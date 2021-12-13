@@ -1,0 +1,229 @@
+<template>
+  <div class="homes rounded">
+    <!--begin::Home-->
+    <div>
+      <ListWidget10></ListWidget10>
+    </div>
+    <!--最近访问-->
+    <div class="card card-custom card-stretch mb-4" v-show="isshowguide">
+      <!--begin::Header-->
+      <div class="card-header align-items-center border-0 mt-3 px-6">
+        <h3 class="card-title align-items-start flex-column">
+          <span class="font-weight-bolder text-dark">
+            <!--{{ $t("COMMON.QUICKGUIDE") }}-->
+            {{ $t("COMMON.TITLE16") }}
+          </span>
+        </h3>
+
+        <div class="width-100 mb-2">
+          <div
+            v-for="item in guidlist"
+            class="float-left inline-block mr-10 mb-2"
+          >
+            <!--可视化-->
+            <router-link
+              v-if="item.type == 4"
+              :to="{
+                path: 'chart/chart',
+                query: {
+                  chart_id: item.data.chart_id,
+                  business_id: item.data.business_id,
+                },
+              }"
+            >
+              <div class="guidbtn">
+                <div class="font-des font-weight-bold font-size-sm">
+                  {{ $t("COMMON.VISUALIZATION") }}->{{ item.name }}
+                </div>
+              </div>
+            </router-link>
+            <!--业务编辑资产-->
+            <router-link
+              v-if="item.type == 1"
+              :to="{ path: 'editbusiness', query: { id: item.data.id } }"
+            >
+              <div class="guidbtn">
+                <div class="font-des font-weight-bold font-size-sm">
+                  {{ $t("COMMON.BUSINESS") }}->{{ item.name }}
+                </div>
+              </div>
+            </router-link>
+            <!--告警策略-->
+            <router-link
+              v-if="item.type == 3"
+              :to="{ path: 'strategy/alarmlist', query: { id: item.data.id } }"
+            >
+              <div class="guidbtn">
+                <div class="font-des font-weight-bold font-size-sm">
+                  {{ $t("COMMON.AUTOMATION") }} -> {{ item.name }}->{{
+                    $t("COMMON.ALARMSTRATEGY")
+                  }}
+                </div>
+              </div>
+            </router-link>
+            <!--控制策略-->
+            <router-link
+              v-if="item.type == 2"
+              :to="{ path: 'strategy/strlist', query: { id: item.data.id } }"
+            >
+              <div class="guidbtn">
+                <div class="font-des font-weight-bold font-size-sm">
+                  {{ $t("COMMON.AUTOMATION") }} -> {{ item.name }}->{{
+                    $t("COMMON.CONTROLSTRATRGY")
+                  }}
+                </div>
+              </div>
+            </router-link>
+          </div>
+        </div>
+        <!--<div v-for="item in guidlist" class="float-left inline-block mr-10 mb-5">
+            &lt;!&ndash;可视化&ndash;&gt;
+            <router-link v-if="item.type==4" :to="{ path: 'chart/chart', query: { chart_id: item.data.chart_id,business_id:item.data.business_id }}">
+              <div class="guidbtn">
+                <div>{{item.name}}<i class="fa fa-caret-right float-right arrowicon"></i></div>
+                <div class="font-des">{{ $t("COMMON.VISUALIZATION") }}</div>
+              </div>
+            </router-link>
+            &lt;!&ndash;业务编辑资产&ndash;&gt;
+            <router-link v-if="item.type==1" :to="{ path: 'editbusiness', query: { id: item.data.id }}">
+              <div class="guidbtn">
+                <div>{{item.name}}<i class="fa fa-caret-right float-right arrowicon"></i></div>
+                <div class="font-des">{{ $t("COMMON.BUSINESS") }}</div>
+              </div>
+            </router-link>
+            &lt;!&ndash;告警策略&ndash;&gt;
+            <router-link v-if="item.type==3" :to="{ path: 'strategy/alarmlist', query: { id: item.data.id }}">
+              <div class="guidbtn">
+                <div>{{ $t("COMMON.ALARMSTRATEGY") }}<i class="fa fa-caret-right float-right arrowicon"></i></div>
+                <div class="font-des">{{ $t("COMMON.AUTOMATION") }} -> {{item.name}}</div>
+              </div>
+            </router-link>
+            &lt;!&ndash;控制策略&ndash;&gt;
+            <router-link v-if="item.type==2" :to="{ path: 'strategy/strlist', query: { id: item.data.id }}">
+              <div class="guidbtn">
+                <div>{{ $t("COMMON.CONTROLSTRATRGY") }}<i class="fa fa-caret-right float-right arrowicon"></i></div>
+                <div class="font-des">{{ $t("COMMON.AUTOMATION") }} -> {{item.name}}</div>
+              </div>
+            </router-link>
+          </div>
+        </div>-->
+      </div>
+    </div>
+    <div>
+      <MixedWidget3></MixedWidget3>
+    </div>
+    <div>
+      <MixedWidget4></MixedWidget4>
+    </div>
+    <!--运行状态-->
+    <!--<div>
+      <MixedWidget2></MixedWidget2>
+    </div>-->
+    <!--<div class="row">
+      <div class="col-md-6">
+      &lt;!&ndash;告警信息&ndash;&gt;
+        <ListWidget3></ListWidget3>
+      </div>
+      <div class="col-md-6">
+      &lt;!&ndash;操作日志&ndash;&gt;
+        <ListWidget9></ListWidget9>
+      </div>
+      <div class="clear"></div>
+    </div>-->
+    <!--end::Home-->
+  </div>
+</template>
+<style>
+.clear {
+  clear: both;
+}
+</style>
+<style scoped>
+.guidbtn {
+  /*background: #5B92FF;padding: 15px 15px;*/
+  color: #fff;
+  border-radius: 4px; /*font-size: 15px;font-weight: bolder;*/
+}
+.font-des {
+  font-size: 12px;
+  font-weight: 100;
+  color: #a8c5ff;
+}
+.arrowicon {
+  margin-left: 20px;
+  color: #2a45c5;
+  font-size: 25px;
+  position: relative;
+  bottom: 3px;
+}
+</style>
+<script>
+import MixedWidget2 from "@/view/content/widgets/mixed/Widget2.vue";
+import MixedWidget3 from "@/view/content/widgets/mixed/Widget3.vue";
+import MixedWidget4 from "@/view/content/widgets/mixed/Widget4.vue";
+import ListWidget3 from "@/view/content/widgets/list/Widget3.vue";
+import ListWidget10 from "@/view/content/widgets/list/Widget10.vue";
+import ListWidget9 from "@/view/content/widgets/list/Widget9.vue";
+
+import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import AUTH from "@/core/services/store/auth.module";
+
+import ApiService from "@/core/services/api.service";
+export default {
+  name: "home",
+  data: () => ({
+    isshowguide: false,
+    guidlist: [],
+  }),
+  components: {
+    MixedWidget2,
+    ListWidget10,
+    ListWidget9,
+    ListWidget3,
+    MixedWidget3,
+    MixedWidget4,
+  },
+  created() {
+    this.ajaxdata();
+  },
+  methods: {
+    ajaxdata() {
+      ApiService.post(AUTH.local_url + "/asset/work_index", {
+        work_name: "",
+        page: 1,
+      }).then(({ data }) => {
+        console.log("获取业务数据");
+        console.log(data);
+        if (data.code == 200) {
+          if (data.data.data.length > 0) {
+            this.isshowguide = true;
+            this.getguidlist();
+          }
+        } else if (data.code == 401) {
+          this.$store
+            .dispatch(LOGOUT)
+            .then(() => this.$router.push({ name: "login" }));
+        } else {
+        }
+      });
+    },
+
+    getguidlist() {
+      ApiService.post(AUTH.local_url + "/navigation/list", {
+        work_name: "",
+      }).then(({ data }) => {
+        console.log("指南列表");
+        console.log(data);
+        if (data.code == 200) {
+          this.guidlist = data.data;
+        } else if (data.code == 401) {
+          this.$store
+            .dispatch(LOGOUT)
+            .then(() => this.$router.push({ name: "login" }));
+        } else {
+        }
+      });
+    },
+  },
+};
+</script>

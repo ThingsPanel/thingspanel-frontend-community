@@ -1,0 +1,27 @@
+//
+// Demo utilities
+//
+
+.demo-square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100px;
+    width: 100px;
+
+    // Sizing
+    &.demo-square-sm {
+        height: 75px;
+        width: 75px;
+    }
+
+    &.demo-square-lg {
+        height: 150px;
+        width: 150px;
+    }
+
+    &.demo-square-xl {
+        height: 175px;
+        width: 175px;
+    }
+}

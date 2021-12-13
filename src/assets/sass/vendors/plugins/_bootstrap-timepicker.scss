@@ -1,0 +1,43 @@
+//
+//  Bootstrap Timepicker
+//
+
+
+// Base
+.bootstrap-timepicker-widget {
+    left: auto;
+    width: 180px;
+    @include border-radius($border-radius);
+
+    .bootstrap-timepicker-hour,
+    .bootstrap-timepicker-minute,
+    .bootstrap-timepicker-meridian,
+    .bootstrap-timepicker-second {
+        @include input-reset();
+        color: $dark-50;
+        font-weight: 500;
+    }
+
+    table td {
+        @include border-radius($border-radius);
+
+        > a {
+            display: flex;
+            border: 0;
+            @include border-radius($border-radius);
+            width: 33px;
+            height: 33px;
+            align-items: center;
+            justify-content: center;
+
+            span {
+                font-size: 0.75rem;
+                color: $text-muted;
+            }
+
+            &:hover {
+                background: $gray-100;
+            }
+        }
+    }
+}

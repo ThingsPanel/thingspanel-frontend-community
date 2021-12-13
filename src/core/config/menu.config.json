@@ -1,0 +1,762 @@
+{
+  "header": {
+    "self": {},
+    "items": [
+      {
+        "title": "Home",
+        "root": true,
+        "page": "home",
+        "translate": "MENU.HOME"
+      },
+      {
+        "title": "User",
+        "root": true,
+        "page": "user",
+        "translate": "MENU.USER"
+      },
+      {
+        "title": "Dashboards",
+        "root": true,
+        "page": "dashboard",
+        "translate": "MENU.DASHBOARD"
+      },
+      {
+        "title": "Builder",
+        "root": true,
+        "page": "builder"
+      },
+      {
+        "title": "Vue Bootstrap",
+        "bullet": "dot",
+        "root": true,
+        "toggle": "click",
+        "type": "mega",
+        "submenu": [
+          {
+            "title": "Task Reports",
+            "submenu": [
+              {
+                "title": "Alert",
+                "page": "vue-bootstrap/alert"
+              },
+              {
+                "title": "Badge",
+                "page": "vue-bootstrap/badge"
+              },
+              {
+                "title": "Button",
+                "page": "vue-bootstrap/button"
+              },
+              {
+                "title": "Button Group",
+                "page": "vue-bootstrap/button-group"
+              },
+              {
+                "title": "Button Toolbar",
+                "page": "vue-bootstrap/button-toolbar"
+              },
+              {
+                "title": "Card",
+                "page": "vue-bootstrap/card"
+              },
+              {
+                "title": "Carousel",
+                "page": "vue-bootstrap/carousel"
+              }
+            ]
+          },
+          {
+            "title": "Profit Margins",
+            "submenu": [
+              {
+                "title": "Collapse",
+                "page": "vue-bootstrap/collapse"
+              },
+              {
+                "title": "Dropdown",
+                "page": "vue-bootstrap/dropdown"
+              },
+              {
+                "title": "Embed",
+                "page": "vue-bootstrap/embed"
+              },
+              {
+                "title": "Form",
+                "page": "vue-bootstrap/form"
+              },
+              {
+                "title": "Form Checkbox",
+                "page": "vue-bootstrap/form-checkbox"
+              },
+              {
+                "title": "Form File",
+                "page": "vue-bootstrap/form-file"
+              },
+              {
+                "title": "Form Group",
+                "page": "vue-bootstrap/form-group"
+              },
+              {
+                "title": "Form Input",
+                "page": "vue-bootstrap/form-input"
+              }
+            ]
+          },
+          {
+            "title": "Staff Management",
+            "submenu": [
+              {
+                "title": "Form Radio",
+                "page": "vue-bootstrap/form-radio"
+              },
+              {
+                "title": "Form Select",
+                "page": "vue-bootstrap/form-select"
+              },
+              {
+                "title": "Form Textarea",
+                "page": "vue-bootstrap/form-textarea"
+              },
+              {
+                "title": "Image",
+                "page": "vue-bootstrap/image"
+              },
+              {
+                "title": "Input Group",
+                "page": "vue-bootstrap/input-group"
+              },
+              {
+                "title": "Jumbotron",
+                "page": "vue-bootstrap/jumbotron"
+              },
+              {
+                "title": "Layout Grid System",
+                "page": "vue-bootstrap/layout-grid-system"
+              }
+            ]
+          },
+          {
+            "title": "Tools",
+            "submenu": [
+              {
+                "title": "Link",
+                "page": "vue-bootstrap/link"
+              },
+              {
+                "title": "List Group",
+                "page": "vue-bootstrap/list-group"
+              },
+              {
+                "title": "Media",
+                "page": "vue-bootstrap/media"
+              },
+              {
+                "title": "Modal",
+                "page": "vue-bootstrap/modal"
+              },
+              {
+                "title": "Nav",
+                "page": "vue-bootstrap/nav"
+              },
+              {
+                "title": "Navbar",
+                "page": "vue-bootstrap/navbar"
+              },
+              {
+                "title": "Pagination",
+                "page": "vue-bootstrap/pagination"
+              },
+              {
+                "title": "Pagination Nav",
+                "page": "vue-bootstrap/pagination-nav"
+              }
+            ]
+          },
+          {
+            "title": "Misc",
+            "submenu": [
+              {
+                "title": "Popover",
+                "page": "vue-bootstrap/popover"
+              },
+              {
+                "title": "Progress",
+                "page": "vue-bootstrap/progress"
+              },
+              {
+                "title": "Spinner",
+                "page": "vue-bootstrap/spinner"
+              },
+              {
+                "title": "Table",
+                "page": "vue-bootstrap/table"
+              },
+              {
+                "title": "Tabs",
+                "page": "vue-bootstrap/tabs"
+              },
+              {
+                "title": "Toasts",
+                "page": "vue-bootstrap/toasts"
+              },
+              {
+                "title": "Tooltip",
+                "page": "vue-bootstrap/tooltip"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Vuetify",
+        "bullet": "dot",
+        "root": true,
+        "toggle": "click",
+        "type": "mega",
+        "submenu": [
+          {
+            "title": "Task Reports",
+            "submenu": [
+              {
+                "title": "Alerts",
+                "page": "vuetify/alerts"
+              },
+              {
+                "title": "Avatars",
+                "page": "vuetify/avatars"
+              },
+              {
+                "title": "Badges",
+                "page": "vuetify/badges"
+              },
+              {
+                "title": "Buttons",
+                "page": "vuetify/buttons"
+              },
+              {
+                "title": "Calendars",
+                "page": "vuetify/calendars"
+              }
+            ]
+          },
+          {
+            "title": "Profit Margins",
+            "submenu": [
+              {
+                "title": "Cards",
+                "page": "vuetify/cards"
+              },
+              {
+                "title": "Chips",
+                "page": "vuetify/chips"
+              },
+              {
+                "title": "Dialog",
+                "page": "vuetify/dialog"
+              },
+              {
+                "title": "Autocompletes",
+                "page": "vuetify/autocompletes"
+              },
+              {
+                "title": "File Inputs",
+                "page": "vuetify/file-inputs"
+              }
+            ]
+          },
+          {
+            "title": "Staff Management",
+            "submenu": [
+              {
+                "title": "Forms",
+                "page": "vuetify/forms"
+              },
+              {
+                "title": "Selection Controls",
+                "page": "vuetify/selection-controls"
+              },
+              {
+                "title": "Selects",
+                "page": "vuetify/selects"
+              },
+              {
+                "title": "Textareas",
+                "page": "vuetify/textareas"
+              },
+              {
+                "title": "Text Fields",
+                "page": "vuetify/text-fields"
+              }
+            ]
+          },
+          {
+            "title": "Tools",
+            "submenu": [
+              {
+                "title": "Simple Tables",
+                "page": "vuetify/simple-tables"
+              },
+              {
+                "title": "Data Tables",
+                "page": "vuetify/data-tables"
+              },
+              {
+                "title": "Tabs",
+                "page": "vuetify/tabs"
+              },
+              {
+                "title": "Timelines",
+                "page": "vuetify/timelines"
+              },
+              {
+                "title": "Tooltips",
+                "page": "vuetify/tooltips"
+              },
+              {
+                "title": "Treeview",
+                "page": "vuetify/treeview"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Custom",
+        "root": true,
+        "toggle": "click",
+        "submenu": [
+          {
+            "title": "Error Pages",
+            "bullet": "dot",
+            "icon": "flaticon2-list-2",
+            "submenu": [
+              {
+                "title": "Error 1",
+                "page": "error/error-1"
+              },
+              {
+                "title": "Error 2",
+                "page": "error/error-2"
+              },
+              {
+                "title": "Error 3",
+                "page": "error/error-3"
+              },
+              {
+                "title": "Error 4",
+                "page": "error/error-4"
+              },
+              {
+                "title": "Error 5",
+                "page": "error/error-5"
+              },
+              {
+                "title": "Error 6",
+                "page": "error/error-6"
+              }
+            ]
+          },
+          {
+            "title": "Wizard",
+            "bullet": "dot",
+            "icon": "flaticon2-mail-1",
+            "submenu": [
+              {
+                "title": "Wizard 1",
+                "page": "wizard/wizard-1"
+              },
+              {
+                "title": "Wizard 2",
+                "page": "wizard/wizard-2"
+              },
+              {
+                "title": "Wizard 3",
+                "page": "wizard/wizard-3"
+              },
+              {
+                "title": "Wizard 4",
+                "page": "wizard/wizard-4"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "aside": {
+    "self": {},
+    "items": [
+      {
+        "title": "Home",
+        "root": true,
+        "icon": "flaticon2-architecture-and-city",
+        "page": "home",
+        "translate": "MENU.HOME",
+        "bullet": "dot"
+      },
+      {
+        "title": "Dashboard",
+        "root": true,
+        "icon": "flaticon2-architecture-and-city",
+        "page": "dashboard",
+        "translate": "MENU.DASHBOARD",
+        "bullet": "dot"
+      },
+      {
+        "title": "Layout Builder",
+        "root": true,
+        "icon": "flaticon2-expand",
+        "page": "builder"
+      },
+      {
+        "section": "Components"
+      },
+      {
+        "title": "Vue Bootstrap",
+        "root": true,
+        "bullet": "dot",
+        "icon": "flaticon2-digital-marketing",
+        "submenu": [
+          {
+            "title": "Alert",
+            "page": "vue-bootstrap/alert"
+          },
+          {
+            "title": "Badge",
+            "page": "vue-bootstrap/badge"
+          },
+          {
+            "title": "Buttons",
+            "submenu": [
+              {
+                "title": "Button",
+                "page": "vue-bootstrap/button"
+              },
+              {
+                "title": "Button Group",
+                "page": "vue-bootstrap/button-group"
+              },
+              {
+                "title": "Button Toolbar",
+                "page": "vue-bootstrap/button-toolbar"
+              }
+            ]
+          },
+          {
+            "title": "Card",
+            "page": "vue-bootstrap/card"
+          },
+          {
+            "title": "Carousel",
+            "page": "vue-bootstrap/carousel"
+          },
+          {
+            "title": "Collapse",
+            "page": "vue-bootstrap/collapse"
+          },
+          {
+            "title": "Dropdown",
+            "page": "vue-bootstrap/dropdown"
+          },
+          {
+            "title": "Embed",
+            "page": "vue-bootstrap/embed"
+          },
+          {
+            "title": "Form",
+            "submenu": [
+              {
+                "title": "Form",
+                "page": "vue-bootstrap/form"
+              },
+              {
+                "title": "Form Checkbox",
+                "page": "vue-bootstrap/form-checkbox"
+              },
+              {
+                "title": "Form File",
+                "page": "vue-bootstrap/form-file"
+              },
+              {
+                "title": "Form Group",
+                "page": "vue-bootstrap/form-group"
+              },
+              {
+                "title": "Form Input",
+                "page": "vue-bootstrap/form-input"
+              },
+              {
+                "title": "Form Radio",
+                "page": "vue-bootstrap/form-radio"
+              },
+              {
+                "title": "Form Select",
+                "page": "vue-bootstrap/form-select"
+              },
+              {
+                "title": "Form Textarea",
+                "page": "vue-bootstrap/form-textarea"
+              }
+            ]
+          },
+          {
+            "title": "Image",
+            "page": "vue-bootstrap/image"
+          },
+          {
+            "title": "Input Group",
+            "page": "vue-bootstrap/input-group"
+          },
+          {
+            "title": "Jumbotron",
+            "page": "vue-bootstrap/jumbotron"
+          },
+          {
+            "title": "Layout and Grid System",
+            "page": "vue-bootstrap/layout-grid-system"
+          },
+          {
+            "title": "Link",
+            "page": "vue-bootstrap/link"
+          },
+          {
+            "title": "List group",
+            "page": "vue-bootstrap/list-group"
+          },
+          {
+            "title": "Media",
+            "page": "vue-bootstrap/media"
+          },
+          {
+            "title": "Modal",
+            "page": "vue-bootstrap/modal"
+          },
+          {
+            "title": "Navigation",
+            "submenu": [
+              {
+                "title": "Nav",
+                "page": "vue-bootstrap/nav"
+              },
+              {
+                "title": "Navbar",
+                "page": "vue-bootstrap/navbar"
+              }
+            ]
+          },
+          {
+            "title": "Pagination",
+            "submenu": [
+              {
+                "title": "Pagination",
+                "page": "vue-bootstrap/pagination"
+              },
+              {
+                "title": "Pagination Nav",
+                "page": "vue-bootstrap/pagination-nav"
+              }
+            ]
+          },
+          {
+            "title": "Notify",
+            "submenu": [
+              {
+                "title": "Popover",
+                "page": "vue-bootstrap/popover"
+              },
+              {
+                "title": "Toasts",
+                "page": "vue-bootstrap/toasts"
+              },
+              {
+                "title": "Tooltip",
+                "page": "vue-bootstrap/tooltip"
+              }
+            ]
+          },
+          {
+            "title": "Progress",
+            "submenu": [
+              {
+                "title": "Progress",
+                "page": "vue-bootstrap/progress"
+              },
+              {
+                "title": "Spinner",
+                "page": "vue-bootstrap/spinner"
+              }
+            ]
+          },
+          {
+            "title": "Table",
+            "page": "vue-bootstrap/table"
+          },
+          {
+            "title": "Tabs",
+            "page": "vue-bootstrap/tabs"
+          }
+        ]
+      },
+      {
+        "title": "Vuetify",
+        "bullet": "dot",
+        "icon": "flaticon-web",
+        "submenu": [
+          {
+            "title": "Alerts",
+            "page": "vuetify/alerts"
+          },
+          {
+            "title": "Avatars",
+            "page": "vuetify/avatars"
+          },
+          {
+            "title": "Badges",
+            "page": "vuetify/badges"
+          },
+          {
+            "title": "Buttons",
+            "page": "vuetify/buttons"
+          },
+          {
+            "title": "Calendars",
+            "page": "vuetify/calendars"
+          },
+          {
+            "title": "Cards",
+            "page": "vuetify/cards"
+          },
+          {
+            "title": "Chips",
+            "page": "vuetify/chips"
+          },
+          {
+            "title": "Dialog",
+            "page": "vuetify/dialog"
+          },
+          {
+            "title": "Forms",
+            "submenu": [
+              {
+                "title": "Autocompletes",
+                "page": "vuetify/autocompletes"
+              },
+              {
+                "title": "File Inputs",
+                "page": "vuetify/file-inputs"
+              },
+              {
+                "title": "Forms",
+                "page": "vuetify/forms"
+              },
+              {
+                "title": "Selection Controls",
+                "page": "vuetify/selection-controls"
+              },
+              {
+                "title": "Selects",
+                "page": "vuetify/selects"
+              },
+              {
+                "title": "Textareas",
+                "page": "vuetify/textareas"
+              },
+              {
+                "title": "Text Fields",
+                "page": "vuetify/text-fields"
+              }
+            ]
+          },
+          {
+            "title": "Tables",
+            "submenu": [
+              {
+                "title": "Simple Tables",
+                "page": "vuetify/simple-tables"
+              },
+              {
+                "title": "Data Tables",
+                "page": "vuetify/data-tables"
+              }
+            ]
+          },
+          {
+            "title": "Tabs",
+            "page": "vuetify/tabs"
+          },
+          {
+            "title": "Timelines",
+            "page": "vuetify/timelines"
+          },
+          {
+            "title": "Tooltips",
+            "page": "vuetify/tooltips"
+          },
+          {
+            "title": "Treeview",
+            "page": "vuetify/treeview"
+          }
+        ]
+      },
+      {
+        "section": "Custom"
+      },
+      {
+        "title": "Error Pages",
+        "root": true,
+        "bullet": "dot",
+        "icon": "flaticon2-list-2",
+        "submenu": [
+          {
+            "title": "Error 1",
+            "page": "error/error-1"
+          },
+          {
+            "title": "Error 2",
+            "page": "error/error-2"
+          },
+          {
+            "title": "Error 3",
+            "page": "error/error-3"
+          },
+          {
+            "title": "Error 4",
+            "page": "error/error-4"
+          },
+          {
+            "title": "Error 5",
+            "page": "error/error-5"
+          },
+          {
+            "title": "Error 6",
+            "page": "error/error-6"
+          }
+        ]
+      },
+      {
+        "title": "Wizard",
+        "root": true,
+        "bullet": "dot",
+        "icon": "flaticon2-mail-1",
+        "submenu": [
+          {
+            "title": "Wizard 1",
+            "page": "wizard/wizard-1"
+          },
+          {
+            "title": "Wizard 2",
+            "page": "wizard/wizard-2"
+          },
+          {
+            "title": "Wizard 3",
+            "page": "wizard/wizard-3"
+          },
+          {
+            "title": "Wizard 4",
+            "page": "wizard/wizard-4"
+          }
+        ]
+      }
+    ]
+  }
+}

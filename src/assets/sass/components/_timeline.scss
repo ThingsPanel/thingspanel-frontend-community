@@ -1,0 +1,67 @@
+//
+// Timeline
+//
+
+
+.timeline.timeline-1 {
+	position: relative;
+
+	$time-width: 60px;
+	$badge-width: 30px;
+
+	.timeline-sep {
+		z-index: 0;
+		content: '';
+		position: absolute;
+		left: $time-width + $badge-width / 2 - 2px;
+		width: 4px;
+		top: 0;
+		bottom: 0;
+		background-color: $gray-200;
+	}
+
+	.timeline-item {
+		flex-grow: 1;
+		display: flex;
+		margin-bottom: 1rem;
+		align-items: center;
+
+		.timeline-label {
+			display: flex;
+			flex-wrap: wrap;
+			flex: 0 0 $time-width;
+			font-weight: 500;
+			color: $text-muted;
+		}
+
+		.timeline-badge {
+			display: flex;
+			width: $badge-width;
+			height: $badge-width;
+			flex-shrink: 0;
+			align-items: center;
+			justify-content: center;
+			background-color: white;
+			border-radius: 50%;
+			border: 4px solid white;
+			position: relative;
+			z-index: 0;
+
+			.svg-icon,
+			i {
+				line-height: 0;
+			}			
+		}
+
+
+		.timeline-content {
+			flex-grow: 1;
+			font-size: 1rem;
+			padding: 0 0 0 0.75rem;
+		}
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+}
