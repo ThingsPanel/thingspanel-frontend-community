@@ -57,9 +57,16 @@
 										</v-text-field>
 									</td>
 									<td class="text-white">
-										<v-select :items="itemarr" :label="$t('COMMON.PLACEHOLDER3')" item-value="id"
+										<el-select v-model="a.type" @change="changedash(a.type, index, b)" :popper-append-to-body="true" class="width-100">
+										    <el-option
+										            v-for="(t, index) in itemarr"
+										            :key="index"
+										            :value="t.name"
+										            :label="t.name"></el-option>
+										</el-select>
+										<!-- <v-select :items="itemarr" :label="$t('COMMON.PLACEHOLDER3')" item-value="id"
 											item-text="name" v-model="a.type" class="text-white" :disabled="false"
-											@change="changedash(a.type, index, b)"></v-select>
+											@change="changedash(a.type, index, b)"></v-select> -->
 									</td>
 									<td>
 										<span @click="dataadmin(list.name, a.type, index, b, 1)"
@@ -124,9 +131,16 @@
 											</v-text-field>
 										</td>
 										<td>
-											<v-select :items="itemarr" :label="$t('COMMON.PLACEHOLDER3')"
+											<!-- <v-select :items="itemarr" :label="$t('COMMON.PLACEHOLDER3')"
 												item-value="id" item-text="name" v-model="c.type" :disabled="c.disabled"
-												@change="changedash1(c.type, index, i, d)"></v-select>
+												@change="changedash1(c.type, index, i, d)"></v-select> -->
+											<el-select v-model="c.type" @change="changedash1(c.type, index, i, d)" :popper-append-to-body="true" class="width-100">
+											    <el-option
+											            v-for="(t, index) in itemarr"
+											            :key="index"
+														:value="t.name"
+											            :label="t.name"></el-option>
+											</el-select>
 										</td>
 										<td>
 											<span @click="dataadmin2(item.name, c.type, index, i, d, 2)"
@@ -184,9 +198,16 @@
 													:label="$t('COMMON.PLACEHOLDER2')"></v-text-field>
 											</td>
 											<td>
-												<v-select :items="itemarr" label="" item-value="id" item-text="name"
+												<el-select v-model="e.type" @change="changedash2(e.type, index, i, m, f)" :popper-append-to-body="true" class="width-100">
+												    <el-option
+												            v-for="(t, index) in itemarr"
+												            :key="index"
+												            :value="t.name"
+												            :label="t.name"></el-option>
+												</el-select>
+										<!-- 		<v-select :items="itemarr" label="" item-value="id" item-text="name"
 													v-model="e.type" :disabled="e.disabled"
-													@change="changedash2(e.type, index, i, m, f)"></v-select>
+													@change="changedash2(e.type, index, i, m, f)"></v-select> -->
 											</td>
 											<td>
 												<span @click="dataadmin3(v.name, e.type, index, i, m, f, 3)"
@@ -247,10 +268,17 @@
 								<v-row class="p-4">
 									<v-col cols="12" class="col-px-0">
 										<div class="text-white">{{ $t("COMMON.AGREEMENT") }}：</div>
-										<v-select :items="agreementList" :label="$t('COMMON.PLACEHOLDER3')"
+										<!-- <v-select :items="agreementList" :label="$t('COMMON.PLACEHOLDER3')"
 											item-value="name" item-text="name" v-model="protocol" class="text-white"
 											:disabled="false" @change="changeAgreement(protocol)">
-										</v-select>
+										</v-select> -->
+										<el-select v-model="protocol" @change="changeAgreement(protocol)" :popper-append-to-body="false" class="width-100">
+										    <el-option
+										            v-for="(t, index) in agreementList"
+										            :key="index"
+													:value="t.name"
+										            :label="t.name"></el-option>
+										</el-select>
 										<!-- 							<v-text-field
 									label="agreement"
 									v-model="agreement"
