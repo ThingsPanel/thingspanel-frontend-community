@@ -77,7 +77,7 @@
       </li>
     </router-link>
     <router-link
-            to="/datas/index"
+            to="/data/index"
             v-slot="{ href, navigate, isActive, isExactActive }"
     >
       <li

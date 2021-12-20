@@ -81,7 +81,7 @@ export default new Router({
           component: () => import("@/view/pages/alarm/List.vue")
         },
         {
-          path: "/datas/index",
+          path: "/data/index",
           name: "datas",
           component: () => import("@/view/pages/datas/index.vue")
         },

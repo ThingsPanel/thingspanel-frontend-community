@@ -1,5 +1,3 @@
-# metronic-vue
-
 ## Project setup
 ```
 yarn install

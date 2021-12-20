@@ -265,7 +265,7 @@
                     yAxis: [
                         {
                             type: 'value',
-                            name: 'G',
+                            name: '%',
                             nameTextStyle: {
                                 color: '#88adf6'
                             },

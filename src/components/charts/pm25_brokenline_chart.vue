@@ -142,6 +142,10 @@
 				});
 			},
 		},
+		mounted() {
+			
+			
+		},
 		methods: {
 
 			/**
@@ -149,11 +153,13 @@
 			 */
 			initChart() {
 				let _this = this;
-				let xdata = []
-				let pm10datas = [];
+				this.chart = echarts.init(document.getElementById('chart_' + this.id));
+				let xdata = [];
+				let pm10datas = this.chart.getOption() ? this.chart.getOption().series[0].data : [];
 				for (let i=0; i<this.fields.length; i++) {
 					let item = this.fields[i];
 					if (_this.id == '3') {
+						
 						pm10datas.push(item['pm25']);
 					}
 					else if (_this.id == '7') {
@@ -181,12 +187,10 @@
 				this.options10.xAxis.data = xdata;
 				this.options10.series.push(pm10data);
 
-				var myChart10 = echarts.init(document.getElementById('chart_' + this.id));
-
-				myChart10.setOption(this.options10);
+				this.chart.setOption(this.options10);
 				
 				window.addEventListener("resize", () => { 
-				    myChart10.resize();
+				    this.chart.resize();
 				});
 			},
 			handleChartClick(param) {
