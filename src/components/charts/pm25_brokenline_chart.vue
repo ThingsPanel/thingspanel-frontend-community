@@ -173,7 +173,7 @@
 				let pm10data = {
 					type: 'line',
 					lineStyle: {
-						color: '#ff0000'
+						color: '#5aa7ff',
 					},
 					data: pm10datas
 				}
