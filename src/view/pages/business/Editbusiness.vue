@@ -57,12 +57,10 @@
 										</v-text-field>
 									</td>
 									<td class="text-white">
-										<el-select v-model="a.type" @change="changedash(a.type, index, b)" :popper-append-to-body="true" class="width-100">
-										    <el-option
-										            v-for="(t, index) in itemarr"
-										            :key="index"
-										            :value="t.name"
-										            :label="t.name"></el-option>
+										<el-select v-model="a.type" @change="changedash(a.type, index, b)"
+											:popper-append-to-body="true" class="width-100">
+											<el-option v-for="(t, index) in itemarr" :key="index" :value="t.name"
+												:label="t.device"></el-option>
 										</el-select>
 										<!-- <v-select :items="itemarr" :label="$t('COMMON.PLACEHOLDER3')" item-value="id"
 											item-text="name" v-model="a.type" class="text-white" :disabled="false"
@@ -76,7 +74,7 @@
 										{{ a.dm }}
 									</td>
 									<td>
-										{{ a.state }}
+										{{ inDateFormat(a.latesttime/1000000) }}
 									</td>
 									<td colspan="2">
 										<span class="mr-2 custom-btn my-1"
@@ -134,12 +132,10 @@
 											<!-- <v-select :items="itemarr" :label="$t('COMMON.PLACEHOLDER3')"
 												item-value="id" item-text="name" v-model="c.type" :disabled="c.disabled"
 												@change="changedash1(c.type, index, i, d)"></v-select> -->
-											<el-select v-model="c.type" @change="changedash1(c.type, index, i, d)" :popper-append-to-body="true" class="width-100">
-											    <el-option
-											            v-for="(t, index) in itemarr"
-											            :key="index"
-														:value="t.name"
-											            :label="t.name"></el-option>
+											<el-select v-model="c.type" @change="changedash1(c.type, index, i, d)"
+												:popper-append-to-body="true" class="width-100">
+												<el-option v-for="(t, index) in itemarr" :key="index" :value="t.device"
+													:label="t.device"></el-option>
 											</el-select>
 										</td>
 										<td>
@@ -198,14 +194,13 @@
 													:label="$t('COMMON.PLACEHOLDER2')"></v-text-field>
 											</td>
 											<td>
-												<el-select v-model="e.type" @change="changedash2(e.type, index, i, m, f)" :popper-append-to-body="true" class="width-100">
-												    <el-option
-												            v-for="(t, index) in itemarr"
-												            :key="index"
-												            :value="t.name"
-												            :label="t.name"></el-option>
+												<el-select v-model="e.type"
+													@change="changedash2(e.type, index, i, m, f)"
+													:popper-append-to-body="true" class="width-100">
+													<el-option v-for="(t, index) in itemarr" :key="index"
+														:value="t.device" :label="t.device"></el-option>
 												</el-select>
-										<!-- 		<v-select :items="itemarr" label="" item-value="id" item-text="name"
+												<!-- 		<v-select :items="itemarr" label="" item-value="id" item-text="name"
 													v-model="e.type" :disabled="e.disabled"
 													@change="changedash2(e.type, index, i, m, f)"></v-select> -->
 											</td>
@@ -268,21 +263,23 @@
 								<v-row class="p-4">
 									<v-col cols="12" class="col-px-0">
 										<div class="text-white">{{ $t("COMMON.AGREEMENT") }}：</div>
-										<!-- <v-select :items="agreementList" :label="$t('COMMON.PLACEHOLDER3')"
-											item-value="name" item-text="name" v-model="protocol" class="text-white"
-											:disabled="false" @change="changeAgreement(protocol)">
-										</v-select> -->
-										<el-select v-model="protocol" @change="changeAgreement(protocol)" :popper-append-to-body="false" class="width-100">
-										    <el-option
-										            v-for="(t, index) in agreementList"
-										            :key="index"
-													:value="t.name"
-										            :label="t.name"></el-option>
+										<el-select v-model="protocol" @change="changeAgreement(protocol)"
+											:popper-append-to-body="false" class="width-100">
+											<el-option v-for="(t, index) in agreementList" :key="index" :value="t.name"
+												:label="t.name"></el-option>
 										</el-select>
-										<!-- 							<v-text-field
-									label="agreement"
-									v-model="agreement"
-									></v-text-field> -->
+									</v-col>
+									<v-col cols="12" class="col-px-0">
+										<div class="text-white">
+											默认配置：
+										</div>
+										<div class="defmsg" style="padding: 10px;font-size: 8px;background: rgba(0, 0, 0, 0.3) !important;">
+											<div class="text-white">端口：{{ port }}</div>
+											<div class="text-white">发布主题：{{ publish }}</div>
+											<div class="text-white">订阅主题：{{ subscribe }}</div>
+											<div class="text-white">用户名：{{ username }}</div>
+											<div class="text-white">密码：{{ password }}</div>
+										</div>
 									</v-col>
 									<v-col cols="12" class="col-px-0">
 										<div class="text-white">
@@ -337,7 +334,7 @@
 												<v-text-field required v-model="item.field_from"></v-text-field>
 											</td>
 											<td>
-												<select class="optgroup form-control" v-model="item.field_to">
+												<select class="optgroup form-control" v-model:field_to="item.field_to" @change="selectAtrrArr($event, i, item)">
 													<optgroup v-for="v in atrrarr" :label="v.name">
 														<option v-for="s in v.field" :value="s.key">
 															{{ s.name }}
@@ -370,6 +367,9 @@
 	</div>
 </template>
 <style scoped>
+	.defmsg {
+		background: '#ffffff';
+	}
 	.table td {
 		vertical-align: middle;
 	}
@@ -412,6 +412,7 @@
 		LOGIN,
 		LOGOUT
 	} from "@/core/services/store/auth.module";
+	import { dateFormat } from "../../../utils/tool.js";
 
 	export default {
 		data: () => ({
@@ -424,7 +425,7 @@
 				device: [{
 					type: "",
 					dm: "代码",
-					stat: "正常",
+					stat: "从未",
 					mapping: [],
 				}, ],
 				two: [],
@@ -442,6 +443,11 @@
 			interface: "json",
 			token: "",
 			protocol: "",
+			port: "",
+			publish: "",
+			subscribe: "",
+			username: "",
+			password: "",
 			datadialog: false,
 			fieldarr: [{
 				field_from: "",
@@ -473,6 +479,42 @@
 			this.datalist();
 		},
 		methods: {
+			inDateFormat(timestamp) {
+				if (timestamp == '' || timestamp == null || timestamp == undefined || !timestamp) {
+					return '从未';
+				}
+
+				let curDate = new Date().getTime()/1000;
+				let str = '从未';
+				if (curDate - timestamp < 60) {
+					str = '刚刚';
+				}
+				else if (curDate - timestamp < 60*2) {
+					str = '一分钟以前';
+				}
+				else if (curDate - timestamp < 60*5) {
+					str = '五分钟以前';
+				}
+				else if (curDate - timestamp < 60*10) {
+					str = '十分钟以前';
+				}
+				else if (curDate - timestamp < 60*30) {
+					str = '半小时以前';
+				}
+				else if (curDate - timestamp < 60*60) {
+					str = '一小时以前';
+				}
+				else {
+					str = dateFormat(timestamp)
+				}
+				
+				return str;
+			},
+			selectAtrrArr(e, i, item) {
+				let atrr = this.atrrarr[i]
+				item['symbol'] = atrr.field[e.target.options.selectedIndex]['symbol']
+				console.log(e)
+			}, 
 			addEl: function() {
 				let cope = {
 					id: 0,
@@ -481,7 +523,7 @@
 					device: [{
 						type: "",
 						dm: "代码",
-						state: "正常",
+						state: "从未",
 						mapping: [],
 					}, ],
 					two: [],
@@ -497,7 +539,7 @@
 					device: [{
 						type: "",
 						dm: "代码",
-						state: "正常",
+						state: "从未",
 						mapping: [],
 					}, ],
 					there: [],
@@ -512,7 +554,7 @@
 				var obj = {
 					type: "",
 					dm: "代码",
-					state: "正常",
+					state: "从未",
 					mapping: [],
 				};
 				this.lists[index]["device"].push(obj);
@@ -568,7 +610,7 @@
 					device: [{
 						type: "",
 						dm: "代码",
-						state: "正常",
+						state: "从未",
 					}, ],
 				};
 				this.lists[index]["two"][i]["there"].push(obj);
@@ -577,7 +619,7 @@
 				var obj = {
 					type: "",
 					dm: "代码",
-					state: "正常",
+					state: "从未",
 					mapping: [],
 				};
 				this.lists[index]["two"][i]["device"].push(obj);
@@ -631,7 +673,7 @@
 				var obj = {
 					type: "",
 					dm: "代码",
-					state: "正常",
+					state: "从未",
 					mapping: [],
 				};
 				this.lists[index]["two"][i]["there"][f]["device"].push(obj);
@@ -715,6 +757,7 @@
 						var obj = {
 							id: "-1",
 							name: "无",
+							device: "无"
 						};
 						var arr = data.data;
 						arr.unshift(obj);
@@ -752,6 +795,7 @@
 				});
 			},
 			equipment: function(item) {
+				let _that = this;
 				console.log(item);
 				this.equname = item.name;
 				this.equid = item.id;
@@ -765,17 +809,22 @@
 						console.log(data);
 						if (data.code == 200) {
 							if (data.data) {
-								this.token = data.data.token;
-								this.protocol = data.data.protocol;
+								_that.token = data.data.token;
+								_that.protocol = data.data.protocol;
+								_that.port = data.data.port;
+								_that.publish = data.data.publish;
+								_that.subscribe = data.data.subscribe;
+								_that.username = data.data.username;
+								_that.password = data.data.password;
 							} else {
-								this.token = "";
-								this.protocol = "";
+								_that.token = "";
+								_that.protocol = "";
 							}
 
-							this.dialog = true;
+							_that.dialog = true;
 						} else if (data.code == 401) {
-							this.$store.dispatch(LOGOUT).then(() =>
-								this.$router.push({
+							_that.$store.dispatch(LOGOUT).then(() =>
+								_that.$router.push({
 									name: "login",
 								})
 							);
@@ -809,7 +858,7 @@
 						if (data.code == 200) {
 							this.lists[index]["device"][b]["dash"] = data.data;
 							this.lists[index]["device"][b]["dm"] = "代码";
-							this.lists[index]["device"][b]["state"] = "正常";
+							this.lists[index]["device"][b]["state"] = "从未";
 						} else if (data.code == 401) {
 							this.$store.dispatch(LOGOUT).then(() =>
 								this.$router.push({
@@ -837,7 +886,7 @@
 						if (data.code == 200) {
 							this.lists[index]["two"][i]["device"][d]["dash"] = data.data;
 							this.lists[index]["two"][i]["device"][d]["dm"] = "代码";
-							this.lists[index]["two"][i]["device"][d]["state"] = "正常";
+							this.lists[index]["two"][i]["device"][d]["state"] = "从未";
 						} else if (data.code == 401) {
 							this.$store.dispatch(LOGOUT).then(() =>
 								this.$router.push({
@@ -867,7 +916,7 @@
 								data.data;
 							this.lists[index]["two"][i]["there"][m]["device"][f]["dm"] = "代码";
 							this.lists[index]["two"][i]["there"][m]["device"][f]["state"] =
-								"正常";
+								"从未";
 						} else if (data.code == 401) {
 							this.$store.dispatch(LOGOUT).then(() =>
 								this.$router.push({
@@ -1203,7 +1252,7 @@
 									})
 								);
 							} else {
-								
+
 							}
 						});
 					} else {}

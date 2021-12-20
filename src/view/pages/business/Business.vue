@@ -417,6 +417,7 @@
                         <select
                           class="optgroup form-control"
                           v-model="item.field_to"
+						  @change="selectAtrrArr($event, i, item)"
                         >
                           <optgroup v-for="(v, m) in atrrarr" :label="v.name">
                             <option v-for="(s, g) in v.field" :value="s.key">
@@ -537,6 +538,11 @@ export default {
     this.sbdata();
   },
   methods: {
+	  selectAtrrArr(e, i, item) {
+	  	let atrr = this.atrrarr[i]
+	  	item['symbol'] = atrr.field[e.target.options.selectedIndex]['symbol']
+	  	console.log(e)
+	  }, 
     addEl: function () {
       let cope = {
         id: 0,
