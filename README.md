@@ -15,15 +15,11 @@
 
 ![项目描述](README_files/1.jpg)
 
-### 1.2 竞品分析
+### 1.2 在线体验
 
-![竞品分析](README_files/2.jpg)
+演示地址：即将发布
 
-### 1.3 在线体验
-
-演示地址：[http://dev.thingspanel.cn/#/list](http://dev.thingspanel.cn/#/list)
-
-测试账号：zhangmeng@126.com / 123456
+测试账号： 暂未开放
 
 [相关技术资料及话题](http://forum.thingspanel.cn/)
 
@@ -43,6 +39,10 @@
 ### 3.2 ThingsPanel-Backend-Vue项目部署
 
 [详情查看此链接 -> https://github.com/ThingsPanel/ThingsPanel-Backend-Vue.git](https://github.com/ThingsPanel/ThingsPanel-Backend-Vue.git)
+
+- 下载安装Node.js，推荐版本16.13
+- 终端进入当项目根目录下，```npm install```，等待依赖下载完毕
+- 执行```npm run dev``` 运行项目
 
 ## 4. 平台数据流程
 
@@ -257,9 +257,7 @@ func (p *PM25) Main(device_ids []string, startTs int64, endTs int64) []interface
 
 #### 4.2.3 进入业务管理模块，新增业务，选择资产设置度对应的应用，保存业务后，可以在编辑业务中设置“代码”获取设备Token
 
-#### 4.2.4 数据推送参照文档， 系统是否收到数据，可以查看 /var/www/backend/storage/logs/ 下面的最新日志， 在这里能看到推送记录，如果没有推送记录，则检查是否推送成功
-
-#### 4.2.5 插件数据显示
+#### 4.2.4 插件数据显示
 
 ![](README_files/2.png)
 ![](README_files/3.png)
