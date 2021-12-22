@@ -155,7 +155,7 @@
 				let _this = this;
 				this.chart = echarts.init(document.getElementById('chart_' + this.id));
 				let xdata = [];
-				let pm10datas = this.chart.getOption() ? this.chart.getOption().series[0].data : [];
+				var pm10datas = this.chart.getOption() ? this.chart.getOption().series[0].data : [];
 				for (let i=0; i<this.fields.length; i++) {
 					let item = this.fields[i];
 					if (_this.id == '3') {

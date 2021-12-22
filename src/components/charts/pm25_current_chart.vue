@@ -4,8 +4,6 @@
 	</div>
 </template>
 <script>
-	import echarts from 'echarts';
-
 	export default {
 		name: "pm25_current_chart",
 		props: {
@@ -41,17 +39,10 @@
 				course_id: '',
 				chapter_id: '',
 				idNameMapping: [],
-
 				maxLevel: 2,
 				hasAxis: true,
-
 				chart: null,
-				// render direction
 				direction: 'vertical',
-				/**
-				 * init options for vue-echarts
-				 * switch render mode between canvas and svg
-				 */
 				initOptions: {
 					renderer: 'canvas'
 				},
@@ -65,31 +56,6 @@
 			};
 		},
 		computed: {
-			itemStyle() {
-				const defaultItemStyle = {
-					normal: {
-						color: {
-							type: 'linear',
-							x: 0,
-							y: 0,
-							x2: 1,
-							y2: 0,
-							colorStops: [{
-								offset: 0,
-								color: this.colorStart, // 0%
-							}, {
-								offset: 1,
-								color: this.colorEnd, // 100%
-							}],
-						},
-					},
-				};
-				if (this.chart_type === 'x_bar') {
-					defaultItemStyle.normal.color.x2 = 0;
-					defaultItemStyle.normal.color.y2 = 1;
-				}
-				return defaultItemStyle;
-			},
 		},
 		watch: {
 			apiData: {
@@ -119,11 +85,6 @@
 			colorStart() {},
 			colorEnd() {},
 			legend(val, oldVal) {
-				this.chart.setOption({
-					legend: {
-						show: val,
-					},
-				});
 			},
 		},
 		methods: {
@@ -139,10 +100,5 @@
 			text-align: center;
 			margin: 10px;
 		}
-	}
-
-	.echarts {
-		width: 100%;
-		height: 100%;
 	}
 </style>
