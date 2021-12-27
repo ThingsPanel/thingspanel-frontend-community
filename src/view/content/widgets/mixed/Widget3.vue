@@ -240,7 +240,7 @@
                         symbolSize: ['15%', '100%'],
                         barCategoryGap: '0%',
                         data: [{
-                            value: 184,
+                            value: 0,
                             symbol: 'media/bg/chart-img.png',
                             barMinHeight:'60%'
                         }]

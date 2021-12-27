@@ -17,7 +17,7 @@
             </div>
             <div class="col text-right align-self-center">
               <a
-                href="https://gitee.com/ThingsPanel/thingspanel-php"
+                href="http://forum.thingspanel.cn"
                 class="btn btn-sm btn-primary text-uppercase"
                 target="_blank"
                 >help</a
@@ -93,7 +93,7 @@
                 <li class="nav-item">
                   <a
                     class="nav-link active"
-                    href="https://gitee.com/ThingsPanel/thingspanel-php"
+                    href="https://www.thingspanel.cn/business"
                     target="_blank"
                     >使用条款</a
                   >
@@ -107,7 +107,7 @@
                   >
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" href="http://www.jiyikeji.cn/" target="_blank"
+                  <a class="nav-link" href="https://www.thingspanel.cn/aboutus" target="_blank"
                     >联系我们</a
                   >
                 </li>

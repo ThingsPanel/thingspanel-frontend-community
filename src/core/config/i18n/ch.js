@@ -209,7 +209,7 @@ export const locale = {
     TITLE20: "内存占用率",
     TITLE21: "CPU占用曲线",
     TITLE22: "内存占用曲线",
-    TITLE23: "状态",
+    TITLE23: "上次推送",
     TITLE24: "图表组件",
     TITLE25: "数据结构",
     SEARCH: "查询",

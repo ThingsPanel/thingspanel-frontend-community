@@ -16,13 +16,14 @@
                 :use-css-transforms="true"
                 :autoSize="true"
         >
+		<!-- :h.sync="item.h" -->
             <grid-item
                     v-for="(item,index) in slices"
                     :key="item.slice_id"
                     :x.sync="item.x"
                     :y.sync="item.y"
                     :w.sync="item.w"
-                    :h.sync="item.h"
+					:h.sync="item.h"
                     :i="item.i"
                     :ref="item.i"
                     :style="gridItemBackground(item.chart_type, colorStart, colorEnd,bgcolor)"
@@ -140,7 +141,7 @@
                 console.log(evt);
                 //解压数据
                 try {
-                    _this.socketData = evt.data;
+                    _this.socketData = new String(evt.data);
                     //_this.socketData = pako.inflateRaw(Base64.decode(evt.data), {to: 'string'});
                 } catch (err) {
                     console.log(err);
@@ -199,6 +200,7 @@
                 this.loading = true;
                 this.layoutUpdating = true;
                 // 禁止普通用户拖动
+				let _that = this;
                 if(this.role == 1){
                     this.gridDraggable=false;
                 }
@@ -216,11 +218,12 @@
                                     data.data[i].endTs = new Date(this.end_time).getTime();
                                     data.data[i].latestTime = this.latest_time; //minutes
                                     data.data[i].w = Number(data.data[i].w);
-                                    data.data[i].h = Number(data.data[i].h);
+                                    data.data[i].h = Number(data.data[i].h);//data.data[i].h
+									
                                 }
-                                this.slices = data.data;
-                                console.log(this.slices);
-                                this.loading = false;
+                                _that.slices = data.data;
+                                console.log(_that.slices);
+                                _that.loading = false;
                             }
                         });
                 } catch (e) {
