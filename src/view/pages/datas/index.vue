@@ -10,7 +10,7 @@
         >
           <el-option
             v-for="(e, index) in buisnesss"
-            :key="index"
+            :key="e.ts"
             :value="e.id"
             :label="e.name"
             @click.native="onClickBuisness(e.name, e.id)"
@@ -26,7 +26,7 @@
         >
           <el-option
             v-for="(e, index) in equlist"
-            :key="index"
+            :key="e.latesttime"
             :value="e.id"
             :label="e.name"
           ></el-option>
@@ -99,6 +99,7 @@
               v-for="(header, h) in headers"
               class="text-white"
               :class="h == 3 ? 'text-center width-300' : ''"
+			  :key="header.id"
             >
               {{ $t(header.text) }}
             </th>
@@ -303,7 +304,7 @@ export default {
   },
 
   methods: {
-    onClickBuisness(id) {
+    onClickBuisness(name, id) {
       let _that = this;
       ApiService.post(AUTH.local_url + "/asset/list", {
         business_id: id,

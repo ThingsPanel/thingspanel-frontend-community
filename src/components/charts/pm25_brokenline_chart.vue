@@ -45,6 +45,10 @@ export default {
     return {
       chart_type: "pm25_brokenline_chart",
       options10: {
+		  tooltip: {
+		      trigger: 'axis',
+		      axisPointer: { type: 'cross' }
+		    },
         grid: {
           top: 10,
         },
@@ -52,6 +56,9 @@ export default {
           type: "category",
           data: [],
           axisLabel: {},
+		  axisTick: {
+			alignWithLabel: true
+		  },
           axisLine: {
             lineStyle: {
               color: "#cccccc",
@@ -187,7 +194,9 @@ export default {
         date = date.replace(/-/g, "/");
         var timestamp = new Date(date).getTime();
         let d = new Date(timestamp);
-        this.xdata.push(d.getHours() + ":" + d.getMinutes());
+		let xdata = this.xdata;
+		xdata.push(d.getHours() + ":" + d.getMinutes());
+        this.xdata = xdata;
       }
 
       let pm10data = {};
@@ -218,7 +227,16 @@ export default {
         };
       }
       let options10 = this.options10;
-      options10.xAxis.data = this.xdata;
+      options10.xAxis = {
+          type: "category",
+          data: this.xdata,
+          axisLabel: {},
+          axisLine: {
+            lineStyle: {
+              color: "#cccccc",
+            },
+          },
+        };
       options10.series[0] = pm10data;
       this.options10 = options10;
 
