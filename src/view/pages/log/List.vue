@@ -8,12 +8,12 @@
       </h3> -->
       <div class="searchbox float-left">
         <div class="path-search">
-          <div class="title">请求路径:</div>
+          <div class="title">{{ $t("COMMON.TITLE28") + ":" }}</div>
           <el-input
             class="searchInput"
             type="text"
             value=""
-            placeholder="请输入请求路径"
+            :placeholder="$t('COMMON.PLACEHOLDER16')"
             v-model="search_path"
           />
         </div>
@@ -23,7 +23,7 @@
             class="searchInput"
             type="text"
             value=""
-            placeholder="请输入请求IP"
+            :placeholder="$t('COMMON.PLACEHOLDER17')"
             v-model="search_ip"
           />
         </div>
@@ -41,7 +41,7 @@
           <v-btn color="primary" @click="operation()">{{
             $t("COMMON.SEARCH")
           }}</v-btn>
-          <v-btn color="white ml-4">重置</v-btn>
+          <v-btn color="white ml-4">{{ $t("COMMON.RESET") }}</v-btn>
         </div>
       </div>
     </div>
@@ -62,7 +62,7 @@
             <thead>
               <tr>
                 <th v-for="(header, h) in headers" class="text-white" :key="h">
-                  {{ header.text }}
+                  {{ $t(header.text) }}
                 </th>
               </tr>
             </thead>
@@ -149,7 +149,7 @@ export default {
   data() {
     return {
       list: [],
-      length: 3,
+      length: 1,
       circle: false,
       disabled: false,
       limit: 20,
@@ -173,7 +173,7 @@ export default {
       tip: false,
       headers: [
         {
-          text: "序号",
+          text: "COMMON.NO",
           class: "text-white",
           cellClass: "td-item",
           align: "start",
@@ -186,27 +186,27 @@ export default {
           value: "ip",
         },
         {
-          text: "请求路径",
+          text: "COMMON.PATH",
           class: "text-white",
           value: "path",
         },
         {
-          text: "说明",
+          text: "COMMON.INSTRUCTION",
           class: "text-white",
           value: "board",
         },
         {
-          text: "请求时间",
+          text: "COMMON.TIMES",
           class: "text-white",
           value: "time",
         },
         {
-          text: "请求耗时",
+          text: "COMMON.CONSUMING",
           class: "text-white",
           value: "time_lang",
         },
         {
-          text: "请求用户",
+          text: "COMMON.USERNAME",
           class: "text-white",
           value: "users",
         },
@@ -295,7 +295,8 @@ export default {
           } else {
             _that.tip = true;
           }
-          _that.length = data.data.last_page;
+          _that.length = data.data.total;
+          _that.page = data.data.current_page;
         } else if (data.code == 401) {
           this.$store.dispatch(LOGOUT).then(() =>
             this.$router.push({

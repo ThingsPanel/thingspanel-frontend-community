@@ -335,7 +335,7 @@ export default {
         value: "email",
       },
       {
-        text: "COMMON.PHONE",
+        text: "COMMON.TELEPHONE",
         class: "text-white",
         sortable: false,
         value: "telephone",

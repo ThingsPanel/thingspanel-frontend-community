@@ -1,6 +1,7 @@
 // China
 export const locale = {
   COMMON: {
+    CONSUMING: "请求耗时",
     USERNAME: "用户名",
     EMAIL: "邮箱",
     TELEPHONE: "手机号",
@@ -28,8 +29,7 @@ export const locale = {
     HOME: "首页",
     AUTOMATION: "自动化",
     GUIDE: "第一次进入指南",
-    TXT1:
-      "为了更节省时间，你可以从目标创建业务，你也可以创建一个新的空白业务，所有操作从创建业务开始。",
+    TXT1: "为了更节省时间，你可以从目标创建业务，你也可以创建一个新的空白业务，所有操作从创建业务开始。",
     BUT1: "从模板创建业务",
     STATE: "运行状态",
     APPLICATION: "应用",
@@ -75,8 +75,8 @@ export const locale = {
     CLOSE: "关闭",
     DATAMANAGE: "数据结构管理",
     FIELDNAME: "字段名",
-	FIELDNAME1: "设备端字段名",
-	ATTR1: "插件预设值",
+    FIELDNAME1: "设备端字段名",
+    ATTR1: "插件预设值",
     ATTR: "属性",
     CONFIRM: "确定",
     NEWCHARTUNIT: "新增图表单元",
@@ -193,6 +193,8 @@ export const locale = {
     PLACEHOLDER28: "请选择条件",
     PLACEHOLDER29: "请选择运算符",
     PLACEHOLDER30: "请选择类型",
+    PLACEHOLDER31: "请输入请求路径",
+    PLACEHOLDER32: "请输入请求IP",
     TITLE7: "关",
     TITLE8: "开",
     TITLE9: "或",
@@ -215,16 +217,19 @@ export const locale = {
     SEARCH: "查询",
     TITLE26: "当前时间暂无数据！",
     TITLE27: "下发策略到终端设备",
+    TITLE28: "路径",
     TEXT41:
       "备注：仅一个条件，和一个指令，且属于同一设备的情况下，方可允许下发",
     TEXT42: "仅一个条件，和一个指令，且属于同一设备的情况下，方可允许下发！",
     TEXT43: "条件和指令属于同一设备的情况下，方可允许下发！",
     TEXT44: "确定要修改吗？",
     UPDATE: "修改",
-    DATAS: "数据管理"
+    DATAS: "数据管理",
+    INSTRUCTION: "说明",
+    PATH: "请求路径",
   },
   TRANSLATOR: {
-    SELECT: "选择你的语言"
+    SELECT: "选择你的语言",
   },
   MENU: {
     NEW: "新",
@@ -233,7 +238,7 @@ export const locale = {
     PAGES: "Pages",
     FEATURES: "特征",
     APPS: "应用",
-    DASHBOARD: "仪表板"
+    DASHBOARD: "仪表板",
   },
   AUTH: {
     GENERAL: {
@@ -245,28 +250,28 @@ export const locale = {
       BACK_BUTTON: "背部",
       PRIVACY: "隐私",
       LEGAL: "法律",
-      CONTACT: "联系"
+      CONTACT: "联系",
     },
     LOGIN: {
       TITLE: "创建帐号",
-      BUTTON: "签到"
+      BUTTON: "签到",
     },
     FORGOT: {
       TITLE: "Forgot Password?",
       DESC: "Enter your email to reset your password",
-      SUCCESS: "Your account has been successfully reset."
+      SUCCESS: "Your account has been successfully reset.",
     },
     REGISTER: {
       TITLE: "Sign Up",
       DESC: "Enter your details to create your account",
-      SUCCESS: "Your account has been successfuly registered."
+      SUCCESS: "Your account has been successfuly registered.",
     },
     INPUT: {
       EMAIL: "Email",
       FULLNAME: "Fullname",
       PASSWORD: "Password",
       CONFIRM_PASSWORD: "Confirm Password",
-      USERNAME: "用戶名"
+      USERNAME: "用戶名",
     },
     VALIDATION: {
       INVALID: "{{name}} is not valid",
@@ -278,8 +283,8 @@ export const locale = {
       REQUIRED_FIELD: "Required field",
       MIN_LENGTH_FIELD: "Minimum field length:",
       MAX_LENGTH_FIELD: "Maximum field length:",
-      INVALID_FIELD: "Field is not valid"
-    }
+      INVALID_FIELD: "Field is not valid",
+    },
   },
   ECOMMERCE: {
     COMMON: {
@@ -293,7 +298,7 @@ export const locale = {
       BUSINESS: "Business",
       INDIVIDUAL: "Individual",
       SEARCH: "Search",
-      IN_ALL_FIELDS: "in all fields"
+      IN_ALL_FIELDS: "in all fields",
     },
     ECOMMERCE: "eCommerce",
     CUSTOMERS: {
@@ -304,22 +309,22 @@ export const locale = {
         TITLE: "Customer Delete",
         DESCRIPTION: "Are you sure to permanently delete this customer?",
         WAIT_DESCRIPTION: "Customer is deleting...",
-        MESSAGE: "Customer has been deleted"
+        MESSAGE: "Customer has been deleted",
       },
       DELETE_CUSTOMER_MULTY: {
         TITLE: "Customers Delete",
         DESCRIPTION: "Are you sure to permanently delete selected customers?",
         WAIT_DESCRIPTION: "Customers are deleting...",
-        MESSAGE: "Selected customers have been deleted"
+        MESSAGE: "Selected customers have been deleted",
       },
       UPDATE_STATUS: {
         TITLE: "Status has been updated for selected customers",
-        MESSAGE: "Selected customers status have successfully been updated"
+        MESSAGE: "Selected customers status have successfully been updated",
       },
       EDIT: {
         UPDATE_MESSAGE: "Customer has been updated",
-        ADD_MESSAGE: "Customer has been created"
-      }
-    }
-  }
+        ADD_MESSAGE: "Customer has been created",
+      },
+    },
+  },
 };

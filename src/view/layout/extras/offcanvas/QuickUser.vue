@@ -28,13 +28,13 @@
         <div class="navi navi-hover" style="width: 150px;">
           <b-dropdown-text tag="div" class="navi-header font-weight-bold">
               <span class="font-size-lg" @click="editpassword">
-                修改密码
+                {{ $t('COMMON.CHANGEPASSWORD') }}
               </span>
 
           </b-dropdown-text>
           <b-dropdown-text tag="div" class="navi-header font-weight-bold">
               <span class="font-size-lg" @click="onLogout">
-                退出
+                {{ $t('COMMON.SIGNOUT') }}
               </span>
 
           </b-dropdown-text>

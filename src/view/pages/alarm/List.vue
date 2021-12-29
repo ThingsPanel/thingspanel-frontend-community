@@ -100,13 +100,13 @@ import { mapGetters } from "vuex";
 import ApiService from "@/core/services/api.service";
 import AUTH from "@/core/services/store/auth.module";
 import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
-
+import { dateFormat } from "../../../utils/tool.js";
 export default {
   name: "widget-3",
   data() {
     return {
       list: [],
-      length: 3,
+      length: 1,
       circle: false,
       disabled: false,
       limit: 20,
@@ -166,7 +166,7 @@ export default {
       endmonth +
       "/" +
       enddate +
-      "T" +
+      " " +
       hour +
       ":" +
       minute +
@@ -180,6 +180,7 @@ export default {
   },
   methods: {
     warning() {
+      let _that = this;
       ApiService.post(AUTH.local_url + "/warning/list", {
         limit: this.limit,
         page: this.page,
@@ -188,12 +189,18 @@ export default {
       }).then(({ data }) => {
         if (data.code == 200) {
           if (data.data.data.length > 0) {
-            this.tip = false;
-            this.list = data.data.data;
+            _that.tip = false;
+            _that.list = data.data.data;
+            let datas = data.data.data;
+            for (let i = 0; i < datas.length; i++) {
+              let item = datas[i];
+              item["created_at"] = dateFormat(item["created_at"]);
+            }
           } else {
-            this.tip = true;
+            _that.tip = true;
           }
-          this.length = data.data.last_page;
+          _that.length = data.data.total;
+          _that.page = data.data.current_page;
         } else if (data.code == 401) {
           this.$store
             .dispatch(LOGOUT)
