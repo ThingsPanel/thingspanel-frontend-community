@@ -276,18 +276,30 @@ export default {
             _that.tip = false;
 
             var mylist = [];
-
             for (var i = 0; i < data.data.data.length; i++) {
               var item = data.data.data[i];
               var detailed = JSON.parse(item.detailed);
+              var dict = {
+                1: "登录",
+                2: "首页",
+                3: "用户管理",
+                4: "客户管理",
+                5: "业务",
+                6: "设备",
+                7: "可视化",
+                8: "告警策略",
+                9: "控制策略",
+                10: "操作日志",
+                11: "图表",
+              };
               mylist.push({
                 no: i + 1,
                 ip: detailed.ip,
                 path: detailed.path,
-                board: "仪表盘",
+                board: item.type != "" ? dict[item.type] : "仪表盘",
                 time: dateFormat(item.created_at),
                 time_lang: 10,
-                users: 20,
+                users: detailed.name ? detailed.name : "未知用户",
               });
             }
 

@@ -93,7 +93,22 @@
                           />
                         </v-col>
                         <v-col cols="12" xs="12" md="6" class="col-py-0">
-                          <v-select
+                          <el-select
+                            v-model="propertyindex"
+                            :popper-append-to-body="false"
+                            class="width-100 mb-2"
+                            :pleaseholder="$t('COMMON.PLACEHOLDER3')"
+                          >
+                            <el-option
+                              v-for="(r, index) in conditionArr"
+                              :key="index"
+                              :value="r.id"
+                              :label="r.name"
+                              @click="changeCgq(propertyindex)"
+                            ></el-option>
+                          </el-select>
+
+                          <!-- <v-select
                             :items="conditionArr"
                             :label="$t('COMMON.PLACEHOLDER3')"
                             item-value="id"
@@ -101,7 +116,7 @@
                             v-model="propertyindex"
                             class="vselect"
                             @change="changeCgq(propertyindex)"
-                          ></v-select>
+                          ></v-select> -->
                         </v-col>
                       </v-row>
                     </div>
@@ -121,7 +136,7 @@
                               v-for="(r, index) in relationship"
                               :key="index"
                               :value="r.id"
-                              :label="$t(r.name)"
+                              :label="r.name"
                             ></el-option>
                           </el-select>
                         </v-col>
@@ -132,7 +147,22 @@
                           class="col-py-0"
                         ></v-col>
                         <v-col cols="12" xs="6" md="3" class="col-py-0">
-                          <v-select
+                          <el-select
+                            v-model="i.field"
+                            :popper-append-to-body="false"
+                            class="width-100 mb-2"
+                            :pleaseholder="$t('COMMON.PLACEHOLDER8')"
+                          >
+                            <el-option
+                              v-for="(r, index) in conditions"
+                              :key="index"
+                              :value="r.key"
+                              :label="r.name"
+                              @click="changeCondition(index, i.field)"
+                            ></el-option>
+                          </el-select>
+
+                          <!-- <v-select
                             :items="conditions"
                             :label="$t('COMMON.PLACEHOLDER8')"
                             item-value="key"
@@ -142,10 +172,26 @@
                             :rules="[conditionRules]"
                             required
                             @change="changeCondition(index, i.field)"
-                          ></v-select>
+                          ></v-select> -->
                         </v-col>
                         <v-col cols="12" xs="6" md="3" class="col-py-0">
-                          <v-select
+                          <el-select
+                            v-model="i.condition"
+                            :popper-append-to-body="false"
+                            class="width-100 mb-2"
+                            :pleaseholder="$t('COMMON.PLACEHOLDER9')"
+                            :rules="[symbolRules]"
+                          >
+                            <el-option
+                              v-for="(r, index) in symbols"
+                              :key="r.key"
+                              :value="r.id"
+                              :label="r.name"
+                              @click="changeCondition(index, i.field)"
+                            ></el-option>
+                          </el-select>
+
+                          <!-- <v-select
                             :items="symbols"
                             :label="$t('COMMON.PLACEHOLDER9')"
                             item-value="id"
@@ -154,7 +200,7 @@
                             class="vselect"
                             :rules="[symbolRules]"
                             required
-                          ></v-select>
+                          ></v-select> -->
                         </v-col>
                         <v-col cols="12" sm="6" md="3" class="col-py-0">
                           <v-text-field
@@ -331,8 +377,11 @@ table td {
 }
 </style>
 <style>
-/*.strtreesel .vue-treeselect__placeholder{color: #fff !important;font-size: 16px !important;}
-    .strtreesel .vue-treeselect__single-value{font-size: 16px !important;}*/
+.strtreesel .vue-treeselect__placeholder {
+  color: #fff !important;
+}
+.strtreesel .vue-treeselect__single-value {
+}
 @media (max-width: 768px) {
   .v-text-field__details {
     display: none !important;
