@@ -316,11 +316,7 @@ export default {
             var arr = data.data[0].device;
             _that.equlist = arr;
           } else {
-            this.$store.dispatch(LOGOUT).then(() =>
-              this.$router.push({
-                name: "login",
-              })
-            );
+            this.$store.dispatch(REFRESH).then(() => {});
           }
         })
         .catch(({ response }) => {
@@ -378,6 +374,8 @@ export default {
             this.desserts = datas;
             this.length = data.data.total;
             this.page = data.data.current_page;
+          } else {
+            this.desserts = [];
           }
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});

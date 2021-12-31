@@ -59,26 +59,19 @@ const actions = {
     });
   },
   [REFRESH](context) {
-    var con = confirm("登录状态已过期是否刷新？");
-    if (con == true) {
-      ApiService.post(local_url + "/auth/refresh")
-        .then(({ data }) => {
-          if (data.code == 200) {
-            JwtService.saveToken(data.data.access_token);
-
-            window.location.reload();
-          } else {
-            this.$store
-              .dispatch(LOGOUT)
-              .then(() => this.$router.push({ name: "login" }));
-          }
-        })
-        .catch(({ response }) => {
+    ApiService.post(local_url + "/auth/refresh")
+      .then(({ data }) => {
+        isShowTokenExp = false;
+        if (data.code == 200) {
+          JwtService.saveToken(data.data.access_token);
+        } else {
           context.commit(PURGE_AUTH);
-        });
-    } else {
-      context.commit(PURGE_AUTH);
-    }
+          window.location.reload();
+        }
+      })
+      .catch(({ response }) => {
+        context.commit(PURGE_AUTH);
+      });
   },
   [LOGOUT](context) {
     ApiService.post(local_url + "/auth/logout")
