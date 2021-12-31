@@ -1,5 +1,10 @@
 <template>
-  <div ref="container" class="slice-wrapper">
+  <div
+    ref="container"
+    class="slice-wrapper"
+    @mouseover="componentEnter"
+    @mouseleave="componentLeave"
+  >
     <header
       ref="header"
       class="card-header"
@@ -8,11 +13,11 @@
       <span class="card-title" v-if="item.chart_type !== 'x_number'">{{
         item.title
       }}</span>
-      <div class="right-buttons">
-        <i
+      <div class="right-buttons" v-show="isshowBtns">
+        <!-- <i
           class="ml-2 fa flaticon-delete text-success pointer"
           @click="delpanel(item.id)"
-        ></i>
+        ></i> -->
         <i
           class="ml-2 fa fa-cog text-success pointer"
           @click="setupCon(item.id, item.title)"
@@ -148,6 +153,7 @@ export default {
       interval: "1",
       dialogtitle: "",
       dialogid: "",
+      isshowBtns: false,
     };
   },
   components: {
@@ -172,6 +178,12 @@ export default {
     },
   },
   methods: {
+    componentEnter() {
+      this.isshowBtns = true;
+    },
+    componentLeave() {
+      this.isshowBtns = false;
+    },
     async getData() {
       this.loading = true;
       try {

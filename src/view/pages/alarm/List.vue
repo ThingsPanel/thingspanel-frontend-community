@@ -99,7 +99,7 @@ import Dropdown4 from "@/view/content/dropdown/Dropdown4.vue";
 import { mapGetters } from "vuex";
 import ApiService from "@/core/services/api.service";
 import AUTH from "@/core/services/store/auth.module";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 import { dateFormat } from "../../../utils/tool.js";
 export default {
   name: "widget-3",
@@ -203,8 +203,8 @@ export default {
           _that.page = data.data.current_page;
         } else if (data.code == 401) {
           this.$store
-            .dispatch(LOGOUT)
-            .then(() => this.$router.push({ name: "login" }));
+            .dispatch(REFRESH)
+            .then(() => {});
         } else {
         }
       });

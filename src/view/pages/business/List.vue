@@ -159,7 +159,7 @@ table td {
 import { mapState } from "vuex";
 import { REGISTER } from "@/core/services/store/auth.module";
 import { UPDATE_USER } from "@/core/services/store/auth.module";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 import AUTH from "@/core/services/store/auth.module";
 
 import { dateFormat } from "../../../utils/tool.js";
@@ -277,8 +277,8 @@ export default {
           console.log(arr);
         } else if (data.code == 401) {
           this.$store
-            .dispatch(LOGOUT)
-            .then(() => this.$router.push({ name: "login" }));
+            .dispatch(REFRESH)
+            .then(() => {});
         } else {
         }
       });

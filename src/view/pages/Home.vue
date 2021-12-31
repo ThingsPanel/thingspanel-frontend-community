@@ -165,7 +165,7 @@ import ListWidget3 from "@/view/content/widgets/list/Widget3.vue";
 import ListWidget10 from "@/view/content/widgets/list/Widget10.vue";
 import ListWidget9 from "@/view/content/widgets/list/Widget9.vue";
 
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 import AUTH from "@/core/services/store/auth.module";
 
 import ApiService from "@/core/services/api.service";
@@ -200,9 +200,8 @@ export default {
             this.getguidlist();
           }
         } else if (data.code == 401) {
-          this.$store
-            .dispatch(LOGOUT)
-            .then(() => this.$router.push({ name: "login" }));
+          this.$store.dispatch(REFRESH).then(() => {});
+          
         } else {
         }
       });
@@ -217,9 +216,8 @@ export default {
         if (data.code == 200) {
           this.guidlist = data.data;
         } else if (data.code == 401) {
-          this.$store
-            .dispatch(LOGOUT)
-            .then(() => this.$router.push({ name: "login" }));
+          this.$store.dispatch(REFRESH).then(() => {});
+          
         } else {
         }
       });

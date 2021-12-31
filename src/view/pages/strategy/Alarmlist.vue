@@ -392,7 +392,7 @@ table td {
 import { mapState } from "vuex";
 import { REGISTER } from "@/core/services/store/auth.module";
 import { UPDATE_USER } from "@/core/services/store/auth.module";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 import AUTH from "@/core/services/store/auth.module";
 
 import ApiService from "@/core/services/api.service";
@@ -578,9 +578,8 @@ export default {
           this.desserts = data.data;
           // this.length = data.data.last_page;
         } else if (data.code == 401) {
-          this.$store
-            .dispatch(LOGOUT)
-            .then(() => this.$router.push({ name: "login" }));
+          this.$store.dispatch(REFRESH).then(() => {});
+          
         }
       });
     },
@@ -594,9 +593,8 @@ export default {
         if (data.code == 200) {
           this.propertyitems = data.data;
         } else if (data.code == 401) {
-          this.$store
-            .dispatch(LOGOUT)
-            .then(() => this.$router.push({ name: "login" }));
+          this.$store.dispatch(REFRESH).then(() => {});
+          
         }
       });
     },
@@ -624,9 +622,8 @@ export default {
               }
             }
           } else if (data.code == 401) {
-            this.$store
-              .dispatch(LOGOUT)
-              .then(() => this.$router.push({ name: "login" }));
+            this.$store.dispatch(REFRESH).then(() => {});
+            
           }
         });
       }
@@ -649,9 +646,8 @@ export default {
                 }
               }
             } else if (data.code == 401) {
-              this.$store
-                .dispatch(LOGOUT)
-                .then(() => this.$router.push({ name: "login" }));
+              this.$store.dispatch(REFRESH).then(() => {});
+              
             }
           }
         );
@@ -666,9 +662,8 @@ export default {
             console.log(data);
             this.symbols = data.data;
           } else if (data.code == 401) {
-            this.$store
-              .dispatch(LOGOUT)
-              .then(() => this.$router.push({ name: "login" }));
+            this.$store.dispatch(REFRESH).then(() => {});
+            
           }
         }
       );
@@ -682,9 +677,8 @@ export default {
             console.log(data.data);
             this.frequencies = data.data;
           } else if (data.code == 401) {
-            this.$store
-              .dispatch(LOGOUT)
-              .then(() => this.$router.push({ name: "login" }));
+            this.$store.dispatch(REFRESH).then(() => {});
+            
           }
         }
       );

@@ -1,6 +1,7 @@
 // China
 export const locale = {
   COMMON: {
+    TOKENEXPIRES: "Whether to refresh the login status has expired?",
     CONSUMING: "Time consuming",
     USERNAME: "username",
     EMAIL: "email",

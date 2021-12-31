@@ -57,7 +57,7 @@ import Dropdown2 from "@/view/content/dropdown/Dropdown2.vue";
 import { mapGetters } from "vuex";
 import ApiService from "@/core/services/api.service";
 import AUTH from "@/core/services/store/auth.module";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 
 export default {
   name: "widget-9",
@@ -82,8 +82,8 @@ export default {
                       this.list = data.data;
                   }else if(data.code == 401){
                       this.$store
-                          .dispatch(LOGOUT)
-                          .then(() => this.$router.push({ name: "login" }));
+                          .dispatch(REFRESH)
+                          .then(() => {});
                   }else{
 
                   }

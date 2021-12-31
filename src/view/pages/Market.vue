@@ -59,7 +59,7 @@
 <script>
 import ApiService from "@/core/services/api.service";
 import AUTH from "@/core/services/store/auth.module";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 export default {
   data(){
     return{
@@ -111,9 +111,8 @@ export default {
             }
             this.listarr = data.data;
           }else if(data.code == 401){
-            this.$store
-            .dispatch(LOGOUT)
-            .then(() => this.$router.push({ name: "login" }));
+            this.$store.dispatch(REFRESH).then(() => {});
+            
           }else{
 
           }

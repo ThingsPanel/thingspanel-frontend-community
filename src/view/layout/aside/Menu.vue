@@ -10,7 +10,7 @@
         class="menu-item adminmeue"
         :class="[
           isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active'
+          isExactActive && 'menu-item-active',
         ]"
       >
         <a :href="href" class="menu-link" @click="navigate">
@@ -20,16 +20,16 @@
       </li>
     </router-link>
     <router-link
-            to="/list"
-            v-slot="{ href, navigate, isActive, isExactActive }"
+      to="/list"
+      v-slot="{ href, navigate, isActive, isExactActive }"
     >
       <li
-              aria-haspopup="true"
-              data-menu-toggle="hover"
-              class="menu-item adminmeue"
-              :class="[
+        aria-haspopup="true"
+        data-menu-toggle="hover"
+        class="menu-item adminmeue"
+        :class="[
           isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active'
+          isExactActive && 'menu-item-active',
         ]"
       >
         <a :href="href" class="menu-link" @click="navigate">
@@ -39,16 +39,16 @@
       </li>
     </router-link>
     <router-link
-            to="/strategy/list"
-            v-slot="{ href, navigate, isActive, isExactActive }"
+      to="/strategy/list"
+      v-slot="{ href, navigate, isActive, isExactActive }"
     >
       <li
-              aria-haspopup="true"
-              data-menu-toggle="hover"
-              class="menu-item adminmeue"
-              :class="[
+        aria-haspopup="true"
+        data-menu-toggle="hover"
+        class="menu-item adminmeue"
+        :class="[
           isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active'
+          isExactActive && 'menu-item-active',
         ]"
       >
         <a :href="href" class="menu-link" @click="navigate">
@@ -58,16 +58,16 @@
       </li>
     </router-link>
     <router-link
-            to="/chart/list"
-            v-slot="{ href, navigate, isActive, isExactActive }"
+      to="/chart/list"
+      v-slot="{ href, navigate, isActive, isExactActive }"
     >
       <li
-              aria-haspopup="true"
-              data-menu-toggle="hover"
-              class="menu-item"
-              :class="[
+        aria-haspopup="true"
+        data-menu-toggle="hover"
+        class="menu-item"
+        :class="[
           isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active'
+          isExactActive && 'menu-item-active',
         ]"
       >
         <a :href="href" class="menu-link" @click="navigate">
@@ -77,16 +77,16 @@
       </li>
     </router-link>
     <router-link
-            to="/data/index"
-            v-slot="{ href, navigate, isActive, isExactActive }"
+      to="/data/index"
+      v-slot="{ href, navigate, isActive, isExactActive }"
     >
       <li
-              aria-haspopup="true"
-              data-menu-toggle="hover"
-              class="menu-item adminmeue"
-              :class="[
+        aria-haspopup="true"
+        data-menu-toggle="hover"
+        class="menu-item adminmeue"
+        :class="[
           isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active'
+          isExactActive && 'menu-item-active',
         ]"
       >
         <a :href="href" class="menu-link" @click="navigate">
@@ -105,7 +105,7 @@
         class="menu-item adminmeue"
         :class="[
           isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active'
+          isExactActive && 'menu-item-active',
         ]"
       >
         <a :href="href" class="menu-link" @click="navigate">
@@ -143,7 +143,7 @@
         class="menu-item adminmeue"
         :class="[
           isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active'
+          isExactActive && 'menu-item-active',
         ]"
       >
         <a :href="href" class="menu-link" @click="navigate">
@@ -153,16 +153,16 @@
       </li>
     </router-link>
     <router-link
-            to="/alarm/list"
-            v-slot="{ href, navigate, isActive, isExactActive }"
+      to="/alarm/list"
+      v-slot="{ href, navigate, isActive, isExactActive }"
     >
       <li
-              aria-haspopup="true"
-              data-menu-toggle="hover"
-              class="menu-item adminmeue"
-              :class="[
+        aria-haspopup="true"
+        data-menu-toggle="hover"
+        class="menu-item adminmeue"
+        :class="[
           isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active'
+          isExactActive && 'menu-item-active',
         ]"
       >
         <a :href="href" class="menu-link" @click="navigate">
@@ -172,16 +172,16 @@
       </li>
     </router-link>
     <router-link
-            to="/log/list"
-            v-slot="{ href, navigate, isActive, isExactActive }"
+      to="/log/list"
+      v-slot="{ href, navigate, isActive, isExactActive }"
     >
       <li
-              aria-haspopup="true"
-              data-menu-toggle="hover"
-              class="menu-item adminmeue"
-              :class="[
+        aria-haspopup="true"
+        data-menu-toggle="hover"
+        class="menu-item adminmeue"
+        :class="[
           isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active'
+          isExactActive && 'menu-item-active',
         ]"
       >
         <a :href="href" class="menu-link" @click="navigate">
@@ -196,34 +196,31 @@
 <script>
 import ApiService from "@/core/services/api.service";
 import AUTH from "@/core/services/store/auth.module";
+import { LOGIN, REFRESH } from "@/core/services/store/auth.module";
 export default {
   name: "KTMenu",
   mounted() {
     //普通用户隐藏其他菜单
-    var url = AUTH.local_url + '/auth/me';
-    ApiService.post(url)
-      .then(({data}) => {
-        console.log(data);
-        if (data.code == 200) {
-          if(data.data.is_admin==1){
-            var aa = document.getElementsByClassName("adminmeue");
-            for(var i=0;i<aa.length;i++){
-              aa[i].style.display='none';
-            }
+    var url = AUTH.local_url + "/auth/me";
+    ApiService.post(url).then(({ data }) => {
+      console.log(data);
+      if (data.code == 200) {
+        if (data.data.is_admin == 1) {
+          var aa = document.getElementsByClassName("adminmeue");
+          for (var i = 0; i < aa.length; i++) {
+            aa[i].style.display = "none";
           }
-        } else if (data.code == 401) {
-          this.$store
-                  .dispatch(LOGOUT)
-                  .then(() => this.$router.push({name: "login"}));
-        } else {
-
         }
-      });
+      } else if (data.code == 401) {
+        this.$store.dispatch(REFRESH);
+      } else {
+      }
+    });
   },
   methods: {
     hasActiveChildren(match) {
       return this.$route["path"].indexOf(match) !== -1;
-    }
-  }
+    },
+  },
 };
 </script>

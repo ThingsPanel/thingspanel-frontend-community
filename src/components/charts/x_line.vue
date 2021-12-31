@@ -9,13 +9,6 @@
 		cutStr
 	} from '@/utils/tool';
 
-	import AUTH from "@/core/services/store/auth.module";
-	import ApiService from "@/core/services/api.service";
-	import {
-		LOGIN,
-		LOGOUT
-	} from "@/core/services/store/auth.module";
-
 	export default {
 		name: 'XLine',
 		// mixins: [ChartMixin],

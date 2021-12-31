@@ -151,7 +151,6 @@
 
 <script>
 import { mapGetters } from "vuex";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
 
 export default {
   name: "widget-2",

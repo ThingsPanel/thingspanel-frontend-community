@@ -99,7 +99,7 @@
               v-for="(header, h) in headers"
               class="text-white"
               :class="h == 3 ? 'text-center width-300' : ''"
-			  :key="header.id"
+              :key="header.id"
             >
               {{ $t(header.text) }}
             </th>
@@ -115,7 +115,7 @@
       </template>
     </v-data-table>
     <v-pagination
-      class="float-right"
+      class="float-right mt-8"
       v-model="page"
       :circle="circle"
       :disabled="disabled"
@@ -158,7 +158,7 @@ table td {
 import { mapState } from "vuex";
 import { REGISTER } from "@/core/services/store/auth.module";
 import { UPDATE_USER } from "@/core/services/store/auth.module";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 import AUTH from "@/core/services/store/auth.module";
 import { dateFormat } from "../../../utils/tool.js";
 
@@ -177,7 +177,7 @@ export default {
       {
         text: "业务名",
         class: "text-white",
-        value: "1234",
+        value: "bname",
       },
       {
         text: "资产名",
@@ -207,7 +207,7 @@ export default {
       {
         text: "设备插件",
         class: "text-white",
-        value: "type",
+        value: "entity_type",
       },
     ],
     token: "",
@@ -336,12 +336,8 @@ export default {
         console.log(data);
         if (data.code == 200) {
           _that.buisnesss = data.data.data;
-        } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() =>
-            this.$router.push({
-              name: "login",
-            })
-          );
+        }
+        if (data.code == 401) {
         } else {
         }
       });
@@ -374,18 +370,17 @@ export default {
         console.log(data);
         if (data.code == 200) {
           let datas = data.data.data;
-          for (let i = 0; i < datas.length; i++) {
-            let item = datas[i];
-            item["ts"] = dateFormat(item["ts"] / 1000000);
+          if (datas) {
+            for (let i = 0; i < datas.length; i++) {
+              let item = datas[i];
+              item["ts"] = dateFormat(item["ts"] / 1000000);
+            }
+            this.desserts = datas;
+            this.length = data.data.total;
+            this.page = data.data.current_page;
           }
-          this.desserts = datas;
-          this.length = data.data.last_page;
         } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() =>
-            this.$router.push({
-              name: "login",
-            })
-          );
+          this.$store.dispatch(REFRESH).then(() => {});
         } else {
         }
       });
@@ -404,15 +399,11 @@ export default {
         console.log("导出");
         console.log(data);
         if (data.code == 200) {
-          console.log("导出成功");
+          nsole.log("导出成功");
           console.log(document.location.hostname + "/" + data.data);
           window.open(data.data, "_blank");
         } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() =>
-            this.$router.push({
-              name: "login",
-            })
-          );
+          this.$store.dispatch(REFRESH).then(() => {});
         } else {
         }
       });

@@ -143,7 +143,7 @@
             class="expantdiv text-right inlineblock float-right"
             v-show="isshowtheme"
           >
-            <div
+            <!-- <div
               class="
                 symbol symbol-40 symbol-light-default
                 mt-2
@@ -158,7 +158,7 @@
                   class="h-100 align-self-end text-white"
                 ></inline-svg>
               </span>
-            </div>
+            </div> -->
             <!--选择主题按钮-->
             <div
               class="
@@ -509,7 +509,7 @@
 </template>
 
 <script>
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 
 import AUTH from "@/core/services/store/auth.module";
 import ApiService from "@/core/services/api.service";
@@ -746,21 +746,12 @@ export default {
                 this.getproperty();
                 this.gettime(); //调取时间
               } else {
-                this.$store.dispatch(LOGOUT).then(() =>
-                  this.$router.push({
-                    name: "login",
-                  })
-                );
+                this.$store.dispatch(REFRESH).then(() => {});
               }
             });
             // Dashboard.methods.getDashboard(data.data[0]['id']);
           } else if (data.code == 401) {
-            console.log("跳转登录页面");
-            this.$store.dispatch(LOGOUT).then(() =>
-              this.$router.push({
-                name: "login",
-              })
-            );
+            this.$store.dispatch(REFRESH).then(() => {});
           } else {
           }
         }
@@ -785,11 +776,7 @@ export default {
           Utils.$emit("demo", this.busid, this.proid);
           // Dashboard.methods.getDashboard(this.busid,this.proid);
         } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() =>
-            this.$router.push({
-              name: "login",
-            })
-          );
+          this.$store.dispatch(REFRESH).then(() => {});
         } else {
         }
       });
@@ -812,11 +799,7 @@ export default {
           this.changebgcolor();
           Dashboard.methods.getDashboard(this.chart_id);
         } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() =>
-            this.$router.push({
-              name: "login",
-            })
-          );
+          this.$store.dispatch(REFRESH).then(() => {});
         } else {
         }
       });
@@ -871,11 +854,7 @@ export default {
           if (data.code == 200) {
             this.changebgcolor();
           } else if (data.code == 401) {
-            this.$store.dispatch(LOGOUT).then(() =>
-              this.$router.push({
-                name: "login",
-              })
-            );
+            this.$store.dispatch(REFRESH).then(() => {});
           } else {
           }
         });
@@ -915,11 +894,7 @@ export default {
             }
             this.inserttime();
           } else if (data.code == 401) {
-            this.$store.dispatch(LOGOUT).then(() =>
-              this.$router.push({
-                name: "login",
-              })
-            );
+            this.$store.dispatch(REFRESH).then(() => {});
           } else {
           }
         });
@@ -1034,11 +1009,7 @@ export default {
           }
           this.paneldialog = true;
         } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() =>
-            this.$router.push({
-              name: "login",
-            })
-          );
+          this.$store.dispatch(REFRESH).then(() => {});
         } else {
         }
       });
@@ -1075,11 +1046,7 @@ export default {
         if (data.code == 200) {
           this.assarr = data.data;
         } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() =>
-            this.$router.push({
-              name: "login",
-            })
-          );
+          this.$store.dispatch(REFRESH).then(() => {});
         } else {
         }
       });
@@ -1097,11 +1064,7 @@ export default {
           if (data.code == 200) {
             this.devicearr = data.data;
           } else if (data.code == 401) {
-            this.$store.dispatch(LOGOUT).then(() =>
-              this.$router.push({
-                name: "login",
-              })
-            );
+            this.$store.dispatch(REFRESH).then(() => {});
           } else {
             alert(data.msg);
           }
@@ -1150,11 +1113,7 @@ export default {
           this.text = "删除成功！";
           this.snackbar = true;
         } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() =>
-            this.$router.push({
-              name: "login",
-            })
-          );
+          this.$store.dispatch(REFRESH).then(() => {});
         } else {
         }
       });
@@ -1200,11 +1159,7 @@ export default {
             this.snackbar = true;
             this.paneldialog = false;
           } else if (data.code == 401) {
-            this.$store.dispatch(LOGOUT).then(() =>
-              this.$router.push({
-                name: "login",
-              })
-            );
+            this.$store.dispatch(REFRESH).then(() => {});
           } else {
           }
         });
@@ -1221,11 +1176,7 @@ export default {
             this.snackbar = true;
             this.paneldialog = false;
           } else if (data.code == 401) {
-            this.$store.dispatch(LOGOUT).then(() =>
-              this.$router.push({
-                name: "login",
-              })
-            );
+            this.$store.dispatch(REFRESH).then(() => {});
           } else {
           }
         });
@@ -1245,11 +1196,7 @@ export default {
           }
           this.equarr = arr;
         } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() =>
-            this.$router.push({
-              name: "login",
-            })
-          );
+          this.$store.dispatch(REFRESH).then(() => {});
         } else {
           alert(data.msg);
         }
@@ -1298,11 +1245,7 @@ export default {
           this.paneldialog = false;
           window.location.reload(); //刷新当前页面
         } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() =>
-            this.$router.push({
-              name: "login",
-            })
-          );
+          this.$store.dispatch(REFRESH).then(() => {});
         } else {
           alert(data.msg);
         }

@@ -409,8 +409,7 @@
 	import AUTH from "@/core/services/store/auth.module";
 	import ApiService from "@/core/services/api.service";
 	import {
-		LOGIN,
-		LOGOUT
+		REFRESH
 	} from "@/core/services/store/auth.module";
 	import { dateFormat } from "../../../utils/tool.js";
 
@@ -591,11 +590,7 @@
 										this.lists[index]["device"].splice(b, 1);
 									}
 								} else if (data.code == 401) {
-									this.$store.dispatch(LOGOUT).then(() =>
-										this.$router.push({
-											name: "login",
-										})
-									);
+									this.$store.dispatch(REFRESH).then(() => {});
 								} else {}
 							});
 						}
@@ -657,11 +652,8 @@
 										this.lists[index]["two"][i]["device"].splice(d, 1);
 									}
 								} else if (data.code == 401) {
-									this.$store.dispatch(LOGOUT).then(() =>
-										this.$router.push({
-											name: "login",
-										})
-									);
+									this.$store.dispatch(REFRESH).then(() => {});
+									
 								} else {}
 							});
 						}
@@ -707,11 +699,8 @@
 									this.lists[index]["two"][i]["there"][m]["device"].splice(f, 1);
 								}
 							} else if (data.code == 401) {
-								this.$store.dispatch(LOGOUT).then(() =>
-									this.$router.push({
-										name: "login",
-									})
-								);
+								this.$store.dispatch(REFRESH).then(() => {});
+								
 							} else {}
 						});
 					}
@@ -731,11 +720,8 @@
 							console.log(arr);
 							this.lists = arr;
 						} else {
-							this.$store.dispatch(LOGOUT).then(() =>
-								this.$router.push({
-									name: "login",
-								})
-							);
+							this.$store.dispatch(REFRESH).then(() => {});
+							
 						}
 					})
 					.catch(({
@@ -763,11 +749,8 @@
 						arr.unshift(obj);
 						this.itemarr = arr;
 					} else if (data.code == 401) {
-						this.$store.dispatch(LOGOUT).then(() =>
-							this.$router.push({
-								name: "login",
-							})
-						);
+						this.$store.dispatch(REFRESH).then(() => {});
+						
 					} else {}
 				});
 			},
@@ -786,11 +769,8 @@
 							name: "buslist",
 						});
 					} else if (data.code == 401) {
-						this.$store.dispatch(LOGOUT).then(() =>
-							this.$router.push({
-								name: "login",
-							})
-						);
+						this.$store.dispatch(REFRESH).then(() => {});
+						
 					} else {}
 				});
 			},
@@ -823,11 +803,8 @@
 
 							_that.dialog = true;
 						} else if (data.code == 401) {
-							_that.$store.dispatch(LOGOUT).then(() =>
-								_that.$router.push({
-									name: "login",
-								})
-							);
+							this.$store.dispatch(REFRESH).then(() => {});
+							
 						} else {}
 					});
 				} else {
@@ -860,11 +837,8 @@
 							this.lists[index]["device"][b]["dm"] = "代码";
 							this.lists[index]["device"][b]["state"] = "从未";
 						} else if (data.code == 401) {
-							this.$store.dispatch(LOGOUT).then(() =>
-								this.$router.push({
-									name: "login",
-								})
-							);
+							this.$store.dispatch(REFRESH).then(() => {});
+							
 						} else {
 							alert(data.msg);
 						}
@@ -888,11 +862,8 @@
 							this.lists[index]["two"][i]["device"][d]["dm"] = "代码";
 							this.lists[index]["two"][i]["device"][d]["state"] = "从未";
 						} else if (data.code == 401) {
-							this.$store.dispatch(LOGOUT).then(() =>
-								this.$router.push({
-									name: "login",
-								})
-							);
+							this.$store.dispatch(REFRESH).then(() => {});
+							
 						} else {
 							alert(data.msg);
 						}
@@ -918,11 +889,8 @@
 							this.lists[index]["two"][i]["there"][m]["device"][f]["state"] =
 								"从未";
 						} else if (data.code == 401) {
-							this.$store.dispatch(LOGOUT).then(() =>
-								this.$router.push({
-									name: "login",
-								})
-							);
+							this.$store.dispatch(REFRESH).then(() => {});
+							
 						} else {
 							alert(data.msg);
 						}
@@ -1121,11 +1089,8 @@
 						this.atrrarr = data.data;
 						console.log(this.fieldarr);
 					} else if (data.code == 401) {
-						this.$store.dispatch(LOGOUT).then(() =>
-							this.$router.push({
-								name: "login",
-							})
-						);
+						this.$store.dispatch(REFRESH).then(() => {});
+						
 					} else {}
 				});
 			},
@@ -1199,11 +1164,8 @@
 						console.log("删除成功");
 						this.datalist();
 					} else if (data.code == 401) {
-						this.$store.dispatch(LOGOUT).then(() =>
-							this.$router.push({
-								name: "login",
-							})
-						);
+						this.$store.dispatch(REFRESH).then(() => {});
+						
 					} else {}
 				});
 			},
@@ -1246,11 +1208,8 @@
 								this.datalist();
 								this.dialog = false;
 							} else if (data.code == 401) {
-								this.$store.dispatch(LOGOUT).then(() =>
-									this.$router.push({
-										name: "login",
-									})
-								);
+								this.$store.dispatch(REFRESH).then(() => {});
+								
 							} else {
 
 							}

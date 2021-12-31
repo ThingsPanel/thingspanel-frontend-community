@@ -158,7 +158,7 @@ table td {
 </style>
 
 <script>
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 import AUTH from "@/core/services/store/auth.module";
 
 import ApiService from "@/core/services/api.service";
@@ -247,7 +247,7 @@ export default {
           this.desserts = data.data.data;
           this.length = data.data.last_page;
         } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() => this.$router.push({ name: "login" }));
+		  this.$store.dispatch(REFRESH).then(() => {});
         } else {
         }
       });

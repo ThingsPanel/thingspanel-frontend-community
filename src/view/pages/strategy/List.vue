@@ -91,7 +91,7 @@ table td {
 import { mapState } from "vuex";
 import { REGISTER } from "@/core/services/store/auth.module";
 import { UPDATE_USER } from "@/core/services/store/auth.module";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 import AUTH from "@/core/services/store/auth.module";
 import ApiService from "@/core/services/api.service";
 import Hits from "@/assets/js/components/com.js";
@@ -195,9 +195,8 @@ export default {
           this.desserts = arr;
           console.log(arr);
         } else if (data.code == 401) {
-          this.$store
-            .dispatch(LOGOUT)
-            .then(() => this.$router.push({ name: "login" }));
+          this.$store.dispatch(REFRESH).then(() => {});
+          
         } else {
         }
       });

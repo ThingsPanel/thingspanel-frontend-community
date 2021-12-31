@@ -141,7 +141,7 @@ import Dropdown2 from "@/view/content/dropdown/Dropdown2.vue";
 import { mapGetters } from "vuex";
 import ApiService from "@/core/services/api.service";
 import AUTH from "@/core/services/store/auth.module";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 import { dateFormat } from "../../../utils/tool.js";
 
 export default {
@@ -310,11 +310,8 @@ export default {
           _that.length = data.data.total;
           _that.page = data.data.current_page;
         } else if (data.code == 401) {
-          this.$store.dispatch(LOGOUT).then(() =>
-            this.$router.push({
-              name: "login",
-            })
-          );
+          this.$store.dispatch(REFRESH).then(() => {});
+          
         } else {
         }
       });

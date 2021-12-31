@@ -471,7 +471,7 @@
 <script>
 import AUTH from "@/core/services/store/auth.module";
 import ApiService from "@/core/services/api.service";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 
 export default {
   data: () => ({
@@ -631,9 +631,8 @@ export default {
           this.items = arr;
           this.fieldsj(this.items[1]["id"]);
         } else if (data.code == 401) {
-          this.$store
-            .dispatch(LOGOUT)
-            .then(() => this.$router.push({ name: "login" }));
+          this.$store.dispatch(REFRESH).then(() => {});
+          
         } else {
           console.log(data);
         }
@@ -663,11 +662,8 @@ export default {
 
             this.dialog = true;
           } else if (data.code == 401) {
-            this.$store.dispatch(LOGOUT).then(() =>
-              this.$router.push({
-                name: "login",
-              })
-            );
+            this.$store.dispatch(REFRESH).then(() => {});
+            
           } else {
           }
         });
@@ -699,9 +695,8 @@ export default {
               this.lists[index]["device"][b]["dm"] = "代码";
               this.lists[index]["device"][b]["state"] = "正常";
             } else if (data.code == 401) {
-              this.$store
-                .dispatch(LOGOUT)
-                .then(() => this.$router.push({ name: "login" }));
+              this.$store.dispatch(REFRESH).then(() => {});
+              
             } else {
               alert(data.msg);
             }
@@ -724,9 +719,8 @@ export default {
               this.lists[index]["two"][i]["device"][d]["dm"] = "代码";
               this.lists[index]["two"][i]["device"][d]["state"] = "正常";
             } else if (data.code == 401) {
-              this.$store
-                .dispatch(LOGOUT)
-                .then(() => this.$router.push({ name: "login" }));
+              this.$store.dispatch(REFRESH).then(() => {});
+              
             } else {
               alert(data.msg);
             }
@@ -752,9 +746,8 @@ export default {
               this.lists[index]["two"][i]["there"][m]["device"][f]["state"] =
                 "正常";
             } else if (data.code == 401) {
-              this.$store
-                .dispatch(LOGOUT)
-                .then(() => this.$router.push({ name: "login" }));
+              this.$store.dispatch(REFRESH).then(() => {});
+              
             } else {
               alert(data.msg);
             }
@@ -839,9 +832,8 @@ export default {
           this.atrrarr = data.data;
           console.log(this.fieldarr);
         } else if (data.code == 401) {
-          this.$store
-            .dispatch(LOGOUT)
-            .then(() => this.$router.push({ name: "login" }));
+          this.$store.dispatch(REFRESH).then(() => {});
+          
         } else {
         }
       });
@@ -900,11 +892,8 @@ export default {
               this.datalist();
               this.dialog = false;
             } else if (data.code == 401) {
-              this.$store.dispatch(LOGOUT).then(() =>
-                this.$router.push({
-                  name: "login",
-                })
-              );
+              this.$store.dispatch(REFRESH).then(() => {});
+              
             } else {
             }
           });
@@ -942,9 +931,8 @@ export default {
             console.log("添加成功！");
             this.$router.push({ name: "buslist" });
           } else if (data.code == 401) {
-            this.$store
-              .dispatch(LOGOUT)
-              .then(() => this.$router.push({ name: "login" }));
+            this.$store.dispatch(REFRESH).then(() => {});
+            
           } else {
           }
         }

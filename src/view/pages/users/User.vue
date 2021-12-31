@@ -284,7 +284,7 @@
 import { mapState } from "vuex";
 import { REGISTER } from "@/core/services/store/auth.module";
 import { UPDATE_USER } from "@/core/services/store/auth.module";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 import AUTH from "@/core/services/store/auth.module";
 
 import ApiService from "@/core/services/api.service";
@@ -495,9 +495,8 @@ export default {
           this.length = data.data.last_page;
           this.desserts = arr;
         } else if (data.code == 401) {
-          this.$store
-            .dispatch(LOGOUT)
-            .then(() => this.$router.push({ name: "login" }));
+          this.$store.dispatch(REFRESH).then(() => {});
+          
         } else {
         }
       });
@@ -587,9 +586,8 @@ export default {
               this.snackbar = true;
               this.ajaxdata();
             } else if (data.code == 401) {
-              this.$store
-                .dispatch(LOGOUT)
-                .then(() => this.$router.push({ name: "login" }));
+              this.$store.dispatch(REFRESH).then(() => {});
+              
             } else {
             }
           });
@@ -651,9 +649,8 @@ export default {
             if (data.code == 200) {
               console.log("修改成功");
             } else if (data.code == 401) {
-              this.$store
-                .dispatch(LOGOUT)
-                .then(() => this.$router.push({ name: "login" }));
+              this.$store.dispatch(REFRESH).then(() => {});
+              
             } else {
             }
           });
@@ -675,9 +672,8 @@ export default {
             console.log(this.defaultbus);
           } else if (data.code == 401) {
             console.log("跳转登录页面");
-            this.$store
-              .dispatch(LOGOUT)
-              .then(() => this.$router.push({ name: "login" }));
+            this.$store.dispatch(REFRESH).then(() => {});
+            
           } else {
           }
         }
