@@ -217,6 +217,7 @@ export const locale = {
     PLACEHOLDER30: "Please choose the type",
     PLACEHOLDER31: "Please enter the request path",
     PLACEHOLDER32: "Please enter the request IP",
+	PLACEHOLDER33: "If the configuration is wrong, the data will not be pushed to the MQTT Broker.",
     SEARCH: "search",
     TEXT41:
       "Remarks: Only one condition and one instruction are allowed to be issued if they belong to the same device",

@@ -291,6 +291,8 @@
 										<div class="text-white">{{ $t("COMMON.TOKEN") }}：</div>
 										<v-text-field label="token" v-model="token"></v-text-field>
 									</v-col>
+									<div class="text-white">提示：{{ $t("COMMON.PLACEHOLDER33") }}</div>
+									
 								</v-row>
 							</v-container>
 						</v-card-text>
@@ -717,8 +719,11 @@
 						console.log(data);
 						if (data.code == 200) {
 							var arr = data.data;
-							console.log(arr);
-							this.lists = arr;
+							if (arr.length > 0) {
+								console.log(arr);
+								this.lists = arr;
+							}
+
 						} else {
 							this.$store.dispatch(REFRESH).then(() => {});
 							
@@ -941,12 +946,13 @@
 						btnevent: "add",
 					}, ];
 				}
+				let data = this.lists[index]["device"][b];
 				this.fieldarr = this.lists[index]["device"][b]["mapping"];
 				this.index1 = index;
 				this.b1 = b;
 				this.level = level;
 				this.fieldsj(type);
-				this.dataname = name;
+				this.dataname = data.name;
 				this.datadialog = true;
 			},
 

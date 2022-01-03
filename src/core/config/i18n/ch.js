@@ -196,6 +196,7 @@ export const locale = {
     PLACEHOLDER30: "请选择类型",
     PLACEHOLDER31: "请输入请求路径",
     PLACEHOLDER32: "请输入请求IP",
+	PLACEHOLDER33: "如配置错误数据将无法推送到MQTT Broker.",
     TITLE7: "关",
     TITLE8: "开",
     TITLE9: "或",
