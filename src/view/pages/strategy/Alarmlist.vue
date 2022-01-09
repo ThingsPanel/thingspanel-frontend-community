@@ -50,7 +50,7 @@
                       label="Id"
                       v-show="false"
                     ></v-text-field>
-                    <v-row>
+                    <v-row style="padding: 8px 4px">
                       <v-col cols="12" xs="12" md="6" class="col-py-0">
                         <div class="text-title">
                           {{ $t("COMMON.ALARMSTRATEGYNAME") }}：
@@ -78,7 +78,7 @@
                       {{ $t("COMMON.ADDRESS") }}：
                     </div>
                     <div class="box">
-                      <v-row>
+                      <v-row style="padding: 8px 4px">
                         <v-col cols="12" xs="12" md="6" class="col-py-0">
                           <treeselect
                             v-model="sensor"
@@ -124,7 +124,10 @@
                       {{ $t("COMMON.TRIGGERCONDITIONS") }}：
                     </div>
                     <div class="box">
-                      <v-row v-for="(i, index) in tjarr">
+                      <v-row
+                        v-for="(i, index) in tjarr"
+                        style="padding: 8px 4px"
+                      >
                         <v-col cols="12" xs="12" md="2" class="col-py-0">
                           <el-select
                             v-show="i.isshowrel"
@@ -149,7 +152,6 @@
                         <v-col cols="12" xs="6" md="3" class="col-py-0">
                           <el-select
                             v-model="i.field"
-                            :popper-append-to-body="false"
                             class="width-100 mb-2"
                             :pleaseholder="$t('COMMON.PLACEHOLDER8')"
                           >
@@ -177,7 +179,6 @@
                         <v-col cols="12" xs="6" md="3" class="col-py-0">
                           <el-select
                             v-model="i.condition"
-                            :popper-append-to-body="false"
                             class="width-100 mb-2"
                             :pleaseholder="$t('COMMON.PLACEHOLDER9')"
                             :rules="[symbolRules]"
@@ -228,7 +229,7 @@
                     <div class="text-title">
                       {{ $t("COMMON.TRIGGERCONDITIONS") }}：
                     </div>
-                    <v-row>
+                    <v-row style="padding: 8px 4px">
                       <v-col cols="12" xs="12" md="12" class="col-py-0">
                         <v-textarea
                           name="template"
@@ -401,6 +402,7 @@ import ApiService from "@/core/services/api.service";
 import Treeselect from "@riophae/vue-treeselect";
 // import the styles
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import "@/assets/css/style.css";
 export default {
   data: () => ({
     length: 1,
@@ -579,7 +581,6 @@ export default {
           // this.length = data.data.last_page;
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
-          
         }
       });
     },
@@ -594,7 +595,6 @@ export default {
           this.propertyitems = data.data;
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
-          
         }
       });
     },
@@ -623,7 +623,6 @@ export default {
             }
           } else if (data.code == 401) {
             this.$store.dispatch(REFRESH).then(() => {});
-            
           }
         });
       }
@@ -647,7 +646,6 @@ export default {
               }
             } else if (data.code == 401) {
               this.$store.dispatch(REFRESH).then(() => {});
-              
             }
           }
         );
@@ -663,7 +661,6 @@ export default {
             this.symbols = data.data;
           } else if (data.code == 401) {
             this.$store.dispatch(REFRESH).then(() => {});
-            
           }
         }
       );
@@ -678,7 +675,6 @@ export default {
             this.frequencies = data.data;
           } else if (data.code == 401) {
             this.$store.dispatch(REFRESH).then(() => {});
-            
           }
         }
       );

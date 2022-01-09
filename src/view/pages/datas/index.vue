@@ -1,12 +1,12 @@
 <template>
   <div class="rounded p-4 card no-border v-application" data-app="true">
-    <v-row class="">
+    <v-row class="" style="height: 75px">
       <v-col cols="12" xs="12" md="2">
         <el-select
           v-model="buisness_id"
           :popper-append-to-body="false"
           class="width-100"
-          placeholder="请选择业务"
+          :placeholder="$t('COMMON.PLACEHOLDER8')"
         >
           <el-option
             v-for="(e, index) in buisnesss"
@@ -22,7 +22,7 @@
           v-model="entity_id"
           :popper-append-to-body="false"
           class="width-100"
-          placeholder="请选择资产"
+          :placeholder="$t('COMMON.PLACEHOLDER35')"
         >
           <el-option
             v-for="(e, index) in equlist"
@@ -78,7 +78,9 @@
       </v-col>
 
       <v-col cols="12" xs="12" md="1">
-        <v-btn color="primary" @click="ajaxdata">搜索</v-btn>
+        <v-btn color="primary" @click="ajaxdata" style="margin-left: 92px"
+          >搜索</v-btn
+        >
       </v-col>
       <!--            <v-col cols="12" xs="12" md="1">-->
       <!--                <v-btn color="primary" @click="exportdata">导出</v-btn>-->
@@ -107,11 +109,12 @@
         </thead>
       </template>
       <template v-slot:item.name="{ item }">
-        <router-link
+        <!-- <router-link
           :to="{ path: 'strlist', query: { id: item.id } }"
           class="text-white"
           >{{ item.name }}
-        </router-link>
+        </router-link> -->
+        <div>{{ item.name }}</div>
       </template>
     </v-data-table>
     <v-pagination
@@ -130,6 +133,7 @@
 <style scoped>
 .v-application .text-start {
   text-align: center !important;
+  font-size: 13px;
 }
 
 table td {
@@ -152,6 +156,10 @@ table td {
 .sel-width {
   width: 150px;
 }
+
+/deep/ .vpd-icon-btn {
+  margin: 0 !important;
+}
 </style>
 
 <script>
@@ -171,41 +179,41 @@ export default {
     length: 3,
     circle: false,
     disabled: false,
-    limit: 15,
+    limit: 10,
     page: 1,
     headers: [
       {
-        text: "业务名",
+        text: "COMMON.BUSINESSNAME",
         class: "text-white",
         value: "bname",
       },
       {
-        text: "资产名",
+        text: "COMMON.TITLE29",
         class: "text-white",
         value: "name",
       },
       {
-        text: "设备Token",
+        text: "Token",
         class: "text-white",
         value: "token",
       },
       {
-        text: "时间",
+        text: "COMMON.TIMES",
         class: "text-white",
         value: "ts",
       },
       {
-        text: "数据标签",
+        text: "COMMON.TITLE30",
         class: "text-white",
         value: "key",
       },
       {
-        text: "值",
+        text: "COMMON.TITLE31",
         class: "text-white",
         value: "dbl_v",
       },
       {
-        text: "设备插件",
+        text: "COMMON.TITLE32",
         class: "text-white",
         value: "entity_type",
       },

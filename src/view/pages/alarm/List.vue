@@ -6,7 +6,7 @@
       <h3 class="card-title font-weight-bolder text-dark">
         {{ $t("COMMON.WARNINFO") }}
       </h3>
-      <div class="datebox float-right mt-4 mr-4">
+      <div class="datebox float-right mt-4">
         <div class="wid-16 float-left">
           <date-picker
             type="datetime"
@@ -29,7 +29,7 @@
             auto-submit
           ></date-picker>
         </div>
-        <div class="float-left">
+        <div class="float-left" style="padding-left: 50px">
           <v-btn color="primary" @click="warning()">{{
             $t("COMMON.SEARCH")
           }}</v-btn>
@@ -76,6 +76,7 @@
         :page="page"
         :total-visible="limit"
         @input="pageChange"
+		style="margin-top: 30px;"
       ></v-pagination>
     </div>
     <!--end::Body-->
@@ -91,6 +92,10 @@
 .pos-re-12 {
   position: relative;
   top: 12px;
+}
+
+/deep/ .datepickers input {
+  color: red !important;
 }
 </style>
 <script>
@@ -109,7 +114,7 @@ export default {
       length: 1,
       circle: false,
       disabled: false,
-      limit: 20,
+      limit: 10,
       page: 1,
       localeConfig: {
         "zh-cn": {
@@ -154,7 +159,7 @@ export default {
       month +
       "/" +
       date +
-      "T" +
+      " " +
       hour +
       ":" +
       minute +
@@ -199,12 +204,10 @@ export default {
           } else {
             _that.tip = true;
           }
-          _that.length = data.data.total;
+          _that.length = parseInt(data.data.total / data.data.per_page) ;
           _that.page = data.data.current_page;
         } else if (data.code == 401) {
-          this.$store
-            .dispatch(REFRESH)
-            .then(() => {});
+          this.$store.dispatch(REFRESH).then(() => {});
         } else {
         }
       });

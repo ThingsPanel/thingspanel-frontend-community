@@ -46,7 +46,7 @@
                   </v-col>
                   <v-col cols="12" xs="12" md="6">
                     <div class="text-title">{{ $t("COMMON.EQUIPMENT") }}：</div>
-                    <v-select
+<!--                    <v-select
                       :items="devicearr"
                       item-value="id"
                       item-text="name"
@@ -54,11 +54,25 @@
                       class="vselect"
                       @change="changeStr(device_id)"
                       required
-                    ></v-select>
+                    ></v-select> -->
+					
+					<el-select
+					  v-model="device_id"
+					  @change="changeStr(device_id)"
+					  :popper-append-to-body="true"
+					  class="width-100 vselect"
+					>
+					  <el-option
+					    v-for="(t, index) in devicearr"
+					    :key="index"
+					    :value="t.id"
+					    :label="t.name"
+					  ></el-option>
+					</el-select>
                   </v-col>
                   <v-col cols="12" xs="12" md="12">
                     <div class="text-title">{{ $t("COMMON.CHARTUNIT") }}：</div>
-                    <v-row>
+                    <v-row style="margin-top: 20px;">
                       <v-col
                         cols="12"
                         xs="12"
@@ -139,11 +153,35 @@
       >
         <div>
           <!--配置图表单元按钮-->
+          <div class="float-left">
+            <div
+              class="text-white float-left"
+              style="height: 56px; line-height: 56px; margin-right: 20px;"
+            >
+              {{ $t('COMMON.PLACEHOLDER35') }}: 
+            </div>
+            <div class="float-left">
+              <el-select
+                v-model="entity_id"
+                :popper-append-to-body="false"
+                class="width-100"
+                :placeholder="$t('COMMON.PLACEHOLDER35')"
+                @change="onChangeEqlist(entity_id)"
+              >
+                <el-option
+                  v-for="(e, index) in equlist"
+                  :key="e.latesttime"
+                  :value="e.id"
+                  :label="e.name"
+                ></el-option>
+              </el-select>
+            </div>
+          </div>
           <div
             class="expantdiv text-right inlineblock float-right"
             v-show="isshowtheme"
           >
-            <!-- <div
+            <div
               class="
                 symbol symbol-40 symbol-light-default
                 mt-2
@@ -158,9 +196,9 @@
                   class="h-100 align-self-end text-white"
                 ></inline-svg>
               </span>
-            </div> -->
+            </div>
             <!--选择主题按钮-->
-            <div
+            <!-- <div
               class="
                 card-toolbar
                 display-inlineblock
@@ -184,7 +222,6 @@
                 @
               >
                 <template v-slot:button-content>
-                  <!--                  <i class="ki ki-bold-more-ver text-white"></i>-->
                   <span class="symbol-label bg-blue">
                     <inline-svg
                       src="media/svg/icons/Design/Color.svg"
@@ -192,7 +229,6 @@
                     ></inline-svg>
                   </span>
                 </template>
-                <!--begin::Navigation-->
                 <div class="navi navi-hover" style="width: 150px">
                   <b-dropdown-text
                     tag="div"
@@ -205,11 +241,10 @@
                     </span>
                   </b-dropdown-text>
                 </div>
-                <!--end::Navigation-->
               </b-dropdown>
-            </div>
+            </div> -->
             <!--背景主题按钮-->
-            <div
+            <!-- <div
               class="
                 card-toolbar
                 display-inlineblock
@@ -233,7 +268,6 @@
                 @
               >
                 <template v-slot:button-content>
-                  <!--                  <i class="ki ki-bold-more-ver text-white"></i>-->
                   <span class="symbol-label bg-blue">
                     <inline-svg
                       src="media/svg/icons/Design/Color-profile.svg"
@@ -241,7 +275,6 @@
                     ></inline-svg>
                   </span>
                 </template>
-                <!--begin::Navigation-->
                 <div class="navi navi-hover" style="width: 150px">
                   <b-dropdown-text
                     tag="div"
@@ -254,9 +287,8 @@
                     </span>
                   </b-dropdown-text>
                 </div>
-                <!--end::Navigation-->
               </b-dropdown>
-            </div>
+            </div> -->
             <!--全屏按钮-->
             <div
               class="
@@ -320,7 +352,7 @@
               </el-select>
             </div>-->
 
-            <div class="wid-16 float-left xs-mt-0" v-show="pcisshow">
+            <!-- <div class="wid-16 float-left xs-mt-0" v-show="pcisshow">
               <el-select
                 v-model="dateindex"
                 @change="changeFilter"
@@ -365,7 +397,7 @@
                 class="zdybtn height-40"
                 >{{ $t("COMMON.SCREEN") }}</v-btn
               >
-            </div>
+            </div> -->
             <div class="wid-16 float-left" v-show="isqtshow">
               <el-select
                 v-model="dateindex"
@@ -418,6 +450,7 @@
         :busid="business_id"
         :proid="proid"
         :chart_id="chart_id"
+		:assest_id="entity_id"
         :start_time="strdate"
         :end_time="enddate"
         :latest_time="dateindex"
@@ -523,6 +556,7 @@ import bgthemes from "@/config/bgtheme";
 import Treeselect from "@riophae/vue-treeselect";
 // import the styles
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import "@/assets/css/style.css";
 
 import Utils from "@/utils/util.js";
 import { SET_AUTH } from "../../../core/services/store/auth.module";
@@ -532,6 +566,8 @@ moment.updateLocale("zh-cn", zh);
 export default {
   data() {
     return {
+      equlist: [],
+      entity_id: "",
       isShowLeftNav: false,
       dialog: false,
       busitems: [],
@@ -659,6 +695,7 @@ export default {
     console.log("图表id");
     console.log(this.chart_id);
     this.gettime();
+    this.getEqlist(this.business_id);
     /*this.getbusiness();
 			  Utils.$emit('demo', this.busid, this.proid);*/
   },
@@ -674,6 +711,29 @@ export default {
     });
   },
   methods: {
+    onChangeEqlist(id) {
+		this.entity_id = id;
+    },
+    getEqlist(id) {
+      let _that = this;
+      ApiService.post(AUTH.local_url + "/asset/list", {
+        business_id: id,
+      })
+        .then(({ data }) => {
+          console.log("资产编辑列表");
+          console.log(data);
+          if (data.code == 200) {
+            var arr = data.data[0].device;
+            _that.equlist = arr;
+			_that.entity_id = arr[0].id;
+          } else {
+            this.$store.dispatch(REFRESH).then(() => {});
+          }
+        })
+        .catch(({ response }) => {
+          console.log(response);
+        });
+    },
     // treeselect值重定义
     normalizer(node) {
       return {
@@ -1360,6 +1420,12 @@ export default {
 
 .treeselect {
   top: 9px;
+}
+
+.vselect {
+	margin-top: 7px;
+	height: 40px !important;
+	line-height: 40px !important;
 }
 
 .el-select {

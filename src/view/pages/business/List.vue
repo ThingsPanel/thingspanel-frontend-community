@@ -97,28 +97,30 @@
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
-        <router-link
-          v-if="item.is_device == 0"
-          :to="{ path: 'business', query: { id: item.id } }"
-          ><v-btn color="primary" class="mr-4" small>{{
-            $t("COMMON.ADDASSETS")
-          }}</v-btn></router-link
-        >
-        <!--<router-link v-if="item.is_device==1" :to="{ path: 'editbusiness', query: { id: item.id }}"><v-btn color="primary" class="mr-4" small>{{$t("COMMON.EDITASSETS")}}</v-btn></router-link>-->
-        <v-btn
-          v-if="item.is_device == 1"
-          color="primary"
-          class="mr-4"
-          small
-          @click="hitsclick(1, item.name, item.id)"
-          >{{ $t("COMMON.EDITASSETS") }}</v-btn
-        >
-        <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
-          $t("COMMON.EDITASSETSNAME")
-        }}</v-btn>
-        <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
-          $t("COMMON.DELETE")
-        }}</v-btn>
+		  <div style="display: flex;flex-direction: row;">
+			  <router-link
+			    v-if="item.is_device == 0"
+			    :to="{ path: 'business', query: { id: item.id } }"
+			    ><v-btn color="primary" class="mr-4" small>{{
+			      $t("COMMON.ADDASSETS")
+			    }}</v-btn></router-link
+			  >
+			  <v-btn
+			    v-if="item.is_device == 1"
+			    color="primary"
+			    class="mr-4"
+			    small
+			    @click="hitsclick(1, item.name, item.id)"
+			    >{{ $t("COMMON.EDITASSETS") }}</v-btn
+			  >
+			  <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
+			    $t("COMMON.EDITASSETSNAME")
+			  }}</v-btn>
+			  <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
+			    $t("COMMON.DELETE")
+			  }}</v-btn>
+		  </div>
+        
       </template>
     </v-data-table>
     <v-pagination

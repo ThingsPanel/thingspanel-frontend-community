@@ -238,15 +238,18 @@
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
-        <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
-          $t("COMMON.EDIT")
-        }}</v-btn>
-        <v-btn color="primary" class="mr-4" small @click="resetPass(item)">{{
-          $t("COMMON.CHANGEPASSWORD")
-        }}</v-btn>
-        <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
-          $t("COMMON.DELETE")
-        }}</v-btn>
+		  <div style="display: flex;flex-direction: row;">
+			  <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
+			    $t("COMMON.EDIT")
+			  }}</v-btn>
+			  <v-btn color="primary" class="mr-4" small @click="resetPass(item)">{{
+			    $t("COMMON.CHANGEPASSWORD")
+			  }}</v-btn>
+			  <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
+			    $t("COMMON.DELETE")
+			  }}</v-btn>
+		  </div>
+        
       </template>
     </v-data-table>
     <v-pagination
@@ -296,7 +299,7 @@ export default {
     text: "",
     vertical: true,
     seen: true,
-    length: 3,
+    length: 1,
     circle: false,
     disabled: false,
     nextIcon: "navigate_next",
@@ -492,11 +495,11 @@ export default {
             }
             arr.push(obg);
           }
-          this.length = data.data.last_page;
+          this.length = parseInt(data.data.total / data.data.per_page) > 0 ? parseInt(data.data.total / data.data.per_page) : 1;
+          this.page = data.data.current_page;
           this.desserts = arr;
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
-          
         } else {
         }
       });
@@ -587,7 +590,6 @@ export default {
               this.ajaxdata();
             } else if (data.code == 401) {
               this.$store.dispatch(REFRESH).then(() => {});
-              
             } else {
             }
           });
@@ -650,7 +652,6 @@ export default {
               console.log("修改成功");
             } else if (data.code == 401) {
               this.$store.dispatch(REFRESH).then(() => {});
-              
             } else {
             }
           });
@@ -673,7 +674,6 @@ export default {
           } else if (data.code == 401) {
             console.log("跳转登录页面");
             this.$store.dispatch(REFRESH).then(() => {});
-            
           } else {
           }
         }

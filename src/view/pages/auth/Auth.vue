@@ -3,7 +3,7 @@
     class="d-flex flex-column flex-root"
     :style="{
       backgroundImage: `url(${backgroundImage}) !important`,
-	  backgroundRepeat: `no-repeat !important`
+	  backgroundRepeat: `repeat !important`
     }"
   >
     <div class="wrappers">

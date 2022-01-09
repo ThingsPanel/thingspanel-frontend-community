@@ -89,28 +89,28 @@
                         <div class="text-title">
                           {{ $t("COMMON.STRATRGYLISTTYPE") }}：
                         </div>
+                        <!-- <v-select
+                                                        :items="strategy"
+                                                        item-value="id"
+                                                        item-text="name"
+                                                        v-model="editedItem.type"
+                                                        class="vselect"
+                                                        @change="changeType(editedItem.type)"
+                                                ></v-select> -->
                         <el-select
                           v-model="editedItem.type"
-                          :popper-append-to-body="false"
-                          class="width-100 mb-2"
-                          :pleaseholder="$t('COMMON.PLACEHOLDER3')"
+                          @change="changeType(editedItem.type)"
+                          :popper-append-to-body="true"
+                          class="width-100 vselect"
+                          style="margin-top: 16px"
                         >
                           <el-option
-                            v-for="(r, index) in strategy"
+                            v-for="(t, index) in strategy"
                             :key="index"
-                            :value="r.id"
-                            :label="r.name"
-                            @click="changeType(editedItem.type)"
+                            :value="t.id"
+                            :label="t.name"
                           ></el-option>
                         </el-select>
-                        <!-- <v-select
-                          :items="strategy"
-                          item-value="id"
-                          item-text="name"
-                          v-model="editedItem.type"
-                          class="vselect"
-                          @change="changeType(editedItem.type)"
-                        ></v-select> -->
                       </v-col>
                     </v-row>
                     <div class="text-title font-weight-bolder my-2">
@@ -120,30 +120,29 @@
                       <v-row
                         v-for="(i, index) in tjarr"
                         v-show="editedItem.isshowsb"
+                        style="padding: 8px 4px"
                       >
                         <v-col cols="12" xs="12" md="1" class="col-py-0">
+                          <!-- <v-select
+                                                            :items="relationship"
+                                                            item-value="id"
+                                                            item-text="name"
+                                                            v-model="i.operator"
+                                                            class="vselect"
+                                                            v-show="i.isshowrel"
+                                                    ></v-select> -->
                           <el-select
                             v-show="i.isshowrel"
                             v-model="i.operator"
-                            :popper-append-to-body="false"
-                            class="width-100 mb-2"
-                            :pleaseholder="$t('COMMON.PLACEHOLDER3')"
+                            class="width-100 vselect"
                           >
                             <el-option
-                              v-for="(r, index) in relationship"
+                              v-for="(t, index) in relationship"
                               :key="index"
-                              :value="r.id"
-                              :label="r.name"
+                              :value="t.id"
+                              :label="t.name"
                             ></el-option>
                           </el-select>
-                          <!-- <v-select
-                            :items="relationship"
-                            item-value="id"
-                            item-text="name"
-                            v-model="i.operator"
-                            class="vselect"
-                            v-show="i.isshowrel"
-                          ></v-select> -->
                         </v-col>
                         <v-col
                           cols="12"
@@ -165,21 +164,7 @@
                           />
                         </v-col>
                         <v-col cols="12" xs="6" md="2" class="col-py-0">
-                          <el-select
-                            v-model="i.device_id"
-                            :popper-append-to-body="false"
-                            class="width-100 mb-2"
-                            :pleaseholder="$t('COMMON.PLACEHOLDER3')"
-                          >
-                            <el-option
-                              v-for="(r, index) in i.conditionArr"
-                              :key="index"
-                              :value="r.id"
-                              :label="r.name"
-                              @click="changeSb(index, i.device_id, 1)"
-                            ></el-option>
-                          </el-select>
-                          <!--          <v-select
+                          <!-- <v-select
                                                         :items="i.conditionArr"
                                                         :label="$t('COMMON.PLACEHOLDER3')"
                                                         item-value="id"
@@ -188,62 +173,68 @@
                                                         class="vselect"
                                                         @change="changeSb(index,i.device_id,1)"
                                                     ></v-select> -->
-                        </v-col>
-                        <v-col cols="12" xs="6" md="1" class="col-py-0">
                           <el-select
-                            v-model="i.field"
-                            :popper-append-to-body="false"
-                            class="width-100 mb-2"
-                            :pleaseholder="$t('COMMON.PLACEHOLDER9')"
+                            v-model="i.device_id"
+                            @change="changeSb(index, i.device_id, 1)"
+                            class="width-100 vselect"
                           >
                             <el-option
-                              v-for="(r, index) in i.assemblyArr"
+                              v-for="(t, index) in i.conditionArr"
                               :key="index"
-                              :value="r.key"
-                              :label="r.name"
-                              @click="changeCgq(index, i.field, 1)"
+                              :value="t.id"
+                              :label="t.name"
                             ></el-option>
                           </el-select>
-
-                          <!--     <v-select
-                            :items="i.assemblyArr"
-                            :label="$t('COMMON.PLACEHOLDER9')"
-                            item-value="key"
-                            item-text="name"
+                        </v-col>
+                        <v-col cols="12" xs="6" md="2" class="col-py-0">
+                          <!-- <v-select
+                                                            :items="i.assemblyArr"
+                                                            :label="$t('COMMON.PLACEHOLDER9')"
+                                                            item-value="key"
+                                                            item-text="name"
+                                                            v-model="i.field"
+                                                            class="vselect"
+                                                            @change="changeCgq(index,i.field,1)"
+                                                    ></v-select> -->
+                          <el-select
                             v-model="i.field"
-                            class="vselect"
                             @change="changeCgq(index, i.field, 1)"
-                          ></v-select> -->
+                            class="width-100 vselect"
+                          >
+                            <el-option
+                              v-for="(t, index) in i.assemblyArr"
+                              :key="index"
+                              :value="t.key"
+                              :label="t.name"
+                            ></el-option>
+                          </el-select>
                         </v-col>
                         <v-col
                           cols="12"
                           xs="6"
-                          md="1"
+                          md="2"
                           class="col-py-0"
                           v-show="i.isvalshow"
                         >
+                          <!-- <v-select
+                                                            :items="symbols"
+                                                            :label="$t('COMMON.PLACEHOLDER12')"
+                                                            item-value="id"
+                                                            item-text="name"
+                                                            v-model="i.condition"
+                                                            class="vselect"
+                                                    ></v-select> -->
                           <el-select
                             v-model="i.condition"
-                            :popper-append-to-body="false"
-                            class="width-100 mb-2"
-                            :pleaseholder="$t('COMMON.PLACEHOLDER12')"
+                            class="width-100 vselect"
                           >
                             <el-option
-                              v-for="(r, index) in symbols"
+                              v-for="(t, index) in symbols"
                               :key="index"
-                              :value="r.id"
-                              :label="r.name"
-                              @click="changeType(editedItem.type)"
+                              :value="t.id"
+                              :label="t.name"
                             ></el-option>
                           </el-select>
-                          <!--                         <v-select
-                            :items="symbols"
-                            :label="$t('COMMON.PLACEHOLDER12')"
-                            item-value="id"
-                            item-text="name"
-                            v-model="i.condition"
-                            class="vselect"
-                          ></v-select> -->
                         </v-col>
                         <v-col
                           cols="12"
@@ -332,32 +323,30 @@
                       <v-row
                         v-show="editedItem.isshowsj"
                         v-for="(rule, r) in rulesarr"
+                        style="padding: 20px 4px; margin-top: -25px"
                       >
                         <v-col cols="12" sm="6" md="2" class="col-py-0 mt-3">
+                          <!-- <v-select
+                                                            :items="timetype"
+                                                            item-value="id"
+                                                            item-text="name"
+                                                            :label="$t('COMMON.PLACEHOLDER30')"
+                                                            v-model="rule.interval"
+                                                            class="vselect mt-1"
+                                                            @change="choosetime(rule.interval,r)"
+                                                    ></v-select> -->
                           <el-select
                             v-model="rule.interval"
-                            :popper-append-to-body="false"
-                            class="width-100 mb-2"
-                            :pleaseholder="$t('COMMON.PLACEHOLDER30')"
+                            @change="choosetime(rule.interval, r)"
+                            class="width-100 vselect"
                           >
                             <el-option
-                              v-for="(r, index) in timetype"
+                              v-for="(t, index) in timetype"
                               :key="index"
-                              :value="r.id"
-                              :label="r.name"
-                              @click="choosetime(rule.interval, r)"
+                              :value="t.id"
+                              :label="t.name"
                             ></el-option>
                           </el-select>
-
-                          <!-- <v-select
-                            :items="timetype"
-                            item-value="id"
-                            item-text="name"
-                            :label="$t('COMMON.PLACEHOLDER30')"
-                            v-model="rule.interval"
-                            class="vselect mt-1"
-                            @change="choosetime(rule.interval, r)"
-                          ></v-select> -->
                         </v-col>
                         <v-col cols="12" xs="6" md="3" class="col-py-0">
                           <date-picker
@@ -386,7 +375,10 @@
                       {{ $t("COMMON.CONTROLINSTRUCTION") }}：
                     </div>
                     <div class="box">
-                      <v-row v-for="(i, m) in instructionsarr">
+                      <v-row
+                        v-for="(i, m) in instructionsarr"
+                        style="padding: 8px 4px"
+                      >
                         <v-col cols="12" xs="12" md="2" class="col-py-0">
                           <treeselect
                             v-model="i.asset_id"
@@ -401,54 +393,50 @@
                           />
                         </v-col>
                         <v-col cols="12" xs="6" md="2" class="col-py-0">
+                          <!-- <v-select
+                                                        :items="i.conditionArr"
+                                                        :label="$t('COMMON.PLACEHOLDER3')"
+                                                        item-value="id"
+                                                        item-text="name"
+                                                        v-model="i.device_id"
+                                                        class="vselect"
+                                                        @change="changeStrzl(m,i.device_id)"
+                                                    ></v-select> -->
                           <el-select
                             v-model="i.device_id"
-                            :popper-append-to-body="false"
-                            class="width-100 mb-2"
-                            :pleaseholder="$t('COMMON.PLACEHOLDER30')"
+                            @change="changeStrzl(m, i.device_id)"
+                            class="width-100 vselect"
                           >
                             <el-option
-                              v-for="(r, index) in i.conditionArr"
+                              v-for="(t, index) in i.conditionArr"
                               :key="index"
-                              :value="r.id"
-                              :label="r.name"
-                              @click="changeStrzl(m, i.device_id)"
+                              :value="t.id"
+                              :label="t.name"
                             ></el-option>
                           </el-select>
-                          <!-- <v-select
-                            :items="i.conditionArr"
-                            :label="$t('COMMON.PLACEHOLDER3')"
-                            item-value="id"
-                            item-text="name"
-                            v-model="i.device_id"
-                            class="vselect"
-                            @change="changeStrzl(m, i.device_id)"
-                          ></v-select> -->
                         </v-col>
                         <v-col cols="12" xs="6" md="2" class="col-py-0">
+                          <!-- <v-select
+                                                            :items="i.switch"
+                                                            :label="$t('COMMON.PLACEHOLDER14')"
+                                                            item-value="key"
+                                                            item-text="name"
+                                                            v-model="i.field"
+                                                            class="vselect"
+                                                            @change="changeInstr(m,i.field)"
+                                                    ></v-select> -->
                           <el-select
                             v-model="i.field"
-                            :popper-append-to-body="false"
-                            class="width-100 mb-2"
-                            :pleaseholder="$t('COMMON.PLACEHOLDER14')"
+                            class="width-100 vselect"
+                            @change="changeInstr(m, i.field)"
                           >
                             <el-option
-                              v-for="(r, index) in i.switch"
+                              v-for="(t, index) in i.switch"
                               :key="index"
-                              :value="r.key"
-                              :label="r.name"
-                              @click="changeInstr(m, i.field)"
+                              :value="t.key"
+                              :label="t.name"
                             ></el-option>
                           </el-select>
-                          <!-- <v-select
-                            :items="i.switch"
-                            :label="$t('COMMON.PLACEHOLDER14')"
-                            item-value="key"
-                            item-text="name"
-                            v-model="i.field"
-                            class="vselect"
-                            @change="changeInstr(m, i.field)"
-                          ></v-select> -->
                         </v-col>
                         <v-col cols="12" xs="6" md="2" class="col-py-0">
                           <div v-show="i.isshowswitch">
@@ -485,7 +473,7 @@
                         </v-col>
                       </v-row>
                     </div>
-                    <v-row>
+                    <v-row style="padding: 8px 4px">
                       <v-col col="12" class="col-py-0">
                         <div class="text-title xs-mt-2">
                           {{ $t("COMMON.POLICYSTATUS") }} ：
@@ -501,31 +489,18 @@
                         </v-radio-group>
                       </v-col>
                     </v-row>
-					<!-- editedItem.isshowsb -->
-                    <v-row v-show="false">
-                      <v-col col="12" class="col-py-0">
-                        <v-checkbox
-                          v-model="editedItem.issued"
-                          value="1"
-                          class="mar-top--8 inline-block"
-                        ></v-checkbox>
-                        <div
-                          class="
-                            text-title
-                            xs-mt-2
-                            inline-block
-                            position-relative
-                            bottom-8
-                          "
-                        >
-                          {{ $t("COMMON.TITLE27") }}
-                        </div>
-                        <div class="remarks text-danger">
-                          ({{ $t("COMMON.TEXT41") }})
-                        </div>
-                      </v-col>
-                      <div class="clear"></div>
-                    </v-row>
+                    <!-- <v-row  v-show="editedItem.isshowsb" style="padding: 8px 4px;">
+                                            <v-col col="12" class="col-py-0">
+                                                <v-checkbox
+                                                        v-model="editedItem.issued"
+                                                        value="1"
+                                                        class="mar-top--8 inline-block"
+                                                ></v-checkbox>
+                                                <div class="text-title xs-mt-2 inline-block position-relative bottom-8">{{ $t("COMMON.TITLE27") }}</div>
+                                                <div class="remarks text-danger">({{ $t("COMMON.TEXT41") }})</div>
+                                            </v-col>
+                                            <div class="clear"></div>
+                                        </v-row> -->
                   </v-container>
                 </v-card-text>
 
@@ -575,6 +550,9 @@
   </div>
 </template>
 <style scoped>
+/deep/ .el-select-dropdown__list {
+  padding: 0;
+}
 .inline-block {
   display: inline-block;
 }
@@ -603,6 +581,17 @@ table td {
 }
 .vselect .v-select__selection {
   color: #333 !important;
+}
+.v-select-list {
+  background: #182046 !important;
+  border: 1px solid #f5f5f5;
+  border-radius: 5px;
+}
+/deep/ .v-list-item__title {
+  color: #ffffff !important;
+}
+/deep/ .vpd-icon-btn {
+  margin: 0 !important;
 }
 .timebox {
   border: unset !important;
@@ -684,6 +673,7 @@ import ApiService from "@/core/services/api.service";
 import Treeselect from "@riophae/vue-treeselect";
 // import the styles
 import "@riophae/vue-treeselect/dist/vue-treeselect.css";
+import "@/assets/css/style.css";
 export default {
   data: () => ({
     length: 1,
@@ -743,7 +733,6 @@ export default {
       isshowsb: true,
       isshowsj: false,
     },
-    // nameRules: [(v) => !!v || "请输入策略名称"],
     describeRules: [(v) => !!v || "请输入策略描述"],
     valueRules: [
       (v) => !!v || "请输入数值",
@@ -938,7 +927,6 @@ export default {
           this.length = data.data.last_page;
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
-          
         }
       });
     },
@@ -955,7 +943,6 @@ export default {
           this.instructionsarr[0]["device"] = data.data;
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
-          
         }
       });
     },
@@ -979,7 +966,6 @@ export default {
             }
           } else if (data.code == 401) {
             this.$store.dispatch(REFRESH).then(() => {});
-            
           }
         });
       }
@@ -999,7 +985,6 @@ export default {
               this.tjarr[i]["unit"] = "";
             } else if (data.code == 401) {
               this.$store.dispatch(REFRESH).then(() => {});
-              
             }
           }
         );
@@ -1030,6 +1015,7 @@ export default {
     },
     changeStrzl(j, bid) {
       // 策略指令
+      let _that = this;
       if (bid !== undefined) {
         ApiService.post(AUTH.local_url + "/automation/instruct", {
           bid: bid,
@@ -1037,19 +1023,20 @@ export default {
           if (data.code == 200) {
             console.log("策略指令");
             console.log(data.data);
-            this.instructionsarr[j]["switch"] = data.data;
-            if (this.instructionsarr[j]["isEditTag"] != 1) {
-              this.instructionsarr[j]["field"] = "";
-              this.instructionsarr[j]["isshowswitch"] = false;
-              this.instructionsarr[j]["isshowinput"] = false;
-              this.instructionsarr[j]["radiovalue"] = "";
-              this.instructionsarr[j]["inputvalue"] = "";
+            let instructionsarr = _that.instructionsarr;
+
+            if (instructionsarr[j]["isEditTag"] != 1) {
+              instructionsarr[j]["isshowswitch"] = false;
+              instructionsarr[j]["isshowinput"] = false;
+              instructionsarr[j]["radiovalue"] = "";
+              instructionsarr[j]["inputvalue"] = "";
             } else {
-              this.instructionsarr[j]["isEditTag"] = 0;
+              instructionsarr[j]["isEditTag"] = 0;
             }
+            instructionsarr[j]["switch"] = data.data;
+            _that.instructionsarr = instructionsarr;
           } else if (data.code == 401) {
             this.$store.dispatch(REFRESH).then(() => {});
-            
           }
         });
       }
@@ -1082,7 +1069,6 @@ export default {
             this.symbols = data.data;
           } else if (data.code == 401) {
             this.$store.dispatch(REFRESH).then(() => {});
-            
           }
         }
       );
@@ -1097,7 +1083,6 @@ export default {
             this.frequencies = data.data;
           } else if (data.code == 401) {
             this.$store.dispatch(REFRESH).then(() => {});
-            
           }
         }
       );
@@ -1253,7 +1238,6 @@ export default {
             _that.dialog = true;
           } else if (data.code == 401) {
             this.$store.dispatch(REFRESH).then(() => {});
-            
           }
         }
       );

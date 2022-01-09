@@ -244,3 +244,28 @@
 
     .chart-item.cssTransforms{height: unset !important;}
 }
+
+.vue-treeselect__menu {
+  background-color: #182046 !important;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.vue-treeselect__option--highlight {
+  background: #182046 !important;
+  color: #ffffff;
+}
+
+.vue-treeselect__option {
+  background: #182046 !important;
+  color: #ffffff;
+}
+
+.el-select-dropdown__list {
+  padding-bottom: 8px;
+}
+.v-list-item__title {
+  color: #ffffff !important;
+}
+.vpd-icon-btn {
+  margin: 0 !important;
+}

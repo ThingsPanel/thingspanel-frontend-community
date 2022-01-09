@@ -61,6 +61,7 @@
     import ApiService from "@/core/services/api.service";
     import AUTH from "@/core/services/store/auth.module";
     import { REFRESH } from "@/core/services/store/auth.module";
+	import i18nService from "@/core/services/i18n.service.js";
     export default {
         name: "widget-2",
         components: {},
@@ -161,7 +162,7 @@
                     ],
                         series: [
                         {
-                            name: 'CPU占用',
+                            name: i18nService.getActiveLanguage() == 'en' ? 'CPU footprint' : 'CPU占用',
                             type: 'line',
                             smooth: true,
                             stack: '',
@@ -293,7 +294,7 @@
                     ],
                     series: [
                         {
-                            name: '内存占用',
+                            name: i18nService.getActiveLanguage() == 'en' ? 'Memory footprint' : '内存占用',
                             type: 'line',
                             smooth: true,
                             stack: '',

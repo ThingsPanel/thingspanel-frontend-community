@@ -104,20 +104,21 @@
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
-        <!--                <router-link :to="{ path: 'chart', query: { chart_id: item.id,business_id:item.business_id }}" @click="hitsclick(3,item.name,item.id,item.business_id)"><v-btn color="primary" class="mr-4" small>可视化图表</v-btn></router-link>-->
-        <v-btn
-          color="primary"
-          class="mr-4"
-          small
-          @click="hitsclick(4, item.title, item.id, item.business_id)"
-          >{{ $t("COMMON.VISUALIZATIONCHART") }}</v-btn
-        >
-        <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
-          $t("COMMON.EDIT")
-        }}</v-btn>
-        <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
-          $t("COMMON.DELETE")
-        }}</v-btn>
+		  <div style="display: flex;flex-direction: row;">
+			  <v-btn
+			    color="primary"
+			    class="mr-4"
+			    small
+			    @click="hitsclick(4, item.title, item.id, item.business_id)"
+			    >{{ $t("COMMON.VISUALIZATIONCHART") }}</v-btn
+			  >
+			  <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
+			    $t("COMMON.EDIT")
+			  }}</v-btn>
+			  <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
+			    $t("COMMON.DELETE")
+			  }}</v-btn>
+		  </div>
       </template>
     </v-data-table>
     <v-pagination
@@ -158,7 +159,7 @@ table td {
 import { mapState } from "vuex";
 import { REGISTER } from "@/core/services/store/auth.module";
 import { UPDATE_USER } from "@/core/services/store/auth.module";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
+import { REFRESH } from "@/core/services/store/auth.module";
 import AUTH from "@/core/services/store/auth.module";
 
 import ApiService from "@/core/services/api.service";
@@ -195,6 +196,7 @@ export default {
         align: "right",
         value: "actions",
         sortable: false,
+		width: '100%'
       },
     ],
     desserts: [],
@@ -277,18 +279,13 @@ export default {
                   this.desserts = arr;
                   console.log(arr);
                 } else if (data.code == 401) {
-                  console.log("跳转登录页面");
-                  this.$store
-                    .dispatch(LOGOUT)
-                    .then(() => this.$router.push({ name: "login" }));
+                  this.$store.dispatch(REFRESH).then(() => {});
                 } else {
                 }
               }
             );
           } else if (data.code == 401) {
-            this.$store
-              .dispatch(LOGOUT)
-              .then(() => this.$router.push({ name: "login" }));
+            this.$store.dispatch(REFRESH).then(() => {});
           } else {
           }
         }
@@ -304,9 +301,7 @@ export default {
             this.busitems = data.data;
           } else if (data.code == 401) {
             console.log("跳转登录页面");
-            this.$store
-              .dispatch(LOGOUT)
-              .then(() => this.$router.push({ name: "login" }));
+            this.$store.dispatch(REFRESH).then(() => {});
           } else {
           }
         }

@@ -201,7 +201,6 @@ export default {
           }
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
-          
         } else {
         }
       });
@@ -217,7 +216,6 @@ export default {
           this.guidlist = data.data;
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
-          
         } else {
         }
       });

@@ -74,7 +74,7 @@
 										{{ a.dm }}
 									</td>
 									<td>
-										{{ inDateFormat(a.latesttime/1000000) }}
+										{{ inDateFormat(a.latesttime / 1000000) }}
 									</td>
 									<td colspan="2">
 										<span class="mr-2 custom-btn my-1"
@@ -270,10 +270,12 @@
 										</el-select>
 									</v-col>
 									<v-col cols="12" class="col-px-0">
-										<div class="text-white">
-											默认配置：
-										</div>
-										<div class="defmsg" style="padding: 10px;font-size: 8px;background: rgba(0, 0, 0, 0.3) !important;">
+										<div class="text-white">默认配置：</div>
+										<div class="defmsg" style="
+                        padding: 10px;
+                        font-size: 8px;
+                        background: rgba(0, 0, 0, 0.3) !important;
+                      ">
 											<div class="text-white">端口：{{ port }}</div>
 											<div class="text-white">发布主题：{{ publish }}</div>
 											<div class="text-white">订阅主题：{{ subscribe }}</div>
@@ -291,8 +293,9 @@
 										<div class="text-white">{{ $t("COMMON.TOKEN") }}：</div>
 										<v-text-field label="token" v-model="token"></v-text-field>
 									</v-col>
-									<div class="text-white">提示：{{ $t("COMMON.PLACEHOLDER33") }}</div>
-									
+									<div class="text-white">
+										提示：{{ $t("COMMON.PLACEHOLDER33") }}
+									</div>
 								</v-row>
 							</v-container>
 						</v-card-text>
@@ -336,13 +339,44 @@
 												<v-text-field required v-model="item.field_from"></v-text-field>
 											</td>
 											<td>
-												<select class="optgroup form-control" v-model:field_to="item.field_to" @change="selectAtrrArr($event, i, item)">
+												<el-select
+												  v-model="item.field_to"
+												  @change="selectAtrrArr($event, i, item)"
+												  :popper-append-to-body="true"
+												  class="width-100"
+												>
+												<template  v-for="(v, m) in atrrarr">
+																			  <el-option
+																			    v-for="(s, g) in v.field"
+																			    :key="g"
+																			    :value="s.key"
+																			    :label="s.name"
+																			  ></el-option>
+												</template>
+												</el-select>
+												<!-- <el-select
+												  v-model="item.field_to"
+												  @change="selectAtrrArr($event, i, item)"
+												  :popper-append-to-body="true"
+												  class="width-100"
+												>
+													<el-option
+														v-for="(s, index) in atrrarr" 
+														:key="index"
+														:value="s.key"
+														:label="s.name"
+													></el-option>
+												</el-select> -->
+												
+												
+												<!-- <select class="optgroup form-control" v-model:field_to="item.field_to"
+													@change="selectAtrrArr($event, i, item)">
 													<optgroup v-for="v in atrrarr" :label="v.name">
 														<option v-for="s in v.field" :value="s.key">
 															{{ s.name }}
 														</option>
 													</optgroup>
-												</select>
+												</select> -->
 											</td>
 											<td>
 												<v-btn small :color="item.btncolor"
@@ -353,6 +387,9 @@
 								</table>
 							</v-container>
 						</v-card-text>
+						<div style="margin-left: 50px; color: #ffffff">
+							提示：{{ $t("COMMON.PLACEHOLDER34") }}
+						</div>
 						<v-card-actions>
 							<v-spacer></v-spacer>
 							<v-btn class="canclebtn" text @click="datadialog = false">{{
@@ -370,8 +407,9 @@
 </template>
 <style scoped>
 	.defmsg {
-		background: '#ffffff';
+		background: "#ffffff";
 	}
+
 	.table td {
 		vertical-align: middle;
 	}
@@ -413,7 +451,9 @@
 	import {
 		REFRESH
 	} from "@/core/services/store/auth.module";
-	import { dateFormat } from "../../../utils/tool.js";
+	import {
+		dateFormat
+	} from "../../../utils/tool.js";
 
 	export default {
 		data: () => ({
@@ -437,10 +477,12 @@
 			equid: "",
 			agreement: "mqtt",
 			agreementList: [{
-				name: "mqtt"
-			}, {
-				name: "tcp"
-			}],
+					name: "mqtt",
+				},
+				{
+					name: "tcp",
+				},
+			],
 			interface: "json",
 			token: "",
 			protocol: "",
@@ -481,41 +523,40 @@
 		},
 		methods: {
 			inDateFormat(timestamp) {
-				if (timestamp == '' || timestamp == null || timestamp == undefined || !timestamp) {
-					return '从未';
+				if (
+					timestamp == "" ||
+					timestamp == null ||
+					timestamp == undefined ||
+					!timestamp
+				) {
+					return "从未";
 				}
 
-				let curDate = new Date().getTime()/1000;
-				let str = '从未';
+				let curDate = new Date().getTime() / 1000;
+				let str = "从未";
 				if (curDate - timestamp < 60) {
-					str = '刚刚';
+					str = "刚刚";
+				} else if (curDate - timestamp < 60 * 2) {
+					str = "一分钟以前";
+				} else if (curDate - timestamp < 60 * 5) {
+					str = "五分钟以前";
+				} else if (curDate - timestamp < 60 * 10) {
+					str = "十分钟以前";
+				} else if (curDate - timestamp < 60 * 30) {
+					str = "半小时以前";
+				} else if (curDate - timestamp < 60 * 60) {
+					str = "一小时以前";
+				} else {
+					str = dateFormat(timestamp);
 				}
-				else if (curDate - timestamp < 60*2) {
-					str = '一分钟以前';
-				}
-				else if (curDate - timestamp < 60*5) {
-					str = '五分钟以前';
-				}
-				else if (curDate - timestamp < 60*10) {
-					str = '十分钟以前';
-				}
-				else if (curDate - timestamp < 60*30) {
-					str = '半小时以前';
-				}
-				else if (curDate - timestamp < 60*60) {
-					str = '一小时以前';
-				}
-				else {
-					str = dateFormat(timestamp)
-				}
-				
+
 				return str;
 			},
 			selectAtrrArr(e, i, item) {
-				let atrr = this.atrrarr[i]
-				item['symbol'] = atrr.field[e.target.options.selectedIndex]['symbol']
-				console.log(e)
-			}, 
+				// let a = this.atrrarr[i];
+				item["symbol"] = item["symbol"];
+				console.log(e);
+			},
 			addEl: function() {
 				let cope = {
 					id: 0,
@@ -561,7 +602,11 @@
 				this.lists[index]["device"].push(obj);
 			},
 			del: function(index, id, type, b) {
-				if (this.lists[index]["two"] && this.lists[index]["two"].length && type == 1) {
+				if (
+					this.lists[index]["two"] &&
+					this.lists[index]["two"].length &&
+					type == 1
+				) {
 					alert(this.$t("COMMON.TITLE5"));
 				} else {
 					var con = confirm(this.$t("COMMON.TITLE4"));
@@ -622,7 +667,10 @@
 				this.lists[index]["two"][i]["device"].push(obj);
 			},
 			del2: function(index, i, id, type, d) {
-				if (this.lists[index]["two"][i]["there"] && this.lists[index]["two"][i]["there"].length != 0) {
+				if (
+					this.lists[index]["two"][i]["there"] &&
+					this.lists[index]["two"][i]["there"].length != 0
+				) {
 					alert(this.$t("COMMON.TITLE6"));
 				} else {
 					var con = confirm(this.$t("COMMON.TITLE4"));
@@ -655,7 +703,6 @@
 									}
 								} else if (data.code == 401) {
 									this.$store.dispatch(REFRESH).then(() => {});
-									
 								} else {}
 							});
 						}
@@ -702,7 +749,6 @@
 								}
 							} else if (data.code == 401) {
 								this.$store.dispatch(REFRESH).then(() => {});
-								
 							} else {}
 						});
 					}
@@ -723,10 +769,8 @@
 								console.log(arr);
 								this.lists = arr;
 							}
-
 						} else {
 							this.$store.dispatch(REFRESH).then(() => {});
-							
 						}
 					})
 					.catch(({
@@ -748,14 +792,13 @@
 						var obj = {
 							id: "-1",
 							name: "无",
-							device: "无"
+							device: "无",
 						};
 						var arr = data.data;
 						arr.unshift(obj);
 						this.itemarr = arr;
 					} else if (data.code == 401) {
 						this.$store.dispatch(REFRESH).then(() => {});
-						
 					} else {}
 				});
 			},
@@ -775,7 +818,6 @@
 						});
 					} else if (data.code == 401) {
 						this.$store.dispatch(REFRESH).then(() => {});
-						
 					} else {}
 				});
 			},
@@ -809,7 +851,6 @@
 							_that.dialog = true;
 						} else if (data.code == 401) {
 							this.$store.dispatch(REFRESH).then(() => {});
-							
 						} else {}
 					});
 				} else {
@@ -843,7 +884,6 @@
 							this.lists[index]["device"][b]["state"] = "从未";
 						} else if (data.code == 401) {
 							this.$store.dispatch(REFRESH).then(() => {});
-							
 						} else {
 							alert(data.msg);
 						}
@@ -868,7 +908,6 @@
 							this.lists[index]["two"][i]["device"][d]["state"] = "从未";
 						} else if (data.code == 401) {
 							this.$store.dispatch(REFRESH).then(() => {});
-							
 						} else {
 							alert(data.msg);
 						}
@@ -895,7 +934,6 @@
 								"从未";
 						} else if (data.code == 401) {
 							this.$store.dispatch(REFRESH).then(() => {});
-							
 						} else {
 							alert(data.msg);
 						}
@@ -1096,7 +1134,6 @@
 						console.log(this.fieldarr);
 					} else if (data.code == 401) {
 						this.$store.dispatch(REFRESH).then(() => {});
-						
 					} else {}
 				});
 			},
@@ -1171,7 +1208,6 @@
 						this.datalist();
 					} else if (data.code == 401) {
 						this.$store.dispatch(REFRESH).then(() => {});
-						
 					} else {}
 				});
 			},
@@ -1215,10 +1251,7 @@
 								this.dialog = false;
 							} else if (data.code == 401) {
 								this.$store.dispatch(REFRESH).then(() => {});
-								
-							} else {
-
-							}
+							} else {}
 						});
 					} else {}
 				} else {

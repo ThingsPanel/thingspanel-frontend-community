@@ -195,12 +195,11 @@ export default {
         var timestamp = new Date(date).getTime();
         let d = new Date(timestamp);
 		let xdata = this.xdata;
-		xdata.push(d.getHours() + ":" + d.getMinutes());
+		xdata.push((d.getHours()<10?('0'+d.getHours()):d.getHours()) + ":" + (d.getMinutes()<10?('0'+d.getMinutes()):d.getMinutes()));
         this.xdata = xdata;
       }
 
       let pm10data = {};
-
       if (_this.id == "3") {
         pm10data = {
           type: "line",
@@ -226,26 +225,28 @@ export default {
           data: this.pm10datas,
         };
       }
-      let options10 = this.options10;
-      options10.xAxis = {
-          type: "category",
-          data: this.xdata,
-          axisLabel: {},
-          axisLine: {
-            lineStyle: {
-              color: "#cccccc",
-            },
-          },
-        };
-      options10.series[0] = pm10data;
-      this.options10 = options10;
-
-      _this.chart.clear();
-      _this.chart.setOption(_this.options10);
-
-      window.addEventListener("resize", () => {
-        _this.chart.resize();
-      });
+	  if (_this.id == '3' || _this.id == '5' == _this.id == '7') {
+		  let options10 = this.options10;
+		  options10.xAxis = {
+		      type: "category",
+		      data: this.xdata,
+		      axisLabel: {},
+		      axisLine: {
+		        lineStyle: {
+		          color: "#cccccc",
+		        },
+		      },
+		    };
+		  options10.series[0] = pm10data;
+		  this.options10 = options10;
+		  
+		  _this.chart.clear();
+		  _this.chart.setOption(_this.options10);
+		  
+		  window.addEventListener("resize", () => {
+		    _this.chart.resize();
+		  });
+	  }
     },
     handleChartClick(param) {
       console.log(param);

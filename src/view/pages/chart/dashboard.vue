@@ -78,6 +78,9 @@ export default {
     chart_id: {
       type: String,
     },
+	assest_id: {
+		type: String,
+	},
     proid: {
       type: String,
     },
@@ -129,13 +132,21 @@ export default {
       socketData: null,
     };
   },
+  watch: {
+    chart_id() {
+      this.getDashboard(this.chart_id, this.assest_id);
+    },
+	assest_id() {
+		this.getDashboard(this.chart_id, this.assest_id);
+	}
+  },
   components: {
     GridLayout,
     GridItem,
     Slice,
   },
   mounted() {
-    this.getDashboard(this.chart_id);
+    this.getDashboard(this.chart_id, this.assest_id);
 
     let _this = this;
     //start websocket
@@ -194,7 +205,7 @@ export default {
     /** *
      * Get dashboard modules
      */
-    async getDashboard(chart_id) {
+    async getDashboard(chart_id, assest_id) {
       this.setHeight();
       this.loading = true;
       this.layoutUpdating = true;
@@ -207,6 +218,7 @@ export default {
         console.log("获取dashboard数据");
         ApiService.post(AUTH.local_url + "/dashboard/dashboard", {
           chart_id: chart_id,
+		  asset_id: assest_id
         }).then(({ data }) => {
           console.log("获取总数据");
           console.log(data);

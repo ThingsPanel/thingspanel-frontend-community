@@ -8,6 +8,7 @@
   >
     <div
       class="container-fluid d-flex align-items-center justify-content-between"
+      style="padding: 0"
     >
       <!-- begin:: Header Menu -->
       <div
@@ -41,7 +42,7 @@ import KTLayoutHeaderMenu from "@/assets/js/layout/base/header-menu.js";
 export default {
   name: "KTHeader",
   components: {
-    KTTopbar
+    KTTopbar,
     // KTMenu
   },
   mounted() {
@@ -87,7 +88,7 @@ export default {
         return classes.join(" ");
       }
       return null;
-    }
-  }
+    },
+  },
 };
 </script>

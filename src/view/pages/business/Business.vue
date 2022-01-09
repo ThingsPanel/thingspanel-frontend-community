@@ -414,7 +414,23 @@
                         ></v-text-field>
                       </td>
                       <td>
-                        <select
+						  <el-select
+						    v-model="item.field_to"
+						    @change="selectAtrrArr($event, i, item)"
+						    :popper-append-to-body="true"
+						    class="optgroup form-control width-100"
+						  >
+						  <template  v-for="(v, m) in atrrarr">
+							  <el-option
+							    v-for="(s, g) in v.field"
+							    :key="g"
+							    :value="s.key"
+							    :label="s.name"
+							  ></el-option>
+						  </template>
+						  </el-select>
+						  
+                        <!-- <select
                           class="optgroup form-control"
                           v-model="item.field_to"
 						  @change="selectAtrrArr($event, i, item)"
@@ -424,7 +440,7 @@
                               {{ s.name }}
                             </option>
                           </optgroup>
-                        </select>
+                        </select> -->
                       </td>
                       <td>
                         <v-btn

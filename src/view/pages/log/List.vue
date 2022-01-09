@@ -8,12 +8,12 @@
       </h3> -->
       <div class="searchbox float-left">
         <div class="path-search">
-          <div class="title">{{ $t("COMMON.TITLE28") + ":" }}</div>
+          <div class="title font-size-h3">{{ $t("COMMON.TITLE28") + ":" }}</div>
           <el-input
             class="searchInput"
             type="text"
             value=""
-            :placeholder="$t('COMMON.PLACEHOLDER16')"
+            :placeholder="$t('COMMON.PLACEHOLDER31')"
             v-model="search_path"
           />
         </div>
@@ -23,12 +23,12 @@
             class="searchInput"
             type="text"
             value=""
-            :placeholder="$t('COMMON.PLACEHOLDER17')"
+            :placeholder="$t('COMMON.PLACEHOLDER32')"
             v-model="search_ip"
           />
         </div>
       </div>
-      <div class="datebox float-right mt-4 mr-4">
+      <div class="datebox float-right mt-4">
         <!-- 			<div class="wid-16 float-left">
 					<date-picker type="datetime" class="datepickers strdate" v-model="start_date" locale="zh-cn" format="YYYY/M/D HH:mm:ss"
 					 :locale-config="localeConfig" auto-submit></date-picker>
@@ -67,6 +67,9 @@
               </tr>
             </thead>
           </template>
+		  <template v-slot:item.board="{ item }">
+			  {{ $t(item.board) }}
+		  </template>
           <template v-slot:item.actions="{ item }">
             <v-btn color="primary" class="mr-4" small @click="clickItem(item)"
               >详情</v-btn
@@ -152,7 +155,7 @@ export default {
       length: 1,
       circle: false,
       disabled: false,
-      limit: 20,
+      limit: 10,
       page: 1,
       search_ip: "",
       search_path: "",
@@ -238,7 +241,7 @@ export default {
       month +
       "/" +
       date +
-      "T" +
+      " " +
       hour +
       ":" +
       minute +
@@ -250,7 +253,7 @@ export default {
       endmonth +
       "/" +
       enddate +
-      "T" +
+      " " +
       hour +
       ":" +
       minute +
@@ -280,25 +283,25 @@ export default {
               var item = data.data.data[i];
               var detailed = JSON.parse(item.detailed);
               var dict = {
-                1: "登录",
-                2: "首页",
-                3: "用户管理",
-                4: "客户管理",
-                5: "业务",
-                6: "设备",
-                7: "可视化",
-                8: "告警策略",
-                9: "控制策略",
-                10: "操作日志",
-                11: "图表",
+                1: "COMMON.LOG1",
+                2: "COMMON.LOG2",
+                3: "COMMON.LOG3",
+                4: "COMMON.LOG4",
+                5: "COMMON.LOG5",
+                6: "COMMON.LOG6",
+                7: "COMMON.LOG7",
+                8: "COMMON.LOG8",
+                9: "COMMON.LOG9",
+                10: "COMMON.LOG10",
+                11: "COMMON.LOG11",
               };
               mylist.push({
                 no: i + 1,
                 ip: detailed.ip,
                 path: detailed.path,
-                board: item.type != "" ? dict[item.type] : "仪表盘",
+                board: item.type != "" ? dict[item.type] : "Unknown",
                 time: dateFormat(item.created_at),
-                time_lang: 10,
+                time_lang: detailed.request_time + "ms",
                 users: detailed.name ? detailed.name : "未知用户",
               });
             }
@@ -306,12 +309,12 @@ export default {
             _that.list = mylist;
           } else {
             _that.tip = true;
+            _that.list = [];
           }
-          _that.length = data.data.total;
+          _that.length = parseInt(data.data.total / data.data.per_page);
           _that.page = data.data.current_page;
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
-          
         } else {
         }
       });

@@ -1,8 +1,8 @@
 <template>
   <!--begin::List Widget 9-->
-  <div class="card card-custom card-stretch gutter-b">
+  <div class="card card-custom card-stretch gutter-b mb-4">
     <!--begin::Header-->
-    <div class="card-header align-items-center border-0 mt-3 px-6">
+    <div class="card-header align-items-center border-0 mt-2 px-6">
       <h3 class="card-title align-items-start flex-column">
         <span class="font-weight-bolder text-dark">
           {{ $t("COMMON.QUICKGUIDE") }}
@@ -49,7 +49,7 @@ export default {
     return {};
   },
   computed: {
-    ...mapGetters(["layoutConfig"])
-  }
+    ...mapGetters(["layoutConfig"]),
+  },
 };
 </script>

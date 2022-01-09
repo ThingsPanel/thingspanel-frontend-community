@@ -37,22 +37,23 @@
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
-        <!--<router-link :to="{ path: 'alarmlist', query: { id: item.id }}"><v-btn color="primary" class="mr-4" small>{{ $t("COMMON.ALARMSTRATEGY") }}</v-btn></router-link>-->
-        <v-btn
-          color="primary"
-          class="mr-4"
-          small
-          @click="hitsclick(3, item.name, item.id, 'alarmlist')"
-          >{{ $t("COMMON.ALARMSTRATEGY") }}</v-btn
-        >
-        <!--<router-link :to="{ path: 'strlist', query: { id: item.id }}"><v-btn color="primary" class="mr-4" small>{{ $t("COMMON.CONTROLSTRATRGY") }}</v-btn></router-link>-->
-        <v-btn
-          color="primary"
-          class="mr-4"
-          small
-          @click="hitsclick(2, item.name, item.id, 'strlist')"
-          >{{ $t("COMMON.CONTROLSTRATRGY") }}</v-btn
-        >
+		  <div style="display: flex;flex-direction: row;">
+			  <v-btn
+			    color="primary"
+			    class="mr-4"
+			    small
+			    @click="hitsclick(3, item.name, item.id, 'alarmlist')"
+			    >{{ $t("COMMON.ALARMSTRATEGY") }}</v-btn
+			  >
+			  <v-btn
+			    color="primary"
+			    class="mr-4"
+			    small
+			    @click="hitsclick(2, item.name, item.id, 'strlist')"
+			    >{{ $t("COMMON.CONTROLSTRATRGY") }}</v-btn
+			  >
+		  </div>
+        
       </template>
     </v-data-table>
     <v-pagination

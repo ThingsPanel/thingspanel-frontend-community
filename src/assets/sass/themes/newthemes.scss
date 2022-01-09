@@ -21,6 +21,7 @@ body{
 }
 .aside-menu .menu-nav > .menu-item > .menu-heading .menu-text, .aside-menu .menu-nav > .menu-item > .menu-link .menu-text{
   color: #5B92FF !important;
+  margin-top: 2px;
 }
 .aside-menu .menu-nav > .menu-item.menu-item-active > .menu-heading .menu-text, .aside-menu .menu-nav > .menu-item.menu-item-active > .menu-link .menu-text{
   color: #fff !important;
@@ -185,7 +186,7 @@ input:not([disabled])[type='text']:not(.no-input),.timebox,input:not([disabled])
   transition: border-color 0.15s ease-in-out,box-shadow 0.15s ease-in-out;
   background-color: rgba(22,30,67,0.5) !important;
   border: 1px solid rgba(0,0,0,0.05) !important;
-  color: #fff !important;
+  color: #b3b7c1 !important;
 }
 .v-select__selections .v-select__selection{
   position: absolute;
@@ -227,7 +228,7 @@ input:not([disabled])[type='text']:not(.no-input),.timebox,input:not([disabled])
 table th, table td{
   border-top:1px solid rgba(91,146,255,0.15) !important;
   border-bottom: unset !important;
-  font-size: 14px !important;
+  font-size: 13px !important;
 }
 table tbody + tbody{
   border-top:2px solid rgba(91,146,255,0.15) !important;
@@ -271,14 +272,15 @@ table tbody + tbody{
 .vue-treeselect__menu{border-radius: 4px;}
 .charttree .vue-treeselect__menu{max-height: 150px !important;overflow: auto !important;font-size: 13px !important;}
 .strtreesel .vue-treeselect__menu div{font-size: 12px;padding: 5px 0;}
-.strtreesel .vue-treeselect__placeholder,.theme--light.v-label{color: #a8c5ff !important;}
-.v-label,.strtreesel .vue-treeselect__placeholder{font-size: 14px !important;}
-.vue-treeselect__single-value,.v-input{font-size: 14px !important;}
+.strtreesel .vue-treeselect__placeholder,.theme--light.v-label{color: #b3b7c1 !important;}
+.v-label,.strtreesel .vue-treeselect__placeholder{font-size: 13px !important;}
+.vue-treeselect__single-value,.v-input{font-size: 13px !important;}
 input[type=text]{font-size: 14px !important;}
 .v-menu__content{z-index: 1000;}
 .v-input--radio-group__input .v-radio .v-label{position: relative;top: 5px;left: 5px !important;}
 .v-text-field .v-label{line-height: 25px !important;}
 .custom-btn{color: #5B92FF;;background-color: transparent;border: 1px solid #5B92FF;padding: .375rem .75rem;border-radius: .25rem;display: inline-block}
+
 @media (min-width: 960px) {
   .container {
     max-width: 900px !important;

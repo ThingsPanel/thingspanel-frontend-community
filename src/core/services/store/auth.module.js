@@ -61,13 +61,13 @@ const actions = {
   [REFRESH](context) {
     ApiService.post(local_url + "/auth/refresh")
       .then(({ data }) => {
-        isShowTokenExp = false;
         if (data.code == 200) {
           JwtService.saveToken(data.data.access_token);
+		  ApiService.setHeader();
         } else {
           context.commit(PURGE_AUTH);
-          window.location.reload();
         }
+        window.location.reload();
       })
       .catch(({ response }) => {
         context.commit(PURGE_AUTH);
