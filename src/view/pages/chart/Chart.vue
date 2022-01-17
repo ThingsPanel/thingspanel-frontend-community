@@ -723,7 +723,7 @@ export default {
           console.log("资产编辑列表");
           console.log(data);
           if (data.code == 200) {
-            var arr = data.data[0].device;
+            var arr = data.data;
             _that.equlist = arr;
 			_that.entity_id = arr[0].id;
           } else {

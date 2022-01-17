@@ -414,7 +414,7 @@
                         ></v-text-field>
                       </td>
                       <td>
-						  <el-select
+                        <!-- <el-select
 						    v-model="item.field_to"
 						    @change="selectAtrrArr($event, i, item)"
 						    :popper-append-to-body="true"
@@ -428,19 +428,19 @@
 							    :label="s.name"
 							  ></el-option>
 						  </template>
-						  </el-select>
-						  
-                        <!-- <select
+						  </el-select> -->
+
+                        <select
                           class="optgroup form-control"
                           v-model="item.field_to"
-						  @change="selectAtrrArr($event, i, item)"
+                          @change="selectAtrrArr($event, i, item)"
                         >
                           <optgroup v-for="(v, m) in atrrarr" :label="v.name">
                             <option v-for="(s, g) in v.field" :value="s.key">
                               {{ s.name }}
                             </option>
                           </optgroup>
-                        </select> -->
+                        </select>
                       </td>
                       <td>
                         <v-btn
@@ -554,11 +554,11 @@ export default {
     this.sbdata();
   },
   methods: {
-	  selectAtrrArr(e, i, item) {
-	  	let atrr = this.atrrarr[i]
-	  	item['symbol'] = atrr.field[e.target.options.selectedIndex]['symbol']
-	  	console.log(e)
-	  }, 
+    selectAtrrArr(e, i, item) {
+      let atrr = this.atrrarr[i];
+      item["symbol"] = atrr.field[e.target.options.selectedIndex]["symbol"];
+      console.log(e);
+    },
     addEl: function () {
       let cope = {
         id: 0,
@@ -648,7 +648,6 @@ export default {
           this.fieldsj(this.items[1]["id"]);
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
-          
         } else {
           console.log(data);
         }
@@ -679,7 +678,6 @@ export default {
             this.dialog = true;
           } else if (data.code == 401) {
             this.$store.dispatch(REFRESH).then(() => {});
-            
           } else {
           }
         });
@@ -712,7 +710,6 @@ export default {
               this.lists[index]["device"][b]["state"] = "正常";
             } else if (data.code == 401) {
               this.$store.dispatch(REFRESH).then(() => {});
-              
             } else {
               alert(data.msg);
             }
@@ -736,7 +733,6 @@ export default {
               this.lists[index]["two"][i]["device"][d]["state"] = "正常";
             } else if (data.code == 401) {
               this.$store.dispatch(REFRESH).then(() => {});
-              
             } else {
               alert(data.msg);
             }
@@ -763,7 +759,6 @@ export default {
                 "正常";
             } else if (data.code == 401) {
               this.$store.dispatch(REFRESH).then(() => {});
-              
             } else {
               alert(data.msg);
             }
@@ -849,7 +844,6 @@ export default {
           console.log(this.fieldarr);
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
-          
         } else {
         }
       });
@@ -909,7 +903,6 @@ export default {
               this.dialog = false;
             } else if (data.code == 401) {
               this.$store.dispatch(REFRESH).then(() => {});
-              
             } else {
             }
           });
@@ -948,7 +941,6 @@ export default {
             this.$router.push({ name: "buslist" });
           } else if (data.code == 401) {
             this.$store.dispatch(REFRESH).then(() => {});
-            
           } else {
           }
         }

@@ -20,7 +20,7 @@
       <!-- :h.sync="item.h" -->
       <grid-item
         v-for="(item, index) in slices"
-        :key="item.slice_id"
+        :key="index"
         :x.sync="item.x"
         :y.sync="item.y"
         :w.sync="item.w"
@@ -42,6 +42,7 @@
           :colorEnd="colorEnd"
           :socketData="socketData"
         />
+        <!-- <component class="test-main" :is="compName"></component> -->
       </grid-item>
     </grid-layout>
     <!-- focus mode mask -->
@@ -60,6 +61,9 @@ import Utils from "@/utils/util.js";
 import websocket from "@/utils/websocket.js";
 import pako from "pako";
 import { Base64 } from "js-base64";
+import Vue from "vue";
+
+var _window;
 
 export default {
   name: "Dashboard",
@@ -78,9 +82,9 @@ export default {
     chart_id: {
       type: String,
     },
-	assest_id: {
-		type: String,
-	},
+    assest_id: {
+      type: String,
+    },
     proid: {
       type: String,
     },
@@ -128,17 +132,27 @@ export default {
        * https://github.com/yugasun/vue-grid-layout/blob/a7d39f28425cee6a6176388daea40e8c8d9c4826/src/GridLayout.vue#L206-L208
        */
       layoutUpdating: false,
-      slices: [{ x: 0, y: 0, h: 0, w: 0 }], // charts modules
+      slices: [
+        {
+          x: 0,
+          y: 0,
+          h: 0,
+          w: 0,
+        },
+      ], // charts modules
       socketData: null,
+      charts: [],
+      compName: "",
+	  plugins: [],
     };
   },
   watch: {
     chart_id() {
-      this.getDashboard(this.chart_id, this.assest_id);
+      this.loadCharts();
     },
-	assest_id() {
-		this.getDashboard(this.chart_id, this.assest_id);
-	}
+    assest_id() {
+      this.loadCharts();
+    },
   },
   components: {
     GridLayout,
@@ -146,7 +160,8 @@ export default {
     Slice,
   },
   mounted() {
-    this.getDashboard(this.chart_id, this.assest_id);
+	_window = window;
+    this.loadCharts();
 
     let _this = this;
     //start websocket
@@ -155,8 +170,7 @@ export default {
       console.log(evt);
       //解压数据
       try {
-        _this.socketData = new String(evt.data);
-        //_this.socketData = pako.inflateRaw(Base64.decode(evt.data), {to: 'string'});
+        _this.socketData = evt.data;
       } catch (err) {
         console.log(err);
       }
@@ -165,16 +179,45 @@ export default {
 
     console.log(window.screen.width);
     this.setHeight();
-    // var that = this;
-    /*Utils.$off('demo');
-            Utils.$on('demo', function (chart_id) {
-                _this.getDashboard(chart_id);
-            })*/
   },
   destroyed: function () {
     websocket.close();
   },
   methods: {
+    loadCharts() {
+      let _that = this;
+	  
+	  ApiService.post(AUTH.local_url + "/dashboard/pluginList", {
+	  }).then(({ data }) => {
+	    console.log("获取插件数据");
+	    console.log(data);
+	    if (data.code == 200) {
+	      _that.charts = data.data;
+		  _that.loadScripts();
+	    }
+	  });
+    },
+	loadScripts() {
+		let _that = this;
+		let chartCount = 0;
+		
+		for (let i = 0; i < this.charts.length; i++) {
+		  let chart = this.charts[i];
+		
+		  let script = document.createElement("script");
+		  script.type = "text/javascript";
+		  script.src = 'http://dev.thingspanel.cn' + chart.url;
+		  script.onload = () => {
+		    Vue.component(chart.component, _window[chart.chart_type].default);
+		
+		    chartCount += 1;
+		    if (_that.charts.length == chartCount) {
+		      _that.getDashboard(this.chart_id, this.assest_id);
+		    }
+		  };
+		  document.body.appendChild(script);
+		}
+	},
     // 动态设置响应式高度
     setHeight() {
       if (window.screen.width <= 768) {
@@ -196,7 +239,7 @@ export default {
     // create gradient background
     gridItemBackground(type, start, stop, bgcolor) {
       /*console.log(start);
-                console.log(bgcolor);*/
+				          console.log(bgcolor);*/
       return {
         background: `${bgcolor}`,
       };
@@ -218,19 +261,19 @@ export default {
         console.log("获取dashboard数据");
         ApiService.post(AUTH.local_url + "/dashboard/dashboard", {
           chart_id: chart_id,
-		  asset_id: assest_id
+          asset_id: assest_id,
         }).then(({ data }) => {
           console.log("获取总数据");
           console.log(data);
           if (data.code == 200) {
             for (var i = 0; i < data.data.length; i++) {
               /*data.data[i].aid = proid;
-                                    data.data[i].bid = busid;*/
+								                      data.data[i].bid = busid;*/
               data.data[i].startTs = new Date(this.start_time).getTime();
               data.data[i].endTs = new Date(this.end_time).getTime();
               data.data[i].latestTime = this.latest_time; //minutes
               data.data[i].w = Number(data.data[i].w);
-              data.data[i].h = Number(data.data[i].h); //data.data[i].h
+              data.data[i].h = Number(data.data[i].h);
             }
             _that.slices = data.data;
             console.log(_that.slices);
@@ -530,13 +573,16 @@ export default {
     width: 100% !important;
     left: 0 !important;
   }
+
   .chart-item.cssTransforms {
     position: relative !important;
     margin-bottom: 10px !important;
   }
+
   .slice-wrapper {
     height: unset !important;
   }
+
   .dashboard {
     margin-top: 30px;
   }

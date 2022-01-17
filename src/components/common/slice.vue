@@ -14,10 +14,10 @@
         item.title
       }}</span>
       <div class="right-buttons" v-show="isshowBtns">
-        <!-- <i
+        <i
           class="ml-2 fa flaticon-delete text-success pointer"
           @click="delpanel(item.id)"
-        ></i> -->
+        ></i>
         <i
           class="ml-2 fa fa-cog text-success pointer"
           @click="setupCon(item.id, item.title)"
