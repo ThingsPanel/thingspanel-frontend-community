@@ -13,6 +13,7 @@
           <tr>
             <th
               v-for="(header, h) in headers"
+              :key="h"
               class="text-white"
               :class="h == 3 ? 'text-center width-300' : ''"
             >
@@ -97,30 +98,29 @@
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
-		  <div style="display: flex;flex-direction: row;">
-			  <router-link
-			    v-if="item.is_device == 0"
-			    :to="{ path: 'business', query: { id: item.id } }"
-			    ><v-btn color="primary" class="mr-4" small>{{
-			      $t("COMMON.ADDASSETS")
-			    }}</v-btn></router-link
-			  >
-			  <v-btn
-			    v-if="item.is_device == 1"
-			    color="primary"
-			    class="mr-4"
-			    small
-			    @click="hitsclick(1, item.name, item.id)"
-			    >{{ $t("COMMON.EDITASSETS") }}</v-btn
-			  >
-			  <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
-			    $t("COMMON.EDITASSETSNAME")
-			  }}</v-btn>
-			  <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
-			    $t("COMMON.DELETE")
-			  }}</v-btn>
-		  </div>
-        
+        <div style="display: flex; flex-direction: row">
+          <router-link
+            v-if="item.is_device == 0"
+            :to="{ path: 'business', query: { id: item.id } }"
+            ><v-btn color="primary" class="mr-4" small>{{
+              $t("COMMON.ADDASSETS")
+            }}</v-btn></router-link
+          >
+          <v-btn
+            v-if="item.is_device == 1"
+            color="primary"
+            class="mr-4"
+            small
+            @click="hitsclick(1, item.name, item.id)"
+            >{{ $t("COMMON.EDITASSETS") }}</v-btn
+          >
+          <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
+            $t("COMMON.EDITASSETSNAME")
+          }}</v-btn>
+          <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
+            $t("COMMON.DELETE")
+          }}</v-btn>
+        </div>
       </template>
     </v-data-table>
     <v-pagination
@@ -269,18 +269,24 @@ export default {
             obg.no = i + 1;
             obg.id = data.data.data[i]["id"];
             obg.name = data.data.data[i]["name"];
-            obg.datetime = dateFormat(parseInt(data.data.data[i]["created_at"]));
+            obg.datetime = dateFormat(
+              parseInt(data.data.data[i]["created_at"])
+            );
             obg.is_device = data.data.data[i]["is_device"];
             console.log(obg);
             arr.push(obg);
           }
-          this.length = data.data.last_page;
+          // this.length = data.data.last_page;
+          this.length =
+            parseInt(data.data.total / data.data.per_page) > 0
+              ? parseInt(data.data.total / data.data.per_page)
+              : 1;
+          this.page = data.data.current_page;
+
           this.desserts = arr;
           console.log(arr);
         } else if (data.code == 401) {
-          this.$store
-            .dispatch(REFRESH)
-            .then(() => {});
+          this.$store.dispatch(REFRESH).then(() => {});
         } else {
         }
       });
@@ -302,14 +308,15 @@ export default {
           item.name +
           "”中包含资产和设备信息，无法删除，请先删除内部的资产和设备，再删除此业务"
       );
-      if(con == true){
-        ApiService.post(AUTH.local_url+"/business/delete",{id:id})
-        .then(({ data }) => {
-          console.log(data);
-          if (data.code == 200) {
-            this.ajaxdata();
+      if (con == true) {
+        ApiService.post(AUTH.local_url + "/business/delete", { id: id }).then(
+          ({ data }) => {
+            console.log(data);
+            if (data.code == 200) {
+              this.ajaxdata();
+            }
           }
-        });
+        );
       }
     },
 
@@ -352,8 +359,8 @@ export default {
         console.log(name);
         var val = this.$refs.form.validate();
         if (val == true) {
-		ApiService.post(AUTH.local_url + "/business/add", {
-		  name: name
+          ApiService.post(AUTH.local_url + "/business/add", {
+            name: name,
           }).then(({ data }) => {
             console.log(data);
             if (data.code == 200) {

@@ -37,23 +37,22 @@
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
-		  <div style="display: flex;flex-direction: row;">
-			  <v-btn
-			    color="primary"
-			    class="mr-4"
-			    small
-			    @click="hitsclick(3, item.name, item.id, 'alarmlist')"
-			    >{{ $t("COMMON.ALARMSTRATEGY") }}</v-btn
-			  >
-			  <v-btn
-			    color="primary"
-			    class="mr-4"
-			    small
-			    @click="hitsclick(2, item.name, item.id, 'strlist')"
-			    >{{ $t("COMMON.CONTROLSTRATRGY") }}</v-btn
-			  >
-		  </div>
-        
+        <div style="display: flex; flex-direction: row">
+          <v-btn
+            color="primary"
+            class="mr-4"
+            small
+            @click="hitsclick(3, item.name, item.id, 'alarmlist')"
+            >{{ $t("COMMON.ALARMSTRATEGY") }}</v-btn
+          >
+          <v-btn
+            color="primary"
+            class="mr-4"
+            small
+            @click="hitsclick(2, item.name, item.id, 'strlist')"
+            >{{ $t("COMMON.CONTROLSTRATRGY") }}</v-btn
+          >
+        </div>
       </template>
     </v-data-table>
     <v-pagination
@@ -192,12 +191,17 @@ export default {
             console.log(obg);
             arr.push(obg);
           }
-          this.length = data.data.last_page;
+          // this.length = data.data.last_page;
+          this.length =
+            parseInt(data.data.total / data.data.per_page) > 0
+              ? parseInt(data.data.total / data.data.per_page)
+              : 1;
+          this.page = data.data.current_page;
+
           this.desserts = arr;
           console.log(arr);
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
-          
         } else {
         }
       });

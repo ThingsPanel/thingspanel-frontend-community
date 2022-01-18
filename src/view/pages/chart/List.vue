@@ -79,24 +79,24 @@
                       required
                     ></v-text-field>
                     <div class="text-title">{{ $t("COMMON.BUSINESS") }}：</div>
- <!--                   <v-select
+                    <!--                   <v-select
                       :items="busitems"
                       item-value="id"
                       item-text="name"
                       v-model="editedItem.business_id"
                       class="vselect"
                     ></v-select> -->
-					<el-select
-					  v-model="editedItem.business_id"
-					  class="width-100 vselect"
-					>
-					  <el-option
-					    v-for="(t, index) in busitems"
-					    :key="index"
-					    :value="t.id"
-					    :label="t.name"
-					  ></el-option>
-					</el-select>
+                    <el-select
+                      v-model="editedItem.business_id"
+                      class="width-100 vselect"
+                    >
+                      <el-option
+                        v-for="(t, index) in busitems"
+                        :key="index"
+                        :value="t.id"
+                        :label="t.name"
+                      ></el-option>
+                    </el-select>
                   </v-container>
                 </v-card-text>
 
@@ -115,21 +115,21 @@
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
-		  <div style="display: flex;flex-direction: row;">
-			  <v-btn
-			    color="primary"
-			    class="mr-4"
-			    small
-			    @click="hitsclick(4, item.title, item.id, item.business_id)"
-			    >{{ $t("COMMON.VISUALIZATIONCHART") }}</v-btn
-			  >
-			  <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
-			    $t("COMMON.EDIT")
-			  }}</v-btn>
-			  <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
-			    $t("COMMON.DELETE")
-			  }}</v-btn>
-		  </div>
+        <div style="display: flex; flex-direction: row">
+          <v-btn
+            color="primary"
+            class="mr-4"
+            small
+            @click="hitsclick(4, item.title, item.id, item.business_id)"
+            >{{ $t("COMMON.VISUALIZATIONCHART") }}</v-btn
+          >
+          <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
+            $t("COMMON.EDIT")
+          }}</v-btn>
+          <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
+            $t("COMMON.DELETE")
+          }}</v-btn>
+        </div>
       </template>
     </v-data-table>
     <v-pagination
@@ -207,7 +207,7 @@ export default {
         align: "right",
         value: "actions",
         sortable: false,
-		width: '100%'
+        width: "100%",
       },
     ],
     desserts: [],
@@ -286,7 +286,12 @@ export default {
                     console.log(obg);
                     arr.push(obg);
                   }
-                  this.length = data.data.last_page;
+                  // this.length = data.data.last_page;
+                  this.length =
+                    parseInt(data.data.total / data.data.per_page) > 0
+                      ? parseInt(data.data.total / data.data.per_page)
+                      : 1;
+                  this.page = data.data.current_page;
                   this.desserts = arr;
                   console.log(arr);
                 } else if (data.code == 401) {

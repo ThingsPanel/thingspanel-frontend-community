@@ -377,6 +377,7 @@
                     <div class="box">
                       <v-row
                         v-for="(i, m) in instructionsarr"
+                        :key="m"
                         style="padding: 8px 4px"
                       >
                         <v-col cols="12" xs="12" md="2" class="col-py-0">
@@ -924,7 +925,12 @@ export default {
             }
           }
           this.desserts = data.data.data;
-          this.length = data.data.last_page;
+          // this.length = data.data.last_page;
+          this.length =
+            parseInt(data.data.total / data.data.per_page) > 0
+              ? parseInt(data.data.total / data.data.per_page)
+              : 1;
+          this.page = data.data.current_page;
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
         }

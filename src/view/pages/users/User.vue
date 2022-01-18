@@ -20,7 +20,7 @@
         <thead>
           <tr>
             <th
-              v-for="(header, h) in headers"
+              v-for="(header, h) in headers" :key="h"
               class="text-white"
               :class="h == 6 ? 'text-center width-300' : ''"
             >
