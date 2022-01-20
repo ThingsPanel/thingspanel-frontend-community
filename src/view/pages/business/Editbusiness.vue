@@ -20,8 +20,8 @@
                   <th>{{ $t("COMMON.NO") }}</th>
                   <th>{{ $t("COMMON.ASSETS") }}</th>
                   <th>{{ $t("COMMON.EQUIPMENT") }}</th>
-                  <th>{{ $t("COMMON.TITLE25") }}</th>
                   <th>{{ $t("COMMON.CODEMANAGE") }}</th>
+                  <th>{{ $t("COMMON.TITLE25") }}</th>
                   <th>{{ $t("COMMON.TITLE23") }}</th>
                   <th colspan="2">{{ $t("COMMON.TITLE24") }}</th>
                   <th>
@@ -39,6 +39,7 @@
                       required
                       v-model="list.name"
                       :label="$t('COMMON.PLACEHOLDER1')"
+                      @blur.prevent="asset_addonly(list, [index], '0', 1)"
                     >
                     </v-text-field>
                   </td>
@@ -65,20 +66,21 @@
                     ></i>
                   </td>
                 </tr>
-                <tr class="text-white" v-for="(a, b) in list.device">
+                <tr class="text-white" v-for="(a, b) in list.device" :key="b">
                   <td></td>
                   <td>
                     <v-text-field
                       required
                       v-model="a.name"
                       :label="$t('COMMON.PLACEHOLDER2')"
+                      @blur.prevent="device_updateonly(a)"
                     >
                     </v-text-field>
                   </td>
-                  <td class="text-white">
+                  <td>
                     <el-select
                       v-model="a.type"
-                      @change="changedash(a.type, index, b)"
+                      @change="changedash(a, [index], b)"
                       :popper-append-to-body="true"
                       class="width-100"
                     >
@@ -89,9 +91,10 @@
                         :label="t.device"
                       ></el-option>
                     </el-select>
-                    <!-- <v-select :items="itemarr" :label="$t('COMMON.PLACEHOLDER3')" item-value="id"
-											item-text="name" v-model="a.type" class="text-white" :disabled="false"
-											@change="changedash(a.type, index, b)"></v-select> -->
+                  </td>
+
+                  <td @click="equipment(a)" class="cursor">
+                    {{ a.dm }}
                   </td>
                   <td>
                     <span
@@ -100,9 +103,6 @@
                       >{{ $t("COMMON.MANAGE") }}</span
                     >
                   </td>
-                  <td @click="equipment(a)" class="cursor">
-                    {{ a.dm }}
-                  </td>
                   <td>
                     {{ inDateFormat(a.latesttime / 1000000) }}
                   </td>
@@ -110,6 +110,7 @@
                     <span
                       class="mr-2 custom-btn my-1"
                       v-for="(dash, num) in a.dash"
+                      :key="num"
                       >{{ dash.name }}</span
                     >
                   </td>
@@ -134,7 +135,6 @@
                       "
                       @click="del(index, a.id, 2, b)"
                     ></i>
-                    <!--									<v-btn small color="primary" @click="addequ(index)">添加设备</v-btn>-->
                   </td>
                 </tr>
                 <template v-for="(item, i) in list.two">
@@ -145,6 +145,9 @@
                         required
                         v-model="item.name"
                         :label="$t('COMMON.PLACEHOLDER1')"
+                        @blur.prevent="
+                          asset_addonly(item, [index, i], list.id, 2)
+                        "
                       ></v-text-field>
                     </td>
                     <td>
@@ -177,26 +180,27 @@
                         required
                         v-model="c.name"
                         :label="$t('COMMON.PLACEHOLDER2')"
+                        @blur.prevent="device_updateonly(c)"
                       >
                       </v-text-field>
                     </td>
                     <td>
-                      <!-- <v-select :items="itemarr" :label="$t('COMMON.PLACEHOLDER3')"
-												item-value="id" item-text="name" v-model="c.type" :disabled="c.disabled"
-												@change="changedash1(c.type, index, i, d)"></v-select> -->
                       <el-select
                         v-model="c.type"
-                        @change="changedash1(c.type, index, i, d)"
+                        @change="changedash(c, [index, i], d)"
                         :popper-append-to-body="true"
                         class="width-100"
                       >
                         <el-option
                           v-for="(t, index) in itemarr"
                           :key="'3-' + index"
-                          :value="t.device"
+                          :value="t.name"
                           :label="t.device"
                         ></el-option>
                       </el-select>
+                    </td>
+                    <td @click="equipment(c)" class="cursor">
+                      {{ c.dm }}
                     </td>
                     <td>
                       <span
@@ -205,9 +209,7 @@
                         >{{ $t("COMMON.MANAGE") }}</span
                       >
                     </td>
-                    <td @click="equipment(c)" class="cursor">
-                      {{ c.dm }}
-                    </td>
+
                     <td>
                       {{ c.state }}
                     </td>
@@ -215,6 +217,7 @@
                       <span
                         class="mr-2 custom-btn my-1"
                         v-for="(da, nu) in c.dash"
+                        :key="nu"
                         >{{ da.name }}</span
                       >
                     </td>
@@ -250,6 +253,9 @@
                           required
                           v-model="v.name"
                           :label="$t('COMMON.PLACEHOLDER1')"
+                          @blur.prevent="
+                            asset_addonly(v, [index, i, m], item.id, 3)
+                          "
                         ></v-text-field>
                       </td>
                       <td>
@@ -265,32 +271,33 @@
                         ></i>
                       </td>
                     </tr>
-                    <tr class="text-white" v-for="(e, f) in v.device">
+                    <tr class="text-white" v-for="(e, f) in v.device" :key="f">
                       <td></td>
                       <td>
                         <v-text-field
                           required
                           v-model="e.name"
                           :label="$t('COMMON.PLACEHOLDER2')"
+                          @blur.prevent="device_updateonly(e)"
                         ></v-text-field>
                       </td>
                       <td>
                         <el-select
                           v-model="e.type"
-                          @change="changedash2(e.type, index, i, m, f)"
+                          @change="changedash(e, [index, i, m], f)"
                           :popper-append-to-body="true"
                           class="width-100"
                         >
                           <el-option
                             v-for="(t, index) in itemarr"
                             :key="'4-' + index"
-                            :value="t.device"
+                            :value="t.name"
                             :label="t.device"
                           ></el-option>
                         </el-select>
-                        <!-- 		<v-select :items="itemarr" label="" item-value="id" item-text="name"
-													v-model="e.type" :disabled="e.disabled"
-													@change="changedash2(e.type, index, i, m, f)"></v-select> -->
+                      </td>
+                      <td @click="equipment(e)" class="cursor">
+                        {{ e.dm }}
                       </td>
                       <td>
                         <span
@@ -299,9 +306,7 @@
                           >{{ $t("COMMON.MANAGE") }}</span
                         >
                       </td>
-                      <td @click="equipment(e)" class="cursor">
-                        {{ e.dm }}
-                      </td>
+
                       <td>
                         {{ e.state }}
                       </td>
@@ -309,6 +314,7 @@
                         <span
                           class="mr-2 custom-btn my-1"
                           v-for="(d, n) in e.dash"
+                          :key="n"
                           >{{ d.name }}</span
                         >
                       </td>
@@ -341,9 +347,9 @@
               </tbody>
             </table>
           </div>
-          <v-btn small color="primary mb-4" @click="onSubmit">{{
+          <!-- <v-btn small color="primary mb-4" @click="onSubmit">{{
             $t("COMMON.SAVE")
-          }}</v-btn>
+          }}</v-btn> -->
         </div>
       </div>
     </v-form>
@@ -398,6 +404,7 @@
                       <div class="text-white">密码：{{ password }}</div>
                     </div>
                   </v-col>
+
                   <v-col cols="12" class="col-px-0">
                     <div class="text-white">
                       {{ $t("COMMON.INTERFACETYPE") }}：
@@ -433,7 +440,7 @@
     </v-row>
     <!-- 数据结构模态框 -->
     <v-row justify="center">
-      <v-form ref="form" lazy-validation @submit.stop.prevent="onDataSubmit">
+      <v-form ref="form" lazy-validation>
         <v-dialog v-model="datadialog" max-width="800">
           <v-card class="card">
             <v-card-title>
@@ -452,36 +459,31 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(item, i) in fieldarr">
+                    <tr v-for="(item, i) in fieldarr" :key="i">
                       <td>
                         <v-text-field
                           required
                           v-model="item.field_from"
+                          @blur.prevent="field_updateonly(item, i)"
                         ></v-text-field>
                       </td>
                       <td>
-                        <!-- <el-select
-                          v-model="item.field_to"
-                          @change="selectAtrrArr($event, i, item)"
-                          :popper-append-to-body="true"
-                          class="optgroup form-control width-100"
-                        >
-                          <template v-for="(v, m) in atrrarr">
-                            <el-option
-                              v-for="(s, g) in v.field"
-                              :key="'7-' + m + g"
-                              :value="s.key"
-                              :label="s.name"
-                            ></el-option>
-                          </template>
-                        </el-select> -->
                         <select
                           class="optgroup form-control"
                           v-model="item.field_to"
-                          
+                          @change="field_updateonly(item, i)"
                         >
-                          <optgroup v-for="(v, m) in atrrarr" :label="v.name">
-                            <option v-for="(s, g) in v.field" :value="s.key" @click="selectAtrrArr($event, m, g, item)">
+                          <optgroup
+                            v-for="(v, m) in atrrarr"
+                            :label="v.name"
+                            :key="m"
+                          >
+                            <option
+                              v-for="(s, g) in v.field"
+                              :key="g"
+                              :value="s.key"
+                              @click="selectAtrrArr($event, m, g, item)"
+                            >
                               {{ s.name }}
                             </option>
                           </optgroup>
@@ -508,7 +510,7 @@
               <v-btn class="canclebtn" text @click="datadialog = false">{{
                 $t("COMMON.CLOSE")
               }}</v-btn>
-              <v-btn class="confbtn" text @click="onDataSubmit">{{
+              <v-btn class="confbtn" text @click="onDataSubmit(fieldarr)">{{
                 $t("COMMON.CONFIRM")
               }}</v-btn>
             </v-card-actions>
@@ -574,7 +576,7 @@ export default {
         device: [
           {
             type: "",
-            dm: "代码",
+            dm: "参数",
             stat: "从未",
             mapping: [],
           },
@@ -685,7 +687,7 @@ export default {
         device: [
           {
             type: "",
-            dm: "代码",
+            dm: "参数",
             state: "从未",
             mapping: [],
           },
@@ -703,7 +705,7 @@ export default {
         device: [
           {
             type: "",
-            dm: "代码",
+            dm: "参数",
             state: "从未",
             mapping: [],
           },
@@ -719,7 +721,7 @@ export default {
     addequ: function (index) {
       var obj = {
         type: "",
-        dm: "代码",
+        dm: "参数",
         state: "从未",
         mapping: [],
       };
@@ -775,7 +777,7 @@ export default {
         device: [
           {
             type: "",
-            dm: "代码",
+            dm: "参数",
             state: "从未",
           },
         ],
@@ -785,7 +787,7 @@ export default {
     addequ2: function (index, i) {
       var obj = {
         type: "",
-        dm: "代码",
+        dm: "参数",
         state: "从未",
         mapping: [],
       };
@@ -837,7 +839,7 @@ export default {
       console.log(this.lists);
       var obj = {
         type: "",
-        dm: "代码",
+        dm: "参数",
         state: "从未",
         mapping: [],
       };
@@ -877,6 +879,129 @@ export default {
         }
       }
     },
+
+    asset_addonly: function (list, index, parent_id, tier) {
+      //新增资产
+      if (!list["id"]) {
+        ApiService.post(AUTH.local_url + "/asset/add_only", {
+          name: list.name,
+          business_id: list.business_id,
+          tier: tier,
+          parent_id: parent_id,
+        }).then(({ data }) => {
+          if (data.code === 200) {
+            let id = data.data.id;
+
+            //添加空设备
+            this.device_addonly(id).then((device_id) => {
+              switch (index.length) {
+                case 1:
+                  this.lists[index[0]].id = id;
+                  this.lists[index[0]].device[0].id = device_id;
+                  break;
+                case 2:
+                  this.lists[index[0]].two[index[1]].id = id;
+                  this.lists[index[0]].two[index[1]].device[0].id = device_id;
+                  break;
+                case 3:
+                  this.lists[index[0]].two[index[1]].three[index[3]].id = id;
+                  this.lists[index[0]].two[index[1]].three[
+                    index[3]
+                  ].device[0].id = device_id;
+                  break;
+              }
+            });
+            console.log("--this.lists---", this.lists);
+          }
+        });
+      } else {
+        //修改资产名称
+        ApiService.post(AUTH.local_url + "/asset/update_only", {
+          id: list.id,
+          name: list.name,
+          business_id: list.business_id,
+          tier: tier,
+          parent_id: parent_id,
+        });
+      }
+    },
+    device_addonly: async function (asset_id) {
+      return await ApiService.post(AUTH.local_url + "/device/add_only", {
+        asset_id: asset_id,
+        token: "",
+        type: "",
+        name: "",
+        extension: "",
+        protocol: "",
+      }).then(({ data }) => {
+        if (data.code === 200) {
+          return data.data.id;
+        }
+      });
+    },
+
+    device_updateonly: function (device) {
+      ApiService.post(AUTH.local_url + "/device/update_only", {
+        id: device.id,
+        name: device.name,
+        type: device.type,
+        protocol: device.protocol,
+      });
+    },
+
+    //字段添加
+    field_updateonly: function (filed, i) {
+      return;
+
+      console.log("--i----", i);
+
+      let deviceId = "";
+      if (this.level == 1) {
+        deviceId = this.lists[this.index1]["device"][this.b1].id;
+      } else if (this.level == 2) {
+        deviceId =
+          this.lists[this.index1]["two"][this.i1]["device"][this.d1].id;
+      } else {
+        deviceId =
+          this.lists[this.index1]["two"][this.i1]["there"][this.m1]["device"][
+            this.f1
+          ].id;
+      }
+
+      let sData = {
+        field_from: filed.field_from,
+        field_to: filed.field_to,
+        device_id: deviceId,
+      };
+
+      if (!filed["id"]) {
+        ApiService.post(AUTH.local_url + "/field/add_only", sData).then(
+          ({ data }) => {
+            if (data.code === 200) {
+              if (data.data["id"]) {
+                if (this.level == 1) {
+                  this.lists[this.index1]["device"][this.b1]["mapping"][i].id =
+                    data.data["id"];
+                } else if (this.level == 2) {
+                  this.lists[this.index1]["two"][this.i1]["device"][this.d1][
+                    "mapping"
+                  ][i].id = data.data["id"];
+                } else {
+                  this.lists[this.index1]["two"][this.i1]["there"][this.m1][
+                    "device"
+                  ][this.f1]["mapping"][i].id = data.data["id"];
+                }
+              }
+              // return data.data.id;
+              // this.datalist(); //重新加载全部数据
+            }
+          }
+        );
+      } else {
+        ApiService.post(AUTH.local_url + "/field/update_only", sData);
+      }
+    },
+
     datalist: function () {
       ApiService.post(AUTH.local_url + "/asset/list", {
         business_id: this.business_id,
@@ -903,8 +1028,6 @@ export default {
     },
     sbdata: function () {
       ApiService.post(AUTH.local_url + "/asset/index").then(({ data }) => {
-        console.log("设备列表");
-        console.log(data);
         if (data.code == 200) {
           var obj = {
             id: "-1",
@@ -943,6 +1066,8 @@ export default {
       console.log(item);
       this.equname = item.name;
       this.equid = item.id;
+      console.log("item", item);
+
       if (this.equid) {
         ApiService.post(AUTH.local_url + "/index/show", {
           did: this.equid,
@@ -970,6 +1095,7 @@ export default {
           }
         });
       } else {
+        //先进行保存，然后获取TOKEN
         this.dialog = true;
       }
     },
@@ -982,66 +1108,66 @@ export default {
     },
     // 编辑一级菜单设备更新组件
     changedash: function (e, index, b) {
-      if (e == -1) {
-        this.lists[index]["device"][b]["dash"] = "";
-        this.lists[index]["device"][b]["dm"] = "";
-        this.lists[index]["device"][b]["state"] = "";
-      } else {
-        ApiService.post(AUTH.local_url + "/asset/widget", {
-          id: e,
-        }).then(({ data }) => {
-          console.log("获取组件内容");
-          console.log(data);
-          if (data.code == 200) {
-            this.lists[index]["device"][b]["dash"] = data.data;
-            this.lists[index]["device"][b]["dm"] = "代码";
-            this.lists[index]["device"][b]["state"] = "从未";
-          } else if (data.code == 401) {
-            this.$store.dispatch(REFRESH).then(() => {});
-          } else {
-            alert(data.msg);
-          }
-        });
-      }
-    },
-    // 编辑一级菜单设备更新组件
-    changedash1: function (e, index, i, d) {
-      if (e == -1) {
-        this.lists[index]["two"][i]["device"][d]["dash"] = "";
-        this.lists[index]["two"][i]["device"][d]["dm"] = "";
-        this.lists[index]["two"][i]["device"][d]["state"] = "";
-      } else {
-        ApiService.post(AUTH.local_url + "/asset/widget", {
-          id: e,
-        }).then(({ data }) => {
-          if (data.code == 200) {
-            this.lists[index]["two"][i]["device"][d]["dash"] = data.data;
-            this.lists[index]["two"][i]["device"][d]["dm"] = "代码";
-            this.lists[index]["two"][i]["device"][d]["state"] = "从未";
-          } else if (data.code == 401) {
-            this.$store.dispatch(REFRESH).then(() => {});
-          } else {
-            alert(data.msg);
-          }
-        });
-      }
-    },
-    // 编辑三级菜单设备更新组件
-    changedash2: function (e, index, i, m, f) {
-      if (e == -1) {
-        this.lists[index]["two"][i]["there"][m]["device"][f]["dash"] = "";
-        this.lists[index]["two"][i]["there"][m]["device"][f]["dm"] = "";
-        this.lists[index]["two"][i]["there"][m]["device"][f]["state"] = "";
+      this.device_updateonly(e); //更新设备信息
+      if (e.type == -1) {
+        switch (index.length) {
+          case 1:
+            this.lists[index[0]]["device"][b]["dash"] = "";
+            this.lists[index[0]]["device"][b]["dm"] = "";
+            this.lists[index[0]]["device"][b]["state"] = "";
+            break;
+          case 2:
+            this.lists[index[0]]["two"][index[1]]["device"][b]["dash"] = "";
+            this.lists[index[0]]["two"][index[1]]["device"][b]["dm"] = "";
+            this.lists[index[0]]["two"][index[1]]["device"][b]["state"] = "";
+            break;
+          case 3:
+            this.lists[index[0]]["two"][index[1]]["there"][index[2]]["device"][
+              b
+            ]["dash"] = "";
+            this.lists[index[0]]["two"][index[1]]["there"][index[2]]["device"][
+              b
+            ]["dm"] = "";
+            this.lists[index[0]]["two"][index[1]]["there"][index[2]]["device"][
+              b
+            ]["state"] = "";
+            break;
+        }
       } else {
         ApiService.post(AUTH.local_url + "/asset/widget", {
           id: e,
         }).then(({ data }) => {
           if (data.code == 200) {
-            this.lists[index]["two"][i]["there"][m]["device"][f]["dash"] =
-              data.data;
-            this.lists[index]["two"][i]["there"][m]["device"][f]["dm"] = "代码";
-            this.lists[index]["two"][i]["there"][m]["device"][f]["state"] =
-              "从未";
+            switch (index.length) {
+              case 1:
+                this.lists[index[0]]["device"][b]["dash"] = data.data;
+                this.lists[index[0]]["device"][b]["dm"] = "参数";
+                this.lists[index[0]]["device"][b]["state"] = "从未";
+                break;
+              case 2:
+                this.lists[index[0]]["two"][index[1]]["device"][b]["dash"] =
+                  data.data;
+                this.lists[index[0]]["two"][index[1]]["device"][b]["dm"] =
+                  "参数";
+                this.lists[index[0]]["two"][index[1]]["device"][b]["state"] =
+                  "从未";
+                break;
+              case 3:
+                this.lists[index[0]]["two"][index[1]]["there"][index[2]][
+                  "device"
+                ][b]["dash"] = data.data;
+                this.lists[index[0]]["two"][index[1]]["there"][index[2]][
+                  "device"
+                ][b]["dm"] = "参数";
+                this.lists[index[0]]["two"][index[1]]["there"][index[2]][
+                  "device"
+                ][b]["state"] = "从未";
+                break;
+            }
+
+            // this.lists[index]["device"][b]["dash"] = data.data;
+            // this.lists[index]["device"][b]["dm"] = "参数";
+            // this.lists[index]["device"][b]["state"] = "从未";
           } else if (data.code == 401) {
             this.$store.dispatch(REFRESH).then(() => {});
           } else {
@@ -1054,22 +1180,6 @@ export default {
     // 一级目录管理
     dataadmin: function (name, type, index, b, level) {
       console.log(this.lists[index]["device"][b]);
-      // if (this.lists[index]["device"][b]["disabled"] == true) {
-      //   // 编辑
-      //   console.log(this.lists[index]["device"][b]["mapping"].length);
-
-      // } else {
-      //   // 新增
-      //   this.fieldarr = [
-      //     {
-      //       field_from: "",
-      //       field_to: "",
-      //       btnname: "新增",
-      //       btncolor: "primary",
-      //       btnevent: "add",
-      //     },
-      //   ];
-      // }
       if (this.lists[index]["device"][b]["mapping"].length > 0) {
         for (
           var p = 0;
@@ -1110,22 +1220,6 @@ export default {
 
     // 二级目录管理
     dataadmin2: function (name, type, index, i, d, level) {
-      // if (this.lists[index]["two"][i]["device"][d]["disabled"] == true) {
-      //   // 编辑
-
-      // } else {
-      //   // 新增
-      //   this.fieldarr = [
-      //     {
-      //       field_from: "",
-      //       field_to: "",
-      //       btnname: "新增",
-      //       btncolor: "primary",
-      //       btnevent: "add"
-      //     }
-      //   ];
-      // }
-
       if (this.lists[index]["two"][i]["device"][d]["mapping"].length > 0) {
         for (
           var p = 0;
@@ -1275,10 +1369,6 @@ export default {
         var con = confirm("确定要删除该数据吗？");
         if (con == true) {
           if (this.level == 1) {
-            // 一级目录
-            console.log(
-              this.lists[this.index1]["device"][this.b1]["mapping"][i]["id"]
-            );
             if (
               this.lists[this.index1]["device"][this.b1]["mapping"][i]["id"] !==
               undefined
@@ -1288,7 +1378,6 @@ export default {
               );
             }
           } else if (this.level == 2) {
-            // 二级目录
             if (
               this.lists[this.index1]["two"][this.i1]["device"][this.d1][
                 "mapping"
@@ -1301,7 +1390,6 @@ export default {
               );
             }
           } else {
-            // 三级目录
             if (
               this.lists[this.index1]["two"][this.i1]["there"][this.m1][
                 "device"
@@ -1334,23 +1422,59 @@ export default {
       });
     },
     // 数据结构管理
-    onDataSubmit: function () {
+    onDataSubmit: function (fieldarr) {
+      console.log("---fieldarr---", fieldarr);
+
+      let deviceId = "";
+      let sData = [];
       if (this.level == 1) {
-        // 一级目录
-        this.lists[this.index1]["device"][this.b1]["mapping"] = this.fieldarr;
+        deviceId = this.lists[this.index1]["device"][this.b1].id;
       } else if (this.level == 2) {
-        // 二级目录
-        this.lists[this.index1]["two"][this.i1]["device"][this.d1]["mapping"] =
-          this.fieldarr;
+        deviceId =
+          this.lists[this.index1]["two"][this.i1]["device"][this.d1].id;
       } else {
-        // 三级目录
-        this.lists[this.index1]["two"][this.i1]["there"][this.m1]["device"][
-          this.f1
-        ]["mapping"] = this.fieldarr;
+        deviceId =
+          this.lists[this.index1]["two"][this.i1]["there"][this.m1]["device"][
+            this.f1
+          ].id;
       }
+
+      for (let i = 0; i < fieldarr.length; i++) {
+        let sDataTemp = {
+          field_from: fieldarr[i].field_from,
+          field_to: fieldarr[i].field_to,
+          device_id: deviceId,
+        };
+
+        if (fieldarr[i]["id"]) {
+          sDataTemp["id"] = fieldarr[i]["id"];
+        }
+        sData.push(sDataTemp);
+      }
+
+      ApiService.post(AUTH.local_url + "/field/add_only", {
+        data: sData,
+      }).then(({ data }) => {
+        if (data.code == 200) {
+          for (let ii = 0; ii < data.data.length; ii++) {
+            if (this.level == 1) {
+              this.lists[this.index1]["device"][this.b1]["mapping"][ii]["id"] =
+                data.data[ii].id;
+            } else if (this.level == 2) {
+              this.lists[this.index1]["two"][this.i1]["device"][this.d1][
+                "mapping"
+              ][ii]["id"] = data.data[ii].id;
+            } else {
+              this.lists[this.index1]["two"][this.i1]["there"][this.m1][
+                "device"
+              ][this.f1]["mapping"][ii].id = data.data[ii]["id"];
+            }
+          }
+        }
+      });
       this.datadialog = false;
     },
-    // 编辑代码模态框
+    // 编辑参数模态框
     editEqSubmit: function () {
       if (this.equid) {
         var con = confirm(this.$t("COMMON.TEXT44"));
@@ -1362,8 +1486,6 @@ export default {
             token: this.token,
             protocol: this.protocol,
           }).then(({ data }) => {
-            console.log("获取设备tooken");
-            console.log(data);
             if (data.code == 200) {
               this.dialog = false;
               this.sbdata();
