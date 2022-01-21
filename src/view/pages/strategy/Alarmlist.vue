@@ -410,7 +410,7 @@ export default {
     disabled: false,
     /*nextIcon: "navigate_next",
             prevIcon: "navigate_before",*/
-    limit: 6,
+    limit: 10,
     page: 1,
     valid: true,
     dialog: false,
@@ -566,8 +566,8 @@ export default {
     ajaxListData() {
       ApiService.post(AUTH.local_url + "/warning/show", {
         wid: this.business_id,
-        page: 1,
-        limit: 10,
+        page: this.page,
+        limit: this.limit,
       }).then(({ data }) => {
         console.log("告警列表");
         console.log(data);

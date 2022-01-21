@@ -682,7 +682,7 @@ export default {
     disabled: false,
     /*nextIcon: "navigate_next",
             prevIcon: "navigate_before",*/
-    limit: 6,
+    limit: 10,
     page: 1,
     valid: true,
     dialog: false,
@@ -903,8 +903,8 @@ export default {
     ajaxListData() {
       ApiService.post(AUTH.local_url + "/automation/index", {
         business_id: this.business_id,
-        page: 1,
-        limit: 10,
+        page: this.page,
+        limit: this.limit,
       }).then(({ data }) => {
         /*console.log('自动化列表');
                         console.log(data);*/

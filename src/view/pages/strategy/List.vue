@@ -107,7 +107,7 @@ export default {
             nextIcons: ["mdi-chevron-right", "mdi-arrow-right", "mdi-menu-right"],
             prevIcon: "navigate_before",
             prevIcons: ["mdi-chevron-left", "mdi-arrow-left", "mdi-menu-left"],*/
-    limit: 6,
+    limit: 10,
     page: 1,
     valid: true,
     dialog: false,
@@ -175,7 +175,8 @@ export default {
     ajaxdata() {
       ApiService.post(AUTH.local_url + "/asset/work_index", {
         work_name: "",
-        page: 1,
+        page: this.page,
+        limit: this.limit
       }).then(({ data }) => {
         console.log("业务列表");
         console.log(data);

@@ -186,7 +186,7 @@ export default {
     nextIcons: ["mdi-chevron-right", "mdi-arrow-right", "mdi-menu-right"],
     prevIcon: "navigate_before",
     prevIcons: ["mdi-chevron-left", "mdi-arrow-left", "mdi-menu-left"],
-    limit: 6,
+    limit: 10,
     page: 1,
     valid: true,
     dialog: false,
@@ -259,7 +259,7 @@ export default {
             },*/
 
     ajaxdata() {
-      ApiService.post(AUTH.local_url + "/dashboard/index", { page: 1 }).then(
+      ApiService.post(AUTH.local_url + "/dashboard/index", { page: this.page, limit: this.limit }).then(
         ({ data }) => {
           console.log("列表");
           console.log(data);
