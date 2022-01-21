@@ -579,6 +579,7 @@ export default {
             dm: "参数",
             stat: "从未",
             mapping: [],
+            dash:[],
           },
         ],
         two: [],
@@ -690,6 +691,7 @@ export default {
             dm: "参数",
             state: "从未",
             mapping: [],
+            dash:[],
           },
         ],
         two: [],
@@ -708,6 +710,7 @@ export default {
             dm: "参数",
             state: "从未",
             mapping: [],
+            dash:[],
           },
         ],
         there: [],
@@ -724,7 +727,14 @@ export default {
         dm: "参数",
         state: "从未",
         mapping: [],
+        dash:[],
+        id: "",
       };
+
+      let id = this.lists[index].id;
+      this.device_addonly(id).then((device_id) => {
+        obj.id = device_id;
+      });
       this.lists[index]["device"].push(obj);
     },
     del: function (index, id, type, b) {
@@ -779,6 +789,7 @@ export default {
             type: "",
             dm: "参数",
             state: "从未",
+            dash:[],
           },
         ],
       };
@@ -790,7 +801,14 @@ export default {
         dm: "参数",
         state: "从未",
         mapping: [],
+        dash:[],
+        id: "",
       };
+
+      let id = this.lists[index]["two"][i].id;
+      this.device_addonly(id).then((device_id) => {
+        obj.id = device_id;
+      });
       this.lists[index]["two"][i]["device"].push(obj);
     },
     del2: function (index, i, id, type, d) {
@@ -842,7 +860,14 @@ export default {
         dm: "参数",
         state: "从未",
         mapping: [],
+        dash:[],
+        id: "",
       };
+
+      let id = this.lists[index]["two"][i]["there"][f].id;
+      this.device_addonly(id).then((device_id) => {
+        obj.id = device_id;
+      });
       this.lists[index]["two"][i]["there"][f]["device"].push(obj);
     },
     del3: function (index, i, v, m, id, type, f) {
@@ -940,12 +965,32 @@ export default {
       });
     },
 
-    device_updateonly: function (device) {
+    device_updateonly: function (device, dashinfo = null) {
       ApiService.post(AUTH.local_url + "/device/update_only", {
         id: device.id,
         name: device.name,
         type: device.type,
         protocol: device.protocol,
+      }).then(({ data }) => {
+        if (dashinfo.length > 0) {
+          let index = dashinfo[0];
+          let b = dashinfo[1];
+
+          switch (index.length) {
+            case 1:
+              this.lists[index[0]]["device"][b]["dash"] = data.data.dash;
+              break;
+            case 2:
+              this.lists[index[0]]["two"][index[1]]["device"][b]["dash"] =
+                data.data.dash;
+              break;
+            case 3:
+              this.lists[index[0]]["two"][index[1]]["there"][index[2]][
+                "device"
+              ][b]["dash"] = data.data.dash;
+              break;
+          }
+        }
       });
     },
 
@@ -1108,7 +1153,7 @@ export default {
     },
     // 编辑一级菜单设备更新组件
     changedash: function (e, index, b) {
-      this.device_updateonly(e); //更新设备信息
+      this.device_updateonly(e, [index, b]); //更新设备信息
       if (e.type == -1) {
         switch (index.length) {
           case 1:
@@ -1133,48 +1178,52 @@ export default {
             ]["state"] = "";
             break;
         }
-      } else {
-        ApiService.post(AUTH.local_url + "/asset/widget", {
-          id: e,
-        }).then(({ data }) => {
-          if (data.code == 200) {
-            switch (index.length) {
-              case 1:
-                this.lists[index[0]]["device"][b]["dash"] = data.data;
-                this.lists[index[0]]["device"][b]["dm"] = "参数";
-                this.lists[index[0]]["device"][b]["state"] = "从未";
-                break;
-              case 2:
-                this.lists[index[0]]["two"][index[1]]["device"][b]["dash"] =
-                  data.data;
-                this.lists[index[0]]["two"][index[1]]["device"][b]["dm"] =
-                  "参数";
-                this.lists[index[0]]["two"][index[1]]["device"][b]["state"] =
-                  "从未";
-                break;
-              case 3:
-                this.lists[index[0]]["two"][index[1]]["there"][index[2]][
-                  "device"
-                ][b]["dash"] = data.data;
-                this.lists[index[0]]["two"][index[1]]["there"][index[2]][
-                  "device"
-                ][b]["dm"] = "参数";
-                this.lists[index[0]]["two"][index[1]]["there"][index[2]][
-                  "device"
-                ][b]["state"] = "从未";
-                break;
-            }
-
-            // this.lists[index]["device"][b]["dash"] = data.data;
-            // this.lists[index]["device"][b]["dm"] = "参数";
-            // this.lists[index]["device"][b]["state"] = "从未";
-          } else if (data.code == 401) {
-            this.$store.dispatch(REFRESH).then(() => {});
-          } else {
-            alert(data.msg);
-          }
-        });
       }
+
+      // else {
+      //   ApiService.post(AUTH.local_url + "/asset/widget", {
+      //     id: e,
+      //   }).then(({ data }) => {
+      //     if (data.code == 200) {
+      //       switch (index.length) {
+      //         case 1:
+      //           console.log('--device---',this.lists[index[0]]["device"][b]);
+
+      //           this.lists[index[0]]["device"][b]["dash"] = data.data;
+      //           this.lists[index[0]]["device"][b]["dm"] = "参数";
+      //           this.lists[index[0]]["device"][b]["state"] = "从未";
+      //           break;
+      //         case 2:
+      //           this.lists[index[0]]["two"][index[1]]["device"][b]["dash"] =
+      //             data.data;
+      //           this.lists[index[0]]["two"][index[1]]["device"][b]["dm"] =
+      //             "参数";
+      //           this.lists[index[0]]["two"][index[1]]["device"][b]["state"] =
+      //             "从未";
+      //           break;
+      //         case 3:
+      //           this.lists[index[0]]["two"][index[1]]["there"][index[2]][
+      //             "device"
+      //           ][b]["dash"] = data.data;
+      //           this.lists[index[0]]["two"][index[1]]["there"][index[2]][
+      //             "device"
+      //           ][b]["dm"] = "参数";
+      //           this.lists[index[0]]["two"][index[1]]["there"][index[2]][
+      //             "device"
+      //           ][b]["state"] = "从未";
+      //           break;
+      //       }
+
+      //       // this.lists[index]["device"][b]["dash"] = data.data;
+      //       // this.lists[index]["device"][b]["dm"] = "参数";
+      //       // this.lists[index]["device"][b]["state"] = "从未";
+      //     } else if (data.code == 401) {
+      //       this.$store.dispatch(REFRESH).then(() => {});
+      //     } else {
+      //       alert(data.msg);
+      //     }
+      //   });
+      // }
     },
 
     // 一级目录管理
