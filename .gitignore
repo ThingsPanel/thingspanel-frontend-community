@@ -1,5 +1,7 @@
 .DS_Store
 node_modules
+dist
+
 # local env files
 .env.local
 .env.*.local
@@ -20,3 +22,5 @@ yarn-error.log*
 
 yarn.lock
 package-lock.json
+
+
