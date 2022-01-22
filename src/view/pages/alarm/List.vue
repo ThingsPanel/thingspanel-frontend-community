@@ -68,15 +68,14 @@
       </template>
       <div v-show="tip" class="text-white">{{ $t("COMMON.TITLE26") }}</div>
       <v-pagination
+        v-if="length > 1"
         class="float-right"
         v-model="page"
-        :circle="circle"
-        :disabled="disabled"
         :length="length"
         :page="page"
-        :total-visible="limit"
+        :total-visible="10"
         @input="pageChange"
-		style="margin-top: 30px;"
+        style="margin-top: 30px"
       ></v-pagination>
     </div>
     <!--end::Body-->
@@ -204,7 +203,7 @@ export default {
           } else {
             _that.tip = true;
           }
-          _that.length = parseInt(data.data.total / data.data.per_page) ;
+          _that.length = parseInt(data.data.total / data.data.per_page);
           _that.page = data.data.current_page;
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});

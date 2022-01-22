@@ -67,9 +67,9 @@
               </tr>
             </thead>
           </template>
-		  <template v-slot:item.board="{ item }">
-			  {{ $t(item.board) }}
-		  </template>
+          <template v-slot:item.board="{ item }">
+            {{ $t(item.board) }}
+          </template>
           <template v-slot:item.actions="{ item }">
             <v-btn color="primary" class="mr-4" small @click="clickItem(item)"
               >详情</v-btn
@@ -78,13 +78,12 @@
         </v-data-table>
         <div v-show="tip" class="text-white">{{ $t("COMMON.TITLE26") }}</div>
         <v-pagination
+          v-if="length > 1"
           class="float-right mt-8"
           v-model="page"
-          :circle="circle"
-          :disabled="disabled"
           :length="length"
           :page="page"
-          :total-visible="limit"
+          :total-visible="10"
           @input="pageChange"
         ></v-pagination>
       </div>

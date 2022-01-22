@@ -133,15 +133,12 @@
       </template>
     </v-data-table>
     <v-pagination
+      v-if="length > 1"
       class="float-right"
       v-model="page"
-      :circle="circle"
-      :disabled="disabled"
       :length="length"
-      :next-icon="nextIcon"
-      :prev-icon="prevIcon"
       :page="page"
-      :total-visible="limit"
+      :total-visible="10"
       @input="pageChange"
     ></v-pagination>
     <div style="clear: both"></div>
@@ -259,53 +256,52 @@ export default {
             },*/
 
     ajaxdata() {
-      ApiService.post(AUTH.local_url + "/dashboard/index", { page: this.page, limit: this.limit }).then(
-        ({ data }) => {
-          console.log("列表");
-          console.log(data);
-          var chartarr = data.data.data;
-          if (data.code == 200) {
-            ApiService.post(AUTH.local_url + "/dashboard/business").then(
-              ({ data }) => {
-                console.log("获取业务");
-                console.log(data);
-                if (data.code == 200) {
-                  this.busitems = data.data;
-                  var arr = [];
-                  for (var i = 0; i < chartarr.length; i++) {
-                    var obg = {};
-                    obg.no = i + 1;
-                    obg.id = chartarr[i]["id"];
-                    obg.title = chartarr[i]["title"];
-                    obg.business_id = chartarr[i]["business_id"];
-                    for (var j = 0; j < this.busitems.length; j++) {
-                      if (this.busitems[j]["id"] == obg.business_id) {
-                        obg.business_name = this.busitems[j]["name"];
-                      }
+      ApiService.post(AUTH.local_url + "/dashboard/index", {
+        page: this.page,
+        limit: this.limit,
+      }).then(({ data }) => {
+        console.log("列表");
+        console.log(data);
+
+        this.length =
+          parseInt(data.data.total / data.data.per_page) > 0
+            ? parseInt(data.data.total / data.data.per_page) + 1
+            : 1;
+        this.page = data.data.current_page;
+
+        var chartarr = data.data.data;
+        if (data.code == 200) {
+          ApiService.post(AUTH.local_url + "/dashboard/business").then(
+            ({ data }) => {
+              if (data.code == 200) {
+                this.busitems = data.data;
+                var arr = [];
+                for (var i = 0; i < chartarr.length; i++) {
+                  var obg = {};
+                  obg.no = i + 1;
+                  obg.id = chartarr[i]["id"];
+                  obg.title = chartarr[i]["title"];
+                  obg.business_id = chartarr[i]["business_id"];
+                  for (var j = 0; j < this.busitems.length; j++) {
+                    if (this.busitems[j]["id"] == obg.business_id) {
+                      obg.business_name = this.busitems[j]["name"];
                     }
-                    console.log(obg);
-                    arr.push(obg);
                   }
-                  // this.length = data.data.last_page;
-                  this.length =
-                    parseInt(data.data.total / data.data.per_page) > 0
-                      ? parseInt(data.data.total / data.data.per_page)
-                      : 1;
-                  this.page = data.data.current_page;
-                  this.desserts = arr;
-                  console.log(arr);
-                } else if (data.code == 401) {
-                  this.$store.dispatch(REFRESH).then(() => {});
-                } else {
+                  arr.push(obg);
                 }
+
+                this.desserts = arr;
+              } else if (data.code == 401) {
+                this.$store.dispatch(REFRESH).then(() => {});
+              } else {
               }
-            );
-          } else if (data.code == 401) {
-            this.$store.dispatch(REFRESH).then(() => {});
-          } else {
-          }
+            }
+          );
+        } else if (data.code == 401) {
+          this.$store.dispatch(REFRESH).then(() => {});
+        } else {
         }
-      );
+      });
     },
 
     getbusiness() {

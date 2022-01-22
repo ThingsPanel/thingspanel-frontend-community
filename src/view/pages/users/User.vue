@@ -20,7 +20,8 @@
         <thead>
           <tr>
             <th
-              v-for="(header, h) in headers" :key="h"
+              v-for="(header, h) in headers"
+              :key="h"
               class="text-white"
               :class="h == 6 ? 'text-center width-300' : ''"
             >
@@ -238,30 +239,26 @@
         </v-toolbar>
       </template>
       <template v-slot:item.actions="{ item }">
-		  <div style="display: flex;flex-direction: row;">
-			  <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
-			    $t("COMMON.EDIT")
-			  }}</v-btn>
-			  <v-btn color="primary" class="mr-4" small @click="resetPass(item)">{{
-			    $t("COMMON.CHANGEPASSWORD")
-			  }}</v-btn>
-			  <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
-			    $t("COMMON.DELETE")
-			  }}</v-btn>
-		  </div>
-        
+        <div style="display: flex; flex-direction: row">
+          <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
+            $t("COMMON.EDIT")
+          }}</v-btn>
+          <v-btn color="primary" class="mr-4" small @click="resetPass(item)">{{
+            $t("COMMON.CHANGEPASSWORD")
+          }}</v-btn>
+          <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
+            $t("COMMON.DELETE")
+          }}</v-btn>
+        </div>
       </template>
     </v-data-table>
     <v-pagination
+      v-if="length > 1"
       class="float-right"
       v-model="page"
-      :circle="circle"
-      :disabled="disabled"
       :length="length"
-      :next-icon="nextIcon"
-      :prev-icon="prevIcon"
       :page="page"
-      :total-visible="limit"
+      :total-visible="10"
       @input="pageChange"
     ></v-pagination>
     <div style="clear: both"></div>
@@ -495,7 +492,10 @@ export default {
             }
             arr.push(obg);
           }
-          this.length = parseInt(data.data.total / data.data.per_page) > 0 ? parseInt(data.data.total / data.data.per_page) : 1;
+          this.length =
+            parseInt(data.data.total / data.data.per_page) > 0
+              ? parseInt(data.data.total / data.data.per_page)
+              : 1;
           this.page = data.data.current_page;
           this.desserts = arr;
         } else if (data.code == 401) {

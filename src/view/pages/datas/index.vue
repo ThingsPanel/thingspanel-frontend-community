@@ -118,13 +118,12 @@
       </template>
     </v-data-table>
     <v-pagination
+      v-if="length > 1"
       class="float-right mt-8"
       v-model="page"
-      :circle="circle"
-      :disabled="disabled"
       :length="length"
       :page="page"
-      :total-visible="limit"
+      :total-visible="10"
       @input="pageChange"
     ></v-pagination>
     <div style="clear: both"></div>

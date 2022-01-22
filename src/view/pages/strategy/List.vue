@@ -56,13 +56,12 @@
       </template>
     </v-data-table>
     <v-pagination
+      v-if="length > 1"
       class="float-right"
       v-model="page"
-      :circle="circle"
-      :disabled="disabled"
       :length="length"
       :page="page"
-      :total-visible="limit"
+      :total-visible="10"
       @input="pageChange"
     ></v-pagination>
     <div style="clear: both"></div>
@@ -176,7 +175,7 @@ export default {
       ApiService.post(AUTH.local_url + "/asset/work_index", {
         work_name: "",
         page: this.page,
-        limit: this.limit
+        limit: this.limit,
       }).then(({ data }) => {
         console.log("业务列表");
         console.log(data);
