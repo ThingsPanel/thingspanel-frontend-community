@@ -114,7 +114,7 @@ export default {
       dialog: false,
       loading: false,
       showSavePopup: false,
-
+      loadTime: 0,
       showModal: false,
       gridDraggable: true,
       gridResizable: true,
@@ -132,26 +132,19 @@ export default {
        * https://github.com/yugasun/vue-grid-layout/blob/a7d39f28425cee6a6176388daea40e8c8d9c4826/src/GridLayout.vue#L206-L208
        */
       layoutUpdating: false,
-      slices: [
-        {
-          x: 0,
-          y: 0,
-          h: 0,
-          w: 0,
-        },
-      ], // charts modules
+      slices: [], // charts modules
       socketData: null,
       charts: [],
       compName: "",
-	  plugins: [],
+      plugins: [],
     };
   },
   watch: {
     chart_id() {
-      this.loadCharts();
+      this.loadCharts("chart_id");
     },
     assest_id() {
-      this.loadCharts();
+      this.loadCharts("assest_id");
     },
   },
   components: {
@@ -160,8 +153,8 @@ export default {
     Slice,
   },
   mounted() {
-	_window = window;
-    this.loadCharts();
+    _window = window;
+    this.loadCharts("mounted");
 
     let _this = this;
     //start websocket
@@ -184,40 +177,55 @@ export default {
     websocket.close();
   },
   methods: {
-    loadCharts() {
+    loadCharts(from) {
       let _that = this;
-	  
-	  ApiService.post(AUTH.local_url + "/dashboard/pluginList", {
-	  }).then(({ data }) => {
-	    console.log("获取插件数据");
-	    console.log(data);
-	    if (data.code == 200) {
-	      _that.charts = data.data;
-		  _that.loadScripts();
-	    }
-	  });
+      ApiService.post(AUTH.local_url + "/dashboard/pluginList", {}).then(
+        ({ data }) => {
+          console.log("获取插件数据");
+          console.log(data);
+          if (data.code == 200) {
+            _that.charts = data.data;
+            _that.loadScripts();
+          }
+        }
+      );
     },
-	loadScripts() {
-		let _that = this;
-		let chartCount = 0;
-		
-		for (let i = 0; i < this.charts.length; i++) {
-		  let chart = this.charts[i];
-		
-		  let script = document.createElement("script");
-		  script.type = "text/javascript";
-		  script.src = 'http://dev.thingspanel.cn' + chart.url;
-		  script.onload = () => {
-		    Vue.component(chart.component, _window[chart.chart_type].default);
-		
-		    chartCount += 1;
-		    if (_that.charts.length == chartCount) {
-		      _that.getDashboard(this.chart_id, this.assest_id);
-		    }
-		  };
-		  document.body.appendChild(script);
-		}
-	},
+    loadScripts() {
+      let _that = this;
+      let chartCount = 0;
+
+      for (let i = 0; i < this.charts.length; i++) {
+        let chart = this.charts[i];
+
+        let script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "http://dev.thingspanel.cn" + chart.url;
+        script.onload = () => {
+          Vue.component(chart.component, _window[chart.chart_type].default);
+
+          chartCount += 1;
+          if (_that.charts.length == chartCount) {
+            console.log("---loadScripts2---");
+            _that.getDashboard(this.chart_id, this.assest_id);
+          }
+        };
+        document.body.appendChild(script);
+      }
+    },
+
+    getTime() {
+      var data = new Date();
+      var month =
+        data.getMonth() < 9 ? "0" + (data.getMonth() + 1) : data.getMonth() + 1;
+      var date = data.getDate() <= 9 ? "0" + data.getDate() : data.getDate();
+      var hour = data.getHours() <= 9 ? "0" + data.getHours() : data.getHours();
+      var minute =
+        data.getMinutes() <= 9 ? "0" + data.getMinutes() : data.getMinutes();
+      var second =
+        data.getSeconds() <= 9 ? "0" + data.getSeconds() : data.getSeconds();
+      return data.getFullYear() + month + date + hour + minute + second;
+    },
+
     // 动态设置响应式高度
     setHeight() {
       if (window.screen.width <= 768) {
@@ -252,6 +260,16 @@ export default {
       this.setHeight();
       this.loading = true;
       this.layoutUpdating = true;
+
+      let time = this.getTime();
+      if (this.loadTime == undefined || time - this.loadTime < 5) {
+        return;
+      }
+
+      console.log("---this.loadTime---", this.loadTime);
+
+      this.loadTime = time;
+
       // 禁止普通用户拖动
       let _that = this;
       if (this.role == 1) {
@@ -276,7 +294,7 @@ export default {
               data.data[i].h = Number(data.data[i].h);
             }
             _that.slices = data.data;
-            console.log(_that.slices);
+            console.log("_that.slices", _that.slices);
             _that.loading = false;
           }
         });

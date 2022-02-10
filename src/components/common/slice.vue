@@ -173,7 +173,9 @@ export default {
       immediate: true,
       handler(val, oldVal) {
         this.item = val;
-        this.getData();
+        if (oldVal != undefined) {
+          this.getData();
+        }
       },
     },
   },
