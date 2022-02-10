@@ -224,7 +224,7 @@ export default {
       protein: 0,
     },
     nameRules: [(v) => !!v || "请输入业务名称"],
-    busitems: [],
+    busitems: [{ id: "", name: "无" }],
   }),
 
   computed: {
@@ -274,7 +274,11 @@ export default {
           ApiService.post(AUTH.local_url + "/dashboard/business").then(
             ({ data }) => {
               if (data.code == 200) {
-                this.busitems = data.data;
+                // this.busitems = data.data;
+                for (let i = 0; i < data.data.length; i++) {
+                  this.busitems.push(data.data[i]);
+                }
+
                 var arr = [];
                 for (var i = 0; i < chartarr.length; i++) {
                   var obg = {};
@@ -307,8 +311,6 @@ export default {
     getbusiness() {
       ApiService.post(AUTH.local_url + "/dashboard/business").then(
         ({ data }) => {
-          console.log("获取业务");
-          console.log(data);
           if (data.code == 200) {
             this.busitems = data.data;
           } else if (data.code == 401) {
@@ -388,21 +390,24 @@ export default {
             title: title,
             business_id: business_id,
           }).then(({ data }) => {
-            console.log(data);
             if (data.code == 200) {
               this.editedItem.title = "";
               this.ajaxdata();
+            } else {
+              this.$message({
+                showClose: true,
+                message: data.message,
+                type: "warning",
+              });
             }
           });
           this.close();
-
           // this.desserts.push(this.editedItem)
         }
       }
     },
 
     hitsclick(type, name, chart_id, business_id) {
-      console.log("点击事件");
       var obj = {};
       obj.chart_id = chart_id;
       obj.business_id = business_id;
