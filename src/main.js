@@ -20,7 +20,7 @@ import ApiService from "./core/services/api.service";
 import { VERIFY_AUTH } from "./core/services/store/auth.module";
 import { RESET_LAYOUT_CONFIG } from "@/core/services/store/config.module";
 
-import  'echarts/theme/macarons.js'
+import 'echarts/theme/macarons.js'
 
 
 import ElementUI from "element-ui";
@@ -35,25 +35,25 @@ Vue.config.productionTip = false;
 Vue.use(ElementUI);
 
 
-import $ from 'jquery';
-Vue.use($);
+// import $ from 'jquery';
+// Vue.use($);
 
 Vue.use(VueAxiosPlugin, {
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded',
-  },
-  transformRequest: [
-    function a(data) {
-      return stringify(jsonProp(data));
+    headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
     },
-  ],
-  resHandleFunc: (response) => {
-    const data = response.data;
-    return {
-      status: response.status || 500,
-      ...data,
-    };
-  },
+    transformRequest: [
+        function a(data) {
+            return stringify(jsonProp(data));
+        },
+    ],
+    resHandleFunc: (response) => {
+        const data = response.data;
+        return {
+            status: response.status || 500,
+            ...data,
+        };
+    },
 });
 
 Vue.use(GlobalComponents);
@@ -83,9 +83,9 @@ import AMap from 'vue-amap';
 Vue.use(AMap);
 
 AMap.initAMapApiLoader({
-  key: 'bfc1a098e3ea0bd05273840cff285dfc',
-  plugin: ['AMap.Scale', 'AMap.ToolBar', 'AMap.Geolocation', 'AMap.OverView', 'AMap.MapType'],
-  v: '1.4.4'
+    key: 'bfc1a098e3ea0bd05273840cff285dfc',
+    plugin: ['AMap.Scale', 'AMap.ToolBar', 'AMap.Geolocation', 'AMap.OverView', 'AMap.MapType'],
+    v: '1.4.4'
 });
 
 // API service init
@@ -101,24 +101,24 @@ new DevicePixelRatio().init();
 // MockService.init();
 
 router.beforeEach((to, from, next) => {
-  // reset config to initial state
-  store.dispatch(RESET_LAYOUT_CONFIG);
+    // reset config to initial state
+    store.dispatch(RESET_LAYOUT_CONFIG);
 
-  // Ensure we checked auth before each page load.
-  Promise.all([store.dispatch(VERIFY_AUTH)]).then(next);
+    // Ensure we checked auth before each page load.
+    Promise.all([store.dispatch(VERIFY_AUTH)]).then(next);
 
-  // Scroll page to top on every route change
-  setTimeout(() => {
-    window.scrollTo(0, 0);
-  }, 100);
+    // Scroll page to top on every route change
+    setTimeout(() => {
+        window.scrollTo(0, 0);
+    }, 100);
 });
 
 new Vue({
-  router,
-  store,
-  i18n,
-  vuetify,
-  template: '<App/>',
-  components: { App },
-  render: h => h(App)
+    router,
+    store,
+    i18n,
+    vuetify,
+    template: '<App/>',
+    components: { App },
+    render: h => h(App)
 }).$mount("#app");

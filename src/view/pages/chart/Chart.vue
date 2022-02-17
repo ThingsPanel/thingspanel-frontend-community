@@ -560,9 +560,9 @@ import "@/assets/css/style.css";
 
 import Utils from "@/utils/util.js";
 import { SET_AUTH } from "../../../core/services/store/auth.module";
-import moment from "moment";
-import zh from "moment/locale/zh-cn";
-moment.updateLocale("zh-cn", zh);
+// import moment from "moment";
+// import zh from "moment/locale/zh-cn";
+// moment.updateLocale("zh-cn", zh);
 export default {
   data() {
     return {

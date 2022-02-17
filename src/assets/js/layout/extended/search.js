@@ -76,31 +76,31 @@ var KTLayoutSearch = function() {
         _showProgress();
         _hideDropdown();
 
-        setTimeout(function() {
-            $.ajax({
-                url: HOST_URL + '/api/quick_search.php',
-                data: {
-                    query: _query
-                },
-                dataType: 'html',
-                success: function(res) {
-                    _hasResult = true;
-                    _hideProgress();
-                    KTUtil.addClass(_target, _resultClass);
-                    KTUtil.setHTML(_resultWrapper, res);
-                    _showDropdown();
-                    KTUtil.scrollUpdate(_resultWrapper);
-                },
-                error: function(res) {
-                    _hasResult = false;
-                    _hideProgress();
-                    KTUtil.addClass(_target, _resultClass);
-                    KTUtil.setHTML(_resultWrapper, '<span class="font-weight-bold text-muted">Connection error. Please try again later..</div>');
-                    _showDropdown();
-                    KTUtil.scrollUpdate(_resultWrapper);
-                }
-            });
-        }, 1000);
+        // setTimeout(function() {
+        //     $.ajax({
+        //         url: HOST_URL + '/api/quick_search.php',
+        //         data: {
+        //             query: _query
+        //         },
+        //         dataType: 'html',
+        //         success: function(res) {
+        //             _hasResult = true;
+        //             _hideProgress();
+        //             KTUtil.addClass(_target, _resultClass);
+        //             KTUtil.setHTML(_resultWrapper, res);
+        //             _showDropdown();
+        //             KTUtil.scrollUpdate(_resultWrapper);
+        //         },
+        //         error: function(res) {
+        //             _hasResult = false;
+        //             _hideProgress();
+        //             KTUtil.addClass(_target, _resultClass);
+        //             KTUtil.setHTML(_resultWrapper, '<span class="font-weight-bold text-muted">Connection error. Please try again later..</div>');
+        //             _showDropdown();
+        //             KTUtil.scrollUpdate(_resultWrapper);
+        //         }
+        //     });
+        // }, 1000);
     }
 
     var _handleCancel = function(e) {
