@@ -139,7 +139,7 @@
                               v-for="(r, index) in relationship"
                               :key="index"
                               :value="r.id"
-                              :label="r.name"
+                              :label="$t(r.name)"
                             ></el-option>
                           </el-select>
                         </v-col>
