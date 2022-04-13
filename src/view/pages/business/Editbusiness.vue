@@ -87,7 +87,7 @@
                       <el-option
                         v-for="(t, index) in itemarr"
                         :key="'2-' + index"
-                        :value="t.name"
+                        :value="t.id"
                         :label="t.device"
                       ></el-option>
                     </el-select>
@@ -966,6 +966,7 @@ export default {
     },
 
     device_updateonly: function (device, dashinfo = null) {
+      console.log(device)
       ApiService.post(AUTH.local_url + "/device/update_only", {
         id: device.id,
         name: device.name,
