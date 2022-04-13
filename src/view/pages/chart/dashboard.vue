@@ -178,7 +178,7 @@
 
 					let script = document.createElement("script");
 					script.type = "text/javascript";
-					script.src = process.env.VUE_APP_BASE_URL + chart.url;
+					script.src = process.env.VUE_APP_BASE_URL.slice(0,process.env.VUE_APP_BASE_URL.length-1) + chart.url;
 					script.onload = () => {
 						Vue.component(chart.component, _window[chart.chart_type].default);
 
