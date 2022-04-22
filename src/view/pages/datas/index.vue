@@ -379,7 +379,8 @@ export default {
               item["ts"] = dateFormat(item["ts"] / 1000000);
             }
             this.desserts = datas;
-            this.length = data.data.total;
+            //this.length = data.data.total;
+            this.length = Math.ceil(data.data.total/ this.limit)+1;
             this.page = data.data.current_page;
           } else {
             this.desserts = [];
