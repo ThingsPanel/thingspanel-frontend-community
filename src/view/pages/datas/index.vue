@@ -380,7 +380,7 @@ export default {
             }
             this.desserts = datas;
             //this.length = data.data.total;
-            this.length = Math.ceil(data.data.total/ this.limit)+1;
+            this.length = Math.ceil(data.data.total/ this.limit);
             this.page = data.data.current_page;
           } else {
             this.desserts = [];
