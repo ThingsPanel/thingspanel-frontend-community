@@ -203,7 +203,7 @@ export default {
           } else {
             _that.tip = true;
           }
-          _that.length = parseInt(data.data.total / data.data.per_page);
+          _that.length = Math.ceil(data.data.total / data.data.per_page);
           _that.page = data.data.current_page;
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});

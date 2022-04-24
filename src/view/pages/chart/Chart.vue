@@ -450,7 +450,7 @@
         :busid="business_id"
         :proid="proid"
         :chart_id="chart_id"
-		:assest_id="entity_id"
+	    	:assest_id="entity_id"
         :start_time="strdate"
         :end_time="enddate"
         :latest_time="dateindex"
@@ -566,7 +566,13 @@ import { SET_AUTH } from "../../../core/services/store/auth.module";
 export default {
   data() {
     return {
-      equlist: [],
+      equlist: [
+        {
+          business_id: "",
+          id: "",
+          name: "预览",
+        },
+      ],
       entity_id: "",
       isShowLeftNav: false,
       dialog: false,
@@ -691,6 +697,16 @@ export default {
   created() {
     this.chart_id = this.$route.query.chart_id;
     this.business_id = this.$route.query.business_id;
+    this.entity_id = this.business_id;
+
+    this.equlist = [
+      {
+        business_id: this.business_id,
+        id: this.entity_id,
+        name: "预览",
+      },
+    ];
+
     this.changebuss(this.business_id);
     console.log("图表id");
     console.log(this.chart_id);
@@ -712,7 +728,8 @@ export default {
   },
   methods: {
     onChangeEqlist(id) {
-		this.entity_id = id;
+      console.log('---onChangeEqlist---', id);
+		  this.entity_id = id;
     },
     getEqlist(id) {
       let _that = this;
@@ -724,8 +741,16 @@ export default {
           console.log(data);
           if (data.code == 200) {
             var arr = data.data;
+
+            //最新页增加预览选项
+            arr.unshift({
+              business_id: this.business_id,
+              id: this.business_id,
+              name: "预览",
+            });
+
             _that.equlist = arr;
-			_that.entity_id = arr[0].id;
+            // _that.entity_id = arr[0].id; //20220424 不再默认第一项展示
           } else {
             this.$store.dispatch(REFRESH).then(() => {});
           }
@@ -1114,7 +1139,7 @@ export default {
 
     //获取设备数据
     changeass(id) {
-      console.log(id);
+      console.log('----changeass----', id);
       if (id !== undefined) {
         ApiService.post(AUTH.local_url + "/dashboard/device", {
           asset_id: id,
