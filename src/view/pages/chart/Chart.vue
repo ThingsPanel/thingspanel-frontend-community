@@ -570,7 +570,7 @@ export default {
         {
           business_id: "",
           id: "",
-          name: "预览",
+          name: "总览",
         },
       ],
       zlshow: false,
@@ -704,7 +704,7 @@ export default {
       {
         business_id: this.business_id,
         id: this.entity_id,
-        name: "预览",
+        name: "总览",
       },
     ];
 
@@ -743,11 +743,11 @@ export default {
           if (data.code == 200) {
             var arr = data.data;
 
-            //最新页增加预览选项
+            //最新页增加总览选项
             arr.unshift({
               business_id: this.business_id,
               id: this.business_id,
-              name: "预览",
+              name: "总览",
             });
 
             _that.equlist = arr;
@@ -1066,7 +1066,7 @@ export default {
 
     // 打开面板模态框
     addpanel() {
-      //总预览
+      //总览
       if (this.business_id == this.entity_id) {
         ApiService.post(AUTH.local_url + "/dashboard/business/component", {
           business_id: this.business_id,
