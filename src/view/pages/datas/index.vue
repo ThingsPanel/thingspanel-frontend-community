@@ -116,6 +116,15 @@
         </router-link> -->
         <div>{{ item.name }}</div>
       </template>
+      <template v-slot:item.dbl_v="{ item }">
+      <div v-if="item.dbl_v.indexOf('./') == -1">{{item.dbl_v}}</div>
+       <el-image
+          style="width: 100px; height: 80px"
+          :src="url+item.dbl_v" 
+          :preview-src-list="imgView(item.dbl_v)"
+          v-else>
+        </el-image>
+      </template>
     </v-data-table>
     <v-pagination
       v-if="length > 1"
@@ -173,6 +182,7 @@ import ApiService from "@/core/services/api.service";
 import Hits from "@/assets/js/components/com.js";
 export default {
   data: () => ({
+    url:process.env.VUE_APP_BASE_URL,
     hideheader: true,
     seen: true,
     length: 3,
@@ -224,6 +234,7 @@ export default {
     equlist: [],
     buisnesss: [],
     buisness_id: "",
+    
     typelist: [
       {
         id: 1,
@@ -311,6 +322,12 @@ export default {
   },
 
   methods: {
+    imgView(str){
+      let arr = []
+      arr.push(this.url+'./files/logo/2022-04-25/2ec86c25b0caac22f87e7698d4be16cd.png')
+      console.log(arr);
+      return arr
+    },
     onClickBuisness(name, id) {
       let _that = this;
       ApiService.post(AUTH.local_url + "/asset/list", {
@@ -379,8 +396,7 @@ export default {
               item["ts"] = dateFormat(item["ts"] / 1000000);
             }
             this.desserts = datas;
-            //this.length = data.data.total;
-            this.length = Math.ceil(data.data.total/ this.limit);
+            this.length = data.data.total;
             this.page = data.data.current_page;
           } else {
             this.desserts = [];

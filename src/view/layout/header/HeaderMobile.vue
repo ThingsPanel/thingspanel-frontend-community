@@ -68,7 +68,7 @@ export default {
      * @returns {string}
      */
     headerLogo() {
-      return process.env.BASE_URL + this.layoutConfig("self.logo.dark");
+      return this.layoutConfig("self.logo.dark");
     },
 
     /**

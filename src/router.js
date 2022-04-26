@@ -90,6 +90,12 @@ export default new Router({
           name: "production",
           component: () => import("@/view/pages/production/index.vue")
         },
+        //new page 
+        {
+          path: "/system/index",
+          name: "systems",
+          component: () => import("@/view/pages/system/index.vue")
+        },
       ]
     },
     {
