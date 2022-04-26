@@ -241,13 +241,11 @@
 				this.layoutUpdating = true;
 
 				let time = this.getTime();
-				// if (this.loadTime == undefined || time - this.loadTime < 5) {
-				// 	return;
-				// }
-				if (this.loadTime == undefined) {
+				if (this.loadTime == undefined || time - this.loadTime < 5) {
 					return;
 				}
-				// console.log("---this.loadTime---", this.loadTime);
+
+				console.log("---this.loadTime---", this.loadTime);
 
 				this.loadTime = time;
 

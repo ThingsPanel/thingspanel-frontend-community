@@ -192,7 +192,10 @@ export default {
             arr.push(obg);
           }
           // this.length = data.data.last_page;
-          this.length = Math.ceil(data.data.total / data.data.per_page);
+          this.length =
+            parseInt(data.data.total / data.data.per_page) > 0
+              ? parseInt(data.data.total / data.data.per_page)
+              : 1;
           this.page = data.data.current_page;
 
           this.desserts = arr;
