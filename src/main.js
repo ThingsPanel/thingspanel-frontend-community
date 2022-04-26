@@ -111,7 +111,21 @@ router.beforeEach((to, from, next) => {
     setTimeout(() => {
         window.scrollTo(0, 0);
     }, 100);
+
+    setTimeout(() => {
+        var _hmt = _hmt || [];
+        (function() {
+            document.getElementById('baidu_tj') && document.getElementById('baidu_tj').remove();
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?e4910b169e66c3c3d29050a965c59f1c";
+            hm.id = "baidu_tj"
+
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    }, 0);
 });
+
 
 new Vue({
     router,
