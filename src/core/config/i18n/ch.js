@@ -1,6 +1,7 @@
 // China
 export const locale = {
     COMMON: {
+        SYSTEMSETUP:"系统设置",
         TOKENEXPIRES: "登录状态已过期是否刷新？",
         CONSUMING: "请求耗时",
         USERNAME: "用户名",

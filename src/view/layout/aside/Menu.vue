@@ -190,6 +190,27 @@
         </a>
       </li>
     </router-link>
+    <!-- 系统设置 -->
+    <router-link
+      to="/system/index"
+      v-slot="{ href, navigate, isActive, isExactActive }"
+    >
+      <li
+        aria-haspopup="true"
+        data-menu-toggle="hover"
+        class="menu-item adminmeue"
+        :class="[
+          isActive && 'menu-item-active',
+          isExactActive && 'menu-item-active',
+        ]"
+      >
+        <a :href="href" class="menu-link" @click="navigate">
+          <i class="menu-icon flaticon2-gear"></i>
+          <span class="menu-text">{{ $t("COMMON.SYSTEMSETUP") }}</span>
+        </a>
+      </li>
+    </router-link>
+    
   </ul>
 </template>
 

@@ -38,6 +38,7 @@ import { mapGetters } from "vuex";
 import objectPath from "object-path";
 import KTLayoutBrand from "@/assets/js/layout/base/brand.js";
 import KTLayoutAsideToggle from "@/assets/js/layout/base/aside-toggle.js";
+import { SET_LAYOUT_CONFIG } from "@/core/services/store/config.module";
 
 export default {
   name: "KTBrand",
@@ -55,6 +56,7 @@ export default {
       const logoObject = this.layoutConfig("self.logo");
 
       let logo;
+
       if (typeof logoObject === "string") {
         logo = logoObject;
       }
@@ -65,7 +67,7 @@ export default {
         const logos = this.layoutConfig("self.logo");
         logo = logos[Object.keys(logos)[0]];
       }
-      return process.env.BASE_URL + logo;
+      return logo;
     }
   },
   computed: {

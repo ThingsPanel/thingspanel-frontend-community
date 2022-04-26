@@ -131,7 +131,7 @@ export default {
      * @returns {string}
      */
     loaderLogo() {
-      return process.env.BASE_URL + this.layoutConfig("loader.logo");
+      return this.layoutConfig("loader.logo");
     },
 
     /**
