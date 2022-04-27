@@ -19,6 +19,7 @@ import ApiService from "./core/services/api.service";
 // import MockService from "./core/mock/mock.service";
 import { VERIFY_AUTH } from "./core/services/store/auth.module";
 import { RESET_LAYOUT_CONFIG } from "@/core/services/store/config.module";
+import VueImageMarker from './components/common/vue-image-marker.vue'
 
 import 'echarts/theme/macarons.js'
 
@@ -30,6 +31,8 @@ import '@/mock';
 
 import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
 Vue.component('date-picker', VuePersianDatetimePicker);
+Vue.component('VImageMarker', VueImageMarker)
+
 Vue.config.productionTip = false;
 
 Vue.use(ElementUI);
