@@ -355,7 +355,7 @@
               }
               this.desserts = datas;
               this.total = data.data.total;
-              this.length = Math.ceil(data.data.total / this.limit);
+              this.length = Math.ceil(data.data.total / data.data.per_page);
               this.page = data.data.current_page;
             } else {
               this.desserts = [];
