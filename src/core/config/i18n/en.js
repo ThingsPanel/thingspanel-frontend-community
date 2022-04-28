@@ -1,13 +1,13 @@
 // China
 export const locale = {
+
   COMMON: {
-    SYSTEMSETUP:"System setup",
-    DEVICEPROPERTIES:"Device properties",
-    DEVICEPROPERTIESVALUE:"Device properties value",
-    DEVICELOCATION:"Device location",
-    DEVICEID:"Device id",
-    
-    // 
+    SYSTEMSETUP: "System setup",
+    DEVICEPROPERTIES: "Device properties",
+    DEVICEPROPERTIESVALUE: "Device properties value",
+    DEVICELOCATION: "Device location",
+    DEVICEID: "Device id",
+
     TOKENEXPIRES: "Whether to refresh the login status has expired?",
     CONSUMING: "Time consuming",
     USERNAME: "username",
@@ -46,10 +46,10 @@ export const locale = {
     TITLE26: "No data at the current time!",
     TITLE27: "Issue policy to terminal device",
     TITLE28: "Path",
-	TITLE29: "Asset Name",
-	TITLE30: "Data labels",
-	TITLE31: "Value",
-	TITLE32: "Device plugin",
+    TITLE29: "Asset Name",
+    TITLE30: "Data labels",
+    TITLE31: "Value",
+    TITLE32: "Device plugin",
     FORGETPASS: "forgot password？",
     NAME: "Username",
     REMARKS: "Remark",
@@ -245,17 +245,17 @@ export const locale = {
     DATAS: "Data management",
     INSTRUCTION: "Instruction",
     PATH: "Request path",
-	LOG1: "Login",
-	LOG2: "Home",
-	LOG3: "User Management",
-	LOG4: "Customer Management",
-	LOG5: "Business",
-	LOG6: "Equipment",
-	LOG7: "Visualization",
-	LOG8: "Alert Policy",
-	LOG9: "Control Strategy",
-	LOG10: "Operation log",	
-	LOG11: "Chart",
+    LOG1: "Login",
+    LOG2: "Home",
+    LOG3: "User Management",
+    LOG4: "Customer Management",
+    LOG5: "Business",
+    LOG6: "Equipment",
+    LOG7: "Visualization",
+    LOG8: "Alert Policy",
+    LOG9: "Control Strategy",
+    LOG10: "Operation log",
+    LOG11: "Chart",
   },
   TRANSLATOR: {
     SELECT: "Please select language",
@@ -316,6 +316,7 @@ export const locale = {
     },
   },
   ECOMMERCE: {
+
     COMMON: {
       SELECTED_RECORDS_COUNT: "Selected records count: ",
       ALL: "All",
@@ -355,5 +356,5 @@ export const locale = {
         ADD_MESSAGE: "Customer has been created",
       },
     },
-  },
+  }
 };

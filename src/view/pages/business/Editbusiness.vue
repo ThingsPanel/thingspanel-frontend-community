@@ -750,7 +750,6 @@ export default {
       }).then((r) => {
         let response = r.data
         if (response.code == 200) {
-          console.log('进来');
           if (response.data.d_id != "") {
             this.deriveceType[0].name = "d_id";
             this.deriveceType[0].value = response.data.d_id;

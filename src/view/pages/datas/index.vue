@@ -77,8 +77,11 @@
         />
       </v-col>
 
-      <v-col cols="12" xs="12" md="1">
-        <v-btn color="primary" @click="ajaxdata" style="margin-left: 92px"
+      <v-col cols="24" xs="24" md="2">
+        <v-btn color="primary" @click="exportdata" style="margin-left: 12px"
+          >导出</v-btn
+        >
+        <v-btn color="primary" @click="ajaxdata" style="margin-left: 12px"
           >搜索</v-btn
         >
       </v-col>
@@ -117,12 +120,13 @@
         <div>{{ item.name }}</div>
       </template>
       <template v-slot:item.dbl_v="{ item }">
-      <div v-if="item.str_v.indexOf('file') == -1">{{item.dbl_v}}</div>
-       <el-image
+        <div v-if="item.str_v.indexOf('file') == -1">{{ item.dbl_v }}</div>
+        <el-image
           style="width: 100px; height: 80px"
-          :src="url+item.str_v" 
+          :src="url + item.str_v"
           :preview-src-list="imgView(item.str_v)"
-          v-else>
+          v-else
+        >
         </el-image>
       </template>
     </v-data-table>
@@ -136,6 +140,25 @@
       @input="pageChange"
     ></v-pagination>
     <div style="clear: both"></div>
+    <v-dialog v-model="dialogVisible" max-width="500">
+      <v-card class="card">
+        <v-card-title>
+          <h5 class="headline text-white">温馨提示</h5>
+        </v-card-title>
+        <v-card-text>
+          <div class="text-white">
+            确定要导出{{ total }}条数据吗？
+          </div></v-card-text
+        >
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn class="canclebtn" text @click="dialogVisible = false"
+            >取消</v-btn
+          >
+          <v-btn class="confbtn" text @click="toExport">确定</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <style scoped>
@@ -182,7 +205,8 @@ import ApiService from "@/core/services/api.service";
 import Hits from "@/assets/js/components/com.js";
 export default {
   data: () => ({
-    url:process.env.VUE_APP_BASE_URL,
+    dialogVisible: false,
+    total: 0,
     hideheader: true,
     seen: true,
     length: 3,
@@ -234,7 +258,6 @@ export default {
     equlist: [],
     buisnesss: [],
     buisness_id: "",
-    
     typelist: [
       {
         id: 1,
@@ -267,6 +290,7 @@ export default {
     },
     start_time: "",
     end_time: "",
+    url:process.env.VUE_APP_BASE_URL
   }),
 
   created() {
@@ -322,10 +346,10 @@ export default {
   },
 
   methods: {
-    imgView(str){
-      let arr = []
-      arr.push(this.url+str)
-      return arr
+    imgView(str) {
+      let arr = [];
+      arr.push(this.url + str);
+      return arr;
     },
     onClickBuisness(name, id) {
       let _that = this;
@@ -408,26 +432,110 @@ export default {
     },
 
     pageChange() {
+      this.equdata();
       this.ajaxdata();
     },
-    exportdata() {
+
+    onClickBuisness(name, id) {
+      let _that = this;
+      ApiService.post(AUTH.local_url + "/asset/list", {
+        business_id: id,
+      })
+        .then(({ data }) => {
+          console.log("资产编辑列表");
+          console.log(data);
+          if (data.code == 200) {
+            var arr = data.data[0].device;
+            _that.equlist = arr;
+          } else {
+            this.$store.dispatch(REFRESH).then(() => {});
+          }
+        })
+        .catch(({ response }) => {
+          console.log(response);
+        });
+    },
+    equdata() {
+      let _that = this;
+      ApiService.post(AUTH.local_url + "/business/index", {
+        page: 1,
+      }).then(({ data }) => {
+        console.log("业务列表");
+        console.log(data);
+        if (data.code == 200) {
+          _that.buisnesss = data.data.data;
+        }
+        if (data.code == 401) {
+        } else {
+        }
+      });
+      // ApiService.post(AUTH.local_url + "/kv/list").then(({ data }) => {
+      //   console.log("设备列表");
+      //   console.log(data);
+      //   if (data.code == 200) {
+      //     this.equlist = data.data;
+      //   } else if (data.code == 401) {
+      //     this.$store.dispatch(LOGOUT).then(() =>
+      //       this.$router.push({
+      //         name: "login",
+      //       })
+      //     );
+      //   } else {
+      //   }
+      // });
+    },
+    ajaxdata() {
+      ApiService.post(AUTH.local_url + "/kv/index", {
+        limit: this.limit,
+        page: this.page,
+        entity_id: this.entity_id,
+        type: this.type,
+        start_time: this.start_time,
+        end_time: this.end_time,
+        token: this.token,
+      }).then(({ data }) => {
+        if (data.code == 200) {
+          let datas = data.data.data;
+          if (datas) {
+            for (let i = 0; i < datas.length; i++) {
+              let item = datas[i];
+              item["ts"] = dateFormat(item["ts"] / 1000000);
+            }
+            this.desserts = datas;
+            this.total = data.data.total;
+            this.length = Math.ceil(data.data.total / data.data.per_page);
+            this.page = data.data.current_page;
+          } else {
+            this.desserts = [];
+          }
+        } else if (data.code == 401) {
+          this.$store.dispatch(REFRESH).then(() => {});
+        } else {
+        }
+      });
+    },
+
+    pageChange() {
+      this.ajaxdata();
+    },
+    toExport() {
       ApiService.post(AUTH.local_url + "/kv/export", {
         entity_id: this.entity_id,
         type: this.type,
         start_time: this.start_time,
         end_time: this.end_time,
       }).then(({ data }) => {
-        console.log("导出");
-        console.log(data);
         if (data.code == 200) {
-          nsole.log("导出成功");
-          console.log(document.location.hostname + "/" + data.data);
-          window.open(data.data, "_blank");
+          this.dialogVisible = false;
+          window.open(process.env.VUE_APP_BASE_URL + "/" + data.data, "_blank");
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
         } else {
         }
       });
+    },
+    exportdata() {
+      this.dialogVisible = true;
     },
   },
 };

@@ -19,6 +19,7 @@ import ApiService from "./core/services/api.service";
 // import MockService from "./core/mock/mock.service";
 import { VERIFY_AUTH } from "./core/services/store/auth.module";
 import { RESET_LAYOUT_CONFIG } from "@/core/services/store/config.module";
+import VueImageMarker from './components/common/vue-image-marker.vue'
 
 import 'echarts/theme/macarons.js'
 
@@ -30,6 +31,8 @@ import '@/mock';
 
 import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
 Vue.component('date-picker', VuePersianDatetimePicker);
+Vue.component('VImageMarker', VueImageMarker)
+
 Vue.config.productionTip = false;
 
 Vue.use(ElementUI);
@@ -111,7 +114,21 @@ router.beforeEach((to, from, next) => {
     setTimeout(() => {
         window.scrollTo(0, 0);
     }, 100);
+
+    setTimeout(() => {
+        var _hmt = _hmt || [];
+        (function() {
+            document.getElementById('baidu_tj') && document.getElementById('baidu_tj').remove();
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?e4910b169e66c3c3d29050a965c59f1c";
+            hm.id = "baidu_tj"
+
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    }, 0);
 });
+
 
 new Vue({
     router,

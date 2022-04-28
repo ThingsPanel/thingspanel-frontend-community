@@ -66,7 +66,7 @@ export default {
       rating: 5,
       page: 1,
       listarr: [],
-      imgarr:['media/logos/wsd.png','media/logos/gps.png','media/logos/switch.png','media/logos/temperature.png','media/logos/en.png','media/logos/qxz.png','media/logos/qxz.png','media/logos/yy.png'],
+      imgarr:['media/logos/wsd.png','media/logos/gps.png','media/logos/switch.png','media/logos/temperature.png','media/logos/en.png','media/logos/qxz.png','media/logos/qxz.png','media/logos/yy.png','media/logos/switch.png'],
     }
   },
   created() {

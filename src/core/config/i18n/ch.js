@@ -1,12 +1,13 @@
 // China
 export const locale = {
     COMMON: {
+
         SYSTEMSETUP:"系统设置",
         DEVICEPROPERTIES:"设备属性",
         DEVICEPROPERTIESVALUE:"设备属性值",
         DEVICELOCATION:"设备位置",
         DEVICEID:"设备id",
-        // 
+
         TOKENEXPIRES: "登录状态已过期是否刷新？",
         CONSUMING: "请求耗时",
         USERNAME: "用户名",

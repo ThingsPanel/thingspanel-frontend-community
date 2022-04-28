@@ -263,10 +263,7 @@ export default {
         console.log("列表");
         console.log(data);
 
-        this.length =
-          parseInt(data.data.total / data.data.per_page) > 0
-            ? parseInt(data.data.total / data.data.per_page) + 1
-            : 1;
+        this.length = Math.ceil(data.data.total / data.data.per_page);
         this.page = data.data.current_page;
 
         var chartarr = data.data.data;

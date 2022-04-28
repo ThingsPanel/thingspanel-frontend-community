@@ -30,7 +30,7 @@
             <v-card-text>
               <v-container>
                 <v-row>
-                  <v-col cols="12" xs="12" md="6">
+                  <v-col cols="12" xs="12" md="6" v-if="!zlshow">
                     <div class="text-title">{{ $t("COMMON.ASSETS") }}：</div>
                     <treeselect
                       v-model="asset_id"
@@ -44,9 +44,9 @@
                       @input="changeass(asset_id)"
                     />
                   </v-col>
-                  <v-col cols="12" xs="12" md="6">
+                  <v-col cols="12" xs="12" md="6" v-if="!zlshow">
                     <div class="text-title">{{ $t("COMMON.EQUIPMENT") }}：</div>
-<!--                    <v-select
+                    <!--                    <v-select
                       :items="devicearr"
                       item-value="id"
                       item-text="name"
@@ -55,24 +55,24 @@
                       @change="changeStr(device_id)"
                       required
                     ></v-select> -->
-					
-					<el-select
-					  v-model="device_id"
-					  @change="changeStr(device_id)"
-					  :popper-append-to-body="true"
-					  class="width-100 vselect"
-					>
-					  <el-option
-					    v-for="(t, index) in devicearr"
-					    :key="index"
-					    :value="t.id"
-					    :label="t.name"
-					  ></el-option>
-					</el-select>
+
+                    <el-select
+                      v-model="device_id"
+                      @change="changeStr(device_id)"
+                      :popper-append-to-body="true"
+                      class="width-100 vselect"
+                    >
+                      <el-option
+                        v-for="(t, index) in devicearr"
+                        :key="index"
+                        :value="t.id"
+                        :label="t.name"
+                      ></el-option>
+                    </el-select>
                   </v-col>
                   <v-col cols="12" xs="12" md="12">
                     <div class="text-title">{{ $t("COMMON.CHARTUNIT") }}：</div>
-                    <v-row style="margin-top: 20px;">
+                    <v-row style="margin-top: 20px">
                       <v-col
                         cols="12"
                         xs="12"
@@ -156,9 +156,9 @@
           <div class="float-left">
             <div
               class="text-white float-left"
-              style="height: 56px; line-height: 56px; margin-right: 20px;"
+              style="height: 56px; line-height: 56px; margin-right: 20px"
             >
-              {{ $t('COMMON.PLACEHOLDER35') }}: 
+              {{ $t("COMMON.PLACEHOLDER35") }}:
             </div>
             <div class="float-left">
               <el-select
@@ -450,7 +450,7 @@
         :busid="business_id"
         :proid="proid"
         :chart_id="chart_id"
-		:assest_id="entity_id"
+        :assest_id="entity_id"
         :start_time="strdate"
         :end_time="enddate"
         :latest_time="dateindex"
@@ -566,7 +566,14 @@ import { SET_AUTH } from "../../../core/services/store/auth.module";
 export default {
   data() {
     return {
-      equlist: [],
+      equlist: [
+        {
+          business_id: "",
+          id: "",
+          name: "总览",
+        },
+      ],
+      zlshow: false,
       entity_id: "",
       isShowLeftNav: false,
       dialog: false,
@@ -691,6 +698,16 @@ export default {
   created() {
     this.chart_id = this.$route.query.chart_id;
     this.business_id = this.$route.query.business_id;
+    this.entity_id = this.business_id;
+
+    this.equlist = [
+      {
+        business_id: this.business_id,
+        id: this.entity_id,
+        name: "预览",
+      },
+    ];
+
     this.changebuss(this.business_id);
     console.log("图表id");
     console.log(this.chart_id);
@@ -724,8 +741,16 @@ export default {
           console.log(data);
           if (data.code == 200) {
             var arr = data.data;
+
+            //最新页增加总览选项
+            arr.unshift({
+              business_id: this.business_id,
+              id: this.business_id,
+              name: "总览",
+            });
+
             _that.equlist = arr;
-			_that.entity_id = arr[0].id;
+            // _that.entity_id = arr[0].id; //20220424 不再默认第一项展示
           } else {
             this.$store.dispatch(REFRESH).then(() => {});
           }
@@ -1040,39 +1065,61 @@ export default {
 
     // 打开面板模态框
     addpanel() {
-      ApiService.post(AUTH.local_url + "/dashboard/list", {
-        chart_id: this.chart_id,
-      }).then(({ data }) => {
-        console.log("获取面板列表");
-        console.log(data);
-        if (data.code == 200) {
-          if (data.data.length > 0) {
-            // 编辑
-            this.isedit = 1;
-            this.panelarr = data.data;
+      //总览
+      if (this.business_id == this.entity_id) {
+        ApiService.post(AUTH.local_url + "/dashboard/business/component", {
+          business_id: this.business_id,
+        }).then(({ data }) => {
+          console.log("获取图表内容");
+          console.log(data);
+          if (data.code == 200) {
+            var arr = data.data;
+            for (var i = 0; i < arr.length; i++) {
+              arr[i]["activeclass"] = "chartborder";
+            }
+            this.equarr = arr;
+          } else if (data.code == 401) {
+            this.$store.dispatch(REFRESH).then(() => {});
           } else {
-            // 新增
-            this.isedit = 0;
-            this.panelarr = [
-              {
-                business_id: "",
-                assarr: [],
-                widget: [
-                  {
-                    device_id: null,
-                    widget_identifier: "",
-                    equarr: [],
-                  },
-                ],
-              },
-            ];
+            alert(data.msg);
           }
-          this.paneldialog = true;
-        } else if (data.code == 401) {
-          this.$store.dispatch(REFRESH).then(() => {});
-        } else {
-        }
-      });
+        });
+        this.zlshow = true;
+        this.paneldialog = true;
+      } else {
+        ApiService.post(AUTH.local_url + "/dashboard/list", {
+          chart_id: this.chart_id,
+        }).then(({ data }) => {
+          if (data.code == 200) {
+            if (data.data.length > 0) {
+              // 编辑
+              this.isedit = 1;
+              this.panelarr = data.data;
+            } else {
+              // 新增
+              this.isedit = 0;
+              this.panelarr = [
+                {
+                  business_id: "",
+                  assarr: [],
+                  widget: [
+                    {
+                      device_id: null,
+                      widget_identifier: "",
+                      equarr: [],
+                    },
+                  ],
+                },
+              ];
+            }
+            this.zlshow = false;
+            this.paneldialog = true;
+          } else if (data.code == 401) {
+            this.$store.dispatch(REFRESH).then(() => {});
+          } else {
+          }
+        });
+      }
     },
 
     // 调取业务数据
@@ -1114,7 +1161,6 @@ export default {
 
     //获取设备数据
     changeass(id) {
-      console.log(id);
       if (id !== undefined) {
         ApiService.post(AUTH.local_url + "/dashboard/device", {
           asset_id: id,
@@ -1205,7 +1251,6 @@ export default {
     //提交面板配置
     submitpanel() {
       var data = JSON.stringify(this.panelarr);
-      console.log(data);
       if (this.isedit == 0) {
         // 新增
         ApiService.post(AUTH.local_url + "/dashboard/add", {
@@ -1280,36 +1325,52 @@ export default {
       var asset_id = this.asset_id;
       var device_id = this.device_id;
       var widget_identifier = this.widget_identifier;
+      var pdata = null;
 
-      if (asset_id == "") {
-        alert("请选择资产！");
-        return fales;
-      }
-      if (device_id == null) {
-        alert("请选择设备！");
-        return false;
-      }
       if (widget_identifier == null) {
         alert("请选择图表！");
         return false;
       }
-      ApiService.post(AUTH.local_url + "/dashboard/add", {
-        chart_id: chart_id,
-        asset_id: asset_id,
-        device_id: device_id,
-        widget_identifier: widget_identifier,
-      }).then(({ data }) => {
-        console.log("添加图表");
-        console.log(data);
-        if (data.code == 200) {
-          this.paneldialog = false;
-          window.location.reload(); //刷新当前页面
-        } else if (data.code == 401) {
-          this.$store.dispatch(REFRESH).then(() => {});
-        } else {
-          alert(data.msg);
+
+      if (this.zlshow) {
+        pdata = {
+          chart_id: chart_id,
+          device_id: this.business_id,
+          asset_id: this.business_id,
+          widget_identifier: widget_identifier,
+        };
+      } else {
+        if (asset_id == "") {
+          alert("请选择资产！");
+          return fales;
         }
-      });
+        if (device_id == null) {
+          alert("请选择设备！");
+          return false;
+        }
+
+        pdata = {
+          chart_id: chart_id,
+          asset_id: asset_id,
+          device_id: device_id,
+          widget_identifier: widget_identifier,
+        };
+      }
+
+      ApiService.post(AUTH.local_url + "/dashboard/add", pdata).then(
+        ({ data }) => {
+          console.log("添加图表");
+          console.log(data);
+          if (data.code == 200) {
+            this.paneldialog = false;
+            window.location.reload(); //刷新当前页面
+          } else if (data.code == 401) {
+            this.$store.dispatch(REFRESH).then(() => {});
+          } else {
+            alert(data.message);
+          }
+        }
+      );
     },
   },
 };
@@ -1423,9 +1484,9 @@ export default {
 }
 
 .vselect {
-	margin-top: 7px;
-	height: 40px !important;
-	line-height: 40px !important;
+  margin-top: 7px;
+  height: 40px !important;
+  line-height: 40px !important;
 }
 
 .el-select {
