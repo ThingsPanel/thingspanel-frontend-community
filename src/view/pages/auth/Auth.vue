@@ -13,7 +13,7 @@
           <div class="row">
             <div class="col align-self-center">
               <a href="" class="logo text-white">
-                <img src="media/logos/logo.svg" alt="" class="logo-icon" />
+                <img :src="siteLogo()" alt="" class="logo-icon" />
               </a>
             </div>
             <div class="col text-right align-self-center">
@@ -189,11 +189,14 @@
 
 <script>
 import { mapState } from "vuex";
+import { mapGetters } from "vuex";
+import objectPath from "object-path";
 
 export default {
   name: "auth",
   methods: {},
   computed: {
+    ...mapGetters(["layoutConfig"]),
     ...mapState({
       errors: (state) => state.auth.errors,
     }),
@@ -201,5 +204,26 @@ export default {
       return process.env.BASE_URL + "media/bg/bg-12.png";
     },
   },
+  methods:{
+    siteLogo() {
+      const menuAsideLeftSkin = this.layoutConfig("brand.self.theme");
+      // set brand logo
+      const logoObject = this.layoutConfig("self.logo");
+
+      let logo;
+
+      if (typeof logoObject === "string") {
+        logo = logoObject;
+      }
+      if (typeof logoObject === "object") {
+        logo = objectPath.get(logoObject, menuAsideLeftSkin + "");
+      }
+      if (typeof logo === "undefined") {
+        const logos = this.layoutConfig("self.logo");
+        logo = logos[Object.keys(logos)[0]];
+      }
+      return logo;
+    }
+  }
 };
 </script>

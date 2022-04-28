@@ -20,6 +20,7 @@
                   <th>{{ $t("COMMON.NO") }}</th>
                   <th>{{ $t("COMMON.ASSETS") }}</th>
                   <th>{{ $t("COMMON.EQUIPMENT") }}</th>
+                  <th>{{ $t("COMMON.DEVICEPROPERTIES") }}</th>
                   <th>{{ $t("COMMON.CODEMANAGE") }}</th>
                   <th>{{ $t("COMMON.TITLE25") }}</th>
                   <th>{{ $t("COMMON.TITLE23") }}</th>
@@ -92,7 +93,14 @@
                       ></el-option>
                     </el-select>
                   </td>
-
+                  <!-- 管理设备属性 -->
+                  <td>
+                    <span
+                      @click="setDervice(index, b)"
+                      class="cursor-pointer"
+                      >{{ $t("COMMON.ATTR") }}</span
+                    >
+                  </td>
                   <td @click="equipment(a)" class="cursor">
                     {{ a.dm }}
                   </td>
@@ -518,6 +526,75 @@
         </v-dialog>
       </v-form>
     </v-row>
+    <!-- 设备属性模态框 -->
+    <v-row justify="center">
+      <v-form ref="form" lazy-validation>
+        <v-dialog v-model="currentDervice.id" max-width="800">
+          <v-card class="card">
+            <v-card-title class="d-flex justify-space-between">
+              <h5 class="headline text-white">
+                {{ currentDervice.name }} {{ $t("COMMON.DEVICEPROPERTIES")
+                }}{{ $t("COMMON.MANAGE") }}
+              </h5>
+              <div>
+                <v-btn class="confbtn" text @click="addline()">{{
+                  $t("COMMON.ADDLINE")
+                }}</v-btn>
+              </div>
+            </v-card-title>
+            <v-card-text>
+              <v-container>
+                <table class="table">
+                  <thead>
+                    <tr class="text-white">
+                      <th>{{ $t("COMMON.DEVICEPROPERTIES") }}</th>
+                      <th>{{ $t("COMMON.DEVICEPROPERTIESVALUE") }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(item, i) in deriveceType" :key="i">
+                      <td>
+                        <select
+                          class="optgroup form-control"
+                          v-model="item.name"
+                          @change="changeSelect"
+                          @focus="selectFocus(item.name, i)"
+                        >
+                          <option :value="'location'">
+                            {{ $t("COMMON.DEVICELOCATION") }}
+                          </option>
+                          <option :value="'d_id'">
+                            {{ $t("COMMON.DEVICEID") }}
+                          </option>
+                        </select>
+                      </td>
+                      <td>
+                        <v-text-field
+                          required
+                          v-model="item.value"
+                        ></v-text-field>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </v-container>
+            </v-card-text>
+            <div style="margin-left: 50px; color: #ffffff">
+              <!-- 提示：{{ $t("COMMON.PLACEHOLDER34") }} -->
+            </div>
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn class="canclebtn" text @click="currentDervice = {};deriveceType = [{name:'',value:''}]">{{
+                $t("COMMON.CLOSE")
+              }}</v-btn>
+              <v-btn class="confbtn" text @click="saveDervice()">{{
+                $t("COMMON.CONFIRM")
+              }}</v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
+      </v-form>
+    </v-row>
   </div>
 </template>
 <style scoped>
@@ -579,7 +656,7 @@ export default {
             dm: "参数",
             stat: "从未",
             mapping: [],
-            dash:[],
+            dash: [],
           },
         ],
         two: [],
@@ -626,6 +703,17 @@ export default {
     d1: "",
     f1: "",
     equipmentItem: {},
+    //
+    currentDerviceArr: [],
+    currentDervice: {},
+    deriveceType: [
+      {
+        name: "",
+        value: "",
+      },
+    ],
+    beforeValue: "",
+    beforeIndex: "",
   }),
   created() {
     console.log("接收值");
@@ -639,6 +727,81 @@ export default {
     this.datalist();
   },
   methods: {
+    selectFocus(str, i) {
+      this.beforeValue = str;
+      this.beforeIndex = i;
+    },
+    changeSelect(e) {
+      let currValue = e.target.value;
+      let arr = this.deriveceType.filter((item, index) => {
+        return item.name == currValue && this.beforeIndex != index;
+      });
+      if (arr.length) {
+        this.$message("该设备属性已存在");
+        this.deriveceType[this.beforeIndex].name = this.beforeValue;
+      }
+      e.srcElement.blur();
+    },
+    setDervice(index, b) {
+      this.currentDerviceArr[0] = index;
+      this.currentDerviceArr[1] = b;
+      ApiService.post(AUTH.local_url + "/device/data", {
+        id: this.lists[index].device[b].id,
+      }).then((r) => {
+        let response = r.data
+        if (response.code == 200) {
+          console.log('进来');
+          if (response.data.d_id != "") {
+            this.deriveceType[0].name = "d_id";
+            this.deriveceType[0].value = response.data.d_id;
+            if (response.data.location != "") {
+              this.deriveceType.push({
+                name: "location",
+                value: response.data.location,
+              });
+              this.currentDervice = Object.assign({},response.data);
+            }
+          } else if (response.data.location != "") {
+            this.deriveceType[0].name = "location";
+            this.deriveceType[0].value = response.data.location;
+            this.currentDervice = Object.assign({},response.data);
+          }else{
+            this.currentDervice = Object.assign({},response.data);
+          }
+        }
+      });
+    },
+    addline() {
+      if (this.deriveceType.length == 2) {
+        this.$message("最多增加两项配置哦");
+        return false;
+      }
+      this.deriveceType.push({
+        name: "",
+        value: "",
+      });
+    },
+    saveDervice() {
+      let derObj =
+        this.lists[this.currentDerviceArr[0]].device[this.currentDerviceArr[1]];
+      let obj = {};
+      this.deriveceType.forEach((item, i) => {
+        obj[item.name] = item.value;
+      });
+      ApiService.post(AUTH.local_url + "/device/update_only", {
+        id: derObj.id,
+        name: obj.name,
+        type: obj.type,
+        protocol: obj.protocol,
+        location: obj.location || "",
+        d_id: obj.d_id || "",
+      }).then(({ data }) => {
+        if (data.code == 200) {
+          this.currentDervice = {};
+          this.deriveceType = [{name:'',value:''}]
+        }
+      });
+    },
     normalizer(node) {
       return {
         id: node.id,
@@ -691,7 +854,7 @@ export default {
             dm: "参数",
             state: "从未",
             mapping: [],
-            dash:[],
+            dash: [],
           },
         ],
         two: [],
@@ -710,7 +873,7 @@ export default {
             dm: "参数",
             state: "从未",
             mapping: [],
-            dash:[],
+            dash: [],
           },
         ],
         there: [],
@@ -727,7 +890,7 @@ export default {
         dm: "参数",
         state: "从未",
         mapping: [],
-        dash:[],
+        dash: [],
         id: "",
       };
 
@@ -789,7 +952,7 @@ export default {
             type: "",
             dm: "参数",
             state: "从未",
-            dash:[],
+            dash: [],
           },
         ],
       };
@@ -801,7 +964,7 @@ export default {
         dm: "参数",
         state: "从未",
         mapping: [],
-        dash:[],
+        dash: [],
         id: "",
       };
 
@@ -860,7 +1023,7 @@ export default {
         dm: "参数",
         state: "从未",
         mapping: [],
-        dash:[],
+        dash: [],
         id: "",
       };
 
@@ -966,7 +1129,7 @@ export default {
     },
 
     device_updateonly: function (device, dashinfo = null) {
-      console.log(device)
+      console.log(device);
       ApiService.post(AUTH.local_url + "/device/update_only", {
         id: device.id,
         name: device.name,

@@ -71,13 +71,15 @@ export default {
       state.config = payload;
     },
     [RESET_LAYOUT_CONFIG](state) {
-      ApiService.setHeader();
       ApiService.post(local_url + "/system/logo/index")
       .then(({ data }) => {
         if (data.code == 200) {
+          console.log(1111231312313);
           state.initial.self.logo.dark = process.env.VUE_APP_BASE_URL + data.data.logo_one
           state.initial.loader.logo = process.env.VUE_APP_BASE_URL + data.data.logo_two
           document.title = data.data.system_name
+          var link = document.querySelector("link[rel~='icon']");
+          link.href = process.env.VUE_APP_BASE_URL + data.data.logo_three
           state.config = Object.assign({}, state.initial);
         }
       })

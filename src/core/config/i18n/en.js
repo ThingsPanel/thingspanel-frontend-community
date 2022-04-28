@@ -2,6 +2,11 @@
 export const locale = {
   COMMON: {
     SYSTEMSETUP:"System setup",
+    DEVICEPROPERTIES:"Device properties",
+    DEVICEPROPERTIESVALUE:"Device properties value",
+    DEVICELOCATION:"Device location",
+    DEVICEID:"Device id",
+    
     // 
     TOKENEXPIRES: "Whether to refresh the login status has expired?",
     CONSUMING: "Time consuming",

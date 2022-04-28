@@ -117,11 +117,11 @@
         <div>{{ item.name }}</div>
       </template>
       <template v-slot:item.dbl_v="{ item }">
-      <div v-if="item.dbl_v.indexOf('./') == -1">{{item.dbl_v}}</div>
+      <div v-if="item.str_v.indexOf('file') == -1">{{item.dbl_v}}</div>
        <el-image
           style="width: 100px; height: 80px"
-          :src="url+item.dbl_v" 
-          :preview-src-list="imgView(item.dbl_v)"
+          :src="url+item.str_v" 
+          :preview-src-list="imgView(item.str_v)"
           v-else>
         </el-image>
       </template>
@@ -324,8 +324,7 @@ export default {
   methods: {
     imgView(str){
       let arr = []
-      arr.push(this.url+'./files/logo/2022-04-25/2ec86c25b0caac22f87e7698d4be16cd.png')
-      console.log(arr);
+      arr.push(this.url+str)
       return arr
     },
     onClickBuisness(name, id) {

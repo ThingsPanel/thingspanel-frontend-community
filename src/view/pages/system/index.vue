@@ -76,7 +76,7 @@
                       </el-upload>
                     </p>
                   </div>
-                  <div>
+                  <div style="margin-right: 2.5rem">
                     <p>加载页面logo</p>
                     <div>
                       <img :src="url + formObj.logo_two" alt="" width="148px" />
@@ -89,6 +89,30 @@
                         :headers="headersObj"
                         :data="params"
                         :on-success="handleAvatarSuccessTwo"
+                        :before-upload="beforeAvatarUpload"
+                      >
+                        <el-button
+                          type="primary"
+                          icon="el-icon-refresh"
+                          size="mini"
+                          >更换logo</el-button
+                        >
+                      </el-upload>
+                    </p>
+                  </div>
+                  <div>
+                    <p>站标logo</p>
+                    <div>
+                      <img :src="url + formObj.logo_three" alt="" width="148px" />
+                    </div>
+                    <p>
+                      <el-upload
+                        class="upload-logo"
+                        :action="url + 'api/file/up'"
+                        :show-file-list="false"
+                        :headers="headersObj"
+                        :data="params"
+                        :on-success="handleAvatarSuccessThree"
                         :before-upload="beforeAvatarUpload"
                       >
                         <el-button
@@ -235,6 +259,9 @@ export default {
     },
     handleAvatarSuccessTwo(res, file) {
       this.formObj.logo_two = res.data;
+    },
+    handleAvatarSuccessThree(res, file) {
+      this.formObj.logo_three = res.data;
     },
     beforeAvatarUpload(file) {
       console.log(file);
