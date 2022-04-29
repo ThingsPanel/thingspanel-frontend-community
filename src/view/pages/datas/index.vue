@@ -462,7 +462,9 @@ export default {
       }).then(({ data }) => {
         if (data.code == 200) {
           this.dialogVisible = false;
-          window.open((process.env.VUE_APP_BASE_URL.slice(0,process.env.VUE_APP_BASE_URL.length-6) ||document.location.protocol + "//" + document.domain) + "/"+ data.data, "_blank");
+          window.open((process.env.VUE_APP_BASE_URL ||
+    document.location.protocol + "//" + document.domain +":9999/").slice(0,(process.env.VUE_APP_BASE_URL ||
+    document.location.protocol + "//" + document.domain +":9999/").length-6) +"/"+ data.data, "_blank");
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
         } else {
