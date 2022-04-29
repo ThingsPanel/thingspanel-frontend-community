@@ -290,7 +290,8 @@ export default {
     },
     start_time: "",
     end_time: "",
-    url:process.env.VUE_APP_BASE_URL
+    url:(process.env.VUE_APP_BASE_URL ||
+    document.location.protocol + "//" + document.domain + ":9999/")
   }),
 
   created() {
