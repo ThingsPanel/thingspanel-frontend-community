@@ -100,11 +100,11 @@
                             :pleaseholder="$t('COMMON.PLACEHOLDER3')"
                           >
                             <el-option
-                              v-for="(r, index) in conditionArr"
-                              :key="index"
+                              v-for="r, in conditionArr"
+                              :key="r.id"
                               :value="r.id"
                               :label="r.name"
-                              @click="changeCgq(propertyindex)"
+                              @click.native="changeCgq(r.id)"
                             ></el-option>
                           </el-select>
 

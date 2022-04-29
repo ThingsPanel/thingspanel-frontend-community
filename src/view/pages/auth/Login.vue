@@ -239,9 +239,11 @@
 }
 #example-input-1{
   -webkit-text-fill-color:#fff !important;
+    transition: background-color 50000s ease-in-out 0s;
 }
 #example-input-2{
   -webkit-text-fill-color:#fff !important;
+  transition: background-color 50000s ease-in-out 0s;
 }
 </style>
 <script>
