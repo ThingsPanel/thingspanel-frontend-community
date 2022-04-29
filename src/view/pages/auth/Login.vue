@@ -237,6 +237,14 @@
 .form-control.form-control-solid {
   background-color: rgba(22, 30, 67, 0.5) !important;
 }
+#example-input-1{
+  -webkit-text-fill-color:#fff !important;
+    transition: background-color 50000s ease-in-out 0s;
+}
+#example-input-2{
+  -webkit-text-fill-color:#fff !important;
+  transition: background-color 50000s ease-in-out 0s;
+}
 </style>
 <script>
 import { mapState } from "vuex";
@@ -248,7 +256,7 @@ import { SET_AUTH } from "../../../core/services/store/auth.module";
 import ApiService from "@/core/services/api.service";
 const local_url =
   (process.env.VUE_APP_BASE_URL ||
-    document.location.protocol + "//" + document.domain + ":5200/") + "api";
+    document.location.protocol + "//" + document.domain + ":9999/") + "api";
 export default {
   mixins: [validationMixin],
   name: "login",

@@ -11,7 +11,7 @@ export const OVERRIDE_LAYOUT_CONFIG = "overrideLayoutConfig";
 export const OVERRIDE_PAGE_LAYOUT_CONFIG = "overridePageLayoutConfig";
 const local_url =
   (process.env.VUE_APP_BASE_URL ||
-    document.location.protocol + "//" + document.domain + ":5200/") + "api";
+    document.location.protocol + "//" + document.domain + ":9999/") + "api";
 
 // mutation types
 
@@ -74,12 +74,14 @@ export default {
       ApiService.post(local_url + "/system/logo/index")
       .then(({ data }) => {
         if (data.code == 200) {
-          console.log(1111231312313);
-          state.initial.self.logo.dark = process.env.VUE_APP_BASE_URL + data.data.logo_one
-          state.initial.loader.logo = process.env.VUE_APP_BASE_URL + data.data.logo_two
+          state.initial.self.logo.dark = (process.env.VUE_APP_BASE_URL  ||
+          document.location.protocol + "//" + document.domain + ":9999/")+ data.data.logo_one
+          state.initial.loader.logo = (process.env.VUE_APP_BASE_URL ||
+          document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_two
           document.title = data.data.system_name
           var link = document.querySelector("link[rel~='icon']");
-          link.href = process.env.VUE_APP_BASE_URL + data.data.logo_three
+          link.href = (process.env.VUE_APP_BASE_URL ||
+          document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_three
           state.config = Object.assign({}, state.initial);
         }
       })

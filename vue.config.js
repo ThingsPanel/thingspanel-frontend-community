@@ -12,7 +12,7 @@ module.exports = {
 	},
 	proxy: {
 	  "/api": {
-		target: process.env.VUE_APP_BASE_URL + "/api",
+		target: process.env.VUE_APP_BASE_URL+ "/api",
 		changeOrigin: true, // 是否改变域名
 		pathRewrite: {
 		  // 路径重写

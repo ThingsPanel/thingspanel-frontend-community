@@ -7,6 +7,8 @@
           :popper-append-to-body="false"
           class="width-100"
           :placeholder="$t('COMMON.PLACEHOLDER8')"
+          @change="changeBuisness"
+          clearable
         >
           <el-option
             v-for="(e, index) in buisnesss"
@@ -23,6 +25,8 @@
           :popper-append-to-body="false"
           class="width-100"
           :placeholder="$t('COMMON.PLACEHOLDER35')"
+          @change="changeAsset"
+          clearable
         >
           <el-option
             v-for="(e, index) in equlist"
@@ -147,7 +151,7 @@
         </v-card-title>
         <v-card-text>
           <div class="text-white">
-            确定要导出{{ total }}条数据吗？
+            确定要导出{{ length }}条数据吗？
           </div></v-card-text
         >
         <v-card-actions>
@@ -290,7 +294,8 @@ export default {
     },
     start_time: "",
     end_time: "",
-    url:process.env.VUE_APP_BASE_URL
+    url:(process.env.VUE_APP_BASE_URL ||
+    document.location.protocol + "//" + document.domain + ":9999/")
   }),
 
   created() {
@@ -346,6 +351,16 @@ export default {
   },
 
   methods: {
+    // 改变业务
+      changeBuisness(e){
+        this.business_id = e
+        this.entity_id = ''
+        this.equlist = []
+        this.ajaxdata();
+      },
+      changeAsset(){
+        this.ajaxdata();
+      },
     imgView(str) {
       let arr = [];
       arr.push(this.url + str);
@@ -360,8 +375,10 @@ export default {
           console.log("资产编辑列表");
           console.log(data);
           if (data.code == 200) {
-            var arr = data.data[0].device;
+            var arr = data.data;
             _that.equlist = arr;
+            
+            console.log('====', _that.equlist)
           } else {
             this.$store.dispatch(REFRESH).then(() => {});
           }
@@ -403,7 +420,8 @@ export default {
       ApiService.post(AUTH.local_url + "/kv/index", {
         limit: this.limit,
         page: this.page,
-        entity_id: this.entity_id,
+        business_id: this.buisness_id,
+        asset_id: this.entity_id,
         type: this.type,
         start_time: this.start_time,
         end_time: this.end_time,
@@ -420,7 +438,7 @@ export default {
             }
             this.desserts = datas;
             this.length = data.data.total;
-            this.page = data.data.current_page;
+            this.length = Math.ceil(data.data.total / data.data.per_page);
           } else {
             this.desserts = [];
           }
@@ -435,89 +453,6 @@ export default {
       this.equdata();
       this.ajaxdata();
     },
-
-    onClickBuisness(name, id) {
-      let _that = this;
-      ApiService.post(AUTH.local_url + "/asset/list", {
-        business_id: id,
-      })
-        .then(({ data }) => {
-          console.log("资产编辑列表");
-          console.log(data);
-          if (data.code == 200) {
-            var arr = data.data[0].device;
-            _that.equlist = arr;
-          } else {
-            this.$store.dispatch(REFRESH).then(() => {});
-          }
-        })
-        .catch(({ response }) => {
-          console.log(response);
-        });
-    },
-    equdata() {
-      let _that = this;
-      ApiService.post(AUTH.local_url + "/business/index", {
-        page: 1,
-      }).then(({ data }) => {
-        console.log("业务列表");
-        console.log(data);
-        if (data.code == 200) {
-          _that.buisnesss = data.data.data;
-        }
-        if (data.code == 401) {
-        } else {
-        }
-      });
-      // ApiService.post(AUTH.local_url + "/kv/list").then(({ data }) => {
-      //   console.log("设备列表");
-      //   console.log(data);
-      //   if (data.code == 200) {
-      //     this.equlist = data.data;
-      //   } else if (data.code == 401) {
-      //     this.$store.dispatch(LOGOUT).then(() =>
-      //       this.$router.push({
-      //         name: "login",
-      //       })
-      //     );
-      //   } else {
-      //   }
-      // });
-    },
-    ajaxdata() {
-      ApiService.post(AUTH.local_url + "/kv/index", {
-        limit: this.limit,
-        page: this.page,
-        entity_id: this.entity_id,
-        type: this.type,
-        start_time: this.start_time,
-        end_time: this.end_time,
-        token: this.token,
-      }).then(({ data }) => {
-        if (data.code == 200) {
-          let datas = data.data.data;
-          if (datas) {
-            for (let i = 0; i < datas.length; i++) {
-              let item = datas[i];
-              item["ts"] = dateFormat(item["ts"] / 1000000);
-            }
-            this.desserts = datas;
-            this.total = data.data.total;
-            this.length = Math.ceil(data.data.total / data.data.per_page);
-            this.page = data.data.current_page;
-          } else {
-            this.desserts = [];
-          }
-        } else if (data.code == 401) {
-          this.$store.dispatch(REFRESH).then(() => {});
-        } else {
-        }
-      });
-    },
-
-    pageChange() {
-      this.ajaxdata();
-    },
     toExport() {
       ApiService.post(AUTH.local_url + "/kv/export", {
         entity_id: this.entity_id,
@@ -527,7 +462,9 @@ export default {
       }).then(({ data }) => {
         if (data.code == 200) {
           this.dialogVisible = false;
-          window.open(process.env.VUE_APP_BASE_URL + "/" + data.data, "_blank");
+          window.open((process.env.VUE_APP_BASE_URL ||
+    document.location.protocol + "//" + document.domain +":9999/").slice(0,(process.env.VUE_APP_BASE_URL ||
+    document.location.protocol + "//" + document.domain +":9999/").length-6) +"/"+ data.data, "_blank");
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
         } else {
