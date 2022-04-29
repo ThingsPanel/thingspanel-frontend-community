@@ -25,6 +25,7 @@
           :popper-append-to-body="false"
           class="width-100"
           :placeholder="$t('COMMON.PLACEHOLDER35')"
+          @change="changeAsset"
           clearable
         >
           <el-option
@@ -150,7 +151,7 @@
         </v-card-title>
         <v-card-text>
           <div class="text-white">
-            确定要导出{{ total }}条数据吗？
+            确定要导出{{ length }}条数据吗？
           </div></v-card-text
         >
         <v-card-actions>
@@ -355,6 +356,10 @@ export default {
         this.business_id = e
         this.entity_id = ''
         this.equlist = []
+        this.ajaxdata();
+      },
+      changeAsset(){
+        this.ajaxdata();
       },
     imgView(str) {
       let arr = [];
@@ -370,8 +375,10 @@ export default {
           console.log("资产编辑列表");
           console.log(data);
           if (data.code == 200) {
-            var arr = data.data[0].device;
+            var arr = data.data;
             _that.equlist = arr;
+            
+            console.log('====', _that.equlist)
           } else {
             this.$store.dispatch(REFRESH).then(() => {});
           }
@@ -455,7 +462,7 @@ export default {
       }).then(({ data }) => {
         if (data.code == 200) {
           this.dialogVisible = false;
-          window.open(process.env.VUE_APP_BASE_URL + "/" + data.data, "_blank");
+          window.open((process.env.VUE_APP_BASE_URL.slice(0,process.env.VUE_APP_BASE_URL.length-6) ||document.location.protocol + "//" + document.domain) + "/"+ data.data, "_blank");
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
         } else {
