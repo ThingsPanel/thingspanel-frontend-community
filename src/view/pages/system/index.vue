@@ -17,7 +17,7 @@
           :class="{ active: item.value == activeTab }"
           @click="activeTab = item.value"
         >
-          {{ item.name }}
+          {{ $t(item.name) }}
         </span>
       </p>
       <div class="content">
@@ -29,30 +29,30 @@
           <div class="content-form">
             <el-form
               :label-position="'left'"
-              label-width="80px"
+              label-width="120px"
               :model="formObj"
             >
-              <el-form-item label="系统标题">
+              <el-form-item :label="$t('COMMON.SYSTEMTITLE')">
                 <el-input
                   style="width: 328px"
                   v-model="formObj.system_name"
-                  placeholder="请输入系统标题"
+                  :placeholder="$t('COMMON.PLACEHOLDER16')"
                 ></el-input>
               </el-form-item>
-              <el-form-item label="主题色">
+              <el-form-item :label="$t('COMMON.THEMECOLOR')">
                 <el-select
                   v-model="formObj.theme"
-                  placeholder="请选择主题色"
+                  :placeholder="$t('COMMON.PLACEHOLDER5')"
                   style="width: 328px"
                 >
-                  <el-option label="蓝色" value="blue"></el-option>
-                  <el-option label="白色" value="white"></el-option>
+                  <el-option :label="$t('COMMON.BLUE')" value="blue"></el-option>
+                  <el-option :label="$t('COMMON.WHITE')" value="white"></el-option>
                 </el-select>
               </el-form-item>
               <el-form-item size="large">
                 <div class="img-upload">
                   <div style="margin-right: 2.5rem">
-                    <p>首页和后台logo</p>
+                    <p>{{$t('COMMON.HOMEANDBACKEND')}} logo</p>
                     <div>
                       <img :src="url + formObj.logo_one" alt="" />
                     </div>
@@ -71,13 +71,13 @@
                           icon="el-icon-refresh"
                           size="mini"
                           
-                          >更换logo</el-button
+                          >{{$t('COMMON.CHANGE')}} logo</el-button
                         >
                       </el-upload>
                     </p>
                   </div>
                   <div style="margin-right: 2.5rem">
-                    <p>加载页面logo</p>
+                    <p>{{$t('COMMON.LOADINGPAGE')}} logo</p>
                     <div>
                       <img :src="url + formObj.logo_two" alt="" width="148px" />
                     </div>
@@ -95,13 +95,13 @@
                           type="primary"
                           icon="el-icon-refresh"
                           size="mini"
-                          >更换logo</el-button
+                          >{{$t('COMMON.CHANGE')}} logo</el-button
                         >
                       </el-upload>
                     </p>
                   </div>
                   <div>
-                    <p>站标logo</p>
+                    <p>{{$t('COMMON.WEBSITE')}} logo</p>
                     <div>
                       <img :src="url + formObj.logo_three" alt="" width="148px" />
                     </div>
@@ -119,7 +119,7 @@
                           type="primary"
                           icon="el-icon-refresh"
                           size="mini"
-                          >更换logo</el-button
+                          >{{$t('COMMON.CHANGE')}} logo</el-button
                         >
                       </el-upload>
                     </p>
@@ -128,10 +128,8 @@
               </el-form-item>
             </el-form>
           </div>
-          <div style="padding-left: 80px">
-            <v-btn color="primary" @click="submitData()">{{
-              "保存修改"
-            }}</v-btn>
+          <div style="padding-left: 120px">
+            <v-btn color="primary" @click="submitData()">{{$t('COMMON.SAVE')}} </v-btn>
           </div>
         </div>
         <!-- <div v-if="activeTab == 2">
@@ -206,15 +204,15 @@ export default {
     activeTab: "1",
     tabs: [
       {
-        name: "常规设置",
+        name: "COMMON.GENERALSETTINGS",
         value: "1",
       },
       {
-        name: "通知设置",
+        name: "COMMON.NOTIFICATIONSETTINGS",
         value: "2",
       },
       {
-        name: "系统授权",
+        name: "COMMON.SYSTEMAUTHORIZATION",
         value: "3",
       },
     ],
@@ -255,6 +253,7 @@ export default {
 
   methods: {
     handleAvatarSuccess(res, file) {
+      console.log(res,file);
       this.formObj.logo_one = res.data;
     },
     handleAvatarSuccessTwo(res, file) {
@@ -264,7 +263,7 @@ export default {
       this.formObj.logo_three = res.data;
     },
     beforeAvatarUpload(file) {
-      console.log(file);
+      console.log('111',file);
       return true;
     },
     submitData() {
