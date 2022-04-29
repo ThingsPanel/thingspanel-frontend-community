@@ -438,7 +438,7 @@ export default {
             }
             this.desserts = datas;
             this.length = data.data.total;
-            this.page = data.data.current_page;
+            this.length = Math.ceil(data.data.total / data.data.per_page);
           } else {
             this.desserts = [];
           }
