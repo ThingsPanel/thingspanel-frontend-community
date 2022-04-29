@@ -1,6 +1,6 @@
 import JwtService from "@/core/services/jwt.service";
 
-let wsServer = (process.env.VUE_APP_WEBSOCKET_URL || ('ws://' + document.domain + ':5200/')) + '?token=' + JwtService.getToken();
+let wsServer = (process.env.VUE_APP_WEBSOCKET_URL || ('ws://' + document.domain + ':9999/')) + '?token=' + JwtService.getToken();
 let websocket = {
     ws: null,
     connect: function () {

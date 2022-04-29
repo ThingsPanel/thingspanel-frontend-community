@@ -16,7 +16,7 @@ export const SET_ERROR = "setError";
 
 const local_url =
   (process.env.VUE_APP_BASE_URL ||
-    document.location.protocol + "//" + document.domain + ":5200/") + "api";
+    document.location.protocol + "//" + document.domain + ":9999/") + "api";
 const state = {
   errors: "",
   user: {},
