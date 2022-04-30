@@ -139,6 +139,10 @@ export default {
       type: String,
       default: "",
     },
+    busid: {
+      type: String,
+      default: "",
+    },
   },
   data() {
     return {
@@ -221,7 +225,7 @@ export default {
         let socketData = JSON.parse(this.socketData);
         if (socketData.wid && socketData.wid == this.item.id) {
           this.apiData = JSON.parse(socketData.data)[0];
-          console.log(this.apiData);
+          this.apiData["busid"] = this.busid;
         }
       } catch (e) {
         //not support string

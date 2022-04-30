@@ -11,7 +11,7 @@
 				dragIgnoreFrom=".echarts,.x-number,.card-title,.right-buttons" @resized="resizedEvent"
 				@moved="movedEvent" class="chart-item">
 				<Slice @expand="handleFocus" :item="item" :colorStart="colorStart" :colorEnd="colorEnd"
-					:socketData="socketData" />
+					:socketData="socketData" :busid="busid"/>
 				<!-- <component class="test-main" :is="compName"></component> -->
 			</grid-item>
 		</grid-layout>
