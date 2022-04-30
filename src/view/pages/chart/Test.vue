@@ -17,51 +17,54 @@
             top: `calc(${marker.y * 100}% - 5px)`,
           }"
         >
-          <div
-            class="marker"
-            :style="{
-              backgroundColor: marker.color,
-            }"
-          ></div>
-          <div class="marker-title" @click="showMessage(marker)">
-            {{ marker.title }}
-          </div>
+          <v-tooltip bottom content-class="marker-tooltip-content">
+            <template v-slot:activator="{ on, attrs }">
+              <div v-bind="attrs" v-on="on">
+                <div
+                  class="marker"
+                  :style="{
+                    backgroundColor: marker.color,
+                  }"
+                ></div>
+                <div class="marker-title">
+                  {{ marker.title }}
+                </div>
+              </div>
+            </template>
+            <v-card class="card">
+              <v-card-text>
+                <v-container>
+                  <v-row class="dialog-head">
+                    <v-col cols="12" md="6" class="col-px-0">{{
+                      marker.title
+                    }}</v-col>
+                    <v-col cols="12" md="6" class="col-px-0">
+                      <span v-if="marker.status == 1">在线</span>
+                      <span v-else>离线</span>
+                    </v-col>
+                  </v-row>
+                  <v-row class="dialog-content">
+                    <v-col cols="12" md="6" class="col-px-0"
+                      >温度:{{ marker.temperature }}</v-col
+                    >
+                    <v-col cols="12" md="6" class="col-px-0"
+                      >噪音:{{ marker.noise }}</v-col
+                    >
+
+                    <v-col cols="12" md="6" class="col-px-0"
+                      >湿度:{{ marker.humidity }}</v-col
+                    >
+                    <v-col cols="12" md="6" class="col-px-0"
+                      >电量:{{ marker.status }}</v-col
+                    >
+                  </v-row>
+                </v-container>
+              </v-card-text>
+            </v-card>
+          </v-tooltip>
         </div>
       </div>
     </div>
-
-    <v-dialog v-model="dialogVisible" max-width="500px">
-      <v-card class="card">
-        <v-card-text>
-          <v-container>
-            <v-row class="dialog-head">
-              <v-col cols="12" md="6" class="col-px-0">{{
-                dialogInfo.title
-              }}</v-col>
-              <v-col cols="12" md="6" class="col-px-0">
-                <span v-if="dialogInfo.status == 1">在线</span>
-                <span v-else>离线</span>
-              </v-col>
-            </v-row>
-            <v-row class="dialog-content">
-              <v-col cols="12" md="6" class="col-px-0"
-                >温度:{{ dialogInfo.temperature }}</v-col
-              >
-              <v-col cols="12" md="6" class="col-px-0"
-                >噪音:{{ dialogInfo.noise }}</v-col
-              >
-
-              <v-col cols="12" md="6" class="col-px-0"
-                >湿度:{{ dialogInfo.title }}</v-col
-              >
-              <v-col cols="12" md="6" class="col-px-0"
-                >电量:{{ dialogInfo.status }}</v-col
-              >
-            </v-row>
-          </v-container>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
   </div>
 </template>
 
@@ -75,7 +78,7 @@ export default {
     return {
       urlImage: "/media/bg/dimarer_bg.png",
       padding: 20,
-      dialogVisible: false,
+
       containerWidth: 1,
       containerHeight: 1,
       imageWidth: 1,
@@ -85,14 +88,6 @@ export default {
       width: 1,
       height: 1,
 
-      dialogInfo: {
-        title: "test1",
-        status: 1,
-        temperature: 38,
-        noise: 10,
-        humidity: 80,
-        electricity: 35,
-      },
       markers: [
         {
           x: 0.2,
@@ -106,57 +101,20 @@ export default {
           electricity: 35,
         },
         {
-          x: 0.4,
-          y: 0.2,
-          color: "red",
-          title: "test1",
-          status: 1,
-          temperature: 38,
-          noise: 10,
-          humidity: 80,
-          electricity: 35,
-        },
-        {
-          x: 0.8,
-          y: 0.3,
-          color: "red",
-          title: "test1",
-          status: 1,
-          temperature: 38,
-          noise: 10,
-          humidity: 80,
-          electricity: 35,
-        },
-        {
-          x: 0.5,
-          y: 0.5,
-          color: "red",
-          title: "test1",
-          status: 1,
-          temperature: 38,
-          noise: 10,
-          humidity: 80,
-          electricity: 35,
-        },
-        {
           x: 0.5,
           y: 0.8,
-          color: "red",
-          color: "red",
-          title: "test1",
-          status: 1,
-          temperature: 38,
-          noise: 10,
-          humidity: 80,
+          color: "gray",
+          title: "test2",
+          status: 0,
+          temperature: 22,
+          noise: 50,
+          humidity: 30,
           electricity: 35,
         },
       ],
     };
   },
   watch: {
-    dialogVisible(val) {
-      val || this.close();
-    },
     padding: "refreshPos",
   },
   computed: {
@@ -177,14 +135,6 @@ export default {
     window.removeEventListener("resize", this.refreshPos);
   },
   methods: {
-    showMessage: function (info) {
-      this.dialogInfo = info;
-      this.dialogVisible = true;
-      console.log("--info---", info);
-    },
-    close: function () {
-      this.dialogVisible = false;
-    },
     onImageLoad(ev) {
       this.imageWidth = ev.currentTarget.naturalWidth;
       this.imageHeight = ev.currentTarget.naturalHeight;
@@ -252,6 +202,10 @@ export default {
   margin: 0 auto;
   border-radius: 6px;
   border: solid 1px silver;
+}
+
+.marker-tooltip-content {
+  padding: 0 !important;
 }
 
 .marker-title {
