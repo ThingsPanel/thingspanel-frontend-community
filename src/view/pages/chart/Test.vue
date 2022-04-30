@@ -1,26 +1,34 @@
 <template>
   <div class="rounded p-4 card no-border v-application" data-app="true">
-    <v-image-marker class="image-marker" :src="urlImage" :padding="padding">
-      <div
-        v-for="(marker, index) in markers"
-        :key="index"
-        class="marker-wrap"
-        :style="{
-          left: `calc(${marker.x * 100}% - 5px)`,
-          top: `calc(${marker.y * 100}% - 5px)`,
-        }"
-      >
+    <div class="image-marker-warp">
+      <img
+        :src="urlImage"
+        :style="posStyle"
+        class="image"
+        @load="onImageLoad"
+      />
+      <div :style="posStyle" class="mark-container">
         <div
-          class="marker"
+          v-for="(marker, index) in markers"
+          :key="index"
+          class="marker-wrap"
           :style="{
-            backgroundColor: marker.color,
+            left: `calc(${marker.x * 100}% - 5px)`,
+            top: `calc(${marker.y * 100}% - 5px)`,
           }"
-        ></div>
-        <div class="marker-title" @click="showMessage(marker)">
-          {{ marker.title }}
+        >
+          <div
+            class="marker"
+            :style="{
+              backgroundColor: marker.color,
+            }"
+          ></div>
+          <div class="marker-title" @click="showMessage(marker)">
+            {{ marker.title }}
+          </div>
         </div>
       </div>
-    </v-image-marker>
+    </div>
 
     <v-dialog v-model="dialogVisible" max-width="500px">
       <v-card class="card">
@@ -58,6 +66,9 @@
 </template>
 
 <script>
+import _debounce from "lodash.debounce";
+
+const LAYOUT_REFRESH_DELAY = 100;
 export default {
   name: "Overiew",
   data() {
@@ -65,6 +76,15 @@ export default {
       urlImage: "/media/bg/dimarer_bg.png",
       padding: 20,
       dialogVisible: false,
+      containerWidth: 1,
+      containerHeight: 1,
+      imageWidth: 1,
+      imageHeight: 1,
+      top: 0,
+      left: 0,
+      width: 1,
+      height: 1,
+
       dialogInfo: {
         title: "test1",
         status: 1,
@@ -137,6 +157,24 @@ export default {
     dialogVisible(val) {
       val || this.close();
     },
+    padding: "refreshPos",
+  },
+  computed: {
+    posStyle() {
+      return {
+        left: this.left + "px",
+        top: this.top + "px",
+        width: this.width + "px",
+        height: this.height + "px",
+      };
+    },
+  },
+  mounted() {
+    this.refreshPos();
+    window.addEventListener("resize", this.refreshPos);
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.refreshPos);
   },
   methods: {
     showMessage: function (info) {
@@ -147,18 +185,60 @@ export default {
     close: function () {
       this.dialogVisible = false;
     },
+    onImageLoad(ev) {
+      this.imageWidth = ev.currentTarget.naturalWidth;
+      this.imageHeight = ev.currentTarget.naturalHeight;
+      this.refreshPos();
+    },
+    // recalc left, top, width, height
+    // Need a delay to wait the dom refreshing
+    refreshPos: _debounce(function () {
+      this.containerWidth = this.$el.clientWidth;
+      this.containerHeight = this.$el.clientHeight;
+      let clientWidth = this.containerWidth - this.padding * 2;
+      let clientHeight = this.containerHeight - this.padding * 2;
+      let clientRatio = clientWidth / clientHeight;
+      let imageRatio = this.imageWidth / this.imageHeight;
+      if (imageRatio > clientRatio) {
+        // top & bottom padding
+        this.width = clientWidth;
+        this.left = this.padding;
+        this.height = this.width / imageRatio;
+        this.top = this.padding + (clientHeight - this.height) / 2;
+      } else {
+        // left & right padding
+        this.height = clientHeight;
+        this.top = this.padding;
+        this.width = this.height * imageRatio;
+        this.left = this.padding + (clientWidth - this.width) / 2;
+      }
+    }, LAYOUT_REFRESH_DELAY),
   },
 };
 </script>
 
 <style scoped>
-.image-marker {
+.image-marker-warp {
   /* width: 100vh; */
   height: 100vh;
   width: 100%;
   border: solid 1px silver;
   user-select: none;
   background-color: #f8f8f8;
+}
+
+.image-marker {
+  position: relative;
+  min-width: 200px;
+  min-height: 200px;
+}
+.image {
+  position: absolute;
+}
+.mark-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
 }
 
 .marker-wrap {
@@ -178,5 +258,7 @@ export default {
   text-align: center;
   color: #f8f8f8;
 }
-.dialog-content{background-color: #f8f8f8;}
+.dialog-content {
+  background-color: #f8f8f8;
+}
 </style>
