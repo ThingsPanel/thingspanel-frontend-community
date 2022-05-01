@@ -11,57 +11,65 @@
         <div
           v-for="(marker, index) in markers"
           :key="index"
-          class="marker-wrap"
           :style="{
             left: `calc(${marker.x * 100}% - 5px)`,
             top: `calc(${marker.y * 100}% - 5px)`,
           }"
+          class="tooptip-wrap"
         >
-          <v-tooltip bottom content-class="marker-tooltip-content">
-            <template v-slot:activator="{ on, attrs }">
-              <div v-bind="attrs" v-on="on">
-                <div
-                  class="marker"
-                  :style="{
-                    backgroundColor: marker.color,
-                  }"
-                ></div>
-                <div class="marker-title">
-                  {{ marker.title }}
+          <el-tooltip placement="bottom" effect="light">
+            <el-button class="tooptip-btn">
+              <img :src="onlineImage" v-if="marker.status == 1" class="marker" />
+              <img :src="offlineImage" v-if="marker.status == 2" class="marker" />
+              <img :src="unuseImage" v-if="marker.status == 0" class="marker" />
+              <span class="text"> {{ marker.title }}</span>
+            </el-button>
+            <div slot="content">
+              <div class="box-card">
+                <div class="clearfix card-header1">
+                  <el-row>
+                    <el-col :span="12"
+                      ><div class="grid-content">
+                        {{ marker.title }}
+                      </div></el-col
+                    >
+                    <el-col :span="12">
+                      <div class="grid-content">
+                        <span v-if="marker.status == 1">在线</span>
+                        <span v-else>离线</span>
+                      </div></el-col
+                    ></el-row
+                  >
+                </div>
+                <div class="card-content1">
+                  <el-row>
+                    <el-col :span="12"
+                      ><div class="grid-content">
+                        温度:{{ marker.temperature }}
+                      </div></el-col
+                    >
+                    <el-col :span="12"
+                      ><div class="grid-content">
+                        噪音:{{ marker.noise }}
+                      </div></el-col
+                    ></el-row
+                  >
+                  <el-row>
+                    <el-col :span="12"
+                      ><div class="grid-content">
+                        湿度:{{ marker.humidity }}
+                      </div></el-col
+                    >
+                    <el-col :span="12"
+                      ><div class="grid-content">
+                        电量:{{ marker.status }}
+                      </div></el-col
+                    >
+                  </el-row>
                 </div>
               </div>
-            </template>
-            <v-card class="card">
-              <v-card-text>
-                <v-container>
-                  <v-row class="dialog-head">
-                    <v-col cols="12" md="6" class="col-px-0">{{
-                      marker.title
-                    }}</v-col>
-                    <v-col cols="12" md="6" class="col-px-0">
-                      <span v-if="marker.status == 1">在线</span>
-                      <span v-else>离线</span>
-                    </v-col>
-                  </v-row>
-                  <v-row class="dialog-content">
-                    <v-col cols="12" md="6" class="col-px-0"
-                      >温度:{{ marker.temperature }}</v-col
-                    >
-                    <v-col cols="12" md="6" class="col-px-0"
-                      >噪音:{{ marker.noise }}</v-col
-                    >
-
-                    <v-col cols="12" md="6" class="col-px-0"
-                      >湿度:{{ marker.humidity }}</v-col
-                    >
-                    <v-col cols="12" md="6" class="col-px-0"
-                      >电量:{{ marker.status }}</v-col
-                    >
-                  </v-row>
-                </v-container>
-              </v-card-text>
-            </v-card>
-          </v-tooltip>
+            </div>
+          </el-tooltip>
         </div>
       </div>
     </div>
@@ -77,8 +85,10 @@ export default {
   data() {
     return {
       urlImage: "/media/bg/dimarer_bg.png",
+      onlineImage: "/media/bg/dimarer_bg_online.png",
+      offlineImage: "/media/bg/dimarer_bg_online.png",
+      unuseImage: "/media/bg/dimarer_bg_unuse.png",
       padding: 20,
-
       containerWidth: 1,
       containerHeight: 1,
       imageWidth: 1,
@@ -191,9 +201,13 @@ export default {
   height: 100%;
 }
 
-.marker-wrap {
+/* .marker-wrap {
   position: absolute;
   cursor: pointer;
+} */
+
+.marker-tooltip-content {
+  padding: 0 !important;
 }
 
 .marker {
@@ -201,18 +215,46 @@ export default {
   height: 10px;
   margin: 0 auto;
   border-radius: 6px;
+}
+
+.tooptip-wrap {
+  position: absolute;
+  cursor: pointer;
+}
+
+.tooptip-btn {
+  border: 0;
+  background: none;
+}
+
+.tooptip-btn .marker {
+  width: 10px;
+  height: 10px;
+  display: block;
+  margin: 0 auto;
+  border-radius: 6px;
   border: solid 1px silver;
 }
 
-.marker-tooltip-content {
-  padding: 0 !important;
+.tooptip-btn .text {
+  margin-top: 2px;
+  display: block;
+  padding: 2px 10px;
+  background-color: #f8f8f8;
+  color: black;
 }
 
-.marker-title {
-  text-align: center;
-  color: #f8f8f8;
+.box-card {
+  padding: 0 !important;
 }
-.dialog-content {
-  background-color: #f8f8f8;
+.box-card .card-header1 {
+  border-bottom: 1px solid gray;
+}
+.box-card .card-header1,
+.box-card .card-content1 {
+  min-width: 200px;
+  height: 30px;
+  line-height: 30px;
+  padding-left: 10px;
 }
 </style>
