@@ -1,8 +1,9 @@
 <template>
   <!-- begin::Page loader -->
   <div class="page-loader page-loader-logo">
-    <img alt="Logo" :src="logo" width="100" />
-    <div class="spinner" v-bind:class="spinnerClass || 'spinner-primary'"></div>
+     <img alt="Logo" :src="logo" width="110" />
+      <!-- <div class="spinner" v-bind:class="spinnerClass || 'spinner-primary'">正在加载中...</div> -->
+	   <div class="spinner1">正在加载中....</div>
   </div>
   <!-- end::Page Loader -->
 </template>
