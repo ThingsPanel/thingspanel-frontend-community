@@ -39,7 +39,10 @@
 		Base64
 	} from "js-base64";
 	import Vue from "vue";
-
+import {
+  ADD_BODY_CLASSNAME,
+  REMOVE_BODY_CLASSNAME
+} from "@/core/services/store/htmlclass.module.js";
 	var _window;
 
 	export default {
@@ -186,6 +189,7 @@
 
 						chartCount += 1;
 						if (_that.charts.length == chartCount) {
+							
 							console.log("---loadScripts2---");
 							_that.getDashboard(this.chart_id, this.assest_id);
 						}
@@ -239,6 +243,7 @@
 			 */
 			async getDashboard(chart_id, assest_id) {
 				this.setHeight();
+				this.$store.dispatch(ADD_BODY_CLASSNAME, "page-loading");
 				this.loading = true;
 				this.layoutUpdating = true;
 
@@ -279,10 +284,18 @@
 							_that.slices = data.data;
 							console.log("_that.slices", _that.slices);
 							_that.loading = false;
+							setTimeout(() => {
+							// Remove page loader after some time
+							this.$store.dispatch(REMOVE_BODY_CLASSNAME, "page-loading");
+							}, 1000);
 						}
 					});
 				} catch (e) {
 					console.log(e);
+					setTimeout(() => {
+      				// Remove page loader after some time
+					
+					}, 1000);
 					this.loading = false;
 				}
 			},
