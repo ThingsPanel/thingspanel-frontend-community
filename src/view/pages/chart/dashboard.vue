@@ -243,13 +243,13 @@ import {
 			 */
 			async getDashboard(chart_id, assest_id) {
 				this.setHeight();
-				this.$store.dispatch(ADD_BODY_CLASSNAME, "page-loading");
 				this.loading = true;
 				this.layoutUpdating = true;
 
 				let time = this.getTime();
 				if (this.loadTime == undefined || time - this.loadTime < 5) {
-					return;
+					// 这个的目的是什么？麻烦写在这里，如果没有会出现什么情况？
+					// return;
 				}
 
 				console.log("---this.loadTime---", this.loadTime);
@@ -261,6 +261,7 @@ import {
 				if (this.role == 1) {
 					this.gridDraggable = false;
 				}
+				this.$store.dispatch(ADD_BODY_CLASSNAME, "page-loading");
 				try {
 					console.log("获取dashboard数据");
 					ApiService.post(AUTH.local_url + "/dashboard/dashboard", {
@@ -284,10 +285,7 @@ import {
 							_that.slices = data.data;
 							console.log("_that.slices", _that.slices);
 							_that.loading = false;
-							setTimeout(() => {
-							// Remove page loader after some time
 							this.$store.dispatch(REMOVE_BODY_CLASSNAME, "page-loading");
-							}, 1000);
 						}
 					});
 				} catch (e) {
