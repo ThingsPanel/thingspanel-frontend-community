@@ -18,9 +18,9 @@
             <b-card-text class="text-left text-muted"
               >{{ $t("COMMON.VERSION") }}：{{ item.version }}</b-card-text
             >
-            <b-card-text class="text-left text-muted text-overflow"
-              >{{ $t("COMMON.AUTHOR") }}：{{ item.author }}</b-card-text
-            >
+            <!-- <b-card-text class="text-left text-muted"
+                >{{ $t("COMMON.AUTHOR") }}：{{ item.author }}</b-card-text
+              > -->
             <b-card-text class="text-left text-muted"
               >{{ $t("COMMON.SCORE") }}：<v-rating
                 v-model="rating"
@@ -70,11 +70,6 @@
     display: block;
     padding: 0px;
   }
-}
-.text-overflow {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
 }
 </style>
 <script>

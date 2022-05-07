@@ -46,11 +46,23 @@
                   </td>
                   <td>
                     <i
-                      class="fa fa-plus-circle text-white mr-2 pointer font-size-20"
+                      class="
+                        fa fa-plus-circle
+                        text-white
+                        mr-2
+                        pointer
+                        font-size-20
+                      "
                       @click="additem(index)"
                     ></i>
                     <i
-                      class="fa fa-minus-circle text-white mr-2 pointer font-size-20"
+                      class="
+                        fa fa-minus-circle
+                        text-white
+                        mr-2
+                        pointer
+                        font-size-20
+                      "
                       @click="del(index, list.id, 1)"
                     ></i>
                   </td>
@@ -112,11 +124,23 @@
                   </td>
                   <td>
                     <i
-                      class="fa fa-plus-circle text-white mr-2 pointer font-size-20"
+                      class="
+                        fa fa-plus-circle
+                        text-white
+                        mr-2
+                        pointer
+                        font-size-20
+                      "
                       @click="addequ(index)"
                     ></i>
                     <i
-                      class="fa fa-minus-circle text-white mr-2 pointer font-size-20"
+                      class="
+                        fa fa-minus-circle
+                        text-white
+                        mr-2
+                        pointer
+                        font-size-20
+                      "
                       @click="del(index, a.id, 2, b)"
                     ></i>
                   </td>
@@ -136,11 +160,23 @@
                     </td>
                     <td>
                       <i
-                        class="fa fa-plus-circle text-white mr-2 pointer font-size-20"
+                        class="
+                          fa fa-plus-circle
+                          text-white
+                          mr-2
+                          pointer
+                          font-size-20
+                        "
                         @click="additem2(index, i)"
                       ></i>
                       <i
-                        class="fa fa-minus-circle text-white mr-2 pointer font-size-20"
+                        class="
+                          fa fa-minus-circle
+                          text-white
+                          mr-2
+                          pointer
+                          font-size-20
+                        "
                         @click="del2(index, i, item.id, 1)"
                       ></i>
                     </td>
@@ -195,11 +231,23 @@
                     </td>
                     <td>
                       <i
-                        class="fa fa-plus-circle text-white mr-2 pointer font-size-20"
+                        class="
+                          fa fa-plus-circle
+                          text-white
+                          mr-2
+                          pointer
+                          font-size-20
+                        "
                         @click="addequ2(index, i)"
                       ></i>
                       <i
-                        class="fa fa-minus-circle text-white mr-2 pointer font-size-20"
+                        class="
+                          fa fa-minus-circle
+                          text-white
+                          mr-2
+                          pointer
+                          font-size-20
+                        "
                         @click="del2(index, i, c.id, 2, d)"
                       ></i>
                       <!--										<v-btn small color="primary" @click="addequ2(index,i)">添加设备</v-btn>-->
@@ -220,7 +268,13 @@
                       </td>
                       <td>
                         <i
-                          class="fa fa-minus-circle text-white mr-2 pointer font-size-20"
+                          class="
+                            fa fa-minus-circle
+                            text-white
+                            mr-2
+                            pointer
+                            font-size-20
+                          "
                           @click="del3(index, i, v, m, v.id, 1)"
                         ></i>
                       </td>
@@ -274,11 +328,23 @@
                       </td>
                       <td>
                         <i
-                          class="fa fa-plus-circle text-white mr-2 pointer font-size-20"
+                          class="
+                            fa fa-plus-circle
+                            text-white
+                            mr-2
+                            pointer
+                            font-size-20
+                          "
                           @click="addequ3(index, i, f)"
                         ></i>
                         <i
-                          class="fa fa-minus-circle text-white mr-2 pointer font-size-20"
+                          class="
+                            fa fa-minus-circle
+                            text-white
+                            mr-2
+                            pointer
+                            font-size-20
+                          "
                           @click="del3(index, i, v, m, e.id, 2, f)"
                         ></i>
                         <!--											<v-btn small color="primary" @click="addequ3(index,i,f)">添加设备</v-btn>-->
@@ -518,15 +584,9 @@
             </div>
             <v-card-actions>
               <v-spacer></v-spacer>
-              <v-btn
-                class="canclebtn"
-                text
-                @click="
-                  currentDervice = {};
-                  deriveceType = [{ name: '', value: '' }];
-                "
-                >{{ $t("COMMON.CLOSE") }}</v-btn
-              >
+              <v-btn class="canclebtn" text @click="currentDervice = {};deriveceType = [{name:'',value:''}]">{{
+                $t("COMMON.CLOSE")
+              }}</v-btn>
               <v-btn class="confbtn" text @click="saveDervice()">{{
                 $t("COMMON.CONFIRM")
               }}</v-btn>
@@ -688,7 +748,7 @@ export default {
       ApiService.post(AUTH.local_url + "/device/data", {
         id: this.lists[index].device[b].id,
       }).then((r) => {
-        let response = r.data;
+        let response = r.data
         if (response.code == 200) {
           if (response.data.d_id != "") {
             this.deriveceType[0].name = "d_id";
@@ -698,14 +758,14 @@ export default {
                 name: "location",
                 value: response.data.location,
               });
-              this.currentDervice = Object.assign({}, response.data);
+              this.currentDervice = Object.assign({},response.data);
             }
           } else if (response.data.location != "") {
             this.deriveceType[0].name = "location";
             this.deriveceType[0].value = response.data.location;
-            this.currentDervice = Object.assign({}, response.data);
-          } else {
-            this.currentDervice = Object.assign({}, response.data);
+            this.currentDervice = Object.assign({},response.data);
+          }else{
+            this.currentDervice = Object.assign({},response.data);
           }
         }
       });
@@ -737,7 +797,7 @@ export default {
       }).then(({ data }) => {
         if (data.code == 200) {
           this.currentDervice = {};
-          this.deriveceType = [{ name: "", value: "" }];
+          this.deriveceType = [{name:'',value:''}]
         }
       });
     },
