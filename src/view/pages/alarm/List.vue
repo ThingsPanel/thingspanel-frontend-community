@@ -3,38 +3,84 @@
   <div class="card card-custom card-stretch gutter-b v-application">
     <!--begin::Header-->
     <div class="card-header border-0">
-      <h3 class="card-title font-weight-bolder text-dark">
+      <!-- <h3 class="card-title font-weight-bolder text-dark">
         {{ $t("COMMON.WARNINFO") }}
-      </h3>
-      <div class="datebox float-right mt-4">
-        <div class="wid-16 float-left">
-          <date-picker
-            type="datetime"
-            class="datepickers strdate"
-            v-model="start_date"
-            locale="zh-cn"
-            format="YYYY/M/D HH:mm:ss"
-            :locale-config="localeConfig"
-            auto-submit
-          ></date-picker>
-        </div>
-        <div class="wid-16 float-left mx-6">
-          <date-picker
-            type="datetime"
-            class="datepickers enddate"
-            v-model="end_date"
-            locale="zh-cn"
-            format="YYYY/M/D HH:mm:ss"
-            :locale-config="localeConfig"
-            auto-submit
-          ></date-picker>
-        </div>
-        <div class="float-left" style="padding-left: 50px">
-          <v-btn color="primary" @click="warning()">{{
-            $t("COMMON.SEARCH")
-          }}</v-btn>
-        </div>
-      </div>
+      </h3> -->
+	  <v-col cols="12" xs="12" md="2">
+	    <el-select
+	      v-model="buisness_id"
+	      :popper-append-to-body="false"
+	      class="width-100"
+	      :placeholder="$t('COMMON.PLACEHOLDER8')"
+	    >
+	      <el-option
+	        v-for="(e, index) in buisnesss"
+	        :key="e.ts"
+	        :value="e.id"
+	        :label="e.name"
+	        @click.native="onClickBuisness(e.name, e.id)"
+	      ></el-option>
+	    </el-select>
+	  </v-col>
+	  <v-col cols="12" xs="12" md="2">
+	    <el-select
+	      v-model="asset_id"
+	      :popper-append-to-body="false"
+	      class="width-100"
+	      :placeholder="$t('COMMON.PLACEHOLDER35')"
+		  
+	    >
+	      <el-option
+	        v-for="(e, index) in equlist"
+	        :key="e.latesttime"
+	        :value="e.id"
+	        :label="e.name"
+			@click.native="onClickAsset(e.device)"
+	      ></el-option>
+	    </el-select>
+	  </v-col>
+	  <v-col cols="12" xs="12" md="2">
+	  <el-select
+	    v-model="device_id"
+	    :popper-append-to-body="false"
+	    class="width-100 vselect"
+		:placeholder="$t('COMMON.PLACEHOLDER3')"
+	  >
+	    <el-option
+	      v-for="(t, index) in devicearr"
+	      :key="index"
+	      :value="t.id"
+	      :label="t.name"
+	    ></el-option>
+	  </el-select>
+	  </v-col>
+	  <v-col cols="12" xs="12" md="2">
+		  <date-picker
+		    type="datetime"
+		    class="datepickers strdate"
+		    v-model="start_date"
+		    locale="zh-cn"
+		    format="YYYY/M/D HH:mm:ss"
+		    :locale-config="localeConfig"
+		    auto-submit
+		  ></date-picker>
+	   </v-col>
+	   <v-col cols="12" xs="12" md="2">
+		   <date-picker
+		     type="datetime"
+		     class="datepickers enddate"
+		     v-model="end_date"
+		     locale="zh-cn"
+		     format="YYYY/M/D HH:mm:ss"
+		     :locale-config="localeConfig"
+		     auto-submit
+		   ></date-picker>
+	    </v-col>
+		<v-col cols="12" xs="12" md="1">
+		  <v-btn color="primary" @click="warning()">{{
+		    $t("COMMON.SEARCH")
+		  }}</v-btn>
+		</v-col>
     </div>
     <!--end::Header-->
     <!--begin::Body-->
@@ -130,6 +176,12 @@ export default {
       start_date: "",
       end_date: "",
       tip: false,
+      equlist: [],
+      asset_id:'',
+      buisnesss: [],
+      buisness_id: "",
+      devicearr:[],
+      device_id:'',
     };
   },
   components: {
@@ -181,35 +233,80 @@ export default {
   },
   mounted() {
     this.warning();
+    this.equdata();
   },
   methods: {
-    warning() {
-      let _that = this;
-      ApiService.post(AUTH.local_url + "/warning/list", {
-        limit: this.limit,
-        page: this.page,
-        start_date: this.start_date,
-        end_date: this.end_date,
-      }).then(({ data }) => {
-        if (data.code == 200) {
-          if (data.data.data.length > 0) {
-            _that.tip = false;
-            _that.list = data.data.data;
-            let datas = data.data.data;
-            for (let i = 0; i < datas.length; i++) {
-              let item = datas[i];
-              item["created_at"] = dateFormat(item["created_at"]);
+      warning() {
+        let _that = this;
+        ApiService.post(AUTH.local_url + "/warning/log/list", {
+          limit: this.limit,
+          page: this.page,
+          business_id:_that.buisness_id,
+          device_id:_that.device_id,
+          asset_id:_that.asset_id,
+          start_date: this.start_date,
+          end_date: this.end_date,
+        }).then(({ data }) => {
+          if (data.code == 200) {
+        let datas = data.data.data;
+            if (datas) {
+              _that.tip = false;
+              _that.list = data.data.data;
+              let datas = data.data.data;
+              for (let i = 0; i < datas.length; i++) {
+                let item = datas[i];
+                item["created_at"] = dateFormat(item["created_at"]);
+              }
+            } else {
+              _that.list = [];
+              _that.tip = true;
+
             }
+            _that.length = parseInt(data.data.total / data.data.per_page);
+            _that.page = data.data.current_page;
+          } else if (data.code == 401) {
+            this.$store.dispatch(REFRESH).then(() => {});
           } else {
-            _that.tip = true;
           }
-          _that.length = Math.ceil(data.data.total / data.data.per_page);
-          _that.page = data.data.current_page;
-        } else if (data.code == 401) {
-          this.$store.dispatch(REFRESH).then(() => {});
+        });
+      },
+    equdata() {
+      let _that = this;
+      ApiService.post(AUTH.local_url + "/business/index", {
+        page: 1,
+      }).then(({ data }) => {
+        console.log("业务列表");
+        console.log(222,data);
+        if (data.code == 200) {
+          _that.buisnesss = data.data.data;
+        }
+        if (data.code == 401) {
         } else {
         }
       });
+    },
+    onClickBuisness(name, id) {
+      let _that = this;
+      ApiService.post(AUTH.local_url + "/asset/list", {
+        business_id: id,
+      })
+        .then(({ data }) => {
+          console.log("资产编辑列表");
+          console.log(111111111,data);
+          if (data.code == 200) {
+            var arr = data.data;
+            _that.equlist = arr;
+          } else {
+            this.$store.dispatch(REFRESH).then(() => {});
+          }
+        })
+        .catch(({ response }) => {
+          console.log(response);
+        });
+
+    },
+    onClickAsset(device){
+        this.devicearr = device;
     },
     pageChange() {
       this.warning();
