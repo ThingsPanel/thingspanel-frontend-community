@@ -151,7 +151,7 @@
         </v-card-title>
         <v-card-text>
           <div class="text-white">
-            确定要导出{{ length }}条数据吗？
+            确定要导出{{ length*limit }}条数据吗？
           </div></v-card-text
         >
         <v-card-actions>
