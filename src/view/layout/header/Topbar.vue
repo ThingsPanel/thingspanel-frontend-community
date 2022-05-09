@@ -172,7 +172,7 @@ export default {
   name: "KTTopbar",
   data() {
     return {
-      languageFlag: "",
+      languageFlag: process.env.BASE_URL + "media/svg/flags/226-united-states.svg",
       languages: i18nService.languages
     };
   },
