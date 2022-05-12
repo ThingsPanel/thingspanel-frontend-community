@@ -124,7 +124,7 @@
         <div>{{ item.name }}</div>
       </template>
       <template v-slot:item.dbl_v="{ item }">
-        <div v-if="item.str_v.indexOf('file') == -1">{{ item.dbl_v }}</div>
+        <div v-if="item.str_v.indexOf('file') == -1">{{ item.str_v!=""?item.str_v:item.dbl_v }}</div>
         <el-image
           style="width: 100px; height: 80px"
           :src="url + item.str_v"
@@ -462,9 +462,15 @@ export default {
       }).then(({ data }) => {
         if (data.code == 200) {
           this.dialogVisible = false;
-          window.open((process.env.VUE_APP_BASE_URL ||
-    document.location.protocol + "//" + document.domain +":9999/").slice(0,(process.env.VUE_APP_BASE_URL ||
-    document.location.protocol + "//" + document.domain +":9999/").length-6) +"/"+ data.data, "_blank");
+          let wPath = window.document.location.href;
+          let pathName =  this.$route.path;
+          let pos = wPath.indexOf(pathName);
+          let file = wPath.substring(0, pos)
+          file = file.replace('/#', '')
+          window.open((process.env.VUE_APP_BASE_URL || file)+"/"+ data.data, "_blank")
+    //       window.open((process.env.VUE_APP_BASE_URL ||
+    // document.location.protocol + "//" + document.domain +":9999/").slice(0,(process.env.VUE_APP_BASE_URL ||
+    // document.location.protocol + "//" + document.domain +":9999/").length-6) +"/"+ data.data, "_blank");
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
         } else {

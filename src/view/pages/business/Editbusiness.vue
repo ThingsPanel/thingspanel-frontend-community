@@ -1057,7 +1057,7 @@ export default {
         asset_id: asset_id,
         token: "",
         type: "",
-        name: "",
+        name: "empty",
         extension: "",
         protocol: "",
       }).then(({ data }) => {
