@@ -151,7 +151,7 @@
         </v-card-title>
         <v-card-text>
           <div class="text-white">
-            确定要导出{{ length*limit }}条数据吗？
+            确定要导出{{ total }}条数据吗？
           </div></v-card-text
         >
         <v-card-actions>
@@ -439,6 +439,7 @@ export default {
             this.desserts = datas;
             this.length = data.data.total;
             this.length = Math.ceil(data.data.total / data.data.per_page);
+            this.total = data.data.total;
           } else {
             this.desserts = [];
           }
