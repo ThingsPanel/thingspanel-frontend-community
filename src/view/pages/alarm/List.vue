@@ -12,6 +12,7 @@
 	      :popper-append-to-body="false"
 	      class="width-100"
 	      :placeholder="$t('COMMON.PLACEHOLDER8')"
+	      @change="changeBuisness"
 	      clearable
 	    >
 	      <el-option
@@ -29,6 +30,7 @@
 	      :popper-append-to-body="false"
 	      class="width-100"
 	      :placeholder="$t('COMMON.PLACEHOLDER35')"
+	      @change="changeAsset"
 	      clearable
 		  
 	    >
@@ -47,6 +49,7 @@
 	    :popper-append-to-body="false"
 	    class="width-100 vselect"
 		:placeholder="$t('COMMON.PLACEHOLDER3')"
+		@change="changeDevice"
 		clearable
 	  >
 	    <el-option
@@ -288,6 +291,24 @@ export default {
         }
       });
     },
+    // 改变业务
+	  changeBuisness(e){
+	    this.business_id = e
+		this.equlist=[],
+		this.asset_id='',
+		this.devicearr=[],
+		this.device_id='',
+	    this.warning();
+	  },
+	  changeAsset(e){
+		  this.asset_id=e,
+		  this.devicearr=[],
+		  this.device_id='',
+	    this.warning();
+	  },
+	  changeDevice(){
+		 this.warning(); 
+	  },
     onClickBuisness(name, id) {
       let _that = this;
       ApiService.post(AUTH.local_url + "/asset/list", {
