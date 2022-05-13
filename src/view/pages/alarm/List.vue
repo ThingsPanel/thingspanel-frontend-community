@@ -12,6 +12,7 @@
 	      :popper-append-to-body="false"
 	      class="width-100"
 	      :placeholder="$t('COMMON.PLACEHOLDER8')"
+	      clearable
 	    >
 	      <el-option
 	        v-for="(e, index) in buisnesss"
@@ -28,6 +29,7 @@
 	      :popper-append-to-body="false"
 	      class="width-100"
 	      :placeholder="$t('COMMON.PLACEHOLDER35')"
+	      clearable
 		  
 	    >
 	      <el-option
@@ -45,6 +47,7 @@
 	    :popper-append-to-body="false"
 	    class="width-100 vselect"
 		:placeholder="$t('COMMON.PLACEHOLDER3')"
+		clearable
 	  >
 	    <el-option
 	      v-for="(t, index) in devicearr"
