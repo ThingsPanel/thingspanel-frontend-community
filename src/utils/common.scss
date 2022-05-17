@@ -1,0 +1,41 @@
+// ElementUi table 背景透明
+.el-table-transparent{
+  // 白色字体
+  .el-table{
+    color: #fff;
+    thead{
+      color: #fff;
+    }
+  }
+
+  // 底白边
+  .el-table::before {
+    height: 0px;
+  }
+
+  // 行 hover
+  .el-table--enable-row-hover .el-table__body tr:hover>td{
+    background-color: transparent !important;
+  }
+
+  /*最外层透明*/
+  .el-table, .el-table__expanded-cell{
+    background-color: transparent;
+  }
+  /* 表格内背景颜色 */
+  .el-table th,
+  .el-table tr,
+  .el-table td {
+    background-color: transparent;
+  }
+}
+
+// 按钮白色
+.el-button--primary{
+  color: #fff!important;
+}
+
+// 遮罩层
+.el-loading-mask{
+  background-color: rgba(255,255,255,0.1);
+}

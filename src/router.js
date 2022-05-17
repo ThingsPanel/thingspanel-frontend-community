@@ -111,7 +111,21 @@ export default new Router({
                     component: () =>
                         import ("@/view/pages/production/index.vue")
                 },
-                //new page 
+                //new page
+                // 数据转发
+                {
+                    path: "/transpond/index",
+                    name: 'transpond',
+                    component: () =>
+                        import ("@/view/pages/transpond/index.vue")
+                },
+                // 设备日志
+                {
+                    path: "/equipment/index",
+                    name: 'equipment',
+                    component: () =>
+                        import ("@/view/pages/equipment/index.vue")
+                },
                 {
                     path: "/system/index",
                     name: "systems",
