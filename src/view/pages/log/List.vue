@@ -41,7 +41,7 @@
           <v-btn color="primary" @click="operation()">{{
             $t("COMMON.SEARCH")
           }}</v-btn>
-          <v-btn color="white ml-4">{{ $t("COMMON.RESET") }}</v-btn>
+          <v-btn color="white ml-4" @click="reset()">{{ $t("COMMON.RESET") }}</v-btn>
         </div>
       </div>
     </div>
@@ -317,6 +317,11 @@ export default {
         } else {
         }
       });
+    },
+    reset(){
+      this.search_ip = "";
+      this.search_path = "";
+      this.operation()
     },
     pageChange() {
       this.operation();

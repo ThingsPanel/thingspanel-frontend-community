@@ -207,6 +207,7 @@ import { dateFormat } from "../../../utils/tool.js";
 
 import ApiService from "@/core/services/api.service";
 import Hits from "@/assets/js/components/com.js";
+import moment from "moment";
 export default {
   data: () => ({
     dialogVisible: false,
@@ -423,8 +424,8 @@ export default {
         business_id: this.buisness_id,
         asset_id: this.entity_id,
         type: this.type,
-        start_time: this.start_time,
-        end_time: this.end_time,
+        start_time: moment(this.start_time).format('YYYY-MM-DD hh:mm:ss'),
+        end_time: moment(this.end_time).format('YYYY-MM-DD hh:mm:ss'),
         token: this.token,
       }).then(({ data }) => {
         console.log("数据管理列表");
