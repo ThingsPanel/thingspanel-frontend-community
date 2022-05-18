@@ -127,6 +127,11 @@ export default new Router({
                         import ("@/view/pages/equipment/index.vue")
                 },
                 {
+                    path: "/firmware/index",
+                    name: 'firmware',
+                    component: () => import("@/view/pages/firmware/Index.vue")
+                },
+                {
                     path: "/system/index",
                     name: "systems",
                     component: () =>

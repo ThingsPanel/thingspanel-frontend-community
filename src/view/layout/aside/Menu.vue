@@ -231,6 +231,28 @@
         </a>
       </li>
     </router-link>
+
+    <!-- 固件升级 -->
+    <router-link
+        to="/firmware/index"
+        v-slot="{ href, navigate, isActive, isExactActive }"
+    >
+      <li
+          aria-haspopup="true"
+          data-menu-toggle="hover"
+          class="menu-item adminmeue"
+          :class="[
+          isActive && 'menu-item-active',
+          isExactActive && 'menu-item-active',
+        ]"
+      >
+        <a :href="href" class="menu-link" @click="navigate">
+          <i class="menu-icon flaticon-upload-1"></i>
+          <span class="menu-text">固件升级</span>
+        </a>
+      </li>
+    </router-link>
+
     <!-- 系统设置 -->
     <router-link
       to="/system/index"
