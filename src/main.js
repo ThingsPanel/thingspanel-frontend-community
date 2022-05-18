@@ -21,8 +21,8 @@ import { VERIFY_AUTH } from "./core/services/store/auth.module";
 import { RESET_LAYOUT_CONFIG } from "@/core/services/store/config.module";
 // import VueImageMarker from './components/common/vue-image-marker.vue'
 
-import '@/utils/common.scss'
-import 'echarts/theme/macarons.js'
+import "@/assets/sass/common.scss";
+import "echarts/theme/macarons.js";
 
 
 import ElementUI from "element-ui";

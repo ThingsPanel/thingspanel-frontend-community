@@ -163,6 +163,18 @@ export default {
 </script>
 
 <style lang="scss">
+.transpond{
+  .el-tag{
+    background-color: #5867dd;
+    border-color: #5867dd;
+    color: #fff;
+  }
+
+  .el-pagination.is-background .el-pager li:not(.disabled).active{
+    background-color: #5867dd;
+    border-color: #5867dd;
+  }
+}
 .transpond-header{
   display: flex;
   flex-direction: row;

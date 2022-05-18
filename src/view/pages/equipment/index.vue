@@ -1,7 +1,33 @@
 <template>
-<div class=" rounded p-4 card no-border v-application el-table-transparent">
-  <div class="equipment-header">
-    <strong class="equipment-title">设备操作日志</strong>
+<div class="equipment rounded p-4 card no-border v-application el-table-transparent">
+  <div class="equipment-filter-box">
+    <el-row>
+      <el-col :span="2">
+        <div class="label-name">设备名</div>
+      </el-col>
+      <el-col :span="5">
+        <el-input></el-input>
+      </el-col>
+      <el-col :span="2" :offset="1">
+        <div class="label-name pl-4">日期</div>
+      </el-col>
+      <el-col :span="5">
+        <el-date-picker
+            class="el-date-picker-custom"
+            v-model="value1"
+            type="datetimerange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期">
+        </el-date-picker>
+      </el-col>
+      <el-col :span="4" :offset="5">
+        <div style="text-align: right; padding-right: 10px">
+          <v-btn depressed color="primary">查询</v-btn>
+          <v-btn class="ml-4" depressed>重置</v-btn>
+        </div>
+      </el-col>
+    </el-row>
   </div>
   <el-table
       v-loading="loading"
@@ -55,6 +81,7 @@ export default {
     data_count: 2,
     per_page : 10,
     page:1,
+    value1: '',
   }),
   created() {
     this.data_count = this.data_list.length
@@ -79,12 +106,35 @@ export default {
 </script>
 
 <style lang="scss">
-.equipment-header{
-  padding-bottom: 10px;
-  .equipment-title{
-    font-size: 1.5rem!important;
+
+.equipment{
+  .el-tag{
+    background-color: #5867dd;
+    border-color: #5867dd;
     color: #fff;
-    font-weight: bold;
+  }
+
+  .el-pagination.is-background .el-pager li:not(.disabled).active{
+    background-color: #5867dd;
+    border-color: #5867dd;
+  }
+}
+
+.equipment-filter-box{
+  padding-bottom: 10px;
+  //.equipment-title{
+  //  font-size: 1.5rem!important;
+  //  color: #fff;
+  //  font-weight: bold;
+  //}
+
+  .label-name{
+    height: 100%;
+    //text-align: center;
+    padding-left: 10px;
+    color: #fff;
+    font-size: 1.25rem!important;
+    line-height: 32px;
   }
 }
 .equipment-pagination{

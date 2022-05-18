@@ -190,26 +190,6 @@
         </a>
       </li>
     </router-link>
-    <!-- 数据转发 -->
-    <router-link
-        to="/transpond/index"
-        v-slot="{ href, navigate, isActive, isExactActive }"
-    >
-      <li
-          aria-haspopup="true"
-          data-menu-toggle="hover"
-          class="menu-item adminmeue"
-          :class="[
-          isActive && 'menu-item-active',
-          isExactActive && 'menu-item-active',
-        ]"
-      >
-        <a :href="href" class="menu-link" @click="navigate">
-          <i class="menu-icon flaticon-share"></i>
-          <span class="menu-text">数据转发</span>
-        </a>
-      </li>
-    </router-link>
     <!--  设备日志  -->
     <router-link
         to="/equipment/index"
@@ -227,6 +207,27 @@
         <a :href="href" class="menu-link" @click="navigate">
           <i class="menu-icon flaticon-interface-3"></i>
           <span class="menu-text">设备日志</span>
+        </a>
+      </li>
+    </router-link>
+
+    <!-- 数据转发 -->
+    <router-link
+        to="/transpond/index"
+        v-slot="{ href, navigate, isActive, isExactActive }"
+    >
+      <li
+          aria-haspopup="true"
+          data-menu-toggle="hover"
+          class="menu-item adminmeue"
+          :class="[
+          isActive && 'menu-item-active',
+          isExactActive && 'menu-item-active',
+        ]"
+      >
+        <a :href="href" class="menu-link" @click="navigate">
+          <i class="menu-icon flaticon-share"></i>
+          <span class="menu-text">数据转发</span>
         </a>
       </li>
     </router-link>

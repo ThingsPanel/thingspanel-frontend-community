@@ -39,3 +39,29 @@
 .el-loading-mask{
   background-color: rgba(255,255,255,0.1);
 }
+
+// el 时间选择器
+.el-picker-panel.el-date-range-picker{
+  .el-date-range-picker__time-header{
+    input.el-input__inner{
+      background-color: #fff!important;
+    }
+  }
+}
+
+.el-date-picker-custom{
+  color: #fff!important;
+  border-color: transparent;
+  background-color:rgba(22, 30, 67, 0.5) !important;
+
+  input{
+    color: #fff!important;
+  }
+
+  .el-range-separator{
+    color: #999;
+  }
+  .el-input__icon.el-range__close-icon{
+    color: #fff;
+  }
+}
