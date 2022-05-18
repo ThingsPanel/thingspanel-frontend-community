@@ -211,13 +211,6 @@ export default {
       this.dialog = true;
     },
 
-    editItem(item) {
-      this.seen = false;
-      this.editedIndex = this.desserts.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
-    },
-
     deleteItem(item) {
       this.editedItem = Object.assign({}, item);
       const id = this.editedItem.id;

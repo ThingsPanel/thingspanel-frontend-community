@@ -205,7 +205,7 @@
         ]"
       >
         <a :href="href" class="menu-link" @click="navigate">
-          <i class="menu-icon flaticon2-paper"></i>
+          <i class="menu-icon flaticon-share"></i>
           <span class="menu-text">数据转发</span>
         </a>
       </li>
@@ -225,7 +225,7 @@
         ]"
       >
         <a :href="href" class="menu-link" @click="navigate">
-          <i class="menu-icon flaticon2-paper"></i>
+          <i class="menu-icon flaticon-interface-3"></i>
           <span class="menu-text">设备日志</span>
         </a>
       </li>
