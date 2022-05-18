@@ -29,6 +29,7 @@
 </template>
 
 <script>
+import options from './cascader_options'
 export default {
   name: "CreateForm",
   props: {
@@ -53,37 +54,7 @@ export default {
         {required: true, message: "请选择频率"}
       ]
     },
-    options: [{
-      value: '环境检测',
-      label: '环境检测',
-      children: [{
-        value: '4层',
-        label: '4层',
-        children: [{
-          value: '温度湿度',
-          label: '温度湿度'
-        }, {
-          value: 'fankui',
-          label: '反馈'
-        }, {
-          value: 'xiaolv',
-          label: '效率'
-        }, {
-          value: 'kekong',
-          label: '可控'
-        }]
-      }, {
-        value: '2层',
-        label: '2层',
-        children: [{
-          value: '温度传感器',
-          label: '温度传感器'
-        }, {
-          value: '氧传感器',
-          label: '氧传感器'
-        }]
-      }]
-    }, ]
+    options: options,
   }),
   created() {
     if(this.init_data){

@@ -1,10 +1,10 @@
 <template>
 <div class="transpond rounded p-4 card no-border v-application el-table-transparent">
   <div class="transpond-header">
-    <strong class="transpond-title">设备操作日志</strong>
+    <strong class="transpond-title">数据转发</strong>
     <el-button class="create-btn" type="primary" size="medium" @click="dialogVisible = true">创建转发</el-button>
   </div>
-  <el-table :data="tableData">
+  <el-table :data="tableData" v-loading="loading">
     <el-table-column prop="device_id" label="设备ID"></el-table-column>
     <el-table-column prop="device_name" label="设备名"></el-table-column>
     <el-table-column prop="frequency" label="频率"></el-table-column>
@@ -21,11 +21,21 @@
           <el-button slot="reference" size="mini" type="danger">删除</el-button>
         </el-popconfirm>
 
-        <el-button style="margin-left: 10px" size="mini" type="success" @click="handle_launch">启动</el-button>
+        <el-button style="margin-left: 10px" size="mini" type="success" @click="handle_launch(scope.row)">启动</el-button>
         <el-button size="mini" type="warning" @click="startEditor(scope.row)">配置</el-button>
       </template>
     </el-table-column>
   </el-table>
+
+  <el-pagination
+      :disabled="loading"
+      class="equipment-pagination"
+      background
+      layout="prev, pager, next"
+      :page-size="per_page"
+      @current-change="page_change"
+      :total="data_count">
+  </el-pagination>
 
 <!-- 新建 -->
   <el-dialog
@@ -53,6 +63,7 @@
 <script>
 import CreateForm from "@/view/pages/transpond/CreateForm.vue";
 import UpdateForm from "@/view/pages/transpond/UpdateForm.vue";
+import data from "./data"
 export default {
   name: "index",
   components: {
@@ -60,20 +71,12 @@ export default {
     UpdateForm,
   },
   data:()=>({
-    tableData:[
-      {
-        device_name: "Frozen Yogurt",
-        frequency: "实时",
-        status: "工作中",
-        device_id: 24,
-      },
-      {
-        device_name: "Frozen Yogurt121",
-        frequency: "每分钟",
-        status: "已停用",
-        device_id: 24,
-      }
-    ],
+    loading: false,
+    per_page: 10,
+    page: 1,
+    data_count:2,
+    tableData: [],
+    data_list: data,
     launch_loading: false,
     form_data:{
       device_name: "",
@@ -86,12 +89,33 @@ export default {
       status: '',
     }
   }),
+  created() {
+    this.data_count = this.data_list.length
+    this.get_data()
+  },
   methods: {
-    handle_launch(){
+    get_data(){
+      this.tableData = this.data_list.slice((this.page-1)*this.per_page, this.page*this.per_page)
+    },
+    page_change(val){
+      if(this.loading) return
+      this.loading = true
+
+      setTimeout(()=>{
+        this.page = val
+        this.get_data()
+        this.loading = false
+      }, 500)
+    },
+    handle_launch(item){
       if(this.launch_loading) return
       this.launch_loading = true
       setTimeout(()=>{
-        this.$message.success("启动成功")
+        this.$message({
+          message: item.device_name + " 启动成功",
+          center: true,
+          type: "success"
+        })
         this.launch_loading = false
       },500)
     },
@@ -102,13 +126,19 @@ export default {
     },
     handle_create(form_data){
       let data = {
-        device_id: new Date().getTime(),
-        device_name: form_data.device_name,
+        device_id: Math.floor(Math.random() * (999999 - 123456 + 1)) + 123456,
+        device_name: form_data.device_name.join(" - "),
         frequency: form_data.frequency,
         status: "工作中"
       }
       this.tableData.unshift(data)
       this.dialogVisible = false
+
+      this.$message({
+        message: "创建成功",
+        center: true,
+        type: "success"
+      })
     },
     startEditor(item){
       // console.log(item)
@@ -121,6 +151,12 @@ export default {
       this.edit_item.frequency = form_data.frequency
       this.edit_item.status = form_data.status
       this.updateDialogVisible = false
+
+      this.$message({
+        message: "更新成功",
+        center: true,
+        type: "success"
+      })
     }
   }
 }

@@ -45,38 +45,15 @@
 </template>
 
 <script>
+import data from './data'
 export default {
   name: "index",
   data:()=>({
     loading: false,
     tableData: [],
-    data_list:[
-      {
-        time: "2022-10-20 18:30:40",
-        name: "王小虎",
-        business: "智能家居",
-        device_name: "4层->办公室",
-        device_id: "device_id1233",
-        command: "directive",
-        action_type: "系统操作",
-        operator: "温度->28度",
-        result: "成功",
-        device_status: "开"
-      },{
-        time: "2022-10-20 18:30:40",
-        name: "王小虎",
-        business: "智能家居",
-        device_name: "5层->办公室",
-        device_id: "device_id1233",
-        command: "directive",
-        action_type: "系统操作",
-        operator: "温度->24度",
-        result: "成功",
-        device_status: "关"
-      }
-    ],
+    data_list: data,
     data_count: 2,
-    per_page : 1,
+    per_page : 10,
     page:1,
   }),
   created() {
