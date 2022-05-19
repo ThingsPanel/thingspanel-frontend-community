@@ -9,11 +9,9 @@
       label-width="80px">
     <el-form-item label="归属产品" prop="product">
       <el-select v-model="form.product">
-        <el-option label="产品A" value="产品A"></el-option>
-        <el-option label="产品B" value="产品B"></el-option>
-        <el-option label="产品C" value="产品C"></el-option>
-        <el-option label="产品D" value="产品D"></el-option>
-        <el-option label="产品E" value="产品E"></el-option>
+        <el-option label="手推车" value="手推车"></el-option>
+        <el-option label="井盖" value="井盖"></el-option>
+        <el-option label="行李拖斗" value="行李拖斗"></el-option>
       </el-select>
     </el-form-item>
 
