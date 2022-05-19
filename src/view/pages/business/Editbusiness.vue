@@ -538,6 +538,10 @@
   </div>
 </template>
 <style scoped>
+.v-text-field {
+  padding-top: 18px!important;
+}
+
 .defmsg {
   background: "#ffffff";
 }
