@@ -166,7 +166,7 @@ export const locale = {
     VERSION: "Ver",
     AUTHOR: "Author",
     SCORE: "Rate",
-    INSTALLED: "",
+    INSTALLED: "Installed",
     TEXT2: "数据间隔时间(秒)",
     TEXT3: "Weather station",
     TEXT4: "空气质量",
