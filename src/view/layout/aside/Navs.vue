@@ -7,7 +7,7 @@
     <v-list>
       <template v-for="(item, index) in navs">
         <!--  list-group里是二级菜单  -->
-        <NavGroup v-if="'children' in item" :item="item" :key="item.link + index"></NavGroup>
+        <NavGroup v-if="'children' in item" :item="item" :key="item.link"></NavGroup>
         <!--  一级的菜单  -->
         <NavItem v-else :item="item" :key="item.link + index"></NavItem>
       </template>
