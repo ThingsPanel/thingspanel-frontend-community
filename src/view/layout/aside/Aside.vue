@@ -29,7 +29,8 @@
           class="aside-menu scroll"
           style="max-height: 90vh; position: relative;"
         >
-          <KTMenu></KTMenu>
+         <!-- <KTMenu></KTMenu> -->
+          <Navs></Navs>
         </perfect-scrollbar>
       </div>
     </div>
@@ -44,6 +45,7 @@ import KTBrand from "@/view/layout/brand/Brand.vue";
 import KTLayoutAside from "@/assets/js/layout/base/aside.js";
 import KTLayoutAsideMenu from "@/assets/js/layout/base/aside-menu.js";
 import KTMenu from "@/view/layout/aside/Menu.vue";
+import Navs from "@/view/layout/aside/Navs";
 
 export default {
   name: "KTAside",
@@ -55,7 +57,8 @@ export default {
   },
   components: {
     KTBrand,
-    KTMenu
+    KTMenu,
+    Navs
   },
   mounted() {
     this.$nextTick(() => {
