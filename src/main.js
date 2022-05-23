@@ -38,6 +38,10 @@ Vue.config.productionTip = false;
 
 Vue.use(ElementUI);
 
+// 组合式api
+import VueCompositionApi from "@vue/composition-api"
+Vue.use(VueCompositionApi)
+
 
 // import $ from 'jquery';
 // Vue.use($);

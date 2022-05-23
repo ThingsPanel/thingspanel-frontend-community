@@ -17,8 +17,8 @@ let data = [
         command: "开",
         action_type: "系统操作",
         operator: "温度->24度",
-        result: "成功",
-        device_status: "开"
+        result: "失败",
+        device_status: "关"
     },
     {
         time: "2022-5-17 14:30:40",
