@@ -4,7 +4,7 @@
       <!-- 设备输入筛选 -->
       <v-col cols="12" md="3">
         <v-text-field
-          class="pt-0 mx-2"
+          class="pt-0 mx-2 my-v-input"
           v-model="search"
           label="设备名"
         ></v-text-field>
@@ -20,7 +20,7 @@
         >
           <template v-slot:activator="{ on, attrs }">
             <v-text-field
-              class="pt-0 mx-2"
+              class="pt-0 mx-2 my-v-input"
               v-model="date_filter"
               label="日期范围"
               readonly
