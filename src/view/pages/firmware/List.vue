@@ -11,7 +11,7 @@
     <v-row no-gutters>
       <v-col>
         <v-data-table
-          class="el-table-transparent"
+          class="v-table-transparent"
           :headers="headers"
           :items="data_list"
           hide-default-footer

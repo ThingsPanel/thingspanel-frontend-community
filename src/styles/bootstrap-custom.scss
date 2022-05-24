@@ -1,0 +1,8 @@
+// bootstrap 文字提示窗
+.tooltip.b-tooltip {
+  background-color: transparent !important;
+
+  .tooltip-inner {
+    max-width: 250px !important;
+  }
+}

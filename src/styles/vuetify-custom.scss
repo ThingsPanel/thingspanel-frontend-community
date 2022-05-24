@@ -4,7 +4,7 @@
 }
 
 // 表格背景透明
-.el-table-transparent{
+.v-table-transparent{
     background-color: transparent!important;
     color: #fff!important;
 
@@ -67,5 +67,9 @@
   
     .v-textarea .v-input__slot {
         background: rgba(0, 0, 0, .2) !important;
+    }
+
+    .v-label {
+        font-size: 13px!important;
     }
   }

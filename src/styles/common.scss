@@ -1,0 +1,17 @@
+// 滚动条
+@import './scrollbar.scss';
+
+// vuetify 自定义样式
+@import './vuetify-custom.scss';
+
+// Element-ui 自定义样式
+@import './element-ui-custom.scss';
+
+// bootstrap-custom 自定义样式
+@import './bootstrap-custom.scss';
+
+// 背景色
+html,body{
+    background-color: #161e43;
+}
+

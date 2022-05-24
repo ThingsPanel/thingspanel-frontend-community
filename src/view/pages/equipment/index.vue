@@ -49,7 +49,7 @@
       <v-col cols="12" sm="12">
         <!-- 表格 -->
         <v-data-table
-          class="el-table-transparent"
+          class="v-table-transparent"
           :headers="headers"
           :items="data_list"
           :search="search"
