@@ -59,6 +59,7 @@
           <template v-slot:[`item.command`]="{ item }">
             <v-chip
               :color="item.command == '开' ? 'green' : 'orange'"
+              small
               outlined
               >{{ item.device_status }}</v-chip
             >
@@ -68,6 +69,7 @@
           <template v-slot:[`item.result`]="{ item }">
             <v-chip
               :color="item.result == '成功' ? 'green' : 'orange'"
+              small
               outlined
               >{{ item.result }}</v-chip
             >
@@ -77,6 +79,7 @@
           <template v-slot:[`item.device_status`]="{ item }">
             <v-chip
               :color="item.device_status == '开' ? 'green' : 'orange'"
+              small
               outlined
               >{{ item.device_status }}</v-chip
             >

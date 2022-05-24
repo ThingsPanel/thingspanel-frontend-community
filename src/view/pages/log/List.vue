@@ -1,55 +1,39 @@
 <template>
-  <!--begin::List Widget 9-->
-  <div class="card card-custom card-stretch gutter-b v-application">
-    <!--begin::Header-->
-    <div class="card-header border-0">
-      <!-- <h3 class="card-title font-weight-bolder text-dark">
-        {{ $t("COMMON.OPERATIONLOG") }}
-      </h3> -->
-      <div class="searchbox float-left">
-        <div class="path-search">
-          <div class="title font-size-h3">{{ $t("COMMON.TITLE28") + ":" }}</div>
-          <el-input
-            class="searchInput"
-            type="text"
-            value=""
-            :placeholder="$t('COMMON.PLACEHOLDER31')"
-            v-model="search_path"
-          />
-        </div>
-        <div class="ip-search">
-          <div class="title">IP:</div>
-          <el-input
-            class="searchInput"
-            type="text"
-            value=""
-            :placeholder="$t('COMMON.PLACEHOLDER32')"
-            v-model="search_ip"
-          />
-        </div>
-      </div>
-      <div class="datebox float-right mt-4">
-        <!-- 			<div class="wid-16 float-left">
-					<date-picker type="datetime" class="datepickers strdate" v-model="start_date" locale="zh-cn" format="YYYY/M/D HH:mm:ss"
-					 :locale-config="localeConfig" auto-submit></date-picker>
-				</div>
-				<div class="wid-16 float-left mx-6">
-					<date-picker type="datetime" class="datepickers enddate" v-model="end_date" locale="zh-cn" format="YYYY/M/D HH:mm:ss"
-					 :locale-config="localeConfig" auto-submit></date-picker>
-				</div> -->
-        <div class="float-left">
-          <v-btn color="primary" @click="operation()">{{
+  <v-container class="card card-custom">
+    <v-row no-gutters>
+      <v-col cols="12" md="3">
+        <!-- 路径搜索 -->
+        <v-text-field
+          class="pt-0 mx-2 my-v-input"
+          v-model="search_path"
+          :label="$t('COMMON.TITLE28')"
+        ></v-text-field>
+      </v-col>
+      <v-col cols="12" md="3">
+        <!-- ip搜索 -->
+        <v-text-field
+          class="pt-0 mx-2 my-v-input"
+          v-model="search_ip"
+          :label="$t('COMMON.PLACEHOLDER32')"
+        ></v-text-field>
+      </v-col>
+      <v-spacer></v-spacer>
+      <v-col cols="12" md="3">
+        <!-- 按钮 -->
+        <div class="text-right mt-1">
+          <v-btn color="indigo" dark @click="operation()">{{
             $t("COMMON.SEARCH")
           }}</v-btn>
-          <v-btn color="white ml-4" @click="reset()">{{ $t("COMMON.RESET") }}</v-btn>
+          <v-btn color="white ml-4" @click="reset()">{{
+            $t("COMMON.RESET")
+          }}</v-btn>
         </div>
-      </div>
-    </div>
-    <!--end::Header-->
+      </v-col>
+    </v-row>
 
-    <!--begin::Body-->
-    <div class="card-body max-height">
-      <div class="timeline timeline-5">
+    <v-row no-gutters>
+      <v-col cols="12">
+        <!-- 数据表格 -->
         <v-data-table
           :headers="headers"
           :hide-default-header="true"
@@ -67,15 +51,16 @@
               </tr>
             </thead>
           </template>
-          <template v-slot:item.board="{ item }">
+          <template v-slot:[`item.board`]="{ item }">
             {{ $t(item.board) }}
           </template>
-          <template v-slot:item.actions="{ item }">
+          <template v-slot:[`item.actions`]="{ item }">
             <v-btn color="primary" class="mr-4" small @click="clickItem(item)"
               >详情</v-btn
             >
           </template>
         </v-data-table>
+
         <div v-show="tip" class="text-white">{{ $t("COMMON.TITLE26") }}</div>
         <v-pagination
           v-if="length > 1"
@@ -86,58 +71,15 @@
           :total-visible="10"
           @input="pageChange"
         ></v-pagination>
-      </div>
-      <!--end: Items-->
-    </div>
-    <!--end: Card Body-->
-  </div>
-  <!--end: Card-->
-  <!--end: List Widget 9-->
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
+
 <style scoped lang="scss">
-/*.max-height{
-        max-height: 260px;
-        overflow-y: auto;
-        margin-bottom: 20px;
-    }*/
-.timeline.timeline-5:before {
-  background-color: unset;
-}
 
-.text-start {
-  color: white;
-}
-
-.card-header .searchbox {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 80px;
-
-  .path-search {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-
-    .title {
-      width: 120px;
-      color: white;
-    }
-  }
-
-  .ip-search {
-    margin-left: 30px;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-
-    .title {
-      width: 80px;
-      color: white;
-    }
-  }
-}
 </style>
+
 <script>
 import Dropdown2 from "@/view/content/dropdown/Dropdown2.vue";
 import { mapGetters } from "vuex";
@@ -318,10 +260,10 @@ export default {
         }
       });
     },
-    reset(){
+    reset() {
       this.search_ip = "";
       this.search_path = "";
-      this.operation()
+      this.operation();
     },
     pageChange() {
       this.operation();
