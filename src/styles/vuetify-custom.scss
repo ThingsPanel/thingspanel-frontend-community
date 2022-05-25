@@ -73,3 +73,15 @@
         font-size: 13px!important;
     }
   }
+
+  // 隐藏 label 标签
+  .v-label-display-none{
+      .v-label{
+          display: none;
+      }
+  }
+
+  // 分页地址
+  .v-pagination .v-pagination__more{
+    color: #fff;
+  }

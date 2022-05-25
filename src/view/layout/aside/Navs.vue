@@ -65,7 +65,7 @@ export default {
 
   // 图标距离字体的间距
   .v-list-item__icon{
-    margin-right: 15px;
+    margin-right: 15px!important;
   }
 
   // 折叠菜单的图标颜色

@@ -134,6 +134,7 @@
         </el-image>
       </template>
     </v-data-table>
+
     <v-pagination
       v-if="length > 1"
       class="float-right mt-8"
@@ -143,7 +144,9 @@
       :total-visible="10"
       @input="pageChange"
     ></v-pagination>
+
     <div style="clear: both"></div>
+
     <v-dialog v-model="dialogVisible" max-width="500">
       <v-card class="card">
         <v-card-title>
@@ -163,6 +166,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
   </div>
 </template>
 <style scoped>
@@ -198,15 +202,15 @@ table td {
 </style>
 
 <script>
-import { mapState } from "vuex";
-import { REGISTER } from "@/core/services/store/auth.module";
-import { UPDATE_USER } from "@/core/services/store/auth.module";
+// import { mapState } from "vuex";
+// import { REGISTER } from "@/core/services/store/auth.module";
+// import { UPDATE_USER } from "@/core/services/store/auth.module";
 import { REFRESH } from "@/core/services/store/auth.module";
 import AUTH from "@/core/services/store/auth.module";
 import { dateFormat } from "../../../utils/tool.js";
 
 import ApiService from "@/core/services/api.service";
-import Hits from "@/assets/js/components/com.js";
+// import Hits from "@/assets/js/components/com.js";
 import moment from "moment";
 export default {
   data: () => ({
