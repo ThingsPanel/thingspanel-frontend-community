@@ -1,17 +1,15 @@
 html {
   overflow: auto !important; // 其他地方的的样式会有 overflow: scroll; 滚动条始终显示
-  min-height: 100%;
-  height: auto !important;
+  min-height: 100% !important;
+  //height: auto !important;
 }
 
-// 超出body的部分的隐藏，不然 html body 等高的时候会有几个像素的滚动距离
-html body {
-  //zoom: 1 !important;
-  overflow: hidden !important;
-  font-size: 12px;
+// 页脚高度有溢出，导致登录页有几个像素滚动条
+.footers{
+  overflow: hidden;
 }
 
-// 火狐滚动条
+// 火狐滚动条美化
 html {
   scrollbar-color: #444f77 #161E43;
   scrollbar-width: thin;

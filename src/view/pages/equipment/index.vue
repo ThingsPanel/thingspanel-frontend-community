@@ -1,5 +1,5 @@
 <template>
-  <v-container class="equipment card card-custom">
+  <v-container class="equipment card card-custom v-application">
     <v-row no-gutters>
       <!-- 设备输入筛选 -->
       <v-col cols="12" md="2">
