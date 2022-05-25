@@ -34,14 +34,14 @@ export default {
       {name:"COMMON.VISUALIZATION", icon: 'menu-icon flaticon2-laptop', link: '/chart/list'},
       {name:"COMMON.AUTOMATION", icon: 'menu-icon flaticon2-hourglass', link: '/strategy/list'},
       {name:"COMMON.WARNINFO", icon: 'menu-icon flaticon2-warning', link: '/alarm/list'},
-      {name: "系统日志",icon: 'menu-icon flaticon2-paper', open:false, children: [
+      {name: "COMMON.SYSTEMLOG",icon: 'menu-icon flaticon-open-box', open:false, children: [
           {name:"COMMON.OPERATIONLOG", icon: 'menu-icon flaticon2-paper', link: '/log/list'},
-          {name:"设备日志", icon: 'menu-icon flaticon-interface-3', link: '/equipment/index'},
+          {name:"COMMON.EQUIPMENTLOG", icon: 'menu-icon flaticon-interface-3', link: '/equipment/index'},
         ]},
-      {name: "产品管理", icon: 'menu-icon flaticon2-paper', open:false, children: [
-          {name:"固件升级", icon: 'menu-icon flaticon-upload-1', link: '/firmware/index'},
+      {name: "COMMON.PRODUCTMANAGEMENT", icon: 'menu-icon flaticon2-gift-1', open:false, children: [
+          {name:"COMMON.FIRMWAREUPGRADE", icon: 'menu-icon flaticon-upload-1', link: '/firmware/index'},
         ]},
-      {name:"数据转发", icon: 'menu-icon flaticon-share', link: '/transpond/index'},
+      {name:"COMMON.TRANSPOND", icon: 'menu-icon flaticon-share', link: '/transpond/index'},
       {name:"COMMON.DATAS", icon: 'menu-icon flaticon2-list', link: '/data/index'},
       {name:"COMMON.USERS", icon: 'menu-icon flaticon2-user', link: '/users/user'},
       {name:"COMMON.SYSTEMSETUP", icon: 'menu-icon flaticon2-gear', link: '/system/index'},
