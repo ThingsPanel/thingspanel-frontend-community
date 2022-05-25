@@ -63,9 +63,13 @@ export default {
     padding: 0 5px;
   }
 
+  .v-list-item {
+    height: 30px;
+  }
+
   // 图标距离字体的间距
   .v-list-item__icon{
-    margin-right: 15px!important;
+    margin: 12px 15px 0 0;
   }
 
   // 折叠菜单的图标颜色
@@ -88,6 +92,8 @@ export default {
 
   // 激活状态
   .v-list-item--active{
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     background: linear-gradient(to right, rgba(41, 56, 125, 0.95) 0%, transparent 100%) !important;
     .v-list-item__title {
       color: #fff!important;
