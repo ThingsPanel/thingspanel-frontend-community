@@ -37,6 +37,7 @@
                   <td>{{ index + 1 }}</td>
                   <td colspan="7">
                     <v-text-field
+                        class="my-v-input"
                       required
                       v-model="list.name"
                       :label="$t('COMMON.PLACEHOLDER1')"
@@ -69,6 +70,7 @@
                   <td>
                     <el-select
                       v-model="a.type"
+                      size="small"
                       @change="changedash(a, [index], b)"
                       :popper-append-to-body="true"
                       class="width-100"
@@ -538,8 +540,13 @@
   </div>
 </template>
 <style scoped>
+.el-input--small .el-input__inner{
+  height: 36px;
+  line-height: 36px;
+}
+
 .v-text-field {
-  padding-top: 18px!important;
+  padding: 14px 0 10px 0 !important;
 }
 
 .defmsg {

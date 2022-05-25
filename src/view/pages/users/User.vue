@@ -41,8 +41,7 @@
           <v-dialog v-model="dialog" max-width="500px">
             <template v-slot:activator="{ on, attrs }">
               <v-btn
-                color="indigo"
-                dark
+                color="primary"
                 class="mb-2"
                 v-bind="attrs"
                 v-on="on"
@@ -242,10 +241,10 @@
       </template>
       <template v-slot:item.actions="{ item }">
         <div style="display: flex; flex-direction: row">
-          <v-btn color="indigo" dark class="mr-4" small @click="editItem(item)">{{
+          <v-btn color="primary" class="mr-4" small @click="editItem(item)">{{
             $t("COMMON.EDIT")
           }}</v-btn>
-          <v-btn color="indigo" dark class="mr-4" small @click="resetPass(item)">{{
+          <v-btn color="primary" class="mr-4" small @click="resetPass(item)">{{
             $t("COMMON.CHANGEPASSWORD")
           }}</v-btn>
           <v-btn color="error" class="mr-4" small @click="deleteItem(item)">{{
@@ -279,6 +278,9 @@
 .v-pagination .primary {
   background-color: #1867c0 !important;
   border-color: #1867c0 !important;
+}
+/deep/ .v-list-item__title{
+  color: rgba(0,0,0,.87) !important;
 }
 </style>
 

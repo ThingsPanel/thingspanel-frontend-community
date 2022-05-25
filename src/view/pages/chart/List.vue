@@ -73,6 +73,7 @@
                     ></v-text-field>
                     <div class="text-title">{{ $t("COMMON.NAMES") }}：</div>
                     <v-text-field
+                        class="v-label-display-none"
                       v-model="editedItem.title"
                       label="Title"
                       :rules="nameRules"

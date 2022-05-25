@@ -2,7 +2,7 @@
 <div class="transpond rounded p-4 card no-border v-application el-table-transparent">
   <div class="transpond-header">
     <strong class="transpond-title">数据转发</strong>
-    <el-button class="create-btn" type="primary" size="medium" @click="dialogVisible = true">创建转发</el-button>
+    <v-btn class="create-btn" color="primary" @click="dialogVisible = true">创建转发</v-btn>
   </div>
   <el-table :data="tableData" v-loading="loading">
     <el-table-column prop="device_id" label="设备ID"></el-table-column>
@@ -174,6 +174,15 @@ export default {
     background-color: #5867dd;
     border-color: #5867dd;
   }
+
+  .equipment-pagination{
+    padding: 10px;
+    text-align: right;
+    ul{
+      padding-left: 0;
+    }
+  }
+
 }
 .transpond-header{
   display: flex;

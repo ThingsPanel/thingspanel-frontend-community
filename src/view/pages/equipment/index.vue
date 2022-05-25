@@ -2,7 +2,7 @@
   <v-container class="equipment card card-custom">
     <v-row no-gutters>
       <!-- 设备输入筛选 -->
-      <v-col cols="12" md="3">
+      <v-col cols="12" md="2">
         <v-text-field
           class="pt-0 mx-2 my-v-input"
           v-model="search"
@@ -10,7 +10,7 @@
         ></v-text-field>
       </v-col>
       <!-- 日期选择器 -->
-      <v-col cols="12" md="3">
+      <v-col cols="12" md="2">
         <v-menu
           v-model="datepicker"
           :close-on-content-click="false"

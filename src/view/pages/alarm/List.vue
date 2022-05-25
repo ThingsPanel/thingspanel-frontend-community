@@ -148,6 +148,10 @@
 /deep/ .datepickers input {
   color: red !important;
 }
+
+/deep/ .datepickers label{
+  margin-bottom: 0 !important;
+}
 </style>
 <script>
 import Dropdown2 from "@/view/content/dropdown/Dropdown2.vue";

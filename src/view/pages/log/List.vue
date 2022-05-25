@@ -1,85 +1,145 @@
 <template>
-  <v-container class="card card-custom">
-    <v-row no-gutters>
-      <v-col cols="12" md="3">
-        <!-- 路径搜索 -->
-        <v-text-field
-          class="pt-0 mx-2 my-v-input"
-          v-model="search_path"
-          :label="$t('COMMON.TITLE28')"
-        ></v-text-field>
-      </v-col>
-      <v-col cols="12" md="3">
-        <!-- ip搜索 -->
-        <v-text-field
-          class="pt-0 mx-2 my-v-input"
-          v-model="search_ip"
-          :label="$t('COMMON.PLACEHOLDER32')"
-        ></v-text-field>
-      </v-col>
-      <v-spacer></v-spacer>
-      <v-col cols="12" md="3">
-        <!-- 按钮 -->
-        <div class="text-right mt-1">
-          <v-btn color="indigo" dark @click="operation()">{{
-            $t("COMMON.SEARCH")
-          }}</v-btn>
-          <v-btn color="white ml-4" @click="reset()">{{
-            $t("COMMON.RESET")
-          }}</v-btn>
+  <!--begin::List Widget 9-->
+  <div class="card card-custom card-stretch gutter-b v-application">
+    <!--begin::Header-->
+    <div class="card-header border-0">
+      <!-- <h3 class="card-title font-weight-bolder text-dark">
+        {{ $t("COMMON.OPERATIONLOG") }}
+      </h3> -->
+      <div class="searchbox float-left">
+        <div class="path-search">
+          <div class="title font-size-h3">{{ $t("COMMON.TITLE28") + ":" }}</div>
+          <el-input
+              class="searchInput"
+              type="text"
+              value=""
+              :placeholder="$t('COMMON.PLACEHOLDER31')"
+              v-model="search_path"
+          />
         </div>
-      </v-col>
-    </v-row>
+        <div class="ip-search">
+          <div class="title">IP:</div>
+          <el-input
+              class="searchInput"
+              type="text"
+              value=""
+              :placeholder="$t('COMMON.PLACEHOLDER32')"
+              v-model="search_ip"
+          />
+        </div>
+      </div>
+      <div class="datebox float-right mt-4">
+        <!-- 			<div class="wid-16 float-left">
+					<date-picker type="datetime" class="datepickers strdate" v-model="start_date" locale="zh-cn" format="YYYY/M/D HH:mm:ss"
+					 :locale-config="localeConfig" auto-submit></date-picker>
+				</div>
+				<div class="wid-16 float-left mx-6">
+					<date-picker type="datetime" class="datepickers enddate" v-model="end_date" locale="zh-cn" format="YYYY/M/D HH:mm:ss"
+					 :locale-config="localeConfig" auto-submit></date-picker>
+				</div> -->
+        <div class="float-left">
+          <v-btn color="primary" @click="operation()">{{
+              $t("COMMON.SEARCH")
+            }}</v-btn>
+          <v-btn color="white ml-4" @click="reset()">{{ $t("COMMON.RESET") }}</v-btn>
+        </div>
+      </div>
+    </div>
+    <!--end::Header-->
 
-    <v-row no-gutters>
-      <v-col cols="12">
-        <!-- 数据表格 -->
+    <!--begin::Body-->
+    <div class="card-body max-height">
+      <div class="timeline timeline-5">
         <v-data-table
-          :headers="headers"
-          :hide-default-header="true"
-          :items="list"
-          item-key="id"
-          class="no-bg text-white"
-          hide-default-footer
+            :headers="headers"
+            :hide-default-header="true"
+            :items="list"
+            item-key="id"
+            class="no-bg text-white"
+            hide-default-footer
         >
           <template v-slot:header="{ props: { headers } }">
             <thead>
-              <tr>
-                <th v-for="(header, h) in headers" class="text-white" :key="h">
-                  {{ $t(header.text) }}
-                </th>
-              </tr>
+            <tr>
+              <th v-for="(header, h) in headers" class="text-white" :key="h">
+                {{ $t(header.text) }}
+              </th>
+            </tr>
             </thead>
           </template>
-          <template v-slot:[`item.board`]="{ item }">
+          <template v-slot:item.board="{ item }">
             {{ $t(item.board) }}
           </template>
-          <template v-slot:[`item.actions`]="{ item }">
+          <template v-slot:item.actions="{ item }">
             <v-btn color="primary" class="mr-4" small @click="clickItem(item)"
-              >详情</v-btn
+            >详情</v-btn
             >
           </template>
         </v-data-table>
-
         <div v-show="tip" class="text-white">{{ $t("COMMON.TITLE26") }}</div>
         <v-pagination
-          v-if="length > 1"
-          class="float-right mt-8"
-          v-model="page"
-          :length="length"
-          :page="page"
-          :total-visible="10"
-          @input="pageChange"
+            v-if="length > 1"
+            class="float-right mt-8"
+            v-model="page"
+            :length="length"
+            :page="page"
+            :total-visible="10"
+            @input="pageChange"
         ></v-pagination>
-      </v-col>
-    </v-row>
-  </v-container>
+      </div>
+      <!--end: Items-->
+    </div>
+    <!--end: Card Body-->
+  </div>
+  <!--end: Card-->
+  <!--end: List Widget 9-->
 </template>
-
 <style scoped lang="scss">
+/*.max-height{
+        max-height: 260px;
+        overflow-y: auto;
+        margin-bottom: 20px;
+    }*/
+.timeline.timeline-5:before {
+  background-color: unset;
+}
 
+.text-start {
+  color: white;
+}
+
+.card-header .searchbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 80px;
+
+  .path-search {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .title {
+      width: 120px;
+      color: white;
+      padding-top: 6px !important;
+    }
+  }
+
+  .ip-search {
+    margin-left: 30px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    .title {
+      width: 80px;
+      color: white;
+      padding-top: 6px !important;
+    }
+  }
+}
 </style>
-
 <script>
 import Dropdown2 from "@/view/content/dropdown/Dropdown2.vue";
 import { mapGetters } from "vuex";
@@ -163,7 +223,7 @@ export default {
   created() {
     var data = new Date();
     var month =
-      data.getMonth() < 9 ? "0" + (data.getMonth() + 1) : data.getMonth() + 1;
+        data.getMonth() < 9 ? "0" + (data.getMonth() + 1) : data.getMonth() + 1;
     var date = data.getDate() <= 9 ? "0" + data.getDate() : data.getDate();
     var hour = data.getHours();
     var minute = data.getMinutes();
@@ -171,35 +231,35 @@ export default {
     var days = 7;
     var newDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     var endmonth =
-      newDate.getMonth() < 9
-        ? "0" + (newDate.getMonth() + 1)
-        : newDate.getMonth() + 1;
+        newDate.getMonth() < 9
+            ? "0" + (newDate.getMonth() + 1)
+            : newDate.getMonth() + 1;
     var enddate =
-      newDate.getDate() <= 9 ? "0" + newDate.getDate() : newDate.getDate();
+        newDate.getDate() <= 9 ? "0" + newDate.getDate() : newDate.getDate();
     var enddates =
-      data.getFullYear() +
-      "/" +
-      month +
-      "/" +
-      date +
-      " " +
-      hour +
-      ":" +
-      minute +
-      ":" +
-      second;
+        data.getFullYear() +
+        "/" +
+        month +
+        "/" +
+        date +
+        " " +
+        hour +
+        ":" +
+        minute +
+        ":" +
+        second;
     var startdate =
-      newDate.getFullYear() +
-      "/" +
-      endmonth +
-      "/" +
-      enddate +
-      " " +
-      hour +
-      ":" +
-      minute +
-      ":" +
-      second;
+        newDate.getFullYear() +
+        "/" +
+        endmonth +
+        "/" +
+        enddate +
+        " " +
+        hour +
+        ":" +
+        minute +
+        ":" +
+        second;
     this.start_date = startdate;
     this.end_date = enddates;
   },
@@ -260,10 +320,10 @@ export default {
         }
       });
     },
-    reset() {
+    reset(){
       this.search_ip = "";
       this.search_path = "";
-      this.operation();
+      this.operation()
     },
     pageChange() {
       this.operation();

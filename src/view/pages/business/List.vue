@@ -123,9 +123,10 @@
         </div>
       </template>
     </v-data-table>
+
     <v-pagination
       v-if="length > 1"
-      class="float-right"
+      class="float-right pt-2"
       v-model="page"
       :length="length"
       :page="page"

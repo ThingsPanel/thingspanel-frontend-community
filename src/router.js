@@ -129,7 +129,7 @@ export default new Router({
                 {
                     path: "/firmware/index",
                     name: 'firmware',
-                    component: () => import("@/view/pages/firmware/List.vue")
+                    component: () => import("@/view/pages/firmware/Index.vue")
                 },
                 {
                     path: "/system/index",
