@@ -1,7 +1,7 @@
 import ApiService from "@/core/services/api.service";
 import JwtService from "@/core/services/jwt.service";
 // 登录和用户详情接口
-import {login} from "@/api/auth";
+import { login, logout, me } from "@/api/auth";
 
 // 引入路由下面调用 router.push 跳转
 import router from "@/router"
@@ -82,7 +82,8 @@ const actions = {
       });
   },
   [LOGOUT](context) {
-    ApiService.post(local_url + "/auth/logout")
+    // ApiService.post(local_url + "/auth/logout")
+    logout()
       .then(({ data }) => {
         if (data.code == 200) {
           context.commit(PURGE_AUTH);
@@ -114,11 +115,12 @@ const actions = {
     });
   },
   [VERIFY_AUTH](context) {
-    console.log(JwtService.getToken());
+    // console.log(JwtService.getToken());
     if (JwtService.getToken()) {
       ApiService.setHeader();
-      ApiService.post(local_url + "/auth/me")
-        .then(({ data }) => {
+      // ApiService.post(local_url + "/auth/me")
+      me()
+          .then(({ data }) => {
           if (data.code == 200) {
             console.log(data);
             data.data.token = JwtService.getToken();

@@ -19,7 +19,7 @@
               >{{ $t("COMMON.VERSION") }}：{{ item.version }}</b-card-text
             >
             <b-card-text class="text-left text-muted text-overflow">
-              {{ $t("COMMON.AUTHOR") }}：<spoan v-b-tooltip :title="item.author">{{ item.author }}</spoan>
+              {{ $t("COMMON.AUTHOR") }}：<span v-b-tooltip :title="item.author">{{ item.author }}</span>
             </b-card-text>
             <b-card-text class="text-left text-muted"
               >{{ $t("COMMON.SCORE") }}：<v-rating
