@@ -32,6 +32,7 @@ export const locale = {
     TITLE1: "please fill in username and password",
     TITLE2: "please fill in avalible email address",
     TITLE3: "password",
+    WrongPassword: "The user name or password is incorrect",
     TITLE4: "Are you sure you want to delete?",
     TITLE5: "Please delete the secondary content under the asset first!",
     TITLE6: "Please delete the third-level content under the asset first!",

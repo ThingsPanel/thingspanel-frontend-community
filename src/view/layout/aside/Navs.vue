@@ -43,6 +43,7 @@ export default {
         ]},
       {name:"COMMON.TRANSPOND", icon: 'menu-icon flaticon-share', link: '/transpond/index'},
       {name:"COMMON.DATAS", icon: 'menu-icon flaticon2-list', link: '/data/index'},
+      {name:"COMMON.MARKET", icon: 'menu-icon flaticon2-supermarket', link: '/market'},
       {name:"COMMON.USERS", icon: 'menu-icon flaticon2-user', link: '/users/user'},
       {name:"COMMON.SYSTEMSETUP", icon: 'menu-icon flaticon2-gear', link: '/system/index'},
     ],

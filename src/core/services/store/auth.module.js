@@ -1,5 +1,10 @@
 import ApiService from "@/core/services/api.service";
 import JwtService from "@/core/services/jwt.service";
+// 登录和用户详情接口
+import {login} from "@/api/auth";
+
+// 引入路由下面调用 router.push 跳转
+import router from "@/router"
 
 // action types
 export const VERIFY_AUTH = "verifyAuth";
@@ -37,24 +42,27 @@ const getters = {
 
 const actions = {
   [LOGIN](context, credentials) {
-    return new Promise((resolve) => {
-      ApiService.post(local_url + "/auth/login", credentials)
-        .then(({ data }) => {
+    return new Promise((resolve, reject) => {
+      login(credentials).then(({ data }) => {
           if (data.code == 200) {
-            console.log("dengl");
-            // console.log(data);
             context.commit(SET_AUTH, data);
-            // console.log(data.data.access_token);
+            // 保存 token
             JwtService.saveToken(data.data.access_token);
-            resolve(data);
-          } else {
-            context.commit(SET_ERROR, "用户名或密码错误！");
+
+            // 登录成功，延迟 500 ms 再跳转
+            setTimeout(()=>{
+              router.push({name: "home"})
+            }, 500)
+
           }
+
+          resolve(data);
         })
         .catch(({ response }) => {
-          console.log(response);
+          reject(response)
+          // console.log(response);
           context.commit(SET_ERROR, response.data.errors);
-          console.log(state);
+          // console.log(state);
         });
     });
   },

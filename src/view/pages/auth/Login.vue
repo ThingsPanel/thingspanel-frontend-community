@@ -1,21 +1,5 @@
 <template>
   <div>
-    <!--begin::Content header-->
-    <!-- <div
-      class="position-absolute top-0 right-0 text-right mt-5 mb-15 mb-lg-0 flex-column-auto justify-content-center py-5 px-10"
-    >
-      <span class="font-weight-bold font-size-3 text-dark-60">
-        Don't have an account yet?
-      </span>
-      <router-link
-        class="font-weight-bold font-size-3 ml-2"
-        :to="{ name: 'register' }"
-      >
-        Sign Up!
-      </router-link>
-    </div> -->
-    <!--end::Content header-->
-
     <!--begin::Signin-->
     <div class="loginrow login-row-height">
       <div class="col-md-6 d-none d-md-flex infologin">
@@ -26,91 +10,12 @@
           <div class="card-body">
             <h5 class="font-weight-light mb-1 text-mute-high">Welcome,</h5>
             <h2 class="font-weight-normal mb-4">{{ $t("COMMON.SIGNIN") }}</h2>
-            <!--            <div class="text-center mb-10 mb-lg-10">-->
-            <!--              <h3 class="font-size-h1">{{ $t("COMMON.SIGNIN") }}</h3>-->
             <p class="font-weight-semi-bold">
               {{ $t("COMMON.TITLE1") }}
             </p>
-            <!--            </div>-->
 
-            <!--begin::Form-->
-            <b-form class="form" @submit.stop.prevent="onSubmit">
-              <!-- <div role="alert" class="alert alert-info">
-                <div class="alert-text">
+            <LoginForm></LoginForm>
 
-                </div>
-              </div> -->
-              <div
-                role="alert"
-                v-bind:class="{ show: errors }"
-                class="alert fade alert-danger mb-0"
-              >
-                <div class="alert-text">
-                  {{ errors }}
-                </div>
-              </div>
-              <div class="loginform">
-                <b-form-group
-                  id="example-input-group-1"
-                  label=""
-                  label-for="example-input-1"
-                >
-                  <b-form-input
-                    class="form-control form-control-solid h-auto py-5 px-6 no-bg"
-                    id="example-input-1"
-                    name="example-input-1"
-                    v-model="$v.form.email.$model"
-                    :state="validateState('email')"
-                    aria-describedby="input-1-live-feedback"
-                  ></b-form-input>
-
-                  <b-form-invalid-feedback id="input-1-live-feedback">
-                    {{ $t("COMMON.TITLE2") }}
-                  </b-form-invalid-feedback>
-                </b-form-group>
-
-                <b-form-group
-                  id="example-input-group-2"
-                  label=""
-                  label-for="example-input-2"
-                >
-                  <b-form-input
-                    class="form-control form-control-solid h-auto py-5 px-6 no-bg"
-                    type="password"
-                    id="example-input-2"
-                    name="example-input-2"
-                    v-model="$v.form.password.$model"
-                    :state="validateState('password')"
-                    aria-describedby="input-2-live-feedback"
-                  ></b-form-input>
-
-                  <b-form-invalid-feedback id="input-2-live-feedback">
-                    {{ $t("COMMON.TITLE3") }}
-                  </b-form-invalid-feedback>
-                </b-form-group>
-              </div>
-
-              <!--begin::Action-->
-              <div
-                class="form-group d-flex flex-wrap justify-content-between align-items-center mt-8"
-              >
-                <!-- <a
-                    href="#"
-                    class="text-dark-60 text-hover-primary my-3 mr-2"
-                    id="kt_login_forgot"
-                  >
-                    {{$t('COMMON.FORGETPASS')}}
-                  </a> -->
-                <button
-                  ref="kt_login_signin_submit"
-                  class="btn btn-primary font-weight-bold form-control font-size-3"
-                >
-                  {{ $t("COMMON.SIGNIN") }}
-                </button>
-              </div>
-              <!--end::Action-->
-            </b-form>
-            <!--end::Form-->
           </div>
         </div>
       </div>
@@ -247,102 +152,12 @@
 }
 </style>
 <script>
-import { mapState } from "vuex";
-import JwtService from "@/core/services/jwt.service";
-import { validationMixin } from "vuelidate";
-import { email, minLength, required } from "vuelidate/lib/validators";
-import { LOGIN, LOGOUT } from "@/core/services/store/auth.module";
-import { SET_AUTH } from "../../../core/services/store/auth.module";
-import ApiService from "@/core/services/api.service";
-const local_url =
-  (process.env.VUE_APP_BASE_URL ||
-    document.location.protocol + "//" + document.domain + ":9999/") + "api";
+import LoginForm from "@/view/pages/auth/LoginForm";
+
 export default {
-  mixins: [validationMixin],
+  components: {
+    LoginForm
+  },
   name: "login",
-  data() {
-    return {
-      // Remove this dummy login info
-      form: {
-        email: "",
-        password: "",
-      },
-    };
-  },
-  worryinfo: "",
-  validations: {
-    form: {
-      email: {
-        required,
-        email,
-      },
-      password: {
-        required,
-        minLength: minLength(6),
-      },
-    },
-  },
-  methods: {
-    validateState(name) {
-      const { $dirty, $error } = this.$v.form[name];
-      return $dirty ? !$error : null;
-    },
-    resetForm() {
-      this.form = {
-        email: null,
-        password: null,
-      };
-
-      this.$nextTick(() => {
-        this.$v.$reset();
-      });
-    },
-    onSubmit() {
-      this.$v.form.$touch();
-      if (this.$v.form.$anyError) {
-        return;
-      }
-
-      const email = this.$v.form.email.$model;
-      const password = this.$v.form.password.$model;
-
-      // clear existing errors
-      this.$store.dispatch(LOGOUT);
-
-      // set spinner to submit button
-      const submitButton = this.$refs["kt_login_signin_submit"];
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
-
-      // dummy delay
-      setTimeout(() => {
-        // send login request
-        /*this.$store
-          .dispatch(LOGIN, { email, password })
-          // go to which page after successfully login
-          .then(() => this.$router.push({ name: "home" }));*/
-        this.$store.dispatch(LOGIN, { email, password }).then(() => {
-          ApiService.setHeader();
-          ApiService.post(local_url + "/auth/me").then(({ data }) => {
-            if (data.code == 200) {
-              console.log(data);
-			  this.$router.push({ name: "home" });
-			  
-              // if (data.data.is_admin == 0) {
-              // } else {
-              //   this.$router.push({ name: "chart" });
-              // }
-            }
-          });
-        });
-
-        submitButton.classList.remove("spinner", "spinner-light", "spinner-right");
-      }, 2000);
-    },
-  },
-  computed: {
-    ...mapState({
-      errors: (state) => state.auth.errors,
-    }),
-  },
 };
 </script>

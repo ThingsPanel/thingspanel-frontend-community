@@ -31,6 +31,7 @@ export const locale = {
     TITLE1: "请输入您的用户名和密码",
     TITLE2: "请输入有效的电子邮件地址",
     TITLE3: "请输入密码",
+    WrongPassword: "用户名或密码错误",
     FORGETPASS: "忘记密码？",
     NAME: "姓名",
     REMARKS: "备注",
