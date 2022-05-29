@@ -46,8 +46,9 @@ const actions = {
       login(credentials).then(({ data }) => {
           if (data.code == 200) {
             context.commit(SET_AUTH, data);
-            // 保存 token
+            // 保存 token 和 过期时间
             JwtService.saveToken(data.data.access_token);
+            JwtService.saveExpiresTime(data.data.expires_in)
 
             // 登录成功，延迟 500 ms 再跳转
             setTimeout(()=>{
@@ -67,19 +68,23 @@ const actions = {
     });
   },
   [REFRESH](context) {
-    ApiService.post(local_url + "/auth/refresh")
-      .then(({ data }) => {
-        if (data.code == 200) {
-          JwtService.saveToken(data.data.access_token);
-		  ApiService.setHeader();
-        } else {
-          context.commit(PURGE_AUTH);
-        }
-        window.location.reload();
-      })
-      .catch(({ response }) => {
-        context.commit(PURGE_AUTH);
-      });
+    // console.log('store refresh token')
+    // 刷新 token 移到 http.js 中刷新
+    // 页面中还有调用此方法
+
+    // ApiService.post(local_url + "/auth/refresh")
+    //   .then(({ data }) => {
+    //     if (data.code == 200) {
+    //       JwtService.saveToken(data.data.access_token);
+	// 	  ApiService.setHeader();
+    //     } else {
+    //       context.commit(PURGE_AUTH);
+    //     }
+    //     window.location.reload();
+    //   })
+    //   .catch(({ response }) => {
+    //     context.commit(PURGE_AUTH);
+    //   });
   },
   [LOGOUT](context) {
     // ApiService.post(local_url + "/auth/logout")
@@ -117,7 +122,7 @@ const actions = {
   [VERIFY_AUTH](context) {
     // console.log(JwtService.getToken());
     if (JwtService.getToken()) {
-      ApiService.setHeader();
+      // ApiService.setHeader();
       // ApiService.post(local_url + "/auth/me")
       me()
           .then(({ data }) => {
