@@ -26,8 +26,8 @@ export default function useLoginForm() {
 
     // 表单数据
     let formData = reactive({
-        email: "admin@thingspanel.cn",
-        password: "123456",
+        email: "",
+        password: "",
     })
 
     // 表单验证规则

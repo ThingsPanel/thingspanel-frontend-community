@@ -25,7 +25,7 @@ import "@/styles/common.scss";
 import "echarts/theme/macarons.js";
 
 
-import ElementUI from "element-ui";
+import ElementUI from "./core/plugins/element-ui";
 
 // mock data
 import '@/mock';
