@@ -92,3 +92,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.header {
+  background: unset!important;
+}
+</style>

@@ -159,7 +159,7 @@
 </style>
 
 <script>
-import KTSearchDefault from "@/view/layout/extras/dropdown/SearchDefault.vue";
+// import KTSearchDefault from "@/view/layout/extras/dropdown/SearchDefault.vue";
 // import KTDropdownNotification from "@/view/layout/extras/dropdown/DropdownNotification.vue";
 // import KTDropdownQuickAction from "@/view/layout/extras/dropdown/DropdownQuickAction.vue";
 // import KTDropdownMyCart from "@/view/layout/extras/dropdown/DropdownMyCart.vue";
@@ -177,13 +177,17 @@ export default {
     };
   },
   components: {
-    KTSearchDefault,
+    // KTSearchDefault,
     // KTDropdownNotification,
     // KTDropdownQuickAction,
     // KTDropdownMyCart,
     KTDropdownLanguage,
     KTQuickUser
     // KTQuickPanel
+  },
+  created() {
+    // 初始化
+    this.onLanguageChanged()
   },
   methods: {
     onLanguageChanged() {
