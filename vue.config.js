@@ -1,7 +1,9 @@
-const path = require("path");
+// const path = require("path");
+const CompressionPlugin = require("compression-webpack-plugin");
 
 module.exports = {
   // publicPath: "",
+  productionSourceMap: false, // 生产打包时不输出map文件
   runtimeCompiler: true,
   devServer: {
     port: 8080,
@@ -30,7 +32,16 @@ module.exports = {
         // Or if using full build of Vue (runtime + compiler)
         // vue$: 'vue/dist/vue.esm.js'      // 'vue/dist/vue.common.js' for webpack 1
       }
-    }
+    },
+    plugins: [
+      new CompressionPlugin({
+          filename: '[path][base].gz',
+          algorithm: 'gzip',
+          test: /\.js$|\.css$|\.html$/,
+          threshold: 10240,
+          minRatio: 0.8
+      }),
+    ]
   },
   css: {
     loaderOptions: {
