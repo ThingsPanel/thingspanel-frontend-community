@@ -264,7 +264,9 @@ export default {
       this.formObj.logo_three = res.data;
     },
     beforeAvatarUpload(file) {
-      console.log('111',file);
+      // 上传前设置请求头，因为 token 会刷新
+      this.headersObj.Authorization = "Bearer " + JwtService.getToken()
+      // console.log('111',file);
       return true;
     },
     submitData() {
