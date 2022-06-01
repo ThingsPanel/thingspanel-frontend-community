@@ -20,13 +20,14 @@
   
     /*最外层透明*/
     .el-table, .el-table__expanded-cell{
-      background-color: transparent;
+      background-color: transparent!important;
     }
+
     /* 表格内背景颜色 */
     .el-table th,
     .el-table tr,
     .el-table td {
-      background-color: transparent;
+      background-color: transparent!important;
     }
   }
   
@@ -65,3 +66,12 @@
       color: #fff;
     }
   }
+
+  // 解决冲突
+.el-alert--error.is-light{
+  color: #F56C6C;
+
+  .el-alert__icon{
+    color: #F56C6C;
+  }
+}

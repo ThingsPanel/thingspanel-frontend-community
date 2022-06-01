@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded bg-white v-application" data-app="true">
+  <div class="rounded bg-white v-application my-v-input" data-app="true">
     <v-form
       ref="form"
       v-model="valid"

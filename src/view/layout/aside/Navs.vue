@@ -45,6 +45,7 @@ export default {
       {name:"COMMON.DATAS", icon: 'menu-icon flaticon2-list', link: '/data/index'},
       {name:"COMMON.MARKET", icon: 'menu-icon flaticon2-supermarket', link: '/market'},
       {name:"COMMON.USERS", icon: 'menu-icon flaticon2-user', link: '/users/user'},
+      {name:"COMMON.USERS", icon: 'menu-icon flaticon2-user', link: '/users/index'},
       {name:"COMMON.SYSTEMSETUP", icon: 'menu-icon flaticon2-gear', link: '/system/index'},
     ],
   })

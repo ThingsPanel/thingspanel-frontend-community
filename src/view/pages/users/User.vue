@@ -9,6 +9,7 @@
         </v-btn>
       </template>
     </v-snackbar>
+
     <v-data-table
       :headers="headers"
       :hide-default-header="hideheader"
@@ -253,6 +254,7 @@
         </div>
       </template>
     </v-data-table>
+
     <v-pagination
       v-if="length > 1"
       class="float-right"

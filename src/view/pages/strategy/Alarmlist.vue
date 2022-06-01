@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded p-4 card no-border v-application" data-app="true">
+  <div class="rounded p-4 card no-border v-application my-v-input" data-app="true">
     <v-data-table
       :headers="headers"
       :items="desserts"

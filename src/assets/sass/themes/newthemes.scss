@@ -156,13 +156,13 @@
     color: #fff;
 }
 
-.el-input--suffix .el-input__inner,
-.vue-treeselect__control,
-.zdydatepicker {
-    background-color: rgba(22, 30, 67, 0.5) !important;
-    border: 1px solid rgba(0, 0, 0, 0.05) !important;
-    color: #fff !important;
-}
+//.el-input--suffix .el-input__inner,
+//.vue-treeselect__control,
+//.zdydatepicker {
+//    background-color: rgba(22, 30, 67, 0.5) !important;
+//    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+//    color: #fff !important;
+//}
 
 .vue-treeselect__single-value {
     color: #fff !important;
@@ -302,23 +302,23 @@ canvas {
     font-size: 14px;
 }
 
- input:not([disabled])[type='text']:not(.no-input),
- .timebox,
- input:not([disabled])[type='number'] {
-     display: block !important;
-     width: 100% !important;
-     height: calc(1.5em + .75rem + 2px) !important;
-     padding: 1.375rem .75rem !important;
-     font-size: 1rem !important;
-     font-weight: 400 !important;
-     line-height: 1.5 !important;
-     background-clip: padding-box !important;
-     border-radius: .25rem !important;
-     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-     background-color: rgba(22, 30, 67, 0.5) !important;
-     border: 1px solid rgba(0, 0, 0, 0.05) !important;
-     color: #b3b7c1 !important;
- }
+ //input:not([disabled])[type='text']:not(.no-input),
+ //.timebox,
+ //input:not([disabled])[type='number'] {
+ //    display: block !important;
+ //    width: 100% !important;
+ //    height: calc(1.5em + .75rem + 2px) !important;
+ //    padding: 1.375rem .75rem !important;
+ //    font-size: 1rem !important;
+ //    font-weight: 400 !important;
+ //    line-height: 1.5 !important;
+ //    background-clip: padding-box !important;
+ //    border-radius: .25rem !important;
+ //    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+ //    background-color: rgba(22, 30, 67, 0.5) !important;
+ //    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+ //    color: #b3b7c1 !important;
+ //}
 
  .v-select__selections .v-select__selection {
      position: absolute;

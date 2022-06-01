@@ -1,6 +1,6 @@
 <template>
   <div
-    class="home rounded chartbox no-border overflow_auto index-page"
+    class="home rounded chartbox no-border overflow_auto index-page my-v-input"
     id="chartpage"
   >
     <div class="v-application">

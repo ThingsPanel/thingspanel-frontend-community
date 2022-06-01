@@ -1,6 +1,6 @@
 <template>
   <!--begin::List Widget 4-->
-  <div class="card card-custom card-stretch gutter-b v-application">
+  <div class="card card-custom card-stretch gutter-b v-application my-v-input">
     <!--begin::Header-->
     <div class="card-header border-0">
       <!-- <h3 class="card-title font-weight-bolder text-dark">

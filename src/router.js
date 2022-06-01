@@ -46,6 +46,12 @@ export default new Router({
                         import ("@/view/pages/users/User.vue")
                 },
                 {
+                    path: "/users/index",
+                    name: "user2",
+                    component: () =>
+                        import ("@/view/pages/users/Index.vue")
+                },
+                {
                     path: "/chart/chart",
                     name: "chart",
                     component: () =>

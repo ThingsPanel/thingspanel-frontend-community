@@ -9,11 +9,15 @@ import {
     TableColumn,
     Dialog,
     Radio,
+    RadioGroup,
     Upload,
     Popconfirm,
     Pagination,
     Tag,
     Cascader,
+    Row,
+    Col,
+    Alert,
     Message,
 } from "element-ui";
 
@@ -29,11 +33,15 @@ const element = {
         Vue.use(TableColumn)
         Vue.use(Dialog)
         Vue.use(Radio)
+        Vue.use(RadioGroup)
         Vue.use(Upload)
         Vue.use(Popconfirm)
         Vue.use(Pagination)
         Vue.use(Tag)
         Vue.use(Cascader)
+        Vue.use(Row)
+        Vue.use(Col)
+        Vue.use(Alert)
 
         Vue.prototype.$message = Message
     }
