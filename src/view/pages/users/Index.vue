@@ -26,8 +26,10 @@
       <template v-slot="scope">
         <div class="text-right">
           <el-button type="primary" size="mini">编辑</el-button>
-          <el-button type="primary" size="mini">修改密码</el-button>
-          <el-button type="danger" size="mini">删除</el-button>
+          <el-button type="primary" size="mini" class="mr-3" @click="handleResetPassword(scope.row)">修改密码</el-button>
+          <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
+            <el-button slot="reference" type="danger" size="mini">删除</el-button>
+          </el-popconfirm>
         </div>
       </template>
     </el-table-column>
@@ -48,6 +50,8 @@
 
   <!-- 创建用户表单 -->
   <CreateUserForm :add_user="add_user" :createUserDialogVisible.sync="createUserDialogVisible"></CreateUserForm>
+
+  <ResetPasswordForm :editUserItem="editUserItem" :resetPasswordDialogVisible.sync="resetPasswordDialogVisible"></ResetPasswordForm>
 </div>
 </template>
 
@@ -55,11 +59,13 @@
 import {defineComponent, ref} from "@vue/composition-api";
 import useUserIndex from "@/view/pages/users/useUserIndex";
 import CreateUserForm from "@/view/pages/users/CreateUserForm";
+import ResetPasswordForm from "@/view/pages/users/ResetPasswordForm";
 
 export default defineComponent({
   name: "userIndex",
   components: {
-    CreateUserForm
+    CreateUserForm,
+    ResetPasswordForm,
   },
   setup(){
 
@@ -74,7 +80,30 @@ export default defineComponent({
       tableData.value.push(data)
     }
 
+    function remove_user(item){
+      let index = tableData.value.indexOf(item)
+      tableData.value.splice(index, 1)
+    }
+
+    function handleDelete(item){
+      // todo 发送请求
+
+      // 移除表单数据
+      remove_user(item)
+    }
+
+    // 新建用户弹窗
     let createUserDialogVisible = ref(false)
+    let resetPasswordDialogVisible = ref(false)
+
+    // 当前编辑的用户
+    let editUserItem = ref({})
+
+    // 修改用户密码
+    function handleResetPassword(item){
+      resetPasswordDialogVisible.value = true
+      editUserItem.value = item
+    }
 
     return {
       tableData,
@@ -83,6 +112,10 @@ export default defineComponent({
       getUserIndex,
       add_user,
       createUserDialogVisible,
+      resetPasswordDialogVisible,
+      handleDelete,
+      editUserItem,
+      handleResetPassword,
     }
   }
 })

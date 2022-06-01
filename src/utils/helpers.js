@@ -1,3 +1,14 @@
+import {Message} from "element-ui";
+
+export function message_success(text){
+    Message({
+        message: text,
+        type: 'success',
+        center: true,
+        showClose: true,
+    })
+}
+
 /**
  * 验证邮箱
  * @param val

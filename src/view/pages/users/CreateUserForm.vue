@@ -37,14 +37,7 @@
     </el-radio-group>
   </el-form-item>
 
-  <el-alert
-      v-if="error_message"
-      title="提交的数据有误"
-      type="error"
-      :description="error_message"
-      class="mb-4"
-      show-icon>
-  </el-alert>
+  <FormAlert :error_message="error_message"></FormAlert>
 
   <div class="py-1"><el-button class="w-100" type="primary" @click="handleSubmit">提交</el-button></div>
   <div class="py-1"><el-button class="w-100" @click="handleReset">重置</el-button></div>
@@ -55,12 +48,15 @@
 
 <script>
 import {defineComponent, ref, reactive, computed} from "@vue/composition-api";
-import {is_cellphone, is_email} from "@/utils/helpers";
+import {is_cellphone, is_email, message_success} from "@/utils/helpers";
 import {user_add} from "@/api/user";
-import {Message} from "element-ui";
+import FormAlert from "@/components/common/FormAlert";
 
 export default defineComponent({
   name: "CreateUserForm",
+  components: {
+    FormAlert
+  },
   props: {
     add_user: {
       required: true,
@@ -75,7 +71,7 @@ export default defineComponent({
     // 父级 props 的计算属性
     let showDialog = computed({
       get(){
-        return props.createUserDialogVisible
+        return !!props.createUserDialogVisible
       },
       set(val){
         context.emit('update:createUserDialogVisible', val)
@@ -142,7 +138,7 @@ export default defineComponent({
         // 发送请求
         user_add(formData).then(({data})=>{
           if( data.code === 200) {
-            Message.success("添加成功！！")
+            message_success("添加用户成功！！")
             // 调用 props 方法向列表添加新数据
             // 后端返回数据缺少 mobile
             data.data.mobile = formData.mobile
