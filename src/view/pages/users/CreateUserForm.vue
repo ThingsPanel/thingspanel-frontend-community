@@ -37,17 +37,21 @@
     </el-radio-group>
   </el-form-item>
 
+  <el-form-item label="备注" prop="remark">
+    <el-input v-model="formData.remark" type="textarea"></el-input>
+  </el-form-item>
+
   <FormAlert :error_message="error_message"></FormAlert>
 
   <div class="py-1"><el-button class="w-100" type="primary" @click="handleSubmit">提交</el-button></div>
-  <div class="py-1"><el-button class="w-100" @click="handleReset">重置</el-button></div>
+<!--  <div class="py-1"><el-button class="w-100" @click="handleReset">重置</el-button></div>-->
 
 </el-form>
 </el-dialog>
 </template>
 
 <script>
-import {defineComponent, ref, reactive, computed} from "@vue/composition-api";
+import {defineComponent, ref, reactive, computed, watch} from "@vue/composition-api";
 import {is_cellphone, is_email, message_success} from "@/utils/helpers";
 import {user_add} from "@/api/user";
 import FormAlert from "@/components/common/FormAlert";
@@ -68,6 +72,9 @@ export default defineComponent({
     }
   },
   setup(props, context){
+    // from 表单元素
+    let createUserForm = ref()
+
     // 父级 props 的计算属性
     let showDialog = computed({
       get(){
@@ -77,8 +84,14 @@ export default defineComponent({
         context.emit('update:createUserDialogVisible', val)
       },
     });
-    // from 表单元素
-    let createUserForm = ref()
+
+    // 弹窗关闭时重置表单
+    watch(()=> props.createUserDialogVisible, (val)=>{
+      if(val === false) {
+        createUserForm.value.resetFields()
+        error_message.value = ""
+      }
+    })
 
     // 提交的数据
     let formData = reactive({
@@ -88,9 +101,10 @@ export default defineComponent({
       mobile: "",
       password: "",
       password_confirmation: "",
+      remark: "",
     })
     let loading = ref(false);
-    let error_message = ref('')
+    let error_message = ref("")
 
     // 检查密码
     const check_password_confirmation = (rule, value, callback) => {
@@ -155,10 +169,10 @@ export default defineComponent({
       })
     }
 
-    function handleReset(){
-      createUserForm.value.resetFields()
-      error_message.value = ""
-    }
+    // function handleReset(){
+    //   createUserForm.value.resetFields()
+    //   error_message.value = ""
+    // }
 
     return {
       showDialog,
@@ -166,7 +180,6 @@ export default defineComponent({
       formData,
       rules,
       handleSubmit,
-      handleReset,
       error_message,
     }
   }

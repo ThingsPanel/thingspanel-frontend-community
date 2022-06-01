@@ -21,6 +21,9 @@ import {
     Message,
 } from "element-ui";
 
+// 防止dialog导致页面滚动条消失抖动
+Dialog.props.lockScroll.default = false;
+
 const element = {
     install: function (Vue) {
         Vue.use(Button)

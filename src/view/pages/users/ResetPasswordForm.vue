@@ -27,11 +27,10 @@
 </template>
 
 <script>
-import {defineComponent, ref, reactive, watch} from "@vue/composition-api";
+import {defineComponent, ref, reactive, watch, computed} from "@vue/composition-api";
 import {user_password} from "@/api/user";
 import {message_success} from "@/utils/helpers";
 import FormAlert from "@/components/common/FormAlert.vue"
-import {computed} from "@vue/composition-api/dist/vue-composition-api";
 
 export default defineComponent({
   name: "ResetPasswordForm",
@@ -65,6 +64,7 @@ export default defineComponent({
     watch(()=> props.resetPasswordDialogVisible, (val)=>{
       if(val === false) {
         resetPasswordFormRef.value.resetFields()
+        error_message.value = ""
       }
     })
 

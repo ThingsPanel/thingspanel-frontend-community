@@ -25,7 +25,7 @@
     <el-table-column label="操作" align="center" width="250">
       <template v-slot="scope">
         <div class="text-right">
-          <el-button type="primary" size="mini">编辑</el-button>
+          <el-button type="primary" size="mini" @click="handleEdit(scope.row)">编辑</el-button>
           <el-button type="primary" size="mini" class="mr-3" @click="handleResetPassword(scope.row)">修改密码</el-button>
           <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
             <el-button slot="reference" type="danger" size="mini">删除</el-button>
@@ -51,6 +51,10 @@
   <!-- 创建用户表单 -->
   <CreateUserForm :add_user="add_user" :createUserDialogVisible.sync="createUserDialogVisible"></CreateUserForm>
 
+  <!-- 修改用户 -->
+  <UpdateUserForm :update_user="update_user" :editUserItem="editUserItem" :updateUserDialogVisible.sync="updateUserDialogVisible"></UpdateUserForm>
+
+  <!-- 重置密码 -->
   <ResetPasswordForm :editUserItem="editUserItem" :resetPasswordDialogVisible.sync="resetPasswordDialogVisible"></ResetPasswordForm>
 </div>
 </template>
@@ -60,12 +64,14 @@ import {defineComponent, ref} from "@vue/composition-api";
 import useUserIndex from "@/view/pages/users/useUserIndex";
 import CreateUserForm from "@/view/pages/users/CreateUserForm";
 import ResetPasswordForm from "@/view/pages/users/ResetPasswordForm";
+import UpdateUserForm from "@/view/pages/users/UpdateUserForm";
 
 export default defineComponent({
   name: "userIndex",
   components: {
     CreateUserForm,
     ResetPasswordForm,
+    UpdateUserForm,
   },
   setup(){
 
@@ -85,6 +91,11 @@ export default defineComponent({
       tableData.value.splice(index, 1)
     }
 
+    function update_user(item, data){
+      let index = tableData.value.indexOf(item)
+      tableData.value.splice(index, 1, data)
+    }
+
     function handleDelete(item){
       // todo 发送请求
 
@@ -95,6 +106,7 @@ export default defineComponent({
     // 新建用户弹窗
     let createUserDialogVisible = ref(false)
     let resetPasswordDialogVisible = ref(false)
+    let updateUserDialogVisible = ref(false)
 
     // 当前编辑的用户
     let editUserItem = ref({})
@@ -105,17 +117,25 @@ export default defineComponent({
       editUserItem.value = item
     }
 
+    function handleEdit(item){
+      updateUserDialogVisible.value = true
+      editUserItem.value = item
+    }
+
     return {
       tableData,
       params,
       total,
       getUserIndex,
       add_user,
+      update_user,
       createUserDialogVisible,
       resetPasswordDialogVisible,
       handleDelete,
       editUserItem,
       handleResetPassword,
+      handleEdit,
+      updateUserDialogVisible,
     }
   }
 })
