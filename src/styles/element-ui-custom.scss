@@ -75,3 +75,30 @@
     color: #F56C6C;
   }
 }
+
+// 修改按钮配色
+.el-button.indigo{
+  background-color: #5867dd!important;
+  border-color: #5867dd!important;
+  &:hover{
+    background-color: #6573e0!important;
+    border-color: #6573e0!important;
+  }
+}
+.el-button--danger{
+  background-color: #fd397a!important;
+  border-color: #fd397a!important;
+  &:hover{
+    background-color: #fd4984!important;
+    border-color: #fd4984!important;
+  }
+}
+
+.el-pagination.is-background .el-pager li:not(.disabled):hover {
+  color: #5867dd !important;
+}
+
+.el-pagination.is-background .el-pager li:not(.disabled).active{
+  background-color: #5867dd!important;
+  color: #fff !important;
+}

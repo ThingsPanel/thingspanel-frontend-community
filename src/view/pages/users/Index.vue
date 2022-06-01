@@ -6,7 +6,7 @@
       <h2 class="h2 text-white m-0 pt-2 pl-2">用户管理</h2>
     </el-col>
     <el-col :offset="20" :span="2" class="px-2">
-      <el-button class="w-100" size="medium" type="primary" @click="createUserDialogVisible = true">添加用户</el-button>
+      <el-button class="w-100 indigo" size="medium" type="primary" @click="createUserDialogVisible = true">添加用户</el-button>
     </el-col>
   </el-row>
   <!-- 头 end -->
@@ -25,8 +25,8 @@
     <el-table-column label="操作" align="center" width="250">
       <template v-slot="scope">
         <div class="text-right">
-          <el-button type="primary" size="mini" @click="handleEdit(scope.row)">编辑</el-button>
-          <el-button type="primary" size="mini" class="mr-3" @click="handleResetPassword(scope.row)">修改密码</el-button>
+          <el-button type="primary" class="indigo" size="mini" @click="handleEdit(scope.row)">编辑</el-button>
+          <el-button type="primary" class="indigo mr-3" size="mini" @click="handleResetPassword(scope.row)">修改密码</el-button>
           <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
             <el-button slot="reference" type="danger" size="mini">删除</el-button>
           </el-popconfirm>

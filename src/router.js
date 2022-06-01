@@ -43,12 +43,6 @@ export default new Router({
                     path: "/users/user",
                     name: "user",
                     component: () =>
-                        import ("@/view/pages/users/User.vue")
-                },
-                {
-                    path: "/users/index",
-                    name: "user2",
-                    component: () =>
                         import ("@/view/pages/users/Index.vue")
                 },
                 {
