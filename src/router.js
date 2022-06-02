@@ -91,7 +91,7 @@ export default new Router({
                     path: "/log/list",
                     name: "loglist",
                     component: () =>
-                        import ("@/view/pages/log/List.vue")
+                        import ("@/view/pages/log/Index.vue")
                 },
                 {
                     path: "/alarm/list",

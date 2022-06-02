@@ -10,9 +10,6 @@ export default function useUserIndex(){
         page: 1,
     })
 
-    // let search = ref('')
-    let limit = ref(10)
-    // let page = ref(1)
     let total = ref(0)
 
     function getUserIndex(){
@@ -25,9 +22,7 @@ export default function useUserIndex(){
                 tableData.value = data.data.data
                 total.value = data.data.total
             }
-        }).catch((e=>{
-            console.error(e)
-        })).finally(()=>{
+        }).finally(()=>{
             loading.value = false
         })
     }

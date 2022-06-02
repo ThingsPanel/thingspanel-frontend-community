@@ -47,3 +47,12 @@ export function handleServerErrorMsg(errors, ServerErrors) {
         }
     }
 }
+
+/**
+ * 判断是否是字符串
+ * @param item
+ * @returns {boolean}
+ */
+export function is_string(item) {
+    return typeof(item) === 'string'
+}
