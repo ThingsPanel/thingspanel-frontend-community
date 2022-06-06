@@ -4,12 +4,12 @@
   <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input">
     <el-col :span="5">
       <el-input placeholder="请输入IP地址" size="medium" v-model="params.ip" clearable @clear="handleSearch()">
-        <template slot="prepend">IP</template>
+<!--        <template slot="prepend">IP</template>-->
       </el-input>
     </el-col>
     <el-col :span="5">
       <el-input placeholder="请输入请求路径" size="medium" v-model="params.path" clearable @clear="handleSearch()">
-        <template slot="prepend">路径</template>
+<!--        <template slot="prepend">路径</template>-->
       </el-input>
     </el-col>
     <el-col :span="10"></el-col>

@@ -108,15 +108,31 @@
 
 // 深色表单组件
 .el-dark-input{
+  // input
   .el-input__inner{
     color: #fff;
     background-color: rgba(22, 30, 67, 0.5) !important;
-    border-color: rgba(0,0,0,0.2);
+    border-color: rgba(0,0,0,0.1);
   }
 
+  // 组合式 input
   .el-input-group__prepend{
     color: #c0c4cc;
     background-color: rgba(22, 30, 67, 0.5) !important;
-    border-color: rgba(0,0,0,0.2);
+    border-color: rgba(0,0,0,0.1);
   }
+
+  // 日期选择器
+  .el-range-separator{
+    color: #c0c4cc!important;
+  }
+  .el-range-input{
+    color: #fff!important;
+  }
+}
+
+// 有冲突，级联选择去掉横向滚动条
+.el-cascader-menu__wrap{
+  overflow: scroll !important;
+  height: 204px !important;
 }

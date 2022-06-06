@@ -91,7 +91,7 @@ export default new Router({
                     path: "/log/list",
                     name: "loglist",
                     component: () =>
-                        import ("@/view/pages/log/Index.vue")
+                        import ("@/view/pages/log/LogIndex.vue")
                 },
                 {
                     path: "/alarm/list",
@@ -103,7 +103,7 @@ export default new Router({
                     path: "/data/index",
                     name: "datas",
                     component: () =>
-                        import ("@/view/pages/datas/index.vue")
+                        import ("@/view/pages/datas/DataIndex.vue")
                 },
                 {
                     path: "/production/index",

@@ -18,6 +18,7 @@ import {
     Row,
     Col,
     Alert,
+    DatePicker,
     Message,
 } from "element-ui";
 
@@ -45,6 +46,7 @@ const element = {
         Vue.use(Row)
         Vue.use(Col)
         Vue.use(Alert)
+        Vue.use(DatePicker)
 
         Vue.prototype.$message = Message
     }

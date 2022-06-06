@@ -1,13 +1,10 @@
 import axios from "axios";
 import JwtService from "@/core/services/jwt.service";
-
-const local_url =
-    (process.env.VUE_APP_BASE_URL ||
-        document.location.protocol + "//" + document.domain + ":9999/") + "api";
+import local_url from "@/api/LocalUrl";
 
 // 创建 axios 实例
 const instance = axios.create({
-    baseURL: local_url,
+    baseURL: local_url + "api",
     timeout: 1000 * 12,
     headers: {
         'Content-Type': 'application/json',
@@ -50,15 +47,16 @@ instance.interceptors.request.use(
 
         const now = Date.now();
         // 没有 token 或者时间大于 expires_in 重定向到登录
-        if(!token || now > token_expires_in) {
+        if(!token || !token_expires_in || now > token_expires_in) {
             JwtService.destroyToken()
             window.location.href = '/#/login'
             return false; // 阻止后面的请求
         }
         // 通过时间判断刷新 token
         if (token && token_expires_in) {
-            // 小于 10 分钟过期的时候刷新
-            if (now - token_expires_in < 10*60*1000) {
+            // 小于 20 分钟过期的时候刷新
+            if (token_expires_in - now  < 20*60*1000) {
+                console.log('刷新token', now, token_expires_in)
                 // 立即刷新token
                 if (!isRefreshing) {
                     isRefreshing = true;
