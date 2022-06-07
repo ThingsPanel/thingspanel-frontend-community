@@ -136,3 +136,9 @@
   overflow: scroll !important;
   height: 204px !important;
 }
+
+.el-cascader-menu{
+  .el-radio{
+    margin-bottom: 0;
+  }
+}

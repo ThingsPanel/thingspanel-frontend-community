@@ -8,3 +8,21 @@ export function asset_list(data) {
         data,
     })
 }
+
+// 根据业务id获取设备分组
+export function asset_list_a(data) {
+    return axios({
+        url: "/asset/list/a",
+        method: "post",
+        data,
+    })
+}
+
+// 根据设备分组ID查询子设备分组
+export function asset_list_b(data) {
+    return axios({
+        url: "/asset/list/b",
+        method: "post",
+        data,
+    })
+}

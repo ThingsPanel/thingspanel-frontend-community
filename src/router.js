@@ -97,7 +97,7 @@ export default new Router({
                     path: "/alarm/list",
                     name: "alarm",
                     component: () =>
-                        import ("@/view/pages/alarm/List.vue")
+                        import ("@/view/pages/alarm/AlarmIndex.vue")
                 },
                 {
                     path: "/data/index",
