@@ -28,6 +28,12 @@ export default new Router({
                         import ("@/view/pages/business/List.vue")
                 },
                 {
+                    path: "/list2",
+                    name: "buslist2",
+                    component: () =>
+                        import ("@/view/pages/business/BusinessIndex.vue")
+                },
+                {
                     path: "/business",
                     name: "business",
                     component: () =>

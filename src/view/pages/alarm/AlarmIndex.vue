@@ -39,6 +39,7 @@
     <!--  日期筛选  -->
     <el-col :span="8">
       <el-date-picker
+          class="w-100"
           v-model="datetimerange"
           :picker-options="DatePickerOptions"
           value-format="yyyy/MM/dd HH:mm:ss"
@@ -67,9 +68,9 @@
     <el-table-column align="center" label="告警时间" prop="created_at"></el-table-column>
     <el-table-column align="center" label="业务名" prop="business_name"></el-table-column>
     <el-table-column align="center" label="设备名" prop="device_name"></el-table-column>
-    <el-table-column align="center" label="指标名" prop="asset_name"></el-table-column>
-    <el-table-column align="center" label="当前值"></el-table-column>
-    <el-table-column align="center" label="触发条件"></el-table-column>
+<!--    <el-table-column align="center" label="指标名" prop="asset_name"></el-table-column>-->
+<!--    <el-table-column align="center" label="当前值"></el-table-column>-->
+    <el-table-column align="center" label="触发条件" prop="describe"></el-table-column>
   </el-table>
   <!-- 表 end -->
 

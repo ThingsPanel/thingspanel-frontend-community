@@ -20,6 +20,7 @@
     </el-col>
     <el-col :span="8">
       <el-date-picker
+          class="w-100"
           v-model="datetimerange"
           :picker-options="DatePickerOptions"
           :clearable="false"
