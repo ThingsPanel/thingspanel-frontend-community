@@ -5,7 +5,7 @@
       <h2 class="h2 text-white m-0 pt-2">业务管理</h2>
     </el-col>
     <el-col :span="2" class="px-2">
-      <el-button class="w-100" size="medium" type="indigo">新增业务</el-button>
+      <el-button class="w-100" size="medium" type="indigo" @click="handleCreate()">新增业务</el-button>
     </el-col>
   </el-row>
 
@@ -69,6 +69,7 @@
 
 import {defineComponent, ref} from "@vue/composition-api";
 import useBusinessIndex from "@/view/pages/business/useBusinessIndex";
+import useRoute from "@/utils/useRoute";
 
 export default defineComponent({
   name: "BusinessIndex",
@@ -81,12 +82,19 @@ export default defineComponent({
       total,
     } = useBusinessIndex()
 
+    let {router} = useRoute()
+
+    function handleCreate(){
+      router.push({name: 'editbusiness2'})
+    }
+
     return {
       tableData,
       getBusinessIndex,
       loading,
       params,
       total,
+      handleCreate,
     }
   }
 })

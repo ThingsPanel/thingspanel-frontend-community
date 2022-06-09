@@ -14,7 +14,13 @@
       </el-cascader>
     </el-col>
     <el-col :span="5">
-      <el-input v-model="params.token" placeholder="请输入要筛选的token" size="medium" clearable @clear="handleSearch()">
+      <el-input
+          v-model="params.token"
+          placeholder="请填写要筛选的token"
+          size="medium"
+          clearable
+          @keydown.enter.native="handleSearch()"
+          @clear="handleSearch()">
 <!--        <template slot="prepend">token</template>-->
       </el-input>
     </el-col>

@@ -32,6 +32,7 @@ export default {
       {name:"COMMON.HOME", icon: 'menu-icon flaticon2-architecture-and-city', link: '/home'},
       {name:"COMMON.BUSINESS", icon: 'menu-icon flaticon2-rhombus', link: '/list'},
       {name:"COMMON.BUSINESS", icon: 'menu-icon flaticon2-rhombus', link: '/list2'},
+      {name:"COMMON.DEVICE", icon: 'menu-icon flaticon2-rhombus', link: '/device'},
       {name:"COMMON.VISUALIZATION", icon: 'menu-icon flaticon2-laptop', link: '/chart/list'},
       {name:"COMMON.AUTOMATION", icon: 'menu-icon flaticon2-hourglass', link: '/strategy/list'},
       {name:"COMMON.WARNINFO", icon: 'menu-icon flaticon2-warning', link: '/alarm/list'},

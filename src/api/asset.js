@@ -1,5 +1,13 @@
 import axios from "./http"
 
+// 设备插件
+export function asset_index(){
+    return axios({
+        url: "/asset/index",
+        method: "post",
+    })
+}
+
 // 资产
 export function asset_list(data) {
     return axios({

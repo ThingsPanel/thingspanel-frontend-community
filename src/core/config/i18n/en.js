@@ -3,6 +3,7 @@ export const locale = {
 
   COMMON: {
     SYSTEMSETUP: "System setup",
+    DEVICE: "Device",
     DEVICEPROPERTIES: "Device properties",
     DEVICEPROPERTIESVALUE: "Device properties value",
     DEVICELOCATION: "Device location",

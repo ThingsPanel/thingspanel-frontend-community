@@ -82,7 +82,7 @@ export default function useAlarmIndex(){
 
     // 重置查询
     function handleReset(){
-        console.log('handleReset')
+        // console.log('handleReset')
         // 逐个赋值
         let dp = defaultParams()
         for (const key in dp) {

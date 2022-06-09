@@ -27,11 +27,18 @@ export default new Router({
                     component: () =>
                         import ("@/view/pages/business/List.vue")
                 },
+                // 重写的 业务
                 {
                     path: "/list2",
                     name: "buslist2",
                     component: () =>
                         import ("@/view/pages/business/BusinessIndex.vue")
+                },
+                {
+                    path: "/device",
+                    name: "device",
+                    component: () =>
+                        import ("@/view/pages/device/DeviceIndex.vue")
                 },
                 {
                     path: "/business",
@@ -44,6 +51,12 @@ export default new Router({
                     name: "editbusiness",
                     component: () =>
                         import ("@/view/pages/business/Editbusiness.vue")
+                },
+                {
+                    path: "/editbusiness2",
+                    name: "editbusiness2",
+                    component: () =>
+                        import ("@/view/pages/business/EditBusinessPage.vue")
                 },
                 {
                     path: "/users/user",
