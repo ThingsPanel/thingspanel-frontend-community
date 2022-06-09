@@ -5,7 +5,7 @@
     <el-col :span="4">
       <BusinessSelector
           :business_id.sync="params.business_id"
-          @change="handleBusinessSelector()"></BusinessSelector>
+          @change="handleBusinessSelectorChange()"></BusinessSelector>
     </el-col>
     <el-col :span="4">
       <AssertSelector
@@ -98,7 +98,7 @@ export default defineComponent({
       device_plugin,
     } = useDeviceIndex()
 
-    function handleBusinessSelector(){
+    function handleBusinessSelectorChange(){
       // business_id 更改时清空 asset_id
       params.asset_id = ""
       handleSearch()
@@ -114,7 +114,7 @@ export default defineComponent({
       handleSearch,
       handleReset,
       device_plugin,
-      handleBusinessSelector,
+      handleBusinessSelectorChange,
     }
   }
 })

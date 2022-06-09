@@ -3,32 +3,17 @@
   <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input">
     <!--  业务筛选  -->
     <el-col :span="4">
-      <el-cascader
-          placeholder="请选择业务"
-          v-model="businessCascaderData"
-          size="medium"
-          :props="businessProps"
-          clearable
-          class="w-100"
-          @change="handleBusinessCascaderClear()"
-      >
-      </el-cascader>
+      <BusinessSelector
+          :business_id.sync="params.business_id"
+          @change="handleBusinessSelectorChange"></BusinessSelector>
     </el-col>
 
     <!--  资产  -->
     <el-col :span="4">
-      <el-cascader
-          placeholder="请选择资产"
-          v-model="assetCascaderData"
-          size="medium"
-          :props="assetProps"
-          :options="assetOptions"
-          clearable
-          :show-all-levels="false"
-          class="w-100"
-          @change="handleSearch()"
-      >
-      </el-cascader>
+      <AssertSelector
+          :business_id="params.business_id"
+          :asset_id.sync="params.asset_id"
+          @change="handleSearch()"></AssertSelector>
     </el-col>
 
     <!--  设备  -->
@@ -91,10 +76,15 @@
 import {defineComponent} from "@vue/composition-api";
 import useAlarmIndex from "@/view/pages/alarm/useAlarmIndex";
 import DatePickerOptions from "@/utils/DatePickerOptions";
-import useAlarmSelect from "@/view/pages/alarm/useAlarmSelect";
+import BusinessSelector from "@/components/common/BusinessSelector.vue"
+import AssertSelector from "@/components/common/AssertSelector.vue"
 
 export default defineComponent({
   name: "AlarmIndex",
+  components: {
+    BusinessSelector,
+    AssertSelector,
+  },
   setup(){
     // 表单数据
     let {
@@ -108,18 +98,8 @@ export default defineComponent({
       datetimerange,
     } = useAlarmIndex()
 
-
-    // 选择
-    let {
-      businessCascaderData,
-      businessProps,
-      assetOptions,
-      assetProps,
-      assetCascaderData,
-    } = useAlarmSelect(params)
-
     // 清除 business 选择器
-    function handleBusinessCascaderClear(){
+    function handleBusinessSelectorChange(){
       // 清除资产的筛选
       params.asset_id = ""
       handleSearch()
@@ -136,12 +116,7 @@ export default defineComponent({
       handleSearch,
       datetimerange,
       DatePickerOptions,
-      businessProps,
-      businessCascaderData,
-      assetOptions,
-      assetProps,
-      assetCascaderData,
-      handleBusinessCascaderClear,
+      handleBusinessSelectorChange,
     }
   }
 })
