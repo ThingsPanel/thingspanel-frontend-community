@@ -30,13 +30,20 @@
   <el-table :data="tableData" :show-header="false" v-loading="loading">
     <el-table-column label="名字" prop="name">
       <template v-slot="scope">
-        <div class="cursor-pointer" @click="handleClick(scope.row)">
+        <div class="cursor-pointer" @click="handleListClick(scope.row)">
           <i :class="scope.row.icon"></i>
           {{scope.row.name ? scope.row.name : scope.row.id}}
         </div>
       </template>
     </el-table-column>
   </el-table>
+
+  <!-- 设备详情start -->
+  <DeviceShowDialog
+      :device_id="currentDeviceId"
+      :deviceShowDialogVisible.sync="deviceShowDialogVisible">
+  </DeviceShowDialog>
+  <!-- 设备详情end -->
 </div>
 </template>
 
@@ -44,9 +51,13 @@
 import {defineComponent, ref} from "@vue/composition-api";
 import useRoute from "@/utils/useRoute";
 import useAssetIndex from "@/view/pages/business/useAssetIndex";
+import DeviceShowDialog from "@/view/pages/device/DeviceShowDialog.vue"
 
 export default defineComponent({
   name: "AssetIndex",
+  components: {
+    DeviceShowDialog
+  },
   setup(){
     let breadcrumbData = ref([])
 
@@ -62,7 +73,6 @@ export default defineComponent({
     breadcrumbData.value.push({
       id: route.query.id,
       name: route.query.name,
-
     })
 
     let business_id = route.query.id
@@ -77,10 +87,17 @@ export default defineComponent({
 
     getFirstLevel(business_id)
 
-    function handleClick(item){
+    let currentDeviceId = ref('')
+    let deviceShowDialogVisible = ref(false)
+    // 列表点击
+    function handleListClick(item){
       if(item.is_asset){
         getSecondLevel(item.id)
         breadcrumbData.value.push(item)
+      } else {
+        // console.log(item)
+        currentDeviceId.value = item.id
+        deviceShowDialogVisible.value = true
       }
     }
 
@@ -115,8 +132,10 @@ export default defineComponent({
       breadcrumbData,
       tableData,
       loading,
-      handleClick,
+      handleListClick,
       handleBreadcrumbClick,
+      currentDeviceId,
+      deviceShowDialogVisible,
     }
 
   }

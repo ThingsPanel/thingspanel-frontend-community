@@ -50,7 +50,13 @@
   <el-table :data="tableData" v-loading="loading">
     <el-table-column align="center" label="业务名称" prop="business_name"></el-table-column>
     <el-table-column align="center" label="设备分组" prop="asset_name"></el-table-column>
-    <el-table-column align="center" label="设备名称" prop="device_name"></el-table-column>
+    <el-table-column align="center" label="设备名称" prop="device_name">
+      <template v-slot="scope">
+        <div class="cursor-pointer" @click="handleListClick(scope.row)">
+          {{scope.row.device_name}}
+        </div>
+      </template>
+    </el-table-column>
 <!--    <el-table-column label="设备ID" prop="device"></el-table-column>-->
     <el-table-column align="center" label="设备插件" prop="device_type"></el-table-column>
     <el-table-column align="center" label="token" prop="device_token">
@@ -63,6 +69,7 @@
   </el-table>
   <!-- 表 end -->
 
+  <!-- 分页 start -->
   <div class="text-right py-3">
     <el-pagination
         background
@@ -72,6 +79,15 @@
         :page-size="params.per_page"
         @current-change="getDeviceIndex"></el-pagination>
   </div>
+  <!-- 分页 end -->
+
+  <!-- 设备详情 start -->
+  <DeviceShowDialog
+      :device_id="currentDeviceId"
+      :deviceShowDialogVisible.sync="deviceShowDialogVisible">
+  </DeviceShowDialog>
+  <!-- 设备详情 end -->
+
 </div>
 </template>
 
@@ -80,12 +96,15 @@ import {defineComponent} from "@vue/composition-api";
 import useDeviceIndex from "@/view/pages/device/useDeviceIndex";
 import BusinessSelector from "@/components/common/BusinessSelector.vue"
 import AssertSelector from "@/components/common/AssertSelector.vue"
+import DeviceShowDialog from "@/view/pages/device/DeviceShowDialog.vue"
+import {ref} from "@vue/composition-api/dist/vue-composition-api";
 
 export default defineComponent({
   name: "DeviceIndex",
   components: {
     BusinessSelector,
     AssertSelector,
+    DeviceShowDialog,
   },
   setup(){
     let {
@@ -105,6 +124,13 @@ export default defineComponent({
       handleSearch()
     }
 
+    let currentDeviceId = ref('')
+    let deviceShowDialogVisible = ref(false)
+
+    function handleListClick(item){
+      currentDeviceId.value = item.device
+      deviceShowDialogVisible.value = true
+    }
 
     return {
       tableData,
@@ -116,6 +142,9 @@ export default defineComponent({
       handleReset,
       device_plugin,
       handleBusinessSelectorChange,
+      currentDeviceId,
+      deviceShowDialogVisible,
+      handleListClick,
     }
   }
 })

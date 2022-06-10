@@ -64,8 +64,8 @@ export default function useAssetIndex() {
 
     function washDeviceData(array_data) {
         return array_data.map((item)=>({
-            id: item.business_id,
-            name: item.business_name,
+            id: item.device,
+            name: item.device_name,
             is_asset: false,
             icon: "el-icon-document"
         }))
