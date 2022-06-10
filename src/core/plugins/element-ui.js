@@ -19,6 +19,8 @@ import {
     Col,
     Alert,
     DatePicker,
+    Breadcrumb,
+    BreadcrumbItem,
     Message,
 } from "element-ui";
 
@@ -47,6 +49,8 @@ const element = {
         Vue.use(Col)
         Vue.use(Alert)
         Vue.use(DatePicker)
+        Vue.use(Breadcrumb)
+        Vue.use(BreadcrumbItem)
 
         Vue.prototype.$message = Message
     }

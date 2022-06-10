@@ -53,11 +53,10 @@ export default defineComponent({
 
     let assetCascaderData = computed({
       get(){
-        return [props.asset_id]
+        return props.asset_id
       },
       set(val){
-        context.emit('update:asset_id', val.join(""))
-        // params.asset_id = val.join("")
+        context.emit('update:asset_id', val)
       }
     })
 
@@ -72,7 +71,7 @@ export default defineComponent({
           asset_list_b({asset_id}).then(({data})=>{
             let nodes = []
             if(data.code === 200 && data.data) {
-              nodes.map((item)=>({
+              nodes = data.data.map((item)=>({
                 label: item.name,
                 value: item.id,
               }))

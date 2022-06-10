@@ -37,12 +37,16 @@
   <el-table :data="tableData" v-loading="loading">
     <el-table-column label="序号" type="index" width="50" align="center">
     </el-table-column>
-    <el-table-column align="center" label="名称" prop="name"></el-table-column>
+    <el-table-column align="center" label="名称" prop="name">
+      <template v-slot="scope">
+        <span class="cursor-pointer" @click="showAsset(scope.row)">{{scope.row.name}}</span>
+      </template>
+    </el-table-column>
     <el-table-column align="center" label="时间" prop="created_at"></el-table-column>
     <el-table-column align="center" label="操作" width="150">
       <template v-slot="scope">
         <div class="text-right">
-          <el-button type="indigo" size="mini" class="mr-3">编辑</el-button>
+          <el-button type="indigo" size="mini" class="mr-3" @click="showAsset(scope.row)">查看</el-button>
           <el-popconfirm title="确定要删除此项吗？">
             <el-button slot="reference" type="danger" size="mini">删除</el-button>
           </el-popconfirm>
@@ -67,25 +71,33 @@
 
 <script>
 
-import {defineComponent, ref} from "@vue/composition-api";
+import {defineComponent} from "@vue/composition-api";
 import useBusinessIndex from "@/view/pages/business/useBusinessIndex";
 import useRoute from "@/utils/useRoute";
 
 export default defineComponent({
   name: "BusinessIndex",
   setup(){
+    let {router, route} = useRoute()
+
+    // 获取传参的 page
+    let page = route.params && route.params.page ? route.params.page : 1;
+
     let {
       tableData,
       getBusinessIndex,
       loading,
       params,
       total,
-    } = useBusinessIndex()
-
-    let {router} = useRoute()
+    } = useBusinessIndex(page)
 
     function handleCreate(){
       router.push({name: 'editbusiness2'})
+    }
+
+    function showAsset(item){
+      // console.log(item)
+      router.push({name: 'assetlist', query:{id: item.id, name: item.name}, params: {page: params.page}})
     }
 
     return {
@@ -95,6 +107,7 @@ export default defineComponent({
       params,
       total,
       handleCreate,
+      showAsset,
     }
   }
 })

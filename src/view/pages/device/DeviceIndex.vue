@@ -48,9 +48,10 @@
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
+    <el-table-column align="center" label="业务名称" prop="business_name"></el-table-column>
+    <el-table-column align="center" label="设备分组" prop="asset_name"></el-table-column>
     <el-table-column align="center" label="设备名称" prop="device_name"></el-table-column>
 <!--    <el-table-column label="设备ID" prop="device"></el-table-column>-->
-    <el-table-column align="center" label="设备分组" prop="asset_name"></el-table-column>
     <el-table-column align="center" label="设备插件" prop="device_type"></el-table-column>
     <el-table-column align="center" label="token" prop="device_token">
       <template v-slot="scope">

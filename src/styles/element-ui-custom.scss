@@ -142,3 +142,13 @@
     margin-bottom: 0;
   }
 }
+
+// 面包屑导航白色文字
+.my-breadcrumb{
+  .el-breadcrumb__inner{
+    color: #fff!important;
+  }
+  .el-breadcrumb__inner.is-link:hover, .el-breadcrumb__inner a:hover{
+    color: #409EFF!important;
+  }
+}

@@ -29,8 +29,13 @@ export default function useAlarmIndex(){
     function washParams(params){
         let copyParams = JSON.parse(JSON.stringify(params))
         // 数组转字符串
-        if(Array.isArray(copyParams.business_id)) {
-            copyParams.business_id = copyParams.business_id.join("")
+        // if(Array.isArray(copyParams.business_id)) {
+        //     // 业务数组内只有一项
+        //     copyParams.business_id = copyParams.business_id.join("")
+        // }
+        if(Array.isArray(copyParams.asset_id)) {
+            // 资产级联选择器返回数组，只用最后一项
+            copyParams.asset_id = copyParams.asset_id.slice(-1).join("")
         }
         return copyParams
     }

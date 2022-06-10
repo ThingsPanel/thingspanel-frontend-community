@@ -2,11 +2,11 @@ import {reactive, ref} from "@vue/composition-api";
 import {business_index} from "@/api/business";
 import {dateFormat} from "@/utils/tool";
 
-export default function useBusinessIndex(){
+export default function useBusinessIndex(page){
     let tableData = ref([])
     let loading = ref(false)
     let params = reactive({
-        page: 1,
+        page: page ? page : 1,
         limit: 10,
     })
 
