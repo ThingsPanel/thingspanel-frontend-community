@@ -7,7 +7,7 @@
     </el-col>
     <el-col :span="2" class="px-2">
       <el-button
-          @click="deviceCreateDialogVisible = true"
+          @click="handleDeviceCreate"
           v-show="current_asset_id"
           class="w-100"
           size="medium"
@@ -50,8 +50,10 @@
 
   <!-- 设备详情start -->
   <DeviceShowDialog
-      @deviceUpdated="handleDeviceUpdate"
+      :asset_id="current_asset_id"
       :device_id="currentDeviceId"
+      @deviceUpdated="handleDeviceUpdated"
+      @deviceCreated="handleDeviceCreated"
       :deviceShowDialogVisible.sync="deviceShowDialogVisible">
   </DeviceShowDialog>
   <!-- 设备详情end -->
@@ -158,11 +160,31 @@ export default defineComponent({
     }
 
     // 处理设备更新
-    function handleDeviceUpdate(data){
+    function handleDeviceUpdated(data){
       let updated_item = tableData.value.find((item)=>{
         return item.id === data.id
       })
       updated_item.name = data.name
+    }
+
+    // 打开创建设备弹窗
+    function handleDeviceCreate(){
+      // 不指定id
+      currentDeviceId.value = ""
+      // 代开弹窗
+      deviceShowDialogVisible.value = true
+    }
+
+    // 创建成功转到编辑
+    function handleDeviceCreated(data){
+      console.log(data)
+      currentDeviceId.value = data.id
+      tableData.value.unshift({
+        id: data.id,
+        name: data.name,
+        is_asset: false,
+        icon: "el-icon-document"
+      })
     }
 
 
@@ -176,7 +198,9 @@ export default defineComponent({
       deviceShowDialogVisible,
       deviceCreateDialogVisible,
       current_asset_id,
-      handleDeviceUpdate,
+      handleDeviceUpdated,
+      handleDeviceCreate,
+      handleDeviceCreated,
     }
 
   }

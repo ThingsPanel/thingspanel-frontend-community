@@ -1,59 +1,49 @@
 <template>
-<div>
-  <el-form
-      ref="deviceEditForm"
-      label-position="left"
-      label-width="60px"
-      :model="formData"
-      :rules="rules"
-      hide-required-asterisk>
-    <el-form-item label="设备名" prop="name">
-      <el-input size="medium" v-model="formData.name"></el-input>
-    </el-form-item>
+<el-form
+    ref="deviceEditForm"
+    label-position="left"
+    label-width="70px"
+    :model="formData"
+    :rules="rules"
+    hide-required-asterisk>
+  <el-form-item label="设备名" prop="name">
+    <el-input size="medium" v-model="formData.name"></el-input>
+  </el-form-item>
 
-    <el-form-item label="协议" prop="protocol">
-      <el-radio-group v-model="formData.protocol">
-        <el-radio label="tcp">TCP</el-radio>
-        <el-radio label="mqtt">MQTT</el-radio>
-      </el-radio-group>
-    </el-form-item>
+  <el-form-item label="协议" prop="protocol">
+    <el-radio-group v-model="formData.protocol">
+      <el-radio label="tcp">TCP</el-radio>
+      <el-radio label="mqtt">MQTT</el-radio>
+    </el-radio-group>
+  </el-form-item>
 
-    <el-form-item label="类型" prop="type">
-      <el-select size="medium" label="type" v-model="formData.type">
-        <el-option v-for="item in typeOptions" :value="item.id" :label="item.name" :key="item.id"></el-option>
-      </el-select>
-    </el-form-item>
-    <div class="mb-3">
-      <el-tag class="mr-2 mb-2" v-for="item in dash" :key="item.key">{{item.name}}</el-tag>
-    </div>
+  <el-form-item label="类型" prop="type">
+    <el-select size="medium" label="type" v-model="formData.type">
+      <el-option v-for="item in typeOptions" :value="item.id" :label="item.name" :key="item.id"></el-option>
+    </el-select>
+  </el-form-item>
+  <div class="mb-3">
+    <el-tag class="mr-2 mb-2" v-for="item in dash" :key="item.key">{{item.name}}</el-tag>
+  </div>
 
-<!--    <el-form-item label="token">{{device_show.token}}</el-form-item>-->
-<!--    <el-form-item label="端口">{{device_show.port}}</el-form-item>-->
-<!--    <el-form-item label="发布主题">{{device_show.publish}}</el-form-item>-->
-<!--    <el-form-item label="订阅主题">{{device_show.subscribe}}</el-form-item>-->
-<!--    <el-form-item label="用户名">{{device_show.username}}</el-form-item>-->
-<!--    <el-form-item label="密码">{{device_show.password}}</el-form-item>-->
+  <!-- 默认参数 start -->
+  <div class="default-params">
+    <p><span>token</span> {{device_show.token}}</p>
+    <p><span>端口</span> {{device_show.port}}</p>
+    <p><span>发布主题</span> {{device_show.publish}}</p>
+    <p><span>订阅主题</span> {{device_show.subscribe}}</p>
+    <p><span>用户名</span> {{device_show.username}}</p>
+    <p><span>密码</span> {{device_show.password}}</p>
+  </div>
+  <!-- 默认参数 end -->
 
-    <!-- 默认参数 start -->
-    <div>
-      <p>token: {{device_show.token}}</p>
-      <p>端口：{{device_show.port}}</p>
-      <p>发布主题：{{device_show.publish}}</p>
-      <p>订阅主题：{{device_show.subscribe}}</p>
-      <p>用户名：{{device_show.username}}</p>
-      <p>密码：{{device_show.password}}</p>
-    </div>
-    <!-- 默认参数 end -->
+  <FormAlert :error_message="error_message"></FormAlert>
 
-    <FormAlert :error_message="error_message"></FormAlert>
+  <div class="my-2"><el-button type="primary" class="w-100" @click="handleSubmit" :disabled="loading">保存</el-button></div>
+  <div class="my-2"><el-button type="default" class="w-100" @click="handleReset" :disabled="loading">重置</el-button></div>
 
-    <div class="my-1"><el-button type="primary" class="w-100" @click="handleSubmit" :disabled="loading">提交</el-button></div>
-    <div class="my-1"><el-button type="default" class="w-100" @click="handleReset" :disabled="loading">重置</el-button></div>
+</el-form>
 
-  </el-form>
-
-
-</div>
 </template>
 
 <script>
@@ -199,5 +189,14 @@ export default defineComponent({
 <style scoped>
 /deep/ label{
   margin-bottom: 0!important;
+}
+
+.default-params span{
+  display: inline-block;
+  width: 70px;
+}
+
+.default-params p{
+  margin-bottom: 1rem;
 }
 </style>
