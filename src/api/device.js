@@ -12,7 +12,7 @@ export function device_list(data){
 // 通过 id 查询 设备详情
 export function device_data(data){
     return axios({
-        url: "/device/data",
+        url: "/index/show",
         method: "post",
         data
     })

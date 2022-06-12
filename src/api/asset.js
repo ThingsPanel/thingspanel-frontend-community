@@ -8,6 +8,15 @@ export function asset_index(){
     })
 }
 
+// 设备插件的仪表
+export function structure_field(data){
+    return axios({
+        url: "/structure/field",
+        method: "post",
+        data // {field: "business"}
+    })
+}
+
 // 资产
 export function asset_list(data) {
     return axios({

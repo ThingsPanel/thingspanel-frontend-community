@@ -1,15 +1,18 @@
 <template>
-<el-dialog :visible.sync="showDialog" :title="'设备详情'">
-  <div>{{device_show}}</div>
+<el-dialog :visible.sync="showDialog" :title="'设备详情'" width="30%">
+  <DeviceEditForm :device_id="device_id" v-on="$listeners"></DeviceEditForm>
 </el-dialog>
 </template>
 
 <script>
-import {computed, defineComponent, ref, watch} from "@vue/composition-api";
-import {device_data} from "@/api/device";
+import {computed, defineComponent} from "@vue/composition-api";
+import DeviceEditForm from "@/view/pages/device/DeviceEditForm";
 
 export default defineComponent({
   name: "DeviceShowDialog",
+  components: {
+    DeviceEditForm
+  },
   props:{
     device_id: {
       required: true,
@@ -31,21 +34,8 @@ export default defineComponent({
       }
     })
 
-    let device_show = ref({})
-
-    // 设备id
-    watch(()=>props.device_id, (id)=>{
-      // id 改变的时候请求 设备详情
-      device_data({id}).then(({data})=>{
-        if(data.code===200){
-          device_show.value = data.data
-        }
-      })
-    })
-
     return {
       showDialog,
-      device_show,
     }
   }
 })
