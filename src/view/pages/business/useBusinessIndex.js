@@ -12,6 +12,7 @@ export default function useBusinessIndex(page){
 
     let total = ref(0)
 
+    // 获取列表
     function getBusinessIndex(){
         if(loading.value) return;
         loading.value = true
@@ -31,6 +32,7 @@ export default function useBusinessIndex(page){
     function washData(data_array){
         return data_array.map((item)=>{
             item.created_at = dateFormat(item.created_at)
+            item.status = null
             return item
         })
     }

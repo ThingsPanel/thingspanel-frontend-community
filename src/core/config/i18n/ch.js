@@ -2,7 +2,7 @@
 export const locale = {
   COMMON: {
     SYSTEMSETUP: "系统设置",
-    DEVICE: "设备",
+    DEVICE: "设备管理",
     DEVICEPROPERTIES: "设备属性",
     DEVICEPROPERTIESVALUE: "设备属性值",
     DEVICELOCATION: "设备分组",

@@ -19,7 +19,6 @@ export default defineComponent({
   },
   props:{
     asset_id: {
-      required: true,
       type: String,
     },
     device_id: {

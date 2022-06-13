@@ -15,6 +15,7 @@
     </el-col>
     <el-col :span="4">
       <el-select
+          class="w-100"
           placeholder="请选择设备插件"
           size="medium"
           v-model="params.device_type"

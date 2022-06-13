@@ -9,6 +9,15 @@ export function message_success(text){
     })
 }
 
+export function message_error(text){
+    Message({
+        message: text,
+        type: "error",
+        center: true,
+        showClose: true,
+    })
+}
+
 /**
  * 验证邮箱
  * @param val

@@ -1,5 +1,5 @@
 <template>
-<div class="rounded card p-4 el-table-transparent">
+<div class="rounded card p-4 el-table-transparent el-dark-input">
   <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3">
     <el-col :span="22">
       <h2 class="h2 text-white m-0 pt-2">业务管理</h2>
@@ -9,47 +9,32 @@
     </el-col>
   </el-row>
 
-  <!-- 筛选start -->
-<!--  <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input">-->
-<!--    <el-col :span="4">-->
-<!--      <el-input size="medium"></el-input>-->
-<!--    </el-col>-->
-<!--    <el-col :span="4">-->
-<!--      <el-input size="medium"></el-input>-->
-<!--    </el-col>-->
-<!--    <el-col :span="4">-->
-<!--      <el-input size="medium"></el-input>-->
-<!--    </el-col>-->
-<!--    <el-col :span="4">-->
-<!--      <el-input size="medium"></el-input>-->
-<!--    </el-col>-->
-<!--    <el-col :span="4"></el-col>-->
-<!--    <el-col :span="2">-->
-<!--      <el-button class="w-100" type="indigo" size="medium">查询</el-button>-->
-<!--    </el-col>-->
-<!--    <el-col :span="2">-->
-<!--      <el-button class="w-100" type="default" size="medium">重置</el-button>-->
-<!--    </el-col>-->
-<!--  </el-row>-->
-  <!-- 筛选end -->
-
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
     <el-table-column label="序号" type="index" width="50" align="center">
     </el-table-column>
     <el-table-column align="center" label="名称" prop="name">
       <template v-slot="scope">
-        <span class="cursor-pointer" @click="showAsset(scope.row)">{{scope.row.name}}</span>
+        <!-- 新建或者编辑 -->
+        <el-input v-if="scope.row.status" size="mini" class="name-input" v-model="scope.row.name"></el-input>
+        <span v-else class="cursor-pointer" @click="showAsset(scope.row)">{{scope.row.name}}</span>
       </template>
     </el-table-column>
     <el-table-column align="center" label="时间" prop="created_at"></el-table-column>
-    <el-table-column align="center" label="操作" width="150">
+    <el-table-column align="center" label="操作" width="200">
       <template v-slot="scope">
         <div class="text-right">
-          <el-button type="indigo" size="mini" class="mr-3" @click="showAsset(scope.row)">查看</el-button>
-          <el-popconfirm title="确定要删除此项吗？">
-            <el-button slot="reference" type="danger" size="mini">删除</el-button>
-          </el-popconfirm>
+          <template v-if="scope.row.status">
+            <!-- status 状态为新建或者编辑 -->
+            <el-button type="indigo" size="mini" @click="handleSave(scope.row)">保存</el-button>
+            <el-button type="default" size="mini" @click="handleCancel(scope.row)">取消</el-button>
+          </template>
+          <template v-else>
+            <el-button type="indigo" size="mini" class="mr-3" @click="handleEdit(scope.row)">编辑业务名</el-button>
+            <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
+              <el-button slot="reference" type="danger" size="mini">删除</el-button>
+            </el-popconfirm>
+          </template>
         </div>
       </template>
     </el-table-column>
@@ -74,6 +59,7 @@
 import {defineComponent} from "@vue/composition-api";
 import useBusinessIndex from "@/view/pages/business/useBusinessIndex";
 import useRoute from "@/utils/useRoute";
+import useBusinessCUD from "@/view/pages/business/useBusinessCUD";
 
 export default defineComponent({
   name: "BusinessIndex",
@@ -83,6 +69,7 @@ export default defineComponent({
     // 获取传参的 page
     let page = route.params && route.params.page ? route.params.page : 1;
 
+    // 业务的列表
     let {
       tableData,
       getBusinessIndex,
@@ -91,10 +78,16 @@ export default defineComponent({
       total,
     } = useBusinessIndex(page)
 
-    function handleCreate(){
-      router.push({name: 'editbusiness2'})
-    }
+    // 业务的增删改
+    let {
+      handleCreate,
+      handleEdit,
+      handleCancel,
+      handleSave,
+      handleDelete,
+    } = useBusinessCUD(tableData)
 
+    // 跳转到设备分组
     function showAsset(item){
       // console.log(item)
       router.push({name: 'assetlist', query:{id: item.id, name: item.name}, params: {page: params.page}})
@@ -108,11 +101,17 @@ export default defineComponent({
       total,
       handleCreate,
       showAsset,
+      handleEdit,
+      handleCancel,
+      handleSave,
+      handleDelete,
     }
   }
 })
 </script>
 
 <style scoped>
-
+.name-input /deep/ input{
+  text-align: center;
+}
 </style>

@@ -1,5 +1,9 @@
 // ElementUi table 背景透明
 .el-table-transparent{
+  // 默认按钮的颜色
+  .el-button--default{
+    color: #606266!important;
+  }
     // 白色字体
     .el-table{
       color: #fff;

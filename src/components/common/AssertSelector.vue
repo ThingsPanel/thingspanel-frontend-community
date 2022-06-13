@@ -1,6 +1,6 @@
 <template>
   <el-cascader
-      placeholder="请选择资产"
+      placeholder="请选择设备分组"
       v-model="assetCascaderData"
       size="medium"
       :props="assetProps"
