@@ -156,3 +156,20 @@
     color: #409EFF!important;
   }
 }
+
+// table 行内编辑
+.inline-edit{
+  // 居中
+  input{
+    text-align: center;
+  }
+  // 错误提示居中
+  .el-form-item__error{
+    width: 100%;
+    text-align: center;
+  }
+  // input 上下居中
+  .el-form-item{
+    margin: 22px 0;
+  }
+}

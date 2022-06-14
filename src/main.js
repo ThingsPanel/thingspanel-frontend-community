@@ -134,6 +134,17 @@ router.beforeEach((to, from, next) => {
     }, 0);
 });
 
+// 注册一个全局自定义指令 `v-focus`
+Vue.directive('focus', {
+    // 当被绑定的元素插入到 DOM 中时……
+    inserted: function (el) {
+        // 获取input元素
+        let input = el.querySelector('input')
+        // 聚焦元素
+        input ? input.focus() : el.focus()
+    }
+})
+
 
 new Vue({
     router,

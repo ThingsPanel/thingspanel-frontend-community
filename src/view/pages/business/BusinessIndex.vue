@@ -10,13 +10,22 @@
   </el-row>
 
   <!-- 表 start -->
+  <el-form
+      ref="businessForm"
+      class="inline-edit input-center"
+      :model="formData"
+      :rules="rules"
+      hide-required-asterisk>
   <el-table :data="tableData" v-loading="loading">
     <el-table-column label="序号" type="index" width="50" align="center">
     </el-table-column>
     <el-table-column align="center" label="名称" prop="name">
       <template v-slot="scope">
         <!-- 新建或者编辑 -->
-        <el-input v-if="scope.row.status" size="mini" class="name-input" v-model="scope.row.name"></el-input>
+        <el-form-item prop="name" v-if="scope.row.status">
+          <el-input size="mini" v-model="formData.name" v-focus
+                    @keydown.enter.native="handleSave(scope.row)"></el-input>
+        </el-form-item>
         <span v-else class="cursor-pointer" @click="showAsset(scope.row)">{{scope.row.name}}</span>
       </template>
     </el-table-column>
@@ -39,6 +48,7 @@
       </template>
     </el-table-column>
   </el-table>
+  </el-form>
   <!-- 表 end -->
 
   <div class="text-right py-3">
@@ -84,6 +94,9 @@ export default defineComponent({
 
     // 业务的增删改
     let {
+      businessForm,
+      formData,
+      rules,
       handleCreate,
       handleEdit,
       handleCancel,
@@ -103,6 +116,9 @@ export default defineComponent({
       loading,
       params,
       total,
+      businessForm,
+      formData,
+      rules,
       handleCreate,
       showAsset,
       handleEdit,
@@ -114,8 +130,19 @@ export default defineComponent({
 })
 </script>
 
-<style scoped>
-.name-input /deep/ input{
-  text-align: center;
+<style lang="scss">
+.inline-edit{
+  input{
+    text-align: center;
+  }
+
+  .el-form-item__error{
+    width: 100%;
+    text-align: center;
+  }
+
+  .el-form-item{
+    margin: 22px 0;
+  }
 }
 </style>

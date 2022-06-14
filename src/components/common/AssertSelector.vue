@@ -8,6 +8,7 @@
       clearable
       :show-all-levels="false"
       class="w-100"
+      filterable
       @change="handleChange()"
   >
   </el-cascader>
