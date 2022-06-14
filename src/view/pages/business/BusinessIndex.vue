@@ -26,11 +26,11 @@
           <el-input size="mini" v-model="formData.name" v-focus
                     @keydown.enter.native="handleSave(scope.row)"></el-input>
         </el-form-item>
-        <span v-else class="cursor-pointer" @click="showAsset(scope.row)">{{scope.row.name}}</span>
+        <span v-else class="cursor-pointer" @click="showDevice(scope.row)">{{scope.row.name}}</span>
       </template>
     </el-table-column>
     <el-table-column align="center" label="时间" prop="created_at"></el-table-column>
-    <el-table-column align="center" label="操作" width="200">
+    <el-table-column align="center" label="操作" width="270">
       <template v-slot="scope">
         <div class="text-right">
           <template v-if="scope.row.status">
@@ -39,6 +39,7 @@
             <el-button type="default" size="mini" @click="handleCancel(scope.row)">取消</el-button>
           </template>
           <template v-else>
+            <el-button type="indigo" size="mini" @click="showDevice(scope.row)">设备管理</el-button>
             <el-button type="indigo" size="mini" class="mr-3" @click="handleEdit(scope.row)">编辑业务名</el-button>
             <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
               <el-button slot="reference" type="danger" size="mini">删除</el-button>
@@ -110,6 +111,10 @@ export default defineComponent({
       router.push({name: 'assetlist', query:{id: item.id, name: item.name}, params: {page: params.page}})
     }
 
+    function showDevice(item){
+      router.push({name: "device", query: {business_id: item.id}, params:{page: params.page}})
+    }
+
     return {
       tableData,
       getBusinessIndex,
@@ -121,6 +126,7 @@ export default defineComponent({
       rules,
       handleCreate,
       showAsset,
+      showDevice,
       handleEdit,
       handleCancel,
       handleSave,

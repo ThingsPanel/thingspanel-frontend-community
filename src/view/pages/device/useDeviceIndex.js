@@ -4,10 +4,12 @@ import {dateFormat} from "@/utils/tool";
 import {asset_index} from "@/api/asset";
 import {is_string} from "@/utils/helpers";
 
-export default function useDeviceIndex() {
+export default function useDeviceIndex(business_id) {
     let tableData = ref([])
     let loading = ref(false)
     let params = reactive(defaultParams())
+
+    if(business_id) params.business_id = business_id
 
     let total = ref(0)
 
@@ -94,7 +96,7 @@ export default function useDeviceIndex() {
         // 逐个赋值
         let dp = defaultParams()
         for (const key in dp) {
-            if(key in params) {
+            if(key in params && key !== "business_id") {
                 params[key] = dp[key]
             }
         }

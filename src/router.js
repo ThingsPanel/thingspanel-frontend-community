@@ -41,7 +41,7 @@ export default new Router({
                         import ("@/view/pages/business/AssetIndex.vue")
                 },
                 {
-                    path: "/device",
+                    path: "/list2/device",
                     name: "device",
                     component: () =>
                         import ("@/view/pages/device/DeviceIndex.vue")

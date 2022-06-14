@@ -43,3 +43,12 @@ export function asset_list_b(data) {
         data,
     })
 }
+
+// 设备租下拉菜单 {business_id}
+export function device_group_drop(data){
+    return axios({
+        url: "/asset/list/d",
+        method: "post",
+        data,
+    })
+}
