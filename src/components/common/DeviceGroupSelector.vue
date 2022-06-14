@@ -1,7 +1,7 @@
 <template>
 <el-select
     v-model="deviceGroupId"
-    clearable
+    :clearable="clearable"
     placeholder="请选择分组"
     size="medium" @change="handleChange()">
   <el-option
@@ -18,6 +18,9 @@ import {device_group_drop} from "@/api/asset";
 export default defineComponent({
   name: "DeviceGroupSelector",
   props: {
+    clearable: {
+      default: false
+    },
     business_id: {
       required: true
     },

@@ -53,16 +53,24 @@ export default function useDeviceIndex(business_id) {
         return data_array.map((item)=>{
             item.latest_ts = item.latest_ts ? dateFormat(item.latest_ts) : ''
 
-            // 映射设备插件
-            device_plugin.value.some((device_item)=>{
-                if(device_item.id === item.device_type) {
-                    item.device_type = device_item.name
-                    return true;
-                }
-            })
-
+            // 增加状态判断新建还是编辑
+            item.status = null
             return item
         })
+    }
+
+    // 映射设备插件
+    function deviceTypeMap(type){
+        let result = ""
+        device_plugin.value.some((device_item)=>{
+            if(device_item.id === type) {
+                result = device_item.name
+                // 查到后终止循环
+                return true
+            }
+        })
+
+        return result;
     }
 
     // 默认请求参数
@@ -113,5 +121,6 @@ export default function useDeviceIndex(business_id) {
         handleSearch,
         handleReset,
         device_plugin,
+        deviceTypeMap,
     }
 }

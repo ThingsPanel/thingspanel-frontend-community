@@ -1,7 +1,7 @@
 import {business_add, business_delete, business_edit} from "@/api/business";
 import {message_error, message_success} from "@/utils/helpers";
 import {dateFormat} from "@/utils/tool";
-import {ref, reactive, nextTick} from "@vue/composition-api";
+import {ref, reactive} from "@vue/composition-api";
 
 export default function useBusinessCUD(tableData){
     let businessForm = ref()

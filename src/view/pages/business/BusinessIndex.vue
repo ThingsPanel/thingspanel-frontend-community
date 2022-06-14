@@ -12,7 +12,7 @@
   <!-- 表 start -->
   <el-form
       ref="businessForm"
-      class="inline-edit input-center"
+      class="inline-edit"
       :model="formData"
       :rules="rules"
       hide-required-asterisk>
@@ -23,7 +23,7 @@
       <template v-slot="scope">
         <!-- 新建或者编辑 -->
         <el-form-item prop="name" v-if="scope.row.status">
-          <el-input size="mini" v-model="formData.name" v-focus
+          <el-input size="medium" v-model="formData.name" v-focus
                     @keydown.enter.native="handleSave(scope.row)"></el-input>
         </el-form-item>
         <span v-else class="cursor-pointer" @click="showDevice(scope.row)">{{scope.row.name}}</span>

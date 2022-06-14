@@ -32,6 +32,8 @@ export default function useBusinessIndex(page){
     function washData(data_array){
         return data_array.map((item)=>{
             item.created_at = dateFormat(item.created_at)
+
+            // 增加状态判断新建还是编辑
             item.status = null
             return item
         })
