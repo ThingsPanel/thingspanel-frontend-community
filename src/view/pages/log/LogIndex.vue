@@ -1,5 +1,11 @@
 <template>
 <div class="rounded card p-4  el-table-transparent">
+  <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
+    <el-col>
+      <TableTitle>操作日志</TableTitle>
+    </el-col>
+  </el-row>
+
   <!-- 头 start -->
   <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input">
     <el-col :span="5">
@@ -61,9 +67,13 @@
 <script>
 import {defineComponent} from "@vue/composition-api";
 import useOperationIndex from "@/view/pages/log/useOperationIndex";
+import TableTitle from "@/components/common/TableTitle.vue"
 
 export default defineComponent({
   name: "Index",
+  components: {
+    TableTitle
+  },
   setup(){
 
     let {

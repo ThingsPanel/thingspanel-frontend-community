@@ -1,5 +1,11 @@
 <template>
 <div class="rounded card p-4 el-table-transparent">
+  <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
+    <el-col>
+      <TableTitle>设备管理</TableTitle>
+    </el-col>
+  </el-row>
+
   <!-- 筛选 start -->
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3 el-dark-input">
     <el-col :span="4">
@@ -49,6 +55,7 @@
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
+    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
     <el-table-column align="center" label="业务名称" prop="business_name"></el-table-column>
     <el-table-column align="center" label="设备分组" prop="asset_name"></el-table-column>
     <el-table-column align="center" label="设备名称" prop="device_name">
@@ -99,6 +106,7 @@ import BusinessSelector from "@/components/common/BusinessSelector.vue"
 import AssertSelector from "@/components/common/AssertSelector.vue"
 import DeviceShowDialog from "@/view/pages/device/DeviceShowDialog.vue"
 import {ref} from "@vue/composition-api/dist/vue-composition-api";
+import TableTitle from "@/components/common/TableTitle.vue"
 
 export default defineComponent({
   name: "DeviceIndex",
@@ -106,6 +114,7 @@ export default defineComponent({
     BusinessSelector,
     AssertSelector,
     DeviceShowDialog,
+    TableTitle,
   },
   setup(){
     let {

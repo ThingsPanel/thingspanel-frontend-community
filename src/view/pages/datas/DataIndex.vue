@@ -1,5 +1,11 @@
 <template>
 <div class="rounded card p-4 el-table-transparent">
+  <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
+    <el-col>
+      <TableTitle>数据管理</TableTitle>
+    </el-col>
+  </el-row>
+
   <!-- 头 start -->
   <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input">
     <el-col :span="5">
@@ -55,6 +61,7 @@
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
+    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
     <el-table-column align="center" label="业务名称" prop="bname"></el-table-column>
     <el-table-column align="center" label="设备分组名称" prop="name"></el-table-column>
     <el-table-column align="center" label="Token" prop="token">
@@ -102,9 +109,13 @@ import useDataIndex from "@/view/pages/datas/useDataIndex";
 import {dateFormat} from "@/utils/tool";
 import useDataCalender from "@/view/pages/datas/useDataCalender";
 import useDataExport from "@/view/pages/datas/useDataExport";
+import TableTitle from "@/components/common/TableTitle.vue"
 
 export default defineComponent({
   name: "DataIndex",
+  components: {
+    TableTitle
+  },
   setup(){
 
     const {

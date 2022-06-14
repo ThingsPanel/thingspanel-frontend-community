@@ -1,8 +1,8 @@
 <template>
 <div class="rounded card p-4 el-table-transparent el-dark-input">
-  <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3">
+  <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="22">
-      <h2 class="h2 text-white m-0 pt-2">业务管理</h2>
+      <TableTitle>业务管理</TableTitle>
     </el-col>
     <el-col :span="2" class="px-2">
       <el-button class="w-100" size="medium" type="indigo" @click="handleCreate()">新增业务</el-button>
@@ -60,9 +60,13 @@ import {defineComponent} from "@vue/composition-api";
 import useBusinessIndex from "@/view/pages/business/useBusinessIndex";
 import useRoute from "@/utils/useRoute";
 import useBusinessCUD from "@/view/pages/business/useBusinessCUD";
+import TableTitle from "@/components/common/TableTitle.vue"
 
 export default defineComponent({
   name: "BusinessIndex",
+  components: {
+    TableTitle
+  },
   setup(){
     let {router, route} = useRoute()
 

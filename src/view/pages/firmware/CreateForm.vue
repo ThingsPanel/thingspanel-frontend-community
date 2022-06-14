@@ -106,22 +106,22 @@ export default {
 </script>
 
 <style lang="scss">
-.firmware-create{
-  .el-form-item__label{
-    color: #fff;
-  }
-
-  .el-upload-dragger{
-    background-color: rgba(22, 30, 67, 0.5) !important;
-  }
-
-  textarea{
-    background-color: rgba(22, 30, 67, 0.5) !important;
-    color: #b3b7c1 !important;
-  }
-
-  .el-radio__label{
-    color: #b3b7c1 !important;
-  }
-}
+//.firmware-create{
+//  .el-form-item__label{
+//    color: #fff;
+//  }
+//
+//  .el-upload-dragger{
+//    background-color: rgba(22, 30, 67, 0.5) !important;
+//  }
+//
+//  textarea{
+//    background-color: rgba(22, 30, 67, 0.5) !important;
+//    color: #b3b7c1 !important;
+//  }
+//
+//  .el-radio__label{
+//    color: #b3b7c1 !important;
+//  }
+//}
 </style>

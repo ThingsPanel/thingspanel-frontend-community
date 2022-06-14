@@ -1,48 +1,50 @@
 <template>
-<div class="transpond rounded p-4 card no-border v-application el-table-transparent">
-  <div class="transpond-header">
-    <strong class="transpond-title">数据转发</strong>
-    <v-btn class="create-btn" color="primary" @click="dialogVisible = true">创建转发</v-btn>
-  </div>
+<div class="rounded p-4 card no-border el-table-transparent">
+  <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
+    <el-col :span="22">
+      <TableTitle>业务管理</TableTitle>
+    </el-col>
+    <el-col :span="2" class="px-2">
+      <el-button class="w-100" size="medium" type="indigo" @click="dialogVisible = true">创建转发</el-button>
+    </el-col>
+  </el-row>
+
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column prop="device_id" label="设备ID"></el-table-column>
-    <el-table-column prop="device_name" label="设备名"></el-table-column>
-    <el-table-column prop="frequency" label="频率"></el-table-column>
-    <el-table-column prop="status" label="接口状态">
+    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
+    <el-table-column prop="device_id" label="设备ID" align="center"></el-table-column>
+    <el-table-column prop="device_name" label="设备名" align="center"></el-table-column>
+    <el-table-column prop="frequency" label="频率" align="center"></el-table-column>
+    <el-table-column prop="status" label="接口状态" align="center">
       <template v-slot="scope">
-        <el-tag size="small" :type="scope.row.status == '工作中' ? 'success' : 'info'">
-          {{scope.row.status}}
-        </el-tag>
+        <el-tag size="mini">{{scope.row.status}}</el-tag>
       </template>
     </el-table-column>
-    <el-table-column prop="actions" label="操作">
+    <el-table-column prop="actions" label="操作" align="center" width="210px">
       <template v-slot="scope">
+        <el-button size="mini" type="indigo" @click="handle_launch(scope.row)">启动</el-button>
+        <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">配置</el-button>
+
         <el-popconfirm title="确定要删除吗？" @confirm="handle_del(scope.row)">
           <el-button slot="reference" size="mini" type="danger">删除</el-button>
         </el-popconfirm>
-
-        <el-button style="margin-left: 10px" size="mini" type="success" @click="handle_launch(scope.row)">启动</el-button>
-        <el-button size="mini" type="warning" @click="startEditor(scope.row)">配置</el-button>
       </template>
     </el-table-column>
   </el-table>
 
-  <el-pagination
-      :disabled="loading"
-      class="equipment-pagination"
-      background
-      layout="prev, pager, next"
-      :page-size="per_page"
-      @current-change="page_change"
-      :total="data_count">
-  </el-pagination>
+  <div class="text-right py-3">
+    <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="data_count"
+        :current-page.sync="page"
+        :page-size="per_page"
+        @current-change="page_change"></el-pagination>
+  </div>
 
 <!-- 新建 -->
   <el-dialog
-      class="transpond-dialog"
       title="创建"
       :visible.sync="dialogVisible"
-      :modal="false"
       width="30%">
     <CreateForm @submit="handle_create"></CreateForm>
   </el-dialog>
@@ -63,12 +65,15 @@
 <script>
 import CreateForm from "@/view/pages/transpond/CreateForm.vue";
 import UpdateForm from "@/view/pages/transpond/UpdateForm.vue";
+import TableTitle from "@/components/common/TableTitle.vue"
 import data from "./data"
+
 export default {
-  name: "index",
+  name: "TranspondIndex",
   components: {
     CreateForm,
     UpdateForm,
+    TableTitle,
   },
   data:()=>({
     loading: false,
@@ -122,7 +127,7 @@ export default {
     handle_del(item){
       // console.log(item)
       let index = this.tableData.indexOf(item)
-      this.tableData.splice(index, 1)
+      this.tableData.splice(TranspondIndex, 1)
     },
     handle_create(form_data){
       let data = {
@@ -164,49 +169,49 @@ export default {
 
 <style lang="scss">
 .transpond{
-  .el-tag{
-    background-color: #5867dd;
-    border-color: #5867dd;
-    color: #fff;
-  }
+  //.el-tag{
+  //  background-color: #5867dd;
+  //  border-color: #5867dd;
+  //  color: #fff;
+  //}
 
-  .el-pagination.is-background .el-pager li:not(.disabled).active{
-    background-color: #5867dd;
-    border-color: #5867dd;
-  }
-
-  .equipment-pagination{
-    padding: 10px;
-    text-align: right;
-    ul{
-      padding-left: 0;
-    }
-  }
+  //.el-pagination.is-background .el-pager li:not(.disabled).active{
+  //  background-color: #5867dd;
+  //  border-color: #5867dd;
+  //}
+  //
+  //.equipment-pagination{
+  //  padding: 10px;
+  //  text-align: right;
+  //  ul{
+  //    padding-left: 0;
+  //  }
+  //}
 
 }
-.transpond-header{
-  display: flex;
-  flex-direction: row;
-  padding-bottom: 10px;
-  .create-btn{
-    margin-left: auto;
-    //color: #fff;
-  }
-  .transpond-title{
-    font-size: 1.5rem!important;
-    color: #fff;
-    font-weight: bold;
-  }
-}
-
-.transpond-dialog{
-  color: #fff;
-  .el-dialog{
-    background-color: #1a234f;
-
-    .el-dialog__title{
-      color: #fff;
-    }
-  }
-}
+//.transpond-header{
+//  display: flex;
+//  flex-direction: row;
+//  padding-bottom: 10px;
+//  .create-btn{
+//    margin-left: auto;
+//    //color: #fff;
+//  }
+//  .transpond-title{
+//    font-size: 1.5rem!important;
+//    color: #fff;
+//    font-weight: bold;
+//  }
+//}
+//
+//.transpond-dialog{
+//  color: #fff;
+//  .el-dialog{
+//    background-color: #1a234f;
+//
+//    .el-dialog__title{
+//      color: #fff;
+//    }
+//  }
+//}
 </style>

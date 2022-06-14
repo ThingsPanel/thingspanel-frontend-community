@@ -1,9 +1,9 @@
 <template>
 <div class="rounded card p-4 el-table-transparent">
   <!-- 头 start -->
-  <el-row type="flex" class="pt-3 pb-4">
+  <el-row type="flex" class="pt-3 pb-4 px-3">
     <el-col :span="2">
-      <h2 class="h2 text-white m-0 pt-2 pl-2">用户管理</h2>
+      <TableTitle>用户管理</TableTitle>
     </el-col>
     <el-col :offset="20" :span="2" class="px-2">
       <el-button class="w-100" size="medium" type="indigo" @click="createUserDialogVisible = true">添加用户</el-button>
@@ -66,6 +66,7 @@ import useUserIndex from "@/view/pages/users/useUserIndex";
 import CreateUserForm from "@/view/pages/users/CreateUserForm";
 import ResetPasswordForm from "@/view/pages/users/ResetPasswordForm";
 import UpdateUserForm from "@/view/pages/users/UpdateUserForm";
+import TableTitle from "@/components/common/TableTitle.vue"
 
 export default defineComponent({
   name: "userIndex",
@@ -73,6 +74,7 @@ export default defineComponent({
     CreateUserForm,
     ResetPasswordForm,
     UpdateUserForm,
+    TableTitle,
   },
   setup(){
 

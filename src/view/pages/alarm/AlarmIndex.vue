@@ -1,5 +1,11 @@
 <template>
 <div class="rounded card p-4 el-table-transparent">
+  <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
+    <el-col>
+      <TableTitle>告警信息</TableTitle>
+    </el-col>
+  </el-row>
+
   <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input">
     <!--  业务筛选  -->
     <el-col :span="4">
@@ -50,12 +56,13 @@
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column align="center" label="告警时间" prop="created_at"></el-table-column>
+    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
+    <el-table-column align="center" label="告警时间" prop="created_at" width="160px"></el-table-column>
     <el-table-column align="center" label="业务名" prop="business_name"></el-table-column>
     <el-table-column align="center" label="设备名" prop="device_name"></el-table-column>
 <!--    <el-table-column align="center" label="指标名" prop="asset_name"></el-table-column>-->
 <!--    <el-table-column align="center" label="当前值"></el-table-column>-->
-    <el-table-column align="center" label="触发条件" prop="describe"></el-table-column>
+    <el-table-column align="center" label="触发条件" prop="describe" show-overflow-tooltip></el-table-column>
   </el-table>
   <!-- 表 end -->
 
@@ -78,12 +85,14 @@ import useAlarmIndex from "@/view/pages/alarm/useAlarmIndex";
 import DatePickerOptions from "@/utils/DatePickerOptions";
 import BusinessSelector from "@/components/common/BusinessSelector.vue"
 import AssertSelector from "@/components/common/AssertSelector.vue"
+import TableTitle from "@/components/common/TableTitle.vue"
 
 export default defineComponent({
   name: "AlarmIndex",
   components: {
     BusinessSelector,
     AssertSelector,
+    TableTitle,
   },
   setup(){
     // 表单数据

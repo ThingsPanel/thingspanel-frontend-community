@@ -68,7 +68,7 @@ export default new Router({
                     path: "/users/user",
                     name: "user",
                     component: () =>
-                        import ("@/view/pages/users/Index.vue")
+                        import ("@/view/pages/users/UserIndex.vue")
                 },
                 {
                     path: "/chart/chart",
@@ -142,19 +142,19 @@ export default new Router({
                     path: "/transpond/index",
                     name: 'transpond',
                     component: () =>
-                        import ("@/view/pages/transpond/index.vue")
+                        import ("@/view/pages/transpond/TranspondIndex.vue")
                 },
                 // 设备日志
                 {
                     path: "/equipment/index",
                     name: 'equipment',
                     component: () =>
-                        import ("@/view/pages/equipment/index.vue")
+                        import ("@/view/pages/equipment/EquipmentIndex.vue")
                 },
                 {
                     path: "/firmware/index",
                     name: 'firmware',
-                    component: () => import("@/view/pages/firmware/Index.vue")
+                    component: () => import("@/view/pages/firmware/FirmwareIndex.vue")
                 },
                 {
                     path: "/system/index",
