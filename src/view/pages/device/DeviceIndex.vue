@@ -18,11 +18,20 @@
   <!-- 筛选 start -->
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="4">
-      <DeviceGroupSelector
-          :clearable="true"
-          :business_id="params.business_id"
-          :asset_id.sync="params.asset_id"
-          @change="handleSearch()"></DeviceGroupSelector>
+      <el-select
+          class="w-100"
+          size="medium"
+          placeholder="请选择设备分组"
+          v-model="params.asset_id"
+          filterable
+          clearable
+          @change="handleSearch()"
+      >
+        <el-option
+            :value="item.id"
+            :label="item.device_group"
+            v-for="item in deviceGroupOptions"></el-option>
+      </el-select>
     </el-col>
     <el-col :span="4">
       <el-select
@@ -30,9 +39,12 @@
           placeholder="请选择设备插件"
           size="medium"
           v-model="params.device_type"
-          @change="handleSearch()" clearable>
+          filterable
+          clearable
+          @change="handleSearch()"
+      >
         <el-option
-            v-for="item in device_plugin"
+            v-for="item in devicePluginOptions"
             :key="item.id"
             :label="item.name"
             :value="item.id"
@@ -59,81 +71,108 @@
   <!-- 筛选 end -->
 
   <!-- 表 start -->
-  <el-form
-      ref="deviceForm"
-      class="inline-edit"
-      :model="formData"
-      :rules="rules"
-      hide-required-asterisk>
-  <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
-<!--    <el-table-column align="center" label="业务名称" prop="business_name"></el-table-column>-->
-    <el-table-column align="center" label="设备名称" prop="device_name">
+  <el-form class="inline-edit">
+  <el-table :data="tableData" v-loading="loading" fit style="width: 100%">
+<!--    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>-->
+
+    <!--  设备名 start  -->
+    <el-table-column align="center" label="设备名称" width="auto" min-width="20%">
       <template v-slot="scope">
-        <el-form-item prop="name" v-if="scope.row.status">
-          <el-input size="medium" v-model="formData.name" v-focus></el-input>
+        <el-form-item :error="scope.row.errors.name">
+          <el-input
+              size="medium"
+              v-model="scope.row.name"
+              @change="handleSave(scope.row)"
+          ></el-input>
         </el-form-item>
-        <div v-else class="cursor-pointer" @click="handleListClick(scope.row)">
-          {{scope.row.device_name}}
-        </div>
       </template>
     </el-table-column>
-<!--    <el-table-column align="center" label="设备id" prop="device"></el-table-column>-->
-    <el-table-column align="center" label="设备分组" prop="asset_name">
+    <!--  设备名 end  -->
+
+    <!--  设备分组 start  -->
+    <el-table-column align="center" label="设备分组" width="auto" min-width="20%">
       <template v-slot="scope">
-        <el-form-item prop="asset_id" v-if="scope.row.status">
-          <DeviceGroupSelector
-              :business_id="params.business_id"
-              :asset_id.sync="formData.asset_id"
-          ></DeviceGroupSelector>
+        <el-form-item :error="scope.row.errors.asset_id">
+          <el-select
+              class="w-100"
+              size="medium"
+              placeholder="请选择设备分组"
+              v-model="scope.row.asset_id"
+              filterable
+              @change="handleSave(scope.row)"
+          >
+            <el-option
+                :value="item.id"
+                :label="item.device_group"
+                v-for="item in deviceGroupOptions"></el-option>
+          </el-select>
         </el-form-item>
-        <div v-else>{{scope.row.asset_name}}</div>
       </template>
     </el-table-column>
-<!--    <el-table-column label="设备ID" prop="device"></el-table-column>-->
-    <el-table-column align="center" label="设备插件" prop="device_type">
+    <!--  设备分组 end  -->
+
+    <!--  设备插件 start  -->
+    <el-table-column align="center" label="设备插件" width="auto" min-width="20%">
       <template v-slot="scope">
-        <el-form-item prop="type" v-if="scope.row.status">
+        <el-form-item :error="scope.row.errors.type">
           <el-select
               class="w-100"
               placeholder="请选择设备插件"
               size="medium"
-              v-model="formData.type"
+              v-model="scope.row.type"
+              filterable
+              @change="handleSave(scope.row)"
           >
             <el-option
-                v-for="item in device_plugin"
+                v-for="item in devicePluginOptions"
                 :key="item.id"
                 :label="item.name"
                 :value="item.id"
             ></el-option>
           </el-select>
         </el-form-item>
-        <div v-else>{{deviceTypeMap(scope.row.device_type)}}</div>
       </template>
     </el-table-column>
-<!--    <el-table-column align="center" label="token" prop="device_token">-->
-<!--      <template v-slot="scope">-->
-<!--        <span class="cursor-pointer" @click="handleSearch({token:scope.row.device_token})">{{scope.row.device_token}}</span>-->
-<!--      </template>-->
-<!--    </el-table-column>-->
-<!--    <el-table-column align="center" label="协议" prop="protocol"></el-table-column>-->
-    <el-table-column align="center" label="上次推送" prop="last_ts"></el-table-column>
-    <el-table-column align="center" label="操作" width="145px">
+    <!--  设备插件 end  -->
+
+    <el-table-column align="center" label="推送参数" width="auto" min-width="8%">
+      <template v-slot="scope">
+        编辑参数
+      </template>
+    </el-table-column>
+
+    <el-table-column align="center" label="数据对接" width="auto" min-width="8%">
+      <template v-slot="scope">
+        编辑对接
+      </template>
+    </el-table-column>
+
+    <el-table-column align="center" label="设备属性" width="auto" min-width="8%">
+      <template v-slot="scope">
+        编辑属性
+      </template>
+    </el-table-column>
+
+    <!--  推送时间 start  -->
+    <el-table-column align="center" label="上次推送" width="auto" min-width="11%">
+      <template v-slot="scope">
+        <div>{{scope.row.latest_ts ? dateFormat(scope.row.latest_ts/1000000) : ""}}</div>
+      </template>
+    </el-table-column>
+    <!--  推送时间 end  -->
+
+    <!--  操作 start  -->
+    <el-table-column align="center" label="操作" width="auto" min-width="5%">
       <template v-slot="scope">
         <div class="text-right">
-          <template v-if="scope.row.status">
-            <el-button type="indigo" size="mini" @click="handleSave(scope.row)">保存</el-button>
-            <el-button type="default" size="mini" @click="handleCancel(scope.row)">取消</el-button>
-          </template>
-          <template v-else>
-            <el-button type="indigo" size="mini" class="mr-3" @click="handleEdit(scope.row)">修改</el-button>
-            <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
+           <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
               <el-button slot="reference" type="danger" size="mini">删除</el-button>
-            </el-popconfirm>
-          </template>
+           </el-popconfirm>
         </div>
       </template>
     </el-table-column>
+    <!--  操作 end  -->
+
   </el-table>
   </el-form>
   <!-- 表 end -->
@@ -169,6 +208,8 @@ import {ref} from "@vue/composition-api/dist/vue-composition-api";
 import TableTitle from "@/components/common/TableTitle.vue"
 import useRoute from "@/utils/useRoute";
 import useDeviceCUD from "@/view/pages/device/useDeviceCUD";
+import {dateFormat} from "@/utils/tool";
+import useDeviceGroup from "@/view/pages/device/useDeviceGroup";
 
 export default defineComponent({
   name: "DeviceIndex",
@@ -181,6 +222,13 @@ export default defineComponent({
     let {route} = useRoute()
     // console.log(route.query.business_id)
 
+    let business_id = route.query.business_id
+
+    let {
+      deviceGroupOptions,
+      getGroupOptions,
+    } = useDeviceGroup(business_id)
+
     let {
       tableData,
       loading,
@@ -189,17 +237,12 @@ export default defineComponent({
       total,
       handleSearch,
       handleReset,
-      device_plugin,
+      devicePluginOptions,
       deviceTypeMap,
-    } = useDeviceIndex(route.query.business_id)
+    } = useDeviceIndex(business_id)
 
     let {
-      deviceForm,
-      formData,
-      rules,
       handleCreate,
-      handleEdit,
-      handleCancel,
       handleSave,
       handleDelete,
     } = useDeviceCUD(tableData)
@@ -227,25 +270,28 @@ export default defineComponent({
       total,
       handleSearch,
       handleReset,
-      device_plugin,
+      devicePluginOptions,
       deviceTypeMap,
       handleBusinessSelectorChange,
       currentDeviceId,
       deviceShowDialogVisible,
       handleListClick,
-      deviceForm,
-      formData,
-      rules,
       handleCreate,
-      handleEdit,
-      handleCancel,
       handleSave,
       handleDelete,
+      dateFormat,
+      deviceGroupOptions,
     }
   }
 })
 </script>
 
 <style scoped>
+/deep/ .el-form-item__content{
+  line-height: 1;
+}
 
+/deep/ .el-form-item{
+  margin: 0 !important;
+}
 </style>

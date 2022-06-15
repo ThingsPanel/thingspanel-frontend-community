@@ -27,10 +27,10 @@ export default function useDeviceIndex(business_id) {
         })
     }
 
-    let device_plugin = ref([])
+    let devicePluginOptions = ref([])
     asset_index().then(({data})=>{
         if(data.code === 200){
-            device_plugin.value = data.data
+            devicePluginOptions.value = data.data
         }
     }).finally(()=>{
         getDeviceIndex()
@@ -51,18 +51,35 @@ export default function useDeviceIndex(business_id) {
     // 清洗数据
     function washData(data_array){
         return data_array.map((item)=>{
-            item.latest_ts = item.latest_ts ? dateFormat(item.latest_ts) : ''
+            // item.latest_ts = item.latest_ts ? dateFormat(item.latest_ts) : ''
 
             // 增加状态判断新建还是编辑
-            item.status = null
-            return item
+            // item.status = null
+            // return item
+            return {
+                id: item.device,
+                name: item.device_name,
+                asset_id: item.asset_id,
+                // asset_name: item.asset_name,
+                token: item.device_token,
+                type: item.device_type,
+                latest_ts: item.latest_ts,
+                protocol: item.protocol,
+                status: null,
+                errors: {
+                    name: "",
+                    asset_id: "",
+                    type: "",
+                    protocol: "",
+                }
+            }
         })
     }
 
     // 映射设备插件
     function deviceTypeMap(type){
         let result = ""
-        device_plugin.value.some((device_item)=>{
+        devicePluginOptions.value.some((device_item)=>{
             if(device_item.id === type) {
                 result = device_item.name
                 // 查到后终止循环
@@ -120,7 +137,7 @@ export default function useDeviceIndex(business_id) {
         total,
         handleSearch,
         handleReset,
-        device_plugin,
+        devicePluginOptions,
         deviceTypeMap,
     }
 }
