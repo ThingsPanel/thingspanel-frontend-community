@@ -1,5 +1,5 @@
 <template>
-<div class="rounded card p-4 el-table-transparent el-dark-input">
+<div class="rounded card p-4 el-table-transparent">
   <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
     <el-col :span="17">
       <TableTitle>设备管理</TableTitle>
@@ -16,7 +16,7 @@
   </el-row>
 
   <!-- 筛选 start -->
-  <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
+  <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3 el-dark-input">
     <el-col :span="4">
       <DeviceGroupSelector
           :asset_id.sync="params.asset_id"
@@ -53,7 +53,7 @@
   <!-- 筛选 end -->
 
   <!-- 表 start -->
-  <el-form class="inline-edit">
+  <el-form class="inline-edit el-dark-input">
   <el-table :data="tableData" v-loading="loading" fit style="width: 100%">
 <!--    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>-->
 
@@ -113,7 +113,7 @@
 
     <el-table-column align="center" label="设备属性" width="auto" min-width="8%">
       <template v-slot="scope">
-        编辑属性
+        <el-button type="text" @click="handleEditClick(scope.row, '编辑属性')">编辑属性</el-button>
       </template>
     </el-table-column>
 
@@ -153,6 +153,15 @@
   </div>
   <!-- 分页 end -->
 
+  <!-- 编辑弹窗 start -->
+  <el-dialog :visible.sync="showEditDialog" :title="EditDialogTitle" width="30%">
+    <DevicePropertyForm
+        v-if="EditDialogTitle === '编辑属性'"
+        :device_item="currentDeviceItem"
+        :key="currentDeviceItem.id" @change="handleSave(currentDeviceItem)"></DevicePropertyForm>
+  </el-dialog>
+  <!-- 编辑弹窗 end -->
+
   <!-- 设备详情 start -->
   <DeviceShowDialog
       :device_id="currentDeviceId"
@@ -175,6 +184,7 @@ import useRoute from "@/utils/useRoute";
 import useDeviceCUD from "@/view/pages/device/useDeviceCUD";
 import {dateFormat} from "@/utils/tool";
 import useDeviceGroup from "@/view/pages/device/useDeviceGroup";
+import DevicePropertyForm from "@/view/pages/device/DevicePropertyForm.vue";
 
 export default defineComponent({
   name: "DeviceIndex",
@@ -183,6 +193,7 @@ export default defineComponent({
     DevicePluginSelector,
     DeviceShowDialog,
     TableTitle,
+    DevicePropertyForm,
   },
   setup(){
     let {route} = useRoute()
@@ -190,11 +201,13 @@ export default defineComponent({
 
     let business_id = route.query.business_id
 
+    // 设备分组的选项
     let {
       deviceGroupOptions,
       getGroupOptions,
     } = useDeviceGroup(business_id)
 
+    // 设备列表
     let {
       tableData,
       loading,
@@ -207,19 +220,26 @@ export default defineComponent({
       deviceTypeMap,
     } = useDeviceIndex(business_id)
 
+    // 设备的增删改
     let {
       handleCreate,
       handleSave,
       handleDelete,
     } = useDeviceCUD(tableData)
 
+    // 编辑弹窗
+    let showEditDialog = ref(false)
+    let EditDialogTitle = ref("")
+    let currentDeviceItem = ref({})
 
-    function handleBusinessSelectorChange(){
-      // business_id 更改时清空 asset_id
-      params.asset_id = ""
-      handleSearch()
+    // 编辑参数 编辑对接 编辑属性
+    function handleEditClick(item, title){
+      currentDeviceItem.value = item
+      EditDialogTitle.value = title
+      showEditDialog.value = true;
     }
 
+    // 设备详情
     let currentDeviceId = ref('')
     let deviceShowDialogVisible = ref(false)
 
@@ -238,7 +258,6 @@ export default defineComponent({
       handleReset,
       devicePluginOptions,
       deviceTypeMap,
-      handleBusinessSelectorChange,
       currentDeviceId,
       deviceShowDialogVisible,
       handleListClick,
@@ -247,6 +266,10 @@ export default defineComponent({
       handleDelete,
       dateFormat,
       deviceGroupOptions,
+      showEditDialog,
+      EditDialogTitle,
+      handleEditClick,
+      currentDeviceItem,
     }
   }
 })

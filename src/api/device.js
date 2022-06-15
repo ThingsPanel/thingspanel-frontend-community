@@ -47,3 +47,11 @@ export function device_delete(data){
         }
     })
 }
+
+export function device_default_setting(data){
+    return axios({
+        url: "/index/default_setting",
+        method: "post",
+        data,
+    })
+}
