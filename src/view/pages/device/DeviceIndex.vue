@@ -18,38 +18,20 @@
   <!-- 筛选 start -->
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="4">
-      <el-select
-          class="w-100"
-          size="medium"
-          placeholder="请选择设备分组"
-          v-model="params.asset_id"
-          filterable
-          clearable
+      <DeviceGroupSelector
+          :asset_id.sync="params.asset_id"
+          :options="deviceGroupOptions"
+          :clearable="true"
           @change="handleSearch()"
-      >
-        <el-option
-            :value="item.id"
-            :label="item.device_group"
-            v-for="item in deviceGroupOptions"></el-option>
-      </el-select>
+      ></DeviceGroupSelector>
     </el-col>
     <el-col :span="4">
-      <el-select
-          class="w-100"
-          placeholder="请选择设备插件"
-          size="medium"
-          v-model="params.device_type"
-          filterable
-          clearable
-          @change="handleSearch()"
-      >
-        <el-option
-            v-for="item in devicePluginOptions"
-            :key="item.id"
-            :label="item.name"
-            :value="item.id"
-        ></el-option>
-      </el-select>
+        <DevicePluginSelector
+            :plugin_type.sync="params.device_type"
+            :options="devicePluginOptions"
+            :clearable="true"
+            @change="handleSearch()"
+        ></DevicePluginSelector>
     </el-col>
     <el-col :span="4">
       <el-input
@@ -93,19 +75,11 @@
     <el-table-column align="center" label="设备分组" width="auto" min-width="20%">
       <template v-slot="scope">
         <el-form-item :error="scope.row.errors.asset_id">
-          <el-select
-              class="w-100"
-              size="medium"
-              placeholder="请选择设备分组"
-              v-model="scope.row.asset_id"
-              filterable
+          <DeviceGroupSelector
+              :asset_id.sync="scope.row.asset_id"
+              :options="deviceGroupOptions"
               @change="handleSave(scope.row)"
-          >
-            <el-option
-                :value="item.id"
-                :label="item.device_group"
-                v-for="item in deviceGroupOptions"></el-option>
-          </el-select>
+          ></DeviceGroupSelector>
         </el-form-item>
       </template>
     </el-table-column>
@@ -115,21 +89,11 @@
     <el-table-column align="center" label="设备插件" width="auto" min-width="20%">
       <template v-slot="scope">
         <el-form-item :error="scope.row.errors.type">
-          <el-select
-              class="w-100"
-              placeholder="请选择设备插件"
-              size="medium"
-              v-model="scope.row.type"
-              filterable
+          <DevicePluginSelector
+              :plugin_type.sync="scope.row.type"
+              :options="devicePluginOptions"
               @change="handleSave(scope.row)"
-          >
-            <el-option
-                v-for="item in devicePluginOptions"
-                :key="item.id"
-                :label="item.name"
-                :value="item.id"
-            ></el-option>
-          </el-select>
+          ></DevicePluginSelector>
         </el-form-item>
       </template>
     </el-table-column>
@@ -202,7 +166,8 @@
 <script>
 import {defineComponent} from "@vue/composition-api";
 import useDeviceIndex from "@/view/pages/device/useDeviceIndex";
-import DeviceGroupSelector from "@/components/common/DeviceGroupSelector.vue"
+import DeviceGroupSelector from "./DeviceGroupSelector.vue"
+import DevicePluginSelector from "./DevicePluginSelector.vue"
 import DeviceShowDialog from "@/view/pages/device/DeviceShowDialog.vue"
 import {ref} from "@vue/composition-api/dist/vue-composition-api";
 import TableTitle from "@/components/common/TableTitle.vue"
@@ -215,6 +180,7 @@ export default defineComponent({
   name: "DeviceIndex",
   components: {
     DeviceGroupSelector,
+    DevicePluginSelector,
     DeviceShowDialog,
     TableTitle,
   },
