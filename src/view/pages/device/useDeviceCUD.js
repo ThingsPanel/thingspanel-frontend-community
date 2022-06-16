@@ -12,7 +12,8 @@ export default function useDeviceCUD(tableData){
             name: "",
             type: "",
             asset_id: "",
-            status: "creating",
+            d_id: "",
+            location: "",
             errors: {
                 name: "",
                 asset_id: "",
@@ -61,16 +62,21 @@ export default function useDeviceCUD(tableData){
     }
 
     function handleDelete(item){
-        console.log('删除设备')
-        device_delete({id: item.id}).then(({data})=>{
-            if(data.code === 200) {
-                message_success("删除成功！")
-                let index = tableData.value.indexOf(item)
-                tableData.value.splice(index, 1)
-            }else{
-                message_error(data.message)
-            }
-        })
+        if(item.id){
+            device_delete({id: item.id}).then(({data})=>{
+                if(data.code === 200) {
+                    message_success("删除成功！")
+                    let index = tableData.value.indexOf(item)
+                    tableData.value.splice(index, 1)
+                }else{
+                    message_error(data.message)
+                }
+            })
+        }else{
+            message_success("删除成功！")
+            let index = tableData.value.indexOf(item)
+            tableData.value.splice(index, 1)
+        }
     }
 
     return {

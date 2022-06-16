@@ -5,13 +5,12 @@
       <TableTitle>设备管理</TableTitle>
     </el-col>
     <el-col :span="3">
-      <el-button type="indigo" size="medium" class="w-100">创建设备向导</el-button>
+<!--      <el-button type="indigo" size="medium" class="w-100">创建设备向导</el-button>-->
     </el-col>
-    <el-col :span="2">
-      <el-button type="indigo" size="medium" class="w-100" @click="handleCreate()">创建设备</el-button>
-    </el-col>
-    <el-col :span="2">
-      <el-button type="indigo" size="medium" class="w-100">管理分组</el-button>
+    <el-col :span="4" class="text-right">
+      <el-button type="indigo" size="medium" @click="handleCreate()">创建设备</el-button>
+
+      <el-button type="indigo" size="medium">管理分组</el-button>
     </el-col>
   </el-row>
 
@@ -35,19 +34,17 @@
     </el-col>
     <el-col :span="4">
       <el-input
-          placeholder="请填写要筛选的token"
-          v-model="params.token"
+          placeholder="请输入设备名"
+          v-model="params.name"
           size="medium"
           clearable
           @keydown.enter.native="handleSearch()"
           @clear="handleSearch()"></el-input>
     </el-col>
     <el-col :span="8"></el-col>
-    <el-col :span="2">
-      <el-button class="w-100" type="indigo" size="medium" @click="handleSearch()">查询</el-button>
-    </el-col>
-    <el-col :span="2">
-      <el-button class="w-100" type="default" size="medium" @click="handleReset()">重置</el-button>
+    <el-col :span="4" class="text-right">
+      <el-button type="indigo" size="medium" @click="handleSearch()">查询</el-button>
+      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>
     </el-col>
   </el-row>
   <!-- 筛选 end -->
@@ -55,10 +52,10 @@
   <!-- 表 start -->
   <el-form class="inline-edit el-dark-input">
   <el-table :data="tableData" v-loading="loading" fit style="width: 100%">
-<!--    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>-->
+<!--    <el-table-column label="序号" type="index" width="50"></el-table-column>-->
 
     <!--  设备名 start  -->
-    <el-table-column align="center" label="设备名称" width="auto" min-width="20%">
+    <el-table-column label="设备名称" width="auto" min-width="12%">
       <template v-slot="scope">
         <el-form-item :error="scope.row.errors.name">
           <el-input
@@ -72,7 +69,7 @@
     <!--  设备名 end  -->
 
     <!--  设备分组 start  -->
-    <el-table-column align="center" label="设备分组" width="auto" min-width="20%">
+    <el-table-column label="设备分组" width="auto" min-width="12%">
       <template v-slot="scope">
         <el-form-item :error="scope.row.errors.asset_id">
           <DeviceGroupSelector
@@ -86,7 +83,7 @@
     <!--  设备分组 end  -->
 
     <!--  设备插件 start  -->
-    <el-table-column align="center" label="设备插件" width="auto" min-width="20%">
+    <el-table-column label="设备插件" width="auto" min-width="12%">
       <template v-slot="scope">
         <el-form-item :error="scope.row.errors.type">
           <DevicePluginSelector
@@ -99,40 +96,49 @@
     </el-table-column>
     <!--  设备插件 end  -->
 
-    <el-table-column align="center" label="推送参数" width="auto" min-width="8%">
+    <el-table-column label="推送参数" width="auto" min-width="8%">
       <template v-slot="scope">
-        编辑参数
+        <el-button type="text" @click="handleEditClick(scope.row, '编辑参数')">编辑参数</el-button>
       </template>
     </el-table-column>
 
-    <el-table-column align="center" label="数据对接" width="auto" min-width="8%">
+    <el-table-column label="数据对接" width="auto" min-width="8%">
       <template v-slot="scope">
         编辑对接
       </template>
     </el-table-column>
 
-    <el-table-column align="center" label="设备属性" width="auto" min-width="8%">
+    <el-table-column label="设备属性" width="auto" min-width="8%">
       <template v-slot="scope">
         <el-button type="text" @click="handleEditClick(scope.row, '编辑属性')">编辑属性</el-button>
       </template>
     </el-table-column>
 
     <!--  推送时间 start  -->
-    <el-table-column align="center" label="上次推送" width="auto" min-width="11%">
+    <el-table-column label="上次推送" width="auto" min-width="12%">
       <template v-slot="scope">
         <div>{{scope.row.latest_ts ? dateFormat(scope.row.latest_ts/1000000) : ""}}</div>
       </template>
     </el-table-column>
     <!--  推送时间 end  -->
 
+    <!-- 图表组件 start-->
+<!--    <el-table-column label="图表组件" width="auto" min-width="23%">-->
+<!--      <template v-slot="scope">-->
+<!--        <el-tag size="mini" class="mr-1 mb-1">温湿度传感器</el-tag>-->
+<!--        <el-tag size="mini">温湿度传感器</el-tag>-->
+<!--      </template>-->
+<!--    </el-table-column>-->
+    <!-- 图表组件 end-->
+
     <!--  操作 start  -->
-    <el-table-column align="center" label="操作" width="auto" min-width="5%">
+    <el-table-column label="操作" width="auto" min-width="5%">
       <template v-slot="scope">
-        <div class="text-right">
+<!--        <div class="text-right">-->
            <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
               <el-button slot="reference" type="danger" size="mini">删除</el-button>
            </el-popconfirm>
-        </div>
+<!--        </div>-->
       </template>
     </el-table-column>
     <!--  操作 end  -->
@@ -155,10 +161,19 @@
 
   <!-- 编辑弹窗 start -->
   <el-dialog :visible.sync="showEditDialog" :title="EditDialogTitle" width="30%">
-    <DevicePropertyForm
-        v-if="EditDialogTitle === '编辑属性'"
+    <DeviceSettingForm
+        v-if="EditDialogTitle === '编辑参数'"
         :device_item="currentDeviceItem"
-        :key="currentDeviceItem.id" @change="handleSave(currentDeviceItem)"></DevicePropertyForm>
+        :key="currentDeviceItem.id"
+        @change="handleSave(currentDeviceItem)"
+    ></DeviceSettingForm>
+
+    <DeviceAttributeForm
+        v-else-if="EditDialogTitle === '编辑属性'"
+        :device_item="currentDeviceItem"
+        :key="currentDeviceItem.id"
+        @change="handleSave(currentDeviceItem)"
+    ></DeviceAttributeForm>
   </el-dialog>
   <!-- 编辑弹窗 end -->
 
@@ -184,7 +199,8 @@ import useRoute from "@/utils/useRoute";
 import useDeviceCUD from "@/view/pages/device/useDeviceCUD";
 import {dateFormat} from "@/utils/tool";
 import useDeviceGroup from "@/view/pages/device/useDeviceGroup";
-import DevicePropertyForm from "@/view/pages/device/DevicePropertyForm.vue";
+import DeviceSettingForm from "@/view/pages/device/DeviceSettingForm.vue";
+import DeviceAttributeForm from "@/view/pages/device/DeviceAttributeForm.vue";
 
 export default defineComponent({
   name: "DeviceIndex",
@@ -193,7 +209,8 @@ export default defineComponent({
     DevicePluginSelector,
     DeviceShowDialog,
     TableTitle,
-    DevicePropertyForm,
+    DeviceSettingForm,
+    DeviceAttributeForm,
   },
   setup(){
     let {route} = useRoute()

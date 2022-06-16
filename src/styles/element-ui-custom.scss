@@ -1,5 +1,8 @@
 // ElementUi table 背景透明
 .el-table-transparent{
+  .el-button--text{
+    color: #fff!important;
+  }
   // 默认按钮的颜色
   .el-button--default{
     color: #606266!important;
@@ -119,6 +122,14 @@
     border-color: rgba(0,0,0,0.1);
   }
 
+  .el-input:hover .el-input__inner {
+    border-color: #c0c4cc;
+  }
+
+  .el-input .el-input__inner:focus {
+    border-color: #198bf6;
+  }
+
   // 组合式 input
   .el-input-group__prepend{
     color: #c0c4cc;
@@ -160,16 +171,16 @@
 // table 行内编辑
 .inline-edit{
   // 居中
-  input{
-    text-align: center;
-  }
+  //input{
+  //  text-align: center;
+  //}
   // 错误提示居中
-  .el-form-item__error{
-    width: 100%;
-    text-align: center;
-  }
+  //.el-form-item__error{
+  //  width: 100%;
+  //  text-align: center;
+  //}
   // input 上下居中
   .el-form-item{
-    margin: 22px 0;
+    margin: 0;
   }
 }

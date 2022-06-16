@@ -1,6 +1,5 @@
 import {reactive, ref} from "@vue/composition-api";
 import {device_list} from "@/api/device";
-import {dateFormat} from "@/utils/tool";
 import {asset_index} from "@/api/asset";
 import {is_string} from "@/utils/helpers";
 
@@ -51,11 +50,6 @@ export default function useDeviceIndex(business_id) {
     // 清洗数据
     function washData(data_array){
         return data_array.map((item)=>{
-            // item.latest_ts = item.latest_ts ? dateFormat(item.latest_ts) : ''
-
-            // 增加状态判断新建还是编辑
-            // item.status = null
-            // return item
             return {
                 id: item.device,
                 name: item.device_name,
@@ -65,7 +59,8 @@ export default function useDeviceIndex(business_id) {
                 type: item.device_type,
                 latest_ts: item.latest_ts,
                 protocol: item.protocol,
-                status: null,
+                d_id: item.d_id,
+                location: item.location,
                 errors: {
                     name: "",
                     asset_id: "",
@@ -100,6 +95,7 @@ export default function useDeviceIndex(business_id) {
             device_id: "",
             device_type: "",
             token: "",
+            name: "",
         }
     }
 
