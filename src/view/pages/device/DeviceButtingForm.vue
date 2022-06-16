@@ -53,7 +53,9 @@
 import {defineComponent, ref} from "@vue/composition-api";
 import {device_field_index, field_add, structure_delete, structure_field} from "@/api/device";
 import FieldSelector from "./FieldSelector.vue"
-import {message_success} from "@/utils/helpers";
+import useDeviceButtingCUD from "@/view/pages/device/useDeviceButtingCUD";
+import useDeviceFieldIndex from "@/view/pages/device/useDeviceFieldIndex";
+import useDeviceFieldOptions from "@/view/pages/device/useDeviceFieldOptions";
 
 export default defineComponent({
   name: "DeviceButtingForm",
@@ -66,119 +68,27 @@ export default defineComponent({
     }
   },
   setup(props, context){
-    let fieldOptions = ref([])
+    let device_id = props.device_item.id
+    let device_type = props.device_item.type
 
-    let tableData = ref([])
+    // 获取当前设备的映射列表
+    let {
+      tableData,
+      washTableData
+    } = useDeviceFieldIndex(device_id)
 
-    device_field_index({device_id: props.device_item.id}).then(({data})=>{
-      if(data.code === 200) {
-        tableData.value = washTableData(data.data)
-      }
-    })
+    // 初始化 fieldOptions
+    let {
+      fieldOptions
+    } = useDeviceFieldOptions(tableData, device_type)
 
-    // 清洗数据
-    function washTableData(array_data){
-      return array_data.map((item)=>({
-        device_id: item.device_id,
-        field_from: item.field_from,
-        field_to: item.field_to,
-        id: item.id,
-        errors: {
-          field_from: "",
-          field_to: "",
-        }
-      }))
-    }
-
-    if(props.device_item.type) {
-      structure_field({field: props.device_item.type}).then(({data})=>{
-        if(data.code === 200){
-          fieldOptions.value = data.data.map((item)=>{
-            return {
-              label: item.name,
-              options: item.field.map((item)=>({
-                value: item.key,
-                label: item.name,
-                disabled: false,
-              }))
-            }
-          })
-        }
-      })
-    }
-
-    function handleCreate(){
-      tableData.value.unshift({
-        device_id: props.device_item.id,
-        field_from: "",
-        field_to: "",
-        errors: {
-          field_from: "",
-          field_to: "",
-        }
-      })
-    }
-
-    function handleDelete(item){
-      if(item.id){
-        structure_delete({id: item.id}).then(({data})=>{
-          if(data.code === 200) {
-            let index = tableData.value.indexOf(item)
-            tableData.value.splice(index, 1)
-          }
-        })
-      }else{
-        let index = tableData.value.indexOf(item)
-        tableData.value.splice(index, 1)
-      }
-      message_success("删除成功！")
-    }
-
-    function handleSave(){
-      // 没有验证通过返回
-      if(!validation()) return;
-
-      field_add({data:tableData.value}).then(({data})=>{
-        if(data.code === 200){
-          tableData.value = washTableData(data.data)
-          message_success("保存成功！")
-        }
-      })
-      console.log("handleSave")
-    }
-
-    // 验证字段
-    function valid_field(item, field){
-      if(item[field]){
-        item.errors[field] = ""
-      }else{
-        item.errors[field] = "必填项"
-      }
-    }
-
-    // 验证所有字段
-    function validation(){
-      // 清理之前的错误
-      tableData.value.some((item)=>{
-        item.errors.field_from = ""
-        item.errors.field_to = ""
-      })
-
-      // 检查空值
-      let valid = true
-      tableData.value.some((item)=>{
-        if(!item.field_from){
-          item.errors.field_from = "请填写"
-          valid = false
-        }
-        if(!item.field_to){
-          item.errors.field_to = "请填写"
-          valid = false
-        }
-      })
-
-      return valid
-    }
+    // 增删改
+    let {
+      handleCreate,
+      handleDelete,
+      handleSave,
+      valid_field,
+    } = useDeviceButtingCUD(tableData,device_id, washTableData)
 
 
     return {
@@ -196,5 +106,10 @@ export default defineComponent({
 <style scoped>
 /deep/ .el-table thead{
   color: #909399;
+}
+
+
+/deep/ .el-select-dropdown__item.selected.is-disabled{
+  cursor: pointer !important;
 }
 </style>
