@@ -84,6 +84,13 @@
   }
 }
 
+.el-alert--warning.is-light {
+  color: #e6a23c;
+  .el-alert__icon{
+    color: #e6a23c;
+  }
+}
+
 // 修改按钮配色
 .el-button--indigo{
   color: #fff!important;

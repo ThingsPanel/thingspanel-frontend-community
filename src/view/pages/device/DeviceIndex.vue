@@ -104,7 +104,7 @@
 
     <el-table-column label="数据对接" width="auto" min-width="8%">
       <template v-slot="scope">
-        编辑对接
+        <el-button type="text" @click="handleEditClick(scope.row, '编辑对接')">编辑对接</el-button>
       </template>
     </el-table-column>
 
@@ -161,6 +161,7 @@
 
   <!-- 编辑弹窗 start -->
   <el-dialog :visible.sync="showEditDialog" :title="EditDialogTitle" width="30%">
+    <!--  默认参数  -->
     <DeviceSettingForm
         v-if="EditDialogTitle === '编辑参数'"
         :device_item="currentDeviceItem"
@@ -168,12 +169,22 @@
         @change="handleSave(currentDeviceItem)"
     ></DeviceSettingForm>
 
+    <!--  属性  -->
     <DeviceAttributeForm
         v-else-if="EditDialogTitle === '编辑属性'"
         :device_item="currentDeviceItem"
         :key="currentDeviceItem.id"
         @change="handleSave(currentDeviceItem)"
     ></DeviceAttributeForm>
+
+    <!--  对接  -->
+    <DeviceButtingForm
+        v-else-if="EditDialogTitle === '编辑对接'"
+        :device_item="currentDeviceItem"
+        :key="currentDeviceItem.id"
+        @change="handleSave(currentDeviceItem)"
+    ></DeviceButtingForm>
+
   </el-dialog>
   <!-- 编辑弹窗 end -->
 
@@ -201,6 +212,7 @@ import {dateFormat} from "@/utils/tool";
 import useDeviceGroup from "@/view/pages/device/useDeviceGroup";
 import DeviceSettingForm from "@/view/pages/device/DeviceSettingForm.vue";
 import DeviceAttributeForm from "@/view/pages/device/DeviceAttributeForm.vue";
+import DeviceButtingForm from "@/view/pages/device/DeviceButtingForm.vue";
 
 export default defineComponent({
   name: "DeviceIndex",
@@ -211,6 +223,7 @@ export default defineComponent({
     TableTitle,
     DeviceSettingForm,
     DeviceAttributeForm,
+    DeviceButtingForm,
   },
   setup(){
     let {route} = useRoute()

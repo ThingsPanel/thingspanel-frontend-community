@@ -3,6 +3,7 @@ import {
     Input,
     Select,
     Option,
+    OptionGroup,
     Form,
     FormItem,
     Table,
@@ -35,6 +36,7 @@ const element = {
         Vue.use(Input)
         Vue.use(Select)
         Vue.use(Option)
+        Vue.use(OptionGroup)
         Vue.use(Table)
         Vue.use(TableColumn)
         Vue.use(Dialog)
