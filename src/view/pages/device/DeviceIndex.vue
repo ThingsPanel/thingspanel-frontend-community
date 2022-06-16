@@ -10,7 +10,7 @@
     <el-col :span="4" class="text-right">
       <el-button type="indigo" size="medium" @click="handleCreate()">创建设备</el-button>
 
-      <el-button type="indigo" size="medium">管理分组</el-button>
+      <el-button type="indigo" size="medium" @click="showManagementGroup=true">管理分组</el-button>
     </el-col>
   </el-row>
 
@@ -188,6 +188,12 @@
   </el-dialog>
   <!-- 编辑弹窗 end -->
 
+  <!-- 分组管理 start -->
+  <el-dialog :visible.sync="showManagementGroup" title="管理设备分组" width="30%">
+    <ManagementGroupForm></ManagementGroupForm>
+  </el-dialog>
+  <!-- 分组管理 end -->
+
   <!-- 设备详情 start -->
   <DeviceShowDialog
       :device_id="currentDeviceId"
@@ -213,6 +219,7 @@ import useDeviceGroup from "@/view/pages/device/useDeviceGroup";
 import DeviceSettingForm from "@/view/pages/device/DeviceSettingForm.vue";
 import DeviceAttributeForm from "@/view/pages/device/DeviceAttributeForm.vue";
 import DeviceButtingForm from "@/view/pages/device/DeviceButtingForm.vue";
+import ManagementGroupForm from "./ManagementGroupForm.vue"
 
 export default defineComponent({
   name: "DeviceIndex",
@@ -224,6 +231,7 @@ export default defineComponent({
     DeviceSettingForm,
     DeviceAttributeForm,
     DeviceButtingForm,
+    ManagementGroupForm,
   },
   setup(){
     let {route} = useRoute()
@@ -278,6 +286,9 @@ export default defineComponent({
       deviceShowDialogVisible.value = true
     }
 
+    // 管理分组
+    let showManagementGroup = ref(false)
+
     return {
       tableData,
       loading,
@@ -300,6 +311,7 @@ export default defineComponent({
       EditDialogTitle,
       handleEditClick,
       currentDeviceItem,
+      showManagementGroup,
     }
   }
 })

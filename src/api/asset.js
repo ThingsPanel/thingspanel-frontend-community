@@ -52,3 +52,21 @@ export function device_group_drop(data){
         data,
     })
 }
+
+// 根据业务id查询所有分组
+export function asset_list_c(data){
+    return axios({
+        url: "/asset/list/c",
+        method: "post",
+        data,
+    })
+}
+
+// 更新分组
+export function asset_update(data){
+    return axios({
+        url: "/asset/update_only",
+        method: "post",
+        data,
+    })
+}

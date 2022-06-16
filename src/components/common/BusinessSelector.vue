@@ -4,7 +4,7 @@
       v-model="businessCascaderData"
       size="medium"
       :props="businessProps"
-      clearable
+      :clearable="clearable"
       class="w-100"
       @change="handleChange()"
   >
@@ -18,7 +18,15 @@ import {business_index} from "@/api/business";
 
 export default defineComponent({
   name: "BusinessSelector",
-  props: ['business_id'],
+  props: {
+    business_id:{
+      required: true,
+      type: String,
+    },
+    clearable: {
+      default: true
+    }
+  },
   setup(props, context){
     // 业务
     let businessCascaderData = computed({
