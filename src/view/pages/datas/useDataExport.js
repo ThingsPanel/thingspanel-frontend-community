@@ -19,7 +19,7 @@ export default function useDataExport(params) {
         exportVisible.value = true
         kv_export(p).then(({data}) => {
             if (data.code === 200) {
-                downloadUrl.value = location.host + '/' + data.data
+                downloadUrl.value = location.protocol + "//" + location.host + '/' + data.data
             }
         }).finally(() => {
             exporting.value = false
