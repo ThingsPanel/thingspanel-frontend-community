@@ -1,20 +1,20 @@
 <template>
 <div>
-  <p class="my-2">协议：</p>
+  <p class="my-2 label-name">协议：</p>
   <el-select size="medium" placeholder="请选择协议" class="w-100" v-model="device_item.protocol" @change="handleChange()">
     <el-option :label="'TCP'" :value="'tcp'"></el-option>
     <el-option :label="'MQTT'" :value="'mqtt'"></el-option>
   </el-select>
 
-  <p class="my-2">默认配置:</p>
+  <p class="my-2 label-name">默认配置:</p>
   <div class="default-setting">
     <p class="my-1" v-for="item in default_setting">{{item}}</p>
   </div>
 
-  <p class="my-2">Token:</p>
+  <p class="my-2 label-name">Token:</p>
   <el-input size="medium" class="w-100" v-model="device_item.token"></el-input>
 
-  <p class="my-2">接口类型:</p>
+  <p class="my-2 label-name">接口类型:</p>
   <div class="default-setting">
     <p class="my-1">json</p>
   </div>
@@ -83,7 +83,7 @@ export default defineComponent({
 
 <style scoped>
 .default-setting{
-  background: #f1f1f1;
+  background: rgba(22, 30, 67, 0.5);
   border-radius: 3px;
   padding: 5px 15px;
   min-height: 37px;

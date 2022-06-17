@@ -30,7 +30,7 @@
 <!--        <template slot="prepend">token</template>-->
       </el-input>
     </el-col>
-    <el-col :span="8">
+    <el-col :span="6">
       <el-date-picker
           class="w-100"
           v-model="datetimerange"
@@ -45,34 +45,34 @@
           end-placeholder="结束日期">
       </el-date-picker>
     </el-col>
-    <el-col :span="2">
-      <el-button class="w-100" type="indigo" size="medium" @click="handleSearch()">查询</el-button>
-    </el-col>
-    <el-col :span="2">
-      <el-popconfirm :title="`确定导出 ${total} 条数据吗?`" @confirm="handleExport()">
-        <el-button slot="reference" class="w-100" type="indigo" size="medium">导出</el-button>
-      </el-popconfirm>
-    </el-col>
-    <el-col :span="2">
-      <el-button class="w-100" type="default" size="medium" @click="handleReset()">重置</el-button>
+    <el-col :span="8">
+      <div class="text-right">
+        <el-button class="mr-2" type="indigo" size="medium" @click="handleSearch()">查询</el-button>
+
+        <el-popconfirm :title="`确定导出 ${total} 条数据吗?`" @confirm="handleExport()">
+          <el-button slot="reference" type="indigo" size="medium">导出</el-button>
+        </el-popconfirm>
+
+        <el-button class="ml-2" type="default" size="medium" @click="handleReset()">重置</el-button>
+      </div>
     </el-col>
   </el-row>
   <!-- 头 end -->
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
-    <el-table-column align="center" label="业务名称" prop="bname"></el-table-column>
-    <el-table-column align="center" label="设备分组名称" prop="name"></el-table-column>
-    <el-table-column align="center" label="Token" prop="token">
+    <el-table-column label="序号" type="index" width="50"></el-table-column>
+    <el-table-column label="业务名称" prop="bname"></el-table-column>
+    <el-table-column label="设备分组名称" prop="name"></el-table-column>
+    <el-table-column label="Token" prop="token" width="300">
       <template v-slot="scope">
         <span class="cursor-pointer" @click="handleSearch({token: scope.row.token})">{{scope.row.token}}</span>
       </template>
     </el-table-column>
-    <el-table-column align="center" label="时间" prop="ts"></el-table-column>
-    <el-table-column align="center" label="数据标签" prop="key"></el-table-column>
-    <el-table-column align="center" label="值" prop="dbl_v"></el-table-column>
-    <el-table-column align="center" label="设备插件" prop="entity_type"></el-table-column>
+    <el-table-column label="时间" prop="ts"></el-table-column>
+    <el-table-column label="数据标签" prop="key"></el-table-column>
+    <el-table-column label="值" prop="dbl_v"></el-table-column>
+    <el-table-column label="设备插件" prop="entity_type"></el-table-column>
   </el-table>
   <!-- 表 end -->
 
@@ -87,6 +87,7 @@
   </div>
 
   <el-dialog
+      class="el-dark-dialog el-dark-input"
       width="30%"
       title="导出"
       :visible.sync="exportVisible">

@@ -160,7 +160,11 @@
   <!-- 分页 end -->
 
   <!-- 编辑弹窗 start -->
-  <el-dialog :visible.sync="showEditDialog" :title="EditDialogTitle" width="30%">
+  <el-dialog
+      class="el-dark-dialog el-dark-input"
+      :visible.sync="showEditDialog"
+      :title="EditDialogTitle"
+      width="30%">
     <!--  默认参数  -->
     <DeviceSettingForm
         v-if="EditDialogTitle === '编辑参数'"
@@ -189,7 +193,11 @@
   <!-- 编辑弹窗 end -->
 
   <!-- 分组管理 start -->
-  <el-dialog :visible.sync="showManagementGroup" title="管理设备分组" width="30%" destroy-on-close>
+  <el-dialog
+      class="el-dark-dialog el-dark-input"
+      :visible.sync="showManagementGroup"
+      title="管理设备分组"
+      width="30%" destroy-on-close>
     <ManagementGroupForm @change="handleChange"></ManagementGroupForm>
   </el-dialog>
   <!-- 分组管理 end -->
@@ -213,6 +221,7 @@ import DeviceSettingForm from "@/view/pages/device/DeviceSettingForm.vue";
 import DeviceAttributeForm from "@/view/pages/device/DeviceAttributeForm.vue";
 import DeviceButtingForm from "@/view/pages/device/DeviceButtingForm.vue";
 import ManagementGroupForm from "./ManagementGroupForm.vue"
+import {message_error} from "@/utils/helpers";
 
 export default defineComponent({
   name: "DeviceIndex",
@@ -265,6 +274,11 @@ export default defineComponent({
 
     // 编辑参数 编辑对接 编辑属性
     function handleEditClick(item, title){
+      if(!item.id) {
+        item.errors.name = "请先填写设备名称"
+        message_error("请先填写设备名称")
+        return
+      }
       currentDeviceItem.value = item
       EditDialogTitle.value = title
       showEditDialog.value = true;

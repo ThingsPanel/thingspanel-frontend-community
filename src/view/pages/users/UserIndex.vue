@@ -5,20 +5,20 @@
     <el-col :span="2">
       <TableTitle>用户管理</TableTitle>
     </el-col>
-    <el-col :offset="20" :span="2" class="px-2">
-      <el-button class="w-100" size="medium" type="indigo" @click="createUserDialogVisible = true">添加用户</el-button>
+    <el-col :offset="20" :span="2" class="px-2 text-right">
+      <el-button size="medium" type="indigo" @click="createUserDialogVisible = true">添加用户</el-button>
     </el-col>
   </el-row>
   <!-- 头 end -->
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
-    <el-table-column label="用户名" prop="email" align="center"></el-table-column>
-    <el-table-column label="姓名" prop="name" align="center"></el-table-column>
-    <el-table-column label="邮箱" prop="email" align="center"></el-table-column>
-    <el-table-column label="手机号" prop="mobile" align="center"></el-table-column>
-    <el-table-column label="角色" prop="is_admin" align="center">
+    <el-table-column label="序号" type="index" width="50"></el-table-column>
+    <el-table-column label="用户名" prop="email"></el-table-column>
+    <el-table-column label="姓名" prop="name"></el-table-column>
+    <el-table-column label="邮箱" prop="email"></el-table-column>
+    <el-table-column label="手机号" prop="mobile"></el-table-column>
+    <el-table-column label="角色" prop="is_admin">
       <template v-slot="scope">
         <el-tag size="mini">{{scope.row.is_admin?'管理员': '普通用户'}}</el-tag>
       </template>

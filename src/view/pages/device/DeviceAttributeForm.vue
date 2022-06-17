@@ -11,8 +11,8 @@
     <el-input v-model="formData.location"></el-input>
   </el-form-item>
 
-  <div>
-    <el-button class="w-100" type="indigo" @click="handleSave()">保存</el-button>
+  <div class="pt-2">
+    <el-button class="w-100" type="primary" @click="handleSave()">保存</el-button>
   </div>
 </el-form>
 </template>

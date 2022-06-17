@@ -4,17 +4,17 @@
     <el-col :span="22">
       <TableTitle>业务管理</TableTitle>
     </el-col>
-    <el-col :span="2" class="px-2">
-      <el-button class="w-100" size="medium" type="indigo" @click="dialogVisible = true">创建转发</el-button>
+    <el-col :span="2" class="px-2 text-right">
+      <el-button size="medium" type="indigo" @click="dialogVisible = true">创建转发</el-button>
     </el-col>
   </el-row>
 
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
-    <el-table-column prop="device_id" label="设备ID" align="center"></el-table-column>
-    <el-table-column prop="device_name" label="设备名" align="center"></el-table-column>
-    <el-table-column prop="frequency" label="频率" align="center"></el-table-column>
-    <el-table-column prop="status" label="接口状态" align="center">
+    <el-table-column label="序号" type="index" width="50"></el-table-column>
+    <el-table-column prop="device_id" label="设备ID"></el-table-column>
+    <el-table-column prop="device_name" label="设备名"></el-table-column>
+    <el-table-column prop="frequency" label="频率"></el-table-column>
+    <el-table-column prop="status" label="接口状态">
       <template v-slot="scope">
         <el-tag size="mini">{{scope.row.status}}</el-tag>
       </template>
@@ -43,6 +43,7 @@
 
 <!-- 新建 -->
   <el-dialog
+      class="el-dark-dialog el-dark-input"
       title="创建"
       :visible.sync="dialogVisible"
       width="30%">
@@ -51,7 +52,7 @@
 
 <!-- 更新 -->
   <el-dialog
-      class="transpond-dialog"
+      class="el-dark-dialog el-dark-input"
       title="配置"
       :visible.sync="updateDialogVisible"
       :modal="false"
@@ -168,50 +169,5 @@ export default {
 </script>
 
 <style lang="scss">
-.transpond{
-  //.el-tag{
-  //  background-color: #5867dd;
-  //  border-color: #5867dd;
-  //  color: #fff;
-  //}
 
-  //.el-pagination.is-background .el-pager li:not(.disabled).active{
-  //  background-color: #5867dd;
-  //  border-color: #5867dd;
-  //}
-  //
-  //.equipment-pagination{
-  //  padding: 10px;
-  //  text-align: right;
-  //  ul{
-  //    padding-left: 0;
-  //  }
-  //}
-
-}
-//.transpond-header{
-//  display: flex;
-//  flex-direction: row;
-//  padding-bottom: 10px;
-//  .create-btn{
-//    margin-left: auto;
-//    //color: #fff;
-//  }
-//  .transpond-title{
-//    font-size: 1.5rem!important;
-//    color: #fff;
-//    font-weight: bold;
-//  }
-//}
-//
-//.transpond-dialog{
-//  color: #fff;
-//  .el-dialog{
-//    background-color: #1a234f;
-//
-//    .el-dialog__title{
-//      color: #fff;
-//    }
-//  }
-//}
 </style>

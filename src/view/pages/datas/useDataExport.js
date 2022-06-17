@@ -1,6 +1,5 @@
 import {ref} from "@vue/composition-api/dist/vue-composition-api";
 import {kv_export} from "@/api/kv";
-import local_url from "@/api/LocalUrl";
 
 export default function useDataExport(params) {
     let exportVisible = ref(false)
@@ -20,7 +19,7 @@ export default function useDataExport(params) {
         exportVisible.value = true
         kv_export(p).then(({data}) => {
             if (data.code === 200) {
-                downloadUrl.value = local_url + data.data
+                downloadUrl.value = location.host + '/' + data.data
             }
         }).finally(() => {
             exporting.value = false

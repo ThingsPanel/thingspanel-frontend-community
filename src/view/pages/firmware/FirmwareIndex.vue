@@ -12,20 +12,19 @@
     <el-col :span="20">
       <TableTitle>固件升级</TableTitle>
     </el-col>
-    <el-col :span="2">
+    <el-col :span="4" class="text-right">
       <el-button type="indigo" size="medium" @click="dialogVisible = true">新增固件</el-button>
-    </el-col>
-    <el-col :span="2">
+
       <el-button type="indigo" size="medium">导入产品</el-button>
     </el-col>
   </el-row>
 
   <el-table :data="tableData">
-    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
-    <el-table-column prop="firmware_name" label="固件名称" align="center"></el-table-column>
-    <el-table-column prop="product" label="归属产品" align="center"></el-table-column>
-    <el-table-column prop="firmware_version" label="固件版本" align="center"></el-table-column>
-    <el-table-column prop="created_at" label="创建时间" align="center"></el-table-column>
+    <el-table-column label="序号" type="index" width="50"></el-table-column>
+    <el-table-column prop="firmware_name" label="固件名称"></el-table-column>
+    <el-table-column prop="product" label="归属产品"></el-table-column>
+    <el-table-column prop="firmware_version" label="固件版本"></el-table-column>
+    <el-table-column prop="created_at" label="创建时间"></el-table-column>
     <el-table-column prop="actions" label="操作" width="145px" align="center">
       <template v-slot="scope">
         <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">配置</el-button>
@@ -38,7 +37,7 @@
   </el-table>
 
   <el-dialog
-      class="firmware-dialog"
+      class="el-dark-dialog el-dark-input"
       title="新增固件"
       :visible.sync="dialogVisible"
       :modal="false"
@@ -81,14 +80,5 @@ export default {
 </script>
 
 <style lang="scss">
-//.firmware-dialog{
-//  color: #fff;
-//  .el-dialog{
-//    background-color: #1a234f;
-//
-//  .el-dialog__title{
-//    color: #fff;
-//  }
-//}
-//}
+
 </style>

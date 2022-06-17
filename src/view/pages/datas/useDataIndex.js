@@ -67,9 +67,9 @@ export default function useDataIndex() {
             "page": 1,
             "entity_id": "",
             "type": 4,
-            "start_time": moment().subtract(7, 'days').format('YYYY-MM-DD hh:mm:ss'),
+            "start_time": moment().subtract(7, 'days').startOf('day').format('YYYY-MM-DD HH:mm:ss'),
             "token": "",
-            "end_time": moment().endOf('day').format('YYYY-MM-DD hh:mm:ss'),
+            "end_time": moment().endOf('day').format('YYYY-MM-DD HH:mm:ss'),
             "key":""
         }
     }

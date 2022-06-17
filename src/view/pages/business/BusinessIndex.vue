@@ -4,17 +4,17 @@
     <el-col :span="22">
       <TableTitle>业务管理</TableTitle>
     </el-col>
-    <el-col :span="2" class="px-2">
-      <el-button class="w-100" size="medium" type="indigo" @click="handleCreate()">新增业务</el-button>
+    <el-col :span="2" class="px-2 text-right">
+      <el-button size="medium" type="indigo" @click="handleCreate()">新增业务</el-button>
     </el-col>
   </el-row>
 
   <!-- 表 start -->
   <el-form class="inline-edit">
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
+    <el-table-column label="序号" type="index"></el-table-column>
 
-    <el-table-column align="center" label="名称" prop="name">
+    <el-table-column label="名称" prop="name">
       <template v-slot="scope">
         <!-- 新建或者编辑 -->
         <el-form-item v-if="scope.row.status" :error="scope.row.errors.name">
@@ -25,7 +25,7 @@
       </template>
     </el-table-column>
 
-    <el-table-column align="center" label="时间" prop="created_at">
+    <el-table-column label="时间" prop="created_at">
       <template v-slot="scope">
         {{scope.row.created_at ? dateFormat(scope.row.created_at) : ""}}
       </template>

@@ -21,27 +21,27 @@ export default new Router({
                     component: () =>
                         import ("@/view/pages/Market.vue")
                 },
-                {
-                    path: "/list",
-                    name: "buslist",
-                    component: () =>
-                        import ("@/view/pages/business/List.vue")
-                },
+                // {
+                //     path: "/list",
+                //     name: "buslist",
+                //     component: () =>
+                //         import ("@/view/pages/business/List.vue")
+                // },
                 // 重写的 业务
                 {
-                    path: "/list2",
+                    path: "/list",
                     name: "businesslist",
                     component: () =>
                         import ("@/view/pages/business/BusinessIndex.vue")
                 },
+                // {
+                //     path: "/list2/asset",
+                //     name: "assetlist",
+                //     component: () =>
+                //         import ("@/view/pages/business/AssetIndex.vue")
+                // },
                 {
-                    path: "/list2/asset",
-                    name: "assetlist",
-                    component: () =>
-                        import ("@/view/pages/business/AssetIndex.vue")
-                },
-                {
-                    path: "/list2/device",
+                    path: "/list/device",
                     name: "device",
                     component: () =>
                         import ("@/view/pages/device/DeviceIndex.vue")

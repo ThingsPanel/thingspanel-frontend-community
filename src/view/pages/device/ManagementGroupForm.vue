@@ -1,7 +1,7 @@
 <template>
 <div>
   <el-row type="flex" class="px-3 pb-3">
-    <el-col :span="3" class="pt-2">
+    <el-col :span="3" class="pt-2 label-name">
       业务名
     </el-col>
     <el-col :span="10">
@@ -133,7 +133,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/deep/ .el-table thead{
-  color: #909399;
-}
+/*/deep/ .el-table thead,.label-name{*/
+/*  color: #a8c5ff;*/
+/*}*/
 </style>

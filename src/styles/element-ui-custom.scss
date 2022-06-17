@@ -122,8 +122,13 @@
 
 // 深色表单组件
 .el-dark-input{
+  //label
+  .el-form-item__label,.el-radio__label{
+    color: #a8c5ff;
+  }
+
   // input
-  .el-input__inner{
+  .el-input__inner,.el-textarea__inner{
     color: #fff;
     background-color: rgba(22, 30, 67, 0.5) !important;
     border-color: rgba(0,0,0,0.1);
@@ -150,6 +155,14 @@
   }
   .el-range-input{
     color: #fff!important;
+  }
+
+  // 拖拽上传
+  .el-upload-dragger{
+    background-color: rgba(22, 30, 67, 0.5) !important;
+    .el-upload__text{
+      color: #a8c5ff;
+    }
   }
 }
 
@@ -190,4 +203,29 @@
   .el-form-item{
     margin: 0;
   }
+}
+
+// 深色弹窗
+.el-dark-dialog{
+  .el-dialog{
+    background-color: #2d3d88;
+
+    .el-dialog__close,.el-dialog__title,.el-table thead,.label-name{
+      color: #a8c5ff;
+    }
+
+    .el-dialog__body{
+      color: #fff;
+    }
+  }
+
+}
+
+// el 日期选择器
+.el-date-editor .el-range-input{
+  width: 42%!important;
+}
+
+.el-date-editor .el-range-separator{
+  padding: 0!important;
 }

@@ -26,3 +26,11 @@ html,body{
 .cursor-pointer{
     cursor: pointer;
 }
+
+// vuetify 默认修改
+.v-btn.v-size--default{
+    font-size: 14px!important;
+}
+.v-btn{
+    font-family: "Microsoft Yahei"!important;
+}

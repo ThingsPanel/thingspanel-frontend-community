@@ -3,7 +3,7 @@
   <el-alert v-if="!device_item.type" title="请先选择插件" type="warning" show-icon :closable="false"></el-alert>
 
   <el-form class="inline-edit">
-  <el-table :data="tableData" fit style="width: 100%">
+  <el-table :data="tableData" fit style="width: 100%" class="el-table-transparent">
     <el-table-column label="设备端字段名" width="auto" min-width="40%">
       <template v-slot="scope">
         <el-form-item :error="scope.row.errors.field_from">
@@ -42,10 +42,10 @@
   </el-form>
 
   <div class="p-3">
-    <el-button type="indigo" class="w-100" size="medium" @click="handleSave()">保存</el-button>
+    <el-button type="primary" class="w-100" size="medium" @click="handleSave()">保存</el-button>
   </div>
 
-  <p>提示：配置错误则数据无法入库</p>
+  <p class="label-name px-3 py-1">提示：配置错误则数据无法入库</p>
 </div>
 </template>
 
@@ -103,9 +103,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/deep/ .el-table thead{
-  color: #909399;
-}
+/*/deep/ .el-table thead{*/
+/*  color: #a8c5ff;*/
+/*}*/
 
 
 /deep/ .el-select-dropdown__item.selected.is-disabled{

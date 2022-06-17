@@ -19,36 +19,35 @@
       </el-input>
     </el-col>
     <el-col :span="10"></el-col>
-    <el-col :span="2">
-      <el-button class="w-100" type="indigo" size="medium" @click="handleSearch()">查询</el-button>
-    </el-col>
-    <el-col :span="2">
-      <el-button class="w-100" type="default" size="medium" @click="handleReset()">重置</el-button>
+    <el-col :span="4" class="text-right">
+      <el-button type="indigo" size="medium" @click="handleSearch()">查询</el-button>
+
+      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>
     </el-col>
   </el-row>
   <!-- 头 end -->
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
-    <el-table-column label="IP" prop="detailed.ip" align="center">
+    <el-table-column label="序号" type="index" width="50"></el-table-column>
+    <el-table-column label="IP" prop="detailed.ip">
       <template v-slot="scope">
         <span class="cursor-pointer" @click="handleSearch({ip:scope.row.detailed.ip})">{{scope.row.detailed.ip}}</span>
       </template>
     </el-table-column>
-    <el-table-column label="请求路径" prop="detailed.path" align="center">
+    <el-table-column label="请求路径" prop="detailed.path">
       <template v-slot="scope">
         <span class="cursor-pointer" @click="handleSearch({path:scope.row.detailed.path})">{{scope.row.detailed.path}}</span>
       </template>
     </el-table-column>
-    <el-table-column label="说明" prop="type" align="center">
+    <el-table-column label="说明" prop="type">
       <template v-slot="scope">
         {{scope.row.type ? $t(scope.row.type) : "未知"}}
       </template>
     </el-table-column>
-    <el-table-column label="时间" prop="created_at" align="center"></el-table-column>
-    <el-table-column label="请求耗时" prop="detailed.request_time" align="center"></el-table-column>
-    <el-table-column label="用户名" prop="detailed.name" align="center"></el-table-column>
+    <el-table-column label="时间" prop="created_at"></el-table-column>
+    <el-table-column label="请求耗时" prop="detailed.request_time"></el-table-column>
+    <el-table-column label="用户名" prop="detailed.name"></el-table-column>
   </el-table>
   <!-- 表 end -->
 

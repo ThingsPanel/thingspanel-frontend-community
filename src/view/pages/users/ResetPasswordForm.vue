@@ -1,5 +1,6 @@
 <template>
 <el-dialog
+    class="el-dark-dialog el-dark-input"
     :visible.sync="showDialog"
     width="30%"
     center

@@ -28,12 +28,11 @@
 <!--    </el-col>-->
 
     <!--  日期筛选  -->
-    <el-col :span="8">
+    <el-col :span="6">
       <el-date-picker
           class="w-100"
           v-model="datetimerange"
           :picker-options="DatePickerOptions"
-          value-format="yyyy/MM/dd HH:mm:ss"
           @change="handleSearch()"
           @clear="handleSearch()"
           size="medium"
@@ -44,25 +43,21 @@
       </el-date-picker>
     </el-col>
 
-    <el-col :span="4"></el-col>
-
-    <el-col :span="2">
-      <el-button class="w-100" type="indigo" size="medium" @click="handleSearch()">查询</el-button>
-    </el-col>
-    <el-col :span="2">
-      <el-button class="w-100" type="default" size="medium" @click="handleReset()">重置</el-button>
+    <el-col :span="10" class="text-right">
+      <el-button type="indigo" size="medium" @click="handleSearch()">查询</el-button>
+      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>
     </el-col>
   </el-row>
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
-    <el-table-column align="center" label="告警时间" prop="created_at" width="160px"></el-table-column>
-    <el-table-column align="center" label="业务名" prop="business_name"></el-table-column>
-    <el-table-column align="center" label="设备名" prop="device_name"></el-table-column>
-<!--    <el-table-column align="center" label="指标名" prop="asset_name"></el-table-column>-->
-<!--    <el-table-column align="center" label="当前值"></el-table-column>-->
-    <el-table-column align="center" label="触发条件" prop="describe" show-overflow-tooltip></el-table-column>
+    <el-table-column label="序号" type="index"></el-table-column>
+    <el-table-column label="告警时间" prop="created_at"></el-table-column>
+    <el-table-column label="业务名" prop="business_name"></el-table-column>
+    <el-table-column label="设备名" prop="device_name"></el-table-column>
+<!--    <el-table-column label="指标名" prop="asset_name"></el-table-column>-->
+<!--    <el-table-column label="当前值"></el-table-column>-->
+    <el-table-column label="触发条件" prop="describe" width="400"></el-table-column>
   </el-table>
   <!-- 表 end -->
 
