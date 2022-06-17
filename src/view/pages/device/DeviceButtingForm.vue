@@ -50,8 +50,7 @@
 </template>
 
 <script>
-import {defineComponent, ref} from "@vue/composition-api";
-import {device_field_index, field_add, structure_delete, structure_field} from "@/api/device";
+import {defineComponent} from "@vue/composition-api";
 import FieldSelector from "./FieldSelector.vue"
 import useDeviceButtingCUD from "@/view/pages/device/useDeviceButtingCUD";
 import useDeviceFieldIndex from "@/view/pages/device/useDeviceFieldIndex";
@@ -88,7 +87,7 @@ export default defineComponent({
       handleDelete,
       handleSave,
       valid_field,
-    } = useDeviceButtingCUD(tableData,device_id, washTableData)
+    } = useDeviceButtingCUD(tableData, device_id, washTableData, fieldOptions)
 
 
     return {

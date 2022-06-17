@@ -1,8 +1,27 @@
 import {field_add, structure_delete} from "@/api/device";
-import {message_success} from "@/utils/helpers";
+import {message_error, message_success} from "@/utils/helpers";
 
-export default function useDeviceButtingCUD(tableData, device_id, washTableData){
+export default function useDeviceButtingCUD(tableData, device_id, washTableData, fieldOptions){
+    // 创建
     function handleCreate(){
+        // 验证上限 一个 options 只能有一个映射
+        let all_used = true
+        fieldOptions.value.some((item)=>{
+            item.options.some((item)=>{
+                // 只要有一个未被使用的就可以新建
+                if(item.disabled === false){
+                    all_used = false
+                    // 终止循环
+                    return true
+                }
+            })
+        })
+        if(all_used) {
+            message_error("已达上线")
+            return;
+        }
+
+        // 添加空值
         tableData.value.unshift({
             device_id: device_id,
             field_from: "",
@@ -14,6 +33,7 @@ export default function useDeviceButtingCUD(tableData, device_id, washTableData)
         })
     }
 
+    // 删除
     function handleDelete(item){
         if(item.id){
             structure_delete({id: item.id}).then(({data})=>{
@@ -29,6 +49,7 @@ export default function useDeviceButtingCUD(tableData, device_id, washTableData)
         message_success("删除成功！")
     }
 
+    // 修改
     function handleSave(){
         // 没有验证通过返回
         if(!validation()) return;
@@ -39,7 +60,6 @@ export default function useDeviceButtingCUD(tableData, device_id, washTableData)
                 message_success("保存成功！")
             }
         })
-        console.log("handleSave")
     }
 
     // 验证字段
