@@ -61,6 +61,7 @@ export default function useDeviceIndex(business_id) {
                 protocol: item.protocol,
                 d_id: item.d_id,
                 location: item.location,
+                structure: item.structure ? item.structure : [],
                 errors: {
                     name: "",
                     asset_id: "",

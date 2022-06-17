@@ -22,7 +22,7 @@
           <FieldSelector
               :group-options="fieldOptions"
               :field_to.sync="scope.row.field_to"
-              @blur="valid_field(scope.row, 'field_to')"
+              @change="valid_field(scope.row, 'field_to')"
           ></FieldSelector>
         </el-form-item>
       </template>

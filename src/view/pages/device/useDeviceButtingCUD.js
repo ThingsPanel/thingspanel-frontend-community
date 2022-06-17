@@ -17,7 +17,7 @@ export default function useDeviceButtingCUD(tableData, device_id, washTableData,
             })
         })
         if(all_used) {
-            message_error("已达上线")
+            message_error("已达上限")
             return;
         }
 

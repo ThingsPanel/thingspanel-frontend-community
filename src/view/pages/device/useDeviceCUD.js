@@ -17,6 +17,7 @@ export default function useDeviceCUD(tableData){
             errors: {
                 name: "",
                 asset_id: "",
+                type: "",
             }
         })
     }
@@ -27,6 +28,7 @@ export default function useDeviceCUD(tableData){
         // 每次提交先清除错误
         item.errors.name = ""
         item.errors.asset_id = ""
+        item.errors.type = ""
 
 
         if(!item.name){

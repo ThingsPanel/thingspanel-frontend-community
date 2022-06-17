@@ -59,6 +59,7 @@
       <template v-slot="scope">
         <el-form-item :error="scope.row.errors.name">
           <el-input
+              placeholder="请填写设备名称"
               size="medium"
               v-model="scope.row.name"
               @change="handleSave(scope.row)"
@@ -89,7 +90,7 @@
           <DevicePluginSelector
               :plugin_type.sync="scope.row.type"
               :options="devicePluginOptions"
-              @change="handleSave(scope.row)"
+              @change="handleDevicePluginChange(scope.row)"
           ></DevicePluginSelector>
         </el-form-item>
       </template>
@@ -123,22 +124,26 @@
     <!--  推送时间 end  -->
 
     <!-- 图表组件 start-->
-<!--    <el-table-column label="图表组件" width="auto" min-width="23%">-->
-<!--      <template v-slot="scope">-->
-<!--        <el-tag size="mini" class="mr-1 mb-1">温湿度传感器</el-tag>-->
-<!--        <el-tag size="mini">温湿度传感器</el-tag>-->
-<!--      </template>-->
-<!--    </el-table-column>-->
+    <el-table-column label="图表组件" width="auto" min-width="23%">
+      <template v-slot="scope">
+        <!--   structure下数组的 field属性的数组   -->
+        <template v-if="scope.row.structure" v-for="item in scope.row.structure">
+          <template v-if="item.field" v-for="field in item.field">
+            <el-tag size="mini" class="mr-1 mb-1" :key="field.key">{{ field.name }}</el-tag>
+          </template>
+        </template>
+      </template>
+    </el-table-column>
     <!-- 图表组件 end-->
 
     <!--  操作 start  -->
     <el-table-column label="操作" width="auto" min-width="5%">
       <template v-slot="scope">
-<!--        <div class="text-right">-->
+        <div class="text-right">
            <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
               <el-button slot="reference" type="danger" size="mini">删除</el-button>
            </el-popconfirm>
-<!--        </div>-->
+        </div>
       </template>
     </el-table-column>
     <!--  操作 end  -->
@@ -198,7 +203,7 @@
       :visible.sync="showManagementGroup"
       title="管理设备分组"
       width="30%" destroy-on-close>
-    <ManagementGroupForm @change="handleChange"></ManagementGroupForm>
+    <ManagementGroupForm @change="handleGroupChange"></ManagementGroupForm>
   </el-dialog>
   <!-- 分组管理 end -->
 
@@ -222,6 +227,7 @@ import DeviceAttributeForm from "@/view/pages/device/DeviceAttributeForm.vue";
 import DeviceButtingForm from "@/view/pages/device/DeviceButtingForm.vue";
 import ManagementGroupForm from "./ManagementGroupForm.vue"
 import {message_error} from "@/utils/helpers";
+import {structure_field} from "@/api/device";
 
 export default defineComponent({
   name: "DeviceIndex",
@@ -274,9 +280,17 @@ export default defineComponent({
 
     // 编辑参数 编辑对接 编辑属性
     function handleEditClick(item, title){
+      // 没id的时候不能编辑参数、对接、属性
+      // 填写设备名新建设备有id
       if(!item.id) {
         item.errors.name = "请先填写设备名称"
         message_error("请先填写设备名称")
+        return
+      }
+      // 对接校验，没有选择设备插件就没有可映射的选项
+      if(!item.type){
+        item.errors.type = "请选择设备插件"
+        message_error("请选择设备插件")
         return
       }
       currentDeviceItem.value = item
@@ -288,11 +302,24 @@ export default defineComponent({
     let showManagementGroup = ref(false)
 
     // 分组更改
-    function handleChange(){
+    function handleGroupChange(){
       // 重新加载分组选项
       getGroupOptions()
       // 重新加载设备，删除分组是会删除设备
       handleSearch()
+    }
+
+    // 设备插件更改
+    function handleDevicePluginChange(item){
+      // 更新设备
+      handleSave(item)
+
+      // 更新图表组件
+      structure_field({field: item.type}).then(({data})=>{
+        if(data.code === 200 && data.data) {
+          item.structure = data.data
+        }
+      })
     }
 
     return {
@@ -316,7 +343,8 @@ export default defineComponent({
       handleEditClick,
       currentDeviceItem,
       showManagementGroup,
-      handleChange,
+      handleGroupChange,
+      handleDevicePluginChange,
     }
   }
 })
