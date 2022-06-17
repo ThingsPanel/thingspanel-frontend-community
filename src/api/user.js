@@ -27,6 +27,15 @@ export function user_edit(data){
     })
 }
 
+// 删除用户
+export function user_delete(data){
+    return axios({
+        url: "/user/delete",
+        method: "post",
+        data
+    })
+}
+
 // 用户权限
 export function user_permission(data){
     return axios({

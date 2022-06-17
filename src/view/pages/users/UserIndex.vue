@@ -67,6 +67,7 @@ import CreateUserForm from "@/view/pages/users/CreateUserForm";
 import ResetPasswordForm from "@/view/pages/users/ResetPasswordForm";
 import UpdateUserForm from "@/view/pages/users/UpdateUserForm";
 import TableTitle from "@/components/common/TableTitle.vue"
+import {user_delete} from "@/api/user";
 
 export default defineComponent({
   name: "userIndex",
@@ -103,10 +104,13 @@ export default defineComponent({
     }
 
     function handleDelete(item){
-      // todo 发送请求
-
-      // 移除表单数据
-      remove_user(item)
+      // 发送请求
+      user_delete({id: item.id}).then(({data})=>{
+        if(data.code === 200){
+          // 移除表单数据
+          remove_user(item)
+        }
+      })
     }
 
     // 新建用户弹窗
