@@ -1,6 +1,5 @@
 import {reactive, ref} from "@vue/composition-api";
 import {business_index} from "@/api/business";
-import {dateFormat} from "@/utils/tool";
 
 export default function useBusinessIndex(page){
     let tableData = ref([])
@@ -31,7 +30,16 @@ export default function useBusinessIndex(page){
 
     function washData(data_array){
         return data_array.map((item)=>{
-            item.created_at = dateFormat(item.created_at)
+            // item.created_at = dateFormat(item.created_at)
+
+            // 每个项的报错
+            item.errors = {
+                name: ""
+            }
+            // 每个项的表单
+            item.formData = {
+                name: "",
+            }
 
             // 增加状态判断新建还是编辑
             item.status = null

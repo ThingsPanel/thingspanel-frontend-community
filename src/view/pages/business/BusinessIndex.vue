@@ -10,26 +10,27 @@
   </el-row>
 
   <!-- 表 start -->
-  <el-form
-      ref="businessForm"
-      class="inline-edit"
-      :model="formData"
-      :rules="rules"
-      hide-required-asterisk>
+  <el-form class="inline-edit">
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="50" align="center">
-    </el-table-column>
+    <el-table-column label="序号" type="index" width="50" align="center"></el-table-column>
+
     <el-table-column align="center" label="名称" prop="name">
       <template v-slot="scope">
         <!-- 新建或者编辑 -->
-        <el-form-item prop="name" v-if="scope.row.status">
-          <el-input size="medium" v-model="formData.name" v-focus
+        <el-form-item v-if="scope.row.status" :error="scope.row.errors.name">
+          <el-input size="medium" v-model="scope.row.formData.name" v-focus
                     @keydown.enter.native="handleSave(scope.row)"></el-input>
         </el-form-item>
         <span v-else class="cursor-pointer" @click="showDevice(scope.row)">{{scope.row.name}}</span>
       </template>
     </el-table-column>
-    <el-table-column align="center" label="时间" prop="created_at"></el-table-column>
+
+    <el-table-column align="center" label="时间" prop="created_at">
+      <template v-slot="scope">
+        {{scope.row.created_at ? dateFormat(scope.row.created_at) : ""}}
+      </template>
+    </el-table-column>
+
     <el-table-column align="center" label="操作" width="270">
       <template v-slot="scope">
         <div class="text-right">
@@ -72,6 +73,7 @@ import useBusinessIndex from "@/view/pages/business/useBusinessIndex";
 import useRoute from "@/utils/useRoute";
 import useBusinessCUD from "@/view/pages/business/useBusinessCUD";
 import TableTitle from "@/components/common/TableTitle.vue"
+import {dateFormat} from "@/utils/tool";
 
 export default defineComponent({
   name: "BusinessIndex",
@@ -95,9 +97,6 @@ export default defineComponent({
 
     // 业务的增删改
     let {
-      businessForm,
-      formData,
-      rules,
       handleCreate,
       handleEdit,
       handleCancel,
@@ -105,12 +104,7 @@ export default defineComponent({
       handleDelete,
     } = useBusinessCUD(tableData)
 
-    // 跳转到设备分组
-    function showAsset(item){
-      // console.log(item)
-      router.push({name: 'assetlist', query:{id: item.id, name: item.name}, params: {page: params.page}})
-    }
-
+    // 跳转到设备
     function showDevice(item){
       router.push({name: "device", query: {business_id: item.id}, params:{page: params.page}})
     }
@@ -121,34 +115,30 @@ export default defineComponent({
       loading,
       params,
       total,
-      businessForm,
-      formData,
-      rules,
       handleCreate,
-      showAsset,
       showDevice,
       handleEdit,
       handleCancel,
       handleSave,
       handleDelete,
+      dateFormat,
     }
   }
 })
 </script>
 
-<style lang="scss">
-.inline-edit{
-  input{
-    text-align: center;
-  }
+<style scoped>
+.inline-edit /deep/ input{
+    text-align: center!important;
+}
 
-  .el-form-item__error{
+.inline-edit /deep/ .el-form-item__error{
     width: 100%;
     text-align: center;
   }
 
-  .el-form-item{
-    margin: 22px 0;
-  }
+.inline-edit /deep/ .el-form-item{
+    margin: 0;
 }
+
 </style>
