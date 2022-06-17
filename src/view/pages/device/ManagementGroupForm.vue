@@ -21,26 +21,29 @@
   <el-table :data="tableData" fit style="width: 100%">
     <el-table-column label="组名" width="auto" min-width="40%">
       <template v-slot="scope">
-        <el-form-item>
+        <el-form-item :error="scope.row.errors.name">
           <el-input size="medium" v-model="scope.row.name" @change="handleSave(scope.row)"></el-input>
         </el-form-item>
       </template>
     </el-table-column>
     <el-table-column label="上级分组" width="auto" min-width="40%">
       <template v-slot="scope">
-        <el-select
-            class="w-100"
-            size="medium"
-            placeholder="请选择分组设备"
-            filterable
-            v-model="scope.row.parent_group"
-            @change="handleSave(scope.row)"
-        >
-          <el-option
-              v-for="item in deviceGroupOptions"
-              :key="item.id" :value="item.device_group"></el-option>
+        <el-form-item :error="scope.row.errors.parent_id">
+          <el-select
+              class="w-100"
+              size="medium"
+              placeholder="请选择分组设备"
+              filterable
+              v-model="scope.row.parent_id"
+              @change="handleSave(scope.row)"
+          >
+            <el-option value="0" label="/"></el-option>
+            <el-option
+                v-for="item in deviceGroupOptions"
+                :key="item.id" :value="item.id" :label="item.device_group"></el-option>
 
-        </el-select>
+          </el-select>
+        </el-form-item>
       </template>
     </el-table-column>
     <el-table-column label="操作" width="auto" min-width="20%">
@@ -81,7 +84,7 @@ export default defineComponent({
     BusinessSelector,
     DeviceGroupSelector,
   },
-  setup(){
+  setup(props, context){
     let {route} = useRoute()
     let business_id = ref('')
     business_id.value = route.query.business_id
@@ -100,12 +103,17 @@ export default defineComponent({
       getGroupOptions,
     } = useDeviceGroup(business_id.value)
 
+    function handleChange(){
+      context.emit('change')
+      getGroupOptions()
+    }
+
     // 增删改
     let {
       handleCreate,
       handleDelete,
       handleSave
-    }= useBusinessGroupCUD(tableData, business_id, deviceGroupOptions)
+    }= useBusinessGroupCUD(tableData, business_id, handleChange)
 
     return {
       business_id,

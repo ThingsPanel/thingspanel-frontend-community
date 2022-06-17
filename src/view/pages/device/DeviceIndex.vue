@@ -189,17 +189,10 @@
   <!-- 编辑弹窗 end -->
 
   <!-- 分组管理 start -->
-  <el-dialog :visible.sync="showManagementGroup" title="管理设备分组" width="30%">
-    <ManagementGroupForm></ManagementGroupForm>
+  <el-dialog :visible.sync="showManagementGroup" title="管理设备分组" width="30%" destroy-on-close>
+    <ManagementGroupForm @change="handleChange"></ManagementGroupForm>
   </el-dialog>
   <!-- 分组管理 end -->
-
-  <!-- 设备详情 start -->
-  <DeviceShowDialog
-      :device_id="currentDeviceId"
-      :deviceShowDialogVisible.sync="deviceShowDialogVisible">
-  </DeviceShowDialog>
-  <!-- 设备详情 end -->
 
 </div>
 </template>
@@ -277,17 +270,16 @@ export default defineComponent({
       showEditDialog.value = true;
     }
 
-    // 设备详情
-    let currentDeviceId = ref('')
-    let deviceShowDialogVisible = ref(false)
-
-    function handleListClick(item){
-      currentDeviceId.value = item.device
-      deviceShowDialogVisible.value = true
-    }
-
     // 管理分组
     let showManagementGroup = ref(false)
+
+    // 分组更改
+    function handleChange(){
+      // 重新加载分组选项
+      getGroupOptions()
+      // 重新加载设备，删除分组是会删除设备
+      handleSearch()
+    }
 
     return {
       tableData,
@@ -299,19 +291,18 @@ export default defineComponent({
       handleReset,
       devicePluginOptions,
       deviceTypeMap,
-      currentDeviceId,
-      deviceShowDialogVisible,
-      handleListClick,
       handleCreate,
       handleSave,
       handleDelete,
       dateFormat,
       deviceGroupOptions,
+      getGroupOptions,
       showEditDialog,
       EditDialogTitle,
       handleEditClick,
       currentDeviceItem,
       showManagementGroup,
+      handleChange,
     }
   }
 })

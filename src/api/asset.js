@@ -70,3 +70,24 @@ export function asset_update(data){
         data,
     })
 }
+
+// 添加分组
+export function asset_add(data){
+    return axios({
+        url: "/asset/add_only",
+        method: "post",
+        data,
+    })
+}
+
+// 删除分组
+export function asset_delete(data){
+    return axios({
+        url: "/asset/delete",
+        method: "post",
+        data:{
+            type:1,
+            ...data
+        },
+    })
+}

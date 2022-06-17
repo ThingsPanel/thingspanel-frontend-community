@@ -1,6 +1,7 @@
 import axios from "axios";
 import JwtService from "@/core/services/jwt.service";
 import local_url from "@/api/LocalUrl";
+import {message_error, message_success} from "@/utils/helpers";
 
 // 创建 axios 实例
 const instance = axios.create({
@@ -101,6 +102,14 @@ instance.interceptors.response.use(
             // console.log('token异常 返回登录')
             JwtService.destroyToken()
             window.location.href = '/#/login'
+            return response;
+        }
+
+        // 统一处理提示
+        if(code === 200){
+            // message_success(message)
+        }else{
+            message_error(message)
         }
 
         return response

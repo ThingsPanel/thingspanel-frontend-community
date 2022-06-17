@@ -37,10 +37,10 @@ export default function useBusinessGroupIndex(business_id){
         return array_data.map((item)=>({
             id: item.id,
             name: item.name,
-            parent_group: item.parent_group,
+            parent_id: item.parent_id,
             errors:{
                 name: "",
-                parent_group: "",
+                parent_id: "",
             }
         }))
     }
