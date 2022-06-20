@@ -14,15 +14,15 @@
       :rules="rules"
       hide-required-asterisk>
     <el-form-item label="姓名" prop="name">
-      <el-input v-model="formData.name"></el-input>
+      <el-input size="medium" v-model="formData.name"></el-input>
     </el-form-item>
 
     <el-form-item label="邮箱" prop="email">
-      <el-input v-model="formData.email"></el-input>
+      <el-input size="medium" v-model="formData.email"></el-input>
     </el-form-item>
 
     <el-form-item label="手机" prop="mobile">
-      <el-input v-model="formData.mobile"></el-input>
+      <el-input size="medium" v-model="formData.mobile"></el-input>
     </el-form-item>
 
     <el-form-item label="角色" prop="is_admin">
@@ -33,12 +33,14 @@
     </el-form-item>
 
     <el-form-item label="备注" prop="remark">
-      <el-input v-model="formData.remark" type="textarea"></el-input>
+      <el-input size="medium" v-model="formData.remark" type="textarea"></el-input>
     </el-form-item>
 
     <FormAlert :error_message="error_message"></FormAlert>
 
-    <div class="py-1"><el-button class="w-100" type="primary" @click="handleSubmit">提交</el-button></div>
+    <div class="py-1">
+      <el-button size="medium" class="w-100" type="primary" @click="handleSubmit">保存</el-button>
+    </div>
   </el-form>
 </el-dialog>
 </template>
@@ -127,11 +129,11 @@ export default defineComponent({
         // 发送请求
         user_edit(formData).then(({data})=>{
           if(data.code === 200) {
-            message_success("修改用户成功！！")
+            message_success(data.message)
 
             // 调用父级修改的方法
             // 后端返回数据缺少 mobile
-            data.data.mobile = props.editUserItem.mobile
+            data.data.mobile = formData.mobile
             props.update_user(props.editUserItem, data.data)
             // 通知父级关闭弹窗
             context.emit('update:updateUserDialogVisible', false)

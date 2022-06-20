@@ -5,7 +5,7 @@
     <el-col :span="12">
       <TableTitle>用户管理</TableTitle>
     </el-col>
-    <el-col :span="12" class="px-2 text-right">
+    <el-col :span="12" class="text-right">
       <el-button size="medium" type="indigo" @click="createUserDialogVisible = true">添加用户</el-button>
     </el-col>
   </el-row>
@@ -90,7 +90,7 @@ export default defineComponent({
 
     // 列表中添加一条用户数据
     function add_user(data){
-      tableData.value.push(data)
+      tableData.value.unshift(data)
     }
 
     function remove_user(item){

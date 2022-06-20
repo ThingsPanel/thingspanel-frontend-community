@@ -42,6 +42,8 @@
         <!--end::Navigation-->
       </b-dropdown>
     </div>
+
+    <ChangePasswordForm :changePasswordDialogVisible.sync="changePasswordDialogVisible"></ChangePasswordForm>
   </div>
 </template>
 
@@ -82,9 +84,13 @@
 import { LOGOUT } from "@/core/services/store/auth.module";
 import AUTH from "@/core/services/store/auth.module";
 import KTLayoutQuickUser from "@/assets/js/layout/extended/quick-user.js";
-import KTOffcanvas from "@/assets/js/components/offcanvas.js";
+// import KTOffcanvas from "@/assets/js/components/offcanvas.js";
+import ChangePasswordForm from "@/view/pages/users/ChangePasswordForm";
 
 export default {
+  components: {
+    ChangePasswordForm
+  },
   data: () => ({
     auth: {
       user:{
@@ -92,6 +98,7 @@ export default {
       }
     },
     name: "KTQuickUser",
+    changePasswordDialogVisible: false,
   }),
   mounted() {
     // Init Quick User Panel
@@ -106,8 +113,9 @@ export default {
         .then(() => this.$router.push({ name: "login" }));
     },
     editpassword(){
-        document.getElementsByClassName('dropdown-menu')[1].classList.remove("show");
-        this.$router.push({ name: "editpassword" });
+      this.changePasswordDialogVisible = true
+        // document.getElementsByClassName('dropdown-menu')[1].classList.remove("show");
+        // this.$router.push({ name: "editpassword" });
     },
   },
   computed: {

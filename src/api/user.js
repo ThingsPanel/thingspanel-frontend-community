@@ -46,9 +46,18 @@ export function user_permission(data){
 }
 
 // 重置用户密码
-export function user_password(data) {
+export function user_reset_password(data) {
     return axios({
         url: "/user/password",
+        method: "post",
+        data
+    })
+}
+
+// 修改密码
+export function user_change_password(data){
+    return axios({
+        url: "/user/update",
         method: "post",
         data
     })

@@ -14,23 +14,23 @@
       :rules="rules"
       hide-required-asterisk>
     <el-form-item label="密码" prop="password">
-      <el-input v-model="formData.password" show-password></el-input>
+      <el-input size="medium" v-model="formData.password" show-password></el-input>
     </el-form-item>
 
     <el-form-item label="确认密码" prop="password_confirmation">
-      <el-input v-model="formData.password_confirmation" show-password></el-input>
+      <el-input size="medium" v-model="formData.password_confirmation" show-password></el-input>
     </el-form-item>
 
     <FormAlert :error_message="error_message"></FormAlert>
 
-    <el-button class="w-100" type="primary" @click="handleSubmit">提交</el-button>
+    <el-button size="medium" class="w-100" type="primary" @click="handleSubmit">保存</el-button>
   </el-form>
 </el-dialog>
 </template>
 
 <script>
 import {defineComponent, ref, reactive, watch, computed} from "@vue/composition-api";
-import {user_password} from "@/api/user";
+import {user_reset_password} from "@/api/user";
 import {message_success} from "@/utils/helpers";
 import FormAlert from "@/components/common/FormAlert.vue"
 
@@ -115,9 +115,9 @@ export default defineComponent({
 
         // 发送请求
         formData.id = props.editUserItem.id;
-        user_password(formData).then(({data})=>{
+        user_reset_password(formData).then(({data})=>{
           if(data.code === 200) {
-            message_success("密码修改成功！！")
+            message_success(data.message)
 
             // 通知父级关闭 dialog
             context.emit('update:resetPasswordDialogVisible', false)
