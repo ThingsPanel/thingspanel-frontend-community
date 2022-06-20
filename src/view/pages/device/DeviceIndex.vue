@@ -1,13 +1,10 @@
 <template>
 <div class="rounded card p-4 el-table-transparent">
   <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
-    <el-col :span="17">
+    <el-col :span="12">
       <TableTitle>设备管理</TableTitle>
     </el-col>
-    <el-col :span="3">
-<!--      <el-button type="indigo" size="medium" class="w-100">创建设备向导</el-button>-->
-    </el-col>
-    <el-col :span="4" class="text-right">
+    <el-col :span="12" class="text-right">
       <el-button type="indigo" size="medium" @click="handleCreate()">创建设备</el-button>
 
       <el-button type="indigo" size="medium" @click="showManagementGroup=true">管理分组</el-button>
@@ -41,10 +38,9 @@
           @keydown.enter.native="handleSearch()"
           @clear="handleSearch()"></el-input>
     </el-col>
-    <el-col :span="8"></el-col>
-    <el-col :span="4" class="text-right">
+    <el-col :span="12" class="text-right">
       <el-button type="indigo" size="medium" @click="handleSearch()">查询</el-button>
-      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>
+<!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
     </el-col>
   </el-row>
   <!-- 筛选 end -->
