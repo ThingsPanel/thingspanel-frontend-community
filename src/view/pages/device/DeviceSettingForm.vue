@@ -12,7 +12,7 @@
   </div>
 
   <p class="my-2 label-name">Token:</p>
-  <el-input size="medium" class="w-100" v-model="device_item.token"></el-input>
+  <el-input size="medium" class="w-100" v-model="device_item.token" @change="handleChange()"></el-input>
 
   <p class="my-2 label-name">接口类型:</p>
   <div class="default-setting">

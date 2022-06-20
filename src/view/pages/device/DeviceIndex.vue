@@ -202,8 +202,10 @@
       class="el-dark-dialog el-dark-input"
       :visible.sync="showManagementGroup"
       title="管理设备分组"
-      width="30%" destroy-on-close>
-    <ManagementGroupForm @change="handleGroupChange"></ManagementGroupForm>
+      width="30%"
+      @open="showManagementGroupForm = true"
+      @closed="showManagementGroupForm = false">
+    <ManagementGroupForm v-if="showManagementGroupForm" @change="handleGroupChange"></ManagementGroupForm>
   </el-dialog>
   <!-- 分组管理 end -->
 
@@ -300,6 +302,7 @@ export default defineComponent({
 
     // 管理分组
     let showManagementGroup = ref(false)
+    let showManagementGroupForm = ref(false)
 
     // 分组更改
     function handleGroupChange(){
@@ -343,6 +346,7 @@ export default defineComponent({
       handleEditClick,
       currentDeviceItem,
       showManagementGroup,
+      showManagementGroupForm,
       handleGroupChange,
       handleDevicePluginChange,
     }

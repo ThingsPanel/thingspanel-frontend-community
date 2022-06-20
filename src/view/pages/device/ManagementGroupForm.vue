@@ -113,7 +113,7 @@ export default defineComponent({
       handleCreate,
       handleDelete,
       handleSave
-    }= useBusinessGroupCUD(tableData, business_id, handleChange)
+    }= useBusinessGroupCUD(tableData, business_id, handleChange, deviceGroupOptions)
 
     return {
       business_id,
