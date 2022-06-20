@@ -1,5 +1,5 @@
 import {business_add, business_delete, business_edit} from "@/api/business";
-import {message_error, message_success} from "@/utils/helpers";
+import {message_success} from "@/utils/helpers";
 import {dateFormat} from "@/utils/tool";
 import {ref, reactive} from "@vue/composition-api";
 
@@ -87,14 +87,17 @@ export default function useBusinessCUD(tableData){
 
     // 删除
     function handleDelete(item){
+        if(loading.value) return
+        loading.value = true
+
         business_delete({id: item.id}).then(({data})=>{
             if(data.code === 200) {
                 let index = tableData.value.indexOf(item)
                 tableData.value.splice(index, 1)
                 message_success("删除成功")
-            }else{
-                message_error(data.message)
             }
+        }).finally(()=>{
+            loading.value = false
         })
     }
 

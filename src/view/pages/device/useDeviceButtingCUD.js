@@ -1,7 +1,10 @@
 import {field_add, structure_delete} from "@/api/device";
 import {message_error, message_success} from "@/utils/helpers";
+import {ref} from "@vue/composition-api";
 
 export default function useDeviceButtingCUD(tableData, device_id, washTableData, fieldOptions){
+    let loading = ref(false)
+
     // 创建
     function handleCreate(){
         // 验证上限 一个 options 只能有一个映射
@@ -36,11 +39,16 @@ export default function useDeviceButtingCUD(tableData, device_id, washTableData,
     // 删除
     function handleDelete(item){
         if(item.id){
+            if(loading.value) return
+            loading.value = true
+
             structure_delete({id: item.id}).then(({data})=>{
                 if(data.code === 200) {
                     let index = tableData.value.indexOf(item)
                     tableData.value.splice(index, 1)
                 }
+            }).finally(()=>{
+                loading.value = false
             })
         }else{
             let index = tableData.value.indexOf(item)
@@ -54,11 +62,16 @@ export default function useDeviceButtingCUD(tableData, device_id, washTableData,
         // 没有验证通过返回
         if(!validation()) return;
 
+        if(loading.value) return
+        loading.value = true
+
         field_add({data:tableData.value}).then(({data})=>{
             if(data.code === 200){
                 tableData.value = washTableData(data.data)
                 message_success("保存成功！")
             }
+        }).finally(()=>{
+            loading.value = false
         })
     }
 

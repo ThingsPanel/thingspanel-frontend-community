@@ -1,7 +1,10 @@
 import {asset_add, asset_delete, asset_update} from "@/api/asset";
 import {message_error, message_success} from "@/utils/helpers";
+import {ref} from "@vue/composition-api";
 
 export default function useBusinessGroupCUD(tableData, business_id, handleChange, deviceGroupOptions){
+    let loading = ref(false)
+
     // 创建
     function handleCreate(){
         tableData.value.unshift({
@@ -18,6 +21,9 @@ export default function useBusinessGroupCUD(tableData, business_id, handleChange
     // 删除操作
     function handleDelete(item){
         if(item.id){
+            if(loading.value) return
+            loading.value = true
+
             asset_delete({
                 id: item.id
             }).then(({data})=>{
@@ -27,6 +33,8 @@ export default function useBusinessGroupCUD(tableData, business_id, handleChange
                     tableData.value.splice(index, 1)
                     handleChange()
                 }
+            }).finally(()=>{
+                loading.value = false
             })
         }else{
             let index = tableData.value.indexOf(item)
@@ -70,7 +78,6 @@ export default function useBusinessGroupCUD(tableData, business_id, handleChange
                     message_success("修改成功")
                     handleChange()
                 }
-                console.log(data)
             })
         }else{
             asset_add({
@@ -83,7 +90,6 @@ export default function useBusinessGroupCUD(tableData, business_id, handleChange
                     message_success("添加成功")
                     handleChange()
                 }
-                console.log(data)
             })
         }
     }

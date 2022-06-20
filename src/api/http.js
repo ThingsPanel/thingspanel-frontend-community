@@ -1,7 +1,7 @@
 import axios from "axios";
 import JwtService from "@/core/services/jwt.service";
 import local_url from "@/api/LocalUrl";
-import {message_error, message_success} from "@/utils/helpers";
+import {message_error} from "@/utils/helpers";
 
 // 创建 axios 实例
 const instance = axios.create({
@@ -106,9 +106,7 @@ instance.interceptors.response.use(
         }
 
         // 统一处理提示
-        if(code === 200){
-            // message_success(message)
-        }else{
+        if(code !== 200){
             message_error(message)
         }
 

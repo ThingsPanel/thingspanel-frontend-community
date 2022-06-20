@@ -128,17 +128,17 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.inline-edit /deep/ input{
-    text-align: center!important;
-}
+/*.inline-edit /deep/ input{*/
+/*    text-align: center!important;*/
+/*}*/
 
-.inline-edit /deep/ .el-form-item__error{
-    width: 100%;
-    text-align: center;
-  }
+/*.inline-edit /deep/ .el-form-item__error{*/
+/*    width: 100%;*/
+/*    text-align: center;*/
+/*  }*/
 
-.inline-edit /deep/ .el-form-item{
-    margin: 0;
-}
+/*.inline-edit /deep/ .el-form-item{*/
+/*    margin: 0;*/
+/*}*/
 
 </style>
