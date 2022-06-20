@@ -34,7 +34,7 @@
 
           <!-- begin:: Content Body -->
           <div class="d-flex flex-column-fluid">
-            <div class="container">
+            <div class="container-fluid">
               <transition name="fade-in-up">
                 <router-view />
               </transition>

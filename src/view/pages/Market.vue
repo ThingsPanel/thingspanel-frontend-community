@@ -27,6 +27,7 @@
                 color="orange"
                 dense
                 small
+                readonly
                 class="d-inline-block v-application"
               ></v-rating
             ></b-card-text>
@@ -53,6 +54,11 @@
 }
 .marketbox {
   border-radius: 8px;
+}
+@media (max-width: 1300px) {
+  .width-20 {
+    width: 25%;
+  }
 }
 @media (max-width: 768px) {
   .marketbox {

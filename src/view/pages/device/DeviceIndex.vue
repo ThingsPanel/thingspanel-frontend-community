@@ -169,6 +169,7 @@
       class="el-dark-dialog el-dark-input"
       :visible.sync="showEditDialog"
       :title="EditDialogTitle"
+      :close-on-click-modal="false"
       width="30%">
     <!--  默认参数  -->
     <DeviceSettingForm
@@ -203,6 +204,7 @@
       :visible.sync="showManagementGroup"
       title="管理设备分组"
       width="30%"
+      :close-on-click-modal="false"
       @open="showManagementGroupForm = true"
       @closed="showManagementGroupForm = false">
     <ManagementGroupForm v-if="showManagementGroupForm" @change="handleGroupChange"></ManagementGroupForm>

@@ -22,7 +22,7 @@
     <el-col :span="4" class="text-right">
       <el-button type="indigo" size="medium" @click="handleSearch()">查询</el-button>
 
-      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>
+<!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
     </el-col>
   </el-row>
   <!-- 头 end -->

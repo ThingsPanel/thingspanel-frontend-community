@@ -33,10 +33,10 @@
                     <v-container>
                         <v-col cols="6">
                             <v-row>
-                            <v-col cols="2" class="v-middle-80 text-white">
+                            <v-col cols="4" class="v-middle-80 text-white">
                                 {{ $t("COMMON.NEWPASSWORD") }}：
                             </v-col>
-                            <v-col cols="10">
+                            <v-col cols="8">
                                 <v-text-field
                                         v-model="password"
                                         label="password"
@@ -44,10 +44,10 @@
                                         :rules="[passwordRules]"
                                 ></v-text-field>
                             </v-col>
-                            <v-col cols="2" class="v-middle-80 text-white">
+                            <v-col cols="4" class="v-middle-80 text-white">
                                 {{ $t("COMMON.CONPASSWORD") }}：
                             </v-col>
-                            <v-col cols="10">
+                            <v-col cols="8">
                                 <v-text-field
                                         v-model="conpassword"
                                         label="conpassword"

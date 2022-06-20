@@ -1,10 +1,10 @@
 <template>
 <div class="rounded card p-4 el-table-transparent el-dark-input">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
-    <el-col :span="22">
+    <el-col :span="12">
       <TableTitle>业务管理</TableTitle>
     </el-col>
-    <el-col :span="2" class="px-2 text-right">
+    <el-col :span="12" class="px-2 text-right">
       <el-button size="medium" type="indigo" @click="handleCreate()">新增业务</el-button>
     </el-col>
   </el-row>

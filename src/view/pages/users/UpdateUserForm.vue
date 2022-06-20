@@ -4,6 +4,7 @@
     :visible.sync="showDialog"
     width="30%"
     center
+    :close-on-click-modal="false"
 >
   <el-form
       ref="updateUserForm"

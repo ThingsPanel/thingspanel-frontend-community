@@ -2,10 +2,10 @@
 <div class="rounded card p-4 el-table-transparent">
   <!-- 头 start -->
   <el-row type="flex" class="pt-3 pb-4 px-3">
-    <el-col :span="2">
+    <el-col :span="12">
       <TableTitle>用户管理</TableTitle>
     </el-col>
-    <el-col :offset="20" :span="2" class="px-2 text-right">
+    <el-col :span="12" class="px-2 text-right">
       <el-button size="medium" type="indigo" @click="createUserDialogVisible = true">添加用户</el-button>
     </el-col>
   </el-row>

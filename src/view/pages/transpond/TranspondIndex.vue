@@ -1,10 +1,10 @@
 <template>
 <div class="rounded p-4 card no-border el-table-transparent">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
-    <el-col :span="22">
+    <el-col :span="12">
       <TableTitle>业务管理</TableTitle>
     </el-col>
-    <el-col :span="2" class="px-2 text-right">
+    <el-col :span="12" class="px-2 text-right">
       <el-button size="medium" type="indigo" @click="dialogVisible = true">创建转发</el-button>
     </el-col>
   </el-row>
@@ -46,6 +46,7 @@
       class="el-dark-dialog el-dark-input"
       title="创建"
       :visible.sync="dialogVisible"
+      :close-on-click-modal="false"
       width="30%">
     <CreateForm @submit="handle_create"></CreateForm>
   </el-dialog>
@@ -55,7 +56,7 @@
       class="el-dark-dialog el-dark-input"
       title="配置"
       :visible.sync="updateDialogVisible"
-      :modal="false"
+      :close-on-click-modal="false"
       width="30%">
     <UpdateForm :init_data="edit_item" @update="handle_update"></UpdateForm>
   </el-dialog>

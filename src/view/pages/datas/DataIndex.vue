@@ -53,7 +53,7 @@
           <el-button slot="reference" type="indigo" size="medium">导出</el-button>
         </el-popconfirm>
 
-        <el-button class="ml-2" type="default" size="medium" @click="handleReset()">重置</el-button>
+<!--        <el-button class="ml-2" type="default" size="medium" @click="handleReset()">重置</el-button>-->
       </div>
     </el-col>
   </el-row>

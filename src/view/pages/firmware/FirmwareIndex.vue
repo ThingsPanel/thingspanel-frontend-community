@@ -9,10 +9,10 @@
 <!--  </div>-->
 
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
-    <el-col :span="20">
+    <el-col :span="12">
       <TableTitle>固件升级</TableTitle>
     </el-col>
-    <el-col :span="4" class="text-right">
+    <el-col :span="12" class="text-right">
       <el-button type="indigo" size="medium" @click="dialogVisible = true">新增固件</el-button>
 
       <el-button type="indigo" size="medium">导入产品</el-button>
@@ -40,7 +40,7 @@
       class="el-dark-dialog el-dark-input"
       title="新增固件"
       :visible.sync="dialogVisible"
-      :modal="false"
+      :close-on-click-modal="false"
       width="30%">
     <CreateForm @submit="handle_create"></CreateForm>
   </el-dialog>
