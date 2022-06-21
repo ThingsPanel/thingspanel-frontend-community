@@ -13,7 +13,7 @@
 
   <!-- 筛选 start -->
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3 el-dark-input">
-    <el-col :span="4">
+    <el-col :span="5">
       <DeviceGroupSelector
           :asset_id.sync="params.asset_id"
           :options="deviceGroupOptions"
@@ -21,7 +21,7 @@
           @change="handleSearch()"
       ></DeviceGroupSelector>
     </el-col>
-    <el-col :span="4">
+    <el-col :span="5">
         <DevicePluginSelector
             :plugin_type.sync="params.device_type"
             :options="devicePluginOptions"
@@ -29,7 +29,7 @@
             @change="handleSearch()"
         ></DevicePluginSelector>
     </el-col>
-    <el-col :span="4">
+    <el-col :span="5">
       <el-input
           placeholder="请输入设备名"
           v-model="params.name"
@@ -38,7 +38,7 @@
           @keydown.enter.native="handleSearch()"
           @clear="handleSearch()"></el-input>
     </el-col>
-    <el-col :span="12" class="text-right">
+    <el-col :span="9" class="text-right">
       <el-button type="indigo" size="medium" @click="handleSearch()">查询</el-button>
 <!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
     </el-col>

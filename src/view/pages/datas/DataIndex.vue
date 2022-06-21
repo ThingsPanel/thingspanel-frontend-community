@@ -30,7 +30,7 @@
 <!--        <template slot="prepend">token</template>-->
       </el-input>
     </el-col>
-    <el-col :span="6">
+    <el-col :span="7">
       <el-date-picker
           class="w-100"
           v-model="datetimerange"
@@ -45,7 +45,7 @@
           end-placeholder="结束日期">
       </el-date-picker>
     </el-col>
-    <el-col :span="8">
+    <el-col :span="7">
       <div class="text-right">
         <el-button class="mr-2" type="indigo" size="medium" @click="handleSearch()">查询</el-button>
 

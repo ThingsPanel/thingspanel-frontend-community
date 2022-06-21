@@ -8,14 +8,14 @@
 
   <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input">
     <!--  业务筛选  -->
-    <el-col :span="4">
+    <el-col :span="5">
       <BusinessSelector
           :business_id.sync="params.business_id"
           @change="handleBusinessSelectorChange"></BusinessSelector>
     </el-col>
 
     <!--  资产  -->
-    <el-col :span="4">
+    <el-col :span="5">
       <AssertSelector
           :business_id="params.business_id"
           :asset_id.sync="params.asset_id"
@@ -28,7 +28,7 @@
 <!--    </el-col>-->
 
     <!--  日期筛选  -->
-    <el-col :span="6">
+    <el-col :span="7">
       <el-date-picker
           class="w-100"
           v-model="datetimerange"
@@ -43,7 +43,7 @@
       </el-date-picker>
     </el-col>
 
-    <el-col :span="10" class="text-right">
+    <el-col :span="7" class="text-right">
       <el-button type="indigo" size="medium" @click="handleSearch()">查询</el-button>
 <!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
     </el-col>
