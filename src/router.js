@@ -101,6 +101,12 @@ export default new Router({
                         import ("@/view/pages/strategy/List.vue")
                 },
                 {
+                    path: "/strategy/list2",
+                    name: "strategylist2",
+                    component: ()=>
+                        import ("@/view/pages/automation/AutomationIndex.vue")
+                },
+                {
                     path: "/strategy/strlist",
                     name: "strlist",
                     component: () =>

@@ -35,6 +35,7 @@ export default {
       // {name:"COMMON.DEVICE", icon: 'menu-icon flaticon2-rhombus', link: '/device'},
       {name:"COMMON.VISUALIZATION", icon: 'menu-icon flaticon2-laptop', link: '/chart/list'},
       {name:"COMMON.AUTOMATION", icon: 'menu-icon flaticon2-hourglass', link: '/strategy/list'},
+      {name:"COMMON.AUTOMATION", icon: 'menu-icon flaticon2-hourglass', link: '/strategy/list2'},
       {name:"COMMON.WARNINFO", icon: 'menu-icon flaticon2-warning', link: '/alarm/list'},
       {name: "COMMON.SYSTEMLOG",icon: 'menu-icon flaticon-open-box', open:false, children: [
           {name:"COMMON.OPERATIONLOG", icon: 'menu-icon flaticon2-paper', link: '/log/list'},
