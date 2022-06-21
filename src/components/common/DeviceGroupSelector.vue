@@ -1,8 +1,10 @@
 <template>
 <el-select
+    class="w-100"
     v-model="deviceGroupId"
     :clearable="clearable"
-    placeholder="请选择分组"
+    :filterable="filterable"
+    placeholder="请选择设备分组"
     size="medium" @change="handleChange()">
   <el-option
       :value="item.id"
@@ -19,7 +21,10 @@ export default defineComponent({
   name: "DeviceGroupSelector",
   props: {
     clearable: {
-      default: false
+      default: true
+    },
+    filterable: {
+      default: true
     },
     business_id: {
       required: true
@@ -44,11 +49,13 @@ export default defineComponent({
     watch(()=>props.business_id, ()=>{
       let business_id = props.business_id
 
-      device_group_drop({business_id}).then(({data})=>{
-        if(data.code === 200 && data.data) {
-          deviceGroupOptions.value = data.data
-        }
-      })
+      if(business_id){
+        device_group_drop({business_id}).then(({data})=>{
+          if(data.code === 200 && data.data) {
+            deviceGroupOptions.value = data.data
+          }
+        })
+      }
     }, {
       immediate: true
     })

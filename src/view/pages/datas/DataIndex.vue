@@ -8,18 +8,20 @@
 
   <!-- 头 start -->
   <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input">
-    <el-col :span="5">
-      <el-cascader
-          placeholder="请选择业务"
-          v-model="cascaderData"
-          size="medium"
-          :props="calenderProps"
-          clearable
-          @change="handleSearch()"
-          class="w-100">
-      </el-cascader>
+    <el-col :span="4">
+      <BusinessSelector
+          :business_id.sync="params.business_id"
+          @change="handleBusinessSelectorChange()"></BusinessSelector>
     </el-col>
-    <el-col :span="5">
+
+    <el-col :span="4">
+      <DeviceGroupSelector
+          :business_id="params.business_id"
+          :asset_id.sync="params.asset_id"
+          @change="handleSearch()"></DeviceGroupSelector>
+    </el-col>
+
+    <el-col :span="4">
       <el-input
           v-model="params.token"
           placeholder="请填写要筛选的token"
@@ -27,9 +29,9 @@
           clearable
           @keydown.enter.native="handleSearch()"
           @clear="handleSearch()">
-<!--        <template slot="prepend">token</template>-->
       </el-input>
     </el-col>
+
     <el-col :span="7">
       <el-date-picker
           class="w-100"
@@ -45,7 +47,8 @@
           end-placeholder="结束日期">
       </el-date-picker>
     </el-col>
-    <el-col :span="7">
+
+    <el-col :span="5">
       <div class="text-right">
         <el-button class="mr-2" type="indigo" size="medium" @click="handleSearch()">查询</el-button>
 
@@ -111,11 +114,15 @@ import {dateFormat} from "@/utils/tool";
 import useDataCalender from "@/view/pages/datas/useDataCalender";
 import useDataExport from "@/view/pages/datas/useDataExport";
 import TableTitle from "@/components/common/TableTitle.vue"
+import BusinessSelector from "@/components/common/BusinessSelector";
+import DeviceGroupSelector from "@/components/common/DeviceGroupSelector.vue"
 
 export default defineComponent({
   name: "DataIndex",
   components: {
-    TableTitle
+    TableTitle,
+    BusinessSelector,
+    DeviceGroupSelector,
   },
   setup(){
 
@@ -130,12 +137,12 @@ export default defineComponent({
       handleReset
     } = useDataIndex()
 
-    // 业务级联选择器
-    const {
-      calenderProps,
-      cascaderData
-    } = useDataCalender(params)
-
+    // 清除 business 选择器
+    function handleBusinessSelectorChange(){
+      // 清除资产的筛选
+      params.asset_id = ""
+      handleSearch()
+    }
 
     // 导出
    const {
@@ -158,12 +165,11 @@ export default defineComponent({
       handleSearch,
       handleReset,
       dateFormat,
-      calenderProps,
-      cascaderData,
       handleExport,
       exportVisible,
       downloadUrl,
       exporting,
+      handleBusinessSelectorChange,
     }
   }
 })

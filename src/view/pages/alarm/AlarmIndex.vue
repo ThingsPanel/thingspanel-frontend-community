@@ -14,18 +14,13 @@
           @change="handleBusinessSelectorChange"></BusinessSelector>
     </el-col>
 
-    <!--  资产  -->
+    <!--  分组  -->
     <el-col :span="5">
-      <AssertSelector
+      <DeviceGroupSelector
           :business_id="params.business_id"
           :asset_id.sync="params.asset_id"
-          @change="handleSearch()"></AssertSelector>
+          @change="handleSearch()"></DeviceGroupSelector>
     </el-col>
-
-    <!--  设备  -->
-<!--    <el-col :span="4">-->
-<!--      <el-input size="medium"></el-input>-->
-<!--    </el-col>-->
 
     <!--  日期筛选  -->
     <el-col :span="7">
@@ -81,6 +76,7 @@ import DatePickerOptions from "@/utils/DatePickerOptions";
 import BusinessSelector from "@/components/common/BusinessSelector.vue"
 import AssertSelector from "@/components/common/AssertSelector.vue"
 import TableTitle from "@/components/common/TableTitle.vue"
+import DeviceGroupSelector from "@/components/common/DeviceGroupSelector.vue"
 
 export default defineComponent({
   name: "AlarmIndex",
@@ -88,6 +84,7 @@ export default defineComponent({
     BusinessSelector,
     AssertSelector,
     TableTitle,
+    DeviceGroupSelector,
   },
   setup(){
     // 表单数据

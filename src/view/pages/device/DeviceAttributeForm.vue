@@ -1,17 +1,17 @@
 <template>
 <el-form
     label-position="left"
-    label-width="80px"
+    label-width="100px"
     :model="formData"
 >
   <el-form-item label="设备ID" prop="d_id">
     <el-input v-model="formData.d_id"></el-input>
   </el-form-item>
-  <el-form-item label="设备分组" prop="location">
-    <el-input v-model="formData.location"></el-input>
+  <el-form-item label="自定义属性" prop="location">
+    <el-input type="textarea" v-model="formData.location"></el-input>
   </el-form-item>
 
-  <div class="pt-2">
+  <div class="pt-4">
     <el-button class="w-100" type="primary" @click="handleSave()">保存</el-button>
   </div>
 </el-form>
