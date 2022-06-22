@@ -61,3 +61,12 @@ export function warning_edit(data){
         data,
     })
 }
+
+// 删除告警信息
+export function warning_delete(data){
+    return axios({
+        url: "/warning/delete",
+        method: "post",
+        data
+    })
+}

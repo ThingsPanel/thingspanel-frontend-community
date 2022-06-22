@@ -18,8 +18,11 @@
     <el-table-column label="策略操作" align="center" width="150">
       <template v-slot="scope">
         <div class="text-right">
-          <el-button type="indigo" size="mini" @click="handleEdit(scope.row)">编辑</el-button>
-          <el-button type="danger" size="mini">删除</el-button>
+          <el-button type="indigo" size="mini" @click="handleEdit(scope.row)" class="mr-3">编辑</el-button>
+
+          <el-popconfirm title="确定删除此项？" @confirm="handleDelete(scope.row)">
+            <el-button slot="reference" type="danger" size="mini">删除</el-button>
+          </el-popconfirm>
         </div>
       </template>
     </el-table-column>
@@ -44,6 +47,7 @@ import useRoute from "@/utils/useRoute";
 import useAlarmStrategyIndex from "@/view/pages/automation/useAlarmStrategyIndex";
 import AlarmEditForm from "@/view/pages/automation/AlarmEditForm";
 import useTableDataCUD from "@/view/pages/automation/useTableDataCUD";
+import {warning_delete} from "@/api/automation";
 
 export default defineComponent({
   name: "AlarmStrategy",
@@ -79,6 +83,16 @@ export default defineComponent({
       current_item.value = item
     }
 
+    // 删除
+    function handleDelete(item){
+      warning_delete({id: item.id}).then(({data})=>{
+        if(data.code === 200){
+          remove_alarm(item)
+        }
+      })
+    }
+
+    // tableData 的增删改逻辑
     let {
       add_alarm,
       remove_alarm,
@@ -94,6 +108,7 @@ export default defineComponent({
       current_item,
       handleCreate,
       handleEdit,
+      handleDelete,
       add_alarm,
       update_alarm,
     }
