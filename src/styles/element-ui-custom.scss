@@ -240,3 +240,11 @@
 .el-date-editor .el-range-separator{
   padding: 0!important;
 }
+
+// 表单
+.el-form.el-form--label-top{
+  .el-form-item__label{
+    padding: 0;
+    margin: 0;
+  }
+}

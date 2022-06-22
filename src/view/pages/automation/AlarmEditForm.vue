@@ -1,29 +1,31 @@
 <template>
 <el-dialog
+    :title="current_item.id ?'修改告警策略': '新增告警策略'"
     class="el-dark-dialog"
     :visible.sync="showDialog"
     width="50%"
-    center
     :close-on-click-modal="false"
 >
 <el-form
-    ref="alarmForm"
+    ref="alarmFormRef"
     :model="formData"
-    :rules="rules"  label-position="top">
+    label-position="top"
+    hide-required-asterisk>
   <el-row :gutter="20">
+
     <el-col :span="12">
-      <el-form-item label="告警策略名称">
+      <el-form-item label="告警策略名称" prop="name" :rules="rules.name">
         <el-input v-model="formData.name"></el-input>
       </el-form-item>
     </el-col>
     <el-col :span="12">
-      <el-form-item label="告警策略名称">
+      <el-form-item label="告警策略名称" prop="describe" :rules="rules.describe">
         <el-input v-model="formData.describe"></el-input>
       </el-form-item>
     </el-col>
 
     <el-col :span="12">
-      <el-form-item label="分组">
+      <el-form-item label="分组" prop="sensor" :rules="rules.sensor">
         <DeviceGroupSelector
             :business_id="business_id"
             :asset_id.sync="formData.sensor"
@@ -32,7 +34,7 @@
       </el-form-item>
     </el-col>
     <el-col :span="12">
-      <el-form-item label="设备">
+      <el-form-item label="设备" prop="bid" :rules="rules.bid">
         <DeviceSelector
             :asset_id="formData.sensor"
             :device_id.sync="formData.bid"
@@ -43,42 +45,45 @@
 
     <el-col :span="24">
       <el-form-item label="触发条件">
-        <template v-for="(config, index) in formData.config">
-        <el-row :gutter="20">
-          <el-col :span="3" v-if="config.operator">
-            <el-form-item prop="operator">
-              <el-select v-model="config.operator" size="medium">
-                <el-option :value="item.value" :label="item.label" v-for="item in operatorOptions"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
+        <template v-for="(config_item, index) in formData.config">
+          <el-row :gutter="20">
+            <!-- 或 且 -->
+            <el-col :span="3" class="py-5" v-if="config_item.operator">
+              <el-form-item>
+                <el-select v-model="config_item.operator" size="medium">
+                  <el-option :value="item.value" :label="item.label" v-for="item in operatorOptions"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-        <el-row :gutter="20">
-          <el-col :span="6">
-            <el-form-item prop="field">
-              <el-select class="w-100" v-model="config.field" placeholder="请选择条件" size="medium">
-                <el-option :value="item.key" :label="item.name" v-for="item in triggerOptions"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6" prop="status">
-            <el-form-item>
-              <el-select class="w-100" v-model="config.condition" placeholder="请选择符号" size="medium">
-                <el-option :value="item.id" :label="item.name" v-for="item in symbolOptions"></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6" prop="value">
-            <el-form-item>
-              <el-input class="w-100" v-model="config.value"></el-input>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-button type="indigo" size="medium" @click="addLine" v-if="index===0">新增一行</el-button>
-            <el-button type="danger" size="medium" @click="removeLine(config)" v-else>删除</el-button>
-          </el-col>
-        </el-row>
+          <el-row :gutter="20">
+            <el-col :span="6">
+              <el-form-item :prop="'config.'+index+'.field'" :rules="rules['config.field']">
+                <el-select class="w-100" v-model="config_item.field" placeholder="请选择条件" size="medium">
+                  <el-option :value="item.key" :label="item.name" v-for="item in triggerOptions"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item :prop="'config.'+index+'.condition'" :rules="rules['config.condition']">
+                <el-select class="w-100" v-model="config_item.condition" placeholder="请选择符号" size="medium">
+                  <el-option :value="item.id" :label="item.name" v-for="item in symbolOptions"></el-option>
+                </el-select>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-form-item :prop="'config.'+index+'.value'" :rules="rules['config.value']">
+                <el-input class="w-100" v-model="config_item.value" placeholder="请输入值"></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="6">
+              <el-button type="indigo" size="medium" @click="addLine" v-if="index===0">新增一行</el-button>
+              <el-popconfirm title="确定删除此项？" @confirm="removeLine(config_item)" v-else>
+                <el-button slot="reference" type="danger" size="medium">删除</el-button>
+              </el-popconfirm>
+            </el-col>
+          </el-row>
         </template>
       </el-form-item>
     </el-col>
@@ -90,6 +95,7 @@
     </el-col>
   </el-row>
 
+  <FormAlert :error_message="error_message"></FormAlert>
 
   <div class="text-right">
     <el-button size="medium" type="default" @click="handleCancel()">取消</el-button>
@@ -105,12 +111,14 @@ import DeviceGroupSelector from "@/components/common/DeviceGroupSelector.vue";
 import DeviceSelector from "./DeviceSelector.vue"
 import useAlarmTriggerOptions from "@/view/pages/automation/useAlarmTriggerOptions";
 import {warning_add, warning_edit} from "@/api/automation";
+import FormAlert from "@/components/common/FormAlert";
 
 export default defineComponent({
   name: "AlarmEditForm",
   components: {
     DeviceGroupSelector,
     DeviceSelector,
+    FormAlert,
   },
   props: {
     business_id: {
@@ -144,6 +152,8 @@ export default defineComponent({
       }
     })
 
+    let alarmFormRef = ref()
+
     // 表单
     let formData = reactive({
       id: "",
@@ -157,6 +167,8 @@ export default defineComponent({
       ],
       message: "",
     })
+
+    let error_message = ref("")
 
     // 重置表单数据
     function resetFormData(){
@@ -177,31 +189,59 @@ export default defineComponent({
     })
 
     let rules = reactive({
-
+      name:[
+        {required: true, message: "请填写名字"}
+      ],
+      describe: [
+        {required: true, message: "请填写描述"}
+      ],
+      sensor: [
+        {required: true, message: "请选择分组"}
+      ],
+      bid: [
+        {required: true, message: "请选择设备"}
+      ],
+      "config.field": [
+        {required: true, message: "请选择条件"}
+      ],
+      "config.condition": [
+        {required: true, message: "请选择符号"}
+      ],
+      "config.value": [
+        {required: true, message: "请填写值"}
+      ],
     })
 
     let loading = ref(false)
 
     // 保存
     function handleSave(){
-      if(loading.value) return
-      loading.value = true
+      alarmFormRef.value.validate((valid)=>{
+        if(!valid) return
 
-      // 发送请求
-      create_or_update(formData).then(({data})=>{
-        if(data.code === 200){
-          handleCancel()
+        error_message.value = ""
 
-          if(formData.id){
-            // 更新
-            props.update_alarm(props.current_item, formData)
+        if(loading.value) return
+        loading.value = true
+
+        // 发送请求
+        create_or_update(formData).then(({data})=>{
+          if(data.code === 200){
+            handleCancel()
+
+            if(formData.id){
+              // 更新
+              props.update_alarm(props.current_item, formData)
+            }else{
+              // 新增
+              props.add_alarm(formData)
+            }
           }else{
-            // 新增
-            props.add_alarm(formData)
+            error_message.value = data.message
           }
-        }
-      }).finally(()=>{
-        loading.value = false
+        }).finally(()=>{
+          loading.value = false
+        })
       })
 
     }
@@ -242,7 +282,9 @@ export default defineComponent({
 
     return {
       showDialog,
+      alarmFormRef,
       formData,
+      error_message,
       rules,
       handleSave,
       handleCancel,
