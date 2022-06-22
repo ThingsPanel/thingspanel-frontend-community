@@ -149,6 +149,17 @@
     border-color: rgba(0,0,0,0.1);
   }
 
+  // 计数器
+  .el-input-number__decrease,.el-input-number__increase{
+    background-color: rgba(22, 30, 67, 0.5) !important;
+  }
+  .el-input-number__increase{
+    border-left-color: rgba(0,0,0,0.1);
+  }
+  .el-input-number__decrease{
+    border-right-color: rgba(0,0,0,0.1);
+  }
+
   // 日期选择器
   .el-range-separator{
     color: #c0c4cc!important;

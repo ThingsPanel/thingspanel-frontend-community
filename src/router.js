@@ -100,6 +100,7 @@ export default new Router({
                     component: () =>
                         import ("@/view/pages/strategy/List.vue")
                 },
+                // 新自动化
                 {
                     path: "/strategy/list2",
                     name: "strategylist2",
@@ -117,6 +118,13 @@ export default new Router({
                     name: "alarmlist",
                     component: () =>
                         import ("@/view/pages/strategy/Alarmlist.vue")
+                },
+                // 新告警策略
+                {
+                    path: "/strategy/alarmlist2",
+                    name: "alarm_strategy",
+                    component: () =>
+                        import ("@/view/pages/automation/AlarmStrategy.vue")
                 },
                 {
                     path: "/log/list",

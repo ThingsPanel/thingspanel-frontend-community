@@ -18,7 +18,7 @@
     <el-table-column align="center" label="操作" width="200">
       <template v-slot="scope">
         <div class="text-right">
-          <el-button type="indigo" size="mini">告警策略</el-button>
+          <el-button type="indigo" size="mini" @click="showAlarmList(scope.row)">告警策略</el-button>
           <el-button type="indigo" size="mini">控制策略</el-button>
         </div>
       </template>
@@ -43,6 +43,7 @@ import {defineComponent} from "@vue/composition-api";
 import TableTitle from "@/components/common/TableTitle.vue"
 import useAutomationIndex from "@/view/pages/automation/useAutomationIndex";
 import {dateFormat} from "@/utils/tool";
+import useRoute from "@/utils/useRoute";
 
 export default defineComponent({
   name: "AutomationIndex",
@@ -58,6 +59,13 @@ export default defineComponent({
       getAutomationIndex,
     } = useAutomationIndex()
 
+    let {router} = useRoute()
+
+    // 告警信息列表
+    function showAlarmList(item){
+      router.push({name: "alarm_strategy", query: {id: item.id}})
+    }
+
     return {
       dateFormat,
       tableData,
@@ -65,6 +73,7 @@ export default defineComponent({
       total,
       params,
       getAutomationIndex,
+      showAlarmList,
     }
   }
 })
