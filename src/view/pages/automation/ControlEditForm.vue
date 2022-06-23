@@ -12,13 +12,14 @@
     label-position="top"
     hide-required-asterisk>
   <el-row :gutter="20">
+
     <el-col :span="8">
-      <el-form-item label="策略名称" prop="name">
+      <el-form-item label="策略名称" prop="name" :rules="rules.name">
         <el-input v-model="formData.name"></el-input>
       </el-form-item>
     </el-col>
     <el-col :span="8">
-      <el-form-item label="策略描述" prop="describe">
+      <el-form-item label="策略描述" prop="describe" :rules="rules.describe">
         <el-input v-model="formData.describe"></el-input>
       </el-form-item>
     </el-col>
@@ -48,7 +49,7 @@
               </el-form-item>
             </el-col>
             <el-col :span="4">
-              <el-form-item>
+              <el-form-item :prop="`config.rules.${index}.asset_id`" :rules="rules['config.rules.asset_id']">
                 <!-- 设备组 -->
                 <DeviceGroupSelector
                     :business_id="business_id"
@@ -58,7 +59,7 @@
               </el-form-item>
             </el-col>
             <el-col :span="4">
-              <el-form-item>
+              <el-form-item :prop="`config.rules.${index}.device_id`" :rules="rules['config.rules.device_id']">
                 <!-- 设备 -->
                 <DeviceSelector
                     :asset_id="rules_item.asset_id"
@@ -68,7 +69,7 @@
               </el-form-item>
             </el-col>
             <el-col :span="3">
-              <el-form-item>
+              <el-form-item :prop="`config.rules.${index}.field`" :rules="rules['config.rules.field']">
                 <!-- 条件选择 -->
                 <TriggerSelector
                     :device_id="rules_item.device_id"
@@ -77,13 +78,13 @@
               </el-form-item>
             </el-col>
             <el-col :span="3">
-              <el-form-item>
+              <el-form-item :prop="`config.rules.${index}.condition`" :rules="rules['config.rules.condition']">
                 <!-- 符号大于小于 -->
                 <SymbolSelector :condition.sync="rules_item.condition"></SymbolSelector>
               </el-form-item>
             </el-col>
             <el-col :span="3">
-              <el-form-item>
+              <el-form-item :prop="`config.rules.${index}.value`" :rules="rules['config.rules.value']">
                 <!-- 数值 -->
                 <el-input size="medium" class="w-100" v-model="rules_item.value" placeholder="数值"></el-input>
               </el-form-item>
@@ -110,10 +111,14 @@
               </el-form-item>
             </el-col>
             <el-col :span="4">
-              <IntervalSelector :interval.sync="rules_item.interval"></IntervalSelector>
+              <el-form-item>
+                <IntervalSelector :interval.sync="rules_item.interval"></IntervalSelector>
+              </el-form-item>
             </el-col>
             <el-col :span="8">
-              <TimeSelector :interval="rules_item.interval" :time.sync="rules_item.time"></TimeSelector>
+              <el-form-item :prop="`config.rules.${index}.time`" :rules="rules['config.rules.time']">
+                <TimeSelector :interval="rules_item.interval" :time.sync="rules_item.time"></TimeSelector>
+              </el-form-item>
             </el-col>
             <el-col :span="3">
               <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">新增一行</el-button>
@@ -133,15 +138,17 @@
         <template v-for="(apply_item, index) in formData.config.apply">
           <el-row :gutter="20" :class="index > 0 ? 'pt-5' : ''">
             <el-col :span="4">
-              <!-- 设备分组 -->
-              <DeviceGroupSelector
-                  :business_id="business_id"
-                  :asset_id.sync="apply_item.asset_id"
-                  :clearable="false"
-              ></DeviceGroupSelector>
+              <el-form-item :prop="`config.apply.${index}.asset_id`" :rules="rules['config.rules.asset_id']">
+                <!-- 设备分组 -->
+                <DeviceGroupSelector
+                    :business_id="business_id"
+                    :asset_id.sync="apply_item.asset_id"
+                    :clearable="false"
+                ></DeviceGroupSelector>
+              </el-form-item>
             </el-col>
             <el-col :span="4">
-              <el-form-item>
+              <el-form-item :prop="`config.apply.${index}.device_id`" :rules="rules['config.rules.device_id']">
                 <!-- 设备 -->
                 <DeviceSelector
                     :asset_id="apply_item.asset_id"
@@ -151,7 +158,7 @@
               </el-form-item>
             </el-col>
             <el-col :span="3">
-              <el-form-item>
+              <el-form-item :prop="`config.apply.${index}.field`" :rules="rules['config.rules.field']">
                 <!-- 条件 -->
                 <TriggerSelector
                     :device_id="apply_item.device_id"
@@ -160,7 +167,7 @@
               </el-form-item>
             </el-col>
             <el-col :span="3">
-              <el-form-item>
+              <el-form-item :prop="`config.apply.${index}.value`" :rules="rules['config.rules.value']">
                 <!-- 值 -->
                 <el-input size="medium" class="w-100" v-model="apply_item.value" placeholder="数值"></el-input>
               </el-form-item>
@@ -209,6 +216,7 @@ import IntervalSelector from "./IntervalSelector.vue"
 import TimeSelector from "./TImeSelector.vue"
 import {automation_add, automation_edit} from "@/api/automation";
 import {watch} from "@vue/composition-api/dist/vue-composition-api";
+import {json_parse_stringify} from "@/utils/helpers";
 
 export default defineComponent({
   name: "ControlEditForm",
@@ -257,24 +265,52 @@ export default defineComponent({
     let controlFormRef = ref()
     let default_rules_type_1 = {asset_id: "", device_id: "", field: "", condition: "", value: "", duration: 0}
     let default_rules_type_2 = {interval:0, time:""}
+    let default_apply = {asset_id: "", device_id: "",  field: "",  value: ""}
 
     let formData = reactive({
       id: "",
       business_id: props.business_id,
-      name: "aaaa",
-      describe: "aaa",
+      name: "",
+      describe: "",
       status: 1, // 开关
       sort: 100,
       type: 1, // 策略类型
       issued: "1",
       config: {
         rules: [
-          default_rules_type_1
+          json_parse_stringify(default_rules_type_1)
         ],
         apply: [
-          {asset_id: "", device_id: "",  field: "",  value: ""}
+          json_parse_stringify(default_apply)
         ]
       }
+    })
+
+    let rules = reactive({
+      name:[
+        {required: true, message: "请填写名字"}
+      ],
+      describe: [
+        {required: true, message: "请填写描述"}
+      ],
+      "config.rules.asset_id": [
+        {required: true, message: "请选择分组"}
+      ],
+      "config.rules.device_id": [
+        {required: true, message: "请选择设备"}
+      ],
+      "config.rules.field": [
+        {required: true, message: "请选择条件"}
+      ],
+      "config.rules.condition": [
+        {required: true, message: "请选择符号"}
+      ],
+      "config.rules.value": [
+        {required: true, message: "请填写值"}
+      ],
+      "config.rules.time": [
+        {required: true, message: "请选择时间"}
+      ],
     })
 
     // 重置表单数据
@@ -296,21 +332,33 @@ export default defineComponent({
       immediate: true
     })
 
+    let loading = ref(false)
+
     function handleSave(){
+      controlFormRef.value.validate((valid)=>{
+        if(!valid) return
 
-      create_or_update(formData).then(({data})=>{
-        if(data.code === 200) {
-          handleCancel()
+        if(loading.value) return
+        loading.value = true
 
-          if(formData.id){
-            // 更新
-            props.update_alarm(props.current_item, formData)
-          }else{
-            // 新增
-            props.add_alarm(formData)
+        create_or_update(formData).then(({data})=>{
+          if(data.code === 200) {
+            handleCancel()
+
+            if(formData.id){
+              // 更新
+              props.update_alarm(props.current_item, formData)
+            }else{
+              // 新增
+              props.add_alarm(formData)
+            }
           }
-        }
+        }).finally(()=>{
+          loading.value = false
+        })
+
       })
+
     }
 
     function create_or_update(formData) {
@@ -330,8 +378,8 @@ export default defineComponent({
     }
 
     function handleTypeChange(val){
-      let tmp = val ==1 ? [default_rules_type_1] : [default_rules_type_2]
-      formData.config.rules = JSON.parse(JSON.stringify(tmp))
+      let tmp = val ==1 ? default_rules_type_1 : default_rules_type_2
+      formData.config.rules = [json_parse_stringify(tmp)]
     }
 
     function addRulesLine(){
@@ -342,7 +390,7 @@ export default defineComponent({
       }else{
         tmp = default_rules_type_2
       }
-      formData.config.rules.push(JSON.parse(JSON.stringify(tmp)))
+      formData.config.rules.push(json_parse_stringify(tmp))
     }
 
     function removeRulesLine(item){
@@ -351,9 +399,7 @@ export default defineComponent({
     }
 
     function addApplyLine(){
-      formData.config.apply.push({
-        asset_id: "", device_id: "",  field: "",  value: ""
-      })
+      formData.config.apply.push(json_parse_stringify(default_apply))
     }
 
     function removeApplyLine(item){
@@ -365,6 +411,7 @@ export default defineComponent({
       showDialog,
       controlFormRef,
       formData,
+      rules,
       handleSave,
       handleCancel,
       addRulesLine,

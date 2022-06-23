@@ -65,3 +65,12 @@ export function handleServerErrorMsg(errors, ServerErrors) {
 export function is_string(item) {
     return typeof(item) === 'string'
 }
+
+/**
+ * 拷贝对象
+ * @param obj
+ * @returns {any}
+ */
+export function json_parse_stringify(obj){
+    return JSON.parse(JSON.stringify(obj))
+}
