@@ -113,6 +113,13 @@ export default new Router({
                     component: () =>
                         import ("@/view/pages/strategy/Strlist.vue")
                 },
+                // 新增控制策略
+                {
+                    path: "/strategy/strlist2",
+                    name: "control_strategy",
+                    component: () =>
+                        import ("@/view/pages/automation/ControlStrategy.vue")
+                },
                 {
                     path: "/strategy/alarmlist",
                     name: "alarmlist",

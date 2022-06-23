@@ -19,7 +19,7 @@
       <template v-slot="scope">
         <div class="text-right">
           <el-button type="indigo" size="mini" @click="showAlarmList(scope.row)">告警策略</el-button>
-          <el-button type="indigo" size="mini">控制策略</el-button>
+          <el-button type="indigo" size="mini" @click="showControlList(scope.row)">控制策略</el-button>
         </div>
       </template>
     </el-table-column>
@@ -66,6 +66,11 @@ export default defineComponent({
       router.push({name: "alarm_strategy", query: {id: item.id}})
     }
 
+    // 控制告警列表
+    function showControlList(item){
+      router.push({name: "control_strategy", query: {id: item.id}})
+    }
+
     return {
       dateFormat,
       tableData,
@@ -74,6 +79,7 @@ export default defineComponent({
       params,
       getAutomationIndex,
       showAlarmList,
+      showControlList,
     }
   }
 })

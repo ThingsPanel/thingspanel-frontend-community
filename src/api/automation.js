@@ -27,6 +27,15 @@ export function dashboard_device(data) {
     })
 }
 
+// 控制策略列表
+export function automation_index(data){
+    return axios({
+        url: "/automation/index",
+        method: "post",
+        data
+    })
+}
+
 // 触发条件 如：开关状态
 export function automation_show(data){
     return axios({
