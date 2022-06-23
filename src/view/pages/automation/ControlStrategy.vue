@@ -45,6 +45,15 @@
         :page-size="params.limit"
         @current-change="getControlStrategyIndex"></el-pagination>
   </div>
+
+  <ControlEditForm
+      :control-dialog-visible.sync="showEditDialog"
+      :business_id="business_id"
+      :current_item="current_item"
+      :key="current_item.id"
+      :add_alarm="add_alarm"
+      :update_alarm="update_alarm"
+  ></ControlEditForm>
 </div>
 </template>
 
@@ -54,11 +63,15 @@ import TableTitle from "@/components/common/TableTitle";
 import useRoute from "@/utils/useRoute";
 import {ref} from "@vue/composition-api/dist/vue-composition-api";
 import useControlStrategyIndex from "@/view/pages/automation/useControlStrategyIndex";
+import ControlEditForm from "./ControlEditForm.vue"
+import useTableDataCUD from "@/view/pages/automation/useTableDataCUD";
+import {automation_delete} from "@/api/automation";
 
 export default defineComponent({
   name: "ControlStrategy",
   components: {
-    TableTitle
+    TableTitle,
+    ControlEditForm,
   },
   setup(){
     let {route, router} = useRoute()
@@ -78,19 +91,35 @@ export default defineComponent({
       router.go(-1)
     }
 
+    // 编辑弹窗
+    let showEditDialog = ref(false)
+
     function handleCreate(){
-      console.log('handleCreate')
+      handleEdit({})
     }
 
     function handleEdit(item){
-      console.log('handleEdit')
+      showEditDialog.value = true
+      current_item.value = item
     }
 
     function handleDelete(item){
-      console.log('handleDelete')
+      automation_delete({id: item.id}).then(({data})=>{
+        if(data.code === 200){
+          remove_alarm(item)
+        }
+      })
     }
 
+    // tableData 的增删改逻辑
+    let {
+      add_alarm,
+      remove_alarm,
+      update_alarm,
+    } =useTableDataCUD(tableData, getControlStrategyIndex)
+
     return {
+      showEditDialog,
       business_id,
       current_item,
       goBack,
@@ -102,6 +131,8 @@ export default defineComponent({
       loading,
       total,
       getControlStrategyIndex,
+      add_alarm,
+      update_alarm,
     }
   }
 })

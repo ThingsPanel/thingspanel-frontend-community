@@ -10,7 +10,9 @@ export default function useAlarmStrategyIndex(id) {
         wid: id,
     })
 
-    function getAlarmStrategyIndex(){
+    function getAlarmStrategyIndex(page){
+        if(page) params.page = page
+
         if(loading.value) return
         loading.value = false
 

@@ -29,9 +29,16 @@ export default function useAlarmTriggerOptions(formData){
         {label: "且", value: "&&"},
     ])
 
+    // 控制策略按类型选择输入框
+    let typeOptions = ref([
+        {label: "设备条件类型", value: 1},
+        {label: "时间条件类型", value: 2},
+    ])
+
     return {
         triggerOptions,
         symbolOptions,
         operatorOptions,
+        typeOptions,
     }
 }

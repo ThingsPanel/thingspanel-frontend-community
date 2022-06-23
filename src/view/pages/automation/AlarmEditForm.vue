@@ -1,6 +1,6 @@
 <template>
 <el-dialog
-    :title="current_item.id ?'修改告警策略': '新增告警策略'"
+    :title="current_item.id ? '修改告警策略' : '新增告警策略'"
     class="el-dark-dialog"
     :visible.sync="showDialog"
     width="50%"

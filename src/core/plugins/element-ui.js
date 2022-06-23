@@ -1,6 +1,7 @@
 import {
     Button,
     Input,
+    InputNumber,
     Select,
     Option,
     OptionGroup,
@@ -22,6 +23,7 @@ import {
     DatePicker,
     Breadcrumb,
     BreadcrumbItem,
+    Switch,
     Message,
 } from "element-ui";
 
@@ -34,6 +36,7 @@ const element = {
         Vue.use(Form)
         Vue.use(FormItem)
         Vue.use(Input)
+        Vue.use(InputNumber)
         Vue.use(Select)
         Vue.use(Option)
         Vue.use(OptionGroup)
@@ -53,6 +56,7 @@ const element = {
         Vue.use(DatePicker)
         Vue.use(Breadcrumb)
         Vue.use(BreadcrumbItem)
+        Vue.use(Switch)
 
         Vue.prototype.$message = Message
     }

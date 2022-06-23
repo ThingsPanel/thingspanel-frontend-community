@@ -63,6 +63,7 @@ export default defineComponent({
     let {
       tableData,
       loading,
+      getAlarmStrategyIndex,
     } = useAlarmStrategyIndex(business_id)
 
     // 后退
@@ -97,7 +98,7 @@ export default defineComponent({
       add_alarm,
       remove_alarm,
       update_alarm,
-    } =useTableDataCUD(tableData)
+    } = useTableDataCUD(tableData, getAlarmStrategyIndex)
 
     return {
       tableData,

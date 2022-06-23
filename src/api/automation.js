@@ -36,6 +36,33 @@ export function automation_index(data){
     })
 }
 
+// 添加控制策略
+export function automation_add(data){
+    return axios({
+        url: "/automation/add",
+        method: "post",
+        data,
+    })
+}
+
+// 修改控制策略
+export function automation_edit(data){
+    return axios({
+        url: "/automation/edit",
+        method: "post",
+        data,
+    })
+}
+
+// 删除控制策略
+export function automation_delete(data){
+    return axios({
+        url: "/automation/delete",
+        method: "post",
+        data,
+    })
+}
+
 // 触发条件 如：开关状态
 export function automation_show(data){
     return axios({
