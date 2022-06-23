@@ -20,6 +20,7 @@ import {
     Row,
     Col,
     Alert,
+    TimePicker,
     DatePicker,
     Breadcrumb,
     BreadcrumbItem,
@@ -53,6 +54,7 @@ const element = {
         Vue.use(Row)
         Vue.use(Col)
         Vue.use(Alert)
+        Vue.use(TimePicker)
         Vue.use(DatePicker)
         Vue.use(Breadcrumb)
         Vue.use(BreadcrumbItem)

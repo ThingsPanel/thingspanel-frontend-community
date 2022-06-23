@@ -38,16 +38,18 @@
     <!--  触发条件 start  -->
     <el-col :span="24">
       <el-form-item label="触发条件">
-        <template v-for="(rules_item, index) in formData.config.rules">
+        <template v-if="formData.type == 1" v-for="(rules_item, index) in formData.config.rules">
           <el-row :gutter="20" :class="index > 0 ? 'pt-5' : ''">
             <el-col :span="4">
               <el-form-item>
-                <ControlTypeSelector :type.sync="formData.type" v-if="index === 0"></ControlTypeSelector>
+                <!-- 条件类型 或者 逻辑且于判断 -->
+                <ControlTypeSelector :type.sync="formData.type" @change="handleTypeChange" v-if="index === 0"></ControlTypeSelector>
                 <LogicalSelector :operator="rules_item.operator" v-else></LogicalSelector>
               </el-form-item>
             </el-col>
             <el-col :span="4">
               <el-form-item>
+                <!-- 设备组 -->
                 <DeviceGroupSelector
                     :business_id="business_id"
                     :asset_id.sync="rules_item.asset_id"
@@ -57,6 +59,7 @@
             </el-col>
             <el-col :span="4">
               <el-form-item>
+                <!-- 设备 -->
                 <DeviceSelector
                     :asset_id="rules_item.asset_id"
                     :device_id.sync="rules_item.device_id"
@@ -66,6 +69,7 @@
             </el-col>
             <el-col :span="3">
               <el-form-item>
+                <!-- 条件选择 -->
                 <TriggerSelector
                     :device_id="rules_item.device_id"
                     :field.sync="rules_item.field"
@@ -74,16 +78,45 @@
             </el-col>
             <el-col :span="3">
               <el-form-item>
+                <!-- 符号大于小于 -->
                 <SymbolSelector :condition.sync="rules_item.condition"></SymbolSelector>
               </el-form-item>
             </el-col>
             <el-col :span="3">
               <el-form-item>
+                <!-- 数值 -->
                 <el-input size="medium" class="w-100" v-model="rules_item.value" placeholder="数值"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="3">
-             <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">新增一行</el-button>
+              <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">新增一行</el-button>
+              <el-popconfirm title="确定删除此项？" @confirm="removeRulesLine(rules_item)" v-else>
+                <el-button slot="reference" type="danger" size="medium">删除</el-button>
+              </el-popconfirm>
+            </el-col>
+          </el-row>
+        </template>
+
+        <!-- 时间条件类型 -->
+        <template v-if="formData.type == 2" v-for="(rules_item, index) in formData.config.rules">
+          <el-row type="flex" :gutter="20" :class="index > 0 ? 'pt-5' : ''">
+            <el-col :span="4">
+              <el-form-item>
+                <!-- 条件类型 -->
+                <ControlTypeSelector
+                    v-if="index == 0"
+                    :type.sync="formData.type"
+                    @change="handleTypeChange"></ControlTypeSelector>
+              </el-form-item>
+            </el-col>
+            <el-col :span="4">
+              <IntervalSelector :interval.sync="rules_item.interval"></IntervalSelector>
+            </el-col>
+            <el-col :span="8">
+              <TimeSelector :interval="rules_item.interval" :time.sync="rules_item.time"></TimeSelector>
+            </el-col>
+            <el-col :span="3">
+              <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">新增一行</el-button>
               <el-popconfirm title="确定删除此项？" @confirm="removeRulesLine(rules_item)" v-else>
                 <el-button slot="reference" type="danger" size="medium">删除</el-button>
               </el-popconfirm>
@@ -172,6 +205,8 @@ import TriggerSelector from "./TriggerSelector.vue"
 import SymbolSelector from "./SymbolSelector.vue"
 import ControlTypeSelector from "./ControlTypeSelector.vue"
 import LogicalSelector from "./LogicalSelector.vue"
+import IntervalSelector from "./IntervalSelector.vue"
+import TimeSelector from "./TImeSelector.vue"
 import {automation_add, automation_edit} from "@/api/automation";
 import {watch} from "@vue/composition-api/dist/vue-composition-api";
 
@@ -184,6 +219,8 @@ export default defineComponent({
     SymbolSelector,
     ControlTypeSelector,
     LogicalSelector,
+    IntervalSelector,
+    TimeSelector,
   },
   props: {
     business_id: {
@@ -218,6 +255,8 @@ export default defineComponent({
     })
 
     let controlFormRef = ref()
+    let default_rules_type_1 = {asset_id: "", device_id: "", field: "", condition: "", value: "", duration: 0}
+    let default_rules_type_2 = {interval:0, time:""}
 
     let formData = reactive({
       id: "",
@@ -230,7 +269,7 @@ export default defineComponent({
       issued: "1",
       config: {
         rules: [
-          {asset_id: "", device_id: "", field: "", condition: "", value: "", duration: 0},
+          default_rules_type_1
         ],
         apply: [
           {asset_id: "", device_id: "",  field: "",  value: ""}
@@ -241,7 +280,7 @@ export default defineComponent({
     // 重置表单数据
     function resetFormData(){
       let item_attrs = JSON.parse(JSON.stringify(props.current_item))
-      console.log(item_attrs)
+
       for (const key in formData) {
         // 有则逐个赋值
         if(key in item_attrs){
@@ -290,10 +329,20 @@ export default defineComponent({
       context.emit("update:controlDialogVisible", false)
     }
 
+    function handleTypeChange(val){
+      let tmp = val ==1 ? [default_rules_type_1] : [default_rules_type_2]
+      formData.config.rules = JSON.parse(JSON.stringify(tmp))
+    }
+
     function addRulesLine(){
-      formData.config.rules.push({
-        operator: "&&", asset_id: "", device_id: "", field: "", condition: "", value: "", duration: 0
-      })
+      let tmp;
+      if(formData.type == 1){
+        tmp = default_rules_type_1
+        tmp.operator = "&&"
+      }else{
+        tmp = default_rules_type_2
+      }
+      formData.config.rules.push(JSON.parse(JSON.stringify(tmp)))
     }
 
     function removeRulesLine(item){
@@ -322,6 +371,7 @@ export default defineComponent({
       removeRulesLine,
       addApplyLine,
       removeApplyLine,
+      handleTypeChange,
     }
   }
 })

@@ -2,6 +2,7 @@
 <el-select
     class="w-100"
     v-model="typeValue"
+    @change="handleChange"
 >
   <el-option
       :value="item.value"
@@ -36,9 +37,14 @@ export default defineComponent({
       {label: "时间条件类型", value: 2},
     ])
 
+    function handleChange(val){
+      context.emit("change", val)
+    }
+
     return {
       typeValue,
       typeOptions,
+      handleChange,
     }
   }
 })

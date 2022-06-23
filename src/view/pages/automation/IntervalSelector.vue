@@ -1,44 +1,45 @@
 <template>
 <el-select
     class="w-100"
-    v-model="logicalValue"
+    v-model="intervalValue"
 >
   <el-option
       :value="item.value"
       :label="item.label"
-      v-for="item in logicalOptions"></el-option>
+      v-for="item in intervalOptions"></el-option>
 </el-select>
 </template>
 
 <script>
+
 import {computed, defineComponent, ref} from "@vue/composition-api";
 
 export default defineComponent({
-  name: "LogicalSelector",
+  name: "IntervalSelector",
   props: {
-    operator: {
+    interval: {
       required: true,
-      type: String,
+      type: Number,
     }
   },
   setup(props, context){
-    let logicalValue = computed({
+    let intervalValue = computed({
       get(){
-        return props.operator
+        return props.interval
       },
       set(val){
-        context.emit("update:operator", val)
+        context.emit("update:interval", val)
       }
     })
 
-    let logicalOptions = ref([
-      {label: "或", value: "||"},
-      {label: "且", value: "&&"},
+    let intervalOptions = ref([
+      {label: "单次", value: 0},
+      {label: "每天", value: 1},
     ])
 
     return {
-      logicalValue,
-      logicalOptions,
+      intervalValue,
+      intervalOptions,
     }
   }
 })

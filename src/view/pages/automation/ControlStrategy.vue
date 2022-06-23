@@ -15,7 +15,11 @@
     <el-table-column label="序号" type="index"></el-table-column>
     <el-table-column label="规则名称" prop="name"></el-table-column>
     <el-table-column label="规则说明" prop="describe"></el-table-column>
-    <el-table-column label="策略类型" prop="type"></el-table-column>
+    <el-table-column label="策略类型" prop="type">
+      <template v-slot="scope">
+        {{scope.row.type === "1" ? "条件类型判断" : "时间条件类型"}}
+      </template>
+    </el-table-column>
     <el-table-column label="策略优先级" prop="sort"></el-table-column>
     <el-table-column label="策略状态" prop="status">
       <template v-slot="scope">
