@@ -5,7 +5,7 @@
       placeholder="条件"
       size="medium"
       filterable
-      @change="handleChange()"
+      @change="handleChange"
   >
     <el-option
         :value="item.key"
@@ -55,7 +55,7 @@ export default defineComponent({
       immediate: true
     })
 
-    function handleChange(){
+    function handleChange(val){
       context.emit("change")
     }
 

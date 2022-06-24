@@ -6,7 +6,7 @@
     :filterable="filterable"
     placeholder="请选择设备"
     size="medium"
-    @change="handleChange()"
+    @change="handleChange"
 >
   <el-option
       :value="item.id"
@@ -63,8 +63,8 @@ export default defineComponent({
       immediate: true
     })
 
-    function handleChange(){
-      context.emit("change")
+    function handleChange(val){
+      context.emit("change", val)
     }
 
     return {

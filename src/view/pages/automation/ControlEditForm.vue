@@ -15,12 +15,12 @@
 
     <el-col :span="8">
       <el-form-item label="策略名称" prop="name" :rules="rules.name">
-        <el-input v-model="formData.name"></el-input>
+        <el-input v-model="formData.name" placeholder="请填写策略名称"></el-input>
       </el-form-item>
     </el-col>
     <el-col :span="8">
       <el-form-item label="策略描述" prop="describe" :rules="rules.describe">
-        <el-input v-model="formData.describe"></el-input>
+        <el-input v-model="formData.describe" placeholder="请填写策略描述"></el-input>
       </el-form-item>
     </el-col>
     <el-col :span="8">
@@ -55,6 +55,7 @@
                     :business_id="business_id"
                     :asset_id.sync="rules_item.asset_id"
                     :clearable="false"
+                    @change="handleDeviceGroupChange(rules_item)"
                 ></DeviceGroupSelector>
               </el-form-item>
             </el-col>
@@ -65,6 +66,7 @@
                     :asset_id="rules_item.asset_id"
                     :device_id.sync="rules_item.device_id"
                     :clearable="false"
+                    @change="handleDeviceChange(rules_item)"
                 ></DeviceSelector>
               </el-form-item>
             </el-col>
@@ -112,7 +114,10 @@
             </el-col>
             <el-col :span="4">
               <el-form-item>
-                <IntervalSelector :interval.sync="rules_item.interval"></IntervalSelector>
+                <IntervalSelector
+                    :interval.sync="rules_item.interval"
+                    @change="handleIntervalChange(rules_item)"
+                ></IntervalSelector>
               </el-form-item>
             </el-col>
             <el-col :span="8">
@@ -144,6 +149,7 @@
                     :business_id="business_id"
                     :asset_id.sync="apply_item.asset_id"
                     :clearable="false"
+                    @change="handleDeviceGroupChange(apply_item)"
                 ></DeviceGroupSelector>
               </el-form-item>
             </el-col>
@@ -154,16 +160,17 @@
                     :asset_id="apply_item.asset_id"
                     :device_id.sync="apply_item.device_id"
                     :clearable="false"
+                    @change="handleDeviceChange(apply_item)"
                 ></DeviceSelector>
               </el-form-item>
             </el-col>
             <el-col :span="3">
               <el-form-item :prop="`config.apply.${index}.field`" :rules="rules['config.rules.field']">
                 <!-- 条件 -->
-                <TriggerSelector
+                <InstructSelector
                     :device_id="apply_item.device_id"
                     :field.sync="apply_item.field"
-                ></TriggerSelector>
+                ></InstructSelector>
               </el-form-item>
             </el-col>
             <el-col :span="3">
@@ -196,6 +203,8 @@
   </el-row>
   <!-- 开关end -->
 
+  <FormAlert :error_message="error_message"></FormAlert>
+
   <div class="text-right">
     <el-button size="medium" type="default" @click="handleCancel()">取消</el-button>
     <el-button size="medium" type="indigo" @click="handleSave()">保存</el-button>
@@ -214,6 +223,8 @@ import ControlTypeSelector from "./ControlTypeSelector.vue"
 import LogicalSelector from "./LogicalSelector.vue"
 import IntervalSelector from "./IntervalSelector.vue"
 import TimeSelector from "./TImeSelector.vue"
+import InstructSelector from "./InstructSelector.vue"
+import FormAlert from "@/components/common/FormAlert.vue";
 import {automation_add, automation_edit} from "@/api/automation";
 import {watch} from "@vue/composition-api/dist/vue-composition-api";
 import {json_parse_stringify} from "@/utils/helpers";
@@ -229,6 +240,8 @@ export default defineComponent({
     LogicalSelector,
     IntervalSelector,
     TimeSelector,
+    InstructSelector,
+    FormAlert,
   },
   props: {
     business_id: {
@@ -286,6 +299,27 @@ export default defineComponent({
       }
     })
 
+    let error_message = ref("")
+
+    // 重置表单数据
+    function resetFormData(){
+      let item_attrs = JSON.parse(JSON.stringify(props.current_item))
+
+      for (const key in formData) {
+        // 有则逐个赋值
+        if(key in item_attrs){
+          formData[key] = item_attrs[key]
+        }
+      }
+    }
+
+    // 修改时用
+    watch(()=>props.current_item, ()=>{
+      resetFormData()
+    }, {
+      immediate: true
+    })
+
     let rules = reactive({
       name:[
         {required: true, message: "请填写名字"}
@@ -313,25 +347,6 @@ export default defineComponent({
       ],
     })
 
-    // 重置表单数据
-    function resetFormData(){
-      let item_attrs = JSON.parse(JSON.stringify(props.current_item))
-
-      for (const key in formData) {
-        // 有则逐个赋值
-        if(key in item_attrs){
-          formData[key] = item_attrs[key]
-        }
-      }
-    }
-
-    // 修改时用
-    watch(()=>props.current_item, ()=>{
-      resetFormData()
-    }, {
-      immediate: true
-    })
-
     let loading = ref(false)
 
     function handleSave(){
@@ -352,6 +367,8 @@ export default defineComponent({
               // 新增
               props.add_alarm(formData)
             }
+          }else{
+            error_message.value = data.message
           }
         }).finally(()=>{
           loading.value = false
@@ -377,6 +394,24 @@ export default defineComponent({
       context.emit("update:controlDialogVisible", false)
     }
 
+    // 设备分组更改时
+    function handleDeviceGroupChange(item){
+      item.device_id = ""
+      item.field = ""
+    }
+
+    // 设备 id 更改时
+    function handleDeviceChange(item){
+      // device_id 更改时 field 置空
+      item.field = ""
+    }
+
+    // 时间条件下 interval 更改
+    function handleIntervalChange(item){
+      item.time = ""
+    }
+
+    // 条件类型切换表单对应的数据
     function handleTypeChange(val){
       let tmp = val ==1 ? default_rules_type_1 : default_rules_type_2
       formData.config.rules = [json_parse_stringify(tmp)]
@@ -411,6 +446,7 @@ export default defineComponent({
       showDialog,
       controlFormRef,
       formData,
+      error_message,
       rules,
       handleSave,
       handleCancel,
@@ -419,6 +455,9 @@ export default defineComponent({
       addApplyLine,
       removeApplyLine,
       handleTypeChange,
+      handleDeviceChange,
+      handleDeviceGroupChange,
+      handleIntervalChange,
     }
   }
 })

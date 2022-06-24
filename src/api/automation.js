@@ -80,6 +80,15 @@ export function automation_symbol(){
     })
 }
 
+// 控制指令 第三个选项
+export function automation_instruct(data){
+    return axios({
+        url: "/automation/instruct",
+        method: "post",
+        data,
+    })
+}
+
 // 新增告警信息
 export function warning_add(data){
     return axios({

@@ -111,7 +111,7 @@ import DeviceGroupSelector from "@/components/common/DeviceGroupSelector.vue";
 import DeviceSelector from "./DeviceSelector.vue"
 import useAlarmTriggerOptions from "@/view/pages/automation/useAlarmTriggerOptions";
 import {warning_add, warning_edit} from "@/api/automation";
-import FormAlert from "@/components/common/FormAlert";
+import FormAlert from "@/components/common/FormAlert.vue";
 
 export default defineComponent({
   name: "AlarmEditForm",

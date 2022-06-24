@@ -2,6 +2,7 @@
 <el-select
     class="w-100"
     v-model="intervalValue"
+    @change="handleChange"
 >
   <el-option
       :value="item.value"
@@ -37,9 +38,14 @@ export default defineComponent({
       {label: "每天", value: 1},
     ])
 
+    function handleChange(){
+      context.emit('change')
+    }
+
     return {
       intervalValue,
       intervalOptions,
+      handleChange,
     }
   }
 })
