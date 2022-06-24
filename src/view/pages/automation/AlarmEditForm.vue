@@ -15,12 +15,12 @@
 
     <el-col :span="12">
       <el-form-item label="告警策略名称" prop="name" :rules="rules.name">
-        <el-input v-model="formData.name"></el-input>
+        <el-input v-model="formData.name" placeholder="请填写告警策略名称"></el-input>
       </el-form-item>
     </el-col>
     <el-col :span="12">
       <el-form-item label="告警策略名称" prop="describe" :rules="rules.describe">
-        <el-input v-model="formData.describe"></el-input>
+        <el-input v-model="formData.describe" placeholder="请填写告警策略名称"></el-input>
       </el-form-item>
     </el-col>
 
@@ -30,6 +30,7 @@
             :business_id="business_id"
             :asset_id.sync="formData.sensor"
             :clearable="false"
+            @change="handleDeviceGroupChange"
         ></DeviceGroupSelector>
       </el-form-item>
     </el-col>
@@ -39,6 +40,7 @@
             :asset_id="formData.sensor"
             :device_id.sync="formData.bid"
             :clearable="false"
+            @change="handleDeviceChange"
         ></DeviceSelector>
       </el-form-item>
     </el-col>
@@ -89,7 +91,7 @@
     </el-col>
 
     <el-col :span="24">
-      <el-form-item label="触发条件">
+      <el-form-item label="信息">
         <el-input v-model="formData.message" type="textarea"></el-input>
       </el-form-item>
     </el-col>
@@ -268,6 +270,23 @@ export default defineComponent({
       operatorOptions,
     } = useAlarmTriggerOptions(formData)
 
+    // 设备分组更改时
+    function handleDeviceGroupChange(){
+      formData.bid = ""; // 设备id 置空
+      // 触发条件置空
+      formData.config = [
+        {field: "", condition: "", value: ""}
+      ]
+    }
+
+    // 设备更改时
+    function handleDeviceChange(){
+      // 触发条件置空
+      formData.config = [
+        {field: "", condition: "", value: ""}
+      ]
+    }
+
     // 添加条件
     function addLine(){
       formData.config.push({
@@ -293,6 +312,8 @@ export default defineComponent({
       operatorOptions,
       addLine,
       removeLine,
+      handleDeviceGroupChange,
+      handleDeviceChange,
     }
   }
 })
