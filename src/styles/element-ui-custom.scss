@@ -175,6 +175,13 @@
       color: #a8c5ff;
     }
   }
+
+  // 计数器 按钮
+  .el-input-number.is-controls-right{
+    .el-input-number__decrease,.el-input-number__increase{
+      border-color: transparent!important;
+    }
+  }
 }
 
 // 有冲突，级联选择去掉横向滚动条

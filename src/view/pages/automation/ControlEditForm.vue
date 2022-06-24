@@ -177,10 +177,11 @@
             <el-col :span="3">
               <el-form-item
                   :prop="`config.apply.${index}.value`"
-                  :rules="apply_item.field_type ==3 ? rules['config.rules.value_number'] : rules['config.rules.value']"
+                  :rules="apply_item.field_type === 3 ? rules['config.rules.value_number'] : rules['config.rules.value']"
               >
-                <!-- 值 -->
-                <el-input size="medium" class="w-100" v-model="apply_item.value" placeholder="值"></el-input>
+                <!-- 值 field_type等于3时 改为数字输入框 -->
+                <el-input-number size="medium" controls-position="right" class="w-100" v-model="apply_item.value" v-if="apply_item.field_type === 3"></el-input-number>
+                <el-input size="medium" class="w-100" v-model="apply_item.value" v-else></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="3">
@@ -394,7 +395,7 @@ export default defineComponent({
       let copy = JSON.parse(JSON.stringify(formData))
       // 重点 config 要序列化
       copy.config = JSON.stringify(copy.config)
-      // status 需要时数字，字符串会报错 "状态 不能为空"
+      // status 需要数字类型，字符串会报错 "状态 不能为空"
       copy.status = Number(copy.status)
       // sort 需要转字符串，不然保存为0
       copy.sort = String(copy.sort)
