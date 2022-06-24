@@ -17,6 +17,7 @@
 import {defineComponent, ref} from "@vue/composition-api";
 import {computed, watch} from "@vue/composition-api/dist/vue-composition-api";
 import {automation_instruct} from "@/api/automation";
+import {json_parse_stringify} from "@/utils/helpers";
 
 export default defineComponent({
   name: "InstructSelector",
@@ -28,6 +29,9 @@ export default defineComponent({
     field: {
       required: true,
       type: String,
+    },
+    apply_item: {
+      required: true,
     }
   },
   setup(props, context){
@@ -44,11 +48,15 @@ export default defineComponent({
 
     // 获取下拉菜单
     watch(()=>props.device_id, (val) =>{
-      console.log(val)
       if(val){
         automation_instruct({bid: val}).then(({data})=>{
           if(data.code === 200 && data.data){
             instructOptions.value = washData(data.data)
+
+            if(props.field){
+              // 修改控制策略时用，初始化数据
+              update_apply_item(props.field)
+            }
           }
         })
       }
@@ -69,7 +77,19 @@ export default defineComponent({
       return [...map.values()]
     }
 
+    function update_apply_item(current_key){
+      // 通过key找出当前的选项，
+      let result = instructOptions.value.filter((item)=> item.key === current_key)
+      if(result.length){
+        // 更新到父级，用于表单条件验证
+        props.apply_item.field_type = result[0].type
+        props.apply_item.field_symbol = result[0].symbol
+      }
+    }
+
     function handleChange(val){
+      update_apply_item(val)
+
       context.emit('change', val)
     }
 

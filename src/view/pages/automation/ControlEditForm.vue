@@ -170,13 +170,17 @@
                 <InstructSelector
                     :device_id="apply_item.device_id"
                     :field.sync="apply_item.field"
+                    :apply_item="apply_item"
                 ></InstructSelector>
               </el-form-item>
             </el-col>
             <el-col :span="3">
-              <el-form-item :prop="`config.apply.${index}.value`" :rules="rules['config.rules.value']">
+              <el-form-item
+                  :prop="`config.apply.${index}.value`"
+                  :rules="apply_item.field_type ==3 ? rules['config.rules.value_number'] : rules['config.rules.value']"
+              >
                 <!-- 值 -->
-                <el-input size="medium" class="w-100" v-model="apply_item.value" placeholder="数值"></el-input>
+                <el-input size="medium" class="w-100" v-model="apply_item.value" placeholder="值"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="3">
@@ -276,6 +280,8 @@ export default defineComponent({
     })
 
     let controlFormRef = ref()
+
+    // 默认值重置时用
     let default_rules_type_1 = {asset_id: "", device_id: "", field: "", condition: "", value: "", duration: 0}
     let default_rules_type_2 = {interval:0, time:""}
     let default_apply = {asset_id: "", device_id: "",  field: "",  value: ""}
@@ -341,6 +347,10 @@ export default defineComponent({
       ],
       "config.rules.value": [
         {required: true, message: "请填写值"}
+      ],
+      "config.rules.value_number": [
+        {required: true, message: "请填写值"},
+        {pattern: /^[0-9]+([.]{1}[0-9]+){0,1}$/, message: "必须是数字"},
       ],
       "config.rules.time": [
         {required: true, message: "请选择时间"}
@@ -417,6 +427,7 @@ export default defineComponent({
       formData.config.rules = [json_parse_stringify(tmp)]
     }
 
+    // 添加表单规则
     function addRulesLine(){
       let tmp;
       if(formData.type == 1){
@@ -427,7 +438,7 @@ export default defineComponent({
       }
       formData.config.rules.push(json_parse_stringify(tmp))
     }
-
+    // 移除表单规则
     function removeRulesLine(item){
       let index = formData.config.rules.indexOf(item)
       formData.config.rules.splice(index, 1)
