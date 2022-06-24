@@ -19,7 +19,7 @@
         <!-- 新建或者编辑 -->
         <el-form-item v-if="scope.row.status" :error="scope.row.errors.name">
           <el-input size="medium" v-model="scope.row.formData.name" v-focus
-                    @keydown.enter.native="handleSave(scope.row)"></el-input>
+                    @keydown.enter.native.prevent="handleSave(scope.row)"></el-input>
         </el-form-item>
         <span v-else class="cursor-pointer" @click="showDevice(scope.row)">{{scope.row.name}}</span>
       </template>

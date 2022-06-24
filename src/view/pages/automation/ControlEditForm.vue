@@ -202,6 +202,7 @@
     <el-col :span="24">
       <el-form-item label="策略状态" class="inline-form-item">
         <el-switch :active-value="1" :inactive-value="0" v-model="formData.status"></el-switch>
+        <small class="px-2">{{formData.status ? '开' : '关'}}</small>
       </el-form-item>
     </el-col>
   </el-row>

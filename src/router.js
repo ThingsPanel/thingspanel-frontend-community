@@ -94,41 +94,41 @@ export default new Router({
                     component: () =>
                         import ("@/view/pages/users/EditPassword.vue")
                 },
-                {
-                    path: "/strategy/list",
-                    name: "strategylist",
-                    component: () =>
-                        import ("@/view/pages/strategy/List.vue")
-                },
+                // {
+                //     path: "/strategy/list",
+                //     name: "strategylist",
+                //     component: () =>
+                //         import ("@/view/pages/strategy/List.vue")
+                // },
                 // 新自动化
                 {
-                    path: "/strategy/list2",
+                    path: "/strategy/list",
                     name: "strategylist2",
                     component: ()=>
                         import ("@/view/pages/automation/AutomationIndex.vue")
                 },
-                {
-                    path: "/strategy/strlist",
-                    name: "strlist",
-                    component: () =>
-                        import ("@/view/pages/strategy/Strlist.vue")
-                },
+                // {
+                //     path: "/strategy/strlist",
+                //     name: "strlist",
+                //     component: () =>
+                //         import ("@/view/pages/strategy/Strlist.vue")
+                // },
                 // 新增控制策略
                 {
-                    path: "/strategy/strlist2",
+                    path: "/strategy/strlist",
                     name: "control_strategy",
                     component: () =>
                         import ("@/view/pages/automation/ControlStrategy.vue")
                 },
-                {
-                    path: "/strategy/alarmlist",
-                    name: "alarmlist",
-                    component: () =>
-                        import ("@/view/pages/strategy/Alarmlist.vue")
-                },
+                // {
+                //     path: "/strategy/alarmlist",
+                //     name: "alarmlist",
+                //     component: () =>
+                //         import ("@/view/pages/strategy/Alarmlist.vue")
+                // },
                 // 新告警策略
                 {
-                    path: "/strategy/alarmlist2",
+                    path: "/strategy/alarmlist",
                     name: "alarm_strategy",
                     component: () =>
                         import ("@/view/pages/automation/AlarmStrategy.vue")

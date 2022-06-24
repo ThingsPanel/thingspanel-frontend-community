@@ -31,11 +31,11 @@ export default {
     navs:[
       {name:"COMMON.HOME", icon: 'menu-icon flaticon2-architecture-and-city', link: '/home'},
       {name:"COMMON.BUSINESS", icon: 'menu-icon flaticon2-rhombus', link: '/list'},
-      // {name:"COMMON.BUSINESS", icon: 'menu-icon flaticon2-rhombus', link: '/list2'},
+      {name:"COMMON.DATAS", icon: 'menu-icon flaticon2-list', link: '/data/index'}, // 数据管理
       // {name:"COMMON.DEVICE", icon: 'menu-icon flaticon2-rhombus', link: '/device'},
       {name:"COMMON.VISUALIZATION", icon: 'menu-icon flaticon2-laptop', link: '/chart/list'},
       {name:"COMMON.AUTOMATION", icon: 'menu-icon flaticon2-hourglass', link: '/strategy/list'},
-      {name:"COMMON.AUTOMATION", icon: 'menu-icon flaticon2-hourglass', link: '/strategy/list2'},
+      // {name:"COMMON.AUTOMATION", icon: 'menu-icon flaticon2-hourglass', link: '/strategy/list2'},
       {name:"COMMON.WARNINFO", icon: 'menu-icon flaticon2-warning', link: '/alarm/list'},
       {name: "COMMON.SYSTEMLOG",icon: 'menu-icon flaticon-open-box', open:false, children: [
           {name:"COMMON.OPERATIONLOG", icon: 'menu-icon flaticon2-paper', link: '/log/list'},
@@ -44,8 +44,7 @@ export default {
       {name: "COMMON.PRODUCTMANAGEMENT", icon: 'menu-icon flaticon2-gift-1', open:false, children: [
           {name:"COMMON.FIRMWAREUPGRADE", icon: 'menu-icon flaticon-upload-1', link: '/firmware/index'},
         ]},
-      {name:"COMMON.TRANSPOND", icon: 'menu-icon flaticon-share', link: '/transpond/index'},
-      {name:"COMMON.DATAS", icon: 'menu-icon flaticon2-list', link: '/data/index'},
+      {name:"COMMON.TRANSPOND", icon: 'menu-icon flaticon-share', link: '/transpond/index'}, // 数据转发
       {name:"COMMON.MARKET", icon: 'menu-icon flaticon2-supermarket', link: '/market'},
       {name:"COMMON.USERS", icon: 'menu-icon flaticon2-user', link: '/users/user'},
       {name:"COMMON.SYSTEMSETUP", icon: 'menu-icon flaticon2-gear', link: '/system/index'},
