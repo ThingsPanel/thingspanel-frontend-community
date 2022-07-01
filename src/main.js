@@ -85,6 +85,7 @@ import "./core/plugins/inline-svg";
 import "./core/plugins/apexcharts";
 import "./core/plugins/metronic";
 import "@mdi/font/css/materialdesignicons.css";
+import './permission' // permission control
 
 // map
 import AMap from 'vue-amap';
@@ -108,39 +109,39 @@ new DevicePixelRatio().init();
 // Remove this to disable mock API
 // MockService.init();
 
-router.beforeEach((to, from, next) => {
-    // reset config to initial state
-    store.dispatch(RESET_LAYOUT_CONFIG);
+// router.beforeEach((to, from, next) => {
+//     // reset config to initial state
+//     store.dispatch(RESET_LAYOUT_CONFIG);
 
-    // Ensure we checked auth before each page load.
-    Promise.all([store.dispatch(VERIFY_AUTH)]).then(next);
+//     // Ensure we checked auth before each page load.
+//     Promise.all([store.dispatch(VERIFY_AUTH)]).then(next);
 
-    // Scroll page to top on every route change
-    setTimeout(() => {
-        window.scrollTo(0, 0);
-    }, 100);
+//     // Scroll page to top on every route change
+//     setTimeout(() => {
+//         window.scrollTo(0, 0);
+//     }, 100);
 
-    setTimeout(() => {
-        var _hmt = _hmt || [];
-        (function() {
-            document.getElementById('baidu_tj') && document.getElementById('baidu_tj').remove();
-            var hm = document.createElement("script");
-            hm.src = "https://hm.baidu.com/hm.js?e4910b169e66c3c3d29050a965c59f1c";
-            hm.id = "baidu_tj"
+//     setTimeout(() => {
+//         var _hmt = _hmt || [];
+//         (function() {
+//             document.getElementById('baidu_tj') && document.getElementById('baidu_tj').remove();
+//             var hm = document.createElement("script");
+//             hm.src = "https://hm.baidu.com/hm.js?e4910b169e66c3c3d29050a965c59f1c";
+//             hm.id = "baidu_tj"
 
-            var s = document.getElementsByTagName("script")[0];
-            s.parentNode.insertBefore(hm, s);
-        })();
-    }, 0);
-});
+//             var s = document.getElementsByTagName("script")[0];
+//             s.parentNode.insertBefore(hm, s);
+//         })();
+//     }, 0);
+// });
 
 // 注册一个全局自定义指令 `v-focus`
 Vue.directive('focus', {
     // 当被绑定的元素插入到 DOM 中时……
-    inserted: function (el) {
+    inserted: function(el) {
         // 获取input元素
         let input = el.querySelector('input')
-        // 聚焦元素
+            // 聚焦元素
         input ? input.focus() : el.focus()
     }
 })

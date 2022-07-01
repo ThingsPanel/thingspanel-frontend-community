@@ -1,7 +1,7 @@
 import axios from "./http"
 
 // 用户列表
-export function user_index(data){
+export function user_index(data) {
     return axios({
         url: "/user/index",
         method: "post",
@@ -10,7 +10,7 @@ export function user_index(data){
 }
 
 // 添加用户
-export function user_add(data){
+export function user_add(data) {
     return axios({
         url: "/user/add",
         method: "post",
@@ -19,7 +19,7 @@ export function user_add(data){
 }
 
 // 修改用户
-export function user_edit(data){
+export function user_edit(data) {
     return axios({
         url: "/user/edit",
         method: "post",
@@ -28,7 +28,7 @@ export function user_edit(data){
 }
 
 // 删除用户
-export function user_delete(data){
+export function user_delete(data) {
     return axios({
         url: "/user/delete",
         method: "post",
@@ -37,7 +37,7 @@ export function user_delete(data){
 }
 
 // 用户权限
-export function user_permission(data){
+export function user_permission(data) {
     return axios({
         url: "/user/permission",
         method: "post",
@@ -55,9 +55,20 @@ export function user_reset_password(data) {
 }
 
 // 修改密码
-export function user_change_password(data){
+export function user_change_password(data) {
     return axios({
         url: "/user/update",
+        method: "post",
+        data
+    })
+}
+
+
+// 修改密码
+export async function get_menu(data) {
+    console.log('--data--', data);
+    return axios({
+        url: "/menu/user",
         method: "post",
         data
     })
