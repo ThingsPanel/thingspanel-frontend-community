@@ -66,7 +66,7 @@ router.beforeEach(async(to, from, next) => {
 
 export async function reSetMenu(router) {
 
-    console.log('--login-auth---', AUTH.state);
+    // console.log('--login-auth---', AUTH.state);
 
     const routes = [];
     const menus = [{
