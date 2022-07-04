@@ -202,6 +202,71 @@ export const constantRouterMap = [{
                     import ("@/view/pages/auth/Register")
             }
         ]
+    },
+
+    {
+        path: "/extra",
+        component: () =>
+            import ("@/view/layout/Layout"),
+        children: [{
+                path: "/list/device",
+                name: "device",
+                component: () =>
+                    import ("@/view/pages/device/DeviceIndex.vue")
+            },
+            {
+                path: "/business",
+                name: "business",
+                component: () =>
+                    import ("@/view/pages/business/Business.vue")
+            }, {
+                path: "/editbusiness",
+                name: "editbusiness",
+                component: () =>
+                    import ("@/view/pages/business/Editbusiness.vue")
+            },
+            {
+                path: "/editbusiness2",
+                name: "editbusiness2",
+                component: () =>
+                    import ("@/view/pages/business/EditBusinessPage.vue")
+            },
+            {
+                path: "/chart/chart",
+                name: "chart",
+                component: () =>
+                    import ("@/view/pages/chart/Chart.vue")
+            }, {
+                path: "/chart/test",
+                name: "Test",
+                component: () =>
+                    import ("@/view/pages/chart/Test.vue")
+            },
+            {
+                path: "/editpassword",
+                name: "editpassword",
+                component: () =>
+                    import ("@/view/pages/users/EditPassword.vue")
+            },
+            {
+                path: "/strategy/strlist",
+                name: "control_strategy",
+                component: () =>
+                    import ("@/view/pages/automation/ControlStrategy.vue")
+            },
+            {
+                path: "/strategy/alarmlist",
+                name: "alarm_strategy",
+                component: () =>
+                    import ("@/view/pages/automation/AlarmStrategy.vue")
+            },
+            {
+                path: "/production/index",
+                name: "production",
+                component: () =>
+                    import ("@/view/pages/production/index.vue")
+            }
+        ]
     }
 ];
 

@@ -83,58 +83,6 @@ export async function reSetMenu(router) {
         },
 
         {
-            path: "/list",
-            flag: "/list/device",
-            component: () =>
-                import ("@/view/layout/Layout"),
-            children: [{
-                path: "/list/device",
-                name: "device",
-                component: () =>
-                    import ("@/view/pages/device/DeviceIndex.vue")
-            }]
-        },
-
-        {
-            path: "/business",
-            flag: "/business",
-            component: () =>
-                import ("@/view/layout/Layout"),
-            children: [{
-                path: "/business",
-                name: "business",
-                component: () =>
-                    import ("@/view/pages/business/Business.vue")
-            }]
-        },
-
-        {
-            path: "/editbusiness",
-            flag: "/editbusiness",
-            component: () =>
-                import ("@/view/layout/Layout"),
-            children: [{
-                path: "/editbusiness",
-                name: "editbusiness",
-                component: () =>
-                    import ("@/view/pages/business/Editbusiness.vue")
-            }]
-        },
-
-        {
-            path: "/editbusiness2",
-            flag: "/editbusiness2",
-            component: () =>
-                import ("@/view/layout/Layout"),
-            children: [{
-                path: "/editbusiness2",
-                name: "editbusiness2",
-                component: () =>
-                    import ("@/view/pages/business/EditBusinessPage.vue")
-            }]
-        },
-
-        {
             path: "/users",
             flag: "user_management",
             component: () =>
@@ -144,32 +92,6 @@ export async function reSetMenu(router) {
                 name: "user",
                 component: () =>
                     import ("@/view/pages/users/UserIndex.vue")
-            }]
-        },
-
-        {
-            path: "/chart",
-            flag: "/chart/chart",
-            component: () =>
-                import ("@/view/layout/Layout"),
-            children: [{
-                path: "/chart/chart",
-                name: "chart",
-                component: () =>
-                    import ("@/view/pages/chart/Chart.vue")
-            }]
-        },
-
-        {
-            path: "/chart",
-            flag: "/chart/test",
-            component: () =>
-                import ("@/view/layout/Layout"),
-            children: [{
-                path: "/chart/test",
-                name: "Test",
-                component: () =>
-                    import ("@/view/pages/chart/Test.vue")
             }]
         },
 
@@ -186,19 +108,6 @@ export async function reSetMenu(router) {
             }]
         },
 
-        {
-            path: "/editpassword",
-            flag: "/editpassword",
-            component: () =>
-                import ("@/view/layout/Layout"),
-            children: [{
-                path: "/editpassword",
-                name: "editpassword",
-                component: () =>
-                    import ("@/view/pages/users/EditPassword.vue")
-            }]
-        },
-
         // 新自动化
         {
             path: "/strategy",
@@ -210,35 +119,6 @@ export async function reSetMenu(router) {
                 name: "strategylist2",
                 component: () =>
                     import ("@/view/pages/automation/AutomationIndex.vue")
-            }]
-        },
-
-        // 新增控制策略
-        {
-            path: "/strategy",
-            flag: "/strategy/strlist",
-            component: () =>
-                import ("@/view/layout/Layout"),
-            children: [{
-                path: "/strategy/strlist",
-                name: "control_strategy",
-                component: () =>
-                    import ("@/view/pages/automation/ControlStrategy.vue")
-            }]
-        },
-
-
-        // 新告警策略
-        {
-            path: "/strategy",
-            flag: "/strategy/alarmlist",
-            component: () =>
-                import ("@/view/layout/Layout"),
-            children: [{
-                path: "/strategy/alarmlist",
-                name: "alarm_strategy",
-                component: () =>
-                    import ("@/view/pages/automation/AlarmStrategy.vue")
             }]
         },
 
@@ -278,19 +158,6 @@ export async function reSetMenu(router) {
                 name: "datas",
                 component: () =>
                     import ("@/view/pages/datas/DataIndex.vue")
-            }]
-        },
-
-        {
-            path: "/production",
-            flag: "/production/index",
-            component: () =>
-                import ("@/view/layout/Layout"),
-            children: [{
-                path: "/production/index",
-                name: "production",
-                component: () =>
-                    import ("@/view/pages/production/index.vue")
             }]
         },
 
@@ -367,13 +234,16 @@ export async function reSetMenu(router) {
     await get_menu({ 'email': 'admin@thingspanel.cn' }).then(res => {
         let ret = res.data;
         if (ret.code === 200) {
+
+            // console.log('router.getRoutes()', router.getRoutes());
+            // console.log('menus', menus);
             let right = ret.data;
             for (let i = 0; i < menus.length; i++) {
                 for (let ii = 0; ii < right.length; ii++) {
                     if (menus[i].flag == right[ii]) {
                         let flag = false;
-                        for (let i = 0; i < router.getRoutes().length; i++) {
-                            if (router.getRoutes()[i].path == menus[i].path) {
+                        for (let iii = 0; iii < router.getRoutes().length; iii++) {
+                            if (router.getRoutes()[iii].path == menus[i].path) {
                                 flag = true;
                             }
                         }
@@ -383,6 +253,8 @@ export async function reSetMenu(router) {
                     }
                 }
             }
+
+            console.log('---routes---', routes);
         }
     });
 
