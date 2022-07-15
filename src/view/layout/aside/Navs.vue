@@ -109,11 +109,25 @@ export default {
         icon: "menu-icon flaticon2-user",
         link: "/users/user",
       },
-      {
-        name: "COMMON.SYSTEMSETUP",
-        icon: "menu-icon flaticon2-gear",
-        link: "/system/index",
-      },
+      // {
+      //   name: "COMMON.SYSTEMSETUP",
+      //   icon: "menu-icon flaticon2-gear",
+      //   link: "/system/index",
+      // },
+      {name:"COMMON.SYSTEMMANAGEMENT", icon: 'menu-icon flaticon2-gear', 
+      open:false, children: [
+          {
+            name:"COMMON.SYSTEMSETUP", 
+            icon: 'menu-icon flaticon-upload-1', 
+            link: '/system/index'
+          },
+          {
+             name:"COMMON.MANAGEMENT", 
+             icon: 'menu-icon flaticon-upload-1', 
+             link: '/management/index'
+          },
+          //  {name:"COMMON.MANAGEMENT", icon: 'menu-icon flaticon-upload-1', link: '/management/index'},
+        ]},
     ],
   }),
 

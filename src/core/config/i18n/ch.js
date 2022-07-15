@@ -1,7 +1,9 @@
 // China
 export const locale = {
   COMMON: {
+    SYSTEMMANAGEMENT:"系统管理",
     SYSTEMSETUP: "系统设置",
+    MANAGEMENT:"角色管理",
     DEVICE: "设备管理",
     DEVICEPROPERTIES: "设备属性",
     DEVICEPROPERTIESVALUE: "设备属性值",
@@ -271,6 +273,18 @@ export const locale = {
     LOG9: "控制策略",
     LOG10: "操作日志",
     LOG11: "图表",
+    NUMBERID:"序号",
+    BUSINESSNAME1:"业务名称",
+    DEVICENAME1:"设备名称",
+    DWVICEGROUPNAME1:"设备分组名称",
+    INSTRUCTION1:"指令",
+    OPERATIONTYPE1:"操作类型",
+    TRIGGERINGTIME1:"触发时间",
+    SENDTHERESULIT1:"发送结果",
+    PROTOCOLTYPE1:"协议类型",
+    EQUIPMENTLOG1:"设备日志",
+    QUERY1:"查询",
+    REST1:"重置",
   },
   TRANSLATOR: {
     SELECT: "选择你的语言",

@@ -2,6 +2,8 @@
 export const locale = {
 
   COMMON: {
+    MANAGEMENT:"Role management",
+    SYSTEMMANAGEMENT:"system management",
     SYSTEMSETUP: "System setup",
     DEVICE: "Device Manager ",
     DEVICEPROPERTIES: "Device properties",
@@ -274,6 +276,18 @@ export const locale = {
     LOG9: "Control Strategy",
     LOG10: "Operation log",
     LOG11: "Chart",
+    NUMBERID:"ID",
+    BUSINESSNAME1:"BusinessName",
+    DEVICENAME1:"DeviceName",
+    DWVICEGROUPNAME1:"DeviceGroupName",
+    INSTRUCTION1:"Instruction",
+    OPERATIONTYPE1:"OperationType",
+    TRIGGERINGTIME1:"TriggeringTime",
+    SENDTHERESULIT1:"SendTheResults",
+    PROTOCOLTYPE1:"ProtocolType",
+    EQUIPMENTLOG1:"EquipmentLog",
+    QUERY1:"QUERY",
+    REST1:"REST"
   },
   TRANSLATOR: {
     SELECT: "Please select language",

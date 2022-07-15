@@ -125,7 +125,7 @@
         <!--   structure下数组的 field属性的数组   -->
         <template v-if="scope.row.structure" v-for="item in scope.row.structure">
           <template v-if="item.field" v-for="field in item.field">
-            <el-tag  class="mr-1 mb-1 tag-custom"  :key="field.key">{{ field.name }}</el-tag>
+            <el-tag size="mini" class="mr-1 mb-1" :key="field.key">{{ field.name }}</el-tag>
           </template>
         </template>
       </template>
@@ -359,9 +359,5 @@ export default defineComponent({
 
 /deep/ .el-form-item{
   margin: 0 !important;
-}
-.tag-custom{
-  background: transparent;
-  border-color:#409EFF;
 }
 </style>

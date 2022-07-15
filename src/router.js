@@ -12,7 +12,15 @@ export const constantRouterMap = [{
             name: "home",
             component: () =>
                 import ("@/view/pages/Home.vue")
-        }]
+        },
+        {
+            path: "/management/index",
+            name: "management",
+            component: () =>
+                import ("@/view/pages/management/index.vue")
+        }
+
+    ]
     },
     // {
     //     path: "/list",
@@ -266,6 +274,7 @@ export const constantRouterMap = [{
                 component: () =>
                     import ("@/view/pages/production/index.vue")
             }
+            
         ]
     }
 ];

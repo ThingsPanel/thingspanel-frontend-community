@@ -26,6 +26,9 @@ import {
     BreadcrumbItem,
     Switch,
     Message,
+    Tree,
+    Drawer,
+    Divider,
 } from "element-ui";
 
 // 防止dialog导致页面滚动条消失抖动
@@ -59,6 +62,9 @@ const element = {
         Vue.use(Breadcrumb)
         Vue.use(BreadcrumbItem)
         Vue.use(Switch)
+        Vue.use(Tree)
+        Vue.use(Drawer)
+        Vue.use(Divider)
 
         Vue.prototype.$message = Message
     }
