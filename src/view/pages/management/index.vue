@@ -152,6 +152,7 @@
             :data="treeData"
             show-checkbox
             node-key="id"
+            :default-checked-keys="treeCheckeds"
             :props="defaultProps"
             @check="checkChange"
             @check-change="setChecked"
@@ -202,6 +203,7 @@ export default defineComponent({
     const tableData = ref([]);
     const treeData = ref([]);
     const drawer = ref(false);
+    const treeCheckeds = ref([]);
     let checkedKeyObj = {};
     const per_page = 10;
     const page = 1;
@@ -236,13 +238,22 @@ export default defineComponent({
       });
     };
     // 获取权限数据  /api/menu/tree
-    const treeDateList = () => {
-      ApiService.post(AUTH.local_url + "/menu/tree").then(({ data }) => {
-        if (data.code == 200) {
-          var arr = data.data;
-          treeData.value = setTreeData(arr);
+    const treeDateList = (item) => {
+      const { id } = item
+      ApiService.post(AUTH.local_url + "/menu/role/index",{ role_id:id }).then((result)=>{
+        if(result.data.code == 200){
+          const resultData = result.data.data || [];
+          treeCheckeds.value = resultData;
+          checkedKeyObj.menu_ids = resultData
+          ApiService.post(AUTH.local_url + "/menu/tree").then(({ data }) => {
+            if (data.code == 200) {
+              var arr = data.data;
+              treeData.value = setTreeData(arr);
+            }
+          });
         }
-      });
+      })
+      
     };
     // 信息编辑
     const handle_launch = (item) => {
@@ -296,7 +307,7 @@ export default defineComponent({
     // 权限管理
     const role_id = ref("");
     const handle_quanxian = (items) => {
-      treeDateList();
+      treeDateList(items);
       checkedKeyObj.role_id = items.id;
       drawer.value = true;
     };
@@ -392,6 +403,7 @@ export default defineComponent({
       handle_launch,
       handle_sever,
       treeData,
+      treeCheckeds,
       defaultProps,
       drawer,
       closeDrawer,
