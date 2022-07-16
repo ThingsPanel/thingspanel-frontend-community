@@ -19,8 +19,8 @@
       </el-form-item>
     </el-col>
     <el-col :span="12">
-      <el-form-item label="告警策略名称" prop="describe" :rules="rules.describe">
-        <el-input v-model="formData.describe" placeholder="请填写告警策略名称"></el-input>
+      <el-form-item label="告警策略描述" prop="describe" :rules="rules.describe">
+        <el-input v-model="formData.describe" placeholder="请填写告警策略描述"></el-input>
       </el-form-item>
     </el-col>
 
@@ -91,10 +91,22 @@
     </el-col>
 
     <el-col :span="24">
+      <el-form-item label="告警方式">
+        <el-checkbox-group v-model="formData.warningChecked" @change="handleAlarmChange" size="small">
+          <el-checkbox label="email">邮箱</el-checkbox>
+          <el-checkbox label="sms" disabled>短信</el-checkbox>
+          <el-checkbox label="dingtalk" disabled>钉钉</el-checkbox>
+          <el-checkbox label="enterpriseWeChat" disabled>企业微信</el-checkbox>
+        </el-checkbox-group>
+      </el-form-item>
+    </el-col>
+
+    <el-col :span="24">
       <el-form-item label="信息">
         <el-input v-model="formData.message" type="textarea"></el-input>
       </el-form-item>
     </el-col>
+
   </el-row>
 
   <FormAlert :error_message="error_message"></FormAlert>
@@ -114,7 +126,7 @@ import DeviceSelector from "./DeviceSelector.vue"
 import useAlarmTriggerOptions from "@/view/pages/automation/useAlarmTriggerOptions";
 import {warning_add, warning_edit} from "@/api/automation";
 import FormAlert from "@/components/common/FormAlert.vue";
-
+import AUTH from "@/core/services/store/auth.module";
 export default defineComponent({
   name: "AlarmEditForm",
   components: {
@@ -168,10 +180,18 @@ export default defineComponent({
         {field: "", condition: "", value: ""},
       ],
       message: "",
+      other_message:"",
+      warningChecked:[],
     })
 
     let error_message = ref("")
 
+    function handleAlarmChange(val) {
+      formData.other_message = "";
+      if(val.indexOf('email') > -1){  
+        formData.other_message = AUTH.state.user.email;
+      }
+    }
     // 重置表单数据
     function resetFormData(){
       let item_attrs = JSON.parse(JSON.stringify(props.current_item))
@@ -180,6 +200,9 @@ export default defineComponent({
         if(key in item_attrs){
           formData[key] = item_attrs[key]
         }
+      }
+      if(item_attrs.other_message){
+       formData.warningChecked = ["email"]
       }
     }
 
@@ -310,6 +333,7 @@ export default defineComponent({
       triggerOptions,
       symbolOptions,
       operatorOptions,
+      handleAlarmChange,
       addLine,
       removeLine,
       handleDeviceGroupChange,

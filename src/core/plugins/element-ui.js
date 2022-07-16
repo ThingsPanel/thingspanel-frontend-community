@@ -29,6 +29,9 @@ import {
     Tree,
     Drawer,
     Divider,
+    Checkbox,
+    CheckboxButton,
+    CheckboxGroup,
 } from "element-ui";
 
 // 防止dialog导致页面滚动条消失抖动
@@ -65,6 +68,9 @@ const element = {
         Vue.use(Tree)
         Vue.use(Drawer)
         Vue.use(Divider)
+        Vue.use(Checkbox)
+        Vue.use(CheckboxButton)
+        Vue.use(CheckboxGroup)
 
         Vue.prototype.$message = Message
     }

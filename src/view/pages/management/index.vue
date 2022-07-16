@@ -62,6 +62,7 @@
             <el-button
               size="mini"
               type="indigo"
+              :disabled="!scope.row.id"
               @click="handle_quanxian(scope.row)"
               >权限管理</el-button
             >
@@ -366,6 +367,9 @@ export default defineComponent({
             id:"",//id
             role_describe: "",//角色描述
             role_name: "",//角色名称
+            errors: {
+                role_name: ""
+            },
         })
       
     }
