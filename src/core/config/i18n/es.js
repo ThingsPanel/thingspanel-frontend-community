@@ -98,5 +98,24 @@ export const locale = {
         ADD_MESSAGE: "Customer has been created"
       }
     }
+  },
+  MANAGEMENT:{
+    PERMISSION:{
+      HOMEPAGE:"Home Page",
+      BUISNESS:"Business",
+      DASHBOARD:"Visualization",
+      AUTOMATION:"automation",
+      ALERT_MESSAGE:"Alarm Information",
+      SYSTEM_LOG:"System Log",
+      LOGS:"Operation log",
+      EQUIPMENT_LOG:" Device log",
+      PRODUCT_MANAGEMENT:"Product Management",
+      FIRMWARE_UPGRADE:"Firmware upgrade",
+      DATA_MANAGEMENT:"Data Managemen",
+      APPLICATION_MANAGEMENT:" Application Management",
+      USER_MANAGEMENT:"User Management",
+      SYSTEM_SETUP:"System Management",
+      DATA_SWITCHING:"Data forwarding",
+    }
   }
 };

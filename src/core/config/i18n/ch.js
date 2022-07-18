@@ -385,4 +385,23 @@ export const locale = {
       },
     },
   },
+  MANAGEMENT:{
+    PERMISSION:{
+      HOMEPAGE:"首页",
+      BUISNESS:"业务",
+      DASHBOARD:"可视化",
+      AUTOMATION:"自动化",
+      ALERT_MESSAGE:"告警信息",
+      SYSTEM_LOG:"系统日志",
+      LOGS:"操作日志",
+      EQUIPMENT_LOG:"设备日志",
+      PRODUCT_MANAGEMENT:"产品管理",
+      FIRMWARE_UPGRADE:"固件升级",
+      DATA_MANAGEMENT:"数据管理",
+      APPLICATION_MANAGEMENT:"应用管理",
+      USER_MANAGEMENT:"用户管理",
+      SYSTEM_SETUP:"系统管理",
+      DATA_SWITCHING:"数据转发",
+    }
+  }
 };

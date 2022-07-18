@@ -188,6 +188,7 @@ import {
   ref,
   computed,
   onMounted,
+  getCurrentInstance,
 } from "@vue/composition-api";
 export default defineComponent({
   name: "Home",
@@ -212,13 +213,14 @@ export default defineComponent({
     const closeDrawer = ref(false);
     let defaultProps = ref({
       children: "child_node",
-      label: "menu_name",
+      label: "customName",
     });
     let paramsPage = reactive({
         page: page ? page : 1,
         limit: 10,
     })
-
+    // 等同于 this
+    const self = getCurrentInstance().proxy
     let total = ref(0)
     // 初始化获取数据
     onMounted(() => {
@@ -312,18 +314,29 @@ export default defineComponent({
       checkedKeyObj.role_id = items.id;
       drawer.value = true;
     };
+
     //  树形结构转换
     const setTreeData = (source) => {
       let cloneData = JSON.parse(JSON.stringify(source)); // 对源数据深度克隆
-      return cloneData.filter((father) => {
-        // 循环所有项，并添加children属性
-        let branchArr = cloneData.filter(
-          (child) => father.id == child.parent_id
-        ); // 返回每一项的子级数组
-
-        branchArr.length > 0 ? (father.child_node = branchArr) : ""; //给父级添加一个children属性，并赋值
-        return father.parent_id == 0; //返回第一层
-      });
+      // 数据排序，根据id进行排序展示，在处理国际化的问题
+      var len = cloneData.length;
+      for (var i = 0; i < len; i++) {
+        for (var j = 0; j < len - 1; j++) {
+          if (Number(cloneData[j].id) > Number(cloneData[j+1].id)) {  // 比较相邻元素                
+            var temp = cloneData[j+1];   //元素交换                
+            cloneData[j+1] = cloneData[j];                
+            cloneData[j] = temp;            
+          }        
+        }
+        const menuName = cloneData[i].menu_name.toLocaleUpperCase();
+        cloneData[i].customName = self.$t("MANAGEMENT.PERMISSION."+menuName);
+        const child_node = cloneData[i].child_node || [];
+        child_node.map((item)=>{
+          const menuChildrenName = item.menu_name.toLocaleUpperCase();
+          item.customName = self.$t("MANAGEMENT.PERMISSION."+menuChildrenName);
+        })
+      }
+      return cloneData;
     };
     // 弹框取消
     const closeDrawerClose = () => {
