@@ -1,63 +1,96 @@
 <template>
-<el-dialog
-    class="el-dark-dialog el-dark-input"
-    :visible.sync="showDialog"
-    width="30%"
-    center
-    :close-on-click-modal="false"
->
-<el-form
-    ref="createUserForm"
-    label-width="80px"
-    label-position="left"
-    :model="formData"
-    :rules="rules"
-    hide-required-asterisk>
-  <el-form-item label="姓名" prop="name">
-    <el-input size="medium" v-model="formData.name"></el-input>
-  </el-form-item>
+  <el-dialog
+      class="el-dark-dialog el-dark-input"
+      :visible.sync="showDialog"
+      width="40%"
+      center
+      :close-on-click-modal="false"
+  >
+    <el-form
+        ref="createUserForm"
+        label-width="80px"
+        label-position="top"
+        :model="formData"
+        :rules="rules"
+        :inline="false"
+        hide-required-asterisk>
 
-  <el-form-item label="邮箱" prop="email">
-    <el-input size="medium" v-model="formData.email"></el-input>
-  </el-form-item>
+      <el-row>
+        <el-form-item label="姓名：" prop="name" style="width: 100%">
+          <el-input size="medium" v-model="formData.name"></el-input>
+        </el-form-item>
+      </el-row>
 
-  <el-form-item label="手机" prop="mobile">
-    <el-input size="medium" v-model="formData.mobile"></el-input>
-  </el-form-item>
+      <el-row>
+        <el-col :span="24">
+          <el-form-item label="角色：" prop="roles">
+            <div style="width: 100%">
+              <el-checkbox-group v-model="formData.roles" style="display:flex;float:left">
+                <el-checkbox v-for="(option, index) in rolesData" :key="index" :label="option.id">{{option.role_name}}</el-checkbox>
+              </el-checkbox-group>
+              <!--          <el-link type="primary" style="display:flex;float:right">展开</el-link>-->
+              <el-button v-show="isCollapsed" type="text" style="display:flex;float:right" @click="isCollapsed = !isCollapsed">
+                展开<i class="el-icon-arrow-down el-icon--right"></i>
+              </el-button>
+              <el-button v-show="!isCollapsed" type="text" style="display:flex;float:right" @click="isCollapsed = !isCollapsed">
+                收起<i class="el-icon-arrow-up el-icon--right"></i>
+              </el-button>
+            </div>
 
-  <el-form-item label="密码" prop="password">
-    <el-input size="medium" v-model="formData.password" type="password" show-password></el-input>
-  </el-form-item>
+          </el-form-item>
+        </el-col>
+      </el-row>
 
-  <el-form-item label="确认密码" prop="password_confirmation">
-    <el-input size="medium" v-model="formData.password_confirmation" type="password" show-password></el-input>
-  </el-form-item>
-  <el-form-item label="角色" prop="is_admin">
-    <el-radio-group v-model="formData.is_admin">
-      <el-radio :label="1">管理员</el-radio>
-      <el-radio :label="0">普通用户</el-radio>
-    </el-radio-group>
-  </el-form-item>
 
-  <el-form-item label="备注" prop="remark">
-    <el-input size="medium" v-model="formData.remark" type="textarea"></el-input>
-  </el-form-item>
+      <el-row>
+        <el-col :span="12">
+          <el-form-item label="邮箱：" prop="email" style="margin-right: 15px">
+            <el-input size="medium" v-model="formData.email"></el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="手机：" prop="mobile" style="margin-left: 15px">
+            <el-input size="medium" v-model="formData.mobile"></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
 
-  <FormAlert :error_message="error_message"></FormAlert>
+      <el-row>
+        <el-col :span="12">
+          <el-form-item label="密码：" prop="password" style="margin-right: 15px">
+            <el-input size="medium" v-model="formData.password" type="password" show-password></el-input>
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="确认密码：" prop="password_confirmation" style="margin-left: 15px">
+            <el-input size="medium" v-model="formData.password_confirmation" type="password" show-password></el-input>
+          </el-form-item>
+        </el-col>
+      </el-row>
 
-  <div class="py-1">
-    <el-button size="medium" class="w-100" type="primary" @click="handleSubmit">保存</el-button>
-  </div>
-<!--  <div class="py-1"><el-button class="w-100" @click="handleReset">重置</el-button></div>-->
+      <el-form-item label="备注：" prop="remark">
+        <el-input size="medium" v-model="formData.remark" type="textarea" :rows="5"></el-input>
+      </el-form-item>
 
-</el-form>
-</el-dialog>
+      <FormAlert :error_message="error_message"></FormAlert>
+
+      <el-form-item >
+        <div style="display: flex;justify-content: center">
+          <el-button size="medium" plain @click="showDialog = false">取消</el-button>
+          <el-button size="medium"  type="primary" @click="handleSubmit">保存</el-button>
+          <!--  <div class="py-1"><el-button class="w-100" @click="handleReset">重置</el-button></div>-->
+        </div>
+      </el-form-item>
+
+
+    </el-form>
+  </el-dialog>
 </template>
 
 <script>
 import {defineComponent, ref, reactive, computed, watch} from "@vue/composition-api";
 import {is_cellphone, is_email, message_success} from "@/utils/helpers";
-import {user_add} from "@/api/user";
+import {user_add, user_add_roles} from "@/api/user";
 import FormAlert from "@/components/common/FormAlert";
 
 export default defineComponent({
@@ -73,6 +106,10 @@ export default defineComponent({
     createUserDialogVisible: {
       type: Boolean,
       default: false
+    },
+    rolesData: {
+      type: Array,
+      default: () => []
     }
   },
   setup(props, context){
@@ -101,12 +138,15 @@ export default defineComponent({
     let formData = reactive({
       name: "",
       is_admin: 0,
+      roles: [],
       email: "",
       mobile: "",
       password: "",
       password_confirmation: "",
       remark: "",
     })
+    // 角色折叠按钮
+    let isCollapsed = ref(false);
     let loading = ref(false);
     let error_message = ref("")
 
@@ -144,18 +184,28 @@ export default defineComponent({
 
     // 提交
     function handleSubmit(){
+
       createUserForm.value.validate((valid)=>{
+
         if(!valid) return;
+
 
         if(loading.value) return;
         loading.value = true
 
         // 提交前清除错误
         error_message.value = ""
-
+        console.log("=======================")
+        console.log({...formData})
+        console.log("=======================")
         // 发送请求
         user_add(formData).then(({data})=>{
           if( data.code === 200) {
+            // 分配角色
+            user_add_roles({user: data.data.email, roles: formData.roles })
+                .then(({data}) => {
+                  console.log(data)
+                })
             message_success(data.message)
             // 调用 props 方法向列表添加新数据
             // 后端返回数据缺少 mobile
@@ -180,6 +230,7 @@ export default defineComponent({
 
     return {
       showDialog,
+      isCollapsed,
       createUserForm,
       formData,
       rules,

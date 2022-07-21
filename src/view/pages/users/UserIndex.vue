@@ -50,10 +50,10 @@
   <!-- 分页 end -->
 
   <!-- 创建用户表单 -->
-  <CreateUserForm :add_user="add_user" :createUserDialogVisible.sync="createUserDialogVisible"></CreateUserForm>
+  <CreateUserForm :rolesData="rolesData" :add_user="add_user" :createUserDialogVisible.sync="createUserDialogVisible"></CreateUserForm>
 
   <!-- 修改用户 -->
-  <UpdateUserForm :update_user="update_user" :editUserItem="editUserItem" :updateUserDialogVisible.sync="updateUserDialogVisible"></UpdateUserForm>
+  <UpdateUserForm :rolesData="rolesData" :update_user="update_user" :editUserItem="editUserItem" :updateUserDialogVisible.sync="updateUserDialogVisible"></UpdateUserForm>
 
   <!-- 重置密码 -->
   <ResetPasswordForm :editUserItem="editUserItem" :resetPasswordDialogVisible.sync="resetPasswordDialogVisible"></ResetPasswordForm>
@@ -82,6 +82,7 @@ export default defineComponent({
     // 获取用户列表
     let {
       tableData,
+      rolesData,
       getUserIndex,
       params,
       total,
@@ -134,6 +135,7 @@ export default defineComponent({
 
     return {
       tableData,
+      rolesData,
       params,
       total,
       loading,
