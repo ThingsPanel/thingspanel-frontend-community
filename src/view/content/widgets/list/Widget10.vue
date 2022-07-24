@@ -22,13 +22,11 @@
           </a>
         </router-link> -->
         <a
-          href="http://wiki.thingspanel.cn/"
           target="_blank"
           class="btn mr-3 btn-success active"
           >{{ $t("COMMON.VIEWHELP") }}</a
         >
         <a
-          href="http://forum.thingspanel.cn/"
           target="_blank"
           class="btn mr-3 btn-success active"
           >{{ $t("COMMON.FEEDBACKQ") }}</a

@@ -100,3 +100,12 @@ export async function get_menu(data) {
         data
     })
 }
+
+// 通过用户名获取角色
+export async function get_roles(data) {
+    return axios({
+        url: "/casbin/user/role/index",
+        method: "post",
+        data
+    })
+}

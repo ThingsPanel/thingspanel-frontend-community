@@ -161,6 +161,20 @@ export async function reSetMenu(router) {
             }]
         },
 
+        // 规则引擎
+        // {
+        //     path: "/ruleinstance",
+        //     flag: "data_switching",
+        //     component: () =>
+        //         import ("@/view/layout/Layout"),
+        //     children: [{
+        //         path: "/ruleinstance/index",
+        //         name: 'ruleinstance',
+        //         component: () =>
+        //             import ("@/view/pages/ruleinstance/RuleinstanceIndex.vue")
+        //     }]
+        // },
+
         // 数据转发
         {
             path: "/transpond",

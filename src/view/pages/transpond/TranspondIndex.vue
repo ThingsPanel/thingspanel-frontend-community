@@ -5,24 +5,23 @@
       <TableTitle>业务管理</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="indigo" @click="dialogVisible = true">创建转发</el-button>
+      <el-button size="medium" type="indigo" @click="dialogVisible = true">创建转发规则</el-button>
     </el-col>
   </el-row>
 
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="50"></el-table-column>
-    <el-table-column prop="device_id" label="设备ID"></el-table-column>
-    <el-table-column prop="device_name" label="设备名"></el-table-column>
-    <el-table-column prop="frequency" label="频率"></el-table-column>
+    <el-table-column label="序号" type="index" width="100"></el-table-column>
+    <el-table-column prop="label" label="规则名称"></el-table-column>
     <el-table-column prop="status" label="接口状态">
       <template v-slot="scope">
-        <el-tag size="mini">{{scope.row.status}}</el-tag>
+        <el-tag size="mini">{{scope.row.disabled ? '禁用' : '正常'}}</el-tag>
       </template>
     </el-table-column>
-    <el-table-column prop="actions" label="操作" align="center" width="210px">
+    <el-table-column prop="actions" label="操作" align="center" width="300px">
       <template v-slot="scope">
         <el-button size="mini" type="indigo" @click="handle_launch(scope.row)">启动</el-button>
-        <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">配置</el-button>
+        <el-button size="mini" type="indigo" @click="handle_pause(scope.row)">暂停</el-button>
+        <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">编辑</el-button>
 
         <el-popconfirm title="确定要删除吗？" @confirm="handle_del(scope.row)">
           <el-button slot="reference" size="mini" type="danger">删除</el-button>
@@ -69,6 +68,15 @@ import CreateForm from "@/view/pages/transpond/CreateForm.vue";
 import UpdateForm from "@/view/pages/transpond/UpdateForm.vue";
 import TableTitle from "@/components/common/TableTitle.vue"
 import data from "./data"
+import {
+  addFlow,
+  addTranspond,
+  delTranspond, getFlows,
+  getRedLogin,
+  getRedToken, getRedUrl,
+  getTranspondList,
+  setRedToken, updateFlows
+} from "@/api/transpond";
 
 export default {
   name: "TranspondIndex",
@@ -102,24 +110,50 @@ export default {
   },
   methods: {
     get_data(){
-      this.tableData = this.data_list.slice((this.page-1)*this.per_page, this.page*this.per_page)
+      let page = {
+        "current_page": this.page,
+        "per_page":36
+      }
+      getTranspondList(page).then(res => {
+        if (res.status == 200) {
+          this.tableData = res.data.data.data
+          this.data_count = res.data.data.total
+          this.loading = false
+        }
+      })
     },
     page_change(val){
       if(this.loading) return
       this.loading = true
-
-      setTimeout(()=>{
-        this.page = val
-        this.get_data()
-        this.loading = false
-      }, 500)
+      this.page = val
+      this.get_data()
     },
     handle_launch(item){
       if(this.launch_loading) return
       this.launch_loading = true
       setTimeout(()=>{
         this.$message({
-          message: item.device_name + " 启动成功",
+          message: item.rule_name + " 启动成功",
+          center: true,
+          type: "success"
+        })
+        this.launch_loading = false
+      },500)
+    },
+    handle_pause(item){
+      if(this.launch_loading) return
+      this.launch_loading = true
+      console.log(item)
+      let index = this.tableData.indexOf(item)
+      console.log(index)
+      // this.tableData.splice(TranspondIndex, 1)
+
+      item.status = "正在暂停";
+
+      setTimeout(()=>{
+
+        this.$message({
+          message: item.rule_name + " 暂停成功",
           center: true,
           type: "success"
         })
@@ -128,31 +162,53 @@ export default {
     },
     handle_del(item){
       // console.log(item)
-      let index = this.tableData.indexOf(item)
-      this.tableData.splice(TranspondIndex, 1)
-    },
-    handle_create(form_data){
-      let data = {
-        device_id: Math.floor(Math.random() * (999999 - 123456 + 1)) + 123456,
-        device_name: form_data.device_name.join(" - "),
-        frequency: form_data.frequency,
-        status: "工作中"
-      }
-      this.tableData.unshift(data)
-      this.dialogVisible = false
-
-      this.$message({
-        message: "创建成功",
-        center: true,
-        type: "success"
+      console.log(item)
+      // flow流程删除成功后，在数据库中删除该条记录
+      delTranspond({id: item.id}).then(res => {
+        if (res.status == 200) {
+          // 数据库中删除Flow
+          this.get_data();
+        }
       })
     },
-    startEditor(item){
-      // console.log(item)
-      // this.edit_item.frequency = item.frequency
-      // this.edit_item.status = item.status
-      this.updateDialogVisible = true
-      this.edit_item = item
+    handle_create(form_data){
+      // 在node-red中创建一个flow
+      let flow = {
+        "label": form_data.rule_name,
+        "nodes": [],
+      }
+      addFlow(flow).then(res => {
+        if (res.status == 200) {
+          console.log(res.data.id)
+          // 创建flow成功后，向数据库写入数据
+          addTranspond({process_id: res.data.id, label: form_data.rule_name }).then(result => {
+            console.log(result)
+            this.get_data();
+            this.$message({
+              message: "创建成功",
+              center: true,
+              type: "success"
+            })
+          })
+        }
+      })
+    },
+    startEditor(row){
+      getFlows().then(res => {
+        if (res.status == 200) {
+          console.log("==============================")
+          var flows = res.data.filter(item => item.type == 'tab');
+          flows.some(item => item.disabled = false)
+          // flows.find(item => item.id == row.process_id).disabled = true;
+          updateFlows(flows).then(res => {
+            console.log(res)
+          })
+          console.log("==============================")
+        }
+      })
+      console.log(row.process_id)
+      const newWindow = window.open(getRedUrl(row.process_id), '_blank');
+      newWindow.opener = null;
     },
     handle_update(form_data){
       this.edit_item.frequency = form_data.frequency

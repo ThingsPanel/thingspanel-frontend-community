@@ -79,6 +79,8 @@ export const locale = {
     EQUIPMENTLOG: "设备日志",
     PRODUCTMANAGEMENT: "产品管理",
     FIRMWAREUPGRADE: "固件升级",
+    RULEENGINE: "规则引擎",
+    RULEINSTANCE: "规则实例",
     TRANSPOND: "数据转发",
     OPERATIONLOG: "操作日志",
     PRODUCTION: "生产管理",

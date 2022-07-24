@@ -73,7 +73,7 @@
 import {defineComponent, reactive, ref, watch, computed} from "@vue/composition-api";
 import FormAlert from "@/components/common/FormAlert";
 import {is_cellphone, is_email, message_success} from "@/utils/helpers";
-import {user_edit, user_edit_roles} from "@/api/user";
+import {get_role, get_roles, user_edit, user_edit_roles} from "@/api/user";
 
 export default defineComponent({
   name: "UpdateUserForm",
@@ -101,7 +101,6 @@ export default defineComponent({
     // 表单元素
     let updateUserForm = ref()
     let isCollapsed = ref(false)
-
     let showDialog = computed({
       get(){
         return !!props.updateUserDialogVisible
@@ -122,6 +121,7 @@ export default defineComponent({
 
     watch(()=> props.editUserItem, (val)=>{
       if(val){
+
         formData.id = val.id
         formData.name = val.name;
         formData.roles = val.roles ? val.roles : [];
@@ -129,6 +129,24 @@ export default defineComponent({
         formData.email = val.email;
         formData.mobile = val.mobile;
         formData.remark = val.remark;
+
+        get_roles({user: formData.email})
+            .then(res => {
+              let { data, code } = res.data;
+              if (code == 200) {
+                let arr = [];
+                data.forEach(item => {
+                  props.rolesData.forEach(rolesItem => {
+                    if (item == rolesItem.role_name) {
+                      arr.push(rolesItem.id)
+                    }
+                  })
+                })
+                formData.roles = arr
+
+
+              }
+            })
       }
     })
 
