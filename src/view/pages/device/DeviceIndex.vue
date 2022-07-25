@@ -360,4 +360,8 @@ export default defineComponent({
 /deep/ .el-form-item{
   margin: 0 !important;
 }
+/deep/ .el-tag {
+  border: 1px solid;
+  background-color: transparent;
+}
 </style>

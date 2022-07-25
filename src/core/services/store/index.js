@@ -9,6 +9,7 @@ import breadcrumbs from "./breadcrumbs.module";
 import app from './modules/app';
 import errorLog from './modules/errorLog';
 import getters from './getters';
+import red from '../red.module'
 
 Vue.use(Vuex);
 
@@ -20,6 +21,7 @@ const store =  new Vuex.Store({
         breadcrumbs,
         app,
     	errorLog,
+        red
     },
     getters,
 });

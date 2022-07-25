@@ -5,6 +5,9 @@ import { login, logout, me } from "@/api/auth";
 
 // 引入路由下面调用 router.push 跳转
 import router from "@/router"
+import {getRedToken} from "@/api/transpond";
+import RED from "@/core/services/red.module"
+
 
 // action types
 export const VERIFY_AUTH = "verifyAuth";
@@ -50,10 +53,28 @@ const actions = {
             JwtService.saveToken(data.data.access_token);
             JwtService.saveExpiresTime(data.data.expires_in)
 
+            console.log("==============getRedToken===============")
+            // 设置node-red的令牌
+            getRedToken().then(res => {
+
+              console.log(res)
+              if (res.status == 200) {
+                RED.setRedToken(res.data)
+              }
+              console.log("==============getRedToken then===============")
+
+            }).catch(err => {
+              console.log(err)
+              console.log("==============getRedToken catch===============")
+
+            })
+
             // 登录成功，延迟 500 ms 再跳转
             setTimeout(()=>{
               router.push({name: "home"})
             }, 500)
+
+
 
           }
 
@@ -62,7 +83,7 @@ const actions = {
         .catch(({ response }) => {
           reject(response)
           // console.log(response);
-          context.commit(SET_ERROR, response.data.errors);
+          context.commit(SET_ERROR, response.data.errors || "");
           // console.log(state);
         });
     });

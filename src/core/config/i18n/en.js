@@ -109,6 +109,8 @@ export const locale = {
     EQUIPMENTLOG: "equipment log",
     PRODUCTMANAGEMENT: "product management",
     FIRMWAREUPGRADE: "firmware upgrade",
+    RULEENGINE: "Rule engine",
+    RULEINSTANCE: "Rule instance",
     TRANSPOND: "data switching",
     OPERATIONLOG: "Logs",
     BUSINESSLIST: "Business list",

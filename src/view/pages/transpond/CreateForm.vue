@@ -6,24 +6,15 @@
       :model="form"
       :hide-required-asterisk="true"
       label-width="80px">
-    <el-form-item label="设备名称" prop="device_name">
-      <el-cascader
-          class="w-100"
-          :options="options"
-          v-model="form.device_name">
-      </el-cascader>
-    </el-form-item>
-    <el-form-item label="频率" prop="frequency">
-      <el-select class="w-100" v-model="form.frequency">
-        <el-option label="实时" value="实时"></el-option>
-        <el-option label="每分钟" value="每分钟"></el-option>
-        <el-option label="每十分钟" value="每十分钟"></el-option>
-        <el-option label="每半小时" value="每半小时"></el-option>
-        <el-option label="每小时" value="每小时"></el-option>
-      </el-select>
+    <el-form-item label="规则名称" prop="rule_name">
+      <el-input v-model="form.rule_name"></el-input>
     </el-form-item>
 
-      <el-button class="w-100" type="primary" @click="onSubmit">创建</el-button>
+      <div style="display: flex;justify-content: center">
+        <el-button class="cancel-button" size="medium" plain @click="cancelDialog">取消</el-button>
+        <el-button class="medium" type="primary" @click="onSubmit">创建</el-button>
+      </div>
+
   </el-form>
 </template>
 
@@ -42,23 +33,19 @@ export default {
   },
   data:()=>({
     form:{
-      device_name: '',
+      rule_name: '',
       frequency: ''
     },
     rules: {
-      device_name: [
-        {required: true, message: "请选择设备"}
-      ],
-      frequency: [
-        {required: true, message: "请选择频率"}
+      rule_name: [
+        {required: true, message: "请输入规则名称"}
       ]
     },
     options: options,
   }),
   created() {
     if(this.init_data){
-      this.form.device_name = this.init_data.device_name
-      this.form.frequency = this.init_data.frequency
+      this.form.rule_name = this.init_data.rule_name
     }
   },
   methods: {
@@ -69,18 +56,18 @@ export default {
           setTimeout(()=>{
             this.$refs.createForm.resetFields()
           }, 500)
-          // this.form.device_name = ""
-          // this.form.frequency = ""
-          // this.handle_create(this.form)
         }
       })
+    },
+    cancelDialog() {
+      this.$emit("cancel")
     }
   }
 }
 </script>
 
 <style lang="scss">
-//.transpond-create{
+.transpond-create{
   //.el-form-item__label{
   //  color: #fff;
   //}
@@ -90,5 +77,5 @@ export default {
   //.el-select{
   //  width: 100%;
   //}
-//}
+}
 </style>

@@ -27,6 +27,33 @@ export function user_edit(data) {
     })
 }
 
+// 分配角色
+export function user_add_roles(data) {
+    return axios({
+        url: "/casbin/user/role/add",
+        method: "post",
+        data
+    })
+}
+
+// 分配角色
+export function user_edit_roles(data) {
+    return axios({
+        url: "/casbin/user/role/update",
+        method: "post",
+        data
+    })
+}
+
+// 获取所有角色
+export function user_find_all_roles(data) {
+    return axios({
+        url: "/user/role/list",
+        method: "post",
+        data
+    })
+}
+
 // 删除用户
 export function user_delete(data) {
     return axios({
@@ -69,6 +96,15 @@ export async function get_menu(data) {
     console.log('--data--', data);
     return axios({
         url: "/menu/user",
+        method: "post",
+        data
+    })
+}
+
+// 通过用户名获取角色
+export async function get_roles(data) {
+    return axios({
+        url: "/casbin/user/role/index",
         method: "post",
         data
     })

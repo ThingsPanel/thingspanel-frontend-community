@@ -69,6 +69,9 @@ import {
   ADD_BODY_CLASSNAME,
   REMOVE_BODY_CLASSNAME
 } from "@/core/services/store/htmlclass.module.js";
+import {getRedToken} from "@/api/transpond";
+import RED from "@/core/services/red.module"
+import {LOGIN} from "../../core/services/store/auth.module";
 
 export default {
   name: "Layout",
@@ -93,6 +96,13 @@ export default {
     // check if current user is authenticated
     if (!this.isAuthenticated) {
       this.$router.push({ name: "login" });
+    } else {
+        getRedToken().then(res => {
+          if (res.status == 200) {
+            RED.setRedToken(res.data)
+          }
+        })
+        .catch()
     }
 
     // Simulate the delay page loading

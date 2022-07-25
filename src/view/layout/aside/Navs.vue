@@ -96,9 +96,29 @@ export default {
       },
       {
         name: "COMMON.TRANSPOND",
-        icon: "menu-icon flaticon-share",
+        icon: "menu-icon flaticon-upload-1",
         link: "/transpond/index",
-      }, // 数据转发
+      },
+      // 规则引擎
+      // {
+      //   name: "COMMON.RULEENGINE",
+      //   icon: "menu-icon flaticon2-gift-1",
+      //   open: false,
+      //   children: [
+      //     // 规则实例
+      //     {
+      //       name: "COMMON.RULEINSTANCE",
+      //       icon: "menu-icon flaticon-upload-1",
+      //       link: "/ruleinstance/index",
+      //     },
+      //     // 数据转发
+      //     {
+      //       name: "COMMON.TRANSPOND",
+      //       icon: "menu-icon flaticon-upload-1",
+      //       link: "/transpond/index",
+      //     }
+      //   ],
+      // },
       {
         name: "COMMON.MARKET",
         icon: "menu-icon flaticon2-supermarket",
