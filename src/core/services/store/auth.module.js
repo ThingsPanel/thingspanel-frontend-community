@@ -53,11 +53,20 @@ const actions = {
             JwtService.saveToken(data.data.access_token);
             JwtService.saveExpiresTime(data.data.expires_in)
 
+            console.log("==============getRedToken===============")
             // 设置node-red的令牌
             getRedToken().then(res => {
+
+              console.log(res)
               if (res.status == 200) {
                 RED.setRedToken(res.data)
               }
+              console.log("==============getRedToken then===============")
+
+            }).catch(err => {
+              console.log(err)
+              console.log("==============getRedToken catch===============")
+
             })
 
             // 登录成功，延迟 500 ms 再跳转

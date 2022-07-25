@@ -47,7 +47,7 @@
       :visible.sync="dialogVisible"
       :close-on-click-modal="false"
       width="30%">
-    <CreateForm @submit="handle_create"></CreateForm>
+    <CreateForm @cancel="dialogVisible = false" @submit="handle_create"></CreateForm>
   </el-dialog>
 
 <!-- 更新 -->
@@ -71,12 +71,11 @@ import data from "./data"
 import {
   addFlow,
   addTranspond,
-  delTranspond, getFlows,
-  getRedLogin,
-  getRedToken, getRedUrl,
+  delTranspond,
+  getRedUrl,
   getTranspondList,
-  setRedToken, updateFlows
 } from "@/api/transpond";
+import {delFlow, getFlow, getFlows, startFlow, stopFlow, updateFlow, updateFlows} from "../../../api/transpond";
 
 export default {
   name: "TranspondIndex",
@@ -128,46 +127,47 @@ export default {
       this.page = val
       this.get_data()
     },
-    handle_launch(item){
+    handle_launch(row){
       if(this.launch_loading) return
       this.launch_loading = true
-      setTimeout(()=>{
-        this.$message({
-          message: item.rule_name + " 启动成功",
-          center: true,
-          type: "success"
-        })
-        this.launch_loading = false
-      },500)
+      this.handleFlows(row.process_id, false)
     },
-    handle_pause(item){
+    handle_pause(row){
       if(this.launch_loading) return
       this.launch_loading = true
-      console.log(item)
-      let index = this.tableData.indexOf(item)
-      console.log(index)
-      // this.tableData.splice(TranspondIndex, 1)
-
-      item.status = "正在暂停";
-
-      setTimeout(()=>{
-
-        this.$message({
-          message: item.rule_name + " 暂停成功",
-          center: true,
-          type: "success"
-        })
-        this.launch_loading = false
-      },500)
+      this.handleFlows(row.process_id, true)
+      row.status = "正在暂停";
+    },
+    handleFlows(id, b) {
+      getFlows().then(res => {
+        if (res.status == 200) {
+          res.data.flows.forEach(flow => {
+            if (flow.id == id) {
+              flow.disabled = b;
+            }
+          })
+          updateFlows(res.data)
+          .then(res => {
+            if (res.status == 200) {
+              this.$message({message: b ? " 启动成功" : "暂停成功", center: true, type: "success"})
+              this.launch_loading = false
+            }
+          })
+        }
+      })
     },
     handle_del(item){
-      // console.log(item)
-      console.log(item)
-      // flow流程删除成功后，在数据库中删除该条记录
+      // 在数据库中删除该条记录
       delTranspond({id: item.id}).then(res => {
         if (res.status == 200) {
           // 数据库中删除Flow
           this.get_data();
+          // 删除node-red中的流程
+          delFlow( item.process_id )
+              .then(res => {
+                console.log(res)
+              })
+          this.$message({message: item.label + " 删除成功", center: true, type: "success"})
         }
       })
     },
@@ -176,37 +176,21 @@ export default {
       let flow = {
         "label": form_data.rule_name,
         "nodes": [],
+        "configs": []
       }
+      console.log(flow)
       addFlow(flow).then(res => {
         if (res.status == 200) {
-          console.log(res.data.id)
           // 创建flow成功后，向数据库写入数据
           addTranspond({process_id: res.data.id, label: form_data.rule_name }).then(result => {
-            console.log(result)
             this.get_data();
-            this.$message({
-              message: "创建成功",
-              center: true,
-              type: "success"
-            })
+            this.dialogVisible = false;
+            this.$message({message: "创建成功", center: true, type: "success"})
           })
         }
       })
     },
     startEditor(row){
-      getFlows().then(res => {
-        if (res.status == 200) {
-          console.log("==============================")
-          var flows = res.data.filter(item => item.type == 'tab');
-          flows.some(item => item.disabled = false)
-          // flows.find(item => item.id == row.process_id).disabled = true;
-          updateFlows(flows).then(res => {
-            console.log(res)
-          })
-          console.log("==============================")
-        }
-      })
-      console.log(row.process_id)
       const newWindow = window.open(getRedUrl(row.process_id), '_blank');
       newWindow.opener = null;
     },

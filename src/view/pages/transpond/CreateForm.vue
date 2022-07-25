@@ -11,7 +11,7 @@
     </el-form-item>
 
       <div style="display: flex;justify-content: center">
-<!--        <el-button class="cancel-button" size="medium" plain @click="showDialog = false">取消</el-button>-->
+        <el-button class="cancel-button" size="medium" plain @click="cancelDialog">取消</el-button>
         <el-button class="medium" type="primary" @click="onSubmit">创建</el-button>
       </div>
 
@@ -56,11 +56,11 @@ export default {
           setTimeout(()=>{
             this.$refs.createForm.resetFields()
           }, 500)
-          // this.form.device_name = ""
-          // this.form.frequency = ""
-          // this.handle_create(this.form)
         }
       })
+    },
+    cancelDialog() {
+      this.$emit("cancel")
     }
   }
 }
