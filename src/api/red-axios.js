@@ -1,6 +1,10 @@
 import http from "axios";
 import RED from "../core/services/red.module";
-export const red_url = process.env.VUE_APP_RED_BASE_URL + ":" + process.env.VUE_APP_RED_PORT;
+import {message_error} from "@/utils/helpers";
+
+export const red_url =
+    (process.env.VUE_APP_RED_BASE_URL ||
+        document.location.protocol + "//" + document.domain + ":1880/");
 
 // 创建 node-red 的 axios 实例
 const instance = http.create({
@@ -26,5 +30,16 @@ instance.interceptors.request.use(
         return config;
     }
 );
+instance.interceptors.response.use(
+    response => {
+        return response
+    },
+    error => {
+        console.log(error)
+        return Promise.reject(error)
+
+    }
+
+)
 
 export default instance;

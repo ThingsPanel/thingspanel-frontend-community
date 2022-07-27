@@ -1,4 +1,4 @@
-import red_axios, {red_url} from "./red-axios";
+import red_axios, {red_base_url, red_url} from "./red-axios";
 import axios from './http'
 
 const loginData = {
@@ -30,6 +30,19 @@ export function getTranspondList(data) {
 export function addTranspond(data) {
     return axios(({
         url: '/data/transpond/add',
+        method: 'post',
+        data
+    }))
+}
+
+/**
+ * 更新thingspanel中的数据
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function updateTranspond(data) {
+    return axios(({
+        url: '/data/transpond/edit',
         method: 'post',
         data
     }))
@@ -183,5 +196,5 @@ export function updateFlows(data) {
 
 
 export function getRedUrl(id) {
-    return red_url + "/#flow/" + id;
+    return red_url + "#flow/" + id;
 }

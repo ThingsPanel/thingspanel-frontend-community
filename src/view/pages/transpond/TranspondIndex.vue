@@ -2,7 +2,7 @@
 <div class="rounded p-4 card no-border el-table-transparent">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>业务管理</TableTitle>
+      <TableTitle>数据转发</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
       <el-button size="medium" type="indigo" @click="dialogVisible = true">创建转发规则</el-button>
@@ -14,7 +14,7 @@
     <el-table-column prop="label" label="规则名称"></el-table-column>
     <el-table-column prop="status" label="接口状态">
       <template v-slot="scope">
-        <el-tag size="mini">{{scope.row.disabled ? '禁用' : '正常'}}</el-tag>
+        <el-tag size="small">{{scope.row.disabled == 'false' ? '已启动' : '已暂停'}}</el-tag>
       </template>
     </el-table-column>
     <el-table-column prop="actions" label="操作" align="center" width="300px">
@@ -75,7 +75,16 @@ import {
   getRedUrl,
   getTranspondList,
 } from "@/api/transpond";
-import {delFlow, getFlow, getFlows, startFlow, stopFlow, updateFlow, updateFlows} from "../../../api/transpond";
+import {
+  delFlow,
+  getFlow,
+  getFlows,
+  startFlow,
+  stopFlow,
+  updateFlow,
+  updateFlows,
+  updateTranspond
+} from "../../../api/transpond";
 
 export default {
   name: "TranspondIndex",
@@ -117,6 +126,7 @@ export default {
         if (res.status == 200) {
           this.tableData = res.data.data.data
           this.data_count = res.data.data.total
+          console.log(this.tableData)
           this.loading = false
         }
       })
@@ -130,30 +140,47 @@ export default {
     handle_launch(row){
       if(this.launch_loading) return
       this.launch_loading = true
-      this.handleFlows(row.process_id, false)
+      this.handleFlows(row, false)
     },
     handle_pause(row){
       if(this.launch_loading) return
       this.launch_loading = true
-      this.handleFlows(row.process_id, true)
-      row.status = "正在暂停";
+      this.handleFlows(row, true)
     },
-    handleFlows(id, b) {
-      getFlows().then(res => {
-        if (res.status == 200) {
-          res.data.flows.forEach(flow => {
-            if (flow.id == id) {
-              flow.disabled = b;
-            }
-          })
-          updateFlows(res.data)
+    handleFlows(row, b) {
+      let flow_id = row.process_id;
+      let label = row.label;
+      let id = row.id;
+      console.log(row)
+      // 获取node-red的所有flows
+      getFlows()
           .then(res => {
             if (res.status == 200) {
-              this.$message({message: b ? " 启动成功" : "暂停成功", center: true, type: "success"})
-              this.launch_loading = false
+              res.data.flows.forEach(flow => {
+                if (flow.id == flow_id) {
+                  flow.disabled = b;
+                }
+              })
+              // 更新flows
+              updateFlows(res.data)
+              .then(res => {
+                if (res.status == 200) {
+                  console.log(b)
+                  this.$message({message: label + (!b ? " 启动成功" : "暂停成功"), center: true, type: "success"})
+                  // flows更新成功后，更新thingspanel数据库中的数据
+                  row.disabled = b ? "true" : "false";
+                  updateTranspond(row)
+                  .then(res => {
+                    console.log(res)
+                    this.get_data();
+                  })
+                  this.launch_loading = false
+                }
+              })
             }
           })
-        }
+      .catch(() => {
+        this.launch_loading = false
       })
     },
     handle_del(item){
@@ -178,16 +205,17 @@ export default {
         "nodes": [],
         "configs": []
       }
-      console.log(flow)
       addFlow(flow).then(res => {
         if (res.status == 200) {
           // 创建flow成功后，向数据库写入数据
-          addTranspond({process_id: res.data.id, label: form_data.rule_name }).then(result => {
+          addTranspond({process_id: res.data.id, disabled: "false", label: form_data.rule_name }).then(result => {
             this.get_data();
             this.dialogVisible = false;
             this.$message({message: "创建成功", center: true, type: "success"})
           })
         }
+      }).catch(err => {
+        console.log(err)
       })
     },
     startEditor(row){
@@ -209,6 +237,9 @@ export default {
 }
 </script>
 
-<style lang="scss">
-
+<style scoped>
+/deep/ .el-tag {
+  border: 1px solid;
+  background-color: transparent;
+}
 </style>

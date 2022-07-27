@@ -34,6 +34,7 @@
         <el-select v-model="params.operation_type" size="medium" placeholder="请选择操作类型">
           <el-option label="定时触发" value="1"></el-option>
           <el-option label="手动控制" value="2"></el-option>
+          <el-option label="自动控制" value="3"></el-option>
         </el-select>
       </el-col>
       <el-col :span="10">
@@ -86,7 +87,10 @@
       </el-table-column>
       <el-table-column :label='$t("COMMON.OPERATIONTYPE1")' prop="operation_type">
          <template v-slot="scope">
-          {{ scope.row.instruct == 1 ?"定时触发":"手动控制" }}
+           <p class="green" v-if="scope.row.operation_type == '1'"><span>{{"定时触发"}}</span></p>
+           <p class="green" v-if="scope.row.operation_type == '2'"><span>{{"手动控制"}}</span></p>
+           <p class="green" v-if="scope.row.operation_type == '3'"><span>{{"自动控制"}}</span></p>
+
         </template>
       </el-table-column>
       <el-table-column :label='$t("COMMON.TRIGGERINGTIME1")' prop="cteate_time" width="145"></el-table-column>
@@ -156,6 +160,7 @@ export default defineComponent({
       ApiService.post(AUTH.local_url + "/conditions/log/index", params).then(
         ({ data }) => {
           if (data.code == 200) {
+            console.log(data.data.data)
             tableData.value = data.data.data;
             total.value = data.data.total;
             loading.value = false
@@ -220,9 +225,10 @@ export default defineComponent({
 .green{
   color: chartreuse;
     border: 1px solid;
-    width: 45px;
+    width: 65px;
     height: 24px;
     border-radius: 20px;
+  text-align: center;
 }
 .orange{
   color:orange;
