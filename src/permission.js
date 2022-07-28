@@ -161,31 +161,27 @@ export async function reSetMenu(router) {
             }]
         },
 
-        // 规则引擎
-        // {
-        //     path: "/ruleinstance",
-        //     flag: "data_switching",
-        //     component: () =>
-        //         import ("@/view/layout/Layout"),
-        //     children: [{
-        //         path: "/ruleinstance/index",
-        //         name: 'ruleinstance',
-        //         component: () =>
-        //             import ("@/view/pages/ruleinstance/RuleinstanceIndex.vue")
-        //     }]
-        // },
+        // 网络组件
+        {
+            path: "/network_components",
+            flag: "data_switching",
+            component: () => import ("@/view/layout/Layout"),
+            children: [{
+                path: "/network_components/index",
+                name: 'network_components',
+                component: () => import ("@/view/pages/network_components/NetworkComponentsIndex.vue")
+            }]
+        },
 
         // 数据转发
         {
             path: "/transpond",
             flag: "data_switching",
-            component: () =>
-                import ("@/view/layout/Layout"),
+            component: () => import ("@/view/layout/Layout"),
             children: [{
                 path: "/transpond/index",
                 name: 'transpond',
-                component: () =>
-                    import ("@/view/pages/transpond/TranspondIndex.vue")
+                component: () => import ("@/view/pages/transpond/TranspondIndex.vue")
             }]
         },
 
@@ -193,34 +189,29 @@ export async function reSetMenu(router) {
         {
             path: "/equipment",
             flag: "equipment_log",
-            component: () =>
-                import ("@/view/layout/Layout"),
+            component: () => import ("@/view/layout/Layout"),
             children: [{
                 path: "/equipment/index",
                 name: 'equipment',
-                component: () =>
-                    import ("@/view/pages/equipment/EquipmentIndex.vue")
+                component: () => import ("@/view/pages/equipment/EquipmentIndex.vue")
             }]
         },
 
         {
             path: "/firmware",
             flag: "firmware_upgrade",
-            component: () =>
-                import ("@/view/layout/Layout"),
+            component: () => import ("@/view/layout/Layout"),
             children: [{
                 path: "/firmware/index",
                 name: 'firmware',
-                component: () =>
-                    import ("@/view/pages/firmware/FirmwareIndex.vue")
+                component: () => import ("@/view/pages/firmware/FirmwareIndex.vue")
             }]
         },
 
         {
             path: "/system",
             flag: "system_setup",
-            component: () =>
-                import ("@/view/layout/Layout"),
+            component: () => import ("@/view/layout/Layout"),
             children: [{
                 path: "/system/index",
                 name: "systems",
