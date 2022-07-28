@@ -22,7 +22,7 @@ module.exports = {
 		}
 	  },
       "/red": {
-        target: process.env.VUE_APP_RED_BASE_URL + ":" + process.env.VUE_APP_RED_PORT,
+        target: process.env.VUE_APP_RED_BASE_URL,
         changeOrigin: true, // 是否改变域名
         pathRewrite: {
             // 路径重写

@@ -94,31 +94,26 @@ export default {
           },
         ],
       },
-      {
-        name: "COMMON.TRANSPOND",
-        icon: "menu-icon flaticon-upload-1",
-        link: "/transpond/index",
-      },
       // 规则引擎
-      // {
-      //   name: "COMMON.RULEENGINE",
-      //   icon: "menu-icon flaticon2-gift-1",
-      //   open: false,
-      //   children: [
-      //     // 规则实例
-      //     {
-      //       name: "COMMON.RULEINSTANCE",
-      //       icon: "menu-icon flaticon-upload-1",
-      //       link: "/ruleinstance/index",
-      //     },
-      //     // 数据转发
-      //     {
-      //       name: "COMMON.TRANSPOND",
-      //       icon: "menu-icon flaticon-upload-1",
-      //       link: "/transpond/index",
-      //     }
-      //   ],
-      // },
+      {
+        name: "COMMON.RULEENGINE",
+        icon: "menu-icon flaticon2-gift-1",
+        open: false,
+        children: [
+          // 网络组件
+          {
+            name: "COMMON.NETWORKCOMPONENTS",
+            icon: "menu-icon flaticon-upload-1",
+            link: "/network_components/index",
+          },
+          // 数据转发
+          {
+            name: "COMMON.TRANSPOND",
+            icon: "menu-icon flaticon-upload-1",
+            link: "/transpond/index",
+          }
+        ],
+      },
       {
         name: "COMMON.MARKET",
         icon: "menu-icon flaticon2-supermarket",

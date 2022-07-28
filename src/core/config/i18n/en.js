@@ -110,7 +110,7 @@ export const locale = {
     PRODUCTMANAGEMENT: "product management",
     FIRMWAREUPGRADE: "firmware upgrade",
     RULEENGINE: "Rule engine",
-    RULEINSTANCE: "Rule instance",
+    NETWORKCOMPONENTS: "Network components",
     TRANSPOND: "data switching",
     OPERATIONLOG: "Logs",
     BUSINESSLIST: "Business list",
