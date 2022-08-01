@@ -47,12 +47,16 @@
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
     <el-table-column label="序号" type="index"></el-table-column>
-    <el-table-column label="告警时间" prop="created_at"></el-table-column>
-    <el-table-column label="业务名" prop="business_name"></el-table-column>
-    <el-table-column label="设备名" prop="device_name"></el-table-column>
+    <el-table-column label="告警时间" prop="created_at" width="180" ></el-table-column>
+    <el-table-column label="业务名" prop="business_name" width="220"></el-table-column>
+    <el-table-column label="设备名" prop="device_name" width="220"></el-table-column>
 <!--    <el-table-column label="指标名" prop="asset_name"></el-table-column>-->
 <!--    <el-table-column label="当前值"></el-table-column>-->
-    <el-table-column label="触发条件" prop="describe" width="400"></el-table-column>
+    <el-table-column label="触发条件" prop="describe" show-overflow-tooltip="true">
+      <template v-slot="scope">
+        <p class="table-describe">{{ scope.row.describe }}</p>
+      </template>
+    </el-table-column>
   </el-table>
   <!-- 表 end -->
 
@@ -124,5 +128,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.table-describe {
 
+}
 </style>
