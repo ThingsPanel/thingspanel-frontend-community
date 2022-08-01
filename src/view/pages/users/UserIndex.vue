@@ -18,9 +18,13 @@
     <el-table-column label="姓名" prop="name"></el-table-column>
     <el-table-column label="邮箱" prop="email"></el-table-column>
     <el-table-column label="手机号" prop="mobile"></el-table-column>
-    <el-table-column label="角色" prop="is_admin">
+    <el-table-column label="角色" prop="is_admin" align="left">
       <template v-slot="scope">
-        <el-tag size="mini">{{scope.row.is_admin?'管理员': '普通用户'}}</el-tag>
+        <div style="display: flex;float:left;" v-for="role in rolesData" :key="role.id">
+          <span style="display: flex;float:left;" v-for="item in scope.row.roles" :key="item">
+            <el-tag style="margin-right: 5px;margin-bottom: 5px" size="small" v-if="role.id == item" >{{ role.role_name }}</el-tag>
+          </span>
+        </div>
       </template>
     </el-table-column>
     <el-table-column label="操作" align="center" width="250">
@@ -90,18 +94,16 @@ export default defineComponent({
     } = useUserIndex()
 
     // 列表中添加一条用户数据
-    function add_user(data){
-      tableData.value.unshift(data)
+    function add_user(){
+      getUserIndex();
     }
 
     function remove_user(item){
-      let index = tableData.value.indexOf(item)
-      tableData.value.splice(index, 1)
+      getUserIndex();
     }
 
-    function update_user(item, data){
-      let index = tableData.value.indexOf(item)
-      tableData.value.splice(index, 1, data)
+    function update_user(){
+      getUserIndex();
     }
 
     function handleDelete(item){
@@ -155,5 +157,8 @@ export default defineComponent({
 </script>
 
 <style scoped>
-
+/deep/ .el-tag {
+  border: 1px solid;
+  background-color: transparent;
+}
 </style>

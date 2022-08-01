@@ -1,80 +1,122 @@
 <template>
-<div>
-  <p class="my-2 label-name">协议：</p>
-  <el-select size="medium" placeholder="请选择协议" class="w-100" v-model="device_item.protocol" @change="handleChange()">
-    <el-option :label="'TCP'" :value="'tcp'"></el-option>
-    <el-option :label="'MQTT'" :value="'mqtt'"></el-option>
-  </el-select>
+  <div>
+    <el-form :model="deviceData" label-width="80px">
 
-  <p class="my-2 label-name">默认配置:</p>
-  <div class="default-setting">
-    <p class="my-1" v-for="item in default_setting">{{item}}</p>
+      <el-form-item label="设备名:">
+        <el-input size="medium" v-model="deviceData.name" :readonly="true"></el-input>
+      </el-form-item>
+
+      <el-form-item label="协议：">
+        <el-select size="medium" placeholder="请选择协议" v-model="deviceData.protocol" @change="handleChange()">
+          <el-option :label="'MQTT'" :value="'mqtt'"></el-option>
+          <el-option :label="'TCP'" :value="'tcp'"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="默认配置:">
+          <el-input type="textarea"
+                    autosize :readonly="true"
+                    v-model="default_setting">
+          </el-input>
+      </el-form-item>
+
+      <div style="margin: 10px 0;"></div>
+
+      <el-form-item label="Token:">
+        <el-input size="medium" v-model="deviceData.token"></el-input>
+      </el-form-item>
+
+      <el-form-item label="接口类型:">
+        <el-input size="medium" value="json" :readonly="true"></el-input>
+      </el-form-item>
+      <div style="margin: 10px 0;"></div>
+
+        <div style="display: flex;justify-content: center">
+          <el-button @click="onCancel">取消</el-button>
+          <el-button type="primary" @click="onSubmit">保存</el-button>
+        </div>
+
+    </el-form>
+
   </div>
-
-  <p class="my-2 label-name">Token:</p>
-  <el-input size="medium" class="w-100" v-model="device_item.token" @change="handleChange()"></el-input>
-
-  <p class="my-2 label-name">接口类型:</p>
-  <div class="default-setting">
-    <p class="my-1">json</p>
-  </div>
-</div>
 </template>
 
 <script>
-import {defineComponent, ref} from "@vue/composition-api";
+import {defineComponent, ref, reactive} from "@vue/composition-api";
 import {device_default_setting} from "@/api/device";
 
 export default defineComponent({
   name: "DeviceSettingForm",
   props: {
     device_item: {
+      type: Object,
+      default: () => {
+        Object({protocol: "mqtt"})
+      },
       required: true,
     }
   },
-  emits: ['change'],
+  emits: ['change', 'cancel'],
   setup(props, context){
-    let default_setting = ref([])
+    let deviceData = reactive({
+      protocol: "mqtt",
+      name: props.device_item.name,
+      token: ""
+    })
+    let default_setting = ref("");
 
-    // console.log(props.device_item)
 
-    // 打开时初始化
-    if(props.device_item.protocol) {
-      device_default_setting({protocol: props.device_item.protocol}).then(({data})=>{
-        // 有可能没有data
-        if(data.data.default_setting) {
-          default_setting.value = data.data.default_setting.split("$$")
-        }else{
-          default_setting.value = []
-        }
-      })
+    // 打开编辑对话框时获取默认token和默认配置说明
+    getDefaultSetting();
+
+    /**
+     * 点击取消
+     */
+    function onCancel() {
+      context.emit("cancel");
     }
 
-    // select 更改时
+    /**
+     * 点击提交
+     */
+    function onSubmit() {
+      context.emit('change');
+    }
+
+    /**
+     * 协议更改
+     */
     function handleChange(){
-      device_default_setting({protocol: props.device_item.protocol}).then(({data})=>{
-        if(data.code === 200) {
+      getDefaultSetting();
+    }
 
-          // 没有 token 时，使用默认值
-          if(data.data.Token && !props.device_item.token) {
-            props.device_item.token = data.data.Token
+
+    /**
+     * 获取token和配置说明
+     */
+    function getDefaultSetting() {
+      device_default_setting({protocol: props.device_item.protocol})
+        .then(({data}) => {
+          if (data.code == 200) {
+            if (data.data.Token && !props.device_item.token) {
+              // 没有 token 时，使用默认值
+              deviceData.token = data.data.Token
+            }
+            if ( data && data.data && data.data.default_setting) {
+              default_setting.value = data.data.default_setting.split("$$").join("\n")
+            } else {
+              default_setting.value = ""
+            }
           }
+        })
 
-          // 有可能没有data
-          if(data.data.default_setting) {
-            default_setting.value = data.data.default_setting.split("$$")
-          }else{
-            default_setting.value = []
-          }
-
-          // console.log('update change')
-          context.emit('change')
-        }
-      })
     }
 
     return {
+      deviceData,
       default_setting,
+      onCancel,
+      onSubmit,
       handleChange,
     }
   }
@@ -82,10 +124,5 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.default-setting{
-  background: rgba(22, 30, 67, 0.5);
-  border-radius: 3px;
-  padding: 5px 15px;
-  min-height: 37px;
-}
+
 </style>

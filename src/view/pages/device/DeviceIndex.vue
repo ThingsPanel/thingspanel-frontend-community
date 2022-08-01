@@ -166,13 +166,14 @@
       :visible.sync="showEditDialog"
       :title="EditDialogTitle"
       :close-on-click-modal="false"
-      width="30%">
+      width="40%">
     <!--  默认参数  -->
     <DeviceSettingForm
         v-if="EditDialogTitle === '编辑参数'"
         :device_item="currentDeviceItem"
         :key="currentDeviceItem.id"
-        @change="handleSave(currentDeviceItem)"
+        @cancel="() => { showEditDialog=false }"
+        @change="handleSave(currentDeviceItem, () => { showEditDialog=false })"
     ></DeviceSettingForm>
 
     <!--  属性  -->
@@ -211,7 +212,8 @@
 </template>
 
 <script>
-import {defineComponent} from "@vue/composition-api";
+
+import toRefs, {defineComponent} from "@vue/composition-api";
 import useDeviceIndex from "@/view/pages/device/useDeviceIndex";
 import DeviceGroupSelector from "./DeviceGroupSelector.vue"
 import DevicePluginSelector from "./DevicePluginSelector.vue"
@@ -241,7 +243,7 @@ export default defineComponent({
     DeviceButtingForm,
     ManagementGroupForm,
   },
-  setup(){
+  setup() {
     let {route} = useRoute()
     // console.log(route.query.business_id)
 
@@ -279,21 +281,26 @@ export default defineComponent({
     let currentDeviceItem = ref({})
 
     // 编辑参数 编辑对接 编辑属性
-    function handleEditClick(item, title){
+    function handleEditClick(item, title) {
       // 没id的时候不能编辑参数、对接、属性
       // 填写设备名新建设备有id
-      if(!item.id) {
+      if (!item.id) {
         item.errors.name = "请先填写设备名称"
         message_error("请先填写设备名称")
         return
       }
       // 对接校验，没有选择设备插件就没有可映射的选项
-      if(!item.type){
+      if (!item.type) {
         item.errors.type = "请选择设备插件"
         message_error("请选择设备插件")
         return
       }
-      currentDeviceItem.value = item
+      item.protocol = "mqtt"
+
+      currentDeviceItem.value = JSON.parse(JSON.stringify(item))
+      console.log("===============currentDeviceItem start=================")
+      console.log(currentDeviceItem.value)
+      console.log("===============currentDeviceItem end=================")
       EditDialogTitle.value = title
       showEditDialog.value = true;
     }
@@ -303,7 +310,7 @@ export default defineComponent({
     let showManagementGroupForm = ref(false)
 
     // 分组更改
-    function handleGroupChange(){
+    function handleGroupChange() {
       // 重新加载分组选项
       getGroupOptions()
       // 重新加载设备，删除分组是会删除设备
@@ -311,13 +318,13 @@ export default defineComponent({
     }
 
     // 设备插件更改
-    function handleDevicePluginChange(item){
+    function handleDevicePluginChange(item) {
       // 更新设备
       handleSave(item)
 
       // 更新图表组件
-      structure_field({field: item.type}).then(({data})=>{
-        if(data.code === 200 && data.data) {
+      structure_field({field: item.type}).then(({data}) => {
+        if (data.code === 200 && data.data) {
           item.structure = data.data
         }
       })
@@ -353,13 +360,13 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/deep/ .el-form-item__content{
-  line-height: 1;
-}
+/*/deep/ .el-form-item__content{*/
+/*  line-height: 1;*/
+/*}*/
 
-/deep/ .el-form-item{
-  margin: 0 !important;
-}
+/*/deep/ .el-form-item{*/
+/*  margin: 0 !important;*/
+/*}*/
 /deep/ .el-tag {
   border: 1px solid;
   background-color: transparent;

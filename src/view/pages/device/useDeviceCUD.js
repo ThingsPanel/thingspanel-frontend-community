@@ -23,8 +23,12 @@ export default function useDeviceCUD(tableData){
         })
     }
 
-    // 保存创建或更新
-    function handleSave(item) {
+    /**
+     * 保存创建或更新
+     * @param item
+     * @param cb 回调
+     */
+    function handleSave(item, cb) {
 
         // 每次提交先清除错误
         item.errors.name = ""
@@ -49,20 +53,26 @@ export default function useDeviceCUD(tableData){
         if(item.id){
             device_update({...item}).then(({data})=>{
                 if(data.code === 200) {
-                    message_success("更新成功！")
+                    message_success("更新成功！");
+                    if (cb) {
+                        cb.call();
+                    }
                 }
             }).finally(()=>{
-                loading.value = false
+                loading.value = false;
             })
         } else {
             device_add(item).then(({data})=>{
                 if(data.code === 200) {
-                    message_success("创建成功！")
-                    item.id = data.data.id
-                    item.name = data.data.name
+                    message_success("创建成功！");
+                    item.id = data.data.id;
+                    item.name = data.data.name;
+                    if (cb) {
+                        cb.call();
+                    }
                 }
             }).finally(()=>{
-                loading.value = false
+                loading.value = false;
             })
         }
     }

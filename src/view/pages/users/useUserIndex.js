@@ -13,23 +13,26 @@ export default function useUserIndex(){
 
     let total = ref(0)
 
+    /**
+     * 获取用户列表
+     */
     function getUserIndex(){
         if(loading.value) return;
         loading.value = true
 
-        // 发送请求
-        user_index(params).then(({data})=>{
-            if(data.code === 200) {
-                tableData.value = data.data.data
-                total.value = data.data.total
-            }
-        }).finally(()=>{
-            loading.value = false
-        })
+        user_index(params)
+            .then(({data})=>{
+                if(data.code === 200) {
+                    tableData.value = data.data.data
+                    total.value = data.data.total
+                }
+            }).finally(()=>{
+                loading.value = false
+            })
     }
 
     /**
-     * 打开用户列表时获取一次所有角色列表
+     * 获取所有角色列表
      */
     function getAllRoles(){
         console.log("=================getAllRoles==============")
@@ -42,13 +45,15 @@ export default function useUserIndex(){
         user_find_all_roles(query).then(({data})=>{
             if(data.code === 200) {
                 rolesData.value = data.data.data
+                // 获取用户列表
             }
         })
 
     }
 
-    getUserIndex()
-    getAllRoles()
+    getUserIndex();
+    // 打开用户列表时获取所有角色列表
+    getAllRoles();
 
     return {
         tableData,

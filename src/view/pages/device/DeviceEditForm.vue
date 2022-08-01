@@ -12,8 +12,8 @@
 
   <el-form-item label="协议" prop="protocol">
     <el-radio-group v-model="formData.protocol">
-      <el-radio label="tcp">TCP</el-radio>
       <el-radio label="mqtt">MQTT</el-radio>
+      <el-radio label="tcp">TCP</el-radio>
     </el-radio-group>
   </el-form-item>
 
@@ -77,7 +77,7 @@ export default defineComponent({
       asset_id: "",
       name: "",
       type: "",
-      protocol: "",
+      protocol: "mqtt",
     })
 
     // 校验规则
