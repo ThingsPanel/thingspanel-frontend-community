@@ -25,16 +25,25 @@
         <el-col :span="24">
           <el-form-item label="角色：" prop="roles">
             <div style="width: 100%">
-              <el-checkbox-group v-model="formData.roles" style="display:flex;float:left">
-                <el-checkbox v-for="(option, index) in rolesData" :key="index" :label="option.id">{{option.role_name}}</el-checkbox>
-              </el-checkbox-group>
-              <!--          <el-link type="primary" style="display:flex;float:right">展开</el-link>-->
-              <el-button v-show="isCollapsed" type="text" style="display:flex;float:right" @click="isCollapsed = !isCollapsed">
-                展开<i class="el-icon-arrow-down el-icon--right"></i>
-              </el-button>
-              <el-button v-show="!isCollapsed" type="text" style="display:flex;float:right" @click="isCollapsed = !isCollapsed">
-                收起<i class="el-icon-arrow-up el-icon--right"></i>
-              </el-button>
+              <el-row :gutter="20">
+                <el-col :span="20">
+                  <el-checkbox-group :class="isCollapsed ? 'cg-roles-name' : ''" v-model="formData.roles">
+                    <el-checkbox v-for="(option, index) in rolesData" :key="index" :label="option.id">{{option.role_name}}</el-checkbox>
+                  </el-checkbox-group>
+                </el-col>
+                <el-col :span="2"></el-col>
+                <el-col :span="2">
+                  <div style="text-align: right">
+                    <el-button v-show="isCollapsed" type="text" style="padding-top: 10px" @click="isCollapsed = !isCollapsed">
+                      展开<i class="el-icon-arrow-down el-icon--right"></i>
+                    </el-button>
+                    <el-button v-show="!isCollapsed" type="text" style="padding-top: 10px"  @click="isCollapsed = !isCollapsed">
+                      收起<i class="el-icon-arrow-up el-icon--right"></i>
+                    </el-button>
+                  </div>
+
+                </el-col>
+              </el-row>
             </div>
 
           </el-form-item>
@@ -59,6 +68,10 @@
         <el-col :span="12">
           <el-form-item label="密码：" prop="password" style="margin-right: 15px">
             <el-input size="medium" v-model="formData.password" type="password" show-password></el-input>
+            <el-alert show-icon
+                title="密码默认为123456"
+                type="info" :closable="false" effect="dark">
+            </el-alert>
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -69,7 +82,7 @@
       </el-row>
 
       <el-form-item label="备注：" prop="remark">
-        <el-input size="medium" v-model="formData.remark" type="textarea" :rows="5"></el-input>
+        <el-input size="medium" v-model="formData.remark" type="textarea" :rows="1"></el-input>
       </el-form-item>
 
       <FormAlert :error_message="error_message"></FormAlert>
@@ -141,12 +154,12 @@ export default defineComponent({
       roles: [],
       email: "",
       mobile: "",
-      password: "",
-      password_confirmation: "",
+      password: "123456",
+      password_confirmation: "123456",
       remark: "",
     })
-    // 角色折叠按钮
-    let isCollapsed = ref(false);
+    // 角色折叠按钮，默认折叠
+    let isCollapsed = ref(true);
     let loading = ref(false);
     let error_message = ref("")
 
@@ -256,5 +269,15 @@ const check_mobile = (rule, value, callback) => {
 </script>
 
 <style scoped>
+.cg-roles-name {
+  white-space: nowrap;
+  overflow: hidden;
 
+}
+.el-alert {
+  padding-top: 0px;
+  padding-bottom: 0px;
+  border: 1px solid;
+  background-color: transparent;
+}
 </style>

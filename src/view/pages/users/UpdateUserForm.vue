@@ -21,17 +21,27 @@
 
       <el-row>
         <el-col :span="24">
-          <el-form-item label="角色：">
+          <el-form-item label="角色：" prop="roles">
             <div style="width: 100%">
-              <el-checkbox-group v-model="formData.roles" style="display:flex;float:left">
-                <el-checkbox v-for="(option, index) in rolesData" :key="index" :label="option.id">{{option.role_name}}</el-checkbox>
-              </el-checkbox-group>
-              <el-button v-show="isCollapsed" type="text" style="display:flex;float:right" @click="isCollapsed = !isCollapsed">
-                展开<i class="el-icon-arrow-down el-icon--right"></i>
-              </el-button>
-              <el-button v-show="!isCollapsed" type="text" style="display:flex;float:right" @click="isCollapsed = !isCollapsed">
-                收起<i class="el-icon-arrow-up el-icon--right"></i>
-              </el-button>
+              <el-row :gutter="20">
+                <el-col :span="20">
+                  <el-checkbox-group :class="isCollapsed ? 'cg-roles-name' : ''" v-model="formData.roles">
+                    <el-checkbox v-for="(option, index) in rolesData" :key="index" :label="option.id">{{option.role_name}}</el-checkbox>
+                  </el-checkbox-group>
+                </el-col>
+                <el-col :span="2"></el-col>
+                <el-col :span="2">
+                  <div style="text-align: right">
+                    <el-button v-show="isCollapsed" type="text" style="padding-top: 10px" @click="isCollapsed = !isCollapsed">
+                      展开<i class="el-icon-arrow-down el-icon--right"></i>
+                    </el-button>
+                    <el-button v-show="!isCollapsed" type="text" style="padding-top: 10px"  @click="isCollapsed = !isCollapsed">
+                      收起<i class="el-icon-arrow-up el-icon--right"></i>
+                    </el-button>
+                  </div>
+
+                </el-col>
+              </el-row>
             </div>
 
           </el-form-item>
@@ -52,7 +62,7 @@
       </el-row>
 
       <el-form-item label="备注" prop="remark">
-        <el-input size="medium" v-model="formData.remark" type="textarea" :rows="5"></el-input>
+        <el-input size="medium" v-model="formData.remark" type="textarea" :rows="3"></el-input>
       </el-form-item>
 
       <FormAlert :error_message="error_message"></FormAlert>
@@ -124,7 +134,7 @@ export default defineComponent({
 
         formData.id = val.id
         formData.name = val.name;
-        formData.roles = val.roles ? val.roles : [];
+        formData.roles = [];
         formData.is_admin = val.is_admin;
         formData.email = val.email;
         formData.mobile = val.mobile;
@@ -133,19 +143,11 @@ export default defineComponent({
         get_roles({user: formData.email})
             .then(res => {
               let { data, code } = res.data;
-              if (code == 200) {
-                let arr = [];
-                data.forEach(item => {
-                  props.rolesData.forEach(rolesItem => {
-                    if (item == rolesItem.role_name) {
-                      arr.push(rolesItem.id)
-                    }
-                  })
-                })
-                formData.roles = arr
-
-
+              if (code == 200 && data) {
+                console.log(data)
+                formData.roles = data
               }
+              console.log(formData.roles)
             })
       }
     })
@@ -183,16 +185,12 @@ export default defineComponent({
             user_edit_roles(params)
                 .then(({data}) => {
                   console.log(data)
+
+                  // 通知父级关闭弹窗
+                  context.emit('update:updateUserDialogVisible', false)
                 })
             message_success(data.message)
-
-            // 调用父级修改的方法
-            // 后端返回数据缺少 mobile
-            data.data.mobile = formData.mobile
-            props.update_user(props.editUserItem, data.data)
-            // 通知父级关闭弹窗
-            context.emit('update:updateUserDialogVisible', false)
-
+            props.update_user()
           }else{
             error_message.value = data.message
           }
@@ -230,5 +228,9 @@ const check_mobile = (rule, value, callback) => {
 </script>
 
 <style scoped>
+.cg-roles-name {
+  white-space: nowrap;
+  overflow: hidden;
 
+}
 </style>
