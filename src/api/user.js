@@ -91,7 +91,7 @@ export function user_change_password(data) {
 }
 
 
-// 修改密码
+// 获取菜单
 export async function get_menu(data) {
     console.log('--data--', data);
     return axios({

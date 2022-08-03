@@ -1,15 +1,15 @@
 <template>
-<div>
-  <el-form ref="loginFormRef" :model="formData" :rules="rules" @keyup.enter.native="handleSubmit">
-    <el-form-item prop="email" :error="errors.email">
-      <el-input v-model.trim="formData.email" clearable auto-complete="on" name="email"></el-input>
-    </el-form-item>
-    <el-form-item prop="password" :error="errors.password">
-      <el-input v-model.trim="formData.password" type="password" show-password name="password"></el-input>
-    </el-form-item>
-    <el-button type="primary" class="w-100" :loading="loading" @click="handleSubmit">{{ $t("COMMON.SIGNIN") }}</el-button>
-  </el-form>
-</div>
+  <div>
+    <el-form ref="loginFormRef" :model="formData" :rules="rules" @keyup.enter.native="handleSubmit">
+      <el-form-item prop="email" :error="errors.email">
+        <el-input v-model.trim="formData.email" clearable auto-complete="on" name="email"></el-input>
+      </el-form-item>
+      <el-form-item prop="password" :error="errors.password">
+        <el-input v-model.trim="formData.password" type="password" show-password name="password"></el-input>
+      </el-form-item>
+      <el-button type="primary" class="w-100" :loading="loading" @click="handleSubmit">{{ $t("COMMON.SIGNIN") }}</el-button>
+    </el-form>
+  </div>
 </template>
 
 <script>

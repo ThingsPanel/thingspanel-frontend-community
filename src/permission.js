@@ -259,7 +259,7 @@ export async function reSetMenu(router) {
                 }
             }
 
-            console.log('---routes---', routes);
+            console.log('---------------------------routes----------------------------', routes);
         }
     });
 
