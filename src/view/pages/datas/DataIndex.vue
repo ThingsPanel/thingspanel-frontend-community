@@ -74,7 +74,20 @@
     </el-table-column>
     <el-table-column label="时间" prop="ts"></el-table-column>
     <el-table-column label="数据标签" prop="key"></el-table-column>
-    <el-table-column label="值" prop="dbl_v"></el-table-column>
+<!--    <el-table-column label="值" prop="dbl_v"></el-table-column>-->
+    <el-table-column label="值" prop="dbl_v">
+      <template v-slot="scope">
+        <div v-if="item.str_v.indexOf('file') == -1">{{ item.str_v!=""?item.str_v:item.dbl_v }}</div>
+        <el-image
+            style="width: 100px; height: 80px"
+            :src="url + item.str_v"
+            :preview-src-list="imgView(item.str_v)"
+            v-else
+        >
+        </el-image>
+      </template>
+    </el-table-column>
+
     <el-table-column label="设备插件" prop="entity_type"></el-table-column>
   </el-table>
   <!-- 表 end -->
@@ -125,7 +138,8 @@ export default defineComponent({
     DeviceGroupSelector,
   },
   setup(){
-
+    const url = (process.env.VUE_APP_BASE_URL ||
+    document.location.protocol + "//" + document.domain + ":9999/")
     const {
       tableData,
       loading,
@@ -155,6 +169,7 @@ export default defineComponent({
 
 
     return {
+      url,
       tableData,
       loading,
       params,

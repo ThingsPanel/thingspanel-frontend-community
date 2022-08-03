@@ -48,6 +48,19 @@ export function device_delete(data){
     })
 }
 
+/**
+ * 根据id获取设备信息
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function device_info(data) {
+    return axios({
+        url: "/device/data",
+        method: "post",
+        data
+    })
+}
+
 // 设备的默认参数
 export function device_default_setting(data){
     return axios({
