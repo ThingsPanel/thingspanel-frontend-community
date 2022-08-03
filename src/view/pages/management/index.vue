@@ -82,24 +82,23 @@
                 type="indigo"
                 @click="handle_sever(scope.row)"
                 >保存</el-button>
-              <el-popconfirm  
-                v-if="inputVal !== ''"
-                title="确定要删除吗？"
-                @confirm="handle_del(scope.row)"
-              >
-                <el-button slot="reference" size="mini" type="danger" class="butStyle"
-                  >删除</el-button
-                >
-              </el-popconfirm>
-               <el-popconfirm  
-                v-else
-                title="确定要取消吗？"
-                @confirm="handleCancel(scope.row)"
-              >
-                <el-button slot="reference" size="mini" type="danger" class="butStyle"
-                  >取消</el-button
-                >
-              </el-popconfirm>
+<!--              <el-popconfirm  -->
+<!--                v-if="inputVal !== ''"-->
+<!--                title="确定要删除吗？"-->
+<!--                @confirm="handle_del(scope.row)"-->
+<!--              >-->
+<!--                <el-button slot="reference" size="mini" type="danger" class="butStyle"-->
+<!--                  >删除</el-button-->
+<!--                >-->
+<!--              </el-popconfirm>-->
+<!--               <el-popconfirm  -->
+
+<!--                title="确定要取消吗？"-->
+<!--                @confirm="handleCancel(scope.row)"-->
+<!--              >-->
+                <el-button size="mini" type="default" class="butStyle" @click="handleCancel(scope.row)"
+                  >取消</el-button>
+<!--              </el-popconfirm>-->
             </el-form-item>
             <el-form-item v-else>
               <el-button
@@ -162,10 +161,9 @@
           </el-tree>
         </div>
         <div>
-          <el-divider></el-divider>
-          <div style="dispplay: felx; text-align: center;">
-            <el-button size="mini" @click="closeDrawerClose"  class="buttStyle">取消</el-button>
-            <el-button size="mini" type="indigo" @click="jurisdiction"
+          <div class="footer" style="text-align: center;">
+            <el-button size="small " @click="closeDrawerClose"  class="buttStyle">取消</el-button>
+            <el-button size="small" type="indigo" @click="jurisdiction"
               >保存</el-button
             >
           </div>
@@ -190,6 +188,7 @@ import {
   onMounted,
   getCurrentInstance,
 } from "@vue/composition-api";
+import {message_error} from "../../../utils/helpers";
 export default defineComponent({
   name: "Home",
   components: {
@@ -265,36 +264,38 @@ export default defineComponent({
     };
     // 信息保存  /api/user/role/edit     /api/user/role/add
     const handle_sever = (item) => {
-        inputVal.value = 1;
-      if(item.id == ""){
-        let query = {
-        role_name: item.role_name,
-        role_describe:item.role_describe
-       };
-        ApiService.post(AUTH.local_url + "/user/role/add", query).then(
-        ({ data }) => {
-          if (data.code == 200) {
-            message_success("添加成功");
-            sbdata();
-          }
-        }
-      );
-      }else{
-      let query = {
-        id: item.id,
-        role_name: item.role_name,
-        role_describe:item.role_describe
-      };
-      ApiService.post(AUTH.local_url + "/user/role/edit", query).then(
-        ({ data }) => {
-          if (data.code == 200) {
-            message_success("修改成功");
-            sbdata();
-          }
-        }
-      );
+      if (item.role_name == "") {
+        message_error("角色名称不能为空!")
+        return;
       }
-      
+      inputVal.value = 1;
+        if (item.id == "") {
+          let query = {
+            role_name: item.role_name,
+            role_describe:item.role_describe
+          }
+          ApiService.post(AUTH.local_url + "/user/role/add", query)
+              .then(({ data }) => {
+                  if (data.code == 200) {
+                    message_success("添加成功");
+                    sbdata();
+                  }
+                })
+      } else {
+        let query = {
+          id: item.id,
+          role_name: item.role_name,
+          role_describe:item.role_describe
+        };
+        ApiService.post(AUTH.local_url + "/user/role/edit", query).then(
+          ({ data }) => {
+            if (data.code == 200) {
+              message_success("修改成功");
+              sbdata();
+            }
+          }
+        )
+      }
     };
     // 删除信息   /api/user/role/delete
     const handle_del = (item) => {
@@ -373,7 +374,7 @@ export default defineComponent({
         sbdata();
       }, 500)
     }
-  // 新建
+    // 新建
     const  dialogVisible =()=>{
       inputVal.value = ''
         tableData.value.unshift({
@@ -397,10 +398,13 @@ export default defineComponent({
     }
     // 取消编辑或新建
     const  handleCancel = (item)=>{
-        // 取消创建的时候删除本条数据
+      console.log(item)
+      if (item.id == "") {
         let index = tableData.value.indexOf(item)
         tableData.value.splice(index, 1)
-        
+      } else {
+        inputVal.value = ""
+      }
     }
     return {
       paramsPage,
@@ -451,7 +455,7 @@ export default defineComponent({
 .home {
   .el-drawer {
     color: #fff !important;
-    font-size: 18px;
+    font-size: 14px;
     background: #263d8b;
     // outline: none;
     &__body {
@@ -466,57 +470,58 @@ export default defineComponent({
 }
 .treeStyle {
   width: 380px;
-  height: 450px;
+  //height: 450px;
+
   padding: 0px 10px;
   border-radius:5px ;
   .el-tree {
     background: #263d8b;
     color: rgb(98, 113, 250);
-    // :hover{
-    //   background: tomato;
-    // }
   }
 }
 .dividerLine {
   margin-top: -23px;
+  .el-divider {
+    background: #8181be;
+  }
 }
 .el-tree-node__content:hover{
-  background: rgb(15, 14, 63);
+  background: #fff;
   border-radius: 5px;
-  line-height: 20px;
 }
 .el-drawer__header{
   color: #fff;
 }
-.el-tree-node__label{
-  margin-top: -7px;
 
-
+.el-tree-node__content {
+  .el-checkbox {
+    margin: 0 auto 0 0;
+  }
 }
-span.el-tree-node__expand-icon .el-icon-caret-right{
-   margin-top: -7px;
-}
-// .is-current{
-//   background: chocolate;
-// }
 
-.el-tree-node .is-focusable .is-checked{
-border-radius: 5px;
+.el-tree-node{
+  border-radius: 5px;
+  margin-bottom: 10px;
+
 }
 .buttStyle{
   background: #263d8b;
-   
 }
 
-
-.el-tree-node__content>.el-tree-node__expand-icon{
-   margin-top: -7px;
-}
 .el-tree-node .is-current .is-focusable .is-checked{
   background: chocolate;
 }
 .el-table-transparent .el-button--default {
     color: #6988f0 !important;
     border: #6988f0 1px solid;
+}
+.footer {
+  border-top: 2px solid #8181be;
+  position: absolute;
+  height: 100px;
+  bottom: 0;
+  left: 0;right: 0;
+  margin: 0;
+  padding-top: 20px;
 }
 </style>

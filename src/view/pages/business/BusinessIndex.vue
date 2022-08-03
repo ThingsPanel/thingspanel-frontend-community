@@ -106,6 +106,7 @@ export default defineComponent({
 
     // 跳转到设备
     function showDevice(item){
+      console.log(item)
       router.push({name: "device", query: {business_id: item.id}, params:{page: params.page}})
     }
 

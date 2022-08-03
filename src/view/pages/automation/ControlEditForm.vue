@@ -4,6 +4,8 @@
     class="el-dark-dialog"
     :visible.sync="showDialog"
     width="60%"
+    height="60%"
+    top="10vh"
     :close-on-click-modal="false"
 >
 <el-form
@@ -103,6 +105,8 @@
         <!-- 时间条件类型 -->
         <template v-if="formData.type == 2" v-for="(rules_item, index) in formData.config.rules">
           <el-row type="flex" :gutter="20" :class="index > 0 ? 'pt-5' : ''">
+
+            <!-- 触发条件   -->
             <el-col :span="4">
               <el-form-item>
                 <!-- 条件类型 -->
@@ -112,6 +116,8 @@
                     @change="handleTypeChange"></ControlTypeSelector>
               </el-form-item>
             </el-col>
+
+            <!-- 时间间隔   -->
             <el-col :span="4">
               <el-form-item>
                 <IntervalSelector
@@ -120,11 +126,14 @@
                 ></IntervalSelector>
               </el-form-item>
             </el-col>
+
+            <!-- 选择时间   -->
             <el-col :span="8">
               <el-form-item :prop="`config.rules.${index}.time`" :rules="rules['config.rules.time']">
                 <TimeSelector :interval="rules_item.interval" :time.sync="rules_item.time"></TimeSelector>
               </el-form-item>
             </el-col>
+
             <el-col :span="3">
               <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">新增一行</el-button>
               <el-popconfirm title="确定删除此项？" @confirm="removeRulesLine(rules_item)" v-else>

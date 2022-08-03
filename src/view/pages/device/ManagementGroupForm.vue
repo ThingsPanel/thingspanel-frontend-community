@@ -32,7 +32,7 @@
           <el-select
               class="w-100"
               size="medium"
-              placeholder="请选择分组设备"
+              placeholder="请选择上级分组"
               filterable
               v-model="scope.row.parent_id"
               @change="handleSave(scope.row)"

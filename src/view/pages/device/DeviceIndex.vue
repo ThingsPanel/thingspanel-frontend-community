@@ -285,8 +285,8 @@ export default defineComponent({
       // 没id的时候不能编辑参数、对接、属性
       // 填写设备名新建设备有id
       if (!item.id) {
-        item.errors.name = "请先填写设备名称"
-        message_error("请先填写设备名称")
+        item.errors.name = "请选择设备分组!"
+        message_error("请选择设备分组!")
         return
       }
       // 对接校验，没有选择设备插件就没有可映射的选项
