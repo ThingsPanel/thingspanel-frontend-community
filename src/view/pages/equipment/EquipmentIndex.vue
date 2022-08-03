@@ -87,9 +87,9 @@
       </el-table-column>
       <el-table-column :label='$t("COMMON.OPERATIONTYPE1")' prop="operation_type">
          <template v-slot="scope">
-           <el-tag  v-if="scope.row.operation_type == '1'">{{"定时触发"}}</el-tag>
-           <el-tag  v-if="scope.row.operation_type == '2'">{{"手动控制"}}</el-tag>
-           <el-tag  v-if="scope.row.operation_type == '3'">{{"自动控制"}}</el-tag>
+           <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '1'">{{"定时触发"}}</el-tag>
+           <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '2'">{{"手动控制"}}</el-tag>
+           <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '3'">{{"自动控制"}}</el-tag>
 <!--           <p class="green" v-if="scope.row.operation_type == '1'"><span>{{"定时触发"}}</span></p>-->
 <!--           <p class="green" v-if="scope.row.operation_type == '2'"><span>{{"手动控制"}}</span></p>-->
 <!--           <p class="green" v-if="scope.row.operation_type == '3'"><span>{{"自动控制"}}</span></p>-->
@@ -102,10 +102,10 @@
       <el-table-column :label='$t("COMMON.SENDTHERESULIT1")'  prop="send_result" align="center"  width="130">
        
               <template v-slot="scope"  >
-                <div class="divStyle">
-                   <p class="green" v-if="scope.row.send_result == '1'"><span>{{"成功"}}</span></p>
-                <p v-else  class="orange">{{"失败"}}</p>
-                </div>
+                <el-tag class="tag-success" v-if="scope.row.send_result == '1'">成功</el-tag>
+                <el-tag class="tag-failed" v-else>失败</el-tag>
+
+
             </template>
       </el-table-column>
       <el-table-column :label='$t("COMMON.PROTOCOLTYPE1")' prop="protocol_type" align="center"></el-table-column>
@@ -220,6 +220,20 @@ export default defineComponent({
 </script>
 
 <style lang="scss">
+.tag-operation-type {
+  border: 1px solid;
+  background-color: transparent;
+}
+.tag-success {
+  color: #67ff0f;
+  border: 1px solid #67ff0f;
+  background-color: transparent;
+}
+.tag-failed {
+  color: #cc0000;
+  border: 1px solid #cc0000;
+  background-color: transparent;
+}
 .butStyle{
   height: 30px;
   line-height: 10px;
