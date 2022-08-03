@@ -10,7 +10,7 @@ export default function useBusinessGroupCUD(tableData, business_id, handleChange
         tableData.value.unshift({
             id: "",
             name: "",
-            parent_id: "",
+            parent_id: "0",
             errors:{
                 name: "",
                 parent_id: "",

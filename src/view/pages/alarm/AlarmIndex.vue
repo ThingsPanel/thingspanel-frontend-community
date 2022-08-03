@@ -8,14 +8,14 @@
 
   <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input">
     <!--  业务筛选  -->
-    <el-col :span="5">
+    <el-col :span="4">
       <BusinessSelector
           :business_id.sync="params.business_id"
           @change="handleBusinessSelectorChange"></BusinessSelector>
     </el-col>
 
     <!--  分组  -->
-    <el-col :span="5">
+    <el-col :span="4">
       <DeviceGroupSelector
           :business_id="params.business_id"
           :asset_id.sync="params.asset_id"
@@ -128,7 +128,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.table-describe {
+.el-table-column {
 
 }
 </style>

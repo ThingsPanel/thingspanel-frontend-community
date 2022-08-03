@@ -2,6 +2,7 @@ import {business_add, business_delete, business_edit} from "@/api/business";
 import {message_success} from "@/utils/helpers";
 import {dateFormat} from "@/utils/tool";
 import {ref, reactive} from "@vue/composition-api";
+import {message_error} from "../../../utils/helpers";
 
 export default function useBusinessCUD(tableData){
     let loading = ref(false)
@@ -50,6 +51,7 @@ export default function useBusinessCUD(tableData){
         // 验证
         if(!item.formData.name){
             item.errors.name = "请填写名称"
+            message_error("业务名称不能为空!")
             return true
         }
 
