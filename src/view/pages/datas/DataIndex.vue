@@ -63,7 +63,7 @@
   <!-- 头 end -->
 
   <!-- 表 start -->
-  <el-table :data="tableData" v-loading="loading">
+  <el-table :data="tableData">
     <el-table-column label="序号" type="index" width="50"></el-table-column>
     <el-table-column label="业务名称" prop="bname"></el-table-column>
     <el-table-column label="设备分组名称" prop="name"></el-table-column>
@@ -74,16 +74,16 @@
     </el-table-column>
     <el-table-column label="时间" prop="ts"></el-table-column>
     <el-table-column label="数据标签" prop="key"></el-table-column>
-<!--    <el-table-column label="值" prop="dbl_v"></el-table-column>-->
     <el-table-column label="值" prop="dbl_v">
       <template v-slot="scope">
-        <div v-if="item.str_v.indexOf('file') == -1">{{ item.str_v!=""?item.str_v:item.dbl_v }}</div>
-        <el-image
-            style="width: 100px; height: 80px"
-            :src="url + item.str_v"
-            :preview-src-list="imgView(item.str_v)"
-            v-else
-        >
+        <div v-if="scope.row.str_v.indexOf('file') == -1">
+          {{ scope.row.str_v != "" ? scope.row.str_v : scope.row.dbl_v }}
+        </div>
+<!--        <el-avatar v-else :src="url + scope.row.str_v"></el-avatar>-->
+        <el-image v-else
+            style="width: 60px; height: 60px"
+            :src="url + scope.row.str_v"
+            :preview-src-list="imgView(scope.row.str_v)">
         </el-image>
       </template>
     </el-table-column>
@@ -120,7 +120,7 @@
 </template>
 
 <script>
-import {defineComponent} from "@vue/composition-api";
+import {defineComponent, watch} from "@vue/composition-api";
 import DatePickerOptions from "@/utils/DatePickerOptions";
 import useDataIndex from "@/view/pages/datas/useDataIndex";
 import {dateFormat} from "@/utils/tool";
@@ -158,6 +158,13 @@ export default defineComponent({
       handleSearch()
     }
 
+
+    function imgView(str) {
+      let arr = [];
+      arr.push(this.url + str);
+      return arr;
+    }
+
     // 导出
    const {
      exportVisible,
@@ -175,6 +182,7 @@ export default defineComponent({
       params,
       total,
       getKvIndex,
+      imgView,
       datetimerange,
       DatePickerOptions,
       handleSearch,

@@ -29,6 +29,9 @@ export default function useDataIndex() {
         kv_index(params).then(({data}) => {
             if(data.code === 200) {
                 tableData.value = wasData(data.data.data)
+                console.log("==============kvIndex=================")
+                console.log(tableData.value)
+                console.log("==============kvIndex=================")
                 total.value = data.data.total
             }
         }).finally(()=>{
@@ -63,6 +66,7 @@ export default function useDataIndex() {
     // 默认请求参数
     function defaultParams(){
         return {
+            "business_id": "",
             "limit": 10,
             "page": 1,
             "entity_id": "",

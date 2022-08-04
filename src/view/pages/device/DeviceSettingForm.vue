@@ -115,16 +115,6 @@ export default defineComponent({
           }
         })
     }
-
-    // function getDeviceInfo() {
-    //   device_info({id: deviceData.id})
-    //     .then(({data}) => {
-    //       if (data.code == 200) {
-    //         console.log(data)
-    //       }
-    //     })
-    // }
-
     return {
       deviceData,
       default_setting,
