@@ -2,10 +2,10 @@
 <div class="rounded p-4 card no-border el-table-transparent">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>网络组件</TableTitle>
+      <TableTitle>接入引擎</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="indigo" @click="dialogVisible = true">创建转发规则</el-button>
+      <el-button size="medium" type="indigo" @click="dialogVisible = true">创建接入规则</el-button>
     </el-col>
   </el-row>
 
@@ -109,7 +109,8 @@ export default {
     get_data(){
       let page = {
         "current_page": this.page,
-        "per_page":36
+        "per_page":36,
+        "role_type": "1"
       }
       getTranspondList(page).then(res => {
         if (res.status == 200) {
@@ -197,7 +198,7 @@ export default {
       addFlow(flow).then(res => {
         if (res.status == 200) {
           // 创建flow成功后，向数据库写入数据
-          addTranspond({process_id: res.data.id, disabled: "false", label: form_data.rule_name }).then(result => {
+          addTranspond({process_id: res.data.id, disabled: "false", label: form_data.rule_name,role_type: "1" }).then(result => {
             this.get_data();
             this.dialogVisible = false;
             this.$message({message: "创建成功", center: true, type: "success"})

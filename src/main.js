@@ -87,6 +87,7 @@ import "./core/plugins/metronic";
 import "@mdi/font/css/materialdesignicons.css";
 import './permission' // permission control
 
+Vue.config.devtools = true
 // map
 import AMap from 'vue-amap';
 Vue.use(AMap);

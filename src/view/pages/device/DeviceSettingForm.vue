@@ -42,8 +42,9 @@
 </template>
 
 <script>
-import {defineComponent, ref, reactive} from "@vue/composition-api";
+import {defineComponent, ref, reactive, watchEffect} from "@vue/composition-api";
 import {device_default_setting} from "@/api/device";
+import {device_info} from "../../../api/device";
 
 export default defineComponent({
   name: "DeviceSettingForm",
@@ -59,15 +60,17 @@ export default defineComponent({
   emits: ['change', 'cancel'],
   setup(props, context){
     let deviceData = reactive({
+      id: props.device_item.id,
+      errors: props.device_item.errors,
       protocol: "mqtt",
       name: props.device_item.name,
-      token: ""
+      token: props.device_item.token
     })
     let default_setting = ref("");
 
-
     // 打开编辑对话框时获取默认token和默认配置说明
     getDefaultSetting();
+    // getDeviceInfo();
 
     /**
      * 点击取消
@@ -80,7 +83,7 @@ export default defineComponent({
      * 点击提交
      */
     function onSubmit() {
-      context.emit('change');
+      context.emit('change', deviceData);
     }
 
     /**
@@ -100,7 +103,9 @@ export default defineComponent({
           if (data.code == 200) {
             if (data.data.Token && !props.device_item.token) {
               // 没有 token 时，使用默认值
-              deviceData.token = data.data.Token
+              if (deviceData == "") {
+                deviceData.token = data.data.Token
+              }
             }
             if ( data && data.data && data.data.default_setting) {
               default_setting.value = data.data.default_setting.split("$$").join("\n")
@@ -109,9 +114,7 @@ export default defineComponent({
             }
           }
         })
-
     }
-
     return {
       deviceData,
       default_setting,

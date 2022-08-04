@@ -80,7 +80,7 @@ export const locale = {
     PRODUCTMANAGEMENT: "产品管理",
     FIRMWAREUPGRADE: "固件升级",
     RULEENGINE: "规则引擎",
-    NETWORKCOMPONENTS: "网络组件",
+    NETWORKCOMPONENTS: "接入引擎",
     TRANSPOND: "数据转发",
     OPERATIONLOG: "操作日志",
     PRODUCTION: "生产管理",

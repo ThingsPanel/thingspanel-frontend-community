@@ -32,6 +32,8 @@ import {
     Checkbox,
     CheckboxButton,
     CheckboxGroup,
+    Image,
+    Avatar
 } from "element-ui";
 
 // 防止dialog导致页面滚动条消失抖动
@@ -39,6 +41,7 @@ Dialog.props.lockScroll.default = false;
 
 const element = {
     install: function (Vue) {
+        Vue.use(Avatar)
         Vue.use(Button)
         Vue.use(Form)
         Vue.use(FormItem)
@@ -50,6 +53,7 @@ const element = {
         Vue.use(Table)
         Vue.use(TableColumn)
         Vue.use(Dialog)
+        Vue.use(Image)
         Vue.use(Radio)
         Vue.use(RadioGroup)
         Vue.use(Upload)
@@ -71,7 +75,6 @@ const element = {
         Vue.use(Checkbox)
         Vue.use(CheckboxButton)
         Vue.use(CheckboxGroup)
-
         Vue.prototype.$message = Message
     }
 }

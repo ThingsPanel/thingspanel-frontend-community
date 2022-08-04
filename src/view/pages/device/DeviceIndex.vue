@@ -173,7 +173,7 @@
         :device_item="currentDeviceItem"
         :key="currentDeviceItem.id"
         @cancel="() => { showEditDialog=false }"
-        @change="handleSave(currentDeviceItem, () => { showEditDialog=false })"
+        @change="(deviceData) => {handleSave(deviceData, () => { showEditDialog=false })}"
     ></DeviceSettingForm>
 
     <!--  属性  -->

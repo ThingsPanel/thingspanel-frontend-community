@@ -100,7 +100,7 @@ export default {
         icon: "menu-icon flaticon2-gift-1",
         open: false,
         children: [
-          // 网络组件
+          // 接入引擎
           {
             name: "COMMON.NETWORKCOMPONENTS",
             icon: "menu-icon flaticon-upload-1",
