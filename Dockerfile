@@ -14,6 +14,8 @@ WORKDIR /opt/web
 RUN npm i -g cnpm --registry=https://registry.npm.taobao.org
 RUN cnpm install -g http-server
 RUN cnpm install
+RUN rm .env.dev
+RUN rm .env.production
 RUN cnpm run build
 
 
