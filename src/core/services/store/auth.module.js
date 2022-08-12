@@ -54,7 +54,7 @@ const worryinfo = "";
 
 const getters = {
   currentUser(state) {
-    return JwtService.getCurrentUser() || state.user;
+    return state.user || JwtService.getCurrentUser();
   },
   isAuthenticated(state) {
     return state.isAuthenticated;
