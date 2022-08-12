@@ -54,7 +54,7 @@ const worryinfo = "";
 
 const getters = {
   currentUser(state) {
-    return state.user;
+    return JwtService.getCurrentUser() || state.user;
   },
   isAuthenticated(state) {
     return state.isAuthenticated;
@@ -78,7 +78,18 @@ const actions = {
             // 获取用户菜单
             context.dispatch(SET_ROUTERS).catch()
             // 保存用户状态: 用户信息，登录状态，token
-            context.commit(SET_AUTH, data);
+            context.commit(SET_AUTH, data.data);
+            getUserInfo()
+                .then(({data}) => {
+                  if (data.code == 200) {
+                    let user = data.data;
+                    state.user = user;
+                    state.user.name = user.name;
+                    state.errors = "";
+                    JwtService.saveCurrentUser(user);
+                  }
+                })
+
             // 保存 token 和 过期时间
             JwtService.saveToken(data.data.access_token);
             JwtService.saveExpiresTime(data.data.expires_in)
@@ -138,6 +149,7 @@ const actions = {
       .then(({ data }) => {
         if (data.code == 200) {
           PermissionService.clearPermissions();
+          JwtService.removeCurrentUser();
           context.commit(PURGE_AUTH);
         }
       })
@@ -260,11 +272,11 @@ const mutations = {
   },
   [SET_AUTH](state, user) {
     state.isAuthenticated = true;
-    state.user = user;
-    state.user.name = user.name;
-    state.errors = "";
-    JwtService.saveToken(state.user.token);
-    state.userid = user.userid;
+    // state.user = user;
+    // state.user.name = user.name;
+    // state.errors = "";
+    // JwtService.saveToken(state.user.token);
+    // state.userid = user.userid;
   },
   [PURGE_AUTH](state) {
     state.isAuthenticated = false;

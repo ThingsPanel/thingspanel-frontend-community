@@ -132,7 +132,7 @@ export const constantRouterMap = [
 Vue.use(VueRouter)
 
 const router = new VueRouter({
-    mode: 'history',
+    mode: 'hash',
     routes: baseRoutes
 })
 router.beforeEach(async(to, from, next) => {

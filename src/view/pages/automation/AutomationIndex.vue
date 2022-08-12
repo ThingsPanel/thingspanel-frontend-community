@@ -63,12 +63,12 @@ export default defineComponent({
 
     // 告警信息列表
     function showAlarmList(item){
-      router.push({name: "alarm_strategy", query: {id: item.id}})
+      router.push({path: "/strategy/alarmlist", query: {id: item.id}})
     }
 
     // 控制告警列表
     function showControlList(item){
-      router.push({name: "control_strategy", query: {id: item.id}})
+      router.push({path: "/strategy/strlist", query: {id: item.id}})
     }
 
     return {

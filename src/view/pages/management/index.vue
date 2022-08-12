@@ -136,12 +136,11 @@
           <el-tree
             ref="permTree"
             :data="treeData"
+            :check-strictly="true"
             show-checkbox
             node-key="id"
             :default-checked-keys="treeCheckeds"
             :props="defaultProps"
-            @check="checkChange"
-            @check-change="setChecked"
           >
           </el-tree>
         </div>
@@ -161,6 +160,7 @@
 <script>
 import AUTH from "@/core/services/store/auth.module";
 import ApiService from "@/core/services/api.service";
+import JwtService from "@/core/services/jwt.service";
 import CreateForm from "@/view/pages/transpond/CreateForm.vue";
 import UpdateForm from "@/view/pages/transpond/UpdateForm.vue";
 import TableTitle from "@/components/common/TableTitle.vue";
@@ -176,6 +176,7 @@ import {
 } from "@vue/composition-api";
 import {message_error} from "../../../utils/helpers";
 import i18n from "@/core/plugins/vue-i18n"
+
 export default defineComponent({
   name: "Home",
   components: {
@@ -210,6 +211,8 @@ export default defineComponent({
     let total = ref(0)
     // 初始化获取数据
     onMounted(() => {
+      console.log(AUTH.state)
+
       sbdata();
       getAllPermissions();
     });
@@ -233,22 +236,33 @@ export default defineComponent({
       Perm.tree()
           .then(({data}) => {
             console.log("=================role tree===================")
+            console.log()
             if (data.code == 200) {
-              data.data.forEach(item => {
-                if (item.children) {
-                  item.children.forEach(child => {
-                    if (child.name == "PermissionManagement") {
-                      child.disabled = true;
-                    }
-                  })
-                }
-              })
-              treeData.value = data.data
+              let user = JwtService.getCurrentUser();
+              let tree = data.data;
+              if (user.email != "super@super.cn") {
+                console.log("不是管理员")
+                tree.forEach(item => {
+                  if (item.children) {
+                    item.children.forEach(child => {
+                      if (child.name == "PermissionManagement") {
+                        child.children.forEach(leaf => {
+                          if (leaf.name == "AddPermission"
+                              || leaf.name == "EditPermission"
+                              || leaf.name == "DeletePermission") {
+                            leaf.disabled = true;
+                          }
+                        })
+                      }
+                    })
+                  }
+                })
+              }
+              treeData.value = tree
 
-              console.log(data.data)
+              console.log(tree)
             }
             console.log("=================role tree===================")
-
           })
     }
 
@@ -260,25 +274,24 @@ export default defineComponent({
           .then(({data}) => {
             if (data.code == 200) {
               treeCheckeds.value = data.data || []
+              // let treeData = data.data || []
+              // self.$nextTick(() => {
+              //   console.log("==============treeData=================")
+              //   console.log(treeData)
+              //   treeData.forEach(key => {
+              //     var node = self.$refs.permTree.getNode(key);
+              //     if (node.isLeaf) {
+              //       self.$refs.permTree.setChecked(node, true)
+              //     }
+              //   })
+              //   console.log("==============treeData=================")
+              //
+              // })
               console.log(treeCheckeds.value)
               self.$refs.permTree.setCheckedKeys(treeCheckeds.value);
             }
           })
 
-      // const { id } = item
-      // ApiService.post(AUTH.local_url + "/menu/role/index",{ role_id:id }).then((result)=>{
-      //   if(result.data.code == 200){
-      //     const resultData = result.data.data || [];
-      //     treeCheckeds.value = resultData;
-      //     checkedKeyObj.menu_ids = resultData
-      //     // ApiService.post(AUTH.local_url + "/menu/tree").then(({ data }) => {
-      //     //   if (data.code == 200) {
-      //     //     var arr = data.data;
-      //     //     treeData.value = setTreeData(arr);
-      //     //   }
-      //     // });
-      //   }
-      // })
     };
 
     // 信息编辑
@@ -346,19 +359,34 @@ export default defineComponent({
     };
     // 权限选择  setChecked
     const checkChange = (items, value) => {
-      checkedKeyObj.functions = value.checkedKeys;
-      console.log(value);
+      // console.log("==============checkChange===================")
+      // console.log(items)
+      // console.log(value);
+      // console.log("===============checkChange==================")
+      // checkedKeyObj.functions = value.checkedKeys;
+
     };
     // 权限节点选择
     const setChecked = (key, checked, deep) => {
-      console.log(key);
-       console.log(checked);
-        console.log(deep); 
+      // console.log("==============setChecked===================")
+      //
+      // console.log(key);
+      //  console.log(checked);
+      //   console.log(deep);
+      // console.log("==============setChecked===================")
+
     };
+
 
     // 权限保存  /api/menu/role/edit
     const jurisdiction = () => {
+      var halfCheckedKeys = self.$refs.permTree.getHalfCheckedKeys();
+      var checkedKeys = self.$refs.permTree.getCheckedKeys();
+      console.log("================权限保存======================")
+      checkedKeyObj.functions = halfCheckedKeys.concat(checkedKeys)
       console.log(checkedKeyObj)
+      console.log("==================权限保存=====================")
+
       Perm.assignPermissions(checkedKeyObj)
         .then(({data}) => {
           console.log(data)
