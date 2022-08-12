@@ -241,7 +241,6 @@ export default defineComponent({
               let user = JwtService.getCurrentUser();
               let tree = data.data;
               if (user.email != "super@super.cn") {
-                console.log("不是管理员")
                 tree.forEach(item => {
                   if (item.children) {
                     item.children.forEach(child => {

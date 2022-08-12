@@ -114,39 +114,40 @@
         </v-form>
       </v-dialog>
     </div>
-    <div class="left-nav" id="left-nav" v-show="isShowLeftNav">
-      <div class="logobox">
-        <img src="/media/logos/logo-light.png" alt="" class="headerlogo" />
-      </div>
-      <ul class="left-nav-ul">
-        <li
-          v-for="(proitem, index) in proitems"
-          v-key="proitem"
-          class="left-nav-li"
-        >
-          <a
-            harf="javascript:;"
-            @click="choosesel(proitem.id)"
-            :class="proitem.id == proid ? 'ative-li' : ''"
-            >{{ proitem.name }}</a
-          >
-          <ul v-if="proitem.children" class="pl-1 left-nav-ul">
-            <li
-              v-for="item in proitem.children"
-              v-key="item"
-              class="left-nav-li"
-            >
-              <a
-                harf="javascript:;"
-                @click="choosesel(item.id)"
-                :class="item.id == proid ? 'ative-li' : ''"
-                >{{ item.name }}</a
-              >
-            </li>
-          </ul>
-        </li>
-      </ul>
-    </div>
+<!-- 2022-8-12 -->
+<!--    <div class="left-nav" id="left-nav" v-show="isShowLeftNav">-->
+<!--      <div class="logobox">-->
+<!--        <img src="/media/logos/logo-light.png" alt="" class="headerlogo" />-->
+<!--      </div>-->
+<!--      <ul class="left-nav-ul">-->
+<!--        <li-->
+<!--          v-for="(proitem, index) in proitems"-->
+<!--          v-key="proitem"-->
+<!--          class="left-nav-li"-->
+<!--        >-->
+<!--          <a-->
+<!--            harf="javascript:;"-->
+<!--            @click="choosesel(proitem.id)"-->
+<!--            :class="proitem.id == proid ? 'ative-li' : ''"-->
+<!--            >{{ proitem.name }}</a-->
+<!--          >-->
+<!--          <ul v-if="proitem.children" class="pl-1 left-nav-ul">-->
+<!--            <li-->
+<!--              v-for="item in proitem.children"-->
+<!--              v-key="item"-->
+<!--              class="left-nav-li"-->
+<!--            >-->
+<!--              <a-->
+<!--                harf="javascript:;"-->
+<!--                @click="choosesel(item.id)"-->
+<!--                :class="item.id == proid ? 'ative-li' : ''"-->
+<!--                >{{ item.name }}</a-->
+<!--              >-->
+<!--            </li>-->
+<!--          </ul>-->
+<!--        </li>-->
+<!--      </ul>-->
+<!--    </div>-->
     <div id="chart-right">
       <div
         class="rounded p-4 v-application display-block v-application--is-ltr"
@@ -188,8 +189,7 @@
                 symbol symbol-40 symbol-light-default
                 mt-2
                 cursor-pointer
-                mr-2
-              "
+                mr-2"
               @click="addpanel"
             >
               <span class="symbol-label bg-blue">
@@ -297,8 +297,7 @@
                 symbol symbol-40 symbol-light-default
                 mt-2
                 cursor-pointer
-                mr-2
-              "
+                mr-2"
               @click="getFullCreeen"
               v-show="isshowfull"
             >
@@ -473,7 +472,7 @@
               @click="Close"
             >
               <inline-svg
-                src="media/svg/icons/Code/Error-circle.svg"
+                src="/media/svg/icons/Code/Error-circle.svg"
               ></inline-svg>
             </span>
           </v-card-title>
@@ -492,7 +491,7 @@
                         @click="Close"
                       >
                         <inline-svg
-                          src="media/svg/icons/Map/Compass.svg"
+                          src="/media/svg/icons/Map/Compass.svg"
                         ></inline-svg>
                       </span>
                       {{ items.name }}
@@ -1175,13 +1174,8 @@ export default {
     changebuss(id) {
       console.log(id);
       console.log("资产列表");
-      // device_group_drop({business_id: id})
-      //     .then(({data}) => {
-      //       console.log("===========changebuss===========")
-      //       console.log(data)
-      //       console.log("===========changebuss===========")
-      //
-      //     })
+
+
       ApiService.post(AUTH.local_url + "/dashboard/property", {
         wid: id,
       }).then(({ data }) => {
