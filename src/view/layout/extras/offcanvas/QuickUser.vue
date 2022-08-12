@@ -8,7 +8,7 @@
     <span
             class=" text-white font-weight-bolder font-size-base d-none d-md-inline mr-3"
     >
-        {{ auth.user.name }}
+        {{ user.name }}
       </span>
     <div class="card-toolbar">
       <b-dropdown
@@ -86,7 +86,7 @@ import AUTH from "@/core/services/store/auth.module";
 import KTLayoutQuickUser from "@/assets/js/layout/extended/quick-user.js";
 // import KTOffcanvas from "@/assets/js/components/offcanvas.js";
 import ChangePasswordForm from "@/view/pages/users/ChangePasswordForm";
-
+import JwtService from "@/core/services/jwt.service"
 export default {
   components: {
     ChangePasswordForm
@@ -97,6 +97,7 @@ export default {
         name:''
       }
     },
+    user: {},
     name: "KTQuickUser",
     changePasswordDialogVisible: false,
   }),
@@ -104,6 +105,9 @@ export default {
     // Init Quick User Panel
     KTLayoutQuickUser.init(this.$refs["kt_quick_user"]);
     this.auth = AUTH.state;
+    this.user = JwtService.getCurrentUser();
+
+    console.log("==============user: " ,JSON.stringify(user))
 
   },
   methods: {

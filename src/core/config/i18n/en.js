@@ -6,6 +6,8 @@ export const locale = {
     SYSTEMMANAGEMENT:"system management",
     SYSTEMSETUP: "System setup",
     PERMISSIONMANAGEMENT: "Permission management",
+    PERMISSIONADD: "Add Permission",
+
     DEVICE: "Device Manager ",
     DEVICEPROPERTIES: "Device properties",
     DEVICEPROPERTIESVALUE: "Device properties value",

@@ -6,7 +6,8 @@
         <TableTitle>{{ $t('COMMON.PERMISSIONMANAGEMENT') }}</TableTitle>
       </el-col>
       <el-col :span="12" class="text-right">
-        <el-button size="medium" type="indigo" @click="handleAdd">添加权限</el-button>
+        <!-- 添加权限按钮 -->
+        <el-button size="medium" type="indigo" @click="handleAdd" :disabled="!hasAuth('sys:permission:add')">{{ $t('COMMON.PERMISSIONADD') }}</el-button>
       </el-col>
     </el-row>
     <!-- 头 end -->
@@ -36,9 +37,9 @@
       <el-table-column label="操作" align="center" width="250">
         <template v-slot="scope">
           <div class="text-right">
-            <el-button type="indigo" size="mini" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button type="indigo" size="mini" @click="handleEdit(scope.row)" :disabled="!hasAuth('sys:permission:edit')">编辑</el-button>
             <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
-              <el-button slot="reference" type="danger" size="mini">删除</el-button>
+              <el-button slot="reference" type="danger" size="mini"  :disabled="!hasAuth('sys:permission:del')">删除</el-button>
             </el-popconfirm>
           </div>
         </template>
@@ -180,13 +181,15 @@ export default {
         })
     },
     getList() {
-      Perm.list()
-        .then(({data}) => {
-          if (data.code == 200) {
-            console.log(data.data)
-            this.tableData = data.data
-          }
-        })
+      if (this.hasAuth('sys:permission:search')) {
+        Perm.list()
+            .then(({data}) => {
+              if (data.code == 200) {
+                console.log(data.data)
+                this.tableData = data.data
+              }
+            })
+      }
     },
     handleAdd() {
       this.formData = { parent_id: "0", type: "1" }

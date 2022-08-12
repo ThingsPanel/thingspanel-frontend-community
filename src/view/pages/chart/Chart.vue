@@ -152,12 +152,12 @@
         class="rounded p-4 v-application display-block v-application--is-ltr"
       >
         <div>
-          <!--配置图表单元按钮-->
-          <div class="float-left">
-            <div
-              class="text-white float-left"
-              style="height: 56px; line-height: 56px; margin-right: 20px"
-            >
+            <!--配置图表单元按钮-->
+            <div class="float-left">
+              <div
+                class="text-white float-left"
+                style="height: 56px; line-height: 56px; margin-right: 20px"
+              >
               {{ $t("COMMON.PLACEHOLDER35") }}:
             </div>
             <!-- 设备分组下拉列表-->
@@ -173,7 +173,7 @@
                   v-for="(e, index) in equlist"
                   :key="e.latesttime"
                   :value="e.id"
-                  :label="e.name"
+                  :label="e.device_group"
                 ></el-option>
               </el-select>
             </div>
@@ -182,6 +182,7 @@
             class="expantdiv text-right inlineblock float-right"
             v-show="isshowtheme"
           >
+            <!-- 添加图表 -->
             <div
               class="
                 symbol symbol-40 symbol-light-default
@@ -735,18 +736,10 @@ export default {
     },
     // 通过业务id获取设备分组
     getEqlist(id) {
-      device_group_drop({business_id: id})
-        .then(res => {
-          console.log("=======device_group_drop======", res)
-        })
-      console.log(id)
       let _that = this;
-      ApiService.post(AUTH.local_url + "/asset/list", {
-        business_id: id,
-      })
-        .then(({ data }) => {
-          console.log("资产编辑列表");
-          console.log(data);
+      device_group_drop({business_id: id})
+        .then(({data}) => {
+          console.log("=======device_group_drop======", data)
           if (data.code == 200) {
             var arr = data.data;
 
@@ -754,7 +747,7 @@ export default {
             arr.unshift({
               business_id: this.business_id,
               id: this.business_id,
-              name: "总览",
+              device_group: "总览",
             });
 
             _that.equlist = arr;
@@ -763,6 +756,33 @@ export default {
             this.$store.dispatch(REFRESH).then(() => {});
           }
         })
+        if (true) {
+          return;
+        }
+      console.log(id)
+
+      // ApiService.post(AUTH.local_url + "/asset/list", {
+      //   business_id: id,
+      // })
+      //   .then(({ data }) => {
+      //     console.log("资产编辑列表");
+      //     console.log(data);
+      //     if (data.code == 200) {
+      //       var arr = data.data;
+      //
+      //       //最新页增加总览选项
+      //       arr.unshift({
+      //         business_id: this.business_id,
+      //         id: this.business_id,
+      //         name: "总览",
+      //       });
+      //
+      //       _that.equlist = arr;
+      //       // _that.entity_id = arr[0].id; //20220424 不再默认第一项展示
+      //     } else {
+      //       this.$store.dispatch(REFRESH).then(() => {});
+      //     }
+      //   })
         .catch(({ response }) => {
           console.log(response);
         });
@@ -1095,6 +1115,7 @@ export default {
         this.zlshow = true;
         this.paneldialog = true;
       } else {
+
         ApiService.post(AUTH.local_url + "/dashboard/list", {
           chart_id: this.chart_id,
         }).then(({ data }) => {
@@ -1105,6 +1126,7 @@ export default {
               this.panelarr = data.data;
             } else {
               // 新增
+              this.asset_id = this.business_id
               this.isedit = 0;
               this.panelarr = [
                 {
@@ -1153,6 +1175,13 @@ export default {
     changebuss(id) {
       console.log(id);
       console.log("资产列表");
+      // device_group_drop({business_id: id})
+      //     .then(({data}) => {
+      //       console.log("===========changebuss===========")
+      //       console.log(data)
+      //       console.log("===========changebuss===========")
+      //
+      //     })
       ApiService.post(AUTH.local_url + "/dashboard/property", {
         wid: id,
       }).then(({ data }) => {

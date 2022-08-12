@@ -5,6 +5,8 @@ export const locale = {
     SYSTEMSETUP: "系统设置",
     MANAGEMENT:"角色管理",
     PERMISSIONMANAGEMENT: "权限管理",
+    PERMISSIONADD: "添加权限",
+
     DEVICE: "设备管理",
     DEVICEPROPERTIES: "设备属性",
     DEVICEPROPERTIESVALUE: "设备属性值",
