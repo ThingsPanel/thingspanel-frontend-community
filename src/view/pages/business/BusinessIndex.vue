@@ -5,7 +5,8 @@
       <TableTitle>业务管理</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="indigo" @click="handleCreate()">新增业务</el-button>
+      <el-button size="medium" type="indigo"
+                 v-if="hasAuth('business:add')" @click="handleCreate()">{{ $t('COMMON.NEWBUSINESS') }}</el-button>
     </el-col>
   </el-row>
 
@@ -40,10 +41,11 @@
             <el-button type="default" size="mini" @click="handleCancel(scope.row)">取消</el-button>
           </template>
           <template v-else>
-            <el-button type="indigo" size="mini" @click="showDevice(scope.row)">设备管理</el-button>
-            <el-button type="indigo" size="mini" class="mr-3" @click="handleEdit(scope.row)">编辑业务名</el-button>
+            <el-button type="indigo" size="mini" v-if="hasAuth('business:device')" @click="showDevice(scope.row)">设备管理</el-button>
+            <el-button type="indigo" size="mini" class="mr-3"
+                       v-if="hasAuth('business:edit')" @click="handleEdit(scope.row)">编辑业务名</el-button>
             <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
-              <el-button slot="reference" type="danger" size="mini">删除</el-button>
+              <el-button slot="reference" type="danger" size="mini" v-if="hasAuth('business:del')">删除</el-button>
             </el-popconfirm>
           </template>
         </div>

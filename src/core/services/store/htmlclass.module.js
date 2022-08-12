@@ -19,6 +19,7 @@ export default {
   },
   actions: {
     [ADD_BODY_CLASSNAME](context, className) {
+      console.log(className)
       document.body.classList.add(className);
     },
     [REMOVE_BODY_CLASSNAME](context, className) {

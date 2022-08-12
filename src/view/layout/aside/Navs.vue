@@ -5,15 +5,17 @@
     permanent
   >
     <v-list>
+      <NavItem :item="homeNav" key="home"></NavItem>
+
       <template v-for="(item, index) in navs">
         <!--  list-group里是二级菜单  -->
         <NavGroup
           v-if="'children' in item"
           :item="item"
-          :key="item.link"
+          :key="item.path"
         ></NavGroup>
         <!--  一级的菜单  -->
-        <NavItem v-else :item="item" :key="item.link + index"></NavItem>
+        <NavItem v-else :item="item" :key="item.path + index"></NavItem>
       </template>
     </v-list>
   </v-navigation-drawer>
@@ -23,6 +25,7 @@
 import NavGroup from "@/view/layout/aside/NavGroup";
 import NavItem from "@/view/layout/aside/NavItem";
 import router from "@/router";
+import axios from "axios";
 
 export default {
   name: "Navs",
@@ -32,155 +35,20 @@ export default {
   },
   data: () => ({
     mini: false,
-    navs: [
-      {
-        name: "COMMON.HOME",
-        icon: "menu-icon flaticon2-architecture-and-city",
-        link: "/home",
-      },
-      {
-        name: "COMMON.BUSINESS",
-        icon: "menu-icon flaticon2-rhombus",
-        link: "/list",
-      },
-      {
-        name: "COMMON.DATAS",
-        icon: "menu-icon flaticon2-list",
-        link: "/data/index",
-      }, // 数据管理
-      // {name:"COMMON.DEVICE", icon: 'menu-icon flaticon2-rhombus', link: '/device'},
-      {
-        name: "COMMON.VISUALIZATION",
-        icon: "menu-icon flaticon2-laptop",
-        link: "/chart/list",
-      },
-      {
-        name: "COMMON.AUTOMATION",
-        icon: "menu-icon flaticon2-hourglass",
-        link: "/strategy/list",
-      },
-      // {name:"COMMON.AUTOMATION", icon: 'menu-icon flaticon2-hourglass', link: '/strategy/list2'},
-      {
-        name: "COMMON.WARNINFO",
-        icon: "menu-icon flaticon2-warning",
-        link: "/alarm/list",
-      },
-      {
-        name: "COMMON.SYSTEMLOG",
-        icon: "menu-icon flaticon-open-box",
-        open: false,
-        children: [
-          {
-            name: "COMMON.OPERATIONLOG",
-            icon: "menu-icon flaticon2-paper",
-            link: "/log/list",
-          },
-          {
-            name: "COMMON.EQUIPMENTLOG",
-            icon: "menu-icon flaticon-interface-3",
-            link: "/equipment/index",
-          },
-        ],
-      },
-      {
-        name: "COMMON.PRODUCTMANAGEMENT",
-        icon: "menu-icon flaticon2-gift-1",
-        open: false,
-        children: [
-          {
-            name: "COMMON.FIRMWAREUPGRADE",
-            icon: "menu-icon flaticon-upload-1",
-            link: "/firmware/index",
-          },
-        ],
-      },
-      // 规则引擎
-      {
-        name: "COMMON.RULEENGINE",
-        icon: "menu-icon flaticon2-gift-1",
-        open: false,
-        children: [
-          // 接入引擎
-          {
-            name: "COMMON.NETWORKCOMPONENTS",
-            icon: "menu-icon flaticon-upload-1",
-            link: "/network_components/index",
-          },
-          // 数据转发
-          {
-            name: "COMMON.TRANSPOND",
-            icon: "menu-icon flaticon-upload-1",
-            link: "/transpond/index",
-          }
-        ],
-      },
-      {
-        name: "COMMON.MARKET",
-        icon: "menu-icon flaticon2-supermarket",
-        link: "/market",
-      },
-      {
-        name: "COMMON.USERS",
-        icon: "menu-icon flaticon2-user",
-        link: "/users/user",
-      },
-      // {
-      //   name: "COMMON.SYSTEMSETUP",
-      //   icon: "menu-icon flaticon2-gear",
-      //   link: "/system/index",
-      // },
-      {name:"COMMON.SYSTEMMANAGEMENT", icon: 'menu-icon flaticon2-gear', 
-      open:false, children: [
-          {
-            name:"COMMON.SYSTEMSETUP", 
-            icon: 'menu-icon flaticon-upload-1', 
-            link: '/system/index'
-          },
-          {
-             name:"COMMON.MANAGEMENT", 
-             icon: 'menu-icon flaticon-upload-1', 
-             link: '/management/index'
-          },
-          //  {name:"COMMON.MANAGEMENT", icon: 'menu-icon flaticon-upload-1', link: '/management/index'},
-        ]},
-    ],
-  }),
-
-  mounted() {
-    let routers = router.getRoutes();
-    let navs = this.navs;
-    let newNavs = [];
-
-    // console.log("navs", navs);
-
-    for (let i = 0; i < navs.length; i++) {
-
-      //有子菜单
-      if (navs[i].children) {
-        let navTemp = [];
-        let navChild = navs[i].children;
-        for (let ic = 0; ic < navChild.length; ic++) {
-          for (let ii = 0; ii < routers.length; ii++) {
-            if (navChild[ic].link == routers[ii].path) {
-              navTemp.push(navChild[ic]);
-            }
-          }
-        }
-
-        if (navTemp.length > 0) {
-          navs[i].children = navTemp;
-          newNavs.push(navs[i]);
-        }
-      } else {
-        for (let ii = 0; ii < routers.length; ii++) {
-          if (navs[i].link == routers[ii].path) {
-            newNavs.push(navs[i]);
-          }
-        }
-      }
+    homeNav: {
+      path: "/home",
+      title: "COMMON.HOME",
+      icon: "flaticon2-architecture-and-city"
     }
-
-    this.navs = newNavs;
+  }),
+  computed: {
+    navs() {
+      return this.$store.getters.getNavs
+    }
+  },
+  methods: {
+  },
+  mounted() {
   },
 };
 </script>

@@ -52,7 +52,7 @@
     <el-table-column label="设备名" prop="device_name" width="220"></el-table-column>
 <!--    <el-table-column label="指标名" prop="asset_name"></el-table-column>-->
 <!--    <el-table-column label="当前值"></el-table-column>-->
-    <el-table-column label="触发条件" prop="describe" show-overflow-tooltip="true">
+    <el-table-column label="触发条件" prop="describe" :show-overflow-tooltip="true">
       <template v-slot="scope">
         <p class="table-describe">{{ scope.row.describe }}</p>
       </template>
