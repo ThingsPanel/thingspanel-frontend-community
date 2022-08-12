@@ -15,7 +15,7 @@
         <span class="svg-icon svg-icon svg-icon-xl">
           <inline-svg
             class="svg-icon"
-            src="media/svg/icons/Navigation/Angle-double-left.svg"
+            src="/media/svg/icons/Navigation/Angle-double-left.svg"
           />
         </span>
       </button>
@@ -52,9 +52,9 @@ export default {
   methods: {
     siteLogo() {
       const menuAsideLeftSkin = this.layoutConfig("brand.self.theme");
+      console.log("==menuAsideLeftSkin " + menuAsideLeftSkin)
       // set brand logo
       const logoObject = this.layoutConfig("self.logo");
-
       let logo;
 
       if (typeof logoObject === "string") {
@@ -66,6 +66,9 @@ export default {
       if (typeof logo === "undefined") {
         const logos = this.layoutConfig("self.logo");
         logo = logos[Object.keys(logos)[0]];
+      }
+      if (logo[0] != "/" && !logo.startsWith("http")) {
+        logo = "/" + logo;
       }
       return logo;
     }

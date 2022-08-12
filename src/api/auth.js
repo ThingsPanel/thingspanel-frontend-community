@@ -1,5 +1,10 @@
 import axios from "./http"
 
+/**
+ * 登录
+ * @param data
+ * @returns {AxiosPromise}
+ */
 export function login(data) {
     return axios({
         url: '/auth/login',
@@ -8,6 +13,10 @@ export function login(data) {
     })
 }
 
+/**
+ * 退出登录
+ * @returns {AxiosPromise}
+ */
 export function logout() {
     return axios({
         url: '/auth/logout',
@@ -15,7 +24,11 @@ export function logout() {
     })
 }
 
-export function me() {
+/**
+ * 获取当前用户信息
+ * @returns {AxiosPromise}
+ */
+export function getUserInfo() {
     return axios({
         url: '/auth/me',
         method: 'post',

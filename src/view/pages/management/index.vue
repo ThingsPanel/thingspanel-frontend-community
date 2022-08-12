@@ -82,23 +82,8 @@
                 type="indigo"
                 @click="handle_sever(scope.row)"
                 >保存</el-button>
-<!--              <el-popconfirm  -->
-<!--                v-if="inputVal !== ''"-->
-<!--                title="确定要删除吗？"-->
-<!--                @confirm="handle_del(scope.row)"-->
-<!--              >-->
-<!--                <el-button slot="reference" size="mini" type="danger" class="butStyle"-->
-<!--                  >删除</el-button-->
-<!--                >-->
-<!--              </el-popconfirm>-->
-<!--               <el-popconfirm  -->
-
-<!--                title="确定要取消吗？"-->
-<!--                @confirm="handleCancel(scope.row)"-->
-<!--              >-->
                 <el-button size="mini" type="default" class="butStyle" @click="handleCancel(scope.row)"
                   >取消</el-button>
-<!--              </el-popconfirm>-->
             </el-form-item>
             <el-form-item v-else>
               <el-button
@@ -149,6 +134,7 @@
         </div>
         <div class="treeStyle">
           <el-tree
+            ref="permTree"
             :data="treeData"
             show-checkbox
             node-key="id"
@@ -157,7 +143,6 @@
             @check="checkChange"
             @check-change="setChecked"
           >
-            <!-- @check="checkChange" -->
           </el-tree>
         </div>
         <div>
@@ -180,6 +165,7 @@ import CreateForm from "@/view/pages/transpond/CreateForm.vue";
 import UpdateForm from "@/view/pages/transpond/UpdateForm.vue";
 import TableTitle from "@/components/common/TableTitle.vue";
 import { message_success } from "@/utils/helpers";
+import Perm from "@/api/permission"
 import {
   defineComponent,
   reactive,
@@ -189,6 +175,7 @@ import {
   getCurrentInstance,
 } from "@vue/composition-api";
 import {message_error} from "../../../utils/helpers";
+import i18n from "@/core/plugins/vue-i18n"
 export default defineComponent({
   name: "Home",
   components: {
@@ -211,8 +198,8 @@ export default defineComponent({
     const data_count= 2;
     const closeDrawer = ref(false);
     let defaultProps = ref({
-      children: "child_node",
-      label: "customName",
+      children: "children",
+      label: data => i18n.t(data.title)
     });
     let paramsPage = reactive({
         page: page ? page : 1,
@@ -224,13 +211,14 @@ export default defineComponent({
     // 初始化获取数据
     onMounted(() => {
       sbdata();
+      getAllPermissions();
     });
 
     // 初始化数据
     const sbdata = () => {
       let query = {
          current_page: paramsPage.page,
-          per_page: paramsPage.limit
+         per_page: paramsPage.limit
       }
       ApiService.post(AUTH.local_url + "/user/role/list",query).then(({ data }) => {
         if (data.code == 200) {
@@ -239,24 +227,60 @@ export default defineComponent({
         }
       });
     };
-    // 获取权限数据  /api/menu/tree
+
+    // 加载所有权限
+    const getAllPermissions = () => {
+      Perm.tree()
+          .then(({data}) => {
+            console.log("=================role tree===================")
+            if (data.code == 200) {
+              data.data.forEach(item => {
+                if (item.children) {
+                  item.children.forEach(child => {
+                    if (child.name == "PermissionManagement") {
+                      child.disabled = true;
+                    }
+                  })
+                }
+              })
+              treeData.value = data.data
+
+              console.log(data.data)
+            }
+            console.log("=================role tree===================")
+
+          })
+    }
+
+    // 获取指定角色的权限数据  /api/menu/tree
     const treeDateList = (item) => {
       const { id } = item
-      ApiService.post(AUTH.local_url + "/menu/role/index",{ role_id:id }).then((result)=>{
-        if(result.data.code == 200){
-          const resultData = result.data.data || [];
-          treeCheckeds.value = resultData;
-          checkedKeyObj.menu_ids = resultData
-          ApiService.post(AUTH.local_url + "/menu/tree").then(({ data }) => {
+      treeCheckeds.value = [""];
+      Perm.getPermissionsByRole({ role: id })
+          .then(({data}) => {
             if (data.code == 200) {
-              var arr = data.data;
-              treeData.value = setTreeData(arr);
+              treeCheckeds.value = data.data || []
+              console.log(treeCheckeds.value)
+              self.$refs.permTree.setCheckedKeys(treeCheckeds.value);
             }
-          });
-        }
-      })
-      
+          })
+
+      // const { id } = item
+      // ApiService.post(AUTH.local_url + "/menu/role/index",{ role_id:id }).then((result)=>{
+      //   if(result.data.code == 200){
+      //     const resultData = result.data.data || [];
+      //     treeCheckeds.value = resultData;
+      //     checkedKeyObj.menu_ids = resultData
+      //     // ApiService.post(AUTH.local_url + "/menu/tree").then(({ data }) => {
+      //     //   if (data.code == 200) {
+      //     //     var arr = data.data;
+      //     //     treeData.value = setTreeData(arr);
+      //     //   }
+      //     // });
+      //   }
+      // })
     };
+
     // 信息编辑
     const handle_launch = (item) => {
       console.log(item);
@@ -312,40 +336,17 @@ export default defineComponent({
     const role_id = ref("");
     const handle_quanxian = (items) => {
       treeDateList(items);
-      checkedKeyObj.role_id = items.id;
+      checkedKeyObj.role = items.id;
       drawer.value = true;
     };
 
-    //  树形结构转换
-    const setTreeData = (source) => {
-      let cloneData = JSON.parse(JSON.stringify(source)); // 对源数据深度克隆
-      // 数据排序，根据id进行排序展示，在处理国际化的问题
-      var len = cloneData.length;
-      for (var i = 0; i < len; i++) {
-        for (var j = 0; j < len - 1; j++) {
-          if (Number(cloneData[j].id) > Number(cloneData[j+1].id)) {  // 比较相邻元素                
-            var temp = cloneData[j+1];   //元素交换                
-            cloneData[j+1] = cloneData[j];                
-            cloneData[j] = temp;            
-          }        
-        }
-        const menuName = cloneData[i].menu_name.toLocaleUpperCase();
-        cloneData[i].customName = self.$t("MANAGEMENT.PERMISSION."+menuName);
-        const child_node = cloneData[i].child_node || [];
-        child_node.map((item)=>{
-          const menuChildrenName = item.menu_name.toLocaleUpperCase();
-          item.customName = self.$t("MANAGEMENT.PERMISSION."+menuChildrenName);
-        })
-      }
-      return cloneData;
-    };
     // 弹框取消
     const closeDrawerClose = () => {
       drawer.value = false;
     };
     // 权限选择  setChecked
     const checkChange = (items, value) => {
-      checkedKeyObj.menu_ids = value.checkedKeys;
+      checkedKeyObj.functions = value.checkedKeys;
       console.log(value);
     };
     // 权限节点选择
@@ -357,15 +358,22 @@ export default defineComponent({
 
     // 权限保存  /api/menu/role/edit
     const jurisdiction = () => {
-      ApiService.post(AUTH.local_url + "/menu/role/edit", checkedKeyObj).then(
-        ({ data }) => {
-          if (data.code == 200) {
-            message_success("权限保存成功");
-            drawer.value = false;
-            sbdata();
-          }
-        }
-      );
+      console.log(checkedKeyObj)
+      Perm.assignPermissions(checkedKeyObj)
+        .then(({data}) => {
+          console.log(data)
+          message_success("保存成功!")
+          drawer.value = false;
+        })
+      // ApiService.post(AUTH.local_url + "/menu/role/edit", checkedKeyObj).then(
+      //   ({ data }) => {
+      //     if (data.code == 200) {
+      //       message_success("权限保存成功");
+      //       drawer.value = false;
+      //       sbdata();
+      //     }
+      //   }
+      // );
     };
     // 分页
     const  page_change=(val)=>{
@@ -378,16 +386,16 @@ export default defineComponent({
     const  dialogVisible =()=>{
       inputVal.value = ''
         tableData.value.unshift({
-            id:"",//id
-            role_describe: "",//角色描述
-            role_name: "",//角色名称
+            id:"",// id
+            role_describe: "",// 角色描述
+            role_name: "",// 角色名称
             errors: {
                 role_name: ""
             },
         })
       
     }
-// 创建业务
+    // 创建
     const handleCreate =()=>{
         // 创建时添加一个空数据到 tableData
         tableData.value.unshift({
@@ -418,7 +426,6 @@ export default defineComponent({
       setChecked,
       jurisdiction,
       closeDrawerClose,
-      setTreeData,
       treeDateList,
       sbdata,
       handle_launch,
@@ -437,7 +444,7 @@ export default defineComponent({
       per_page,
       page,
       data_count,
-      total,
+      total
     };
   },
 });
@@ -471,6 +478,7 @@ export default defineComponent({
 .treeStyle {
   width: 380px;
   //height: 450px;
+  overflow:auto;
 
   padding: 0px 10px;
   border-radius:5px ;

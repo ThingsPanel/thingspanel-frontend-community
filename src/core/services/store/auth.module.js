@@ -1,12 +1,20 @@
 import ApiService from "@/core/services/api.service";
 import JwtService from "@/core/services/jwt.service";
+import PermissionService from "../permission.service"
+
 // 登录和用户详情接口
-import { login, logout, me } from "@/api/auth";
+import { login, logout, getUserInfo } from "@/api/auth";
+import { CONST_ROUTERS } from "@/permission"
+// const { permissions } = require("@/permissions.json")
+import Perm from "@/api/permission"
 
 // 引入路由下面调用 router.push 跳转
 import router from "@/router"
 import {getRedToken} from "@/api/transpond";
 import RED from "@/core/services/red.module"
+import {get_menu} from "../../../api/user";
+import store from "./index";
+import {RESET_LAYOUT_CONFIG} from "./config.module";
 
 
 // action types
@@ -16,6 +24,8 @@ export const LOGOUT = "logout";
 export const REFRESH = "refresh";
 export const REGISTER = "register";
 export const UPDATE_USER = "updateUser";
+export const SET_ROUTERS = "setRouters"
+export const GET_ROUTERS = "getRouters"
 
 // mutation types
 export const PURGE_AUTH = "logOut";
@@ -30,6 +40,14 @@ const state = {
   user: {},
   isAuthenticated: !!JwtService.getToken(),
   userid: "",
+  // 是否开启了node-red认证
+  isRedAuthStarted: false,
+  // 权限
+  permissions: [],
+  // 导航菜单
+  navs: [],
+  // 授权
+  authority: []
 };
 
 const worryinfo = "";
@@ -41,6 +59,15 @@ const getters = {
   isAuthenticated(state) {
     return state.isAuthenticated;
   },
+  isRedAuthStarted(state) {
+    return state.isRedAuthStarted;
+  },
+  getNavs(state) {
+    return state.navs;
+  },
+  getAuth(state) {
+    return state.authority;
+  }
 };
 
 const actions = {
@@ -48,41 +75,39 @@ const actions = {
     return new Promise((resolve, reject) => {
       login(credentials).then(({ data }) => {
           if (data.code == 200) {
+            // 获取用户菜单
+            context.dispatch(SET_ROUTERS).catch()
+            // 保存用户状态: 用户信息，登录状态，token
             context.commit(SET_AUTH, data);
             // 保存 token 和 过期时间
             JwtService.saveToken(data.data.access_token);
             JwtService.saveExpiresTime(data.data.expires_in)
 
-            console.log("==============getRedToken===============")
-            // 设置node-red的令牌
-            getRedToken().then(res => {
-
-              console.log(res)
-              if (res.status == 200) {
-                RED.setRedToken(res.data)
-              }
-              console.log("==============getRedToken then===============")
-
-            }).catch(err => {
-              console.log(err)
-              console.log("==============getRedToken catch===============")
-
-            })
+            if (state.isRedAuthStarted) {
+              console.log("==============getRedToken===============")
+              // 设置node-red的令牌
+              getRedToken()
+                  .then(res => {
+                    if (res.status == 200) {
+                      RED.setRedToken(res.data)
+                    }
+                  })
+                  .catch(err => {
+                    console.log(err)
+                  })
+            }
 
             // 登录成功，延迟 500 ms 再跳转
-            setTimeout(()=>{
-              router.push({name: "home"})
+            setTimeout(() => {
+              router.push({name: "home"}).catch(() =>{});
             }, 500)
-
-
-
           }
 
           resolve(data);
         })
         .catch(({ response }) => {
           reject(response)
-          // console.log(response);
+          console.log(response);
           context.commit(SET_ERROR, response.data.errors || "");
           // console.log(state);
         });
@@ -112,6 +137,7 @@ const actions = {
     logout()
       .then(({ data }) => {
         if (data.code == 200) {
+          PermissionService.clearPermissions();
           context.commit(PURGE_AUTH);
         }
       })
@@ -145,7 +171,7 @@ const actions = {
     if (JwtService.getToken()) {
       // ApiService.setHeader();
       // ApiService.post(local_url + "/auth/me")
-      me()
+      getUserInfo()
           .then(({ data }) => {
           if (data.code == 200) {
             console.log(data);
@@ -153,9 +179,9 @@ const actions = {
             data.data.userid = data.data.id;
             context.commit(SET_AUTH, data.data);
           } else {
-            this.$store
-              .dispatch(LOGOUT)
-              .then(() => this.$router.push({ name: "login" }));
+            // this.$store
+            //   .dispatch(LOGOUT)
+            //   .then(() => this.$router.push({ name: "login" }));
           }
         })
         .catch(({ response }) => {
@@ -181,6 +207,51 @@ const actions = {
       }
     );
   },
+  [SET_ROUTERS]() {
+    return new Promise((resolve, reject) => {
+      if (PermissionService.getPermissions()) {
+        // 从缓存中读取路由
+        console.log("================从缓存中读取路由==================")
+        state.permissions = PermissionService.getPermissions();
+        // 获取菜单
+        state.navs = state.permissions['menu_tree'];
+        // 获取按钮权限
+        state.authority = state.permissions['other_list']
+
+        // 添加菜单路由
+        addPermissionsToRoutes(state.permissions['menu_tree'], router)
+        // 添加页面路由
+        addPermissionsToRoutes(state.permissions['page_tree'], router)
+        resolve({code: 200});
+      } else {
+        // 如果缓存中没有路由数据，则从服务器读取
+        Perm.getPermissions()
+            .then(({data}) => {
+              if (data.code == 200) {
+                state.permissions = data.data;
+
+                console.log("=================从服务器读取===================")
+                console.log(state.permissions)
+                // 存储permissions
+                PermissionService.savePermissions(state.permissions);
+                // 获取导航菜单
+                state.navs = state.permissions['menu_tree'];
+                // 获取按钮权限
+                state.authority = state.permissions['other_list']
+
+                // 添加菜单路由
+                addPermissionsToRoutes(state.permissions['menu_tree'], router)
+                // 添加页面路由
+                addPermissionsToRoutes(state.permissions['page_tree'], router)
+                resolve({code: 200});
+              } else {
+                resolve({code: 400});
+              }
+            })
+            .catch((err) => reject(err))
+      }
+    })
+  }
 };
 
 const mutations = {
@@ -203,11 +274,38 @@ const mutations = {
   },
 };
 
-export default {
-  local_url,
-  state,
-  actions,
-  mutations,
-  getters,
-  worryinfo,
-};
+export default {local_url, state, actions, mutations, getters, worryinfo,};
+
+const addPermissionsToRoutes = (perms, router) => {
+  if (!perms) {
+    return;
+  }
+  // 动态绑定路由
+  perms.forEach(permission => {
+    if (permission.children) {
+      permission.children.forEach(e => {
+        let route = permissionToRoute(e);
+        if (route) {
+          router.addRoute('Layout', route);
+        }
+      })
+    } else {
+      let route = permissionToRoute(permission);
+      if (route) {
+        router.addRoute('Layout', route);
+      }
+    }
+  })
+}
+
+const permissionToRoute = (permission) => {
+  if (!permission.component) {
+    return null
+  }
+  let route = {
+    name: permission['name'],
+    path: permission.path
+  }
+  route.component = () => import("@/view" + permission.component)
+  return route
+}

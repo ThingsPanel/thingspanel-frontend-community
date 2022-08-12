@@ -5,6 +5,7 @@ export const locale = {
     MANAGEMENT:"Role management",
     SYSTEMMANAGEMENT:"system management",
     SYSTEMSETUP: "System setup",
+    PERMISSIONMANAGEMENT: "Permission management",
     DEVICE: "Device Manager ",
     DEVICEPROPERTIES: "Device properties",
     DEVICEPROPERTIESVALUE: "Device properties value",

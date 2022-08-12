@@ -71,7 +71,7 @@ import {
 } from "@/core/services/store/htmlclass.module.js";
 import {getRedToken} from "@/api/transpond";
 import RED from "@/core/services/red.module"
-import {LOGIN} from "../../core/services/store/auth.module";
+import {LOGIN, SET_ROUTERS} from "../../core/services/store/auth.module";
 
 export default {
   name: "Layout",
@@ -97,6 +97,7 @@ export default {
     if (!this.isAuthenticated) {
       this.$router.push({ name: "login" });
     } else {
+        this.$store.dispatch(SET_ROUTERS)
         getRedToken().then(res => {
           if (res.status == 200) {
             RED.setRedToken(res.data)

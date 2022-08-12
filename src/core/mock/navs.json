@@ -1,0 +1,112 @@
+{
+  "navs": [
+    {
+      "title": "COMMON.HOME",
+      "icon": "menu-icon flaticon2-architecture-and-city",
+      "link": "/home"
+    },
+    {
+      "title": "COMMON.BUSINESS",
+      "icon": "menu-icon flaticon2-rhombus",
+      "link": "/list"
+    },
+    {
+      "title": "COMMON.DATAS",
+      "icon": "menu-icon flaticon2-list",
+      "link": "/data/index"
+    },
+    {
+      "title": "COMMON.VISUALIZATION",
+      "icon": "menu-icon flaticon2-laptop",
+      "link": "/chart/list"
+    },
+    {
+      "title": "COMMON.AUTOMATION",
+      "icon": "menu-icon flaticon2-hourglass",
+      "link": "/strategy/list"
+    },
+    {
+      "title": "COMMON.WARNINFO",
+      "icon": "menu-icon flaticon2-warning",
+      "link": "/alarm/list"
+    },
+    {
+      "title": "COMMON.SYSTEMLOG",
+      "icon": "menu-icon flaticon-open-box",
+      "open": false,
+      "children": [
+        {
+          "title": "COMMON.OPERATIONLOG",
+          "icon": "menu-icon flaticon2-paper",
+          "link": "/log/list"
+        },
+        {
+          "title": "COMMON.EQUIPMENTLOG",
+          "icon": "menu-icon flaticon-interface-3",
+          "link": "/equipment/index"
+        }
+      ]
+    },
+    {
+      "title": "COMMON.PRODUCTMANAGEMENT",
+      "icon": "menu-icon flaticon2-gift-1",
+      "open": false,
+      "children": [
+        {
+          "title": "COMMON.FIRMWAREUPGRADE",
+          "icon": "menu-icon flaticon-upload-1",
+          "link": "/firmware/index"
+        }
+      ]
+    },
+    {
+      "title": "COMMON.RULEENGINE",
+      "icon": "menu-icon flaticon2-gift-1",
+      "open": false,
+      "children": [
+        {
+          "title": "COMMON.NETWORKCOMPONENTS",
+          "icon": "menu-icon flaticon-upload-1",
+          "link": "/network_components/index"
+        },
+        {
+          "title": "COMMON.TRANSPOND",
+          "icon": "menu-icon flaticon-upload-1",
+          "link": "/transpond/index"
+        }
+      ]
+    },
+    {
+      "title": "COMMON.MARKET",
+      "icon": "menu-icon flaticon2-supermarket",
+      "link": "/market"
+    },
+    {
+      "title": "COMMON.USERS",
+      "icon": "menu-icon flaticon2-user",
+      "link": "/users/user"
+    },
+    {
+      "title": "COMMON.SYSTEMMANAGEMENT",
+      "icon": "menu-icon flaticon2-gear",
+      "open": false,
+      "children": [
+        {
+          "title": "COMMON.SYSTEMSETUP",
+          "icon": "menu-icon flaticon-upload-1",
+          "link": "/system/index"
+        },
+        {
+          "title": "COMMON.MANAGEMENT",
+          "icon": "menu-icon flaticon-upload-1",
+          "link": "/management/index"
+        },
+        {
+          "title": "COMMON.PERMISSION",
+          "icon": "menu-icon flaticon-upload-1",
+          "link": "/permission/index"
+        }
+      ]
+    }
+  ]
+}

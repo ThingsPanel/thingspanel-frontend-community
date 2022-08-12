@@ -60,16 +60,17 @@ export default function useLoginForm() {
             clearErrorsMsg(errors)
 
             // vuex actions 提交登录请求
-            store.dispatch(LOGIN, formData).then((response) => {
-                if (response.code !== 200) {
-                    errors.email = self.$t("COMMON.WrongPassword")
-                }
-            }).finally(() => {
-                // 速度太快，延迟 500 ms
-                setTimeout(()=>{
-                    loading.value = false
-                }, 500)
-            })
+            store.dispatch(LOGIN, formData)
+                .then((response) => {
+                    if (response.code !== 200) {
+                        errors.email = self.$t("COMMON.WrongPassword")
+                    }
+                }).finally(() => {
+                    // 速度太快，延迟 500 ms
+                    setTimeout(()=>{
+                        loading.value = false
+                    }, 500)
+                })
 
         })
     }

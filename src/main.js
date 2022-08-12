@@ -1,11 +1,12 @@
 import 'normalize.css';
 import '@/styles/app.scss';
-import 'echarts/lib/chart/bar';
-import 'echarts/lib/chart/line';
-import 'echarts/lib/chart/pie';
+require('echarts/lib/chart/bar') ;
+// import 'echarts/lib/chart/line';
+require('echarts/lib/chart/line');
+require('echarts/lib/chart/pie');
 // echarts component
-import 'echarts/lib/component/tooltip';
-import 'echarts/lib/component/legend';
+require('echarts/lib/component/tooltip');
+require('echarts/lib/component/legend');
 
 import Vue from "vue";
 import stringify from 'qs/lib/stringify';
@@ -22,7 +23,7 @@ import { RESET_LAYOUT_CONFIG } from "@/core/services/store/config.module";
 // import VueImageMarker from './components/common/vue-image-marker.vue'
 
 import "@/styles/common.scss";
-import "echarts/theme/macarons.js";
+require("echarts/theme/macarons.js");
 
 
 import ElementUI from "./core/plugins/element-ui";
@@ -42,6 +43,7 @@ Vue.use(ElementUI);
 import VueCompositionApi from "@vue/composition-api"
 Vue.use(VueCompositionApi)
 
+import checkAuth from "@/components/mixins/checkAuth"
 
 // import $ from 'jquery';
 // Vue.use($);
@@ -85,9 +87,9 @@ import "./core/plugins/inline-svg";
 import "./core/plugins/apexcharts";
 import "./core/plugins/metronic";
 import "@mdi/font/css/materialdesignicons.css";
-import './permission' // permission control
+// import './permission' // permission control
 
-Vue.config.devtools = true
+
 // map
 import AMap from 'vue-amap';
 Vue.use(AMap);

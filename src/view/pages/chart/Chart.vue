@@ -160,6 +160,7 @@
             >
               {{ $t("COMMON.PLACEHOLDER35") }}:
             </div>
+            <!-- 设备分组下拉列表-->
             <div class="float-left">
               <el-select
                 v-model="entity_id"
@@ -192,7 +193,7 @@
             >
               <span class="symbol-label bg-blue">
                 <inline-svg
-                  src="media/svg/icons/Navigation/Plus.svg"
+                  src="/media/svg/icons/Navigation/Plus.svg"
                   class="h-100 align-self-end text-white"
                 ></inline-svg>
               </span>
@@ -563,6 +564,7 @@ import { SET_AUTH } from "../../../core/services/store/auth.module";
 // import moment from "moment";
 // import zh from "moment/locale/zh-cn";
 // moment.updateLocale("zh-cn", zh);
+import {device_group_drop} from "@/api/asset";
 export default {
   data() {
     return {
@@ -591,7 +593,7 @@ export default {
       themeIndex: 0,
       themesIndex: 0,
       n: 0,
-      expandicon: "media/svg/icons/General/Expand-arrows.svg",
+      expandicon: "/media/svg/icons/General/Expand-arrows.svg",
       dateindex: 0,
       datefilter: [
         {
@@ -729,9 +731,15 @@ export default {
   },
   methods: {
     onChangeEqlist(id) {
-		this.entity_id = id;
+		  this.entity_id = id;
     },
+    // 通过业务id获取设备分组
     getEqlist(id) {
+      device_group_drop({business_id: id})
+        .then(res => {
+          console.log("=======device_group_drop======", res)
+        })
+      console.log(id)
       let _that = this;
       ApiService.post(AUTH.local_url + "/asset/list", {
         business_id: id,

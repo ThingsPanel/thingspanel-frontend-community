@@ -25,12 +25,14 @@
 import { OVERRIDE_LAYOUT_CONFIG } from "@/core/services/store/config.module";
 
 export default {
-  name: "Thingspanel",
+  name: "ThingsPanel",
   mounted() {
+    this.$store.dispatch("setRouters");
     /**
      * this is to override the layout config using saved data from localStorage
      * remove this to use config only from static json (@/core/config/layout.config.json)
      */
+
     this.$store.dispatch(OVERRIDE_LAYOUT_CONFIG);
     window.localStorage.setItem("base_url",process.env.VUE_APP_BASE_URL || document.location.protocol + "//" + document.domain +":9999/");
   },
