@@ -200,6 +200,10 @@ export default {
       })
     },
     handle_create(form_data){
+      console.log("==================================")
+      console.log(form_data)
+      console.log("==================================")
+
       // 在node-red中创建一个flow
       let flow = {
         "label": form_data.rule_name,

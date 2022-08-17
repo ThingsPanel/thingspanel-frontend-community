@@ -2,7 +2,7 @@
 <div class="rounded card p-4 el-table-transparent">
   <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
     <el-col>
-      <TableTitle>数据管理</TableTitle>
+      <TableTitle>{{ $t('COMMON.DATAS') }}</TableTitle>
     </el-col>
   </el-row>
 
@@ -24,7 +24,7 @@
     <el-col :span="4">
       <el-input
           v-model="params.token"
-          placeholder="请填写要筛选的token"
+          :placeholder="$t('COMMON.PLACEHOLDER36')"
           size="medium"
           clearable
           @keydown.enter.native="handleSearch()"
@@ -42,18 +42,18 @@
           @change="handleSearch()"
           size="medium"
           type="datetimerange"
-          range-separator="至"
-          start-placeholder="开始日期"
+          :range-separator="$t('COMMON.PLACEHOLDER38')"
+          :start-placeholder="$t('COMMON.PLACEHOLDER37')"
           end-placeholder="结束日期">
       </el-date-picker>
     </el-col>
 
     <el-col :span="5">
       <div class="text-right">
-        <el-button class="mr-2" type="indigo" size="medium" @click="handleSearch()">查询</el-button>
+        <el-button class="mr-2" type="indigo" size="medium" @click="handleSearch()">{{ $t('COMMON.SEARCH') }}</el-button>
 
         <el-popconfirm :title="`确定导出 ${total} 条数据吗?`" @confirm="handleExport()">
-          <el-button slot="reference" type="indigo" size="medium">导出</el-button>
+          <el-button slot="reference" type="indigo" size="medium">{{ $t('COMMON.EXPORT') }}</el-button>
         </el-popconfirm>
 
 <!--        <el-button class="ml-2" type="default" size="medium" @click="handleReset()">重置</el-button>-->
@@ -64,17 +64,17 @@
 
   <!-- 表 start -->
   <el-table :data="tableData">
-    <el-table-column label="序号" type="index" width="50"></el-table-column>
-    <el-table-column label="业务名称" prop="bname"></el-table-column>
-    <el-table-column label="设备分组名称" prop="name"></el-table-column>
+    <el-table-column :label="$t('COMMON.NO')" type="index" width="50"></el-table-column>
+    <el-table-column :label="$t('COMMON.BUSINESSNAME1')" prop="bname"></el-table-column>
+    <el-table-column :label="$t('COMMON.DWVICEGROUPNAME1')" prop="name"></el-table-column>
     <el-table-column label="Token" prop="token" width="300">
       <template v-slot="scope">
         <span class="cursor-pointer" @click="handleSearch({token: scope.row.token})">{{scope.row.token}}</span>
       </template>
     </el-table-column>
-    <el-table-column label="时间" prop="ts"></el-table-column>
-    <el-table-column label="数据标签" prop="key"></el-table-column>
-    <el-table-column label="值" prop="dbl_v">
+    <el-table-column :label="$t('COMMON.TIMES')"  prop="ts"></el-table-column>
+    <el-table-column :label="$t('COMMON.TITLE30')" prop="key"></el-table-column>
+    <el-table-column :label="$t('COMMON.TITLE31')" prop="dbl_v">
       <template v-slot="scope">
         <div v-if="scope.row.str_v.indexOf('file') == -1">
           {{ scope.row.str_v != "" ? scope.row.str_v : scope.row.dbl_v }}
@@ -88,7 +88,7 @@
       </template>
     </el-table-column>
 
-    <el-table-column label="设备插件" prop="entity_type"></el-table-column>
+    <el-table-column :label="$t('COMMON.TITLE32')" prop="entity_type"></el-table-column>
   </el-table>
   <!-- 表 end -->
 
@@ -105,13 +105,13 @@
   <el-dialog
       class="el-dark-dialog el-dark-input"
       width="30%"
-      title="导出"
+      :title="$t('COMMON.EXPORT')"
       :visible.sync="exportVisible">
 
     <div class="text-center">
-      <p>{{ downloadUrl ? downloadUrl.split('/').pop().toString() : "生成中请稍后..." }}</p>
+      <p>{{ downloadUrl ? downloadUrl.split('/').pop().toString() : $t('COMMON.GENERATE_WAIT') }}</p>
       <p v-if="!exporting">
-          <a :href="downloadUrl">点击下载</a>
+          <a :href="downloadUrl">{{ $t('COMMON.CLICKDOWNLOAD') }}</a>
       </p>
     </div>
 

@@ -131,9 +131,7 @@ export default {
             } else if (data.data[i]["template"] == "x_time") {
               // 温湿度插件
               data.data[i]["img"] = "media/logos/temperature.png";
-            } else if (
-              data.data[i]["template"] == "EnvironmentPanel:environment"
-            ) {
+            } else if (data.data[i]["template"] == "EnvironmentPanel:environment") {
               // 水肥插件
               data.data[i]["img"] = "media/logos/wsd.png";
             } else if (data.data[i]["template"] == "weather_week") {

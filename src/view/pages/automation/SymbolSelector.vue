@@ -2,14 +2,14 @@
   <el-select
       class="w-100"
       v-model="conditionValue"
-      placeholder="符号"
+      :placeholder="$t('AUTOMATION.PLACEHOLDER8')"
       size="medium"
       filterable
       @change="handleChange()"
   >
     <el-option
         :value="item.id"
-        :label="item.name"
+        :label="item.id"
         v-for="item in symbolOptions"></el-option>
   </el-select>
 </template>

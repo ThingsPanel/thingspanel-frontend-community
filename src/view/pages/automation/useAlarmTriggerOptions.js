@@ -1,5 +1,6 @@
 import {ref, watch} from "@vue/composition-api";
 import {automation_show, automation_symbol} from "@/api/automation";
+import i18n from "@/core/plugins/vue-i18n"
 
 export default function useAlarmTriggerOptions(formData){
     let triggerOptions = ref([])
@@ -8,6 +9,7 @@ export default function useAlarmTriggerOptions(formData){
         if(val){
             automation_show({bid: val}).then(({data})=>{
                 if(data.code === 200 && data.data){
+                    console.log(data.data)
                     triggerOptions.value = data.data
                 }
             })
@@ -25,8 +27,8 @@ export default function useAlarmTriggerOptions(formData){
     })
 
     let operatorOptions = ref([
-        {label: "或", value: "||"},
-        {label: "且", value: "&&"},
+        {label: i18n.t('AUTOMATION.OR'), value: "||"},
+        {label: i18n.t('AUTOMATION.AND'), value: "&&"},
     ])
 
     // 控制策略按类型选择输入框

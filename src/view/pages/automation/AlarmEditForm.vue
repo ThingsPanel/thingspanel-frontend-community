@@ -1,6 +1,6 @@
 <template>
 <el-dialog
-    :title="current_item.id ? '修改告警策略' : '新增告警策略'"
+    :title="current_item.id ? $t('AUTOMATION.ALARM_STRATEGY.EDIT_ALARM_STRATEGY') : $t('AUTOMATION.ALARM_STRATEGY.ADD_ALARM_STRATEGY')"
     class="el-dark-dialog"
     :visible.sync="showDialog"
     width="50%"
@@ -14,18 +14,18 @@
   <el-row :gutter="20">
 
     <el-col :span="12">
-      <el-form-item label="告警策略名称" prop="name" :rules="rules.name">
-        <el-input v-model="formData.name" placeholder="请填写告警策略名称"></el-input>
+      <el-form-item :label="$t('AUTOMATION.ALARM_STRATEGY.ALARM_STRATEGY_NAME')" prop="name" :rules="rules.name">
+        <el-input v-model="formData.name" :placeholder="$t('AUTOMATION.ALARM_STRATEGY.PLACEHOLDER1')"></el-input>
       </el-form-item>
     </el-col>
     <el-col :span="12">
-      <el-form-item label="告警策略描述" prop="describe" :rules="rules.describe">
-        <el-input v-model="formData.describe" placeholder="请填写告警策略描述"></el-input>
+      <el-form-item :label="$t('AUTOMATION.ALARM_STRATEGY.ALARM_STRATEGY_DESCRIBE')" prop="describe" :rules="rules.describe">
+        <el-input v-model="formData.describe" :placeholder="$t('AUTOMATION.ALARM_STRATEGY.PLACEHOLDER2')"></el-input>
       </el-form-item>
     </el-col>
-
+<!--分组-->
     <el-col :span="12">
-      <el-form-item label="分组" prop="sensor" :rules="rules.sensor">
+      <el-form-item :label="$t('AUTOMATION.GROUP')" prop="sensor" :rules="rules.sensor">
         <DeviceGroupSelector
             :business_id="business_id"
             :asset_id.sync="formData.sensor"
@@ -34,8 +34,10 @@
         ></DeviceGroupSelector>
       </el-form-item>
     </el-col>
+
+<!--    设备-->
     <el-col :span="12">
-      <el-form-item label="设备" prop="bid" :rules="rules.bid">
+      <el-form-item :label="$t('AUTOMATION.DEVICE')" prop="bid" :rules="rules.bid">
         <DeviceSelector
             :asset_id="formData.sensor"
             :device_id.sync="formData.bid"
@@ -45,8 +47,9 @@
       </el-form-item>
     </el-col>
 
+<!--触发条件-->
     <el-col :span="24">
-      <el-form-item label="触发条件">
+      <el-form-item :label="$t('AUTOMATION.TRIGGERING_CONDITION')">
         <template v-for="(config_item, index) in formData.config">
           <el-row :gutter="20">
             <!-- 或 且 -->
@@ -59,30 +62,34 @@
             </el-col>
           </el-row>
 
+<!--          请选择条件-->
           <el-row :gutter="20">
             <el-col :span="6">
               <el-form-item :prop="'config.'+index+'.field'" :rules="rules['config.field']">
-                <el-select class="w-100" v-model="config_item.field" placeholder="请选择条件" size="medium">
+                <el-select class="w-100" v-model="config_item.field" :placeholder="$t('AUTOMATION.PLACEHOLDER2')" size="medium">
                   <el-option :value="item.key" :label="item.name" v-for="item in triggerOptions"></el-option>
                 </el-select>
               </el-form-item>
             </el-col>
+<!--           选择操作符 -->
             <el-col :span="6">
               <el-form-item :prop="'config.'+index+'.condition'" :rules="rules['config.condition']">
-                <el-select class="w-100" v-model="config_item.condition" placeholder="请选择符号" size="medium">
-                  <el-option :value="item.id" :label="item.name" v-for="item in symbolOptions"></el-option>
+                <el-select class="w-100" v-model="config_item.condition" :placeholder="$t('AUTOMATION.PLACEHOLDER3')" size="medium">
+                  <el-option :value="item.id" :label="item.name" v-for="item in symbolOptions">{{ item.id }}</el-option>
                 </el-select>
               </el-form-item>
             </el-col>
+<!--            选择值-->
             <el-col :span="6">
               <el-form-item :prop="'config.'+index+'.value'" :rules="rules['config.value']">
-                <el-input class="w-100" v-model="config_item.value" placeholder="请输入值"></el-input>
+                <el-input class="w-100" v-model="config_item.value" :placeholder="$t('AUTOMATION.PLACEHOLDER4')"></el-input>
               </el-form-item>
             </el-col>
+<!--            新增一行-->
             <el-col :span="6">
-              <el-button type="indigo" size="medium" @click="addLine" v-if="index===0">新增一行</el-button>
-              <el-popconfirm title="确定删除此项？" @confirm="removeLine(config_item)" v-else>
-                <el-button slot="reference" type="danger" size="medium">删除</el-button>
+              <el-button type="indigo" size="medium" @click="addLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
+              <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeLine(config_item)" v-else>
+                <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE') }}</el-button>
               </el-popconfirm>
             </el-col>
           </el-row>
@@ -91,18 +98,18 @@
     </el-col>
 
     <el-col :span="24">
-      <el-form-item label="告警方式">
+      <el-form-item :label="$t('AUTOMATION.ALARM_TYPE')">
         <el-checkbox-group v-model="formData.warningChecked" @change="handleAlarmChange" size="small">
-          <el-checkbox label="email">邮箱</el-checkbox>
-          <el-checkbox label="sms" disabled>短信</el-checkbox>
-          <el-checkbox label="dingtalk" disabled>钉钉</el-checkbox>
-          <el-checkbox label="enterpriseWeChat" disabled>企业微信</el-checkbox>
+          <el-checkbox label="email">{{$t('COMMON.EMAIL')}}</el-checkbox>
+          <el-checkbox label="sms" disabled>{{$t('AUTOMATION.SMS')}}</el-checkbox>
+          <el-checkbox label="dingtalk" disabled>{{$t('AUTOMATION.DING_TALK')}}</el-checkbox>
+          <el-checkbox label="enterpriseWeChat" disabled>{{$t('AUTOMATION.ENTERPRISE_WECHAT')}}</el-checkbox>
         </el-checkbox-group>
       </el-form-item>
     </el-col>
 
     <el-col :span="24">
-      <el-form-item label="信息">
+      <el-form-item :label="$t('AUTOMATION.INFORMATION')">
         <el-input v-model="formData.message" type="textarea"></el-input>
       </el-form-item>
     </el-col>
@@ -112,8 +119,8 @@
   <FormAlert :error_message="error_message"></FormAlert>
 
   <div class="text-right">
-    <el-button size="medium" type="default" @click="handleCancel()">取消</el-button>
-    <el-button size="medium" type="indigo" @click="handleSave()">保存</el-button>
+    <el-button size="medium" type="default" @click="handleCancel()">{{ $t('COMMON.CANCEL') }}</el-button>
+    <el-button size="medium" type="indigo" @click="handleSave()">{{ $t('COMMON.SAVE') }}</el-button>
   </div>
 </el-form>
 </el-dialog>

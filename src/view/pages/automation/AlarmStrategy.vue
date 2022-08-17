@@ -2,26 +2,26 @@
 <div class="rounded card p-4 el-table-transparent el-dark-input">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>告警策略列表</TableTitle>
+      <TableTitle>{{ $t('COMMON.ALARMSTRATEGYLIST') }}</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="indigo" @click="handleCreate()">新增告警策略</el-button>
-      <el-button size="medium" type="indigo" @click="goBack()">返回</el-button>
+      <el-button size="medium" type="indigo" @click="handleCreate()">{{ $t('COMMON.NEWALARMSTRATEGY') }}</el-button>
+      <el-button size="medium" type="indigo" @click="goBack()">{{ $t('COMMON.RETURN') }}</el-button>
     </el-col>
   </el-row>
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="100"></el-table-column>
-    <el-table-column label="规则名称" prop="name"></el-table-column>
-    <el-table-column label="规则说明" prop="describe"></el-table-column>
-    <el-table-column label="策略操作" align="center" width="150">
+    <el-table-column :label="$t('COMMON.NO')" type="index" width="100"></el-table-column>
+    <el-table-column :label="$t('COMMON.RULE_NAME')" prop="name"></el-table-column>
+    <el-table-column :label="$t('COMMON.RULE_DESCRIBE')" prop="describe"></el-table-column>
+    <el-table-column :label="$t('COMMON.STRATEGY_HANDLE')" align="center" width="150">
       <template v-slot="scope">
         <div class="text-right">
-          <el-button type="indigo" size="mini" @click="handleEdit(scope.row)" class="mr-3">编辑</el-button>
+          <el-button type="indigo" size="mini" @click="handleEdit(scope.row)" class="mr-3">{{ $t('COMMON.EDIT') }}</el-button>
 
-          <el-popconfirm title="确定删除此项？" @confirm="handleDelete(scope.row)">
-            <el-button slot="reference" type="danger" size="mini">删除</el-button>
+          <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handleDelete(scope.row)">
+            <el-button slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>
           </el-popconfirm>
         </div>
       </template>

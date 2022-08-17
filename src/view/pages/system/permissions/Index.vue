@@ -15,7 +15,7 @@
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading" row-key="id">
       <el-table-column type="index"></el-table-column>
-      <el-table-column label="标题" prop="title">
+      <el-table-column label="标题" prop="title" width="150px">
         <template v-slot="scope">
           {{ $t(scope.row.title) }}
         </template>

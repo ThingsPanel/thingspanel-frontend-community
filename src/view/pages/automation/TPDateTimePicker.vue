@@ -3,12 +3,12 @@
     <el-date-picker
         v-model="dateValue"
         type="date"
-        placeholder="选择日期">
+        :placeholder="$t('AUTOMATION.SELECT_DATE')">
     </el-date-picker>
     <el-time-picker
         v-model="timeValue"
 
-        placeholder="选择时间">
+        :placeholder="$t('AUTOMATION.SELECT_TIME')">
     </el-time-picker>
   </div>
 </template>

@@ -1,6 +1,6 @@
 <template>
 <el-dialog
-    :title="current_item.id ? '修改控制策略' : '新增控制策略'"
+    :title="current_item.id ? $t('AUTOMATION.CONTROL_STRATEGY.EDIT_CONTROL_STRATEGY') : $t('AUTOMATION.CONTROL_STRATEGY.ADD_CONTROL_STRATEGY')"
     class="el-dark-dialog"
     :visible.sync="showDialog"
     width="60%"
@@ -15,22 +15,25 @@
     hide-required-asterisk>
   <el-row :gutter="20">
 
+<!--    策略名称-->
     <el-col :span="8">
-      <el-form-item label="策略名称" prop="name" :rules="rules.name">
-        <el-input v-model="formData.name" placeholder="请填写策略名称"></el-input>
+      <el-form-item :label="$t('COMMON.STRATRGYLISTNAME')" prop="name" :rules="rules.name">
+        <el-input v-model="formData.name" :placeholder="$t('COMMON.PLACEHOLDER5')"></el-input>
       </el-form-item>
     </el-col>
+<!--策略描述-->
     <el-col :span="8">
-      <el-form-item label="策略描述" prop="describe" :rules="rules.describe">
-        <el-input v-model="formData.describe" placeholder="请填写策略描述"></el-input>
+      <el-form-item :label="$t('COMMON.STRATRGYLISTDES')" prop="describe" :rules="rules.describe">
+        <el-input v-model="formData.describe" :placeholder="$t('COMMON.PLACEHOLDER6')"></el-input>
       </el-form-item>
     </el-col>
+<!--    策略优先级 -->
     <el-col :span="8">
-      <el-form-item label="策略优先级" prop="sort">
+      <el-form-item :label="$t('COMMON.POLICYPRIORITY')" prop="sort">
         <template slot="label">
-          策略优先级
+          {{ $t('COMMON.POLICYPRIORITY') }}
           <el-tooltip placement="top">
-            <div slot="content">值越小优先级越高</div>
+            <div slot="content">{{ $t('COMMON.POLICYPRIORITY_TOOLTIP') }}</div>
             <small class="help">?</small>
           </el-tooltip>
         </template>
@@ -40,7 +43,7 @@
 
     <!--  触发条件 start  -->
     <el-col :span="24">
-      <el-form-item label="触发条件">
+      <el-form-item :label="$t('AUTOMATION.TRIGGERING_CONDITION')">
         <template v-if="formData.type == 1" v-for="(rules_item, index) in formData.config.rules">
           <el-row :gutter="20" :class="index > 0 ? 'pt-5' : ''">
             <el-col :span="4">
@@ -90,13 +93,13 @@
             <el-col :span="3">
               <el-form-item :prop="`config.rules.${index}.value`" :rules="rules['config.rules.value']">
                 <!-- 数值 -->
-                <el-input size="medium" class="w-100" v-model="rules_item.value" placeholder="数值"></el-input>
+                <el-input size="medium" class="w-100" v-model="rules_item.value" :placeholder="$t('AUTOMATION.PLACEHOLDER7')"></el-input>
               </el-form-item>
             </el-col>
             <el-col :span="3">
-              <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">新增一行</el-button>
-              <el-popconfirm title="确定删除此项？" @confirm="removeRulesLine(rules_item)" v-else>
-                <el-button slot="reference" type="danger" size="medium">删除</el-button>
+              <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
+              <el-popconfirm :title=" $t('COMMON.TITLE4') " @confirm="removeRulesLine(rules_item)" v-else>
+                <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE') }}</el-button>
               </el-popconfirm>
             </el-col>
           </el-row>
@@ -135,9 +138,9 @@
             </el-col>
 
             <el-col :span="3">
-              <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">新增一行</el-button>
-              <el-popconfirm title="确定删除此项？" @confirm="removeRulesLine(rules_item)" v-else>
-                <el-button slot="reference" type="danger" size="medium">删除</el-button>
+              <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
+              <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeRulesLine(rules_item)" v-else>
+                <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE')}}</el-button>
               </el-popconfirm>
             </el-col>
           </el-row>
@@ -148,7 +151,7 @@
 
     <!--  执行指令 start  -->
     <el-col :span="24">
-      <el-form-item label="执行命令">
+      <el-form-item :label="$t('AUTOMATION.EXECUTE_COMMAND')">
         <template v-for="(apply_item, index) in formData.config.apply">
           <el-row :gutter="20" :class="index > 0 ? 'pt-5' : ''">
             <el-col :span="4">
@@ -194,9 +197,9 @@
               </el-form-item>
             </el-col>
             <el-col :span="3">
-              <el-button type="indigo" size="medium" @click="addApplyLine" v-if="index===0">新增一行</el-button>
-              <el-popconfirm title="确定删除此项？" @confirm="removeApplyLine(apply_item)" v-else>
-                <el-button slot="reference" type="danger" size="medium">删除</el-button>
+              <el-button type="indigo" size="medium" @click="addApplyLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
+              <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeApplyLine(apply_item)" v-else>
+                <el-button slot="reference" type="danger" size="medium">{{  $t('COMMON.DELETE') }}</el-button>
               </el-popconfirm>
             </el-col>
           </el-row>
@@ -210,9 +213,9 @@
   <!-- 开关start -->
   <el-row :gutter="20">
     <el-col :span="24">
-      <el-form-item label="策略状态" class="inline-form-item">
+      <el-form-item :label="$t('COMMON.POLICYSTATUS')" class="inline-form-item">
         <el-switch :active-value="1" :inactive-value="0" v-model="formData.status"></el-switch>
-        <small class="px-2">{{formData.status ? '开' : '关'}}</small>
+        <small class="px-2">{{formData.status ? $t('COMMON.ON') : $t('COMMON.OFF')}}</small>
       </el-form-item>
     </el-col>
   </el-row>
@@ -221,8 +224,8 @@
   <FormAlert :error_message="error_message"></FormAlert>
 
   <div class="text-right">
-    <el-button size="medium" type="default" @click="handleCancel()">取消</el-button>
-    <el-button size="medium" type="indigo" @click="handleSave()">保存</el-button>
+    <el-button size="medium" type="default" @click="handleCancel()">{{$t('COMMON.CANCEL')}}</el-button>
+    <el-button size="medium" type="indigo" @click="handleSave()">{{$t('COMMON.SAVE')}}</el-button>
   </div>
 </el-form>
 </el-dialog>

@@ -2,37 +2,42 @@
 <div class="rounded card p-4 el-table-transparent el-dark-input">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>控制策略列表</TableTitle>
+      <TableTitle>{{  $t('AUTOMATION.CONTROL_STRATEGY.CONTROL_STRATEGY_LIST') }}</TableTitle>
     </el-col>
     <el-col :span="12" class="text-right">
-      <el-button size="medium" type="indigo" @click="handleCreate()">新策略</el-button>
-      <el-button size="medium" type="indigo" @click="goBack()">返回</el-button>
+<!--      新增-->
+      <el-button size="medium" type="indigo" @click="handleCreate()">{{  $t('AUTOMATION.CONTROL_STRATEGY.NEW_STRATEGY') }}</el-button>
+<!--      返回-->
+      <el-button size="medium" type="indigo" @click="goBack()">{{  $t('COMMON.RETURN') }}</el-button>
     </el-col>
   </el-row>
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index"></el-table-column>
-    <el-table-column label="规则名称" prop="name"></el-table-column>
-    <el-table-column label="规则说明" prop="describe"></el-table-column>
-    <el-table-column label="策略类型" prop="type">
+    <el-table-column :label="$t('COMMON.NO')" type="index"></el-table-column>
+    <el-table-column :label="$t('COMMON.RULE_NAME')" prop="name"></el-table-column>
+    <el-table-column :label="$t('COMMON.RULE_DESCRIBE')" prop="describe"></el-table-column>
+    <el-table-column :label="$t('COMMON.STRATRGYLISTTYPE')" prop="type">
       <template v-slot="scope">
-        {{scope.row.type == "1" ? "设备条件类型" : "时间条件类型"}}
+        {{scope.row.type == "1" ? $t('AUTOMATION.DEVICE_CONDITION_TYPE') : $t('AUTOMATION.TIME_CONDITION_TYPE') }}
       </template>
     </el-table-column>
-    <el-table-column label="策略优先级" prop="sort"></el-table-column>
-    <el-table-column label="策略状态" prop="status">
+    <el-table-column :label="$t('COMMON.POLICYPRIORITY')" prop="sort"></el-table-column>
+<!--    策略状态-->
+    <el-table-column :label="$t('COMMON.POLICYSTATUS')" prop="status">
       <template v-slot="scope">
-        {{Number(scope.row.status) ? '开' : '关'}}
+        {{Number(scope.row.status) ? $t('COMMON.ON') : $t('COMMON.OFF') }}
       </template>
     </el-table-column>
-    <el-table-column label="策略操作" width="150" align="center">
+    <!-- 策略操作-->
+    <el-table-column :label="$t('COMMON.STRATEGY_HANDLE')" width="150" align="center">
       <template v-slot="scope">
         <div class="text-right">
-          <el-button type="indigo" size="mini" class="mr-3" @click="handleEdit(scope.row)">编辑</el-button>
-
-          <el-popconfirm title="确定删除此项？" @confirm="handleDelete(scope.row)">
-            <el-button slot="reference" type="danger" size="mini">删除</el-button>
+          <!-- 编辑 -->
+          <el-button type="indigo" size="mini" class="mr-3" @click="handleEdit(scope.row)">{{ $t('COMMON.EDIT') }}</el-button>
+          <!-- 删除 -->
+          <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handleDelete(scope.row)">
+            <el-button slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>
           </el-popconfirm>
         </div>
       </template>
