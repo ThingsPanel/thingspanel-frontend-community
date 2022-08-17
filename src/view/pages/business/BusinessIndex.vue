@@ -15,7 +15,7 @@
   <el-table :data="tableData" v-loading="loading">
     <el-table-column :label="$t('COMMON.NO')" type="index"></el-table-column>
 
-    <el-table-column :label="$t('COMMON.NAME')" prop="name">
+    <el-table-column :label="$t('COMMON.BUSINESSNAME1')" prop="name">
       <template v-slot="scope">
         <!-- 新建或者编辑 -->
         <el-form-item v-if="scope.row.status" :error="scope.row.errors.name">

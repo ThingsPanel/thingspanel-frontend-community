@@ -93,6 +93,7 @@
     </el-table-column>
     <!--  设备插件 end  -->
 
+    <!-- 编辑参数   -->
     <el-table-column label="推送参数" width="auto" min-width="8%">
       <template v-slot="scope">
         <el-button type="text" @click="handleEditClick(scope.row, '编辑参数')">编辑参数</el-button>
@@ -173,7 +174,11 @@
         :device_item="currentDeviceItem"
         :key="currentDeviceItem.id"
         @cancel="() => { showEditDialog=false }"
-        @change="(deviceData) => {handleSave(deviceData, () => { showEditDialog=false })}"
+        @change="(deviceData) => {
+          handleSave(deviceData, () => {
+            showEditDialog=false
+          })
+        }"
     ></DeviceSettingForm>
 
     <!--  属性  -->
@@ -282,6 +287,7 @@ export default defineComponent({
 
     // 编辑参数 编辑对接 编辑属性
     function handleEditClick(item, title) {
+
       // 没id的时候不能编辑参数、对接、属性
       // 填写设备名新建设备有id
       if (!item.id) {
@@ -295,12 +301,15 @@ export default defineComponent({
         message_error("请选择设备插件")
         return
       }
-      item.protocol = "mqtt"
+
 
       currentDeviceItem.value = JSON.parse(JSON.stringify(item))
-      console.log("===============currentDeviceItem start=================")
-      console.log(currentDeviceItem.value)
-      console.log("===============currentDeviceItem end=================")
+      if (!currentDeviceItem.value.protocol || currentDeviceItem.value.protocol == "") {
+        currentDeviceItem.value.protocol = "mqtt"
+      }
+      // if (!currentDeviceItem.value.token || currentDeviceItem.value.token == "") {
+      //   currentDeviceItem.value.token = "mqtt"
+      // }
       EditDialogTitle.value = title
       showEditDialog.value = true;
     }
