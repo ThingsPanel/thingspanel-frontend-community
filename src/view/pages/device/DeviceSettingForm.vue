@@ -59,10 +59,11 @@ export default defineComponent({
   },
   emits: ['change', 'cancel'],
   setup(props, context){
+    console.log(props.device_item)
     let deviceData = reactive({
       id: props.device_item.id,
       errors: props.device_item.errors,
-      protocol: "mqtt",
+      protocol: props.device_item.protocol,
       name: props.device_item.name,
       token: props.device_item.token
     })
@@ -98,12 +99,12 @@ export default defineComponent({
      * 获取token和配置说明
      */
     function getDefaultSetting() {
-      device_default_setting({protocol: props.device_item.protocol})
+      device_default_setting({protocol: deviceData.protocol})
         .then(({data}) => {
           if (data.code == 200) {
             if (data.data.Token && !props.device_item.token) {
               // 没有 token 时，使用默认值
-              if (deviceData == "") {
+              if (deviceData == "" || !deviceData.token || deviceData.token =="") {
                 deviceData.token = data.data.Token
               }
             }
