@@ -2,19 +2,19 @@
     <a href="https://github.com/ThingsPanel/ThingsPanel-Backend-Vue">
         <img src="https://img.shields.io/npm/v/cxs-ui?color=blue">
     </a>
-    <a href="LICENSE">
-        <img src="https://img.shields.io/badge/License-MIT-yellow.svg">
-    </a>
     <a href="">
         <img src="https://img.shields.io/static/v1?label=Vue&message=2.0&color=green">
     </a>
     <a href="https://github.com/ThingsPanel/ThingsPanel-Backend-Vue">
         <img src="https://img.shields.io/npm/dependency-version/cxs-ui/element-ui?color=green">
     </a>
+    <a href="LICENSE">
+        <img src="https://img.shields.io/badge/License-MIT-yellow.svg">
+    </a>
 </p>
 # ThingsPanel前端使用说明
 
-本系统采用Golang 微服务架构,一款高性、高吞吐量、高扩展性的物联网平台! 单机可以支持百万链接,同时支持自定义扩展功能多种协议交互，支持插件化开发!
+本系统采用Golang 微服务架构,一款高性能、高吞吐量、高扩展性的物联网平台! 单机可以支持百万链接,同时支持自定义扩展功能多种协议交互，支持插件化开发!
 
 ## 1. 平台描述
 
@@ -31,9 +31,10 @@
 
 ### 1.2 在线体验
 
-演示地址：即将发布
+演示地址：http://dev.thingspanel.cn
 
-测试账号： 暂未开放
+测试账号： admin@thingspanel.cn  
+测试密码： 123456
 
 [相关技术资料及话题](http://forum.thingspanel.cn/)
 
@@ -55,7 +56,7 @@
 [详情查看此链接 -> https://github.com/ThingsPanel/ThingsPanel-Backend-Vue.git](https://github.com/ThingsPanel/ThingsPanel-Backend-Vue.git)
 
 - 下载安装Node.js，推荐版本16.13
-- 终端进入当项目根目录下，```npm install```，等待依赖下载完毕
+- 终端进入项目根目录下，```npm install```，等待依赖下载完毕
 - 执行```npm run dev``` 运行项目
 
 ## 4. 平台数据流程
