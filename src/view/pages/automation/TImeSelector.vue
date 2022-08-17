@@ -6,7 +6,7 @@
         v-model="timeValue"
         class="w-100"
         :clearable="false"
-        placeholder="选择时间"
+        :placeholder="$t('AUTOMATION.SELECT_TIME')"
         value-format="HH:mm:ss"
     ></el-time-picker>
     <TPDateTimePicker v-show="interval == 0" :value.sync="timeValue"></TPDateTimePicker>

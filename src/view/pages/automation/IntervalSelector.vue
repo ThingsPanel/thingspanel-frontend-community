@@ -14,7 +14,7 @@
 <script>
 
 import {computed, defineComponent, ref} from "@vue/composition-api";
-
+import i18n from "@/core/plugins/vue-i18n";
 export default defineComponent({
   name: "IntervalSelector",
   props: {
@@ -34,8 +34,8 @@ export default defineComponent({
     })
 
     let intervalOptions = ref([
-      {label: "单次", value: 0},
-      {label: "每天", value: 1},
+      {label: i18n.t('AUTOMATION.ONCE'), value: 0},
+      {label: i18n.t('AUTOMATION.DAYS'), value: 1},
     ])
 
     function handleChange(){

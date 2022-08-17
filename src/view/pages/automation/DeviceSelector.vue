@@ -4,7 +4,7 @@
     v-model="deviceId"
     :clearable="clearable"
     :filterable="filterable"
-    placeholder="请选择设备"
+    :placeholder="$t('AUTOMATION.PLACEHOLDER1')"
     size="medium"
     @change="handleChange"
 >

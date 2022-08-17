@@ -1,6 +1,6 @@
 <template>
   <el-cascader
-      placeholder="请选择业务"
+      :placeholder="$t('COMMON.PLACEHOLDER8')"
       v-model="businessCascaderData"
       size="medium"
       :props="businessProps"

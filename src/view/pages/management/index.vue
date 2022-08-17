@@ -15,9 +15,9 @@
         <el-table-column
           label="序号"
           type="index"
-          width="150px"
+
         ></el-table-column>
-        <el-table-column prop="role_name" label="角色名称">
+        <el-table-column prop="role_name" label="角色名称" width="200px">
           <template v-slot="scope">
             <!-- 新建或者编辑 -->
             <el-form-item v-if="inputVal == scope.row.id">
@@ -62,8 +62,8 @@
             <el-button
               size="mini"
               type="indigo"
-              :disabled="!scope.row.id"
               @click="handle_quanxian(scope.row)"
+              :disabled="!hasAuth('sys:role:assign')"
               >权限管理</el-button
             >
           </template>
@@ -89,6 +89,7 @@
               <el-button
                 size="mini"
                 type="indigo"
+                :disabled="!hasAuth('sys:role:edit')"
                 @click="handle_launch(scope.row)"
                 >编辑</el-button
               >
@@ -101,7 +102,8 @@
                   size="mini"
                   type="danger"
                   class="butStyle"
-                  >删除</el-button
+                  :disabled="!hasAuth('sys:role:del')"
+                >删除</el-button
                 >
               </el-popconfirm>
             </el-form-item>
@@ -148,7 +150,8 @@
           <div class="footer" style="text-align: center;">
             <el-button size="small " @click="closeDrawerClose"  class="buttStyle">取消</el-button>
             <el-button size="small" type="indigo" @click="jurisdiction"
-              >保存</el-button
+
+            >保存</el-button
             >
           </div>
         </div>
@@ -236,23 +239,25 @@ export default defineComponent({
       Perm.tree()
           .then(({data}) => {
             console.log("=================role tree===================")
-            console.log()
             if (data.code == 200) {
               let user = JwtService.getCurrentUser();
               let tree = data.data;
               if (user.email != "super@super.cn") {
                 tree.forEach(item => {
-                  if (item.children) {
+                  if (item.children && item.name == "SystemManagement") {
                     item.children.forEach(child => {
-                      if (child.name == "PermissionManagement") {
                         child.children.forEach(leaf => {
                           if (leaf.name == "AddPermission"
                               || leaf.name == "EditPermission"
-                              || leaf.name == "DeletePermission") {
+                              || leaf.name == "DeletePermission"
+                              || leaf.name == "DelUser"
+                              || leaf.name == "EditPassword"
+                              || leaf.name == "EditRole"
+                              || leaf.name == "DelRole"
+                          ) {
                             leaf.disabled = true;
                           }
                         })
-                      }
                     })
                   }
                 })

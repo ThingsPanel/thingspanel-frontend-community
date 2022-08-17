@@ -14,6 +14,8 @@
 <script>
 import {computed, defineComponent} from "@vue/composition-api";
 import {ref} from "@vue/composition-api/dist/vue-composition-api";
+import i18n from "@/core/plugins/vue-i18n"
+
 
 export default defineComponent({
   name: "ControlTypeSelector",
@@ -33,8 +35,8 @@ export default defineComponent({
     })
 
     let typeOptions = ref([
-      {label: "设备条件类型", value: 1},
-      {label: "时间条件类型", value: 2},
+      {label: i18n.t('AUTOMATION.DEVICE_CONDITION_TYPE'), value: 1},
+      {label: i18n.t('AUTOMATION.TIME_CONDITION_TYPE'), value: 2},
     ])
 
     function handleChange(val){

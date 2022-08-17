@@ -2,7 +2,7 @@
   <el-select
       class="w-100"
       v-model="fieldValue"
-      placeholder="条件"
+      :placeholder="$t('AUTOMATION.PLACEHOLDER9')"
       size="medium"
       filterable
       @change="handleChange"

@@ -4,7 +4,7 @@
     v-model="deviceGroupId"
     :clearable="clearable"
     :filterable="filterable"
-    placeholder="请选择设备分组"
+    :placeholder="$t('COMMON.PLACEHOLDER35')"
     size="medium" @change="handleChange()">
   <el-option
       :value="item.id"

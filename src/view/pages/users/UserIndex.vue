@@ -36,7 +36,7 @@
                      :disabled="!hasAuth('sys:user:editpassword')"
                      @click="handleResetPassword(scope.row)">{{ $t('COMMON.CHANGEPASSWORD') }}</el-button>
           <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handleDelete(scope.row)">
-            <el-button slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>
+            <el-button slot="reference" type="danger" size="mini" :disabled="!hasAuth('sys:user:del')">{{ $t('COMMON.DELETE') }}</el-button>
           </el-popconfirm>
         </div>
       </template>
