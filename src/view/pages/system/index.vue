@@ -275,9 +275,9 @@ export default {
           if (data.code == 200) {
               this.text = "保存成功！";
               this.$store.dispatch(RESET_LAYOUT_CONFIG);
-          this.snackbar = true;
+              this.snackbar = true;
           } else if (data.code == 401) {
-            this.$store.dispatch(REFRESH).then(() => {});
+              this.$store.dispatch(REFRESH).then(() => {});
           } else {
           }
         }
