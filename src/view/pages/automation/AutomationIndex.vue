@@ -9,7 +9,7 @@
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
     <el-table-column :label="$t('COMMON.NO')" type="index" width="100"></el-table-column>
-    <el-table-column :label="$t('COMMON.NAME')" prop="name"></el-table-column>
+    <el-table-column :label="$t('COMMON.NAMES')" prop="name"></el-table-column>
     <el-table-column :label="$t('COMMON.TIMES')" prop="created_at">
       <template v-slot="scope">
         {{scope.row.created_at ? dateFormat(scope.row.created_at) : ""}}
