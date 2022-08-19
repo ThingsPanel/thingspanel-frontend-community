@@ -75,6 +75,7 @@ const actions = {
     return new Promise((resolve, reject) => {
       login(credentials).then(({ data }) => {
           if (data.code == 200) {
+            PermissionService.clearPermissions();
             // 获取用户菜单
             context.dispatch(SET_ROUTERS).catch()
             // 保存用户状态: 用户信息，登录状态，token
