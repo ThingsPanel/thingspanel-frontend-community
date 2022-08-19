@@ -33,7 +33,9 @@ import {
     CheckboxButton,
     CheckboxGroup,
     Image,
-    Avatar
+    Avatar,
+    Tabs,
+    TabPane
 } from "element-ui";
 
 // 防止dialog导致页面滚动条消失抖动
@@ -75,6 +77,8 @@ const element = {
         Vue.use(Checkbox)
         Vue.use(CheckboxButton)
         Vue.use(CheckboxGroup)
+        Vue.use(Tabs)
+        Vue.use(TabPane)
         Vue.prototype.$message = Message
     }
 }
