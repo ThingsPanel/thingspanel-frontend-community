@@ -290,8 +290,13 @@ export default defineComponent({
 
       // 没id的时候不能编辑参数、对接、属性
       // 填写设备名新建设备有id
-      if (!item.id) {
-        item.errors.name = "请选择设备分组!"
+      if (!item.name) {
+        item.errors.name = "请填写设备名称!"
+        message_error("请填写设备名称!")
+        return
+
+      }if (!item.asset_id) {
+        item.errors.asset_id = "请选择设备分组!"
         message_error("请选择设备分组!")
         return
       }
