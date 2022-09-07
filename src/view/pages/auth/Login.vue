@@ -2,9 +2,9 @@
   <div>
     <!--begin::Signin-->
     <div class="loginrow login-row-height">
-      <div class="col-md-6 d-none d-md-flex infologin">
-       
-      </div>
+<!--      <div class="col-md-6 d-none d-md-flex infologin">-->
+<!--       -->
+<!--      </div>-->
       <div class="login-form login-signin col-md-6">
         <div class="shadow-lg">
           <div class="card-body">
@@ -64,6 +64,7 @@
 .login-signin {
   align-self: center !important;
   flex: 0 0 33.33333%;
+  margin: 0 auto;
   max-width: 30%;
   background: unset;
 }

@@ -18,7 +18,7 @@
             </div>
             <div class="col text-right align-self-center">
               <a
-                href="https://www.taiji.com.cn/"
+                href="http://thingspanel.io/"
                 class="btn btn-sm btn-primary text-uppercase"
                 target="_blank"
                 >help</a
