@@ -107,7 +107,7 @@ export default {
     this.auth = AUTH.state;
     this.user = JwtService.getCurrentUser();
 
-    console.log("==============user: " ,JSON.stringify(user))
+    console.log("==============user: " ,JSON.stringify(this.user))
 
   },
   methods: {

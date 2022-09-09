@@ -5,12 +5,8 @@ const getRouters = () => {
 }
 
 const saveRouters = (routers) => {
-    console.log("================saveRouters===============");
-    console.log(routers);
     if (routers) {
         localStorage.setItem(ROUTERS, JSON.stringify(routers));
-        console.log("================setItem===============");
-
     }
 }
 

@@ -95,19 +95,19 @@ const actions = {
             JwtService.saveToken(data.data.access_token);
             JwtService.saveExpiresTime(data.data.expires_in)
 
-            if (state.isRedAuthStarted) {
-              console.log("==============getRedToken===============")
-              // 设置node-red的令牌
-              getRedToken()
-                  .then(res => {
-                    if (res.status == 200) {
-                      RED.setRedToken(res.data)
-                    }
-                  })
-                  .catch(err => {
-                    console.log(err)
-                  })
-            }
+            // if (state.isRedAuthStarted) {
+            //   console.log("==============getRedToken===============")
+            //   // 设置node-red的令牌
+            //   getRedToken()
+            //       .then(res => {
+            //         if (res.status == 200) {
+            //           RED.setRedToken(res.data)
+            //         }
+            //       })
+            //       .catch(err => {
+            //         console.log(err)
+            //       })
+            // }
 
             // 登录成功，延迟 500 ms 再跳转
             setTimeout(() => {
@@ -226,6 +226,7 @@ const actions = {
         // 从缓存中读取路由
         console.log("================从缓存中读取路由==================")
         state.permissions = PermissionService.getPermissions();
+        console.log("================从缓存中读取路由==================", state.permissions)
         // 获取菜单
         state.navs = state.permissions['menu_tree'];
         // 获取按钮权限
