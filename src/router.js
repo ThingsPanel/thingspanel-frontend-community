@@ -67,7 +67,7 @@ router.beforeEach(async(to, from, next) => {
     } else {
         next();
     }
-    
+
 
     // reset config to initial state
     // store.dispatch(RESET_LAYOUT_CONFIG);
