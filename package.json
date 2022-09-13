@@ -42,6 +42,7 @@
     "storage": "^0.2.0",
     "sweetalert2": "^9.10.12",
     "tooltip.js": "^1.3.2",
+    "tp-iot": "^0.0.10",
     "v-tcplayer": "0.0.8",
     "vue": "^2.6.12",
     "vue-amap": "^0.5.10",

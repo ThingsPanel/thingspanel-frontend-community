@@ -27,6 +27,7 @@ require("echarts/theme/macarons.js");
 
 
 import ElementUI from "./core/plugins/element-ui";
+import tpIot from "tp-iot"
 
 // mock data
 import '@/mock';
@@ -38,6 +39,7 @@ Vue.component('date-picker', VuePersianDatetimePicker);
 Vue.config.productionTip = false;
 
 Vue.use(ElementUI);
+Vue.use(tpIot);
 
 // 组合式api
 import VueCompositionApi from "@vue/composition-api"

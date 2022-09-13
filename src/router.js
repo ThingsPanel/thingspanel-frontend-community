@@ -48,29 +48,20 @@ const router = new VueRouter({
     routes: baseRoutes
 })
 router.beforeEach(async(to, from, next) => {
-//
-    if (!store.getters.isAuthenticated && to.name != "login") {
-        next({ name: "login" })
-    } else {
+
+    const token = JwtService.getToken()
+    const token_expires_in = JwtService.getExpiresTime()
+    const now = Date.now();
+
+
+    if (to.name == 'login') {
+        // 如果是登录请求，通过
         next();
+    } else if (!token || !token_expires_in || now > token_expires_in) {
+        // 如果token为空或已过期，跳转到登录页面
+        next({name: 'login'})
     }
-
-    if (JwtService.getToken() && JwtService.getExpiresTime() && Date.now() <= JwtService.getExpiresTime()) {
-        if (to.name == "login") {
-            next({ name: "home" });
-        } else {
-            next();
-        }
-    } else {
-        JwtService.destroyToken();
-        Permission.clearPermissions();
-
-        next({ name: "login" })
-    }
-
-    console.log("====JwtService.getToken()", JwtService.getToken());
-    console.log("====JwtService.getExpiresTime()", JwtService.getExpiresTime());
-    console.log("====Date()", Date.now());
+    next();
 
 
     // reset config to initial state
