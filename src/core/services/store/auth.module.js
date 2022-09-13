@@ -75,6 +75,10 @@ const actions = {
     return new Promise((resolve, reject) => {
       login(credentials).then(({ data }) => {
           if (data.code == 200) {
+            // 保存 token 和 过期时间
+            JwtService.saveToken(data.data.access_token);
+            JwtService.saveExpiresTime(data.data.expires_in)
+
             PermissionService.clearPermissions();
             // 获取用户菜单
             context.dispatch(SET_ROUTERS).catch()
@@ -91,27 +95,27 @@ const actions = {
                   }
                 })
 
-            // 保存 token 和 过期时间
-            JwtService.saveToken(data.data.access_token);
-            JwtService.saveExpiresTime(data.data.expires_in)
 
-            // if (state.isRedAuthStarted) {
-            //   console.log("==============getRedToken===============")
-            //   // 设置node-red的令牌
-            //   getRedToken()
-            //       .then(res => {
-            //         if (res.status == 200) {
-            //           RED.setRedToken(res.data)
-            //         }
-            //       })
-            //       .catch(err => {
-            //         console.log(err)
-            //       })
-            // }
+
+            if (state.isRedAuthStarted) {
+              console.log("==============getRedToken===============")
+              // 设置node-red的令牌
+              getRedToken()
+                  .then(res => {
+                    if (res.status == 200) {
+                      RED.setRedToken(res.data)
+                    }
+                  })
+                  .catch(err => {
+                    console.log(err)
+                  })
+            }
 
             // 登录成功，延迟 500 ms 再跳转
             setTimeout(() => {
-              router.push({name: "home"}).catch(() =>{});
+              router.push({name: "home"}).catch(() =>{
+                location.reload();
+              });
             }, 500)
           }
 

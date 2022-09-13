@@ -70,7 +70,6 @@ export default {
       state.config = payload;
     },
     [RESET_LAYOUT_CONFIG](state) {
-      console.log("==============RESET_LAYOUT_CONFIG=================")
       ApiService.post(local_url + "/system/logo/index")
       .then(({ data }) => {
         if (data.code == 200) {
