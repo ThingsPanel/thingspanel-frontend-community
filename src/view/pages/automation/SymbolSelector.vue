@@ -10,7 +10,7 @@
     <el-option
         :value="item.id"
         :label="item.id"
-        v-for="item in symbolOptions"></el-option>
+        v-for="(item, index) in symbolOptions" :key="index"></el-option>
   </el-select>
 </template>
 

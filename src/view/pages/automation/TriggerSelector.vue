@@ -9,8 +9,8 @@
   >
     <el-option
         :value="item.key"
-        :label="item.name"
-        v-for="item in triggerOptions"></el-option>
+        :label="item.name" :key="index"
+        v-for="(item, index) in triggerOptions"></el-option>
   </el-select>
 </template>
 

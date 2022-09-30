@@ -1,12 +1,8 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import store from "./core/services/store"
-import {LOGOUT, SET_ROUTERS, VERIFY_AUTH} from "./core/services/store/auth.module";
-import AUTH from "@/core/services/store/auth.module";
-import { RESET_LAYOUT_CONFIG } from "@/core/services/store/config.module";
+import { VERIFY_AUTH} from "./core/services/store/auth.module";
 import JwtService from "@/core/services/jwt.service";
-import Permission from "@/core/services/permission.service.js";
-import {destroyToken} from "./core/services/jwt.service";
 import {message_error} from "./utils/helpers";
 
 export const baseRoutes = [

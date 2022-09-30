@@ -100,8 +100,8 @@
                             :pleaseholder="$t('COMMON.PLACEHOLDER3')"
                           >
                             <el-option
-                              v-for="r, in conditionArr"
-                              :key="r.id"
+                              v-for="(r, index) in conditionArr"
+                              :key="index"
                               :value="r.id"
                               :label="r.name"
                               @click.native="changeCgq(r.id)"
@@ -125,7 +125,7 @@
                     </div>
                     <div class="box">
                       <v-row
-                        v-for="(i, index) in tjarr"
+                        v-for="(i, index) in tjarr" :key="index"
                         style="padding: 8px 4px"
                       >
                         <v-col cols="12" xs="12" md="2" class="col-py-0">

@@ -11,7 +11,7 @@
   <el-option
       :value="item.id"
       :label="item.name"
-      v-for="item in deviceOptions"></el-option>
+      v-for="(item, index) in deviceOptions"  :key="index"></el-option>
 
 </el-select>
 </template>

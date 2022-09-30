@@ -17,6 +17,7 @@
 import AUTH from "@/core/services/store/auth.module";
 import ApiService from "@/core/services/api.service";
 import PluginCard from "./PluginCard";
+import PluginAPI from "@/api/plugin.js";
 
 export default {
   name: "Installed",
@@ -49,32 +50,7 @@ export default {
   },
   methods: {
     loadPlugin() {
-      //
-      ApiService.post(AUTH.local_url + "/markets/list").then(({data}) => {
-        if (data.code == 200) {
-          for (var i = 0; i < data.data.length; i++) {
-            data.data[i]["img"] = this.imgArr[i];
-            data.data[i]["isInstalled"] = true;
-          }
-          // this.list = data.data;
-          this.list.unshift({
-            author: "",
-            description: "",
-            email: "",
-            img: "media/logos/wsd.png",
-            name: "测试插件",
-            type: "app",
-            version: "1.0.0",
-            isInstalled: false
-          })
-          this.listArr = this.list;
-        } else if (data.code == 401) {
-          this.$store.dispatch(REFRESH).then(() => {
-          });
-        } else {
-        }
-      });
-      this.listArr = this.list;
+
     },
     searchPlugin(value) {
       if (value == "") {

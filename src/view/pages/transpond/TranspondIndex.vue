@@ -120,7 +120,7 @@ export default {
     get_data(){
       let page = {
         "current_page": this.page,
-        "per_page":36,
+        "per_page":10,
         "role_type": "2"
       }
       getTranspondList(page).then(res => {

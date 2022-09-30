@@ -77,7 +77,7 @@
                         cols="12"
                         xs="12"
                         md="4"
-                        v-for="(w, p) in equarr"
+                        v-for="(w, p) in equarr" :key="p"
                         class="cursor-pointer"
                       >
                         <div
@@ -480,7 +480,7 @@
             <v-container>
               <v-row class="scrow">
                 <ul class="scul_1">
-                  <li v-for="items in proitems" class="scli_1">
+                  <li v-for="(items, index) in proitems" :key="index" class="scli_1">
                     <div class="sctitle_1" @click="choosesel(items.id)">
                       <span
                         class="
@@ -505,7 +505,7 @@
                       </span>
                     </div>
                     <ul v-if="items.children" class="scul_2">
-                      <li v-for="v in items.children" class="scli_2">
+                      <li v-for="(v, index) in items.children" :key="index" class="scli_2">
                         <div class="sctitle_2" @click="choosesel(v.id)">
                           <span
                             class="

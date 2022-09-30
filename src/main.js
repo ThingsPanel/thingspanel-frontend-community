@@ -1,12 +1,5 @@
 import 'normalize.css';
 import '@/styles/app.scss';
-require('echarts/lib/chart/bar') ;
-// import 'echarts/lib/chart/line';
-require('echarts/lib/chart/line');
-require('echarts/lib/chart/pie');
-// echarts component
-require('echarts/lib/component/tooltip');
-require('echarts/lib/component/legend');
 
 import Vue from "vue";
 import stringify from 'qs/lib/stringify';
@@ -17,14 +10,11 @@ import store from "./core/services/store";
 import GlobalComponents from './components/global-components';
 import { jsonProp } from './utils/tool';
 import ApiService from "./core/services/api.service";
-// import MockService from "./core/mock/mock.service";
-import { VERIFY_AUTH } from "./core/services/store/auth.module";
-import { RESET_LAYOUT_CONFIG } from "@/core/services/store/config.module";
-// import VueImageMarker from './components/common/vue-image-marker.vue'
+
 
 import "@/styles/common.scss";
-require("echarts/theme/macarons.js");
-
+import * as echarts from 'echarts';
+Vue.prototype.$echarts = echarts
 
 import ElementUI from "./core/plugins/element-ui";
 import tpIot from "tp-iot"
@@ -34,7 +24,6 @@ import '@/mock';
 
 import VuePersianDatetimePicker from 'vue-persian-datetime-picker';
 Vue.component('date-picker', VuePersianDatetimePicker);
-// Vue.component('VImageMarker', VueImageMarker)
 
 Vue.config.productionTip = false;
 
@@ -45,10 +34,7 @@ Vue.use(tpIot);
 import VueCompositionApi from "@vue/composition-api"
 Vue.use(VueCompositionApi)
 
-import checkAuth from "@/components/mixins/checkAuth"
-
-// import $ from 'jquery';
-// Vue.use($);
+import "@/components/mixins/checkAuth"
 
 Vue.use(VueAxiosPlugin, {
     headers: {
@@ -86,21 +72,10 @@ import "./core/plugins/bootstrap-vue";
 import "./core/plugins/perfect-scrollbar";
 import "./core/plugins/highlight-js";
 import "./core/plugins/inline-svg";
-import "./core/plugins/apexcharts";
 import "./core/plugins/metronic";
 import "@mdi/font/css/materialdesignicons.css";
-// import './permission' // permission control
 
 
-// map
-import AMap from 'vue-amap';
-Vue.use(AMap);
-
-AMap.initAMapApiLoader({
-    key: 'bfc1a098e3ea0bd05273840cff285dfc',
-    plugin: ['AMap.Scale', 'AMap.ToolBar', 'AMap.Geolocation', 'AMap.OverView', 'AMap.MapType'],
-    v: '1.4.4'
-});
 
 // API service init
 ApiService.init();
@@ -111,34 +86,6 @@ import DevicePixelRatio from './assets/js/layout/base/devicePixelRatio.js';
 //在页面加载之时，调用此方法初始化页面比例
 new DevicePixelRatio().init();
 
-// Remove this to disable mock API
-// MockService.init();
-
-// router.beforeEach((to, from, next) => {
-//     // reset config to initial state
-//     store.dispatch(RESET_LAYOUT_CONFIG);
-
-//     // Ensure we checked auth before each page load.
-//     Promise.all([store.dispatch(VERIFY_AUTH)]).then(next);
-
-//     // Scroll page to top on every route change
-//     setTimeout(() => {
-//         window.scrollTo(0, 0);
-//     }, 100);
-
-//     setTimeout(() => {
-//         var _hmt = _hmt || [];
-//         (function() {
-//             document.getElementById('baidu_tj') && document.getElementById('baidu_tj').remove();
-//             var hm = document.createElement("script");
-//             hm.src = "https://hm.baidu.com/hm.js?e4910b169e66c3c3d29050a965c59f1c";
-//             hm.id = "baidu_tj"
-
-//             var s = document.getElementsByTagName("script")[0];
-//             s.parentNode.insertBefore(hm, s);
-//         })();
-//     }, 0);
-// });
 
 // 注册一个全局自定义指令 `v-focus`
 Vue.directive('focus', {

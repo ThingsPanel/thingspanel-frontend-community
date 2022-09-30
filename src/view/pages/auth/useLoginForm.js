@@ -69,7 +69,7 @@ export default function useLoginForm() {
                     // 速度太快，延迟 500 ms
                     setTimeout(()=>{
                         loading.value = false
-                    }, 500)
+                    }, 1000)
                 })
 
         })

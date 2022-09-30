@@ -117,3 +117,31 @@ export function device_field_index(data){
         data,
     })
 }
+
+
+/**
+ * 根据属性获取设备的数据
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function currentValue(data) {
+    return axios({
+        url: "/kv/current",
+        method: "post",
+        data,
+    })
+}
+
+/**
+ * 根据属性获取设备的历史数据
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function historyValue(data) {
+    return axios({
+        url: "/kv/history",
+        method: "post",
+        data,
+    })
+}
+

@@ -1,7 +1,11 @@
 import axios from "./http"
 
 export default {
-    // 分页列表
+    /**
+     * 分页列表
+     * @param data
+     * @returns {AxiosPromise}
+     */
     page: (data) => {
         return axios({
             url: "/user/function/list",

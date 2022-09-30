@@ -4,17 +4,12 @@ import PermissionService from "../permission.service"
 
 // 登录和用户详情接口
 import { login, logout, getUserInfo } from "@/api/auth";
-import { CONST_ROUTERS } from "@/permission"
-// const { permissions } = require("@/permissions.json")
 import Perm from "@/api/permission"
 
 // 引入路由下面调用 router.push 跳转
 import router from "@/router"
 import {getRedToken} from "@/api/transpond";
 import RED from "@/core/services/red.module"
-import {get_menu} from "../../../api/user";
-import store from "./index";
-import {RESET_LAYOUT_CONFIG} from "./config.module";
 
 
 // action types

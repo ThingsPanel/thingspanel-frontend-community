@@ -109,6 +109,7 @@ export const locale = {
     FEEDBACKQ: "Submit issues",
     STRATEGY: "Strategy",
     VISUALIZATION: "Dashboard",
+    DEVICE_CHART: "Device Charts",
     WARNINFO: "Alert message",
     SYSTEMLOG: "system log",
     EQUIPMENTLOG: "equipment log",

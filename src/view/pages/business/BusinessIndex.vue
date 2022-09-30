@@ -41,6 +41,8 @@
             <el-button type="default" size="mini" @click="handleCancel(scope.row)">{{ $t('COMMON.CANCEL') }}</el-button>
           </template>
           <template v-else>
+
+<!--            <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">{{ $t('COMMON.DEVICE_CHART') }}</el-button>-->
             <el-button type="indigo" size="mini" v-if="hasAuth('business:device')" @click="showDevice(scope.row)">{{ $t('COMMON.DEVICE') }}</el-button>
             <el-button type="indigo" size="mini" class="mr-3"
                        v-if="hasAuth('business:edit')" @click="handleEdit(scope.row)">{{ $t('COMMON.EDITASSETSNAME') }}</el-button>
@@ -106,6 +108,11 @@ export default defineComponent({
       handleDelete,
     } = useBusinessCUD(tableData)
 
+    // 跳转到设备图表
+    function showDeviceChart(item) {
+      router.push({name: "DeviceChart", query: {business_id: item.id}})
+    }
+
     // 跳转到设备
     function showDevice(item){
       console.log(item)
@@ -119,6 +126,7 @@ export default defineComponent({
       params,
       total,
       handleCreate,
+      showDeviceChart,
       showDevice,
       handleEdit,
       handleCancel,

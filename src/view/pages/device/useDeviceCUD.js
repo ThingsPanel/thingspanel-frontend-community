@@ -15,6 +15,7 @@ export default function useDeviceCUD(tableData){
             asset_id: "",
             d_id: "",
             location: "",
+            protocol: "mqtt",
             errors: {
                 name: "",
                 asset_id: "",
@@ -35,21 +36,22 @@ export default function useDeviceCUD(tableData){
         console.log("================handleSave====================")
 
         // 每次提交先清除错误
-        // item.errors.name = ""
-        // item.errors.asset_id = ""
-        // item.errors.type = ""
+        item.errors.name = ""
+        item.errors.asset_id = ""
+        item.errors.type = ""
 
 
-        // if(!item.name){
-        //     item.errors.name="请填写用户名"
-        //     return
-        // }
-        //
-        // if(!item.asset_id){
-        //     item.errors.asset_id = "请选择分组"
-        //     return
-        // }
+        if(!item.name){
+            item.errors.name="请填写用户名"
+            return
+        }
 
+        if(!item.asset_id){
+            item.errors.asset_id = "请选择分组"
+            return
+        }
+
+        console.log("====handleSave", loading.value)
         if(loading.value) return
         loading.value = true
 

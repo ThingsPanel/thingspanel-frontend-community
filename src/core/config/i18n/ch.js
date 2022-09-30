@@ -79,6 +79,7 @@ export const locale = {
     FEEDBACKQ: "反馈问题",
     STRATEGY: "策略",
     VISUALIZATION: "可视化",
+    DEVICE_CHART: "设备图表",
     WARNINFO: "告警信息",
     SYSTEMLOG: "系统日志",
     EQUIPMENTLOG: "设备日志",

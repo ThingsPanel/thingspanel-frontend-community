@@ -9,7 +9,7 @@
   <el-option
       :value="item.key"
       :label="item.name"
-      v-for="item in instructOptions"></el-option>
+      v-for="(item, index) in instructOptions" :key="index"></el-option>
 </el-select>
 </template>
 

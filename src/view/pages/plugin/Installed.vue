@@ -1,22 +1,31 @@
 <template>
     <div class="content-form">
-      <el-form :inline="true">
-        <el-form-item style="width: 200px">
+<!--      <el-form :inline="true">-->
+<!--        <el-form-item style="width: 200px">-->
+<!--          <el-input style="width: 200px" clearable v-model="searchValue" placeholder="请输入插件名称"></el-input>-->
+<!--        </el-form-item>-->
+<!--      </el-form>-->
+      <el-row style="width:100%;display: flex;justify-content: space-between">
+        <el-col :span="23">
           <el-input style="width: 200px" clearable v-model="searchValue" placeholder="请输入插件名称"></el-input>
-        </el-form-item>
-      </el-form>
+
+        </el-col>
+        <el-col :span="1">
+          <el-button icon="el-icon-refresh" class="primary el-button--indigo"
+                     :loading="refreshLoading" @click="load">刷新</el-button>
+        </el-col>
+
+      </el-row>
 
       <div class="width-20" v-for="item in listArr">
-        <PluginCard :data="item" :isInstalled="true"></PluginCard>
+        <PluginCard :key="item.id" :data="item" :isInstalled="true" :category="category"></PluginCard>
       </div>
     </div>
 </template>
 
 <script>
-import AUTH from "@/core/services/store/auth.module";
-import ApiService from "@/core/services/api.service";
 import PluginCard from "./PluginCard";
-
+import PluginAPI from "@/api/plugin.js";
 
 export default {
   name: "Installed",
@@ -26,6 +35,8 @@ export default {
       list: [],
       listArr: [],
       searchValue: '',
+      category: [],
+      refreshLoading: false,
       imgArr: [
         "media/logos/wsd.png",
         "media/logos/gps.png",
@@ -40,7 +51,7 @@ export default {
     }
   },
   created() {
-    this.loadInstalled();
+    this.load();
   },
   watch: {
     searchValue(newVal) {
@@ -48,21 +59,31 @@ export default {
     }
   },
   methods: {
-    loadInstalled() {
-      ApiService.post(AUTH.local_url + "/markets/list").then(({data}) => {
-        if (data.code == 200) {
-          for (var i = 0; i < data.data.length; i++) {
-            data.data[i]["img"] = this.imgArr[i];
+    /**
+     * 加载插件列表
+     */
+    load() {
+      this.refreshLoading = true;
+      PluginAPI.category({"current_page": 1, "per_page": 10000, "dict_code": "chart_type"})
+          .then(({data}) => {
+            if (data.code == 200) {
+              this.category = data.data.data;
+              this.loadList();
+            }
+          })
+    },
+    loadList() {
+      // 加载插件列表
+      PluginAPI.page({"current_page": 1, "per_page": 10000})
+        .then(({data}) => {
+          if (data.code == 200) {
+            let pluginList = data.data.data;
+            this.listArr = pluginList;
+            console.log(this.listArr)
+            this.refreshLoading = false;
+
           }
-          this.list = data.data;
-          this.listArr = data.data;
-          console.log(this.listArr)
-        } else if (data.code == 401) {
-          this.$store.dispatch(REFRESH).then(() => {
-          });
-        } else {
-        }
-      });
+        })
     },
     searchPlugin(value) {
       if (value == "") {

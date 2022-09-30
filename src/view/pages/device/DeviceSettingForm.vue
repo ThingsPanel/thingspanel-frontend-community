@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-form :model="deviceData" label-width="80px">
+    <el-form :model="deviceData" label-width="120px">
 
       <el-form-item label="设备名:">
         <el-input size="medium" v-model="deviceData.name" :readonly="true"></el-input>
@@ -22,7 +22,7 @@
 
       <div style="margin: 10px 0;"></div>
 
-      <el-form-item label="Token:">
+      <el-form-item label="Access Token:">
         <el-input size="medium" v-model="deviceData.token"></el-input>
       </el-form-item>
 
@@ -62,6 +62,7 @@ export default defineComponent({
     console.log(props.device_item)
     let deviceData = reactive({
       id: props.device_item.id,
+      asset_id: props.device_item.asset_id,
       errors: props.device_item.errors,
       protocol: props.device_item.protocol,
       name: props.device_item.name,

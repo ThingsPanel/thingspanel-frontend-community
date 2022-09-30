@@ -52,11 +52,10 @@
       <el-form-item :label="$t('AUTOMATION.TRIGGERING_CONDITION')">
         <template v-for="(config_item, index) in formData.config">
           <el-row :gutter="20">
-            <!-- 或 且 -->
             <el-col :span="3" class="py-5" v-if="config_item.operator">
               <el-form-item>
                 <el-select v-model="config_item.operator" size="medium">
-                  <el-option :value="item.value" :label="item.label" v-for="item in operatorOptions"></el-option>
+                  <el-option :value="item.value" :label="item.label" v-for="(item, index) in operatorOptions" :key="index"></el-option>
                 </el-select>
               </el-form-item>
             </el-col>
@@ -67,7 +66,7 @@
             <el-col :span="6">
               <el-form-item :prop="'config.'+index+'.field'" :rules="rules['config.field']">
                 <el-select class="w-100" v-model="config_item.field" :placeholder="$t('AUTOMATION.PLACEHOLDER2')" size="medium">
-                  <el-option :value="item.key" :label="item.name" v-for="item in triggerOptions"></el-option>
+                  <el-option :value="item.key" :label="item.name" v-for="(item, index) in triggerOptions" :key="index"></el-option>
                 </el-select>
               </el-form-item>
             </el-col>
@@ -75,7 +74,7 @@
             <el-col :span="6">
               <el-form-item :prop="'config.'+index+'.condition'" :rules="rules['config.condition']">
                 <el-select class="w-100" v-model="config_item.condition" :placeholder="$t('AUTOMATION.PLACEHOLDER3')" size="medium">
-                  <el-option :value="item.id" :label="item.name" v-for="item in symbolOptions">{{ item.id }}</el-option>
+                  <el-option :value="item.id" :label="item.name" v-for="(item,index) in symbolOptions" :key="index">{{ item.id }}</el-option>
                 </el-select>
               </el-form-item>
             </el-col>

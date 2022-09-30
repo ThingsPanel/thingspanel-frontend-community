@@ -5,9 +5,13 @@
       <TableTitle>设备管理</TableTitle>
     </el-col>
     <el-col :span="12" class="text-right">
+
       <el-button type="indigo" size="medium" @click="handleCreate()">创建设备</el-button>
 
       <el-button type="indigo" size="medium" @click="showManagementGroup=true">管理分组</el-button>
+
+<!--      <el-button type="indigo" size="medium" @click="handleDeviceChart">设备图表</el-button>-->
+
     </el-col>
   </el-row>
 
@@ -80,18 +84,25 @@
     <!--  设备分组 end  -->
 
     <!--  设备插件 start  -->
-    <el-table-column label="设备插件" width="auto" min-width="12%">
+<!--    <el-table-column label="设备插件" width="auto" min-width="12%">-->
+<!--      <template v-slot="scope">-->
+<!--        <el-form-item :error="scope.row.errors.type">-->
+<!--          <DevicePluginSelector-->
+<!--              :plugin_type.sync="scope.row.type"-->
+<!--              :options="devicePluginOptions"-->
+<!--              @change="handleDevicePluginChange(scope.row)"-->
+<!--          ></DevicePluginSelector>-->
+<!--        </el-form-item>-->
+<!--      </template>-->
+<!--    </el-table-column>-->
+    <!--  设备插件 end  -->
+
+    <!-- 绑定插件 -->
+    <el-table-column label="绑定插件" width="auto" min-width="8%">
       <template v-slot="scope">
-        <el-form-item :error="scope.row.errors.type">
-          <DevicePluginSelector
-              :plugin_type.sync="scope.row.type"
-              :options="devicePluginOptions"
-              @change="handleDevicePluginChange(scope.row)"
-          ></DevicePluginSelector>
-        </el-form-item>
+        <el-button type="text" @click="handleBindingClick(scope.row)">绑定插件</el-button>
       </template>
     </el-table-column>
-    <!--  设备插件 end  -->
 
     <!-- 编辑参数   -->
     <el-table-column label="推送参数" width="auto" min-width="8%">
@@ -100,11 +111,11 @@
       </template>
     </el-table-column>
 
-    <el-table-column label="数据对接" width="auto" min-width="8%">
-      <template v-slot="scope">
-        <el-button type="text" @click="handleEditClick(scope.row, '编辑对接')">编辑对接</el-button>
-      </template>
-    </el-table-column>
+<!--    <el-table-column label="数据对接" width="auto" min-width="8%">-->
+<!--      <template v-slot="scope">-->
+<!--        <el-button type="text" @click="handleEditClick(scope.row, '编辑对接')">编辑对接</el-button>-->
+<!--      </template>-->
+<!--    </el-table-column>-->
 
     <el-table-column label="设备属性" width="auto" min-width="8%">
       <template v-slot="scope">
@@ -160,6 +171,8 @@
         @current-change="getDeviceIndex"></el-pagination>
   </div>
   <!-- 分页 end -->
+
+  <PluginBinding :dialog-visible.sync="showBindingDialog" :device_item="currentDeviceItem"></PluginBinding>
 
   <!-- 编辑弹窗 start -->
   <el-dialog
@@ -221,6 +234,7 @@
 import toRefs, {defineComponent} from "@vue/composition-api";
 import useDeviceIndex from "@/view/pages/device/useDeviceIndex";
 import DeviceGroupSelector from "./DeviceGroupSelector.vue"
+import PluginBinding from "./PluginBinding";
 import DevicePluginSelector from "./DevicePluginSelector.vue"
 import DeviceShowDialog from "@/view/pages/device/DeviceShowDialog.vue"
 import {ref} from "@vue/composition-api/dist/vue-composition-api";
@@ -239,6 +253,7 @@ import {structure_field} from "@/api/device";
 export default defineComponent({
   name: "DeviceIndex",
   components: {
+    PluginBinding,
     DeviceGroupSelector,
     DevicePluginSelector,
     DeviceShowDialog,
@@ -249,7 +264,7 @@ export default defineComponent({
     ManagementGroupForm,
   },
   setup() {
-    let {route} = useRoute()
+    let {route, router} = useRoute()
     // console.log(route.query.business_id)
 
     let business_id = route.query.business_id
@@ -280,10 +295,21 @@ export default defineComponent({
       handleDelete,
     } = useDeviceCUD(tableData)
 
+    function handleDeviceChart() {
+      router.push({name: "DeviceChart", query: { business_id: business_id }})
+    }
+
     // 编辑弹窗
+    let showBindingDialog = ref(false)
     let showEditDialog = ref(false)
     let EditDialogTitle = ref("")
     let currentDeviceItem = ref({})
+
+    // 绑定插件
+    function handleBindingClick(item) {
+      currentDeviceItem.value = JSON.parse(JSON.stringify(item))
+      showBindingDialog.value = true;
+    }
 
     // 编辑参数 编辑对接 编辑属性
     function handleEditClick(item, title) {
@@ -301,11 +327,11 @@ export default defineComponent({
         return
       }
       // 对接校验，没有选择设备插件就没有可映射的选项
-      if (!item.type) {
-        item.errors.type = "请选择设备插件"
-        message_error("请选择设备插件")
-        return
-      }
+      // if (!item.type) {
+      //   item.errors.type = "请选择设备插件"
+      //   message_error("请选择设备插件")
+      //   return
+      // }
 
 
       currentDeviceItem.value = JSON.parse(JSON.stringify(item))
@@ -354,12 +380,15 @@ export default defineComponent({
       handleReset,
       devicePluginOptions,
       deviceTypeMap,
+      handleDeviceChart,
       handleCreate,
       handleSave,
       handleDelete,
       dateFormat,
       deviceGroupOptions,
       getGroupOptions,
+      showBindingDialog,
+      handleBindingClick,
       showEditDialog,
       EditDialogTitle,
       handleEditClick,

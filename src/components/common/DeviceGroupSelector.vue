@@ -9,7 +9,7 @@
   <el-option
       :value="item.id"
       :label="item.device_group"
-      v-for="item in deviceGroupOptions"></el-option>
+      v-for="item in deviceGroupOptions" :key="item.id"></el-option>
 </el-select>
 </template>
 

@@ -118,7 +118,7 @@
                     </div>
                     <div class="box">
                       <v-row
-                        v-for="(i, index) in tjarr"
+                        v-for="(i, index) in tjarr" :key="index"
                         v-show="editedItem.isshowsb"
                         style="padding: 8px 4px"
                       >
@@ -322,7 +322,7 @@
                       </v-row>
                       <v-row
                         v-show="editedItem.isshowsj"
-                        v-for="(rule, r) in rulesarr"
+                        v-for="(rule, r) in rulesarr" :key="r"
                         style="padding: 20px 4px; margin-top: -25px"
                       >
                         <v-col cols="12" sm="6" md="2" class="col-py-0 mt-3">
