@@ -90,8 +90,6 @@ export default defineComponent({
           })
       }
 
-
-
       // 点击了一级分类，加载二级节点
       if (node.level == 1) {
         groupId = node.data.id;
@@ -185,7 +183,9 @@ export default defineComponent({
               screenData.value = JSON.parse(data.data.data[0].json_data);
             } else {
               showScreen.value = false;
-              callback();
+              if (callback) {
+                callback();
+              }
             }
           })
     }

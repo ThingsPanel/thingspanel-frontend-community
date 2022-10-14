@@ -108,17 +108,21 @@ export default {
       if (this.timer) {
         clearInterval(this.timer);
       }
+      this.getValue();
       this.timer = setInterval(() => {
-        // 轮询获取指定设备的推送数据
-        if (this.controlType == "history") {
-          // 历史数据
-          this.getHistory(this.device.device, this.optionData.mapping);
-        } else {
-          // 当前值
-          this.getCurrent(this.device.device, this.optionData.mapping);
-        }
+        this.getValue();
       }, this.flushTime * 1000);
       addTimer(this.timer);
+    },
+    getValue() {
+      // 轮询获取指定设备的推送数据
+      if (this.controlType == "history") {
+        // 历史数据
+        this.getHistory(this.device.device, this.optionData.mapping);
+      } else {
+        // 当前值
+        this.getCurrent(this.device.device, this.optionData.mapping);
+      }
     },
     /**
      * 从服务器获取指定设备的推送数据
