@@ -9,6 +9,8 @@
           <el-input class="el-dark-input search-input" suffix-icon="el-icon-search" v-model="filterValue" autocomplete="off" placeholder="搜索"></el-input>
           <el-tree class="el-dark-tree" ref="pluginTree" lazy
                    :load="loadNode" :props="defaultProps" :filter-node-method="filterNode" @node-click="nodeClick"></el-tree>
+
+<!--        <el-tree class="el-dark-tree" ref="pluginTree" :data="treeData" :props="defaultProps"></el-tree>-->
       </div>
 
       <div class="display-canvas">
@@ -64,6 +66,20 @@ export default defineComponent({
      */
     let pluginData = ref([])
     let groupId = "";
+
+    // let treeData = ref([])
+    // getTreeData();
+    // function getTreeData() {
+    //   getDeviceTree({current_page: 1, per_page: 9999, business_id:  business_id})
+    //     .then(({data}) => {
+    //       if (data.code == 200) {
+    //         treeData.value = data.data.data;
+    //       }
+    //       console.log("getDeviceTree", data)
+    //     })
+    // }
+
+
     function loadNode(node, resolve) {
       // 默认加载一级节点
       if (node.level == 0) {
@@ -73,6 +89,8 @@ export default defineComponent({
             return resolve(arr);
           })
       }
+
+
 
       // 点击了一级分类，加载二级节点
       if (node.level == 1) {
@@ -86,13 +104,29 @@ export default defineComponent({
               }
               let arr = data.data.data.map(item => {
                 item.label = item.device_name;
-                item.leaf = true;
+                if (!item.children) {
+                  item.leaf = true;
+                }
                 return item;
               })
               return resolve(arr);
             }
           })
       }
+
+      if (node.level == 2) {
+        if (node.data.children) {
+          let arr = node.data.children.map(item => {
+            item.id = item.device;
+            item.label = item.device_name;
+            item.leaf = true;
+            return item;
+          })
+          console.log("level=2", arr)
+          return resolve(arr);
+        }
+      }
+
     }
 
     let screenData = ref([]);
@@ -103,24 +137,24 @@ export default defineComponent({
      * 点击设备
      * @param node
      */
-    async function nodeClick(node) {
+    function nodeClick(node) {
       device.value = node;
       if (node.leaf && node.device && node.type) {
         let param = {"current_page": 1, "per_page": 10, "id": node.type}
-        await getScreenData(node.device)
-        if (showScreen.value) return;
+        getScreenData(node.device, () => {
+          PluginAPI.page(param)
+              .then(({data}) => {
+                if (data.code == 200 && data.data && data.data.data && data.data.data.length > 0) {
+                  let plugin = JSON.parse(data.data.data[0].chart_data);
+                  showScreen.value = false;
+                  screenData.value = JSON.parse(JSON.stringify(plugin.chart));
+                } else {
+                  screenData.value = [];
+                }
+              })
+        })
 
-        PluginAPI.page(param)
-          .then(({data}) => {
-            console.log("PluginAPI", data)
-            if (data.code == 200 && data.data && data.data.data && data.data.data.length > 0) {
-              let plugin = JSON.parse(data.data.data[0].chart_data);
-              showScreen.value = false;
-              screenData.value = JSON.parse(JSON.stringify(plugin.chart));
-            } else {
-              screenData.value = [];
-            }
-          })
+
       } else {
         screenData.value = [];
       }
@@ -142,7 +176,7 @@ export default defineComponent({
     }
 
 
-    function getScreenData(relation_id) {
+    function getScreenData(relation_id, callback) {
       let params = {current_page: 1, per_page: 9999, relation_id}
       VisualAPI.list(params)
           .then(({data}) => {
@@ -151,6 +185,7 @@ export default defineComponent({
               screenData.value = JSON.parse(data.data.data[0].json_data);
             } else {
               showScreen.value = false;
+              callback();
             }
           })
     }

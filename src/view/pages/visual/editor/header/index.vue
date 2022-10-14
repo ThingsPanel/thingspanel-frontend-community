@@ -19,8 +19,7 @@
     <div class="right">
       <div class="button">
         <el-button class="el-button--indigo" size="medium" @click="handleSave">保存</el-button>
-<!--        <el-button class="el-button&#45;&#45;indigo" size="medium" @click="handlePreview">预览</el-button>-->
-        <el-button class="el-button--danger" size="medium" :disabled="false" @click="handlePublish">发布</el-button>
+        <el-button class="el-button--danger" size="medium" :disabled="true" @click="handlePublish">发布</el-button>
       </div>
     </div>
   </div>
