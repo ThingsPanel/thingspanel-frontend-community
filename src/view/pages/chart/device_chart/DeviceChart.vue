@@ -28,6 +28,7 @@ import {device_list} from "@/api/device";
 import PluginAPI from "@/api/plugin.js"
 import DeviceChartCanvas from "./DeviceChartCanvas"
 import VisualAPI from "@/api/visualization.js"
+import {getDeviceTree} from "@/api/device";
 
 export default defineComponent({
   name: "DeviceChart",
@@ -77,7 +78,7 @@ export default defineComponent({
       if (node.level == 1) {
         groupId = node.data.id;
         let data ={current_page: 1, per_page: 9999, asset_id: groupId}
-        device_list(data)
+        getDeviceTree(data)
           .then(({data}) => {
             if (data.code == 200) {
               if (!data.data.data) {
@@ -104,12 +105,14 @@ export default defineComponent({
      */
     async function nodeClick(node) {
       device.value = node;
-      if (node.leaf && node.device && node.device_type) {
-        let param = {"current_page": 1, "per_page": 10, "id": node.device_type}
+      if (node.leaf && node.device && node.type) {
+        let param = {"current_page": 1, "per_page": 10, "id": node.type}
         await getScreenData(node.device)
-        if (showScreen) return;
+        if (showScreen.value) return;
+
         PluginAPI.page(param)
           .then(({data}) => {
+            console.log("PluginAPI", data)
             if (data.code == 200 && data.data && data.data.data && data.data.data.length > 0) {
               let plugin = JSON.parse(data.data.data[0].chart_data);
               showScreen.value = false;
