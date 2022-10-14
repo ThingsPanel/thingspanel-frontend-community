@@ -116,7 +116,7 @@
     <!-- 绑定插件 -->
     <el-table-column label="绑定插件" width="auto" min-width="8%">
       <template slot-scope="scope">
-        <el-button type="text" @click="handleBindingClick(scope.row)">绑定插件</el-button>
+        <el-button v-if="scope.row.device_type!='2'" type="text" @click="handleBindingClick(scope.row)">绑定插件</el-button>
       </template>
     </el-table-column>
 
