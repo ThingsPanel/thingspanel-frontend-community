@@ -63,7 +63,7 @@ export default {
         // 获取表单的属性
         ModbusAPI.getFormAttr({ protocol_type: newValue.protocol})
           .then(({data}) => {
-            if (data.code == 200) {
+            if (data.code == 200 && data.data && data.data.config) {
               this.formAttr = data.data.config;
               this.formRule = this.getFormRule(this.formAttr);
               if (this.device.protocol_config != "{}" && this.device.protocol_config != "") {
@@ -84,7 +84,7 @@ export default {
           let device = this.device;
           let config = {
             id: device.id,
-            protocol_config: JSON.stringify(this.formData)
+            protocol_config: JSON.stringify({DeviceId: device.id, AccessToken: device.token, ...this.formData})
           }
           ModbusAPI.updateDeviceConfig(config)
               .then(({data}) => {

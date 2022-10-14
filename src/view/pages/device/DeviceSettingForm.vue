@@ -59,7 +59,7 @@
 </template>
 
 <script>
-import {defineComponent, ref, reactive, watch, computed} from "@vue/composition-api";
+import {defineComponent, ref, reactive, watch, watchEffect} from "@vue/composition-api";
 import {device_default_setting} from "@/api/device";
 import {device_info} from "../../../api/device";
 
@@ -86,14 +86,6 @@ export default defineComponent({
       token: props.device_item.token
     });
 
-    // let protocolOptions = computed({
-    //   get(){
-    //     return props.device_item.deviceType == "1" ? [{label: "MQTT", value: "mqtt"}] :
-    //         [{label: "MODBUS_TCP", value: "MODBUS_TCP"}, {label: "MODBUS_RTU", value: "MODBUS_RTU"}];
-    //   },
-    //   set() {}
-    // })
-
     let protocolOptions = ref([]);
 
     if (props.device_item.device_type == "1" || props.device_item.device_type == 1) {
@@ -102,6 +94,9 @@ export default defineComponent({
       protocolOptions.value = [{label: "MODBUS_TCP", value: "MODBUS_TCP"}, {label: "MODBUS_RTU", value: "MODBUS_RTU"}]
     }
 
+    watchEffect(() => {
+      console.log("watchEffect", props.device_item.device_type)
+    })
     let default_setting = ref("");
 
     // 打开编辑对话框时获取默认token和默认配置说明
