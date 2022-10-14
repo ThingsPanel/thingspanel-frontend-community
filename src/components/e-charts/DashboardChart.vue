@@ -14,6 +14,14 @@ export default {
       type: [String],
       default: "#3aa423"
     },
+    w: {
+      type: [Number,String],
+      default: "100%"
+    },
+    h: {
+      type: [Number, String],
+      default: "100%"
+    },
     min: {
       type: [Number, String],
       default: 0
@@ -44,6 +52,16 @@ export default {
       handler(newValue) {
         this.setEchartsValue(newValue);
       }
+    },
+    w: {
+      handler(newValue) {
+          this.myChart.resize();
+      }
+    },
+    h: {
+      handler(newValue) {
+          this.myChart.resize();
+      }
     }
   },
   data() {
@@ -68,6 +86,7 @@ export default {
       this.$nextTick(() => {
         this.myChart.resize();
         this.optionData = JSON.parse(JSON.stringify(this.option));
+        this.optionData = this.initOption(this.optionData);
         this.optionData.series[0].min = this.min;
         this.optionData.series[0].max = this.max;
         this.optionData.series[0].data[0].name = this.title;
@@ -83,6 +102,20 @@ export default {
     setEchartsValue(value) {
       let option = { series: [ { data: [ { value }]}]}
       this.myChart.setOption(option);
+    },
+    initOption(option) {
+      if ((typeof option.series[0].data[0]) == "number") {
+        option.series[0].data[0] = { value: option.series[0].data[0], name: ""}
+      }
+      if (!option.series[0].detail) option.series[0].detail = {};
+
+      if (!option.series[0].progress) option.series[0].progress = {};
+      if (!option.series[0].progress.itemStyle) option.series[0].progress.itemStyle = {};
+
+
+      if (!option.series[0].pointer) option.series[0].pointer = {};
+      if (!option.series[0].pointer.itemStyle) option.series[0].pointer.itemStyle = {};
+      return option;
     }
   }
 }

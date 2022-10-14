@@ -145,3 +145,15 @@ export function historyValue(data) {
     })
 }
 
+/**
+ * 获取设备列表（含网关和设备)
+ * @param data
+ */
+export function getDeviceTree(data) {
+    return axios({
+        url: "/device/list/tree",
+        method: "post",
+        data,
+    })
+}
+

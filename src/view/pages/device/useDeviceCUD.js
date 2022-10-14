@@ -11,15 +11,15 @@ export default function useDeviceCUD(tableData){
         tableData.value.unshift({
             id: "",
             name: "",
-            type: "",
             asset_id: "",
             d_id: "",
             location: "",
             protocol: "mqtt",
+            device_type: "1",
             errors: {
                 name: "",
                 asset_id: "",
-                type: "",
+                device_type: ""
             }
         })
     }
@@ -54,6 +54,7 @@ export default function useDeviceCUD(tableData){
         console.log("====handleSave", loading.value)
         if(loading.value) return
         loading.value = true
+
 
         // 有id更新
         if(item.id){
@@ -92,7 +93,14 @@ export default function useDeviceCUD(tableData){
                 if(data.code === 200) {
                     message_success("删除成功！")
                     let index = tableData.value.indexOf(item)
-                    tableData.value.splice(index, 1)
+                    if (index == -1) {
+                        let parent = tableData.value.find(it => it.id == item.parent_id);
+                        let index = parent.children.findIndex(it => it.id == item.id)
+                        parent.children.splice(index, 1);
+                        console.log(index)
+                    } else {
+                        tableData.value.splice(index, 1)
+                    }
                 }
             }).finally(()=>{
                 loading.value = false
@@ -100,6 +108,7 @@ export default function useDeviceCUD(tableData){
         }else{
             message_success("删除成功！")
             let index = tableData.value.indexOf(item)
+            console.log(index)
             tableData.value.splice(index, 1)
         }
     }

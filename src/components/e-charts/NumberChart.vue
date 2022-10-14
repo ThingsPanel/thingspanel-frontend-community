@@ -51,11 +51,11 @@ export default {
       this.myChart = this.$echarts.init(this.$refs["chart-main"]);
       this.$nextTick(() => {
         this.myChart.resize();
-        this.optionData = JSON.parse(JSON.stringify(this.option));
-        this.optionData.series[0].itemStyle.color = this.color;
-        this.optionData.series[0].data[0].value = this.value;
-        this.myChart.setOption(this.optionData);
       });
+      this.optionData = JSON.parse(JSON.stringify(this.option));
+      this.optionData.series[0].itemStyle.color = this.color;
+      this.optionData.series[0].data[0].value = this.value;
+      this.myChart.setOption(this.optionData);
     },
     setEchartsValue(value) {
       if (!this.myChart) return;
@@ -66,7 +66,7 @@ export default {
 }
 const numberOption = {
   title: {
-    text: '0'
+    text: ''
   },
   legend: {
     data: []
@@ -122,13 +122,13 @@ const numberOption = {
           color:'#fff'
         }
       },
+      symbol: 'media/bg/chart-img.png',
       symbolRepeat: true,
-      symbolSize: ['20%', '100%'],
-      barCategoryGap: '10%',
+      symbolSize: ['15%', '100%'],
+      barCategoryGap: '0%',
       data: [
         {
           value: 1,
-          symbol: 'media/bg/chart-img.png',
           barMinHeight:'60%'
         }
       ]

@@ -2,19 +2,32 @@
   <div>
     <el-form :model="deviceData" label-width="120px">
 
-      <el-form-item label="设备名:">
-        <el-input size="medium" v-model="deviceData.name" :readonly="true"></el-input>
-      </el-form-item>
+<!--      <el-form-item label="设备名:">-->
+<!--        <el-input size="medium" v-model="deviceData.name" :readonly="true"></el-input>-->
+<!--      </el-form-item>-->
 
-      <el-form-item label="协议：">
+      <el-form-item label="传输协议：">
         <el-select size="medium" placeholder="请选择协议" v-model="deviceData.protocol" @change="handleChange()">
-          <el-option :label="'MQTT'" :value="'mqtt'"></el-option>
-          <el-option :label="'TCP'" :value="'tcp'"></el-option>
+          <el-option v-for="option in protocolOptions" :key="option.value" :label="option.label" :value="option.value"></el-option>
         </el-select>
       </el-form-item>
 
-      <el-form-item label="默认配置:">
-          <el-input type="textarea"
+      <el-form-item label="认证方式：">
+        <el-select size="medium" placeholder="请选择认证方式" v-model="deviceData.authMode"
+                   :disabled="true"
+                   @change="handleChange()">
+          <el-option :label="'AccessToken接入'" :value="'accessToken'"></el-option>
+          <el-option :label="'MQTT Basic'" :value="'mqttBasic'"></el-option>
+          <el-option :label="'X.509'" :value="'x509'"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="Access Token:">
+        <el-input size="medium" v-model="deviceData.token"></el-input>
+      </el-form-item>
+
+      <el-form-item label="">
+          <el-input type="textarea" :disabled="true"
                     autosize :readonly="true"
                     v-model="default_setting">
           </el-input>
@@ -22,14 +35,18 @@
 
       <div style="margin: 10px 0;"></div>
 
-      <el-form-item label="Access Token:">
-        <el-input size="medium" v-model="deviceData.token"></el-input>
+      <el-form-item label="数据交换格式：">
+        <el-select size="medium" placeholder="" v-model="deviceData.dataExchangeAgreement" @change="handleChange()">
+          <el-option :label="'ThingsPanel官方单设备协议'" :value="'TPSingleProtocol'"></el-option>
+          <el-option :label="'ThingsPanel官方网关协议'" :value="'TPGatewayProtocol'"></el-option>
+          <el-option :label="'自定义协议'" :value="'custom'"></el-option>
+        </el-select>
       </el-form-item>
 
-      <el-form-item label="接口类型:">
-        <el-input size="medium" value="json" :readonly="true"></el-input>
-      </el-form-item>
-      <div style="margin: 10px 0;"></div>
+<!--      <el-form-item label="接口类型:">-->
+<!--        <el-input size="medium" value="json" :readonly="true"></el-input>-->
+<!--      </el-form-item>-->
+<!--      <div style="margin: 10px 0;"></div>-->
 
         <div style="display: flex;justify-content: center">
           <el-button @click="onCancel">取消</el-button>
@@ -42,7 +59,7 @@
 </template>
 
 <script>
-import {defineComponent, ref, reactive, watchEffect} from "@vue/composition-api";
+import {defineComponent, ref, reactive, watch, computed} from "@vue/composition-api";
 import {device_default_setting} from "@/api/device";
 import {device_info} from "../../../api/device";
 
@@ -51,23 +68,40 @@ export default defineComponent({
   props: {
     device_item: {
       type: Object,
-      default: () => {
-        Object({protocol: "mqtt"})
-      },
       required: true,
     }
   },
   emits: ['change', 'cancel'],
   setup(props, context){
-    console.log(props.device_item)
+
+
     let deviceData = reactive({
       id: props.device_item.id,
       asset_id: props.device_item.asset_id,
       errors: props.device_item.errors,
       protocol: props.device_item.protocol,
+      authMode: "accessToken",
+      dataExchangeAgreement: props.device_item.dataExchangeAgreement,
       name: props.device_item.name,
       token: props.device_item.token
-    })
+    });
+
+    // let protocolOptions = computed({
+    //   get(){
+    //     return props.device_item.deviceType == "1" ? [{label: "MQTT", value: "mqtt"}] :
+    //         [{label: "MODBUS_TCP", value: "MODBUS_TCP"}, {label: "MODBUS_RTU", value: "MODBUS_RTU"}];
+    //   },
+    //   set() {}
+    // })
+
+    let protocolOptions = ref([]);
+
+    if (props.device_item.device_type == "1" || props.device_item.device_type == 1) {
+      protocolOptions.value = [{label: "MQTT", value: "mqtt"}]
+    } else {
+      protocolOptions.value = [{label: "MODBUS_TCP", value: "MODBUS_TCP"}, {label: "MODBUS_RTU", value: "MODBUS_RTU"}]
+    }
+
     let default_setting = ref("");
 
     // 打开编辑对话框时获取默认token和默认配置说明
@@ -118,6 +152,7 @@ export default defineComponent({
         })
     }
     return {
+      protocolOptions,
       deviceData,
       default_setting,
       onCancel,

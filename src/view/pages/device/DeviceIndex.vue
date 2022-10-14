@@ -17,6 +17,7 @@
 
   <!-- 筛选 start -->
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3 el-dark-input">
+
     <el-col :span="5">
       <DeviceGroupSelector
           :asset_id.sync="params.asset_id"
@@ -51,14 +52,18 @@
 
   <!-- 表 start -->
   <el-form class="inline-edit el-dark-input">
-  <el-table :data="tableData" v-loading="loading" fit style="width: 100%">
-<!--    <el-table-column label="序号" type="index" width="50"></el-table-column>-->
+  <el-table :data="tableData" v-loading="loading" default-expand-all row-key="id" fit style="width: 100%" :indent="30">
 
+    <el-table-column label="类型" width="120">
+      <template slot-scope="scope">
+        {{ scope.row.device_type == 3 ? "子设备" : (scope.row.device_type == 2 ? "网关" : "设备" )}}
+      </template>
+    </el-table-column>
     <!--  设备名 start  -->
-    <el-table-column label="设备名称" width="auto" min-width="12%">
-      <template v-slot="scope">
+    <el-table-column label="设备名称" width="200" prop="name">
+      <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.name">
-          <el-input
+          <el-input style="width: 100%"
               placeholder="请填写设备名称"
               size="medium"
               v-model="scope.row.name"
@@ -71,7 +76,7 @@
 
     <!--  设备分组 start  -->
     <el-table-column label="设备分组" width="auto" min-width="12%">
-      <template v-slot="scope">
+      <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.asset_id">
           <DeviceGroupSelector
               :asset_id.sync="scope.row.asset_id"
@@ -82,6 +87,17 @@
       </template>
     </el-table-column>
     <!--  设备分组 end  -->
+
+    <!--  设备类型：网关/设备 start  -->
+    <el-table-column label="网关/设备" width="auto" min-width="12%">
+      <template slot-scope="scope">
+        <el-form-item :error="scope.row.errors.device_type">
+          <DeviceTypeSelector :deviceType.sync="scope.row.device_type" @change="deviceTypeChange(scope.row)"
+          ></DeviceTypeSelector>
+        </el-form-item>
+      </template>
+    </el-table-column>
+    <!--  设备类型：网关/设备 end  -->
 
     <!--  设备插件 start  -->
 <!--    <el-table-column label="设备插件" width="auto" min-width="12%">-->
@@ -99,33 +115,21 @@
 
     <!-- 绑定插件 -->
     <el-table-column label="绑定插件" width="auto" min-width="8%">
-      <template v-slot="scope">
+      <template slot-scope="scope">
         <el-button type="text" @click="handleBindingClick(scope.row)">绑定插件</el-button>
       </template>
     </el-table-column>
 
     <!-- 编辑参数   -->
     <el-table-column label="推送参数" width="auto" min-width="8%">
-      <template v-slot="scope">
-        <el-button type="text" @click="handleEditClick(scope.row, '编辑参数')">编辑参数</el-button>
-      </template>
-    </el-table-column>
-
-<!--    <el-table-column label="数据对接" width="auto" min-width="8%">-->
-<!--      <template v-slot="scope">-->
-<!--        <el-button type="text" @click="handleEditClick(scope.row, '编辑对接')">编辑对接</el-button>-->
-<!--      </template>-->
-<!--    </el-table-column>-->
-
-    <el-table-column label="设备属性" width="auto" min-width="8%">
-      <template v-slot="scope">
-        <el-button type="text" @click="handleEditClick(scope.row, '编辑属性')">编辑属性</el-button>
+      <template slot-scope="scope">
+        <el-button v-if="scope.row.device_type!='3'" type="text" @click="handleEditClick(scope.row, '编辑参数')">编辑参数</el-button>
       </template>
     </el-table-column>
 
     <!--  推送时间 start  -->
     <el-table-column label="上次推送" width="auto" min-width="12%">
-      <template v-slot="scope">
+      <template slot-scope="scope">
         <div>{{scope.row.latest_ts ? dateFormat(scope.row.latest_ts/1000000) : ""}}</div>
       </template>
     </el-table-column>
@@ -133,7 +137,7 @@
 
     <!-- 图表组件 start-->
     <el-table-column label="图表组件" width="auto" min-width="23%">
-      <template v-slot="scope">
+      <template slot-scope="scope">
         <!--   structure下数组的 field属性的数组   -->
         <template v-if="scope.row.structure" v-for="item in scope.row.structure">
           <template v-if="item.field" v-for="field in item.field">
@@ -145,9 +149,14 @@
     <!-- 图表组件 end-->
 
     <!--  操作 start  -->
-    <el-table-column label="操作" width="auto" min-width="5%">
-      <template v-slot="scope">
+    <el-table-column label="操作" width="auto" min-width="12%">
+      <template slot-scope="scope">
         <div class="text-right">
+          <el-button v-show="scope.row.device_type==2" type="primary" size="mini"
+                     @click="addChildDevice(scope.row)">增加子设备</el-button>
+          <el-button v-show="scope.row.device_type==3" type="primary" size="mini"
+                     @click="deviceConfig(scope.row)">设&nbsp;备&nbsp;配&nbsp;置</el-button>
+
            <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
               <el-button slot="reference" type="danger" size="mini">删除</el-button>
            </el-popconfirm>
@@ -226,14 +235,20 @@
   </el-dialog>
   <!-- 分组管理 end -->
 
+<!-- 设备配置 -->
+  <DeviceConfigForm :dialog-visible.sync="deviceConfigVisible" :device="currentDeviceItem"
+                    @submit="deviceConfigUpdate"
+  ></DeviceConfigForm>
+
 </div>
 </template>
 
 <script>
 
 import toRefs, {defineComponent} from "@vue/composition-api";
-import useDeviceIndex from "@/view/pages/device/useDeviceIndex";
+import useDeviceIndex from "./useDeviceIndex";
 import DeviceGroupSelector from "./DeviceGroupSelector.vue"
+import DeviceTypeSelector from "./DeviceTypeSelector.vue"
 import PluginBinding from "./PluginBinding";
 import DevicePluginSelector from "./DevicePluginSelector.vue"
 import DeviceShowDialog from "@/view/pages/device/DeviceShowDialog.vue"
@@ -249,12 +264,15 @@ import DeviceButtingForm from "@/view/pages/device/DeviceButtingForm.vue";
 import ManagementGroupForm from "./ManagementGroupForm.vue"
 import {message_error} from "@/utils/helpers";
 import {structure_field} from "@/api/device";
+// 设备配置
+import DeviceConfigForm from "./DeviceConfigForm"
 
 export default defineComponent({
   name: "DeviceIndex",
   components: {
     PluginBinding,
     DeviceGroupSelector,
+    DeviceTypeSelector,
     DevicePluginSelector,
     DeviceShowDialog,
     TableTitle,
@@ -262,6 +280,7 @@ export default defineComponent({
     DeviceAttributeForm,
     DeviceButtingForm,
     ManagementGroupForm,
+    DeviceConfigForm
   },
   setup() {
     let {route, router} = useRoute()
@@ -295,6 +314,19 @@ export default defineComponent({
       handleDelete,
     } = useDeviceCUD(tableData)
 
+    function deviceTypeChange(row) {
+      if (row.device_type == "1" || row.device_type == 1) {
+        row.protocol = "mqtt";
+      } else {
+        row.protocol = "MODBUS_TCP";
+      }
+      currentDeviceItem.value = row;
+      console.log("deviceTypeChange", row)
+      handleSave(row, () => {
+        getDeviceIndex();
+      });
+    }
+
     function handleDeviceChart() {
       router.push({name: "DeviceChart", query: { business_id: business_id }})
     }
@@ -327,20 +359,18 @@ export default defineComponent({
         return
       }
       // 对接校验，没有选择设备插件就没有可映射的选项
-      // if (!item.type) {
-      //   item.errors.type = "请选择设备插件"
-      //   message_error("请选择设备插件")
-      //   return
-      // }
+      if (!item.device_type) {
+        item.errors.device_type = "请选择设备类型"
+        message_error("请选择设备类型")
+        return
+      }
 
 
       currentDeviceItem.value = JSON.parse(JSON.stringify(item))
-      if (!currentDeviceItem.value.protocol || currentDeviceItem.value.protocol == "") {
-        currentDeviceItem.value.protocol = "mqtt"
-      }
-      // if (!currentDeviceItem.value.token || currentDeviceItem.value.token == "") {
-      //   currentDeviceItem.value.token = "mqtt"
+      // if (!currentDeviceItem.value.protocol || currentDeviceItem.value.protocol == "") {
+      //   currentDeviceItem.value.protocol = "mqtt"
       // }
+
       EditDialogTitle.value = title
       showEditDialog.value = true;
     }
@@ -370,6 +400,53 @@ export default defineComponent({
       })
     }
 
+    /**
+     * 增加子设备
+     * @param item
+     */
+    function addChildDevice(row) {
+      let rowData = JSON.parse(JSON.stringify(row));
+      let childDevice = {
+        id: "",
+        name: "",
+        asset_id: row.asset_id,
+        d_id: "",
+        location: "",
+        protocol: row.protocol,
+        device_type: "3",
+        parent_id: row.id,
+        errors: {
+          name: "",
+          asset_id: "",
+          type: "",
+        }
+      };
+
+      if (!rowData.children) rowData.children = [];
+      rowData.children .unshift(childDevice);
+      let index = tableData.value.findIndex(item => item.id == rowData.id);
+      tableData.value.splice(index, 1, rowData);
+    }
+
+
+    let deviceConfigVisible = ref(false);
+    /**
+     * 设备配置
+     * @param item
+     */
+    function deviceConfig(row) {
+      currentDeviceItem.value = JSON.parse(JSON.stringify(row));
+      deviceConfigVisible.value = true;
+      console.log("deviceConfig", row)
+      let index = tableData.value.findIndex(item => item.id == row.id);
+      console.log(index)
+
+    }
+
+    function deviceConfigUpdate() {
+      handleSearch();
+    }
+
     return {
       tableData,
       loading,
@@ -386,6 +463,7 @@ export default defineComponent({
       handleDelete,
       dateFormat,
       deviceGroupOptions,
+      deviceTypeChange,
       getGroupOptions,
       showBindingDialog,
       handleBindingClick,
@@ -397,6 +475,10 @@ export default defineComponent({
       showManagementGroupForm,
       handleGroupChange,
       handleDevicePluginChange,
+      addChildDevice,
+      deviceConfigVisible,
+      deviceConfig,
+      deviceConfigUpdate
     }
   }
 })

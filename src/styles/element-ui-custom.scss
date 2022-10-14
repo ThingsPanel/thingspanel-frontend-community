@@ -109,12 +109,12 @@
 }
 
 .el-button--danger {
-  background-color: #fd397a !important;
-  border-color: #fd397a !important;
-
+  background-color: #cc0f4b !important;
+  border-color: #cc0f4b !important;
+  color: #fff!important;
   &:hover {
-    background-color: #fd4984 !important;
-    border-color: #fd4984 !important;
+    background-color: #e52161 !important;
+    border-color: #e52161 !important;
   }
 }
 
@@ -220,6 +220,11 @@
 
 }
 
+.el-dark-link {
+  .el-link--inner {
+    color: #dadada;
+  }
+}
 .el-dark-tree {
   background: #273775 !important;
   color: rgb(98, 113, 250) !important;
@@ -335,6 +340,17 @@
       color: #fff;
     }
   }
+}
+.el-dark-tabs {
+  .el-tabs__nav {
+    .el-tabs__item.is-active {
+      color: #409eff;
+    }
+    .el-tabs__item {
+      color: #cbcbcb;
+    }
+  }
+
 }
 
 // el 日期选择器

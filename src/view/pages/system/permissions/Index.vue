@@ -168,14 +168,11 @@ export default {
   },
   methods: {
     changePage(pages) {
-      console.log(this.params);
-      console.log(pages)
     },
     getParentTree() {
       Perm.tree()
         .then(({data}) => {
           if (data.code == 200) {
-            console.log(data)
             this.permissionOptions = data.data;
           }
         })
@@ -185,7 +182,6 @@ export default {
         Perm.list()
             .then(({data}) => {
               if (data.code == 200) {
-                console.log(data.data)
                 this.tableData = data.data
               }
             })

@@ -80,8 +80,8 @@ export default {
     },
     showDeviceChart(row) {
       console.log(row)
-      this.$router.push({name: "DeviceChart", query: {business_id: row.id}})
-    }
+      this.$router.push({name: "DeviceChart", query: {businessId: row.id, name: row.name}})
+    },
   },
 };
 </script>

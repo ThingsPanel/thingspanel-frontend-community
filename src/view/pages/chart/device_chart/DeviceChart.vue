@@ -1,38 +1,33 @@
 <template>
   <div class="container-fluid">
-    <el-row>
-      <el-col class="h-100">
-        <div class="header">
-          <el-button class="el-button--indigo"  @click="back">返回</el-button>
-        </div>
-      </el-col>
-    </el-row>
-    <el-row :gutter="20">
-      <el-col :span="4" >
-        <div>
-          <el-input class="el-dark-input search-input" v-model="filterValue" autocomplete="off" placeholder="搜索"></el-input>
+    <div class="header">
+      <el-button class="el-button--indigo"  @click="back">返回</el-button>
+      <el-button class="el-button--indigo"  @click="VisualEdit">编辑</el-button>
+    </div>
+    <div class="content">
+      <div class="left-tree">
+          <el-input class="el-dark-input search-input" suffix-icon="el-icon-search" v-model="filterValue" autocomplete="off" placeholder="搜索"></el-input>
           <el-tree class="el-dark-tree" ref="pluginTree" lazy
                    :load="loadNode" :props="defaultProps" :filter-node-method="filterNode" @node-click="nodeClick"></el-tree>
-        </div>
+      </div>
 
-      </el-col>
-      <el-col :span="20" >
-        <div>
-          <DeviceChartCanvas :json-str="jsonStr" :device="device"></DeviceChartCanvas>
-        </div>
-      </el-col>
-    </el-row>
+      <div class="display-canvas">
+        <DeviceChartCanvas :show-screen="showScreen" :screen-data="screenData" :device="device"></DeviceChartCanvas>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script>
 import {defineComponent, watch, ref as reference} from "@vue/composition-api";
 import useRoute from "@/utils/useRoute";
-import {reactive, ref} from "@vue/composition-api/dist/vue-composition-api";
+import { ref} from "@vue/composition-api/dist/vue-composition-api";
 import {device_group_drop} from "@/api/asset";
 import {device_list} from "@/api/device";
 import PluginAPI from "@/api/plugin.js"
 import DeviceChartCanvas from "./DeviceChartCanvas"
+import VisualAPI from "@/api/visualization.js"
 
 export default defineComponent({
   name: "DeviceChart",
@@ -42,7 +37,11 @@ export default defineComponent({
   setup(props, context){
     let { route, router } = useRoute();
     // 业务id
-    let business_id = route.query.business_id
+    let business_id = route.query.businessId;
+    let name = route.query.name;
+
+
+
     const defaultProps = { label: 'label', isLeaf: 'leaf'}
     /**
      * 节点过滤
@@ -63,12 +62,12 @@ export default defineComponent({
      * 2. 点击设备分组后加载该分组下的所有设备
      */
     let pluginData = ref([])
+    let groupId = "";
     function loadNode(node, resolve) {
       // 默认加载一级节点
       if (node.level == 0) {
         device_group_drop({ business_id })
           .then(({ data }) => {
-            console.log(data)
             let arr = data.data.map(item => { return { label: item.device_group, id: item.id } })
             return resolve(arr);
           })
@@ -76,8 +75,8 @@ export default defineComponent({
 
       // 点击了一级分类，加载二级节点
       if (node.level == 1) {
-        let groupId = node.data.id;
-        let data ={current_page: 1, per_page: 999999, asset_id: groupId}
+        groupId = node.data.id;
+        let data ={current_page: 1, per_page: 9999, asset_id: groupId}
         device_list(data)
           .then(({data}) => {
             if (data.code == 200) {
@@ -95,33 +94,67 @@ export default defineComponent({
       }
     }
 
-    let jsonStr = ref("")
+    let screenData = ref([]);
     let device = ref({})
+    let showScreen = ref(false);
 
     /**
      * 点击设备
      * @param node
      */
-    function nodeClick(node) {
+    async function nodeClick(node) {
       device.value = node;
       if (node.leaf && node.device && node.device_type) {
         let param = {"current_page": 1, "per_page": 10, "id": node.device_type}
+        await getScreenData(node.device)
+        if (showScreen) return;
         PluginAPI.page(param)
           .then(({data}) => {
             if (data.code == 200 && data.data && data.data.data && data.data.data.length > 0) {
-                jsonStr.value = data.data.data[0].chart_data;
+              let plugin = JSON.parse(data.data.data[0].chart_data);
+              showScreen.value = false;
+              screenData.value = JSON.parse(JSON.stringify(plugin.chart));
             } else {
-              jsonStr.value ="{}";
+              screenData.value = [];
             }
           })
       } else {
-        jsonStr.value ="{}";
+        screenData.value = [];
       }
     }
 
     function back() {
       router.push({ name: "ChartList" })
     }
+
+    function VisualEdit() {
+      let query = {
+        name,
+        businessId: business_id,
+        groupId,
+        deviceId: device.value.device || ""
+      }
+      const{ href } = router.resolve({ name:"VisualEditor", query });
+      window.open(href,'_blank');
+    }
+
+
+    function getScreenData(relation_id) {
+      let params = {current_page: 1, per_page: 9999, relation_id}
+      VisualAPI.list(params)
+          .then(({data}) => {
+            if (data.code == 200 && data.data.data.length > 0) {
+              showScreen.value = true;
+              screenData.value = JSON.parse(data.data.data[0].json_data);
+            } else {
+              showScreen.value = false;
+            }
+          })
+    }
+
+    // 默认显示业务大屏
+    getScreenData(business_id);
+
     return {
       back,
       defaultProps,
@@ -131,29 +164,52 @@ export default defineComponent({
       filterNode,
       loadNode,
       nodeClick,
-      jsonStr,
-      device
+      showScreen,
+      screenData,
+      device,
+      VisualEdit
     }
   }
 })
 </script>
 
 <style scoped lang="scss">
-.content {
-  height: 100%!important;
-}
 .container-fluid {
-  height: 100%!important;
-  padding: 20px 10px 100px 10px;
+  position: Inherit;
+  height: 100vh!important;
+  width: auto;
+  padding: 20px 10px 0px 10px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   .header {
     color:  #fff;
     height: 60px;
     padding-bottom: 20px;
   }
-  .search-input {
-    //background-color: #5867dd!important;
-    //border-color: #5867dd!important;
+  .content {
+    display: inline-flex;
+    width: 100%;
+    height: calc(100% - 60px);
+    background-color: #161e43;
+    .left-tree {
+      position: Inherit;
+      width: 300px;
+      height: 100%;
+      border: 2px solid #161e43;
+      border-radius: 4px;
+      background-color: #1f2a5f;
+      .search-input {
+        //background-color: #5867dd!important;
+        //border-color: #5867dd!important;
+        border-radius: 10px;
+        margin: 2px;
+      }
+    }
+
+    .display-canvas {
+      width: 100%;
+      height: 100%;
+    }
   }
+
 }
 </style>

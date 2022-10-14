@@ -6,7 +6,8 @@ import {
   Select,
   Option,
   Cascader,
-  CascaderPanel
+  CascaderPanel,
+    Link
 } from 'element-ui';
 
 // custom theme
@@ -31,6 +32,7 @@ GlobalComponents.install = (Vue) => {
   Vue.use(Option);
   Vue.use(Cascader);
   Vue.use(CascaderPanel);
+  Vue.use(Link);
 
   Vue.use(VueClipboard)
   Vue.use(NumberChart);

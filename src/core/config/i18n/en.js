@@ -150,6 +150,8 @@ export const locale = {
     ADDVISUALIZATION: "Add dashboard",
     NAMES: "Name",
     VISUALIZATIONCHART: "Dashboard",
+    VISUALIZATIONSCREEN: "Visualization Display",
+    VISUALIZATIONEDITOR: " Visualization Editor",
     ALARMSTRATEGYLIST: "Alert strategy list",
     RETURN: "Back",
     NEWALARMSTRATEGY: "Add alert stategy",

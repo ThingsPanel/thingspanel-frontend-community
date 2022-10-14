@@ -8,6 +8,14 @@ import i18nService from "@/core/services/i18n.service.js";
 export default {
   name: "CurveChart",
   props: {
+    w: {
+      type: [Number,String],
+      default: "100%"
+    },
+    h: {
+      type: [Number, String],
+      default: "100%"
+    },
     option: {
       type: [Object],
       default: () => { return curveOption }
@@ -26,6 +34,16 @@ export default {
     }
   },
   watch: {
+    w: {
+      handler(newValue) {
+        this.myChart.resize();
+      }
+    },
+    h: {
+      handler(newValue) {
+        this.myChart.resize();
+      }
+    },
     value: {
       handler(newValue) {
         this.setEchartsValue(newValue);
@@ -48,14 +66,15 @@ export default {
     //初始化echarts
     echartsInit() {
       this.myChart = this.$echarts.init(this.$refs["chart-main"]);
-      this.optionData = JSON.parse(JSON.stringify(this.option));
-      this.optionData.series[0].name = this.title;
-      this.myChart.setOption(this.optionData);
+      this.$nextTick(() => {
+        this.myChart.resize();
+        this.optionData = JSON.parse(JSON.stringify(this.option));
+        this.optionData.series[0].name = this.title;
+        this.myChart.setOption(this.optionData);
+      })
     },
     setEchartsValue(value) {
-      if (!this.myChart) {
-        this.echartsInit();
-      }
+      if (!this.myChart) return;
       this.myChart.setOption(value);
     }
   }

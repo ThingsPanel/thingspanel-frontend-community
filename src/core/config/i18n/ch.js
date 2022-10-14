@@ -121,6 +121,8 @@ export const locale = {
     ADDVISUALIZATION: "新增可视化",
     NAMES: "名称",
     VISUALIZATIONCHART: "可视化图表",
+    VISUALIZATIONSCREEN: "可视化大屏",
+    VISUALIZATIONEDITOR: "可视化编辑器",
     ALARMSTRATEGYLIST: "告警策略列表",
     RETURN: "返回",
     NEWALARMSTRATEGY: "新增告警策略",
