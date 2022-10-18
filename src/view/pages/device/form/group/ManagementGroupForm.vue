@@ -1,3 +1,4 @@
+<!-- 管理设备分组 -->
 <template>
 <div>
   <el-row type="flex" class="px-3 pb-3">
@@ -74,10 +75,13 @@ import {defineComponent, reactive, ref} from "@vue/composition-api";
 import useRoute from "@/utils/useRoute";
 import BusinessSelector from "@/components/common/BusinessSelector.vue"
 import useDeviceGroup from "@/view/pages/device/useDeviceGroup";
-import DeviceGroupSelector from "./DeviceGroupSelector.vue"
-import useBusinessGroupIndex from "@/view/pages/device/useBusinessGroupIndex";
-import useBusinessGroupCUD from "@/view/pages/device/useBusinessGroupCUD";
+import DeviceGroupSelector from "../../components/DeviceGroupSelector.vue"
+import useBusinessGroupIndex from "./useBusinessGroupIndex";
+import useBusinessGroupCUD from "./useBusinessGroupCUD";
 
+/**
+ * 分组管理
+  */
 export default defineComponent({
   name: "ManagementGroupForm",
   components: {

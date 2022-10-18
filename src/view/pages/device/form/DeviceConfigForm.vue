@@ -1,3 +1,4 @@
+<!-- 子设备配置 -->
 <template>
   <el-dialog class="el-dark-dialog el-dark-input" title="设备配置" width="40%"
              :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
@@ -35,7 +36,7 @@
 
 <script>
 import ModbusAPI from "@/api/modbus"
-import {message_success} from "../../../utils/helpers";
+import {message_success} from "../../../../utils/helpers";
 export default {
   name: "DeviceConfigForm",
   props: {
@@ -66,7 +67,9 @@ export default {
             if (data.code == 200 && data.data && data.data.config) {
               this.formAttr = data.data.config;
               this.formRule = this.getFormRule(this.formAttr);
-              if (this.device.protocol_config != "{}" && this.device.protocol_config != "") {
+              if (this.device.protocol_config != "{}"
+                  && this.device.protocol_config != ""
+                  && this.device.protocol_config != undefined) {
                 this.formData = JSON.parse(this.device.protocol_config);
               }
             }

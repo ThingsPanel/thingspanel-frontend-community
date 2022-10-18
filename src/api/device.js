@@ -157,3 +157,29 @@ export function getDeviceTree(data) {
     })
 }
 
+/**
+ * 获取设备信息
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function getDeviceInfo(data) {
+    return axios({
+        url: "/device/data",
+        method: "post",
+        data,
+    })
+}
+
+/**
+ * 更新设备信息
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function updateDeviceInfo(data){
+    return axios({
+        url: "/device/update_only",
+        method: "post",
+        data
+    })
+}
+

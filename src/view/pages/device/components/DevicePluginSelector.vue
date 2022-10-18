@@ -1,9 +1,10 @@
+<!-- 设备插件下拉列表 -->
 <template>
   <el-select
       class="w-100"
+      placeholder="请选择设备插件"
       size="medium"
-      placeholder="请选择设备分组"
-      v-model="device_group_id"
+      v-model="device_plugin_type"
       filterable
       :clearable="clearable"
       @change="handleChange()"
@@ -11,8 +12,8 @@
     <el-option
         v-for="item in options"
         :key="item.id"
+        :label="item.name"
         :value="item.id"
-        :label="item.device_group"
     ></el-option>
   </el-select>
 </template>
@@ -21,13 +22,13 @@
 import {computed, defineComponent} from "@vue/composition-api";
 
 export default defineComponent({
-  name: "DeviceGroupSelector",
+  name: "DevicePluginSelector",
   props: {
     clearable: {
       default: false,
       type: Boolean,
     },
-    asset_id: {
+    plugin_type:{
       required: true,
       type: String,
     },
@@ -39,23 +40,22 @@ export default defineComponent({
   emits:["change"],
   setup(props, context){
 
-    let device_group_id = computed({
+    let device_plugin_type = computed({
       get(){
-        return props.asset_id
+        return props.plugin_type
       },
       set(val){
-        context.emit("update:asset_id", val)
+        context.emit("update:plugin_type", val)
       }
     })
-
 
     function handleChange(){
       context.emit("change")
     }
 
     return {
-      device_group_id,
-      handleChange,
+      device_plugin_type,
+      handleChange
     }
   }
 })

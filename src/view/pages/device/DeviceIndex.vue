@@ -123,7 +123,8 @@
     <!-- 编辑参数   -->
     <el-table-column label="推送参数" width="auto" min-width="8%">
       <template slot-scope="scope">
-        <el-button v-if="scope.row.device_type!='3'" type="text" @click="handleEditClick(scope.row, '编辑参数')">编辑参数</el-button>
+        <el-button v-if="scope.row.device_type=='3'" type="text" @click="handleEditSubParameter(scope.row)">编辑参数</el-button>
+        <el-button v-else type="text" @click="handleEditParameter(scope.row, '编辑参数')">编辑参数</el-button>
       </template>
     </el-table-column>
 
@@ -149,12 +150,12 @@
     <!-- 图表组件 end-->
 
     <!--  操作 start  -->
-    <el-table-column label="操作" width="auto" min-width="12%">
+    <el-table-column label="操作" width="200px" min-width="12%">
       <template slot-scope="scope">
         <div class="text-right">
-          <el-button v-show="scope.row.device_type==2" type="primary" size="mini"
+          <el-button style="margin-right: 10px" v-show="scope.row.device_type==2" type="primary" size="mini"
                      @click="addChildDevice(scope.row)">增加子设备</el-button>
-          <el-button v-show="scope.row.device_type==3" type="primary" size="mini"
+          <el-button style="margin-right: 10px" v-show="scope.row.device_type==3" type="primary" size="mini"
                      @click="deviceConfig(scope.row)">设&nbsp;备&nbsp;配&nbsp;置</el-button>
 
            <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
@@ -181,43 +182,43 @@
   </div>
   <!-- 分页 end -->
 
+  <!-- 插件绑定 start -->
   <PluginBinding :dialog-visible.sync="showBindingDialog" :device_item="currentDeviceItem"></PluginBinding>
 
-  <!-- 编辑弹窗 start -->
-  <el-dialog
-      class="el-dark-dialog el-dark-input"
-      :visible.sync="showEditDialog"
-      :title="EditDialogTitle"
-      :close-on-click-modal="false"
-      width="40%">
-    <!--  默认参数  -->
-    <DeviceSettingForm
-        v-if="EditDialogTitle === '编辑参数'"
-        :device_item="currentDeviceItem"
-        :key="currentDeviceItem.id"
-        @cancel="() => { showEditDialog=false }"
-        @change="(deviceData) => {
+
+  <DeviceSettingForm
+      :dialog-visible.sync="showDeviceSetting"
+      :device_item="currentDeviceItem"
+      @change="(deviceData) => {
           handleSave(deviceData, () => {
             showEditDialog=false
           })
         }"
-    ></DeviceSettingForm>
+  ></DeviceSettingForm>
+  <!-- 子设备参数 start -->
+  <SubDeviceSettingForm :dialog-visible.sync="showSubDeviceSetting" :device_item="currentDeviceItem"></SubDeviceSettingForm>
 
-    <!--  属性  -->
-    <DeviceAttributeForm
-        v-else-if="EditDialogTitle === '编辑属性'"
-        :device_item="currentDeviceItem"
-        :key="currentDeviceItem.id"
-        @change="handleSave(currentDeviceItem)"
-    ></DeviceAttributeForm>
+  <!-- 编辑弹窗 start -->
+<!--  <el-dialog-->
+<!--      class="el-dark-dialog el-dark-input"-->
+<!--      :visible.sync="showEditDialog"-->
+<!--      :title="EditDialogTitle"-->
+<!--      :close-on-click-modal="false"-->
+<!--      width="40%">-->
+<!--    &lt;!&ndash;  默认参数  &ndash;&gt;-->
+<!--    <DeviceSettingForm-->
+<!--        v-if="EditDialogTitle === '编辑参数'"-->
+<!--        :device_item="currentDeviceItem"-->
+<!--        :key="currentDeviceItem.id"-->
+<!--        @cancel="() => { showEditDialog=false }"-->
+<!--        @change="(deviceData) => {-->
+<!--          handleSave(deviceData, () => {-->
+<!--            showEditDialog=false-->
+<!--          })-->
+<!--        }"-->
+<!--    ></DeviceSettingForm>-->
 
-    <!--  对接  -->
-    <DeviceButtingForm
-        v-else-if="EditDialogTitle === '编辑对接'"
-        :device_item="currentDeviceItem"
-        :key="currentDeviceItem.id"
-        @change="handleSave(currentDeviceItem)"
-    ></DeviceButtingForm>
+
 
   </el-dialog>
   <!-- 编辑弹窗 end -->
@@ -244,28 +245,34 @@
 </template>
 
 <script>
-
-import toRefs, {defineComponent} from "@vue/composition-api";
-import useDeviceIndex from "./useDeviceIndex";
-import DeviceGroupSelector from "./DeviceGroupSelector.vue"
-import DeviceTypeSelector from "./DeviceTypeSelector.vue"
-import PluginBinding from "./PluginBinding";
-import DevicePluginSelector from "./DevicePluginSelector.vue"
-import DeviceShowDialog from "@/view/pages/device/DeviceShowDialog.vue"
+import {defineComponent} from "@vue/composition-api";
 import {ref} from "@vue/composition-api/dist/vue-composition-api";
-import TableTitle from "@/components/common/TableTitle.vue"
+
 import useRoute from "@/utils/useRoute";
-import useDeviceCUD from "@/view/pages/device/useDeviceCUD";
 import {dateFormat} from "@/utils/tool";
-import useDeviceGroup from "@/view/pages/device/useDeviceGroup";
-import DeviceSettingForm from "@/view/pages/device/DeviceSettingForm.vue";
-import DeviceAttributeForm from "@/view/pages/device/DeviceAttributeForm.vue";
-import DeviceButtingForm from "@/view/pages/device/DeviceButtingForm.vue";
-import ManagementGroupForm from "./ManagementGroupForm.vue"
 import {message_error} from "@/utils/helpers";
 import {structure_field} from "@/api/device";
-// 设备配置
-import DeviceConfigForm from "./DeviceConfigForm"
+
+import DeviceGroupSelector from "./components/DeviceGroupSelector.vue"
+import DeviceTypeSelector from "./components/DeviceTypeSelector.vue"
+import DevicePluginSelector from "./components/DevicePluginSelector.vue"
+import TableTitle from "@/components/common/TableTitle.vue"
+
+import useDeviceIndex from "./useDeviceIndex";
+import useDeviceCUD from "@/view/pages/device/useDeviceCUD";
+import useDeviceGroup from "@/view/pages/device/useDeviceGroup";
+
+// 插件绑定
+import PluginBinding from "./form/plugin/PluginBindingForm";
+// 配置推送参数
+import DeviceSettingForm from "./form/param/DeviceSettingForm.vue";
+// 配置子设备设备地址
+import SubDeviceSettingForm from "./form/param/SubDeviceSettingForm";
+// 分组管理
+import ManagementGroupForm from "./form/group/ManagementGroupForm.vue"
+// 子设备配置
+import DeviceConfigForm from "./form/DeviceConfigForm"
+import {device_default_setting} from "../../../api/device";
 
 export default defineComponent({
   name: "DeviceIndex",
@@ -274,13 +281,11 @@ export default defineComponent({
     DeviceGroupSelector,
     DeviceTypeSelector,
     DevicePluginSelector,
-    DeviceShowDialog,
     TableTitle,
     DeviceSettingForm,
-    DeviceAttributeForm,
-    DeviceButtingForm,
     ManagementGroupForm,
-    DeviceConfigForm
+    DeviceConfigForm,
+    SubDeviceSettingForm
   },
   setup() {
     let {route, router} = useRoute()
@@ -332,10 +337,12 @@ export default defineComponent({
     }
 
     // 编辑弹窗
-    let showBindingDialog = ref(false)
-    let showEditDialog = ref(false)
-    let EditDialogTitle = ref("")
-    let currentDeviceItem = ref({})
+    let showBindingDialog = ref(false);
+    let showDeviceSetting = ref(false);
+    let showSubDeviceSetting = ref(false);
+    let showEditDialog = ref(false);
+    let EditDialogTitle = ref("");
+    let currentDeviceItem = ref({});
 
     // 绑定插件
     function handleBindingClick(item) {
@@ -343,8 +350,8 @@ export default defineComponent({
       showBindingDialog.value = true;
     }
 
-    // 编辑参数 编辑对接 编辑属性
-    function handleEditClick(item, title) {
+    // 编辑参数
+    function handleEditParameter(item, title) {
 
       // 没id的时候不能编辑参数、对接、属性
       // 填写设备名新建设备有id
@@ -364,15 +371,15 @@ export default defineComponent({
         message_error("请选择设备类型")
         return
       }
-
-
       currentDeviceItem.value = JSON.parse(JSON.stringify(item))
-      // if (!currentDeviceItem.value.protocol || currentDeviceItem.value.protocol == "") {
-      //   currentDeviceItem.value.protocol = "mqtt"
-      // }
-
       EditDialogTitle.value = title
-      showEditDialog.value = true;
+      showDeviceSetting.value = true;
+    }
+
+    // 编辑子设备参数
+    function handleEditSubParameter(item) {
+      showSubDeviceSetting.value = true;
+      currentDeviceItem.value = JSON.parse(JSON.stringify(item));
     }
 
     // 管理分组
@@ -447,6 +454,8 @@ export default defineComponent({
       handleSearch();
     }
 
+
+
     return {
       tableData,
       loading,
@@ -457,7 +466,6 @@ export default defineComponent({
       handleReset,
       devicePluginOptions,
       deviceTypeMap,
-      handleDeviceChart,
       handleCreate,
       handleSave,
       handleDelete,
@@ -469,7 +477,10 @@ export default defineComponent({
       handleBindingClick,
       showEditDialog,
       EditDialogTitle,
-      handleEditClick,
+      showDeviceSetting,
+      handleEditParameter,
+      showSubDeviceSetting,
+      handleEditSubParameter,
       currentDeviceItem,
       showManagementGroup,
       showManagementGroupForm,

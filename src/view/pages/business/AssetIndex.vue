@@ -49,19 +49,19 @@
   </el-table>
 
   <!-- 设备详情start -->
-  <DeviceShowDialog
-      :asset_id="current_asset_id"
-      :device_id="currentDeviceId"
-      @deviceUpdated="handleDeviceUpdated"
-      @deviceCreated="handleDeviceCreated"
-      :deviceShowDialogVisible.sync="deviceShowDialogVisible">
-  </DeviceShowDialog>
+<!--  <DeviceShowDialog-->
+<!--      :asset_id="current_asset_id"-->
+<!--      :device_id="currentDeviceId"-->
+<!--      @deviceUpdated="handleDeviceUpdated"-->
+<!--      @deviceCreated="handleDeviceCreated"-->
+<!--      :deviceShowDialogVisible.sync="deviceShowDialogVisible">-->
+<!--  </DeviceShowDialog>-->
   <!-- 设备详情end -->
 
-  <DeviceCreateDialog
-      :asset_id="current_asset_id"
-      :deviceCreateDialogVisible.sync="deviceCreateDialogVisible">
-  </DeviceCreateDialog>
+<!--  <DeviceCreateDialog-->
+<!--      :asset_id="current_asset_id"-->
+<!--      :deviceCreateDialogVisible.sync="deviceCreateDialogVisible">-->
+<!--  </DeviceCreateDialog>-->
 </div>
 </template>
 
@@ -69,14 +69,14 @@
 import {computed, defineComponent, ref} from "@vue/composition-api";
 import useRoute from "@/utils/useRoute";
 import useAssetIndex from "@/view/pages/business/useAssetIndex";
-import DeviceShowDialog from "@/view/pages/device/DeviceShowDialog.vue"
-import DeviceCreateDialog from "@/view/pages/device/DeviceCreateDialog";
+// import DeviceShowDialog from "@/view/pages/device/DeviceShowDialog.vue"
+// import DeviceCreateDialog from "@/view/pages/device/DeviceCreateDialog";
 
 export default defineComponent({
   name: "AssetIndex",
   components: {
-    DeviceShowDialog,
-    DeviceCreateDialog,
+    // DeviceShowDialog,
+    // DeviceCreateDialog,
   },
   setup(){
     let breadcrumbData = ref([])

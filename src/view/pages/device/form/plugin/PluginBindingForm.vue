@@ -1,18 +1,17 @@
 <template>
-  <el-dialog class="el-dark-dialog el-dark-input" title="绑定插件" :visible.sync="showDialog" width="50%">
+  <el-dialog class="el-dark-dialog el-dark-input" title="绑定插件" :visible.sync="showDialog" width="1000px">
     <div class="container-fluid">
       <el-row :gutter="40">
-        <el-col :span="6">
-          <el-card>
-<!--            <el-input class="el-dark-input"></el-input>-->
+        <el-col :span="6" >
+          <div class="tree-div" style="border-right: 4px solid #263373">
             <el-tree class="el-dark-tree plugin-binding-tree"
                      :data="pluginTree" :props="{ children: 'device_model', label: 'model_name'}"
-                      @node-click="nodeClick"></el-tree>
-          </el-card>
+                     @node-click="nodeClick"></el-tree>
+          </div>
         </el-col>
 
         <el-col :span="18">
-          <tsl-editor class="tsl-editor" :data="tslData"></tsl-editor>
+          <tsl-editor class="tsl-editor" :show-view="false" :data="tslData"></tsl-editor>
         </el-col>
       </el-row>
 
@@ -30,7 +29,7 @@ import {computed, defineComponent} from "@vue/composition-api";
 import {reactive, ref} from "@vue/composition-api/dist/vue-composition-api";
 import PluginAPI from "@/api/plugin.js"
 import {device_update} from "@/api/device";
-import {message_error, message_success} from "../../../utils/helpers";
+import {message_error, message_success} from "../../../../../utils/helpers";
 
 export default defineComponent({
   name: "PluginBinding",
@@ -47,6 +46,7 @@ export default defineComponent({
   setup(props, context) {
     let showDialog = computed({
       get() {
+        console.log("plugin_device_item", props.device_item)
         return !!props.dialogVisible;
       },
       set(val) {
@@ -59,6 +59,13 @@ export default defineComponent({
         return props.device_item.id;
       }
     })
+
+    /**
+     * 用于回显数据
+     */
+    function getPlugin() {
+
+    }
 
 
     /**
@@ -86,6 +93,7 @@ export default defineComponent({
           .then(({data}) => {
             if (data.code == 200) {
               tslData.value = JSON.parse(data.data.data[0].chart_data).tsl
+              console.log(tslData.value)
             }
           })
       }
@@ -121,26 +129,48 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-.tsl-editor {
-  margin: 20px 10px 10px 10px;
-  ::v-deep .el-table--border {
-    border-bottom: 1px solid #fff;
+::v-deep .tsl-editor {
+  height: 100%!important;
+  overflow-y: auto;
+  .el-form-item:first-child {
+    .el-form-item__content {
+      padding-top: 6px;
+      padding-bottom: 6px;
+      border-top: 1px solid #324899;
+      border-bottom: 1px solid #324899;
+    }
   }
+  .el-form-item:nth-child(2) {
+    background-color: #314694;
+    padding: 10px;
+    overflow-y: auto;
+
+    .el-table--border {
+      border: 1px solid #2d3c88;
+    }
+    .el-table--border::after, .el-table--group::after, .el-table::before {
+      background-color: #2d3c88;
+    }
+    .el-table--border .el-table__cell, .el-table__body-wrapper .el-table--border.is-scrolling-left~.el-table__fixed {
+      border: 1px solid #2d3c88;
+    }
+  }
+
 }
 ::v-deep .el-dialog {
   height: 800px;
   .container-fluid {
     height: 600px;
   }
-  .el-card {
-    height: 100%;
-    //background-color: #1a2f73;
-    background: #273775;
-    border: 0;
-    color: #fff;
+  .tree-div {
     overflow-y: auto;
+    overflow-x: auto;
+    border-right: 4px solid #263373;
+    padding: 0 10px 10px 10px;
   }
+
   .plugin-binding-tree {
+    background-color:#2d3d88!important;
     height: 540px;
   }
 

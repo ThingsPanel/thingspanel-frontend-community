@@ -1,6 +1,6 @@
 <template>
   <div id="droppable" class="droppable" ref="droppable"  tabindex="0" @keydown="onKeyDown">
-    <VueDragResize style="position: absolute"
+    <VueDragResize style=""
         v-for="(component) in fullData" :key="component.cptId" :isDraggable="true" :isResizable="true"
                    :isActive="component.actived" :parentLimitation="true" :preventActiveBehavior="false"
                    :x="component.point.x" :y="component.point.y"
@@ -10,12 +10,12 @@
                    @resizestop="(rect) => onChangeStop(rect, component.cptId)"
                    @dragstop="(rect) => onChangeStop(rect, component.cptId)"
     >
-      <dashboard-chart style="position: absolute;width: 100%;height: 100%"
+      <dashboard-chart style="width: 100%;height: 100%"
                        :w="component.point.w" :h="component.point.h"
                        v-if="component.controlType == 'dashboard'"
                        :option="component"></dashboard-chart>
 
-      <history-chart style="position: absolute;width: 100%;height: 100%"
+      <history-chart style="width: 100%;height: 100%"
                      :w="component.point.w" :h="component.point.h"
                      v-if="component.controlType == 'history'"
                      :option="component"></history-chart>
