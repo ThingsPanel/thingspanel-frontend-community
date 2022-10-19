@@ -1,20 +1,20 @@
 <template>
   <el-dialog
-      class="el-dark-dialog el-dark-input"
+      class="el-dark-dialog el-dark-input" :append-to-body="true"
       :visible.sync="dialogVisible"
       title="编辑参数"
-      :close-on-click-modal="false"
+      :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
       width="40%">
 
-    <el-form :model="deviceData" label-width="120px">
+    <el-form :model="deviceData" :rules="formRule" label-width="120px">
 
-      <el-form-item label="传输协议：">
+      <el-form-item label="传输协议：" prop="protocol">
         <el-select size="medium" placeholder="请选择协议" v-model="deviceData.protocol" @change="handleChange">
           <el-option v-for="option in protocolOptions" :key="option.value" :label="option.label" :value="option.value"></el-option>
         </el-select>
       </el-form-item>
 
-      <el-form-item label="认证方式：">
+      <el-form-item label="认证方式：" prop="authMode">
         <el-select size="medium" placeholder="请选择认证方式" v-model="deviceData.authMode"
                    :disabled="true"
                    @change="handleChange()">
@@ -24,7 +24,7 @@
         </el-select>
       </el-form-item>
 
-      <el-form-item label="Access Token:">
+      <el-form-item label="Access Token:" prop="token">
         <el-input size="medium" v-model="deviceData.token"></el-input>
       </el-form-item>
 
@@ -38,32 +38,59 @@
       <div style="margin: 10px 0;"></div>
 
       <el-form-item label="数据交换格式：">
-        <el-select size="medium" placeholder="" v-model="deviceData.dataExchangeAgreement" >
-          <el-option :label="'ThingsPanel官方单设备协议'" :value="'TPSingleProtocol'"></el-option>
-          <el-option :label="'ThingsPanel官方网关协议'" :value="'TPGatewayProtocol'"></el-option>
-          <el-option :label="'自定义协议'" :value="'custom'"></el-option>
+        <el-select size="medium" placeholder="" filterable
+                   popper-class="exchange-agreement" :popper-append-to-body="false"
+                   v-model="deviceData.dataExchangeAgreement"
+                   @change="handleExchangeAgreementChange">
+          <el-option-group >
+            <el-option :label="'默认'" :value="''"></el-option>
+            <el-option :label="'自定义协议'" :value="'custom'"></el-option>
+          </el-option-group>
+
+          <el-option-group >
+            <el-option v-for="option in customExchangeAgreementList" :key="option.value"
+                     :value="option.value" :label="option.label">
+              <span style="float: left;width: 200px">{{ option.label }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">
+                <el-button icon="el-icon-edit-outline"  size="mini" @click="handleShowExchangeAgreementDialog(option)"></el-button>
+
+                <el-button icon="el-icon-delete"  size="mini" @click="handleDeleteExchangeAgreement(option)"></el-button>
+              </span>
+            </el-option>
+          </el-option-group>
+
         </el-select>
       </el-form-item>
 
         <div style="display: flex;justify-content: center">
-          <el-button @click="onCancel">取消</el-button>
+          <el-button style="color:#000" @click="onCancel">取消</el-button>
           <el-button type="primary" @click="onSubmit">保存</el-button>
         </div>
 
     </el-form>
 
+    <!--    数据交换格式-->
+    <custom-exchange-agreement :dialog-visible.sync="customExchangeAgreementVisible"
+                            :data="exchangeAgreementData" :device="deviceData" @submit="handleAddExchangeAgreement"
+    ></custom-exchange-agreement>
   </el-dialog>
 </template>
 
 <script>
 import {defineComponent, ref, reactive, watch } from "@vue/composition-api";
 import {device_default_setting} from "@/api/device";
-import {getDeviceInfo} from "@/api/device";
-import {updateDeviceInfo} from "../../../../../api/device";
-import {message_success} from "../../../../../utils/helpers";
-
+import {getDeviceInfo, updateDeviceInfo} from "@/api/device";
+import {message_success} from "@/utils/helpers";
+import CustomExchangeAgreement from "./CustomExchangeAgreement";
+import { getCustomExchangeAgreementList } from "@/api/device";
+import {message_confirm} from "@/utils/helpers";
+import DictAPI from "@/api/dict"
+import {deleteCustomExchangeAgreement} from "../../../../../api/device";
 export default defineComponent({
   name: "DeviceSettingForm",
+  components: {
+    CustomExchangeAgreement
+  },
   props: {
     dialogVisible: {
       type: [Boolean],
@@ -77,9 +104,15 @@ export default defineComponent({
   emits: ['change', 'cancel'],
   setup(props, context){
 
-    console.log("deviceSettingForm")
     let device = {};
     let defaultSettings = {};
+
+    const required = true;
+    let formRule = {
+      protocol: [ {required, message: "传输协议不能为空"}],
+      token: [ {required, message: "Acess Token不能为空"}],
+      dataExchangeAgreement: [ {required, message: "数据交换格式不能为空"}]
+    }
 
     /**
      * 监听显示状态，打开对话框时获取设备信息
@@ -87,9 +120,7 @@ export default defineComponent({
     watch(() => props.dialogVisible, value => {
       if (value) {
         device = props.device_item;
-
         getDeviceInformation();
-        console.log("defaultSettings", defaultSettings)
       }
     })
 
@@ -100,7 +131,6 @@ export default defineComponent({
       getDeviceInfo({ id: device.id })
           .then(({data}) => {
             if (data.code == 200) {
-              console.log("getDeviceInformation", data.data)
               device = data.data;
               initForm();
             }
@@ -109,12 +139,14 @@ export default defineComponent({
 
     // 传输协议下拉列表
     let protocolOptions = ref([]);
+    // 表单数据
     let deviceData = reactive({
       protocol: "",
       authMode: "accessToken",
       token: "",
       defaultSetting: "",
-      dataExchangeAgreement: ""
+      dataExchangeAgreement: "",
+      errors: {}
     });
 
     /**
@@ -123,20 +155,19 @@ export default defineComponent({
     function initForm() {
       if (device.device_type == "1" || device.device_type == 1) {
         protocolOptions.value = [{label: "MQTT", value: "mqtt"}];
-        deviceData.dataExchangeAgreement = "TPSingleProtocol";
       } else {
-        protocolOptions.value = [{label: "MODBUS_TCP", value: "MODBUS_TCP"}, {label: "MODBUS_RTU", value: "MODBUS_RTU"}];
-        deviceData.dataExchangeAgreement = "TPGatewayProtocol";
+        getGatewayProtocolList();
       }
+      deviceData.dataExchangeAgreement = device.script_id ? device.script_id : "";
       deviceData.id = device.id;
       deviceData.protocol = device.protocol;
       deviceData.authMode = "accessToken";
       deviceData.token = device.token;
       deviceData.errors = {};
-
-
       // 获取默认token和默认配置说明
       getDefaultSetting(device.protocol);
+      initCustomExchangeAgreementList(device.protocol);
+
     }
 
     /**
@@ -150,6 +181,7 @@ export default defineComponent({
      * 点击提交
      */
     function onSubmit() {
+      deviceData.script_id = deviceData.dataExchangeAgreement;
       updateDeviceInfo(deviceData)
         .then(({data}) => {
           if (data.code == 200) {
@@ -157,17 +189,34 @@ export default defineComponent({
             onCancel();
           }
         })
-      // context.emit('change', deviceData);
     }
 
     /**
-     * 协议更改
+     * 传输协议更改
+     * @param v
      */
     function handleChange(v){
       console.log("handleChange", v)
       getDefaultSetting(v);
+      initCustomExchangeAgreementList(v);
     }
 
+    /**
+     * 获取网关传输协议下拉列表
+     */
+    function getGatewayProtocolList() {
+      let param = { current_page: 1, per_page: 9999, dict_code: "GATEWAY_PROTOCOL"}
+      DictAPI.list(param)
+        .then(({data}) => {
+          if (data.code == 200) {
+            protocolOptions.value = data.data.data.map(item => {
+              return {
+                label: item.describe, value: item.dict_value
+              }
+            })
+          }
+        })
+    }
 
 
 
@@ -176,35 +225,114 @@ export default defineComponent({
      */
     function getDefaultSetting(protocol) {
       if (!protocol) return;
-      deviceData.defaultSetting = defaultSettings[protocol.toLowerCase()];
+      deviceData.defaultSetting = defaultSettings[protocol];
     }
 
     getDefaultSettings();
     function getDefaultSettings() {
-      let protocols = ["mqtt", "MODBUS_TCP", "MODBUS_RTU"];
+      let protocols = ["mqtt", "MQTT", "MODBUS_TCP", "MODBUS_RTU"];
       defaultSettings = {};
       for (let p of protocols) {
         device_default_setting({ protocol: p})
             .then(({data}) => {
               if (data.code == 200) {
-                defaultSettings[p.toLowerCase()] = data.data.default_setting.split("$$").join("\n");
+                defaultSettings[p] = data.data.default_setting.split("$$").join("\n");
               }
             })
       }
     }
 
+    let customExchangeAgreementVisible = ref(false);
+    let oldCustomExchangeAgreement = "";
+    let customExchangeAgreementList = ref([]);
+    let exchangeAgreementData = reactive({
+      id: "",
+      protocol_type: ""
+    })
+    /**
+     * 获取自定义数据交换列表
+     */
+    function initCustomExchangeAgreementList(v) {
+      exchangeAgreementData.protocol_type = v;
+      getCustomExchangeAgreementList({"current_page": 1, "per_page": 9999, "protocol_type": v})
+      .then(({data}) => {
+        if (data.code == 200) {
+          if (data.data && data.data.data && data.data.data.length > 0) {
+            customExchangeAgreementList.value = data.data.data.map(item => {
+              return {value: item.id, label: item.script_name }
+            });
+          }
+        }
+      })
+    }
+
+    /**
+     * 更改数据交换协议
+     * @param v
+     */
+    function handleExchangeAgreementChange(v) {
+      if (v != "custom") {
+        oldCustomExchangeAgreement = v;
+        return;
+      }
+      deviceData.dataExchangeAgreement = oldCustomExchangeAgreement;
+      exchangeAgreementData.id = "";
+      customExchangeAgreementVisible.value = true;
+    }
+
+    function handleAddExchangeAgreement(v) {
+      console.log(v)
+      initCustomExchangeAgreementList(device.protocol);
+      oldCustomExchangeAgreement = deviceData.dataExchangeAgreement = v;
+    }
+
+    function handleShowExchangeAgreementDialog(v) {
+      exchangeAgreementData.id = v.value;
+      customExchangeAgreementVisible.value = true;
+    }
+
+    function handleDeleteExchangeAgreement(value) {
+      message_confirm("是否删除此协议！")
+        .then(() => {
+          deleteCustomExchangeAgreement({id: value.value})
+            .then(({data}) => {
+              if (data.code == 200) {
+                initCustomExchangeAgreementList(device.protocol);
+                deviceData.dataExchangeAgreement = "";
+              }
+            })
+        })
+        .catch(() => {
+          console.log("====cancel")
+        })
+    }
+
 
     return {
+      formRule,
       protocolOptions,
       deviceData,
       onCancel,
       onSubmit,
       handleChange,
+      handleExchangeAgreementChange,
+      customExchangeAgreementVisible,
+      customExchangeAgreementList,
+      exchangeAgreementData,
+      handleAddExchangeAgreement,
+      handleShowExchangeAgreementDialog,
+      handleDeleteExchangeAgreement
     }
   }
 })
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+  ::v-deep .exchange-agreement {
 
+    .el-select-dropdown__wrap {
+      height: 100%!important;
+      max-height: 500px;
+    }
+  }
 </style>

@@ -3,7 +3,7 @@
       class="el-dark-dialog el-dark-input"
       :visible.sync="dialogVisible"
       title="配置参数"
-      :close-on-click-modal="false"
+      :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
       width="600px">
     <el-form label-width="120px" >
       <el-form-item label="设备地址:" style="padding: 50px">

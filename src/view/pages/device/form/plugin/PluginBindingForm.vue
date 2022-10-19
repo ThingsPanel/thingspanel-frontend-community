@@ -1,5 +1,5 @@
 <template>
-  <el-dialog class="el-dark-dialog el-dark-input" title="绑定插件" :visible.sync="showDialog" width="1000px">
+  <el-dialog class="el-dark-dialog el-dark-input" title="绑定设备插件" :visible.sync="showDialog" width="1000px">
     <div class="container-fluid">
       <el-row :gutter="40">
         <el-col :span="6" >

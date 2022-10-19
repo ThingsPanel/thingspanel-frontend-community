@@ -157,6 +157,7 @@ export function getDeviceTree(data) {
     })
 }
 
+
 /**
  * 获取设备信息
  * @param data
@@ -183,3 +184,55 @@ export function updateDeviceInfo(data){
     })
 }
 
+
+/**
+ * 获取自定义数据交换列表
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function getCustomExchangeAgreementList(data){
+    return axios({
+        url: "/tp_script/list",
+        method: "post",
+        data
+    })
+}
+
+/**
+ * 新增自定义数据交换格式
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function addCustomExchangeAgreement(data){
+    return axios({
+        url: "/tp_script/add",
+        method: "post",
+        data
+    })
+}
+
+/**
+ * 编辑自定义数据交换格式
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function editCustomExchangeAgreement(data){
+    return axios({
+        url: "/tp_script/edit",
+        method: "post",
+        data
+    })
+}
+
+/**
+ * 删除自定义数据交换格式
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function deleteCustomExchangeAgreement(data){
+    return axios({
+        url: "/tp_script/delete",
+        method: "post",
+        data
+    })
+}

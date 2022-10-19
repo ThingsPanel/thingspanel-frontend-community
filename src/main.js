@@ -30,6 +30,8 @@ Vue.config.productionTip = false;
 Vue.use(ElementUI);
 Vue.use(tpIot);
 
+
+
 // 组合式api
 import VueCompositionApi from "@vue/composition-api"
 Vue.use(VueCompositionApi)

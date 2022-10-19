@@ -79,6 +79,7 @@
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.asset_id">
           <DeviceGroupSelector
+              :disabled="scope.row.device_type == 3"
               :asset_id.sync="scope.row.asset_id"
               :options="deviceGroupOptions"
               @change="handleSave(scope.row)"
@@ -378,6 +379,12 @@ export default defineComponent({
 
     // 编辑子设备参数
     function handleEditSubParameter(item) {
+      console.log("====handleEditSubParameter", item)
+      if (!item.name) {
+        item.errors.name = "请输入子设备名称"
+        message_error(item.errors.name)
+        return;
+      }
       showSubDeviceSetting.value = true;
       currentDeviceItem.value = JSON.parse(JSON.stringify(item));
     }

@@ -5,6 +5,7 @@
       size="medium"
       placeholder="请选择设备分组"
       v-model="device_group_id"
+      :disabled="disabled"
       filterable
       :clearable="clearable"
       @change="handleChange()"
@@ -24,6 +25,10 @@ import {computed, defineComponent} from "@vue/composition-api";
 export default defineComponent({
   name: "DeviceGroupSelector",
   props: {
+    disabled: {
+      default: false,
+      type: Boolean,
+    },
     clearable: {
       default: false,
       type: Boolean,
