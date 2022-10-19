@@ -221,7 +221,7 @@
 
 
 
-  </el-dialog>
+<!--  </el-dialog>-->
   <!-- 编辑弹窗 end -->
 
   <!-- 分组管理 start -->
@@ -333,9 +333,6 @@ export default defineComponent({
       });
     }
 
-    function handleDeviceChart() {
-      router.push({name: "DeviceChart", query: { business_id: business_id }})
-    }
 
     // 编辑弹窗
     let showBindingDialog = ref(false);
@@ -347,6 +344,11 @@ export default defineComponent({
 
     // 绑定插件
     function handleBindingClick(item) {
+      if (!item.name) {
+        item.errors.name = "请填写设备名称!"
+        message_error("请填写设备名称!")
+        return
+      }
       currentDeviceItem.value = JSON.parse(JSON.stringify(item))
       showBindingDialog.value = true;
     }
@@ -449,6 +451,11 @@ export default defineComponent({
      * @param item
      */
     function deviceConfig(row) {
+      if (!row.name) {
+        row.errors.name = "请输入子设备名称"
+        message_error(row.errors.name)
+        return;
+      }
       currentDeviceItem.value = JSON.parse(JSON.stringify(row));
       deviceConfigVisible.value = true;
       console.log("deviceConfig", row)

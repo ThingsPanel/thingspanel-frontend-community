@@ -17,15 +17,15 @@
       </el-row>
 
       <p class="code-editor-label">上行解析脚本</p>
-      <CodeEditor class="dark-code-editor" key="upside" style="width: 100%;height: 300px"  min_height="300px"
+      <CodeEditor class="dark-code-editor" key="upside" style="width: 100%;height: 260px"  min_height="260px"
                   :copy_code="true" :hide_header="false" theme="dark"
-                  :value="formData.script_content_a"
+                  v-model="formData.script_content_a"
       ></CodeEditor>
 
       <p class="code-editor-label">下行解析脚本</p>
-      <CodeEditor class="dark-code-editor" key="down" style="width: 100%;height: 300px" min_height="300px"
+      <CodeEditor class="dark-code-editor" key="down" style="width: 100%;height: 260px" min_height="260px"
                   :copy_code="true" :hide_header="false" theme="dark"
-                  :value="formData.script_content_b"></CodeEditor>
+                  v-model="formData.script_content_b"></CodeEditor>
 
       <div style="margin-top: 10px;display: flex;justify-content: center">
         <el-button style="color:#000" @click="closeDialog">取消</el-button>
