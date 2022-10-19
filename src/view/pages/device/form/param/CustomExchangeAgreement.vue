@@ -43,9 +43,17 @@ import CodeEditor from 'simple-code-editor';
 import {message_success} from "@/utils/helpers";
 import {getCustomExchangeAgreementList, addCustomExchangeAgreement, editCustomExchangeAgreement} from "@/api/device";
 
-const codeTemp = "function encodeInp(msg, topic){\n" +
-    "    //编写脚本处理msg\n" +
-    "    return msg\n" +
+const upCodeTemp = "function encodeInp(msg, topic){\n" +
+    "    //编写脚本处理从设备发来消息msg,转为平台可接收的消息规范\n" +
+    "    //将msg转为json对象,如:var jsonObj = JSON.parse(msg);\n" +
+    "    //处理完后将jsonObj转回字符串,如:msg = JSON.stringify(jsonObj);\n" +
+    "    return msg;\n" +
+    "}"
+const downCodeTemp = "function encodeInp(msg, topic){\n" +
+    "    //编写脚本处理从平台发出的消息msg,转为设备可接收的消息规范\n" +
+    "    //将msg转为json对象,如:var jsonObj = JSON.parse(msg);\n" +
+    "    //处理完后将jsonObj转回字符串,如:msg = JSON.stringify(jsonObj);\n" +
+    "    return msg;\n" +
     "}"
 export default defineComponent ({
   name: "CustomExchangeAgreement",
@@ -71,8 +79,8 @@ export default defineComponent ({
       id: "",
       company: "",
       product_name: "",
-      script_content_a: codeTemp,
-      script_content_b: codeTemp,
+      script_content_a: upCodeTemp,
+      script_content_b: downCodeTemp,
       script_type: "javascript"
     })
 
@@ -90,8 +98,8 @@ export default defineComponent ({
       } else {
         formData.company = "";
         formData.product_name = "";
-        formData.script_content_a = codeTemp;
-        formData.script_content_b = codeTemp;
+        formData.script_content_a = upCodeTemp;
+        formData.script_content_b = downCodeTemp;
       }
     })
 
@@ -99,13 +107,12 @@ export default defineComponent ({
       getCustomExchangeAgreementList({current_page: 1, per_page: 10, id})
         .then(({data}) => {
           if (data.code == 200) {
-            console.log(data)
             let d = data.data.data[0];
-            console.log("getOne", d)
             formData.company = d.company;
             formData.product_name = d.product_name;
-            formData.script_content_a = JSON.parse(d.script_content_a);
-            formData.script_content_b = JSON.parse(d.script_content_b);
+            formData.script_content_a = d.script_content_a;
+            console.log("getCustomExchangeAgreementList", formData.script_content_a)
+            formData.script_content_b = d.script_content_b;
           }
         })
     }
@@ -119,8 +126,8 @@ export default defineComponent ({
     function onSubmit() {
       formData.script_name = formData.company + "" + formData.product_name;
       formData.protocol_type = props.device.protocol;
-      formData.script_content_a = JSON.stringify(formData.script_content_a);
-      formData.script_content_b = JSON.stringify(formData.script_content_b);
+      formData.script_content_a = formData.script_content_a;
+      formData.script_content_b = formData.script_content_b;
 
       customForm.value.validate((valid) => {
         if (valid) {

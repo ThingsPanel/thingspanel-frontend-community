@@ -4,6 +4,7 @@ import store from "./core/services/store"
 import { VERIFY_AUTH} from "./core/services/store/auth.module";
 import JwtService from "@/core/services/jwt.service";
 import {message_error} from "./utils/helpers";
+import {RESET_LAYOUT_CONFIG} from "./core/services/store/config.module";
 
 export const baseRoutes = [
     {
@@ -71,7 +72,7 @@ router.beforeEach(async(to, from, next) => {
 
 
     // reset config to initial state
-    // store.dispatch(RESET_LAYOUT_CONFIG);
+    Promise.all([store.dispatch(RESET_LAYOUT_CONFIG)]).then(next);
 
     // Ensure we checked auth before each page load.
     Promise.all([store.dispatch(VERIFY_AUTH)]).then(next);
