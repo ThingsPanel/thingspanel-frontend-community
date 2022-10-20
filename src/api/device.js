@@ -146,6 +146,19 @@ export function historyValue(data) {
 }
 
 /**
+ * 控制开关
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function turnSwitch(data) {
+    return axios({
+        url: "/device/operating_device",
+        method: "post",
+        data,
+    })
+}
+
+/**
  * 获取设备列表（含网关和设备)
  * @param data
  */

@@ -78,7 +78,6 @@ export default {
     }
   },
   mounted() {
-    console.log("====device", this.device)
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
     this.initEChart();

@@ -93,7 +93,8 @@ export default defineComponent({
           .then(({data}) => {
             if (data.code == 200) {
               tslData.value = JSON.parse(data.data.data[0].chart_data).tsl
-              console.log(tslData.value)
+
+              console.log(JSON.parse(data.data.data[0].chart_data).chart)
             }
           })
       }
@@ -136,23 +137,25 @@ export default defineComponent({
     .el-form-item__content {
       padding-top: 6px;
       padding-bottom: 6px;
-      border-top: 1px solid #324899;
-      border-bottom: 1px solid #324899;
+      //border-top: 1px solid #324899;
+      //border-bottom: 1px solid #324899;
     }
   }
   .el-form-item:nth-child(2) {
-    background-color: #314694;
-    padding: 10px;
+    //background-color: #314694;
     overflow-y: auto;
 
     .el-table--border {
-      border: 1px solid #2d3c88;
+      border: 1px solid #314694;
     }
     .el-table--border::after, .el-table--group::after, .el-table::before {
-      background-color: #2d3c88;
+      background-color: #314694;
     }
     .el-table--border .el-table__cell, .el-table__body-wrapper .el-table--border.is-scrolling-left~.el-table__fixed {
-      border: 1px solid #2d3c88;
+      border: 1px solid #314694;
+    }
+    .el-table__empty-block {
+      border-top: 1px solid #314694;
     }
   }
 

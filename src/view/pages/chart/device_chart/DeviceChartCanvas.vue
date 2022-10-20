@@ -5,7 +5,7 @@
         <div v-for="option in options" :key="option['id']">
           <e-charts style="width: 360px;height: 360px" v-if="option.controlType == 'dashboard' || option.controlType == 'history'"
                     :option="option" :device="device"></e-charts>
-          <control style="width: 360px;height: 360px" v-if="option.controlType == 'control'" :option="option" ></control>
+          <control style="width: 360px;height: 360px" v-if="option.controlType == 'control'" :option="option" :device="device"></control>
         </div>
       </div>
     </div>
