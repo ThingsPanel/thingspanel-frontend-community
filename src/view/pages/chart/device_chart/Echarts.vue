@@ -64,7 +64,7 @@ export default {
       controlType: "dashboard",
       optionData: {},
       configurationVisible: false,
-      flushTime: 10,
+      flushTime: 5,
       timer: null
     }
   },
@@ -134,9 +134,10 @@ export default {
           if (data.code == 200) {
             if (data.data) {
               let series = [];
+              let title = this.optionData.series[0].data[0].name ? this.optionData.series[0].data[0].name : "";
               if (!this.optionData || !this.optionData.mapping) return;
                 this.optionData.mapping.forEach(map => {
-                  let serie = { data: [{ value: data.data[0][map] }]};
+                  let serie = { data: [{ value: data.data[0][map], name: title }]};
                   series.push(serie);
                 })
                 // 设置图表的当前值
@@ -180,7 +181,7 @@ export default {
       }
     },
     showConfiguration() {
-      this.configurationVisible = true;
+      // this.configurationVisible = true;
     }
   },
 }

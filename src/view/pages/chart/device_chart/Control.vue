@@ -54,7 +54,8 @@ export default {
   watch: {
     option: {
       handler(newValue) {
-        // this.updateControl();
+        if (JSON.stringify(newValue) == "{}") return;
+        this.updateControl();
       }
     }
   },
