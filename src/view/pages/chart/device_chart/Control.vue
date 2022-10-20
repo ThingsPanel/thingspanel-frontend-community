@@ -73,10 +73,12 @@ export default {
       // 获取绑定的属性
       let values = {};
       v.series.forEach(item => {
-        values[item.mapping.value] = item.value ? item.mapping.on : item.mapping.off;
+        values[item.mapping.value] = item.value ?
+            typeConvert(item.mapping.on, item.mapping.attr.dataType) :
+            typeConvert(item.mapping.off, item.mapping.attr.dataType);
       })
 
-      let param = { device_id: this.device.device, values }
+      let param = { device_id: this.device.device, values };
       // 控制设备状态
       turnSwitch(param)
         .then(({data}) => {
@@ -131,6 +133,12 @@ const clearTimer = () => {
     timers.forEach(timer => clearInterval(timer))
     localStorage.setItem("timers", null);
   }
+}
+const typeConvert = (value, type) => {
+  if (type.toLowerCase() == "integer") return Number(value);
+  if (type.toLowerCase() == "string" || type.toLowerCase() == "text") return String(value);
+  if (type.toLowerCase() == "bool" || type.toLowerCase() == "boolean") return Boolean(value);
+  if (type.toLowerCase() == "float") return parseFloat(value);
 }
 </script>
 
