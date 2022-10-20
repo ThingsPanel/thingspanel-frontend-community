@@ -50,6 +50,13 @@ export default {
       flushTime: 5
     }
   },
+  watch: {
+    option: {
+      handler(newValue) {
+        this.updateControl();
+      }
+    }
+  },
   beforeDestroy() {
     clearTimer();
   },
@@ -65,6 +72,7 @@ export default {
       // 获取每个开关的值 v
       // 属性和开关的值对应
       let obj = {};
+
       for (let i = 0; i < mapping.length; i++) {
         obj[mapping[i]] = v[i];
       }
@@ -78,10 +86,10 @@ export default {
         })
     },
     updateControl() {
-      if (this.timer) {
-        clearInterval(this.timer);
-      }
-
+      // if (this.timer) {
+      //   clearInterval(this.timer);
+      // }
+      console.log("updateControl")
       this.getSwitchValue();
       this.timer = setInterval(() => {
         this.getSwitchValue();
@@ -94,7 +102,7 @@ export default {
       let param = { entity_id: this.device.device, attribute: this.option.mapping }
       currentValue(param)
           .then(({data}) => {
-            if (data.code == 200) {
+            if (data.code == 200 && data.data) {
               let map = optionTmp.mapping;
               for (let i = 0; i < map.length; i++) {
                 if (data.data[0][map[i]] == "true") {
@@ -110,7 +118,7 @@ export default {
   }
 }
 const addTimer = (timer) => {
-  var timers = JSON.parse(localStorage.getItem("timers"));
+  let timers = JSON.parse(localStorage.getItem("timers"));
   if (!timers) {
     timers = [];
   }
@@ -118,10 +126,11 @@ const addTimer = (timer) => {
   localStorage.setItem("timers", JSON.stringify(timers))
 }
 const clearTimer = () => {
-  var timers = JSON.parse(localStorage.getItem("timers"));
-  if (timers && timers.length > 0)
+  let timers = JSON.parse(localStorage.getItem("timers"));
+  if (timers && timers.length > 0 && timer!="undefined") {
     timers.forEach(timer => clearInterval(timer))
-  localStorage.setItem("timers", null);
+    localStorage.setItem("timers", null);
+  }
 }
 </script>
 
