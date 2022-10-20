@@ -47,13 +47,14 @@ export default {
       controlType: "",
       optionData: {},
       timer: "",
-      flushTime: 5
+      flushTime: 5,
+      mapping: []
     }
   },
   watch: {
     option: {
       handler(newValue) {
-        this.updateControl();
+        // this.updateControl();
       }
     }
   },
@@ -63,21 +64,48 @@ export default {
   mounted() {
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
-    this.updateControl();
+    console.log("====mounted", this.optionData)
+    this.mapping = this.option.series.map(item => {return item.mapping.value})
+    this.getSwitchValue();
+    // this.updateControl();
   },
+  /**
+    {
+      "series": [
+          {
+              "type": "switch",
+              "value": false,
+              "mapping": {
+                  "value": "light_1",
+                  "on": "1",
+                  "off": "0"
+              }
+          },
+          {
+              "type": "switch",
+              "value": true,
+              "mapping": {
+                  "value": "light_2",
+                  "on": "1",
+                  "off": "0"
+              }
+          }
+        ],
+        "name": "客厅照明",
+        "controlType": "control",
+        "id": "XUFM3cLsvgmp"
+    }
+   */
   methods: {
     handleChange(v) {
       // 获取绑定的属性
-      let mapping = this.option.mapping
-      // 获取每个开关的值 v
-      // 属性和开关的值对应
-      let obj = {};
+      let values = {};
+      v.series.forEach(item => {
+        values[item.mapping.value] = item.value ? item.mapping.on : item.mapping.off;
+      })
 
-      for (let i = 0; i < mapping.length; i++) {
-        obj[mapping[i]] = v[i];
-      }
-      let param = {device_id: this.device.device, "values": obj}
-
+      let param = { device_id: this.device.device, values }
+      // 控制设备状态
       turnSwitch(param)
         .then(({data}) => {
           if (data.code == 200) {
@@ -99,19 +127,29 @@ export default {
     },
     getSwitchValue() {
       let optionTmp = JSON.parse(JSON.stringify(this.optionData));
-      let param = { entity_id: this.device.device, attribute: this.option.mapping }
+      let param = { entity_id: this.device.device, attribute: this.mapping }
+      console.log("param", param)
       currentValue(param)
           .then(({data}) => {
             if (data.code == 200 && data.data) {
-              let map = optionTmp.mapping;
-              for (let i = 0; i < map.length; i++) {
-                if (data.data[0][map[i]] == "true") {
-                  optionTmp.series[i].value = true;
-                } else if (data.data[0][map[i]] == "false") {
-                  optionTmp.series[i].value = false;
-                }
-              }
-              this.optionData = JSON.parse(JSON.stringify(optionTmp))
+              let dataObj = data.data[0];
+              console.log("getSwitchValue", dataObj)
+              // {
+              //   "light_a": 0,
+              //   "light_b": 1,
+              //   "status": "2",
+              //   "systime": "2022-10-20 15:52:08"
+              // }
+
+              // let map = optionTmp.mapping;
+              // for (let i = 0; i < map.length; i++) {
+              //   if (data.data[0][map[i]] == "true") {
+              //     optionTmp.series[i].value = true;
+              //   } else if (data.data[0][map[i]] == "false") {
+              //     optionTmp.series[i].value = false;
+              //   }
+              // }
+              // this.optionData = JSON.parse(JSON.stringify(optionTmp))
             }
           })
     }

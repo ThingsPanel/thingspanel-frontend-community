@@ -78,20 +78,23 @@ export default defineComponent ({
       }
 
       // 获得推送数据示例
-      let arr = [];
-      options.value.forEach(option => {
-        option['mapping'].forEach(map => {
-          arr.push(map);
-        })
-      })
-      let temp = {};
-      for (let i = 0; i < arr.length; i++) {
-        temp[arr[i]] = "值" + (i+1);
-      }
-      payloadTemplate.value = JSON.stringify(temp);
-      console.log("====payloadTemplate", payloadTemplate);
-      // 清空计时器
-      clearTimer();
+    //   let arr = [];
+    //   console.log("====DeviceChartCanvas 1")
+    //   options.value.forEach(option => {
+    //     option['mapping'].forEach(map => {
+    //       arr.push(map);
+    //     })
+    //   })
+    //   console.log("====DeviceChartCanvas 2")
+    //
+    //   let temp = {};
+    //   for (let i = 0; i < arr.length; i++) {
+    //     temp[arr[i]] = "值" + (i+1);
+    //   }
+    //   payloadTemplate.value = JSON.stringify(temp);
+    //   console.log("====payloadTemplate", payloadTemplate);
+    //   // 清空计时器
+    //   clearTimer();
     }, {immediate: true, deep: true})
 
     watch(() => props.device, value => {
