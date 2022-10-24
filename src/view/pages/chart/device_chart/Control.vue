@@ -115,17 +115,25 @@ export default {
       let param = { entity_id: this.device.device, attribute: this.mapping }
       currentValue(param)
           .then(({data}) => {
+            console.log(data)
             if (data.code == 200 && data.data) {
+              console.log("dataObj", data.data)
               let dataObj = data.data[0];
               optionTmp.series.forEach(item => {
                 let map = item.mapping;
-                if (dataObj[map.value] == map.on) {
-                  item.value = true;
-                } else if (dataObj[map.value] == map.off){
-                  item.value = false;
+                if (item.type == "switch") {
+                  if (dataObj[map.value] == map.on) {
+                    item.value = true;
+                  } else if (dataObj[map.value] == map.off){
+                    item.value = false;
+                  }
+                } else if (item.type == "slider") {
+                  item.value = dataObj[map.value];
                 }
               })
+
               this.optionData = JSON.parse(JSON.stringify(optionTmp))
+              console.log("optionData", this.optionData)
             }
           })
     }
