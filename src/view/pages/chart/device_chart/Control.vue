@@ -60,6 +60,7 @@ export default {
     }
   },
   beforeDestroy() {
+    console.log("beforeDestroy")
     clearTimer();
   },
   mounted() {
@@ -71,13 +72,23 @@ export default {
   },
   methods: {
     handleChange(v) {
+      console.log("handleChange.optionData",this.optionData )
+      console.log("handleChange.v", v)
       // 获取绑定的属性
       let values = {};
+
       v.series.forEach(item => {
-        values[item.mapping.value] = item.value ?
-            typeConvert(item.mapping.on, item.mapping.attr.dataType) :
-            typeConvert(item.mapping.off, item.mapping.attr.dataType);
+        console.log("item", item)
+        if (item.type == "switch") {
+          values[item.mapping.value] = item.value ?
+              typeConvert(item.mapping.on, item.mapping.attr.dataType) :
+              typeConvert(item.mapping.off, item.mapping.attr.dataType);
+        } else if (item.type == "slider") {
+          values[item.mapping.value] = Number(item.value);
+        }
+        console.log(values)
       })
+      // if (true) return;
 
       let param = { device_id: this.device.device, values };
       // 控制设备状态
@@ -89,9 +100,9 @@ export default {
         })
     },
     updateControl() {
-      // if (this.timer) {
-      //   clearInterval(this.timer);
-      // }
+      if (this.timer) {
+        clearInterval(this.timer);
+      }
       this.getSwitchValue();
       this.timer = setInterval(() => {
         this.getSwitchValue();
@@ -130,7 +141,7 @@ const addTimer = (timer) => {
 }
 const clearTimer = () => {
   let timers = JSON.parse(localStorage.getItem("timers"));
-  if (timers && timers.length > 0 && timer!="undefined") {
+  if (timers && timers.length > 0 && timers!="undefined") {
     timers.forEach(timer => clearInterval(timer))
     localStorage.setItem("timers", null);
   }

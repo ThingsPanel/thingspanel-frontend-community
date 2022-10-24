@@ -16,16 +16,23 @@
 
       <el-form-item label="认证方式：" prop="authMode">
         <el-select size="medium" placeholder="请选择认证方式" v-model="deviceData.authMode"
-                   :disabled="true"
-                   @change="handleChange()">
+                   @change="handleAuthModeChange()">
           <el-option :label="'AccessToken接入'" :value="'accessToken'"></el-option>
           <el-option :label="'MQTT Basic'" :value="'mqttBasic'"></el-option>
-          <el-option :label="'X.509'" :value="'x509'"></el-option>
+          <el-option :disabled="true" :label="'X.509'" :value="'x509'"></el-option>
         </el-select>
       </el-form-item>
 
-      <el-form-item label="Access Token：" prop="token">
+      <el-form-item v-if="deviceData.authMode=='accessToken'" label="Access Token：" prop="token">
         <el-input size="medium" v-model="deviceData.token"></el-input>
+      </el-form-item>
+
+      <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="用户名：" prop="username">
+        <el-input size="medium" v-model="deviceData.username"></el-input>
+      </el-form-item>
+
+      <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="密码：" prop="password">
+        <el-input size="medium" v-model="deviceData.password"></el-input>
       </el-form-item>
 
       <el-form-item label="连接信息：">
@@ -108,11 +115,13 @@ export default defineComponent({
     let defaultSettings = {};
 
     const required = true;
-    let formRule = {
+    let formRule = ref({
       protocol: [ {required, message: "传输协议不能为空"}],
-      token: [ {required, message: "Acess Token不能为空"}],
+      token: [ {required, message: "Access Token不能为空"}],
+      username: [ {required, message: "用户名不能为空"}],
+      password: [ {required, message: "密码不能为空"}],
       dataExchangeAgreement: [ {required, message: "数据交换格式不能为空"}]
-    }
+    })
 
     /**
      * 监听显示状态，打开对话框时获取设备信息
@@ -131,6 +140,7 @@ export default defineComponent({
       getDeviceInfo({ id: device.id })
           .then(({data}) => {
             if (data.code == 200) {
+              console.log("getDeviceInformation", data.data)
               device = data.data;
               initForm();
             }
@@ -144,6 +154,8 @@ export default defineComponent({
       protocol: "",
       authMode: "accessToken",
       token: "",
+      username: "",
+      password: "",
       defaultSetting: "",
       dataExchangeAgreement: "",
       errors: {}
@@ -161,8 +173,10 @@ export default defineComponent({
       deviceData.dataExchangeAgreement = device.script_id ? device.script_id : "";
       deviceData.id = device.id;
       deviceData.protocol = device.protocol;
-      deviceData.authMode = "accessToken";
+      deviceData.authMode = device.password ? "mqttBasic" : "accessToken";
       deviceData.token = device.token;
+      deviceData.username = device.token;
+      deviceData.password = device.password ? device.password : "";
       deviceData.errors = {};
       // 获取默认token和默认配置说明
       getDefaultSetting(device.protocol);
@@ -182,6 +196,11 @@ export default defineComponent({
      */
     function onSubmit() {
       deviceData.script_id = deviceData.dataExchangeAgreement;
+      if (deviceData.authMode == "mqttBasic") {
+        deviceData.token = deviceData.username;
+      } else {
+        deviceData.password = "";
+      }
       updateDeviceInfo(deviceData)
         .then(({data}) => {
           if (data.code == 200) {
@@ -218,6 +237,9 @@ export default defineComponent({
         })
     }
 
+    function handleAuthModeChange(v) {
+
+    }
 
 
     /**
@@ -315,6 +337,7 @@ export default defineComponent({
       onCancel,
       onSubmit,
       handleChange,
+      handleAuthModeChange,
       handleExchangeAgreementChange,
       customExchangeAgreementVisible,
       customExchangeAgreementList,
