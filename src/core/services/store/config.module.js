@@ -78,9 +78,9 @@ export default {
           state.initial.loader.logo = (process.env.VUE_APP_BASE_URL ||
           document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_two
           document.title = data.data.system_name
-          var link = document.querySelector("link[rel~='icon']");
-          link.href = (process.env.VUE_APP_BASE_URL ||
-          document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_three
+          // var link = document.querySelector("link[rel~='icon']");
+          // link.href = (process.env.VUE_APP_BASE_URL ||
+          // document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_three
           state.config = Object.assign({}, state.initial);
         }
       })

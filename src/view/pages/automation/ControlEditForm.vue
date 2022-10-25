@@ -21,7 +21,7 @@
         <el-input v-model="formData.name" :placeholder="$t('COMMON.PLACEHOLDER5')"></el-input>
       </el-form-item>
     </el-col>
-<!--策略描述-->
+    <!--策略描述-->
     <el-col :span="8">
       <el-form-item :label="$t('COMMON.STRATRGYLISTDES')" prop="describe" :rules="rules.describe">
         <el-input v-model="formData.describe" :placeholder="$t('COMMON.PLACEHOLDER6')"></el-input>
@@ -41,7 +41,10 @@
       </el-form-item>
     </el-col>
 
+
+    <!----------------------------------------------------------------------------------------------------------------->
     <!--  触发条件 start  -->
+    <!----------------------------------------------------------------------------------------------------------------->
     <el-col :span="24">
       <el-form-item :label="$t('AUTOMATION.TRIGGERING_CONDITION')">
         <template v-if="formData.type == 1" v-for="(rules_item, index) in formData.config.rules">
@@ -71,17 +74,14 @@
                     :asset_id="rules_item.asset_id"
                     :device_id.sync="rules_item.device_id"
                     :clearable="false"
-                    @change="handleDeviceChange(rules_item)"
+                    @change="(deviceId, pluginId) => handleDeviceChange(rules_item, deviceId, pluginId)"
                 ></DeviceSelector>
               </el-form-item>
             </el-col>
             <el-col :span="3">
               <el-form-item :prop="`config.rules.${index}.field`" :rules="rules['config.rules.field']">
                 <!-- 条件选择 -->
-                <TriggerSelector
-                    :device_id="rules_item.device_id"
-                    :field.sync="rules_item.field"
-                ></TriggerSelector>
+                <TriggerSelector :device_id="rules_item.device_id" :plugin_id="rules_item.plugin_id" :field.sync="rules_item.field"></TriggerSelector>
               </el-form-item>
             </el-col>
             <el-col :span="3">
@@ -149,7 +149,9 @@
     </el-col>
     <!--  触发条件 end  -->
 
-    <!--  执行指令 start  -->
+    <!----------------------------------------------------------------------------------------------------------------->
+    <!-- 执行指令 start -->
+    <!----------------------------------------------------------------------------------------------------------------->
     <el-col :span="24">
       <el-form-item :label="$t('AUTOMATION.EXECUTE_COMMAND')">
         <template v-for="(apply_item, index) in formData.config.apply">
@@ -172,7 +174,7 @@
                     :asset_id="apply_item.asset_id"
                     :device_id.sync="apply_item.device_id"
                     :clearable="false"
-                    @change="handleDeviceChange(apply_item)"
+                    @change="(deviceId, pluginId) => handleDeviceChange(apply_item, deviceId, pluginId)"
                 ></DeviceSelector>
               </el-form-item>
             </el-col>
@@ -181,6 +183,7 @@
                 <!-- 条件 -->
                 <InstructSelector
                     :device_id="apply_item.device_id"
+                    :plugin_id="apply_item.plugin_id"
                     :field.sync="apply_item.field"
                     :apply_item="apply_item"
                 ></InstructSelector>
@@ -213,6 +216,7 @@
   <!-- 开关start -->
   <el-row :gutter="20">
     <el-col :span="24">
+      <!-- 策略状态 -->
       <el-form-item :label="$t('COMMON.POLICYSTATUS')" class="inline-form-item">
         <el-switch :active-value="1" :inactive-value="0" v-model="formData.status"></el-switch>
         <small class="px-2">{{formData.status ? $t('COMMON.ON') : $t('COMMON.OFF')}}</small>
@@ -296,9 +300,9 @@ export default defineComponent({
     let controlFormRef = ref()
 
     // 默认值重置时用
-    let default_rules_type_1 = {asset_id: "", device_id: "", field: "", condition: "", value: "", duration: 0}
+    let default_rules_type_1 = {asset_id: "", device_id: "", plugin_id: "", field: "", condition: "", value: "", duration: 0}
     let default_rules_type_2 = {interval:0, time:""}
-    let default_apply = {asset_id: "", device_id: "",  field: "",  value: ""}
+    let default_apply = {asset_id: "", device_id: "", plugin_id: "",  field: "",  value: ""}
 
     let formData = reactive({
       id: "",
@@ -425,9 +429,16 @@ export default defineComponent({
     }
 
     // 设备 id 更改时
-    function handleDeviceChange(item){
+    function handleDeviceChange(item, deviceId, pluginId){
       // device_id 更改时 field 置空
-      item.field = ""
+      // item.field = ""
+      // 插件id
+      if (pluginId) {
+        item.plugin_id = pluginId;
+      }
+      console.log("handleDeviceChange.item", item)
+      console.log("handleDeviceChange.deviceId", deviceId)
+      console.log("handleDeviceChange.pluginId", pluginId)
     }
 
     // 时间条件下 interval 更改

@@ -7,10 +7,7 @@
       filterable
       @change="handleChange"
   >
-    <el-option
-        :value="item.key"
-        :label="item.name" :key="index"
-        v-for="(item, index) in triggerOptions"></el-option>
+    <el-option :value="item.name" :label="item.title" :key="index" v-for="(item, index) in triggerOptions"></el-option>
   </el-select>
 </template>
 
@@ -18,11 +15,15 @@
 import {computed, defineComponent} from "@vue/composition-api";
 import {ref, watch} from "@vue/composition-api/dist/vue-composition-api";
 import {automation_show} from "@/api/automation";
-
+import PluginAPI from "@/api/plugin.js"
 export default defineComponent({
   name: "TriggerSelector",
   props: {
     device_id: {
+      required: true,
+      type: String,
+    },
+    plugin_id: {
       required: true,
       type: String,
     },
@@ -43,17 +44,36 @@ export default defineComponent({
       }
     })
 
-    watch(()=>props.device_id, (val)=>{
+    // watch(()=>props.device_id, (val)=>{
+    //   if(val){
+    //     automation_show({bid: val}).then(({data})=>{
+    //       if(data.code === 200 && data.data){
+    //         triggerOptions.value = data.data
+    //       }
+    //     })
+    //   }
+    // }, {
+    //   immediate: true
+    // });
+
+    watch(()=>props.plugin_id, (val)=>{
       if(val){
-        automation_show({bid: val}).then(({data})=>{
-          if(data.code === 200 && data.data){
-            triggerOptions.value = data.data
-          }
-        })
+        let param = {current_page: 1, per_page: 10, id: val}
+        PluginAPI.page(param)
+          .then(({data}) => {
+            if (data.code == 200 && data.data.data && data.data.data.length > 0) {
+              let pluginJsonStr = data.data.data[0].chart_data ? data.data.data[0].chart_data : "{}";
+              let pluginObj = JSON.parse(pluginJsonStr);
+              console.log("pluginObj", pluginObj.tsl.properties)
+
+              triggerOptions.value = pluginObj.tsl.properties;
+            }
+          })
       }
     }, {
       immediate: true
-    })
+    });
+
 
     function handleChange(val){
       context.emit("change")

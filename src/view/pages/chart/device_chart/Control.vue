@@ -8,7 +8,6 @@
     </div>
 
     <common-control :option="optionData" @change="handleChange"></common-control>
-<!--    <el-switch style="margin-top:100px" v-model="switchValue" active-color="#13ce66" inactive-color="#ff4949" :width="60"></el-switch>-->
 
     <el-dialog title="配置" width="30%"
                :visible.sync="configurationVisible">
@@ -66,19 +65,15 @@ export default {
   mounted() {
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
-    console.log("====mounted", this.optionData)
     this.mapping = this.option.series.map(item => {return item.mapping.value})
     this.updateControl();
   },
   methods: {
     handleChange(v) {
-      console.log("handleChange.optionData",this.optionData )
-      console.log("handleChange.v", v)
       // 获取绑定的属性
       let values = {};
 
       v.series.forEach(item => {
-        console.log("item", item)
         if (item.type == "switch") {
           values[item.mapping.value] = item.value ?
               typeConvert(item.mapping.on, item.mapping.attr.dataType) :
@@ -86,9 +81,7 @@ export default {
         } else if (item.type == "slider") {
           values[item.mapping.value] = Number(item.value);
         }
-        console.log(values)
       })
-      // if (true) return;
 
       let param = { device_id: this.device.device, values };
       // 控制设备状态
@@ -115,9 +108,7 @@ export default {
       let param = { entity_id: this.device.device, attribute: this.mapping }
       currentValue(param)
           .then(({data}) => {
-            console.log(data)
             if (data.code == 200 && data.data) {
-              console.log("dataObj", data.data)
               let dataObj = data.data[0];
               optionTmp.series.forEach(item => {
                 let map = item.mapping;
@@ -133,7 +124,6 @@ export default {
               })
 
               this.optionData = JSON.parse(JSON.stringify(optionTmp))
-              console.log("optionData", this.optionData)
             }
           })
     }

@@ -8,10 +8,7 @@
     size="medium"
     @change="handleChange"
 >
-  <el-option
-      :value="item.id"
-      :label="item.name"
-      v-for="(item, index) in deviceOptions"  :key="index"></el-option>
+  <el-option :value="item.id" :label="item.name" v-for="(item, index) in deviceOptions"  :key="index"></el-option>
 
 </el-select>
 </template>
@@ -44,7 +41,7 @@ export default defineComponent({
         return props.device_id
       },
       set(val){
-        context.emit("update:device_id", val)
+        context.emit("update:device_id", val);
       }
     })
 
@@ -55,7 +52,8 @@ export default defineComponent({
       if(asset_id){
         dashboard_device({asset_id}).then(({data})=>{
           if(data.code === 200 && data.data){
-            deviceOptions.value = data.data
+            let options = data.data.filter(item => item.device_type != "2")
+            deviceOptions.value = options;
           }
         })
       }
@@ -64,7 +62,8 @@ export default defineComponent({
     })
 
     function handleChange(val){
-      context.emit("change", val)
+      let device = deviceOptions.value.find(item => item.id == val);
+      context.emit("change", val, device.type);
     }
 
     return {

@@ -50,107 +50,47 @@
                     ></v-text-field>
                     <v-row>
                       <v-col cols="12" xs="12" md="3" class="col-py-0">
-                        <div class="text-title">
-                          {{ $t("COMMON.STRATRGYLISTNAME") }}：
-                        </div>
-                        <v-text-field
-                          v-model="editedItem.name"
-                          :label="$t('COMMON.PLACEHOLDER6')"
-                          :rules="[nameRules]"
-                          required
-                        ></v-text-field>
+                        <!-- 策略名称 -->
+                        <div class="text-title">{{ $t("COMMON.STRATRGYLISTNAME") }}：</div>
+                        <!-- 请输入名称 -->
+                        <v-text-field v-model="editedItem.name" :label="$t('COMMON.PLACEHOLDER6')" :rules="[nameRules]" required></v-text-field>
                       </v-col>
                       <v-col cols="12" xs="12" md="3" class="col-py-0">
-                        <div class="text-title">
-                          {{ $t("COMMON.STRATRGYLISTDES") }}：
-                        </div>
-                        <v-text-field
-                          v-model="editedItem.describe"
-                          :label="$t('COMMON.PLACEHOLDER7')"
-                          :rules="describeRules"
-                          required
-                        ></v-text-field>
+                        <!-- 策略描述 -->
+                        <div class="text-title">{{ $t("COMMON.STRATRGYLISTDES") }}：</div>
+                        <!-- 请输入描述 -->
+                        <v-text-field v-model="editedItem.describe" :label="$t('COMMON.PLACEHOLDER7')" :rules="describeRules" required></v-text-field>
                       </v-col>
                       <v-col cols="12" xs="12" md="3" class="col-py-0">
-                        <div class="text-title">
-                          {{ $t("COMMON.POLICYPRIORITY") }}：
-                        </div>
-                        <v-text-field
-                          v-model="editedItem.sort"
-                          :label="$t('COMMON.PLACEHOLDER16')"
-                          :rules="valueRules"
-                          required
-                        ></v-text-field>
-                        <div class="remarks text-danger">
-                          {{ $t("COMMON.TEXT1") }}
-                        </div>
+                        <!-- 策略优先级 -->
+                        <div class="text-title">{{ $t("COMMON.POLICYPRIORITY") }}：</div>
+                        <!-- 请输入 -->
+                        <v-text-field v-model="editedItem.sort" :label="$t('COMMON.PLACEHOLDER16')" :rules="valueRules" required></v-text-field>
+                        <!-- 备注：值越小优先级越高 -->
+                        <div class="remarks text-danger">{{ $t("COMMON.TEXT1") }}</div>
                       </v-col>
                       <v-col cols="12" xs="12" md="3" class="col-py-0">
-                        <div class="text-title">
-                          {{ $t("COMMON.STRATRGYLISTTYPE") }}：
-                        </div>
-                        <!-- <v-select
-                                                        :items="strategy"
-                                                        item-value="id"
-                                                        item-text="name"
-                                                        v-model="editedItem.type"
-                                                        class="vselect"
-                                                        @change="changeType(editedItem.type)"
-                                                ></v-select> -->
-                        <el-select
-                          v-model="editedItem.type"
-                          @change="changeType(editedItem.type)"
-                          :popper-append-to-body="true"
-                          class="width-100 vselect"
-                          style="margin-top: 16px"
-                        >
-                          <el-option
-                            v-for="(t, index) in strategy"
-                            :key="index"
-                            :value="t.id"
-                            :label="t.name"
-                          ></el-option>
+                        <!-- 策略类型 -->
+                        <div class="text-title">{{ $t("COMMON.STRATRGYLISTTYPE") }} </div>
+                        <!-- 策略类型: 设备条件类型, 时间条件类型 -->
+                        <el-select v-model="editedItem.type" @change="changeType(editedItem.type)" :popper-append-to-body="true" class="width-100 vselect" style="margin-top: 16px">
+                          <el-option v-for="(t, index) in strategy" :key="index" :value="t.id" :label="t.name"></el-option>
                         </el-select>
                       </v-col>
                     </v-row>
-                    <div class="text-title font-weight-bolder my-2">
-                      {{ $t("COMMON.TRIGGERCONDITIONS") }}：
-                    </div>
+                    <!-- 触发条件 -->
+                    <div class="text-title font-weight-bolder my-2">{{ $t("COMMON.TRIGGERCONDITIONS") }}：</div>
                     <div class="box">
-                      <v-row
-                        v-for="(i, index) in tjarr" :key="index"
-                        v-show="editedItem.isshowsb"
-                        style="padding: 8px 4px"
-                      >
+                      <v-row v-for="(i, index) in tjarr" :key="index" v-show="editedItem.isshowsb" style="padding: 8px 4px">
                         <v-col cols="12" xs="12" md="1" class="col-py-0">
-                          <!-- <v-select
-                                                            :items="relationship"
-                                                            item-value="id"
-                                                            item-text="name"
-                                                            v-model="i.operator"
-                                                            class="vselect"
-                                                            v-show="i.isshowrel"
-                                                    ></v-select> -->
-                          <el-select
-                            v-show="i.isshowrel"
-                            v-model="i.operator"
-                            class="width-100 vselect"
-                          >
-                            <el-option
-                              v-for="(t, index) in relationship"
-                              :key="index"
-                              :value="t.id"
-                              :label="t.name"
-                            ></el-option>
+
+                          <el-select v-show="i.isshowrel" v-model="i.operator" class="width-100 vselect">
+                            <el-option v-for="(t, index) in relationship" :key="index" :value="t.id" :label="t.name"></el-option>
                           </el-select>
                         </v-col>
-                        <v-col
-                          cols="12"
-                          xs="12"
-                          md="11"
-                          class="col-py-0"
-                        ></v-col>
+                        <v-col cols="12" xs="12" md="11" class="col-py-0"></v-col>
                         <v-col cols="12" xs="12" md="2" class="col-py-0">
+                          <!-- 选择业务-->
                           <treeselect
                             v-model="i.asset_id"
                             :multiple="false"
@@ -164,15 +104,7 @@
                           />
                         </v-col>
                         <v-col cols="12" xs="6" md="2" class="col-py-0">
-                          <!-- <v-select
-                                                        :items="i.conditionArr"
-                                                        :label="$t('COMMON.PLACEHOLDER3')"
-                                                        item-value="id"
-                                                        item-text="name"
-                                                        v-model="i.device_id"
-                                                        class="vselect"
-                                                        @change="changeSb(index,i.device_id,1)"
-                                                    ></v-select> -->
+
                           <el-select
                             v-model="i.device_id"
                             @change="changeSb(index, i.device_id, 1)"
@@ -187,15 +119,7 @@
                           </el-select>
                         </v-col>
                         <v-col cols="12" xs="6" md="2" class="col-py-0">
-                          <!-- <v-select
-                                                            :items="i.assemblyArr"
-                                                            :label="$t('COMMON.PLACEHOLDER9')"
-                                                            item-value="key"
-                                                            item-text="name"
-                                                            v-model="i.field"
-                                                            class="vselect"
-                                                            @change="changeCgq(index,i.field,1)"
-                                                    ></v-select> -->
+
                           <el-select
                             v-model="i.field"
                             @change="changeCgq(index, i.field, 1)"
@@ -216,14 +140,7 @@
                           class="col-py-0"
                           v-show="i.isvalshow"
                         >
-                          <!-- <v-select
-                                                            :items="symbols"
-                                                            :label="$t('COMMON.PLACEHOLDER12')"
-                                                            item-value="id"
-                                                            item-text="name"
-                                                            v-model="i.condition"
-                                                            class="vselect"
-                                                    ></v-select> -->
+
                           <el-select
                             v-model="i.condition"
                             class="width-100 vselect"
@@ -243,6 +160,7 @@
                           class="col-py-0"
                           v-show="i.isvalshow"
                         >
+                          <!-- 输入值 -->
                           <v-text-field
                             :label="$t('COMMON.PLACEHOLDER10')"
                             v-model="i.inputvalue"
@@ -277,9 +195,9 @@
                           md="1"
                           class="col-py-0"
                           v-show="i.isswitchshow"
-                          ><div
-                            class="text-title mar-top-8 text-center vselect"
                           >
+                          <!-- 持续 -->
+                          <div class="text-title mar-top-8 text-center vselect">
                             {{ $t("COMMON.CONTINUED") }}
                           </div></v-col
                         >
@@ -349,6 +267,7 @@
                           </el-select>
                         </v-col>
                         <v-col cols="12" xs="6" md="3" class="col-py-0">
+                          <!-- 触发时间点 -->
                           <date-picker
                             :type="rule.datetype"
                             class="datepickers strtimes"
@@ -371,6 +290,7 @@
                         </v-col>
                       </v-row>
                     </div>
+                    <!-- 控制指令 -->
                     <div class="text-title font-weight-bolder my-2">
                       {{ $t("COMMON.CONTROLINSTRUCTION") }}：
                     </div>
@@ -381,6 +301,7 @@
                         style="padding: 8px 4px"
                       >
                         <v-col cols="12" xs="12" md="2" class="col-py-0">
+                          <!-- 选择业务 -->
                           <treeselect
                             v-model="i.asset_id"
                             :multiple="false"
@@ -417,15 +338,7 @@
                           </el-select>
                         </v-col>
                         <v-col cols="12" xs="6" md="2" class="col-py-0">
-                          <!-- <v-select
-                                                            :items="i.switch"
-                                                            :label="$t('COMMON.PLACEHOLDER14')"
-                                                            item-value="key"
-                                                            item-text="name"
-                                                            v-model="i.field"
-                                                            class="vselect"
-                                                            @change="changeInstr(m,i.field)"
-                                                    ></v-select> -->
+
                           <el-select
                             v-model="i.field"
                             class="width-100 vselect"
@@ -456,6 +369,7 @@
                             </v-radio-group>
                           </div>
                           <div v-show="i.isshowinput">
+                            <!-- 输入值 -->
                             <v-text-field
                               :label="$t('COMMON.PLACEHOLDER10')"
                               v-model="i.inputvalue"
@@ -476,6 +390,7 @@
                     </div>
                     <v-row style="padding: 8px 4px">
                       <v-col col="12" class="col-py-0">
+                        <!-- 策略状态-->
                         <div class="text-title xs-mt-2">
                           {{ $t("COMMON.POLICYSTATUS") }} ：
                         </div>
@@ -1067,6 +982,7 @@ export default {
       ApiService.post(AUTH.local_url + "/automation/symbol").then(
         ({ data }) => {
           if (data.code == 200) {
+            console.log("symbol", data)
             /*console.log('范围');
                             console.log(data);*/
             this.symbols = data.data;

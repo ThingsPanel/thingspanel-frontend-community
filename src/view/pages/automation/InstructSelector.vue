@@ -26,6 +26,10 @@ export default defineComponent({
       required:true,
       type: String,
     },
+    plugin_id: {
+      required:true,
+      type: String,
+    },
     field: {
       required: true,
       type: String,
@@ -62,6 +66,12 @@ export default defineComponent({
       }
     },{
       immediate: true
+    })
+
+    watch(() => props.plugin_id, val => {
+      if (val) {
+        console.log("plugin_id", val)
+      }
     })
 
     // 去重
