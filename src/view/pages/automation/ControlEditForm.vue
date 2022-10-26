@@ -81,7 +81,10 @@
             <el-col :span="3">
               <el-form-item :prop="`config.rules.${index}.field`" :rules="rules['config.rules.field']">
                 <!-- 条件选择 -->
-                <TriggerSelector :device_id="rules_item.device_id" :plugin_id="rules_item.plugin_id" :field.sync="rules_item.field"></TriggerSelector>
+                <TriggerSelector
+                    :device_id="rules_item.device_id"
+                    :plugin_id="rules_item.plugin_id"
+                    :field.sync="rules_item.field"></TriggerSelector>
               </el-form-item>
             </el-col>
             <el-col :span="3">
@@ -185,7 +188,6 @@
                     :device_id="apply_item.device_id"
                     :plugin_id="apply_item.plugin_id"
                     :field.sync="apply_item.field"
-                    :apply_item="apply_item"
                 ></InstructSelector>
               </el-form-item>
             </el-col>
@@ -328,7 +330,7 @@ export default defineComponent({
     // 重置表单数据
     function resetFormData(){
       let item_attrs = JSON.parse(JSON.stringify(props.current_item))
-
+      console.log("resetFormData.item_attrs", item_attrs)
       for (const key in formData) {
         // 有则逐个赋值
         if(key in item_attrs){

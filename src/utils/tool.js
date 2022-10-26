@@ -98,3 +98,19 @@ export function dateFormat(format) {
     seconds;
   return now_time;
 }
+
+export const addTimer = (timer) => {
+  let timers = JSON.parse(localStorage.getItem("timers"));
+  if (!timers) {
+    timers = [];
+  }
+  timers.push(timer);
+  localStorage.setItem("timers", JSON.stringify(timers))
+}
+export const clearTimer = () => {
+  let timers = JSON.parse(localStorage.getItem("timers"));
+  if (timers && timers.length > 0 && timers!="undefined") {
+    timers.forEach(timer => clearInterval(timer))
+    localStorage.setItem("timers", null);
+  }
+}

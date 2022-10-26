@@ -41,13 +41,16 @@
         <DeviceSelector
             :asset_id="formData.sensor"
             :device_id.sync="formData.bid"
+            :plugin_id.sync="formData.pluginId"
             :clearable="false"
             @change="handleDeviceChange"
         ></DeviceSelector>
       </el-form-item>
     </el-col>
 
+<!-- --------------------------------------------------------------------------------------------------------------- -->
 <!--触发条件-->
+<!-- --------------------------------------------------------------------------------------------------------------- -->
     <el-col :span="24">
       <el-form-item :label="$t('AUTOMATION.TRIGGERING_CONDITION')">
         <template v-for="(config_item, index) in formData.config">
@@ -66,7 +69,7 @@
             <el-col :span="6">
               <el-form-item :prop="'config.'+index+'.field'" :rules="rules['config.field']">
                 <el-select class="w-100" v-model="config_item.field" :placeholder="$t('AUTOMATION.PLACEHOLDER2')" size="medium">
-                  <el-option :value="item.key" :label="item.name" v-for="(item, index) in triggerOptions" :key="index"></el-option>
+                  <el-option :value="item.name" :label="item.title" v-for="(item, index) in triggerOptions" :key="index"></el-option>
                 </el-select>
               </el-form-item>
             </el-col>
@@ -133,6 +136,7 @@ import useAlarmTriggerOptions from "@/view/pages/automation/useAlarmTriggerOptio
 import {warning_add, warning_edit} from "@/api/automation";
 import FormAlert from "@/components/common/FormAlert.vue";
 import AUTH from "@/core/services/store/auth.module";
+import {device_info} from "../../../api/device";
 export default defineComponent({
   name: "AlarmEditForm",
   components: {
@@ -182,6 +186,7 @@ export default defineComponent({
       describe: "",
       sensor: "", // 设备分组
       bid: "", // 设备id
+      pluginId: "", // 插件id
       config: [
         {field: "", condition: "", value: ""},
       ],
@@ -205,6 +210,14 @@ export default defineComponent({
         // 有则逐个赋值
         if(key in item_attrs){
           formData[key] = item_attrs[key]
+        }
+        if (key == "bid") {
+          device_info({ id: item_attrs[key]})
+          .then(({data}) => {
+            if (data.code == 200) {
+              formData.pluginId = data.data.type;
+            }
+          })
         }
       }
       if(item_attrs.other_message){
@@ -309,7 +322,11 @@ export default defineComponent({
     }
 
     // 设备更改时
-    function handleDeviceChange(){
+    function handleDeviceChange(deviceId, pluginId){
+      console.log("handleDeviceChange.deviceId", deviceId)
+      console.log("handleDeviceChange.pluginId", pluginId)
+      formData.pluginId = pluginId;
+      console.log("handleDeviceChange.formData", formData)
       // 触发条件置空
       formData.config = [
         {field: "", condition: "", value: ""}

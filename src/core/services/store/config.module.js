@@ -81,7 +81,7 @@ export default {
           // var link = document.querySelector("link[rel~='icon']");
           // link.href = (process.env.VUE_APP_BASE_URL ||
           // document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_three
-          state.config = Object.assign({}, state.initial);
+          // state.config = Object.assign({}, state.initial);
         }
       })
       .catch(({ response }) => {});

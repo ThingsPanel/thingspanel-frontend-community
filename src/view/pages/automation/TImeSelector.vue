@@ -45,9 +45,11 @@ export default defineComponent({
   setup(props, context){
     let timeValue = computed({
       get(){
+        console.log("TimeSelector.timeValue.get")
         return props.time
       },
       set(val){
+        console.log("TimeSelector.timeValue.set")
         context.emit("update:time", val)
       }
     })

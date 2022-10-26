@@ -56,6 +56,7 @@ export default defineComponent({
 
     let id = computed({
       get() {
+        console.log("plugin.id", )
         return props.device_item.id;
       }
     })

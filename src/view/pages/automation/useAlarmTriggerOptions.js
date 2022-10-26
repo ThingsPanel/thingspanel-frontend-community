@@ -1,22 +1,36 @@
 import {ref, watch} from "@vue/composition-api";
 import {automation_show, automation_symbol} from "@/api/automation";
 import i18n from "@/core/plugins/vue-i18n"
+import PluginAPI from "@/api/plugin"
 
 export default function useAlarmTriggerOptions(formData){
     let triggerOptions = ref([])
 
-    watch(()=>formData.bid, (val)=>{
+    // watch(()=>formData.bid, (val)=>{
+    //     if(val){
+    //         automation_show({bid: val}).then(({data})=>{
+    //             if(data.code === 200 && data.data){
+    //                 triggerOptions.value = data.data;
+    //             }
+    //         })
+    //     }
+    // }, {
+    //     immediate: true
+    // })
+
+    watch(()=>formData.pluginId, (val)=>{
         if(val){
-            automation_show({bid: val}).then(({data})=>{
-                if(data.code === 200 && data.data){
-                    console.log(data.data)
-                    triggerOptions.value = data.data
-                }
-            })
+            let param = {current_page: 1, per_page: 10, id: val}
+            PluginAPI.page(param)
+                .then(({data}) => {
+                    if (data.code == 200 && data.data.data && data.data.data.length > 0) {
+                        let pluginJsonStr = data.data.data[0].chart_data ? data.data.data[0].chart_data : "{}";
+                        let pluginObj = JSON.parse(pluginJsonStr);
+                        triggerOptions.value = pluginObj.tsl.properties;
+                    }
+                })
         }
-    }, {
-        immediate: true
-    })
+    },{immediate: true})
 
     let symbolOptions = ref([])
 

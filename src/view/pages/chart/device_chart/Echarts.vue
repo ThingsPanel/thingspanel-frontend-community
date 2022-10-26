@@ -39,6 +39,8 @@
 
 <script>
 import { currentValue, historyValue } from "@/api/device";
+import { addTimer, clearTimer } from "@/utils/tool.js"
+
 let Echarts = require('echarts/lib/echarts');
 require('echarts/lib/chart/gauge');
 
@@ -81,6 +83,7 @@ export default {
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
     this.initEChart();
+    this.updateOption()
   },
   beforeDestroy() {
     clearTimer();
@@ -100,13 +103,14 @@ export default {
       } else {
         this.myEcharts.setOption(this.optionData);
       }
-      this.updateOption()
+      console.log("initEChart.updateOption()")
     },
     // 更新图表的值
     updateOption() {
       if (this.timer) {
         clearInterval(this.timer);
       }
+      console.log("updateOption.timer", this.timer)
       this.getValue();
       this.timer = setInterval(() => {
         this.getValue();
@@ -175,6 +179,7 @@ export default {
         })
     },
     handleFlushCommand(command) {
+      console.log()
       if (command != "custom") {
         this.flushTime = command;
         this.updateOption();
@@ -185,20 +190,7 @@ export default {
     }
   },
 }
-const addTimer = (timer) => {
-  var timers = JSON.parse(localStorage.getItem("timers"));
-  if (!timers) {
-    timers = [];
-  }
-  timers.push(timer);
-  localStorage.setItem("timers", JSON.stringify(timers))
-}
-const clearTimer = () => {
-  var timers = JSON.parse(localStorage.getItem("timers"));
-  if (timers && timers.length > 0)
-    timers.forEach(timer => clearInterval(timer))
-  localStorage.setItem("timers", null);
-}
+
 
 </script>
 

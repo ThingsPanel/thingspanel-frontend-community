@@ -72,7 +72,7 @@ router.beforeEach(async(to, from, next) => {
 
 
     // reset config to initial state
-    Promise.all([store.dispatch(RESET_LAYOUT_CONFIG)]).then(next);
+    // Promise.all([store.dispatch(RESET_LAYOUT_CONFIG)]).then(next);
 
     // Ensure we checked auth before each page load.
     Promise.all([store.dispatch(VERIFY_AUTH)]).then(next);

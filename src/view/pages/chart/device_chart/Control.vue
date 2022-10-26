@@ -26,6 +26,8 @@
 import { turnSwitch } from "@/api/device"
 import { currentValue } from "@/api/device";
 import {message_success} from "../../../../utils/helpers";
+import { addTimer, clearTimer } from "@/utils/tool.js"
+
 export default {
   name: "Control",
   props: {
@@ -129,21 +131,7 @@ export default {
     }
   }
 }
-const addTimer = (timer) => {
-  let timers = JSON.parse(localStorage.getItem("timers"));
-  if (!timers) {
-    timers = [];
-  }
-  timers.push(timer);
-  localStorage.setItem("timers", JSON.stringify(timers))
-}
-const clearTimer = () => {
-  let timers = JSON.parse(localStorage.getItem("timers"));
-  if (timers && timers.length > 0 && timers!="undefined") {
-    timers.forEach(timer => clearInterval(timer))
-    localStorage.setItem("timers", null);
-  }
-}
+
 const typeConvert = (value, type) => {
   if (type.toLowerCase() == "integer") return Number(value);
   if (type.toLowerCase() == "string" || type.toLowerCase() == "text") return String(value);
