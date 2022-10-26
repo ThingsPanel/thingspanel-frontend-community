@@ -9,7 +9,11 @@
         :placeholder="$t('AUTOMATION.SELECT_TIME')"
         value-format="HH:mm:ss"
     ></el-time-picker>
+
     <TPDateTimePicker v-show="interval == 0" :value.sync="timeValue"></TPDateTimePicker>
+
+
+
 <!--    <el-date-picker-->
 <!--        key="datepicker"-->
 <!--        v-show="interval == 0"-->
@@ -26,7 +30,7 @@
 </template>
 
 <script>
-import {computed, defineComponent} from "@vue/composition-api";
+import  {computed, defineComponent} from "@vue/composition-api";
 import TPDateTimePicker from "./TPDateTimePicker";
 export default defineComponent({
   name: "TImeSelector",
@@ -52,7 +56,8 @@ export default defineComponent({
         console.log("TimeSelector.timeValue.set")
         context.emit("update:time", val)
       }
-    })
+    });
+
 
     return {
       timeValue

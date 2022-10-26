@@ -1,3 +1,4 @@
+<!-- 控制策略 -->
 <template>
 <div class="rounded card p-4 el-table-transparent el-dark-input">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
@@ -66,12 +67,13 @@
 </div>
 </template>
 
+<!-- 控制策略 -->
 <script>
 import {defineComponent} from "@vue/composition-api";
 import TableTitle from "@/components/common/TableTitle";
 import useRoute from "@/utils/useRoute";
 import {ref} from "@vue/composition-api/dist/vue-composition-api";
-import useControlStrategyIndex from "@/view/pages/automation/useControlStrategyIndex";
+import useControlStrategyIndex from "./useControlStrategyIndex";
 import ControlEditForm from "./ControlEditForm.vue"
 import useTableDataCUD from "@/view/pages/automation/useTableDataCUD";
 import {automation_delete} from "@/api/automation";

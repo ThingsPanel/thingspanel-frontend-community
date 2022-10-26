@@ -205,6 +205,7 @@ export default defineComponent({
         .then(({data}) => {
           if (data.code == 200) {
             message_success("更新成功！")
+            context.emit("submit");
             onCancel();
           }
         })
@@ -258,6 +259,7 @@ export default defineComponent({
         device_default_setting({ protocol: p})
             .then(({data}) => {
               if (data.code == 200) {
+                console.log(data.data.default_setting)
                 defaultSettings[p] = data.data.default_setting.split("$$").join("\n");
               }
             })

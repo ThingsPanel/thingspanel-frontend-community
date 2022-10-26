@@ -131,12 +131,12 @@
 <script>
 import {computed, defineComponent, reactive, ref, watch} from "@vue/composition-api";
 import DeviceGroupSelector from "@/components/common/DeviceGroupSelector.vue";
-import DeviceSelector from "./DeviceSelector.vue"
-import useAlarmTriggerOptions from "@/view/pages/automation/useAlarmTriggerOptions";
+import DeviceSelector from "../components/DeviceSelector.vue"
+import useAlarmTriggerOptions from "./useAlarmTriggerOptions";
 import {warning_add, warning_edit} from "@/api/automation";
 import FormAlert from "@/components/common/FormAlert.vue";
 import AUTH from "@/core/services/store/auth.module";
-import {device_info} from "../../../api/device";
+import {device_info} from "../../../../api/device";
 export default defineComponent({
   name: "AlarmEditForm",
   components: {

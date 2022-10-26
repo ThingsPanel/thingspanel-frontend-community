@@ -6,7 +6,6 @@
     width="60%"
     height="60%"
     top="10vh"
-    :close-on-click-modal="false"
 >
 <el-form
     ref="controlFormRef"
@@ -135,9 +134,15 @@
 
             <!-- 选择时间   -->
             <el-col :span="8">
-              <el-form-item :prop="`config.rules.${index}.time`" :rules="rules['config.rules.time']">
+              <el-form-item v-if="rules_item.interval==2">
+                <repeat-time :rule_id.sync="rules_item.rule_id" :time_interval.sync="rules_item.time_interval"></repeat-time>
+              </el-form-item>
+
+              <el-form-item v-else :rules="rules['config.rules.time']">
                 <TimeSelector :interval="rules_item.interval" :time.sync="rules_item.time"></TimeSelector>
               </el-form-item>
+
+
             </el-col>
 
             <el-col :span="3">
@@ -240,19 +245,19 @@
 <script>
 import {defineComponent, computed, ref, reactive} from "@vue/composition-api";
 import DeviceGroupSelector from "@/components/common/DeviceGroupSelector.vue";
-import DeviceSelector from "./DeviceSelector.vue"
-import TriggerSelector from "./TriggerSelector.vue"
-import SymbolSelector from "./SymbolSelector.vue"
-import ControlTypeSelector from "./ControlTypeSelector.vue"
-import LogicalSelector from "./LogicalSelector.vue"
-import IntervalSelector from "./IntervalSelector.vue"
-import TimeSelector from "./TImeSelector.vue"
-import InstructSelector from "./InstructSelector.vue"
+import DeviceSelector from "../components/DeviceSelector.vue"
+import TriggerSelector from "../components/TriggerSelector.vue"
+import SymbolSelector from "../components/SymbolSelector.vue"
+import ControlTypeSelector from "../components/ControlTypeSelector.vue"
+import LogicalSelector from "../components/LogicalSelector.vue"
+import IntervalSelector from "../components/IntervalSelector.vue"
+import TimeSelector from "../components/TImeSelector.vue"
+import InstructSelector from "../components/InstructSelector.vue"
 import FormAlert from "@/components/common/FormAlert.vue";
 import {automation_add, automation_edit} from "@/api/automation";
 import {watch} from "@vue/composition-api/dist/vue-composition-api";
 import {json_parse_stringify} from "@/utils/helpers";
-
+import RepeatTime from "../components/RepeatTime"
 export default defineComponent({
   name: "ControlEditForm",
   components: {
@@ -263,6 +268,7 @@ export default defineComponent({
     ControlTypeSelector,
     LogicalSelector,
     IntervalSelector,
+    RepeatTime,
     TimeSelector,
     InstructSelector,
     FormAlert,
@@ -303,7 +309,7 @@ export default defineComponent({
 
     // 默认值重置时用
     let default_rules_type_1 = {asset_id: "", device_id: "", plugin_id: "", field: "", condition: "", value: "", duration: 0}
-    let default_rules_type_2 = {interval:0, time:""}
+    let default_rules_type_2 = {interval:0, time: "", time_interval: 0, rule_id: ""}
     let default_apply = {asset_id: "", device_id: "", plugin_id: "",  field: "",  value: ""}
 
     let formData = reactive({
@@ -330,7 +336,6 @@ export default defineComponent({
     // 重置表单数据
     function resetFormData(){
       let item_attrs = JSON.parse(JSON.stringify(props.current_item))
-      console.log("resetFormData.item_attrs", item_attrs)
       for (const key in formData) {
         // 有则逐个赋值
         if(key in item_attrs){
@@ -374,6 +379,9 @@ export default defineComponent({
       ],
       "config.rules.time": [
         {required: true, message: "请选择时间"}
+      ],
+      "config.rules.time_interval": [
+        {required: true, message: "请填写间隔时间"}
       ],
     })
 

@@ -36,6 +36,7 @@ export default defineComponent({
     let intervalOptions = ref([
       {label: i18n.t('AUTOMATION.ONCE'), value: 0},
       {label: i18n.t('AUTOMATION.DAYS'), value: 1},
+      {label: i18n.t('AUTOMATION.REPEAT'), value: 2},
     ])
 
     function handleChange(){

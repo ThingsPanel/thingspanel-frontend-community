@@ -124,7 +124,9 @@
     <!-- 编辑参数   -->
     <el-table-column label="推送参数" width="auto" min-width="8%">
       <template slot-scope="scope">
+        <!-- 子设备 -->
         <el-button v-if="scope.row.device_type=='3'" type="text" @click="handleEditSubParameter(scope.row)">编辑参数</el-button>
+        <!-- 网关/设备 -->
         <el-button v-else type="text" @click="handleEditParameter(scope.row, '编辑参数')">编辑参数</el-button>
       </template>
     </el-table-column>
@@ -156,7 +158,7 @@
         <div class="text-right">
           <el-button style="margin-right: 10px" v-show="scope.row.device_type==2" type="primary" size="mini"
                      @click="addChildDevice(scope.row)">增加子设备</el-button>
-          <el-button style="margin-right: 10px" v-show="scope.row.device_type==3" type="primary" size="mini"
+          <el-button style="margin-right: 10px" v-show="scope.row.device_type==3 && scope.row.protocol!='MQTT'" type="primary" size="mini"
                      @click="deviceConfig(scope.row)">设&nbsp;备&nbsp;配&nbsp;置</el-button>
 
            <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
@@ -186,43 +188,10 @@
   <!-- 插件绑定 start -->
   <PluginBinding :dialog-visible.sync="showBindingDialog" :device_item="currentDeviceItem"></PluginBinding>
 
-
-  <DeviceSettingForm
-      :dialog-visible.sync="showDeviceSetting"
-      :device_item="currentDeviceItem"
-      @change="(deviceData) => {
-          handleSave(deviceData, () => {
-            showEditDialog=false
-          })
-        }"
-  ></DeviceSettingForm>
+  <!-- 设备/网关参数 start -->
+  <DeviceSettingForm :dialog-visible.sync="showDeviceSetting" :device_item="currentDeviceItem" @submit="getDeviceIndex"></DeviceSettingForm>
   <!-- 子设备参数 start -->
   <SubDeviceSettingForm :dialog-visible.sync="showSubDeviceSetting" :device_item="currentDeviceItem"></SubDeviceSettingForm>
-
-  <!-- 编辑弹窗 start -->
-<!--  <el-dialog-->
-<!--      class="el-dark-dialog el-dark-input"-->
-<!--      :visible.sync="showEditDialog"-->
-<!--      :title="EditDialogTitle"-->
-<!--      :close-on-click-modal="false"-->
-<!--      width="40%">-->
-<!--    &lt;!&ndash;  默认参数  &ndash;&gt;-->
-<!--    <DeviceSettingForm-->
-<!--        v-if="EditDialogTitle === '编辑参数'"-->
-<!--        :device_item="currentDeviceItem"-->
-<!--        :key="currentDeviceItem.id"-->
-<!--        @cancel="() => { showEditDialog=false }"-->
-<!--        @change="(deviceData) => {-->
-<!--          handleSave(deviceData, () => {-->
-<!--            showEditDialog=false-->
-<!--          })-->
-<!--        }"-->
-<!--    ></DeviceSettingForm>-->
-
-
-
-<!--  </el-dialog>-->
-  <!-- 编辑弹窗 end -->
 
   <!-- 分组管理 start -->
   <el-dialog
@@ -421,6 +390,7 @@ export default defineComponent({
      * @param item
      */
     function addChildDevice(row) {
+      console.log("addChildDevice", row)
       let rowData = JSON.parse(JSON.stringify(row));
       let childDevice = {
         id: "",

@@ -17,14 +17,14 @@
       </el-row>
 
       <p class="code-editor-label">上行解析脚本</p>
-      <CodeEditor class="dark-code-editor" key="upside" style="width: 100%;height: 260px"  min_height="260px"
-                  :copy_code="true" :hide_header="false" theme="dark"
+      <CodeEditor class="dark-code-editor" key="upside" style="width: 100%;height: 260px;overflow-y: auto"  min_height="260px"
+                  :copy_code="true" :hide_header="false" theme="dark" :wrap_code="true"
                   v-model="formData.script_content_a"
       ></CodeEditor>
 
       <p class="code-editor-label">下行解析脚本</p>
       <CodeEditor class="dark-code-editor" key="down" style="width: 100%;height: 260px" min_height="260px"
-                  :copy_code="true" :hide_header="false" theme="dark"
+                  :copy_code="true" :hide_header="false" theme="dark" :wrap_code="true"
                   v-model="formData.script_content_b"></CodeEditor>
 
       <div style="margin-top: 10px;display: flex;justify-content: center">
@@ -169,6 +169,9 @@ export default defineComponent ({
   .code-editor-label {
     color: #a8c5ff;
     margin-top: 10px;
+    textarea {
+      overflow-y: auto;
+    }
   }
 
   //.dark-code-editor {

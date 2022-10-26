@@ -26,7 +26,7 @@
         </el-col>
       </el-row>
     </div>
-    <tp-editor class="tp-dark-editor" :visible.sync="showEditorDialog" :plugin-category="pluginCategory" @publish="publish"></tp-editor>
+    <tp-editor class="tp-dark-editor" :visible.sync="showEditorDialog" :json="pluginJsonData" :plugin-category="pluginCategory" @publish="publish"></tp-editor>
 
     <!--    导入JSON-->
     <el-dialog class="el-dark-dialog el-table-transparent" title="导入JSON" :visible.sync="importDialogVisible" width="30%">
@@ -62,7 +62,8 @@ export default {
       showEditorDialog: false,
       pluginCategory: [],
       importDialogVisible: false,
-      importPluginJson: ""
+      importPluginJson: "",
+      pluginJsonData: {}
     }
   },
   created() {
@@ -90,7 +91,9 @@ export default {
       this.importDialogVisible = true;
     },
     handleImport() {
-      this.publish(JSON.parse(this.importPluginJson));
+      this.pluginJsonData = JSON.parse(this.importPluginJson);
+      this.showEditorDialog = true;
+      // this.publish(JSON.parse(this.importPluginJson));
     },
     /**
      * 发布

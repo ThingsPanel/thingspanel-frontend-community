@@ -389,6 +389,7 @@ export const locale = {
     PLACEHOLDER9: "Condition",
     ONCE: "Once",
     DAYS: "Every day",
+    REPEAT: "Repeat",
     SELECT_TIME: "Select time",
     SELECT_DATE: "Select date",
     ADD_LINE: "A set of new",

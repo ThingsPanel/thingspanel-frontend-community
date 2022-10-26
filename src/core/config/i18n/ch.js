@@ -386,6 +386,7 @@ export const locale = {
     PLACEHOLDER9: "条件",
     ONCE: "单次",
     DAYS: "每天",
+    REPEAT: "重复",
     SELECT_TIME: "选择时间",
     SELECT_DATE: "选择日期",
     ADD_LINE: "新增一行",

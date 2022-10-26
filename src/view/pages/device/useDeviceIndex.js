@@ -77,7 +77,7 @@ export default function useDeviceIndex(business_id) {
             asset_id: item.asset_id,
             token: item.device_token,
             device_type: item.device_type,
-            type: item.device_type==3 ? "1" : item.device_type,
+            type: item.type,
             latest_ts: item.latest_ts,
             protocol: item.protocol,
             d_id: item.d_id,

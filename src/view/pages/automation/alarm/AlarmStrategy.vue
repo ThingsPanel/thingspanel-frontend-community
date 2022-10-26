@@ -44,8 +44,8 @@
 import {defineComponent, ref} from "@vue/composition-api";
 import TableTitle from "@/components/common/TableTitle.vue";
 import useRoute from "@/utils/useRoute";
-import useAlarmStrategyIndex from "@/view/pages/automation/useAlarmStrategyIndex";
-import AlarmEditForm from "@/view/pages/automation/AlarmEditForm";
+import useAlarmStrategyIndex from "./useAlarmStrategyIndex";
+import AlarmEditForm from "./AlarmEditForm";
 import useTableDataCUD from "@/view/pages/automation/useTableDataCUD";
 import {warning_delete} from "@/api/automation";
 
