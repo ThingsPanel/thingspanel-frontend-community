@@ -72,6 +72,7 @@ import {
 import {getRedToken} from "@/api/transpond";
 import RED from "@/core/services/red.module"
 import {LOGIN, SET_ROUTERS} from "../../core/services/store/auth.module";
+import {RESET_LAYOUT_CONFIG} from "../../core/services/store/config.module";
 
 export default {
   name: "Layout",
@@ -86,9 +87,9 @@ export default {
     Loader
   },
   beforeMount() {
+    this.$store.dispatch(RESET_LAYOUT_CONFIG);
     // show page loading
     this.$store.dispatch(ADD_BODY_CLASSNAME, "page-loading");
-
     // initialize html element classes
     HtmlClass.init(this.layoutConfig());
   },

@@ -51,7 +51,7 @@ const router = new VueRouter({
     mode: 'hash',
     routes: baseRoutes
 })
-router.beforeEach(async(to, from, next) => {
+router.beforeEach((to, from, next) => {
 
     const token = JwtService.getToken()
     const token_expires_in = JwtService.getExpiresTime()
@@ -71,11 +71,9 @@ router.beforeEach(async(to, from, next) => {
     }
 
 
-    // reset config to initial state
-    // Promise.all([store.dispatch(RESET_LAYOUT_CONFIG)]).then(next);
-
     // Ensure we checked auth before each page load.
-    Promise.all([store.dispatch(VERIFY_AUTH)]).then(next);
+    // Promise.all([store.dispatch(VERIFY_AUTH)]).then(next);
+    store.dispatch(VERIFY_AUTH).then(next);
 
     // Scroll page to top on every route change
     setTimeout(() => {
