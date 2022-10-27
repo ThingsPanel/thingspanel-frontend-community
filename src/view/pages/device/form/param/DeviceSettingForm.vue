@@ -251,6 +251,9 @@ export default defineComponent({
       deviceData.defaultSetting = defaultSettings[protocol];
     }
 
+    /**
+     * 第一次载入编辑参数对话框时获取
+     */
     getDefaultSettings();
     function getDefaultSettings() {
       let protocols = ["mqtt", "MQTT", "MODBUS_TCP", "MODBUS_RTU"];

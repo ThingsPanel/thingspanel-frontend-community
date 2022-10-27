@@ -1,10 +1,10 @@
 <template>
   <div style="display: inline-flex;">
-      <el-input-number v-model="timeInterval"></el-input-number>
+      <el-input-number v-model="timeInterval" :min="minInterval"></el-input-number>
       <el-select style="width: 100px" placeholder="单位" v-model="timeIntervalUnit">
-        <el-option value="second" label="秒">秒</el-option>
-        <el-option value="minute" label="分钟" :disabled="true">分钟</el-option>
-        <el-option value="hour" label="小时" :disabled="true">小时</el-option>
+        <el-option value="second" label="秒/次">秒/次</el-option>
+        <el-option value="minute" label="分钟/次">分钟/次</el-option>
+        <el-option value="hour" label="小时/次">小时/次</el-option>
       </el-select>
   </div>
 </template>
@@ -18,6 +18,11 @@ export default defineComponent({
   props: {
     time_interval: {
       required: true,
+      type: Number
+    },
+    unit: {
+      type: String,
+      default: "second"
     },
     rule_id: {
       type: String
@@ -25,23 +30,45 @@ export default defineComponent({
   },
   setup(props, context){
 
-    let timeIntervalUnit = ref("second");
+    let minInterval = ref(60);
+
+    // 间隔时间，
     let timeInterval = computed({
       get(){
-        return props.time_interval
+        return props.time_interval;
       },
       set(val){
         context.emit("update:time_interval", val);
       }
     });
 
-    let ruleId = getRandomString(10);
-    context.emit("update:rule_id", ruleId);
+    // 单位
+    let timeIntervalUnit = computed({
+      get(){
+        return props.unit
+      },
+      set(val){
+        if (val == "second") {
+          minInterval.value = 60;
+          if (timeInterval.value < 60) {
+            timeInterval.value = 60;
+          }
+        } else {
+          minInterval.value = 1;
+        }
+        context.emit("update:unit", val);
+      }
+    });
 
-
+    if (props.rule_id == "") {
+      // 自动生成ruleId
+      let ruleId = getRandomString(10);
+      context.emit("update:rule_id", ruleId);
+    }
 
     return {
       timeInterval,
+      minInterval,
       timeIntervalUnit
     }
   }

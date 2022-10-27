@@ -135,7 +135,8 @@
             <!-- 选择时间   -->
             <el-col :span="8">
               <el-form-item v-if="rules_item.interval==2">
-                <repeat-time :rule_id.sync="rules_item.rule_id" :time_interval.sync="rules_item.time_interval"></repeat-time>
+                <repeat-time :rule_id.sync="rules_item.rule_id"
+                             :unit.sync="rules_item.unit" :time_interval.sync="rules_item.time_interval_a"></repeat-time>
               </el-form-item>
 
               <el-form-item v-else :rules="rules['config.rules.time']">
@@ -309,7 +310,7 @@ export default defineComponent({
 
     // 默认值重置时用
     let default_rules_type_1 = {asset_id: "", device_id: "", plugin_id: "", field: "", condition: "", value: "", duration: 0}
-    let default_rules_type_2 = {interval:0, time: "", time_interval: 0, rule_id: ""}
+    let default_rules_type_2 = {interval:0, time: "", time_interval_a: 60, unit: "second", rule_id: ""}
     let default_apply = {asset_id: "", device_id: "", plugin_id: "",  field: "",  value: ""}
 
     let formData = reactive({
@@ -336,6 +337,17 @@ export default defineComponent({
     // 重置表单数据
     function resetFormData(){
       let item_attrs = JSON.parse(JSON.stringify(props.current_item))
+      if (JSON.stringify(item_attrs) != "{}") {
+        item_attrs.config.rules.forEach(item => {
+          if (item.unit == "minute") {
+            item.time_interval_a = item.time_interval / 60;
+          } else if (item.unit == "hour") {
+            item.time_interval_a = item.time_interval / 3600;
+          } else {
+            item.time_interval_a = item.time_interval;
+          }
+        })
+      }
       for (const key in formData) {
         // 有则逐个赋值
         if(key in item_attrs){
@@ -379,10 +391,7 @@ export default defineComponent({
       ],
       "config.rules.time": [
         {required: true, message: "请选择时间"}
-      ],
-      "config.rules.time_interval": [
-        {required: true, message: "请填写间隔时间"}
-      ],
+      ]
     })
 
     let loading = ref(false)
@@ -393,7 +402,15 @@ export default defineComponent({
 
         if(loading.value) return
         loading.value = true
-
+        formData.config.rules.forEach(item => {
+          if (item.unit == "minute") {
+            item.time_interval = item.time_interval_a * 60;
+          } else if (item.unit == "hour") {
+            item.time_interval = item.time_interval_a * 3600;
+          } else {
+            item.time_intervaa = item.time_interval_a;
+          }
+        })
         create_or_update(formData).then(({data})=>{
           if(data.code === 200) {
             handleCancel()

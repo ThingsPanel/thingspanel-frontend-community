@@ -169,9 +169,10 @@ export default defineComponent ({
   .code-editor-label {
     color: #a8c5ff;
     margin-top: 10px;
-    textarea {
-      overflow-y: auto;
-    }
+
+  }
+  ::v-deep .code_editor .code_area  textarea {
+    overflow-y: auto;
   }
 
   //.dark-code-editor {
