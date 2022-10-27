@@ -18,7 +18,7 @@ const local_url =
 export default {
   state: {
     config: config,
-    initial: config
+    initial: config,
   },
   getters: {
     /**
@@ -70,7 +70,6 @@ export default {
       state.config = payload;
     },
     [RESET_LAYOUT_CONFIG](state) {
-      console.log("RESET_LAYOUT_CONFIG", state.initial)
       ApiService.post(local_url + "/system/logo/index")
       .then(({ data }) => {
         if (data.code == 200) {
