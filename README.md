@@ -67,6 +67,14 @@
 - 重新加载配置文件 ```nginx -s reload```
 - 在浏览器中输入地址访问
 
+# 4. 运行效果
+![](README_files/3.png)
+![](README_files/4.png)
+![](README_files/5.png)
+![](README_files/6.png)
+![](README_files/7.png)
+![](README_files/8.png)
+![](README_files/9.png)
 
 ## 联系我们
 
