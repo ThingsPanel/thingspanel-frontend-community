@@ -4,7 +4,8 @@
       <el-row :gutter="40">
         <el-col :span="6" >
           <div class="tree-div" style="border-right: 4px solid #263373">
-            <el-tree class="el-dark-tree plugin-binding-tree"
+            <el-tree v-if="showDialog" ref="tree" class="el-dark-tree plugin-binding-tree"  :default-expanded-keys="defaultExpandKeys"
+                     node-key="id"
                      :data="pluginTree" :props="{ children: 'device_model', label: 'model_name'}"
                      @node-click="nodeClick"></el-tree>
           </div>
@@ -25,11 +26,11 @@
 </template>
 
 <script>
-import {computed, defineComponent} from "@vue/composition-api";
-import {reactive, ref} from "@vue/composition-api/dist/vue-composition-api";
+import {computed, defineComponent, getCurrentInstance, nextTick} from "@vue/composition-api";
+import { ref } from "@vue/composition-api/dist/vue-composition-api";
 import PluginAPI from "@/api/plugin.js"
 import {device_update} from "@/api/device";
-import {message_error, message_success} from "../../../../../utils/helpers";
+import {message_success} from "@/utils/helpers";
 
 export default defineComponent({
   name: "PluginBinding",
@@ -44,15 +45,29 @@ export default defineComponent({
     }
   },
   setup(props, context) {
+    const tree = ref(null);
+    let defaultExpandKeys = ref([]);
+
     let showDialog = computed({
       get() {
-        console.log("plugin_device_item", props.device_item)
-        return !!props.dialogVisible;
+        if (props.dialogVisible) {
+          // 插件id
+          const pluginId = props.device_item.type;
+          defaultExpandKeys.value.push(pluginId);
+          nextTick(() => {
+            tree.value.setCurrentKey(pluginId);
+          })
+          getPluginData(pluginId);
+        } else {
+          defaultExpandKeys.value = [];
+        }
+        return props.dialogVisible;
       },
       set(val) {
         context.emit('update:dialogVisible', val)
       }
     })
+
 
     let id = computed({
       get() {
@@ -73,12 +88,17 @@ export default defineComponent({
      * 插件列表
      */
     let pluginTree = ref([])
-    PluginAPI.tree({})
-        .then(({data}) => {
-          if (data.code == 200) {
-            pluginTree.value = data.data
-          }
-        })
+    function getPluginList() {
+      PluginAPI.tree({})
+          .then(({data}) => {
+            if (data.code == 200) {
+              console.log("PluginAPI.tree", data.data)
+              pluginTree.value = data.data
+            }
+          })
+    }
+    getPluginList();
+
 
     let tslData = ref({});
     let pluginId = "";
@@ -88,17 +108,22 @@ export default defineComponent({
      */
     function nodeClick(node) {
       if (!node["dict_value"]) {
-        // 插件
-        pluginId = node.id;
-        PluginAPI.page({"current_page": 1, "per_page": 10, "id": pluginId})
+        // 通过插件id获取插件数据
+        getPluginData(node.id)
+      }
+    }
+
+    /**
+     * 通过插件id获取插件数据
+     * @param pluginId
+     */
+    function getPluginData(pluginId) {
+      PluginAPI.page({"current_page": 1, "per_page": 10, "id": pluginId})
           .then(({data}) => {
             if (data.code == 200) {
               tslData.value = JSON.parse(data.data.data[0].chart_data).tsl
-
-              console.log(JSON.parse(data.data.data[0].chart_data).chart)
             }
           })
-      }
     }
 
     /**
@@ -120,6 +145,8 @@ export default defineComponent({
     }
 
   return {
+    tree,
+    defaultExpandKeys,
     pluginTree,
     showDialog,
     tslData,
@@ -176,6 +203,10 @@ export default defineComponent({
   .plugin-binding-tree {
     background-color:#2d3d88!important;
     height: 540px;
+    .is-current .el-tree-node__content {
+      //background-color: #cb1667 !important;
+      background-color: #1c2754 !important;
+    }
   }
 
   .el-alert {
