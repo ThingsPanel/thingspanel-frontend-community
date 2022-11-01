@@ -117,8 +117,9 @@ export default defineComponent({
      * 通过插件id获取插件数据
      * @param pluginId
      */
-    function getPluginData(pluginId) {
-      PluginAPI.page({"current_page": 1, "per_page": 10, "id": pluginId})
+    function getPluginData(pId) {
+      pluginId = pId;
+      PluginAPI.page({"current_page": 1, "per_page": 10, "id": pId})
           .then(({data}) => {
             if (data.code == 200) {
               tslData.value = JSON.parse(data.data.data[0].chart_data).tsl

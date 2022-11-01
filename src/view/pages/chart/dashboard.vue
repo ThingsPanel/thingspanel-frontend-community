@@ -21,10 +21,7 @@
 </template>
 
 <script>
-	import {
-		GridLayout,
-		GridItem
-	} from "vue-grid-layout";
+	import {GridLayout, GridItem} from "vue-grid-layout";
 	import Slice from "@/components/common/slice";
 
 	import AUTH from "@/core/services/store/auth.module";

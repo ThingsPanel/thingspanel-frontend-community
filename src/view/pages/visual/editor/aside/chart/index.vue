@@ -1,7 +1,8 @@
 <template>
   <div class="component-chart">
     <div class="component-item" v-for="(chart, index) in dataList" :key="index">
-      <dashboard-chart v-show="chart.controlType == 'dashboard'" style="width: 200px;height: 200px" :option="chart"></dashboard-chart>
+      <dashboard-chart style="width: 200px;height: 200px;position: absolute"
+                       v-if="chart.controlType == 'dashboard' && chart.type != 'status'"  :option="chart"></dashboard-chart>
     </div>
   </div>
 </template>

@@ -68,7 +68,9 @@ export default {
     componentList: {
       handler(newValue) {
         if (newValue.length == 0) return;
-        this.chartList = this.componentList.filter(item => item.controlType == "dashboard" || item.controlType == "history");
+        this.chartList = this.componentList.filter(item => {
+          return (item.controlType == "dashboard" && item.type != "status") || item.controlType == "history"
+        });
       }
     }
   },

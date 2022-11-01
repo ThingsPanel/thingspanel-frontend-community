@@ -34,7 +34,7 @@ export default {
      */
 
     this.$store.dispatch(OVERRIDE_LAYOUT_CONFIG);
-    window.localStorage.setItem("base_url",process.env.VUE_APP_BASE_URL || document.location.protocol + "//" + document.domain +":9999/");
+    window.localStorage.setItem("base_url", process.env.VUE_APP_BASE_URL || document.location.protocol + "//" + document.domain +":9999/");
   },
 };
 </script>

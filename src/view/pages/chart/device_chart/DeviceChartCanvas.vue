@@ -1,20 +1,42 @@
 <template>
   <div class="container-canvas">
-    <div v-if="!showScreen" class="canvas-screen">
-      <div v-if="options && options.length > 0" class="container-charts">
-        <div v-for="option in options" :key="option['id']">
+    <div v-if="!showScreen" class="canvas-default">
+<!--      <div v-if="options && options.length > 0" class="container-charts">-->
+        <PluginCharts :options="options" :device="device"></PluginCharts>
+<!--        <grid-layout-->
+<!--            :layout.sync="options"-->
+<!--            :col-num="15"-->
+<!--            :row-height="30"-->
+<!--            :is-draggable="true"-->
+<!--            :is-resizable="true"-->
+<!--            :is-mirrored="false"-->
+<!--            :vertical-compact="true"-->
+<!--            :margin="[10, 10]"-->
+<!--            :use-css-transforms="true"-->
+<!--        >-->
+<!--          <grid-item class="grid-item" v-for="option in options" :key="option['i']"-->
+<!--                     :x="option['x']"-->
+<!--                     :y="option['y']"-->
+<!--                     :w="option['w']"-->
+<!--                     :h="option['h']"-->
+<!--                     :i="option['i']"-->
+<!--          >-->
+<!--&lt;!&ndash;            <div v-for="option in options" :key="option['id']">&ndash;&gt;-->
 
-          <e-charts style="width: 360px;height: 360px"
-                    v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && option.type != 'status'"
-                    :option="option" :device="device"></e-charts>
+<!--              <e-charts style="width: 100%;height: 100%"-->
+<!--                        v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && option.type != 'status'"-->
+<!--                        :option="option" :device="device"></e-charts>-->
 
-          <status style="width: 360px;height: 360px"
-                  v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>
+<!--              <status style="width: 100%;height: 100%"-->
+<!--                      v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>-->
 
-          <control style="width: 360px;height: 360px" v-if="option.controlType == 'control'" :option="option" :device="device"></control>
+<!--              <control style="width: 100%;height: 100%" v-if="option.controlType == 'control'" :option="option" :device="device"></control>-->
 
-        </div>
-      </div>
+<!--&lt;!&ndash;            </div>&ndash;&gt;-->
+<!--          </grid-item>-->
+<!--        </grid-layout>-->
+
+<!--      </div>-->
     </div>
 
     <div v-if="showScreen" class="canvas-screen">
@@ -51,10 +73,13 @@ import ClipButton from "@/components/common/ClipButton";
 import DashboardChart from "@/components/e-charts/DashboardChart";
 import HistoryChart from "@/components/e-charts/CurveChart";
 import VueDragResize from 'vue-drag-resize'
+import {GridLayout, GridItem} from "vue-grid-layout";
+import PluginCharts from "./PluginCharts";
 export default defineComponent ({
   name: "DeviceChartCanvas",
   components: {
-    ECharts, Control, Status, ClipButton, DashboardChart, HistoryChart, VueDragResize
+    ECharts, Control, Status, ClipButton, DashboardChart, HistoryChart, VueDragResize,
+    GridLayout, GridItem, PluginCharts
   },
   props: {
     showScreen: {
@@ -81,28 +106,12 @@ export default defineComponent ({
       console.log("watch", value)
 
       options.value = value;
+      console.log("options.value", value)
+
       if (options.value == undefined) {
         return;
       }
 
-      // 获得推送数据示例
-    //   let arr = [];
-    //   console.log("====DeviceChartCanvas 1")
-    //   options.value.forEach(option => {
-    //     option['mapping'].forEach(map => {
-    //       arr.push(map);
-    //     })
-    //   })
-    //   console.log("====DeviceChartCanvas 2")
-    //
-    //   let temp = {};
-    //   for (let i = 0; i < arr.length; i++) {
-    //     temp[arr[i]] = "值" + (i+1);
-    //   }
-    //   payloadTemplate.value = JSON.stringify(temp);
-    //   console.log("====payloadTemplate", payloadTemplate);
-    //   // 清空计时器
-    //   clearTimer();
     }, {immediate: true, deep: true})
 
     watch(() => props.device, value => {
@@ -139,14 +148,21 @@ const clearTimer = () => {
     //overflow-y: auto!important;
   }
 }
+.canvas-default {
+  width: 100%;
+  height: 100%;
+}
 .container-charts {
-  display: flex;
-  position: relative;
-  flex-flow: wrap;
-  //position: absolute;
-  height: 100%!important;
-  //overflow-y: auto!important;
-  padding: 10px;
-  background-color: #1f2a5f;
+  width: 100%;
+  height: 100%;
+  display: block;
+  //display: flex;
+  //position: relative;
+  //flex-flow: wrap;
+  ////position: absolute;
+  //height: 100%!important;
+  ////overflow-y: auto!important;
+  //padding: 10px;
+  //background-color: #1f2a5f;
 }
 </style>

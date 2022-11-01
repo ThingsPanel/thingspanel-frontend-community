@@ -137,22 +137,24 @@ export default defineComponent({
      */
     function nodeClick(node) {
       device.value = node;
+      console.log("nodeClick.mode", node)
       if (node.leaf && node.device && node.type) {
         let param = {"current_page": 1, "per_page": 10, "id": node.type}
         getScreenData(node.device, () => {
+          console.log("getScreenData.callback()")
+
           PluginAPI.page(param)
               .then(({data}) => {
                 if (data.code == 200 && data.data && data.data.data && data.data.data.length > 0) {
                   let plugin = JSON.parse(data.data.data[0].chart_data);
                   showScreen.value = false;
                   screenData.value = JSON.parse(JSON.stringify(plugin.chart));
+                  console.log("PluginAPI.screenData", screenData.value)
                 } else {
                   screenData.value = [];
                 }
               })
         })
-
-
       } else {
         screenData.value = [];
       }
@@ -176,8 +178,10 @@ export default defineComponent({
 
     function getScreenData(relation_id, callback) {
       let params = {current_page: 1, per_page: 9999, relation_id}
+      console.log("getScreenData.relation_id", relation_id)
       VisualAPI.list(params)
           .then(({data}) => {
+            console.log("VisualAPI.data", data)
             if (data.code == 200 && data.data.data.length > 0) {
               showScreen.value = true;
               screenData.value = JSON.parse(data.data.data[0].json_data);
@@ -187,6 +191,9 @@ export default defineComponent({
                 callback();
               }
             }
+          })
+          .catch(err => {
+            console.log("VisualAPI.err", err)
           })
     }
 

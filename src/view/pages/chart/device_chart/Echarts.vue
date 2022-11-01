@@ -23,7 +23,7 @@
 
     </div>
 
-    <div style="width: 360px; height: 360px" ref="chart"></div>
+    <div style="width: 100%; height:100%" ref="chart"></div>
 
     <el-dialog title="配置" width="30%"
         :visible.sync="configurationVisible">
@@ -187,6 +187,12 @@ export default {
     },
     showConfiguration() {
       // this.configurationVisible = true;
+    },
+    /**
+     * 修改 e-chart 大小
+     */
+    sizeChange(){
+      this.myEcharts.resize();
     }
   },
 }
@@ -199,6 +205,7 @@ export default {
   margin: 10px 20px 10px 10px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   background-color: #2d3d86;
+  border-radius: 16px;
 }
 .chart-header {
   position: relative;

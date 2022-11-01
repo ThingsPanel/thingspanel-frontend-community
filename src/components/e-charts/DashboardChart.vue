@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%;height: 100%" id="main" ref="chart-main"></div>
+  <div style="width: 100%;height: 100%;" id="main" ref="chart-main"></div>
 </template>
 
 <script>
@@ -104,14 +104,15 @@ export default {
       this.myChart.setOption(option);
     },
     initOption(option) {
-      if ((typeof option.series[0].data[0]) == "number") {
+      if (!option.series[0].data) console.log(option.series[0])
+
+      if (option.series[0].data && (typeof option.series[0].data[0]) == "number") {
         option.series[0].data[0] = { value: option.series[0].data[0], name: ""}
       }
       if (!option.series[0].detail) option.series[0].detail = {};
 
       if (!option.series[0].progress) option.series[0].progress = {};
       if (!option.series[0].progress.itemStyle) option.series[0].progress.itemStyle = {};
-
 
       if (!option.series[0].pointer) option.series[0].pointer = {};
       if (!option.series[0].pointer.itemStyle) option.series[0].pointer.itemStyle = {};
