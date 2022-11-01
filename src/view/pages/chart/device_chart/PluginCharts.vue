@@ -78,24 +78,28 @@ export default {
       this.setLayout();
     },
     getLayout() {
-      console.log("setLayout.device", this.optionsData)
-      // device_info({id: this.device.device })
-      //   .then(({data}) => {
-      //     if (data.code == 200) {
-      //       for (let i = 0; i < this.optionsData.length; i++) {
-      //         let layout = JSON.parse(data.data['chart_option']);
-      //         let option = layout.find(item => item.id == this.optionsData[i].id)
-      //         if (!option) {
-      //           option = {x: 0, y: 0, w: 4, h: 6, i}
-      //         }
-      //         this.optionsData[i].x = option.x;
-      //         this.optionsData[i].y = option.y;
-      //         this.optionsData[i].w = option.w;
-      //         this.optionsData[i].h = option.h;
-      //         this.optionsData[i].i = option.i;
-      //       }
-      //     }
-      //   })
+      console.log("getLayout.device", this.device)
+      device_info({id: this.device.device })
+        .then(({data}) => {
+          if (data.code == 200) {
+            let layout = JSON.parse(data.data['chart_option']);
+            console.log("getLayout.layout", layout)
+            let options = JSON.parse(JSON.stringify(this.optionsData));
+            for (let i = 0; i < this.options.length; i++) {
+              let option = layout.find(item => item.id == this.options[i].id)
+              if (!option) {
+                option = {x: 0, y: 0, w: 4, h: 6, i}
+              }
+              options[i].x = option.x;
+              options[i].y = option.y;
+              options[i].w = option.w;
+              options[i].h = option.h;
+              options[i].i = option.i;
+            }
+            console.log("getLayout.options", options)
+            this.optionsData = options;
+          }
+        })
     },
     setLayout() {
       let layout = this.optionsData.map(item => {
