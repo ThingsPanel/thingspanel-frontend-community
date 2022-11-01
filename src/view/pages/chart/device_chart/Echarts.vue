@@ -80,10 +80,13 @@ export default {
     }
   },
   mounted() {
+    window.addEventListener("resize",() => {
+      this.myEcharts.resize();
+    });
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
     this.initEChart();
-    this.updateOption()
+    this.updateOption();
   },
   beforeDestroy() {
     clearTimer();
