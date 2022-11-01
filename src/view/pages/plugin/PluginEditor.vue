@@ -45,7 +45,7 @@
 
       <span slot="footer" class="dialog-footer">
         <el-button  @click="importDialogVisible = false">取 消</el-button>
-        <el-button type="primary" class="el-button--indigo" @click="handleImport">导 入</el-button>
+        <el-button type="primary" class="el-button--indigo" @click="handleImport()">导 入</el-button>
       </span>
     </el-dialog>
   </div>
@@ -63,7 +63,8 @@ export default {
       pluginCategory: [],
       importDialogVisible: false,
       importPluginJson: "",
-      pluginJsonData: {}
+      pluginJsonData: {},
+      id: ""
     }
   },
   created() {
@@ -90,10 +91,16 @@ export default {
     showImportPlugin() {
       this.importDialogVisible = true;
     },
-    handleImport() {
-      this.pluginJsonData = JSON.parse(this.importPluginJson);
+    handleImport(data) {
+      if (data) {
+        this.pluginJsonData = JSON.parse(data.chart_data);
+        this.id = data.id;
+      } else {
+        this.pluginJsonData = JSON.parse(this.importPluginJson);
+        this.id = "";
+      }
+      console.log("handleImport", this.pluginJsonData);
       this.showEditorDialog = true;
-      // this.publish(JSON.parse(this.importPluginJson));
     },
     /**
      * 发布
@@ -108,13 +115,27 @@ export default {
         author: jsonObj.info.author,
         version: jsonObj.info.version
       };
-      PluginAPI.add(data).then(({data}) => {
-        if (data.code == 200) {
-          message_success("插件导入成功");
-          this.importDialogVisible = false;
-          if (callback) callback(true)
-        }
-      })
+      if (this.id) {
+        data.id = this.id;
+        // 修改插件
+        PluginAPI.edit(data).then(({data}) => {
+          if (data.code == 200) {
+            message_success("插件修改成功");
+            this.importDialogVisible = false;
+            if (callback) callback(true)
+          }
+        })
+      } else {
+        // 新增插件
+        PluginAPI.add(data).then(({data}) => {
+          if (data.code == 200) {
+            message_success("插件导入成功");
+            this.importDialogVisible = false;
+            if (callback) callback(true)
+          }
+        })
+      }
+
     }
   }
 }

@@ -19,6 +19,32 @@ export default {
     },
 
     /**
+     * 修改插件
+     * @param data
+     * @returns {AxiosPromise}
+     */
+    edit: (data) => {
+        return axios({
+            url: "/device/model/edit",
+            method: "post",
+            data
+        })
+    },
+
+    /**
+     * 删除插件
+     * @param data
+     * @returns {AxiosPromise}
+     */
+    del: (data) => {
+        return axios({
+            url: "/device/model/delete",
+            method: "post",
+            data
+        })
+    },
+
+    /**
      * 查询插件分页列表
      * @param data
      * @returns {AxiosPromise}

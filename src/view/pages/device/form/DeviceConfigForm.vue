@@ -5,7 +5,7 @@
              :visible.sync="dialogVisible" @close="handleClose">
     <div class="container-fluid">
 
-      <el-form ref="configForm" :model="formData" :rules="formRule" label-width="120px">
+      <el-form ref="configForm" :model="formData" :rules="formRule" label-width="260px">
         <el-form-item v-for="(attr, index) in formAttr" :key="index" :label="attr.label" :prop="attr.dataKey">
 
           <el-input style="width: 80%"

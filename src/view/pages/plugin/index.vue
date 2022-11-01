@@ -13,19 +13,19 @@
       </p>
       <div class="content">
 
-        <!-- 已安装 -->
-        <div v-show="activeTab == 'installed'">
-          <installed></installed>
+        <!-- 插件列表 -->
+        <div v-show="activeTab == 'list'">
+          <installed @edit="handleEditPlugin"></installed>
         </div>
 
         <!-- 插件商店 -->
-        <div v-show="activeTab == 'store'">
-          <plugin-store></plugin-store>
-        </div>
+<!--        <div v-show="activeTab == 'store'">-->
+<!--          <plugin-store></plugin-store>-->
+<!--        </div>-->
 
         <!-- 插件编辑器 -->
         <div v-show="activeTab == 'editor'">
-          <plugin-editor></plugin-editor>
+          <plugin-editor ref="pluginEditor"></plugin-editor>
         </div>
       </div>
     </div>
@@ -38,18 +38,14 @@ import PluginStore from "./PluginStore";
 import PluginEditor from "./PluginEditor";
 export default {
   name: "index",
-  components: { Installed, PluginStore, PluginEditor },
+  components: { Installed, PluginEditor },
   data() {
     return {
-      activeTab: "installed",
+      activeTab: "list",
       tabs: [
         {
-          name: "COMMON.INSTALLED",
-          value: "installed",
-        },
-        {
-          name: "COMMON.PLUGIN_STORE",
-          value: "store",
+          name: "COMMON.PLUGINLIST",
+          value: "list",
         },
         {
           name: "COMMON.PLUGIN_EDITOR",
@@ -59,9 +55,10 @@ export default {
     };
   },
   methods: {
-    handleClick(tab, event) {
-      console.log(tab, event);
-    },
+    handleEditPlugin(item) {
+      console.log("handleEditPlugin", item)
+      this.$refs.pluginEditor.handleImport(item);
+    }
   }
 }
 </script>
