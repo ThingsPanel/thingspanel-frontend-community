@@ -46,12 +46,12 @@
                      :x="component.point.x" :y="component.point.y"
                      :w="component.point.w" :h="component.point.h"
       >
-        <dashboard-chart style="width: 100%;height: 100%;"
+        <dashboard-chart :style="component.style ? component.style : defaultStyle"
                          :w="component.point.w" :h="component.point.h"
                          v-if="component.controlType == 'dashboard'"
                          :option="component"></dashboard-chart>
 
-        <history-chart style="width: 100%;height: 100%"
+        <history-chart :style="component.style ? component.style : defaultStyle"
                        :w="component.point.w" :h="component.point.h"
                        v-if="component.controlType == 'history'"
                        :option="component"></history-chart>
@@ -66,9 +66,9 @@
 <script>
 import {watch,  defineComponent, ref as reference} from "@vue/composition-api";
 import {reactive, ref} from "@vue/composition-api/dist/vue-composition-api";
-import ECharts from "./Echarts"
-import Control from "./Control";
-import Status from "./Status"
+import ECharts from "./components/Echarts"
+import Control from "./components/Control";
+import Status from "./components/Status"
 import ClipButton from "@/components/common/ClipButton";
 import DashboardChart from "@/components/e-charts/DashboardChart";
 import HistoryChart from "@/components/e-charts/CurveChart";
@@ -118,10 +118,18 @@ export default defineComponent ({
       console.log("====device", value)
     });
 
+    let defaultStyle = {
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'rgba(45, 61, 134, 1)',
+      borderRadius: '10px'
+    };
+
     return {
       options,
       payloadTemplate,
-      componentList
+      componentList,
+      defaultStyle
     }
   }
 })

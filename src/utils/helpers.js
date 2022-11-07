@@ -121,3 +121,30 @@ const RandomIndex = (min, max, i) => {
     //返回最终索引值
     return index;
 }
+
+export function colorRGBA2Hex(rgbaColor) {
+    let rgb = rgbaColor.split(',');
+    let r = parseInt(rgb[0].split('(')[1]);
+    let g = parseInt(rgb[1]);
+    let b = parseInt(rgb[2].split(')')[0]);
+    let hexColor = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+    let opacity = rgb[3];
+    return {hexColor, opacity};
+}
+
+export function colorHex2RGBA(hexColor, opacity) {
+    if (hexColor == ""){
+        return ""
+    }
+    hexColor = hexColor.substring(1);
+    hexColor = hexColor.toLowerCase();
+    let b = new Array();
+    for(let x = 0; x < 3; x++){
+        b[0] = hexColor.substr(x * 2,2);
+        b[3] = "0123456789abcdef";
+        b[1] = b[0].substr(0, 1);
+        b[2] = b[0].substr(1, 1);
+        b[20+x] = b[3].indexOf(b[1]) * 16 + b[3].indexOf(b[2]);
+    }
+    return "rgba(" +  b[20] + ", " + b[21] + ", " + b[22] + ", " + opacity + ")";
+}

@@ -273,11 +273,10 @@ const mutations = {
   },
   [SET_AUTH](state, user) {
     state.isAuthenticated = true;
-    // state.user = user;
-    // state.user.name = user.name;
-    // state.errors = "";
+    state.user = user;
+    state.errors = "";
     // JwtService.saveToken(state.user.token);
-    // state.userid = user.userid;
+    state.userid = user.userid;
   },
   [PURGE_AUTH](state) {
     state.isAuthenticated = false;

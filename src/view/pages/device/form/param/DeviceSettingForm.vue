@@ -4,12 +4,13 @@
       :visible.sync="dialogVisible"
       title="编辑参数"
       :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
-      width="40%">
+      width="800px">
 
-    <el-form :model="deviceData" :rules="formRule" label-width="130px">
+    <el-form class="inline-edit el-dark-input" :model="deviceData" :rules="formRule" label-width="130px">
 
       <el-form-item label="传输协议：" prop="protocol">
-        <el-select size="medium" placeholder="请选择协议" v-model="deviceData.protocol" @change="handleChange">
+        <el-select size="medium" placeholder="请选择协议" v-model="deviceData.protocol" @change="handleChange"
+                   :disabled="deviceData.hasChildDevice">
           <el-option v-for="option in protocolOptions" :key="option.value" :label="option.label" :value="option.value"></el-option>
         </el-select>
       </el-form-item>
@@ -36,10 +37,26 @@
       </el-form-item>
 
       <el-form-item label="连接信息：">
-          <el-input type="textarea" :disabled="true"
-                    autosize :readonly="true"
-                    v-model="deviceData.defaultSetting">
-          </el-input>
+        <el-descriptions class="el-dark-descriptions" :column="1" border :colon="true">
+          <el-descriptions-item v-for="(item, index) in connectInfo" :key="index"
+                                :contentStyle="getDescriptionContentStyle()"
+                                :labelStyle="getDescriptionLabelStyle()"
+                                :label="item.label">
+
+            <el-link v-if="item.link" :href="item.value" target="_blank">{{item.value}}</el-link>
+
+            <el-tooltip v-else effect="dark" :content="item.tooltip ? item.tooltip : '点击复制内容'" placement="right-start">
+              <el-input ref="payloadInput" v-if="item.payload"  v-model="item.value" type="textarea"
+                        v-clipboard:copy="item.value"
+                        :autosize="{ maxRows: 6 }" readonly @focus="handleCopy(item)"
+              >{{item.value}}</el-input>
+
+              <el-input readonly v-else v-clipboard:copy="item.value" v-model="item.value" @click.native="handleCopy(item)">
+              </el-input>
+<!--              <span v-else v-clipboard:copy="item.value" @click="handleCopy(item)">{{item.value}}</span>-->
+            </el-tooltip>
+          </el-descriptions-item>
+        </el-descriptions>
       </el-form-item>
 
       <div style="margin: 10px 0;"></div>
@@ -84,7 +101,7 @@
 </template>
 
 <script>
-import {defineComponent, ref, reactive, watch } from "@vue/composition-api";
+import {defineComponent, ref, reactive, watch, nextTick } from "@vue/composition-api";
 import {device_default_setting} from "@/api/device";
 import {getDeviceInfo, updateDeviceInfo} from "@/api/device";
 import {message_success} from "@/utils/helpers";
@@ -92,7 +109,11 @@ import CustomExchangeAgreement from "./CustomExchangeAgreement";
 import { getCustomExchangeAgreementList } from "@/api/device";
 import {message_confirm} from "@/utils/helpers";
 import DictAPI from "@/api/dict"
-import {deleteCustomExchangeAgreement} from "../../../../../api/device";
+import PluginAPI from "@/api/plugin.js"
+import {deleteCustomExchangeAgreement} from "@/api/device";
+// 传输协议连接信息
+import ProtocolInfo from "./protocol-info"
+
 export default defineComponent({
   name: "DeviceSettingForm",
   components: {
@@ -113,6 +134,7 @@ export default defineComponent({
 
     let device = {};
     let defaultSettings = {};
+    let tslProperties = {};
 
     const required = true;
     let formRule = ref({
@@ -129,6 +151,7 @@ export default defineComponent({
     watch(() => props.dialogVisible, value => {
       if (value) {
         device = props.device_item;
+
         getDeviceInformation();
       }
     })
@@ -141,8 +164,7 @@ export default defineComponent({
           .then(({data}) => {
             if (data.code == 200) {
               console.log("getDeviceInformation", data.data)
-              device = data.data;
-              initForm();
+              initForm(data.data);
             }
           })
     }
@@ -152,6 +174,7 @@ export default defineComponent({
     // 表单数据
     let deviceData = reactive({
       protocol: "",
+      hasChildDevice: false,
       authMode: "accessToken",
       token: "",
       username: "",
@@ -164,24 +187,41 @@ export default defineComponent({
     /**
      * 初始化表单
      */
-    function initForm() {
-      if (device.device_type == "1" || device.device_type == 1) {
+    async function initForm(d) {
+      if (d.device_type == "1" || d.device_type == 1) {
         protocolOptions.value = [{label: "MQTT", value: "mqtt"}];
       } else {
+        // 获取网关传输协议
         getGatewayProtocolList();
       }
-      deviceData.dataExchangeAgreement = device.script_id ? device.script_id : "";
-      deviceData.id = device.id;
-      deviceData.protocol = device.protocol;
-      deviceData.authMode = device.password ? "mqttBasic" : "accessToken";
-      deviceData.token = device.token;
-      deviceData.username = device.token;
-      deviceData.password = device.password ? device.password : "";
+      deviceData.dataExchangeAgreement = d.script_id ? d.script_id : "";
+      deviceData.id = d.id;
+      deviceData.hasChildDevice = !!device.children && device.children.length > 0
+      deviceData.protocol = d.protocol;
+      deviceData.authMode = d.password ? "mqttBasic" : "accessToken";
+      deviceData.token = d.token;
+      deviceData.username = d.token;
+      deviceData.password = d.password ? d.password : "";
       deviceData.errors = {};
-      // 获取默认token和默认配置说明
-      getDefaultSetting(device.protocol);
-      initCustomExchangeAgreementList(device.protocol);
+      deviceData.children = device.children;
+      console.log("d", d)
+      console.log("deviceData", deviceData)
+      initCustomExchangeAgreementList(d.protocol);
 
+      if (d.device_type == "2") {
+        // 获取网关的所有子设备绑定的插件模型
+        if (deviceData.hasChildDevice && deviceData.protocol == "MQTT") {
+          for (let child of deviceData.children) {
+            tslProperties[child.subDeviceAddress] = await getTSLByPluginId(child.type);
+          }
+        }
+      } else {
+        // 获取设备绑定的插件的物模型
+        tslProperties["single"] = await getTSLByPluginId(d.type)
+      }
+
+      // 获取默认token和默认配置说明, 必须在getTSLByPluginId之后执行
+      getDefaultSetting(d.protocol);
     }
 
     /**
@@ -243,31 +283,98 @@ export default defineComponent({
     }
 
 
+    let connectInfo = ref([]);
     /**
      * 获取token和配置说明
      */
     function getDefaultSetting(protocol) {
+      console.log("getDefaultSetting", deviceData)
       if (!protocol) return;
-      deviceData.defaultSetting = defaultSettings[protocol];
+      let defaultSetting = JSON.parse(JSON.stringify(ProtocolInfo[protocol]));
+      let payload = getPayload();
+
+      defaultSetting.forEach(item => {
+        item.value = item.value.replaceAll("{AccessToken}", device.token);
+        item.value = item.value.replaceAll("{payload}", payload);
+      })
+      connectInfo.value = defaultSetting;
     }
 
     /**
-     * 第一次载入编辑参数对话框时获取
+     * 获取推送报文
      */
-    getDefaultSettings();
-    function getDefaultSettings() {
-      let protocols = ["mqtt", "MQTT", "MODBUS_TCP", "MODBUS_RTU"];
-      defaultSettings = {};
-      for (let p of protocols) {
-        device_default_setting({ protocol: p})
-            .then(({data}) => {
-              if (data.code == 200) {
-                console.log(data.data.default_setting)
-                defaultSettings[p] = data.data.default_setting.split("$$").join("\n");
-              }
-            })
+    function getPayload() {
+      let payload = {};
+
+      if (tslProperties.single) {
+        // 获取标准设备的推送格式
+        tslProperties.single.forEach(item => {
+          payload[item.name] = item.title + "值";
+        })
+
+
+      } else {
+        // 获取网关的推送格式   {sub_device_addr:{key:value...},sub_device_addr:{key:value...}...}
+        console.log("tslProperties", tslProperties)
+        for (let subAddr in tslProperties) {
+          let tslList = tslProperties[subAddr];
+          // 遍历物模型
+          let subTsl = {};
+          tslList.forEach(item => {
+            console.log("tslList", item)
+            subTsl[item.name] = item.title + "值";
+          })
+          if (subAddr) {
+            payload[subAddr] = subTsl;
+          }
+        }
       }
+
+      let payloadStr = JSON.stringify(payload, null, 4);
+      return payloadStr;
     }
+
+    /**
+     * 获取单个设备的推送报文
+     * @param d
+     * @returns {Promise<void>}
+     */
+    function getSingleDevicePayload(d) {
+
+    }
+
+    /**
+     * 通过插件id获取物模型
+     * @param pluginId
+     */
+    async function getTSLByPluginId(pluginId) {
+      let param = {"current_page": 1, "per_page": 10, "id": pluginId}
+      let {data} = await PluginAPI.page(param)
+      if (data.code == 200) {
+        if (!data.data.data || data.data.data.length == 0) return []
+        let pluginStr = data.data.data[0].chart_data;
+        if (pluginStr == "" || pluginStr == "{}" || pluginStr == undefined) return []
+        let plugin = JSON.parse(pluginStr);
+        return plugin.tsl.properties;
+      }
+      return [];
+    }
+
+    function handleCopy(item) {
+      let index = connectInfo.value.findIndex(it => it == item )
+      connectInfo.value.forEach(it => {
+        delete it.tooltip;
+      })
+      let info = connectInfo.value[index];
+      info.tooltip = "内容已复制";
+      connectInfo.value.splice(index, 1, info);
+
+
+      // item.tooltip = true;
+    }
+
+
+
 
     let customExchangeAgreementVisible = ref(false);
     let oldCustomExchangeAgreement = "";
@@ -334,11 +441,23 @@ export default defineComponent({
         })
     }
 
+    // 连接信息内容样式
+    function getDescriptionContentStyle() {
+      return {color: '#fff', backgroundColor: '#2d3d88!important'}
+    }
+
+    // 连接信息标签样式
+    function getDescriptionLabelStyle() {
+      return {width: '160px', fontSize: '11px!important', color: '#ccc!important', backgroundColor: '#2d3d88!important'};
+    }
+
 
     return {
       formRule,
       protocolOptions,
       deviceData,
+      connectInfo,
+      handleCopy,
       onCancel,
       onSubmit,
       handleChange,
@@ -349,7 +468,9 @@ export default defineComponent({
       exchangeAgreementData,
       handleAddExchangeAgreement,
       handleShowExchangeAgreementDialog,
-      handleDeleteExchangeAgreement
+      handleDeleteExchangeAgreement,
+      getDescriptionContentStyle,
+      getDescriptionLabelStyle
     }
   }
 })
@@ -362,5 +483,8 @@ export default defineComponent({
       height: 100%!important;
       max-height: 500px;
     }
+
   }
+
+
 </style>

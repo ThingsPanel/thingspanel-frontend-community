@@ -116,6 +116,7 @@ export default {
 
       if (!option.series[0].pointer) option.series[0].pointer = {};
       if (!option.series[0].pointer.itemStyle) option.series[0].pointer.itemStyle = {};
+      option.backgroundColor = "transparent"
       return option;
     }
   }

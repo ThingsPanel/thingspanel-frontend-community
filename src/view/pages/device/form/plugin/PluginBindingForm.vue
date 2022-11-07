@@ -50,9 +50,12 @@ export default defineComponent({
 
     let showDialog = computed({
       get() {
+        tslData.value = {};
         if (props.dialogVisible) {
           // 插件id
           const pluginId = props.device_item.type;
+          if (!pluginId) return props.dialogVisible;
+          // 回显已绑定插件
           defaultExpandKeys.value.push(pluginId);
           nextTick(() => {
             tree.value.setCurrentKey(pluginId);
@@ -140,6 +143,7 @@ export default defineComponent({
           console.log(data)
           if (data.code == 200) {
             message_success("绑定成功！")
+            this.$emit("submit")
           }
         })
         .catch(err => {})

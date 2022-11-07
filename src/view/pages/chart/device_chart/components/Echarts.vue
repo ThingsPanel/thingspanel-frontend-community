@@ -1,6 +1,6 @@
 <template>
-  <div class="chart-div">
-    <div class="chart-header">
+    <div class="chart-div" :style="getChartStyle()">
+    <div  v-if="showHeader" class="chart-header">
 
       <span class="title">{{ optionData.name }}</span>
       <div class="tool-right">
@@ -47,6 +47,10 @@ require('echarts/lib/chart/gauge');
 export default {
   name: "Echarts",
   props: {
+    showHeader: {
+      type: [Boolean],
+      default: false
+    },
     option: {
       type: [Object],
       default: () => {return {}}
@@ -67,7 +71,7 @@ export default {
       optionData: {},
       configurationVisible: false,
       flushTime: 5,
-      timer: null
+      timer: null,
     }
   },
   watch: {
@@ -83,6 +87,7 @@ export default {
     window.addEventListener("resize",() => {
       this.myEcharts.resize();
     });
+    console.log(this.option)
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
     this.initEChart();
@@ -106,7 +111,6 @@ export default {
       } else {
         this.myEcharts.setOption(this.optionData);
       }
-      console.log("initEChart.updateOption()")
     },
     // 更新图表的值
     updateOption() {
@@ -182,7 +186,6 @@ export default {
         })
     },
     handleFlushCommand(command) {
-      console.log()
       if (command != "custom") {
         this.flushTime = command;
         this.updateOption();
@@ -196,6 +199,14 @@ export default {
      */
     sizeChange(){
       this.myEcharts.resize();
+    },
+    getChartStyle() {
+      let style = this.optionData.style ? this.optionData.style : {};
+      let backgroundColor = style.backgroundColor ? style.backgroundColor : "#2d3d86";
+      console.log("getChartStyle", backgroundColor)
+      return {
+        backgroundColor
+      }
     }
   },
 }

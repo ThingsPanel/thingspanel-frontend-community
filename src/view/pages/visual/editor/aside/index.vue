@@ -12,11 +12,13 @@
               <p>{{ chart.name }}</p>
 
               <vue-drag :option="chart" :index="index">
-                  <dashboard-chart v-show="chart.controlType == 'dashboard'" style="width: 200px;height: 200px"
+                  <dashboard-chart v-show="chart.controlType == 'dashboard'"
+                                   :style="getChartStyle(chart)"
                                    draggable="true"
                                    :option="chart"></dashboard-chart>
 
-                  <curve-chart v-show="chart.controlType == 'history'" style="width:200px;height:200px;"
+                  <curve-chart v-show="chart.controlType == 'history'"
+                               style="getChartStyle(chart)"
                                draggable="true"
                                :option="chart"></curve-chart>
 
@@ -76,14 +78,25 @@ export default {
   },
   mounted() {
 
+  },
+  methods: {
+    getChartStyle(item) {
+      return {
+        borderRadius: "10px",
+        width: "200px",
+        height: "200px",
+        backgroundColor: item.backgroundColor ? item.backgroundColor : "#2d3d86"
+      }
+    }
   }
 }
 </script>
 
 <style scoped lang="scss">
 .editor-container {
+  //position: relative;
   width: 100%;
-  height: 100%;
+  height: calc(100% - 20px);
   padding: 10px;
   background-color: #202c62;
 
@@ -95,27 +108,25 @@ export default {
     background-color: #202c62;
   }
   .component-list {
+    width: 100%;
+    height: calc(100% - 70px);
     margin-top: 20px;
-    position: absolute;
     top: 50px;
     bottom: 0;
     background-color: #202c62;
     overflow-y: auto;
-
-
     .component-chart-list {
-      display: flex;
-      flex-flow: wrap;
+      width: 100%;
+      height: 100%;
       .component-item {
-        display: block;
+        float:left;
         position: relative;
         width: 200px;
         height: 200px;
-        margin: 4px;
+        margin: 2px;
         //border: 1px dashed #ccc;
         border-radius: 14px;
         background-color: #2d3d86;
-        //background-color: #fff;
         p {
           position: absolute;
           color: #fff;

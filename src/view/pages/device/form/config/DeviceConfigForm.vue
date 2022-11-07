@@ -36,7 +36,7 @@
 
 <script>
 import ModbusAPI from "@/api/modbus"
-import {message_success} from "../../../../utils/helpers";
+import {message_success} from "../../../../../utils/helpers";
 export default {
   name: "DeviceConfigForm",
   props: {

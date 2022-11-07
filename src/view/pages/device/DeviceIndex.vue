@@ -186,7 +186,7 @@
   <!-- 分页 end -->
 
   <!-- 插件绑定 start -->
-  <PluginBinding :dialog-visible.sync="showBindingDialog" :device_item="currentDeviceItem"></PluginBinding>
+  <PluginBinding :dialog-visible.sync="showBindingDialog" :device_item="currentDeviceItem" @submit="getDeviceIndex"></PluginBinding>
 
   <!-- 设备/网关参数 start -->
   <DeviceSettingForm :dialog-visible.sync="showDeviceSetting" :device_item="currentDeviceItem" @submit="getDeviceIndex"></DeviceSettingForm>
@@ -241,7 +241,7 @@ import SubDeviceSettingForm from "./form/param/SubDeviceSettingForm";
 // 分组管理
 import ManagementGroupForm from "./form/group/ManagementGroupForm.vue"
 // 子设备配置
-import DeviceConfigForm from "./form/DeviceConfigForm"
+import DeviceConfigForm from "./form/config/DeviceConfigForm"
 import {device_default_setting} from "../../../api/device";
 
 export default defineComponent({

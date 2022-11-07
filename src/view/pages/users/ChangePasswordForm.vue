@@ -116,7 +116,7 @@ export default defineComponent({
         error_message.value = ""
 
         // 赋值user_id
-        formData.id = store.state.auth.userid
+        formData.id = store.state.auth.user.id
 
         user_change_password(formData).then(({data})=>{
           if(data.code === 200) {

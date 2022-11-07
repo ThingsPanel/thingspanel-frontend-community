@@ -5,12 +5,11 @@
       <el-button class="el-button--indigo"  @click="VisualEdit">编辑</el-button>
     </div>
     <div class="content">
-      <div class="left-tree">
-          <el-input class="el-dark-input search-input" suffix-icon="el-icon-search" v-model="filterValue" autocomplete="off" placeholder="搜索"></el-input>
-          <el-tree class="el-dark-tree" ref="pluginTree" lazy
-                   :load="loadNode" :props="defaultProps" :filter-node-method="filterNode" @node-click="nodeClick"></el-tree>
 
-<!--        <el-tree class="el-dark-tree" ref="pluginTree" :data="treeData" :props="defaultProps"></el-tree>-->
+      <div class="left-tree">
+        <el-input class="el-dark-input search-input" suffix-icon="el-icon-search" v-model="filterValue" autocomplete="off" placeholder="搜索"></el-input>
+        <el-tree class="el-dark-tree" ref="pluginTree" lazy
+                 :load="loadNode" :props="defaultProps" :filter-node-method="filterNode" @node-click="nodeClick"></el-tree>
       </div>
 
       <div class="display-canvas">
@@ -169,7 +168,8 @@ export default defineComponent({
         name,
         businessId: business_id,
         groupId,
-        deviceId: device.value.device || ""
+        deviceId: device.value.device || "",
+        pluginId: device.value.type || ""
       }
       const{ href } = router.resolve({ name:"VisualEditor", query });
       window.open(href,'_blank');
@@ -184,7 +184,8 @@ export default defineComponent({
             console.log("VisualAPI.data", data)
             if (data.code == 200 && data.data.data.length > 0) {
               showScreen.value = true;
-              screenData.value = JSON.parse(data.data.data[0].json_data);
+              let jsonData = JSON.parse(data.data.data[0].json_data);
+              screenData.value = jsonData.screen ? jsonData.screen : jsonData;
             } else {
               showScreen.value = false;
               if (callback) {

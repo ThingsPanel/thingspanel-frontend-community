@@ -128,6 +128,42 @@
   color: #fff !important;
 }
 
+// 深色表格
+.el-dark-table {
+  color: #fff;
+  tr {
+    background-color: #2d3d88!important;
+  }
+  .el-table__header-wrapper {
+    display: none;
+    height: 40px!important;
+    line-height: 40px!important;
+  }
+
+  .el-table__header-wrapper th.el-table__cell {
+    background-color: #2d3d88!important;
+    color: #fff;
+    line-height: 40px!important;
+    height: 40px!important;
+
+  }
+  td.el-table__cell div {
+    color: #fff;
+  }
+  .el-table--border {
+    border: 1px solid #314694;
+  }
+  .el-table--border::after, .el-table--group::after, .el-table::before {
+    background-color: #314694;
+  }
+  .el-table--border .el-table__cell, .el-table__body-wrapper .el-table--border.is-scrolling-left~.el-table__fixed {
+    border: 1px solid #314694;
+  }
+  .el-table__empty-block {
+    border-top: 1px solid #314694;
+  }
+}
+
 // 深色表单组件
 .el-dark-input {
   //label
@@ -281,10 +317,21 @@
       border: none;
     }
 
+
+
     .el-descriptions-item__label {
     }
 
+    table tbody + tbody {
+      border-top: 1px solid rgba(91, 146, 255, 0.15) !important;
+      border-bottom: unset !important;
+    }
   }
+
+  .el-link.el-link--default {
+    color: #fff;
+  }
+
 }
 
 // 有冲突，级联选择去掉横向滚动条

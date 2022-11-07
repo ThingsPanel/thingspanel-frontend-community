@@ -121,7 +121,7 @@ let timer = null;
 }
 
 
-@media (max-width: 1400px) {
+@media (max-width: 1500px) {
   .width-20 {
     width: 25%;
   }

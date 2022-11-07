@@ -1,6 +1,6 @@
 <template>
   <div class="chart-div">
-    <div class="chart-header">
+    <div  v-if="showHeader" class="chart-header">
       <span class="title">{{ option.name }}</span>
       <div class="tool-right">
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
@@ -18,6 +18,14 @@ import {currentValue} from "@/api/device";
 export default {
   name: "StatusIndex",
   props: {
+    displayData: {
+      type: [Boolean],
+      default: false
+    },
+    showHeader: {
+      type: [Boolean],
+      default: false
+    },
     option: {
       type: [Object],
       default: () => { return {} }
@@ -41,10 +49,12 @@ export default {
     console.log("mounted", this.option);
     console.log("device", this.device);
     this.optionData = JSON.parse(JSON.stringify(this.option));
+    if (!this.displayData) return;
     this.updateOption();
   },
   beforeDestroy() {
     console.log("beforeDestroy")
+    if (!this.displayData) return;
     clearTimer();
   },
   methods: {

@@ -3,6 +3,9 @@
 </template>
 
 <style lang="scss">
+body {
+  zoom:1!important;
+}
 // 3rd party plugins css
 @import "~vuetify/dist/vuetify.css";
 @import "~bootstrap-vue/dist/bootstrap-vue.css";

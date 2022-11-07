@@ -84,7 +84,7 @@ export function user_reset_password(data) {
 // 修改密码
 export function user_change_password(data) {
     return axios({
-        url: "/user/update",
+        url: "/user/password",
         method: "post",
         data
     })

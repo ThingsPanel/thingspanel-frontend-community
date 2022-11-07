@@ -1,6 +1,6 @@
 <template>
   <div class="chart-div">
-    <div class="chart-header">
+    <div class="chart-header" v-if="showHeader">
       <span class="title">{{ optionData.name }}</span>
       <div class="tool-right">
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
@@ -25,12 +25,16 @@
 <script>
 import { turnSwitch } from "@/api/device"
 import { currentValue } from "@/api/device";
-import {message_success} from "../../../../utils/helpers";
+import {message_success} from "../../../../../utils/helpers";
 import { addTimer, clearTimer } from "@/utils/tool.js"
 
 export default {
   name: "Control",
   props: {
+    showHeader: {
+      type: [Boolean],
+      default: false
+    },
     option: {
       type: [Object],
       default: () => {return {}}
