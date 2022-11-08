@@ -75,6 +75,8 @@ import HistoryChart from "@/components/e-charts/CurveChart";
 import VueDragResize from 'vue-drag-resize'
 import {GridLayout, GridItem} from "vue-grid-layout";
 import PluginCharts from "./PluginCharts";
+import bus from "@/core/plugins/eventBus"
+
 export default defineComponent ({
   name: "DeviceChartCanvas",
   components: {
@@ -101,6 +103,10 @@ export default defineComponent ({
     // 大屏数据
     let componentList = ref([]);
 
+    // 监听share事件
+    bus.$on('updateVisual', () => {
+      console.log("===================updateVisual")
+    })
     // 显示插件图表
     watch(() => props.screenData, value => {
       console.log("watch", value)

@@ -9,7 +9,8 @@
     <div class="right">
       <div class="button-div">
         <el-button class="el-button--indigo" size="medium" @click="handleSave">保存</el-button>
-        <el-button class="el-button--danger" size="medium" :disabled="true" @click="handlePublish">发布</el-button>
+        <el-button class="el-button--indigo" size="medium" @click="handleSaveAndClose">保存并关闭</el-button>
+        <el-button class="el-button--danger" size="medium" :disabled="false" @click="handlePublish">发布</el-button>
       </div>
     </div>
 
@@ -28,6 +29,8 @@
 </template>
 
 <script>
+import bus from "@/core/plugins/eventBus"
+
 export default {
   name: "EditorHeader",
   props: {
@@ -44,10 +47,18 @@ export default {
     handleSave() {
       this.$emit("save");
     },
+    handleSaveAndClose() {
+      this.$emit("save");
+      window.opener = null;
+      window.open('','_self');
+      window.close();
+    },
     handlePreview() {
 
     },
     handlePublish() {
+      bus.$emit("updateVisual")
+
       console.log("header.publish")
       this.$emit("publish");
     }

@@ -8,25 +8,44 @@
       <el-tabs class="el-dark-tabs" tab-position="top" v-model="typeTabValue">
         <el-tab-pane label="图表" name="chart">
           <div class="component-chart-list">
-            <div class="component-item" v-for="(chart, index) in chartList" :key="index">
-              <p>{{ chart.name }}</p>
+            <div class="component-item" v-for="(component, index) in chartList" :key="index">
+              <p>{{ component.name }}</p>
 
-              <vue-drag :option="chart" :index="index">
-                  <dashboard-chart v-show="chart.controlType == 'dashboard'"
-                                   :style="getChartStyle(chart)"
+              <vue-drag :option="component" :index="index">
+                  <dashboard-chart v-show="component.controlType == 'dashboard'"
+                                   :style="getChartStyle(component)"
                                    draggable="true"
-                                   :option="chart"></dashboard-chart>
+                                   :option="component"></dashboard-chart>
 
-                  <curve-chart v-show="chart.controlType == 'history'"
+                  <curve-chart v-show="component.controlType == 'history'"
                                style="getChartStyle(chart)"
                                draggable="true"
-                               :option="chart"></curve-chart>
+                               :option="component"></curve-chart>
+
+                <status :style="getChartStyle(component)"
+                        v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>
+
 
               </vue-drag>
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="开关" name="switch"></el-tab-pane>
+        <el-tab-pane label="开关" name="switch">
+          <div class="component-chart-list">
+            <div class="component-item" v-for="(component, index) in controlList" :key="index">
+              <p>{{ component.name }}</p>
+
+              <vue-drag :option="component" :index="index">
+                <control :style="getChartStyle(component)"
+                         :w="component.point.w" :h="component.point.h"
+                         v-if="component.controlType == 'control'"
+                         :option="component"></control>
+
+              </vue-drag>
+            </div>
+          </div>
+
+        </el-tab-pane>
         <el-tab-pane label="视频" name="media"></el-tab-pane>
         <el-tab-pane label="报表" name="report"></el-tab-pane>
         <el-tab-pane label="组态" name="config"></el-tab-pane>
@@ -42,12 +61,14 @@
 <script>
 import DashboardChart from "@/components/e-charts/DashboardChart";
 import CurveChart from "@/components/e-charts/CurveChart"
+import Control from "@/components/control/Control";
+import Status from "@/components/e-charts/Status";
 import VueDrag from "@/components/drag"
 // import Chart from "./chart";
 export default {
   name: "EditorAside",
   components: {
-    DashboardChart, CurveChart, VueDrag
+    DashboardChart, CurveChart, Control, Status, VueDrag
   },
   props: {
     componentList: {
@@ -59,7 +80,7 @@ export default {
     return {
       typeTabValue: "chart",
       chartList: [],
-      switchList: [],
+      controlList: [],
       mediaList: [],
       reportList: [],
       configurationList: [],
@@ -73,6 +94,10 @@ export default {
         this.chartList = this.componentList.filter(item => {
           return (item.controlType == "dashboard" && item.type != "status") || item.controlType == "history"
         });
+        this.controlList = this.componentList.filter(item => {
+          return item.controlType == "control";
+        });
+        console.log("====controlList", this.controlList)
       }
     }
   },

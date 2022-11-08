@@ -87,6 +87,7 @@ export default {
           .then(({data}) => {
             if (data.code == 200) {
               message_success("保存成功！")
+              bus.$emit("updateVisual")
             }
           })
       } else {
@@ -95,11 +96,14 @@ export default {
             .then(({data}) => {
               if (data.code == 200) {
                 message_success("保存成功！")
+                bus.$emit("updateVisual")
+
               }
             })
       }
     },
     handlePublish() {
+
       console.log("publish", this.screenId)
       console.log(this.$refs.editorCanvas.tempData)
     },
@@ -107,7 +111,17 @@ export default {
      * 获取插件列表
      */
     getPluginList() {
-      PluginAPI.page({"current_page": 1, "per_page": 9999})
+      let param = { "current_page": 1, "per_page": 9999 };
+
+      if (this.mode == BUSINESS_MODE) {
+        // param["business_id"] = this.businessId;
+      } else if (this.mode == GROUP_MODE) {
+        // param["asset_id"] = this.groupId;
+      } else if (this.mode == DEVICE_MODE) {
+        param["id"] = this.pluginId;
+      }
+
+      PluginAPI.page(param)
         .then(({data}) => {
           if (data.code ==200) {
             let list = data.data.data;
