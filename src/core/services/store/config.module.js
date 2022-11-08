@@ -1,5 +1,5 @@
 import ApiService from "@/core/services/api.service";
-
+import axios_prototype from "axios"
 import objectPath from "object-path";
 import merge from "deepmerge";
 import config from "@/core/config/layout.config.json";
@@ -70,21 +70,39 @@ export default {
       state.config = payload;
     },
     [RESET_LAYOUT_CONFIG](state) {
-      ApiService.post(local_url + "/system/logo/index")
-      .then(({ data }) => {
-        if (data.code == 200) {
-          state.initial.self.logo.dark = (process.env.VUE_APP_BASE_URL  ||
-          document.location.protocol + "//" + document.domain + ":9999/")+ data.data.logo_one
-          state.initial.loader.logo = (process.env.VUE_APP_BASE_URL ||
-          document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_two
-          document.title = data.data.system_name
-          // var link = document.querySelector("link[rel~='icon']");
-          // link.href = (process.env.VUE_APP_BASE_URL ||
-          // document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_three
-          // state.config = Object.assign({}, state.initial);
-        }
-      })
-      .catch(({ response }) => {});
+      axios_prototype.post(local_url + "/system/logo/index")
+          .then(({ data }) => {
+            if (data.code == 200) {
+              console.log("=============logo================", data.data)
+              state.initial.self.logo.dark = (process.env.VUE_APP_BASE_URL  ||
+                  document.location.protocol + "//" + document.domain + ":9999/")+ data.data.logo_one
+              state.initial.loader.logo = (process.env.VUE_APP_BASE_URL ||
+                  document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_two
+              document.title = data.data.system_name
+              // var link = document.querySelector("link[rel~='icon']");
+              // link.href = (process.env.VUE_APP_BASE_URL ||
+              // document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_three
+              // state.config = Object.assign({}, state.initial);
+            }
+          })
+      // ApiService.post(local_url + "/system/logo/index")
+      // .then(({ data }) => {
+      //   console.log("=============logo================data", data)
+      //
+      //   if (data.code == 200) {
+      //     console.log("=============logo================", data.data)
+      //     state.initial.self.logo.dark = (process.env.VUE_APP_BASE_URL  ||
+      //     document.location.protocol + "//" + document.domain + ":9999/")+ data.data.logo_one
+      //     state.initial.loader.logo = (process.env.VUE_APP_BASE_URL ||
+      //     document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_two
+      //     document.title = data.data.system_name
+      //     // var link = document.querySelector("link[rel~='icon']");
+      //     // link.href = (process.env.VUE_APP_BASE_URL ||
+      //     // document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_three
+      //     // state.config = Object.assign({}, state.initial);
+      //   }
+      // })
+      // .catch(({ response }) => {});
       
     },
     [OVERRIDE_LAYOUT_CONFIG](state) {

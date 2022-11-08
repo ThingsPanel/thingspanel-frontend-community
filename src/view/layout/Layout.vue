@@ -87,7 +87,7 @@ export default {
     Loader
   },
   beforeMount() {
-    this.$store.dispatch(RESET_LAYOUT_CONFIG);
+    // this.$store.dispatch(RESET_LAYOUT_CONFIG);
     // show page loading
     this.$store.dispatch(ADD_BODY_CLASSNAME, "page-loading");
     // initialize html element classes

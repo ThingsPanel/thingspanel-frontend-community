@@ -13,13 +13,11 @@
 
               <vue-drag :option="component" :index="index">
                   <dashboard-chart v-show="component.controlType == 'dashboard'"
-                                   :style="getChartStyle(component)"
-                                   draggable="true"
+                                   :style="getChartStyle(component)" draggable="true"
                                    :option="component"></dashboard-chart>
 
                   <curve-chart v-show="component.controlType == 'history'"
-                               style="getChartStyle(chart)"
-                               draggable="true"
+                               style="getChartStyle(chart)" draggable="true"
                                :option="component"></curve-chart>
 
                 <status :style="getChartStyle(component)"
@@ -30,17 +28,14 @@
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="开关" name="switch">
+        <el-tab-pane label="开关" name="control">
           <div class="component-chart-list">
             <div class="component-item" v-for="(component, index) in controlList" :key="index">
               <p>{{ component.name }}</p>
 
               <vue-drag :option="component" :index="index">
-                <control :style="getChartStyle(component)"
-                         :w="component.point.w" :h="component.point.h"
-                         v-if="component.controlType == 'control'"
+                <control :style="getChartStyle(component)" draggable="true"
                          :option="component"></control>
-
               </vue-drag>
             </div>
           </div>
@@ -94,6 +89,7 @@ export default {
         this.chartList = this.componentList.filter(item => {
           return (item.controlType == "dashboard" && item.type != "status") || item.controlType == "history"
         });
+        console.log("====chartList", this.chartList)
         this.controlList = this.componentList.filter(item => {
           return item.controlType == "control";
         });

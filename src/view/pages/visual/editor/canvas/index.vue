@@ -12,7 +12,7 @@
                      @resizestop="(rect) => onChangeStop(rect, component.cptId)"
                      @dragstop="(rect) => onChangeStop(rect, component.cptId)"
       >
-        <dashboard-chart :style="component.style ? component.style : defaultStyle"
+        <dashboard-chart :style="getChartStyle(component)"
                          :w="component.point.w" :h="component.point.h"
                          v-if="component.controlType == 'dashboard' && component.type != 'status'"
                          :option="component"></dashboard-chart>
