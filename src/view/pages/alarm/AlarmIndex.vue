@@ -2,7 +2,7 @@
 <div class="rounded card p-4 el-table-transparent">
   <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
     <el-col>
-      <TableTitle>告警信息</TableTitle>
+      <TableTitle>{{ $t("COMMON.WARNINFO")}}</TableTitle>
     </el-col>
   </el-row>
 
@@ -32,27 +32,27 @@
           @clear="handleSearch()"
           size="medium"
           type="datetimerange"
-          range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期">
+          :range-separator="$t('COMMON.PLACEHOLDER38')"
+          :start-placeholder="$t('COMMON.PLACEHOLDER37')"
+          :end-placeholder="$t('COMMON.PLACEHOLDER39')">
       </el-date-picker>
     </el-col>
 
     <el-col :span="7" class="text-right">
-      <el-button type="indigo" size="medium" @click="handleSearch()">查询</el-button>
+      <el-button type="indigo" size="medium" @click="handleSearch()">{{ $t("COMMON.SEARCH")}}</el-button>
 <!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
     </el-col>
   </el-row>
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index"></el-table-column>
-    <el-table-column label="告警时间" prop="created_at" width="180" ></el-table-column>
-    <el-table-column label="业务名" prop="business_name" width="220"></el-table-column>
-    <el-table-column label="设备名" prop="device_name" width="220"></el-table-column>
+    <el-table-column :label="$t('COMMON.NO')" type="index"></el-table-column>
+    <el-table-column :label="$t('COMMON.ALARMTIME')" prop="created_at" width="180" ></el-table-column>
+    <el-table-column :label="$t('COMMON.BUSINESSNAME')" prop="business_name" width="220"></el-table-column>
+    <el-table-column :label="$t('COMMON.DEVICENAME1')" prop="device_name" width="220"></el-table-column>
 <!--    <el-table-column label="指标名" prop="asset_name"></el-table-column>-->
 <!--    <el-table-column label="当前值"></el-table-column>-->
-    <el-table-column label="触发条件" prop="describe" :show-overflow-tooltip="true">
+    <el-table-column :label="$t('COMMON.TRIGGERCONDITIONS')" prop="describe" :show-overflow-tooltip="true">
       <template v-slot="scope">
         <p class="table-describe">{{ scope.row.describe }}</p>
       </template>
