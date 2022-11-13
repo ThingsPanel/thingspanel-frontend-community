@@ -13,7 +13,7 @@
       </div>
 
       <div class="display-canvas">
-        <DeviceChartCanvas :show-screen="showScreen" :screen-data="screenData" :device="device"></DeviceChartCanvas>
+        <DeviceChartCanvas :show-screen="showScreen" :screen-data="screenData" :canvasStyle="canvasStyle" :device="device"></DeviceChartCanvas>
       </div>
     </div>
 
@@ -114,6 +114,7 @@ export default defineComponent({
     }
 
     let screenData = ref([]);
+    let canvasStyle = ref({});
     let device = ref({})
     let showScreen = ref(false);
 
@@ -169,7 +170,9 @@ export default defineComponent({
             if (data.code == 200 && data.data.data.length > 0) {
               showScreen.value = true;
               let jsonData = JSON.parse(data.data.data[0].json_data);
+              console.log("====getScreenData.jsonData", jsonData)
               screenData.value = jsonData.screen ? jsonData.screen : jsonData;
+              canvasStyle.value = jsonData.canvasStyle ? jsonData.canvasStyle : {};
             } else {
               showScreen.value = false;
               if (callback) {
@@ -196,6 +199,7 @@ export default defineComponent({
       nodeClick,
       showScreen,
       screenData,
+      canvasStyle,
       device,
       VisualEdit
     }

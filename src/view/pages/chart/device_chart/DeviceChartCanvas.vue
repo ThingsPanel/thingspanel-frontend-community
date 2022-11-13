@@ -3,70 +3,50 @@
     <div v-if="!showScreen" class="canvas-default">
 <!--      <div v-if="options && options.length > 0" class="container-charts">-->
         <PluginCharts :options="options" :device="device"></PluginCharts>
-<!--        <grid-layout-->
-<!--            :layout.sync="options"-->
-<!--            :col-num="15"-->
-<!--            :row-height="30"-->
-<!--            :is-draggable="true"-->
-<!--            :is-resizable="true"-->
-<!--            :is-mirrored="false"-->
-<!--            :vertical-compact="true"-->
-<!--            :margin="[10, 10]"-->
-<!--            :use-css-transforms="true"-->
-<!--        >-->
-<!--          <grid-item class="grid-item" v-for="option in options" :key="option['i']"-->
-<!--                     :x="option['x']"-->
-<!--                     :y="option['y']"-->
-<!--                     :w="option['w']"-->
-<!--                     :h="option['h']"-->
-<!--                     :i="option['i']"-->
-<!--          >-->
-<!--&lt;!&ndash;            <div v-for="option in options" :key="option['id']">&ndash;&gt;-->
 
-<!--              <e-charts style="width: 100%;height: 100%"-->
-<!--                        v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && option.type != 'status'"-->
-<!--                        :option="option" :device="device"></e-charts>-->
-
-<!--              <status style="width: 100%;height: 100%"-->
-<!--                      v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>-->
-
-<!--              <control style="width: 100%;height: 100%" v-if="option.controlType == 'control'" :option="option" :device="device"></control>-->
-
-<!--&lt;!&ndash;            </div>&ndash;&gt;-->
-<!--          </grid-item>-->
-<!--        </grid-layout>-->
-
-<!--      </div>-->
     </div>
 
     <div v-if="showScreen" class="canvas-screen">
-      <VueDragResize style="position: absolute;"
-                     v-for="(component) in componentList" :key="component.cptId"
-                     :parentLimitation="true" :preventActiveBehavior="true"
-                     :x="component.point.x" :y="component.point.y"
-                     :w="component.point.w" :h="component.point.h"
-      >
-        <dashboard-chart :style="component.style ? component.style : defaultStyle"
-                         :w="component.point.w" :h="component.point.h"
-                         v-if="component.controlType == 'dashboard'" :value="component.value"
-                         :option="component"></dashboard-chart>
-
-        <history-chart :style="component.style ? component.style : defaultStyle"
+      <div class="canvas-screen-drag">
+        <VueDragResize style="position: absolute;"
+                       v-for="(component) in componentList" :key="component.cptId"
+                       :parentLimitation="true" :preventActiveBehavior="true"
+                       :x="component.point.x" :y="component.point.y"
                        :w="component.point.w" :h="component.point.h"
-                       v-if="component.controlType == 'history'" :value="component.value"
-                       :option="component"></history-chart>
+        >
+          <dashboard-chart :style="component.style ? component.style : defaultStyle"
+                           :w="component.point.w" :h="component.point.h"
+                           v-if="component.controlType == 'dashboard'" :value="component.value"
+                           :option="component"></dashboard-chart>
 
-        <configure :defaultStyle="component.style ? component.style : defaultStyle"
+          <status :style="component.style ? component.style : defaultStyle"
+                  :w="component.point.w" :h="component.point.h"
+                  v-if="component.controlType == 'dashboard' && component.type == 'status'" :value="component.value"
+                  :option="component"></status>
+
+          <history-chart :style="component.style ? component.style : defaultStyle"
+                         :w="component.point.w" :h="component.point.h"
+                         v-if="component.controlType == 'history'" :value="component.value"
+                         :option="component"></history-chart>
+
+          <control :style="component.style ? component.style : defaultStyle"
                    :w="component.point.w" :h="component.point.h"
-                   v-if="component.type == 'configure'"
-                   :option="component"></configure>
+                   v-if="component.controlType == 'control'" :value="component.value"
+                   :option="component"></control>
 
-        <other :defaultStyle="component.style ? component.style : defaultStyle"
-               :w="component.point.w" :h="component.point.h"
-               v-if="component.type == 'text'" :value="component.value"
-               :option="component"></other>
+          <configure :defaultStyle="component.style ? component.style : defaultStyle"
+                     :w="component.point.w" :h="component.point.h"
+                     v-if="component.type == 'configure'"
+                     :option="component"></configure>
 
-      </VueDragResize>
+          <other :defaultStyle="component.style ? component.style : defaultStyle"
+                 :w="component.point.w" :h="component.point.h"
+                 v-if="component.type == 'text'" :value="component.value"
+                 :option="component"></other>
+
+        </VueDragResize>
+      </div>
+
     </div>
 
 
@@ -79,10 +59,10 @@ import {watch,  defineComponent, ref as reference} from "@vue/composition-api";
 import {reactive, ref} from "@vue/composition-api/dist/vue-composition-api";
 import ECharts from "./components/Echarts"
 import Control from "./components/Control";
-import Status from "./components/Status"
 
 import ClipButton from "@/components/common/ClipButton";
 import DashboardChart from "@/components/e-charts/DashboardChart";
+import Status from "@/components/e-charts/Status"
 import HistoryChart from "@/components/e-charts/CurveChart";
 import Configure from "@/components/configure/Configure"
 import Other from "@/components/other/Other"
@@ -110,6 +90,10 @@ export default defineComponent ({
       type: [Array],
       default: () => []
     },
+    canvasStyle: {
+      type: [Object],
+      default: () => { return {} }
+    },
     device: {
       type: [Object],
       default: () => { return {} }
@@ -132,9 +116,10 @@ export default defineComponent ({
       options.value = value;
       console.log("options.value", value);
 
-      console.log("==================showScreen", props.showScreen)
       if (props.showScreen && value.length > 0) {
         // 如果是大屏，则开始循环刷新数据
+        console.log("==================showScreen.canvasStyle", props.canvasStyle)
+
         componentList.value = JSON.parse(JSON.stringify(value));
         refresh(componentList.value);
       } else {
@@ -281,6 +266,7 @@ export default defineComponent ({
 
 <style scoped lang="scss">
 .container-canvas {
+  position: relative;
   width: 100%;
   height: 100%!important;
   overflow-y: auto!important;
@@ -288,10 +274,17 @@ export default defineComponent ({
   border-radius: 10px;
   background-color: #1f2a5f;
   .canvas-screen {
-    //display: flex;
-    position: absolute;
-    //flex-flow: wrap;
-    //overflow-y: auto!important;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    .canvas-screen-drag {
+      position: absolute;
+      top: 40px;
+      bottom: 40px;
+      left: 10px;
+      right: 10px;
+    }
   }
 }
 .canvas-default {
