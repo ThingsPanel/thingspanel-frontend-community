@@ -78,8 +78,17 @@ export default {
         data.title = newValue.title;
         data.value = newValue.title;
         data.mapping = newValue.mapping;
-        let properties = this.tsl.properties.find(item => item.name == data.mapping);
-        data.unit = properties.unit;
+        console.log("====EditorInformation.1", data);
+        let properties = null;
+        if (this.tsl.properties) {
+          properties = this.tsl.properties.find(item => item.name == data.mapping);
+        }
+        console.log("====EditorInformation.2", data)
+        if (properties) {
+          data.unit = properties.unit;
+        }
+        console.log("====EditorInformation.3", data)
+
         bus.$emit('changeData', newValue.cptId, data);
       },
       deep: true
