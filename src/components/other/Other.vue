@@ -33,6 +33,7 @@ export default {
   watch: {
     option: {
       handler(newValue) {
+        console.log("====other.newValue", newValue)
       },
       immediate: true,
       deep: true

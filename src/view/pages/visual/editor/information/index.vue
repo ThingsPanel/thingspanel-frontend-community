@@ -76,6 +76,7 @@ export default {
       handler(newValue) {
         let data = {};
         data.title = newValue.title;
+        data.value = newValue.title;
         data.mapping = newValue.mapping;
         bus.$emit('changeData', newValue.cptId, data);
       },
