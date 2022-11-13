@@ -53,7 +53,7 @@
 
         <history-chart :style="component.style ? component.style : defaultStyle"
                        :w="component.point.w" :h="component.point.h"
-                       v-if="component.controlType == 'history'"
+                       v-if="component.controlType == 'history'" :value="component.value"
                        :option="component"></history-chart>
 
         <configure :defaultStyle="component.style ? component.style : defaultStyle"
@@ -91,7 +91,7 @@ import VueDragResize from 'vue-drag-resize'
 import {GridLayout, GridItem} from "vue-grid-layout";
 import PluginCharts from "./PluginCharts";
 import bus from "@/core/plugins/eventBus"
-import {currentValue} from "@/api/device";
+import {currentValue, historyValue} from "@/api/device";
 
 import { addTimer, clearTimer } from "@/utils/tool.js"
 
@@ -172,7 +172,8 @@ export default defineComponent ({
      * @returns {any}
      */
     function listForEach() {
-      getCurrentValue()
+      getCurrentValue();
+      getHistoryValue();
       return listForEach;
     }
 
@@ -183,6 +184,7 @@ export default defineComponent ({
         .then(({ data }) => {
           if (data.code == 200) {
             let datas = data.data;
+            if (!datas || !datas[0]) return;
             componentList.value.forEach(item => {
               if (item.controlType == "dashboard" || item.controlType == "history" || item.type == "text") {
                 getComponentValue(datas[0], item)
@@ -190,6 +192,41 @@ export default defineComponent ({
             })
           }
         })
+    }
+
+    function getHistoryValue() {
+      let deviceId = props.device.id ? props.device.id : props.device.device;
+      if (!deviceId) return;
+      for (let i = 0; i < componentList.value.length; i++) {
+        let cpt = componentList.value[i];
+        if (cpt.controlType == "history") {
+          let attrs = cpt.mapping;
+          let timestamp = (new Date()).getTime();
+          let yesterday = timestamp-246060*1000;
+          let rate = 10 * 1000 * 1000;  // 微秒
+          let attribute = attrs.concat(["systime"])
+          console.log("getHistoryValue")
+          historyValue(
+              {
+                device_id: deviceId,
+                attribute,
+                "start_ts": yesterday,
+                "end_ts": timestamp,
+                rate
+              }
+          )
+              .then(({ data }) => {
+                if (data.code == 200) {
+                  let arr = [];
+                  cpt.mapping.forEach(map => {
+                    arr.push({data: data.data[map], sysTime: data.data.systime});
+                  })
+                  cpt.value = JSON.stringify(arr)
+                  componentList.value.splice(i, 1, cpt)
+                }
+              })
+        }
+      }
 
     }
 

@@ -66,19 +66,6 @@ export default defineComponent({
     let pluginData = ref([])
     let groupId = "";
 
-    // let treeData = ref([])
-    // getTreeData();
-    // function getTreeData() {
-    //   getDeviceTree({current_page: 1, per_page: 9999, business_id:  business_id})
-    //     .then(({data}) => {
-    //       if (data.code == 200) {
-    //         treeData.value = data.data.data;
-    //       }
-    //       console.log("getDeviceTree", data)
-    //     })
-    // }
-
-
     function loadNode(node, resolve) {
       // 默认加载一级节点
       if (node.level == 0) {
@@ -136,12 +123,9 @@ export default defineComponent({
      */
     function nodeClick(node) {
       device.value = node;
-      console.log("nodeClick.mode", node)
       if (node.leaf && node.device && node.type) {
         let param = {"current_page": 1, "per_page": 10, "id": node.type}
         getScreenData(node.device, () => {
-          console.log("getScreenData.callback()")
-
           PluginAPI.page(param)
               .then(({data}) => {
                 if (data.code == 200 && data.data && data.data.data && data.data.data.length > 0) {
