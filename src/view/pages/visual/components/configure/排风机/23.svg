@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="42.443px"
+   height="42.024px"
+   viewBox="0 0 42.443 42.024"
+   enable-background="new 0 0 42.443 42.024"
+   xml:space="preserve"
+   sodipodi:docname="排风机_23-01.svg"><metadata
+   id="metadata27"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs25" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview23" />
+<g
+   id="g20">
+	<path
+   fill="#1B8E99"
+   d="M9.334,3.425c0,0,4.876-3.456,10.157-3.425c0.444,0.771,7.188,9.903,1.73,21.012   c-0.787-0.211-2.545-1.891-5.278-6.114C13.93,11.787,11.063,6.512,9.334,3.425z"
+   id="path2" />
+	<path
+   fill="#1B8E99"
+   d="M0.048,22.512c0,0-0.556-5.95,2.111-10.507c0.89,0,12.171-1.274,19.063,9.007   c-0.577,0.576-2.909,1.259-7.935,1.514C9.586,22.713,3.584,22.56,0.048,22.512z"
+   id="path4" />
+	<path
+   fill="#1B8E99"
+   d="M11.934,40.099c0,0-5.432-2.494-8.044-7.083c0.444-0.77,4.982-11.177,17.332-12.004   c0.21,0.787-0.365,3.148-2.657,7.627C16.877,31.94,13.744,37.061,11.934,40.099z"
+   id="path6" />
+	<path
+   fill="#1B8E99"
+   d="M33.107,38.598c0,0-4.874,3.457-10.155,3.426c-0.444-0.77-7.188-9.904-1.729-21.012   c0.785,0.211,2.544,1.89,5.276,6.113C28.513,30.238,31.38,35.512,33.107,38.598z"
+   id="path8" />
+	<path
+   fill="#1B8E99"
+   d="M42.395,19.512c0,0,0.556,5.95-2.112,10.508c-0.889,0-12.171,1.273-19.061-9.008   c0.575-0.575,2.909-1.259,7.934-1.513C32.857,19.311,38.858,19.464,42.395,19.512z"
+   id="path10" />
+	<path
+   fill="#1B8E99"
+   d="M30.508,1.926c0,0,5.433,2.492,8.045,7.082c-0.445,0.771-4.982,11.178-17.331,12.004   c-0.21-0.787,0.364-3.149,2.655-7.627C25.565,10.085,28.701,4.964,30.508,1.926z"
+   id="path12" />
+	<g
+   id="g18">
+		<circle
+   fill="#FFFFFF"
+   cx="21.17"
+   cy="21.042"
+   r="8.453"
+   id="circle14" />
+		<circle
+   fill="#1B8E99"
+   cx="21.17"
+   cy="21.041"
+   r="5.34"
+   id="circle16" />
+	</g>
+</g>
+</svg>

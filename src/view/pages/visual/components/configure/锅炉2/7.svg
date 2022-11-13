@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="98px"
+   height="62.025px"
+   viewBox="571.494 76 98 62.025"
+   enable-background="new 571.494 76 98 62.025"
+   xml:space="preserve"
+   sodipodi:docname="01-07.svg"><metadata
+   id="metadata37"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs35" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview33" />
+<g
+   id="g30">
+	
+		<rect
+   x="571.744"
+   y="85.667"
+   fill="#868686"
+   stroke="#1B1B1B"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="74"
+   height="48.5"
+   id="rect2" />
+	<polygon
+   fill="#A9A9A9"
+   points="644.868,103.671 572.619,120.859 572.619,86.484 644.868,86.484  "
+   id="polygon4" />
+	<rect
+   x="595.744"
+   y="82.667"
+   fill="#868686"
+   stroke="#1B1B1B"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="8.5"
+   height="3"
+   id="rect6" />
+	<polyline
+   fill="none"
+   stroke="#1B1B1B"
+   stroke-miterlimit="10"
+   points="637.577,85.667 637.577,76.5 654.577,76.5 654.577,92.5     "
+   id="polyline8" />
+	<polygon
+   fill="#373737"
+   stroke="#1B1B1B"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="651.077,88.5 651.077,94.25    645.744,94.25 645.744,99.583 651.077,99.583 651.077,101.833 657.744,101.833 657.744,88.5  "
+   id="polygon10" />
+	
+		<rect
+   x="571.744"
+   y="134.167"
+   fill="#535353"
+   stroke="#1B1B1B"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="97.5"
+   height="3.608"
+   id="rect12" />
+	<g
+   id="g28">
+		
+			<rect
+   x="645.906"
+   y="109.668"
+   fill="#868686"
+   stroke="#1B1B1B"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="9.923"
+   height="2.771"
+   id="rect14" />
+		
+			<rect
+   x="645.906"
+   y="112.438"
+   fill="#535353"
+   stroke="#1B1B1B"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="9.923"
+   height="3.482"
+   id="rect16" />
+		
+			<rect
+   x="655.829"
+   y="114.037"
+   fill="#535353"
+   stroke="#1B1B1B"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="9.138"
+   height="12.506"
+   id="rect18" />
+		
+			<rect
+   x="645.906"
+   y="115.921"
+   fill="#868686"
+   stroke="#1B1B1B"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="15.248"
+   height="10.622"
+   id="rect20" />
+		
+			<rect
+   x="657.258"
+   y="117.806"
+   fill="#373737"
+   stroke="#1B1B1B"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="3.896"
+   height="6.853"
+   id="rect22" />
+		
+			<rect
+   x="647.662"
+   y="117.806"
+   fill="#373737"
+   stroke="#1B1B1B"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="3.898"
+   height="2.056"
+   id="rect24" />
+		
+			<rect
+   x="652.447"
+   y="117.806"
+   fill="#373737"
+   stroke="#1B1B1B"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="3.897"
+   height="2.056"
+   id="rect26" />
+	</g>
+</g>
+</svg>

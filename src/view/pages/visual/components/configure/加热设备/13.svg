@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="100.271px"
+   height="100.271px"
+   viewBox="0 0 100.271 100.271"
+   enable-background="new 0 0 100.271 100.271"
+   xml:space="preserve"
+   sodipodi:docname="加热处理-13.svg"><metadata
+   id="metadata15"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs13" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview11" />
+<g
+   id="g8">
+	<circle
+   fill="#00CFFF"
+   stroke="#231815"
+   stroke-miterlimit="10"
+   cx="50.136"
+   cy="50.136"
+   r="49.636"
+   id="circle2" />
+	<polyline
+   fill="none"
+   stroke="#231815"
+   stroke-miterlimit="10"
+   points="21.986,21.788 30.803,26.513 21.986,31.237 30.803,35.962    21.986,40.687 30.803,45.411 21.986,50.136 30.803,54.86 21.986,59.584 30.803,64.309 21.986,69.033 30.803,73.758 21.986,78.482     "
+   id="polyline4" />
+	<polyline
+   fill="none"
+   stroke="#231815"
+   stroke-miterlimit="10"
+   points="78.285,21.788 69.468,26.513 78.285,31.237 69.468,35.962    78.285,40.687 69.468,45.411 78.285,50.136 69.468,54.86 78.285,59.584 69.468,64.309 78.285,69.033 69.468,73.758 78.285,78.482     "
+   id="polyline6" />
+</g>
+</svg>

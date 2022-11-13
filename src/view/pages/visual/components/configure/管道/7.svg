@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="72px"
+   height="51px"
+   viewBox="0 0 72 51"
+   enable-background="new 0 0 72 51"
+   xml:space="preserve"
+   sodipodi:docname="工业管道_07-01.svg"><metadata
+   id="metadata60"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs58" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview56" />
+<g
+   id="g53">
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="63.7549"
+   y1="-228.6304"
+   x2="86.9346"
+   y2="-228.6304"
+   gradientTransform="matrix(0 1 -1 0 -192.6035 -60.248)">
+		<stop
+   offset="0"
+   style="stop-color:#12141A"
+   id="stop2" />
+		<stop
+   offset="0.5"
+   style="stop-color:#F5FAFD"
+   id="stop4" />
+		<stop
+   offset="1"
+   style="stop-color:#12141A"
+   id="stop6" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#12141A" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#12141A" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#12141A" />
+	</linearGradient>
+	<rect
+   x="3.567"
+   y="3.507"
+   fill="url(#SVGID_1_)"
+   width="64.919"
+   height="23.18"
+   id="rect9" />
+	<g
+   id="g20">
+		
+			<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="60.248"
+   y1="-262.8467"
+   x2="90.4414"
+   y2="-262.8467"
+   gradientTransform="matrix(0 1 -1 0 -192.6035 -60.248)">
+			<stop
+   offset="0"
+   style="stop-color:#12141A"
+   id="stop11" />
+			<stop
+   offset="0.5"
+   style="stop-color:#F5FAFD"
+   id="stop13" />
+			<stop
+   offset="1"
+   style="stop-color:#12141A"
+   id="stop15" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#12141A" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#12141A" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#12141A" />
+		</linearGradient>
+		
+			<rect
+   x="68.486"
+   fill="url(#SVGID_2_)"
+   stroke="#12141A"
+   stroke-width="0.5669"
+   stroke-linejoin="round"
+   width="3.514"
+   height="30.193"
+   id="rect18" />
+	</g>
+	<g
+   id="g31">
+		
+			<linearGradient
+   id="SVGID_3_"
+   gradientUnits="userSpaceOnUse"
+   x1="-723.7744"
+   y1="235.0283"
+   x2="-693.5811"
+   y2="235.0283"
+   gradientTransform="matrix(0 -1 1 0 -233.2715 -693.5811)">
+			<stop
+   offset="0"
+   style="stop-color:#12141A"
+   id="stop22" />
+			<stop
+   offset="0.5"
+   style="stop-color:#F5FAFD"
+   id="stop24" />
+			<stop
+   offset="1"
+   style="stop-color:#12141A"
+   id="stop26" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#12141A" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#12141A" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#12141A" />
+		</linearGradient>
+		<rect
+   fill="url(#SVGID_3_)"
+   stroke="#12141A"
+   stroke-width="0.5669"
+   stroke-linejoin="round"
+   width="3.514"
+   height="30.193"
+   id="rect29" />
+	</g>
+	
+		<linearGradient
+   id="SVGID_4_"
+   gradientUnits="userSpaceOnUse"
+   x1="92.0605"
+   y1="-217.019"
+   x2="92.0605"
+   y2="-240.2437"
+   gradientTransform="matrix(0 1 -1 0 -192.6035 -60.248)">
+		<stop
+   offset="0"
+   style="stop-color:#12141A"
+   id="stop33" />
+		<stop
+   offset="0.5"
+   style="stop-color:#F5FAFD"
+   id="stop35" />
+		<stop
+   offset="1"
+   style="stop-color:#12141A"
+   id="stop37" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#12141A" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#12141A" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#12141A" />
+	</linearGradient>
+	<path
+   fill="url(#SVGID_4_)"
+   d="M24.415,26.687c0-6.4,5.198-10.556,11.612-10.556c6.413,0,11.612,4.155,11.612,10.556v20.807H24.415   V26.687z"
+   id="path40" />
+	<g
+   id="g51">
+		
+			<linearGradient
+   id="SVGID_5_"
+   gradientUnits="userSpaceOnUse"
+   x1="-48.4414"
+   y1="-279.0688"
+   x2="-18.1914"
+   y2="-279.0688"
+   gradientTransform="matrix(-1 0 0 -1 2.71 -229.8223)">
+			<stop
+   offset="0"
+   style="stop-color:#12141A"
+   id="stop42" />
+			<stop
+   offset="0.5"
+   style="stop-color:#F5FAFD"
+   id="stop44" />
+			<stop
+   offset="1"
+   style="stop-color:#12141A"
+   id="stop46" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#12141A" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#12141A" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#12141A" />
+		</linearGradient>
+		
+			<rect
+   x="20.901"
+   y="47.493"
+   fill="url(#SVGID_5_)"
+   stroke="#12141A"
+   stroke-width="0.5669"
+   stroke-linejoin="round"
+   width="30.25"
+   height="3.507"
+   id="rect49" />
+	</g>
+</g>
+</svg>

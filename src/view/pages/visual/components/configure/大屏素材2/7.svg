@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="96px" height="75px" viewBox="0 0 96 75" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>编组 18</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#006A76" offset="0%"></stop>
+            <stop stop-color="#002C41" stop-opacity="0.7" offset="25.1181385%"></stop>
+            <stop stop-color="#000A25" stop-opacity="0" offset="49.9804367%"></stop>
+            <stop stop-color="#002139" stop-opacity="0.7" offset="73.4138861%"></stop>
+            <stop stop-color="#005262" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-opacity="0.276107681">
+        <g id="大数据可视化科技智慧智能统计后台监管中心" transform="translate(-718.000000, -432.000000)" fill="url(#linearGradient-1)" stroke="#23FFF9" stroke-width="0.815294118">
+            <g id="原创-center" transform="translate(375.000000, 122.000000)">
+                <g id="编组-39" transform="translate(5.000000, 139.000000)">
+                    <g id="编组-31" transform="translate(339.000000, 172.000000)">
+                        <g id="编组-18">
+                            <rect id="矩形" x="-0.407647059" y="-0.407647059" width="94.0552941" height="73.8952941" rx="3.36"></rect>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

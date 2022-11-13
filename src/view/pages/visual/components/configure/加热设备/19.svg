@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="128.266px"
+   height="108.065px"
+   viewBox="0 0 128.266 108.065"
+   enable-background="new 0 0 128.266 108.065"
+   xml:space="preserve"
+   sodipodi:docname="加热处理-19.svg"><metadata
+   id="metadata53"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs51" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview49" />
+<g
+   id="g46">
+	<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="64.1328"
+   y1="19.499"
+   x2="64.1328"
+   y2="0.251">
+		<stop
+   offset="0"
+   style="stop-color:#A1A1A1"
+   id="stop2" />
+		<stop
+   offset="0.4951"
+   style="stop-color:#FFFFFF"
+   id="stop4" />
+		<stop
+   offset="0.6355"
+   style="stop-color:#E9E9E9"
+   id="stop6" />
+		<stop
+   offset="0.9269"
+   style="stop-color:#B0B0B0"
+   id="stop8" />
+		<stop
+   offset="1"
+   style="stop-color:#A1A1A1"
+   id="stop10" />
+	</linearGradient>
+	
+		<rect
+   x="0.25"
+   y="0.251"
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="127.766"
+   height="19.248"
+   id="rect13" />
+	
+		<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="1510.2402"
+   y1="407.1797"
+   x2="1510.2402"
+   y2="345.2988"
+   gradientTransform="matrix(0 -1 1 0 -312.1055 1564.2725)">
+		<stop
+   offset="0"
+   style="stop-color:#A1A1A1"
+   id="stop15" />
+		<stop
+   offset="0.4951"
+   style="stop-color:#FFFFFF"
+   id="stop17" />
+		<stop
+   offset="0.6355"
+   style="stop-color:#E9E9E9"
+   id="stop19" />
+		<stop
+   offset="0.9269"
+   style="stop-color:#B0B0B0"
+   id="stop21" />
+		<stop
+   offset="1"
+   style="stop-color:#A1A1A1"
+   id="stop23" />
+	</linearGradient>
+	
+		<path
+   fill="url(#SVGID_2_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   d="   M95.074,0.25v76.625c0,17.088-13.853,30.94-30.94,30.94l0,0c-17.088,0-30.94-13.853-30.94-30.94V0.25H95.074z"
+   id="path26" />
+	<linearGradient
+   id="SVGID_3_"
+   gradientUnits="userSpaceOnUse"
+   x1="64.1367"
+   y1="7.6104"
+   x2="64.1367"
+   y2="0.25">
+		<stop
+   offset="0"
+   style="stop-color:#A1A1A1"
+   id="stop28" />
+		<stop
+   offset="0.4982"
+   style="stop-color:#BBBBBB"
+   id="stop30" />
+		<stop
+   offset="1"
+   style="stop-color:#D1D1D1"
+   id="stop32" />
+	</linearGradient>
+	
+		<path
+   fill="url(#SVGID_3_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   d="   M91.729,0.25c0,4.065-12.354,7.36-27.594,7.36S36.543,4.315,36.543,0.25H91.729z"
+   id="path35" />
+	<linearGradient
+   id="SVGID_4_"
+   gradientUnits="userSpaceOnUse"
+   x1="64.1543"
+   y1="60.2959"
+   x2="64.1543"
+   y2="52.8652">
+		<stop
+   offset="0"
+   style="stop-color:#D1D1D1"
+   id="stop37" />
+		<stop
+   offset="0.5018"
+   style="stop-color:#BBBBBB"
+   id="stop39" />
+		<stop
+   offset="1"
+   style="stop-color:#A1A1A1"
+   id="stop41" />
+	</linearGradient>
+	
+		<path
+   fill="url(#SVGID_4_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   d="   M95.553,52.865v2.023c0,2.992-14.055,5.407-31.398,5.407c-17.343,0-31.398-2.415-31.398-5.407v-2.023   c0,0.718,0.807,1.393,2.279,2.023c4.652,1.979,15.939,3.384,29.119,3.384s24.468-1.404,29.119-3.384   C94.747,54.258,95.553,53.583,95.553,52.865z"
+   id="path44" />
+</g>
+</svg>

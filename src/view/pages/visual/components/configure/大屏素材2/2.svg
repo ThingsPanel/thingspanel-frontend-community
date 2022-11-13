@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="820px" height="650px" viewBox="0 0 820 650" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>背景/中</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <rect id="path-1" x="0" y="0" width="820" height="570"></rect>
+        <filter x="-1.2%" y="-1.8%" width="102.4%" height="103.5%" filterUnits="objectBoundingBox" id="filter-3">
+            <feGaussianBlur stdDeviation="10" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="0" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.211764706   0 0 0 0 0.384313725   0 0 0 0 0.643137255  0 0 0 1 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+        <linearGradient x1="24.5883599%" y1="0%" x2="75.4116401%" y2="88.5754276%" id="linearGradient-4">
+            <stop stop-color="#175CEF" offset="0%"></stop>
+            <stop stop-color="#0F172C" stop-opacity="0" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="24.0856137%" y1="0%" x2="75.9143863%" y2="88.5754276%" id="linearGradient-5">
+            <stop stop-color="#175CEF" offset="0%"></stop>
+            <stop stop-color="#0F172C" stop-opacity="0" offset="100%"></stop>
+        </linearGradient>
+        <filter x="-19.1%" y="-18.9%" width="138.2%" height="137.8%" filterUnits="objectBoundingBox" id="filter-6">
+            <feGaussianBlur stdDeviation="50" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <linearGradient x1="99.1250932%" y1="50%" x2="1.45050262%" y2="50%" id="linearGradient-7">
+            <stop stop-color="#FFFFFF" stop-opacity="0" offset="0%"></stop>
+            <stop stop-color="#FFFFFF" offset="50.19941%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0" offset="100%"></stop>
+        </linearGradient>
+        <filter x="-11.4%" y="-131.2%" width="122.7%" height="362.5%" filterUnits="objectBoundingBox" id="filter-8">
+            <feGaussianBlur stdDeviation="21" in="SourceGraphic"></feGaussianBlur>
+        </filter>
+        <linearGradient x1="99.1250932%" y1="50%" x2="1.45050262%" y2="50%" id="linearGradient-9">
+            <stop stop-color="#FFFFFF" stop-opacity="0" offset="0%"></stop>
+            <stop stop-color="#FFFFFF" offset="50.19941%"></stop>
+            <stop stop-color="#FFFFFF" stop-opacity="0" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="3大数据可视化蓝色科技智慧车辆大屏后台统计" transform="translate(-550.000000, -183.000000)">
+            <g id="原创-center" transform="translate(550.000000, 183.000000)">
+                <g id="背景/中">
+                    <g id="编组-2">
+                        <rect id="矩形" fill-opacity="0.01" fill="#0A083D" x="0" y="0" width="820" height="650"></rect>
+                        <g id="矩形-+-矩形-蒙版" transform="translate(0.000000, 40.000000)">
+                            <mask id="mask-2" fill="white">
+                                <use xlink:href="#path-1"></use>
+                            </mask>
+                            <g id="蒙版">
+                                <use fill="#0A0739" fill-rule="evenodd" xlink:href="#path-1"></use>
+                                <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-1"></use>
+                                <rect stroke="#4F93E5" stroke-width="2" stroke-linejoin="square" x="1" y="1" width="818" height="568"></rect>
+                            </g>
+                            <g id="编组" mask="url(#mask-2)">
+                                <g transform="translate(1.644444, 1.913793)" id="矩形">
+                                    <rect fill="url(#linearGradient-4)" transform="translate(613.533333, 285.086207) scale(-1, 1) translate(-613.533333, -285.086207) " x="410.355556" y="0.0862068966" width="406.355556" height="570"></rect>
+                                    <rect fill="url(#linearGradient-5)" x="0" y="0" width="410.355556" height="570"></rect>
+                                </g>
+                            </g>
+                            <polyline id="路径-4" stroke="#50B4FF" stroke-width="4" mask="url(#mask-2)" points="2.73333333 36 2.73333333 3 32.8 3"></polyline>
+                            <ellipse id="椭圆形" fill="#0D0F20" opacity="0.198335193" filter="url(#filter-6)" mask="url(#mask-2)" cx="409.088889" cy="497" rx="392.688889" ry="397"></ellipse>
+                            <polyline id="路径-4" stroke="#50B4FF" stroke-width="4" mask="url(#mask-2)" transform="translate(802.233333, 19.500000) scale(-1, 1) translate(-802.233333, -19.500000) " points="787.2 36 787.2 3 817.266667 3"></polyline>
+                            <polyline id="路径-4" stroke="#50B4FF" stroke-width="4" mask="url(#mask-2)" transform="translate(17.766667, 550.500000) scale(1, -1) translate(-17.766667, -550.500000) " points="2.73333333 567 2.73333333 534 32.8 534"></polyline>
+                            <polyline id="路径-4" stroke="#50B4FF" stroke-width="4" mask="url(#mask-2)" transform="translate(802.233333, 549.500000) scale(-1, -1) translate(-802.233333, -549.500000) " points="787.2 566 787.2 533 817.266667 533"></polyline>
+                            <rect id="矩形" fill="url(#linearGradient-7)" style="mix-blend-mode: overlay;" filter="url(#filter-8)" mask="url(#mask-2)" x="133" y="0" width="554" height="48"></rect>
+                            <rect id="矩形" fill="url(#linearGradient-9)" style="mix-blend-mode: overlay;" mask="url(#mask-2)" x="250" y="0" width="320" height="3"></rect>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="62px"
+   height="86px"
+   viewBox="0 0 62 86"
+   enable-background="new 0 0 62 86"
+   xml:space="preserve"
+   sodipodi:docname="罐体_10-01.svg"><metadata
+   id="metadata27"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs25" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview23" />
+<g
+   id="g20">
+	<g
+   id="g6">
+		<ellipse
+   fill="#00FFFF"
+   cx="31"
+   cy="10.123"
+   rx="30"
+   ry="9.623"
+   id="ellipse2" />
+		<path
+   d="M31,20.246c-17.104,0-30.5-4.447-30.5-10.123C0.5,4.446,13.896,0,31,0s30.5,4.446,30.5,10.123    C61.5,15.799,48.104,20.246,31,20.246z M31,1C15.01,1,1.5,5.178,1.5,10.123s13.51,9.123,29.5,9.123s29.5-4.178,29.5-9.123    S46.99,1,31,1z"
+   id="path4" />
+	</g>
+	<g
+   id="g12">
+		<rect
+   x="1"
+   y="10.123"
+   fill="#00FFFF"
+   width="60"
+   height="51.303"
+   id="rect8" />
+		<path
+   d="M61.5,61.926h-61V9.623h61V61.926z M1.5,60.926h59V10.623h-59V60.926z"
+   id="path10" />
+	</g>
+	<g
+   id="g18">
+		<polygon
+   fill="#00FFFF"
+   points="44.988,85.5 17.012,85.5 1,61.426 61,61.426   "
+   id="polygon14" />
+		<path
+   d="M45.257,86H16.744L0.066,60.926h61.867L45.257,86z M17.279,85h27.441l15.346-23.074H1.934L17.279,85z"
+   id="path16" />
+	</g>
+</g>
+</svg>

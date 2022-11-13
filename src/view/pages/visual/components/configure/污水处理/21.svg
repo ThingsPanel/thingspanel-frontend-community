@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="124.887px"
+   height="115.182px"
+   viewBox="543.29 720.25 124.887 115.182"
+   enable-background="new 543.29 720.25 124.887 115.182"
+   xml:space="preserve"
+   sodipodi:docname="水与污水处理-21.svg"><metadata
+   id="metadata104"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs102" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview100" />
+<g
+   id="g97">
+	
+		<rect
+   x="656.192"
+   y="740.082"
+   fill="#B2B2B2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="8.413"
+   height="46.04"
+   id="rect2" />
+	<path
+   fill="#B2B2B2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M603.992,772.818l-10.771,1.942l10.763-1.974   c1.016,4.04,5.509,13.759,13.994,18.91c17.595,10.679,17.552,18.724,18.469,23.936l-21.756,2.84   c-0.258-1.454-2.817-6.819-13.788-13.479c-17.078-10.368-16.932-26.066-17.472-28.289"
+   id="path4" />
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="579.6074"
+   y1="404.7612"
+   x2="579.6074"
+   y2="433.1157"
+   gradientTransform="matrix(1 0 0 -1 8.3398 1182.04)">
+		<stop
+   offset="0"
+   style="stop-color:#7F7F7F"
+   id="stop6" />
+		<stop
+   offset="0.5"
+   style="stop-color:#D7D7D7"
+   id="stop8" />
+		<stop
+   offset="1"
+   style="stop-color:#7F7F7F"
+   id="stop10" />
+	</linearGradient>
+	
+		<rect
+   x="543.54"
+   y="748.925"
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="88.813"
+   height="28.354"
+   id="rect13" />
+	
+		<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="619.3398"
+   y1="404.7612"
+   x2="619.3398"
+   y2="433.1157"
+   gradientTransform="matrix(1 0 0 -1 8.3398 1182.04)">
+		<stop
+   offset="0"
+   style="stop-color:#7F7F7F"
+   id="stop15" />
+		<stop
+   offset="0.5"
+   style="stop-color:#D7D7D7"
+   id="stop17" />
+		<stop
+   offset="1"
+   style="stop-color:#7F7F7F"
+   id="stop19" />
+	</linearGradient>
+	
+		<rect
+   x="623.003"
+   y="748.925"
+   fill="url(#SVGID_2_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="9.353"
+   height="28.354"
+   id="rect22" />
+	
+		<linearGradient
+   id="SVGID_3_"
+   gradientUnits="userSpaceOnUse"
+   x1="562.9932"
+   y1="452.54"
+   x2="570.915"
+   y2="452.54"
+   gradientTransform="matrix(1 0 0 -1 8.3398 1182.04)">
+		<stop
+   offset="0"
+   style="stop-color:#7F7F7F"
+   id="stop24" />
+		<stop
+   offset="0.5"
+   style="stop-color:#D7D7D7"
+   id="stop26" />
+		<stop
+   offset="1"
+   style="stop-color:#7F7F7F"
+   id="stop28" />
+	</linearGradient>
+	
+		<rect
+   x="571.333"
+   y="720.5"
+   fill="url(#SVGID_3_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="7.922"
+   height="18"
+   id="rect31" />
+	
+		<linearGradient
+   id="SVGID_4_"
+   gradientUnits="userSpaceOnUse"
+   x1="562.9932"
+   y1="-192.6875"
+   x2="570.915"
+   y2="-192.6875"
+   gradientTransform="matrix(1 0 0 1 8.3398 989.3916)">
+		<stop
+   offset="0"
+   style="stop-color:#7F7F7F"
+   id="stop33" />
+		<stop
+   offset="0.5"
+   style="stop-color:#D7D7D7"
+   id="stop35" />
+		<stop
+   offset="1"
+   style="stop-color:#7F7F7F"
+   id="stop37" />
+	</linearGradient>
+	
+		<rect
+   x="571.333"
+   y="787.704"
+   fill="url(#SVGID_4_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="7.922"
+   height="18"
+   id="rect40" />
+	
+		<linearGradient
+   id="SVGID_5_"
+   gradientUnits="userSpaceOnUse"
+   x1="558.8164"
+   y1="418.938"
+   x2="575.0928"
+   y2="418.938"
+   gradientTransform="matrix(1 0 0 -1 8.3398 1182.04)">
+		<stop
+   offset="0"
+   style="stop-color:#7F7F7F"
+   id="stop42" />
+		<stop
+   offset="0.5"
+   style="stop-color:#D7D7D7"
+   id="stop44" />
+		<stop
+   offset="1"
+   style="stop-color:#7F7F7F"
+   id="stop46" />
+	</linearGradient>
+	<polygon
+   fill="url(#SVGID_5_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="579.255,738.5 571.333,738.5    571.333,738.501 567.156,748.925 567.156,777.279 571.333,787.703 571.333,787.704 579.255,787.704 583.433,777.279    583.433,748.925  "
+   id="polygon49" />
+	<g
+   id="g53">
+		<path
+   fill="#E5E5E5"
+   d="M622.292,812.006c-0.511-2.825-2.653-8.155-16.319-16.216c-14.567-8.595-14.717-19.916-14.903-20.661    l4.308-0.757c0.043,0.168-0.004,10.657,13.132,18.406c15.127,8.923,17.577,15.591,18.136,18.675L622.292,812.006z"
+   id="path51" />
+	</g>
+	<polygon
+   fill="#B2B2B2"
+   points="583.438,777.332 583.438,748.924 605.267,748.924 605.267,777.276 605.267,778.586 583.69,778.586     "
+   id="polygon55" />
+	<g
+   id="g71">
+		
+			<rect
+   x="610.415"
+   y="816.163"
+   transform="matrix(-0.9884 0.1516 -0.1516 -0.9884 1371.2178 1544.3855)"
+   fill="#7F7F7F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="32.639"
+   height="16.605"
+   id="rect57" />
+		
+			<rect
+   x="616.286"
+   y="816.546"
+   transform="matrix(-0.9885 0.1515 -0.1515 -0.9885 1371.157 1544.7133)"
+   fill="#B2B2B2"
+   width="20.906"
+   height="16.078"
+   id="rect59" />
+		
+			<rect
+   x="624.234"
+   y="816.479"
+   transform="matrix(-0.9884 0.1518 -0.1518 -0.9884 1371.3375 1544.3607)"
+   fill="#E5E5E5"
+   width="4.986"
+   height="16.079"
+   id="rect61" />
+		<g
+   id="g69">
+			
+				<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="610.122"
+   y1="823.826"
+   x2="642.384"
+   y2="818.876"
+   id="line63" />
+			
+				<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="610.607"
+   y1="826.997"
+   x2="642.871"
+   y2="822.048"
+   id="line65" />
+			
+				<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="611.096"
+   y1="830.169"
+   x2="643.357"
+   y2="825.219"
+   id="line67" />
+		</g>
+	</g>
+	
+		<linearGradient
+   id="SVGID_6_"
+   gradientUnits="userSpaceOnUse"
+   x1="633.918"
+   y1="412.6782"
+   x2="633.918"
+   y2="425.1968"
+   gradientTransform="matrix(1 0 0 -1 8.3398 1182.04)">
+		<stop
+   offset="0"
+   style="stop-color:#7F7F7F"
+   id="stop73" />
+		<stop
+   offset="0.5"
+   style="stop-color:#D7D7D7"
+   id="stop75" />
+		<stop
+   offset="1"
+   style="stop-color:#7F7F7F"
+   id="stop77" />
+	</linearGradient>
+	
+		<rect
+   x="632.354"
+   y="756.844"
+   fill="url(#SVGID_6_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="19.806"
+   height="12.519"
+   id="rect80" />
+	
+		<linearGradient
+   id="SVGID_7_"
+   gradientUnits="userSpaceOnUse"
+   x1="645.8369"
+   y1="395.9185"
+   x2="645.8369"
+   y2="441.9585"
+   gradientTransform="matrix(1 0 0 -1 8.3398 1182.04)">
+		<stop
+   offset="0"
+   style="stop-color:#7F7F7F"
+   id="stop82" />
+		<stop
+   offset="0.5"
+   style="stop-color:#D7D7D7"
+   id="stop84" />
+		<stop
+   offset="1"
+   style="stop-color:#7F7F7F"
+   id="stop86" />
+	</linearGradient>
+	
+		<rect
+   x="652.159"
+   y="740.082"
+   fill="url(#SVGID_7_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="4.033"
+   height="46.04"
+   id="rect89" />
+	
+		<rect
+   x="656.192"
+   y="756.844"
+   fill="#D7D7D7"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="11.734"
+   height="4.172"
+   id="rect91" />
+	
+		<rect
+   x="656.192"
+   y="761.016"
+   fill="#D7D7D7"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="11.734"
+   height="4.173"
+   id="rect93" />
+	
+		<rect
+   x="656.192"
+   y="765.188"
+   fill="#D7D7D7"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="11.734"
+   height="4.173"
+   id="rect95" />
+</g>
+</svg>

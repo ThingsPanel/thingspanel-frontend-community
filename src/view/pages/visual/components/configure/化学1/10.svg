@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="77.504px"
+   height="110.021px"
+   viewBox="494.224 207.75 77.504 110.021"
+   enable-background="new 494.224 207.75 77.504 110.021"
+   xml:space="preserve"
+   sodipodi:docname="化学设备-05.svg"><metadata
+   id="metadata37"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs35" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview33" />
+<g
+   id="g30">
+	<path
+   fill="#B2B2B2"
+   stroke="#231815"
+   stroke-width="0.3444"
+   stroke-miterlimit="10"
+   d="M546.585,211.083h-27.219   c-0.878,0-1.581-0.703-1.581-1.581l0,0c0-0.878,0.703-1.581,1.581-1.581h27.219c0.879,0,1.581,0.703,1.581,1.581l0,0   C548.078,210.38,547.376,211.083,546.585,211.083z"
+   id="path2" />
+	<path
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.3584"
+   stroke-miterlimit="10"
+   d="M571.083,306.966l-25.99-73.142l0,0   v-22.741h-24.234v22.653l0,0l-25.99,73.142c-1.844,5.269,2.02,10.712,7.552,10.712h61.111   C569.063,317.678,572.927,312.146,571.083,306.966z"
+   id="path4" />
+	<g
+   id="g28">
+		
+			<line
+   fill="none"
+   stroke="#F7F7F7"
+   stroke-width="0.7169"
+   stroke-miterlimit="10"
+   x1="522.439"
+   y1="245.502"
+   x2="543.425"
+   y2="245.502"
+   id="line6" />
+		
+			<line
+   fill="none"
+   stroke="#F7F7F7"
+   stroke-width="0.7169"
+   stroke-miterlimit="10"
+   x1="522.439"
+   y1="252.176"
+   x2="543.425"
+   y2="252.176"
+   id="line8" />
+		
+			<line
+   fill="none"
+   stroke="#F7F7F7"
+   stroke-width="0.7169"
+   stroke-miterlimit="10"
+   x1="522.439"
+   y1="258.937"
+   x2="543.425"
+   y2="258.937"
+   id="line10" />
+		
+			<line
+   fill="none"
+   stroke="#F7F7F7"
+   stroke-width="0.7169"
+   stroke-miterlimit="10"
+   x1="522.439"
+   y1="265.61"
+   x2="543.425"
+   y2="265.61"
+   id="line12" />
+		
+			<line
+   fill="none"
+   stroke="#F7F7F7"
+   stroke-width="0.7169"
+   stroke-miterlimit="10"
+   x1="522.439"
+   y1="272.371"
+   x2="543.425"
+   y2="272.371"
+   id="line14" />
+		
+			<line
+   fill="none"
+   stroke="#F7F7F7"
+   stroke-width="0.7169"
+   stroke-miterlimit="10"
+   x1="522.439"
+   y1="279.044"
+   x2="543.425"
+   y2="279.044"
+   id="line16" />
+		
+			<line
+   fill="none"
+   stroke="#F7F7F7"
+   stroke-width="0.7169"
+   stroke-miterlimit="10"
+   x1="522.439"
+   y1="285.805"
+   x2="543.425"
+   y2="285.805"
+   id="line18" />
+		
+			<line
+   fill="none"
+   stroke="#F7F7F7"
+   stroke-width="0.7169"
+   stroke-miterlimit="10"
+   x1="522.439"
+   y1="292.478"
+   x2="543.425"
+   y2="292.478"
+   id="line20" />
+		
+			<line
+   fill="none"
+   stroke="#F7F7F7"
+   stroke-width="0.7169"
+   stroke-miterlimit="10"
+   x1="522.439"
+   y1="299.239"
+   x2="543.425"
+   y2="299.239"
+   id="line22" />
+		
+			<line
+   fill="none"
+   stroke="#F7F7F7"
+   stroke-width="0.7169"
+   stroke-miterlimit="10"
+   x1="522.439"
+   y1="305.912"
+   x2="543.425"
+   y2="305.912"
+   id="line24" />
+		
+			<line
+   fill="none"
+   stroke="#F7F7F7"
+   stroke-width="0.7169"
+   stroke-miterlimit="10"
+   x1="522.439"
+   y1="312.673"
+   x2="543.425"
+   y2="312.673"
+   id="line26" />
+	</g>
+</g>
+</svg>

@@ -423,3 +423,20 @@
     color: #fff;
   }
 }
+
+/**
+  折叠面板
+ */
+.el-drak-collapse {
+  border-top: unset!important;
+  border-bottom: unset!important;
+  .el-collapse-item__header {
+    background-color: #202c62!important;
+    color: #fff;
+    border-bottom: 1px solid #233067;
+  }
+  .el-collapse-item__wrap {
+    background-color: #202c62!important;
+    border-bottom: unset;
+  }
+}

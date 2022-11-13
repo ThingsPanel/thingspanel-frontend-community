@@ -31,7 +31,7 @@ export default {
       default: 100
     },
     value: {
-      type: [Number, String],
+      type: [Number, String, Array],
       default: 0
     },
     unit: {
@@ -100,6 +100,7 @@ export default {
       });
     },
     setEchartsValue(value) {
+      console.log("setEchartsValue", typeof value)
       let option = { series: [ { data: [ { value }]}]}
       this.myChart.setOption(option);
     },

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="122.281px"
+   height="122.982px"
+   viewBox="362.552 322.747 122.281 122.982"
+   enable-background="new 362.552 322.747 122.281 122.982"
+   xml:space="preserve"
+   sodipodi:docname="加工设备-11.svg"><metadata
+   id="metadata13"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs11" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview9" />
+<g
+   id="g6">
+	<circle
+   fill="#4C7F7F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="423.691"
+   cy="384.237"
+   r="8.781"
+   id="circle2" />
+	<path
+   fill="#99CCCC"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M484.55,391.757l-22.751-7.52l22.75-7.521   l-1.097-6.228l-23.953,0.715l18.808-14.848l-3.162-5.477l-22.262,8.863l12.594-20.385l-4.844-4.065l-17.889,15.944l4.862-23.463   l-5.942-2.164l-11.355,21.099l-3.454-23.71h-6.324l-3.455,23.71l-11.355-21.098l-5.942,2.163l4.861,23.462l-17.888-15.942   l-4.845,4.064l12.593,20.384l-22.26-8.861l-3.162,5.477l18.806,14.848l-23.949-0.715l-1.099,6.229l22.75,7.52l-22.75,7.521   l1.099,6.229l23.95-0.716l-18.807,14.848l3.162,5.478l22.262-8.863l-12.594,20.384l4.845,4.065l17.887-15.942l-4.86,23.462   l5.941,2.164l11.356-21.1l3.455,23.708l6.324,0.003l3.454-23.712l11.356,21.099l5.943-2.162l-4.863-23.463l17.888,15.941   l4.846-4.063l-12.596-20.385l22.261,8.862l3.163-5.476l-18.807-14.848l23.95,0.714L484.55,391.757z M415.313,387.287l-0.536-3.05   l0.536-3.05l1.55-2.681l2.372-1.99l2.908-1.061h3.099l2.909,1.06l2.372,1.99l1.549,2.682l0.537,3.05l-0.537,3.05l-1.549,2.681   l-2.371,1.99l-2.91,1.06l-3.099,0.001l-2.908-1.061l-2.372-1.989L415.313,387.287z"
+   id="path4" />
+</g>
+</svg>

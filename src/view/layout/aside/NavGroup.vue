@@ -6,7 +6,7 @@
   >
     <template v-slot:activator>
       <v-list-item-content>
-        <v-list-item-title>{{ $t(item.title) }}</v-list-item-title>
+        <v-list-item-title>{{ $t(item.title) ? $t(item.title) : item.title }}</v-list-item-title>
       </v-list-item-content>
     </template>
 

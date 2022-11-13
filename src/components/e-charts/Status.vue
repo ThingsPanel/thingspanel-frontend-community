@@ -92,7 +92,7 @@ export default {
 
 <style scoped lang="scss">
 .chart-div {
-  margin: 10px 20px 10px 10px;
+  //margin: 10px 20px 10px 10px;
   border-radius: 16px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   background-color: #2d3d86;

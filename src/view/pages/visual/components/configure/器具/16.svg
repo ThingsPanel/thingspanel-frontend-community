@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="88.625px"
+   height="60.373px"
+   viewBox="406.288 306.806 88.625 60.373"
+   enable-background="new 406.288 306.806 88.625 60.373"
+   xml:space="preserve"
+   sodipodi:docname="01-16.svg"><metadata
+   id="metadata21"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs19" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview17" />
+<g
+   id="g14">
+	
+		<rect
+   x="406.538"
+   y="313.596"
+   fill="#D3B47F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="75.087"
+   height="53.333"
+   id="rect2" />
+	
+		<polygon
+   fill="#AD8959"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   494.663,356.263 481.625,366.929 481.625,313.596 494.663,307.056  "
+   id="polygon4" />
+	
+		<polygon
+   fill="#E5C69A"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   494.663,307.056 425.292,307.056 406.538,313.596 481.625,313.596  "
+   id="polygon6" />
+	<path
+   fill="#231815"
+   d="M417.649,324.759c-0.172,0-0.31,0.139-0.31,0.311c0,0.341-0.278,0.618-0.619,0.618   s-0.618-0.277-0.618-0.618v-3.146c1.245-0.003,2.402-0.005,3.379,0.347c-0.206-1.805-1.777-3.207-3.688-3.207   s-3.481,1.402-3.688,3.207c0.976-0.352,2.133-0.35,3.378-0.347v3.146c0,0.683,0.556,1.236,1.236,1.236   c0.684,0,1.237-0.555,1.237-1.236C417.959,324.897,417.82,324.759,417.649,324.759z"
+   id="path8" />
+	<polygon
+   fill="#231815"
+   points="470.861,320.367 466.344,323.122 468.772,323.122 468.772,325.001 472.952,325.001    472.952,323.122 475.38,323.122  "
+   id="polygon10" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   x1="442.768"
+   y1="313.596"
+   x2="458.434"
+   y2="307.056"
+   id="line12" />
+</g>
+</svg>

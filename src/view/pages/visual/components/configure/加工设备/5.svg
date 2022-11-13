@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="113.768px"
+   height="90.609px"
+   viewBox="46.183 206.768 113.768 90.609"
+   enable-background="new 46.183 206.768 113.768 90.609"
+   xml:space="preserve"
+   sodipodi:docname="加工设备-05.svg"><metadata
+   id="metadata49"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs47" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview45" />
+<g
+   id="g42">
+	<polygon
+   fill="#7390A0"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="141.55,242.002 136.952,230.532    130.206,224.127 100.703,222.419 100.703,246.786 135.035,246.786 144.036,246.786 152.036,246.786 152.036,242.002  "
+   id="polygon2" />
+	<path
+   fill="#53727F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M121.683,209.833l-9.54,9.54   c-0.54-0.41-1.11-0.79-1.721-1.11l9.84-9.84L121.683,209.833z"
+   id="path4" />
+	<path
+   fill="#53727F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M61.989,207.122l9.54,9.54   c-0.41,0.54-0.79,1.11-1.11,1.721l-9.84-9.84L61.989,207.122z"
+   id="path6" />
+	<path
+   fill="#53727F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M56.471,216.752h13.492   c0.092,0.672,0.227,1.344,0.432,2.001H56.479L56.471,216.752z"
+   id="path8" />
+	<path
+   fill="#47636D"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M115.052,233.813   c-0.05,1.41-0.34,5.556-0.81,6.806h-3.82v7.824c-5.91,4.29-27.63,7.13-39.43,7.13h-1.56v-4.13c10.06-0.61,19.069-3.25,24.229-7   v-17.19l4.62-6.5v-4h6v17.06H115.052z"
+   id="path10" />
+	
+		<rect
+   x="56.741"
+   y="258.26"
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="46.799"
+   height="33.242"
+   id="rect12" />
+	
+		<rect
+   x="103.54"
+   y="258.26"
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="46.799"
+   height="33.242"
+   id="rect14" />
+	<polygon
+   fill="#7390A0"
+   points="102.642,270.286 57.642,278.286 57.642,258.46 102.642,258.46  "
+   id="polygon16" />
+	<polygon
+   fill="#7390A0"
+   points="149.439,261.953 104.439,270.286 104.439,258.46 149.439,258.46  "
+   id="polygon18" />
+	
+		<rect
+   x="59.503"
+   y="291.501"
+   fill="#53727F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="88.074"
+   height="5.626"
+   id="rect20" />
+	<polygon
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="56.742,239.252 56.742,291.502    46.433,291.502 46.433,241.652 48.832,239.252  "
+   id="polygon22" />
+	<polygon
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="63.435,251.568 63.435,239.252    56.741,239.252 56.741,258.26 57.274,258.26 57.274,258.262 159.701,258.262 159.701,251.568  "
+   id="polygon24" />
+	<polygon
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="94.081,246.786 144.036,246.786    144.036,251.568 87.036,251.568  "
+   id="polygon26" />
+	<path
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M98.282,212.752v8l-4.62,6.5v17.19   c-5.16,3.75-14.17,6.39-24.229,7c-1.461,0.08-2.94,0.13-4.44,0.13h-1.56v-21.4c0-3.47,1.01-6.7,2.76-9.41   c3.1-4.82,8.51-8.01,14.66-8.01H98.282z"
+   id="path28" />
+	<path
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M119.813,232.088   c0,1.908-0.365,3.719-0.997,5.396h-14.533v-20.719c0.061,0,0.121-0.012,0.194-0.012c2.625,0,5.104,0.656,7.267,1.834   c0.741,0.389,1.435,0.851,2.091,1.35C117.467,222.744,119.813,227.142,119.813,232.088z"
+   id="path30" />
+	
+		<rect
+   x="95.952"
+   y="242.002"
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="3.5"
+   height="9.566"
+   id="rect32" />
+	
+		<rect
+   x="152.036"
+   y="222.419"
+   fill="#7390A0"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="3"
+   height="29.149"
+   id="rect34" />
+	
+		<rect
+   x="147.577"
+   y="230.532"
+   fill="#7390A0"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="4.459"
+   height="12.923"
+   id="rect36" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="116.375"
+   y1="222.419"
+   x2="144.036"
+   y2="222.419"
+   id="line38" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="141.785"
+   y1="222.419"
+   x2="141.785"
+   y2="242.002"
+   id="line40" />
+</g>
+</svg>

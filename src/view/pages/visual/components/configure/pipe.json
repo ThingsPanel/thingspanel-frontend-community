@@ -1,0 +1,59 @@
+{
+  "value": "pipe",
+  "title": "管道",
+  "sort": 4,
+  "create_type": "draggable",
+  "props": ["prop_data"],
+  "defaultStyle": {
+    "width": "60px",
+    "height": "60px"
+  },
+  "components": [
+    {
+      "value": "pipe",
+      "title": "管道",
+      "image_src": "/media/configure/pipe/p01.svg"
+    },
+    {
+      "value": "pipe",
+      "title": "管道",
+      "image_src": "/media/configure/pipe/p02.svg"
+    },
+    {
+      "value": "pipe",
+      "title": "管道",
+      "image_src": "/media/configure/pipe/p03.svg"
+    },
+    {
+      "value": "pipe",
+      "title": "管道",
+      "image_src": "/media/configure/pipe/p04.svg"
+    },
+    {
+      "value": "pipe",
+      "title": "管道",
+      "image_src": "/media/configure/pipe/p05.svg"
+    },
+    {
+      "value": "pipe",
+      "title": "管道",
+      "image_src": "/media/configure/pipe/p06.svg"
+    },
+    {
+      "value": "pipe",
+      "title": "管道",
+      "image_src": "/media/configure/pipe/p07.svg"
+    },
+    {
+      "value": "pipe",
+      "title": "管道",
+      "image_src": "/media/configure/pipe/p08.svg"
+    },
+    {
+      "value": "pipe",
+      "title": "管道-流动",
+      "create_type": "draw",
+      "image_src": "/media/configure/pipe/flow_p01.png"
+    }
+  ]
+}

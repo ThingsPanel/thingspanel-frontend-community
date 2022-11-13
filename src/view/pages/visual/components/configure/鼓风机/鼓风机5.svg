@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1 Tiny//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-tiny.dtd">
+<svg version="1.1" baseProfile="tiny" id="_x36_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+	 x="0px" y="0px" width="84.054px" height="91.418px" viewBox="0 0 84.054 91.418" xml:space="preserve">
+<g>
+	<rect x="18.805" y="64.528" fill="#323232" width="46.258" height="22.377"/>
+	<radialGradient id="SVGID_1_" cx="42.499" cy="40.355" r="33.2199" gradientUnits="userSpaceOnUse">
+		<stop  offset="0.2247" style="stop-color:#DCE1E1"/>
+		<stop  offset="0.6395" style="stop-color:#B4B7B9"/>
+		<stop  offset="1" style="stop-color:#95979A"/>
+	</radialGradient>
+	<path fill="url(#SVGID_1_)" d="M77.72,41.442c0,19.744-16.005,35.75-35.75,35.75S6.22,61.186,6.22,41.442s16.005-35.75,35.75-35.75
+		l5.25,0.167V1.192h30.333L77.72,41.442z"/>
+	<rect x="45.123" fill="#5A5A5A" width="33.474" height="2.074"/>
+	<rect x="24.803" y="45.108" fill="#646464" width="2.667" height="40.75"/>
+	<rect x="56.386" y="45.108" fill="#646464" width="2.667" height="40.75"/>
+	<polygon fill="#646464" points="47.078,78.173 36.662,78.173 33.841,84.683 50.044,84.683 	"/>
+	<circle fill="#8C8C8C" cx="42.217" cy="72.52" r="8.556"/>
+	<circle fill="#646464" cx="42.216" cy="72.52" r="2.445"/>
+	<polygon fill="#464646" points="56.427,47.775 27.511,47.775 24.803,45.109 59.094,45.109 	"/>
+	<circle fill="#8C8C8C" cx="42.499" cy="41.022" r="10.718"/>
+	<circle fill="#040303" cx="42.499" cy="41.024" r="0.67"/>
+	<rect y="84.648" fill="#505050" width="84.054" height="6.77"/>
+</g>
+</svg>

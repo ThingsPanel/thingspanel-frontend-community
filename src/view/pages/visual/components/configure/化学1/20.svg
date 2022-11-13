@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="77.319px"
+   height="123.477px"
+   viewBox="44.843 495.058 77.319 123.477"
+   enable-background="new 44.843 495.058 77.319 123.477"
+   xml:space="preserve"
+   sodipodi:docname="化学设备-10.svg"><metadata
+   id="metadata17"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs15" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview13" />
+<g
+   id="g10">
+	<polygon
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="121.698,499.697 45.307,499.697    79.463,551.59 79.463,617.795 87.454,607.347 87.454,551.59  "
+   id="polygon2" />
+	
+		<ellipse
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="83.502"
+   cy="499.698"
+   rx="38.195"
+   ry="4.39"
+   id="ellipse4" />
+	<path
+   fill="#FFFFFF"
+   d="M59.883,509.181l11.239,16.068c0.527,0.702,0.351,1.668-0.352,2.107l0,0   c-0.702,0.526-1.668,0.351-2.107-0.352l-11.327-16.068c-0.527-0.702-0.351-1.668,0.352-2.107l0,0   C58.39,508.303,59.356,508.478,59.883,509.181z"
+   id="path6" />
+	<circle
+   fill="#FFFFFF"
+   cx="72.79"
+   cy="530.341"
+   r="1.493"
+   id="circle8" />
+</g>
+</svg>

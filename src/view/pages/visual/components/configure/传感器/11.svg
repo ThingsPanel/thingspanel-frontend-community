@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="56.432px"
+   height="137.301px"
+   viewBox="347.019 419.369 56.432 137.301"
+   enable-background="new 347.019 419.369 56.432 137.301"
+   xml:space="preserve"
+   sodipodi:docname="传感器-11.svg"><metadata
+   id="metadata31"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs29" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview27" />
+<g
+   id="g24">
+	<polygon
+   fill="#B2B2B2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="379.493,431.122 379.493,419.619    370.976,419.619 370.976,431.122 347.269,431.122 347.269,462.469 403.2,462.469 403.2,431.122  "
+   id="polygon2" />
+	
+		<rect
+   x="349.99"
+   y="447.103"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="50.575"
+   height="43.463"
+   id="rect4" />
+	
+		<rect
+   x="354.029"
+   y="465.629"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="42.41"
+   height="21.425"
+   id="rect6" />
+	<circle
+   fill="#666666"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="375.19"
+   cy="455.883"
+   r="5.444"
+   id="circle8" />
+	<g
+   id="g16">
+		
+			<rect
+   x="368.166"
+   y="490.565"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="7.639"
+   height="7.464"
+   id="rect10" />
+		
+			<rect
+   x="375.717"
+   y="490.565"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="6.586"
+   height="3.688"
+   id="rect12" />
+		
+			<rect
+   x="375.717"
+   y="494.254"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="6.586"
+   height="3.688"
+   id="rect14" />
+	</g>
+	<polygon
+   fill="#B2B2B2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="389.239,547.814 361.229,547.814    368.166,498.029 382.303,498.029  "
+   id="polygon18" />
+	
+		<rect
+   x="357.015"
+   y="547.814"
+   fill="#B2B2B2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="36.439"
+   height="4.303"
+   id="rect20" />
+	<rect
+   x="349.99"
+   y="552.117"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="50.575"
+   height="4.303"
+   id="rect22" />
+</g>
+</svg>

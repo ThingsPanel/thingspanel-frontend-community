@@ -34,7 +34,9 @@ import EditorCanvas from "./canvas"
 import EditorInformation from "./information"
 import PluginAPI from "@/api/plugin.js"
 import VisualAPI from "@/api/visualization.js";
-import {message_success} from "../../../../utils/helpers";
+import {message_success} from "@/utils/helpers";
+import bus from "@/core/plugins/eventBus";
+
 const DEVICE_MODE = 0;
 const GROUP_MODE = 1;
 const BUSINESS_MODE = 2;
@@ -74,10 +76,14 @@ export default {
   },
   methods: {
     handleSave() {
-      console.log("handleSave", this.$refs.editorCanvas.jsonData)
+      let jsonData = {};
+      jsonData.screen = this.$refs.editorCanvas.fullData;
+      jsonData.canvasStyle = this.$refs.editorCanvas.canvasStyle;
+
+      console.log("handleSave", jsonData)
       let data = {
         relation_id: this.relationId,
-        json_data: JSON.stringify(this.$refs.editorCanvas.jsonData),
+        json_data: JSON.stringify(jsonData),
         dashboard_name: this.params.name,
       }
       if (this.screenId != "") {
@@ -95,15 +101,14 @@ export default {
         VisualAPI.add(data)
             .then(({data}) => {
               if (data.code == 200) {
+                this.screenId = data.data.id;
                 message_success("保存成功！")
                 bus.$emit("updateVisual")
-
               }
             })
       }
     },
     handlePublish() {
-
       console.log("publish", this.screenId)
       console.log(this.$refs.editorCanvas.tempData)
     },
@@ -120,7 +125,6 @@ export default {
       } else if (this.mode == DEVICE_MODE) {
         param["id"] = this.pluginId;
       }
-
       PluginAPI.page(param)
         .then(({data}) => {
           if (data.code ==200) {
@@ -134,18 +138,26 @@ export default {
                   charts.forEach(item => {
                       this.componentList.push(item);
                   })
-                }
+                };
+                let tsl = jsonObj.tsl
+                bus.$emit("shareTsl", tsl);
               }
             });
           }
         })
     },
+    /**
+     * 获取大屏数据
+     */
     getScreenData() {
       VisualAPI.list({"current_page": 1, "per_page": 10, "relation_id": this.relationId})
         .then(({data}) => {
           if (data.code == 200) {
+            console.log("====jsonData.screen", data)
+
             let result = data.data.data;
             if (result.length != 0) {
+
               // 如果有大屏数据，加载大屏
               this.screenId = result[0].id;
               let jsonData = JSON.parse(result[0].json_data);

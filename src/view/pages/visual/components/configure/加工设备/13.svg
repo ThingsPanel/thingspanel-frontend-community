@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="135.872px"
+   height="100.498px"
+   viewBox="37.511 496.427 135.872 100.498"
+   enable-background="new 37.511 496.427 135.872 100.498"
+   xml:space="preserve"
+   sodipodi:docname="加工设备-13.svg"><metadata
+   id="metadata80"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs78" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview76" />
+<g
+   id="g73">
+	
+		<rect
+   x="37.761"
+   y="530.488"
+   fill="#6CC6E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="7.554"
+   height="23.382"
+   id="rect2" />
+	
+		<rect
+   x="44.114"
+   y="541.761"
+   fill="#358BBA"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="129.019"
+   height="52.279"
+   id="rect4" />
+	<polygon
+   fill="#4FAAD3"
+   points="171.934,557.973 45.314,578.596 45.314,542.625 171.934,542.625  "
+   id="polygon6" />
+	<polygon
+   fill="#4FAAD3"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="59.942,496.677 49.391,496.677    44.114,541.761 59.942,541.761  "
+   id="polygon8" />
+	
+		<rect
+   x="59.942"
+   y="496.677"
+   fill="#4FAAD3"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="41.728"
+   height="45.084"
+   id="rect10" />
+	
+		<rect
+   x="101.67"
+   y="496.677"
+   fill="#4FAAD3"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="41.729"
+   height="45.084"
+   id="rect12" />
+	<polygon
+   fill="#358BBA"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="108.624,530.488 101.67,541.761    101.67,496.677 108.624,496.677  "
+   id="polygon14" />
+	
+		<rect
+   x="70.976"
+   y="502.911"
+   fill="#6CC6E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="19.663"
+   height="22.543"
+   id="rect16" />
+	<polygon
+   fill="#358BBA"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="143.398,530.488 108.624,530.488    101.67,541.761 143.398,541.761  "
+   id="polygon18" />
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="100.7036"
+   y1="377.1147"
+   x2="100.7036"
+   y2="394.7056"
+   gradientTransform="matrix(1 0 0 -1 8.3398 909.04)">
+		<stop
+   offset="0.0197"
+   style="stop-color:#358BBA"
+   id="stop20" />
+		<stop
+   offset="0.5"
+   style="stop-color:#97D7ED"
+   id="stop22" />
+		<stop
+   offset="1"
+   style="stop-color:#358BBA"
+   id="stop24" />
+	</linearGradient>
+	
+		<rect
+   x="105.146"
+   y="514.335"
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="7.796"
+   height="17.591"
+   id="rect27" />
+	
+		<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="131.6558"
+   y1="367.2798"
+   x2="131.6558"
+   y2="412.3638"
+   gradientTransform="matrix(1 0 0 -1 8.3398 909.04)">
+		<stop
+   offset="0.0197"
+   style="stop-color:#358BBA"
+   id="stop29" />
+		<stop
+   offset="0.5"
+   style="stop-color:#358BBA"
+   id="stop31" />
+		<stop
+   offset="1"
+   style="stop-color:#358BBA"
+   id="stop33" />
+	</linearGradient>
+	
+		<rect
+   x="136.594"
+   y="496.677"
+   fill="url(#SVGID_2_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="6.805"
+   height="45.084"
+   id="rect36" />
+	
+		<linearGradient
+   id="SVGID_3_"
+   gradientUnits="userSpaceOnUse"
+   x1="130.5015"
+   y1="372.9165"
+   x2="130.5015"
+   y2="394.7056"
+   gradientTransform="matrix(1 0 0 -1 8.3398 909.04)">
+		<stop
+   offset="0.0197"
+   style="stop-color:#358BBA"
+   id="stop38" />
+		<stop
+   offset="0.5"
+   style="stop-color:#97D7ED"
+   id="stop40" />
+		<stop
+   offset="1"
+   style="stop-color:#358BBA"
+   id="stop42" />
+	</linearGradient>
+	
+		<rect
+   x="134.285"
+   y="514.335"
+   fill="url(#SVGID_3_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="9.113"
+   height="21.789"
+   id="rect45" />
+	<g
+   id="g53">
+		
+			<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="134.285"
+   y1="519.835"
+   x2="143.398"
+   y2="519.835"
+   id="line47" />
+		
+			<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="134.285"
+   y1="525.229"
+   x2="143.398"
+   y2="525.229"
+   id="line49" />
+		
+			<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="134.285"
+   y1="530.626"
+   x2="143.398"
+   y2="530.626"
+   id="line51" />
+	</g>
+	
+		<rect
+   x="143.398"
+   y="496.677"
+   fill="#4FAAD3"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="29.734"
+   height="45.084"
+   id="rect55" />
+	
+		<rect
+   x="143.398"
+   y="496.677"
+   fill="#6CC6E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="11.988"
+   height="15.826"
+   id="rect57" />
+	
+		<rect
+   x="143.398"
+   y="511.923"
+   fill="#6CC6E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="11.988"
+   height="15.825"
+   id="rect59" />
+	
+		<rect
+   x="143.398"
+   y="527.748"
+   fill="#358BBA"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="29.734"
+   height="4.178"
+   id="rect61" />
+	
+		<rect
+   x="143.398"
+   y="536.124"
+   fill="#358BBA"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="29.734"
+   height="5.637"
+   id="rect63" />
+	
+		<rect
+   x="143.398"
+   y="531.926"
+   fill="#6CC6E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="29.734"
+   height="4.198"
+   id="rect65" />
+	<polyline
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="68.098,564.3 68.098,591.639    77.928,591.639  "
+   id="polyline67" />
+	
+		<rect
+   x="77.928"
+   y="586.603"
+   fill="#6CC6E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="20.865"
+   height="10.072"
+   id="rect69" />
+	<rect
+   x="37.761"
+   y="530.488"
+   fill="#231815"
+   width="2.518"
+   height="23.382"
+   id="rect71" />
+</g>
+</svg>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="48px" height="60px" viewBox="0 0 48 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>编组 8</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="100%" x2="50%" y2="3.77441406%" id="linearGradient-1">
+            <stop stop-color="#316BDE" offset="0%"></stop>
+            <stop stop-color="#0B2266" offset="50.3256034%"></stop>
+            <stop stop-color="#397CFC" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="编组-34备份-4">
+            <g id="编组-8">
+                <rect id="矩形" fill="url(#linearGradient-1)" x="6.78899132e-14" y="2.84217094e-14" width="47.5937842" height="60"></rect>
+                <rect id="矩形" fill="#4AA7FF" x="0" y="1.01506105e-14" width="1.51091378" height="5.45454545"></rect>
+                <rect id="矩形" fill="#4AA7FF" x="-1.87874542e-13" y="0" width="7.21117942" height="1.9047619"></rect>
+                <rect id="矩形" fill="#4AA7FF" x="0" y="8.72727273" width="1.51091378" height="43.6363636"></rect>
+                <rect id="矩形" fill="#4AA7FF" x="46.1515483" y="8.72727273" width="1.51091378" height="43.6363636"></rect>
+                <rect id="矩形" fill="#4AA7FF" transform="translate(46.907005, 2.727273) scale(-1, 1) translate(-46.907005, -2.727273) " x="46.1515483" y="1.01506105e-14" width="1.51091378" height="5.45454545"></rect>
+                <rect id="矩形" fill="#4AA7FF" transform="translate(43.988194, 0.952381) scale(-1, 1) translate(-43.988194, -0.952381) " x="40.3826047" y="0" width="7.21117942" height="1.9047619"></rect>
+                <rect id="矩形" fill="#4AA7FF" transform="translate(0.721118, 56.320346) scale(1, -1) translate(-0.721118, -56.320346) " x="3.07812308e-14" y="53.5930736" width="1.44223588" height="5.45454545"></rect>
+                <rect id="矩形" fill="#4AA7FF" transform="translate(3.605590, 58.909091) scale(1, -1) translate(-3.605590, -58.909091) " x="-1.87874542e-13" y="57.95671" width="7.21117942" height="1.9047619"></rect>
+                <rect id="矩形" fill="#4AA7FF" transform="translate(23.796892, 58.909091) scale(1, -1) translate(-23.796892, -58.909091) " x="10.0956512" y="57.95671" width="27.4024818" height="1.9047619"></rect>
+                <rect id="矩形" fill="#4AA7FF" transform="translate(23.796892, 0.952381) scale(1, -1) translate(-23.796892, -0.952381) " x="10.0956512" y="2.70682947e-14" width="27.4024818" height="1.9047619"></rect>
+                <rect id="矩形" fill="#4AA7FF" transform="translate(46.872666, 56.320346) scale(-1, -1) translate(-46.872666, -56.320346) " x="46.1515483" y="53.5930736" width="1.44223588" height="5.45454545"></rect>
+                <rect id="矩形" fill="#4AA7FF" transform="translate(43.988194, 58.909091) scale(-1, -1) translate(-43.988194, -58.909091) " x="40.3826047" y="57.95671" width="7.21117942" height="1.9047619"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

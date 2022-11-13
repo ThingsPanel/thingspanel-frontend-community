@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="137.266px"
+   height="95.064px"
+   viewBox="48.796 1059.091 137.266 95.064"
+   enable-background="new 48.796 1059.091 137.266 95.064"
+   xml:space="preserve"
+   sodipodi:docname="传送机传送带-29.svg"><metadata
+   id="metadata15"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs13" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview11" />
+<g
+   id="g8">
+	<polygon
+   fill="#4C4C4C"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="174.419,1059.341 85.473,1148.287    54.674,1117.479 112.813,1059.341  "
+   id="polygon2" />
+	<polygon
+   fill="#C0C0C0"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="112.813,1059.341 54.674,1117.479    49.15,1111.965 101.783,1059.341  "
+   id="polygon4" />
+	<polygon
+   fill="#C0C0C0"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="185.459,1059.341 90.997,1153.802    85.473,1148.287 174.419,1059.341  "
+   id="polygon6" />
+</g>
+</svg>
