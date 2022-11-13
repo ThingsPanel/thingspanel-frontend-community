@@ -236,6 +236,8 @@ export default defineComponent ({
               component.value.push(data[map]);
             }
           })
+        } else if (component.controlType == "control") {
+
         }
         console.log(component, component.value)
       } else if (typeof mapping == "string") {
