@@ -246,7 +246,7 @@ export default defineComponent ({
         // 文本组件
         if (mapping) {
           if (data[mapping]) {
-            let unit = component.unit != "-" && component.unit != undefined ? component.unit : "";
+            let unit = (component.unit != "-" && component.unit != undefined) ? component.unit : "";
             component.value = data[mapping] + " " + unit;
           }
         }
