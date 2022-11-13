@@ -2,22 +2,22 @@
   <div class="rounded p-4 card no-border el-table-transparent">
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
       <el-col :span="12">
-        <TableTitle>角色管理</TableTitle>
+        <TableTitle>{{ $t("COMMON.MANAGEMENT")}}</TableTitle>
       </el-col>
       <el-col :span="12" class="px-2 text-right">
         <el-button size="medium" type="indigo" @click="dialogVisible"
-          >添加角色</el-button
+          >{{ $t("COMMON.ADDROLE")}}</el-button
         >
       </el-col>
     </el-row>
     <el-form class="inline-edit">
       <el-table :data="tableData">
         <el-table-column
-          label="序号"
+          :label="$t('COMMON.NO')"
           type="index"
 
         ></el-table-column>
-        <el-table-column prop="role_name" label="角色名称" width="200px">
+        <el-table-column prop="role_name" :label="$t('COMMON.ROLENAME')" width="200px">
           <template v-slot="scope">
             <!-- 新建或者编辑 -->
             <el-form-item v-if="inputVal == scope.row.id">
@@ -37,7 +37,7 @@
             >
           </template>
         </el-table-column>
-        <el-table-column prop="role_describe" label="角色描述">
+        <el-table-column prop="role_describe" :label="$t('COMMON.ROLEDESCRIPTION')">
           <template v-slot="scope">
             <!-- 新建或者编辑 -->
             <el-form-item v-if="inputVal == scope.row.id">
@@ -57,21 +57,21 @@
             >
           </template>
         </el-table-column>
-        <el-table-column prop="id" label="权限管理">
+        <el-table-column prop="id" :label="$t('COMMON.PERMISSIONMANAGEMENT')">
           <template v-slot="scope">
             <el-button
               size="mini"
               type="indigo"
               @click="handle_quanxian(scope.row)"
               :disabled="!hasAuth('sys:role:assign')"
-              >权限管理</el-button
+              >{{ $t("COMMON.PERMISSIONMANAGEMENT")}}</el-button
             >
           </template>
         </el-table-column>
 
         <el-table-column
           prop="actions"
-          label="操作"
+          :label="$t('COMMON.OPERATION')"
           align="center"
           width="210px"
         >
@@ -81,9 +81,9 @@
                 size="mini"
                 type="indigo"
                 @click="handle_sever(scope.row)"
-                >保存</el-button>
+                >{{ $t("COMMON.SAVE")}}</el-button>
                 <el-button size="mini" type="default" class="butStyle" @click="handleCancel(scope.row)"
-                  >取消</el-button>
+                  >{{ $t("COMMON.CANCEL")}}</el-button>
             </el-form-item>
             <el-form-item v-else>
               <el-button
@@ -91,10 +91,10 @@
                 type="indigo"
                 :disabled="!hasAuth('sys:role:edit')"
                 @click="handle_launch(scope.row)"
-                >编辑</el-button
+                >{{ $t("COMMON.EDIT")}}</el-button
               >
               <el-popconfirm
-                title="确定要删除吗？"
+                :title="$t('COMMON.TITLE4')"
                 @confirm="handle_del(scope.row)"
               >
                 <el-button
@@ -103,7 +103,7 @@
                   type="danger"
                   class="butStyle"
                   :disabled="!hasAuth('sys:role:del')"
-                >删除</el-button
+                >{{ $t("COMMON.DELETE")}}</el-button
                 >
               </el-popconfirm>
             </el-form-item>
@@ -123,7 +123,7 @@
     </div>
     <div class="home">
       <el-drawer
-        title="权限编辑"
+        :title="$t('COMMON.PERMISSIONEDIT')"
         :visible.sync="drawer"
         direction="rtl"
         size="400px"

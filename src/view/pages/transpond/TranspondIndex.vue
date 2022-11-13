@@ -2,29 +2,29 @@
 <div class="rounded p-4 card no-border el-table-transparent">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>数据转发</TableTitle>
+      <TableTitle>{{ $t("COMMON.TRANSPOND")}}</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="indigo" @click="dialogVisible = true">创建转发规则</el-button>
+      <el-button size="medium" type="indigo" @click="dialogVisible = true">{{ $t("COMMON.CREATINGFORWARDINGRULE")}}</el-button>
     </el-col>
   </el-row>
 
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="100"></el-table-column>
-    <el-table-column prop="label" label="规则名称"></el-table-column>
-    <el-table-column prop="status" label="接口状态">
+    <el-table-column :label="$t('COMMON.NO')" type="index" width="100"></el-table-column>
+    <el-table-column prop="label" :label="$t('COMMON.RULE_NAME')"></el-table-column>
+    <el-table-column prop="status" :label="$t('COMMON.TNTERFACESTATUS')">
       <template v-slot="scope">
-        <el-tag size="small">{{scope.row.disabled == 'false' ? '已启动' : '已暂停'}}</el-tag>
+        <el-tag size="small">{{scope.row.disabled == 'false' ? $t('COMMON.SRARTED') : $t('COMMON.PUTONHOLD')}}</el-tag>
       </template>
     </el-table-column>
-    <el-table-column prop="actions" label="操作" align="center" width="300px">
+    <el-table-column prop="actions" :label="$t('COMMON.OPERATION')" align="center" width="300px">
       <template v-slot="scope">
-        <el-button size="mini" type="indigo" @click="handle_launch(scope.row)">启动</el-button>
-        <el-button size="mini" type="indigo" @click="handle_pause(scope.row)">暂停</el-button>
-        <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">编辑</el-button>
+        <el-button size="mini" type="indigo" @click="handle_launch(scope.row)">{{ $t("COMMON.START")}}</el-button>
+        <el-button size="mini" type="indigo" @click="handle_pause(scope.row)">{{ $t("COMMON.SUSPENDED")}}</el-button>
+        <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">{{ $t("COMMON.EDIT")}}</el-button>
 
-        <el-popconfirm title="确定要删除吗？" @confirm="handle_del(scope.row)">
-          <el-button slot="reference" size="mini" type="danger">删除</el-button>
+        <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handle_del(scope.row)">
+          <el-button slot="reference" size="mini" type="danger">{{ $t("COMMON.DELETE")}}</el-button>
         </el-popconfirm>
       </template>
     </el-table-column>
@@ -43,7 +43,7 @@
 <!-- 新建 -->
   <el-dialog
       class="el-dark-dialog el-dark-input"
-      title="创建"
+      :title="$t('COMMON.CREATE')"
       :visible.sync="dialogVisible"
       :close-on-click-modal="false"
       width="30%">

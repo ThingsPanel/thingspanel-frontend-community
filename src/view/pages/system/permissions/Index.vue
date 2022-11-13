@@ -15,31 +15,31 @@
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading" row-key="id">
       <el-table-column type="index"></el-table-column>
-      <el-table-column label="标题" prop="title" width="150px">
+      <el-table-column :label="$t('COMMON.TITLE')" prop="title" width="150px">
         <template v-slot="scope">
           {{ $t(scope.row.title) }}
         </template>
       </el-table-column>
       <el-table-column :label="$t('COMMON.NAMES')" prop="name"></el-table-column>
-      <el-table-column label="图标" prop="icon"></el-table-column>
+      <el-table-column :label="$t('COMMON.ICON')" prop="icon"></el-table-column>
       <el-table-column label="url" prop="path"></el-table-column>
-      <el-table-column label="组件" prop="component"></el-table-column>
-      <el-table-column label="排序" prop="sort"></el-table-column>
-      <el-table-column label="类型" prop="type" align="left">
+      <el-table-column :label="$t('COMMON.COMPONENT')" prop="component"></el-table-column>
+      <el-table-column :label="$t('COMMON.THESORTING')" prop="sort"></el-table-column>
+      <el-table-column :label="$t('COMMON.TYPE')" prop="type" align="left">
         <template v-slot="scope">
-          <el-tag type="warning" v-show="scope.row.type == 0">目录</el-tag>
-          <el-tag type="success" v-show="scope.row.type == 1">菜单</el-tag>
-          <el-tag type="danger" v-show="scope.row.type == 2">路由</el-tag>
-          <el-tag type="info" v-show="scope.row.type == 3">按钮</el-tag>
+          <el-tag type="warning" v-show="scope.row.type == 0">{{ $t('COMMON.DIRECTORY') }}</el-tag>
+          <el-tag type="success" v-show="scope.row.type == 1">{{ $t('COMMON.MENU') }}</el-tag>
+          <el-tag type="danger" v-show="scope.row.type == 2">{{ $t('COMMON.ROUTING') }}</el-tag>
+          <el-tag type="info" v-show="scope.row.type == 3">{{ $t('COMMON.BUTTON') }}</el-tag>
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" align="center" width="250">
+      <el-table-column :label="$t('COMMON.OPERATION')" align="center" width="250">
         <template v-slot="scope">
           <div class="text-right">
-            <el-button type="indigo" size="mini" @click="handleEdit(scope.row)" :disabled="!hasAuth('sys:permission:edit')">编辑</el-button>
-            <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
-              <el-button slot="reference" type="danger" size="mini"  :disabled="!hasAuth('sys:permission:del')">删除</el-button>
+            <el-button type="indigo" size="mini" @click="handleEdit(scope.row)" :disabled="!hasAuth('sys:permission:edit')">{{ $t('COMMON.EDIT') }}</el-button>
+            <el-popconfirm :title="$t('COMMON.DELETETHISITEM')" @confirm="handleDelete(scope.row)">
+              <el-button slot="reference" type="danger" size="mini"  :disabled="!hasAuth('sys:permission:del')">{{ $t('COMMON.DELETE') }}</el-button>
             </el-popconfirm>
           </div>
         </template>

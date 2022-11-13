@@ -2,7 +2,7 @@
   <div class="rounded card p-4 el-table-transparent">
     <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
       <el-col>
-        <TableTitle>设备日志</TableTitle>
+        <TableTitle>{{ $t("COMMON.EQUIPMENTLOG")}}</TableTitle>
       </el-col>
     </el-row>
 
@@ -10,7 +10,7 @@
     <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input">
       <el-col :span="10">
         <el-input
-          placeholder="请输入业务名称"
+          :placeholder="$t('COMMON.PLACEHOLDER18')"
           size="medium"
           v-model="params.business_name"
           clearable
@@ -21,7 +21,7 @@
       </el-col>
       <el-col :span="10">
         <el-input
-          placeholder="请输入设备分组名称"
+          :placeholder="$t('COMMON.ENTERASSETNAME')"
           size="medium"
           v-model="params.asset_name"
           clearable
@@ -31,23 +31,23 @@
         </el-input>
       </el-col>
       <el-col :span="10">
-        <el-select v-model="params.operation_type" size="medium" placeholder="请选择操作类型">
-          <el-option label="定时触发" value="1"></el-option>
-          <el-option label="手动控制" value="2"></el-option>
-          <el-option label="自动控制" value="3"></el-option>
+        <el-select v-model="params.operation_type" size="medium" :placeholder="$t('COMMON.OPERATIONTYPE')">
+          <el-option :label="$t('COMMON.TIMINGTRIGGER')" value="1"></el-option>
+          <el-option :label="$t('COMMON.MANUALCONTROL')" value="2"></el-option>
+          <el-option :label="$t('COMMON.AUTOMATICCONTROL')" value="3"></el-option>
         </el-select>
       </el-col>
       <el-col :span="10">
-        <el-select v-model="params.send_result" placeholder="请选择发送结果" size="medium">
-          <el-option label="成功" value="1"></el-option>
-          <el-option label="失败" value="2"></el-option>
+        <el-select v-model="params.send_result" :placeholder="$t('COMMON.SELECTSENDRESULTS')" size="medium">
+          <el-option :label="$t('COMMON.SUCCESSFUL')" value="1"></el-option>
+          <el-option :label="$t('COMMON.FAILURE')" value="2"></el-option>
         </el-select>
       </el-col>
       <el-col :span="14" class="text-right">
         <el-button type="indigo" size="medium" @click="handleSearch()" class="butStyle"
-          >查询</el-button
+          >{{ $t("COMMON.SEARCH")}}</el-button
         >
-        <el-button type="default" size="medium" @click="handleReset()" class="butStyle">重置</el-button>
+        <el-button type="default" size="medium" @click="handleReset()" class="butStyle">{{ $t("COMMON.RESET")}}</el-button>
       </el-col>
     </el-row>
     <!-- 头 end -->
@@ -89,7 +89,7 @@
          <template v-slot="scope">
            <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '1'">{{"定时触发"}}</el-tag>
            <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '2'">{{"手动控制"}}</el-tag>
-           <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '3'">{{"自动控制"}}</el-tag>
+           <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '3'">{{ $t("COMMON.AUTOMATICCONTROL")}}</el-tag>
 <!--           <p class="green" v-if="scope.row.operation_type == '1'"><span>{{"定时触发"}}</span></p>-->
 <!--           <p class="green" v-if="scope.row.operation_type == '2'"><span>{{"手动控制"}}</span></p>-->
 <!--           <p class="green" v-if="scope.row.operation_type == '3'"><span>{{"自动控制"}}</span></p>-->
@@ -102,8 +102,8 @@
       <el-table-column :label='$t("COMMON.SENDTHERESULIT1")'  prop="send_result" align="center"  width="130">
        
               <template v-slot="scope"  >
-                <el-tag class="tag-success" v-if="scope.row.send_result == '1'">成功</el-tag>
-                <el-tag class="tag-failed" v-else>失败</el-tag>
+                <el-tag class="tag-success" v-if="scope.row.send_result == '1'">{{ $t("COMMON.SUCCESSFUL")}}</el-tag>
+                <el-tag class="tag-failed" v-else>{{ $t("COMMON.FAILURE")}}</el-tag>
 
 
             </template>
