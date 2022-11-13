@@ -241,10 +241,13 @@ export default defineComponent ({
         }
         console.log(component, component.value)
       } else if (typeof mapping == "string") {
+        console.log("====获取组件的值", component)
+        console.log("====获取组件的值", data)
         // 文本组件
         if (mapping) {
           if (data[mapping]) {
-            component.value = data[mapping];
+            let unit = component.unit != "-" && component.unit != undefined ? component.unit : "";
+            component.value = data[mapping] + " " + unit;
           }
         }
       }

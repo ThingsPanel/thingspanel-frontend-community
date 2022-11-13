@@ -15,7 +15,7 @@
 
           <el-form-item label="数据源">
 
-            <el-select v-model="formData.mapping" v-if="formData.type == 'text'">
+            <el-select v-model="formData.mapping" v-if="formData.type == 'text'" @change="handleChangeMap">
               <el-option v-for="(item, index) in formData.dataSrc" :value="item" :key="index">{{ item }}</el-option>
             </el-select>
 
@@ -78,6 +78,8 @@ export default {
         data.title = newValue.title;
         data.value = newValue.title;
         data.mapping = newValue.mapping;
+        let properties = this.tsl.properties.find(item => item.name == data.mapping);
+        data.unit = properties.unit;
         bus.$emit('changeData', newValue.cptId, data);
       },
       deep: true
@@ -87,6 +89,9 @@ export default {
     handleTabClick() {
 
     },
+    handleChangeMap(val) {
+      console.log("handleChangeMap", val)
+    }
   }
 }
 </script>
