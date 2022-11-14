@@ -99,6 +99,16 @@ export function dateFormat(format) {
   return now_time;
 }
 
+export const getTimer = () => {
+  let timers = JSON.parse(localStorage.getItem("timers"));
+  return timers;
+}
+
+export const delTimer = (timer) => {
+  if (timer) {
+    clearInterval(timer);
+  }
+}
 export const addTimer = (timer) => {
   let timers = JSON.parse(localStorage.getItem("timers"));
   if (!timers) {

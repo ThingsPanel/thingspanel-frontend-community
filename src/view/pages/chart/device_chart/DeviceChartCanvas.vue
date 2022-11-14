@@ -55,7 +55,7 @@
 </template>
 
 <script>
-import {watch,  defineComponent, ref as reference} from "@vue/composition-api";
+import {watch,  defineComponent, onBeforeUnmount, ref as reference} from "@vue/composition-api";
 import {reactive, ref} from "@vue/composition-api/dist/vue-composition-api";
 import ECharts from "./components/Echarts"
 import Control from "./components/Control";
@@ -73,7 +73,7 @@ import PluginCharts from "./PluginCharts";
 import bus from "@/core/plugins/eventBus"
 import {currentValue, historyValue} from "@/api/device";
 
-import { addTimer, clearTimer } from "@/utils/tool.js"
+import { addTimer, getTimer, clearTimer, delTimer } from "@/utils/tool.js"
 
 export default defineComponent ({
   name: "DeviceChartCanvas",
@@ -143,13 +143,21 @@ export default defineComponent ({
       borderRadius: '10px'
     };
 
+
+    onBeforeUnmount(() => {
+      console.log("====销毁定时器")
+      if (timer) clearInterval(timer);
+    })
+
+    let timer = null;
     /**
      * 定时器
      */
     function refresh() {
-      clearTimer();
-      let timer = setInterval(listForEach(), 5000)
-      addTimer(timer);
+      if (timer) clearInterval(timer);
+      console.log("====refresh.clearTimer")
+      timer = setInterval(listForEach(), 5000);
+      console.log("====refresh", timer)
     }
 
     /**
@@ -261,12 +269,7 @@ export default defineComponent ({
     }
   }
 })
-// const clearTimer = () => {
-//   var timers = JSON.parse(localStorage.getItem("timers"));
-//   if (timers && timers.length > 0)
-//   timers.forEach(timer => clearInterval(timer))
-//   localStorage.setItem("timers", null);
-// }
+
 </script>
 
 <style scoped lang="scss">
