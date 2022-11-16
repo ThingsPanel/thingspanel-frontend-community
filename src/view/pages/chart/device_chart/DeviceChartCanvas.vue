@@ -13,6 +13,7 @@
                        :parentLimitation="true" :preventActiveBehavior="true"
                        :x="component.point.x" :y="component.point.y"
                        :w="component.point.w" :h="component.point.h"
+                       :z="component.point.z"
         >
           <dashboard-chart :style="component.style ? component.style : defaultStyle"
                            :w="component.point.w" :h="component.point.h"

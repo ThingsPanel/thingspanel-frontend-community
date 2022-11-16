@@ -4,9 +4,10 @@
          tabindex="0" @keydown="onKeyDown">
       <VueDragResize style=""
                      v-for="(component) in fullData" :key="component.cptId" :isDraggable="true" :isResizable="true"
-                     :isActive="component.actived" :parentLimitation="true" :preventActiveBehavior="true"
+                     :isActive="true" :parentLimitation="true" :preventActiveBehavior="true"
                      :x="component.point.x" :y="component.point.y"
                      :w="component.point.w" :h="component.point.h"
+                     :minw="10" :minh="10"
                      :z="component.point.z"
                      @clicked="onClicked(component)"
                      @activated="onActivated(component)"
@@ -79,9 +80,14 @@ export default {
     DashboardChart, HistoryChart, Control, Status, Configure, Other, VueDragResize
   },
   props: {
-    screenData: {
-      type: [Array],
-      default: () => []
+    jsonData: {
+      type: [Object],
+      default: () => {
+        return {
+          screen: [],
+          canvasStyle: {}
+        }
+      }
     }
   },
   data() {
@@ -89,7 +95,6 @@ export default {
       // 画布上所有的组件集合
       fullData: [],
       tempData: [],
-      jsonData: {},
       currentId: "",
       defaultStyle: {backgroundColor: 'rgba(45, 61, 134, 1)'},
       canvasStyle: {},
@@ -99,32 +104,26 @@ export default {
     }
   },
   watch: {
-    screenData: {
+    jsonData: {
       handler(newValue) {
-        if (newValue.length == 0) return;
-        console.log("canvas.screenData", newValue)
-        if (newValue[0].point) {
+        console.log("====jsonData", newValue)
+        if (!newValue) return;
+        let fullData = JSON.parse(JSON.stringify(newValue.screen)) ;
+        if (fullData.length == 0) return;
+        let canvasStyle = newValue.canvasStyle ? newValue.canvasStyle : {};
+        if (fullData[0].point) {
           // 显示大屏
-          this.fullData = JSON.parse(JSON.stringify(newValue));
-          this.canvasStyle = { height: this.jsonData.canvasStyle.height };
-          this.tempData = JSON.parse(JSON.stringify(this.fullData));
+          this.fullData = fullData;
+          this.canvasStyle = canvasStyle;
         } else {
           // 无大屏显示插件图表
-          this.fullData = JSON.parse(JSON.stringify(this.setLayout(newValue, 4, 10)))
-          console.log(this.fullData)
-          this.tempData = JSON.parse(JSON.stringify(this.fullData));
-          this.jsonData.screen = this.tempData;
-          this.jsonData.canvasStyle = this.canvasStyle;
+          this.fullData = JSON.parse(JSON.stringify(this.setLayout(fullData, 4, 10)));
+
         }
+
         console.log("=================fullData===================")
         console.log(this.fullData)
         console.log("=================fullData===================")
-
-        // this.$nextTick(() => {
-        //   let fullHeight = this.$refs.canvas_container.scrollHeight;
-        //   this.$refs.canvas_container.clientHeight = fullHeight;
-        //   console.log("fullHeight", fullHeight)
-        // })
 
       },
       immediate: true
@@ -270,11 +269,11 @@ export default {
       let cpt = component;
       this.currentId = cpt.cptId;
       // 所有组件的激活状态设置为false
-      this.fullData.forEach(item => {item.actived = false;})
-      // 将当前选中的组件设为已激活状态
-      let index = this.fullData.findIndex(item => item.cptId == cpt.cptId);
-      cpt.actived = true;
-      this.fullData.splice(index, 1, cpt);
+      // this.fullData.forEach(item => {item.actived = false;})
+      // // 将当前选中的组件设为已激活状态
+      // let index = this.fullData.findIndex(item => item.cptId == cpt.cptId);
+      // cpt.actived = true;
+      // this.fullData.splice(index, 1, cpt);
       // 传递数据
       bus.$emit('share', JSON.parse(JSON.stringify(cpt)))
     },

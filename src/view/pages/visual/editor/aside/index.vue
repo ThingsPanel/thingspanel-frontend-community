@@ -2,7 +2,7 @@
   <div class="editor-container">
     <div class="search-box">
         <span style="width: 60px;color: #fff;">组件:</span>
-        <el-input class="el-dark-input" suffix-icon="el-icon-search" placeholder="在此搜索组件"></el-input>
+        <el-input class="el-dark-input" suffix-icon="el-icon-search" placeholder="在此搜索组件" v-model="searchText"></el-input>
     </div>
     <div class="component-list">
       <el-tabs class="el-dark-tabs" tab-position="top" v-model="typeTabValue">
@@ -49,7 +49,7 @@
         <el-tab-pane label="报表" name="report"></el-tab-pane>
 
         <el-tab-pane label="组态" name="config">
-          <configure-panel></configure-panel>
+          <configure-panel :search-text="searchText"></configure-panel>
         </el-tab-pane>
 
         <el-tab-pane label="其他" name="other">
@@ -88,6 +88,7 @@ export default {
   data() {
     return {
       typeTabValue: "chart",
+      searchText: "",
       chartList: [],
       controlList: [],
       mediaList: [],

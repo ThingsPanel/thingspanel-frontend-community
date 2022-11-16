@@ -2,7 +2,13 @@
   <div class="editor-container">
     <div class="editor-header">
       <!-- header -->
-      <EditorHeader :params="params" @save="handleSave" @publish="handlePublish"></EditorHeader>
+      <EditorHeader :params="params"
+                    @save="handleSave"
+                    @publish="handlePublish"
+                    @show-import="showImportDialog"
+                    @show-export="showExportDialog"
+                    @import="handleImport"
+      ></EditorHeader>
     </div>
 
     <div class="editor-content">
@@ -18,11 +24,14 @@
 
       <div class="editor-center" >
         <!-- 画布 -->
-        <EditorCanvas ref="editorCanvas" :screen-data="screenData" key="editCanvas"></EditorCanvas>
+        <EditorCanvas ref="editorCanvas" :json-data="jsonData" key="editCanvas"></EditorCanvas>
       </div>
 
 
     </div>
+
+    <dialog-form :option="dialogOption" @import="handleImport"></dialog-form>
+
   </div>
 
 </template>
@@ -32,10 +41,13 @@ import EditorHeader from "./header"
 import EditorAside from "./aside"
 import EditorCanvas from "./canvas"
 import EditorInformation from "./information"
+import DialogForm from "./dialog"
 import PluginAPI from "@/api/plugin.js"
 import VisualAPI from "@/api/visualization.js";
 import {message_success} from "@/utils/helpers";
 import bus from "@/core/plugins/eventBus";
+import {MessageBox} from "element-ui";
+import {message_error} from "@/utils/helpers";
 
 const DEVICE_MODE = 0;
 const GROUP_MODE = 1;
@@ -44,7 +56,7 @@ const BUSINESS_MODE = 2;
 export default {
   name: "VisualEditor",
   components: {
-    EditorHeader, EditorAside, EditorCanvas, EditorInformation
+    EditorHeader, EditorAside, EditorCanvas, EditorInformation, DialogForm
   },
   data() {
     return {
@@ -54,7 +66,9 @@ export default {
       mode: DEVICE_MODE,  // 大屏类型
       relationId: "",
       pluginId: "",
-      screenData: []
+      screenData: [],
+      jsonData: {},
+      dialogOption: {}
     }
   },
   mounted() {
@@ -75,6 +89,44 @@ export default {
     this.getScreenData();
   },
   methods: {
+    showImportDialog() {
+      let jsonData = {};
+      jsonData.screen = this.$refs.editorCanvas.fullData;
+      jsonData.canvasStyle = this.$refs.editorCanvas.canvasStyle;
+      this.dialogOption = { jsonData, importVisible: true }
+    },
+    showExportDialog() {
+      let jsonData = {};
+      jsonData.screen = this.$refs.editorCanvas.fullData;
+      jsonData.canvasStyle = this.$refs.editorCanvas.canvasStyle;
+      this.dialogOption = { jsonData, exportVisible: true }
+    },
+    handleImport(data) {
+
+      console.log("====handleImport.import", typeof data)
+      console.log("====handleImport.screen", this.$refs.editorCanvas.fullData)
+      let screen = this.$refs.editorCanvas.fullData;
+      if (screen && screen.length > 0) {
+        MessageBox.confirm('确定要覆盖当前大屏吗?', '提示', {
+          confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'
+        }).then(() => {
+          if (typeof data == "object" && data.screen) {
+            this.jsonData = data;
+          } else {
+            checkJsonData(data)
+                .then(res => {
+                  if (res == true) {
+                    this.jsonData = JSON.parse(data);
+                    this.$message({type: 'success', message: '导入成功!'});
+                  }
+                })
+                .catch(err => {
+                  message_error("请输入正确的JSON代码")
+                })
+          }
+        }).catch(() => {});
+      }
+    },
     handleSave() {
       let jsonData = {};
       jsonData.screen = this.$refs.editorCanvas.fullData;
@@ -161,7 +213,7 @@ export default {
               // 如果有大屏数据，加载大屏
               this.screenId = result[0].id;
               let jsonData = JSON.parse(result[0].json_data);
-              this.screenData  = jsonData.screen ? jsonData.screen : jsonData;
+              this.jsonData  = jsonData;
             } else {
               // 如果没有大屏数据，加载设备绑定的插件图表
               if (this.mode == DEVICE_MODE) {
@@ -174,7 +226,9 @@ export default {
                       if (jsonData) {
                         let pluginData = JSON.parse(jsonData);
                         let chartData = pluginData.chart;
+                        console.log("====chartData", chartData)
                         this.screenData = chartData;
+                        this.jsonData  = { screen: chartData };
                       }
                     }
                   })
@@ -183,8 +237,17 @@ export default {
             }
           }
         })
-    }
+    },
+
   }
+}
+
+const checkJsonData = (jsonData) => {
+  return new Promise(function (resolve, reject) {
+    if (!jsonData) reject(false);
+    JSON.parse(jsonData);
+    resolve(true);
+  });
 }
 </script>
 

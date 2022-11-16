@@ -2,23 +2,30 @@
   <div class="configure-aside-container">
     <div class="component-chart-list">
 
-      <el-collapse class="el-drak-collapse" style="padding:10px" v-model="activeName" accordion>
+      <el-collapse class="el-drak-collapse" style="padding:10px" v-model="activeNames">
         <el-collapse-item v-for="(configure, index) in configures" :key="index" :title="configure.category" :name="configure.category">
-          <div class="component-item" v-for="(component, index) in configure.components" :key="index"
-               :style="getComponentStyle(component.style, configure.defaultStyle)">
+          <div v-if="isActive(configure.category)">
+            <div class="component-item" v-for="(component, index) in configure.components" :key="index"
+                 :style="getComponentStyle(component.style, configure.defaultStyle)">
 
-            <vue-drag :option="component" type="configure" @click="handleComponentClicked" :index="'configure' + component.name">
+              <vue-drag :option="component" type="configure" @click="handleComponentClicked" :index="'configure' + component.name">
 
-              <el-tooltip class="item" effect="dark" :content="component.name ? component.name : configure.category" placement="top-end">
-                <div>
-                  <img :style="getComponentStyle(component.style, configure.defaultStyle)"
-                       :src="component.image_src" alt="">
-                </div>
-              </el-tooltip>
+                <el-tooltip class="item" effect="dark" :content="component.name ? component.name : configure.category" placement="top-end">
+                  <div>
+                    <el-image lazy
+                        :style="getComponentStyle(component.style, configure.defaultStyle)"
+                        :src="component.image_src"
+                        ></el-image>
+<!--                    <img :style="getComponentStyle(component.style, configure.defaultStyle)"-->
+<!--                         :src="component.image_src" alt="">-->
+                  </div>
+                </el-tooltip>
 
-            </vue-drag>
+              </vue-drag>
 
+            </div>
           </div>
+
         </el-collapse-item>
 
       </el-collapse>
@@ -33,21 +40,43 @@ import { getConfigureComponents } from "@/view/pages/visual/components/index.js"
 export default {
   name: "ConfigurePanel",
   components: { VueDrag },
+  props: {
+    searchText: {
+      type: [String],
+      default: ""
+    }
+  },
   data() {
     return {
       configures: [],
-      activeName: "",
+      categoryNames: [],
+      activeNames: [""],
       defaultStyle: {
         width: "60px",
         height: "60px"
       }
     }
   },
+  watch: {
+    searchText: {
+      handler(newVal) {
+        if (!newVal) return;
+        let filter = this.categoryNames.filter(item => item.indexOf(newVal) > -1 );
+        this.activeNames = filter;
+        console.log("====searchText.filter", filter)
+      }
+    }
+  },
   mounted() {
     this.configures = getConfigureComponents();
+    this.categoryNames = this.configures.map(item => item.category)
+
     console.log("========this.configures", this.configures)
   },
   methods: {
+    isActive(value) {
+      return this.activeNames.find(item => item == value);
+    },
     handleComponentClicked(component, id) {
       console.log(component, id)
       this.$nextTick(() => {
