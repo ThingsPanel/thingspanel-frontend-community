@@ -339,6 +339,7 @@ export const locale = {
     PLACEHOLDER37: "Start date",
     PLACEHOLDER38: "to",
     PLACEHOLDER39: "end date",
+    PLACEHOLDER40: "Please enter the data tags",
 
     SEARCH: "Search",
     EXPORT: "Export",

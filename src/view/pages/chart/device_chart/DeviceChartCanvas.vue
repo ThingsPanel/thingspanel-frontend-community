@@ -8,9 +8,9 @@
 
     <div v-if="showScreen" class="canvas-screen">
       <div class="canvas-screen-drag">
-        <VueDragResize style="position: absolute;"
+        <VueDraggableResizable style="position: absolute;"
                        v-for="(component) in componentList" :key="component.cptId"
-                       :parentLimitation="true" :preventActiveBehavior="true"
+                       :parent="true" :draggable="false" :resizable="false" :active="false"
                        :x="component.point.x" :y="component.point.y"
                        :w="component.point.w" :h="component.point.h"
                        :z="component.point.z"
@@ -45,7 +45,7 @@
                  v-if="component.type == 'text'" :value="component.value"
                  :option="component"></other>
 
-        </VueDragResize>
+        </VueDraggableResizable>
       </div>
 
     </div>
@@ -68,7 +68,8 @@ import HistoryChart from "@/components/e-charts/CurveChart";
 import Configure from "@/components/configure/Configure"
 import Other from "@/components/other/Other"
 
-import VueDragResize from 'vue-drag-resize'
+import VueDraggableResizable from 'vue-draggable-resizable'
+
 import {GridLayout, GridItem} from "vue-grid-layout";
 import PluginCharts from "./PluginCharts";
 import bus from "@/core/plugins/eventBus"
@@ -79,7 +80,7 @@ import { addTimer, getTimer, clearTimer, delTimer } from "@/utils/tool.js"
 export default defineComponent ({
   name: "DeviceChartCanvas",
   components: {
-    ECharts, Control, Status, ClipButton, DashboardChart, HistoryChart, VueDragResize,
+    ECharts, Control, Status, ClipButton, DashboardChart, HistoryChart, VueDraggableResizable,
     GridLayout, GridItem, PluginCharts, Configure, Other
   },
   props: {

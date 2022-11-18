@@ -31,9 +31,9 @@
         <el-link class="el-dark-link link-item" icon="el-icon-s-platform">预览</el-link>
         <el-link class="el-dark-link link-item" icon="el-icon-s-platform">更换主题</el-link>
 
-        <el-select size="mini" placeholder="请选择模板" v-model="template" @change="handleChangeTemplate">
-          <el-option v-for="(template, index) in templateList" :key="index" :label="template.title" :value="template.value"></el-option>
-        </el-select>
+<!--        <el-select size="mini" placeholder="请选择模板" v-model="template" @change="handleChangeTemplate">-->
+<!--          <el-option v-for="(template, index) in templateList" :key="index" :label="template.title" :value="template.value"></el-option>-->
+<!--        </el-select>-->
 
       </div>
     </div>

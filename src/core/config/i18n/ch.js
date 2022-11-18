@@ -313,6 +313,8 @@ export const locale = {
     PLACEHOLDER37: "开始日期",
     PLACEHOLDER38: "至",
     PLACEHOLDER39: "结束日期",
+    PLACEHOLDER40: "请填写数据标签",
+
 
     TITLE7: "关",
     TITLE8: "开",

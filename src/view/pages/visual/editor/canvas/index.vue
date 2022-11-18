@@ -2,19 +2,14 @@
   <div class="canvas-container" ref="canvas_container" >
     <div id="droppable" class="droppable" ref="droppable" :style="canvasStyle"
          tabindex="0" @keydown="onKeyDown">
-      <VueDragResize style=""
-                     v-for="(component) in fullData" :key="component.cptId" :isDraggable="true" :isResizable="true"
-                     :isActive="true" :parentLimitation="true" :preventActiveBehavior="true"
+      <VueDraggableResizable style=""
+                     v-for="(component) in fullData" :key="component.cptId" :parent="true"
                      :x="component.point.x" :y="component.point.y"
                      :w="component.point.w" :h="component.point.h"
-                     :minw="10" :minh="10"
                      :z="component.point.z"
-                     @clicked="onClicked(component)"
-                     @activated="onActivated(component)"
-                     @deactivated="onDeactivated(component)"
-                     @resizing="(rect) => onChangeStop(rect, component.cptId)"
-                     @resizestop="(rect) => onChangeStop(rect, component.cptId)"
-                     @dragstop="(rect) => onChangeStop(rect, component.cptId)"
+                    @activated="onActivated(component)"
+                    @resizestop="(left, top, width, height) => onResizestop(component, left, top, width, height)"
+                    @dragstop="(left, top) => onDragstop(component, left, top)"
       >
         <dashboard-chart :style="getChartStyle(component)" ref="component"
                          :w="component.point.w" :h="component.point.h"
@@ -44,7 +39,7 @@
                v-if="component.type == 'other' || component.type == 'text'" :option="component"></other>
 
 
-      </VueDragResize>
+      </VueDraggableResizable>
     </div>
 
     <!-- 右键菜单 start -->
@@ -70,14 +65,16 @@ import Status from "@/components/e-charts/Status";
 import Configure from "@/components/configure/Configure"
 import Other from "@/components/other/Other"
 
-import VueDragResize from 'vue-drag-resize'
+import VueDraggableResizable from 'vue-draggable-resizable'
+import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
+
 import { getRandomString } from "@/utils/helpers";
 import bus from "@/core/plugins/eventBus"
 
 export default {
   name: "EditorCanvas",
   components: {
-    DashboardChart, HistoryChart, Control, Status, Configure, Other, VueDragResize
+    DashboardChart, HistoryChart, Control, Status, Configure, Other, VueDraggableResizable
   },
   props: {
     jsonData: {
@@ -145,7 +142,7 @@ export default {
     })
     // 监听数据改变
     bus.$on("changeData", (cptId, data) => {
-      console.log("====canvas.watch.changeData1", data)
+      // console.log("====canvas.watch.changeData1", data)
 
       let index = this.fullData.findIndex(item => item.cptId == cptId)
       if (index < 0) return;
@@ -154,15 +151,15 @@ export default {
         cpt[item] = data[item];
       })
       this.fullData.splice(index, 1, cpt);
-      console.log("====canvas.watch.changeData2", this.fullData)
+      // console.log("====canvas.watch.changeData2", this.fullData)
     })
     // 监听样式改变
     bus.$on('changeStyle', (cptId, style) => {
-      console.log("canvas.changeStyle", style)
+      // console.log("canvas.changeStyle", style)
       let index = this.fullData.findIndex(item => item.cptId == cptId)
       if (index < 0) return;
       let cpt = JSON.parse(JSON.stringify(this.fullData[index]));
-      console.log("cpt", cpt)
+      // console.log("cpt", cpt)
       cpt.style = style;
       this.fullData.splice(index, 1, cpt);
       // console.log(this.fullData)
@@ -234,54 +231,37 @@ export default {
       this.currentId = opt.cptId;
       delete opt.relativePoint;
       this.fullData.push(opt);
-      console.log(this.fullData)
+      // console.log(this.fullData)
       this.$refs.droppable.focus();
     },
     /**
-     * 组件被移动或改变大小时的回调
+     * 组件被改变大小时的回调
      * @param newRect
      */
-    resize(newRect) {
+    onResizestop(component, left, top, width, height) {
+      component.point.x = left;
+      component.point.y = top;
+      component.point.w = width;
+      component.point.h = height;
     },
     /**
-     * 结束拖拽/改变大小时的回调
-     * @param newRect
-     * @param cpt
+     * 组件被移动时的回调
+     * @param component
+     * @param left
+     * @param top
      */
-    onChangeStop(newRect, cptId) {
-      let index = this.fullData.findIndex(item => item.cptId == cptId);
-      let opt = JSON.parse(JSON.stringify(this.fullData[index]));
-      opt.point.x = newRect.left;
-      opt.point.y = newRect.top;
-      opt.point.h = newRect.height;
-      opt.point.w = newRect.width;
-      this.currentId = opt.cptId;
-      this.fullData.splice(index, 1, opt);
-      // this.tempData.splice(index, 1, opt);
-      // this.jsonData.screen = this.tempData;
+    onDragstop(component, left, top) {
+      component.point.x = left;
+      component.point.y = top;
     },
     /**
-     * 点击组件
+     * 激活组件
      * @param component
      */
-    onClicked(component) {
-      console.log("onClicked")
+    onActivated(component) {
       let cpt = component;
       this.currentId = cpt.cptId;
-      // 所有组件的激活状态设置为false
-      // this.fullData.forEach(item => {item.actived = false;})
-      // // 将当前选中的组件设为已激活状态
-      // let index = this.fullData.findIndex(item => item.cptId == cpt.cptId);
-      // cpt.actived = true;
-      // this.fullData.splice(index, 1, cpt);
-      // 传递数据
       bus.$emit('share', JSON.parse(JSON.stringify(cpt)))
-    },
-    onActivated(component) {
-      // console.log("onActivated")
-    },
-    onDeactivated(component) {
-      // component.actived =false;
     },
     /**
      * 画布上的按键被按下后的回调
@@ -383,6 +363,10 @@ export default {
   left: 10px;
   right: 10px;
   background-color: #171d46;
+  .draggable-default {
+    position: relative;
+    border: 1px dashed #ccc;
+  }
 }
 .contextmenu__item {
   display: block;
