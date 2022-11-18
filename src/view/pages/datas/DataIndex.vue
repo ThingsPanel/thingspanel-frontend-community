@@ -77,13 +77,14 @@
   <el-table :data="tableData">
     <el-table-column :label="$t('COMMON.NO')" type="index" width="50"></el-table-column>
     <el-table-column :label="$t('COMMON.BUSINESSNAME1')" prop="bname"></el-table-column>
-    <el-table-column :label="$t('COMMON.DWVICEGROUPNAME1')" prop="name"></el-table-column>
+    <el-table-column :label="$t('COMMON.DWVICEGROUPNAME1')" prop="asset_name"></el-table-column>
+    <el-table-column label="网关名称"  prop="gateway_name"></el-table-column>
+    <el-table-column label="设备名" prop="device_name"></el-table-column>
 <!--    <el-table-column label="Token" prop="token" width="300">-->
 <!--      <template v-slot="scope">-->
 <!--        <span class="cursor-pointer" @click="handleSearch({token: scope.row.token})">{{scope.row.token}}</span>-->
 <!--      </template>-->
 <!--    </el-table-column>-->
-    <el-table-column label="网关名称"  prop="gateway_name"></el-table-column>
 
     <el-table-column :label="$t('COMMON.TIMES')"  prop="ts"></el-table-column>
     <el-table-column :label="$t('COMMON.TITLE30')" prop="key"></el-table-column>
