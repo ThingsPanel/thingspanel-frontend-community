@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="112px" height="128px" viewBox="0 0 112 128" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>编组 12备份 6</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <polygon id="path-1" points="53.5 0 99.8323591 26.75 99.8323591 80.25 53.5 107 7.1676409 80.25 7.1676409 26.75"></polygon>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="0903智慧监管大数据可视化统计UI首页暗黑系科技风" transform="translate(-654.000000, -440.000000)">
+            <g id="编组-12备份-6" transform="translate(646.000000, 440.000000)">
+                <g id="编组-22" transform="translate(14.000000, 14.000000)" opacity="0.5" stroke="#66FFFF" stroke-width="2">
+                    <path d="M0,100 L6.36062622,93.6393738 M94.7757721,5.22422791 L100,0" id="形状"></path>
+                    <path d="M0,100 L6.36062622,93.6393738 M94.7757721,5.22422791 L100,0" id="形状" transform="translate(50.000000, 50.000000) scale(-1, 1) translate(-50.000000, -50.000000) "></path>
+                </g>
+                <path d="M64,1.15470054 L9.57437416,32.5773503 L9.57437416,95.4226497 L64,126.845299 L118.425626,95.4226497 L118.425626,32.5773503 L64,1.15470054 Z" id="多边形" stroke="#66FFFF" stroke-width="2" fill-opacity="0.5" fill="#030C31"></path>
+                <g id="编组-19" transform="translate(11.000000, 11.000000)">
+                    <mask id="mask-2" fill="white">
+                        <use xlink:href="#path-1"></use>
+                    </mask>
+                    <use id="蒙版" fill-opacity="0.5" fill="#030C31" xlink:href="#path-1"></use>
+                    <g id="编组-21" opacity="0.300000012" mask="url(#mask-2)" stroke="#66FFFF">
+                        <g transform="translate(46.000000, 52.000000) rotate(-30.000000) translate(-46.000000, -52.000000) translate(-52.000000, -3.000000)">
+                            <line x1="0" y1="26.5" x2="195.5" y2="26" id="路径-19"></line>
+                            <line x1="0" y1="30.5" x2="195.5" y2="30" id="路径-19"></line>
+                            <line x1="0" y1="1.5" x2="195.5" y2="1" id="路径-19备份"></line>
+                            <line x1="0" y1="75.5" x2="195.5" y2="75" id="路径-19"></line>
+                            <line x1="0" y1="40.5" x2="195.5" y2="40" id="路径-19"></line>
+                            <line x1="0" y1="11.5" x2="195.5" y2="11" id="路径-19备份-2"></line>
+                            <line x1="0" y1="6.5" x2="195.5" y2="6" id="路径-19备份"></line>
+                            <line x1="0" y1="16.5" x2="195.5" y2="16" id="路径-19备份-2"></line>
+                            <line x1="0" y1="80.5" x2="195.5" y2="80" id="路径-19"></line>
+                            <line x1="0" y1="50.5" x2="195.5" y2="50" id="路径-19"></line>
+                            <line x1="0" y1="21.5" x2="195.5" y2="21" id="路径-19备份-3"></line>
+                            <line x1="0" y1="84.5" x2="195.5" y2="84" id="路径-19"></line>
+                            <line x1="0" y1="60.5" x2="195.5" y2="60" id="路径-19"></line>
+                            <line x1="0" y1="35.5" x2="195.5" y2="35" id="路径-19"></line>
+                            <line x1="0" y1="45.5" x2="195.5" y2="45" id="路径-19"></line>
+                            <line x1="0" y1="55.5" x2="195.5" y2="55" id="路径-19"></line>
+                            <line x1="0" y1="65.5" x2="195.5" y2="65" id="路径-19"></line>
+                            <line x1="0" y1="89.5" x2="195.5" y2="89" id="路径-19"></line>
+                            <line x1="0" y1="70.5" x2="195.5" y2="70" id="路径-19"></line>
+                            <line x1="0" y1="94.5" x2="195.5" y2="94" id="路径-19"></line>
+                            <line x1="0" y1="99.5" x2="195.5" y2="99" id="路径-19"></line>
+                            <line x1="0" y1="104.5" x2="195.5" y2="104" id="路径-19"></line>
+                            <line x1="0" y1="109.5" x2="195.5" y2="109" id="路径-19"></line>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

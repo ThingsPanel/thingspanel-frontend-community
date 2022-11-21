@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="118.4px" height="89.303px" viewBox="0 0 118.4 89.303" enable-background="new 0 0 118.4 89.303" xml:space="preserve">
+<g>
+	<rect x="0" y="0" fill="#B2ADA7" width="118.4" height="89.303"/>
+	
+		<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="138.0203" y1="-105.5432" x2="172.3551" y2="-168.5459" gradientTransform="matrix(1 0 0 -1 -113.3501 -75.7173)">
+		<stop  offset="0" style="stop-color:#CFC8C2"/>
+		<stop  offset="0.176" style="stop-color:#B7B2AE"/>
+		<stop  offset="0.4326" style="stop-color:#8D8B8A"/>
+		<stop  offset="0.6365" style="stop-color:#868484"/>
+		<stop  offset="1" style="stop-color:#7D7C7D"/>
+	</linearGradient>
+	<rect x="2.775" y="2.408" fill="url(#SVGID_1_)" width="56.993" height="79.067"/>
+	<polyline fill="none" stroke="#352B30" points="3.908,24.641 3.908,26.427 2.427,26.427 	"/>
+	<polygon fill="#6D6366" points="59.602,75.784 31.563,23.673 38.076,22.785 59.836,64.084 	"/>
+	<polygon fill="#50474B" points="37.484,21.897 59.688,66.304 59.54,40.548 47.698,22.489 	"/>
+	<polygon fill="#352B30" points="46.514,24.117 59.244,48.985 59.836,37.735 52.287,23.377 	"/>
+	<rect x="2.208" y="2.408" fill="#1F181C" width="56.993" height="22.275"/>
+	
+		<linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="186.4792" y1="-94.7332" x2="231.5344" y2="-165.1516" gradientTransform="matrix(1 0 0 -1 -113.3501 -75.7173)">
+		<stop  offset="0" style="stop-color:#C9C6C1"/>
+		<stop  offset="0.1387" style="stop-color:#B5B3AF"/>
+		<stop  offset="0.3794" style="stop-color:#989694"/>
+		<stop  offset="0.5169" style="stop-color:#8D8B8A"/>
+		<stop  offset="0.9099" style="stop-color:#7F7E7F"/>
+		<stop  offset="0.9607" style="stop-color:#7D7C7D"/>
+	</linearGradient>
+	<rect x="59.602" y="2.408" fill="url(#SVGID_2_)" width="56.391" height="79.067"/>
+	<rect x="66.191" y="4.318" fill="#E3DEC5" width="6.934" height="10.935"/>
+	<rect x="61.057" y="4.318" fill="#040303" width="2.134" height="5.2"/>
+	<rect x="59.857" y="2.798" fill="#FFFFFF" width="55.207" height="0.572"/>
+	<rect x="112.063" y="4.251" fill="#040303" width="2.2" height="5.268"/>
+	<rect x="10.035" y="16.931" fill="#E3DEC5" width="6.723" height="3.009"/>
+	<rect x="19.79" y="16.931" fill="#DFDDD7" width="6.724" height="3.009"/>
+	<polygon fill="#040303" points="13.032,15.445 13.72,15.445 13.72,8.695 13.032,8.695 13.032,14.648 11.188,14.648 11.376,15.445 	
+		"/>
+	<polygon fill="#6D6366" points="15.251,8.695 14.563,8.695 14.563,15.445 15.251,15.445 15.251,9.492 18.126,9.492 18.157,8.695 	
+		"/>
+	<polygon fill="#6D6366" points="19.751,8.695 19.063,8.695 19.063,15.445 19.751,15.445 19.751,9.492 22.626,9.492 22.657,8.695 	
+		"/>
+	<polygon fill="#6D6366" points="11.501,8.695 10.813,8.695 10.813,15.445 11.501,15.445 11.501,9.492 13.095,9.492 13.11,8.695 	
+		"/>
+	<polygon fill="#6D6366" points="24.282,8.695 23.595,8.695 23.595,15.445 24.282,15.445 24.282,9.492 25.876,9.492 25.892,8.695 	
+		"/>
+	<polygon fill="#040303" points="17.563,15.445 18.251,15.445 18.251,8.695 17.563,8.695 17.563,14.648 15.313,14.648 
+		15.313,15.445 	"/>
+	<polygon fill="#040303" points="22.032,15.445 22.72,15.445 22.72,8.695 22.032,8.695 22.032,14.648 19.782,14.648 19.782,15.445 	
+		"/>
+	<polygon fill="#040303" points="25.782,15.445 26.47,15.445 26.47,8.695 25.782,8.695 25.782,14.648 24.298,14.648 24.298,15.445 	
+		"/>
+	<ellipse fill="#9D5638" cx="36.705" cy="17.419" rx="2.627" ry="2.736"/>
+	<ellipse fill="#9D5638" cx="44.657" cy="17.419" rx="2.276" ry="2.736"/>
+	<polyline fill="none" stroke="#352B30" stroke-width="0.8" points="2.618,80.408 3.654,80.441 3.654,79.27 	"/>
+	<rect x="78.428" y="83.216" fill="#743000" width="20.333" height="4.333"/>
+	<rect x="2.408" y="2.208" fill="none" stroke="#6D6366" stroke-width="0.75" width="113.584" height="79.269"/>
+</g>
+</svg>

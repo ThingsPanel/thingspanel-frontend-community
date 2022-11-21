@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="5px"
+   height="30px"
+   viewBox="0 0 5 30"
+   enable-background="new 0 0 5 30"
+   xml:space="preserve"
+   sodipodi:docname="工业管道_19-01.svg"><metadata
+   id="metadata53"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs51" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview49" />
+<g
+   id="g46">
+	
+		<radialGradient
+   id="SVGID_1_"
+   cx="-16.6045"
+   cy="-104.8569"
+   r="1.3752"
+   gradientTransform="matrix(0 -1.0017 0.9584 0 104.6664 -14.8905)"
+   gradientUnits="userSpaceOnUse">
+		<stop
+   offset="0"
+   style="stop-color:#F5FAFD"
+   id="stop2" />
+		<stop
+   offset="1"
+   style="stop-color:#12141A"
+   id="stop4" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#12141A" />
+	</radialGradient>
+	<path
+   fill="url(#SVGID_1_)"
+   stroke="#12141A"
+   stroke-width="0.5669"
+   stroke-linejoin="round"
+   d="M3.334,0C4.253,0,5,0.779,5,1.742   c0,0.962-0.747,1.743-1.666,1.743"
+   id="path7" />
+	
+		<radialGradient
+   id="SVGID_2_"
+   cx="-43.0742"
+   cy="-104.8569"
+   r="1.3748"
+   gradientTransform="matrix(0 -1.0017 0.9584 0 104.6664 -14.8905)"
+   gradientUnits="userSpaceOnUse">
+		<stop
+   offset="0"
+   style="stop-color:#F5FAFD"
+   id="stop9" />
+		<stop
+   offset="1"
+   style="stop-color:#12141A"
+   id="stop11" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#12141A" />
+	</radialGradient>
+	<path
+   fill="url(#SVGID_2_)"
+   stroke="#12141A"
+   stroke-width="0.5669"
+   stroke-linejoin="round"
+   d="M3.334,26.516   C4.253,26.516,5,27.297,5,28.258C5,29.221,4.253,30,3.334,30"
+   id="path14" />
+	
+		<radialGradient
+   id="SVGID_3_"
+   cx="-36.9697"
+   cy="-104.8569"
+   r="1.3748"
+   gradientTransform="matrix(0 -1.0017 0.9584 0 104.6664 -14.8905)"
+   gradientUnits="userSpaceOnUse">
+		<stop
+   offset="0"
+   style="stop-color:#F5FAFD"
+   id="stop16" />
+		<stop
+   offset="1"
+   style="stop-color:#12141A"
+   id="stop18" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#12141A" />
+	</radialGradient>
+	<path
+   fill="url(#SVGID_3_)"
+   stroke="#12141A"
+   stroke-width="0.5669"
+   stroke-linejoin="round"
+   d="M3.334,20.4   C4.253,20.4,5,21.181,5,22.143c0,0.963-0.747,1.742-1.666,1.742"
+   id="path21" />
+	
+		<radialGradient
+   id="SVGID_4_"
+   cx="-29.8389"
+   cy="-104.8569"
+   r="1.3745"
+   gradientTransform="matrix(0 -1.0017 0.9584 0 104.6664 -14.8905)"
+   gradientUnits="userSpaceOnUse">
+		<stop
+   offset="0"
+   style="stop-color:#F5FAFD"
+   id="stop23" />
+		<stop
+   offset="1"
+   style="stop-color:#12141A"
+   id="stop25" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#12141A" />
+	</radialGradient>
+	<path
+   fill="url(#SVGID_4_)"
+   stroke="#12141A"
+   stroke-width="0.5669"
+   stroke-linejoin="round"
+   d="M3.334,13.258   C4.253,13.258,5,14.038,5,15c0,0.961-0.747,1.742-1.666,1.742"
+   id="path28" />
+	
+		<radialGradient
+   id="SVGID_5_"
+   cx="-22.7085"
+   cy="-104.8569"
+   r="1.3745"
+   gradientTransform="matrix(0 -1.0017 0.9584 0 104.6664 -14.8905)"
+   gradientUnits="userSpaceOnUse">
+		<stop
+   offset="0"
+   style="stop-color:#F5FAFD"
+   id="stop30" />
+		<stop
+   offset="1"
+   style="stop-color:#12141A"
+   id="stop32" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#12141A" />
+	</radialGradient>
+	<path
+   fill="url(#SVGID_5_)"
+   stroke="#12141A"
+   stroke-width="0.5669"
+   stroke-linejoin="round"
+   d="M3.334,6.115   C4.253,6.115,5,6.896,5,7.858c0,0.961-0.747,1.741-1.666,1.741"
+   id="path35" />
+	
+		<linearGradient
+   id="SVGID_6_"
+   gradientUnits="userSpaceOnUse"
+   x1="-45.2734"
+   y1="-96.6064"
+   x2="-15.2734"
+   y2="-96.6064"
+   gradientTransform="matrix(0 -1 1 0 98.2734 -15.2734)">
+		<stop
+   offset="0"
+   style="stop-color:#12141A"
+   id="stop37" />
+		<stop
+   offset="0.5"
+   style="stop-color:#F5FAFD"
+   id="stop39" />
+		<stop
+   offset="1"
+   style="stop-color:#12141A"
+   id="stop41" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#12141A" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#12141A" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F5FAFD" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#12141A" />
+	</linearGradient>
+	<rect
+   fill="url(#SVGID_6_)"
+   stroke="#12141A"
+   stroke-width="0.5669"
+   stroke-linejoin="round"
+   width="3.334"
+   height="30"
+   id="rect44" />
+</g>
+</svg>

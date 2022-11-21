@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="120.334px"
+   height="130.761px"
+   viewBox="0 0 120.334 130.761"
+   enable-background="new 0 0 120.334 130.761"
+   xml:space="preserve"
+   sodipodi:docname="冷却处理-01.svg"><metadata
+   id="metadata43"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs41" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview39" />
+<g
+   id="g36">
+	
+		<rect
+   x="0.25"
+   y="35.018"
+   fill="#F7F7F0"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="95.493"
+   height="95.494"
+   id="rect2" />
+	
+		<polygon
+   fill="#F7F7F0"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   95.743,35.018 0.25,35.018 9.057,9.057 104.551,9.057  "
+   id="polygon4" />
+	
+		<polygon
+   fill="#C9C8B1"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   78.72,29.92 20.732,29.92 26.08,14.155 84.067,14.155  "
+   id="polygon6" />
+	<g
+   id="g14">
+		<rect
+   x="0.831"
+   y="93"
+   fill="#FFCC00"
+   width="94.331"
+   height="11.552"
+   id="rect8" />
+		<rect
+   x="0.831"
+   y="81.45"
+   fill="#FF0000"
+   width="94.331"
+   height="11.55"
+   id="rect10" />
+		<rect
+   x="0.831"
+   y="69.899"
+   fill="#990000"
+   width="94.331"
+   height="11.551"
+   id="rect12" />
+	</g>
+	
+		<rect
+   x="27.835"
+   y="114.776"
+   fill="#3F3F4C"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="40.324"
+   height="3.187"
+   id="rect16" />
+	
+		<ellipse
+   fill="#3F3F4C"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="47.997"
+   cy="51.633"
+   rx="24.334"
+   ry="6.998"
+   id="ellipse18" />
+	
+		<polygon
+   fill="#F7F7F0"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   120.084,0.25 24.591,0.25 9.057,9.057 104.551,9.057  "
+   id="polygon20" />
+	
+		<polygon
+   fill="#C9C8B1"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   120.084,0.25 104.551,9.057 95.743,35.018 95.743,130.511 120.084,114.575  "
+   id="polygon22" />
+	
+		<line
+   fill="none"
+   stroke="#5E5D4E"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   x1="104.551"
+   y1="9.057"
+   x2="104.551"
+   y2="124.745"
+   id="line24" />
+	
+		<line
+   fill="none"
+   stroke="#5E5D4E"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   x1="113.127"
+   y1="4.195"
+   x2="113.127"
+   y2="119.13"
+   id="line26" />
+	<polygon
+   fill="#3F3F4C"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="54.616,26.73 26.455,26.73    30.163,17.344 58.324,17.344  "
+   id="polygon28" />
+	<polygon
+   fill="#9BB5C9"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="74.998,26.73 57.787,26.73    61.495,17.344 78.706,17.344  "
+   id="polygon30" />
+	<polygon
+   fill="#E06588"
+   points="66.8,25.484 60.105,25.484 62.666,18.778 69.358,18.778  "
+   id="polygon32" />
+	<polygon
+   fill="#E06588"
+   points="73.318,25.484 68.246,25.484 70.807,18.778 75.877,18.778  "
+   id="polygon34" />
+</g>
+</svg>

@@ -1,0 +1,24 @@
+{
+  "value": "boiler",
+  "title": "锅炉",
+  "create_type": "draggable",
+  "sort": 1,
+  "props": ["prop_data"],
+  "components": [
+    {
+      "value": "boiler",
+      "title": "锅炉",
+      "image_src": "/media/configure/boiler/b01.png"
+    },
+    {
+      "value": "boiler",
+      "title": "锅炉",
+      "image_src": "/media/configure/boiler/b02.png"
+    },
+    {
+      "value": "boiler",
+      "title": "锅炉",
+      "image_src": "/media/configure/boiler/b03.png"
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="45px"
+   height="45px"
+   viewBox="0 0 45 45"
+   enable-background="new 0 0 45 45"
+   xml:space="preserve"
+   sodipodi:docname="圆形按钮指示灯_52-01.svg"><metadata
+   id="metadata23"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs21" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview19" />
+<g
+   id="g16">
+	<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="6.7925"
+   y1="6.792"
+   x2="36.5495"
+   y2="36.549">
+		<stop
+   offset="0"
+   style="stop-color:#99FFFF"
+   id="stop2" />
+		<stop
+   offset="1"
+   style="stop-color:#4479FF"
+   id="stop4" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#99FFFF" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#99FFFF" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#4479FF" />
+	</linearGradient>
+	<path
+   fill="url(#SVGID_1_)"
+   d="M22.502,0C10.093,0,0,10.095,0,22.499C0,34.907,10.093,45,22.502,45C34.908,45,45,34.907,45,22.499   C45,10.095,34.908,0,22.502,0z"
+   id="path7" />
+	<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="32.7178"
+   y1="32.7158"
+   x2="10.8518"
+   y2="10.8498">
+		<stop
+   offset="0"
+   style="stop-color:#99FFFF"
+   id="stop9" />
+		<stop
+   offset="1"
+   style="stop-color:#4479FF"
+   id="stop11" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#99FFFF" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#99FFFF" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#4479FF" />
+	</linearGradient>
+	<circle
+   fill="url(#SVGID_2_)"
+   cx="22.504"
+   cy="22.499"
+   r="17.655"
+   id="circle14" />
+</g>
+</svg>

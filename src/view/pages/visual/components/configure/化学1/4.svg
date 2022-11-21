@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="62.976px"
+   height="100.82px"
+   viewBox="166.6 217.175 62.976 100.82"
+   enable-background="new 166.6 217.175 62.976 100.82"
+   xml:space="preserve"
+   sodipodi:docname="化学设备-02.svg"><metadata
+   id="metadata29"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs27" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview25" />
+<g
+   id="g22">
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="180.5322"
+   y1="625.7432"
+   x2="251.6333"
+   y2="625.7432"
+   gradientTransform="matrix(0.878 0 0 -0.878 8.4008 817.9401)">
+		<stop
+   offset="0"
+   style="stop-color:#DCDBDA"
+   id="stop2" />
+		<stop
+   offset="0.5074"
+   style="stop-color:#FFFFFF"
+   id="stop4" />
+		<stop
+   offset="1"
+   style="stop-color:#DCDBDA"
+   id="stop6" />
+	</linearGradient>
+	<path
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.6348"
+   stroke-miterlimit="10"
+   d="M204.761,249.805v-30.468h-13.346   v30.468c0,5.795-3.512,10.976-8.868,13.083c-9.132,3.6-15.629,12.468-15.629,22.829v7.464c0,13.522,10.976,24.498,24.498,24.498   h13.346c13.522,0,24.498-10.976,24.498-24.498v-7.464c0-10.361-6.498-19.317-15.629-22.829   C208.273,260.78,204.761,255.6,204.761,249.805z"
+   id="path9" />
+	
+		<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="208.4326"
+   y1="681.7422"
+   x2="223.6675"
+   y2="681.7422"
+   gradientTransform="matrix(0.878 0 0 -0.878 8.4008 817.9401)">
+		<stop
+   offset="0"
+   style="stop-color:#DCDBDA"
+   id="stop11" />
+		<stop
+   offset="0.5074"
+   style="stop-color:#FFFFFF"
+   id="stop13" />
+		<stop
+   offset="1"
+   style="stop-color:#DCDBDA"
+   id="stop15" />
+	</linearGradient>
+	
+		<ellipse
+   fill="url(#SVGID_2_)"
+   stroke="#231815"
+   stroke-width="0.6348"
+   stroke-miterlimit="10"
+   cx="198.088"
+   cy="219.337"
+   rx="6.673"
+   ry="1.844"
+   id="ellipse18" />
+	
+		<path
+   fill="none"
+   stroke="#FFFFFF"
+   stroke-width="2.5393"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   d="   M182.81,267.717c0,0-8.166,7.024-9.307,15.98"
+   id="path20" />
+</g>
+</svg>

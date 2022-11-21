@@ -4,7 +4,7 @@
     <div class="chart-container" ref="chart_container">
       <VueDragResize v-for="(option, index) in optionsData" :key="index"
                      :isDraggable="false" :isResizable="false" :isActive="false"
-                     parentLimitation="true" :preventActiveBehavior="false"
+                     :parentLimitation="true" :preventActiveBehavior="false"
                      :x="option.point.x" :y="option.point.y"
                      :w="option.point.w" :h="option.point.h"
       >

@@ -1,0 +1,843 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="26px"
+   height="19px"
+   viewBox="0 0 26 19"
+   enable-background="new 0 0 26 19"
+   xml:space="preserve"
+   sodipodi:docname="工业管道_57-01.svg"><metadata
+   id="metadata204"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs202" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview200" />
+<g
+   id="g197">
+	<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#580000"
+   d="M2.615,0h20.77C24.824,0,26,1.177,26,2.617v13.765   C26,17.823,24.824,19,23.385,19H2.615C1.176,19,0,17.823,0,16.382V2.617C0,1.177,1.176,0,2.615,0z"
+   id="path2" />
+	<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="13.0005"
+   y1="19.1055"
+   x2="13.0005"
+   y2="0.2232">
+		<stop
+   offset="0"
+   style="stop-color:#926A46"
+   id="stop4" />
+		<stop
+   offset="0.01"
+   style="stop-color:#812000"
+   id="stop6" />
+		<stop
+   offset="0.16"
+   style="stop-color:#A06032"
+   id="stop8" />
+		<stop
+   offset="0.24"
+   style="stop-color:#C77D51"
+   id="stop10" />
+		<stop
+   offset="0.33"
+   style="stop-color:#FACE91"
+   id="stop12" />
+		<stop
+   offset="0.4"
+   style="stop-color:#FAF2DE"
+   id="stop14" />
+		<stop
+   offset="0.52"
+   style="stop-color:#F1BE74"
+   id="stop16" />
+		<stop
+   offset="0.61"
+   style="stop-color:#E99C62"
+   id="stop18" />
+		<stop
+   offset="0.72"
+   style="stop-color:#AF5800"
+   id="stop20" />
+		<stop
+   offset="0.87"
+   style="stop-color:#812000"
+   id="stop22" />
+		<stop
+   offset="1"
+   style="stop-color:#B47736"
+   id="stop24" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#926A46" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#926A46" />
+		<a:midPointStop
+   offset="0.01"
+   style="stop-color:#812000" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#812000" />
+		<a:midPointStop
+   offset="0.16"
+   style="stop-color:#A06032" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#A06032" />
+		<a:midPointStop
+   offset="0.24"
+   style="stop-color:#C77D51" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#C77D51" />
+		<a:midPointStop
+   offset="0.33"
+   style="stop-color:#FACE91" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FACE91" />
+		<a:midPointStop
+   offset="0.4"
+   style="stop-color:#FAF2DE" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FAF2DE" />
+		<a:midPointStop
+   offset="0.52"
+   style="stop-color:#F1BE74" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#F1BE74" />
+		<a:midPointStop
+   offset="0.61"
+   style="stop-color:#E99C62" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#E99C62" />
+		<a:midPointStop
+   offset="0.72"
+   style="stop-color:#AF5800" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#AF5800" />
+		<a:midPointStop
+   offset="0.87"
+   style="stop-color:#812000" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#812000" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#B47736" />
+	</linearGradient>
+	<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="url(#SVGID_1_)"
+   d="M2.615,0.224h20.77c1.315,0,2.392,1.078,2.392,2.394   v13.765c0,1.317-1.076,2.394-2.392,2.394H2.615c-1.315,0-2.391-1.076-2.391-2.394V2.617C0.225,1.302,1.3,0.224,2.615,0.224z"
+   id="path27" />
+	<g
+   id="g48">
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#640000"
+   d="M23.385,0.984c0.753-0.002,1.366,0.609,1.367,1.367    c0,0.756-0.613,1.372-1.366,1.373c-0.752,0.002-1.364-0.611-1.364-1.368S22.634,0.984,23.385,0.984z"
+   id="path29" />
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#8E2F02"
+   cx="23.385"
+   cy="2.354"
+   r="1.239"
+   id="circle31" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#CA814B"
+   d="M24.424,1.681c0.525,0.817-0.057,1.91-1.038,1.912    c-0.438,0.002-0.822-0.229-1.042-0.574C23.093,3.867,24.56,2.671,24.424,1.681z"
+   id="path33" />
+		
+			<radialGradient
+   id="SVGID_2_"
+   cx="24.6074"
+   cy="4.6426"
+   r="1.4897"
+   gradientTransform="matrix(1.0083 0 0 1.0094 -1.1839 -2.7691)"
+   gradientUnits="userSpaceOnUse">
+			<stop
+   offset="0"
+   style="stop-color:#FDEFD9"
+   id="stop35" />
+			<stop
+   offset="0.26"
+   style="stop-color:#FACE91"
+   id="stop37" />
+			<stop
+   offset="0.86"
+   style="stop-color:#8C2D02"
+   id="stop39" />
+			<stop
+   offset="1"
+   style="stop-color:#B14F00"
+   id="stop41" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.26"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.86"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#B14F00" />
+		</radialGradient>
+		<ellipse
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="url(#SVGID_2_)"
+   cx="23.411"
+   cy="2.329"
+   rx="1.078"
+   ry="1.084"
+   id="ellipse44" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#FFFFFF"
+   d="M23.926,1.586c0.375,0.261,0.163,0.571-0.213,0.31    C23.337,1.637,23.549,1.328,23.926,1.586z"
+   id="path46" />
+	</g>
+	<g
+   id="g69">
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#640000"
+   d="M23.385,14.936c0.753-0.001,1.366,0.61,1.367,1.367    c0,0.757-0.613,1.372-1.366,1.373c-0.752,0.002-1.364-0.61-1.364-1.368C22.021,15.552,22.634,14.937,23.385,14.936z"
+   id="path50" />
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#8E2F02"
+   cx="23.385"
+   cy="16.305"
+   r="1.24"
+   id="circle52" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#CA814B"
+   d="M24.424,15.633c0.525,0.817-0.057,1.91-1.038,1.912    c-0.438,0.002-0.822-0.229-1.042-0.574C23.093,17.819,24.56,16.622,24.424,15.633z"
+   id="path54" />
+		
+			<radialGradient
+   id="SVGID_3_"
+   cx="24.6074"
+   cy="18.4639"
+   r="1.489"
+   gradientTransform="matrix(1.0083 0 0 1.0094 -1.1839 -2.7691)"
+   gradientUnits="userSpaceOnUse">
+			<stop
+   offset="0"
+   style="stop-color:#FDEFD9"
+   id="stop56" />
+			<stop
+   offset="0.26"
+   style="stop-color:#FACE91"
+   id="stop58" />
+			<stop
+   offset="0.86"
+   style="stop-color:#8C2D02"
+   id="stop60" />
+			<stop
+   offset="1"
+   style="stop-color:#B14F00"
+   id="stop62" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.26"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.86"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#B14F00" />
+		</radialGradient>
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="url(#SVGID_3_)"
+   cx="23.411"
+   cy="16.281"
+   r="1.083"
+   id="circle65" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#FFFFFF"
+   d="M23.926,15.539c0.375,0.259,0.163,0.569-0.213,0.31    C23.337,15.588,23.549,15.279,23.926,15.539z"
+   id="path67" />
+	</g>
+	<g
+   id="g90">
+		<ellipse
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#640000"
+   cx="2.9"
+   cy="2.354"
+   rx="1.364"
+   ry="1.37"
+   id="ellipse71" />
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#8E2F02"
+   cx="2.9"
+   cy="2.354"
+   r="1.239"
+   id="circle73" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#CA814B"
+   d="M3.938,1.681c0.526,0.817-0.056,1.91-1.036,1.912    C2.463,3.595,2.076,3.364,1.859,3.019C2.605,3.867,4.073,2.671,3.938,1.681z"
+   id="path75" />
+		
+			<radialGradient
+   id="SVGID_4_"
+   cx="4.2905"
+   cy="4.6426"
+   r="1.4899"
+   gradientTransform="matrix(1.0083 0 0 1.0094 -1.1839 -2.7691)"
+   gradientUnits="userSpaceOnUse">
+			<stop
+   offset="0"
+   style="stop-color:#FDEFD9"
+   id="stop77" />
+			<stop
+   offset="0.26"
+   style="stop-color:#FACE91"
+   id="stop79" />
+			<stop
+   offset="0.86"
+   style="stop-color:#8C2D02"
+   id="stop81" />
+			<stop
+   offset="1"
+   style="stop-color:#B14F00"
+   id="stop83" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.26"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.86"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#B14F00" />
+		</radialGradient>
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="url(#SVGID_4_)"
+   cx="2.926"
+   cy="2.329"
+   r="1.084"
+   id="circle86" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#FFFFFF"
+   d="M3.44,1.586c0.374,0.261,0.163,0.571-0.213,0.31    C2.851,1.637,3.064,1.328,3.44,1.586z"
+   id="path88" />
+	</g>
+	<g
+   id="g111">
+		<ellipse
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#640000"
+   cx="2.9"
+   cy="16.306"
+   rx="1.364"
+   ry="1.37"
+   id="ellipse92" />
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#8E2F02"
+   cx="2.9"
+   cy="16.305"
+   r="1.24"
+   id="circle94" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#CA814B"
+   d="M3.938,15.633c0.526,0.817-0.056,1.91-1.036,1.912    c-0.438,0.002-0.825-0.229-1.042-0.574C2.605,17.819,4.073,16.622,3.938,15.633z"
+   id="path96" />
+		
+			<radialGradient
+   id="SVGID_5_"
+   cx="4.2905"
+   cy="18.4639"
+   r="1.4892"
+   gradientTransform="matrix(1.0083 0 0 1.0094 -1.1839 -2.7691)"
+   gradientUnits="userSpaceOnUse">
+			<stop
+   offset="0"
+   style="stop-color:#FDEFD9"
+   id="stop98" />
+			<stop
+   offset="0.26"
+   style="stop-color:#FACE91"
+   id="stop100" />
+			<stop
+   offset="0.86"
+   style="stop-color:#8C2D02"
+   id="stop102" />
+			<stop
+   offset="1"
+   style="stop-color:#B14F00"
+   id="stop104" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.26"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.86"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#B14F00" />
+		</radialGradient>
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="url(#SVGID_5_)"
+   cx="2.926"
+   cy="16.281"
+   r="1.083"
+   id="circle107" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#FFFFFF"
+   d="M3.44,15.539c0.374,0.259,0.163,0.569-0.213,0.31    C2.851,15.588,3.064,15.279,3.44,15.539z"
+   id="path109" />
+	</g>
+	<g
+   id="g132">
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#640000"
+   cx="9.727"
+   cy="16.306"
+   r="1.369"
+   id="circle113" />
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#8E2F02"
+   cx="9.728"
+   cy="16.306"
+   r="1.238"
+   id="circle115" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#CA814B"
+   d="M10.399,15.269c-0.816-0.527-1.908,0.057-1.91,1.036    c-0.002,0.44,0.229,0.826,0.573,1.044C8.215,16.601,9.41,15.133,10.399,15.269z"
+   id="path117" />
+		
+			<radialGradient
+   id="SVGID_6_"
+   cx="11.2559"
+   cy="18.6592"
+   r="1.489"
+   gradientTransform="matrix(1.0083 0 0 1.0094 -1.1839 -2.7691)"
+   gradientUnits="userSpaceOnUse">
+			<stop
+   offset="0"
+   style="stop-color:#FDEFD9"
+   id="stop119" />
+			<stop
+   offset="0.26"
+   style="stop-color:#FACE91"
+   id="stop121" />
+			<stop
+   offset="0.86"
+   style="stop-color:#8C2D02"
+   id="stop123" />
+			<stop
+   offset="1"
+   style="stop-color:#B14F00"
+   id="stop125" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.26"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.86"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#B14F00" />
+		</radialGradient>
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="url(#SVGID_6_)"
+   cx="9.753"
+   cy="16.282"
+   r="1.082"
+   id="circle128" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#FFFFFF"
+   d="M10.494,15.768c-0.26-0.376-0.57-0.165-0.31,0.212    C10.443,16.356,10.751,16.144,10.494,15.768z"
+   id="path130" />
+	</g>
+	<g
+   id="g153">
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#640000"
+   cx="16.558"
+   cy="16.306"
+   r="1.369"
+   id="circle134" />
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#8E2F02"
+   cx="16.559"
+   cy="16.306"
+   r="1.238"
+   id="circle136" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#CA814B"
+   d="M17.23,15.269c-0.814-0.527-1.908,0.057-1.91,1.036    c-0.001,0.44,0.228,0.826,0.574,1.044C15.046,16.601,16.242,15.133,17.23,15.269z"
+   id="path138" />
+		
+			<radialGradient
+   id="SVGID_7_"
+   cx="18.0293"
+   cy="18.6592"
+   r="1.4892"
+   gradientTransform="matrix(1.0083 0 0 1.0094 -1.1839 -2.7691)"
+   gradientUnits="userSpaceOnUse">
+			<stop
+   offset="0"
+   style="stop-color:#FDEFD9"
+   id="stop140" />
+			<stop
+   offset="0.26"
+   style="stop-color:#FACE91"
+   id="stop142" />
+			<stop
+   offset="0.86"
+   style="stop-color:#8C2D02"
+   id="stop144" />
+			<stop
+   offset="1"
+   style="stop-color:#B14F00"
+   id="stop146" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.26"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.86"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#B14F00" />
+		</radialGradient>
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="url(#SVGID_7_)"
+   cx="16.583"
+   cy="16.282"
+   r="1.082"
+   id="circle149" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#FFFFFF"
+   d="M17.323,15.768c-0.258-0.376-0.568-0.165-0.307,0.212    C17.275,16.356,17.583,16.144,17.323,15.768z"
+   id="path151" />
+	</g>
+	<g
+   id="g174">
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#640000"
+   cx="9.727"
+   cy="2.354"
+   r="1.369"
+   id="circle155" />
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#8E2F02"
+   cx="9.728"
+   cy="2.354"
+   r="1.238"
+   id="circle157" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#CA814B"
+   d="M10.399,1.317C9.583,0.79,8.491,1.372,8.489,2.354    C8.487,2.794,8.718,3.179,9.063,3.397C8.215,2.648,9.41,1.181,10.399,1.317z"
+   id="path159" />
+		
+			<radialGradient
+   id="SVGID_8_"
+   cx="11.2559"
+   cy="4.8369"
+   r="1.4899"
+   gradientTransform="matrix(1.0083 0 0 1.0094 -1.1839 -2.7691)"
+   gradientUnits="userSpaceOnUse">
+			<stop
+   offset="0"
+   style="stop-color:#FDEFD9"
+   id="stop161" />
+			<stop
+   offset="0.26"
+   style="stop-color:#FACE91"
+   id="stop163" />
+			<stop
+   offset="0.86"
+   style="stop-color:#8C2D02"
+   id="stop165" />
+			<stop
+   offset="1"
+   style="stop-color:#B14F00"
+   id="stop167" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.26"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.86"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#B14F00" />
+		</radialGradient>
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="url(#SVGID_8_)"
+   cx="9.753"
+   cy="2.329"
+   r="1.082"
+   id="circle170" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#FFFFFF"
+   d="M10.494,1.814c-0.26-0.374-0.57-0.162-0.31,0.214    C10.443,2.404,10.751,2.191,10.494,1.814z"
+   id="path172" />
+	</g>
+	<g
+   id="g195">
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#640000"
+   d="M17.927,2.354c0.001-0.754-0.609-1.365-1.365-1.365    c-0.758,0-1.372,0.611-1.373,1.365s0.611,1.366,1.367,1.366C17.311,3.722,17.926,3.109,17.927,2.354z"
+   id="path176" />
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#8E2F02"
+   cx="16.559"
+   cy="2.354"
+   r="1.238"
+   id="circle178" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#CA814B"
+   d="M17.23,1.317c-0.814-0.527-1.908,0.055-1.91,1.037    c-0.001,0.439,0.228,0.824,0.574,1.043C15.046,2.648,16.242,1.181,17.23,1.317z"
+   id="path180" />
+		
+			<radialGradient
+   id="SVGID_9_"
+   cx="18.0293"
+   cy="4.8369"
+   r="1.4901"
+   gradientTransform="matrix(1.0083 0 0 1.0094 -1.1839 -2.7691)"
+   gradientUnits="userSpaceOnUse">
+			<stop
+   offset="0"
+   style="stop-color:#FDEFD9"
+   id="stop182" />
+			<stop
+   offset="0.26"
+   style="stop-color:#FACE91"
+   id="stop184" />
+			<stop
+   offset="0.86"
+   style="stop-color:#8C2D02"
+   id="stop186" />
+			<stop
+   offset="1"
+   style="stop-color:#B14F00"
+   id="stop188" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FDEFD9" />
+			<a:midPointStop
+   offset="0.26"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FACE91" />
+			<a:midPointStop
+   offset="0.86"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#8C2D02" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#B14F00" />
+		</radialGradient>
+		<circle
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="url(#SVGID_9_)"
+   cx="16.583"
+   cy="2.329"
+   r="1.082"
+   id="circle191" />
+		<path
+   fill-rule="evenodd"
+   clip-rule="evenodd"
+   fill="#FFFFFF"
+   d="M17.323,1.814c-0.258-0.374-0.568-0.162-0.307,0.214    C17.275,2.404,17.583,2.191,17.323,1.814z"
+   id="path193" />
+	</g>
+</g>
+</svg>

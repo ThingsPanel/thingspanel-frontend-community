@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="164.265px"
+   height="88.09px"
+   viewBox="0 0 164.265 88.09"
+   enable-background="new 0 0 164.265 88.09"
+   xml:space="preserve"
+   sodipodi:docname="加热处理-07.svg"><metadata
+   id="metadata119"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs117" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview115" />
+<g
+   id="g112">
+	
+		<polygon
+   fill="#155D89"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   38.862,48.621 32.905,87.84 29.267,87.84 35.223,48.621  "
+   id="polygon2" />
+	<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="49.6826"
+   y1="5.395"
+   x2="114.582"
+   y2="5.395">
+		<stop
+   offset="0"
+   style="stop-color:#2D86C9"
+   id="stop4" />
+		<stop
+   offset="0.5"
+   style="stop-color:#CFE9F6"
+   id="stop6" />
+		<stop
+   offset="1"
+   style="stop-color:#2D86C9"
+   id="stop8" />
+	</linearGradient>
+	
+		<rect
+   x="49.683"
+   y="1.796"
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="64.899"
+   height="7.198"
+   id="rect11" />
+	<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="75.5361"
+   y1="1.0229"
+   x2="88.7285"
+   y2="1.0229">
+		<stop
+   offset="0"
+   style="stop-color:#2D86C9"
+   id="stop13" />
+		<stop
+   offset="0.5"
+   style="stop-color:#CFE9F6"
+   id="stop15" />
+		<stop
+   offset="1"
+   style="stop-color:#2D86C9"
+   id="stop17" />
+	</linearGradient>
+	
+		<rect
+   x="75.536"
+   y="0.25"
+   fill="url(#SVGID_2_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="13.192"
+   height="1.546"
+   id="rect20" />
+	<linearGradient
+   id="SVGID_3_"
+   gradientUnits="userSpaceOnUse"
+   x1="23.2979"
+   y1="24.8652"
+   x2="140.9668"
+   y2="24.8652">
+		<stop
+   offset="0"
+   style="stop-color:#2D86C9"
+   id="stop22" />
+		<stop
+   offset="0.5"
+   style="stop-color:#CFE9F6"
+   id="stop24" />
+		<stop
+   offset="1"
+   style="stop-color:#2D86C9"
+   id="stop26" />
+	</linearGradient>
+	
+		<polygon
+   fill="url(#SVGID_3_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   140.967,40.736 23.298,40.736 49.683,8.994 114.582,8.994  "
+   id="polygon29" />
+	<linearGradient
+   id="SVGID_4_"
+   gradientUnits="userSpaceOnUse"
+   x1="82.1328"
+   y1="12.229"
+   x2="82.1328"
+   y2="38.9442">
+		<stop
+   offset="0"
+   style="stop-color:#660000"
+   id="stop31" />
+		<stop
+   offset="1"
+   style="stop-color:#FF0000"
+   id="stop33" />
+	</linearGradient>
+	
+		<rect
+   x="49.683"
+   y="8.994"
+   fill="url(#SVGID_4_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="64.899"
+   height="31.742"
+   id="rect36" />
+	<g
+   id="g87">
+		<linearGradient
+   id="SVGID_5_"
+   gradientUnits="userSpaceOnUse"
+   x1="56.2031"
+   y1="33.1099"
+   x2="56.2031"
+   y2="40.2567">
+			<stop
+   offset="0"
+   style="stop-color:#660000"
+   id="stop38" />
+			<stop
+   offset="1"
+   style="stop-color:#FF0000"
+   id="stop40" />
+		</linearGradient>
+		
+			<rect
+   x="54.156"
+   y="32.245"
+   fill="url(#SVGID_5_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="4.094"
+   height="8.492"
+   id="rect43" />
+		<linearGradient
+   id="SVGID_6_"
+   gradientUnits="userSpaceOnUse"
+   x1="64.8457"
+   y1="33.1099"
+   x2="64.8457"
+   y2="40.2567">
+			<stop
+   offset="0"
+   style="stop-color:#660000"
+   id="stop45" />
+			<stop
+   offset="1"
+   style="stop-color:#FF0000"
+   id="stop47" />
+		</linearGradient>
+		
+			<rect
+   x="62.799"
+   y="32.245"
+   fill="url(#SVGID_6_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="4.094"
+   height="8.492"
+   id="rect50" />
+		<linearGradient
+   id="SVGID_7_"
+   gradientUnits="userSpaceOnUse"
+   x1="73.4893"
+   y1="33.1099"
+   x2="73.4893"
+   y2="40.2567">
+			<stop
+   offset="0"
+   style="stop-color:#660000"
+   id="stop52" />
+			<stop
+   offset="1"
+   style="stop-color:#FF0000"
+   id="stop54" />
+		</linearGradient>
+		
+			<rect
+   x="71.442"
+   y="32.245"
+   fill="url(#SVGID_7_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="4.094"
+   height="8.492"
+   id="rect57" />
+		<linearGradient
+   id="SVGID_8_"
+   gradientUnits="userSpaceOnUse"
+   x1="82.1328"
+   y1="33.1099"
+   x2="82.1328"
+   y2="40.2567">
+			<stop
+   offset="0"
+   style="stop-color:#660000"
+   id="stop59" />
+			<stop
+   offset="1"
+   style="stop-color:#FF0000"
+   id="stop61" />
+		</linearGradient>
+		
+			<rect
+   x="80.085"
+   y="32.245"
+   fill="url(#SVGID_8_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="4.095"
+   height="8.492"
+   id="rect64" />
+		<linearGradient
+   id="SVGID_9_"
+   gradientUnits="userSpaceOnUse"
+   x1="90.7754"
+   y1="33.1099"
+   x2="90.7754"
+   y2="40.2567">
+			<stop
+   offset="0"
+   style="stop-color:#660000"
+   id="stop66" />
+			<stop
+   offset="1"
+   style="stop-color:#FF0000"
+   id="stop68" />
+		</linearGradient>
+		
+			<rect
+   x="88.729"
+   y="32.245"
+   fill="url(#SVGID_9_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="4.094"
+   height="8.492"
+   id="rect71" />
+		<linearGradient
+   id="SVGID_10_"
+   gradientUnits="userSpaceOnUse"
+   x1="99.418"
+   y1="33.1099"
+   x2="99.418"
+   y2="40.2567">
+			<stop
+   offset="0"
+   style="stop-color:#660000"
+   id="stop73" />
+			<stop
+   offset="1"
+   style="stop-color:#FF0000"
+   id="stop75" />
+		</linearGradient>
+		
+			<rect
+   x="97.371"
+   y="32.245"
+   fill="url(#SVGID_10_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="4.095"
+   height="8.492"
+   id="rect78" />
+		<linearGradient
+   id="SVGID_11_"
+   gradientUnits="userSpaceOnUse"
+   x1="108.0615"
+   y1="33.1099"
+   x2="108.0615"
+   y2="40.2567">
+			<stop
+   offset="0"
+   style="stop-color:#660000"
+   id="stop80" />
+			<stop
+   offset="1"
+   style="stop-color:#FF0000"
+   id="stop82" />
+		</linearGradient>
+		
+			<rect
+   x="106.015"
+   y="32.245"
+   fill="url(#SVGID_11_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="4.094"
+   height="8.492"
+   id="rect85" />
+	</g>
+	<linearGradient
+   id="SVGID_12_"
+   gradientUnits="userSpaceOnUse"
+   x1="35.29"
+   y1="44.6787"
+   x2="134.324"
+   y2="44.6787">
+		<stop
+   offset="0"
+   style="stop-color:#2D86C9"
+   id="stop89" />
+		<stop
+   offset="0.5"
+   style="stop-color:#CFE9F6"
+   id="stop91" />
+		<stop
+   offset="1"
+   style="stop-color:#2D86C9"
+   id="stop93" />
+	</linearGradient>
+	
+		<rect
+   x="23.298"
+   y="40.736"
+   fill="url(#SVGID_12_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="117.669"
+   height="7.885"
+   id="rect96" />
+	
+		<rect
+   x="16.626"
+   y="40.736"
+   fill="#9BC9E8"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="6.672"
+   height="7.885"
+   id="rect98" />
+	
+		<rect
+   x="0.25"
+   y="40.736"
+   fill="#5DA3D6"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="16.376"
+   height="7.885"
+   id="rect100" />
+	
+		<rect
+   x="140.967"
+   y="40.736"
+   fill="#9BC9E8"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="6.672"
+   height="7.885"
+   id="rect102" />
+	
+		<rect
+   x="147.639"
+   y="40.736"
+   fill="#5DA3D6"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="16.376"
+   height="7.885"
+   id="rect104" />
+	
+		<polygon
+   fill="#5DA3D6"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   35.223,48.621 29.267,87.84 23.298,87.84 23.298,48.621  "
+   id="polygon106" />
+	
+		<polygon
+   fill="#155D89"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   125.402,48.621 131.359,87.84 134.998,87.84 129.042,48.621  "
+   id="polygon108" />
+	
+		<polygon
+   fill="#5DA3D6"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   129.042,48.621 134.998,87.84 140.967,87.84 140.967,48.621  "
+   id="polygon110" />
+</g>
+</svg>

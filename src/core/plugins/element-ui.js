@@ -40,7 +40,9 @@ import {
     DescriptionsItem,
     Dropdown,
     DropdownMenu,
-    DropdownItem
+    DropdownItem,
+    Collapse,
+    CollapseItem,
 } from "element-ui";
 
 // 防止dialog导致页面滚动条消失抖动
@@ -89,6 +91,8 @@ const element = {
         Vue.use(Dropdown)
         Vue.use(DropdownMenu)
         Vue.use(DropdownItem)
+        Vue.use(Collapse)
+        Vue.use(CollapseItem)
         Vue.prototype.$message = Message
     }
 }

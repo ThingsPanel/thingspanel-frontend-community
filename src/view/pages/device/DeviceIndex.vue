@@ -242,7 +242,6 @@ import SubDeviceSettingForm from "./form/param/SubDeviceSettingForm";
 import ManagementGroupForm from "./form/group/ManagementGroupForm.vue"
 // 子设备配置
 import DeviceConfigForm from "./form/config/DeviceConfigForm"
-import {device_default_setting} from "../../../api/device";
 
 export default defineComponent({
   name: "DeviceIndex",

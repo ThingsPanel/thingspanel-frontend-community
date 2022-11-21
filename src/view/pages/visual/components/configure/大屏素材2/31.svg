@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="245px" height="127px" viewBox="0 0 245 127" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>编组 43</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="100%" y1="50.3713978%" x2="0%" y2="50.9865404%" id="linearGradient-1">
+            <stop stop-color="#32C5FF" offset="0%"></stop>
+            <stop stop-color="#11294E" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" opacity="0.5">
+        <g id="0103科技感可视化大数据智慧税务统计大屏展示平台" transform="translate(-1406.000000, -634.000000)">
+            <g id="编组-7" transform="translate(1390.000000, 561.000000)">
+                <g id="编组-43" transform="translate(17.000000, 74.267516)">
+                    <g id="数字/匡备份-4" stroke="#3D7FFF">
+                        <g id="编组-3">
+                            <rect id="矩形" stroke-width="2.25053079" fill="#2F558F" opacity="0.300000012" transform="translate(121.217622, 61.889597) scale(1, -1) translate(-121.217622, -61.889597) " x="1.12526539" y="1.12526539" width="240.184713" height="121.528662"></rect>
+                            <g id="编组-2" stroke-width="1.68789809">
+                                <polyline id="路径-7" points="0 4.50106157 0 0 5.62632696 0"></polyline>
+                                <polyline id="路径-7" transform="translate(239.622081, 2.250531) scale(-1, 1) translate(-239.622081, -2.250531) " points="236.808917 4.50106157 236.808917 0 242.435244 0"></polyline>
+                            </g>
+                            <g id="编组" transform="translate(0.000000, 119.278132)" stroke-width="1.68789809">
+                                <polyline id="路径-7" transform="translate(2.813163, 2.250531) scale(1, -1) translate(-2.813163, -2.250531) " points="0 4.50106157 0 0 5.62632696 0"></polyline>
+                                <polyline id="路径-7" transform="translate(239.622081, 2.250531) scale(-1, -1) translate(-239.622081, -2.250531) " points="236.808917 4.50106157 236.808917 0 242.435244 0"></polyline>
+                            </g>
+                        </g>
+                    </g>
+                    <path d="M1.06812301,123.779193 C1.06812301,123.779193 12.6633484,104.392278 22.9160937,101.460379 C30.1417249,99.3941206 35.9827665,111.204835 44.7640643,111.283801 C53.4611431,111.362009 57.4197516,104.680351 66.612035,101.853316 C74.8981281,99.3049743 80.4647586,96.3786513 88.4600056,97.8453596 C97.9431352,99.5850162 102.532503,111.253666 110.307976,109.869228 C120.01088,108.141606 122.766036,91.1798045 132.155947,90.0652095 C140.244412,89.1050978 144.967747,104.178662 154.003918,104.682461 C162.446123,105.153145 167.094076,92.53292 175.851888,92.5014181 C184.572452,92.4700501 189.121321,104.787572 197.699859,104.525286 C206.599698,104.253178 210.808641,91.1654327 219.54783,91.1654327 C228.287018,91.1654327 241.3958,104.525286 241.3958,104.525286" id="路径" stroke="url(#linearGradient-1)" stroke-width="2.25053079" stroke-linecap="round" fill-rule="nonzero"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

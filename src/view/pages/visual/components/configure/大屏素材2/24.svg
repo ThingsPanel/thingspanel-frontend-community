@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="377px" height="316px" viewBox="0 0 377 316" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>设备累计使用</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <polygon id="path-1" points="3.25821241e-13 8.31152394 7.59919743 0 249.654404 0 269.744091 12.9661017 366.842105 12.9661017 366.842105 304.831615 357.086918 313 12.9917761 313 6.47368421 306.691059 6.47368421 268.514353 0 259.128488"></polygon>
+        <filter x="-1.4%" y="-1.6%" width="102.7%" height="103.2%" filterUnits="objectBoundingBox" id="filter-2">
+            <feGaussianBlur stdDeviation="5" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="0" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.101960784   0 0 0 0 0.356862745   0 0 0 0 0.792156863  0 0 0 1 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+        <path d="M366.842105,36 L366.842105,36.9995359 L269.907,36.999 L249.237161,43.0079194 L249.231,42.996 L0,42.9967511 L0,41.9972152 L249.137,41.997 L269.736,36.01 L269.736842,36 L366.842105,36 Z" id="path-3"></path>
+        <filter x="-2.5%" y="-128.4%" width="104.9%" height="356.9%" filterUnits="objectBoundingBox" id="filter-4">
+            <feOffset dx="0" dy="0" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="3" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.101960784   0 0 0 0 0.356862745   0 0 0 0 0.792156863  0 0 0 1 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="页面1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="首页缩小" transform="translate(-74.000000, -734.000000)">
+            <g id="分组-31" transform="translate(78.000000, 98.000000)">
+                <g id="设备累计使用" transform="translate(1.000000, 637.000000)">
+                    <g id="分组-22">
+                        <g id="矩形">
+                            <use fill-opacity="0.50317029" fill="#08276A" fill-rule="evenodd" xlink:href="#path-1"></use>
+                            <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                            <path stroke="#1A5BCA" stroke-width="1" d="M0.5,8.50564474 L0.5,258.972779 L6.97368421,268.358644 L6.97368421,306.47916 L13.1941236,312.5 L356.905226,312.5 L366.342105,304.598146 L366.342105,13.4661017 L269.59675,13.4661017 L249.507063,0.5 L7.81953314,0.5 L0.5,8.50564474 Z" stroke-linejoin="square"></path>
+                        </g>
+                        <polyline id="路径" stroke="#00A3FF" stroke-width="2" stroke-linecap="round" points="0 19 0 8.5763037 7.51441266 0 21.5789474 0"></polyline>
+                        <polyline id="路径-copy" stroke="#00A3FF" stroke-width="2" stroke-linecap="round" transform="translate(16.723684, 304.031058) rotate(-90.000000) translate(-16.723684, -304.031058) " points="7.72368421 314.281058 7.72368421 300.508416 14.075602 293.781058 25.7236842 293.781058"></polyline>
+                        <polyline id="路径-copy-2" stroke="#00A3FF" stroke-width="2" stroke-linecap="round" transform="translate(350.586596, 307.503966) scale(-1, 1) rotate(-90.000000) translate(-350.586596, -307.503966) " points="345.08263 325.774773 345.08263 300.92472 356.090562 289.233159"></polyline>
+                        <g id="合并形状">
+                            <use fill="black" fill-opacity="1" filter="url(#filter-4)" xlink:href="#path-3"></use>
+                            <use fill="#1A5BCA" fill-rule="evenodd" xlink:href="#path-3"></use>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -13,7 +13,7 @@
       </div>
 
       <div class="display-canvas">
-        <DeviceChartCanvas :show-screen="showScreen" :screen-data="screenData" :device="device"></DeviceChartCanvas>
+        <DeviceChartCanvas :show-screen="showScreen" :screen-data="screenData" :canvasStyle="canvasStyle" :device="device"></DeviceChartCanvas>
       </div>
     </div>
 
@@ -66,19 +66,6 @@ export default defineComponent({
     let pluginData = ref([])
     let groupId = "";
 
-    // let treeData = ref([])
-    // getTreeData();
-    // function getTreeData() {
-    //   getDeviceTree({current_page: 1, per_page: 9999, business_id:  business_id})
-    //     .then(({data}) => {
-    //       if (data.code == 200) {
-    //         treeData.value = data.data.data;
-    //       }
-    //       console.log("getDeviceTree", data)
-    //     })
-    // }
-
-
     function loadNode(node, resolve) {
       // 默认加载一级节点
       if (node.level == 0) {
@@ -127,6 +114,7 @@ export default defineComponent({
     }
 
     let screenData = ref([]);
+    let canvasStyle = ref({});
     let device = ref({})
     let showScreen = ref(false);
 
@@ -136,12 +124,9 @@ export default defineComponent({
      */
     function nodeClick(node) {
       device.value = node;
-      console.log("nodeClick.mode", node)
       if (node.leaf && node.device && node.type) {
         let param = {"current_page": 1, "per_page": 10, "id": node.type}
         getScreenData(node.device, () => {
-          console.log("getScreenData.callback()")
-
           PluginAPI.page(param)
               .then(({data}) => {
                 if (data.code == 200 && data.data && data.data.data && data.data.data.length > 0) {
@@ -185,7 +170,9 @@ export default defineComponent({
             if (data.code == 200 && data.data.data.length > 0) {
               showScreen.value = true;
               let jsonData = JSON.parse(data.data.data[0].json_data);
+              console.log("====getScreenData.jsonData", jsonData)
               screenData.value = jsonData.screen ? jsonData.screen : jsonData;
+              canvasStyle.value = jsonData.canvasStyle ? jsonData.canvasStyle : {};
             } else {
               showScreen.value = false;
               if (callback) {
@@ -212,6 +199,7 @@ export default defineComponent({
       nodeClick,
       showScreen,
       screenData,
+      canvasStyle,
       device,
       VisualEdit
     }

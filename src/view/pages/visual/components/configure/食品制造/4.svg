@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="50.825px"
+   height="74.867px"
+   viewBox="327.173 71.451 50.825 74.867"
+   enable-background="new 327.173 71.451 50.825 74.867"
+   xml:space="preserve"
+   sodipodi:docname="食物生产-04.svg"><metadata
+   id="metadata62"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs60" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview58" />
+<g
+   id="g55">
+	<path
+   fill="#6F9BE2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M376.775,75.964h-0.786   c0-2.354-9.832-4.263-21.962-4.263c-12.129,0-21.96,1.909-21.96,4.263h-0.785c-0.537,0-0.974,0.436-0.974,0.973   s0.437,0.973,0.974,0.973h1.729l5.997,32.997l-1.405,2.841h1.923l3.033,16.695h22.938l3.035-16.695h1.923l-1.406-2.842   l5.997-32.995h1.73c0.537,0,0.973-0.436,0.973-0.973S377.313,75.964,376.775,75.964z"
+   id="path2" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="339.525"
+   y1="113.748"
+   x2="368.531"
+   y2="113.748"
+   id="line4" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="369.048"
+   y1="110.905"
+   x2="339.009"
+   y2="110.907"
+   id="line6" />
+	<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="333.012"
+   y1="77.91"
+   x2="375.045"
+   y2="77.91"
+   id="line8" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="332.067"
+   y1="75.964"
+   x2="375.989"
+   y2="75.964"
+   id="line10" />
+	<g
+   id="g16">
+		<circle
+   fill="#4376BF"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="345.661"
+   cy="100.178"
+   r="3.152"
+   id="circle12" />
+		<circle
+   fill="#2B5D99"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="345.661"
+   cy="100.178"
+   r="1.909"
+   id="circle14" />
+	</g>
+	<g
+   id="g22">
+		<circle
+   fill="#4376BF"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="349.236"
+   cy="123.95"
+   r="3.152"
+   id="circle18" />
+		<circle
+   fill="#2B5D99"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="349.236"
+   cy="123.95"
+   r="1.908"
+   id="circle20" />
+	</g>
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="330.2324"
+   y1="917.7852"
+   x2="361.1465"
+   y2="917.7852"
+   gradientTransform="matrix(1 0 0 -1 8.3398 1056.04)">
+		<stop
+   offset="0"
+   style="stop-color:#2B5D99"
+   id="stop24" />
+		<stop
+   offset="0.3202"
+   style="stop-color:#5B89CD"
+   id="stop26" />
+		<stop
+   offset="0.5369"
+   style="stop-color:#6F9BE2"
+   id="stop28" />
+		<stop
+   offset="0.7734"
+   style="stop-color:#5180C2"
+   id="stop30" />
+		<stop
+   offset="1"
+   style="stop-color:#2B5D99"
+   id="stop32" />
+	</linearGradient>
+	<path
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M369.485,133.601h-3.989v-3.158H342.56   v3.158h-3.987v5.391h3.987v4.219c0,1.578,5.136,2.857,11.469,2.857c6.335,0,11.469-1.279,11.469-2.857v-4.219h3.989   L369.485,133.601L369.485,133.601z"
+   id="path35" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="342.56"
+   y1="133.601"
+   x2="365.496"
+   y2="133.601"
+   id="line37" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="365.496"
+   y1="138.992"
+   x2="342.56"
+   y2="138.992"
+   id="line39" />
+	<path
+   fill="#6F9BE2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M348.813,128.579   c0-0.966-0.781-1.75-1.746-1.75c-0.39,0-0.743,0.131-1.033,0.345l-0.003-0.003l-16.639,8.524l4.206,6.132l14.644-11.956   l-0.003-0.004C348.59,129.548,348.813,129.091,348.813,128.579z"
+   id="path41" />
+	<circle
+   fill="#6F9BE2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="331.164"
+   cy="138.992"
+   r="3.741"
+   id="circle43" />
+	<path
+   fill="#6F9BE2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M334.976,132.841   c0.438-0.238,0.94-0.373,1.476-0.373c1.708,0,3.092,1.385,3.092,3.093c0,0.783-0.291,1.499-0.771,2.043"
+   id="path45" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="337.515"
+   y1="132.66"
+   x2="347.56"
+   y2="127.102"
+   id="line47" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="338.76"
+   y1="133.508"
+   x2="348.22"
+   y2="127.274"
+   id="line49" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="339.542"
+   y1="134.677"
+   x2="348.649"
+   y2="127.849"
+   id="line51" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="339.542"
+   y1="136.024"
+   x2="348.813"
+   y2="128.579"
+   id="line53" />
+</g>
+</svg>

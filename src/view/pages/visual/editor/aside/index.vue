@@ -2,16 +2,17 @@
   <div class="editor-container">
     <div class="search-box">
         <span style="width: 60px;color: #fff;">组件:</span>
-        <el-input class="el-dark-input" suffix-icon="el-icon-search" placeholder="在此搜索组件"></el-input>
+        <el-input class="el-dark-input" suffix-icon="el-icon-search" placeholder="在此搜索组件" v-model="searchText"></el-input>
     </div>
     <div class="component-list">
       <el-tabs class="el-dark-tabs" tab-position="top" v-model="typeTabValue">
+
         <el-tab-pane label="图表" name="chart">
           <div class="component-chart-list">
             <div class="component-item" v-for="(component, index) in chartList" :key="index">
               <p>{{ component.name }}</p>
 
-              <vue-drag :option="component" :index="index">
+              <vue-drag :option="component" :index="'chart' + index">
                   <dashboard-chart v-show="component.controlType == 'dashboard'"
                                    :style="getChartStyle(component)" draggable="true"
                                    :option="component"></dashboard-chart>
@@ -28,12 +29,13 @@
             </div>
           </div>
         </el-tab-pane>
+
         <el-tab-pane label="开关" name="control">
           <div class="component-chart-list">
             <div class="component-item" v-for="(component, index) in controlList" :key="index">
               <p>{{ component.name }}</p>
 
-              <vue-drag :option="component" :index="index">
+              <vue-drag :option="component" :index="'control' + index">
                 <control :style="getChartStyle(component)" draggable="true"
                          :option="component"></control>
               </vue-drag>
@@ -41,10 +43,19 @@
           </div>
 
         </el-tab-pane>
+
         <el-tab-pane label="视频" name="media"></el-tab-pane>
+
         <el-tab-pane label="报表" name="report"></el-tab-pane>
-        <el-tab-pane label="组态" name="config"></el-tab-pane>
-        <el-tab-pane label="其他" name="other"></el-tab-pane>
+
+        <el-tab-pane label="组态" name="config">
+          <configure-panel :search-text="searchText"></configure-panel>
+        </el-tab-pane>
+
+        <el-tab-pane label="其他" name="other">
+          <other-panel></other-panel>
+        </el-tab-pane>
+
       </el-tabs>
 
 
@@ -60,10 +71,13 @@ import Control from "@/components/control/Control";
 import Status from "@/components/e-charts/Status";
 import VueDrag from "@/components/drag"
 // import Chart from "./chart";
+
+import ConfigurePanel from "./configure"
+import OtherPanel from "./other"
 export default {
   name: "EditorAside",
   components: {
-    DashboardChart, CurveChart, Control, Status, VueDrag
+    DashboardChart, CurveChart, Control, Status, VueDrag, ConfigurePanel, OtherPanel
   },
   props: {
     componentList: {
@@ -74,6 +88,7 @@ export default {
   data() {
     return {
       typeTabValue: "chart",
+      searchText: "",
       chartList: [],
       controlList: [],
       mediaList: [],

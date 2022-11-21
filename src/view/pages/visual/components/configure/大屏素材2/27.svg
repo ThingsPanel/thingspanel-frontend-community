@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1588px" height="683px" viewBox="0 0 1588 683" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>编组 19</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M123.87082,8.52651283e-14 L140.619886,15.1314967 L406.131212,15.1314967 L424.545376,41.5889746 L1155.45462,41.5889746 L1173.86879,15.1314967 L1439.38011,15.1314967 L1456.12918,8.52651283e-14 L1550.95289,8.52651283e-14 L1580,28.9819153 L1580,135.586454 L1532.45462,176.419269 L1532.45462,433.165584 L1580,473.998398 L1580,580.602937 L1550.95289,609.584853 L1173.86879,609.584853 L1093,677 L976,677 L925.727426,601.039271 L655.192454,601.039271 L605,677 L487,677 L406.131212,609.584853 L29.0471077,609.584853 L-1.53477231e-12,580.602937 L-1.53477231e-12,473.998398 L47.5453763,433.165584 L47.5453763,176.419269 L-1.64845915e-12,135.586454 L-1.64845915e-12,28.9819153 L29.0471077,8.52651283e-14 L123.87082,8.52651283e-14 Z" id="path-1"></path>
+        <filter x="-1.0%" y="-2.4%" width="102.1%" height="104.9%" filterUnits="objectBoundingBox" id="filter-2">
+            <feGaussianBlur stdDeviation="15" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="0" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.239215686   0 0 0 0 0.498039216   0 0 0 0 1  0 0 0 0.520104041 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="0403科技感机械边框立体3d后台数据可视化首页" transform="translate(-166.000000, -202.000000)">
+            <g id="编组-19" transform="translate(170.000000, 206.000000)">
+                <g id="编组-17" transform="translate(790.000000, 338.500000) scale(1, -1) translate(-790.000000, -338.500000) ">
+                    <g id="编组-16" transform="translate(790.000000, 338.500000) scale(1, -1) translate(-790.000000, -338.500000) ">
+                        <g id="编组-15">
+                            <g id="编组-3">
+                                <g id="形状结合">
+                                    <use fill-opacity="0.7" fill="#041751" fill-rule="evenodd" xlink:href="#path-1"></use>
+                                    <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                                    <use stroke="#3A7DDB" stroke-width="3" xlink:href="#path-1"></use>
+                                </g>
+                                <polygon id="矩形" fill="#05FFFF" opacity="0.600000024" points="419.24832 15.1921459 1156.1347 15.1921459 1143.03395 30.3842917 437.299357 30.3842917"></polygon>
+                                <g id="编组-2">
+                                    <polygon id="矩形" fill="#00FFFF" points="4 94.0014025 19 107.289176 19 150.017086 4 136.729313"></polygon>
+                                    <polygon id="矩形" fill="#00FFFF" points="72 3.79803647 124 3.79803647 134.889715 13.2931276 82.8897153 13.2931276"></polygon>
+                                    <polyline id="路径-17" stroke="#00FFFF" stroke-width="8" points="175.365599 15.1314967 140.619886 15.1314967 124.325444 0 29.0471077 0 4.40536496e-13 28.9819153 4.40536496e-13 135.586454 44.111139 173.299155"></polyline>
+                                    <polygon id="矩形" fill="#00FFFF" transform="translate(27.000000, 24.687237) scale(-1, -1) translate(-27.000000, -24.687237) " points="15 13.2931276 39 13.2931276 15 36.0813464"></polygon>
+                                </g>
+                            </g>
+                            <g id="编组-3" transform="translate(88.000000, 522.584853) scale(1, -1) translate(-88.000000, -522.584853) translate(0.000000, 435.584853)">
+                                <g id="编组-2">
+                                    <polygon id="矩形" fill="#00FFFF" points="4 94.0014025 19 107.289176 19 150.017086 4 136.729313"></polygon>
+                                    <polygon id="矩形" fill="#00FFFF" points="72 3.79803647 124 3.79803647 134.889715 13.2931276 82.8897153 13.2931276"></polygon>
+                                    <polyline id="路径-17" stroke="#00FFFF" stroke-width="8" points="175.365599 0 124.325444 1.44300534e-14 29.0471077 1.44300534e-14 0 28.9819153 0 135.586454 44.111139 173.299155"></polyline>
+                                    <polygon id="矩形" fill="#00FFFF" transform="translate(27.000000, 24.687237) scale(-1, -1) translate(-27.000000, -24.687237) " points="15 13.2931276 39 13.2931276 15 36.0813464"></polygon>
+                                </g>
+                            </g>
+                        </g>
+                        <g id="编组-15" transform="translate(1492.000000, 305.000000) scale(-1, 1) translate(-1492.000000, -305.000000) translate(1404.000000, 0.000000)">
+                            <g id="编组-3">
+                                <g id="编组-2">
+                                    <polygon id="矩形" fill="#00FFFF" points="4 94.0014025 19 107.289176 19 150.017086 4 136.729313"></polygon>
+                                    <polygon id="矩形" fill="#00FFFF" points="72 3.79803647 124 3.79803647 134.889715 13.2931276 82.8897153 13.2931276"></polygon>
+                                    <polyline id="路径-17" stroke="#00FFFF" stroke-width="8" points="175.365599 15.1314967 140.619886 15.1314967 124.325444 0 29.0471077 0 4.40536496e-13 28.9819153 4.40536496e-13 135.586454 44.111139 173.299155"></polyline>
+                                    <polygon id="矩形" fill="#00FFFF" transform="translate(27.000000, 24.687237) scale(-1, -1) translate(-27.000000, -24.687237) " points="15 13.2931276 39 13.2931276 15 36.0813464"></polygon>
+                                </g>
+                            </g>
+                            <g id="编组-3" transform="translate(88.000000, 522.584853) scale(1, -1) translate(-88.000000, -522.584853) translate(0.000000, 435.584853)">
+                                <g id="编组-2">
+                                    <polygon id="矩形" fill="#00FFFF" points="4 94.0014025 19 107.289176 19 150.017086 4 136.729313"></polygon>
+                                    <polygon id="矩形" fill="#00FFFF" points="72 3.79803647 124 3.79803647 134.889715 13.2931276 82.8897153 13.2931276"></polygon>
+                                    <polyline id="路径-17" stroke="#00FFFF" stroke-width="8" points="175.365599 0 124.325444 1.44300534e-14 29.0471077 1.44300534e-14 0 28.9819153 0 135.586454 44.111139 173.299155"></polyline>
+                                    <polygon id="矩形" fill="#00FFFF" transform="translate(27.000000, 24.687237) scale(-1, -1) translate(-27.000000, -24.687237) " points="15 13.2931276 39 13.2931276 15 36.0813464"></polygon>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

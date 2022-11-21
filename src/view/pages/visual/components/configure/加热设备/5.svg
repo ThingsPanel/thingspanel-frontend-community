@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="118.75px"
+   height="98px"
+   viewBox="0 0 118.75 98"
+   enable-background="new 0 0 118.75 98"
+   xml:space="preserve"
+   sodipodi:docname="加热处理-05.svg"><metadata
+   id="metadata15"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs13" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview11" />
+<g
+   id="g8">
+	<polygon
+   fill="#231815"
+   points="102,49.75 103.5,49.75 103.5,28.75 102,28.75 32,28.75 32,13.75 102,13.75 102,10.75 29,10.75    29,31.75 30.5,31.75 100.5,31.75 100.5,46.75 30.5,46.75 29,46.75 29,67.75 30.5,67.75 100.5,67.75 100.5,82.75 30.5,82.75    30.5,85.75 103.5,85.75 103.5,64.75 102,64.75 32,64.75 32,49.75  "
+   id="polygon2" />
+	<g
+   id="g6">
+		<path
+   fill="#0EA3E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M106.75,97.75h-104    c-1.381,0-2.5-1.119-2.5-2.5s1.119-2.5,2.5-2.5h104c3.722,0,6.75-3.028,6.75-6.75s-3.028-6.75-6.75-6.75h-84    C16.271,79.25,11,73.979,11,67.5s5.271-11.75,11.75-11.75h84c3.722,0,6.75-3.028,6.75-6.75s-3.028-6.75-6.75-6.75h-84    C16.271,42.25,11,36.979,11,30.5c0-6.479,5.271-11.75,11.75-11.75h84c3.722,0,6.75-3.028,6.75-6.75s-3.028-6.75-6.75-6.75h-104    c-1.381,0-2.5-1.119-2.5-2.5s1.119-2.5,2.5-2.5h104c6.479,0,11.75,5.271,11.75,11.75s-5.271,11.75-11.75,11.75h-84    c-3.722,0-6.75,3.028-6.75,6.75c0,3.722,3.028,6.75,6.75,6.75h84c6.479,0,11.75,5.271,11.75,11.75s-5.271,11.75-11.75,11.75h-84    c-3.722,0-6.75,3.028-6.75,6.75s3.028,6.75,6.75,6.75h84c6.479,0,11.75,5.271,11.75,11.75S113.229,97.75,106.75,97.75z"
+   id="path4" />
+	</g>
+</g>
+</svg>

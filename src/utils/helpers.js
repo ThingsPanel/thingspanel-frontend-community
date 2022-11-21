@@ -122,6 +122,11 @@ const RandomIndex = (min, max, i) => {
     return index;
 }
 
+/**
+ * RGBA转十六进制颜色
+ * @param rgbaColor
+ * @returns {{hexColor: string, opacity}}
+ */
 export function colorRGBA2Hex(rgbaColor) {
     let rgb = rgbaColor.split(',');
     let r = parseInt(rgb[0].split('(')[1]);
@@ -132,6 +137,12 @@ export function colorRGBA2Hex(rgbaColor) {
     return {hexColor, opacity};
 }
 
+/**
+ * 十六进制颜色转RGBA
+ * @param hexColor
+ * @param opacity
+ * @returns {string}
+ */
 export function colorHex2RGBA(hexColor, opacity) {
     if (hexColor == ""){
         return ""

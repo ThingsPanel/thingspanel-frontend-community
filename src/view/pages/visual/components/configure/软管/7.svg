@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="94.044px"
+   height="96.889px"
+   viewBox="315.062 172.531 94.044 96.889"
+   enable-background="new 315.062 172.531 94.044 96.889"
+   xml:space="preserve"
+   sodipodi:docname="软管-07.svg"><metadata
+   id="metadata27"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs25" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview23" />
+<g
+   id="g20">
+	<path
+   fill="#55646B"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M391.168,222.704   c3.701-4.4,7.021-9.13,9.895-14.128c0.61-1.042,1.195-2.085,1.756-3.153c0.788-1.476,1.538-2.99,2.236-4.515l-60.137-28.042   c-0.382,0.878-0.828,1.73-1.297,2.543c-0.954,1.654-2.049,3.206-3.27,4.654c-5.989,7.135-14.98,11.675-25.04,11.675v66.344   C345.77,258.082,373.009,244.334,391.168,222.704z"
+   id="path2" />
+	
+		<rect
+   x="315.313"
+   y="191.738"
+   fill="#B4CBD1"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="3.893"
+   height="77.432"
+   id="rect4" />
+	
+		<rect
+   x="288.46"
+   y="227.56"
+   transform="matrix(-0.1392 -0.9903 0.9903 -0.1392 145.447 585.4435)"
+   fill="#B4CBD1"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="77.435"
+   height="3.89"
+   id="rect6" />
+	
+		<rect
+   x="298.125"
+   y="225.214"
+   transform="matrix(-0.2756 -0.9613 0.9613 -0.2756 211.3123 613.5609)"
+   fill="#B4CBD1"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="77.435"
+   height="3.891"
+   id="rect8" />
+	
+		<rect
+   x="307.413"
+   y="221.522"
+   transform="matrix(-0.4067 -0.9135 0.9135 -0.4067 282.7588 630.5626)"
+   fill="#B4CBD1"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="77.428"
+   height="3.891"
+   id="rect10" />
+	
+		<rect
+   x="316.081"
+   y="216.609"
+   transform="matrix(-0.5299 -0.848 0.848 -0.5299 357.4673 635.2542)"
+   fill="#B4CBD1"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="77.428"
+   height="3.892"
+   id="rect12" />
+	
+		<rect
+   x="323.995"
+   y="210.542"
+   transform="matrix(-0.6428 -0.766 0.766 -0.6428 433.0933 626.9216)"
+   fill="#B4CBD1"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="77.429"
+   height="3.891"
+   id="rect14" />
+	
+		<rect
+   x="330.952"
+   y="203.419"
+   transform="matrix(-0.7431 -0.6691 0.6691 -0.7431 506.9612 605.3356)"
+   fill="#B4CBD1"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="77.427"
+   height="3.891"
+   id="rect16" />
+	
+		<rect
+   x="336.861"
+   y="195.42"
+   transform="matrix(-0.829 -0.5592 0.5592 -0.829 576.5656 571.0137)"
+   fill="#B4CBD1"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="77.429"
+   height="3.891"
+   id="rect18" />
+</g>
+</svg>

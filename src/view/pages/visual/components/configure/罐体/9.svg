@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="62px"
+   height="86px"
+   viewBox="0 0 62 86"
+   enable-background="new 0 0 62 86"
+   xml:space="preserve"
+   sodipodi:docname="罐体_09-01.svg"><metadata
+   id="metadata27"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs25" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview23" />
+<g
+   id="g20">
+	<g
+   id="g6">
+		<rect
+   x="1.189"
+   y="10.123"
+   fill="#00FFFF"
+   width="59.619"
+   height="51.303"
+   id="rect2" />
+		<path
+   d="M61.306,61.926H0.692V9.623h60.613V61.926z M1.687,60.926h58.625V10.623H1.687V60.926z"
+   id="path4" />
+	</g>
+	<g
+   id="g12">
+		<polygon
+   fill="#00FFFF"
+   points="37.142,85.5 24.857,85.5 1.189,61.426 60.809,61.426   "
+   id="polygon8" />
+		<path
+   d="M37.349,86H24.651L0,60.926h62L37.349,86z M25.064,85h11.869l22.686-23.074H2.381L25.064,85z"
+   id="path10" />
+	</g>
+	<g
+   id="g18">
+		<ellipse
+   fill="#00FFFF"
+   cx="30.999"
+   cy="10.123"
+   rx="29.81"
+   ry="9.623"
+   id="ellipse14" />
+		<path
+   d="M30.999,20.246c-16.994,0-30.307-4.447-30.307-10.123C0.692,4.446,14.005,0,30.999,0c16.995,0,30.307,4.446,30.307,10.123    C61.306,15.799,47.994,20.246,30.999,20.246z M30.999,1C15.11,1,1.687,5.178,1.687,10.123s13.424,9.123,29.313,9.123    c15.89,0,29.313-4.178,29.313-9.123S46.889,1,30.999,1z"
+   id="path16" />
+	</g>
+</g>
+</svg>

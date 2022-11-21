@@ -71,7 +71,9 @@ export default {
   mounted() {
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
-    this.mapping = this.option.series.map(item => {return item.mapping.value})
+    if (this.option.series) {
+      this.mapping = this.option.series.map(item => {return item.mapping.value})
+    }
     this.updateControl();
   },
   methods: {

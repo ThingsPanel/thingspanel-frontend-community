@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="31.656px"
+   height="153.834px"
+   viewBox="257.022 603.993 31.656 153.834"
+   enable-background="new 257.022 603.993 31.656 153.834"
+   xml:space="preserve"
+   sodipodi:docname="传送机传送带-18.svg"><metadata
+   id="metadata15"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs13" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview11" />
+<g
+   id="g8">
+	
+		<rect
+   x="261.382"
+   y="604.243"
+   fill="#4C4C4C"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="22.938"
+   height="153.334"
+   id="rect2" />
+	
+		<rect
+   x="284.319"
+   y="604.243"
+   fill="#C0C0C0"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="4.109"
+   height="153.334"
+   id="rect4" />
+	
+		<rect
+   x="257.272"
+   y="604.243"
+   fill="#C0C0C0"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="4.109"
+   height="153.334"
+   id="rect6" />
+</g>
+</svg>

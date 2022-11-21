@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="69.471px"
+   height="116.366px"
+   viewBox="310.434 232.762 69.471 116.366"
+   enable-background="new 310.434 232.762 69.471 116.366"
+   xml:space="preserve"
+   sodipodi:docname="油罐-08.svg"><metadata
+   id="metadata61"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs59" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview57" />
+<g
+   id="g54">
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="314.4063"
+   y1="362.1719"
+   x2="359.2539"
+   y2="362.1719"
+   gradientTransform="matrix(1 0 0 1 8.3398 -16.2939)">
+		<stop
+   offset="0"
+   style="stop-color:#999999"
+   id="stop2" />
+		<stop
+   offset="0.2925"
+   style="stop-color:#DBDBDB"
+   id="stop4" />
+		<stop
+   offset="0.5"
+   style="stop-color:#F2F2F2"
+   id="stop6" />
+		<stop
+   offset="0.717"
+   style="stop-color:#DBDBDB"
+   id="stop8" />
+		<stop
+   offset="1"
+   style="stop-color:#999999"
+   id="stop10" />
+	</linearGradient>
+	
+		<rect
+   x="322.746"
+   y="342.878"
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="44.848"
+   height="6"
+   id="rect13" />
+	
+		<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="302.3438"
+   y1="581.6963"
+   x2="371.3145"
+   y2="581.6963"
+   gradientTransform="matrix(1 0 0 -1 8.3398 875.04)">
+		<stop
+   offset="0"
+   style="stop-color:#2D9AFC"
+   id="stop15" />
+		<stop
+   offset="0.2689"
+   style="stop-color:#93C8F7"
+   id="stop17" />
+		<stop
+   offset="0.5"
+   style="stop-color:#B8D8F5"
+   id="stop19" />
+		<stop
+   offset="0.7358"
+   style="stop-color:#93C8F7"
+   id="stop21" />
+		<stop
+   offset="1"
+   style="stop-color:#2D9AFC"
+   id="stop23" />
+	</linearGradient>
+	<path
+   fill="url(#SVGID_2_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M379.654,323.859   c0,11.498-9.32,20.818-20.818,20.818h-27.334c-11.498,0-20.818-9.32-20.818-20.818V262.83c0-11.498,9.32-20.819,20.818-20.819   h27.334c11.498,0,20.818,9.321,20.818,20.819V323.859z"
+   id="path26" />
+	
+		<linearGradient
+   id="SVGID_3_"
+   gradientUnits="userSpaceOnUse"
+   x1="321.4063"
+   y1="636.0283"
+   x2="352.2539"
+   y2="636.0283"
+   gradientTransform="matrix(1 0 0 -1 8.3398 875.04)">
+		<stop
+   offset="0"
+   style="stop-color:#2D9AFC"
+   id="stop28" />
+		<stop
+   offset="0.2689"
+   style="stop-color:#93C8F7"
+   id="stop30" />
+		<stop
+   offset="0.5"
+   style="stop-color:#B8D8F5"
+   id="stop32" />
+		<stop
+   offset="0.7358"
+   style="stop-color:#93C8F7"
+   id="stop34" />
+		<stop
+   offset="1"
+   style="stop-color:#2D9AFC"
+   id="stop36" />
+	</linearGradient>
+	
+		<rect
+   x="329.746"
+   y="236.012"
+   fill="url(#SVGID_3_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="30.848"
+   height="6"
+   id="rect39" />
+	
+		<linearGradient
+   id="SVGID_4_"
+   gradientUnits="userSpaceOnUse"
+   x1="317.2402"
+   y1="640.5283"
+   x2="356.4199"
+   y2="640.5283"
+   gradientTransform="matrix(1 0 0 -1 8.3398 875.04)">
+		<stop
+   offset="0"
+   style="stop-color:#2D9AFC"
+   id="stop41" />
+		<stop
+   offset="0.2689"
+   style="stop-color:#93C8F7"
+   id="stop43" />
+		<stop
+   offset="0.5"
+   style="stop-color:#B8D8F5"
+   id="stop45" />
+		<stop
+   offset="0.7358"
+   style="stop-color:#93C8F7"
+   id="stop47" />
+		<stop
+   offset="1"
+   style="stop-color:#2D9AFC"
+   id="stop49" />
+	</linearGradient>
+	
+		<rect
+   x="325.58"
+   y="233.012"
+   fill="url(#SVGID_4_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="39.18"
+   height="3"
+   id="rect52" />
+</g>
+</svg>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 15.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1 Tiny//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-tiny.dtd">
+<svg version="1.1" baseProfile="tiny" id="_x32_2_x7E_28"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="159.496px"
+	 height="40.776px" viewBox="0 0 159.496 40.776" xml:space="preserve">
+<g>
+	<g>
+		<polygon fill="#ED9400" points="159.496,30.297 138.834,40.697 131.336,37.347 131.336,17.195 138.834,13.721 140.051,6.88 
+			149.219,0 159.496,4.13 		"/>
+		<polygon fill="#7D5400" points="138.834,13.721 136.406,18.371 3.303,18.371 0,13.721 16.469,0 149.219,0 		"/>
+		<rect y="13.721" fill="#F9B143" width="138.834" height="26.977"/>
+		<g>
+			<rect x="98.779" y="22.942" fill="#323232" width="20.994" height="17.834"/>
+			<rect x="99.727" y="23.756" fill="#999999" width="2.709" height="16.344"/>
+		</g>
+		<g>
+			<rect x="59.611" y="22.942" fill="#323232" width="20.996" height="17.834"/>
+			<rect x="60.561" y="23.756" fill="#999999" width="2.709" height="16.344"/>
+		</g>
+		<g>
+			<rect x="19.611" y="22.942" fill="#323232" width="20.996" height="17.834"/>
+			<rect x="20.561" y="23.756" fill="#999999" width="2.709" height="16.344"/>
+		</g>
+	</g>
+	<polygon points="154.428,21.323 146.58,24.483 146.58,17.944 154.428,14.784 	"/>
+	<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="153.7559" y1="16.1416" x2="148.1515" y2="22.2813">
+		<stop  offset="0" style="stop-color:#DBD2D2"/>
+		<stop  offset="0.1451" style="stop-color:#E6E0E0"/>
+		<stop  offset="0.3846" style="stop-color:#FFFFFF"/>
+		<stop  offset="0.7418" style="stop-color:#D9D2D2"/>
+		<stop  offset="1" style="stop-color:#FFFFFF"/>
+	</linearGradient>
+	<polygon fill="url(#SVGID_1_)" points="153.842,20.843 147.246,23.426 147.246,18.477 153.842,15.894 	"/>
+</g>
+</svg>

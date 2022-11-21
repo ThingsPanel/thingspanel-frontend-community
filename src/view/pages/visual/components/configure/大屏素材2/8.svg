@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1162px" height="514px" viewBox="0 0 1162 514" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>编组 39</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-1">
+            <stop stop-color="#004146" offset="0%"></stop>
+            <stop stop-color="#000A25" offset="6.8497101%"></stop>
+            <stop stop-color="#000A25" stop-opacity="0" offset="100%"></stop>
+        </linearGradient>
+        <polygon id="path-2" points="0 20.391304 22.2662539 20.391304 0 36.9130426"></polygon>
+        <filter x="-13.5%" y="-18.2%" width="126.9%" height="136.3%" filterUnits="objectBoundingBox" id="filter-3">
+            <feGaussianBlur stdDeviation="3" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="0" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 1   0 0 0 0 0.956140351  0 0 0 1 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+        <polygon id="path-4" points="1137.73375 20.391304 1160 20.391304 1137.73375 36.9130426"></polygon>
+        <filter x="-13.5%" y="-18.2%" width="126.9%" height="136.3%" filterUnits="objectBoundingBox" id="filter-5">
+            <feGaussianBlur stdDeviation="3" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="0" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 1   0 0 0 0 0.956140351  0 0 0 1 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+        <polygon id="path-6" points="1137.73375 496.423898 1160 496.423898 1137.73375 512.945636"></polygon>
+        <filter x="-13.5%" y="-18.2%" width="126.9%" height="136.3%" filterUnits="objectBoundingBox" id="filter-7">
+            <feGaussianBlur stdDeviation="3" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="0" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 1   0 0 0 0 0.956140351  0 0 0 1 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+        <polygon id="path-8" points="0 496.423898 22.2662539 496.423898 0 512.945636"></polygon>
+        <filter x="-13.5%" y="-18.2%" width="126.9%" height="136.3%" filterUnits="objectBoundingBox" id="filter-9">
+            <feGaussianBlur stdDeviation="3" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="0" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 1   0 0 0 0 0.956140351  0 0 0 1 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-10">
+            <stop stop-color="#00B7B7" stop-opacity="0" offset="0%"></stop>
+            <stop stop-color="#00B8B8" stop-opacity="0.565854206" offset="62.7453882%"></stop>
+            <stop stop-color="#00B8B8" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-11">
+            <stop stop-color="#00B8B8" offset="0%"></stop>
+            <stop stop-color="#00B8B8" stop-opacity="0.565854206" offset="37.2546118%"></stop>
+            <stop stop-color="#00B7B7" stop-opacity="0" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="页面-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="大数据可视化科技智慧智能统计后台监管中心" transform="translate(-379.000000, -261.000000)">
+            <g id="原创-center" transform="translate(375.000000, 122.000000)">
+                <g id="编组-39" transform="translate(5.000000, 139.000000)">
+                    <g id="编组-32">
+                        <rect id="矩形" fill="#012337" opacity="0.600000024" x="0" y="8" width="1160" height="505"></rect>
+                        <g id="编组-30">
+                            <g id="编组-35备份">
+                                <g id="编组-34">
+                                    <g id="编组-12备份-5">
+                                        <path d="M387.63356,37.9631016 L387.727705,38.0398814 L387.512076,37.9631016 L387.63356,37.9631016 Z M387.63356,37.9631016 L772.845242,37.9631016 L793.761566,20.0501275 L1133.19919,20.0501275 L1133.39493,20.1118614 L1160.34118,38.9865645 L1160.34118,491.601903 L1130.40444,513.222224 L1130.20468,513.286813 L30.5945834,513.286813 L30.4045966,513.22902 L-0.341176471,492.616363 L-0.341176471,40.1637827 L28.4661309,20.111288 L28.6610474,20.0501275 L365.669301,20.0501275 L387.63356,37.9631016 Z M772.845242,37.9631016 L772.97137,37.9631016 L772.749444,38.0451439 L772.845242,37.9631016 Z" id="矩形" stroke="#23FFF9" stroke-width="0.682352941" fill="url(#linearGradient-1)"></path>
+                                        <g id="矩形">
+                                            <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+                                            <path stroke="#00E0DB" stroke-width="1.36470588" d="M0.682352941,21.0736569 L0.682352941,35.5570509 L20.2015412,21.0736569 L0.682352941,21.0736569 Z" stroke-linejoin="square"></path>
+                                        </g>
+                                        <g id="矩形" transform="translate(1148.866873, 28.652173) scale(-1, 1) translate(-1148.866873, -28.652173) ">
+                                            <use fill="black" fill-opacity="1" filter="url(#filter-5)" xlink:href="#path-4"></use>
+                                            <path stroke="#00E0DB" stroke-width="1.36470588" d="M1138.4161,21.0736569 L1138.4161,35.5570509 L1157.93529,21.0736569 L1138.4161,21.0736569 Z" stroke-linejoin="square"></path>
+                                        </g>
+                                        <g id="矩形" transform="translate(1148.866873, 504.684767) scale(-1, -1) translate(-1148.866873, -504.684767) ">
+                                            <use fill="black" fill-opacity="1" filter="url(#filter-7)" xlink:href="#path-6"></use>
+                                            <path stroke="#00E0DB" stroke-width="1.36470588" d="M1138.4161,497.106251 L1138.4161,511.589645 L1157.93529,497.106251 L1138.4161,497.106251 Z" stroke-linejoin="square"></path>
+                                        </g>
+                                        <g id="矩形" transform="translate(11.133127, 504.684767) scale(1, -1) translate(-11.133127, -504.684767) ">
+                                            <use fill="black" fill-opacity="1" filter="url(#filter-9)" xlink:href="#path-8"></use>
+                                            <path stroke="#00E0DB" stroke-width="1.36470588" d="M0.682352941,497.106251 L0.682352941,511.589645 L20.2015412,497.106251 L0.682352941,497.106251 Z" stroke-linejoin="square"></path>
+                                        </g>
+                                        <polygon id="路径-11" fill="url(#linearGradient-10)" points="358.414861 0.364129574 393.420997 35.3641296 767.329733 35.3641296 801.585139 0.364129574"></polygon>
+                                        <g id="编组-10" transform="translate(267.913313, 27.619565)" fill="#00E0DB">
+                                            <g id="编组-47" transform="translate(539.488669, 0.000000)">
+                                                <polygon id="矩形" points="73.1986821 0 76.0413494 0 81.7266839 3.61413032 78.8840166 3.61413032"></polygon>
+                                                <polygon id="矩形" points="0 0 23.4520049 0 29.1373395 3.61413032 5.68533453 3.61413032"></polygon>
+                                                <polygon id="矩形" points="29.8480063 0 40.5080085 0 46.1933431 3.61413032 35.5333408 3.61413032"></polygon>
+                                                <polygon id="矩形备份-4" points="46.9040099 0 51.3684044 0 54.783142 0 61.1173462 3.61413032 53.2382141 3.61413032"></polygon>
+                                                <polygon id="矩形" points="61.1173462 0 66.8026808 0 72.4880153 3.61413032 66.8026808 3.61413032"></polygon>
+                                            </g>
+                                            <g id="编组-47" transform="translate(41.529906, 1.968811) scale(-1, 1) translate(-41.529906, -1.968811) translate(0.529906, 0.000000)">
+                                                <polygon id="矩形" points="73.1986821 0 76.0413494 0 81.7266839 3.61413032 78.8840166 3.61413032"></polygon>
+                                                <polygon id="矩形" points="0 0 23.4520049 0 29.1373395 3.61413032 5.68533453 3.61413032"></polygon>
+                                                <polygon id="矩形" points="29.8480063 0 40.5080085 0 46.1933431 3.61413032 35.5333408 3.61413032"></polygon>
+                                                <polygon id="矩形备份-4" points="46.9040099 0 51.3684044 0 54.783142 0 61.1173462 3.61413032 53.2382141 3.61413032"></polygon>
+                                                <polygon id="矩形" points="61.1173462 0 66.8026808 0 72.4880153 3.61413032 66.8026808 3.61413032"></polygon>
+                                            </g>
+                                        </g>
+                                        <polyline id="路径-12" fill="url(#linearGradient-11)" transform="translate(7.900929, 180.703799) scale(-1, 1) translate(-7.900929, -180.703799) " points="15.8018576 81.8315194 0 92.9275895 0 264.791783 15.8018576 279.576078"></polyline>
+                                        <polyline id="路径-12" fill="url(#linearGradient-11)" points="1160 81.8315194 1144.19814 92.9275895 1144.19814 264.791783 1160 279.576078"></polyline>
+                                    </g>
+                                    <g id="编组-26" opacity="0.200000003" transform="translate(436.705882, 39.494564)">
+                                        <line x1="0" y1="0.938735148" x2="287.306502" y2="0.938735148" id="路径-2" stroke="#00E0DB" stroke-width="0.827094474" opacity="0.5"></line>
+                                        <line x1="0" y1="10.4512513" x2="287.306502" y2="10.4512513" id="路径-2" stroke="#00E0DB" stroke-width="0.827094474" opacity="0.5"></line>
+                                        <line x1="0" y1="19.9637675" x2="287.306502" y2="19.9637675" id="路径-2" stroke="#00E0DB" stroke-width="0.827094474" opacity="0.5"></line>
+                                        <line x1="0" y1="29.4762837" x2="287.306502" y2="29.4762837" id="路径-2" stroke="#00E0DB" stroke-width="0.827094474" opacity="0.5"></line>
+                                        <line x1="0" y1="38.9887998" x2="287.306502" y2="38.9887998" id="路径-2" stroke="#00E0DB" stroke-width="0.827094474" opacity="0.5"></line>
+                                        <line x1="0" y1="48.501316" x2="287.306502" y2="48.501316" id="路径-2" stroke="#00E0DB" stroke-width="0.827094474" opacity="0.5"></line>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="14.3653251" cy="0.938735148" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="57.6064046" cy="0.938735148" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="100.847484" cy="0.938735148" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="144.088564" cy="0.938735148" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="186.459017" cy="0.938735148" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="230.570723" cy="0.938735148" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="272.941176" cy="0.938735148" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="14.3653251" cy="10.4512513" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="57.6064046" cy="10.4512513" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="100.847484" cy="10.4512513" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="144.088564" cy="10.4512513" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="186.459017" cy="10.4512513" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="230.570723" cy="10.4512513" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="272.941176" cy="10.4512513" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="14.3653251" cy="19.9637675" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="57.6064046" cy="19.9637675" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="100.847484" cy="19.9637675" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="144.088564" cy="19.9637675" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="186.459017" cy="19.9637675" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="230.570723" cy="19.9637675" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="272.941176" cy="19.9637675" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="14.3653251" cy="29.4762837" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="57.6064046" cy="29.4762837" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="100.847484" cy="29.4762837" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="144.088564" cy="29.4762837" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="186.459017" cy="29.4762837" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="230.570723" cy="29.4762837" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="272.941176" cy="29.4762837" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="14.3653251" cy="38.9887998" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="57.6064046" cy="38.9887998" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="100.847484" cy="38.9887998" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="144.088564" cy="38.9887998" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="186.459017" cy="38.9887998" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="230.570723" cy="38.9887998" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="272.941176" cy="38.9887998" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="14.3653251" cy="48.501316" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="57.6064046" cy="48.501316" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="100.847484" cy="48.501316" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="144.088564" cy="48.501316" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="186.459017" cy="48.501316" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="230.570723" cy="48.501316" rx="1.30593864" ry="1"></ellipse>
+                                        <ellipse id="椭圆形" fill="#00E0DB" cx="272.941176" cy="48.501316" rx="1.30593864" ry="1"></ellipse>
+                                    </g>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

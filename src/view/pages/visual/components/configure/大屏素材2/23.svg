@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="375px" height="334px" viewBox="0 0 375 334" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>场景累计</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <polygon id="path-1" points="13.6193457 0.511867874 0.527150622 12.3733206 0.57385312 321.77498 10.5568893 331.509119 357.101914 331.509119 366.3065 321.655306 366.3065 34.3220062 348.139325 19.0146561 180.40818 19.0146561 155.818519 0.511867874"></polygon>
+        <filter x="-1.5%" y="-1.7%" width="103.0%" height="103.3%" filterUnits="objectBoundingBox" id="filter-2">
+            <feGaussianBlur stdDeviation="5" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="0" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.101960784   0 0 0 0 0.356862745   0 0 0 0 0.792156863  0 0 0 1 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+        <rect id="path-3" x="1.07894737" y="47" width="364.684211" height="1"></rect>
+        <filter x="-2.5%" y="-900.0%" width="104.9%" height="1900.0%" filterUnits="objectBoundingBox" id="filter-4">
+            <feOffset dx="0" dy="0" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="3" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.101960784   0 0 0 0 0.356862745   0 0 0 0 0.792156863  0 0 0 1 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="页面1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="首页缩小" transform="translate(-75.000000, -385.000000)">
+            <g id="分组-31" transform="translate(78.000000, 98.000000)">
+                <g id="场景累计" transform="translate(1.000000, 288.000000)">
+                    <g id="框2">
+                        <g id="矩形-2" transform="translate(0.078947, 0.000000)">
+                            <g id="路径-3">
+                                <use fill-opacity="0.501245471" fill="#08276A" fill-rule="evenodd" xlink:href="#path-1"></use>
+                                <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                                <use stroke="#1A5BCA" stroke-width="1" xlink:href="#path-1"></use>
+                            </g>
+                            <polyline id="路径" stroke="#00A3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="36.8309335 0 13.6178297 0 0 14.4126108 0.00272789265 33.8397039"></polyline>
+                            <polyline id="路径-copy-3" stroke="#00A3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(13.543245, 319.000000) scale(1, -1) translate(-13.543245, -319.000000) " points="27.0864897 306 10.3470702 306 2.84217094e-14 316.572907 0.00272789265 332"></polyline>
+                            <polyline id="路径-copy-4" stroke="#00A3FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="339.868421 331.993374 356.607841 331.993374 366.842105 321.492858 366.842105 306"></polyline>
+                            <g id="矩形" transform="translate(183.421053, 47.500000) scale(1, -1) translate(-183.421053, -47.500000) ">
+                                <use fill="black" fill-opacity="1" filter="url(#filter-4)" xlink:href="#path-3"></use>
+                                <use fill="#1A5BCA" fill-rule="evenodd" xlink:href="#path-3"></use>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -128,6 +128,12 @@
   color: #fff !important;
 }
 
+.el-dark-dropdown {
+  color: #dadada!important;
+  margin-right: 10px!important;
+  vertical-align: middle;
+}
+
 // 深色表格
 .el-dark-table {
   color: #fff;
@@ -255,12 +261,26 @@
   }
 
 }
+/**
+  下拉列表
+ */
+.el-dark-select {
+  .el-input__inner {
+    background-color: #273775 !important;
+  }
+}
 
+/**
+  文字链接
+ */
 .el-dark-link {
   .el-link--inner {
     color: #dadada;
   }
 }
+/**
+  树形控件
+ */
 .el-dark-tree {
   background: #273775 !important;
   color: rgb(98, 113, 250) !important;
@@ -421,5 +441,22 @@
 .el-checkbox {
   .el-checkbox__label {
     color: #fff;
+  }
+}
+
+/**
+  折叠面板
+ */
+.el-drak-collapse {
+  border-top: unset!important;
+  border-bottom: unset!important;
+  .el-collapse-item__header {
+    background-color: #202c62!important;
+    color: #fff;
+    border-bottom: 1px solid #233067;
+  }
+  .el-collapse-item__wrap {
+    background-color: #202c62!important;
+    border-bottom: unset;
   }
 }

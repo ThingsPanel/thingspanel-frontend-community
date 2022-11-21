@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="73.016px"
+   height="107.334px"
+   viewBox="37.883 81.945 73.016 107.334"
+   enable-background="new 37.883 81.945 73.016 107.334"
+   xml:space="preserve"
+   sodipodi:docname="油罐-01.svg"><metadata
+   id="metadata140"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs138" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview136" />
+<g
+   id="g133">
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="29.793"
+   y1="781.0176"
+   x2="102.3081"
+   y2="781.0176"
+   gradientTransform="matrix(1 0 0 -1 8.3398 875.04)">
+		<stop
+   offset="0"
+   style="stop-color:#999999"
+   id="stop2" />
+		<stop
+   offset="0.5"
+   style="stop-color:#F2F2F2"
+   id="stop4" />
+		<stop
+   offset="1"
+   style="stop-color:#999999"
+   id="stop6" />
+	</linearGradient>
+	<path
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M95.088,82.195H53.695   c-9.403,2.347-15.562,6.247-15.562,10.664c0,7.175,16.233,12.991,36.258,12.991s36.257-5.816,36.257-12.991   C110.648,88.442,104.49,84.542,95.088,82.195z"
+   id="path9" />
+	
+		<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="29.793"
+   y1="675.4111"
+   x2="102.3081"
+   y2="675.4111"
+   gradientTransform="matrix(1 0 0 1 8.3398 -498.21)">
+		<stop
+   offset="0"
+   style="stop-color:#999999"
+   id="stop11" />
+		<stop
+   offset="0.5"
+   style="stop-color:#F2F2F2"
+   id="stop13" />
+		<stop
+   offset="1"
+   style="stop-color:#999999"
+   id="stop15" />
+	</linearGradient>
+	<path
+   fill="url(#SVGID_2_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M95.088,189.029H53.695   c-9.403-2.347-15.562-6.247-15.562-10.664c0-7.175,16.233-12.991,36.258-12.991s36.257,5.816,36.257,12.991   C110.648,182.782,104.49,186.682,95.088,189.029z"
+   id="path18" />
+	
+		<linearGradient
+   id="SVGID_3_"
+   gradientUnits="userSpaceOnUse"
+   x1="29.7939"
+   y1="739.4287"
+   x2="102.3091"
+   y2="739.4287"
+   gradientTransform="matrix(1 0 0 -1 8.3398 875.04)">
+		<stop
+   offset="0"
+   style="stop-color:#999999"
+   id="stop20" />
+		<stop
+   offset="0.5"
+   style="stop-color:#F2F2F2"
+   id="stop22" />
+		<stop
+   offset="1"
+   style="stop-color:#999999"
+   id="stop24" />
+	</linearGradient>
+	
+		<rect
+   x="38.134"
+   y="92.859"
+   fill="url(#SVGID_3_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="72.515"
+   height="85.505"
+   id="rect27" />
+	<g
+   id="g59">
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="41.818"
+   cy="90.533"
+   r="0.969"
+   id="circle29" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="46.471"
+   cy="90.533"
+   r="0.969"
+   id="circle31" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="51.125"
+   cy="90.533"
+   r="0.969"
+   id="circle33" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="55.778"
+   cy="90.533"
+   r="0.969"
+   id="circle35" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="60.431"
+   cy="90.533"
+   r="0.969"
+   id="circle37" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="65.084"
+   cy="90.533"
+   r="0.969"
+   id="circle39" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="69.738"
+   cy="90.533"
+   r="0.969"
+   id="circle41" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="74.391"
+   cy="90.533"
+   r="0.969"
+   id="circle43" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="79.044"
+   cy="90.533"
+   r="0.969"
+   id="circle45" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="83.698"
+   cy="90.533"
+   r="0.969"
+   id="circle47" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="88.352"
+   cy="90.533"
+   r="0.97"
+   id="circle49" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="93.004"
+   cy="90.533"
+   r="0.969"
+   id="circle51" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="97.658"
+   cy="90.533"
+   r="0.97"
+   id="circle53" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="102.312"
+   cy="90.533"
+   r="0.97"
+   id="circle55" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="106.965"
+   cy="90.533"
+   r="0.97"
+   id="circle57" />
+	</g>
+	<g
+   id="g91">
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="41.818"
+   cy="180.691"
+   r="0.969"
+   id="circle61" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="46.471"
+   cy="180.691"
+   r="0.969"
+   id="circle63" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="51.125"
+   cy="180.691"
+   r="0.969"
+   id="circle65" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="55.778"
+   cy="180.691"
+   r="0.969"
+   id="circle67" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="60.431"
+   cy="180.691"
+   r="0.969"
+   id="circle69" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="65.084"
+   cy="180.691"
+   r="0.969"
+   id="circle71" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="69.738"
+   cy="180.691"
+   r="0.969"
+   id="circle73" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="74.391"
+   cy="180.691"
+   r="0.969"
+   id="circle75" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="79.044"
+   cy="180.691"
+   r="0.969"
+   id="circle77" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="83.698"
+   cy="180.691"
+   r="0.969"
+   id="circle79" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="88.352"
+   cy="180.691"
+   r="0.97"
+   id="circle81" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="93.004"
+   cy="180.691"
+   r="0.969"
+   id="circle83" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="97.658"
+   cy="180.691"
+   r="0.97"
+   id="circle85" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="102.312"
+   cy="180.691"
+   r="0.97"
+   id="circle87" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="106.965"
+   cy="180.691"
+   r="0.97"
+   id="circle89" />
+	</g>
+	<g
+   id="g131">
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="160.85"
+   r="0.969"
+   id="circle93" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="165.633"
+   r="0.969"
+   id="circle95" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="170.416"
+   r="0.969"
+   id="circle97" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="175.198"
+   r="0.969"
+   id="circle99" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="156.197"
+   r="0.969"
+   id="circle101" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="151.543"
+   r="0.969"
+   id="circle103" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="146.89"
+   r="0.969"
+   id="circle105" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="142.237"
+   r="0.969"
+   id="circle107" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="137.583"
+   r="0.969"
+   id="circle109" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="132.93"
+   r="0.969"
+   id="circle111" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="128.277"
+   r="0.969"
+   id="circle113" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="123.623"
+   r="0.969"
+   id="circle115" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="118.969"
+   r="0.969"
+   id="circle117" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="114.316"
+   r="0.969"
+   id="circle119" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="109.663"
+   r="0.969"
+   id="circle121" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="105.01"
+   r="0.969"
+   id="circle123" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="100.356"
+   r="0.969"
+   id="circle125" />
+		<circle
+   fill="#9F9F9F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="57.717"
+   cy="95.703"
+   r="0.969"
+   id="circle127" />
+		
+			<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   x1="54.809"
+   y1="92.859"
+   x2="54.809"
+   y2="178.365"
+   id="line129" />
+	</g>
+</g>
+</svg>

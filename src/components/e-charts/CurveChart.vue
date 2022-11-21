@@ -25,8 +25,8 @@ export default {
       default: ""
     },
     value: {
-      type: [Object],
-      default: () => { return {} }
+      type: [String],
+      default: ""
     },
     autoResize: {
       type: [Boolean, String],
@@ -46,10 +46,10 @@ export default {
     },
     value: {
       handler(newValue) {
-        this.setEchartsValue(newValue);
-      },
-      immediate: true,
-      deep: true
+        console.log("曲线图", newValue)
+        if (!newValue) return;
+        this.setEchartsValue(JSON.parse(newValue));
+      }
     }
   },
   mounted() {
@@ -74,8 +74,20 @@ export default {
       })
     },
     setEchartsValue(value) {
+      // 2022-11-13 13:10:11
       if (!this.myChart) return;
-      this.myChart.setOption(value);
+      let xAxis = value.map(item => {
+        if (JSON.stringify(item) == "{}") return {};
+        return { data: item.sysTime.map(item => item.substring(12)) }
+      })
+      let series = value.map(item => {
+        if (JSON.stringify(item) == "{}") return {};
+        return { data: item.data, type: "line" }
+      })
+      console.log("setEchartsValue", series)
+      let option = { xAxis, series }
+
+      this.myChart.setOption(option);
     }
   }
 }
