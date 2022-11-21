@@ -66,7 +66,7 @@
   <el-table :data="tableData">
     <el-table-column :label="$t('COMMON.NO')" type="index" width="50"></el-table-column>
     <el-table-column :label="$t('COMMON.BUSINESSNAME1')" prop="bname"></el-table-column>
-    <el-table-column :label="$t('COMMON.DWVICEGROUPNAME1')" prop="name"></el-table-column>
+    <el-table-column :label="$t('COMMON.DEVICEGROUPNAME1')" prop="name"></el-table-column>
     <el-table-column label="Token" prop="token" width="300">
       <template v-slot="scope">
         <span class="cursor-pointer" @click="handleSearch({token: scope.row.token})">{{scope.row.token}}</span>
