@@ -1,126 +1,24 @@
 <template>
   <!-- begin:: Header Topbar -->
   <div class="topbar">
-    <!--begin: Search -->
-    <!--<b-dropdown
-      size="sm"
-      id="kt_quick_search_toggle"
-      variant="link"
-      toggle-class="topbar-item text-decoration-none"
-      no-caret
-      right
-      no-flip
-    >
-      <template v-slot:button-content>
-        <div class="btn btn-icon btn-clean btn-lg btn-dropdown mr-1">
-          <span class="svg-icon svg-icon-xl svg-icon-primary">
-            <inline-svg src="media/svg/icons/General/Search.svg" />
-          </span>
-        </div>
-      </template>
-      <b-dropdown-text tag="div" style="width: 350px;">
-        <KTSearchDefault></KTSearchDefault>
-      </b-dropdown-text>
-    </b-dropdown>-->
-    <!--end: Search -->
-
-    <!--begin: Notifications -->
-    <!-- <b-dropdown
-      size="sm"
-      variant="link"
-      toggle-class="topbar-item text-decoration-none"
-      no-caret
-      right
-      no-flip
-    >
-      <template v-slot:button-content>
-        <div
-          class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1 pulse pulse-primary"
-        >
-          <span class="svg-icon svg-icon-xl svg-icon-primary">
-            <inline-svg src="media/svg/icons/Code/Compiling.svg" />
-          </span>
-          <span class="pulse-ring"></span>
-        </div>
-      </template>
-      <b-dropdown-text tag="div" style="width: 350px;">
-        <form>
-          <KTDropdownNotification></KTDropdownNotification>
-        </form>
-      </b-dropdown-text>
-    </b-dropdown> -->
-    <!--end: Notifications -->
-
-    <!--begin: Quick Actions -->
-    <!-- <b-dropdown
-      size="sm"
-      variant="link"
-      toggle-class="topbar-item text-decoration-none"
-      no-caret
-      right
-      no-flip
-    >
-      <template v-slot:button-content>
-        <div class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1">
-          <span class="svg-icon svg-icon-xl svg-icon-primary">
-            <inline-svg src="media/svg/icons/Media/Equalizer.svg" />
-          </span>
-        </div>
-      </template>
-      <b-dropdown-text tag="div" style="width: 350px;">
-        <KTDropdownQuickAction></KTDropdownQuickAction>
-      </b-dropdown-text>
-    </b-dropdown> -->
-    <!--end: Quick Actions -->
-
-    <!--begin: My Cart -->
-    <!-- <b-dropdown
-      size="sm"
-      variant="link"
-      toggle-class="topbar-item text-decoration-none"
-      no-caret
-      right
-      no-flip
-    >
-      <template v-slot:button-content>
-        <div class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1">
-          <span class="svg-icon svg-icon-xl svg-icon-primary">
-            <inline-svg src="media/svg/icons/Shopping/Cart3.svg" />
-          </span>
-        </div>
-      </template>
-      <b-dropdown-text tag="div" style="width: 350px;">
-        <KTDropdownMyCart></KTDropdownMyCart>
-      </b-dropdown-text>
-    </b-dropdown> -->
-    <!--end: My Cart -->
-
-    <!--begin: Quick panel toggle -->
-    <!-- <KTQuickPanel></KTQuickPanel> -->
-    <!--end: Quick panel toggle -->
 
     <!--begin: Language bar -->
     <div class="topbar-item">
-      <b-dropdown
-        size="sm"
-        variant="link"
-        toggle-class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1 text-decoration-none"
-        no-caret
-        right
-        no-flip
-      >
+      <el-select v-model="themeValue" placeholder="主题颜色" @change="handleChangeTheme">
+        <el-option v-for="(theme, index) in themeOptions" :key="index" :label="theme.label" :value="theme.value" ></el-option>
+      </el-select>
+
+      <b-dropdown size="sm" variant="link" toggle-class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1 text-decoration-none"
+        no-caret right no-flip>
+
         <template v-slot:button-content>
-          <img
-            class="h-20px w-20px rounded-sm"
-            :src="languageFlag || getLanguageFlag"
-            alt=""
-          />
+          <img class="h-20px w-20px rounded-sm" :src="languageFlag || getLanguageFlag" alt=""/>
         </template>
+
         <b-dropdown-text tag="div" style="width: 175px;">
-          <KTDropdownLanguage
-            v-on:language-changed="onLanguageChanged"
-          ></KTDropdownLanguage>
+          <KTDropdownLanguage v-on:language-changed="onLanguageChanged"></KTDropdownLanguage>
         </b-dropdown-text>
+
       </b-dropdown>
     </div>
     <!--end: Language bar -->
@@ -173,7 +71,12 @@ export default {
   data() {
     return {
       languageFlag: process.env.BASE_URL + "media/svg/flags/034-china.svg",
-      languages: i18nService.languages
+      languages: i18nService.languages,
+      themeValue: "default",
+      themeOptions: [
+        { label: "默认", value: "default" },
+        { label: "白色", value: "white" }
+      ]
     };
   },
   components: {
@@ -187,13 +90,30 @@ export default {
   },
   created() {
     // 初始化
-    this.onLanguageChanged()
+    this.onLanguageChanged();
+    //
+    let style = localStorage.getItem("style");
+    if (style && style == "themes/white.css") {
+      this.themeValue = "white";
+    }
   },
   methods: {
     onLanguageChanged() {
       this.languageFlag = this.languages.find(val => {
         return val.lang === i18nService.getActiveLanguage();
       }).flag;
+    },
+    /**
+     * 选择主题
+     * @param v
+     */
+    handleChangeTheme(v) {
+      let themeFile = "themes/default.css";
+      if (v == "white") {
+        themeFile = "themes/white.css";
+      }
+      document.getElementById('style').setAttribute("href", themeFile);
+      localStorage.setItem("style", themeFile);
     }
   },
   computed: {

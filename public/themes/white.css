@@ -1,0 +1,19 @@
+html, body {
+    background-color: #ffffff!important;
+}
+.aside {
+    background-color: unset!important;
+}
+.aside-menu {
+    background-color: #ffffff!important;
+}
+.wrapbox {
+    background: unset!important;
+}
+.aside-menu-wrapper {
+    background-color: #ffffff!important;
+}
+.d-flex {
+    background-color: #ffffff!important;
+}
+

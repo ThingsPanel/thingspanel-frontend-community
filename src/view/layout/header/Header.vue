@@ -6,15 +6,9 @@
     class="header"
     v-bind:class="headerClasses"
   >
-    <div
-      class="container-fluid d-flex align-items-center justify-content-between"
-      style="padding: 0"
-    >
+    <div class="container-fluid d-flex align-items-center justify-content-between" style="padding: 0">
       <!-- begin:: Header Menu -->
-      <div
-        class="header-menu-wrapper header-menu-wrapper-left"
-        ref="kt_header_menu_wrapper"
-      >
+      <div class="header-menu-wrapper header-menu-wrapper-left" ref="kt_header_menu_wrapper">
         <!-- <div
           v-if="headerMenuEnabled"
           id="kt_header_menu"
