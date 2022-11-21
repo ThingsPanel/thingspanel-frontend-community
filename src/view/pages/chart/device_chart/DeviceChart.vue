@@ -1,13 +1,13 @@
 <template>
   <div class="container-fluid">
     <div class="header">
-      <el-button class="el-button--indigo"  @click="back">返回</el-button>
-      <el-button class="el-button--indigo"  @click="VisualEdit">编辑</el-button>
+      <el-button class="el-button--indigo"  @click="back">{{ $t('COMMON.RETURN') }}</el-button>
+      <el-button class="el-button--indigo"  @click="VisualEdit">{{ $t('COMMON.EDIT') }}</el-button>
     </div>
     <div class="content">
 
       <div class="left-tree">
-        <el-input class="el-dark-input search-input" suffix-icon="el-icon-search" v-model="filterValue" autocomplete="off" placeholder="搜索"></el-input>
+        <el-input class="el-dark-input search-input" suffix-icon="el-icon-search" v-model="filterValue" autocomplete="off" :placeholder="$t('COMMON.SEARCH')"></el-input>
         <el-tree class="el-dark-tree" ref="pluginTree" lazy
                  :load="loadNode" :props="defaultProps" :filter-node-method="filterNode" @node-click="nodeClick"></el-tree>
       </div>

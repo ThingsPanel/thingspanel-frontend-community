@@ -3,12 +3,12 @@
 
       <el-row style="width:100%;display: flex;justify-content: space-between">
         <el-col :xs="16" :sm="20" :md="20" :lg="22" :xl="22">
-          <el-input style="width: 200px" clearable v-model="searchValue" placeholder="请输入插件名称"></el-input>
+          <el-input style="width: 200px" clearable v-model="searchValue" :placeholder="$t('COMMON.PLACEHOLDER50')"></el-input>
         </el-col>
 
         <el-col :xs="8" :sm="4" :md="4" :lg="2" :xl="2">
           <el-button icon="el-icon-refresh" class="primary el-button--indigo"
-                     :loading="refreshLoading" @click="load">刷新</el-button>
+                     :loading="refreshLoading" @click="load">{{ $t('COMMON.THEREFRESH') }}</el-button>
         </el-col>
       </el-row>
 

@@ -1,36 +1,36 @@
 <template>
-  <el-dialog class="el-dark-dialog" title="创建产品" :visible.sync="dialogVisible" width="30%"
+  <el-dialog class="el-dark-dialog" :title="$t('COMMON.CREATEPRODUCT')" :visible.sync="dialogVisible" width="30%"
              :before-close="handleClose" :close-on-click-modal="false">
     <el-form label-position="top" :model="formData" :rules="formRules">
 
-      <el-form-item label="产品" prop="product_id">
+      <el-form-item :label="$t('COMMON.PRODUCT')"  prop="product_id">
         <el-select style="width: 100%" v-model="formData.product_name" disabled >
           <el-option v-for="item in productOptions" :key="item.value" :label="item.label"
                      :value="item.value"></el-option>
         </el-select>
       </el-form-item>
 
-      <el-form-item label="批号" prop="batch_number">
+      <el-form-item :label="$t('COMMON.BATCHNUMBER')" prop="batch_number">
         <el-input v-model="formData.batch_number"></el-input>
       </el-form-item>
 
-      <el-form-item label="接入地址" prop="access_address">
+      <el-form-item :label="$t('COMMON.ACCESSADDRESS')" prop="access_address">
         <el-input v-model="formData.access_address"></el-input>
       </el-form-item>
 
-      <el-form-item label="设备数量" prop="device_number">
+      <el-form-item :label="$t('COMMON.NUMBEREQIPMENT')" prop="device_number">
         <el-input-number v-model="formData.device_number"></el-input-number>
       </el-form-item>
 
-      <el-form-item label="批次描述">
+      <el-form-item :label="$t('COMMON.BATCHDESCRIPTION')">
         <el-input v-model="formData.describe"></el-input>
       </el-form-item>
 
     </el-form>
 
     <span slot="footer" class="dialog-footer">
-    <el-button @click="handleClose">取 消</el-button>
-    <el-button type="primary" @click="handleSubmit">确 定</el-button>
+    <el-button @click="handleClose">{{ $t('COMMON.CANCEL') }}</el-button>
+    <el-button type="primary" @click="handleSubmit">{{ $t('COMMON.CONFIRM') }}</el-button>
   </span>
   </el-dialog>
 </template>
@@ -47,6 +47,7 @@
  */
 import ProductAPI from "@/api/product.js"
 import {message_success} from "@/utils/helpers";
+import i18n from "@/core/plugins/vue-i18n.js"
 
 const required = true;
 export default {
@@ -72,10 +73,10 @@ export default {
         describle: ""
       },
       formRules: {
-        batch_number: [{required, message: '请输入批号'}],
-        product_id: [{required, message: '请选择产品'}],
-        access_address: [{required, message: '请输入接入地址'}],
-        device_number: [{required, message: '请输入设备数量', type: 'number'}]
+        batch_number: [{required, message:  i18n.t('COMMON.PLACEHOLDER45')}],
+        product_id: [{required, message: i18n.t('COMMON.PLACEHOLDER46')}],
+        access_address: [{required, message: i18n.t('COMMON.PLACEHOLDER47')}],
+        device_number: [{required, message:  i18n.t('COMMON.PLACEHOLDER48'), type: 'number'}]
       },
       dialogVisible: false,
       productOptions: [

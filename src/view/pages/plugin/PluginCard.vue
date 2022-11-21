@@ -49,17 +49,17 @@
         </div>
       </el-row>
       <el-row>
-        <el-input class="el-dark-input" type="textarea" :rows="24" placeholder="请输入内容" v-model="exportPluginJson"></el-input>
+        <el-input class="el-dark-input" type="textarea" :rows="24" :placeholder="$t('COMMON.PLACEHOLDER51')" v-model="exportPluginJson"></el-input>
       </el-row>
 
       <span slot="footer" class="dialog-footer">
-        <el-button  @click="exportDialogVisible = false">取 消</el-button>
-        <el-button type="primary" class="el-button--indigo" @click="handleExport">导 出</el-button>
+        <el-button  @click="exportDialogVisible = false">{{ $t('COMMON.CANCEL') }}</el-button>
+        <el-button type="primary" class="el-button--indigo" @click="handleExport">{{ $t('COMMON.EXPORT') }}</el-button>
         <el-button type="primary" class="el-button--indigo"
                    v-clipboard:copy="exportPluginJson"
                    v-clipboard:success="onCopy"
                    v-clipboard:error="onError"
-        >复制到剪贴板</el-button>
+        >{{ $t('COMMON.PLACEHOLDER52') }}</el-button>
       </span>
     </el-dialog>
   </b-card>

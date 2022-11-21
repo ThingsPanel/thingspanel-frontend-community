@@ -6,13 +6,13 @@
       :model="form"
       :hide-required-asterisk="true"
       label-width="80px">
-    <el-form-item label="规则名称" prop="rule_name">
+    <el-form-item :label="$t('COMMON.RULE_NAME')" prop="rule_name">
       <el-input v-model="form.rule_name"></el-input>
     </el-form-item>
 
       <div style="display: flex;justify-content: center">
-        <el-button class="cancel-button" size="medium" plain @click="cancelDialog">取消</el-button>
-        <el-button class="medium" type="primary" @click="onSubmit">创建</el-button>
+        <el-button class="cancel-button" size="medium" plain @click="cancelDialog">{{ $t('COMMON.CANCEL') }}</el-button>
+        <el-button class="medium" type="primary" @click="onSubmit">{{ $t('COMMON.CREATE') }}</el-button>
       </div>
 
   </el-form>
