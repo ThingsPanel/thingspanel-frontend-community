@@ -79,8 +79,8 @@
     <el-table-column :label="$t('COMMON.BUSINESSNAME1')" prop="bname"></el-table-column>
 
     <el-table-column :label="$t('COMMON.DWVICEGROUPNAME1')" prop="asset_name"></el-table-column>
-    <el-table-column label="网关名称"  prop="gateway_name"></el-table-column>
-    <el-table-column label="设备名" prop="device_name"></el-table-column>
+    <el-table-column :label="$t('COMMON.GATEWAYNAME')"  prop="gateway_name"></el-table-column>
+    <el-table-column :label="$t('COMMON.DEVICENAME1')" prop="device_name"></el-table-column>
 <!--    <el-table-column label="Token" prop="token" width="300">-->
 <!--      <template v-slot="scope">-->
 <!--        <span class="cursor-pointer" @click="handleSearch({token: scope.row.token})">{{scope.row.token}}</span>-->

@@ -7,8 +7,8 @@
             <el-card class="box-card" @click.native="customPlugin">
               <div class="text-item">
                 <i class="el-icon-edit-outline icon"></i>
-                <p>自定义插件</p>
-                <p class="tips">解决个性化设备需求</p>
+                <p>{{ $t('COMMON.PLACEHOLDER53') }}</p>
+                <p class="tips">{{ $t('COMMON.PLACEHOLDER54') }}</p>
               </div>
             </el-card>
           </a>
@@ -18,8 +18,8 @@
             <el-card class="box-card"  @click.native="showImportPlugin">
               <div class="text-item">
                 <i class="el-icon-folder-add icon"></i>
-                <p>导入插件</p>
-                <p class="tips">导入即用</p>
+                <p>{{ $t('COMMON.IMPOTPLUGINS') }}</p>
+                <p class="tips">{{ $t('COMMON.IMPORTUSE') }}</p>
               </div>
             </el-card>
           </a>
@@ -32,20 +32,20 @@
     <el-dialog class="el-dark-dialog el-table-transparent" title="导入JSON" :visible.sync="importDialogVisible" width="30%">
       <el-row >
         <div style="margin-bottom: 10px;display: flex;justify-content: space-between">
-          <span>在这里粘贴插件的JSON文本</span>
+          <span>{{ $t('COMMON.JSONTEST') }}</span>
           <el-upload class="upload-demo" action="#" :limit="1" >
-            <el-button type="primary" class="el-button--indigo">选择文件</el-button>
+            <el-button type="primary" class="el-button--indigo">{{ $t('COMMON.SELECTTHEFILE') }}</el-button>
           </el-upload>
 <!--          <el-button type="primary" class="el-button&#45;&#45;indigo" >选择文件</el-button>-->
         </div>
       </el-row>
       <el-row>
-        <el-input class="el-dark-input" type="textarea" :rows="24" placeholder="请输入内容" v-model="importPluginJson"></el-input>
+        <el-input class="el-dark-input" type="textarea" :rows="24" :placeholder="$t('COMMON.PLACEHOLDER51')" v-model="importPluginJson"></el-input>
       </el-row>
 
       <span slot="footer" class="dialog-footer">
-        <el-button  @click="importDialogVisible = false">取 消</el-button>
-        <el-button type="primary" class="el-button--indigo" @click="handleImport()">导 入</el-button>
+        <el-button  @click="importDialogVisible = false">{{ $t('COMMON.CANCEL') }}</el-button>
+        <el-button type="primary" class="el-button--indigo" @click="handleImport()">{{ $t('COMMON.THEIMPORT') }}</el-button>
       </span>
     </el-dialog>
   </div>

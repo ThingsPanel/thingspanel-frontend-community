@@ -14,11 +14,11 @@
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3 el-dark-input">
 
       <el-col :span="12">
-        <el-input placeholder="产品编号" v-model="params.serialNumber" clearable></el-input>
+        <el-input :placeholder="$t('COMMON.PRODUCTNUMBER')" v-model="params.serialNumber" clearable></el-input>
       </el-col>
 
       <el-col :span="12" class="text-right">
-        <el-button type="indigo" size="medium" @click="handleSearch">查询</el-button>
+        <el-button type="indigo" size="medium" @click="handleSearch">{{ $t('COMMON.SEARCH') }}</el-button>
         <!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
       </el-col>
     </el-row>
