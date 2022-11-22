@@ -87,6 +87,20 @@ html {
     border-top: 1px solid #314694!important;
 }
 
+.el-collapse {
+    border-top: unset!important;
+    border-bottom: unset!important;
+}
+
+.el-collapse .el-collapse-item__header {
+    background-color: #202c62!important;
+    color: #fff;
+    border-bottom: 1px solid #233067;
+}
+.el-collapse .el-collapse-item__wrap {
+    background-color: #202c62!important;
+    border-bottom: unset;
+}
 
 
 .aside {

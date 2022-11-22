@@ -11,7 +11,7 @@
         <!-- ==========================常规组件 start======================================== -->
 <!--        <el-tab-pane label="常规组件" name="common">-->
 <!--          <el-collapse v-model="commonActiveNames"  >-->
-<!--            <el-collapse-item v-for="(components, index) in commonList" :title="components.category" :name="index">-->
+<!--            <el-collapse-item v-for="(components, index) in commonList" :key="index" :title="components.label" :name="index">-->
 
 <!--            </el-collapse-item>-->
 <!--          </el-collapse>-->
@@ -109,10 +109,37 @@ export default {
   },
   data() {
     return {
-      typeTabValue: "common",
+      typeTabValue: "chart",
       searchText: "",
       commonActiveNames: [""],
-      commonList: [],
+      commonList: [
+        {
+          label: "图表组件",
+          value: "eChart",
+          children: [
+            {
+              label: "仪表盘",
+              value: "dashboard"
+            },
+            {
+              label: "曲线图",
+              value: "history"
+            }
+          ]
+        },
+        {
+          label: "文本组件",
+          value: "text"
+        },
+        {
+          label: "组态",
+          value: "configure"
+        },
+        {
+          label: "视频组件",
+          value: "video"
+        }
+      ],
       chartList: [],
       controlList: [],
       mediaList: [],

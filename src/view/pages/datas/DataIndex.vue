@@ -34,6 +34,17 @@
 
     <el-col :span="4">
       <el-input
+          v-model="params.device_name"
+          :placeholder="$t('COMMON.PLACEHOLDER2')"
+          size="medium"
+          clearable
+          @keydown.enter.native="handleSearch()"
+          @clear="handleSearch()">
+      </el-input>
+    </el-col>
+
+    <el-col :span="4">
+      <el-input
           v-model="params.key"
           :placeholder="$t('COMMON.PLACEHOLDER40')"
           size="medium"
