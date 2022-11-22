@@ -1,3 +1,55 @@
+html,body{
+    background: #161e43!important;
+}
+
+.w-100{
+    width: 100%;
+}
+
+.text-right{
+    text-align: right;
+}
+
+.cursor-pointer{
+    cursor: pointer;
+}
+html {
+    /* 其他地方的的样式会有 overflow: scroll; 滚动条始终显示*/
+    overflow: auto !important;
+    min-height: 100% !important;
+}
+
+/* 页脚高度有溢出，导致登录页有几个像素滚动条*/
+.footers{
+   overflow: hidden;
+}
+
+/* 火狐滚动条美化*/
+html {
+   scrollbar-color: #444f77 #161E43;
+   scrollbar-width: thin;
+}
+
+/* webkit 内核*/
+       /*控制整个滚动条*/
+::-webkit-scrollbar {
+   background-color: #161E43;
+   width: 8px;
+   height: 8px;
+}
+
+/* 滚动条中间滑动部分*/
+::-webkit-scrollbar-thumb {
+    background-color: #444f77;
+}
+.v-btn.v-size--default{
+   font-size: 14px!important;
+}
+.v-btn{
+    font-family: "Microsoft Yahei"!important;
+}
+
+/* el-table */
 .el-table {
     color: #fff;
 }
@@ -34,4 +86,110 @@
 }
 .el-table .el-table__empty-block {
     border-top: 1px solid #314694!important;
+}
+
+
+
+.aside {
+    background-color: #161E43 !important;
+    box-shadow: 3px 0px 7px #000;
+}
+
+.brand {
+    background: unset !important;
+}
+
+.aside-menu {
+    background: unset !important;
+}
+
+.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-heading,
+.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-link {
+    background: linear-gradient(to right, rgba(41, 56, 125, 0.95) 0%, transparent 100%) !important;
+    color: #fff;
+    border-radius: 4px;
+}
+
+.aside-menu .menu-nav>.menu-item>.menu-heading .menu-text,
+.aside-menu .menu-nav>.menu-item>.menu-link .menu-text {
+    color: #5B92FF !important;
+    margin-top: 2px;
+}
+
+.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-heading .menu-text,
+.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-link .menu-text {
+    color: #fff !important;
+}
+
+.aside-menu .menu-nav>.menu-item>.menu-heading .menu-icon,
+.aside-menu .menu-nav>.menu-item>.menu-link .menu-icon {
+    background: rgba(91, 146, 255, 0.2) !important;
+    padding: 0 5px;
+    height: 24px;
+    line-height: 24px;
+    width: 24px;
+    border-radius: 3px;
+    font-size: 1.18em;
+    text-align: center;
+    vertical-align: middle;
+    margin-right: 15px;
+    color: #3699FF !important;
+    flex: unset;
+}
+
+.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-heading .menu-icon,
+.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-link .menu-icon {
+    background-color: #5B92FF !important;
+    color: #fff !important;
+}
+
+.card {
+    background: #2d3d88 !important;
+    border-radius: .25rem;
+    border: unset!important;
+}
+
+.card-box {
+    border: 1px solid #ECF0F3!important;
+}
+
+.card-title,
+.card-title .text-dark {
+    color: #fff !important;
+}
+
+.text-muted {
+    color: #a8c5ff !important;
+}
+
+.btn-primary {
+    background-color: #5B92FF !important;
+    border: unset !important;
+}
+
+.bg-light-box {
+    background: #3d6bc7 !important;
+}
+
+.card a.text-dark {
+    color: #fff !important;
+}
+
+.text-date {
+    color: #a8c5ff !important;
+}
+
+.wrapbox {
+    margin-left: 15px;
+    margin-right: 15px;
+    /*background-color: #1a234f;*/
+    background: radial-gradient(ellipse at center, #29387d 0%, #1a234f 100%);
+    background-size: 100%;
+    /*background-attachment: fixed;*/
+    /*background-position: center top;*/
+    border-radius: 5px;
+    padding: 0px;
+    height: auto;
+    min-height: 100%;
+    overflow: hidden;
 }

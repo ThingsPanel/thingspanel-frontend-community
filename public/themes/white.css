@@ -1,19 +1,25 @@
-html, body {
-    background-color: #ffffff!important;
-}
-.aside {
+/*html, body {*/
+/*    background-color: #ffffff!important;*/
+/*}*/
+/*.aside {*/
+/*    background-color: unset!important;*/
+/*}*/
+.aside-menu {
     background-color: unset!important;
 }
-.aside-menu {
-    background-color: #ffffff!important;
+.brand {
+    background-color: unset!important;
 }
-.wrapbox {
-    background: unset!important;
-}
-.aside-menu-wrapper {
-    background-color: #ffffff!important;
-}
-.d-flex {
-    background-color: #ffffff!important;
-}
+/*.wrapbox {*/
+/*    background: #ffffff!important;*/
+/*}*/
+/*.aside-menu-wrapper {*/
+/*    background-color: #ffffff!important;*/
+/*}*/
+/*.d-flex {*/
+/*    background-color: #ffffff!important;*/
+/*}*/
+/*.card {*/
+/*    background: #ffffff!important;*/
+/*}*/
 

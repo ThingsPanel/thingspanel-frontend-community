@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded card p-4 el-table-transparent">
+  <div class="rounded card p-4">
     <!-- 头 start -->
     <el-row type="flex" class="pt-3 pb-4 px-3">
       <el-col :span="12">

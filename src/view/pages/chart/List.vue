@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded card p-4 el-table-transparent el-dark-input">
+  <div class="rounded card p-4">
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
       <el-col :span="12">
         <TableTitle>{{ $t('COMMON.VISUALIZATION') }}</TableTitle>

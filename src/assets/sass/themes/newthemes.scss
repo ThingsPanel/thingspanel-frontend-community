@@ -8,91 +8,91 @@
 //     font-family: 'Roboto', sans-serif !important;
 // }
 
-.aside {
-    background-color: #161E43 !important;
-    box-shadow: 3px 0px 7px #000;
-}
+//.aside {
+//    background-color: #161E43 !important;
+//    box-shadow: 3px 0px 7px #000;
+//}
 
-.brand {
-    background: unset !important;
-}
-
-.aside-menu {
-    background: unset !important;
-}
-
-.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-heading,
-.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-link {
-    background: linear-gradient(to right, rgba(41, 56, 125, 0.95) 0%, transparent 100%) !important;
-    color: #fff;
-    border-radius: 4px;
-}
-
-.aside-menu .menu-nav>.menu-item>.menu-heading .menu-text,
-.aside-menu .menu-nav>.menu-item>.menu-link .menu-text {
-    color: #5B92FF !important;
-    margin-top: 2px;
-}
-
-.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-heading .menu-text,
-.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-link .menu-text {
-    color: #fff !important;
-}
-
-.aside-menu .menu-nav>.menu-item>.menu-heading .menu-icon,
-.aside-menu .menu-nav>.menu-item>.menu-link .menu-icon {
-    background: rgba(91, 146, 255, 0.2) !important;
-    padding: 0 5px;
-    height: 24px;
-    line-height: 24px;
-    width: 24px;
-    border-radius: 3px;
-    font-size: 1.18em;
-    text-align: center;
-    vertical-align: middle;
-    margin-right: 15px;
-    color: #3699FF !important;
-    flex: unset;
-}
-
-.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-heading .menu-icon,
-.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-link .menu-icon {
-    background-color: #5B92FF !important;
-    color: #fff !important;
-}
-
-.card {
-    background: #2d3d88 !important;
-    border-radius: .25rem;
-    border: unset;
-    //background: unset;
-}
-
-.card-title,
-.card-title .text-dark {
-    color: #fff !important;
-}
-
-.text-muted {
-    color: #a8c5ff !important;
-}
-
-.btn-primary {
-    background-color: #5B92FF !important;
-    border: unset !important;
-}
-
-.bg-light-box {
-    background: #3d6bc7 !important;
-}
-
-.card a.text-dark {
-    color: #fff !important;
-}
-
-.text-date {
-    color: #a8c5ff !important;
-}
+//.brand {
+//    background: unset !important;
+//}
+//
+//.aside-menu {
+//    background: unset !important;
+//}
+//
+//.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-heading,
+//.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-link {
+//    background: linear-gradient(to right, rgba(41, 56, 125, 0.95) 0%, transparent 100%) !important;
+//    color: #fff;
+//    border-radius: 4px;
+//}
+//
+//.aside-menu .menu-nav>.menu-item>.menu-heading .menu-text,
+//.aside-menu .menu-nav>.menu-item>.menu-link .menu-text {
+//    color: #5B92FF !important;
+//    margin-top: 2px;
+//}
+//
+//.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-heading .menu-text,
+//.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-link .menu-text {
+//    color: #fff !important;
+//}
+//
+//.aside-menu .menu-nav>.menu-item>.menu-heading .menu-icon,
+//.aside-menu .menu-nav>.menu-item>.menu-link .menu-icon {
+//    background: rgba(91, 146, 255, 0.2) !important;
+//    padding: 0 5px;
+//    height: 24px;
+//    line-height: 24px;
+//    width: 24px;
+//    border-radius: 3px;
+//    font-size: 1.18em;
+//    text-align: center;
+//    vertical-align: middle;
+//    margin-right: 15px;
+//    color: #3699FF !important;
+//    flex: unset;
+//}
+//
+//.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-heading .menu-icon,
+//.aside-menu .menu-nav>.menu-item.menu-item-active>.menu-link .menu-icon {
+//    background-color: #5B92FF !important;
+//    color: #fff !important;
+//}
+//
+//.card {
+//    //background: #2d3d88 !important;
+//    border-radius: .25rem;
+//    border: unset;
+//    //background: unset;
+//}
+//
+//.card-title,
+//.card-title .text-dark {
+//    color: #fff !important;
+//}
+//
+//.text-muted {
+//    color: #a8c5ff !important;
+//}
+//
+//.btn-primary {
+//    background-color: #5B92FF !important;
+//    border: unset !important;
+//}
+//
+//.bg-light-box {
+//    background: #3d6bc7 !important;
+//}
+//
+//.card a.text-dark {
+//    color: #fff !important;
+//}
+//
+//.text-date {
+//    color: #a8c5ff !important;
+//}
 
 //滚动条
 // ::-webkit-scrollbar-track {
@@ -129,32 +129,32 @@
 //     height: 4px;
 // }
 
-.text-blue {
-    color: #5B92FF;
-}
-
-.card-box {
-    border: 1px solid #5B92FF;
-}
-
-.no-border {
-    border: unset !important;
-}
-
-.no-bg {
-    background: unset !important;
-}
-
-.theme--light.v-data-table>.v-data-table__wrapper>table>tbody>tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
-    background: unset !important;
-}
-
-.theme--light.v-input input,
-.theme--light.v-input textarea,
-.theme--light.v-select .v-select__selection--comma,
-.table .theme--light.v-icon {
-    color: #fff;
-}
+//.text-blue {
+//    color: #5B92FF;
+//}
+//
+//.card-box {
+//    border: 1px solid #5B92FF;
+//}
+//
+//.no-border {
+//    border: unset !important;
+//}
+//
+//.no-bg {
+//    background: unset !important;
+//}
+//
+//.theme--light.v-data-table>.v-data-table__wrapper>table>tbody>tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
+//    background: unset !important;
+//}
+//
+//.theme--light.v-input input,
+//.theme--light.v-input textarea,
+//.theme--light.v-select .v-select__selection--comma,
+//.table .theme--light.v-icon {
+//    color: #fff;
+//}
 
 //.el-input--suffix .el-input__inner,
 //.vue-treeselect__control,
@@ -268,20 +268,20 @@ canvas {
     padding-top: 15px !important;
 }
 
-.wrapbox {
-    margin-left: 15px;
-    margin-right: 15px;
-    background-color: #1a234f;
-    background: radial-gradient(ellipse at center, #29387d 0%, #1a234f 100%);
-    background-size: 100%;
-    background-attachment: fixed;
-    background-position: center top;
-    border-radius: 5px;
-    padding: 0px;
-    height: auto;
-    min-height: 100%;
-    overflow: hidden;
-}
+//.wrapbox {
+//    margin-left: 15px;
+//    margin-right: 15px;
+//    background-color: #1a234f;
+//    background: radial-gradient(ellipse at center, #29387d 0%, #1a234f 100%);
+//    background-size: 100%;
+//    background-attachment: fixed;
+//    background-position: center top;
+//    border-radius: 5px;
+//    padding: 0px;
+//    height: auto;
+//    min-height: 100%;
+//    overflow: hidden;
+//}
 
 .header {
     background: unset;
