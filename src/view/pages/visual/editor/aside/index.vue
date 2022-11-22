@@ -7,6 +7,28 @@
     <div class="component-list">
       <el-tabs class="el-dark-tabs" tab-position="top" v-model="typeTabValue">
 
+
+        <!-- ==========================常规组件 start======================================== -->
+<!--        <el-tab-pane label="常规组件" name="common">-->
+<!--          <el-collapse v-model="commonActiveNames"  >-->
+<!--            <el-collapse-item v-for="(components, index) in commonList" :title="components.category" :name="index">-->
+
+<!--            </el-collapse-item>-->
+<!--          </el-collapse>-->
+<!--        </el-tab-pane>-->
+        <!-- ==========================常规组件 end========================================== -->
+
+
+        <!-- ==========================插件组件 start======================================== -->
+<!--        <el-tab-pane label="插件组件" name="plugin"></el-tab-pane>-->
+        <!-- ==========================插件组件 end======================================== -->
+
+
+        <!-- ==========================我的组件 start======================================== -->
+<!--        <el-tab-pane label="我的组件" name="myself"></el-tab-pane>-->
+        <!-- ==========================我的组件 end======================================== -->
+
+
         <el-tab-pane label="图表" name="chart">
           <div class="component-chart-list">
             <div class="component-item" v-for="(component, index) in chartList" :key="index">
@@ -87,8 +109,10 @@ export default {
   },
   data() {
     return {
-      typeTabValue: "chart",
+      typeTabValue: "common",
       searchText: "",
+      commonActiveNames: [""],
+      commonList: [],
       chartList: [],
       controlList: [],
       mediaList: [],

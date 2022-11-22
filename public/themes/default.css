@@ -61,9 +61,8 @@ html {
 }
 
 .el-table .el-table__header-wrapper {
-    display: none;
-    height: 40px!important;
-    line-height: 40px!important;
+    /*height: 40px!important;*/
+    /*line-height: 40px!important;*/
 }
 
 .el-table .el-table__header-wrapper th.el-table__cell {
@@ -193,3 +192,5 @@ html {
     min-height: 100%;
     overflow: hidden;
 }
+
+.panel-bg-blue{background: #2d3d88;}

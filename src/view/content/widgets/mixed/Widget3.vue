@@ -35,17 +35,17 @@
         </div>
         <div class="col-md-3">
             <div class="panel-bg-blue px-6 py-4 rounded">
-            <div class="text-muted">{{ $t("COMMON.TITLE20") }}</div>
-            <div class="chart_height">
-              <!-- 内存占用率 -->
-              <dashboard-chart color="#0493fa" :value="ramUsage"></dashboard-chart>
-            </div>
+              <div class="text-muted">{{ $t("COMMON.TITLE20") }}</div>
+              <div class="chart_height">
+                <!-- 内存占用率 -->
+                <dashboard-chart color="#0493fa" :value="ramUsage"></dashboard-chart>
+              </div>
             </div>
         </div>
     </div>
 </template>
 <style scoped>
-    .panel-bg-blue{background: #2d3d88;}
+    /*.panel-bg-blue{background: #2d3d88;}*/
     .title-num{font-size: 18px;}
     .chart_height{height: 130px;}
     .home_chart{width: 150px;height: 150px;margin: 0 auto;    position: relative;bottom: 18px;}
