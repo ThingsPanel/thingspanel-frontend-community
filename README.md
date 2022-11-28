@@ -45,6 +45,7 @@
 - Frontend：Vue.js Element-UI （node.js 16.13)
 - MQTT Broker：GMQTT
 - TSDB: PostgreSQL 14.1
+
 # 3. 项目结构
         ├── babel.config.js
         ├── package.json               -- 包管理器代码
@@ -102,22 +103,24 @@
         │   │   ├── visual             -- 可视化编辑器
                 └── Home.vue           -- 首页
         
+# 4. 功能结构图
+![](./README_files/10.png)
 
-# 4. 环境搭建
+# 5. 环境搭建
 
-## 4.1 ThingsPanel-Go后台环境搭建
+## 5.1 ThingsPanel-Go后台环境搭建
 
 [详情查看此链接 —> http://forum.thingspanel.cn/d/10-thingspanel-go](http://forum.thingspanel.cn/d/10-thingspanel-go)
 
-## 4.2 安装依赖
+## 5.2 安装依赖
 - 下载安装Node.js，推荐版本16.13
 - 终端进入项目根目录下，执行命令```npm install```，等待依赖下载完毕
 
-## 4.3 本地运行
+## 5.3 本地运行
 - 执行```npm run dev```
 - 打开浏览器输入```localhost:8080```即可访问
 
-## 4.4 部署到服务器
+## 5.4 部署到服务器
 - 执行 ```npm run build``` 打包项目
 - 打包成功后，会在dist目录下生成打包后的文件，将dist目录里的所有文件上传到服务器的web目录里
 - 在服务器上配置nginx
@@ -125,7 +128,7 @@
 - 重新加载配置文件 ```nginx -s reload```
 - 在浏览器中输入地址访问
 
-# 5. 运行效果
+# 6. 运行效果
 ![](./README_files/3.png)
 ![](README_files/4.png)
 ![](README_files/5.png)
