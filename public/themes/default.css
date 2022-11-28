@@ -102,6 +102,10 @@ html {
     border-bottom: unset;
 }
 
+.el-pager {
+    padding-left: 0!important;
+}
+
 
 .aside {
     background-color: #161E43 !important;

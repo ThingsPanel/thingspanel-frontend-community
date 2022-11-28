@@ -14,54 +14,55 @@
           <el-option v-for="option in protocolOptions" :key="option.value" :label="option.label" :value="option.value"></el-option>
         </el-select>
       </el-form-item>
+      <div v-if="">
 
-      <el-form-item label="认证方式：" prop="authMode">
-        <el-select size="medium" placeholder="请选择认证方式" v-model="deviceData.authMode"
-                   @change="handleAuthModeChange()">
-          <el-option :label="'AccessToken接入'" :value="'accessToken'"></el-option>
-          <el-option :label="'MQTT Basic'" :value="'mqttBasic'"></el-option>
-          <el-option :disabled="true" :label="'X.509'" :value="'x509'"></el-option>
-        </el-select>
-      </el-form-item>
+        <el-form-item label="认证方式：" prop="authMode">
+          <el-select size="medium" placeholder="请选择认证方式" v-model="deviceData.authMode"
+                     @change="handleAuthModeChange()">
+            <el-option :label="'AccessToken接入'" :value="'accessToken'"></el-option>
+            <el-option :label="'MQTT Basic'" :value="'mqttBasic'"></el-option>
+            <el-option :disabled="true" :label="'X.509'" :value="'x509'"></el-option>
+          </el-select>
+        </el-form-item>
 
-      <el-form-item v-if="deviceData.authMode=='accessToken'" label="Access Token：" prop="token">
-        <el-input size="medium" v-model="deviceData.token"></el-input>
-      </el-form-item>
+        <el-form-item v-if="deviceData.authMode=='accessToken'" label="Access Token：" prop="token">
+          <el-input size="medium" v-model="deviceData.token"></el-input>
+        </el-form-item>
 
-      <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="用户名：" prop="username">
-        <el-input size="medium" v-model="deviceData.username"></el-input>
-      </el-form-item>
+        <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="用户名：" prop="username">
+          <el-input size="medium" v-model="deviceData.username"></el-input>
+        </el-form-item>
 
-      <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="密码：" prop="password">
-        <el-input size="medium" v-model="deviceData.password"></el-input>
-      </el-form-item>
+        <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="密码：" prop="password">
+          <el-input size="medium" v-model="deviceData.password"></el-input>
+        </el-form-item>
 
-      <el-form-item label="连接信息：">
-        <el-descriptions class="el-dark-descriptions" :column="1" border :colon="true">
-          <el-descriptions-item v-for="(item, index) in connectInfo" :key="index"
-                                :contentStyle="getDescriptionContentStyle()"
-                                :labelStyle="getDescriptionLabelStyle()"
-                                :label="item.label">
+        <el-form-item label="连接信息：">
+          <el-descriptions class="el-dark-descriptions" :column="1" border :colon="true">
+            <el-descriptions-item v-for="(item, index) in connectInfo" :key="index"
+                                  :contentStyle="getDescriptionContentStyle()"
+                                  :labelStyle="getDescriptionLabelStyle()"
+                                  :label="item.label">
 
-            <el-link v-if="item.link" :href="item.value" target="_blank">{{item.value}}</el-link>
+              <el-link v-if="item.link" :href="item.value" target="_blank">{{item.value}}</el-link>
 
-            <el-tooltip v-else effect="dark" :content="item.tooltip ? item.tooltip : '点击复制内容'" placement="right-start">
-              <el-input ref="payloadInput" v-if="item.payload"  v-model="item.value" type="textarea"
-                        v-clipboard:copy="item.value"
-                        :autosize="{ maxRows: 6 }" readonly @focus="handleCopy(item)"
-              >{{item.value}}</el-input>
+              <el-tooltip v-else effect="dark" :content="item.tooltip ? item.tooltip : '点击复制内容'" placement="right-start">
+                <el-input ref="payloadInput" v-if="item.payload"  v-model="item.value" type="textarea"
+                          v-clipboard:copy="item.value"
+                          :autosize="{ maxRows: 6 }" readonly @focus="handleCopy(item)"
+                >{{item.value}}</el-input>
 
-              <el-input readonly v-else v-clipboard:copy="item.value" v-model="item.value" @click.native="handleCopy(item)">
-              </el-input>
-<!--              <span v-else v-clipboard:copy="item.value" @click="handleCopy(item)">{{item.value}}</span>-->
-            </el-tooltip>
-          </el-descriptions-item>
-        </el-descriptions>
-      </el-form-item>
+                <el-input readonly v-else v-clipboard:copy="item.value" v-model="item.value" @click.native="handleCopy(item)">
+                </el-input>
+  <!--              <span v-else v-clipboard:copy="item.value" @click="handleCopy(item)">{{item.value}}</span>-->
+              </el-tooltip>
+            </el-descriptions-item>
+          </el-descriptions>
+        </el-form-item>
 
-      <div style="margin: 10px 0;"></div>
+        <div style="margin: 10px 0;"></div>
 
-      <el-form-item label="数据处理脚本：">
+        <el-form-item label="数据处理脚本：">
         <el-select size="medium" placeholder="" filterable
                    popper-class="exchange-agreement" :popper-append-to-body="false"
                    v-model="deviceData.dataExchangeAgreement"
@@ -86,6 +87,7 @@
         </el-select>
       </el-form-item>
 
+      </div>
         <div style="display: flex;justify-content: center">
           <el-button style="color:#000" @click="onCancel">取消</el-button>
           <el-button type="primary" @click="onSubmit">保存</el-button>
@@ -113,6 +115,7 @@ import PluginAPI from "@/api/plugin.js"
 import {deleteCustomExchangeAgreement} from "@/api/device";
 // 传输协议连接信息
 import ProtocolInfo from "./protocol-info"
+import useDeviceSettingIndex from "./useDeviceSettingIndex";
 
 export default defineComponent({
   name: "DeviceSettingForm",
@@ -135,6 +138,7 @@ export default defineComponent({
     let device = {};
     let defaultSettings = {};
     let tslProperties = {};
+    // let { getDeviceProtocolList, deviceProtocolList } = useDeviceSettingIndex();
 
     const required = true;
     let formRule = ref({
@@ -189,8 +193,13 @@ export default defineComponent({
      */
     async function initForm(d) {
       if (d.device_type == "1" || d.device_type == 1) {
-        protocolOptions.value = [{label: "MQTT", value: "mqtt"}];
+        // 标准单设备
+        protocolOptions.value = [
+            {label: "MQTT", value: "mqtt"},
+            {label: "视频地址接入", value: "video"}
+        ];
       } else {
+        // 网关
         // 获取网关传输协议
         getGatewayProtocolList();
       }

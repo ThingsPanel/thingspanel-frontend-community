@@ -7,13 +7,16 @@
     <v-list>
       <NavItem :item="homeNav" key="home"></NavItem>
 
+<!--      <template v-for="(item, index) in homeNav">-->
+<!--        &lt;!&ndash;  list-group里是二级菜单  &ndash;&gt;-->
+<!--        <NavGroup v-if="'children' in item" :item="item" :key="item.path"></NavGroup>-->
+<!--        &lt;!&ndash;  一级的菜单  &ndash;&gt;-->
+<!--        <NavItem v-else :item="item" :key="item.path + index"></NavItem>-->
+<!--      </template>-->
+
       <template v-for="(item, index) in navs">
         <!--  list-group里是二级菜单  -->
-        <NavGroup
-          v-if="'children' in item"
-          :item="item"
-          :key="item.path"
-        ></NavGroup>
+        <NavGroup v-if="'children' in item" :item="item" :key="item.path"></NavGroup>
         <!--  一级的菜单  -->
         <NavItem v-else :item="item" :key="item.path + index"></NavItem>
       </template>
@@ -38,7 +41,14 @@ export default {
     homeNav: {
       path: "/home",
       title: "COMMON.HOME",
-      icon: "flaticon2-architecture-and-city"
+      icon: "flaticon2-architecture-and-city",
+      children: [
+        {
+          path: "/home",
+          title: "COMMON.HOME",
+          icon: "flaticon2-architecture-and-city",
+        }
+      ]
     }
   }),
   computed: {

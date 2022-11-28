@@ -13,14 +13,6 @@
       </h3>
 
       <div class="width-100 mt-2 mb-5">
-        <!-- <router-link
-                to="/list"
-                v-slot="{ href, navigate, isActive, isExactActive }"
-        >
-          <a :href="href" class="btn mr-3 btn-primary active" @click="navigate">
-            {{ $t("COMMON.BUT1") }}
-          </a>
-        </router-link> -->
         <a
           target="_blank"
           class="btn mr-3 btn-success active"

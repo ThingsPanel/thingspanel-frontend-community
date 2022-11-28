@@ -2,7 +2,7 @@
   <div>
     <el-dialog class="el-dark-dialog" :title="$t('COMMON.CREATEPRODUCT')" :visible.sync="dialogVisible" width="30%"
                :before-close="handleClose" :close-on-click-modal="false">
-      <el-form label-position="top" :model="formData" :rules="formRules">
+      <el-form label-position="top" :model="formData" :rules="formRules" class="el-dark-input">
         <el-form-item :label="$t('COMMON.PRODUCTNAME')" prop="name">
           <el-input v-model="formData.name"></el-input>
         </el-form-item>

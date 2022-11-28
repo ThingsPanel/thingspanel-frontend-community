@@ -58,7 +58,6 @@ export const locale = {
     PRODUCTDESCRIPTION:"产品描述",
     CREATEDATE:"创建日期",
     VIEWBATCH:"查看批次",
-    SEARCH:"搜索",
     PRODUCT:"产品",
     BATCHNUMBER:"批号",
     ACCESSADDRESS:"接入地址",

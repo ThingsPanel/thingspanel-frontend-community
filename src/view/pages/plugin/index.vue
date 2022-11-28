@@ -8,48 +8,53 @@
             :class="{ active: item.value == activeTab }"
             @click="activeTab = item.value"
         >
-          {{ $t(item.name) }}
+          {{ $t(item.name) ? $t(item.name) : item.name}}
         </span>
       </p>
       <div class="content">
 
         <!-- 插件列表 -->
-        <div v-show="activeTab == 'list'">
-          <installed @edit="handleEditPlugin"></installed>
+        <div v-show="activeTab == 'devicePlugin'">
+          <plugin-list @edit="handleEditPlugin"></plugin-list>
         </div>
 
-        <!-- 插件商店 -->
-<!--        <div v-show="activeTab == 'store'">-->
-<!--          <plugin-store></plugin-store>-->
-<!--        </div>-->
+        <!-- 协议插件 -->
+        <div v-show="activeTab == 'protocolPlugin'">
+          <protocol-plugin ></protocol-plugin>
+        </div>
 
         <!-- 插件编辑器 -->
-        <div v-show="activeTab == 'editor'">
-          <plugin-editor ref="pluginEditor"></plugin-editor>
+        <div v-show="activeTab == 'deviceEditor'">
+          <device-plugin ref="pluginEditor"></device-plugin>
         </div>
+
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import Installed from "./Installed";
-import PluginStore from "./PluginStore";
-import PluginEditor from "./PluginEditor";
+import PluginList from "./list";
+import DevicePlugin from "./device";
+import ProtocolPlugin from "./protocol"
 export default {
   name: "index",
-  components: { Installed, PluginEditor },
+  components: { PluginList, DevicePlugin, ProtocolPlugin },
   data() {
     return {
-      activeTab: "list",
+      activeTab: "devicePlugin",
       tabs: [
         {
-          name: "COMMON.PLUGINLIST",
-          value: "list",
+          name: "COMMON.TITLE32",
+          value: "devicePlugin",
         },
         {
-          name: "COMMON.PLUGIN_EDITOR",
-          value: "editor",
+          name: "接入协议",
+          value: "protocolPlugin",
+        },
+        {
+          name: "设备插件生成器",
+          value: "deviceEditor",
         }
       ]
     };

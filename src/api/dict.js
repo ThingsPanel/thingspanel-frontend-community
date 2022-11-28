@@ -1,7 +1,7 @@
 import axios from "./http"
 
 /**
- * API
+ * 字典API
  */
 export default {
 

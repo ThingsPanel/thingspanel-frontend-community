@@ -67,7 +67,7 @@
 
 <script>
 import { MessageBox } from 'element-ui';
-import {message_success} from "../../../utils/helpers";
+import {message_success} from "../../../../utils/helpers";
 import PluginAPI from "@/api/plugin.js"
 export default {
   name: "PluginCard",

@@ -16,19 +16,10 @@
       class="aside-menu-wrapper flex-column-fluid"
       id="kt_aside_menu_wrapper"
     >
-      <div
-        ref="kt_aside_menu"
-        id="kt_aside_menu"
-        class="aside-menu my-4"
-        data-menu-vertical="1"
-        data-menu-dropdown-timeout="500"
-        v-bind:class="asideMenuClass"
-      >
+      <div ref="kt_aside_menu" id="kt_aside_menu" class="aside-menu my-4" data-menu-vertical="1"
+        data-menu-dropdown-timeout="500" v-bind:class="asideMenuClass">
         <!-- example static menu here -->
-        <perfect-scrollbar
-          class="aside-menu scroll"
-          style="max-height: 90vh; position: relative;"
-        >
+        <perfect-scrollbar class="aside-menu scroll" style="max-height: 90vh; position: relative;">
          <!-- <KTMenu></KTMenu> -->
           <Navs></Navs>
         </perfect-scrollbar>

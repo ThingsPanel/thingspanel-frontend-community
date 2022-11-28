@@ -45,22 +45,79 @@
 - Frontend：Vue.js Element-UI （node.js 16.13)
 - MQTT Broker：GMQTT
 - TSDB: PostgreSQL 14.1
+# 3. 项目结构
+        ├── babel.config.js
+        ├── package.json               -- 包管理器代码
+        ├── vue.config.js              -- 配置文件
+        ├── src                        -- 源代码
+        │   ├── App.vue                -- 主页面
+        │   ├── main.js                -- 入口文件
+        │   ├── router.js              -- 路由中间件
+        │   ├── api                    -- api 组
+        │   ├── assets                 -- 静态资源
+        │   ├── components             -- 全局组件
+        │   ├── core                   -- 核心组
+        │   │   ├── config             -- i18n配置
+        │   │   │   └── i18n           -- 国际化
+        │   │   └── services           -- 全局函数
+        │   │       └── store          -- 状态管理器
+        │   ├── style                  -- 全局样式
+        │   │   ├── _iconfont.scss
+        │   │   ├── _var.scss
+        │   │   ├── app.scss
+        │   │   ├── bootstrap-custom.scss
+        │   │   ├── common.scss
+        │   │   ├── element-ui-custom.scss  -- 此处可以全局覆盖 element-plus 样式(弃用）
+        │   │   ├── scrollbar.scss
+        │   │   ├── vuetify-custom.scss     -- 弃用
+        │   ├── themes                 -- 弃用
+        │   ├── utils                  -- 方法包库
+        │   ├── view -- 主要view代码
+        │   │   ├── content -- 通用页面组件
+        │   │   ├── layout  --  layout约束
+        │   │   │   ├── aside          -- 左侧菜单
+        │   │   │   ├── brand          -- 左上角logo
+        │   │   │   ├── extras         
+        │   │   │   ├── footer         -- 公共底部
+        │   │   │   ├── header         -- 公共头部
+        │   │   │   ├── subheader      
+        │   │   │   └── Layout.vue     -- layout约束页面 
+        │   ├── pages                  -- 视图页面
+        │   │   ├── access-engine      -- 接入引擎
+        │   │   ├── alarm              -- 告警信息
+        │   │   ├── auth               -- 登录/注册
+        │   │   ├── automation         -- 自动化
+        │   │   ├── business           -- 业务
+        │   │   ├── chart              -- 可视化
+        │   │   ├── datas              -- 数据管理
+        │   │   ├── device             -- 可视化 -> 设备管理
+        │   │   ├── equipment          -- 系统日志 -> 设备日志
+        │   │   ├── log                -- 系统日志 -> 操作日志
+        │   │   ├── management         -- 系统管理 -> 角色管理
+        │   │   ├── plugin             -- 应用管理
+        │   │   ├── product            -- 产品管理
+        │   │   ├── system             -- 系统设置/权限管理
+        │   │   ├── transpond          -- 规则引擎 -> 数据转发
+        │   │   ├── users              -- 用户管理
+        │   │   ├── visual             -- 可视化编辑器
+                └── Home.vue           -- 首页
+        
 
-# 3. 环境搭建
+# 4. 环境搭建
 
-## 3.1 ThingsPanel-Go后台环境搭建
+## 4.1 ThingsPanel-Go后台环境搭建
 
 [详情查看此链接 —> http://forum.thingspanel.cn/d/10-thingspanel-go](http://forum.thingspanel.cn/d/10-thingspanel-go)
 
-## 3.2 安装依赖
+## 4.2 安装依赖
 - 下载安装Node.js，推荐版本16.13
 - 终端进入项目根目录下，执行命令```npm install```，等待依赖下载完毕
 
-## 3.3 本地运行
+## 4.3 本地运行
 - 执行```npm run dev```
 - 打开浏览器输入```localhost:8080```即可访问
 
-## 3.4 部署到服务器
+## 4.4 部署到服务器
 - 执行 ```npm run build``` 打包项目
 - 打包成功后，会在dist目录下生成打包后的文件，将dist目录里的所有文件上传到服务器的web目录里
 - 在服务器上配置nginx
@@ -68,7 +125,7 @@
 - 重新加载配置文件 ```nginx -s reload```
 - 在浏览器中输入地址访问
 
-# 4. 运行效果
+# 5. 运行效果
 ![](./README_files/3.png)
 ![](README_files/4.png)
 ![](README_files/5.png)
