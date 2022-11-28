@@ -1,30 +1,48 @@
-<!-- 子设备配置 -->
+<!-- 设备配置 -->
 <template>
   <el-dialog class="el-dark-dialog el-dark-input" title="设备配置" width="40%"
              :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
              :visible.sync="dialogVisible" @close="handleClose">
     <div class="container-fluid">
+      <el-tabs v-model="activeName"  @tab-click="handleClick">
+        <el-tab-pane v-for="(item, index) in tabList" :key="index" :label="item.label" :name="item.value"></el-tab-pane>
+      </el-tabs>
 
-      <el-form ref="configForm" :model="formData" :rules="formRule" label-width="260px">
-        <el-form-item v-for="(attr, index) in formAttr" :key="index" :label="attr.label" :prop="attr.dataKey">
+      <!-- 数据解析 -->
+      <div v-if="activeName=='configParse'">
+        <el-form ref="configForm" :model="formData" :rules="formRule" label-width="260px">
+          <el-form-item v-for="(attr, index) in formAttr" :key="index" :label="attr.label" :prop="attr.dataKey">
 
-          <el-input style="width: 80%"
-              v-if="attr.type=='input' && attr.validate.type!='number'"
-              v-model="formData[attr.dataKey]"
-              :placeholder="attr.placeholder"></el-input>
+            <el-input style="width: 80%"
+                      v-if="attr.type=='input' && attr.validate.type!='number'"
+                      v-model="formData[attr.dataKey]"
+                      :placeholder="attr.placeholder"></el-input>
 
-          <el-input-number style="width: 80%"
-                           v-if="attr.type=='input' && attr.validate.type=='number'"
-                           v-model="formData[attr.dataKey]"
-                           :placeholder="attr.placeholder"></el-input-number>
+            <el-input-number style="width: 80%"
+                             v-if="attr.type=='input' && attr.validate.type=='number'"
+                             v-model="formData[attr.dataKey]"
+                             :placeholder="attr.placeholder"></el-input-number>
 
-          <el-select style="width: 80%"
-              v-if="attr.type=='select'" v-model="formData[attr.dataKey]">
-            <el-option v-for="(option, index) in attr.options" :key="index"
-                       :label="option.label" :value="option.value"></el-option>
-          </el-select>
-        </el-form-item>
-      </el-form>
+            <el-select style="width: 80%"
+                       v-if="attr.type=='select'" v-model="formData[attr.dataKey]">
+              <el-option v-for="(option, index) in attr.options" :key="index"
+                         :label="option.label" :value="option.value"></el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <!-- 设备属性 -->
+      <div v-else-if="activeName=='deviceAttribute'">
+        <el-form label-position="left">
+          <el-form-item label="设备位置" >
+            <el-input style="width: 100%" placeholder="请输入设备经纬度，用逗号隔开，如：116.462346, 39.356432"></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <!-- 运维信息 -->
+      <div v-else-if="activeName=='runningStatus'"></div>
     </div>
 
     <span slot="footer" class="dialog-footer">
@@ -51,6 +69,12 @@ export default {
   },
   data() {
     return {
+      activeName: "",
+      tabList: [
+        { value: "configParse", label: "数据解析" },
+        { value: "deviceAttribute", label: "设备属性" },
+        { value: "runningStatus", label: "运维信息" }
+      ],
       formAttr: [],
       formData: {},
       formRule: {}
@@ -59,21 +83,37 @@ export default {
   watch: {
     device: {
       handler(newValue) {
+        console.log("====handler", newValue)
         this.formData = {};
         if (JSON.stringify(newValue) == "{}" || newValue == "") {return;}
-        // 获取表单的属性
-        ModbusAPI.getFormAttr({ protocol_type: newValue.protocol})
-          .then(({data}) => {
-            if (data.code == 200 && data.data && data.data.config) {
-              this.formAttr = data.data.config;
-              this.formRule = this.getFormRule(this.formAttr);
-              if (this.device.protocol_config != "{}"
-                  && this.device.protocol_config != ""
-                  && this.device.protocol_config != undefined) {
-                this.formData = JSON.parse(this.device.protocol_config);
-              }
-            }
-          })
+        if (newValue.device_type == "3") {
+          this.tabList = [
+            { value: "configParse", label: "数据解析" },
+            { value: "deviceAttribute", label: "设备属性" },
+            { value: "runningStatus", label: "运维信息" }
+          ];
+          this.activeName = "configParse";
+          // 获取表单的属性
+          ModbusAPI.getFormAttr({ protocol_type: newValue.protocol})
+              .then(({data}) => {
+                if (data.code == 200 && data.data && data.data.config) {
+                  this.formAttr = data.data.config;
+                  this.formRule = this.getFormRule(this.formAttr);
+                  if (this.device.protocol_config != "{}"
+                      && this.device.protocol_config != ""
+                      && this.device.protocol_config != undefined) {
+                    this.formData = JSON.parse(this.device.protocol_config);
+                  }
+                }
+              })
+        } else {
+          this.tabList = [
+            { value: "deviceAttribute", label: "设备属性" },
+            { value: "runningStatus", label: "运维信息" }
+          ]
+          this.activeName = "deviceAttribute";
+        }
+
       },
     }
   },
@@ -102,6 +142,9 @@ export default {
           return false;
         }
       });
+
+    },
+    handleClick() {
 
     },
     getFormRule(formAttr) {

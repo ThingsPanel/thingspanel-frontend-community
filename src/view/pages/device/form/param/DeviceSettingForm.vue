@@ -11,10 +11,18 @@
       <el-form-item label="传输协议：" prop="protocol">
         <el-select size="medium" placeholder="请选择协议" v-model="deviceData.protocol" @change="handleChange"
                    :disabled="deviceData.hasChildDevice">
-          <el-option v-for="option in protocolOptions" :key="option.value" :label="option.label" :value="option.value"></el-option>
+          <el-option v-for="option in protocolOptions" :key="option.id" :label="option.describe" :value="option.dict_value"></el-option>
         </el-select>
       </el-form-item>
-      <div v-if="">
+
+      <!-- 视频地址接入 -->
+      <div v-if="deviceData.protocol == 'video_address'" style="margin-top: 10px;margin-bottom: 20px" >
+        <el-form-item label="视频地址接入：">
+          <el-input style="width: 100%;margin-right: 20px" size="medium" placeholder="请输入视频地址" v-model="deviceData.video_address"></el-input>
+        </el-form-item>
+      </div>
+
+      <div v-else>
 
         <el-form-item label="认证方式：" prop="authMode">
           <el-select size="medium" placeholder="请选择认证方式" v-model="deviceData.authMode"
@@ -88,6 +96,9 @@
       </el-form-item>
 
       </div>
+
+
+
         <div style="display: flex;justify-content: center">
           <el-button style="color:#000" @click="onCancel">取消</el-button>
           <el-button type="primary" @click="onSubmit">保存</el-button>
@@ -138,7 +149,7 @@ export default defineComponent({
     let device = {};
     let defaultSettings = {};
     let tslProperties = {};
-    // let { getDeviceProtocolList, deviceProtocolList } = useDeviceSettingIndex();
+    let { getDeviceProtocolList } = useDeviceSettingIndex()
 
     const required = true;
     let formRule = ref({
@@ -180,6 +191,7 @@ export default defineComponent({
       protocol: "",
       hasChildDevice: false,
       authMode: "accessToken",
+      video_address: "",
       token: "",
       username: "",
       password: "",
@@ -192,12 +204,14 @@ export default defineComponent({
      * 初始化表单
      */
     async function initForm(d) {
+
       if (d.device_type == "1" || d.device_type == 1) {
         // 标准单设备
-        protocolOptions.value = [
-            {label: "MQTT", value: "mqtt"},
-            {label: "视频地址接入", value: "video"}
-        ];
+
+        getDeviceProtocolList()
+            .then(data => {
+              protocolOptions.value = data;
+            })
       } else {
         // 网关
         // 获取网关传输协议

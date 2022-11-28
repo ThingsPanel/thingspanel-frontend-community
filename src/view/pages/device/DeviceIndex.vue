@@ -153,12 +153,12 @@
     <!-- 图表组件 end-->
 
     <!--  操作 start  -->
-    <el-table-column :label="$t('COMMON.OPERATION')" width="200px" min-width="12%">
+    <el-table-column :label="$t('COMMON.OPERATION')" width="300px" min-width="12%">
       <template slot-scope="scope">
         <div class="text-right">
-          <el-button style="margin-right: 10px" v-show="scope.row.device_type==2" type="primary" size="mini"
+          <el-button  v-show="scope.row.device_type==2" type="primary" size="mini"
                      @click="addChildDevice(scope.row)">{{ $t("COMMON.ADDINGCHILDDEVICE")}}</el-button>
-          <el-button style="margin-right: 10px" v-show="scope.row.device_type==3 && scope.row.protocol!='MQTT'" type="primary" size="mini"
+          <el-button style="margin-right: 10px"  type="primary" size="mini"
                      @click="deviceConfig(scope.row)">设&nbsp;备&nbsp;配&nbsp;置</el-button>
 
            <el-popconfirm :title="$t('COMMON.DELETETHISITEM')" @confirm="handleDelete(scope.row)">

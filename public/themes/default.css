@@ -106,6 +106,13 @@ html {
     padding-left: 0!important;
 }
 
+.el-tabs__item {
+    color: #bbbaba !important;
+}
+
+.el-tabs__item.is-active {
+    color: #fff!important;
+}
 
 .aside {
     background-color: #161E43 !important;
