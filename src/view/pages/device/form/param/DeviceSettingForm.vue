@@ -1,3 +1,4 @@
+<!-- 编辑参数 -->
 <template>
   <el-dialog
       class="el-dark-dialog el-dark-input" :append-to-body="true"
@@ -11,7 +12,7 @@
       <el-form-item label="传输协议：" prop="protocol">
         <el-select size="medium" placeholder="请选择协议" v-model="deviceData.protocol" @change="handleChange"
                    :disabled="deviceData.hasChildDevice">
-          <el-option v-for="option in protocolOptions" :key="option.id" :label="option.describe" :value="option.dict_value"></el-option>
+          <el-option v-for="option in protocolOptions" :key="option.id" :label="option.label" :value="option.value"></el-option>
         </el-select>
       </el-form-item>
 
@@ -28,7 +29,7 @@
           <el-select size="medium" placeholder="请选择认证方式" v-model="deviceData.authMode"
                      @change="handleAuthModeChange()">
             <el-option :label="'AccessToken接入'" :value="'accessToken'"></el-option>
-            <el-option :label="'MQTT Basic'" :value="'mqttBasic'"></el-option>
+            <el-option :label="'Basic'" :value="'mqttBasic'"></el-option>
             <el-option :disabled="true" :label="'X.509'" :value="'x509'"></el-option>
           </el-select>
         </el-form-item>
@@ -149,7 +150,7 @@ export default defineComponent({
     let device = {};
     let defaultSettings = {};
     let tslProperties = {};
-    let { getDeviceProtocolList } = useDeviceSettingIndex()
+    let { getDeviceProtocolList, getGatewayProtocolList } = useDeviceSettingIndex()
 
     const required = true;
     let formRule = ref({
@@ -166,7 +167,6 @@ export default defineComponent({
     watch(() => props.dialogVisible, value => {
       if (value) {
         device = props.device_item;
-
         getDeviceInformation();
       }
     })
@@ -207,15 +207,11 @@ export default defineComponent({
 
       if (d.device_type == "1" || d.device_type == 1) {
         // 标准单设备
-
-        getDeviceProtocolList()
-            .then(data => {
-              protocolOptions.value = data;
-            })
+        protocolOptions.value = await getDeviceProtocolList();
       } else {
         // 网关
         // 获取网关传输协议
-        getGatewayProtocolList();
+        protocolOptions.value = await getGatewayProtocolList();
       }
       deviceData.dataExchangeAgreement = d.script_id ? d.script_id : "";
       deviceData.id = d.id;
@@ -227,8 +223,7 @@ export default defineComponent({
       deviceData.password = d.password ? d.password : "";
       deviceData.errors = {};
       deviceData.children = device.children;
-      console.log("d", d)
-      console.log("deviceData", deviceData)
+      deviceData.video_address = JSON.parse(d.additional_info).video_address
       initCustomExchangeAgreementList(d.protocol);
 
       if (d.device_type == "2") {
@@ -258,11 +253,15 @@ export default defineComponent({
      * 点击提交
      */
     function onSubmit() {
-      deviceData.script_id = deviceData.dataExchangeAgreement;
-      if (deviceData.authMode == "mqttBasic") {
-        deviceData.token = deviceData.username;
+      if (deviceData.protocol == "video_address") {
+        deviceData.additional_info = JSON.stringify({ video_address: deviceData.video_address });
       } else {
-        deviceData.password = "";
+        deviceData.script_id = deviceData.dataExchangeAgreement;
+        if (deviceData.authMode == "mqttBasic") {
+          deviceData.token = deviceData.username;
+        } else {
+          deviceData.password = "";
+        }
       }
       updateDeviceInfo(deviceData)
         .then(({data}) => {
@@ -284,22 +283,6 @@ export default defineComponent({
       initCustomExchangeAgreementList(v);
     }
 
-    /**
-     * 获取网关传输协议下拉列表
-     */
-    function getGatewayProtocolList() {
-      let param = { current_page: 1, per_page: 9999, dict_code: "GATEWAY_PROTOCOL"}
-      DictAPI.list(param)
-        .then(({data}) => {
-          if (data.code == 200) {
-            protocolOptions.value = data.data.data.map(item => {
-              return {
-                label: item.describe, value: item.dict_value
-              }
-            })
-          }
-        })
-    }
 
     function handleAuthModeChange(v) {
 

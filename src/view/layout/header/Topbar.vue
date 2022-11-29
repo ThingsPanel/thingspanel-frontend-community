@@ -108,12 +108,12 @@ export default {
      * @param v
      */
     handleChangeTheme(v) {
-      let themeFile = "themes/default.css";
-      if (v == "white") {
-        themeFile = "themes/white.css";
-      }
-      document.getElementById('style').setAttribute("href", themeFile);
-      localStorage.setItem("style", themeFile);
+      // let themeFile = "themes/default.css";
+      // if (v == "white") {
+      //   themeFile = "themes/white.css";
+      // }
+      // document.getElementById('style').setAttribute("href", themeFile);
+      // localStorage.setItem("style", themeFile);
     }
   },
   computed: {

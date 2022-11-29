@@ -34,9 +34,11 @@
 
       <!-- 设备属性 -->
       <div v-else-if="activeName=='deviceAttribute'">
-        <el-form label-position="left">
+        <el-form label-position="left" :model="formData">
           <el-form-item label="设备位置" >
-            <el-input style="width: 100%" placeholder="请输入设备经纬度，用逗号隔开，如：116.462346, 39.356432"></el-input>
+            <el-input style="width: 100%" placeholder="请输入设备经纬度，用逗号隔开，如：116.462346, 39.356432"
+                      v-model="location"
+              ></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -77,16 +79,19 @@ export default {
       ],
       formAttr: [],
       formData: {},
-      formRule: {}
+      formRule: {},
+      location: ""
     }
   },
   watch: {
     device: {
       handler(newValue) {
         console.log("====handler", newValue)
+        this.location = newValue.location ? newValue.location : "";
         this.formData = {};
         if (JSON.stringify(newValue) == "{}" || newValue == "") {return;}
         if (newValue.device_type == "3") {
+          // 子设备
           this.tabList = [
             { value: "configParse", label: "数据解析" },
             { value: "deviceAttribute", label: "设备属性" },
@@ -94,7 +99,7 @@ export default {
           ];
           this.activeName = "configParse";
           // 获取表单的属性
-          ModbusAPI.getFormAttr({ protocol_type: newValue.protocol})
+          ModbusAPI.getFormAttr({ protocol_type: newValue.protocol, device_type: "2"})
               .then(({data}) => {
                 if (data.code == 200 && data.data && data.data.config) {
                   this.formAttr = data.data.config;
@@ -112,6 +117,12 @@ export default {
             { value: "runningStatus", label: "运维信息" }
           ]
           this.activeName = "deviceAttribute";
+          this.formRule = {
+            location: [
+              { required: false, message: '请输入设备位置', trigger: 'change' }
+            ],
+          };
+          console.log(this.formRule)
         }
 
       },
@@ -122,27 +133,31 @@ export default {
       this.$emit("update:dialogVisible", false)
     },
     handleSubmit() {
-      this.$refs["configForm"].validate((valid) => {
-        if (valid) {
-          let device = this.device;
-          let config = {
-            id: device.id,
-            protocol_config: JSON.stringify({DeviceId: device.id, AccessToken: device.token, ...this.formData})
-          }
-          ModbusAPI.updateDeviceConfig(config)
-              .then(({data}) => {
-                if (data.code == 200) {
-                  message_success("配置成功！")
-                  this.handleClose();
-                  this.$emit("submit");
-
-                }
-              })
-        } else {
-          return false;
+      const submit = () => {
+        let device = this.device;
+        let config = {
+          id: device.id,
+          location: this.location,
+          protocol_config: JSON.stringify({DeviceId: device.id, AccessToken: device.token, ...this.formData})
         }
-      });
-
+        ModbusAPI.updateDeviceConfig(config)
+            .then(({data}) => {
+              if (data.code == 200) {
+                message_success("配置成功！")
+                this.handleClose();
+                this.$emit("submit");
+              }
+            })
+      }
+      if (this.$refs["configForm"]) {
+        this.$refs["configForm"].validate((valid) => {
+          if (valid) {
+            submit();
+          }
+        });
+      } else {
+        submit();
+      }
     },
     handleClick() {
 

@@ -17,6 +17,14 @@
         <!-- 名称 -->
         <el-table-column label="名称" prop="name" align="center"></el-table-column>
 
+        <!-- 设备类型 -->
+        <el-table-column label="设备类型" prop="device_type" align="center">
+          <template v-slot="scope">
+            <el-tag v-if="scope.row.device_type=='1'" type="success">设备</el-tag>
+            <el-tag v-else-if="scope.row.device_type=='2'">网关</el-tag>
+          </template>
+        </el-table-column>
+
         <!-- 协议类型 -->
         <el-table-column label="协议类型" prop="protocol_type" align="center"></el-table-column>
 

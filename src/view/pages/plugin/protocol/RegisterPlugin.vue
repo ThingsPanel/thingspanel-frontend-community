@@ -4,10 +4,18 @@
                :before-close="handleClose" :close-on-click-modal="false">
       <el-form class="el-dark-input" label-position="left" :model="formData" :rules="formRules">
 
+        <el-form-item label="名称" prop="name">
+          <el-input v-model="formData.name"></el-input>
+        </el-form-item>
+
+
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="名称" prop="name">
-              <el-input v-model="formData.name"></el-input>
+            <el-form-item label="设备类型" prop="device_type">
+              <el-select v-model="formData.device_type">
+                <el-option value="1" label="设备"></el-option>
+                <el-option value="2" label="网关"></el-option>
+              </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -79,6 +87,7 @@ export default {
       dialogVisible: false,
       formData: {
         name: "",
+        device_type: "1",
         protocol_type: "",
         access_address: "",
         http_address: "",
@@ -88,10 +97,11 @@ export default {
       },
       formRules: {
         name: [{required, message: "请输入名称"}],
+        device_type: [{required, message: "请选择设备类型"}],
         protocol_type: [{required, message: "请输入协议类型"}],
         access_address: [{required, message: "请输入接入地址"}],
         http_address: [{required, message: "请输入名服务地址"}],
-        sub_topic_prefix: [{required, message: "请输入协议订阅主题前缀"}],
+        sub_topic_prefix: [{required, message: "请输入协议订阅主题前缀"}]
       },
       loading: false
     }
@@ -102,6 +112,7 @@ export default {
         console.log("====visible", newValue)
         if (newValue) {
           this.formData = JSON.parse(JSON.stringify(this.data));
+          this.formData.device_type = "1";
           this.loading = false;
           this.dialogVisible = newValue;
         }
