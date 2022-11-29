@@ -351,13 +351,15 @@ export default {
 
 <style scoped>
 .canvas-container {
-  position: relative;
+  /*position: relative;*/
   width: 100%;
   height: 100%;
   overflow-y: auto;
 }
 .droppable {
-  position: absolute;
+  /*position: absolute;*/
+  position: relative;
+
   top: 40px;
   bottom: 40px;
   left: 10px;
