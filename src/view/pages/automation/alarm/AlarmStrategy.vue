@@ -29,6 +29,16 @@
   </el-table>
   <!-- 表 end -->
 
+  <div class="text-right py-3">
+    <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="total"
+        :current-page.sync="params.page"
+        :page-size="params.limit"
+        @current-change="getAlarmStrategyIndex"></el-pagination>
+  </div>
+
   <AlarmEditForm
       :alarm-dialog-visible.sync="showEditDialog"
       :business_id="business_id"
@@ -62,7 +72,9 @@ export default defineComponent({
 
     let {
       tableData,
+      total,
       loading,
+      params,
       getAlarmStrategyIndex,
     } = useAlarmStrategyIndex(business_id)
 
@@ -101,6 +113,8 @@ export default defineComponent({
     } = useTableDataCUD(tableData, getAlarmStrategyIndex)
 
     return {
+      params,
+      total,
       tableData,
       loading,
       goBack,
@@ -112,6 +126,7 @@ export default defineComponent({
       handleDelete,
       add_alarm,
       update_alarm,
+      getAlarmStrategyIndex
     }
   }
 })

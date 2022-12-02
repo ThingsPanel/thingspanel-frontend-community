@@ -74,8 +74,9 @@ export default {
 
   },
   methods: {
-    handleResized() {
-
+    handleResized(i, w, h) {
+      this.$refs["component_" + i][0].sizeChange();
+      this.setLayout();
     },
     /**
      * 初始化图表的大小和位置

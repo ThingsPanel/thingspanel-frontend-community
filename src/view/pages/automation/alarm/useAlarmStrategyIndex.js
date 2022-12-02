@@ -9,6 +9,7 @@ export default function useAlarmStrategyIndex(id) {
         page: 1,
         wid: id,
     })
+    let total = ref(0);
 
     function getAlarmStrategyIndex(page){
         if(page) params.page = page
@@ -18,7 +19,8 @@ export default function useAlarmStrategyIndex(id) {
 
         warning_show(params).then(({data})=>{
             if(data.code === 200) {
-                tableData.value = data.data
+                tableData.value = data.data.data
+                total.value = data.data.total;
             }
         }).finally(()=>{
             loading.value = false
@@ -30,6 +32,7 @@ export default function useAlarmStrategyIndex(id) {
     return {
         tableData,
         params,
+        total,
         loading,
         getAlarmStrategyIndex,
     }

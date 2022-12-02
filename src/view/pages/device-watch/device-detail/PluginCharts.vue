@@ -13,16 +13,18 @@
                  :y="option.y"
                  :w="option.w"
                  :h="option.h"
-                 :i="option.i">
+                 :i="option.i"
+                 @moved="handleResized"
+                 @resized="handleResized">
 
-        <e-charts class="component-item" :ref="'component_' + option.i"
+        <e-charts class="component-item" :ref="'component_' + option.i" :show-header="true"
                   v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && option.type != 'status'"
                   :option="option" :device="device"></e-charts>
 
-        <status class="component-item" :ref="'component_' + option.i"
+        <status class="component-item" :ref="'component_' + option.i" :show-header="true"
                 v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>
 
-        <control class="component-item" :ref="'component_' + option.i"
+        <control class="component-item" :ref="'component_' + option.i" :show-header="true"
                  v-if="option.controlType == 'control'" :option="option" :device="device"></control>
 
       </grid-item>
@@ -91,6 +93,11 @@ export default {
   mounted() {
   },
   methods: {
+    handleResized(i) {
+      this.$nextTick(() => {
+          this.$refs["component_" + i][0].sizeChange();
+      })
+    },
     /**
      * 读取设备的图表的布局
      * @param options

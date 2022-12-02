@@ -169,40 +169,6 @@ export default {
       console.log(this.$refs.editorCanvas.tempData)
     },
     /**
-     * 获取插件列表
-     */
-    getPluginList() {
-      let param = { "current_page": 1, "per_page": 9999 };
-
-      if (this.mode == BUSINESS_MODE) {
-        // param["business_id"] = this.businessId;
-      } else if (this.mode == GROUP_MODE) {
-        // param["asset_id"] = this.groupId;
-      } else if (this.mode == DEVICE_MODE) {
-        param["id"] = this.pluginId;
-      }
-      PluginAPI.page(param)
-        .then(({data}) => {
-          if (data.code ==200) {
-            let list = data.data.data;
-            this.chartList = [];
-            list.forEach(item => {
-              if (item.chart_data) {
-                let jsonObj = JSON.parse(item.chart_data);
-                if (jsonObj.chart) {
-                  let charts = jsonObj.chart;
-                  charts.forEach(item => {
-                      this.componentList.push(item);
-                  })
-                };
-                let tsl = jsonObj.tsl
-                bus.$emit("shareTsl", tsl);
-              }
-            });
-          }
-        })
-    },
-    /**
      * 获取大屏数据
      */
     getScreenData() {
@@ -219,25 +185,8 @@ export default {
               let jsonData = JSON.parse(result[0].json_data);
               this.jsonData  = jsonData;
             } else {
-              // 如果没有大屏数据，加载设备绑定的插件图表
-              if (this.mode == DEVICE_MODE) {
-                let param = {"current_page": 1, "per_page": 10, "id": this.pluginId};
-                console.log("this.pluginId", this.pluginId)
-                PluginAPI.page(param)
-                  .then(({data}) => {
-                    if (data.code == 200) {
-                      let jsonData = data.data.data[0].chart_data;
-                      if (jsonData) {
-                        let pluginData = JSON.parse(jsonData);
-                        let chartData = pluginData.chart;
-                        console.log("====chartData", chartData)
-                        this.screenData = chartData;
-                        this.jsonData  = { screen: chartData };
-                      }
-                    }
-                  })
+              // 如果没有大屏数
 
-              }
             }
           }
         })
