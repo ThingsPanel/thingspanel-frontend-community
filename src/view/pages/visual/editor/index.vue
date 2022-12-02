@@ -1,8 +1,9 @@
 <template>
   <div class="editor-container">
     <div class="editor-header">
-      <!-- header -->
+      <!-- 顶部工具栏 -->
       <EditorHeader :params="params"
+                    @zoom="handleZoom"
                     @save="handleSave"
                     @publish="handlePublish"
                     @show-import="showImportDialog"
@@ -89,6 +90,9 @@ export default {
     this.getScreenData();
   },
   methods: {
+    handleZoom(v) {
+      this.$refs.editorCanvas.setZoom(v);
+    },
     showImportDialog() {
       let jsonData = {};
       jsonData.screen = this.$refs.editorCanvas.fullData;
@@ -270,12 +274,12 @@ const checkJsonData = (jsonData) => {
   // 左侧组件列表
   .content-left {
     float:left;
-    width: 440px;
+    width: 300px;
     height: calc(100% - 10px);
   }
   // 中间画布
   .editor-center {
-    margin-left: 440px;
+    margin-left: 300px;
     margin-right: 250px;
     height: calc(100% - 10px);
     background-color: #171d46;

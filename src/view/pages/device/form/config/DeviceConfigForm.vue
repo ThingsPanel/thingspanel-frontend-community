@@ -90,16 +90,17 @@ export default {
         this.location = newValue.location ? newValue.location : "";
         this.formData = {};
         if (JSON.stringify(newValue) == "{}" || newValue == "") {return;}
-        if (newValue.device_type == "3") {
-          // 子设备
+        if (newValue.device_type == "3" || (newValue.device_type == "1" && newValue.protocol != "mqtt")) {
+          // 子设备所有协议都要数据解析，直连设备所有自定义协议(mqtt协议之外)都要数据解析
           this.tabList = [
             { value: "configParse", label: "数据解析" },
             { value: "deviceAttribute", label: "设备属性" },
             { value: "runningStatus", label: "运维信息" }
           ];
           this.activeName = "configParse";
+          let deviceType = newValue.device_type == "1" ? "1" : "2";
           // 获取表单的属性
-          ModbusAPI.getFormAttr({ protocol_type: newValue.protocol, device_type: "2"})
+          ModbusAPI.getFormAttr({ protocol_type: newValue.protocol, device_type: deviceType})
               .then(({data}) => {
                 if (data.code == 200 && data.data && data.data.config) {
                   this.formAttr = data.data.config;

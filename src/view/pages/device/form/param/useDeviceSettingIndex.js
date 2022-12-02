@@ -1,4 +1,5 @@
 import DictAPI from "@/api/dict.js"
+import ProtocolAPI from "@/api/protocolPlugin.js"
 
 export default function useDeviceSettingIndex() {
 
@@ -18,9 +19,31 @@ export default function useDeviceSettingIndex() {
         return result;
     }
 
+    /**
+     * 获取自定义协议连接信息
+     * @param deviceData
+     * @returns {Promise<[{label: string, value: string}, {label: string, value: (string|[{message: *, required: boolean}]|[{message: string, required: boolean}]|*)}]|*[]>}
+     */
+    async function getCustomConnectInformation(deviceData) {
+        let params = {current_page: 1, per_page: 10, protocol_type: deviceData.protocol, device_type: deviceData.device_type };
+        let { data } = await ProtocolAPI.page(params)
+        if (data.code == 200) {
+            if (!data.data.data) return [];
+            let result = data.data.data[0];
+            let port = result.access_address.split(":")[1];
+            let description = result.description ? result.description : "";
+            let info = [
+                { label: "协议端口", value: port },
+                { label: "描述", value: description }
+            ]
+            return info;
+        }
+    }
+
     return {
         getDeviceProtocolList,
-        getGatewayProtocolList
+        getGatewayProtocolList,
+        getCustomConnectInformation
     }
 }
 

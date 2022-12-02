@@ -74,7 +74,7 @@ import "./core/plugins/bootstrap-vue";
 import "./core/plugins/perfect-scrollbar";
 import "./core/plugins/highlight-js";
 import "./core/plugins/inline-svg";
-import "./core/plugins/metronic";
+// import "./core/plugins/metronic";
 import "@mdi/font/css/materialdesignicons.css";
 
 

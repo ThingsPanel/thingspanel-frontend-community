@@ -183,22 +183,22 @@ const actions = {
     if (JwtService.getToken()) {
       // ApiService.setHeader();
       // ApiService.post(local_url + "/auth/me")
-      getUserInfo()
-          .then(({ data }) => {
-          if (data.code == 200) {
-            console.log(data);
-            data.data.token = JwtService.getToken();
-            data.data.userid = data.data.id;
-            context.commit(SET_AUTH, data.data);
-          } else {
-            // this.$store
-            //   .dispatch(LOGOUT)
-            //   .then(() => this.$router.push({ name: "login" }));
-          }
-        })
-        .catch(({ response }) => {
-          // context.commit(SET_ERROR, response.data.errors);
-        });
+      // getUserInfo()
+      //     .then(({ data }) => {
+      //     if (data.code == 200) {
+      //       console.log(data);
+      //       data.data.token = JwtService.getToken();
+      //       data.data.userid = data.data.id;
+      //       context.commit(SET_AUTH, data.data);
+      //     } else {
+      //       // this.$store
+      //       //   .dispatch(LOGOUT)
+      //       //   .then(() => this.$router.push({ name: "login" }));
+      //     }
+      //   })
+      //   .catch(({ response }) => {
+      //     // context.commit(SET_ERROR, response.data.errors);
+      //   });
     } else {
       context.commit(PURGE_AUTH);
     }

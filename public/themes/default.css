@@ -114,6 +114,10 @@ html {
     color: #fff!important;
 }
 
+.el-button--default {
+    color: #5399fa !important;
+}
+
 .aside {
     background-color: #161E43 !important;
     box-shadow: 3px 0px 7px #000;

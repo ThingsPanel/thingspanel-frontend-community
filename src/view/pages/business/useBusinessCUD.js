@@ -73,10 +73,11 @@ export default function useBusinessCUD(tableData){
         } else if(item.status === "creating") {
             business_add({name: item.formData.name}).then(({data})=>{
                 if(data.code === 200) {
+                    console.log("====creating", dateFormat(data.data.created_at))
                     // 洗一下数据 格式化日期
                     item.id = data.data.id
                     item.name = data.data.name
-                    item.created_at = dateFormat(data.data.created_at)
+                    item.created_at = data.data.created_at
                     item.status = null
                     message_success("创建成功")
                 }

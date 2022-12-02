@@ -97,7 +97,8 @@ export default {
       canvasStyle: {},
       menuVisible: false, // 右键菜单
       zTopIndex: 500,   // 当前大屏的最高层
-      zBottomIndex: 500   // 当前大屏的最底层
+      zBottomIndex: 500,   // 当前大屏的最底层
+      scale: 1
     }
   },
   watch: {
@@ -166,6 +167,16 @@ export default {
     })
   },
   methods: {
+    /**
+     * 缩放
+     * @param scale
+     */
+    setZoom(step) {
+      this.scale += step;
+      console.log("====setZoom", step)
+      let droppable = document.getElementById("droppable")
+      droppable.style.transform = "scale(" + this.scale + ")";
+    },
     /**
      * 初始化图表的大小和位置
      * @param row   行数

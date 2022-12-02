@@ -5,22 +5,50 @@
         <el-input class="el-dark-input" suffix-icon="el-icon-search" placeholder="在此搜索组件" v-model="searchText"></el-input>
     </div>
     <div class="component-list">
-      <el-tabs class="el-dark-tabs" tab-position="top" v-model="typeTabValue">
+      <el-tabs class="el-dark-tabs" style="height: 100%" tab-position="top" v-model="typeTabValue">
 
 
-<!--        &lt;!&ndash; ==========================常规组件 start======================================== &ndash;&gt;-->
-<!--        <el-tab-pane label="常规组件" name="common">-->
-<!--          <el-collapse v-model="commonActiveNames"  >-->
-<!--            <el-collapse-item v-for="(components, index) in commonList" :key="index" :title="components.label" :name="index">-->
-
-<!--            </el-collapse-item>-->
-<!--          </el-collapse>-->
-<!--        </el-tab-pane>-->
-<!--        &lt;!&ndash; ==========================常规组件 end========================================== &ndash;&gt;-->
+        <!-- ==========================常规组件 start======================================== -->
+        <el-tab-pane label="常规组件" name="common" >
+          <common-tab></common-tab>
+        </el-tab-pane>
+        <!-- ==========================常规组件 end========================================== -->
 
 
-<!--        &lt;!&ndash; ==========================插件组件 start======================================== &ndash;&gt;-->
-<!--        <el-tab-pane label="插件组件" name="plugin">-->
+        <!-- ==========================插件组件 start======================================== -->
+        <el-tab-pane label="插件组件" name="plugin">
+          <plugin-tab></plugin-tab>
+
+<!--          <div class="component-chart-list">-->
+<!--            <div class="component-item" v-for="(component, index) in chartList" :key="index">-->
+<!--              <p>{{ component.name }}</p>-->
+
+<!--              <vue-drag :option="component" :index="'chart' + index">-->
+<!--                  <dashboard-chart v-show="component.controlType == 'dashboard'"-->
+<!--                                   :style="getChartStyle(component)" draggable="true"-->
+<!--                                   :option="component"></dashboard-chart>-->
+
+<!--                  <curve-chart v-show="component.controlType == 'history'"-->
+<!--                               style="getChartStyle(chart)" draggable="true"-->
+<!--                               :option="component"></curve-chart>-->
+
+<!--                <status :style="getChartStyle(component)"-->
+<!--                        v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>-->
+
+
+<!--              </vue-drag>-->
+<!--            </div>-->
+<!--          </div>-->
+        </el-tab-pane>
+        <!-- ==========================插件组件 end======================================== -->
+
+
+        <!-- ==========================我的组件 start======================================== -->
+        <el-tab-pane label="我的组件" name="myself"></el-tab-pane>
+        <!-- ==========================我的组件 end======================================== -->
+
+
+<!--        <el-tab-pane label="图表" name="chart">-->
 <!--          <div class="component-chart-list">-->
 <!--            <div class="component-item" v-for="(component, index) in chartList" :key="index">-->
 <!--              <p>{{ component.name }}</p>-->
@@ -42,62 +70,22 @@
 <!--            </div>-->
 <!--          </div>-->
 <!--        </el-tab-pane>-->
-<!--        &lt;!&ndash; ==========================插件组件 end======================================== &ndash;&gt;-->
+
+<!--        <el-tab-pane label="开关" name="control">-->
+<!--          <div class="component-chart-list">-->
+<!--            <div class="component-item" v-for="(component, index) in controlList" :key="index">-->
+<!--              <p>{{ component.name }}</p>-->
+
+<!--              <vue-drag :option="component" :index="'control' + index">-->
+<!--                <control :style="getChartStyle(component)" draggable="true"-->
+<!--                         :option="component"></control>-->
+<!--              </vue-drag>-->
+<!--            </div>-->
+<!--          </div>-->
+
+<!--        </el-tab-pane>-->
 
 
-<!--        &lt;!&ndash; ==========================我的组件 start======================================== &ndash;&gt;-->
-<!--        <el-tab-pane label="我的组件" name="myself"></el-tab-pane>-->
-<!--        &lt;!&ndash; ==========================我的组件 end======================================== &ndash;&gt;-->
-
-
-        <el-tab-pane label="图表" name="chart">
-          <div class="component-chart-list">
-            <div class="component-item" v-for="(component, index) in chartList" :key="index">
-              <p>{{ component.name }}</p>
-
-              <vue-drag :option="component" :index="'chart' + index">
-                  <dashboard-chart v-show="component.controlType == 'dashboard'"
-                                   :style="getChartStyle(component)" draggable="true"
-                                   :option="component"></dashboard-chart>
-
-                  <curve-chart v-show="component.controlType == 'history'"
-                               style="getChartStyle(chart)" draggable="true"
-                               :option="component"></curve-chart>
-
-                <status :style="getChartStyle(component)"
-                        v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>
-
-
-              </vue-drag>
-            </div>
-          </div>
-        </el-tab-pane>
-
-        <el-tab-pane label="开关" name="control">
-          <div class="component-chart-list">
-            <div class="component-item" v-for="(component, index) in controlList" :key="index">
-              <p>{{ component.name }}</p>
-
-              <vue-drag :option="component" :index="'control' + index">
-                <control :style="getChartStyle(component)" draggable="true"
-                         :option="component"></control>
-              </vue-drag>
-            </div>
-          </div>
-
-        </el-tab-pane>
-
-        <el-tab-pane label="视频" name="media"></el-tab-pane>
-
-        <el-tab-pane label="报表" name="report"></el-tab-pane>
-
-        <el-tab-pane label="组态" name="config">
-          <configure-panel :search-text="searchText"></configure-panel>
-        </el-tab-pane>
-
-        <el-tab-pane label="其他" name="other">
-          <other-panel></other-panel>
-        </el-tab-pane>
 
       </el-tabs>
 
@@ -108,20 +96,12 @@
 </template>
 
 <script>
-import DashboardChart from "@/components/e-charts/DashboardChart";
-import CurveChart from "@/components/e-charts/CurveChart"
-import Control from "@/components/control/Control";
-import Status from "@/components/e-charts/Status";
-import VueDrag from "@/components/drag"
-// import Chart from "./chart";
+import CommonTab from "./common"
+import PluginTab from "./plugin"
 
-import ConfigurePanel from "./configure"
-import OtherPanel from "./other"
 export default {
   name: "EditorAside",
-  components: {
-    DashboardChart, CurveChart, Control, Status, VueDrag, ConfigurePanel, OtherPanel
-  },
+  components: { CommonTab, PluginTab },
   props: {
     componentList: {
       type: [Array],
@@ -130,37 +110,10 @@ export default {
   },
   data() {
     return {
-      typeTabValue: "chart",
+      typeTabValue: "common",
       searchText: "",
       commonActiveNames: [""],
-      commonList: [
-        {
-          label: "图表组件",
-          value: "eChart",
-          children: [
-            {
-              label: "仪表盘",
-              value: "dashboard"
-            },
-            {
-              label: "曲线图",
-              value: "history"
-            }
-          ]
-        },
-        {
-          label: "文本组件",
-          value: "text"
-        },
-        {
-          label: "组态",
-          value: "configure"
-        },
-        {
-          label: "视频组件",
-          value: "video"
-        }
-      ],
+      pluginActiveName: "",
       chartList: [],
       controlList: [],
       mediaList: [],
@@ -188,6 +141,9 @@ export default {
 
   },
   methods: {
+    handleCommonTabsClick(tab) {
+      console.log("====tab", tab)
+    },
     getChartStyle(item) {
       return {
         borderRadius: "10px",
@@ -201,6 +157,56 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.tab-label-left {
+  position:relative;
+  display: flex;
+  width: 50px;
+  height:60px;
+  text-align: center;
+  i {
+    position: absolute;
+    top: 10px;
+    width: 50px!important;
+    height: 20px!important;
+  }
+  p {
+    position: absolute;
+    top: 20px;
+    width: 50px!important;
+    height: 20px!important;
+  }
+}
+.tab-content-right {
+  height: 100%;
+  margin-left: 65px;
+}
+::v-deep .el-tabs__content {
+  height: calc(100% - 50px);
+  .el-tab-pane {
+    height: 100%;
+  }
+}
+::v-deep .el-tabs__header.is-left {
+  width: 60px!important;
+}
+.el-tabs__item.is-left.is-active {
+  .tab-label-left {
+    background-color: #171d46;
+    border-radius: 10px;
+  }
+}
+::v-deep .el-tabs--left {
+  padding-left: 0px!important;
+  margin-left: 0px!important;
+  text-align: center!important;
+}
+::v-deep .el-tabs__item.is-left {
+  height: 60px!important;
+  padding-left: 0px!important;
+  margin-left: 0px!important;
+  text-align: center!important;
+
+}
 .editor-container {
   //position: relative;
   width: 100%;
@@ -222,7 +228,7 @@ export default {
     top: 50px;
     bottom: 0;
     background-color: #202c62;
-    overflow-y: auto;
+    //overflow-y: auto;
     .component-chart-list {
       width: 100%;
       height: 100%;

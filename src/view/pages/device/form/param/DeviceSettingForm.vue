@@ -72,33 +72,31 @@
         <div style="margin: 10px 0;"></div>
 
         <el-form-item label="数据处理脚本：">
-        <el-select size="medium" placeholder="" filterable
-                   popper-class="exchange-agreement" :popper-append-to-body="false"
-                   v-model="deviceData.dataExchangeAgreement"
-                   @change="handleExchangeAgreementChange">
-          <el-option-group >
-            <el-option :label="'默认'" :value="''"></el-option>
-            <el-option :label="'自定义协议'" :value="'custom'"></el-option>
-          </el-option-group>
+          <el-select size="medium" placeholder="" filterable
+                     popper-class="exchange-agreement" :popper-append-to-body="false"
+                     v-model="deviceData.dataExchangeAgreement"
+                     @change="handleExchangeAgreementChange">
+            <el-option-group >
+              <el-option :label="'默认'" :value="''"></el-option>
+              <el-option :label="'自定义协议'" :value="'custom'"></el-option>
+            </el-option-group>
 
-          <el-option-group >
-            <el-option v-for="option in customExchangeAgreementList" :key="option.value"
-                     :value="option.value" :label="option.label">
-              <span style="float: left;width: 200px">{{ option.label }}</span>
-              <span style="float: right; color: #8492a6; font-size: 13px">
-                <el-button icon="el-icon-edit-outline"  size="mini" @click="handleShowExchangeAgreementDialog(option)"></el-button>
+            <el-option-group >
+              <el-option v-for="option in customExchangeAgreementList" :key="option.value"
+                       :value="option.value" :label="option.label">
+                <span style="float: left;width: 200px">{{ option.label }}</span>
+                <span style="float: right; color: #8492a6; font-size: 13px">
+                  <el-button icon="el-icon-edit-outline"  size="mini" @click="handleShowExchangeAgreementDialog(option)"></el-button>
 
-                <el-button icon="el-icon-delete"  size="mini" @click="handleDeleteExchangeAgreement(option)"></el-button>
-              </span>
-            </el-option>
-          </el-option-group>
+                  <el-button icon="el-icon-delete"  size="mini" @click="handleDeleteExchangeAgreement(option)"></el-button>
+                </span>
+              </el-option>
+            </el-option-group>
 
-        </el-select>
-      </el-form-item>
+          </el-select>
+        </el-form-item>
 
       </div>
-
-
 
         <div style="display: flex;justify-content: center">
           <el-button style="color:#000" @click="onCancel">取消</el-button>
@@ -150,7 +148,7 @@ export default defineComponent({
     let device = {};
     let defaultSettings = {};
     let tslProperties = {};
-    let { getDeviceProtocolList, getGatewayProtocolList } = useDeviceSettingIndex()
+    let { getDeviceProtocolList, getGatewayProtocolList, getCustomConnectInformation } = useDeviceSettingIndex()
 
     const required = true;
     let formRule = ref({
@@ -216,6 +214,7 @@ export default defineComponent({
       deviceData.dataExchangeAgreement = d.script_id ? d.script_id : "";
       deviceData.id = d.id;
       deviceData.hasChildDevice = !!device.children && device.children.length > 0
+      deviceData.device_type = d.device_type;
       deviceData.protocol = d.protocol;
       deviceData.authMode = d.password ? "mqttBasic" : "accessToken";
       deviceData.token = d.token;
@@ -223,7 +222,7 @@ export default defineComponent({
       deviceData.password = d.password ? d.password : "";
       deviceData.errors = {};
       deviceData.children = device.children;
-      deviceData.video_address = JSON.parse(d.additional_info).video_address
+      deviceData.video_address = d.additional_info ? JSON.parse(d.additional_info).video_address : "";
       initCustomExchangeAgreementList(d.protocol);
 
       if (d.device_type == "2") {
@@ -239,7 +238,7 @@ export default defineComponent({
       }
 
       // 获取默认token和默认配置说明, 必须在getTSLByPluginId之后执行
-      getDefaultSetting(d.protocol);
+      await getDefaultSetting(d.protocol);
     }
 
     /**
@@ -288,22 +287,45 @@ export default defineComponent({
 
     }
 
-
+    // 连接信息
     let connectInfo = ref([]);
     /**
      * 获取token和配置说明
      */
-    function getDefaultSetting(protocol) {
+    async function getDefaultSetting(protocol) {
       console.log("getDefaultSetting", deviceData)
-      if (!protocol) return;
-      let defaultSetting = JSON.parse(JSON.stringify(ProtocolInfo[protocol]));
-      let payload = getPayload();
 
-      defaultSetting.forEach(item => {
-        item.value = item.value.replaceAll("{AccessToken}", device.token);
-        item.value = item.value.replaceAll("{payload}", payload);
-      })
-      connectInfo.value = defaultSetting;
+      const setConnectSetting = () => {
+        let defaultSetting = JSON.parse(JSON.stringify(ProtocolInfo[protocol]));
+        let payload = getPayload();
+
+        defaultSetting.forEach(item => {
+          item.value = item.value.replaceAll("{AccessToken}", device.token);
+          item.value = item.value.replaceAll("{payload}", payload);
+        })
+        connectInfo.value = defaultSetting;
+      };
+
+
+      if (!protocol) return;
+      if (deviceData.device_type === "1") {
+        // 直接设备
+        if (deviceData.protocol === "mqtt") {
+          setConnectSetting();
+        } else if (deviceData.protocol !== "mqtt" && deviceData.protocol !== "video_address") {
+          // 自定义协议
+          connectInfo.value = await getCustomConnectInformation(deviceData);
+        }
+      } else if (deviceData.device_type === "2") {
+        // 网关
+        if (deviceData.protocol === "MQTT") {
+          setConnectSetting();
+        } else {
+          // 自定义协议
+          connectInfo.value = await getCustomConnectInformation(deviceData);
+        }
+      }
+
     }
 
     /**
@@ -394,13 +416,16 @@ export default defineComponent({
      */
     function initCustomExchangeAgreementList(v) {
       exchangeAgreementData.protocol_type = v;
-      getCustomExchangeAgreementList({"current_page": 1, "per_page": 9999, "protocol_type": v})
+      let params = {"current_page": 1, "per_page": 9999, "protocol_type": v, "device_type": deviceData.device_type};
+      getCustomExchangeAgreementList(params)
       .then(({data}) => {
         if (data.code == 200) {
           if (data.data && data.data.data && data.data.data.length > 0) {
             customExchangeAgreementList.value = data.data.data.map(item => {
               return {value: item.id, label: item.script_name }
             });
+          } else {
+            customExchangeAgreementList.value = [];
           }
         }
       })

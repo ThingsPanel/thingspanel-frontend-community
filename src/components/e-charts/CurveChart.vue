@@ -25,7 +25,7 @@ export default {
       default: ""
     },
     value: {
-      type: [String],
+      type: [String, Object],
       default: ""
     },
     autoResize: {
@@ -48,7 +48,11 @@ export default {
       handler(newValue) {
         console.log("曲线图", newValue)
         if (!newValue) return;
-        this.setEchartsValue(JSON.parse(newValue));
+        if (typeof newValue == "string") {
+          this.setEchartsValue(JSON.parse(newValue));
+        } else {
+          this.myChart.setOption(newValue)
+        }
       }
     }
   },

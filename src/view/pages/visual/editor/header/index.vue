@@ -28,6 +28,12 @@
         </el-dropdown>
         <el-link class="el-dark-link link-item" icon="el-icon-edit-outline">编辑</el-link>
         <el-link class="el-dark-link link-item" icon="el-icon-refresh-left">撤销</el-link>
+
+        <!-- 缩小 -->
+        <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-minus" @click="handleZoomOut"></el-link>
+        <!-- 放大 -->
+        <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-plus" @click="handleZoomIn"></el-link>
+
         <el-link class="el-dark-link link-item" icon="el-icon-s-platform">预览</el-link>
         <el-link class="el-dark-link link-item" icon="el-icon-s-platform">更换主题</el-link>
 
@@ -64,6 +70,12 @@ export default {
     console.log("====templates", this.templateList)
   },
   methods: {
+    handleZoomOut() {
+      this.$emit("zoom", -0.1);
+    },
+    handleZoomIn() {
+      this.$emit("zoom", 0.1);
+    },
     /**
      * 保存
      */

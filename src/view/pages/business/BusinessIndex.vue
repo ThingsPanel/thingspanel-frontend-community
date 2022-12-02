@@ -2,11 +2,11 @@
 <div class="rounded card p-4">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>{{ $t('COMMON.BUSINESSMANAGEMENT') }}</TableTitle>
+      <TableTitle>项目管理</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
       <el-button size="medium" type="indigo"
-                 v-if="hasAuth('business:add')" @click="handleCreate()">{{ $t('COMMON.NEWBUSINESS') }}</el-button>
+                 v-if="hasAuth('business:add')" @click="handleCreate()">新增项目</el-button>
     </el-col>
   </el-row>
 
@@ -15,7 +15,7 @@
   <el-table :data="tableData" v-loading="loading">
     <el-table-column :label="$t('COMMON.NO')" type="index"></el-table-column>
 
-    <el-table-column :label="$t('COMMON.BUSINESSNAME1')" prop="name">
+    <el-table-column label="项目名称" prop="name">
       <template v-slot="scope">
         <!-- 新建或者编辑 -->
         <el-form-item v-if="scope.row.status" :error="scope.row.errors.name">
@@ -45,7 +45,7 @@
 <!--            <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">{{ $t('COMMON.DEVICE_CHART') }}</el-button>-->
             <el-button type="indigo" size="mini" v-if="hasAuth('business:device')" @click="showDevice(scope.row)">{{ $t('COMMON.DEVICE') }}</el-button>
             <el-button type="indigo" size="mini" class="mr-3"
-                       v-if="hasAuth('business:edit')" @click="handleEdit(scope.row)">{{ $t('COMMON.EDITASSETSNAME') }}</el-button>
+                       v-if="hasAuth('business:edit')" @click="handleEdit(scope.row)">编辑项目名</el-button>
             <el-popconfirm :title="$t('COMMON.TEXT44')" @confirm="handleDelete(scope.row)">
               <el-button slot="reference" type="danger" size="mini" v-if="hasAuth('business:del')">{{ $t('COMMON.DELETE') }}</el-button>
             </el-popconfirm>

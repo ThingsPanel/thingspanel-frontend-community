@@ -23,8 +23,13 @@ Use below html tag for RTL version
   <script type="text/javascript" src="<%= BASE_URL %>echarts.min.js" async></script>
   <body>
     <noscript>
-      <strong>We're sorry but metronic-vue doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+      <strong>We're sorry but ThingPanel doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
     </noscript>
+    <style>
+        .el-picker-panel {
+            z-index: 2099!important;
+        }
+    </style>
     <div id="app"></div>
     <!-- built files will be auto injected -->
   </body>

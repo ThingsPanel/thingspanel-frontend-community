@@ -143,4 +143,4 @@
 
 论坛：[论坛](http://forum.thingspanel.cn/)
 
-qq群：260150504
+qq群：371794256

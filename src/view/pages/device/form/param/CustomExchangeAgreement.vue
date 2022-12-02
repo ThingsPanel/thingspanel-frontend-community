@@ -42,19 +42,32 @@ import {defineComponent, ref, watch, reactive} from "@vue/composition-api";
 import CodeEditor from 'simple-code-editor';
 import {message_success} from "@/utils/helpers";
 import {getCustomExchangeAgreementList, addCustomExchangeAgreement, editCustomExchangeAgreement} from "@/api/device";
+const upCodeTemp = " function encodeInp(msg, topic){\n" +
+"    // 将设备自定义msg（自定义形式）数据转换为json形式数据, 设备上报数据到物联网平台时调用\n" +
+"    // 入参：topic string 设备上报消息的 topic\n" +
+"    // 入参：msg byte[] 数组 不能为空\n" +
+"    // 出参：string\n" +
+"    // 处理完后将对象转回字符串形式\n" +
+"    // 例，byte[]转string：var msgString = String.fromCharCode.apply(null, msg);\n" +
+"    // 例，string转jsonObj：msgJson = JSON.parse(msgString);\n" +
+"    // 例，jsonObj转string：msgString = JSON.stringify(msgJson);\n" +
+"    var msgString = String.fromCharCode.apply(null, msg);\n" +
+"    return msgString;\n" +
+" }"
 
-const upCodeTemp = "function encodeInp(msg, topic){\n" +
-    "    //编写脚本处理从设备发来消息msg,转为平台可接收的消息规范\n" +
-    "    //将msg转为json对象,如:var jsonObj = JSON.parse(msg);\n" +
-    "    //处理完后将jsonObj转回字符串,如:msg = JSON.stringify(jsonObj);\n" +
-    "    return msg;\n" +
-    "}"
-const downCodeTemp = "function encodeInp(msg, topic){\n" +
-    "    //编写脚本处理从平台发出的消息msg,转为设备可接收的消息规范\n" +
-    "    //将msg转为json对象,如:var jsonObj = JSON.parse(msg);\n" +
-    "    //处理完后将jsonObj转回字符串,如:msg = JSON.stringify(jsonObj);\n" +
-    "    return msg;\n" +
-    "}"
+const downCodeTemp = " function encodeInp(msg, topic){\n" +
+    "    // 将平台规范的msg（json形式）数据转换为设备自定义形式数据, 物联网平台发送数据数到设备时调用\n" +
+    "    // 入参：topic string 设备上报消息的 topic\n" +
+    "    // 入参：msg byte[] 数组 不能为空\n" +
+    "    // 出参：string\n" +
+    "    // 处理完后将对象转回字符串形式\n" +
+    "    // 例，byte[]转string：var msgString = String.fromCharCode.apply(null, msg);\n" +
+    "    // 例，string转jsonObj：msgJson = JSON.parse(msgString);\n" +
+    "    // 例，jsonObj转string：msgString = JSON.stringify(msgJson);\n" +
+    "    var msgString = String.fromCharCode.apply(null, msg);\n" +
+    "    return msgString;\n" +
+    " }"
+
 export default defineComponent ({
   name: "CustomExchangeAgreement",
   components: {
@@ -126,6 +139,7 @@ export default defineComponent ({
     function onSubmit() {
       formData.script_name = formData.company + "" + formData.product_name;
       formData.protocol_type = props.device.protocol;
+      formData.device_type = props.device.device_type;
       formData.script_content_a = formData.script_content_a;
       formData.script_content_b = formData.script_content_b;
 

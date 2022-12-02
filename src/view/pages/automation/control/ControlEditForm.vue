@@ -1,246 +1,250 @@
 <template>
-<el-dialog
-    :title="current_item.id ? $t('AUTOMATION.CONTROL_STRATEGY.EDIT_CONTROL_STRATEGY') : $t('AUTOMATION.CONTROL_STRATEGY.ADD_CONTROL_STRATEGY')"
-    class="el-dark-dialog"
-    :visible.sync="showDialog"
-    width="60%"
-    height="60%"
-    top="10vh"
->
-<el-form
-    ref="controlFormRef"
-    :model="formData"
-    label-position="top"
-    hide-required-asterisk>
-  <el-row :gutter="20">
+  <el-dialog
+      :title="current_item.id ? $t('AUTOMATION.CONTROL_STRATEGY.EDIT_CONTROL_STRATEGY') : $t('AUTOMATION.CONTROL_STRATEGY.ADD_CONTROL_STRATEGY')"
+      class="el-dark-dialog"
+      :visible.sync="showDialog"
+      width="60%"
+      height="60%"
+      top="10vh"
+  >
+    <el-form
+      ref="controlFormRef"
+      :model="formData"
+      label-position="top"
+      hide-required-asterisk>
+    <el-row :gutter="20">
 
-<!--    策略名称-->
-    <el-col :span="8">
-      <el-form-item :label="$t('COMMON.STRATRGYLISTNAME')" prop="name" :rules="rules.name">
-        <el-input v-model="formData.name" :placeholder="$t('COMMON.PLACEHOLDER5')"></el-input>
-      </el-form-item>
-    </el-col>
-    <!--策略描述-->
-    <el-col :span="8">
-      <el-form-item :label="$t('COMMON.STRATRGYLISTDES')" prop="describe" :rules="rules.describe">
-        <el-input v-model="formData.describe" :placeholder="$t('COMMON.PLACEHOLDER6')"></el-input>
-      </el-form-item>
-    </el-col>
-<!--    策略优先级 -->
-    <el-col :span="8">
-      <el-form-item :label="$t('COMMON.POLICYPRIORITY')" prop="sort">
-        <template slot="label">
-          {{ $t('COMMON.POLICYPRIORITY') }}
-          <el-tooltip placement="top">
-            <div slot="content">{{ $t('COMMON.POLICYPRIORITY_TOOLTIP') }}</div>
-            <small class="help">?</small>
-          </el-tooltip>
-        </template>
-        <el-input-number class="w-100" v-model="formData.sort"></el-input-number>
-      </el-form-item>
-    </el-col>
-
-
-    <!----------------------------------------------------------------------------------------------------------------->
-    <!--  触发条件 start  -->
-    <!----------------------------------------------------------------------------------------------------------------->
-    <el-col :span="24">
-      <el-form-item :label="$t('AUTOMATION.TRIGGERING_CONDITION')">
-        <template v-if="formData.type == 1" v-for="(rules_item, index) in formData.config.rules">
-          <el-row :gutter="20" :class="index > 0 ? 'pt-5' : ''">
-            <el-col :span="4">
-              <el-form-item>
-                <!-- 条件类型 或者 逻辑且于判断 -->
-                <ControlTypeSelector :type.sync="formData.type" @change="handleTypeChange" v-if="index === 0"></ControlTypeSelector>
-                <LogicalSelector :operator="rules_item.operator" v-else></LogicalSelector>
-              </el-form-item>
-            </el-col>
-            <el-col :span="4">
-              <el-form-item :prop="`config.rules.${index}.asset_id`" :rules="rules['config.rules.asset_id']">
-                <!-- 设备组 -->
-                <DeviceGroupSelector
-                    :business_id="business_id"
-                    :asset_id.sync="rules_item.asset_id"
-                    :clearable="false"
-                    @change="handleDeviceGroupChange(rules_item)"
-                ></DeviceGroupSelector>
-              </el-form-item>
-            </el-col>
-            <el-col :span="4">
-              <el-form-item :prop="`config.rules.${index}.device_id`" :rules="rules['config.rules.device_id']">
-                <!-- 设备 -->
-                <DeviceSelector
-                    :asset_id="rules_item.asset_id"
-                    :device_id.sync="rules_item.device_id"
-                    :clearable="false"
-                    @change="(deviceId, pluginId) => handleDeviceChange(rules_item, deviceId, pluginId)"
-                ></DeviceSelector>
-              </el-form-item>
-            </el-col>
-            <el-col :span="3">
-              <el-form-item :prop="`config.rules.${index}.field`" :rules="rules['config.rules.field']">
-                <!-- 条件选择 -->
-                <TriggerSelector
-                    :device_id="rules_item.device_id"
-                    :plugin_id="rules_item.plugin_id"
-                    :field.sync="rules_item.field"></TriggerSelector>
-              </el-form-item>
-            </el-col>
-            <el-col :span="3">
-              <el-form-item :prop="`config.rules.${index}.condition`" :rules="rules['config.rules.condition']">
-                <!-- 符号大于小于 -->
-                <SymbolSelector :condition.sync="rules_item.condition"></SymbolSelector>
-              </el-form-item>
-            </el-col>
-            <el-col :span="3">
-              <el-form-item :prop="`config.rules.${index}.value`" :rules="rules['config.rules.value']">
-                <!-- 数值 -->
-                <el-input size="medium" class="w-100" v-model="rules_item.value" :placeholder="$t('AUTOMATION.PLACEHOLDER7')"></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="3">
-              <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-              <el-popconfirm :title=" $t('COMMON.TITLE4') " @confirm="removeRulesLine(rules_item)" v-else>
-                <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE') }}</el-button>
-              </el-popconfirm>
-            </el-col>
-          </el-row>
-        </template>
-
-        <!-- 时间条件类型 -->
-        <template v-if="formData.type == 2" v-for="(rules_item, index) in formData.config.rules">
-          <el-row type="flex" :gutter="20" :class="index > 0 ? 'pt-5' : ''">
-
-            <!-- 触发条件   -->
-            <el-col :span="4">
-              <el-form-item>
-                <!-- 条件类型 -->
-                <ControlTypeSelector
-                    v-if="index == 0"
-                    :type.sync="formData.type"
-                    @change="handleTypeChange"></ControlTypeSelector>
-              </el-form-item>
-            </el-col>
-
-            <!-- 时间间隔   -->
-            <el-col :span="4">
-              <el-form-item>
-                <IntervalSelector
-                    :interval.sync="rules_item.interval"
-                    @change="handleIntervalChange(rules_item)"
-                ></IntervalSelector>
-              </el-form-item>
-            </el-col>
-
-            <!-- 选择时间   -->
-            <el-col :span="8">
-              <el-form-item v-if="rules_item.interval==2">
-                <repeat-time :rule_id.sync="rules_item.rule_id"
-                             :unit.sync="rules_item.unit" :time_interval.sync="rules_item.time_interval_a"></repeat-time>
-              </el-form-item>
-
-              <el-form-item v-else :rules="rules['config.rules.time']">
-                <TimeSelector :interval="rules_item.interval" :time.sync="rules_item.time"></TimeSelector>
-              </el-form-item>
+      <!--    策略名称-->
+      <el-col :span="8">
+        <el-form-item :label="$t('COMMON.STRATRGYLISTNAME')" prop="name" :rules="rules.name">
+          <el-input v-model="formData.name" :placeholder="$t('COMMON.PLACEHOLDER5')"></el-input>
+        </el-form-item>
+      </el-col>
+      <!--策略描述-->
+      <el-col :span="8">
+        <el-form-item :label="$t('COMMON.STRATRGYLISTDES')" prop="describe" :rules="rules.describe">
+          <el-input v-model="formData.describe" :placeholder="$t('COMMON.PLACEHOLDER6')"></el-input>
+        </el-form-item>
+      </el-col>
+  <!--    策略优先级 -->
+      <el-col :span="8">
+        <el-form-item :label="$t('COMMON.POLICYPRIORITY')" prop="sort">
+          <template slot="label">
+            {{ $t('COMMON.POLICYPRIORITY') }}
+            <el-tooltip placement="top">
+              <div slot="content">{{ $t('COMMON.POLICYPRIORITY_TOOLTIP') }}</div>
+              <small class="help">?</small>
+            </el-tooltip>
+          </template>
+          <el-input-number class="w-100" v-model="formData.sort"></el-input-number>
+        </el-form-item>
+      </el-col>
 
 
-            </el-col>
+      <!----------------------------------------------------------------------------------------------------------------->
+      <!--  触发条件 start  -->
+      <!----------------------------------------------------------------------------------------------------------------->
+      <el-col :span="24">
+        <el-form-item :label="$t('AUTOMATION.TRIGGERING_CONDITION')">
+          <template v-if="formData.type == 1" v-for="(rules_item, index) in formData.config.rules">
+            <el-row :gutter="20" :class="index > 0 ? 'pt-5' : ''">
+              <el-col :span="4">
+                <el-form-item>
+                  <!-- 条件类型 或者 逻辑且于判断 -->
+                  <ControlTypeSelector :type.sync="formData.type" @change="handleTypeChange" v-if="index === 0"></ControlTypeSelector>
+                  <LogicalSelector :operator="rules_item.operator" v-else></LogicalSelector>
+                </el-form-item>
+              </el-col>
+              <el-col :span="4">
+                <el-form-item :prop="`config.rules.${index}.asset_id`" :rules="rules['config.rules.asset_id']">
+                  <!-- 设备组 -->
+                  <DeviceGroupSelector
+                      :business_id="business_id"
+                      :asset_id.sync="rules_item.asset_id"
+                      :clearable="false"
+                      @change="handleDeviceGroupChange(rules_item)"
+                  ></DeviceGroupSelector>
+                </el-form-item>
+              </el-col>
+              <el-col :span="4">
+                <el-form-item :prop="`config.rules.${index}.device_id`" :rules="rules['config.rules.device_id']">
+                  <!-- 设备 -->
+                  <DeviceSelector
+                      :asset_id="rules_item.asset_id"
+                      :device_id.sync="rules_item.device_id"
+                      :clearable="false"
+                      @change="(deviceId, pluginId) => handleDeviceChange(rules_item, deviceId, pluginId)"
+                  ></DeviceSelector>
+                </el-form-item>
+              </el-col>
+              <el-col :span="3">
+                <el-form-item :prop="`config.rules.${index}.field`" :rules="rules['config.rules.field']">
+                  <!-- 条件选择 -->
+                  <TriggerSelector
+                      :device_id="rules_item.device_id"
+                      :plugin_id="rules_item.plugin_id"
+                      :field.sync="rules_item.field"></TriggerSelector>
+                </el-form-item>
+              </el-col>
+              <el-col :span="3">
+                <el-form-item :prop="`config.rules.${index}.condition`" :rules="rules['config.rules.condition']">
+                  <!-- 符号大于小于 -->
+                  <SymbolSelector :condition.sync="rules_item.condition"></SymbolSelector>
+                </el-form-item>
+              </el-col>
+              <el-col :span="3">
+                <el-form-item :prop="`config.rules.${index}.value`" :rules="rules['config.rules.value']">
+                  <!-- 数值 -->
+                  <el-input size="medium" class="w-100" v-model="rules_item.value" :placeholder="$t('AUTOMATION.PLACEHOLDER7')"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="3">
+                <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
+                <el-popconfirm :title=" $t('COMMON.TITLE4') " @confirm="removeRulesLine(rules_item)" v-else>
+                  <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE') }}</el-button>
+                </el-popconfirm>
+              </el-col>
+            </el-row>
+          </template>
 
-            <el-col :span="3">
-              <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-              <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeRulesLine(rules_item)" v-else>
-                <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE')}}</el-button>
-              </el-popconfirm>
-            </el-col>
-          </el-row>
-        </template>
-      </el-form-item>
-    </el-col>
-    <!--  触发条件 end  -->
+          <!-- 时间条件类型 -->
+          <template v-if="formData.type == 2" v-for="(rules_item, index) in formData.config.rules">
+            <el-row type="flex" :gutter="20" :class="index > 0 ? 'pt-5' : ''">
 
-    <!----------------------------------------------------------------------------------------------------------------->
-    <!-- 执行指令 start -->
-    <!----------------------------------------------------------------------------------------------------------------->
-    <el-col :span="24">
-      <el-form-item :label="$t('AUTOMATION.EXECUTE_COMMAND')">
-        <template v-for="(apply_item, index) in formData.config.apply">
-          <el-row :gutter="20" :class="index > 0 ? 'pt-5' : ''">
-            <el-col :span="4">
-              <el-form-item :prop="`config.apply.${index}.asset_id`" :rules="rules['config.rules.asset_id']">
-                <!-- 设备分组 -->
-                <DeviceGroupSelector
-                    :business_id="business_id"
-                    :asset_id.sync="apply_item.asset_id"
-                    :clearable="false"
-                    @change="handleDeviceGroupChange(apply_item)"
-                ></DeviceGroupSelector>
-              </el-form-item>
-            </el-col>
-            <el-col :span="4">
-              <el-form-item :prop="`config.apply.${index}.device_id`" :rules="rules['config.rules.device_id']">
-                <!-- 设备 -->
-                <DeviceSelector
-                    :asset_id="apply_item.asset_id"
-                    :device_id.sync="apply_item.device_id"
-                    :clearable="false"
-                    @change="(deviceId, pluginId) => handleDeviceChange(apply_item, deviceId, pluginId)"
-                ></DeviceSelector>
-              </el-form-item>
-            </el-col>
-            <el-col :span="3">
-              <el-form-item :prop="`config.apply.${index}.field`" :rules="rules['config.rules.field']">
-                <!-- 条件 -->
-                <InstructSelector
-                    :device_id="apply_item.device_id"
-                    :plugin_id="apply_item.plugin_id"
-                    :field.sync="apply_item.field"
-                ></InstructSelector>
-              </el-form-item>
-            </el-col>
-            <el-col :span="3">
-              <el-form-item
-                  :prop="`config.apply.${index}.value`"
-                  :rules="apply_item.field_type === 3 ? rules['config.rules.value_number'] : rules['config.rules.value']"
-              >
-                <!-- 值 field_type等于3时 改为数字输入框 -->
-                <el-input-number size="medium" controls-position="right" class="w-100" v-model="apply_item.value" v-if="apply_item.field_type === 3"></el-input-number>
-                <el-input size="medium" class="w-100" v-model="apply_item.value" v-else></el-input>
-              </el-form-item>
-            </el-col>
-            <el-col :span="3">
-              <el-button type="indigo" size="medium" @click="addApplyLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-              <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeApplyLine(apply_item)" v-else>
-                <el-button slot="reference" type="danger" size="medium">{{  $t('COMMON.DELETE') }}</el-button>
-              </el-popconfirm>
-            </el-col>
-          </el-row>
-        </template>
-      </el-form-item>
-    </el-col>
-    <!--  执行指令 end  -->
+              <!-- 触发条件   -->
+              <el-col :span="4">
+                <el-form-item>
+                  <!-- 条件类型 -->
+                  <ControlTypeSelector
+                      v-if="index == 0"
+                      :type.sync="formData.type"
+                      @change="handleTypeChange"></ControlTypeSelector>
+                </el-form-item>
+              </el-col>
 
-  </el-row>
+              <!-- 时间间隔   -->
+              <el-col :span="4">
+                <el-form-item>
+                  <IntervalSelector
+                      :interval.sync="rules_item.interval"
+                      @change="handleIntervalChange(rules_item)"
+                  ></IntervalSelector>
+                </el-form-item>
+              </el-col>
 
-  <!-- 开关start -->
-  <el-row :gutter="20">
-    <el-col :span="24">
-      <!-- 策略状态 -->
-      <el-form-item :label="$t('COMMON.POLICYSTATUS')" class="inline-form-item">
-        <el-switch :active-value="1" :inactive-value="0" v-model="formData.status"></el-switch>
-        <small class="px-2">{{formData.status ? $t('COMMON.ON') : $t('COMMON.OFF')}}</small>
-      </el-form-item>
-    </el-col>
-  </el-row>
-  <!-- 开关end -->
+              <!-- 选择时间   -->
+              <el-col :span="8">
+                <!-- interval为2时重复   -->
+                <el-form-item v-if="rules_item.interval==2"
+                              :prop="`config.rules.${index}.time_interval`"
+                              >
+                  <repeat-time :rule_id.sync="rules_item.rule_id"
+                               :unit.sync="rules_item.unit" :time_interval.sync="rules_item.time_interval_a"></repeat-time>
+                </el-form-item>
 
-  <FormAlert :error_message="error_message"></FormAlert>
+                <!-- interval为0时单次， 为1时每天 -->
+                <el-form-item v-else :prop="`config.rules.${index}.time`" :rules="rules['config.rules.time']">
+                  <TimeSelector :interval="rules_item.interval" :time.sync="rules_item.time"></TimeSelector>
+                </el-form-item>
 
-  <div class="text-right">
-    <el-button size="medium" type="default" @click="handleCancel()">{{$t('COMMON.CANCEL')}}</el-button>
-    <el-button size="medium" type="indigo" @click="handleSave()">{{$t('COMMON.SAVE')}}</el-button>
-  </div>
-</el-form>
-</el-dialog>
+
+              </el-col>
+
+              <el-col :span="3">
+                <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
+                <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeRulesLine(rules_item)" v-else>
+                  <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE')}}</el-button>
+                </el-popconfirm>
+              </el-col>
+            </el-row>
+          </template>
+        </el-form-item>
+      </el-col>
+      <!--  触发条件 end  -->
+
+      <!----------------------------------------------------------------------------------------------------------------->
+      <!-- 执行指令 start -->
+      <!----------------------------------------------------------------------------------------------------------------->
+      <el-col :span="24">
+        <el-form-item :label="$t('AUTOMATION.EXECUTE_COMMAND')">
+          <template v-for="(apply_item, index) in formData.config.apply">
+            <el-row :gutter="20" :class="index > 0 ? 'pt-5' : ''">
+              <el-col :span="4">
+                <el-form-item :prop="`config.apply.${index}.asset_id`" :rules="rules['config.rules.asset_id']">
+                  <!-- 设备分组 -->
+                  <DeviceGroupSelector
+                      :business_id="business_id"
+                      :asset_id.sync="apply_item.asset_id"
+                      :clearable="false"
+                      @change="handleDeviceGroupChange(apply_item)"
+                  ></DeviceGroupSelector>
+                </el-form-item>
+              </el-col>
+              <el-col :span="4">
+                <el-form-item :prop="`config.apply.${index}.device_id`" :rules="rules['config.rules.device_id']">
+                  <!-- 设备 -->
+                  <DeviceSelector
+                      :asset_id="apply_item.asset_id"
+                      :device_id.sync="apply_item.device_id"
+                      :clearable="false"
+                      @change="(deviceId, pluginId) => handleDeviceChange(apply_item, deviceId, pluginId)"
+                  ></DeviceSelector>
+                </el-form-item>
+              </el-col>
+              <el-col :span="3">
+                <el-form-item :prop="`config.apply.${index}.field`" :rules="rules['config.rules.field']">
+                  <!-- 条件 -->
+                  <InstructSelector
+                      :device_id="apply_item.device_id"
+                      :plugin_id="apply_item.plugin_id"
+                      :field.sync="apply_item.field"
+                  ></InstructSelector>
+                </el-form-item>
+              </el-col>
+              <el-col :span="3">
+                <el-form-item
+                    :prop="`config.apply.${index}.value`"
+                    :rules="apply_item.field_type === 3 ? rules['config.rules.value_number'] : rules['config.rules.value']"
+                >
+                  <!-- 值 field_type等于3时 改为数字输入框 -->
+                  <el-input-number size="medium" controls-position="right" class="w-100" v-model="apply_item.value" v-if="apply_item.field_type === 3"></el-input-number>
+                  <el-input size="medium" class="w-100" v-model="apply_item.value" v-else></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="3">
+                <el-button type="indigo" size="medium" @click="addApplyLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
+                <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeApplyLine(apply_item)" v-else>
+                  <el-button slot="reference" type="danger" size="medium">{{  $t('COMMON.DELETE') }}</el-button>
+                </el-popconfirm>
+              </el-col>
+            </el-row>
+          </template>
+        </el-form-item>
+      </el-col>
+      <!--  执行指令 end  -->
+
+    </el-row>
+
+    <!-- 开关start -->
+    <el-row :gutter="20">
+      <el-col :span="24">
+        <!-- 策略状态 -->
+        <el-form-item :label="$t('COMMON.POLICYSTATUS')" class="inline-form-item">
+          <el-switch :active-value="1" :inactive-value="0" v-model="formData.status"></el-switch>
+          <small class="px-2">{{formData.status ? $t('COMMON.ON') : $t('COMMON.OFF')}}</small>
+        </el-form-item>
+      </el-col>
+    </el-row>
+    <!-- 开关end -->
+
+    <FormAlert :error_message="error_message"></FormAlert>
+
+    <div class="text-right">
+      <el-button size="medium" type="default" @click="handleCancel()">{{$t('COMMON.CANCEL')}}</el-button>
+      <el-button size="medium" type="indigo" @click="handleSave()">{{$t('COMMON.SAVE')}}</el-button>
+    </div>
+  </el-form>
+  </el-dialog>
 </template>
 
 <script>
@@ -540,4 +544,5 @@ export default defineComponent({
   float: left!important;
   padding-right: 10px;
 }
+
 </style>
