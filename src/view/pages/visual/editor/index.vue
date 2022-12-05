@@ -84,8 +84,6 @@ export default {
       this.relationId = this.params.groupId;
       this.mode = GROUP_MODE;
     }
-    // 从插件加载图表
-    this.getPluginList();
     // 加载大屏数据
     this.getScreenData();
   },

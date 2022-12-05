@@ -30,11 +30,11 @@
       </grid-item>
     </grid-layout>
 
-    <div v-if="status == pluginStatus.LOADING" class="plugin-loading">
+    <div v-else-if="status == pluginStatus.LOADING" class="plugin-loading">
       正在加载插件图表...
     </div>
 
-    <div v-if="status == pluginStatus.NONE" class="plugin-loading">
+    <div v-else-if="status == pluginStatus.NONE" class="plugin-loading">
       该设备未绑定插件，请绑定插件...
     </div>
 
@@ -106,7 +106,8 @@ export default {
       device_info({id: this.device.device })
         .then(({data}) => {
           if (data.code == 200) {
-            if (data.data['chart_option'] && data.data['chart_option'] != "[]") {
+            console.log("====getLayout", data.data)
+            if (data.data['chart_option'] && data.data['chart_option'] != "[]" && data.data['chart_option'] != "{}") {
               let layout = JSON.parse(data.data['chart_option']);
               for (let i = 0; i < this.options.length; i++) {
                 let option = layout.find(item => item.id == this.options[i].id)
@@ -125,6 +126,7 @@ export default {
               this.optionsData = this.getDefaultLayout(options, 4)
             }
             this.status = this.pluginStatus.LOADED;
+            this.getComponentMaps(this.optionsData);
           }
         })
     },
@@ -180,6 +182,19 @@ export default {
         })
         this.setLayout();
       })
+    },
+    /**
+     * 1.遍历组件
+     * 2.根据组件类型获取当前值/历史曲线值
+     * 3.给组件赋值
+     */
+    getComponentMaps(options) {
+      options.forEach(item => {
+        console.log("====getComponentMaps", item)
+        // if (item.controlType == "dashboard") {
+        //
+        // } else if (item.controlType == "dashboard")
+      })
     }
   }
 }
@@ -209,5 +224,9 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
+}
+.plugin-loading {
+  color: #fff;
+  font-size: 18px;
 }
 </style>

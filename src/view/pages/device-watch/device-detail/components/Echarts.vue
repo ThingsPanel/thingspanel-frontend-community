@@ -5,7 +5,7 @@
       <span class="title">{{ optionData.name }}</span>
       <div class="tool-right">
         <!-- 刷新频率  -->
-        <el-dropdown @command="handleFlushCommand">
+        <el-dropdown v-if="false" @command="handleFlushCommand">
           <el-button class="tool-item" size="mini" icon="el-icon-time"></el-button>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item command="2">2秒</el-dropdown-item>

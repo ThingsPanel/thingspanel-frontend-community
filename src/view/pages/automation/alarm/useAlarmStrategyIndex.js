@@ -12,6 +12,7 @@ export default function useAlarmStrategyIndex(id) {
     let total = ref(0);
 
     function getAlarmStrategyIndex(page){
+        console.log("====getAlarmStrategyIndex", page)
         if(page) params.page = page
 
         if(loading.value) return

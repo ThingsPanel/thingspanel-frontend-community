@@ -7,6 +7,7 @@
                      :x="component.point.x" :y="component.point.y"
                      :w="component.point.w" :h="component.point.h"
                      :z="component.point.z"
+                     :scale="scale"
                     @activated="onActivated(component)"
                     @resizestop="(left, top, width, height) => onResizestop(component, left, top, width, height)"
                     @dragstop="(left, top) => onDragstop(component, left, top)"
@@ -71,6 +72,26 @@ import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
 import { getRandomString } from "@/utils/helpers";
 import bus from "@/core/plugins/eventBus"
 
+const statusConfig = {
+  IDLE: 0,
+  DRAG_START: 1,
+  DRAGGING: 2,
+  MOVE_START: 3,
+  MOVING: 4
+}
+
+const canvasInfo = {
+  status: statusConfig.IDLE,
+  target: null,
+  lastEventPos: { x: null, y: null },
+  offsetEventPos: { x: null, y: null },
+  offset: { x: 0, y: 0 },
+  scale: 1,
+  scaleStep: .1,
+  maxScale: 2,
+  minScale: .5
+}
+
 export default {
   name: "EditorCanvas",
   components: {
@@ -105,7 +126,7 @@ export default {
     jsonData: {
       handler(newValue) {
         console.log("====jsonData", newValue)
-        if (!newValue) return;
+        if (!newValue || JSON.stringify(newValue) == "{}" ||newValue == undefined) return;
         let fullData = JSON.parse(JSON.stringify(newValue.screen)) ;
         if (fullData.length == 0) return;
         let canvasStyle = newValue.canvasStyle ? newValue.canvasStyle : {};
@@ -234,6 +255,7 @@ export default {
     handleDrop(e) {
       e.preventDefault();
       let jsonOpt = e.dataTransfer.getData("option");
+      console.log("====canvas.handleDrop", jsonOpt)
       if (!jsonOpt) return;
       this.zTopIndex++;
       let opt = JSON.parse(jsonOpt);
@@ -291,6 +313,11 @@ export default {
         backgroundColor: item.backgroundColor ? item.backgroundColor : "#2d3d86"
       }
     },
+    /**
+     * 设置组件层级
+     * @param item
+     * @returns {{backgroundColor: (*|string), borderRadius: string, width: string, height: string}}
+     */
     getConfigureStyle(item) {
       return {
         borderRadius: "10px",
@@ -356,6 +383,9 @@ export default {
       //   menu.style.top = event.offsetY - 10 + 'px'
       // }
     },
+    dragCanvas(e) {
+      console.log("====dragCanvas", e)
+    }
   }
 }
 </script>
@@ -370,7 +400,8 @@ export default {
 .droppable {
   /*position: absolute;*/
   position: relative;
-
+  width: 100%;
+  height: 100%;
   top: 40px;
   bottom: 40px;
   left: 10px;
