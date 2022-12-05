@@ -17,7 +17,7 @@
 
         <div class="width-100 mb-2">
           <div
-            v-for="(item,index) in guidlist"  
+            v-for="(item, index) in guidlist"
             class="float-left inline-block mr-10 mb-2"
           >
             <!--可视化-->

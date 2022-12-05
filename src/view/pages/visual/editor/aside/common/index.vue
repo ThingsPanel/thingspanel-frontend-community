@@ -4,9 +4,9 @@
 
       <!-- 图表 -->
       <el-collapse-item title="图表" name="chart">
-        <div class="component-item" v-for="(item, index) in chartList" :key="index">
-          <vue-drag :option="component" type="chart" @click="handleComponentClicked" :index="'configure' + component.name">
-            <el-image  :style="defaultStyle" :src="item"></el-image>
+        <div class="component-item" v-for="(component, index) in chartList" :key="index">
+          <vue-drag :option="component" :type="component.type" @click="handleComponentClicked" :index="'chart' + component.name">
+            <el-image  :style="defaultStyle" :src="component.image_src"></el-image>
           </vue-drag>
         </div>
       </el-collapse-item>
@@ -14,15 +14,14 @@
 
       <!-- 文本 -->
       <el-collapse-item title="文本" name="text">
-        <div class="component-item" v-for="(item, index) in textList" :key="index">
-          <vue-drag :option="component" type="text" @click="handleComponentClicked" :index="'configure' + component.name">
-            <el-image  :style="defaultStyle" :src="item"></el-image>
+        <div class="component-item" v-for="(component, index) in textList" :key="index">
+          <vue-drag :option="component" :type="component.type" @click="handleComponentClicked" :index="'text' + component.name">
+            <el-image  :style="defaultStyle" :src="component.image_src"></el-image>
           </vue-drag>
         </div>
-
       </el-collapse-item>
 
-      <!-- 组态面板 -->
+      <!-- 组态 -->
       <el-collapse-item v-for="(configure, index) in configures" :key="index" :title="configure.category" :name="configure.category">
         <div v-if="isActive(configure.category)">
           <div class="component-item" v-for="(component, index) in configure.components" :key="index"
@@ -71,10 +70,14 @@ export default {
       categoryNames: [],
       activeNames: [""],
       chartList: [
-        require("@/view/pages/visual/components/chart/dashboard.svg"),
-        require("@/view/pages/visual/components/chart/dashboard1.svg")
+        {name: "仪表盘", type: "dashboard", image_src: require("@/view/pages/visual/components/chart/dashboard.svg") },
+        {name: "折线", type: "curve", image_src: require("@/view/pages/visual/components/chart/curve.svg") },
+        {name: "饼图", type: "pie", image_src: require("@/view/pages/visual/components/chart/pie.svg") },
+        {name: "柱状图", type: "bar", image_src: require("@/view/pages/visual/components/chart/bar.svg") },
       ],
-      textList: [require("@/view/pages/visual/components/text/text_1.svg")],
+      textList: [
+        { name: "文本", type: "text", image_src: require("@/view/pages/visual/components/text/text_1.svg") }
+      ],
       defaultStyle: {
         width: "50px",
         height: "50px"
@@ -109,6 +112,7 @@ export default {
     }
   }
 }
+
 </script>
 
 <style scoped lang="scss">

@@ -1,13 +1,4 @@
 <template>
-<!--<div class="rounded card p-4">-->
-<!--  &lt;!&ndash; 头 start &ndash;&gt;-->
-<!--  <el-row type="flex" class="pt-3 pb-4 px-3">-->
-<!--    <el-col :span="12">-->
-<!--      <TableTitle>{{ $t("COMMON.CHANGEPASSWORD") }}</TableTitle>-->
-<!--    </el-col>-->
-<!--  </el-row>-->
-<!--  &lt;!&ndash; 头 end &ndash;&gt;-->
-
 <el-dialog
     class="el-dark-dialog el-dark-input"
     :visible.sync="showDialog"

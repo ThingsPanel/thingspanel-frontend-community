@@ -35,9 +35,13 @@
                    v-if="component.type == 'configure'" :option="component">
         </configure>
 
+        <!-- 文本组件 -->
+        <CommonText v-else-if="component.type == 'text'" :style="getConfigureStyle(component)"
+            :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
+
         <other :style="getConfigureStyle(component)"
                :w="component.point.w" :h="component.point.h"
-               v-if="component.type == 'other' || component.type == 'text'" :option="component"></other>
+               v-else-if="component.type == 'other'" :option="component"></other>
 
 
       </VueDraggableResizable>
@@ -65,6 +69,7 @@ import Control from "@/components/control/Control";
 import Status from "@/components/e-charts/Status";
 import Configure from "@/components/configure/Configure"
 import Other from "@/components/other/Other"
+import CommonText from "@/components/text/CommonText"
 
 import VueDraggableResizable from 'vue-draggable-resizable'
 import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
@@ -95,7 +100,7 @@ const canvasInfo = {
 export default {
   name: "EditorCanvas",
   components: {
-    DashboardChart, HistoryChart, Control, Status, Configure, Other, VueDraggableResizable
+    DashboardChart, HistoryChart, Control, Status, Configure, Other, CommonText, VueDraggableResizable
   },
   props: {
     jsonData: {
@@ -369,8 +374,8 @@ export default {
     },
     styleMenu(event, menu) {
       console.log(event)
-      menu.style.left = event.clientX - 440 + 'px';
-      menu.style.top = event.clientY - 60 + 'px'
+      menu.style.left = event.clientX + 4 + 'px';
+      menu.style.top = event.clientY + 'px'
       document.addEventListener('click', this.foo) // 给整个document新增监听鼠标事件，点击任何位置执行foo方法
       // if (event.clientX > 1800) {
       //   menu.style.left = event.offsetX + 30 + 'px'
