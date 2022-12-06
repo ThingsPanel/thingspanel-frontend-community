@@ -39,12 +39,9 @@ export function device_update(data){
 // 删除设备
 export function device_delete(data){
     return axios({
-        url: "/asset/delete",
+        url: "/device/delete",
         method: "post",
-        data: {
-            type: 2,
-            ...data
-        }
+        data
     })
 }
 
