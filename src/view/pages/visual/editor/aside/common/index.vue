@@ -1,6 +1,6 @@
 <template>
   <div class="common-container">
-    <el-collapse class="el-dark-collapse" style="padding:10px" v-model="activeNames">
+    <el-collapse class="el-dark-collapse" style="padding:10px;" v-model="activeNames">
 
       <!-- 图表 -->
       <el-collapse-item title="图表" name="chart">
@@ -70,10 +70,10 @@ export default {
       categoryNames: [],
       activeNames: [""],
       chartList: [
-        {name: "仪表盘", type: "dashboard", image_src: require("@/view/pages/visual/components/chart/dashboard.svg") },
-        {name: "折线", type: "curve", image_src: require("@/view/pages/visual/components/chart/curve.svg") },
-        {name: "饼图", type: "pie", image_src: require("@/view/pages/visual/components/chart/pie.svg") },
-        {name: "柱状图", type: "bar", image_src: require("@/view/pages/visual/components/chart/bar.svg") },
+        {name: "仪表盘", type: "dashboard", controlType: "dashboard", image_src: require("@/view/pages/visual/components/chart/dashboard.svg") },
+        {name: "折线", type: "curve", controlType: "history", image_src: require("@/view/pages/visual/components/chart/curve.svg") },
+        {name: "饼图", type: "pie", controlType: "dashboard", image_src: require("@/view/pages/visual/components/chart/pie.svg") },
+        {name: "柱状图", type: "bar", controlType: "dashboard", image_src: require("@/view/pages/visual/components/chart/bar.svg") },
       ],
       textList: [
         { name: "文本", type: "text", image_src: require("@/view/pages/visual/components/text/text_1.svg") }
@@ -116,6 +116,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.common-container {
+  height: 100%;
+  overflow-y: auto;
+}
 .tab-label-left {
   position:relative;
   display: flex;

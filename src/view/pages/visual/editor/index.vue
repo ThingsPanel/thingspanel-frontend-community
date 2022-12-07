@@ -91,6 +91,9 @@ export default {
     handleZoom(v) {
       this.$refs.editorCanvas.setZoom(v);
     },
+    handleAdapt() {
+      this.$refs.editorCanvas.adapt();
+    },
     showImportDialog() {
       let jsonData = {};
       jsonData.screen = this.$refs.editorCanvas.fullData;

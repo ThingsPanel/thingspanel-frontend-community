@@ -87,7 +87,6 @@ export default {
     window.addEventListener("resize",() => {
       this.myEcharts.resize();
     });
-    console.log(this.option)
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
     this.initEChart();
@@ -198,7 +197,7 @@ export default {
      * 修改 e-chart 大小
      */
     sizeChange(){
-      this.myEcharts.resize();
+        this.myEcharts.resize();
     },
     getChartStyle() {
       let style = this.optionData.style ? this.optionData.style : {};

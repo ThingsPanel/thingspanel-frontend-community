@@ -10,7 +10,7 @@
       <div class="button-div">
         <el-button class="el-button--indigo" size="medium" @click="handleSave">保存</el-button>
         <el-button class="el-button--indigo" size="medium" @click="handleSaveAndClose">保存并关闭</el-button>
-        <el-button class="el-button--danger" size="medium" :disabled="false" @click="handlePublish">发布</el-button>
+<!--        <el-button class="el-button&#45;&#45;danger" size="medium" :disabled="false" @click="handlePublish">发布</el-button>-->
       </div>
     </div>
 
@@ -33,6 +33,9 @@
         <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-minus" @click="handleZoomOut"></el-link>
         <!-- 放大 -->
         <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-plus" @click="handleZoomIn"></el-link>
+
+        <el-link class="el-dark-link link-item" icon="el-icon-monitor" @click="handleAdapt">自适应</el-link>
+
 
         <el-link class="el-dark-link link-item" icon="el-icon-s-platform">预览</el-link>
         <el-link class="el-dark-link link-item" icon="el-icon-s-platform">更换主题</el-link>
@@ -70,11 +73,23 @@ export default {
     console.log("====templates", this.templateList)
   },
   methods: {
+    /**
+     * 缩小
+     */
     handleZoomOut() {
       this.$emit("zoom", -0.1);
     },
+    /**
+     * 放大
+     */
     handleZoomIn() {
       this.$emit("zoom", 0.1);
+    },
+    /**
+     * 自适应
+     */
+    handleAdapt() {
+      this.$emit("adapt");
     },
     /**
      * 保存

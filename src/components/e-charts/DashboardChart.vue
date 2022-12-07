@@ -71,6 +71,7 @@ export default {
     }
   },
   mounted() {
+    console.log("====dashboard.option", this.option)
     // 在通过mounted调用即可
     this.echartsInit();
     if (this.autoResize) {
@@ -105,6 +106,8 @@ export default {
       this.myChart.setOption(option);
     },
     initOption(option) {
+      if (!option.series) option.series = dashboardOption.series;
+
       if (!option.series[0].data) console.log(option.series[0])
 
       if (option.series[0].data && (typeof option.series[0].data[0]) == "number") {

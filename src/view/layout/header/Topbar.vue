@@ -57,13 +57,8 @@
 </style>
 
 <script>
-// import KTSearchDefault from "@/view/layout/extras/dropdown/SearchDefault.vue";
-// import KTDropdownNotification from "@/view/layout/extras/dropdown/DropdownNotification.vue";
-// import KTDropdownQuickAction from "@/view/layout/extras/dropdown/DropdownQuickAction.vue";
-// import KTDropdownMyCart from "@/view/layout/extras/dropdown/DropdownMyCart.vue";
 import KTDropdownLanguage from "@/view/layout/extras/dropdown/DropdownLanguage.vue";
 import KTQuickUser from "@/view/layout/extras/offcanvas/QuickUser.vue";
-// import KTQuickPanel from "@/view/layout/extras/offcanvas/QuickPanel.vue";
 import i18nService from "@/core/services/i18n.service.js";
 
 export default {
@@ -75,26 +70,20 @@ export default {
       themeValue: "default",
       themeOptions: [
         { label: "默认", value: "default" },
-        { label: "白色", value: "white" }
+        { label: "白色", value: "white" },
       ]
     };
   },
   components: {
-    // KTSearchDefault,
-    // KTDropdownNotification,
-    // KTDropdownQuickAction,
-    // KTDropdownMyCart,
     KTDropdownLanguage,
     KTQuickUser
-    // KTQuickPanel
   },
   created() {
     // 初始化
     this.onLanguageChanged();
-    //
     let style = localStorage.getItem("style");
-    if (style && style == "themes/white.css") {
-      this.themeValue = "white";
+    if (style) {
+      this.themeValue = style;
     }
   },
   methods: {
@@ -107,13 +96,10 @@ export default {
      * 选择主题
      * @param v
      */
-    handleChangeTheme(v) {
-      let themeFile = "themes/default.css";
-      if (v == "white") {
-        themeFile = "themes/white.css";
-      }
+    handleChangeTheme(theme) {
+      let themeFile = "themes/" + theme + ".css";
       document.getElementById('style').setAttribute("href", themeFile);
-      localStorage.setItem("style", themeFile);
+      localStorage.setItem("style", theme);
     }
   },
   computed: {
