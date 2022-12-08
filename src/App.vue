@@ -1,4 +1,5 @@
 <template>
+  
   <router-view></router-view>
 </template>
 
@@ -27,9 +28,9 @@ body {
 <script>
 import { OVERRIDE_LAYOUT_CONFIG } from "@/core/services/store/config.module";
 import {RESET_LAYOUT_CONFIG} from "./core/services/store/config.module";
-
 export default {
   name: "ThingsPanel",
+  
   mounted() {
     this.$store.dispatch("setRouters");
     /**

@@ -393,7 +393,8 @@ export const locale = {
     PROTOCOLTYPE1:"协议类型",
     EQUIPMENTLOG1:"设备日志",
     QUERY1:"查询",
-    REST1:"重置",
+    REST1: "重置",
+    ECHARTS:"设备地图"
   },
   TRANSLATOR: {
     SELECT: "选择你的语言",

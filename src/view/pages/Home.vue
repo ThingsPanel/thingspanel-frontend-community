@@ -16,10 +16,7 @@
         </h3>
 
         <div class="width-100 mb-2">
-          <div
-            v-for="(item,index) in guidlist"  
-            class="float-left inline-block mr-10 mb-2"
-          >
+          <div v-for="(item,index) in guidlist"  class="float-left inline-block mr-10 mb-2">
             <!--可视化-->
             <router-link
               v-if="item.type == 4"
@@ -137,8 +134,15 @@
 .clear {
   clear: both;
 }
+ 
 </style>
 <style scoped>
+/* #app {
+    height: 100%;
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+  } */
 .guidbtn {
   /*background: #5B92FF;padding: 15px 15px;*/
   color: #fff;
@@ -156,6 +160,7 @@
   position: relative;
   bottom: 3px;
 }
+
 </style>
 <script>
 import MixedWidget2 from "@/view/content/widgets/mixed/Widget2.vue";
