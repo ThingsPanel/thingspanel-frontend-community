@@ -1,16 +1,20 @@
 <template>
   <div class="canvas-container" ref="canvas_container" >
     <div id="droppable" class="droppable" ref="droppable" :style="canvasStyle"
-         tabindex="0" @keydown="onKeyDown">
+         tabindex="0" >
       <VueDraggableResizable style=""
-                     v-for="(component) in fullData" :key="component.cptId" :parent="true"
-                     :x="component.point.x" :y="component.point.y"
-                     :w="component.point.w" :h="component.point.h"
-                     :z="component.point.z"
-                     :scale="scale"
-                    @activated="onActivated(component)"
-                    @resizestop="(left, top, width, height) => onResizestop(component, left, top, width, height)"
+                    v-for="(component) in fullData" :key="component.cptId" :parent="false"
+                    :x="component.point.x" :y="component.point.y"
+                    :w="component.point.w" :h="component.point.h"
+                    :z="component.point.z"
+                    :scale="scale"
+                    @activated="onActivated(component)" @deactivated="onDeactivated(component)"
+                    @resizing="(left, top, width, height) => onResize(component, left, top, width, height)"
+                    @resizestop="(left, top, width, height) => onResize(component, left, top, width, height)"
                     @dragstop="(left, top) => onDragstop(component, left, top)"
+                    @keydown.native="e => onKeyDown(component, e)"
+                             @click.native="onClick(component)"
+                    @dblclick.native="onMouseDown(component)"
       >
         <dashboard-chart :style="getChartStyle(component)" ref="component"
                          :w="component.point.w" :h="component.point.h"
@@ -35,9 +39,14 @@
                    v-if="component.type == 'configure'" :option="component">
         </configure>
 
+        <!-- 文本组件 -->
+        <CommonText v-else-if="component.type == 'text'" :style="getConfigureStyle(component)"
+                    :active="component.activeted" :editable="component.editable"
+            :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
+
         <other :style="getConfigureStyle(component)"
                :w="component.point.w" :h="component.point.h"
-               v-if="component.type == 'other' || component.type == 'text'" :option="component"></other>
+               v-else-if="component.type == 'other'" :option="component"></other>
 
 
       </VueDraggableResizable>
@@ -65,6 +74,7 @@ import Control from "@/components/control/Control";
 import Status from "@/components/e-charts/Status";
 import Configure from "@/components/configure/Configure"
 import Other from "@/components/other/Other"
+import CommonText from "@/components/text/CommonText"
 
 import VueDraggableResizable from 'vue-draggable-resizable'
 import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
@@ -95,7 +105,7 @@ const canvasInfo = {
 export default {
   name: "EditorCanvas",
   components: {
-    DashboardChart, HistoryChart, Control, Status, Configure, Other, VueDraggableResizable
+    DashboardChart, HistoryChart, Control, Status, Configure, Other, CommonText, VueDraggableResizable
   },
   props: {
     jsonData: {
@@ -119,7 +129,17 @@ export default {
       menuVisible: false, // 右键菜单
       zTopIndex: 500,   // 当前大屏的最高层
       zBottomIndex: 500,   // 当前大屏的最底层
-      scale: 1
+      scale: 1,
+      Specifications: {
+        //定义的宽高比例，初始为1
+        ww: 1,
+        wh: 1,
+        //根据class="home"里面定义的宽高进行作为初始宽高进行计算
+        //！自定义内容！
+        width: 1920,
+        height: 919
+        //！自定义内容！
+      }
     }
   },
   watch: {
@@ -134,16 +154,7 @@ export default {
           // 显示大屏
           this.fullData = fullData;
           this.canvasStyle = canvasStyle;
-        } else {
-          // 无大屏显示插件图表
-          this.fullData = JSON.parse(JSON.stringify(this.setLayout(fullData, 4, 10)));
-
         }
-
-        console.log("=================fullData===================")
-        console.log(this.fullData)
-        console.log("=================fullData===================")
-
       },
       immediate: true
     }
@@ -161,6 +172,9 @@ export default {
           this.rightClick(e)
         }
       });
+
+      this.$refs.canvas_container.addEventListener("resize", this.handleCanvasResize, false);
+
     })
     // 监听数据改变
     bus.$on("changeData", (cptId, data) => {
@@ -193,43 +207,22 @@ export default {
      * @param scale
      */
     setZoom(step) {
+      if (this.scale >= 1.5 && step > 0) return;
+      if (this.scale <= 0.5 && step < 0) return;
       this.scale += step;
       console.log("====setZoom", step)
       let droppable = document.getElementById("droppable")
       droppable.style.transform = "scale(" + this.scale + ")";
     },
     /**
-     * 初始化图表的大小和位置
-     * @param row   行数
-     * @param span  间隔
+     * 窗口自适应
      */
-    setLayout(data, row, span) {
-      let options = JSON.parse(JSON.stringify(data));
-      // 获取画布的宽
-      let fullWidth = this.$refs.droppable.offsetWidth;
-      // 图表的边长
-      let itemLength = (fullWidth - (row * span * 2)) / row;
-      let rowI = 0;   // 列数
-      let colI = 0;   // 行数
-      for (let i = 0; i < options.length; i++) {
-        if (rowI == row) {
-          // 如果超过4列则换行
-          rowI = 0;
-          colI = colI + 1;
-        }
-        options[i].point = {};
-        options[i].point.x = (rowI * itemLength) + (span * rowI);
-        options[i].point.y = (colI * itemLength) + (span * colI);
-        options[i].point.h = itemLength;
-        options[i].point.w = itemLength;
-        options[i].point.z = this.zTopIndex;
-        this.zTopIndex++;
-        options[i].cptId = getRandomString(9);
-        rowI++;
-      }
-      let height = ((colI + 1) * itemLength) + ((colI + 1) * span) + "px";
-      this.canvasStyle = { height, minHeight: 'calc(100% - 70px)' }
-      return options;
+    adapt() {
+
+    },
+    handleCanvasResize() {
+      console.log("====handleCanvasResize", window.innerWidth)
+      console.log("====handleCanvasResize", window.innerHeight)
     },
     /**
      * 当元素被拖放到放置区域后的回调
@@ -261,6 +254,8 @@ export default {
       let opt = JSON.parse(jsonOpt);
       opt.point = {h: 200, w: 200, x: e.offsetX, y: e.offsetY, z: this.zTopIndex};
       opt.cptId = getRandomString(9);
+      opt.editable = false;
+      opt.activeted = false;
       this.currentId = opt.cptId;
       delete opt.relativePoint;
       this.fullData.push(opt);
@@ -269,9 +264,13 @@ export default {
     },
     /**
      * 组件被改变大小时的回调
-     * @param newRect
+     * @param component
+     * @param left
+     * @param top
+     * @param width
+     * @param height
      */
-    onResizestop(component, left, top, width, height) {
+    onResize(component, left, top, width, height) {
       component.point.x = left;
       component.point.y = top;
       component.point.w = width;
@@ -293,17 +292,40 @@ export default {
      */
     onActivated(component) {
       let cpt = component;
+      component.activeted = true;
       this.currentId = cpt.cptId;
       bus.$emit('share', JSON.parse(JSON.stringify(cpt)))
+    },
+    onDeactivated(component) {
+      component.activeted = false;
+      component.editable = false;
     },
     /**
      * 画布上的按键被按下后的回调
      * @param e
      */
-    onKeyDown(e) {
+    onKeyDown(component, e) {
+      console.log("====onKeyDown", e)
       if (e.code == "Backspace") {
-        this.handleDelete();
+        // if (component.type == "text") return;
+        this.handleDelete(component);
+      } else if (e.code == "Enter") {
+        component.editable = false;
       }
+    },
+    /**
+     * 单击组件 组件不可编辑
+     * @param component
+     */
+    onClick(component) {
+      component.editable = false;
+    },
+    /**
+     * 双击组件 组件可编辑
+     * @param component
+     */
+    onMouseDown(component) {
+      component.editable = true;
     },
     getChartStyle(item) {
       return {
@@ -347,41 +369,35 @@ export default {
         if (cpt.point.z < this.zBottomIndex) this.zBottomIndex = cpt.point.z;
       }
       this.fullData.splice(index, 1, cpt);
-      console.log("handleSetZIndex", cpt)
     },
-    handleDelete() {
-      let index = this.fullData.findIndex(item => item.cptId == this.currentId);
-      console.log(index)
+    handleDelete(component = null) {
+      console.log("====handleDelete", this.fullData)
+      console.log("====handleDelete.cptId", this.currentId)
+      let cptId = this.currentId;
+
+      let index = this.fullData.findIndex(item => item.cptId == cptId);
       this.fullData.splice(index, 1);
-      console.log(this.fullData)
     },
     rightClick(event) {
+      if (!this.currentId) return;
       this.menuVisible = false // 先把模态框关死，目的是 第二次或者第n次右键鼠标的时候 它默认的是true
       this.menuVisible = true // 显示模态窗口，跳出自定义菜单栏
       // event.preventDefault() //关闭浏览器右键默认事件
       let menu = document.querySelector('.menu')
       this.styleMenu(event, menu)
     },
-    foo() {
+    closeMenu() {
       // 取消鼠标监听事件 菜单栏
       this.menuVisible = false
-      document.removeEventListener('click', this.foo) // 关掉监听，
+      // 关掉监听，
+      document.removeEventListener('click', this.closeMenu)
     },
     styleMenu(event, menu) {
       console.log(event)
-      menu.style.left = event.clientX - 440 + 'px';
-      menu.style.top = event.clientY - 60 + 'px'
-      document.addEventListener('click', this.foo) // 给整个document新增监听鼠标事件，点击任何位置执行foo方法
-      // if (event.clientX > 1800) {
-      //   menu.style.left = event.offsetX + 30 + 'px'
-      // } else {
-      //   menu.style.left = event.offsetX + 1 + 'px'
-      // }
-      // if (event.clientY > 700) {
-      //   menu.style.top = event.offsetY - 30 + 'px'
-      // } else {
-      //   menu.style.top = event.offsetY - 10 + 'px'
-      // }
+      menu.style.left = event.clientX - 300 + 'px';
+      menu.style.top = event.clientY - 50 + 'px'
+      // 给整个document新增监听鼠标事件，点击任何位置执行 closeMenu 方法
+      document.addEventListener('click', this.closeMenu)
     },
     dragCanvas(e) {
       console.log("====dragCanvas", e)
@@ -392,25 +408,29 @@ export default {
 
 <style scoped>
 .canvas-container {
-  /*position: relative;*/
+  position: relative;
   width: 100%;
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden;
 }
 .droppable {
   /*position: absolute;*/
   position: relative;
-  width: 100%;
-  height: 100%;
-  top: 40px;
-  bottom: 40px;
-  left: 10px;
-  right: 10px;
-  background-color: #171d46;
-  .draggable-default {
-    position: relative;
-    border: 1px dashed #ccc;
-  }
+  /*width: 100%;*/
+  /*height: 100%;*/
+  /*top: -100%;*/
+  /*bottom: 40px;*/
+  /*left: -100%;*/
+  /*right: 10px;*/
+  /*background-color: #171d46;*/
+  background-color: #ea08a2;
+  width: 1920px;
+  height: 919px;
+  transform-origin: 0 0;
+  /*left: 50%;*/
+  /*top: 50%;*/
+  transition: 0.3s;
+
 }
 .contextmenu__item {
   display: block;

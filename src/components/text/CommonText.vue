@@ -1,0 +1,75 @@
+<template>
+  <div class="text-container">
+    <input class="input" ref="inputRef" type="text"  v-if="active && editable" v-model="textValue"
+           @mousedown="stopPropagation" @mouseup="stopPropagation" @click="stopPropagation"
+           @keydown="stopPropagation"
+    />
+
+    <span class="text" v-else>{{ textValue }}</span>
+  </div>
+</template>
+
+<script>
+export default {
+  name: "CommonText",
+  props: {
+    option: {
+      type: [Object],
+      default: () => { return {} }
+    },
+    mode: {
+      type: [String],
+      default: "edit"
+    },
+    active: {
+      type: [Boolean],
+      default: false
+    },
+    editable: {
+      type: [Boolean],
+      default: false
+    }
+  },
+  data() {
+    return {
+      textValue: "文本"
+    }
+  },
+  watch: {
+    editable: {
+      handler(newValue) {
+        this.$nextTick(() => {
+          if (newValue) {
+            // 激活 input 后使 input 获得焦点
+            let input = this.$refs["inputRef"];
+            if (input) input.focus();
+          }
+        })
+      }
+    }
+  },
+  methods: {
+    stopPropagation(e){
+      e.stopPropagation()
+    }
+  }
+}
+</script>
+
+<style scoped>
+.text-container {
+  margin: 0 auto;
+  text-align: center
+}
+.input {
+  width: 100%;
+  height: 30px;
+  text-align: center;
+  background-color: transparent;
+  color: #FFF;
+  border: 0px;
+}
+.text {
+  color: #fff;
+}
+</style>

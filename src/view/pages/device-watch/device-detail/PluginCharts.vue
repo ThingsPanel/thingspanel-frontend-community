@@ -1,7 +1,7 @@
 <!-- 点击设备默认显示插件图表 -->
 <template>
   <div style="width: 100%;height: 100%;overflow-y: auto">
-    <grid-layout v-if="status == pluginStatus.LOADED" style="width: 100%;height: 100%"
+    <grid-layout  style="width: 100%;height: 100%"
         :layout.sync="optionsData" :col-num="colNum" :row-height="30"
         :is-draggable="true" :is-resizable="true" :is-mirrored="false"
         :vertical-compact="true" :margin="[10, 10]" :use-css-transforms="true"
@@ -30,13 +30,13 @@
       </grid-item>
     </grid-layout>
 
-    <div v-else-if="status == pluginStatus.LOADING" class="plugin-loading">
-      正在加载插件图表...
-    </div>
+<!--    <div v-show="status == pluginStatus.LOADING" class="plugin-loading">-->
+<!--      正在加载插件图表...-->
+<!--    </div>-->
 
-    <div v-else-if="status == pluginStatus.NONE" class="plugin-loading">
-      该设备未绑定插件，请绑定插件...
-    </div>
+<!--    <div v-show="status == pluginStatus.NONE" class="plugin-loading">-->
+<!--      该设备未绑定插件，请绑定插件...-->
+<!--    </div>-->
 
   </div>
 
@@ -44,7 +44,7 @@
 
 
 <script>
-import {GridLayout, GridItem} from "vue-grid-layout";
+import { GridLayout, GridItem } from "vue-grid-layout";
 import ECharts from "./components/Echarts"
 import Control from "./components/Control";
 import Status from "./components/Status"
@@ -53,7 +53,7 @@ import {device_update} from "../../../../api/device";
 
 export default {
   name: "PluginCharts",
-  components: {GridLayout, GridItem, ECharts, Control, Status},
+  components: { GridLayout, GridItem, ECharts, Control, Status },
   props: {
     options: {
       type: [Array],
@@ -90,10 +90,9 @@ export default {
       }
     }
   },
-  mounted() {
-  },
   methods: {
     handleResized(i) {
+      console.log("====handleResized.i", i)
       this.$nextTick(() => {
           this.$refs["component_" + i][0].sizeChange();
       })
@@ -119,13 +118,24 @@ export default {
                 options[i].w = option.w;
                 options[i].h = option.h;
                 options[i].i = option.i;
+                // this.handleResized(i);
               }
               this.optionsData = options;
             } else {
               // 如果读取到的布局为空，则显示默认布局
               this.optionsData = this.getDefaultLayout(options, 4)
             }
+
+
             this.status = this.pluginStatus.LOADED;
+            // this.$nextTick(() => {
+            //   this.optionsData.forEach(item => {
+            //     let component = this.$refs["component_" + item.i];
+            //     if (component) {
+            //       component[0].sizeChange();
+            //     }
+            //   })
+            // })
             this.getComponentMaps(this.optionsData);
           }
         })
@@ -155,6 +165,7 @@ export default {
         options[i].y = rowI * rowH;
         options[i].i = i;
         colI++;
+        // this.handleResized(i);
       }
       return options;
     },
@@ -180,8 +191,8 @@ export default {
         newLayout.forEach(item => {
           this.$refs["component_" + item.i][0].sizeChange();
         })
-        this.setLayout();
       })
+      this.setLayout();
     },
     /**
      * 1.遍历组件
@@ -221,7 +232,7 @@ export default {
 .component-item {
   width: 100%;
   height: 100%;
-  position: absolute;
+  //position: absolute;
   top: 0;
   left: 0;
 }

@@ -1,48 +1,48 @@
 <template>
   <div class="common-container">
-    <el-tabs tab-position="left" style="height: 100%;width: 70px;float:left"
-             v-model="activeName">
+<!--    <el-tabs tab-position="left" style="height: 100%;width: 70px;float:left"-->
+<!--             v-model="activeName">-->
 
-      <el-tab-pane v-for="({ label, value, icon }) in tabList" :key="value" :label="label" :name="value">
-        <div class="tab-label-left" slot="label">
-          <i :class="icon"></i>
-          <p>{{ label }}</p>
-        </div>
-      </el-tab-pane>
+<!--      <el-tab-pane v-for="({ label, value, icon }) in tabList" :key="value" :label="label" :name="value">-->
+<!--        <div class="tab-label-left" slot="label">-->
+<!--          <i :class="icon"></i>-->
+<!--          <p>{{ label }}</p>-->
+<!--        </div>-->
+<!--      </el-tab-pane>-->
 
-    </el-tabs>
-    <div class="tab-content-right">
-      <div v-if="activeName=='dashboard'" class="component-chart-list">
-        <div class="component-item" v-for="(component, index) in chartList" :key="index">
-          <p>{{ component.name }}</p>
+<!--    </el-tabs>-->
+<!--    <div class="tab-content-right">-->
+<!--      <div v-if="activeName=='dashboard'" class="component-chart-list">-->
+<!--        <div class="component-item" v-for="(component, index) in chartList" :key="index">-->
+<!--          <p>{{ component.name }}</p>-->
 
-          <vue-drag :option="component" :index="'chart' + index">
-            <dashboard-chart v-show="component.controlType == 'dashboard'"
-                             :style="getChartStyle(component)" draggable="true"
-                             :option="component"></dashboard-chart>
+<!--          <vue-drag :option="component" :index="'chart' + index">-->
+<!--            <dashboard-chart v-show="component.controlType == 'dashboard'"-->
+<!--                             :style="getChartStyle(component)" draggable="true"-->
+<!--                             :option="component"></dashboard-chart>-->
 
-            <curve-chart v-show="component.controlType == 'history'"
-                         style="getChartStyle(chart)" draggable="true"
-                         :option="component"></curve-chart>
+<!--            <curve-chart v-show="component.controlType == 'history'"-->
+<!--                         style="getChartStyle(chart)" draggable="true"-->
+<!--                         :option="component"></curve-chart>-->
 
-            <status :style="getChartStyle(component)"
-                    v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>
+<!--            <status :style="getChartStyle(component)"-->
+<!--                    v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>-->
 
 
-          </vue-drag>
-        </div>
-      </div>
+<!--          </vue-drag>-->
+<!--        </div>-->
+<!--      </div>-->
 
-      <div v-if="activeName=='curve'" class="component-chart-list">
-        <div class="component-item" v-for="(component, index) in curveList" :key="index">
-          <p>{{ component.name }}</p>
-          <vue-drag :option="component" :index="index">
-            <curve-chart style="getChartStyle(chart)" draggable="true" :option="component"></curve-chart>
-          </vue-drag>
-        </div>
-      </div>
+<!--      <div v-if="activeName=='curve'" class="component-chart-list">-->
+<!--        <div class="component-item" v-for="(component, index) in curveList" :key="index">-->
+<!--          <p>{{ component.name }}</p>-->
+<!--          <vue-drag :option="component" :index="index">-->
+<!--            <curve-chart style="getChartStyle(chart)" draggable="true" :option="component"></curve-chart>-->
+<!--          </vue-drag>-->
+<!--        </div>-->
+<!--      </div>-->
 
-    </div>
+<!--    </div>-->
   </div>
 </template>
 

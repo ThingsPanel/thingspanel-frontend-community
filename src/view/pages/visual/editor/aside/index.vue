@@ -18,27 +18,6 @@
         <!-- ==========================插件组件 start======================================== -->
         <el-tab-pane label="插件组件" name="plugin">
           <plugin-tab></plugin-tab>
-
-<!--          <div class="component-chart-list">-->
-<!--            <div class="component-item" v-for="(component, index) in chartList" :key="index">-->
-<!--              <p>{{ component.name }}</p>-->
-
-<!--              <vue-drag :option="component" :index="'chart' + index">-->
-<!--                  <dashboard-chart v-show="component.controlType == 'dashboard'"-->
-<!--                                   :style="getChartStyle(component)" draggable="true"-->
-<!--                                   :option="component"></dashboard-chart>-->
-
-<!--                  <curve-chart v-show="component.controlType == 'history'"-->
-<!--                               style="getChartStyle(chart)" draggable="true"-->
-<!--                               :option="component"></curve-chart>-->
-
-<!--                <status :style="getChartStyle(component)"-->
-<!--                        v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>-->
-
-
-<!--              </vue-drag>-->
-<!--            </div>-->
-<!--          </div>-->
         </el-tab-pane>
         <!-- ==========================插件组件 end======================================== -->
 

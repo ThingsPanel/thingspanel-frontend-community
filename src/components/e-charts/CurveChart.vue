@@ -57,6 +57,7 @@ export default {
     }
   },
   mounted() {
+    console.log("====curve.option", this.option)
     // 初始化
     this.echartsInit()
     // 自适应大小
@@ -72,7 +73,7 @@ export default {
       this.myChart = this.$echarts.init(this.$refs["chart-main"]);
       this.$nextTick(() => {
         this.myChart.resize();
-        this.optionData = JSON.parse(JSON.stringify(this.option));
+        this.optionData = initOption(this.option)
         this.optionData.series[0].name = this.title;
         this.myChart.setOption(this.optionData);
       })
@@ -92,8 +93,16 @@ export default {
       let option = { xAxis, series }
 
       this.myChart.setOption(option);
-    }
+    },
+
   }
+}
+const initOption = (option) => {
+  if (!option.series) option.series = curveOption.series;
+  if (!option.xAxis) option.xAxis = curveOption.xAxis;
+  if (!option.yAxis) option.yAxis = curveOption.yAxis;
+
+  return JSON.parse(JSON.stringify(option));
 }
 const curveOption = {
   title: {

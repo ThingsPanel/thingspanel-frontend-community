@@ -49,14 +49,12 @@ export default {
     // HtmlClass.init(this.layoutConfig());
   },
   created() {
-    let style = localStorage.getItem("style");
-    if (style){
-      console.log("====style", style)
-      document.getElementById('style').setAttribute("href", style); //实现将主题保存在内存中刷新浏览器不改变
-    } else {
-      console.log("====default")
-      document.getElementById('style').setAttribute("href", "themes/default.css");
+    let theme = localStorage.getItem("style");
+    let themeFile = "themes/default.css";
+    if (theme){
+      themeFile = "themes/" + theme + ".css";
     }
+    document.getElementById('style').setAttribute("href", themeFile); //实现将主题保存在内存中刷新浏览器不改变
   }
 };
 </script>

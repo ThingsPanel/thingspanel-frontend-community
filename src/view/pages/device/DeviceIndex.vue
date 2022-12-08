@@ -100,20 +100,6 @@
     </el-table-column>
     <!--  设备类型：网关/设备 end  -->
 
-    <!--  设备插件 start  -->
-<!--    <el-table-column label="设备插件" width="auto" min-width="12%">-->
-<!--      <template v-slot="scope">-->
-<!--        <el-form-item :error="scope.row.errors.type">-->
-<!--          <DevicePluginSelector-->
-<!--              :plugin_type.sync="scope.row.type"-->
-<!--              :options="devicePluginOptions"-->
-<!--              @change="handleDevicePluginChange(scope.row)"-->
-<!--          ></DevicePluginSelector>-->
-<!--        </el-form-item>-->
-<!--      </template>-->
-<!--    </el-table-column>-->
-    <!--  设备插件 end  -->
-
     <!-- 绑定插件 -->
     <el-table-column :label="$t('COMMON.BINGPLUGINS')" width="auto" min-width="8%">
       <template slot-scope="scope">
