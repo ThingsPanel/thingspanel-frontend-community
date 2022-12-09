@@ -1,45 +1,45 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import store from "./core/services/store"
-import { VERIFY_AUTH} from "./core/services/store/auth.module";
+import { VERIFY_AUTH } from "./core/services/store/auth.module";
 import JwtService from "@/core/services/jwt.service";
-import {message_error} from "./utils/helpers";
-import {RESET_LAYOUT_CONFIG} from "./core/services/store/config.module";
+import { message_error } from "./utils/helpers";
+import { RESET_LAYOUT_CONFIG } from "./core/services/store/config.module";
 
 export const baseRoutes = [
     {
         path: "/",
         name: "Layout",
-        component: () => import ("@/view/layout/Layout"),
+        component: () => import("@/view/layout/Layout"),
         redirect: "/home",
         children: [
             {
                 path: "/home",
                 name: "home",
-                component: () => import ("@/view/pages/Home.vue")
+                component: () => import("@/view/pages/Home.vue")
             }
         ]
     },
     {
         path: "/auth",
-        component: () => import ("@/view/pages/auth/Auth"),
+        component: () => import("@/view/pages/auth/Auth"),
         children: [
             {
                 path: "/login",
                 name: "login",
-                component: () => import ("@/view/pages/auth/Login")
+                component: () => import("@/view/pages/auth/Login")
             },
             {
                 path: "/register",
                 name: "register",
-                component: () => import ("@/view/pages/auth/Register")
+                component: () => import("@/view/pages/auth/Register")
             }
         ]
     },
     {
         path: "/visual_editor",
         name: "VisualEditor",
-        component: () => import ("@/view/pages/visual/editor/index"),
+        component: () => import("@/view/pages/visual/editor/index"),
     }
 
 ]

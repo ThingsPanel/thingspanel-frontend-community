@@ -10,6 +10,7 @@
     "rtl": "webpack --config webpack-rtl.config.js"
   },
   "dependencies": {
+    "@amap/amap-jsapi-loader": "^1.0.1",
     "@babel/polyfill": "^7.4.4",
     "@fortawesome/fontawesome-free": "^5.13.0",
     "@mdi/font": "^3.6.95",
@@ -36,6 +37,7 @@
     "perfect-scrollbar": "^1.5.0",
     "portal-vue": "^2.1.7",
     "roboto-fontface": "*",
+    "screenfull": "^4.2.0",
     "simple-code-editor": "^1.2.2",
     "socicon": "^3.0.5",
     "storage": "^0.2.0",
@@ -44,6 +46,7 @@
     "tp-iot": "^0.8.7",
     "v-tcplayer": "0.0.8",
     "vue": "^2.6.12",
+    "vue-amap": "^0.5.10",
     "vue-async-component": "^1.0.14",
     "vue-axios": "^2.1.4",
     "vue-axios-plugin": "^1.3.0",

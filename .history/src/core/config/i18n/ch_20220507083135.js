@@ -263,6 +263,7 @@ export const locale = {
         LOG9: "控制策略",
         LOG10: "操作日志",
         LOG11: "图表",
+        ECHARTS:"设备地图"
     },
     TRANSLATOR: {
         SELECT: "选择你的语言",

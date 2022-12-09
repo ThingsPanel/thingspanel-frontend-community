@@ -178,6 +178,7 @@ export default {
         })
     },
     getList() {
+      // console.log(11111,this.hasAuth('sys:permission:search'))
       if (this.hasAuth('sys:permission:search')) {
         Perm.list()
             .then(({data}) => {
