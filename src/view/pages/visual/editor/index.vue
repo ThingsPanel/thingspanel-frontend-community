@@ -69,7 +69,7 @@ export default {
       pluginId: "",
       screenData: [],
       jsonData: {},
-      dialogOption: {}
+      dialogOption: {},
     }
   },
   mounted() {
@@ -86,6 +86,8 @@ export default {
     }
     // 加载大屏数据
     this.getScreenData();
+    // 获取项目/分组/设备的级联菜单数据
+    this.getCasOptions();
   },
   methods: {
     handleZoom(v) {
@@ -192,7 +194,19 @@ export default {
           }
         })
     },
-
+    /**
+     * 获取项目/分组/设备的级联菜单
+     */
+    getCasOptions() {
+      VisualAPI.getTree(null)
+          .then(({ data }) => {
+            if (data.code == 200) {
+              // 将获取到的数据转换为可用数据
+              let casOptions = washData(data.data);
+              bus.$emit("getCasOptions", casOptions)
+            }
+          })
+    }
   }
 }
 
@@ -202,6 +216,31 @@ const checkJsonData = (jsonData) => {
     JSON.parse(jsonData);
     resolve(true);
   });
+}
+/**
+ * 清洗数据
+ * @param options
+ * @returns {*}
+ */
+const washData = (options) => {
+  let opt = options;
+  options.forEach(business => {
+    business.value = business.business_id;
+    business.label = business.business_name;
+    if (business.children) {
+      business.children.forEach(group => {
+        group.value = group.group_id;
+        group.label = group.group_name;
+        if (group.children) {
+          group.children.forEach(device => {
+            device.value = device.device_id;
+            device.label = device.device_name;
+          })
+        }
+      })
+    }
+  });
+  return opt;
 }
 </script>
 

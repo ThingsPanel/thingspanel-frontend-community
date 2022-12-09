@@ -1,12 +1,11 @@
+<!-- 仪表盘配置面板 -->
 <template>
-  <div class="dashboard-container">
 
-  </div>
 </template>
 
 <script>
 export default {
-  name: "DashboardPane"
+  name: "DashboardConfig"
 }
 </script>
 

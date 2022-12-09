@@ -16,7 +16,7 @@
                              @click.native="onClick(component)"
                     @dblclick.native="onMouseDown(component)"
       >
-        <dashboard-chart :style="getChartStyle(component)" ref="component"
+        <dashboard-chart :style="getChartStyle(component)" ref="component" :key="'dashboard_' + component.cptId"
                          :w="component.point.w" :h="component.point.h"
                          v-if="component.controlType == 'dashboard' && component.type != 'status'"
                          :option="component"></dashboard-chart>
@@ -42,6 +42,7 @@
         <!-- 文本组件 -->
         <CommonText v-else-if="component.type == 'text'" :style="getConfigureStyle(component)"
                     :active="component.activeted" :editable="component.editable"
+                    :value.sync="component.text"
             :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
 
         <other :style="getConfigureStyle(component)"
@@ -160,6 +161,7 @@ export default {
     }
   },
   mounted() {
+    // 事件监听
     this.$nextTick(() => {
       this.$refs.droppable.addEventListener("dragover", this.handleDragover);
       this.$refs.droppable.addEventListener("dragleave", this.handleDragLeave);
@@ -176,19 +178,21 @@ export default {
       this.$refs.canvas_container.addEventListener("resize", this.handleCanvasResize, false);
 
     })
-    // 监听数据改变
-    bus.$on("changeData", (cptId, data) => {
-      // console.log("====canvas.watch.changeData1", data)
 
-      let index = this.fullData.findIndex(item => item.cptId == cptId)
+    // 监听数据改变
+    bus.$on("changeData", data => {
+      console.log("====canvas.watch.changeData1", data)
+
+      let index = this.fullData.findIndex(item => item.cptId == data.cptId)
       if (index < 0) return;
-      let cpt = JSON.parse(JSON.stringify(this.fullData[index]));
+      let cpt = this.fullData[index];
       Object.keys(data).forEach(item => {
         cpt[item] = data[item];
       })
-      this.fullData.splice(index, 1, cpt);
+      // this.fullData.splice(index, 1, cpt);
       // console.log("====canvas.watch.changeData2", this.fullData)
     })
+
     // 监听样式改变
     bus.$on('changeStyle', (cptId, style) => {
       // console.log("canvas.changeStyle", style)
@@ -248,10 +252,10 @@ export default {
     handleDrop(e) {
       e.preventDefault();
       let jsonOpt = e.dataTransfer.getData("option");
-      console.log("====canvas.handleDrop", jsonOpt)
       if (!jsonOpt) return;
       this.zTopIndex++;
       let opt = JSON.parse(jsonOpt);
+      console.log("====canvas.handleDrop", opt)
       opt.point = {h: 200, w: 200, x: e.offsetX, y: e.offsetY, z: this.zTopIndex};
       opt.cptId = getRandomString(9);
       opt.editable = false;
@@ -311,6 +315,7 @@ export default {
         this.handleDelete(component);
       } else if (e.code == "Enter") {
         component.editable = false;
+        bus.$emit('share', JSON.parse(JSON.stringify(component)))
       }
     },
     /**
@@ -319,6 +324,7 @@ export default {
      */
     onClick(component) {
       component.editable = false;
+      bus.$emit('share', JSON.parse(JSON.stringify(component)))
     },
     /**
      * 双击组件 组件可编辑
@@ -422,8 +428,8 @@ export default {
   /*bottom: 40px;*/
   /*left: -100%;*/
   /*right: 10px;*/
-  /*background-color: #171d46;*/
-  background-color: #ea08a2;
+  background-color: #171d46;
+  /*background-color: #ea08a2;*/
   width: 1920px;
   height: 919px;
   transform-origin: 0 0;

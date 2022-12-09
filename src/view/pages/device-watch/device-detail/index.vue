@@ -185,6 +185,7 @@ export default defineComponent({
       border: 2px solid #161e43;
       border-radius: 4px;
       background-color: #1f2a5f;
+      overflow-y: auto;
       .search-input {
         //background-color: #5867dd!important;
         //border-color: #5867dd!important;

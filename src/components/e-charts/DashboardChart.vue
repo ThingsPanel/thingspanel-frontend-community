@@ -8,7 +8,7 @@ export default {
   props: {
     option: {
       type: [Object],
-      default: () => { return dashboardOption }
+      default: () => { return {} }
     },
     color: {
       type: [String],
@@ -84,20 +84,20 @@ export default {
     //初始化echarts
     echartsInit() {
       this.myChart = this.$echarts.init(this.$refs["chart-main"]);
+      this.optionData = JSON.parse(JSON.stringify(this.option));
+      this.optionData = this.initOption(this.optionData);
+      this.optionData.series[0].min = this.min;
+      this.optionData.series[0].max = this.max;
+      this.optionData.series[0].data[0].name = this.title;
+      this.optionData.series[0].data[0].value = this.value;
+      this.optionData.series[0].detail.formatter = "{value}" + this.unit;
+      // 进度条颜色
+      this.optionData.series[0].progress.itemStyle.color = this.color;
+      // 指针颜色
+      this.optionData.series[0].pointer.itemStyle.color = this.color;
+      this.myChart.setOption(this.optionData);
       this.$nextTick(() => {
         this.myChart.resize();
-        this.optionData = JSON.parse(JSON.stringify(this.option));
-        this.optionData = this.initOption(this.optionData);
-        this.optionData.series[0].min = this.min;
-        this.optionData.series[0].max = this.max;
-        this.optionData.series[0].data[0].name = this.title;
-        this.optionData.series[0].data[0].value = this.value;
-        this.optionData.series[0].detail.formatter = "{value}" + this.unit;
-        // 进度条颜色
-        this.optionData.series[0].progress.itemStyle.color = this.color;
-        // 指针颜色
-        this.optionData.series[0].pointer.itemStyle.color = this.color;
-        this.myChart.setOption(this.optionData);
       });
     },
     setEchartsValue(value) {
@@ -106,7 +106,7 @@ export default {
       this.myChart.setOption(option);
     },
     initOption(option) {
-      if (!option.series) option.series = dashboardOption.series;
+      if (!option.series) option.series = JSON.parse(JSON.stringify(dashboardOption.series));
 
       if (!option.series[0].data) console.log(option.series[0])
 
@@ -121,6 +121,7 @@ export default {
       if (!option.series[0].pointer) option.series[0].pointer = {};
       if (!option.series[0].pointer.itemStyle) option.series[0].pointer.itemStyle = {};
       option.backgroundColor = "transparent"
+      console.log("====initOption", option)
       return option;
     }
   }

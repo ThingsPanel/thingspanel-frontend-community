@@ -62,5 +62,18 @@ export default {
         })
     },
 
+    /**
+     * 获取项目/分组/设备级联数据
+     * @param data
+     * @returns {AxiosPromise}
+     */
+    getTree: (data) => {
+        return axios({
+            url: "/device/cascade",
+            method: "post",
+            data
+        })
+    }
+
 
 }

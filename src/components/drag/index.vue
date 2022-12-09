@@ -31,6 +31,7 @@ export default {
     }
   },
   mounted() {
+    console.log("====drag.mounted", this.option)
     if (this.draggable) {
       const draggable = document.getElementById("draggable" + this.index);
       draggable.addEventListener("dragstart", this.handleDragStart);

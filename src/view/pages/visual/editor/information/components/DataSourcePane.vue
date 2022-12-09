@@ -1,12 +1,11 @@
+<!-- 数据源面板 -->
 <template>
-  <div class="video-container">
-    video
-  </div>
+
 </template>
 
 <script>
 export default {
-  name: "VideoPane"
+  name: "DataSourcePane"
 }
 </script>
 

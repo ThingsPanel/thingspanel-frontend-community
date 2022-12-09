@@ -1,56 +1,63 @@
 <template>
   <div class="common-container">
-<!--    <el-tabs tab-position="left" style="height: 100%;width: 70px;float:left"-->
-<!--             v-model="activeName">-->
+    <el-cascader ref="cascaderRef" class="el-cascader" :options="casOptions" :props="{ emitPath: false }"
+                 filterable @change="handleChangeOptions">
+      <template slot-scope="{ node, data }">
+        <span>{{ data.label }}</span>
+        <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
+        <span v-if="data.device_id">({{ data.plugin_id ? "已绑定" : "未绑定" }})</span>
+      </template>
+    </el-cascader>
 
-<!--      <el-tab-pane v-for="({ label, value, icon }) in tabList" :key="value" :label="label" :name="value">-->
-<!--        <div class="tab-label-left" slot="label">-->
-<!--          <i :class="icon"></i>-->
-<!--          <p>{{ label }}</p>-->
-<!--        </div>-->
-<!--      </el-tab-pane>-->
+    <el-collapse class="el-dark-collapse aside-plugin-collapse" style="padding:10px;" v-model="activeNames">
+      <el-collapse-item v-for="(components, index) in componentList" :key="components.value" :title="components.label"
+                        :name="components.value">
+        <div class="component-item" v-for="(component, index) in components.children" :key="component.id">-->
+          <p class="component-item-title">{{ component.name }}</p>
 
-<!--    </el-tabs>-->
-<!--    <div class="tab-content-right">-->
-<!--      <div v-if="activeName=='dashboard'" class="component-chart-list">-->
-<!--        <div class="component-item" v-for="(component, index) in chartList" :key="index">-->
-<!--          <p>{{ component.name }}</p>-->
+          <vue-drag :option="component" :index="component.id">
 
-<!--          <vue-drag :option="component" :index="'chart' + index">-->
-<!--            <dashboard-chart v-show="component.controlType == 'dashboard'"-->
-<!--                             :style="getChartStyle(component)" draggable="true"-->
-<!--                             :option="component"></dashboard-chart>-->
+            <!-- 仪表盘 -->
+            <dashboard-chart v-show="component.controlType == 'dashboard'"
+                             :style="getChartStyle(component)"
+                             :option="component"></dashboard-chart>
 
-<!--            <curve-chart v-show="component.controlType == 'history'"-->
-<!--                         style="getChartStyle(chart)" draggable="true"-->
-<!--                         :option="component"></curve-chart>-->
+            <!-- 曲线图 -->
+            <curve-chart v-show="component.controlType == 'history'"
+                         style="getChartStyle(chart)"
+                         :option="component"></curve-chart>
 
-<!--            <status :style="getChartStyle(component)"-->
-<!--                    v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>-->
+            <!-- 开关 -->
+            <control v-show="component.controlType == 'control'"
+                     style="getChartStyle(chart)"
+                     :option="component"></control>
+
+            <!-- 状态 -->
+            <status :style="getChartStyle(component)"
+                    v-if="component.controlType == 'dashboard' && component.type == 'status'"
+                    :option="component"></status>
 
 
-<!--          </vue-drag>-->
-<!--        </div>-->
-<!--      </div>-->
+          </vue-drag>
+        </div>
+      </el-collapse-item>
 
-<!--      <div v-if="activeName=='curve'" class="component-chart-list">-->
-<!--        <div class="component-item" v-for="(component, index) in curveList" :key="index">-->
-<!--          <p>{{ component.name }}</p>-->
-<!--          <vue-drag :option="component" :index="index">-->
-<!--            <curve-chart style="getChartStyle(chart)" draggable="true" :option="component"></curve-chart>-->
-<!--          </vue-drag>-->
-<!--        </div>-->
-<!--      </div>-->
-
-<!--    </div>-->
+    </el-collapse>
   </div>
 </template>
 
 <script>
-import DashboardPane from "./dashboard"
+import VueDrag from "@/components/drag"
+import DashboardChart from "@/components/e-charts/DashboardChart";
+import CurveChart from "@/components/e-charts/CurveChart";
+import Control from "@/components/control/Control";
+import Status from "@/components/e-charts/Status";
+import PluginAPI from "@/api/plugin"
+import bus from "@/core/plugins/eventBus"
+
 export default {
   name: "PluginTab",
-  components: { DashboardPane },
+  components: {VueDrag, DashboardChart, CurveChart, Control, Status},
   props: {
     searchText: {
       type: [String],
@@ -63,20 +70,69 @@ export default {
   },
   data() {
     return {
-      activeName: "",
-      tabList: [
-        { label: "仪表盘", value: "dashboard", icon: "el-icon-pie-chart"},
-        { label: "曲线", value: "curve", icon: "el-icon-chat-line-square"},
-        { label: "开关", value: "switch", icon: "el-icon-setting"},
-        { label: "状态", value: "status", icon: "el-icon-data-board"},
-        { label: "视频", value: "video", icon: "el-icon-data-board"},
-        { label: "报表", value: "report", icon: "el-icon-data-board"},
+      activeNames: [""],
+      componentList: [
+        {label: "仪表盘", value: "dashboard", children: []},
+        {label: "曲线", value: "history", children: []},
+        {label: "开关", value: "control", children: []},
+        {label: "状态", value: "status", children: []},
+        {label: "视频", value: "video", children: []},
+        {label: "报表", value: "report", children: []},
       ],
-      // 曲线图列表
-      curveList: []
+      casOptions: []
     }
   },
+  mounted() {
+    // 获取项目/分组/设备的级联菜单
+    bus.$on('getCasOptions', val => {
+      this.casOptions = val;
+    });
+  },
   methods: {
+    /**
+     * 级联菜单选中节点时的回调
+     */
+    handleChangeOptions(v) {
+      let node = this.$refs.cascaderRef.getCheckedNodes()[0];
+      if (!node) return;
+      this.componentList.forEach(item => item.children = []);
+      if (node.data.business_id) {
+        // 项目
+      } else if (node.data.group_id) {
+        // 分组
+      } else if (node.data.device_id) {
+        // 设备
+        let pluginId = node.data.plugin_id;
+        if (pluginId) {
+          PluginAPI.page({id: pluginId, current_page: 1, per_page: 10})
+              .then(({data}) => {
+                if (data.code == 200 || data.code == "200") {
+                  let jsonData = data.data.data.length > 0 ? data.data.data[0] : "{}"
+                  let jsonObj = JSON.parse(jsonData.chart_data);
+                  let {chart} = jsonObj;
+                  chart.forEach(item => {
+                    let it = JSON.parse(JSON.stringify(item));
+                    if (it.controlType == "dashboard") {
+                      let cpt = this.componentList.find(component => component.value == "dashboard")
+                      it.deviceId = node.data.device_id;
+                      cpt.children.push(it);
+                    } else if (it.controlType == "history") {
+                      let cpt = this.componentList.find(component => component.value == "history")
+                      it.deviceId = node.data.device_id;
+                      cpt.children.push(it);
+                    } else if (it.controlType == "control") {
+                      let cpt = this.componentList.find(component => component.value == "control")
+                      it.deviceId = node.data.device_id;
+                      cpt.children.push(it);
+                    }
+                  })
+                  this.activeNames = ["dashboard", "history", "control", "status", "video", "report"];
+                  //
+                }
+              })
+        }
+      }
+    },
     getChartStyle(item) {
       return {
         borderRadius: "10px",
@@ -87,45 +143,89 @@ export default {
     }
   }
 }
+
+
 </script>
 
 <style scoped lang="scss">
+.common-container {
+  height: 100%;
+
+  .aside-plugin-collapse {
+    height: 100%;
+    overflow-y: auto;
+
+    .component-item {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      margin-bottom: 30px;
+      //border: 1px dashed #ccc;
+      border-radius: 14px;
+      //background-color: #2d3d86;
+      .component-item-title {
+        position: absolute;
+        color: #fff;
+        text-align: center;
+        width: 100%;
+      }
+    }
+  }
+}
+
 .tab-label-left {
-  position:relative;
+  position: relative;
   display: flex;
   width: 50px;
-  height:60px;
+  height: 60px;
   text-align: center;
+
   i {
     position: absolute;
     top: 10px;
-    width: 50px!important;
-    height: 20px!important;
+    width: 50px !important;
+    height: 20px !important;
   }
+
   p {
     position: absolute;
     top: 20px;
-    width: 50px!important;
-    height: 20px!important;
+    width: 50px !important;
+    height: 20px !important;
   }
 }
+
 .tab-content-right {
   height: 100%;
   margin-left: 65px;
 }
+
 ::v-deep .el-tabs__content {
   height: calc(100% - 50px);
+
   .el-tab-pane {
     height: 100%;
   }
 }
+
 ::v-deep .el-tabs__header.is-left {
-  width: 60px!important;
+  width: 60px !important;
 }
+
 .el-tabs__item.is-left.is-active {
   .tab-label-left {
     background-color: #171d46;
     border-radius: 10px;
   }
 }
+
+.el-cascader {
+  width: 100%;
+}
+
+.component-item-title {
+  color: #fff;
+
+}
+
 </style>

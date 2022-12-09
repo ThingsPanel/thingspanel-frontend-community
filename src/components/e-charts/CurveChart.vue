@@ -18,7 +18,7 @@ export default {
     },
     option: {
       type: [Object],
-      default: () => { return curveOption }
+      default: () => { return {} }
     },
     title: {
       type: [String],
@@ -46,7 +46,6 @@ export default {
     },
     value: {
       handler(newValue) {
-        console.log("曲线图", newValue)
         if (!newValue) return;
         if (typeof newValue == "string") {
           this.setEchartsValue(JSON.parse(newValue));
@@ -57,7 +56,6 @@ export default {
     }
   },
   mounted() {
-    console.log("====curve.option", this.option)
     // 初始化
     this.echartsInit()
     // 自适应大小
@@ -71,11 +69,11 @@ export default {
     //初始化echarts
     echartsInit() {
       this.myChart = this.$echarts.init(this.$refs["chart-main"]);
+      this.optionData = this.initOption(JSON.parse(JSON.stringify(this.option)))
+      this.optionData.series[0].name = this.title;
+      this.myChart.setOption(this.optionData);
       this.$nextTick(() => {
         this.myChart.resize();
-        this.optionData = initOption(this.option)
-        this.optionData.series[0].name = this.title;
-        this.myChart.setOption(this.optionData);
       })
     },
     setEchartsValue(value) {
@@ -89,21 +87,21 @@ export default {
         if (JSON.stringify(item) == "{}") return {};
         return { data: item.data, type: "line" }
       })
-      console.log("setEchartsValue", series)
       let option = { xAxis, series }
 
       this.myChart.setOption(option);
     },
+    initOption(option) {
+      const curveOpt = JSON.parse(JSON.stringify(curveOption));
+      if (!option.series) option.series = curveOpt.series;
+      if (!option.xAxis) option.xAxis = curveOpt.xAxis;
+      if (!option.yAxis) option.yAxis = curveOpt.yAxis;
+      return option;
+    }
 
   }
 }
-const initOption = (option) => {
-  if (!option.series) option.series = curveOption.series;
-  if (!option.xAxis) option.xAxis = curveOption.xAxis;
-  if (!option.yAxis) option.yAxis = curveOption.yAxis;
 
-  return JSON.parse(JSON.stringify(option));
-}
 const curveOption = {
   title: {
     show: false,

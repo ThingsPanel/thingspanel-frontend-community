@@ -118,6 +118,16 @@ html {
     color: #5399fa !important;
 }
 
+::v-deep .el-divider--horizontal {
+    margin-top: 14px!important;
+    margin-bottom: 4px!important;
+}
+
+.el-divider__text {
+    background-color: #202c62!important;
+    color: #ccc!important;
+}
+
 .aside {
     background-color: #161E43 !important;
     box-shadow: 3px 0px 7px #000;

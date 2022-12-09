@@ -2,8 +2,7 @@
   <div class="text-container">
     <input class="input" ref="inputRef" type="text"  v-if="active && editable" v-model="textValue"
            @mousedown="stopPropagation" @mouseup="stopPropagation" @click="stopPropagation"
-           @keydown="stopPropagation"
-    />
+           @keydown="stopPropagation"/>
 
     <span class="text" v-else>{{ textValue }}</span>
   </div>
@@ -28,14 +27,32 @@ export default {
     editable: {
       type: [Boolean],
       default: false
+    },
+    value: {
+      type: [String],
+      default: "文本"
     }
   },
   data() {
     return {
-      textValue: "文本"
+      textValue: ""
     }
   },
+  created() {
+    this.$emit("update:value", this.value);
+    this.textValue = this.value;
+  },
   watch: {
+    value: {
+      handler(newValue) {
+        this.textValue = newValue;
+      }
+    },
+    textValue: {
+      handler(newValue) {
+        this.$emit("update:value", newValue)
+      }
+    },
     editable: {
       handler(newValue) {
         this.$nextTick(() => {
