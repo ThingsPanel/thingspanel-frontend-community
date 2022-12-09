@@ -163,12 +163,9 @@
 
 </style>
 <script>
-import MixedWidget2 from "@/view/content/widgets/mixed/Widget2.vue";
 import MixedWidget3 from "@/view/content/widgets/mixed/Widget3.vue";
 import MixedWidget4 from "@/view/content/widgets/mixed/Widget4.vue";
-import ListWidget3 from "@/view/content/widgets/list/Widget3.vue";
 import ListWidget10 from "@/view/content/widgets/list/Widget10.vue";
-import ListWidget9 from "@/view/content/widgets/list/Widget9.vue";
 
 import { REFRESH } from "@/core/services/store/auth.module";
 import AUTH from "@/core/services/store/auth.module";
@@ -181,10 +178,7 @@ export default {
     guidlist: [],
   }),
   components: {
-    MixedWidget2,
     ListWidget10,
-    ListWidget9,
-    ListWidget3,
     MixedWidget3,
     MixedWidget4,
   },
@@ -207,6 +201,7 @@ export default {
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
         } else {
+          //
         }
       });
     },
@@ -222,6 +217,7 @@ export default {
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
         } else {
+          //
         }
       });
     },
