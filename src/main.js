@@ -40,7 +40,6 @@ import * as echarts from 'echarts';
 Vue.prototype.$echarts = echarts
 
 import ElementUI from "./core/plugins/element-ui";
-import tpIot from "tp-iot"
 
 // mock data
 import '@/mock';
@@ -51,8 +50,10 @@ Vue.component('date-picker', VuePersianDatetimePicker);
 Vue.config.productionTip = false;
 
 Vue.use(ElementUI);
-Vue.use(tpIot);
 
+// import tpIot from "tp-iot"
+import tpIot from "/packages/device_plugin"
+Vue.use(tpIot)
 
 
 // 组合式api

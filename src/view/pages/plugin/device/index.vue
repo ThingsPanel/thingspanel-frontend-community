@@ -26,7 +26,8 @@
         </el-col>
       </el-row>
     </div>
-    <tp-editor class="tp-dark-editor" :visible.sync="showEditorDialog" :json="pluginJsonData" :plugin-category="pluginCategory" @publish="publish"></tp-editor>
+<!--    <tp-editor class="tp-dark-editor" :visible.sync="showEditorDialog" :json="pluginJsonData" :plugin-category="pluginCategory" @publish="publish"></tp-editor>-->
+    <DevicePluginEditor class="tp-dark-editor" :visible.sync="showEditorDialog" :json="pluginJsonData" :plugin-category="pluginCategory" @publish="publish"></DevicePluginEditor>
 
     <!--    导入JSON-->
     <el-dialog class="el-dark-dialog el-table-transparent" title="导入JSON" :visible.sync="importDialogVisible" width="30%">
@@ -52,6 +53,8 @@
 </template>
 
 <script>
+// import DevicePluginEditor from "/packages/device_plugin/editor"
+
 import PluginAPI from "@/api/plugin.js"
 import {message_success} from "@/utils/helpers";
 export default {

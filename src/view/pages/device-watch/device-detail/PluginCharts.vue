@@ -18,11 +18,14 @@
                  @resized="handleResized">
 
         <e-charts class="component-item" :ref="'component_' + option.i" :show-header="true"
-                  v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && option.type != 'status'"
+                  v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && !option.type"
                   :option="option" :device="device"></e-charts>
 
         <status class="component-item" :ref="'component_' + option.i" :show-header="true"
                 v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>
+
+        <device-status class="component-item" :ref="'component_' + option.i" :show-header="true"
+                v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'" :option="option" :device="device"></device-status>
 
         <control class="component-item" :ref="'component_' + option.i" :show-header="true"
                  v-if="option.controlType == 'control'" :option="option" :device="device"></control>
@@ -48,12 +51,13 @@ import { GridLayout, GridItem } from "vue-grid-layout";
 import ECharts from "./components/Echarts"
 import Control from "./components/Control";
 import Status from "./components/Status"
+import DeviceStatus from "./components/DeviceStatus"
 import {device_info} from "@/api/device";
 import {device_update} from "../../../../api/device";
 
 export default {
   name: "PluginCharts",
-  components: { GridLayout, GridItem, ECharts, Control, Status },
+  components: { GridLayout, GridItem, ECharts, Control, Status, DeviceStatus },
   props: {
     options: {
       type: [Array],

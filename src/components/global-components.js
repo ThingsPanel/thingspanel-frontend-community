@@ -8,7 +8,11 @@ import {
   Cascader,
   CascaderPanel,
   Link,
-  Popover
+  Popover,
+  Card,
+  Steps,
+  Step,
+  RadioButton
 } from 'element-ui';
 
 // custom theme
@@ -35,6 +39,10 @@ GlobalComponents.install = (Vue) => {
   Vue.use(CascaderPanel);
   Vue.use(Link);
   Vue.use(Popover);
+  Vue.use(Card);
+  Vue.use(Steps);
+  Vue.use(Step);
+  Vue.use(RadioButton);
 
   Vue.use(VueClipboard)
   Vue.use(NumberChart);

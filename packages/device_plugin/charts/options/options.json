@@ -1,0 +1,475 @@
+{
+  "dashboard": [
+    {
+      "tooltip": {
+        "formatter": "{a} <br/>{b} : {c}%"
+      },
+      "series": [
+            {
+              "name": "Pressure",
+              "type": "gauge",
+              "startAngle": 200,
+              "endAngle": -20,
+              "offsetCenter": [0, "-15%"],
+              "min": 0,
+              "max": 60,
+              "axisTick": {
+                "show":true,
+                "splitNumber": 2,
+                "length": 2,
+                "lineStyle": {
+                  "color": "#ddd"
+                }
+              },
+              "splitLine": {
+                "show": false,
+                "length": 10,
+                "lineStyle": {
+                  "color": "auto"
+                }
+              },
+              "axisLabel": {
+                "show":true,
+                "distance": 12,
+                "textStyle": {
+                  "color": "#fff",
+                  "fontSize": 12
+                }
+              },
+              "axisLine": {
+                "lineStyle": {
+                  "width": 6,
+                  "color": [
+                    [0.3, "#67e0e3"],
+                    [0.7, "#37a2da"],
+                    [1, "#fd666d"]
+                  ]
+                }
+              },
+              "progress": {
+                "show": true,
+                "width": 8,
+                "itemStyle": {
+                  "color": "#63e33d"
+                }
+              },
+              "pointer": {
+                "show":true,
+                "width": 3,
+                "itemStyle": {
+                  "color": "#63e33d"
+                }
+              },
+              "detail": {
+                "formatter": "{value}°C",
+                "fontSize": 16,
+                "color": "#63e33d"
+              },
+              "data": [
+                {
+                  "value": 0,
+                  "name": ""
+                }
+              ]
+            }
+          ],
+      "simulator": {
+        "funcArr": ["return +(Math.random() * 60).toFixed(2);"],
+        "interval": 5000
+      }
+    },
+    {
+      "series": [
+        {
+          "type": "gauge",
+          "progress": {
+            "show": true,
+            "width": 18
+          },
+          "axisLine": {
+            "lineStyle": {
+              "width": 2
+            }
+          },
+          "axisTick": {
+            "show": false
+          },
+          "splitLine": {
+            "show": false,
+            "length": 5,
+            "lineStyle": {
+              "width": 2,
+              "color": "#999"
+            }
+          },
+          "axisLabel": {
+            "distance": 10,
+            "color": "#fff",
+            "fontSize": 14
+          },
+          "anchor": {
+            "show": true,
+            "showAbove": true,
+            "size": 25,
+            "itemStyle": {
+              "borderWidth": 10
+            }
+          },
+          "title": {
+            "show": false
+          },
+          "detail": {
+            "fontSize": 20,
+            "offsetCenter": [0, "70%"],
+            "color": "#fff"
+          },
+          "data": [
+            {
+              "value": 0
+            }
+          ]
+        }
+      ],
+      "simulator": {
+        "funcArr": ["return +(Math.random() * 60).toFixed(2);"],
+        "interval": 5000
+      }
+    },
+    {
+      "series": [
+        {
+          "type": "gauge",
+          "startAngle": 200,
+          "endAngle": -20,
+          "min": 0,
+          "max": 60,
+
+          "itemStyle": {
+            "color": "#FFAB91"
+          },
+          "progress": {
+            "show": true,
+            "width": 30
+          },
+          "pointer": {
+            "show": false
+          },
+          "splitLine": {
+            "show": false
+          },
+          "axisTick": {
+            "show": false
+          },
+          "axisLabel": {
+            "show": false
+          },
+          "axisLine": {
+            "lineStyle": {
+              "width": 30
+            }
+          },
+          "detail": {
+            "valueAnimation": true,
+            "width": "60%",
+            "lineHeight": 40,
+            "borderRadius": 8,
+            "offsetCenter": [0, "-15%"],
+            "fontWeight": "bolder",
+            "formatter": "{value} °C",
+            "color": "auto"
+          },
+          "data": [
+            {
+              "value": 0
+            }
+          ]
+        }
+      ],
+      "simulator": {
+        "funcArr": ["return +(Math.random() * 60).toFixed(2);"],
+        "interval": 5000
+      }
+    },
+    {
+      "tooltip": {
+        "formatter": "{a} <br/>{b} : {c}%"
+      },
+      "series": [
+        {
+          "name": "Pressure",
+          "type": "gauge",
+          "center": [
+            "30%", "50%"
+          ],
+          "radius": "60%",
+          "startAngle": 320,
+          "endAngle": 42,
+          "itemStyle": {
+            "color": "#409EFF"
+          },
+          "progress": {
+            "show": true,
+            "itemStyle": {
+              "color": "#409EFF"
+            }
+          },
+          "axisTick": {
+            "show": false
+          },
+          "splitLine": {
+            "show": false
+          },
+          "axisLabel": {
+            "distance": 0,
+            "color": "#409EFF",
+            "fontSize": 10
+          },
+          "detail": {
+            "fontSize": 20,
+            "formatter": "{value}",
+            "color": "#409EFF"
+          },
+          "data": [
+            {
+              "value": 10,
+              "name": ""
+            }
+          ]
+        },
+        {
+          "name": "Pressure",
+          "type": "gauge",
+          "center": [
+            "70%", "50%"
+          ],
+          "radius": "60%",
+          "startAngle": 140,
+          "endAngle": -138,
+          "itemStyle": {
+            "color": "#49B401"
+          },
+          "progress": {
+            "show": true,
+            "itemStyle": {
+              "color": "#49B401"
+            }
+          },
+          "axisTick": {
+            "show": false
+          },
+          "splitLine": {
+            "show": false
+          },
+          "axisLabel": {
+            "distance": 0,
+            "color": "#49B401",
+            "fontSize": 10
+          },
+          "detail": {
+            "fontSize": 20,
+            "formatter": "{value}",
+            "color": "#49B401"
+          },
+          "data": [
+            {
+              "value": 10,
+              "name": ""
+            }
+          ]
+        }
+      ],
+      "simulator": {
+        "funcArr": ["return +(Math.random() * 60).toFixed(2);", "return +(Math.random() * 60).toFixed(2);"],
+        "interval": 5000
+      }
+    },
+    {
+      "series": [
+        {
+          "type": "gauge",
+          "startAngle": 200,
+          "endAngle": -20,
+          "title": {
+            "color": "#FFFFFF"
+          },
+          "itemStyle": {
+            "color": "#FFFFFF"
+          },
+          "progress": {
+            "show": false,
+            "width": 0
+          },
+          "pointer": {
+            "show": false
+          },
+          "splitLine": {
+            "show": false
+          },
+          "axisTick": {
+            "show": false
+          },
+          "axisLabel": {
+            "show": false
+          },
+          "axisLine": {
+            "show": false
+          },
+          "detail": {
+            "show": true,
+            "fontSize": 50,
+            "offsetCenter": [0, "-15%"],
+            "formatter": "{value}",
+            "color": "#FFFFFF"
+          },
+          "data": [
+            {
+              "value": 0,
+              "name": "温度"
+            }
+          ]
+        }
+      ],
+      "simulator": {
+        "funcArr": ["return +(Math.random() * 60).toFixed(2);"],
+        "interval": 5000
+      }
+    },
+    {
+      "type": "status",
+      "series": {
+        "title": "液位",
+        "fontSize": 30,
+        "value": 0,
+        "status": [
+          {
+            "comparison": "==",
+            "value": 0,
+            "label": "缺液",
+            "color": "#",
+            "fontSize": 20,
+            "icon": ""
+          },
+          {
+            "comparison": "==",
+            "value": 1,
+            "label": "有液",
+            "fontSize": 20
+          }
+        ]
+      }
+    },
+    {
+      "type": "deviceStatus",
+      "series": {
+
+      }
+    }
+
+  ],
+  "history": [
+    {
+      "xAxis": {
+        "type": "category",
+        "axisLine": {
+          "lineStyle": {
+            "color": "#fff"
+          }
+        },
+        "data": [
+          "周一", "周二", "周三", "周四", "周五", "周六", "周日"
+        ]
+      },
+      "yAxis": {
+        "type": "value",
+        "axisLine": {
+          "lineStyle": {
+            "color": "#fff"
+          }
+        }
+      },
+      "series": [
+        {
+          "data": [150, 230, 224, 218, 135, 147, 260],
+          "type": "line"
+        }
+      ]
+    }
+  ],
+  "control": [
+    {
+      "componentName": "单控开关",
+      "series": [
+        {
+          "type": "switch",
+          "value": false,
+          "id": 1
+        }
+      ],
+      "disabled": false
+    },
+    {
+      "componentName": "双控开关",
+      "series": [
+        {
+          "type": "switch",
+          "value": false,
+          "id": 1
+        },
+        {
+          "type": "switch",
+          "value": false,
+          "id": 2
+        }
+      ],
+      "disabled": false
+    },
+    {
+      "componentName": "三控开关",
+      "series": [
+        {
+          "type": "switch",
+          "value": false,
+          "id": 1
+        },
+        {
+          "type": "switch",
+          "value": false,
+          "id": 2
+        },
+        {
+          "type": "switch",
+          "value": false,
+          "id": 3
+        }
+      ],
+      "disabled": true
+    },
+    {
+      "componentName": "滑动开关",
+      "series": [
+        {
+          "type": "slider",
+          "value": 0,
+          "id": 4,
+          "mapping": {
+            "max": 100,
+            "step": 1
+          }
+        }
+      ],
+      "disabled": false
+    },
+    {
+      "componentName": "数值开关",
+      "type": "setValue",
+      "series": [
+        {
+          "type": "setValue",
+          "id": 5,
+          "value": 0
+        }
+      ],
+      "disabled": false
+    }
+  ]
+}

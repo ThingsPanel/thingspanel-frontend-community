@@ -2,6 +2,7 @@
   <el-dialog
       :title="current_item.id ? $t('AUTOMATION.CONTROL_STRATEGY.EDIT_CONTROL_STRATEGY') : $t('AUTOMATION.CONTROL_STRATEGY.ADD_CONTROL_STRATEGY')"
       class="el-dark-dialog"
+      :close-on-click-modal="false"
       :visible.sync="showDialog"
       width="60%"
       height="60%"
@@ -14,13 +15,13 @@
       hide-required-asterisk>
     <el-row :gutter="20">
 
-      <!--    策略名称-->
+      <!-- 策略名称-->
       <el-col :span="8">
         <el-form-item :label="$t('COMMON.STRATRGYLISTNAME')" prop="name" :rules="rules.name">
           <el-input v-model="formData.name" :placeholder="$t('COMMON.PLACEHOLDER5')"></el-input>
         </el-form-item>
       </el-col>
-      <!--策略描述-->
+      <!-- 策略描述 -->
       <el-col :span="8">
         <el-form-item :label="$t('COMMON.STRATRGYLISTDES')" prop="describe" :rules="rules.describe">
           <el-input v-model="formData.describe" :placeholder="$t('COMMON.PLACEHOLDER6')"></el-input>
@@ -100,7 +101,7 @@
               </el-col>
               <el-col :span="3">
                 <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-                <el-popconfirm :title=" $t('COMMON.TITLE4') " @confirm="removeRulesLine(rules_item)" v-else>
+                <el-popconfirm :title="$t('COMMON.TITLE4') " @confirm="removeRulesLine(rules_item)" v-else>
                   <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE') }}</el-button>
                 </el-popconfirm>
               </el-col>
@@ -317,7 +318,7 @@ export default defineComponent({
     let default_rules_type_2 = {interval:0, time: "", time_interval_a: 60, unit: "second", rule_id: ""}
     let default_apply = {asset_id: "", device_id: "", plugin_id: "",  field: "",  value: ""}
 
-    let formData = reactive({
+    const initialFormData = {
       id: "",
       business_id: props.business_id,
       name: "",
@@ -334,7 +335,8 @@ export default defineComponent({
           json_parse_stringify(default_apply)
         ]
       }
-    })
+    };
+    let formData = reactive(initialFormData)
 
     let error_message = ref("")
 
@@ -351,6 +353,10 @@ export default defineComponent({
             item.time_interval_a = item.time_interval;
           }
         })
+      }
+      if (item_attrs == "{}") {
+        formData.value = initialFormData;
+        return;
       }
       for (const key in formData) {
         // 有则逐个赋值
