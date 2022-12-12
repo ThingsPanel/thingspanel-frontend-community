@@ -36,7 +36,7 @@
       <b-btn v-show="isInstalled" variant="primary" size="sm" class="text-center" style="margin-left: 20px" @click="handleShowExport" >
         {{ $t("COMMON.EXPORT") }}
       </b-btn>
-      <b-btn v-show="isInstalled" variant="primary" size="sm" class="text-center" style="margin-left: 20px" @click="handleUninstall" >
+      <b-btn v-show="isInstalled" :disabled="!hasAuth('plugin:device:del')" variant="primary" size="sm" class="text-center" style="margin-left: 20px" @click="handleUninstall" >
         {{ $t("COMMON.UNINSTALL") }}
       </b-btn>
     </b-card-text>

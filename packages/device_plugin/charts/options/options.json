@@ -398,6 +398,7 @@
   "control": [
     {
       "componentName": "单控开关",
+      "type": "switch",
       "series": [
         {
           "type": "switch",
@@ -409,6 +410,7 @@
     },
     {
       "componentName": "双控开关",
+      "type": "switch",
       "series": [
         {
           "type": "switch",
@@ -425,6 +427,7 @@
     },
     {
       "componentName": "三控开关",
+      "type": "switch",
       "series": [
         {
           "type": "switch",
@@ -446,6 +449,7 @@
     },
     {
       "componentName": "滑动开关",
+      "type": "slider",
       "series": [
         {
           "type": "slider",
@@ -460,7 +464,7 @@
       "disabled": false
     },
     {
-      "componentName": "数值开关",
+      "componentName": "数值设置",
       "type": "setValue",
       "series": [
         {

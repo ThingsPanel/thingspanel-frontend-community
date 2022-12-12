@@ -32,6 +32,10 @@ export default {
     CommonSwitch, SlideSwitch, SetValue
   },
   props: {
+    type: {
+      type: [String],
+      default: "switch"
+    },
     showName: {
       type: [Boolean],
       default: false,

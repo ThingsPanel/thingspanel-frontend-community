@@ -7,7 +7,7 @@
       </div>
     </div>
 
-    <common-device-status :option="optionData"></common-device-status>
+    <common-device-status :option="optionData" :value="statusText" :push-time="pushTime"></common-device-status>
   </div>
 
 </template>
@@ -35,22 +35,19 @@ export default {
     return {
       optionData: {},
       timer: null,
-      flushTime: 5
+      flushTime: 5,
+      statusText: "离线",
+      pushTime: ""
     }
   },
   watch: {
 
   },
   mounted() {
-    console.log("mounted", this.option);
-    console.log("device", this.device);
     this.optionData = JSON.parse(JSON.stringify(this.option));
-    this.flushTime = this.optionData.thresholdTime;
-    console.log("====deviceStatus.optionData", this.optionData)
     this.updateOption();
   },
   beforeDestroy() {
-    console.log("beforeDestroy")
     clearTimer();
   },
   methods: {
@@ -71,8 +68,16 @@ export default {
           .then(({data}) => {
             if (data.code == 200 && data.data) {
               let lastTime = data.data[0]["systime"];
-              console.log(lastTime)
-              
+              let now = new Date();
+              let diff = new Date(now) - new Date(lastTime);
+              if (diff > (this.optionData.thresholdTime * 1000)) {
+                this.statusText = "离线"
+              } else {
+                this.statusText = "在线"
+              }
+              this.pushTime = lastTime;
+              console.log(diff)
+
             }
           })
     },

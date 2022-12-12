@@ -86,7 +86,7 @@ export default {
           values[item.mapping.value] = item.value ?
               typeConvert(item.mapping.on, item.mapping.attr.dataType) :
               typeConvert(item.mapping.off, item.mapping.attr.dataType);
-        } else if (item.type == "slider") {
+        } else if (item.type == "slider" || item.type == "setValue") {
           values[item.mapping.value] = Number(item.value);
         }
       })

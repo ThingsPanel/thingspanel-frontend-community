@@ -39,7 +39,7 @@ export default {
   },
   methods: {
     handleSubmit() {
-      this.$emit("submit", this.inputValue);
+      this.$emit("change", this.inputValue);
     }
   }
 }
