@@ -168,6 +168,7 @@ export default {
       } else if (this.step == 2) {
         // 图表
         this.jsonData.chart = this.$refs.chart.mappedCharts;
+        console.log("====editor.jsonData", this.jsonData)
         if (this.jsonData.chart.length == 0) {
           return;
         }

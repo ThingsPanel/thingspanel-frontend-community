@@ -39,7 +39,7 @@
               <div v-else>
                 <el-button type="indigo" size="mini" @click="showVisual(scope.row)">查看</el-button>
                 <el-button type="indigo" size="mini" @click="editVisual(scope.row)">编辑</el-button>
-                <el-popconfirm style="margin-left: 10px" :title="$t('COMMON.TEXT44')" @confirm="delVisual(scope.row)">
+                <el-popconfirm :disabled="!hasAuth('visual:del')" style="margin-left: 10px" :title="$t('COMMON.TEXT44')" @confirm="delVisual(scope.row)">
                   <el-button  slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>
                 </el-popconfirm>
               </div>
@@ -89,7 +89,8 @@ export default {
   },
   methods: {
     handleCreate() {
-      if (this.tableData[0].status) return;
+      console.log("====handleCreate", this.tableData)
+      if (this.tableData[0] && this.tableData[0].status) return;
       this.tableData.unshift({
         dashboard_name: "",
         status: "creating",
@@ -143,14 +144,28 @@ export default {
         this.loading = false
       })
     },
+    /**
+     * 查看可视化
+     * @param item
+     */
     showVisual(item) {
-
+      let query = { id: item.id };
+      const{ href } = this.$router.resolve({ name:"VisualDisplay", query });
+      window.open(href,'_blank');
     },
+    /**
+     * 编辑可视化
+     * @param item
+     */
     editVisual(item) {
       let query = { id: item.id };
       const{ href } = this.$router.resolve({ name:"VisualEditor", query });
       window.open(href,'_blank');
     },
+    /**
+     * 删除可视化
+     * @param item
+     */
     delVisual(item) {
       VisualAPI.del({ id: item.id })
         .then(({ data }) => {

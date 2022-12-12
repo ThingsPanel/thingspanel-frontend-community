@@ -26,7 +26,6 @@
 import { turnSwitch } from "@/api/device"
 import { currentValue } from "@/api/device";
 import {message_success} from "../../../../../utils/helpers";
-import { addTimer, clearTimer } from "@/utils/tool.js"
 
 export default {
   name: "Control",
@@ -51,22 +50,15 @@ export default {
       dialogVisible: false,
       controlType: "",
       optionData: {},
-      timer: "",
-      flushTime: 5,
-      mapping: []
+      mapping: [],
     }
   },
   watch: {
     option: {
       handler(newValue) {
         if (JSON.stringify(newValue) == "{}") return;
-        this.updateControl();
       }
     }
-  },
-  beforeDestroy() {
-    console.log("beforeDestroy")
-    clearTimer();
   },
   mounted() {
     this.optionData = JSON.parse(JSON.stringify(this.option));
@@ -74,7 +66,6 @@ export default {
     if (this.option.series) {
       this.mapping = this.option.series.map(item => {return item.mapping.value})
     }
-    this.updateControl();
   },
   methods: {
     handleChange(v) {
@@ -100,15 +91,21 @@ export default {
           }
         })
     },
-    updateControl() {
-      if (this.timer) {
-        clearInterval(this.timer);
-      }
-      this.getSwitchValue();
-      this.timer = setInterval(() => {
-        this.getSwitchValue();
-      }, this.flushTime * 1000);
-      addTimer(this.timer);
+    updateOption(values) {
+      console.log("control.values", values)
+      // let optionTmp = JSON.parse(JSON.stringify(this.optionData));
+      this.optionData.series.forEach(item => {
+        let map = item.mapping;
+        if (item.type == "switch") {
+          if (values[map.value] == map.on) {
+            item.value = true;
+          } else {
+            item.value = false;
+          }
+        } else if (item.type == "slider") {
+          item.value = values[map.value];
+        }
+      });
 
     },
     getSwitchValue() {
@@ -118,6 +115,7 @@ export default {
           .then(({data}) => {
             if (data.code == 200 && data.data) {
               let dataObj = data.data[0];
+              console.log("====control.dataObj", dataObj)
               optionTmp.series.forEach(item => {
                 let map = item.mapping;
                 if (item.type == "switch") {
@@ -130,9 +128,18 @@ export default {
                   item.value = dataObj[map.value];
                 }
               })
-
-              this.optionData = JSON.parse(JSON.stringify(optionTmp))
+            } else {
+              optionTmp.series.forEach(item => {
+                if (item.type == "switch") {
+                    item.value = false;
+                } else if (item.type == "slider") {
+                  item.value = 0;
+                }
+              })
             }
+
+            this.optionData = JSON.parse(JSON.stringify(optionTmp))
+
           })
     },
     sizeChange() {

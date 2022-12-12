@@ -158,8 +158,7 @@ export default {
     .component-item {
       position: relative;
       width: 180px;
-      height: 180px;
-      margin-bottom: 30px;
+      height: 100%;
       //border: 1px dashed #ccc;
       border-radius: 14px;
       //background-color: #2d3d86;

@@ -12,7 +12,7 @@
       </div>
 
       <div class="display-canvas">
-        <PluginCharts :options="pluginOptions" :device="device"></PluginCharts>
+        <PluginCharts :options="pluginOptions" :tsl="pluginTsl" :device="device"></PluginCharts>
       </div>
     </div>
 
@@ -105,7 +105,6 @@ export default defineComponent({
             item.leaf = true;
             return item;
           })
-          console.log("level=2", arr)
           return resolve(arr);
         }
       }
@@ -113,6 +112,7 @@ export default defineComponent({
     }
 
     let pluginOptions = ref([]);
+    let pluginTsl = ref([]);
     let canvasStyle = ref({});
     let device = ref({})
 
@@ -129,6 +129,7 @@ export default defineComponent({
                 if (data.code == 200 && data.data && data.data.data && data.data.data.length > 0) {
                   let plugin = JSON.parse(data.data.data[0].chart_data);
                   pluginOptions.value = JSON.parse(JSON.stringify(plugin.chart));
+                  pluginTsl.value = JSON.parse(JSON.stringify(plugin.tsl.properties));
                 } else {
                   pluginOptions.value = [];
                 }
@@ -154,7 +155,8 @@ export default defineComponent({
       nodeClick,
       canvasStyle,
       device,
-      pluginOptions
+      pluginOptions,
+      pluginTsl
     }
   }
 })

@@ -51,7 +51,7 @@
         <el-table-column align="center" :label="$t('COMMON.OPERATION')" width="100">
           <template v-slot="scope">
             <div class="text-center">
-              <el-popconfirm title="确定要删除吗？" @confirm="handleDelete(scope.row)">
+              <el-popconfirm :disabled="!hasAuth('plugin:protocol:del')" title="确定要删除吗？" @confirm="handleDelete(scope.row)">
                 <el-button slot="reference" size="mini" type="danger">{{ $t('COMMON.DELETE') }}</el-button>
               </el-popconfirm>
             </div>

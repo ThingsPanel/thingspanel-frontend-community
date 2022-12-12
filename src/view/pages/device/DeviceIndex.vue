@@ -147,7 +147,7 @@
           <el-button style="margin-right: 10px"  type="primary" size="mini"
                      @click="deviceConfig(scope.row)">设&nbsp;备&nbsp;配&nbsp;置</el-button>
 
-           <el-popconfirm :title="$t('COMMON.DELETETHISITEM')" @confirm="handleDelete(scope.row)">
+           <el-popconfirm :disabled="!hasAuth('device:del')" :title="$t('COMMON.DELETETHISITEM')" @confirm="handleDelete(scope.row)">
               <el-button slot="reference" type="danger" size="mini">{{ $t("COMMON.DELETE")}}</el-button>
            </el-popconfirm>
         </div>

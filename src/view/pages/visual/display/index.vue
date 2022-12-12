@@ -1,33 +1,21 @@
 <template>
   <div class="container-fluid">
-    <el-row>
-      <el-col class="h-100">
-        <div class="header">
-          <el-button class="el-button--indigo"  @click="back">返回</el-button>
-        </div>
-      </el-col>
-    </el-row>
-    <el-row :gutter="20">
-      <el-col :span="24" >
-        <div>
 
-        </div>
-      </el-col>
-    </el-row>
   </div>
 </template>
 
 <script>
+import VisualAPI from "@/api/visualization.js"
 export default {
   name: "VisualDisplay",
   mounted() {
-    let businessId = this.$route.query.business_id;
-    console.log("businessId", businessId)
+    let id = this.$route.query.id;
+    VisualAPI.list({ id })
+
+    console.log("====id", id)
   },
   methods: {
-    back() {
-      this.$router.push({ name: "ChartList" })
-    }
+
   }
 }
 </script>

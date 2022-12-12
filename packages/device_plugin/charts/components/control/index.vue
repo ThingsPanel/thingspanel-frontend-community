@@ -3,16 +3,16 @@
   <div class="switch-container" @click="clickSwitch">
     <div class="switch-component-title" v-if="showName">{{ optionData.componentName}}</div>
     <div class="switch-list">
-      <div class="switch-item" v-for="item in optionData.series" :key="item.id">
+      <div class="switch-item" v-for="item in optionData.series" :key="item.type + item.id">
 
-        <CommonSwitch v-if="item.type=='switch'" :disabled="optionData.disabled" :value="item.value"
+        <CommonSwitch :key="item.type + item.id" v-if="item.type=='switch'" :disabled="optionData.disabled" :value="item.value"
                       @change="v => handleChange(item, v)"></CommonSwitch>
 
-        <SlideSwitch v-if="item.type=='slider'" :disabled="optionData.disabled"
+        <SlideSwitch :key="item.type + item.id" v-if="item.type=='slider'" :disabled="optionData.disabled"
                      :value.sync="item.value" :max="item.mapping.max" :step="item.mapping.step"
                      @change="v => handleChange(item, v)"></SlideSwitch>
 
-        <SetValue v-if="item.type=='setValue'" :disabled="optionData.disabled" :value.sync="item.value"
+        <SetValue :key="item.type + item.id" v-if="item.type=='setValue'" :disabled="optionData.disabled" :value.sync="item.value"
                    @change="v => handleChange(item, v)"
                    ></SetValue>
 

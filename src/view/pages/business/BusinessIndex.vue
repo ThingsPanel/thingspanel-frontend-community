@@ -45,9 +45,9 @@
 <!--            <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">{{ $t('COMMON.DEVICE_CHART') }}</el-button>-->
             <el-button type="indigo" size="mini" v-if="hasAuth('business:device')" @click="showDevice(scope.row)">{{ $t('COMMON.DEVICE') }}</el-button>
             <el-button type="indigo" size="mini" class="mr-3"
-                       v-if="hasAuth('business:edit')" @click="handleEdit(scope.row)">编辑项目名</el-button>
+                       :disabled="!hasAuth('business:edit')" @click="handleEdit(scope.row)">编辑项目名</el-button>
             <el-popconfirm :title="$t('COMMON.TEXT44')" @confirm="handleDelete(scope.row)">
-              <el-button slot="reference" type="danger" size="mini" v-if="hasAuth('business:del')">{{ $t('COMMON.DELETE') }}</el-button>
+              <el-button :disabled="!hasAuth('business:del')" slot="reference" type="danger" size="mini" >{{ $t('COMMON.DELETE') }}</el-button>
             </el-popconfirm>
           </template>
         </div>

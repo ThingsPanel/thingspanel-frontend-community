@@ -39,34 +39,33 @@ export default {
     }
   },
   watch: {
-
   },
   mounted() {
-    console.log("mounted", this.option);
-    console.log("device", this.device);
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.updateOption();
   },
-  beforeDestroy() {
-    console.log("beforeDestroy")
-    clearTimer();
+  beforeUpdate() {
+    let timer = this.$store.getters.getTimers(this.option.id);
+    // 删除计时器
+    clearInterval(timer);
+    // 状态中删除计时器
+    this.$store.commit("delTimer", this.option.id);
+    this.updateOption();
   },
   methods: {
     updateOption() {
-      if (this.timer) {
-        clearInterval(this.timer);
-      }
+      console.log("====updateOption.Status")
+
       let deviceId = this.device.device;
       let attrs = this.option.mapping;
       this.getValue(deviceId, attrs);
       this.timer = setInterval(() => {
         this.getValue(deviceId, attrs);
       }, this.flushTime * 1000);
-      addTimer(this.timer);
+      // 计时器存入状态
+      this.$store.commit("addTimer", { id: this.option.id, timer: this.timer});
     },
     getValue(deviceId, attrs) {
-      console.log(deviceId)
-      console.log(attrs)
       currentValue({entity_id: deviceId, attribute: attrs})
           .then(({data}) => {
             if (data.code == 200 && data.data) {

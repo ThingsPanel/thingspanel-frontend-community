@@ -12,7 +12,8 @@ import {
     Step,
     RadioButton,
     RadioGroup,
-    Slider
+    Slider,
+    Transfer
 } from 'element-ui';
 
 const install = Vue => {
@@ -22,6 +23,7 @@ const install = Vue => {
     Vue.use(RadioButton);
     Vue.use(RadioGroup);
     Vue.use(Slider);
+    Vue.use(Transfer);
     Vue.component(DevicePluginEditor.name, DevicePluginEditor);
     Vue.component(TslEditor.name, TslEditor);
     Vue.component(CommonControl.name, CommonControl);

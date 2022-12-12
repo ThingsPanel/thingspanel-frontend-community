@@ -214,8 +214,8 @@ export default {
       .component-item {
         float:left;
         position: relative;
-        width: 200px;
-        height: 200px;
+        //width: 200px;
+        //height: 200px;
         margin: 2px;
         //border: 1px dashed #ccc;
         border-radius: 14px;

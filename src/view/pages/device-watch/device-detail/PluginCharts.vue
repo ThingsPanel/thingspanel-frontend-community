@@ -17,17 +17,17 @@
                  @moved="handleResized"
                  @resized="handleResized">
 
-        <e-charts class="component-item" :ref="'component_' + option.i" :show-header="true"
+        <e-charts class="component-item" :ref="'component_' + option.id" :key="option['id']" :show-header="true"
                   v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && !option.type"
-                  :option="option" :device="device"></e-charts>
+                  :option="option" :device="device" :value="option.value"></e-charts>
 
-        <status class="component-item" :ref="'component_' + option.i" :show-header="true"
+        <status class="component-item" :ref="'component_' + option.id" :key="option['id']" :show-header="true"
                 v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>
 
-        <device-status class="component-item" :ref="'component_' + option.i" :show-header="true"
+        <device-status class="component-item" :ref="'component_' + option.id" :key="option['id']" :show-header="true"
                 v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'" :option="option" :device="device"></device-status>
 
-        <control class="component-item" :ref="'component_' + option.i" :show-header="true"
+        <control class="component-item" :ref="'component_' + option.id" :key="option['id']" :show-header="true"
                  v-if="option.controlType == 'control'" :option="option" :device="device"></control>
 
       </grid-item>
@@ -53,13 +53,18 @@ import Control from "./components/Control";
 import Status from "./components/Status"
 import DeviceStatus from "./components/DeviceStatus"
 import {device_info} from "@/api/device";
-import {device_update} from "../../../../api/device";
+import {device_update, historyValue} from "../../../../api/device";
+import {currentValue} from "@/api/device";
 
 export default {
   name: "PluginCharts",
   components: { GridLayout, GridItem, ECharts, Control, Status, DeviceStatus },
   props: {
     options: {
+      type: [Array],
+      default: () => []
+    },
+    tsl: {
       type: [Array],
       default: () => []
     },
@@ -79,7 +84,11 @@ export default {
         NONE: 2
       },
       // 插件状态
-      status: 0
+      status: 0,
+      // 5秒刷新一次组件的值
+      flushTime: 5,
+      // 计时器
+      timer: null
     }
   },
   watch: {
@@ -89,9 +98,15 @@ export default {
           let options = JSON.parse(JSON.stringify(newValue));
           this.getLayout(options, 4)
         } else {
+          this.optionsData = [];
           this.status = this.pluginStatus.NONE;
         }
       }
+    }
+  },
+  beforeDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer);
     }
   },
   methods: {
@@ -129,17 +144,7 @@ export default {
               // 如果读取到的布局为空，则显示默认布局
               this.optionsData = this.getDefaultLayout(options, 4)
             }
-
-
             this.status = this.pluginStatus.LOADED;
-            // this.$nextTick(() => {
-            //   this.optionsData.forEach(item => {
-            //     let component = this.$refs["component_" + item.i];
-            //     if (component) {
-            //       component[0].sizeChange();
-            //     }
-            //   })
-            // })
             this.getComponentMaps(this.optionsData);
           }
         })
@@ -193,7 +198,10 @@ export default {
     handleLayoutUpdatedEvent(newLayout) {
       this.$nextTick(() => {
         newLayout.forEach(item => {
-          this.$refs["component_" + item.i][0].sizeChange();
+          let ref = this.$refs["component_" + item.i];
+          if (ref && ref[0]) {
+            ref[0].sizeChange();
+          }
         })
       })
       this.setLayout();
@@ -204,12 +212,105 @@ export default {
      * 3.给组件赋值
      */
     getComponentMaps(options) {
-      options.forEach(item => {
-        console.log("====getComponentMaps", item)
-        // if (item.controlType == "dashboard") {
-        //
-        // } else if (item.controlType == "dashboard")
+      let componentMaps = {current: [], history: []};
+      for (let i = 0; i < options.length; i++) {
+        let option = options[i];
+        if (option.controlType == "dashboard") {
+          componentMaps.current.push({id: option.id, map: this.getMapping(option)});
+        } else if (option.controlType == "control" && option.type != "setValue") {
+          componentMaps.current.push({id: option.id, map: this.getControlMapping(option)});
+        } else if (option.controlType == "history") {
+          componentMaps.history.push({id: option.id, map: this.getMapping(option)});
+        }
+      }
+      this.updateComponents(componentMaps);
+    },
+    /**
+     * 更新组件的值
+     * @param componentMaps
+     */
+    updateComponents(componentMaps) {
+      const fun = () => {
+        if (componentMaps.current.length > 0) {
+          this.getCurrent(componentMaps.current);
+        }
+        if (componentMaps.history.length > 0) {
+          this.getHistory(componentMaps.history);
+        }
+        return fun;
+      }
+      this.timer = setInterval(fun(), this.flushTime * 1000)
+    },
+    /**
+     * 从服务器获取指定设备的推送数据
+     * @param deviceId
+     * @param attrs
+     */
+    getCurrent(componentMap) {
+      currentValue({entity_id: this.device.device})
+          .then(({data}) => {
+            if (data.code == 200) {
+              this.optionsData.forEach(option => {
+                  let index = componentMap.findIndex(item => item.id == option.id);
+                  if (componentMap[index]) {
+                    let mapping = componentMap[index].map;
+                    let values = null;
+                    if (option.controlType == "dashboard") {
+                      values = mapping.map(item => {
+                        return {...item, value: data.data[0][item.name]}
+                      });
+                    } else if (option.controlType == "control") {
+                      console.log("====PluginCharts.control.mapping", mapping)
+                      values = {};
+                      mapping.forEach(item => {
+                        values[item] = data.data[0][item];
+                      });
+                    }
+
+                    this.$nextTick(() => {
+                      this.$refs["component_" + option.id][0].updateOption(values);
+                    })
+                  }
+                // }
+              })
+            }
+          })
+    },
+    getHistory(componentMap) {
+      console.log("====PluginCharts.componentMap", componentMap)
+      this.$nextTick(() => {
+        componentMap.forEach(item => {
+          let ref = this.$refs["component_" + item.id];
+          if (ref && ref[0]) {
+            ref[0].getHistory(item.map);
+          }
+        })
       })
+    },
+    getMapping(option) {
+      if (option.mapping) {
+        let mapping = [];
+        this.tsl.map(property => {
+          option.mapping.forEach(item => {
+            if (property.name == item) {
+              mapping.push(property);
+            }
+          })
+        })
+        return mapping;
+      } else {
+        return [];
+      }
+    },
+    getControlMapping(option) {
+      if (option.series && option.series.length > 0) {
+        // 开关的mapping
+        let mapping = [];
+        option.series.forEach(item => {
+          mapping.push(item.mapping.value);
+        })
+        return mapping;
+      }
     }
   }
 }

@@ -151,11 +151,9 @@ export default {
         let fullData = JSON.parse(JSON.stringify(newValue.screen)) ;
         if (fullData.length == 0) return;
         let canvasStyle = newValue.canvasStyle ? newValue.canvasStyle : {};
-        if (fullData[0].point) {
-          // 显示大屏
-          this.fullData = fullData;
-          this.canvasStyle = canvasStyle;
-        }
+        // 显示大屏
+        this.fullData = fullData;
+        this.canvasStyle = canvasStyle;
       },
       immediate: true
     }
