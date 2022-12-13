@@ -35,6 +35,9 @@
 <!--            <el-input class="el-dark-input" v-model="formData.mapping[index]" :disabled="true"></el-input>-->
 <!--          </div>-->
 <!--        </el-form>-->
+
+        <dashboard-config v-if="formData.type == 'dashboard'" :form-data="formData" :cas-options="casOptions"></dashboard-config>
+
         <text-config v-if="formData.type == 'text'" :form-data="formData" :cas-options="casOptions"></text-config>
 
         <configure-config v-if="formData.type == 'configure'" :form-data="formData" :cas-options="casOptions"></configure-config>
@@ -52,12 +55,13 @@
 import bus from "@/core/plugins/eventBus"
 import StylePanel from "./style"
 import PluginAPI from "@/api/plugin"
+import DashboardConfig from "./DashboardConfig";
 import TextConfig from "./TextConfig"
 import ConfigureConfig from "./ConfigureConfig"
 
 export default {
   name: "EditorInformation",
-  components: { StylePanel, TextConfig, ConfigureConfig },
+  components: { StylePanel, DashboardConfig, TextConfig, ConfigureConfig },
   data() {
     return {
       tabValue: "data",
@@ -73,10 +77,10 @@ export default {
   mounted() {
     // 监听share事件
     bus.$on('share', val => {
-      console.log("====share", val)
       this.formData = val;
       if (!this.formData.mapping) this.formData.mapping = "";
       // if (val.type == "text" && !val.text) this.formData.text = this.formData.name;
+      console.log("====share.formData", this.formData)
     });
 
     // 获取项目/分组/设备的级联菜单

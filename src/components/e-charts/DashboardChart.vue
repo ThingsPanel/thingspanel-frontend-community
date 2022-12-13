@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%;height: 100%;" id="main" ref="chart-main"></div>
+  <div style="width: 100%;height: 100%;background-color: transparent" id="main" ref="chart-main"></div>
 </template>
 
 <script>
@@ -50,6 +50,7 @@ export default {
   watch: {
     value: {
       handler(newValue) {
+        console.log("====DashboardChart.value", newValue)
         this.setEchartsValue(newValue);
       }
     },
@@ -99,9 +100,19 @@ export default {
         this.myChart.resize();
       });
     },
+    /**
+     * 设置Echarts图表的值
+     * @param value
+     */
     setEchartsValue(value) {
-      console.log("setEchartsValue", typeof value)
-      let option = { series: [ { data: [ { value }]}]}
+      console.log("====设置Echarts图表的值", value)
+      let option = null;
+      if (typeof value == "string") {
+        option = { series: [ { data: [ { value }]}]};
+      } else {
+        let series = value.map(item => { return { data: [ { value: item } ] } })
+        option = { series };
+      }
       this.myChart.setOption(option);
     },
     initOption(option) {

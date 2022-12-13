@@ -94,6 +94,10 @@ export default {
   watch: {
     options: {
       handler(newValue) {
+        let timer = localStorage.getItem("deviceWatch_timer");
+        if (timer) {
+          clearInterval(parseInt(timer));
+        }
         if (newValue && newValue.length > 0) {
           let options = JSON.parse(JSON.stringify(newValue));
           this.getLayout(options, 4)
@@ -240,6 +244,7 @@ export default {
         return fun;
       }
       this.timer = setInterval(fun(), this.flushTime * 1000)
+      localStorage.setItem("deviceWatch_timer", this.timer + "");
     },
     /**
      * 从服务器获取指定设备的推送数据

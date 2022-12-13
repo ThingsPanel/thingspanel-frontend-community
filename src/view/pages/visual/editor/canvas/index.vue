@@ -2,7 +2,7 @@
   <div class="canvas-container" ref="canvas_container" >
     <div id="droppable" class="droppable" ref="droppable" :style="canvasStyle"
          tabindex="0" >
-      <VueDraggableResizable style=""
+      <VueDraggableResizable
                     v-for="(component) in fullData" :key="component.cptId" :parent="false"
                     :x="component.point.x" :y="component.point.y"
                     :w="component.point.w" :h="component.point.h"
@@ -13,7 +13,7 @@
                     @resizestop="(left, top, width, height) => onResize(component, left, top, width, height)"
                     @dragstop="(left, top) => onDragstop(component, left, top)"
                     @keydown.native="e => onKeyDown(component, e)"
-                             @click.native="onClick(component)"
+                    @click.native="onClick(component)"
                     @dblclick.native="onMouseDown(component)"
       >
         <dashboard-chart :style="getChartStyle(component)" ref="component" :key="'dashboard_' + component.cptId"
@@ -42,7 +42,7 @@
         <!-- 文本组件 -->
         <CommonText v-else-if="component.type == 'text'" :style="getConfigureStyle(component)"
                     :active="component.activeted" :editable="component.editable"
-                    :value.sync="component.text"
+                    :value.sync="component.value"
             :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
 
         <other :style="getConfigureStyle(component)"

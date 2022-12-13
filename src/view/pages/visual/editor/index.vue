@@ -2,7 +2,7 @@
   <div class="editor-container">
     <div class="editor-header">
       <!-- 顶部工具栏 -->
-      <EditorHeader :params="params"
+      <EditorHeader :params.sync="params"
                     @zoom="handleZoom"
                     @save="handleSave"
                     @publish="handlePublish"
@@ -63,6 +63,7 @@ export default {
       screenData: [],
       jsonData: {},
       dialogOption: {},
+      params: {}
     }
   },
   mounted() {
@@ -70,6 +71,7 @@ export default {
     this.visualId = this.$route.query.id;
     // 获取可视化大屏名称
     this.visualName = this.$route.query.name;
+    this.params = { name: this.$route.query.name }
     // 加载可视化大屏数据
     this.getScreenData(this.visualId);
     // 获取项目/分组/设备的级联菜单数据

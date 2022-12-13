@@ -29,7 +29,7 @@ export default {
       default: false
     },
     value: {
-      type: [String],
+      type: [String, Array],
       default: "文本"
     }
   },
@@ -45,7 +45,12 @@ export default {
   watch: {
     value: {
       handler(newValue) {
-        this.textValue = newValue;
+        console.log("====CommonText.value", newValue)
+        if (typeof newValue == "string") {
+          this.textValue = newValue;
+        } else if (typeof newValue == "object") {
+          this.textValue = newValue[0];
+        }
       }
     },
     textValue: {

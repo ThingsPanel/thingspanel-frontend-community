@@ -12,6 +12,7 @@
         <dashboard-chart :style="getChartStyle(component)" ref="component" :key="'dashboard_' + component.cptId"
                          :w="component.point.w" :h="component.point.h"
                          v-if="component.controlType == 'dashboard' && component.type != 'status'"
+                         :value="component.value"
                          :option="component"></dashboard-chart>
 
         <history-chart :style="getChartStyle(component)"
@@ -35,7 +36,7 @@
         <!-- 文本组件 -->
         <CommonText v-else-if="component.type == 'text'" :style="getConfigureStyle(component)"
                     :active="component.activeted" :editable="component.editable"
-                    :value.sync="component.text"
+                    :value="component.value"
                     :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
 
         <other :style="getConfigureStyle(component)"
@@ -71,7 +72,11 @@ export default {
   data() {
     return {
       fullData: [],
-      scale: 1
+      scale: 1,
+      // 刷新间隔
+      flushTime: 5,
+      // 计时器
+      timer: null
     }
   },
   mounted() {
@@ -162,22 +167,39 @@ export default {
      * 刷新组件的值
      */
     refresh(fullData) {
-      fullData.forEach(item => {
-        if (item.controlType == "dashboard") {
+      const fun = () => {
+        fullData.forEach(item => {
+          if (item.controlType == "dashboard") {
+            //
+            this.getCurrent(item);
+          } else if (item.type == "text") {
+            console.log("====item", item);
+            this.getCurrent(item);
+          }
+        })
+        return fun;
+      }
 
-        } else if (item.type == "text") {
-          console.log("====item", item);
-          this.getCurrent(item);
-        }
-      })
+      this.timer = setInterval(fun(), this.flushTime * 1000);
+
     },
     getCurrent(cpt) {
+      console.log("====display.getCurrent.cpt", cpt)
       let entity_id = cpt.deviceId;
       let attribute = cpt.mapping;
+      let values = [];
+      if (!entity_id || !attribute) return;
       currentValue({ entity_id, attribute })
         .then(({ data }) => {
           if (data.code == 200 && data.data != null) {
-            console.log("====display.getCurrent", data)
+            let result = data.data[0];
+            if (typeof attribute == "string") {
+              values = [result[attribute]];
+            } else if (typeof attribute == "object") {
+              values = attribute.map(attr => result[attr]);
+            }
+            cpt.value = values;
+            console.log("====display.getCurrent", cpt.controlType, values)
           }
         })
     }
