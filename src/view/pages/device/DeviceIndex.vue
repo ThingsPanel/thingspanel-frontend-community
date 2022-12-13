@@ -118,6 +118,15 @@
     </el-table-column>
 
     <!--  推送时间 start  -->
+    <el-table-column label="状态" width="auto" min-width="12%">
+      <template slot-scope="scope">
+        <el-tag v-if="scope.row.device_state=='1'">在线</el-tag>
+        <el-tag v-else type="info">离线</el-tag>
+      </template>
+    </el-table-column>
+    <!--  推送时间 end  -->
+
+    <!--  推送时间 start  -->
     <el-table-column :label="$t('COMMON.TITLE23')" width="auto" min-width="12%">
       <template slot-scope="scope">
         <div>{{scope.row.latest_ts ? dateFormat(scope.row.latest_ts/1000000) : ""}}</div>
