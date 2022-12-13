@@ -30,21 +30,21 @@
           <!--        <template slot="prepend">路径</template>-->
         </el-input>
       </el-col>
-      <el-col :span="10">
+      <el-col :span="5">
         <el-select v-model="params.operation_type" size="medium" :placeholder="$t('COMMON.OPERATIONTYPE')">
           <el-option :label="$t('COMMON.TIMINGTRIGGER')" value="1"></el-option>
           <el-option :label="$t('COMMON.MANUALCONTROL')" value="2"></el-option>
           <el-option :label="$t('COMMON.AUTOMATICCONTROL')" value="3"></el-option>
         </el-select>
       </el-col>
-      <el-col :span="10">
+      <el-col :span="6">
         <el-select v-model="params.send_result" :placeholder="$t('COMMON.SELECTSENDRESULTS')" size="medium">
           <el-option :label="$t('COMMON.SUCCESSFUL')" value="1"></el-option>
           <el-option :label="$t('COMMON.FAILURE')" value="2"></el-option>
         </el-select>
       </el-col>
-      <el-col :span="14" class="text-right">
-        <el-button type="indigo" size="medium" @click="handleSearch()" class="butStyle"
+      <el-col :span="14">
+        <el-button type="border" size="medium" @click="handleSearch()" class="butStyle"
           >{{ $t("COMMON.SEARCH")}}</el-button
         >
         <el-button type="default" size="medium" @click="handleReset()" class="butStyle">{{ $t("COMMON.RESET")}}</el-button>

@@ -233,3 +233,37 @@ html {
 }
 
 .panel-bg-blue{background: #2d3d88;}
+
+
+.el-button--border{
+    color: #fff !important;
+    background-color: transparent !important;   
+    border-color: #5867dd !important;
+}
+  
+.el-button--border:hover {
+    background-color: #6573e0 !important;
+    border-color: #6573e0 !important;
+}
+
+.el-button--border{
+    color: #fff !important;
+    background-color: transparent !important;   
+    border-color: #5867dd !important;
+}
+  
+.el-button--border:hover {
+    background-color: #6573e0 !important;
+    border-color: #6573e0 !important;
+}
+
+.el-button--export{
+    color: #fff !important;
+    background-color: #16A1B8 !important;   
+    border-color: #16A1B8 !important;
+}
+  
+.el-button--export:hover {
+    background-color: #16A1B8 !important;
+    border-color: #16A1B8 !important;
+}

@@ -93,7 +93,7 @@
               <ul class="nav justify-content-center justify-md-content-end">
                 <li class="nav-item">
                   <a
-                    class="nav-link active"
+                    class="nav-link"
                     href="http://thingspanel.io/"
                     target="_blank"
                     >使用条款</a
@@ -147,6 +147,7 @@
 .logo-icon {
   height: 47px;
   /* width: 98px; */
+  margin-bottom: 10px;
 }
 .headers {
   border-bottom: 1px solid rgba(91, 146, 255, 0.15);

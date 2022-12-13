@@ -71,11 +71,11 @@
     </el-col>
 
     <el-col :span="5">
-      <div class="text-right">
-        <el-button class="mr-2" type="indigo" size="medium" @click="handleSearch()">{{ $t('COMMON.SEARCH') }}</el-button>
+      <div>
+        <el-button class="mr-2" type="border" size="medium" @click="handleSearch()">{{ $t('COMMON.SEARCH') }}</el-button>
 
         <el-popconfirm :title="`确定导出 ${total} 条数据吗?`" @confirm="handleExport()">
-          <el-button slot="reference" type="indigo" size="medium">{{ $t('COMMON.EXPORT') }}</el-button>
+          <el-button slot="reference" type="export" size="medium">{{ $t('COMMON.EXPORT') }}</el-button>
         </el-popconfirm>
 
 <!--        <el-button class="ml-2" type="default" size="medium" @click="handleReset()">重置</el-button>-->

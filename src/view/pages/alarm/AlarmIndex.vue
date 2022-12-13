@@ -38,8 +38,8 @@
       </el-date-picker>
     </el-col>
 
-    <el-col :span="7" class="text-right">
-      <el-button type="indigo" size="medium" @click="handleSearch()">{{ $t("COMMON.SEARCH")}}</el-button>
+    <el-col :span="7">
+      <el-button type="border" size="medium" @click="handleSearch()">{{ $t("COMMON.SEARCH")}}</el-button>
 <!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
     </el-col>
   </el-row>
