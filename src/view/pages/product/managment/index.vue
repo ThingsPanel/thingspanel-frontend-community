@@ -17,8 +17,8 @@
         <el-input :placeholder="$t('COMMON.PRODUCTNUMBER')" v-model="params.serialNumber" clearable></el-input>
       </el-col>
 
-      <el-col :span="12" class="text-right">
-        <el-button type="indigo" size="medium" @click="handleSearch">{{ $t('COMMON.SEARCH') }}</el-button>
+      <el-col :span="12">
+        <el-button type="border" size="medium" @click="handleSearch">{{ $t('COMMON.SEARCH') }}</el-button>
         <!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
       </el-col>
     </el-row>
@@ -29,24 +29,24 @@
       <el-table :data="tableData" v-loading="loading">
 
         <!-- 产品编号-->
-        <el-table-column :label="$t('COMMON.PRODUCTNUMBER')" prop="serial_number" align="center">
+        <el-table-column :label="$t('COMMON.PRODUCTNUMBER')" prop="serial_number" align="left">
 
         </el-table-column>
 
         <!-- 产品名称-->
-        <el-table-column :label="$t('COMMON.PRODUCTNAME')" prop="name" align="center">
+        <el-table-column :label="$t('COMMON.PRODUCTNAME')" prop="name" align="left">
 
         </el-table-column>
 
         <!--  协议类型-->
-        <el-table-column :label="$t('COMMON.PROTOCOLTYPE1')" prop="protocol_type" align="center">
+        <el-table-column :label="$t('COMMON.PROTOCOLTYPE1')" prop="protocol_type" align="left">
           <template v-slot="scope">
             <el-tag>{{ scope.row.protocol_type }}</el-tag>
           </template>
         </el-table-column>
 
         <!-- 认证方式-->
-        <el-table-column :label="$t('COMMON.AUTHENTICATION')" prop="auth_type" align="center">
+        <el-table-column :label="$t('COMMON.AUTHENTICATION')" prop="auth_type" align="left">
           <template v-slot="scope">
             <el-tag v-if="scope.row.auth_type == '1'">AccessToken</el-tag>
             <el-tag v-else-if="scope.row.auth_type == '2'">MQTTBasic</el-tag>
@@ -54,23 +54,23 @@
         </el-table-column>
 
         <!-- 产品描述-->
-        <el-table-column :label="$t('COMMON.PRODUCTDESCRIPTION')" prop="describe" align="center">
+        <el-table-column :label="$t('COMMON.PRODUCTDESCRIPTION')" prop="describe" align="left">
           <template v-slot="scope">
              {{ scope.row.describe ? scope.row.describe : "--"}}
           </template>
         </el-table-column>
 
         <!-- 创建日期-->
-        <el-table-column :label="$t('COMMON.CREATEDATE')" prop="created" align="center">
+        <el-table-column :label="$t('COMMON.CREATEDATE')" prop="created" align="left">
           <template v-slot="scope">
             {{ scope.row.created ? scope.row.created : "--"}}
           </template>
         </el-table-column>
 
         <!-- 操作列-->
-        <el-table-column align="center" :label="$t('COMMON.OPERATION')" width="360">
+        <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="230">
           <template v-slot="scope">
-            <div class="text-center">
+            <div style="text-align: left">
               <el-button type="indigo" size="mini" @click="showBatch(scope.row)">{{ $t('COMMON.VIEWBATCH') }}</el-button>
               <el-popconfirm title="确定要删除吗？" @confirm="handleDelete(scope.row)">
                 <el-button slot="reference" size="mini" type="danger">{{ $t('COMMON.DELETE') }}</el-button>

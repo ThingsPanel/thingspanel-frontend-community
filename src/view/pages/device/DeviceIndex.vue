@@ -6,9 +6,9 @@
     </el-col>
     <el-col :span="12" class="text-right">
 
-      <el-button type="indigo" size="medium" @click="handleCreate()">{{ $t("COMMON.CREATEDEVICE")}}</el-button>
+      <!-- <el-button type="indigo" size="medium" @click="handleCreate()">{{ $t("COMMON.CREATEDEVICE")}}</el-button>
 
-      <el-button type="indigo" size="medium" @click="showManagementGroup=true">{{ $t("COMMON.MANAGEMENTGROUP")}}</el-button>
+      <el-button type="indigo" size="medium" @click="showManagementGroup=true">{{ $t("COMMON.MANAGEMENTGROUP")}}</el-button> -->
 
 <!--      <el-button type="indigo" size="medium" @click="handleDeviceChart">设备图表</el-button>-->
 
@@ -43,9 +43,15 @@
           @keydown.enter.native="handleSearch()"
           @clear="handleSearch()"></el-input>
     </el-col>
-    <el-col :span="9" class="text-right">
-      <el-button type="indigo" size="medium" @click="handleSearch()">{{ $t("COMMON.SEARCH")}}</el-button>
+    <el-col :span="9" >
+      <el-button type="border" size="medium" @click="handleSearch()">{{ $t("COMMON.SEARCH")}}</el-button>
 <!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
+    </el-col>
+    <el-col :span="12" class="text-right">
+
+      <el-button type="border" size="medium" @click="handleCreate()">{{ $t("COMMON.CREATEDEVICE")}}</el-button>
+
+      <el-button type="indigo" size="medium" @click="showManagementGroup=true">{{ $t("COMMON.MANAGEMENTGROUP")}}</el-button>
     </el-col>
   </el-row>
   <!-- 筛选 end -->
@@ -150,7 +156,7 @@
     <!--  操作 start  -->
     <el-table-column :label="$t('COMMON.OPERATION')" width="300px" min-width="12%">
       <template slot-scope="scope">
-        <div class="text-right">
+        <div style="text-align: left">
           <el-button  v-show="scope.row.device_type==2" type="primary" size="mini"
                      @click="addChildDevice(scope.row)">{{ $t("COMMON.ADDINGCHILDDEVICE")}}</el-button>
           <el-button style="margin-right: 10px"  type="primary" size="mini"
