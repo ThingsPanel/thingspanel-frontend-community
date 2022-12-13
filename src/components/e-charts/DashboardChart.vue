@@ -71,7 +71,6 @@ export default {
     }
   },
   mounted() {
-    console.log("====dashboard.option", this.option)
     // 在通过mounted调用即可
     this.echartsInit();
     if (this.autoResize) {
@@ -83,7 +82,7 @@ export default {
   methods: {
     //初始化echarts
     echartsInit() {
-      this.myChart = this.$echarts.init(this.$refs["chart-main"]);
+      this.myChart = this.$echarts.init(this.$refs["chart-main"], null, { renderer : 'svg' });
       this.optionData = JSON.parse(JSON.stringify(this.option));
       this.optionData = this.initOption(this.optionData);
       this.optionData.series[0].min = this.min;

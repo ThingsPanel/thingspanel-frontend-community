@@ -99,6 +99,7 @@
 <!--    </el-table-column>-->
 
     <el-table-column :label="$t('COMMON.TIMES')"  prop="ts"></el-table-column>
+    <el-table-column label="属性别名" prop="alias"></el-table-column>
     <el-table-column :label="$t('COMMON.TITLE30')" prop="key"></el-table-column>
     <el-table-column :label="$t('COMMON.TITLE31')" prop="dbl_v">
       <template v-slot="scope">

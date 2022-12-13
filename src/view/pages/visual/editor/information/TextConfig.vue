@@ -87,7 +87,8 @@ export default {
         name: "",
         text: "",
         mapping: "",
-        casValue: ""
+        casValue: "",
+        deviceId: ""
       },
       dataSrcOptions: []
     }
@@ -95,6 +96,7 @@ export default {
   watch: {
     formData: {
       handler(newValue){
+        console.log("====TextConfig", newValue);
         this.form = JSON.parse(JSON.stringify(newValue));
         if (this.form.casValue) {
           this.handleChangeOptions(this.form.casValue);
@@ -113,10 +115,12 @@ export default {
       let checkedNodes = this.$refs.cascaderRef.getCheckedNodes();
       let node = checkedNodes ? checkedNodes[0] : null;
 
+      let deviceId = null;
       let pluginId = null;
       if (!node && v) {
         // 如果不是手动选择节点
         pluginId = await getPluginIdFromCasOptions(this.casOptions, v);
+        deviceId = v[2] ? v[2] : null;
       } else {
         if (node.data.business_id) {
           // 项目
@@ -125,13 +129,15 @@ export default {
         } else if (node.data.device_id) {
           // 设备
           pluginId = node.data.plugin_id;
+          deviceId = node.data.device_id;
         }
       }
       if (!pluginId) return;
       let tslProperties = await getPluginTSLByPluginId(pluginId);
       if (!tslProperties) return;
       this.dataSrcOptions = tslProperties;
-      this.formData.mapping = "";
+      this.form.deviceId = deviceId;
+      this.form.mapping = "";
     }
   }
 }

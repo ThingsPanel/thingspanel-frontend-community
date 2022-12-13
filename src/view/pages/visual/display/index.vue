@@ -1,34 +1,214 @@
 <template>
-  <div class="container-fluid">
+  <div class="canvas-container">
+    <div class="canvas-display" id="canvas_display">
+      <VueDraggableResizable style="" class-name="draggable-class"
+                             v-for="(component) in fullData" :key="component.cptId" :parent="false"
+                             :disable-user-select="false" :draggable="false" :resizable="false"
+                             :x="component.point.x" :y="component.point.y"
+                             :w="component.point.w" :h="component.point.h"
+                             :z="component.point.z"
+                             :scale="scale"
+      >
+        <dashboard-chart :style="getChartStyle(component)" ref="component" :key="'dashboard_' + component.cptId"
+                         :w="component.point.w" :h="component.point.h"
+                         v-if="component.controlType == 'dashboard' && component.type != 'status'"
+                         :option="component"></dashboard-chart>
 
+        <history-chart :style="getChartStyle(component)"
+                       :w="component.point.w" :h="component.point.h"
+                       v-if="component.controlType == 'history'"
+                       :option="component"></history-chart>
+
+        <status :style="getChartStyle(component)"
+                v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>
+
+        <control :style="getChartStyle(component)"
+                 :w="component.point.w" :h="component.point.h"
+                 v-if="component.controlType == 'control'"
+                 :option="component"></control>
+
+        <configure :style="getConfigureStyle(component)"
+                   :w="component.point.w" :h="component.point.h"
+                   v-if="component.type == 'configure'" :option="component">
+        </configure>
+
+        <!-- 文本组件 -->
+        <CommonText v-else-if="component.type == 'text'" :style="getConfigureStyle(component)"
+                    :active="component.activeted" :editable="component.editable"
+                    :value.sync="component.text"
+                    :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
+
+        <other :style="getConfigureStyle(component)"
+               :w="component.point.w" :h="component.point.h"
+               v-else-if="component.type == 'other'" :option="component"></other>
+
+
+      </VueDraggableResizable>
+    </div>
   </div>
 </template>
 
 <script>
+import DashboardChart from "@/components/e-charts/DashboardChart";
+import HistoryChart from "@/components/e-charts/CurveChart";
+import Control from "@/components/control/Control";
+import Status from "@/components/e-charts/Status";
+import Configure from "@/components/configure/Configure"
+import Other from "@/components/other/Other"
+import CommonText from "@/components/text/CommonText"
+
+import VueDraggableResizable from 'vue-draggable-resizable'
+import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
+
 import VisualAPI from "@/api/visualization.js"
+import { currentValue } from "@/api/device"
+
 export default {
   name: "VisualDisplay",
+  components: {
+    DashboardChart, HistoryChart, Control, Status, Configure, Other, CommonText, VueDraggableResizable
+  },
+  data() {
+    return {
+      fullData: [],
+      scale: 1
+    }
+  },
   mounted() {
     let id = this.$route.query.id;
-    VisualAPI.list({ id })
-
-    console.log("====id", id)
+    VisualAPI.list({ current_page: 1, per_page: 10, id })
+      .then(({ data }) => {
+        if (data.code == 200) {
+          let result = data.data.data ? data.data.data[0] : {};
+          let jsonData = result ? result.json_data : "{}";
+          console.log("====display", result);
+          let jsonObj = JSON.parse(jsonData);
+          document.title = result.dashboard_name ? result.dashboard_name : "";
+          this.fullData = jsonObj.screen ? jsonObj.screen : [];
+          this.scale = this.getScale(this.fullData);
+          this.setZoom(this.scale);
+          this.refresh(this.fullData);
+        }
+      })
   },
   methods: {
+    /**
+     * 获取自适应的scale
+     * @param fullData
+     * @returns {number}
+     */
+    getScale(fullData) {
+      let left = null, right = null, top = null, bottom = null;
+      fullData.forEach(item => {
+        let point = item.point;
+        if (!left || left > point.x) left = point.x;
+        if (!right || right < (point.x + point.w)) right = point.x + point.w;
+        if (!top || top > point.y) top = point.y;
+        if (!bottom || bottom < (point.y + point.h)) bottom = point.y + point.h;
+      })
+      // 宽 = 最右 - 最左
+      let fitW = right - left;
+      // 高 = 最下 - 最上
+      let fitH = bottom - top;
+      let canvasDisplay = document.getElementById("canvas_display");
+      canvasDisplay.style.width = fitW + "px";
+      canvasDisplay.style.height = fitH + "px";
 
+      const w = window.innerWidth / fitW
+      const h = window.innerHeight / fitH
+      // 宽度与高度的比例取最小的，以确保屏幕可以完全显示
+      let scale = Math.min(w, h)
+      return scale;
+    },
+    /**
+     * 放大
+     */
+    handleZoomOut() {
+      this.scale += 0.1;
+      this.setZoom(this.scale);
+    },
+    /**
+     * 缩小
+     */
+    handleZoomIn() {
+      this.scale -= 0.1;
+      this.setZoom(this.scale);
+    },
+    /**
+     * 缩放
+     * @param scale
+     */
+    setZoom(scale) {
+      let canvasDisplay = document.getElementById("canvas_display")
+      canvasDisplay.style.transform = "scale(" + scale + ")";
+    },
+    getChartStyle(item) {
+      return {
+        borderRadius: "10px",
+        width: "100%",
+        height: "100%",
+        backgroundColor: item.backgroundColor ? item.backgroundColor : "#2d3d86"
+      }
+    },
+    getConfigureStyle(item) {
+      return {
+        borderRadius: "10px",
+        width: "100%",
+        height: "100%",
+        backgroundColor: item.backgroundColor ? item.backgroundColor : "transparent"
+      }
+    },
+    /**
+     * 刷新组件的值
+     */
+    refresh(fullData) {
+      fullData.forEach(item => {
+        if (item.controlType == "dashboard") {
+
+        } else if (item.type == "text") {
+          console.log("====item", item);
+          this.getCurrent(item);
+        }
+      })
+    },
+    getCurrent(cpt) {
+      let entity_id = cpt.deviceId;
+      let attribute = cpt.mapping;
+      currentValue({ entity_id, attribute })
+        .then(({ data }) => {
+          if (data.code == 200 && data.data != null) {
+            console.log("====display.getCurrent", data)
+          }
+        })
+    }
   }
 }
 </script>
 
 <style scoped lang="scss">
-.container-fluid {
+.canvas-container {
+  position: relative;
+  width: 100%;
   height: 100%!important;
-  padding: 20px 10px 100px 10px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-.header {
-  color:  #fff;
-  height: 60px;
-  padding-bottom: 20px;
-}
+  padding: 0;
+  margin: 0;
+  .header {
+    position: absolute;
+    text-align: center;
+    top: 0;
+    left: 0;
+    right:0;
+    color:  #fff;
+    height: 60px;
+    width: 100px;
+    margin:auto;
+  }
+  .canvas-display {
+    transform-origin: -25% 0 0;
+  }
+  .draggable-class {
+    position: absolute;
+    border: unset;
+  }
 }
 </style>

@@ -103,6 +103,7 @@ export default {
         // 分组
       } else if (node.data.device_id) {
         // 设备
+        this.formData.deviceId = node.data.device_id;
         let pluginId = node.data.plugin_id;
         if (pluginId) {
           PluginAPI.page({ id: pluginId, current_page: 1, per_page: 10 })

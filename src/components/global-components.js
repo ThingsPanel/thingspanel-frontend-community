@@ -12,7 +12,8 @@ import {
   Card,
   Steps,
   Step,
-  RadioButton
+  RadioButton,
+  ColorPicker
 } from 'element-ui';
 
 // custom theme
@@ -43,6 +44,7 @@ GlobalComponents.install = (Vue) => {
   Vue.use(Steps);
   Vue.use(Step);
   Vue.use(RadioButton);
+  Vue.use(ColorPicker);
 
   Vue.use(VueClipboard)
   Vue.use(NumberChart);
