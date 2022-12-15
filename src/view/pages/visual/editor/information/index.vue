@@ -42,6 +42,9 @@
 
         <configure-config v-if="formData.type == 'configure'" :form-data="formData" :cas-options="casOptions"></configure-config>
 
+        <video-config v-if="formData.type == 'video'" :form-data="formData" :cas-options="casOptions"></video-config>
+
+
       </el-tab-pane>
       <el-tab-pane label="样式" name="style">
         <style-panel></style-panel>
@@ -58,10 +61,10 @@ import PluginAPI from "@/api/plugin"
 import DashboardConfig from "./DashboardConfig";
 import TextConfig from "./TextConfig"
 import ConfigureConfig from "./ConfigureConfig"
-
+import VideoConfig from "./VideoConfig";
 export default {
   name: "EditorInformation",
-  components: { StylePanel, DashboardConfig, TextConfig, ConfigureConfig },
+  components: { StylePanel, DashboardConfig, TextConfig, ConfigureConfig, VideoConfig },
   data() {
     return {
       tabValue: "data",
@@ -79,7 +82,6 @@ export default {
     bus.$on('share', val => {
       this.formData = val;
       if (!this.formData.mapping) this.formData.mapping = "";
-      // if (val.type == "text" && !val.text) this.formData.text = this.formData.name;
       console.log("====share.formData", this.formData)
     });
 
@@ -91,37 +93,6 @@ export default {
   methods: {
     handleTabClick() {
 
-    },
-    handleChangeMap(val) {
-      console.log("handleChangeMap", val)
-    },
-    /**
-     * 级联菜单选中节点时的回调
-     */
-    handleChangeOptions(v) {
-      let node = this.$refs.cascaderRef.getCheckedNodes()[0];
-      if (!node) return;
-      if (node.data.business_id) {
-        // 项目
-      } else if (node.data.group_id) {
-        // 分组
-      } else if (node.data.device_id) {
-        // 设备
-        this.formData.deviceId = node.data.device_id;
-        let pluginId = node.data.plugin_id;
-        if (pluginId) {
-          PluginAPI.page({ id: pluginId, current_page: 1, per_page: 10 })
-              .then(({ data }) => {
-                if (data.code == 200 || data.code == "200") {
-                  let jsonData = data.data.data.length > 0 ? data.data.data[0] : "{}"
-                  let jsonObj = JSON.parse(jsonData.chart_data);
-                  let { tsl } = jsonObj;
-                  this.dataSrcOptions = tsl.properties;
-                  this.formData.mapping = "";
-                }
-              })
-        }
-      }
     },
   }
 }

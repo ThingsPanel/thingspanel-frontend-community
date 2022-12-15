@@ -54,7 +54,6 @@ export default {
   },
   methods: {
     updateOption() {
-      console.log("====updateOption.Status")
 
       let deviceId = this.device.device;
       let attrs = this.option.mapping;

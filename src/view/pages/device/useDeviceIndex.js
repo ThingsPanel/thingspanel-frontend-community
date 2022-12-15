@@ -77,6 +77,7 @@ export default function useDeviceIndex(business_id) {
             asset_id: item.asset_id,
             token: item.device_token,
             device_type: item.device_type,
+            device_state: item.device_state,
             type: item.type,
             latest_ts: item.latest_ts,
             protocol: item.protocol,
@@ -84,6 +85,7 @@ export default function useDeviceIndex(business_id) {
             location: item.location,
             structure: item.structure ? item.structure : [],
             parent_id: item.parent_id,
+            additional_info: item.additional_info,
             protocol_config: item.protocol_config,
             subDeviceAddress: item.sub_device_addr ? item.sub_device_addr : "",
             errors: {

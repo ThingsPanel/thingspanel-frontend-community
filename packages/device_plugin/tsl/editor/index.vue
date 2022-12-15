@@ -16,6 +16,10 @@
           <el-button type="primary" style="margin-left: 10px" @click="jsonDialogVisible=true">JSON模式</el-button>
         </div>
 
+        <div v-show="showCreate" style="float: right">
+          <el-button type="border-warning" @click="handleGoToPlugin">找不到插件？去创建</el-button>
+        </div>
+
       </el-form-item>
 
       <el-form-item style="width: 100%">
@@ -90,6 +94,7 @@ import props from "./props.js"
 import data from "./data.js"
 import methods from "./methods";
 import watch from "./watch";
+
 export default {
   name: "TslEditor",
   components: { CommonTable },

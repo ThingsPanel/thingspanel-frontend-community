@@ -173,7 +173,6 @@ import {
   defineComponent,
   reactive,
   ref,
-  computed,
   onMounted,
   getCurrentInstance,
 } from "@vue/composition-api";

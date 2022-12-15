@@ -41,51 +41,30 @@ export default {
     }
   },
   watch: {
-
+    value: {
+      handler(newValue) {
+      }
+    }
   },
   mounted() {
-    console.log("====deviceStatus.timer", this.$store.state.timer)
-    console.log("====deviceStatus", this.device)
     this.optionData = JSON.parse(JSON.stringify(this.option));
-    this.updateOption();
-  },
-  beforeUpdate() {
-    let timer = this.$store.getters.getTimers(this.option.id);
-    // 删除计时器
-    clearInterval(timer);
-    // 状态中删除计时器
-    this.$store.commit("delTimer", this.option.id);
-    this.updateOption();
   },
   methods: {
-    updateOption() {
-      let deviceId = this.device.device;
-      let attrs = this.option.mapping;
-      this.getValue(deviceId, attrs);
-      this.timer = setInterval(() => {
-        this.getValue(deviceId, attrs);
-      }, this.flushTime * 1000);
-      // 计时器存入状态
-      this.$store.commit("addTimer", { id: this.option.id, timer: this.timer});
-    },
-    getValue(deviceId) {
-      currentValue({ entity_id: deviceId })
-          .then(({data}) => {
-            if (data.code == 200 && data.data) {
-              let lastTime = data.data[0]["systime"];
-              let now = new Date();
-              let diff = new Date(now) - new Date(lastTime);
-              if (diff > (this.optionData.thresholdTime * 1000)) {
-                this.statusText = "离线"
-              } else {
-                this.statusText = "在线"
-              }
-              this.pushTime = lastTime;
-            } else {
-              this.statusText = "离线";
-              this.pushTime = ""
-            }
-          })
+    updateOption(values) {
+      if (values) {
+        let lastTime = values;
+        let now = new Date();
+        let diff = new Date(now) - new Date(lastTime);
+        if (diff > (this.optionData.thresholdTime * 1000)) {
+          this.statusText = "离线"
+        } else {
+          this.statusText = "在线"
+        }
+        this.pushTime = lastTime;
+      } else {
+        this.statusText = "离线";
+        this.pushTime = "";
+      }
     },
     sizeChange() {
 

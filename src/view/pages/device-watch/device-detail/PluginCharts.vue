@@ -14,21 +14,25 @@
                  :w="option.w"
                  :h="option.h"
                  :i="option.i"
-                 @moved="handleResized"
-                 @resized="handleResized">
+                 @moved="handleResized(option.i)"
+                 @resized="handleResized(option.i)">
 
-        <e-charts class="component-item" :ref="'component_' + option.id" :key="option['id']" :show-header="true"
+        <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
                   v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && !option.type"
                   :option="option" :device="device" :value="option.value"></e-charts>
 
-        <status class="component-item" :ref="'component_' + option.id" :key="option['id']" :show-header="true"
+        <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
                 v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>
 
-        <device-status class="component-item" :ref="'component_' + option.id" :key="option['id']" :show-header="true"
-                v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'" :option="option" :device="device"></device-status>
+        <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+                v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'"
+                       :option="option" :device="device" :value="option.value"></device-status>
 
-        <control class="component-item" :ref="'component_' + option.id" :key="option['id']" :show-header="true"
+        <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
                  v-if="option.controlType == 'control'" :option="option" :device="device"></control>
+
+        <video-component class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+                 v-if="option.controlType == 'video'" :option="option" :device="device"></video-component>
 
       </grid-item>
     </grid-layout>
@@ -52,13 +56,14 @@ import ECharts from "./components/Echarts"
 import Control from "./components/Control";
 import Status from "./components/Status"
 import DeviceStatus from "./components/DeviceStatus"
+import VideoComponent from "./components/Video";
 import {device_info} from "@/api/device";
-import {device_update, historyValue} from "../../../../api/device";
+import {device_update, historyValue} from "@/api/device";
 import {currentValue} from "@/api/device";
 
 export default {
   name: "PluginCharts",
-  components: { GridLayout, GridItem, ECharts, Control, Status, DeviceStatus },
+  components: { GridLayout, GridItem, ECharts, Control, Status, DeviceStatus, VideoComponent },
   props: {
     options: {
       type: [Array],
@@ -117,6 +122,7 @@ export default {
     handleResized(i) {
       console.log("====handleResized.i", i)
       this.$nextTick(() => {
+        console.log("====handleResized", this.$refs["component_" + i])
           this.$refs["component_" + i][0].sizeChange();
       })
     },
@@ -261,11 +267,14 @@ export default {
                     let mapping = componentMap[index].map;
                     let values = null;
                     if (option.controlType == "dashboard") {
-                      values = mapping.map(item => {
-                        return {...item, value: data.data[0][item.name]}
-                      });
+                      if (option.type == "deviceStatus") {
+                        values = data.data[0].systime;
+                      } else {
+                        values = mapping.map(item => {
+                          return {...item, value: data.data[0][item.name]}
+                        });
+                      }
                     } else if (option.controlType == "control") {
-                      console.log("====PluginCharts.control.mapping", mapping)
                       values = {};
                       mapping.forEach(item => {
                         values[item] = data.data[0][item];
@@ -273,7 +282,7 @@ export default {
                     }
 
                     this.$nextTick(() => {
-                      this.$refs["component_" + option.id][0].updateOption(values);
+                      this.$refs["component_" + option.i][0].updateOption(values);
                     })
                   }
                 // }
@@ -285,7 +294,7 @@ export default {
       console.log("====PluginCharts.componentMap", componentMap)
       this.$nextTick(() => {
         componentMap.forEach(item => {
-          let ref = this.$refs["component_" + item.id];
+          let ref = this.$refs["component_" + item.i];
           if (ref && ref[0]) {
             ref[0].getHistory(item.map);
           }
@@ -349,5 +358,12 @@ export default {
 .plugin-loading {
   color: #fff;
   font-size: 18px;
+}
+::v-deep .vue-resizable-handle {
+  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNjcxMDc3NzUzOTcyIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjI5MjciIHdpZHRoPSI2IiBoZWlnaHQ9IjYiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj48cGF0aCBkPSJNNzcyLjA5NiAyNDMuNzEycTE3LjQwOC0xNy40MDggMzkuNDI0LTIyLjUyOHQ0MC45NiAyLjA0OCAzMS43NDQgMjYuNjI0IDEyLjggNTAuMTc2bDAgNDYxLjgyNHEwIDI3LjY0OC05LjIxNiA1Mi4yMjR0LTI1LjYgNDMuMDA4LTM4LjkxMiAyOC42NzItNDkuMTUyIDEwLjI0bC00OTAuNDk2IDBxLTI2LjYyNCAwLTQzLjUyLTEzLjMxMnQtMjMuMDQtMzIuNzY4LTEuMDI0LTQxLjQ3MiAyMi41MjgtMzkuNDI0cTI1LjYtMjUuNiA3MC4xNDQtNjkuMTJ0OTguMzA0LTk2LjI1NiAxMTAuNTkyLTEwOS4wNTYgMTA3LjUyLTEwNS45ODQgOTAuMTEyLTg4LjU3NiA1Ni44MzItNTYuMzJ6IiBwLWlkPSIyOTI4IiBmaWxsPSIjZmZmZmZmIj48L3BhdGg+PC9zdmc+);
+  background-position: 100% 100%;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  -webkit-box-sizing: border-box;
 }
 </style>

@@ -366,3 +366,18 @@ html {
     background-color: transparent !important;
 }
 
+.el-button--border-warning{
+    color: #FFBC47 !important;
+    background-color: transparent !important;
+    border-color: #FFBC47 !important;
+}
+
+.el-button--border-warning:hover {
+    color: #000 !important;
+    background-color: #FFBC47 !important;
+    border-color: #FFBC47 !important;
+}
+
+.el-form .el-form-item__label {
+    color: #FFFFFF!important;
+}

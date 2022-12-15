@@ -77,10 +77,6 @@ export default {
   watch: {
     value: {
       handler(newValue) {
-        console.log("====更新图表的值1", newValue)
-        if (newValue) {
-          this.updateOption(newValue);
-        }
       }
     }
   },

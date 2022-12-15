@@ -44,7 +44,14 @@
       </div>
 
       <!-- 运维信息 -->
-      <div v-else-if="activeName=='runningStatus'"></div>
+      <div v-else-if="activeName=='runningStatus'">
+        <el-form label-position="left" :model="runningFormData">
+          <el-form-item label="离线时间阈值" prop="thresholdTime">
+            <el-input-number controls-position="right" size="small" v-model="runningFormData.thresholdTime" :min="5"></el-input-number>
+            秒
+          </el-form-item>
+        </el-form>
+      </div>
     </div>
 
     <span slot="footer" class="dialog-footer">
@@ -79,6 +86,9 @@ export default {
       ],
       formAttr: [],
       formData: {},
+      runningFormData: {
+        thresholdTime: 60
+      },
       formRule: {},
       location: ""
     }
@@ -86,8 +96,11 @@ export default {
   watch: {
     device: {
       handler(newValue) {
-        console.log("====handler", newValue)
+        console.log("====DeviceConfigForm.handler", newValue)
         this.location = newValue.location ? newValue.location : "";
+        let additionalInfo = newValue.additional_info ? JSON.parse(newValue.additional_info) :
+            {runningInfo: {thresholdTime: 60}};
+        this.runningFormData = additionalInfo.runningInfo;
         this.formData = {};
         if (JSON.stringify(newValue) == "{}" || newValue == "") {return;}
         if (newValue.device_type == "3" || (newValue.device_type == "1" && newValue.protocol != "mqtt")) {
@@ -131,20 +144,23 @@ export default {
   },
   methods: {
     handleClose() {
-      this.$emit("update:dialogVisible", false)
+      this.$emit("update:dialogVisible", false);
     },
     handleSubmit() {
       const submit = () => {
         let device = this.device;
+        let additionalInfo = this.device.additional_info ? JSON.parse(this.device.additional_info) : {};
+        additionalInfo.runningInfo = this.runningFormData;
         let config = {
           id: device.id,
+          additional_info: JSON.stringify(additionalInfo),
           location: this.location,
           protocol_config: JSON.stringify({DeviceId: device.id, AccessToken: device.token, ...this.formData})
         }
         ModbusAPI.updateDeviceConfig(config)
             .then(({data}) => {
               if (data.code == 200) {
-                message_success("配置成功！")
+                message_success("配置成功！");
                 this.handleClose();
                 this.$emit("submit");
               }

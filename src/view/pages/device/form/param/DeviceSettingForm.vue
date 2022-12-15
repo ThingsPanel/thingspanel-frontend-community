@@ -223,6 +223,7 @@ export default defineComponent({
       deviceData.errors = {};
       deviceData.children = device.children;
       deviceData.video_address = d.additional_info ? JSON.parse(d.additional_info).video_address : "";
+      deviceData.additionalInfo = d.additional_info ? JSON.parse(d.additional_info) : {};
       initCustomExchangeAgreementList(d.protocol);
 
       if (d.device_type == "2") {
@@ -253,7 +254,8 @@ export default defineComponent({
      */
     function onSubmit() {
       if (deviceData.protocol == "video_address") {
-        deviceData.additional_info = JSON.stringify({ video_address: deviceData.video_address });
+        deviceData.additionalInfo.video_address = deviceData.video_address;
+        deviceData.additional_info = JSON.stringify(deviceData.additionalInfo);
       } else {
         deviceData.script_id = deviceData.dataExchangeAgreement;
         if (deviceData.authMode == "mqttBasic") {
