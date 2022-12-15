@@ -11,8 +11,8 @@
     </el-form-item>
 
       <div style="display: flex;justify-content: center">
-        <el-button class="cancel-button" size="medium" plain @click="cancelDialog">{{ $t('COMMON.CANCEL') }}</el-button>
-        <el-button class="medium" type="primary" @click="onSubmit">{{ $t('COMMON.CREATE') }}</el-button>
+        <el-button type="cancel" size="medium" plain @click="cancelDialog">{{ $t('COMMON.CANCEL') }}</el-button>
+        <el-button type="save" size="medium" @click="onSubmit">{{ $t('COMMON.CREATE') }}</el-button>
       </div>
 
   </el-form>

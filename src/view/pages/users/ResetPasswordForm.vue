@@ -3,7 +3,7 @@
     class="el-dark-dialog el-dark-input"
     :visible.sync="showDialog"
     width="30%"
-    center
+    title="修改密码"
     :close-on-click-modal="false"
 >
   <el-form
@@ -23,7 +23,7 @@
 
     <FormAlert :error_message="error_message"></FormAlert>
 
-    <el-button size="medium" class="w-100" type="primary" @click="handleSubmit">保存</el-button>
+    <el-button size="medium" class="w-100" type="save" @click="handleSubmit">保存</el-button>
   </el-form>
 </el-dialog>
 </template>

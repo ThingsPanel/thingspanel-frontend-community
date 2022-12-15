@@ -482,7 +482,7 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss">
+<style scope lang="scss">
 .el-input__inner {
   color: aliceblue;
   background: #090944;
@@ -516,7 +516,9 @@ export default defineComponent({
   border-radius:5px ;
   .el-tree {
     background: #263d8b;
-    color: rgb(98, 113, 250);
+    color: #5b92ff;
+   
+
   }
 }
 .dividerLine {
@@ -525,9 +527,13 @@ export default defineComponent({
     background: #8181be;
   }
 }
+.el-tree-node__content {
+
+    border-radius: 5px;
+}
 .el-tree-node__content:hover{
   background: #fff;
-  border-radius: 5px;
+  border-radius: 5px !important;
 }
 .el-drawer__header{
   color: #fff;

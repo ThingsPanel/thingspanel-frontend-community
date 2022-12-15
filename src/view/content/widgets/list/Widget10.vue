@@ -1,6 +1,6 @@
 <template>
   <!--begin::List Widget 9-->
-  <div class="card card-custom card-stretch gutter-b mb-4">
+  <div class="card card-custom card-stretch gutter-b mb-4.5">
     <!--begin::Header-->
     <div class="card-header align-items-center border-0 mt-2 px-6">
       <h3 class="card-title align-items-start flex-column">

@@ -128,8 +128,8 @@
               </el-form-item>
             </el-form>
           </div>
-          <div style="padding-left: 120px">
-            <v-btn color="primary" @click="submitData()">{{$t('COMMON.SAVE')}} </v-btn>
+          <div style="padding-left: 120px; margin-bottom: 20px;">
+            <el-button type="save" @click="submitData()">{{$t('COMMON.SAVE')}} </el-button>
           </div>
         </div>
         <!-- <div v-if="activeTab == 2">

@@ -25,7 +25,7 @@
 <!--      <el-input-->
 <!--          v-model="params.token"-->
 <!--          :placeholder="$t('COMMON.PLACEHOLDER36')"-->
-<!--          size="medium"-->
+
 <!--          clearable-->
 <!--          @keydown.enter.native="handleSearch()"-->
 <!--          @clear="handleSearch()">-->
@@ -36,7 +36,7 @@
       <el-input
           v-model="params.device_name"
           :placeholder="$t('COMMON.PLACEHOLDER2')"
-          size="medium"
+   
           clearable
           @keydown.enter.native="handleSearch()"
           @clear="handleSearch()">
@@ -47,7 +47,7 @@
       <el-input
           v-model="params.key"
           :placeholder="$t('COMMON.PLACEHOLDER40')"
-          size="medium"
+   
           clearable
           @keydown.enter.native="handleSearch()"
           @clear="handleSearch()">
@@ -62,7 +62,6 @@
           :clearable="false"
           value-format="yyyy-MM-dd HH:mm:ss"
           @change="handleSearch()"
-          size="medium"
           type="datetimerange"
           :range-separator="$t('COMMON.PLACEHOLDER38')"
           :start-placeholder="$t('COMMON.PLACEHOLDER37')"

@@ -36,7 +36,7 @@
 <!--                  <el-card class="upload-card">-->
                     <img class="upload-img" width="100%" v-show="thumbImg!=''" :src="thumbImg" alt="">
 <!--                  </el-card>-->
-                  <el-button type="primary">选择封面</el-button>
+                  <el-button type="primary" style="margin-top:20px">选择封面</el-button>
                 </el-upload>
               </div>
 

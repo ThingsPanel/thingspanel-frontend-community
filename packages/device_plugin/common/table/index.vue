@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 表格 -->
-    <el-table :data="tableData" border>
+    <el-table :data="tableData" border class="table-order">
       <el-table-column type="expand" label="查看" width="80" v-if="showView">
         <template slot-scope="props">
           <el-form label-position="left" class="table-form-expand">
@@ -124,8 +124,8 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="handleAdvanceSave">确 定</el-button>
+        <el-button type="cancel" @click="dialogVisible = false">取 消</el-button>
+        <el-button type="save" @click="handleAdvanceSave">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -150,6 +150,9 @@ export default {
 </script>
 
 <style scoped>
+.table-order{
+  border-bottom: 1px solid #EBEEF5;
+}
 .table-form-expand {
   padding-left: 30px;
 }
@@ -158,4 +161,6 @@ export default {
   color: #99a9bf!important;
 
 }
+
+
 </style>

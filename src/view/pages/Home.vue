@@ -5,7 +5,7 @@
       <ListWidget10></ListWidget10>
     </div>
     <!--最近访问-->
-    <div class="card card-custom card-stretch mb-4" v-show="isshowguide">
+    <div class="card card-custom card-stretch gutter-b mb-4.5" v-show="isshowguide">
       <!--begin::Header-->
       <div class="card-header align-items-center border-0 mt-3 px-6">
         <h3 class="card-title align-items-start flex-column">
@@ -106,10 +106,10 @@
         </div>-->
       </div>
     </div>
-    <div>
+    <div class="card-custom card-stretch gutter-b mb-4.5">
       <MixedWidget3></MixedWidget3>
     </div>
-    <div>
+    <div class="card-custom card-stretch gutter-b mb-4.5" style="margin-top:-22px">
       <MixedWidget4></MixedWidget4>
     </div>
     <!--运行状态-->

@@ -84,7 +84,7 @@ export default {
     span {
       display: inline-block;
       padding: 0.6rem 0 1.4rem;
-      margin-right: 5rem;
+      margin-right: 2rem;
       cursor: pointer;
 
       &.active {

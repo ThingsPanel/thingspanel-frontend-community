@@ -1,15 +1,18 @@
 <template>
   <div class="topbar-item">
-    <span
-            class="text-blue font-weight-bold font-size-base d-none d-md-inline mr-1"
+    <div class="card-user">
+      <span
+            class="text-blue font-weight-bold font-size-base d-none d-lg-block mr-1" 
     >
         Hi,
       </span>
     <span
-            class=" text-white font-weight-bolder font-size-base d-none d-md-inline mr-3"
+            class=" text-white font-weight-bolder font-size-base d-none d-lg-block mr-3"
     >
         {{ user.name }}
       </span>
+    </div>
+   
     <div class="card-toolbar">
       <b-dropdown
               id="dropmenu"

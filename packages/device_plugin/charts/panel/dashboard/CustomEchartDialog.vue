@@ -165,8 +165,8 @@
       </el-col>
     </el-row>
     <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submit">确 定</el-button>
+        <el-button type="cancel" @click="dialogVisible = false">取 消</el-button>
+        <el-button type="save" @click="submit">确 定</el-button>
       </span>
   </el-dialog>
 </template>
@@ -439,5 +439,18 @@ export default {
   width: 80px;
 }
 .dialog-footer {
+}
+/deep/ .el-tabs--card > .el-tabs__header .el-tabs__nav{
+  border: none !important;
+}
+/deep/ .el-tabs__item{
+  border: none !important;
+  color: #fff!important;
+  background: #4455d9 !important;;
+}
+/deep/ .el-tabs__item.is-active {
+    color: #fff!important;
+    background: #4093ff !important;
+    border: none !important;
 }
 </style>

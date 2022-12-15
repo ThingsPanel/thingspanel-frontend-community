@@ -3,7 +3,7 @@
       class="w-100"
       v-model="conditionValue"
       :placeholder="$t('AUTOMATION.PLACEHOLDER8')"
-      size="medium"
+  
       filterable
       @change="handleChange()"
   >

@@ -11,8 +11,8 @@
     </el-form-item>
 
       <div style="display: flex;justify-content: center">
-        <el-button class="cancel-button" size="medium" plain @click="cancelDialog">取消</el-button>
-        <el-button class="medium" type="primary" @click="onSubmit">创建</el-button>
+        <el-button class="cancel-button" type="cancel" size="medium" plain @click="cancelDialog">取消</el-button>
+        <el-button class="medium" type="save" size="medium" @click="onSubmit">创建</el-button>
       </div>
 
   </el-form>

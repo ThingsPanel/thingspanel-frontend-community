@@ -11,7 +11,7 @@
             <el-radio-button label="report">报表</el-radio-button>
             <el-radio-button label="other">其他</el-radio-button>
           </el-radio-group>
-          <el-button style="margin-right: 70px" type="primary" @click="handleCustom">自定义</el-button>
+          <el-button style="margin-right: 70px" type="primary" class="btn-order" @click="handleCustom">自定义</el-button>
         </div>
       </el-row>
 
@@ -238,5 +238,10 @@ export default {
 }
 ::v-deep .el-checkbox .el-checkbox__label {
   color: #1a1a27!important;
+}
+
+.btn-order{
+  height: 40px;
+
 }
 </style>

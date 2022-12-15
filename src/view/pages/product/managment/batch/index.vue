@@ -6,7 +6,7 @@
       </el-col>
 
       <el-col :span="12" class="px-2 text-right">
-        <el-button size="medium" type="indigo" @click="handleCreate">{{ $t('COMMON.CREATEBATCH') }}</el-button>
+        <el-button size="medium" type="border" @click="handleCreate">{{ $t('COMMON.CREATEBATCH') }}</el-button>
       </el-col>
     </el-row>
 

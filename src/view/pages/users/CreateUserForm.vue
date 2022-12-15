@@ -3,7 +3,7 @@
       class="el-dark-dialog el-dark-input"
       :visible.sync="showDialog"
       width="40%"
-      center
+      title="用户管理"
       :close-on-click-modal="false"
   >
     <el-form
@@ -89,8 +89,8 @@
 
       <el-form-item >
         <div style="display: flex;justify-content: center">
-          <el-button size="medium" plain @click="showDialog = false">取消</el-button>
-          <el-button size="medium"  type="primary" @click="handleSubmit">保存</el-button>
+          <el-button size="medium" type="cancel" plain @click="showDialog = false">取消</el-button>
+          <el-button size="medium" type="save" @click="handleSubmit">保存</el-button>
           <!--  <div class="py-1"><el-button class="w-100" @click="handleReset">重置</el-button></div>-->
         </div>
       </el-form-item>

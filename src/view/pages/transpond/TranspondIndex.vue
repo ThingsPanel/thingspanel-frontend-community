@@ -1,11 +1,11 @@
 <template>
-<div class="rounded p-4 card no-border">
+<div class="rounded p-4 card">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
       <TableTitle>{{ $t("COMMON.TRANSPOND")}}</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="indigo" @click="dialogVisible = true">{{ $t("COMMON.CREATINGFORWARDINGRULE")}}</el-button>
+      <el-button size="medium" type="border" @click="dialogVisible = true">{{ $t("COMMON.CREATINGFORWARDINGRULE")}}</el-button>
     </el-col>
   </el-row>
 
@@ -19,8 +19,8 @@
     </el-table-column>
     <el-table-column prop="actions" :label="$t('COMMON.OPERATION')" align="center" width="300px">
       <template v-slot="scope">
-        <el-button size="mini" type="indigo" @click="handle_launch(scope.row)">{{ $t("COMMON.START")}}</el-button>
-        <el-button size="mini" type="indigo" @click="handle_pause(scope.row)">{{ $t("COMMON.SUSPENDED")}}</el-button>
+        <el-button size="mini" type="success" @click="handle_launch(scope.row)">{{ $t("COMMON.START")}}</el-button>
+        <el-button size="mini" type="yellow" @click="handle_pause(scope.row)">{{ $t("COMMON.SUSPENDED")}}</el-button>
         <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">{{ $t("COMMON.EDIT")}}</el-button>
 
         <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handle_del(scope.row)">

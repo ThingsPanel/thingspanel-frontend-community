@@ -33,7 +33,7 @@
     <el-dialog class="el-dark-dialog el-table-transparent" title="导入JSON" :visible.sync="importDialogVisible" width="30%">
       <el-row >
         <div style="margin-bottom: 10px;display: flex;justify-content: space-between">
-          <span>{{ $t('COMMON.JSONTEST') }}</span>
+          <span style="padding-top: 10px;">{{ $t('COMMON.JSONTEST') }}</span>
           <el-upload class="upload-demo" action="#" :limit="1" >
             <el-button type="primary" class="el-button--indigo">{{ $t('COMMON.SELECTTHEFILE') }}</el-button>
           </el-upload>
@@ -45,8 +45,8 @@
       </el-row>
 
       <span slot="footer" class="dialog-footer">
-        <el-button  @click="importDialogVisible = false">{{ $t('COMMON.CANCEL') }}</el-button>
-        <el-button type="primary" class="el-button--indigo" @click="handleImport()">{{ $t('COMMON.THEIMPORT') }}</el-button>
+        <el-button type="cancel" @click="importDialogVisible = false">{{ $t('COMMON.CANCEL') }}</el-button>
+        <el-button type="export" @click="handleImport()">{{ $t('COMMON.THEIMPORT') }}</el-button>
       </span>
     </el-dialog>
   </div>

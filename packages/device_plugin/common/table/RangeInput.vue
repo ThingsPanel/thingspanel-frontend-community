@@ -1,7 +1,7 @@
 <template>
   <div style="display: flex">
     <el-input v-model="startValue" @change="handleChange"></el-input>
-    <span style="width: 50px">-</span>
+    <span style="width: 50px; text-align: center;">-</span>
     <el-input v-model="endValue" @change="handleChange"></el-input>
   </div>
 </template>

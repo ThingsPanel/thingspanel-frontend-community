@@ -54,8 +54,8 @@
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column :label='$t("COMMON.NUMBERID")' type="index" width="50"  align="center"></el-table-column>
-      <el-table-column :label='$t("COMMON.BUSINESSNAME1")' prop="business_name">
+      <el-table-column :label='$t("COMMON.NUMBERID")' type="index" width="50" align="left"></el-table-column>
+      <el-table-column :label='$t("COMMON.BUSINESSNAME1")'  width="270" align="left" prop="business_name">
         <template v-slot="scope">
           <span
             class="cursor-pointer"

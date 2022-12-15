@@ -5,7 +5,7 @@
     :clearable="clearable"
     :filterable="filterable"
     :placeholder="$t('AUTOMATION.PLACEHOLDER1')"
-    size="medium"
+ 
     @change="handleChange"
 >
   <el-option :value="item.id" :label="item.name" v-for="(item, index) in deviceOptions"  :key="index"></el-option>

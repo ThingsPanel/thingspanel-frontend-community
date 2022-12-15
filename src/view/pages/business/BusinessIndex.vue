@@ -5,7 +5,7 @@
       <TableTitle>项目管理</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="indigo"
+      <el-button size="medium" type="border"
                  v-if="hasAuth('business:add')" @click="handleCreate()">新增项目</el-button>
     </el-col>
   </el-row>
@@ -13,7 +13,7 @@
   <!-- 表 start -->
   <el-form class="inline-edit">
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column :label="$t('COMMON.NO')" type="index"></el-table-column>
+    <el-table-column :label="$t('COMMON.NO')" type="index" width="260"></el-table-column>
 
     <el-table-column label="项目名称" prop="name">
       <template v-slot="scope">
@@ -32,9 +32,9 @@
       </template>
     </el-table-column>
 
-    <el-table-column align="center" :label="$t('COMMON.OPERATION')" width="360">
+    <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="270">
       <template v-slot="scope">
-        <div class="text-right">
+        <div style="text-align: left">
           <template v-if="scope.row.status">
             <!-- status 状态为新建或者编辑 -->
             <el-button type="indigo" size="mini" @click="handleSave(scope.row)">{{ $t('COMMON.SAVE') }}</el-button>
@@ -43,8 +43,8 @@
           <template v-else>
 
 <!--            <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">{{ $t('COMMON.DEVICE_CHART') }}</el-button>-->
-            <el-button type="indigo" size="mini" v-if="hasAuth('business:device')" @click="showDevice(scope.row)">{{ $t('COMMON.DEVICE') }}</el-button>
-            <el-button type="indigo" size="mini" class="mr-3"
+            <el-button type="yellow" size="mini" v-if="hasAuth('business:device')" @click="showDevice(scope.row)">{{ $t('COMMON.DEVICE') }}</el-button>
+            <el-button type="blue" size="mini" class="mr-3"
                        :disabled="!hasAuth('business:edit')" @click="handleEdit(scope.row)">编辑项目名</el-button>
             <el-popconfirm :title="$t('COMMON.TEXT44')" @confirm="handleDelete(scope.row)">
               <el-button :disabled="!hasAuth('business:del')" slot="reference" type="danger" size="mini" >{{ $t('COMMON.DELETE') }}</el-button>

@@ -99,8 +99,8 @@
       </div>
 
         <div style="display: flex;justify-content: center">
-          <el-button style="color:#000" @click="onCancel">取消</el-button>
-          <el-button type="primary" @click="onSubmit">保存</el-button>
+          <el-button type="cancel" @click="onCancel">取消</el-button>
+          <el-button type="save" @click="onSubmit">保存</el-button>
         </div>
 
     </el-form>

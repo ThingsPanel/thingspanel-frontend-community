@@ -3,7 +3,7 @@
       class="w-100"
       v-model="fieldValue"
       :placeholder="$t('AUTOMATION.PLACEHOLDER9')"
-      size="medium"
+ 
       filterable
       @change="handleChange"
   >

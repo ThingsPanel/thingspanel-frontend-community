@@ -1,5 +1,5 @@
 <template>
-  <b-card class="mb-5 text-center card-box margin-auto marketbox"
+  <b-card class="mb-5 text-center card-border margin-auto marketbox"
           v-bind:key="data.id"
           :title="pluginData.model_name"
           :img-src="'media/logos/wsd.png'"
@@ -24,7 +24,7 @@
       <v-rating v-model="rating" color="orange" dense small readonly class="d-inline-block v-application"></v-rating>
     </b-card-text>
     <b-card-text style="margin-top: 10px">
-      <b-btn v-show="isInstalled" variant="primary" size="sm" class="text-center" @click="handleEdit">
+      <b-btn v-show="isInstalled" variant="warning" size="sm" class="text-center" @click="handleEdit">
         {{ $t("COMMON.EDIT") }}
       </b-btn>
       <b-btn v-show="!isInstalled"
@@ -33,10 +33,10 @@
              @click="handleInstall">
         {{ installing ?  $t("COMMON.INSTALLING_TITLE") : $t("COMMON.INSTALL") }}
       </b-btn>
-      <b-btn v-show="isInstalled" variant="primary" size="sm" class="text-center" style="margin-left: 20px" @click="handleShowExport" >
+      <b-btn v-show="isInstalled" variant="success" size="sm" class="text-center" style="margin-left: 20px" @click="handleShowExport" >
         {{ $t("COMMON.EXPORT") }}
       </b-btn>
-      <b-btn v-show="isInstalled" :disabled="!hasAuth('plugin:device:del')" variant="primary" size="sm" class="text-center" style="margin-left: 20px" @click="handleUninstall" >
+      <b-btn v-show="isInstalled" :disabled="!hasAuth('plugin:device:del')" variant="danger" size="sm" class="text-center" style="margin-left: 20px" @click="handleUninstall" >
         {{ $t("COMMON.UNINSTALL") }}
       </b-btn>
     </b-card-text>
@@ -189,5 +189,8 @@ export default {
 }
 .installing {
 
+}
+.card-border{
+  border: 1px solid #70A0ED !important;
 }
 </style>

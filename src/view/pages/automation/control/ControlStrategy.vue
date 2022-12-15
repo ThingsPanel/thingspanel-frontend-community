@@ -7,7 +7,7 @@
     </el-col>
     <el-col :span="12" class="text-right">
 <!--      新增-->
-      <el-button size="medium" type="indigo" @click="handleCreate()">{{  $t('AUTOMATION.CONTROL_STRATEGY.NEW_STRATEGY') }}</el-button>
+      <el-button size="medium" type="border" @click="handleCreate()">{{  $t('AUTOMATION.CONTROL_STRATEGY.NEW_STRATEGY') }}</el-button>
 <!--      返回-->
       <el-button size="medium" type="indigo" @click="goBack()">{{  $t('COMMON.RETURN') }}</el-button>
     </el-col>
@@ -35,7 +35,7 @@
       <template v-slot="scope">
         <div class="text-right">
           <!-- 编辑 -->
-          <el-button type="indigo" size="mini" class="mr-3" @click="handleEdit(scope.row)">{{ $t('COMMON.EDIT') }}</el-button>
+          <el-button type="yellow" size="mini" class="mr-3" @click="handleEdit(scope.row)">{{ $t('COMMON.EDIT') }}</el-button>
           <!-- 删除 -->
           <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handleDelete(scope.row)">
             <el-button slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>

@@ -3,7 +3,7 @@
       class="el-dark-dialog el-dark-input"
       :visible.sync="showDialog"
       width="40%"
-      center
+      title="用户管理"
       :close-on-click-modal="false"
   >
     <el-form

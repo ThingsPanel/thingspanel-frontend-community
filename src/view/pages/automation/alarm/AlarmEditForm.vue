@@ -57,7 +57,7 @@
           <el-row :gutter="20">
             <el-col :span="3" class="py-5" v-if="config_item.operator">
               <el-form-item>
-                <el-select v-model="config_item.operator" size="medium">
+                <el-select v-model="config_item.operator">
                   <el-option :value="item.value" :label="item.label" v-for="(item, index) in operatorOptions" :key="index"></el-option>
                 </el-select>
               </el-form-item>
@@ -68,7 +68,7 @@
           <el-row :gutter="20">
             <el-col :span="6">
               <el-form-item :prop="'config.'+index+'.field'" :rules="rules['config.field']">
-                <el-select class="w-100" v-model="config_item.field" :placeholder="$t('AUTOMATION.PLACEHOLDER2')" size="medium">
+                <el-select class="w-100" v-model="config_item.field" :placeholder="$t('AUTOMATION.PLACEHOLDER2')">
                   <el-option :value="item.name" :label="item.title" v-for="(item, index) in triggerOptions" :key="index"></el-option>
                 </el-select>
               </el-form-item>
@@ -76,7 +76,7 @@
 <!--           选择操作符 -->
             <el-col :span="6">
               <el-form-item :prop="'config.'+index+'.condition'" :rules="rules['config.condition']">
-                <el-select class="w-100" v-model="config_item.condition" :placeholder="$t('AUTOMATION.PLACEHOLDER3')" size="medium">
+                <el-select class="w-100" v-model="config_item.condition" :placeholder="$t('AUTOMATION.PLACEHOLDER3')">
                   <el-option :value="item.id" :label="item.name" v-for="(item,index) in symbolOptions" :key="index">{{ item.id }}</el-option>
                 </el-select>
               </el-form-item>
@@ -121,8 +121,8 @@
   <FormAlert :error_message="error_message"></FormAlert>
 
   <div class="text-right">
-    <el-button size="medium" type="default" @click="handleCancel()">{{ $t('COMMON.CANCEL') }}</el-button>
-    <el-button size="medium" type="indigo" @click="handleSave()">{{ $t('COMMON.SAVE') }}</el-button>
+    <el-button size="medium" type="cancel" @click="handleCancel()">{{ $t('COMMON.CANCEL') }}</el-button>
+    <el-button size="medium" type="save" @click="handleSave()">{{ $t('COMMON.SAVE') }}</el-button>
   </div>
 </el-form>
 </el-dialog>
@@ -252,7 +252,7 @@ export default defineComponent({
         {required: true, message: "请选择符号"}
       ],
       "config.value": [
-        {required: true, message: "请填写值"}
+        {required: true, message: "请选择值"}
       ],
     })
 

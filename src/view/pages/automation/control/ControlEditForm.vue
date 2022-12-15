@@ -96,7 +96,7 @@
               <el-col :span="3">
                 <el-form-item :prop="`config.rules.${index}.value`" :rules="rules['config.rules.value']">
                   <!-- 数值 -->
-                  <el-input size="medium" class="w-100" v-model="rules_item.value" :placeholder="$t('AUTOMATION.PLACEHOLDER7')"></el-input>
+                  <el-input class="w-100" v-model="rules_item.value" :placeholder="$t('AUTOMATION.PLACEHOLDER7')"></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="3">
@@ -208,8 +208,8 @@
                     :rules="apply_item.field_type === 3 ? rules['config.rules.value_number'] : rules['config.rules.value']"
                 >
                   <!-- 值 field_type等于3时 改为数字输入框 -->
-                  <el-input-number size="medium" controls-position="right" class="w-100" v-model="apply_item.value" v-if="apply_item.field_type === 3"></el-input-number>
-                  <el-input size="medium" class="w-100" v-model="apply_item.value" v-else></el-input>
+                  <el-input-number controls-position="right" class="w-100" v-model="apply_item.value" v-if="apply_item.field_type === 3"></el-input-number>
+                  <el-input class="w-100" v-model="apply_item.value" v-else></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="3">
@@ -241,8 +241,8 @@
     <FormAlert :error_message="error_message"></FormAlert>
 
     <div class="text-right">
-      <el-button size="medium" type="default" @click="handleCancel()">{{$t('COMMON.CANCEL')}}</el-button>
-      <el-button size="medium" type="indigo" @click="handleSave()">{{$t('COMMON.SAVE')}}</el-button>
+      <el-button size="medium" type="cancel" @click="handleCancel()">{{$t('COMMON.CANCEL')}}</el-button>
+      <el-button size="medium" type="save" @click="handleSave()">{{$t('COMMON.SAVE')}}</el-button>
     </div>
   </el-form>
   </el-dialog>

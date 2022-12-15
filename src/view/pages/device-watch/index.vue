@@ -15,7 +15,7 @@
         <el-table-column label="项目名称" prop="name" align="left">
           <template v-slot="scope">
             <div class="w-100 cursor-pointer" @click="showDeviceChart(scope.row)">
-              <p>{{ scope.row.name }}</p>
+              <p class="mad">{{ scope.row.name }}</p>
             </div>
           </template>
         </el-table-column>
@@ -47,7 +47,9 @@
   </div>
 </template>
 <style scoped>
-
+.mad{
+  margin-bottom: 0;
+}
 </style>
 
 <script>

@@ -3,7 +3,7 @@
     class="w-100"
     v-model="fieldValue"
     placeholder="命令"
-    size="medium"
+
     filterable @change="handleChange"
 >
   <el-option

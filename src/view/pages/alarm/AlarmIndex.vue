@@ -30,7 +30,6 @@
           :picker-options="DatePickerOptions"
           @change="handleSearch()"
           @clear="handleSearch()"
-          size="medium"
           type="datetimerange"
           :range-separator="$t('COMMON.PLACEHOLDER38')"
           :start-placeholder="$t('COMMON.PLACEHOLDER37')"
@@ -54,7 +53,7 @@
 <!--    <el-table-column label="当前值"></el-table-column>-->
     <el-table-column :label="$t('COMMON.TRIGGERCONDITIONS')" prop="describe" :show-overflow-tooltip="true">
       <template v-slot="scope">
-        <p class="table-describe">{{ scope.row.describe }}</p>
+        <p class="table-describe mad">{{ scope.row.describe }}</p>
       </template>
     </el-table-column>
   </el-table>
@@ -130,5 +129,8 @@ export default defineComponent({
 <style scoped>
 .el-table-column {
 
+}
+.mad{
+  margin-bottom: 0;
 }
 </style>

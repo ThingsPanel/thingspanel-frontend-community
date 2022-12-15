@@ -247,7 +247,7 @@ div {
   display: flex;
   flex-flow: wrap;
   width: 1000px;
-  height: 600px;
+  height: 580px;
   float: left;
   overflow-y: auto;
   margin: 0 auto;

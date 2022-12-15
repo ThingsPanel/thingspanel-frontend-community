@@ -6,39 +6,41 @@
       </el-col>
 
       <el-col :span="12" class="px-2 text-right">
-        <el-button size="medium" type="indigo"
+        <el-button size="medium" type="border"
                    @click="handleCreate()">创建可视化</el-button>
       </el-col>
     </el-row>
     <!-- 表 start -->
     <el-form class="inline-edit">
       <el-table :data="tableData" v-loading="loading">
-        <el-table-column :label="$t('COMMON.NO')" type="index" align="center" width="80"></el-table-column>
+        <el-table-column :label="$t('COMMON.NO')" type="index" align="left" width="550"></el-table-column>
 
-        <el-table-column label="可视化名称" prop="dashboard_name" align="center">
+        <el-table-column label="可视化名称" prop="dashboard_name" align="left">
           <template v-slot="scope">
             <!-- 新建 -->
             <el-form-item v-if="scope.row.status" :error="scope.row.errors.dashboard_name">
               <el-input size="medium" v-model="scope.row.formData.dashboard_name" v-focus
                         @keydown.enter.native.prevent="handleSave(scope.row)"></el-input>
+
+                    
             </el-form-item>
 
-            <div v-else class="text-center w-100 cursor-pointer" @click="showDeviceChart(scope.row)">
-              <p>{{ scope.row.dashboard_name }}</p>
+            <div v-else class="w-100 cursor-pointer" @click="showDeviceChart(scope.row)">
+              <p class="mad">{{ scope.row.dashboard_name }}</p>
             </div>
           </template>
         </el-table-column>
 
-        <el-table-column align="center" :label="$t('COMMON.OPERATION')" width="360">
+        <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="360">
           <template v-slot="scope">
-            <div class="text-center">
+            <div style="text-align: left">
               <div v-if="scope.row.status">
-                <el-button type="indigo" size="mini" @click="handleSave(scope.row)">保存</el-button>
-                <el-button type="default" size="mini" @click="handleCancel(scope.row)">取消</el-button>
+                <el-button type="save" size="mini" @click="handleSave(scope.row)">保存</el-button>
+                <el-button type="cancel" size="mini" @click="handleCancel(scope.row)">取消</el-button>
               </div>
               <div v-else>
                 <el-button type="indigo" size="mini" @click="showVisual(scope.row)">查看</el-button>
-                <el-button type="indigo" size="mini" @click="editVisual(scope.row)">编辑</el-button>
+                <el-button type="yellow" size="mini" @click="editVisual(scope.row)">编辑</el-button>
                 <el-popconfirm :disabled="!hasAuth('visual:del')" style="margin-left: 10px" :title="$t('COMMON.TEXT44')" @confirm="delVisual(scope.row)">
                   <el-button  slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>
                 </el-popconfirm>
@@ -63,7 +65,9 @@
   </div>
 </template>
 <style scoped>
-
+.mad{
+  margin-bottom: 0;
+}
 </style>
 
 <script>

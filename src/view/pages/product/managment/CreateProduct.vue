@@ -44,8 +44,8 @@
       </el-form>
 
       <span slot="footer" class="dialog-footer">
-      <el-button @click="handleClose">{{ $t('COMMON.CANCEL') }}</el-button>
-      <el-button type="primary" @click="handleSubmit">{{ $t('COMMON.CONFIRM') }}</el-button>
+      <el-button type="cancel" @click="handleClose">{{ $t('COMMON.CANCEL') }}</el-button>
+      <el-button type="save" @click="handleSubmit">{{ $t('COMMON.CONFIRM') }}</el-button>
     </span>
     </el-dialog>
     <plugin-binding-form :dialog-visible.sync="pluginDialogVisible" @submit="handleBindPluginSubmit"></plugin-binding-form>

@@ -8,14 +8,14 @@
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column :label="$t('COMMON.NO')" type="index" width="100"></el-table-column>
-    <el-table-column :label="$t('COMMON.NAMES')" prop="name"></el-table-column>
+    <el-table-column :label="$t('COMMON.NO')" type="index" width="260"></el-table-column>
+    <el-table-column :label="$t('COMMON.NAMES')" prop="name" ></el-table-column>
     <el-table-column :label="$t('COMMON.TIMES')" prop="created_at">
       <template v-slot="scope">
         {{scope.row.created_at ? dateFormat(scope.row.created_at) : ""}}
       </template>
     </el-table-column>
-    <el-table-column align="left" :label="$t('COMMON.OPERATION')" min-width="200" width="300">
+    <el-table-column align="left" :label="$t('COMMON.OPERATION')"  width="200">
       <template v-slot="scope">
         <div style="text-align: left">
           <el-button type="indigo" size="mini" @click="showAlarmList(scope.row)">{{ $t('COMMON.ALARM_STRATEGY') }}</el-button>

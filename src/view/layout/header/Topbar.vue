@@ -4,7 +4,7 @@
 
     <!--begin: Language bar -->
     <div class="topbar-item">
-      <el-select v-model="themeValue" placeholder="主题颜色" @change="handleChangeTheme">
+      <el-select class="topbar-select" v-model="themeValue" placeholder="主题颜色" @change="handleChangeTheme">
         <el-option v-for="(theme, index) in themeOptions" :key="index" :label="theme.label" :value="theme.value" ></el-option>
       </el-select>
 
@@ -12,7 +12,7 @@
         no-caret right no-flip>
 
         <template v-slot:button-content>
-          <img class="h-20px w-20px rounded-sm" :src="languageFlag || getLanguageFlag" alt=""/>
+          <img class="h-30px w-30px rounded-sm mad" :src="languageFlag || getLanguageFlag" alt=""/>
         </template>
 
         <b-dropdown-text tag="div" style="width: 175px;">
@@ -32,6 +32,16 @@
 
 <style lang="scss">
 .topbar {
+  .el-input__inner{
+     height: 30px;
+     line-height: 30px;
+  }
+  .topbar-select{
+    .el-input__suffix{
+      top:7px;
+    }
+     
+  }
   .dropdown-toggle {
     padding: 0;
     &:hover {
