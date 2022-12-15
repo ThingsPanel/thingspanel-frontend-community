@@ -12,7 +12,7 @@
         </el-col>
 
         <el-col :span="18">
-          <tsl-editor class="tsl-editor" :show-view="false" :data="tslData"></tsl-editor>
+          <tsl-editor class="tsl-editor" :show-view="false" :show-create="true" :data="tslData" @gotoPlugin="handleGotoPlugin"></tsl-editor>
         </el-col>
       </el-row>
 
@@ -26,11 +26,12 @@
 </template>
 
 <script>
-import {computed, defineComponent, getCurrentInstance, nextTick} from "@vue/composition-api";
+import {computed, defineComponent, nextTick} from "@vue/composition-api";
 import { ref } from "@vue/composition-api/dist/vue-composition-api";
 import PluginAPI from "@/api/plugin.js"
 import {device_update} from "@/api/device";
 import {message_success} from "@/utils/helpers";
+import useRoute from "@/utils/useRoute";
 
 export default defineComponent({
   name: "PluginBinding",
@@ -45,6 +46,9 @@ export default defineComponent({
     }
   },
   setup(props, context) {
+    let {router} = useRoute()
+
+
     const tree = ref(null);
     let defaultExpandKeys = ref([]);
 
@@ -149,6 +153,11 @@ export default defineComponent({
         .catch(err => {})
     }
 
+    function handleGotoPlugin() {
+      router.push({ name: "Market", query: { tab: "deviceEditor"} })
+
+    }
+
   return {
     tree,
     defaultExpandKeys,
@@ -156,7 +165,8 @@ export default defineComponent({
     showDialog,
     tslData,
     nodeClick,
-    handleSubmit
+    handleSubmit,
+    handleGotoPlugin
   }
 }
 })

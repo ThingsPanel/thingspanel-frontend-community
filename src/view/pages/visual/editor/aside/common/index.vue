@@ -21,6 +21,15 @@
         </div>
       </el-collapse-item>
 
+      <!-- 视频 -->
+      <el-collapse-item title="视频" name="video">
+        <div class="component-item" v-for="(component, index) in videoList" :key="index">
+          <vue-drag :option="component" :type="component.type" @click="handleComponentClicked" :index="'video' + component.name">
+            <el-image  :style="defaultStyle" :src="component.image_src"></el-image>
+          </vue-drag>
+        </div>
+      </el-collapse-item>
+
       <!-- 组态 -->
       <el-collapse-item v-for="(configure, index) in configures" :key="index" :title="configure.category" :name="configure.category">
         <div v-if="isActive(configure.category)">
@@ -77,6 +86,9 @@ export default {
       ],
       textList: [
         { name: "文本", type: "text", image_src: require("@/view/pages/visual/components/text/text_1.svg") }
+      ],
+      videoList: [
+        { name: "视频", type: "video", image_src: require("@/view/pages/visual/components/video/video_1.svg") }
       ],
       defaultStyle: {
         width: "50px",

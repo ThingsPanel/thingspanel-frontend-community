@@ -29,7 +29,9 @@
                      @submit="componentSubmit"
       ></control-panel>
 
-      <video-panel v-else-if="chartCategory=='video'" ref="video" :charts="options.video"></video-panel>
+      <video-panel v-else-if="chartCategory=='video'" ref="video" :charts="options.video"
+                   @submit="componentSubmit"
+      ></video-panel>
 
       <report-panel v-else-if="chartCategory=='report'" ref="report" :charts="options.report"></report-panel>
 

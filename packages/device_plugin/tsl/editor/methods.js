@@ -16,5 +16,8 @@ export default {
         }
         this.jsonStr = JSON.stringify(obj, null, 4);
         this.$emit("dataChange", obj);
+    },
+    handleGoToPlugin() {
+        this.$emit("gotoPlugin");
     }
 }

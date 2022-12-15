@@ -19,7 +19,6 @@ const getPluginIdFromCasOptions = (casOptions, v) => {
                         if (!group.children) resolve(null);
                         group.children.forEach(device => {
                             if (device.device_id == v[2]) {
-                                console.log("找到3级节点", device.plugin_id)
                                 resolve(device.plugin_id)
                             } else {
                                 resolve(null);

@@ -45,6 +45,11 @@
                     :value.sync="component.value"
             :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
 
+        <video-player
+                   :w="component.point.w" :h="component.point.h"
+                   v-if="component.type == 'video'" :option="component">
+        </video-player>
+
         <other :style="getConfigureStyle(component)"
                :w="component.point.w" :h="component.point.h"
                v-else-if="component.type == 'other'" :option="component"></other>
@@ -76,6 +81,7 @@ import Status from "@/components/e-charts/Status";
 import Configure from "@/components/configure/Configure"
 import Other from "@/components/other/Other"
 import CommonText from "@/components/text/CommonText"
+import VideoPlayer from "@/components/common/VideoPlayer"
 
 import VueDraggableResizable from 'vue-draggable-resizable'
 import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
@@ -106,7 +112,7 @@ const canvasInfo = {
 export default {
   name: "EditorCanvas",
   components: {
-    DashboardChart, HistoryChart, Control, Status, Configure, Other, CommonText, VueDraggableResizable
+    DashboardChart, HistoryChart, Control, Status, Configure, Other, CommonText, VideoPlayer, VueDraggableResizable
   },
   props: {
     jsonData: {
@@ -179,7 +185,7 @@ export default {
 
     // 监听数据改变
     bus.$on("changeData", data => {
-      console.log("====canvas.watch.changeData1", data)
+      // console.log("====canvas.watch.changeData1", data)
 
       let index = this.fullData.findIndex(item => item.cptId == data.cptId)
       if (index < 0) return;
@@ -187,8 +193,7 @@ export default {
       Object.keys(data).forEach(item => {
         cpt[item] = data[item];
       })
-      // this.fullData.splice(index, 1, cpt);
-      // console.log("====canvas.watch.changeData2", this.fullData)
+      // console.log("====canvas.watch.changeData2", cpt)
     })
 
     // 监听样式改变

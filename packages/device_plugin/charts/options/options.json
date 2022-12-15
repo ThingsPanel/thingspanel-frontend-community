@@ -475,5 +475,14 @@
       ],
       "disabled": false
     }
+  ],
+  "video": [
+    {
+      "controlType": "video",
+      "index": 1,
+      "type": "video",
+      "title": "视频",
+      "src": ""
+    }
   ]
 }

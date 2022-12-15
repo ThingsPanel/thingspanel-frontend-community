@@ -87,6 +87,7 @@ export default {
   },
   methods: {
     customPlugin() {
+      this.pluginJsonData = {};
       this.showEditorDialog = true
       console.log("configuration")
       // return false

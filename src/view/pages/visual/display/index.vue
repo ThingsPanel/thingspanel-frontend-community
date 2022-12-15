@@ -39,6 +39,11 @@
                     :value="component.value"
                     :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
 
+        <video-player :style="getChartStyle(component)"
+                 :w="component.point.w" :h="component.point.h"
+                 v-if="component.type == 'video'" :option="component"
+                  :src="component.src" :autoplay="true"></video-player>
+
         <other :style="getConfigureStyle(component)"
                :w="component.point.w" :h="component.point.h"
                v-else-if="component.type == 'other'" :option="component"></other>
@@ -57,6 +62,7 @@ import Status from "@/components/e-charts/Status";
 import Configure from "@/components/configure/Configure"
 import Other from "@/components/other/Other"
 import CommonText from "@/components/text/CommonText"
+import VideoPlayer from "@/components/common/VideoPlayer";
 
 import VueDraggableResizable from 'vue-draggable-resizable'
 import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
@@ -67,7 +73,8 @@ import { currentValue } from "@/api/device"
 export default {
   name: "VisualDisplay",
   components: {
-    DashboardChart, HistoryChart, Control, Status, Configure, Other, CommonText, VueDraggableResizable
+    DashboardChart, HistoryChart, Control, Status, Configure, Other, CommonText, VueDraggableResizable,
+    VideoPlayer
   },
   data() {
     return {

@@ -59,6 +59,12 @@ export default {
       ]
     };
   },
+  mounted() {
+    let tab = this.$route.query.tab;
+    if (tab) {
+      this.activeTab = tab;
+    }
+  },
   methods: {
     handleEditPlugin(item) {
       console.log("handleEditPlugin", item)

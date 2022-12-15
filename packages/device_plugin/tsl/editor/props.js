@@ -38,5 +38,9 @@ export default {
     showHandle: {
         type: [String, Boolean],
         default: false
+    },
+    showCreate: {
+        type: [String, Boolean],
+        default: false
     }
 }

@@ -17,21 +17,24 @@
 
 
       <el-collapse-item title="数据源" name="source">
-        <el-cascader ref="cascaderRef" class="el-cascader" size="mini"
-                     :options="casOptions"  v-model="form.casValue"
-                     filterable @change="handleChangeOptions" placeholder="请选择设备">
-          <template slot-scope="{ node, data }">
-            <span>{{ data.label }}</span>
-            <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
-            <span v-if="data.device_id">({{ data.plugin_id ? "已绑定" : "未绑定" }})</span>
-          </template>
-        </el-cascader>
+<!--        <el-cascader ref="cascaderRef" class="el-cascader" size="mini"-->
+<!--                     :options="casOptions"  v-model="form.casValue"-->
+<!--                     filterable @change="handleChangeOptions" placeholder="请选择设备">-->
+<!--          <template slot-scope="{ node, data }">-->
+<!--            <span>{{ data.label }}</span>-->
+<!--            <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>-->
+<!--            <span v-if="data.device_id">({{ data.plugin_id ? "已绑定" : "未绑定" }})</span>-->
+<!--          </template>-->
+<!--        </el-cascader>-->
 
-        <el-select size="mini" placeholder="请选择数据源" v-model="form.mapping" v-if="dataSrcOptions.length > 0">
-          <el-option v-for="(item, index) in dataSrcOptions"  :key="index"
-                     :value="item.name" :label="item.title">
-          </el-option>
-        </el-select>
+<!--        <el-select size="mini" placeholder="请选择数据源" v-model="form.mapping" v-if="dataSrcOptions.length > 0">-->
+<!--          <el-option v-for="(item, index) in dataSrcOptions"  :key="index"-->
+<!--                     :value="item.name" :label="item.title">-->
+<!--          </el-option>-->
+<!--        </el-select>-->
+        <data-source-pane :cas-options="casOptions" :cas-value.sync="form.casValue" :mapping.sync="form.mapping"
+                          @select="handleSelect"
+        ></data-source-pane>
       </el-collapse-item>
 
 
@@ -42,10 +45,11 @@
 
 <script>
 import bus from "@/core/plugins/eventBus"
-import Call from "./call"
+import DataSourcePane from "./components/DataSourcePane";
 
 export default {
   name: "DashboardConfig",
+  components: { DataSourcePane },
   props: {
     formData: {
       type: [Object],
@@ -74,9 +78,9 @@ export default {
       handler(newValue){
         console.log("====Dashboard", newValue);
         this.form = JSON.parse(JSON.stringify(newValue));
-        if (this.form.casValue) {
-          this.handleChangeOptions(this.form.casValue);
-        }
+        // if (this.form.casValue) {
+        //   this.handleChangeOptions(this.form.casValue);
+        // }
       }
     },
     form: {
@@ -87,35 +91,38 @@ export default {
     }
   },
   methods: {
-    async handleChangeOptions(v) {
-      let checkedNodes = this.$refs.cascaderRef.getCheckedNodes();
-      let node = checkedNodes ? checkedNodes[0] : null;
+    handleSelect(v) {
 
-      let deviceId = null;
-      let pluginId = null;
-
-      if (!node && v) {
-        // 如果不是手动选择节点
-        pluginId = await Call.getPluginIdFromCasOptions(this.casOptions, v);
-        deviceId = v[2] ? v[2] : null;
-      } else if (node) {
-        console.log("====DashboardConfig.node", node)
-        if (node.data.business_id) {
-          // 项目
-        } else if (node.data.group_id) {
-          // 分组
-        } else if (node.data.device_id) {
-          // 设备
-          pluginId = node.data.plugin_id;
-          deviceId = node.data.device_id;
-        }
-      }
-      if (!pluginId) return;
-      let tslProperties = await Call.getPluginTSLByPluginId(pluginId);
-      if (!tslProperties) return;
-      this.dataSrcOptions = tslProperties;
-      this.form.deviceId = deviceId;
     }
+    // async handleChangeOptions(v) {
+    //   let checkedNodes = this.$refs.cascaderRef.getCheckedNodes();
+    //   let node = checkedNodes ? checkedNodes[0] : null;
+    //
+    //   let deviceId = null;
+    //   let pluginId = null;
+    //
+    //   if (!node && v) {
+    //     // 如果不是手动选择节点
+    //     pluginId = await Call.getPluginIdFromCasOptions(this.casOptions, v);
+    //     deviceId = v[2] ? v[2] : null;
+    //   } else if (node) {
+    //     console.log("====DashboardConfig.node", node)
+    //     if (node.data.business_id) {
+    //       // 项目
+    //     } else if (node.data.group_id) {
+    //       // 分组
+    //     } else if (node.data.device_id) {
+    //       // 设备
+    //       pluginId = node.data.plugin_id;
+    //       deviceId = node.data.device_id;
+    //     }
+    //   }
+    //   if (!pluginId) return;
+    //   let tslProperties = await Call.getPluginTSLByPluginId(pluginId);
+    //   if (!tslProperties) return;
+    //   this.dataSrcOptions = tslProperties;
+    //   this.form.deviceId = deviceId;
+    // }
   }
 }
 </script>

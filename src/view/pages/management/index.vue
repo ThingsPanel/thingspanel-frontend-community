@@ -173,7 +173,6 @@ import {
   defineComponent,
   reactive,
   ref,
-  computed,
   onMounted,
   getCurrentInstance,
 } from "@vue/composition-api";
@@ -482,7 +481,7 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss">
+<style scope lang="scss">
 .el-input__inner {
   color: aliceblue;
   background: #090944;

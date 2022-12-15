@@ -34,6 +34,12 @@ import GlobalComponents from './components/global-components';
 import { jsonProp } from './utils/tool';
 import ApiService from "./core/services/api.service";
 
+/**
+ * video.js
+ */
+import Video from 'video.js'
+import 'video.js/dist/video-js.css'
+Vue.prototype.$video = Video
 
 import "@/styles/common.scss";
 import * as echarts from 'echarts';
