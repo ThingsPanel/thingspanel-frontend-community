@@ -361,7 +361,7 @@ export default defineComponent({
       for (const key in formData) {
         // 有则逐个赋值
         if(key in item_attrs){
-          formData[key] = item_attrs[key]
+          formData[key] = item_attrs[key];
         }
       }
     }
@@ -446,6 +446,7 @@ export default defineComponent({
     function create_or_update(formData) {
       // 拷贝
       let copy = JSON.parse(JSON.stringify(formData))
+      console.log("====create_or_update.formData", formData)
       // 重点 config 要序列化
       copy.config = JSON.stringify(copy.config)
       // status 需要数字类型，字符串会报错 "状态 不能为空"

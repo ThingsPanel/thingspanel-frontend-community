@@ -154,9 +154,9 @@
     <!-- 图表组件 end-->
 
     <!--  操作 start  -->
-    <el-table-column :label="$t('COMMON.OPERATION')" width="300px" min-width="12%">
+    <el-table-column :label="$t('COMMON.OPERATION')" width="300px" min-width="12%" align="right">
       <template slot-scope="scope">
-        <div style="text-align: left">
+        <div style="text-align: right">
           <el-button  v-show="scope.row.device_type==2" type="primary" size="mini"
                      @click="addChildDevice(scope.row)">{{ $t("COMMON.ADDINGCHILDDEVICE")}}</el-button>
           <el-button style="margin-right: 10px"  type="primary" size="mini"

@@ -63,6 +63,7 @@ export default {
      */
     mapping: {
       handler(newValue) {
+        console.log("====DashboardPane.mapping", newValue)
         this.form.mapping = newValue;
       }
     },
@@ -114,7 +115,6 @@ export default {
           deviceId = node.data.device_id;
         }
       }
-
       if (!pluginId) return;
       let tslProperties = await Call.getPluginTSLByPluginId(pluginId);
       if (!tslProperties) return;

@@ -109,7 +109,7 @@ export default defineComponent({
 
     function handleChange(val){
       // update_apply_item(val)
-
+      console.log("====InstructSelector.handleChange", val )
       context.emit('change', val)
     }
 

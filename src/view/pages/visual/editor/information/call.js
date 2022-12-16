@@ -7,25 +7,23 @@ import PluginAPI from "@/api/plugin"
  * @returns {Promise<unknown>}
  */
 const getPluginIdFromCasOptions = (casOptions, v) => {
+    console.log("====D.getPluginIdFromCasOptions", casOptions, v)
     return new Promise((resolve, reject) => {
         if (v.length < 3) return null;
-        casOptions.forEach(business => {
+        casOptions.forEach(async business => {
             // 从项目里找级联菜单的一级节点
             if (business.business_id == v[0]) {
                 if (!business.children) reject(null);
                 business.children.forEach(group => {
                     // 从分组里找二级节点
                     if (group.group_id == v[1]) {
-                        if (!group.children) resolve(null);
+                        if (!group.children) reject(null);
                         group.children.forEach(device => {
                             if (device.device_id == v[2]) {
+                                console.log("====D.getPluginIdFromCasOptions.device", device)
                                 resolve(device.plugin_id)
-                            } else {
-                                resolve(null);
                             }
                         })
-                    } else {
-                        resolve(null);
                     }
                 })
             }
