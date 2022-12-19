@@ -25,15 +25,13 @@ import useRoute from "@/utils/useRoute";
 import { ref} from "@vue/composition-api/dist/vue-composition-api";
 import {device_group_drop} from "@/api/asset";
 import PluginAPI from "@/api/plugin.js"
-import DeviceChartCanvas from "./DeviceChartCanvas"
-import VisualAPI from "@/api/visualization.js"
 import {getDeviceTree} from "@/api/device";
 import PluginCharts from "./PluginCharts.vue"
 
 export default defineComponent({
   name: "DeviceDetail",
   components: {
-    DeviceChartCanvas, PluginCharts
+    PluginCharts
   },
   setup(props, context){
     let { route, router } = useRoute();

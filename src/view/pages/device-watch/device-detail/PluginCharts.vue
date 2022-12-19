@@ -230,7 +230,7 @@ export default {
         } else if (option.controlType == "control" && option.type != "setValue") {
           componentMaps.current.push({id: option.id, map: this.getControlMapping(option)});
         } else if (option.controlType == "history") {
-          componentMaps.history.push({id: option.id, map: this.getMapping(option)});
+          componentMaps.history.push({id: option.id, i: option.i, map: this.getMapping(option)});
         }
       }
       this.updateComponents(componentMaps);
@@ -291,7 +291,6 @@ export default {
           })
     },
     getHistory(componentMap) {
-      console.log("====PluginCharts.componentMap", componentMap)
       this.$nextTick(() => {
         componentMap.forEach(item => {
           let ref = this.$refs["component_" + item.i];

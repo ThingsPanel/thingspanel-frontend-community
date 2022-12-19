@@ -68,8 +68,6 @@ export default {
   mounted() {
     // 获取可视化大屏id
     this.visualId = this.$route.query.id;
-    // 获取可视化大屏名称
-    this.params = { name: this.$route.query.name }
     // 加载可视化大屏数据
     this.getScreenData(this.visualId);
     // 获取项目/分组/设备的级联菜单数据
@@ -138,8 +136,6 @@ export default {
      * 保存可视化大屏数据
      */
     handleSave() {
-      console.log("====handleSave", this.params);
-      if (true) return;
       if (this.visualId == "") return;
       let jsonData = {};
       jsonData.screen = this.$refs.editorCanvas.fullData;
@@ -170,6 +166,8 @@ export default {
           if (data.code == 200) {
             let result = data.data.data;
             if (result.length != 0) {
+              this.params = { name: result[0].dashboard_name };
+              console.log("====this.params", this.params)
               let jsonData = JSON.parse(result[0].json_data);
               this.jsonData  = jsonData;
             }

@@ -68,7 +68,6 @@ export default {
   watch: {
     "params.name": {
       handler(newValue) {
-        console.log("====params.name", newValue)
         if (newValue) {
           this.name = newValue;
         }

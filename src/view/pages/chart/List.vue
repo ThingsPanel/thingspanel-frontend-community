@@ -162,7 +162,7 @@ export default {
      * @param item
      */
     editVisual(item) {
-      let query = { id: item.id, name: item.dashboard_name };
+      let query = { id: item.id };
       const{ href } = this.$router.resolve({ name:"VisualEditor", query });
       window.open(href,'_blank');
     },
