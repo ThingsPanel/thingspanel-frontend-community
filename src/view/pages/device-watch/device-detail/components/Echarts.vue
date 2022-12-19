@@ -162,6 +162,9 @@ export default {
      * 修改 e-chart 大小
      */
     sizeChange(){
+      let mainRef = this.$refs.chart;
+
+      console.log("====sizeChange", mainRef)
         this.myEcharts.resize();
     },
     getChartStyle() {

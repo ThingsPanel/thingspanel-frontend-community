@@ -13,7 +13,7 @@
       </li>
       <li v-b-tooltip.hover.left="'Documentation'" class="nav-item">
         <a
-          href="https://keenthemes.com/metronic/?page=docs"
+          href="http://dev.thingspanel.cn"
           class="btn btn-sm btn-icon btn-bg-light btn-text-warning btn-hover-warning"
           target="_blank"
         >
