@@ -68,10 +68,10 @@ export default {
 .video-js {
   /*max-width: 100vw!important;*/
   /*max-height: 100vh!important;*/
-  background: content-box;
-  position: static;
-  padding: 10px;
-  height: auto!important;
+  /*background: content-box;*/
+  /*position: static;*/
+  /*padding: 10px;*/
+  /*height: auto!important;*/
   /*aspect-ratio: 96/40;*/
 }
 </style>

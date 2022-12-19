@@ -471,8 +471,11 @@ export default {
   border-color: #66b1ff;
   color: #fff;
 }
+.draggable.resizable.vdr {
+  border: 1px dashed #293b79;
+}
 .active.draggable.resizable.vdr {
-  border: 1px solid #26c705;
+  border: 2px solid #26c705;
   background-color: #2d3d86;
 }
 </style>

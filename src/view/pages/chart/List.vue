@@ -153,7 +153,7 @@ export default {
      * @param item
      */
     showVisual(item) {
-      let query = { id: item.id };
+      let query = { id: item.id, name: item.dashboard_name };
       const{ href } = this.$router.resolve({ name:"VisualDisplay", query });
       window.open(href,'_blank');
     },
@@ -162,7 +162,7 @@ export default {
      * @param item
      */
     editVisual(item) {
-      let query = { id: item.id };
+      let query = { id: item.id, name: item.dashboard_name };
       const{ href } = this.$router.resolve({ name:"VisualEditor", query });
       window.open(href,'_blank');
     },

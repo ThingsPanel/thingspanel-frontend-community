@@ -1,9 +1,8 @@
 <template>
   <div class="header-container">
-    <div class="left">
-      <p style="">
-        {{ params.name }}
-      </p>
+    <div class="left" @click="handleShowEditName">
+      <el-input class="input-title" style="width:200px" ref="inputRef"size="small" v-if="edit" v-model="name" @change="inputNameChange"></el-input>
+      <div class="title" v-else>{{ name }}</div>
     </div>
 
     <div class="right">
@@ -40,10 +39,6 @@
         <el-link class="el-dark-link link-item" icon="el-icon-s-platform">预览</el-link>
         <el-link class="el-dark-link link-item" icon="el-icon-s-platform">更换主题</el-link>
 
-<!--        <el-select size="mini" placeholder="请选择模板" v-model="template" @change="handleChangeTemplate">-->
-<!--          <el-option v-for="(template, index) in templateList" :key="index" :label="template.title" :value="template.value"></el-option>-->
-<!--        </el-select>-->
-
       </div>
     </div>
 
@@ -58,14 +53,27 @@ export default {
   props: {
     params: {
       type: [Object],
-      default: () => { return {} }
+      default: () => { return { name: "123"} }
     }
   },
   data() {
     return {
       template: "",
       // 模板列表
-      templateList: []
+      templateList: [],
+      edit: false,
+      name: ""
+    }
+  },
+  watch: {
+    "params.name": {
+      handler(newValue) {
+        console.log("====params.name", newValue)
+        if (newValue) {
+          this.name = newValue;
+        }
+      },
+      immediate: true, deep: true
     }
   },
   mounted() {
@@ -73,6 +81,12 @@ export default {
     console.log("====templates", this.templateList)
   },
   methods: {
+    handleShowEditName() {
+      this.edit = true;
+      this.$nextTick(() => {
+        this.$refs.inputRef.focus();
+      })
+    },
     /**
      * 缩小
      */
@@ -142,6 +156,11 @@ export default {
     handleChangeTemplate(val) {
       let temp = this.templateList.find(item => item.value == val)
       this.$emit("import", temp);
+    },
+    inputNameChange() {
+      this.edit = false;
+      this.params.name = this.name;
+      this.$emit("update:changeName", this.params);
     }
   }
 }
@@ -155,14 +174,22 @@ export default {
   .left {
     display: table;
     float: left;
-    width: 440px!important;
-    p {
+    width: 300px!important;
+    .title {
       vertical-align: middle;
       display: table-cell;
-      width: 440px!important;
+      width: 200px!important;
       color: #fff;
       font-size: 20px;
       padding-left: 20px;
+      height: 60px;
+    }
+    .input-title {
+      vertical-align: middle;
+      display: table-cell;
+      width: 200px!important;
+      color: #fff;
+      font-size: 20px;
       height: 60px;
     }
   }
