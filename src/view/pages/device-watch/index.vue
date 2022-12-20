@@ -68,6 +68,7 @@ export default {
     tableData: []
   }),
   created() {
+    console.log("====created", this.$t("COMMON.SYSTEMMANAGEMENT"));
     this.getBusinessIndex();
   },
   methods: {

@@ -13,8 +13,9 @@ export default function useTableDataCUD(tableData, getList){
     }
 
     function update_alarm(item, new_item){
-        let index = tableData.value.indexOf(item)
-        tableData.value.splice(index, 1, new_item)
+        getList && getList(1)
+        // let index = tableData.value.indexOf(item)
+        // tableData.value.splice(index, 1, new_item)
     }
 
     return {

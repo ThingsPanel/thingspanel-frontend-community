@@ -381,3 +381,15 @@ html {
 .el-form .el-form-item__label {
     color: #FFFFFF!important;
 }
+
+.el-message-box {
+    background-color: #202c62!important;
+    border: unset!important;
+}
+
+.el-message-box__title {
+    color: #fff!important;
+}
+.el-message-box__message p {
+    color: #fff!important;
+}

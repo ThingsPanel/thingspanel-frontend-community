@@ -1,7 +1,7 @@
 <template>
   <div class="header-container">
     <div class="left" @click="handleShowEditName">
-      <el-input class="input-title" style="width:200px" ref="inputRef"size="small" v-if="edit" v-model="name" @change="inputNameChange"></el-input>
+      <el-input class="input-title" style="width:200px" ref="inputRef"size="small" v-if="edit" v-model="name" @change="inputNameChange" @blur="inputNameChange"></el-input>
       <div class="title" v-else>{{ name }}</div>
     </div>
 

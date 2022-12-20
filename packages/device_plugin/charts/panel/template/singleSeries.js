@@ -27,6 +27,7 @@ export default
 "        }\n" +
 "      },\n" +
 "      axisLabel: {\n" +
+"        show: true,\n" +
 "        distance: 17,\n" +
 "        color: '#fff',\n" +
 "        fontSize: 14\n" +

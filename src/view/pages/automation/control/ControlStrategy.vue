@@ -59,7 +59,7 @@
   <ControlEditForm
       :control-dialog-visible.sync="showEditDialog"
       :business_id="business_id"
-      :current_item="current_item"
+      :current_item.sync="current_item"
       :key="current_item.id"
       :add_alarm="add_alarm"
       :update_alarm="update_alarm"

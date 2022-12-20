@@ -15,7 +15,7 @@
                  :h="option.h"
                  :i="option.i"
                  @moved="handleResized(option.i)"
-                 @resized="handleResized(option.i)">
+                 @resized="(l, r, w, h) => handleResized(option.i, {l, r, w, h})">
 
         <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
                   v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && !option.type"
@@ -119,10 +119,8 @@ export default {
     }
   },
   methods: {
-    handleResized(i) {
-      console.log("====handleResized.i", i)
+    handleResized(i, rect) {
       this.$nextTick(() => {
-        console.log("====handleResized", this.$refs["component_" + i])
           this.$refs["component_" + i][0].sizeChange();
       })
     },
@@ -206,14 +204,14 @@ export default {
      * @param newLayout
      */
     handleLayoutUpdatedEvent(newLayout) {
-      this.$nextTick(() => {
-        newLayout.forEach(item => {
-          let ref = this.$refs["component_" + item.i];
-          if (ref && ref[0]) {
-            ref[0].sizeChange();
-          }
-        })
-      })
+      // this.$nextTick(() => {
+      //   newLayout.forEach(item => {
+      //     let ref = this.$refs["component_" + item.i];
+      //     if (ref && ref[0]) {
+      //       ref[0].sizeChange();
+      //     }
+      //   })
+      // })
       this.setLayout();
     },
     /**

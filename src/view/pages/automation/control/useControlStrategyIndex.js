@@ -1,5 +1,5 @@
 import {reactive, ref} from "@vue/composition-api";
-import {automation_index} from "@/api/automation";
+import {automation_index, getOneControlStrategy} from "@/api/automation";
 
 export default function useControlStrategyIndex(id){
     let tableData = ref([])
@@ -9,8 +9,9 @@ export default function useControlStrategyIndex(id){
         limit: 10,
         page: 1,
     })
-
     let total = ref(0)
+
+    let currentItem = reactive({});
 
     function getControlStrategyIndex(page){
         if(page) params.page = page
@@ -28,6 +29,16 @@ export default function useControlStrategyIndex(id){
         })
     }
 
+    function getControlStrategy(id) {
+        getOneControlStrategy({ id })
+            .then(({ data }) => {
+                if (data.code == 200) {
+                    currentItem.value = data.data;
+                    console.log("====getControlStrategy", data);
+                }
+            })
+    }
+
     function washData(array_data){
         return array_data.map((item)=>{
             item.config = JSON.parse(item.config)
@@ -36,13 +47,15 @@ export default function useControlStrategyIndex(id){
         })
     }
 
-    getControlStrategyIndex()
+    id && getControlStrategyIndex()
 
     return {
         tableData,
         params,
         loading,
         total,
+        currentItem,
+        getControlStrategy,
         getControlStrategyIndex,
     }
 }

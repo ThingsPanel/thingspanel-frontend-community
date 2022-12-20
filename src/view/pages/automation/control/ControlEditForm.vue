@@ -214,9 +214,11 @@
               </el-col>
               <el-col :span="3">
                 <el-button type="indigo" size="medium" @click="addApplyLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-                <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeApplyLine(apply_item)" v-else>
-                  <el-button slot="reference" type="danger" size="medium">{{  $t('COMMON.DELETE') }}</el-button>
-                </el-popconfirm>
+                <el-button type="danger" size="medium" v-else @click="removeApplyLine(apply_item)">{{ $t('COMMON.DELETE')}}</el-button>
+
+<!--                <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeApplyLine(apply_item)" v-else>-->
+<!--                  <el-button slot="reference" type="danger" size="medium">{{  $t('COMMON.DELETE') }}</el-button>-->
+<!--                </el-popconfirm>-->
               </el-col>
             </el-row>
           </template>
@@ -249,7 +251,7 @@
 </template>
 
 <script>
-import {defineComponent, computed, ref, reactive} from "@vue/composition-api";
+import  {defineComponent, computed, ref, reactive, getCurrentInstance} from "@vue/composition-api";
 import DeviceGroupSelector from "@/components/common/DeviceGroupSelector.vue";
 import DeviceSelector from "../components/DeviceSelector.vue"
 import TriggerSelector from "../components/TriggerSelector.vue"
@@ -264,6 +266,7 @@ import {automation_add, automation_edit} from "@/api/automation";
 import {watch} from "@vue/composition-api/dist/vue-composition-api";
 import {json_parse_stringify} from "@/utils/helpers";
 import RepeatTime from "../components/RepeatTime"
+import { MessageBox } from 'element-ui';
 export default defineComponent({
   name: "ControlEditForm",
   components: {
@@ -302,14 +305,21 @@ export default defineComponent({
     }
   },
   setup(props, context){
+
+    const this_ = getCurrentInstance().proxy;
+
     let showDialog = computed({
       get(){
+        // if (!props.controlDialogVisible) {
+        //   resetFormData({});
+        // }
         return !!props.controlDialogVisible
       },
       set(val){
         context.emit("update:controlDialogVisible", val)
       }
     })
+
 
     let controlFormRef = ref()
 
@@ -336,14 +346,33 @@ export default defineComponent({
         ]
       }
     };
-    let formData = reactive(initialFormData)
+    let formData = reactive({
+      id: "",
+      business_id: props.business_id,
+      name: "",
+      describe: "",
+      status: 1, // 开关
+      sort: 100,
+      type: 1, // 策略类型
+      issued: "1",
+      config: {
+        rules: [
+          json_parse_stringify(default_rules_type_1)
+        ],
+        apply: [
+          json_parse_stringify(default_apply)
+        ]
+      }
+    })
 
     let error_message = ref("")
 
     // 重置表单数据
-    function resetFormData(){
-      let item_attrs = JSON.parse(JSON.stringify(props.current_item))
-      if (JSON.stringify(item_attrs) != "{}") {
+    function resetFormData(currentItem){
+      let item_attrs = JSON.parse(JSON.stringify(currentItem))
+      if (JSON.stringify(item_attrs) == "{}") {
+        item_attrs = JSON.parse(JSON.stringify(initialFormData));
+      } else if (JSON.stringify(item_attrs) != "{}") {
         item_attrs.config.rules.forEach(item => {
           if (item.unit == "minute") {
             item.time_interval_a = item.time_interval / 60;
@@ -354,21 +383,22 @@ export default defineComponent({
           }
         })
       }
-      if (item_attrs == "{}") {
-        formData.value = initialFormData;
-        return;
-      }
+
+      console.log("====resetFormData.item_attrs", item_attrs)
+
       for (const key in formData) {
         // 有则逐个赋值
         if(key in item_attrs){
           formData[key] = item_attrs[key];
         }
       }
+      console.log("====resetFormData.formData", formData)
+
     }
 
     // 修改时用
     watch(()=>props.current_item, ()=>{
-      resetFormData()
+      resetFormData(props.current_item)
     }, {
       immediate: true
     })
@@ -457,7 +487,10 @@ export default defineComponent({
     }
 
     function handleCancel(){
-      context.emit("update:controlDialogVisible", false)
+      showDialog.value = false;
+      console.log("====handleCancel")
+      context.emit("update:current_item", {})
+      // context.emit("update:controlDialogVisible", false)
     }
 
     // 设备分组更改时
@@ -512,8 +545,16 @@ export default defineComponent({
     }
 
     function removeApplyLine(item){
-      let index = formData.config.apply.indexOf(item)
-      formData.config.apply.splice(index, 1)
+      MessageBox.confirm('是否继续?', '提示', {confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'})
+        .then(() => {
+          let index = formData.config.apply.indexOf(item)
+          formData.config.apply.splice(index, 1)
+          this.$message({type: 'success', message: '删除成功!'});
+        })
+          .catch(() => {
+          this.$message({type: 'info', message: '已取消删除'});
+        });
+
     }
 
     return {
