@@ -178,70 +178,79 @@ export default {
               }
             ]
       };
-      console.log("====Echarts.sizechange", length)
       if (length < 150) {
-        option = {
-          series: [
-            {
-              axisLabel: {
-                show: false,
-              },
-              progress: {
-                width: 6
-              },
-              pointer: {
-                show: false
-              },
-              anchor: {
-                show: false
-              },
-              detail: {
-                fontSize: 18,
-                offsetCenter: [0, 0],
-              }
-            }
-          ]
-        }
+        const miniSerie = {
+          axisLabel: {
+            show: false,
+          },
+          progress: {
+            width: 6
+          },
+          pointer: {
+            show: false
+          },
+          anchor: {
+            show: false
+          },
+          detail: {
+            fontSize: 18,
+            offsetCenter: [0, 0],
+          }
+        };
+        const series = this.option.series.map(() => miniSerie)
+        option = {series}
       } else if (length < 200) {
-        option = {
-          series: [
-            {
-              axisLabel: {
-                show: this.getEchartsItemConfig("axisLabel.show"),
-                distance: 0,
-                fontSize: 10
-              },
-              progress: {
-                width: 12
-              },
-              pointer: {
-                show: this.getEchartsItemConfig("pointer.show"),
-                width: 6
-              },
-              anchor: {
-                show: this.getEchartsItemConfig("anchor.show"),
-                size: 5
-              },
-              detail: {
-                fontSize: 16,
-                offsetCenter: this.option.series[0].detail.offsetCenter ? this.option.series[0].detail.offsetCenter : [0, '40%'],
-              }
-            }
-          ]
-        }
+        const smallSerie = {
+          axisLabel: {
+            show: this.getEchartsItemConfig("axisLabel.show"),
+            distance: 0,
+            fontSize: 10
+          },
+          progress: {
+            width: 12
+          },
+          pointer: {
+            show: this.getEchartsItemConfig("pointer.show"),
+            width: 6
+          },
+          anchor: {
+            show: this.getEchartsItemConfig("anchor.show"),
+            size: 5
+          },
+          detail: {
+            fontSize: 16,
+            offsetCenter: this.option.series[0].detail.offsetCenter ? this.option.series[0].detail.offsetCenter : [0, '40%'],
+          }
+        };
+        const series = this.option.series.map(() => smallSerie)
+        option = { series }
       } else if (length >= 200) {
         option = JSON.parse(JSON.stringify(this.option));
-        option.series[0].axisLabel.show = this.getEchartsItemConfig("axisLabel.show");
+        for (let i = 0; i < option.series.length; i++) {
+          let serie = option.series[i];
+          if (!serie.axisLabel) serie.axisLabel = {};
+          serie.axisLabel.show = this.getEchartsItemConfig("axisLabel.show", i);
+
+          if (!serie.progress) serie.progress = {};
+          serie.progress.show = this.getEchartsItemConfig("progress.show", i);
+
+          if (!serie.pointer) serie.pointer = {};
+          serie.pointer.show = this.getEchartsItemConfig("pointer.show", i);
+
+          if (!serie.anchor) serie.anchor = {};
+          serie.anchor.show = this.getEchartsItemConfig("anchor.show", i);
+        }
+
         option.series[0].detail.fontSize = this.option.series[0].detail.fontSize ? this.option.series[0].detail.fontSize : 30;
 
       }
       this.myEcharts.setOption(option)
         this.myEcharts.resize();
     },
-    getEchartsItemConfig(v) {
+    getEchartsItemConfig(v, i = 0) {
       const e = v.split(".");
-      if (!this.option.series[0][e[0]]) return true;
-      if (!this.option.series[0][e[0]][e[1]]) return true;
+      if (!this.option.series[i][e[0]]) return true;
+      if (!this.option.series[i][e[0]][e[1]]) return true;
     },
     getChartStyle() {
       let style = this.optionData.style ? this.optionData.style : {};

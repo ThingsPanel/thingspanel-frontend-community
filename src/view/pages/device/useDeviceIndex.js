@@ -160,28 +160,26 @@ export default function useDeviceIndex(business_id) {
         getDeviceIndex()
     }
 
+    let timer = null;
     function getDeviceStatus(ids) {
         const fn = () => {
             getDeviceListStatus({ device_id_list: ids })
                 .then(({ data }) => {
                     if (data.code == 200) {
                         tableData.value.forEach(item => {
-                            console.log("====getDeviceStatus", item.id, data.data, data.data[item.id])
                             item.device_state = data.data[item.id] ? data.data[item.id] : "0";
                             if (item.children && item.children.length > 0) {
                                 item.children.forEach(child => {
-                                    console.log("====children", data.data[child.id])
                                     child.device_state = data.data[child.id] ? data.data[child.id] : "0";
                                 })
                             }
                         })
                     }
-                    console.log("====getDeviceStatus", tableData.value);
-
                 })
         }
         fn();
-        let timer = setInterval(fn, 5000);
+        if (timer) clearInterval(timer);
+        timer = setInterval(fn, 5000);
 
     }
 
