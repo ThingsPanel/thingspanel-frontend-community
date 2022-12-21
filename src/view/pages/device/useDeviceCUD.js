@@ -85,7 +85,7 @@ export default function useDeviceCUD(tableData){
         }
     }
 
-    function handleDelete(item){
+    function handleDelete(item, call){
         if(item.id){
             if(loading.value) return
             loading.value = true
@@ -102,6 +102,7 @@ export default function useDeviceCUD(tableData){
                     } else {
                         tableData.value.splice(index, 1)
                     }
+                if (call) call();
                 }
             }).finally(()=>{
                 loading.value = false

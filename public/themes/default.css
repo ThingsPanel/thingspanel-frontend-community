@@ -270,7 +270,7 @@ html {
 
 .el-select-dropdown__item.hover, .el-select-dropdown__item:hover {
     background-color: #0087F6 !important;
-    color: #fff;
+    color: #fff!important;
 }
 .el-button--border{
     color: #fff !important;

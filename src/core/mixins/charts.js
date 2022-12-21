@@ -8,6 +8,8 @@ Vue.mixin({
          * @returns {{}}
          */
         resizeECharts(opt, length) {
+            console.log("====charts.mixin.option1", opt)
+            if (!opt) return {};
             let option = {};
             if (length < 160) {
                 const miniSerie = {
@@ -15,7 +17,7 @@ Vue.mixin({
                         show: false,
                     },
                     progress: {
-                        width: 6
+                        width: opt.series[0].progress.width ? opt.series[0].progress.width : 6
                     },
                     pointer: {
                         show: false
@@ -24,10 +26,13 @@ Vue.mixin({
                         show: false
                     },
                     detail: {
-                        fontSize: 18,
                         offsetCenter: [0, 0],
                     }
                 };
+                console.log("=====", opt.series[0])
+                miniSerie.detail.fontSize = !opt.series[0].axisLabel.show && !opt.series[0].progress.show
+                && !opt.series[0].pointer.show ? opt.series[0].detail.fontSize : 18;
+
                 const series = opt.series.map(() => miniSerie)
                 option = {series}
             } else if (length < 200) {
@@ -40,7 +45,7 @@ Vue.mixin({
                             fontSize: 10
                         },
                         progress: {
-                            width: 12
+                            width: opt.series[i].progress.width ? opt.series[i].progress.width : 12
                         },
                         pointer: {
                             show: getEchartsItemConfig(opt, "pointer.show", i),
@@ -51,10 +56,11 @@ Vue.mixin({
                             size: 5
                         },
                         detail: {
-                            fontSize: 16,
-                            offsetCenter: opt.series[0].detail.offsetCenter ? opt.series[0].detail.offsetCenter : [0, '40%'],
+                            offsetCenter: opt.series[i].detail.offsetCenter ? opt.series[i].detail.offsetCenter : [0, '40%'],
                         }
                     };
+                    serie.detail.fontSize = !opt.series[i].axisLabel.show && !opt.series[i].progress.show
+                        && !opt.series[i].pointer.show ? opt.series[i].detail.fontSize : 16
                     series.push(serie);
                 }
                 option = { series }
@@ -75,9 +81,11 @@ Vue.mixin({
                     serie.anchor.show = getEchartsItemConfig(opt, "anchor.show", i);
 
                     option.series[i].detail.fontSize = opt.series[i].detail.fontSize ? opt.series[i].detail.fontSize : 30;
-
                 }
+
             }
+            console.log("====charts.mixin.option2", option)
+
             return option;
         }
     }
@@ -85,7 +93,9 @@ Vue.mixin({
 
 const getEchartsItemConfig = (opt, v, i = 0) => {
     const e = v.split(".");
+    console.log("====getEchartsItemConfig", v, opt.series[i][e[0]])
     if (!opt.series[i][e[0]]) return true;
-    if (!opt.series[i][e[0]][e[1]]) return true;
+    if (opt.series[i][e[0]][e[1]] == undefined) return true;
+    console.log("====getEchartsItemConfig", v, opt.series[i][e[0]], opt.series[i][e[0]][e[1]])
     return opt.series[i][e[0]][e[1]];
 }

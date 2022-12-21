@@ -5,10 +5,10 @@
       size="medium"
       placeholder="请选择设备类型"
       v-model="deviceTypeId"
-      :disabled="deviceType==3"
+      :disabled="deviceType==3 || currentItem.children"
       filterable
       :clearable="clearable"
-      @change="handleChange()"
+      @change="handleChange"
   >
     <el-option v-for="item in options" :key="item.value" :value="item.value" :label="item.label"></el-option>
   </el-select>
@@ -30,6 +30,14 @@ export default defineComponent({
     deviceType: {
       type: [String],
       default: "1"
+    },
+    currentItem: {
+      type: [Object],
+      default: () => { return {} }
+    },
+    disabled: {
+      type: [Boolean],
+      default: false
     },
     options: {
       type: [Array],
@@ -53,7 +61,8 @@ export default defineComponent({
     })
 
 
-    function handleChange(){
+    function handleChange(value){
+      // console.log("====handleChange", props.currentItem, value)
       // context.emit("change", value)
     }
 

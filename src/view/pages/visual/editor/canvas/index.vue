@@ -1,6 +1,6 @@
 <template>
   <div class="canvas-container" ref="canvas_container" >
-    <div id="droppable" class="droppable" ref="droppable" :style="canvasStyle"
+    <div id="droppable" class="droppable" ref="droppable" :style="canvasStyle" @click="handleClickBackground"
          tabindex="0" >
       <VueDraggableResizable
                     v-for="(component) in fullData" :key="component.cptId" :parent="false"
@@ -165,6 +165,8 @@ export default {
     }
   },
   mounted() {
+
+
     // 事件监听
     this.$nextTick(() => {
       this.$refs.droppable.addEventListener("dragover", this.handleDragover);
@@ -181,31 +183,43 @@ export default {
 
       this.$refs.canvas_container.addEventListener("resize", this.handleCanvasResize, false);
 
+      const box = this.$refs.canvas_container;
+      const offsetW = box.offsetWidth;
+      const offsetH = box.offsetHeight;
+      this.$refs.droppable.style.setProperty("--w", "1920px");
+      this.$refs.droppable.style.setProperty("--h", "1080px");
+      this.$refs.droppable.style.setProperty("--color", "#2d3d86");
+
+      let scaleX = offsetW / 1920;
+      let scaleY = offsetH / 1080;
+      this.scale = Math.min(scaleX, scaleY);
+      this.$refs.droppable.style.transform = "scale(" + this.scale + ")";
     })
 
     // 监听数据改变
     bus.$on("changeData", data => {
-      // console.log("====canvas.watch.changeData1", data)
-
       let index = this.fullData.findIndex(item => item.cptId == data.cptId)
       if (index < 0) return;
       let cpt = this.fullData[index];
       Object.keys(data).forEach(item => {
         cpt[item] = data[item];
       })
-      // console.log("====canvas.watch.changeData2", cpt)
     })
 
     // 监听样式改变
     bus.$on('changeStyle', (cptId, style) => {
-      // console.log("canvas.changeStyle", style)
-      let index = this.fullData.findIndex(item => item.cptId == cptId)
-      if (index < 0) return;
-      let cpt = JSON.parse(JSON.stringify(this.fullData[index]));
-      // console.log("cpt", cpt)
-      cpt.style = style;
-      this.fullData.splice(index, 1, cpt);
-      // console.log(this.fullData)
+      if (cptId == null) {
+        const droppable = this.$refs.droppable;
+        droppable.style.setProperty("--w", style.intWidth + "px");
+        droppable.style.setProperty("--h", style.intHeight + "px");
+        droppable.style.setProperty("--color", style.backgroundColor);
+      } else {
+        let index = this.fullData.findIndex(item => item.cptId == cptId)
+        if (index < 0) return;
+        let cpt = JSON.parse(JSON.stringify(this.fullData[index]));
+        cpt.style = style;
+        this.fullData.splice(index, 1, cpt);
+      }
     })
   },
   methods: {
@@ -330,6 +344,15 @@ export default {
       bus.$emit('share', JSON.parse(JSON.stringify(component)))
     },
     /**
+     * 单击画布
+     */
+    handleClickBackground(e) {
+      let inComponent = this.isInComponent({x: e.offsetX, y: e.offsetY });
+      if (!inComponent) {
+        bus.$emit("share", {type: "background"})
+      }
+    },
+    /**
      * 双击组件 组件可编辑
      * @param component
      */
@@ -410,12 +433,21 @@ export default {
     },
     dragCanvas(e) {
       console.log("====dragCanvas", e)
+    },
+    isInComponent(pos) {
+      for (let i = 0; i < this.fullData.length; i++) {
+        let point = this.fullData[i].point;
+        if (pos.x > point.x && pos.y > point.y && pos.x < (point.x + point.w) && pos.y < (point.y + point.h)) {
+          return true;
+        }
+      }
+      return false;
     }
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .canvas-container {
   position: relative;
   width: 100%;
@@ -431,15 +463,13 @@ export default {
   /*bottom: 40px;*/
   /*left: -100%;*/
   /*right: 10px;*/
-  background-color: #171d46;
+  background-color: var(--color);
   /*background-color: #ea08a2;*/
-  width: 1920px;
-  height: 919px;
+  width: var(--w);
+  height: var(--h);
   transform-origin: 0 0;
-  /*left: 50%;*/
-  /*top: 50%;*/
   transition: 0.3s;
-
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1)
 }
 .contextmenu__item {
   display: block;
@@ -477,5 +507,11 @@ export default {
 .active.draggable.resizable.vdr {
   border: 2px solid #26c705;
   background-color: #2d3d86;
+}
+::v-deep .handle-tl {
+  z-index: 9999!important;
+}
+::v-deep .handle-tm {
+  z-index: 9999!important;
 }
 </style>

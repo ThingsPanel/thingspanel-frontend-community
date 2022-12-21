@@ -1,8 +1,10 @@
 <template>
-  <div style="width: 100%;height: 100%;background-color: transparent" id="main" ref="chart-main"></div>
+  <div style="width: 100%;height: 100%;background-color: transparent" :id="'main' + option.cptId" ref="chart-main"></div>
 </template>
 
 <script>
+import charts from "@/core/mixins/charts.js"
+
 export default {
   name: "DashboardChart",
   props: {
@@ -79,13 +81,27 @@ export default {
         this.myChart.resize();
       });
     }
+
+    const chartMain = document.getElementById("main" + this.option.cptId);
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        switch(entry.target) {
+          case chartMain: {
+            let length = Math.min(entry.contentRect.width, entry.contentRect.height)
+            let option = this.resizeECharts(JSON.parse(JSON.stringify(this.optionData)), length);
+            this.myChart.setOption(JSON.parse(JSON.stringify(option)))
+          }
+        }
+      }
+    })
+    resizeObserver.observe(chartMain);
+
   },
   methods: {
     //初始化echarts
     echartsInit() {
       this.myChart = this.$echarts.init(this.$refs["chart-main"], null, { renderer : 'svg' });
-      this.optionData = JSON.parse(JSON.stringify(this.option));
-      this.optionData = this.initOption(this.optionData);
+      this.optionData = this.initOption(this.option);
       this.optionData.series[0].min = this.min;
       this.optionData.series[0].max = this.max;
       this.optionData.series[0].data[0].name = this.title;
@@ -115,7 +131,8 @@ export default {
       }
       this.myChart.setOption(option);
     },
-    initOption(option) {
+    initOption(opt) {
+      let option = JSON.parse(JSON.stringify(opt));
       if (!option.series) option.series = JSON.parse(JSON.stringify(dashboardOption.series));
 
       if (!option.series[0].data) console.log(option.series[0])

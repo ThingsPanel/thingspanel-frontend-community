@@ -314,6 +314,9 @@
           "axisLine": {
             "show": false
           },
+          "anchor": {
+            "show": false
+          },
           "detail": {
             "show": true,
             "fontSize": 50,

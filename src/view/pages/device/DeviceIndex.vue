@@ -99,7 +99,7 @@
     <el-table-column :label="$t('COMMON.GATEWAYDEVICE')" width="auto" min-width="12%">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.device_type">
-          <DeviceTypeSelector :deviceType.sync="scope.row.device_type" @change="deviceTypeChange(scope.row)"
+          <DeviceTypeSelector :current-item="scope.row" :deviceType.sync="scope.row.device_type" @change="deviceTypeChange(scope.row)"
           ></DeviceTypeSelector>
         </el-form-item>
       </template>
@@ -162,7 +162,8 @@
           <el-button style="margin-right: 10px"  type="primary" size="mini"
                      @click="deviceConfig(scope.row)">设&nbsp;备&nbsp;配&nbsp;置</el-button>
 
-           <el-popconfirm :disabled="!hasAuth('device:del')" :title="$t('COMMON.DELETETHISITEM')" @confirm="handleDelete(scope.row)">
+           <el-popconfirm :disabled="!hasAuth('device:del')" :title="$t('COMMON.DELETETHISITEM')"
+                          @confirm="handleDelete(scope.row, getDeviceIndex)">
               <el-button slot="reference" type="danger" size="mini">{{ $t("COMMON.DELETE")}}</el-button>
            </el-popconfirm>
         </div>
