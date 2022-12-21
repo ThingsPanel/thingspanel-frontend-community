@@ -66,7 +66,7 @@ Vue.use(tpIot)
 import VueCompositionApi from "@vue/composition-api"
 Vue.use(VueCompositionApi)
 
-import "@/components/mixins/checkAuth"
+import "@/core/mixins/checkAuth"
 
 Vue.use(VueAxiosPlugin, {
     headers: {

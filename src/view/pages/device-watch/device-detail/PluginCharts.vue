@@ -152,6 +152,7 @@ export default {
               // 如果读取到的布局为空，则显示默认布局
               this.optionsData = this.getDefaultLayout(options, 4)
             }
+            // this.handleResized(i);
             this.status = this.pluginStatus.LOADED;
             this.getComponentMaps(this.optionsData);
           }
