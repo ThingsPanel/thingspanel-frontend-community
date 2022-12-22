@@ -272,7 +272,7 @@ export const locale = {
     PLACEHOLDER5: "请选择",
     PLACEHOLDER6: "请输入名称",
     PLACEHOLDER7: "请输入描述",
-    PLACEHOLDER8: "选择业务",
+    PLACEHOLDER8: "选择项目",
     PLACEHOLDER9: "选择值",
     PLACEHOLDER10: "输入值",
     PLACEHOLDER11: "请输入模板内容",
