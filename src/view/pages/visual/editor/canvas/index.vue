@@ -3,7 +3,7 @@
     <div id="droppable" class="droppable" ref="droppable" :style="canvasStyle" @click="handleClickBackground"
          tabindex="0" >
       <VueDraggableResizable
-                    v-for="(component) in fullData" :key="component.cptId" :parent="false"
+                    v-for="(component) in fullData" :key="component.cptId" :parent="true"
                     :x="component.point.x" :y="component.point.y"
                     :w="component.point.w" :h="component.point.h"
                     :z="component.point.z"
@@ -89,25 +89,6 @@ import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
 import { getRandomString } from "@/utils/helpers";
 import bus from "@/core/plugins/eventBus"
 
-const statusConfig = {
-  IDLE: 0,
-  DRAG_START: 1,
-  DRAGGING: 2,
-  MOVE_START: 3,
-  MOVING: 4
-}
-
-const canvasInfo = {
-  status: statusConfig.IDLE,
-  target: null,
-  lastEventPos: { x: null, y: null },
-  offsetEventPos: { x: null, y: null },
-  offset: { x: 0, y: 0 },
-  scale: 1,
-  scaleStep: .1,
-  maxScale: 2,
-  minScale: .5
-}
 
 export default {
   name: "EditorCanvas",
@@ -137,15 +118,24 @@ export default {
       zTopIndex: 500,   // 当前大屏的最高层
       zBottomIndex: 500,   // 当前大屏的最底层
       scale: 1,
-      Specifications: {
+      Spec: {
         //定义的宽高比例，初始为1
-        ww: 1,
-        wh: 1,
-        //根据class="home"里面定义的宽高进行作为初始宽高进行计算
-        //！自定义内容！
-        width: 1920,
-        height: 919
-        //！自定义内容！
+        scaleW: 1,
+        scaleH: 1,
+        intWidth: 1920,
+        intHeight: 1080,
+        backgroundColor: "#2d3d86",
+        getScale: () => {
+          const parent = this.$refs.canvas_container;
+          // 画布父容器宽度
+          const parentW = parent.offsetWidth;
+          // 画布父容器高度
+          const parentH = parent.offsetHeight;
+          let scaleX = (parentW - 40) / this.Spec.intWidth;
+          let scaleY = (parentH - 40)  / this.Spec.intHeight;
+          let scale = Math.min(scaleX, scaleY);
+          return scale;
+        }
       }
     }
   },
@@ -166,6 +156,17 @@ export default {
   },
   mounted() {
 
+    const setCanvasStyle = () => {
+      this.$refs.droppable.style.setProperty("--w", this.Spec.intWidth + "px");
+      this.$refs.droppable.style.setProperty("--h", this.Spec.intHeight + "px");
+      this.$refs.droppable.style.setProperty("--color", this.Spec.backgroundColor);
+      this.scale = this.Spec.getScale();
+      this.$refs.droppable.style.transform = "scale(" + this.scale + ")";
+    }
+
+    window.addEventListener("resize", () => {
+      setCanvasStyle();
+    }, null);
 
     // 事件监听
     this.$nextTick(() => {
@@ -183,17 +184,9 @@ export default {
 
       this.$refs.canvas_container.addEventListener("resize", this.handleCanvasResize, false);
 
-      const box = this.$refs.canvas_container;
-      const offsetW = box.offsetWidth;
-      const offsetH = box.offsetHeight;
-      this.$refs.droppable.style.setProperty("--w", "1920px");
-      this.$refs.droppable.style.setProperty("--h", "1080px");
-      this.$refs.droppable.style.setProperty("--color", "#2d3d86");
+      // 默认显示页面设置面板
+      this.handleClickBackground(null);
 
-      let scaleX = offsetW / 1920;
-      let scaleY = offsetH / 1080;
-      this.scale = Math.min(scaleX, scaleY);
-      this.$refs.droppable.style.transform = "scale(" + this.scale + ")";
     })
 
     // 监听数据改变
@@ -208,12 +201,20 @@ export default {
 
     // 监听样式改变
     bus.$on('changeStyle', (cptId, style) => {
-      if (cptId == null) {
+      console.log("====canvas.changeStyle.cptId:", cptId, ", style:", style)
+      if (cptId == null && style.type=="background") {
+        // 画布背景设置
         const droppable = this.$refs.droppable;
+        if (style.intWidth) this.Spec.intWidth = style.intWidth
+        if (style.intHeight) this.Spec.intHeight = style.intHeight
         droppable.style.setProperty("--w", style.intWidth + "px");
         droppable.style.setProperty("--h", style.intHeight + "px");
         droppable.style.setProperty("--color", style.backgroundColor);
+        this.scale = this.Spec.getScale();
+        console.log("====canvas.scale", this.scale)
+        droppable.style.transform = "scale(" + this.scale + ")";
       } else {
+        // 组件设置
         let index = this.fullData.findIndex(item => item.cptId == cptId)
         if (index < 0) return;
         let cpt = JSON.parse(JSON.stringify(this.fullData[index]));
@@ -347,9 +348,11 @@ export default {
      * 单击画布
      */
     handleClickBackground(e) {
-      let inComponent = this.isInComponent({x: e.offsetX, y: e.offsetY });
-      if (!inComponent) {
-        bus.$emit("share", {type: "background"})
+      console.log("====handleClickBackground", e)
+      if (e == null) {
+        bus.$emit("share", {type: "background", ...this.Spec})
+      } else if (!this.isInComponent({x: e.offsetX, y: e.offsetY })) {
+        bus.$emit("share", {type: "background", ...this.Spec})
       }
     },
     /**

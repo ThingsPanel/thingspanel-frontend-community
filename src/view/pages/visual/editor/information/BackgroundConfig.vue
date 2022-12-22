@@ -36,9 +36,9 @@ export default {
       tabValue: "data",
       form: {
         type: "background",
-        intWidth: 1920,
-        intHeight: 1080,
-        backgroundColor: "#2d3d86"
+        intWidth: 0,
+        intHeight: 0,
+        backgroundColor: ""
       }
     }
   },

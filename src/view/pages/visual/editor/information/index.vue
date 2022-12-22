@@ -1,7 +1,7 @@
 <template>
   <div class="information-container">
 
-        <background-config v-show="formData.type=='background'"></background-config>
+        <background-config v-show="formData.type=='background'" :form-data="formData"></background-config>
 
         <dashboard-config v-show="formData.type == 'dashboard'" :form-data="formData" :cas-options="casOptions"></dashboard-config>
 

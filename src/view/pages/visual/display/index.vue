@@ -97,7 +97,8 @@ export default {
           let jsonObj = JSON.parse(jsonData);
           document.title = result.dashboard_name ? result.dashboard_name : "";
           this.fullData = jsonObj.screen ? jsonObj.screen : [];
-          this.scale = this.getScale(this.fullData);
+          // this.scale = this.getScale(this.fullData);
+          this.scale = 1;
           this.setZoom(this.scale);
           this.refresh(this.fullData);
         }
@@ -233,7 +234,7 @@ export default {
     margin:auto;
   }
   .canvas-display {
-    transform-origin: -25% 0 0;
+    //transform-origin: -25% 0 0;
   }
   .draggable-class {
     position: absolute;
