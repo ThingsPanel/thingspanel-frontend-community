@@ -155,7 +155,6 @@ import objectPath from "object-path";
 
 export default {
   name: "auth",
-  methods: {},
   computed: {
     ...mapGetters(["layoutConfig"]),
     ...mapState({
@@ -171,7 +170,7 @@ export default {
       // set brand logo
       const logoObject = this.layoutConfig("self.logo");
 
-      let logo;
+      let logo = null;
 
       if (typeof logoObject === "string") {
         logo = logoObject;
@@ -179,10 +178,15 @@ export default {
       if (typeof logoObject === "object") {
         logo = objectPath.get(logoObject, menuAsideLeftSkin + "");
       }
-      if (typeof logo === "undefined") {
-        const logos = this.layoutConfig("self.logo");
-        logo = logos[Object.keys(logos)[0]];
+      // if (typeof logo === "undefined") {
+      //   const logos = this.layoutConfig("self.logo");
+      //   logo = logos[Object.keys(logos)[0]];
+      // }
+
+      if (!logo) {
+        logo = "/media/logos/logo-dark.png"
       }
+
       return logo;
     }
   }

@@ -2,12 +2,12 @@
   <div class="canvas-container" ref="canvas_container" >
     <div id="droppable" class="droppable" ref="droppable" :style="canvasStyle" @click="handleClickBackground"
          tabindex="0" >
-      <VueDraggableResizable
+      <VueDraggableResizable :id="'drag_box_' + component.cptId"
                     v-for="(component) in fullData" :key="component.cptId" :parent="true"
                     :x="component.point.x" :y="component.point.y"
                     :w="component.point.w" :h="component.point.h"
                     :z="component.point.z"
-                    :scale="scale" :disableUserSelect="false"
+                    :scale="defaultScale" :disableUserSelect="false"
                     @activated="onActivated(component)" @deactivated="onDeactivated(component)"
                     @resizing="(left, top, width, height) => onResize(component, left, top, width, height)"
                     @resizestop="(left, top, width, height) => onResize(component, left, top, width, height)"
@@ -40,7 +40,7 @@
         </configure>
 
         <!-- 文本组件 -->
-        <CommonText v-else-if="component.type == 'text'" :style="getConfigureStyle(component)"
+        <CommonText v-else-if="component.type == 'text'" :v-style="getStyle(component)"
                     :active="component.activeted" :editable="component.editable"
                     :value.sync="component.value"
             :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
@@ -115,11 +115,7 @@ export default {
       zTopIndex: 500,   // 当前大屏的最高层
       zBottomIndex: 500,   // 当前大屏的最底层
       isInComponent: false,
-      // canvasStyle: {
-      //   intWidth: 1920,
-      //   intHeight: 1080,
-      //   backgroundColor: "#2d3d86",
-      // }
+
     }
   },
   watch: {
@@ -136,7 +132,7 @@ export default {
             this.canvasStyle[key] = newValue.canvasStyle[key];
           }
         }
-        this.setCanvasStyle("droppable");
+        this.setCanvasStyle("droppable", "canvas_container");
         // 默认显示页面设置面板
         bus.$emit("share", {type: "background", ...this.canvasStyle})
       },
@@ -159,10 +155,8 @@ export default {
         }
       });
 
-      this.$refs.canvas_container.addEventListener("resize", this.handleCanvasResize, false);
-
       window.addEventListener("resize", () => {
-        this.setCanvasStyle("droppable");
+        this.setCanvasStyle("droppable", "canvas_container");
 
       }, null);
       // 默认显示页面设置面板
@@ -188,7 +182,7 @@ export default {
         if (style.intHeight) this.canvasStyle.intHeight = style.intHeight
         if (style.backgroundColor) this.canvasStyle.backgroundColor = style.backgroundColor;
         console.log("====changeStyle", style)
-        this.setCanvasStyle("droppable");
+        this.setCanvasStyle("droppable", "canvas_container");
       } else {
         // 组件设置
         let index = this.fullData.findIndex(item => item.cptId == cptId)
@@ -200,44 +194,6 @@ export default {
     })
   },
   methods: {
-    // setCanvasStyle() {
-    //   this.$nextTick(() => {
-    //     console.log("====setCanvasStyle", JSON.stringify(this.canvasStyle))
-    //     if (this.canvasStyle.intWidth) {
-    //       this.$refs.droppable.style.setProperty("--w", this.canvasStyle.intWidth + "px");
-    //     }
-    //     if (this.canvasStyle.intHeight) {
-    //       this.$refs.droppable.style.setProperty("--h", this.canvasStyle.intHeight + "px");
-    //     }
-    //     if (this.canvasStyle.backgroundColor) {
-    //       this.$refs.droppable.style.setProperty("--color", this.canvasStyle.backgroundColor);
-    //     }
-    //     this.scale = this.getScale();
-    //     this.$refs.droppable.style.transform = "scale(" + this.scale + ")";
-    //   })
-    // },
-    /**
-     * 缩放
-     * @param scale
-     */
-    setZoom(step) {
-      if (this.scale >= 1.5 && step > 0) return;
-      if (this.scale <= 0.5 && step < 0) return;
-      this.scale += step;
-      console.log("====setZoom", step)
-      let droppable = document.getElementById("droppable")
-      droppable.style.transform = "scale(" + this.scale + ")";
-    },
-    /**
-     * 窗口自适应
-     */
-    adapt() {
-
-    },
-    handleCanvasResize() {
-      console.log("====handleCanvasResize", window.innerWidth)
-      console.log("====handleCanvasResize", window.innerHeight)
-    },
     /**
      * 当元素被拖放到放置区域后的回调
      * @param e
@@ -270,10 +226,11 @@ export default {
       opt.cptId = getRandomString(9);
       opt.editable = false;
       opt.activeted = false;
-      this.currentId = opt.cptId;
       delete opt.relativePoint;
       this.fullData.push(opt);
-      // console.log(this.fullData)
+      this.handleUnselect(this.currentId);
+      this.handleSelect(opt.cptId);
+      this.currentId = opt.cptId;
       this.$refs.droppable.focus();
     },
     /**
@@ -307,6 +264,8 @@ export default {
     onActivated(component) {
       let cpt = component;
       component.activeted = true;
+      this.handleUnselect(this.currentId);
+      this.handleSelect(component.cptId);
       this.currentId = cpt.cptId;
       bus.$emit('share', JSON.parse(JSON.stringify(cpt)))
     },
@@ -340,6 +299,7 @@ export default {
      */
     handleClickBackground(e) {
       if (!this.isInComponent) {
+        this.handleUnselect(this.currentId);
         bus.$emit("share", {type: "background", ...this.canvasStyle})
       }
       setTimeout(() => {
@@ -353,12 +313,12 @@ export default {
     onDBClick(component) {
       component.editable = true;
     },
-    getChartStyle(item) {
+    getChartStyle(style) {
       return {
         borderRadius: "10px",
         width: "100%",
         height: "100%",
-        backgroundColor: item.backgroundColor ? item.backgroundColor : "transparent"
+        backgroundColor: style.backgroundColor ? style.backgroundColor : "transparent"
       }
     },
     /**
@@ -427,41 +387,7 @@ export default {
     },
     dragCanvas(e) {
       console.log("====dragCanvas", e)
-    },
-    getScale() {
-      const parent = this.$refs.canvas_container;
-      // 画布父容器宽度
-      const parentW = parent.offsetWidth;
-      // 画布父容器高度
-      const parentH = parent.offsetHeight;
-      let scaleX = (parentW - 40) / this.canvasStyle.intWidth;
-      let scaleY = (parentH - 40)  / this.canvasStyle.intHeight;
-      let scale = Math.min(scaleX, scaleY);
-      return scale;
-    },
-    isInComponent(pos) {
-        for (let i = 0; i < this.fullData.length; i++) {
-          let point = this.fullData[i].point;
-          if (pos.x >= point.x && pos.y >= point.y && pos.x <= (point.x + point.w) && pos.y <= (point.y + point.h)) {
-            return true;
-          }
-        }
-        return (false);
-    },
-
-    // /**
-    //  * 获取缩放后的鼠标的真实坐标
-    //  * @param e
-    //  * @param offset
-    //  * @param scale
-    //  * @returns {{x: number, y: number}}
-    //  */
-    // getCanvasPosition(e, offset = { x: 0, y: 0 }, scale = 1) {
-    //   return {
-    //     x: (e.offsetX - offset.x) / scale,
-    //     y: (e.offsetY - offset.y) / scale
-    //   }
-    // }
+    }
   }
 }
 </script>
@@ -524,5 +450,9 @@ export default {
 }
 ::v-deep .handle-tm {
   z-index: 9999!important;
+}
+.active.draggable.resizable.selected {
+  border: 2px solid #26c705;
+  background-color: #354793;
 }
 </style>

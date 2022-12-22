@@ -1,5 +1,5 @@
 <template>
-  <div class="canvas-container">
+  <div class="canvas-container" ref="canvasContainer">
     <div class="canvas-display" id="canvas_display" ref="canvasDisplay">
       <VueDraggableResizable style="" class-name="draggable-class"
                              v-for="(component) in fullData" :key="component.cptId" :parent="false"
@@ -102,7 +102,7 @@ export default {
             }
           }
           // this.scale = this.getScale(this.fullData);
-          this.setCanvasStyle("canvasDisplay");
+          this.setCanvasStyle("canvasDisplay", "canvasContainer");
           this.scale = 1;
           this.setZoom(this.scale);
           this.refresh(this.fullData);

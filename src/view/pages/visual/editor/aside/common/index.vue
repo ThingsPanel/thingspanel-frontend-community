@@ -85,7 +85,7 @@ export default {
         {name: "柱状图", type: "bar", controlType: "dashboard", image_src: require("@/view/pages/visual/components/chart/bar.svg") },
       ],
       textList: [
-        { name: "文本", type: "text", style: {width: 100, height: 50},image_src: require("@/view/pages/visual/components/text/text_1.svg") }
+        { name: "文本", type: "text", style: {width: 100, height: 50, fontSize: 20},image_src: require("@/view/pages/visual/components/text/text_1.svg") }
       ],
       videoList: [
         { name: "视频", type: "video", image_src: require("@/view/pages/visual/components/video/video_1.svg") }

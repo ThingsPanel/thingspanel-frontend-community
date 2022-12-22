@@ -31,6 +31,10 @@ export default {
     value: {
       type: [String, Array],
       default: "文本"
+    },
+    vStyle: {
+      type: [Object],
+      default: () => { return {} }
     }
   },
   data() {
@@ -68,6 +72,12 @@ export default {
           }
         })
       }
+    },
+    vStyle: {
+      handler(newValue) {
+        console.log("====text", newValue)
+      },
+      immediate: true
     }
   },
   methods: {

@@ -26,9 +26,6 @@ import bus from "@/core/plugins/eventBus"
 
 export default {
   name: "index",
-  props: {
-
-  },
   data() {
     return {
       // opacity: 1,
