@@ -185,7 +185,8 @@ export default {
       this.$refs.canvas_container.addEventListener("resize", this.handleCanvasResize, false);
 
       // 默认显示页面设置面板
-      this.handleClickBackground(null);
+      // this.handleClickBackground(null);
+      bus.$emit("share", {type: "background", ...this.Spec})
 
     })
 
@@ -349,9 +350,7 @@ export default {
      */
     handleClickBackground(e) {
       console.log("====handleClickBackground", e)
-      if (e == null) {
-        bus.$emit("share", {type: "background", ...this.Spec})
-      } else if (!this.isInComponent({x: e.offsetX, y: e.offsetY })) {
+      if (!this.isInComponent({x: e.offsetX, y: e.offsetY })) {
         bus.$emit("share", {type: "background", ...this.Spec})
       }
     },
@@ -440,7 +439,7 @@ export default {
     isInComponent(pos) {
       for (let i = 0; i < this.fullData.length; i++) {
         let point = this.fullData[i].point;
-        if (pos.x > point.x && pos.y > point.y && pos.x < (point.x + point.w) && pos.y < (point.y + point.h)) {
+        if (pos.x >= point.x && pos.y >= point.y && pos.x <= (point.x + point.w) && pos.y <= (point.y + point.h)) {
           return true;
         }
       }
