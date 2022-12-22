@@ -81,5 +81,18 @@ export default {
             method: "post",
             data
         })
+    },
+
+    /**
+     * 插件地图数据
+     * @param data
+     * @returns {AxiosPromise}
+     */
+    map: (data) => {
+        return axios({
+            url: "/device/map",
+            method: "post",
+            data
+        })
     }
 }
