@@ -33,10 +33,11 @@
 <script>
 import bus from "@/core/plugins/eventBus"
 import DataSourcePane from "./components/DataSourcePane";
+import StylePanel from "./style"
 
 export default {
   name: "TextConfig",
-  components: { DataSourcePane },
+  components: { DataSourcePane, StylePanel },
   props: {
     formData: {
       type: [Object],

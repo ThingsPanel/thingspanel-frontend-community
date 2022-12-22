@@ -50,6 +50,7 @@ export default {
     },
     form: {
       handler(newValue) {
+        console.log("====share.background.form", newValue)
         bus.$emit('changeStyle', null, newValue);
       },
       deep: true

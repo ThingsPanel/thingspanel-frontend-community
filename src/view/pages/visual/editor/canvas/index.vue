@@ -14,7 +14,7 @@
                     @dragstop="(left, top) => onDragstop(component, left, top)"
                     @keydown.native="e => onKeyDown(component, e)"
                     @click.native="onClick(component)"
-                    @dblclick.native="onMouseDown(component)"
+                    @dblclick.native="onDBClick(component)"
       >
         <dashboard-chart :style="getChartStyle(component)" ref="component" :key="'dashboard_' + component.cptId"
                          :w="component.point.w" :h="component.point.h"
@@ -118,6 +118,7 @@ export default {
       zTopIndex: 500,   // 当前大屏的最高层
       zBottomIndex: 500,   // 当前大屏的最底层
       scale: 1,
+      isInComponent: false,
       Spec: {
         //定义的宽高比例，初始为1
         scaleW: 1,
@@ -164,10 +165,6 @@ export default {
       this.$refs.droppable.style.transform = "scale(" + this.scale + ")";
     }
 
-    window.addEventListener("resize", () => {
-      setCanvasStyle();
-    }, null);
-
     // 事件监听
     this.$nextTick(() => {
       this.$refs.droppable.addEventListener("dragover", this.handleDragover);
@@ -184,6 +181,10 @@ export default {
 
       this.$refs.canvas_container.addEventListener("resize", this.handleCanvasResize, false);
 
+      // setCanvasStyle();
+      window.addEventListener("resize", () => {
+        setCanvasStyle();
+      }, null);
       // 默认显示页面设置面板
       // this.handleClickBackground(null);
       bus.$emit("share", {type: "background", ...this.Spec})
@@ -202,7 +203,6 @@ export default {
 
     // 监听样式改变
     bus.$on('changeStyle', (cptId, style) => {
-      console.log("====canvas.changeStyle.cptId:", cptId, ", style:", style)
       if (cptId == null && style.type=="background") {
         // 画布背景设置
         const droppable = this.$refs.droppable;
@@ -328,9 +328,7 @@ export default {
      * @param e
      */
     onKeyDown(component, e) {
-      console.log("====onKeyDown", e)
       if (e.code == "Backspace") {
-        // if (component.type == "text") return;
         this.handleDelete(component);
       } else if (e.code == "Enter") {
         component.editable = false;
@@ -342,6 +340,7 @@ export default {
      * @param component
      */
     onClick(component) {
+      this.isInComponent = true;
       component.editable = false;
       bus.$emit('share', JSON.parse(JSON.stringify(component)))
     },
@@ -349,16 +348,18 @@ export default {
      * 单击画布
      */
     handleClickBackground(e) {
-      console.log("====handleClickBackground", e)
-      if (!this.isInComponent({x: e.offsetX, y: e.offsetY })) {
+      if (!this.isInComponent) {
         bus.$emit("share", {type: "background", ...this.Spec})
       }
+      setTimeout(() => {
+        this.isInComponent = false
+      }, 100);
     },
     /**
      * 双击组件 组件可编辑
      * @param component
      */
-    onMouseDown(component) {
+    onDBClick(component) {
       component.editable = true;
     },
     getChartStyle(item) {
@@ -437,14 +438,27 @@ export default {
       console.log("====dragCanvas", e)
     },
     isInComponent(pos) {
-      for (let i = 0; i < this.fullData.length; i++) {
-        let point = this.fullData[i].point;
-        if (pos.x >= point.x && pos.y >= point.y && pos.x <= (point.x + point.w) && pos.y <= (point.y + point.h)) {
-          return true;
+        for (let i = 0; i < this.fullData.length; i++) {
+          let point = this.fullData[i].point;
+          if (pos.x >= point.x && pos.y >= point.y && pos.x <= (point.x + point.w) && pos.y <= (point.y + point.h)) {
+            return true;
+          }
         }
-      }
-      return false;
-    }
+        return (false);
+    },
+    // /**
+    //  * 获取缩放后的鼠标的真实坐标
+    //  * @param e
+    //  * @param offset
+    //  * @param scale
+    //  * @returns {{x: number, y: number}}
+    //  */
+    // getCanvasPosition(e, offset = { x: 0, y: 0 }, scale = 1) {
+    //   return {
+    //     x: (e.offsetX - offset.x) / scale,
+    //     y: (e.offsetY - offset.y) / scale
+    //   }
+    // }
   }
 }
 </script>

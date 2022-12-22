@@ -36,8 +36,13 @@
 </template>
 
 <script>
+import StylePanel from "./style"
+
 export default {
   name: "ConfigureConfig",
+  components: {
+    StylePanel
+  },
   props: {
     formData: {
       type: [Object],
