@@ -28,15 +28,15 @@
         <el-link class="el-dark-link link-item" icon="el-icon-edit-outline">编辑</el-link>
         <el-link class="el-dark-link link-item" icon="el-icon-refresh-left">撤销</el-link>
 
-        <!-- 缩小 -->
-        <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-minus" @click="handleZoomOut"></el-link>
-        <!-- 放大 -->
-        <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-plus" @click="handleZoomIn"></el-link>
+<!--        &lt;!&ndash; 缩小 &ndash;&gt;-->
+<!--        <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-minus" @click="handleZoomOut"></el-link>-->
+<!--        &lt;!&ndash; 放大 &ndash;&gt;-->
+<!--        <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-plus" @click="handleZoomIn"></el-link>-->
 
-        <el-link class="el-dark-link link-item" icon="el-icon-monitor" @click="handleAdapt">自适应</el-link>
+<!--        <el-link class="el-dark-link link-item" icon="el-icon-monitor" @click="handleAdapt">自适应</el-link>-->
 
 
-        <el-link class="el-dark-link link-item" icon="el-icon-s-platform">预览</el-link>
+        <el-link class="el-dark-link link-item" icon="el-icon-s-platform" @click="handlePreview">预览</el-link>
         <el-link class="el-dark-link link-item" icon="el-icon-s-platform">更换主题</el-link>
 
       </div>
@@ -123,7 +123,7 @@ export default {
      * 预览
      */
     handlePreview() {
-
+      this.$emit("preview");
     },
     /**
      * 发布

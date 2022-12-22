@@ -88,6 +88,7 @@ import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
 
 import { getRandomString } from "@/utils/helpers";
 import bus from "@/core/plugins/eventBus"
+import "@/core/mixins/visual"
 
 
 export default {
@@ -108,36 +109,17 @@ export default {
   },
   data() {
     return {
-      // 画布上所有的组件集合
-      fullData: [],
-      tempData: [],
       currentId: "",
       defaultStyle: {backgroundColor: 'rgba(45, 61, 134, 1)'},
-      canvasStyle: {},
       menuVisible: false, // 右键菜单
       zTopIndex: 500,   // 当前大屏的最高层
       zBottomIndex: 500,   // 当前大屏的最底层
-      scale: 1,
       isInComponent: false,
-      Spec: {
-        //定义的宽高比例，初始为1
-        scaleW: 1,
-        scaleH: 1,
-        intWidth: 1920,
-        intHeight: 1080,
-        backgroundColor: "#2d3d86",
-        getScale: () => {
-          const parent = this.$refs.canvas_container;
-          // 画布父容器宽度
-          const parentW = parent.offsetWidth;
-          // 画布父容器高度
-          const parentH = parent.offsetHeight;
-          let scaleX = (parentW - 40) / this.Spec.intWidth;
-          let scaleY = (parentH - 40)  / this.Spec.intHeight;
-          let scale = Math.min(scaleX, scaleY);
-          return scale;
-        }
-      }
+      // canvasStyle: {
+      //   intWidth: 1920,
+      //   intHeight: 1080,
+      //   backgroundColor: "#2d3d86",
+      // }
     }
   },
   watch: {
@@ -145,25 +127,23 @@ export default {
       handler(newValue) {
         console.log("====jsonData", newValue)
         if (!newValue || JSON.stringify(newValue) == "{}" ||newValue == undefined) return;
-        let fullData = JSON.parse(JSON.stringify(newValue.screen)) ;
-        if (fullData.length == 0) return;
-        let canvasStyle = newValue.canvasStyle ? newValue.canvasStyle : {};
+
         // 显示大屏
-        this.fullData = fullData;
-        this.canvasStyle = canvasStyle;
+        this.fullData = newValue.screen.length > 0 ? JSON.parse(JSON.stringify(newValue.screen)) : [];
+
+        if (newValue.canvasStyle && JSON.stringify(newValue.canvasStyle) != "{}") {
+          for (let key in newValue.canvasStyle) {
+            this.canvasStyle[key] = newValue.canvasStyle[key];
+          }
+        }
+        this.setCanvasStyle("droppable");
+        // 默认显示页面设置面板
+        bus.$emit("share", {type: "background", ...this.canvasStyle})
       },
       immediate: true
     }
   },
   mounted() {
-
-    const setCanvasStyle = () => {
-      this.$refs.droppable.style.setProperty("--w", this.Spec.intWidth + "px");
-      this.$refs.droppable.style.setProperty("--h", this.Spec.intHeight + "px");
-      this.$refs.droppable.style.setProperty("--color", this.Spec.backgroundColor);
-      this.scale = this.Spec.getScale();
-      this.$refs.droppable.style.transform = "scale(" + this.scale + ")";
-    }
 
     // 事件监听
     this.$nextTick(() => {
@@ -181,13 +161,12 @@ export default {
 
       this.$refs.canvas_container.addEventListener("resize", this.handleCanvasResize, false);
 
-      // setCanvasStyle();
       window.addEventListener("resize", () => {
-        setCanvasStyle();
+        this.setCanvasStyle("droppable");
+
       }, null);
       // 默认显示页面设置面板
-      // this.handleClickBackground(null);
-      bus.$emit("share", {type: "background", ...this.Spec})
+      bus.$emit("share", {type: "background", ...this.canvasStyle})
 
     })
 
@@ -205,15 +184,11 @@ export default {
     bus.$on('changeStyle', (cptId, style) => {
       if (cptId == null && style.type=="background") {
         // 画布背景设置
-        const droppable = this.$refs.droppable;
-        if (style.intWidth) this.Spec.intWidth = style.intWidth
-        if (style.intHeight) this.Spec.intHeight = style.intHeight
-        droppable.style.setProperty("--w", style.intWidth + "px");
-        droppable.style.setProperty("--h", style.intHeight + "px");
-        droppable.style.setProperty("--color", style.backgroundColor);
-        this.scale = this.Spec.getScale();
-        console.log("====canvas.scale", this.scale)
-        droppable.style.transform = "scale(" + this.scale + ")";
+        if (style.intWidth) this.canvasStyle.intWidth = style.intWidth
+        if (style.intHeight) this.canvasStyle.intHeight = style.intHeight
+        if (style.backgroundColor) this.canvasStyle.backgroundColor = style.backgroundColor;
+        console.log("====changeStyle", style)
+        this.setCanvasStyle("droppable");
       } else {
         // 组件设置
         let index = this.fullData.findIndex(item => item.cptId == cptId)
@@ -225,6 +200,22 @@ export default {
     })
   },
   methods: {
+    // setCanvasStyle() {
+    //   this.$nextTick(() => {
+    //     console.log("====setCanvasStyle", JSON.stringify(this.canvasStyle))
+    //     if (this.canvasStyle.intWidth) {
+    //       this.$refs.droppable.style.setProperty("--w", this.canvasStyle.intWidth + "px");
+    //     }
+    //     if (this.canvasStyle.intHeight) {
+    //       this.$refs.droppable.style.setProperty("--h", this.canvasStyle.intHeight + "px");
+    //     }
+    //     if (this.canvasStyle.backgroundColor) {
+    //       this.$refs.droppable.style.setProperty("--color", this.canvasStyle.backgroundColor);
+    //     }
+    //     this.scale = this.getScale();
+    //     this.$refs.droppable.style.transform = "scale(" + this.scale + ")";
+    //   })
+    // },
     /**
      * 缩放
      * @param scale
@@ -349,7 +340,7 @@ export default {
      */
     handleClickBackground(e) {
       if (!this.isInComponent) {
-        bus.$emit("share", {type: "background", ...this.Spec})
+        bus.$emit("share", {type: "background", ...this.canvasStyle})
       }
       setTimeout(() => {
         this.isInComponent = false
@@ -367,7 +358,7 @@ export default {
         borderRadius: "10px",
         width: "100%",
         height: "100%",
-        backgroundColor: item.backgroundColor ? item.backgroundColor : "#2d3d86"
+        backgroundColor: item.backgroundColor ? item.backgroundColor : "transparent"
       }
     },
     /**
@@ -437,6 +428,17 @@ export default {
     dragCanvas(e) {
       console.log("====dragCanvas", e)
     },
+    getScale() {
+      const parent = this.$refs.canvas_container;
+      // 画布父容器宽度
+      const parentW = parent.offsetWidth;
+      // 画布父容器高度
+      const parentH = parent.offsetHeight;
+      let scaleX = (parentW - 40) / this.canvasStyle.intWidth;
+      let scaleY = (parentH - 40)  / this.canvasStyle.intHeight;
+      let scale = Math.min(scaleX, scaleY);
+      return scale;
+    },
     isInComponent(pos) {
         for (let i = 0; i < this.fullData.length; i++) {
           let point = this.fullData[i].point;
@@ -446,6 +448,7 @@ export default {
         }
         return (false);
     },
+
     // /**
     //  * 获取缩放后的鼠标的真实坐标
     //  * @param e
@@ -471,16 +474,8 @@ export default {
   overflow: hidden;
 }
 .droppable {
-  /*position: absolute;*/
   position: relative;
-  /*width: 100%;*/
-  /*height: 100%;*/
-  /*top: -100%;*/
-  /*bottom: 40px;*/
-  /*left: -100%;*/
-  /*right: 10px;*/
   background-color: var(--color);
-  /*background-color: #ea08a2;*/
   width: var(--w);
   height: var(--h);
   transform-origin: 0 0;

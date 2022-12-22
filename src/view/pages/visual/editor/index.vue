@@ -5,6 +5,7 @@
       <EditorHeader :params.sync="params"
                     @zoom="handleZoom"
                     @save="handleSave"
+                    @preview="handlePreview"
                     @publish="handlePublish"
                     @show-import="showImportDialog"
                     @show-export="showExportDialog"
@@ -86,6 +87,14 @@ export default {
      */
     handleAdapt() {
       this.$refs.editorCanvas.adapt();
+    },
+    /**
+     * 预览
+     */
+    handlePreview() {
+      let query = { id: this.visualId };
+      const{ href } = this.$router.resolve({ name:"VisualDisplay", query });
+      window.open(href,'_blank');
     },
     /**
      * 打开导入对话框

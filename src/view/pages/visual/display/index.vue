@@ -1,6 +1,6 @@
 <template>
   <div class="canvas-container">
-    <div class="canvas-display" id="canvas_display">
+    <div class="canvas-display" id="canvas_display" ref="canvasDisplay">
       <VueDraggableResizable style="" class-name="draggable-class"
                              v-for="(component) in fullData" :key="component.cptId" :parent="false"
                              :disable-user-select="false" :draggable="false" :resizable="false"
@@ -69,6 +69,7 @@ import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
 
 import VisualAPI from "@/api/visualization.js"
 import { currentValue } from "@/api/device"
+import "@/core/mixins/visual"
 
 export default {
   name: "VisualDisplay",
@@ -78,8 +79,6 @@ export default {
   },
   data() {
     return {
-      fullData: [],
-      scale: 1,
       // 刷新间隔
       flushTime: 5,
       // 计时器
@@ -96,8 +95,14 @@ export default {
           console.log("====display", result);
           let jsonObj = JSON.parse(jsonData);
           document.title = result.dashboard_name ? result.dashboard_name : "";
-          this.fullData = jsonObj.screen ? jsonObj.screen : [];
+          this.fullData = jsonObj.screen.length > 0 ? JSON.parse(JSON.stringify(jsonObj.screen)) : [];
+          if (jsonObj.canvasStyle && JSON.stringify(jsonObj.canvasStyle) != "{}") {
+            for (let key in jsonObj.canvasStyle) {
+              this.canvasStyle[key] = jsonObj.canvasStyle[key];
+            }
+          }
           // this.scale = this.getScale(this.fullData);
+          this.setCanvasStyle("canvasDisplay");
           this.scale = 1;
           this.setZoom(this.scale);
           this.refresh(this.fullData);
@@ -234,7 +239,9 @@ export default {
     margin:auto;
   }
   .canvas-display {
-    //transform-origin: -25% 0 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--color);
   }
   .draggable-class {
     position: absolute;

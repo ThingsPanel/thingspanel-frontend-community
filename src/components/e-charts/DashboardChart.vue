@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import charts from "@/core/mixins/charts.js"
+import "@/core/mixins/charts.js"
 
 export default {
   name: "DashboardChart",
