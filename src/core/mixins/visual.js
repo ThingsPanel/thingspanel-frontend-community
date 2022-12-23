@@ -54,6 +54,7 @@ Vue.mixin({
             const parentW = parent.offsetWidth;
             // 画布父容器高度
             const parentH = parent.offsetHeight;
+            console.log("====parent", parent.offsetWidth, parent.offsetHeight)
             let scaleX = (parentW - 40) / this.canvasStyle.intWidth;
             let scaleY = (parentH - 40)  / this.canvasStyle.intHeight;
             let scale = Math.min(scaleX, scaleY);

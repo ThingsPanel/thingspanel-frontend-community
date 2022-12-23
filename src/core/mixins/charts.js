@@ -44,6 +44,7 @@ Vue.mixin({
                         show: false
                     },
                     detail: {
+                        formatter: opt.series[0].detail.formatter ? opt.series[0].detail.formatter : "{value}",
                         offsetCenter: [0, 0],
                     }
                 };
@@ -74,6 +75,7 @@ Vue.mixin({
                             size: 5
                         },
                         detail: {
+                            formatter: opt.series[0].detail.formatter ? opt.series[0].detail.formatter : "{value}",
                             offsetCenter: opt.series[i].detail.offsetCenter ? opt.series[i].detail.offsetCenter : [0, '40%'],
                         }
                     };
@@ -98,6 +100,7 @@ Vue.mixin({
                     if (!serie.anchor) serie.anchor = {};
                     serie.anchor.show = getEchartsItemConfig(opt, "anchor.show", i);
 
+                    option.series[i].detail.formatter = opt.series[i].detail.formatter ? opt.series[i].detail.formatter : "{value}",
                     option.series[i].detail.fontSize = opt.series[i].detail.fontSize ? opt.series[i].detail.fontSize : 30;
                 }
 

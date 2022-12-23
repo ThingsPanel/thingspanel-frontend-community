@@ -7,7 +7,7 @@
                              :x="component.point.x" :y="component.point.y"
                              :w="component.point.w" :h="component.point.h"
                              :z="component.point.z"
-                             :scale="scale"
+                             :scale="defaultScale"
       >
         <dashboard-chart :style="getChartStyle(component)" ref="component" :key="'dashboard_' + component.cptId"
                          :w="component.point.w" :h="component.point.h"
@@ -101,10 +101,7 @@ export default {
               this.canvasStyle[key] = jsonObj.canvasStyle[key];
             }
           }
-          // this.scale = this.getScale(this.fullData);
           this.setCanvasStyle("canvasDisplay", "canvasContainer");
-          this.scale = 1;
-          this.setZoom(this.scale);
           this.refresh(this.fullData);
         }
       })
@@ -115,29 +112,29 @@ export default {
      * @param fullData
      * @returns {number}
      */
-    getScale(fullData) {
-      let left = null, right = null, top = null, bottom = null;
-      fullData.forEach(item => {
-        let point = item.point;
-        if (!left || left > point.x) left = point.x;
-        if (!right || right < (point.x + point.w)) right = point.x + point.w;
-        if (!top || top > point.y) top = point.y;
-        if (!bottom || bottom < (point.y + point.h)) bottom = point.y + point.h;
-      })
-      // 宽 = 最右 - 最左
-      let fitW = right - left;
-      // 高 = 最下 - 最上
-      let fitH = bottom - top;
-      let canvasDisplay = document.getElementById("canvas_display");
-      canvasDisplay.style.width = fitW + "px";
-      canvasDisplay.style.height = fitH + "px";
-
-      const w = window.innerWidth / fitW
-      const h = window.innerHeight / fitH
-      // 宽度与高度的比例取最小的，以确保屏幕可以完全显示
-      let scale = Math.min(w, h)
-      return scale;
-    },
+    // getScale(fullData) {
+    //   let left = null, right = null, top = null, bottom = null;
+    //   fullData.forEach(item => {
+    //     let point = item.point;
+    //     if (!left || left > point.x) left = point.x;
+    //     if (!right || right < (point.x + point.w)) right = point.x + point.w;
+    //     if (!top || top > point.y) top = point.y;
+    //     if (!bottom || bottom < (point.y + point.h)) bottom = point.y + point.h;
+    //   })
+    //   // 宽 = 最右 - 最左
+    //   let fitW = right - left;
+    //   // 高 = 最下 - 最上
+    //   let fitH = bottom - top;
+    //   let canvasDisplay = document.getElementById("canvas_display");
+    //   canvasDisplay.style.width = fitW + "px";
+    //   canvasDisplay.style.height = fitH + "px";
+    //
+    //   const w = window.innerWidth / fitW
+    //   const h = window.innerHeight / fitH
+    //   // 宽度与高度的比例取最小的，以确保屏幕可以完全显示
+    //   let scale = Math.min(w, h)
+    //   return scale;
+    // },
     /**
      * 放大
      */
@@ -152,14 +149,14 @@ export default {
       this.scale -= 0.1;
       this.setZoom(this.scale);
     },
-    /**
-     * 缩放
-     * @param scale
-     */
-    setZoom(scale) {
-      let canvasDisplay = document.getElementById("canvas_display")
-      canvasDisplay.style.transform = "scale(" + scale + ")";
-    },
+    // /**
+    //  * 缩放
+    //  * @param scale
+    //  */
+    // setZoom(scale) {
+    //   let canvasDisplay = document.getElementById("canvas_display")
+    //   canvasDisplay.style.transform = "scale(" + scale + ")";
+    // },
     getChartStyle(item) {
       return {
         borderRadius: "10px",
@@ -227,17 +224,6 @@ export default {
   height: 100%!important;
   padding: 0;
   margin: 0;
-  .header {
-    position: absolute;
-    text-align: center;
-    top: 0;
-    left: 0;
-    right:0;
-    color:  #fff;
-    height: 60px;
-    width: 100px;
-    margin:auto;
-  }
   .canvas-display {
     width: 100%;
     height: 100%;
