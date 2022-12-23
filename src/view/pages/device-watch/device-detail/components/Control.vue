@@ -159,11 +159,11 @@ const typeConvert = (value, type) => {
 
 <style scoped lang="scss">
 .chart-div {
-  margin: 10px 20px 10px 10px;
-  border-radius: 16px;
+  position: relative;
+  //margin: 10px 20px 20px 10px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   background-color: #2d3d86;
-  text-align: center;
+  border-radius: 4px;
 }
 .chart-header {
   position: relative;
@@ -172,7 +172,7 @@ const typeConvert = (value, type) => {
   height: 40px;
   padding-left: 10px;
   text-align: right;
-  box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
+  //box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
   .title {
     //width: 100%;
     //flex-grow: 1;
