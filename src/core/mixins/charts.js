@@ -27,7 +27,7 @@ Vue.mixin({
          */
         resizeECharts(opt, length) {
             console.log("====charts.mixin.option1", opt)
-            if (!opt) return {};
+            if (!opt || opt.controlType =="history") return {};
             let option = {};
             if (length < 160) {
                 const miniSerie = {
