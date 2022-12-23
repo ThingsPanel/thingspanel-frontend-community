@@ -1,5 +1,5 @@
 <template>
-  <div class="text-container">
+  <div class="text-container" :style="vStyle">
     <input class="input" ref="inputRef" type="text"  v-if="active && editable" v-model="textValue"
            @mousedown="stopPropagation" @mouseup="stopPropagation" @click="stopPropagation"
            @keydown="stopPropagation"/>
@@ -34,7 +34,14 @@ export default {
     },
     vStyle: {
       type: [Object],
-      default: () => { return {} }
+      default: () => {
+        return {
+          borderRadius: 0,
+          borderWidth: 0,
+          borderColor: "#2d3d86",
+          fontSize: 18
+        }
+      }
     }
   },
   data() {
@@ -76,6 +83,7 @@ export default {
     vStyle: {
       handler(newValue) {
         console.log("====text", newValue)
+
       },
       immediate: true
     }

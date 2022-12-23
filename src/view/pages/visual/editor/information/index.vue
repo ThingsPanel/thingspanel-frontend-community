@@ -64,7 +64,7 @@ export default {
 .information-container {
   width: 100%;
   height: 100%;
-  padding: 20px
+  padding: 16px;
 }
 ::v-deep .el-divider--horizontal {
  margin-top: 44px!important;

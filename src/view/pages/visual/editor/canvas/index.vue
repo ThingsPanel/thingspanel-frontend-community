@@ -176,6 +176,7 @@ export default {
 
     // 监听样式改变
     bus.$on('changeStyle', (cptId, style) => {
+      console.log("====changeStyle.style", style)
       if (cptId == null && style.type=="background") {
         // 画布背景设置
         if (style.intWidth) this.canvasStyle.intWidth = style.intWidth

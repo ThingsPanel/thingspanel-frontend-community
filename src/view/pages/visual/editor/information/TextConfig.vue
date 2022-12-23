@@ -25,7 +25,6 @@
       </el-tab-pane>
       <el-tab-pane label="样式" name="style">
         <style-panel></style-panel>
-
       </el-tab-pane>
     </el-tabs>
   </div>

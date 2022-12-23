@@ -525,7 +525,7 @@ const required = true, only = true, advanced =true;
 export const tableAttr = {
     properties: [
         { field: "title", label: "标题", validate: {required, only}},
-        { field: "name", label: "名称", validate: {required, only}},
+        { field: "name", label: "属性", validate: {required, only}},
         { field: "dataType", label: "数据类型", type: "select", default: "float",validate: {required},
             options: dataType
         },

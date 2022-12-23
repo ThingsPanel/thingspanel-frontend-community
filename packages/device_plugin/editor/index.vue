@@ -46,6 +46,7 @@ import global from "../common/global";
 
 // import Function from "./Function"
 import Publish from "./Publish";
+import {message_error} from "../../../src/utils/helpers";
 const steps = [
   { label: "插件信息", icon: "el-icon-info", description: "填写插件信息" },
   { label: "物模型", icon: "el-icon-s-home", description: "选择标准物模型或自定义" },
@@ -168,8 +169,8 @@ export default {
       } else if (this.step == 2) {
         // 图表
         this.jsonData.chart = this.$refs.chart.mappedCharts;
-        console.log("====editor.jsonData", this.jsonData)
         if (this.jsonData.chart.length == 0) {
+          message_error("至少绑定一个图表！")
           return;
         }
       } else if (this.step == 3) {

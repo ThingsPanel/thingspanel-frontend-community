@@ -114,16 +114,15 @@
                 ApiService.post(AUTH.local_url+"/home/list")
                     .then(({ data }) => {
                         if (data.code == 200) {
-                            this.deviceTotal = data.data.device;
-                            this.messageTotal = data.data.msg;
-                            this.cpuUsage = data.data['cpu_usage'];
-                            this.ramUsage = data.data['mem_usage'];
-                        }else if(data.code == 401){
+                            this.deviceTotal = data.data.device ? data.data.device : 0;
+                            this.messageTotal = data.data.msg ? data.data.msg : 0;
+                            this.cpuUsage = data.data['cpu_usage'] ? data.data['cpu_usage'] : 0;
+                            this.ramUsage = data.data['mem_usage'] ? data.data['mem_usage'] : 0;
+                        } else if (data.code == 401) {
                             this.$store
                                 .dispatch(REFRESH)
                                 .then(() => {});
                         }else{
-
                         }
                     });
             }

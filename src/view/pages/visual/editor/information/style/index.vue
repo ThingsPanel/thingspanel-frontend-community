@@ -1,6 +1,6 @@
 <template>
   <div class="style-panel-container">
-    <el-form label-position="left" label-width="90px" :model="style">
+    <el-form label-position="left" label-width="80px" :model="style">
       <el-form-item label="背景透明度">
         <el-slider v-model="style.opa" :max="1" :step="0.1" :min="0" show-stops></el-slider>
       </el-form-item>
@@ -15,6 +15,9 @@
       </el-form-item>
       <el-form-item label="边框颜色">
         <el-color-picker v-model="style.borderColor"></el-color-picker>
+      </el-form-item>
+      <el-form-item label="文字大小">
+        <el-input-number size="mini" v-model="style.fontSize"></el-input-number>
       </el-form-item>
     </el-form>
   </div>
@@ -42,7 +45,8 @@ export default {
         bgColor: "#2d3d86",
         borderRadius: 0,
         borderWidth: 0,
-        borderColor: "#2d3d86"
+        borderColor: "#2d3d86",
+        fontSize: 18
       }
     }
   },
@@ -52,8 +56,9 @@ export default {
         let styleData = JSON.parse(JSON.stringify(val));
         styleData.backgroundColor = colorHex2RGBA(val.bgColor, val.opa);
         if (styleData.borderWidth > 0) styleData.borderStyle = "solid";
-        styleData.borderWidth = styleData.borderWidth + "px";
-        styleData.borderRadius = styleData.borderRadius + "px";
+        styleData.borderWidth += "px";
+        styleData.borderRadius += "px";
+        styleData.fontSize += "px";
         bus.$emit('changeStyle', this.cptId, styleData);
       },
       deep: true

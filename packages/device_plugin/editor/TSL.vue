@@ -39,6 +39,7 @@
 <script>
 import TslEditor from "../tsl/editor"
 import { standardTSL } from "../data/attrs";
+import {message_error} from "../../../src/utils/helpers";
 
 export default {
   name: "TSL",
@@ -115,11 +116,16 @@ export default {
     chkValue() {
       if (this.radioClassify == "standard") {
         if (this.tslValue == "") {
+          message_error("请选择标准物模型！");
           return false;
         }
       } else {
-        if (this.customData.properties == undefined || this.customData.properties.length == 0 ||
-            this.categoryValue == "") {
+        if (this.categoryValue == "") {
+          message_error("请选择分类！")
+          return false;
+        }
+        if (this.customData.properties == undefined || this.customData.properties.length == 0) {
+          message_error("物模型不能为空！")
           return false;
         }
       }
