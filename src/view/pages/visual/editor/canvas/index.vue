@@ -138,7 +138,7 @@ export default {
             this.canvasStyle[key] = newValue.canvasStyle[key];
           }
         }
-        this.setCanvasStyle("droppable", "canvas_container");
+        this.setCanvasStyle("droppable", "canvas_container", 40);
         // 默认显示页面设置面板
         bus.$emit("share", {type: "background", ...this.canvasStyle})
       },
@@ -162,7 +162,7 @@ export default {
       });
 
       window.addEventListener("resize", () => {
-        this.setCanvasStyle("droppable", "canvas_container");
+        this.setCanvasStyle("droppable", "canvas_container", 40);
 
       }, null);
       // 默认显示页面设置面板
@@ -189,7 +189,7 @@ export default {
         if (style.intHeight) this.canvasStyle.intHeight = style.intHeight
         if (style.backgroundColor) this.canvasStyle.backgroundColor = style.backgroundColor;
         console.log("====changeStyle", style)
-        this.setCanvasStyle("droppable", "canvas_container");
+        this.setCanvasStyle("droppable", "canvas_container", 40);
       } else {
         // 组件设置
         let index = this.fullData.findIndex(item => item.cptId == cptId)

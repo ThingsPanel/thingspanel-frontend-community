@@ -20,6 +20,7 @@ Vue.mixin({
         setCanvasStyle(canvasRef, parentRef, space = 0) {
             this.$nextTick(() => {
                 let canvas = this.$refs[canvasRef];
+                const parent = this.$refs[parentRef];
                 console.log("====setCanvasStyle", JSON.stringify(this.canvasStyle))
                 if (this.canvasStyle.intWidth) {
                     canvas.style.setProperty("--w", this.canvasStyle.intWidth + "px");
@@ -28,6 +29,7 @@ Vue.mixin({
                     canvas.style.setProperty("--h", this.canvasStyle.intHeight + "px");
                 }
                 if (this.canvasStyle.backgroundColor) {
+                    parent.style.setProperty("--color", this.canvasStyle.backgroundColor);
                     canvas.style.setProperty("--color", this.canvasStyle.backgroundColor);
                 }
                 this.defaultScale = this.getScale(parentRef, space);
@@ -40,14 +42,6 @@ Vue.mixin({
             if (cpt.style.height) cpt.point.h = cpt.style.height;
             return cpt.style;
         },
-        setZoom(step) {
-            if (this.defaultScale >= 1.5 && step > 0) return;
-            if (this.defaultScale <= 0.5 && step < 0) return;
-            this.defaultScale += step;
-            console.log("====setZoom", step)
-            let droppable = document.getElementById("droppable")
-            droppable.style.transform = "scale(" + this.defaultScale + ")";
-        },
         getScale(refName, space) {
             const parent = this.$refs[refName];
             // 画布父容器宽度
@@ -55,13 +49,11 @@ Vue.mixin({
             // 画布父容器高度
             const parentH = parent.offsetHeight;
             console.log("====parent", parent.offsetWidth, parent.offsetHeight)
-            let scaleX = (parentW + space) / this.canvasStyle.intWidth;
-            let scaleY = (parentH + space)  / this.canvasStyle.intHeight;
-            if (space > 0) {
-                return Math.max(scaleX, scaleY);
-            } else {
-                return Math.min(scaleX, scaleY);
-            }
+            console.log("====window", window.innerWidth, window.innerHeight)
+            let scaleX = (parentW - space) / this.canvasStyle.intWidth;
+            let scaleY = (parentH - space)  / this.canvasStyle.intHeight;
+
+            return Math.min(scaleX, scaleY);
         },
         handleUnselect(cptId) {
             const unselect = (cptId) => {

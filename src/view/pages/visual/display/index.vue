@@ -101,40 +101,12 @@ export default {
               this.canvasStyle[key] = jsonObj.canvasStyle[key];
             }
           }
-          this.setCanvasStyle("canvasDisplay", "canvasContainer", 40);
+          this.setCanvasStyle("canvasDisplay", "canvasContainer");
           this.refresh(this.fullData);
         }
       })
   },
   methods: {
-    /**
-     * 获取自适应的scale
-     * @param fullData
-     * @returns {number}
-     */
-    // getScale(fullData) {
-    //   let left = null, right = null, top = null, bottom = null;
-    //   fullData.forEach(item => {
-    //     let point = item.point;
-    //     if (!left || left > point.x) left = point.x;
-    //     if (!right || right < (point.x + point.w)) right = point.x + point.w;
-    //     if (!top || top > point.y) top = point.y;
-    //     if (!bottom || bottom < (point.y + point.h)) bottom = point.y + point.h;
-    //   })
-    //   // 宽 = 最右 - 最左
-    //   let fitW = right - left;
-    //   // 高 = 最下 - 最上
-    //   let fitH = bottom - top;
-    //   let canvasDisplay = document.getElementById("canvas_display");
-    //   canvasDisplay.style.width = fitW + "px";
-    //   canvasDisplay.style.height = fitH + "px";
-    //
-    //   const w = window.innerWidth / fitW
-    //   const h = window.innerHeight / fitH
-    //   // 宽度与高度的比例取最小的，以确保屏幕可以完全显示
-    //   let scale = Math.min(w, h)
-    //   return scale;
-    // },
     /**
      * 放大
      */
@@ -149,14 +121,6 @@ export default {
       this.scale -= 0.1;
       this.setZoom(this.scale);
     },
-    // /**
-    //  * 缩放
-    //  * @param scale
-    //  */
-    // setZoom(scale) {
-    //   let canvasDisplay = document.getElementById("canvas_display")
-    //   canvasDisplay.style.transform = "scale(" + scale + ")";
-    // },
     getChartStyle(item) {
       return {
         borderRadius: "10px",
@@ -220,14 +184,16 @@ export default {
 <style scoped lang="scss">
 .canvas-container {
   position: relative;
-  width: 100%;
+  width: 100%!important;
   height: 100%!important;
   padding: 0;
   margin: 0;
+  background-color: var(--color);
   .canvas-display {
-    width: 100%;
-    height: 100%;
+    width: var(--w);
+    height: var(--h);
     background-color: var(--color);
+    transform-origin: 0 0;
   }
   .draggable-class {
     position: absolute;
