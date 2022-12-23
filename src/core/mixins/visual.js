@@ -35,6 +35,7 @@ Vue.mixin({
             })
         },
         getStyle(cpt) {
+            if (!cpt.style) return {};
             if (cpt.style.width) cpt.point.w = cpt.style.width;
             if (cpt.style.height) cpt.point.h = cpt.style.height;
             return cpt.style;
