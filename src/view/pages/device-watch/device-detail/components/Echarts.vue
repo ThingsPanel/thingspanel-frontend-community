@@ -23,7 +23,7 @@
 
     </div>
 
-    <div style="width: 100%; height:100%" ref="chart"></div>
+    <div style="width: 100%; height:100%;position: absolute;top:40px" ref="chart"></div>
 
     <el-dialog title="配置" width="30%"
         :visible.sync="configurationVisible">
@@ -38,9 +38,8 @@
 </template>
 
 <script>
-import { currentValue, historyValue } from "@/api/device";
-import { addTimer, clearTimer } from "@/utils/tool.js"
-import charts from "@/core/mixins/charts.js"
+import {  historyValue } from "@/api/device";
+import "@/core/mixins/charts.js"
 
 let Echarts = require('echarts/lib/echarts');
 require('echarts/lib/chart/gauge');
@@ -187,10 +186,11 @@ export default {
 
 <style scoped lang="scss">
 .chart-div {
-  margin: 10px 20px 10px 10px;
+  position: relative;
+  //margin: 10px 20px 20px 10px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   background-color: #2d3d86;
-  border-radius: 16px;
+  border-radius: 4px;
 }
 .chart-header {
   position: relative;
@@ -199,7 +199,7 @@ export default {
   height: 40px;
   padding-left: 10px;
   text-align: right;
-  box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
+  //box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
   .title {
     //width: 100%;
     //flex-grow: 1;
