@@ -10,10 +10,10 @@
 
         <div v-show="showHandle" style="float: right">
           <el-radio-group v-model="editMode">
-            <el-radio-button label="simple">简单模式</el-radio-button>
-            <el-radio-button label="advanced">高级模式</el-radio-button>
+            <el-radio-button type="primary" label="simple">简单模式</el-radio-button>
+            <el-radio-button type="primary" label="advanced">高级模式</el-radio-button>
+            <el-radio-button type="primary" @click="jsonDialogVisible=true">JSON模式</el-radio-button>
           </el-radio-group>
-          <el-button type="primary" style="margin-left: 10px" @click="jsonDialogVisible=true">JSON模式</el-button>
         </div>
 
         <div v-show="showCreate" style="float: right">

@@ -29,6 +29,11 @@
         <status :style="getChartStyle(component)"
                 v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>
 
+        <pie-chart :style="getChartStyle(component)" :loading="false"
+                       :w="component.point.w" :h="component.point.h"
+                       v-if="component.type == 'pie'"
+                       :option="component"></pie-chart>
+
         <control :style="getChartStyle(component)"
                        :w="component.point.w" :h="component.point.h"
                        v-if="component.controlType == 'control'"
@@ -76,6 +81,7 @@
 <script>
 import DashboardChart from "@/components/e-charts/DashboardChart";
 import HistoryChart from "@/components/e-charts/CurveChart";
+import PieChart from "@/components/e-charts/PieChart"
 import Control from "@/components/control/Control";
 import Status from "@/components/e-charts/Status";
 import Configure from "@/components/configure/Configure"
@@ -94,7 +100,7 @@ import "@/core/mixins/visual"
 export default {
   name: "EditorCanvas",
   components: {
-    DashboardChart, HistoryChart, Control, Status, Configure, Other, CommonText, VideoPlayer, VueDraggableResizable
+    DashboardChart, HistoryChart, PieChart, Control, Status, Configure, Other, CommonText, VideoPlayer, VueDraggableResizable
   },
   props: {
     jsonData: {

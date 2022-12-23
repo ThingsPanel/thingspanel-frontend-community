@@ -26,7 +26,6 @@
         </el-col>
       </el-row>
     </div>
-<!--    <tp-editor class="tp-dark-editor" :visible.sync="showEditorDialog" :json="pluginJsonData" :plugin-category="pluginCategory" @publish="publish"></tp-editor>-->
     <DevicePluginEditor class="tp-dark-editor" :visible.sync="showEditorDialog" :json="pluginJsonData" :plugin-category="pluginCategory" @publish="publish"></DevicePluginEditor>
 
     <!--    导入JSON-->
@@ -186,21 +185,33 @@ export default {
   }
 
 }
+
 ::v-deep .tp-editor .el-transfer-panel__item.el-checkbox {
   color: #000000!important;
 }
+
 ::v-deep .el-dialog__header {
   background-color: #2d3d88!important;
 }
-  ::v-deep  .el-dialog {
-    background-color: #2d3d88!important;
 
-    .el-dialog__close,.el-dialog__title,.el-table thead,.label-name{
-      color: #a8c5ff;
-    }
+::v-deep  .el-dialog {
+  background-color: #2d3d88!important;
 
-    .el-dialog__body{
-      color: #fff;
-    }
+  .el-dialog__close,.el-dialog__title,.el-table thead,.label-name{
+    color: #a8c5ff;
   }
+
+  .el-dialog__body{
+    color: #fff;
+  }
+}
+
+.tp-dark-editor {
+  ::v-deep tr.el-table__row {
+    border-top: 1px solid #ccc!important;
+  }
+}
+
+
+
 </style>

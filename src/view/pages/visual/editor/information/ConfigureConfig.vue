@@ -2,31 +2,8 @@
 <template>
   <div>
     <el-tabs class="el-dark-tabs" style="" v-model="tabValue">
-      <el-tab-pane label="数据" name="data">
-        <el-row style="margin: 20px 0 20px 0">
-          <el-col :span="6" style="height:100%;padding-top: 6px;color:#fff">名称</el-col>
-          <el-col :span="18"><el-input size="mini" v-model="form.name"></el-input></el-col>
-        </el-row>
-        <el-collapse class="el-dark-collapse information-collapse" style="padding:10px;" v-model="activeNames">
-    <!--      <el-collapse-item title="信息" name="info">-->
-
-    <!--      </el-collapse-item>-->
-
-          <el-collapse-item title="数据源" name="source">
-            <el-cascader ref="cascaderRef" class="el-cascader" size="mini"
-                         :options="casOptions" :props="{ emitPath: false }"
-                         filterable @change="handleChangeOptions" placeholder="请选择设备">
-              <template slot-scope="{ node, data }">
-                <span>{{ data.label }}</span>
-                <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
-                <span v-if="data.device_id">({{ data.plugin_id ? "已绑定" : "未绑定" }})</span>
-              </template>
-            </el-cascader>
-
-          </el-collapse-item>
-
-        </el-collapse>
-
+      <el-tab-pane label="配置" name="data">
+        <BaseConfig :name="form.name" :z="form.point.z" :w="form.point.w" :h="form.point.h"></BaseConfig>
       </el-tab-pane>
       <el-tab-pane label="样式" name="style">
         <style-panel></style-panel>
@@ -36,13 +13,12 @@
 </template>
 
 <script>
-import StylePanel from "./style"
+import bus from "@/core/plugins/eventBus"
+// import StylePanel from "./StylePanel"
 
 export default {
   name: "ConfigureConfig",
-  components: {
-    StylePanel
-  },
+
   props: {
     formData: {
       type: [Object],
@@ -56,7 +32,7 @@ export default {
   data() {
     return {
       tabValue: "data",
-      activeNames: ["info", "source"],
+      activeNames: ["info"],
       form: {
         name: "",
         text: "",
@@ -64,17 +40,33 @@ export default {
       }
     }
   },
-  created() {
-    console.log("====configure.created")
-  },
-  methods: {
-    handleChangeOptions() {
-
+  watch: {
+    formData: {
+      handler(newValue){
+        this.form = JSON.parse(JSON.stringify(newValue));
+      }
+    },
+    form: {
+      handler(newValue) {
+        bus.$emit('changeData', newValue);
+      },
+      deep: true
     }
   }
 }
 </script>
 
 <style scoped>
-
+.el-collapse-item {
+  border-top: 1px solid #FFFFFF17;
+}
+.information-collapse {
+  padding: 0!important;
+}
+::v-deep .el-collapse-item__content {
+  padding: 10px 0 20px 14px;
+}
+.el-select {
+  padding: 10px 0 0 0;
+}
 </style>

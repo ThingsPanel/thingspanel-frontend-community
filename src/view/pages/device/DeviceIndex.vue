@@ -6,12 +6,6 @@
     </el-col>
     <el-col :span="12" class="text-right">
 
-      <!-- <el-button type="indigo" size="medium" @click="handleCreate()">{{ $t("COMMON.CREATEDEVICE")}}</el-button>
-
-      <el-button type="indigo" size="medium" @click="showManagementGroup=true">{{ $t("COMMON.MANAGEMENTGROUP")}}</el-button> -->
-
-<!--      <el-button type="indigo" size="medium" @click="handleDeviceChart">设备图表</el-button>-->
-
     </el-col>
   </el-row>
 
@@ -144,10 +138,20 @@
     <el-table-column :label="$t('COMMON.TITLE24')" width="auto" min-width="23%">
       <template slot-scope="scope">
         <!--   structure下数组的 field属性的数组   -->
-        <template v-if="scope.row.structure" v-for="item in scope.row.structure">
-          <template v-if="item.field" v-for="field in item.field">
-            <el-tag size="mini" class="mr-1 mb-1" :key="field.key">{{ field.name }}</el-tag>
+        <template v-if="scope.row.chart_names">
+          <template v-for="(name, index) in scope.row.chart_names">
+            <el-tag v-if="index<3" size="mini" class="mr-1 mb-1" :key="index">{{ name }}</el-tag>
           </template>
+          <el-tooltip placement="top">
+            <div slot="content" style="width: 200px;">
+              <template v-for="(name, index) in scope.row.chart_names">
+                <el-tag size="mini" class="mr-1 mb-1" :key="index">{{ name }}</el-tag>
+              </template>
+            </div>
+            <el-tag v-if="scope.row.chart_names.length>5" size="mini" class="mr-1 mb-1" :key="'omit'"
+            >...</el-tag>
+          </el-tooltip>
+
         </template>
       </template>
     </el-table-column>
@@ -439,7 +443,11 @@ export default defineComponent({
       handleSearch();
     }
 
+    function handleHoverOmit(item) {
+      item.showAllChartName = true;
+      console.log("====handleHoverOmit", item)
 
+    }
 
     return {
       tableData,
@@ -454,6 +462,7 @@ export default defineComponent({
       handleCreate,
       handleSave,
       handleDelete,
+      handleHoverOmit,
       dateFormat,
       deviceGroupOptions,
       deviceTypeChange,
@@ -492,4 +501,5 @@ export default defineComponent({
   border: 1px solid;
   background-color: transparent;
 }
+
 </style>

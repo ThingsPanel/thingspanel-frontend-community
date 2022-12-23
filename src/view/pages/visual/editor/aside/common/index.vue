@@ -6,7 +6,9 @@
       <el-collapse-item title="图表" name="chart">
         <div class="component-item" v-for="(component, index) in chartList" :key="index">
           <vue-drag :option="component" :type="component.type" @click="handleComponentClicked" :index="'chart' + component.name">
-            <el-image  :style="defaultStyle" :src="component.image_src"></el-image>
+            <el-tooltip class="item" effect="dark" :content="component.name" placement="top-end">
+                <el-image  :style="defaultStyle" :src="component.image_src"></el-image>
+            </el-tooltip>
           </vue-drag>
         </div>
       </el-collapse-item>
@@ -16,7 +18,9 @@
       <el-collapse-item title="文本" name="text">
         <div class="component-item" v-for="(component, index) in textList" :key="index">
           <vue-drag :option="component" :type="component.type" @click="handleComponentClicked" :index="'text' + component.name">
-            <el-image  :style="defaultStyle" :src="component.image_src"></el-image>
+            <el-tooltip class="item" effect="dark" :content="component.name" placement="top-end">
+              <el-image  :style="defaultStyle" :src="component.image_src"></el-image>
+            </el-tooltip>
           </vue-drag>
         </div>
       </el-collapse-item>
@@ -25,7 +29,9 @@
       <el-collapse-item title="视频" name="video">
         <div class="component-item" v-for="(component, index) in videoList" :key="index">
           <vue-drag :option="component" :type="component.type" @click="handleComponentClicked" :index="'video' + component.name">
-            <el-image  :style="defaultStyle" :src="component.image_src"></el-image>
+            <el-tooltip class="item" effect="dark" :content="component.name" placement="top-end">
+              <el-image  :style="defaultStyle" :src="component.image_src"></el-image>
+            </el-tooltip>
           </vue-drag>
         </div>
       </el-collapse-item>
@@ -44,8 +50,6 @@
                             :style="getComponentStyle(component.style, configure.defaultStyle)"
                             :src="component.image_src"
                   ></el-image>
-                  <!--                    <img :style="getComponentStyle(component.style, configure.defaultStyle)"-->
-                  <!--                         :src="component.image_src" alt="">-->
                 </div>
               </el-tooltip>
 
@@ -80,9 +84,9 @@ export default {
       activeNames: [""],
       chartList: [
         {name: "仪表盘", type: "dashboard", controlType: "dashboard", image_src: require("@/view/pages/visual/components/chart/dashboard.svg") },
-        {name: "折线", type: "curve", controlType: "history", image_src: require("@/view/pages/visual/components/chart/curve.svg") },
-        {name: "饼图", type: "pie", controlType: "dashboard", image_src: require("@/view/pages/visual/components/chart/pie.svg") },
-        {name: "柱状图", type: "bar", controlType: "dashboard", image_src: require("@/view/pages/visual/components/chart/bar.svg") },
+        {name: "曲线图", type: "curve", controlType: "history", image_src: require("@/view/pages/visual/components/chart/curve.svg") },
+        {name: "饼图", type: "pie", controlType: "pie", image_src: require("@/view/pages/visual/components/chart/pie.svg") },
+        {name: "柱状图", type: "bar", controlType: "bar", image_src: require("@/view/pages/visual/components/chart/bar.svg") },
       ],
       textList: [
         { name: "文本", type: "text", style: {width: 100, height: 50, fontSize: 20},image_src: require("@/view/pages/visual/components/text/text_1.svg") }

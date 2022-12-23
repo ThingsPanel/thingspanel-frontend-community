@@ -5,6 +5,8 @@
 
         <dashboard-config v-show="formData.type == 'dashboard'" :form-data="formData" :cas-options="casOptions"></dashboard-config>
 
+        <curve-config v-show="formData.type == 'curve'" :form-data="formData" :cas-options="casOptions"></curve-config>
+
         <text-config v-show="formData.type == 'text'" :form-data="formData" :cas-options="casOptions"></text-config>
 
         <configure-config v-show="formData.type == 'configure'" :form-data="formData" :cas-options="casOptions"></configure-config>
@@ -17,16 +19,17 @@
 
 <script>
 import bus from "@/core/plugins/eventBus"
-// import StylePanel from "./style"
-import PluginAPI from "@/api/plugin"
 import BackgroundConfig from "./BackgroundConfig";
 import DashboardConfig from "./DashboardConfig";
+import CurveConfig from "./CurveConfig";
 import TextConfig from "./TextConfig"
 import ConfigureConfig from "./ConfigureConfig"
 import VideoConfig from "./VideoConfig";
+import "./components"
+
 export default {
   name: "EditorInformation",
-  components: { BackgroundConfig, DashboardConfig, TextConfig, ConfigureConfig, VideoConfig },
+  components: { BackgroundConfig, DashboardConfig, CurveConfig, TextConfig, ConfigureConfig, VideoConfig },
   data() {
     return {
       tabValue: "data",

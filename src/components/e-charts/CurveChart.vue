@@ -77,7 +77,6 @@ export default {
       })
     },
     setEchartsValue(value) {
-      // 2022-11-13 13:10:11
       if (!this.myChart) return;
       let xAxis = value.map(item => {
         if (JSON.stringify(item) == "{}") return {};

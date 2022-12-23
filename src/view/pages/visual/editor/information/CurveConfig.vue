@@ -1,23 +1,15 @@
-<!-- 文本配置面板 -->
+<!-- 曲线图配置面板 -->
 <template>
   <div>
     <el-tabs class="el-dark-tabs" style="" v-model="tabValue">
       <el-tab-pane label="配置" name="data">
-
         <BaseConfig :name="form.name" :z="form.point.z" :w="form.point.w" :h="form.point.h"></BaseConfig>
 
-        <el-collapse class="el-dark-collapse information-collapse"  v-model="activeNames">
+        <el-collapse class="el-dark-collapse information-collapse" style="padding:10px;" v-model="activeNames">
 
-          <el-collapse-item title="信息" name="info">
-            <z-index-pane :z.sync="form.point.z"></z-index-pane>
-            <el-row>
-              <el-col :span="6" style="height:100%;padding-top: 6px;color:#fff">文本</el-col>
-              <el-col :span="18"><el-input size="mini" v-model="form.value"></el-input></el-col>
-            </el-row>
-          </el-collapse-item>
           <el-collapse-item title="数据源" name="source">
             <data-source-pane :cas-options="casOptions" :cas-value.sync="form.casValue" :mapping.sync="form.mapping"
-              @select="handleSelect"
+                              @select="handleSelect"
             ></data-source-pane>
           </el-collapse-item>
         </el-collapse>
@@ -33,9 +25,8 @@
 import bus from "@/core/plugins/eventBus"
 import DataSourcePane from "./components/DataSourcePane";
 import StylePanel from "./StylePanel"
-
 export default {
-  name: "TextConfig",
+  name: "CurveConfig",
   components: { DataSourcePane, StylePanel },
   props: {
     formData: {
@@ -65,7 +56,8 @@ export default {
     formData: {
       handler(newValue){
         this.form = JSON.parse(JSON.stringify(newValue));
-      }
+      },
+      immediate: true
     },
     form: {
       handler(newValue) {
@@ -76,7 +68,8 @@ export default {
   },
   methods: {
     handleSelect(v) {
-    },
+
+    }
   }
 }
 </script>

@@ -98,6 +98,7 @@ export default function useDeviceIndex(business_id) {
             additional_info: item.additional_info,
             protocol_config: item.protocol_config,
             subDeviceAddress: item.sub_device_addr ? item.sub_device_addr : "",
+            chart_names: item.chart_names,
             errors: {
                 name: "",
                 asset_id: "",

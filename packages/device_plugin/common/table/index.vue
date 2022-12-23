@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 表格 -->
-    <el-table :data="tableData" border class="table-order">
+    <el-table :data="tableData"  class="table-order">
       <el-table-column type="expand" label="查看" width="80" v-if="showView">
         <template slot-scope="props">
           <el-form label-position="left" class="table-form-expand">
@@ -75,9 +75,9 @@
 
         <!-- 列头按钮 -->
         <template v-slot:header>
-          <el-button v-if="(showHandle && addOrEdit!='add') || !editInTable" @click="handleAdd">新增</el-button>
-          <el-button v-if="editInTable && addOrEdit=='add'" @click="handleSimpleSave(null)">保存</el-button>
-          <el-button v-if="editInTable && addOrEdit=='add'" @click="handleCancel(null)">取消</el-button>
+          <el-button type="border" v-if="(showHandle && addOrEdit!='add') || !editInTable" @click="handleAdd">新增</el-button>
+          <el-button type="indigo" v-if="editInTable && addOrEdit=='add'" @click="handleSimpleSave(null)">保存</el-button>
+          <el-button type="default" v-if="editInTable && addOrEdit=='add'" @click="handleCancel(null)">取消</el-button>
         </template>
 
         <!-- 行按钮 -->
@@ -91,11 +91,11 @@
     </el-table>
 
     <!-- 高级模式对话框-->
-    <el-dialog width="600px" :class="dark?'dark-dialog':''"
+    <el-dialog width="700px" :class="dark?'dark-dialog':''"
         :title="addOrEdit=='add'?'新增':'编辑'"
         :visible.sync="dialogVisible" :append-to-body="true"
         @closed="handleClose">
-      <el-form style="padding-left: 30px; padding-right: 30px;" label-position="left" label-width="100px" :model="formData">
+      <el-form style="padding-left: 30px; padding-right: 30px;" label-position="left" label-width="160px" :model="formData">
 
         <el-form-item style="margin-bottom: 30px"
             v-for="(attr , index) in dataAttr" :key="index" :label="attr.label + '：'">
@@ -159,8 +159,18 @@ export default {
 /deep/ .table-form-expand .el-form-item__label {
   width: 90px;
   color: #99a9bf!important;
+}
 
+.el-table .el-table__empty-block {
+  border-top: 1px solid #ebeef5!important;
 }
 
 
+.el-table td.el-table__cell, .el-table th.el-table__cell.is-leaf {
+  /* border-bottom: 1px solid #EBEEF5; */
+  border: 1px solid #ebeef5 !important;
+}
+.el-table.table-order.el-table--fit.el-table--enable-row-hover {
+  border-bottom: unset;
+}
 </style>

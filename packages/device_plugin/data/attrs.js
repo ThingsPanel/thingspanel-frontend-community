@@ -524,16 +524,14 @@ const dataType = [
 const required = true, only = true, advanced =true;
 export const tableAttr = {
     properties: [
-        { field: "title", label: "标题", validate: {required, only}},
-        { field: "name", label: "属性", validate: {required, only}},
+        { field: "title", label: "字段名(例：温度)", validate: {required, only}},
+        { field: "name", label: "字段(例：temperature)", validate: {required, only}},
         { field: "dataType", label: "数据类型", type: "select", default: "float",validate: {required},
             options: dataType
         },
         { field: "dataRange", label: "取值范围", advanced, type: "range", default: "0-999"},
         { field: "stepLength", label: "间距", advanced, default: 0.1},
-        { field: "unit", label: "单位", advanced, type: "select", default: "-",
-            options: unitOption
-        },
+        { field: "unit", label: "单位(例：℃)", validate: {required, only}},
         { field: "description", label: "描述", advanced, type: "textarea"},
     ],
     services: [
