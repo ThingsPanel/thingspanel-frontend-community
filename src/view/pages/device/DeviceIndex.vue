@@ -54,13 +54,13 @@
   <el-form class="inline-edit el-dark-input">
   <el-table :data="tableData" v-loading="loading" default-expand-all row-key="id" fit style="width: 100%" :indent="30">
 
-    <el-table-column :label="$t('COMMON.TYPE')" width="120">
+    <el-table-column :label="$t('COMMON.TYPE')" width="120" min-width="12%" >
       <template slot-scope="scope">
         {{ scope.row.device_type == 3 ? $t('COMMON.SUB_DEVICE'): (scope.row.device_type == 2 ? $t('COMMON.THEGATEWAY') : $t('COMMON.EQUIPMENT'))}}
       </template>
     </el-table-column>
     <!--  设备名 start  -->
-    <el-table-column :label="$t('COMMON.DEVICENAME1')" width="200" prop="name">
+    <el-table-column :label="$t('COMMON.DEVICENAME1')" fit min-width="14%" max-width="20%" prop="name">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.name">
           <el-input style="width: 100%"

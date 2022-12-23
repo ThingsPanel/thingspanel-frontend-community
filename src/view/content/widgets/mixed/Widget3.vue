@@ -100,7 +100,7 @@
                 conditions: '',
                 dashboard: '',
                 deviceTotal: "0",
-                messageTotal: "1",
+                messageTotal: "0",
                 cpuUsage: 0,
                 ramUsage: 0
             }
