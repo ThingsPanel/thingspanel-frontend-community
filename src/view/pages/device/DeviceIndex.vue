@@ -54,7 +54,7 @@
   <el-form class="inline-edit el-dark-input">
   <el-table :data="tableData" v-loading="loading" default-expand-all row-key="id" fit style="width: 100%" :indent="30">
 
-    <el-table-column :label="$t('COMMON.TYPE')" width="120" min-width="12%" >
+    <el-table-column :label="$t('COMMON.TYPE')" width="100" min-width="10%" >
       <template slot-scope="scope">
         {{ scope.row.device_type == 3 ? $t('COMMON.SUB_DEVICE'): (scope.row.device_type == 2 ? $t('COMMON.THEGATEWAY') : $t('COMMON.EQUIPMENT'))}}
       </template>
@@ -500,6 +500,9 @@ export default defineComponent({
 /deep/ .el-tag {
   border: 1px solid;
   background-color: transparent;
+}
+::v-deep .el-table__indent {
+  padding-left: 4px!important;
 }
 
 </style>
