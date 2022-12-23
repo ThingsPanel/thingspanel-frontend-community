@@ -61,16 +61,14 @@ export default {
       if (typeof logoObject === "object") {
         logo = objectPath.get(logoObject, menuAsideLeftSkin + "");
       }
-      // if (typeof logo === "undefined") {
-      //   const logos = this.layoutConfig("self.logo");
-      //   logo = logos[Object.keys(logos)[0]];
-      // }
+      if (typeof logo === "undefined") {
+        const logos = this.layoutConfig("self.logo");
+        logo = logos[Object.keys(logos)[0]];
+      }
       if (logo[0] != "/" && !logo.startsWith("http")) {
         logo = "/" + logo;
       }
-      if (!logo) {
-        logo = "/media/logos/logo-dark.png"
-      }
+      console.log("====Brand", logo)
 
       return logo;
     }

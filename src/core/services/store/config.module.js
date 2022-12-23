@@ -73,11 +73,12 @@ export default {
       axios_prototype.post(local_url + "/system/logo/index")
           .then(({ data }) => {
             if (data.code == 200) {
-              console.log("=============logo================", data.data)
+              const logo = "media/logos/logo-dark.png";
               state.initial.self.logo.dark = (process.env.VUE_APP_BASE_URL  ||
-                  document.location.protocol + "//" + document.domain + ":9999/")+ data.data.logo_one
+                  document.location.protocol + "//" + document.domain + ":9999/")+ (data.data.logo_one ? data.data.logo_one : logo);
+
               state.initial.loader.logo = (process.env.VUE_APP_BASE_URL ||
-                  document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_two
+                  document.location.protocol + "//" + document.domain + ":9999/") + (data.data.logo_two ? data.data.logo_two : logo);
               document.title = data.data.system_name
               // var link = document.querySelector("link[rel~='icon']");
               // link.href = (process.env.VUE_APP_BASE_URL ||

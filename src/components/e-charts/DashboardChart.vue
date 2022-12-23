@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 100%;height: 100%;background-color: transparent" :id="'main' + option.cptId" ref="chart-main"></div>
+    <div style="width: 100%;height: 100%;background-color: transparent" :id="'main' + option.cptId" ref="chart-main"></div>
 </template>
 
 <script>
@@ -16,14 +16,6 @@ export default {
       type: [String],
       default: "#3aa423"
     },
-    w: {
-      type: [Number,String],
-      default: "100%"
-    },
-    h: {
-      type: [Number, String],
-      default: "100%"
-    },
     min: {
       type: [Number, String],
       default: 0
@@ -34,11 +26,11 @@ export default {
     },
     value: {
       type: [Number, String, Array],
-      default: 0
+      default: "0"
     },
     unit: {
       type: [String],
-      default: "%"
+      default: ""
     },
     title: {
       type: [String],
@@ -56,16 +48,6 @@ export default {
         this.setEchartsValue(newValue);
       }
     },
-    w: {
-      handler(newValue) {
-          this.myChart.resize();
-      }
-    },
-    h: {
-      handler(newValue) {
-          this.myChart.resize();
-      }
-    }
   },
   data() {
     return {
@@ -111,6 +93,7 @@ export default {
       this.optionData.series[0].progress.itemStyle.color = this.color;
       // 指针颜色
       this.optionData.series[0].pointer.itemStyle.color = this.color;
+      console.log("====初始化echarts", this.optionData);
       this.myChart.setOption(this.optionData);
       this.$nextTick(() => {
         this.myChart.resize();
@@ -123,9 +106,9 @@ export default {
     setEchartsValue(value) {
       console.log("====设置Echarts图表的值", value)
       let option = null;
-      if (typeof value == "string") {
+      if (typeof value == "string" || typeof value == "number") {
         option = { series: [ { data: [ { value }]}]};
-      } else {
+      } else if (typeof value == "object"){
         let series = value.map(item => { return { data: [ { value: item } ] } })
         option = { series };
       }

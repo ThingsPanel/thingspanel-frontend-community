@@ -178,13 +178,9 @@ export default {
       if (typeof logoObject === "object") {
         logo = objectPath.get(logoObject, menuAsideLeftSkin + "");
       }
-      // if (typeof logo === "undefined") {
-      //   const logos = this.layoutConfig("self.logo");
-      //   logo = logos[Object.keys(logos)[0]];
-      // }
-
-      if (!logo) {
-        logo = "/media/logos/logo-dark.png"
+      if (typeof logo === "undefined") {
+        const logos = this.layoutConfig("self.logo");
+        logo = logos[Object.keys(logos)[0]];
       }
 
       return logo;

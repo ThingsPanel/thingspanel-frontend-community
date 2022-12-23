@@ -3,13 +3,19 @@
 </template>
 
 <script>
+import "@/core/mixins/charts.js"
+
 export default {
   name: "PieChart",
   props: {
     option: {
       type: [Object],
       default: () => {return {}}
-    }
+    },
+
+  },
+  watch: {
+
   },
   data() {
     return {

@@ -1,5 +1,23 @@
 import Vue from 'vue'
 Vue.mixin({
+    props: {
+        w: {
+            type: [Number,String],
+            default: "100%"
+        },
+        h: {
+            type: [Number, String],
+            default: "100%"
+        },
+    },
+    watch: {
+        w() {
+            this.myChart.resize();
+        },
+        h() {
+            this.myChart.resize();
+        }
+    },
     methods: {
         /**
          * 仪表盘自适应
