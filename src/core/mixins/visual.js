@@ -17,7 +17,7 @@ Vue.mixin({
         }
     },
     methods: {
-        setCanvasStyle(canvasRef, parentRef) {
+        setCanvasStyle(canvasRef, parentRef, space = 0) {
             this.$nextTick(() => {
                 let canvas = this.$refs[canvasRef];
                 console.log("====setCanvasStyle", JSON.stringify(this.canvasStyle))
@@ -30,7 +30,7 @@ Vue.mixin({
                 if (this.canvasStyle.backgroundColor) {
                     canvas.style.setProperty("--color", this.canvasStyle.backgroundColor);
                 }
-                this.defaultScale = this.getScale(parentRef);
+                this.defaultScale = this.getScale(parentRef, space);
                 canvas.style.transform = "scale(" + this.defaultScale + ")";
             })
         },
@@ -48,17 +48,20 @@ Vue.mixin({
             let droppable = document.getElementById("droppable")
             droppable.style.transform = "scale(" + this.defaultScale + ")";
         },
-        getScale(refName) {
+        getScale(refName, space) {
             const parent = this.$refs[refName];
             // 画布父容器宽度
             const parentW = parent.offsetWidth;
             // 画布父容器高度
             const parentH = parent.offsetHeight;
             console.log("====parent", parent.offsetWidth, parent.offsetHeight)
-            let scaleX = (parentW - 40) / this.canvasStyle.intWidth;
-            let scaleY = (parentH - 40)  / this.canvasStyle.intHeight;
-            let scale = Math.min(scaleX, scaleY);
-            return scale;
+            let scaleX = (parentW + space) / this.canvasStyle.intWidth;
+            let scaleY = (parentH + space)  / this.canvasStyle.intHeight;
+            if (space > 0) {
+                return Math.max(scaleX, scaleY);
+            } else {
+                return Math.min(scaleX, scaleY);
+            }
         },
         handleUnselect(cptId) {
             const unselect = (cptId) => {

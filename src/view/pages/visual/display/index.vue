@@ -101,7 +101,7 @@ export default {
               this.canvasStyle[key] = jsonObj.canvasStyle[key];
             }
           }
-          this.setCanvasStyle("canvasDisplay", "canvasContainer");
+          this.setCanvasStyle("canvasDisplay", "canvasContainer", 40);
           this.refresh(this.fullData);
         }
       })
