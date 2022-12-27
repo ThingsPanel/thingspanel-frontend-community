@@ -34,6 +34,11 @@
                        v-if="component.type == 'pie'"
                        :option="component"></pie-chart>
 
+        <bar-chart :style="getChartStyle(component)" :loading="false"
+                       :w="component.point.w" :h="component.point.h"
+                       v-if="component.type == 'bar'"
+                       :option="component"></bar-chart>
+
         <control :style="getChartStyle(component)"
                        :w="component.point.w" :h="component.point.h"
                        v-if="component.controlType == 'control'"
@@ -45,7 +50,7 @@
         </configure>
 
         <!-- 文本组件 -->
-        <CommonText v-else-if="component.type == 'text'" :v-style="getStyle(component)"
+        <CommonText v-else-if="component.type == 'text'" :style="getStyle(component)"
                     :active="component.activeted" :editable="component.editable"
                     :value.sync="component.value"
             :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
@@ -82,6 +87,7 @@
 import DashboardChart from "@/components/e-charts/DashboardChart";
 import HistoryChart from "@/components/e-charts/CurveChart";
 import PieChart from "@/components/e-charts/PieChart"
+import BarChart from "@/components/e-charts/BarChart"
 import Control from "@/components/control/Control";
 import Status from "@/components/e-charts/Status";
 import Configure from "@/components/configure/Configure"
@@ -100,7 +106,7 @@ import "@/core/mixins/visual"
 export default {
   name: "EditorCanvas",
   components: {
-    DashboardChart, HistoryChart, PieChart, Control, Status, Configure, Other, CommonText, VideoPlayer, VueDraggableResizable
+    DashboardChart, HistoryChart, PieChart, BarChart, Control, Status, Configure, Other, CommonText, VideoPlayer, VueDraggableResizable
   },
   props: {
     jsonData: {
@@ -127,7 +133,6 @@ export default {
   watch: {
     jsonData: {
       handler(newValue) {
-        console.log("====jsonData", newValue)
         if (!newValue || JSON.stringify(newValue) == "{}" ||newValue == undefined) return;
 
         // 显示大屏
@@ -182,13 +187,11 @@ export default {
 
     // 监听样式改变
     bus.$on('changeStyle', (cptId, style) => {
-      console.log("====changeStyle.style", style)
       if (cptId == null && style.type=="background") {
         // 画布背景设置
         if (style.intWidth) this.canvasStyle.intWidth = style.intWidth
         if (style.intHeight) this.canvasStyle.intHeight = style.intHeight
         if (style.backgroundColor) this.canvasStyle.backgroundColor = style.backgroundColor;
-        console.log("====changeStyle", style)
         this.setCanvasStyle("droppable", "canvas_container", 40);
       } else {
         // 组件设置
@@ -228,7 +231,6 @@ export default {
       if (!jsonOpt) return;
       this.zTopIndex++;
       let opt = JSON.parse(jsonOpt);
-      console.log("====canvas.handleDrop", opt)
       opt.point = {h: 200, w: 200, x: e.offsetX, y: e.offsetY, z: this.zTopIndex};
       opt.cptId = getRandomString(9);
       opt.editable = false;
@@ -364,8 +366,6 @@ export default {
       this.fullData.splice(index, 1, cpt);
     },
     handleDelete(component = null) {
-      console.log("====handleDelete", this.fullData)
-      console.log("====handleDelete.cptId", this.currentId)
       let cptId = this.currentId;
 
       let index = this.fullData.findIndex(item => item.cptId == cptId);
@@ -386,14 +386,12 @@ export default {
       document.removeEventListener('click', this.closeMenu)
     },
     styleMenu(event, menu) {
-      console.log(event)
       menu.style.left = event.clientX - 300 + 'px';
       menu.style.top = event.clientY - 50 + 'px'
       // 给整个document新增监听鼠标事件，点击任何位置执行 closeMenu 方法
       document.addEventListener('click', this.closeMenu)
     },
     dragCanvas(e) {
-      console.log("====dragCanvas", e)
     }
   }
 }

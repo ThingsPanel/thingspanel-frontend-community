@@ -1,10 +1,10 @@
 <template>
-  <div class="text-container" :style="vStyle">
+  <div class="text-container">
     <input class="input" ref="inputRef" type="text"  v-if="active && editable" v-model="textValue"
            @mousedown="stopPropagation" @mouseup="stopPropagation" @click="stopPropagation"
            @keydown="stopPropagation"/>
 
-    <span class="text" v-else>{{ textValue }}</span>
+    <span id="text" class="text" v-else>{{ textValue }}</span>
   </div>
 </template>
 
@@ -32,17 +32,17 @@ export default {
       type: [String, Array],
       default: "文本"
     },
-    vStyle: {
-      type: [Object],
-      default: () => {
-        return {
-          borderRadius: 0,
-          borderWidth: 0,
-          borderColor: "#2d3d86",
-          fontSize: 18
-        }
-      }
-    }
+    // vStyle: {
+    //   type: [Object],
+    //   default: () => {
+    //     return {
+    //       borderRadius: 0,
+    //       borderWidth: 0,
+    //       borderColor: "#2d3d86",
+    //       fontSize: 18
+    //     }
+    //   }
+    // }
   },
   data() {
     return {
@@ -50,13 +50,13 @@ export default {
     }
   },
   created() {
+    console.log("====CommonText.option", this.option)
     this.$emit("update:value", this.value);
     this.textValue = this.value;
   },
   watch: {
     value: {
       handler(newValue) {
-        console.log("====CommonText.value", newValue)
         if (typeof newValue == "string") {
           this.textValue = newValue;
         } else if (typeof newValue == "object") {

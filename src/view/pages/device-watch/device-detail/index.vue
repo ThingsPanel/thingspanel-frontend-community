@@ -1,7 +1,7 @@
 <template>
   <div class="device-watch-container">
     <div class="header">
-      <el-button class="el-button--indigo"  @click="back">{{ $t('COMMON.RETURN') }}</el-button>
+      <el-button class="el-button--indigo" size="medium" @click="back">{{ $t('COMMON.RETURN') }}</el-button>
     </div>
     <div class="content">
 
@@ -166,12 +166,12 @@ export default defineComponent({
   height: calc(100vh - 90px)!important;
   //height: calc(100% - 100px);
   width: auto;
-  padding: 20px 10px 0px 10px;
+  padding: 0;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   .header {
     color:  #fff;
-    height: 60px;
-    padding-bottom: 20px;
+    height: 50px;
+    padding-bottom: 10px;
   }
   .content {
     display: inline-flex;

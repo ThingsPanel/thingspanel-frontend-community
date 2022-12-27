@@ -28,6 +28,14 @@ export default {
      */
     layoutConfig: state => (path, defaultValue) => {
       return objectPath.get(state.config, path, defaultValue);
+    },
+    /**
+     *
+     * @param state
+     * @returns {function(*=, *=): *}
+     */
+    layoutInitial: state => (path, defaultValue) => {
+      return objectPath.get(state.initial, path, defaultValue);
     }
   },
   actions: {
@@ -74,11 +82,19 @@ export default {
           .then(({ data }) => {
             if (data.code == 200) {
               const logo = "media/logos/logo-dark.png";
+              const bg = "media/bg/bg-12.png";
               state.initial.self.logo.dark = (process.env.VUE_APP_BASE_URL  ||
-                  document.location.protocol + "//" + document.domain + ":9999/")+ (data.data.logo_one ? data.data.logo_one : logo);
+                  document.location.protocol + "//" + document.domain + ":9999/")+
+                  (data.data.logo_one ? data.data.logo_one : logo);
 
               state.initial.loader.logo = (process.env.VUE_APP_BASE_URL ||
-                  document.location.protocol + "//" + document.domain + ":9999/") + (data.data.logo_two ? data.data.logo_two : logo);
+                  document.location.protocol + "//" + document.domain + ":9999/") +
+                  (data.data.logo_two ? data.data.logo_two : logo);
+
+              state.initial.loader.background = (process.env.VUE_APP_BASE_URL ||
+                      document.location.protocol + "//" + document.domain + ":9999/") +
+                  (data.data.home_background ? data.data.home_background : bg);
+
               document.title = data.data.system_name
               // var link = document.querySelector("link[rel~='icon']");
               // link.href = (process.env.VUE_APP_BASE_URL ||

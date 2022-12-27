@@ -1,10 +1,7 @@
 <template>
   <div
     class="d-flex flex-column flex-root"
-    :style="{
-      backgroundImage: `url(${backgroundImage}) !important`,
-	  backgroundRepeat: `repeat !important`
-    }"
+    :style="{backgroundImage: `url(${ getSystemLogo() }) !important`,backgroundRepeat: `repeat !important`}"
   >
     <div class="wrappers">
       <header class="headers">
@@ -156,7 +153,7 @@ import objectPath from "object-path";
 export default {
   name: "auth",
   computed: {
-    ...mapGetters(["layoutConfig"]),
+    ...mapGetters(["layoutConfig", "layoutInitial"]),
     ...mapState({
       errors: (state) => state.auth.errors,
     }),
@@ -164,7 +161,15 @@ export default {
       return process.env.BASE_URL + "media/bg/bg-12.png";
     },
   },
+  mounted() {
+    this.getSystemLogo();
+  },
   methods:{
+    getSystemLogo() {
+      const bg = this.layoutInitial("loader.background");
+      console.log("====getSystemLogo",  bg)
+      return  bg;
+    },
     siteLogo() {
       const menuAsideLeftSkin = this.layoutConfig("brand.self.theme");
       // set brand logo

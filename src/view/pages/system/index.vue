@@ -100,7 +100,7 @@
                       </el-upload>
                     </p>
                   </div>
-                  <div>
+                  <div style="margin-right: 2.5rem">
                     <p>{{$t('COMMON.WEBSITE')}} logo</p>
                     <div>
                       <img :src="url + formObj.logo_three" alt="" width="148px" />
@@ -124,6 +124,31 @@
                       </el-upload>
                     </p>
                   </div>
+                  <div>
+                    <p>{{$t('COMMON.BACKGROUND')}}</p>
+                    <div>
+                      <img :src="url + (formObj.home_background ? formObj.home_background : 'media/bg/bg-12.png')"
+                           alt="" width="148px" />
+                    </div>
+                    <p>
+                      <el-upload
+                          class="upload-logo"
+                          :action="url + 'api/file/up'"
+                          :show-file-list="false"
+                          :headers="headersObj"
+                          :data="params"
+                          :on-success="handleAvatarSuccessFour"
+                          :before-upload="beforeAvatarUpload"
+                      >
+                        <el-button
+                            type="primary"
+                            icon="el-icon-refresh"
+                            size="mini"
+                        >{{$t('COMMON.CHANGE')}}</el-button
+                        >
+                      </el-upload>
+                    </p>
+                  </div>
                 </div>
               </el-form-item>
             </el-form>
@@ -142,56 +167,7 @@
     </div>
   </div>
 </template>
-<style lang="scss" scoped>
-.system-box {
-  color: #fff;
-  p {
-    margin: 0;
-  }
-  .tab-title {
-    font-size: 1.3rem;
-    border-bottom: 1px solid #f6f6f613;
-    padding: 0 1rem;
-    span {
-      display: inline-block;
-      padding: 0.6rem 0 1.4rem;
-      margin-right: 5rem;
-      cursor: pointer;
-      &.active {
-        border-bottom: 2px solid #5b92ff;
-      }
-    }
-  }
-  .content {
-    padding: 0 1rem;
-    & > p {
-      font-size: 14px;
-    }
-    &-form {
-      ::v-deep .el-form-item__label {
-        color: #fff;
-      }
-    }
-  }
-  .img-upload {
-    display: flex;
-    img {
-      width: 140px;
-      height: 140px;
-      object-fit: contain;
-    }
-    ::v-deep .el-button {
-      width: 100%;
-      margin-top: 1rem;
-      background: #212d66;
-      border-color: #212d66;
-    }
-    ::v-deep .el-upload{
-        width: 100%;
-    }
-  }
-}
-</style>
+
 
 <script>
 import AUTH from "@/core/services/store/auth.module";
@@ -244,9 +220,12 @@ export default {
       ({ data }) => {
         if (data.code == 200) {
           this.formObj = Object.assign({}, data.data);
+
+          console.log("====formObj", this.formObj)
         } else if (data.code == 401) {
           this.$store.dispatch(REFRESH).then(() => {});
         } else {
+          //
         }
       }
     );
@@ -262,6 +241,9 @@ export default {
     },
     handleAvatarSuccessThree(res, file) {
       this.formObj.logo_three = res.data;
+    },
+    handleAvatarSuccessFour(res, file) {
+      this.formObj.home_background = res.data;
     },
     beforeAvatarUpload(file) {
       // 上传前设置请求头，因为 token 会刷新
@@ -286,3 +268,53 @@ export default {
   },
 };
 </script>
+<style lang="scss" scoped>
+.system-box {
+  color: #fff;
+  p {
+    margin: 0;
+  }
+  .tab-title {
+    font-size: 1.3rem;
+    border-bottom: 1px solid #f6f6f613;
+    padding: 0 1rem;
+    span {
+      display: inline-block;
+      padding: 0.6rem 0 1.4rem;
+      margin-right: 5rem;
+      cursor: pointer;
+      &.active {
+        border-bottom: 2px solid #5b92ff;
+      }
+    }
+  }
+  .content {
+    padding: 0 1rem;
+    & > p {
+      font-size: 14px;
+    }
+    &-form {
+      ::v-deep .el-form-item__label {
+        color: #fff;
+      }
+    }
+  }
+  .img-upload {
+    display: flex;
+    img {
+      width: 140px;
+      height: 140px;
+      object-fit: contain;
+    }
+    ::v-deep .el-button {
+      width: 100%;
+      margin-top: 1rem;
+      background: #212d66;
+      border-color: #212d66;
+    }
+    ::v-deep .el-upload{
+      width: 100%;
+    }
+  }
+}
+</style>

@@ -1,4 +1,4 @@
-<!-- 文本配置面板 -->
+<!-- 仪表盘配置面板 -->
 <template>
   <div>
     <el-tabs class="el-dark-tabs" style="" v-model="tabValue">
@@ -7,14 +7,10 @@
 
         <el-collapse class="el-dark-collapse information-collapse" style="padding:10px;" v-model="activeNames">
 
-<!--          <el-collapse-item title="信息" name="info">-->
-<!--          </el-collapse-item>-->
-
-          <el-collapse-item title="视频源" name="videoSource">
-            <el-row>
-              <el-col :span="6" style="height:100%;padding-top: 6px;color:#fff">url</el-col>
-              <el-col :span="18"><el-input size="mini" v-model="form.src"></el-input></el-col>
-            </el-row>
+          <el-collapse-item title="数据源" name="source">
+            <data-source-pane :cas-options="casOptions" :cas-value.sync="form.casValue" :mapping.sync="form.mapping"
+                              @select="handleSelect"
+            ></data-source-pane>
           </el-collapse-item>
         </el-collapse>
       </el-tab-pane>
@@ -27,10 +23,8 @@
 
 <script>
 import bus from "@/core/plugins/eventBus"
-import StylePanel from "./StylePanel"
 export default {
-  name: "VideoConfig",
-  components: { StylePanel },
+  name: "DashboardConfig",
   props: {
     formData: {
       type: [Object],
@@ -43,15 +37,15 @@ export default {
   },
   data() {
     return {
-      activeNames: ["info", "videoSource"],
       tabValue: "data",
+      activeNames: ["info", "source"],
       form: {
         name: "",
         text: "",
         mapping: "",
         casValue: "",
         deviceId: "",
-        src: ""
+        point: {}
       },
       dataSrcOptions: []
     }
@@ -59,8 +53,11 @@ export default {
   watch: {
     formData: {
       handler(newValue){
-        this.form = JSON.parse(JSON.stringify(newValue));
-      }
+        if (newValue.type == "dashboard") {
+          this.form = JSON.parse(JSON.stringify(newValue));
+        }
+      },
+      immediate: true
     },
     form: {
       handler(newValue) {
@@ -70,7 +67,9 @@ export default {
     }
   },
   methods: {
+    handleSelect(v) {
 
+    }
   }
 }
 </script>

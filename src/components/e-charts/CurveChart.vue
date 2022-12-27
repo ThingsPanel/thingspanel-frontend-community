@@ -10,14 +10,6 @@ import "@/core/mixins/charts.js"
 export default {
   name: "CurveChart",
   props: {
-    // w: {
-    //   type: [Number,String],
-    //   default: "100%"
-    // },
-    // h: {
-    //   type: [Number, String],
-    //   default: "100%"
-    // },
     option: {
       type: [Object],
       default: () => { return {} }
@@ -36,16 +28,6 @@ export default {
     }
   },
   watch: {
-    // w: {
-    //   handler(newValue) {
-    //     this.myChart.resize();
-    //   }
-    // },
-    // h: {
-    //   handler(newValue) {
-    //     this.myChart.resize();
-    //   }
-    // },
     value: {
       handler(newValue) {
         if (!newValue) return;

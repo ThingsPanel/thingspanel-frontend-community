@@ -1,4 +1,4 @@
-<!-- 仪表盘配置面板 -->
+<!-- 曲线图配置面板 -->
 <template>
   <div>
     <el-tabs class="el-dark-tabs" style="" v-model="tabValue">
@@ -23,11 +23,8 @@
 
 <script>
 import bus from "@/core/plugins/eventBus"
-import DataSourcePane from "./components/DataSourcePane";
-import StylePanel from "./StylePanel"
 export default {
-  name: "DashboardConfig",
-  components: { DataSourcePane, StylePanel },
+  name: "CurveConfig",
   props: {
     formData: {
       type: [Object],
@@ -47,7 +44,8 @@ export default {
         text: "",
         mapping: "",
         casValue: "",
-        deviceId: ""
+        deviceId: "",
+        point: {}
       },
       dataSrcOptions: []
     }
@@ -55,7 +53,9 @@ export default {
   watch: {
     formData: {
       handler(newValue){
-        this.form = JSON.parse(JSON.stringify(newValue));
+        if (newValue.type == "curve") {
+          this.form = JSON.parse(JSON.stringify(newValue));
+        }
       },
       immediate: true
     },

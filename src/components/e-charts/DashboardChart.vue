@@ -51,7 +51,7 @@ export default {
   },
   data() {
     return {
-      myChart: null,
+      // myChart: null,
       optionData: {}
     }
   },
@@ -88,7 +88,7 @@ export default {
       this.optionData.series[0].max = this.max;
       this.optionData.series[0].data[0].name = this.title;
       this.optionData.series[0].data[0].value = this.value;
-      this.optionData.series[0].detail.formatter = "{value}" + this.unit;
+      this.optionData.series[0].detail.formatter = "{value} " + this.unit;
       // 进度条颜色
       this.optionData.series[0].progress.itemStyle.color = this.color;
       // 指针颜色

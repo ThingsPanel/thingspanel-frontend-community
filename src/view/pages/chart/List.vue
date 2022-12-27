@@ -39,8 +39,8 @@
                 <el-button type="cancel" size="mini" @click="handleCancel(scope.row)">取消</el-button>
               </div>
               <div v-else>
-                <el-button type="indigo" size="mini" @click="showVisual(scope.row)">查看</el-button>
-                <el-button type="yellow" size="mini" @click="editVisual(scope.row)">编辑</el-button>
+                <el-button type="yellow" size="mini" @click="showVisual(scope.row)">查看</el-button>
+                <el-button type="indigo" size="mini" @click="editVisual(scope.row)">编辑</el-button>
                 <el-popconfirm :disabled="!hasAuth('visual:del')" style="margin-left: 10px" :title="$t('COMMON.TEXT44')" @confirm="delVisual(scope.row)">
                   <el-button  slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>
                 </el-popconfirm>
@@ -108,9 +108,9 @@ export default {
     },
     handleSave(item) {
       // 验证
-      if(!item.formData.dashboard_name){
+      if(!item.formData.dashboard_name || !item.formData.dashboard_name.trim()){
         item.errors.dashboard_name = "请填写名称"
-        message_error("大屏名称不能为空!")
+        message_error("可视化名称不能为空!")
         return true
       }
       VisualAPI.add(item.formData)

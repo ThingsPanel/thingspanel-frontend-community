@@ -10,13 +10,14 @@ Vue.mixin({
             default: "100%"
         },
     },
-    watch: {
-        w() {
-            this.myChart.resize();
-        },
-        h() {
-            this.myChart.resize();
+    data() {
+        return {
+            myChart: null
         }
+    },
+    watch: {
+        w() {if (this.myChart) this.myChart.resize();},
+        h() {if (this.myChart) this.myChart.resize();}
     },
     methods: {
         /**

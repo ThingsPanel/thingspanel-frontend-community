@@ -164,7 +164,6 @@ export default {
         })
     },
     handlePublish() {
-      console.log(this.$refs.editorCanvas.tempData)
     },
     /**
      * 获取大屏数据
@@ -176,7 +175,6 @@ export default {
             let result = data.data.data;
             if (result.length != 0) {
               this.params = { name: result[0].dashboard_name };
-              console.log("====this.params", this.params)
               let jsonData = JSON.parse(result[0].json_data);
               this.jsonData  = jsonData;
             }

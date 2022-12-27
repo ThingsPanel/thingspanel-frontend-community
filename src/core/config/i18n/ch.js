@@ -85,6 +85,7 @@ export const locale = {
     HOMEANDBACKEND: "首页和后台",
     LOADINGPAGE: "加载页面",
     WEBSITE: "站标",
+    BACKGROUND: "背景图片",
 
     TOKENEXPIRES: "登录状态已过期是否刷新？",
     CONSUMING: "请求耗时",

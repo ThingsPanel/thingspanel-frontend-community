@@ -100,7 +100,7 @@ export default {
   }
 
   .content {
-    padding: 2rem 1rem;
+    padding: 1rem 0;
 
     & > p {
       font-size: 14px;

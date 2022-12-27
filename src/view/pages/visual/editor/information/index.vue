@@ -7,6 +7,10 @@
 
         <curve-config v-show="formData.type == 'curve'" :form-data="formData" :cas-options="casOptions"></curve-config>
 
+        <pie-config v-show="formData.type == 'pie'" :form-data="formData" :cas-options="casOptions"></pie-config>
+
+        <bar-config v-show="formData.type == 'bar'" :form-data="formData" :cas-options="casOptions"></bar-config>
+
         <text-config v-show="formData.type == 'text'" :form-data="formData" :cas-options="casOptions"></text-config>
 
         <configure-config v-show="formData.type == 'configure'" :form-data="formData" :cas-options="casOptions"></configure-config>
@@ -19,24 +23,18 @@
 
 <script>
 import bus from "@/core/plugins/eventBus"
-import BackgroundConfig from "./BackgroundConfig";
-import DashboardConfig from "./DashboardConfig";
-import CurveConfig from "./CurveConfig";
-import TextConfig from "./TextConfig"
-import ConfigureConfig from "./ConfigureConfig"
-import VideoConfig from "./VideoConfig";
 import "./components"
 
 export default {
   name: "EditorInformation",
-  components: { BackgroundConfig, DashboardConfig, CurveConfig, TextConfig, ConfigureConfig, VideoConfig },
   data() {
     return {
       tabValue: "data",
       formData: {
-        name: "",
-        text: "",
-        mapping: ""
+        type: "background",
+        intWidth: 1920,
+        intHeight: 1080,
+        backgroundColor: "#2d3d86"
       },
       casOptions: [],
       dataSrcOptions: []
@@ -47,7 +45,6 @@ export default {
     bus.$on('share', val => {
       this.formData = JSON.parse(JSON.stringify(val));
       if (!this.formData.mapping) this.formData.mapping = "";
-      console.log("====share.formData", this.formData)
     });
 
     // 获取项目/分组/设备的级联菜单
@@ -56,9 +53,7 @@ export default {
     });
   },
   methods: {
-    handleTabClick() {
 
-    },
   }
 }
 </script>

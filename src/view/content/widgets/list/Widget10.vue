@@ -13,16 +13,8 @@
       </h3>
 
       <div class="width-100 mt-2 mb-5">
-        <a
-          target="_blank"
-          class="btn mr-3 btn-success active"
-          >{{ $t("COMMON.VIEWHELP") }}</a
-        >
-        <a
-          target="_blank"
-          class="btn mr-3 btn-success active"
-          >{{ $t("COMMON.FEEDBACKQ") }}</a
-        >
+        <a target="_blank" href="http://thingspanel.io" class="btn mr-3 btn-success active">{{ $t("COMMON.VIEWHELP") }}</a>
+        <a target="_blank" href="https://github.com/ThingsPanel" class="btn mr-3 btn-success active">{{ $t("COMMON.FEEDBACKQ") }}</a>
       </div>
     </div>
   </div>

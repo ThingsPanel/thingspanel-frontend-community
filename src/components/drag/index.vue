@@ -31,7 +31,6 @@ export default {
     }
   },
   mounted() {
-    console.log("====drag.mounted", this.option)
     if (this.draggable) {
       const draggable = document.getElementById("draggable" + this.index);
       draggable.addEventListener("dragstart", this.handleDragStart);
@@ -40,7 +39,6 @@ export default {
   },
   methods: {
     handleClick() {
-      console.log("handleClick", this.option)
       // 如果创建方式是绘制
       if (!this.draggable) {
         this.$emit("click", this.option, "draggable" + this.index);
@@ -54,7 +52,6 @@ export default {
       // DataTransfer对象专门用来存储拖放时要携带的数据
       this.option.relativePoint = this.point;
       this.option.type = this.type;
-      console.log("handleDragStart", this.option)
       e.dataTransfer.setData("option", JSON.stringify(this.option));
     },
     handleMouseDown(e) {

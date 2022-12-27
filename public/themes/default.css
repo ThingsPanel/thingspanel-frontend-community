@@ -49,6 +49,10 @@ html {
     font-family: "Microsoft Yahei"!important;
 }
 
+span.text-blue.font-weight-bold.font-size-base.d-none.d-lg-block.mr-1 {
+    color: #ded9d9;
+}
+
 /* el-table */
 .el-table {
     color: #fff;

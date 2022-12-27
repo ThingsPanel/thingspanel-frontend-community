@@ -1,9 +1,9 @@
-<!-- 曲线图配置面板 -->
+<!-- 仪表盘配置面板 -->
 <template>
   <div>
     <el-tabs class="el-dark-tabs" style="" v-model="tabValue">
       <el-tab-pane label="配置" name="data">
-        <BaseConfig :name="form.name" :z="form.point.z" :w="form.point.w" :h="form.point.h"></BaseConfig>
+        <BaseConfig :name.sync="form.name" :z.sync="form.point.z" :w.sync="form.point.w" :h.sync="form.point.h"></BaseConfig>
 
         <el-collapse class="el-dark-collapse information-collapse" style="padding:10px;" v-model="activeNames">
 
@@ -23,11 +23,8 @@
 
 <script>
 import bus from "@/core/plugins/eventBus"
-import DataSourcePane from "./components/DataSourcePane";
-import StylePanel from "./StylePanel"
 export default {
-  name: "CurveConfig",
-  components: { DataSourcePane, StylePanel },
+  name: "BarConfig",
   props: {
     formData: {
       type: [Object],
@@ -47,7 +44,8 @@ export default {
         text: "",
         mapping: "",
         casValue: "",
-        deviceId: ""
+        deviceId: "",
+        point: { }
       },
       dataSrcOptions: []
     }
@@ -55,9 +53,11 @@ export default {
   watch: {
     formData: {
       handler(newValue){
-        this.form = JSON.parse(JSON.stringify(newValue));
-      },
-      immediate: true
+        if (newValue.type == "bar") {
+          this.form = JSON.parse(JSON.stringify(newValue));
+        }
+        console.log("====DashboardConfig.form", this.form)
+      }
     },
     form: {
       handler(newValue) {

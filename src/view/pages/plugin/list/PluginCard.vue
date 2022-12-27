@@ -8,21 +8,35 @@
           tag="article"
 
   >
-    <b-card-text class="text-left text-muted">
-      {{ $t("COMMON.CLASSIFY") }}：{{ pluginData.type }}
-    </b-card-text>
-    <b-card-text class="text-left text-muted">
-      {{ $t("COMMON.VERSION") }}：{{ pluginData.version }}
-    </b-card-text>
-    <b-card-text class="text-left text-muted text-overflow">
-      {{ $t("COMMON.AUTHOR") }}：<span v-b-tooltip :title="pluginData.author">
-      {{ pluginData.author }}
-    </span>
-    </b-card-text>
-    <b-card-text class="text-left text-muted">
-      {{ $t("COMMON.SCORE") }}：
-      <v-rating v-model="rating" color="orange" dense small readonly class="d-inline-block v-application"></v-rating>
-    </b-card-text>
+
+    <div style="padding: 2.25rem;">
+      <!-- 分类 -->
+      <b-card-text class="text-left text-muted">
+        {{ $t("COMMON.CLASSIFY") }}：{{ pluginData.type }}
+      </b-card-text>
+
+      <!-- 版本 -->
+      <b-card-text class="text-left text-muted">
+        {{ $t("COMMON.VERSION") }}：{{ pluginData.version }}
+      </b-card-text>
+
+      <!-- 作者 -->
+      <b-card-text class="text-left text-muted text-overflow">
+        {{ $t("COMMON.AUTHOR") }}：
+        <span v-b-tooltip :title="pluginData.author">
+        {{ pluginData.author }}
+      </span>
+      </b-card-text>
+
+      <!-- 评分 -->
+      <b-card-text class="text-left text-muted">
+        {{ $t("COMMON.SCORE") }}：
+        <v-rating v-model="rating" color="orange" dense small readonly class="d-inline-block v-application"></v-rating>
+      </b-card-text>
+    </div>
+
+
+    <!-- 按钮 -->
     <b-card-text style="margin-top: 10px">
       <b-btn v-show="isInstalled" variant="warning" size="sm" class="text-center" @click="handleEdit">
         {{ $t("COMMON.EDIT") }}
@@ -192,5 +206,8 @@ export default {
 }
 .card-border{
   border: 1px solid #70A0ED !important;
+}
+.card-body {
+  padding: 10px 0;
 }
 </style>

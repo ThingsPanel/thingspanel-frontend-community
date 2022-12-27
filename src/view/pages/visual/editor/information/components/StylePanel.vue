@@ -66,7 +66,6 @@ export default {
   },
   mounted() {
     bus.$on('share', val => {
-      console.log("style.share", val)
       this.cptId = val.cptId;
       if (val.style) {
         this.initStyle(val.style);

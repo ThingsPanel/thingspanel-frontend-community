@@ -30,41 +30,7 @@
   <!-- end:: Header Topbar -->
 </template>
 
-<style lang="scss">
-.topbar {
-  .el-input__inner{
-     height: 30px;
-     line-height: 30px;
-  }
-  .topbar-select{
-    .el-input__suffix{
-      top:7px;
-    }
-     
-  }
-  .dropdown-toggle {
-    padding: 0;
-    &:hover {
-      text-decoration: none;
-    }
 
-    &.dropdown-toggle-no-caret {
-      &:after {
-        content: none;
-      }
-    }
-  }
-
-  .dropdown-menu {
-    margin: 0;
-    padding: 0;
-    outline: none;
-    .b-dropdown-text {
-      padding: 0;
-    }
-  }
-}
-</style>
 
 <script>
 import KTDropdownLanguage from "@/view/layout/extras/dropdown/DropdownLanguage.vue";
@@ -119,3 +85,39 @@ export default {
   }
 };
 </script>
+
+<style lang="scss">
+.topbar {
+  .el-input__inner{
+    height: 30px;
+    line-height: 30px;
+  }
+  .topbar-select{
+    .el-input__suffix{
+      top:7px;
+    }
+
+  }
+  .dropdown-toggle {
+    padding: 0;
+    &:hover {
+      text-decoration: none;
+    }
+
+    &.dropdown-toggle-no-caret {
+      &:after {
+        content: none;
+      }
+    }
+  }
+
+  .dropdown-menu {
+    margin: 0;
+    padding: 0;
+    outline: none;
+    .b-dropdown-text {
+      padding: 0;
+    }
+  }
+}
+</style>

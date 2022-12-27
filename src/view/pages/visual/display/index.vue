@@ -20,6 +20,16 @@
                        v-if="component.controlType == 'history'"
                        :option="component"></history-chart>
 
+        <pie-chart :style="getChartStyle(component)" :loading="false"
+                   :w="component.point.w" :h="component.point.h"
+                   v-if="component.type == 'pie'"
+                   :option="component"></pie-chart>
+
+        <bar-chart :style="getChartStyle(component)" :loading="false"
+                   :w="component.point.w" :h="component.point.h"
+                   v-if="component.type == 'bar'"
+                   :option="component"></bar-chart>
+
         <status :style="getChartStyle(component)"
                 v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>
 
@@ -34,7 +44,7 @@
         </configure>
 
         <!-- 文本组件 -->
-        <CommonText v-else-if="component.type == 'text'" :style="getConfigureStyle(component)"
+        <CommonText v-else-if="component.type == 'text'" :style="getStyle(component)"
                     :active="component.activeted" :editable="component.editable"
                     :value="component.value"
                     :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
@@ -57,6 +67,8 @@
 <script>
 import DashboardChart from "@/components/e-charts/DashboardChart";
 import HistoryChart from "@/components/e-charts/CurveChart";
+import PieChart from "@/components/e-charts/PieChart"
+import BarChart from "@/components/e-charts/BarChart"
 import Control from "@/components/control/Control";
 import Status from "@/components/e-charts/Status";
 import Configure from "@/components/configure/Configure"
@@ -74,7 +86,7 @@ import "@/core/mixins/visual"
 export default {
   name: "VisualDisplay",
   components: {
-    DashboardChart, HistoryChart, Control, Status, Configure, Other, CommonText, VueDraggableResizable,
+    DashboardChart, HistoryChart, PieChart, BarChart, Control, Status, Configure, Other, CommonText, VueDraggableResizable,
     VideoPlayer
   },
   data() {
