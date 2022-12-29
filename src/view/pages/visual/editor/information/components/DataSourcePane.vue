@@ -1,28 +1,38 @@
 <!-- 数据源面板 -->
 <template>
-  <div>
-    <el-cascader ref="cascaderRef" class="el-cascader" size="mini"
-                 :options="casOptions"  v-model="form.casValue"
-                 filterable @change="handleChangeOptions" placeholder="请选择设备">
-      <template slot-scope="{ node, data }">
-        <span>{{ data.label }}</span>
-        <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
-        <span v-if="data.device_id">({{ data.plugin_id ? "已绑定" : "未绑定" }})</span>
-      </template>
-    </el-cascader>
+  <div style="text-align: center;padding-left: 14px;">
+      <div v-for="(form, index) in formsData" :key="index" style="text-align: center">
+        <div style="display: inline-flex">
+          <div style="display: block">
+            <el-cascader ref="cascaderRef" class="el-cascader" size="mini"
+                         :options="casOptions"  v-model="form.casValue"
+                         filterable @change="v => handleChangeOptions({...form, index}, v)" placeholder="请选择设备">
+              <template slot-scope="{ node, data }">
+                <span>{{ data.label }}</span>
+                <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
+                <span v-if="data.device_id">({{ data.plugin_id ? "已绑定" : "未绑定" }})</span>
+              </template>
+            </el-cascader>
+            <el-select size="mini" placeholder="请选择数据源" v-model="form.map" @change="handleChangeMap">
+              <el-option v-for="(item, index) in form.dataSrcOptions"  :key="'option_' + index"
+                         :value="item.name" :label="item.title">
+              </el-option>
+            </el-select>
+          </div>
 
-    <el-select size="mini" placeholder="请选择数据源" v-model="form.mapping" v-if="dataSrcOptions.length > 0">
-      <el-option v-for="(item, index) in dataSrcOptions"  :key="index"
-                 :value="item.name" :label="item.title">
-      </el-option>
-    </el-select>
+          <el-button type="border" size="mini" icon="el-icon-delete" @click="handleDelete(index)"></el-button>
+        </div>
+
+        <el-divider></el-divider>
+      </div>
+
+    <el-button class="add-button" type="blue" size="small" @click="handleAdd">添加数据源</el-button>
   </div>
 
 </template>
 
 <script>
 import Call from "../call";
-
 export default {
   name: "DataSourcePane",
   props: {
@@ -30,72 +40,63 @@ export default {
       type: [Object, Array],
       default: () => []
     },
-    casValue: {
-      type: [Array, String],
+    dataSrc: {
+      type: [Array],
       default: () => []
     },
     mapping: {
-      type: [String],
-      default: ""
+      type: [Array, String],
+      default: () => [""]
     }
   },
   data() {
     return {
-      form: {
-        casValue: "",
-        mapping: ""
-      },
-      dataSrcOptions: []
+      formsData: [],
     }
   },
   watch: {
-    /**
-     * 父组件传递的级联菜单的值
-     */
-    casValue: {
+    dataSrc: {
       handler(newValue) {
-        this.form.casValue = newValue;
-        this.handleChangeOptions(newValue);
-      }
-    },
-    /**
-     * 父组件传递的mapping
-     */
-    mapping: {
-      handler(newValue) {
-        console.log("====DashboardPane.mapping", newValue)
-        this.form.mapping = newValue;
-      }
-    },
-    /**
-     * 级联菜单的值
-     */
-    "form.casValue": {
-      handler(newValue) {
-        this.$emit("update:casValue", newValue)
-        this.$emit("select", this.form)
+        this.formsData = JSON.parse(JSON.stringify(newValue));
       },
-      deep: true
-    },
-    /**
-     * 绑定的属性值
-     */
-    "form.mapping": {
-      handler(newValue) {
-        this.$emit("update:mapping", newValue)
-        this.$emit("select", this.form)
-      },
-      deep: true
+      immediate: true
     }
   },
   methods: {
+    /**
+     * 添加数据源
+     */
+    handleAdd() {
+      this.formsData.push({ casValue: "", map: "" })
+    },
+    /**
+     * 删除数据源
+     * @param form
+     */
+    handleDelete(index) {
+      this.formsData.splice(index, 1)
+      this.handleChangeMap();
+    },
+    /**
+     * 选择数据源后触发
+     */
+    handleChangeMap() {
+      let mapping = this.formsData.map(form => form.map);
+      // this.$emit("update:mapping", mapping);
+
+      let data = this.formsData.map(form => {
+        let { casValue, deviceId, map } = form;
+        return { casValue, deviceId, map }
+      })
+      this.$emit("select", data, mapping)
+    },
     /**
      * 级联菜单改变时的回调
      * @param v
      * @returns {Promise<void>}
      */
-    async handleChangeOptions(v) {
-      let checkedNodes = this.$refs.cascaderRef.getCheckedNodes();
+    async handleChangeOptions(form, v) {
+      let checkedNodes = this.$refs.cascaderRef[0].getCheckedNodes();
       let node = checkedNodes ? checkedNodes[0] : null;
 
       let deviceId = null;
@@ -118,8 +119,11 @@ export default {
       if (!pluginId) return;
       let tslProperties = await Call.getPluginTSLByPluginId(pluginId);
       if (!tslProperties) return;
-      this.dataSrcOptions = tslProperties;
-      this.form.deviceId = deviceId;
+      let tmp = JSON.parse(JSON.stringify(form));
+      tmp.dataSrcOptions = tslProperties;
+      tmp.deviceId = deviceId;
+      delete tmp.index;
+      this.formsData.splice(form.index, 1, tmp);
     }
   }
 }
@@ -131,5 +135,21 @@ export default {
 }
 .el-select {
   padding: 10px 0 0 0;
+}
+.add-button {
+  margin-top: 10px;
+  width: 193px;
+}
+
+.el-divider.el-divider--horizontal {
+  margin-top: 10px!important;
+  width: 190px!important;
+  background-color: #464E5F;;
+}
+button.el-button.el-button--border.el-button--mini {
+  height: 28px;
+  line-height: 28px;
+  padding: 0 7px;
+  margin-left: 4px;
 }
 </style>

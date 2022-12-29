@@ -177,6 +177,7 @@ export default {
 
     // 监听数据改变
     bus.$on("changeData", data => {
+      console.log("====changeData", data)
       let index = this.fullData.findIndex(item => item.cptId == data.cptId)
       if (index < 0) return;
       let cpt = this.fullData[index];

@@ -75,4 +75,7 @@ export default {
 .el-input-number {
   width: 100%;
 }
+::v-deep input.el-input__inner{
+  text-align: center!important;
+}
 </style>
