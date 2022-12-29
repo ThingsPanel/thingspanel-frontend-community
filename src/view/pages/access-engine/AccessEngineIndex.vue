@@ -17,7 +17,7 @@
         <el-tag size="small">{{scope.row.disabled == 'false' ? $t('COMMON.SRARTED'): $t('COMMON.PUTONHOLD')}}</el-tag>
       </template>
     </el-table-column>
-    <el-table-column prop="actions" :label="$t('COMMON.OPERATION')" align="center" width="300px">
+    <el-table-column prop="actions" :label="$t('COMMON.OPERATION')" align="left" width="320px">
       <template v-slot="scope">
         <el-button size="mini" type="success" @click="handle_launch(scope.row)">{{ $t("COMMON.START")}}</el-button>
         <el-button size="mini" type="yellow" @click="handle_pause(scope.row)">{{ $t("COMMON.SUSPENDED")}}</el-button>

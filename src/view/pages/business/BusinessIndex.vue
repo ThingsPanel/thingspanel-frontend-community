@@ -2,11 +2,11 @@
 <div class="rounded card p-4">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>项目管理</TableTitle>
+      <TableTitle>{{ $t('COMMON.BUSINESSLIST') }}</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
       <el-button size="medium" type="border"
-                 v-if="hasAuth('business:add')" @click="handleCreate()">新增项目</el-button>
+                 v-if="hasAuth('business:add')" @click="handleCreate()">{{  $t('COMMON.NEWBUSINESS') }}</el-button>
     </el-col>
   </el-row>
 
@@ -32,7 +32,7 @@
       </template>
     </el-table-column>
 
-    <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="270">
+    <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="330">
       <template v-slot="scope">
         <div style="text-align: left">
           <template v-if="scope.row.status">

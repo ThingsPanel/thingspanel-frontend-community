@@ -166,6 +166,7 @@ export const locale = {
     FEEDBACKQ: "Submit Issues",
     STRATEGY: "Strategy",
     VISUALIZATION: "Dashboard",
+    NEWVISUALIZATION: "NewDashboard",
     DEVICE_CHART: "Device Charts",
     WARNINFO: "Alert Message",
     SYSTEMLOG: "system log",
@@ -405,7 +406,8 @@ export const locale = {
     PROTOCOLTYPE1:"ProtocolType",
     EQUIPMENTLOG1:"EquipmentLog",
     QUERY1:"QUERY",
-    REST1:"REST"
+    REST1:"REST",
+    DEVICEMAP:"Device map"
   },
   TRANSLATOR: {
     SELECT: "Please select language",

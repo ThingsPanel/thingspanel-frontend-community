@@ -7,7 +7,7 @@
 
       <el-col :span="12" class="px-2 text-right">
         <el-button size="medium" type="border"
-                   @click="handleCreate()">创建可视化</el-button>
+                   @click="handleCreate()">{{ $t('COMMON.NEWVISUALIZATION') }}</el-button>
       </el-col>
     </el-row>
     <!-- 表 start -->
@@ -35,12 +35,12 @@
           <template v-slot="scope">
             <div style="text-align: left">
               <div v-if="scope.row.status">
-                <el-button type="save" size="mini" @click="handleSave(scope.row)">保存</el-button>
-                <el-button type="cancel" size="mini" @click="handleCancel(scope.row)">取消</el-button>
+                <el-button type="save" size="mini" @click="handleSave(scope.row)">{{ $t('COMMON.SAVE') }}</el-button>
+                <el-button type="cancel" size="mini" @click="handleCancel(scope.row)">{{ $t('COMMON.CANCEL') }}</el-button>
               </div>
               <div v-else>
                 <el-button type="yellow" size="mini" @click="showVisual(scope.row)">查看</el-button>
-                <el-button type="indigo" size="mini" @click="editVisual(scope.row)">编辑</el-button>
+                <el-button type="indigo" size="mini" @click="editVisual(scope.row)">{{ $t('COMMON.EDIT') }}</el-button>
                 <el-popconfirm :disabled="!hasAuth('visual:del')" style="margin-left: 10px" :title="$t('COMMON.TEXT44')" @confirm="delVisual(scope.row)">
                   <el-button  slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>
                 </el-popconfirm>

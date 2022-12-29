@@ -15,7 +15,7 @@
         {{scope.row.created_at ? dateFormat(scope.row.created_at) : ""}}
       </template>
     </el-table-column>
-    <el-table-column align="left" :label="$t('COMMON.OPERATION')"  width="200">
+    <el-table-column align="left" :label="$t('COMMON.OPERATION')"  width="280">
       <template v-slot="scope">
         <div style="text-align: left">
           <el-button type="indigo" size="mini" @click="showAlarmList(scope.row)">{{ $t('COMMON.ALARM_STRATEGY') }}</el-button>
