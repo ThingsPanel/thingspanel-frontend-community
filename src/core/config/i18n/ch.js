@@ -142,6 +142,7 @@ export const locale = {
     FEEDBACKQ: "反馈问题",
     STRATEGY: "策略",
     VISUALIZATION: "可视化",
+    NEWVISUALIZATION: "创建可视化",
     DEVICE_CHART: "设备图表",
     WARNINFO: "告警信息",
     SYSTEMLOG: "系统日志",
@@ -395,7 +396,8 @@ export const locale = {
     EQUIPMENTLOG1:"设备日志",
     QUERY1:"查询",
     REST1: "重置",
-    ECHARTS:"设备地图"
+    // ECHARTS:"设备地图"
+    DEVICEMAP:"设备地图"
   },
   TRANSLATOR: {
     SELECT: "选择你的语言",
