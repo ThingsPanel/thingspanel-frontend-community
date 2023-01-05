@@ -85,7 +85,7 @@
 </style>
 <script>
     import ApiService from "@/core/services/api.service";
-    import AUTH from "@/core/services/store/auth.module";
+    import { local_url } from "@/api/LocalUrl"
     import { REFRESH } from "@/core/services/store/auth.module";
     import NumberChart from "@/components/e-charts/NumberChart";
     import DashboardChart from "@/components/e-charts/DashboardChart";
@@ -113,7 +113,7 @@
         },
         methods:{
             ajaxdata() {
-                ApiService.post(AUTH.local_url+"/home/list")
+                ApiService.post(local_url + "api/home/list")
                     .then(({ data }) => {
                         if (data.code == 200) {
                             this.deviceTotal = data.data.device ? data.data.device : 0;

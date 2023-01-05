@@ -152,43 +152,93 @@ export default {
     /**
      * 刷新组件的值
      */
-    refresh(fullData) {
-      const fun = () => {
-        fullData.forEach(item => {
-          if (item.controlType == "dashboard") {
-            //
-            this.getCurrent(item);
-          } else if (item.type == "text") {
-            console.log("====item", item);
-            this.getCurrent(item);
-          }
-        })
+    async refresh(fullData) {
+      console.log("====display.refresh.fullData", fullData);
+      // list item: { 组件id, 设备id, { 物模型属性(包括字段，字段名，单位...) } }
+      let bindList = [];
+      this.fullData.forEach(cpt => {
+        if (cpt.dataSrc) {
+          cpt.dataSrc.forEach(dataSrcItem => {
+            let index = bindList.findIndex(item => item.deviceId == dataSrcItem.deviceId)
+            if (index == -1) {
+              bindList.push({ cptId: cpt.cptId, type: cpt.type, deviceId: dataSrcItem.deviceId });
+            }
+          })
+        }
+      })
+      console.log("====display.refresh.bindList", bindList)
+
+      const fun = async () => {
+        let values = [];
+        for (let i = 0; i < bindList.length; i++) {
+          let entity_id = bindList[i].deviceId;
+          await currentValue({ entity_id })
+              .then(({ data }) => {
+                if (data.code == 200) {
+                  let value = data.data ? data.data[0] : null;
+                  console.log("====display.refresh.data.data", value)
+                  values.push({ entity_id, cptId: bindList[i].cptId, value})
+                  if (i == bindList.length - 1) {
+                    // 请求调用完毕，更新组件的值
+                    this.updateComponentValue(values);
+                  }
+                }
+
+              });
+        }
         return fun;
       }
 
-      this.timer = setInterval(fun(), this.flushTime * 1000);
+      this.timer = setInterval(await fun(), this.flushTime * 1000);
 
     },
-    getCurrent(cpt) {
-      console.log("====display.getCurrent.cpt", cpt)
-      let entity_id = cpt.deviceId;
-      let attribute = cpt.mapping;
-      let values = [];
-      if (!entity_id || !attribute) return;
-      currentValue({ entity_id, attribute })
-        .then(({ data }) => {
-          if (data.code == 200 && data.data != null) {
-            let result = data.data[0];
-            if (typeof attribute == "string") {
-              values = [result[attribute]];
-            } else if (typeof attribute == "object") {
-              values = attribute.map(attr => result[attr]);
-            }
-            cpt.value = values;
-            console.log("====display.getCurrent", cpt.controlType, values)
+    updateComponentValue(values) {
+      console.log("====display.getCurrent.请求调用完毕", values);
+      values.forEach(val => {
+        this.fullData.forEach(item => {
+          if (item.cptId == val.cptId) {
+            console.log("====display.getCurrent.遍历组件.item", item);
+            console.log("====display.getCurrent.遍历组件.type", item.type);
+            console.log("====display.getCurrent.遍历组件.mapping", item.mapping);
+            console.log("====display.getCurrent.遍历组件.value", val);
+            console.log("====display.getCurrent==========================================")
+            item.value = val.value;
           }
         })
+      })
+
+    },
+    /*
+      饼图 绑定n个设备， 每个设备都要发一次请求，n个请求全都返回成功后再刷新饼图的数据
+      曲线图 绑定n个设备， 每个设备都要发一次请求，n个请求全都返回成功后再刷新曲线图的数据
+      柱状图 绑定n个设备， 每个设备都要发一次请求，n个请求全都返回成功后再刷新柱状图的数据
+      报表 ?
+     */
+    async getCurrent(item) {
+      let entity_id = item.deviceId;
+      currentValue({ entity_id })
+          .then(({ data }) => {
+            console.log("====display.getCurrent", data)
+          });
     }
+    // getCurrent(cpt) {
+    //   let entity_id = cpt.deviceId;
+    //   let attribute = cpt.mapping;
+    //   let values = [];
+    //   if (!entity_id || !attribute) return;
+    //   currentValue({ entity_id, attribute })
+    //     .then(({ data }) => {
+    //       if (data.code == 200 && data.data != null) {
+    //         let result = data.data[0];
+    //         if (typeof attribute == "string") {
+    //           values = [result[attribute]];
+    //         } else if (typeof attribute == "object") {
+    //           values = attribute.map(attr => result[attr]);
+    //         }
+    //         cpt.value = values;
+    //       }
+    //     })
+    // }
   }
 }
 </script>

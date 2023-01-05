@@ -15,7 +15,7 @@
             </el-row>
           </el-collapse-item>
           <el-collapse-item title="数据源" name="source">
-            <data-source-pane :cas-options="casOptions" :cas-value.sync="form.casValue" :mapping.sync="form.mapping"
+            <data-source-pane :limit="1" :cas-options="casOptions" :data-src.sync="form.dataSrc" :mapping.sync="form.mapping"
               @select="handleSelect"
             ></data-source-pane>
           </el-collapse-item>
@@ -51,8 +51,7 @@ export default {
         name: "",
         text: "",
         mapping: "",
-        casValue: "",
-        deviceId: "",
+        dataSrc: [],
         point: {}
       },
       dataSrcOptions: []
@@ -65,17 +64,14 @@ export default {
           this.form = JSON.parse(JSON.stringify(newValue));
         }
       }
-    },
-    form: {
-      handler(newValue) {
-        bus.$emit('changeData', newValue);
-      },
-      deep: true
     }
   },
   methods: {
-    handleSelect(v) {
-    },
+    handleSelect(v, m) {
+      this.form.dataSrc = v;
+      this.form.mapping = m;
+      bus.$emit('changeData', this.form);
+    }
   }
 }
 </script>

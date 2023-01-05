@@ -6,7 +6,9 @@ export const locale = {
     MANAGEMENT:"角色管理",
     PERMISSIONMANAGEMENT: "权限管理",
     PERMISSIONADD: "添加权限",
-
+    DEVICEACCESS: "设备接入",
+    DEVICEWATCH: "设备监控",
+    NEWPROJECT: "新增项目",
     DEVICE: "设备管理",
     CREATEDEVICE: "创建设备",
     MANAGEMENTGROUP: "管理分组",
@@ -58,6 +60,7 @@ export const locale = {
     PRODUCTDESCRIPTION:"产品描述",
     CREATEDATE:"创建日期",
     VIEWBATCH:"查看批次",
+    BATCHLIST: "批次列表",
     PRODUCT:"产品",
     BATCHNUMBER:"批号",
     ACCESSADDRESS:"接入地址",
@@ -69,6 +72,8 @@ export const locale = {
     JSONTEST:"在这里粘贴插件的JSON文本",
     SELECTTHEFILE:"选择文件",
     THEIMPORT:"导入",
+    DELPROTOCOLPLUGIN: "删除协议插件",
+    DELDEVICEPLUGIN: "删除设备插件",
 
     DEVICEPROPERTIES: "设备属性",
     DEVICEPROPERTIESVALUE: "设备属性值",
@@ -143,6 +148,7 @@ export const locale = {
     STRATEGY: "策略",
     VISUALIZATION: "可视化",
     NEWVISUALIZATION: "创建可视化",
+    DELVISUALIZATION: "删除可视化",
     DEVICE_CHART: "设备图表",
     WARNINFO: "告警信息",
     SYSTEMLOG: "系统日志",
@@ -155,7 +161,7 @@ export const locale = {
     OPERATIONLOG: "操作日志",
     PRODUCTION: "生产管理",
     BUSINESSMANAGEMENT: "业务管理",
-    BUSINESSLIST: "业务列表",
+    BUSINESSLIST: "项目列表",
     NEWLYADDED: "新增",
     NEWBUSINESS: "新增业务",
     BUSINESSNAME: "业务名称",
@@ -561,5 +567,9 @@ export const locale = {
       SYSTEM_SETUP:"系统管理",
       DATA_SWITCHING:"数据转发",
     }
+  },
+  PLUGIN: {
+    CUSTOM_DEVICE_PLUGIN: "自定义设备插件",
+    DEVICE_INFO: "设备信息"
   }
 };

@@ -26,7 +26,12 @@
         </el-col>
       </el-row>
     </div>
-    <DevicePluginEditor class="tp-dark-editor" :visible.sync="showEditorDialog" :json="pluginJsonData" :plugin-category="pluginCategory" @publish="publish"></DevicePluginEditor>
+    <DevicePluginEditor class="tp-dark-editor"
+                        :visible.sync="showEditorDialog"
+                        :title="$t('PLUGIN.CUSTOM_DEVICE_PLUGIN')"
+                        :json="pluginJsonData"
+                        :plugin-category="pluginCategory"
+                        @publish="publish"></DevicePluginEditor>
 
     <!--    导入JSON-->
     <el-dialog class="el-dark-dialog el-table-transparent" title="导入JSON" :visible.sync="importDialogVisible" width="30%">

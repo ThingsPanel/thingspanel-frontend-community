@@ -4,7 +4,7 @@
       <div v-for="(form, index) in formsData" :key="index" style="text-align: center">
         <div style="display: inline-flex">
           <div style="display: block">
-            <el-cascader ref="cascaderRef" class="el-cascader" size="mini"
+            <el-cascader :ref="'cascaderRef_' + index" class="el-cascader" size="mini"
                          :options="casOptions"  v-model="form.casValue"
                          filterable @change="v => handleChangeOptions({...form, index}, v)" placeholder="请选择设备">
               <template slot-scope="{ node, data }">
@@ -13,9 +13,9 @@
                 <span v-if="data.device_id">({{ data.plugin_id ? "已绑定" : "未绑定" }})</span>
               </template>
             </el-cascader>
-            <el-select size="mini" placeholder="请选择数据源" v-model="form.map" @change="handleChangeMap">
+            <el-select size="mini" placeholder="请选择数据源" v-model="form.property" value-key="name" @change="handleChangeMap">
               <el-option v-for="(item, index) in form.dataSrcOptions"  :key="'option_' + index"
-                         :value="item.name" :label="item.title">
+                         :value="item" :label="item.title">
               </el-option>
             </el-select>
           </div>
@@ -33,6 +33,7 @@
 
 <script>
 import Call from "../call";
+import {message_error} from "@/utils/helpers";
 export default {
   name: "DataSourcePane",
   props: {
@@ -47,6 +48,10 @@ export default {
     mapping: {
       type: [Array, String],
       default: () => [""]
+    },
+    limit: {
+      type: [Number],
+      default: 0
     }
   },
   data() {
@@ -58,6 +63,11 @@ export default {
     dataSrc: {
       handler(newValue) {
         this.formsData = JSON.parse(JSON.stringify(newValue));
+        console.log("====DataSourcePane.dataSrc", this.formsData)
+        this.formsData.forEach((form, index) => {
+          console.log("====DataSourcePane.dataSrc", form, index)
+          this.handleChangeOptions({ ...form, index }, form.casValue)
+        })
       },
       immediate: true
     }
@@ -67,7 +77,13 @@ export default {
      * 添加数据源
      */
     handleAdd() {
-      this.formsData.push({ casValue: "", map: "" })
+      if (this.limit === 0) {
+        this.formsData.push({ casValue: "", property: {} })
+      } else if (this.formsData.length  == 0) {
+        this.formsData.push({ casValue: "", property: {} })
+      } else {
+        message_error("该组件只能添加一个数据源！")
+      }
     },
     /**
      * 删除数据源
@@ -81,12 +97,13 @@ export default {
      * 选择数据源后触发
      */
     handleChangeMap() {
-      let mapping = this.formsData.map(form => form.map);
-      // this.$emit("update:mapping", mapping);
+      console.log("====handleChangeMap.formsData", this.formsData)
+      let mapping = this.formsData.map(form => form.property.name);
+      this.$emit("update:mapping", mapping);
 
       let data = this.formsData.map(form => {
-        let { casValue, deviceId, map } = form;
-        return { casValue, deviceId, map }
+        let { casValue, deviceId, property } = form;
+        return { casValue, deviceId, property }
       })
       this.$emit("select", data, mapping)
     },
@@ -96,8 +113,10 @@ export default {
      * @returns {Promise<void>}
      */
     async handleChangeOptions(form, v) {
-      let checkedNodes = this.$refs.cascaderRef[0].getCheckedNodes();
+
+      let checkedNodes = this.$refs["cascaderRef_" + form.index][0].getCheckedNodes();
       let node = checkedNodes ? checkedNodes[0] : null;
+      console.log("====DataSourcePane.handleChangeOptions3", checkedNodes, node)
 
       let deviceId = null;
       let pluginId = null;

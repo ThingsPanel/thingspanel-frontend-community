@@ -94,6 +94,7 @@ import AUTH from "@/core/services/store/auth.module";
 import {REFRESH} from "@/core/services/store/auth.module";
 import i18nService from "@/core/services/i18n.service.js";
 import CurveChart from "@/components/e-charts/CurveChart";
+import {local_url} from "../../../../api/LocalUrl";
 export default {
   name: "widget-4",
   components: {CurveChart},
@@ -113,7 +114,7 @@ export default {
   },
   methods: {
     ajaxdata() {
-      ApiService.post(AUTH.local_url + "/home/chart")
+      ApiService.post(local_url + "api/home/chart")
           .then(({data}) => {
             if (data.code == 200) {
               let cpu_xAxis = [], cpu_series = [];

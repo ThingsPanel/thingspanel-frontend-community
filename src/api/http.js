@@ -1,6 +1,6 @@
 import axios from "axios";
 import JwtService from "@/core/services/jwt.service";
-import local_url from "@/api/LocalUrl";
+import {local_url} from "@/api/LocalUrl";
 import {message_error} from "@/utils/helpers";
 
 // 创建 axios 实例

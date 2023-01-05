@@ -170,6 +170,7 @@
 
 
 <script>
+import { local_url } from "@/api/LocalUrl"
 import AUTH from "@/core/services/store/auth.module";
 import ApiService from "@/core/services/api.service";
 import JwtService from "@/core/services/jwt.service";
@@ -192,8 +193,7 @@ export default {
         value: "3",
       },
     ],
-    url: (process.env.VUE_APP_BASE_URL ||
-    document.location.protocol + "//" + document.domain + ":9999/"),
+    url: local_url,
     formObj: {
       custom_id: "",
       id: "",
@@ -216,7 +216,7 @@ export default {
   }),
 
   created() {
-    ApiService.post(AUTH.local_url + "/system/logo/index", null).then(
+    ApiService.post(local_url + "api/system/logo/index", null).then(
       ({ data }) => {
         if (data.code == 200) {
           this.formObj = Object.assign({}, data.data);
@@ -252,7 +252,7 @@ export default {
       return true;
     },
     submitData() {
-      ApiService.post(AUTH.local_url + "/system/logo/update", this.formObj).then(
+      ApiService.post(local_url + "api/system/logo/update", this.formObj).then(
         ({ data }) => {
           if (data.code == 200) {
               this.text = "保存成功！";

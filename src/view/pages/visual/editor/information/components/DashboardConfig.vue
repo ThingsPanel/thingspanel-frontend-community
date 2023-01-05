@@ -63,7 +63,7 @@ export default {
     handleSelect(v, m) {
       this.form.dataSrc = v;
       this.form.mapping = m;
-      console.log("====PieConfig.handleSelect", this.form);
+      console.log("====DashboardConfig.handleSelect", this.form);
       bus.$emit('changeData', this.form);
     }
   }

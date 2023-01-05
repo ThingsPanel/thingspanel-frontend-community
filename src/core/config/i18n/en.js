@@ -7,6 +7,9 @@ export const locale = {
     SYSTEMSETUP: "System setup",
     PERMISSIONMANAGEMENT: "Permission management",
     PERMISSIONADD: "Add Permission",
+    DEVICEACCESS: "Device Access",
+    NEWPROJECT: "New Project",
+    DEVICEWATCH: "Device Watch",
 
     DEVICE: "Device Manager ",
     CREATEDEVICE: "Create Device",
@@ -63,6 +66,8 @@ export const locale = {
     JSONTEST:"Paste the plug-in's JSON text here",
     SELECTTHEFILE:"Select the file",
     THEIMPORT:"The import",
+    DELPROTOCOLPLUGIN: "Del Protocol Plugin",
+    DELDEVICEPLUGIN: "Del Device Plugin",
 
 
     DEVICEPROPERTIES: "Device properties",
@@ -165,11 +170,12 @@ export const locale = {
     VIEWHELP: "Help",
     FEEDBACKQ: "Submit Issues",
     STRATEGY: "Strategy",
-    VISUALIZATION: "Dashboard",
-    NEWVISUALIZATION: "NewDashboard",
+    VISUALIZATION: "Visualization",
+    NEWVISUALIZATION: "New Visualization",
+    DELVISUALIZATION: "Del Visualization",
     DEVICE_CHART: "Device Charts",
     WARNINFO: "Alert Message",
-    SYSTEMLOG: "system log",
+    SYSTEMLOG: "System Log",
     EQUIPMENTLOG: "Equipment Log",
     PRODUCTMANAGEMENT: "product management",
     CREATEPRODUCT: "create product",
@@ -194,7 +200,7 @@ export const locale = {
     TRANSPOND: "Data Switching",
     OPERATIONLOG: "Logs",
     BUSINESSMANAGEMENT: "Business Management",
-    BUSINESSLIST: "Business list",
+    BUSINESSLIST: "Project List",
     NEWLYADDED: "New",
     NEWBUSINESS: "New Business",
     BUSINESSNAME: "Business Name",
@@ -572,5 +578,10 @@ export const locale = {
       SYSTEM_SETUP:"System Management",
       DATA_SWITCHING:"Data forwarding",
     }
+  },
+  PLUGIN: {
+    CUSTOM_DEVICE_PLUGIN: "Custom Device Plugin",
+    DEVICE_INFO: "Device Info"
+
   }
 };

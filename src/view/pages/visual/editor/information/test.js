@@ -23,13 +23,20 @@ const t = {
         "point": {"h": 302, "w": 361, "x": 157, "y": 394, "z": 502},
         "cptId": "oYDRrsjEg",
         "editable": false,
-        "activeted": false,
+        "activeted": true,
         "mapping": ["DO0"],
         "casValue": [],
         "dataSrc": [{
             "casValue": ["0ba3d6ff-30ed-4830-be8e-b1fbb2052a4b", "52ab6e26-64a3-d643-e79a-08c06ba1fc64", "4c310c31-ec11-0f48-47fa-3d53a005aa41"],
             "deviceId": "4c310c31-ec11-0f48-47fa-3d53a005aa41",
-            "map": "DO0"
+            "property": {
+                "dataType": "integer",
+                "dataRange": "0-999",
+                "stepLength": 0.1,
+                "unit": "-",
+                "title": "DO0",
+                "name": "DO0"
+            }
         }]
     }, {
         "name": "曲线图",
@@ -62,10 +69,15 @@ const t = {
         "point": {"h": 50, "w": 100, "x": 1093, "y": 632, "z": 504},
         "cptId": "vBFQKvemH",
         "editable": false,
-        "activeted": false,
+        "activeted": true,
         "value": "文本",
-        "mapping": "",
-        "casValue": []
+        "mapping": ["DO3"],
+        "casValue": [],
+        "dataSrc": [{
+            "casValue": ["0ba3d6ff-30ed-4830-be8e-b1fbb2052a4b", "52ab6e26-64a3-d643-e79a-08c06ba1fc64", "4c310c31-ec11-0f48-47fa-3d53a005aa41"],
+            "deviceId": "4c310c31-ec11-0f48-47fa-3d53a005aa41",
+            "map": "DO3"
+        }]
     }, {
         "name": "仪表盘",
         "type": "dashboard",
@@ -74,7 +86,7 @@ const t = {
         "point": {"h": 200, "w": 200, "x": 676, "y": 604, "z": 501},
         "cptId": "DlVF94z1b",
         "editable": false,
-        "activeted": true,
+        "activeted": false,
         "mapping": ["REG20002"],
         "dataSrc": [{
             "casValue": ["0ba3d6ff-30ed-4830-be8e-b1fbb2052a4b", "52ab6e26-64a3-d643-e79a-08c06ba1fc64", "4c310c31-ec11-0f48-47fa-3d53a005aa41"],

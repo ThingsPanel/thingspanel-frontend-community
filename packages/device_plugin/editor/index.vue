@@ -47,8 +47,10 @@ import global from "../common/global";
 // import Function from "./Function"
 import Publish from "./Publish";
 import {message_error} from "../../../src/utils/helpers";
+import i18n from "@/core/plugins/vue-i18n"
+
 const steps = [
-  { label: "插件信息", icon: "el-icon-info", description: "填写插件信息" },
+  { label: i18n.t('PLUGIN.DEVICE_INFO'), icon: "el-icon-info", description: "填写插件信息" },
   { label: "物模型", icon: "el-icon-s-home", description: "选择标准物模型或自定义" },
   { label: "图表", icon: "el-icon-s-data", description: "绑定图表" },
   // { label: "函数", icon: "el-icon-edit", description: "Function" },
