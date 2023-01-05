@@ -33,6 +33,8 @@ export default {
   name: "ThingsPanel",
   
   mounted() {
+    console.log("====location", document.location.protocol + "//" + document.location.host );
+
     this.$store.dispatch("setRouters");
     /**
      * this is to override the layout config using saved data from localStorage
