@@ -105,7 +105,7 @@ export default {
         let { casValue, deviceId, property } = form;
         return { casValue, deviceId, property }
       })
-      this.$emit("select", data, mapping)
+      this.$emit("select", data, mapping);
     },
     /**
      * 级联菜单改变时的回调
@@ -116,7 +116,6 @@ export default {
 
       let checkedNodes = this.$refs["cascaderRef_" + form.index][0].getCheckedNodes();
       let node = checkedNodes ? checkedNodes[0] : null;
-      console.log("====DataSourcePane.handleChangeOptions3", checkedNodes, node)
 
       let deviceId = null;
       let pluginId = null;

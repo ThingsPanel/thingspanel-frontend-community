@@ -161,7 +161,7 @@ export default {
           cpt.dataSrc.forEach(dataSrcItem => {
             let index = bindList.findIndex(item => item.deviceId == dataSrcItem.deviceId)
             if (index == -1) {
-              bindList.push({ cptId: cpt.cptId, type: cpt.type, deviceId: dataSrcItem.deviceId });
+              bindList.push({  deviceId: dataSrcItem.deviceId });
             }
           })
         }
@@ -177,7 +177,7 @@ export default {
                 if (data.code == 200) {
                   let value = data.data ? data.data[0] : null;
                   console.log("====display.refresh.data.data", value)
-                  values.push({ entity_id, cptId: bindList[i].cptId, value})
+                  values.push({ entity_id, value})
                   if (i == bindList.length - 1) {
                     // 请求调用完毕，更新组件的值
                     this.updateComponentValue(values);
@@ -196,11 +196,11 @@ export default {
       console.log("====display.getCurrent.请求调用完毕", values);
       values.forEach(val => {
         this.fullData.forEach(item => {
-          if (item.cptId == val.cptId) {
-            console.log("====display.getCurrent.遍历组件.item", item);
+          if (item.deviceId == val.deviceId) {
+            // console.log("====display.getCurrent.遍历组件.item", item);
             console.log("====display.getCurrent.遍历组件.type", item.type);
-            console.log("====display.getCurrent.遍历组件.mapping", item.mapping);
-            console.log("====display.getCurrent.遍历组件.value", val);
+            // console.log("====display.getCurrent.遍历组件.mapping", item.mapping);
+            // console.log("====display.getCurrent.遍历组件.value", val);
             console.log("====display.getCurrent==========================================")
             item.value = val.value;
           }

@@ -7,7 +7,7 @@
       :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
       width="800px">
 
-    <el-form class="inline-edit el-dark-input" :model="deviceData" :rules="formRule" label-width="130px">
+    <el-form ref="settingFormRef" class="inline-edit el-dark-input" :model="deviceData" :rules="formRule" label-width="130px">
 
       <el-form-item label="传输协议：" prop="protocol">
         <el-select size="medium" placeholder="请选择协议" v-model="deviceData.protocol" @change="handleChange"
@@ -23,28 +23,39 @@
         </el-form-item>
       </div>
 
+
+
       <div v-else>
+        <!-- 视频设备id-->
+        <div v-if="deviceData.protocol.startsWith('WVP_')" style="margin-top: 10px;margin-bottom: 20px" >
+          <el-form-item label="视频设备id ：" prop="d_id">
+            <el-input style="width: 100%;margin-right: 20px" size="medium" placeholder="请输入视频设备id" v-model="deviceData.d_id"></el-input>
+          </el-form-item>
+        </div>
 
-        <el-form-item label="认证方式：" prop="authMode">
-          <el-select size="medium" placeholder="请选择认证方式" v-model="deviceData.authMode"
-                     @change="handleAuthModeChange()">
-            <el-option :label="'AccessToken接入'" :value="'accessToken'"></el-option>
-            <el-option :label="'Basic'" :value="'mqttBasic'"></el-option>
-            <el-option :disabled="true" :label="'X.509'" :value="'x509'"></el-option>
-          </el-select>
-        </el-form-item>
+        <div v-else>
+          <el-form-item label="认证方式：" prop="authMode">
+            <el-select size="medium" placeholder="请选择认证方式" v-model="deviceData.authMode"
+                       @change="handleAuthModeChange()">
+              <el-option :label="'AccessToken接入'" :value="'accessToken'"></el-option>
+              <el-option :label="'Basic'" :value="'mqttBasic'"></el-option>
+              <el-option :disabled="true" :label="'X.509'" :value="'x509'"></el-option>
+            </el-select>
+          </el-form-item>
 
-        <el-form-item v-if="deviceData.authMode=='accessToken'" label="Access Token：" prop="token">
-          <el-input size="medium" v-model="deviceData.token"></el-input>
-        </el-form-item>
+          <el-form-item v-if="deviceData.authMode=='accessToken'" label="Access Token：" prop="token">
+            <el-input size="medium" v-model="deviceData.token"></el-input>
+          </el-form-item>
 
-        <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="用户名：" prop="username">
-          <el-input size="medium" v-model="deviceData.username"></el-input>
-        </el-form-item>
+          <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="用户名：" prop="username">
+            <el-input size="medium" v-model="deviceData.username"></el-input>
+          </el-form-item>
 
-        <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="密码：" prop="password">
-          <el-input size="medium" v-model="deviceData.password"></el-input>
-        </el-form-item>
+          <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="密码：" prop="password">
+            <el-input size="medium" v-model="deviceData.password"></el-input>
+          </el-form-item>
+        </div>
+
 
         <el-form-item label="连接信息：">
           <el-descriptions class="el-dark-descriptions" :column="1" border :colon="true">
@@ -156,6 +167,7 @@ export default defineComponent({
       token: [ {required, message: "Access Token不能为空"}],
       username: [ {required, message: "用户名不能为空"}],
       password: [ {required, message: "密码不能为空"}],
+      d_id: [ {required, message: "视频设备id不能为空"}],
       dataExchangeAgreement: [ {required, message: "数据交换格式不能为空"}]
     })
 
@@ -191,6 +203,7 @@ export default defineComponent({
       authMode: "accessToken",
       video_address: "",
       token: "",
+      d_id: "",
       username: "",
       password: "",
       defaultSetting: "",
@@ -215,6 +228,7 @@ export default defineComponent({
       deviceData.id = d.id;
       deviceData.hasChildDevice = !!device.children && device.children.length > 0
       deviceData.device_type = d.device_type;
+      deviceData.d_id = d.d_id;
       deviceData.protocol = d.protocol;
       deviceData.authMode = d.password ? "mqttBasic" : "accessToken";
       deviceData.token = d.token;
@@ -253,25 +267,29 @@ export default defineComponent({
      * 点击提交
      */
     function onSubmit() {
-      if (deviceData.protocol == "video_address") {
-        deviceData.additionalInfo.video_address = deviceData.video_address;
-        deviceData.additional_info = JSON.stringify(deviceData.additionalInfo);
-      } else {
-        deviceData.script_id = deviceData.dataExchangeAgreement;
-        if (deviceData.authMode == "mqttBasic") {
-          deviceData.token = deviceData.username;
-        } else {
-          deviceData.password = "";
-        }
-      }
-      updateDeviceInfo(deviceData)
-        .then(({data}) => {
-          if (data.code == 200) {
-            message_success("更新成功！")
-            context.emit("submit");
-            onCancel();
+      this.$refs.settingFormRef.validate(valid => {
+        if (valid) {
+          if (deviceData.protocol == "video_address") {
+            deviceData.additionalInfo.video_address = deviceData.video_address;
+            deviceData.additional_info = JSON.stringify(deviceData.additionalInfo);
+          } else {
+            deviceData.script_id = deviceData.dataExchangeAgreement;
+            if (deviceData.authMode == "mqttBasic") {
+              deviceData.token = deviceData.username;
+            } else {
+              deviceData.password = "";
+            }
           }
-        })
+          updateDeviceInfo(deviceData)
+              .then(({data}) => {
+                if (data.code == 200) {
+                  message_success("更新成功！")
+                  context.emit("submit");
+                  onCancel();
+                }
+              })
+        }
+      })
     }
 
     /**
