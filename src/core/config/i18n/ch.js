@@ -163,7 +163,7 @@ export const locale = {
     BUSINESSMANAGEMENT: "业务管理",
     BUSINESSLIST: "项目列表",
     NEWLYADDED: "新增",
-    NEWBUSINESS: "新增业务",
+    NEWBUSINESS: "新增项目",
     BUSINESSNAME: "业务名称",
     ADDASSETS: "添加设备分组",
     EDITASSETS: "编辑业务",
