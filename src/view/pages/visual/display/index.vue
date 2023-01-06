@@ -92,7 +92,7 @@ export default {
   data() {
     return {
       // 刷新间隔
-      flushTime: 5,
+      flushTime: 10,
       // 计时器
       timer: null
     }
@@ -152,43 +152,112 @@ export default {
     /**
      * 刷新组件的值
      */
-    refresh(fullData) {
-      const fun = () => {
-        fullData.forEach(item => {
-          if (item.controlType == "dashboard") {
-            //
-            this.getCurrent(item);
-          } else if (item.type == "text") {
-            console.log("====item", item);
-            this.getCurrent(item);
-          }
-        })
+    async refresh(fullData) {
+      console.log("====display.refresh.fullData", fullData);
+      // list item: { 组件id, 设备id, { 物模型属性(包括字段，字段名，单位...) } }
+      let deviceList = [];
+      this.fullData.forEach(cpt => {
+        if (cpt.dataSrc) {
+          cpt.dataSrc.forEach(dataSrcItem => {
+            let index = deviceList.findIndex(item => item.deviceId == dataSrcItem.deviceId)
+            if (index == -1) {
+              deviceList.push({  deviceId: dataSrcItem.deviceId });
+            }
+          })
+        }
+      })
+      console.log("====display.refresh.deviceList", deviceList)
+
+      const fun = async () => {
+        let values = [];
+        for (let i = 0; i < deviceList.length; i++) {
+          let entity_id = deviceList[i].deviceId;
+          await currentValue({ entity_id })
+              .then(({ data }) => {
+                if (data.code == 200) {
+                  let value = data.data ? data.data[0] : null;
+                  console.log("====display.refresh.data.data", value)
+                  values.push({ deviceId: entity_id, value})
+                  if (i == deviceList.length - 1) {
+                    // 请求调用完毕，更新组件的值
+                    this.updateComponentValue(values);
+                  }
+                }
+
+              });
+        }
         return fun;
       }
 
-      this.timer = setInterval(fun(), this.flushTime * 1000);
+      this.timer = setInterval(await fun(), this.flushTime * 1000);
 
     },
-    getCurrent(cpt) {
-      console.log("====display.getCurrent.cpt", cpt)
-      let entity_id = cpt.deviceId;
-      let attribute = cpt.mapping;
-      let values = [];
-      if (!entity_id || !attribute) return;
-      currentValue({ entity_id, attribute })
-        .then(({ data }) => {
-          if (data.code == 200 && data.data != null) {
-            let result = data.data[0];
-            if (typeof attribute == "string") {
-              values = [result[attribute]];
-            } else if (typeof attribute == "object") {
-              values = attribute.map(attr => result[attr]);
-            }
-            cpt.value = values;
-            console.log("====display.getCurrent", cpt.controlType, values)
+    updateComponentValue(values) {
+      console.log("====display.getCurrent.请求调用完毕", values);
+      values.forEach(val => {
+        this.fullData.forEach(cpt => {
+          /*
+            dataSrc: [
+              {
+                  "casValue": ["", "", ""],
+                  "deviceId": "",
+                  "property": {"dataType": "integer","unit": "-","title": "DO1","name": "DO1", ...}
+              },
+              ...
+            ]
+           */
+          if (cpt.dataSrc) {
+            let valueList = [];
+            cpt.dataSrc.forEach(item => {
+              if (item.deviceId == val.deviceId) {
+                valueList.push(val.value)
+              }
+            })
+            console.log("====valueList", valueList)
           }
+          // if (item.deviceId == val.deviceId) {
+          //   // console.log("====display.getCurrent.遍历组件.item", item);
+          //   console.log("====display.getCurrent.遍历组件.type", item.type);
+          //   // console.log("====display.getCurrent.遍历组件.mapping", item.mapping);
+          //   // console.log("====display.getCurrent.遍历组件.value", val);
+          //   console.log("====display.getCurrent==========================================")
+          //   item.value = val.value;
+          // }
         })
+      })
+
+    },
+    /*
+      饼图 绑定n个设备， 每个设备都要发一次请求，n个请求全都返回成功后再刷新饼图的数据
+      曲线图 绑定n个设备， 每个设备都要发一次请求，n个请求全都返回成功后再刷新曲线图的数据
+      柱状图 绑定n个设备， 每个设备都要发一次请求，n个请求全都返回成功后再刷新柱状图的数据
+      报表 ?
+     */
+    async getCurrent(item) {
+      let entity_id = item.deviceId;
+      currentValue({ entity_id })
+          .then(({ data }) => {
+            console.log("====display.getCurrent", data)
+          });
     }
+    // getCurrent(cpt) {
+    //   let entity_id = cpt.deviceId;
+    //   let attribute = cpt.mapping;
+    //   let values = [];
+    //   if (!entity_id || !attribute) return;
+    //   currentValue({ entity_id, attribute })
+    //     .then(({ data }) => {
+    //       if (data.code == 200 && data.data != null) {
+    //         let result = data.data[0];
+    //         if (typeof attribute == "string") {
+    //           values = [result[attribute]];
+    //         } else if (typeof attribute == "object") {
+    //           values = attribute.map(attr => result[attr]);
+    //         }
+    //         cpt.value = values;
+    //       }
+    //     })
+    // }
   }
 }
 </script>

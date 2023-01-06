@@ -63,6 +63,7 @@ export default {
   width: 100%;
   height: 100%;
   padding: 16px;
+  overflow-y: auto;
 }
 ::v-deep .el-divider--horizontal {
  margin-top: 44px!important;

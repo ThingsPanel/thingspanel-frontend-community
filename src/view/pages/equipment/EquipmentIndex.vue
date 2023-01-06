@@ -136,6 +136,7 @@ import TableTitle from "@/components/common/TableTitle.vue";
 import ApiService from "@/core/services/api.service";
 import AUTH from "@/core/services/store/auth.module";
 import {is_string} from "@/utils/helpers";
+import {local_url} from "../../../api/LocalUrl";
 export default defineComponent({
   name: "EquipmentIndex",
   components: {
@@ -160,7 +161,7 @@ export default defineComponent({
 
     // 数据查询 /api/conditions/log/index
     const queryValue = () => {
-      ApiService.post(AUTH.local_url + "/conditions/log/index", params).then(
+      ApiService.post(local_url + "api/conditions/log/index", params).then(
         ({ data }) => {
           if (data.code == 200) {
             console.log(data.data.data)

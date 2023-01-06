@@ -58,6 +58,7 @@ import { mapGetters } from "vuex";
 import ApiService from "@/core/services/api.service";
 import AUTH from "@/core/services/store/auth.module";
 import { REFRESH } from "@/core/services/store/auth.module";
+import {local_url} from "../../../../api/LocalUrl";
 
 export default {
   name: "widget-9",
@@ -74,7 +75,7 @@ export default {
   },
   methods:{
       operation() {
-          ApiService.post(AUTH.local_url+"/operation/index")
+          ApiService.post(local_url+"api/operation/index")
               .then(({ data }) => {
                   console.log('操作日志');
                   console.log(data);

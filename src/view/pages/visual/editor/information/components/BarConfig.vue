@@ -8,7 +8,7 @@
         <el-collapse class="el-dark-collapse information-collapse" style="padding:10px;" v-model="activeNames">
 
           <el-collapse-item title="数据源" name="source">
-            <data-source-pane :cas-options="casOptions" :cas-value.sync="form.casValue" :mapping.sync="form.mapping"
+            <data-source-pane :cas-options="casOptions" :data-src.sync="form.dataSrc" :mapping.sync="form.mapping"
                               @select="handleSelect"
             ></data-source-pane>
           </el-collapse-item>
@@ -43,8 +43,7 @@ export default {
         name: "",
         text: "",
         mapping: "",
-        casValue: "",
-        deviceId: "",
+        dataSrc: [],
         point: { }
       },
       dataSrcOptions: []
@@ -56,19 +55,14 @@ export default {
         if (newValue.type == "bar") {
           this.form = JSON.parse(JSON.stringify(newValue));
         }
-        console.log("====DashboardConfig.form", this.form)
       }
-    },
-    form: {
-      handler(newValue) {
-        bus.$emit('changeData', newValue);
-      },
-      deep: true
     }
   },
   methods: {
-    handleSelect(v) {
-
+    handleSelect(v, m) {
+      this.form.dataSrc = v;
+      this.form.mapping = m;
+      bus.$emit('changeData', this.form);
     }
   }
 }

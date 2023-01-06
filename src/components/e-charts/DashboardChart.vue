@@ -109,9 +109,25 @@ export default {
       if (typeof value == "string" || typeof value == "number") {
         option = { series: [ { data: [ { value }]}]};
       } else if (typeof value == "object"){
-        let series = value.map(item => { return { data: [ { value: item } ] } })
-        option = { series };
+        if (Object.prototype.toString.call(value) === "[object Object]") {
+          // object
+
+          if (this.option.dataSrc) {
+            let property = this.option.dataSrc[0].property;
+
+            let val = value[property.name];
+            if (val) {
+              option = { series: [ { data: [ { value: val }], detail: { formatter: '{value}' + property.unit } }]};
+            }
+          }
+        } else {
+          // array
+          let series = value.map(item => { return { data: [ { value: item } ] } })
+          option = { series };
+        }
       }
+      console.log("====我是Object", option)
+
       this.myChart.setOption(option);
     },
     initOption(opt) {

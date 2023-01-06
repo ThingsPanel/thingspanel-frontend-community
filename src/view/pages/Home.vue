@@ -168,8 +168,7 @@ import MixedWidget4 from "@/view/content/widgets/mixed/Widget4.vue";
 import ListWidget10 from "@/view/content/widgets/list/Widget10.vue";
 
 import { REFRESH } from "@/core/services/store/auth.module";
-import AUTH from "@/core/services/store/auth.module";
-
+import { local_url } from "@/api/LocalUrl"
 import ApiService from "@/core/services/api.service";
 export default {
   name: "home",
@@ -187,12 +186,10 @@ export default {
   },
   methods: {
     ajaxdata() {
-      ApiService.post(AUTH.local_url + "/asset/work_index", {
+      ApiService.post(local_url + "api/asset/work_index", {
         work_name: "",
         page: 1,
       }).then(({ data }) => {
-        console.log("获取业务数据");
-        console.log(data);
         if (data.code == 200) {
           if (data.data.data.length > 0) {
             this.isshowguide = true;
@@ -207,7 +204,7 @@ export default {
     },
 
     getguidlist() {
-      ApiService.post(AUTH.local_url + "/navigation/list", {
+      ApiService.post(local_url + "api/navigation/list", {
         work_name: "",
       }).then(({ data }) => {
         console.log("指南列表");

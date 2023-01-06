@@ -23,7 +23,7 @@
 
     </div>
 
-    <div style="width: 100%; height:100%;position: absolute;top:40px" ref="chart"></div>
+    <div style="width: 100%; height:calc(100% - 40px);position: absolute;top:40px" ref="chart"></div>
 
     <el-dialog title="配置" width="30%"
         :visible.sync="configurationVisible">

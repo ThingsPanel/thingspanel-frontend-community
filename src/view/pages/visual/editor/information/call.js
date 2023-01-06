@@ -7,7 +7,6 @@ import PluginAPI from "@/api/plugin"
  * @returns {Promise<unknown>}
  */
 const getPluginIdFromCasOptions = (casOptions, v) => {
-    console.log("====D.getPluginIdFromCasOptions", casOptions, v)
     return new Promise((resolve, reject) => {
         if (v.length < 3) return null;
         casOptions.forEach(async business => {
@@ -20,7 +19,6 @@ const getPluginIdFromCasOptions = (casOptions, v) => {
                         if (!group.children) reject(null);
                         group.children.forEach(device => {
                             if (device.device_id == v[2]) {
-                                console.log("====D.getPluginIdFromCasOptions.device", device)
                                 resolve(device.plugin_id)
                             }
                         })

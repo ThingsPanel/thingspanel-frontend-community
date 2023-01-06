@@ -31,18 +31,7 @@ export default {
     value: {
       type: [String, Array],
       default: "文本"
-    },
-    // vStyle: {
-    //   type: [Object],
-    //   default: () => {
-    //     return {
-    //       borderRadius: 0,
-    //       borderWidth: 0,
-    //       borderColor: "#2d3d86",
-    //       fontSize: 18
-    //     }
-    //   }
-    // }
+    }
   },
   data() {
     return {
@@ -57,10 +46,17 @@ export default {
   watch: {
     value: {
       handler(newValue) {
+        if (newValue == null) return;
         if (typeof newValue == "string") {
           this.textValue = newValue;
         } else if (typeof newValue == "object") {
-          this.textValue = newValue[0];
+          if (this.option.dataSrc) {
+            let property = this.option.dataSrc[0].property;
+            let value = newValue[property.name];
+            if (value) {
+              this.textValue = value;
+            }
+          }
         }
       }
     },
@@ -79,13 +75,6 @@ export default {
           }
         })
       }
-    },
-    vStyle: {
-      handler(newValue) {
-        console.log("====text", newValue)
-
-      },
-      immediate: true
     }
   },
   methods: {

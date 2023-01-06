@@ -1,11 +1,11 @@
 import ApiService from "@/core/services/api.service";
 import JwtService from "@/core/services/jwt.service";
 import PermissionService from "../permission.service"
+import {local_url} from "@/api/LocalUrl";
 
 // 登录和用户详情接口
 import { login, logout, getUserInfo } from "@/api/auth";
 import Perm from "@/api/permission"
-
 // 引入路由下面调用 router.push 跳转
 import router from "@/router"
 import {getRedToken} from "@/api/transpond";
@@ -27,9 +27,10 @@ export const PURGE_AUTH = "logOut";
 export const SET_AUTH = "setUser";
 export const SET_ERROR = "setError";
 
-const local_url =
-  (process.env.VUE_APP_BASE_URL ||
-    document.location.protocol + "//" + document.domain + ":9999/") + "api";
+// const local_url =
+//   (process.env.VUE_APP_BASE_URL ||
+//     document.location.protocol + "//" + document.domain + ":9999/") + "api";
+const base_url = local_url + "api";
 const state = {
   errors: "",
   user: {},
@@ -157,7 +158,7 @@ const actions = {
   },
   [REGISTER](context, credentials) {
     return new Promise((resolve, reject) => {
-      ApiService.post(local_url + "/user/add", credentials)
+      ApiService.post(base_url + "/user/add", credentials)
         .then(({ data }) => {
           // console.log(data);
           if (data.code !== 200) {
@@ -211,7 +212,7 @@ const actions = {
     if (password) {
       user.password = password;
     }
-    return ApiService.post(local_url + "/user/edit", payload).then(
+    return ApiService.post(base_url + "/user/edit", payload).then(
       ({ data }) => {
         console.log(data);
         // context.commit(SET_AUTH, data);
