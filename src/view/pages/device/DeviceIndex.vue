@@ -54,7 +54,7 @@
   <el-form class="inline-edit el-dark-input">
   <el-table :data="tableData" v-loading="loading" default-expand-all row-key="id" fit style="width: 100%" :indent="30">
 
-    <el-table-column :label="$t('COMMON.TYPE')" width="100" min-width="10%" >
+    <el-table-column :label="$t('COMMON.TYPE')" width="auto" min-width="13%" >
       <template slot-scope="scope">
         {{ scope.row.device_type == 3 ? $t('COMMON.SUB_DEVICE'): (scope.row.device_type == 2 ? $t('COMMON.THEGATEWAY') : $t('COMMON.EQUIPMENT'))}}
       </template>
@@ -90,7 +90,7 @@
     <!--  设备分组 end  -->
 
     <!--  设备类型：网关/设备 start  -->
-    <el-table-column :label="$t('COMMON.GATEWAYDEVICE')" width="auto" min-width="12%">
+    <el-table-column :label="$t('COMMON.GATEWAYDEVICE')" width="auto" min-width="13%">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.device_type">
           <DeviceTypeSelector :current-item="scope.row" :deviceType.sync="scope.row.device_type" @change="deviceTypeChange(scope.row)"
@@ -158,9 +158,9 @@
     <!-- 图表组件 end-->
 
     <!--  操作 start  -->
-    <el-table-column :label="$t('COMMON.OPERATION')" width="300px" min-width="12%" align="right">
+    <el-table-column :label="$t('COMMON.OPERATION')" width="auto" min-width="33%">
       <template slot-scope="scope">
-        <div style="text-align: right">
+        <div style="text-align: left">
           <el-button  v-show="scope.row.device_type==2" type="primary" size="mini"
                      @click="addChildDevice(scope.row)">{{ $t("COMMON.ADDINGCHILDDEVICE")}}</el-button>
           <el-button style="margin-right: 10px"  type="primary" size="mini"

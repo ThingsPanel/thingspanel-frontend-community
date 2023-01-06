@@ -67,7 +67,7 @@
   align-self: center !important;
   flex: 0 0 33.33333%;
   margin: 0 auto;
-  max-width: 30%;
+  max-width: 20%;
   background: unset;
   position: absolute;
   right: 15%;
