@@ -31,7 +31,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="360">
+        <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="300">
           <template v-slot="scope">
             <div style="text-align: left">
               <div v-if="scope.row.status">
