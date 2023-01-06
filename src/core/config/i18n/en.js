@@ -130,6 +130,8 @@ export const locale = {
     TITLE30: "Data labels",
     TITLE31: "Value",
     TITLE32: "Device Plugin",
+    TITLE33: "Protocol Plugin",
+    TITLE34: "Device Editor",
     FORGETPASS: "forgot password？",
     NAME: "name",
     REMARKS: "Remark",

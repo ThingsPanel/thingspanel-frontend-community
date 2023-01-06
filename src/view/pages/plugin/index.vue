@@ -49,11 +49,11 @@ export default {
           value: "devicePlugin",
         },
         {
-          name: "接入协议",
+          name: "COMMON.TITLE33",
           value: "protocolPlugin",
         },
         {
-          name: "设备插件生成器",
+          name: "COMMON.TITLE34",
           value: "deviceEditor",
         }
       ]
