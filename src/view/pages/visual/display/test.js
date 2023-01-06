@@ -30,21 +30,34 @@ const json = {
         "point": {"h": 302, "w": 361, "x": 157, "y": 394, "z": 502},
         "cptId": "oYDRrsjEg",
         "editable": false,
-        "activeted": false,
-        "mapping": ["DO1"],
+        "activeted": true,
+        "mapping": ["DO1", "temp"],
         "casValue": [],
-        "dataSrc": [{
-            "casValue": ["0ba3d6ff-30ed-4830-be8e-b1fbb2052a4b", "52ab6e26-64a3-d643-e79a-08c06ba1fc64", "4c310c31-ec11-0f48-47fa-3d53a005aa41"],
-            "deviceId": "4c310c31-ec11-0f48-47fa-3d53a005aa41",
-            "property": {
-                "dataType": "integer",
-                "dataRange": "0-999",
-                "stepLength": 0.1,
-                "unit": "-",
-                "title": "DO1",
-                "name": "DO1"
-            }
-        }]
+        "dataSrc": [
+            {
+                "casValue": ["0ba3d6ff-30ed-4830-be8e-b1fbb2052a4b", "52ab6e26-64a3-d643-e79a-08c06ba1fc64", "4c310c31-ec11-0f48-47fa-3d53a005aa41"],
+                "deviceId": "4c310c31-ec11-0f48-47fa-3d53a005aa41",
+                "property": {
+                    "dataType": "integer",
+                    "dataRange": "0-999",
+                    "stepLength": 0.1,
+                    "unit": "-",
+                    "title": "DO1",
+                    "name": "DO1"
+                }
+            },
+            {
+                "casValue": ["1eeee463-e980-d787-045e-f7a6b32c69ef", "d2dbe4c8-0afd-3af6-facd-c8c4adf2b79e", "a461e818-5734-d0c3-195b-24bab86782bb"],
+                "deviceId": "a461e818-5734-d0c3-195b-24bab86782bb",
+                "property": {
+                    "dataType": "integer",
+                    "dataRange": "0-999",
+                    "stepLength": 0.1,
+                    "title": "温度",
+                    "name": "temp",
+                    "unit": "C"
+                }
+            }]
     }, {
         "name": "曲线图",
         "type": "curve",
@@ -83,7 +96,7 @@ const json = {
         "point": {"h": 50, "w": 100, "x": 1093, "y": 632, "z": 504},
         "cptId": "vBFQKvemH",
         "editable": false,
-        "activeted": true,
+        "activeted": false,
         "value": "文本",
         "mapping": ["humidity"],
         "casValue": [],
@@ -108,17 +121,17 @@ const json = {
         "cptId": "DlVF94z1b",
         "editable": false,
         "activeted": false,
-        "mapping": ["temp"],
+        "mapping": ["temperature"],
         "dataSrc": [{
-            "casValue": ["cbb46065-dfb7-1f94-3b70-d9002544abef", "94bfe48e-e4cb-8699-1d61-d890976d9c9c", "6f3fac81-9b5e-5eeb-1357-40d1ed1d6fa1"],
-            "deviceId": "6f3fac81-9b5e-5eeb-1357-40d1ed1d6fa1",
+            "casValue": ["f553f517-5c1e-f563-dea7-887542a77dee", "18a0a973-68f3-17ee-0e26-5b32839be245", "261855cc-b9be-fa6a-60eb-0474b7af81f9"],
+            "deviceId": "261855cc-b9be-fa6a-60eb-0474b7af81f9",
             "property": {
-                "dataType": "float",
-                "dataRange": "0-999",
-                "stepLength": 0.1,
+                "name": "temperature",
                 "title": "温度",
-                "name": "temp",
-                "unit": "℃"
+                "dataType": "float",
+                "dataRange": "0-100",
+                "stepLength": 0.1,
+                "unit": "°C"
             }
         }]
     }, {

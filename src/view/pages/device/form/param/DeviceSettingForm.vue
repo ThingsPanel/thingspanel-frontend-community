@@ -28,7 +28,7 @@
       <div v-else>
         <!-- 视频设备id-->
         <div v-if="deviceData.protocol.startsWith('WVP_')" style="margin-top: 10px;margin-bottom: 20px" >
-          <el-form-item label="视频设备id ：" prop="d_id">
+          <el-form-item label="视频设备编号 ：" prop="d_id">
             <el-input style="width: 100%;margin-right: 20px" size="medium" placeholder="请输入视频设备id" v-model="deviceData.d_id"></el-input>
           </el-form-item>
         </div>

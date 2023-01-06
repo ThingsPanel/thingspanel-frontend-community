@@ -92,7 +92,7 @@ export default {
   data() {
     return {
       // 刷新间隔
-      flushTime: 5,
+      flushTime: 10,
       // 计时器
       timer: null
     }
@@ -155,30 +155,30 @@ export default {
     async refresh(fullData) {
       console.log("====display.refresh.fullData", fullData);
       // list item: { 组件id, 设备id, { 物模型属性(包括字段，字段名，单位...) } }
-      let bindList = [];
+      let deviceList = [];
       this.fullData.forEach(cpt => {
         if (cpt.dataSrc) {
           cpt.dataSrc.forEach(dataSrcItem => {
-            let index = bindList.findIndex(item => item.deviceId == dataSrcItem.deviceId)
+            let index = deviceList.findIndex(item => item.deviceId == dataSrcItem.deviceId)
             if (index == -1) {
-              bindList.push({  deviceId: dataSrcItem.deviceId });
+              deviceList.push({  deviceId: dataSrcItem.deviceId });
             }
           })
         }
       })
-      console.log("====display.refresh.bindList", bindList)
+      console.log("====display.refresh.deviceList", deviceList)
 
       const fun = async () => {
         let values = [];
-        for (let i = 0; i < bindList.length; i++) {
-          let entity_id = bindList[i].deviceId;
+        for (let i = 0; i < deviceList.length; i++) {
+          let entity_id = deviceList[i].deviceId;
           await currentValue({ entity_id })
               .then(({ data }) => {
                 if (data.code == 200) {
                   let value = data.data ? data.data[0] : null;
                   console.log("====display.refresh.data.data", value)
-                  values.push({ entity_id, value})
-                  if (i == bindList.length - 1) {
+                  values.push({ deviceId: entity_id, value})
+                  if (i == deviceList.length - 1) {
                     // 请求调用完毕，更新组件的值
                     this.updateComponentValue(values);
                   }
@@ -195,15 +195,34 @@ export default {
     updateComponentValue(values) {
       console.log("====display.getCurrent.请求调用完毕", values);
       values.forEach(val => {
-        this.fullData.forEach(item => {
-          if (item.deviceId == val.deviceId) {
-            // console.log("====display.getCurrent.遍历组件.item", item);
-            console.log("====display.getCurrent.遍历组件.type", item.type);
-            // console.log("====display.getCurrent.遍历组件.mapping", item.mapping);
-            // console.log("====display.getCurrent.遍历组件.value", val);
-            console.log("====display.getCurrent==========================================")
-            item.value = val.value;
+        this.fullData.forEach(cpt => {
+          /*
+            dataSrc: [
+              {
+                  "casValue": ["", "", ""],
+                  "deviceId": "",
+                  "property": {"dataType": "integer","unit": "-","title": "DO1","name": "DO1", ...}
+              },
+              ...
+            ]
+           */
+          if (cpt.dataSrc) {
+            let valueList = [];
+            cpt.dataSrc.forEach(item => {
+              if (item.deviceId == val.deviceId) {
+                valueList.push(val.value)
+              }
+            })
+            console.log("====valueList", valueList)
           }
+          // if (item.deviceId == val.deviceId) {
+          //   // console.log("====display.getCurrent.遍历组件.item", item);
+          //   console.log("====display.getCurrent.遍历组件.type", item.type);
+          //   // console.log("====display.getCurrent.遍历组件.mapping", item.mapping);
+          //   // console.log("====display.getCurrent.遍历组件.value", val);
+          //   console.log("====display.getCurrent==========================================")
+          //   item.value = val.value;
+          // }
         })
       })
 
