@@ -111,9 +111,9 @@
     <el-table-column :label="$t('COMMON.CODEMANAGE')" width="80px" min-width="10%">
       <template slot-scope="scope">
         <!-- 子设备 -->
-        <el-button v-if="scope.row.device_type=='3'" type="text" @click="handleEditSubParameter(scope.row)">{{ $t("COMMON.EDITPARAMETERS")}}</el-button>
+<!--        <el-button v-if="scope.row.device_type=='3'" type="text" @click="handleEditSubParameter(scope.row)">{{ $t("COMMON.EDITPARAMETERS")}}</el-button>-->
         <!-- 网关/设备 -->
-        <el-button v-else type="text" @click="handleEditParameter(scope.row, '编辑参数')">{{ $t("COMMON.EDITPARAMETERS")}}</el-button>
+        <el-button v-if="scope.row.device_type!=='3'" type="text" @click="handleEditParameter(scope.row, '编辑参数')">{{ $t("COMMON.EDITPARAMETERS")}}</el-button>
       </template>
     </el-table-column>
 

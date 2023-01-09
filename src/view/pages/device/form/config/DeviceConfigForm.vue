@@ -34,10 +34,16 @@
 
       <!-- 设备属性 -->
       <div v-else-if="activeName=='deviceAttribute'">
-        <el-form label-position="left" :model="formData">
+        <el-form label-position="left" :model="attrFormData">
+          <el-form-item label="子设备地址" >
+            <el-input style="width: 100%" placeholder="请输入设备经纬度，用逗号隔开，如：116.462346, 39.356432"
+                      v-model="attrFormData.subDeviceAddress"
+            ></el-input>
+          </el-form-item>
+
           <el-form-item label="设备位置" >
             <el-input style="width: 100%" placeholder="请输入设备经纬度，用逗号隔开，如：116.462346, 39.356432"
-                      v-model="location"
+                      v-model="attrFormData.location"
               ></el-input>
           </el-form-item>
         </el-form>
@@ -86,6 +92,7 @@ export default {
       ],
       formAttr: [],
       formData: {},
+      attrFormData: {},
       runningFormData: {
         thresholdTime: 60
       },
@@ -97,10 +104,12 @@ export default {
     dialogVisible: {
       handler(newValue) {
         if (newValue) {
+          console.log("====DeviceConfigForm.newValue", this.device)
           this.location = this.device.location ? this.device.location : "";
-          let additionalInfo = this.device.additional_info ? JSON.parse(this.device.additional_info) :
+          let additionalInfo = (this.device.additional_info && this.device.additional_info!="null") ? JSON.parse(this.device.additional_info) :
               {runningInfo: {thresholdTime: 60}};
-          this.runningFormData = additionalInfo.runningInfo;
+          this.attrFormData = { subDeviceAddress: this.device.subDeviceAddress, location: this.device.location };
+          this.runningFormData = additionalInfo.runningInfo ? additionalInfo.runningInfo : {};
           this.formData = {};
           if (JSON.stringify(this.device) == "{}" || this.device == "") {return;}
           if (this.device.device_type == "3" || (this.device.device_type == "1" && this.device.protocol != "mqtt")) {

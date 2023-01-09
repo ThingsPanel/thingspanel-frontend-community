@@ -587,5 +587,23 @@ export const locale = {
     CUSTOM_DEVICE_PLUGIN: "Custom Device Plugin",
     DEVICE_INFO: "Device Info"
 
+  },
+  HOME: {
+
+  },
+  DEVICE_ACCESS: {
+
+  },
+  DEVICE_WATCH: {
+
+  },
+  DEVICE_MAP: {
+
+  },
+  DATA_MANAGEMENT: {
+
+  },
+  VISUALIZATION: {
+
   }
 };

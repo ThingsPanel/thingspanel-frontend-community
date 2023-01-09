@@ -573,5 +573,23 @@ export const locale = {
   PLUGIN: {
     CUSTOM_DEVICE_PLUGIN: "自定义设备插件",
     DEVICE_INFO: "设备信息"
+  },
+  HOME: {
+
+  },
+  DEVICE_ACCESS: {
+
+  },
+  DEVICE_WATCH: {
+
+  },
+  DEVICE_MAP: {
+
+  },
+  DATA_MANAGEMENT: {
+
+  },
+  VISUALIZATION: {
+
   }
 };
