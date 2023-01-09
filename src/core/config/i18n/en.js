@@ -589,7 +589,7 @@ export const locale = {
 
   },
   HOME: {
-
+    QUICK_GUIDE: "Quick Guide"
   },
   DEVICE_ACCESS: {
 

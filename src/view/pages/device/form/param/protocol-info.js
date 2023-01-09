@@ -9,7 +9,7 @@ export default {
         { label: "设备上报属性主题", value: "device/attributes" },
         { label: "设备订阅属性主题", value: "device/attributes/{AccessToken}" },
         { label: "MQTT用户名", value: "{AccessToken}" },
-        { label: "MQTT密码", value: "在设备端密码为空即可连接" },
+        { label: "MQTT密码", value: "在设备端密码为空即可连接", show: ["accessToken"] },
         { label: "设备上报数据", value: "{payload}", payload },
     ],
 

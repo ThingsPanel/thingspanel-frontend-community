@@ -574,21 +574,27 @@ export const locale = {
     CUSTOM_DEVICE_PLUGIN: "自定义设备插件",
     DEVICE_INFO: "设备信息"
   },
+  // 首页
   HOME: {
-
+    QUICK_GUIDE: "快捷指南"
   },
+  // 设备接入
   DEVICE_ACCESS: {
 
   },
+  // 设备监控
   DEVICE_WATCH: {
 
   },
+  // 设备地图
   DEVICE_MAP: {
 
   },
+  // 数据管理
   DATA_MANAGEMENT: {
 
   },
+  // 可视化
   VISUALIZATION: {
 
   }

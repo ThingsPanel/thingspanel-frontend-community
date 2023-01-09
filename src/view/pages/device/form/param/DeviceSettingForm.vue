@@ -36,7 +36,7 @@
         <div v-else>
           <el-form-item label="认证方式：" prop="authMode">
             <el-select size="medium" placeholder="请选择认证方式" v-model="deviceData.authMode"
-                       @change="handleAuthModeChange()">
+                       @change="handleAuthModeChange">
               <el-option :label="'AccessToken接入'" :value="'accessToken'"></el-option>
               <el-option :label="'Basic'" :value="'mqttBasic'"></el-option>
               <el-option :disabled="true" :label="'X.509'" :value="'x509'"></el-option>
@@ -304,6 +304,8 @@ export default defineComponent({
 
 
     function handleAuthModeChange(v) {
+      console.log("====handleAuthModeChange", deviceData)
+      getDefaultSetting(deviceData.protocol);
 
     }
 
@@ -319,11 +321,17 @@ export default defineComponent({
         let defaultSetting = JSON.parse(JSON.stringify(ProtocolInfo[protocol]));
         let payload = getPayload();
 
+        let settings = [];
         defaultSetting.forEach(item => {
           item.value = item.value.replaceAll("{AccessToken}", device.token);
           item.value = item.value.replaceAll("{payload}", payload);
+          if (item.show && item.show.indexOf(deviceData.authMode) > -1) {
+            settings.push(item);
+          } else if (!item.show) {
+            settings.push(item);
+          }
         })
-        connectInfo.value = defaultSetting;
+        connectInfo.value = settings;
       };
 
 
