@@ -202,6 +202,7 @@ export default {
         cpt.style = style;
         this.fullData.splice(index, 1, cpt);
       }
+
     })
   },
   methods: {

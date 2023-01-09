@@ -482,9 +482,9 @@
   "video": [
     {
       "controlType": "video",
-      "index": 1,
-      "type": "video",
-      "title": "视频",
+      "index": 2,
+      "type": "monitor",
+      "title": "监控",
       "src": ""
     }
   ]

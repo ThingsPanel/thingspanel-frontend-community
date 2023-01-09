@@ -52,7 +52,7 @@ export default {
         } else if (typeof newValue == "object") {
           if (this.option.dataSrc) {
             let property = this.option.dataSrc[0].property;
-            let value = newValue[property.name];
+            let value = newValue[0]['value'][property.name];
             if (value) {
               this.textValue = value;
             }

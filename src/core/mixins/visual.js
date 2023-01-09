@@ -23,17 +23,17 @@ Vue.mixin({
                 const parent = this.$refs[parentRef];
                 console.log("====setCanvasStyle", JSON.stringify(this.canvasStyle))
                 if (this.canvasStyle.intWidth) {
-                    canvas.style.setProperty("--w", this.canvasStyle.intWidth + "px");
+                    canvas.style && canvas.style.setProperty("--w", this.canvasStyle.intWidth + "px");
                 }
                 if (this.canvasStyle.intHeight) {
-                    canvas.style.setProperty("--h", this.canvasStyle.intHeight + "px");
+                    canvas.style && canvas.style.setProperty("--h", this.canvasStyle.intHeight + "px");
                 }
                 if (this.canvasStyle.backgroundColor) {
-                    parent.style.setProperty("--color", this.canvasStyle.backgroundColor);
-                    canvas.style.setProperty("--color", this.canvasStyle.backgroundColor);
+                    parent.style && parent.style.setProperty("--color", this.canvasStyle.backgroundColor);
+                    canvas.style && canvas.style.setProperty("--color", this.canvasStyle.backgroundColor);
                 }
                 this.defaultScale = this.getScale(parentRef, space);
-                canvas.style.transform = "scale(" + this.defaultScale + ")";
+                canvas.style && (canvas.style.transform = "scale(" + this.defaultScale + ")");
             })
         },
         getStyle(cpt) {
@@ -58,6 +58,7 @@ Vue.mixin({
         handleUnselect(cptId) {
             const unselect = (cptId) => {
                 const dragBox = document.getElementById("drag_box_" + cptId)
+                if (!dragBox.style) return;
                 dragBox.style.backgroundColor = "unset";
                 dragBox.style.border = "1px dashed #293b79";
             }

@@ -5,7 +5,7 @@
       size="medium"
       placeholder="请选择设备类型"
       v-model="deviceTypeId"
-      :disabled="deviceType==3 || currentItem.children"
+      :disabled="deviceType==3 || !!currentItem.children"
       filterable
       :clearable="clearable"
       @change="handleChange"

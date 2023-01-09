@@ -140,9 +140,10 @@ export default {
      */
     handleFileCommand(command) {
       if (command == "export") {
-        this.$emit("showExport");
+        this.$emit("show-export");
       } else if (command == "import") {
-        this.$emit("showImport");
+        console.log("====handleFileCommand", command)
+        this.$emit("show-import");
       }
     },
     /**

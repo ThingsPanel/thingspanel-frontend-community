@@ -92,8 +92,10 @@ export default {
      * 预览
      */
     handlePreview() {
-      let query = { id: this.visualId };
-      const{ href } = this.$router.resolve({ name:"VisualDisplay", query });
+      let query = { id: this.visualId, mode: "preview" };
+      const{ href } = this.$router.resolve({ name:"VisualDisplay", query  });
+      let jsonData = { screen: this.$refs.editorCanvas.fullData, canvasStyle: this.$refs.editorCanvas.canvasStyle};
+      localStorage.setItem("visual_json_data", JSON.stringify(jsonData))
       window.open(href,'_blank');
     },
     /**

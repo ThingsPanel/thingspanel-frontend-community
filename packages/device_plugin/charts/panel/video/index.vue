@@ -4,7 +4,7 @@
       <div class="video-item" v-for="(option, index) in charts" :key="index" @click="showDialog(option)">
         <div class="video-item-header" >{{ option.title }}</div>
         <common-video v-if="option.type == 'video'" :ref="'video_' + option.index" :option="option" @submit="handleSubmit"></common-video>
-        <common-camera v-if="option.type == 'camera'" :ref="'video_' + option.index" :option="option" @submit="handleSubmit"></common-camera>
+        <common-monitor v-if="option.type == 'monitor'" :ref="'video_' + option.index" :option="option" @submit="handleSubmit"></common-monitor>
 
       </div>
     </div>
@@ -14,10 +14,11 @@
 
 <script>
 import CommonVideo from "../../components/video/CommonVideo";
+import CommonMonitor from "../../components/video/CommonMonitor";
 export default {
   name: "VideoPanel",
   components:{
-    CommonVideo
+    CommonVideo, CommonMonitor
   },
   props: {
     charts: {

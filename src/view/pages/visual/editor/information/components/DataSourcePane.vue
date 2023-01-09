@@ -77,12 +77,10 @@ export default {
      * 添加数据源
      */
     handleAdd() {
-      if (this.limit === 0) {
-        this.formsData.push({ casValue: "", property: {} })
-      } else if (this.formsData.length  == 0) {
-        this.formsData.push({ casValue: "", property: {} })
-      } else {
+      if (this.limit === 1 && this.formsData.length === 1) {
         message_error("该组件只能添加一个数据源！")
+      } else {
+        this.formsData.push({ casValue: "", property: {} })
       }
     },
     /**
@@ -113,9 +111,11 @@ export default {
      * @returns {Promise<void>}
      */
     async handleChangeOptions(form, v) {
-
-      let checkedNodes = this.$refs["cascaderRef_" + form.index][0].getCheckedNodes();
+      let cascaderRef = this.$refs["cascaderRef_" + form.index];
+      let checkedNodes = cascaderRef ? cascaderRef[0].getCheckedNodes() : null;
       let node = checkedNodes ? checkedNodes[0] : null;
+
+      if (!node && !v) return;
 
       let deviceId = null;
       let pluginId = null;

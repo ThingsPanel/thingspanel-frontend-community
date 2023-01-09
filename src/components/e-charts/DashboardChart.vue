@@ -109,13 +109,13 @@ export default {
       if (typeof value == "string" || typeof value == "number") {
         option = { series: [ { data: [ { value }]}]};
       } else if (typeof value == "object"){
-        if (Object.prototype.toString.call(value) === "[object Object]") {
+        if (Object.prototype.toString.call(value) === "[object Array]") {
           // object
 
           if (this.option.dataSrc) {
             let property = this.option.dataSrc[0].property;
 
-            let val = value[property.name];
+            let val = value[0]['value'][property.name];
             if (val) {
               option = { series: [ { data: [ { value: val }], detail: { formatter: '{value}' + property.unit } }]};
             }

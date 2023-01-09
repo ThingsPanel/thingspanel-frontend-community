@@ -22,7 +22,7 @@
 
         <pie-chart :style="getChartStyle(component)" :loading="false"
                    :w="component.point.w" :h="component.point.h"
-                   v-if="component.type == 'pie'"
+                   v-if="component.type == 'pie'" :value="component.value"
                    :option="component"></pie-chart>
 
         <bar-chart :style="getChartStyle(component)" :loading="false"
@@ -98,27 +98,35 @@ export default {
     }
   },
   mounted() {
-    let id = this.$route.query.id;
-    VisualAPI.list({ current_page: 1, per_page: 10, id })
-      .then(({ data }) => {
-        if (data.code == 200) {
-          let result = data.data.data ? data.data.data[0] : {};
-          let jsonData = result ? result.json_data : "{}";
-          console.log("====display", result);
-          let jsonObj = JSON.parse(jsonData);
-          document.title = result.dashboard_name ? result.dashboard_name : "";
-          this.fullData = jsonObj.screen.length > 0 ? JSON.parse(JSON.stringify(jsonObj.screen)) : [];
-          if (jsonObj.canvasStyle && JSON.stringify(jsonObj.canvasStyle) != "{}") {
-            for (let key in jsonObj.canvasStyle) {
-              this.canvasStyle[key] = jsonObj.canvasStyle[key];
+    let { id, mode } = this.$route.query;
+    if (mode === "preview") {
+      // 预览模式
+      let jsonData = localStorage.getItem("visual_json_data");
+      this.initCanvas(jsonData);
+    } else {
+      VisualAPI.list({ current_page: 1, per_page: 10, id })
+          .then(({ data }) => {
+            if (data.code == 200) {
+              let result = data.data.data ? data.data.data[0] : {};
+              document.title = result.dashboard_name ? result.dashboard_name : "";
+              let jsonData = result ? result.json_data : "{}";
+              this.initCanvas(jsonData)
             }
-          }
-          this.setCanvasStyle("canvasDisplay", "canvasContainer");
-          this.refresh(this.fullData);
-        }
-      })
+          })
+    }
   },
   methods: {
+    initCanvas(jsonData) {
+      let jsonObj = JSON.parse(jsonData);
+      this.fullData = jsonObj.screen.length > 0 ? JSON.parse(JSON.stringify(jsonObj.screen)) : [];
+      if (jsonObj.canvasStyle && JSON.stringify(jsonObj.canvasStyle) != "{}") {
+        for (let key in jsonObj.canvasStyle) {
+          this.canvasStyle[key] = jsonObj.canvasStyle[key];
+        }
+      }
+      this.setCanvasStyle("canvasDisplay", "canvasContainer");
+      this.refresh(this.fullData);
+    },
     /**
      * 放大
      */
@@ -153,7 +161,6 @@ export default {
      * 刷新组件的值
      */
     async refresh(fullData) {
-      console.log("====display.refresh.fullData", fullData);
       // list item: { 组件id, 设备id, { 物模型属性(包括字段，字段名，单位...) } }
       let deviceList = [];
       this.fullData.forEach(cpt => {
@@ -166,7 +173,6 @@ export default {
           })
         }
       })
-      console.log("====display.refresh.deviceList", deviceList)
 
       const fun = async () => {
         let values = [];
@@ -176,54 +182,48 @@ export default {
               .then(({ data }) => {
                 if (data.code == 200) {
                   let value = data.data ? data.data[0] : null;
-                  console.log("====display.refresh.data.data", value)
                   values.push({ deviceId: entity_id, value})
                   if (i == deviceList.length - 1) {
                     // 请求调用完毕，更新组件的值
                     this.updateComponentValue(values);
                   }
                 }
-
               });
         }
         return fun;
       }
 
       this.timer = setInterval(await fun(), this.flushTime * 1000);
-
     },
+    /**
+     * 更新组件的值
+     * @param values   [{ deviceId, value }, ... ]
+     */
     updateComponentValue(values) {
       console.log("====display.getCurrent.请求调用完毕", values);
-      values.forEach(val => {
-        this.fullData.forEach(cpt => {
-          /*
-            dataSrc: [
-              {
-                  "casValue": ["", "", ""],
-                  "deviceId": "",
-                  "property": {"dataType": "integer","unit": "-","title": "DO1","name": "DO1", ...}
-              },
-              ...
-            ]
-           */
-          if (cpt.dataSrc) {
-            let valueList = [];
-            cpt.dataSrc.forEach(item => {
+      this.fullData.forEach(cpt => {
+        /*
+          dataSrc: [
+            {
+                "casValue": ["", "", ""],
+                "deviceId": "",
+                "property": {"dataType": "integer","unit": "-","title": "DO1","name": "DO1", ...}
+            },
+            ...
+          ]
+         */
+        if (cpt.dataSrc) {
+          let valueList = [];
+          cpt.dataSrc.forEach(item => {
+            values.forEach(val => {
               if (item.deviceId == val.deviceId) {
-                valueList.push(val.value)
+                valueList.push(JSON.parse(JSON.stringify(val)));
               }
             })
-            console.log("====valueList", valueList)
-          }
-          // if (item.deviceId == val.deviceId) {
-          //   // console.log("====display.getCurrent.遍历组件.item", item);
-          //   console.log("====display.getCurrent.遍历组件.type", item.type);
-          //   // console.log("====display.getCurrent.遍历组件.mapping", item.mapping);
-          //   // console.log("====display.getCurrent.遍历组件.value", val);
-          //   console.log("====display.getCurrent==========================================")
-          //   item.value = val.value;
-          // }
-        })
+          })
+          valueList.length > 0 && console.log("====valueList", valueList)
+          cpt.value = JSON.parse(JSON.stringify(valueList));
+        }
       })
 
     },

@@ -8,7 +8,7 @@
     </div>
 
     <div class="video-box" ref="videoBox">
-      <video-player style="width: 100%;height: 100%" :src="optionData.src"></video-player>
+      <video-player style="width: 100%;height: 100%" :src="optionData.src" :type="optionData.type"></video-player>
     </div>
 
   </div>
@@ -29,9 +29,11 @@ export default {
     },
     option: {
       type: [Object],
-      default: () => {
-        return {}
-      }
+      default: () => {return {}}
+    },
+    device: {
+      type: [Object],
+      default: () => {return {}}
     }
   },
   data() {
@@ -46,7 +48,13 @@ export default {
     option: {
       handler(newValue) {
         if (newValue) {
+          console.log("====option", newValue)
+          let additionalInfo = this.device.additional_info ? JSON.parse(this.device.additional_info) : {};
           this.optionData = JSON.parse(JSON.stringify(newValue))
+          if (newValue.type == "monitor") {
+            this.optionData.type = "application/x-mpegURL";
+          }
+          this.optionData.src = additionalInfo.video_address ? additionalInfo.video_address : "";
         }
       },
       immediate: true
@@ -66,7 +74,7 @@ export default {
 .chart-div {
   position: relative;
   //margin: 10px 20px 10px 10px;
-  border-radius: 16px;
+  border-radius: 4px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   background-color: #2d3d86;
   text-align: center;

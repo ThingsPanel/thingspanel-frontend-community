@@ -70,6 +70,7 @@ const mainConfig = function() {
       })
     ],
     module: {
+      noParse: [/videojs-contrib-hls/],
       rules: [
         ...(config.dev.useEslint ? [] : []),
         {

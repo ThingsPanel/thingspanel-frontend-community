@@ -14,6 +14,10 @@ export default {
       type: [String],
       default: ""
     },
+    type: {
+      type: [String],
+      default: "video/mp4"
+    },
     autoplay: {
       type: [Boolean],
       default: false
@@ -47,7 +51,7 @@ export default {
     });
     this.options.autoplay = this.autoplay;
 
-    this.options.sources.push({ "src": this.src, "type": "video/mp4" })
+    this.options.sources.push({ "src": this.src, "type": this.type })
 
     console.log("====VideoPlayer.options", this.options)
 

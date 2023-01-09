@@ -14,30 +14,41 @@ export default {
         return {}
       }
     },
-
+    value: {
+      type: [Array],
+      default: () => []
+    }
   },
-  watch: {},
+  watch: {
+    value: {
+      handler(newValue) {
+        console.log("====PieChart.value", newValue)
+        this.setEChartsValue(newValue);
+      }
+    },
+  },
   data() {
     return {
-      defaultOption:
-          {
+      defaultOption: {
             legend: {
               orient: "vertical",
               left: "left",
               textStyle: {color: '#fff'}
             },
-            series:
-                [
-                  {
-                    type: "pie",
-                    label: {color: "#fff"},
-                    data: [
-                      {value: 335, name: "Apple"},
-                      {value: 135, name: "Oranges"},
-                      {value: 1548, name: "Bananas"}
-                    ]
-                  }
+            series: [
+              {
+                type: "pie",
+                label: {
+                  color: "#fff",
+                  fontSize: 20
+                },
+                data: [
+                  {value: 335, name: "Apple"},
+                  {value: 135, name: "Oranges"},
+                  {value: 1548, name: "Bananas"}
                 ]
+              }
+            ]
           }
     }
   },
@@ -59,8 +70,22 @@ export default {
         this.myChart.resize();
       })
     },
-    setEChartsValue() {
+    setEChartsValue(valueList) {
+      if (!this.option || !this.option.dataSrc || !valueList) return;
+      let data = [];
+      let dataSrc = this.option.dataSrc;
+      dataSrc.forEach(item => {
+        let deviceId = item.deviceId;
+        let { title, name } = item.property;
+        let index = valueList.findIndex(val => val.deviceId == deviceId);
+        let value = valueList[index].value[name];
+        console.log("====PieChart", deviceId, title, name, value)
+        data.push({ name: title, value })
+      });
+      console.log("====PieChart", data)
 
+      let series = [{label: { formatter: '{b}: {@2012} ({d}%)' }, data }]
+      this.myChart.setOption({ series });
     }
   }
 }
