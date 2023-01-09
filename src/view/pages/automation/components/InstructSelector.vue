@@ -3,7 +3,7 @@
     class="w-100"
     v-model="fieldValue"
     placeholder="命令"
-    size="medium"
+
     filterable @change="handleChange"
 >
   <el-option
@@ -109,7 +109,7 @@ export default defineComponent({
 
     function handleChange(val){
       // update_apply_item(val)
-
+      console.log("====InstructSelector.handleChange", val )
       context.emit('change', val)
     }
 

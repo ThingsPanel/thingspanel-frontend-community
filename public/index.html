@@ -19,6 +19,7 @@ Use below html tag for RTL version
       <link rel="stylesheet" id="style" href="<%= BASE_URL %>themes/default.css">
     <title>ThingsPanel</title>
   </head>
+<!--  -->
   <!-- <script src="https://cdn.bootcss.com/echarts/5.3.0/echarts.min.js"></script> -->
   <script type="text/javascript" src="<%= BASE_URL %>echarts.min.js" async></script>
   <body>
@@ -29,8 +30,21 @@ Use below html tag for RTL version
         .el-picker-panel {
             z-index: 2099!important;
         }
+        .el-popover {
+            z-index: 2099!important;
+        }
     </style>
     <div id="app"></div>
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?e4910b169e66c3c3d29050a965c59f1c";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
     <!-- built files will be auto injected -->
   </body>
 </html>

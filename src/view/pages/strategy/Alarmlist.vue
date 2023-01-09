@@ -1,5 +1,6 @@
 <template>
   <div class="rounded p-4 card no-border v-application my-v-input" data-app="true">
+
     <v-data-table
       :headers="headers"
       :items="desserts"
@@ -20,22 +21,14 @@
                   $t("COMMON.RETURN")
                 }}</v-btn></router-link
               >
-              <v-btn
-                color="primary"
-                dark
-                class="mb-2"
-                v-bind="attrs"
-                v-on="on"
-                @click="showdialog"
-                >{{ $t("COMMON.NEWALARMSTRATEGY") }}</v-btn
-              >
+             
             </template>
 
             <v-form
               ref="form"
               v-model="valid"
               lazy-validation
-              @submit.stop.prevent="onSubmit"
+            
             >
               <v-card class="card">
                 <v-card-title>

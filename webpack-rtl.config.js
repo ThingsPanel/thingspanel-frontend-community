@@ -38,6 +38,7 @@ const mainConfig = function() {
       // output path based on the entries' filename
       filename: "[name].js"
     },
+    watchOptions: false,
     resolve: { extensions: [".scss"] },
     plugins: [
       // webpack log message
@@ -69,6 +70,7 @@ const mainConfig = function() {
       })
     ],
     module: {
+      noParse: [/videojs-contrib-hls/],
       rules: [
         ...(config.dev.useEslint ? [] : []),
         {

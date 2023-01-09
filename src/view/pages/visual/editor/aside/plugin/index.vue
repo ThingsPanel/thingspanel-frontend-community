@@ -38,6 +38,7 @@
                     :option="component"></status>
 
 
+
           </vue-drag>
         </div>
       </el-collapse-item>
@@ -52,6 +53,7 @@ import DashboardChart from "@/components/e-charts/DashboardChart";
 import CurveChart from "@/components/e-charts/CurveChart";
 import Control from "@/components/control/Control";
 import Status from "@/components/e-charts/Status";
+
 import PluginAPI from "@/api/plugin"
 import bus from "@/core/plugins/eventBus"
 
@@ -158,8 +160,7 @@ export default {
     .component-item {
       position: relative;
       width: 180px;
-      height: 180px;
-      margin-bottom: 30px;
+      height: 100%;
       //border: 1px dashed #ccc;
       border-radius: 14px;
       //background-color: #2d3d86;

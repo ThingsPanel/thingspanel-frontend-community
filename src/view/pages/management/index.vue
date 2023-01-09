@@ -173,12 +173,12 @@ import {
   defineComponent,
   reactive,
   ref,
-  computed,
   onMounted,
   getCurrentInstance,
 } from "@vue/composition-api";
 import {message_error} from "../../../utils/helpers";
 import i18n from "@/core/plugins/vue-i18n"
+import {local_url} from "../../../api/LocalUrl";
 
 export default defineComponent({
   name: "Home",
@@ -226,7 +226,7 @@ export default defineComponent({
          current_page: paramsPage.page,
          per_page: paramsPage.limit
       }
-      ApiService.post(AUTH.local_url + "/user/role/list",query).then(({ data }) => {
+      ApiService.post(local_url + "api/user/role/list",query).then(({ data }) => {
         if (data.code == 200) {
           tableData.value = data.data.data;
           total.value = data.data.total; 
@@ -315,7 +315,7 @@ export default defineComponent({
             role_name: item.role_name,
             role_describe:item.role_describe
           }
-          ApiService.post(AUTH.local_url + "/user/role/add", query)
+          ApiService.post(local_url + "api/user/role/add", query)
               .then(({ data }) => {
                   if (data.code == 200) {
                     message_success("添加成功");
@@ -328,7 +328,7 @@ export default defineComponent({
           role_name: item.role_name,
           role_describe:item.role_describe
         };
-        ApiService.post(AUTH.local_url + "/user/role/edit", query).then(
+        ApiService.post(local_url + "api/user/role/edit", query).then(
           ({ data }) => {
             if (data.code == 200) {
               message_success("修改成功");
@@ -340,7 +340,7 @@ export default defineComponent({
     };
     // 删除信息   /api/user/role/delete
     const handle_del = (item) => {
-      ApiService.post(AUTH.local_url + "/user/role/delete", {
+      ApiService.post(local_url + "api/user/role/delete", {
         id: item.id,
       }).then(({ data }) => {
         if (data.code == 200) {
@@ -482,7 +482,7 @@ export default defineComponent({
 });
 </script>
 
-<style lang="scss">
+<style scope lang="scss">
 .el-input__inner {
   color: aliceblue;
   background: #090944;
@@ -516,7 +516,9 @@ export default defineComponent({
   border-radius:5px ;
   .el-tree {
     background: #263d8b;
-    color: rgb(98, 113, 250);
+    color: #5b92ff;
+   
+
   }
 }
 .dividerLine {
@@ -525,9 +527,13 @@ export default defineComponent({
     background: #8181be;
   }
 }
+.el-tree-node__content {
+
+    border-radius: 5px;
+}
 .el-tree-node__content:hover{
   background: #fff;
-  border-radius: 5px;
+  border-radius: 5px !important;
 }
 .el-drawer__header{
   color: #fff;

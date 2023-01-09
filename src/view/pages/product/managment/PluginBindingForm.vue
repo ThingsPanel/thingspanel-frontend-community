@@ -19,8 +19,8 @@
     </div>
 
     <span slot="footer" class="dialog-footer">
-        <el-button @click="showDialog = false">{{ $t('COMMON.CANCEL') }}</el-button>
-        <el-button type="primary" @click="handleSubmit">{{ $t('COMMON.CONFIRM') }}</el-button>
+        <el-button type="cancel" @click="showDialog = false">{{ $t('COMMON.CANCEL') }}</el-button>
+        <el-button type="save" @click="handleSubmit">{{ $t('COMMON.CONFIRM') }}</el-button>
       </span>
   </el-dialog>
 </template>
@@ -171,11 +171,18 @@ export default defineComponent({
   .container-fluid {
     height: 600px;
   }
+  .el-col-6{
+    padding-left: 0 !important;
+  }
   .tree-div {
     overflow-y: auto;
     overflow-x: auto;
     border-right: 4px solid #263373;
-    padding: 0 10px 10px 10px;
+    padding: 0 10px 10px 0px;
+    
+    .el-tree-node__label{
+      font-size: 14px;
+    }
   }
 
   .plugin-binding-tree {

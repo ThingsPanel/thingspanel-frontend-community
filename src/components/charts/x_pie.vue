@@ -11,11 +11,11 @@
     </echarts>
 </template>
 <script>
-// import ChartMixin from '@/components/mixins/chart-mixin';
+import ChartMixin from '@/components/mixins/chart-mixin';
 
 export default {
   name: 'XPie',
-  // mixins: [ChartMixin],
+  mixins: [ChartMixin],
   props: {
     loading: {
       type: Boolean,
@@ -49,7 +49,6 @@ export default {
   },
   data() {
     return {
-      hasAxis: false,
       chart_type: 'x_pie',
       options: {
         title: {

@@ -4,7 +4,7 @@
            @mousedown="stopPropagation" @mouseup="stopPropagation" @click="stopPropagation"
            @keydown="stopPropagation"/>
 
-    <span class="text" v-else>{{ textValue }}</span>
+    <span id="text" class="text" v-else>{{ textValue }}</span>
   </div>
 </template>
 
@@ -29,7 +29,7 @@ export default {
       default: false
     },
     value: {
-      type: [String],
+      type: [String, Array],
       default: "文本"
     }
   },
@@ -39,13 +39,25 @@ export default {
     }
   },
   created() {
+    console.log("====CommonText.option", this.option)
     this.$emit("update:value", this.value);
     this.textValue = this.value;
   },
   watch: {
     value: {
       handler(newValue) {
-        this.textValue = newValue;
+        if (newValue == null) return;
+        if (typeof newValue == "string") {
+          this.textValue = newValue;
+        } else if (typeof newValue == "object") {
+          if (this.option.dataSrc) {
+            let property = this.option.dataSrc[0].property;
+            let value = newValue[0]['value'][property.name];
+            if (value) {
+              this.textValue = value;
+            }
+          }
+        }
       }
     },
     textValue: {

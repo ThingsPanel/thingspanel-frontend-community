@@ -1,20 +1,20 @@
 <template>
   <div class="canvas-container" ref="canvas_container" >
-    <div id="droppable" class="droppable" ref="droppable" :style="canvasStyle"
+    <div id="droppable" class="droppable" ref="droppable" :style="canvasStyle" @click="handleClickBackground"
          tabindex="0" >
-      <VueDraggableResizable style=""
-                    v-for="(component) in fullData" :key="component.cptId" :parent="false"
+      <VueDraggableResizable :id="'drag_box_' + component.cptId"
+                    v-for="(component) in fullData" :key="component.cptId" :parent="true"
                     :x="component.point.x" :y="component.point.y"
                     :w="component.point.w" :h="component.point.h"
                     :z="component.point.z"
-                    :scale="scale"
+                    :scale="defaultScale" :disableUserSelect="false"
                     @activated="onActivated(component)" @deactivated="onDeactivated(component)"
                     @resizing="(left, top, width, height) => onResize(component, left, top, width, height)"
                     @resizestop="(left, top, width, height) => onResize(component, left, top, width, height)"
                     @dragstop="(left, top) => onDragstop(component, left, top)"
                     @keydown.native="e => onKeyDown(component, e)"
-                             @click.native="onClick(component)"
-                    @dblclick.native="onMouseDown(component)"
+                    @click.native="onClick(component)"
+                    @dblclick.native="onDBClick(component)"
       >
         <dashboard-chart :style="getChartStyle(component)" ref="component" :key="'dashboard_' + component.cptId"
                          :w="component.point.w" :h="component.point.h"
@@ -29,6 +29,16 @@
         <status :style="getChartStyle(component)"
                 v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>
 
+        <pie-chart :style="getChartStyle(component)" :loading="false"
+                       :w="component.point.w" :h="component.point.h"
+                       v-if="component.type == 'pie'"
+                       :option="component"></pie-chart>
+
+        <bar-chart :style="getChartStyle(component)" :loading="false"
+                       :w="component.point.w" :h="component.point.h"
+                       v-if="component.type == 'bar'"
+                       :option="component"></bar-chart>
+
         <control :style="getChartStyle(component)"
                        :w="component.point.w" :h="component.point.h"
                        v-if="component.controlType == 'control'"
@@ -40,10 +50,15 @@
         </configure>
 
         <!-- 文本组件 -->
-        <CommonText v-else-if="component.type == 'text'" :style="getConfigureStyle(component)"
+        <CommonText v-else-if="component.type == 'text'" :style="getStyle(component)"
                     :active="component.activeted" :editable="component.editable"
-                    :value.sync="component.text"
+                    :value.sync="component.value"
             :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
+
+        <video-player
+                   :w="component.point.w" :h="component.point.h"
+                   v-if="component.type == 'video'" :option="component">
+        </video-player>
 
         <other :style="getConfigureStyle(component)"
                :w="component.point.w" :h="component.point.h"
@@ -71,42 +86,27 @@
 <script>
 import DashboardChart from "@/components/e-charts/DashboardChart";
 import HistoryChart from "@/components/e-charts/CurveChart";
+import PieChart from "@/components/e-charts/PieChart"
+import BarChart from "@/components/e-charts/BarChart"
 import Control from "@/components/control/Control";
 import Status from "@/components/e-charts/Status";
 import Configure from "@/components/configure/Configure"
 import Other from "@/components/other/Other"
 import CommonText from "@/components/text/CommonText"
+import VideoPlayer from "@/components/common/VideoPlayer"
 
 import VueDraggableResizable from 'vue-draggable-resizable'
 import 'vue-draggable-resizable/dist/VueDraggableResizable.css'
 
 import { getRandomString } from "@/utils/helpers";
 import bus from "@/core/plugins/eventBus"
+import "@/core/mixins/visual"
 
-const statusConfig = {
-  IDLE: 0,
-  DRAG_START: 1,
-  DRAGGING: 2,
-  MOVE_START: 3,
-  MOVING: 4
-}
-
-const canvasInfo = {
-  status: statusConfig.IDLE,
-  target: null,
-  lastEventPos: { x: null, y: null },
-  offsetEventPos: { x: null, y: null },
-  offset: { x: 0, y: 0 },
-  scale: 1,
-  scaleStep: .1,
-  maxScale: 2,
-  minScale: .5
-}
 
 export default {
   name: "EditorCanvas",
   components: {
-    DashboardChart, HistoryChart, Control, Status, Configure, Other, CommonText, VueDraggableResizable
+    DashboardChart, HistoryChart, PieChart, BarChart, Control, Status, Configure, Other, CommonText, VideoPlayer, VueDraggableResizable
   },
   props: {
     jsonData: {
@@ -121,46 +121,37 @@ export default {
   },
   data() {
     return {
-      // 画布上所有的组件集合
-      fullData: [],
-      tempData: [],
       currentId: "",
       defaultStyle: {backgroundColor: 'rgba(45, 61, 134, 1)'},
-      canvasStyle: {},
       menuVisible: false, // 右键菜单
       zTopIndex: 500,   // 当前大屏的最高层
       zBottomIndex: 500,   // 当前大屏的最底层
-      scale: 1,
-      Specifications: {
-        //定义的宽高比例，初始为1
-        ww: 1,
-        wh: 1,
-        //根据class="home"里面定义的宽高进行作为初始宽高进行计算
-        //！自定义内容！
-        width: 1920,
-        height: 919
-        //！自定义内容！
-      }
+      isInComponent: false,
+
     }
   },
   watch: {
     jsonData: {
       handler(newValue) {
-        console.log("====jsonData", newValue)
         if (!newValue || JSON.stringify(newValue) == "{}" ||newValue == undefined) return;
-        let fullData = JSON.parse(JSON.stringify(newValue.screen)) ;
-        if (fullData.length == 0) return;
-        let canvasStyle = newValue.canvasStyle ? newValue.canvasStyle : {};
-        if (fullData[0].point) {
-          // 显示大屏
-          this.fullData = fullData;
-          this.canvasStyle = canvasStyle;
+
+        // 显示大屏
+        this.fullData = newValue.screen.length > 0 ? JSON.parse(JSON.stringify(newValue.screen)) : [];
+
+        if (newValue.canvasStyle && JSON.stringify(newValue.canvasStyle) != "{}") {
+          for (let key in newValue.canvasStyle) {
+            this.canvasStyle[key] = newValue.canvasStyle[key];
+          }
         }
+        this.setCanvasStyle("droppable", "canvas_container", 40);
+        // 默认显示页面设置面板
+        bus.$emit("share", {type: "background", ...this.canvasStyle})
       },
       immediate: true
     }
   },
   mounted() {
+
     // 事件监听
     this.$nextTick(() => {
       this.$refs.droppable.addEventListener("dragover", this.handleDragover);
@@ -175,59 +166,46 @@ export default {
         }
       });
 
-      this.$refs.canvas_container.addEventListener("resize", this.handleCanvasResize, false);
+      window.addEventListener("resize", () => {
+        this.setCanvasStyle("droppable", "canvas_container", 40);
+
+      }, null);
+      // 默认显示页面设置面板
+      bus.$emit("share", {type: "background", ...this.canvasStyle})
 
     })
 
     // 监听数据改变
     bus.$on("changeData", data => {
-      console.log("====canvas.watch.changeData1", data)
-
+      console.log("====changeData", data)
       let index = this.fullData.findIndex(item => item.cptId == data.cptId)
       if (index < 0) return;
       let cpt = this.fullData[index];
       Object.keys(data).forEach(item => {
         cpt[item] = data[item];
       })
-      // this.fullData.splice(index, 1, cpt);
-      // console.log("====canvas.watch.changeData2", this.fullData)
     })
 
     // 监听样式改变
     bus.$on('changeStyle', (cptId, style) => {
-      // console.log("canvas.changeStyle", style)
-      let index = this.fullData.findIndex(item => item.cptId == cptId)
-      if (index < 0) return;
-      let cpt = JSON.parse(JSON.stringify(this.fullData[index]));
-      // console.log("cpt", cpt)
-      cpt.style = style;
-      this.fullData.splice(index, 1, cpt);
-      // console.log(this.fullData)
+      if (cptId == null && style.type=="background") {
+        // 画布背景设置
+        if (style.intWidth) this.canvasStyle.intWidth = style.intWidth
+        if (style.intHeight) this.canvasStyle.intHeight = style.intHeight
+        if (style.backgroundColor) this.canvasStyle.backgroundColor = style.backgroundColor;
+        this.setCanvasStyle("droppable", "canvas_container", 40);
+      } else {
+        // 组件设置
+        let index = this.fullData.findIndex(item => item.cptId == cptId)
+        if (index < 0) return;
+        let cpt = JSON.parse(JSON.stringify(this.fullData[index]));
+        cpt.style = style;
+        this.fullData.splice(index, 1, cpt);
+      }
+
     })
   },
   methods: {
-    /**
-     * 缩放
-     * @param scale
-     */
-    setZoom(step) {
-      if (this.scale >= 1.5 && step > 0) return;
-      if (this.scale <= 0.5 && step < 0) return;
-      this.scale += step;
-      console.log("====setZoom", step)
-      let droppable = document.getElementById("droppable")
-      droppable.style.transform = "scale(" + this.scale + ")";
-    },
-    /**
-     * 窗口自适应
-     */
-    adapt() {
-
-    },
-    handleCanvasResize() {
-      console.log("====handleCanvasResize", window.innerWidth)
-      console.log("====handleCanvasResize", window.innerHeight)
-    },
     /**
      * 当元素被拖放到放置区域后的回调
      * @param e
@@ -255,15 +233,15 @@ export default {
       if (!jsonOpt) return;
       this.zTopIndex++;
       let opt = JSON.parse(jsonOpt);
-      console.log("====canvas.handleDrop", opt)
       opt.point = {h: 200, w: 200, x: e.offsetX, y: e.offsetY, z: this.zTopIndex};
       opt.cptId = getRandomString(9);
       opt.editable = false;
       opt.activeted = false;
-      this.currentId = opt.cptId;
       delete opt.relativePoint;
       this.fullData.push(opt);
-      // console.log(this.fullData)
+      this.handleUnselect(this.currentId);
+      this.handleSelect(opt.cptId);
+      this.currentId = opt.cptId;
       this.$refs.droppable.focus();
     },
     /**
@@ -297,6 +275,8 @@ export default {
     onActivated(component) {
       let cpt = component;
       component.activeted = true;
+      this.handleUnselect(this.currentId);
+      this.handleSelect(component.cptId);
       this.currentId = cpt.cptId;
       bus.$emit('share', JSON.parse(JSON.stringify(cpt)))
     },
@@ -309,9 +289,7 @@ export default {
      * @param e
      */
     onKeyDown(component, e) {
-      console.log("====onKeyDown", e)
       if (e.code == "Backspace") {
-        // if (component.type == "text") return;
         this.handleDelete(component);
       } else if (e.code == "Enter") {
         component.editable = false;
@@ -323,22 +301,35 @@ export default {
      * @param component
      */
     onClick(component) {
+      this.isInComponent = true;
       component.editable = false;
       bus.$emit('share', JSON.parse(JSON.stringify(component)))
+    },
+    /**
+     * 单击画布
+     */
+    handleClickBackground(e) {
+      if (!this.isInComponent) {
+        this.handleUnselect(this.currentId);
+        bus.$emit("share", {type: "background", ...this.canvasStyle})
+      }
+      setTimeout(() => {
+        this.isInComponent = false
+      }, 100);
     },
     /**
      * 双击组件 组件可编辑
      * @param component
      */
-    onMouseDown(component) {
+    onDBClick(component) {
       component.editable = true;
     },
-    getChartStyle(item) {
+    getChartStyle(style) {
       return {
         borderRadius: "10px",
         width: "100%",
         height: "100%",
-        backgroundColor: item.backgroundColor ? item.backgroundColor : "#2d3d86"
+        backgroundColor: style.backgroundColor ? style.backgroundColor : "transparent"
       }
     },
     /**
@@ -377,8 +368,6 @@ export default {
       this.fullData.splice(index, 1, cpt);
     },
     handleDelete(component = null) {
-      console.log("====handleDelete", this.fullData)
-      console.log("====handleDelete.cptId", this.currentId)
       let cptId = this.currentId;
 
       let index = this.fullData.findIndex(item => item.cptId == cptId);
@@ -399,20 +388,18 @@ export default {
       document.removeEventListener('click', this.closeMenu)
     },
     styleMenu(event, menu) {
-      console.log(event)
       menu.style.left = event.clientX - 300 + 'px';
       menu.style.top = event.clientY - 50 + 'px'
       // 给整个document新增监听鼠标事件，点击任何位置执行 closeMenu 方法
       document.addEventListener('click', this.closeMenu)
     },
     dragCanvas(e) {
-      console.log("====dragCanvas", e)
     }
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .canvas-container {
   position: relative;
   width: 100%;
@@ -420,23 +407,13 @@ export default {
   overflow: hidden;
 }
 .droppable {
-  /*position: absolute;*/
   position: relative;
-  /*width: 100%;*/
-  /*height: 100%;*/
-  /*top: -100%;*/
-  /*bottom: 40px;*/
-  /*left: -100%;*/
-  /*right: 10px;*/
-  background-color: #171d46;
-  /*background-color: #ea08a2;*/
-  width: 1920px;
-  height: 919px;
+  background-color: var(--color);
+  width: var(--w);
+  height: var(--h);
   transform-origin: 0 0;
-  /*left: 50%;*/
-  /*top: 50%;*/
   transition: 0.3s;
-
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1)
 }
 .contextmenu__item {
   display: block;
@@ -467,5 +444,22 @@ export default {
   background: #66b1ff;
   border-color: #66b1ff;
   color: #fff;
+}
+.draggable.resizable.vdr {
+  border: 1px dashed #293b79;
+}
+.active.draggable.resizable.vdr {
+  border: 2px solid #26c705;
+  background-color: #2d3d86;
+}
+::v-deep .handle-tl {
+  z-index: 9999!important;
+}
+::v-deep .handle-tm {
+  z-index: 9999!important;
+}
+.active.draggable.resizable.selected {
+  border: 2px solid #26c705;
+  background-color: #354793;
 }
 </style>

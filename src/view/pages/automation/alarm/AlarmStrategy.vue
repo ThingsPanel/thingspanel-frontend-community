@@ -5,7 +5,7 @@
       <TableTitle>{{ $t('COMMON.ALARMSTRATEGYLIST') }}</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="indigo" @click="handleCreate()">{{ $t('COMMON.NEWALARMSTRATEGY') }}</el-button>
+      <el-button size="medium" type="border" @click="handleCreate()">{{ $t('COMMON.NEWALARMSTRATEGY') }}</el-button>
       <el-button size="medium" type="indigo" @click="goBack()">{{ $t('COMMON.RETURN') }}</el-button>
     </el-col>
   </el-row>
@@ -18,7 +18,7 @@
     <el-table-column :label="$t('COMMON.STRATEGY_HANDLE')" align="center" width="150">
       <template v-slot="scope">
         <div class="text-right">
-          <el-button type="indigo" size="mini" @click="handleEdit(scope.row)" class="mr-3">{{ $t('COMMON.EDIT') }}</el-button>
+          <el-button type="yellow" size="mini" @click="handleEdit(scope.row)" class="mr-3">{{ $t('COMMON.EDIT') }}</el-button>
 
           <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handleDelete(scope.row)">
             <el-button slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>

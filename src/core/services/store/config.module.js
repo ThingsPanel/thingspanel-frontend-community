@@ -3,17 +3,19 @@ import axios_prototype from "axios"
 import objectPath from "object-path";
 import merge from "deepmerge";
 import config from "@/core/config/layout.config.json";
+import {local_url} from "@/api/LocalUrl";
 
 // action types
 export const SET_LAYOUT_CONFIG = "setLayoutConfig";
 export const RESET_LAYOUT_CONFIG = "resetLayoutConfig";
 export const OVERRIDE_LAYOUT_CONFIG = "overrideLayoutConfig";
 export const OVERRIDE_PAGE_LAYOUT_CONFIG = "overridePageLayoutConfig";
-const local_url =
-  (process.env.VUE_APP_BASE_URL ||
-    document.location.protocol + "//" + document.domain + ":9999/") + "api";
+// const local_url =
+//   (process.env.VUE_APP_BASE_URL ||
+//     document.location.protocol + "//" + document.domain + ":9999/") + "api";
 
 // mutation types
+const base_url = local_url + "api";
 
 export default {
   state: {
@@ -28,6 +30,14 @@ export default {
      */
     layoutConfig: state => (path, defaultValue) => {
       return objectPath.get(state.config, path, defaultValue);
+    },
+    /**
+     *
+     * @param state
+     * @returns {function(*=, *=): *}
+     */
+    layoutInitial: state => (path, defaultValue) => {
+      return objectPath.get(state.initial, path, defaultValue);
     }
   },
   actions: {
@@ -70,14 +80,19 @@ export default {
       state.config = payload;
     },
     [RESET_LAYOUT_CONFIG](state) {
-      axios_prototype.post(local_url + "/system/logo/index")
+      console.log("====local_url", base_url)
+      axios_prototype.post(base_url + "/system/logo/index")
           .then(({ data }) => {
             if (data.code == 200) {
-              console.log("=============logo================", data.data)
-              state.initial.self.logo.dark = (process.env.VUE_APP_BASE_URL  ||
-                  document.location.protocol + "//" + document.domain + ":9999/")+ data.data.logo_one
-              state.initial.loader.logo = (process.env.VUE_APP_BASE_URL ||
-                  document.location.protocol + "//" + document.domain + ":9999/") + data.data.logo_two
+              const logo = "media/logos/logo-dark.png";
+              const bg = "media/bg/bg-12.png";
+
+              state.initial.self.logo.dark = data.data.logo_one ? (local_url + data.data.logo_one) : logo;
+
+              state.initial.loader.logo = data.data.logo_two ? (local_url + data.data.logo_two)  : logo;
+
+              state.initial.loader.background = data.data.home_background ? (local_url + data.data.home_background ) : bg;
+
               document.title = data.data.system_name
               // var link = document.querySelector("link[rel~='icon']");
               // link.href = (process.env.VUE_APP_BASE_URL ||

@@ -49,15 +49,21 @@ export default {
           value: "devicePlugin",
         },
         {
-          name: "接入协议",
+          name: "COMMON.TITLE33",
           value: "protocolPlugin",
         },
         {
-          name: "设备插件生成器",
+          name: "COMMON.TITLE34",
           value: "deviceEditor",
         }
       ]
     };
+  },
+  mounted() {
+    let tab = this.$route.query.tab;
+    if (tab) {
+      this.activeTab = tab;
+    }
   },
   methods: {
     handleEditPlugin(item) {
@@ -84,7 +90,7 @@ export default {
     span {
       display: inline-block;
       padding: 0.6rem 0 1.4rem;
-      margin-right: 5rem;
+      margin-right: 2rem;
       cursor: pointer;
 
       &.active {
@@ -94,7 +100,7 @@ export default {
   }
 
   .content {
-    padding: 2rem 1rem;
+    padding: 1rem 0;
 
     & > p {
       font-size: 14px;

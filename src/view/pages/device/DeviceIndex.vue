@@ -6,12 +6,6 @@
     </el-col>
     <el-col :span="12" class="text-right">
 
-      <el-button type="indigo" size="medium" @click="handleCreate()">{{ $t("COMMON.CREATEDEVICE")}}</el-button>
-
-      <el-button type="indigo" size="medium" @click="showManagementGroup=true">{{ $t("COMMON.MANAGEMENTGROUP")}}</el-button>
-
-<!--      <el-button type="indigo" size="medium" @click="handleDeviceChart">设备图表</el-button>-->
-
     </el-col>
   </el-row>
 
@@ -43,9 +37,15 @@
           @keydown.enter.native="handleSearch()"
           @clear="handleSearch()"></el-input>
     </el-col>
-    <el-col :span="9" class="text-right">
-      <el-button type="indigo" size="medium" @click="handleSearch()">{{ $t("COMMON.SEARCH")}}</el-button>
+    <el-col :span="9" >
+      <el-button type="border" size="medium" @click="handleSearch()">{{ $t("COMMON.SEARCH")}}</el-button>
 <!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
+    </el-col>
+    <el-col :span="12" class="text-right">
+
+      <el-button type="border" size="medium" @click="handleCreate()">{{ $t("COMMON.CREATEDEVICE")}}</el-button>
+
+      <el-button type="indigo" size="medium" @click="showManagementGroup=true">{{ $t("COMMON.MANAGEMENTGROUP")}}</el-button>
     </el-col>
   </el-row>
   <!-- 筛选 end -->
@@ -54,13 +54,13 @@
   <el-form class="inline-edit el-dark-input">
   <el-table :data="tableData" v-loading="loading" default-expand-all row-key="id" fit style="width: 100%" :indent="30">
 
-    <el-table-column :label="$t('COMMON.TYPE')" width="120">
+    <el-table-column :label="$t('COMMON.TYPE')" width="auto" min-width="13%" >
       <template slot-scope="scope">
         {{ scope.row.device_type == 3 ? $t('COMMON.SUB_DEVICE'): (scope.row.device_type == 2 ? $t('COMMON.THEGATEWAY') : $t('COMMON.EQUIPMENT'))}}
       </template>
     </el-table-column>
     <!--  设备名 start  -->
-    <el-table-column :label="$t('COMMON.DEVICENAME1')" width="200" prop="name">
+    <el-table-column :label="$t('COMMON.DEVICENAME1')" fit min-width="14%" max-width="20%" prop="name">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.name">
           <el-input style="width: 100%"
@@ -90,10 +90,10 @@
     <!--  设备分组 end  -->
 
     <!--  设备类型：网关/设备 start  -->
-    <el-table-column :label="$t('COMMON.GATEWAYDEVICE')" width="auto" min-width="12%">
+    <el-table-column :label="$t('COMMON.GATEWAYDEVICE')" width="auto" min-width="13%">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.device_type">
-          <DeviceTypeSelector :deviceType.sync="scope.row.device_type" @change="deviceTypeChange(scope.row)"
+          <DeviceTypeSelector :current-item="scope.row" :deviceType.sync="scope.row.device_type" @change="deviceTypeChange(scope.row)"
           ></DeviceTypeSelector>
         </el-form-item>
       </template>
@@ -101,21 +101,30 @@
     <!--  设备类型：网关/设备 end  -->
 
     <!-- 绑定插件 -->
-    <el-table-column :label="$t('COMMON.BINGPLUGINS')" width="auto" min-width="8%">
+    <el-table-column :label="$t('COMMON.BINGPLUGINS')" width="80px">
       <template slot-scope="scope">
         <el-button v-if="scope.row.device_type!='2'" type="text" @click="handleBindingClick(scope.row)">{{ $t("COMMON.BINGPLUGINS")}}</el-button>
       </template>
     </el-table-column>
 
     <!-- 编辑参数   -->
-    <el-table-column :label="$t('COMMON.CODEMANAGE')" width="auto" min-width="8%">
+    <el-table-column :label="$t('COMMON.CODEMANAGE')" width="80px" min-width="10%">
       <template slot-scope="scope">
         <!-- 子设备 -->
-        <el-button v-if="scope.row.device_type=='3'" type="text" @click="handleEditSubParameter(scope.row)">{{ $t("COMMON.EDITPARAMETERS")}}</el-button>
+<!--        <el-button v-if="scope.row.device_type=='3'" type="text" @click="handleEditSubParameter(scope.row)">{{ $t("COMMON.EDITPARAMETERS")}}</el-button>-->
         <!-- 网关/设备 -->
-        <el-button v-else type="text" @click="handleEditParameter(scope.row, '编辑参数')">{{ $t("COMMON.EDITPARAMETERS")}}</el-button>
+        <el-button v-if="scope.row.device_type!=='3'" type="text" @click="handleEditParameter(scope.row, '编辑参数')">{{ $t("COMMON.EDITPARAMETERS")}}</el-button>
       </template>
     </el-table-column>
+
+    <!--  在线/离线状态 start  -->
+    <el-table-column label="状态" width="70px">
+      <template slot-scope="scope">
+        <el-tag v-if="scope.row.device_state === '1'">在线</el-tag>
+        <el-tag v-else-if="scope.row.device_type!=='3'" type="info">离线</el-tag>
+      </template>
+    </el-table-column>
+    <!--  推送时间 end  -->
 
     <!--  推送时间 start  -->
     <el-table-column :label="$t('COMMON.TITLE23')" width="auto" min-width="12%">
@@ -129,25 +138,36 @@
     <el-table-column :label="$t('COMMON.TITLE24')" width="auto" min-width="23%">
       <template slot-scope="scope">
         <!--   structure下数组的 field属性的数组   -->
-        <template v-if="scope.row.structure" v-for="item in scope.row.structure">
-          <template v-if="item.field" v-for="field in item.field">
-            <el-tag size="mini" class="mr-1 mb-1" :key="field.key">{{ field.name }}</el-tag>
+        <template v-if="scope.row.chart_names">
+          <template v-for="(name, index) in scope.row.chart_names">
+            <el-tag v-if="index<3" size="mini" class="mr-1 mb-1" :key="index">{{ name }}</el-tag>
           </template>
+          <el-tooltip placement="top">
+            <div slot="content" style="width: 200px;">
+              <template v-for="(name, index) in scope.row.chart_names">
+                <el-tag size="mini" class="mr-1 mb-1" :key="index">{{ name }}</el-tag>
+              </template>
+            </div>
+            <el-tag v-if="scope.row.chart_names.length>5" size="mini" class="mr-1 mb-1" :key="'omit'"
+            >...</el-tag>
+          </el-tooltip>
+
         </template>
       </template>
     </el-table-column>
     <!-- 图表组件 end-->
 
     <!--  操作 start  -->
-    <el-table-column :label="$t('COMMON.OPERATION')" width="300px" min-width="12%">
+    <el-table-column :label="$t('COMMON.OPERATION')" width="auto" min-width="33%">
       <template slot-scope="scope">
-        <div class="text-right">
+        <div style="text-align: right">
           <el-button  v-show="scope.row.device_type==2" type="primary" size="mini"
                      @click="addChildDevice(scope.row)">{{ $t("COMMON.ADDINGCHILDDEVICE")}}</el-button>
           <el-button style="margin-right: 10px"  type="primary" size="mini"
                      @click="deviceConfig(scope.row)">设&nbsp;备&nbsp;配&nbsp;置</el-button>
 
-           <el-popconfirm :title="$t('COMMON.DELETETHISITEM')" @confirm="handleDelete(scope.row)">
+           <el-popconfirm :disabled="!hasAuth('device:del')" :title="$t('COMMON.DELETETHISITEM')"
+                          @confirm="handleDelete(scope.row, getDeviceIndex)">
               <el-button slot="reference" type="danger" size="mini">{{ $t("COMMON.DELETE")}}</el-button>
            </el-popconfirm>
         </div>
@@ -201,7 +221,7 @@
 </template>
 
 <script>
-import {defineComponent} from "@vue/composition-api";
+import {defineComponent, watch} from "@vue/composition-api";
 import {ref} from "@vue/composition-api/dist/vue-composition-api";
 
 import useRoute from "@/utils/useRoute";
@@ -423,7 +443,11 @@ export default defineComponent({
       handleSearch();
     }
 
+    function handleHoverOmit(item) {
+      item.showAllChartName = true;
+      console.log("====handleHoverOmit", item)
 
+    }
 
     return {
       tableData,
@@ -438,6 +462,7 @@ export default defineComponent({
       handleCreate,
       handleSave,
       handleDelete,
+      handleHoverOmit,
       dateFormat,
       deviceGroupOptions,
       deviceTypeChange,
@@ -476,4 +501,8 @@ export default defineComponent({
   border: 1px solid;
   background-color: transparent;
 }
+::v-deep .el-table__indent {
+  padding-left: 4px!important;
+}
+
 </style>

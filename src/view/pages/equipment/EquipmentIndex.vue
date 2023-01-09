@@ -30,21 +30,21 @@
           <!--        <template slot="prepend">路径</template>-->
         </el-input>
       </el-col>
-      <el-col :span="10">
+      <el-col :span="5">
         <el-select v-model="params.operation_type" size="medium" :placeholder="$t('COMMON.OPERATIONTYPE')">
           <el-option :label="$t('COMMON.TIMINGTRIGGER')" value="1"></el-option>
           <el-option :label="$t('COMMON.MANUALCONTROL')" value="2"></el-option>
           <el-option :label="$t('COMMON.AUTOMATICCONTROL')" value="3"></el-option>
         </el-select>
       </el-col>
-      <el-col :span="10">
+      <el-col :span="6">
         <el-select v-model="params.send_result" :placeholder="$t('COMMON.SELECTSENDRESULTS')" size="medium">
           <el-option :label="$t('COMMON.SUCCESSFUL')" value="1"></el-option>
           <el-option :label="$t('COMMON.FAILURE')" value="2"></el-option>
         </el-select>
       </el-col>
-      <el-col :span="14" class="text-right">
-        <el-button type="indigo" size="medium" @click="handleSearch()" class="butStyle"
+      <el-col :span="14">
+        <el-button type="border" size="medium" @click="handleSearch()" class="butStyle"
           >{{ $t("COMMON.SEARCH")}}</el-button
         >
         <el-button type="default" size="medium" @click="handleReset()" class="butStyle">{{ $t("COMMON.RESET")}}</el-button>
@@ -54,8 +54,8 @@
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column :label='$t("COMMON.NUMBERID")' type="index" width="50"  align="center"></el-table-column>
-      <el-table-column :label='$t("COMMON.BUSINESSNAME1")' prop="business_name">
+      <el-table-column :label='$t("COMMON.NUMBERID")' type="index" width="50" align="left"></el-table-column>
+      <el-table-column :label='$t("COMMON.BUSINESSNAME1")'  width="270" align="left" prop="business_name">
         <template v-slot="scope">
           <span
             class="cursor-pointer"
@@ -136,6 +136,7 @@ import TableTitle from "@/components/common/TableTitle.vue";
 import ApiService from "@/core/services/api.service";
 import AUTH from "@/core/services/store/auth.module";
 import {is_string} from "@/utils/helpers";
+import {local_url} from "../../../api/LocalUrl";
 export default defineComponent({
   name: "EquipmentIndex",
   components: {
@@ -160,7 +161,7 @@ export default defineComponent({
 
     // 数据查询 /api/conditions/log/index
     const queryValue = () => {
-      ApiService.post(AUTH.local_url + "/conditions/log/index", params).then(
+      ApiService.post(local_url + "api/conditions/log/index", params).then(
         ({ data }) => {
           if (data.code == 200) {
             console.log(data.data.data)

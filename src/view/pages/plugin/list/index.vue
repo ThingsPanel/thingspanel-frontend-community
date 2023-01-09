@@ -1,7 +1,7 @@
 <template>
     <div class="content-form">
       <el-form>
-        <el-row>
+        <el-row style="padding-left: 10px">
           <el-col :xs="16" :sm="18" :md="18" :lg="18" :xl="18">
 <!--            <el-form-item label="插件类型：">-->
 <!--              <el-radio-group v-model="params.pluginType" size="small" @input="handlePluginTypeChanged">-->
@@ -18,18 +18,8 @@
 
         </el-row>
 
-<!--        <el-row style="width:100%;display: flex;justify-content: space-between">-->
-<!--          <el-col :xs="16" :sm="20" :md="20" :lg="22" :xl="22">-->
-<!--            <el-input style="width: 200px" size="small" clearable v-model="searchValue" :placeholder="$t('COMMON.PLACEHOLDER50')"></el-input>-->
-<!--          </el-col>-->
-
-<!--          <el-col :xs="8" :sm="4" :md="4" :lg="2" :xl="2">-->
-<!--            <el-button icon="el-icon-refresh" class="primary el-button&#45;&#45;indigo"-->
-<!--                       :loading="refreshLoading" @click="load">{{ $t('COMMON.THEREFRESH') }}</el-button>-->
-<!--          </el-col>-->
-<!--        </el-row>-->
       </el-form>
-      <div class="width-20" v-for="item in listArr">
+      <div class="width-20" v-for="(item,index) in listArr" :key="index">
         <PluginCard :key="item.id" :data="item" :isInstalled="true" :category="category"
                     @edit="handleEditPlugin"
                     @delete="handleDelPlugin"
@@ -191,7 +181,7 @@ let timer = null;
   }
 }
 
-@media (max-width: 1068px) {
+@media (max-width: 1160px) {
   .width-20 {
     width: 50%;
     display: inline-block;

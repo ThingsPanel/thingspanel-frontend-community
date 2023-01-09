@@ -26,7 +26,6 @@
 import { turnSwitch } from "@/api/device"
 import { currentValue } from "@/api/device";
 import {message_success} from "../../../../../utils/helpers";
-import { addTimer, clearTimer } from "@/utils/tool.js"
 
 export default {
   name: "Control",
@@ -51,22 +50,15 @@ export default {
       dialogVisible: false,
       controlType: "",
       optionData: {},
-      timer: "",
-      flushTime: 5,
-      mapping: []
+      mapping: [],
     }
   },
   watch: {
     option: {
       handler(newValue) {
         if (JSON.stringify(newValue) == "{}") return;
-        this.updateControl();
       }
     }
-  },
-  beforeDestroy() {
-    console.log("beforeDestroy")
-    clearTimer();
   },
   mounted() {
     this.optionData = JSON.parse(JSON.stringify(this.option));
@@ -74,7 +66,6 @@ export default {
     if (this.option.series) {
       this.mapping = this.option.series.map(item => {return item.mapping.value})
     }
-    this.updateControl();
   },
   methods: {
     handleChange(v) {
@@ -86,7 +77,7 @@ export default {
           values[item.mapping.value] = item.value ?
               typeConvert(item.mapping.on, item.mapping.attr.dataType) :
               typeConvert(item.mapping.off, item.mapping.attr.dataType);
-        } else if (item.type == "slider") {
+        } else if (item.type == "slider" || item.type == "setValue") {
           values[item.mapping.value] = Number(item.value);
         }
       })
@@ -100,15 +91,21 @@ export default {
           }
         })
     },
-    updateControl() {
-      if (this.timer) {
-        clearInterval(this.timer);
-      }
-      this.getSwitchValue();
-      this.timer = setInterval(() => {
-        this.getSwitchValue();
-      }, this.flushTime * 1000);
-      addTimer(this.timer);
+    updateOption(values) {
+      console.log("control.values", values)
+      // let optionTmp = JSON.parse(JSON.stringify(this.optionData));
+      this.optionData.series.forEach(item => {
+        let map = item.mapping;
+        if (item.type == "switch") {
+          if (values[map.value] == map.on) {
+            item.value = true;
+          } else {
+            item.value = false;
+          }
+        } else if (item.type == "slider") {
+          item.value = values[map.value];
+        }
+      });
 
     },
     getSwitchValue() {
@@ -118,6 +115,7 @@ export default {
           .then(({data}) => {
             if (data.code == 200 && data.data) {
               let dataObj = data.data[0];
+              console.log("====control.dataObj", dataObj)
               optionTmp.series.forEach(item => {
                 let map = item.mapping;
                 if (item.type == "switch") {
@@ -130,9 +128,18 @@ export default {
                   item.value = dataObj[map.value];
                 }
               })
-
-              this.optionData = JSON.parse(JSON.stringify(optionTmp))
+            } else {
+              optionTmp.series.forEach(item => {
+                if (item.type == "switch") {
+                    item.value = false;
+                } else if (item.type == "slider") {
+                  item.value = 0;
+                }
+              })
             }
+
+            this.optionData = JSON.parse(JSON.stringify(optionTmp))
+
           })
     },
     sizeChange() {
@@ -152,11 +159,11 @@ const typeConvert = (value, type) => {
 
 <style scoped lang="scss">
 .chart-div {
-  margin: 10px 20px 10px 10px;
-  border-radius: 16px;
+  position: relative;
+  //margin: 10px 20px 20px 10px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   background-color: #2d3d86;
-  text-align: center;
+  border-radius: 4px;
 }
 .chart-header {
   position: relative;
@@ -165,7 +172,7 @@ const typeConvert = (value, type) => {
   height: 40px;
   padding-left: 10px;
   text-align: right;
-  box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
+  //box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
   .title {
     //width: 100%;
     //flex-grow: 1;

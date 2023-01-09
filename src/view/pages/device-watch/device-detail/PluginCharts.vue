@@ -14,18 +14,25 @@
                  :w="option.w"
                  :h="option.h"
                  :i="option.i"
-                 @moved="handleResized"
-                 @resized="handleResized">
+                 @moved="handleResized(option.i)"
+                 @resized="(l, r, w, h) => handleResized(option.i, {l, r, w, h})">
 
-        <e-charts class="component-item" :ref="'component_' + option.i" :show-header="true"
-                  v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && option.type != 'status'"
-                  :option="option" :device="device"></e-charts>
+        <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+                  v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && !option.type"
+                  :option="option" :device="device" :value="option.value"></e-charts>
 
-        <status class="component-item" :ref="'component_' + option.i" :show-header="true"
+        <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
                 v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>
 
-        <control class="component-item" :ref="'component_' + option.i" :show-header="true"
+        <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+                v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'"
+                       :option="option" :device="device" :value="option.value"></device-status>
+
+        <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
                  v-if="option.controlType == 'control'" :option="option" :device="device"></control>
+
+        <video-component class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+                 v-if="option.controlType == 'video'" :option="option" :device="device"></video-component>
 
       </grid-item>
     </grid-layout>
@@ -48,14 +55,21 @@ import { GridLayout, GridItem } from "vue-grid-layout";
 import ECharts from "./components/Echarts"
 import Control from "./components/Control";
 import Status from "./components/Status"
+import DeviceStatus from "./components/DeviceStatus"
+import VideoComponent from "./components/Video";
 import {device_info} from "@/api/device";
-import {device_update} from "../../../../api/device";
+import {device_update, historyValue} from "@/api/device";
+import {currentValue} from "@/api/device";
 
 export default {
   name: "PluginCharts",
-  components: { GridLayout, GridItem, ECharts, Control, Status },
+  components: { GridLayout, GridItem, ECharts, Control, Status, DeviceStatus, VideoComponent },
   props: {
     options: {
+      type: [Array],
+      default: () => []
+    },
+    tsl: {
       type: [Array],
       default: () => []
     },
@@ -75,24 +89,37 @@ export default {
         NONE: 2
       },
       // 插件状态
-      status: 0
+      status: 0,
+      // 5秒刷新一次组件的值
+      flushTime: 5,
+      // 计时器
+      timer: null
     }
   },
   watch: {
     options: {
       handler(newValue) {
+        let timer = localStorage.getItem("deviceWatch_timer");
+        if (timer) {
+          clearInterval(parseInt(timer));
+        }
         if (newValue && newValue.length > 0) {
           let options = JSON.parse(JSON.stringify(newValue));
           this.getLayout(options, 4)
         } else {
+          this.optionsData = [];
           this.status = this.pluginStatus.NONE;
         }
       }
     }
   },
+  beforeDestroy() {
+    if (this.timer) {
+      clearInterval(this.timer);
+    }
+  },
   methods: {
-    handleResized(i) {
-      console.log("====handleResized.i", i)
+    handleResized(i, rect) {
       this.$nextTick(() => {
           this.$refs["component_" + i][0].sizeChange();
       })
@@ -125,17 +152,8 @@ export default {
               // 如果读取到的布局为空，则显示默认布局
               this.optionsData = this.getDefaultLayout(options, 4)
             }
-
-
+            // this.handleResized(i);
             this.status = this.pluginStatus.LOADED;
-            // this.$nextTick(() => {
-            //   this.optionsData.forEach(item => {
-            //     let component = this.$refs["component_" + item.i];
-            //     if (component) {
-            //       component[0].sizeChange();
-            //     }
-            //   })
-            // })
             this.getComponentMaps(this.optionsData);
           }
         })
@@ -187,11 +205,14 @@ export default {
      * @param newLayout
      */
     handleLayoutUpdatedEvent(newLayout) {
-      this.$nextTick(() => {
-        newLayout.forEach(item => {
-          this.$refs["component_" + item.i][0].sizeChange();
-        })
-      })
+      // this.$nextTick(() => {
+      //   newLayout.forEach(item => {
+      //     let ref = this.$refs["component_" + item.i];
+      //     if (ref && ref[0]) {
+      //       ref[0].sizeChange();
+      //     }
+      //   })
+      // })
       this.setLayout();
     },
     /**
@@ -200,12 +221,108 @@ export default {
      * 3.给组件赋值
      */
     getComponentMaps(options) {
-      options.forEach(item => {
-        console.log("====getComponentMaps", item)
-        // if (item.controlType == "dashboard") {
-        //
-        // } else if (item.controlType == "dashboard")
+      let componentMaps = {current: [], history: []};
+      for (let i = 0; i < options.length; i++) {
+        let option = options[i];
+        if (option.controlType == "dashboard") {
+          componentMaps.current.push({id: option.id, map: this.getMapping(option)});
+        } else if (option.controlType == "control" && option.type != "setValue") {
+          componentMaps.current.push({id: option.id, map: this.getControlMapping(option)});
+        } else if (option.controlType == "history") {
+          componentMaps.history.push({id: option.id, i: option.i, map: this.getMapping(option)});
+        }
+      }
+      this.updateComponents(componentMaps);
+    },
+    /**
+     * 更新组件的值
+     * @param componentMaps
+     */
+    updateComponents(componentMaps) {
+      const fun = () => {
+        if (componentMaps.current.length > 0) {
+          this.getCurrent(componentMaps.current);
+        }
+        if (componentMaps.history.length > 0) {
+          this.getHistory(componentMaps.history);
+        }
+        return fun;
+      }
+      this.timer = setInterval(fun(), this.flushTime * 1000)
+      localStorage.setItem("deviceWatch_timer", this.timer + "");
+    },
+    /**
+     * 从服务器获取指定设备的推送数据
+     * @param deviceId
+     * @param attrs
+     */
+    getCurrent(componentMap) {
+      currentValue({entity_id: this.device.device})
+          .then(({data}) => {
+            if (data.code == 200) {
+              this.optionsData.forEach(option => {
+                  let index = componentMap.findIndex(item => item.id == option.id);
+                  if (componentMap[index]) {
+                    let mapping = componentMap[index].map;
+                    let values = null;
+                    if (option.controlType == "dashboard") {
+                      if (option.type == "deviceStatus") {
+                        values = data.data[0].systime;
+                      } else {
+                        values = mapping.map(item => {
+                          return {...item, value: data.data[0][item.name]}
+                        });
+                      }
+                    } else if (option.controlType == "control") {
+                      values = {};
+                      mapping.forEach(item => {
+                        values[item] = data.data[0][item];
+                      });
+                    }
+
+                    this.$nextTick(() => {
+                      this.$refs["component_" + option.i][0].updateOption(values);
+                    })
+                  }
+                // }
+              })
+            }
+          })
+    },
+    getHistory(componentMap) {
+      this.$nextTick(() => {
+        componentMap.forEach(item => {
+          let ref = this.$refs["component_" + item.i];
+          if (ref && ref[0]) {
+            ref[0].getHistory(item.map);
+          }
+        })
       })
+    },
+    getMapping(option) {
+      if (option.mapping) {
+        let mapping = [];
+        this.tsl.map(property => {
+          option.mapping.forEach(item => {
+            if (property.name == item) {
+              mapping.push(property);
+            }
+          })
+        })
+        return mapping;
+      } else {
+        return [];
+      }
+    },
+    getControlMapping(option) {
+      if (option.series && option.series.length > 0) {
+        // 开关的mapping
+        let mapping = [];
+        option.series.forEach(item => {
+          mapping.push(item.mapping.value);
+        })
+        return mapping;
+      }
     }
   }
 }
@@ -239,5 +356,12 @@ export default {
 .plugin-loading {
   color: #fff;
   font-size: 18px;
+}
+::v-deep .vue-resizable-handle {
+  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNjcxMDc3NzUzOTcyIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjI5MjciIHdpZHRoPSI2IiBoZWlnaHQ9IjYiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj48cGF0aCBkPSJNNzcyLjA5NiAyNDMuNzEycTE3LjQwOC0xNy40MDggMzkuNDI0LTIyLjUyOHQ0MC45NiAyLjA0OCAzMS43NDQgMjYuNjI0IDEyLjggNTAuMTc2bDAgNDYxLjgyNHEwIDI3LjY0OC05LjIxNiA1Mi4yMjR0LTI1LjYgNDMuMDA4LTM4LjkxMiAyOC42NzItNDkuMTUyIDEwLjI0bC00OTAuNDk2IDBxLTI2LjYyNCAwLTQzLjUyLTEzLjMxMnQtMjMuMDQtMzIuNzY4LTEuMDI0LTQxLjQ3MiAyMi41MjgtMzkuNDI0cTI1LjYtMjUuNiA3MC4xNDQtNjkuMTJ0OTguMzA0LTk2LjI1NiAxMTAuNTkyLTEwOS4wNTYgMTA3LjUyLTEwNS45ODQgOTAuMTEyLTg4LjU3NiA1Ni44MzItNTYuMzJ6IiBwLWlkPSIyOTI4IiBmaWxsPSIjZmZmZmZmIj48L3BhdGg+PC9zdmc+);
+  background-position: 100% 100%;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  -webkit-box-sizing: border-box;
 }
 </style>

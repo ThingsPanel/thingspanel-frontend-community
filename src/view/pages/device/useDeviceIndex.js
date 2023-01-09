@@ -1,17 +1,22 @@
-import {reactive, ref} from "@vue/composition-api";
-import {device_list} from "@/api/device";
+import { reactive, ref } from "@vue/composition-api";
 import {asset_index} from "@/api/asset";
 import {is_string} from "@/utils/helpers";
-import {getDeviceTree} from "../../../api/device";
+import {getDeviceListStatus, getDeviceTree} from "@/api/device";
+import { useStore } from "@/core/services/store";
 
 export default function useDeviceIndex(business_id) {
     let tableData = ref([])
     let loading = ref(false)
     let params = reactive(defaultParams())
 
+    let deviceIds = ref([]);
+
     if (business_id) params.business_id = business_id
 
     let total = ref(0)
+
+    const store = useStore();
+
 
     /**
      * 获取设备列表（含网关/设备)
@@ -23,9 +28,11 @@ export default function useDeviceIndex(business_id) {
         getDeviceTree(washParams(params)).then(({data}) => {
             if (data.code === 200) {
                 total.value = data.data.total
-                tableData.value = data.data.data ? washData(data.data.data) : [];
-                console.log("====getDeviceTree", tableData.value)
-
+                let { table, ids } = washData(data.data.data);
+                tableData.value = data.data.data ? table : [];
+                deviceIds.value = ids;
+                console.log("====getDeviceTree.ids", ids);
+                getDeviceStatus(ids);
             }
         }).finally(() => {
             loading.value = false
@@ -56,17 +63,20 @@ export default function useDeviceIndex(business_id) {
 
     function washData(data_array) {
         let table = [];
+        let ids = [];
         data_array.forEach(item => {
             let row = fillData(item);
             if (item.children) {
                 row.children = [];
                 item.children.forEach(child => {
                     row.children.push(fillData(child));
+                    // ids.push(child.device);
                 })
             }
+            ids.push(row.device);
             table.push(row);
         })
-        return table;
+        return {table, ids};
     }
 
     function fillData(item) {
@@ -77,6 +87,7 @@ export default function useDeviceIndex(business_id) {
             asset_id: item.asset_id,
             token: item.device_token,
             device_type: item.device_type,
+            device_state: item.device_state,
             type: item.type,
             latest_ts: item.latest_ts,
             protocol: item.protocol,
@@ -84,8 +95,10 @@ export default function useDeviceIndex(business_id) {
             location: item.location,
             structure: item.structure ? item.structure : [],
             parent_id: item.parent_id,
+            additional_info: item.additional_info,
             protocol_config: item.protocol_config,
             subDeviceAddress: item.sub_device_addr ? item.sub_device_addr : "",
+            chart_names: item.chart_names,
             errors: {
                 name: "",
                 asset_id: "",
@@ -150,10 +163,36 @@ export default function useDeviceIndex(business_id) {
         getDeviceIndex()
     }
 
+    let timer = null;
+    function getDeviceStatus(ids) {
+        console.log("====getDeviceStatus.getTimers:", store.getters.getTimers(business_id))
+        const fn = () => {
+            getDeviceListStatus({ device_id_list: ids })
+                .then(({ data }) => {
+                    if (data.code == 200) {
+                        tableData.value.forEach(item => {
+                            item.device_state = data.data[item.id] ? data.data[item.id] : "0";
+                            // if (item.children && item.children.length > 0) {
+                            //     item.children.forEach(child => {
+                            //         child.device_state = data.data[child.id] ? data.data[child.id] : "0";
+                            //     })
+                            // }
+                        })
+                    }
+                })
+        }
+        fn();
+        if (timer) clearInterval(timer);
+        timer = setInterval(fn, 5000);
+        store.commit("addTimer", {id: business_id, timer});
+
+    }
+
     return {
         tableData,
         loading,
         params,
+        deviceIds,
         getDeviceTree,
         getDeviceIndex,
         total,

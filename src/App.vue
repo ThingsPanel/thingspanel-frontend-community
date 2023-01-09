@@ -28,10 +28,13 @@ body {
 <script>
 import { OVERRIDE_LAYOUT_CONFIG } from "@/core/services/store/config.module";
 import {RESET_LAYOUT_CONFIG} from "./core/services/store/config.module";
+import {local_url} from "@/api/LocalUrl";
 export default {
   name: "ThingsPanel",
   
   mounted() {
+    console.log("====location", document.location.protocol + "//" + document.location.host );
+
     this.$store.dispatch("setRouters");
     /**
      * this is to override the layout config using saved data from localStorage
@@ -39,9 +42,10 @@ export default {
      */
 
     this.$store.dispatch(OVERRIDE_LAYOUT_CONFIG);
-    window.localStorage.setItem("base_url", process.env.VUE_APP_BASE_URL || document.location.protocol + "//" + document.domain +":9999/");
+    window.localStorage.setItem("base_url", local_url);
   },
   beforeMount() {
+    console.log("local_url", local_url)
     this.$store.dispatch(RESET_LAYOUT_CONFIG);
     // // show page loading
     // this.$store.dispatch(ADD_BODY_CLASSNAME, "page-loading");

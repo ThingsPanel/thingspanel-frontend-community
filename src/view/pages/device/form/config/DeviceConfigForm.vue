@@ -34,7 +34,13 @@
 
       <!-- 设备属性 -->
       <div v-else-if="activeName=='deviceAttribute'">
-        <el-form label-position="left" :model="formData">
+        <el-form label-position="left" :model="attrFormData">
+          <el-form-item label="子设备地址" >
+            <el-input style="width: 100%" placeholder="请输入设备经纬度，用逗号隔开，如：116.462346, 39.356432"
+                      v-model="attrFormData.subDeviceAddress"
+            ></el-input>
+          </el-form-item>
+
           <el-form-item label="设备位置" >
             <el-input readonly @click.native="showCheckLocation" style="width: 100%" placeholder="请输入设备经纬度，用逗号隔开，如：116.462346, 39.356432"
                       v-model="location"
@@ -44,12 +50,19 @@
       </div>
 
       <!-- 运维信息 -->
-      <div v-else-if="activeName=='runningStatus'"></div>
+      <div v-else-if="activeName=='runningStatus'">
+        <el-form label-position="left" :model="runningFormData">
+          <el-form-item label="离线时间阈值" prop="thresholdTime">
+            <el-input-number controls-position="right" size="small" v-model="runningFormData.thresholdTime" :min="5"></el-input-number>
+            秒
+          </el-form-item>
+        </el-form>
+      </div>
     </div>
 
     <span slot="footer" class="dialog-footer">
-        <el-button @click="handleClose">取 消</el-button>
-        <el-button type="primary" @click="handleSubmit">确 定</el-button>
+        <el-button type="cancel" @click="handleClose">取 消</el-button>
+        <el-button type="save" @click="handleSubmit">确 定</el-button>
       </span>
 
       <device-location-config v-if="positionShow" :maker-position.sync="locationArray" :dialog-visible.sync="positionShow"></device-location-config>
@@ -87,53 +100,112 @@ export default {
       ],
       formAttr: [],
       formData: {},
+      attrFormData: {},
+      runningFormData: {
+        thresholdTime: 60
+      },
       formRule: {},
       location: "",
       locationArray: []
     }
   },
   watch: {
+    dialogVisible: {
+      handler(newValue) {
+        if (newValue) {
+          console.log("====DeviceConfigForm.newValue", this.device)
+          this.location = this.device.location ? this.device.location : "";
+          let additionalInfo = (this.device.additional_info && this.device.additional_info!="null") ? JSON.parse(this.device.additional_info) :
+              {runningInfo: {thresholdTime: 60}};
+          this.attrFormData = { subDeviceAddress: this.device.subDeviceAddress, location: this.device.location };
+          this.runningFormData = additionalInfo.runningInfo ? additionalInfo.runningInfo : {};
+          this.formData = {};
+          if (JSON.stringify(this.device) == "{}" || this.device == "") {return;}
+          if (this.device.device_type == "3" || (this.device.device_type == "1" && this.device.protocol != "mqtt")) {
+            // 子设备所有协议都要数据解析，直连设备所有自定义协议(mqtt协议之外)都要数据解析
+            this.tabList = [
+              { value: "configParse", label: "数据解析" },
+              { value: "deviceAttribute", label: "设备属性" },
+              { value: "runningStatus", label: "运维信息" }
+            ];
+            this.activeName = "configParse";
+            let deviceType = this.device.device_type == "1" ? "1" : "2";
+            // 获取表单的属性
+            ModbusAPI.getFormAttr({ protocol_type: this.device.protocol, device_type: deviceType})
+                .then(({data}) => {
+                  if (data.code == 200 && data.data && data.data.config) {
+                    this.formAttr = data.data.config;
+                    this.formRule = this.getFormRule(this.formAttr);
+                    if (this.device.protocol_config != "{}"
+                        && this.device.protocol_config != ""
+                        && this.device.protocol_config != undefined) {
+                      this.formData = JSON.parse(this.device.protocol_config);
+                    }
+                  } else {
+                    this.tabList.splice(0, 1);
+                    this.activeName = "deviceAttribute";
+                  }
+                })
+          } else {
+            this.tabList = [
+              { value: "deviceAttribute", label: "设备属性" },
+              { value: "runningStatus", label: "运维信息" }
+            ]
+            this.activeName = "deviceAttribute";
+            this.formRule = {
+              location: [
+                { required: false, message: '请输入设备位置', trigger: 'change' }
+              ],
+            };
+            console.log(this.formRule)
+          }
+        }
+      }
+    },
     device: {
       handler(newValue) {
-        console.log("====handler", newValue)
-        this.location = newValue.location ? newValue.location : "";
-        this.formData = {};
-        if (JSON.stringify(newValue) == "{}" || newValue == "") {return;}
-        if (newValue.device_type == "3" || (newValue.device_type == "1" && newValue.protocol != "mqtt")) {
-          // 子设备所有协议都要数据解析，直连设备所有自定义协议(mqtt协议之外)都要数据解析
-          this.tabList = [
-            { value: "configParse", label: "数据解析" },
-            { value: "deviceAttribute", label: "设备属性" },
-            { value: "runningStatus", label: "运维信息" }
-          ];
-          this.activeName = "configParse";
-          let deviceType = newValue.device_type == "1" ? "1" : "2";
-          // 获取表单的属性
-          ModbusAPI.getFormAttr({ protocol_type: newValue.protocol, device_type: deviceType})
-              .then(({data}) => {
-                if (data.code == 200 && data.data && data.data.config) {
-                  this.formAttr = data.data.config;
-                  this.formRule = this.getFormRule(this.formAttr);
-                  if (this.device.protocol_config != "{}"
-                      && this.device.protocol_config != ""
-                      && this.device.protocol_config != undefined) {
-                    this.formData = JSON.parse(this.device.protocol_config);
-                  }
-                }
-              })
-        } else {
-          this.tabList = [
-            { value: "deviceAttribute", label: "设备属性" },
-            { value: "runningStatus", label: "运维信息" }
-          ]
-          this.activeName = "deviceAttribute";
-          this.formRule = {
-            location: [
-              { required: false, message: '请输入设备位置', trigger: 'change' }
-            ],
-          };
-          console.log(this.formRule)
-        }
+        console.log("====DeviceConfigForm.handler", newValue)
+        // this.location = newValue.location ? newValue.location : "";
+        // let additionalInfo = newValue.additional_info ? JSON.parse(newValue.additional_info) :
+        //     {runningInfo: {thresholdTime: 60}};
+        // this.runningFormData = additionalInfo.runningInfo;
+        // this.formData = {};
+        // if (JSON.stringify(newValue) == "{}" || newValue == "") {return;}
+        // if (newValue.device_type == "3" || (newValue.device_type == "1" && newValue.protocol != "mqtt")) {
+        //   // 子设备所有协议都要数据解析，直连设备所有自定义协议(mqtt协议之外)都要数据解析
+        //   this.tabList = [
+        //     { value: "configParse", label: "数据解析" },
+        //     { value: "deviceAttribute", label: "设备属性" },
+        //     { value: "runningStatus", label: "运维信息" }
+        //   ];
+        //   this.activeName = "configParse";
+        //   let deviceType = newValue.device_type == "1" ? "1" : "2";
+        //   // 获取表单的属性
+        //   ModbusAPI.getFormAttr({ protocol_type: newValue.protocol, device_type: deviceType})
+        //       .then(({data}) => {
+        //         if (data.code == 200 && data.data && data.data.config) {
+        //           this.formAttr = data.data.config;
+        //           this.formRule = this.getFormRule(this.formAttr);
+        //           if (this.device.protocol_config != "{}"
+        //               && this.device.protocol_config != ""
+        //               && this.device.protocol_config != undefined) {
+        //             this.formData = JSON.parse(this.device.protocol_config);
+        //           }
+        //         }
+        //       })
+        // } else {
+        //   this.tabList = [
+        //     { value: "deviceAttribute", label: "设备属性" },
+        //     { value: "runningStatus", label: "运维信息" }
+        //   ]
+        //   this.activeName = "deviceAttribute";
+        //   this.formRule = {
+        //     location: [
+        //       { required: false, message: '请输入设备位置', trigger: 'change' }
+        //     ],
+        //   };
+        //   console.log(this.formRule)
+        // }
 
       },
     },
@@ -145,7 +217,7 @@ export default {
   },
   methods: {
     handleClose() {
-      this.$emit("update:dialogVisible", false)
+      this.$emit("update:dialogVisible", false);
     },
     showCheckLocation() {
       this.positionShow = true
@@ -153,15 +225,18 @@ export default {
     handleSubmit() {
       const submit = () => {
         let device = this.device;
+        let additionalInfo = this.device.additional_info ? JSON.parse(this.device.additional_info) : {};
+        additionalInfo.runningInfo = this.runningFormData;
         let config = {
           id: device.id,
+          additional_info: JSON.stringify(additionalInfo),
           location: this.location,
           protocol_config: JSON.stringify({DeviceId: device.id, AccessToken: device.token, ...this.formData})
         }
         ModbusAPI.updateDeviceConfig(config)
             .then(({data}) => {
               if (data.code == 200) {
-                message_success("配置成功！")
+                message_success("配置成功！");
                 this.handleClose();
                 this.$emit("submit");
               }

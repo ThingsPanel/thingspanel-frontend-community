@@ -40,6 +40,11 @@ export const baseRoutes = [
         path: "/visual_editor",
         name: "VisualEditor",
         component: () => import("@/view/pages/visual/editor/index"),
+    },
+    {
+        path: "/visual_display",
+        name: "VisualDisplay",
+        component: () => import("@/view/pages/visual/display/index"),
     }
 
 ]

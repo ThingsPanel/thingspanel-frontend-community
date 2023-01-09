@@ -3,26 +3,29 @@
   <div class="rounded card p-4">
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
       <el-col :span="12">
-        <TableTitle>设备监控</TableTitle>
+        <TableTitle>{{ $t('COMMON.DEVICE') }}</TableTitle>
       </el-col>
     </el-row>
 
     <!-- 表 start -->
     <el-form class="inline-edit">
       <el-table :data="tableData" v-loading="loading">
-        <el-table-column :label="$t('COMMON.NO')" type="index" align="center" width="80"></el-table-column>
+        <el-table-column :label="$t('COMMON.NO')" type="index" width="600"></el-table-column>
 
-        <el-table-column label="项目名称" prop="name" align="center">
+        <el-table-column label="项目名称" prop="name" align="left">
           <template v-slot="scope">
-            <div class="text-center w-100 cursor-pointer" @click="showDeviceChart(scope.row)">
-              <p>{{ scope.row.name }}</p>
+            <div class="w-100 cursor-pointer" @click="showDeviceChart(scope.row)">
+              <p class="mad">{{ scope.row.name }}</p>
             </div>
           </template>
         </el-table-column>
 
-        <el-table-column align="center" :label="$t('COMMON.OPERATION')" width="360">
+        <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="160">
           <template v-slot="scope">
-            <div class="text-center">
+            <!-- <div class="text-center">
+              <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">查看</el-button>
+            </div> -->
+            <div style="text-align: left">
               <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">查看</el-button>
             </div>
           </template>
@@ -44,6 +47,10 @@
   </div>
 </template>
 <style scoped>
+.mad{
+  margin-bottom: 0;
+}
+
 
 </style>
 
@@ -63,6 +70,7 @@ export default {
     tableData: []
   }),
   created() {
+    console.log("====created", this.$t("COMMON.SYSTEMMANAGEMENT"));
     this.getBusinessIndex();
   },
   methods: {

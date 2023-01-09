@@ -36,6 +36,19 @@ export function automation_index(data){
     })
 }
 
+/**
+ * 通过id获取单条控制策略
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function getOneControlStrategy(data) {
+    return axios({
+        url: "/automation/details",
+        method: "post",
+        data
+    })
+}
+
 // 添加控制策略
 export function automation_add(data){
     return axios({

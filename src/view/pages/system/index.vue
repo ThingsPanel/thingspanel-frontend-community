@@ -100,7 +100,7 @@
                       </el-upload>
                     </p>
                   </div>
-                  <div>
+                  <div style="margin-right: 2.5rem">
                     <p>{{$t('COMMON.WEBSITE')}} logo</p>
                     <div>
                       <img :src="url + formObj.logo_three" alt="" width="148px" />
@@ -124,12 +124,37 @@
                       </el-upload>
                     </p>
                   </div>
+                  <div>
+                    <p>{{$t('COMMON.BACKGROUND')}}</p>
+                    <div>
+                      <img :src="url + (formObj.home_background ? formObj.home_background : 'media/bg/bg-12.png')"
+                           alt="" width="148px" />
+                    </div>
+                    <p>
+                      <el-upload
+                          class="upload-logo"
+                          :action="url + 'api/file/up'"
+                          :show-file-list="false"
+                          :headers="headersObj"
+                          :data="params"
+                          :on-success="handleAvatarSuccessFour"
+                          :before-upload="beforeAvatarUpload"
+                      >
+                        <el-button
+                            type="primary"
+                            icon="el-icon-refresh"
+                            size="mini"
+                        >{{$t('COMMON.CHANGE')}}</el-button
+                        >
+                      </el-upload>
+                    </p>
+                  </div>
                 </div>
               </el-form-item>
             </el-form>
           </div>
-          <div style="padding-left: 120px">
-            <v-btn color="primary" @click="submitData()">{{$t('COMMON.SAVE')}} </v-btn>
+          <div style="padding-left: 120px; margin-bottom: 20px;">
+            <el-button type="save" @click="submitData()">{{$t('COMMON.SAVE')}} </el-button>
           </div>
         </div>
         <!-- <div v-if="activeTab == 2">
@@ -142,6 +167,107 @@
     </div>
   </div>
 </template>
+
+
+<script>
+import { local_url } from "@/api/LocalUrl"
+import AUTH from "@/core/services/store/auth.module";
+import ApiService from "@/core/services/api.service";
+import JwtService from "@/core/services/jwt.service";
+import { REFRESH } from "@/core/services/store/auth.module";
+import { RESET_LAYOUT_CONFIG } from "@/core/services/store/config.module"
+export default {
+  data: () => ({
+    activeTab: "1",
+    tabs: [
+      {
+        name: "COMMON.GENERALSETTINGS",
+        value: "1",
+      },
+      {
+        name: "COMMON.NOTIFICATIONSETTINGS",
+        value: "2",
+      },
+      {
+        name: "COMMON.SYSTEMAUTHORIZATION",
+        value: "3",
+      },
+    ],
+    url: local_url,
+    formObj: {
+      custom_id: "",
+      id: "",
+      logo_one: "",
+      logo_three: "",
+      logo_two: "",
+      remark: "",
+      system_name: "",
+      theme: "",
+    },
+    headersObj: {
+      Authorization: "Bearer " + JwtService.getToken(),
+    },
+    params: {
+      type: "logo",
+    },
+    text:'',
+    snackbar:false,
+    vertical: true,
+  }),
+
+  created() {
+    ApiService.post(local_url + "api/system/logo/index", null).then(
+      ({ data }) => {
+        if (data.code == 200) {
+          this.formObj = Object.assign({}, data.data);
+
+          console.log("====formObj", this.formObj)
+        } else if (data.code == 401) {
+          this.$store.dispatch(REFRESH).then(() => {});
+        } else {
+          //
+        }
+      }
+    );
+  },
+
+  methods: {
+    handleAvatarSuccess(res, file) {
+      console.log(res,file);
+      this.formObj.logo_one = res.data;
+    },
+    handleAvatarSuccessTwo(res, file) {
+      this.formObj.logo_two = res.data;
+    },
+    handleAvatarSuccessThree(res, file) {
+      this.formObj.logo_three = res.data;
+    },
+    handleAvatarSuccessFour(res, file) {
+      this.formObj.home_background = res.data;
+    },
+    beforeAvatarUpload(file) {
+      // 上传前设置请求头，因为 token 会刷新
+      this.headersObj.Authorization = "Bearer " + JwtService.getToken()
+      // console.log('111',file);
+      return true;
+    },
+    submitData() {
+      ApiService.post(local_url + "api/system/logo/update", this.formObj).then(
+        ({ data }) => {
+          if (data.code == 200) {
+              this.text = "保存成功！";
+              this.$store.dispatch(RESET_LAYOUT_CONFIG);
+              this.snackbar = true;
+          } else if (data.code == 401) {
+              this.$store.dispatch(REFRESH).then(() => {});
+          } else {
+          }
+        }
+      );
+    },
+  },
+};
+</script>
 <style lang="scss" scoped>
 .system-box {
   color: #fff;
@@ -187,102 +313,8 @@
       border-color: #212d66;
     }
     ::v-deep .el-upload{
-        width: 100%;
+      width: 100%;
     }
   }
 }
 </style>
-
-<script>
-import AUTH from "@/core/services/store/auth.module";
-import ApiService from "@/core/services/api.service";
-import JwtService from "@/core/services/jwt.service";
-import { REFRESH } from "@/core/services/store/auth.module";
-import { RESET_LAYOUT_CONFIG } from "@/core/services/store/config.module"
-export default {
-  data: () => ({
-    activeTab: "1",
-    tabs: [
-      {
-        name: "COMMON.GENERALSETTINGS",
-        value: "1",
-      },
-      {
-        name: "COMMON.NOTIFICATIONSETTINGS",
-        value: "2",
-      },
-      {
-        name: "COMMON.SYSTEMAUTHORIZATION",
-        value: "3",
-      },
-    ],
-    url: (process.env.VUE_APP_BASE_URL ||
-    document.location.protocol + "//" + document.domain + ":9999/"),
-    formObj: {
-      custom_id: "",
-      id: "",
-      logo_one: "",
-      logo_three: "",
-      logo_two: "",
-      remark: "",
-      system_name: "",
-      theme: "",
-    },
-    headersObj: {
-      Authorization: "Bearer " + JwtService.getToken(),
-    },
-    params: {
-      type: "logo",
-    },
-    text:'',
-    snackbar:false,
-    vertical: true,
-  }),
-
-  created() {
-    ApiService.post(AUTH.local_url + "/system/logo/index", null).then(
-      ({ data }) => {
-        if (data.code == 200) {
-          this.formObj = Object.assign({}, data.data);
-        } else if (data.code == 401) {
-          this.$store.dispatch(REFRESH).then(() => {});
-        } else {
-        }
-      }
-    );
-  },
-
-  methods: {
-    handleAvatarSuccess(res, file) {
-      console.log(res,file);
-      this.formObj.logo_one = res.data;
-    },
-    handleAvatarSuccessTwo(res, file) {
-      this.formObj.logo_two = res.data;
-    },
-    handleAvatarSuccessThree(res, file) {
-      this.formObj.logo_three = res.data;
-    },
-    beforeAvatarUpload(file) {
-      // 上传前设置请求头，因为 token 会刷新
-      this.headersObj.Authorization = "Bearer " + JwtService.getToken()
-      // console.log('111',file);
-      return true;
-    },
-    submitData() {
-      ApiService.post(AUTH.local_url + "/system/logo/update", this.formObj).then(
-        ({ data }) => {
-          if (data.code == 200) {
-              this.text = "保存成功！";
-              this.$store.dispatch(RESET_LAYOUT_CONFIG);
-              this.snackbar = true;
-          } else if (data.code == 401) {
-              this.$store.dispatch(REFRESH).then(() => {});
-          } else {
-          }
-        }
-      );
-    },
-  },
-};
-</script>

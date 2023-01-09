@@ -18,6 +18,7 @@
               </el-select>
             </el-form-item>
           </el-col>
+
           <el-col :span="12">
             <el-form-item label="协议类型" prop="protocol_type">
               <el-input v-model="formData.protocol_type"></el-input>
@@ -111,8 +112,8 @@ export default {
       handler(newValue) {
         console.log("====visible", newValue)
         if (newValue) {
-          this.formData = JSON.parse(JSON.stringify(this.data));
-          this.formData.device_type = "1";
+          // this.formData = JSON.parse(JSON.stringify(this.data));
+          // this.formData.device_type = "1";
           this.loading = false;
           this.dialogVisible = newValue;
         }

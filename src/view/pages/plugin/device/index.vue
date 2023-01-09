@@ -26,13 +26,18 @@
         </el-col>
       </el-row>
     </div>
-    <tp-editor class="tp-dark-editor" :visible.sync="showEditorDialog" :json="pluginJsonData" :plugin-category="pluginCategory" @publish="publish"></tp-editor>
+    <DevicePluginEditor class="tp-dark-editor"
+                        :visible.sync="showEditorDialog"
+                        :title="$t('PLUGIN.CUSTOM_DEVICE_PLUGIN')"
+                        :json="pluginJsonData"
+                        :plugin-category="pluginCategory"
+                        @publish="publish"></DevicePluginEditor>
 
     <!--    导入JSON-->
     <el-dialog class="el-dark-dialog el-table-transparent" title="导入JSON" :visible.sync="importDialogVisible" width="30%">
       <el-row >
         <div style="margin-bottom: 10px;display: flex;justify-content: space-between">
-          <span>{{ $t('COMMON.JSONTEST') }}</span>
+          <span style="padding-top: 10px;">{{ $t('COMMON.JSONTEST') }}</span>
           <el-upload class="upload-demo" action="#" :limit="1" >
             <el-button type="primary" class="el-button--indigo">{{ $t('COMMON.SELECTTHEFILE') }}</el-button>
           </el-upload>
@@ -44,14 +49,16 @@
       </el-row>
 
       <span slot="footer" class="dialog-footer">
-        <el-button  @click="importDialogVisible = false">{{ $t('COMMON.CANCEL') }}</el-button>
-        <el-button type="primary" class="el-button--indigo" @click="handleImport()">{{ $t('COMMON.THEIMPORT') }}</el-button>
+        <el-button type="cancel" @click="importDialogVisible = false">{{ $t('COMMON.CANCEL') }}</el-button>
+        <el-button type="export" @click="handleImport()">{{ $t('COMMON.THEIMPORT') }}</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
+// import DevicePluginEditor from "/packages/device_plugin/editor"
+
 import PluginAPI from "@/api/plugin.js"
 import {message_success} from "@/utils/helpers";
 export default {
@@ -84,6 +91,7 @@ export default {
   },
   methods: {
     customPlugin() {
+      this.pluginJsonData = {};
       this.showEditorDialog = true
       console.log("configuration")
       // return false
@@ -182,21 +190,33 @@ export default {
   }
 
 }
+
 ::v-deep .tp-editor .el-transfer-panel__item.el-checkbox {
   color: #000000!important;
 }
+
 ::v-deep .el-dialog__header {
   background-color: #2d3d88!important;
 }
-  ::v-deep  .el-dialog {
-    background-color: #2d3d88!important;
 
-    .el-dialog__close,.el-dialog__title,.el-table thead,.label-name{
-      color: #a8c5ff;
-    }
+::v-deep  .el-dialog {
+  background-color: #2d3d88!important;
 
-    .el-dialog__body{
-      color: #fff;
-    }
+  .el-dialog__close,.el-dialog__title,.el-table thead,.label-name{
+    color: #a8c5ff;
   }
+
+  .el-dialog__body{
+    color: #fff;
+  }
+}
+
+.tp-dark-editor {
+  ::v-deep tr.el-table__row {
+    border-top: 1px solid #ccc!important;
+  }
+}
+
+
+
 </style>

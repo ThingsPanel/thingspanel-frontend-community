@@ -90,5 +90,6 @@ export default {
 <style scoped>
 .header {
   background: unset!important;
+  margin-bottom: 30px;
 }
 </style>

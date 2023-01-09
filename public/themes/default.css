@@ -49,6 +49,10 @@ html {
     font-family: "Microsoft Yahei"!important;
 }
 
+span.text-blue.font-weight-bold.font-size-base.d-none.d-lg-block.mr-1 {
+    color: #ded9d9;
+}
+
 /* el-table */
 .el-table {
     color: #fff;
@@ -127,7 +131,36 @@ html {
     background-color: #202c62!important;
     color: #ccc!important;
 }
+.el-dark-input .el-input__inner, .el-dark-input .el-textarea__inner {
+    color: #fff;
+    background-color: rgba(22, 30, 67, 0.5) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+.el-dark-input .el-input__inner:focus {
+    color: #495057 !important;
+    background-color: #fff !important;
+    border-color: #dbe7ff !important;
+    outline: 0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(91,146,255,0.25) !important;
+}
 
+.el-form-item__content .el-input__inner{
+    color: #fff;
+    background-color: rgba(22, 30, 67, 0.5) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    height: 40px;
+    line-height: 40px;
+}
+
+.el-form-item__content .el-input__inner:focus {
+    color: #495057 !important;
+    background-color: #fff !important;
+    border-color: #dbe7ff !important;
+    outline: 0 !important;
+    height: 40px;
+    line-height: 40px;
+    box-shadow: 0 0 0 0.2rem rgba(91,146,255,0.25) !important;
+}
 .aside {
     background-color: #161E43 !important;
     box-shadow: 3px 0px 7px #000;
@@ -233,3 +266,134 @@ html {
 }
 
 .panel-bg-blue{background: #2d3d88;}
+
+.el-cascader-node:not(.is-disabled):hover{
+    color: #fff;
+    background: #0087F6 !important;
+}
+
+.el-select-dropdown__item.hover, .el-select-dropdown__item:hover {
+    background-color: #0087F6 !important;
+    color: #fff!important;
+}
+.el-button--border{
+    color: #fff !important;
+    background-color: transparent !important;   
+    border-color: #5867dd !important;
+}
+  
+.el-button--border:hover {
+    background-color: #6573e0 !important;
+    border-color: #6573e0 !important;
+}
+
+.el-button--border{
+    color: #fff !important;
+    background-color: transparent !important;   
+    border-color: #5867dd !important;
+}
+  
+.el-button--border:hover {
+    background-color: #6573e0 !important;
+    border-color: #6573e0 !important;
+}
+
+.el-button--export{
+    color: #fff !important;
+    background-color: #16A1B8 !important;   
+    border-color: #16A1B8 !important;
+}
+  
+.el-button--export:hover {
+    background-color: #16A1B8 !important;
+    border-color: #16A1B8 !important;
+}
+
+.el-button--yellow{
+    color: #fff !important;
+    background-color: #FFAE22 !important;   
+    border-color: #FFAE22 !important;
+}
+  
+.el-button--yellow:hover {
+    background-color: #FFBC48 !important;
+    border-color: #FFBC48 !important;
+}
+.el-button--blue{
+    color: #fff !important;
+    background-color: #347AFF !important;   
+    border-color: #347AFF !important;
+}
+  
+.el-button--blue:hover {
+    background-color: #5B92FF !important;
+    border-color: #5B92FF !important;
+}
+
+.el-button--cancel{
+    color: #5B92FF !important;
+    border-color: #5B92FF !important;
+    background-color: transparent !important;   
+}
+  
+.el-button--cancel:hover {
+    color: #fff !important;
+    background-color: #5B92FF !important;
+    border-color: #5B92FF !important;
+}
+
+.el-button--save{
+    color: #fff !important;
+    background-color: #5B92FF !important;
+    border-color: #5B92FF !important; 
+}
+  
+.el-button--save:hover {
+    color: #fff !important;
+    background-color: #3579ff !important;
+    border-color: #2870ff !important;
+}
+
+.el-button--success {
+    color: #1FC96E !important;
+    border-color: #1FC96E !important;
+    background-color: transparent !important;   
+}
+
+.el-button--success:hover {
+    color: #fff !important;
+    border-color: #1FC96E !important;
+    background-color: #1FC96E !important;   
+}
+
+.el-table  {
+    background-color: transparent !important;
+}
+
+.el-button--border-warning{
+    color: #FFBC47 !important;
+    background-color: transparent !important;
+    border-color: #FFBC47 !important;
+}
+
+.el-button--border-warning:hover {
+    color: #000 !important;
+    background-color: #FFBC47 !important;
+    border-color: #FFBC47 !important;
+}
+
+.el-form .el-form-item__label {
+    color: #FFFFFF!important;
+}
+
+.el-message-box {
+    background-color: #202c62!important;
+    border: unset!important;
+}
+
+.el-message-box__title {
+    color: #fff!important;
+}
+.el-message-box__message p {
+    color: #fff!important;
+}

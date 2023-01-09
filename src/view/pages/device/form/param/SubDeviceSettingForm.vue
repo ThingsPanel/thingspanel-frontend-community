@@ -6,9 +6,12 @@
       :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
       width="600px">
     <el-form label-width="120px" >
-      <el-form-item label="设备地址:" style="padding: 50px">
-        <el-input size="medium" v-model="subDeviceAddress" ></el-input>
-      </el-form-item>
+        <el-form-item :label="device_item.protocol.startsWith('WVP_') ? '通道编号:' : '设备地址:'" style="padding: 30px">
+          <el-input size="medium" v-model="subDeviceAddress" ></el-input>
+        </el-form-item>
+        <el-form-item v-if="device_item.protocol.startsWith('WVP_')" label="播放地址:" style="padding: 30px">
+          <el-input size="medium" v-model="subDeviceVideoAddress" ></el-input>
+        </el-form-item>
 
       <div style="display: flex;justify-content: center;margin-bottom:30px">
         <el-button @click="closeDialog">取消</el-button>
@@ -38,6 +41,8 @@ export default defineComponent({
   },
   setup(props, context){
     let subDeviceAddress = ref("")
+    let subDeviceVideoAddress = ref("")
+    let additionalInfo = {};
 
     let device = {};
 
@@ -62,7 +67,12 @@ export default defineComponent({
      * 提交
      */
     function onSubmit() {
-      updateDeviceInfo({id: device.id, sub_device_addr: subDeviceAddress.value})
+      let params = {};
+      params.id = device.id;
+      params.sub_device_addr = subDeviceAddress.value;
+      additionalInfo.video_address = subDeviceVideoAddress.value;
+      params.additional_info = JSON.stringify(additionalInfo);
+      updateDeviceInfo(params)
         .then(({data}) => {
           if (data.code == 200) {
             message_success("修改成功！");
@@ -78,7 +88,10 @@ export default defineComponent({
       getDeviceInfo({ id: device.id })
         .then(({data}) => {
           if (data.code == 200) {
+            console.log("====getDeviceInformation", data)
             subDeviceAddress.value = data.data.sub_device_addr ? data.data.sub_device_addr : "";
+            additionalInfo = data.data.additional_info ? JSON.parse(data.data.additional_info) : {};
+            subDeviceVideoAddress.value = additionalInfo.video_address ? additionalInfo.video_address : "";
           }
         })
     }
@@ -86,6 +99,7 @@ export default defineComponent({
 
     return {
       subDeviceAddress,
+      subDeviceVideoAddress,
       closeDialog,
       onSubmit
     }

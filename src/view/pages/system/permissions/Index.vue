@@ -37,7 +37,7 @@
       <el-table-column :label="$t('COMMON.OPERATION')" align="center" width="250">
         <template v-slot="scope">
           <div class="text-right">
-            <el-button type="indigo" size="mini" @click="handleEdit(scope.row)" :disabled="!hasAuth('sys:permission:edit')">{{ $t('COMMON.EDIT') }}</el-button>
+            <el-button type="indigo" size="mini" class="mr-3" @click="handleEdit(scope.row)" :disabled="!hasAuth('sys:permission:edit')">{{ $t('COMMON.EDIT') }}</el-button>
             <el-popconfirm :title="$t('COMMON.DELETETHISITEM')" @confirm="handleDelete(scope.row)">
               <el-button slot="reference" type="danger" size="mini"  :disabled="!hasAuth('sys:permission:del')">{{ $t('COMMON.DELETE') }}</el-button>
             </el-popconfirm>
@@ -64,6 +64,7 @@
                :visible.sync="dialogVisible"
                @closed="dialogVisible = false"
                :close-on-click-modal="false"
+               title="权限管理"
                width="600px">
       <el-form :model="formData"
                label-position="right"
@@ -126,8 +127,8 @@
         </el-form-item>
 
         <div style="display: flex;justify-content: center">
-          <el-button @click="onCancel">取 消</el-button>
-          <el-button type="primary" @click="onSubmit">确 定</el-button>
+          <el-button type="cancel" @click="onCancel">取 消</el-button>
+          <el-button type="save" @click="onSubmit">确 定</el-button>
         </div>
 
 

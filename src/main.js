@@ -34,13 +34,18 @@ import GlobalComponents from './components/global-components';
 import { jsonProp } from './utils/tool';
 import ApiService from "./core/services/api.service";
 
+/**
+ * video.js
+ */
+import Video from 'video.js'
+import 'video.js/dist/video-js.css'
+Vue.prototype.$video = Video
 
 import "@/styles/common.scss";
 import * as echarts from 'echarts';
 Vue.prototype.$echarts = echarts
 
 import ElementUI from "./core/plugins/element-ui";
-import tpIot from "tp-iot"
 
 // mock data
 import '@/mock';
@@ -51,15 +56,17 @@ Vue.component('date-picker', VuePersianDatetimePicker);
 Vue.config.productionTip = false;
 
 Vue.use(ElementUI);
-Vue.use(tpIot);
 
+// import tpIot from "tp-iot"
+import tpIot from "/packages/device_plugin"
+Vue.use(tpIot)
 
 
 // 组合式api
 import VueCompositionApi from "@vue/composition-api"
 Vue.use(VueCompositionApi)
 
-import "@/components/mixins/checkAuth"
+import "@/core/mixins/checkAuth"
 
 Vue.use(VueAxiosPlugin, {
     headers: {

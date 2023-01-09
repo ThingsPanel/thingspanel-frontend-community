@@ -28,8 +28,8 @@
                   v-model="formData.script_content_b"></CodeEditor>
 
       <div style="margin-top: 10px;display: flex;justify-content: center">
-        <el-button style="color:#000" @click="closeDialog">取消</el-button>
-        <el-button type="primary" @click="onSubmit">保存</el-button>
+        <el-button type="cancel" style="color:#000" @click="closeDialog">取消</el-button>
+        <el-button type="save" @click="onSubmit">保存</el-button>
       </div>
     </el-form>
 

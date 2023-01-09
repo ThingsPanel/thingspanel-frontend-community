@@ -11,7 +11,8 @@
                 <div class="text-muted">{{ $t("COMMON.TITLE17") }}</div>
                 <div class="chart_height text-white title-num">
                     <!-- 设备总数 -->
-                  <number-chart :value="deviceTotal"></number-chart>
+                  <div style="height: 80px;line-height: 80px;font-size: 20px" v-if="deviceTotal==0">0</div>
+                  <number-chart v-else :value="deviceTotal"></number-chart>
                 </div>
             </div>
         </div>
@@ -20,7 +21,8 @@
                 <div class="text-muted">{{ $t("COMMON.TITLE18") }}</div>
                 <div class="chart_height text-white title-num">
                     <!-- 消息总数 -->
-                  <number-chart color="#F85778" :value="messageTotal"></number-chart>
+                  <div style="height: 80px;line-height: 80px;font-size: 20px" v-if="messageTotal==0">0</div>
+                  <number-chart v-else color="#F85778" :value="messageTotal"></number-chart>
                 </div>
             </div>
         </div>
@@ -28,7 +30,7 @@
             <div class="panel-bg-blue px-6 py-4 rounded">
                 <div class="text-muted">{{ $t("COMMON.TITLE19") }}</div>
                 <div class="chart_height">
-                  <dashboard-chart :value="cpuUsage"></dashboard-chart>
+                  <dashboard-chart :value="cpuUsage" unit="%"></dashboard-chart>
                   <!-- CPU占用率 -->
                 </div>
             </div>
@@ -38,7 +40,7 @@
               <div class="text-muted">{{ $t("COMMON.TITLE20") }}</div>
               <div class="chart_height">
                 <!-- 内存占用率 -->
-                <dashboard-chart color="#0493fa" :value="ramUsage"></dashboard-chart>
+                <dashboard-chart color="#0493fa" :value="ramUsage" unit="%"></dashboard-chart>
               </div>
             </div>
         </div>
@@ -83,7 +85,7 @@
 </style>
 <script>
     import ApiService from "@/core/services/api.service";
-    import AUTH from "@/core/services/store/auth.module";
+    import { local_url } from "@/api/LocalUrl"
     import { REFRESH } from "@/core/services/store/auth.module";
     import NumberChart from "@/components/e-charts/NumberChart";
     import DashboardChart from "@/components/e-charts/DashboardChart";
@@ -97,8 +99,8 @@
                 equipment: '', // 设备
                 conditions: '',
                 dashboard: '',
-                deviceTotal: 0,
-                messageTotal: 0,
+                deviceTotal: "0",
+                messageTotal: "0",
                 cpuUsage: 0,
                 ramUsage: 0
             }
@@ -111,19 +113,18 @@
         },
         methods:{
             ajaxdata() {
-                ApiService.post(AUTH.local_url+"/home/list")
+                ApiService.post(local_url + "api/home/list")
                     .then(({ data }) => {
                         if (data.code == 200) {
-                            this.deviceTotal = data.data.device;
-                            this.messageTotal = data.data.msg;
-                            this.cpuUsage = data.data['cpu_usage'];
-                            this.ramUsage = data.data['mem_usage'];
-                        }else if(data.code == 401){
+                            this.deviceTotal = data.data.device ? data.data.device : 0;
+                            this.messageTotal = data.data.msg ? data.data.msg : 0;
+                            this.cpuUsage = data.data['cpu_usage'] ? data.data['cpu_usage'] : 0;
+                            this.ramUsage = data.data['mem_usage'] ? data.data['mem_usage'] : 0;
+                        } else if (data.code == 401) {
                             this.$store
                                 .dispatch(REFRESH)
                                 .then(() => {});
                         }else{
-
                         }
                     });
             }

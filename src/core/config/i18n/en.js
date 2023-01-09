@@ -7,6 +7,9 @@ export const locale = {
     SYSTEMSETUP: "System setup",
     PERMISSIONMANAGEMENT: "Permission management",
     PERMISSIONADD: "Add Permission",
+    DEVICEACCESS: "Device Access",
+    NEWPROJECT: "New Project",
+    DEVICEWATCH: "Device Watch",
 
     DEVICE: "Device Manager ",
     CREATEDEVICE: "Create Device",
@@ -51,7 +54,6 @@ export const locale = {
     ROUTING: "routing",
     BUTTON: "button",
     GATEWAYNAME: "Gateway Name",
-    SEARCH:"search",
     MQTTPROTOCOL: "MQTT Protocol",
     PRODUCT:"product",
     BATCHNUMBER:"Batch Number",
@@ -64,6 +66,8 @@ export const locale = {
     JSONTEST:"Paste the plug-in's JSON text here",
     SELECTTHEFILE:"Select the file",
     THEIMPORT:"The import",
+    DELPROTOCOLPLUGIN: "Del Protocol Plugin",
+    DELDEVICEPLUGIN: "Del Device Plugin",
 
 
     DEVICEPROPERTIES: "Device properties",
@@ -81,6 +85,7 @@ export const locale = {
     HOMEANDBACKEND:"Home and backend",
     LOADINGPAGE:"Loading page",
     WEBSITE:"Website",
+    BACKGROUND: "Background",
 
     TOKENEXPIRES: "Whether to refresh the login status has expired?",
     CONSUMING: "Time consuming",
@@ -125,6 +130,8 @@ export const locale = {
     TITLE30: "Data labels",
     TITLE31: "Value",
     TITLE32: "Device Plugin",
+    TITLE33: "Protocol Plugin",
+    TITLE34: "Device Editor",
     FORGETPASS: "forgot password？",
     NAME: "name",
     REMARKS: "Remark",
@@ -166,9 +173,13 @@ export const locale = {
     FEEDBACKQ: "Submit Issues",
     STRATEGY: "Strategy",
     VISUALIZATION: "Dashboard",
+    NEWVISUALIZATION: "NewDashboard",
+    VISUALIZATION: "Visualization",
+    NEWVISUALIZATION: "New Visualization",
+    DELVISUALIZATION: "Del Visualization",
     DEVICE_CHART: "Device Charts",
     WARNINFO: "Alert Message",
-    SYSTEMLOG: "system log",
+    SYSTEMLOG: "System Log",
     EQUIPMENTLOG: "Equipment Log",
     PRODUCTMANAGEMENT: "product management",
     CREATEPRODUCT: "create product",
@@ -179,11 +190,9 @@ export const locale = {
     VIEWBATCH: "view batch",
     BATCHLIST: "batch list",
     CREATEBATCH: "create batch",
-    BATCHNUMBER: "batch number",
     DEVICENUMBER: "device number",
     CONNECTADDRESS: "connect address",
     GENERATEDATAFLAGS: "generate data flags",
-    BATCHDESCRIPTION: "batch description",
     AUTHENTICATION: "Authentication",
     CREATEDATE: "Create date",
     GENERATEDATA: "generate data",
@@ -195,10 +204,10 @@ export const locale = {
     TRANSPOND: "Data Switching",
     OPERATIONLOG: "Logs",
     BUSINESSMANAGEMENT: "Business Management",
-    BUSINESSLIST: "Business list",
+    BUSINESSLIST: "Project List",
     NEWLYADDED: "New",
-    NEWBUSINESS: "New Business",
-    BUSINESSNAME: "Business Name",
+    NEWBUSINESS: "New Project",
+    BUSINESSNAME: "Project Name",
     ADDASSETS: "Add assets",
     EDITASSETS: "Edit assets",
     EDITASSETSNAME: "Edit assets name",
@@ -407,7 +416,8 @@ export const locale = {
     PROTOCOLTYPE1:"ProtocolType",
     EQUIPMENTLOG1:"EquipmentLog",
     QUERY1:"QUERY",
-    REST1:"REST"
+    REST1:"REST",
+    DEVICEMAP:"Device map"
   },
   TRANSLATOR: {
     SELECT: "Please select language",
@@ -572,5 +582,28 @@ export const locale = {
       SYSTEM_SETUP:"System Management",
       DATA_SWITCHING:"Data forwarding",
     }
+  },
+  PLUGIN: {
+    CUSTOM_DEVICE_PLUGIN: "Custom Device Plugin",
+    DEVICE_INFO: "Device Info"
+
+  },
+  HOME: {
+
+  },
+  DEVICE_ACCESS: {
+
+  },
+  DEVICE_WATCH: {
+
+  },
+  DEVICE_MAP: {
+
+  },
+  DATA_MANAGEMENT: {
+
+  },
+  VISUALIZATION: {
+
   }
 };

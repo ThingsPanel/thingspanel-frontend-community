@@ -25,7 +25,7 @@
 <!--      <el-input-->
 <!--          v-model="params.token"-->
 <!--          :placeholder="$t('COMMON.PLACEHOLDER36')"-->
-<!--          size="medium"-->
+
 <!--          clearable-->
 <!--          @keydown.enter.native="handleSearch()"-->
 <!--          @clear="handleSearch()">-->
@@ -36,7 +36,7 @@
       <el-input
           v-model="params.device_name"
           :placeholder="$t('COMMON.PLACEHOLDER2')"
-          size="medium"
+   
           clearable
           @keydown.enter.native="handleSearch()"
           @clear="handleSearch()">
@@ -47,7 +47,7 @@
       <el-input
           v-model="params.key"
           :placeholder="$t('COMMON.PLACEHOLDER40')"
-          size="medium"
+   
           clearable
           @keydown.enter.native="handleSearch()"
           @clear="handleSearch()">
@@ -62,7 +62,6 @@
           :clearable="false"
           value-format="yyyy-MM-dd HH:mm:ss"
           @change="handleSearch()"
-          size="medium"
           type="datetimerange"
           :range-separator="$t('COMMON.PLACEHOLDER38')"
           :start-placeholder="$t('COMMON.PLACEHOLDER37')"
@@ -71,11 +70,11 @@
     </el-col>
 
     <el-col :span="5">
-      <div class="text-right">
-        <el-button class="mr-2" type="indigo" size="medium" @click="handleSearch()">{{ $t('COMMON.SEARCH') }}</el-button>
+      <div>
+        <el-button class="mr-2" type="border" size="medium" @click="handleSearch()">{{ $t('COMMON.SEARCH') }}</el-button>
 
         <el-popconfirm :title="`确定导出 ${total} 条数据吗?`" @confirm="handleExport()">
-          <el-button slot="reference" type="indigo" size="medium">{{ $t('COMMON.EXPORT') }}</el-button>
+          <el-button slot="reference" type="export" size="medium">{{ $t('COMMON.EXPORT') }}</el-button>
         </el-popconfirm>
 
 <!--        <el-button class="ml-2" type="default" size="medium" @click="handleReset()">重置</el-button>-->
@@ -99,6 +98,7 @@
 <!--    </el-table-column>-->
 
     <el-table-column :label="$t('COMMON.TIMES')"  prop="ts"></el-table-column>
+    <el-table-column label="属性别名" prop="alias"></el-table-column>
     <el-table-column :label="$t('COMMON.TITLE30')" prop="key"></el-table-column>
     <el-table-column :label="$t('COMMON.TITLE31')" prop="dbl_v">
       <template v-slot="scope">

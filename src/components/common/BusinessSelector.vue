@@ -2,7 +2,6 @@
   <el-cascader
       :placeholder="$t('COMMON.PLACEHOLDER8')"
       v-model="businessCascaderData"
-      size="medium"
       :props="businessProps"
       :clearable="clearable"
       class="w-100"
@@ -72,6 +71,9 @@ export default defineComponent({
 })
 </script>
 
-<style scoped>
-
+<style>
+  /* .el-cascader-node:not(.is-disabled):hover{
+    color: #fff;
+    background: #0087F6;
+  } */
 </style>

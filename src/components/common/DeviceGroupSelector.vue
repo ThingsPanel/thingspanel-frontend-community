@@ -5,7 +5,7 @@
     :clearable="clearable"
     :filterable="filterable"
     :placeholder="$t('COMMON.PLACEHOLDER35')"
-    size="medium" @change="handleChange()">
+    @change="handleChange()">
   <el-option
       :value="item.id"
       :label="item.device_group"

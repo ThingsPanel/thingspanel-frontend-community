@@ -2,9 +2,10 @@
   <div class="editor-container">
     <div class="editor-header">
       <!-- 顶部工具栏 -->
-      <EditorHeader :params="params"
+      <EditorHeader :params.sync="params"
                     @zoom="handleZoom"
                     @save="handleSave"
+                    @preview="handlePreview"
                     @publish="handlePublish"
                     @show-import="showImportDialog"
                     @show-export="showExportDialog"
@@ -43,16 +44,12 @@ import EditorAside from "./aside"
 import EditorCanvas from "./canvas"
 import EditorInformation from "./information"
 import DialogForm from "./dialog"
-import PluginAPI from "@/api/plugin.js"
 import VisualAPI from "@/api/visualization.js";
 import {message_success} from "@/utils/helpers";
 import bus from "@/core/plugins/eventBus";
 import {MessageBox} from "element-ui";
 import {message_error} from "@/utils/helpers";
 
-const DEVICE_MODE = 0;
-const GROUP_MODE = 1;
-const BUSINESS_MODE = 2;
 
 export default {
   name: "VisualEditor",
@@ -62,56 +59,68 @@ export default {
   data() {
     return {
       componentList: [],
-      params: {},
-      screenId: "",
-      mode: DEVICE_MODE,  // 大屏类型
-      relationId: "",
-      pluginId: "",
+      visualId: "",
       screenData: [],
       jsonData: {},
       dialogOption: {},
+      params: {}
     }
   },
   mounted() {
-    this.params = JSON.parse(JSON.stringify(this.$route.query));
-    this.pluginId = this.params.pluginId;
-    this.relationId = this.params.businessId;
-    this.mode = BUSINESS_MODE;
-    if (this.params.deviceId != "") {
-      this.relationId = this.params.deviceId;
-      this.mode = DEVICE_MODE;
-    } else if (this.params.groupId != "") {
-      this.relationId = this.params.groupId;
-      this.mode = GROUP_MODE;
-    }
-    // 加载大屏数据
-    this.getScreenData();
+    // 获取可视化大屏id
+    this.visualId = this.$route.query.id;
+    // 加载可视化大屏数据
+    this.getScreenData(this.visualId);
     // 获取项目/分组/设备的级联菜单数据
     this.getCasOptions();
   },
   methods: {
+    /**
+     * 缩放
+     * @param v
+     */
     handleZoom(v) {
       this.$refs.editorCanvas.setZoom(v);
     },
+    /**
+     * 自适应
+     */
     handleAdapt() {
       this.$refs.editorCanvas.adapt();
     },
+    /**
+     * 预览
+     */
+    handlePreview() {
+      let query = { id: this.visualId, mode: "preview" };
+      const{ href } = this.$router.resolve({ name:"VisualDisplay", query  });
+      let jsonData = { screen: this.$refs.editorCanvas.fullData, canvasStyle: this.$refs.editorCanvas.canvasStyle};
+      localStorage.setItem("visual_json_data", JSON.stringify(jsonData))
+      window.open(href,'_blank');
+    },
+    /**
+     * 打开导入对话框
+     */
     showImportDialog() {
       let jsonData = {};
       jsonData.screen = this.$refs.editorCanvas.fullData;
       jsonData.canvasStyle = this.$refs.editorCanvas.canvasStyle;
       this.dialogOption = { jsonData, importVisible: true }
     },
+    /**
+     * 打开导出对话框
+     */
     showExportDialog() {
       let jsonData = {};
       jsonData.screen = this.$refs.editorCanvas.fullData;
       jsonData.canvasStyle = this.$refs.editorCanvas.canvasStyle;
       this.dialogOption = { jsonData, exportVisible: true }
     },
+    /**
+     * 导入可视化大屏数据
+     * @param data
+     */
     handleImport(data) {
-
-      console.log("====handleImport.import", typeof data)
-      console.log("====handleImport.screen", this.$refs.editorCanvas.fullData)
       let screen = this.$refs.editorCanvas.fullData;
       if (screen && screen.length > 0) {
         MessageBox.confirm('确定要覆盖当前大屏吗?', '提示', {
@@ -134,62 +143,42 @@ export default {
         }).catch(() => {});
       }
     },
+    /**
+     * 保存可视化大屏数据
+     */
     handleSave() {
+      if (this.visualId == "") return;
       let jsonData = {};
       jsonData.screen = this.$refs.editorCanvas.fullData;
       jsonData.canvasStyle = this.$refs.editorCanvas.canvasStyle;
-
-      console.log("handleSave", jsonData)
       let data = {
-        relation_id: this.relationId,
+        id: this.visualId,
         json_data: JSON.stringify(jsonData),
         dashboard_name: this.params.name,
       }
-      if (this.screenId != "") {
-        // 修改
-        data.id = this.screenId;
-        VisualAPI.edit(data)
-          .then(({data}) => {
-            if (data.code == 200) {
-              message_success("保存成功！")
-              bus.$emit("updateVisual")
-            }
-          })
-      } else {
-        // 添加
-        VisualAPI.add(data)
-            .then(({data}) => {
-              if (data.code == 200) {
-                this.screenId = data.data.id;
-                message_success("保存成功！")
-                bus.$emit("updateVisual")
-              }
-            })
-      }
+      // 修改
+      VisualAPI.edit(data)
+        .then(({data}) => {
+          if (data.code == 200) {
+            message_success("保存成功！")
+            bus.$emit("updateVisual")
+          }
+        })
     },
     handlePublish() {
-      console.log("publish", this.screenId)
-      console.log(this.$refs.editorCanvas.tempData)
     },
     /**
      * 获取大屏数据
      */
-    getScreenData() {
-      VisualAPI.list({"current_page": 1, "per_page": 10, "relation_id": this.relationId})
+    getScreenData(id) {
+      VisualAPI.list({ current_page: 1, per_page: 10, id })
         .then(({data}) => {
           if (data.code == 200) {
-            console.log("====jsonData.screen", data)
-
             let result = data.data.data;
             if (result.length != 0) {
-
-              // 如果有大屏数据，加载大屏
-              this.screenId = result[0].id;
+              this.params = { name: result[0].dashboard_name };
               let jsonData = JSON.parse(result[0].json_data);
               this.jsonData  = jsonData;
-            } else {
-              // 如果没有大屏数
-
             }
           }
         })
@@ -218,7 +207,7 @@ const checkJsonData = (jsonData) => {
   });
 }
 /**
- * 清洗数据
+ * 清洗数据获取可用的级联菜单数据
  * @param options
  * @returns {*}
  */

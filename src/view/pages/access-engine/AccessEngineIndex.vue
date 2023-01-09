@@ -5,7 +5,7 @@
       <TableTitle>{{ $t("COMMON.NETWORKCOMPONENTS")}}</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="indigo" @click="dialogVisible = true">{{ $t("COMMON.CREATACCESSRULSE")}}</el-button>
+      <el-button size="medium" type="border" @click="dialogVisible = true">{{ $t("COMMON.CREATACCESSRULSE")}}</el-button>
     </el-col>
   </el-row>
 
@@ -17,10 +17,10 @@
         <el-tag size="small">{{scope.row.disabled == 'false' ? $t('COMMON.SRARTED'): $t('COMMON.PUTONHOLD')}}</el-tag>
       </template>
     </el-table-column>
-    <el-table-column prop="actions" :label="$t('COMMON.OPERATION')" align="center" width="300px">
+    <el-table-column prop="actions" :label="$t('COMMON.OPERATION')" align="left" width="320px">
       <template v-slot="scope">
-        <el-button size="mini" type="indigo" @click="handle_launch(scope.row)">{{ $t("COMMON.START")}}</el-button>
-        <el-button size="mini" type="indigo" @click="handle_pause(scope.row)">{{ $t("COMMON.SUSPENDED")}}</el-button>
+        <el-button size="mini" type="success" @click="handle_launch(scope.row)">{{ $t("COMMON.START")}}</el-button>
+        <el-button size="mini" type="yellow" @click="handle_pause(scope.row)">{{ $t("COMMON.SUSPENDED")}}</el-button>
         <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">{{ $t("COMMON.EDIT")}}</el-button>
 
         <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handle_del(scope.row)">

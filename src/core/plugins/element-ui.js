@@ -42,7 +42,7 @@ import {
     DropdownMenu,
     DropdownItem,
     Collapse,
-    CollapseItem,
+    CollapseItem
 } from "element-ui";
 
 // 防止dialog导致页面滚动条消失抖动

@@ -12,6 +12,7 @@
   "loader": {
     "type": "spinner-logo",
     "logo": "media/logos/logo-letter-1.png",
+    "background": "media/bg/bg-12.png",
     "message": "Please wait..."
   },
   "breakpoints": {

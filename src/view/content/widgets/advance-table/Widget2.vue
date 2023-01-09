@@ -178,7 +178,7 @@ export default {
           text1: "Payrol Application",
           text2: "company@dev.com",
           text3: "$560,000",
-          text4: "Laravel, Metronic",
+          text4: "Laravel, ThingsPanel",
           text5: "Success"
         },
         {

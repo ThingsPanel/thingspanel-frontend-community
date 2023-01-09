@@ -1,7 +1,7 @@
 <template>
   <div class="dialog-container">
     <!-- 导入JSON start-->
-    <el-dialog class="el-dark-dialog el-table-transparent" title="导入JSON" :visible.sync="optionData.importVisible" width="30%">
+    <el-dialog class="el-dark-dialog el-table-transparent" title="导入JSON" :visible.sync="optionData.importVisible" width="540px">
       <el-row >
         <div style="margin-bottom: 10px;display: flex;justify-content: space-between">
           <span>在这里粘贴大屏的JSON文本</span>
@@ -23,7 +23,7 @@
     <!-- 导入JSON end -->
 
     <!-- 导出JSON start -->
-    <el-dialog class="el-dark-dialog el-table-transparent" title="导出JSON" :visible.sync="optionData.exportVisible" width="30%">
+    <el-dialog class="el-dark-dialog el-table-transparent" title="导出JSON" :visible.sync="optionData.exportVisible" width="540px">
       <el-row >
         <div style="margin-bottom: 10px;display: flex;justify-content: space-between">
 

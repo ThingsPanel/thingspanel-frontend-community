@@ -246,3 +246,16 @@ export function deleteCustomExchangeAgreement(data){
         data
     })
 }
+
+/**
+ * 获取多个设备状态
+ * @param data   设备列表
+ * @returns {AxiosPromise}
+ */
+export function getDeviceListStatus(data) {
+    return axios({
+        url: "/device/status",
+        method: "post",
+        data,
+    })
+}

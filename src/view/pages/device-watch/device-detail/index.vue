@@ -1,7 +1,7 @@
 <template>
   <div class="device-watch-container">
     <div class="header">
-      <el-button class="el-button--indigo"  @click="back">{{ $t('COMMON.RETURN') }}</el-button>
+      <el-button class="el-button--indigo" size="medium" @click="back">{{ $t('COMMON.RETURN') }}</el-button>
     </div>
     <div class="content">
 
@@ -12,7 +12,7 @@
       </div>
 
       <div class="display-canvas">
-        <PluginCharts :options="pluginOptions" :device="device"></PluginCharts>
+        <PluginCharts :options="pluginOptions" :tsl="pluginTsl" :device="device"></PluginCharts>
       </div>
     </div>
 
@@ -25,15 +25,13 @@ import useRoute from "@/utils/useRoute";
 import { ref} from "@vue/composition-api/dist/vue-composition-api";
 import {device_group_drop} from "@/api/asset";
 import PluginAPI from "@/api/plugin.js"
-import DeviceChartCanvas from "./DeviceChartCanvas"
-import VisualAPI from "@/api/visualization.js"
 import {getDeviceTree} from "@/api/device";
 import PluginCharts from "./PluginCharts.vue"
 
 export default defineComponent({
   name: "DeviceDetail",
   components: {
-    DeviceChartCanvas, PluginCharts
+    PluginCharts
   },
   setup(props, context){
     let { route, router } = useRoute();
@@ -105,7 +103,6 @@ export default defineComponent({
             item.leaf = true;
             return item;
           })
-          console.log("level=2", arr)
           return resolve(arr);
         }
       }
@@ -113,6 +110,7 @@ export default defineComponent({
     }
 
     let pluginOptions = ref([]);
+    let pluginTsl = ref([]);
     let canvasStyle = ref({});
     let device = ref({})
 
@@ -129,6 +127,7 @@ export default defineComponent({
                 if (data.code == 200 && data.data && data.data.data && data.data.data.length > 0) {
                   let plugin = JSON.parse(data.data.data[0].chart_data);
                   pluginOptions.value = JSON.parse(JSON.stringify(plugin.chart));
+                  pluginTsl.value = JSON.parse(JSON.stringify(plugin.tsl.properties));
                 } else {
                   pluginOptions.value = [];
                 }
@@ -154,7 +153,8 @@ export default defineComponent({
       nodeClick,
       canvasStyle,
       device,
-      pluginOptions
+      pluginOptions,
+      pluginTsl
     }
   }
 })
@@ -166,12 +166,12 @@ export default defineComponent({
   height: calc(100vh - 90px)!important;
   //height: calc(100% - 100px);
   width: auto;
-  padding: 20px 10px 0px 10px;
+  padding: 0;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   .header {
     color:  #fff;
-    height: 60px;
-    padding-bottom: 20px;
+    height: 50px;
+    padding-bottom: 10px;
   }
   .content {
     display: inline-flex;

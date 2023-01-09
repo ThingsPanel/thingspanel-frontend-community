@@ -23,7 +23,7 @@
 
     </div>
 
-    <div style="width: 100%; height:100%" ref="chart"></div>
+    <div style="width: 100%; height:calc(100% - 40px);position: absolute;top:40px" ref="chart"></div>
 
     <el-dialog title="配置" width="30%"
         :visible.sync="configurationVisible">
@@ -38,8 +38,8 @@
 </template>
 
 <script>
-import { currentValue, historyValue } from "@/api/device";
-import { addTimer, clearTimer } from "@/utils/tool.js"
+import {  historyValue } from "@/api/device";
+import "@/core/mixins/charts.js"
 
 let Echarts = require('echarts/lib/echarts');
 require('echarts/lib/chart/gauge');
@@ -56,7 +56,7 @@ export default {
       default: () => {return {}}
     },
     value: {
-      type: [Object],
+      type: [Object, String, Array],
       default: () => { return {} }
     },
     device: {
@@ -77,9 +77,6 @@ export default {
   watch: {
     value: {
       handler(newValue) {
-        if (newValue) {
-          this.refreshOption(newValue);
-        }
       }
     }
   },
@@ -90,11 +87,8 @@ export default {
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
     this.initEChart();
-    this.updateOption();
   },
-  beforeDestroy() {
-    clearTimer();
-  },
+
   methods: {
     /**
      * 加载EChats图表
@@ -111,26 +105,19 @@ export default {
         this.myEcharts.setOption(this.optionData);
       }
     },
-    // 更新图表的值
-    updateOption() {
-      if (this.timer) {
-        clearInterval(this.timer);
-      }
-      console.log("updateOption.timer", this.timer)
-      this.getValue();
-      this.timer = setInterval(() => {
-        this.getValue();
-      }, this.flushTime * 1000);
-      addTimer(this.timer);
-    },
-    getValue() {
-      // 轮询获取指定设备的推送数据
-      if (this.controlType == "history") {
-        // 历史数据
-        this.getHistory(this.device.device, this.optionData.mapping);
-      } else {
-        // 当前值
-        this.getCurrent(this.device.device, this.optionData.mapping);
+    /**
+     * 更新图表的值
+     * @param value
+     */
+    updateOption(value) {
+      console.log("====更新图表的值", this.option)
+      if (this.option.controlType == "dashboard") {
+        let series = [];
+        series = value.map(item => {
+          let detail = { formatter: '{value}' + (item.unit != "-" ? item.unit : "") };
+          return { data: [ { value: item.value } ], detail }
+        })
+        this.myEcharts.setOption({ series });
       }
     },
     /**
@@ -138,39 +125,23 @@ export default {
      * @param deviceId
      * @param attrs
      */
-    getCurrent(deviceId, attrs) {
-      currentValue({entity_id: deviceId, attribute: attrs})
-        .then(({data}) => {
-          if (data.code == 200) {
-            if (data.data) {
-              let series = [];
-              let title = this.optionData.series[0].data[0].name ? this.optionData.series[0].data[0].name : "";
-              if (!this.optionData || !this.optionData.mapping) return;
-                this.optionData.mapping.forEach(map => {
-                  let serie = { data: [{ value: data.data[0][map], name: title }]};
-                  series.push(serie);
-                })
-                // 设置图表的当前值
-                this.myEcharts.setOption({series})
-            }
-          }
-        })
-    },
-    getHistory(deviceId, attrs) {
+    getHistory(mapping) {
+      let attrs = mapping.map(item => item.name);
+      console.log("====Echarts.getHistory", attrs)
       if (!attrs || attrs.length == 0) return;
       let timestamp = (new Date()).getTime();
       let yesterday = timestamp-246060*1000;
       let rate = 10 * 1000 * 1000;  // 微秒
       let attribute = attrs.concat(["systime"])
-      historyValue(
-          {
-            device_id: deviceId,
-            attribute,
-            "start_ts": yesterday,
-            "end_ts": timestamp,
-            rate
-          }
-      )
+      let params = {
+        device_id: this.device.device,
+        attribute,
+        "start_ts": yesterday,
+        "end_ts": timestamp,
+        rate
+      }
+      console.log("getHistory", this.device, this.option, attrs, params);
+      historyValue(params)
         .then(({data}) => {
           if (data.code == 200) {
             let series = [];
@@ -184,12 +155,6 @@ export default {
           }
         })
     },
-    handleFlushCommand(command) {
-      if (command != "custom") {
-        this.flushTime = command;
-        this.updateOption();
-      }
-    },
     showConfiguration() {
       // this.configurationVisible = true;
     },
@@ -197,6 +162,12 @@ export default {
      * 修改 e-chart 大小
      */
     sizeChange(){
+      let mainRef = this.$refs.chart;
+      let width = mainRef.clientWidth;
+      let height = mainRef.clientHeight;
+      let length = Math.min(width, height);
+      let option = this.resizeECharts(this.option, length);
+      this.myEcharts.setOption(option)
         this.myEcharts.resize();
     },
     getChartStyle() {
@@ -215,10 +186,11 @@ export default {
 
 <style scoped lang="scss">
 .chart-div {
-  margin: 10px 20px 10px 10px;
+  position: relative;
+  //margin: 10px 20px 20px 10px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   background-color: #2d3d86;
-  border-radius: 16px;
+  border-radius: 4px;
 }
 .chart-header {
   position: relative;
@@ -227,7 +199,7 @@ export default {
   height: 40px;
   padding-left: 10px;
   text-align: right;
-  box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
+  //box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
   .title {
     //width: 100%;
     //flex-grow: 1;

@@ -1,5 +1,6 @@
-import red_axios, {red_base_url, red_url} from "./red-axios";
+import red_axios from "./red-axios";
 import axios from './http'
+import { red_url } from "@/api/LocalUrl"
 
 const loginData = {
     "client_id": "node-red-editor",

@@ -92,11 +92,13 @@ export default {
   // 折叠菜单父级的左边距
   .v-list-group__header,
   .v-list-item {
-    padding-left: 1.5rem !important;
+    padding: 0 1rem !important;
+    margin-left: 1rem;
   }
   // 二级菜单的左边距
   .v-list-group__items .v-list-item {
-    padding-left: 3rem !important;
+    padding: 0 1rem !important;
+    margin-left: 3rem;
   }
 
   // 去掉右边框

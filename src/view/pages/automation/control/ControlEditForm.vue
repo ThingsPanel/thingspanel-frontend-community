@@ -2,6 +2,7 @@
   <el-dialog
       :title="current_item.id ? $t('AUTOMATION.CONTROL_STRATEGY.EDIT_CONTROL_STRATEGY') : $t('AUTOMATION.CONTROL_STRATEGY.ADD_CONTROL_STRATEGY')"
       class="el-dark-dialog"
+      :close-on-click-modal="false"
       :visible.sync="showDialog"
       width="60%"
       height="60%"
@@ -14,13 +15,13 @@
       hide-required-asterisk>
     <el-row :gutter="20">
 
-      <!--    策略名称-->
+      <!-- 策略名称-->
       <el-col :span="8">
         <el-form-item :label="$t('COMMON.STRATRGYLISTNAME')" prop="name" :rules="rules.name">
           <el-input v-model="formData.name" :placeholder="$t('COMMON.PLACEHOLDER5')"></el-input>
         </el-form-item>
       </el-col>
-      <!--策略描述-->
+      <!-- 策略描述 -->
       <el-col :span="8">
         <el-form-item :label="$t('COMMON.STRATRGYLISTDES')" prop="describe" :rules="rules.describe">
           <el-input v-model="formData.describe" :placeholder="$t('COMMON.PLACEHOLDER6')"></el-input>
@@ -95,12 +96,12 @@
               <el-col :span="3">
                 <el-form-item :prop="`config.rules.${index}.value`" :rules="rules['config.rules.value']">
                   <!-- 数值 -->
-                  <el-input size="medium" class="w-100" v-model="rules_item.value" :placeholder="$t('AUTOMATION.PLACEHOLDER7')"></el-input>
+                  <el-input class="w-100" v-model="rules_item.value" :placeholder="$t('AUTOMATION.PLACEHOLDER7')"></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="3">
                 <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-                <el-popconfirm :title=" $t('COMMON.TITLE4') " @confirm="removeRulesLine(rules_item)" v-else>
+                <el-popconfirm :title="$t('COMMON.TITLE4') " @confirm="removeRulesLine(rules_item)" v-else>
                   <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE') }}</el-button>
                 </el-popconfirm>
               </el-col>
@@ -207,15 +208,17 @@
                     :rules="apply_item.field_type === 3 ? rules['config.rules.value_number'] : rules['config.rules.value']"
                 >
                   <!-- 值 field_type等于3时 改为数字输入框 -->
-                  <el-input-number size="medium" controls-position="right" class="w-100" v-model="apply_item.value" v-if="apply_item.field_type === 3"></el-input-number>
-                  <el-input size="medium" class="w-100" v-model="apply_item.value" v-else></el-input>
+                  <el-input-number controls-position="right" class="w-100" v-model="apply_item.value" v-if="apply_item.field_type === 3"></el-input-number>
+                  <el-input class="w-100" v-model="apply_item.value" v-else></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="3">
                 <el-button type="indigo" size="medium" @click="addApplyLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-                <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeApplyLine(apply_item)" v-else>
-                  <el-button slot="reference" type="danger" size="medium">{{  $t('COMMON.DELETE') }}</el-button>
-                </el-popconfirm>
+                <el-button type="danger" size="medium" v-else @click="removeApplyLine(apply_item)">{{ $t('COMMON.DELETE')}}</el-button>
+
+<!--                <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeApplyLine(apply_item)" v-else>-->
+<!--                  <el-button slot="reference" type="danger" size="medium">{{  $t('COMMON.DELETE') }}</el-button>-->
+<!--                </el-popconfirm>-->
               </el-col>
             </el-row>
           </template>
@@ -240,15 +243,15 @@
     <FormAlert :error_message="error_message"></FormAlert>
 
     <div class="text-right">
-      <el-button size="medium" type="default" @click="handleCancel()">{{$t('COMMON.CANCEL')}}</el-button>
-      <el-button size="medium" type="indigo" @click="handleSave()">{{$t('COMMON.SAVE')}}</el-button>
+      <el-button size="medium" type="cancel" @click="handleCancel()">{{$t('COMMON.CANCEL')}}</el-button>
+      <el-button size="medium" type="save" @click="handleSave()">{{$t('COMMON.SAVE')}}</el-button>
     </div>
   </el-form>
   </el-dialog>
 </template>
 
 <script>
-import {defineComponent, computed, ref, reactive} from "@vue/composition-api";
+import  {defineComponent, computed, ref, reactive, getCurrentInstance} from "@vue/composition-api";
 import DeviceGroupSelector from "@/components/common/DeviceGroupSelector.vue";
 import DeviceSelector from "../components/DeviceSelector.vue"
 import TriggerSelector from "../components/TriggerSelector.vue"
@@ -263,6 +266,7 @@ import {automation_add, automation_edit} from "@/api/automation";
 import {watch} from "@vue/composition-api/dist/vue-composition-api";
 import {json_parse_stringify} from "@/utils/helpers";
 import RepeatTime from "../components/RepeatTime"
+import { MessageBox } from 'element-ui';
 export default defineComponent({
   name: "ControlEditForm",
   components: {
@@ -301,14 +305,21 @@ export default defineComponent({
     }
   },
   setup(props, context){
+
+    const this_ = getCurrentInstance().proxy;
+
     let showDialog = computed({
       get(){
+        // if (!props.controlDialogVisible) {
+        //   resetFormData({});
+        // }
         return !!props.controlDialogVisible
       },
       set(val){
         context.emit("update:controlDialogVisible", val)
       }
     })
+
 
     let controlFormRef = ref()
 
@@ -317,6 +328,24 @@ export default defineComponent({
     let default_rules_type_2 = {interval:0, time: "", time_interval_a: 60, unit: "second", rule_id: ""}
     let default_apply = {asset_id: "", device_id: "", plugin_id: "",  field: "",  value: ""}
 
+    const initialFormData = {
+      id: "",
+      business_id: props.business_id,
+      name: "",
+      describe: "",
+      status: 1, // 开关
+      sort: 100,
+      type: 1, // 策略类型
+      issued: "1",
+      config: {
+        rules: [
+          json_parse_stringify(default_rules_type_1)
+        ],
+        apply: [
+          json_parse_stringify(default_apply)
+        ]
+      }
+    };
     let formData = reactive({
       id: "",
       business_id: props.business_id,
@@ -339,9 +368,11 @@ export default defineComponent({
     let error_message = ref("")
 
     // 重置表单数据
-    function resetFormData(){
-      let item_attrs = JSON.parse(JSON.stringify(props.current_item))
-      if (JSON.stringify(item_attrs) != "{}") {
+    function resetFormData(currentItem){
+      let item_attrs = JSON.parse(JSON.stringify(currentItem))
+      if (JSON.stringify(item_attrs) == "{}") {
+        item_attrs = JSON.parse(JSON.stringify(initialFormData));
+      } else if (JSON.stringify(item_attrs) != "{}") {
         item_attrs.config.rules.forEach(item => {
           if (item.unit == "minute") {
             item.time_interval_a = item.time_interval / 60;
@@ -352,17 +383,22 @@ export default defineComponent({
           }
         })
       }
+
+      console.log("====resetFormData.item_attrs", item_attrs)
+
       for (const key in formData) {
         // 有则逐个赋值
         if(key in item_attrs){
-          formData[key] = item_attrs[key]
+          formData[key] = item_attrs[key];
         }
       }
+      console.log("====resetFormData.formData", formData)
+
     }
 
     // 修改时用
     watch(()=>props.current_item, ()=>{
-      resetFormData()
+      resetFormData(props.current_item)
     }, {
       immediate: true
     })
@@ -440,6 +476,7 @@ export default defineComponent({
     function create_or_update(formData) {
       // 拷贝
       let copy = JSON.parse(JSON.stringify(formData))
+      console.log("====create_or_update.formData", formData)
       // 重点 config 要序列化
       copy.config = JSON.stringify(copy.config)
       // status 需要数字类型，字符串会报错 "状态 不能为空"
@@ -450,7 +487,10 @@ export default defineComponent({
     }
 
     function handleCancel(){
-      context.emit("update:controlDialogVisible", false)
+      showDialog.value = false;
+      console.log("====handleCancel")
+      context.emit("update:current_item", {})
+      // context.emit("update:controlDialogVisible", false)
     }
 
     // 设备分组更改时
@@ -505,8 +545,16 @@ export default defineComponent({
     }
 
     function removeApplyLine(item){
-      let index = formData.config.apply.indexOf(item)
-      formData.config.apply.splice(index, 1)
+      MessageBox.confirm('是否继续?', '提示', {confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning'})
+        .then(() => {
+          let index = formData.config.apply.indexOf(item)
+          formData.config.apply.splice(index, 1)
+          this.$message({type: 'success', message: '删除成功!'});
+        })
+          .catch(() => {
+          this.$message({type: 'info', message: '已取消删除'});
+        });
+
     }
 
     return {

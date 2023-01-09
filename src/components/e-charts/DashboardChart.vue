@@ -1,8 +1,10 @@
 <template>
-  <div style="width: 100%;height: 100%;" id="main" ref="chart-main"></div>
+    <div style="width: 100%;height: 100%;background-color: transparent" :id="'main' + option.cptId" ref="chart-main"></div>
 </template>
 
 <script>
+import "@/core/mixins/charts.js"
+
 export default {
   name: "DashboardChart",
   props: {
@@ -14,14 +16,6 @@ export default {
       type: [String],
       default: "#3aa423"
     },
-    w: {
-      type: [Number,String],
-      default: "100%"
-    },
-    h: {
-      type: [Number, String],
-      default: "100%"
-    },
     min: {
       type: [Number, String],
       default: 0
@@ -32,11 +26,11 @@ export default {
     },
     value: {
       type: [Number, String, Array],
-      default: 0
+      default: "0"
     },
     unit: {
       type: [String],
-      default: "%"
+      default: ""
     },
     title: {
       type: [String],
@@ -50,28 +44,18 @@ export default {
   watch: {
     value: {
       handler(newValue) {
+        console.log("====DashboardChart.value", newValue)
         this.setEchartsValue(newValue);
       }
     },
-    w: {
-      handler(newValue) {
-          this.myChart.resize();
-      }
-    },
-    h: {
-      handler(newValue) {
-          this.myChart.resize();
-      }
-    }
   },
   data() {
     return {
-      myChart: null,
+      // myChart: null,
       optionData: {}
     }
   },
   mounted() {
-    console.log("====dashboard.option", this.option)
     // 在通过mounted调用即可
     this.echartsInit();
     if (this.autoResize) {
@@ -79,33 +63,75 @@ export default {
         this.myChart.resize();
       });
     }
+
+    const chartMain = document.getElementById("main" + this.option.cptId);
+    const resizeObserver = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        switch(entry.target) {
+          case chartMain: {
+            let length = Math.min(entry.contentRect.width, entry.contentRect.height)
+            let option = this.resizeECharts(JSON.parse(JSON.stringify(this.optionData)), length);
+            this.myChart.setOption(JSON.parse(JSON.stringify(option)))
+          }
+        }
+      }
+    })
+    resizeObserver.observe(chartMain);
+
   },
   methods: {
     //初始化echarts
     echartsInit() {
-      this.myChart = this.$echarts.init(this.$refs["chart-main"]);
-      this.optionData = JSON.parse(JSON.stringify(this.option));
-      this.optionData = this.initOption(this.optionData);
+      this.myChart = this.$echarts.init(this.$refs["chart-main"], null, { renderer : 'svg' });
+      this.optionData = this.initOption(this.option);
       this.optionData.series[0].min = this.min;
       this.optionData.series[0].max = this.max;
       this.optionData.series[0].data[0].name = this.title;
       this.optionData.series[0].data[0].value = this.value;
-      this.optionData.series[0].detail.formatter = "{value}" + this.unit;
+      this.optionData.series[0].detail.formatter = "{value} " + this.unit;
       // 进度条颜色
       this.optionData.series[0].progress.itemStyle.color = this.color;
       // 指针颜色
       this.optionData.series[0].pointer.itemStyle.color = this.color;
+      console.log("====初始化echarts", this.optionData);
       this.myChart.setOption(this.optionData);
       this.$nextTick(() => {
         this.myChart.resize();
       });
     },
+    /**
+     * 设置Echarts图表的值
+     * @param value
+     */
     setEchartsValue(value) {
-      console.log("setEchartsValue", typeof value)
-      let option = { series: [ { data: [ { value }]}]}
+      console.log("====设置Echarts图表的值", value)
+      let option = null;
+      if (typeof value == "string" || typeof value == "number") {
+        option = { series: [ { data: [ { value }]}]};
+      } else if (typeof value == "object"){
+        if (Object.prototype.toString.call(value) === "[object Array]") {
+          // object
+
+          if (this.option.dataSrc) {
+            let property = this.option.dataSrc[0].property;
+
+            let val = value[0]['value'][property.name];
+            if (val) {
+              option = { series: [ { data: [ { value: val }], detail: { formatter: '{value}' + property.unit } }]};
+            }
+          }
+        } else {
+          // array
+          let series = value.map(item => { return { data: [ { value: item } ] } })
+          option = { series };
+        }
+      }
+      console.log("====我是Object", option)
+
       this.myChart.setOption(option);
     },
-    initOption(option) {
+    initOption(opt) {
+      let option = JSON.parse(JSON.stringify(opt));
       if (!option.series) option.series = JSON.parse(JSON.stringify(dashboardOption.series));
 
       if (!option.series[0].data) console.log(option.series[0])

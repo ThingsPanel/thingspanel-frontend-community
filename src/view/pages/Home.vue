@@ -5,7 +5,7 @@
       <ListWidget10></ListWidget10>
     </div>
     <!--最近访问-->
-    <div class="card card-custom card-stretch mb-4" v-show="isshowguide">
+    <div class="card card-custom card-stretch gutter-b mb-4.5" v-show="isshowguide">
       <!--begin::Header-->
       <div class="card-header align-items-center border-0 mt-3 px-6">
         <h3 class="card-title align-items-start flex-column">
@@ -106,10 +106,10 @@
         </div>-->
       </div>
     </div>
-    <div>
+    <div class="card-custom card-stretch gutter-b mb-4.5">
       <MixedWidget3></MixedWidget3>
     </div>
-    <div>
+    <div class="card-custom card-stretch gutter-b mb-4.5" style="margin-top:-22px">
       <MixedWidget4></MixedWidget4>
     </div>
     <!--运行状态-->
@@ -168,8 +168,7 @@ import MixedWidget4 from "@/view/content/widgets/mixed/Widget4.vue";
 import ListWidget10 from "@/view/content/widgets/list/Widget10.vue";
 
 import { REFRESH } from "@/core/services/store/auth.module";
-import AUTH from "@/core/services/store/auth.module";
-
+import { local_url } from "@/api/LocalUrl"
 import ApiService from "@/core/services/api.service";
 export default {
   name: "home",
@@ -187,12 +186,10 @@ export default {
   },
   methods: {
     ajaxdata() {
-      ApiService.post(AUTH.local_url + "/asset/work_index", {
+      ApiService.post(local_url + "api/asset/work_index", {
         work_name: "",
         page: 1,
       }).then(({ data }) => {
-        console.log("获取业务数据");
-        console.log(data);
         if (data.code == 200) {
           if (data.data.data.length > 0) {
             this.isshowguide = true;
@@ -207,7 +204,7 @@ export default {
     },
 
     getguidlist() {
-      ApiService.post(AUTH.local_url + "/navigation/list", {
+      ApiService.post(local_url + "api/navigation/list", {
         work_name: "",
       }).then(({ data }) => {
         console.log("指南列表");

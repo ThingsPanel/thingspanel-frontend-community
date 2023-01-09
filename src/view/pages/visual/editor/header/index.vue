@@ -1,9 +1,8 @@
 <template>
   <div class="header-container">
-    <div class="left">
-      <p style="">
-        {{ params.name }}
-      </p>
+    <div class="left" @click="handleShowEditName">
+      <el-input class="input-title" style="width:200px" ref="inputRef"size="small" v-if="edit" v-model="name" @change="inputNameChange" @blur="inputNameChange"></el-input>
+      <div class="title" v-else>{{ name }}</div>
     </div>
 
     <div class="right">
@@ -29,20 +28,16 @@
         <el-link class="el-dark-link link-item" icon="el-icon-edit-outline">编辑</el-link>
         <el-link class="el-dark-link link-item" icon="el-icon-refresh-left">撤销</el-link>
 
-        <!-- 缩小 -->
-        <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-minus" @click="handleZoomOut"></el-link>
-        <!-- 放大 -->
-        <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-plus" @click="handleZoomIn"></el-link>
+<!--        &lt;!&ndash; 缩小 &ndash;&gt;-->
+<!--        <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-minus" @click="handleZoomOut"></el-link>-->
+<!--        &lt;!&ndash; 放大 &ndash;&gt;-->
+<!--        <el-link class="el-dark-link link-item" :underline="false" icon="el-icon-plus" @click="handleZoomIn"></el-link>-->
 
-        <el-link class="el-dark-link link-item" icon="el-icon-monitor" @click="handleAdapt">自适应</el-link>
+<!--        <el-link class="el-dark-link link-item" icon="el-icon-monitor" @click="handleAdapt">自适应</el-link>-->
 
 
-        <el-link class="el-dark-link link-item" icon="el-icon-s-platform">预览</el-link>
+        <el-link class="el-dark-link link-item" icon="el-icon-s-platform" @click="handlePreview">预览</el-link>
         <el-link class="el-dark-link link-item" icon="el-icon-s-platform">更换主题</el-link>
-
-<!--        <el-select size="mini" placeholder="请选择模板" v-model="template" @change="handleChangeTemplate">-->
-<!--          <el-option v-for="(template, index) in templateList" :key="index" :label="template.title" :value="template.value"></el-option>-->
-<!--        </el-select>-->
 
       </div>
     </div>
@@ -58,14 +53,26 @@ export default {
   props: {
     params: {
       type: [Object],
-      default: () => { return {} }
+      default: () => { return { name: "123"} }
     }
   },
   data() {
     return {
       template: "",
       // 模板列表
-      templateList: []
+      templateList: [],
+      edit: false,
+      name: ""
+    }
+  },
+  watch: {
+    "params.name": {
+      handler(newValue) {
+        if (newValue) {
+          this.name = newValue;
+        }
+      },
+      immediate: true, deep: true
     }
   },
   mounted() {
@@ -73,6 +80,12 @@ export default {
     console.log("====templates", this.templateList)
   },
   methods: {
+    handleShowEditName() {
+      this.edit = true;
+      this.$nextTick(() => {
+        this.$refs.inputRef.focus();
+      })
+    },
     /**
      * 缩小
      */
@@ -110,7 +123,7 @@ export default {
      * 预览
      */
     handlePreview() {
-
+      this.$emit("preview");
     },
     /**
      * 发布
@@ -127,9 +140,10 @@ export default {
      */
     handleFileCommand(command) {
       if (command == "export") {
-        this.$emit("showExport");
+        this.$emit("show-export");
       } else if (command == "import") {
-        this.$emit("showImport");
+        console.log("====handleFileCommand", command)
+        this.$emit("show-import");
       }
     },
     /**
@@ -142,6 +156,11 @@ export default {
     handleChangeTemplate(val) {
       let temp = this.templateList.find(item => item.value == val)
       this.$emit("import", temp);
+    },
+    inputNameChange() {
+      this.edit = false;
+      this.params.name = this.name;
+      this.$emit("update:changeName", this.params);
     }
   }
 }
@@ -155,14 +174,22 @@ export default {
   .left {
     display: table;
     float: left;
-    width: 440px!important;
-    p {
+    width: 300px!important;
+    .title {
       vertical-align: middle;
       display: table-cell;
-      width: 440px!important;
+      width: 200px!important;
       color: #fff;
       font-size: 20px;
       padding-left: 20px;
+      height: 60px;
+    }
+    .input-title {
+      vertical-align: middle;
+      display: table-cell;
+      width: 200px!important;
+      color: #fff;
+      font-size: 20px;
       height: 60px;
     }
   }
