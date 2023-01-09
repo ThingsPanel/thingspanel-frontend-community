@@ -42,8 +42,8 @@
           </el-form-item>
 
           <el-form-item label="设备位置" >
-            <el-input style="width: 100%" placeholder="请输入设备经纬度，用逗号隔开，如：116.462346, 39.356432"
-                      v-model="attrFormData.location"
+            <el-input readonly @click.native="showCheckLocation" style="width: 100%" placeholder="请输入设备经纬度，用逗号隔开，如：116.462346, 39.356432"
+                      v-model="location"
               ></el-input>
           </el-form-item>
         </el-form>
@@ -64,14 +64,21 @@
         <el-button type="cancel" @click="handleClose">取 消</el-button>
         <el-button type="save" @click="handleSubmit">确 定</el-button>
       </span>
+
+      <device-location-config v-if="positionShow" :maker-position.sync="locationArray" :dialog-visible.sync="positionShow"></device-location-config>
   </el-dialog>
+  
 </template>
 
 <script>
 import ModbusAPI from "@/api/modbus"
 import {message_success} from "../../../../../utils/helpers";
+import DeviceLocationConfig from "@/components/common/DeviceLocationConfig.vue"
 export default {
   name: "DeviceConfigForm",
+  components: {
+    DeviceLocationConfig
+  },
   props: {
     dialogVisible: {
       type: [Boolean],
@@ -84,6 +91,7 @@ export default {
   },
   data() {
     return {
+      positionShow: false,
       activeName: "",
       tabList: [
         { value: "configParse", label: "数据解析" },
@@ -97,7 +105,8 @@ export default {
         thresholdTime: 60
       },
       formRule: {},
-      location: ""
+      location: "",
+      locationArray: []
     }
   },
   watch: {
@@ -199,11 +208,19 @@ export default {
         // }
 
       },
+    },
+    locationArray(newValue) {
+      if(newValue) {
+        this.location = newValue.join(",")
+      }
     }
   },
   methods: {
     handleClose() {
       this.$emit("update:dialogVisible", false);
+    },
+    showCheckLocation() {
+      this.positionShow = true
     },
     handleSubmit() {
       const submit = () => {
