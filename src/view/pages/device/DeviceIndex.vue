@@ -101,14 +101,14 @@
     <!--  设备类型：网关/设备 end  -->
 
     <!-- 绑定插件 -->
-    <el-table-column :label="$t('COMMON.BINGPLUGINS')" width="auto" min-width="8%">
+    <el-table-column :label="$t('COMMON.BINGPLUGINS')" width="80px">
       <template slot-scope="scope">
         <el-button v-if="scope.row.device_type!='2'" type="text" @click="handleBindingClick(scope.row)">{{ $t("COMMON.BINGPLUGINS")}}</el-button>
       </template>
     </el-table-column>
 
     <!-- 编辑参数   -->
-    <el-table-column :label="$t('COMMON.CODEMANAGE')" width="auto" min-width="8%">
+    <el-table-column :label="$t('COMMON.CODEMANAGE')" width="80px" min-width="10%">
       <template slot-scope="scope">
         <!-- 子设备 -->
         <el-button v-if="scope.row.device_type=='3'" type="text" @click="handleEditSubParameter(scope.row)">{{ $t("COMMON.EDITPARAMETERS")}}</el-button>
@@ -117,8 +117,8 @@
       </template>
     </el-table-column>
 
-    <!--  推送时间 start  -->
-    <el-table-column label="状态" width="auto" min-width="12%">
+    <!--  在线/离线状态 start  -->
+    <el-table-column label="状态" width="70px">
       <template slot-scope="scope">
         <el-tag v-if="scope.row.device_state === '1'">在线</el-tag>
         <el-tag v-else-if="scope.row.device_type!=='3'" type="info">离线</el-tag>
@@ -160,7 +160,7 @@
     <!--  操作 start  -->
     <el-table-column :label="$t('COMMON.OPERATION')" width="auto" min-width="33%">
       <template slot-scope="scope">
-        <div style="text-align: left">
+        <div style="text-align: right">
           <el-button  v-show="scope.row.device_type==2" type="primary" size="mini"
                      @click="addChildDevice(scope.row)">{{ $t("COMMON.ADDINGCHILDDEVICE")}}</el-button>
           <el-button style="margin-right: 10px"  type="primary" size="mini"
