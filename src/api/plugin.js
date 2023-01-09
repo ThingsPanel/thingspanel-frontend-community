@@ -94,5 +94,18 @@ export default {
             method: "post",
             data
         })
+    },
+    /**
+     * 查询设备其他信息
+     * 
+     * @param {*} data 
+     * @returns 
+     */
+    equip: (data) => {
+        return axios({
+            url: "/kv/current/symbol",
+            method: "post",
+            data
+        })
     }
 }

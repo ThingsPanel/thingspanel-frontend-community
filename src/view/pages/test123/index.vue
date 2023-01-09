@@ -12,18 +12,13 @@
           <BusinessSelector :business_id.sync="params.business_id"></BusinessSelector>
         </el-col>
         <el-col :span="4">
-          <DeviceGroupSelector @change="handleGroupChange" :asset_id.sync="params.asset_id" :business_id.sync="params.business_id">
+          <DeviceGroupSelector @change="handleGroupChange" :asset_id.sync="params.asset_id"
+            :business_id.sync="params.business_id">
           </DeviceGroupSelector>
         </el-col>
         <el-col :span="4">
-          <el-cascader
-            placeholder="请选择设备插件"
-            v-model="pluginId"
-            size="medium"
-            :options="optionsList"
-            class="w-100"
-        >
-        </el-cascader>
+          <el-cascader placeholder="请选择设备插件" v-model="pluginId" size="medium" :options="optionsList" class="w-100">
+          </el-cascader>
         </el-col>
         <el-col :span="12">
           <el-button icon="el-icon-full-screen " @click='btn'
@@ -31,53 +26,19 @@
 
         </el-col>
       </el-row>
-      <div :style="{ width: '100%', height: '900px' }" :class='{ amap_box: bindc }'>
-        <el-amap vid="amap" :plugin="plugin" class="amap-demo" :center="center" ref="centerMap">
-          <el-amap-marker v-for="(marker, index) in markers" :key="'marker' + index" :position="marker"> </el-amap-marker>
-          <!-- <el-amap-info-window
-          :position="window.position"
-          :visible="true"
-          :content="window.content"
-          :offset="window.offset"
-          :close-when-click-map="true"
-          :is-custom="true"
-        >
-          <div id="info-window">
-            <p>{{ window.address }}</p>
-            <div class="detail" @click="checkDetail">查看详情</div>
-          </div>
-        </el-amap-info-window> -->
+      <div :style="{ width: '100%', height: '100vh' }" :class='{ amap_box: bindc }'>
+        <el-amap vid="amap" class="amap-box" v-bind="mapConfig" viewMode="3D">
+
+          <el-amap-marker v-for="(marker, index) in markers" :position="marker.position" :vid="index"
+            :content="marker.content" :label="marker.label" :events="marker.events"></el-amap-marker>
+
+          <el-amap-info-window v-for="boatWindow in boatWindows" :position="boatWindow.position"
+            :visible="boatWindow.visible" :content="boatWindow.content" :events="boatWindow.events" :auto-move="true"
+            :is-custom="true" :offset="boatWindow.offset" />
+
         </el-amap>
       </div>
     </div>
-    <!-- 点标记 111-->
-    <div class="map_address">
-      <div class="address-wrapper" :style="{ width: '100%', height: '100%' }">
-
-        <!-- <el-amap vid="amap" class="amap-demo" :amap-manager="amapManager" :plugin="plugin" :events="events"
-          :center="center" :zoom="zoom">
-     
-          <el-amap-marker v-for="(marker, index) in markers" :key="'marker' + index" :position="marker.position"> </el-amap-marker>
-        </el-amap> -->
-      </div>
-    </div>
-    <!--  -->
-    <!-- 信息窗口 -->
-    <el-amap-info-window
-          v-if="window"
-          :position="window.position"
-          :visible="window.visible"
-          :content="window.content"
-          :offset="window.offset"
-          :close-when-click-map="true"
-          :is-custom="true"
-        >
-          <div id="info-window">
-            <p>{{ window.address }}</p>
-            <div class="detail" @click="checkDetail">查看详情</div>
-          </div>
-        </el-amap-info-window>
-    <!--  -->
   </div>
 </template>
 
@@ -89,7 +50,6 @@ import screenfull from "screenfull";
 import PluginAPI from "@/api/plugin.js"
 import { AMapManager } from "vue-amap"
 let amapManager = new AMapManager();
-let Geocoder;
 
 export default {
   components: {
@@ -104,20 +64,19 @@ export default {
         .then(({ data }) => {
           if (data.code == 200) {
             this.optionsList = JSON.parse(JSON.stringify(this.formatterOption(data.data)))
-            console.log(this.optionsList)
+            this.renderMarks(this.optionsList)
           }
         })
     },
     // 设备地图
     getEquipMap() {
-      let vue = this
-      PluginAPI.map(this.queryParams) 
-        .then(({data}) => {
+      let vm = this
+      PluginAPI.map(this.queryParams)
+        .then(({ data }) => {
           let res = data.data
-          vue.markers.push({
-            center: res.location,
-            bounds: [100, 100]
-          })
+          if (res[0].location) {
+            vm.createWindow(res[0], res[0].location.split(','))
+          }
         })
     },
     // 设备分组选择
@@ -129,13 +88,81 @@ export default {
       data.forEach(e => {
         e.value = e.dict_value || e.id
         e.label = e.model_name
-        if(e.device_model) {
+        if (e.device_model) {
           e.children = e.device_model
           this.formatterOption(e.children)
         }
       })
       return data
     },
+    // 初始化渲染所有设备
+    renderMarks(dataList) {
+      let deviceList = []
+      let vm = this
+      dataList.forEach(e => {
+        deviceList = [...deviceList, ...e.children]
+      });
+      deviceList.forEach(e => {
+        let params = {
+          device_model_id: e.id
+        }
+        PluginAPI.map(params)
+          .then(({ data }) => {
+            let res = data.data?.filter(item => item.location)
+            res?.forEach((el, index) => {
+              vm.markers.push({
+                position: el.location.split(","),
+                label: {
+                  content: `<div class="label-info">${el.business_name} - ${el.device_name}</div>`,
+                  offset: [5, 20],
+                  direction: 'bottom'
+                },
+                events: {
+                  click() {
+                    el.position = el.location.split(",")
+                    vm.createWindow(el, el.position)
+                  }
+                }
+              })
+            })
+
+            // 默认窗口
+            if (res) {
+              vm.createWindow(res[0], res[0]?.location.split(","))
+            }
+
+          })
+      })
+    },
+    // 获取设备其他信息
+    getEquipInfo() {
+      PluginAPI.map(this.queryParams)
+        .then(({ data }) => {
+          let res = data.data
+          if (res[0].location) {
+            vm.createWindow(res[0], res[0].location.split(','))
+          }
+        })
+    },
+    // 创建点坐标
+    createMark(el) {
+      const vm = this
+      vm.markers.push({
+        position: el.location.split(","),
+        label: {
+          content: `<div class="label-info">${el.business_name} - ${el.device_name}</div>`,
+          offset: [5, 20],
+          direction: 'bottom'
+        },
+        events: {
+          click() {
+            el.position = el.location.split(",")
+            vm.createWindow(el, el.position)
+          }
+        }
+      })
+    },
+    // 全屏显示
     btn() {
       this.bindc = !this.bindc;
       let element = document.getElementById("screen"); //指定全屏区域元素
@@ -143,180 +170,67 @@ export default {
       let aa = document.querySelector('.aa')
       aa.style.position = 'absolute'
     },
-    onSearchResult(pois) {
-      console.log(pois)
-      this.input = document.querySelector('.search-box-wrapper input').value
-      this.center = [pois[0].lng, pois[0].lat]        //选择了第一个值
-      this.markers = [];    //标记点先清空  
-      this.markers.push([pois[0].lng, pois[0].lat])   //把搜索的位置的第一个值存入标记中并显示标记点
-      console.log(this.markers);
-    },
-    point() {
-      const markers = [];
-      const windows = [];
-      const that = this;
-      this.data.forEach((item, index) => {
-        markers.push({
-          position: item.position.split(","),
-          // icon:item.url, //不设置默认蓝色水滴
-          visible: true,
-          events: {
-            click() {
-              // 方法：鼠标移动到点标记上，显示相应窗体
-              that.windows.forEach((window) => {
-                window.visible = false; // 关闭窗体
-              });
-              that.window = that.windows[index];
-              that.$nextTick(() => {
-                that.window.visible = true;
-              });
-            },
-          },
-        });
-        windows.push({
-          position: item.position.split(","),
-          isCustom: true,
-          offset: [115, 55], // 窗体偏移
-          showShadow: false,
-          visible: true, // 初始是否显示
-          address: item.address,
-        });
-      });
-      //  加点
-      this.markers = markers;
-      // 加弹窗
-      this.windows = windows;
-    },
+    // 创建信息窗体
+    createWindow(boatData, lnglat) {
+      const windows = []
+      const vm = this
+      // 设备内容
+      const equipContent = `<div style="width: 330px;height: 115px;border-raduis:5px; background: #fff;padding:12px;box-shadow:3px 5px 3px #ccc; font-size:14px">
+             <div style="line-height:21px;display:flex;justify-content:space-between"><span>项目名：${boatData.business_name}</span><span>设备名：${boatData.device_name}</span></div> 
+             <div style="line-height:21px">温度：</div>
+             <div style="line-height:21px">湿度：</div>
+             <div style="line-height:21px;display:flex;justify-content:space-between">数据更新时间：${boatData.latest_ts}<span>在线/离线</span></div>
+           </div>`
+      const sensorContent = `<div style="width: 330px;height: 115px;background: #fff;padding:12px;box-shadow:3px 5px 2px 2px #ccc; font-size:14px">
+             <div style="line-height:21px;display:flex;justify-content:space-between"><span>项目名：${boatData.business_name}</span><span>设备名：${boatData.device_name}</span></div> 
+             <div style="line-height:21px;display:flex;justify-content:space-between">数据更新时间：${boatData.latest_ts}<span>在线/离线</span></div>
+           </div>`
+
+      windows.push({
+        position: lnglat,
+        visible: true,
+        offset: [10, -30],
+        showShadow: true,
+        content: equipContent
+      })
+      this.boatWindows = windows
+      // vm.boatWindow = windows[0]
+    }
   },
-  created (){
+  created() {
     this.getPluginList()
-    // this.point()
   },
   mounted() {
-    this.point()
+
   },
   data() {
-    const self = this;
     return {
-      data: [
-        {
-          position: "113.645422,34.730936",
-          address: "另一个地址",
-        },
-        {
-          position: "113.685313,34.746453",
-          address: "一个地址",
-        },
-      ],
       params: {
         business_id: ""
       },
       queryParams: {
         group_id: "aa93360c-d864-9033-88b7-9d34e63517a2"
       },
-      pluginId: '',
-      optionsList: [],
+      // 信息窗体
+      boatWindows: [],
+      boatWindow: {},
+      // 点坐标
       markers: [],
-      zoom: 10,
-      input: '',
-      amapManager,
-      searchOption: {
-        city: "全国",
-        citylimit: false,
-      },
-      marker: [],
-      windows: [],
-      window: "",
-      events: {
-        init: (o) => {
-          o.getCity((result) => {
-            console.log(result)
-          })
-        },
-        click: (e) => {
-          self.center = [e.lnglat.lng, e.lnglat.lat];
-          console.log(self.center)
-          self.markers = [];
-          self.markers.push(self.center)
-          Geocoder.getAddress(self.center, function (status, result) { //根据坐标获取位置
-            if (status === "complete" && result.info === "OK") {
-              console.log(result.regeocode.formattedAddress)
-              self.input = result.regeocode.formattedAddress;
-              document.querySelector(".search-box-wrapper input").value = self.input;
-            }
-          })
-        }
-      },
+      // 全屏切换
       bindc: true,
-      center: [113.645422, 34.730936],
-      lng: 0,
-      lat: 0,
-      loaded: false,
-      plugin: [
-        {
-          pName: "MapType",
-          defaultType: 0, // 初始化默认图层类型。 取值为0：默认底图 取值为1：卫星图 默认值：0
-          showTraffic: false,
-          showRoad: true,
-        },
-        {
-          // 工具栏
-          pName: "ToolBar",
-          events: {
-            init(instance) {
-              // console.log(instance);
-            },
-          },
-        },
-        {
-          enableHighAccuracy: true, //是否使用高精度定位，默认:true
-          timeout: 100, //超过10秒后停止定位，默认：无穷大
-          maximumAge: 0, //定位结果缓存0毫秒，默认：0
-          convert: true, //自动偏移坐标，偏移后的坐标为高德坐标，默认：true
-          showButton: true, //显示定位按钮，默认：true
-          buttonPosition: "RB", //定位按钮停靠位置，默认：'LB'，左下角
-          showMarker: true, //定位成功后在定位到的位置显示点标记，默认：true
-          showCircle: true, //定位成功后用圆圈表示定位精度范围，默认：true
-          panToLocation: true, //定位成功后将定位到的位置作为地图中心点，默认：true
-          zoomToAccuracy: true, //定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：f
-          extensions: "all",
-          pName: "Geolocation",
-          events: {
-            init(o) {
-              // o 是高德地图定位插件实例
-              o.getCurrentPosition((status, result) => {
-                if (result && result.position) {
-                  self.lng = result.position.lng;
-                  self.lat = result.position.lat;
-                  self.center = [self.lng, self.lat];
-                  self.loaded = true;
-                  self.$nextTick();
-                  // 111
-                  self.markers.push(self.center)
-                  self.zoom = 14;
-                  // 
-                }
-              });
-            },
-          },
-        },
-        // {
-        //   pName: "Geocoder",
-        //   events: {
-        //     init: (o) => {
-        //       Geocoder = o; // o 则是AMap.Geocoder的实例 对外部的Geocoder变量进行赋值，在任何地方就都可以使用
-        //       //data里的events中使用了Geocoder
-        //       o.getAddress(self.center, function (status, result) { //根据坐标获取位置
-        //         if (status === "complete" && result.info === "OK") {
-        //           self.input = result.regeocode.formattedAddress;
-        //           document.querySelector(".search-box-wrapper input").value = self.input;
-        //         }
-        //       })
-        //     }
-        //   }
-        // }
-        // // 
-      ],
+      mapConfig: {
+        zoom: 8,
+        center: [100, 30],
+        // 地图插件
+        plugin: [
+          'MapType'
+        ],
+        amapManager,
+      },
+      // 设备插件列表
+      optionsList: [],
+      // 插件ID
+      pluginId: '',
     };
   },
 
@@ -330,7 +244,7 @@ export default {
 
 .amap_box {
   margin-top: -100px;
-  height: 1000px !important;
+  height: 100vh !important;
 }
 
 .p-4 {
@@ -351,15 +265,29 @@ export default {
   display: none;
 }
 
-
-// 
 .address-wrapper {
   display: flex;
   flex-direction: column;
 }
 
-.amap-demo {
+.amap-box {
   flex: 1;
   height: 100vh;
+}
+
+.label-info {
+  position: absolute;
+  z-index: 2;
+  border: 1px solid #fff;
+  background-color: #5867dd !important;
+  white-space: nowrap;
+  border-radius: 4px;
+  cursor: default;
+  padding: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #fff;
+  margin-left: -2px;
+  font-weight: bold;
 }
 </style>
