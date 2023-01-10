@@ -54,13 +54,13 @@
   <el-form class="inline-edit el-dark-input">
   <el-table :data="tableData" v-loading="loading" default-expand-all row-key="id" fit style="width: 100%" :indent="30">
 
-    <el-table-column :label="$t('COMMON.TYPE')" width="auto" min-width="13%" >
+    <el-table-column :label="$t('COMMON.TYPE')" width="70px">
       <template slot-scope="scope">
         {{ scope.row.device_type == 3 ? $t('COMMON.SUB_DEVICE'): (scope.row.device_type == 2 ? $t('COMMON.THEGATEWAY') : $t('COMMON.EQUIPMENT'))}}
       </template>
     </el-table-column>
     <!--  设备名 start  -->
-    <el-table-column :label="$t('COMMON.DEVICENAME1')" fit min-width="14%" max-width="20%" prop="name">
+    <el-table-column :label="$t('COMMON.DEVICENAME1')" min-width="14%" max-width="20%" prop="name">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.name">
           <el-input style="width: 100%"
@@ -75,7 +75,7 @@
     <!--  设备名 end  -->
 
     <!--  设备分组 start  -->
-    <el-table-column :label="$t('COMMON.DEVICELOCATION')" width="auto" min-width="12%">
+    <el-table-column :label="$t('COMMON.DEVICELOCATION')" width="auto" min-width="15%">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.asset_id">
           <DeviceGroupSelector
@@ -90,7 +90,7 @@
     <!--  设备分组 end  -->
 
     <!--  设备类型：网关/设备 start  -->
-    <el-table-column :label="$t('COMMON.GATEWAYDEVICE')" width="auto" min-width="13%">
+    <el-table-column :label="$t('COMMON.GATEWAYDEVICE')" width="auto" min-width="10%">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.device_type">
           <DeviceTypeSelector :current-item="scope.row" :deviceType.sync="scope.row.device_type" @change="deviceTypeChange(scope.row)"

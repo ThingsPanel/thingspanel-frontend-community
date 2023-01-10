@@ -397,3 +397,6 @@ span.text-blue.font-weight-bold.font-size-base.d-none.d-lg-block.mr-1 {
 .el-message-box__message p {
     color: #fff!important;
 }
+.el-dark-input .el-input__inner, .el-dark-input .el-textarea__inner{
+    border: none !important;
+}
