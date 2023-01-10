@@ -29,10 +29,10 @@
       <div :style="{ width: '100%', height: '100vh' }" :class='{ amap_box: bindc }'>
         <el-amap vid="amap" class="amap-box" v-bind="mapConfig" viewMode="3D">
 
-          <el-amap-marker v-for="(marker, index) in markers" :position="marker.position" :vid="index"
+          <el-amap-marker v-for="(marker, index) in markers" :key="index" :position="marker.position" :vid="index"
             :content="marker.content" :label="marker.label" :events="marker.events"></el-amap-marker>
 
-          <el-amap-info-window v-for="boatWindow in boatWindows" :position="boatWindow.position"
+          <el-amap-info-window v-for="(boatWindow, index) in boatWindows" :key="index" :position="boatWindow.position"
             :visible="boatWindow.visible" :content="boatWindow.content" :events="boatWindow.events" :auto-move="true"
             :is-custom="true" :offset="boatWindow.offset" />
 

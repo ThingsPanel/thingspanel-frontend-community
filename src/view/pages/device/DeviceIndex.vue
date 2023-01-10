@@ -221,7 +221,7 @@
 </template>
 
 <script>
-import {defineComponent, watch} from "@vue/composition-api";
+import {defineComponent} from "@vue/composition-api";
 import {ref} from "@vue/composition-api/dist/vue-composition-api";
 
 import useRoute from "@/utils/useRoute";
@@ -263,7 +263,7 @@ export default defineComponent({
     SubDeviceSettingForm
   },
   setup() {
-    let {route, router} = useRoute()
+    let {route} = useRoute()
     // console.log(route.query.business_id)
 
     let business_id = route.query.business_id

@@ -12,6 +12,25 @@
                               @select="handleSelect"
             ></data-source-pane>
           </el-collapse-item>
+
+          <el-collapse-item title="采样周期" name="sampling">
+            <el-row style="margin: 20px 0 10px 0" :gutter="4">
+              <el-col :span="8" style="height:100%;color:#fff" >采样区间:</el-col>
+              <el-col :span="6"><el-input style="padding:0;margin-right:4px" size="mini" v-model="samplingTime"></el-input></el-col>
+              <el-col :span="10">
+                <el-select style="padding:0;" size="mini" v-model="samplingTimeUnit">
+                  <el-option label="分钟内" value="minute"></el-option>
+                  <el-option label="小时内" value="hour"></el-option>
+                  <el-option label="天内" value="day"></el-option>
+                </el-select>
+              </el-col>
+            </el-row>
+
+            <el-row style="margin: 20px 0 10px 0">
+              <el-col :span="8" style="height:100%;color:#fff">采样频率:</el-col>
+              <el-col :span="16"><el-select style="padding:0" size="mini"></el-select></el-col>
+            </el-row>
+          </el-collapse-item>
         </el-collapse>
       </el-tab-pane>
       <el-tab-pane label="样式" name="style">
@@ -38,7 +57,7 @@ export default {
   data() {
     return {
       tabValue: "data",
-      activeNames: ["info", "source"],
+      activeNames: ["info", "source", "sampling"],
       form: {
         name: "",
         text: "",
@@ -46,7 +65,10 @@ export default {
         dataSrc: [],
         point: {}
       },
-      dataSrcOptions: []
+      dataSrcOptions: [],
+      samplingTime: 5,
+      samplingTimeUnit: "minute",
+      sampleFrequency: ""
     }
   },
   watch: {

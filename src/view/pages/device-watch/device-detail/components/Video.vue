@@ -53,6 +53,7 @@ export default {
           this.optionData = JSON.parse(JSON.stringify(newValue))
           if (newValue.type == "monitor") {
             this.optionData.type = "application/x-mpegURL";
+            // this.optionData.type = "video/mp4";
           }
           this.optionData.src = additionalInfo.video_address ? additionalInfo.video_address : "";
         }

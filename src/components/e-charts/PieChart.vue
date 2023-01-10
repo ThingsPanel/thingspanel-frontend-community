@@ -78,8 +78,7 @@ export default {
         let deviceId = item.deviceId;
         let { title, name } = item.property;
         let index = valueList.findIndex(val => val.deviceId == deviceId);
-        let value = valueList[index].value[name];
-        console.log("====PieChart", deviceId, title, name, value)
+        let value = valueList[index].value ? valueList[index].value[name] : 0;
         data.push({ name: title, value })
       });
       console.log("====PieChart", data)

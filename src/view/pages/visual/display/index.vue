@@ -27,7 +27,7 @@
 
         <bar-chart :style="getChartStyle(component)" :loading="false"
                    :w="component.point.w" :h="component.point.h"
-                   v-if="component.type == 'bar'"
+                   v-if="component.type == 'bar'" :value="component.value"
                    :option="component"></bar-chart>
 
         <status :style="getChartStyle(component)"
@@ -161,34 +161,46 @@ export default {
      * 刷新组件的值
      */
     async refresh(fullData) {
-      // list item: { 组件id, 设备id, { 物模型属性(包括字段，字段名，单位...) } }
-      let deviceList = [];
-      this.fullData.forEach(cpt => {
+      const getList = (list, cpt) => {
         if (cpt.dataSrc) {
           cpt.dataSrc.forEach(dataSrcItem => {
-            let index = deviceList.findIndex(item => item.deviceId == dataSrcItem.deviceId)
+            let index = list.findIndex(item => item == dataSrcItem.deviceId)
             if (index == -1) {
-              deviceList.push({  deviceId: dataSrcItem.deviceId });
+              list.push(dataSrcItem.deviceId );
             }
           })
         }
-      })
+      };
+
+      let currentList = [];
+      let historyList = [];
+      fullData.forEach(cpt => {
+        if (cpt.type == "curve") {
+          getList(historyList, cpt);
+        } else {
+          getList(currentList, cpt);
+        }
+      });
 
       const fun = async () => {
         let values = [];
-        for (let i = 0; i < deviceList.length; i++) {
-          let entity_id = deviceList[i].deviceId;
+        for (let i = 0; i < currentList.length; i++) {
+          let entity_id = currentList[i];
           await currentValue({ entity_id })
               .then(({ data }) => {
                 if (data.code == 200) {
                   let value = data.data ? data.data[0] : null;
                   values.push({ deviceId: entity_id, value})
-                  if (i == deviceList.length - 1) {
+                  if (i == currentList.length - 1) {
                     // 请求调用完毕，更新组件的值
                     this.updateComponentValue(values);
                   }
                 }
               });
+        }
+
+        for (let i = 0; i < historyList.length; i++) {
+
         }
         return fun;
       }
@@ -200,7 +212,7 @@ export default {
      * @param values   [{ deviceId, value }, ... ]
      */
     updateComponentValue(values) {
-      console.log("====display.getCurrent.请求调用完毕", values);
+      console.log("====display.updateComponentValue.请求调用完毕", values);
       this.fullData.forEach(cpt => {
         /*
           dataSrc: [
@@ -217,11 +229,11 @@ export default {
           cpt.dataSrc.forEach(item => {
             values.forEach(val => {
               if (item.deviceId == val.deviceId) {
+                console.log("====updateComponentValue", val)
                 valueList.push(JSON.parse(JSON.stringify(val)));
               }
             })
           })
-          valueList.length > 0 && console.log("====valueList", valueList)
           cpt.value = JSON.parse(JSON.stringify(valueList));
         }
       })
@@ -233,31 +245,7 @@ export default {
       柱状图 绑定n个设备， 每个设备都要发一次请求，n个请求全都返回成功后再刷新柱状图的数据
       报表 ?
      */
-    async getCurrent(item) {
-      let entity_id = item.deviceId;
-      currentValue({ entity_id })
-          .then(({ data }) => {
-            console.log("====display.getCurrent", data)
-          });
-    }
-    // getCurrent(cpt) {
-    //   let entity_id = cpt.deviceId;
-    //   let attribute = cpt.mapping;
-    //   let values = [];
-    //   if (!entity_id || !attribute) return;
-    //   currentValue({ entity_id, attribute })
-    //     .then(({ data }) => {
-    //       if (data.code == 200 && data.data != null) {
-    //         let result = data.data[0];
-    //         if (typeof attribute == "string") {
-    //           values = [result[attribute]];
-    //         } else if (typeof attribute == "object") {
-    //           values = attribute.map(attr => result[attr]);
-    //         }
-    //         cpt.value = values;
-    //       }
-    //     })
-    // }
+
   }
 }
 </script>

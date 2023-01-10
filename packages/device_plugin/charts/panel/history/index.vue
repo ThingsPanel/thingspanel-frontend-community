@@ -52,6 +52,7 @@
 
 <script>
 import EChart from "../../components/dashboard/EChart"
+import {message_error} from "@/utils/helpers";
 export default {
   name: "HistoryPanel",
   components: { EChart  },
@@ -131,7 +132,14 @@ export default {
      * 提交
      */
     submit() {
-      if (this.historyName == "" || this.dataSrcValue.length == 0) return;
+      if (this.historyName == "") {
+        message_error("名称不能为空")
+        return;
+      }
+      if (this.dataSrcValue.length == 0) {
+        message_error("请选择数据源")
+        return;
+      }
       let option = JSON.parse(JSON.stringify(this.chartOption));
       option.name = this.historyName;   // 图表名称
       option.mapping = this.dataSrcValue;  // 绑定的属性
