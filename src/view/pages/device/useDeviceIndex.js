@@ -1,4 +1,4 @@
-import { reactive, ref } from "@vue/composition-api";
+import {onBeforeUnmount, reactive, ref} from "@vue/composition-api";
 import {asset_index} from "@/api/asset";
 import {is_string} from "@/utils/helpers";
 import {getDeviceListStatus, getDeviceTree} from "@/api/device";
@@ -172,11 +172,6 @@ export default function useDeviceIndex(business_id) {
                     if (data.code == 200) {
                         tableData.value.forEach(item => {
                             item.device_state = data.data[item.id] ? data.data[item.id] : "0";
-                            // if (item.children && item.children.length > 0) {
-                            //     item.children.forEach(child => {
-                            //         child.device_state = data.data[child.id] ? data.data[child.id] : "0";
-                            //     })
-                            // }
                         })
                     }
                 })
@@ -187,6 +182,10 @@ export default function useDeviceIndex(business_id) {
         store.commit("addTimer", {id: business_id, timer});
 
     }
+
+    onBeforeUnmount(() => {
+        if (timer) clearInterval(timer);
+    })
 
     return {
         tableData,

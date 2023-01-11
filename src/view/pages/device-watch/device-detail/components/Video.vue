@@ -52,7 +52,7 @@ export default {
           let additionalInfo = this.device.additional_info ? JSON.parse(this.device.additional_info) : {};
           this.optionData = JSON.parse(JSON.stringify(newValue))
           if (newValue.type == "monitor") {
-            this.optionData.type = "application/x-mpegURL";
+            this.optionData.type = "application/x-mpegURL/video/mp4";
             // this.optionData.type = "video/mp4";
           }
           this.optionData.src = additionalInfo.video_address ? additionalInfo.video_address : "";

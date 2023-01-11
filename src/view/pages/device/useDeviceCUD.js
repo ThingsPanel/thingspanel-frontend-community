@@ -93,15 +93,6 @@ export default function useDeviceCUD(tableData){
             device_delete({id: item.id}).then(({data})=>{
                 if(data.code === 200) {
                     message_success("删除成功！")
-                    // let index = tableData.value.indexOf(item)
-                    // if (index == -1) {
-                    //     let parent = tableData.value.find(it => it.id == item.parent_id);
-                    //     let index = parent.children.findIndex(it => it.id == item.id)
-                    //     parent.children.splice(index, 1);
-                    //     console.log(index)
-                    // } else {
-                    //     tableData.value.splice(index, 1)
-                    // }
                 }
             }).finally(()=>{
                 loading.value = false
@@ -110,9 +101,6 @@ export default function useDeviceCUD(tableData){
         } else {
             call && call();
             message_success("删除成功！")
-            // let index = tableData.value.indexOf(item)
-            // console.log(index)
-            // tableData.value.splice(index, 1)
         }
     }
 
