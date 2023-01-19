@@ -106,9 +106,9 @@ instance.interceptors.response.use(
         }
 
         // 统一处理提示
-        if(code !== 200){
-            // message_error(message)
-            console.log(message)
+        if(code !== 200) {
+            message_error(message);
+            console.log(message);
         }
 
         return response

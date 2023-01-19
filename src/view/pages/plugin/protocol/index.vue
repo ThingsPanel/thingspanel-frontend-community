@@ -52,7 +52,7 @@
           <template v-slot="scope">
             <div style="text-align: left">
               <el-popconfirm title="确定要删除吗？" @confirm="handleDelete(scope.row)">
-                <el-button slot="reference" size="mini" type="danger">{{ $t('COMMON.DELETE') }}</el-button>
+                <el-button slot="reference" size="mini" type="danger" :disabled="!hasAuth('plugin:protocol:del')">{{ $t('COMMON.DELETE') }}</el-button>
               </el-popconfirm>
             </div>
           </template>

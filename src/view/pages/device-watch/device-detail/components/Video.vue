@@ -8,19 +8,32 @@
     </div>
 
     <div class="video-box" ref="videoBox">
-      <video-player style="width: 100%;height: 100%" :src="optionData.src" :type="optionData.type"></video-player>
+
+      <video-player v-if="optionData.type=='monitor'" style="width: 100%;height: 100%" :src="optionData.src"
+                    ></video-player>
+
+      <video-control v-else-if="optionData.type=='monitor_control'" style="width: 100%;height: 100%" :src="optionData.src"
+                     @command="handleCommand"></video-control>
+
+      <video-record v-else-if="optionData.type=='monitor_playback'" style="width: 100%;height: 100%"
+                    :src="optionData.src" :device="device"
+                     @command="handleCommand"></video-record>
+
+
     </div>
 
   </div>
 </template>
 
 <script>
+import ProtocolPluginAPI from "@/api/protocolPlugin"
 import VideoPlayer from "@/components/common/VideoPlayer";
-
+import VideoControl from "@/components/common/VideoControl";
+import VideoRecord from "@/components/common/VideoRecord";
 export default {
   name: "Video",
   components: {
-    VideoPlayer
+    VideoPlayer, VideoControl, VideoRecord
   },
   props: {
     showHeader: {
@@ -38,22 +51,27 @@ export default {
   },
   data() {
     return {
-      optionData: {}
+      optionData: {},
+      params: {
+        horizonSpeed: "30",
+        verticalSpeed: "30",
+        zoomSpeed: "30"
+      }
     }
   },
   mounted() {
-
   },
   watch: {
     option: {
       handler(newValue) {
         if (newValue) {
-          console.log("====option", newValue)
-          let additionalInfo = this.device.additional_info ? JSON.parse(this.device.additional_info) : {};
+          let additionalInfo = (this.device.additional_info && this.device.additional_info != "null") ? JSON.parse(this.device.additional_info) : {};
           this.optionData = JSON.parse(JSON.stringify(newValue))
-          if (newValue.type == "monitor") {
-            this.optionData.type = "application/x-mpegURL/video/mp4";
-            // this.optionData.type = "video/mp4";
+
+          this.params.sub_device_addr = this.device.sub_device_addr;
+          this.params.parent_id = this.device.parent_id;
+          if (this.device.protocol.startsWith("WVP_")) {
+            this.callPlayWVP();
           }
           this.optionData.src = additionalInfo.video_address ? additionalInfo.video_address : "";
         }
@@ -65,7 +83,36 @@ export default {
     sizeChange() {
       let videoBox = this.$refs.videoBox;
       console.log("====video.sizeChange()", videoBox.clientWidth, videoBox.clientHeight)
+    },
+    /**
+     * 播放WVP直播流时需要调用一次
+     */
+    callPlayWVP() {
+      ProtocolPluginAPI.callPlayWVP(this.params)
+        .then(({data}) => {
+          if (data.code == 200) {
+            let result = data.data.data;
+            if (!this.optionData.src) {
+              this.optionData.src = result.flv;
+            }
+          }
+        })
+    },
+    /**
+     * 播放组件控制回调
+     * @param command
+     */
+    handleCommand(command) {
+      console.log("====video.handleCommand", command);
+      this.params.command = command.toLowerCase();
+      this.params.horizonSpeed = "30";
+      this.params.verticalSpeed = "30";
+      this.params.zoomSpeed = "30";
 
+      ProtocolPluginAPI.commandPlayerPTZ(this.params)
+        .then(({data}) => {
+          console.log("====video.handleCommand", data);
+        })
     }
   }
 }
@@ -114,7 +161,7 @@ export default {
 
   .video-box {
     width: 100%;
-    height: 100%;
+    height: calc(100% - 40px);
     padding: 10px;
   }
 }

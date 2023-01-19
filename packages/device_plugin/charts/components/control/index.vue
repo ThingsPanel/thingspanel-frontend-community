@@ -16,6 +16,10 @@
                    @change="v => handleChange(item, v)"
                    ></SetValue>
 
+        <MainSwitch :key="item.type + item.id" v-if="item.type=='mainSwitch'" :disabled="optionData.disabled" :value.sync="item.value"
+                  @change="v => handleChange(item, v)"
+        ></MainSwitch>
+
       </div>
     </div>
 
@@ -26,10 +30,11 @@
 import CommonSwitch from "./Switch.vue"
 import SlideSwitch from "./SlideSwitch.vue"
 import SetValue from "./SetValue.vue"
+import MainSwitch from "./MainSwitch";
 export default {
   name: "CommonControl",
   components: {
-    CommonSwitch, SlideSwitch, SetValue
+    CommonSwitch, SlideSwitch, SetValue, MainSwitch
   },
   props: {
     type: {

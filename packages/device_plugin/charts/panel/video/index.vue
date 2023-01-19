@@ -1,10 +1,21 @@
 <template>
   <div class="video-container">
     <div class="video-item-list">
-      <div class="video-item" v-for="(option, index) in charts" :key="index" @click="showDialog(option)">
+      <div class="video-item" :style="option.style ? option.style : {}" v-for="(option, index) in charts" :key="index" @click="showDialog(option)">
         <div class="video-item-header" >{{ option.title }}</div>
-        <common-video v-if="option.type == 'video'" :ref="'video_' + option.index" :option="option" @submit="handleSubmit"></common-video>
-        <common-monitor v-if="option.type == 'monitor'" :ref="'video_' + option.index" :option="option" @submit="handleSubmit"></common-monitor>
+
+        <video-player1 class="video-player" v-if="option.type == 'monitor'" :ref="'video_' + option.index" :option="option"
+                        @submit="handleSubmit">
+        </video-player1>
+
+        <video-player2 class="video-player" v-if="option.type == 'monitor_control'" :ref="'video_' + option.index" :option="option"
+                       @submit="handleSubmit">
+        </video-player2>
+
+
+        <video-player3 class="video-player" v-if="option.type == 'monitor_playback'" :ref="'video_' + option.index" :option="option"
+                       @submit="handleSubmit">
+        </video-player3>
 
       </div>
     </div>
@@ -13,12 +24,14 @@
 </template>
 
 <script>
-import CommonVideo from "../../components/video/CommonVideo";
-import CommonMonitor from "../../components/video/CommonMonitor";
+import VideoPlayer1 from "../../components/video/VideoPlayer1"
+import VideoPlayer2 from "../../components/video/VideoPlayer2"
+import VideoPlayer3 from "../../components/video/VideoPlayer3"
+
 export default {
   name: "VideoPanel",
   components:{
-    CommonVideo, CommonMonitor
+    VideoPlayer1, VideoPlayer2, VideoPlayer3
   },
   props: {
     charts: {
@@ -46,6 +59,15 @@ export default {
 .video-container {
   width: 1000px;
 }
+.video-item-list {
+  display: flex;
+  flex-flow: wrap;
+  width: 1000px;
+  height: 580px;
+  float: left;
+  overflow-y: auto;
+  margin: 0 auto;
+}
 .video-item {
   display: inline-block;
   width: 300px;
@@ -60,6 +82,10 @@ export default {
   cursor:pointer;
   .video-item-header {
     height: 40px;
+  }
+  .video-player {
+    width: 100%;
+    height: calc(100% - 40px);
   }
 }
 

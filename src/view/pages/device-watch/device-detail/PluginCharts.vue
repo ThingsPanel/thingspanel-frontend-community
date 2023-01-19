@@ -8,7 +8,8 @@
          @layout-updated="handleLayoutUpdatedEvent"
     >
 
-      <grid-item class="grid-item" v-for="option in optionsData" :key="option['id']"
+      <grid-item class="grid-item" v-for="(option, index) in optionsData" :key="option['id'] + index"
+                 dragAllowFrom=".chart-header"
                  :x="option.x"
                  :y="option.y"
                  :w="option.w"
@@ -18,8 +19,12 @@
                  @resized="(l, r, w, h) => handleResized(option.i, {l, r, w, h})">
 
         <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-                  v-if="(option.controlType == 'dashboard' || option.controlType == 'history') && !option.type"
+                  v-if="option.controlType == 'dashboard' && !option.type"
                   :option="option" :device="device" :value="option.value"></e-charts>
+
+        <curve class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+               v-if="option.controlType == 'history'"
+               :option="option" :device="device" :value="option.value"></curve>
 
         <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
                 v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>
@@ -31,7 +36,8 @@
         <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
                  v-if="option.controlType == 'control'" :option="option" :device="device"></control>
 
-        <video-component class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+        <video-component class="component-item" style="min-width: 200px;min-height: 200px" :ref="'component_' + option.i"
+                         :key="option['id']" :show-header="true"
                  v-if="option.controlType == 'video'" :option="option" :device="device"></video-component>
 
       </grid-item>
@@ -53,6 +59,7 @@
 <script>
 import { GridLayout, GridItem } from "vue-grid-layout";
 import ECharts from "./components/Echarts"
+import Curve from "./components/Curve";
 import Control from "./components/Control";
 import Status from "./components/Status"
 import DeviceStatus from "./components/DeviceStatus"
@@ -63,7 +70,7 @@ import {currentValue} from "@/api/device";
 
 export default {
   name: "PluginCharts",
-  components: { GridLayout, GridItem, ECharts, Control, Status, DeviceStatus, VideoComponent },
+  components: { GridLayout, GridItem, ECharts, Curve,  Control, Status, DeviceStatus, VideoComponent },
   props: {
     options: {
       type: [Array],
@@ -120,6 +127,7 @@ export default {
   },
   methods: {
     handleResized(i, rect) {
+      console.log("====handleResized.i", i)
       this.$nextTick(() => {
           this.$refs["component_" + i][0].sizeChange();
       })

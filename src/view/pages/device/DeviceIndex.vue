@@ -54,7 +54,7 @@
   <el-form class="inline-edit el-dark-input">
   <el-table :data="tableData" v-loading="loading" default-expand-all row-key="id" fit style="width: 100%" :indent="30">
 
-    <el-table-column :label="$t('COMMON.TYPE')" width="70px">
+    <el-table-column :label="$t('COMMON.TYPE')" width="100px">
       <template slot-scope="scope">
         {{ scope.row.device_type == 3 ? $t('COMMON.SUB_DEVICE'): (scope.row.device_type == 2 ? $t('COMMON.THEGATEWAY') : $t('COMMON.EQUIPMENT'))}}
       </template>
@@ -158,7 +158,7 @@
     <!-- 图表组件 end-->
 
     <!--  操作 start  -->
-    <el-table-column :label="$t('COMMON.OPERATION')" width="auto" min-width="33%">
+    <el-table-column :label="$t('COMMON.OPERATION')" width="280px" min-width="33%">
       <template slot-scope="scope">
         <div style="text-align: right">
           <el-button  v-show="scope.row.device_type==2" type="primary" size="mini"

@@ -3,27 +3,9 @@
     <div  v-if="showHeader" class="chart-header">
 
       <span class="title">{{ optionData.name }}</span>
-      <div class="tool-right">
-        <!-- 刷新频率  -->
-        <el-dropdown v-if="false" @command="handleFlushCommand">
-          <el-button class="tool-item" size="mini" icon="el-icon-time"></el-button>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="2">2秒</el-dropdown-item>
-            <el-dropdown-item command="5">5秒</el-dropdown-item>
-            <el-dropdown-item command="10">10秒</el-dropdown-item>
-            <el-dropdown-item command="30">30秒</el-dropdown-item>
-            <el-dropdown-item command="60">1分钟</el-dropdown-item>
-            <el-dropdown-item command="custom">自定义</el-dropdown-item>
-          </el-dropdown-menu>
-        </el-dropdown>
-        <el-button v-if="optionData.controlType == 'history'" class="tool-item" size="mini" icon="el-icon-picture-outline"></el-button>
-
-        <el-button class="tool-item" size="mini" icon="el-icon-more" @click="showConfiguration"></el-button>
-      </div>
-
     </div>
 
-    <div style="width: 100%; height:calc(100% - 40px);position: absolute;top:40px" ref="chart"></div>
+    <div style="width: 100%; height:calc(100% - 60px);position: absolute;top:40px" ref="chart"></div>
 
     <el-dialog title="配置" width="30%"
         :visible.sync="configurationVisible">
@@ -119,44 +101,6 @@ export default {
         })
         this.myEcharts.setOption({ series });
       }
-    },
-    /**
-     * 从服务器获取指定设备的推送数据
-     * @param deviceId
-     * @param attrs
-     */
-    getHistory(mapping) {
-      let attrs = mapping.map(item => item.name);
-      console.log("====Echarts.getHistory", attrs)
-      if (!attrs || attrs.length == 0) return;
-      let timestamp = (new Date()).getTime();
-      let yesterday = timestamp-246060*1000;
-      let rate = 10 * 1000 * 1000;  // 微秒
-      let attribute = attrs.concat(["systime"])
-      let params = {
-        device_id: this.device.device,
-        attribute,
-        "start_ts": yesterday,
-        "end_ts": timestamp,
-        rate
-      }
-      console.log("getHistory", this.device, this.option, attrs, params);
-      historyValue(params)
-        .then(({data}) => {
-          if (data.code == 200) {
-            let series = [];
-            for (let i = 0; i < attrs.length; i++) {
-              series.push({ data: data.data[attrs[i]], type: "line"})
-            }
-            let sysTimes = data.data.systime.map(item => item = item.substring(12))
-            let xAxis = {data: sysTimes, type: 'category'} ;
-            let option = { series, xAxis };
-            this.initEChart(option);
-          }
-        })
-    },
-    showConfiguration() {
-      // this.configurationVisible = true;
     },
     /**
      * 修改 e-chart 大小

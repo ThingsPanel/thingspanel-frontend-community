@@ -12,6 +12,7 @@
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
     "@babel/polyfill": "^7.4.4",
+    "@easydarwin/easywasmplayer": "^4.0.13",
     "@fortawesome/fontawesome-free": "^5.13.0",
     "@mdi/font": "^3.6.95",
     "@popperjs/core": "^2.4.0",
@@ -25,6 +26,7 @@
     "deepmerge": "^4.2.2",
     "echarts": "^5.4.0",
     "element-ui": "^2.15.8",
+    "flv.js": "^1.6.2",
     "highlight.js": "^9.18.1",
     "jquery": "^3.5.1",
     "js-base64": "^3.5.2",

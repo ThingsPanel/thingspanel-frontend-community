@@ -39,8 +39,13 @@
             <el-input style="width: 100%" placeholder="请输入子设备地址" v-model="attrFormData.subDeviceAddress"></el-input>
           </el-form-item>
 
-          <el-form-item v-if="device.device_type == '3' && device.protocol.startsWith('WVP_')" label="播放地址:">
-            <el-input size="medium" v-model="attrFormData.subDeviceVideoAddress" ></el-input>
+          <el-form-item v-if="device.device_type == '2' && device.protocol.startsWith('WVP_')" label="选择设备:">
+            <el-select style="width: 100%" v-model="attrFormData.d_id">
+              <el-option v-for="(item, index) in wvpDeviceList" :key="item.deviceId"
+                         :label="item.deviceId + ' [' + item.createTime + '] ' + (item.online == 1 ? '在线' : '离线')"
+                         :value="item.deviceId"
+              ></el-option>
+            </el-select>
           </el-form-item>
 
           <el-form-item label="设备位置" >
@@ -74,6 +79,7 @@
 
 <script>
 import ModbusAPI from "@/api/modbus"
+import ProtocolPluginAPI from "@/api/protocolPlugin"
 import {message_success} from "../../../../../utils/helpers";
 import DeviceLocationConfig from "@/components/common/DeviceLocationConfig.vue"
 export default {
@@ -108,7 +114,8 @@ export default {
       },
       formRule: {},
       location: "",
-      locationArray: []
+      locationArray: [],
+      wvpDeviceList: []
     }
   },
   watch: {
@@ -121,6 +128,7 @@ export default {
               {runningInfo: {thresholdTime: 60}};
 
           this.attrFormData = {
+            d_id: this.device.d_id,
             subDeviceAddress: this.device.subDeviceAddress,
             location: this.device.location,
             subDeviceVideoAddress: additionalInfo.video_address
@@ -165,6 +173,10 @@ export default {
                 { required: false, message: '请输入设备位置', trigger: 'change' }
               ],
             };
+            if (this.device.device_type == 2 && this.device.protocol.startsWith("WVP_")) {
+              // 是网关且协议为GB28181
+              this.getWVPDeviceList();
+            }
           }
         }
       }
@@ -182,6 +194,19 @@ export default {
     showCheckLocation() {
       this.positionShow = true
     },
+    getWVPDeviceList() {
+      ProtocolPluginAPI.getWVPDevices({
+        "id": this.device.id,
+        "count": "9999",
+        "page":"1"
+      })
+        .then(({data}) => {
+          console.log("====getWVPDeviceList", data)
+          if (data.code == 200) {
+            this.wvpDeviceList = data.data.list ? data.data.list : [];
+          }
+        })
+    },
     handleSubmit() {
       console.log("====DeviceConfigForm", this.device.additional_info)
       const submit = () => {
@@ -191,11 +216,14 @@ export default {
         additionalInfo.video_address = this.attrFormData.subDeviceVideoAddress;
         let config = {
           id: device.id,
+          d_id: this.attrFormData.d_id,
           additional_info: JSON.stringify(additionalInfo),
           location: this.attrFormData.location,
           subDeviceAddress: this.attrFormData.subDeviceAddress,
           protocol_config: JSON.stringify({DeviceId: device.id, AccessToken: device.token, ...this.formData})
         }
+        console.log("====DeviceConfigForm.config", config, this.attrFormData)
+
         ModbusAPI.updateDeviceConfig(config)
             .then(({data}) => {
               if (data.code == 200) {

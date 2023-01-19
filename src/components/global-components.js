@@ -13,7 +13,9 @@ import {
   Steps,
   Step,
   RadioButton,
-  ColorPicker
+  ColorPicker,
+  Calendar,
+  Empty
 } from 'element-ui';
 
 // custom theme
@@ -45,6 +47,8 @@ GlobalComponents.install = (Vue) => {
   Vue.use(Step);
   Vue.use(RadioButton);
   Vue.use(ColorPicker);
+  Vue.use(Calendar);
+  Vue.use(Empty);
 
   Vue.use(VueClipboard)
   Vue.use(NumberChart);

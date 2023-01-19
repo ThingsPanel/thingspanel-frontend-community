@@ -25,18 +25,26 @@ export default function useDeviceSettingIndex() {
      * @returns {Promise<[{label: string, value: string}, {label: string, value: (string|[{message: *, required: boolean}]|[{message: string, required: boolean}]|*)}]|*[]>}
      */
     async function getCustomConnectInformation(deviceData) {
+
         let params = {current_page: 1, per_page: 10, protocol_type: deviceData.protocol, device_type: deviceData.device_type };
         let { data } = await ProtocolAPI.page(params)
         if (data.code == 200) {
+            console.log("====getDefaultSetting.getCustomConnectInformation", data.data.data)
             if (!data.data.data) return [];
             let result = data.data.data[0];
             let port = result.access_address.split(":")[1];
             let description = result.description ? result.description : "";
-            let info = [
-                { label: "协议端口", value: port },
-                { label: "描述", value: description }
-            ]
-            return info;
+            let additionalInfo = result.additional_info ? JSON.parse(result.additional_info) : [];
+            if (additionalInfo.length > 0) {
+                return additionalInfo.map(item => {
+                    return { label: item.key, value: item.value }
+                })
+            } else {
+                return [
+                    { label: "协议端口", value: port },
+                    { label: "描述", value: description }
+                ]
+            }
         }
     }
 

@@ -27,11 +27,21 @@
 
       <div v-else>
         <!-- 视频设备id-->
-        <div v-if="deviceData.protocol.startsWith('WVP_')" style="margin-top: 10px;margin-bottom: 20px" >
-          <el-form-item label="视频设备编号 ：" prop="d_id">
-            <el-input style="width: 100%;margin-right: 20px" size="medium" placeholder="请输入视频设备id" v-model="deviceData.d_id"></el-input>
+<!--        <div v-if="deviceData.protocol.startsWith('WVP_')" style="margin-top: 10px;margin-bottom: 20px" >-->
+<!--          <el-form-item label="视频设备编号 ：" prop="d_id">-->
+<!--            <el-input style="width: 100%;margin-right: 20px" size="medium" placeholder="请输入视频设备id" v-model="deviceData.d_id"></el-input>-->
+<!--          </el-form-item>-->
+<!--        </div>-->
+        <div v-if="deviceData.protocol.startsWith('WVP_')" style="margin-top: 10px;margin-bottom: 20px">
+          <el-form-item label="认证方式：" prop="authMode">
+            <el-select size="medium" placeholder="请选择认证方式" :disabled="true" v-model="deviceData.authMode"
+                       @change="handleAuthModeChange">
+              <el-option :label="'密码认证'" :value="'accessToken'"></el-option>
+            </el-select>
           </el-form-item>
+
         </div>
+
 
         <div v-else>
           <el-form-item label="认证方式：" prop="authMode">
@@ -82,7 +92,7 @@
 
         <div style="margin: 10px 0;"></div>
 
-        <el-form-item label="数据处理脚本：">
+        <el-form-item v-if="!deviceData.protocol.startsWith('WVP_')" label="数据处理脚本：">
           <el-select size="medium" placeholder="" filterable
                      popper-class="exchange-agreement" :popper-append-to-body="false"
                      v-model="deviceData.dataExchangeAgreement"
@@ -224,6 +234,7 @@ export default defineComponent({
         // 获取网关传输协议
         protocolOptions.value = await getGatewayProtocolList();
       }
+      console.log("====protocolOptions")
       deviceData.dataExchangeAgreement = d.script_id ? d.script_id : "";
       deviceData.id = d.id;
       deviceData.hasChildDevice = !!device.children && device.children.length > 0
@@ -316,6 +327,7 @@ export default defineComponent({
      */
     async function getDefaultSetting(protocol) {
       console.log("getDefaultSetting", deviceData)
+      console.log("getDefaultSetting.protocolOptions", protocolOptions.value)
 
       const setConnectSetting = () => {
         let defaultSetting = JSON.parse(JSON.stringify(ProtocolInfo[protocol]));
@@ -334,7 +346,6 @@ export default defineComponent({
         connectInfo.value = settings;
       };
 
-
       if (!protocol) return;
       if (deviceData.device_type === "1") {
         // 直接设备
@@ -351,6 +362,8 @@ export default defineComponent({
         } else {
           // 自定义协议
           connectInfo.value = await getCustomConnectInformation(deviceData);
+          console.log("====getDefaultSetting.getCustomConnectInformation", connectInfo)
+
         }
       }
 
@@ -425,8 +438,6 @@ export default defineComponent({
       info.tooltip = "内容已复制";
       connectInfo.value.splice(index, 1, info);
 
-
-      // item.tooltip = true;
     }
 
 

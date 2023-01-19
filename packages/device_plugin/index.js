@@ -1,8 +1,8 @@
 import DevicePluginEditor from "./editor";
-import TslEditor from "./tsl/editor"
-import CommonControl from "./charts/components/control"
-import CommonStatus from "./charts/components/dashboard/Status"
-import CommonDeviceStatus from "./charts/components/dashboard/DeviceStatus"
+import TslEditor from "./tsl/editor";
+import CommonControl from "./charts/components/control";
+import CommonStatus from "./charts/components/dashboard/Status";
+import CommonDeviceStatus from "./charts/components/dashboard/DeviceStatus";
 
 import './style/dark-theme.scss'
 
@@ -29,7 +29,6 @@ const install = Vue => {
     Vue.component(CommonControl.name, CommonControl);
     Vue.component(CommonStatus.name, CommonStatus);
     Vue.component(CommonDeviceStatus.name, CommonDeviceStatus);
-
 }
 
 if (typeof window.Vue !== 'undefined') {

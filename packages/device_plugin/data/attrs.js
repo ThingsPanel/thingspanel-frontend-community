@@ -531,7 +531,7 @@ export const tableAttr = {
         },
         { field: "dataRange", label: "取值范围", advanced, type: "range", default: "0-999"},
         { field: "stepLength", label: "间距", advanced, default: 0.1},
-        { field: "unit", label: "单位(例：℃)", validate: {required, only}},
+        { field: "unit", label: "单位(例：℃)", validate: { only}},
         { field: "description", label: "描述", advanced, type: "textarea"},
     ],
     services: [

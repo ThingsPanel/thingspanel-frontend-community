@@ -164,6 +164,11 @@ export default function useDeviceIndex(business_id) {
     }
 
     let timer = null;
+
+    /**
+     * 获取设备在线状态
+     * @param ids
+     */
     function getDeviceStatus(ids) {
         console.log("====getDeviceStatus.getTimers:", store.getters.getTimers(business_id))
         const fn = () => {
@@ -179,7 +184,7 @@ export default function useDeviceIndex(business_id) {
         fn();
         if (timer) clearInterval(timer);
         timer = setInterval(fn, 5000);
-        store.commit("addTimer", {id: business_id, timer});
+        // store.commit("addTimer", {id: business_id, timer});
 
     }
 
