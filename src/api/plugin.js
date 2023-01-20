@@ -1,3 +1,4 @@
+import { post } from "jquery"
 import axios from "./http"
 
 /**
@@ -104,6 +105,19 @@ export default {
     equip: (data) => {
         return axios({
             url: "/kv/current/symbol",
+            method: "post",
+            data
+        })
+    },
+    /**
+     * 根据设备id获取设备状态
+     * 
+     * @param {*} data 
+     * @returns 
+     */
+    state: (data) => {
+        return axios({
+            url: "/device/status",
             method: "post",
             data
         })

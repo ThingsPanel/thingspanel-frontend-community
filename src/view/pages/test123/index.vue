@@ -1,29 +1,24 @@
 <template>
   <div class="amap-page-container rounded card p-4">
-    <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
-      <el-col>
-        <TableTitle>{{ $t("COMMON.ECHARTS") }}</TableTitle>
-      </el-col>
-    </el-row>
-
     <div id="screen">
-      <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input aa">
+      <el-row type="flex" :gutter="10" class="pt-3 pb-4 px-3 el-dark-input aa screen-nav">
         <el-col :span="4">
-          <BusinessSelector :business_id.sync="params.business_id"></BusinessSelector>
+          <BusinessSelector :showAll="true" :business_id.sync="queryParams.business_id" @change="handleChangeBussiness">
+          </BusinessSelector>
         </el-col>
         <el-col :span="4">
-          <DeviceGroupSelector @change="handleGroupChange" :asset_id.sync="params.asset_id"
-            :business_id.sync="params.business_id">
+          <DeviceGroupSelector :showAll="true" @change="handleChangeEquipGroup" :asset_id.sync="queryParams.group_id"
+            :business_id.sync="queryParams.business_id">
           </DeviceGroupSelector>
         </el-col>
         <el-col :span="4">
-          <el-cascader placeholder="请选择设备插件" v-model="pluginId" size="medium" :options="optionsList" class="w-100">
+          <el-cascader placeholder="请选择设备插件" @change="handleChangePlugin" v-model="queryParams.plugin_id"
+            :options="optionsList" class="w-100">
           </el-cascader>
         </el-col>
         <el-col :span="12">
           <el-button icon="el-icon-full-screen " @click='btn'
-            class="btn el-button--default el-button mr-2 el-button--indigo el-button--medium">全屏</el-button>
-
+            class="btn el-button--default el-button mr-2 el-button--indigo screen-btn">全屏</el-button>
         </el-col>
       </el-row>
       <div :style="{ width: '100%', height: '100vh' }" :class='{ amap_box: bindc }'>
@@ -58,6 +53,43 @@ export default {
     DeviceGroupSelector
   },
   methods: {
+    /**
+     * 项目选择(第一个)
+     * 1.获取项目下设备分组
+     * 2.获取项目下所有的设备并展示到地图上
+     */
+    handleChangeBussiness() {
+      this.markers = []
+      this.boatWindows = {}
+      this.queryParams.group_id = ''
+      // 所有项目
+      if (this.queryParams.business_id === 'all') {
+        this.getPluginList()
+      } else {
+        this.getEquipInfo(this.queryParams)
+      }
+    },
+    /**
+     * 设备分组选择(第二个)
+     */
+    handleChangeEquipGroup() {
+      this.markers = []
+      this.boatWindows = {}
+      if (this.queryParams.group_id === 'all') {
+        let params = JSON.parse(JSON.stringify(this.queryParams))
+        params.group_id = ''
+        this.getEquipInfo(params)
+      } else {
+        this.getEquipInfo(this.queryParams)
+      }
+    },
+    /**
+     * 插件选择(第三个)
+     */
+    handleChangePlugin() {
+      this.markers = []
+      this.boatWindows = {}
+    },
     // 获取插件列表
     getPluginList() {
       PluginAPI.tree({})
@@ -67,21 +99,6 @@ export default {
             this.renderMarks(this.optionsList)
           }
         })
-    },
-    // 设备地图
-    getEquipMap() {
-      let vm = this
-      PluginAPI.map(this.queryParams)
-        .then(({ data }) => {
-          let res = data.data
-          if (res[0].location) {
-            vm.createWindow(res[0], res[0].location.split(','))
-          }
-        })
-    },
-    // 设备分组选择
-    handleGroupChange() {
-      this.getEquipMap()
     },
     // 格式化插件tree返回数据
     formatterOption(data) {
@@ -95,10 +112,28 @@ export default {
       })
       return data
     },
+    /**
+     * 获取设备状态
+     * 
+     * @param {Array} idList 设备id集合
+     */
+    async getEquipStatus(idList) {
+      return await PluginAPI.state(idList)
+    },
+    /**
+     * 获取插件分类
+     */
+    async getPluginCategory() {
+      try {
+        const { data } = await PluginAPI.category({ current_page: 1, per_page: 100, dict_code: 'chart_type' })
+        this.pluginCategory = data?.data || []
+        // alert(JSON.stringify(this.pluginCategory))
+      } catch (error) {
+      }
+    },
     // 初始化渲染所有设备
     renderMarks(dataList) {
       let deviceList = []
-      let vm = this
       dataList.forEach(e => {
         deviceList = [...deviceList, ...e.children]
       });
@@ -106,61 +141,59 @@ export default {
         let params = {
           device_model_id: e.id
         }
-        PluginAPI.map(params)
-          .then(({ data }) => {
-            let res = data.data?.filter(item => item.location)
-            res?.forEach((el, index) => {
-              vm.markers.push({
-                position: el.location.split(","),
-                label: {
-                  content: `<div class="label-info">${el.business_name} - ${el.device_name}</div>`,
-                  offset: [5, 20],
-                  direction: 'bottom'
-                },
-                events: {
-                  click() {
-                    el.position = el.location.split(",")
-                    vm.createWindow(el, el.position)
-                  }
-                }
-              })
-            })
-
-            // 默认窗口
-            if (res) {
-              vm.createWindow(res[0], res[0]?.location.split(","))
-            }
-
-          })
+        this.getEquipInfo(params)
       })
     },
-    // 获取设备其他信息
-    getEquipInfo() {
-      PluginAPI.map(this.queryParams)
+    /**
+     * 获取设备基础信息
+     * 
+     * @param {*} params 查询参数
+     */
+    getEquipInfo(params) {
+      PluginAPI.map(params)
         .then(({ data }) => {
-          let res = data.data
-          if (res[0].location) {
-            vm.createWindow(res[0], res[0].location.split(','))
+          // 筛选坐标不为空的设备
+          let equipList = data.data?.filter(equip => equip.location)
+          if (equipList && equipList.length) {
+            // 设备状态
+            let statusParams = { device_id_list: equipList?.map(e => e.device_id) }
+            this.getEquipStatus(statusParams).then(statusList => {
+              equipList.forEach(e => {
+                e.device_status = statusList[e.device_id]
+              })
+              // 更新状态
+              this.batchCreateMarker(equipList)
+            })
           }
         })
     },
-    // 创建点坐标
-    createMark(el) {
+    /**
+     * 批量创建点坐标
+     */
+    batchCreateMarker(dataList) {
+      if (!dataList || !dataList.length) {
+        return false
+      }
       const vm = this
-      vm.markers.push({
-        position: el.location.split(","),
-        label: {
-          content: `<div class="label-info">${el.business_name} - ${el.device_name}</div>`,
-          offset: [5, 20],
-          direction: 'bottom'
-        },
-        events: {
-          click() {
-            el.position = el.location.split(",")
-            vm.createWindow(el, el.position)
+      dataList.forEach((el) => {
+        this.markers.push({
+          position: el.location.split(","),
+          label: {
+            content: `<div class="label-info">${el.business_name} - ${el.device_name}</div>`,
+            offset: [5, 20],
+            direction: 'bottom'
+          },
+          events: {
+            click() {
+              el.position = el.location.split(",")
+              vm.createWindow(el)
+            }
           }
-        }
+        })
       })
+
+      // 默认展示第一个坐标点信息窗体
+      this.createWindow(dataList[0])
     },
     // 全屏显示
     btn() {
@@ -171,45 +204,72 @@ export default {
       aa.style.position = 'absolute'
     },
     // 创建信息窗体
-    createWindow(boatData, lnglat) {
+    async createWindow(boatData) {
       const windows = []
-      const vm = this
+
+      let sensor = ''
+      let switchContent = ''
+      if (boatData.device_type === '1') {
+        // 传感器
+        const { data } = await PluginAPI.equip({ entity_id: boatData.device_id })
+        if (data?.data) {
+          sensor = `<div style="display:flex;justify-content:space-between;line-height:30px;">
+            <div><span style="font-weight:bold;">温度: </span>${data.data[0]['温度']}</div>
+            <div><span style="font-weight:bold;">湿度: </span>${data.data[0]['湿度']}</div>
+          </div>`
+        }
+      } else if (boatData.device_type === '2') {
+        // 开关
+        switchContent = `
+        <div style="line-height:30px;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:bold;">开关控制: </span>
+          <input type="checkbox">
+        </div>`
+        // <!--button id="${boatData?.device_id}" class="control" onclick="handleSwitch('${boatData?.device_id}')">开关</button> -->
+      }
+
+
       // 设备内容
-      const equipContent = `<div style="width: 330px;height: 115px;border-raduis:5px; background: #fff;padding:12px;box-shadow:3px 5px 3px #ccc; font-size:14px">
-             <div style="line-height:21px;display:flex;justify-content:space-between"><span>项目名：${boatData.business_name}</span><span>设备名：${boatData.device_name}</span></div> 
-             <div style="line-height:21px">温度：</div>
-             <div style="line-height:21px">湿度：</div>
-             <div style="line-height:21px;display:flex;justify-content:space-between">数据更新时间：${boatData.latest_ts}<span>在线/离线</span></div>
-           </div>`
-      const sensorContent = `<div style="width: 330px;height: 115px;background: #fff;padding:12px;box-shadow:3px 5px 2px 2px #ccc; font-size:14px">
-             <div style="line-height:21px;display:flex;justify-content:space-between"><span>项目名：${boatData.business_name}</span><span>设备名：${boatData.device_name}</span></div> 
-             <div style="line-height:21px;display:flex;justify-content:space-between">数据更新时间：${boatData.latest_ts}<span>在线/离线</span></div>
+      let equipStatus = boatData.equipStatus === '1' ? '<div style="margin-left:20px; color:#28a745; font-weight:bold;">在线</div>'
+        : '<div style="margin-left:20px; color:#888; font-weight:bold;">离线</div>'
+      let latest_ts = boatData?.latest_ts ?? ''
+      const equipContent = `<div class="window-box" style="display: flex;flex-direction: column;
+            justify-content: space-between; white-space: nowrap;min-width: 240px;border-radius:6px; background: #fff;padding:12px;box-shadow:3px 5px 3px #ccc; font-size:15px">
+             <div style="line-height:30px;display:flex;justify-content:space-between">
+               <div><span style="font-weight:bold;">项目名：</span>${boatData?.business_name}</div>
+               <div style="margin-left:20px"><span style="font-weight:bold;">设备名：</span>${boatData?.device_name}</div>
+             </div> 
+             ${sensor}
+             ${switchContent}
+             <div style="line-height:30px;display:flex;justify-content:space-between">
+              <div><span style="font-weight:bold;">数据更新时间：</span>${latest_ts}</div>
+              ${equipStatus}
+            </div>
            </div>`
 
       windows.push({
-        position: lnglat,
+        position: boatData.location?.split(','),
         visible: true,
         offset: [10, -30],
         showShadow: true,
-        content: equipContent
+        content: equipContent,
       })
       this.boatWindows = windows
-      // vm.boatWindow = windows[0]
     }
   },
   created() {
     this.getPluginList()
-  },
-  mounted() {
-
+    this.getPluginCategory()
+    window.handleSwitch = (value) => {
+      alert(value)
+    }
   },
   data() {
     return {
-      params: {
-        business_id: ""
-      },
       queryParams: {
-        group_id: "aa93360c-d864-9033-88b7-9d34e63517a2"
+        business_id: "",
+        group_id: "",
+        plugin_id: ""
       },
       // 信息窗体
       boatWindows: [],
@@ -225,12 +285,12 @@ export default {
         plugin: [
           'MapType'
         ],
-        amapManager,
+        amapManager
       },
       // 设备插件列表
       optionsList: [],
-      // 插件ID
-      pluginId: '',
+      // 插件分类集合
+      pluginCategory: []
     };
   },
 
@@ -289,5 +349,74 @@ export default {
   color: #fff;
   margin-left: -2px;
   font-weight: bold;
+}
+
+.screen {
+  &-btn {
+    padding: 11px 20px;
+  }
+
+  &-nav {
+    width: 100%;
+    margin-top: 20px;
+    margin-left: 20px;
+  }
+}
+</style>
+
+<style lang="scss">
+.control {
+  border: 1px solid #ccc;
+  font-size: 12px;
+  padding: 0 10px;
+}
+
+.window-box {
+  input[type="checkbox"] {
+    appearance: none;
+    width: 37px;
+    height: 18px;
+    position: relative;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: #bfbfbf;
+  }
+
+  input[type="checkbox"]:before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    left: 2px;
+    top: 1px;
+    border-radius: 50%;
+    transition: left cubic-bezier(0.3, 1.5, 0.7, 1) 0.3s;
+  }
+
+  input[type="checkbox"]:after {
+    position: absolute;
+    top: 1px;
+    content: "开 关";
+    text-indent: 3px;
+    word-spacing: -1px;
+    display: inline-block;
+    white-space: nowrap;
+    color: #fff;
+    font: 8px/16px monospace;
+    font-weight: bold;
+  }
+
+  input[type="checkbox"]:checked {
+    background-color: #5867dd;
+  }
+
+  input[type="checkbox"]:checked:before {
+    left: 19px;
+  }
+
+  input[type="checkbox"]:checked:after {
+    color: #fff;
+  }
 }
 </style>

@@ -14,7 +14,7 @@
 </template>
 
 <script>
-import {defineComponent, ref, watch, computed} from "@vue/composition-api";
+import {defineComponent, ref, watch, created, computed} from "@vue/composition-api";
 import {device_group_drop} from "@/api/asset";
 
 export default defineComponent({
@@ -31,10 +31,25 @@ export default defineComponent({
     },
     asset_id: {
       required: true
+    },
+    showAll: {
+      default: false
     }
   },
   setup(props, context){
     let deviceGroupOptions = ref([])
+
+    /**
+     * 展示所有设备分组选项
+     */
+    function initShowAll() {
+      if(!props.showAll) return false
+      deviceGroupOptions.value.unshift({
+        device_group: '所有设备分组',
+        id: 'all'
+      })
+    }
+
 
     let deviceGroupId = computed({
       get(){
@@ -54,6 +69,9 @@ export default defineComponent({
           if(data.code === 200 && data.data) {
             deviceGroupOptions.value = data.data
           }
+          if(deviceGroupOptions.value[0]?.id !== 'all') {
+            initShowAll()
+          }
         })
       }
     }, {
@@ -64,6 +82,7 @@ export default defineComponent({
       context.emit("change")
     }
 
+    initShowAll()
 
     return {
       deviceGroupId,
