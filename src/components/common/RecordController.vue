@@ -24,7 +24,7 @@
             {{ record.startTime.substr(11) + "-" + record.endTime.substring(11) }}
           </div>
           <div class="item-right">
-            <el-button size="mini" round icon="el-icon-caret-right" @click="handlePlayRecord(record)"></el-button>
+            <el-button size="mini" round icon="el-icon-caret-right" :disabled="playDisabled" @click="handlePlayRecord(record)"></el-button>
           </div>
         </div>
       </template>
@@ -43,6 +43,10 @@ export default {
       default: () => []
     },
     showRecordList: {
+      type: [Boolean],
+      default: true
+    },
+    playDisabled: {
       type: [Boolean],
       default: true
     }
@@ -103,6 +107,10 @@ export default {
     handleChangeDate() {
       this.value = this.year + "-" + this.month;
     },
+    /**
+     * 点击播放按钮
+     * @param record
+     */
     handlePlayRecord(record) {
       this.$emit("play", record);
     }

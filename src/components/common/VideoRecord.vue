@@ -5,6 +5,7 @@
     </div>
     <div v-if="showControl" class="control-box">
       <record-controller :records="recordList"
+                         :play-disabled="playDisabled"
                          @change-date="handleChangeDate"
                          @play="handlePlayRecord"
       ></record-controller>
@@ -38,7 +39,8 @@ export default {
       src: "",
       recordList: [],
       playerStatus: PlayerStatus.PREPARED,
-      showControl: true
+      showControl: true,
+      playDisabled: false
     }
   },
   mounted() {
@@ -66,19 +68,27 @@ export default {
     window.addEventListener('beforeunload', e => {
       this.stopPlayRecord();
 
-    })
+    }, null)
 
   },
   beforeDestroy() {
     this.stopPlayRecord();
   },
   methods: {
+    /**
+     * 选择日期
+     * @param date
+     */
     handleChangeDate(date) {
       let {parent_id, sub_device_addr} = this.device;
       let startTime = date + " 00:00:00";
       let endTime = date + " 23:59:59"
       this.getRecordList({ parent_id, sub_device_addr,  startTime, endTime});
     },
+    /**
+     * 获取录像列表
+     * @param params
+     */
     getRecordList(params) {
       ProtocolPluginAPI.getRecordList(params)
         .then(({data}) => {
@@ -87,7 +97,12 @@ export default {
           }
         })
     },
+    /**
+     * 播放录像
+     * @param record
+     */
     handlePlayRecord(record) {
+      if (this.playDisabled) return;
       const play = () => {
         let {parent_id, sub_device_addr} = this.device;
         let { startTime, endTime } = record;
@@ -98,15 +113,12 @@ export default {
               if (data.code == 200) {
                 let result = data.data;
                 this.src = result.flv;
+                this.playDisabled = false;
               }
             })
       }
+      this.playDisabled = true;
       this.stopPlayRecord(play);
-      // if (this.playerStatus == PlayerStatus.PLAYING) {
-      //   this.stopPlayRecord(play);
-      // } else {
-      //   play();
-      // }
     },
     playerCallback(e) {
       switch (e) {
@@ -149,6 +161,7 @@ export default {
     float: left;
     display: table;
     width: calc(100% - 200px);
+    //width: 100%;
     height: 100%;
     .player {
 

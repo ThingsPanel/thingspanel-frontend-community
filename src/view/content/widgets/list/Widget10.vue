@@ -5,7 +5,7 @@
     <div class="card-header align-items-center border-0 mt-2 px-6">
       <h3 class="card-title align-items-start flex-column">
         <span class="font-weight-bolder text-dark">
-          {{ $t("COMMON.QUICKGUIDE") }}
+          {{ $t("HOME.QUICK_GUIDE") }}
         </span>
         <span class="text-muted mt-3 font-weight-bold font-size-sm">{{
           $t("COMMON.TXT1")
