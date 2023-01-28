@@ -2,7 +2,7 @@
 <div class="rounded card p-4">
   <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
     <el-col>
-      <TableTitle>{{ $t('COMMON.DATAS') }}</TableTitle>
+      <TableTitle>{{ $t('DATA_MANAGEMENT.DATAS') }}</TableTitle>
     </el-col>
   </el-row>
 
@@ -35,7 +35,7 @@
     <el-col :span="4">
       <el-input
           v-model="params.device_name"
-          :placeholder="$t('COMMON.PLACEHOLDER2')"
+          :placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER3')"
    
           clearable
           @keydown.enter.native="handleSearch()"
@@ -46,7 +46,7 @@
     <el-col :span="4">
       <el-input
           v-model="params.key"
-          :placeholder="$t('COMMON.PLACEHOLDER40')"
+          :placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER4')"
    
           clearable
           @keydown.enter.native="handleSearch()"
@@ -63,18 +63,18 @@
           value-format="yyyy-MM-dd HH:mm:ss"
           @change="handleSearch()"
           type="datetimerange"
-          :range-separator="$t('COMMON.PLACEHOLDER38')"
-          :start-placeholder="$t('COMMON.PLACEHOLDER37')"
-          end-placeholder="结束日期">
+          :start-placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER5')"
+          :range-separator="$t('DATA_MANAGEMENT.PLACEHOLDER6')"
+          :end-placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER7')">
       </el-date-picker>
     </el-col>
 
     <el-col :span="5">
       <div>
-        <el-button class="mr-2" type="border" size="medium" @click="handleSearch()">{{ $t('COMMON.SEARCH') }}</el-button>
+        <el-button class="mr-2" type="border" size="medium" @click="handleSearch()">{{ $t('DATA_MANAGEMENT.SEARCH') }}</el-button>
 
         <el-popconfirm :title="`确定导出 ${total} 条数据吗?`" @confirm="handleExport()">
-          <el-button slot="reference" type="export" size="medium">{{ $t('COMMON.EXPORT') }}</el-button>
+          <el-button slot="reference" type="export" size="medium">{{ $t('DATA_MANAGEMENT.EXPORT') }}</el-button>
         </el-popconfirm>
 
 <!--        <el-button class="ml-2" type="default" size="medium" @click="handleReset()">重置</el-button>-->
@@ -85,22 +85,22 @@
 
   <!-- 表 start -->
   <el-table :data="tableData">
-    <el-table-column :label="$t('COMMON.NO')" type="index" width="50"></el-table-column>
-    <el-table-column :label="$t('COMMON.BUSINESSNAME1')" prop="bname"></el-table-column>
+    <el-table-column :label="$t('DATA_MANAGEMENT.NO')" type="index" width="50"></el-table-column>
+    <el-table-column :label="$t('DATA_MANAGEMENT.BUSINESSNAME1')" prop="bname"></el-table-column>
 
-    <el-table-column :label="$t('COMMON.DWVICEGROUPNAME1')" prop="asset_name"></el-table-column>
-    <el-table-column :label="$t('COMMON.GATEWAYNAME')"  prop="gateway_name"></el-table-column>
-    <el-table-column :label="$t('COMMON.DEVICENAME1')" prop="device_name"></el-table-column>
+    <el-table-column :label="$t('DATA_MANAGEMENT.DWVICEGROUPNAME1')" prop="asset_name"></el-table-column>
+    <el-table-column :label="$t('DATA_MANAGEMENT.GATEWAYNAME')"  prop="gateway_name"></el-table-column>
+    <el-table-column :label="$t('DATA_MANAGEMENT.DEVICENAME1')" prop="device_name"></el-table-column>
 <!--    <el-table-column label="Token" prop="token" width="300">-->
 <!--      <template v-slot="scope">-->
 <!--        <span class="cursor-pointer" @click="handleSearch({token: scope.row.token})">{{scope.row.token}}</span>-->
 <!--      </template>-->
 <!--    </el-table-column>-->
 
-    <el-table-column :label="$t('COMMON.TIMES')"  prop="ts"></el-table-column>
-    <el-table-column label="属性别名" prop="alias"></el-table-column>
-    <el-table-column :label="$t('COMMON.TITLE30')" prop="key"></el-table-column>
-    <el-table-column :label="$t('COMMON.TITLE31')" prop="dbl_v">
+    <el-table-column :label="$t('DATA_MANAGEMENT.TIMES')"  prop="ts"></el-table-column>
+    <el-table-column :label="$t('DATA_MANAGEMENT.PROPERTY_ASLIAS')" prop="alias"></el-table-column>
+    <el-table-column :label="$t('DATA_MANAGEMENT.TITLE30')" prop="key"></el-table-column>
+    <el-table-column :label="$t('DATA_MANAGEMENT.TITLE31')" prop="dbl_v">
       <template v-slot="scope">
         <div v-if="scope.row.str_v.indexOf('file') == -1">
           {{ scope.row.str_v != "" ? scope.row.str_v : scope.row.dbl_v }}
@@ -114,7 +114,7 @@
       </template>
     </el-table-column>
 
-    <el-table-column :label="$t('COMMON.TITLE32')" prop="entity_type"></el-table-column>
+    <el-table-column :label="$t('DATA_MANAGEMENT.TITLE32')" prop="entity_type"></el-table-column>
   </el-table>
   <!-- 表 end -->
 
@@ -131,13 +131,13 @@
   <el-dialog
       class="el-dark-dialog el-dark-input"
       width="30%"
-      :title="$t('COMMON.EXPORT')"
+      :title="$t('DATA_MANAGEMENT.EXPORT')"
       :visible.sync="exportVisible">
 
     <div class="text-center">
-      <p>{{ downloadUrl ? downloadUrl.split('/').pop().toString() : $t('COMMON.GENERATE_WAIT') }}</p>
+      <p>{{ downloadUrl ? downloadUrl.split('/').pop().toString() : $t('DATA_MANAGEMENT.GENERATE_WAIT') }}</p>
       <p v-if="!exporting">
-          <a :href="downloadUrl">{{ $t('COMMON.CLICKDOWNLOAD') }}</a>
+          <a :href="downloadUrl">{{ $t('DATA_MANAGEMENT.CLICKDOWNLOAD') }}</a>
       </p>
     </div>
 

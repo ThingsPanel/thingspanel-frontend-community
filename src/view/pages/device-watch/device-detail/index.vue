@@ -1,12 +1,12 @@
 <template>
   <div class="device-watch-container">
     <div class="header">
-      <el-button class="el-button--indigo" size="medium" @click="back">{{ $t('COMMON.RETURN') }}</el-button>
+      <el-button class="el-button--indigo" size="medium" @click="back">{{ $t('DEVICE_WATCH_DETAIL.RETURN') }}</el-button>
     </div>
     <div class="content">
 
       <div class="left-tree">
-        <el-input class="el-dark-input search-input" suffix-icon="el-icon-search" v-model="filterValue" autocomplete="off" :placeholder="$t('COMMON.SEARCH')"></el-input>
+        <el-input class="el-dark-input search-input" suffix-icon="el-icon-search" v-model="filterValue" autocomplete="off" :placeholder="$t('DEVICE_WATCH_DETAIL.SEARCH')"></el-input>
         <el-tree class="el-dark-tree" ref="pluginTree" lazy
                  :load="loadNode" :props="defaultProps" :filter-node-method="filterNode" @node-click="nodeClick"></el-tree>
       </div>

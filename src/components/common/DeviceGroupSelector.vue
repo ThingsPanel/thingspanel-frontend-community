@@ -4,7 +4,7 @@
     v-model="deviceGroupId"
     :clearable="clearable"
     :filterable="filterable"
-    :placeholder="$t('COMMON.PLACEHOLDER35')"
+    :placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER2')"
     @change="handleChange()">
   <el-option
       :value="item.id"

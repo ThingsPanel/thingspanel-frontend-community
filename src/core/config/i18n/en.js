@@ -657,16 +657,153 @@ export const locale = {
     DELETETHISITEM: "Are you sure you want to delete this item?",
     DELETE:"Delete",
   },
+  /**
+   * 设备监控
+   */
   DEVICE_WATCH: {
-
+    DEVICEWATCH: "Device Watch",
+    NO: "ID",
+    PROJECT_NAME: "Project Name",
+    OPERATION: "Operation",
+    SEE:"See"
   },
+  /**
+   * 设备监控详情
+   */
+  DEVICE_WATCH_DETAIL: {
+    RETURN:"Back",
+    SEARCH: "Search",
+  },
+  /**
+   * 设备地图
+   */
   DEVICE_MAP: {
 
   },
+  /**
+   * 数据管理
+   */
   DATA_MANAGEMENT: {
-
+    DATAS: "Data Management",
+    PLACEHOLDER1: "Select business",
+    PLACEHOLDER2: "Please select an asset",
+    PLACEHOLDER3: "Please input assets alias name",
+    PLACEHOLDER4: "Please enter the data tags",
+    PLACEHOLDER5: "Start date",
+    PLACEHOLDER6: "to",
+    PLACEHOLDER7: "End date",
+    SEARCH: "Search",
+    EXPORT: "Export",
+    NO:"ID",
+    BUSINESSNAME1:"BusinessName",
+    DWVICEGROUPNAME1:"DeviceGroupName",
+    GATEWAYNAME: "Gateway Name",
+    DEVICENAME1:"DeviceName",
+    TIMES: "Time",
+    TITLE30: "Data labels",
+    TITLE31: "Value",
+    TITLE32: "Device Plugin",
+    PROPERTY_ASLIAS:"Property Alias",
+    GENERATE_WAIT: "Generating, please wait...",
+    CLICKDOWNLOAD: "Click download",
   },
+  /**
+   * 可视化
+   */
   VISUALIZATION: {
 
+  },
+  /**
+   * 自动化
+   */
+  AUTOMATION: {
+    
+  },
+  /**
+   * 告警
+   */
+  ALARM: {
+
+  },
+  /**
+   * 系统日志
+   */
+  SYSTEM_LOG: {
+    /**
+     * 操作日志
+     */
+    OPERATION_LOG: {
+
+    },
+    /**
+     * 设备日志
+     */
+    DEVICE_LOG: {
+
+    }
+  },
+  /**
+   * 产品管理
+   */
+  PRODUCT_MANAGEMENT: {
+    /**
+     * 产品列表
+     */
+    PRODUCT_LIST: {
+
+    }
+  },
+  /**
+   * 规则引擎
+   */
+  RULE_ENGINE: {
+    /**
+     * 接入引擎
+     */
+    ACCESS_ENGINE: {
+
+    },
+    /**
+     * 数据转发
+     */
+    DATA_FORWARDING: {
+
+    }
+  },
+  /**
+   * 插件管理
+   */
+  PLUGIN: {
+    CUSTOM_DEVICE_PLUGIN: "",
+    DEVICE_INFO: ""
+  },
+  /**
+   * 系统管理
+   */
+  SYSTEM_MANAGEMENT: {
+    /**
+     * 系统设置
+     */
+    SYSTEM_SETTING: {
+
+    },
+    /**
+     * 用户管理
+     */
+    USER_MANAGEMENT: {
+
+    },
+    /**
+     * 角色管理
+     */
+    ROLE_MANAGEMENT: {
+
+    },
+    /**
+     * 权限管理
+     */
+    PERMISSION_MANAGEMENT: {
+
+    }
   }
 };

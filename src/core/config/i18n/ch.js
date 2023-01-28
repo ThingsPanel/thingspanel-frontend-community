@@ -577,13 +577,13 @@ export const locale = {
     NO: "序号",
     EDIT_PROJECT_NAME: "编辑项目名",
     PROJECT_NAME: "项目名称",
-    TIMES:"时间",
+    TIMES: "时间",
     OPERATION: "操作",
-    SAVE:"保存",
-    CANCEL:"取消",
+    SAVE: "保存",
+    CANCEL: "取消",
     DEVICE: "设备管理",
-    TEXT44:"确定要修改吗？",
-    DELETE:"删除",
+    TEXT44: "确定要修改吗？",
+    DELETE: "删除",
   },
   /**
    * 设备管理
@@ -597,25 +597,36 @@ export const locale = {
     SUB_DEVICE: "子设备",
     THEGATEWAY: "网关",
     EQUIPMENT: "设备",
-    DEVICENAME1:"设备名称",
+    DEVICENAME1: "设备名称",
     DEVICELOCATION: "设备分组",
     GATEWAYDEVICE: "网关/设备",
     BINGPLUGINS: "绑定插件",
     CODEMANAGE: "推送参数",
     EDITPARAMETERS: "编辑参数",
-    STATE:"状态",
+    STATE: "状态",
     TITLE23: "上次推送",
     TITLE24: "图表组件",
-    OPERATION:"操作",
+    OPERATION: "操作",
     ADDINGCHILDDEVICE: "增加子设备",
     DELETETHISITEM: "确定要删除此项吗？",
-    DELETE:"删除",
+    DELETE: "删除",
   },
   /**
    * 设备监控
    */
   DEVICE_WATCH: {
-
+    DEVICEWATCH: "设备监控",
+    NO: "序号",
+    PROJECT_NAME: "项目名称",
+    OPERATION: "操作",
+    SEE: "查看"
+  },
+  /**
+   * 设备监控详情
+   */
+  DEVICE_WATCH_DETAIL: {
+    RETURN: "返回",
+    SEARCH: "查询",
   },
   /**
    * 设备地图
@@ -627,7 +638,28 @@ export const locale = {
    * 数据管理
    */
   DATA_MANAGEMENT: {
-
+    DATAS: "数据管理",
+    PLACEHOLDER1: "请选择项目",
+    PLACEHOLDER2: "请选择设备分组",
+    PLACEHOLDER3: "请输入设备名称",
+    PLACEHOLDER4: "请填写数据标签",
+    PLACEHOLDER5: "开始日期",
+    PLACEHOLDER6: "至",
+    PLACEHOLDER7: "结束日期",
+    SEARCH: "查询",
+    EXPORT: "导出",
+    NO:"序号",
+    BUSINESSNAME1:"业务名称",
+    DWVICEGROUPNAME1:"设备分组名称",
+    GATEWAYNAME: "网关名称",
+    DEVICENAME1:"设备名称",
+    TIMES: "时间",
+    TITLE30: "数据标签",
+    TITLE31: "值",
+    TITLE32: "设备插件",
+    PROPERTY_ASLIAS:"属性别名",
+    GENERATE_WAIT: "生成中请稍后",
+    CLICKDOWNLOAD: "点击下载",
   },
   /**
    * 可视化

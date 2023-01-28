@@ -1,5 +1,5 @@
 <template>
-  <el-cascader :placeholder="$t('COMMON.PLACEHOLDER8')" v-model="businessCascaderData" :props="businessProps"
+  <el-cascader :placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER1')" v-model="businessCascaderData" :props="businessProps"
     :clearable="clearable" class="w-100" @change="handleChange()">
   </el-cascader>
 </template>
