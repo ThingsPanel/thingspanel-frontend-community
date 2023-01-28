@@ -2,7 +2,7 @@
   <div class="row">
     <div class="col-md-6">
       <div class="panel-bg-blue px-6 py-4 rounded">
-        <div class="text-muted">{{ $t("COMMON.TITLE21") }}</div>
+        <div class="text-muted">{{ $t("HOME.TITLE21") }}</div>
         <div class="chart_height text-white title-num">
           <!-- cpu占用曲线-->
           <curve-chart :value="cpuCurveData" key="cpu" :title="cpuTitle"></curve-chart>
@@ -12,7 +12,7 @@
     </div>
     <div class="col-md-6">
       <div class="panel-bg-blue px-6 py-4 rounded">
-        <div class="text-muted">{{ $t("COMMON.TITLE22") }}</div>
+        <div class="text-muted">{{ $t("HOME.TITLE22") }}</div>
         <div class="chart_height text-white title-num">
           <!-- 内存占用曲线-->
           <curve-chart :value="ramCurveData" key="ram" :title="ramTitle"></curve-chart>

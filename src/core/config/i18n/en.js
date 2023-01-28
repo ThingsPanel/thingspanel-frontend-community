@@ -422,6 +422,9 @@ export const locale = {
   TRANSLATOR: {
     SELECT: "Please select language",
   },
+  /**
+   * 菜单
+   */
   MENU: {
     NEW: "New",
     ACTIONS: "Action",
@@ -588,8 +591,26 @@ export const locale = {
     DEVICE_INFO: "Device Info"
 
   },
+  /**
+   * 首页
+   */
   HOME: {
-    QUICK_GUIDE: "Quick Guide"
+    QUICK_GUIDE: "Quick Guide",
+    LAST_VISIT: "Recent Visit",
+    TEXT1: "Access to data needs to start with the development of device plug-ins, or you can download existing plug-ins to quickly access data.",
+    VIEWHELP: "Help",
+    FEEDBACKQ: "Submit Issues",
+    VISUALIZATION: "Visualization",
+    BUSINESS: "Business",
+    AUTOMATION: "Automation",
+    ALARMSTRATEGY: "Alert strategy",
+    CONTROLSTRATRGY: "Control strategy",
+    DEVICE_TOTAL: "Total number of equipment",
+    MESSAGE_TOTAL: "Total number of messages",
+    TITLE19: "CPU usage",
+    TITLE20: "Memory usage",
+    TITLE21: "CPU Usage Curve",
+    TITLE22: "Memory Usage Curve",
   },
   DEVICE_ACCESS: {
 

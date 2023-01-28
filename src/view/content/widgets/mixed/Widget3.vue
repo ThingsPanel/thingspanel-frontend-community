@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-md-3">
             <div class="panel-bg-blue px-6 py-4 rounded">
-                <div class="text-muted">{{ $t("COMMON.TITLE17") }}</div>
+                <div class="text-muted">{{ $t("HOME.DEVICE_TOTAL") }}</div>
                 <div class="chart_height text-white title-num">
                     <!-- 设备总数 -->
                   <div style="height: 80px;line-height: 80px;font-size: 20px" v-if="deviceTotal==0">0</div>
@@ -18,7 +18,7 @@
         </div>
         <div class="col-md-3">
             <div class="panel-bg-blue px-6 py-4 rounded">
-                <div class="text-muted">{{ $t("COMMON.TITLE18") }}</div>
+                <div class="text-muted">{{ $t("HOME.MESSAGE_TOTAL") }}</div>
                 <div class="chart_height text-white title-num">
                     <!-- 消息总数 -->
                   <div style="height: 80px;line-height: 80px;font-size: 20px" v-if="messageTotal==0">0</div>
@@ -28,7 +28,7 @@
         </div>
         <div class="col-md-3">
             <div class="panel-bg-blue px-6 py-4 rounded">
-                <div class="text-muted">{{ $t("COMMON.TITLE19") }}</div>
+                <div class="text-muted">{{ $t("HOME.TITLE19") }}</div>
                 <div class="chart_height">
                   <dashboard-chart :value="cpuUsage" unit="%"></dashboard-chart>
                   <!-- CPU占用率 -->
@@ -37,7 +37,7 @@
         </div>
         <div class="col-md-3">
             <div class="panel-bg-blue px-6 py-4 rounded">
-              <div class="text-muted">{{ $t("COMMON.TITLE20") }}</div>
+              <div class="text-muted">{{ $t("HOME.TITLE20") }}</div>
               <div class="chart_height">
                 <!-- 内存占用率 -->
                 <dashboard-chart color="#0493fa" :value="ramUsage" unit="%"></dashboard-chart>

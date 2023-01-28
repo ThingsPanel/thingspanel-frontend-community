@@ -482,6 +482,9 @@ export const locale = {
     DEVICE_GROUP_SELECTOR_PLACEHOLDER: "请选择设备分组",
     QUERY: "查询"
   },
+  /**
+   * 菜单
+  */
   MENU: {
     HOME: "首页",
     DEVICE_ACCESS: "设备接入",
@@ -489,7 +492,9 @@ export const locale = {
     DEVICE_MAP: "设备地图",
     DATA_MANAGEMENT: "数据管理",
     VISUALIZATION: "可视化",
-    AUTOMATION: "自动化"
+    AUTOMATION: "自动化",
+
+
   },
   /**
    * 认证
@@ -547,8 +552,20 @@ export const locale = {
     QUICK_GUIDE: "快捷指南",
     LAST_VISIT: "最近访问",
     TEXT1: "接入数据需要从设备插件开发开始，也可以下载已有插件，快速接入数据。",
+    VIEWHELP: "查看帮助",
+    FEEDBACKQ: "反馈问题",
+    VISUALIZATION: "可视化",
+    BUSINESS: "业务",
+    AUTOMATION: "自动化",
+    ALARMSTRATEGY: "告警策略",
+    CONTROLSTRATRGY: "控制策略",
     DEVICE_TOTAL: "设备总数",
-    MESSAGE_TOTAL: "消息总数"
+    MESSAGE_TOTAL: "消息总数",
+    TITLE19: "CPU占用率",
+    TITLE20: "内存占用率",
+    TITLE21: "CPU占用曲线",
+    TITLE22: "内存占用曲线",
+    
   },
   /**
    * 设备接入

@@ -11,7 +11,7 @@
         <h3 class="card-title align-items-start flex-column">
           <span class="font-weight-bolder text-dark">
             <!--{{ $t("COMMON.QUICKGUIDE") }}-->
-            {{ $t("COMMON.TITLE16") }}
+            {{ $t("HOME.LAST_VISIT") }}
           </span>
         </h3>
 
@@ -30,7 +30,7 @@
             >
               <div class="guidbtn">
                 <div class="font-des font-weight-bold font-size-sm">
-                  {{ $t("COMMON.VISUALIZATION") }}->{{ item.name }}
+                  {{ $t("HOME.VISUALIZATION") }}->{{ item.name }}
                 </div>
               </div>
             </router-link>
