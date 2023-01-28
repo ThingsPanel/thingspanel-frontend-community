@@ -2,7 +2,7 @@
 <template>
   <el-select
       class="w-100"
-      placeholder="请选择设备插件"
+      :placeholder="$t('COMMON.DEVICE_PLUG_SELECTOR_PLACEHOLDER')"
       size="medium"
       v-model="device_plugin_type"
       filterable

@@ -3,7 +3,7 @@
   <el-select
       class="w-100"
       size="medium"
-      placeholder="请选择设备分组"
+      :placeholder="$t('COMMON.DEVICE_GROUP_SELECTOR_PLACEHOLDER')"
       v-model="device_group_id"
       :disabled="disabled"
       filterable

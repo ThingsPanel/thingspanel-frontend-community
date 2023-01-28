@@ -417,7 +417,9 @@ export const locale = {
     EQUIPMENTLOG1:"EquipmentLog",
     QUERY1:"QUERY",
     REST1:"REST",
-    DEVICEMAP:"Device map"
+    DEVICEMAP:"Device map",
+    DEVICE_GROUP_SELECTOR_PLACEHOLDER: "Please select the devicelocation",
+    DEVICE_PLUG_SELECTOR_PLACEHOLDER: "Please select the deviceplug",
   },
   TRANSLATOR: {
     SELECT: "Please select language",
@@ -612,8 +614,48 @@ export const locale = {
     TITLE21: "CPU Usage Curve",
     TITLE22: "Memory Usage Curve",
   },
+   /**
+   * 设备接入
+   */
   DEVICE_ACCESS: {
-
+    DEVICEACCESS: "Device Access",
+    NEW_PROJECT: "New Project",
+    NO: "ID",
+    EDIT_PROJECT_NAME: "Edit Project Name",
+    PROJECT_NAME: "Project Name",
+    TIMES:"Time",
+    OPERATION: "Operation",
+    SAVE:"save",
+    CANCEL:"cancel",
+    DEVICE: "Device Manager",
+    TEXT44:"Are you sure you want to modify",
+    DELETE:"Delete",
+  },
+  /**
+   * 设备管理
+   */
+  DEVICE_MANAGEMENT: {
+    PLACEHOLDER2: "Please input assets alias name",
+    SEARCH: "Search",
+    CREATEDEVICE: "Create Device",
+    MANAGEMENTGROUP: "Management Group",
+    TYPE: "type",
+    SUB_DEVICE: "sub-device",
+    THEGATEWAY: "The gateway",
+    EQUIPMENT: "Device",
+    DEVICENAME1:"DeviceName",
+    DEVICELOCATION: "Device location",
+    GATEWAYDEVICE: "Gateway/Device",
+    BINGPLUGINS: "Binding plug-ins",
+    CODEMANAGE: "Code",
+    EDITPARAMETERS: "Edit parameters",
+    STATE:"state",
+    TITLE23: "Last push",
+    TITLE24: "Chart component",
+    OPERATION:"Operation",
+    ADDINGCHILDDEVICE: "Adding a child device",
+    DELETETHISITEM: "Are you sure you want to delete this item?",
+    DELETE:"Delete",
   },
   DEVICE_WATCH: {
 

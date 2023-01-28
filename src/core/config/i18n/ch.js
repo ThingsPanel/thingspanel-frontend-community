@@ -480,6 +480,7 @@ export const locale = {
     DELETE: "删除",
     ADD_LINE: "新增一行",
     DEVICE_GROUP_SELECTOR_PLACEHOLDER: "请选择设备分组",
+    DEVICE_PLUG_SELECTOR_PLACEHOLDER: "请选择设备插件",
     QUERY: "查询"
   },
   /**
@@ -571,16 +572,44 @@ export const locale = {
    * 设备接入
    */
   DEVICE_ACCESS: {
+    DEVICEACCESS: "设备接入",
     NEW_PROJECT: "新增项目",
-    DEVICE_MANAGEMENT: "设备管理",
+    NO: "序号",
     EDIT_PROJECT_NAME: "编辑项目名",
     PROJECT_NAME: "项目名称",
+    TIMES:"时间",
+    OPERATION: "操作",
+    SAVE:"保存",
+    CANCEL:"取消",
+    DEVICE: "设备管理",
+    TEXT44:"确定要修改吗？",
+    DELETE:"删除",
   },
   /**
    * 设备管理
    */
   DEVICE_MANAGEMENT: {
-
+    PLACEHOLDER2: "请输入设备名称",
+    SEARCH: "查询",
+    CREATEDEVICE: "创建设备",
+    MANAGEMENTGROUP: "管理分组",
+    TYPE: "类型",
+    SUB_DEVICE: "子设备",
+    THEGATEWAY: "网关",
+    EQUIPMENT: "设备",
+    DEVICENAME1:"设备名称",
+    DEVICELOCATION: "设备分组",
+    GATEWAYDEVICE: "网关/设备",
+    BINGPLUGINS: "绑定插件",
+    CODEMANAGE: "推送参数",
+    EDITPARAMETERS: "编辑参数",
+    STATE:"状态",
+    TITLE23: "上次推送",
+    TITLE24: "图表组件",
+    OPERATION:"操作",
+    ADDINGCHILDDEVICE: "增加子设备",
+    DELETETHISITEM: "确定要删除此项吗？",
+    DELETE:"删除",
   },
   /**
    * 设备监控

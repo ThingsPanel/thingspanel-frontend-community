@@ -2,7 +2,7 @@
 <div class="rounded card p-4 el-table-transparent">
   <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
     <el-col :span="12">
-      <TableTitle>{{ $t("COMMON.DEVICE") }}</TableTitle>
+      <TableTitle>{{ $t("DEVICE_ACCESS.DEVICE") }}</TableTitle>
     </el-col>
     <el-col :span="12" class="text-right">
 
@@ -14,6 +14,7 @@
 
     <el-col :span="5">
       <DeviceGroupSelector
+  
           :asset_id.sync="params.asset_id"
           :options="deviceGroupOptions"
           :clearable="true"
@@ -30,7 +31,7 @@
     </el-col>
     <el-col :span="5">
       <el-input
-          :placeholder="$t('COMMON.PLACEHOLDER2')"
+          :placeholder="$t('DEVICE_MANAGEMENT.PLACEHOLDER2')"
           v-model="params.name"
           size="medium"
           clearable
@@ -38,14 +39,14 @@
           @clear="handleSearch()"></el-input>
     </el-col>
     <el-col :span="9" >
-      <el-button type="border" size="medium" @click="handleSearch()">{{ $t("COMMON.SEARCH")}}</el-button>
+      <el-button type="border" size="medium" @click="handleSearch()">{{ $t("DEVICE_MANAGEMENT.SEARCH")}}</el-button>
 <!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
     </el-col>
     <el-col :span="12" class="text-right">
 
-      <el-button type="border" size="medium" @click="handleCreate()">{{ $t("COMMON.CREATEDEVICE")}}</el-button>
+      <el-button type="border" size="medium" @click="handleCreate()">{{ $t("DEVICE_MANAGEMENT.CREATEDEVICE")}}</el-button>
 
-      <el-button type="indigo" size="medium" @click="showManagementGroup=true">{{ $t("COMMON.MANAGEMENTGROUP")}}</el-button>
+      <el-button type="indigo" size="medium" @click="showManagementGroup=true">{{ $t("DEVICE_MANAGEMENT.MANAGEMENTGROUP")}}</el-button>
     </el-col>
   </el-row>
   <!-- 筛选 end -->
@@ -54,17 +55,17 @@
   <el-form class="inline-edit el-dark-input">
   <el-table :data="tableData" v-loading="loading" default-expand-all row-key="id" fit style="width: 100%" :indent="30">
 
-    <el-table-column :label="$t('COMMON.TYPE')" width="100px">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.TYPE')" width="125px">
       <template slot-scope="scope">
-        {{ scope.row.device_type == 3 ? $t('COMMON.SUB_DEVICE'): (scope.row.device_type == 2 ? $t('COMMON.THEGATEWAY') : $t('COMMON.EQUIPMENT'))}}
+        {{ scope.row.device_type == 3 ? $t('DEVICE_MANAGEMENT.SUB_DEVICE'): (scope.row.device_type == 2 ? $t('DEVICE_MANAGEMENT.THEGATEWAY') : $t('DEVICE_MANAGEMENT.EQUIPMENT'))}}
       </template>
     </el-table-column>
     <!--  设备名 start  -->
-    <el-table-column :label="$t('COMMON.DEVICENAME1')" min-width="14%" max-width="20%" prop="name">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.DEVICENAME1')" min-width="15%" width="auto" prop="name">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.name">
           <el-input style="width: 100%"
-             :placeholder="$t('COMMON.PLACEHOLDER2')"
+             :placeholder="$t('DEVICE_MANAGEMENT.PLACEHOLDER2')"
               size="medium"
               v-model="scope.row.name"
               @change="handleSave(scope.row)"
@@ -75,7 +76,7 @@
     <!--  设备名 end  -->
 
     <!--  设备分组 start  -->
-    <el-table-column :label="$t('COMMON.DEVICELOCATION')" width="auto" min-width="15%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.DEVICELOCATION')" width="auto" min-width="15%">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.asset_id">
           <DeviceGroupSelector
@@ -90,7 +91,7 @@
     <!--  设备分组 end  -->
 
     <!--  设备类型：网关/设备 start  -->
-    <el-table-column :label="$t('COMMON.GATEWAYDEVICE')" width="auto" min-width="10%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.GATEWAYDEVICE')" width="auto" min-width="13%">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.device_type">
           <DeviceTypeSelector :current-item="scope.row" :deviceType.sync="scope.row.device_type" @change="deviceTypeChange(scope.row)"
@@ -101,24 +102,24 @@
     <!--  设备类型：网关/设备 end  -->
 
     <!-- 绑定插件 -->
-    <el-table-column :label="$t('COMMON.BINGPLUGINS')" width="80px">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.BINGPLUGINS')" min-width="13%">
       <template slot-scope="scope">
-        <el-button v-if="scope.row.device_type!='2'" type="text" @click="handleBindingClick(scope.row)">{{ $t("COMMON.BINGPLUGINS")}}</el-button>
+        <el-button v-if="scope.row.device_type!='2'" type="text" @click="handleBindingClick(scope.row)">{{ $t("DEVICE_MANAGEMENT.BINGPLUGINS")}}</el-button>
       </template>
     </el-table-column>
 
     <!-- 编辑参数   -->
-    <el-table-column :label="$t('COMMON.CODEMANAGE')" width="80px" min-width="10%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.CODEMANAGE')" min-width="13%">
       <template slot-scope="scope">
         <!-- 子设备 -->
-<!--        <el-button v-if="scope.row.device_type=='3'" type="text" @click="handleEditSubParameter(scope.row)">{{ $t("COMMON.EDITPARAMETERS")}}</el-button>-->
+<!--        <el-button v-if="scope.row.device_type=='3'" type="text" @click="handleEditSubParameter(scope.row)">{{ $t("DEVICE_MANAGEMENT.EDITPARAMETERS")}}</el-button>-->
         <!-- 网关/设备 -->
-        <el-button v-if="scope.row.device_type!=='3'" type="text" @click="handleEditParameter(scope.row, '编辑参数')">{{ $t("COMMON.EDITPARAMETERS")}}</el-button>
+        <el-button v-if="scope.row.device_type!=='3'" type="text" @click="handleEditParameter(scope.row, '编辑参数')">{{ $t("DEVICE_MANAGEMENT.EDITPARAMETERS")}}</el-button>
       </template>
     </el-table-column>
 
     <!--  在线/离线状态 start  -->
-    <el-table-column label="状态" width="70px">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.STATE')" min-width="10%">
       <template slot-scope="scope">
         <el-tag v-if="scope.row.device_state === '1'">在线</el-tag>
         <el-tag v-else-if="scope.row.device_type!=='3'" type="info">离线</el-tag>
@@ -127,7 +128,7 @@
     <!--  推送时间 end  -->
 
     <!--  推送时间 start  -->
-    <el-table-column :label="$t('COMMON.TITLE23')" width="auto" min-width="12%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.TITLE23')" min-width="12%">
       <template slot-scope="scope">
         <div>{{scope.row.latest_ts ? dateFormat(scope.row.latest_ts/1000000) : ""}}</div>
       </template>
@@ -135,7 +136,7 @@
     <!--  推送时间 end  -->
 
     <!-- 图表组件 start-->
-    <el-table-column :label="$t('COMMON.TITLE24')" width="auto" min-width="23%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.TITLE24')" min-width="21%">
       <template slot-scope="scope">
         <!--   structure下数组的 field属性的数组   -->
         <template v-if="scope.row.chart_names">
@@ -158,17 +159,17 @@
     <!-- 图表组件 end-->
 
     <!--  操作 start  -->
-    <el-table-column :label="$t('COMMON.OPERATION')" width="280px" min-width="33%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.OPERATION')" min-width="37%">
       <template slot-scope="scope">
         <div style="text-align: right">
           <el-button  v-show="scope.row.device_type==2" type="primary" size="mini"
-                     @click="addChildDevice(scope.row)">{{ $t("COMMON.ADDINGCHILDDEVICE")}}</el-button>
+                     @click="addChildDevice(scope.row)">{{ $t("DEVICE_MANAGEMENT.ADDINGCHILDDEVICE")}}</el-button>
           <el-button style="margin-right: 10px"  type="primary" size="mini"
                      @click="deviceConfig(scope.row)">设&nbsp;备&nbsp;配&nbsp;置</el-button>
 
-           <el-popconfirm :disabled="!hasAuth('device:del')" :title="$t('COMMON.DELETETHISITEM')"
+           <el-popconfirm :disabled="!hasAuth('device:del')" :title="$t('DEVICE_MANAGEMENT.DELETETHISITEM')"
                           @confirm="handleDelete(scope.row, getDeviceIndex)">
-              <el-button slot="reference" type="danger" size="mini">{{ $t("COMMON.DELETE")}}</el-button>
+              <el-button slot="reference" type="danger" size="mini">{{ $t("DEVICE_MANAGEMENT.DELETE")}}</el-button>
            </el-popconfirm>
         </div>
       </template>

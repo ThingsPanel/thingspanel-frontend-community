@@ -2,20 +2,20 @@
 <div class="rounded card p-4">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>{{ $t('COMMON.DEVICEACCESS') }}</TableTitle>
+      <TableTitle>{{ $t('DEVICE_ACCESS.DEVICEACCESS') }}</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
       <el-button size="medium" type="border"
-                 v-if="hasAuth('business:add')" @click="handleCreate()">{{  $t('COMMON.NEWBUSINESS') }}</el-button>
+                 v-if="hasAuth('business:add')" @click="handleCreate()">{{  $t('DEVICE_ACCESS.NEW_PROJECT') }}</el-button>
     </el-col>
   </el-row>
 
   <!-- 表 start -->
   <el-form class="inline-edit">
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column :label="$t('COMMON.NO')" type="index" width="260"></el-table-column>
+    <el-table-column :label="$t('DEVICE_ACCESS.NO')" type="index" width="260"></el-table-column>
 
-    <el-table-column label="项目名称" prop="name">
+    <el-table-column :label="$t('DEVICE_ACCESS.PROJECT_NAME')" prop="name">
       <template v-slot="scope">
         <!-- 新建或者编辑 -->
         <el-form-item v-if="scope.row.status" :error="scope.row.errors.name">
@@ -26,28 +26,28 @@
       </template>
     </el-table-column>
 
-    <el-table-column :label="$t('COMMON.TIMES')" prop="created_at">
+    <el-table-column :label="$t('DEVICE_ACCESS.TIMES')" prop="created_at">
       <template v-slot="scope">
         {{scope.row.created_at ? dateFormat(scope.row.created_at) : ""}}
       </template>
     </el-table-column>
 
-    <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="330">
+    <el-table-column align="left" :label="$t('DEVICE_ACCESS.OPERATION')" width="380">
       <template v-slot="scope">
         <div style="text-align: left">
           <template v-if="scope.row.status">
             <!-- status 状态为新建或者编辑 -->
-            <el-button type="indigo" size="mini" @click="handleSave(scope.row)">{{ $t('COMMON.SAVE') }}</el-button>
-            <el-button type="default" size="mini" @click="handleCancel(scope.row)">{{ $t('COMMON.CANCEL') }}</el-button>
+            <el-button type="indigo" size="mini" @click="handleSave(scope.row)">{{ $t('DEVICE_ACCESS.SAVE') }}</el-button>
+            <el-button type="default" size="mini" @click="handleCancel(scope.row)">{{ $t('DEVICE_ACCESS.CANCEL') }}</el-button>
           </template>
           <template v-else>
 
 <!--            <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">{{ $t('COMMON.DEVICE_CHART') }}</el-button>-->
-            <el-button type="yellow" size="mini" v-if="hasAuth('business:device')" @click="showDevice(scope.row)">{{ $t('COMMON.DEVICE') }}</el-button>
+            <el-button type="yellow" size="mini" v-if="hasAuth('business:device')" @click="showDevice(scope.row)">{{ $t('DEVICE_ACCESS.DEVICE') }}</el-button>
             <el-button type="blue" size="mini" class="mr-3"
-                       :disabled="!hasAuth('business:edit')" @click="handleEdit(scope.row)">编辑项目名</el-button>
-            <el-popconfirm :title="$t('COMMON.TEXT44')" @confirm="handleDelete(scope.row)">
-              <el-button :disabled="!hasAuth('business:del')" slot="reference" type="danger" size="mini" >{{ $t('COMMON.DELETE') }}</el-button>
+                       :disabled="!hasAuth('business:edit')" @click="handleEdit(scope.row)">{{ $t('DEVICE_ACCESS.EDIT_PROJECT_NAME') }}</el-button>
+            <el-popconfirm :title="$t('DEVICE_ACCESS.TEXT44')" @confirm="handleDelete(scope.row)">
+              <el-button :disabled="!hasAuth('business:del')" slot="reference" type="danger" size="mini" >{{ $t('DEVICE_ACCESS.DELETE') }}</el-button>
             </el-popconfirm>
           </template>
         </div>

@@ -41,7 +41,7 @@
             >
               <div class="guidbtn">
                 <div class="font-des font-weight-bold font-size-sm">
-                  {{ $t("COMMON.BUSINESS") }}->{{ item.name }}
+                  {{ $t("HOME.BUSINESS") }}->{{ item.name }}
                 </div>
               </div>
             </router-link>
@@ -52,8 +52,8 @@
             >
               <div class="guidbtn">
                 <div class="font-des font-weight-bold font-size-sm">
-                  {{ $t("COMMON.AUTOMATION") }} -> {{ item.name }}->{{
-                    $t("COMMON.ALARMSTRATEGY")
+                  {{ $t("HOME.AUTOMATION") }} -> {{ item.name }}->{{
+                    $t("HOME.ALARMSTRATEGY")
                   }}
                 </div>
               </div>
@@ -65,8 +65,8 @@
             >
               <div class="guidbtn">
                 <div class="font-des font-weight-bold font-size-sm">
-                  {{ $t("COMMON.AUTOMATION") }} -> {{ item.name }}->{{
-                    $t("COMMON.CONTROLSTRATRGY")
+                  {{ $t("HOME.AUTOMATION") }} -> {{ item.name }}->{{
+                    $t("HOME.CONTROLSTRATRGY")
                   }}
                 </div>
               </div>
