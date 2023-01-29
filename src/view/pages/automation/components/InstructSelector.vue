@@ -2,7 +2,7 @@
 <el-select
     class="w-100"
     v-model="fieldValue"
-    placeholder="命令"
+    :placeholder="$t('AUTOMATION.COMMAND')"
 
     filterable @change="handleChange"
 >

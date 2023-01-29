@@ -632,7 +632,8 @@ export const locale = {
    * 设备地图
    */
   DEVICE_MAP: {
-
+    PLACEHOLDER1: "请选择设置插件",
+    PLACEHOLDER2: "全屏",
   },
   /**
    * 数据管理
@@ -665,12 +666,49 @@ export const locale = {
    * 可视化
    */
   VISUALIZATION: {
-
+    TITLE: "可视化",
+    NEWVISUALIZATION: "创建可视化",
+    DELVISUALIZATION: "删除可视化",
+    NO: "序号",
+    VISUALIZATIONNAME: "可视化名称",
+    OPERATION: "操作",
+    SAVE: "保存",
+    CANCEL: "取消",
+    EDIT: "编辑",
+    TEXT44: "确定要修改吗？",
+    DELETE:"删除",
+    SEE: "查看",
   },
   /**
    * 自动化
    */
   AUTOMATION: {
+    TITLE: "自动化",
+    NO: "序号",
+    NAMES: "名称",
+    TIMES: "时间",
+    OPERATION: "操作",
+    ALARM_STRATEGY_BTN: "告警策略",
+    CONTROL_STRATEGY_BTN: "控制策略",
+    ALARMSTRATEGYLIST: "告警策略列表",
+    NEWALARMSTRATEGY: "新增告警策略",
+    RETURN: "返回",
+    RULE_NAME: "规则名称",
+    RULE_DESCRIBE: "规则说明",
+    STRATEGY_HANDLE: "策略操作",
+    TITLE4: "你确定要删除吗？",
+    SAVE: "保存",
+    CANCEL: "取消",
+    EDIT: "编辑",
+    DELETE:"删除",
+    STRATRGYLISTTYPE: "策略类型",
+    POLICYPRIORITY: "策略优先级",
+    POLICYPRIORITY_TOOLTIP: "备注：值越小优先级越高",
+    POLICYSTATUS: "策略状态",
+    STRATRGYLISTNAME: "策略名称",
+    STRATRGYLISTDES: "策略描述",
+    ON: "开",
+    OFF: "关",
     GROUP: "分组",
     DEVICE: "设备",
     TRIGGERING_CONDITION: "触发条件",
@@ -699,7 +737,7 @@ export const locale = {
     DEVICE_CONDITION_TYPE: "设备条件类型",
     TIME_CONDITION_TYPE: "时间条件类型",
     EXECUTE_COMMAND: "执行命令",
-
+    COMMAND: "命令",
     ALARM_STRATEGY: {
       ADD_ALARM_STRATEGY: "新增告警策略",
       EDIT_ALARM_STRATEGY: "修改告警策略",

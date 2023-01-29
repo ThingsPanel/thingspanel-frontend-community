@@ -2,20 +2,20 @@
   <div class="rounded card p-4">
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
       <el-col :span="12">
-        <TableTitle>{{ $t('COMMON.VISUALIZATION') }}</TableTitle>
+        <TableTitle>{{ $t('VISUALIZATION.TITLE') }}</TableTitle>
       </el-col>
 
       <el-col :span="12" class="px-2 text-right">
         <el-button size="medium" type="border"
-                   @click="handleCreate()">{{ $t('COMMON.NEWVISUALIZATION') }}</el-button>
+                   @click="handleCreate()">{{ $t('VISUALIZATION.NEWVISUALIZATION') }}</el-button>
       </el-col>
     </el-row>
     <!-- 表 start -->
     <el-form class="inline-edit">
       <el-table :data="tableData" v-loading="loading">
-        <el-table-column :label="$t('COMMON.NO')" type="index" align="left" width="550"></el-table-column>
+        <el-table-column :label="$t('VISUALIZATION.NO')" type="index" align="left" width="550"></el-table-column>
 
-        <el-table-column label="可视化名称" prop="dashboard_name" align="left">
+        <el-table-column :label="$t('VISUALIZATION.VISUALIZATIONNAME')" prop="dashboard_name" align="left">
           <template v-slot="scope">
             <!-- 新建 -->
             <el-form-item v-if="scope.row.status" :error="scope.row.errors.dashboard_name">
@@ -31,18 +31,18 @@
           </template>
         </el-table-column>
 
-        <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="300">
+        <el-table-column align="left" :label="$t('VISUALIZATION.OPERATION')" width="300">
           <template v-slot="scope">
             <div style="text-align: left">
               <div v-if="scope.row.status">
-                <el-button type="save" size="mini" @click="handleSave(scope.row)">{{ $t('COMMON.SAVE') }}</el-button>
-                <el-button type="cancel" size="mini" @click="handleCancel(scope.row)">{{ $t('COMMON.CANCEL') }}</el-button>
+                <el-button type="save" size="mini" @click="handleSave(scope.row)">{{ $t('VISUALIZATION.SAVE') }}</el-button>
+                <el-button type="cancel" size="mini" @click="handleCancel(scope.row)">{{ $t('VISUALIZATION.CANCEL') }}</el-button>
               </div>
               <div v-else>
-                <el-button type="yellow" size="mini" @click="showVisual(scope.row)">查看</el-button>
-                <el-button type="indigo" size="mini" @click="editVisual(scope.row)">{{ $t('COMMON.EDIT') }}</el-button>
-                <el-popconfirm :disabled="!hasAuth('visual:del')" style="margin-left: 10px" :title="$t('COMMON.TEXT44')" @confirm="delVisual(scope.row)">
-                  <el-button  slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>
+                <el-button type="yellow" size="mini" @click="showVisual(scope.row)">{{ $t('VISUALIZATION.SEE') }}</el-button>
+                <el-button type="indigo" size="mini" @click="editVisual(scope.row)">{{ $t('VISUALIZATION.EDIT') }}</el-button>
+                <el-popconfirm :disabled="!hasAuth('visual:del')" style="margin-left: 10px" :title="$t('VISUALIZATION.TEXT44')" @confirm="delVisual(scope.row)">
+                  <el-button  slot="reference" type="danger" size="mini">{{ $t('VISUALIZATION.DELETE') }}</el-button>
                 </el-popconfirm>
               </div>
             </div>

@@ -2,26 +2,26 @@
 <div class="rounded card p-4 el-table-transparent el-dark-input">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>{{ $t('COMMON.ALARMSTRATEGYLIST') }}</TableTitle>
+      <TableTitle>{{ $t('AUTOMATION.ALARMSTRATEGYLIST') }}</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="border" @click="handleCreate()">{{ $t('COMMON.NEWALARMSTRATEGY') }}</el-button>
-      <el-button size="medium" type="indigo" @click="goBack()">{{ $t('COMMON.RETURN') }}</el-button>
+      <el-button size="medium" type="border" @click="handleCreate()">{{ $t('AUTOMATION.NEWALARMSTRATEGY') }}</el-button>
+      <el-button size="medium" type="indigo" @click="goBack()">{{ $t('AUTOMATION.RETURN') }}</el-button>
     </el-col>
   </el-row>
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column :label="$t('COMMON.NO')" type="index" width="100"></el-table-column>
-    <el-table-column :label="$t('COMMON.RULE_NAME')" prop="name"></el-table-column>
-    <el-table-column :label="$t('COMMON.RULE_DESCRIBE')" prop="describe"></el-table-column>
-    <el-table-column :label="$t('COMMON.STRATEGY_HANDLE')" align="center" width="150">
+    <el-table-column :label="$t('AUTOMATION.NO')" type="index" width="100"></el-table-column>
+    <el-table-column :label="$t('AUTOMATION.RULE_NAME')" prop="name"></el-table-column>
+    <el-table-column :label="$t('AUTOMATION.RULE_DESCRIBE')" prop="describe"></el-table-column>
+    <el-table-column :label="$t('AUTOMATION.STRATEGY_HANDLE')" align="center" width="150">
       <template v-slot="scope">
         <div class="text-right">
-          <el-button type="yellow" size="mini" @click="handleEdit(scope.row)" class="mr-3">{{ $t('COMMON.EDIT') }}</el-button>
+          <el-button type="yellow" size="mini" @click="handleEdit(scope.row)" class="mr-3">{{ $t('AUTOMATION.EDIT') }}</el-button>
 
-          <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handleDelete(scope.row)">
-            <el-button slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>
+          <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
+            <el-button slot="reference" type="danger" size="mini">{{ $t('AUTOMATION.DELETE') }}</el-button>
           </el-popconfirm>
         </div>
       </template>

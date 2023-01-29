@@ -17,23 +17,23 @@
 
       <!-- 策略名称-->
       <el-col :span="8">
-        <el-form-item :label="$t('COMMON.STRATRGYLISTNAME')" prop="name" :rules="rules.name">
-          <el-input v-model="formData.name" :placeholder="$t('COMMON.PLACEHOLDER5')"></el-input>
+        <el-form-item :label="$t('AUTOMATION.STRATRGYLISTNAME')" prop="name" :rules="rules.name">
+          <el-input v-model="formData.name" :placeholder="$t('AUTOMATION.PLACEHOLDER5')"></el-input>
         </el-form-item>
       </el-col>
       <!-- 策略描述 -->
       <el-col :span="8">
-        <el-form-item :label="$t('COMMON.STRATRGYLISTDES')" prop="describe" :rules="rules.describe">
-          <el-input v-model="formData.describe" :placeholder="$t('COMMON.PLACEHOLDER6')"></el-input>
+        <el-form-item :label="$t('AUTOMATION.STRATRGYLISTDES')" prop="describe" :rules="rules.describe">
+          <el-input v-model="formData.describe" :placeholder="$t('AUTOMATION.PLACEHOLDER6')"></el-input>
         </el-form-item>
       </el-col>
   <!--    策略优先级 -->
       <el-col :span="8">
-        <el-form-item :label="$t('COMMON.POLICYPRIORITY')" prop="sort">
+        <el-form-item :label="$t('AUTOMATION.POLICYPRIORITY')" prop="sort">
           <template slot="label">
-            {{ $t('COMMON.POLICYPRIORITY') }}
+            {{ $t('AUTOMATION.POLICYPRIORITY') }}
             <el-tooltip placement="top">
-              <div slot="content">{{ $t('COMMON.POLICYPRIORITY_TOOLTIP') }}</div>
+              <div slot="content">{{ $t('AUTOMATION.POLICYPRIORITY_TOOLTIP') }}</div>
               <small class="help">?</small>
             </el-tooltip>
           </template>
@@ -101,8 +101,8 @@
               </el-col>
               <el-col :span="3">
                 <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-                <el-popconfirm :title="$t('COMMON.TITLE4') " @confirm="removeRulesLine(rules_item)" v-else>
-                  <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE') }}</el-button>
+                <el-popconfirm :title="$t('AUTOMATION.TITLE4') " @confirm="removeRulesLine(rules_item)" v-else>
+                  <el-button slot="reference" type="danger" size="medium">{{ $t('AUTOMATION.DELETE') }}</el-button>
                 </el-popconfirm>
               </el-col>
             </el-row>
@@ -153,8 +153,8 @@
 
               <el-col :span="3">
                 <el-button type="indigo" size="medium" @click="addRulesLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-                <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeRulesLine(rules_item)" v-else>
-                  <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE')}}</el-button>
+                <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="removeRulesLine(rules_item)" v-else>
+                  <el-button slot="reference" type="danger" size="medium">{{ $t('AUTOMATION.DELETE')}}</el-button>
                 </el-popconfirm>
               </el-col>
             </el-row>
@@ -214,10 +214,10 @@
               </el-col>
               <el-col :span="3">
                 <el-button type="indigo" size="medium" @click="addApplyLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-                <el-button type="danger" size="medium" v-else @click="removeApplyLine(apply_item)">{{ $t('COMMON.DELETE')}}</el-button>
+                <el-button type="danger" size="medium" v-else @click="removeApplyLine(apply_item)">{{ $t('AUTOMATION.DELETE')}}</el-button>
 
-<!--                <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeApplyLine(apply_item)" v-else>-->
-<!--                  <el-button slot="reference" type="danger" size="medium">{{  $t('COMMON.DELETE') }}</el-button>-->
+<!--                <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="removeApplyLine(apply_item)" v-else>-->
+<!--                  <el-button slot="reference" type="danger" size="medium">{{  $t('AUTOMATION.DELETE') }}</el-button>-->
 <!--                </el-popconfirm>-->
               </el-col>
             </el-row>
@@ -232,9 +232,9 @@
     <el-row :gutter="20">
       <el-col :span="24">
         <!-- 策略状态 -->
-        <el-form-item :label="$t('COMMON.POLICYSTATUS')" class="inline-form-item">
+        <el-form-item :label="$t('AUTOMATION.POLICYSTATUS')" class="inline-form-item">
           <el-switch :active-value="1" :inactive-value="0" v-model="formData.status"></el-switch>
-          <small class="px-2">{{formData.status ? $t('COMMON.ON') : $t('COMMON.OFF')}}</small>
+          <small class="px-2">{{formData.status ? $t('AUTOMATION.ON') : $t('AUTOMATION.OFF')}}</small>
         </el-form-item>
       </el-col>
     </el-row>
@@ -243,8 +243,8 @@
     <FormAlert :error_message="error_message"></FormAlert>
 
     <div class="text-right">
-      <el-button size="medium" type="cancel" @click="handleCancel()">{{$t('COMMON.CANCEL')}}</el-button>
-      <el-button size="medium" type="save" @click="handleSave()">{{$t('COMMON.SAVE')}}</el-button>
+      <el-button size="medium" type="cancel" @click="handleCancel()">{{$t('AUTOMATION.CANCEL')}}</el-button>
+      <el-button size="medium" type="save" @click="handleSave()">{{$t('AUTOMATION.SAVE')}}</el-button>
     </div>
   </el-form>
   </el-dialog>

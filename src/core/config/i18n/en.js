@@ -482,51 +482,51 @@ export const locale = {
       INVALID_FIELD: "Field is not valid",
     },
   },
-  AUTOMATION: {
-    GROUP: "Group",
-    DEVICE: "Device",
-    TRIGGERING_CONDITION: "Triggering condition",
-    PLACEHOLDER1: "please select device",
-    PLACEHOLDER2: "please select condition",
-    PLACEHOLDER3: "please select operator",
-    PLACEHOLDER4: "please select value",
-    PLACEHOLDER5: "please enter strategy name",
-    PLACEHOLDER6: "please enter strategy describe",
-    PLACEHOLDER7: "Value",
-    PLACEHOLDER8: "Operator",
-    PLACEHOLDER9: "Condition",
-    ONCE: "Once",
-    DAYS: "Every day",
-    REPEAT: "Repeat",
-    SELECT_TIME: "Select time",
-    SELECT_DATE: "Select date",
-    ADD_LINE: "A set of new",
-    OR: "Or",
-    AND: "And",
-    ALARM_TYPE: "Alarm type",
-    SMS: "Sms",
-    DING_TALK: "Ding talk",
-    ENTERPRISE_WECHAT: "Enterprise Wechat",
-    INFORMATION: "Information",
-    DEVICE_CONDITION_TYPE: "Device condition type",
-    TIME_CONDITION_TYPE: "Time condition type",
-    EXECUTE_COMMAND: "Execute the command",
-    ALARM_STRATEGY: {
-      ADD_ALARM_STRATEGY: "Add Alarm strategy",
-      EDIT_ALARM_STRATEGY: "Edit Alarm strategy",
-      ALARM_STRATEGY_NAME: "Alarm strategy name",
-      ALARM_STRATEGY_DESCRIBE: "Alarm strategy describe",
+  // AUTOMATION: {
+  //   GROUP: "Group",
+  //   DEVICE: "Device",
+  //   TRIGGERING_CONDITION: "Triggering condition",
+  //   PLACEHOLDER1: "please select device",
+  //   PLACEHOLDER2: "please select condition",
+  //   PLACEHOLDER3: "please select operator",
+  //   PLACEHOLDER4: "please select value",
+  //   PLACEHOLDER5: "please enter strategy name",
+  //   PLACEHOLDER6: "please enter strategy describe",
+  //   PLACEHOLDER7: "Value",
+  //   PLACEHOLDER8: "Operator",
+  //   PLACEHOLDER9: "Condition",
+  //   ONCE: "Once",
+  //   DAYS: "Every day",
+  //   REPEAT: "Repeat",
+  //   SELECT_TIME: "Select time",
+  //   SELECT_DATE: "Select date",
+  //   ADD_LINE: "A set of new",
+  //   OR: "Or",
+  //   AND: "And",
+  //   ALARM_TYPE: "Alarm type",
+  //   SMS: "Sms",
+  //   DING_TALK: "Ding talk",
+  //   ENTERPRISE_WECHAT: "Enterprise Wechat",
+  //   INFORMATION: "Information",
+  //   DEVICE_CONDITION_TYPE: "Device condition type",
+  //   TIME_CONDITION_TYPE: "Time condition type",
+  //   EXECUTE_COMMAND: "Execute the command",
+  //   ALARM_STRATEGY: {
+  //     ADD_ALARM_STRATEGY: "Add Alarm strategy",
+  //     EDIT_ALARM_STRATEGY: "Edit Alarm strategy",
+  //     ALARM_STRATEGY_NAME: "Alarm strategy name",
+  //     ALARM_STRATEGY_DESCRIBE: "Alarm strategy describe",
 
-      PLACEHOLDER1: "Please enter alarm strategy name",
-      PLACEHOLDER2: "Please enter alarm strategy describe"
-    },
-    CONTROL_STRATEGY: {
-      CONTROL_STRATEGY_LIST: "Control strategy list",
-      NEW_STRATEGY: "New strategy",
-      EDIT_CONTROL_STRATEGY: "Edit control strategy",
-      ADD_CONTROL_STRATEGY: "Add control strategy"
-    }
-  },
+  //     PLACEHOLDER1: "Please enter alarm strategy name",
+  //     PLACEHOLDER2: "Please enter alarm strategy describe"
+  //   },
+  //   CONTROL_STRATEGY: {
+  //     CONTROL_STRATEGY_LIST: "Control strategy list",
+  //     NEW_STRATEGY: "New strategy",
+  //     EDIT_CONTROL_STRATEGY: "Edit control strategy",
+  //     ADD_CONTROL_STRATEGY: "Add control strategy"
+  //   }
+  // },
   ECOMMERCE: {
 
     COMMON: {
@@ -678,7 +678,8 @@ export const locale = {
    * 设备地图
    */
   DEVICE_MAP: {
-
+    PLACEHOLDER1: "Please select device plug",
+    PLACEHOLDER2: "Full screen",
   },
   /**
    * 数据管理
@@ -711,13 +712,93 @@ export const locale = {
    * 可视化
    */
   VISUALIZATION: {
-
+    TITLE: "Visualization",
+    NEWVISUALIZATION: "New Visualization",
+    DELVISUALIZATION: "Del Visualization",
+    NO: "ID",
+    VISUALIZATIONNAME: "Visualization Name",
+    OPERATION: "Operation",
+    SAVE: "save",
+    CANCEL: "cancel",
+    EDIT: "Edit",
+    TEXT44: "Are you sure you want to modify?",
+    DELETE: "Delete",
+    SEE: "See",
   },
   /**
    * 自动化
    */
   AUTOMATION: {
-    
+    TITLE: "Automation",
+    NO: "ID",
+    NAMES: "Name",
+    TIMES: "Time",
+    OPERATION: "Operation",
+    ALARM_STRATEGY_BTN: "Alarm strategy",
+    CONTROL_STRATEGY_BTN: "Control strategy",
+    ALARMSTRATEGYLIST: "Alert strategy list",
+    NEWALARMSTRATEGY: "Add alert stategy",
+    RETURN: "Back",
+    RULE_NAME: "Rule name",
+    RULE_DESCRIBE: "Rule describe",
+    STRATEGY_HANDLE: "Strategy handle",
+    TITLE4: "Are you sure you want to delete?",
+    SAVE: "save",
+    CANCEL: "cancel",
+    EDIT: "Edit",
+    DELETE: "Delete",
+    STRATRGYLISTTYPE: "Strategy type",
+    POLICYPRIORITY: "Stategy priority",
+    POLICYPRIORITY_TOOLTIP: "Note: The smaller the value, the higher the priority",
+    POLICYSTATUS: "Strategy status",
+    STRATRGYLISTNAME: "Control strategy name",
+    STRATRGYLISTDES: "Control strategy description",
+    ON: "On",
+    OFF: "Off",
+    GROUP: "Group",
+    DEVICE: "Device",
+    TRIGGERING_CONDITION: "Triggering condition",
+    PLACEHOLDER1: "please select device",
+    PLACEHOLDER2: "please select condition",
+    PLACEHOLDER3: "please select operator",
+    PLACEHOLDER4: "please select value",
+    PLACEHOLDER5: "please enter strategy name",
+    PLACEHOLDER6: "please enter strategy describe",
+    PLACEHOLDER7: "Value",
+    PLACEHOLDER8: "Operator",
+    PLACEHOLDER9: "Condition",
+    ONCE: "Once",
+    DAYS: "Every day",
+    REPEAT: "Repeat",
+    SELECT_TIME: "Select time",
+    SELECT_DATE: "Select date",
+    ADD_LINE: "A set of new",
+    OR: "Or",
+    AND: "And",
+    ALARM_TYPE: "Alarm type",
+    SMS: "Sms",
+    DING_TALK: "Ding talk",
+    ENTERPRISE_WECHAT: "Enterprise Wechat",
+    INFORMATION: "Information",
+    DEVICE_CONDITION_TYPE: "Device condition type",
+    TIME_CONDITION_TYPE: "Time condition type",
+    EXECUTE_COMMAND: "Execute the command",
+    COMMAND: "command",
+    ALARM_STRATEGY: {
+      ADD_ALARM_STRATEGY: "Add Alarm strategy",
+      EDIT_ALARM_STRATEGY: "Edit Alarm strategy",
+      ALARM_STRATEGY_NAME: "Alarm strategy name",
+      ALARM_STRATEGY_DESCRIBE: "Alarm strategy describe",
+
+      PLACEHOLDER1: "Please enter alarm strategy name",
+      PLACEHOLDER2: "Please enter alarm strategy describe"
+    },
+    CONTROL_STRATEGY: {
+      CONTROL_STRATEGY_LIST: "Control strategy list",
+      NEW_STRATEGY: "New strategy",
+      EDIT_CONTROL_STRATEGY: "Edit control strategy",
+      ADD_CONTROL_STRATEGY: "Add control strategy"
+    }
   },
   /**
    * 告警

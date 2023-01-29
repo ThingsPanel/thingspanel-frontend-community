@@ -12,13 +12,13 @@
           </DeviceGroupSelector>
         </el-col>
         <el-col :span="4">
-          <el-cascader placeholder="请选择设备插件" @change="handleChangePlugin" v-model="queryParams.plugin_id"
+          <el-cascader :placeholder="$t('DEVICE_MAP.PLACEHOLDER1')" @change="handleChangePlugin" v-model="queryParams.plugin_id"
             :options="optionsList" class="w-100">
           </el-cascader>
         </el-col>
         <el-col :span="12">
           <el-button icon="el-icon-full-screen " @click='btn'
-            class="btn el-button--default el-button mr-2 el-button--indigo screen-btn">全屏</el-button>
+            class="btn el-button--default el-button mr-2 el-button--indigo screen-btn">{{ $t('DEVICE_MAP.PLACEHOLDER2') }}</el-button>
         </el-col>
       </el-row>
       <div :style="{ width: '100%', height: '100vh' }" :class='{ amap_box: bindc }'>

@@ -9,36 +9,36 @@
 <!--      新增-->
       <el-button size="medium" type="border" @click="handleCreate()">{{  $t('AUTOMATION.CONTROL_STRATEGY.NEW_STRATEGY') }}</el-button>
 <!--      返回-->
-      <el-button size="medium" type="indigo" @click="goBack()">{{  $t('COMMON.RETURN') }}</el-button>
+      <el-button size="medium" type="indigo" @click="goBack()">{{  $t('AUTOMATION.RETURN') }}</el-button>
     </el-col>
   </el-row>
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column :label="$t('COMMON.NO')" type="index"></el-table-column>
-    <el-table-column :label="$t('COMMON.RULE_NAME')" prop="name"></el-table-column>
-    <el-table-column :label="$t('COMMON.RULE_DESCRIBE')" prop="describe"></el-table-column>
-    <el-table-column :label="$t('COMMON.STRATRGYLISTTYPE')" prop="type">
+    <el-table-column :label="$t('AUTOMATION.NO')" type="index"></el-table-column>
+    <el-table-column :label="$t('AUTOMATION.RULE_NAME')" prop="name"></el-table-column>
+    <el-table-column :label="$t('AUTOMATION.RULE_DESCRIBE')" prop="describe"></el-table-column>
+    <el-table-column :label="$t('AUTOMATION.STRATRGYLISTTYPE')" prop="type">
       <template v-slot="scope">
         {{scope.row.type == "1" ? $t('AUTOMATION.DEVICE_CONDITION_TYPE') : $t('AUTOMATION.TIME_CONDITION_TYPE') }}
       </template>
     </el-table-column>
-    <el-table-column :label="$t('COMMON.POLICYPRIORITY')" prop="sort"></el-table-column>
+    <el-table-column :label="$t('AUTOMATION.POLICYPRIORITY')" prop="sort"></el-table-column>
 <!--    策略状态-->
-    <el-table-column :label="$t('COMMON.POLICYSTATUS')" prop="status">
+    <el-table-column :label="$t('AUTOMATION.POLICYSTATUS')" prop="status">
       <template v-slot="scope">
-        {{Number(scope.row.status) ? $t('COMMON.ON') : $t('COMMON.OFF') }}
+        {{Number(scope.row.status) ? $t('AUTOMATION.ON') : $t('AUTOMATION.OFF') }}
       </template>
     </el-table-column>
     <!-- 策略操作-->
-    <el-table-column :label="$t('COMMON.STRATEGY_HANDLE')" width="150" align="center">
+    <el-table-column :label="$t('AUTOMATION.STRATEGY_HANDLE')" width="150" align="center">
       <template v-slot="scope">
         <div class="text-right">
           <!-- 编辑 -->
-          <el-button type="yellow" size="mini" class="mr-3" @click="handleEdit(scope.row)">{{ $t('COMMON.EDIT') }}</el-button>
+          <el-button type="yellow" size="mini" class="mr-3" @click="handleEdit(scope.row)">{{ $t('AUTOMATION.EDIT') }}</el-button>
           <!-- 删除 -->
-          <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handleDelete(scope.row)">
-            <el-button slot="reference" type="danger" size="mini">{{ $t('COMMON.DELETE') }}</el-button>
+          <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
+            <el-button slot="reference" type="danger" size="mini">{{ $t('AUTOMATION.DELETE') }}</el-button>
           </el-popconfirm>
         </div>
       </template>

@@ -121,8 +121,8 @@
   <FormAlert :error_message="error_message"></FormAlert>
 
   <div class="text-right">
-    <el-button size="medium" type="cancel" @click="handleCancel()">{{ $t('COMMON.CANCEL') }}</el-button>
-    <el-button size="medium" type="save" @click="handleSave()">{{ $t('COMMON.SAVE') }}</el-button>
+    <el-button size="medium" type="cancel" @click="handleCancel()">{{ $t('AUTOMATION.CANCEL') }}</el-button>
+    <el-button size="medium" type="save" @click="handleSave()">{{ $t('AUTOMATION.SAVE') }}</el-button>
   </div>
 </el-form>
 </el-dialog>
