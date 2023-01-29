@@ -40,12 +40,12 @@ export default {
     mini: false,
     homeNav: {
       path: "/home",
-      title: "COMMON.HOME",
+      title: "MENU.HOME",
       icon: "flaticon2-architecture-and-city",
       children: [
         {
           path: "/home",
-          title: "COMMON.HOME",
+          title: "MENU.HOME",
           icon: "flaticon2-architecture-and-city",
         }
       ]
