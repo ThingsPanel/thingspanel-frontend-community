@@ -145,7 +145,7 @@
           </template>
           <el-tooltip placement="top">
             <div slot="content" style="width: 200px;">
-              <template v-for="(name, index) in scope.row.chart_names">
+              <template v-for="(name, index) in scope.row.chart_names" >
                 <el-tag size="mini" class="mr-1 mb-1" :key="index">{{ name }}</el-tag>
               </template>
             </div>
