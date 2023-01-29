@@ -30,7 +30,8 @@ export const SET_ERROR = "setError";
 // const local_url =
 //   (process.env.VUE_APP_BASE_URL ||
 //     document.location.protocol + "//" + document.domain + ":9999/") + "api";
-const base_url = local_url + "api";
+const base_url = local_url + (local_url.endsWith("/") ? "api" : "/api");
+
 const state = {
   errors: "",
   user: {},
@@ -68,6 +69,7 @@ const getters = {
 
 const actions = {
   [LOGIN](context, credentials) {
+    console.log("====Login", local_url);
     return new Promise((resolve, reject) => {
       login(credentials).then(({ data }) => {
           if (data.code == 200) {
