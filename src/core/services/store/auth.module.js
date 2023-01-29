@@ -68,6 +68,7 @@ const getters = {
 
 const actions = {
   [LOGIN](context, credentials) {
+    console.log("====Login", document.location.protocol + "//" + document.domain)
     return new Promise((resolve, reject) => {
       login(credentials).then(({ data }) => {
           if (data.code == 200) {
