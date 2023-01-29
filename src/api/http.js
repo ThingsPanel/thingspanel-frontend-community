@@ -1,7 +1,10 @@
 import axios from "axios";
 import JwtService from "@/core/services/jwt.service";
-import {local_url} from "@/api/LocalUrl";
 import {message_error} from "@/utils/helpers";
+
+const local_url =
+    (process.env.VUE_APP_BASE_URL ||
+        document.location.protocol + "//" + document.domain + ":9999/");
 
 // 创建 axios 实例
 const instance = axios.create({

@@ -64,6 +64,7 @@ export default function useDeviceIndex(business_id) {
     function washData(data_array) {
         let table = [];
         let ids = [];
+        if (!data_array) return {table, ids};
         data_array.forEach(item => {
             let row = fillData(item);
             if (item.children) {
@@ -171,6 +172,8 @@ export default function useDeviceIndex(business_id) {
      */
     function getDeviceStatus(ids) {
         console.log("====getDeviceStatus.getTimers:", store.getters.getTimers(business_id))
+        if (timer) clearInterval(timer);
+        if (!ids || ids.length == 0) return;
         const fn = () => {
             getDeviceListStatus({ device_id_list: ids })
                 .then(({ data }) => {
@@ -182,7 +185,6 @@ export default function useDeviceIndex(business_id) {
                 })
         }
         fn();
-        if (timer) clearInterval(timer);
         timer = setInterval(fn, 5000);
         // store.commit("addTimer", {id: business_id, timer});
 
