@@ -1,5 +1,4 @@
-const local_url = process.env.VUE_APP_BASE_URL  ||
-    (document.location.origin + "/");
+const local_url = process.env.VUE_APP_BASE_URL  || document.location.origin;
 
 const ws_url = process.env.VUE_APP_WEBSOCKET_URL || ('ws://' + document.location.host + '/ws')
 
