@@ -1,7 +1,6 @@
 import ApiService from "@/core/services/api.service";
 import JwtService from "@/core/services/jwt.service";
 import PermissionService from "../permission.service"
-import {local_url} from "@/api/LocalUrl";
 
 // 登录和用户详情接口
 import { login, logout, getUserInfo } from "@/api/auth";
@@ -27,10 +26,10 @@ export const PURGE_AUTH = "logOut";
 export const SET_AUTH = "setUser";
 export const SET_ERROR = "setError";
 
-// const local_url =
-//   (process.env.VUE_APP_BASE_URL ||
-//     document.location.protocol + "//" + document.domain + ":9999/") + "api";
-const base_url = local_url + "api";
+
+const local_url = process.env.VUE_APP_BASE_URL  || document.location.origin;
+const base_url = local_url + (local_url.endsWith("/") ? "api" : "/api");
+
 const state = {
   errors: "",
   user: {},
@@ -68,7 +67,7 @@ const getters = {
 
 const actions = {
   [LOGIN](context, credentials) {
-    console.log("====Login", document.location.protocol + "//" + document.domain)
+    console.log("====Login", local_url);
     return new Promise((resolve, reject) => {
       login(credentials).then(({ data }) => {
           if (data.code == 200) {

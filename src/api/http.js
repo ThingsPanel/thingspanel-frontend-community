@@ -2,13 +2,12 @@ import axios from "axios";
 import JwtService from "@/core/services/jwt.service";
 import {message_error} from "@/utils/helpers";
 
-const local_url =
-    (process.env.VUE_APP_BASE_URL ||
-        document.location.protocol + "//" + document.domain + ":9999/");
+
+const local_url = process.env.VUE_APP_BASE_URL  || document.location.origin;
 
 // 创建 axios 实例
 const instance = axios.create({
-    baseURL: local_url + "api",
+    baseURL: local_url + (local_url.endsWith("/") ? "api" : "/api"),
     timeout: 1000 * 12,
     headers: {
         'Content-Type': 'application/json',
