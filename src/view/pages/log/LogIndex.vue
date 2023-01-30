@@ -39,7 +39,7 @@
         <span class="cursor-pointer" @click="handleSearch({path:scope.row.detailed.path})">{{scope.row.detailed.path}}</span>
       </template>
     </el-table-column>
-    <el-table-column :label="$t('COMMON.INSTRUCTION')" prop="type">
+    <el-table-column :label="$t('SYSTEM_LOG.OPERATION_LOG.INSTRUCTION')" prop="type">
       <template v-slot="scope">
         {{scope.row.type ? $t(scope.row.type) : "未知"}}
       </template>

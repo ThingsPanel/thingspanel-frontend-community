@@ -859,8 +859,75 @@ export const locale = {
      * 产品列表
      */
     PRODUCT_LIST: {
+      PRODUCTLIST:"product list",
+      CREATEPRODUCT:"create product",
+      PRODUCTNUMBER:"product number",
+      SEARCH:"Search",
+      PRODUCTNAME:"product name",
+      PROTOCOLTYPE1:"ProtocolType",
+      AUTHENTICATION:"Authentication",
+      PRODUCTDESCRIPTION:"product description",
+      CREATEDATE:"Create date",
+      OPERATION:"Operation",
+      VIEWBATCH:"view batch",
+      DELETE:"Delete",
+      /**
+       * 产品列表新增弹框
+       */
+      PRODUCT_LIST_ADD: {
+        CREATEPRODUCT:"create product",
+        PRODUCTNAME:"product name",
+        PRODUCTNUMBER:"product number",
+        PROTOCOLTYPE1:"ProtocolType",
+        PLACEHOLDER42:"Select a protocol type",
+        PLACEHOLDER43:"Select an authentication mode",
+        TITLE32: "Device Plugin",
+        PRODUCTDESCRIPTION:"product description",
+        CANCEL:"cancel",
+        CONFIRM:"submit",
+      },
+      PLACEHOLDER1:"Please input name",
+      PLACEHOLDER2:"Please enter the product number",
+      PLACEHOLDER3:"Select a protocol type",
+      PLACEHOLDER4:"Select a authentication type",
+    },
+    /**
+     * 批次列表
+     */
+    BATCH_LIST: {
+      BATCHLIST:"batch list",
+      CREATEBATCH:"create batch",
+      BATCHNUMBER:"Batch Number",
+      DEVICENUMBER: "device number",
+      CONNECTADDRESS:"connect address",
+      GENERATEDATAFLAGS: "generate data flags",
+      BATCHDESCRIPTION:"Batch Description",
+      CREATEDATE:"Create date",
+      OPERATION:"Operation",
+      DELETE:"Delete",
+      GENERATEDATA: "generate data",
+      EXPORTQRCODEANDDATA:"export qrcode and data",
+      IMPORTDATA: "import data",
+      /**
+     * 批次列表新增弹框
+     */
+      BATCH_LIST_ADD: {
+        CREATEPRODUCT:"create product",
+        PRODUCT:"product",
+        BATCHNUMBER:"Batch Number",
+        ACCESSADDRESS:"Access address",
+        NUMBEREQIPMENT:"Number of equipment",
+        BATCHDESCRIPTION:"Batch Description",
+        CANCEL:"cancel",
+        CONFIRM:"submit",
+      },
+      PLACEHOLDER1:"Please enter the batch number",
+      PLACEHOLDER2:"Please select the product",
+      PLACEHOLDER3:"Please enter the access address",
+      PLACEHOLDER4:"Please enter the number of devices",
+    },
 
-    }
+
   },
   /**
    * 规则引擎

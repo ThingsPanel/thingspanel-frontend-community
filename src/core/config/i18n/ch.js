@@ -61,6 +61,9 @@ export const locale = {
     CREATEDATE:"创建日期",
     VIEWBATCH:"查看批次",
     BATCHLIST: "批次列表",
+    CREATEBATCH: "创建批次",
+    DEVICENUMBER: "设备数量",
+    CONNECTADDRESS: "接入地址",
     PRODUCT:"产品",
     BATCHNUMBER:"批号",
     ACCESSADDRESS:"接入地址",
@@ -817,8 +820,73 @@ export const locale = {
      * 产品列表
      */
     PRODUCT_LIST: {
-
-    }
+      PRODUCTLIST:"产品列表",
+      CREATEPRODUCT:"创建产品",
+      PRODUCTNUMBER:"产品编号",
+      SEARCH:"查询",
+      PRODUCTNAME:"产品名称",
+      PROTOCOLTYPE1:"协议类型",
+      AUTHENTICATION:"认证方式",
+      PRODUCTDESCRIPTION:"产品描述",
+      CREATEDATE:"创建日期",
+      OPERATION:"操作",
+      VIEWBATCH:"查看批次",
+      DELETE:"删除",
+      /**
+     * 产品列表新增弹框
+     */
+      PRODUCT_LIST_ADD: {
+        CREATEPRODUCT:"创建产品",
+        PRODUCTNAME:"产品名称",
+        PRODUCTNUMBER:"产品编号",
+        PROTOCOLTYPE1:"协议类型",
+        PLACEHOLDER42:"请选择协议类型",
+        PLACEHOLDER43:"请选择认证方式",
+        TITLE32: "设备插件",
+        PRODUCTDESCRIPTION:"产品描述",
+        CANCEL:"取消",
+        CONFIRM:"确定",
+      },
+      PLACEHOLDER1:"请输入名称",
+      PLACEHOLDER2:"请输入产品编号",
+      PLACEHOLDER3:"请选择协议类型",
+      PLACEHOLDER4:"请选择认证方式",
+    },
+    /**
+     * 批次列表
+     */
+    BATCH_LIST: {
+      BATCHLIST:"批次列表",
+      CREATEBATCH:"创建批次",
+      BATCHNUMBER:"批号",
+      DEVICENUMBER:"设备数量",
+      CONNECTADDRESS:"接入地址",
+      GENERATEDATAFLAGS:"生成数据标志",
+      BATCHDESCRIPTION:"批次描述",
+      CREATEDATE:"创建日期",
+      OPERATION:"操作",
+      DELETE:"删除",
+      GENERATEDATA:"生成数据",
+      EXPORTQRCODEANDDATA:"导出二维码数据",
+      IMPORTDATA:"导出数据",
+      /**
+     * 批次列表新增弹框
+     */
+      BATCH_LIST_ADD: {
+        CREATEPRODUCT:"创建产品",
+        PRODUCT:"产品",
+        BATCHNUMBER:"批号",
+        ACCESSADDRESS:"接入地址",
+        NUMBEREQIPMENT:"设备数量",
+        BATCHDESCRIPTION:"批次描述",
+        CANCEL:"取消",
+        CONFIRM:"确定",
+      },
+      PLACEHOLDER1:"请输入批号",
+      PLACEHOLDER2:"请选择产品",
+      PLACEHOLDER3:"请输入接入地址",
+      PLACEHOLDER4:"请输入设备数量",
+    },
   },
   /**
    * 规则引擎
