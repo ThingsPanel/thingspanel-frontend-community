@@ -1,36 +1,36 @@
 <template>
-  <el-dialog class="el-dark-dialog" :title="$t('COMMON.CREATEPRODUCT')" :visible.sync="dialogVisible" width="30%"
+  <el-dialog class="el-dark-dialog" :title="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.CREATEPRODUCT')" :visible.sync="dialogVisible" width="30%"
              :before-close="handleClose" :close-on-click-modal="false">
     <el-form label-position="top" :model="formData" :rules="formRules">
 
-      <el-form-item :label="$t('COMMON.PRODUCT')"  prop="product_id">
+      <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.PRODUCT')"  prop="product_id">
         <el-select style="width: 100%" v-model="formData.product_name" disabled >
           <el-option v-for="item in productOptions" :key="item.value" :label="item.label"
                      :value="item.value"></el-option>
         </el-select>
       </el-form-item>
 
-      <el-form-item :label="$t('COMMON.BATCHNUMBER')" prop="batch_number">
+      <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.BATCHNUMBER')" prop="batch_number">
         <el-input v-model="formData.batch_number"></el-input>
       </el-form-item>
 
-      <el-form-item :label="$t('COMMON.ACCESSADDRESS')" prop="access_address">
+      <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.ACCESSADDRESS')" prop="access_address">
         <el-input v-model="formData.access_address"></el-input>
       </el-form-item>
 
-      <el-form-item :label="$t('COMMON.NUMBEREQIPMENT')" prop="device_number">
+      <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.NUMBEREQIPMENT')" prop="device_number">
         <el-input-number v-model="formData.device_number"></el-input-number>
       </el-form-item>
 
-      <el-form-item :label="$t('COMMON.BATCHDESCRIPTION')">
+      <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.BATCHDESCRIPTION')">
         <el-input v-model="formData.describe"></el-input>
       </el-form-item>
 
     </el-form>
 
     <span slot="footer" class="dialog-footer">
-    <el-button type="cancel" @click="handleClose">{{ $t('COMMON.CANCEL') }}</el-button>
-    <el-button type="save" @click="handleSubmit">{{ $t('COMMON.CONFIRM') }}</el-button>
+    <el-button type="cancel" @click="handleClose">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.CANCEL') }}</el-button>
+    <el-button type="save" @click="handleSubmit">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.CONFIRM') }}</el-button>
   </span>
   </el-dialog>
 </template>
@@ -73,10 +73,10 @@ export default {
         describle: ""
       },
       formRules: {
-        batch_number: [{required, message:  i18n.t('COMMON.PLACEHOLDER45')}],
-        product_id: [{required, message: i18n.t('COMMON.PLACEHOLDER46')}],
-        access_address: [{required, message: i18n.t('COMMON.PLACEHOLDER47')}],
-        device_number: [{required, message:  i18n.t('COMMON.PLACEHOLDER48'), type: 'number'}]
+        batch_number: [{required, message:  i18n.t('PRODUCT_MANAGEMENT.BATCH_LIST.PLACEHOLDER1')}],
+        product_id: [{required, message: i18n.t('PRODUCT_MANAGEMENT.BATCH_LIST.PLACEHOLDER2')}],
+        access_address: [{required, message: i18n.t('PRODUCT_MANAGEMENT.BATCH_LIST.PLACEHOLDER3')}],
+        device_number: [{required, message:  i18n.t('PRODUCT_MANAGEMENT.BATCH_LIST.PLACEHOLDER4'), type: 'number'}]
       },
       dialogVisible: false,
       productOptions: [

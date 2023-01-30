@@ -1,20 +1,20 @@
 <template>
   <div>
-    <el-dialog class="el-dark-dialog" :title="$t('COMMON.CREATEPRODUCT')" :visible.sync="dialogVisible" width="30%"
+    <el-dialog class="el-dark-dialog" :title="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.CREATEPRODUCT')" :visible.sync="dialogVisible" width="30%"
                :before-close="handleClose" :close-on-click-modal="false">
       <el-form label-position="top" :model="formData" :rules="formRules" class="el-dark-input">
-        <el-form-item :label="$t('COMMON.PRODUCTNAME')" prop="name">
+        <el-form-item :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.PRODUCTNAME')" prop="name">
           <el-input v-model="formData.name"></el-input>
         </el-form-item>
 
-        <el-form-item :label="$t('COMMON.PRODUCTNUMBER')" prop="serial_number">
+        <el-form-item :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.PRODUCTNUMBER')" prop="serial_number">
           <el-input v-model="formData.serial_number"></el-input>
         </el-form-item>
 
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item :label="$t('COMMON.PROTOCOLTYPE1')" prop="protocol_type">
-              <el-select style="width: 100%" v-model="formData.protocol_type" :placeholder="$t('COMMON.PLACEHOLDER42')">
+            <el-form-item :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.PROTOCOLTYPE1')" prop="protocol_type">
+              <el-select style="width: 100%" v-model="formData.protocol_type" :placeholder="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.PLACEHOLDER42')">
                 <el-option v-for="item in protocolOptions" :key="item.value" :label="item.label"
                            :value="item.value"></el-option>
               </el-select>
@@ -23,7 +23,7 @@
 
           <el-col :span="12">
             <el-form-item :label="$t('COMMON.AUTHENTICATION')" prop="auth_type">
-              <el-select style="width: 100%" v-model="formData.auth_type" :placeholder="$t('COMMON.PLACEHOLDER43')">
+              <el-select style="width: 100%" v-model="formData.auth_type" :placeholder="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.PLACEHOLDER43')">
                 <el-option v-for="item in authOptions" :key="item.value" :label="item.label"
                            :value="item.value"></el-option>
               </el-select>
@@ -31,21 +31,21 @@
           </el-col>
         </el-row>
 
-        <el-form-item :label="$t('COMMON.TITLE32')">
+        <el-form-item :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.TITLE32')">
           <el-input v-model="formData.plugin" @click.native="handleBindPlugin">
 
           </el-input>
         </el-form-item>
 
-        <el-form-item :label="$t('COMMON.PRODUCTDESCRIPTION')">
+        <el-form-item :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.PRODUCTDESCRIPTION')">
           <el-input v-model="formData.describe"></el-input>
         </el-form-item>
 
       </el-form>
 
       <span slot="footer" class="dialog-footer">
-      <el-button type="cancel" @click="handleClose">{{ $t('COMMON.CANCEL') }}</el-button>
-      <el-button type="save" @click="handleSubmit">{{ $t('COMMON.CONFIRM') }}</el-button>
+      <el-button type="cancel" @click="handleClose">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.CANCEL') }}</el-button>
+      <el-button type="save" @click="handleSubmit">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.CONFIRM') }}</el-button>
     </span>
     </el-dialog>
     <plugin-binding-form :dialog-visible.sync="pluginDialogVisible" @submit="handleBindPluginSubmit"></plugin-binding-form>
@@ -84,10 +84,10 @@ export default {
         describe: ""
       },
       formRules: {
-        name: [{required, message: i18n.t('COMMON.PLACEHOLDER6')}],
-        serial_number: [{required, message: i18n.t('COMMON.PLACEHOLDER41')}],
-        protocol_type: [{required, message: i18n.t('COMMON.PLACEHOLDER42')}],
-        auth_type: [{required, message: i18n.t('COMMON.PLACEHOLDER42')}],
+        name: [{required, message: i18n.t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PLACEHOLDER1')}],
+        serial_number: [{required, message: i18n.t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PLACEHOLDER2')}],
+        protocol_type: [{required, message: i18n.t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PLACEHOLDER3')}],
+        auth_type: [{required, message: i18n.t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PLACEHOLDER4')}],
       },
       dialogVisible: false,
       protocolOptions: [

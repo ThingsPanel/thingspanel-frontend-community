@@ -2,11 +2,11 @@
   <div class="rounded card p-4 el-table-transparent el-dark-input">
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
       <el-col :span="12">
-        <TableTitle>{{ $t('COMMON.BATCHLIST') }}</TableTitle>
+        <TableTitle>{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCHLIST') }}</TableTitle>
       </el-col>
 
       <el-col :span="12" class="px-2 text-right">
-        <el-button size="medium" type="border" @click="handleCreate">{{ $t('COMMON.CREATEBATCH') }}</el-button>
+        <el-button size="medium" type="border" @click="handleCreate">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.CREATEBATCH') }}</el-button>
       </el-col>
     </el-row>
 
@@ -15,21 +15,21 @@
       <el-table :data="tableData" v-loading="loading">
 
         <!-- 批号-->
-        <el-table-column :label="$t('COMMON.BATCHNUMBER')" prop="batch_number" align="center">
+        <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCHNUMBER')" prop="batch_number" align="center">
 
         </el-table-column>
 
         <!-- 设备数量-->
-        <el-table-column :label="$t('COMMON.DEVICENUMBER')" prop="device_number" align="center">
+        <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.DEVICENUMBER')" prop="device_number" align="center">
 
         </el-table-column>
 
         <!--  接入地址-->
-        <el-table-column :label="$t('COMMON.CONNECTADDRESS')" prop="access_address"align="center">
+        <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.CONNECTADDRESS')" prop="access_address"align="center">
         </el-table-column>
 
         <!-- 生成数据标志-->
-        <el-table-column :label="$t('COMMON.GENERATEDATAFLAGS')" prop="generate_flag" align="center">
+        <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.GENERATEDATAFLAGS')" prop="generate_flag" align="center">
           <template v-slot="scope">
             <el-tag v-if="scope.row.generate_flag == '1'"  type="success">已生成</el-tag>
             <el-tag v-else type="danger">未生成</el-tag>
@@ -37,29 +37,29 @@
         </el-table-column>
 
         <!-- 批次描述-->
-        <el-table-column :label="$t('COMMON.BATCHDESCRIPTION')" prop="describe" align="center">
+        <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCHDESCRIPTION')" prop="describe" align="center">
         </el-table-column>
 
         <!-- 创建日期-->
-        <el-table-column :label="$t('COMMON.CREATEDATE')" prop="created" align="center">
+        <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.CREATEDATE')" prop="created" align="center">
           <template v-slot="scope">
             {{ scope.row.created ? scope.row.created : "--"}}
           </template>
         </el-table-column>
 
         <!-- 操作列-->
-        <el-table-column align="center" :label="$t('COMMON.OPERATION')" width="400px">
+        <el-table-column align="left" :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.OPERATION')" width="500px">
           <template v-slot="scope">
             <div class="text-center">
-              <el-button type="indigo" :disabled="scope.row.generate_flag == '1'" size="mini" @click="generateData(scope.row)">{{ $t('COMMON.GENERATEDATA') }}</el-button>
+              <el-button type="indigo" :disabled="scope.row.generate_flag == '1'" class="mr-3" size="mini" @click="generateData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.GENERATEDATA') }}</el-button>
 
-              <el-popconfirm title="确定要删除吗？" @confirm="handleDelete(scope.row)">
-                <el-button slot="reference" size="mini" type="danger">{{ $t('COMMON.DELETE') }}</el-button>
+              <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
+                <el-button slot="reference" class="mr-3" size="mini" type="danger">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.DELETE') }}</el-button>
               </el-popconfirm>
 
-              <el-button type="indigo" size="mini" @click="exportQRCodeAndData(scope.row)">{{ $t('COMMON.EXPORTQRCODEANDDATA') }}</el-button>
+              <el-button type="indigo" size="mini" @click="exportQRCodeAndData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.EXPORTQRCODEANDDATA') }}</el-button>
 
-              <el-button type="indigo" size="mini" @click="importData(scope.row)">{{ $t('COMMON.IMPORTDATA') }}</el-button>
+              <el-button type="indigo" size="mini" @click="importData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA') }}</el-button>
             </div>
           </template>
         </el-table-column>

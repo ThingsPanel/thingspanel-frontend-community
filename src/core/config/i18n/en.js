@@ -354,10 +354,8 @@ export const locale = {
     PLACEHOLDER30: "Please choose the type",
     PLACEHOLDER31: "Please enter the request path",
     PLACEHOLDER32: "Please enter the request IP",
-    PLACEHOLDER33:
-      "If the configuration is wrong, the data will not be pushed to the MQTT Broker.",
-    PLACEHOLDER34:
-      "If the configuration is wrong, the data cannot be stored in the database",
+    PLACEHOLDER33: "If the configuration is wrong, the data will not be pushed to the MQTT Broker.",
+    PLACEHOLDER34: "If the configuration is wrong, the data cannot be stored in the database",
     PLACEHOLDER35: "Please select an asset",
     PLACEHOLDER36: "Please enter the token",
     PLACEHOLDER37: "Start date",
@@ -378,17 +376,13 @@ export const locale = {
     PLACEHOLDER52:"Copy to Clipboard",
     PLACEHOLDER53:"Custom plug-ins",
     PLACEHOLDER54:"Address personalized device requirements",
-
     SEARCH: "Search",
     EXPORT: "Export",
     CLICKDOWNLOAD: "Click download",
     GENERATE_WAIT: "Generating, please wait...",
-    TEXT41:
-      "Remarks: Only one condition and one instruction are allowed to be issued if they belong to the same device",
-    TEXT42:
-      "Only one condition and one instruction are allowed to be issued if they belong to the same device!",
-    TEXT43:
-      "Only when the conditions and instructions belong to the same device can be issued!",
+    TEXT41: "Remarks: Only one condition and one instruction are allowed to be issued if they belong to the same device",
+    TEXT42: "Only one condition and one instruction are allowed to be issued if they belong to the same device!",
+    TEXT43: "Only when the conditions and instructions belong to the same device can be issued!",
     TEXT44: "Are you sure you want to modify?",
     UPDATE: "Update",
     DATAS: "Data Management",
@@ -804,7 +798,12 @@ export const locale = {
    * 告警
    */
   ALARM: {
-
+    WARNINFO: "Alert Message",
+    NO: "ID",
+    ALARMTIME: "Alarm Time",
+    BUSINESSNAME: "Project Name",
+    DEVICENAME1: "DeviceName",
+    TRIGGERCONDITIONS: "Triggering condition",
   },
   /**
    * 系统日志
@@ -814,13 +813,42 @@ export const locale = {
      * 操作日志
      */
     OPERATION_LOG: {
-
+      OPERATIONLOG: "Logs",
+      IPADDRESS: "Please enter the IP address",
+      PLACEHOLDER31: "Please enter the request path",
+      SEARCH:"Search",
+      NO: "ID",
+      PATH: "Request path",
+      INSTRUCTION: "Instruction",
+      TIMES: "Time",
+      CONSUMING: "Time consuming",
+      USERNAME: "username",
     },
     /**
      * 设备日志
      */
     DEVICE_LOG: {
-
+      EQUIPMENTLOG: "Equipment Log",
+      PLACEHOLDER18: "Please enter the business name",
+      ENTERASSETNAME: "Assets name",
+      OPERATIONTYPE: "Please select an operation type",
+      TIMINGTRIGGER: "Timing trigger",
+      MANUALCONTROL: "Manual control",
+      AUTOMATICCONTROL: "Automatic control",
+      SELECTSENDRESULTS: "Please select send results",
+      SUCCESSFUL: "successful",
+      FAILURE: "failure",
+      SEARCH:"Search",
+      RESET: "Reset",
+      NUMBERID: "ID",
+      BUSINESSNAME1: "BusinessName",
+      DEVICENAME1: "DeviceName",
+      DWVICEGROUPNAME1: "DeviceGroupName",
+      INSTRUCTION1: "Instruction",
+      OPERATIONTYPE1: "OperationType",
+      TRIGGERINGTIME1: "TriggeringTime",
+      SENDTHERESULIT1: "SendTheResults",
+      PROTOCOLTYPE1: "ProtocolType",
     }
   },
   /**
@@ -831,8 +859,75 @@ export const locale = {
      * 产品列表
      */
     PRODUCT_LIST: {
+      PRODUCTLIST:"product list",
+      CREATEPRODUCT:"create product",
+      PRODUCTNUMBER:"product number",
+      SEARCH:"Search",
+      PRODUCTNAME:"product name",
+      PROTOCOLTYPE1:"ProtocolType",
+      AUTHENTICATION:"Authentication",
+      PRODUCTDESCRIPTION:"product description",
+      CREATEDATE:"Create date",
+      OPERATION:"Operation",
+      VIEWBATCH:"view batch",
+      DELETE:"Delete",
+      /**
+       * 产品列表新增弹框
+       */
+      PRODUCT_LIST_ADD: {
+        CREATEPRODUCT:"create product",
+        PRODUCTNAME:"product name",
+        PRODUCTNUMBER:"product number",
+        PROTOCOLTYPE1:"ProtocolType",
+        PLACEHOLDER42:"Select a protocol type",
+        PLACEHOLDER43:"Select an authentication mode",
+        TITLE32: "Device Plugin",
+        PRODUCTDESCRIPTION:"product description",
+        CANCEL:"cancel",
+        CONFIRM:"submit",
+      },
+      PLACEHOLDER1:"Please input name",
+      PLACEHOLDER2:"Please enter the product number",
+      PLACEHOLDER3:"Select a protocol type",
+      PLACEHOLDER4:"Select a authentication type",
+    },
+    /**
+     * 批次列表
+     */
+    BATCH_LIST: {
+      BATCHLIST:"batch list",
+      CREATEBATCH:"create batch",
+      BATCHNUMBER:"Batch Number",
+      DEVICENUMBER: "device number",
+      CONNECTADDRESS:"connect address",
+      GENERATEDATAFLAGS: "generate data flags",
+      BATCHDESCRIPTION:"Batch Description",
+      CREATEDATE:"Create date",
+      OPERATION:"Operation",
+      DELETE:"Delete",
+      GENERATEDATA: "generate data",
+      EXPORTQRCODEANDDATA:"export qrcode and data",
+      IMPORTDATA: "import data",
+      /**
+     * 批次列表新增弹框
+     */
+      BATCH_LIST_ADD: {
+        CREATEPRODUCT:"create product",
+        PRODUCT:"product",
+        BATCHNUMBER:"Batch Number",
+        ACCESSADDRESS:"Access address",
+        NUMBEREQIPMENT:"Number of equipment",
+        BATCHDESCRIPTION:"Batch Description",
+        CANCEL:"cancel",
+        CONFIRM:"submit",
+      },
+      PLACEHOLDER1:"Please enter the batch number",
+      PLACEHOLDER2:"Please select the product",
+      PLACEHOLDER3:"Please enter the access address",
+      PLACEHOLDER4:"Please enter the number of devices",
+    },
 
-    }
+
   },
   /**
    * 规则引擎

@@ -254,6 +254,7 @@ export default defineComponent({
       "config.value": [
         {required: true, message: "请选择值"}
       ],
+      
     })
 
     let loading = ref(false)

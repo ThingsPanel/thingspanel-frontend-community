@@ -2,7 +2,7 @@
 <div class="rounded card p-4">
   <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
     <el-col>
-      <TableTitle>{{ $t("COMMON.WARNINFO")}}</TableTitle>
+      <TableTitle>{{ $t("ALARM.WARNINFO")}}</TableTitle>
     </el-col>
   </el-row>
 
@@ -31,27 +31,27 @@
           @change="handleSearch()"
           @clear="handleSearch()"
           type="datetimerange"
-          :range-separator="$t('COMMON.PLACEHOLDER38')"
-          :start-placeholder="$t('COMMON.PLACEHOLDER37')"
-          :end-placeholder="$t('COMMON.PLACEHOLDER39')">
+          :start-placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER5')"
+          :range-separator="$t('DATA_MANAGEMENT.PLACEHOLDER6')"
+          :end-placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER7')">
       </el-date-picker>
     </el-col>
 
     <el-col :span="7">
-      <el-button type="border" size="medium" @click="handleSearch()">{{ $t("COMMON.SEARCH")}}</el-button>
+      <el-button type="border" size="medium" @click="handleSearch()">{{ $t("DATA_MANAGEMENT.SEARCH")}}</el-button>
 <!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
     </el-col>
   </el-row>
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column :label="$t('COMMON.NO')" type="index"></el-table-column>
-    <el-table-column :label="$t('COMMON.ALARMTIME')" prop="created_at" width="180" ></el-table-column>
-    <el-table-column :label="$t('COMMON.BUSINESSNAME')" prop="business_name" width="220"></el-table-column>
-    <el-table-column :label="$t('COMMON.DEVICENAME1')" prop="device_name" width="220"></el-table-column>
+    <el-table-column :label="$t('ALARM.NO')" type="index"></el-table-column>
+    <el-table-column :label="$t('ALARM.ALARMTIME')" prop="created_at" width="180" ></el-table-column>
+    <el-table-column :label="$t('ALARM.BUSINESSNAME')" prop="business_name" width="220"></el-table-column>
+    <el-table-column :label="$t('ALARM.DEVICENAME1')" prop="device_name" width="220"></el-table-column>
 <!--    <el-table-column label="指标名" prop="asset_name"></el-table-column>-->
 <!--    <el-table-column label="当前值"></el-table-column>-->
-    <el-table-column :label="$t('COMMON.TRIGGERCONDITIONS')" prop="describe" :show-overflow-tooltip="true">
+    <el-table-column :label="$t('ALARM.TRIGGERCONDITIONS')" prop="describe" :show-overflow-tooltip="true">
       <template v-slot="scope">
         <p class="table-describe mad">{{ scope.row.describe }}</p>
       </template>
