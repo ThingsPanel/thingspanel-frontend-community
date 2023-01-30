@@ -71,6 +71,20 @@ export function handleServerErrorMsg(errors, ServerErrors) {
     }
 }
 
+export function formatDate(timestamp) {
+    if (!timestamp) return "";
+    let time = 0;
+    time = timestamp.toString().substr(0, 13);
+    let date = new Date(Number(time));   // 转换为格林威治时间对象
+    let year = date.getFullYear();    // 获取年
+    let month = date.getMonth() + 1;       // 获取月
+    let day = date.getDay()
+    let hour = date.getHours();
+    let minute = date.getMinutes()
+    let second = date.getSeconds();
+    return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+}
+
 /**
  * 判断是否是字符串
  * @param item

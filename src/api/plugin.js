@@ -1,4 +1,3 @@
-import { post } from "jquery"
 import axios from "./http"
 
 /**
