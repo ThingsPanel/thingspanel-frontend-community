@@ -372,8 +372,7 @@ export const locale = {
     TITLE32: "设备插件",
     TITLE33: "接入协议",
     TITLE34: "设备插件生成器",
-    TEXT41:
-      "备注：仅一个条件，和一个指令，且属于同一设备的情况下，方可允许下发",
+    TEXT41: "备注：仅一个条件，和一个指令，且属于同一设备的情况下，方可允许下发",
     TEXT42: "仅一个条件，和一个指令，且属于同一设备的情况下，方可允许下发！",
     TEXT43: "条件和指令属于同一设备的情况下，方可允许下发！",
     TEXT44: "确定要修改吗？",
@@ -757,7 +756,12 @@ export const locale = {
    * 告警
    */
   ALARM: {
-
+    WARNINFO: "告警信息",
+    NO: "序号",
+    ALARMTIME: "告警时间",
+    BUSINESSNAME: "业务名称",
+    DEVICENAME1: "设备名称",
+    TRIGGERCONDITIONS: "触发条件",
   },
   /**
    * 系统日志
@@ -767,13 +771,42 @@ export const locale = {
      * 操作日志
      */
     OPERATION_LOG: {
-
+      OPERATIONLOG: "操作日志",
+      IPADDRESS: "请输入IP地址",
+      PLACEHOLDER31: "请输入请求路径",
+      SEARCH:"查询",
+      NO: "序号",
+      PATH: "请求路径",
+      INSTRUCTION: "说明",
+      TIMES: "时间",
+      CONSUMING: "请求耗时",
+      USERNAME: "用户名",
     },
     /**
      * 设备日志
      */
     DEVICE_LOG: {
-
+      EQUIPMENTLOG: "设备日志",
+      PLACEHOLDER18: "请输入业务名称",
+      ENTERASSETNAME: "请输入设备分组名称",
+      OPERATIONTYPE: "请选择操作类型",
+      TIMINGTRIGGER: "定时触发",
+      MANUALCONTROL: "手动控制",
+      AUTOMATICCONTROL: "自动控制",
+      SELECTSENDRESULTS: "请选择发送结果",
+      SUCCESSFUL: "成功",
+      FAILURE: "失败",
+      SEARCH:"查询",
+      RESET: "重置",
+      NUMBERID: "序号",
+      BUSINESSNAME1: "业务名称",
+      DEVICENAME1: "设备名称",
+      DWVICEGROUPNAME1: "设备分组名称",
+      INSTRUCTION1: "指令",
+      OPERATIONTYPE1: "操作类型",
+      TRIGGERINGTIME1: "触发时间",
+      SENDTHERESULIT1: "发送结果",
+      PROTOCOLTYPE1: "协议类型",
     }
   },
   /**
@@ -809,7 +842,8 @@ export const locale = {
    */
   PLUGIN: {
     CUSTOM_DEVICE_PLUGIN: "自定义设备插件",
-    DEVICE_INFO: "设备信息"
+    DEVICE_INFO: "设备信息",
+
   },
   /**
    * 系统管理

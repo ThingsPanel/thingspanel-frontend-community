@@ -354,10 +354,8 @@ export const locale = {
     PLACEHOLDER30: "Please choose the type",
     PLACEHOLDER31: "Please enter the request path",
     PLACEHOLDER32: "Please enter the request IP",
-    PLACEHOLDER33:
-      "If the configuration is wrong, the data will not be pushed to the MQTT Broker.",
-    PLACEHOLDER34:
-      "If the configuration is wrong, the data cannot be stored in the database",
+    PLACEHOLDER33: "If the configuration is wrong, the data will not be pushed to the MQTT Broker.",
+    PLACEHOLDER34: "If the configuration is wrong, the data cannot be stored in the database",
     PLACEHOLDER35: "Please select an asset",
     PLACEHOLDER36: "Please enter the token",
     PLACEHOLDER37: "Start date",
@@ -378,17 +376,13 @@ export const locale = {
     PLACEHOLDER52:"Copy to Clipboard",
     PLACEHOLDER53:"Custom plug-ins",
     PLACEHOLDER54:"Address personalized device requirements",
-
     SEARCH: "Search",
     EXPORT: "Export",
     CLICKDOWNLOAD: "Click download",
     GENERATE_WAIT: "Generating, please wait...",
-    TEXT41:
-      "Remarks: Only one condition and one instruction are allowed to be issued if they belong to the same device",
-    TEXT42:
-      "Only one condition and one instruction are allowed to be issued if they belong to the same device!",
-    TEXT43:
-      "Only when the conditions and instructions belong to the same device can be issued!",
+    TEXT41: "Remarks: Only one condition and one instruction are allowed to be issued if they belong to the same device",
+    TEXT42: "Only one condition and one instruction are allowed to be issued if they belong to the same device!",
+    TEXT43: "Only when the conditions and instructions belong to the same device can be issued!",
     TEXT44: "Are you sure you want to modify?",
     UPDATE: "Update",
     DATAS: "Data Management",
@@ -804,7 +798,12 @@ export const locale = {
    * 告警
    */
   ALARM: {
-
+    WARNINFO: "Alert Message",
+    NO: "ID",
+    ALARMTIME: "Alarm Time",
+    BUSINESSNAME: "Project Name",
+    DEVICENAME1: "DeviceName",
+    TRIGGERCONDITIONS: "Triggering condition",
   },
   /**
    * 系统日志
@@ -814,13 +813,42 @@ export const locale = {
      * 操作日志
      */
     OPERATION_LOG: {
-
+      OPERATIONLOG: "Logs",
+      IPADDRESS: "Please enter the IP address",
+      PLACEHOLDER31: "Please enter the request path",
+      SEARCH:"Search",
+      NO: "ID",
+      PATH: "Request path",
+      INSTRUCTION: "Instruction",
+      TIMES: "Time",
+      CONSUMING: "Time consuming",
+      USERNAME: "username",
     },
     /**
      * 设备日志
      */
     DEVICE_LOG: {
-
+      EQUIPMENTLOG: "Equipment Log",
+      PLACEHOLDER18: "Please enter the business name",
+      ENTERASSETNAME: "Assets name",
+      OPERATIONTYPE: "Please select an operation type",
+      TIMINGTRIGGER: "Timing trigger",
+      MANUALCONTROL: "Manual control",
+      AUTOMATICCONTROL: "Automatic control",
+      SELECTSENDRESULTS: "Please select send results",
+      SUCCESSFUL: "successful",
+      FAILURE: "failure",
+      SEARCH:"Search",
+      RESET: "Reset",
+      NUMBERID: "ID",
+      BUSINESSNAME1: "BusinessName",
+      DEVICENAME1: "DeviceName",
+      DWVICEGROUPNAME1: "DeviceGroupName",
+      INSTRUCTION1: "Instruction",
+      OPERATIONTYPE1: "OperationType",
+      TRIGGERINGTIME1: "TriggeringTime",
+      SENDTHERESULIT1: "SendTheResults",
+      PROTOCOLTYPE1: "ProtocolType",
     }
   },
   /**
