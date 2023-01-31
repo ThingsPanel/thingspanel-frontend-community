@@ -2,29 +2,29 @@
 <div class="rounded p-4 card no-border">
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>{{ $t("COMMON.NETWORKCOMPONENTS")}}</TableTitle>
+      <TableTitle>{{ $t("RULE_ENGINE.ACCESS_ENGINE.NETWORKCOMPONENTS")}}</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="border" @click="dialogVisible = true">{{ $t("COMMON.CREATACCESSRULSE")}}</el-button>
+      <el-button size="medium" type="border" @click="dialogVisible = true">{{ $t("RULE_ENGINE.ACCESS_ENGINE.CREATACCESSRULSE")}}</el-button>
     </el-col>
   </el-row>
 
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column :label="$t('COMMON.NO')" type="index" width="100"></el-table-column>
-    <el-table-column prop="label" :label="$t('COMMON.RULE_NAME')"></el-table-column>
-    <el-table-column prop="status" :label="$t('COMMON.TNTERFACESTATUS')">
+    <el-table-column :label="$t('RULE_ENGINE.ACCESS_ENGINE.NO')" type="index" width="100"></el-table-column>
+    <el-table-column prop="label" :label="$t('RULE_ENGINE.ACCESS_ENGINE.RULE_NAME')"></el-table-column>
+    <el-table-column prop="status" :label="$t('RULE_ENGINE.ACCESS_ENGINE.TNTERFACESTATUS')">
       <template v-slot="scope">
-        <el-tag size="small">{{scope.row.disabled == 'false' ? $t('COMMON.SRARTED'): $t('COMMON.PUTONHOLD')}}</el-tag>
+        <el-tag size="small">{{scope.row.disabled == 'false' ? $t('RULE_ENGINE.ACCESS_ENGINE.SRARTED'): $t('RULE_ENGINE.ACCESS_ENGINE.PUTONHOLD')}}</el-tag>
       </template>
     </el-table-column>
-    <el-table-column prop="actions" :label="$t('COMMON.OPERATION')" align="left" width="320px">
+    <el-table-column prop="actions" :label="$t('RULE_ENGINE.ACCESS_ENGINE.OPERATION')" align="left" width="320px">
       <template v-slot="scope">
-        <el-button size="mini" type="success" @click="handle_launch(scope.row)">{{ $t("COMMON.START")}}</el-button>
-        <el-button size="mini" type="yellow" @click="handle_pause(scope.row)">{{ $t("COMMON.SUSPENDED")}}</el-button>
-        <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">{{ $t("COMMON.EDIT")}}</el-button>
+        <el-button size="mini" type="success" @click="handle_launch(scope.row)">{{ $t("RULE_ENGINE.ACCESS_ENGINE.START")}}</el-button>
+        <el-button size="mini" type="yellow" @click="handle_pause(scope.row)">{{ $t("RULE_ENGINE.ACCESS_ENGINE.SUSPENDED")}}</el-button>
+        <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">{{ $t("RULE_ENGINE.ACCESS_ENGINE.EDIT")}}</el-button>
 
-        <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handle_del(scope.row)">
-          <el-button slot="reference" size="mini" type="danger">{{ $t("COMMON.DELETE")}}</el-button>
+        <el-popconfirm :title="$t('RULE_ENGINE.ACCESS_ENGINE.TITLE4')" @confirm="handle_del(scope.row)">
+          <el-button slot="reference" size="mini" type="danger">{{ $t("RULE_ENGINE.ACCESS_ENGINE.DELETE")}}</el-button>
         </el-popconfirm>
       </template>
     </el-table-column>
@@ -43,7 +43,7 @@
 <!-- 新建 -->
   <el-dialog
       class="el-dark-dialog el-dark-input"
-      :title="$t('COMMON.CREATE')"
+      :title="$t('RULE_ENGINE.ACCESS_ENGINE.CREATE')"
       :visible.sync="dialogVisible"
       :close-on-click-modal="false"
       width="30%">
@@ -53,7 +53,7 @@
 <!-- 更新 -->
   <el-dialog
       class="el-dark-dialog el-dark-input"
-      :title="$t('COMMON.CONFIGURATION')"
+      :title="$t('RULE_ENGINE.ACCESS_ENGINE.CONFIGURATION')"
       :visible.sync="updateDialogVisible"
       :close-on-click-modal="false"
       width="30%">

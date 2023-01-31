@@ -512,6 +512,8 @@ export const locale = {
     USERS: "用户管理",
     MANAGEMENT:"角色管理",
     PERMISSIONMANAGEMENT: "权限管理",
+    DELPROTOCOLPLUGIN: "删除协议插件",
+    DELDEVICEPLUGIN: "删除设备插件",
   },
   /**
    * 认证
@@ -910,13 +912,45 @@ export const locale = {
      * 接入引擎
      */
     ACCESS_ENGINE: {
-
+      NETWORKCOMPONENTS: "接入引擎",
+      CREATACCESSRULSE: "创建接入规则",
+      NO: "序号",
+      RULE_NAME: "规则名称",
+      TNTERFACESTATUS: "接口状态",
+      SRARTED: "已启动",
+      PUTONHOLD: "已暂停",
+      OPERATION: "操作",
+      START: "启动",
+      SUSPENDED: "暂停",
+      EDIT: "编辑",
+      DELETE: "删除",
+      CREATE: "创建",
+      CONFIGURATION: "配置",
+      TITLE4: "你确定要删除吗？",
+      CANCEL: "取消",
+      SUBMIT:" 创建",
+      PLACEHOLDER: "请输入规则名称"
+ 
     },
     /**
      * 数据转发
      */
     DATA_FORWARDING: {
-
+      TRANSPOND: "数据转发",
+      CREATINGFORWARDINGRULE: "创建转发规则",
+      NO: "序号",
+      RULE_NAME: "规则名称",
+      TNTERFACESTATUS: "接口状态",
+      SRARTED: "已启动",
+      PUTONHOLD: "已暂停",
+      OPERATION: "操作",
+      START: "启动",
+      SUSPENDED: "暂停",
+      EDIT: "编辑",
+      DELETE: "删除",
+      CREATE: "创建",
+      CONFIGURATION: "配置",
+      TITLE4: "你确定要删除吗？",
     }
   },
   /**
