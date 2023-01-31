@@ -407,7 +407,9 @@ export const locale = {
     QUERY1:"查询",
     REST1: "重置",
     // ECHARTS:"设备地图"
-    DEVICEMAP:"设备地图"
+    DEVICEMAP:"设备地图",
+    DEVICE_GROUP_SELECTOR_PLACEHOLDER: "请选择分组",
+    DEVICE_PLUG_SELECTOR_PLACEHOLDER: "请选择插件",
   },
   TRANSLATOR: {
     SELECT: "选择你的语言",
