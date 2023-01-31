@@ -1,10 +1,13 @@
 <template>
-  <div>
-    <el-select>
+  <div style="display: flex">
+    <el-select style="width: 100px;margin-right:10px" v-model="value">
       <el-option label="设备1" :value="'device1'"></el-option>
     </el-select>
-    <StateSelector/>
+
+    <StateSelector v-if="value!=''"/>
   </div>
+
+
 </template>
 
 <script>
@@ -13,6 +16,11 @@ export default {
   name: "DeviceSelector",
   components: {
     StateSelector
+  },
+  data() {
+    return {
+      value: ""
+    }
   }
 }
 </script>

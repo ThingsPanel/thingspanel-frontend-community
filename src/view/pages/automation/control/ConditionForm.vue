@@ -1,73 +1,79 @@
 <template>
   <div>
-    <el-form label-position="right" label-width="85px">
-      <el-row :gutter="20">
-        <!-- 自动化名称-->
-        <el-col :span="8">
-          <el-form-item label="自动化名称">
-            <el-input v-model="formData.name"></el-input>
-          </el-form-item>
-        </el-col>
+<!--    <el-form label-position="right" label-width="85px">-->
 
-        <!-- 描述-->
-        <el-col :span="8">
-          <el-form-item label="描述">
-            <el-input v-model="formData.name"></el-input>
-          </el-form-item>
-        </el-col>
+      <!-- ========================================================================================================== -->
+      <!-- 条件 -->
+      <!-- ========================================================================================================== -->
+      <el-form-item label="如果：">
+        <div style="display: flex;margin-bottom: 10px" v-for="(condition, index) in formData.conditions" :key="index">
 
-        <!-- 优先级-->
-        <el-col :span="8">
-          <el-form-item label="优先级">
-            <el-input v-model="formData.name"></el-input>
-          </el-form-item>
-        </el-col>
-      </el-row>
+          <el-select v-if="condition.relation" style="position: absolute; width: 60px;margin-right:10px" v-model="condition.relation">
+            <!-- 且 -->
+            <el-option label="且" :value="'and'"></el-option>
+            <!-- 或 -->
+            <el-option label="或" :value="'or'"></el-option>
+          </el-select>
 
-      <el-form-item label="如果">
-        <el-row :gutter="20" v-for="(condition, index) in formData.conditions" :key="index">
-
-          <!-- 条件-->
-          <el-col :span="3">
-            <el-select v-model="condition.type">
+            <el-select style="width: 100px;margin-left: 70px;margin-right:10px" v-model="condition.type">
               <!-- 设备条件-->
               <el-option label="设备条件" :value="'device'"></el-option>
               <!-- 时间条件-->
               <el-option label="时间条件" :value="'time'"></el-option>
             </el-select>
-          </el-col>
 
-          <!-- 条件-->
-          <el-col :span="21">
-            <ProjectSelector/>
-          </el-col>
+          <!-- 选择设备条件后显示项目列表 -->
+          <ProjectSelector v-if="condition.type=='device'"/>
 
+          <!-- 选择时间条件后显示时间条件类型 -->
+          <TimeTypeSelector v-else-if="condition.type=='time'"/>
 
-        </el-row>
+          <!-- 新增一行 -->
+          <el-button type="indigo" size="small" style="margin-left: auto"
+                     v-if="index == 0"
+                     @click="handleAddCondition">新增一行</el-button>
+
+          <!-- 删除 -->
+          <el-button type="danger" size="small" style="margin-left: auto"
+                     v-if="index > 0"
+                     @click="handleDeleteCondition(condition)">删除</el-button>
+
+        </div>
       </el-form-item>
 
-    </el-form>
+<!--    </el-form>-->
   </div>
 </template>
 
 <script>
-import ProjectSelector from "./selector/ProjectSelector";
-
+import ProjectSelector from "./selector/device/ProjectSelector";
+import TimeTypeSelector from "./selector/time/TimeTypeSelector";
 export default {
   name: "ConditionForm",
-  components: { ProjectSelector },
+  components: { ProjectSelector, TimeTypeSelector },
   data() {
     return {
       formData: {
         conditions: [
           {
             type: "device"
-          },
+          }
+        ],
+        action: [
           {
-            type: "time"
+
           }
         ]
       }
+    }
+  },
+  methods: {
+    handleAddCondition() {
+      this.formData.conditions.push({ type: "device", relation: "and" });
+    },
+    handleDeleteCondition(condition) {
+      let index = this.formData.conditions.findIndex(item => item == condition);
+      this.formData.conditions.splice(index, 1);
     }
   }
 }

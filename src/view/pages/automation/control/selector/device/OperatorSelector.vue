@@ -1,8 +1,9 @@
 <template>
-  <div>
-    <el-select placeholder="操作符">
+  <div style="display: flex">
+    <el-select style="width: 100px;margin-right:10px" placeholder="操作符" v-model="operator">
       <el-option v-for="(item, index) in operators" :key="index" :label="item" :value="item"></el-option>
     </el-select>
+    <el-input style="width: 100px;margin-right:10px" v-model="value"></el-input>
   </div>
 </template>
 
@@ -13,7 +14,9 @@ export default {
     return {
       operators: [
           ">", ">=", "<", "<=", "==", "!=", "in", "between"
-      ]
+      ],
+      operator: "",
+      value: ""
     }
   }
 }

@@ -15,7 +15,8 @@ import {
   RadioButton,
   ColorPicker,
   Calendar,
-  Empty
+  Empty,
+  TimeSelect
 } from 'element-ui';
 
 // custom theme
@@ -49,6 +50,7 @@ GlobalComponents.install = (Vue) => {
   Vue.use(ColorPicker);
   Vue.use(Calendar);
   Vue.use(Empty);
+  Vue.use(TimeSelect);
 
   Vue.use(VueClipboard)
   Vue.use(NumberChart);
