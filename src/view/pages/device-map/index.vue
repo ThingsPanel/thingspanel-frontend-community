@@ -199,7 +199,6 @@ export default {
     },
     /**
      * 获取设备基础信息
-     * 
      * @param {*} params { device_model_id: 插件id}
      */
     getEquipInfo(params) {
@@ -285,7 +284,7 @@ export default {
         // 当前值DOM
         currentDOM = `<div style="line-height:30px;">`;
         Object.keys(properties).forEach(key => {
-          if (key !== "systime") {
+          if (key !== "systime" && key !== "SYS_ONLINE") {
             currentDOM += `<div><span style="font-weight:bold;">${ key }：</span>${properties[key]}</div>`
           }
         })

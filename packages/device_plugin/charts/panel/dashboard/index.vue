@@ -70,6 +70,7 @@ import TpEChart from "../../components/dashboard/EChart"
 import TpDeviceStatus from "../../components/dashboard/DeviceStatus"
 import CustomEChartDialog from "./CustomEchartDialog";
 import global from "../../../common/global";
+import {message_error} from "@/utils/helpers";
 
 export default {
   name: "DashboardPanel",
@@ -160,7 +161,10 @@ export default {
       }
     },
     submit() {
-      if (this.chartName == "") return;
+      if (this.chartName == "") {
+        message_error("名称不能为空！")
+        return;
+      }
       let option = JSON.parse(JSON.stringify(this.chartOption));
       option.name = this.chartName;
       option.mapping = [];

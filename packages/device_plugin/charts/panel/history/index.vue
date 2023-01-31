@@ -132,6 +132,7 @@ export default {
      * 提交
      */
     submit() {
+
       if (this.historyName == "") {
         message_error("名称不能为空")
         return;
@@ -144,7 +145,11 @@ export default {
       option.name = this.historyName;   // 图表名称
       option.mapping = this.dataSrcValue;  // 绑定的属性
       option.controlType = "history";  // 图表类型
-      option.series[0].data = [0];  // 初始化图表
+      // 初始化图表
+      option.series = [];
+      this.dataSrc.forEach(item => {
+        option.series.push({ data: [0], "type": "line", name: item.title});
+      })
       option.xAxis.data = [''];     // 初始化图表
       this.$emit("submit", option)
       this.dialogVisible = false;

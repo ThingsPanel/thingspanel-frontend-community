@@ -108,6 +108,7 @@
 <script>
 import Control from "../../components/control"
 import global from "../../../common/global";
+import {message_error} from "@/utils/helpers";
 
 export default {
   name: "ControlPanel",
@@ -208,6 +209,7 @@ export default {
      * 绑定组件
      */
     submit() {
+      if (!this.validate()) return;
       let option = JSON.parse(JSON.stringify(this.controlOption))
       if (option.type && option.type == "scene") {
         // 场景开关
@@ -231,6 +233,27 @@ export default {
       option.disabled = this.disabledChecked;
       this.$emit("submit", option)
     },
+    validate() {
+      if (!this.controlName) {
+        message_error("名称不能为空！");
+        return false;
+      }
+      this.dataSrcOptions.forEach(item => {
+        if (!item.value) {
+          message_error("请选择数据源！");
+          return false;
+        }
+        if (item.on === "") {
+          message_error("开启的值不能为空！");
+          return false;
+        }
+        if (item.off === "") {
+          message_error("关闭的值不能为空！");
+          return false;
+        }
+      })
+      return true;
+    }
 
   }
 }

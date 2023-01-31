@@ -127,7 +127,7 @@
                   <div>
                     <p>{{$t('COMMON.BACKGROUND')}}</p>
                     <div>
-                      <img :src="url + (formObj.home_background ? formObj.home_background : 'media/bg/bg-12.png')"
+                      <img :src="formObj.home_background ? url + formObj.home_background : '/media/bg/bg-12.png'"
                            alt="" width="148px" />
                     </div>
                     <p>
