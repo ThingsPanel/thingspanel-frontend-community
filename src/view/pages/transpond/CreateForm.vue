@@ -6,13 +6,13 @@
       :model="form"
       :hide-required-asterisk="true"
       label-width="80px">
-    <el-form-item label="规则名称" prop="rule_name">
+    <el-form-item :label="$t('RULE_ENGINE.ACCESS_ENGINE.RULE_NAME')" prop="rule_name">
       <el-input v-model="form.rule_name"></el-input>
     </el-form-item>
 
       <div style="display: flex;justify-content: center">
-        <el-button class="cancel-button" type="cancel" size="medium" plain @click="cancelDialog">取消</el-button>
-        <el-button class="medium" type="save" size="medium" @click="onSubmit">创建</el-button>
+        <el-button class="cancel-button" type="cancel" size="medium" plain @click="cancelDialog">{{ $t('RULE_ENGINE.ACCESS_ENGINE.CANCEL') }}</el-button>
+        <el-button class="medium" type="save" size="medium" @click="onSubmit">{{ $t('RULE_ENGINE.ACCESS_ENGINE.SUBMIT') }}</el-button>
       </div>
 
   </el-form>
@@ -20,6 +20,8 @@
 
 <script>
 import options from './cascader_options'
+import i18n from "@/core/plugins/vue-i18n.js"
+const required = true;
 export default {
   name: "CreateForm",
   props: {
@@ -38,7 +40,7 @@ export default {
     },
     rules: {
       rule_name: [
-        {required: true, message: "请输入规则名称"}
+        {required, message: i18n.t('RULE_ENGINE.ACCESS_ENGINE.PLACEHOLDER')}
       ]
     },
     options: options,

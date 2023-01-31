@@ -422,14 +422,6 @@ export const locale = {
    * 菜单
    */
   MENU: {
-    // NEW: "New",
-    // ACTIONS: "Action",
-    // CREATE_POST: "Create post",
-    // PAGES: "Pages",
-    // FEATURES: "Features",
-    // APPS: "Apps",
-    // DASHBOARD: "Dashboard",
-
     HOME: "Home",
     DEVICE_ACCESS: "Device Access",
     DEVICE_WATCH: "Device Watch",
@@ -453,6 +445,8 @@ export const locale = {
     USERS: "User management",
     MANAGEMENT:"Role management",
     PERMISSIONMANAGEMENT: "Permission management",
+    DELPROTOCOLPLUGIN: "Del Protocol Plugin",
+    DELDEVICEPLUGIN: "Del Device Plugin",
   },
   AUTH: {
     GENERAL: {
@@ -961,13 +955,44 @@ export const locale = {
      * 接入引擎
      */
     ACCESS_ENGINE: {
-
+      NETWORKCOMPONENTS: "Access Engine",
+      CREATACCESSRULSE: "Creating Access Rules",
+      NO: "ID",
+      RULE_NAME: "Rule name",
+      TNTERFACESTATUS: "Interface Status",
+      SRARTED: "Started",
+      PUTONHOLD: "Put on hold",
+      OPERATION: "Operation",
+      START: "Start ",
+      SUSPENDED: "suspended",
+      EDIT: "Edit",
+      DELETE:"Delete",
+      CREATE: "create",
+      CONFIGURATION:"configuration",
+      TITLE4: "Are you sure you want to delete?",
+      CANCEL:"cancel",
+      SUBMIT:"create",
+      PLACEHOLDER:"Please enter a rule name",
     },
     /**
      * 数据转发
      */
     DATA_FORWARDING: {
-
+      TRANSPOND: "Data Switching",
+      CREATINGFORWARDINGRULE: "Creating a Forwarding Rule",
+      NO: "ID",
+      RULE_NAME: "Rule name",
+      TNTERFACESTATUS: "Interface Status",
+      SRARTED: "Started",
+      PUTONHOLD: "Put on hold",
+      OPERATION: "Operation",
+      START: "Start ",
+      SUSPENDED: "suspended",
+      EDIT: "Edit",
+      DELETE:"Delete",
+      CREATE: "create",
+      CONFIGURATION:"configuration",
+      TITLE4: "Are you sure you want to delete?",
     }
   },
   /**
