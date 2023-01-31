@@ -496,8 +496,22 @@ export const locale = {
     DATA_MANAGEMENT: "数据管理",
     VISUALIZATION: "可视化",
     AUTOMATION: "自动化",
-    ALERT_INFORMATION: "告警信息"
-
+    WARNINFO: "告警信息",
+    SYSTEMLOG: "系统日志",
+    OPERATIONLOG: "操作日志",
+    EQUIPMENTLOG: "设备日志",
+    PRODUCTMANAGEMENT: "产品管理",
+    PRODUCTLIST: "产品列表",
+    BATCHLIST: "批次列表",
+    RULEENGINE: "规则引擎",
+    NETWORKCOMPONENTS: "接入引擎",
+    TRANSPOND: "数据转发",
+    MARKET: "应用管理",
+    SYSTEMMANAGEMENT: "系统管理",
+    SYSTEMSETUP: "系统设置",
+    USERS: "用户管理",
+    MANAGEMENT:"角色管理",
+    PERMISSIONMANAGEMENT: "权限管理",
   },
   /**
    * 认证
