@@ -35,7 +35,7 @@
 
       <report-panel v-else-if="chartCategory=='report'" ref="report" :charts="options.report"></report-panel>
 
-      <other-panel v-else-if="chartCategory=='other'" type="other" ref="other" :charts="options.other"></other-panel>
+    
     </div>
 
     <!-- 已绑定图表 -->

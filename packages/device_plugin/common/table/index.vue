@@ -75,24 +75,24 @@
 
         <!-- 列头按钮 -->
         <template v-slot:header>
-          <el-button type="border" v-if="(showHandle && addOrEdit!='add') || !editInTable" @click="handleAdd">新增</el-button>
-          <el-button type="indigo" v-if="editInTable && addOrEdit=='add'" @click="handleSimpleSave(null)">保存</el-button>
-          <el-button type="default" v-if="editInTable && addOrEdit=='add'" @click="handleCancel(null)">取消</el-button>
+          <el-button type="border" v-if="(showHandle && addOrEdit!='add') || !editInTable" @click="handleAdd">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.ADD') }}</el-button>
+          <el-button type="indigo" v-if="editInTable && addOrEdit=='add'" @click="handleSimpleSave(null)">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.SAVE') }}</el-button>
+          <el-button type="default" v-if="editInTable && addOrEdit=='add'" @click="handleCancel(null)">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.CANCEL') }}</el-button>
         </template>
 
         <!-- 行按钮 -->
         <template v-slot="scope">
-          <el-button v-show="!scope.row['edit']" @click="handleEdit(scope.row)">编辑</el-button>
-          <el-button v-show="!scope.row['edit']" @click="handleDel(scope.row)">删除</el-button>
-          <el-button v-show="editInTable && scope.row['edit']" @click="handleSimpleSave(scope.row)">保存</el-button>
-          <el-button v-show="editInTable && scope.row['edit']" @click="handleCancel(scope.row)">取消</el-button>
+          <el-button v-show="!scope.row['edit']" @click="handleEdit(scope.row)">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.EDIT') }}</el-button>
+          <el-button v-show="!scope.row['edit']" @click="handleDel(scope.row)">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.DELETE') }}</el-button>
+          <el-button v-show="editInTable && scope.row['edit']" @click="handleSimpleSave(scope.row)">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.SAVE') }}</el-button>
+          <el-button v-show="editInTable && scope.row['edit']" @click="handleCancel(scope.row)">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.CANCEL') }}</el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <!-- 高级模式对话框-->
     <el-dialog width="700px" :class="dark?'dark-dialog':''"
-        :title="addOrEdit=='add'?'新增':'编辑'"
+        :title="addOrEdit=='add'?$t('PLUGIN.MATTER_MODEL_INFO_TAB.ADD'):$t('PLUGIN.MATTER_MODEL_INFO_TAB.EDIT')"
         :visible.sync="dialogVisible" :append-to-body="true"
         @closed="handleClose">
       <el-form style="padding-left: 30px; padding-right: 30px;" label-position="left" label-width="160px" :model="formData">
@@ -124,8 +124,8 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button type="cancel" @click="dialogVisible = false">取 消</el-button>
-        <el-button type="save" @click="handleAdvanceSave">确 定</el-button>
+        <el-button type="cancel" @click="dialogVisible = false">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.CANCEL') }}</el-button>
+        <el-button type="save" @click="handleAdvanceSave">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.CONFIRM') }}</el-button>
       </span>
     </el-dialog>
   </div>

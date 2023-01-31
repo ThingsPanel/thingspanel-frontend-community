@@ -954,12 +954,96 @@ export const locale = {
     }
   },
   /**
-   * 插件管理
+   * 应用管理
    */
   PLUGIN: {
+    TAB1: "设备插件",
+    TAB2: "接入协议",
+    TAB3: "设备插件生成器",
+     /**
+   * 应用管理——设备插件
+   */
+     TAB1_CONTENT: {
+      PLACEHOLDER: "请输入插件名称",
+      PLACEHOLDER1:"请输入内容",
+      PLACEHOLDER2: "复制到剪贴板",
+      SEARCH: "查询",
+      CLASSIFY: "分类",
+      VERSION: "版本号",
+      AUTHOR: "作者",
+      SCORE: "评分",
+      EDIT: "编辑",
+      INSTALLING_TITLE: "安装中...",
+      INSTALL: "一键安装",
+      EXPORT: "导出",
+      UNINSTALL: "卸载",
+      CANCEL: "取消",
+      CONFIRM:"确定",
+      TITLE: "导出JSON",
+      TIP_TEXT: "卸载该插件, 是否继续?",
+      TIP: "提示",
+    },
     CUSTOM_DEVICE_PLUGIN: "自定义设备插件",
     DEVICE_INFO: "设备信息",
+    MATTER_MODEL: "物模型",
+    CHART: "图表",
+    FUNCTION: "函数",
+    RELEASE: "发布",
+    TXT: "填写插件信息",
+    TXT1: "选择标准物模型或自定义",
+    TXT2: "绑定图表",
+    TXT3: "Function",
+    TXT4: "发布到应用商店",
+   /**
+   * 应用管理——设备插件——设备信息
+   */
+    DEVICE_INFO_TAB: {
+      LABLE1: "插件名称：",
+      LABLE2: "插件分类：",
+      LABLE3: "作者名称：",
+      LABLE4: "插件版本：",
+      LABLE5: "插件说明：",
+      VALIDATE: "请输入插件名称",
+      VALIDATE2: "请选择插件分类",
+      PLUNGIN_COVER: "插件封面（474X246）：",
+      CHOOSE_COVER: "选择封面",
+    },
+    /**
+   * 应用管理——设备插件——物模型
+   */
+    MATTER_MODEL_INFO_TAB: {
+      RADIO_TAB1: "标准物模型",
+      RADIO_TAB2: "自定义物模型",
+      RADIO_TAB3: "属性",
+      RADIO_TAB4: "服务",
+      RADIO_TAB5: "事件",
+      RADIO_TAB6: "简单模式",
+      RADIO_TAB7: "高级模式",
+      RADIO_TAB8: "JSON模式",
+      LABLE1: "选择物模型",
+      LABLE2: "选择分类",
+      BTN: "找不到插件？去创建",
+      ADD: "新增",
+      EDIT: "编辑",
+      DELETE: "删除",
+      CANCEL: "取消",
+      SAVE: "保存",
+      CONFIRM:"确定",
+    },
+    /**
+   * 应用管理——设备插件——图表
+   */
+    CHART_INFO_TAB: {
 
+    },
+   /**
+   * 应用管理——设备插件——发布
+   */
+    RELEASE_INFO_TAB: {
+      TEXT: "是否同意发布到应用商店",
+
+    },
+    
   },
   /**
    * 系统管理

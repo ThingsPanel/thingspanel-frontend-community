@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :class="'editor-dialog ' + theme + '-dialog'" :title="title" :show-close="false" width="1300px"
+    <el-dialog :class="'editor-dialog ' + theme + '-dialog'" :title="$t('PLUGIN.CUSTOM_DEVICE_PLUGIN')" :show-close="false" width="1300px"
                :visible="visible" :append-to-body="true"
                :close-on-click-modal="false">
       <el-steps style="margin: 20px auto;"
@@ -50,11 +50,11 @@ import {message_error} from "../../../src/utils/helpers";
 import i18n from "@/core/plugins/vue-i18n"
 
 const steps = [
-  { label: i18n.t('PLUGIN.DEVICE_INFO'), icon: "el-icon-info", description: "填写插件信息" },
-  { label: "物模型", icon: "el-icon-s-home", description: "选择标准物模型或自定义" },
-  { label: "图表", icon: "el-icon-s-data", description: "绑定图表" },
-  // { label: "函数", icon: "el-icon-edit", description: "Function" },
-  { label: "发布", icon: "el-icon-upload", description: "发布到应用商店" }
+  { label: i18n.t('PLUGIN.DEVICE_INFO'), icon: "el-icon-info", description: i18n.t('PLUGIN.TXT')},
+  { label: i18n.t('PLUGIN.MATTER_MODEL'), icon: "el-icon-s-home", description: i18n.t('PLUGIN.TXT1')},
+  { label: i18n.t('PLUGIN.CHART'), icon: "el-icon-s-data", description: i18n.t('PLUGIN.TXT2')},
+  // { label: i18n.t('PLUGIN.FUNCTION'), icon: "el-icon-edit", description: i18n.t('PLUGIN.TXT3')},
+  { label: i18n.t('PLUGIN.RELEASE'), icon: "el-icon-upload", description: i18n.t('PLUGIN.TXT4')}
 ]
 
 
@@ -74,7 +74,7 @@ export default {
     },
     title: {
       type: [String],
-      default: "自定义设备插件"
+      // default: "自定义设备插件"
     },
     json: {
       type: [Object],

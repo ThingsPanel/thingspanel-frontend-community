@@ -11,9 +11,9 @@
 <!--            </el-form-item>-->
           </el-col>
           <el-col :xs="8" :sm="6" :md="6" :lg="6" :xl="6" style="display: inline-flex;">
-            <el-input style="margin-right: 10px" size="small" clearable v-model="searchValue" :placeholder="$t('COMMON.PLACEHOLDER50')"></el-input>
+            <el-input style="margin-right: 10px" size="small" clearable v-model="searchValue" :placeholder="$t('PLUGIN.TAB1_CONTENT.PLACEHOLDER')"></el-input>
             <el-button icon="el-icon-refresh" class="primary el-button--indigo" size="mini"
-                       :loading="refreshLoading" @click="loadList">{{ $t('COMMON.SEARCH') }}</el-button>
+                       :loading="refreshLoading" @click="loadList">{{ $t('PLUGIN.TAB1_CONTENT.SEARCH') }}</el-button>
           </el-col>
 
         </el-row>

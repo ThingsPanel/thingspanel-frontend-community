@@ -12,17 +12,17 @@
     <div style="padding: 2.25rem;">
       <!-- 分类 -->
       <b-card-text class="text-left text-muted">
-        {{ $t("COMMON.CLASSIFY") }}：{{ pluginData.type }}
+        {{ $t("PLUGIN.TAB1_CONTENT.CLASSIFY") }}：{{ pluginData.type }}
       </b-card-text>
 
       <!-- 版本 -->
       <b-card-text class="text-left text-muted">
-        {{ $t("COMMON.VERSION") }}：{{ pluginData.version }}
+        {{ $t("PLUGIN.TAB1_CONTENT.VERSION") }}：{{ pluginData.version }}
       </b-card-text>
 
       <!-- 作者 -->
       <b-card-text class="text-left text-muted text-overflow">
-        {{ $t("COMMON.AUTHOR") }}：
+        {{ $t("PLUGIN.TAB1_CONTENT.AUTHOR") }}：
         <span v-b-tooltip :title="pluginData.author">
         {{ pluginData.author }}
       </span>
@@ -30,7 +30,7 @@
 
       <!-- 评分 -->
       <b-card-text class="text-left text-muted">
-        {{ $t("COMMON.SCORE") }}：
+        {{ $t("PLUGIN.TAB1_CONTENT.SCORE") }}：
         <v-rating v-model="rating" color="orange" dense small readonly class="d-inline-block v-application"></v-rating>
       </b-card-text>
     </div>
@@ -39,41 +39,41 @@
     <!-- 按钮 -->
     <b-card-text style="margin-top: 10px">
       <b-btn v-show="isInstalled" variant="warning" size="sm" class="text-center" @click="handleEdit">
-        {{ $t("COMMON.EDIT") }}
+        {{ $t("PLUGIN.TAB1_CONTENT.EDIT") }}
       </b-btn>
       <b-btn v-show="!isInstalled"
              variant="primary" size="sm" class="text-center installing"
              :disabled="installing || isInstalled"
              @click="handleInstall">
-        {{ installing ?  $t("COMMON.INSTALLING_TITLE") : $t("COMMON.INSTALL") }}
+        {{ installing ?  $t("PLUGIN.TAB1_CONTENT.INSTALLING_TITLE") : $t("PLUGIN.TAB1_CONTENT.INSTALL") }}
       </b-btn>
       <b-btn v-show="isInstalled" variant="success" size="sm" class="text-center" style="margin-left: 20px" @click="handleShowExport" >
-        {{ $t("COMMON.EXPORT") }}
+        {{ $t("PLUGIN.TAB1_CONTENT.EXPORT") }}
       </b-btn>
       <b-btn v-show="isInstalled" :disabled="!hasAuth('plugin:device:del')" variant="danger" size="sm" class="text-center" style="margin-left: 20px" @click="handleUninstall" >
-        {{ $t("COMMON.UNINSTALL") }}
+        {{ $t("PLUGIN.TAB1_CONTENT.UNINSTALL") }}
       </b-btn>
     </b-card-text>
 
     <!-- 导出JSON-->
-    <el-dialog class="el-dark-dialog el-table-transparent" title="导出JSON" :visible.sync="exportDialogVisible" width="30%">
+    <el-dialog class="el-dark-dialog el-table-transparent" :title="$t('PLUGIN.TAB1_CONTENT.TITLE')" :visible.sync="exportDialogVisible" width="30%">
       <el-row >
         <div style="margin-bottom: 10px;display: flex;justify-content: space-between">
 
         </div>
       </el-row>
       <el-row>
-        <el-input class="el-dark-input" type="textarea" :rows="24" :placeholder="$t('COMMON.PLACEHOLDER51')" v-model="exportPluginJson"></el-input>
+        <el-input class="el-dark-input" type="textarea" :rows="24" :placeholder="$t('PLUGIN.TAB1_CONTENT.PLACEHOLDER1')" v-model="exportPluginJson"></el-input>
       </el-row>
 
       <span slot="footer" class="dialog-footer">
-        <el-button  @click="exportDialogVisible = false">{{ $t('COMMON.CANCEL') }}</el-button>
-        <el-button type="primary" class="el-button--indigo" @click="handleExport">{{ $t('COMMON.EXPORT') }}</el-button>
+        <el-button  @click="exportDialogVisible = false">{{ $t('PLUGIN.TAB1_CONTENT.CANCEL') }}</el-button>
+        <el-button type="primary" class="el-button--indigo" @click="handleExport">{{ $t('PLUGIN.TAB1_CONTENT.EXPORT') }}</el-button>
         <el-button type="primary" class="el-button--indigo"
                    v-clipboard:copy="exportPluginJson"
                    v-clipboard:success="onCopy"
                    v-clipboard:error="onError"
-        >{{ $t('COMMON.PLACEHOLDER52') }}</el-button>
+        >{{ $t('PLUGIN.TAB1_CONTENT.PLACEHOLDER2') }}</el-button>
       </span>
     </el-dialog>
   </b-card>
@@ -151,9 +151,9 @@ export default {
      * 卸载插件
      */
     handleUninstall() {
-      MessageBox.confirm('卸载该插件, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+      MessageBox.confirm(this.$t('PLUGIN.TAB1_CONTENT.TIP_TEXT'), this.$t('PLUGIN.TAB1_CONTENT.TIP'), {
+        confirmButtonText: this.$t('PLUGIN.TAB1_CONTENT.CONFIRM'),
+        cancelButtonText: this.$t('PLUGIN.TAB1_CONTENT.CANCEL'),
         type: 'warning'
       }).then(() => {
         PluginAPI.del({id: this.pluginData.id })

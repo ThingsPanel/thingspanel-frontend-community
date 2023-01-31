@@ -5,7 +5,7 @@
         <el-input type="textarea"  v-model="jsonStr" :autosize="{ minRows: 22, maxRows: 22}"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-checkbox v-model="isPublic">是否同意发布到应用商店</el-checkbox>
+        <el-checkbox v-model="isPublic">{{ $t('PLUGIN.RELEASE_INFO_TAB.TEXT') }}</el-checkbox>
       </el-form-item>
     </el-form>
 

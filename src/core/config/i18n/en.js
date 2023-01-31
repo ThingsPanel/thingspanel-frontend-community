@@ -600,11 +600,7 @@ export const locale = {
       DATA_SWITCHING:"Data forwarding",
     }
   },
-  PLUGIN: {
-    CUSTOM_DEVICE_PLUGIN: "Custom Device Plugin",
-    DEVICE_INFO: "Device Info"
-
-  },
+  
   /**
    * 首页
    */
@@ -996,11 +992,95 @@ export const locale = {
     }
   },
   /**
-   * 插件管理
+   * 应用管理
    */
   PLUGIN: {
-    CUSTOM_DEVICE_PLUGIN: "",
-    DEVICE_INFO: ""
+    TAB1: "Device Plugin",
+    TAB2: "Protocol Plugin",
+    TAB3: "Device Editor",
+    /**
+   * 应用管理——设备插件
+   */
+    TAB1_CONTENT: {
+      PLACEHOLDER: "Please enter a plug-in name",
+      PLACEHOLDER1:"Please enter the content",
+      PLACEHOLDER2: "Copy to Clipboard",
+      SEARCH: "Search",
+      CLASSIFY: "Category",
+      VERSION: "Ver",
+      AUTHOR: "Author",
+      SCORE: "Rate",
+      EDIT: "Edit",
+      INSTALLING_TITLE: "Installing...",
+      INSTALL: "Quick install",
+      EXPORT: "Export",
+      UNINSTALL: "Uninstall",
+      CANCEL:"cancel",
+      CONFIRM:"submit",
+      TITLE: "Export JSON",
+      TIP_TEXT:"Uninstall the plug-in do you want to continue?",
+      TIP: "Tip",
+    },
+    CUSTOM_DEVICE_PLUGIN: "Custom device plugin",
+    DEVICE_INFO: "Device info",
+    MATTER_MODEL: "Matter model",
+    CHART: "Chart",
+    FUNCTION: "Function",
+    RELEASE: "Release",
+    TXT: "Fill in plug-in information",
+    TXT1: "Select standard object model or customize",
+    TXT2: "Binding chart",
+    TXT3: "Function",
+    TXT4: "Publish to store",
+    /**
+   * 应用管理——设备插件——设备信息
+   */
+    DEVICE_INFO_TAB: {
+      LABLE1: "Plug-in name：",
+      LABLE2: "Plug-in classification：",
+      LABLE3: "Author name：",
+      LABLE4: "Plug-in version：",
+      LABLE5: "Plug-in description：",
+      VALIDATE: "Please enter a plug-in name",
+      VALIDATE2: "Please select plug-in classification",
+      PLUNGIN_COVER: "Plug-in cover（474X246）：",
+      CHOOSE_COVER: "Choose cover",
+    },
+    /**
+   * 应用管理——设备插件——物模型
+   */
+    MATTER_MODEL_INFO_TAB: {
+      RADIO_TAB1: "Standard model",
+      RADIO_TAB2: "Customization model",
+      RADIO_TAB3: "properties",
+      RADIO_TAB4: "services",
+      RADIO_TAB5: "events",
+      RADIO_TAB6: "simple",
+      RADIO_TAB7: "advanced",
+      RADIO_TAB8: "json",
+      LABLE1: "Choose model",
+      LABLE2: "Choose classification",
+      BTN: "Can't find the plug-in ? To create",
+      ADD: "Add",
+      EDIT: "Edit",
+      DELETE: "Delete",
+      CANCEL: "Cancel",
+      SAVE: "Save",
+      CONFIRM:"Submit",
+    },
+    /**
+   * 应用管理——设备插件——图表
+   */
+    CHART_INFO_TAB: {
+
+    },
+    /**
+    * 应用管理——设备插件——发布
+    */
+    RELEASE_INFO_TAB: {
+      TEXT: "Do you agree to publish to the App Store",
+
+    },
   },
   /**
    * 系统管理
