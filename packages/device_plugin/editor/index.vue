@@ -24,11 +24,11 @@
       <Publish v-if="step == 3" ref="publish" :data="jsonData"></Publish>
 
       <div slot="footer" class="dialog-footer" >
-        <el-button type="primary" @click="handleClose">关闭</el-button>
+        <el-button type="primary" @click="handleClose">{{ $t('PLUGIN.CLOSE') }}</el-button>
         <div>
-          <el-button :disabled="step == 0" type="primary" @click="handlePrev">上一步</el-button>
-          <el-button v-if="step<(steps.length - 1)" type="primary" @click="handleNext">下一步</el-button>
-          <el-button v-if="step==(steps.length - 1)"  type="primary" @click="handlePublish">发布</el-button>
+          <el-button :disabled="step == 0" type="primary" @click="handlePrev">{{ $t('PLUGIN.PREV') }}</el-button>
+          <el-button v-if="step<(steps.length - 1)" type="primary" @click="handleNext">{{ $t('PLUGIN.NEXT') }}</el-button>
+          <el-button v-if="step==(steps.length - 1)"  type="primary" @click="handlePublish">{{ $t('PLUGIN.RELEASE') }}</el-button>
         </div>
       </div>
     </el-dialog>

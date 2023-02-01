@@ -2,22 +2,22 @@
 <template>
   <div class="common-video-container">
     <video-player  :src="optionData.src"/>
-    <el-dialog class="el-dark-dialog" title="绑定" width="500px"
+    <el-dialog class="el-dark-dialog" :title="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE22')" width="500px"
                :visible.sync="dialogVisible" :append-to-body="true" :close-on-click-modal="false"
                :before-close="handleClose">
 
       <el-form class="el-dark-form" :model="optionData" :rules="formRule">
 
-        <el-form-item label="名称" prop="name">
+        <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE3')" prop="name">
           <el-input v-model="optionData.name"></el-input>
         </el-form-item>
 
       </el-form>
 
       <span slot="footer" class="dialog-footer">
-          <el-button @click="handleClose">取 消</el-button>
-          <el-button type="primary" @click="handleSubmit">确 定</el-button>
-        </span>
+          <el-button @click="handleClose">{{ $t('PLUGIN.CHART_INFO_TAB.CANCEL') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">{{ $t('PLUGIN.CHART_INFO_TAB.CONFIRM') }}</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>

@@ -1,6 +1,6 @@
 <template>
   <!-- 自定义对话框 -->
-  <el-dialog title="自定义仪表盘" width="1000px" :class="dark?'dark-dialog':''"
+  <el-dialog :title="$t('PLUGIN.CUSTOM_DASHBOARD.TITLE')" width="1000px" :class="dark?'dark-dialog':''"
              :close-on-click-modal="false" :visible.sync="dialogVisible" :append-to-body="true"
              @closed="closed">
 
@@ -8,29 +8,29 @@
       <!-- 左侧：option代码 -->
       <el-col :span="14">
         <el-tabs v-model="leftActive" type="card">
-          <el-tab-pane label="配置图表" name="option">
+          <el-tab-pane :label="$t('PLUGIN.CUSTOM_DASHBOARD.TAB_PANE_LABEL1')" name="option">
             <div class="option-pane-select-div">
-              选择模板
-              <el-select v-model="seriesType" placeholder="请选择图表模板" @change="changeSeriesType">
+              {{ $t('PLUGIN.CUSTOM_DASHBOARD.TXT') }}
+              <el-select v-model="seriesType" :placeholder="$t('PLUGIN.CUSTOM_DASHBOARD.PLACEHOLDER1')" @change="changeSeriesType">
                 <el-option v-for="(item, index) in seriesOptions" :key="index" :label="item.label" :value="item.value"/>
 
               </el-select>
             </div>
             <el-input style="height: 450px;overflow-y: auto"
-                      type="textarea" placeholder="请输入内容"
+                      type="textarea" :placeholder="$t('PLUGIN.CUSTOM_DASHBOARD.PLACEHOLDER2')"
                       :autosize="{ minRows: 20, maxRows: 20}" v-model="jsonOptionText"
                       @input="jsonOptionInput">
             </el-input>
           </el-tab-pane>
 
           <!-- 模拟数据 -->
-          <el-tab-pane label="模拟数据" name="random">
+          <el-tab-pane :label="$t('PLUGIN.CUSTOM_DASHBOARD.TAB_PANE_LABEL2')" name="random">
             <div class="random-pane-div">
               <el-form :inline="true" style="display: flex;justify-content: space-between">
                 <el-form-item >
-                  <el-checkbox v-model="startRandom" @change="changeRandomState">开启随机数据</el-checkbox>
+                  <el-checkbox v-model="startRandom" @change="changeRandomState">{{ $t('PLUGIN.CUSTOM_DASHBOARD.CHECKBOX') }}</el-checkbox>
                 </el-form-item>
-                <el-form-item label="执行间隔">
+                <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE1')">
                   <el-input-number v-model="customInterval" :min="0.5" :max="10" :step="0.5"
                                    @change="setRandomData" >
                   </el-input-number>
@@ -43,7 +43,7 @@
               <el-tabs v-model="randomTabsValue" type="card">
                 <el-tab-pane v-for="item in randomTabs" :key="item.name" :label="item.title" :name="item.name">
                   <el-input style="height: 250px;overflow-y: auto"
-                            type="textarea" placeholder="请输入代码"
+                            type="textarea" :placeholder="$t('PLUGIN.CUSTOM_DASHBOARD.PLACEHOLDER3')"
                             :autosize="{ minRows: 10, maxRows: 10}" v-model="item.content"
                             @input="randomInput"></el-input>
                 </el-tab-pane>
@@ -53,97 +53,97 @@
 
           </el-tab-pane>
 
-          <el-tab-pane class="ui-tab-pane" label="样式设置" name="ui">
+          <el-tab-pane class="ui-tab-pane" :label="$t('PLUGIN.CUSTOM_DASHBOARD.TAB_PANE_LABEL3')" name="ui">
             <el-tabs v-model="styleTabsValue">
               <el-tab-pane v-for="(item, index) in styleTabs" :key="index" :label="item.title" :name="item.name">
                 <el-form class="ui-pane-form" label-position="left" :inline="false" label-width="250px">
 
                   <!-- 当前值文本大小 30 -->
-                  <el-form-item label="当前值文本大小">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE2')">
                     <el-input-number v-model="chartStyle[index].detail.fontSize" @change="handleChangeStyle"></el-input-number>
                   </el-form-item>
                   <!-- 当前值文本颜色 #000 -->
-                  <el-form-item label="当前值文本颜色">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE3')">
                     <el-color-picker v-model="chartStyle[index].detail.color" @change="handleChangeStyle"></el-color-picker>
                   </el-form-item>
                   <!-- 当前值文本后缀 "" -->
-                  <el-form-item label="当前值文本后缀">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE4')">
                     <el-input v-model="currentValueEnds" @change="handleChangeStyle"></el-input>
                   </el-form-item>
 
                   <!-- 当前值的纵轴位置 40 -->
-                  <el-form-item label="当前值的纵轴位置">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE5')">
                     <el-input-number v-model="offsetCenterY" @change="handleChangeStyle"></el-input-number>
                   </el-form-item>
 
                   <!-- pointer.show true-->
-                  <el-form-item label="显示指针">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE6')">
                     <el-switch v-model="chartStyle[index].pointer.show" @change="handleChangeStyle"></el-switch>
                   </el-form-item>
 
                   <!-- itemStyle.color -->
-                  <el-form-item label="指针颜色">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE7')">
                     <el-color-picker v-model="chartStyle[index].itemStyle.color" @change="handleChangeStyle"></el-color-picker>
                   </el-form-item>
 
                   <!-- progress.show false -->
-                  <el-form-item label="显示进度条">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE8')">
                     <el-switch v-model="chartStyle[index].progress.show" @change="handleChangeStyle"></el-switch>
                   </el-form-item>
 
                   <!-- progress.width 10-->
-                  <el-form-item label="进度条宽度">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE9')">
                     <el-input-number v-model="chartStyle[index].progress.width"  @change="handleChangeStyle"></el-input-number>
                   </el-form-item>
 
                   <!-- axisLine.show true-->
-                  <el-form-item label="显示轴线">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE10')">
                     <el-switch v-model="chartStyle[index].axisLine.show" @change="handleChangeStyle"></el-switch>
                   </el-form-item>
 
                   <!-- axisLine.lineStyle.width 10-->
-                  <el-form-item label="轴线宽度">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE11')">
                     <el-input-number v-model="chartStyle[index].axisLine.lineStyle.width" @change="handleChangeStyle"></el-input-number>
                   </el-form-item>
 
 
                   <!-- axisLabel.show true-->
-                  <el-form-item label="显示标签">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE12')">
                     <el-switch v-model="chartStyle[index].axisLabel.show" @change="handleChangeStyle"></el-switch>
                   </el-form-item>
 
                   <!-- axisLabel.color #000-->
-                  <el-form-item label="标签颜色">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE13')">
                     <el-color-picker v-model="chartStyle[index].axisLabel.color" @change="handleChangeStyle"></el-color-picker>
                   </el-form-item>
 
                   <!-- axisLabel.fontSize 12-->
-                  <el-form-item label="标签文字大小">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE14')">
                     <el-input-number v-model="chartStyle[index].axisLabel.fontSize" @change="handleChangeStyle"></el-input-number>
                   </el-form-item>
 
                   <!-- axisLabel.distance 15-->
-                  <el-form-item label="标签与刻度线的距离">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE15')">
                     <el-input-number v-model="chartStyle[index].axisLabel.distance" @change="handleChangeStyle"></el-input-number>
                   </el-form-item>
 
                   <!-- splitLine.show true-->
-                  <el-form-item label="显示分隔线">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE16')">
                     <el-switch v-model="chartStyle[index].splitLine.show" @change="handleChangeStyle"></el-switch>
                   </el-form-item>
 
                   <!-- splitLine.length 10 -->
-                  <el-form-item label="分隔线长度">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE17')">
                     <el-input-number v-model="chartStyle[index].splitLine.length" @change="handleChangeStyle"></el-input-number>
                   </el-form-item>
 
                   <!-- axisTick.show true -->
-                  <el-form-item label="显示刻度">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE18')">
                     <el-switch v-model="chartStyle[index].axisTick.show" @change="handleChangeStyle"></el-switch>
                   </el-form-item>
 
                   <!-- anchor.show false-->
-                  <el-form-item label="显示圆心">
+                  <el-form-item :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE19')">
                     <el-switch v-model="chartStyle[index].anchor.show" @change="handleChangeStyle"></el-switch>
                   </el-form-item>
 
@@ -157,7 +157,7 @@
       <!-- 右侧：图表预览 -->
       <el-col :span="10">
         <el-tabs v-model="rightActive" type="card">
-          <el-tab-pane label="预览" name="preview" >
+          <el-tab-pane :label="$t('PLUGIN.CUSTOM_DASHBOARD.LABLE20')" name="preview" >
             <div style="width: 280px;height: 280px;margin: 40px auto;" ref="chart-preview"></div>
           </el-tab-pane>
         </el-tabs>
@@ -165,8 +165,8 @@
       </el-col>
     </el-row>
     <span slot="footer" class="dialog-footer">
-        <el-button type="cancel" @click="dialogVisible = false">取 消</el-button>
-        <el-button type="save" @click="submit">确 定</el-button>
+        <el-button type="cancel" @click="dialogVisible = false">{{ $t('PLUGIN.CUSTOM_DASHBOARD.CANCEL') }}</el-button>
+        <el-button type="save" @click="submit">{{ $t('PLUGIN.CUSTOM_DASHBOARD.CONFIRM') }}</el-button>
       </span>
   </el-dialog>
 </template>

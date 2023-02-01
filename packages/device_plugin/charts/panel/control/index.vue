@@ -7,15 +7,15 @@
     </div>
 
     <!-- 绑定echart图表 /-->
-    <el-dialog :class="theme + '-dialog'" title="绑定图表" width="500px" :visible.sync="dialogVisible" :append-to-body="true" :close-on-click-modal="false">
+    <el-dialog :class="theme + '-dialog'" :title="$t('PLUGIN.CHART_INFO_TAB.TEXT1')" width="500px" :visible.sync="dialogVisible" :append-to-body="true" :close-on-click-modal="false">
       <el-tabs v-model="tabsValue">
-        <el-tab-pane style="height: 300px"  label="绑定数据*" name="map">
+        <el-tab-pane style="height: 300px" :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE')" name="map">
           <div class="add-chart-map-container">
             <el-form :label-position="'left'">
-              <el-form-item label="名称">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE3')">
                 <el-input v-model="controlName"></el-input>
               </el-form-item>
-              <el-form-item label="选择数据源">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE4')">
                 <!-- 从json中解析出物模型的所有属性 -->
                 <div class="datasrc-item" v-for="(item, index) in dataSrcOptions" :key="index">
                   <el-select style="width: 100%; margin-bottom: 10px;"
@@ -26,22 +26,22 @@
 
                   <el-row :gutter="20" v-if="item.type=='switch'">
                     <el-col :span="12" style="display: inline-flex">
-                      <span style="width: 60px;text-align: center">开启：</span>
+                      <span style="width: 60px;text-align: center">{{ $t('PLUGIN.CHART_INFO_TAB.TAB_TITLE17') }}</span>
                       <el-input v-model="item.on"></el-input>
                     </el-col>
                     <el-col :span="12" style="display: inline-flex">
-                      <span style="width: 60px;text-align: center">关闭：</span>
+                      <span style="width: 60px;text-align: center">{{ $t('PLUGIN.CHART_INFO_TAB.TAB_TITLE18') }}</span>
                       <el-input v-model="item.off"></el-input>
                     </el-col>
                   </el-row>
 
                   <el-row :gutter="20" v-if="item.type=='slider'">
                     <el-col :span="12" style="display: inline-flex">
-                      <span style="width: 80px;text-align: center">最大值：</span>
+                      <span style="width: 80px;text-align: center">{{ $t('PLUGIN.CHART_INFO_TAB.TAB_TITLE19') }}</span>
                       <el-input v-model="item.max"></el-input>
                     </el-col>
                     <el-col :span="12" style="display: inline-flex">
-                      <span style="width: 60px;text-align: center">步长：</span>
+                      <span style="width: 60px;text-align: center">{{ $t('PLUGIN.CHART_INFO_TAB.TAB_TITLE20') }}</span>
                       <el-input v-model="item.step"></el-input>
                     </el-col>
                   </el-row>
@@ -54,12 +54,12 @@
           </div>
         </el-tab-pane>
 
-        <el-tab-pane style="height: 300px" label="界面配置" name="ui">
+        <el-tab-pane style="height: 300px" :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE2')" name="ui">
           <div class="add-chart-map-container">
             <el-form :label-position="'left'">
 
               <el-form-item label="">
-                <el-checkbox v-model="disabledChecked">是否禁用</el-checkbox>
+                <el-checkbox v-model="disabledChecked">{{ $t('PLUGIN.CHART_INFO_TAB.TAB_TITLE21') }}</el-checkbox>
               </el-form-item>
             </el-form>
           </div>
@@ -67,22 +67,22 @@
 
       </el-tabs>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submit">确 定</el-button>
+        <el-button @click="dialogVisible = false">{{ $t('PLUGIN.CHART_INFO_TAB.CANCEL') }}</el-button>
+        <el-button type="primary" @click="submit">{{ $t('PLUGIN.CHART_INFO_TAB.CONFIRM') }}</el-button>
       </span>
     </el-dialog>
 
 <!--    绑定场景开关对话框-->
-    <el-dialog :class="theme + '-dialog'" title="绑定图表" width="665px" :visible.sync="sceneDialogVisible" :append-to-body="true" :close-on-click-modal="false">
+    <el-dialog :class="theme + '-dialog'" :title="$t('PLUGIN.CHART_INFO_TAB.TEXT1')" width="665px" :visible.sync="sceneDialogVisible" :append-to-body="true" :close-on-click-modal="false">
       <el-tabs v-model="tabsValue">
-        <el-tab-pane style="height: 440px"  label="绑定数据*" name="map">
+        <el-tab-pane style="height: 440px" :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE')" name="map">
           <div class="add-chart-map-container">
             <el-form ref="sceneFormRef" :label-position="'top'" :rules="sceneFormRule">
-              <el-form-item label="名称" prop="controlName">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE3')" prop="controlName">
                 <el-input v-model="controlName"></el-input>
               </el-form-item>
 
-              <el-form-item label="选择数据源:">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE4')">
                 <!-- 从json中解析出物模型的所有属性 -->
                 <el-transfer style="width: 100%;height: 240px"
                              :titles="['数据源', '已选择数据源']"
@@ -97,8 +97,8 @@
 
       </el-tabs>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="sceneDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submit">确 定</el-button>
+        <el-button @click="sceneDialogVisible = false">{{ $t('PLUGIN.CHART_INFO_TAB.CANCEL') }}</el-button>
+        <el-button type="primary" @click="submit">{{ $t('PLUGIN.CHART_INFO_TAB.CONFIRM') }}</el-button>
       </span>
     </el-dialog>
 
@@ -109,7 +109,7 @@
 import Control from "../../components/control"
 import global from "../../../common/global";
 import {message_error} from "@/utils/helpers";
-
+import i18n from "@/core/plugins/vue-i18n.js"
 export default {
   name: "ControlPanel",
   components: { Control },
@@ -137,7 +137,7 @@ export default {
       controlOption: {},
       dataSrcValue: [],
       sceneFormRule: {
-        "controlName": [{ required: true, message: "请输入名称" }]
+        "controlName": [{ required: true, message: i18n.t('PLUGIN.CHART_INFO_TAB.TAB_TITLE13') }]
       }
     }
   },

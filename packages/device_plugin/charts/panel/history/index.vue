@@ -8,16 +8,16 @@
     </div>
 
     <!-- 绑定历史数据 /-->
-    <el-dialog :class="'history-dialog' + dark?'dark-dialog':''" title="绑定图表" width="665px" :close-on-click-modal="false"
+    <el-dialog :class="'history-dialog' + dark?'dark-dialog':''" :title="$t('PLUGIN.CHART_INFO_TAB.TEXT1')" width="665px" :close-on-click-modal="false"
                :visible.sync="dialogVisible" :append-to-body="true">
       <el-tabs v-model="tabsValue">
-        <el-tab-pane style="height: 440px"  label="绑定数据" name="map">
+        <el-tab-pane style="height: 440px" :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE')" name="map">
           <div class="add-chart-map-container">
             <el-form class="history-form" label-position="top" label-width="100">
-              <el-form-item label="名称:" style="width: 100%">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE3')" style="width: 100%">
                 <el-input style="flex-grow: 1" v-model="historyName"></el-input>
               </el-form-item>
-              <el-form-item label="选择数据源:">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE4')">
                 <!-- 从json中解析出物模型的所有属性 -->
                 <el-transfer style="width: 100%;height: 240px"
                              :titles="['数据源', '已选择数据源']"
@@ -28,13 +28,13 @@
           </div>
         </el-tab-pane>
 
-        <el-tab-pane style="height: 300px" label="界面配置" name="ui">
+        <el-tab-pane style="height: 300px" :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE2')" name="ui">
           <div class="add-chart-map-container">
             <el-form :label-position="'left'">
-              <el-form-item label="颜色">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE16')">
 
               </el-form-item>
-              <el-form-item label="文本大小">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE6')">
 
               </el-form-item>
             </el-form>
@@ -43,8 +43,8 @@
 
       </el-tabs>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submit">确 定</el-button>
+        <el-button @click="dialogVisible = false">{{ $t('PLUGIN.CHART_INFO_TAB.CANCEL') }}</el-button>
+        <el-button type="primary" @click="submit">{{ $t('PLUGIN.CHART_INFO_TAB.CONFIRM') }}</el-button>
       </span>
     </el-dialog>
   </div>
