@@ -121,8 +121,8 @@
     <!--  在线/离线状态 start  -->
     <el-table-column :label="$t('DEVICE_MANAGEMENT.STATE')" min-width="10%">
       <template slot-scope="scope">
-        <el-tag v-if="scope.row.device_state === '1'">在线</el-tag>
-        <el-tag v-else-if="scope.row.device_type!=='3'" type="info">离线</el-tag>
+        <el-tag v-if="scope.row.device_state === '1'">{{ $t('DEVICE_MANAGEMENT.ONLINE') }}</el-tag>
+        <el-tag v-else-if="scope.row.device_type!=='3'" type="info">{{ $t('DEVICE_MANAGEMENT.OFFLINE') }}</el-tag>
       </template>
     </el-table-column>
     <!--  推送时间 end  -->
@@ -204,7 +204,7 @@
   <el-dialog
       class="el-dark-dialog el-dark-input"
       :visible.sync="showManagementGroup"
-      :title="$t('COMMON.MANAGINGDEVICEGROUPS')"
+      :title="$t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.MANAGINGDEVICEGROUPS')"
       width="30%"
       :close-on-click-modal="false"
       @open="showManagementGroupForm = true"

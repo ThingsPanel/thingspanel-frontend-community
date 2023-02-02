@@ -2,8 +2,8 @@
 <template>
 <div>
   <el-row type="flex" class="px-3 pb-3">
-    <el-col :span="3" class="pt-2 label-name">
-      业务名
+    <el-col :span="5" class="pt-2 label-name">
+      {{ $t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.BUSINESSNAME') }}
     </el-col>
     <el-col :span="10">
       <BusinessSelector
@@ -13,27 +13,27 @@
     </el-col>
     <el-col :span="11">
       <div class="text-right">
-        <el-button type="indigo" size="medium" @click="handleCreate()">添加</el-button>
+        <el-button type="indigo" size="medium" @click="handleCreate()">{{ $t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.ADD') }}</el-button>
       </div>
     </el-col>
   </el-row>
 
   <el-form class="inline-edit">
   <el-table :data="tableData" fit style="width: 100%">
-    <el-table-column label="组名" width="auto" min-width="40%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.GROUPNAME')" width="auto" min-width="40%">
       <template v-slot="scope">
         <el-form-item :error="scope.row.errors.name">
           <el-input size="medium" v-model="scope.row.name" @change="handleSave(scope.row)"></el-input>
         </el-form-item>
       </template>
     </el-table-column>
-    <el-table-column label="上级分组" width="auto" min-width="40%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.PARENTGROUP')" width="auto" min-width="40%">
       <template v-slot="scope">
         <el-form-item :error="scope.row.errors.parent_id">
           <el-select
               class="w-100"
               size="medium"
-              placeholder="请选择上级分组"
+              :placeholder="$t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.PLACEHOLDER')"
               filterable
               v-model="scope.row.parent_id"
               @change="handleSave(scope.row)"
@@ -47,10 +47,10 @@
         </el-form-item>
       </template>
     </el-table-column>
-    <el-table-column label="操作" width="auto" min-width="20%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.OPERATION')" width="auto" min-width="20%">
       <template v-slot="scope">
-        <el-popconfirm title="确定要删除此项吗？" @confirm="handleDelete(scope.row)">
-          <el-button slot="reference" type="danger" size="medium">删除</el-button>
+        <el-popconfirm :title="$t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.DELETETHISITEM')" @confirm="handleDelete(scope.row)">
+          <el-button slot="reference" type="danger" size="medium">{{ $t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.DELETE') }}</el-button>
         </el-popconfirm>
       </template>
     </el-table-column>

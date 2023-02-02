@@ -1,3 +1,4 @@
+import i18n from "@/core/plugins/vue-i18n.js"
 const unitOption = [
     {
         "value": "-",
@@ -524,25 +525,23 @@ const dataType = [
 const required = true, only = true, advanced =true;
 export const tableAttr = {
     properties: [
-        { field: "title", label: "字段名(例：温度)", validate: {required, only}},
-        { field: "name", label: "字段(例：temperature)", validate: {required, only}},
-        { field: "dataType", label: "数据类型", type: "select", default: "float",validate: {required},
-            options: dataType
-        },
-        { field: "dataRange", label: "取值范围", advanced, type: "range", default: "0-999"},
-        { field: "stepLength", label: "间距", advanced, default: 0.1},
-        { field: "unit", label: "单位(例：℃)", validate: { only}},
-        { field: "description", label: "描述", advanced, type: "textarea"},
+        { field: "title", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE1'), validate: {required, only}},
+        { field: "name", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE2'), validate: {required, only}},
+        { field: "dataType", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE3'), type: "select", default: "float", validate: {required}, options: dataType},
+        { field: "dataRange", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE4'), advanced, type: "range", default: "0-999"},
+        { field: "stepLength", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE5'), advanced, default: 0.1},
+        { field: "unit", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE6'), validate: { only}},
+        { field: "description", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE7'), advanced, type: "textarea"},
     ],
     services: [
-        { field: "function", label: "功能"},
-        { field: "topic", label: "topic"},
-        { field: "description", label: "描述", type: "select"}
+        { field: "function", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE8')},
+        { field: "topic", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE9')},
+        { field: "description", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE10'), type: "select"}
     ],
     events: [
-        { field: "function", label: "功能"},
-        { field: "topic", label: "topic"},
-        { field: "description", label: "描述"}
+        { field: "function", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE8')},
+        { field: "topic", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE9')},
+        { field: "description", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE10')}
     ]
 }
 

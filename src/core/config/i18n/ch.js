@@ -610,6 +610,7 @@ export const locale = {
    */
   DEVICE_MANAGEMENT: {
     PLACEHOLDER2: "请输入设备名称",
+    PLACEHOLDER4:"请选择设备类型",
     SEARCH: "查询",
     CREATEDEVICE: "创建设备",
     MANAGEMENTGROUP: "管理分组",
@@ -624,12 +625,88 @@ export const locale = {
     CODEMANAGE: "推送参数",
     EDITPARAMETERS: "编辑参数",
     STATE: "状态",
+    ONLINE: "在线",
+    OFFLINE: "离线",
     TITLE23: "上次推送",
     TITLE24: "图表组件",
     OPERATION: "操作",
     ADDINGCHILDDEVICE: "增加子设备",
     DELETETHISITEM: "确定要删除此项吗？",
     DELETE: "删除",
+    BINDDEVICEPLUG: "绑定设备插件",
+    CANCEL:"取消",
+    SAVE:"Save",
+
+   /**
+   * 管理分组弹框
+   */
+    MANAGEMENT_GROUP_MODEL:{
+      MANAGINGDEVICEGROUPS:"管理设备分组",
+      BUSINESSNAME: "业务名",
+      ADD: "添加",
+      GROUPNAME: "组名",
+      PARENTGROUP: "上级分组",
+      PLACEHOLDER: "请选择上级分组",
+      OPERATION: "操作",
+      DELETETHISITEM: "确定要删除此项吗？",
+      DELETE: "删除",
+    },
+    /**
+     * 设备配置弹框
+     */
+    DEVICE_CONFIG: {
+      DEVICECONFIG: "设备配置",
+      DATAANALYSIS: "数据解析",
+      DEVICEPROPERTIES: "设备属性",
+      OPERATION: "运维信息",
+      SUBDEVICEADDRESS:"子设备地址",
+      PLACEHOLDER1: "请输入子设备地址",
+      PLACEHOLDER2: "请输入设备经纬度，用逗号隔开，如：116.462346, 39.356432",
+      PLACEHOLDER3: "请输入设备位置",
+      LABLE1: "选择设备",
+      ONLINE: "在线",
+      OFFLINE: "离线",
+      DEVICELOCATION: "设备位置",
+      OFFLINETIME:"离线时间阈值",
+      CANCEL:"取消",
+      CONFIRM:"确定",
+    },
+    /**
+     * 编辑参数弹框
+     */
+    EDIT_PARAMETER: {
+      EDITPARAMETER: "编辑参数",
+      LABLE1: "传输协议：",
+      LABLE2: "视频地址接入：",
+      LABLE3: "认证方式：",
+      LABLE4: "用户名：",
+      LABLE5: "密码：",
+      LABLE6: "连接信息：",
+      LABLE7: "数据处理脚本：",
+      LABLE8: "视频设备编号：",
+      PLACEHOLDER1:"请选择协议",
+      PLACEHOLDER2:"请输入视频地址",
+      PLACEHOLDER3:" 请选择认证方式",
+      PLACEHOLDER4: "请输入视频设备id",
+      OPTIONLABLE1: "密码认证",
+      OPTIONLABLE2: "默认",
+      OPTIONLABLE3: "自定义协议",
+      COPY:"点击复制内容",
+      SAVE: "保存",
+      CANCEL: "取消",
+    },
+    /**
+     * 自定义数据解析脚本弹框
+     */
+    CUSTOM_SCRIPT: {
+      TITLE: "自定义数据解析脚本",
+      COMPANYNAME: "公司名称",
+      PRODUCTNAME: "产品名称",
+      TEXT1: "上行解析脚本",    
+      TEXT2: "下行解析脚本",
+      SAVE: "保存",
+      CANCEL: "取消",
+    }
   },
   /**
    * 设备监控
@@ -976,10 +1053,10 @@ export const locale = {
     CLOSE:"关闭",
     PREV:"上一步",
     NEXT:"下一步",
-     /**
+    /**
    * 应用管理——设备插件
    */
-     TAB1_CONTENT: {
+    TAB1_CONTENT: {
       PLACEHOLDER: "请输入插件名称",
       PLACEHOLDER1:"请输入内容",
       PLACEHOLDER2: "复制到剪贴板",
@@ -1082,6 +1159,23 @@ export const locale = {
       SAVE: "保存",
       CONFIRM:"确定",
     },
+   /**
+   * 应用管理——设备插件——物模型——表格
+   */
+    MATTER_MODEL_TABLE:{
+      LABLE1: "字段名(例：温度)",
+      LABLE2: "字段(例：temperature)",
+      LABLE3: "数据类型",
+      LABLE4: "取值范围",
+      LABLE5: "间距",
+      LABLE6: "单位(例：℃)",
+      LABLE7: "描述",
+      LABLE8: "功能",
+      LABLE9: "topic",
+      LABLE10: "描述",
+      LABLE11: "查看",
+    },
+
     /**
    * 应用管理——设备插件——图表
    */

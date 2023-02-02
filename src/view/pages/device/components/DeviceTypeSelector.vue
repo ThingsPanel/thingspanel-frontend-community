@@ -3,7 +3,7 @@
   <el-select
       class="w-100"
       size="medium"
-      placeholder="请选择设备类型"
+      :placeholder="$t('DEVICE_MANAGEMENT.PLACEHOLDER4')"
       v-model="deviceTypeId"
       :disabled="deviceType==3 || !!currentItem.children"
       filterable
@@ -16,7 +16,7 @@
 
 <script>
 import {computed, defineComponent} from "@vue/composition-api";
-
+import i18n from "@/core/plugins/vue-i18n.js"
 export default defineComponent({
   name: "DeviceTypeSelector",
   props: {
@@ -42,8 +42,8 @@ export default defineComponent({
     options: {
       type: [Array],
       default: () => [
-        {value: "1", label: "设备"},
-        {value: "2", label: "网关"}
+        {value: "1", label: i18n.t('DEVICE_MANAGEMENT.EQUIPMENT')},
+        {value: "2", label: i18n.t('DEVICE_MANAGEMENT.THEGATEWAY')}
       ]
     }
   },

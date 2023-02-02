@@ -1,6 +1,6 @@
 <!-- 设备配置 -->
 <template>
-  <el-dialog class="el-dark-dialog el-dark-input" title="设备配置" width="40%"
+  <el-dialog class="el-dark-dialog el-dark-input" :title="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICECONFIG')" width="40%"
              :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
              :visible.sync="dialogVisible" @close="handleClose">
     <div class="container-fluid">
@@ -35,21 +35,21 @@
       <!-- 设备属性 -->
       <div v-else-if="activeName=='deviceAttribute'">
         <el-form label-position="left" :model="attrFormData">
-          <el-form-item label="子设备地址" v-if="device.device_type =='3'">
-            <el-input style="width: 100%" placeholder="请输入子设备地址" v-model="attrFormData.subDeviceAddress"></el-input>
+          <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.SUBDEVICEADDRESS')" v-if="device.device_type =='3'">
+            <el-input style="width: 100%" :placeholder="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PLACEHOLDER1')" v-model="attrFormData.subDeviceAddress"></el-input>
           </el-form-item>
 
-          <el-form-item v-if="device.device_type == '2' && device.protocol.startsWith('WVP_')" label="选择设备:">
+          <el-form-item v-if="device.device_type == '2' && device.protocol.startsWith('WVP_')" :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.LABLE1')">
             <el-select style="width: 100%" v-model="attrFormData.d_id">
               <el-option v-for="(item, index) in wvpDeviceList" :key="item.deviceId"
-                         :label="item.deviceId + ' [' + item.createTime + '] ' + (item.online == 1 ? '在线' : '离线')"
+                         :label="item.deviceId + ' [' + item.createTime + '] ' + (item.online == 1 ? $t('DEVICE_MANAGEMENT.DEVICE_CONFIG.ONLINE') : $t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OFFLINE'))"
                          :value="item.deviceId"
               ></el-option>
             </el-select>
           </el-form-item>
 
-          <el-form-item label="设备位置" >
-            <el-input readonly @click.native="showCheckLocation" style="width: 100%" placeholder="请输入设备经纬度，用逗号隔开，如：116.462346, 39.356432"
+          <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICELOCATION')" >
+            <el-input readonly @click.native="showCheckLocation" style="width: 100%" :placeholder="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PLACEHOLDER2')"
                       v-model="attrFormData.location"
               ></el-input>
           </el-form-item>
@@ -59,7 +59,7 @@
       <!-- 运维信息 -->
       <div v-else-if="activeName=='runningStatus'">
         <el-form label-position="left" :model="runningFormData">
-          <el-form-item label="离线时间阈值" prop="thresholdTime">
+          <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OFFLINETIME')" prop="thresholdTime">
             <el-input-number controls-position="right" size="small" v-model="runningFormData.thresholdTime" :min="5"></el-input-number>
             秒
           </el-form-item>
@@ -68,8 +68,8 @@
     </div>
 
     <span slot="footer" class="dialog-footer">
-        <el-button type="cancel" @click="handleClose">取 消</el-button>
-        <el-button type="save" @click="handleSubmit">确 定</el-button>
+        <el-button type="cancel" @click="handleClose">{{ $t('DEVICE_MANAGEMENT.DEVICE_CONFIG.CANCEL') }}</el-button>
+        <el-button type="save" @click="handleSubmit">{{ $t('DEVICE_MANAGEMENT.DEVICE_CONFIG.CONFIRM') }}</el-button>
       </span>
 
       <device-location-config v-if="positionShow" :maker-position.sync="locationArray" :dialog-visible.sync="positionShow"></device-location-config>
@@ -82,6 +82,7 @@ import ModbusAPI from "@/api/modbus"
 import ProtocolPluginAPI from "@/api/protocolPlugin"
 import {message_success} from "../../../../../utils/helpers";
 import DeviceLocationConfig from "@/components/common/DeviceLocationConfig.vue"
+import i18n from "@/core/plugins/vue-i18n.js"
 export default {
   name: "DeviceConfigForm",
   components: {
@@ -102,9 +103,9 @@ export default {
       positionShow: false,
       activeName: "",
       tabList: [
-        { value: "configParse", label: "数据解析" },
-        { value: "deviceAttribute", label: "设备属性" },
-        { value: "runningStatus", label: "运维信息" }
+        { value: "configParse", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DATAANALYSIS')},
+        { value: "deviceAttribute", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICEPROPERTIES')},
+        { value: "runningStatus", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OPERATION')}
       ],
       formAttr: [],
       formData: {},
@@ -140,9 +141,9 @@ export default {
           if (this.device.device_type == "3" || (this.device.device_type == "1" && this.device.protocol != "mqtt")) {
             // 子设备所有协议都要数据解析，直连设备所有自定义协议(mqtt协议之外)都要数据解析
             this.tabList = [
-              { value: "configParse", label: "数据解析" },
-              { value: "deviceAttribute", label: "设备属性" },
-              { value: "runningStatus", label: "运维信息" }
+              { value: "configParse", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DATAANALYSIS')},
+              { value: "deviceAttribute", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICEPROPERTIES')},
+              { value: "runningStatus", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OPERATION')},
             ];
             this.activeName = "configParse";
             let deviceType = this.device.device_type == "1" ? "1" : "2";
@@ -164,13 +165,13 @@ export default {
                 })
           } else {
             this.tabList = [
-              { value: "deviceAttribute", label: "设备属性" },
-              { value: "runningStatus", label: "运维信息" }
+              { value: "deviceAttribute", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICEPROPERTIES')},
+              { value: "runningStatus", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OPERATION')},
             ]
             this.activeName = "deviceAttribute";
             this.formRule = {
               location: [
-                { required: false, message: '请输入设备位置', trigger: 'change' }
+                { required: false, message: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PLACEHOLDER3'), trigger: 'change' }
               ],
             };
             if (this.device.device_type == 2 && this.device.protocol.startsWith("WVP_")) {

@@ -644,6 +644,7 @@ export const locale = {
    */
   DEVICE_MANAGEMENT: {
     PLACEHOLDER2: "Please input assets alias name",
+    PLACEHOLDER4:"Please select device type",
     SEARCH: "Search",
     CREATEDEVICE: "Create Device",
     MANAGEMENTGROUP: "Management Group",
@@ -658,12 +659,87 @@ export const locale = {
     CODEMANAGE: "Code",
     EDITPARAMETERS: "Edit parameters",
     STATE:"state",
+    ONLINE: "On",
+    OFFLINE: "Off",
     TITLE23: "Last push",
     TITLE24: "Chart component",
     OPERATION:"Operation",
     ADDINGCHILDDEVICE: "Adding a child device",
     DELETETHISITEM: "Are you sure you want to delete this item?",
     DELETE:"Delete",
+    BINDDEVICEPLUG: "Bind device plug-in",
+    CANCEL: "Cancel",
+    SAVE:"Save",
+    /**
+   * 管理分组弹框
+   */
+    MANAGEMENT_GROUP_MODEL:{
+      MANAGINGDEVICEGROUPS:"Managing Device Groups",
+      BUSINESSNAME: "BusinessName",
+      ADD: "Add",
+      GROUPNAME: "GroupName",
+      PARENTGROUP: "ParentGroup",
+      PLACEHOLDER: "Please select parent group",
+      OPERATION: "Operation",
+      DELETETHISITEM: "Are you sure you want to delete this item?",
+      DELETE: "Delete",
+    },
+    /**
+     * 设备配置弹框
+     */
+    DEVICE_CONFIG: {
+      DEVICECONFIG: "Device config",
+      DATAANALYSIS: "Data analysis",
+      DEVICEPROPERTIES: "Device properties",
+      OPERATION: "Operation",
+      SUBDEVICEADDRESS:"Sub device address",
+      PLACEHOLDER1: "Please enter sub device address",
+      PLACEHOLDER2: "Please enter device lot，separate with commas，e.g：116.462346, 39.356432",
+      PLACEHOLDER3: "Please enter device location",
+      LABLE1: "Select device",
+      ONLINE: "On line",
+      OFFLINE: "Off line",
+      DEVICELOCATION: "Device location",
+      OFFLINETIME:"Offline time threshold",
+      CANCEL: "Cancel",
+      CONFIRM:"Submit",
+    },
+    /**
+     * 编辑参数弹框
+     */
+    EDIT_PARAMETER: {
+      EDITPARAMETER: "Edit parameter",
+      LABLE1: "Transmit protocol：",
+      LABLE2: "Video address connect：",
+      LABLE3: "Authentication：",
+      LABLE4: "UserName：",
+      LABLE5: "Password：",
+      LABLE6: "Connect info：",
+      LABLE7: "Data processing script：",
+      LABLE8: "Video device code：",
+      PLACEHOLDER1:"Please select a protocol",
+      PLACEHOLDER2:"Please enter video address",
+      PLACEHOLDER3:"Please select an authentication mode",
+      PLACEHOLDER4:"Please video device code id",
+      OPTIONLABLE1: "PasswordAuthentication",
+      OPTIONLABLE2: "Acquiesce",
+      OPTIONLABLE3: "CustomProtocol",
+      COPY: "Click to copy content",
+      SAVE: "Save",
+      CANCEL: "Cancel",
+    },
+    /**
+     * 自定义数据解析脚本弹框
+     */
+    CUSTOM_SCRIPT: {
+      TITLE: "Custom data parsing script",
+      COMPANYNAME: "companyName",
+      PRODUCTNAME: "productName",
+      TEXT1: "Uplink parsing script",
+      TEXT2: "Down parsing script",
+      SAVE: "Save",
+      CANCEL: "Cancel",
+    }
   },
   /**
    * 设备监控
@@ -673,7 +749,7 @@ export const locale = {
     NO: "ID",
     PROJECT_NAME: "Project Name",
     OPERATION: "Operation",
-    SEE:"See"
+    SEE:"See",
   },
   /**
    * 设备监控详情
@@ -1117,6 +1193,22 @@ export const locale = {
       CANCEL: "Cancel",
       SAVE: "Save",
       CONFIRM:"Submit",
+    },
+    /**
+   * 应用管理——设备插件——物模型——表格
+   */
+    MATTER_MODEL_TABLE:{
+      LABLE1: "Field name (e.g： temperature)",
+      LABLE2: "Field (e.g：temperature)",
+      LABLE3: "Data type",
+      LABLE4: "Data Range",
+      LABLE5: "Step Length",
+      LABLE6: "Unit (e.g：℃)",
+      LABLE7: "Description",
+      LABLE8: "Function",
+      LABLE9: "topic",
+      LABLE10: "Description",
+      LABLE11: "View",
     },
     /**
    * 应用管理——设备插件——图表

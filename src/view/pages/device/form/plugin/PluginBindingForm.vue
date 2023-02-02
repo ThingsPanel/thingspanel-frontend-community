@@ -1,5 +1,5 @@
 <template>
-  <el-dialog class="el-dark-dialog el-dark-input" title="绑定设备插件" :visible.sync="showDialog" width="1000px">
+  <el-dialog class="el-dark-dialog el-dark-input" :title="$t('DEVICE_MANAGEMENT.BINDDEVICEPLUG')" :visible.sync="showDialog" width="1000px">
     <div class="container-fluid">
       <el-row :gutter="40">
         <el-col :span="6" >
@@ -19,8 +19,8 @@
     </div>
 
     <span slot="footer" class="dialog-footer">
-        <el-button type="cancel" @click="showDialog = false">取 消</el-button>
-        <el-button type="save" @click="handleSubmit">确 定</el-button>
+        <el-button type="cancel" @click="showDialog = false">{{ $t('DEVICE_MANAGEMENT.CANCEL') }}</el-button>
+        <el-button type="save" @click="handleSubmit">{{ $t('DEVICE_MANAGEMENT.SAVE') }}</el-button>
       </span>
   </el-dialog>
 </template>
