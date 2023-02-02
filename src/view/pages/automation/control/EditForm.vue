@@ -39,7 +39,7 @@
       <ActionForm/>
 
       <div class="text-right">
-        <el-button size="medium" type="save" @click="handleCancel()">保存并执行</el-button>
+        <el-button size="medium" type="save" @click="handleSaveAndStart()">保存并执行</el-button>
         <el-button size="medium" type="cancel" @click="handleSave()">仅保存</el-button>
       </div>
     </el-form>
@@ -87,6 +87,14 @@ export default {
       set(val) {
         this.$emit("update:visible", val);
       }
+    }
+  },
+  methods: {
+    handleSaveAndStart() {
+
+    },
+    handleSave() {
+
     }
   }
 }

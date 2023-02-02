@@ -46,8 +46,8 @@
 </template>
 
 <script>
-import ProjectSelector from "./selector/device/ProjectSelector";
-import TimeTypeSelector from "./selector/time/TimeTypeSelector";
+import ProjectSelector from "../components/device/ProjectSelector";
+import TimeTypeSelector from "../components/time/TimeTypeSelector";
 export default {
   name: "ConditionForm",
   components: { ProjectSelector, TimeTypeSelector },

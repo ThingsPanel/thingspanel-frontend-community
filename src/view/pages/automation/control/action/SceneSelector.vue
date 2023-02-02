@@ -1,22 +1,15 @@
 <template>
   <div style="display: flex">
+    激活
     <el-select style="width: 100px;margin-right:10px" v-model="value">
-      <el-option label="设备1" :value="'device1'"></el-option>
+      <el-option :label="'场景1'" :value="'scene1'"></el-option>
     </el-select>
-
-    <StateSelector v-if="value!=''"/>
   </div>
-
-
 </template>
 
 <script>
-import StateSelector from "./StateSelector";
 export default {
-  name: "DeviceSelector",
-  components: {
-    StateSelector
-  },
+  name: "SceneSelector",
   data() {
     return {
       value: ""

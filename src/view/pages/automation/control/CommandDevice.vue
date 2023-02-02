@@ -1,14 +1,9 @@
 <!-- 操作设备 -->
 <template>
-  <div>
+  <div class="command-device-box">
     <div style="display: flex;margin-bottom: 10px" v-for="(command, index) in commands" :key="index">
 
-
-      <!-- 选择设备条件后显示项目列表 -->
-<!--      <ProjectSelector v-if="command.type=='device'"/>-->
-
-<!--      &lt;!&ndash; 选择时间条件后显示时间条件类型 &ndash;&gt;-->
-<!--      <TimeTypeSelector v-else-if="command.type=='time'"/>-->
+      <ProjectSelector :option="{operator: false}"/>
 
       <!-- 新增一行 -->
       <el-button type="indigo" size="small" style="margin-left: auto"
@@ -26,8 +21,10 @@
 </template>
 
 <script>
+import ProjectSelector from "../components/device/ProjectSelector";
 export default {
   name: "CommandDevice",
+  components: { ProjectSelector },
   data() {
     return {
       commands: [
@@ -40,7 +37,7 @@ export default {
   },
   methods: {
     handleAddCommand() {
-
+      this.commands.push({});
     },
     handleDeleteCommand(command) {
 
@@ -51,5 +48,8 @@ export default {
 </script>
 
 <style scoped>
-
+.command-device-box {
+  padding: 10px;
+  border: 1px solid #2c3e50;
+}
 </style>

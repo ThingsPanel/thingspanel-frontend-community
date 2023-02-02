@@ -67,6 +67,7 @@ import VueCompositionApi from "@vue/composition-api"
 Vue.use(VueCompositionApi)
 
 import "@/core/mixins/checkAuth"
+import "@/utils/tool.js"
 
 Vue.use(VueAxiosPlugin, {
     headers: {
