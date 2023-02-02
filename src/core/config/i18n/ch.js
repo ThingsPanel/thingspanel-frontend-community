@@ -87,7 +87,7 @@ export const locale = {
     SYSTEMAUTHORIZATION: "系统授权",
     SYSTEMTITLE: "系统标题",
     THEMECOLOR: "主题色",
-    BLUR: "蓝色",
+    BLUE: "蓝色",
     WHITE: "白色",
     CHANGE: "更换",
     HOMEANDBACKEND: "首页和后台",
@@ -635,7 +635,7 @@ export const locale = {
     DELETE: "删除",
     BINDDEVICEPLUG: "绑定设备插件",
     CANCEL:"取消",
-    SAVE:"Save",
+    SAVE:"保存",
 
    /**
    * 管理分组弹框
@@ -1269,23 +1269,78 @@ export const locale = {
    * 系统管理
    */
   SYSTEM_MANAGEMENT: {
+    GENERALSETTINGS: "常规设置",
+    NOTIFICATIONSETTINGS: "通知设置",
+    SYSTEMAUTHORIZATION: "系统授权",
+    TITLE4: "你确定要删除吗？",
+    CANCEL: "取消",
+    SAVE: "保存",
+    DELETE: "删除",
+    EDIT: "编辑",
     /**
-     * 系统设置
+     * 系统设置 常规设置
      */
     SYSTEM_SETTING: {
-
+      SYSTEMTITLE: "系统标题",
+      THEMECOLOR: "主题色",
+      PLACEHOLDER1: "请输入",
+      PLACEHOLDER2: "请选择",
+      BLUE: "蓝色",
+      WHITE: "白色",
+      HOMEANDBACKEND: "首页和后台",
+      CHANGE: "更换",
+      LOADINGPAGE: "加载页面",
+      WEBSITE: "站标",
+      BACKGROUND: "背景图片",
+  
     },
     /**
      * 用户管理
      */
     USER_MANAGEMENT: {
-
+      USERS: "用户管理",
+      AddUSER: "添加用户",
+      NO: "序号",
+      USERNAME:"用户名",
+      NAME: "姓名",
+      EMAIL: "邮箱",
+      TELEPHONE: "手机号",
+      ROLE: "角色",
+      OPERATION: "操作",
+      CHANGEPASSWORD: "修改密码",
+      PASSWORD: "密码",
+      CONPASSWORD: "确认密码",
+      REMARKS: "备注",
+      DOWN: "展开",
+      UP: "收起",
+      PLACEHOLDER1:"请填写姓名",
+      PLACEHOLDER2:"请填写电子邮箱",
+      PLACEHOLDER3: "请输入正确的邮箱",
+      PLACEHOLDER4: "请输入手机号",
+      PLACEHOLDER5: "请输入正确的手机号",
+      PLACEHOLDER6: "请输入新密码",
+      PLACEHOLDER7: "密码不少于6位数",
+      PLACEHOLDER8: "请再次输入密码",
+      PLACEHOLDER9: "新密码两次输入不一致",
+      TITLE: "密码默认为123456",
     },
     /**
      * 角色管理
      */
     ROLE_MANAGEMENT: {
-
+      MANAGEMENT:"角色管理",
+      ADDROLE: "添加角色",
+      NO: "序号",
+      ROLENAME: "角色名称",
+      ROLEDESCRIPTION: "角色描述",
+      PERMISSIONMANAGEMENT: "权限管理",
+      OPERATION: "操作",
+      TITLE4: "你确定要删除吗？",
+      CANCEL: "取消",
+      SAVE: "保存",
+      DELETE: "删除",
+      EDIT: "编辑",
+      PERMISSIONEDIT: "权限编辑",
     },
     /**
      * 权限管理

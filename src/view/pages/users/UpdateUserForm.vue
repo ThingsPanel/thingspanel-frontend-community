@@ -3,7 +3,7 @@
       class="el-dark-dialog el-dark-input"
       :visible.sync="showDialog"
       width="40%"
-      title="用户管理"
+      :title="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.USERS')"
       :close-on-click-modal="false"
   >
     <el-form
@@ -14,14 +14,14 @@
         :rules="rules"
         hide-required-asterisk>
       <el-row>
-        <el-form-item label="姓名：" prop="name" >
+        <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.NAME')" prop="name" >
           <el-input size="medium" v-model="formData.name"></el-input>
         </el-form-item>
       </el-row>
 
       <el-row>
         <el-col :span="24">
-          <el-form-item label="角色：" prop="roles">
+          <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.ROLE')" prop="roles">
             <div style="width: 100%">
               <el-row :gutter="20">
                 <el-col :span="20">
@@ -33,10 +33,10 @@
                 <el-col :span="2">
                   <div style="text-align: right">
                     <el-button v-show="isCollapsed" type="text" style="padding-top: 10px" @click="isCollapsed = !isCollapsed">
-                      展开<i class="el-icon-arrow-down el-icon--right"></i>
+                      {{ $t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.DOWN') }}<i class="el-icon-arrow-down el-icon--right"></i>
                     </el-button>
                     <el-button v-show="!isCollapsed" type="text" style="padding-top: 10px"  @click="isCollapsed = !isCollapsed">
-                      收起<i class="el-icon-arrow-up el-icon--right"></i>
+                      {{ $t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.UP') }}<i class="el-icon-arrow-up el-icon--right"></i>
                     </el-button>
                   </div>
 
@@ -50,18 +50,18 @@
 
       <el-row>
         <el-col :span="12">
-          <el-form-item label="邮箱：" prop="email" style="margin-right: 15px">
+          <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.EMAIL')" prop="email" style="margin-right: 15px">
             <el-input size="medium" v-model="formData.email"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="手机：" prop="mobile" style="margin-left: 15px">
+          <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.TELEPHONE')" prop="mobile" style="margin-left: 15px">
             <el-input size="medium" v-model="formData.mobile"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
 
-      <el-form-item label="备注" prop="remark">
+      <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.REMARKS')" prop="remark">
         <el-input size="medium" v-model="formData.remark" type="textarea" :rows="3"></el-input>
       </el-form-item>
 
@@ -69,8 +69,8 @@
 
       <el-form-item >
         <div style="display: flex;justify-content: center">
-          <el-button size="medium" plain @click="showDialog = false">取消</el-button>
-          <el-button size="medium"  type="primary" @click="handleSubmit">保存</el-button>
+          <el-button size="medium" plain @click="showDialog = false">{{$t('SYSTEM_MANAGEMENT.CANCEL')}}</el-button>
+          <el-button size="medium"  type="primary" @click="handleSubmit">{{$t('SYSTEM_MANAGEMENT.SAVE')}}</el-button>
           <!--  <div class="py-1"><el-button class="w-100" @click="handleReset">重置</el-button></div>-->
         </div>
       </el-form-item>
@@ -84,7 +84,7 @@ import {defineComponent, reactive, ref, watch, computed} from "@vue/composition-
 import FormAlert from "@/components/common/FormAlert";
 import {is_cellphone, is_email, message_success} from "@/utils/helpers";
 import {get_role, get_roles, user_edit, user_edit_roles} from "@/api/user";
-
+import i18n from "@/core/plugins/vue-i18n.js"
 export default defineComponent({
   name: "UpdateUserForm",
   components: {
@@ -157,13 +157,13 @@ export default defineComponent({
 
     let rules = reactive({
       name: [
-        {required: true, message: "请填写姓名"}
+        {required: true, message: i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER1')}
       ],
       email: [
-        {required: true, message: "请填写合法的电子邮箱", validator: check_email}
+        {required: true, message: i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER2'), validator: check_email}
       ],
       mobile: [
-        {required: true, message: "请填写合法的手机号", validator: check_mobile}
+        {required: true, message: i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER4'), validator: check_mobile}
       ],
     })
 
@@ -217,13 +217,13 @@ const check_email = (rule, value, callback) => {
   if (is_email(value)) {
     callback()
   }
-  callback(new Error("请填写合法的电子邮箱"))
+  callback(new Error(i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER3')))
 }
 const check_mobile = (rule, value, callback) => {
   if (is_cellphone(value)) {
     callback()
   }
-  callback(new Error("请填写合法的手机号"))
+  callback(new Error(i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER5')))
 }
 </script>
 

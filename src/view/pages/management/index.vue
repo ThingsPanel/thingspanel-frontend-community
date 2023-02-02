@@ -2,22 +2,22 @@
   <div class="rounded p-4 card no-border">
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
       <el-col :span="12">
-        <TableTitle>{{ $t("COMMON.MANAGEMENT")}}</TableTitle>
+        <TableTitle>{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.MANAGEMENT")}}</TableTitle>
       </el-col>
       <el-col :span="12" class="px-2 text-right">
         <el-button size="medium" type="indigo" @click="dialogVisible"
-          >{{ $t("COMMON.ADDROLE")}}</el-button
+          >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.ADDROLE")}}</el-button
         >
       </el-col>
     </el-row>
     <el-form class="inline-edit">
       <el-table :data="tableData">
         <el-table-column
-          :label="$t('COMMON.NO')"
+          :label="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.NO')"
           type="index"
 
         ></el-table-column>
-        <el-table-column prop="role_name" :label="$t('COMMON.ROLENAME')" width="200px">
+        <el-table-column prop="role_name" :label="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.ROLENAME')" width="200px">
           <template v-slot="scope">
             <!-- 新建或者编辑 -->
             <el-form-item v-if="inputVal == scope.row.id">
@@ -37,7 +37,7 @@
             >
           </template>
         </el-table-column>
-        <el-table-column prop="role_describe" :label="$t('COMMON.ROLEDESCRIPTION')">
+        <el-table-column prop="role_describe" :label="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.ROLEDESCRIPTION')">
           <template v-slot="scope">
             <!-- 新建或者编辑 -->
             <el-form-item v-if="inputVal == scope.row.id">
@@ -57,21 +57,21 @@
             >
           </template>
         </el-table-column>
-        <el-table-column prop="id" :label="$t('COMMON.PERMISSIONMANAGEMENT')">
+        <el-table-column prop="id" :label="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.PERMISSIONMANAGEMENT')">
           <template v-slot="scope">
             <el-button
               size="mini"
               type="indigo"
               @click="handle_quanxian(scope.row)"
               :disabled="!hasAuth('sys:role:assign')"
-              >{{ $t("COMMON.PERMISSIONMANAGEMENT")}}</el-button
+              >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.PERMISSIONMANAGEMENT")}}</el-button
             >
           </template>
         </el-table-column>
 
         <el-table-column
           prop="actions"
-          :label="$t('COMMON.OPERATION')"
+          :label="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.OPERATION')"
           align="center"
           width="210px"
         >
@@ -81,9 +81,9 @@
                 size="mini"
                 type="indigo"
                 @click="handle_sever(scope.row)"
-                >{{ $t("COMMON.SAVE")}}</el-button>
+                >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.SAVE")}}</el-button>
                 <el-button size="mini" type="default" class="butStyle" @click="handleCancel(scope.row)"
-                  >{{ $t("COMMON.CANCEL")}}</el-button>
+                  >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.CANCEL")}}</el-button>
             </el-form-item>
             <el-form-item v-else>
               <el-button
@@ -91,10 +91,10 @@
                 type="indigo"
                 :disabled="!hasAuth('sys:role:edit')"
                 @click="handle_launch(scope.row)"
-                >{{ $t("COMMON.EDIT")}}</el-button
+                >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.EDIT")}}</el-button
               >
               <el-popconfirm
-                :title="$t('COMMON.TITLE4')"
+                :title="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.TITLE4')"
                 @confirm="handle_del(scope.row)"
               >
                 <el-button
@@ -103,7 +103,7 @@
                   type="danger"
                   class="butStyle"
                   :disabled="!hasAuth('sys:role:del')"
-                >{{ $t("COMMON.DELETE")}}</el-button
+                >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.DELETE")}}</el-button
                 >
               </el-popconfirm>
             </el-form-item>
@@ -123,7 +123,7 @@
     </div>
     <div class="home">
       <el-drawer
-        :title="$t('COMMON.PERMISSIONEDIT')"
+        :title="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.PERMISSIONEDIT')"
         :visible.sync="drawer"
         direction="rtl"
         size="400px"
@@ -148,10 +148,10 @@
         </div>
         <div>
           <div class="footer" style="text-align: center;">
-            <el-button size="small " @click="closeDrawerClose"  class="buttStyle">取消</el-button>
+            <el-button size="small " @click="closeDrawerClose"  class="buttStyle">{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.CANCEL")}}</el-button>
             <el-button size="small" type="indigo" @click="jurisdiction"
 
-            >保存</el-button
+            >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.SAVE")}}</el-button
             >
           </div>
         </div>

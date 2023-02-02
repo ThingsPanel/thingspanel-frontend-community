@@ -32,27 +32,27 @@
               label-width="120px"
               :model="formObj"
             >
-              <el-form-item :label="$t('COMMON.SYSTEMTITLE')">
+              <el-form-item :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.SYSTEMTITLE')">
                 <el-input
                   style="width: 328px"
                   v-model="formObj.system_name"
-                  :placeholder="$t('COMMON.PLACEHOLDER16')"
+                  :placeholder="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.PLACEHOLDER1')"
                 ></el-input>
               </el-form-item>
-              <el-form-item :label="$t('COMMON.THEMECOLOR')">
+              <el-form-item :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.THEMECOLOR')">
                 <el-select
                   v-model="formObj.theme"
-                  :placeholder="$t('COMMON.PLACEHOLDER5')"
+                  :placeholder="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.PLACEHOLDER2')"
                   style="width: 328px"
                 >
-                  <el-option :label="$t('COMMON.BLUE')" value="blue"></el-option>
-                  <el-option :label="$t('COMMON.WHITE')" value="white"></el-option>
+                  <el-option :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.BLUE')" value="blue"></el-option>
+                  <el-option :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.WHITE')" value="white"></el-option>
                 </el-select>
               </el-form-item>
               <el-form-item size="large">
                 <div class="img-upload">
                   <div style="margin-right: 2.5rem">
-                    <p>{{$t('COMMON.HOMEANDBACKEND')}} logo</p>
+                    <p>{{$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.HOMEANDBACKEND')}} logo</p>
                     <div>
                       <img :src="url + formObj.logo_one" alt="" />
                     </div>
@@ -71,13 +71,13 @@
                           icon="el-icon-refresh"
                           size="mini"
                           
-                          >{{$t('COMMON.CHANGE')}} logo</el-button
+                          >{{$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.CHANGE')}} logo</el-button
                         >
                       </el-upload>
                     </p>
                   </div>
                   <div style="margin-right: 2.5rem">
-                    <p>{{$t('COMMON.LOADINGPAGE')}} logo</p>
+                    <p>{{$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.LOADINGPAGE')}} logo</p>
                     <div>
                       <img :src="url + formObj.logo_two" alt="" width="148px" />
                     </div>
@@ -95,13 +95,13 @@
                           type="primary"
                           icon="el-icon-refresh"
                           size="mini"
-                          >{{$t('COMMON.CHANGE')}} logo</el-button
+                          >{{$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.CHANGE')}} logo</el-button
                         >
                       </el-upload>
                     </p>
                   </div>
                   <div style="margin-right: 2.5rem">
-                    <p>{{$t('COMMON.WEBSITE')}} logo</p>
+                    <p>{{$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.WEBSITE')}} logo</p>
                     <div>
                       <img :src="url + formObj.logo_three" alt="" width="148px" />
                     </div>
@@ -119,13 +119,13 @@
                           type="primary"
                           icon="el-icon-refresh"
                           size="mini"
-                          >{{$t('COMMON.CHANGE')}} logo</el-button
+                          >{{$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.CHANGE')}} logo</el-button
                         >
                       </el-upload>
                     </p>
                   </div>
                   <div>
-                    <p>{{$t('COMMON.BACKGROUND')}}</p>
+                    <p>{{$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.BACKGROUND')}}</p>
                     <div>
                       <img :src="formObj.home_background ? url + formObj.home_background : '/media/bg/bg-12.png'"
                            alt="" width="148px" />
@@ -144,7 +144,7 @@
                             type="primary"
                             icon="el-icon-refresh"
                             size="mini"
-                        >{{$t('COMMON.CHANGE')}}</el-button
+                        >{{$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.CHANGE')}}</el-button
                         >
                       </el-upload>
                     </p>
@@ -154,7 +154,7 @@
             </el-form>
           </div>
           <div style="padding-left: 120px; margin-bottom: 20px;">
-            <el-button type="save" @click="submitData()">{{$t('COMMON.SAVE')}} </el-button>
+            <el-button type="save" @click="submitData()">{{$t('SYSTEM_MANAGEMENT.SAVE')}} </el-button>
           </div>
         </div>
         <!-- <div v-if="activeTab == 2">
@@ -181,15 +181,15 @@ export default {
     activeTab: "1",
     tabs: [
       {
-        name: "COMMON.GENERALSETTINGS",
+        name: "SYSTEM_MANAGEMENT.GENERALSETTINGS",
         value: "1",
       },
       {
-        name: "COMMON.NOTIFICATIONSETTINGS",
+        name: "SYSTEM_MANAGEMENT.NOTIFICATIONSETTINGS",
         value: "2",
       },
       {
-        name: "COMMON.SYSTEMAUTHORIZATION",
+        name: "SYSTEM_MANAGEMENT.SYSTEMAUTHORIZATION",
         value: "3",
       },
     ],
