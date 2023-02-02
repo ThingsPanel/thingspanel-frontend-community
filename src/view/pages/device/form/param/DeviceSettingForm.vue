@@ -3,14 +3,14 @@
   <el-dialog
       class="el-dark-dialog el-dark-input" :append-to-body="true"
       :visible.sync="dialogVisible"
-      title="编辑参数"
+      :title="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.EDITPARAMETER')"
       :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
-      width="800px">
+      width="820px">
 
-    <el-form ref="settingFormRef" class="inline-edit el-dark-input" :model="deviceData" :rules="formRule" label-width="130px">
+    <el-form ref="settingFormRef" class="inline-edit el-dark-input" :model="deviceData" :rules="formRule" label-width="180px">
 
-      <el-form-item label="传输协议：" prop="protocol">
-        <el-select size="medium" placeholder="请选择协议" v-model="deviceData.protocol" @change="handleChange"
+      <el-form-item :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.LABLE1')" prop="protocol">
+        <el-select size="medium" :placeholder="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER1')" v-model="deviceData.protocol" @change="handleChange"
                    :disabled="deviceData.hasChildDevice">
           <el-option v-for="option in protocolOptions" :key="option.id" :label="option.label" :value="option.value"></el-option>
         </el-select>
@@ -18,8 +18,8 @@
 
       <!-- 视频地址接入 -->
       <div v-if="deviceData.protocol == 'video_address'" style="margin-top: 10px;margin-bottom: 20px" >
-        <el-form-item label="视频地址接入：">
-          <el-input style="width: 100%;margin-right: 20px" size="medium" placeholder="请输入视频地址" v-model="deviceData.video_address"></el-input>
+        <el-form-item :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.LABLE2')">
+          <el-input style="width: 100%;margin-right: 20px" size="medium" :placeholder="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER2')" v-model="deviceData.video_address"></el-input>
         </el-form-item>
       </div>
 
@@ -28,15 +28,15 @@
       <div v-else>
         <!-- 视频设备id-->
 <!--        <div v-if="deviceData.protocol.startsWith('WVP_')" style="margin-top: 10px;margin-bottom: 20px" >-->
-<!--          <el-form-item label="视频设备编号 ：" prop="d_id">-->
-<!--            <el-input style="width: 100%;margin-right: 20px" size="medium" placeholder="请输入视频设备id" v-model="deviceData.d_id"></el-input>-->
+<!--          <el-form-item :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.LABLE8') prop="d_id">-->
+<!--            <el-input style="width: 100%;margin-right: 20px" size="medium" :placeholder="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER8')" v-model="deviceData.d_id"></el-input>-->
 <!--          </el-form-item>-->
 <!--        </div>-->
         <div v-if="deviceData.protocol.startsWith('WVP_')" style="margin-top: 10px;margin-bottom: 20px">
-          <el-form-item label="认证方式：" prop="authMode">
-            <el-select size="medium" placeholder="请选择认证方式" :disabled="true" v-model="deviceData.authMode"
+          <el-form-item :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.LABLE3')" prop="authMode">
+            <el-select size="medium" :placeholder="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER3')" :disabled="true" v-model="deviceData.authMode"
                        @change="handleAuthModeChange">
-              <el-option :label="'密码认证'" :value="'accessToken'"></el-option>
+              <el-option :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.OPTIONLABLE1')" :value="'accessToken'"></el-option>
             </el-select>
           </el-form-item>
 
@@ -44,8 +44,8 @@
 
 
         <div v-else>
-          <el-form-item label="认证方式：" prop="authMode">
-            <el-select size="medium" placeholder="请选择认证方式" v-model="deviceData.authMode"
+          <el-form-item :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.LABLE3')" prop="authMode">
+            <el-select size="medium" :placeholder="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER3')" v-model="deviceData.authMode"
                        @change="handleAuthModeChange">
               <el-option :label="'AccessToken接入'" :value="'accessToken'"></el-option>
               <el-option :label="'Basic'" :value="'mqttBasic'"></el-option>
@@ -57,17 +57,17 @@
             <el-input size="medium" v-model="deviceData.token"></el-input>
           </el-form-item>
 
-          <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="用户名：" prop="username">
+          <el-form-item v-if="deviceData.authMode=='mqttBasic'" :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.LABLE4')" prop="username">
             <el-input size="medium" v-model="deviceData.username"></el-input>
           </el-form-item>
 
-          <el-form-item v-if="deviceData.authMode=='mqttBasic'" label="密码：" prop="password">
+          <el-form-item v-if="deviceData.authMode=='mqttBasic'" :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.LABLE5')" prop="password">
             <el-input size="medium" v-model="deviceData.password"></el-input>
           </el-form-item>
         </div>
 
 
-        <el-form-item label="连接信息：">
+        <el-form-item :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.LABLE6')">
           <el-descriptions class="el-dark-descriptions" :column="1" border :colon="true">
             <el-descriptions-item v-for="(item, index) in connectInfo" :key="index"
                                   :contentStyle="getDescriptionContentStyle()"
@@ -76,7 +76,7 @@
 
               <el-link v-if="item.link" :href="item.value" target="_blank">{{item.value}}</el-link>
 
-              <el-tooltip v-else effect="dark" :content="item.tooltip ? item.tooltip : '点击复制内容'" placement="right-start">
+              <el-tooltip v-else effect="dark" :content="item.tooltip ? item.tooltip : $t('DEVICE_MANAGEMENT.EDIT_PARAMETER.COPY')" placement="right-start">
                 <el-input ref="payloadInput" v-if="item.payload"  v-model="item.value" type="textarea"
                           v-clipboard:copy="item.value"
                           :autosize="{ maxRows: 6 }" readonly @focus="handleCopy(item)"
@@ -92,14 +92,14 @@
 
         <div style="margin: 10px 0;"></div>
 
-        <el-form-item v-if="!deviceData.protocol.startsWith('WVP_')" label="数据处理脚本：">
+        <el-form-item v-if="!deviceData.protocol.startsWith('WVP_')" :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.LABLE7')">
           <el-select size="medium" placeholder="" filterable
                      popper-class="exchange-agreement" :popper-append-to-body="false"
                      v-model="deviceData.dataExchangeAgreement"
                      @change="handleExchangeAgreementChange">
             <el-option-group >
-              <el-option :label="'默认'" :value="''"></el-option>
-              <el-option :label="'自定义协议'" :value="'custom'"></el-option>
+              <el-option :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.OPTIONLABLE2')" :value="''"></el-option>
+              <el-option :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.OPTIONLABLE3')" :value="'custom'"></el-option>
             </el-option-group>
 
             <el-option-group >
@@ -120,8 +120,8 @@
       </div>
 
         <div style="display: flex;justify-content: center">
-          <el-button type="cancel" @click="onCancel">取消</el-button>
-          <el-button type="save" @click="onSubmit">保存</el-button>
+          <el-button type="cancel" @click="onCancel">{{ $t('DEVICE_MANAGEMENT.EDIT_PARAMETER.CANCEL') }}</el-button>
+          <el-button type="save" @click="onSubmit">{{ $t('DEVICE_MANAGEMENT.EDIT_PARAMETER.SAVE') }}</el-button>
         </div>
 
     </el-form>

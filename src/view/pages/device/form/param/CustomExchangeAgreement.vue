@@ -1,35 +1,35 @@
 <template>
-  <el-dialog width="800px" class="el-dark-dialog el-dark-input" title="自定义数据解析脚本"
+  <el-dialog width="800px" class="el-dark-dialog el-dark-input" :title="$t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.TITLE')"
              :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
              :visible.sync="dialogVisible" :append-to-body="true">
     <el-form ref="customForm" :model="formData" :rules="formRule">
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="公司名称" prop="companyName">
+          <el-form-item :label="$t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.COMPANYNAME')" prop="companyName">
             <el-input v-model="formData.company"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
-          <el-form-item label="产品名称" prop="productName">
+          <el-form-item :label="$t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.PRODUCTNAME')" prop="productName">
             <el-input v-model="formData.product_name"></el-input>
           </el-form-item>
         </el-col>
       </el-row>
 
-      <p class="code-editor-label">上行解析脚本</p>
+      <p class="code-editor-label">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.TEXT1') }}</p>
       <CodeEditor class="dark-code-editor" key="upside" style="width: 100%;height: 260px;overflow-y: auto"  min_height="260px"
                   :copy_code="true" :hide_header="false" theme="dark" :wrap_code="true"
                   v-model="formData.script_content_a"
       ></CodeEditor>
 
-      <p class="code-editor-label">下行解析脚本</p>
+      <p class="code-editor-label">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.TEXT2') }}</p>
       <CodeEditor class="dark-code-editor" key="down" style="width: 100%;height: 260px" min_height="260px"
                   :copy_code="true" :hide_header="false" theme="dark" :wrap_code="true"
                   v-model="formData.script_content_b"></CodeEditor>
 
       <div style="margin-top: 10px;display: flex;justify-content: center">
-        <el-button type="cancel" style="color:#000" @click="closeDialog">取消</el-button>
-        <el-button type="save" @click="onSubmit">保存</el-button>
+        <el-button type="cancel" style="color:#000" @click="closeDialog">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.CANCEL') }}</el-button>
+        <el-button type="save" @click="onSubmit">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.SAVE') }}</el-button>
       </div>
     </el-form>
 

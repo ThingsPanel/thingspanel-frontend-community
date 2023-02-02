@@ -25,7 +25,7 @@
 <script>
 import VideoPlayer from "@/components/common/VideoPlayer.vue";
 import {message_error} from "@/utils/helpers";
-
+import i18n from "@/core/plugins/vue-i18n.js"
 const required = true;
 export default {
   name: "VideoPlayer1",
@@ -45,8 +45,8 @@ export default {
         src: ""
       },
       formRule: {
-        "name": [{required, message: "请输入视频名称"}],
-        "src": [{required, message: "请输入视频地址"}]
+        "name": [{required, message: i18n.t('PLUGIN.CHART_INFO_TAB.TAB_TITLE24')}],
+        "src": [{required, message: i18n.t('PLUGIN.CHART_INFO_TAB.TAB_TITLE25')}]
       },
       dialogVisible: false
     }
