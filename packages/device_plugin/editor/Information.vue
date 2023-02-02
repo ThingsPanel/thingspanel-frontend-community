@@ -5,27 +5,27 @@
         <el-row :gutter="80">
 
           <el-col :span="16" style="padding-top:10px">
-            <el-form-item label="插件名称：" label-width="80"  prop="pluginName">
+            <el-form-item :label="$t('PLUGIN.DEVICE_INFO_TAB.LABLE1')" label-width="100" prop="pluginName">
               <el-input v-model="formData['pluginName']" ></el-input>
             </el-form-item>
-            <el-form-item label="插件分类：" label-width="80"  prop="pluginCategory">
+            <el-form-item :label="$t('PLUGIN.DEVICE_INFO_TAB.LABLE2')" label-width="100" prop="pluginCategory">
               <el-select style="width: 100%" v-model="formData['pluginCategory']">
                 <el-option  v-for="(item, index) in pluginCategory" :key="index" :label="item.label" :value="item.value"></el-option>
               </el-select>
             </el-form-item>
-            <el-form-item label="作者名称：" label-width="80" >
+            <el-form-item :label="$t('PLUGIN.DEVICE_INFO_TAB.LABLE3')" label-width="100" >
               <el-input v-model="formData['author']"></el-input>
             </el-form-item>
-            <el-form-item label="插件版本：" label-width="80" >
+            <el-form-item :label="$t('PLUGIN.DEVICE_INFO_TAB.LABLE4')" label-width="100" >
               <el-input v-model="formData['version']"></el-input>
             </el-form-item>
-            <el-form-item label="插件说明：" label-width="80" >
+            <el-form-item :label="$t('PLUGIN.DEVICE_INFO_TAB.LABLE5')" label-width="100" >
               <el-input type="textarea" :rows="2" v-model="formData['description']"></el-input>
             </el-form-item>
           </el-col>
 
           <el-col :span="8" >
-            <el-form-item label="插件封面（474X246）：" label-width="auto" label-position="top">
+            <el-form-item :label="$t('PLUGIN.DEVICE_INFO_TAB.PLUNGIN_COVER')" label-width="auto" label-position="top">
               <div >
                 <el-upload
                     action="#"
@@ -36,7 +36,7 @@
 <!--                  <el-card class="upload-card">-->
                     <img class="upload-img" width="100%" v-show="thumbImg!=''" :src="thumbImg" alt="">
 <!--                  </el-card>-->
-                  <el-button type="primary" style="margin-top:20px">选择封面</el-button>
+                  <el-button type="primary" style="margin-top:20px">{{ $t('PLUGIN.DEVICE_INFO_TAB.CHOOSE_COVER') }}</el-button>
                 </el-upload>
               </div>
 
@@ -57,7 +57,7 @@
 </template>
 
 <script>
-
+import i18n from "@/core/plugins/vue-i18n.js"
 export default {
   name: "Information",
   props: {
@@ -76,10 +76,10 @@ export default {
       // 校验表单
       formRules: {
         pluginName: [
-          {required: true, message: '请输入插件名称', trigger: 'blur'}
+          {required: true, message: i18n.t('PLUGIN.DEVICE_INFO_TAB.VALIDATE'), trigger: 'blur'}
         ],
         pluginCategory: [
-          {required: true, message: '请选择插件分类', trigger: 'blur'}
+          {required: true, message: i18n.t('PLUGIN.DEVICE_INFO_TAB.VALIDATE2'), trigger: 'blur'}
         ],
 
       },
@@ -133,7 +133,7 @@ export default {
   margin-bottom: 10px;
 }
 ::v-deep .el-form-item__label {
-  width: 120px;
+  width: 170px;
 }
 ::v-deep .el-input__inner {
   width: 100%;

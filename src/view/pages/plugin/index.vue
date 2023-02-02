@@ -45,15 +45,15 @@ export default {
       activeTab: "devicePlugin",
       tabs: [
         {
-          name: "COMMON.TITLE32",
+          name: "PLUGIN.TAB1",
           value: "devicePlugin",
         },
         {
-          name: "COMMON.TITLE33",
+          name: "PLUGIN.TAB2",
           value: "protocolPlugin",
         },
         {
-          name: "COMMON.TITLE34",
+          name: "PLUGIN.TAB3",
           value: "deviceEditor",
         }
       ]

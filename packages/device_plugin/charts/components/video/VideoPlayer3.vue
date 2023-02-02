@@ -2,21 +2,21 @@
   <div class="common-video-container">
 <!--    <video-record  :src="optionData.src"/>-->
     <img class="thumbnail" :src="require('@/assets/images/video_control/player3.png')" alt="">
-    <el-dialog class="el-dark-dialog" title="绑定" width="500px"
+    <el-dialog class="el-dark-dialog" :title="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE22')" width="500px"
                :visible.sync="dialogVisible" :append-to-body="true" :close-on-click-modal="false"
                :before-close="handleClose">
 
       <el-form class="el-dark-form" :model="optionData" :rules="formRule">
 
-        <el-form-item label="名称" prop="name">
+        <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE3')" prop="name">
           <el-input v-model="optionData.name"></el-input>
         </el-form-item>
 
       </el-form>
 
       <span slot="footer" class="dialog-footer">
-          <el-button @click="handleClose">取 消</el-button>
-          <el-button type="primary" @click="handleSubmit">确 定</el-button>
+          <el-button @click="handleClose">{{ $t('PLUGIN.CHART_INFO_TAB.CANCEL') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">{{ $t('PLUGIN.CHART_INFO_TAB.CONFIRM') }}</el-button>
         </span>
     </el-dialog>
   </div>
@@ -25,7 +25,7 @@
 <script>
 import VideoRecord from "@/components/common/VideoRecord.vue";
 import {message_error} from "@/utils/helpers";
-
+import i18n from "@/core/plugins/vue-i18n.js"
 const required = true;
 export default {
   name: "CommonVideoRecord",
@@ -47,8 +47,8 @@ export default {
         src: ""
       },
       formRule: {
-        "name": [{required, message: "请输入视频名称"}],
-        "src": [{required, message: "请输入视频地址"}]
+        "name": [{required, message: i18n.t('PLUGIN.CHART_INFO_TAB.TAB_TITLE24')}],
+        "src": [{required, message: i18n.t('PLUGIN.CHART_INFO_TAB.TAB_TITLE25')}]
       },
       dialogVisible: false
     }

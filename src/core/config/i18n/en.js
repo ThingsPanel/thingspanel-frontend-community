@@ -600,11 +600,7 @@ export const locale = {
       DATA_SWITCHING:"Data forwarding",
     }
   },
-  PLUGIN: {
-    CUSTOM_DEVICE_PLUGIN: "Custom Device Plugin",
-    DEVICE_INFO: "Device Info"
-
-  },
+  
   /**
    * 首页
    */
@@ -996,11 +992,219 @@ export const locale = {
     }
   },
   /**
-   * 插件管理
+   * 应用管理
    */
   PLUGIN: {
-    CUSTOM_DEVICE_PLUGIN: "",
-    DEVICE_INFO: ""
+    TAB1: "Device Plugin",
+    TAB2: "Protocol Plugin",
+    TAB3: "Device Editor",
+    CUSTOM_DEVICE_PLUGIN: "Custom device plugin",
+    DEVICE_INFO: "Device info",
+    MATTER_MODEL: "Matter model",
+    CHART: "Chart",
+    FUNCTION: "Function",
+    RELEASE: "Release",
+    TXT: "Fill in plug-in information",
+    TXT1: "Select standard object model or customize",
+    TXT2: "Binding chart",
+    TXT3: "Function",
+    TXT4: "Publish to store",
+    CLOSE:"close",
+    PREV:"prev",
+    NEXT:"next",
+    /**
+   * 应用管理——设备插件
+   */
+    TAB1_CONTENT: {
+      PLACEHOLDER: "Please enter a plug-in name",
+      PLACEHOLDER1:"Please enter the content",
+      PLACEHOLDER2: "Copy to Clipboard",
+      SEARCH: "Search",
+      CLASSIFY: "Category",
+      VERSION: "Ver",
+      AUTHOR: "Author",
+      SCORE: "Rate",
+      EDIT: "Edit",
+      INSTALLING_TITLE: "Installing...",
+      INSTALL: "Quick install",
+      EXPORT: "Export",
+      UNINSTALL: "Uninstall",
+      CANCEL:"cancel",
+      CONFIRM:"submit",
+      TITLE: "Export JSON",
+      TIP_TEXT:"Uninstall the plug-in do you want to continue?",
+      TIP: "Tip",
+    },
+    /**
+     * 应用管理——接入协议插件
+     */
+    TAB2_CONTENT: {
+      TITLE:"Access protocol plug-in",
+      BTN:"Register plug-in",
+      NAME:"name",
+      DEVICETYPE:"Device type",
+      PROTOCOLTYPE:"Protocol Type",
+      CONNECTADDRESS: "Connect Address",
+      HTTPADDRESS:"Http Address",
+      LABLE:"Plug-in topic prefix",
+      AUTHOR:"Author",
+      DESCRIBE:"Describe",
+      TITLE4: "Are you sure you want to delete?",
+      DELETE:"Delete",
+      OPERATION: "Operation",
+      NEWWORK:"network",
+      DEVICE:"device",
+      CONNECTNUMBER:"Connect number：",
+      ADDCONFIG:"Add config",
+      PLACEHOLDER1:"Please enter a config name",
+      PLACEHOLDER2:"Please enter a config value",
+      PLACEHOLDER3:"Please input name",
+      PLACEHOLDER4:"Please select device type",
+      PLACEHOLDER5:"Please enter protocol type",
+      PLACEHOLDER6:"Please enter connect address",
+      PLACEHOLDER7:"Please enter http address",
+      PLACEHOLDER8:"Please enter plug-in topic prefix",
+      CANCEL:"Cancel",
+      CONFIRM:"Submit",
+    },
+    /**
+     * 应用管理——插件编辑器
+     */
+    TAB3_CONTENT: {
+      TITLE:"Import JSON",
+      PLACEHOLDER1:"Custom plug-ins",
+      PLACEHOLDER2:"Address personalized device requirements",
+      PLACEHOLDER3: "Please enter the content",
+      IMPOTPLUGINS:"Importing Plug-ins",
+      IMPORTUSE:"Import for use",
+      JSONTEST:"Paste the plug-in's JSON text here",
+      SELECTTHEFILE:"Select the file",
+      CANCEL:"Cancel",
+      THEIMPORT:"The import",
+    },
+    /**
+   * 应用管理——设备插件——设备信息
+   */
+    DEVICE_INFO_TAB: {
+      LABLE1: "Plug-in name：",
+      LABLE2: "Plug-in classification：",
+      LABLE3: "Author name：",
+      LABLE4: "Plug-in version：",
+      LABLE5: "Plug-in description：",
+      VALIDATE: "Please enter a plug-in name",
+      VALIDATE2: "Please select plug-in classification",
+      PLUNGIN_COVER: "Plug-in cover（474X246）：",
+      CHOOSE_COVER: "Choose cover",
+    },
+    /**
+   * 应用管理——设备插件——物模型
+   */
+    MATTER_MODEL_INFO_TAB: {
+      RADIO_TAB1: "Standard model",
+      RADIO_TAB2: "Customization model",
+      RADIO_TAB3: "properties",
+      RADIO_TAB4: "services",
+      RADIO_TAB5: "events",
+      RADIO_TAB6: "simple",
+      RADIO_TAB7: "advanced",
+      RADIO_TAB8: "json",
+      LABLE1: "Choose model",
+      LABLE2: "Choose classification",
+      BTN: "Can't find the plug-in ? To create",
+      ADD: "Add",
+      EDIT: "Edit",
+      DELETE: "Delete",
+      CANCEL: "Cancel",
+      SAVE: "Save",
+      CONFIRM:"Submit",
+    },
+    /**
+   * 应用管理——设备插件——图表
+   */
+    CHART_INFO_TAB: {
+      DASHBOARD:"dashboard",
+      HISTORY:"history",
+      CONTROL:"control",
+      VIDEO:"video",
+      REPORT:"report",
+      OTHER:"other",
+      CUSTOM:"custom",
+      TEXT:"Chart bound",
+      TEXT1:"Binding chart",
+      TIP:"Click to edit the chart",
+      TAB_TITLE:"Binding data*",
+      TAB_TITLE2: "Interface configuration",
+      TAB_TITLE3: "Name",
+      TAB_TITLE4: "Select data",
+      TAB_TITLE5: "Chart title：",
+      TAB_TITLE6: "Text size：",
+      TAB_TITLE7: "Back ground：",
+      TAB_TITLE8: "Please select",
+      TAB_TITLE9: "Condition：",
+      TAB_TITLE10: "Value：",
+      TAB_TITLE11: "Info：",
+      TAB_TITLE12: "Offline time threshold",
+      TAB_TITLE13: "Please enter name",
+      TAB_TITLE14: "Please enter offline time threshold",
+      TAB_TITLE15: "Device state",
+      TAB_TITLE16: "Color",
+      TAB_TITLE17: "On：",
+      TAB_TITLE18: "Off：",
+      TAB_TITLE19: "Max：",
+      TAB_TITLE20: "Step：",
+      TAB_TITLE21: "Is disabled",
+      TAB_TITLE22: "Binding",
+      TAB_TITLE23: "Src",
+      TAB_TITLE24: "Please enter video name",
+      TAB_TITLE25: "Please enter video address",
+      TAB_TITLE26: "Please enter assembly name",
+      CANCEL: "Cancel",
+      CONFIRM:"Submit",
+      ADD: "Add",
+      DELETE: "Delete",
+    },
+    /**
+   * 应用管理——设备插件——图表——自定义仪表盘弹框
+   */
+    CUSTOM_DASHBOARD: {
+      TITLE: "Custom Dashboard",
+      TAB_PANE_LABEL1:"Configuration Chart",
+      TAB_PANE_LABEL2:"Analog Data",
+      TAB_PANE_LABEL3:"Style Settings",
+      TXT: "Select a template",
+      PLACEHOLDER1: "Please Select a chart template",
+      PLACEHOLDER2: "Please enter the content",
+      PLACEHOLDER3: "Please enter the code",
+      CHECKBOX: "Open random data",
+      LABLE1:"Execution interval",
+      LABLE2:"Current value text size",
+      LABLE3:"Current value text color",
+      LABLE4:"Current value text suffix",
+      LABLE5:"Vertical axis position of current value",
+      LABLE6:"Show pointer",
+      LABLE7:"Pointer color",
+      LABLE8:"Show progress bar",
+      LABLE9:"Progress bar width",
+      LABLE10:"Show grid lines",
+      LABLE11:"Axis width",
+      LABLE12:"Show labels",
+      LABLE13:"Labels color",
+      LABLE14:"Label text size",
+      LABLE15:"Distance between label and tick mark",
+      LABLE16:"Show separator",
+      LABLE17:"Separator line",
+      LABLE18:"Show Display scale",
+      LABLE19:"Show center",
+      LABLE20:"preview",
+      CANCEL: "Cancel",
+      CONFIRM:"Submit",
+    },
+    /**
+    * 应用管理——设备插件——发布
+    */
+    RELEASE_INFO_TAB: {
+      TEXT: "Do you agree to publish to the App Store",
+    },
   },
   /**
    * 系统管理

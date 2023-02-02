@@ -7,8 +7,8 @@
             <el-card class="box-card" @click.native="customPlugin">
               <div class="text-item">
                 <i class="el-icon-edit-outline icon"></i>
-                <p>{{ $t('COMMON.PLACEHOLDER53') }}</p>
-                <p class="tips">{{ $t('COMMON.PLACEHOLDER54') }}</p>
+                <p>{{ $t('PLUGIN.TAB3_CONTENT.PLACEHOLDER1') }}</p>
+                <p class="tips">{{ $t('PLUGIN.TAB3_CONTENT.PLACEHOLDER2') }}</p>
               </div>
             </el-card>
           </a>
@@ -18,8 +18,8 @@
             <el-card class="box-card"  @click.native="showImportPlugin">
               <div class="text-item">
                 <i class="el-icon-folder-add icon"></i>
-                <p>{{ $t('COMMON.IMPOTPLUGINS') }}</p>
-                <p class="tips">{{ $t('COMMON.IMPORTUSE') }}</p>
+                <p>{{ $t('PLUGIN.TAB3_CONTENT.IMPOTPLUGINS') }}</p>
+                <p class="tips">{{ $t('PLUGIN.TAB3_CONTENT.IMPORTUSE') }}</p>
               </div>
             </el-card>
           </a>
@@ -34,23 +34,23 @@
                         @publish="publish"></DevicePluginEditor>
 
     <!--    导入JSON-->
-    <el-dialog class="el-dark-dialog el-table-transparent" title="导入JSON" :visible.sync="importDialogVisible" width="30%">
+    <el-dialog class="el-dark-dialog el-table-transparent" :title=" $t('PLUGIN.TAB3_CONTENT.TITLE')" :visible.sync="importDialogVisible" width="30%">
       <el-row >
         <div style="margin-bottom: 10px;display: flex;justify-content: space-between">
-          <span style="padding-top: 10px;">{{ $t('COMMON.JSONTEST') }}</span>
+          <span style="padding-top: 10px;">{{ $t('PLUGIN.TAB3_CONTENT.JSONTEST') }}</span>
           <el-upload class="upload-demo" action="#" :limit="1" >
-            <el-button type="primary" class="el-button--indigo">{{ $t('COMMON.SELECTTHEFILE') }}</el-button>
+            <el-button type="primary" class="el-button--indigo">{{ $t('PLUGIN.TAB3_CONTENT.SELECTTHEFILE') }}</el-button>
           </el-upload>
 <!--          <el-button type="primary" class="el-button&#45;&#45;indigo" >选择文件</el-button>-->
         </div>
       </el-row>
       <el-row>
-        <el-input class="el-dark-input" type="textarea" :rows="24" :placeholder="$t('COMMON.PLACEHOLDER51')" v-model="importPluginJson"></el-input>
+        <el-input class="el-dark-input" type="textarea" :rows="24" :placeholder="$t('PLUGIN.TAB3_CONTENT.PLACEHOLDER3')" v-model="importPluginJson"></el-input>
       </el-row>
 
       <span slot="footer" class="dialog-footer">
-        <el-button type="cancel" @click="importDialogVisible = false">{{ $t('COMMON.CANCEL') }}</el-button>
-        <el-button type="export" @click="handleImport()">{{ $t('COMMON.THEIMPORT') }}</el-button>
+        <el-button type="cancel" @click="importDialogVisible = false">{{ $t('PLUGIN.TAB3_CONTENT.CANCEL') }}</el-button>
+        <el-button type="export" @click="handleImport()">{{ $t('PLUGIN.TAB3_CONTENT.THEIMPORT') }}</el-button>
       </span>
     </el-dialog>
   </div>

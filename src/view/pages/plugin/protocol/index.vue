@@ -2,11 +2,11 @@
   <div class="rounded card p-4">
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
       <el-col :span="12">
-        <TableTitle>接入协议插件</TableTitle>
+        <TableTitle>{{ $t('PLUGIN.TAB2_CONTENT.TITLE') }}</TableTitle>
       </el-col>
 
       <el-col :span="12" class="px-2 text-right">
-        <el-button size="medium" type="indigo" @click="handleShowRegister">注册插件</el-button>
+        <el-button size="medium" type="indigo" @click="handleShowRegister">{{ $t('PLUGIN.TAB2_CONTENT.BTN') }}</el-button>
       </el-col>
     </el-row>
 
@@ -15,44 +15,44 @@
       <el-table :data="params.data" v-loading="loading">
 
         <!-- 名称 -->
-        <el-table-column label="名称" prop="name" align="left"></el-table-column>
+        <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.NAME')" prop="name" align="left"></el-table-column>
 
         <!-- 设备类型 -->
-        <el-table-column label="设备类型" prop="device_type" align="left">
+        <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.DEVICETYPE')" prop="device_type" align="left">
           <template v-slot="scope">
-            <el-tag v-if="scope.row.device_type=='1'" type="success">设备</el-tag>
-            <el-tag v-else-if="scope.row.device_type=='2'">网关</el-tag>
+            <el-tag v-if="scope.row.device_type=='1'" type="success">{{ $t('PLUGIN.TAB2_CONTENT.DEVICE') }}</el-tag>
+            <el-tag v-else-if="scope.row.device_type=='2'">{{ $t('PLUGIN.TAB2_CONTENT.NEWWORK') }}</el-tag>
           </template>
         </el-table-column>
 
         <!-- 协议类型 -->
-        <el-table-column label="协议类型" prop="protocol_type" align="left"></el-table-column>
+        <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.PROTOCOLTYPE')" prop="protocol_type" align="left"></el-table-column>
 
         <!-- 接入地址 -->
-        <el-table-column label="接入地址" prop="access_address" align="left"></el-table-column>
+        <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.CONNECTADDRESS')" prop="access_address" align="left"></el-table-column>
 
         <!-- HTTP服务器地址 -->
-        <el-table-column label="HTTP服务器地址" prop="http_address" align="left"></el-table-column>
+        <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.HTTPADDRESS')" prop="http_address" align="left"></el-table-column>
 
         <!--  插件订阅主题前缀-->
-        <el-table-column label="插件订阅主题前缀" prop="sub_topic_prefix" align="left"></el-table-column>
+        <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.LABLE')" prop="sub_topic_prefix" align="left"></el-table-column>
 
         <!-- 作者-->
-        <el-table-column label="作者" prop="author" align="left"></el-table-column>
+        <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.AUTHOR')" prop="author" align="left"></el-table-column>
 
         <!-- 描述-->
-        <el-table-column label="描述" prop="description" align="left">
+        <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.DESCRIBE')" prop="description" align="left">
           <template v-slot="scope">
             {{ scope.row.description ? scope.row.description : "--"}}
           </template>
         </el-table-column>
 
         <!-- 操作列-->
-        <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="120">
+        <el-table-column align="left" :label="$t('PLUGIN.TAB2_CONTENT.OPERATION')" width="120">
           <template v-slot="scope">
             <div style="text-align: left">
-              <el-popconfirm title="确定要删除吗？" @confirm="handleDelete(scope.row)">
-                <el-button slot="reference" size="mini" type="danger" :disabled="!hasAuth('plugin:protocol:del')">{{ $t('COMMON.DELETE') }}</el-button>
+              <el-popconfirm :title="$t('PLUGIN.TAB2_CONTENT.TITLE4')" @confirm="handleDelete(scope.row)">
+                <el-button slot="reference" size="mini" type="danger" :disabled="!hasAuth('plugin:protocol:del')">{{ $t('PLUGIN.TAB2_CONTENT.DELETE') }}</el-button>
               </el-popconfirm>
             </div>
           </template>

@@ -2,14 +2,14 @@
 <template>
   <div class="tsl-container">
     <el-radio-group class="radio-classify" v-model="radioClassify">
-      <el-radio-button label="standard">标准物模型</el-radio-button>
-      <el-radio-button label="custom">自定义物模型</el-radio-button>
+      <el-radio-button label="standard">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.RADIO_TAB1') }}</el-radio-button>
+      <el-radio-button label="custom">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.RADIO_TAB2') }}</el-radio-button>
     </el-radio-group>
 
     <!--    标准物模型 start-->
     <div class="div-select" v-if="radioClassify=='standard'">
       <el-form>
-        <el-form-item label="选择物模型">
+        <el-form-item :label="$t('PLUGIN.MATTER_MODEL_INFO_TAB.LABLE1')">
           <el-cascader v-model="tslValue" separator=" -> "
                        :options="tslOptions" filterable
                        @change="handleChange"></el-cascader>
@@ -22,7 +22,7 @@
     <!-- 自定义物模性 start-->
     <div class="div-select category" v-else>
       <el-form>
-        <el-form-item label="选择分类">
+        <el-form-item :label="$t('PLUGIN.MATTER_MODEL_INFO_TAB.LABLE2')">
           <el-select v-model="categoryValue">
             <el-option v-for="(option, index) in tslOptions" :key="index" :value="option.value" :label="option.label"></el-option>
           </el-select>

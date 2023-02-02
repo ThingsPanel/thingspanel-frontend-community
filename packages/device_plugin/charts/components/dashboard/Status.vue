@@ -6,17 +6,17 @@
         <i :class="labelIcon"></i>{{ label }}
       </p>
     </div>
-    <el-dialog class="dark-dialog" title="绑定图表" width="700px" :visible.sync="dialogVisible" :append-to-body="true" :close-on-click-modal="false">
+    <el-dialog class="dark-dialog" :title="$t('PLUGIN.CHART_INFO_TAB.TEXT1')" width="700px" :visible.sync="dialogVisible" :append-to-body="true" :close-on-click-modal="false">
       <el-tabs v-model="tabsValue">
-        <el-tab-pane style="height: 300px"  label="绑定数据*" name="map">
+        <el-tab-pane style="height: 300px" :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE')" name="map">
           <div class="add-chart-map-container">
             <el-form :label-position="'left'" label-width="100px" style="margin: 20px">
-              <el-form-item label="名称">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE3')">
                 <el-input v-model="mapData.name"></el-input>
               </el-form-item>
-              <el-form-item label="选择数据源">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE4')">
                 <!-- 从json中解析出物模型的所有属性 -->
-                <el-select style="width: 100%; margin-bottom: 10px;" v-model="mapData.srcValue">
+                <el-select style="width: 100%; margin-bottom: 10px;" :placeholder="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE8')" v-model="mapData.srcValue">
                   <el-option v-for="(option, index) in dataSrc" :key="index" :value="option.name" >
                     {{option.title + '(' + option.name + ')'}}
                   </el-option>
@@ -25,22 +25,22 @@
 
               <el-row :gutter="20" style="margin-bottom: 10px" v-for="(condition, index) in mapData.conditions" :key="index">
                 <el-col :span="7" style="display: inline-flex">
-                  <span style="width: 80px;text-align: center;margin-top:6px">条件：</span>
-                  <el-select v-model="condition.operator">
+                  <span style="width: 100px;text-align: center;margin-top:6px">{{ $t('PLUGIN.CHART_INFO_TAB.TAB_TITLE9') }}</span>
+                  <el-select :placeholder="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE8')" v-model="condition.operator">
                     <el-option v-for="(operator, index) in operators" :key="index" :label="operator" :value="operator"></el-option>
                   </el-select>
                 </el-col>
                 <el-col :span="6" style="display: inline-flex">
-                  <span style="width: 60px;text-align: center;margin-top:6px">值：</span>
+                  <span style="width: 80px;text-align: center;margin-top:6px">{{ $t('PLUGIN.CHART_INFO_TAB.TAB_TITLE10') }}</span>
                   <el-input v-model="condition.value"></el-input>
                 </el-col>
                 <el-col :span="8" style="display: inline-flex">
-                  <span style="width: 60px;text-align: center;margin-top:6px">信息：</span>
+                  <span style="width: 60px;text-align: center;margin-top:6px">{{ $t('PLUGIN.CHART_INFO_TAB.TAB_TITLE11') }}</span>
                   <el-input v-model="condition.label"></el-input>
                 </el-col>
                 <el-col :span="3" style="display: inline-flex">
-                  <el-button v-if="condition.addEnable" type="primary" @click="handleAddCondition">添加</el-button>
-                  <el-button v-if="condition.delEnable" type="danger" @click="handleDelCondition(condition)">删除</el-button>
+                  <el-button v-if="condition.addEnable" type="primary" @click="handleAddCondition">{{ $t('PLUGIN.CHART_INFO_TAB.ADD') }}</el-button>
+                  <el-button v-if="condition.delEnable" type="danger" @click="handleDelCondition(condition)">{{ $t('PLUGIN.CHART_INFO_TAB.DELETE') }}</el-button>
                 </el-col>
               </el-row>
 
@@ -48,13 +48,13 @@
           </div>
         </el-tab-pane>
 
-        <el-tab-pane style="height: 300px" label="界面配置" name="ui">
+        <el-tab-pane style="height: 300px" :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE2')" name="ui">
           <div class="add-chart-map-container">
             <el-form :label-position="'left'" label-width="100px">
-              <el-form-item label="标题：">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE5')">
                 <el-input v-model="mapData.title"></el-input>
               </el-form-item>
-              <el-form-item label="文本大小：">
+              <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE6')">
               </el-form-item>
             </el-form>
           </div>
@@ -62,8 +62,8 @@
 
       </el-tabs>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submit">确 定</el-button>
+        <el-button @click="dialogVisible = false">{{ $t('PLUGIN.CHART_INFO_TAB.CANCEL') }}</el-button>
+        <el-button type="primary" @click="submit">{{ $t('PLUGIN.CHART_INFO_TAB.CONFIRM') }}</el-button>
       </span>
     </el-dialog>
   </div>

@@ -4,14 +4,14 @@
       <el-row>
         <div style="width: 100%;justify-content: space-between;display: flex">
           <el-radio-group v-model="chartCategory">
-            <el-radio-button label="dashboard">仪表盘</el-radio-button>
-            <el-radio-button label="history">历史数据</el-radio-button>
-            <el-radio-button label="control">控制组件</el-radio-button>
-            <el-radio-button label="video">视频</el-radio-button>
-            <el-radio-button label="report">报表</el-radio-button>
-            <el-radio-button label="other">其他</el-radio-button>
+            <el-radio-button label="dashboard">{{ $t('PLUGIN.CHART_INFO_TAB.DASHBOARD') }}</el-radio-button>
+            <el-radio-button label="history">{{ $t('PLUGIN.CHART_INFO_TAB.HISTORY') }}</el-radio-button>
+            <el-radio-button label="control">{{ $t('PLUGIN.CHART_INFO_TAB.CONTROL') }}</el-radio-button>
+            <el-radio-button label="video">{{ $t('PLUGIN.CHART_INFO_TAB.VIDEO') }}</el-radio-button>
+            <el-radio-button label="report">{{ $t('PLUGIN.CHART_INFO_TAB.REPORT') }}</el-radio-button>
+            <el-radio-button label="other">{{ $t('PLUGIN.CHART_INFO_TAB.OTHER') }}</el-radio-button>
           </el-radio-group>
-          <el-button style="margin-right: 70px" type="primary" class="btn-order" @click="handleCustom">自定义</el-button>
+          <el-button style="margin-right: 70px" type="primary" class="btn-order" @click="handleCustom">{{ $t('PLUGIN.CHART_INFO_TAB.CUSTOM') }}</el-button>
         </div>
       </el-row>
 
@@ -35,7 +35,7 @@
 
       <report-panel v-else-if="chartCategory=='report'" ref="report" :charts="options.report"></report-panel>
 
-      <other-panel v-else-if="chartCategory=='other'" type="other" ref="other" :charts="options.other"></other-panel>
+    
     </div>
 
     <!-- 已绑定图表 -->
@@ -43,8 +43,8 @@
       <el-row>
         <el-col>
           <div class="infinite-list-top" style="height: 40px;margin:8px">
-            已绑定图表
-            <el-tooltip class="infinite-list-top-info" effect="dark" content="点击可编辑图表" placement="right-start">
+            {{ $t('PLUGIN.CHART_INFO_TAB.TEXT') }}
+            <el-tooltip class="infinite-list-top-info" effect="dark" :content="$t('PLUGIN.CHART_INFO_TAB.TIP')" placement="right-start">
               <i class="el-icon-info" style="font-size: 18px"></i>
             </el-tooltip>
           </div>

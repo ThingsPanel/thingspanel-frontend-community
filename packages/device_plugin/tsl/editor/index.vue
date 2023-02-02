@@ -3,21 +3,21 @@
     <el-form :inline="false">
       <el-form-item style="text-align: left">
         <el-radio-group v-model="tslType">
-          <el-radio-button label="properties">属性</el-radio-button>
-          <el-radio-button label="services">服务</el-radio-button>
-          <el-radio-button label="events">事件</el-radio-button>
+          <el-radio-button label="properties">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.RADIO_TAB3') }}</el-radio-button>
+          <el-radio-button label="services">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.RADIO_TAB4') }}</el-radio-button>
+          <el-radio-button label="events">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.RADIO_TAB5') }}</el-radio-button>
         </el-radio-group>
 
         <div v-show="showHandle" style="float: right">
           <el-radio-group v-model="editMode">
-            <el-radio-button type="primary" label="simple">简单模式</el-radio-button>
-            <el-radio-button type="primary" label="advanced">高级模式</el-radio-button>
-            <el-radio-button type="primary" @click="jsonDialogVisible=true">JSON模式</el-radio-button>
+            <el-radio-button type="primary" label="simple">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.RADIO_TAB6') }}</el-radio-button>
+            <el-radio-button type="primary" label="advanced">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.RADIO_TAB7') }}</el-radio-button>
+            <el-radio-button type="primary" @click="jsonDialogVisible=true">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.RADIO_TAB8') }}</el-radio-button>
           </el-radio-group>
         </div>
 
         <div v-show="showCreate" style="float: right">
-          <el-button type="border-warning" @click="handleGoToPlugin">找不到插件？去创建</el-button>
+          <el-button type="border-warning" @click="handleGoToPlugin">{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.BTN') }}</el-button>
         </div>
 
       </el-form-item>
