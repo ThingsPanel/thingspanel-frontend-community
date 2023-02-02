@@ -1,17 +1,21 @@
 <template>
   <div style="display: flex">
-    <el-select style="width: 100px;margin-right:10px" v-model="value">
+    <el-select style="width: 100px;margin-right:10px" v-model="formData.state" value-key="value" @change="handleStateChange">
       <el-option-group v-for="group in options" :key="group.label" :label="group.label">
-        <el-option v-for="item in group.options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+        <el-option v-for="item in group.options" :key="item.value" :label="item.label" :value="item"></el-option>
       </el-option-group>
 <!--      <el-option v-for="(option, index) in options" :key="index" :label="option.label" :value="option.value"></el-option>-->
     </el-select>
 
-    <!-- 在线持续时间 -->
-    <OnlineDuration v-if="value=='onlineDuration'"/>
-    <!-- 操作符 -->
-    <OperatorSelector v-else-if="value!=''" :option="option" :property="property"/>
-
+    <template v-if="formData.state">
+      <!-- 在线持续时间 -->
+      <OnlineDuration v-if="formData.state.mode=='onlineDuration'"/>
+      <!-- 操作符 -->
+      <OperatorSelector v-else-if="formData.state.mode == 'property'"
+                        :data.sync="formData"
+                        :option="option"
+                        :property="formData.state"/>
+    </template>
   </div>
 </template>
 
@@ -25,30 +29,43 @@ export default {
     OperatorSelector, OnlineDuration
   },
   props: {
-    option: {
+    data: {
       type: [Object],
       default: () => { return { }}
     },
-    pluginId: {
-      type: [String],
-      default: ""
+    option: {
+      type: [Object],
+      default: () => { return { }}
     }
   },
   data() {
     return {
-      value: "",
       options: [],
-      property: {}
+      formData: {
+        state: {}
+      },
+      properties: {}
     }
   },
   watch: {
-    pluginId: {
+    data: {
       handler(newValue) {
+        console.log("====state", newValue)
         if (newValue) {
-          this.getProperties(newValue);
+          this.formData = JSON.parse(JSON.stringify(newValue));
+          this.getProperties(newValue.device.pluginId);
         }
       },
-      immediate: true
+      immediate: true,
+      deep: true
+    },
+    formData: {
+      handler(newValue) {
+        console.log("====state.formData", newValue)
+        if (newValue) {
+          this.$emit("update:data", newValue);
+        }
+      }
     }
   },
   methods: {
@@ -66,17 +83,20 @@ export default {
             // 物模型属性
             let properties = jsonObj.tsl?.properties || [];
             let arr = properties.map(item => {
-              return { label: item.title, value: item.name };
+              return { label: item.title, value: item.name, unit: item.unit, mode: "property" };
             });
             this.options = [];
             if (this.option.operator) {
-              this.options.push({label: "状态", options: [{ label: "在线状态", value:"onlineDuration" }]});
+              this.options.push({label: "状态", options: [{ mode: "onlineDuration", label: "在线状态", value: "onlineDuration" }]});
             }
             this.options.push({label: "属性", options: arr});
-            console.log("====getProperties", this.options)
-
+            console.log("====getProperties", this.options);
           }
         })
+    },
+    handleStateChange(v) {
+      console.log("====handleStateChange", v)
+      console.log("====handleStateChange", this.formData.state)
     }
   }
 }

@@ -1,9 +1,9 @@
 <template>
     <div style="display: flex">
-      <el-select style="width: 100px;margin-right:10px" v-model="value">
+      <el-select style="width: 100px;margin-right:10px" v-model="formData.group.id">
         <el-option v-for="(option, index) in options" :key="index" :label="option.device_group" :value="option.id"></el-option>
       </el-select>
-      <DeviceSelector v-if="value!=''" :id="value" :option="option"/>
+<!--      <DeviceSelector v-if="formData.groupId" :data="formData" :option="option"/>-->
     </div>
 </template>
 
@@ -16,6 +16,10 @@ export default {
     DeviceSelector
   },
   props: {
+    data: {
+      type: [Object],
+      default: () => { return { }}
+    },
     option: {
       type: [Object],
       default: () => { return { }}
@@ -28,17 +32,22 @@ export default {
   data() {
     return {
       value: "",
-      options: []
+      options: [],
+      formData: {}
     }
   },
   watch: {
-    id: {
+    data: {
       handler(newValue) {
-        if (newValue) {
-          this.getGroupList(newValue);
-        }
+        this.formData = JSON.parse(JSON.stringify(this.data));
+        this.getGroupList(newValue);
       },
       immediate: true
+    },
+    "formData.groupId": {
+      handler() {
+        this.$emit("update:data", this.formData);
+      }
     }
   },
   methods: {

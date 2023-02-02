@@ -102,18 +102,21 @@
                 deviceTotal: "0",
                 messageTotal: "0",
                 cpuUsage: 0,
-                ramUsage: 0
+                ramUsage: 0,
+                timer: null
             }
         },
         created() {
             this.ajaxdata();
-            setInterval(this.ajaxdata,60000);
+            this.timer = setInterval(this.ajaxdata,7000);
         },
-        mounted() {
+        beforeDestroy() {
+          clearInterval(this.timer);
         },
         methods:{
             ajaxdata() {
-                ApiService.post(local_url + "api/home/list")
+              console.log("====document.location.origin", document.location.origin);
+                ApiService.post(local_url +  (local_url.endsWith("/") ? "api" : "/api")  + "/home/list")
                     .then(({ data }) => {
                         if (data.code == 200) {
                             this.deviceTotal = data.data.device ? data.data.device : 0;

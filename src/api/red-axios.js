@@ -1,7 +1,9 @@
 import http from "axios";
 import RED from "../core/services/red.module";
 import {message_error} from "@/utils/helpers";
-import { red_url } from "@/api/LocalUrl"
+
+
+const red_url =  process.env.VUE_APP_RED_BASE_URL || document.location.origin + ":1880/";
 
 
 // 创建 node-red 的 axios 实例
@@ -30,10 +32,10 @@ instance.interceptors.request.use(
 );
 instance.interceptors.response.use(
     response => {
+
         return response
     },
     error => {
-        console.log(error)
         return Promise.reject(error)
 
     }

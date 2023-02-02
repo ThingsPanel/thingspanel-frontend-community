@@ -104,17 +104,21 @@ export default {
       ramTitle: i18nService.getActiveLanguage() == 'en' ? 'RAM footprint' : 'RAM占用',
       cpuCurveData: {},
       ramCurveData: {},
+      timer: null
     }
   },
   created() {
     this.ajaxdata();
-    setInterval(this.ajaxdata, 60000);
+    this.timer = setInterval(this.ajaxdata, 7000);
   },
   mounted() {
   },
+  beforeDestroy() {
+    clearInterval(this.timer);
+  },
   methods: {
     ajaxdata() {
-      ApiService.post(local_url + "api/home/chart")
+      ApiService.post(local_url + (local_url.endsWith("/") ? "api" : "/api")  + "/home/chart")
           .then(({data}) => {
             if (data.code == 200) {
               let cpu_xAxis = [], cpu_series = [];

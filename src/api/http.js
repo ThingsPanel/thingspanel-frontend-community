@@ -40,7 +40,6 @@ instance.interceptors.request.use(
         // 设置请求头 token
         const token = JwtService.getToken()
         const token_expires_in = JwtService.getExpiresTime()
-
         token && (config.headers.Authorization = `Bearer ${token}`)
 
         // 登录接口和刷新token接口绕过，不进入刷新 token 判断
@@ -53,13 +52,13 @@ instance.interceptors.request.use(
         if(!token || !token_expires_in || now > token_expires_in) {
             JwtService.destroyToken()
             window.location.href = '/#/login'
-            return false; // 阻止后面的请求
+            // return false; // 阻止后面的请求
+            return config;
         }
         // 通过时间判断刷新 token
         if (token && token_expires_in) {
             // 小于 20 分钟过期的时候刷新
             if (token_expires_in - now  < 20*60*1000) {
-                console.log('刷新token', now, token_expires_in)
                 // 立即刷新token
                 if (!isRefreshing) {
                     isRefreshing = true;
@@ -69,7 +68,6 @@ instance.interceptors.request.use(
                         isRefreshing = false;
                         return access_token;
                     }).then((access_token) => {
-                        // console.log('刷新token成功，执行队列')
                         requests.forEach(cb => cb(access_token));
                         // 执行完成后，清空队列
                         requests = []
@@ -80,6 +78,7 @@ instance.interceptors.request.use(
                 const retryOriginalRequest = new Promise((resolve) => {
                     requests.push((access_token) => {
                         // 因为config中的token是旧的，所以刷新token后要将新token传进来
+                        console.log("====config", config)
                         config.headers['Authorization'] = `Bearer ${access_token}`;
                         resolve(config)
                     })

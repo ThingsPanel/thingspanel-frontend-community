@@ -10,7 +10,7 @@ const setRedToken = (res) => {
 }
 
 const getRedToken = () => {
-    var red_token = window.localStorage.getItem(RED_TOKEN_KEY);
+    let red_token = window.localStorage.getItem(RED_TOKEN_KEY);
     if (!red_token) {
         return false;
     }
@@ -18,7 +18,7 @@ const getRedToken = () => {
 }
 
 const getRedTokenExpired = () => {
-    var expired = window.localStorage.getItem(RED_TOKEN_EXPIRED_KEY);
+    let expired = window.localStorage.getItem(RED_TOKEN_EXPIRED_KEY);
     return expired;
 }
 

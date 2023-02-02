@@ -23,7 +23,9 @@
             </el-select>
 
           <!-- 选择设备条件后显示项目列表 -->
-          <ProjectSelector v-if="condition.type=='device'"/>
+<!--          <ProjectSelector v-if="condition.type=='device'" :data="condition.data"/>-->
+
+          <DeviceSelector v-if="condition.type=='device'" :data="condition.data" @change="handleDeviceChange"/>
 
           <!-- 选择时间条件后显示时间条件类型 -->
           <TimeTypeSelector v-else-if="condition.type=='time'"/>
@@ -48,15 +50,30 @@
 <script>
 import ProjectSelector from "../components/device/ProjectSelector";
 import TimeTypeSelector from "../components/time/TimeTypeSelector";
+import DeviceSelector from "./DeviceSelector";
 export default {
   name: "ConditionForm",
-  components: { ProjectSelector, TimeTypeSelector },
+  components: { DeviceSelector, ProjectSelector, TimeTypeSelector },
   data() {
     return {
       formData: {
         conditions: [
           {
-            type: "device"
+            type: "device",
+            data: {
+              projectId: "",
+              groupId: "",
+              deviceId: "",
+              state: {
+                mode: "",      // mode: 在线持续时间(onlineDuration)    物模型属性(property)
+                value: "",
+                duration: {},
+                operator: {
+                  symbol: "",
+                  value: ""
+                }
+              }
+            }
           }
         ],
         action: [
@@ -74,6 +91,9 @@ export default {
     handleDeleteCondition(condition) {
       let index = this.formData.conditions.findIndex(item => item == condition);
       this.formData.conditions.splice(index, 1);
+    },
+    handleDeviceChange(v) {
+      console.log("====handleDeviceChange", v)
     }
   }
 }
