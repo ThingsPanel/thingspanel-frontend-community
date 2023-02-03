@@ -3,23 +3,23 @@
   <!-- 头 start -->
   <el-row type="flex" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>{{ $t('COMMON.USERS') }}</TableTitle>
+      <TableTitle>{{ $t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.USERS') }}</TableTitle>
     </el-col>
     <el-col :span="12" class="text-right">
 <!--      -->
-      <el-button size="medium" type="indigo" @click="createUserDialogVisible = true">{{ $t('COMMON.AddUSER') }}</el-button>
+      <el-button size="medium" type="indigo" @click="createUserDialogVisible = true">{{ $t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.AddUSER') }}</el-button>
     </el-col>
   </el-row>
   <!-- 头 end -->
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column :label="$t('COMMON.NO')" type="index" width="50"></el-table-column>
-    <el-table-column :label="$t('COMMON.USERNAME')" prop="email"></el-table-column>
-    <el-table-column :label="$t('COMMON.NAME')" prop="name"></el-table-column>
-    <el-table-column :label="$t('COMMON.EMAIL')" prop="email"></el-table-column>
-    <el-table-column :label="$t('COMMON.TELEPHONE')" prop="mobile"></el-table-column>
-    <el-table-column :label="$t('COMMON.ROLE')" align="left">
+    <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.NO')" type="index" width="50"></el-table-column>
+    <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.USERNAME')" prop="email"></el-table-column>
+    <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.NAME')" prop="name"></el-table-column>
+    <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.EMAIL')" prop="email"></el-table-column>
+    <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.TELEPHONE')" prop="mobile"></el-table-column>
+    <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.ROLE')" align="left">
       <template v-slot="scope">
         <div style="display: flex;float:left;" v-for="role in rolesData" :key="role.id">
           <span style="display: flex;float:left;" v-for="item in scope.row.roles" :key="item">
@@ -28,15 +28,15 @@
         </div>
       </template>
     </el-table-column>
-    <el-table-column :label="$t('COMMON.OPERATION')" align="center" width="300">
+    <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.OPERATION')" align="center" width="300">
       <template v-slot="scope">
         <div class="text-right">
-          <el-button type="indigo" size="mini" @click="handleEdit(scope.row)">{{ $t('COMMON.EDIT') }}</el-button>
+          <el-button type="indigo" size="mini" @click="handleEdit(scope.row)">{{ $t('SYSTEM_MANAGEMENT.EDIT') }}</el-button>
           <el-button type="indigo" class="mr-3" size="mini"
                      :disabled="!hasAuth('sys:user:editpassword')"
-                     @click="handleResetPassword(scope.row)">{{ $t('COMMON.CHANGEPASSWORD') }}</el-button>
-          <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="handleDelete(scope.row)">
-            <el-button slot="reference" type="danger" size="mini" :disabled="!hasAuth('sys:user:del')">{{ $t('COMMON.DELETE') }}</el-button>
+                     @click="handleResetPassword(scope.row)">{{ $t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.CHANGEPASSWORD') }}</el-button>
+          <el-popconfirm :title="$t('SYSTEM_MANAGEMENT.TITLE4')" @confirm="handleDelete(scope.row)">
+            <el-button slot="reference" type="danger" size="mini" :disabled="!hasAuth('sys:user:del')">{{ $t('SYSTEM_MANAGEMENT.DELETE') }}</el-button>
           </el-popconfirm>
         </div>
       </template>

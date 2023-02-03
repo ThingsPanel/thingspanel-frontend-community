@@ -1302,23 +1302,77 @@ export const locale = {
    * 系统管理
    */
   SYSTEM_MANAGEMENT: {
+    GENERALSETTINGS: "General Settings",
+    NOTIFICATIONSETTINGS: "Notification Settings",
+    SYSTEMAUTHORIZATION: "System Authorization",
+    SAVE: "Save",
+    CANCEL: "Cancel",
+    EDIT: "Edit",
+    DELETE: "Delete",
+    TITLE4: "Are you sure you want to delete?",
     /**
      * 系统设置
      */
     SYSTEM_SETTING: {
-
+      SYSTEMTITLE: "System title",
+      THEMECOLOR: "Theme color",
+      PLACEHOLDER1: "Please input",
+      PLACEHOLDER2: "Please select",
+      BLUE:"blue",
+      WHITE:"white",
+      HOMEANDBACKEND: "Home and backend",
+      CHANGE: "change",
+      LOADINGPAGE: "Loading page",
+      WEBSITE: "Website",
+      BACKGROUND: "Background",
     },
     /**
      * 用户管理
      */
     USER_MANAGEMENT: {
-
+      USERS: "User management",
+      AddUSER: "Add user",
+      NO: "ID",
+      USERNAME:"username",
+      NAME: "name",
+      EMAIL: "email",
+      TELEPHONE: "phone",
+      ROLE: "Role",
+      OPERATION: "Operation",
+      CHANGEPASSWORD: "Change password",
+      PASSWORD: "Password",
+      CONPASSWORD: "Confirm password",
+      REMARKS: "Remark",
+      DOWN: "open",
+      UP: "up",
+      PLACEHOLDER1:"Please enter name",
+      PLACEHOLDER2:"Please input email",
+      PLACEHOLDER3: "please enter vaild email",
+      PLACEHOLDER4: "Please enter phone number",
+      PLACEHOLDER5: "please enter a valid phone number",
+      PLACEHOLDER6: "Please enter new password",
+      PLACEHOLDER7: "Password must be no less than 6 digits",
+      PLACEHOLDER8: "Please again enter password",
+      PLACEHOLDER9: "The two new passwords are inconsistent",
+      TITLE: "The password defaults to 123456",
     },
     /**
      * 角色管理
      */
     ROLE_MANAGEMENT: {
-
+      MANAGEMENT:"Role management",
+      ADDROLE: "Adding a Role",
+      NO: "ID",
+      ROLENAME: "Role Name",
+      ROLEDESCRIPTION: "Role Description",
+      PERMISSIONMANAGEMENT: "Permission management",
+      OPERATION: "Operation",
+      SAVE: "save",
+      CANCEL: "cancel",
+      EDIT: "Edit",
+      DELETE: "Delete",
+      TITLE4: "Are you sure you want to delete?",
+      PERMISSIONEDIT: "Permission editing",
     },
     /**
      * 权限管理

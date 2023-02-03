@@ -3,7 +3,7 @@
     class="el-dark-dialog el-dark-input"
     :visible.sync="showDialog"
     width="30%"
-    title="修改密码"
+    :title="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.CHANGEPASSWORD')"
     :close-on-click-modal="false"
 >
   <el-form
@@ -13,17 +13,17 @@
       :model="formData"
       :rules="rules"
       hide-required-asterisk>
-    <el-form-item label="密码" prop="password">
+    <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PASSWORD')" prop="password">
       <el-input size="medium" v-model="formData.password" show-password></el-input>
     </el-form-item>
 
-    <el-form-item label="确认密码" prop="password_confirmation">
+    <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.CONPASSWORD')" prop="password_confirmation">
       <el-input size="medium" v-model="formData.password_confirmation" show-password></el-input>
     </el-form-item>
 
     <FormAlert :error_message="error_message"></FormAlert>
 
-    <el-button size="medium" class="w-100" type="save" @click="handleSubmit">保存</el-button>
+    <el-button size="medium" class="w-100" type="save" @click="handleSubmit">{{$t('SYSTEM_MANAGEMENT.SAVE')}}</el-button>
   </el-form>
 </el-dialog>
 </template>
@@ -33,7 +33,7 @@ import {defineComponent, ref, reactive, watch, computed} from "@vue/composition-
 import {user_reset_password} from "@/api/user";
 import {message_success} from "@/utils/helpers";
 import FormAlert from "@/components/common/FormAlert.vue"
-
+import i18n from "@/core/plugins/vue-i18n.js"
 export default defineComponent({
   name: "ResetPasswordForm",
   components: {
@@ -82,10 +82,10 @@ export default defineComponent({
     // 检查密码
     const check_password_confirmation = (rule, value, callback) => {
       if (value === "") {
-        callback(new Error("请再次输入密码"));
+        callback(new Error(i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER8')));
       }
       if (formData.password !== value) {
-        callback(new Error("新密码两次输入不一致"));
+        callback(new Error(i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER9')));
       }
 
       callback();
@@ -94,8 +94,8 @@ export default defineComponent({
     // 表单验证
     let rules = reactive({
       password: [
-        {required:true, message: "请输入新密码"},
-        {min:6, message: "密码至少 6 位"}
+        {required:true, message: i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER6')},
+        {min:6, message: i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER7')}
       ],
       password_confirmation: [
         {required: true, validator: check_password_confirmation}

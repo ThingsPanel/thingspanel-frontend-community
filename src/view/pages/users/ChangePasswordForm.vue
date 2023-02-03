@@ -3,7 +3,7 @@
     class="el-dark-dialog el-dark-input"
     :visible.sync="showDialog"
     width="30%"
-    title="修改密码"
+    :title="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.CHANGEPASSWORD')"
     :close-on-click-modal="false"
     :append-to-body="true"
 >
@@ -16,16 +16,16 @@
       @keydown.enter="handleSubmit()"
       hide-required-asterisk
   >
-    <el-form-item :label='$t("COMMON.NEWPASSWORD")' prop="password">
+    <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PASSWORD')" prop="password">
       <el-input size="medium" v-model="formData.password" show-password></el-input>
     </el-form-item>
-    <el-form-item :label='$t("COMMON.CONPASSWORD")' prop="password_confirmation">
+    <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.CONPASSWORD')" prop="password_confirmation">
       <el-input size="medium" v-model="formData.password_confirmation" show-password></el-input>
     </el-form-item>
 
     <FormAlert :error_message="error_message"></FormAlert>
 
-    <el-button @click="handleSubmit()" type="save" class="w-100">保存</el-button>
+    <el-button @click="handleSubmit()" type="save" class="w-100">{{$t('SYSTEM_MANAGEMENT.SAVE')}}</el-button>
   </el-form>
 </el-dialog>
 <!--</div>-->
@@ -38,7 +38,7 @@ import {useStore} from "@/core/services/store";
 import {user_change_password} from "@/api/user";
 import {message_success} from "@/utils/helpers";
 import FormAlert from "@/components/common/FormAlert";
-
+import i18n from "@/core/plugins/vue-i18n.js"
 export default defineComponent({
   name: "ChangePasswordForm",
   components: {
@@ -75,11 +75,11 @@ export default defineComponent({
     let error_message = ref("")
 
     let check_password_confirmation = (rule, value, callback)=>{
-      if(value === ''){
-        callback(new Error('请再次输入密码'));
+      if (value === "") {
+        callback(new Error(i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER8')));
       }
-      if(formData.password !== value){
-        callback(new Error('新密码两次输入不一致'));
+      if (formData.password !== value) {
+        callback(new Error(i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER9')));
       }
 
       callback();
@@ -87,8 +87,8 @@ export default defineComponent({
 
     let rules = reactive({
       password: [
-        {required:true, message: "请输入新密码"},
-        {min:6, message: "密码至少 6 位"}
+        {required:true, message: i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER6')},
+        {min:6, message: i18n.t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PLACEHOLDER7')}
       ],
       password_confirmation: [
         {required: true, validator: check_password_confirmation}
