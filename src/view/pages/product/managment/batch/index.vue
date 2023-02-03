@@ -88,12 +88,12 @@
     <el-dialog
         class="el-dark-dialog el-dark-input"
         width="30%"
-        :title="$t('COMMON.EXPORT')"
+        :title="$t('PRODUCT_MANAGEMENT.BATCH_LIST.EXPORT')"
         :visible.sync="exportVisible">
 
       <div class="text-center">
-        <p>{{ downloadUrl ? downloadUrl.split('/').pop().toString() : $t('COMMON.GENERATE_WAIT') }}</p>
-        <p><a :href="downloadUrl">{{ $t('COMMON.CLICKDOWNLOAD') }}</a></p>
+        <p>{{ downloadUrl ? downloadUrl.split('/').pop().toString() : $t('PRODUCT_MANAGEMENT.BATCH_LIST.GENERATE_WAIT') }}</p>
+        <p><a :href="downloadUrl">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.CLICKDOWNLOAD') }}</a></p>
       </div>
     </el-dialog>
     <!-- 导出二维码和数据对话框 end -->

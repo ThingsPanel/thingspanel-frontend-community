@@ -436,6 +436,7 @@ export const locale = {
     PRODUCTMANAGEMENT: "product management",
     PRODUCTLIST: "product list",
     BATCHLIST: "batch list",
+    FIRMWAREUPGRADE:"firmware upgrade",
     RULEENGINE: "Rule engine",
     NETWORKCOMPONENTS: "Access Engine",
     TRANSPOND: "Data Switching",
@@ -494,51 +495,6 @@ export const locale = {
       INVALID_FIELD: "Field is not valid",
     },
   },
-  // AUTOMATION: {
-  //   GROUP: "Group",
-  //   DEVICE: "Device",
-  //   TRIGGERING_CONDITION: "Triggering condition",
-  //   PLACEHOLDER1: "please select device",
-  //   PLACEHOLDER2: "please select condition",
-  //   PLACEHOLDER3: "please select operator",
-  //   PLACEHOLDER4: "please select value",
-  //   PLACEHOLDER5: "please enter strategy name",
-  //   PLACEHOLDER6: "please enter strategy describe",
-  //   PLACEHOLDER7: "Value",
-  //   PLACEHOLDER8: "Operator",
-  //   PLACEHOLDER9: "Condition",
-  //   ONCE: "Once",
-  //   DAYS: "Every day",
-  //   REPEAT: "Repeat",
-  //   SELECT_TIME: "Select time",
-  //   SELECT_DATE: "Select date",
-  //   ADD_LINE: "A set of new",
-  //   OR: "Or",
-  //   AND: "And",
-  //   ALARM_TYPE: "Alarm type",
-  //   SMS: "Sms",
-  //   DING_TALK: "Ding talk",
-  //   ENTERPRISE_WECHAT: "Enterprise Wechat",
-  //   INFORMATION: "Information",
-  //   DEVICE_CONDITION_TYPE: "Device condition type",
-  //   TIME_CONDITION_TYPE: "Time condition type",
-  //   EXECUTE_COMMAND: "Execute the command",
-  //   ALARM_STRATEGY: {
-  //     ADD_ALARM_STRATEGY: "Add Alarm strategy",
-  //     EDIT_ALARM_STRATEGY: "Edit Alarm strategy",
-  //     ALARM_STRATEGY_NAME: "Alarm strategy name",
-  //     ALARM_STRATEGY_DESCRIBE: "Alarm strategy describe",
-
-  //     PLACEHOLDER1: "Please enter alarm strategy name",
-  //     PLACEHOLDER2: "Please enter alarm strategy describe"
-  //   },
-  //   CONTROL_STRATEGY: {
-  //     CONTROL_STRATEGY_LIST: "Control strategy list",
-  //     NEW_STRATEGY: "New strategy",
-  //     EDIT_CONTROL_STRATEGY: "Edit control strategy",
-  //     ADD_CONTROL_STRATEGY: "Add control strategy"
-  //   }
-  // },
   ECOMMERCE: {
 
     COMMON: {
@@ -600,7 +556,21 @@ export const locale = {
       DATA_SWITCHING:"Data forwarding",
     }
   },
-  
+  /**
+   * 登录页面
+   */
+  LOGIN: {
+    SIGNIN: "login",
+    TITLE1: "please fill in username and password",
+    TITLE2: "please fill in avalible email address",
+    TITLE3: "password",
+    TITLE4: "please enter vaild email",
+    TEXT1: "All right reserved",
+    TEXT2: "Terms of Use",
+    TEXT3: "Privacy Policy",
+    TEXT4: "Contact us",
+    WrongPassword: "The user name or password is incorrect",
+  },
   /**
    * 首页
    */
@@ -725,6 +695,17 @@ export const locale = {
       OPTIONLABLE2: "Acquiesce",
       OPTIONLABLE3: "CustomProtocol",
       COPY: "Click to copy content",
+      SAVE: "Save",
+      CANCEL: "Cancel",
+    },
+    /**
+     * 配置参数弹框
+     */
+    CONFIG_PARAMETER: {
+      CONFIGPARAMETER: "Config parameter",
+      CHANGENUMBER: "Channel number：",
+      DEVICEADDRESS: "Device address：",
+      PLAYBACKADDRESS: "Playback address：",
       SAVE: "Save",
       CANCEL: "Cancel",
     },
@@ -861,6 +842,7 @@ export const locale = {
     AND: "And",
     ALARM_TYPE: "Alarm type",
     SMS: "Sms",
+    EMAIL: "Email",
     DING_TALK: "Ding talk",
     ENTERPRISE_WECHAT: "Enterprise Wechat",
     INFORMATION: "Information",
@@ -868,6 +850,9 @@ export const locale = {
     TIME_CONDITION_TYPE: "Time condition type",
     EXECUTE_COMMAND: "Execute the command",
     COMMAND: "command",
+    CREATETIME: "create time",
+    START: "Start ",
+    LOG: "Log",
     ALARM_STRATEGY: {
       ADD_ALARM_STRATEGY: "Add Alarm strategy",
       EDIT_ALARM_STRATEGY: "Edit Alarm strategy",
@@ -961,6 +946,7 @@ export const locale = {
       OPERATION:"Operation",
       VIEWBATCH:"view batch",
       DELETE:"Delete",
+      MQTTPROTOCOL: "MQTT Protocol",
       /**
        * 产品列表新增弹框
        */
@@ -969,6 +955,7 @@ export const locale = {
         PRODUCTNAME:"product name",
         PRODUCTNUMBER:"product number",
         PROTOCOLTYPE1:"ProtocolType",
+        PROTOCOLTYPE2:"Authentication",
         PLACEHOLDER42:"Select a protocol type",
         PLACEHOLDER43:"Select an authentication mode",
         TITLE32: "Device Plugin",
@@ -998,6 +985,9 @@ export const locale = {
       GENERATEDATA: "generate data",
       EXPORTQRCODEANDDATA:"export qrcode and data",
       IMPORTDATA: "import data",
+      EXPORT: "Export",
+      GENERATE_WAIT: "Generating, please wait...",
+      CLICKDOWNLOAD: "Click download",
       /**
      * 批次列表新增弹框
      */
@@ -1016,8 +1006,45 @@ export const locale = {
       PLACEHOLDER3:"Please enter the access address",
       PLACEHOLDER4:"Please enter the number of devices",
     },
-
-
+    /**
+     * 固件升级列表
+     */
+    FIRMWARE_LIST: {
+      FIRMWAREUPGRADE: "firmware update",
+      ADDFIRMWARE: "Add firmware",
+      IMPORTPRODUCT: "Import product",
+      NO: "ID",
+      FIRMWARENAME: "firmware name",
+      BELONGINGPRODUCT: "Belonging product",
+      FIRMWAREVERSION: "firmware version",
+      CREATEDTIME: "created time",
+      OPERATION:"Operation",
+      CONFIG: "Config",
+      DELETE:"Delete",
+      TITLE4: "Are you sure you want to delete?",
+       /**
+     * 固件升级新增弹框
+     */
+       FIRMWARE_LIST_ADD: {
+        ADDFIRMWARE: "Add firmware",
+        BELONGINGPRODUCT: "Belonging product",
+        FIRMWARENAME: "firmware name",
+        VERSION: "version",
+        SIGNTYPE: "sign type",
+        SIGN: "sign",
+        UPLOAD: "upload firmware",
+        TIP1: "Drag files here, or",
+        TIP2: "Click Upload",
+        DESCRIPTION: "description",
+        SUBMIT: "Submit",
+        PLACEHOLDER1:"please select the product",
+        PLACEHOLDER2:"please enter the firmware name",
+        PLACEHOLDER3:"please enter the version",
+        PLACEHOLDER4:"please enter the sign type",
+        PLACEHOLDER5:"please enter the sign",
+        PLACEHOLDER6:"please enter the description",
+      },
+    },
   },
   /**
    * 规则引擎
@@ -1305,13 +1332,14 @@ export const locale = {
     GENERALSETTINGS: "General Settings",
     NOTIFICATIONSETTINGS: "Notification Settings",
     SYSTEMAUTHORIZATION: "System Authorization",
-    SAVE: "Save",
-    CANCEL: "Cancel",
-    EDIT: "Edit",
-    DELETE: "Delete",
     TITLE4: "Are you sure you want to delete?",
+    CANCEL: "Cancel",
+    SAVE: "Save",
+    DELETE: "Delete",
+    EDIT: "Edit",
+    CONFIRM: "Submit",
     /**
-     * 系统设置
+     * 系统设置 常规设置
      */
     SYSTEM_SETTING: {
       SYSTEMTITLE: "System title",
@@ -1345,8 +1373,8 @@ export const locale = {
       REMARKS: "Remark",
       DOWN: "open",
       UP: "up",
-      PLACEHOLDER1:"Please enter name",
-      PLACEHOLDER2:"Please input email",
+      PLACEHOLDER1: "please enter name",
+      PLACEHOLDER2: "please input email",
       PLACEHOLDER3: "please enter vaild email",
       PLACEHOLDER4: "Please enter phone number",
       PLACEHOLDER5: "please enter a valid phone number",
@@ -1378,7 +1406,31 @@ export const locale = {
      * 权限管理
      */
     PERMISSION_MANAGEMENT: {
-
+      PERMISSIONMANAGEMENT: "Permission management",
+      PERMISSIONADD: "Add Permission",
+      TITLE: "Title",
+      NAMES: "Name",
+      ICON: "icon",
+      COMPONENT: "component",
+      THESORTING: "The sorting",
+      TYPE: "type",
+      DIRECTORY: "directory",
+      MENU: "menu",
+      ROUTING: "routing",
+      BUTTON: "button",
+      OPERATION: "Operation",
+      EDIT: "Edit",
+      DELETE: "Delete",
+      DELETETHISITEM: "Are you sure you want to delete this item?",
+      PARENTMENU: "Parent menu：",
+      LABLENAME: "Name：",
+      COMPONENTPATH: "Component path：",
+      LABLETITLE: "Title：",
+      LABLEICON: "icon：",
+      LABLETHESORTING: "The sorting：",
+      CODE: "code：",
+      LABLETYPE: "type：",
+      PLACEHOLDER: "Please select",
     }
   }
 };

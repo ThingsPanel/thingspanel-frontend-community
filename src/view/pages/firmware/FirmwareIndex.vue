@@ -10,27 +10,27 @@
 
   <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
     <el-col :span="12">
-      <TableTitle>固件升级</TableTitle>
+      <TableTitle>{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWAREUPGRADE') }}</TableTitle>
     </el-col>
     <el-col :span="12" class="text-right">
-      <el-button type="indigo" size="medium" @click="dialogVisible = true">新增固件</el-button>
+      <el-button type="indigo" size="medium" @click="dialogVisible = true">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.ADDFIRMWARE') }}</el-button>
 
-      <el-button type="indigo" size="medium">导入产品</el-button>
+      <el-button type="indigo" size="medium">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.IMPORTPRODUCT') }}</el-button>
     </el-col>
   </el-row>
 
   <el-table :data="tableData">
-    <el-table-column label="序号" type="index" width="50"></el-table-column>
-    <el-table-column prop="firmware_name" label="固件名称"></el-table-column>
-    <el-table-column prop="product" label="归属产品"></el-table-column>
-    <el-table-column prop="firmware_version" label="固件版本"></el-table-column>
-    <el-table-column prop="created_at" label="创建时间"></el-table-column>
-    <el-table-column prop="actions" label="操作" width="145px" align="center">
+    <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.NO')" type="index" width="50"></el-table-column>
+    <el-table-column prop="firmware_name" :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARENAME')"></el-table-column>
+    <el-table-column prop="product" :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.BELONGINGPRODUCT')"></el-table-column>
+    <el-table-column prop="firmware_version" :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWAREVERSION')"></el-table-column>
+    <el-table-column prop="created_at" :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.CREATEDTIME')"></el-table-column>
+    <el-table-column prop="actions" :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.OPERATION')" width="200px" align="center">
       <template v-slot="scope">
-        <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">配置</el-button>
+        <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.CONFIG') }}</el-button>
 
-        <el-popconfirm title="确定要删除吗？" @confirm="handle_del(scope.row)">
-          <el-button slot="reference" size="mini" type="danger">删除</el-button>
+        <el-popconfirm :title="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TITLE4')" @confirm="handle_del(scope.row)">
+          <el-button slot="reference" size="mini" type="danger">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.DELETE') }}</el-button>
         </el-popconfirm>
       </template>
     </el-table-column>
@@ -38,7 +38,7 @@
 
   <el-dialog
       class="el-dark-dialog el-dark-input"
-      title="新增固件"
+      :title="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.ADDFIRMWARE')"
       :visible.sync="dialogVisible"
       :close-on-click-modal="false"
       width="30%">

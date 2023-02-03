@@ -505,6 +505,7 @@ export const locale = {
     PRODUCTMANAGEMENT: "产品管理",
     PRODUCTLIST: "产品列表",
     BATCHLIST: "批次列表",
+    FIRMWAREUPGRADE:"固件升级",
     RULEENGINE: "规则引擎",
     NETWORKCOMPONENTS: "接入引擎",
     TRANSPOND: "数据转发",
@@ -565,6 +566,22 @@ export const locale = {
       MAX_LENGTH_FIELD: "Maximum field length:",
       INVALID_FIELD: "Field is not valid",
     },
+  },
+  /**
+   * 登录页面
+   */
+  LOGIN: {
+    SIGNIN: "登 录",
+    TITLE1: "请输入您的用户名和密码",
+    TITLE2: "请输入有效的电子邮件地址",
+    TITLE3: "请输入密码",
+    TITLE4: "请填写合法的电子邮箱",
+    TEXT1: "版权所有",
+    TEXT2: "使用条款",
+    TEXT3: "隐私策略",
+    TEXT4: "联系我们",
+    WrongPassword: "用户名或密码错误",
+
   },
   /**
    * 首页
@@ -692,6 +709,17 @@ export const locale = {
       OPTIONLABLE2: "默认",
       OPTIONLABLE3: "自定义协议",
       COPY:"点击复制内容",
+      SAVE: "保存",
+      CANCEL: "取消",
+    },
+    /**
+     * 配置参数弹框
+     */
+    CONFIG_PARAMETER: {
+      CONFIGPARAMETER: "配置参数",
+      CHANGENUMBER: "通道编号：",
+      DEVICEADDRESS: "设备地址：",
+      PLAYBACKADDRESS: "播放地址：",
       SAVE: "保存",
       CANCEL: "取消",
     },
@@ -828,6 +856,7 @@ export const locale = {
     AND: "且",
     ALARM_TYPE: "告警方式",
     SMS: "短信",
+    EMAIL: "邮箱",
     DING_TALK: "钉钉",
     INFORMATION: "信息",
     ENTERPRISE_WECHAT: "企业微信",
@@ -835,6 +864,9 @@ export const locale = {
     TIME_CONDITION_TYPE: "时间条件类型",
     EXECUTE_COMMAND: "执行命令",
     COMMAND: "命令",
+    CREATETIME: "创建时间",
+    START: "启动",
+    LOG: "日志",
     ALARM_STRATEGY: {
       ADD_ALARM_STRATEGY: "新增告警策略",
       EDIT_ALARM_STRATEGY: "修改告警策略",
@@ -927,6 +959,7 @@ export const locale = {
       OPERATION:"操作",
       VIEWBATCH:"查看批次",
       DELETE:"删除",
+      MQTTPROTOCOL: "MQTT协议",
       /**
      * 产品列表新增弹框
      */
@@ -935,12 +968,14 @@ export const locale = {
         PRODUCTNAME:"产品名称",
         PRODUCTNUMBER:"产品编号",
         PROTOCOLTYPE1:"协议类型",
+        PROTOCOLTYPE2:"认证方式",
         PLACEHOLDER42:"请选择协议类型",
         PLACEHOLDER43:"请选择认证方式",
         TITLE32: "设备插件",
         PRODUCTDESCRIPTION:"产品描述",
         CANCEL:"取消",
         CONFIRM:"确定",
+
       },
       PLACEHOLDER1:"请输入名称",
       PLACEHOLDER2:"请输入产品编号",
@@ -964,6 +999,9 @@ export const locale = {
       GENERATEDATA:"生成数据",
       EXPORTQRCODEANDDATA:"导出二维码数据",
       IMPORTDATA:"导出数据",
+      EXPORT: "导出",
+      GENERATE_WAIT: "生成中请稍后",
+      CLICKDOWNLOAD: "点击下载",
       /**
      * 批次列表新增弹框
      */
@@ -981,6 +1019,45 @@ export const locale = {
       PLACEHOLDER2:"请选择产品",
       PLACEHOLDER3:"请输入接入地址",
       PLACEHOLDER4:"请输入设备数量",
+    },
+    /**
+     * 固件升级列表
+     */
+    FIRMWARE_LIST: {
+      FIRMWAREUPGRADE: "固件升级",
+      ADDFIRMWARE: "新增固件",
+      IMPORTPRODUCT: "导入产品",
+      NO: "序号",
+      FIRMWARENAME: "固件名称",
+      BELONGINGPRODUCT: "归属产品",
+      FIRMWAREVERSION: "固件版本",
+      CREATEDTIME: "创建时间",
+      OPERATION:"操作",
+      CONFIG: "配置",
+      DELETE:"删除",
+      TITLE4: "确定要删除吗？",
+      /**
+     * 固件升级新增弹框
+     */
+      FIRMWARE_LIST_ADD: {
+        ADDFIRMWARE: "新增固件",
+        BELONGINGPRODUCT: "归属产品",
+        FIRMWARENAME: "固件名称",
+        VERSION: "版本号",
+        SIGNTYPE: "签名方式",
+        SIGN: "签名",
+        UPLOAD: "上传固件",
+        TIP1: "将文件拖到此处，或",
+        TIP2: "点击上传",
+        DESCRIPTION: "描述",
+        SUBMIT: "提交",
+        PLACEHOLDER1:"请选择产品",
+        PLACEHOLDER2:"请填写固件名",
+        PLACEHOLDER3:"请填写固件版本",
+        PLACEHOLDER4:"请填写签名类型",
+        PLACEHOLDER5:"请填写签名",
+        PLACEHOLDER6:"请填写固件描述",
+      },
     },
   },
   /**
@@ -1008,8 +1085,7 @@ export const locale = {
       TITLE4: "你确定要删除吗？",
       CANCEL: "取消",
       SUBMIT:" 创建",
-      PLACEHOLDER: "请输入规则名称"
- 
+      PLACEHOLDER: "请输入规则名称",
     },
     /**
      * 数据转发
@@ -1175,7 +1251,6 @@ export const locale = {
       LABLE10: "描述",
       LABLE11: "查看",
     },
-
     /**
    * 应用管理——设备插件——图表
    */
@@ -1263,7 +1338,6 @@ export const locale = {
     RELEASE_INFO_TAB: {
       TEXT: "是否同意发布到应用商店",
     },
-    
   },
   /**
    * 系统管理
@@ -1277,6 +1351,7 @@ export const locale = {
     SAVE: "保存",
     DELETE: "删除",
     EDIT: "编辑",
+    CONFIRM: "确定",
     /**
      * 系统设置 常规设置
      */
@@ -1292,7 +1367,6 @@ export const locale = {
       LOADINGPAGE: "加载页面",
       WEBSITE: "站标",
       BACKGROUND: "背景图片",
-  
     },
     /**
      * 用户管理
@@ -1336,17 +1410,35 @@ export const locale = {
       PERMISSIONMANAGEMENT: "权限管理",
       OPERATION: "操作",
       TITLE4: "你确定要删除吗？",
-      CANCEL: "取消",
-      SAVE: "保存",
-      DELETE: "删除",
-      EDIT: "编辑",
       PERMISSIONEDIT: "权限编辑",
     },
     /**
      * 权限管理
      */
     PERMISSION_MANAGEMENT: {
-
+      PERMISSIONMANAGEMENT: "权限管理",
+      PERMISSIONADD: "添加权限",
+      TITLE: "标题",
+      NAMES: "名称",
+      ICON: "图标",
+      COMPONENT: "组件",
+      THESORTING: "排序",
+      TYPE: "类型",
+      DIRECTORY: "目录",
+      MENU: "菜单",
+      ROUTING: "路由",
+      BUTTON: "按钮",
+      OPERATION: "操作",
+      DELETETHISITEM: "确定要删除此项吗？",
+      PARENTMENU: "父菜单：",
+      LABLENAME: "名称：",
+      COMPONENTPATH: "组件路径：",
+      LABLETITLE: "标题：",
+      LABLEICON: "图标：",
+      LABLETHESORTING: "排序：",
+      CODE: "编码：",
+      LABLETYPE: "类型：",
+      PLACEHOLDER: "请选择",
     }
   }
 };

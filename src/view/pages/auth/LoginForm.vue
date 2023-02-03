@@ -7,7 +7,7 @@
       <el-form-item prop="password" :error="errors.password">
         <el-input v-model.trim="formData.password" type="password" show-password name="password"></el-input>
       </el-form-item>
-      <el-button type="primary" class="w-100" :loading="loading" @click="handleSubmit">{{ $t("COMMON.SIGNIN") }}</el-button>
+      <el-button type="primary" class="w-100" :loading="loading" @click="handleSubmit">{{ $t("LOGIN.SIGNIN") }}</el-button>
     </el-form>
   </div>
 </template>

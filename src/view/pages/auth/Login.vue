@@ -9,9 +9,9 @@
         <div class="shadow-lg">
           <div class="card-body">
             <h5 class="font-weight-light mb-1 text-mute-high">Welcome,</h5>
-            <h2 class="font-weight-normal mb-4">{{ $t("COMMON.SIGNIN") }}</h2>
+            <h2 class="font-weight-normal mb-4">{{ $t("LOGIN.SIGNIN") }}</h2>
             <p class="font-weight-semi-bold">
-              {{ $t("COMMON.TITLE1") }}
+              {{ $t("LOGIN.TITLE1") }}
             </p>
 
             <LoginForm></LoginForm>

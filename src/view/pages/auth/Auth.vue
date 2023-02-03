@@ -43,7 +43,7 @@
           <div class="row">
             <div class="col-12 col-md text-center text-md-left align-self-center">
               <p class="footer_copy">
-                版权所有 <a href="http://thingspanel.io/" target="_blank">ThingsPanel</a>
+                {{ $t("LOGIN.TEXT1") }} <a href="http://thingspanel.io/" target="_blank">ThingsPanel</a>
               </p>
             </div>
             <div class="col-12 col-md-auto text-center text-md-right">
@@ -53,7 +53,7 @@
                     class="nav-link"
                     href="http://thingspanel.io/"
                     target="_blank"
-                    >使用条款</a
+                    >{{ $t("LOGIN.TEXT2") }}</a
                   >
                 </li>
                 <li class="nav-item">
@@ -61,12 +61,12 @@
                     class="nav-link"
                     href="http://thingspanel.io/"
                     target="_blank"
-                    >隐私策略</a
+                    >{{ $t("LOGIN.TEXT3") }}</a
                   >
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" href="http://thingspanel.io/" target="_blank"
-                    >联系我们</a
+                    >{{ $t("LOGIN.TEXT4") }}</a
                   >
                 </li>
               </ul>

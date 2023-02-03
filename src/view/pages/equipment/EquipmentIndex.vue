@@ -87,8 +87,8 @@
       </el-table-column>
       <el-table-column :label='$t("SYSTEM_LOG.DEVICE_LOG.OPERATIONTYPE1")' prop="operation_type">
          <template v-slot="scope">
-           <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '1'">{{"定时触发"}}</el-tag>
-           <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '2'">{{"手动控制"}}</el-tag>
+           <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '1'">{{ $t("SYSTEM_LOG.DEVICE_LOG.TIMINGTRIGGER")}}</el-tag>
+           <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '2'">{{$t("SYSTEM_LOG.DEVICE_LOG.MANUALCONTROL")}}</el-tag>
            <el-tag class="tag-operation-type" v-if="scope.row.operation_type == '3'">{{ $t("SYSTEM_LOG.DEVICE_LOG.AUTOMATICCONTROL")}}</el-tag>
 <!--           <p class="green" v-if="scope.row.operation_type == '1'"><span>{{"定时触发"}}</span></p>-->
 <!--           <p class="green" v-if="scope.row.operation_type == '2'"><span>{{"手动控制"}}</span></p>-->
