@@ -108,7 +108,7 @@
         },
         created() {
             this.ajaxdata();
-            this.timer = setInterval(this.ajaxdata,7000);
+            this.timer = setInterval(this.ajaxdata,10000);
         },
         beforeDestroy() {
           clearInterval(this.timer);

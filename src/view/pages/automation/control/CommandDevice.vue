@@ -3,7 +3,7 @@
   <div class="command-device-box">
     <div style="display: flex;margin-bottom: 10px" v-for="(command, index) in commands" :key="index">
 
-      <ProjectSelector :option="{operator: false}"/>
+      <DeviceTypeSelector :option="{operator: false}" @change="handleCommandChange"/>
 
       <!-- 新增一行 -->
       <el-button type="indigo" size="small" style="margin-left: auto"
@@ -21,10 +21,10 @@
 </template>
 
 <script>
-import ProjectSelector from "../components/device/ProjectSelector";
+import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
 export default {
   name: "CommandDevice",
-  components: { ProjectSelector },
+  components: { DeviceTypeSelector },
   data() {
     return {
       commands: [
@@ -36,6 +36,9 @@ export default {
     }
   },
   methods: {
+    handleCommandChange(v) {
+      console.log("====handleCommandChange", v);
+    },
     handleAddCommand() {
       this.commands.push({});
     },

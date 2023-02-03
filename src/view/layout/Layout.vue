@@ -99,12 +99,12 @@ export default {
       this.$router.push({ name: "login" });
     } else {
         this.$store.dispatch(SET_ROUTERS)
-        getRedToken().then(res => {
-          if (res.status == 200) {
-            RED.setRedToken(res.data)
-          }
-        })
-        .catch()
+        // getRedToken().then(res => {
+        //   if (res.status == 200) {
+        //     RED.setRedToken(res.data)
+        //   }
+        // })
+        // .catch()
     }
 
     // Simulate the delay page loading

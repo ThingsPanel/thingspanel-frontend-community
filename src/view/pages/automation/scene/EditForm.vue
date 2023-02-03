@@ -19,7 +19,7 @@
 
       <el-form-item label="添加设备">
         <div style="" v-for="(item, index) in formData.commands" :key="index">
-          <ProjectSelector :data="item.data" :option="{operator: false}"/>
+          <DeviceTypeSelector :data="item.data" :option="{operator: false}"/>
           <!-- 新增一行 -->
           <el-button type="indigo" size="small" style="margin-left: auto"
                      v-if="index == 0" @click="handleAddCommand">新增一行</el-button>
@@ -36,10 +36,10 @@
 
 <script>
 import data from "./data"
-import ProjectSelector from "../components/device/ProjectSelector";
+import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
 export default {
   name: "EditForm",
-  components: { ProjectSelector },
+  components: { DeviceTypeSelector },
   props: {
     id: {
       type: [String],

@@ -1,10 +1,6 @@
 <template>
   <div>
 <!--    <el-form label-position="right" label-width="85px">-->
-
-      <!-- ========================================================================================================== -->
-      <!-- 条件 -->
-      <!-- ========================================================================================================== -->
       <el-form-item label="如果：">
         <div style="display: flex;margin-bottom: 10px" v-for="(condition, index) in formData.conditions" :key="index">
 
@@ -23,12 +19,12 @@
             </el-select>
 
           <!-- 选择设备条件后显示项目列表 -->
-<!--          <ProjectSelector v-if="condition.type=='device'" :data="condition.data"/>-->
-
-          <DeviceSelector v-if="condition.type=='device'" :data="condition.data" @change="handleDeviceChange"/>
+          <template v-if="condition.type=='device'">
+            <DeviceTypeSelector v-if="condition.type=='device'" :data.sync="condition.data" @change="handleDeviceChange"/>
+          </template>
 
           <!-- 选择时间条件后显示时间条件类型 -->
-          <TimeTypeSelector v-else-if="condition.type=='time'"/>
+          <TimeTypeSelector v-else-if="condition.type=='time'" :data.sync="condition.data" @change="handleTimeChange"/>
 
           <!-- 新增一行 -->
           <el-button type="indigo" size="small" style="margin-left: auto"
@@ -48,12 +44,11 @@
 </template>
 
 <script>
-import ProjectSelector from "../components/device/ProjectSelector";
 import TimeTypeSelector from "../components/time/TimeTypeSelector";
-import DeviceSelector from "./DeviceSelector";
+import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
 export default {
   name: "ConditionForm",
-  components: { DeviceSelector, ProjectSelector, TimeTypeSelector },
+  components: { DeviceTypeSelector, TimeTypeSelector },
   data() {
     return {
       formData: {
@@ -85,15 +80,37 @@ export default {
     }
   },
   methods: {
+    /**
+     * @description: 新增一行
+     * @return {*}
+     */
     handleAddCondition() {
       this.formData.conditions.push({ type: "device", relation: "and" });
     },
+    /**
+     * @description: 删除一行
+     * @return {*}
+     */
     handleDeleteCondition(condition) {
       let index = this.formData.conditions.findIndex(item => item == condition);
       this.formData.conditions.splice(index, 1);
     },
+    /**
+     * @description: 设备条件
+     * @param {*} v
+     * @return {*}
+     */
     handleDeviceChange(v) {
-      console.log("====handleDeviceChange", v)
+      console.log("====handleDeviceChange", JSON.stringify(this.formData));
+    },
+    /**
+     * @description: 时间条件
+     * @param {*} v
+     * @return {*}
+     */
+    handleTimeChange(v) {
+      console.log("====handleTimeChange", JSON.stringify(this.formData));
+
     }
   }
 }

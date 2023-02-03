@@ -1,16 +1,24 @@
+<!--
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-02-02 08:39:13
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-02-03 13:25:25
+ * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\time\TimeTypeSelector.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
   <div style="display: flex">
-    <el-select style="width: 100px;margin-right:10px" v-model="value">
+    <el-select style="width: 100px;margin-right:10px" v-model="formData.type">
       <el-option label="单次" value="once"></el-option>
       <el-option label="重复" value="repeat"></el-option>
       <el-option label="范围" value="range"></el-option>
     </el-select>
 
-    <OnceTimeSelector v-if="value=='once'"/>
+    <OnceTimeSelector v-if="formData.type=='once'" @change="handleOnceTimeChange"/>
 
-    <RepeatTimeSelector v-else-if="value=='repeat'"/>
+    <RepeatTimeSelector v-else-if="formData.type=='repeat'" @change="handleRepeatTimeChange"/>
 
-    <DateRangeSelector v-else-if="value=='range'"/>
+    <DateRangeSelector v-else-if="formData.type=='range'" @change="handleDateRangeChange"/> 
   </div>
 </template>
 
@@ -23,8 +31,75 @@ export default {
   components: { OnceTimeSelector, RepeatTimeSelector, DateRangeSelector },
   data() {
     return {
-      value: ""
+      value: "",
+      formData: {
+        type: "once",
+        once: {},
+        repeat: {},
+        range: {}
+      },
+      params: {
+        type: "",
+        once: {},
+        repeat: {},
+        range: ""
+      }
     }
+  },
+  methods: {
+    /**
+     * @description: 
+     * @param {*} v
+     * @return {*}
+     */       
+    handleOnceTimeChange(v) {
+      this.initParams();
+      this.params.type = "once";
+      this.params.once = { value: v };
+      this.updateData();
+    },
+    /**
+     * @description: 改变重复时间
+     * @param {*} v
+     * @return {*}
+     */
+    handleRepeatTimeChange(v) {
+      this.initParams();
+      this.params.type = "repeat";
+      this.params.repeat = v;
+      this.updateData();
+    },
+    /**
+     * @description: 改变时间范围
+     * @param {*} v
+     * @return {*}
+     */
+    handleDateRangeChange(v) {
+      this.initParams();
+      this.params.type = "range";
+      this.params.range = v;
+      this.updateData();
+    },
+    /**
+     * @description: 初始化params
+     * @return {*}
+     */
+    initParams() {
+      this.params = {
+        type: "",
+        once: {},
+        repeat: {}
+      };
+    },
+    /**
+     * @description: 向父组件传值
+     * @return {*}
+     */    
+    updateData() {
+      this.$emit("update:data", this.params);
+      this.$emit("change", this.params);
+    }
+    
   }
 }
 </script>

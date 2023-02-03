@@ -13,6 +13,7 @@
 
         <SceneSelector v-if="action.type=='scene'"/>
 
+        <AlarmPanel v-if="action.type=='alarm'"/>
 
       </div>
       <el-button type="border" size="mini" :disabled="actions.length > 2" @click="handleAddAction">新增执行动作</el-button>
@@ -24,14 +25,16 @@
 import {message_error} from "@/utils/helpers";
 import CommandDevice from "./CommandDevice";
 import SceneSelector from "./action/SceneSelector";
+import AlarmPanel from "./action/AlarmPanel.vue";
+
 const actionTypeOptions = [
   { label: "操作设备", value: "device" },
   { label: "激活场景", value: "scene" },
-  { label: "触发告警", value: "alert" },
+  { label: "触发告警", value: "alarm" },
 ];
 export default {
   name: "ActionForm",
-  components: { CommandDevice, SceneSelector },
+  components: { CommandDevice, SceneSelector, AlarmPanel },
   data() {
     return {
       actions: [

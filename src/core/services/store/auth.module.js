@@ -121,7 +121,6 @@ const actions = {
           reject(response)
           console.log(response);
           context.commit(SET_ERROR, response.data.errors || "");
-          // console.log(state);
         });
     });
   },
@@ -224,9 +223,7 @@ const actions = {
     return new Promise((resolve, reject) => {
       if (PermissionService.getPermissions()) {
         // 从缓存中读取路由
-        console.log("================从缓存中读取路由==================")
         state.permissions = PermissionService.getPermissions();
-        console.log("================从缓存中读取路由==================", state.permissions)
         // 获取菜单
         state.navs = state.permissions['menu_tree'];
         // 获取按钮权限
@@ -243,9 +240,6 @@ const actions = {
             .then(({data}) => {
               if (data.code == 200) {
                 state.permissions = data.data;
-
-                console.log("=================从服务器读取===================")
-                console.log(state.permissions)
                 // 存储permissions
                 PermissionService.savePermissions(state.permissions);
                 // 获取导航菜单

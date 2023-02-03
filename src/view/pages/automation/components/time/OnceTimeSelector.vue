@@ -1,8 +1,6 @@
 <template>
-  <el-date-picker
-      v-model="value"
-      type="datetime"
-      placeholder="选择日期时间">
+  <el-date-picker v-model="value" type="datetime" placeholder="选择日期时间" 
+        @change="handleValueChange">
   </el-date-picker>
 </template>
 
@@ -12,6 +10,11 @@ export default {
   data() {
     return {
       value: ""
+    }
+  },
+  methods: {
+    handleValueChange(v) {
+      this.$emit("change", v);
     }
   }
 }
