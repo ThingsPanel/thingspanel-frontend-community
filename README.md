@@ -8,9 +8,7 @@
     <a href="https://github.com/ThingsPanel/ThingsPanel-Backend-Vue">
         <img src="https://img.shields.io/npm/dependency-version/cxs-ui/element-ui?color=green">
     </a>
-    <a href="LICENSE">
-        <img src="https://img.shields.io/badge/License-MIT-yellow.svg">
-    </a>
+
 </p>
 
 # ThingsPanel前端使用说明
