@@ -6,8 +6,8 @@
       label-position="left"
       :model="form"
       :hide-required-asterisk="true"
-      label-width="80px">
-    <el-form-item label="归属产品" prop="product">
+      label-width="150px">
+    <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.BELONGINGPRODUCT')" prop="product">
       <el-select v-model="form.product">
         <el-option label="手推车" value="手推车"></el-option>
         <el-option label="井盖" value="井盖"></el-option>
@@ -15,46 +15,46 @@
       </el-select>
     </el-form-item>
 
-    <el-form-item label="固件名称" prop="firmware_name">
+    <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.FIRMWARENAME')" prop="firmware_name">
       <el-input v-model="form.firmware_name"></el-input>
     </el-form-item>
 
-    <el-form-item label="版本号" prop="firmware_version">
+    <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.VERSION')" prop="firmware_version">
       <el-input v-model="form.firmware_version"></el-input>
     </el-form-item>
 
-    <el-form-item label="签名方式" prop="signature">
+    <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.SIGNTYPE')" prop="signature">
       <el-radio v-model="form.signature" label="MD5">MD5</el-radio>
       <el-radio v-model="form.signature" label="SHA256">SHA256</el-radio>
     </el-form-item>
 
-    <el-form-item label="签名" prop="sign_value">
+    <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.SIGN')" prop="sign_value">
       <el-input v-model="form.sign_value"></el-input>
     </el-form-item>
 
-    <el-form-item label="上传固件">
+    <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.UPLOAD')">
       <el-upload
           class="upload-demo"
           drag
           action="https://jsonplaceholder.typicode.com/posts/"
           multiple>
         <i class="el-icon-upload"></i>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <div class="el-upload__text">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.TIP1') }}<em>{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.TIP2') }}</em></div>
       </el-upload>
     </el-form-item>
 
-    <el-form-item label="描述" prop="description">
+    <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.DESCRIPTION')" prop="description">
       <el-input type="textarea" v-model="form.description"></el-input>
     </el-form-item>
 
-    <el-button type="primary" class="w-100" @click="onSubmit">提交</el-button>
+    <el-button type="primary" class="w-100" @click="onSubmit">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.SUBMIT') }}</el-button>
   </el-form>
 </div>
 </template>
 
 <script>
 import moment from "moment";
-
+import i18n from "@/core/plugins/vue-i18n.js"
 export default {
   name: "CreateForm",
   data: () => ({
@@ -68,22 +68,22 @@ export default {
     },
     rules: {
       product:[
-        {required: true, message: "请选择产品"}
+        {required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER1')}
       ],
       firmware_name:[
-        {required: true, message: "请填写固件名"}
+        {required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER2')}
       ],
       firmware_version:[
-        {required: true, message: "请填写固件版本"}
+        {required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER3')}
       ],
       signature: [
-        {required: true, message: "请填写签名类型"}
+        {required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER4')}
       ],
       sign_value: [
-        {required: true, message: "请填写签名值"}
+        {required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER5')}
       ],
       description: [
-        {required: true, message: "请填写固件描述"}
+        {required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER6')}
       ]
     }
   }),

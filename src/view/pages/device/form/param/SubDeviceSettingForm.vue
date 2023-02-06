@@ -2,20 +2,20 @@
   <el-dialog
       class="el-dark-dialog el-dark-input"
       :visible.sync="dialogVisible"
-      title="配置参数"
+      :title="$t('DEVICE_MANAGEMENT.CONFIG_PARAMETER.CONFIGPARAMETER')"
       :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
       width="600px">
     <el-form label-width="120px" >
-        <el-form-item :label="device_item.protocol.startsWith('WVP_') ? '通道编号:' : '设备地址:'" style="padding: 30px">
+        <el-form-item :label="device_item.protocol.startsWith('WVP_') ? $t('DEVICE_MANAGEMENT.CONFIG_PARAMETER.CHANGENUMBER') : $t('DEVICE_MANAGEMENT.CONFIG_PARAMETER.DEVICEADDRESS')" style="padding: 30px">
           <el-input size="medium" v-model="subDeviceAddress" ></el-input>
         </el-form-item>
-        <el-form-item v-if="device_item.protocol.startsWith('WVP_')" label="播放地址:" style="padding: 30px">
+        <el-form-item v-if="device_item.protocol.startsWith('WVP_')" :label="$t('DEVICE_MANAGEMENT.CONFIG_PARAMETER.PLAYBACKADDRESS')" style="padding: 30px">
           <el-input size="medium" v-model="subDeviceVideoAddress" ></el-input>
         </el-form-item>
 
       <div style="display: flex;justify-content: center;margin-bottom:30px">
-        <el-button @click="closeDialog">取消</el-button>
-        <el-button type="primary" @click="onSubmit">保存</el-button>
+        <el-button @click="closeDialog">{{ $t('DEVICE_MANAGEMENT.CONFIG_PARAMETER.CANCEL') }}</el-button>
+        <el-button type="primary" @click="onSubmit">{{ $t('DEVICE_MANAGEMENT.CONFIG_PARAMETER.SAVE') }}</el-button>
       </div>
     </el-form>
 

@@ -90,8 +90,8 @@
 <!--            新增一行-->
             <el-col :span="6">
               <el-button type="indigo" size="medium" @click="addLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-              <el-popconfirm :title="$t('COMMON.TITLE4')" @confirm="removeLine(config_item)" v-else>
-                <el-button slot="reference" type="danger" size="medium">{{ $t('COMMON.DELETE') }}</el-button>
+              <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="removeLine(config_item)" v-else>
+                <el-button slot="reference" type="danger" size="medium">{{ $t('AUTOMATION.DELETE') }}</el-button>
               </el-popconfirm>
             </el-col>
           </el-row>
@@ -102,7 +102,7 @@
     <el-col :span="24">
       <el-form-item :label="$t('AUTOMATION.ALARM_TYPE')">
         <el-checkbox-group v-model="formData.warningChecked" @change="handleAlarmChange" size="small">
-          <el-checkbox label="email">{{$t('COMMON.EMAIL')}}</el-checkbox>
+          <el-checkbox label="email">{{$t('AUTOMATION.EMAIL')}}</el-checkbox>
           <el-checkbox label="sms" disabled>{{$t('AUTOMATION.SMS')}}</el-checkbox>
           <el-checkbox label="dingtalk" disabled>{{$t('AUTOMATION.DING_TALK')}}</el-checkbox>
           <el-checkbox label="enterpriseWeChat" disabled>{{$t('AUTOMATION.ENTERPRISE_WECHAT')}}</el-checkbox>

@@ -22,7 +22,7 @@
           </el-col>
 
           <el-col :span="12">
-            <el-form-item :label="$t('COMMON.AUTHENTICATION')" prop="auth_type">
+            <el-form-item :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.PROTOCOLTYPE2')" prop="auth_type">
               <el-select style="width: 100%" v-model="formData.auth_type" :placeholder="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.PLACEHOLDER43')">
                 <el-option v-for="item in authOptions" :key="item.value" :label="item.label"
                            :value="item.value"></el-option>
@@ -92,7 +92,7 @@ export default {
       dialogVisible: false,
       protocolOptions: [
         { value: "mqtt", label: "mqtt" },
-        { value: "MQTT", label: i18n.t("COMMON.MQTTPROTOCOL") },
+        { value: "MQTT", label: i18n.t("PRODUCT_MANAGEMENT.PRODUCT_LIST.MQTTPROTOCOL") },
       ],
       authOptions: [
         { value: "1", label: "AccessToken " },

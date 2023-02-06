@@ -81,9 +81,9 @@
                 size="mini"
                 type="indigo"
                 @click="handle_sever(scope.row)"
-                >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.SAVE")}}</el-button>
+                >{{ $t("SYSTEM_MANAGEMENT.SAVE")}}</el-button>
                 <el-button size="mini" type="default" class="butStyle" @click="handleCancel(scope.row)"
-                  >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.CANCEL")}}</el-button>
+                  >{{ $t("SYSTEM_MANAGEMENT.CANCEL")}}</el-button>
             </el-form-item>
             <el-form-item v-else>
               <el-button
@@ -91,10 +91,10 @@
                 type="indigo"
                 :disabled="!hasAuth('sys:role:edit')"
                 @click="handle_launch(scope.row)"
-                >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.EDIT")}}</el-button
+                >{{ $t("SYSTEM_MANAGEMENT.EDIT")}}</el-button
               >
               <el-popconfirm
-                :title="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.TITLE4')"
+                :title="$t('SYSTEM_MANAGEMENT.TITLE4')"
                 @confirm="handle_del(scope.row)"
               >
                 <el-button
@@ -103,7 +103,7 @@
                   type="danger"
                   class="butStyle"
                   :disabled="!hasAuth('sys:role:del')"
-                >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.DELETE")}}</el-button
+                >{{ $t("SYSTEM_MANAGEMENT.DELETE")}}</el-button
                 >
               </el-popconfirm>
             </el-form-item>
@@ -148,10 +148,10 @@
         </div>
         <div>
           <div class="footer" style="text-align: center;">
-            <el-button size="small " @click="closeDrawerClose"  class="buttStyle">{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.CANCEL")}}</el-button>
+            <el-button size="small " @click="closeDrawerClose"  class="buttStyle">{{ $t("SYSTEM_MANAGEMENT.CANCEL")}}</el-button>
             <el-button size="small" type="indigo" @click="jurisdiction"
 
-            >{{ $t("SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.SAVE")}}</el-button
+            >{{ $t("SYSTEM_MANAGEMENT.SAVE")}}</el-button
             >
           </div>
         </div>
