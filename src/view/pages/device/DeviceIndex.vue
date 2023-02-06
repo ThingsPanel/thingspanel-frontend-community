@@ -61,7 +61,7 @@
       </template>
     </el-table-column>
     <!--  设备名 start  -->
-    <el-table-column :label="$t('DEVICE_MANAGEMENT.DEVICENAME1')" min-width="15%" width="auto" prop="name">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.DEVICENAME1')" min-width="14%" width="auto" prop="name">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.name">
           <el-input style="width: 100%"
@@ -91,7 +91,7 @@
     <!--  设备分组 end  -->
 
     <!--  设备类型：网关/设备 start  -->
-    <el-table-column :label="$t('DEVICE_MANAGEMENT.GATEWAYDEVICE')" width="auto" min-width="13%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.GATEWAYDEVICE')" width="auto" min-width="15%">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.device_type">
           <DeviceTypeSelector :current-item="scope.row" :deviceType.sync="scope.row.device_type" @change="deviceTypeChange(scope.row)"
@@ -102,7 +102,7 @@
     <!--  设备类型：网关/设备 end  -->
 
     <!-- 绑定插件 -->
-    <el-table-column :label="$t('DEVICE_MANAGEMENT.BINGPLUGINS')" min-width="13%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.BINGPLUGINS')" min-width="15%">
       <template slot-scope="scope">
         <el-button v-if="scope.row.device_type!='2'" type="text" @click="handleBindingClick(scope.row)">{{ $t("DEVICE_MANAGEMENT.BINGPLUGINS")}}</el-button>
       </template>
@@ -128,7 +128,7 @@
     <!--  推送时间 end  -->
 
     <!--  推送时间 start  -->
-    <el-table-column :label="$t('DEVICE_MANAGEMENT.TITLE23')" min-width="12%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.TITLE23')" min-width="16%">
       <template slot-scope="scope">
         <div>{{scope.row.latest_ts ? dateFormat(scope.row.latest_ts/1000000) : ""}}</div>
       </template>
@@ -136,7 +136,7 @@
     <!--  推送时间 end  -->
 
     <!-- 图表组件 start-->
-    <el-table-column :label="$t('DEVICE_MANAGEMENT.TITLE24')" min-width="21%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.TITLE24')" min-width="20%">
       <template slot-scope="scope">
         <!--   structure下数组的 field属性的数组   -->
         <template v-if="scope.row.chart_names">
@@ -159,13 +159,13 @@
     <!-- 图表组件 end-->
 
     <!--  操作 start  -->
-    <el-table-column :label="$t('DEVICE_MANAGEMENT.OPERATION')" min-width="37%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.OPERATION')" min-width="40%">
       <template slot-scope="scope">
         <div style="text-align: right">
           <el-button  v-show="scope.row.device_type==2" type="primary" size="mini"
                      @click="addChildDevice(scope.row)">{{ $t("DEVICE_MANAGEMENT.ADDINGCHILDDEVICE")}}</el-button>
           <el-button style="margin-right: 10px"  type="primary" size="mini"
-                     @click="deviceConfig(scope.row)">设&nbsp;备&nbsp;配&nbsp;置</el-button>
+                     @click="deviceConfig(scope.row)">{{ $t("DEVICE_MANAGEMENT.DEVICECONFIG")}}</el-button>
 
            <el-popconfirm :disabled="!hasAuth('device:del')" :title="$t('DEVICE_MANAGEMENT.DELETETHISITEM')"
                           @confirm="handleDelete(scope.row, getDeviceIndex)">

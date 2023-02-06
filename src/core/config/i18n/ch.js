@@ -642,6 +642,7 @@ export const locale = {
     TITLE24: "图表组件",
     OPERATION: "操作",
     ADDINGCHILDDEVICE: "增加子设备",
+    DEVICECONFIG: "设备配置",
     DELETETHISITEM: "确定要删除此项吗？",
     DELETE: "删除",
     BINDDEVICEPLUG: "绑定设备插件",

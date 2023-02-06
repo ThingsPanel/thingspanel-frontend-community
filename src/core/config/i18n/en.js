@@ -629,6 +629,7 @@ export const locale = {
     TITLE24: "Chart component",
     OPERATION: "Operation",
     ADDINGCHILDDEVICE: "Adding a child device",
+    DEVICECONFIG: "Device config",
     DELETETHISITEM: "Are you sure you want to delete this item?",
     DELETE: "Delete",
     BINDDEVICEPLUG: "Bind device plug-in",
