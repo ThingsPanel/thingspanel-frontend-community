@@ -874,13 +874,30 @@ export const locale = {
       ALARM_STRATEGY_NAME: "告警策略名称",
       ALARM_STRATEGY_DESCRIBE: "告警策略描述",
       PLACEHOLDER1: "请填写告警策略名称",
-      PLACEHOLDER2: "请填写告警策略描述"
+      PLACEHOLDER2: "请填写告警策略描述",
+      PLACEHOLDER3: "请填写名字",
+      PLACEHOLDER4: "请填写描述",
+      PLACEHOLDER5: "请选择分组",
+      PLACEHOLDER6: "请选择设备",
+      PLACEHOLDER7: "请选择条件",
+      PLACEHOLDER8: "请选择符号",
+      PLACEHOLDER9: "请填写值",
     },
     CONTROL_STRATEGY: {
       CONTROL_STRATEGY_LIST: "控制策略列表",
       NEW_STRATEGY: "新策略",
       EDIT_CONTROL_STRATEGY: "修改控制策略",
-      ADD_CONTROL_STRATEGY: "新增控制策略"
+      ADD_CONTROL_STRATEGY: "新增控制策略",
+      PLACEHOLDER1: "请填写名字",
+      PLACEHOLDER2: "请填写描述",
+      PLACEHOLDER3: "请选择分组",
+      PLACEHOLDER4: "请选择设备",
+      PLACEHOLDER5: "请选择条件",
+      PLACEHOLDER6: "请选择符号",
+      PLACEHOLDER7: "请选择值",
+      PLACEHOLDER8: "请填写值",
+      PLACEHOLDER9: "必须是数字",
+      PLACEHOLDER10: "请选择时间",
     }
   },
   /**

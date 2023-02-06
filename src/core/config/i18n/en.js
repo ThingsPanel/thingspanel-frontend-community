@@ -861,13 +861,30 @@ export const locale = {
       ALARM_STRATEGY_NAME: "Alarm strategy name",
       ALARM_STRATEGY_DESCRIBE: "Alarm strategy describe",
       PLACEHOLDER1: "Please enter alarm strategy name",
-      PLACEHOLDER2: "Please enter alarm strategy describe"
+      PLACEHOLDER2: "Please enter alarm strategy describe",
+      PLACEHOLDER3: "Please enter name",
+      PLACEHOLDER4: "Please enter describe",
+      PLACEHOLDER5: "Please select an asset",
+      PLACEHOLDER6: "Please select an device",
+      PLACEHOLDER7: "please select an condition",
+      PLACEHOLDER8: "please select an symbol",
+      PLACEHOLDER9: "please enter value",
     },
     CONTROL_STRATEGY: {
       CONTROL_STRATEGY_LIST: "Control strategy list",
       NEW_STRATEGY: "New strategy",
       EDIT_CONTROL_STRATEGY: "Edit control strategy",
-      ADD_CONTROL_STRATEGY: "Add control strategy"
+      ADD_CONTROL_STRATEGY: "Add control strategy",
+      PLACEHOLDER1: "Please enter name",
+      PLACEHOLDER2: "Please enter describe",
+      PLACEHOLDER3: "Please select an asset",
+      PLACEHOLDER4: "Please select an device",
+      PLACEHOLDER5: "please select an condition",
+      PLACEHOLDER6: "please select an symbol",
+      PLACEHOLDER7: "please enter value",
+      PLACEHOLDER8: "please enter value",
+      PLACEHOLDER9: "must be a number",
+      PLACEHOLDER10: "please select an time",
     }
   },
   /**
