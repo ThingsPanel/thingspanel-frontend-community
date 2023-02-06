@@ -36,7 +36,7 @@
       <ConditionForm/>
 
       <!-- 执行动作 -->
-      <ActionForm/>
+      <ActionForm :data="formData.actions" @change="handleActionChange"/>
 
       <div class="text-right">
         <el-button size="medium" type="save" @click="handleSaveAndStart()">保存并执行</el-button>
@@ -75,7 +75,21 @@ export default {
       formData: {
         name: "",
         describe: "",
-        priority: ""
+        priority: "",
+        conditions: [],
+        actions: [
+          {
+            type: "alarm",
+            groups: [
+              {}
+            ],
+            notification: ["wechat", "sms"],
+            priority: "low"
+          },
+          {
+            type: "scene"
+          }
+        ]
       }
     }
   },
@@ -95,6 +109,9 @@ export default {
     },
     handleSave() {
 
+    },
+    handleActionChange(v) {
+      console.log("====editForm.handleActionChange", v);
     }
   }
 }

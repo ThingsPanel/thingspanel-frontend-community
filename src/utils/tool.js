@@ -49,6 +49,19 @@ export function deepClone(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
 
+/**
+ * @description: 替换数组中的对象
+ * @param {*} arr
+ * @param {*} obj1
+ * @param {*} obj2
+ * @return {*}
+ */
+export function replaceObj(arr, obj1, obj2) {
+  let index = arr.findIndex(item => item == obj1);
+  arr.splice(index, 1, obj2);
+  return arr;
+}
+
 export function jsonProp(obj) {
   // type check
   if (!obj || typeof obj !== "object") {
