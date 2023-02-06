@@ -420,7 +420,7 @@ export const locale = {
     HOME: "Home",
     DEVICE_ACCESS: "Device Access",
     DEVICE_WATCH: "Device Watch",
-    DEVICE_MAP: "Device map",
+    DEVICE_MAP: "Device Map",
     DATA_MANAGEMENT: "Data Management",
     VISUALIZATION: "Visualization",
     AUTOMATION: "Automation",

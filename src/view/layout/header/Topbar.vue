@@ -4,9 +4,9 @@
 
     <!--begin: Language bar -->
     <div class="topbar-item">
-      <el-select class="topbar-select" v-model="themeValue" placeholder="主题颜色" @change="handleChangeTheme">
+      <!-- <el-select class="topbar-select" v-model="themeValue" placeholder="主题颜色" @change="handleChangeTheme">
         <el-option v-for="(theme, index) in themeOptions" :key="index" :label="theme.label" :value="theme.value" ></el-option>
-      </el-select>
+      </el-select> -->
 
       <b-dropdown size="sm" variant="link" toggle-class="btn btn-icon btn-clean btn-dropdown btn-lg mr-1 text-decoration-none"
         no-caret right no-flip>
