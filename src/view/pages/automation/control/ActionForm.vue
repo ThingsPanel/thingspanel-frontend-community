@@ -5,15 +5,18 @@
 
         <el-select style="width: 100px;margin-right:10px" placeholder="选择执行动作" v-model="action.type"
                    :disabled="actions.length > (index+1)"
-                   @change="v => handleChangeActionType(action, v)">
+                   @change="v=>handleChangeActionType(action, v)">
           <el-option v-for="(item, index) in action.typeOptions" :key="index" :label="item.label" :value="item.value"></el-option>
         </el-select>
 
-        <CommandDevice v-if="action.type=='device'"/>
+        <!-- 操作设备 -->
+        <CommandDevice v-if="action.type=='device'" :data="action" @change="v=>handleCommandChange(action, v)"/>
 
-        <SceneSelector v-if="action.type=='scene'"/>
+        <!-- 激活场景 -->
+        <SceneSelector v-if="action.type=='scene'" @change="v=>handleSceneChange(action, v)"/>
 
-        <AlarmPanel v-if="action.type=='alarm'"/>
+        <!-- 告警通知 -->
+        <AlarmNotification v-if="action.type=='alarm'"  :data="action" @change="v=>handleAlarmChange(action, v)"/>
 
       </div>
       <el-button type="border" size="mini" :disabled="actions.length > 2" @click="handleAddAction">新增执行动作</el-button>
@@ -25,7 +28,8 @@
 import {message_error} from "@/utils/helpers";
 import CommandDevice from "./CommandDevice";
 import SceneSelector from "./action/SceneSelector";
-import AlarmPanel from "./action/AlarmPanel.vue";
+import AlarmNotification from "./action/AlarmNotification.vue";
+import { replaceObj } from '@/utils/tool';
 
 const actionTypeOptions = [
   { label: "操作设备", value: "device" },
@@ -34,21 +38,59 @@ const actionTypeOptions = [
 ];
 export default {
   name: "ActionForm",
-  components: { CommandDevice, SceneSelector, AlarmPanel },
+  components: { CommandDevice, SceneSelector, AlarmNotification },
+  props: {
+    data: {
+      type: [Array],
+      default: () => []
+    }
+  },
   data() {
     return {
       actions: [
-        { type: "", typeOptions: actionTypeOptions, disabled: false }
-      ]
+          { type: "", typeOptions: actionTypeOptions, disabled: false }
+        ]
+    }
+  },
+  watch: {
+    data: {
+      handler(newValue) {
+        if (newValue) {
+          this.actions = JSON.parse(JSON.stringify(this.data));
+          console.log("====actionform", this.actions);
+        }
+      },immediate: true
+    },
+    actions: {
+      handler(newValue) {
+        if (newValue) {
+          console.log("====actions", newValue);
+        }
+      },
+      deep: true
     }
   },
   created() {
-
+    this.setActionTypeOptions();
   },
   methods: {
+    /**
+     * @description: 初始化执行动作类型下拉列表
+     * @return {*}
+     */    
+    setActionTypeOptions() {
+      let list = JSON.parse(JSON.stringify(actionTypeOptions));
+      this.actions.forEach(action => {
+        if (action.type) {
+          action.typeOptions = JSON.parse(JSON.stringify(list));
+          let index = list.findIndex(item => item.value == action.type);
+          list.splice(index, 1);
+        }
+      })
+    },
     handleAddAction() {
-      let result = this.actions.every(item => !item.type);
-      if (result) {
+      let result = this.actions.every(item => item.type != "");
+      if (!result) {
         message_error("请选择一个执行动作");
         return;
       }
@@ -61,6 +103,55 @@ export default {
     handleChangeActionType(action, v) {
 
 
+    },
+    /**
+     * @description: 操作设备更改
+     * @param {*} v
+     * @return {*}
+     */    
+    handleCommandChange(action, v) {
+      action.commands = v.commands;
+      action.type = "device";
+      // replaceObj(this.actions, action, v);
+      console.log("====handleCommandChange.actions", this.actions);
+      this.updateData();
+    },
+    /**
+     * @description: 场景更改
+     * @param {*} v
+     * @return {*}
+     */    
+    handleSceneChange(action, v) {
+      action.type = "scene";
+      action.value = v;
+      this.updateData();
+    },
+    /**
+     * @description: 通知更改
+     * @param {*} v
+     * @return {*}
+     */    
+    handleAlarmChange(action, v) {
+      // 死循环
+      console.log("====handleAlarmChange",action, v)
+      for (const item in v) {
+        action[item] = v[item];
+      }
+      console.log("====handleAlarmChange.action", action);
+
+      // replaceObj(this.actions, action, v);
+      this.updateData();
+    },
+    /**
+     * @description: 向父组件传值
+     * @return {*}
+     */    
+    updateData() {
+      this.actions.forEach(item => {
+        delete item.typeOptions;
+        delete item.disabled;
+      })
+      this.$emit("change", this.actions);
     }
   }
 }

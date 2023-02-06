@@ -5,8 +5,6 @@
                @change="handleProjectChange">
       <el-option v-for="(option, index) in projectOptions" :key="index" :label="option.name" :value="option.id"></el-option>
     </el-select>
-    <!-- 选择项目后显示分组 -->
-<!--    <GroupSelector v-if="formData.project.id" :data.sync.once="formData.project"/>-->
 
     <!-- 分组列表 -->
     <el-select style="width: 100px;margin-right:10px" v-if="formData.projectId" v-model="formData.groupId"
@@ -73,7 +71,7 @@ export default {
       // 向父组件传的值
       params: {
         projectId: "",
-        groupID: "",
+        groupId: "",
         deviceId: "",
         state: {
           duration: {},
@@ -114,8 +112,8 @@ export default {
      */
     handleDeviceChange(v) {
       this.params.deviceId = v.value;
-      this.updateData();
       this.getStateList(v.pluginId);
+      this.updateData();
     },
     /**
      * 选择状态或属性
@@ -186,7 +184,6 @@ export default {
                   label: item.device_name, value: item.device, pluginId: item.type
                 }
               });
-              console.log("====getDeviceList", this.deviceOptions)
             }
           })
     },
@@ -195,8 +192,9 @@ export default {
      * @param id  插件id
      */
     getStateList(id) {
-      console.log("====getStateList", id)
-      let params = {current_page: 1, per_page: 10, id };
+      this.stateOptions = [];
+      if (!id) return;
+      let params = {current_page: 1, per_page: 9999, id };
       PluginAPI.page(params)
           .then(({data}) => {
             if (data.code == 200) {
@@ -207,12 +205,11 @@ export default {
               let arr = properties.map(item => {
                 return { label: item.title, name: item.name, unit: item.unit, mode: "property" };
               });
-              this.stateOptions = [];
+            
               if (this.option.operator) {
                 this.stateOptions.push({label: "状态", options: [{ mode: "onlineDuration", label: "在线状态", name: "onlineDuration" }]});
               }
               this.stateOptions.push({label: "属性", options: arr});
-              console.log("====getStateList", this.stateOptions);
             }
           })
     }

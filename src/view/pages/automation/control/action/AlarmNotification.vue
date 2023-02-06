@@ -1,0 +1,150 @@
+<!--
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-02-03 13:36:48
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-02-03 17:46:47
+ * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\alarm\AlarmPanel.vue
+ * @Description: 
+-->
+<template>
+    <div>
+  <!--    <el-form label-position="right" label-width="85px">-->
+        <el-form-item label="告警级别">
+            <el-select style="width: 100px;" v-model="formData.priority">
+                <el-option label="低" :value="'low'"></el-option>
+                <el-option label="中" :value="'medium'"></el-option>
+                <el-option label="高" :value="'hight'"></el-option>
+              </el-select>
+        </el-form-item>
+
+        <el-form-item label="通知用户">
+          <div style="display: flex;margin-bottom: 10px" v-for="(group, index) in formData.groups" :key="index">
+  
+            <el-select style="width: 100px;margin-right:10px" v-model="group.role" @change="handleRoleChange">
+              <el-option v-for="(role, index) in roleList" :key="index" :label="role.role_name" :value="role.id"></el-option>
+            </el-select>
+
+            <el-select style="width: auto;margin-left: 10px;margin-right:10px" multiple v-model="group.users">
+              <el-option label="所有用户" :value="'all'"></el-option>
+
+            </el-select>
+
+  
+            <!-- 新增一行 -->
+            <el-button type="indigo" size="small" style="margin-left: auto"
+                       v-if="index == 0"
+                       @click="handleAddGroup">新增一行</el-button>
+  
+            <!-- 删除 -->
+            <el-button type="danger" size="small" style="margin-left: auto"
+                       v-if="index > 0"
+                       @click="handleDeleteGrouop(group)">删除</el-button>
+  
+          </div>
+        </el-form-item>
+
+        <el-form-item label="重复次数">
+          <el-input v-model="formData.repeatTimes" placeholder="告警达到重复次数才触发"></el-input>
+        </el-form-item>
+
+        <el-form-item label="通知方式">
+          <el-checkbox-group v-model="formData.notification">
+            <el-checkbox label="wechat">微信通知</el-checkbox>
+            <el-checkbox label="sms">短信通知</el-checkbox>
+            <el-checkbox label="email">邮件通知</el-checkbox>
+            <el-checkbox label="phone">电话通知</el-checkbox>
+          </el-checkbox-group>
+        </el-form-item>
+  
+  <!--    </el-form>-->
+    </div>
+  </template>
+  
+  <script>
+  import { user_find_all_roles } from "@/api/user"
+  export default {
+    name: "AlarmPanel",
+    components: {  },
+    props: {
+      data: {
+        type: [Object],
+        default: () => { return {} }
+      }
+    },
+    data() {
+      return {
+        formData: {
+            groups: [
+                {}
+            ],
+            notification: []
+        },
+        roleList: []
+      }
+    },
+    created() {
+      this.getRoleList();
+    },
+    watch: {
+      data: {
+        handler(newValue) {
+          if (newValue) {
+            this.formData = JSON.parse(JSON.stringify(newValue));
+          }
+        }, immediate: true
+      },
+      formData: {
+        handler(newValue) {
+          if(newValue) {
+            console.log("====alarm.watch.formData", newValue);
+            this.$emit("change", newValue);
+          }
+        },
+        immediate: true,
+        deep: true
+      }
+    },
+    methods: {
+      /**
+       * @description: 新增用户组
+       * @return {*}
+       */      
+      handleAddGroup() {
+        this.formData.groups.push({});
+      },
+      /**
+       * @description: 删除用户组
+       * @param {*} group
+       * @return {*}
+       */
+      handleDeleteGrouop(group) {
+        let index = this.formData.groups.findIndex(item => item == group);
+        this.formData.groups.splice(index, 1);
+      },
+      /**
+       * @description: 根据角色id查询用户
+       * @param {*} v
+       * @return {*}
+       */      
+      handleRoleChange(v) {
+        // 缺接口
+      },
+      /**
+       * @description: 获取角色列表
+       * @return {*}
+       */
+      getRoleList() {
+        user_find_all_roles({ current_page: 1, per_page: 36 })
+        .then(({data}) => {
+          if (data.code == 200) {
+            this.roleList = data.data?.data || [];
+          }
+        })
+      }
+    }
+  }
+  </script>
+  
+  <style scoped>
+  
+  </style>
