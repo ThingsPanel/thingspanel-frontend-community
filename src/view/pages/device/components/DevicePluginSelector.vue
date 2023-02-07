@@ -2,7 +2,8 @@
 <template>
   <el-select
       class="w-100"
-      :placeholder="$t('COMMON.DEVICE_PLUG_SELECTOR_PLACEHOLDER')"
+      :placeholder="$t('DEVICE_MANAGEMENT.PLACEHOLDER3')"
+      :no-data-text="$t('PUBLIC.NODATA')"
       size="medium"
       v-model="device_plugin_type"
       filterable

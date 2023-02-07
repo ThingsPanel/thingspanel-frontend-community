@@ -51,7 +51,7 @@ import i18n from "@/core/plugins/vue-i18n"
 
 const steps = [
   { label: i18n.t('PLUGIN.DEVICE_INFO'), icon: "el-icon-info", description: i18n.t('PLUGIN.TXT')},
-  { label: i18n.t('PLUGIN.MATTER_MODEL'), icon: "el-icon-s-home", description: i18n.t('PLUGIN.TXT1')},
+  { label: i18n.t('PLUGIN.THINGS_MODEL'), icon: "el-icon-s-home", description: i18n.t('PLUGIN.TXT1')},
   { label: i18n.t('PLUGIN.CHART'), icon: "el-icon-s-data", description: i18n.t('PLUGIN.TXT2')},
   // { label: i18n.t('PLUGIN.FUNCTION'), icon: "el-icon-edit", description: i18n.t('PLUGIN.TXT3')},
   { label: i18n.t('PLUGIN.RELEASE'), icon: "el-icon-upload", description: i18n.t('PLUGIN.TXT4')}

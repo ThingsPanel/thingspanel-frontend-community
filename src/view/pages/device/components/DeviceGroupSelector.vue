@@ -3,7 +3,8 @@
   <el-select
       class="w-100"
       size="medium"
-      :placeholder="$t('COMMON.DEVICE_GROUP_SELECTOR_PLACEHOLDER')"
+      :placeholder="$t('DEVICE_MANAGEMENT.PLACEHOLDER1')"
+      :no-data-text="$t('PUBLIC.NODATA')"
       v-model="device_group_id"
       :disabled="disabled"
       filterable

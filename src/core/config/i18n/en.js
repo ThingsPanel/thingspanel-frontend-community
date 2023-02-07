@@ -419,7 +419,7 @@ export const locale = {
   MENU: {
     HOME: "Home",
     DEVICE_ACCESS: "Device Access",
-    DEVICE_WATCH: "Device Watch",
+    DEVICE_MONITORING: "Device Monitoring",
     DEVICE_MAP: "Device map",
     DATA_MANAGEMENT: "Data Management",
     VISUALIZATION: "Visualization",
@@ -550,6 +550,11 @@ export const locale = {
       DATA_SWITCHING: "Data forwarding",
     }
   },
+  
+
+  PUBLIC: {
+    NODATA: "No data",
+  },
   /**
    * 登录页面
    */
@@ -564,13 +569,15 @@ export const locale = {
     TEXT3: "Privacy Policy",
     TEXT4: "Contact us",
     WrongPassword: "The user name or password is incorrect",
+    LOADING:"Loading....",
   },
   /**
    * 首页
    */
   HOME: {
     QUICK_GUIDE: "Quick Guide",
-    LAST_VISIT: "Recent Visit",
+    GETTING_STARTED: "Getting Started",
+    LAST_VISIT: "Recently Visited",
     TEXT1: "Access to data needs to start with the development of device plug-ins, or you can download existing plug-ins to quickly access data.",
     VIEWHELP: "Help",
     FEEDBACKQ: "Submit Issues",
@@ -579,7 +586,7 @@ export const locale = {
     AUTOMATION: "Automation",
     ALARMSTRATEGY: "Alert strategy",
     CONTROLSTRATRGY: "Control strategy",
-    DEVICE_TOTAL: "Total number of equipment",
+    DEVICE_TOTAL: "Total number of devices",
     MESSAGE_TOTAL: "Total number of messages",
     TITLE19: "CPU usage",
     TITLE20: "Memory usage",
@@ -599,7 +606,7 @@ export const locale = {
     OPERATION: "Operation",
     SAVE: "save",
     CANCEL: "cancel",
-    DEVICE: "Device Manager",
+    DEVICE: "Device Management",
     TEXT44: "Are you sure you want to modify",
     DELETE: "Delete",
   },
@@ -607,24 +614,26 @@ export const locale = {
    * 设备管理
    */
   DEVICE_MANAGEMENT: {
-    PLACEHOLDER2: "Please input assets alias name",
+    PLACEHOLDER1: "Select Project",
+    PLACEHOLDER2: "device name",
+    PLACEHOLDER3: "Select Group",
     PLACEHOLDER4: "Please select device type",
     SEARCH: "Search",
     CREATEDEVICE: "Create Device",
     MANAGEMENTGROUP: "Management Group",
-    TYPE: "type",
+    TYPE: "Type",
     SUB_DEVICE: "sub-device",
     THEGATEWAY: "The gateway",
     EQUIPMENT: "Device",
     DEVICENAME1: "DeviceName",
     DEVICELOCATION: "Device location",
     GATEWAYDEVICE: "Gateway/Device",
-    BINGPLUGINS: "Binding plug-ins",
-    CODEMANAGE: "Code",
-    EDITPARAMETERS: "Edit parameters",
-    STATE: "state",
-    ONLINE: "On",
-    OFFLINE: "Off",
+    BINGPLUGINS: "Bind",
+    CODEMANAGE: "Conn Params",
+    EDITPARAMETERS: "Edit",
+    STATE: "State",
+    ONLINE: "Online",
+    OFFLINE: "Offline",
     TITLE23: "Last push",
     TITLE24: "Chart component",
     OPERATION: "Operation",
@@ -727,12 +736,12 @@ export const locale = {
   /**
    * 设备监控
    */
-  DEVICE_WATCH: {
-    DEVICEWATCH: "Device Watch",
+  DEVICE_MONITORING: {
+    DEVICEMONITORING: "Device Monitoring",
     NO: "ID",
     PROJECT_NAME: "Project Name",
     OPERATION: "Operation",
-    SEE: "See",
+    VIEW: "View",
   },
   /**
    * 设备监控详情
@@ -754,8 +763,8 @@ export const locale = {
   DATA_MANAGEMENT: {
     DATAS: "Data Management",
     PLACEHOLDER1: "Select business",
-    PLACEHOLDER2: "Please select an asset",
-    PLACEHOLDER3: "Please input assets alias name",
+    PLACEHOLDER2: "Select Project",
+    PLACEHOLDER3: "Select Group",
     PLACEHOLDER4: "Please enter the data tags",
     PLACEHOLDER5: "Start date",
     PLACEHOLDER6: "to",
@@ -790,7 +799,7 @@ export const locale = {
     EDIT: "Edit",
     TEXT44: "Are you sure you want to modify?",
     DELETE: "Delete",
-    SEE: "See",
+    VIEW: "View",
   },
   /**
    * 自动化
@@ -1121,7 +1130,7 @@ export const locale = {
     TAB3: "Device Editor",
     CUSTOM_DEVICE_PLUGIN: "Custom device plugin",
     DEVICE_INFO: "Device info",
-    MATTER_MODEL: "Matter model",
+    THINGS_MODEL: "Things model",
     CHART: "Chart",
     FUNCTION: "Function",
     RELEASE: "Release",
@@ -1216,6 +1225,7 @@ export const locale = {
       VALIDATE2: "Please select plug-in classification",
       PLUNGIN_COVER: "Plug-in cover（474X246）：",
       CHOOSE_COVER: "Choose cover",
+      PLACEHOLDER1: "Please select",
     },
     /**
    * 应用管理——设备插件——物模型

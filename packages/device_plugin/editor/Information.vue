@@ -9,7 +9,7 @@
               <el-input v-model="formData['pluginName']" ></el-input>
             </el-form-item>
             <el-form-item :label="$t('PLUGIN.DEVICE_INFO_TAB.LABLE2')" label-width="100" prop="pluginCategory">
-              <el-select style="width: 100%" v-model="formData['pluginCategory']">
+              <el-select style="width: 100%" v-model="formData['pluginCategory']" :placeholder="$t('PLUGIN.DEVICE_INFO_TAB.PLACEHOLDER1')" :no-data-text="$t('PUBLIC.NODATA')">
                 <el-option  v-for="(item, index) in pluginCategory" :key="index" :label="item.label" :value="item.value"></el-option>
               </el-select>
             </el-form-item>

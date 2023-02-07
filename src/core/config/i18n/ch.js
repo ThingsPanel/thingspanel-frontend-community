@@ -489,7 +489,7 @@ export const locale = {
   MENU: {
     HOME: "首页",
     DEVICE_ACCESS: "设备接入",
-    DEVICE_WATCH: "设备监控",
+    DEVICE_MONITORING: "设备监控",
     DEVICE_MAP: "设备地图",
     DATA_MANAGEMENT: "数据管理",
     VISUALIZATION: "可视化",
@@ -563,6 +563,9 @@ export const locale = {
       INVALID_FIELD: "Field is not valid",
     },
   },
+  PUBLIC: {
+    NODATA: "无数据",
+  },
   /**
    * 登录页面
    */
@@ -577,12 +580,14 @@ export const locale = {
     TEXT3: "隐私策略",
     TEXT4: "联系我们",
     WrongPassword: "用户名或密码错误",
+    LOADING:"正在加载中....",
   },
   /**
    * 首页
    */
   HOME: {
     QUICK_GUIDE: "快捷指南",
+    GETTING_STARTED: "新手入门",
     LAST_VISIT: "最近访问",
     TEXT1: "接入数据需要从设备插件开发开始，也可以下载已有插件，快速接入数据。",
     VIEWHELP: "查看帮助",
@@ -620,7 +625,9 @@ export const locale = {
    * 设备管理
    */
   DEVICE_MANAGEMENT: {
+    PLACEHOLDER1: "请选择分组",
     PLACEHOLDER2: "请输入设备名称",
+    PLACEHOLDER3: "请选择插件",
     PLACEHOLDER4: "请选择设备类型",
     SEARCH: "查询",
     CREATEDEVICE: "创建设备",
@@ -740,12 +747,12 @@ export const locale = {
   /**
    * 设备监控
    */
-  DEVICE_WATCH: {
-    DEVICEWATCH: "设备监控",
+  DEVICE_MONITORING: {
+    DEVICEMONITORING: "设备监控",
     NO: "序号",
     PROJECT_NAME: "项目名称",
     OPERATION: "操作",
-    SEE: "查看"
+    VIEW: "查看"
   },
   /**
    * 设备监控详情
@@ -803,7 +810,7 @@ export const locale = {
     EDIT: "编辑",
     TEXT44: "确定要修改吗？",
     DELETE: "删除",
-    SEE: "查看",
+    VIEW: "查看",
   },
   /**
    * 自动化
@@ -1134,7 +1141,7 @@ export const locale = {
     TAB3: "设备插件生成器",
     CUSTOM_DEVICE_PLUGIN: "自定义设备插件",
     DEVICE_INFO: "设备信息",
-    MATTER_MODEL: "物模型",
+    THINGS_MODEL: "物模型",
     CHART: "图表",
     FUNCTION: "函数",
     RELEASE: "发布",
@@ -1229,6 +1236,7 @@ export const locale = {
       VALIDATE2: "请选择插件分类",
       PLUNGIN_COVER: "插件封面（474X246）：",
       CHOOSE_COVER: "选择封面",
+      PLACEHOLDER1: "请选择",
     },
     /**
    * 应用管理——设备插件——物模型
