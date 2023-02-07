@@ -489,6 +489,7 @@ export const locale = {
   MENU: {
     HOME: "首页",
     DEVICE_ACCESS: "设备接入",
+    DEVICE_MONITORING: "设备监控",
     DEVICE_WATCH: "设备监控",
     DEVICE_MAP: "设备地图",
     DATA_MANAGEMENT: "数据管理",

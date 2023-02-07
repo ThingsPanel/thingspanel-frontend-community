@@ -220,7 +220,7 @@ export default {
           d_id: this.attrFormData.d_id,
           additional_info: JSON.stringify(additionalInfo),
           location: this.attrFormData.location,
-          subDeviceAddress: this.attrFormData.subDeviceAddress,
+          sub_device_addr: this.attrFormData.subDeviceAddress,
           protocol_config: JSON.stringify({DeviceId: device.id, AccessToken: device.token, ...this.formData})
         }
         console.log("====DeviceConfigForm.config", config, this.attrFormData)

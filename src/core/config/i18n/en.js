@@ -419,6 +419,7 @@ export const locale = {
   MENU: {
     HOME: "Home",
     DEVICE_ACCESS: "Device Access",
+    DEVICE_MONITORING: "Device Monitoring",
     DEVICE_WATCH: "Device Watch",
     DEVICE_MAP: "Device map",
     DATA_MANAGEMENT: "Data Management",
