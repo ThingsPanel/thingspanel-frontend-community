@@ -586,7 +586,7 @@ export const locale = {
    * 首页
    */
   HOME: {
-    QUICK_GUIDE: "快捷指南",
+    QUICK_START: "快捷指南",
     GETTING_STARTED: "新手入门",
     LAST_VISIT: "最近访问",
     TEXT1: "接入数据需要从设备插件开发开始，也可以下载已有插件，快速接入数据。",

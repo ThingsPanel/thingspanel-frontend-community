@@ -13,7 +13,7 @@
       </h3>
 
       <div class="width-100 mt-2 mb-5">
-        <a target="_blank" href="http://thingspanel.io/docs/overview" class="btn mr-3 btn-success active">{{ $t("HOME.QUICK_GUIDE") }}</a>
+        <a target="_blank" href="http://thingspanel.io/en/docs/quick_start" class="btn mr-3 btn-success active">{{ $t("HOME.QUICK_START") }}</a>
         <a target="_blank" href="http://thingspanel.io" class="btn mr-3 btn-success active">{{ $t("HOME.VIEWHELP") }}</a>
         <a target="_blank" href="https://github.com/ThingsPanel" class="btn mr-3 btn-success active">{{ $t("HOME.FEEDBACKQ") }}</a>
       </div>

@@ -575,7 +575,7 @@ export const locale = {
    * 首页
    */
   HOME: {
-    QUICK_GUIDE: "Quick Guide",
+    QUICK_START: "Quick Start",
     GETTING_STARTED: "Getting Started",
     LAST_VISIT: "Recently Visited",
     TEXT1: "Access to data needs to start with the development of device plug-ins, or you can download existing plug-ins to quickly access data.",
