@@ -565,6 +565,8 @@ export const locale = {
   },
   PUBLIC: {
     NODATA: "无数据",
+    CHANGEPASSWORD: "修改密码",
+    SIGNOUT: "退 出",
   },
   /**
    * 登录页面
