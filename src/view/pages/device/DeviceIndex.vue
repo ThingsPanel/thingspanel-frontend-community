@@ -68,7 +68,7 @@
              :placeholder="$t('DEVICE_MANAGEMENT.PLACEHOLDER2')"
               size="medium"
               v-model="scope.row.name"
-              @change="handleSave(scope.row)"
+              @change="handleSave(scope.row, getDeviceIndex)"
           ></el-input>
         </el-form-item>
       </template>
@@ -83,7 +83,7 @@
               :disabled="scope.row.device_type == 3"
               :asset_id.sync="scope.row.asset_id"
               :options="deviceGroupOptions"
-              @change="handleSave(scope.row)"
+              @change="handleSave(scope.row, getDeviceIndex)"
           ></DeviceGroupSelector>
         </el-form-item>
       </template>
