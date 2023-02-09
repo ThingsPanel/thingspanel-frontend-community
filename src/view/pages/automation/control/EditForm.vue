@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-      :title="currentItem.id ? $t('AUTOMATION.CONTROL_STRATEGY.EDIT_CONTROL_STRATEGY') : $t('AUTOMATION.CONTROL_STRATEGY.ADD_CONTROL_STRATEGY')"
+      :title="formData.id ? $t('AUTOMATION.CONTROL_STRATEGY.EDIT_CONTROL_STRATEGY') : $t('AUTOMATION.CONTROL_STRATEGY.ADD_CONTROL_STRATEGY')"
       class="el-dark-dialog"
       :close-on-click-modal="false"
       :visible.sync="dialogVisible"
@@ -32,8 +32,8 @@
         </el-col>
       </el-row>
 
-      <!-- 条件 Dohkn4158 -->
-      <ConditionForm/>
+      <!-- 条件  -->
+      <ConditionForm :data="formData.conditions" @change="handleConditionChange"/>
 
       <!-- 执行动作 -->
       <ActionForm :data="formData.actions" @change="handleActionChange"/>
@@ -63,11 +63,9 @@ export default {
       type: [Boolean],
       default:  false
     },
-    currentItem: {
+    data: {
       type: [Object],
-      default:  () => {
-        return {}
-      }
+      default:  () => {return {} }
     }
   },
   data() {
@@ -76,20 +74,10 @@ export default {
         name: "",
         describe: "",
         priority: "",
-        conditions: [],
-        actions: [
-          {
-            type: "alarm",
-            groups: [
-              {}
-            ],
-            notification: ["wechat", "sms"],
-            priority: "low"
-          },
-          {
-            type: "scene"
-          }
-        ]
+        conditions: [
+          {}
+        ],
+        actions: []
       }
     }
   },
@@ -103,15 +91,52 @@ export default {
       }
     }
   },
+  watch: {
+    visible: {
+      handler(newValue) {
+        if (newValue) {
+          this.initFormData();
+        }
+      }
+    }
+  },
   methods: {
+    /**
+     * @description: 初始化表单数据
+     * @return {*}
+     */    
+    initFormData() {
+      if (!this.data.id) {
+        this.formData = {
+          name: "",
+          describe: "",
+          priority: "",
+          conditions: [{}],
+          actions: []
+        }
+      } else {
+        this.formData = JSON.parse(JSON.stringify(this.data));
+      }
+      console.log("====initFormData.formData", this.formData);
+      
+    },
+    handleConditionChange(v) {
+      this.formData.conditions = v;
+      this.updateData();
+    },
+    handleActionChange(v) {
+      this.formData.actions = v;
+      console.log("====handleActionChange", v)
+      this.updateData();
+    },
     handleSaveAndStart() {
 
     },
     handleSave() {
 
     },
-    handleActionChange(v) {
-      console.log("====editForm.handleActionChange", v);
+    updateData() {
+      this.$emit("change", this.formData);
     }
   }
 }

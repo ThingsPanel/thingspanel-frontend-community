@@ -213,14 +213,6 @@ export default {
      * @param newLayout
      */
     handleLayoutUpdatedEvent(newLayout) {
-      // this.$nextTick(() => {
-      //   newLayout.forEach(item => {
-      //     let ref = this.$refs["component_" + item.i];
-      //     if (ref && ref[0]) {
-      //       ref[0].sizeChange();
-      //     }
-      //   })
-      // })
       this.setLayout();
     },
     /**

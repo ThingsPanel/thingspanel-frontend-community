@@ -1,7 +1,14 @@
-<!-- 操作设备 -->
+<!--
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-02-06 09:04:58
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-02-06 17:01:04
+ * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\CommandDevice.vue
+ * @Description: 操作设备
+-->
 <template>
   <div class="command-device-box">
-    <div style="display: flex;margin-bottom: 10px" v-for="(command, index) in formData.commands" :key="index">
+    <div style="display: flex;margin-bottom: 10px" v-for="(command, index) in commands" :key="index">
 
       <DeviceTypeSelector :option="{operator: false}" :data="command" @change="v=>handleCommandChange(command, v)"/>
 
@@ -21,30 +28,31 @@
 </template>
 
 <script>
-import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
+import DeviceTypeSelector from "../../components/device/DeviceTypeSelector.vue";
 export default {
   name: "CommandDevice",
   components: { DeviceTypeSelector },
   props: {
     data: {
-      type: [Object],
-      default: () => { return {} }
+      type: [Array],
+      default: () => { return [] }
     }
   },
   data() {
     return {
-      formData: {
-        commands: [{}]
-      }
+      commands: []
     }
   },
   watch: {
     data: {
       handler(newValue) {
-        if (newValue) {
-          this.formData.commands = JSON.parse(JSON.stringify(newValue));
+        if (newValue && newValue.length > 0) {
+          this.commands = JSON.parse(JSON.stringify(newValue));
+        } else {
+          this.commands = [{}]
         }
-      }
+      },
+      immediate: true
     }
   },
   methods: {
@@ -55,9 +63,10 @@ export default {
      * @return {*}
      */    
     handleCommandChange(command, v) {
-      let index = this.formData.commands.findIndex(item => item == command);
-      this.formData.commands.splice(index, 1, v);
-      this.$emit("change", this.formData);
+      for (const item in v) {
+        command[item] = v[item];
+      }
+      this.$emit("change", this.commands);
     },
     /**
      * @description: 新增一行指令
@@ -72,7 +81,8 @@ export default {
      * @return {*}
      */    
     handleDeleteCommand(command) {
-
+      let index = this.commands.findIndex(item => item == command);
+      this.commands.splice(index, 1);
     }
 
   }

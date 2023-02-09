@@ -10,13 +10,13 @@
         </el-select>
 
         <!-- 操作设备 -->
-        <CommandDevice v-if="action.type=='device'" :data="action" @change="v=>handleCommandChange(action, v)"/>
+        <CommandDevice v-if="action.type=='device'" :data="action.data" @change="v=>handleCommandChange(action, v)"/>
 
         <!-- 激活场景 -->
-        <SceneSelector v-if="action.type=='scene'" @change="v=>handleSceneChange(action, v)"/>
+        <SceneSelector v-if="action.type=='scene'" :data="action.data" @change="v=>handleSceneChange(action, v)"/>
 
         <!-- 告警通知 -->
-        <AlarmNotification v-if="action.type=='alarm'"  :data="action" @change="v=>handleAlarmChange(action, v)"/>
+        <AlarmNotification v-if="action.type=='alarm'" :data="action.data" @change="v=>handleAlarmChange(action, v)"/>
 
       </div>
       <el-button type="border" size="mini" :disabled="actions.length > 2" @click="handleAddAction">新增执行动作</el-button>
@@ -26,10 +26,9 @@
 
 <script>
 import {message_error} from "@/utils/helpers";
-import CommandDevice from "./CommandDevice";
+import CommandDevice from "./action/CommandDevice";
 import SceneSelector from "./action/SceneSelector";
 import AlarmNotification from "./action/AlarmNotification.vue";
-import { replaceObj } from '@/utils/tool';
 
 const actionTypeOptions = [
   { label: "操作设备", value: "device" },
@@ -55,23 +54,17 @@ export default {
   watch: {
     data: {
       handler(newValue) {
+        console.log("====actionform", newValue);
+
         if (newValue) {
-          this.actions = JSON.parse(JSON.stringify(this.data));
-          console.log("====actionform", this.actions);
+          this.actions = JSON.parse(JSON.stringify(newValue));
+          this.setActionTypeOptions();
         }
       },immediate: true
-    },
-    actions: {
-      handler(newValue) {
-        if (newValue) {
-          console.log("====actions", newValue);
-        }
-      },
-      deep: true
     }
   },
   created() {
-    this.setActionTypeOptions();
+    // this.setActionTypeOptions();
   },
   methods: {
     /**
@@ -79,6 +72,7 @@ export default {
      * @return {*}
      */    
     setActionTypeOptions() {
+      console.log("====ActionForm.setActionTypeOptions")
       let list = JSON.parse(JSON.stringify(actionTypeOptions));
       this.actions.forEach(action => {
         if (action.type) {
@@ -88,6 +82,10 @@ export default {
         }
       })
     },
+    /**
+     * @description: 新增一个执行动作
+     * @return {*}
+     */    
     handleAddAction() {
       let result = this.actions.every(item => item.type != "");
       if (!result) {
@@ -101,7 +99,7 @@ export default {
       this.actions.push({ type: "", typeOptions: arr, disabled: false})
     },
     handleChangeActionType(action, v) {
-
+      console.log("====handleChangeActionType", action, v)
 
     },
     /**
@@ -110,10 +108,11 @@ export default {
      * @return {*}
      */    
     handleCommandChange(action, v) {
-      action.commands = v.commands;
+      // for (const item in v) {
+      //   action[item] = v[item];
+      // }
+      action.data = v;
       action.type = "device";
-      // replaceObj(this.actions, action, v);
-      console.log("====handleCommandChange.actions", this.actions);
       this.updateData();
     },
     /**
@@ -122,6 +121,8 @@ export default {
      * @return {*}
      */    
     handleSceneChange(action, v) {
+      console.log("====handleSceneChange")
+
       action.type = "scene";
       action.value = v;
       this.updateData();
@@ -132,14 +133,10 @@ export default {
      * @return {*}
      */    
     handleAlarmChange(action, v) {
-      // 死循环
-      console.log("====handleAlarmChange",action, v)
-      for (const item in v) {
-        action[item] = v[item];
-      }
-      console.log("====handleAlarmChange.action", action);
-
-      // replaceObj(this.actions, action, v);
+      // for (const item in v) {
+      //   action[item] = v[item];
+      // }
+      action.data = v;
       this.updateData();
     },
     /**

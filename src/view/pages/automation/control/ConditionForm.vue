@@ -2,7 +2,7 @@
   <div>
 <!--    <el-form label-position="right" label-width="85px">-->
       <el-form-item label="如果：">
-        <div style="display: flex;margin-bottom: 10px" v-for="(condition, index) in formData.conditions" :key="index">
+        <div style="display: flex;margin-bottom: 10px" v-for="(condition, index) in conditions" :key="index">
 
           <el-select v-if="condition.relation" style="position: absolute; width: 60px;margin-right:10px" v-model="condition.relation">
             <!-- 且 -->
@@ -20,11 +20,11 @@
 
           <!-- 选择设备条件后显示项目列表 -->
           <template v-if="condition.type=='device'">
-            <DeviceTypeSelector v-if="condition.type=='device'" :data.sync="condition.data" @change="handleDeviceChange"/>
+            <DeviceTypeSelector v-if="condition.type=='device'" :data="condition.data" @change="v=>handleDeviceChange(condition, v)"/>
           </template>
 
           <!-- 选择时间条件后显示时间条件类型 -->
-          <TimeTypeSelector v-else-if="condition.type=='time'" :data.sync="condition.data" @change="handleTimeChange"/>
+          <TimeTypeSelector v-else-if="condition.type=='time'" :data.sync="condition.data" @change="v=>handleTimeChange(condition, v)"/>
 
           <!-- 新增一行 -->
           <el-button type="indigo" size="small" style="margin-left: auto"
@@ -49,34 +49,28 @@ import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
 export default {
   name: "ConditionForm",
   components: { DeviceTypeSelector, TimeTypeSelector },
+  props: {
+    data: {
+      type: [Array],
+      default: () => []
+    }
+  },
   data() {
     return {
-      formData: {
-        conditions: [
-          {
-            type: "device",
-            data: {
-              projectId: "",
-              groupId: "",
-              deviceId: "",
-              state: {
-                mode: "",      // mode: 在线持续时间(onlineDuration)    物模型属性(property)
-                value: "",
-                duration: {},
-                operator: {
-                  symbol: "",
-                  value: ""
-                }
-              }
-            }
-          }
-        ],
-        action: [
-          {
+      conditions: [],
+    }
+  },
+  watch: {
+    data: {
+      handler(newValue) {
+        console.log("====condition", newValue);
+        if (newValue) {
+          this.conditions = JSON.parse(JSON.stringify(newValue));
+          console.log("====condition.conditions", this.conditions);
 
-          }
-        ]
-      }
+        }
+      },
+      immediate: true
     }
   },
   methods: {
@@ -85,23 +79,24 @@ export default {
      * @return {*}
      */
     handleAddCondition() {
-      this.formData.conditions.push({ type: "device", relation: "and" });
+      this.conditions.push({ type: "device", relation: "and" });
     },
     /**
      * @description: 删除一行
      * @return {*}
      */
     handleDeleteCondition(condition) {
-      let index = this.formData.conditions.findIndex(item => item == condition);
-      this.formData.conditions.splice(index, 1);
+      let index = this.conditions.findIndex(item => item == condition);
+      this.conditions.splice(index, 1);
     },
     /**
      * @description: 设备条件
      * @param {*} v
      * @return {*}
      */
-    handleDeviceChange(v) {
-      console.log("====handleDeviceChange", JSON.stringify(this.formData));
+    handleDeviceChange(condition, v) {
+      condition.data = v;
+      this.$emit("change", this.conditions)
     },
     /**
      * @description: 时间条件
@@ -109,7 +104,8 @@ export default {
      * @return {*}
      */
     handleTimeChange(v) {
-      console.log("====handleTimeChange", JSON.stringify(this.formData));
+      console.log("====condition.handleTimeChange", JSON.stringify(this.conditions));
+      this.$emit("change", this.conditions)
 
     }
   }

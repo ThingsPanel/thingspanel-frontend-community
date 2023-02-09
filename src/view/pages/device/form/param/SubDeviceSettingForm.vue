@@ -6,7 +6,7 @@
       :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false"
       width="600px">
     <el-form label-width="120px" >
-        <el-form-item :label="device_item.protocol.startsWith('WVP_') ? $t('DEVICE_MANAGEMENT.CONFIG_PARAMETER.CHANGENUMBER') : $t('DEVICE_MANAGEMENT.CONFIG_PARAMETER.DEVICEADDRESS')" style="padding: 30px">
+        <el-form-item :label="device_item.protocol && device_item.protocol.startsWith('WVP_') ? $t('DEVICE_MANAGEMENT.CONFIG_PARAMETER.CHANGENUMBER') : $t('DEVICE_MANAGEMENT.CONFIG_PARAMETER.DEVICEADDRESS')" style="padding: 30px">
           <el-input size="medium" v-model="subDeviceAddress" ></el-input>
         </el-form-item>
         <el-form-item v-if="device_item.protocol.startsWith('WVP_')" :label="$t('DEVICE_MANAGEMENT.CONFIG_PARAMETER.PLAYBACKADDRESS')" style="padding: 30px">

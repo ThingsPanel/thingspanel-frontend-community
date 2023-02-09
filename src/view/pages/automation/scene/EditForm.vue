@@ -1,3 +1,11 @@
+<!--
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-02-03 14:04:59
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-02-07 09:41:40
+ * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\scene\EditForm.vue
+ * @Description: 场景编辑表单
+-->
 <template>
   <el-dialog
       :title="formData.id ? '编辑' : '新增'"
@@ -18,11 +26,14 @@
       </el-form-item>
 
       <el-form-item label="添加设备">
-        <div style="" v-for="(item, index) in formData.commands" :key="index">
-          <DeviceTypeSelector :data="item.data" :option="{operator: false}"/>
+        <div style="display:flex;margin-bottom: 10px;" v-for="(command, index) in formData.commands" :key="index">
+          <DeviceTypeSelector style="" :data="command.data" :option="{operator: false}" @change="v=>handleCommandChange(command, v)"/>
           <!-- 新增一行 -->
           <el-button type="indigo" size="small" style="margin-left: auto"
-                     v-if="index == 0" @click="handleAddCommand">新增一行</el-button>
+                     v-if="index == 0" @click="handleAddCommand(command)">新增一行</el-button>
+
+          <el-button type="danger" size="small" style="margin-left: auto"
+                     v-if="index > 0" @click="handleDeleteCommand(command)">删除</el-button>
         </div>
       </el-form-item>
 
@@ -52,36 +63,66 @@ export default {
   },
   data() {
     return {
-      formData: {
-        commands: [
-          {}
-        ]
+      formData: {}
+    }
+  },
+  computed: {
+    dialogVisible: {
+      get() { 
+        return this.visible;
       },
-      dialogVisible: false
+      set(val) {
+        this.$emit("update:visible", val);
+      }
     }
   },
   watch: {
     visible: {
       handler(newValue) {
         if (newValue) {
-          this.formData = {commands: [{}]};
           if (this.id) {
             this.formData = JSON.parse(JSON.stringify(data.find(item => item.id = this.id)));
+          } else {
+            this.formData = {commands: [{data: {}}]};
           }
-          console.log("====scene", this.formData)
-
         }
-        this.dialogVisible = newValue;
       }
     }
   },
   methods: {
+    /**
+     * @description: 新增一行命令
+     * @return {*}
+     */    
     handleAddCommand() {
-      this.formData.commands.push({});
+      this.formData.commands.push({data: {}});
     },
+    /**
+     * @description: 保存
+     * @return {*}
+     */    
     handleSubmit() {
-      // this.dialogVisible = false;
-      this.$emit("update:visible", false);
+      this.dialogVisible = false;
+      console.log("====scene.EditForm", this.formData)
+    },
+    /**
+     * @description: 指定行被改变
+     * @param {*} command  改变前的值
+     * @param {*} v  改变后的值
+     * @return {*}
+     */    
+    handleCommandChange(command, v) {
+      command.data = v;
+    },
+    /**
+     * @description: 删除指定行
+     * @param {*} command
+     * @param {*} v
+     * @return {*}
+     */    
+    handleDeleteCommand(command) {
+      let index = this.formData.commands.findIndex(item => item ==command );
+      this.formData.commands.splice(index, 1);
     }
   }
 }
