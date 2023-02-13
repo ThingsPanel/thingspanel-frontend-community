@@ -47,17 +47,7 @@ export default {
     value: {
       handler(newValue) {
         if (newValue == null) return;
-        if (typeof newValue == "string") {
-          this.textValue = newValue;
-        } else if (typeof newValue == "object") {
-          if (this.option.dataSrc) {
-            let property = this.option.dataSrc[0].property;
-            let value = newValue[0]['value'][property.name];
-            if (value) {
-              this.textValue = value;
-            }
-          }
-        }
+        this.setEChartsValue(newValue);
       }
     },
     textValue: {
@@ -78,6 +68,20 @@ export default {
     }
   },
   methods: {
+    setEChartsValue(newValue) {
+      console.log("CommonText", newValue)
+      if (typeof newValue == "string") {
+          this.textValue = newValue;
+        } else if (typeof newValue == "object") {
+          if (this.option.dataSrc) {
+            let property = this.option.dataSrc[0].property;
+            let value = newValue[0]['value'][property.name];
+            if (value) {
+              this.textValue = value;
+            }
+          }
+        }
+    },
     stopPropagation(e){
       e.stopPropagation()
     }

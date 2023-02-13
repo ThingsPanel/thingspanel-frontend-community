@@ -25,7 +25,7 @@ export default {
       default: 100
     },
     value: {
-      type: [Number, String, Array],
+      type: [Number, String, Array, Object],
       default: "0"
     },
     unit: {
@@ -44,9 +44,10 @@ export default {
   watch: {
     value: {
       handler(newValue) {
-        console.log("====DashboardChart.value", newValue)
-        this.setEchartsValue(newValue);
-      }
+        console.log("====DashboardChart.value", typeof newValue, newValue)
+        this.setEChartsValue(newValue);
+      },
+      immediate: true
     },
   },
   data() {
@@ -103,7 +104,7 @@ export default {
      * 设置Echarts图表的值
      * @param value
      */
-    setEchartsValue(value) {
+    setEChartsValue(value) {
       console.log("====设置Echarts图表的值", value)
       let option = null;
       if (typeof value == "string" || typeof value == "number") {
