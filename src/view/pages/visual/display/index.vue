@@ -9,52 +9,52 @@
                              :z="component.point.z"
                              :scale="defaultScale"
       >
-        <dashboard-chart :style="getChartStyle(component)" ref="component" :key="'dashboard_' + component.cptId"
+        <dashboard-chart :style="getChartStyle(component)" :ref="'component_' + component.cptId" :key="'dashboard_' + component.cptId"
                          :w="component.point.w" :h="component.point.h"
                          v-if="component.controlType == 'dashboard' && component.type != 'status'"
                          :value="component.value"
                          :option="component"></dashboard-chart>
 
-        <history-chart :style="getChartStyle(component)"
+        <history-chart :style="getChartStyle(component)" :ref="'component_' + component.cptId"
                        :w="component.point.w" :h="component.point.h"
                        v-if="component.controlType == 'history'"
                        :option="component"></history-chart>
 
-        <pie-chart :style="getChartStyle(component)" :loading="false"
+        <pie-chart :style="getChartStyle(component)" :loading="false" :ref="'component_' + component.cptId"
                    :w="component.point.w" :h="component.point.h"
                    v-if="component.type == 'pie'" :value="component.value"
                    :option="component"></pie-chart>
 
-        <bar-chart :style="getChartStyle(component)" :loading="false"
+        <bar-chart :style="getChartStyle(component)" :loading="false" :ref="'component_' + component.cptId"
                    :w="component.point.w" :h="component.point.h"
                    v-if="component.type == 'bar'" :value="component.value"
                    :option="component"></bar-chart>
 
-        <status :style="getChartStyle(component)"
+        <status :style="getChartStyle(component)" :ref="'component_' + component.cptId"
                 v-if="component.controlType == 'dashboard' && component.type == 'status'" :option="component"></status>
 
-        <control :style="getChartStyle(component)"
+        <control :style="getChartStyle(component)" :ref="'component_' + component.cptId"
                  :w="component.point.w" :h="component.point.h"
                  v-if="component.controlType == 'control'"
                  :option="component"></control>
 
-        <configure :style="getConfigureStyle(component)"
+        <configure :style="getConfigureStyle(component)" :ref="'component_' + component.cptId"
                    :w="component.point.w" :h="component.point.h"
                    v-if="component.type == 'configure'" :option="component">
         </configure>
 
         <!-- 文本组件 -->
-        <CommonText v-else-if="component.type == 'text'" :style="getStyle(component)"
+        <CommonText v-else-if="component.type == 'text'" :style="getStyle(component)" :ref="'component_' + component.cptId"
                     :active="component.activeted" :editable="component.editable"
                     :value="component.value"
                     :w="component.point.w" :h="component.point.h" :option="component"></CommonText>
 
-        <video-player :style="getChartStyle(component)"
+        <video-player :style="getChartStyle(component)" :ref="'component_' + component.cptId"
                  :w="component.point.w" :h="component.point.h"
                  v-if="component.type == 'video'" :option="component"
                   :src="component.src" :autoplay="true"></video-player>
 
-        <other :style="getConfigureStyle(component)"
+        <other :style="getConfigureStyle(component)" :ref="'component_' + component.cptId"
                :w="component.point.w" :h="component.point.h"
                v-else-if="component.type == 'other'" :option="component"></other>
 
@@ -212,7 +212,7 @@ export default {
      * @param values   [{ deviceId, value }, ... ]
      */
     updateComponentValue(values) {
-      console.log("====display.updateComponentValue.请求调用完毕", values);
+      console.log("====display.updateComponentValue.请求调用完毕", this, values);
       this.fullData.forEach(cpt => {
         /*
           dataSrc: [
@@ -234,10 +234,15 @@ export default {
               }
             })
           })
-          cpt.value = JSON.parse(JSON.stringify(valueList));
+          // 
+          const ref = this.$refs['component_' + cpt.cptId];
+          if (ref) {
+            ref[0].setEChartsValue(valueList)
+          } else {
+            cpt.value = JSON.parse(JSON.stringify(valueList));
+          }
         }
       })
-
     },
     /*
       饼图 绑定n个设备， 每个设备都要发一次请求，n个请求全都返回成功后再刷新饼图的数据
