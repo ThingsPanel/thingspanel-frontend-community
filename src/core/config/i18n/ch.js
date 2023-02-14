@@ -489,7 +489,7 @@ export const locale = {
   MENU: {
     HOME: "首页",
     DEVICE_ACCESS: "设备接入",
-    DEVICE_WATCH: "设备监控",
+    DEVICE_MONITORING: "设备监控",
     DEVICE_MAP: "设备地图",
     DATA_MANAGEMENT: "数据管理",
     VISUALIZATION: "可视化",
@@ -563,6 +563,11 @@ export const locale = {
       INVALID_FIELD: "Field is not valid",
     },
   },
+  PUBLIC: {
+    NODATA: "无数据",
+    CHANGEPASSWORD: "修改密码",
+    SIGNOUT: "退 出",
+  },
   /**
    * 登录页面
    */
@@ -577,12 +582,14 @@ export const locale = {
     TEXT3: "隐私策略",
     TEXT4: "联系我们",
     WrongPassword: "用户名或密码错误",
+    LOADING:"正在加载中....",
   },
   /**
    * 首页
    */
   HOME: {
-    QUICK_GUIDE: "快捷指南",
+    QUICK_START: "快捷指南",
+    GETTING_STARTED: "新手入门",
     LAST_VISIT: "最近访问",
     TEXT1: "接入数据需要从设备插件开发开始，也可以下载已有插件，快速接入数据。",
     VIEWHELP: "查看帮助",
@@ -620,7 +627,9 @@ export const locale = {
    * 设备管理
    */
   DEVICE_MANAGEMENT: {
+    PLACEHOLDER1: "请选择分组",
     PLACEHOLDER2: "请输入设备名称",
+    PLACEHOLDER3: "请选择插件",
     PLACEHOLDER4: "请选择设备类型",
     SEARCH: "查询",
     CREATEDEVICE: "创建设备",
@@ -642,6 +651,7 @@ export const locale = {
     TITLE24: "图表组件",
     OPERATION: "操作",
     ADDINGCHILDDEVICE: "增加子设备",
+    DEVICECONFIG: "设备配置",
     DELETETHISITEM: "确定要删除此项吗？",
     DELETE: "删除",
     BINDDEVICEPLUG: "绑定设备插件",
@@ -698,10 +708,17 @@ export const locale = {
       PLACEHOLDER2: "请输入视频地址",
       PLACEHOLDER3:" 请选择认证方式",
       PLACEHOLDER4: "请输入视频设备id",
+      PLACEHOLDER5: "传输协议不能为空",
+      PLACEHOLDER6: "Access Token不能为空",
+      PLACEHOLDER7: "用户名不能为空",
+      PLACEHOLDER8: "密码不能为空",
+      PLACEHOLDER9: "视频设备id不能为空",
+      PLACEHOLDER10: "数据交换格式不能为空",
       OPTIONLABLE1: "密码认证",
       OPTIONLABLE2: "默认",
       OPTIONLABLE3: "自定义协议",
       COPY: "点击复制内容",
+      COPIED: "内容已复制",
       SAVE: "保存",
       CANCEL: "取消",
     },
@@ -732,12 +749,12 @@ export const locale = {
   /**
    * 设备监控
    */
-  DEVICE_WATCH: {
-    DEVICEWATCH: "设备监控",
+  DEVICE_MONITORING: {
+    DEVICEMONITORING: "设备监控",
     NO: "序号",
     PROJECT_NAME: "项目名称",
     OPERATION: "操作",
-    SEE: "查看"
+    VIEW: "查看"
   },
   /**
    * 设备监控详情
@@ -795,7 +812,7 @@ export const locale = {
     EDIT: "编辑",
     TEXT44: "确定要修改吗？",
     DELETE: "删除",
-    SEE: "查看",
+    VIEW: "查看",
   },
   /**
    * 自动化
@@ -866,13 +883,30 @@ export const locale = {
       ALARM_STRATEGY_NAME: "告警策略名称",
       ALARM_STRATEGY_DESCRIBE: "告警策略描述",
       PLACEHOLDER1: "请填写告警策略名称",
-      PLACEHOLDER2: "请填写告警策略描述"
+      PLACEHOLDER2: "请填写告警策略描述",
+      PLACEHOLDER3: "请填写名字",
+      PLACEHOLDER4: "请填写描述",
+      PLACEHOLDER5: "请选择分组",
+      PLACEHOLDER6: "请选择设备",
+      PLACEHOLDER7: "请选择条件",
+      PLACEHOLDER8: "请选择符号",
+      PLACEHOLDER9: "请填写值",
     },
     CONTROL_STRATEGY: {
       CONTROL_STRATEGY_LIST: "控制策略列表",
       NEW_STRATEGY: "新策略",
       EDIT_CONTROL_STRATEGY: "修改控制策略",
-      ADD_CONTROL_STRATEGY: "新增控制策略"
+      ADD_CONTROL_STRATEGY: "新增控制策略",
+      PLACEHOLDER1: "请填写名字",
+      PLACEHOLDER2: "请填写描述",
+      PLACEHOLDER3: "请选择分组",
+      PLACEHOLDER4: "请选择设备",
+      PLACEHOLDER5: "请选择条件",
+      PLACEHOLDER6: "请选择符号",
+      PLACEHOLDER7: "请选择值",
+      PLACEHOLDER8: "请填写值",
+      PLACEHOLDER9: "必须是数字",
+      PLACEHOLDER10: "请选择时间",
     }
   },
   /**
@@ -1109,7 +1143,7 @@ export const locale = {
     TAB3: "设备插件生成器",
     CUSTOM_DEVICE_PLUGIN: "自定义设备插件",
     DEVICE_INFO: "设备信息",
-    MATTER_MODEL: "物模型",
+    THINGS_MODEL: "物模型",
     CHART: "图表",
     FUNCTION: "函数",
     RELEASE: "发布",
@@ -1204,6 +1238,7 @@ export const locale = {
       VALIDATE2: "请选择插件分类",
       PLUNGIN_COVER: "插件封面（474X246）：",
       CHOOSE_COVER: "选择封面",
+      PLACEHOLDER1: "请选择",
     },
     /**
    * 应用管理——设备插件——物模型

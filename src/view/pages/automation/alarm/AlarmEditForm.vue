@@ -137,6 +137,7 @@ import {warning_add, warning_edit} from "@/api/automation";
 import FormAlert from "@/components/common/FormAlert.vue";
 import AUTH from "@/core/services/store/auth.module";
 import {device_info} from "../../../../api/device";
+import i18n from "@/core/plugins/vue-i18n.js"
 export default defineComponent({
   name: "AlarmEditForm",
   components: {
@@ -234,25 +235,25 @@ export default defineComponent({
 
     let rules = reactive({
       name:[
-        {required: true, message: "请填写名字"}
+        {required: true, message: i18n.t('AUTOMATION.ALARM_STRATEGY.PLACEHOLDER3')}
       ],
       describe: [
-        {required: true, message: "请填写描述"}
+        {required: true, message: i18n.t('AUTOMATION.ALARM_STRATEGY.PLACEHOLDER4')}
       ],
       sensor: [
-        {required: true, message: "请选择分组"}
+        {required: true, message: i18n.t('AUTOMATION.ALARM_STRATEGY.PLACEHOLDER5')}
       ],
       bid: [
-        {required: true, message: "请选择设备"}
+        {required: true, message: i18n.t('AUTOMATION.ALARM_STRATEGY.PLACEHOLDER6')}
       ],
       "config.field": [
-        {required: true, message: "请选择条件"}
+        {required: true, message: i18n.t('AUTOMATION.ALARM_STRATEGY.PLACEHOLDER7')}
       ],
       "config.condition": [
-        {required: true, message: "请选择符号"}
+        {required: true, message: i18n.t('AUTOMATION.ALARM_STRATEGY.PLACEHOLDER8')}
       ],
       "config.value": [
-        {required: true, message: "请选择值"}
+        {required: true, message: i18n.t('AUTOMATION.ALARM_STRATEGY.PLACEHOLDER9')}
       ],
       
     })

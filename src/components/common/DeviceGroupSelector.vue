@@ -5,6 +5,7 @@
     :clearable="clearable"
     :filterable="filterable"
     :placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER2')"
+    :no-data-text="$t('PUBLIC.NODATA')"
     @change="handleChange()">
   <el-option
       :value="item.id"

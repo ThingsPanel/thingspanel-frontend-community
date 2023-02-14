@@ -39,7 +39,7 @@
                 <el-button type="cancel" size="mini" @click="handleCancel(scope.row)">{{ $t('VISUALIZATION.CANCEL') }}</el-button>
               </div>
               <div v-else>
-                <el-button type="yellow" size="mini" @click="showVisual(scope.row)">{{ $t('VISUALIZATION.SEE') }}</el-button>
+                <el-button type="yellow" size="mini" @click="showVisual(scope.row)">{{ $t('VISUALIZATION.VIEW') }}</el-button>
                 <el-button type="indigo" size="mini" @click="editVisual(scope.row)">{{ $t('VISUALIZATION.EDIT') }}</el-button>
                 <el-popconfirm :disabled="!hasAuth('visual:del')" style="margin-left: 10px" :title="$t('VISUALIZATION.TEXT44')" @confirm="delVisual(scope.row)">
                   <el-button  slot="reference" type="danger" size="mini">{{ $t('VISUALIZATION.DELETE') }}</el-button>

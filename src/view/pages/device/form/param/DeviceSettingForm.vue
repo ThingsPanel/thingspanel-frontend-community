@@ -147,7 +147,7 @@ import {deleteCustomExchangeAgreement} from "@/api/device";
 // 传输协议连接信息
 import ProtocolInfo from "./protocol-info"
 import useDeviceSettingIndex from "./useDeviceSettingIndex";
-
+import i18n from "@/core/plugins/vue-i18n.js"
 export default defineComponent({
   name: "DeviceSettingForm",
   components: {
@@ -173,12 +173,12 @@ export default defineComponent({
 
     const required = true;
     let formRule = ref({
-      protocol: [ {required, message: "传输协议不能为空"}],
-      token: [ {required, message: "Access Token不能为空"}],
-      username: [ {required, message: "用户名不能为空"}],
-      password: [ {required, message: "密码不能为空"}],
-      d_id: [ {required, message: "视频设备id不能为空"}],
-      dataExchangeAgreement: [ {required, message: "数据交换格式不能为空"}]
+      protocol: [ {required, message: i18n.t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER5')}],
+      token: [ {required, message: i18n.t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER6')}],
+      username: [ {required, message: i18n.t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER7')}],
+      password: [ {required, message: i18n.t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER8')}],
+      d_id: [ {required, message: i18n.t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER9')}],
+      dataExchangeAgreement: [ {required, message: i18n.t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER10')}]
     })
 
     /**
@@ -435,7 +435,7 @@ export default defineComponent({
         delete it.tooltip;
       })
       let info = connectInfo.value[index];
-      info.tooltip = "内容已复制";
+      info.tooltip = this.$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.COPIED');
       connectInfo.value.splice(index, 1, info);
 
     }

@@ -267,6 +267,7 @@ import {watch} from "@vue/composition-api/dist/vue-composition-api";
 import {json_parse_stringify} from "@/utils/helpers";
 import RepeatTime from "../components/RepeatTime"
 import { MessageBox } from 'element-ui';
+import i18n from "@/core/plugins/vue-i18n.js"
 export default defineComponent({
   name: "ControlEditForm",
   components: {
@@ -405,32 +406,32 @@ export default defineComponent({
 
     let rules = reactive({
       name:[
-        {required: true, message: "请填写名字"}
+        {required: true, message: i18n.t('AUTOMATION.CONTROL_STRATEGY.PLACEHOLDER1')}
       ],
       describe: [
-        {required: true, message: "请填写描述"}
+        {required: true, message: i18n.t('AUTOMATION.CONTROL_STRATEGY.PLACEHOLDER2')}
       ],
       "config.rules.asset_id": [
-        {required: true, message: "请选择分组"}
+        {required: true, message: i18n.t('AUTOMATION.CONTROL_STRATEGY.PLACEHOLDER3')}
       ],
       "config.rules.device_id": [
-        {required: true, message: "请选择设备"}
+        {required: true, message: i18n.t('AUTOMATION.CONTROL_STRATEGY.PLACEHOLDER4')}
       ],
       "config.rules.field": [
-        {required: true, message: "请选择条件"}
+        {required: true, message: i18n.t('AUTOMATION.CONTROL_STRATEGY.PLACEHOLDER5')}
       ],
       "config.rules.condition": [
-        {required: true, message: "请选择符号"}
+        {required: true, message: i18n.t('AUTOMATION.CONTROL_STRATEGY.PLACEHOLDER6')}
       ],
       "config.rules.value": [
-        {required: true, message: "请填写值"}
+        {required: true, message: i18n.t('AUTOMATION.CONTROL_STRATEGY.PLACEHOLDER7')}
       ],
       "config.rules.value_number": [
-        {required: true, message: "请填写值"},
-        {pattern: /^[0-9]+([.]{1}[0-9]+){0,1}$/, message: "必须是数字"},
+        {required: true, message: i18n.t('AUTOMATION.CONTROL_STRATEGY.PLACEHOLDER8')},
+        {pattern: /^[0-9]+([.]{1}[0-9]+){0,1}$/, message: i18n.t('AUTOMATION.CONTROL_STRATEGY.PLACEHOLDER9')},
       ],
       "config.rules.time": [
-        {required: true, message: "请选择时间"}
+        {required: true, message: i18n.t('AUTOMATION.CONTROL_STRATEGY.PLACEHOLDER10')}
       ]
     })
 

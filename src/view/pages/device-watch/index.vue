@@ -3,16 +3,16 @@
   <div class="rounded card p-4">
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
       <el-col :span="12">
-        <TableTitle>{{ $t('DEVICE_WATCH.DEVICEWATCH') }}</TableTitle>
+        <TableTitle>{{ $t('DEVICE_MONITORING.DEVICEMONITORING') }}</TableTitle>
       </el-col>
     </el-row>
 
     <!-- 表 start -->
     <el-form class="inline-edit">
       <el-table :data="tableData" v-loading="loading">
-        <el-table-column :label="$t('DEVICE_WATCH.NO')" type="index" width="600"></el-table-column>
+        <el-table-column :label="$t('DEVICE_MONITORING.NO')" type="index" width="600"></el-table-column>
 
-        <el-table-column :label="$t('DEVICE_WATCH.PROJECT_NAME')" prop="name" align="left">
+        <el-table-column :label="$t('DEVICE_MONITORING.PROJECT_NAME')" prop="name" align="left">
           <template v-slot="scope">
             <div class="w-100 cursor-pointer" @click="showDeviceChart(scope.row)">
               <p class="mad">{{ scope.row.name }}</p>
@@ -20,13 +20,13 @@
           </template>
         </el-table-column>
 
-        <el-table-column align="left" :label="$t('DEVICE_WATCH.OPERATION')" width="160">
+        <el-table-column align="left" :label="$t('DEVICE_MONITORING.OPERATION')" width="160">
           <template v-slot="scope">
             <!-- <div class="text-center">
               <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">查看</el-button>
             </div> -->
             <div style="text-align: left">
-              <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">{{ $t("DEVICE_WATCH.SEE")}}</el-button>
+              <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">{{ $t("DEVICE_MONITORING.VIEW")}}</el-button>
             </div>
           </template>
         </el-table-column>

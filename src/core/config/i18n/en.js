@@ -421,6 +421,8 @@ export const locale = {
     DEVICE_ACCESS: "Device Access",
     DEVICE_WATCH: "Device Watch",
     DEVICE_MAP: "Device Map",
+    DEVICE_MONITORING: "Device Monitoring",
+    DEVICE_MAP: "Device map",
     DATA_MANAGEMENT: "Data Management",
     VISUALIZATION: "Visualization",
     AUTOMATION: "Automation",
@@ -550,6 +552,13 @@ export const locale = {
       DATA_SWITCHING: "Data forwarding",
     }
   },
+  
+
+  PUBLIC: {
+    NODATA: "No data",
+    CHANGEPASSWORD: "Change password",
+    SIGNOUT: "logout",
+  },
   /**
    * 登录页面
    */
@@ -564,13 +573,15 @@ export const locale = {
     TEXT3: "Privacy Policy",
     TEXT4: "Contact us",
     WrongPassword: "The user name or password is incorrect",
+    LOADING:"Loading....",
   },
   /**
    * 首页
    */
   HOME: {
-    QUICK_GUIDE: "Quick Guide",
-    LAST_VISIT: "Recent Visit",
+    QUICK_START: "Quick Start",
+    GETTING_STARTED: "Getting Started",
+    LAST_VISIT: "Recently Visited",
     TEXT1: "Access to data needs to start with the development of device plug-ins, or you can download existing plug-ins to quickly access data.",
     VIEWHELP: "Help",
     FEEDBACKQ: "Submit Issues",
@@ -579,7 +590,7 @@ export const locale = {
     AUTOMATION: "Automation",
     ALARMSTRATEGY: "Alert strategy",
     CONTROLSTRATRGY: "Control strategy",
-    DEVICE_TOTAL: "Total number of equipment",
+    DEVICE_TOTAL: "Total number of devices",
     MESSAGE_TOTAL: "Total number of messages",
     TITLE19: "CPU usage",
     TITLE20: "Memory usage",
@@ -599,7 +610,7 @@ export const locale = {
     OPERATION: "Operation",
     SAVE: "save",
     CANCEL: "cancel",
-    DEVICE: "Device Manager",
+    DEVICE: "Device Management",
     TEXT44: "Are you sure you want to modify",
     DELETE: "Delete",
   },
@@ -607,28 +618,31 @@ export const locale = {
    * 设备管理
    */
   DEVICE_MANAGEMENT: {
-    PLACEHOLDER2: "Please input assets alias name",
+    PLACEHOLDER1: "Select Project",
+    PLACEHOLDER2: "device name",
+    PLACEHOLDER3: "Select Group",
     PLACEHOLDER4: "Please select device type",
     SEARCH: "Search",
     CREATEDEVICE: "Create Device",
     MANAGEMENTGROUP: "Management Group",
-    TYPE: "type",
+    TYPE: "Type",
     SUB_DEVICE: "sub-device",
     THEGATEWAY: "The gateway",
     EQUIPMENT: "Device",
     DEVICENAME1: "DeviceName",
     DEVICELOCATION: "Device location",
     GATEWAYDEVICE: "Gateway/Device",
-    BINGPLUGINS: "Binding plug-ins",
-    CODEMANAGE: "Code",
-    EDITPARAMETERS: "Edit parameters",
-    STATE: "state",
-    ONLINE: "On",
-    OFFLINE: "Off",
+    BINGPLUGINS: "Bind",
+    CODEMANAGE: "Conn Params",
+    EDITPARAMETERS: "Edit",
+    STATE: "State",
+    ONLINE: "Online",
+    OFFLINE: "Offline",
     TITLE23: "Last push",
     TITLE24: "Chart component",
     OPERATION: "Operation",
     ADDINGCHILDDEVICE: "Adding a child device",
+    DEVICECONFIG: "Device config",
     DELETETHISITEM: "Are you sure you want to delete this item?",
     DELETE: "Delete",
     BINDDEVICEPLUG: "Bind device plug-in",
@@ -681,14 +695,21 @@ export const locale = {
       LABLE6: "Connect info：",
       LABLE7: "Data processing script：",
       LABLE8: "Video device code：",
-      PLACEHOLDER1: "Please select a protocol",
-      PLACEHOLDER2: "Please enter video address",
-      PLACEHOLDER3: "Please select an authentication mode",
-      PLACEHOLDER4: "Please video device code id",
+      PLACEHOLDER1: "please select a protocol",
+      PLACEHOLDER2: "please enter video address",
+      PLACEHOLDER3: "please select an authentication mode",
+      PLACEHOLDER4: "please video device code id",
+      PLACEHOLDER5: "protocol cannot be empty",
+      PLACEHOLDER6: "Access Token cannot be empty",
+      PLACEHOLDER7: "User name cannot be empty",
+      PLACEHOLDER8: "Password cannot be empty",
+      PLACEHOLDER9: "Video device id cannot be empty",
+      PLACEHOLDER10: "Data exchange format cannot be empty",
       OPTIONLABLE1: "PasswordAuthentication",
       OPTIONLABLE2: "Acquiesce",
       OPTIONLABLE3: "CustomProtocol",
       COPY: "Click to copy content",
+      COPIED: "Content copied",
       SAVE: "Save",
       CANCEL: "Cancel",
     },
@@ -719,12 +740,12 @@ export const locale = {
   /**
    * 设备监控
    */
-  DEVICE_WATCH: {
-    DEVICEWATCH: "Device Watch",
+  DEVICE_MONITORING: {
+    DEVICEMONITORING: "Device Monitoring",
     NO: "ID",
     PROJECT_NAME: "Project Name",
     OPERATION: "Operation",
-    SEE: "See",
+    VIEW: "View",
   },
   /**
    * 设备监控详情
@@ -746,8 +767,8 @@ export const locale = {
   DATA_MANAGEMENT: {
     DATAS: "Data Management",
     PLACEHOLDER1: "Select business",
-    PLACEHOLDER2: "Please select an asset",
-    PLACEHOLDER3: "Please input assets alias name",
+    PLACEHOLDER2: "Select Project",
+    PLACEHOLDER3: "Select Group",
     PLACEHOLDER4: "Please enter the data tags",
     PLACEHOLDER5: "Start date",
     PLACEHOLDER6: "to",
@@ -782,7 +803,7 @@ export const locale = {
     EDIT: "Edit",
     TEXT44: "Are you sure you want to modify?",
     DELETE: "Delete",
-    SEE: "See",
+    VIEW: "View",
   },
   /**
    * 自动化
@@ -853,13 +874,30 @@ export const locale = {
       ALARM_STRATEGY_NAME: "Alarm strategy name",
       ALARM_STRATEGY_DESCRIBE: "Alarm strategy describe",
       PLACEHOLDER1: "Please enter alarm strategy name",
-      PLACEHOLDER2: "Please enter alarm strategy describe"
+      PLACEHOLDER2: "Please enter alarm strategy describe",
+      PLACEHOLDER3: "Please enter name",
+      PLACEHOLDER4: "Please enter describe",
+      PLACEHOLDER5: "Please select an asset",
+      PLACEHOLDER6: "Please select an device",
+      PLACEHOLDER7: "please select an condition",
+      PLACEHOLDER8: "please select an symbol",
+      PLACEHOLDER9: "please enter value",
     },
     CONTROL_STRATEGY: {
       CONTROL_STRATEGY_LIST: "Control strategy list",
       NEW_STRATEGY: "New strategy",
       EDIT_CONTROL_STRATEGY: "Edit control strategy",
-      ADD_CONTROL_STRATEGY: "Add control strategy"
+      ADD_CONTROL_STRATEGY: "Add control strategy",
+      PLACEHOLDER1: "Please enter name",
+      PLACEHOLDER2: "Please enter describe",
+      PLACEHOLDER3: "Please select an asset",
+      PLACEHOLDER4: "Please select an device",
+      PLACEHOLDER5: "please select an condition",
+      PLACEHOLDER6: "please select an symbol",
+      PLACEHOLDER7: "please enter value",
+      PLACEHOLDER8: "please enter value",
+      PLACEHOLDER9: "must be a number",
+      PLACEHOLDER10: "please select an time",
     }
   },
   /**
@@ -1096,7 +1134,7 @@ export const locale = {
     TAB3: "Device Editor",
     CUSTOM_DEVICE_PLUGIN: "Custom device plugin",
     DEVICE_INFO: "Device info",
-    MATTER_MODEL: "Matter model",
+    THINGS_MODEL: "Things model",
     CHART: "Chart",
     FUNCTION: "Function",
     RELEASE: "Release",
@@ -1191,6 +1229,7 @@ export const locale = {
       VALIDATE2: "Please select plug-in classification",
       PLUNGIN_COVER: "Plug-in cover（474X246）：",
       CHOOSE_COVER: "Choose cover",
+      PLACEHOLDER1: "Please select",
     },
     /**
    * 应用管理——设备插件——物模型
