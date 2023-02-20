@@ -24,7 +24,7 @@
           </template>
 
           <!-- 选择时间条件后显示时间条件类型 -->
-          <TimeTypeSelector v-else-if="condition.type=='time'" :data.sync="condition.data" @change="v=>handleTimeChange(condition, v)"/>
+          <TimeTypeSelector v-else-if="condition.type=='time'" :data="condition.data" @change="v=>handleTimeChange(condition, v)"/>
 
           <!-- 新增一行 -->
           <el-button type="indigo" size="small" style="margin-left: auto"
@@ -63,11 +63,8 @@ export default {
   watch: {
     data: {
       handler(newValue) {
-        console.log("====condition", newValue);
         if (newValue) {
           this.conditions = JSON.parse(JSON.stringify(newValue));
-          console.log("====condition.conditions", this.conditions);
-
         }
       },
       immediate: true
@@ -79,7 +76,7 @@ export default {
      * @return {*}
      */
     handleAddCondition() {
-      this.conditions.push({ type: "device", relation: "and" });
+      this.conditions.push({ type: "device", relation: "and", data: {} });
     },
     /**
      * @description: 删除一行
@@ -103,8 +100,9 @@ export default {
      * @param {*} v
      * @return {*}
      */
-    handleTimeChange(v) {
-      console.log("====condition.handleTimeChange", JSON.stringify(this.conditions));
+    handleTimeChange(condition, v) {
+      condition.data = JSON.parse(JSON.stringify(v));
+      console.log("====condition.handleTimeChange", condition, v, JSON.stringify(this.conditions));
       this.$emit("change", this.conditions)
 
     }

@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-03 14:04:59
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-07 09:41:40
+ * @LastEditTime: 2023-02-14 20:40:25
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\scene\EditForm.vue
  * @Description: 场景编辑表单
 -->
@@ -18,11 +18,11 @@
   >
     <el-form label-position="left" label-width="85px">
       <el-form-item label="场景标题">
-        <el-input v-model="formData.name"></el-input>
+        <el-input v-model="formData.scenario_name"></el-input>
       </el-form-item>
 
       <el-form-item label="场景描述">
-        <el-input v-model="formData.describe"></el-input>
+        <el-input v-model="formData.scenario_description"></el-input>
       </el-form-item>
 
       <el-form-item label="添加设备">
@@ -48,6 +48,8 @@
 <script>
 import data from "./data"
 import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
+import Auto from "@/api/automation_1.0"
+import { message_success } from '../../../../utils/helpers';
 export default {
   name: "EditForm",
   components: { DeviceTypeSelector },
@@ -81,10 +83,15 @@ export default {
       handler(newValue) {
         if (newValue) {
           if (this.id) {
-            this.formData = JSON.parse(JSON.stringify(data.find(item => item.id = this.id)));
+            // 编辑
+            this.getScene(this.id);
+            // this.formData = JSON.parse(JSON.stringify(data.find(item => item.id = this.id)));
           } else {
+            // 新增
             this.formData = {commands: [{data: {}}]};
           }
+        } else {
+          this.formData = {};
         }
       }
     }
@@ -102,7 +109,40 @@ export default {
      * @return {*}
      */    
     handleSubmit() {
-      this.dialogVisible = false;
+      // 
+      let params = JSON.parse(JSON.stringify(this.formData));
+      params.scenario_actions = this.formData.commands.map(cmd => {
+        let { name, type, operator } = cmd.data.state
+        let instruct = {};
+        instruct[name] = this.jsonTypeConvert(type, operator.value);
+        return {
+          action_type: "1",
+          device_id: cmd.data.deviceId,
+          device_model: "1",
+          instruct: JSON.stringify(instruct),
+          remark: "备注"
+          
+        }
+      })
+      if (!this.formData.id) {
+        Auto.Scene.add(params)
+          .then(({data}) => {
+            if (data.code === 200) {
+              this.dialogVisible = false;
+              this.$emit("submit");
+              message_success("新增成功!");
+            }
+          })
+      } else {
+        Auto.Scene.edit(params)
+          .then(({data}) => {
+            if (data.code === 200) {
+              this.dialogVisible = false;
+              this.$emit("submit");
+              message_success("编辑成功!");
+            }
+          })
+      }
       console.log("====scene.EditForm", this.formData)
     },
     /**
@@ -123,7 +163,46 @@ export default {
     handleDeleteCommand(command) {
       let index = this.formData.commands.findIndex(item => item ==command );
       this.formData.commands.splice(index, 1);
+    },
+    getScene(id) {
+      Auto.Scene.get({id})
+        .then(({data}) => {
+          if (data.code === 200) {
+            let result = data?.data || "{}";
+            if (result !== "{}") {
+              let commands = this.getCommands(JSON.parse(JSON.stringify(result)))
+              let tmp = JSON.parse(JSON.stringify(result));
+              tmp.commands = commands;
+              this.formData = tmp;
+            }
+          }
+        })
+    },
+    getCommands(v) {
+      let cmds = v?.scenario_actions || [];
+      let commands = cmds.map(cmd => {
+        let p = JSON.parse(cmd.instruct);
+        let name = Object.keys(p)[0];
+        let value = p[name];
+        return {
+            data: {
+              projectId: cmd.business_id,
+              groupId: cmd.asset_id,
+              deviceId: cmd.device_id,
+              state: {
+                name,
+                mode: "property",
+                operator: {
+                    symbol: "",
+                    value
+                }
+              }
+            }
+        }
+      })
+      return commands;
     }
+
   }
 }
 </script>

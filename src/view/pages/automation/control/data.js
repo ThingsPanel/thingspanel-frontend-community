@@ -39,7 +39,7 @@ const data = [
                         "sms",
                         "email"
                     ],
-                    "priority": "low",
+                    "warningLevel": "low",
                     "repeatTimes": "1"
                 }
             },
@@ -88,6 +88,63 @@ const data = [
                 ]
             }
           ]
+    }
+]
+
+const actions = [
+    {
+        "projectId": "9518757b-3e1a-3fe1-f256-f350d4f170c9",
+        "groupId": "828964e8-8662-a44d-f48d-ca2f354fff02",
+        "deviceId": "8e08aefb-7c7d-cfb5-3d05-79143a431a19",
+        "device": {
+            "label": "温度传感器",
+            "value": "8e08aefb-7c7d-cfb5-3d05-79143a431a19",
+            "pluginId": "3ec9580a-709d-38dd-c282-c8c9481495d8"
+        },
+        "state": {
+            "label": "温度",
+            "name": "temp",
+            "unit": "℃",
+            "mode": "property",
+            "type": "float",
+            "operator": {
+                "symbol": "=",
+                "value": "1"
+            }
+        }
+    },
+    {
+        "projectId": "9518757b-3e1a-3fe1-f256-f350d4f170c9",
+        "groupId": "828964e8-8662-a44d-f48d-ca2f354fff02",
+        "deviceId": "8e08aefb-7c7d-cfb5-3d05-79143a431a19",
+        "device": {
+            "label": "温度传感器",
+            "value": "8e08aefb-7c7d-cfb5-3d05-79143a431a19",
+            "pluginId": "3ec9580a-709d-38dd-c282-c8c9481495d8"
+        },
+        "state": {
+            "label": "温度",
+            "name": "temp",
+            "unit": "℃",
+            "mode": "property",
+            "type": "float",
+            "operator": {
+                "symbol": "=",
+                "value": "2"
+            }
+        }
+    }
+]
+const automation_actions = [
+    {
+        "action_type": "1",
+        "device_id": "8e08aefb-7c7d-cfb5-3d05-79143a431a19",
+        "additional_info": "{\"device_model\":\"1\",\"instruct\":{\"temp\":\"1\"}}"
+    },
+    {
+        "action_type": "1",
+        "device_id": "8e08aefb-7c7d-cfb5-3d05-79143a431a19",
+        "additional_info": "{\"device_model\":\"1\",\"instruct\":{\"temp\":\"2\"}}"
     }
 ]
 

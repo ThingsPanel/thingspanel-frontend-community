@@ -2,17 +2,9 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-06 09:39:11
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-06 17:17:57
+ * @LastEditTime: 2023-02-20 09:05:48
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\ControlStrategy.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
-<!--
- * @Author: chaoxiaoshu-mx leukotrichia@163.com
- * @Date: 2023-02-06 09:39:11
- * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-06 11:23:10
- * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\ControlStrategy.vue
- * @Description: 
 -->
 <template>
   <div class="rounded card p-4 el-table-transparent el-dark-input">
@@ -30,21 +22,28 @@
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column :label="$t('AUTOMATION.RULE_NAME')" prop="name"></el-table-column>
-      <el-table-column :label="$t('AUTOMATION.RULE_DESCRIBE')" prop="describe"></el-table-column>
+      <el-table-column :label="$t('AUTOMATION.RULE_NAME')" prop="automation_name"></el-table-column>
+      <el-table-column :label="$t('AUTOMATION.RULE_DESCRIBE')" prop="automation_described"></el-table-column>
 
-      <el-table-column :label="$t('AUTOMATION.CREATETIME')" prop="time"></el-table-column>
+      <el-table-column :label="$t('AUTOMATION.CREATETIME')" prop="created_at">
+        <template v-slot="scope">
+          {{ scope.row.created_at ? formatDate(scope.row.created_at) : "" }}
+        </template>
+      </el-table-column>
 
       <!-- 策略操作-->
       <el-table-column :label="$t('AUTOMATION.OPERATION')" width="auto" align="center">
         <template v-slot="scope">
           <div class="text-right">
-            <el-button type="yellow" size="mini">{{ $t('AUTOMATION.START') }}</el-button>
+            <el-button type="yellow" size="mini" v-if="scope.row.enabled === '0'" @click="handleSetStatus(scope.row)">{{ $t('AUTOMATION.START') }}</el-button>
+            
+            <el-button type="yellow" size="mini" v-if="scope.row.enabled === '1'" @click="handleSetStatus(scope.row)">禁用</el-button>
 
             <!-- 编辑 -->
             <el-button type="yellow" size="mini" @click="handleEdit(scope.row)">{{ $t('AUTOMATION.EDIT') }}</el-button>
-
-            <el-button type="yellow" size="mini">{{ $t('AUTOMATION.LOG') }}</el-button>
+            
+            <!-- 日志 -->
+            <el-button type="yellow" size="mini" @click="handleLog(scope.row)">{{ $t('AUTOMATION.LOG') }}</el-button>
 
             <!-- 删除 -->
             <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
@@ -61,33 +60,46 @@
           background
           layout="prev, pager, next"
           :total="total"
-          :current-page.sync="params.page"
-          :page-size="params.limit"
+          :current-page.sync="params.current_page"
+          :page-size="params.per_page"
           @current-change="getControlStrategyIndex"></el-pagination>
     </div>
 
-    <EditForm :visible.sync="showEditDialog" :data="editFormData" @change="handleEditFormChange"/>
+    <Logger :visible.sync="showLogger" :id="automationId"/>
+
+    <EditForm :visible.sync="showEditDialog" :data="editFormData" @submit="getControlStrategyIndex"/>
   </div>
 </template>
 
 <script>
 import TableTitle from "@/components/common/TableTitle";
 import EditForm from "./EditForm";
+import Logger from "./Logger"
 import data from "./data.js"
+import "@/core/mixins/common"
+
+import Auto from "@/api/automation_1.0"
+import { message_success } from '../../../../utils/helpers';
 export default {
   name: "ControlStrategy",
   components: {
     TableTitle,
-    EditForm
+    EditForm,
+    Logger
   },
   data() {
     return {
       loading: false,
       tableData: [],
       total: 0,
-      params: {},
+      params: {
+        current_page: 1,
+        per_page: 10
+      },
       showEditDialog: false,
-      editFormData: {}
+      editFormData: {},
+      showLogger: false,
+      automationId: ""
     }
   },
   created() {
@@ -111,30 +123,58 @@ export default {
      */    
     handleEdit(v) {
       this.editFormData = JSON.parse(JSON.stringify(v));
-      console.log("handleEdit", v)
       this.showEditDialog = true;
     },
     /**
-     * @description: 编辑表单的数据被改变
+     * @description: 删除一条策略
+     * @param {*} v
+     * @return {*}
+     */        
+    handleDelete(v) {
+      Auto.Control.delete({id: v.id})
+        .then(({data: result}) => {
+          if (result.code === 200) {
+            this.getControlStrategyIndex();
+            message_success("删除成功!");
+          }
+        })
+    },
+    /**
+     * @description: 修改状态
      * @param {*} v
      * @return {*}
      */    
-    handleEditFormChange(v) {
-      console.log("====handleEditFormChange", v)
+    handleSetStatus(v) {
+      const enabled = v.enabled === "0" ? "1" : "0";
+      Auto.Control.enabled({id: v.id, enabled })
+        .then(({data: result}) => {
+          if (result.code === 200) {
+            this.getControlStrategyIndex();
+            message_success(enabled === "0" ? "已禁用" : "已启用！");
+          }
+        })
     },
     /**
-     * @description: 删除一条策略
+     * @description: 日志
+     * @param {*} v
      * @return {*}
-     */        
-    handleDelete() {
-
+     */    
+    handleLog(v) {
+      this.automationId = v.id;
+      this.showLogger = true;
     },
     /**
      * @description:获取策略列表
      * @return {*}
      */  
     getControlStrategyIndex() {
-      this.tableData = data;
+      Auto.Control.list(this.params)
+        .then(({data}) => {
+          if (data.code === 200) {
+            this.tableData = data.data?.data || [];
+            this.total = data.data?.total || 0;
+          }
+        })
     }
   }
 

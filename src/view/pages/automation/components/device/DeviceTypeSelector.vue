@@ -90,8 +90,10 @@ export default {
   watch: {
     data: {
       handler(newValue) {
+        console.log("data", newValue)
         if (newValue) {
           this.formData = JSON.parse(JSON.stringify(newValue));
+          
         }
       },
       immediate: true
@@ -107,6 +109,7 @@ export default {
     "formData.groupId": {
       handler(newValue) {
         if (newValue) {
+          console.log("formData.groupId", newValue)
           this.getDeviceList(newValue);
         }
       },
@@ -133,6 +136,7 @@ export default {
      * @param v
      */
     handleGroupChange(v) {
+      console.log("handleGroupChange", v)
       this.formData.groupId = v;
       this.formData.deviceId = "";
       this.updateData();
@@ -210,14 +214,17 @@ export default {
           .then(({data}) => {
             if (data.code == 200) {
               let arr = data.data?.data || [];
+
               this.deviceOptions = arr.map(item => {
                 return {
                   label: item.device_name, value: item.device, pluginId: item.type
                 }
               });
+              
               if (this.formData.deviceId) {
                 this.formData.device = this.deviceOptions.find(item => item.value == this.formData.deviceId);
-                this.getStateList(this.formData.device.pluginId);
+                this.formData.device && this.getStateList(this.formData.device.pluginId);
+                this.updateData();
               }
             }
           })
@@ -240,7 +247,10 @@ export default {
               let properties = jsonObj.tsl?.properties || [];
 
               let arr = properties.map(item => {
-                return { label: item.title, name: item.name, unit: item.unit, mode: "property" };
+                if (this.formData.state && this.formData.state.name === item.name) {
+                  this.formData.state = { ...this.formData.state, unit: item.unit }
+                }
+                return { label: item.title, name: item.name, unit: item.unit, mode: "property", type: item.dataType };
               });
 
               this.stateOptions = [];
@@ -248,6 +258,8 @@ export default {
                 this.stateOptions.push({label: "状态", options: [{ mode: "onlineDuration", label: "在线状态", name: "onlineDuration" }]});
               }
               this.stateOptions.push({label: "属性", options: arr});
+              this.updateData();
+              
             }
           })
     }

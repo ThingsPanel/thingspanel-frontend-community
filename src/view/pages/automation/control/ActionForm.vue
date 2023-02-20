@@ -13,7 +13,7 @@
         <CommandDevice v-if="action.type=='device'" :data="action.data" @change="v=>handleCommandChange(action, v)"/>
 
         <!-- 激活场景 -->
-        <SceneSelector v-if="action.type=='scene'" :data="action.data" @change="v=>handleSceneChange(action, v)"/>
+        <SceneSelector v-if="action.type=='scene'" :value="action.value" @change="v=>handleSceneChange(action, v)"/>
 
         <!-- 告警通知 -->
         <AlarmNotification v-if="action.type=='alarm'" :data="action.data" @change="v=>handleAlarmChange(action, v)"/>
@@ -54,8 +54,6 @@ export default {
   watch: {
     data: {
       handler(newValue) {
-        console.log("====actionform", newValue);
-
         if (newValue) {
           this.actions = JSON.parse(JSON.stringify(newValue));
           this.setActionTypeOptions();
@@ -72,7 +70,6 @@ export default {
      * @return {*}
      */    
     setActionTypeOptions() {
-      console.log("====ActionForm.setActionTypeOptions")
       let list = JSON.parse(JSON.stringify(actionTypeOptions));
       this.actions.forEach(action => {
         if (action.type) {
@@ -99,7 +96,6 @@ export default {
       this.actions.push({ type: "", typeOptions: arr, disabled: false})
     },
     handleChangeActionType(action, v) {
-      console.log("====handleChangeActionType", action, v)
 
     },
     /**
@@ -121,8 +117,6 @@ export default {
      * @return {*}
      */    
     handleSceneChange(action, v) {
-      console.log("====handleSceneChange")
-
       action.type = "scene";
       action.value = v;
       this.updateData();

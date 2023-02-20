@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-03 13:36:48
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-06 16:38:27
+ * @LastEditTime: 2023-02-16 16:13:01
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\alarm\AlarmPanel.vue
  * @Description: 
 -->
@@ -10,10 +10,10 @@
     <div>
   <!--    <el-form label-position="right" label-width="85px">-->
         <el-form-item label="告警级别">
-            <el-select style="width: 100px;" v-model="formData.priority" @change="handleChange">
-                <el-option label="低" :value="'low'"></el-option>
-                <el-option label="中" :value="'medium'"></el-option>
-                <el-option label="高" :value="'hight'"></el-option>
+            <el-select style="width: 100px;" v-model="formData.warningLevel" @change="handleChange">
+                <el-option label="低" :value="'1'"></el-option>
+                <el-option label="中" :value="'2'"></el-option>
+                <el-option label="高" :value="'3'"></el-option>
               </el-select>
         </el-form-item>
 
@@ -89,8 +89,6 @@
       data: {
         handler(newValue) {
           if (newValue && JSON.stringify(newValue) !== "{}") {
-            console.log("====AlarmNotification.data", newValue)
-
             this.formData = JSON.parse(JSON.stringify(newValue));
           }
         }, immediate: true
@@ -124,7 +122,6 @@
         this.formData.groups.splice(index, 1);
       },
       handleChange() {
-        console.log("====alarmNotification.handleChange", this.formData);
         this.$emit("change", this.formData);
       },
       /**
