@@ -2,22 +2,23 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-03 14:04:59
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-07 09:34:25
+ * @LastEditTime: 2023-02-21 14:18:18
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\device\OperatorSelector.vue
  * @Description: 操作设备
 -->
 <template>
   <div style="display: flex">
-    <el-select v-if="option.operator" style="width: 100px;margin-right:10px" placeholder="操作符" v-model="formData.symbol"
+    <el-select ref="symbolRef" v-if="option.operator" style="width: 100px;margin-right:10px" placeholder="操作符" v-model="formData.symbol"
                @change="handleChange">
       <el-option v-for="(item, index) in symbolList" :key="index" :label="item" :value="item"></el-option>
     </el-select>
-    <el-input style="width: 100px;margin-right:10px" v-model="formData.value" @change="handleChange"></el-input>
+    <el-input ref="valueRef" style="width: 100px;margin-right:10px" v-model="formData.value" @change="handleChange"></el-input>
     {{ data.unit ? data.unit : "" }}
   </div>
 </template>
 
 <script>
+import { message_error } from '../../../../../utils/helpers'
 
 export default {
   name: "OperatorSelector",
@@ -62,6 +63,19 @@ export default {
         this.formData.symbol = "=";
       }
       this.$emit("change", this.formData);
+    },
+    validate() {
+      if (this.option.operator && (!this.formData.symbol || this.formData.symbol === "")) {
+        this.$refs.symbolRef && this.$refs.symbolRef.focus();
+        message_error("请选择操作符！");
+        return false;
+      }
+      if (!this.formData.value || this.formData.value === "") {
+        this.$refs.valueRef && this.$refs.valueRef.focus();
+        message_error("请输入属性值！");
+        return false;
+      }
+      return true;
     }
   }
 }

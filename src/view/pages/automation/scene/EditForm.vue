@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-03 14:04:59
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-14 20:40:25
+ * @LastEditTime: 2023-02-21 10:10:58
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\scene\EditForm.vue
  * @Description: 场景编辑表单
 -->
@@ -18,7 +18,7 @@
   >
     <el-form label-position="left" label-width="85px">
       <el-form-item label="场景标题">
-        <el-input v-model="formData.scenario_name"></el-input>
+        <el-input ref="nameRef" v-model="formData.scenario_name"></el-input>
       </el-form-item>
 
       <el-form-item label="场景描述">
@@ -27,7 +27,7 @@
 
       <el-form-item label="添加设备">
         <div style="display:flex;margin-bottom: 10px;" v-for="(command, index) in formData.commands" :key="index">
-          <DeviceTypeSelector style="" :data="command.data" :option="{operator: false}" @change="v=>handleCommandChange(command, v)"/>
+          <DeviceTypeSelector ref="deviceTypeRef" style="" :data="command.data" :option="{operator: false}" @change="v=>handleCommandChange(command, v)"/>
           <!-- 新增一行 -->
           <el-button type="indigo" size="small" style="margin-left: auto"
                      v-if="index == 0" @click="handleAddCommand(command)">新增一行</el-button>
@@ -65,7 +65,10 @@ export default {
   },
   data() {
     return {
-      formData: {}
+      formData: {
+        scenario_name: "",
+        scenario_description: ""
+      }
     }
   },
   computed: {
@@ -88,7 +91,15 @@ export default {
             // this.formData = JSON.parse(JSON.stringify(data.find(item => item.id = this.id)));
           } else {
             // 新增
-            this.formData = {commands: [{data: {}}]};
+            this.formData = {
+              scenario_name: "",
+              scenario_description: "",
+              commands: [
+                {
+                  data: {}
+                }
+              ]
+            };
           }
         } else {
           this.formData = {};
@@ -109,6 +120,9 @@ export default {
      * @return {*}
      */    
     handleSubmit() {
+      if (!this.validate()) {
+        return;
+      }
       // 
       let params = JSON.parse(JSON.stringify(this.formData));
       params.scenario_actions = this.formData.commands.map(cmd => {
@@ -201,8 +215,19 @@ export default {
         }
       })
       return commands;
+    },
+    validate() {
+      if (!this.formData.scenario_name || this.formData.scenario_name === "") {
+        this.$refs.nameRef.focus();
+        message_error("请输入场景名称！");
+        return false;
+      }
+      for(let i=0; i < this.$refs.deviceTypeRef.length; i++) {
+        const ref = this.$refs.deviceTypeRef[i];
+        if (!ref.validate()) return false;
+      }
+      return true;
     }
-
   }
 }
 </script>

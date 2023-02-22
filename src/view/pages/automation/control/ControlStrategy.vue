@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-06 09:39:11
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-20 09:05:48
+ * @LastEditTime: 2023-02-21 11:12:36
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\ControlStrategy.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -35,15 +35,15 @@
       <el-table-column :label="$t('AUTOMATION.OPERATION')" width="auto" align="center">
         <template v-slot="scope">
           <div class="text-right">
-            <el-button type="yellow" size="mini" v-if="scope.row.enabled === '0'" @click="handleSetStatus(scope.row)">{{ $t('AUTOMATION.START') }}</el-button>
+            <el-button type="success" size="mini" v-if="scope.row.enabled === '0'" @click="handleSetStatus(scope.row)">{{ $t('AUTOMATION.START') }}</el-button>
             
-            <el-button type="yellow" size="mini" v-if="scope.row.enabled === '1'" @click="handleSetStatus(scope.row)">禁用</el-button>
+            <el-button type="warning" size="mini" v-if="scope.row.enabled === '1'" @click="handleSetStatus(scope.row)">禁用</el-button>
 
             <!-- 编辑 -->
-            <el-button type="yellow" size="mini" @click="handleEdit(scope.row)">{{ $t('AUTOMATION.EDIT') }}</el-button>
+            <el-button type="primary" size="mini" @click="handleEdit(scope.row)">{{ $t('AUTOMATION.EDIT') }}</el-button>
             
             <!-- 日志 -->
-            <el-button type="yellow" size="mini" @click="handleLog(scope.row)">{{ $t('AUTOMATION.LOG') }}</el-button>
+            <el-button type="info" size="mini" @click="handleLog(scope.row)">{{ $t('AUTOMATION.LOG') }}</el-button>
 
             <!-- 删除 -->
             <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">

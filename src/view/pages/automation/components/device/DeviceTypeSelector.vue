@@ -1,25 +1,25 @@
 <template>
   <div style="display: flex">
     <!-- 项目列表 -->
-    <el-select style="width: 100px;margin-right:10px" v-model="formData.projectId" placeholder="选择项目"
+    <el-select ref="projectRef" style="width: 100px;margin-right:10px" v-model="formData.projectId" placeholder="选择项目"
                @change="handleProjectChange">
       <el-option v-for="(option, index) in projectOptions" :key="index" :label="option.name" :value="option.id"></el-option>
     </el-select>
 
     <!-- 分组列表 -->
-    <el-select style="width: 100px;margin-right:10px" v-if="formData.projectId" v-model="formData.groupId" placeholder="选择分组"
+    <el-select ref="groupRef" style="width: 100px;margin-right:10px" v-if="formData.projectId" v-model="formData.groupId" placeholder="选择分组"
                @change="handleGroupChange">
       <el-option v-for="(option, index) in groupOptions" :key="index" :label="option.device_group" :value="option.id"></el-option>
     </el-select>
 
     <!-- 设备列表 -->
-    <el-select style="width: 100px;margin-right:10px" v-if="formData.groupId" v-model="formData.device" placeholder="选择设备"
+    <el-select ref="deviceRef" style="width: 100px;margin-right:10px" v-if="formData.groupId" v-model="formData.device" placeholder="选择设备"
                @change="handleDeviceChange">
       <el-option v-for="(option, index) in deviceOptions" :key="index" :label="option.label" :value="option"></el-option>
     </el-select>
 
     <!-- 状态/属性列表 -->
-    <el-select style="width: 100px;margin-right:10px" v-if="formData.device && formData.device.value" 
+    <el-select ref="stateRef" style="width: 100px;margin-right:10px" v-if="formData.device && formData.device.value" 
                v-model="formData.state" value-key="name" placeholder="选择状态"
                @change="handleStateChange">
       <el-option-group v-for="group in stateOptions" :key="group.label" :label="group.label">
@@ -29,10 +29,10 @@
 
     <template v-if="formData.state">
       <!-- 在线持续时间 -->
-      <OnlineDuration v-if="formData.state.mode=='onlineDuration'" @change="handleDurationChange"/>
+      <OnlineDuration ref="onlineDurationRef" v-if="formData.state.mode=='onlineDuration'" :data="formData.state.duration" @change="handleDurationChange"/>
 
       <!-- 操作符 -->
-      <OperatorSelector v-else-if="formData.state.mode == 'property'"
+      <OperatorSelector ref="operatorSelectorRef" v-else-if="formData.state.mode == 'property'"
                         :data="formData.state" :option="option" @change="handleOperatorChange"/>
     </template>
 
@@ -46,6 +46,7 @@ import {getDeviceTree} from "@/api/device";
 import PluginAPI from "@/api/plugin";
 import OnlineDuration from "./OnlineDuration"
 import OperatorSelector from "./OperatorSelector";
+import { message_error } from '@/utils/helpers';
 export default {
   name: "DeviceTypeSelector",
   components: { OnlineDuration, OperatorSelector },
@@ -164,7 +165,7 @@ export default {
      * @param {*} v 
      */
     handleDurationChange(v) {
-      this.formData.state.duration = { value: v };
+      this.formData.state.duration = v;
       this.updateData();
     },
     /**
@@ -179,6 +180,7 @@ export default {
      * 向父组件传值
      */
     updateData() {
+      console.log("updateData", this.formData);
       this.$emit("change", this.formData);
     },
     /**
@@ -262,6 +264,37 @@ export default {
               
             }
           })
+    },
+    /**
+     * @description: 验证
+     * @return {*}
+     */    
+    validate() {
+      const refs = this.$refs;
+      const form = this.formData;
+      if (!form.projectId || form.projectId === "") {
+        refs.projectRef.focus();
+        message_error("请选择项目");
+        return false;
+      }
+      if (!form.groupId || form.groupId === "") {
+        refs.groupRef.focus();
+        message_error("请选择分组");
+        return false;
+      }
+      if (!form.deviceId || form.deviceId === "") {
+        refs.deviceRef.focus();
+        message_error("请选择设备");
+        return false;
+      }
+      if (!form.state || form.state === "") {
+        refs.stateRef.focus();
+        message_error("请选择状态或属性");
+        return false;
+      }
+      if (refs.onlineDurationRef && !refs.onlineDurationRef.validate()) return false;
+      if (refs.operatorSelectorRef && !refs.operatorSelectorRef.validate()) return false;
+      return true;
     }
   }
 }

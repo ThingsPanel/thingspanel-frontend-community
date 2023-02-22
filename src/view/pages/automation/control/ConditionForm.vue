@@ -4,14 +4,14 @@
       <el-form-item label="如果：">
         <div style="display: flex;margin-bottom: 10px" v-for="(condition, index) in conditions" :key="index">
 
-          <el-select v-if="condition.relation" style="position: absolute; width: 60px;margin-right:10px" v-model="condition.relation">
+          <el-select ref="relationRef" v-if="condition.relation" style="position: absolute; width: 60px;margin-right:10px" v-model="condition.relation">
             <!-- 且 -->
             <el-option label="且" :value="'and'"></el-option>
             <!-- 或 -->
             <el-option label="或" :value="'or'"></el-option>
           </el-select>
 
-            <el-select style="width: 100px;margin-left: 70px;margin-right:10px" v-model="condition.type">
+            <el-select ref="typeRef" style="width: 100px;margin-left: 70px;margin-right:10px" v-model="condition.type">
               <!-- 设备条件-->
               <el-option label="设备条件" :value="'device'"></el-option>
               <!-- 时间条件-->
@@ -20,11 +20,11 @@
 
           <!-- 选择设备条件后显示项目列表 -->
           <template v-if="condition.type=='device'">
-            <DeviceTypeSelector v-if="condition.type=='device'" :data="condition.data" @change="v=>handleDeviceChange(condition, v)"/>
+            <DeviceTypeSelector ref="deviceTypeSelectorRef" v-if="condition.type=='device'" :data="condition.data" @change="v=>handleDeviceChange(condition, v)"/>
           </template>
 
           <!-- 选择时间条件后显示时间条件类型 -->
-          <TimeTypeSelector v-else-if="condition.type=='time'" :data="condition.data" @change="v=>handleTimeChange(condition, v)"/>
+          <TimeTypeSelector ref="timeTypeSelectorRef" v-else-if="condition.type=='time'" :data="condition.data" @change="v=>handleTimeChange(condition, v)"/>
 
           <!-- 新增一行 -->
           <el-button type="indigo" size="small" style="margin-left: auto"
@@ -46,6 +46,7 @@
 <script>
 import TimeTypeSelector from "../components/time/TimeTypeSelector";
 import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
+import { message_error } from '../../../../utils/helpers';
 export default {
   name: "ConditionForm",
   components: { DeviceTypeSelector, TimeTypeSelector },
@@ -85,6 +86,7 @@ export default {
     handleDeleteCondition(condition) {
       let index = this.conditions.findIndex(item => item == condition);
       this.conditions.splice(index, 1);
+      this.$emit("change", this.conditions);
     },
     /**
      * @description: 设备条件
@@ -105,6 +107,40 @@ export default {
       console.log("====condition.handleTimeChange", condition, v, JSON.stringify(this.conditions));
       this.$emit("change", this.conditions)
 
+    },
+    validate() {
+      for (let index = 0; index < this.conditions.length; index++) {
+        const item = this.conditions[index];
+        if (index > 0 && (!item.relation || item.relation === "")) {
+          this.$refs.relationRef[index].focus();
+          message_error("请选择且或关系！")
+          return false;
+        }
+        if (!item.type || item.type === "") {
+          this.$refs.typeRef[index].focus();
+          message_error("请选择条件类型！")
+          return false;
+        }
+      };
+      if (this.$refs.deviceTypeSelectorRef) {
+        for (let index = 0; index < this.$refs.deviceTypeSelectorRef.length; index++) {
+          const ref = this.$refs.deviceTypeSelectorRef[index];
+          if (!ref.validate()) {
+            return false;
+          }
+        }
+      }
+      
+      if (this.$refs.timeTypeSelectorRef) {
+        for (let index = 0; index < this.$refs.timeTypeSelectorRef.length; index++) {
+          const ref = this.$refs.timeTypeSelectorRef[index];
+          if (!ref.validate()) {
+            return false;
+          }
+        }
+      }
+     
+      return true;
     }
   }
 }

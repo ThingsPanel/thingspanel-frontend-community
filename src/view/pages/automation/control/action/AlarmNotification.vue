@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-03 13:36:48
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-16 16:13:01
+ * @LastEditTime: 2023-02-21 18:01:46
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\alarm\AlarmPanel.vue
  * @Description: 
 -->
@@ -10,7 +10,7 @@
     <div>
   <!--    <el-form label-position="right" label-width="85px">-->
         <el-form-item label="告警级别">
-            <el-select style="width: 100px;" v-model="formData.warningLevel" @change="handleChange">
+            <el-select ref="warningLevelRef" style="width: 100px;" v-model="formData.warningLevel" @change="handleChange">
                 <el-option label="低" :value="'1'"></el-option>
                 <el-option label="中" :value="'2'"></el-option>
                 <el-option label="高" :value="'3'"></el-option>
@@ -44,7 +44,7 @@
         </el-form-item>
 
         <el-form-item label="重复次数">
-          <el-input v-model="formData.repeatTimes" placeholder="告警达到重复次数才触发" @change="handleChange"></el-input>
+          <el-input ref="repeatTimesRef" v-model="formData.repeatTimes" placeholder="告警达到重复次数才触发" @change="handleChange"></el-input>
         </el-form-item>
 
         <el-form-item label="通知方式">
@@ -55,6 +55,10 @@
             <el-checkbox label="phone">电话通知</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
+
+        <el-form-item label="告警描述">
+          <el-input v-model="formData.warning_description" placeholder="告警描述" @change="handleChange"></el-input>
+        </el-form-item>
   
   <!--    </el-form>-->
     </div>
@@ -62,6 +66,7 @@
   
   <script>
   import { user_find_all_roles } from "@/api/user"
+import { message_error } from '../../../../../utils/helpers'
   export default {
     name: "AlarmPanel",
     components: {  },
@@ -93,16 +98,6 @@
           }
         }, immediate: true
       },
-      // formData: {
-      //   handler(newValue) {
-      //     if(newValue && JSON.stringify(newValue) !== "{}") {
-      //       console.log("====alarm.watch.formData", newValue);
-      //       this.$emit("change", newValue);
-      //     }
-      //   },
-      //   immediate: true,
-      //   deep: true
-      // }
     },
     methods: {
       /**
@@ -144,6 +139,24 @@
             this.roleList = data.data?.data || [];
           }
         })
+      },
+      validate() {
+        if (!this.formData.warningLevel || this.formData.warningLevel === "") {
+          this.$refs.warningLevelRef.focus();
+          message_error("请选择告警级别！");
+          return false;
+        }
+        // if (!this.formData.repeatTimes || this.formData.repeatTimes === "") {
+        //   this.$refs.repeatTimesRef.focus();
+        //   message_error("请输入重复次数！");
+        //   return false;
+        // }
+        
+        if (!this.formData.notification || this.formData.notification.length ===0) {
+          message_error("请至少选择一个通知方式！");
+          return false;
+        }
+        return true;
       }
     }
   }

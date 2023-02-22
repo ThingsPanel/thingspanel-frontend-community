@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-06 09:04:58
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-06 17:01:04
+ * @LastEditTime: 2023-02-21 14:56:41
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\CommandDevice.vue
  * @Description: 操作设备
 -->
@@ -10,7 +10,7 @@
   <div class="command-device-box">
     <div style="display: flex;margin-bottom: 10px" v-for="(command, index) in commands" :key="index">
 
-      <DeviceTypeSelector :option="{operator: false}" :data="command" @change="v=>handleCommandChange(command, v)"/>
+      <DeviceTypeSelector ref="deviceTypeRef" :option="{operator: false}" :data="command" @change="v=>handleCommandChange(command, v)"/>
 
       <!-- 新增一行 -->
       <el-button type="indigo" size="small" style="margin-left: auto"
@@ -23,6 +23,7 @@
                  @click="handleDeleteCommand(command)">删除</el-button>
 
     </div>
+
   </div>
 
 </template>
@@ -83,6 +84,14 @@ export default {
     handleDeleteCommand(command) {
       let index = this.commands.findIndex(item => item == command);
       this.commands.splice(index, 1);
+    },
+    validate() {
+      for (let index = 0; index < this.commands.length; index++) {
+        if (this.$refs.deviceTypeRef && !this.$refs.deviceTypeRef[index].validate()) {
+          return false;
+        }
+      }
+      return true;
     }
 
   }

@@ -3,21 +3,27 @@
     <el-form-item label="那么：">
       <div style="display: flex;margin-bottom: 10px" v-for="(action, index) in actions" :key="index">
 
-        <el-select style="width: 100px;margin-right:10px" placeholder="选择执行动作" v-model="action.type"
+        <el-select ref="actionTypeRef" style="width: 100px;margin-right:20px" placeholder="选择执行动作" v-model="action.type"
                    :disabled="actions.length > (index+1)"
                    @change="v=>handleChangeActionType(action, v)">
           <el-option v-for="(item, index) in action.typeOptions" :key="index" :label="item.label" :value="item.value"></el-option>
         </el-select>
 
         <!-- 操作设备 -->
-        <CommandDevice v-if="action.type=='device'" :data="action.data" @change="v=>handleCommandChange(action, v)"/>
+        <CommandDevice ref="commandRef" v-if="action.type=='device'" :data="action.data" @change="v=>handleCommandChange(action, v)"/>
+
 
         <!-- 激活场景 -->
-        <SceneSelector v-if="action.type=='scene'" :value="action.value" @change="v=>handleSceneChange(action, v)"/>
+        <SceneSelector ref="sceneRef" v-if="action.type=='scene'" :value="action.value" @change="v=>handleSceneChange(action, v)"/>
 
         <!-- 告警通知 -->
-        <AlarmNotification v-if="action.type=='alarm'" :data="action.data" @change="v=>handleAlarmChange(action, v)"/>
-
+        <AlarmNotification ref="alarmRef" v-if="action.type=='alarm'" :data="action.data" @change="v=>handleAlarmChange(action, v)"/>
+        <!-- <el-button v-if="action.type=='device'" type="danger" size="mini">删除</el-button> -->
+        
+        <div style="margin-left:20px;">
+          <el-button type="border danger" size="mini" :v-if="actions.length > 0" @click="handleDeleteAction(action)">删除</el-button>
+        </div>
+        
       </div>
       <el-button type="border" size="mini" :disabled="actions.length > 2" @click="handleAddAction">新增执行动作</el-button>
     </el-form-item>
@@ -143,7 +149,36 @@ export default {
         delete item.disabled;
       })
       this.$emit("change", this.actions);
-    }
+    },
+    validate() {
+      if (this.actions.length === 0) {
+        message_error("至少选择一个执行动作！");
+        return false;
+      }
+      for (let index = 0; index < this.actions.length; index++) {
+        const item = this.actions[index];
+        if (!item.type || item.type === "") {
+          this.$refs.actionTypeRef[index].focus();
+          message_error("请选择执行动作！");
+          return false;
+        }
+        console.log(this.$refs.commandRef, this.$refs.sceneRef, this.$refs.alarmRef)
+        if (this.$refs.commandRef && this.$refs.commandRef.length > 0 && !this.$refs.commandRef[0].validate()) return false;
+        if (this.$refs.sceneRef && this.$refs.sceneRef.length > 0 && !this.$refs.sceneRef[0].validate()) return false;
+        if (this.$refs.alarmRef && this.$refs.alarmRef.length > 0 && !this.$refs.alarmRef[0].validate()) return false;
+      }
+      return true;
+    },
+    /**
+     * @description: 删除动作
+     * @param {*} action
+     * @return {*}
+     */    
+    handleDeleteAction(action) {
+      const index = this.actions.findIndex(item => item == action);
+      this.actions.splice(index, 1);
+      this.setActionTypeOptions();
+    },
   }
 }
 </script>
