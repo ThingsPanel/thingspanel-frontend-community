@@ -52,7 +52,7 @@
   <!-- 筛选 end -->
 
   <!-- 表 start -->
-  <el-form class="inline-edit el-dark-input">
+  <el-form class="inline-edit">
   <el-table :data="tableData" v-loading="loading" default-expand-all row-key="id" fit style="width: 100%" :indent="30">
 
     <el-table-column :label="$t('DEVICE_MANAGEMENT.TYPE')" width="125px">
