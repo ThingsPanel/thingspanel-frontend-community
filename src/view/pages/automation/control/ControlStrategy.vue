@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-06 09:39:11
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-21 11:12:36
+ * @LastEditTime: 2023-02-28 08:44:48
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\ControlStrategy.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -10,7 +10,7 @@
   <div class="rounded card p-4 el-table-transparent el-dark-input">
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
       <el-col :span="12">
-        <TableTitle>{{  $t('AUTOMATION.CONTROL_STRATEGY.CONTROL_STRATEGY_LIST') }}</TableTitle>
+        <TableTitle>自动化列表</TableTitle>
       </el-col>
       <el-col :span="12" class="text-right">
         <!--      新增-->
@@ -22,6 +22,8 @@
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
+    <el-table-column label="序号" type="index" width="260"></el-table-column>
+
       <el-table-column :label="$t('AUTOMATION.RULE_NAME')" prop="automation_name"></el-table-column>
       <el-table-column :label="$t('AUTOMATION.RULE_DESCRIBE')" prop="automation_described"></el-table-column>
 
@@ -75,11 +77,10 @@
 import TableTitle from "@/components/common/TableTitle";
 import EditForm from "./EditForm";
 import Logger from "./Logger"
-import data from "./data.js"
 import "@/core/mixins/common"
 
 import Auto from "@/api/automation_1.0"
-import { message_success } from '../../../../utils/helpers';
+import { message_success } from '@/utils/helpers';
 export default {
   name: "ControlStrategy",
   components: {

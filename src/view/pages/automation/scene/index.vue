@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-02 08:39:13
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-21 10:30:40
+ * @LastEditTime: 2023-02-22 15:07:29
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\scene\index.vue
  * @Description: 场景列表
 -->
@@ -13,12 +13,13 @@
         <TableTitle>场景管理</TableTitle>
       </el-col>
       <el-col :span="12" class="text-right">
-        <el-button type="border" size="mini"  @click="handleShowAdd">新增场景</el-button>
+        <el-button type="border"  @click="handleShowAdd">新增场景</el-button>
       </el-col>
     </el-row>
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
+      <el-table-column label="序号" type="index" width="260"></el-table-column>
       <el-table-column :label="'场景名称'" prop="scenario_name" ></el-table-column>
       <el-table-column :label="'场景描述'" prop="scenario_description" ></el-table-column>
       <el-table-column :label="'创建时间'" prop="created_at">
@@ -30,7 +31,7 @@
         <template v-slot="scope">
           <div style="text-align: right">
             <el-button type="border" size="mini"  @click="handleShowEdit(scope.row)">编辑</el-button>
-            <el-button type="border" size="mini"  @click="handleShowLog(scope.row)">日志</el-button>
+            <el-button type="info" size="mini"  @click="handleShowLog(scope.row)">日志</el-button>
             <!-- <el-button type="danger" size="mini"  @click="handleDelete(scope.row)">删除</el-button> -->
 
             <!-- 删除 -->
@@ -56,7 +57,7 @@
 
     <EditForm :visible.sync="editDialogVisible" :id="formId" @submit="getSceneList"/>
 
-    <Logger :visible.sync="logDialogVisible" :id="formId"/>
+    <Logger :visible.sync="logDialogVisible" :data="currentItem"/>
   </div>
 </template>
 
@@ -82,7 +83,8 @@ export default {
       },
       editDialogVisible: false,
       logDialogVisible: false,
-      formId: ""
+      formId: "",
+      currentItem: {}
     }
   },
   created() {
@@ -108,6 +110,7 @@ export default {
     },
     handleShowLog(item) {
       this.formId = item.id;
+      this.currentItem = JSON.parse(JSON.stringify(item));
       this.logDialogVisible = true;
     },
     handleDelete(item) {

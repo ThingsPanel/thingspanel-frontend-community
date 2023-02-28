@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-03 14:04:59
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-21 10:10:58
+ * @LastEditTime: 2023-02-22 10:44:18
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\scene\EditForm.vue
  * @Description: 场景编辑表单
 -->
@@ -49,7 +49,7 @@
 import data from "./data"
 import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
 import Auto from "@/api/automation_1.0"
-import { message_success } from '../../../../utils/helpers';
+import { message_success, message_error } from '@/utils/helpers';
 export default {
   name: "EditForm",
   components: { DeviceTypeSelector },

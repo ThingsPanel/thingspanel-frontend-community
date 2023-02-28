@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-21 15:34:42
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-21 15:38:21
+ * @LastEditTime: 2023-02-28 09:50:30
  * @FilePath: \ThingsPanel-Backend-Vue\src\api\alarm.js
  * @Description: 告警信息
  */
@@ -38,6 +38,19 @@ export default {
             data
         })
     },
+
+    /**
+     * 批量处理
+     * @param {*} data 
+     * @returns 
+     */
+    batchProcess: (data) => {
+        return axios({
+            url: "/v1/warning/information/batch/processing",
+            method: "post",
+            data
+        })
+    }
 
 
 }

@@ -12,14 +12,14 @@
       <el-row :gutter="20">
         <!-- 自动化名称-->
         <el-col :span="8">
-          <el-form-item label="自动化名称">
+          <el-form-item :label="$t('AUTOMATION.RULE_NAME')">
             <el-input ref="nameRef" v-model="formData.automation_name"></el-input>
           </el-form-item>
         </el-col>
 
         <!-- 描述-->
         <el-col :span="8">
-          <el-form-item label="描述">
+          <el-form-item :label="$t('AUTOMATION.RULE_DESCRIBE')">
             <el-input ref="describeRef" v-model="formData.automation_described"></el-input>
           </el-form-item>
         </el-col>

@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-17 08:49:11
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-21 16:40:42
+ * @LastEditTime: 2023-02-22 15:04:23
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Logger.vue
  * @Description: 控制策略日志
 -->
@@ -17,9 +17,9 @@
         <el-table-column label="执行时间" prop="trigger_time" width="240"></el-table-column>
         <el-table-column label="执行说明" prop="process_description" width="auto"></el-table-column>
   
-        <el-table-column label="执行结果" prop="process_result" width="100">
+        <el-table-column label="执行状态" prop="process_result" width="100">
           <template v-slot="scope">
-            {{ scope.row.process_result == '1' ? '已处理' : '未处理' }}
+            {{ scope.row.process_result == '1' ? '成功' : '失败' }}
           </template>
         </el-table-column>
 
@@ -82,9 +82,7 @@ export default {
       total: 0,
       loading: false,
       detailDialogVisible: false,
-      detailId: "",
       currentItem: {},
-      automationId: ""
     };
   },
   computed: {
@@ -125,9 +123,7 @@ export default {
         this.dialogVisible = false;
     },
     handleShowDetail(item) {
-      this.detailId = item.id;
-      this.automationId = item.automation_id;
-      thi.currentItem = JSON.parse(JSON.stringfy(item))
+      this.currentItem = JSON.parse(JSON.stringify(item))
       this.detailDialogVisible = true;
     }
   },
