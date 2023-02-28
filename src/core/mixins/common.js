@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-14 11:39:30
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-14 16:03:23
+ * @LastEditTime: 2023-02-28 10:51:29
  * @FilePath: \ThingsPanel-Backend-Vue\src\core\mixins\common.js
  * @Description: 
  */
@@ -42,11 +42,11 @@ Vue.mixin({
 
 
     jsonTypeConvert(t, v) {
-      let type = t.toLowerCase();
+      const type = t?.toLowerCase() || "";
       if (type === "float" || type === "integer" || type === "number") {
         return Number(v);
       } else {
-        v.toString();
+        return v.toString();
       }
     }
   }

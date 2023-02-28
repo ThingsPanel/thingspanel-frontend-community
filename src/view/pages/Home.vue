@@ -170,6 +170,8 @@ import ListWidget10 from "@/view/content/widgets/list/Widget10.vue";
 import { REFRESH } from "@/core/services/store/auth.module";
 import { local_url } from "@/api/LocalUrl"
 import ApiService from "@/core/services/api.service";
+import axios from "axios"
+
 export default {
   name: "home",
   data: () => ({
@@ -183,6 +185,12 @@ export default {
   },
   created() {
     this.ajaxdata();
+
+    axios.get('http://localhost:3001/test')
+      .then(res => {
+        console.log("localhost:3001", res)
+      })
+    
   },
   methods: {
     ajaxdata() {

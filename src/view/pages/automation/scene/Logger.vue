@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-17 08:49:11
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-22 15:22:28
+ * @LastEditTime: 2023-02-28 10:39:14
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Logger.vue
  * @Description: 场景日志
 -->
@@ -51,15 +51,15 @@
           <!-- 动作类型 -->
           <el-table-column label="动作类型" prop="process_result" width="100">
             <template v-slot="scope">
-              <p v-if="scope.row.action_type==='1'">设备输出</p>
-              <p v-if="scope.row.action_type==='2'">触发告警</p>
-              <p v-if="scope.row.action_type==='3'">激活场景</p>
+              <span v-if="scope.row.action_type==='1'">设备输出</span>
+              <span v-if="scope.row.action_type==='2'">触发告警</span>
+              <span v-if="scope.row.action_type==='3'">激活场景</span>
             </template>
           </el-table-column>
 
           <el-table-column label="执行状态" prop="process_result">
             <template v-slot="scope">
-              {{ scope.row.process_result === "1" ? "成功" : "失败" }}
+              <span>{{ scope.row.process_result === "1" ? "成功" : "失败" }}</span>
             </template>
           </el-table-column>
 
