@@ -1,42 +1,34 @@
 <!--
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
- * @Date: 2023-02-03 14:04:59
+ * @Date: 2023-03-01 11:09:45
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-01 13:58:30
- * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\time\OnceTimeSelector.vue
+ * @LastEditTime: 2023-03-01 11:10:14
+ * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\device\OnlineState.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
-  <div style="display: flex;">
-    <el-date-picker ref="datePicker" v-model="formData.value" type="datetime" placeholder="选择日期时间" 
-    format="yyyy-MM-dd HH:mm:ss"
-    value-format="yyyy-MM-dd HH:mm:ss"
-    @change="handleValueChange">
-  </el-date-picker>
-  <el-tooltip placement="top">
-    <div slot="content">只执行一次，执行结束后条件消失.</div>
-    <i class="el-icon-info" style="margin:10px;"></i>
-  </el-tooltip>
+  <div style="display: flex">
+    持续
+    <el-input ref="onlineRef" style="width: 100px;margin-right:10px" v-model="formData.value" @change="handleValueChange"></el-input>
+    秒
   </div>
 </template>
 
 <script>
 import { message_error } from '@/utils/helpers';
 export default {
-  name: "OnceTimeSelector",
+  name: "OnlineDuration",
   props: {
     data: {
       type: [Object],
-      default: () => {
-        return {}
-      }
+      default: () => { return {}}
     }
   },
   data() {
     return {
       formData: {
-        value: "",
-      },
+        value: ""
+      }
     }
   },
   watch: {
@@ -51,12 +43,12 @@ export default {
   },
   methods: {
     handleValueChange(v) {
-      this.$emit("change", v);
+      this.$emit("change", { value: v });
     },
     validate() {
       if (!this.formData.value || this.formData.value === "") {
-        this.$refs.datePicker.focus();
-        message_error("请选择时间")
+        this.$refs.durationRef.focus();
+        message_error("请输入秒数!")
         return false;
       }
       return true;

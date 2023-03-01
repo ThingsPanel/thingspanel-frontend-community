@@ -237,7 +237,27 @@ export default {
      */
     getStateList(id) {
       this.stateOptions = [];
-      if (!id) return;
+      if (this.option.operator) {
+        this.stateOptions.push({
+          label: "在线状态", 
+          options: [
+            { mode: "onlineDuration", label: "持续时间", name: "onlineDuration" },
+          ]
+        });
+
+        this.stateOptions.push({
+          label: "上下线", 
+          options: [
+            { mode: "onlineState", label: "上线", name: "online" },
+            { mode: "onlineState", label: "下线", name: "offline" },
+            { mode: "onlineState", label: "上下线", name: "onAndOff" }
+          ]
+        });
+      }
+      if (!id) {
+        this.updateData();
+        return;
+      }
       let params = {current_page: 1, per_page: 9999, id };
       PluginAPI.page(params)
           .then(({data}) => {
@@ -250,15 +270,12 @@ export default {
 
               let arr = properties.map(item => {
                 if (this.formData.state && this.formData.state.name === item.name) {
-                  this.formData.state = { ...this.formData.state, unit: item.unit }
+                  this.formData.state = { ...this.formData.state, unit: item.unit, type: item.type }
                 }
                 return { label: item.title, name: item.name, unit: item.unit, mode: "property", type: item.dataType };
               });
 
-              this.stateOptions = [];
-              if (this.option.operator) {
-                this.stateOptions.push({label: "状态", options: [{ mode: "onlineDuration", label: "在线状态", name: "onlineDuration" }]});
-              }
+              
               this.stateOptions.push({label: "属性", options: arr});
               this.updateData();
               

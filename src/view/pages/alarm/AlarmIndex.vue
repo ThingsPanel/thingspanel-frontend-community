@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-07 10:02:17
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-28 10:26:52
+ * @LastEditTime: 2023-02-28 16:00:50
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\alarm\index.vue
  * @Description: 告警信息列表
 -->
@@ -25,7 +25,7 @@
       </el-col>
 
       <el-col :span="12" class="text-right">
-        <el-select v-model="params.warningLevel" placeholder="报警级别" clearable @change="handleSearch">
+        <el-select style="margin-right:10px" v-model="params.warningLevel" placeholder="报警级别" clearable @change="handleSearch">
           <el-option value="low" label="低"></el-option>
           <el-option value="medium" label="中"></el-option>
           <el-option value="high" label="高"></el-option>
@@ -64,7 +64,7 @@
           <p v-if="scope.row.processing_result == ProcessingState.ignored">已忽略</p>
         </template>
       </el-table-column>
-      <el-table-column label="处理人" prop="handler" width="180"></el-table-column>
+      <el-table-column label="处理人" prop="handler" width="auto"></el-table-column>
 
       <el-table-column label="操作" width="240" align="center">
         <template v-slot="scope">

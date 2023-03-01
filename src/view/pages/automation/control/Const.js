@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-20 19:41:00
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-21 18:44:55
+ * @LastEditTime: 2023-03-01 12:19:58
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Const.js
  * @Description: 
  */
@@ -27,10 +27,24 @@ const StateMode = {
     // 事件
     event: "2",
     // 在线离线状态
-    state: "3",
+    onlineState: "3",
+    // 在线持续时间
+    onlineDuration: "4",
     // 通过value获取key
     getKey: value => Object.keys(StateMode).find(key => StateMode[key] === value)
 };
+
+/**
+ * @description: 上下线状态
+ * @return {*}
+ */
+const OnlineState = {
+    online: "1",
+    offline: "2",
+    onAndOff: "3",
+    // 通过value获取key
+    getKey: value => Object.keys(OnlineState).find(key => OnlineState[key] === value)
+}
 
 /**
  * @description: 时间条件类型
@@ -99,7 +113,7 @@ export function setConditions(conditions) {
     let group_number = 1;
     const washCondition = (c) => {
         let condition = {};
-        console.log("Object.keys(c)", Object.keys(c))
+        console.log("Object.keys(c)",c)
 
         if (c.type === "device") {
             // ================================== 设备条件 =====================================
@@ -112,8 +126,8 @@ export function setConditions(conditions) {
                 condition['v1'] = c.data.state.name;
                 condition['v2'] = c.data.state.operator.symbol;
                 condition['v3'] = c.data.state.operator.value;
-            } else if (condition.device_condition_type === StateMode.state) {
-
+            } else if (condition.device_condition_type === StateMode.onlineState) {
+                condition['v2'] = OnlineState[c.data.state.name];
             }
         } else if (c.type === "time") {
             // ================================== 时间条件 =====================================
@@ -279,14 +293,33 @@ export function getConditions(conditions) {
                     groupId: item.asset_id,
                     deviceId: item.device_id
                 };
+
+                let name = "";
+                switch (item.device_condition_type) {
+                    case StateMode.property: {
+                        // 属性
+                        name = item.v1;
+                        break;
+                    }
+                    case StateMode.onlineState: {
+                        // 上下线状态
+                        name = OnlineState.getKey(item.v2);
+                        break;
+                    }
+                }
+                console.log(condition.data.state)
+
                 condition.data.state = {
-                    name: item.v1,
+                    name,
                     mode: StateMode.getKey(item.device_condition_type),
                     operator: {
                         symbol: item.v2,
                         value: item.v3
                     }
                 };
+
+
+                
             } else {
                 // 时间条件
                 condition.type = ConditionType.getKey(item.condition_type);

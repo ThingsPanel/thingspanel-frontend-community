@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-17 08:49:11
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-22 14:46:12
+ * @LastEditTime: 2023-03-01 15:38:31
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Logger.vue
  * @Description: 控制策略日志详情
 -->
@@ -19,9 +19,9 @@
         <!-- 动作类型 -->
         <el-table-column label="动作类型" prop="process_result" width="100">
           <template v-slot="scope">
-            <p v-if="scope.row.action_type==='1'">设备输出</p>
-            <p v-if="scope.row.action_type==='2'">触发告警</p>
-            <p v-if="scope.row.action_type==='3'">激活场景</p>
+            <span v-if="scope.row.action_type==='1'">设备输出</span>
+            <span v-if="scope.row.action_type==='2'">触发告警</span>
+            <span v-if="scope.row.action_type==='3'">激活场景</span>
           </template>
         </el-table-column>
 

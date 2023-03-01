@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-      :title="formData.id ? $t('AUTOMATION.CONTROL_STRATEGY.EDIT_CONTROL_STRATEGY') : $t('AUTOMATION.CONTROL_STRATEGY.ADD_CONTROL_STRATEGY')"
+      :title="formData.id ? '编辑规则' :'新增规则'"
       class="el-dark-dialog"
       :close-on-click-modal="false"
       :visible.sync="dialogVisible"
@@ -12,7 +12,7 @@
       <el-row :gutter="20">
         <!-- 自动化名称-->
         <el-col :span="8">
-          <el-form-item :label="$t('AUTOMATION.RULE_NAME')">
+          <el-form-item :label="$t('AUTOMATION.RULE_NAME')" required>
             <el-input ref="nameRef" v-model="formData.automation_name"></el-input>
           </el-form-item>
         </el-col>
@@ -43,8 +43,8 @@
       <ActionForm ref="actionRef" :data="formData.actions" @change="handleActionChange"/>
 
       <div class="text-right">
-        <el-button size="medium" type="save" @click="handleSaveAndStart()">保存并执行</el-button>
-        <el-button size="medium" type="cancel" @click="handleSave()">仅保存</el-button>
+        <el-button v-if="formData.id" size="medium" type="save" @click="handleSaveAndStart()">保存并执行</el-button>
+        <el-button size="medium" type="cancel" @click="handleSave()">保存</el-button>
       </div>
     </el-form>
   </el-dialog>

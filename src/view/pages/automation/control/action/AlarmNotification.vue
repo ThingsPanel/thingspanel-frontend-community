@@ -2,14 +2,14 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-03 13:36:48
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-21 18:01:46
+ * @LastEditTime: 2023-03-01 16:04:01
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\alarm\AlarmPanel.vue
  * @Description: 
 -->
 <template>
     <div>
   <!--    <el-form label-position="right" label-width="85px">-->
-        <el-form-item label="告警级别">
+        <el-form-item label="告警级别" required>
             <el-select ref="warningLevelRef" style="width: 100px;" v-model="formData.warningLevel" @change="handleChange">
                 <el-option label="低" :value="'1'"></el-option>
                 <el-option label="中" :value="'2'"></el-option>
@@ -47,7 +47,7 @@
           <el-input ref="repeatTimesRef" v-model="formData.repeatTimes" placeholder="告警达到重复次数才触发" @change="handleChange"></el-input>
         </el-form-item>
 
-        <el-form-item label="通知方式">
+        <el-form-item label="通知方式" required>
           <el-checkbox-group v-model="formData.notification" @change="handleChange">
             <el-checkbox label="wechat">微信通知</el-checkbox>
             <el-checkbox label="sms">短信通知</el-checkbox>
@@ -66,7 +66,7 @@
   
   <script>
   import { user_find_all_roles } from "@/api/user"
-import { message_error } from '../../../../../utils/helpers'
+import { message_error } from '@/utils/helpers'
   export default {
     name: "AlarmPanel",
     components: {  },
@@ -95,6 +95,10 @@ import { message_error } from '../../../../../utils/helpers'
         handler(newValue) {
           if (newValue && JSON.stringify(newValue) !== "{}") {
             this.formData = JSON.parse(JSON.stringify(newValue));
+            console.log("alarm.formData", this.formData)
+            if (!this.formData.groups || this.formData.groups.length === 0) {
+              this.formData.groups = [{}];
+            }
           }
         }, immediate: true
       },

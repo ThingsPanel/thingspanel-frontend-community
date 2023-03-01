@@ -1,9 +1,9 @@
 <template>
   <div>
-    <el-form-item label="那么：">
+    <el-form-item style="width:100%" label="那么：">
       <div style="display: flex;margin-bottom: 10px" v-for="(action, index) in actions" :key="index">
 
-        <el-select ref="actionTypeRef" style="width: 100px;margin-right:20px" placeholder="选择执行动作" v-model="action.type"
+        <el-select ref="actionTypeRef" style="width: 120px;margin-right:20px" placeholder="选择执行动作" v-model="action.type"
                    :disabled="actions.length > (index+1)"
                    @change="v=>handleChangeActionType(action, v)">
           <el-option v-for="(item, index) in action.typeOptions" :key="index" :label="item.label" :value="item.value"></el-option>
@@ -21,7 +21,7 @@
         <!-- <el-button v-if="action.type=='device'" type="danger" size="mini">删除</el-button> -->
         
         <div style="margin-left:20px;">
-          <el-button type="border danger" size="mini" :v-if="actions.length > 0" @click="handleDeleteAction(action)">删除</el-button>
+          <el-button style="height:40px" type="danger" size="small" :v-if="actions.length > 0" @click="handleDeleteAction(action)">删除</el-button>
         </div>
         
       </div>

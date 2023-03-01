@@ -186,10 +186,10 @@ export default {
   created() {
     this.ajaxdata();
 
-    axios.get('http://localhost:3001/test')
-      .then(res => {
-        console.log("localhost:3001", res)
-      })
+    // axios.get('http://localhost:3001/test')
+    //   .then(res => {
+    //     console.log("localhost:3001", res)
+    //   })
     
   },
   methods: {

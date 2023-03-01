@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-06 09:04:58
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-21 14:56:41
+ * @LastEditTime: 2023-03-01 16:17:07
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\CommandDevice.vue
  * @Description: 操作设备
 -->
@@ -13,12 +13,12 @@
       <DeviceTypeSelector ref="deviceTypeRef" :option="{operator: false}" :data="command" @change="v=>handleCommandChange(command, v)"/>
 
       <!-- 新增一行 -->
-      <el-button type="indigo" size="small" style="margin-left: auto"
+      <el-button type="indigo" size="small" style="margin-left: auto;"
                  v-if="index == 0"
                  @click="handleAddCommand">新增一行</el-button>
 
       <!-- 删除 -->
-      <el-button type="danger" size="small" style="margin-left: auto"
+      <el-button type="danger" size="small" style="margin-left: auto;"
                  v-if="index > 0"
                  @click="handleDeleteCommand(command)">删除</el-button>
 
@@ -101,6 +101,7 @@ export default {
 <style scoped>
 .command-device-box {
   padding: 10px;
-  border: 1px solid #2c3e50;
+  border: 1px solid #4d96e0;
+  border-radius: 6px;
 }
 </style>

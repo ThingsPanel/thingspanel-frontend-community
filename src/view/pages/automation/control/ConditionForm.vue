@@ -26,15 +26,17 @@
           <!-- 选择时间条件后显示时间条件类型 -->
           <TimeTypeSelector ref="timeTypeSelectorRef" v-else-if="condition.type=='time'" :data="condition.data" @change="v=>handleTimeChange(condition, v)"/>
 
+            
           <!-- 新增一行 -->
-          <el-button type="indigo" size="small" style="margin-left: auto"
+          <el-button type="indigo" size="small" style="margin-left: auto;height:40px"
                      v-if="index == 0"
                      @click="handleAddCondition">新增一行</el-button>
 
           <!-- 删除 -->
-          <el-button type="danger" size="small" style="margin-left: auto"
-                     v-if="index > 0"
-                     @click="handleDeleteCondition(condition)">删除</el-button>
+          <el-button type="danger" size="small" style="margin-left: auto;height:40px"
+                    v-if="index > 0"
+                    @click="handleDeleteCondition(condition)">删除</el-button>
+          
 
         </div>
       </el-form-item>
@@ -46,7 +48,7 @@
 <script>
 import TimeTypeSelector from "../components/time/TimeTypeSelector";
 import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
-import { message_error } from '../../../../utils/helpers';
+import { message_error } from '@/utils/helpers';
 export default {
   name: "ConditionForm",
   components: { DeviceTypeSelector, TimeTypeSelector },

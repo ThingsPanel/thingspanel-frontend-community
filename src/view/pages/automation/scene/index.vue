@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-02 08:39:13
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-22 15:07:29
+ * @LastEditTime: 2023-03-01 15:47:15
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\scene\index.vue
  * @Description: 场景列表
 -->
@@ -19,7 +19,7 @@
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column label="序号" type="index" width="260"></el-table-column>
+      <el-table-column label="序号" type="index" width="100" align="center"></el-table-column>
       <el-table-column :label="'场景名称'" prop="scenario_name" ></el-table-column>
       <el-table-column :label="'场景描述'" prop="scenario_description" ></el-table-column>
       <el-table-column :label="'创建时间'" prop="created_at">

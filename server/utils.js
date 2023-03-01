@@ -17,6 +17,25 @@ async function Sleep (time) {
   })
 }
 
+function getComment(code) {
+  if (!code) return "";
+  const start = code.search("<!--");
+  const end = code.search("-->");
+  const comment = code.substring(start, end + 3);
+  return comment;
+}
+
+function getKV(comment, k) {
+  console.log("comment", comment)
+  if (comment === "") return "";
+  // var reg = new RegExp("@" + k + ":\s(.*)");
+  const index = comment.search("@" + k);
+  var result = comment.match(reg);
+  return result;
+}
+
 module.exports = {
-  Sleep: Sleep
+  Sleep: Sleep,
+  getComment,
+  getKV
 }

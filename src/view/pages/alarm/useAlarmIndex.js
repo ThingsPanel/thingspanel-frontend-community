@@ -15,8 +15,8 @@ export default function useAlarmIndex(){
 
         warning_log_list(washParams(params)).then(({data})=>{
             if(data.code === 200) {
-                tableData.value = data.data.data ? washData(data.data.data) : []
-                total.value = data.data.total
+                tableData.value = data.data.data ? washData(data.data.data) : [];
+                total.value = data.data.total;
             }
         }).finally(()=>{
             loading.value = false

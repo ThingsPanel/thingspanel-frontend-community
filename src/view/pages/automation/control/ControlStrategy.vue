@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-06 09:39:11
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-28 08:44:48
+ * @LastEditTime: 2023-03-01 15:36:39
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\ControlStrategy.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -10,11 +10,11 @@
   <div class="rounded card p-4 el-table-transparent el-dark-input">
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
       <el-col :span="12">
-        <TableTitle>自动化列表</TableTitle>
+        <TableTitle>场景联动列表</TableTitle>
       </el-col>
       <el-col :span="12" class="text-right">
         <!--      新增-->
-        <el-button size="medium" type="border" @click="handleCreate">{{  $t('AUTOMATION.CONTROL_STRATEGY.NEW_STRATEGY') }}</el-button>
+        <el-button size="medium" type="border" @click="handleCreate">新增规则</el-button>
         <!--      返回-->
         <el-button size="medium" type="indigo" @click="goBack">{{  $t('AUTOMATION.RETURN') }}</el-button>
       </el-col>
@@ -22,7 +22,7 @@
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
-    <el-table-column label="序号" type="index" width="260"></el-table-column>
+    <el-table-column label="序号" type="index" width="100" align="center"></el-table-column>
 
       <el-table-column :label="$t('AUTOMATION.RULE_NAME')" prop="automation_name"></el-table-column>
       <el-table-column :label="$t('AUTOMATION.RULE_DESCRIBE')" prop="automation_described"></el-table-column>
@@ -34,12 +34,12 @@
       </el-table-column>
 
       <!-- 策略操作-->
-      <el-table-column :label="$t('AUTOMATION.OPERATION')" width="auto" align="center">
+      <el-table-column :label="$t('AUTOMATION.OPERATION')" width="280" align="center">
         <template v-slot="scope">
           <div class="text-right">
             <el-button type="success" size="mini" v-if="scope.row.enabled === '0'" @click="handleSetStatus(scope.row)">{{ $t('AUTOMATION.START') }}</el-button>
             
-            <el-button type="warning" size="mini" v-if="scope.row.enabled === '1'" @click="handleSetStatus(scope.row)">禁用</el-button>
+            <el-button type="warning" size="mini" v-if="scope.row.enabled === '1'" @click="handleSetStatus(scope.row)">停用</el-button>
 
             <!-- 编辑 -->
             <el-button type="primary" size="mini" @click="handleEdit(scope.row)">{{ $t('AUTOMATION.EDIT') }}</el-button>

@@ -1,3 +1,11 @@
+<!--
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-01-29 14:11:23
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-02-28 15:37:46
+ * @FilePath: \ThingsPanel-Backend-Vue\packages\device_plugin\charts\components\dashboard\EChart.vue
+ * @Description: 
+-->
 <template>
     <div style="width:100%;height:100%;" ref="chart-main" @click="handleClick"/>
 </template>
@@ -41,19 +49,19 @@ export default {
       this.myChart.setOption(this.option);
       let data = this.option.series[0].data;
       let title = data[0].name ? data[0].name : "";
-      if (this.option.simulator) {
-        let sim = this.option.simulator;
-        setInterval(() => {
-          let series = [];
-          for (let i = 0; i < sim.funcArr.length; i++) {
-            let fn = new Function(sim.funcArr[i])
-            let value = fn();
-            let data = { data: [{ value, name: title }]};
-            series.push(data);
-          }
-          this.myChart.setOption({series})
-        }, sim.interval)
-      }
+      // if (this.option.simulator) {
+      //   let sim = this.option.simulator;
+      //   setInterval(() => {
+      //     let series = [];
+      //     for (let i = 0; i < sim.funcArr.length; i++) {
+      //       let fn = new Function(sim.funcArr[i])
+      //       let value = fn();
+      //       let data = { data: [{ value, name: title }]};
+      //       series.push(data);
+      //     }
+      //     this.myChart.setOption({series})
+      //   }, sim.interval)
+      // }
 
     },
     /**
