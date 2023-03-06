@@ -12,6 +12,7 @@ jobs:
     - run: |
         npm install    
         npm i @crowdin/cli   
+        npm i crowdin
         crowdin download
         git config user.name github-actions
         git config user.email github-actions@github.com
