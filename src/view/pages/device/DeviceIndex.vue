@@ -1,5 +1,5 @@
 <template>
-<div class="rounded card p-4 el-table-transparent">
+<div class="rounded card p-4 ">
   <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
     <el-col :span="12">
       <TableTitle>{{ $t("DEVICE_ACCESS.DEVICE") }}</TableTitle>
@@ -202,7 +202,7 @@
 
   <!-- 分组管理 start -->
   <el-dialog
-      class="el-dark-dialog el-dark-input"
+      class=""
       :visible.sync="showManagementGroup"
       :title="$t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.MANAGINGDEVICEGROUPS')"
       width="30%"

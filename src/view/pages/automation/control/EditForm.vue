@@ -221,7 +221,17 @@ export default {
 
 
 </script>
+<style scope>
 
-<style scoped>
-
+</style>
+<style>
+.el-form-item.is-required:not(.is-no-asterisk) .el-form-item__label-wrap>.el-form-item__label:before, .el-form-item.is-required:not(.is-no-asterisk)>.el-form-item__label:before {
+  content: unset;
+}
+.el-form-item.is-required:not(.is-no-asterisk) .el-form-item__label-wrap>.el-form-item__label:after, .el-form-item.is-required:not(.is-no-asterisk)>.el-form-item__label:after {
+  content: '*';
+  font-size: 18px;
+  color: #F56C6C;
+  margin-left: 4px;
+}
 </style>

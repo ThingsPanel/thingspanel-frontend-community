@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-03 14:04:59
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-22 10:44:18
+ * @LastEditTime: 2023-03-02 14:58:03
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\scene\EditForm.vue
  * @Description: 场景编辑表单
 -->
@@ -17,7 +17,7 @@
       top="10vh"
   >
     <el-form label-position="left" label-width="85px">
-      <el-form-item label="场景标题">
+      <el-form-item label="场景标题" required >
         <el-input ref="nameRef" v-model="formData.scenario_name"></el-input>
       </el-form-item>
 
@@ -25,7 +25,7 @@
         <el-input v-model="formData.scenario_description"></el-input>
       </el-form-item>
 
-      <el-form-item label="添加设备">
+      <el-form-item label="添加设备" required>
         <div style="display:flex;margin-bottom: 10px;" v-for="(command, index) in formData.commands" :key="index">
           <DeviceTypeSelector ref="deviceTypeRef" style="" :data="command.data" :option="{operator: false}" @change="v=>handleCommandChange(command, v)"/>
           <!-- 新增一行 -->

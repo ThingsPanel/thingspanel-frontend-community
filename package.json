@@ -9,7 +9,8 @@
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "rtl": "webpack --config webpack-rtl.config.js",
-    "start": "start npm run dev && start npm run server"
+    "start": "start npm run dev && start npm run server",
+    "crowdin:sync": "crowdin upload && crowdin download"
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
