@@ -10,9 +10,7 @@ jobs:
       with:
         node-version: 18
     - run: |
-        npm install    
-        npm i @crowdin/cli   
-        npm i crowdin
+        npm install     
         crowdin download
         git config user.name github-actions
         git config user.email github-actions@github.com
