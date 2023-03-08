@@ -71,7 +71,7 @@
         <el-table-column align="left" :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.OPERATION')" width="230">
           <template v-slot="scope">
             <div style="text-align: left">
-              <el-button type="indigo" size="mini" class="mr-3" @click="showBatch(scope.row)">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.VIEWBATCH') }}</el-button>
+              <el-button type="indigo" size="mini" class="mr-3" @click="showBatch(scope.row)">批量管理</el-button>
               <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
                 <el-button slot="reference" size="mini" type="danger">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.DELETE') }}</el-button>
               </el-popconfirm>

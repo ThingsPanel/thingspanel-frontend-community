@@ -48,18 +48,20 @@
         </el-table-column>
 
         <!-- 操作列-->
-        <el-table-column align="left" :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.OPERATION')" width="500px">
+        <el-table-column align="left" :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.OPERATION')" width="540px">
           <template v-slot="scope">
             <div class="text-center">
-              <el-button type="indigo" :disabled="scope.row.generate_flag == '1'" class="mr-3" size="mini" @click="generateData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.GENERATEDATA') }}</el-button>
+              <el-button type="indigo" class="mr-1" size="mini" @click="viewPreRegistration(scope.row)">查看预注册</el-button>
+              <el-button type="indigo" :disabled="scope.row.generate_flag == '1'" class="mr-1" size="mini" @click="generateData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.GENERATEDATA') }}</el-button>
 
-              <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
-                <el-button slot="reference" class="mr-3" size="mini" type="danger">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.DELETE') }}</el-button>
+             
+
+              <el-button type="indigo" class="mr-1" size="mini" @click="exportQRCodeAndData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.EXPORTQRCODEANDDATA') }}</el-button>
+
+              <el-button type="indigo" class="mr-1" size="mini" @click="importData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA') }}</el-button>
+              <el-popconfirm class="mr-1" :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
+                <el-button slot="reference" style="margin-left:10px" size="mini" type="danger">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.DELETE') }}</el-button>
               </el-popconfirm>
-
-              <el-button type="indigo" size="mini" @click="exportQRCodeAndData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.EXPORTQRCODEANDDATA') }}</el-button>
-
-              <el-button type="indigo" size="mini" @click="importData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA') }}</el-button>
             </div>
           </template>
         </el-table-column>
