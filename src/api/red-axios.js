@@ -1,9 +1,17 @@
+/*
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-02-02 16:29:08
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-03-08 16:43:24
+ * @FilePath: \ThingsPanel-Backend-Vue\src\api\red-axios.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import http from "axios";
 import RED from "../core/services/red.module";
 import {message_error} from "@/utils/helpers";
 
 
-const red_url =  process.env.VUE_APP_RED_BASE_URL || document.location.origin + ":1880/";
+const red_url =  process.env.VUE_APP_RED_BASE_URL || document.location.origin + ":1880";
 
 
 // 创建 node-red 的 axios 实例

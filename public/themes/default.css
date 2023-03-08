@@ -412,5 +412,5 @@ span.text-blue.font-weight-bold.font-size-base.d-none.d-lg-block.mr-1 {
 }
 
 .table-title {
-    color: #ffffff;
+    color: #ffffff!important;
 }

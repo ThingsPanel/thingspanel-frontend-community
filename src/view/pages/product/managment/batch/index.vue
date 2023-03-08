@@ -154,10 +154,17 @@ export default {
           })
     },
     /**
+     * @description: 查看预注册
+     * @param {*} item
+     * @return {*}
+     */       
+    viewPreRegistration(item) {
+      this.$router.push({ path: "/product/batch/pre-registration"})
+    },
+    /**
      * 打开创建批次对话框
      */
     handleCreate() {
-      console.log("handleCreate")
       this.createDialogVisible = true;
     },
     handleDelete(item) {

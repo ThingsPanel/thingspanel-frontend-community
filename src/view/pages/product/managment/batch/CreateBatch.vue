@@ -1,37 +1,34 @@
+<!--
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-01-31 16:45:45
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-03-08 15:18:52
+ * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\managment\batch\CreateBatch.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
-  <el-dialog class="el-dark-dialog" :title="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.CREATEPRODUCT')" :visible.sync="dialogVisible" width="30%"
+  <el-dialog class="el-dark-dialog" title="创建批次" :visible.sync="dialogVisible" width="400px"
              :before-close="handleClose" :close-on-click-modal="false">
-    <el-form label-position="top" :model="formData" :rules="formRules">
+    <el-form :inline="false" label-position="left" label-width="80px" :model="formData" :rules="formRules">
 
-      <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.PRODUCT')"  prop="product_id">
-        <el-select style="width: 100%" v-model="formData.product_name" disabled >
-          <el-option v-for="item in productOptions" :key="item.value" :label="item.label"
-                     :value="item.value"></el-option>
-        </el-select>
-      </el-form-item>
+      <el-row>
+        <el-form-item label="批次号" prop="batch_number">
+          <el-input v-model="formData.batch_number"></el-input>
+        </el-form-item>
+      </el-row>
+      
 
-      <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.BATCHNUMBER')" prop="batch_number">
-        <el-input v-model="formData.batch_number"></el-input>
-      </el-form-item>
-
-      <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.ACCESSADDRESS')" prop="access_address">
-        <el-input v-model="formData.access_address"></el-input>
-      </el-form-item>
-
-      <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.NUMBEREQIPMENT')" prop="device_number">
-        <el-input-number v-model="formData.device_number"></el-input-number>
-      </el-form-item>
-
-      <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.BATCHDESCRIPTION')">
-        <el-input v-model="formData.describe"></el-input>
-      </el-form-item>
-
+      <el-row>
+        <el-form-item label="数量" prop="number">
+          <el-input-number v-model="formData.number"></el-input-number>
+        </el-form-item>
+      </el-row>
+      
     </el-form>
 
     <span slot="footer" class="dialog-footer">
-    <el-button type="cancel" @click="handleClose">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.CANCEL') }}</el-button>
-    <el-button type="save" @click="handleSubmit">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCH_LIST_ADD.CONFIRM') }}</el-button>
-  </span>
+      <el-button type="save" @click="handleSubmit">创建批次</el-button>
+    </span>
   </el-dialog>
 </template>
 
@@ -66,17 +63,11 @@ export default {
     return {
       formData: {
         batch_number: "",
-        product_id: "",
-        access_address: "",
-        device_number: 0,
-        generate_flag: "",
-        describle: ""
+        number: 0,
       },
       formRules: {
         batch_number: [{required, message:  i18n.t('PRODUCT_MANAGEMENT.BATCH_LIST.PLACEHOLDER1')}],
-        product_id: [{required, message: i18n.t('PRODUCT_MANAGEMENT.BATCH_LIST.PLACEHOLDER2')}],
-        access_address: [{required, message: i18n.t('PRODUCT_MANAGEMENT.BATCH_LIST.PLACEHOLDER3')}],
-        device_number: [{required, message:  i18n.t('PRODUCT_MANAGEMENT.BATCH_LIST.PLACEHOLDER4'), type: 'number'}]
+        number: [{required, message:  i18n.t('PRODUCT_MANAGEMENT.BATCH_LIST.PLACEHOLDER4'), type: 'number'}]
       },
       dialogVisible: false,
       productOptions: [
@@ -89,7 +80,6 @@ export default {
       handler(newValue) {
         if (newValue) {
           this.formData = JSON.parse(JSON.stringify(this.data));
-          if (!this.formData.device_number)  this.formData.device_number = 0;
           this.dialogVisible = newValue;
         }
       }
@@ -99,15 +89,7 @@ export default {
     handleSubmit() {
       if (!this.formData.id) {
         // add
-        this.formData.plugin = "{}"
-        ProductAPI.batchAdd(this.formData)
-            .then(({ data }) => {
-              if (data.code ==200) {
-                this.$emit("submit")
-                message_success("批次添加成功！")
-                this.handleClose();
-              }
-            })
+        
       } else {
         // edit
       }
