@@ -5,7 +5,7 @@
       <span class="title">{{ optionData.name }}</span>
     </div>
 
-    <div style="width: 100%; height:calc(100% - 60px);position: absolute;top:40px" ref="chart"></div>
+    <div style="width: 100%; height:calc(100% - 60px);position: absolute;top:40px" ref="chart" id="echarts"></div>
 
     <el-dialog title="配置" width="30%"
         :visible.sync="configurationVisible">
@@ -79,6 +79,7 @@ export default {
       this.myEcharts = Echarts.init(this.$refs.chart, 'dark');
       this.$nextTick(() => {
         this.myEcharts.resize();
+        // this.sizeChange();
       });
       this.optionData.backgroundColor = 'transparent';
       if (option) {

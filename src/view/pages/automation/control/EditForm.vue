@@ -142,6 +142,7 @@ export default {
       }
     },
     handleConditionChange(v) {
+      console.log("handleConditionChange", v);
       this.formData.conditions = v;
     },
     handleActionChange(v) {

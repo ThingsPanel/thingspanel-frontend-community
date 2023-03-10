@@ -1,10 +1,11 @@
 <template>
   <div>
-<!--    <el-form label-position="right" label-width="85px">-->
       <el-form-item label="如果：">
         <div style="display: flex;margin-bottom: 10px" v-for="(condition, index) in conditions" :key="index">
 
-          <el-select ref="relationRef" v-if="condition.relation" style="position: absolute; width: 60px;margin-right:10px" v-model="condition.relation">
+          <el-select ref="relationRef" style="position: absolute; width: 60px;margin-right:10px" 
+              v-if="condition.relation"
+              v-model="condition.relation" @change="v => handleRelationChange(condition,v )">
             <!-- 且 -->
             <el-option label="且" :value="'and'"></el-option>
             <!-- 或 -->
@@ -20,11 +21,13 @@
 
           <!-- 选择设备条件后显示项目列表 -->
           <template v-if="condition.type=='device'">
-            <DeviceTypeSelector ref="deviceTypeSelectorRef" v-if="condition.type=='device'" :data="condition.data" @change="v=>handleDeviceChange(condition, v)"/>
+            <DeviceTypeSelector ref="deviceTypeSelectorRef" v-if="condition.type=='device'" :data="condition.data" 
+                @change="v=>handleDeviceChange(condition, v)"/>
           </template>
 
           <!-- 选择时间条件后显示时间条件类型 -->
-          <TimeTypeSelector ref="timeTypeSelectorRef" v-else-if="condition.type=='time'" :data="condition.data" @change="v=>handleTimeChange(condition, v)"/>
+          <TimeTypeSelector ref="timeTypeSelectorRef" v-else-if="condition.type=='time'" :data="condition.data" 
+              @change="v=>handleTimeChange(condition, v)"/>
 
             
           <!-- 新增一行 -->
@@ -40,8 +43,6 @@
 
         </div>
       </el-form-item>
-
-<!--    </el-form>-->
   </div>
 </template>
 
@@ -91,13 +92,23 @@ export default {
       this.$emit("change", this.conditions);
     },
     /**
+     * @description: 且或
+     * @param {*} condition
+     * @param {*} v
+     * @return {*}
+     */    
+    handleRelationChange(condition, v) {
+      condition.relation = v;
+      this.$emit("change", this.conditions);
+    },
+    /**
      * @description: 设备条件
      * @param {*} v
      * @return {*}
      */
     handleDeviceChange(condition, v) {
       condition.data = v;
-      this.$emit("change", this.conditions)
+      this.$emit("change", this.conditions);
     },
     /**
      * @description: 时间条件
@@ -108,7 +119,6 @@ export default {
       condition.data = JSON.parse(JSON.stringify(v));
       console.log("====condition.handleTimeChange", condition, v, JSON.stringify(this.conditions));
       this.$emit("change", this.conditions)
-
     },
     validate() {
       for (let index = 0; index < this.conditions.length; index++) {

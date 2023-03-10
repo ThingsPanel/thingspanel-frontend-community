@@ -1,3 +1,21 @@
+const v = [
+    {
+        "type": "time"
+        
+    },
+    {
+        "type": "time",
+        "relation": "and"
+    },
+    {
+        "type": "time",
+        "relation": "or"
+    },
+    {
+        "type": "time",
+        "relation": "and"
+    }
+]
 const data = [
     {
         id: "1",

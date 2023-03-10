@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-20 19:41:00
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-01 12:19:58
+ * @LastEditTime: 2023-03-10 09:12:06
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Const.js
  * @Description: 
  */
@@ -197,6 +197,7 @@ export function setConditions(conditions) {
     }
 
     let conditionList = [];
+    // 遍历conditions,进行数据转换
     conditions.length > 0 && conditions.forEach(item => {
         conditionList.push(washCondition(item));
     })
@@ -276,14 +277,15 @@ export function getConditions(conditions) {
     if (conditions && conditions.length > 0) {
         conditions.forEach((item, index) => {
             console.log(index, item.group_number)
+            let groupNumber = item.group_number; 
             let condition = {};
             if (index === 0) {
                 condition.relation = "";
-            } else if (index === temp) {
+            } else if (groupNumber === temp) {
                 condition.relation = "and";
-            } else if (index > temp) {
+            } else if (groupNumber > temp) {
                 condition.relation = "or";
-                temp = index;
+                temp = groupNumber;
             }
             if (item.condition_type == ConditionType.device) {
                 // 设备条件
