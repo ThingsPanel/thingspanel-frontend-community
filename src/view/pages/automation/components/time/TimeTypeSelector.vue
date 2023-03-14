@@ -2,16 +2,16 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-02 08:39:13
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-20 20:37:27
+ * @LastEditTime: 2023-03-10 12:42:56
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\time\TimeTypeSelector.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
   <div style="display: flex">
     <el-select ref="typeRef" style="width: 100px;margin-right:10px" v-model="formData.type" @change="handleTimeTypeChange">
-      <el-option label="单次" value="once"></el-option>
-      <el-option label="重复" value="repeat"></el-option>
-      <el-option label="范围" value="range"></el-option>
+      <el-option :label="$t('AUTOMATION.ONCE')" value="once"></el-option>
+      <el-option :label="$t('AUTOMATION.REPEAT')" value="repeat"></el-option>
+      <el-option :label="$t('AUTOMATION.RANGE')" value="range"></el-option>
     </el-select>
 
     <OnceTimeSelector ref="onceRef" v-if="formData.type=='once'" :data="formData.once" @change="handleOnceTimeChange"/>
@@ -26,7 +26,7 @@
 import OnceTimeSelector from "./OnceTimeSelector";
 import RepeatTimeSelector from "./RepeatTimeSelector";
 import DateRangeSelector from "./DateRangeSelector";
-import { message_error } from '../../../../../utils/helpers';
+import { message_error } from '@/utils/helpers';
 export default {
   name: "TimeTypeSelector",
   components: { OnceTimeSelector, RepeatTimeSelector, DateRangeSelector },
@@ -127,7 +127,8 @@ export default {
     validate() {
       if (!this.formData.type || this.formData.type === "") {
         this.$refs.typeRef.focus();
-        message_error("请选择时间条件类型！");
+        // 请选择时间条件类型！
+        message_error(this.$t('AUTOMATION.ERROR.TIME_TYPE'));
         return false;
       }
       return (this.$refs.onceRef && this.$refs.onceRef.validate()) ||

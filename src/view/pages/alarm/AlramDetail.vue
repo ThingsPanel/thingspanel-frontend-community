@@ -2,21 +2,21 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-07 11:04:52
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-28 09:30:23
+ * @LastEditTime: 2023-03-13 15:02:56
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\alarm\AlramDetail.vue
  * @Description: 告警详情
 -->
 
 <template>
-  <el-dialog :title="'告警详情'" class="el-dark-dialog" :visible.sync="dialogVisible"
+  <el-dialog :title="$t('ALARM.ALARAM_DETAIL')" class="el-dark-dialog" :visible.sync="dialogVisible"
     width="600px"  top="10vh">
     <el-form class="el-dark-input" label-position="left" label-width="85px">
-      <el-form-item label="告警内容">
+      <el-form-item :label="$t('ALARM.ALARAM_CONTENT')">
         <el-input type="textarea" readonly  :rows="3" v-model="formData.warning_content"></el-input>
       </el-form-item>
 
       <div class="text-right">
-        <el-button size="medium" type="cancel" @click="handleCancel">关闭</el-button>
+        <el-button size="medium" type="cancel" @click="handleCancel">{{ $t('COMMON.CLOSE') }}</el-button>
       </div>
     </el-form>
   </el-dialog>

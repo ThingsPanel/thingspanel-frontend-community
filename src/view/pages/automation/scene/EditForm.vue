@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-03 14:04:59
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-02 14:58:03
+ * @LastEditTime: 2023-03-10 19:30:09
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\scene\EditForm.vue
  * @Description: 场景编辑表单
 -->
@@ -17,29 +17,29 @@
       top="10vh"
   >
     <el-form label-position="left" label-width="85px">
-      <el-form-item label="场景标题" required >
+      <el-form-item :label="$t('AUTOMATION.SCENE_TITLE')" required >
         <el-input ref="nameRef" v-model="formData.scenario_name"></el-input>
       </el-form-item>
 
-      <el-form-item label="场景描述">
+      <el-form-item :label="$t('AUTOMATION.SCENE_DESCRIPTION')">
         <el-input v-model="formData.scenario_description"></el-input>
       </el-form-item>
 
-      <el-form-item label="添加设备" required>
+      <el-form-item :label="$t('')" required>
         <div style="display:flex;margin-bottom: 10px;" v-for="(command, index) in formData.commands" :key="index">
           <DeviceTypeSelector ref="deviceTypeRef" style="" :data="command.data" :option="{operator: false}" @change="v=>handleCommandChange(command, v)"/>
           <!-- 新增一行 -->
           <el-button type="indigo" size="small" style="margin-left: auto"
-                     v-if="index == 0" @click="handleAddCommand(command)">新增一行</el-button>
+                     v-if="index == 0" @click="handleAddCommand(command)">{{ $t('AUTOMATION.ADD_LINE')}}</el-button>
 
           <el-button type="danger" size="small" style="margin-left: auto"
-                     v-if="index > 0" @click="handleDeleteCommand(command)">删除</el-button>
+                     v-if="index > 0" @click="handleDeleteCommand(command)">{{ $t('AUTOMATION.DELETE')}}</el-button>
         </div>
       </el-form-item>
 
 
       <div class="text-right">
-        <el-button size="medium" type="cancel" @click="handleSubmit">保存</el-button>
+        <el-button size="medium" type="cancel" @click="handleSubmit">{{ $t('AUTOMATION.SAVE')}}</el-button>
       </div>
     </el-form>
   </el-dialog>
@@ -219,7 +219,7 @@ export default {
     validate() {
       if (!this.formData.scenario_name || this.formData.scenario_name === "") {
         this.$refs.nameRef.focus();
-        message_error("请输入场景名称！");
+        message_error(this.$t('AUTOMATION.SCENE_NAME'));
         return false;
       }
       for(let i=0; i < this.$refs.deviceTypeRef.length; i++) {

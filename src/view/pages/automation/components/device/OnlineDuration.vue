@@ -1,8 +1,8 @@
 <template>
   <div style="display: flex">
-    持续
-    <el-input ref="durationRef" style="width: 100px;margin-right:10px" v-model="formData.value" @change="handleValueChange"></el-input>
-    秒
+    {{ $t('AUTOMATION.DURATION') }}
+    <el-input ref="durationRef" style="width: 100px;margin-left:10px;margin-right:10px" v-model="formData.value" @change="handleValueChange"></el-input>
+    {{ $t('AUTOMATION.SECONDS') }}
   </div>
 </template>
 
@@ -40,7 +40,7 @@ export default {
     validate() {
       if (!this.formData.value || this.formData.value === "") {
         this.$refs.durationRef.focus();
-        message_error("请输入秒数!")
+        message_error(this.$t('AUTOMATION.ERROR.DURATION'))
         return false;
       }
       return true;

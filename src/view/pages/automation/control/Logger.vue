@@ -2,24 +2,24 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-17 08:49:11
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-22 15:04:23
+ * @LastEditTime: 2023-03-10 19:07:47
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Logger.vue
  * @Description: 控制策略日志
 -->
 <template>
-  <el-dialog title="日志" class="el-dark-dialog" :append-to-body="true" :close-on-click-modal="false" :visible.sync="dialogVisible"
+  <el-dialog :title="$t('AUTOMATION.LOG')" class="el-dark-dialog" :append-to-body="true" :close-on-click-modal="false" :visible.sync="dialogVisible"
     width="60%" height="60%" top="10vh">
     <el-form label-position="left" label-width="85px">
     
       <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
 
-        <el-table-column label="执行时间" prop="trigger_time" width="240"></el-table-column>
-        <el-table-column label="执行说明" prop="process_description" width="auto"></el-table-column>
+        <el-table-column :label="$t('AUTOMATION.EXE_TIME')" prop="trigger_time" width="240"></el-table-column>
+        <el-table-column :label="$t('AUTOMATION.EXE_DESCRIPTION')" prop="process_description" width="auto"></el-table-column>
   
-        <el-table-column label="执行状态" prop="process_result" width="100">
+        <el-table-column :label="$t('AUTOMATION.EXE_STATUS')" prop="process_result" width="100">
           <template v-slot="scope">
-            {{ scope.row.process_result == '1' ? '成功' : '失败' }}
+            {{ scope.row.process_result == '1' ? $t('AUTOMATION.SUCEESSFUL') : $t('AUTOMATION.FAILURE') }}
           </template>
         </el-table-column>
 
@@ -27,7 +27,7 @@
         <el-table-column align="left" :label="$t('AUTOMATION.OPERATION')"  width="80">
           <template v-slot="scope">
             <div style="text-align: right">
-              <el-button type="border" size="mini"  @click="handleShowDetail(scope.row)">详情</el-button>
+              <el-button type="border" size="mini"  @click="handleShowDetail(scope.row)">{{ $t('AUTOMATION.DETAIL') }}</el-button>
             </div>
           </template>
         </el-table-column>
@@ -45,7 +45,7 @@
         ></el-pagination>
       </div>
       <div class="text-right">
-        <el-button size="medium" type="cancel" @click="handleClose">关闭</el-button>
+        <el-button size="medium" type="cancel" @click="handleClose">{{ $t('COMMON.CLOSE') }}</el-button>
       </div>
     </el-form>
 

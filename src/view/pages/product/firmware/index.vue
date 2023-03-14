@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-08 15:22:33
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-08 15:30:45
+ * @LastEditTime: 2023-03-13 15:32:13
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -18,7 +18,7 @@
         </el-row>
         <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
             <el-col :span="4">
-                <el-select>
+                <el-select :value="params.category">
                     <el-option label="全部产品" value="all"></el-option>
                 </el-select>
             </el-col>
@@ -85,24 +85,28 @@
         </div>
         <!-- 分页 end -->
 
+        <add-package :visible.sync="addPackageDialogVisible"></add-package>
+
     </div>
 </template>
   
 <script>
 import TableTitle from "@/components/common/TableTitle.vue"
-
+import AddPackage from "./AddPackage.vue";
 export default {
     name: "FirmwareUpgrade",
-    components: { TableTitle },
+    components: { TableTitle, AddPackage },
     data() {
         return {
             tableData: [],
             loading: false,
             params: {
+                category: "all",
                 current_page: 1,
                 per_page: 10,
                 total: 0
-            }
+            },
+            addPackageDialogVisible: false
         }
     },
     methods: {
@@ -110,7 +114,7 @@ export default {
 
         },
         handleCreate() {
-
+            this.addPackageDialogVisible = true;
         },
         viewTaskList(item) {
 

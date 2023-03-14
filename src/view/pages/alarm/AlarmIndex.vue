@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-07 10:02:17
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-02-28 16:00:50
+ * @LastEditTime: 2023-03-13 15:11:14
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\alarm\index.vue
  * @Description: 告警信息列表
 -->
@@ -25,16 +25,16 @@
       </el-col>
 
       <el-col :span="12" class="text-right">
-        <el-select style="margin-right:10px" v-model="params.warningLevel" placeholder="报警级别" clearable @change="handleSearch">
-          <el-option value="low" label="低"></el-option>
-          <el-option value="medium" label="中"></el-option>
-          <el-option value="high" label="高"></el-option>
+        <el-select style="margin-right:10px" v-model="params.warningLevel" :placeholder="$t('ALARM.PLACEHOLDER.WARNING_LEVEL')" clearable @change="handleSearch">
+          <el-option value="low" :label="$t('AUTOMATION.WARNING_LEVEL_LOW')"></el-option>
+          <el-option value="medium" :label="$t('AUTOMATION.WARNING_LEVEL_MEDIUM')"></el-option>
+          <el-option value="high" :label="$t('AUTOMATION.WARNING_LEVEL_HIGH')"></el-option>
         </el-select>
 
-        <el-select v-model="params.processing_result" placeholder="是否处理" clearable @change="handleSearch">
-          <el-option :value="ProcessingState.unprocessed" label="未处理"></el-option>
-          <el-option :value="ProcessingState.processed" label="已处理"></el-option>
-          <el-option :value="ProcessingState.ignored" label="已忽略"></el-option>
+        <el-select v-model="params.processing_result" :placeholder="$t('ALARM.PROCESSING_RESULT')" clearable @change="handleSearch">
+          <el-option :value="ProcessingState.unprocessed" :label="$t('ALARM.UNPROCESSED')"></el-option>
+          <el-option :value="ProcessingState.processed" :label="$t('ALARM.PROCESSED')"></el-option>
+          <el-option :value="ProcessingState.ignored" :label="$t('ALARM.IGNORED')"></el-option>
 
         </el-select>
       </el-col>
@@ -48,35 +48,35 @@
           {{ formatDate(scope.row.created_at) }}
         </template>
       </el-table-column>
-      <el-table-column label="告警名称" prop="warning_name" width="220"></el-table-column>
-      <el-table-column label="级别" prop="warning_level" width="60"></el-table-column>
-      <el-table-column label="告警描述" prop="warning_description" :show-overflow-tooltip="true" width="auto">
+      <el-table-column :label="$t('ALARM.WARNING_NAME')" prop="warning_name" width="220"></el-table-column>
+      <el-table-column :label="$t('ALARM.LEVEL')" prop="warning_level" width="60"></el-table-column>
+      <el-table-column :label="$t('ALARM.WARNING_DESCRIPTION')" prop="warning_description" :show-overflow-tooltip="true" width="auto">
         <template v-slot="scope">
           <p class="table-describe mad">{{ scope.row.describe }}</p>
         </template>
       </el-table-column>
 
-      <el-table-column label="处理时间" prop="updated_at" width="180"></el-table-column>
-      <el-table-column label="处理结果" prop="handle_result" width="180">
+      <el-table-column :label="$t('ALARM.PROCESSING_RESULT')" prop="updated_at" width="180"></el-table-column>
+      <el-table-column :label="$t('ALARM.PROCESSING_RESULT')" prop="handle_result" width="180">
         <template v-slot="scope">
-          <p v-if="scope.row.processing_result == ProcessingState.processed">已处理</p>
-          <p v-if="scope.row.processing_result == ProcessingState.unprocessed">未处理</p>
-          <p v-if="scope.row.processing_result == ProcessingState.ignored">已忽略</p>
+          <p v-if="scope.row.processing_result == ProcessingState.processed">{{ $t('ALARM.PROCESSED') }}</p>
+          <p v-if="scope.row.processing_result == ProcessingState.unprocessed">{{ $t('ALARM.UNPROCESSED') }}</p>
+          <p v-if="scope.row.processing_result == ProcessingState.ignored">{{ $t('ALARM.IGNORED')}}</p>
         </template>
       </el-table-column>
-      <el-table-column label="处理人" prop="handler" width="auto"></el-table-column>
+      <el-table-column :label="$t('ALARM.PROCESSOR')" prop="handler" width="auto"></el-table-column>
 
-      <el-table-column label="操作" width="240" align="center">
+      <el-table-column :label="$t('ALARM.HANDLE')" width="240" align="center">
         <template v-slot="scope">
           <div class="text-right">
-            <el-button type="yellow" size="mini" @click="handleShowDetail(scope.row)">详情</el-button>
+            <el-button type="yellow" size="mini" @click="handleShowDetail(scope.row)">{{  $t('AUTOMATION.DETAIL') }}</el-button>
 
             <!-- 处理 -->
             <el-button type="border" size="mini" v-if="scope.row.processing_result == ProcessingState.unprocessed"
-              @click="handleShowProcess(scope.row)">处理</el-button>
+              @click="handleShowProcess(scope.row)">{{ $t('ALARM.PROCESS')}}</el-button>
 
             <el-button size="mini" v-if="scope.row.processing_result == ProcessingState.unprocessed"
-              @click="handleIgnored(scope.row)">忽略</el-button>
+              @click="handleIgnored(scope.row)">{{ $t('ALARM.IGNORE')}}</el-button>
 
           </div>
         </template>
@@ -85,8 +85,8 @@
     <!-- 表 end -->
 
     <div class="text-left py-3">
-      <el-button size="mini" type="border" @click="handleShowBatchProcessing">批量处理</el-button>
-      <el-button size="mini" type="yellow" @click="handleIgnored(selectRows)">批量忽略</el-button>
+      <el-button size="mini" type="border" @click="handleShowBatchProcessing">{{ $t('ALARM.BATCH_PROCESS')}}</el-button>
+      <el-button size="mini" type="yellow" @click="handleIgnored(selectRows)">{{ $t('ALARM.BATCH_IGNORED')}}</el-button>
     </div>
     <div class="text-right py-3">
       <el-pagination background layout="prev, pager, next" 
@@ -117,7 +117,7 @@ import AlarmDetail from "./AlramDetail.vue"
 import AlarmProcess from "./AlarmProcess.vue"
 import AlarmAPI from "@/api/alarm";
 import "@/core/mixins/common"
-import { message_success } from "../../../utils/helpers";
+import { message_success } from "@/utils/helpers";
 export default {
   name: "AlarmIndex",
   components: { TableTitle, AlarmDetail, AlarmProcess },
@@ -221,7 +221,7 @@ export default {
           .then(({ data: result }) => {
             if (result.code === 200) {
               this.getAlarmList();
-              message_success(value === ProcessingState.processed ? "已处理" : "已忽略")
+              message_success(value === ProcessingState.processed ? this.$t('ALARM.PROCESSED') : $t('ALARM.IGNORED'))
             }
           })
       } else {
@@ -230,7 +230,7 @@ export default {
           .then(({ data: result }) => {
             if (result.code === 200) {
               this.getAlarmList();
-              message_success(value === ProcessingState.processed ? "已处理" : "已忽略")
+              message_success(value === ProcessingState.processed ? this.$t('ALARM.PROCESSED') : $t('ALARM.IGNORED'))
             }
           })
       }

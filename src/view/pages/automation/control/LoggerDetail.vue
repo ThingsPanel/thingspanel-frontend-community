@@ -2,37 +2,37 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-17 08:49:11
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-01 15:38:31
+ * @LastEditTime: 2023-03-10 19:18:34
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Logger.vue
  * @Description: 控制策略日志详情
 -->
 <template>
-  <el-dialog title="日志详情" class="el-dark-dialog" :append-to-body="true" :visible.sync="dialogVisible" width="800px"
+  <el-dialog :title="$t('AUTOMATION.LOG_DETAIL')" class="el-dark-dialog" :append-to-body="true" :visible.sync="dialogVisible" width="800px"
     top="10vh">
     <el-form label-position="left" label-width="85px">
 
       <!-- 表 start -->
       <el-table :data="tableData" v-loading="loading">
 
-        <el-table-column label="目标名称" prop="target_name" width="auto"></el-table-column>
+        <el-table-column :label="$t('AUTOMATION.TARGET_NAME')" prop="target_name" width="auto"></el-table-column>
 
         <!-- 动作类型 -->
-        <el-table-column label="动作类型" prop="process_result" width="100">
+        <el-table-column :label="$t('AUTOMATION.ACTION_TYPE')" prop="process_result" width="100">
           <template v-slot="scope">
-            <span v-if="scope.row.action_type==='1'">设备输出</span>
-            <span v-if="scope.row.action_type==='2'">触发告警</span>
-            <span v-if="scope.row.action_type==='3'">激活场景</span>
+            <span v-if="scope.row.action_type==='1'">{{ $t('AUTOMATION.DEVICE_OUT') }}</span>
+            <span v-if="scope.row.action_type==='2'">{{ $t('AUTOMATION.TRIGGER_NAME') }}</span>
+            <span v-if="scope.row.action_type==='3'">{{ $t('AUTOMATION.ACTIVATE_SCENE') }}</span>
           </template>
         </el-table-column>
 
-        <el-table-column label="执行状态" prop="process_result" width="100">
+        <el-table-column :label="$t('AUTOMATION.EXE_STATUS')" prop="process_result" width="100">
           <template v-slot="scope">
-            {{ scope.row.process_result == '1' ? '成功' : '失败' }}
+            {{ scope.row.process_result == '1' ? $t('AUTOMATION.SUCCESSFUL') : $t('AUTOMATION.FAILURE') }}
           </template>
         </el-table-column>
 
         <!-- 说明 -->
-        <el-table-column label="执行内容" prop="process_description" width="auto"></el-table-column>
+        <el-table-column :label="$t('AUTOMATION.EXE_CONTENT')" prop="process_description" width="auto"></el-table-column>
 
       </el-table>
       <!-- 表 end -->
@@ -42,7 +42,7 @@
           :page-size="params.per_page" @current-change="getLoggerDetailList"></el-pagination>
       </div>
       <div class="text-right">
-        <el-button size="medium" type="cancel" @click="handleClose">关闭</el-button>
+        <el-button size="medium" type="cancel" @click="handleClose">{{ $t('AUTOMATION.CLOSE') }}</el-button>
       </div>
     </el-form>
   </el-dialog>

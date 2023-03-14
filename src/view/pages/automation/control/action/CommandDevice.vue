@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-06 09:04:58
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-01 16:17:07
+ * @LastEditTime: 2023-03-10 15:58:28
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\CommandDevice.vue
  * @Description: 操作设备
 -->
@@ -15,12 +15,12 @@
       <!-- 新增一行 -->
       <el-button type="indigo" size="small" style="margin-left: auto;"
                  v-if="index == 0"
-                 @click="handleAddCommand">新增一行</el-button>
+                 @click="handleAddCommand">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
 
       <!-- 删除 -->
       <el-button type="danger" size="small" style="margin-left: auto;"
                  v-if="index > 0"
-                 @click="handleDeleteCommand(command)">删除</el-button>
+                 @click="handleDeleteCommand(command)">{{ $t('AUTOMATION.DELETE') }}</el-button>
 
     </div>
 

@@ -37,9 +37,17 @@
       <el-table-column :label="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.OPERATION')" align="center" width="250">
         <template v-slot="scope">
           <div class="text-right">
-            <el-button type="indigo" size="mini" class="mr-3" @click="handleEdit(scope.row)" :disabled="!hasAuth('sys:permission:edit')">{{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.EDIT') }}</el-button>
-            <el-popconfirm :title="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.DELETETHISITEM')" @confirm="handleDelete(scope.row)">
-              <el-button slot="reference" type="danger" size="mini"  :disabled="!hasAuth('sys:permission:del')">{{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.DELETE') }}</el-button>
+
+            <el-button type="indigo" size="mini" class="mr-3" 
+              @click="handleEdit(scope.row)" :disabled="!hasAuth('sys:permission:edit')">
+              {{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.EDIT') }}
+            </el-button>
+
+            <el-popconfirm :title="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.DELETETHISITEM')" 
+              @confirm="handleDelete(scope.row)">
+              <el-button slot="reference" type="danger" size="mini"  :disabled="!hasAuth('sys:permission:del')">
+                {{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.DELETE') }}
+              </el-button>
             </el-popconfirm>
           </div>
         </template>

@@ -1,9 +1,9 @@
 <template>
   <div>
-    <el-form-item style="width:100%" label="那么：">
+    <el-form-item style="width:100%" :label="$t('AUTOMATION.THEN')">
       <div style="display: flex;margin-bottom: 10px" v-for="(action, index) in actions" :key="index">
 
-        <el-select ref="actionTypeRef" style="width: 120px;margin-right:20px" placeholder="选择执行动作" v-model="action.type"
+        <el-select ref="actionTypeRef" style="width: 120px;margin-right:20px" :placeholder="$t('AUTOMATION.PLACEHOLDER.ACTION_TYPE')" v-model="action.type"
                    :disabled="actions.length > (index+1)"
                    @change="v=>handleChangeActionType(action, v)">
           <el-option v-for="(item, index) in action.typeOptions" :key="index" :label="item.label" :value="item.value"></el-option>
@@ -18,14 +18,14 @@
 
         <!-- 告警通知 -->
         <AlarmNotification ref="alarmRef" v-if="action.type=='alarm'" :data="action.data" @change="v=>handleAlarmChange(action, v)"/>
-        <!-- <el-button v-if="action.type=='device'" type="danger" size="mini">删除</el-button> -->
+        <!-- <el-button v-if="action.type=='device'" type="danger" size="mini">{{ $t('AUTOMATION.DELETE') }}</el-button> -->
         
         <div style="margin-left:20px;">
-          <el-button style="height:40px" type="danger" size="small" :v-if="actions.length > 0" @click="handleDeleteAction(action)">删除</el-button>
+          <el-button style="height:40px" type="danger" size="small" :v-if="actions.length > 0" @click="handleDeleteAction(action)">{{ $t('AUTOMATION.DELETE') }}</el-button>
         </div>
         
       </div>
-      <el-button type="border" size="mini" :disabled="actions.length > 2" @click="handleAddAction">新增执行动作</el-button>
+      <el-button type="border" size="mini" :disabled="actions.length > 2" @click="handleAddAction">{{ $t('AUTOMATION.ADD_ACTION_TYPE') }}</el-button>
     </el-form-item>
   </div>
 </template>
@@ -35,11 +35,12 @@ import {message_error} from "@/utils/helpers";
 import CommandDevice from "./action/CommandDevice";
 import SceneSelector from "./action/SceneSelector";
 import AlarmNotification from "./action/AlarmNotification.vue";
+import i18n from "@/core/plugins/vue-i18n"
 
 const actionTypeOptions = [
-  { label: "操作设备", value: "device" },
-  { label: "激活场景", value: "scene" },
-  { label: "触发告警", value: "alarm" },
+  { label: i18n.t('AUTOMATION.OPERATING_DEVICE'), value: "device" },
+  { label: i18n.t('AUTOMATION.ACTIVATION_SCENARIO'), value: "scene" },
+  { label: i18n.t('AUTOMATION.TRIGGER_ALARM'), value: "alarm" },
 ];
 export default {
   name: "ActionForm",
@@ -92,7 +93,7 @@ export default {
     handleAddAction() {
       let result = this.actions.every(item => item.type != "");
       if (!result) {
-        message_error("请选择一个执行动作");
+        message_error(this.$t('AUTOMATION.ERROR.ACTION_TYPE'));
         return;
       }
       // 已选动作
@@ -152,14 +153,14 @@ export default {
     },
     validate() {
       if (this.actions.length === 0) {
-        message_error("至少选择一个执行动作！");
+        message_error(this.$t('AUTOMATIN.ERROR.ACTION_TYPE'));
         return false;
       }
       for (let index = 0; index < this.actions.length; index++) {
         const item = this.actions[index];
         if (!item.type || item.type === "") {
           this.$refs.actionTypeRef[index].focus();
-          message_error("请选择执行动作！");
+          message_error(this.$t('AUTOMATION.ERROR.ATLEAST_ONE_ACTION_TYPE'));
           return false;
         }
         console.log(this.$refs.commandRef, this.$refs.sceneRef, this.$refs.alarmRef)

@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-03 14:04:59
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-02 14:10:33
+ * @LastEditTime: 2023-03-10 15:24:03
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\time\DateRangeSelector.vue
  * @Description: 
 -->
@@ -12,13 +12,13 @@
       format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss"
       v-model="startValue"
       type="datetime"
-      placeholder="起始时间YYYY-MM-DD hh:mm:ss" @change="handleChange">
+      :placeholder="$t('AUTOMATION.PLACEHOLDER.START_DATE') + ' YYYY-MM-DD hh:mm:ss'" @change="handleChange">
     </el-date-picker>
     <el-date-picker style="margin-right:10px;width:270px" ref="endRef" :clearable="false"
       format="yyyy-MM-dd HH:mm:ss" value-format="yyyy-MM-dd HH:mm:ss"
       v-model="endValue"
       type="datetime"
-      placeholder="结束时间YYYY-MM-DD hh:mm:ss" @change="handleChange">
+      :placeholder="$t('AUTOMATION.PLACEHOLDER.END_DATE') + ' YYYY-MM-DD hh:mm:ss'" @change="handleChange">
     </el-date-picker>
   </div>
 </template>
@@ -68,12 +68,12 @@ export default {
     validate() {
       if (!this.startValue) {
         this.$refs.startRef.focus();
-        message_error("请选择起始时间段")
+        message_error(this.$t('AUTOMATION.ERROR.START_DATE'));
         return false;
       }
       if (!this.endValue) {
         this.$refs.endRef.focus();
-        message_error("请选择结束时间段")
+        message_error(this.$t('AUTOMATION.ERROR.END_DATE'));
         return false;
       }
       return true;

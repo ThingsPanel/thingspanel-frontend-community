@@ -313,6 +313,10 @@ const permissionToRoute = (permission) => {
     name: permission['name'],
     path: permission.path
   }
-  route.component = () => import("@/view" + permission.component)
+  try {
+    route.component = () => import("@/view" + permission.component)
+  } catch (err) {
+    console.log(err)
+  }
   return route
 }

@@ -147,7 +147,10 @@ export default {
       option.controlType = "history";  // 图表类型
       // 初始化图表
       option.series = [];
-      this.dataSrc.forEach(item => {
+      let mappingArr = this.dataSrc.filter(item => {
+        return option.mapping.findIndex(map => map == item.name) >= 0;
+      });
+      mappingArr.forEach(item => {
         option.series.push({ data: [0], "type": "line", name: item.title});
       })
       option.xAxis.data = [''];     // 初始化图表

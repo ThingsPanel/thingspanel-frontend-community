@@ -59,7 +59,7 @@ import {message_success} from "@/utils/helpers";
 import PluginBindingForm from "./PluginBindingForm";
 import i18n from "@/core/plugins/vue-i18n.js"
 
-  const required = true;
+const required = true;
 export default {
   name: "CreateProduct",
   components: { PluginBindingForm },

@@ -1,26 +1,26 @@
 <template>
   <div style="display: flex">
     <!-- 项目列表 -->
-    <el-select ref="projectRef" style="width: 100px;margin-right:10px" v-model="formData.projectId" placeholder="选择项目"
+    <el-select ref="projectRef" style="width: 100px;margin-right:10px" v-model="formData.projectId" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_PROJECT')"
                @change="handleProjectChange">
       <el-option v-for="(option, index) in projectOptions" :key="index" :label="option.name" :value="option.id"></el-option>
     </el-select>
 
     <!-- 分组列表 -->
-    <el-select ref="groupRef" style="width: 100px;margin-right:10px" v-if="formData.projectId" v-model="formData.groupId" placeholder="选择分组"
+    <el-select ref="groupRef" style="width: 100px;margin-right:10px" v-if="formData.projectId" v-model="formData.groupId" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_GROUP')"
                @change="handleGroupChange">
       <el-option v-for="(option, index) in groupOptions" :key="index" :label="option.device_group" :value="option.id"></el-option>
     </el-select>
 
     <!-- 设备列表 -->
-    <el-select ref="deviceRef" style="width: 100px;margin-right:10px" v-if="formData.groupId" v-model="formData.device" placeholder="选择设备"
+    <el-select ref="deviceRef" style="width: 100px;margin-right:10px" v-if="formData.groupId" v-model="formData.device" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_DEVICE')"
                @change="handleDeviceChange">
       <el-option v-for="(option, index) in deviceOptions" :key="index" :label="option.label" :value="option"></el-option>
     </el-select>
 
     <!-- 状态/属性列表 -->
     <el-select ref="stateRef" style="width: 100px;margin-right:10px" v-if="formData.device && formData.device.value" 
-               v-model="formData.state" value-key="name" placeholder="选择状态"
+               v-model="formData.state" value-key="name" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_STATE')"
                @change="handleStateChange">
       <el-option-group v-for="group in stateOptions" :key="group.label" :label="group.label">
         <el-option v-for="item in group.options" :key="item.name" :label="item.label" :value="item"></el-option>
@@ -47,6 +47,7 @@ import PluginAPI from "@/api/plugin";
 import OnlineDuration from "./OnlineDuration"
 import OperatorSelector from "./OperatorSelector";
 import { message_error } from '@/utils/helpers';
+import i18n from "@/core/plugins/vue-i18n"
 export default {
   name: "DeviceTypeSelector",
   components: { OnlineDuration, OperatorSelector },
@@ -239,18 +240,18 @@ export default {
       this.stateOptions = [];
       if (this.option.operator) {
         this.stateOptions.push({
-          label: "在线状态", 
+          label: this.$t('AUTOMATION.ONLINE_STATUS'), 
           options: [
-            { mode: "onlineDuration", label: "持续时间", name: "onlineDuration" },
+            { mode: "onlineDuration", label: this.$t('AUTOMATION.ONLINE_DURATION'), name: "onlineDuration" },
           ]
         });
 
         this.stateOptions.push({
-          label: "上下线", 
+          label: this.$t('AUTOMATION.ONLINE_OFFLINE'), 
           options: [
-            { mode: "onlineState", label: "上线", name: "online" },
-            { mode: "onlineState", label: "下线", name: "offline" },
-            { mode: "onlineState", label: "上下线", name: "onAndOff" }
+            { mode: "onlineState", label: this.$t('AUTOMATION.ONLINE'), name: "online" },
+            { mode: "onlineState", label: this.$t('AUTOMATION.OFFLINE'), name: "offline" },
+            { mode: "onlineState", label: this.$t('AUTOMATION.ONLINE_OFFLINE'), name: "onAndOff" }
           ]
         });
       }
@@ -276,7 +277,7 @@ export default {
               });
 
               
-              this.stateOptions.push({label: "属性", options: arr});
+              this.stateOptions.push({label: this.$t('AUTOMATION.PROPERTY'), options: arr});
               this.updateData();
               
             }
@@ -291,22 +292,22 @@ export default {
       const form = this.formData;
       if (!form.projectId || form.projectId === "") {
         refs.projectRef.focus();
-        message_error("请选择项目");
+        message_error(this.$t('AUTOMATION.ERROR.PROJECT'));
         return false;
       }
       if (!form.groupId || form.groupId === "") {
         refs.groupRef.focus();
-        message_error("请选择分组");
+        message_error(this.$t('AUTOMATION.ERROR.GROUP'));
         return false;
       }
       if (!form.deviceId || form.deviceId === "") {
         refs.deviceRef.focus();
-        message_error("请选择设备");
+        message_error(this.$t('AUTOMATION.ERROR.DEVICE'));
         return false;
       }
       if (!form.state || form.state === "") {
         refs.stateRef.focus();
-        message_error("请选择状态或属性");
+        message_error(this.$t('AUTOMATION.ERROR.STATE'));
         return false;
       }
       if (refs.onlineDurationRef && !refs.onlineDurationRef.validate()) return false;

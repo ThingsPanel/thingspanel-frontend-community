@@ -2,13 +2,14 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-03 14:04:59
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-01 11:58:01
+ * @LastEditTime: 2023-03-10 12:31:56
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\device\OperatorSelector.vue
  * @Description: 操作设备
 -->
 <template>
   <div style="display: flex">
-    <el-select ref="symbolRef" v-if="option.operator" style="width: 100px;margin-right:10px" placeholder="操作符" v-model="formData.symbol"
+    <el-select ref="symbolRef" v-if="option.operator" style="width: 100px;margin-right:10px" :placeholder="$t('AUTOMATION.PLACEHOLDER.SYMBOL')" 
+    v-model="formData.symbol"
                @change="handleChange">
       <el-option v-for="(item, index) in symbolList" :key="index" :label="item" :value="item"></el-option>
     </el-select>
@@ -68,7 +69,7 @@ export default {
       console.log("OperatorSelector", this.data)
       if (this.option.operator && (!this.formData.symbol || this.formData.symbol === "")) {
         this.$refs.symbolRef && this.$refs.symbolRef.focus();
-        message_error("请选择操作符！");
+        message_error(this.$t('AUTOMATION.ERROR.SYMBOL'));
         return false;
       }
 
@@ -80,7 +81,7 @@ export default {
       console.log("OperatorSelector", result)
       if (!this.formData.value || this.formData.value === "" || !result) {
         this.$refs.valueRef && this.$refs.valueRef.focus();
-        message_error("请输入正确的属性值！");
+        message_error(this.$t('AUTOMATION.ERROR.PROPERTY'));
         return false;
       }
       return true;

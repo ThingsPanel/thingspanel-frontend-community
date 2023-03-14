@@ -102,7 +102,8 @@ export default {
      * 加载EChats图表
      */
     initEChart(option) {
-      console.log("====option", option)
+      console.log("====Curve.option", option)
+      console.log("====Curve.optionData", this.optionData)
       this.myEcharts = this.$echarts.init(this.$refs.chart, 'dark');
       this.$nextTick(() => {
         this.myEcharts.resize();

@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-      :title="formData.id ? '编辑规则' :'新增规则'"
+      :title="formData.id ? $t('AUTOMATION.EDIT_RULE') : $t('AUTOMATION.ADD_RULE')"
       class="el-dark-dialog"
       :close-on-click-modal="false"
       :visible.sync="dialogVisible"
@@ -26,9 +26,9 @@
 
         <!-- 优先级-->
         <el-col :span="8">
-          <el-form-item label="优先级">
+          <el-form-item :label="$t('AUTOMATION.PRIORITY')">
             <el-input-number ref="priorityRef" :min="0" :max="100" v-model="formData.priority"></el-input-number>
-            <el-tooltip class="item" effect="dark" content="值越小优先级越高" placement="top-start">
+            <el-tooltip class="item" effect="dark" :content="$t('AUTOMATION.TIP.PRIORITY')" placement="top-start">
               <i class="el-icon-info" style="margin-left:10px;"></i>
             </el-tooltip>
             
@@ -43,8 +43,8 @@
       <ActionForm ref="actionRef" :data="formData.actions" @change="handleActionChange"/>
 
       <div class="text-right">
-        <el-button v-if="formData.id" size="medium" type="save" @click="handleSaveAndStart()">保存并执行</el-button>
-        <el-button size="medium" type="cancel" @click="handleSave()">保存</el-button>
+        <el-button v-if="formData.id" size="medium" type="save" @click="handleSaveAndStart()">{{ $t('AUTOMATION.SAVE_START') }}</el-button>
+        <el-button size="medium" type="cancel" @click="handleSave()">{{ $t('AUTOMATION.SAVE') }}</el-button>
       </div>
     </el-form>
   </el-dialog>
@@ -57,7 +57,7 @@ import ActionForm from "./ActionForm";
 import Auto from "@/api/automation_1.0"
 import { message_success } from '@/utils/helpers';
 import { setConditions, setActions, getConditions, getActions }  from "./Const"
-import { message_error } from '../../../../utils/helpers';
+import { message_error } from '@/utils/helpers';
 
 export default {
   name: "EditForm",
@@ -162,7 +162,7 @@ export default {
     validate() {
       if (!this.formData.automation_name || this.formData.automation_name === "") {
         this.$refs.nameRef.focus();
-        message_error("请输入自动化名称！");
+        message_error(this.$t('AUTOMATION.PLACEHOLDER10'));
         return false;
       }
       if (!this.$refs.conditionRef.validate()) return false;
@@ -193,7 +193,7 @@ export default {
           .then(({data: result}) => {
             if (result.code === 200) {
               this.$emit("submit");
-              message_success("编辑成功！")
+              message_success(this.$t("AUTOMATION.EDIT_SUCCESSFULLY"))
               this.dialogVisible = false;
             }
           })
@@ -206,7 +206,7 @@ export default {
           .then(({data: result}) => {
             if (result.code === 200) {
               this.$emit("submit");
-              message_success("新增成功！");
+              message_success(this.$t("AUTOMATION.ADD_SUCCESSFULLY"));
               this.dialogVisible = false;
             }
           })

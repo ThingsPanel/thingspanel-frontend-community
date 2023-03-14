@@ -19,9 +19,15 @@
         <template v-slot="scope">
           <div style="text-align: left">
            <!-- <el-button type="indigo" size="mini" v-if="hasAuth('strategy:scene:list')" @click="showSceneList(scope.row)">场景管理</el-button> -->
-            <el-button type="indigo" size="mini" @click="showSceneList(scope.row)">场景管理</el-button>
-            <el-button type="indigo" size="mini" @click="showAlarmList(scope.row)">{{ $t('AUTOMATION.ALARM_STRATEGY_BTN') }}</el-button>
-            <el-button type="indigo" size="mini" @click="showControlList(scope.row)">{{ $t('AUTOMATION.CONTROL_STRATEGY_BTN') }}</el-button>
+            <el-button type="indigo" size="mini" @click="showSceneList(scope.row)">
+              {{  $t("AUTOMATION.SCENE_MANAGEMENT") }}
+            </el-button>
+            <el-button type="indigo" size="mini" @click="showAlarmList(scope.row)">
+              {{ $t('AUTOMATION.ALARM_STRATEGY_BTN') }}
+            </el-button>
+            <el-button type="indigo" size="mini" @click="showControlList(scope.row)">
+              {{ $t('AUTOMATION.CONTROL_STRATEGY_BTN') }}
+            </el-button>
           </div>
         </template>
       </el-table-column>
