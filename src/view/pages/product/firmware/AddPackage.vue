@@ -1,7 +1,7 @@
 <template>
     <div class="firmware-create">
         <el-dialog class="el-dark-dialog" :title="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.CREATEPRODUCT')"
-            :visible.sync="dialogVisible" width="30%" :before-close="handleClose" :close-on-click-modal="false">
+            :visible.sync="dialogVisible" width="30%" :before-close="() => dialogVisible=false" :close-on-click-modal="false">
             <el-form ref="firmwareCreateForm" :rules="rules" label-position="left" :model="form"
                 :hide-required-asterisk="true" label-width="150px">
 
@@ -35,18 +35,37 @@
                         <el-option label="SHA256" value="SHA256"></el-option>
                     </el-select>
                 </el-form-item>
-
                 <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.UPLOAD')">
-                    <el-upload class="upload-demo" drag action="https://jsonplaceholder.typicode.com/posts/" multiple>
-                        <i class="el-icon-upload"></i>
-                        <div class="el-upload__text">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.TIP1')
-                        }}<em>{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.TIP2') }}</em></div>
+                    <el-upload
+                        class="upload-demo"
+                        action="https://jsonplaceholder.typicode.com/posts/"
+                        multiple
+                        :limit="3"
+                        >
+                        <el-button size="small" type="primary">点击上传</el-button>
                     </el-upload>
                 </el-form-item>
+
 
                 <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.DESCRIPTION')"
                     prop="description">
                     <el-input type="textarea" v-model="form.description"></el-input>
+                </el-form-item>
+
+
+                <el-form-item :label="'其他配置'">
+                    <el-row v-for="(config, index) in form.configs" :key="index">
+                        <el-col :span="7" style="margin-right:10px">
+                            <el-input placeholder="key" v-model="config.key"></el-input>
+                        </el-col>
+                        <el-col :span="7" style="margin-right:10px">
+                            <el-input placeholder="value" v-model="config.value"></el-input>
+                        </el-col>
+                        <el-col :span="6"  :offset="2">
+                            <el-button type="border" v-if="index===0" @click="handleAddConfig">增加一行</el-button>
+                            <el-button type="danger" v-else @click="handleDeleteConfig(config)">删除</el-button>
+                        </el-col>
+                    </el-row>
                 </el-form-item>
 
                 <div class="text-right">
@@ -92,6 +111,9 @@ export default {
             signature: "",
             sign_value: "",
             description: "",
+            configs: [
+                {}
+            ]
         },
         rules: {
             product: [
@@ -127,6 +149,13 @@ export default {
                     }, 500)
                 }
             })
+        },
+        handleAddConfig() {
+            this.form.configs.push({})
+        },
+        handleDeleteConfig(config) {
+            const index = this.form.configs.findIndex(item => item === config);
+            console.log(index);
         }
     }
 }

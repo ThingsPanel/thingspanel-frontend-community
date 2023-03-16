@@ -1197,8 +1197,11 @@ export const locale = {
      * 固件升级新增弹框
      */
       FIRMWARE_LIST_ADD: {
+        PACKAGE_NAME: '升级包名称',
         ADDFIRMWARE: '新增固件',
         BELONGINGPRODUCT: '归属产品',
+        PACKAGE_MODULE: '升级包模块',
+        PACKAGE_VERSION: '升级包版本号',
         FIRMWARENAME: '固件名称',
         VERSION: '版本号',
         SIGNTYPE: '签名方式',

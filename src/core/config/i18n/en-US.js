@@ -890,7 +890,7 @@ export const locale = {
     DURATION: '持续',
     SECONDS: '秒',
     PERHOUR: '每小时',
-    DAYS: 'Every day',
+    DAYS: '每天',
     WEEKLY: '每周',
     MONTHLY: '每月',
     CUSTOM_CRON: '自定义cron',
@@ -924,7 +924,7 @@ export const locale = {
     START: 'Start ',
     STOP: '停用',
     SAVE_START: '保存并执行',
-    SAVE: 'save',
+    SAVE: '保存',
     LOG: 'Log',
     EXE_TIME: '执行时间',
     EXE_DESCRIPTION: '执行说明',
@@ -940,7 +940,7 @@ export const locale = {
     DEVICE_OUT: '设备输出',
     TRIGGER_ALARM: '触发告警',
     ACTIVATE_SCENE: '激活场景',
-    EDIT: 'Edit',
+    EDIT: '编辑',
     ADD: '新增',
     SCENE_TITLE: '场景标题',
     SCENE_NAME: '场景名称',
@@ -1197,8 +1197,11 @@ export const locale = {
      * 固件升级新增弹框
      */
       FIRMWARE_LIST_ADD: {
+        PACKAGE_NAME: '升级包名称',
         ADDFIRMWARE: 'Add firmware',
         BELONGINGPRODUCT: 'Belonging product',
+        PACKAGE_MODULE: '升级包模块',
+        PACKAGE_VERSION: '升级包版本号',
         FIRMWARENAME: 'firmware name',
         VERSION: 'version',
         SIGNTYPE: 'sign type',
