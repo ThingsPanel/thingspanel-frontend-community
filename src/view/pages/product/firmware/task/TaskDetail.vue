@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-15 08:54:20
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-15 17:53:46
+ * @LastEditTime: 2023-03-20 14:07:37
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\task\TaskDetail.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -10,7 +10,7 @@
   <div>
     <el-row :gutter="20" style="margin-bottom: 20px">
         <el-col :span="3" v-for="(item, index) in stateList" :key="index">
-            <widget :title="item.title" :value="item.value"/>
+            <widget :status="item.status" :value="item.count"/>
         </el-col>
     </el-row>
     <div class="rounded card p-4 el-table-transparent el-dark-input text-white">
@@ -31,7 +31,7 @@
         <el-table :data="tableData" v-loading="loading">
   
           <!-- 设备编号-->
-          <el-table-column :label="'设备编号'" prop="device_number" align="left"/>
+          <el-table-column :label="'设备编号'" prop="device_code" align="left"/>
   
           <!-- 设备名-->
           <el-table-column :label="'设备名'" prop="device_name" align="left"/>
@@ -43,44 +43,46 @@
           <el-table-column :label="'目标版本号'" prop="target_version" align="left"/>
   
           <!-- 升级进度 -->
-          <el-table-column :label="'升级进度'" prop="progress" align="left">
+          <el-table-column :label="'升级进度'" prop="upgrade_progress" align="left">
             <template v-slot="scope">
-               <el-progress :percentage="scope.row.progress"></el-progress>
+               <el-progress :percentage="getProgress(scope.row.upgrade_progress)"></el-progress>
             </template>
           </el-table-column>
   
           <!-- 状态更新时间-->
-          <el-table-column :label="'状态更新时间'" prop="status_updated" align="left">
+          <el-table-column :label="'状态更新时间'" prop="status_update_time" align="left">
             <template v-slot="scope">
-              {{ scope.row.status_updated ? scope.row.status_updated : "--"}}
+              {{ scope.row.status_update_time ? scope.row.status_update_time : "--"}}
             </template>
           </el-table-column>
 
+          <!-- 状态 0-待推送 1-已推送 2-升级中 3-升级成功 4-升级失败 5-已取消 -->
           <!-- 状态-->
-          <el-table-column :label="'状态'" prop="status" align="left">
+          <el-table-column :label="'状态'" prop="upgrade_status" align="left">
             <template v-slot="scope">
-                <p v-if="scope.row.status===upgradeState.unupgraded">待升级</p>
+              {{  upgradeState.getText[scope.row.status] }}
+                <!-- <p v-if="scope.row.status===upgradeState.unupgraded">待升级</p>
                 <p v-else-if="scope.row.status===upgradeState.upgrading">升级中</p>
                 <p v-else-if="scope.row.status===upgradeState.upgraded">升级成功</p>
-                <p v-else-if="scope.row.status===upgradeState.failed">升级失败</p>
+                <p v-else-if="scope.row.status===upgradeState.failed">升级失败</p> -->
             </template>
           </el-table-column>
 
           <!-- 状态详情-->
-          <el-table-column :label="'状态详情'" prop="statusDetail" align="left"/>
+          <el-table-column :label="'状态详情'" prop="status_detail" align="left"/>
          
   
           <!-- 操作列-->
           <el-table-column align="left" :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.OPERATION')" width="230">
             <template v-slot="scope">
               <div style="text-align: left">
-                <!-- 待升级, 开始升级 -->
-                <el-button v-if="scope.row.status===upgradeState.unupgraded" type="indigo" size="mini" class="mr-3" @click="startUpgrading(scope.row)">开始升级</el-button>
-                <!-- 升级失败, 重升级 -->
-                <el-button v-else-if="scope.row.status===upgradeState.failed" type="indigo" size="mini" class="mr-3" @click="reUpgrading(scope.row)">重升级</el-button>
-                <!-- 升级中，取消升级 -->
-                <el-button v-else-if="scope.row.status===upgradeState.upgrading" type="indigo" size="mini" class="mr-3" @click="cancelUpgrading(scope.row)">取消升级</el-button>
                 
+                <!-- 升级失败, 重升级 -->
+                <el-button v-if="scope.row.status===upgradeState.failed[0]" type="indigo" size="mini" class="mr-3" @click="reUpgrading(scope.row)">重升级</el-button>
+                <!-- 升级中，取消升级 -->
+                <el-button v-if="scope.row.status===upgradeState.upgrading[0]" type="indigo" size="mini" class="mr-3" @click="cancelUpgrading(scope.row)">取消升级</el-button>
+                <!-- 待升级, 开始升级 -->
+                <el-button v-else type="indigo" size="mini" class="mr-3" @click="startUpgrading(scope.row)">开始升级</el-button>
               </div>
             </template>
           </el-table-column>
@@ -104,38 +106,15 @@
 </template>
 
 <script>
-/**
- * @description: 升级状态
- * @return {*}
- */
-const UpgradeState = {
-    // 待升级
-    unupgraded: 0,
-    // 升级中
-    upgrading: 1,
-    // 升级成功
-    upgraded: 2,
-    // 升级失败
-    failed: 3,
-    // 通过value获取key
-    getKey: value => Object.keys(UpgradeState).find(key => UpgradeState[key] === value)
-}
 import Widget from './components/Widget.vue';
-import { taskDetailData } from "./data"
+import OTAAPI from "@/api/ota"
+import { UpgradeState } from "./Const"
 export default {
   components: {Widget},
   props: {},
   data() {
     return {
-        stateList: [
-            { key: "all", title: "所有状态", value: 20 },
-            { key: "", title: "待推送", value: 10 },
-            { key: "", title: "已推送", value: 0 },
-            { key: "unupgraded", title: "待升级", value: 0 },
-            { key: "upgrading", title: "升级中", value: 5 },
-            { key: "upgraded", title: "升级成功", value: 3 },
-            { key: "failed", title: "升级失败", value: 2 }
-        ],
+        stateList: [],
         loading: false,
         tableData: [],
         params: {
@@ -146,15 +125,8 @@ export default {
         upgradeState: UpgradeState
     }
   },
-  watch: {
-    tableData: {
-        handler(newValue) {
-            this.updateStateList();
-        },
-        deep: true
-    }
-  },
   mounted() {
+    this.params.ota_task_id = this.$route.query.taskId;
     this.getList();
   },
   methods: {
@@ -163,7 +135,49 @@ export default {
      * @return {*}
      */    
     getList() {
-        this.tableData = JSON.parse(JSON.stringify(taskDetailData));
+        OTAAPI.taskDetailList(this.params)
+          .then(({ data: result }) => {
+            if (result.code === 200) {
+              this.tableData = result.data?.data?.list || [];
+              const arr = result.data?.data?.statuscount || [];
+              this.computeStateList(arr);
+            }
+          })
+    },
+    /**
+     * @description: 获取进度
+     * @param {*} value
+     * @return {*}
+     */    
+    getProgress(value) {
+      let progress = Number(value || 0);
+      if (progress > 100) progress = 100;
+      if (progress < 0) progress = 0;
+      return progress;
+    },
+    /**
+     * @description: 计算stateList的值
+     * @return {*}
+     */    
+    computeStateList(arr) {
+      this.stateList = [];
+      // 所有状态
+      const total = arr.reduce((total, item) => total += item.count, 0) || 0;
+
+      // 遍历UpgradeState
+      Object.keys(UpgradeState).forEach(item => {
+        if (typeof UpgradeState[item] !== "function") {
+          // 状态
+          const status = UpgradeState[item][0];
+          const index = arr.findIndex(item => item.upgrade_status === String(status));
+          // 数量
+          let count = (index >= 0 ? arr[index].count : 0)
+          // 所有状态
+          if (status === UpgradeState.all[0]) count = total;
+
+          this.stateList.push({ status, count });
+        }
+      })
     },
     /**
      * @description: 开始升级
@@ -171,16 +185,16 @@ export default {
      * @return {*}
      */    
     startUpgrading(row) {
-        const fun = () => {
-            if(row.progress >= 100) {
-                clearInterval(timer);
-                row.status = UpgradeState.upgraded;
-                return;
-            }
-            row.status = UpgradeState.upgrading;
-            row.progress++;
-        }
-        let timer = setInterval(fun, 100);
+        // const fun = () => {
+        //     if(row.progress >= 100) {
+        //         clearInterval(timer);
+        //         row.status = UpgradeState.upgraded;
+        //         return;
+        //     }
+        //     row.status = UpgradeState.upgrading;
+        //     row.progress++;
+        // }
+        // let timer = setInterval(fun, 100);
     },
     /**
      * @description: 取消升级
@@ -190,24 +204,7 @@ export default {
     cancelUpgrading(row) {
         
     },
-    updateStateList() {
-        const arr = this.tableData;
-        const stateList = this.stateList;
-        const setStateList = state => {
-            if (typeof state === "function") return;
-            const count = arr.filter(item => item.status===state)?.length || 0;
-            const key = UpgradeState.getKey(state);
-            stateList.filter(item => item.key === key).forEach(item => item.value = count);
-        };
-        // 所有
-        const total = this.tableData.length;
-        // 待推送
-        // this.tableData.filter
-        // 已推送
-        // arr.filter(item => item.status)
-       
-        Object.values(UpgradeState).forEach(value => setStateList(value));
-    }
+  
   }
 }
 </script>

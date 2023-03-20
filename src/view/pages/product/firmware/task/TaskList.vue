@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-08 15:22:33
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-15 11:21:45
+ * @LastEditTime: 2023-03-17 21:00:42
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -17,22 +17,22 @@
         <!-- 表 start -->
         <el-form class="inline-edit">
             <el-table :data="tableData" v-loading="loading">
-
+              
                 <!-- 任务名称-->
-                <el-table-column label="任务名称" prop="name" align="center"/>
+                <el-table-column label="任务名称" prop="task_name" align="center"/>
 
                 <!-- 状态-->
-                <el-table-column label="状态" prop="status" align="center"/>
+                <el-table-column label="状态" prop="task_status" align="center"/>
 
                 <!-- 设备数量-->
-                <el-table-column label="设备数量" prop="number" align="center">
+                <el-table-column label="设备数量" prop="device_count" align="center">
                 </el-table-column>
 
               
                 <!-- 创建时间-->
-                <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.CREATEDATE')" prop="created" align="center">
+                <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.CREATEDATE')" prop="created_at" align="center">
                     <template v-slot="scope">
-                        {{ scope.row.created ? scope.row.created : "--" }}
+                        {{ scope.row.created_at ? formatDate(scope.row.created_at) : "--" }}
                     </template>
                 </el-table-column>
 
@@ -65,10 +65,17 @@
   
 <script>
 import AddTask from "./AddTask.vue"
-import { data } from "./data"
+import OTAAPI from "@/api/ota"
+import "@/core/mixins/common"
 export default {
     name: "TaskList",
     components: { AddTask },
+    props: {
+        id: {
+            type: [String],
+            default: ""
+        }
+    },
     data() {
         return {
             tableData: [],
@@ -91,14 +98,21 @@ export default {
          * @return {*}
          */        
         getList() {
-            this.tableData = data;
-            console.log(this.tableData)
+            this.params.otd_id = this.id;
+            OTAAPI.taskList(this.params)
+                .then(({ data: result }) => {
+                    if (result.code === 200) {
+                        this.tableData = result.data?.data || [];
+                        this.params.total = result.data?.total || 0;
+                    }
+                })
         },
         handleCreate() {
             this.addTaskDialogVisible = true;
         },
         viewTaskList(row) {
-            this.$router.push({ name: "TaskDetail" })
+            console.log("viewTaskList", row);
+            this.$router.push({ name: "TaskDetail", query: { taskId: row.id } })
         },
         cancelTask(row) {
 

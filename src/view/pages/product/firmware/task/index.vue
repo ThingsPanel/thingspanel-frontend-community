@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-15 08:53:42
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-15 09:32:05
+ * @LastEditTime: 2023-03-17 20:45:29
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\task\index.vue
  * @Description: 
 -->
@@ -10,10 +10,10 @@
     <div>
         <el-tabs v-model="activeName">
             <el-tab-pane label="任务列表" name="task">
-                <task-list></task-list>
+                <task-list :id="otaId"></task-list>
             </el-tab-pane>
             <el-tab-pane label="升级包信息" name="information">
-                <package-information></package-information>
+                <package-information  :id="otaId"></package-information>
             </el-tab-pane>
         </el-tabs>
     </div>
@@ -27,8 +27,15 @@ export default {
     components: { TaskList, PackageInformation },
     data() {
         return {
-            activeName: "task"
+            activeName: "task",
+            otaId: ""
         }
+    },
+    mounted() {
+        this.otaId = this.$route.query.otaId;
+    },
+    methods: {
+        
     }
 }
 </script>

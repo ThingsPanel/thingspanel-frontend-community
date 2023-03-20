@@ -23,6 +23,7 @@
           <el-dropdown-menu slot="dropdown" style="width: 120px;text-align: center">
             <el-dropdown-item command="import">导入</el-dropdown-item>
             <el-dropdown-item command="export">导出</el-dropdown-item>
+            <el-dropdown-item command="publish">发布</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
         <el-link class="el-dark-link link-item" icon="el-icon-edit-outline">编辑</el-link>

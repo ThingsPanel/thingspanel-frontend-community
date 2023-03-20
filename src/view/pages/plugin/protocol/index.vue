@@ -7,6 +7,7 @@
 
       <el-col :span="12" class="px-2 text-right">
         <el-button size="medium" type="indigo" @click="handleShowRegister">{{ $t('PLUGIN.TAB2_CONTENT.BTN') }}</el-button>
+        <el-button size="medium" type="indigo" >发布</el-button>
       </el-col>
     </el-row>
 

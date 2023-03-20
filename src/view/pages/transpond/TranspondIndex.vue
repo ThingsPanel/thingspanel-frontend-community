@@ -6,6 +6,7 @@
     </el-col>
     <el-col :span="12" class="px-2 text-right">
       <el-button size="medium" type="border" @click="dialogVisible = true">{{ $t("RULE_ENGINE.DATA_FORWARDING.CREATINGFORWARDINGRULE")}}</el-button>
+      <el-button size="medium" type="border">发布</el-button>
     </el-col>
   </el-row>
 

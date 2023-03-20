@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-08 15:22:33
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-15 09:12:37
+ * @LastEditTime: 2023-03-17 17:42:51
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -34,27 +34,27 @@
             <el-table :data="tableData" v-loading="loading">
 
                 <!-- 升级包名称-->
-                <el-table-column label="升级包名称" prop="name" align="center"/>
+                <el-table-column label="升级包名称" prop="package_name" align="center"/>
 
                 <!-- 升级包版本号-->
-                <el-table-column label="升级包版本号" prop="version" align="center"/>
+                <el-table-column label="升级包版本号" prop="package_version" align="center"/>
 
                 <!-- 归属产品-->
-                <el-table-column label="归属产品" prop="parent" align="center">
+                <el-table-column label="归属产品" prop="product_id" align="center">
                 </el-table-column>
 
                 <!-- 模块名称-->
-                <el-table-column label="模块名称" prop="model" align="center">
+                <el-table-column label="模块名称" prop="package_module" align="center">
                 </el-table-column>
 
                 <!-- 描述-->
-                <el-table-column label="描述" prop="describe" align="center">
+                <el-table-column label="描述" prop="description" align="center">
                 </el-table-column>
 
                 <!-- 创建日期-->
-                <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.CREATEDATE')" prop="created" align="center">
+                <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.CREATEDATE')" prop="created_at" align="center">
                     <template v-slot="scope">
-                        {{ scope.row.created ? scope.row.created : "--" }}
+                        {{ scope.row.created_at ? scope.row.created_at : "--" }}
                     </template>
                 </el-table-column>
 
@@ -83,7 +83,7 @@
         </div>
         <!-- 分页 end -->
 
-        <add-package :visible.sync="addPackageDialogVisible"></add-package>
+        <add-package :visible.sync="addPackageDialogVisible" @submit="getList"></add-package>
 
     </div>
 </template>
@@ -91,6 +91,7 @@
 <script>
 import TableTitle from "@/components/common/TableTitle.vue"
 import AddPackage from "./AddPackage.vue";
+import OTAAPI from "@/api/ota"
 
 import { data } from "./data"
 export default {
@@ -118,6 +119,14 @@ export default {
          * @return {*}
          */        
         getList() {
+            OTAAPI.list(this.params)
+                .then(({ data: result }) => {
+                    console.log(result);
+                    if (result.code === 200) {
+                        this.tableData = result.data?.data || [];
+                        this.params.total = result.data.total;
+                    }
+                })
             this.tableData = data;
             console.log(this.tableData)
         },
@@ -125,7 +134,7 @@ export default {
             this.addPackageDialogVisible = true;
         },
         viewTaskList(item) {
-            this.$router.push( { name: "OTATask" })
+            this.$router.push( { name: "OTATask", query: { otaId: item.id } })
         },
         handleDelete(item) {
 

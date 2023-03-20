@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-01-31 16:45:45
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-08 15:18:52
+ * @LastEditTime: 2023-03-17 15:36:44
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\managment\batch\CreateBatch.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -19,8 +19,8 @@
       
 
       <el-row>
-        <el-form-item label="数量" prop="number">
-          <el-input-number v-model="formData.number"></el-input-number>
+        <el-form-item label="数量" prop="device_number">
+          <el-input-number v-model="formData.device_number"></el-input-number>
         </el-form-item>
       </el-row>
       
@@ -63,40 +63,46 @@ export default {
     return {
       formData: {
         batch_number: "",
-        number: 0,
+        device_number: 0,
       },
       formRules: {
         batch_number: [{required, message:  i18n.t('PRODUCT_MANAGEMENT.BATCH_LIST.PLACEHOLDER1')}],
         number: [{required, message:  i18n.t('PRODUCT_MANAGEMENT.BATCH_LIST.PLACEHOLDER4'), type: 'number'}]
       },
-      dialogVisible: false,
       productOptions: [
 
       ],
     }
   },
-  watch: {
-    visible: {
-      handler(newValue) {
-        if (newValue) {
-          this.formData = JSON.parse(JSON.stringify(this.data));
-          this.dialogVisible = newValue;
-        }
+  computed: {
+    dialogVisible: {
+      get() {
+        return this.visible;
+      },
+      set(val) {
+        this.$emit("update:visible", val);
       }
     }
   },
   methods: {
     handleSubmit() {
-      if (!this.formData.id) {
+      if (!this.data.id) {
         // add
-        
+        ProductAPI.batchAdd({product_id: this.data.product_id, ...this.formData})
+          .then(({ data: result }) => {
+            console.log("result", result)
+            if (result.code === 200) {
+              this.$emit("submit")
+              message_success("创建批次成功！")
+              this.dialogVisible = false;
+            }
+          })
       } else {
         // edit
       }
     },
     handleClose() {
       this.dialogVisible = false;
-      this.$emit("update:visible", false)
     }
   }
 }

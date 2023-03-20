@@ -1,3 +1,11 @@
+<!--
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-03-08 14:05:48
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-03-17 15:40:08
+ * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\managment\batch\pre-registration\index.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
     <div class="rounded card p-4 el-table-transparent el-dark-input">
         <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
@@ -8,12 +16,12 @@
         </el-row>
         <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
             <el-col :span="4">
-                <el-select>
+                <el-select v-model="params.activeStatus">
                     <el-option label="全部" value="all"></el-option>
                 </el-select>
             </el-col>
             <el-col :span="4">
-                <el-input placeholder="请输入设备编号"></el-input>
+                <el-input placeholder="请输入设备编号" v-model="params.device_number"></el-input>
             </el-col>
             <el-col :span="4">
                 <el-button type="border">搜索</el-button>

@@ -788,7 +788,7 @@ export const locale = {
     SEARCH: "查询",
     EXPORT: "导出",
     NO: "序号",
-    BUSINESSNAME1: "业务名称",
+    BUSINESSNAME1: "项目名称",
     DWVICEGROUPNAME1: "设备分组名称",
     GATEWAYNAME: "网关名称",
     DEVICENAME1: "设备名称",

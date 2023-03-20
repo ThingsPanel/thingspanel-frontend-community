@@ -30,6 +30,7 @@
       <div style="margin-top: 10px;display: flex;justify-content: center">
         <el-button type="cancel" style="color:#000" @click="closeDialog">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.CANCEL') }}</el-button>
         <el-button type="save" @click="onSubmit">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.SAVE') }}</el-button>
+        <el-button type="save" @click="onPublish">发布</el-button>
       </div>
     </el-form>
 
@@ -135,7 +136,12 @@ export default defineComponent ({
       context.emit("update:dialogVisible", false);
     }
 
+      
     const customForm = ref(null);
+    /**
+     * @description: 保存
+     * @return {*}
+     */  
     function onSubmit() {
       formData.script_name = formData.company + "" + formData.product_name;
       formData.protocol_type = props.device.protocol;
@@ -168,12 +174,21 @@ export default defineComponent ({
       });
     }
 
+    /**
+     * @description: 发布
+     * @return {*}
+     */    
+    function onPublish() {
+
+    }
+
     return {
       customForm,
       formRule,
       formData,
       closeDialog,
-      onSubmit
+      onSubmit,
+      onPublish
     }
   }
 })

@@ -7,6 +7,7 @@
 
       <el-col :span="12" class="px-2 text-right">
         <el-button size="medium" type="border" @click="handleCreate">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.CREATEBATCH') }}</el-button>
+        <el-button size="medium" type="border" @click="handleImport">导入数据</el-button>
       </el-col>
     </el-row>
 
@@ -24,22 +25,7 @@
 
         </el-table-column>
 
-        <!--  接入地址-->
-        <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.CONNECTADDRESS')" prop="access_address"align="center">
-        </el-table-column>
-
-        <!-- 生成数据标志-->
-        <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.GENERATEDATAFLAGS')" prop="generate_flag" align="center">
-          <template v-slot="scope">
-            <el-tag v-if="scope.row.generate_flag == '1'"  type="success">已生成</el-tag>
-            <el-tag v-else type="danger">未生成</el-tag>
-          </template>
-        </el-table-column>
-
-        <!-- 批次描述-->
-        <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCHDESCRIPTION')" prop="describe" align="center">
-        </el-table-column>
-
+   
         <!-- 创建日期-->
         <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.CREATEDATE')" prop="created" align="center">
           <template v-slot="scope">
@@ -58,7 +44,7 @@
 
               <el-button type="indigo" class="mr-1" size="mini" @click="exportQRCodeAndData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.EXPORTQRCODEANDDATA') }}</el-button>
 
-              <el-button type="indigo" class="mr-1" size="mini" @click="importData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA') }}</el-button>
+              <el-button type="indigo" class="mr-1" size="mini" @click="exportData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA') }}</el-button>
               <el-popconfirm class="mr-1" :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
                 <el-button slot="reference" style="margin-left:10px" size="mini" type="danger">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.DELETE') }}</el-button>
               </el-popconfirm>
@@ -210,10 +196,13 @@ export default {
 
     },
     /**
-     * 导入数据
+     * 导出数据
      * @param item
      */
-    importData(item) {
+    exportData(item) {
+
+    },
+    handleImport() {
 
     }
   }

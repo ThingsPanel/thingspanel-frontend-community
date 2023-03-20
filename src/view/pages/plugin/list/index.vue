@@ -1,30 +1,101 @@
 <template>
     <div class="content-form">
-      <el-form>
-        <el-row style="padding-left: 10px">
-          <el-col :xs="16" :sm="18" :md="18" :lg="18" :xl="18">
-<!--            <el-form-item label="插件类型：">-->
-<!--              <el-radio-group v-model="params.pluginType" size="small" @input="handlePluginTypeChanged">-->
-<!--                <el-radio-button label="device">设备插件</el-radio-button>-->
-<!--                <el-radio-button label="protocol">协议插件</el-radio-button>-->
-<!--              </el-radio-group>-->
-<!--            </el-form-item>-->
-          </el-col>
-          <el-col :xs="8" :sm="6" :md="6" :lg="6" :xl="6" style="display: inline-flex;">
-            <el-input style="margin-right: 10px" size="small" clearable v-model="searchValue" :placeholder="$t('PLUGIN.TAB1_CONTENT.PLACEHOLDER')"></el-input>
-            <el-button icon="el-icon-refresh" class="primary el-button--indigo" size="mini"
-                       :loading="refreshLoading" @click="loadList">{{ $t('PLUGIN.TAB1_CONTENT.SEARCH') }}</el-button>
-          </el-col>
+      <el-form label-position="left" label-width="120px">
+           <el-form-item label="插件类型：">
+             <el-radio-group v-model="params.pluginType" size="small" @input="handlePluginTypeChanged">
+               <el-radio-button label="device">设备插件</el-radio-button>
+               <el-radio-button label="script">解析脚本</el-radio-button>
+               <el-radio-button label="node-red">规则引擎代码</el-radio-button>
+               <el-radio-button label="protocol">协议插件</el-radio-button>
+               <el-radio-button label="visual">可视化插件</el-radio-button>
+             </el-radio-group>
+            </el-form-item>
 
-        </el-row>
+            <el-form-item label="安装状态：">
+              <el-radio-group v-model="params.installationStatus" size="small" @input="handlePluginTypeChanged">
+                <el-radio-button label="all">全部</el-radio-button>
+                <el-radio-button label="installed">已安装</el-radio-button>
+                <el-radio-button label="uninstalled">未安装</el-radio-button>
+              </el-radio-group>
+             </el-form-item>
 
+             <el-form-item label="搜索：">
+                <el-row>
+                  <el-col :span="20">
+                    <div class="flex">
+                      <el-input style="margin-right: 10px;width: 200px" size="small" clearable v-model="searchValue" :placeholder="$t('PLUGIN.TAB1_CONTENT.PLACEHOLDER')"></el-input>
+                      <el-button icon="el-icon-refresh" class="primary el-button--indigo" size="mini"
+                             :loading="refreshLoading" @click="loadList">{{ $t('PLUGIN.TAB1_CONTENT.SEARCH') }}</el-button>
+                    </div>
+                    
+                  </el-col>
+
+                  <el-col :span="4" class="flex">
+                    <el-button :class="params.displayMode=='grid'? 'isActive' : ''" type="border" size="mini" icon="el-icon-s-grid"
+                      @click="handleChangeDisplayMode('grid')"></el-button>
+
+                    <el-button :class="params.displayMode=='table'? 'isActive' : ''" type="border" size="mini" icon="el-icon-s-unfold"
+                      @click="handleChangeDisplayMode('table')"></el-button>
+                  </el-col>
+                </el-row>
+             </el-form-item>
       </el-form>
-      <div class="width-20" v-for="(item,index) in listArr" :key="index">
-        <PluginCard :key="item.id" :data="item" :isInstalled="true" :category="category"
-                    @edit="handleEditPlugin"
-                    @delete="handleDelPlugin"
-        ></PluginCard>
+
+      <div v-if="params.displayMode==='grid'">
+        <div class="width-20" v-for="(item,index) in listArr" :key="index">
+          <PluginCard :key="item.id" :data="item" :isInstalled="true" :category="category"
+                      @edit="handleEditPlugin"
+                      @delete="handleDelPlugin"
+          ></PluginCard>
+        </div>
       </div>
+
+      <div v-else>
+        <!-- 表 start -->
+        <!--
+          {
+              "id": "4c77118a-5ee4-2483-13c8-9d15f5212473",
+              "model_name": "BoshInfoCtrl",
+              "flag": 0,
+              "chart_data": "{\"info\":{\"pluginCategory\":\"2\",\"pluginName\":\"BoshInfoCtrl\"},\"tsl\":{\"properties\":[{\"dataType\":\"integer\",\"dataRange\":\"0-999\",\"stepLength\":0.1,\"title\":\"继电器\",\"name\":\"powerstate\"}],\"option\":{\"classify\":\"custom\",\"catValue\":\"relay\"}},\"chart\":[{\"componentName\":\"单控开关\",\"type\":\"switch\",\"series\":[{\"type\":\"switch\",\"value\":false,\"id\":1,\"mapping\":{\"value\":\"powerstate\",\"on\":\"1\",\"off\":\"0\",\"attr\":{\"dataType\":\"integer\",\"dataRange\":\"0-999\",\"stepLength\":0.1,\"title\":\"继电器\",\"name\":\"powerstate\"}}}],\"disabled\":false,\"name\":\"继电器\",\"controlType\":\"control\",\"id\":\"M4ZJUuhfcwkN\"}],\"publish\":{\"isPub\":false}}",
+              "model_type": "2",
+              "sort": 0,
+              "issued": 0,
+              "created_at": 1678964701
+          }
+        -->
+        <el-form class="inline-edit">
+          <el-table :data="listArr" v-loading="loading">
+
+            <!-- 名称 -->
+            <el-table-column label="名称" prop="model_name" align="left"></el-table-column>
+
+            <el-table-column label="开发商"  align="left"></el-table-column>
+
+            <el-table-column label="说明"  prop="description" align="left"></el-table-column>
+
+            <el-table-column label="插件分类"  prop="category" align="left"></el-table-column>
+
+            <el-table-column label="安装状态"  prop="category" align="left"></el-table-column>
+
+
+            <!-- 操作列-->
+            <el-table-column align="left" :label="$t('PLUGIN.TAB2_CONTENT.OPERATION')" width="240">
+              <template v-slot="scope">
+                <div style="text-align: left">
+                  <el-button slot="reference" size="mini" type="border">安装</el-button>
+                  <el-popconfirm :title="$t('PLUGIN.TAB2_CONTENT.TITLE4')" @confirm="handleDelete(scope.row)">
+                    <el-button slot="reference" size="mini" type="danger">卸载</el-button>
+                  </el-popconfirm>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-form>
+        <!-- 表 end -->
+
+      </div>
+      
 
       <div class="text-right py-3">
         <el-pagination
@@ -48,11 +119,13 @@ export default {
   components: {PluginCard},
   data() {
     return {
+      loading: false,
       params: {
         total: 0,
         current_page: 1,
         per_page: 10,
-        pluginType: ""
+        pluginType: "",
+        displayMode: "grid"
       },
       list: [],
       listArr: [],
@@ -102,10 +175,14 @@ export default {
       PluginAPI.page(this.params)
         .then(({data}) => {
           if (data.code == 200) {
-            this.params = data.data;
-            let pluginList = data.data.data;
+            this.params.total = data.data?.total || 0;
+            this.params.current_page = data.data?.current_page || 1;
+            this.params.per_page = data.data?.per_page || 10;
+
+            let pluginList = data.data?.data || [];
             this.listArr = pluginList;
             this.refreshLoading = false;
+            console.log(this.listArr);
 
           }
         })
@@ -136,6 +213,9 @@ export default {
         this.listArr = this.list.filter(item => item.name.indexOf(this.searchValue) > -1);
       }
     },
+    handleChangeDisplayMode(mode) {
+      this.params.displayMode = mode;
+    },
     /**
      * 插件类型
      * @param v
@@ -161,7 +241,13 @@ let timer = null;
 </script>
 
 <style scoped>
-
+.el-form-item {
+  margin-bottom: 0;
+}
+::v-deep .el-button--border.isActive {
+  background-color: #6573e0 !important;
+  border-color: #6573e0 !important;
+}
 .width-20 {
   width: 20%;
   display: inline-block;
