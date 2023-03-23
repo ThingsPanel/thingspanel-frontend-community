@@ -2,22 +2,14 @@
     <div class="content-form">
       <el-form label-position="left" label-width="120px">
            <el-form-item label="插件类型：">
-             <el-radio-group v-model="params.pluginType" size="small" @input="handlePluginTypeChanged">
+             <el-radio-group v-model="params.pluginType" size="small" @change="handlePluginTypeChanged">
                <el-radio-button label="device">设备插件</el-radio-button>
                <el-radio-button label="script">解析脚本</el-radio-button>
-               <el-radio-button label="node-red">规则引擎代码</el-radio-button>
+               <el-radio-button label="nodeRed">规则引擎代码</el-radio-button>
                <el-radio-button label="protocol">协议插件</el-radio-button>
                <el-radio-button label="visual">可视化插件</el-radio-button>
              </el-radio-group>
             </el-form-item>
-
-            <el-form-item label="安装状态：">
-              <el-radio-group v-model="params.installationStatus" size="small" @input="handlePluginTypeChanged">
-                <el-radio-button label="all">全部</el-radio-button>
-                <el-radio-button label="installed">已安装</el-radio-button>
-                <el-radio-button label="uninstalled">未安装</el-radio-button>
-              </el-radio-group>
-             </el-form-item>
 
              <el-form-item label="搜索：">
                 <el-row>
@@ -25,7 +17,7 @@
                     <div class="flex">
                       <el-input style="margin-right: 10px;width: 200px" size="small" clearable v-model="searchValue" :placeholder="$t('PLUGIN.TAB1_CONTENT.PLACEHOLDER')"></el-input>
                       <el-button icon="el-icon-refresh" class="primary el-button--indigo" size="mini"
-                             :loading="refreshLoading" @click="loadList">{{ $t('PLUGIN.TAB1_CONTENT.SEARCH') }}</el-button>
+                             :loading="refreshBtnLoading" @click="loadList">{{ $t('PLUGIN.TAB1_CONTENT.SEARCH') }}</el-button>
                     </div>
                     
                   </el-col>
@@ -41,52 +33,39 @@
              </el-form-item>
       </el-form>
 
-      <div v-if="params.displayMode==='grid'">
+      <div v-if="params.displayMode==='grid'" v-loading="listLoadig">
         <div class="width-20" v-for="(item,index) in listArr" :key="index">
           <PluginCard :key="item.id" :data="item" :isInstalled="true" :category="category"
                       @edit="handleEditPlugin"
                       @delete="handleDelPlugin"
+                      @install="handleInstallPlugin"
           ></PluginCard>
         </div>
       </div>
 
       <div v-else>
         <!-- 表 start -->
-        <!--
-          {
-              "id": "4c77118a-5ee4-2483-13c8-9d15f5212473",
-              "model_name": "BoshInfoCtrl",
-              "flag": 0,
-              "chart_data": "{\"info\":{\"pluginCategory\":\"2\",\"pluginName\":\"BoshInfoCtrl\"},\"tsl\":{\"properties\":[{\"dataType\":\"integer\",\"dataRange\":\"0-999\",\"stepLength\":0.1,\"title\":\"继电器\",\"name\":\"powerstate\"}],\"option\":{\"classify\":\"custom\",\"catValue\":\"relay\"}},\"chart\":[{\"componentName\":\"单控开关\",\"type\":\"switch\",\"series\":[{\"type\":\"switch\",\"value\":false,\"id\":1,\"mapping\":{\"value\":\"powerstate\",\"on\":\"1\",\"off\":\"0\",\"attr\":{\"dataType\":\"integer\",\"dataRange\":\"0-999\",\"stepLength\":0.1,\"title\":\"继电器\",\"name\":\"powerstate\"}}}],\"disabled\":false,\"name\":\"继电器\",\"controlType\":\"control\",\"id\":\"M4ZJUuhfcwkN\"}],\"publish\":{\"isPub\":false}}",
-              "model_type": "2",
-              "sort": 0,
-              "issued": 0,
-              "created_at": 1678964701
-          }
-        -->
         <el-form class="inline-edit">
-          <el-table :data="listArr" v-loading="loading">
+          <el-table :data="listArr" v-loading="listLoadig">
 
             <!-- 名称 -->
-            <el-table-column label="名称" prop="model_name" align="left"></el-table-column>
+            <el-table-column label="名称" prop="name" align="left"></el-table-column>
 
-            <el-table-column label="开发商"  align="left"></el-table-column>
+            <el-table-column label="作者"  prop="author" align="left"></el-table-column>
 
-            <el-table-column label="说明"  prop="description" align="left"></el-table-column>
+            <el-table-column label="说明"  prop="describe" align="left"></el-table-column>
 
-            <el-table-column label="插件分类"  prop="category" align="left"></el-table-column>
-
-            <el-table-column label="安装状态"  prop="category" align="left"></el-table-column>
+            <el-table-column label="插件分类"  prop="devicePluginTypeLabel" align="left"></el-table-column>
 
 
             <!-- 操作列-->
             <el-table-column align="left" :label="$t('PLUGIN.TAB2_CONTENT.OPERATION')" width="240">
               <template v-slot="scope">
                 <div style="text-align: left">
-                  <el-button slot="reference" size="mini" type="border">安装</el-button>
-                  <el-popconfirm :title="$t('PLUGIN.TAB2_CONTENT.TITLE4')" @confirm="handleDelete(scope.row)">
-                    <el-button slot="reference" size="mini" type="danger">卸载</el-button>
-                  </el-popconfirm>
+
+                  <login-store :visible.sync="loginStoreDialogVisible"/>
+                  <el-button slot="reference" size="mini" type="border" @click="handleInstallPlugin(scope.row)">安装</el-button>
+
                 </div>
               </template>
             </el-table-column>
@@ -113,36 +92,31 @@
 import PluginCard from "./PluginCard";
 import PluginAPI from "@/api/plugin.js";
 import ProtocolPlugin from "@/api/protocolPlugin.js";
-
+import LoginStore from '@/view/pages/auth/LoginStore';
+import StoreAPI from "@/api/store"
+import { Wash, PluginType } from "../Const";
+import { addCustomExchangeAgreement } from "@/api/device"
 export default {
   name: "PluginList",
-  components: {PluginCard},
+  components: {PluginCard, LoginStore},
   data() {
     return {
       loading: false,
+      listLoadig: false,
       params: {
         total: 0,
-        current_page: 1,
-        per_page: 10,
-        pluginType: "",
+        page: 1,
+        pageSize: 10,
+        pluginType: "device",
+        installationStatus: "all",
         displayMode: "grid"
       },
       list: [],
       listArr: [],
       searchValue: '',
       category: [],
-      refreshLoading: false,
-      imgArr: [
-        "media/logos/wsd.png",
-        "media/logos/gps.png",
-        "media/logos/switch.png",
-        "media/logos/temperature.png",
-        "media/logos/en.png",
-        "media/logos/qxz.png",
-        "media/logos/qxz.png",
-        "media/logos/yy.png",
-        "media/logos/switch.png",
-      ]
+      refreshBtnLoading: false,
+      loginStoreDialogVisible: false
     }
   },
   created() {
@@ -158,14 +132,26 @@ export default {
      * 加载插件列表
      */
     loadList() {
-      this.refreshLoading = true;
-      PluginAPI.category({"current_page": 1, "per_page": 9999, "dict_code": "chart_type"})
-          .then(({data}) => {
-            if (data.code == 200) {
-              this.category = data.data.data;
-              this.loadDevicePluginList();
+      if (StoreAPI.list[this.params.pluginType]) {
+        this.refreshBtnLoading = true;
+        this.listLoading = true;
+        this.listArr = [];
+        StoreAPI.list[this.params.pluginType](this.params)
+          .then(({data: result}) => {
+            console.log(result)
+            if (result.code === 0) {
+              const list = result.data?.list || [];
+              this.listArr = list.map(item => Wash[this.params.pluginType]?.fromStore(item) || []);
             }
           })
+          .finally(() => {
+            this.refreshBtnLoading = false;
+            this.listLoading = false;
+          })
+      } else {
+        this.listArr = [];
+      }
+
     },
     /**
      * 获取设备插件列表
@@ -181,7 +167,7 @@ export default {
 
             let pluginList = data.data?.data || [];
             this.listArr = pluginList;
-            this.refreshLoading = false;
+            this.refreshBtnLoading = false;
             console.log(this.listArr);
 
           }
@@ -221,7 +207,80 @@ export default {
      * @param v
      */
     handlePluginTypeChanged(v) {
+      console.log("handlePluginTypeChanged", v)
+      switch (v) {
+        case "device": {
 
+          break;
+        }
+      }
+      this.loadList();
+    },
+    handleInstallPlugin(item, cb) {
+      const isAuth = this.$store.getters.getStoreAuthenticated;
+      if (isAuth) {
+        // 安装
+        switch(item.pluginType) {
+          case PluginType.Device: {
+            // 安装设备插件
+            this.installDevicePlugin(item, cb);
+            break;
+          }
+          case PluginType.Script: {
+            // 安装脚本插件
+            this.installScriptPlugin(item, cb)
+            break;
+          }
+        }
+      } else {
+        // 登录
+        this.loginStoreDialogVisible = true;
+      }
+    },
+    /**
+     * @description: 安装设备插件
+     * @param {*} item
+     * @param {*} callback
+     * @return {*}
+     */    
+    installDevicePlugin(item, callback) {
+      let data = {
+          model_type: item.devicePluginType,
+          chart_data: item.jsonData,
+          model_name: item.name,
+          version: item.version,
+          author: item.author
+        }
+        PluginAPI.add(data).then(({data}) => {
+            if (data.code == 200) {
+              callback({ code: 200, data, msg: "安装成功！" })
+            }
+          })
+    },
+    /**
+     * @description: 安装脚本插件
+     * @param {*} item
+     * @param {*} callback
+     * @return {*}
+     */    
+    installScriptPlugin(item, callback) {
+      let data = {
+        protocol_type: item.protocol_type,
+        script_name: item.name,
+        company: item.name,
+        product_name: item.name,
+        script_content_a: item.uplinkScript,
+        script_content_b: item.downlinkScript,
+        remark: item.describe,
+        device_type: item.scriptPluginType
+      };
+      addCustomExchangeAgreement(data)
+        .then(({ data: result }) => {
+          console.log("addCustomExchangeAgreement", result)
+          if (result.code === 200) {
+            callback({ code: 200, msg: "安装成功!"})
+          }
+        })
     },
     /**
      * 防抖

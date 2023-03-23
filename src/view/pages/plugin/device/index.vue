@@ -27,11 +27,14 @@
       </el-row>
     </div>
     <DevicePluginEditor class="tp-dark-editor"
-                        :visible.sync="showEditorDialog"
-                        :title="$t('PLUGIN.CUSTOM_DEVICE_PLUGIN')"
-                        :json="pluginJsonData"
-                        :plugin-category="pluginCategory"
-                        @publish="publish"></DevicePluginEditor>
+        :visible.sync="showEditorDialog"
+        :title="$t('PLUGIN.CUSTOM_DEVICE_PLUGIN')"
+        :json="pluginJsonData"
+        :plugin-category="pluginCategory"
+        @save="save"
+        @publish="publish"></DevicePluginEditor>
+
+    <LoginStore :visible.sync="loginStoreDialogVisible"></LoginStore>
 
     <!--    导入JSON-->
     <el-dialog class="el-dark-dialog el-table-transparent" :title=" $t('PLUGIN.TAB3_CONTENT.TITLE')" :visible.sync="importDialogVisible" width="30%">
@@ -61,8 +64,13 @@
 
 import PluginAPI from "@/api/plugin.js"
 import {message_success} from "@/utils/helpers";
+import StoreAPI from "@/api/store";
+import { message_error } from '@/utils/helpers';
+import LoginStore from '@/view/pages/auth/LoginStore';
+
 export default {
   name: "PluginEditor",
+  components: { LoginStore },
   data() {
     return {
       activeName: "",
@@ -71,7 +79,8 @@ export default {
       importDialogVisible: false,
       importPluginJson: "",
       pluginJsonData: {},
-      id: ""
+      id: "",
+      loginStoreDialogVisible: false
     }
   },
   created() {
@@ -101,7 +110,7 @@ export default {
     },
     handleImport(data) {
       if (data) {
-        this.pluginJsonData = JSON.parse(data.chart_data);
+        this.pluginJsonData = JSON.parse(data.jsonData);
         this.id = data.id;
       } else {
         this.pluginJsonData = JSON.parse(this.importPluginJson);
@@ -110,12 +119,9 @@ export default {
       console.log("handleImport", this.pluginJsonData);
       this.showEditorDialog = true;
     },
-    /**
-     * 发布
-     * @param data
-     * @param callback true：发布成功, false: 发布失败
-     */
-    publish(jsonObj, callback) {
+    save(jsonObj, callback) {
+      console.log("save", jsonObj)
+
       let data = {
         model_type: jsonObj.info.pluginCategory,
         chart_data: JSON.stringify(jsonObj),
@@ -128,20 +134,47 @@ export default {
         // 修改插件
         PluginAPI.edit(data).then(({data}) => {
           if (data.code == 200) {
-            message_success("插件修改成功");
             this.importDialogVisible = false;
-            if (callback) callback(true)
+            if (callback) callback({ code: 200, msg: "修改成功"})
           }
         })
       } else {
         // 新增插件
         PluginAPI.add(data).then(({data}) => {
           if (data.code == 200) {
-            message_success("插件导入成功");
             this.importDialogVisible = false;
-            if (callback) callback(true)
+            callback && callback({ code: 200, msg: "新增成功！"})
           }
         })
+      }
+    },
+    /**
+     * 发布
+     * @param data
+     * @param callback
+     */
+    publish(jsonObj, callback) {
+      console.log("publish", jsonObj)
+      const isAuth = this.$store.getters.getStoreAuthenticated;
+      if (isAuth) {
+        // 已登录
+        let deviceData = {
+          devicePluginType: Number(jsonObj.info.pluginCategory),
+          pluginAuthor: jsonObj.info.author,
+          pluginName: jsonObj.info.pluginName,
+          dataResource: JSON.stringify(jsonObj),
+          versionNumber: jsonObj.info.version,
+          pluginDescribe: jsonObj.info.description
+        }
+        StoreAPI.publish.device(deviceData)
+          .then(({ data: result }) => {
+            callback && callback({ code: 200, msg: "发布成功！"})
+          })
+
+      } else {
+        // 未登录
+        message_error("请先登录仓库！");
+        this.loginStoreDialogVisible = true;
       }
 
     }

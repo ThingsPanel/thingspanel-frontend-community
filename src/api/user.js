@@ -1,4 +1,4 @@
-import axios from "./http"
+import axios from "./interceptor/http"
 
 // 用户列表
 export function user_index(data) {

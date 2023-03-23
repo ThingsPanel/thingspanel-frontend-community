@@ -162,7 +162,6 @@ export default {
             message_success("产品删除成功");
             this.getProductList();
           }
-          console.log(data)
         })
     }
   }

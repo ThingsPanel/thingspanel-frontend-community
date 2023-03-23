@@ -1,12 +1,13 @@
+
 <template>
   <div class="publish-container">
-    <el-form style="padding: 40px 30px;bottom: 50px">
+    <el-form style="padding: 40px 30px;">
       <el-form-item>
-        <el-input type="textarea"  v-model="jsonStr" :autosize="{ minRows: 22, maxRows: 22}"></el-input>
+        <el-input type="textarea"  v-model="jsonStr" :autosize="{ minRows: 26, maxRows: 26}"></el-input>
       </el-form-item>
-      <el-form-item>
+      <!-- <el-form-item>
         <el-checkbox v-model="isPublic">{{ $t('PLUGIN.RELEASE_INFO_TAB.TEXT') }}</el-checkbox>
-      </el-form-item>
+      </el-form-item> -->
     </el-form>
 
   </div>

@@ -1,4 +1,4 @@
-import axios from "./http"
+import axios from "./interceptor/http"
 
 // 设备分页条件查询
 export function device_list(data){

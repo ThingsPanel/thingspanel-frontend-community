@@ -6,7 +6,7 @@
  * @FilePath: \ThingsPanel-Backend-Vue\src\api\automation_1.0.js
  * @Description: 
  */
-import axios from "./http"
+import axios from "./interceptor/http"
 export default {
 
     /**

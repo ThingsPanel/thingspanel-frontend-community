@@ -33,8 +33,8 @@
                 </el-form-item>
 
                 <!-- 签名方式 -->
-                <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.SIGNTYPE')" prop="sign">
-                    <el-select v-model="form.sign">
+                <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.SIGNTYPE')" prop="signature_algorithm">
+                    <el-select v-model="form.signature_algorithm">
                         <el-option label="MD5" value="MD5"></el-option>
                         <el-option label="SHA256" value="SHA256"></el-option>
                     </el-select>
@@ -78,8 +78,8 @@
                 </el-form-item>
 
                 <div class="text-right">
-                    <el-button type="primary" @click="dialogVisible=false">{{$t('COMMON.CANCEL') }}</el-button>
-                    <el-button type="border"  @click="handleSubmit">{{$t('COMMON.CONFIRM') }}</el-button>
+                    <el-button type="border" @click="dialogVisible=false">{{$t('COMMON.CANCEL') }}</el-button>
+                    <el-button type="primary"  @click="handleSubmit">{{$t('COMMON.CONFIRM') }}</el-button>
                 </div>
                 
             </el-form>
@@ -123,7 +123,7 @@ export default {
             package_version: "",
             package_url: "",
             package_module: "",
-            sign: "",
+            signature_algorithm: "",
             description: "",
             additional_info: [
                 {}

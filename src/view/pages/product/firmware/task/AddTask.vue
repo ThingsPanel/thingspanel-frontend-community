@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-15 08:54:41
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-15 10:41:28
+ * @LastEditTime: 2023-03-21 20:13:28
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\task\AddTask.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -35,20 +35,19 @@
                     <el-input readonly placeholder="点这里选择设备"
                         v-if="form.deviceMode==='1'" 
                         @click.native="selectDeviceDialogVisible=true"></el-input>
-                    <select-device :visible.sync="selectDeviceDialogVisible"></select-device>
+
+                    <select-device :visible.sync="selectDeviceDialogVisible" :data="data"></select-device>
                 </el-form-item>
             
-
                 <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.DESCRIPTION')"
                     prop="description">
                     <el-input type="textarea" v-model="form.description"></el-input>
                 </el-form-item>
 
-
-
                 <div class="text-right">
-                    <el-button type="border"  @click="onSubmit">{{$t('COMMON.CONFIRM') }}</el-button>
-                    <el-button type="primary" @click="dialogVisible=false">{{$t('COMMON.CANCEL') }}</el-button>
+                    <el-button type="border" @click="dialogVisible=false">{{$t('COMMON.CANCEL') }}</el-button>
+                    <el-button type="primary"  @click="onSubmit">{{$t('COMMON.CONFIRM') }}</el-button>
+
                 </div>
                 
             </el-form>
@@ -64,6 +63,10 @@ export default {
         visible: {
             type: [Boolean],
             default: false
+        },
+        data: {
+            type: [Object],
+            default: () => { return {} }
         }
     },
     data() {

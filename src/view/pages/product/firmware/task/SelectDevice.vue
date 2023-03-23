@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-15 09:58:28
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-15 10:37:39
+ * @LastEditTime: 2023-03-21 20:20:38
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\task\SelectDevice.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -44,8 +44,8 @@
                 
                 <div class="text-right py-5">
                     已选择{{ params.count  }}个设备
-                    <el-button type="border" @click="onSubmit">{{ $t('COMMON.CONFIRM') }}</el-button>
-                    <el-button type="primary" @click="dialogVisible = false">{{ $t('COMMON.CANCEL') }}</el-button>
+                    <el-button type="border" @click="dialogVisible = false">{{ $t('COMMON.CANCEL') }}</el-button>
+                    <el-button type="primary" @click="onSubmit">{{ $t('COMMON.CONFIRM') }}</el-button>
                 </div>
 
             </el-form>
@@ -54,24 +54,28 @@
 </template>
 
 <script>
+import ProductAPI from "@/api/product";
 export default {
     components: {},
     props: {
         visible: {
             type: [Boolean],
             default: false
+        },
+        data: {
+            type: [Object],
+            default: () => { return {} }
         }
     },
     data() {
         return {
             tableData: [],
             params: {
-                version: "",
-                device_name: "",
-                count: 0,
-                total: 0,
                 current_page: 1,
-                per_page: 5
+                per_page: 5,
+                product_id: "",
+                current_version: "",
+                name: ""
             }
         }
     },
@@ -85,9 +89,18 @@ export default {
             } 
         }
     },
+    mounted() {
+        this.getList();
+    },
     methods: {
         getList() {
-
+            this.params.product_id = this.$route.query.productId;
+            ProductAPI.getDeviceListByProductId(this.params)
+                .then(({ data: result }) => {
+                    if (result.code === 200) {
+                        console.log(result.data)
+                    }
+                })
         },
         onSubmit() {
 

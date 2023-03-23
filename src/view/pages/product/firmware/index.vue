@@ -134,7 +134,7 @@ export default {
             this.addPackageDialogVisible = true;
         },
         viewTaskList(item) {
-            this.$router.push( { name: "OTATask", query: { otaId: item.id } })
+            this.$router.push( { name: "OTATask", query: { otaId: item.id, productId: item.product_id } })
         },
         handleDelete(item) {
 

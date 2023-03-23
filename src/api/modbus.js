@@ -1,4 +1,4 @@
-import axios from "./http"
+import axios from "./interceptor/http"
 
 /**
  * 网关(modbus)接口

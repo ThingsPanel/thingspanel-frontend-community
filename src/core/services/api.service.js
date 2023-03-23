@@ -1,8 +1,16 @@
+/*
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-01-29 14:11:24
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-03-20 15:15:28
+ * @FilePath: \ThingsPanel-Backend-Vue\src\core\services\api.service.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 // import Vue from "vue";
 // import axios from "axios";
 // import VueAxios from "vue-axios";
 // import JwtService from "@/core/services/jwt.service";
-import axios from "@/api/http";
+import axios from "@/api/interceptor/http";
 /**
  * 原方法是使用 VueAxios 发送请求 如：vue.axios.post()
  * 每个页面中请求方法为  ApiService.post(AUTH.local_url + "/markets/list").then(({ data }) => {

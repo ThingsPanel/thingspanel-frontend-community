@@ -1,4 +1,4 @@
-import axios from "./http";
+import axios from "./interceptor/http";
 
 // 业务列表
 export function business_index(data) {

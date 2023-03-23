@@ -24,11 +24,12 @@
       <Publish v-if="step == 3" ref="publish" :data="jsonData"></Publish>
 
       <div slot="footer" class="dialog-footer" >
-        <el-button type="primary" @click="handleClose">{{ $t('PLUGIN.CLOSE') }}</el-button>
-        <div>
+        <div class="text-right">
           <el-button :disabled="step == 0" type="primary" @click="handlePrev">{{ $t('PLUGIN.PREV') }}</el-button>
           <el-button v-if="step<(steps.length - 1)" type="primary" @click="handleNext">{{ $t('PLUGIN.NEXT') }}</el-button>
+          <el-button v-if="step==(steps.length - 1)"  type="primary" @click="handleSave">保存</el-button>
           <el-button v-if="step==(steps.length - 1)"  type="primary" @click="handlePublish">{{ $t('PLUGIN.RELEASE') }}</el-button>
+          <el-button type="primary" @click="handleClose">{{ $t('PLUGIN.CLOSE') }}</el-button>
         </div>
       </div>
     </el-dialog>
@@ -46,7 +47,7 @@ import global from "../common/global";
 
 // import Function from "./Function"
 import Publish from "./Publish";
-import {message_error} from "../../../src/utils/helpers";
+import {message_error, message_success} from "../../../src/utils/helpers";
 import i18n from "@/core/plugins/vue-i18n"
 
 const steps = [
@@ -183,14 +184,19 @@ export default {
     handleClose() {
       this.$emit("update:visible", false);
     },
+    handleSave() {
+      this.$emit("save", this.jsonData, res => {
+        if (res.code === 200) {
+          message_success(res.msg);
+        }
+      })
+    },
     handlePublish() {
       this.publishing = true;
-      this.jsonData["publish"] = {};
-      this.jsonData["publish"]["isPub"] = this.$refs.publish.isPublic;
-      this.$emit("publish", this.jsonData, (res) => {
-        if (res) {
-          this.publishing =false;
-          this.$emit("update:visible", false);
+      this.jsonData.publish = { isPus: true };
+      this.$emit("publish", this.jsonData, res => {
+        if (res.code === 200) {
+          message_success(res.msg);
         }
       });
     }
@@ -204,7 +210,6 @@ export default {
   padding-top: 0;
 }
 .dialog-footer {
-  display: flex;
-  justify-content: space-between;
+  
 }
 </style>

@@ -1,4 +1,4 @@
-import axios from "./http"
+import axios from "./interceptor/http"
 
 // 数据
 export function kv_index(data) {

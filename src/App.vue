@@ -36,11 +36,11 @@ export default {
     console.log("====location", document.location.protocol + "//" + document.location.host );
 
     this.$store.dispatch("setRouters");
+    this.$store.commit("refresh_page");
     /**
      * this is to override the layout config using saved data from localStorage
      * remove this to use config only from static json (@/core/config/layout.config.json)
      */
-
     this.$store.dispatch(OVERRIDE_LAYOUT_CONFIG);
     window.localStorage.setItem("base_url", local_url);
   },

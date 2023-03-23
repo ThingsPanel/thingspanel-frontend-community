@@ -1,4 +1,4 @@
-import axios from "./http"
+import axios from "./interceptor/http"
 
 const BASE_URL = "/tp_product"
 const BATCH_BASE_URL = "/tp_batch"
@@ -137,4 +137,31 @@ export default {
             data
         })
     },
+
+    /**
+     * 获取预注册分页列表
+     * @param {*} data 
+     * @returns 
+     */
+    getPreRegistration: data => {
+        return axios({
+            url: "/tp_generate_device/list",
+            methods: "post",
+            data
+        })
+    },
+
+    
+    /**
+     * 通过产品id获取设备列表
+     * @param data
+     * @returns {AxiosPromise}
+     */
+    getDeviceListByProductId: (data) => {
+        return axios({
+            url: "/device/listbyproduct",
+            method: "post",
+            data
+        })
+    }
 }

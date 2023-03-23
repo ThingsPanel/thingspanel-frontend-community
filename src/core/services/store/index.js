@@ -5,6 +5,7 @@ import auth from "./auth.module";
 import htmlClass from "./htmlclass.module";
 import config from "./config.module";
 import breadcrumbs from "./breadcrumbs.module";
+import appStore from "./app-store.module"; 
 
 import app from './modules/app';
 import errorLog from './modules/errorLog';
@@ -20,6 +21,7 @@ const store =  new Vuex.Store({
         htmlClass,
         config,
         breadcrumbs,
+        appStore,
         app,
     	errorLog,
         interval,

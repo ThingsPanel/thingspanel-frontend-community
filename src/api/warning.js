@@ -1,4 +1,4 @@
-import axios from "./http";
+import axios from "./interceptor/http";
 
 export function warning_log_list(data){
     return axios({

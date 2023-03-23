@@ -1,4 +1,4 @@
-import axios from "./http"
+import axios from "./interceptor/http"
 
 /**
  * 插件API
@@ -120,5 +120,7 @@ export default {
             method: "post",
             data
         })
-    }
+    },
+
+    
 }

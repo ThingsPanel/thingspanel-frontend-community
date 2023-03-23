@@ -145,7 +145,8 @@ export default {
      * @return {*}
      */       
     viewPreRegistration(item) {
-      this.$router.push({ path: "/product/batch/pre-registration"})
+      console.log("viewPreRegistration", item)
+      this.$router.push({ path: "/product/batch/pre-registration", query: { batchId: item.id }})
     },
     /**
      * 打开创建批次对话框
