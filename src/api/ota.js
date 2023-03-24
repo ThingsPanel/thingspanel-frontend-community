@@ -105,4 +105,16 @@ export default {
         })
     },
 
+    /**
+     * @description: 修改升级状态
+     * @return {*}
+     */    
+    modifyUpgradeStatus: data => {
+        return axios({
+            url: "/tp_ota_device/modfiyupdate",
+            method: "post",
+            data
+        })
+    }
+
 }

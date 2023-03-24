@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-15 08:54:20
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-20 14:07:37
+ * @LastEditTime: 2023-03-24 17:51:38
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\task\TaskDetail.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -34,7 +34,7 @@
           <el-table-column :label="'设备编号'" prop="device_code" align="left"/>
   
           <!-- 设备名-->
-          <el-table-column :label="'设备名'" prop="device_name" align="left"/>
+          <el-table-column :label="'设备名'" prop="name" align="left"/>
   
           <!--  当前版本号 -->
           <el-table-column :label="'当前版本号'" prop="current_version" align="left"/>
@@ -56,15 +56,11 @@
             </template>
           </el-table-column>
 
-          <!-- 状态 0-待推送 1-已推送 2-升级中 3-升级成功 4-升级失败 5-已取消 -->
+          <!-- 状态:    0-待推送 1-已推送 2-升级中 3-升级成功 4-升级失败 5-已取消 -->
           <!-- 状态-->
           <el-table-column :label="'状态'" prop="upgrade_status" align="left">
             <template v-slot="scope">
-              {{  upgradeState.getText[scope.row.status] }}
-                <!-- <p v-if="scope.row.status===upgradeState.unupgraded">待升级</p>
-                <p v-else-if="scope.row.status===upgradeState.upgrading">升级中</p>
-                <p v-else-if="scope.row.status===upgradeState.upgraded">升级成功</p>
-                <p v-else-if="scope.row.status===upgradeState.failed">升级失败</p> -->
+              {{  upgradeState.getText(scope.row.upgrade_status) }}
             </template>
           </el-table-column>
 
@@ -78,11 +74,15 @@
               <div style="text-align: left">
                 
                 <!-- 升级失败, 重升级 -->
-                <el-button v-if="scope.row.status===upgradeState.failed[0]" type="indigo" size="mini" class="mr-3" @click="reUpgrading(scope.row)">重升级</el-button>
+                <el-button type="indigo" size="mini" class="mr-3"
+                    v-if="scope.row.upgrade_status===upgradeState.failed[0] || scope.row.upgrade_status===upgradeState.cancelled[0]"  
+                    v-loading="!!scope.row.isLoading"
+                    @click="reUpgrading(scope.row)">重升级</el-button>
                 <!-- 升级中，取消升级 -->
-                <el-button v-if="scope.row.status===upgradeState.upgrading[0]" type="indigo" size="mini" class="mr-3" @click="cancelUpgrading(scope.row)">取消升级</el-button>
-                <!-- 待升级, 开始升级 -->
-                <el-button v-else type="indigo" size="mini" class="mr-3" @click="startUpgrading(scope.row)">开始升级</el-button>
+                <el-button type="indigo" size="mini" class="mr-3"
+                  v-if="scope.row.status===upgradeState.upgrading[0]"  
+                  v-loading="!!scope.row.isLoading"
+                  @click="cancelUpgrading(scope.row)">取消升级</el-button>
               </div>
             </template>
           </el-table-column>
@@ -180,21 +180,12 @@ export default {
       })
     },
     /**
-     * @description: 开始升级
+     * @description: 重升级
      * @param {*} row
      * @return {*}
      */    
-    startUpgrading(row) {
-        // const fun = () => {
-        //     if(row.progress >= 100) {
-        //         clearInterval(timer);
-        //         row.status = UpgradeState.upgraded;
-        //         return;
-        //     }
-        //     row.status = UpgradeState.upgrading;
-        //     row.progress++;
-        // }
-        // let timer = setInterval(fun, 100);
+    reUpgrading(row) {
+        this.modifyUpgradeStatus(row);
     },
     /**
      * @description: 取消升级
@@ -202,8 +193,26 @@ export default {
      * @return {*}
      */    
     cancelUpgrading(row) {
-        
+      this.modifyUpgradeStatus(row);
     },
+    // 状态:    0-待推送 1-已推送 2-升级中 3-升级成功 4-升级失败 5-已取消
+    /**
+     * @description: 
+     * @param {*} row
+     * @param {*} upgrade_status
+     * @return {*}
+     */    
+    modifyUpgradeStatus(row) {
+      const data = {
+        id: row.id,
+        ota_task_id: row.ota_task_id
+      }
+      row.isLoading = true;
+      OTAAPI.modifyUpgradeStatus(data)
+        .then(({ data: result }) => {
+          this.getList();
+        })
+    }
   
   }
 }

@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-15 08:54:41
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-24 14:20:01
+ * @LastEditTime: 2023-03-24 16:15:53
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\task\AddTask.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -10,8 +10,8 @@
     <div>
         <el-dialog class="el-dark-dialog" title="新增升级任务" :append-to-body="true"
             :visible.sync="dialogVisible" width="30%" :before-close="() => dialogVisible=false" :close-on-click-modal="false">
-            <el-form ref="addTaskForm" label-position="left" :model="form" :rules="rules"
-                :hide-required-asterisk="true" label-width="150px">
+            <el-form class="el-dark-input" ref="addTaskForm" label-position="left" :model="form" :rules="rules" 
+                label-width="150px">
 
                 <el-form-item :label="'任务名称'" prop="task_name" required>
                     <el-input v-model="form.task_name"></el-input>
@@ -22,8 +22,11 @@
                         <el-option label="立即升级" value="0"></el-option>
                         <el-option label="待升级" value="1"></el-option>
                     </el-select>
-                    <el-date-picker v-if="form.upgrade_time_type==='1'" type="datetime" placeholder="选择升级时间"
-                        v-model="start_time" ></el-date-picker>
+                </el-form-item>
+
+                <el-form-item v-if="form.upgrade_time_type==='1'">
+                    <el-date-picker  type="datetime" placeholder="选择升级时间"
+                        v-model="form.start_time" ></el-date-picker>
                 </el-form-item>
 
                 <el-form-item :label="'选择设备'" prop="select_device_flag" required>
@@ -57,8 +60,8 @@
 </template>
 <script>
 import SelectDevice from './SelectDevice.vue';
-import ProductAPI from "@/api/product";
-import { message_success } from '../../../../../utils/helpers';
+import OTAAPI from "@/api/ota";
+import { message_success } from '@/utils/helpers';
 export default {
     name: 'AddTask',
     components: { SelectDevice},
@@ -76,7 +79,9 @@ export default {
         return {
             form: {
                 task_name: "",
-                upgrade_time: "",
+                upgrade_time_type: "0",
+                select_device_flag: "0",
+                start_time: "",
                 device: [],
                 description: ""
             },
@@ -100,6 +105,22 @@ export default {
             }
         }
     },
+    watch: {
+        dialogVisible: {
+            handler(newValue) {
+                if (newValue) {
+                    this.form =  {
+                        task_name: "",
+                        upgrade_time_type: "0",
+                        select_device_flag: "0",
+                        start_time: "",
+                        device: [],
+                        description: ""
+                    }
+                }
+            }
+        }
+    },
     methods: {
         changeSelectionDevie(val) {
             this.deviceList = val.map(item => item.id);
@@ -109,12 +130,21 @@ export default {
             this.$refs.addTaskForm.validate(valid => {
                 if (valid) {
                     const { otaId, productId } = this.$route.query;
-                    ProductAPI.addTask({ otaId, productId, device_id_list: this.deviceList, ...this.form })
+                    let data = {
+                        ota_id: otaId, 
+                        product_id: productId, 
+                        device_id_list: this.deviceList, 
+                        end_time: this.form.start_time,
+                        ...this.form 
+                    }
+                    OTAAPI.taskAdd(data)
                         .then(({ data: result }) => {
                             console.log(result)
-                            message_success("添加成功！");
-                            this.dialogVisible = false;
-                            this.$emit("submit")
+                            if (result.code === 200) {
+                                message_success("添加成功！");
+                                this.dialogVisible = false;
+                                this.$emit("submit");
+                            }
                         })
                 }
             })

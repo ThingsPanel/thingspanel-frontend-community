@@ -3,21 +3,13 @@
       <el-form label-position="left" label-width="120px">
            <el-form-item label="插件类型：">
              <el-radio-group v-model="params.pluginType" size="small" @change="handlePluginTypeChanged">
-               <el-radio-button label="device">设备插件</el-radio-button>
-               <el-radio-button label="script">解析脚本</el-radio-button>
-               <el-radio-button label="nodeRed">规则引擎代码</el-radio-button>
-               <el-radio-button label="protocol">协议插件</el-radio-button>
-               <el-radio-button label="visual">可视化插件</el-radio-button>
+               <el-radio-button :label="pluginType.Device">设备插件</el-radio-button>
+               <el-radio-button :label="pluginType.Script">解析脚本</el-radio-button>
+               <el-radio-button :label="pluginType.NodRed">规则引擎代码</el-radio-button>
+               <el-radio-button :label="pluginType.Protocol">协议插件</el-radio-button>
+               <el-radio-button :label="pluginType.Visual">可视化插件</el-radio-button>
              </el-radio-group>
             </el-form-item>
-
-            <!-- <el-form-item label="安装状态：">
-              <el-radio-group v-model="params.installationStatus" size="small" @input="handlePluginTypeChanged">
-                <el-radio-button label="all">全部</el-radio-button>
-                <el-radio-button label="installed">已安装</el-radio-button>
-                <el-radio-button label="uninstalled">未安装</el-radio-button>
-              </el-radio-group>
-             </el-form-item> -->
 
              <el-form-item label="搜索：">
                 <el-row>
@@ -105,11 +97,12 @@
 <script>
 import PluginCard from "./PluginCard";
 import PluginAPI from "@/api/plugin.js";
+import { getCustomExchangeAgreementList } from "@/api/device";
 import ProtocolPlugin from "@/api/protocolPlugin.js";
 import LoginStore from '@/view/pages/auth/LoginStore';
 
 import ExportPlugin from "./ExportPlugin"
-import { Wash } from "../Const"
+import { PluginType, Wash } from "../Const"
 export default {
   name: "PluginList",
   components: {PluginCard, LoginStore, ExportPlugin},
@@ -117,11 +110,12 @@ export default {
     return {
       loading: false,
       listLoadig: false,
+      pluginType: PluginType,
       params: {
         total: 0,
         current_page: 1,
         per_page: 10,
-        pluginType: "device",
+        pluginType: PluginType.Device,
         installationStatus: "all",
         displayMode: "grid"
       },
@@ -148,7 +142,16 @@ export default {
      * 加载插件列表
      */
     loadList() {
-      this.loadDevicePluginList();
+      switch (this.params.pluginType) {
+        case PluginType.Device: {
+          this.loadDevicePluginList();
+          break;
+        }
+        case PluginType.Script: {
+          this.loadScriptPluginList();
+          break;
+        }
+      }
     },
     /**
      * 获取设备插件列表
@@ -172,12 +175,30 @@ export default {
      * @return {*}
      */    
     loadProtocolPluginList() {
-      let params = { current_page: this.params.current_page, per_page: this.params.per_page }
-      ProtocolPlugin.page(params)
+      ProtocolPlugin.page(this.params)
           .then(({ data }) => {
             if (data.code == 200) {
               this.loading = false;
               this.params = data.data;
+            }
+          })
+    },
+    /**
+     * @description: 获取脚本插件列表
+     * @return {*}
+     */    
+    loadScriptPluginList() {
+      this.loading = true;
+      getCustomExchangeAgreementList(this.params)
+          .then(({ data }) => {
+            if (data.code == 200) {
+              this.params.total = data.data?.total || 0;
+              this.params.current_page = data.data?.current_page || 1;
+              this.params.per_page = data.data?.per_page || 10;
+              let pluginList = data.data?.data || [];
+              this.listArr = pluginList.map(item => Wash.script.fromTP(item))
+              consolelog("getCustomExchangeAgreementList", this.listArr)
+              this.refreshBtnLoading = false;
             }
           })
     },
@@ -187,7 +208,9 @@ export default {
      * @return {*}
      */    
     handleEditPlugin(item) {
-      this.$emit("edit", item);
+      if (item.pluginType === PluginType.Device) {
+        this.$emit("edit", item);
+      }
     },
     /**
      * @description: 导出
