@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-20 19:41:00
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-10 09:12:06
+ * @LastEditTime: 2023-03-24 09:00:39
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Const.js
  * @Description: 
  */
@@ -160,7 +160,10 @@ export function setConditions(conditions) {
                         }
                         case RepeatTimeType.weekly: {
                             // 每周
-                            condition['v3'] = repeat.weekly.week.toString();
+                            // 周日 - 周六 对应   1 - 7
+                            let v3 = (Number(repeat.weekly.week) + 1);
+                            if (v3 === 8) v3 = 1;  // 周日 = 7
+                            condition['v3'] = v3.toString();
                             condition['v4'] = repeat.weekly.time.toString();
                             break;
                         }

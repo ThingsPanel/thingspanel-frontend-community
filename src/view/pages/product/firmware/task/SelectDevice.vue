@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-15 09:58:28
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-21 20:20:38
+ * @LastEditTime: 2023-03-24 13:43:23
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\task\SelectDevice.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -10,8 +10,7 @@
     <div>
         <el-dialog class="el-dark-dialog" title="请选择设备" :visible.sync="dialogVisible" width="30%"
             :before-close="() => dialogVisible = false" :close-on-click-modal="false" :append-to-body="true">
-            <el-form class="inline-edit" ref="addTaskForm" label-position="left" :model="params" :hide-required-asterisk="true"
-                >
+            <el-form class="inline-edit" ref="addTaskForm" label-position="left" :model="params" :hide-required-asterisk="true">
                 <el-row :gutter="20">
                     <el-col :span="8">
                         <el-form-item prop="version">
@@ -28,10 +27,11 @@
                     </el-col>
                 </el-row>
 
-                <el-table class="table" :data="tableData">
+                <el-table class="table" :data="tableData" @selection-change="handleSelectionChange">
+                    <el-table-column type="selection" width="55"></el-table-column>
                     <el-table-column label="设备名称" prop="name" align="center"/>
-                    <el-table-column label="版本号" prop="version" align="center"/>
-                    <el-table-column label="设备编号" prop="number" align="center"/>
+                    <el-table-column label="版本号" prop="current_version" align="center"/>
+                    <el-table-column label="设备编号" prop="device_code" align="center" :show-overflow-tooltip="true"/>
                 </el-table>
 
                 <!-- 分页 start -->
@@ -55,6 +55,7 @@
 
 <script>
 import ProductAPI from "@/api/product";
+import { message_error } from '../../../../../utils/helpers';
 export default {
     components: {},
     props: {
@@ -76,7 +77,8 @@ export default {
                 product_id: "",
                 current_version: "",
                 name: ""
-            }
+            },
+            deviceSelection: []
         }
     },
     computed: {
@@ -98,12 +100,22 @@ export default {
             ProductAPI.getDeviceListByProductId(this.params)
                 .then(({ data: result }) => {
                     if (result.code === 200) {
-                        console.log(result.data)
+                        this.tableData = result.data?.data || [];
+                        this.params.total = result.data?.total || 0
                     }
                 })
         },
+        handleSelectionChange(val) {
+            this.deviceSelection = val;
+        },
         onSubmit() {
-
+            console.log("SelectDevice", this.deviceSelection)
+            if (this.deviceSelection.length === 0) {
+                message_error("请至少选择一个设备");
+                return;
+            }
+            this.$emit("change", this.deviceSelection);
+            this.dialogVisible = false;
         }
     }
 }

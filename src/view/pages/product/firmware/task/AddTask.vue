@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-15 08:54:41
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-21 20:13:28
+ * @LastEditTime: 2023-03-24 14:20:01
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\task\AddTask.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -10,33 +10,34 @@
     <div>
         <el-dialog class="el-dark-dialog" title="新增升级任务" :append-to-body="true"
             :visible.sync="dialogVisible" width="30%" :before-close="() => dialogVisible=false" :close-on-click-modal="false">
-            <el-form ref="addTaskForm" label-position="left" :model="form"
+            <el-form ref="addTaskForm" label-position="left" :model="form" :rules="rules"
                 :hide-required-asterisk="true" label-width="150px">
 
                 <el-form-item :label="'任务名称'" prop="task_name" required>
-                    <el-input v-model="form.firmware_name"></el-input>
+                    <el-input v-model="form.task_name"></el-input>
                 </el-form-item>
 
-                <el-form-item :label="'升级时间'" prop="upgrade_time">
-                    <el-select v-model="form.upgrade_time">
-                        <el-option label="立即升级" value="immediate"></el-option>
+                <el-form-item :label="'升级时间'" prop="upgrade_time_type" required>
+                    <el-select v-model="form.upgrade_time_type">
+                        <el-option label="立即升级" value="0"></el-option>
+                        <el-option label="待升级" value="1"></el-option>
                     </el-select>
+                    <el-date-picker v-if="form.upgrade_time_type==='1'" type="datetime" placeholder="选择升级时间"
+                        v-model="start_time" ></el-date-picker>
                 </el-form-item>
 
-                <el-form-item :label="'选择设备'" >
-                    <el-select v-model="form.deviceMode">
+                <el-form-item :label="'选择设备'" prop="select_device_flag" required>
+                    <el-select v-model="form.select_device_flag">
                         <el-option label="全部设备" value="0"></el-option>
                         <el-option label="选择设备" value="1"></el-option>
                     </el-select>
                     
                 </el-form-item>
 
-                <el-form-item prop="devices">
-                    <el-input readonly placeholder="点这里选择设备"
-                        v-if="form.deviceMode==='1'" 
+                <el-form-item prop="devices" v-if="form.select_device_flag==='1'">
+                    <el-input readonly placeholder="点这里选择设备" v-model="deviceListStr"
                         @click.native="selectDeviceDialogVisible=true"></el-input>
-
-                    <select-device :visible.sync="selectDeviceDialogVisible" :data="data"></select-device>
+                    <select-device :visible.sync="selectDeviceDialogVisible" :data="data" @change="changeSelectionDevie"></select-device>
                 </el-form-item>
             
                 <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.DESCRIPTION')"
@@ -56,6 +57,8 @@
 </template>
 <script>
 import SelectDevice from './SelectDevice.vue';
+import ProductAPI from "@/api/product";
+import { message_success } from '../../../../../utils/helpers';
 export default {
     name: 'AddTask',
     components: { SelectDevice},
@@ -77,7 +80,14 @@ export default {
                 device: [],
                 description: ""
             },
-            selectDeviceDialogVisible: false
+            rules: {
+                task_name: [{required: true, message: '请输入任务名称', trigger: 'blur'}],
+                upgrade_time_type: [{required: true, message: '请选择升级时间', trigger: 'blur'}],
+                select_device_flag: [{required: true, message: '请选择设备', trigger: 'blur'}]
+            },
+            selectDeviceDialogVisible: false,
+            deviceList: [],
+            deviceListStr: ""
         };
     },
     computed: {
@@ -91,9 +101,24 @@ export default {
         }
     },
     methods: {
+        changeSelectionDevie(val) {
+            this.deviceList = val.map(item => item.id);
+            this.deviceListStr = val.map(item => item.name).join(",")
+        },
         onSubmit() {
-
-            this.dialogVisible = false;
+            this.$refs.addTaskForm.validate(valid => {
+                if (valid) {
+                    const { otaId, productId } = this.$route.query;
+                    ProductAPI.addTask({ otaId, productId, device_id_list: this.deviceList, ...this.form })
+                        .then(({ data: result }) => {
+                            console.log(result)
+                            message_success("添加成功！");
+                            this.dialogVisible = false;
+                            this.$emit("submit")
+                        })
+                }
+            })
+            
         }
     },
 };

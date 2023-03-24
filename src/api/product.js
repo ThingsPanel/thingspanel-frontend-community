@@ -126,6 +126,19 @@ export default {
     },
 
     /**
+     * 导入批次
+     * @param {*} data 
+     * @returns 
+     */
+    importBatch: data => {
+        return axios({
+            url: BATCH_BASE_URL + "/import",
+            method: "post",
+            data
+        })
+    },
+
+    /**
      * 导出二维码和数据
      * @param data
      * @returns {AxiosPromise}
@@ -146,7 +159,20 @@ export default {
     getPreRegistration: data => {
         return axios({
             url: "/tp_generate_device/list",
-            methods: "post",
+            method: "post",
+            data
+        })
+    },
+
+    /**
+     * 删除未激活预注册设备
+     * @param {*} data 
+     * @returns 
+     */
+    deletePreRegistration: data => {
+        return axios({
+            url: "/tp_generate_device/delete",
+            method: "post",
             data
         })
     },
@@ -160,6 +186,19 @@ export default {
     getDeviceListByProductId: (data) => {
         return axios({
             url: "/device/listbyproduct",
+            method: "post",
+            data
+        })
+    },
+
+    /**
+     * 添加固件升级任务
+     * @param {*} data 
+     * @returns 
+     */
+    addTask: data => {
+        return axios({
+            url: "/tp_ota_task/add",
             method: "post",
             data
         })

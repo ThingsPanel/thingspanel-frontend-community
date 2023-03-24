@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-08 15:22:33
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-21 20:12:58
+ * @LastEditTime: 2023-03-24 14:12:47
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -57,8 +57,7 @@
         </div>
         <!-- 分页 end -->
 
-        <!-- <add-package :visible.sync="addPackageDialogVisible"></add-package> -->
-        <add-task :visible.sync="addTaskDialogVisible" :data="data"></add-task>
+        <add-task :visible.sync="addTaskDialogVisible" :data="data" @submit="getList"></add-task>
 
     </div>
 </template>

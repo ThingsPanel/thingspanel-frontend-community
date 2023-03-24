@@ -93,6 +93,7 @@ import i18n from "@/core/plugins/vue-i18n.js";
 import ProductAPI from "@/api/product";
 import OTAAPI from "@/api/ota";
 import JwtService from "@/core/services/jwt.service";
+import { message_success } from '../../../../utils/helpers';
 
 export default {
     name: "AddPackage",
@@ -181,8 +182,13 @@ export default {
                     OTAAPI.add(formData)
                         .then(({ data: result }) => {
                             console.log("handleSubmit", result)
+                            if (result.code === 200) {
+                                this.dialogVisible = false;
+                                message_success("添加成功!")
+                                this.$emit("submit");
+
+                            }
                         })
-                    this.$emit("submit");
 
                     setTimeout(() => {
                         this.$refs.firmwareCreateForm.resetFields()
