@@ -1,12 +1,4 @@
 // 状态 0-待推送 1-已推送 2-升级中 3-升级成功 4-升级失败 5-已取消
-// export const UpgradeState = {
-//     0: "待推送",
-//     1: "已推送",
-//     2: "升级中",
-//     3: "升级成功",
-//     4: "升级失败",
-//     5: "已取消"
-// }
 
 const UpgradeState = {
     // 所有状态
@@ -29,7 +21,7 @@ const UpgradeState = {
         return arr ? arr[1] : "";
     },
     // 通过value获取key
-    getKey: value => Object.keys(UpgradeState).find(key => UpgradeState[key] === value)
+    getKey: value => Object.keys(UpgradeState).find(key => UpgradeState[key] === value),
 }
 
 export { UpgradeState }

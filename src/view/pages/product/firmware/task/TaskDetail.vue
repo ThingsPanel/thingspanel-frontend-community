@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-15 08:54:20
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-24 17:51:38
+ * @LastEditTime: 2023-03-26 19:21:43
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\task\TaskDetail.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -16,7 +16,7 @@
     <div class="rounded card p-4 el-table-transparent el-dark-input text-white">
         <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
             <el-col :span="6">
-                <el-input placeholder="请输入设备名称"></el-input>
+                <el-input placeholder="请输入设备名称" v-model="params.name"></el-input>
             </el-col>
             <el-col :span="4">
                 <el-button type="border" @click="getList">搜索</el-button>
@@ -139,6 +139,7 @@ export default {
           .then(({ data: result }) => {
             if (result.code === 200) {
               this.tableData = result.data?.data?.list || [];
+              this.params.total = result.data.total;
               const arr = result.data?.data?.statuscount || [];
               this.computeStateList(arr);
             }
@@ -185,7 +186,7 @@ export default {
      * @return {*}
      */    
     reUpgrading(row) {
-        this.modifyUpgradeStatus(row);
+        this.modifyUpgradeStatus(row, UpgradeState.upgrading[0]);
     },
     /**
      * @description: 取消升级
@@ -193,7 +194,7 @@ export default {
      * @return {*}
      */    
     cancelUpgrading(row) {
-      this.modifyUpgradeStatus(row);
+      this.modifyUpgradeStatus(row, UpgradeState.cancelled[0]);
     },
     // 状态:    0-待推送 1-已推送 2-升级中 3-升级成功 4-升级失败 5-已取消
     /**
@@ -202,10 +203,11 @@ export default {
      * @param {*} upgrade_status
      * @return {*}
      */    
-    modifyUpgradeStatus(row) {
+    modifyUpgradeStatus(row, upgrade_status) {
       const data = {
         id: row.id,
-        ota_task_id: row.ota_task_id
+        ota_task_id: row.ota_task_id,
+        upgrade_status
       }
       row.isLoading = true;
       OTAAPI.modifyUpgradeStatus(data)
