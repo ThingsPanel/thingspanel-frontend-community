@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-15 08:54:20
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-28 17:47:13
+ * @LastEditTime: 2023-03-28 22:01:49
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\task\TaskDetail.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -73,11 +73,17 @@
             <template v-slot="scope">
               <div class="text-center">
                 
-                <!-- 升级失败, 重升级 -->
-                <el-button type="indigo" size="mini" class="mr-3"
-                    v-if="scope.row.upgrade_status===upgradeState.failed[0] || scope.row.upgrade_status===upgradeState.cancelled[0]"  
-                    v-loading="!!scope.row.isLoading"
-                    @click="reUpgrading(scope.row)">重升级</el-button>
+                <div v-if="scope.row.upgrade_status===upgradeState.failed[0] || scope.row.upgrade_status===upgradeState.cancelled[0]">
+                  <!-- 升级失败, 重升级 -->
+                  <el-popconfirm title="确定要重新升级吗？" @confirm="reUpgrading(scope.row)">
+                    <!-- <el-button slot="reference" type="danger" 
+                        v-loading="!!scope.row.isLoading" class="mr-1" size="mini">取消</el-button> -->
+                        <el-button slot="reference" type="indigo" size="mini" class="mr-3"
+                          v-loading="!!scope.row.isLoading">重升级</el-button>
+                  </el-popconfirm>
+                </div>
+                
+                
                 <!-- 升级中，取消升级 -->
                 <el-button type="indigo" size="mini" class="mr-3"
                   v-else-if="scope.row.status!==upgradeState.upgraded[0]"  
@@ -122,12 +128,20 @@ export default {
             current_page: 1,
             per_page: 10
         },
-        upgradeState: UpgradeState
+        upgradeState: UpgradeState,
+        timer: null
     }
   },
   mounted() {
     this.params.ota_task_id = this.$route.query.taskId;
     this.getList();
+    // 计时器
+    this.timer = setInterval(() => {
+      this.getList();
+    }, 5000);
+  },
+  destroyed() {
+    clearInterval(this.timer);
   },
   methods: {
     handleSelectStatus(status) {

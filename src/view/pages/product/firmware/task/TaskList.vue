@@ -45,7 +45,11 @@
                     <template v-slot="scope">
                         <div class="text-right">
                             <el-button type="indigo" class="mr-1" size="mini" @click="viewTaskList(scope.row)">查看</el-button>
-                            <el-button v-loading="!!scope.row.isLoading" type="indigo" class="mr-1" size="mini" @click="cancelTask(scope.row)">取消</el-button>
+                            
+                            <el-popconfirm title="确定要取消升级吗？" @confirm="cancelTask(scope.row)">
+                                <el-button slot="reference" type="danger" 
+                                    v-loading="!!scope.row.isLoading" class="mr-1" size="mini">取消</el-button>
+                              </el-popconfirm>
                         </div>
                     </template>
                 </el-table-column>
