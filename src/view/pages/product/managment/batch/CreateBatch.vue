@@ -33,15 +33,7 @@
 </template>
 
 <script>
-/*
--ID
-*批号  "batch_number": "BATCH002",
-*产品ID（用户在产品下啦列表中选择）   "product_id": "bed165d9-8e68-d3f3-63a6-3005da6c5595",
-*设备数量  "device_number": 10,
--生成标志（0-未生成，1-已生成）  "generate_flag": "",
-批次描述   "describle": ""
--创建日期
- */
+
 import ProductAPI from "@/api/product.js"
 import {message_success} from "@/utils/helpers";
 import i18n from "@/core/plugins/vue-i18n.js"
@@ -112,7 +104,7 @@ export default {
 
 ::v-deep .el-form--label-left {
   .el-form-item {
-    display: inline-flex!important;
+    
   }
 }
 </style>

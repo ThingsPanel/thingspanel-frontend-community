@@ -1,4 +1,5 @@
 import axios from "./interceptor/http"
+import { local_url } from "@/api/LocalUrl"
 
 const BASE_URL = "/tp_product"
 const BATCH_BASE_URL = "/tp_batch"
@@ -125,6 +126,8 @@ export default {
         })
     },
 
+    uploadUrl: local_url + "api/file/up",
+
     /**
      * 导入批次
      * @param {*} data 
@@ -164,6 +167,19 @@ export default {
         })
     },
 
+    /**
+     * 激活设备
+     * @param {*} data
+     * @returns
+     */
+    generateDevice: data => {
+        return axios({
+            url: "/tp_generate_device/activate",
+            method: "post",
+            data
+        })
+    },
+    
     /**
      * 删除未激活预注册设备
      * @param {*} data 

@@ -1,11 +1,11 @@
 <template>
-    <div class="chart-div" :style="getChartStyle()">
+  <div class="chart-div" :style="getChartStyle()">
     <div  v-if="showHeader" class="chart-header">
 
       <span class="title">{{ optionData.name }}</span>
     </div>
 
-    <div style="width: 100%; height:calc(100% - 60px);position: absolute;top:40px" ref="chart" id="echarts"></div>
+    <div class="echarts" style="width: 100%; height:100%;position: absolute;top:0px;padding:6px" ref="chart" id="echarts"></div>
 
     <el-dialog title="配置" width="30%"
         :visible.sync="configurationVisible">
@@ -136,6 +136,7 @@ export default {
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   background-color: #2d3d86;
   border-radius: 4px;
+  
 }
 .chart-header {
   position: relative;

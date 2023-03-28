@@ -91,8 +91,8 @@ export default {
       },
       dialogVisible: false,
       protocolOptions: [
-        { value: "mqtt", label: "mqtt" },
-        { value: "MQTT", label: i18n.t("PRODUCT_MANAGEMENT.PRODUCT_LIST.MQTTPROTOCOL") },
+        { value: "mqtt", label: "MQTT直连" },
+        { value: "MQTT", label: "MQTT网关" },
       ],
       authOptions: [
         { value: "1", label: "AccessToken " },

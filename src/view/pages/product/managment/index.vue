@@ -68,10 +68,10 @@
         </el-table-column>
 
         <!-- 操作列-->
-        <el-table-column align="left" :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.OPERATION')" width="230">
+        <el-table-column align="center" :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.OPERATION')" width="230">
           <template v-slot="scope">
-            <div style="text-align: left">
-              <el-button type="indigo" size="mini" class="mr-3" @click="showBatch(scope.row)">批次管理</el-button>
+            <div style="text-align: center">
+              <el-button type="indigo" size="mini" class="mr-3" @click="showBatch(scope.row)">批量管理</el-button>
               <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
                 <el-button slot="reference" size="mini" type="danger">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.DELETE') }}</el-button>
               </el-popconfirm>
@@ -128,6 +128,7 @@ export default {
      * 获取产品列表
      */
     getProductList() {
+      this.loading = true;
       this.params.serial_number = "%" + this.params.serialNumber + "%";
       ProductAPI.page(this.params)
         .then(({ data }) => {
@@ -137,6 +138,9 @@ export default {
               return item;
             })
           }
+        })
+        .finally(() => {
+          this.loading = false;
         })
     },
     handleSearch() {

@@ -8,7 +8,11 @@
                 <!-- 升级包名称 -->
                 <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PACKAGE_NAME')"
                     prop="package_name" required>
-                    <el-input v-model="form.package_name"></el-input>
+                   
+                    <!-- 给el-input添加tooltip -->
+                    <el-tooltip effect="dark" content="支持中文、英文、数字、下划线（_）、中划线（-）、小括号（()），必须以中文、英文或数字开头，长度不能超过 40 个字符" placement="top">
+                        <el-input v-model="form.package_name"></el-input>   
+                    </el-tooltip>
                 </el-form-item>
 
                 <!-- 归属产品 -->
@@ -23,13 +27,19 @@
                 <!-- 升级包模块 -->
                 <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PACKAGE_MODULE')"
                     prop="package_module">
-                    <el-input v-model="form.package_module"></el-input>
+                    <!-- 给el-input添加tooltip -->
+                    <el-tooltip effect="dark" content="支持英文字母、数字、点、中划线和下划线，长度限制 1～64 个字符" placement="top">
+                        <el-input v-model="form.package_module"></el-input> 
+                    </el-tooltip>
                 </el-form-item>
 
                 <!-- 升级包版本号 -->
                 <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PACKAGE_VERSION')"
                     prop="package_version">
-                    <el-input v-model="form.package_version"></el-input>
+                    <!-- 给el-input添加tooltip -->
+                    <el-tooltip effect="dark" content="仅支持英文字母、数字、点号（.）、中划线（-）和下划线（_），长度限制为 1~64 个字符" placement="top">
+                        <el-input v-model="form.package_version" placeholder="例：v1.0.0"></el-input>    
+                    </el-tooltip>
                 </el-form-item>
 
                 <!-- 签名方式 -->
@@ -50,7 +60,10 @@
                         :file-list="fileList"
                         :on-success="onUploadSuccess"
                         >
-                        <el-button size="small" type="primary">点击上传</el-button>
+                        <!-- 给el-button添加tooltip -->
+                        <el-tooltip effect="dark" content="仅支持 bin、tar、gz、tar.xz、zip、gzip、apk、dav、pack 类型的文件，文件名支持中文、英文字母、数字和下划线，长度限制1~32个字符，文件总大小最大为1000MB" placement="top">
+                            <el-button size="small" type="primary">点击上传</el-button>
+                        </el-tooltip>
                     </el-upload>
                 </el-form-item>
 
@@ -123,8 +136,8 @@ export default {
             package_name: "",
             package_version: "",
             package_url: "",
-            package_module: "",
-            signature_algorithm: "",
+            package_module: "default",
+            signature_algorithm: "MD5",
             description: "",
             additional_info: [
                 {}
@@ -162,22 +175,25 @@ export default {
          */        
         getProductList() {
             const params = { current_page: 1, per_page: 9999 }
-            console.log("getProductList", params);
-
             ProductAPI.page(params)
                 .then(({ data: result }) => {
                     if (result.code === 200) {
                         this.productList = result.data?.data || [];
-                        console.log("getProductList", this.productList);
-
                     }
                 })
         },
+        /**
+         * @description: 提交
+         * @param {*} res
+         * @param {*} file
+         * @return {*}
+         */
         handleSubmit() {
-            console.log("handleSubmit", this.form)
+            console.log("handleSubmit", this.form, this.fileList)
             this.$refs.firmwareCreateForm.validate((valid) => {
                 if (valid) {
                     let formData = JSON.parse(JSON.stringify(this.form))
+                    formData.additional_info = JSON.stringify(formData.additional_info);
                     formData.created_at = moment().format("YYYY-MM-DD HH:mm:ss")
                     OTAAPI.add(formData)
                         .then(({ data: result }) => {
@@ -196,12 +212,21 @@ export default {
                 }
             })
         },
+        /**
+         * @description: 增加配置
+         * @return {*}
+         */
         handleAddConfig() {
-            this.form.configs.push({})
+            this.form.additional_info.push({})
         },
+        /**
+         * @description: 删除配置
+         * @param {*} config
+         * @return {*}
+         */
         handleDeleteConfig(config) {
-            const index = this.form.configs.findIndex(item => item === config);
-            console.log(index);
+            const index = this.form.additional_info.findIndex(item => item === config);
+            this.form.additional_info.splice(index, 1);
         },
         onUploadSuccess(response, file, fileList) {
             if (response.code === 200) {

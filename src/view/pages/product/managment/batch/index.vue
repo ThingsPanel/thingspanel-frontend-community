@@ -2,7 +2,7 @@
   <div class="rounded card p-4 el-table-transparent el-dark-input">
     <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
       <el-col :span="12">
-        <TableTitle>{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCHLIST') }}</TableTitle>
+        <TableTitle>{{ params.product_name }} - {{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCHLIST') }}</TableTitle>
       </el-col>
 
       <el-col :span="12" class="px-2 text-right">
@@ -16,7 +16,7 @@
       <el-table :data="tableData" v-loading="loading">
 
         <!-- 批号-->
-        <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCHNUMBER')" prop="batch_number" align="center">
+        <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCHNUMBER')" prop="batch_number" align="left">
 
         </el-table-column>
 
@@ -34,17 +34,20 @@
         </el-table-column>
 
         <!-- 操作列-->
-        <el-table-column align="left" :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.OPERATION')" width="540px">
+        <el-table-column align="right" :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.OPERATION')" width="320px">
           <template v-slot="scope">
-            <div class="text-center">
-              <el-button type="indigo" class="mr-1" size="mini" @click="viewPreRegistration(scope.row)">查看预注册</el-button>
-              <el-button type="indigo" :disabled="scope.row.generate_flag == '1'" class="mr-1" size="mini" @click="generateData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.GENERATEDATA') }}</el-button>
+            <div class="text-right">
+              <el-button type="indigo"  class="mr-1" size="mini" 
+                v-if="scope.row.generate_flag !== '1'" @click="generateData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.GENERATEDATA') }}</el-button>
+              
+              <el-button type="indigo"  class="mr-1" size="mini" 
+                v-if="scope.row.generate_flag == '1'" @click="viewPreRegistration(scope.row)">查看预注册</el-button>
 
-             
+              <el-button type="indigo" class="mr-1" size="mini"
+                v-if="scope.row.generate_flag == '1'"  :loading="exportLoading"
+                @click="exportQRCodeAndData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA') }}</el-button>
 
-              <el-button type="indigo" class="mr-1" size="mini" @click="exportQRCodeAndData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.EXPORTQRCODEANDDATA') }}</el-button>
-
-              <el-button type="indigo" class="mr-1" size="mini" @click="exportData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA') }}</el-button>
+              <!-- <el-button type="indigo" class="mr-1" size="mini" @click="exportData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA') }}</el-button> -->
               <el-popconfirm class="mr-1" :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
                 <el-button slot="reference" style="margin-left:10px" size="mini" type="danger">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.DELETE') }}</el-button>
               </el-popconfirm>
@@ -72,6 +75,10 @@
                   :data="params" @submit="getBatchList"></create-batch>
     <!-- 创建批次对话框 end -->
 
+    <!-- 导入数据 -->
+    <import-batch :visible.sync="importDialogVisible" 
+                  @submit="getBatchList"></import-batch>
+
     <!-- 导出二维码和数据对话框 start -->
     <el-dialog
         class="el-dark-dialog el-dark-input"
@@ -93,11 +100,12 @@
 import TableTitle from "@/components/common/TableTitle.vue"
 import ProductAPI from "@/api/product.js"
 import CreateBatch from "./CreateBatch";
+import ImportBatch from "./ImportBatch.vue";
 import {message_success} from "@/utils/helpers";
 import {dateFormat} from "@/utils/tool";
 export default {
   name: "BatchList",
-  components: { TableTitle, CreateBatch },
+  components: { TableTitle, CreateBatch, ImportBatch },
   data() {
     return {
       tableData: [],
@@ -108,6 +116,8 @@ export default {
         per_page: 10
       },
       createDialogVisible: false,
+      exportLoading: false,
+      importDialogVisible: false,
       generateEnabled: true,   // 生成数据按钮是否可用
       exportVisible: false, // 导出二维码和数据对话框
       exporting: false,
@@ -127,6 +137,7 @@ export default {
      * 获取产品列表
      */
     getBatchList() {
+      this.loading = true;
       ProductAPI.batchPage(this.params)
           .then(({ data }) => {
             if (data.code == 200) {
@@ -138,6 +149,9 @@ export default {
               console.log("tableData", this.tableData)
             }
           })
+          .finally(() => {
+            this.loading = false;
+          })
     },
     /**
      * @description: 查看预注册
@@ -145,8 +159,14 @@ export default {
      * @return {*}
      */       
     viewPreRegistration(item) {
-      console.log("viewPreRegistration", item)
-      this.$router.push({ path: "/product/batch/pre-registration", query: { batchId: item.id }})
+      console.log("viewPreRegistration", this.$route.query, item)
+      const { product_id, product_name } = this.$route.query;
+      this.$router.push({ path: "/product/batch/pre-registration", 
+        query: { 
+          batchId: item.id, 
+          productName: product_name,
+          batchNumber: item.batch_number,
+        }})
     },
     /**
      * 打开创建批次对话框
@@ -172,8 +192,8 @@ export default {
       ProductAPI.generateBatch({id: item.id})
         .then(({ data }) => {
           if (data.code == 200) {
-            message_success("批次生成成功！")
             this.getBatchList();
+            message_success("批次生成成功！")
           }
         })
         .finally(() => {
@@ -185,6 +205,7 @@ export default {
      * @param item
      */
     exportQRCodeAndData(item) {
+      this.exportLoading = true;
       ProductAPI.exportQRCodeAndData(({ id: item.id }))
         .then(({ data }) => {
           if (data.code == 200) {
@@ -193,6 +214,9 @@ export default {
           } else {
             this.exportVisible = false;
           }
+        })
+        .finally(() => {
+          this.exportLoading = false;
         })
 
     },
@@ -208,7 +232,7 @@ export default {
      * @return {*}
      */    
     handleImport() {
-      
+      this.importDialogVisible = true;
     }
   }
 }

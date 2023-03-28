@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-08 15:22:33
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-24 17:37:29
+ * @LastEditTime: 2023-03-28 11:48:09
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -19,10 +19,14 @@
             <el-table :data="tableData" v-loading="loading">
               
                 <!-- 任务名称-->
-                <el-table-column label="任务名称" prop="task_name" align="center"/>
+                <el-table-column label="任务名称" prop="task_name" align="left"/>
 
                 <!-- 状态-->
-                <el-table-column label="状态" prop="task_status" align="center"/>
+                <el-table-column label="状态" prop="task_status" align="center">
+                    <template v-slot="scope">
+                        {{ getUpgradeStatus(scope.row.task_status) }}
+                    </template>
+                </el-table-column>
 
                 <!-- 设备数量-->
                 <el-table-column label="设备数量" prop="device_count" align="center">
@@ -37,9 +41,9 @@
                 </el-table-column>
 
                 <!-- 操作列-->
-                <el-table-column align="left" :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.OPERATION')" width="540px">
+                <el-table-column align="right" :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.OPERATION')" width="240px">
                     <template v-slot="scope">
-                        <div class="text-center">
+                        <div class="text-right">
                             <el-button type="indigo" class="mr-1" size="mini" @click="viewTaskList(scope.row)">查看</el-button>
                             <el-button v-loading="!!scope.row.isLoading" type="indigo" class="mr-1" size="mini" @click="cancelTask(scope.row)">取消</el-button>
                         </div>
@@ -66,6 +70,8 @@
 import AddTask from "./AddTask.vue"
 import OTAAPI from "@/api/ota"
 import "@/core/mixins/common"
+// 引入Const里的升级状态
+import { UpgradeState } from "./Const"
 export default {
     name: "TaskList",
     components: { AddTask },
@@ -89,7 +95,8 @@ export default {
                 per_page: 10,
                 total: 0
             },
-            addTaskDialogVisible: false
+            addTaskDialogVisible: false,
+            upgradeState: UpgradeState
         }
     },
     mounted() {
@@ -102,6 +109,7 @@ export default {
          */        
         getList() {
             this.params.otd_id = this.data.otdId;
+            this.loading = true;
             OTAAPI.taskList(this.params)
                 .then(({ data: result }) => {
                     if (result.code === 200) {
@@ -109,13 +117,30 @@ export default {
                         this.params.total = result.data?.total || 0;
                     }
                 })
+                .finally(() => {
+                    this.loading = false;
+                })
         },
+        /**
+         * @description: 添加任务
+         * @return {*}
+         */
         handleCreate() {
             this.addTaskDialogVisible = true;
         },
+        /**
+         * @description: 查看任务详情
+         * @param {*} row
+         * @return {*}
+         */
         viewTaskList(row) {
             this.$router.push({ name: "TaskDetail", query: { taskId: row.id } })
         },
+        /**
+         * @description: 取消任务
+         * @param {*} row
+         * @return {*}
+         */
         cancelTask(row) {
             row.isLoading = true;
             OTAAPI.modifyUpgradeStatus({ ota_task_id: row.id })
@@ -124,6 +149,14 @@ export default {
                         this.getList();
                     }
                 })
+        },
+        getUpgradeStatus(status) {
+            if (String(status) === String(UpgradeState.upgrading[0])) {
+                return "升级中";
+            } else if (String(status) === String(UpgradeState.upgraded[0])) {
+                return "升级完成";
+            }
+            return "待升级";
         }
     }
 }

@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-15 08:54:20
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-26 19:21:43
+ * @LastEditTime: 2023-03-28 11:45:10
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\task\TaskDetail.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -10,7 +10,7 @@
   <div>
     <el-row :gutter="20" style="margin-bottom: 20px">
         <el-col :span="3" v-for="(item, index) in stateList" :key="index">
-            <widget :status="item.status" :value="item.count"/>
+            <widget :status="item.status" :value="item.count"  @click="handleSelectStatus"/>
         </el-col>
     </el-row>
     <div class="rounded card p-4 el-table-transparent el-dark-input text-white">
@@ -31,7 +31,7 @@
         <el-table :data="tableData" v-loading="loading">
   
           <!-- 设备编号-->
-          <el-table-column :label="'设备编号'" prop="device_code" align="left"/>
+          <el-table-column :label="'设备编号'" prop="device_code" align="left" :show-overflow-tooltip="true"/>
   
           <!-- 设备名-->
           <el-table-column :label="'设备名'" prop="name" align="left"/>
@@ -69,9 +69,9 @@
          
   
           <!-- 操作列-->
-          <el-table-column align="left" :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.OPERATION')" width="230">
+          <el-table-column align="center" :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.OPERATION')" width="180">
             <template v-slot="scope">
-              <div style="text-align: left">
+              <div class="text-center">
                 
                 <!-- 升级失败, 重升级 -->
                 <el-button type="indigo" size="mini" class="mr-3"
@@ -80,7 +80,7 @@
                     @click="reUpgrading(scope.row)">重升级</el-button>
                 <!-- 升级中，取消升级 -->
                 <el-button type="indigo" size="mini" class="mr-3"
-                  v-if="scope.row.status===upgradeState.upgrading[0]"  
+                  v-else-if="scope.row.status!==upgradeState.upgraded[0]"  
                   v-loading="!!scope.row.isLoading"
                   @click="cancelUpgrading(scope.row)">取消升级</el-button>
               </div>
@@ -130,20 +130,27 @@ export default {
     this.getList();
   },
   methods: {
+    handleSelectStatus(status) {
+      this.params.upgrade_status = status === "-1" ? "" : status;
+      this.getList();
+    },
     /**
      * @description: 获取列表
      * @return {*}
      */    
     getList() {
-        OTAAPI.taskDetailList(this.params)
-          .then(({ data: result }) => {
-            if (result.code === 200) {
-              this.tableData = result.data?.data?.list || [];
-              this.params.total = result.data.total;
-              const arr = result.data?.data?.statuscount || [];
-              this.computeStateList(arr);
-            }
-          })
+      this.loading = true;
+      OTAAPI.taskDetailList(this.params)
+        .then(({ data: result }) => {
+          if (result.code === 200) {
+            this.tableData = result.data?.data?.list || [];
+            this.params.total = result.data.total;
+            const arr = result.data?.data?.statuscount || [];
+            this.computeStateList(arr);
+          }
+        }).finally(() => {
+          this.loading = false;
+        })
     },
     /**
      * @description: 获取进度

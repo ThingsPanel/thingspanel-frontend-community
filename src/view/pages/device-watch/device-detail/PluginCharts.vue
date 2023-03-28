@@ -9,7 +9,6 @@
     >
 
       <grid-item class="grid-item" v-for="(option, index) in optionsData" :key="option['id'] + index"
-                 dragAllowFrom=".chart-header"
                  :x="option.x"
                  :y="option.y"
                  :w="option.w"
