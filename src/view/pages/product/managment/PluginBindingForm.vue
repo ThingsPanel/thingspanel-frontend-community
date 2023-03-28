@@ -88,6 +88,7 @@ export default defineComponent({
 
     let tslData = ref({});
     let pluginId = "";
+    let pluginName = "";
     /**
      * 选择下拉列表后，在table中显示物模型数据
      * @param node
@@ -108,6 +109,8 @@ export default defineComponent({
       PluginAPI.page({"current_page": 1, "per_page": 10, "id": pId})
           .then(({data}) => {
             if (data.code == 200) {
+              console.log("getPluginData", data.data.data[0])
+              pluginName = data.data.data[0]?.model_name || "";
               tslData.value = JSON.parse(data.data.data[0].chart_data).tsl
             }
           })
@@ -119,7 +122,7 @@ export default defineComponent({
     function handleSubmit() {
       this.showDialog = false;
 
-      this.$emit("submit", pluginId)
+      this.$emit("submit", pluginId, pluginName)
     }
 
   return {

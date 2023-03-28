@@ -32,7 +32,7 @@
         </el-row>
 
         <el-form-item :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.TITLE32')">
-          <el-input v-model="formData.plugin" @click.native="handleBindPlugin">
+          <el-input v-model="formData.pluginName" @click.native="handleBindPlugin">
 
           </el-input>
         </el-form-item>
@@ -133,9 +133,10 @@ export default {
     handleBindPlugin(item) {
       this.pluginDialogVisible = true;
     },
-    handleBindPluginSubmit(pluginId) {
+    handleBindPluginSubmit(pluginId, pluginName) {
       console.log("handleBindPluginSubmit", pluginId)
       this.formData.plugin = pluginId;
+      this.formData.pluginName = pluginName;
     },
     handleClose() {
       this.dialogVisible = false;

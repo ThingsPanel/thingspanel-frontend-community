@@ -5,6 +5,9 @@
       <span class="title">{{ optionData.name }}</span>
       <div class="tool-right">
 
+        <!-- 采样区间 -->
+        <el-button class="tool-item" size="mini" icon="el-icon-date" @click="handleClickRange"></el-button>
+
         <!-- 采样周期  -->
         <el-dropdown @command="handlePeriodCommand">
           <el-button class="tool-item" size="mini" icon="el-icon-time"></el-button>
@@ -50,6 +53,15 @@
         <el-button type="primary" @click="configurationVisible = false">确 定</el-button>
       </span>
     </el-dialog>
+
+    <el-dialog title="采样区间" width="30%"
+               :visible.sync="rangeDialogVisible">
+      <span></span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="rangeDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="rangeDialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -83,6 +95,7 @@ export default {
       myEcharts: {},
       optionData: {},
       configurationVisible: false,
+      rangeDialogVisible: false,
       params: {
         period: 300,   // 采样周期，默认最近5分钟
         rate: 10     // 采样频率，默认10秒
@@ -153,6 +166,10 @@ export default {
               this.initEChart(option);
             }
           })
+    },
+    
+    handleClickRange() {
+
     },
     /**
      * 采样周期
