@@ -401,7 +401,7 @@ span.text-blue.font-weight-bold.font-size-base.d-none.d-lg-block.mr-1 {
     border: none !important;
 }
 
-.el-dialog__header, .el-dialog__body {
+.el-dialog__header, .el-dialog__body, .el-dialog__footer {
     background-color: #2d3d88;
 }
 .el-dialog__body .label-name {
@@ -410,6 +410,8 @@ span.text-blue.font-weight-bold.font-size-base.d-none.d-lg-block.mr-1 {
 .el-dialog__title {
     color: #a8c5ff!important;
 }
+
+
 
 .table-title {
     color: #ffffff!important;

@@ -44,9 +44,9 @@
       </el-form>
 
       <span slot="footer" class="dialog-footer">
-      <el-button type="cancel" @click="handleClose">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.CANCEL') }}</el-button>
-      <el-button type="save" @click="handleSubmit">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.CONFIRM') }}</el-button>
-    </span>
+        <el-button type="cancel" @click="handleClose">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.CANCEL') }}</el-button>
+        <el-button type="save" @click="handleSubmit">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.CONFIRM') }}</el-button>
+      </span>
     </el-dialog>
     <plugin-binding-form :dialog-visible.sync="pluginDialogVisible" @submit="handleBindPluginSubmit"></plugin-binding-form>
   </div>

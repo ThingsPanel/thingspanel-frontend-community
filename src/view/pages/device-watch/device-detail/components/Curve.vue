@@ -45,7 +45,7 @@
 
     <div style="width: 100%; height:calc(100% - 60px);position: absolute;top:40px;bottom:20px" ref="chart"></div>
 
-    <el-dialog title="配置" width="30%"
+    <el-dialog class="el-dark-dialog" title="配置" width="30%" :append-to-body="true"
                :visible.sync="configurationVisible">
       <span></span>
       <span slot="footer" class="dialog-footer">
@@ -54,9 +54,27 @@
       </span>
     </el-dialog>
 
-    <el-dialog title="采样区间" width="30%"
+    <el-dialog title="采样区间" width="30%" :append-to-body="true"
                :visible.sync="rangeDialogVisible">
-      <span></span>
+      <span>
+        <el-date-picker
+          v-model="value2"
+          type="datetime"
+          placeholder="选择日期时间"
+          align="right"
+          :picker-options="pickerOptions">
+        </el-date-picker>
+      </span>
+      <span>
+        <el-date-picker
+          v-model="value2"
+          type="datetime"
+          placeholder="选择日期时间"
+          align="right"
+          :picker-options="pickerOptions">
+        </el-date-picker>
+      </span>
+
       <span slot="footer" class="dialog-footer">
         <el-button @click="rangeDialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="rangeDialogVisible = false">确 定</el-button>
@@ -169,7 +187,7 @@ export default {
     },
     
     handleClickRange() {
-
+      this.rangeDialogVisible = true;
     },
     /**
      * 采样周期
