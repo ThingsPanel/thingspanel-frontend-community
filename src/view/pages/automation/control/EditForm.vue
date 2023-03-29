@@ -4,7 +4,7 @@
       class="el-dark-dialog"
       :close-on-click-modal="false"
       :visible.sync="dialogVisible"
-      width="60%"
+      width="1100px"
       height="60%"
       top="10vh"
   >
@@ -27,10 +27,13 @@
         <!-- 优先级-->
         <el-col :span="8">
           <el-form-item :label="$t('AUTOMATION.PRIORITY')">
-            <el-input-number ref="priorityRef" :min="0" :max="100" v-model="formData.priority"></el-input-number>
-            <el-tooltip class="item" effect="dark" :content="$t('AUTOMATION.TIP.PRIORITY')" placement="top-start">
-              <i class="el-icon-info" style="margin-left:10px;"></i>
-            </el-tooltip>
+            <div style="display:inline-flex">
+              <el-input-number ref="priorityRef" :min="0" :max="100" v-model="formData.priority"></el-input-number>
+              <el-tooltip class="item" effect="dark" :content="$t('AUTOMATION.TIP.PRIORITY')" placement="top-start">
+                <i class="el-icon-info" style="margin-left:10px;margin-top:10px"></i>
+              </el-tooltip>
+            </div>
+            
             
           </el-form-item>
         </el-col>

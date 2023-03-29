@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-20 19:41:00
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-24 09:00:39
+ * @LastEditTime: 2023-03-29 10:31:18
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Const.js
  * @Description: 
  */
@@ -413,13 +413,13 @@ export function getActions(actions) {
                 state: {}
             };
             const additionalInfo = item.additional_info ? JSON.parse(item.additional_info) : {};
-            const name = Object.keys(additionalInfo.instruct)[0];
+            const name = Object.keys(additionalInfo.instruct || {})[0];
             command.state = {
                 name,
                 mode: "property",
                 operator: {
                     symbol: "",
-                    value: additionalInfo.instruct[name]
+                    value: additionalInfo.instruct ? additionalInfo.instruct[name] : ""
                 }
             }
             commands.push(command);
