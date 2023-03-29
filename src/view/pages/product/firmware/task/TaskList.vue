@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-08 15:22:33
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-28 11:48:09
+ * @LastEditTime: 2023-03-29 12:02:06
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\firmware\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -94,7 +94,6 @@ export default {
             tableData: [],
             loading: false,
             params: {
-                category: "all",
                 current_page: 1,
                 per_page: 10,
                 total: 0
@@ -112,8 +111,9 @@ export default {
          * @return {*}
          */        
         getList() {
-            this.params.otd_id = this.data.otdId;
+            this.params.ota_id = this.$route.query.otaId;
             this.loading = true;
+            console.log("taskList", this.params)
             OTAAPI.taskList(this.params)
                 .then(({ data: result }) => {
                     if (result.code === 200) {

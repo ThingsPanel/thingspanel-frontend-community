@@ -4,6 +4,8 @@
       <div class="video-item" :style="option.style ? option.style : {}" v-for="(option, index) in charts" :key="index" @click="showDialog(option)">
         <div class="video-item-header" >{{ option.title }}</div>
 
+        
+
         <video-player1 class="video-player" v-if="option.type == 'monitor'" :ref="'video_' + option.index" :option="option"
                         @submit="handleSubmit">
         </video-player1>
