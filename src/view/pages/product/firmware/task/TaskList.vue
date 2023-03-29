@@ -155,10 +155,16 @@ export default {
                 })
         },
         getUpgradeStatus(status) {
-            if (String(status) === String(UpgradeState.upgrading[0])) {
-                return "升级中";
-            } else if (String(status) === String(UpgradeState.upgraded[0])) {
-                return "升级完成";
+            switch (status) {
+                case "0": {
+                    return "待升级";
+                }
+                case "1": {
+                    return "升级中";
+                }
+                case "2": {
+                    return "已完成";
+                }
             }
             return "待升级";
         }
