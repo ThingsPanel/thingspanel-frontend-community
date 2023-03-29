@@ -105,6 +105,13 @@
     <el-table-column :label="$t('DEVICE_MANAGEMENT.BINGPLUGINS')" min-width="15%">
       <template slot-scope="scope">
         <el-button v-if="scope.row.device_type!='2'" type="text" @click="handleBindingClick(scope.row)">{{ $t("DEVICE_MANAGEMENT.BINGPLUGINS")}}</el-button>
+        <!-- <device-plugin-selector
+            :disabled="scope.row.device_type == 2"
+            :current-item="scope.row"
+            :plugin_type.sync="scope.row.plugin_type"
+            :options="devicePluginOptions"
+            @change="handleSave(scope.row, getDeviceIndex)"
+        ></device-plugin-selector> -->
       </template>
     </el-table-column>
 
@@ -232,7 +239,7 @@ import {structure_field} from "@/api/device";
 
 import DeviceGroupSelector from "./components/DeviceGroupSelector.vue"
 import DeviceTypeSelector from "./components/DeviceTypeSelector.vue"
-import DevicePluginSelector from "./components/DevicePluginSelector.vue"
+// import DevicePluginSelector from "./components/DevicePluginSelector.vue"
 import TableTitle from "@/components/common/TableTitle.vue"
 
 import useDeviceIndex from "./useDeviceIndex";
@@ -256,7 +263,7 @@ export default defineComponent({
     PluginBinding,
     DeviceGroupSelector,
     DeviceTypeSelector,
-    DevicePluginSelector,
+    // DevicePluginSelector,
     TableTitle,
     DeviceSettingForm,
     ManagementGroupForm,

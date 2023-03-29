@@ -95,10 +95,14 @@ export default {
     updateOption(value) {
       console.log("====更新图表的值", this.option)
       if (this.option.controlType == "dashboard") {
+        let name = "";
+        if (this.option.series[0] && this.option.series[0].data[0] && this.option.series[0].data[0].name) {
+          name = this.option.series[0].data[0].name ;
+        }
         let series = [];
         series = value.map(item => {
           let detail = { formatter: '{value}' + (item.unit != "-" ? item.unit : "") };
-          return { data: [ { value: item.value } ], detail }
+          return { data: [ { value: item.value, name } ], detail }
         })
         this.myEcharts.setOption({ series });
       }

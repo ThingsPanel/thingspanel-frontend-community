@@ -57,6 +57,7 @@
                         :action="uploadUrl"
                         :headers="headers"
                         :data="{ type: 'upgradePackage'}"
+                        accept=".bin,.tar,.gz,.tar.xz,.zip,.gzip,.apk,.dav,.pack"
                         :file-list="fileList"
                         :on-success="onUploadSuccess"
                         >
@@ -193,7 +194,11 @@ export default {
             this.$refs.firmwareCreateForm.validate((valid) => {
                 if (valid) {
                     let formData = JSON.parse(JSON.stringify(this.form))
-                    formData.additional_info = JSON.stringify(formData.additional_info);
+                    let additionalInfo = {};
+                    formData.additional_info.forEach(item => {
+                        additionalInfo[item.key] = item.value;
+                    })
+                    formData.additional_info = JSON.stringify(additionalInfo);
                     formData.created_at = moment().format("YYYY-MM-DD HH:mm:ss")
                     OTAAPI.add(formData)
                         .then(({ data: result }) => {
@@ -229,9 +234,12 @@ export default {
             this.form.additional_info.splice(index, 1);
         },
         onUploadSuccess(response, file, fileList) {
+            console.log("onUploadSuccess", response, file, fileList)
             if (response.code === 200) {
                 this.form.package_url = response.data;
                 this.form.package_path = response.data;
+            } else {
+                this.$message.error(response.msg);
             }
             console.log("onUploadSuccess", response, file, fileList);
             console.log("onUploadSuccess.form", this.form);

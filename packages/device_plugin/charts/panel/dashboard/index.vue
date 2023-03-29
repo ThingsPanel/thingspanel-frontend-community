@@ -171,6 +171,10 @@ export default {
       option.controlType = "dashboard"
       option.series[0].data[0].name = this.chartTitle;
       option.series[0].detail.fontSize = this.fontSize;
+      if (option.series.length > 1) {
+        option.series[1].data[0].name = this.chartTitle;
+        option.series[1].detail.fontSize = this.fontSize;
+      }
       option.style = {};
       // 背景颜色
       option.style.backgroundColor = this.backgroundColor;

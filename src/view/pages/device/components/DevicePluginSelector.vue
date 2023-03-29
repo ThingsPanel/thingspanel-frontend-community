@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-28 15:11:01
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-27 13:36:21
+ * @LastEditTime: 2023-03-29 09:03:13
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\device\components\DevicePluginSelector.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -17,6 +17,7 @@
       filterable
       :clearable="clearable"
       @change="handleChange()"
+      @visible-change="handleVisibleChange"
   >
     <el-option
         v-for="item in options"
@@ -29,7 +30,7 @@
 
 <script>
 import {computed, defineComponent} from "@vue/composition-api";
-
+import PluginAPI from "@/api/plugin";
 export default defineComponent({
   name: "DevicePluginSelector",
   props: {
@@ -37,7 +38,7 @@ export default defineComponent({
       default: false,
       type: Boolean,
     },
-    plugin_type:{
+    pluginType:{
       required: true,
       type: String,
     },
@@ -51,10 +52,10 @@ export default defineComponent({
 
     let device_plugin_type = computed({
       get(){
-        return props.plugin_type
+        return props.pluginType
       },
       set(val){
-        context.emit("update:plugin_type", val)
+        context.emit("update:pluginType", val)
       }
     })
 
@@ -63,11 +64,22 @@ export default defineComponent({
     }
 
     // 转换时间的函数
-    
+    const pluginList = ref([]);
+    function handleVisibleChange(val){
+      if(val) {
+        console.log("下拉列表展开", val);
+        PluginAPI.page({ current_page: 1, per_page: 1000 })
+          .then(({ data: result }) => {
+            if (result.code === 200) {
+              pluginList.value = result.data?.data || [];
+            }
+          })
+      }
+    }
     
     return {
       device_plugin_type,
-      handleChange
+      handleChange, handleVisibleChange
     }
   }
 })
