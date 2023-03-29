@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-20 19:41:00
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-29 10:31:18
+ * @LastEditTime: 2023-03-29 16:27:23
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Const.js
  * @Description: 
  */
@@ -162,15 +162,15 @@ export function setConditions(conditions) {
                             // 每周
                             // 周日 - 周六 对应   1 - 7
                             let v3 = (Number(repeat.weekly.week) + 1);
-                            if (v3 === 8) v3 = 1;  // 周日 = 7
+                            if (v3 === 8) v3 = 1;  
                             condition['v3'] = v3.toString();
                             condition['v4'] = repeat.weekly.time.toString();
                             break;
                         }
                         case RepeatTimeType.monthly: {
                             // 每月
-                            condition['v3'] = repeat.monthly.day.toString();
-                            condition['v4'] = repeat.monthly.time.toString();
+                            condition['v3'] = repeat.monthly.day.toString() + ":" + repeat.monthly.time.toString();
+                            // condition['v4'] = repeat.monthly.time.toString();
                             break;
                         }
                         case RepeatTimeType.cron: {
@@ -362,10 +362,16 @@ export function getConditions(conditions) {
                                 break;
                             }
                             case RepeatTimeType.monthly: {
+                                // 从接口获取的数据格式为 dd:HH:mm
+                                let arr = item.v3.split(":");
+                                // 每月
                                 condition.data.repeat.monthly = {
-                                    day: item.v3,
-                                    time: item.v4
+                                    day: arr[0],
+                                    time: arr[1] + ":" + arr[2]
                                 }
+                                
+                                break;
+
                             }
                             case RepeatTimeType.cron: {
                                 condition.data.repeat.cron = item.v3;
@@ -394,6 +400,7 @@ export function getConditions(conditions) {
     
     return conditionList;
 }
+
 
 /**
      * @description: 回显action

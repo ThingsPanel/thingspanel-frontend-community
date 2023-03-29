@@ -3,22 +3,25 @@
     <div class="chart-header" v-if="showHeader">
       <span class="title">{{ optionData.name }}</span>
       <div class="tool-right">
+        <el-button class="tool-item" :class="monitorType==='control' ? 'selected' : ''" size="mini" 
+          @click="handleChangeMonitorType('control')">控制</el-button>
+
+        <el-button class="tool-item" :class="monitorType==='record' ? 'selected' : ''" size="mini" 
+          @click="handleChangeMonitorType('record')">回放</el-button>
+
+        <el-button class="tool-item" :class="monitorType==='default' ? 'selected' : ''" size="mini" 
+          @click="handleChangeMonitorType('default')">默认</el-button>
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
       </div>
     </div>
 
     <div class="video-box" ref="videoBox">
 
-      <video-player v-if="optionData.type=='monitor'" style="width: 100%;height: 100%" :src="optionData.src"
-                    ></video-player>
-
-      <video-control v-else-if="optionData.type=='monitor_control'" style="width: 100%;height: 100%" :src="optionData.src"
-                     @command="handleCommand"></video-control>
-
-      <video-record v-else-if="optionData.type=='monitor_playback'" style="width: 100%;height: 100%"
-                    :src="optionData.src" :device="device"
-                     @command="handleCommand"></video-record>
-
+      <monitor-player  style="width: 100%;height: 100%" 
+        v-if="optionData.type=='monitor'" :type="monitorType"
+        :src="optionData.src"  :device="device"
+        @command="handleCommand"
+        ></monitor-player>
 
     </div>
 
@@ -28,12 +31,11 @@
 <script>
 import ProtocolPluginAPI from "@/api/protocolPlugin"
 import VideoPlayer from "@/components/common/VideoPlayer";
-import VideoControl from "@/components/common/VideoControl";
-import VideoRecord from "@/components/common/VideoRecord";
+import MonitorPlayer from "@/components/video/monitor";
 export default {
   name: "Video",
   components: {
-    VideoPlayer, VideoControl, VideoRecord
+    VideoPlayer, MonitorPlayer
   },
   props: {
     showHeader: {
@@ -56,7 +58,8 @@ export default {
         horizonSpeed: "30",
         verticalSpeed: "30",
         zoomSpeed: "30"
-      }
+      },
+      monitorType: "default"
     }
   },
   mounted() {
@@ -80,6 +83,29 @@ export default {
     }
   },
   methods: {
+    /**
+     * 播放组件控制回调
+     * @param command
+     */
+    handleCommand(command) {
+      console.log("====video.handleCommand", command);
+      this.params.command = command.toLowerCase();
+      this.params.horizonSpeed = "30";
+      this.params.verticalSpeed = "30";
+      this.params.zoomSpeed = "30";
+
+      ProtocolPluginAPI.commandPlayerPTZ(this.params)
+        .then(({data}) => {
+          console.log("====video.handleCommand", data);
+        })
+    },
+    /**
+     * 切换监控类型
+     * @param type
+     */
+    handleChangeMonitorType(type) {
+      this.monitorType = type;
+    },
     sizeChange() {
       let videoBox = this.$refs.videoBox;
       console.log("====video.sizeChange()", videoBox.clientWidth, videoBox.clientHeight)
@@ -98,22 +124,6 @@ export default {
           }
         })
     },
-    /**
-     * 播放组件控制回调
-     * @param command
-     */
-    handleCommand(command) {
-      console.log("====video.handleCommand", command);
-      this.params.command = command.toLowerCase();
-      this.params.horizonSpeed = "30";
-      this.params.verticalSpeed = "30";
-      this.params.zoomSpeed = "30";
-
-      ProtocolPluginAPI.commandPlayerPTZ(this.params)
-        .then(({data}) => {
-          console.log("====video.handleCommand", data);
-        })
-    }
   }
 }
 </script>
@@ -154,7 +164,13 @@ export default {
     }
 
     .tool-item {
+      color: #ffffff;
       background: transparent !important;
+      border: 0px solid transparent;
+    }
+    .selected {
+      color: #2d3d86;
+      background: #ffffff !important;
       border: 0px solid transparent;
     }
   }

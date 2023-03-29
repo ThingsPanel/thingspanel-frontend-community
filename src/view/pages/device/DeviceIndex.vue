@@ -21,14 +21,14 @@
           @change="handleSearch()"
       ></DeviceGroupSelector>
     </el-col>
-    <el-col :span="5">
+    <!-- <el-col :span="5">
         <DevicePluginSelector
             :plugin_type.sync="params.device_type"
             :options="devicePluginOptions"
             :clearable="true"
             @change="handleSearch()"
         ></DevicePluginSelector>
-    </el-col>
+    </el-col> -->
     <el-col :span="5">
       <el-input
           :placeholder="$t('DEVICE_MANAGEMENT.PLACEHOLDER2')"

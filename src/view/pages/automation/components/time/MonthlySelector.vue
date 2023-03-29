@@ -8,12 +8,14 @@
 -->
 <template>
   <div style="display: flex">
-    <el-select style="margin-right:10px" ref="dayRef" v-model="formData.day" @change="handleDayChange">
+    <el-select style="margin-right:10px" ref="dayRef" 
+      v-model="formData.day" @change="handleDayChange">
       <el-option v-for="(day, index) in dayOptions" :key="index" :label="day.label" :value="day.value"></el-option>
     </el-select>
 
-    <el-time-select ref="timeRef" v-if="formData.day!=''" v-model="formData.time" 
-    :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_TIME')" @change="handleTimeChange"></el-time-select>
+    <el-time-select ref="timeRef" value-format="HH:mm"
+      v-if="formData.day!=''" v-model="formData.time" 
+      :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_TIME')" @change="handleTimeChange"></el-time-select>
   </div>
 </template>
 

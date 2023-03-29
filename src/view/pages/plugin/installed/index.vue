@@ -151,6 +151,9 @@ export default {
           this.loadScriptPluginList();
           break;
         }
+        default: {
+          this.listArr = [];
+        }
       }
     },
     /**

@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-07 10:02:17
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-13 15:11:14
+ * @LastEditTime: 2023-03-29 17:04:14
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\alarm\index.vue
  * @Description: 告警信息列表
 -->
@@ -49,7 +49,13 @@
         </template>
       </el-table-column>
       <el-table-column :label="$t('ALARM.WARNING_NAME')" prop="warning_name" width="220"></el-table-column>
-      <el-table-column :label="$t('ALARM.LEVEL')" prop="warning_level" width="60"></el-table-column>
+      <el-table-column :label="$t('ALARM.LEVEL')" prop="warning_level" width="60">
+        <template v-slot="scope">
+          <p class="table-describe mad" v-if="scope.row.warning_level==='1'">低</p>
+          <p class="table-describe mad" v-if="scope.row.warning_level==='2'">低</p>
+          <p class="table-describe mad" v-if="scope.row.warning_level==='3'">低</p>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('ALARM.WARNING_DESCRIPTION')" prop="warning_description" :show-overflow-tooltip="true" width="auto">
         <template v-slot="scope">
           <p class="table-describe mad">{{ scope.row.describe }}</p>

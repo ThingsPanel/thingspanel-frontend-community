@@ -16,7 +16,7 @@
         </h3>
 
         <div class="width-100 mb-2">
-          <div v-for="(item,index) in guidlist"  class="float-left inline-block mr-10 mb-2">
+          <div v-for="(item,index) in guidlist" :key="index"  class="float-left inline-block mr-10 mb-2">
             <!--可视化-->
             <router-link
               v-if="item.type == 4"

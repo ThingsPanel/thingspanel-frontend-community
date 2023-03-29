@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-02 08:39:13
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-24 09:07:40
+ * @LastEditTime: 2023-03-29 15:42:30
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\time\WeeklySelector.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -12,7 +12,7 @@
       <el-option v-for="(week, index) in weekOptions" :key="index" :label="week.label" :value="week.value"></el-option>
     </el-select>
 
-    <el-time-picker ref="timeRef" v-if="weekValue!=''" value-format="dd:HH:mm"
+    <el-time-picker ref="timeRef" v-if="weekValue!=''" value-format="HH:mm"
         v-model="timeValue" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_TIME')" @change="handleChange"></el-time-picker>
   </div>
 </template>

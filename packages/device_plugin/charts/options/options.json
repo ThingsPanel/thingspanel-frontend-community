@@ -435,45 +435,6 @@
       "disabled": false
     },
     {
-      "componentName": "双控开关",
-      "type": "switch",
-      "series": [
-        {
-          "type": "switch",
-          "value": false,
-          "id": 1
-        },
-        {
-          "type": "switch",
-          "value": false,
-          "id": 2
-        }
-      ],
-      "disabled": false
-    },
-    {
-      "componentName": "三控开关",
-      "type": "switch",
-      "series": [
-        {
-          "type": "switch",
-          "value": false,
-          "id": 1
-        },
-        {
-          "type": "switch",
-          "value": false,
-          "id": 2
-        },
-        {
-          "type": "switch",
-          "value": false,
-          "id": 3
-        }
-      ],
-      "disabled": true
-    },
-    {
       "componentName": "滑动开关",
       "type": "slider",
       "series": [
@@ -505,27 +466,19 @@
   "video": [
     {
       "controlType": "video",
+      "index": 1,
+      "type": "video",
+      "title": "视频",
+      "src": ""
+    },
+    {
+      "controlType": "video",
       "index": 2,
       "type": "monitor",
-      "title": "监控1",
-      "src": ""
-    },
-    {
-      "controlType": "video",
-      "index": 3,
-      "type": "monitor_control",
-      "title": "监控2",
-      "src": "",
-      "style": {
-        "width": "400px"
-      }
-    },
-    {
-      "controlType": "video",
-      "index": 4,
-      "type": "monitor_playback",
-      "title": "监控回放",
+      "title": "监控",
       "src": ""
     }
+    
+    
   ]
 }

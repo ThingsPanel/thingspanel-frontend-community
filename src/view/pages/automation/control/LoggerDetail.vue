@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-17 08:49:11
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-10 19:18:34
+ * @LastEditTime: 2023-03-29 17:00:01
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Logger.vue
  * @Description: 控制策略日志详情
 -->
@@ -27,7 +27,7 @@
 
         <el-table-column :label="$t('AUTOMATION.EXE_STATUS')" prop="process_result" width="100">
           <template v-slot="scope">
-            {{ scope.row.process_result == '1' ? $t('AUTOMATION.SUCCESSFUL') : $t('AUTOMATION.FAILURE') }}
+            {{ scope.row.process_result == '1' ? "$t('AUTOMATION.SUCEESSFUL')" : $t('AUTOMATION.FAILURE') }}
           </template>
         </el-table-column>
 

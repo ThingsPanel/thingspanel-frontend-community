@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-02 08:39:13
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-10 14:02:30
+ * @LastEditTime: 2023-03-29 15:41:47
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\time\RepeatTimeSelector.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -26,7 +26,9 @@
     
     <div style="display:flex;" v-else-if="formData.type=='days'">
       <!-- <el-time-select ref="daysRef" step='00:15' v-model="formData.days" placeholder="选择时间" @change="handleDaysChange"></el-time-select> -->
-      <el-time-picker ref="daysRef" v-model="formData.days" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_TIME')" @change="handleDaysChange"></el-time-picker>
+      <el-time-picker ref="daysRef" value-format="HH:mm"
+          v-model="formData.days" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_TIME')" 
+          @change="handleDaysChange"></el-time-picker>
       <el-tooltip placement="top">
         <div slot="content">{{ $t('AUTOMATION.TIP.DAYS') }}</div>
         <i class="el-icon-info" style="margin:10px;"></i>
