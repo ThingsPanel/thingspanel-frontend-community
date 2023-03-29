@@ -2,7 +2,7 @@
   <div class="chart-div">
     <div class="chart-header" v-if="showHeader">
       <span class="title">{{ optionData.name }}</span>
-      <div class="tool-right">
+      <div class="tool-right" v-if="optionData.type=='monitor'">
         <el-button class="tool-item" :class="monitorType==='control' ? 'selected' : ''" size="mini" 
           @click="handleChangeMonitorType('control')">控制</el-button>
 
@@ -11,11 +11,18 @@
 
         <el-button class="tool-item" :class="monitorType==='default' ? 'selected' : ''" size="mini" 
           @click="handleChangeMonitorType('default')">默认</el-button>
+
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
       </div>
     </div>
 
     <div class="video-box" ref="videoBox">
+
+
+      <video-player  style="width: 100%;height: 100%" 
+        v-if="optionData.type=='video'"
+        :src="optionData.src"
+        ></video-player>
 
       <monitor-player  style="width: 100%;height: 100%" 
         v-if="optionData.type=='monitor'" :type="monitorType"
@@ -30,7 +37,7 @@
 
 <script>
 import ProtocolPluginAPI from "@/api/protocolPlugin"
-import VideoPlayer from "@/components/common/VideoPlayer";
+import VideoPlayer from "@/components/video/video";
 import MonitorPlayer from "@/components/video/monitor";
 export default {
   name: "Video",
@@ -67,8 +74,11 @@ export default {
   watch: {
     option: {
       handler(newValue) {
+        console.log("====video.option", newValue, this.device);
         if (newValue) {
           let additionalInfo = (this.device.additional_info && this.device.additional_info != "null") ? JSON.parse(this.device.additional_info) : {};
+        console.log("====video.option", additionalInfo);
+
           this.optionData = JSON.parse(JSON.stringify(newValue))
 
           this.params.sub_device_addr = this.device.sub_device_addr;
@@ -76,7 +86,11 @@ export default {
           if (this.device.protocol.startsWith("WVP_")) {
             this.callPlayWVP();
           }
-          this.optionData.src = additionalInfo.video_address ? additionalInfo.video_address : "";
+          if (this.optionData.type === "video") {
+            setTimeout(() => {
+              this.optionData.src = additionalInfo.video_address ? additionalInfo.video_address : "";
+            }, 500)
+          }
         }
       },
       immediate: true

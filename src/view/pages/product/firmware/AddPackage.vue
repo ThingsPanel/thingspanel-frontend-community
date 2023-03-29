@@ -51,7 +51,7 @@
                 </el-form-item>
 
                 <!-- 上传升级包 -->
-                <el-form-item label="上传升级包" required prop="package_url">
+                <el-form-item label="上传升级包" required prop="packageUrl">
                     <el-upload
                         class="upload-demo"
                         :action="uploadUrl"
@@ -109,6 +109,8 @@ import OTAAPI from "@/api/ota";
 import JwtService from "@/core/services/jwt.service";
 import { message_success } from '../../../../utils/helpers';
 
+import { local_url } from "@/api/LocalUrl"
+
 export default {
     name: "AddPackage",
     props: {
@@ -137,6 +139,7 @@ export default {
             package_name: "",
             package_version: "",
             package_url: "",
+            packageUrl: "",
             package_module: "default",
             signature_algorithm: "MD5",
             description: "",
@@ -157,6 +160,9 @@ export default {
             ],
             package_module: [
                 { required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER2') }
+            ],
+            packageUrl: [
+                { required: true, message: "请选择升级包" }
             ],
             package_version: [
                 { required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER3') }
@@ -211,9 +217,9 @@ export default {
                             }
                         })
 
-                    setTimeout(() => {
-                        this.$refs.firmwareCreateForm.resetFields()
-                    }, 500)
+                    // setTimeout(() => {
+                    //     this.$refs.firmwareCreateForm.resetFields()
+                    // }, 500)
                 }
             })
         },
@@ -233,11 +239,19 @@ export default {
             const index = this.form.additional_info.findIndex(item => item === config);
             this.form.additional_info.splice(index, 1);
         },
+        // 如果前两个字符是./，则去除字符串前两个字符
+        removeDotSlash(str) {
+            if (str.indexOf('./') === 0) {
+                return str.slice(2);
+            }
+            return str;
+        },
         onUploadSuccess(response, file, fileList) {
             console.log("onUploadSuccess", response, file, fileList)
             if (response.code === 200) {
-                this.form.package_url = response.data;
-                this.form.package_path = response.data;
+                this.form.packageUrl = local_url + this.removeDotSlash(response.data);
+                this.form.package_path = this.form.packageUrl;
+                this.form.package_url = this.form.packageUrl;
             } else {
                 this.$message.error(response.msg);
             }
