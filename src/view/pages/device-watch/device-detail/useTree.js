@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-07 08:50:47
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-07 10:21:33
+ * @LastEditTime: 2023-03-29 18:43:24
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\device-watch\device-detail\useTree.js
  * @Description:
  */
@@ -78,7 +78,7 @@ export default function useTree(projectId) {
      * 点击设备显示插件图表
      * @param node
      */
-    function nodeClick(node) {
+    function nodeClick(node, cb) {
         device.value = node;
         if (node.leaf && node.device && node.type) {
             let param = { "current_page": 1, "per_page": 10, "id": node.type }
@@ -98,6 +98,7 @@ export default function useTree(projectId) {
             console.log("nodeClick", node)
             pluginOptions.value = [];
         }
+        cb && cb();
     }
 
 

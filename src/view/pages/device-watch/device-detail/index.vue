@@ -8,11 +8,12 @@
       <div class="left-tree">
         <el-input class="el-dark-input search-input" suffix-icon="el-icon-search" v-model="filterValue" autocomplete="off" :placeholder="$t('DEVICE_WATCH_DETAIL.SEARCH')"></el-input>
         <el-tree class="el-dark-tree" ref="pluginTree" lazy
-                 :load="loadNode" :props="defaultProps" :filter-node-method="filterNode" @node-click="nodeClick"></el-tree>
+                 :load="loadNode" :props="defaultProps" :filter-node-method="filterNode" 
+                 @node-click="node => nodeClick(node, changeNode)"></el-tree>
       </div>
 
       <div class="display-canvas">
-        <PluginCharts :options="pluginOptions" :tsl="pluginTsl" :device="device"></PluginCharts>
+        <PluginCharts ref="pluginCharts" :options="pluginOptions" :tsl="pluginTsl" :device="device"></PluginCharts>
       </div>
     </div>
 
@@ -69,6 +70,12 @@ export default defineComponent({
       router.push({ name: "DeviceWatch" })
     }
 
+    const pluginCharts = ref();
+    function changeNode() {
+      console.log("changeNode", pluginCharts)
+      pluginCharts.value.nodeChanged && pluginCharts.value.nodeChanged();
+    }
+
 
     return {
       back,
@@ -78,6 +85,8 @@ export default defineComponent({
       filterNode,
       loadNode,
       nodeClick,
+      pluginCharts,
+      changeNode,
       device,
       pluginOptions,
       pluginTsl

@@ -19,7 +19,7 @@
     <div class="video-box" ref="videoBox">
 
 
-      <video-player  style="width: 100%;height: 100%" 
+      <video-player ref="videoPlayer" style="width: 100%;height: 100%" 
         v-if="optionData.type=='video'"
         :src="optionData.src"
         ></video-player>
@@ -138,6 +138,10 @@ export default {
           }
         })
     },
+    nodeChanged() {
+      console.log("====video.nodeChanged()")
+      this.$refs.videoPlayer.destroy();
+    }
   }
 }
 </script>
