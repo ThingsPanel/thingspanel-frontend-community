@@ -2,27 +2,29 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-20 14:35:59
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-21 14:10:54
+ * @LastEditTime: 2023-03-30 14:50:21
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\plugin\list\LoginStore.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
     <div>
         <el-dialog class="el-dark-dialog" title="登录应用商店" :visible.sync="dialogVisible" width="30%"
-            :before-close="() => dialogVisible = false" :close-on-click-modal="false" :append-to-body="true">
-            <el-form class="inline-edit" ref="LoginForm" label-position="left" :model="formData" :hide-required-asterisk="true">
+            :before-close="() => handleCancel()" :close-on-click-modal="false" :append-to-body="true">
+            <el-form class="inline-edit" ref="LoginForm" label-position="left" 
+                :model="formData" :rules="formRules"
+                :hide-required-asterisk="true">
                     
-                <el-form-item label="用户名">
+                <el-form-item label="用户名" prop="username">
                     <el-input v-model="formData.username"></el-input>
                 </el-form-item>
 
-                <el-form-item label="密码">
-                    <el-input v-model="formData.password"></el-input>
+                <el-form-item label="密码" prop="password">
+                    <el-input v-model="formData.password" show-password></el-input>
                 </el-form-item>
                 
                 <div class="text-right py-5">
                     <el-link class="link-signup" href="" type="success" target="_blank">没有账号？去创建</el-link>
-                    <el-button type="border" @click="dialogVisible = false">{{ $t('COMMON.CANCEL') }}</el-button>
+                    <el-button type="border" @click="handleCancel">{{ $t('COMMON.CANCEL') }}</el-button>
                     <el-button type="primary" :loading="btnLoading" @click="handleSubmit">{{ $t('COMMON.LOG1') }}</el-button>
                 </div>
 
@@ -40,13 +42,27 @@ export default {
         visible: {
             type: [Boolean],
             default: false
+        },
+        cancel: {
+            type: [Function],
+            default: () => {}
         }
     },
     data() {
         return {
             formData: {
-                username: "17398467065",
-                password: "123456"
+                username: "",
+                password: ""
+            },
+            formRules: {
+                username: [
+                    { required: true, message: "请输入用户名", trigger: "blur" },
+                    { min: 3, max: 20, message: "长度在 3 到 20 个字符", trigger: "blur" }
+                ],
+                password: [
+                    { required: true, message: "请输入密码", trigger: "blur" },
+                    { min: 6, max: 20, message: "长度在 6 到 20 个字符", trigger: "blur" }
+                ]
             },
             btnLoading: false
         }
@@ -62,23 +78,35 @@ export default {
         }
     },
     methods: {
+        handleCancel() {
+            this.dialogVisible = false;
+            this.cancel({ code: 400, msg: "取消登录"});
+        },
         /**
          * @description: 登录
          * @return {*}
          */
         handleSubmit() {
             this.btnLoading = true;
-            this.$store.dispatch(LOGIN, this.formData)
-                .then(res => {
-                    if (res.code === 0) {
-                        message_success("登陆成功！");
-                        this.dialogVisible = false;
-                    }
-                    console.log(res)
-                })
-                .finally(() => {
+            this.$refs.LoginForm.validate(valid => {
+                if (valid) {
+                    this.$store.dispatch(LOGIN, this.formData)
+                        .then(res => {
+                            if (res.code === 0) {
+                                message_success("登陆成功！");
+                                this.dialogVisible = false;
+                            }
+                            console.log(res)
+                        })
+                        .finally(() => {
+                            this.btnLoading = false;
+                        })
+                } else {
                     this.btnLoading = false;
-                })
+                    return false;
+                }
+            })
+            
         }
     }
 }

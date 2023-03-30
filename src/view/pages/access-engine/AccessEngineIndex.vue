@@ -199,7 +199,7 @@ export default {
       addFlow(flow).then(res => {
         if (res.status == 200) {
           // 创建flow成功后，向数据库写入数据
-          addTranspond({process_id: res.data.id, disabled: "false", label: form_data.rule_name,role_type: "1" }).then(result => {
+          addTranspond({process_id: res.data.id, disabled: "false", label: flow.label,role_type: "1" }).then(result => {
             this.get_data();
             this.dialogVisible = false;
             this.$message({message: "创建成功", center: true, type: "success"})

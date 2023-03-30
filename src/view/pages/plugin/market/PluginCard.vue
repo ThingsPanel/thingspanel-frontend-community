@@ -46,6 +46,7 @@
 
 <script>
 import {message_success} from "@/utils/helpers";
+import { message_error } from '../../../../utils/helpers';
 export default {
   name: "PluginCard",
   props: {
@@ -84,12 +85,12 @@ export default {
     handleInstall() {
       this.installing = true
       this.$emit("install", this.pluginData, res => {
-        setTimeout(() => {
           this.installing = false;
           if (res.code === 200) {
             message_success(res.msg);
+          }  else {
+            message_error(res.msg);
           }
-        }, 1000)
       })
     },
     /**

@@ -63,7 +63,7 @@
               <template v-slot="scope">
                 <div style="text-align: left">
 
-                  <login-store :visible.sync="loginStoreDialogVisible"/>
+                  
                   <el-button slot="reference" size="mini" type="border" @click="handleInstallPlugin(scope.row)">安装</el-button>
 
                 </div>
@@ -85,6 +85,8 @@
             :page-size="params.per_page"
             @current-change="loadList"></el-pagination>
       </div>
+
+      <login-store :visible.sync="loginStoreDialogVisible" :cancel="cancelLogin"/>
     </div>
 </template>
 
@@ -116,7 +118,8 @@ export default {
       searchValue: '',
       category: [],
       refreshBtnLoading: false,
-      loginStoreDialogVisible: false
+      loginStoreDialogVisible: false,
+      cancelLogin: () => {}
     }
   },
   created() {
@@ -218,6 +221,7 @@ export default {
     },
     handleInstallPlugin(item, cb) {
       const isAuth = this.$store.getters.getStoreAuthenticated;
+      console.log("handleInstallPlugin", item, isAuth)
       if (isAuth) {
         // 安装
         switch(item.pluginType) {
@@ -234,6 +238,7 @@ export default {
         }
       } else {
         // 登录
+        this.cancelLogin = cb;
         this.loginStoreDialogVisible = true;
       }
     },

@@ -1,7 +1,7 @@
 <template>
     <div class="firmware-create">
         <el-dialog class="el-dark-dialog" :title="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.CREATEPRODUCT')"
-            :visible.sync="dialogVisible" width="30%" :before-close="() => dialogVisible=false" :close-on-click-modal="false">
+            :visible.sync="dialogVisible" width="540px" :before-close="() => dialogVisible=false" :close-on-click-modal="false">
             <el-form ref="firmwareCreateForm" :rules="rules" label-position="left" :model="form"
                 label-width="150px">
 
@@ -52,18 +52,22 @@
 
                 <!-- 上传升级包 -->
                 <el-form-item label="上传升级包" required prop="packageUrl">
-                    <el-upload
+                    <el-upload ref="upload"
                         class="upload-demo"
                         :action="uploadUrl"
                         :headers="headers"
                         :data="{ type: 'upgradePackage'}"
                         accept=".bin,.tar,.gz,.tar.xz,.zip,.gzip,.apk,.dav,.pack"
                         :file-list="fileList"
+                        :limit="2"
+                        :on-change="onUploadChange"
                         :on-success="onUploadSuccess"
+                        :auto-upload="false"
                         >
+                        <el-button slot="trigger" size="small" type="border">选取文件</el-button>
                         <!-- 给el-button添加tooltip -->
                         <el-tooltip effect="dark" content="仅支持 bin、tar、gz、tar.xz、zip、gzip、apk、dav、pack 类型的文件，文件名支持中文、英文字母、数字和下划线，长度限制1~32个字符，文件总大小最大为1000MB" placement="top">
-                            <el-button size="small" type="primary">点击上传</el-button>
+                            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
                         </el-tooltip>
                     </el-upload>
                 </el-form-item>
@@ -162,7 +166,7 @@ export default {
                 { required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER2') }
             ],
             packageUrl: [
-                { required: true, message: "请选择升级包" }
+                { required: true, message: "请上传升级包！" }
             ],
             package_version: [
                 { required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER3') }
@@ -246,6 +250,13 @@ export default {
             }
             return str;
         },
+        submitUpload() {
+            this.$refs.upload.submit();
+        },
+        onUploadChange(file, fileList) {
+            this.fileList = [];
+            this.fileList.push(file);
+        },
         onUploadSuccess(response, file, fileList) {
             console.log("onUploadSuccess", response, file, fileList)
             if (response.code === 200) {
@@ -255,14 +266,15 @@ export default {
             } else {
                 this.$message.error(response.msg);
             }
-            console.log("onUploadSuccess", response, file, fileList);
-            console.log("onUploadSuccess.form", this.form);
         }
     }
 }
 </script>
     
-<style lang="scss">
+<style lang="scss" scope>
+.el-upload-list__item-name {
+    color: #fff;
+}
 //.firmware-create{
 //  .el-form-item__label{
 //    color: #fff;
