@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-20 19:41:00
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-29 16:27:23
+ * @LastEditTime: 2023-03-30 10:14:30
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Const.js
  * @Description: 
  */
@@ -232,7 +232,7 @@ export function setActions(actions, name) {
                         {
                             ...action,
                             device_id: item.deviceId,     // 设备id
-                            additional_info: additionalInfo
+                            additional_info: JSON.stringify(additionalInfo)
                         }
                     )
                 })

@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-06 09:04:58
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-10 15:58:28
+ * @LastEditTime: 2023-03-30 10:23:34
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\CommandDevice.vue
  * @Description: 操作设备
 -->
@@ -13,7 +13,7 @@
       <DeviceTypeSelector ref="deviceTypeRef" :option="{operator: false}" :data="command" @change="v=>handleCommandChange(command, v)"/>
 
       <!-- 新增一行 -->
-      <el-button type="indigo" size="small" style="margin-left: auto;"
+      <el-button type="indigo" size="small" style="margin-left: 10px;"
                  v-if="index == 0"
                  @click="handleAddCommand">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
 

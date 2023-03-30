@@ -149,6 +149,7 @@ export default {
       this.formData.conditions = v;
     },
     handleActionChange(v) {
+      console.log("handleActionChange", v);
       this.formData.actions = v;
     },
     /**

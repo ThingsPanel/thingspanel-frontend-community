@@ -11,7 +11,7 @@
     </el-row>
 
     <!-- 筛选 start -->
-    <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3 el-dark-input">
+    <!-- <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3 el-dark-input">
 
       <el-col :span="12">
         <el-input :placeholder="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCTNUMBER')" v-model="params.serialNumber" clearable></el-input>
@@ -19,9 +19,8 @@
 
       <el-col :span="12">
         <el-button type="border" size="medium" @click="handleSearch">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.SEARCH') }}</el-button>
-        <!--      <el-button type="default" size="medium" @click="handleReset()">重置</el-button>-->
       </el-col>
-    </el-row>
+    </el-row> -->
     <!-- 筛选 end -->
 
     <!-- 表 start -->

@@ -114,6 +114,7 @@ export default {
       // for (const item in v) {
       //   action[item] = v[item];
       // }
+      console.log("====handleCommandChange====", action, v)
       action.data = v;
       action.type = "device";
       this.updateData();

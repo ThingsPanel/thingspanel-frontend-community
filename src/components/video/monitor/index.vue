@@ -2,14 +2,14 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-29 14:39:42
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-29 17:45:37
+ * @LastEditTime: 2023-03-30 10:00:11
  * @FilePath: \ThingsPanel-Backend-Vue\src\components\video\monitor\index.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
     <div class="video-control-container">
         <div class="player-box" id="player-box">
-            <video-player class="player" :src="playSrc" @callback="playerCallback"></video-player>
+            <video-player class="player" ref="videoPlayer" :src="playSrc" @callback="playerCallback"></video-player>
         </div>
         <!-- 控制组件 -->
         <div class="control-box" v-if="type === 'control'">
@@ -20,8 +20,7 @@
             <record-controller 
                 :records="recordList" 
                 @change-date="handleChangeDate"
-                @play="handlePlayRecord"
-                @command="handleCommand"></record-controller>
+                @play="handlePlayRecord"></record-controller>
         </div>
     </div>
 </template>
@@ -43,10 +42,6 @@ export default {
     name: "MonitorPlayer",
     components: { VideoPlayer, PlayerController, RecordController },
     props: {
-        src: {
-            type: [String],
-            default: ""
-        },
         type: {
             type: [String],
             default: "default"
@@ -63,17 +58,14 @@ export default {
             // 录像列表
             recordList: [],
             playerStatus: PlayerStatus.PREPARED,
+            params: {
+                horizonSpeed: "30",
+                verticalSpeed: "30",
+                zoomSpeed: "30",
+            },
         }
     },
     watch: {
-        src: {
-            handler(newValue) {
-                if (newValue) {
-                    this.playSrc = newValue;
-                }
-            },
-            immediate: true
-        },
         type: {
             handler(newValue) {
                 this.$nextTick(() => {
@@ -83,7 +75,9 @@ export default {
                             // 控制
                             playerBox.style && playerBox.style.setProperty("--w", "calc(100% - 100px)");
                             if (this.playerStatus === PlayerStatus.PLAYING && this.oldType === "record") {
-                                this.stopPlay();
+                                this.stopPlay(this.callPlayWVP());
+                            } else {
+                                this.callPlayWVP()
                             }
                             break;
                         case "record":
@@ -94,10 +88,13 @@ export default {
                             }
                             break;
                         default:
+                            console.log("default", newValue)
                             // 默认
                             playerBox.style && playerBox.style.setProperty("--w", "100%");
                             if (this.playerStatus === PlayerStatus.PLAYING && this.oldType === "record") {
-                                this.stopPlay();
+                                this.stopPlay(this.callPlayWVP());
+                            } else {
+                                this.callPlayWVP();
                             }
                             break;
                     }
@@ -112,15 +109,27 @@ export default {
         console.log("mounted", this.type)
         window.addEventListener('beforeunload', e => {
             this.stopPlay();
-        }, null)
+        }, null);
+
     },
     beforeDestroy() {
         this.stopPlay();
     },
     methods: {
+        /**
+         * PTZ控制
+         * @param command
+         */
         handleCommand(command) {
-            this.$emit(command);
-            this.$emit("command", command);
+            this.params.command = command.toLowerCase();
+            this.params.horizonSpeed = "30";
+            this.params.verticalSpeed = "30";
+            this.params.zoomSpeed = "30";
+
+            ProtocolPluginAPI.commandPlayerPTZ(this.params)
+                .then(({data}) => {
+                    console.log("====video.handleCommand", data);
+                })
         },
 
         /**
@@ -141,9 +150,9 @@ export default {
          */
         handleChangeDate(date) {
             console.log("handleChangeDate", date)
-            let {parent_id, sub_device_addr} = this.device;
-            let startTime = date + " 00:00:00";
-            let endTime = date + " 23:59:59"
+            const {parent_id, sub_device_addr} = this.device;
+            const startTime = date + " 00:00:00";
+            const endTime = date + " 23:59:59"
             this.getRecordList({ parent_id, sub_device_addr,  startTime, endTime});
         },
         /**
@@ -153,9 +162,9 @@ export default {
         handlePlayRecord(record) {
             if (this.playDisabled) return;
             const playFunc = () => {
-                let {parent_id, sub_device_addr} = this.device;
-                let { startTime, endTime } = record;
-                let params = { parent_id, sub_device_addr, startTime, endTime }
+                const {parent_id, sub_device_addr} = this.device;
+                const { startTime, endTime } = record;
+                const params = { parent_id, sub_device_addr, startTime, endTime }
 
                 ProtocolPluginAPI.getRecordURL(params)
                     .then(({data}) => {
@@ -193,18 +202,37 @@ export default {
             }
         },
         /**
+         * 开始播放
+         */
+        play() {
+            this.$refs.videoPlayer.play();
+        },
+        /**
          * 停止播放录像
          * @param callback
          */
         stopPlay(call) {
-            let {parent_id, sub_device_addr} = this.device;
+            const {parent_id, sub_device_addr} = this.device;
             this.playSrc = "";
             ProtocolPluginAPI.stopRecordPlay({parent_id, sub_device_addr})
                 .then(({data}) => {
-                    console.log(data)
                     call && call();
                 })
-        }
+        },
+        /**
+         * 播放WVP直播流
+         */
+        callPlayWVP() {
+            const { parent_id, sub_device_addr } = this.device;
+            ProtocolPluginAPI.callPlayWVP({ parent_id, sub_device_addr })
+                .then(({data}) => {
+                    if (data.code == 200) {
+                        let result = data.data.data;
+                        this.playSrc = result.flv;
+                        this.play();
+                    }
+                })
+        },
     }
 }
 </script>

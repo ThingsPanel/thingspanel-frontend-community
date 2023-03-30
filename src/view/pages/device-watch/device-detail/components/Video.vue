@@ -24,10 +24,8 @@
         :src="optionData.src"
         ></video-player>
 
-      <monitor-player  style="width: 100%;height: 100%" 
-        v-if="optionData.type=='monitor'" :type="monitorType"
-        :src="optionData.src"  :device="device"
-        @command="handleCommand"
+      <monitor-player ref="monitorPlayer" style="width: 100%;height: 100%" 
+        v-if="optionData.type=='monitor'" :type="monitorType" :device="device"
         ></monitor-player>
 
     </div>
@@ -61,11 +59,6 @@ export default {
   data() {
     return {
       optionData: {},
-      params: {
-        horizonSpeed: "30",
-        verticalSpeed: "30",
-        zoomSpeed: "30"
-      },
       monitorType: "default"
     }
   },
@@ -74,18 +67,9 @@ export default {
   watch: {
     option: {
       handler(newValue) {
-        console.log("====video.option", newValue, this.device);
         if (newValue) {
           let additionalInfo = (this.device.additional_info && this.device.additional_info != "null") ? JSON.parse(this.device.additional_info) : {};
-        console.log("====video.option", additionalInfo);
-
           this.optionData = JSON.parse(JSON.stringify(newValue))
-
-          this.params.sub_device_addr = this.device.sub_device_addr;
-          this.params.parent_id = this.device.parent_id;
-          if (this.device.protocol.startsWith("WVP_")) {
-            this.callPlayWVP();
-          }
           if (this.optionData.type === "video") {
             setTimeout(() => {
               this.optionData.src = additionalInfo.video_address ? additionalInfo.video_address : "";
@@ -98,22 +82,6 @@ export default {
   },
   methods: {
     /**
-     * 播放组件控制回调
-     * @param command
-     */
-    handleCommand(command) {
-      console.log("====video.handleCommand", command);
-      this.params.command = command.toLowerCase();
-      this.params.horizonSpeed = "30";
-      this.params.verticalSpeed = "30";
-      this.params.zoomSpeed = "30";
-
-      ProtocolPluginAPI.commandPlayerPTZ(this.params)
-        .then(({data}) => {
-          console.log("====video.handleCommand", data);
-        })
-    },
-    /**
      * 切换监控类型
      * @param type
      */
@@ -122,24 +90,8 @@ export default {
     },
     sizeChange() {
       let videoBox = this.$refs.videoBox;
-      console.log("====video.sizeChange()", videoBox.clientWidth, videoBox.clientHeight)
-    },
-    /**
-     * 播放WVP直播流时需要调用一次
-     */
-    callPlayWVP() {
-      ProtocolPluginAPI.callPlayWVP(this.params)
-        .then(({data}) => {
-          if (data.code == 200) {
-            let result = data.data.data;
-            if (!this.optionData.src) {
-              this.optionData.src = result.flv;
-            }
-          }
-        })
     },
     nodeChanged() {
-      console.log("====video.nodeChanged()")
       this.$refs.videoPlayer.destroy();
     }
   }
