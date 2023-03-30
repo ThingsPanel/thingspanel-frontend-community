@@ -40,7 +40,7 @@ module.exports = {
                 }
             },
             "/store": {
-                target: "http://119.91.238.241:8900",
+                target: process.env.VUE_APP_STORE_BASE_URL,
                 changeOrigin: true, // 是否改变域名
                 pathRewrite: {
                     "^/store": ""
