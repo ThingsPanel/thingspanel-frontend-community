@@ -80,9 +80,9 @@
         <el-pagination
             background
             layout="prev, pager, next"
-            :total="params.total"
-            :current-page.sync="params.current_page"
-            :page-size="params.per_page"
+            :total="total"
+            :current-page.sync="params.page"
+            :page-size="params.pageSize"
             @current-change="loadList"></el-pagination>
       </div>
 
@@ -105,8 +105,8 @@ export default {
     return {
       loading: false,
       listLoadig: false,
+      total: 12,
       params: {
-        total: 0,
         page: 1,
         pageSize: 10,
         pluginType: "device",
@@ -139,11 +139,16 @@ export default {
         this.refreshBtnLoading = true;
         this.listLoading = true;
         this.listArr = [];
-        StoreAPI.list[this.params.pluginType](this.params)
+        const params = {
+          page: this.params.page,
+          pageSize: this.params.pageSize
+        }
+        StoreAPI.list[this.params.pluginType](params)
           .then(({data: result}) => {
             console.log(result)
             if (result.code === 0) {
               const list = result.data?.list || [];
+              this.total = result.data?.total || 0;
               this.listArr = list.map(item => Wash[this.params.pluginType]?.fromStore(item) || []);
             }
           })
@@ -154,40 +159,6 @@ export default {
       } else {
         this.listArr = [];
       }
-
-    },
-    /**
-     * 获取设备插件列表
-     */
-    loadDevicePluginList() {
-      // 加载插件列表
-      PluginAPI.page(this.params)
-        .then(({data}) => {
-          if (data.code == 200) {
-            this.params.total = data.data?.total || 0;
-            this.params.current_page = data.data?.current_page || 1;
-            this.params.per_page = data.data?.per_page || 10;
-
-            let pluginList = data.data?.data || [];
-            this.listArr = pluginList;
-            this.refreshBtnLoading = false;
-            console.log(this.listArr);
-
-          }
-        })
-    },
-    /**
-     * 获取协议插件列表
-     */
-    loadProtocolPluginList() {
-      let params = { current_page: this.params.current_page, per_page: this.params.per_page }
-      ProtocolPlugin.page(params)
-          .then(({ data }) => {
-            if (data.code == 200) {
-              this.loading = false;
-              this.params = data.data;
-            }
-          })
     },
     handleEditPlugin(item) {
       this.$emit("edit", item);

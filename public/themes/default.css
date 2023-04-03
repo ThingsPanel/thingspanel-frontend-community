@@ -131,6 +131,11 @@ span.text-blue.font-weight-bold.font-size-base.d-none.d-lg-block.mr-1 {
     background-color: #202c62!important;
     color: #ccc!important;
 }
+.el-input__inner {
+    color: #fff!important;
+    background-color: rgba(22, 30, 67, 0.5) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
 .el-dark-input .el-input__inner, .el-dark-input .el-textarea__inner {
     color: #fff;
     background-color: rgba(22, 30, 67, 0.5) !important;
@@ -415,4 +420,30 @@ span.text-blue.font-weight-bold.font-size-base.d-none.d-lg-block.mr-1 {
 
 .table-title {
     color: #ffffff!important;
+}
+
+.el-popover {
+    border: unset!important;
+    color:#000!important;
+}
+/* .el-popover.el-table {
+    background-color: transparent!important;
+} */
+.el-popover.el-table.el-table__header-wrapper {
+    background-color: transparent!important;
+}
+.el-popover .el-table .el-table__header-wrapper th.el-table__cell {
+    background-color: transparent!important;
+}
+.el-popover .el-table tr {
+    background-color: transparent!important;
+}
+.el-popover .el-table .el-table__header-wrapper th.el-table__cell {
+    color:#000!important;
+}
+.el-popover .el-table td.el-table__cell div {
+    color:#000!important;
+}
+.el-popover .el-table tbody tr:hover>td {
+    background: #f5f7fa !important
 }

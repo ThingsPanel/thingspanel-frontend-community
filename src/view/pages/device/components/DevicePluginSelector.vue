@@ -1,90 +1,175 @@
 <!--
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
- * @Date: 2023-02-28 15:11:01
+ * @Date: 2023-03-30 15:33:41
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-29 09:03:13
- * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\device\components\DevicePluginSelector.vue
+ * @LastEditTime: 2023-04-03 14:04:01
+ * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\device\components\DevicePlugiSelector.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
-<!-- 设备插件下拉列表 -->
 <template>
-  <el-select
-      class="w-100"
-      :placeholder="$t('DEVICE_MANAGEMENT.PLACEHOLDER3')"
-      :no-data-text="$t('PUBLIC.NODATA')"
-      size="medium"
-      v-model="device_plugin_type"
-      filterable
-      :clearable="clearable"
-      @change="handleChange()"
-      @visible-change="handleVisibleChange"
-  >
-    <el-option
-        v-for="item in options"
-        :key="item.id"
-        :label="item.name"
-        :value="item.id"
-    ></el-option>
-  </el-select>
+  <div>
+    <el-popover placement="bottom-start" width="420" trigger="click" @show="showPopover">
+      <div>
+        <el-input ref="searchInput" v-model="searchText" clearable placeholder="输入插件名称检索"></el-input>
+
+        <el-table :data="pageList">
+          <el-table-column width="180" property="name" label="名称" :show-overflow-tooltip="true"></el-table-column>
+          <el-table-column width="100" property="author" label="作者"></el-table-column>
+          <el-table-column width="100" label="操作">
+            <template slot-scope="scope">
+              <el-button type="text" size="mini" v-if="scope.row.status === 'install'"
+                @click="handleSelect(scope.row)">选择</el-button>
+
+              <el-button type="text" size="mini" v-if="scope.row.status === 'store'"
+                @click="handleSelect(scope.row)">安装</el-button>
+
+              <el-button type="text" size="mini"  slot="reference" @click="handleView(scope.row)">查看</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+        <div class="text-right py-3">
+          <el-pagination background layout="prev, pager, next" :total="total" :current-page.sync="params.page"
+            :page-size="params.pageSize" @current-change="getList"></el-pagination>
+        </div>
+
+        <el-link class="link-create" type="warning" target="_blank" @click.native="handleGoToPlugin">{{
+          $t('PLUGIN.MATTER_MODEL_INFO_TAB.BTN') }}</el-link>
+        <!-- <el-button type="border-warning" >{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.BTN') }}</el-button> -->
+      </div>
+      <el-input size="medium" slot="reference" readonly v-model="data.plugin_name"></el-input>
+    </el-popover>
+    <device-plugin-detail :visible.sync="showDetailDialog" :id="currentItem.id"></device-plugin-detail>
+  </div>
 </template>
 
 <script>
-import {computed, defineComponent} from "@vue/composition-api";
-import PluginAPI from "@/api/plugin";
-export default defineComponent({
-  name: "DevicePluginSelector",
+import { _debounce } from "@/utils/helpers.js";
+import DevicePluginDetail from "./DevicePluginDetail.vue";
+const fuzzysort = require('fuzzysort');
+
+export default {
+  components: {DevicePluginDetail},
   props: {
-    clearable: {
-      default: false,
-      type: Boolean,
-    },
-    pluginType:{
-      required: true,
-      type: String,
-    },
     options: {
-      required: true,
-      type: Array,
+      type: [Object, Array],
+      default: () => {
+        return {};
+      }
+    },
+    data: {
+      type: [Object, Array],
+      default: () => {
+        return {};
+      }
     }
   },
-  emits:["change"],
-  setup(props, context){
-
-    let device_plugin_type = computed({
-      get(){
-        return props.pluginType
-      },
-      set(val){
-        context.emit("update:pluginType", val)
-      }
-    })
-
-    function handleChange(){
-      context.emit("change")
-    }
-
-    // 转换时间的函数
-    const pluginList = ref([]);
-    function handleVisibleChange(val){
-      if(val) {
-        console.log("下拉列表展开", val);
-        PluginAPI.page({ current_page: 1, per_page: 1000 })
-          .then(({ data: result }) => {
-            if (result.code === 200) {
-              pluginList.value = result.data?.data || [];
-            }
-          })
-      }
-    }
-    
+  data() {
     return {
-      device_plugin_type,
-      handleChange, handleVisibleChange
+      searchText: '',
+      currentItem: {},
+      showDetailDialog: false,
+      debounceSearchTextChange: null,
+      queryList: [],
+      pageList: [],
+      total: 30,
+      params: {
+        page: 1,
+        pageSize: 5
+      }
     }
+  },
+  watch: {
+    searchText: {
+      handler(newValue) {
+        if (newValue) {
+          this.debounceSearchTextChange();
+        }
+      },
+      immediate: true
+    },
+    data: {
+      handler(newValue) {
+        if (newValue.plugin_name) {
+          this.searchText = newValue.plugin_name;
+        }
+      },
+      deep: true,
+      immediate: true
+    }
+  },
+  created() {
+    // 防抖
+    this.debounceSearchTextChange = _debounce(this.querySearch, 100);
+  },
+  methods: {
+    getList() {
+      const { list, total } = this.createPagination(this.queryList, this.params.page, this.params.pageSize);
+      this.pageList = list;
+      this.total = total;
+    },
+    /**
+     * @description: 搜索
+     * @param {String} searchText
+     * @return {Array}
+     */
+    querySearch() {
+      const result = fuzzysort.go(this.searchText, this.options, { keys: ["name", "author"] });
+      this.queryList = result.map(item => item.obj);
+      console.log("this.queryList", this.queryList)
+      this.getList();
+      // this.queryList = this.options.filter(item => item.name.toLowerCase().indexOf(this.searchText.toLowerCase()) > -1);
+      // this.getList();
+    },
+    /**
+     * @description: 分页
+     * @param {Array} list
+     * @param {Number} page
+     * @param {Number} pageSize
+     * @return {Object}
+     */
+    createPagination(list, page, pageSize) {
+      let total = list.length;
+      let start = (page - 1) * pageSize;
+      let end = page * pageSize;
+      let newList = list.slice(start, end);
+      return {
+        total,
+        list: newList
+      };
+    },
+    /**
+     * @description: 显示搜索对话框
+     * @param {Object} event
+     * @return {void}
+     */
+    showPopover() {
+      this.$nextTick(() => {
+        console.log("showPopover", this.data.plugin_name)
+        this.$refs.searchInput.focus();
+      });
+    },
+    handleSelect(row) {
+      this.$emit("select", row, () => {
+        console.log("handleSelect", row)
+        this.searchText = row.name;
+      });
+    },
+    handleView(row) {
+      this.currentItem = row;
+      this.showDetailDialog = true;
+      console.log("handleView", row);
+      // this.$emit("view", row);
+    },
+    handleGoToPlugin() {
+      this.$router.push({ name: "Market", query: { tab: "deviceEditor" } })
+    },
+
   }
-})
+}
 </script>
+<style lang="scss" scoped>
+.link-create {
+  margin: 20px auto 0 20px;
 
-<style scoped>
-
+}
 </style>

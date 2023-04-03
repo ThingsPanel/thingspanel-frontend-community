@@ -23,7 +23,7 @@
       </el-form-item>
 
       <el-form-item style="width: 100%">
-        <div style="height:440px;overflow-y: auto">
+        <div style="overflow-y: auto">
             <!-- 属性 -->
             <common-table v-if="tslType=='properties'" border key="properties"
                           :show-view="showView"
