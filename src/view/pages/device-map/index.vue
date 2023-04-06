@@ -21,7 +21,7 @@
             class="btn el-button--default el-button mr-2 el-button--indigo screen-btn">{{ $t('DEVICE_MAP.PLACEHOLDER2') }}</el-button>
         </el-col>
       </el-row>
-      <div :style="{ width: '100%', height: '100vh' }" :class='{ amap_box: bindc }'>
+      <div :style="{ width: '100%', height: '100vh' }" :class='{ amap_box: bindc }' v-loading="loading">
         <el-amap vid="amap" class="amap-box" v-bind="mapConfig" viewMode="3D">
 
           <el-amap-marker v-for="(marker, index) in markers" :key="'marker_'+index" :position="marker.position" :vid="index"
@@ -55,6 +55,7 @@ export default {
   },
   data() {
     return {
+      loading: false,
       queryParams: {
         business_id: "",
         group_id: "",
@@ -105,11 +106,15 @@ export default {
      * @param params
      */
     renderDeviceMap(params) {
+      this.loading = true;
       PluginAPI.map(params)
         .then(({ data }) => {
           if (data.code == 200) {
             this.batchCreateMarker(data?.data || []);
           }
+        })
+        .finally(() => {
+          this.loading = false;
         })
     },
     /**

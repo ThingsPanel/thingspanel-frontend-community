@@ -75,8 +75,18 @@ export function jsonProp(obj) {
   return obj;
 }
 
-export function dateFormat(format) {
-  var n = parseInt(format) * 1000;
+export function dateFormat(timestamp) {
+  if (!timestamp) return "";
+  if (timestamp.toString().length === 10) {
+    timestamp = timestamp * 1000;
+  } else if (timestamp.toString().length === 13) {
+    timestamp = timestamp;
+  } else if (timestamp.toString().length === 16) {  
+    timestamp = timestamp / 1000;
+  } else {
+    return "";
+  }
+  var n = parseInt(timestamp);
   var D = new Date(n);
   var year = D.getFullYear(); //四位数年份
 

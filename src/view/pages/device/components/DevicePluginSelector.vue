@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-30 15:33:41
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-04-03 14:04:01
+ * @LastEditTime: 2023-04-03 17:07:52
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\device\components\DevicePlugiSelector.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -12,13 +12,14 @@
       <div>
         <el-input ref="searchInput" v-model="searchText" clearable placeholder="输入插件名称检索"></el-input>
 
-        <el-table :data="pageList">
+        <el-table :data="pageList" :row-class-name="tableRowClassName">
           <el-table-column width="180" property="name" label="名称" :show-overflow-tooltip="true"></el-table-column>
           <el-table-column width="100" property="author" label="作者"></el-table-column>
           <el-table-column width="100" label="操作">
             <template slot-scope="scope">
+
               <el-button type="text" size="mini" v-if="scope.row.status === 'install'"
-                @click="handleSelect(scope.row)">选择</el-button>
+                @click="handleSelect(scope.row)">{{ scope.row.bind ? "已选择" : "选择"}}</el-button>
 
               <el-button type="text" size="mini" v-if="scope.row.status === 'store'"
                 @click="handleSelect(scope.row)">安装</el-button>
@@ -115,10 +116,7 @@ export default {
     querySearch() {
       const result = fuzzysort.go(this.searchText, this.options, { keys: ["name", "author"] });
       this.queryList = result.map(item => item.obj);
-      console.log("this.queryList", this.queryList)
       this.getList();
-      // this.queryList = this.options.filter(item => item.name.toLowerCase().indexOf(this.searchText.toLowerCase()) > -1);
-      // this.getList();
     },
     /**
      * @description: 分页
@@ -131,7 +129,13 @@ export default {
       let total = list.length;
       let start = (page - 1) * pageSize;
       let end = page * pageSize;
-      let newList = list.slice(start, end);
+      let newList = JSON.parse(JSON.stringify(list.slice(start, end)));
+      if (this.data && this.data.type) {
+        const index = newList.findIndex(item => item.id === this.data.type);
+        if (index > -1) {
+          newList[index].bind = true;
+        }
+      }
       return {
         total,
         list: newList
@@ -146,12 +150,14 @@ export default {
       this.$nextTick(() => {
         console.log("showPopover", this.data.plugin_name)
         this.$refs.searchInput.focus();
+        this.debounceSearchTextChange();
       });
     },
     handleSelect(row) {
       this.$emit("select", row, () => {
         console.log("handleSelect", row)
         this.searchText = row.name;
+        this.debounceSearchTextChange();
       });
     },
     handleView(row) {
@@ -163,6 +169,12 @@ export default {
     handleGoToPlugin() {
       this.$router.push({ name: "Market", query: { tab: "deviceEditor" } })
     },
+    tableRowClassName({row, rowIndex}) {
+        if (row.bind) {
+          return 'select-row';
+        }
+        return '';
+      }
 
   }
 }
@@ -170,6 +182,12 @@ export default {
 <style lang="scss" scoped>
 .link-create {
   margin: 20px auto 0 20px;
-
+}
+::v-deep .el-table tr.el-table__row.select-row {
+  background-color:#4758a5!important;
+  color: #0af199;
+  .el-table td.el-table__cell div {
+    color: #0af199;
+  }
 }
 </style>

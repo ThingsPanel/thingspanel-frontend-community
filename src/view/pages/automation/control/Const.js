@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-20 19:41:00
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-30 10:14:30
+ * @LastEditTime: 2023-04-06 09:56:22
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Const.js
  * @Description: 
  */
@@ -80,6 +80,18 @@ const RepeatTimeType = {
     getKey: value => Object.keys(RepeatTimeType).find(key => RepeatTimeType[key] === value)
 }
 
+/**
+ * @description: 周
+ */
+const Week = {
+    SUNDAY: 1,
+    MONDAY: 2,
+    TUESDAY: 3,
+    WEDNESDAY: 4,
+    THURSDAY: 5,
+    FRIDAY: 6,
+    SATURDAY: 7,
+}
 /**
  * @description: 动作类型
  */
@@ -159,10 +171,9 @@ export function setConditions(conditions) {
                             break;
                         }
                         case RepeatTimeType.weekly: {
-                            // 每周
-                            // 周日 - 周六 对应   1 - 7
-                            let v3 = (Number(repeat.weekly.week) + 1);
-                            if (v3 === 8) v3 = 1;  
+                            // 每周周几
+                            // 周日: 1, 周一: 2, ..., 周六: 7
+                            let v3 = repeat.weekly.week;
                             condition['v3'] = v3.toString();
                             condition['v4'] = repeat.weekly.time.toString();
                             break;
@@ -291,7 +302,9 @@ export function getConditions(conditions) {
                 temp = groupNumber;
             }
             if (item.condition_type == ConditionType.device) {
-                // 设备条件
+                // =================================================================================
+                // 设备条件 start
+                // =================================================================================
                 condition.type = ConditionType.getKey(item.condition_type);
                 condition.data = {
                     projectId: item.business_id,
@@ -322,11 +335,13 @@ export function getConditions(conditions) {
                         value: item.v3
                     }
                 };
-
-
-                
+                // =================================================================================
+                // 设备条件 end
+                // =================================================================================
             } else {
-                // 时间条件
+                // =================================================================================
+                // 时间条件 start
+                // =================================================================================
                 condition.type = ConditionType.getKey(item.condition_type);
                 condition.data = {
                     type: TimeType.getKey(item.time_condition_type)
@@ -391,6 +406,9 @@ export function getConditions(conditions) {
                         break;
                     }
                 }
+                // =================================================================================
+                // 时间条件 end
+                // =================================================================================
             }
             conditionList.push(condition);
         })
@@ -455,4 +473,4 @@ export function getActions(actions) {
     return actionList;
 }
 
-export { ConditionType, StateMode, TimeType, RepeatTimeType, ActionType, CommandType }
+export { ConditionType, StateMode, TimeType, RepeatTimeType, Week, ActionType, CommandType }

@@ -1,6 +1,6 @@
 <template>
     <div class="firmware-create">
-        <el-dialog class="el-dark-dialog" :title="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.PRODUCT_LIST_ADD.CREATEPRODUCT')"
+        <el-dialog class="el-dark-dialog" title="添加升级包"
             :visible.sync="dialogVisible" width="540px" :before-close="() => dialogVisible=false" :close-on-click-modal="false">
             <el-form ref="firmwareCreateForm" :rules="rules" label-position="left" :model="form"
                 label-width="150px">
@@ -11,7 +11,7 @@
                    
                     <!-- 给el-input添加tooltip -->
                     <el-tooltip effect="dark" content="支持中文、英文、数字、下划线（_）、中划线（-）、小括号（()），必须以中文、英文或数字开头，长度不能超过 40 个字符" placement="top">
-                        <el-input v-model="form.package_name"></el-input>   
+                        <el-input v-model="form.package_name" maxlength="40" show-word-limit></el-input>   
                     </el-tooltip>
                 </el-form-item>
 
@@ -80,17 +80,17 @@
                 </el-form-item>
 
                 <!-- 其他配置 -->
-                <el-form-item :label="'其他配置'">
+                <el-form-item style="line-height: 30px;" :label="'其他配置'">
                     <el-row v-for="(config, index) in form.additional_info" :key="index">
                         <el-col :span="7" style="margin-right:10px">
-                            <el-input placeholder="key" v-model="config.key"></el-input>
+                            <el-input size="small" placeholder="key" v-model="config.key"></el-input>
                         </el-col>
                         <el-col :span="7" style="margin-right:10px">
-                            <el-input placeholder="value" v-model="config.value"></el-input>
+                            <el-input size="small" placeholder="value" v-model="config.value"></el-input>
                         </el-col>
                         <el-col :span="6"  :offset="2">
-                            <el-button type="border" v-if="index===0" @click="handleAddConfig">增加一行</el-button>
-                            <el-button type="danger" v-else @click="handleDeleteConfig(config)">删除</el-button>
+                            <el-button size="small" type="border" v-if="index===0" @click="handleAddConfig">增加一行</el-button>
+                            <el-button size="small" type="danger" v-else @click="handleDeleteConfig(config)">删除</el-button>
                         </el-col>
                     </el-row>
                 </el-form-item>
@@ -160,7 +160,10 @@ export default {
                 { required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER1') }
             ],
             package_name: [
-                { required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER2') }
+                { 
+                    required: true, 
+                    message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER2') ,
+                }
             ],
             package_module: [
                 { required: true, message: i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.PLACEHOLDER2') }

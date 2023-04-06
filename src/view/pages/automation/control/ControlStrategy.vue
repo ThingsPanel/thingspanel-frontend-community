@@ -170,12 +170,16 @@ export default {
      * @return {*}
      */  
     getControlStrategyIndex() {
+      this.loading = true;
       Auto.Control.list(this.params)
         .then(({data}) => {
           if (data.code === 200) {
             this.tableData = data.data?.data || [];
             this.total = data.data?.total || 0;
           }
+        })
+        .finally(() => {
+          this.loading = false;
         })
     }
   }

@@ -77,7 +77,6 @@ export default {
   },
   methods: {
     handleEditPlugin(item) {
-      console.log("handleEditPlugin", item)
       this.$refs.pluginEditor.handleImport(item);
     }
   }

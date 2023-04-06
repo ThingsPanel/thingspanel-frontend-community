@@ -119,6 +119,7 @@ export default {
     initCanvas(jsonData) {
       let jsonObj = JSON.parse(jsonData);
       this.fullData = jsonObj.screen.length > 0 ? JSON.parse(JSON.stringify(jsonObj.screen)) : [];
+      console.log("initCanvas", this.fullData)
       if (jsonObj.canvasStyle && JSON.stringify(jsonObj.canvasStyle) != "{}") {
         for (let key in jsonObj.canvasStyle) {
           this.canvasStyle[key] = jsonObj.canvasStyle[key];

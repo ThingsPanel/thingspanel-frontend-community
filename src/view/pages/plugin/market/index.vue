@@ -62,10 +62,7 @@
             <el-table-column align="left" :label="$t('PLUGIN.TAB2_CONTENT.OPERATION')" width="240">
               <template v-slot="scope">
                 <div style="text-align: left">
-
-                  
                   <el-button slot="reference" size="mini" type="border" @click="handleInstallPlugin(scope.row)">安装</el-button>
-
                 </div>
               </template>
             </el-table-column>

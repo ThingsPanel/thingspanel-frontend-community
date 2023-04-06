@@ -42,10 +42,15 @@
           </template>
           <template v-else>
 
-<!--            <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">{{ $t('COMMON.DEVICE_CHART') }}</el-button>-->
-            <el-button type="yellow" size="mini" v-if="hasAuth('business:device')" @click="showDevice(scope.row)">{{ $t('DEVICE_ACCESS.DEVICE') }}</el-button>
-            <el-button type="blue" size="mini" class="mr-3"
+            
+           <el-button type="yellow" size="mini" v-if="hasAuth('business:device')" @click="showDevice(scope.row)">{{ $t('DEVICE_ACCESS.DEVICE') }}</el-button>
+            
+           <el-button type="indigo" size="mini" @click="showDeviceWatch(scope.row)">{{ $t('DEVICE_MONITORING.DEVICEMONITORING') }}</el-button>
+
+           <el-button type="blue" size="mini" class="mr-3"
                        :disabled="!hasAuth('business:edit')" @click="handleEdit(scope.row)">{{ $t('DEVICE_ACCESS.EDIT_PROJECT_NAME') }}</el-button>
+
+
             <el-popconfirm :title="$t('DEVICE_ACCESS.TEXT44')" @confirm="handleDelete(scope.row)">
               <el-button :disabled="!hasAuth('business:del')" slot="reference" type="danger" size="mini" >{{ $t('DEVICE_ACCESS.DELETE') }}</el-button>
             </el-popconfirm>
@@ -108,9 +113,9 @@ export default defineComponent({
       handleDelete,
     } = useBusinessCUD(tableData)
 
-    // 跳转到设备图表
-    function showDeviceChart(item) {
-      router.push({name: "DeviceChart", query: {business_id: item.id}})
+    // 跳转到设备监控
+    function showDeviceWatch(item) {
+      router.push({name: "DeviceDetail", query: {businessId: item.id, name: item.name}})
     }
 
     // 跳转到设备
@@ -126,7 +131,7 @@ export default defineComponent({
       params,
       total,
       handleCreate,
-      showDeviceChart,
+      showDeviceWatch,
       showDevice,
       handleEdit,
       handleCancel,

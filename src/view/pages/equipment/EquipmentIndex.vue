@@ -31,14 +31,14 @@
         </el-input>
       </el-col>
       <el-col :span="5">
-        <el-select v-model="params.operation_type" size="medium" :placeholder="$t('SYSTEM_LOG.DEVICE_LOG.OPERATIONTYPE')">
+        <el-select v-model="params.operation_type" size="medium" :placeholder="$t('SYSTEM_LOG.DEVICE_LOG.OPERATIONTYPE')" clearable>
           <el-option :label="$t('SYSTEM_LOG.DEVICE_LOG.TIMINGTRIGGER')" value="1"></el-option>
           <el-option :label="$t('SYSTEM_LOG.DEVICE_LOG.MANUALCONTROL')" value="2"></el-option>
           <el-option :label="$t('SYSTEM_LOG.DEVICE_LOG.AUTOMATICCONTROL')" value="3"></el-option>
         </el-select>
       </el-col>
       <el-col :span="6">
-        <el-select v-model="params.send_result" :placeholder="$t('SYSTEM_LOG.DEVICE_LOG.SELECTSENDRESULTS')" size="medium">
+        <el-select v-model="params.send_result" :placeholder="$t('SYSTEM_LOG.DEVICE_LOG.SELECTSENDRESULTS')" clearable size="medium">
           <el-option :label="$t('SYSTEM_LOG.DEVICE_LOG.SUCCESSFUL')" value="1"></el-option>
           <el-option :label="$t('SYSTEM_LOG.DEVICE_LOG.FAILURE')" value="2"></el-option>
         </el-select>
@@ -161,16 +161,21 @@ export default defineComponent({
 
     // 数据查询 /api/conditions/log/index
     const queryValue = () => {
-      ApiService.post(local_url + "api/conditions/log/index", params).then(
-        ({ data }) => {
-          if (data.code == 200) {
-            console.log(data.data.data)
-            tableData.value = data.data.data;
-            total.value = data.data.total;
-            loading.value = false
+      loading.value = true;
+      ApiService.post(local_url + "api/conditions/log/index", params)
+        .then(
+          ({ data }) => {
+            if (data.code == 200) {
+              console.log(data.data.data)
+              tableData.value = data.data.data;
+              total.value = data.data.total;
+              loading.value = false
+            }
           }
-        }
-      );
+        )
+        .finally(() => {
+          loading.value = false;
+        });
     };
     const handleSearch = (filter) => {
       // 有传参的时候才赋值查询

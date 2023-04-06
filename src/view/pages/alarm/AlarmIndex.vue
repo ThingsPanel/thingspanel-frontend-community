@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-07 10:02:17
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-29 17:04:14
+ * @LastEditTime: 2023-04-06 09:11:17
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\alarm\index.vue
  * @Description: 告警信息列表
 -->
@@ -172,7 +172,7 @@ export default {
      * @return {*}
      */    
     getAlarmList() {
-      console.log("getAlarmList", this.params)
+      this.loading = true;
       AlarmAPI.list(this.params)
         .then(({ data: result }) => {
           if (result.code === 200) {
@@ -181,6 +181,9 @@ export default {
             this.total = result.data.total;
           }
         })
+        .finally(() => {
+          this.loading = false;
+        });
     },
     /**
      * @description: 显示详情对话框

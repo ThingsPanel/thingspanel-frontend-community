@@ -200,6 +200,7 @@ export default defineComponent({
 
       createUserForm.value.validate((valid)=>{
 
+        console.log("createUserForm", valid)
         if(!valid) return;
 
 

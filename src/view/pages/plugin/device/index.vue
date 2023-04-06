@@ -32,7 +32,8 @@
         :json="pluginJsonData"
         :plugin-category="pluginCategory"
         @save="save"
-        @publish="publish"></DevicePluginEditor>
+        @publish="publish">
+    </DevicePluginEditor>
 
     <LoginStore :visible.sync="loginStoreDialogVisible"></LoginStore>
 
@@ -168,7 +169,8 @@ export default {
         }
         StoreAPI.publish.device(deviceData)
           .then(({ data: result }) => {
-            callback && callback({ code: 200, msg: "发布成功！"})
+            const msg = "上传成功，请等待审核，审核通过后可以在应用市场查看！";
+            callback && callback({ code: 200, msg })
           })
 
       } else {

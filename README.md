@@ -3,7 +3,7 @@
         <img src="https://img.shields.io/npm/v/cxs-ui?color=blue">
     </a>
     <a href="">
-        <img src="https://img.shields.io/static/v1?label=Vue&message=2.0&color=green">
+        <img src="https://img.shields.io/static/v1?label=Vue&message=2.6.12&color=green">
     </a>
     <a href="https://github.com/ThingsPanel/ThingsPanel-Backend-Vue">
         <img src="https://img.shields.io/npm/dependency-version/cxs-ui/element-ui?color=green">
@@ -40,7 +40,7 @@
 # 2. 技术栈
 
 - Backend：Golang(Go 1.17.5)
-- Frontend：Vue.js Element-UI （node.js 16.13)
+- Frontend：Vue.js(2.6.12) Element-UI （node.js 16.13)
 - MQTT Broker：GMQTT
 - TSDB: PostgreSQL 14.1
 

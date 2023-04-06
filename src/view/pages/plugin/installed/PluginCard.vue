@@ -38,7 +38,7 @@
 
     <!-- 按钮 -->
     <b-card-text style="margin-top: 10px">
-      <b-btn v-show="isInstalled" variant="warning" size="sm" class="text-center" @click="handleEdit">
+      <b-btn v-show="pluginData.pluginType === pluginType.Device" variant="warning" size="sm" class="text-center" @click="handleEdit">
         {{ $t("PLUGIN.TAB1_CONTENT.EDIT") }}
       </b-btn>
       <b-btn v-show="!isInstalled"
@@ -63,15 +63,12 @@
 import { MessageBox } from 'element-ui';
 import {message_success} from "../../../../utils/helpers";
 import PluginAPI from "@/api/plugin.js"
+import { PluginType } from "../Const";
 export default {
   name: "PluginCard",
   props: {
     data: {
       type: Object,
-      default: () => {}
-    },
-    category: {
-      type: [Array],
       default: () => {}
     },
     isInstalled: {
@@ -87,12 +84,12 @@ export default {
       installing: false,
       exportPluginJson: "",
       exportDialogVisible: false,
+      pluginType: PluginType
     }
   },
   created() {
     this.pluginData = JSON.parse(JSON.stringify(this.data));
-    // let cat = this.category.find(item => item['dict_value'] == this.pluginData['model_type'])
-    // this.pluginData['type'] = cat.describe;
+    console.log("===PluginCard.pluginData" , this.pluginData)
   },
   methods: {
     /**

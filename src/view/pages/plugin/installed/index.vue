@@ -15,7 +15,7 @@
                 <el-row>
                   <el-col :span="20">
                     <div class="flex">
-                      <el-input style="margin-right: 10px;width: 200px" size="small" clearable v-model="searchValue" :placeholder="$t('PLUGIN.TAB1_CONTENT.PLACEHOLDER')"></el-input>
+                      <el-input style="margin-right: 10px;width: 200px" size="small" clearable v-model="params.model_name" :placeholder="$t('PLUGIN.TAB1_CONTENT.PLACEHOLDER')"></el-input>
                       <el-button icon="el-icon-refresh" class="primary el-button--indigo" size="mini"
                              :loading="refreshBtnLoading" @click="loadList">{{ $t('PLUGIN.TAB1_CONTENT.SEARCH') }}</el-button>
                     </div>
@@ -33,9 +33,9 @@
              </el-form-item>
       </el-form>
 
-      <div v-if="params.displayMode==='grid'" v-loading="listLoadig">
-        <div class="width-20" v-for="(item,index) in listArr" :key="index">
-          <PluginCard :key="item.id" :data="item" :isInstalled="true" :category="category"
+      <div v-if="params.displayMode==='grid'" v-loading="listLoadig" element-loading-background="rgba(45, 61, 136, 0.1)">
+        <div class="width-20" v-for="(item,index) in listArr" :key="index" >
+          <PluginCard :key="item.id" :data="item" :isInstalled="true"
                       @export="handleExportPlugin"
                       @edit="handleEditPlugin"
                       @delete="handleDelPlugin"
@@ -63,12 +63,11 @@
               <template v-slot="scope">
                 <div style="text-align: left">
 
-                  <login-store :visible.sync="loginStoreDialogVisible"/>
-                  <el-button slot="reference" size="mini" type="border" @click="handleEditPlugin(scope.row)">编辑</el-button>
+                  <el-button v-if="scope.row.pluginType===pluginType.Device" slot="reference" size="mini" type="border" @click="handleEditPlugin(scope.row)">编辑</el-button>
                   <el-button slot="reference" size="mini" type="border" @click="handleExportPlugin(scope.row)">导出</el-button>
 
-                  <el-popconfirm :title="$t('PLUGIN.TAB2_CONTENT.TITLE4')" @confirm="handleDelete(scope.row)">
-                    <el-button slot="reference" size="mini" type="danger">卸载</el-button>
+                  <el-popconfirm :title="$t('PLUGIN.TAB2_CONTENT.TITLE4')" @confirm="handleDelPlugin(scope.row)">
+                    <el-button style="margin-left:10px" slot="reference" size="mini" type="danger">卸载</el-button>
                   </el-popconfirm>
                 </div>
               </template>
@@ -99,13 +98,13 @@ import PluginCard from "./PluginCard";
 import PluginAPI from "@/api/plugin.js";
 import { getCustomExchangeAgreementList } from "@/api/device";
 import ProtocolPlugin from "@/api/protocolPlugin.js";
-import LoginStore from '@/view/pages/auth/LoginStore';
 
 import ExportPlugin from "./ExportPlugin"
 import { PluginType, Wash } from "../Const"
+import { message_success } from "@/utils/helpers";
 export default {
   name: "PluginList",
-  components: {PluginCard, LoginStore, ExportPlugin},
+  components: {PluginCard, ExportPlugin},
   data() {
     return {
       loading: false,
@@ -122,9 +121,7 @@ export default {
       list: [],
       listArr: [],
       searchValue: '',
-      category: [],
       refreshBtnLoading: false,
-      loginStoreDialogVisible: false,
       exportDialogVisible: false,
       exportPluginJson: {}
     }
@@ -160,6 +157,7 @@ export default {
      * 获取设备插件列表
      */
     loadDevicePluginList() {
+      this.listLoadig = true;
       // 加载插件列表
       PluginAPI.page(this.params)
         .then(({data}) => {
@@ -172,18 +170,29 @@ export default {
             this.refreshBtnLoading = false;
           }
         })
+        .finally(() => {
+          setTimeout(() => {
+            this.listLoadig = false;
+          }, 500);
+        })
     },
     /**
      * @description: 获取协议插件列表
      * @return {*}
      */    
     loadProtocolPluginList() {
+      this.listLoadig = true;
       ProtocolPlugin.page(this.params)
           .then(({ data }) => {
             if (data.code == 200) {
               this.loading = false;
               this.params = data.data;
             }
+          })
+          .finally(() => {
+            setTimeout(() => {
+              this.listLoadig = false;
+            }, 500);
           })
     },
     /**
@@ -192,6 +201,7 @@ export default {
      */    
     loadScriptPluginList() {
       this.loading = true;
+      this.listLoadig = true;
       getCustomExchangeAgreementList(this.params)
           .then(({ data }) => {
             if (data.code == 200) {
@@ -203,6 +213,11 @@ export default {
               consolelog("getCustomExchangeAgreementList", this.listArr)
               this.refreshBtnLoading = false;
             }
+          })
+          .finally(() => {
+            setTimeout(() => {
+              this.listLoadig = false;
+            }, 500);
           })
     },
     /**
@@ -230,20 +245,20 @@ export default {
      * @return {*}
      */    
     handleDelPlugin(item) {
-      this.load();
-    },
-    searchPlugin(value) {
-      if (value == "") {
-        this.listArr = this.list;
-      } else {
-        this.listArr = this.list.filter(item => item.name.indexOf(this.searchValue) > -1);
-      }
-    },
+      PluginAPI.del({ id: item.id })
+        .then(({data}) => {
+          console.log("handleDelPlugin", data)
+          if (data.code == 200) {
+            message_success("删除成功");
+            this.loadList();
+          }
+        })
+      },
     handleChangeDisplayMode(mode) {
       this.params.displayMode = mode;
     },
     /**
-     * 插件类型
+     * 切换插件类型, 设备 协议 脚本 规则引擎 可视化
      * @param v
      */
     handlePluginTypeChanged(v) {
@@ -254,18 +269,8 @@ export default {
           break;
         }
       }
+      this.params.current_page = 1;
       this.loadList();
-    },
-    handleInstallPlugin(item) {
-      const isAuth = this.$store.getters.getStoreAuthenticated;
-
-      if (isAuth) {
-        // 安装
-        console.log("安装", isAuth)
-      } else {
-        // 登录
-        this.loginStoreDialogVisible = true;
-      }
     },
     /**
      * 防抖
