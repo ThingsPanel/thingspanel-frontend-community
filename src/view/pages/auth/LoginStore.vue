@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-20 14:35:59
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-30 14:50:21
+ * @LastEditTime: 2023-04-07 16:18:08
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\plugin\list\LoginStore.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -23,7 +23,7 @@
                 </el-form-item>
                 
                 <div class="text-right py-5">
-                    <el-link class="link-signup" href="" type="success" target="_blank">没有账号？去创建</el-link>
+                    <el-link class="link-signup" href="http://r.thingspanel.cn/" type="success" target="_blank">没有账号？去创建</el-link>
                     <el-button type="border" @click="handleCancel">{{ $t('COMMON.CANCEL') }}</el-button>
                     <el-button type="primary" :loading="btnLoading" @click="handleSubmit">{{ $t('COMMON.LOG1') }}</el-button>
                 </div>
@@ -43,7 +43,12 @@ export default {
             type: [Boolean],
             default: false
         },
-        cancel: {
+        /**
+         * @description: 登录状态回调
+         * @param {code, msg} 
+         * @return {*}
+         */
+         login: {
             type: [Function],
             default: () => {}
         }
@@ -80,7 +85,7 @@ export default {
     methods: {
         handleCancel() {
             this.dialogVisible = false;
-            this.cancel({ code: 400, msg: "取消登录"});
+            this.login({ code: 400, msg: "取消登录"});
         },
         /**
          * @description: 登录
@@ -95,6 +100,7 @@ export default {
                             if (res.code === 0) {
                                 message_success("登陆成功！");
                                 this.dialogVisible = false;
+                                this.login({ code: 200, msg: "登录成功" })
                             }
                             console.log(res)
                         })
