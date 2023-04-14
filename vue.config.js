@@ -1,11 +1,3 @@
-/*
- * @Author: chaoxiaoshu-mx leukotrichia@163.com
- * @Date: 2023-01-29 14:11:25
- * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-22 09:34:55
- * @FilePath: \ThingsPanel-Backend-Vue\vue.config.js
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 
 // const path = require("path");
 const CompressionPlugin = require("compression-webpack-plugin");
@@ -13,7 +5,7 @@ const CompressionPlugin = require("compression-webpack-plugin");
 module.exports = {
     // publicPath: "",
     productionSourceMap: false, // 生产打包时不输出map文件
-    runtimeCompiler: true,
+    // runtimeCompiler: true,
     devServer: {
         port: 8080,
         host: 'localhost',
@@ -54,7 +46,7 @@ module.exports = {
         resolve: {
             alias: {
                 // If using the runtime only build
-                vue$: "vue/dist/vue.runtime.esm.js" // 'vue/dist/vue.runtime.common.js' for webpack 1
+                // vue$: "vue/dist/vue.runtime.esm.js" // 'vue/dist/vue.runtime.common.js' for webpack 1
                 // Or if using full build of Vue (runtime + compiler)
                 // vue$: 'vue/dist/vue.esm.js'      // 'vue/dist/vue.common.js' for webpack 1
             }
@@ -67,18 +59,7 @@ module.exports = {
                 threshold: 10240,
                 minRatio: 0.8
             }),
-        ],
-        module: {
-            rules: [
-                {
-                    test: /\.swf$/,
-                    loader: 'url-loader',
-                    options: {
-                        limit: 10000
-                    }
-                }
-            ]
-        },
+        ]
     },
     css: {
         loaderOptions: {

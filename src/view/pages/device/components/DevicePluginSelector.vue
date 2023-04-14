@@ -22,7 +22,7 @@
                 @click="handleSelect(scope.row)">{{ scope.row.bind ? "已选择" : "选择"}}</el-button>
 
               <el-button type="text" size="mini" v-if="scope.row.status === 'store'"
-                @click="handleSelect(scope.row)">安装</el-button>
+                >安装</el-button>
 
               <el-button type="text" size="mini"  slot="reference" @click="handleView(scope.row)">查看</el-button>
             </template>

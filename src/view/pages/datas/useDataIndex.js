@@ -45,7 +45,7 @@ export default function useDataIndex() {
     function wasData(data_array){
         return data_array.map((item)=>{
             // 格式化数据
-            item.ts = dateFormat(item.ts / 1000000)
+            item.ts = dateFormat(item.ts)
             return item
         })
     }

@@ -1,11 +1,4 @@
-<!--
- * @Author: chaoxiaoshu-mx leukotrichia@163.com
- * @Date: 2023-03-29 14:39:42
- * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-30 10:00:11
- * @FilePath: \ThingsPanel-Backend-Vue\src\components\video\monitor\index.vue
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
+
 <template>
     <div class="video-control-container">
         <div class="player-box" id="player-box">
@@ -18,8 +11,8 @@
         <!-- 回放组件 -->
         <div class="record-box" v-if="type === 'record'">
             <record-controller 
-                :records="recordList" 
-                @change-date="handleChangeDate"
+                :records="recordList" :playDisabled="recordPlayDisabled"
+                @change-date="handleChangeDate" 
                 @play="handlePlayRecord"></record-controller>
         </div>
     </div>
@@ -28,10 +21,11 @@
 <script>
 const PlayerStatus = {
   PREPARED: 0,
-  PLAYING: 1,
-  PAUSED: 2,
-  STOPED: 3,
-  CLOSE: 4
+  PLAY: 1,
+  PLAYING: 2,
+  PAUSED: 3,
+  STOPED: 4,
+  CLOSE: 5
 }
 import VideoPlayer from "../video";
 import PlayerController from "./PlayerController";
@@ -63,6 +57,7 @@ export default {
                 verticalSpeed: "30",
                 zoomSpeed: "30",
             },
+            recordPlayDisabled: false
         }
     },
     watch: {
@@ -84,7 +79,9 @@ export default {
                             // 回放
                             playerBox.style && playerBox.style.setProperty("--w", "calc(100% - 200px)");
                             if (this.playerStatus === PlayerStatus.PLAYING) {
-                                this.stopPlay();
+                                // this.stopPlay();
+                                this.$refs.videoPlayer.pause();
+                                this.recordPlayDisabled = false;
                             }
                             break;
                         default:
@@ -121,12 +118,12 @@ export default {
          * @param command
          */
         handleCommand(command) {
+            const {parent_id, sub_device_addr} = this.device;
             this.params.command = command.toLowerCase();
             this.params.horizonSpeed = "30";
             this.params.verticalSpeed = "30";
             this.params.zoomSpeed = "30";
-
-            ProtocolPluginAPI.commandPlayerPTZ(this.params)
+            ProtocolPluginAPI.commandPlayerPTZ({...this.params, parent_id, sub_device_addr})
                 .then(({data}) => {
                     console.log("====video.handleCommand", data);
                 })
@@ -160,7 +157,8 @@ export default {
          * @param record
          */
         handlePlayRecord(record) {
-            if (this.playDisabled) return;
+            if (this.recordPlayDisabled) return;
+            console.log("====handlePlayRecord", record)
             const playFunc = () => {
                 const {parent_id, sub_device_addr} = this.device;
                 const { startTime, endTime } = record;
@@ -170,12 +168,13 @@ export default {
                     .then(({data}) => {
                         if (data.code == 200) {
                             let result = data.data;
-                            this.playSrc = result.flv;
-                            this.playDisabled = false;
+                            this.playSrc = result.fmp4;
+                            this.recordPlayDisabled = false;
+                            console.log("====handlePlayRecord", this.playSrc)
                         }
                     })
             }
-            this.playDisabled = true;
+            this.recordPlayDisabled = true;
             this.stopPlay(playFunc);
         },
         /**
@@ -185,15 +184,21 @@ export default {
         playerCallback(e) {
             switch (e) {
                 case "play": {
-                    this.playerStatus = PlayerStatus.PLAYING;
+                    this.playerStatus = PlayerStatus.PLAY;
                     break;
                 }
-                case "videoTimestamp": {
-                    this.playerStatus = PlayerStatus.PLAYING;
+                case "progress": {
+                    if (this.playerStatus === PlayerStatus.PLAY) {
+                        this.playerStatus = PlayerStatus.PLAYING;
+                    }
                     break;
                 }
-                case "stop": {
+                case "ended": {
                     this.playerStatus = PlayerStatus.STOPED;
+                    break;
+                }
+                case "pause": {
+                    this.playerStatus = PlayerStatus.PAUSED;
                     break;
                 }
                 default: {
@@ -205,7 +210,7 @@ export default {
          * 开始播放
          */
         play() {
-            this.$refs.videoPlayer.play();
+            // this.$refs.videoPlayer.play();
         },
         /**
          * 停止播放录像
@@ -213,11 +218,13 @@ export default {
          */
         stopPlay(call) {
             const {parent_id, sub_device_addr} = this.device;
-            this.playSrc = "";
-            ProtocolPluginAPI.stopRecordPlay({parent_id, sub_device_addr})
-                .then(({data}) => {
-                    call && call();
-                })
+            if (parent_id && sub_device_addr) {
+                this.playSrc = "";
+                ProtocolPluginAPI.stopRecordPlay({parent_id, sub_device_addr})
+                    .then(({data}) => {
+                        call && call();
+                    })
+            }
         },
         /**
          * 播放WVP直播流
@@ -228,7 +235,7 @@ export default {
                 .then(({data}) => {
                     if (data.code == 200) {
                         let result = data.data.data;
-                        this.playSrc = result.flv;
+                        this.playSrc = result.fmp4;
                         this.play();
                     }
                 })
@@ -246,6 +253,7 @@ export default {
         display: table;
         float: left;
         width: var(--w);
+        height:100%;
 
         .player {
             display: table-cell;

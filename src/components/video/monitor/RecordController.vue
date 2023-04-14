@@ -112,6 +112,7 @@ export default {
      * @param record
      */
     handlePlayRecord(record) {
+      console.log("RecordController.handlePlayRecord", record)
       this.$emit("play", record);
     }
   }

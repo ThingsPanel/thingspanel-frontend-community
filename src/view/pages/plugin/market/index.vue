@@ -83,7 +83,7 @@
             @current-change="loadList"></el-pagination>
       </div>
 
-      <login-store :visible.sync="loginStoreDialogVisible" :cancel="cancelLogin"/>
+      <login-store :visible.sync="loginStoreDialogVisible" :login="loginCallback"/>
     </div>
 </template>
 
@@ -116,7 +116,7 @@ export default {
       category: [],
       refreshBtnLoading: false,
       loginStoreDialogVisible: false,
-      cancelLogin: () => {}
+      loginCallback: () => {}
     }
   },
   created() {
@@ -206,7 +206,7 @@ export default {
         }
       } else {
         // 登录
-        this.cancelLogin = cb;
+        this.loginCallback = cb;
         this.loginStoreDialogVisible = true;
       }
     },

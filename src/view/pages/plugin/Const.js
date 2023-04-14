@@ -39,7 +39,7 @@ const DevicePluginType = {
         Controller: "控制器",
         Lighting: "照明",
         Electricity: "电力",
-        Camera: "电力",
+        Camera: "摄像头",
         Other: "其他",
     },
     /**

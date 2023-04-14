@@ -25,7 +25,7 @@
                 </el-form-item>
 
                 <el-form-item v-if="form.upgrade_time_type==='1'">
-                    <el-date-picker  type="datetime" placeholder="选择升级时间"
+                    <el-date-picker  type="datetime" placeholder="选择升级时间" value-format="yyyy-MM-dd HH:mm:ss"
                         v-model="form.start_time" ></el-date-picker>
                 </el-form-item>
 
