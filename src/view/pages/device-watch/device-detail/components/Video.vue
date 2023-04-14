@@ -29,7 +29,7 @@
         ></monitor-player>
 
       <ezviz-player ref="ezvizPlayer" style="width: 100%;height: 100%" 
-        v-if="optionData.type=='ezviz'" :src="optionData.src"
+        v-if="optionData.type=='ezviz'" :src="optionData.src" :appKey="optionData.appKey" :appSecret="optionData.appSecret"
         ></ezviz-player>
 
     </div>
@@ -79,7 +79,13 @@ export default {
           if (this.optionData.type === "video") {
             setTimeout(() => {
               this.optionData.src = additionalInfo.video_address ? additionalInfo.video_address : "";
-            }, 500)
+            }, 50)
+          } else if (this.optionData.type === "ezviz") {
+            setTimeout(() => {
+              this.optionData.src = additionalInfo.video_address ? additionalInfo.video_address : "";
+              this.optionData.appKey = additionalInfo.app_key ? additionalInfo.app_key : "";
+              this.optionData.appSecret = additionalInfo.secret ? additionalInfo.secret : "";
+            }, 50)
           }
         }
       },

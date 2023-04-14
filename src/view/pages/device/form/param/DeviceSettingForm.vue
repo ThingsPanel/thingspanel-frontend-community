@@ -23,6 +23,22 @@
         </el-form-item>
       </div>
 
+      <!-- 萤石云接入 -->
+      <div v-else-if="deviceData.protocol == 'ezviz'" style="margin-top: 10px;margin-bottom: 20px" >
+        <el-form-item :label="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.LABLE2')">
+          <el-input style="width: 100%;margin-right: 20px" size="medium" :placeholder="$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.PLACEHOLDER2')" v-model="deviceData.video_address"></el-input>
+        </el-form-item>
+
+        <el-form-item label="AppKey：">
+          <el-input style="width: 100%;margin-right: 20px" size="medium" placeholder="请输入AppKey" type="password"
+            v-model="deviceData.app_key"></el-input>
+        </el-form-item>
+
+        <el-form-item label="Secret：">
+          <el-input style="width: 100%;margin-right: 20px" size="medium" placeholder="请输入Secret" type="password"
+            v-model="deviceData.secret"></el-input>
+        </el-form-item>
+      </div>
 
 
       <div v-else>
@@ -212,6 +228,8 @@ export default defineComponent({
       hasChildDevice: false,
       authMode: "accessToken",
       video_address: "",
+      app_key: "",
+      secret: "",
       token: "",
       d_id: "",
       username: "",
@@ -248,6 +266,8 @@ export default defineComponent({
       deviceData.errors = {};
       deviceData.children = device.children;
       deviceData.video_address = d.additional_info ? JSON.parse(d.additional_info).video_address : "";
+      deviceData.app_key = d.additional_info ? JSON.parse(d.additional_info).app_key : "";
+      deviceData.secret = d.additional_info ? JSON.parse(d.additional_info).secret : "";
       deviceData.additionalInfo = d.additional_info ? JSON.parse(d.additional_info) : {};
       initCustomExchangeAgreementList(d.protocol);
 
@@ -282,6 +302,11 @@ export default defineComponent({
         if (valid) {
           if (deviceData.protocol == "video_address") {
             deviceData.additionalInfo.video_address = deviceData.video_address;
+            deviceData.additional_info = JSON.stringify(deviceData.additionalInfo);
+          } else if (deviceData.protocol == "ezviz") {
+            deviceData.additionalInfo.video_address = deviceData.video_address;
+            deviceData.additionalInfo.app_key = deviceData.app_key;
+            deviceData.additionalInfo.secret = deviceData.secret;
             deviceData.additional_info = JSON.stringify(deviceData.additionalInfo);
           } else {
             deviceData.script_id = deviceData.dataExchangeAgreement;

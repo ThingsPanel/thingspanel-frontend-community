@@ -9,6 +9,7 @@ export default function useDeviceSettingIndex() {
     async function getDeviceProtocolList() {
         let result = await getProtocolList("DRIECT_ATTACHED_PROTOCOL");
         result.unshift({ value: "mqtt", label: "官方MQTT协议" })
+        result.push({ value: "ezviz", label: "萤石云视频协议" })
         return result;
     }
 
