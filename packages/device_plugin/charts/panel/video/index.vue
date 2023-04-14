@@ -1,11 +1,4 @@
-<!--
- * @Author: chaoxiaoshu-mx leukotrichia@163.com
- * @Date: 2023-01-29 14:11:23
- * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-29 17:57:51
- * @FilePath: \ThingsPanel-Backend-Vue\packages\device_plugin\charts\panel\video\index.vue
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
--->
+
 <template>
   <div class="video-container">
     <div class="video-item-list">
@@ -21,6 +14,9 @@
                         @submit="handleSubmit">
         </monitor-player>
 
+        <ezviz-player class="video-player" v-if="option.type == 'ezviz'" :ref="'video_' + option.index" :option="option"
+                @submit="handleSubmit">
+        </ezviz-player>
 
         <!-- <monitor-player class="video-player" v-if="option.type == 'monitor'" :ref="'video_' + option.index" :option="option"
                         @submit="handleSubmit">
@@ -35,12 +31,12 @@
 <script>
 import MonitorPlayer from "../../components/video/MonitorPlayer";
 import VideoPlayer from "../../components/video/VideoPlayer";
-
+import EzvizPlayer from "../../components/video/EzvizPlayer"
 
 export default {
   name: "VideoPanel",
   components:{
-    MonitorPlayer, VideoPlayer
+    MonitorPlayer, VideoPlayer, EzvizPlayer
   },
   props: {
     charts: {

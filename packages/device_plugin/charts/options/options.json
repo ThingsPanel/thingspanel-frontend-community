@@ -469,14 +469,25 @@
       "index": 1,
       "type": "video",
       "title": "视频",
-      "src": ""
+      "src": "",
+      "name": "视频"
     },
     {
       "controlType": "video",
       "index": 2,
       "type": "monitor",
-      "title": "监控",
-      "src": ""
+      "title": "GB28281",
+      "src": "",
+      "name": "GB28281"
+    }
+    ,
+    {
+      "controlType": "video",
+      "index": 3,
+      "type": "ezviz",
+      "title": "萤石云",
+      "src": "",
+      "name": "萤石云"
     }
     
     

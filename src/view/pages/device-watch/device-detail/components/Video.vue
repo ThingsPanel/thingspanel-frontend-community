@@ -28,6 +28,10 @@
         v-if="optionData.type=='monitor'" :type="monitorType" :device="device"
         ></monitor-player>
 
+      <ezviz-player ref="ezvizPlayer" style="width: 100%;height: 100%" 
+        v-if="optionData.type=='ezviz'" :src="optionData.src"
+        ></ezviz-player>
+
     </div>
 
   </div>
@@ -37,10 +41,12 @@
 import ProtocolPluginAPI from "@/api/protocolPlugin"
 import VideoPlayer from "@/components/video/video";
 import MonitorPlayer from "@/components/video/monitor";
+import EzvizPlayer from "@/components/video/ezviz";
+
 export default {
   name: "Video",
   components: {
-    VideoPlayer, MonitorPlayer
+    VideoPlayer, MonitorPlayer, EzvizPlayer
   },
   props: {
     showHeader: {

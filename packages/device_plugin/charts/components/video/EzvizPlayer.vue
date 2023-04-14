@@ -1,4 +1,4 @@
-<!-- 播放组件1 -->
+<!-- 萤石云视频地址插件 -->
 <template>
     <div class="common-video-container">
       <div class="player-box"></div>
@@ -23,15 +23,11 @@
   </template>
   
   <script>
-  import VideoPlayer from "@/components/common/VideoPlayer.vue";
   import {message_error} from "@/utils/helpers";
   import i18n from "@/core/plugins/vue-i18n.js"
   const required = true;
   export default {
-    name: "MonitorPlayer",
-    components: {
-      VideoPlayer
-    },
+    name: "EzvizPlayer",
     props: {
       options: {
         type: [Object],

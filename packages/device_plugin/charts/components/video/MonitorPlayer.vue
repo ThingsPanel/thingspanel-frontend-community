@@ -9,7 +9,8 @@
 <!-- 播放组件1 -->
 <template>
     <div class="common-video-container">
-      <video-player  :src="optionData.src"/>
+      <!-- <video-player  :src="optionData.src"/> -->
+      <div class="player-box"></div>
       <el-dialog class="el-dark-dialog" :title="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE22')" width="500px"
                  :visible.sync="dialogVisible" :append-to-body="true" :close-on-click-modal="false"
                  :before-close="handleClose">
@@ -93,9 +94,16 @@
   }
   </script>
   
-  <style scoped>
+  <style scoped lang="scss">
   .common-video-container {
+    position: relative;
     width: 100%;
     height: 100%;
+    .player-box {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-color: #000000;
+    }
   }
   </style>
