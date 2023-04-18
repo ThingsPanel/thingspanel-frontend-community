@@ -27,7 +27,7 @@
 
         <el-table-column :label="$t('AUTOMATION.EXE_STATUS')" prop="process_result" width="100">
           <template v-slot="scope">
-            {{ scope.row.process_result == '1' ? "$t('AUTOMATION.SUCEESSFUL')" : $t('AUTOMATION.FAILURE') }}
+            {{ scope.row.process_result == '1' ? $t('AUTOMATION.SUCEESSFUL') : $t('AUTOMATION.FAILURE') }}
           </template>
         </el-table-column>
 

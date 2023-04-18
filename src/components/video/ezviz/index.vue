@@ -46,8 +46,6 @@ export default {
     createPlayer(accessToken) {
         this.player = new EZUIKit.EZUIKitPlayer({
             id: 'video-container', // 视频容器ID
-            width: 600,
-            height: 400,
             accessToken,
             url: this.src
         });
