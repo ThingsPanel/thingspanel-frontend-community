@@ -124,7 +124,7 @@ export default {
       for (let index = 0; index < this.conditions.length; index++) {
         const item = this.conditions[index];
         if (index > 0 && (!item.relation || item.relation === "")) {
-          this.$refs.relationRef[index].focus();
+          this.$refs.relationRef[index] && this.$refs.relationRef[index].focus();
           message_error(this.$t('AUTOMATION.ERROR.RELATION'))
           return false;
         }

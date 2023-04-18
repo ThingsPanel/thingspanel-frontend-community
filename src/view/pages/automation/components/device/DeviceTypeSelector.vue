@@ -239,13 +239,15 @@ export default {
     getStateList(id) {
       this.stateOptions = [];
       if (this.option.operator) {
-        this.stateOptions.push({
-          label: this.$t('AUTOMATION.ONLINE_STATUS'), 
-          options: [
-            { mode: "onlineDuration", label: this.$t('AUTOMATION.ONLINE_DURATION'), name: "onlineDuration" },
-          ]
-        });
+        // 持续时间
+        // this.stateOptions.push({
+        //   label: this.$t('AUTOMATION.ONLINE_STATUS'), 
+        //   options: [
+        //     { mode: "onlineDuration", label: this.$t('AUTOMATION.ONLINE_DURATION'), name: "onlineDuration" },
+        //   ]
+        // });
 
+        // 在线状态
         this.stateOptions.push({
           label: this.$t('AUTOMATION.ONLINE_OFFLINE'), 
           options: [

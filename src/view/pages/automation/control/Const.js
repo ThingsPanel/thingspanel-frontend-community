@@ -1,11 +1,3 @@
-/*
- * @Author: chaoxiaoshu-mx leukotrichia@163.com
- * @Date: 2023-02-20 19:41:00
- * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-04-06 09:56:22
- * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\Const.js
- * @Description: 
- */
 /**
  * @description: 条件类型
  */
