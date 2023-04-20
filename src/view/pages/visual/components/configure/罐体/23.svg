@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="55px"
+   height="89px"
+   viewBox="0 0 55 89"
+   enable-background="new 0 0 55 89"
+   xml:space="preserve"
+   sodipodi:docname="罐体_23-01.svg"><metadata
+   id="metadata52"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs50" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview48" />
+<g
+   id="g45">
+	<g
+   id="g13">
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="1.7207"
+   y1="44.5"
+   x2="53.2783"
+   y2="44.5">
+			<stop
+   offset="0"
+   style="stop-color:#666666"
+   id="stop2" />
+			<stop
+   offset="0.5054"
+   style="stop-color:#FFFFFF"
+   id="stop4" />
+			<stop
+   offset="1"
+   style="stop-color:#666666"
+   id="stop6" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#666666" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#666666" />
+			<a:midPointStop
+   offset="0.5054"
+   style="stop-color:#FFFFFF" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FFFFFF" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#666666" />
+		</linearGradient>
+		<rect
+   x="1.721"
+   y="0.5"
+   fill="url(#SVGID_1_)"
+   width="51.558"
+   height="88"
+   id="rect9" />
+		<path
+   fill="#231F20"
+   d="M53.778,89H1.221V0h52.558V89z M2.221,88h50.558V1H2.221V88z"
+   id="path11" />
+	</g>
+	<g
+   id="g19">
+		<rect
+   y="1.641"
+   fill="#231F20"
+   width="55"
+   height="1.141"
+   id="rect15" />
+		<rect
+   y="0.5"
+   fill="#CCCCCC"
+   width="55"
+   height="1.141"
+   id="rect17" />
+	</g>
+	<g
+   id="g25">
+		<rect
+   y="23.07"
+   fill="#231F20"
+   width="55"
+   height="1.141"
+   id="rect21" />
+		<rect
+   y="21.93"
+   fill="#CCCCCC"
+   width="55"
+   height="1.141"
+   id="rect23" />
+	</g>
+	<g
+   id="g31">
+		<rect
+   y="44.5"
+   fill="#231F20"
+   width="55"
+   height="1.141"
+   id="rect27" />
+		<rect
+   y="43.359"
+   fill="#CCCCCC"
+   width="55"
+   height="1.141"
+   id="rect29" />
+	</g>
+	<g
+   id="g37">
+		<rect
+   y="65.93"
+   fill="#231F20"
+   width="55"
+   height="1.141"
+   id="rect33" />
+		<rect
+   y="64.789"
+   fill="#CCCCCC"
+   width="55"
+   height="1.141"
+   id="rect35" />
+	</g>
+	<g
+   id="g43">
+		<rect
+   y="87.358"
+   fill="#231F20"
+   width="55"
+   height="1.142"
+   id="rect39" />
+		<rect
+   y="86.219"
+   fill="#CCCCCC"
+   width="55"
+   height="1.14"
+   id="rect41" />
+	</g>
+</g>
+</svg>

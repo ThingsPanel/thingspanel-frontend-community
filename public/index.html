@@ -1,0 +1,59 @@
+<!--
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-01-29 14:11:23
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-02-03 16:17:58
+ * @FilePath: \ThingsPanel-Backend-Vue\public\index.html
+ * @Description: 
+-->
+<!DOCTYPE html>
+<!--
+Use below html tag for RTL version
+<html lang="en" dir="rtl" direction="rtl" style="direction: rtl">
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, viewport-fit=cover">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable"
+          content="yes">
+<!--    <script type="text/javascript" src="./static/IPConfig.js" async></script>-->
+    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
+<!--    <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700|Roboto:300,400,500,600,700|Material+Icons" rel="stylesheet">-->
+      <link rel="stylesheet" id="style" href="<%= BASE_URL %>themes/default.css">
+    <title>ThingsPanel</title>
+      <script src="./EasyWasmPlayer.js" async></script>
+  </head>
+<!--  -->
+  <!-- <script src="https://cdn.bootcss.com/echarts/5.3.0/echarts.min.js"></script> -->
+  <script type="text/javascript" src="<%= BASE_URL %>echarts.min.js" async></script>
+  <body>
+    <noscript>
+      <strong>We're sorry but ThingPanel doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+    </noscript>
+    <style>
+        .el-picker-panel {
+            z-index: 2099!important;
+        }
+        .el-popover {
+            z-index: 2099!important;
+        }
+    </style>
+    <div id="app"></div>
+
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+            var hm = document.createElement("script");
+            hm.src = "https://hm.baidu.com/hm.js?e4910b169e66c3c3d29050a965c59f1c";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+    <!-- built files will be auto injected -->
+  </body>
+</html>

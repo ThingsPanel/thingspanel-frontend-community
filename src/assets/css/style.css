@@ -1,0 +1,271 @@
+/*自定义css变量*/
+:root{
+    --main-color: #080593;
+    --color-gray: #666666;
+}
+/*引入字体*/
+@font-face {
+    font-family: '思源黑体';
+    src: url('../font/SourceHanSansCN-Bold.otf');
+    font-weight: normal;
+    font-style: normal;
+}
+/*动效*/
+@keyframes ringing
+{
+    from  {transform:rotate(-30deg);}
+    to  {transform:rotate(30deg);}
+}
+
+@keyframes myfirst
+{
+    /*from  {transform: scale(1);-ms-transform: scale(1);}
+    to  {transform: scale(1.1);-ms-transform: scale(1.1);}*/
+    from  {transform: rotateY(0deg);}
+    to  {transform: rotateY(180deg);}
+}
+/*公用样式*/
+.pos-top-10{position: relative;top: 10px;}
+.pos-top-20{position: relative;top:20px;}
+.font-34{font-size: 34px;}
+.font-14{font-size: 14px;}
+.font-18{font-size: 18px;}
+.inline-block{display: inline-block;}
+.mar-bott-20{margin-bottom: 20px;}
+.clear{clear: both;}
+.font-30{font-size: 30px;}
+.opacity-86{opacity: 0.86;}
+.opacity-82{opacity: 0.82;}
+.pull-right{float: right !important;}
+.height-100{height: 100%;}
+.height-90{height: 90%;}
+.height-85{height: 85%;}
+.height-80{height: 80%;}
+.height-70{height: 70%;}
+.height-65{height: 65%;}
+.height-50{height: 50%;}
+.height-30{height: 30%;}
+.height-20{height: 20%;}
+.height-15{height: 15%;}
+
+/*首页*/
+.wrap{width: 100%;min-height:100%;background: rgba(247, 247, 247, 0.99);font-family: "思源黑体";position: relative;}
+.box_left{width: 461px;min-height: 100%;background: #FDFFFF;box-shadow: 0px 6px 29px 3px rgba(9, 49, 111, 0.27);border-radius: 10px 60px 60px 10px;position: relative;}
+.title{font-size: 35px;font-weight: bold;color: #080593;padding: 30px 30px 10px;}
+.datas{padding: 10px 15px;}
+.datas_bg{background: url(../images/bg1.png) no-repeat;background-size: 100% 100%;border-radius: 45px;box-shadow: 2px 2px 10px #888888;animation: myfirst 6s linear 0s 2 alternate;/*animation-iteration-count:infinite;*/}
+.datas_top_icon{margin: 18px 35px;float: left;animation: ringing 1.5s linear 0s 5 alternate;animation-iteration-count:infinite;width: 64px !important;height: auto !important;}
+.tem_num{color: #ffffff;font-size: 60px;margin-top: 10px;display: inline-block;font-family: Source Han Sans CN;font-weight: 400;clear: both;}
+.datas_bottom{text-align: right;padding: 15px 15px;}
+.times_up,.times_down{display: inline-block;margin: 0 1%;}
+.times_num{color: #ffffff;display: inline-block;font-weight: 400;margin-right: 10px;}
+.timesicon{margin:0 5px;width: 36px !important;height: auto !important;}
+.numicon{width: 56px !important;height: auto !important;}
+.dateicon{width: 15px !important;height: auto !important;}
+/* 空气污染 */
+.air_quality_title{font-size: 28px;font-weight: bold;color: #080593;opacity: 0.7;padding: 15px 30px;position: relative;top: 15px;}
+.contaminate{height: 145px;margin: 20px auto;width: 80%;text-align: center;position: relative;
+}
+.contaminate_box{position: absolute;bottom: 0;width: 100%;}
+.contaminate_num{font-size: 30px;font-weight: 800;color: #4E4DB0;
+}
+.contaminate_num span{font-size: 14px;font-weight: 100;}
+.comtaminate_unit{color: #4E4DB0;font-size: 20px;}
+.numlist{list-style-type: none;padding: 25px;}
+.numitem{/* padding: 20px 10px; */padding: 5% 10px;height: 20%;}
+.numicon{margin-right: 15px;}
+.num_title{font-weight: 400;color: #666666;font-size: 16px;opacity: 0.82;}
+.num_des{font-weight: 500;color: #999999;font-size: 14px;opacity: 0.82;}
+.num_data{font-size: 15px;font-weight: 800;color: #4E4DB0;}
+.num_data span{font-size: 12px;font-weight: 100;margin-left: 8px;}
+/*.chart_dashboard{width: 100%;height: 300px}*/
+.numlist{margin-top: -10%;}
+
+/* 右侧内容 */
+.box_right{ width:-webkit-calc(100% - 461px); width:-moz-calc(100% - 461px); width:calc(100% - 461px); position: absolute;right: 0;top: 0;}
+.right_box{padding: 30px 60px;}
+.right_title{font-size: 18px;font-weight: bold;color: #080593;opacity: 0.6;margin-bottom: 15px;margin-left: 15px;}
+.divbox{margin-left: 18px;display: inline-block;}
+.divbox span{margin-left: 10px;font-weight: 400;color: #666666;opacity: 0.86;}
+.panel_list{background: #FFFFFF;box-shadow: 0px 6px 29px 3px rgba(27, 64, 122, 0.15);border-radius: 20px;position: relative;}
+.panel_item{padding: 10px 0;width: 145px;}
+.panicon{width: 35px;height: auto;margin-right: 15px;}
+.panel_active,.panel_list:hover{background: #33329A;color: #ffffff;cursor: pointer;}
+.panel_active .num_title,.panel_active .num_des,.panel_list:hover .num_title,.panel_list:hover .num_des{opacity: 1;}
+.panel_active .num_title,.panel_active .num_des,.panel_list:hover .num_title,.panel_list:hover .num_des{color: #ffffff;}
+.chartmap{background: #ffffff;border-radius: 20px;padding: 15px;padding-left: 0;}
+.chartbox{padding: 0 15px;}
+.chartbox img{width: 100%;height: auto;}
+.weatherbox{display:flex;flex-wrap:wrap;display: -webkit-flex; /* Safari */margin-top: 10px;}
+.weatherlist{flex:1; padding: 0px 15px;}
+.weatheritem{background: #ffffff;border-radius: 20px;text-align: center;padding: 15px 15px;color: #666666;opacity: 0.86;box-shadow: 0px 6px 29px 3px rgba(27, 64, 122, 0.15);position: relative;}
+.dayicon{margin: 35px 0;height: 52px !important;width: auto !important;}
+.weather_ative,.weatheritem:hover{background: url(../images/bg2.png) no-repeat;background-size: 100% 100%;cursor: pointer;}
+.weather_ative div,.weatheritem:hover div{color: #ffffff;}
+.weatheritem:hover .dayicon{animation: ringing 0.8s linear 0s 5 alternate;}
+.weather_ative .dayicon{animation: ringing 1.5s linear 0s 5 alternate;animation-iteration-count:infinite;}
+.numitem_active .num_data{color: #EB6E12;}
+.panel_item_top{position: absolute;top: 25%;left: 50%;transform: translate(-50%, -25%);}
+.panel_item_bottom{position: absolute;top: 75%;left: 50%;transform: translate(-50%, -50%);}
+/*.chart{height: 300px;}*/
+.panicon{max-width: 35px !important;height: auto !important;float: left;}
+.weather-position{position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);}
+/*.ul_box{height: 70%;}*/
+@media screen and (min-width: 769px) and (max-width: 1366px){
+    .box_left{width: 400px;}
+    .box_right{width: -webkit-calc(100% - 400px);width: -moz-calc(100% - 400px);width: calc(100% - 400px);}
+    /*.datas{padding: unset;}*/
+    .contaminate{height: 105px;margin: 0px auto;width: 70%;}
+    .title{font-size: 30px;padding: 15px 25px 5px;}
+    .air_quality_title{font-size: 24px;padding: 15px 20px;padding-top: 0;}
+    .contaminate_num{font-size: 20px;}
+    .comtaminate_unit{font-size: 12px;}
+    .num_title{font-size: 14px;}
+    .num_des{font-size: 10px;}
+    .numicon{height: 45px;}
+    .num_data{font-size: 12px;font-weight: 500;}
+    /*.numitem{padding: 6px 10px;}*/
+    .right_title{font-size: 16px;}
+    .dayicon{margin: 8px 0;}
+    .divbox{font-size:12px;}
+    .dateicon{height: 15px;}
+    /*.chart{height: 250px;}*/
+    /*.chart_dashboard{width: 100%;height: 230px}*/
+    .numlist{margin-top: -10%;padding: 15px;}
+}
+@media screen and (min-width: 1900px) {
+    .box_left{width: 400px;}
+    .box_right{width: -webkit-calc(100% - 400px);width: -moz-calc(100% - 400px);width: calc(100% - 400px);}
+    /*.datas{padding: unset;}*/
+    .contaminate{height: 105px;margin: 0px auto;width: 70%;}
+    .title{font-size: 30px;padding: 15px 25px 5px;}
+    .air_quality_title{font-size: 24px;padding: 15px 20px;padding-top: 0;}
+    .contaminate_num{font-size: 20px;}
+    .comtaminate_unit{font-size: 12px;}
+    .num_title{font-size: 14px;}
+    .num_des{font-size: 10px;}
+    .numicon{height: 45px;}
+    .num_data{font-size: 12px;font-weight: 500;}
+    /*.numitem{padding: 6px 10px;}*/
+    .right_title{font-size: 16px;}
+    .dayicon{margin: 8px 0;}
+    .divbox{font-size:12px;}
+    .dateicon{height: 15px;}
+    /*.chart{height: 250px;}*/
+    /*.chart{min-height: 180px;}*/
+    /*.chart_dashboard{width: 100%;height: 230px}*/
+    .numlist{margin-top: -10%;padding: 15px;}
+    .panel_item{padding: 15px 0;}
+    .numlist{margin-bottom: 0;}
+    .tem_num{font-size: 42px;}
+    .font-34{font-size: 18px;}
+
+}
+
+@media screen and (min-width: 2000px) {
+    .title{font-size: 25px;}
+    .datas_top_icon{width: 40px !important;}
+    .tem_num{font-size: 27px;margin-top: 18px;}
+    .air_quality_title{font-size: 20px;}
+    .numicon{width: 40px !important;}
+    .panicon{max-width: 25px !important;margin-top: 5px;}
+    .font-34{font-size: 15px;}
+    .dayicon{height: 40px !important;}
+    .font-18{font-size: 12px;}
+    .font-14{font-size: 12px;}
+    .num_title{font-size: 13px;}
+    .num_des{font-size: 12px;}
+    .num_data{font-size: 12px;}
+    .numlist{padding: 25px 15px;}
+}
+@media screen and (max-width: 1500px){
+    .title{font-size: 25px;}
+    .datas_top_icon{width: 40px !important;}
+    .tem_num{font-size: 27px;margin-top: 18px;}
+    .air_quality_title{font-size: 20px;}
+    .numicon{width: 40px !important;}
+    .panicon{max-width: 25px !important;margin-top: 5px;}
+    .font-34{font-size: 15px;}
+    .dayicon{height: 40px !important;}
+    .font-18{font-size: 12px;}
+    .font-14{font-size: 12px;}
+    .num_title{font-size: 13px;}
+    .num_des{font-size: 12px;}
+    .num_data{font-size: 12px;}
+    .numlist{padding: 25px 15px;}
+}
+@media screen and (max-width: 1280px){
+    .times_num{font-size: 10px;}
+    .timesicon{width: 18px !important;}
+    .numlist{padding: 10px 0px;}
+}
+
+@media screen and (max-width: 768px) {
+    .height-100{height: unset;}
+    .height-90{height: unset;}
+    .height-85{height: unset;}
+    .height-80{height: unset;}
+    .height-70{height: unset;}
+    .height-65{height: unset;}
+    .height-50{height: unset;}
+    .height-30{height: unset;}
+    .height-20{height: unset;}
+    .height-15{height: unset;}
+
+    .weather-position{position:unset;top:unset;left:unset;transform:unset;}
+    .panel_item_top{position: unset;top: unset;left: unset;transform: unset;}
+    .panel_item_bottom{position: unset;top: unset;left: unset;transform: unset;}
+    .panel_item{width: unset;padding-left: 25%;}
+
+    .box_left{width: 100%;position: relative;border-radius: unset;}
+    .box_right{position: relative;width: 100%;right: unset;}
+    .right_box{padding: 15px 15px;}
+    .panel_list{margin-bottom: 10px;}
+
+    .weatherbox{display: block;flex-wrap: unset;}
+    .weatherlist{flex: unset;width: 33.33%;display: inline-block;float: left;margin-bottom: 10px;}
+    .dayicon{margin: 10px 0;}
+    .divbox{margin-bottom: 10px;}
+
+    .title{font-size: 30px;padding: 15px 25px 5px;}
+    .air_quality_title{font-size: 24px;padding: 15px 20px;padding-top: 0;}
+    .contaminate_num{font-size: 20px;}
+    .comtaminate_unit{font-size: 12px;}
+    .num_title{font-size: 14px;}
+    .num_des{font-size: 10px;}
+    .numicon{height: 45px;}
+    .num_data{font-size: 12px;font-weight: 500;}
+    .numitem{padding: 10px;height: unset;}
+    .contaminate{height: 120px;margin: 10px auto;width: 77%;}
+    .numlist{padding: 15px;}
+    .contaminate_box{bottom: 10px;}
+    .box_left{min-height: calc(100% - 120px);}
+    .chart_dashboard{width: 100%;height: 230px;}
+
+    .chart-item.cssTransforms{height: unset !important;}
+}
+
+.vue-treeselect__menu {
+  background-color: #182046 !important;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.vue-treeselect__option--highlight {
+  background: #182046 !important;
+  color: #ffffff;
+}
+
+.vue-treeselect__option {
+  background: #182046 !important;
+  color: #ffffff;
+}
+
+.el-select-dropdown__list {
+  padding-bottom: 8px;
+}
+.v-list-item__title {
+  color: #ffffff !important;
+}
+.vpd-icon-btn {
+  margin: 0 !important;
+}

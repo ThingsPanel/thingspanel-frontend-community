@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="118.2px"
+   height="118.724px"
+   viewBox="231.92 78.601 118.2 118.724"
+   enable-background="new 231.92 78.601 118.2 118.724"
+   xml:space="preserve"
+   sodipodi:docname="采矿-01.svg"><metadata
+   id="metadata23"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs21" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview19" />
+<g
+   id="g16">
+	<polygon
+   fill="#FFCC00"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="289.99,89.81 294.176,79.257    273.586,93.065 273.907,81.718 273.907,81.719 273.907,81.717 266.109,92.389 259.28,101.736 255.702,90.962 248.804,114.776    241.758,105.876 243.42,130.613 233.755,124.659 243.776,147.337 232.657,145.047 249.831,162.929 238.6,164.581 260.854,175.51    250.865,180.904 275.515,183.563 267.972,192.048 292.047,186.115 287.86,196.669 308.453,182.86 308.13,194.209 322.759,174.19    326.335,184.964 333.234,161.15 340.281,170.051 338.62,145.313 348.286,151.268 338.262,128.589 349.382,130.879 332.207,112.997    343.439,111.345 321.185,100.415 331.174,95.021 306.521,92.362 314.064,83.876  "
+   id="polygon2" />
+	<circle
+   fill="#E5B200"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="291.02"
+   cy="137.963"
+   r="39.743"
+   id="circle4" />
+	<circle
+   fill="#FFCC00"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="291.019"
+   cy="137.964"
+   r="21.023"
+   id="circle6" />
+	<circle
+   fill="#E5B200"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="291.019"
+   cy="137.963"
+   r="11.426"
+   id="circle8" />
+	<circle
+   fill="#E5B200"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="264.531"
+   cy="133.293"
+   r="4.57"
+   id="circle10" />
+	<circle
+   fill="#E5B200"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="300.218"
+   cy="163.238"
+   r="4.569"
+   id="circle12" />
+	<circle
+   fill="#E5B200"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="308.308"
+   cy="117.358"
+   r="4.569"
+   id="circle14" />
+</g>
+</svg>

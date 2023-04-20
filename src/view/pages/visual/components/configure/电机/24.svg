@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="91px"
+   height="41px"
+   viewBox="0 0 91 41"
+   enable-background="new 0 0 91 41"
+   xml:space="preserve"
+   sodipodi:docname="电机_24-01.svg"><metadata
+   id="metadata93"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs91" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview89" />
+<g
+   id="g86">
+	<g
+   id="g13">
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="45.5"
+   y1="19.2744"
+   x2="45.5"
+   y2="21.8041">
+			<stop
+   offset="0"
+   style="stop-color:#666666"
+   id="stop2" />
+			<stop
+   offset="0.5054"
+   style="stop-color:#FFFFFF"
+   id="stop4" />
+			<stop
+   offset="1"
+   style="stop-color:#666666"
+   id="stop6" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#666666" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#666666" />
+			<a:midPointStop
+   offset="0.5054"
+   style="stop-color:#FFFFFF" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FFFFFF" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#666666" />
+		</linearGradient>
+		<rect
+   x="0.5"
+   y="18.894"
+   fill="url(#SVGID_1_)"
+   width="90"
+   height="3.213"
+   id="rect9" />
+		<path
+   d="M91,22.606H0v-4.213h91V22.606z M1,21.606h89v-2.213H1V21.606z"
+   id="path11" />
+	</g>
+	<g
+   id="g31">
+		<rect
+   x="66.443"
+   y="0.5"
+   fill="#666666"
+   width="7.283"
+   height="40"
+   id="rect15" />
+		<rect
+   x="66.443"
+   y="3.164"
+   fill="#7A7A7A"
+   width="7.283"
+   height="34.672"
+   id="rect17" />
+		<rect
+   x="66.443"
+   y="5.828"
+   fill="#8E8E8E"
+   width="7.283"
+   height="29.344"
+   id="rect19" />
+		<rect
+   x="66.443"
+   y="8.492"
+   fill="#A2A2A2"
+   width="7.283"
+   height="24.016"
+   id="rect21" />
+		<rect
+   x="66.443"
+   y="11.156"
+   fill="#B6B6B6"
+   width="7.283"
+   height="18.689"
+   id="rect23" />
+		<rect
+   x="66.443"
+   y="13.82"
+   fill="#CACACA"
+   width="7.283"
+   height="13.361"
+   id="rect25" />
+		<rect
+   x="66.443"
+   y="16.483"
+   fill="#DEDEDE"
+   width="7.283"
+   height="8.033"
+   id="rect27" />
+		<rect
+   x="66.443"
+   y="19.147"
+   fill="#F2F2F2"
+   width="7.283"
+   height="2.705"
+   id="rect29" />
+	</g>
+	<g
+   id="g44">
+		<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="44.3862"
+   y1="3.5112"
+   x2="44.3862"
+   y2="38.3831">
+			<stop
+   offset="0"
+   style="stop-color:#666666"
+   id="stop33" />
+			<stop
+   offset="0.5054"
+   style="stop-color:#FFFFFF"
+   id="stop35" />
+			<stop
+   offset="1"
+   style="stop-color:#666666"
+   id="stop37" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#666666" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#666666" />
+			<a:midPointStop
+   offset="0.5054"
+   style="stop-color:#FFFFFF" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FFFFFF" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#666666" />
+		</linearGradient>
+		<rect
+   x="22.33"
+   y="0.5"
+   fill="url(#SVGID_2_)"
+   width="44.114"
+   height="40"
+   id="rect40" />
+		<path
+   d="M66.943,41H21.83V0h45.114V41z M22.83,40h43.114V1H22.83V40z"
+   id="path42" />
+	</g>
+	<path
+   d="M74.227,41h-8.283V0h8.283V41z M66.943,40h6.283V1h-6.283V40z"
+   id="path46" />
+	<g
+   id="g64">
+		<rect
+   x="15.043"
+   y="0.5"
+   fill="#666666"
+   width="7.286"
+   height="40"
+   id="rect48" />
+		<rect
+   x="15.043"
+   y="3.164"
+   fill="#7A7A7A"
+   width="7.286"
+   height="34.672"
+   id="rect50" />
+		<rect
+   x="15.043"
+   y="5.828"
+   fill="#8E8E8E"
+   width="7.286"
+   height="29.344"
+   id="rect52" />
+		<rect
+   x="15.043"
+   y="8.492"
+   fill="#A2A2A2"
+   width="7.286"
+   height="24.016"
+   id="rect54" />
+		<rect
+   x="15.043"
+   y="11.156"
+   fill="#B6B6B6"
+   width="7.286"
+   height="18.689"
+   id="rect56" />
+		<rect
+   x="15.043"
+   y="13.82"
+   fill="#CACACA"
+   width="7.286"
+   height="13.361"
+   id="rect58" />
+		<rect
+   x="15.043"
+   y="16.483"
+   fill="#DEDEDE"
+   width="7.286"
+   height="8.033"
+   id="rect60" />
+		<rect
+   x="15.043"
+   y="19.147"
+   fill="#F2F2F2"
+   width="7.286"
+   height="2.705"
+   id="rect62" />
+	</g>
+	<path
+   d="M22.83,41h-8.286V0h8.286V41z M15.543,40h6.286V1h-6.286V40z"
+   id="path66" />
+	<path
+   d="M17.767,11.444h-3.224V4.463h3.224V11.444z M15.543,10.444h1.224V5.463h-1.224V10.444z"
+   id="path68" />
+	<path
+   d="M17.767,23.769h-3.224v-6.981h3.224V23.769z M15.543,22.769h1.224v-4.981h-1.224V22.769z"
+   id="path70" />
+	<path
+   d="M17.767,36.092h-3.224v-6.98h3.224V36.092z M15.543,35.092h1.224v-4.98h-1.224V35.092z"
+   id="path72" />
+	<path
+   d="M74.227,11.444h-3.223V4.463h3.223V11.444z M72.004,10.444h1.223V5.463h-1.223V10.444z"
+   id="path74" />
+	<path
+   d="M74.227,23.769h-3.223v-6.981h3.223V23.769z M72.004,22.769h1.223v-4.981h-1.223V22.769z"
+   id="path76" />
+	<path
+   d="M74.227,36.092h-3.223v-6.98h3.223V36.092z M72.004,35.092h1.223v-4.98h-1.223V35.092z"
+   id="path78" />
+	<g
+   id="g84">
+		<rect
+   x="74.734"
+   y="15.017"
+   fill="#FCBA63"
+   width="1.779"
+   height="10.966"
+   id="rect80" />
+		<path
+   d="M77.014,26.482h-2.779V14.517h2.779V26.482z M75.234,25.482h0.779v-9.966h-0.779V25.482z"
+   id="path82" />
+	</g>
+</g>
+</svg>

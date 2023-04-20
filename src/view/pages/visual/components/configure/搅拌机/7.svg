@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="35px"
+   height="79px"
+   viewBox="0 0 35 79"
+   enable-background="new 0 0 35 79"
+   xml:space="preserve"
+   sodipodi:docname="搅拌机_07-01.svg"><metadata
+   id="metadata72"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs70" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview68" />
+<g
+   id="g65">
+	<rect
+   x="0.199"
+   y="69.771"
+   width="34.3"
+   height="1.766"
+   id="rect2" />
+	<g
+   id="g8">
+		<rect
+   x="0.501"
+   y="60.882"
+   fill="#E6E6E6"
+   width="2.253"
+   height="10.272"
+   id="rect4" />
+		<path
+   d="M3.255,71.653H0V60.383h3.255V71.653z M1.001,70.656h1.252v-9.275H1.001V70.656z"
+   id="path6" />
+	</g>
+	<g
+   id="g14">
+		<rect
+   x="32.246"
+   y="60.882"
+   fill="#E6E6E6"
+   width="2.253"
+   height="10.272"
+   id="rect10" />
+		<path
+   d="M35,71.653h-3.255V60.383H35V71.653z M32.747,70.656h1.252v-9.275h-1.252V70.656z"
+   id="path12" />
+	</g>
+	<g
+   id="g20">
+		<polygon
+   fill="#E6E6E6"
+   points="24.759,66.592 6.953,78.501 6.924,75.779 24.759,63.733   "
+   id="polygon16" />
+		<path
+   d="M6.953,79c-0.08,0-0.16-0.02-0.233-0.058c-0.162-0.085-0.265-0.253-0.267-0.437l-0.029-2.722    c-0.002-0.167,0.08-0.324,0.219-0.418L24.477,63.32c0.155-0.102,0.354-0.114,0.517-0.027c0.164,0.086,0.267,0.256,0.267,0.44    v2.858c0,0.166-0.084,0.321-0.222,0.414L7.233,78.915C7.149,78.971,7.051,79,6.953,79z M7.428,76.041l0.017,1.53l16.813-11.245    v-1.652L7.428,76.041z"
+   id="path18" />
+	</g>
+	<g
+   id="g26">
+		<polygon
+   fill="#E6E6E6"
+   points="9.631,66.592 28.035,78.467 28.058,75.779 9.631,63.733   "
+   id="polygon22" />
+		<path
+   d="M28.035,78.965c-0.095,0-0.19-0.027-0.273-0.08L9.358,67.01c-0.142-0.092-0.228-0.249-0.228-0.418v-2.858    c0-0.184,0.101-0.353,0.263-0.438c0.16-0.088,0.357-0.08,0.513,0.021l18.426,12.045c0.143,0.094,0.228,0.252,0.226,0.422    l-0.022,2.688c-0.001,0.182-0.103,0.349-0.263,0.435C28.198,78.945,28.116,78.965,28.035,78.965z M10.132,66.32l17.409,11.232    l0.013-1.506L10.132,64.658V66.32z"
+   id="path24" />
+	</g>
+	<g
+   id="g32">
+		<rect
+   x="28.035"
+   y="68.193"
+   fill="#E6E6E6"
+   width="2.253"
+   height="10.273"
+   id="rect28" />
+		<path
+   d="M30.789,78.965h-3.255v-11.27h3.255V78.965z M28.535,77.968h1.252v-9.276h-1.252V77.968z"
+   id="path30" />
+	</g>
+	<g
+   id="g38">
+		<rect
+   x="4.686"
+   y="68.193"
+   fill="#E6E6E6"
+   width="2.253"
+   height="10.273"
+   id="rect34" />
+		<path
+   d="M7.439,78.965H4.185v-11.27h3.255V78.965z M5.187,77.968h1.252v-9.276H5.187V77.968z"
+   id="path36" />
+	</g>
+	<g
+   id="g44">
+		<rect
+   x="7.378"
+   y="56.318"
+   fill="#E6E6E6"
+   width="2.253"
+   height="10.273"
+   id="rect40" />
+		<path
+   d="M10.132,67.09H6.877V55.82h3.255V67.09z M7.879,66.094h1.252v-9.276H7.879V66.094z"
+   id="path42" />
+	</g>
+	<g
+   id="g50">
+		<rect
+   x="24.759"
+   y="56.318"
+   fill="#E6E6E6"
+   width="2.253"
+   height="10.273"
+   id="rect46" />
+		<path
+   d="M27.513,67.09h-3.255V55.82h3.255V67.09z M25.26,66.094h1.251v-9.276H25.26V66.094z"
+   id="path48" />
+	</g>
+	<g
+   id="g63">
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="15.1885"
+   y1="35.5269"
+   x2="19.4414"
+   y2="35.5269">
+			<stop
+   offset="0"
+   style="stop-color:#666666"
+   id="stop52" />
+			<stop
+   offset="0.5054"
+   style="stop-color:#FFFFFF"
+   id="stop54" />
+			<stop
+   offset="1"
+   style="stop-color:#666666"
+   id="stop56" />
+			<a:midPointStop
+   offset="0"
+   style="stop-color:#666666" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#666666" />
+			<a:midPointStop
+   offset="0.5054"
+   style="stop-color:#FFFFFF" />
+			<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FFFFFF" />
+			<a:midPointStop
+   offset="1"
+   style="stop-color:#666666" />
+		</linearGradient>
+		<rect
+   x="15.188"
+   y="0.498"
+   fill="url(#SVGID_1_)"
+   width="4.253"
+   height="70.058"
+   id="rect59" />
+		<path
+   d="M19.942,71.055h-5.255V0h5.255V71.055z M15.688,70.057h3.252V0.997h-3.252V70.057z"
+   id="path61" />
+	</g>
+</g>
+</svg>

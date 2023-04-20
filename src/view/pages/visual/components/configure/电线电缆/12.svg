@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="134.891px"
+   height="131.139px"
+   viewBox="379.694 520.67 134.891 131.139"
+   enable-background="new 379.694 520.67 134.891 131.139"
+   xml:space="preserve"
+   sodipodi:docname="电线与电缆-12.svg"><metadata
+   id="metadata30"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs28" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview26" />
+<g
+   id="g23">
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="462.5518"
+   y1="190.708"
+   x2="433.8545"
+   y2="292.058"
+   gradientTransform="matrix(1 0 0 -1 8.3398 820.6064)">
+		<stop
+   offset="0"
+   style="stop-color:#B28114"
+   id="stop2" />
+		<stop
+   offset="0.4729"
+   style="stop-color:#F4BC4A"
+   id="stop4" />
+		<stop
+   offset="1"
+   style="stop-color:#D6A322"
+   id="stop6" />
+	</linearGradient>
+	<path
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M512.86,565.824   c-4.936-21.544-21.886-38.494-43.43-43.43c-4.185-0.961-8.525-1.475-13.002-1.475c-31.979,0-57.904,25.926-57.904,57.905   c0,4.476,0.5,8.816,1.475,13.002c4.935,21.544,21.885,38.494,43.429,43.429c4.186,0.961,8.526,1.476,13.002,1.476   c31.979,0,57.905-25.927,57.905-57.905C514.335,574.351,513.835,570.009,512.86,565.824z"
+   id="path9" />
+	<path
+   fill="#B28114"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M501.371,575.026   c-5.028-21.949-22.297-39.219-44.246-44.246c-4.263-0.979-8.688-1.502-13.247-1.502c-32.58,0-58.994,26.414-58.994,58.995   c0,4.559,0.509,8.982,1.502,13.245c5.027,21.949,22.297,39.22,44.246,44.246c4.263,0.979,8.688,1.502,13.246,1.502   c32.581,0,58.995-26.413,58.995-58.994C502.873,583.714,502.363,579.29,501.371,575.026z"
+   id="path11" />
+	<path
+   fill="#D6A322"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M452.185,535.072l-70.738,70.739   c-0.992-4.264-1.502-8.688-1.502-13.246c0-32.581,26.414-58.995,58.995-58.995C443.497,533.57,447.922,534.093,452.185,535.072z"
+   id="path13" />
+	<path
+   fill="#D6A322"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M497.933,592.565   c0,32.58-26.414,58.993-58.993,58.993c-4.561,0-8.984-0.521-13.247-1.502l70.738-70.738   C497.423,583.582,497.933,588.006,497.933,592.565z"
+   id="path15" />
+	<path
+   fill="#F4BC4A"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M496.431,579.318l-70.738,70.738   c-21.949-5.026-39.219-22.297-44.246-44.245l70.738-70.739C474.134,540.101,491.403,557.369,496.431,579.318z"
+   id="path17" />
+	<circle
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="438.938"
+   cy="592.565"
+   r="11.794"
+   id="circle19" />
+	<path
+   fill="#A3750F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M443.185,602.37   c-5.896,0-10.678-4.781-10.678-10.678c0-5.409,4.027-9.868,9.245-10.569c-0.903-0.222-1.843-0.353-2.813-0.353   c-6.516,0-11.796,5.279-11.796,11.795c0,6.514,5.28,11.795,11.796,11.795c2.664,0,5.114-0.896,7.09-2.387   C445.122,602.226,444.17,602.37,443.185,602.37z"
+   id="path21" />
+</g>
+</svg>

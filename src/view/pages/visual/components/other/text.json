@@ -1,0 +1,24 @@
+{
+  "value": "text",
+  "title": "文本",
+  "type": "text",
+  "sort": 1,
+  "create_type": "draggable",
+  "props": ["prop_data"],
+  "defaultStyle": {
+    "width": "60px",
+    "height": "60px"
+  },
+  "components": [
+    {
+      "value": "text",
+      "title": "文本1",
+      "name": "text",
+      "style": {
+        "width": "40px",
+        "height": "40px"
+      },
+      "image_src": "/media/visual-editor/other/text/t01.svg"
+    }
+  ]
+}

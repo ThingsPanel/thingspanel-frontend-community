@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="136.6px"
+   height="104.75px"
+   viewBox="207.861 381.438 136.6 104.75"
+   enable-background="new 207.861 381.438 136.6 104.75"
+   xml:space="preserve"
+   sodipodi:docname="电线与电缆-08.svg"><metadata
+   id="metadata56"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs54" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview52" />
+<g
+   id="g49">
+	
+		<polygon
+   fill="#3FA5FF"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   335.794,485.938 231.111,485.938 231.111,452.206 208.111,437.438 309.324,437.438 309.324,444.438 313.128,444.438    335.794,437.438  "
+   id="polygon2" />
+	<g
+   id="g8">
+		
+			<rect
+   x="211.606"
+   y="401.438"
+   fill="#E4E5E6"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="93.913"
+   height="12"
+   id="rect4" />
+		
+			<rect
+   x="211.606"
+   y="413.438"
+   fill="#CCCCCC"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="93.913"
+   height="24"
+   id="rect6" />
+	</g>
+	<g
+   id="g16">
+		
+			<rect
+   x="255.344"
+   y="391.771"
+   fill="#CCCCCC"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="5.479"
+   height="9.667"
+   id="rect10" />
+		
+			<rect
+   x="260.823"
+   y="391.771"
+   fill="#B7B7B7"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="5.48"
+   height="9.667"
+   id="rect12" />
+		
+			<rect
+   x="266.304"
+   y="391.771"
+   fill="#A6A7AB"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="5.479"
+   height="9.667"
+   id="rect14" />
+	</g>
+	
+		<rect
+   x="305.52"
+   y="413.854"
+   fill="#A6A7AB"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="7.608"
+   height="11.168"
+   id="rect18" />
+	
+		<polygon
+   fill="#E4E5E6"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   344.211,435.104 313.128,435.104 313.128,413.854 335.794,413.854  "
+   id="polygon20" />
+	
+		<rect
+   x="313.128"
+   y="435.104"
+   fill="#A6A7AB"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="22.666"
+   height="10.626"
+   id="rect22" />
+	
+		<rect
+   x="305.52"
+   y="401.438"
+   fill="#035AA6"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="3.806"
+   height="36"
+   id="rect24" />
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="280.5171"
+   y1="426.543"
+   x2="317.6465"
+   y2="426.543"
+   gradientTransform="matrix(1 0 0 -1 8.3398 820.6064)">
+		<stop
+   offset="0"
+   style="stop-color:#035AA6"
+   id="stop26" />
+		<stop
+   offset="0.5"
+   style="stop-color:#70A1CC"
+   id="stop28" />
+		<stop
+   offset="1"
+   style="stop-color:#035AA6"
+   id="stop30" />
+	</linearGradient>
+	
+		<polygon
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   309.311,401.438 325.986,386.688 288.857,386.688 305.533,401.438  "
+   id="polygon33" />
+	
+		<rect
+   x="288.857"
+   y="381.688"
+   fill="#3FA5FF"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="37.129"
+   height="5"
+   id="rect35" />
+	
+		<polygon
+   fill="#3FA5FF"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   211.606,437.438 211.606,401.438 208.111,401.438 208.111,437.438 231.861,452.688 235.424,452.688  "
+   id="polygon37" />
+	
+		<rect
+   x="237.527"
+   y="456.105"
+   fill="#333333"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="76.496"
+   height="25.834"
+   id="rect39" />
+	
+		<polygon
+   fill="#333333"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   256.361,439.855 218.028,439.855 236.443,451.605 256.361,451.605  "
+   id="polygon41" />
+	
+		<rect
+   x="258.186"
+   y="439.855"
+   fill="#333333"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="23.938"
+   height="11.75"
+   id="rect43" />
+	
+		<rect
+   x="283.812"
+   y="439.855"
+   fill="#333333"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="23.938"
+   height="11.75"
+   id="rect45" />
+	
+		<polygon
+   fill="#3FA5FF"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   314.022,444.438 300.82,444.438 305.625,437.438 309.22,437.438  "
+   id="polygon47" />
+</g>
+</svg>

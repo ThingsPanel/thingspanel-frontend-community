@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="412px" height="198px" viewBox="0 0 412 198" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 61 (89581) - https://sketch.com -->
+    <title>活跃数据</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <polygon id="path-1" points="7.88409762e-13 4.84716157 6.50925327 -3.10862447e-14 279.426394 -1.13686838e-13 299.441489 9.00000301 396.410632 9.08134139 402.914259 15.0990707 402.879217 190.01369 396.416337 195.999676 6.46276596 195.999676 0 190"></polygon>
+        <filter x="-1.2%" y="-2.6%" width="102.5%" height="105.1%" filterUnits="objectBoundingBox" id="filter-2">
+            <feGaussianBlur stdDeviation="5" in="SourceAlpha" result="shadowBlurInner1"></feGaussianBlur>
+            <feOffset dx="0" dy="0" in="shadowBlurInner1" result="shadowOffsetInner1"></feOffset>
+            <feComposite in="shadowOffsetInner1" in2="SourceAlpha" operator="arithmetic" k2="-1" k3="1" result="shadowInnerInner1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0.101960784   0 0 0 0 0.356862745   0 0 0 0 0.792156863  0 0 0 1 0" type="matrix" in="shadowInnerInner1"></feColorMatrix>
+        </filter>
+        <path d="M402.845745,31 L402.845745,31.9995359 L299.642128,31.999 L278.972302,37.998935 L278.971128,37.996 L1.07712766,37.9967511 L1.07712766,36.9972152 L278.879128,36.997 L299.475128,31.02 L299.475553,31 L402.845745,31 Z" id="path-3"></path>
+        <filter x="-2.2%" y="-128.6%" width="104.5%" height="357.2%" filterUnits="objectBoundingBox" id="filter-4">
+            <feOffset dx="0" dy="0" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="3" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.101960784   0 0 0 0 0.356862745   0 0 0 0 0.792156863  0 0 0 1 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="页面1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="首页缩小" transform="translate(-460.000000, -165.000000)">
+            <g id="分组-31" transform="translate(78.000000, 98.000000)">
+                <g id="活跃数据" transform="translate(386.000000, 68.000000)">
+                    <g id="Group-Copy-8">
+                        <g id="框4">
+                            <g id="分组-22-copy" transform="translate(0.077128, 0.000000)">
+                                <g id="矩形">
+                                    <use fill-opacity="0.50317029" fill="#08276A" fill-rule="evenodd" xlink:href="#path-1"></use>
+                                    <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                                    <path stroke="#1A5BCA" stroke-width="1" d="M0.5,5.09823382 L0.5,189.781929 L6.65907599,195.499676 L396.220358,195.499676 L402.37926,189.795237 L402.414216,15.3175906 L396.214619,9.58117715 L299.44107,9.49999982 L299.236436,9.45601865 L279.31915,0.5 L6.67496819,0.5 L0.5,5.09823382 Z" stroke-linejoin="square"></path>
+                                </g>
+                                <polyline id="路径" stroke="#00A3FF" stroke-width="2" stroke-linecap="round" points="0 17 0 6.5763037 7.50173915 0 21.5425532 0"></polyline>
+                                <polyline id="路径-copy" stroke="#00A3FF" stroke-width="2" stroke-linecap="round" transform="translate(10.232713, 187.000000) rotate(-90.000000) translate(-10.232713, -187.000000) " points="1.23271277 197.232713 1.23271277 183.4833 7.58463054 176.767287 19.2327128 176.767287"></polyline>
+                                <polyline id="路径-copy" stroke="#00A3FF" stroke-width="2" stroke-linecap="round" transform="translate(392.613032, 187.000000) scale(-1, 1) rotate(-90.000000) translate(-392.613032, -187.000000) " points="383.613032 197.232713 383.613032 183.4833 389.96495 176.767287 401.613032 176.767287"></polyline>
+                                <polyline id="路径-copy" stroke="#00A3FF" stroke-width="2" stroke-linecap="round" transform="translate(392.613032, 18.000000) scale(-1, -1) rotate(-90.000000) translate(-392.613032, -18.000000) " points="383.613032 28.2327128 383.613032 14.4832996 389.96495 7.76728723 401.613032 7.76728723"></polyline>
+                                <g id="合并形状">
+                                    <use fill="black" fill-opacity="1" filter="url(#filter-4)" xlink:href="#path-3"></use>
+                                    <use fill="#1A5BCA" fill-rule="evenodd" xlink:href="#path-3"></use>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

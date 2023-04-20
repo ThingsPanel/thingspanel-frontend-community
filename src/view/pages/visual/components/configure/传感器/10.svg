@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="127.645px"
+   height="108.834px"
+   viewBox="168.16 447.748 127.645 108.834"
+   enable-background="new 168.16 447.748 127.645 108.834"
+   xml:space="preserve"
+   sodipodi:docname="传感器-10.svg"><metadata
+   id="metadata41"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs39" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview37" />
+<g
+   id="g34">
+	<g
+   id="g6">
+		
+			<rect
+   x="205.99"
+   y="475.376"
+   fill="#B2B2B2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="10.8"
+   height="51.717"
+   id="rect2" />
+		
+			<rect
+   x="205.99"
+   y="475.376"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="10.8"
+   height="30.819"
+   id="rect4" />
+	</g>
+	
+		<rect
+   x="216.79"
+   y="480.469"
+   fill="#7F7F7F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="5.269"
+   height="41.619"
+   id="rect8" />
+	
+		<rect
+   x="200.722"
+   y="496.888"
+   fill="#7F7F7F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="5.268"
+   height="8.692"
+   id="rect10" />
+	
+		<rect
+   x="192.205"
+   y="494.166"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="8.517"
+   height="14.225"
+   id="rect12" />
+	
+		<rect
+   x="187.024"
+   y="496.888"
+   fill="#7F7F7F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="5.268"
+   height="8.692"
+   id="rect14" />
+	
+		<rect
+   x="168.41"
+   y="499.609"
+   fill="#7F7F7F"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="10.098"
+   height="3.337"
+   id="rect16" />
+	
+		<rect
+   x="178.419"
+   y="495.834"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="8.517"
+   height="10.888"
+   id="rect18" />
+	<polygon
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="284.751,533.503 222.059,533.678    222.059,468.79 242.341,464.839 284.751,520.332  "
+   id="polygon20" />
+	
+		<rect
+   x="230.576"
+   y="533.503"
+   fill="#B2B2B2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="44.868"
+   height="22.829"
+   id="rect22" />
+	
+		<rect
+   x="239.444"
+   y="533.503"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="27.132"
+   height="22.829"
+   id="rect24" />
+	<g
+   id="g32">
+		<polygon
+   fill="#CCCCCC"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="279.307,490.127 266.751,473.356     237.512,448.068 226.537,456.234 284.576,533.503 295.463,525.337   "
+   id="polygon26" />
+		
+			<rect
+   x="265.218"
+   y="476.322"
+   transform="matrix(-0.6002 -0.7999 0.7999 -0.6002 57.4589 988.2133)"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="20.986"
+   height="6.849"
+   id="rect28" />
+		
+			<rect
+   x="212.696"
+   y="484.005"
+   transform="matrix(-0.6002 -0.7999 0.7999 -0.6002 25.0133 994.2112)"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="96.589"
+   height="13.698"
+   id="rect30" />
+	</g>
+</g>
+</svg>

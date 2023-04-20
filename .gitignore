@@ -1,6 +1,8 @@
 .DS_Store
 node_modules
 dist
+!\src\core\config\i18n\ch.js
+\src\core\config\i18n
 
 # local env files
 .env.local

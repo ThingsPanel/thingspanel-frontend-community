@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="108.832px"
+   height="94.5px"
+   viewBox="372.944 202.877 108.832 94.5"
+   enable-background="new 372.944 202.877 108.832 94.5"
+   xml:space="preserve"
+   sodipodi:docname="加工设备-07.svg"><metadata
+   id="metadata55"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs53" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview51" />
+<g
+   id="g48">
+	
+		<rect
+   x="373.194"
+   y="215.46"
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="98.666"
+   height="32"
+   id="rect2" />
+	<polygon
+   opacity="0.6"
+   fill="#99CCCC"
+   enable-background="new    "
+   points="471.027,223.861 374.027,231.861 374.027,215.861    471.027,215.861  "
+   id="polygon4" />
+	<g
+   id="g10">
+		<line
+   fill="none"
+   stroke="#99CCCC"
+   stroke-miterlimit="10"
+   x1="402.194"
+   y1="247.46"
+   x2="402.194"
+   y2="237.627"
+   id="line6" />
+		<line
+   fill="none"
+   stroke="#99CCCC"
+   stroke-miterlimit="10"
+   x1="442.86"
+   y1="247.46"
+   x2="442.86"
+   y2="237.627"
+   id="line8" />
+	</g>
+	
+		<rect
+   x="471.86"
+   y="215.46"
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="3.667"
+   height="32"
+   id="rect12" />
+	
+		<rect
+   x="475.527"
+   y="223.861"
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="5.999"
+   height="15.199"
+   id="rect14" />
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="372.6152"
+   y1="693.5801"
+   x2="372.6152"
+   y2="705.9121"
+   gradientTransform="matrix(1 0 0 -1 8.3398 909.04)">
+		<stop
+   offset="0.0197"
+   style="stop-color:#5E7E91"
+   id="stop16" />
+		<stop
+   offset="0.5"
+   style="stop-color:#99CCCC"
+   id="stop18" />
+		<stop
+   offset="1"
+   style="stop-color:#5E7E91"
+   id="stop20" />
+	</linearGradient>
+	
+		<rect
+   x="378.193"
+   y="203.127"
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="5.522"
+   height="12.333"
+   id="rect23" />
+	
+		<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="381.4102"
+   y1="693.5801"
+   x2="381.4102"
+   y2="705.9121"
+   gradientTransform="matrix(1 0 0 -1 8.3398 909.04)">
+		<stop
+   offset="0.0197"
+   style="stop-color:#5E7E91"
+   id="stop25" />
+		<stop
+   offset="0.5"
+   style="stop-color:#99CCCC"
+   id="stop27" />
+		<stop
+   offset="1"
+   style="stop-color:#5E7E91"
+   id="stop29" />
+	</linearGradient>
+	
+		<rect
+   x="383.717"
+   y="203.127"
+   fill="url(#SVGID_2_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="12.063"
+   height="12.333"
+   id="rect32" />
+	<polygon
+   fill="#99CCCC"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="411.21,215.46 391.21,215.46    395.716,203.127 406.704,203.127  "
+   id="polygon34" />
+	<polygon
+   fill="#99CCCC"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="433.845,215.46 453.845,215.46    449.339,203.127 438.351,203.127  "
+   id="polygon36" />
+	
+		<rect
+   x="377.194"
+   y="247.46"
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="4.999"
+   height="41.667"
+   id="rect38" />
+	
+		<rect
+   x="462.861"
+   y="247.46"
+   fill="#5E7E91"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="4.999"
+   height="41.667"
+   id="rect40" />
+	
+		<rect
+   x="373.194"
+   y="247.46"
+   fill="#99CCCC"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="4.999"
+   height="49.667"
+   id="rect42" />
+	
+		<rect
+   x="466.028"
+   y="247.46"
+   fill="#99CCCC"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="4.999"
+   height="49.667"
+   id="rect44" />
+	
+		<rect
+   x="378.193"
+   y="269.793"
+   fill="#99CCCC"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="87.168"
+   height="5"
+   id="rect46" />
+</g>
+</svg>

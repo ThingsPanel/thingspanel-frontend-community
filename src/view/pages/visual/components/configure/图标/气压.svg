@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 44.7 44.7"
+   style="enable-background:new 0 0 44.7 44.7;"
+   xml:space="preserve"
+   sodipodi:docname="UPS电源_151.svg"><metadata
+   id="metadata21"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs19" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview17" />
+<style
+   type="text/css"
+   id="style2">
+	.st0{fill:#1296DB;}
+</style>
+<title
+   id="title4">资源 151</title>
+<g
+   id="图层_2_1_">
+	<g
+   id="图层_2-2">
+		<path
+   class="st0"
+   d="M22.3,44.7C10,44.7,0,34.7,0,22.3S10,0,22.3,0s22.3,10,22.3,22.3l0,0C44.6,34.7,34.7,44.6,22.3,44.7z     M22.3,3.4c-10.5,0-18.9,8.5-18.9,18.9s8.5,18.9,18.9,18.9c10.5,0,18.9-8.5,18.9-18.9c0,0,0,0,0,0C41.2,11.9,32.8,3.4,22.3,3.4z"
+   id="path6" />
+		<path
+   class="st0"
+   d="M22.5,23.3c-0.6,0-1.2-0.5-1.2-1.1c0-0.3,0.1-0.7,0.4-0.9l7.3-7c0.4-0.4,1.2-0.4,1.6,0c0.4,0.5,0.4,1.2,0,1.6    c0,0,0,0,0,0l-7.3,7C23.1,23.1,22.8,23.2,22.5,23.3z"
+   id="path8" />
+		<path
+   class="st0"
+   d="M38.1,23.5c-0.3,0-0.6-0.1-0.8-0.3c-0.2-0.2-0.3-0.5-0.3-0.8c0-8.1-6.6-14.6-14.6-14.6S7.7,14.2,7.7,22.3    c0,0.6-0.5,1.1-1.1,1.1c-0.6,0-1.1-0.5-1.1-1.1C5.2,13,12.6,5.2,21.9,5c9.3-0.2,17.1,7.2,17.3,16.5c0,0.3,0,0.5,0,0.8    c0,0.3-0.1,0.6-0.3,0.8C38.7,23.4,38.4,23.5,38.1,23.5z"
+   id="path10" />
+		<path
+   class="st0"
+   d="M20.2,24.5c1.2,1.2,3.1,1.2,4.3,0c1.2-1.2,1.2-3.1,0-4.3l0,0c-1.2-1.2-3.1-1.2-4.3,0S19,23.3,20.2,24.5    L20.2,24.5z"
+   id="path12" />
+	</g>
+</g>
+</svg>

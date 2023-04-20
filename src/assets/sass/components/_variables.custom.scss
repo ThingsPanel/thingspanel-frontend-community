@@ -1,0 +1,285 @@
+//
+// Custom Components Config
+// To override any custom variable safely you can use _variables.demo.scss
+//
+
+// Base icons(See: plugins/keenthemes-icons/font/ki.css)
+$ki-types: (
+	arrowDown: 	'\f109',
+	arrowUp: 	'\f10e',
+	arrowBack: 	'\f106',
+	arrowNext: 	'\f105',
+	boldClose: 	'\f113',
+	close: 		'\f130',
+	plus: 		'\f10d',
+	minus: 		'\f10a',
+	check: 		'\f108',
+	hide: 		'\f115',
+	code: 		'\f116',
+	copy: 		'\f117'
+) !default;
+
+// Heights & Widths
+$heights-and-widths: (
+  auto: auto,
+  1px: 1px,
+  2px: 2px,
+  3px: 3px,
+  4px: 4px,
+  5px: 5px,
+  10px: 10px,
+  15px: 15px,
+  20px: 20px,
+  25px: 25px,
+  30px: 30px,
+  35px: 35px,
+  40px: 40px,
+  45px: 45px,
+  50px: 50px,
+  55px: 55px,
+  60px: 60px,
+  65px: 65px,
+  70px: 70px,
+  75px: 75px,
+  80px: 80px,
+  85px: 85px,
+  90px: 90px,
+  95px: 95px,
+  100px: 100px,
+  125px: 125px,
+  150px: 150px,
+  175px: 175px,
+  200px: 200px,
+  225px: 225px,
+  250px: 250px,
+  275px: 275px,
+  300px: 300px,
+  325px: 325px,
+  350px: 350px,
+  375px: 375px,
+  400px: 400px,
+  425px: 425px,
+  450px: 450px,
+  475px: 475px,
+  500px: 500px,
+  550px: 550px,
+  600px: 600px,
+  650px: 650px,
+  700px: 700px,
+  750px: 750px,
+  800px: 800px,
+  850px: 850px,
+  900px: 900px,
+  950px: 950px,
+  1000px: 1000px,
+) !default;
+
+// Icon Sizes
+$icon-sizes: (
+    ss: 0.5rem,
+    xs: 0.65rem,
+    sm: 0.75rem,
+    nm: 0.85rem,
+    md: 1.25rem,
+    lg: 1.5rem,
+    xl: 1.75rem,
+    xxl: 2.25rem,
+
+    1x: 1rem,
+    2x: 2rem,
+    3x: 3rem,
+    4x: 4rem,
+    5x: 5rem,
+    6x: 6rem,
+    7x: 7rem,
+    8x: 8rem,
+    9x: 9rem,
+    10x: 10rem
+);
+
+// SVG Icon Sizes
+$svg-icon-sizes: (
+    sm: 1.25rem,
+    md: 1.5rem,
+    lg: 1.75rem,
+    xl: 2rem,
+    xxl: 2.25rem,
+
+    1x: 1rem,
+    2x: 2rem,
+    3x: 3rem,
+    4x: 4rem,
+    5x: 5rem,
+    6x: 6rem,
+    7x: 7rem,
+    8x: 8rem,
+    9x: 9rem,
+	10x: 10rem,
+
+	full: 100%
+);
+
+// Symbol Sizes
+$symbol-sizes: (
+    20: 20px,
+    25: 25px,
+    30: 30px,
+    35: 35px,
+    40: 40px,
+    45: 45px,
+    default: 50px,
+    50: 50px,
+    55: 55px,
+    60: 60px,
+    65: 65px,
+    70: 70px,
+    75: 75px,
+    80: 80px,
+    85: 85px,
+    90: 90px,
+    95: 95px,
+    100:100px,
+    120:120px,
+    130:130px,
+    140:140px,
+    150:150px
+);
+
+// Burger Icon
+$burger-icon-config: (
+    width: 24px,
+    height: 24px,
+    transition: all 0.3s,
+    thickness: 3px,
+    space: 5px,
+    radius: 3px,
+    theme: (
+        default: $text-muted,
+        hover: $primary,
+        active: $primary
+    )
+) !default;
+
+// Checkbox
+$checkbox-config: (
+	transition: all 0.3s ease,
+    sizes: (
+        default: (
+            base: 18px,
+            tick:  10px,
+        ),
+        lg: (
+            base: 24px,
+            tick:  12px,
+        )
+    ),
+	color: $gray-200,
+	outlineColor: $gray-400
+) !default;
+
+// Radio
+$radio-config: (
+	transition: all 0.3s ease,
+    sizes: (
+        default: (
+            base: 18px,
+            tick:  6px,
+        ),
+        lg: (
+            base: 24px,
+            tick:  8px,
+        )
+    ),
+	color: $gray-200,
+	outlineColor: $gray-400
+) !default;
+
+// Switch
+$switch-config: (
+	color: $gray-200,
+	tick: $primary
+) !default;
+
+// Scrolltop
+$scrolltop-config: (
+    bottom: (
+        desktop: 40px,
+        tablet-and-mobile: 30px
+    ),
+    right: (
+        desktop: 20px,
+        tablet-and-mobile: 15px
+    ),
+    size: (
+        desktop: 36px,
+        tablet-and-mobile: 30px
+    )
+) !default;
+
+// Datatable
+$datatable-config: (
+	// Base
+	spacer: 					$card-spacer-x,
+	bg: 						#ffffff,
+
+	// Scrollbar
+	scrollbar-bg: 				$gray-200,
+
+	// Head
+	head-bg: 					$gray-100,
+	head-color: 				$dark,
+	head-sorted-color: 			$primary,
+	head-icon-color: 			$primary,
+    head-compact-color:         $text-muted,
+    head-compact-font-size:     0.9rem,
+    head-compact-text-transform:uppercase,
+    head-compact-font-weight:   600,
+    head-compact-letter-spacing:0.1rem,
+
+	// Body cell
+	body-color: 				$dark-75,
+
+    // Cell padding
+    cell-padding-x:             1rem,
+    cell-padding-y:             1rem,
+    head-cell-padding-x:        1rem,
+    head-cell-padding-y:        0.75rem,
+
+	// Row colors
+	row-border: 				$gray-200,
+	row-bg-even: 				transparent,
+	row-bg-hover: 				transparent,
+	row-bg-active: 				$gray-100,
+
+	// Lock table shadow
+	lock-shadow: 				0px 10px 17px 5px rgba(#000000, 0.075),
+
+	// Subtable
+	subtable-toggle-icon: 		$primary,
+	subtable-expanded-bg: 		$gray-100,
+	subtable-pager-pagel: 		$gray-100,
+	subtable-shadow: 			0px 10px 15px 1px rgba(#000000, 0.05),
+
+	detail-icon-color: 			$primary,
+	detail-icon-color-hover: 	$primary,
+
+	// Pagination colors
+    page-spacer:                1rem,
+	page-size: 					2.25rem,
+	page-bg:                    darken($gray-100, 2%),
+	page-bg-hover:              $primary,
+	page-bg-active:             $primary,
+
+	page-color: 				$dark-50,
+	page-color-hover: 			theme-inverse-color('primary'),
+	page-color-active: 			theme-inverse-color('primary'),
+
+    page-icon-color: 			$gray-500,
+	page-icon-color-hover: 		theme-inverse-color('primary'),
+	page-icon-color-active: 	theme-inverse-color('primary'),
+
+	page-info-bg: 				darken($gray-100, 2%),
+	page-info-bg-hover: 		$primary,
+	page-info-color: 			$dark-50,
+	page-info-color-hover:	 	theme-inverse-color('primary')
+) !default;

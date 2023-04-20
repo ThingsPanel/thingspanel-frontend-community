@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="52.449px"
+   height="95.527px"
+   viewBox="159.155 544.339 52.449 95.527"
+   enable-background="new 159.155 544.339 52.449 95.527"
+   xml:space="preserve"
+   sodipodi:docname="01-18.svg"><metadata
+   id="metadata19"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs17" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview15" />
+<g
+   id="g12">
+	<polygon
+   fill="#B2B2B2"
+   points="185.377,592.108 159.646,545.032 211.114,545.032  "
+   id="polygon2" />
+	<polygon
+   fill="#BFBFBF"
+   points="159.646,639.174 159.646,545.032 185.377,592.108  "
+   id="polygon4" />
+	<polygon
+   fill="#D9D9D9"
+   points="211.114,639.182 159.646,639.182 159.646,639.174 185.377,592.108 211.113,639.174  "
+   id="polygon6" />
+	<polygon
+   fill="#CCCCCC"
+   points="211.113,639.174 185.377,592.108 211.114,545.032  "
+   id="polygon8" />
+	
+		<rect
+   x="159.405"
+   y="544.589"
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="51.949"
+   height="95.027"
+   id="rect10" />
+</g>
+</svg>

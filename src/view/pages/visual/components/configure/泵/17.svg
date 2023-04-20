@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="61.423px"
+   height="76.323px"
+   viewBox="357.919 319.53 61.423 76.323"
+   enable-background="new 357.919 319.53 61.423 76.323"
+   xml:space="preserve"
+   sodipodi:docname="泵-18.svg"><metadata
+   id="metadata67"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs65" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview63" />
+<g
+   id="g60">
+	
+		<path
+   fill="#FF1A00"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   d="   M401.742,337.248v-0.066c-2.318-0.596-3.974-2.649-3.974-5.165v-2.583h-18.211v6.225c-12.383,3.841-21.389,15.429-21.389,29.071   c0,16.82,13.642,30.461,30.461,30.461c16.82,0,30.462-13.642,30.462-30.461C419.092,352.61,412.006,342.147,401.742,337.248z    M388.63,383.271c-10.264,0-18.542-8.278-18.542-18.542c0-10.065,8.079-18.277,18.079-18.542c1.522,0,1.787,0.066,2.715,0.066   c0.331,0,0.993,0.199,0.86,0.199c8.741,1.457,15.43,9.072,15.43,18.277C407.172,374.993,398.895,383.271,388.63,383.271z"
+   id="path2" />
+	<circle
+   fill="#E51F13"
+   stroke="#E51F13"
+   stroke-miterlimit="10"
+   cx="388.63"
+   cy="364.729"
+   r="18.542"
+   id="circle4" />
+	<path
+   fill="none"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M388.63,346.187   c10.265,0,18.542,8.278,18.542,18.542s-8.277,18.542-18.542,18.542"
+   id="path6" />
+	
+		<circle
+   fill="#B21D14"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   cx="388.63"
+   cy="364.729"
+   r="14.039"
+   id="circle8" />
+	
+		<circle
+   fill="#FF1A00"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   cx="380.286"
+   cy="356.915"
+   r="1.523"
+   id="circle10" />
+	
+		<circle
+   fill="#FF1A00"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   cx="396.444"
+   cy="356.385"
+   r="1.523"
+   id="circle12" />
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="460.4316"
+   y1="158.7837"
+   x2="460.4316"
+   y2="204.7837"
+   gradientTransform="matrix(0.6622 0 0 -0.6622 83.7294 500.3389)">
+		<stop
+   offset="0"
+   style="stop-color:#B21D14;stop-opacity:0"
+   id="stop14" />
+		<stop
+   offset="1"
+   style="stop-color:#4C0D09"
+   id="stop16" />
+	</linearGradient>
+	<path
+   fill="url(#SVGID_1_)"
+   d="M396.974,364.729v29.27c-2.648,0.794-5.43,1.192-8.344,1.192c-2.913,0-5.694-0.397-8.344-1.192   v-29.27H396.974z"
+   id="path19" />
+	
+		<circle
+   fill="#D9D9D9"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   cx="388.63"
+   cy="364.729"
+   r="8.344"
+   id="circle21" />
+	
+		<circle
+   fill="#333333"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   cx="388.63"
+   cy="364.729"
+   r="6.49"
+   id="circle23" />
+	
+		<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="443.5771"
+   y1="264.4341"
+   x2="477.3271"
+   y2="264.4341"
+   gradientTransform="matrix(0.6622 0 0 -0.6622 83.7294 500.3389)">
+		<stop
+   offset="0"
+   style="stop-color:#FF1A00"
+   id="stop25" />
+		<stop
+   offset="0.5"
+   style="stop-color:#FFA59A"
+   id="stop27" />
+		<stop
+   offset="1"
+   style="stop-color:#FF1A00"
+   id="stop29" />
+	</linearGradient>
+	
+		<rect
+   x="377.438"
+   y="321.089"
+   fill="url(#SVGID_2_)"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="22.383"
+   height="8.278"
+   id="rect32" />
+	
+		<path
+   fill="#FF1A00"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   d="   M401.742,337.248L401.742,337.248c-2.318-0.663-4.04-2.782-4.04-5.298v-2.583h-18.211v6.291l0,0   c0.199,5.165,3.378,9.205,8.212,10.33c0.795,0.199,2.251,0.332,3.179,0.332c0.331,0,0.927,0.198,1.258,0.132"
+   id="path34" />
+	
+		<circle
+   fill="#FF1A00"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   cx="388.63"
+   cy="383.271"
+   r="4.238"
+   id="circle36" />
+	
+		<circle
+   fill="#FF1A00"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   cx="380.816"
+   cy="373.073"
+   r="1.523"
+   id="circle38" />
+	
+		<circle
+   fill="#FF1A00"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   cx="396.974"
+   cy="372.543"
+   r="1.523"
+   id="circle40" />
+	<g
+   id="g48">
+		
+			<rect
+   x="366.844"
+   y="391.085"
+   fill="#FF1A00"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="5.563"
+   height="5.827"
+   id="rect42" />
+		
+			<rect
+   x="374.988"
+   y="391.085"
+   fill="#FF1A00"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="9.007"
+   height="5.827"
+   id="rect44" />
+		
+			<rect
+   x="372.406"
+   y="391.085"
+   fill="#B21D14"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="2.582"
+   height="5.827"
+   id="rect46" />
+	</g>
+	<g
+   id="g56">
+		
+			<rect
+   x="404.854"
+   y="391.085"
+   fill="#FF1A00"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="5.563"
+   height="5.827"
+   id="rect50" />
+		
+			<rect
+   x="393.266"
+   y="391.085"
+   fill="#FF1A00"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="9.006"
+   height="5.827"
+   id="rect52" />
+		
+			<rect
+   x="402.271"
+   y="391.085"
+   fill="#B21D14"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="2.583"
+   height="5.827"
+   id="rect54" />
+	</g>
+	
+		<rect
+   x="384.061"
+   y="393.204"
+   fill="#B21D14"
+   stroke="#000000"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="9.205"
+   height="3.708"
+   id="rect58" />
+</g>
+</svg>

@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="98px"
+   height="79px"
+   viewBox="0 0 98 79"
+   enable-background="new 0 0 98 79"
+   xml:space="preserve"
+   sodipodi:docname="排风机_47-01.svg"><metadata
+   id="metadata99"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs97" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview95" />
+<g
+   id="g92">
+	<g
+   id="g6">
+		<rect
+   x="0.499"
+   y="0.5"
+   fill="#B2B2B2"
+   width="97.002"
+   height="78"
+   id="rect2" />
+		<path
+   fill="#231F20"
+   d="M98.001,79H-0.001V0h98.002V79z M0.999,78h96.002V1H0.999V78z"
+   id="path4" />
+	</g>
+	<rect
+   x="49"
+   y="0.5"
+   fill="#4C4C4C"
+   width="48.501"
+   height="70.936"
+   id="rect8" />
+	<rect
+   x="50.721"
+   y="2.121"
+   fill="#F0BD00"
+   width="45.058"
+   height="67.694"
+   id="rect10" />
+	<rect
+   x="0.499"
+   y="0.5"
+   fill="#F0BD00"
+   width="48.501"
+   height="70.936"
+   id="rect12" />
+	<rect
+   x="0.499"
+   y="0.5"
+   fill="#727272"
+   width="48.501"
+   height="17.938"
+   id="rect14" />
+	<rect
+   x="50.721"
+   y="2.121"
+   fill="#E6E6E6"
+   width="45.058"
+   height="0.995"
+   id="rect16" />
+	<g
+   id="g22">
+		<rect
+   x="0.499"
+   y="71.436"
+   fill="#CC9600"
+   width="97.002"
+   height="7.064"
+   id="rect18" />
+		<path
+   fill="#231F20"
+   d="M98.001,79H-0.001v-8.064h98.002V79z M0.999,78h96.002v-6.064H0.999V78z"
+   id="path20" />
+	</g>
+	<rect
+   x="89.786"
+   y="6.496"
+   fill="#231F20"
+   width="1.494"
+   height="7.94"
+   id="rect24" />
+	<rect
+   x="55.357"
+   y="6.496"
+   fill="#231F20"
+   width="1.492"
+   height="7.94"
+   id="rect26" />
+	<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="47.4937"
+   y1="60.6162"
+   x2="77.5302"
+   y2="-25.5218">
+		<stop
+   offset="0"
+   style="stop-color:#FFFFFF;stop-opacity:0"
+   id="stop28" />
+		<stop
+   offset="1"
+   style="stop-color:#FFFFFF"
+   id="stop30" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#FFFFFF;stop-opacity:0" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FFFFFF;stop-opacity:0" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#FFFFFF" />
+	</linearGradient>
+	<polygon
+   fill="url(#SVGID_1_)"
+   points="60.92,69.814 50.721,69.814 50.721,2.121 85.059,2.121  "
+   id="polygon33" />
+	<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="-1.9507"
+   y1="62.833"
+   x2="20.8454"
+   y2="-2.5411">
+		<stop
+   offset="0"
+   style="stop-color:#FFFFFF;stop-opacity:0"
+   id="stop35" />
+		<stop
+   offset="1"
+   style="stop-color:#FFFFFF"
+   id="stop37" />
+		<a:midPointStop
+   offset="0"
+   style="stop-color:#FFFFFF;stop-opacity:0" />
+		<a:midPointStop
+   offset="0.5"
+   style="stop-color:#FFFFFF;stop-opacity:0" />
+		<a:midPointStop
+   offset="1"
+   style="stop-color:#FFFFFF" />
+	</linearGradient>
+	<polygon
+   fill="url(#SVGID_2_)"
+   points="8.24,69.814 0.499,69.814 0.499,18.438 26.56,18.438  "
+   id="polygon40" />
+	<g
+   id="g78">
+		<g
+   id="g46">
+			<rect
+   x="6.419"
+   y="3.598"
+   fill="#231F20"
+   width="2.449"
+   height="7.327"
+   id="rect42" />
+			<rect
+   x="6.304"
+   y="3.598"
+   fill="#999999"
+   width="1.455"
+   height="7.327"
+   id="rect44" />
+		</g>
+		<g
+   id="g52">
+			<rect
+   x="6.304"
+   y="12.898"
+   fill="#231F20"
+   width="8.039"
+   height="2.442"
+   id="rect48" />
+			<rect
+   x="6.304"
+   y="12.784"
+   fill="#999999"
+   width="8.039"
+   height="1.931"
+   id="rect50" />
+		</g>
+		<g
+   id="g58">
+			<rect
+   x="17.253"
+   y="12.898"
+   fill="#231F20"
+   width="8.039"
+   height="2.442"
+   id="rect54" />
+			<rect
+   x="17.253"
+   y="12.784"
+   fill="#999999"
+   width="8.039"
+   height="1.931"
+   id="rect56" />
+		</g>
+		<g
+   id="g64">
+			<rect
+   x="11.894"
+   y="3.598"
+   fill="#231F20"
+   width="2.449"
+   height="7.327"
+   id="rect60" />
+			<rect
+   x="11.778"
+   y="3.598"
+   fill="#999999"
+   width="1.454"
+   height="7.327"
+   id="rect62" />
+		</g>
+		<g
+   id="g70">
+			<rect
+   x="17.368"
+   y="3.598"
+   fill="#231F20"
+   width="2.449"
+   height="7.327"
+   id="rect66" />
+			<rect
+   x="17.253"
+   y="3.598"
+   fill="#999999"
+   width="1.454"
+   height="7.327"
+   id="rect68" />
+		</g>
+		<g
+   id="g76">
+			<rect
+   x="22.842"
+   y="3.598"
+   fill="#231F20"
+   width="2.45"
+   height="7.327"
+   id="rect72" />
+			<rect
+   x="22.728"
+   y="3.598"
+   fill="#999999"
+   width="1.454"
+   height="7.327"
+   id="rect74" />
+		</g>
+	</g>
+	<g
+   id="g84">
+		<rect
+   x="30.005"
+   y="8.141"
+   fill="#231F20"
+   width="5.076"
+   height="3.961"
+   id="rect80" />
+		<rect
+   x="31.127"
+   y="6.837"
+   fill="#231F20"
+   width="2.833"
+   height="2.356"
+   id="rect82" />
+	</g>
+	<g
+   id="g90">
+		<rect
+   x="37.957"
+   y="8.141"
+   fill="#231F20"
+   width="5.076"
+   height="3.961"
+   id="rect86" />
+		<rect
+   x="39.079"
+   y="6.837"
+   fill="#231F20"
+   width="2.833"
+   height="2.356"
+   id="rect88" />
+	</g>
+</g>
+</svg>

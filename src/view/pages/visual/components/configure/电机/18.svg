@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="71px"
+   height="85px"
+   viewBox="0 0 71 85"
+   enable-background="new 0 0 71 85"
+   xml:space="preserve"
+   sodipodi:docname="电机_18-01.svg"><metadata
+   id="metadata57"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs55" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview53" />
+<g
+   id="g50">
+	<g
+   id="g6">
+		<rect
+   x="47.415"
+   y="0.5"
+   fill="#B2B2B2"
+   width="7.914"
+   height="84"
+   id="rect2" />
+		<path
+   d="M55.829,85h-8.914V0h8.914V85z M47.915,84h6.914V1h-6.914V84z"
+   id="path4" />
+	</g>
+	<g
+   id="g12">
+		<rect
+   x="55.329"
+   y="24.959"
+   fill="#B2B2B2"
+   width="2.309"
+   height="35.082"
+   id="rect8" />
+		<path
+   d="M58.138,60.541h-3.309V24.459h3.309V60.541z M55.829,59.541h1.309V25.459h-1.309V59.541z"
+   id="path10" />
+	</g>
+	<g
+   id="g18">
+		<rect
+   x="57.638"
+   y="40.063"
+   fill="#B2B2B2"
+   width="12.862"
+   height="4.875"
+   id="rect14" />
+		<path
+   d="M71,45.438H57.138v-5.875H71V45.438z M58.138,44.438H70v-3.875H58.138V44.438z"
+   id="path16" />
+	</g>
+	<g
+   id="g24">
+		<rect
+   x="0.5"
+   y="21.084"
+   fill="#808080"
+   width="46.915"
+   height="42.832"
+   id="rect20" />
+		<path
+   d="M47.915,64.416H0V20.584h47.915V64.416z M1,63.416h45.915V21.584H1V63.416z"
+   id="path22" />
+	</g>
+	<g
+   id="g30">
+		<rect
+   x="5.777"
+   y="19.146"
+   fill="#666666"
+   width="41.638"
+   height="3.875"
+   id="rect26" />
+		<path
+   d="M47.915,23.521H5.277v-4.875h42.638V23.521z M6.277,22.521h40.638v-2.875H6.277V22.521z"
+   id="path28" />
+	</g>
+	<g
+   id="g36">
+		<rect
+   x="5.777"
+   y="61.979"
+   fill="#666666"
+   width="41.638"
+   height="3.875"
+   id="rect32" />
+		<path
+   d="M47.915,66.354H5.277v-4.875h42.638V66.354z M6.277,65.354h40.638v-2.875H6.277V65.354z"
+   id="path34" />
+	</g>
+	<g
+   id="g42">
+		<rect
+   x="8.415"
+   y="14.979"
+   fill="#4D4D4D"
+   width="16.325"
+   height="4.167"
+   id="rect38" />
+		<path
+   d="M25.24,19.646H7.915v-5.167H25.24V19.646z M8.915,18.646H24.24v-3.167H8.915V18.646z"
+   id="path40" />
+	</g>
+	<g
+   id="g48">
+		<rect
+   x="10.229"
+   y="5.813"
+   fill="#333333"
+   width="12.698"
+   height="9.166"
+   id="rect44" />
+		<path
+   d="M23.427,15.479H9.729V5.313h13.698V15.479z M10.729,14.479h11.698V6.313H10.729V14.479z"
+   id="path46" />
+	</g>
+</g>
+</svg>

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="96.4px"
+   height="114.966px"
+   viewBox="0 0 96.4 114.966"
+   enable-background="new 0 0 96.4 114.966"
+   xml:space="preserve"
+   sodipodi:docname="加热处理-09.svg"><metadata
+   id="metadata49"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs47" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview45" />
+<g
+   id="g42">
+	<g
+   id="g8">
+		
+			<rect
+   x="0.25"
+   y="25.721"
+   fill="#BF0000"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="6.138"
+   height="88.995"
+   id="rect2" />
+		
+			<polygon
+   fill="#F78B8B"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    6.388,25.721 0.25,25.721 24.033,0.25 30.171,0.25   "
+   id="polygon4" />
+		
+			<polygon
+   fill="#F92121"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    30.171,89.245 6.388,114.716 6.388,25.721 30.171,0.25   "
+   id="polygon6" />
+	</g>
+	<g
+   id="g16">
+		
+			<rect
+   x="16.745"
+   y="25.721"
+   fill="#BF0000"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="6.138"
+   height="88.995"
+   id="rect10" />
+		
+			<polygon
+   fill="#F78B8B"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    22.883,25.721 16.745,25.721 40.528,0.25 46.666,0.25   "
+   id="polygon12" />
+		
+			<polygon
+   fill="#F92121"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    46.666,89.245 22.883,114.716 22.883,25.721 46.666,0.25   "
+   id="polygon14" />
+	</g>
+	<g
+   id="g24">
+		
+			<rect
+   x="33.239"
+   y="25.721"
+   fill="#BF0000"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="6.138"
+   height="88.995"
+   id="rect18" />
+		
+			<polygon
+   fill="#F78B8B"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    39.377,25.721 33.239,25.721 57.022,0.25 63.16,0.25   "
+   id="polygon20" />
+		
+			<polygon
+   fill="#F92121"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    63.16,89.245 39.377,114.716 39.377,25.721 63.16,0.25   "
+   id="polygon22" />
+	</g>
+	<g
+   id="g32">
+		
+			<rect
+   x="49.734"
+   y="25.721"
+   fill="#BF0000"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="6.138"
+   height="88.995"
+   id="rect26" />
+		
+			<polygon
+   fill="#F78B8B"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    55.872,25.721 49.734,25.721 73.518,0.25 79.655,0.25   "
+   id="polygon28" />
+		
+			<polygon
+   fill="#F92121"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    79.655,89.245 55.872,114.716 55.872,25.721 79.655,0.25   "
+   id="polygon30" />
+	</g>
+	<g
+   id="g40">
+		
+			<rect
+   x="66.229"
+   y="25.721"
+   fill="#BF0000"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   width="6.138"
+   height="88.995"
+   id="rect34" />
+		
+			<polygon
+   fill="#F78B8B"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    72.367,25.721 66.229,25.721 90.013,0.25 96.15,0.25   "
+   id="polygon36" />
+		
+			<polygon
+   fill="#F92121"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    96.15,89.245 72.367,114.716 72.367,25.721 96.15,0.25   "
+   id="polygon38" />
+	</g>
+</g>
+</svg>

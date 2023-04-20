@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="89.363px"
+   height="63.249px"
+   viewBox="132.65 823.169 89.363 63.249"
+   enable-background="new 132.65 823.169 89.363 63.249"
+   xml:space="preserve"
+   sodipodi:docname="01-51.svg"><metadata
+   id="metadata86"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs84" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview82" />
+<g
+   id="g79">
+	
+		<polygon
+   fill="#F47F76"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   197.003,886.168 137.896,877.855 137.796,874.523 196.903,882.834  "
+   id="polygon2" />
+	
+		<polygon
+   fill="#F47F76"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   218.094,879.513 197.003,886.168 196.903,882.834 217.994,876.181  "
+   id="polygon4" />
+	
+		<polygon
+   fill="#89130B"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   159.702,869.797 137.796,874.523 196.903,882.834 217.994,876.181  "
+   id="polygon6" />
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="159.3997"
+   y1="663.1394"
+   x2="156.7327"
+   y2="614.139"
+   gradientTransform="matrix(1 0 0 -1 8.3999 1490.0991)">
+		<stop
+   offset="0"
+   style="stop-color:#A91204"
+   id="stop8" />
+		<stop
+   offset="0.0606"
+   style="stop-color:#C2382B"
+   id="stop10" />
+		<stop
+   offset="0.1199"
+   style="stop-color:#D7574B"
+   id="stop12" />
+		<stop
+   offset="0.1527"
+   style="stop-color:#DF6357"
+   id="stop14" />
+		<stop
+   offset="0.1623"
+   style="stop-color:#E36A5E"
+   id="stop16" />
+		<stop
+   offset="0.2023"
+   style="stop-color:#EF8379"
+   id="stop18" />
+		<stop
+   offset="0.2432"
+   style="stop-color:#F8968C"
+   id="stop20" />
+		<stop
+   offset="0.2853"
+   style="stop-color:#FDA097"
+   id="stop22" />
+		<stop
+   offset="0.33"
+   style="stop-color:#FFA49B"
+   id="stop24" />
+		<stop
+   offset="0.3957"
+   style="stop-color:#FD9F96"
+   id="stop26" />
+		<stop
+   offset="0.4739"
+   style="stop-color:#F69187"
+   id="stop28" />
+		<stop
+   offset="0.5583"
+   style="stop-color:#EB7A70"
+   id="stop30" />
+		<stop
+   offset="0.6256"
+   style="stop-color:#DF6357"
+   id="stop32" />
+		<stop
+   offset="1"
+   style="stop-color:#A91204"
+   id="stop34" />
+	</linearGradient>
+	
+		<path
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   d="   M150.655,827.084c-9.806,0-17.755,10.237-17.755,22.867c0,12.629,7.949,22.866,17.755,22.866l48.001,6.268v-52L150.655,827.084   L150.655,827.084z"
+   id="path37" />
+	<path
+   fill="#F47F76"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M221.661,852.319   c0,13.938-9.832,25.896-22.322,26.734c-12.905,0.867-23.688-10.399-23.688-25.189s10.783-26.78,23.688-26.78   C211.829,827.084,221.661,838.383,221.661,852.319z"
+   id="path39" />
+	<path
+   fill="#F7A9A4"
+   d="M177.944,853.843c0-14.002,9.947-25.415,22.058-25.992c-0.326-0.017-0.653-0.027-0.983-0.027   c-12.54,0-23.017,11.649-23.017,26.021c0,14.2,10.23,25.049,22.57,24.492C187.119,877.738,177.944,867.289,177.944,853.843z"
+   id="path41" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   x1="200.001"
+   y1="827.1"
+   x2="200.001"
+   y2="879"
+   id="line43" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   x1="198.275"
+   y1="839.604"
+   x2="198.275"
+   y2="843.043"
+   id="line45" />
+	
+		<line
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   x1="201.775"
+   y1="839.782"
+   x2="201.775"
+   y2="842.864"
+   id="line47" />
+	
+		<polyline
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="   171.15,860.092 171.15,823.419 187.522,823.419 187.522,827.1  "
+   id="polyline49" />
+	
+		<rect
+   x="171.15"
+   y="831.584"
+   fill="#AD180A"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="3"
+   height="9.739"
+   id="rect51" />
+	<g
+   id="g57">
+		
+			<polygon
+   fill="#F47F76"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    170.4,860.084 162.119,859.621 162.119,849.531 170.4,849.584   "
+   id="polygon53" />
+		
+			<polygon
+   fill="#A52B23"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   points="    172.65,859.854 170.4,860.084 170.4,849.584 172.65,850.063   "
+   id="polygon55" />
+	</g>
+	
+		<ellipse
+   fill="#AD190B"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   cx="200.001"
+   cy="864.583"
+   rx="6.943"
+   ry="9.004"
+   id="ellipse59" />
+	
+		<ellipse
+   fill="#F06457"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="200.001"
+   cy="864.583"
+   rx="5.063"
+   ry="6.566"
+   id="ellipse61" />
+	
+		<ellipse
+   fill="#F7A9A4"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="200.001"
+   cy="864.583"
+   rx="2.479"
+   ry="3.214"
+   id="ellipse63" />
+	<g
+   id="g73">
+		<path
+   fill="#868686"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M217.052,866.035    c0.35-3.864-1.301-7.403-4.029-9.43l0.224-1.121l-4.725-0.614c-5.226-0.472-9.878,3.763-10.393,9.456    c-0.457,5.066,2.519,9.572,6.858,10.84l-0.006,0.009l5.461,1.373l0.146-1.604C214.039,873.634,216.673,870.234,217.052,866.035z"
+   id="path65" />
+		
+			<ellipse
+   transform="matrix(0.0899 -0.996 0.996 0.0899 -669.5342 999.2877)"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="212.005"
+   cy="865.988"
+   rx="10.625"
+   ry="9.749"
+   id="ellipse67" />
+		
+			<ellipse
+   transform="matrix(0.09 -0.9959 0.9959 0.09 -668.3609 1000.7925)"
+   fill="#868686"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="213.476"
+   cy="866.138"
+   rx="5.458"
+   ry="5.008"
+   id="ellipse69" />
+		
+			<ellipse
+   transform="matrix(0.0899 -0.996 0.996 0.0899 -666.7819 1003.1123)"
+   fill="#E5E5E5"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="215.481"
+   cy="866.399"
+   rx="5.458"
+   ry="5.01"
+   id="ellipse71" />
+	</g>
+	<path
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M165.778,859.825c0,0,3.977,3.324,3.064,7.973   c-0.91,4.646,0.058,6.827,1.558,7.599"
+   id="path75" />
+	<path
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M170.4,859.825c0,0-0.539,3.324,0.372,7.973   c0.91,4.646-0.058,6.827-1.558,7.599"
+   id="path77" />
+</g>
+</svg>

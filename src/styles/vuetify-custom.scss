@@ -1,0 +1,96 @@
+// 背景
+.theme--light.v-application{
+    background-color: transparent!important;
+}
+
+// 表格背景透明
+.v-table-transparent{
+    background-color: transparent!important;
+    color: #fff!important;
+
+    thead th{
+        color: #fff!important;
+    }
+}
+
+// 修改 vuetify 表单样式
+// 拷贝至此目录 src/assets/sass/themes/newthemes.scss
+.my-v-input{
+    input:not([disabled])[type='text']:not(.no-input),
+    .timebox,
+    input:not([disabled])[type='number'] {
+        display: block !important;
+        width: 100% !important;
+        height: calc(1.5em + .75rem + 2px) !important;
+        padding: 1.375rem .75rem !important;
+        font-size: 1rem !important;
+        font-weight: 400 !important;
+        line-height: 1.5 !important;
+        background-clip: padding-box !important;
+        border-radius: .25rem !important;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        background-color: rgba(22, 30, 67, 0.5) !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        color: #b3b7c1 !important;
+    }
+
+    .el-input--suffix .el-input__inner,
+    .vue-treeselect__control,
+    .zdydatepicker {
+        background-color: rgba(22, 30, 67, 0.5) !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        color: #fff !important;
+    }
+//
+//    .v-input__append-inner {
+//        position: absolute;
+//        z-index: 99;
+//        right: 0;
+//    }
+//
+//    .v-text-field__slot .v-label {
+//        left: 8px !important;
+//        top: 8px !important;
+//    }
+//
+//    // 去除底边
+//    .v-input__slot:before {
+//        border: unset !important;
+//    }
+//    .v-input__slot:after{
+//      display: none!important;
+//    }
+//
+//    // 选择
+//    .v-select__selections .v-select__selection {
+//        position: absolute;
+//        left: 8px;
+//        z-index: 1;
+//    }
+//
+//    .v-select__slot .v-label {
+//      color: #fff !important;
+//      z-index: 99;
+//      left: 8px !important;
+//    }
+//
+//    .v-textarea .v-input__slot {
+//        background: rgba(0, 0, 0, .2) !important;
+//    }
+//
+//    .v-label {
+//        font-size: 13px!important;
+//    }
+  }
+
+  // 隐藏 label 标签
+  .v-label-display-none{
+      .v-label{
+          display: none;
+      }
+  }
+
+  // 分页地址
+  .v-pagination .v-pagination__more{
+    color: #fff;
+  }

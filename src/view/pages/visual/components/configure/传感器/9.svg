@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="70.393px"
+   height="98.842px"
+   viewBox="53.399 457.828 70.393 98.842"
+   enable-background="new 53.399 457.828 70.393 98.842"
+   xml:space="preserve"
+   sodipodi:docname="传感器-09.svg"><metadata
+   id="metadata47"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs45" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview43" />
+<g
+   id="g40">
+	
+		<rect
+   x="53.649"
+   y="462.995"
+   fill="#D9D9D9"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="69.893"
+   height="93.425"
+   id="rect2" />
+	
+		<rect
+   x="59.795"
+   y="467.122"
+   fill="#FFFFFF"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="58.039"
+   height="63.57"
+   id="rect4" />
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="82.7988"
+   y1="326.7451"
+   x2="99.9357"
+   y2="326.7451"
+   gradientTransform="matrix(0.878 0 0 -0.878 8.4008 748.6627)">
+		<stop
+   offset="0"
+   style="stop-color:#9A9594"
+   id="stop6" />
+		<stop
+   offset="0.5"
+   style="stop-color:#FFFFFF"
+   id="stop8" />
+		<stop
+   offset="1"
+   style="stop-color:#9A9594"
+   id="stop10" />
+	</linearGradient>
+	
+		<rect
+   x="81.132"
+   y="460.536"
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="15.015"
+   height="2.459"
+   id="rect13" />
+	
+		<linearGradient
+   id="SVGID_2_"
+   gradientUnits="userSpaceOnUse"
+   x1="86.0874"
+   y1="329.5449"
+   x2="96.6467"
+   y2="329.5449"
+   gradientTransform="matrix(0.878 0 0 -0.878 8.4008 748.6627)">
+		<stop
+   offset="0"
+   style="stop-color:#9A9594"
+   id="stop15" />
+		<stop
+   offset="0.5"
+   style="stop-color:#FFFFFF"
+   id="stop17" />
+		<stop
+   offset="1"
+   style="stop-color:#9A9594"
+   id="stop19" />
+	</linearGradient>
+	
+		<rect
+   x="84.029"
+   y="458.078"
+   fill="url(#SVGID_2_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="9.307"
+   height="2.458"
+   id="rect22" />
+	<polygon
+   fill="#BFBFBF"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="90.966,535.609 117.659,530.692    117.659,556.332 90.966,556.332  "
+   id="polygon24" />
+	<polygon
+   fill="#D9D9D9"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   points="90.966,535.609 64.273,530.692    64.273,556.332 90.966,556.332  "
+   id="polygon26" />
+	
+		<rect
+   x="69.366"
+   y="517.347"
+   fill="#FF0000"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="14.839"
+   height="7.99"
+   id="rect28" />
+	
+		<rect
+   x="96.937"
+   y="517.347"
+   fill="#1BDD24"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   width="14.839"
+   height="7.99"
+   id="rect30" />
+	<circle
+   fill="#BFBFBF"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="88.595"
+   cy="491.444"
+   r="14.224"
+   id="circle32" />
+	<circle
+   fill="#D9D9D9"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="88.595"
+   cy="491.444"
+   r="11.941"
+   id="circle34" />
+	<path
+   fill="#FF0000"
+   d="M89.473,493.639l-0.79,2.283l-0.791-2.283l0.791-14.136L89.473,493.639z"
+   id="path36" />
+	<circle
+   fill="#231815"
+   cx="88.595"
+   cy="491.444"
+   r="0.966"
+   id="circle38" />
+</g>
+</svg>

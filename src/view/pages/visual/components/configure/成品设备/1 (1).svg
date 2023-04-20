@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="79.9px"
+   height="103.167px"
+   viewBox="32.65 103.321 79.9 103.167"
+   enable-background="new 32.65 103.321 79.9 103.167"
+   xml:space="preserve"
+   sodipodi:docname="成品设备-01.svg"><metadata
+   id="metadata34"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs32" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview30" />
+<g
+   id="g27">
+	
+		<linearGradient
+   id="SVGID_1_"
+   gradientUnits="userSpaceOnUse"
+   x1="24.5601"
+   y1="768.0332"
+   x2="103.959"
+   y2="768.0332"
+   gradientTransform="matrix(1 0 0 -1 8.3398 949.04)">
+		<stop
+   offset="0"
+   style="stop-color:#9E9A98"
+   id="stop2" />
+		<stop
+   offset="0.2266"
+   style="stop-color:#CAC8C7"
+   id="stop4" />
+		<stop
+   offset="0.5"
+   style="stop-color:#E1E0DF"
+   id="stop6" />
+		<stop
+   offset="1"
+   style="stop-color:#979290"
+   id="stop8" />
+	</linearGradient>
+	
+		<path
+   fill="url(#SVGID_1_)"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-linecap="round"
+   stroke-linejoin="round"
+   stroke-miterlimit="10"
+   d="   M32.9,155.777v41.299c0,3.132,17.774,9.162,39.699,9.162c21.926,0,39.7-6.029,39.7-9.162v-41.299H32.9z"
+   id="path11" />
+	<path
+   fill="#B2B2B2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M32.9,148.506v8.871   c0,3.132,17.774,5.671,39.699,5.671c21.926,0,39.7-2.539,39.7-5.671v-8.871H32.9z"
+   id="path13" />
+	
+		<ellipse
+   fill="#B2B2B2"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   cx="72.6"
+   cy="148.506"
+   rx="39.7"
+   ry="5.671"
+   id="ellipse15" />
+	<path
+   fill="none"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M112.3,188.423c0,3.132-17.774,9.162-39.7,9.162   c-21.925,0-39.699-6.029-39.699-9.162"
+   id="path17" />
+	<g
+   opacity="0.6"
+   id="g23">
+		<path
+   fill="#DFDEDD"
+   d="M55.586,153.627v51.409c-2.313-0.332-4.502-0.715-6.544-1.144v-50.824    C51.084,153.287,53.273,153.47,55.586,153.627z"
+   id="path19" />
+		<path
+   fill="#DFDEDD"
+   d="M96.158,153.069v50.824c-2.042,0.428-4.231,0.812-6.544,1.144v-51.409    C91.927,153.47,94.116,153.287,96.158,153.069z"
+   id="path21" />
+	</g>
+	<path
+   fill="#8A8C8E"
+   stroke="#231815"
+   stroke-width="0.5"
+   stroke-miterlimit="10"
+   d="M36.721,153.069   c-0.144-1.499-0.223-3.02-0.223-4.563c0-22.889,16.164-41.445,36.102-41.445c19.939,0,36.103,18.556,36.103,41.445   c0,1.543-0.079,3.064-0.222,4.563h3.616c0.134-1.5,0.203-3.022,0.203-4.563c0-24.817-17.774-44.935-39.7-44.935   c-21.925,0-39.699,20.118-39.699,44.935c0,1.541,0.069,3.063,0.203,4.563H36.721z"
+   id="path25" />
+</g>
+</svg>

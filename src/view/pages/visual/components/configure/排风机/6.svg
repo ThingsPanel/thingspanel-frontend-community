@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="图层_1"
+   x="0px"
+   y="0px"
+   width="65px"
+   height="65px"
+   viewBox="0 0 65 65"
+   enable-background="new 0 0 65 65"
+   xml:space="preserve"
+   sodipodi:docname="排风机_06-01.svg"><metadata
+   id="metadata57"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs55" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="640"
+   inkscape:window-height="480"
+   id="namedview53" />
+<g
+   id="g50">
+	<path
+   fill="#167272"
+   d="M65,60.332C65,62.91,62.91,65,60.332,65H5.736c-2.578,0-4.668-2.09-4.668-4.668V5.736   c0-2.578,2.09-4.668,4.668-4.668h54.596C62.91,1.068,65,3.158,65,5.736V60.332z"
+   id="path2" />
+	<path
+   fill="#1B8E99"
+   d="M63.932,59.264c0,2.578-2.09,4.669-4.668,4.669H4.668C2.09,63.933,0,61.842,0,59.264V4.669   C0,2.09,2.09,0,4.668,0h54.596c2.578,0,4.668,2.09,4.668,4.669V59.264z"
+   id="path4" />
+	<g
+   id="g14">
+		<circle
+   fill="#B2B2B2"
+   cx="8.643"
+   cy="8.56"
+   r="3.168"
+   id="circle6" />
+		<circle
+   fill="#B2B2B2"
+   cx="56.491"
+   cy="8.56"
+   r="3.167"
+   id="circle8" />
+		<circle
+   fill="#B2B2B2"
+   cx="8.643"
+   cy="56.574"
+   r="3.168"
+   id="circle10" />
+		<circle
+   fill="#B2B2B2"
+   cx="56.491"
+   cy="56.574"
+   r="3.167"
+   id="circle12" />
+	</g>
+	<g
+   id="g24">
+		<circle
+   fill="#E5E5E5"
+   cx="8.042"
+   cy="7.959"
+   r="3.167"
+   id="circle16" />
+		<circle
+   fill="#E5E5E5"
+   cx="55.891"
+   cy="7.959"
+   r="3.168"
+   id="circle18" />
+		<circle
+   fill="#E5E5E5"
+   cx="8.042"
+   cy="55.975"
+   r="3.167"
+   id="circle20" />
+		<circle
+   fill="#E5E5E5"
+   cx="55.891"
+   cy="55.975"
+   r="3.168"
+   id="circle22" />
+	</g>
+	<circle
+   fill="#FFFFFF"
+   cx="31.967"
+   cy="31.966"
+   r="24.508"
+   id="circle26" />
+	<circle
+   fill="#E5E5E5"
+   cx="31.967"
+   cy="31.966"
+   r="23"
+   id="circle28" />
+	<g
+   id="g48">
+		<path
+   fill="#1B8E99"
+   d="M25.094,11.887c0,0,5.604-2.076,10.695-0.679c0.23,0.858,4.381,11.426-3.767,20.742    c-0.705-0.407-1.969-2.483-3.515-7.271C27.368,21.152,25.963,15.315,25.094,11.887z"
+   id="path30" />
+		<path
+   fill="#1B8E99"
+   d="M11.183,27.92c0,0,1.003-5.892,4.759-9.604c0.859,0.231,12.086,1.92,16.082,13.635    c-0.707,0.406-3.137,0.463-8.056-0.592C20.344,30.583,14.586,28.882,11.183,27.92z"
+   id="path32" />
+		<path
+   fill="#1B8E99"
+   d="M18.112,47.984c0,0-4.601-3.814-5.938-8.924c0.629-0.629,7.706-9.507,19.849-7.109    c-0.001,0.814-1.168,2.947-4.541,6.681C24.998,41.382,20.646,45.518,18.112,47.984z"
+   id="path34" />
+		<path
+   fill="#1B8E99"
+   d="M38.952,52.015c0,0-5.603,2.077-10.696,0.681c-0.23-0.859-4.381-11.427,3.768-20.744    c0.705,0.407,1.969,2.484,3.515,7.271C36.678,42.75,38.083,48.587,38.952,52.015z"
+   id="path36" />
+		<path
+   fill="#1B8E99"
+   d="M52.863,35.982c0,0-1.003,5.891-4.76,9.604c-0.859-0.23-12.086-1.92-16.08-13.635    c0.705-0.407,3.135-0.463,8.055,0.592C43.702,33.318,49.46,35.021,52.863,35.982z"
+   id="path38" />
+		<path
+   fill="#1B8E99"
+   d="M45.934,15.919c0,0,4.602,3.813,5.938,8.923c-0.629,0.629-7.705,9.508-19.848,7.109    c0-0.814,1.166-2.947,4.539-6.68C39.047,22.521,43.4,18.385,45.934,15.919z"
+   id="path40" />
+		<g
+   id="g46">
+			<circle
+   fill="#FFFFFF"
+   cx="31.966"
+   cy="31.966"
+   r="8.453"
+   id="circle42" />
+			<circle
+   fill="#1B8E99"
+   cx="31.966"
+   cy="31.966"
+   r="5.341"
+   id="circle44" />
+		</g>
+	</g>
+</g>
+</svg>
