@@ -398,6 +398,7 @@ export default {
       
       this.formMertialsData = {}
       this.createMaterialsDialogVisible = false
+      this.materialParams.keyword = ''
     },
     onTasteDialogSubmit() {
       var tmpTasteData = '';
