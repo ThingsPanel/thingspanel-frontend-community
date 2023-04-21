@@ -437,7 +437,7 @@ export function getActions(actions) {
                 id: item.warning_strategy?.id || "",
                 warningLevel: item.warning_strategy?.warning_level || "",
                 repeatTimes: item.warning_strategy?.repeat_count || 0,
-                notification: item.warning_strategy?.inform_way.split(",") || [],
+                notification: item.warning_strategy?.inform_way?.split(",") || [],
                 warning_description: item.warning_strategy?.warning_description || ""
             };
             actionList.push(action);
