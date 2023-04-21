@@ -1,11 +1,3 @@
-<!--
- * @Author: chaoxiaoshu-mx leukotrichia@163.com
- * @Date: 2023-02-03 13:36:48
- * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-10 16:25:55
- * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\components\alarm\AlarmPanel.vue
- * @Description: 
--->
 <template>
     <div>
   <!--    <el-form label-position="right" label-width="85px">-->
