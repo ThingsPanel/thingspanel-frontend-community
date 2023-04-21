@@ -180,6 +180,7 @@ export default {
       const index = this.actions.findIndex(item => item == action);
       this.actions.splice(index, 1);
       this.setActionTypeOptions();
+      this.updateData();
     },
   }
 }
