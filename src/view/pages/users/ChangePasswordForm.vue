@@ -42,8 +42,7 @@ import i18n from "@/core/plugins/vue-i18n.js"
 export default defineComponent({
   name: "ChangePasswordForm",
   components: {
-    TableTitle,
-    FormAlert,
+    TableTitle, FormAlert,
   },
   props: {
     changePasswordDialogVisible: {

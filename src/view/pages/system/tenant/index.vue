@@ -69,6 +69,7 @@ export default {
     methods: {
         getList() {
             this.loading = true;
+            this.params.enabled = 1;
             user_index(this.params)
                 .then(({data: result}) => {
                     if (result.code === 200) {

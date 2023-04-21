@@ -8,7 +8,7 @@ export default function useUserIndex(){
     let params = reactive({
         search: '',
         limit: 10,
-        page: 1,
+        page: 1
     })
 
     let total = ref(0)

@@ -176,9 +176,9 @@ import {
   onMounted,
   getCurrentInstance,
 } from "@vue/composition-api";
-import {message_error} from "../../../utils/helpers";
+import {message_error} from "@/utils/helpers";
 import i18n from "@/core/plugins/vue-i18n"
-import {local_url} from "../../../api/LocalUrl";
+import {local_url} from "@/api/LocalUrl";
 
 export default defineComponent({
   name: "Home",
@@ -243,10 +243,11 @@ export default defineComponent({
               let user = JwtService.getCurrentUser();
               let tree = data.data;
               if (user.email != "super@super.cn") {
+
                 tree.forEach(item => {
                   if (item.children && item.name == "SystemManagement") {
                     item.children.forEach(child => {
-                        child.children.forEach(leaf => {
+                        child.children && child.children.forEach(leaf => {
                           if (leaf.name == "AddPermission"
                               || leaf.name == "EditPermission"
                               || leaf.name == "DeletePermission"
