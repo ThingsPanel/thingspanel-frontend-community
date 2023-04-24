@@ -8,7 +8,7 @@
       <el-col :span="12" class="text-right">
         <!-- 添加权限按钮 -->
         <el-button size="medium" type="indigo" @click="handleAdd" :disabled="!hasAuth('sys:permission:add')">{{ $t('RECIPEMANAGEMENT.CREATERECIPE') }}</el-button>
-        <el-button size="medium" type="border" >下发配置</el-button>
+        <el-button size="medium" type="border" @click="showSendToMQTTVisity">下发配置</el-button>
       </el-col>
     </el-row>
     <!-- 头 end -->
@@ -91,28 +91,14 @@
           <el-button type="save" @click="handleMaterialsCreate">添加物料</el-button>
           <div style="display: flex;">
             <!-- <el-input size="medium" v-model="formData.Materials"></el-input> -->
-            <el-tag
-  :key="tag"
-  v-for="(tag,index) in dynamicTags"
-  closable
-  :disable-transitions="false"
-  @close="handleClose(tag,index)">
-  {{tag}}
-</el-tag>
+            <el-tag :key="tag" v-for="(tag,index) in dynamicTags" closable :disable-transitions="false" @close="handleClose(tag,index)">{{tag}}</el-tag>
           </div>
         </el-form-item>
 
         <el-form-item :label="$t('RECIPEMANAGEMENT.RECIPE_EDIT.TASTE')" style="width: 100%">
           <el-button type="save" @click="handleTasteCreate">添加口味</el-button>
           <div style="display: flex;">
-            <el-tag
-  :key="tag"
-  v-for="(tag,index) in tasteDynamicTags"
-  closable
-  :disable-transitions="false"
-  @close="handleTasteClose(tag,index)">
-  {{tag}}
-</el-tag>
+            <el-tag :key="tag" v-for="(tag,index) in tasteDynamicTags" closable :disable-transitions="false" @close="handleTasteClose(tag,index)">{{tag}}</el-tag>
           </div>
 
         </el-form-item>
@@ -223,6 +209,36 @@
       </el-form>
     </el-dialog>
 
+    <el-dialog class="el-dark-dialog el-dark-input"
+               :visible.sync="dialogSendToMQVisible"
+               @closed="dialogSendToMQVisible = false"
+               :close-on-click-modal="false"
+               title="下发配置"
+               width="600px">
+      <el-form :model="formSendToMQData"
+               label-position="right"
+               label-width="140px"
+               :inline="false"
+      >
+        <el-form-item label="设备" style="width: 100%">
+          <el-select style="width: 100%"  placeholder="请选择项目" v-model="formData.project" @change="selectedProject($event)">
+                <el-option v-for="(item,index) in projectOptions" :key="index" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+          <el-select style="width: 100%"  placeholder="请选择分组" v-model="formData.group" @change="selectedAsset($event)">
+                <el-option v-for="(item,index) in assetList" :key="index" :label="item.name" :value="item.id"></el-option>
+          </el-select>
+          <el-select style="width: 100%"  placeholder="请选择设备" v-model="formData.device_name" @change="selectedDevice($event)">
+                <el-option v-for="(item,index) in deviceList" :key="index" :label="item.device_name" :value="item.access_token+'='+item.asset_id"></el-option>
+          </el-select>
+        </el-form-item>
+
+        <div style="display: flex;justify-content: center">
+          <el-button type="save" @click="onSendToMQTT">下发</el-button>
+        </div>
+
+      </el-form>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -230,7 +246,10 @@
 import TableTitle from "@/components/common/TableTitle.vue"
 import Recipe from "@/api/recipe"
 import PotType from "@/api/pot"
-import {message_success} from "../../../../utils/helpers";
+import { business_index } from "@/api/business";
+import {asset_list_a} from "@/api/asset";
+import {device_list} from "@/api/device"
+import {message_success,message_error} from "../../../../utils/helpers";
 import { stringify } from "querystring";
 
 export default {
@@ -243,6 +262,9 @@ export default {
       tmpSoupStandard: 0,
       loading: false,
       tableData: [],
+      formSendToMQData: {
+
+      },
       formData: {
         TasteArr: [],
         MaterialArr: [],
@@ -267,11 +289,16 @@ export default {
       dialogVisible: false,
       createMaterialsDialogVisible: false,
       createTasteDialogVisible: false,
+      dialogSendToMQVisible: false,
       currentWaterLine: 0,
       dynamicTags: [],
       tasteDynamicTags: [],
       Materials: [],
-      Taste: []
+      Taste: [],
+      projectOptions: [],
+      assetList: [],
+      deviceList: [],
+      sendToMQTTData: []
     }
   },
   mounted() {
@@ -367,8 +394,42 @@ export default {
       this.getPotTypeList()
       this.dialogVisible = true
     },
-    sendToMQTT() {
-      Recipe.sendToMQTT()
+    showSendToMQTTVisity() {
+      business_index({limit: 100, page: 1})
+          .then(({data}) => {
+            if (data.code == 200) {
+              this.projectOptions = data.data?.data || [];
+            }
+          })
+      this.dialogSendToMQVisible = true;
+    },
+
+    selectedProject(event) {
+      
+      asset_list_a({business_id: event}).then(({data}) => {
+        if (data.code === 200) {
+           this.assetList = data.data
+        }
+    })
+    },
+
+    selectedAsset(event) {
+      device_list({asset_id: event,current_page:1,per_page:10}).then(({data}) => {
+        if (data.code === 200) {
+           this.deviceList = data.data.data
+        }
+    })
+    },
+
+    selectedDevice(event) {
+        this.sendToMQTTData = event.split('=')
+    },
+
+    onSendToMQTT() {
+      if(this.sendToMQTTData.length != 2){
+        message_error("请选择设备")
+      }
+      Recipe.sendToMQTT({access_token: this.sendToMQTTData[0],asset_id: this.sendToMQTTData[1]})
         .then(({data}) => {
           if (data.code == 200) {
             message_success("操作成功")

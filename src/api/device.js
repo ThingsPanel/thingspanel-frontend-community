@@ -9,6 +9,15 @@ export function device_list(data){
     })
 }
 
+// 设备分页条件查询
+export function page(data){
+    return axios({
+        url: "/device/page/list",
+        method: "post",
+        data
+    })
+}
+
 // 通过 id 查询 设备详情
 export function device_data(data){
     return axios({

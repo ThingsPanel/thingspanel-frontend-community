@@ -89,7 +89,7 @@ export default {
     /**
      * 下发配置
      */
-    sendToMQTT: () => {
+    sendToMQTT: (data) => {
         return axios({
             url: BASE_URL + "/send/to/mqtt",
             method: "post",
