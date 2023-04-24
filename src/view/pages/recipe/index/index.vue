@@ -432,7 +432,12 @@ export default {
       Recipe.sendToMQTT({access_token: this.sendToMQTTData[0],asset_id: this.sendToMQTTData[1]})
         .then(({data}) => {
           if (data.code == 200) {
-            message_success("操作成功")
+            message_success("下发成功")
+            this.projectOptions =  []
+            this.assetList =  []
+            this.deviceList = []
+            this.sendToMQTTData =  []
+            this.dialogSendToMQVisible = false
           }
         })
     },
