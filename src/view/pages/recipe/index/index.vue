@@ -215,19 +215,19 @@
                :close-on-click-modal="false"
                title="下发配置"
                width="600px">
-      <el-form :model="formSendToMQData"
+      <el-form :model="formSendData"
                label-position="right"
                label-width="140px"
                :inline="false"
       >
         <el-form-item label="设备" style="width: 100%">
-          <el-select style="width: 100%"  placeholder="请选择项目" v-model="formData.project" @change="selectedProject($event)">
+          <el-select style="width: 100%"  placeholder="请选择项目" v-model="formSendData.project" @change="selectedProject($event)">
                 <el-option v-for="(item,index) in projectOptions" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
-          <el-select style="width: 100%"  placeholder="请选择分组" v-model="formData.group" @change="selectedAsset($event)">
+          <el-select style="width: 100%"  placeholder="请选择分组" v-model="formSendData.group" @change="selectedAsset($event)">
                 <el-option v-for="(item,index) in assetList" :key="index" :label="item.name" :value="item.id"></el-option>
           </el-select>
-          <el-select style="width: 100%"  placeholder="请选择设备" v-model="formData.device_name" @change="selectedDevice($event)">
+          <el-select style="width: 100%"  placeholder="请选择设备" v-model="formSendData.device_name" @change="selectedDevice($event)">
                 <el-option v-for="(item,index) in deviceList" :key="index" :label="item.device_name" :value="item.access_token+'='+item.asset_id"></el-option>
           </el-select>
         </el-form-item>
@@ -262,7 +262,7 @@ export default {
       tmpSoupStandard: 0,
       loading: false,
       tableData: [],
-      formSendToMQData: {
+      formSendData: {
 
       },
       formData: {
@@ -428,11 +428,13 @@ export default {
     onSendToMQTT() {
       if(this.sendToMQTTData.length != 2){
         message_error("请选择设备")
+        return
       }
       Recipe.sendToMQTT({access_token: this.sendToMQTTData[0],asset_id: this.sendToMQTTData[1]})
         .then(({data}) => {
           if (data.code == 200) {
             message_success("下发成功")
+            this.formSendData = {}
             this.projectOptions =  []
             this.assetList =  []
             this.deviceList = []
