@@ -48,8 +48,11 @@ export default {
     data: {
       handler(newValue) {
         if (newValue) {
-          console.log("RepeatTimeSelector", newValue);
-          this.formData = JSON.parse(JSON.stringify(newValue));
+          if (newValue && newValue.week && newValue.time) {
+            console.log("RepeatTimeSelector", newValue);
+            this.weekValue = Number(newValue.week);
+            this.timeValue = newValue.time;
+          }
         }
       },
       immediate: true
