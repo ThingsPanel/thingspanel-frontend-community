@@ -109,4 +109,30 @@ export default {
             data
         })
     },
+
+    /**
+     * 删除
+     * @param data
+     * @returns {AxiosPromise}
+     */
+    delete_materials: (data) => {
+        return axios({
+            url: BASE_URL + "/delete/materials",
+            method: "post",
+            data
+        })
+    },
+
+     /**
+     * 删除
+     * @param data
+     * @returns {AxiosPromise}
+     */
+     delete_taste: (data) => {
+        return axios({
+            url: BASE_URL + "/delete/taste",
+            method: "post",
+            data
+        })
+    }
 }
