@@ -444,6 +444,7 @@ export default {
         })
     },
     handleEdit(row) {
+      this.getPotTypeList()
       Recipe.getOne({
         "current_page": 1,
         "per_page": 1,
@@ -476,13 +477,11 @@ export default {
       this.formMertialsData = {}
       this.createMaterialsDialogVisible = false
       this.materialParams.keyword = ''
-      this.dynamicTags = []
     },
     onTasteDialogCancel() {
       this.formTasteData = {}
       this.createTasteDialogVisible = false
       this.materialParams.keyword = ''
-      this.tasteDynamicTags = []
     },
     onMaterialDialogSubmit() {
       var tmpMaterialData = '';
