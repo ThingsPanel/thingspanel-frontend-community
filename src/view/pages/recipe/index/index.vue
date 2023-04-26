@@ -546,6 +546,7 @@ export default {
       this.formMertialsData = {}
       this.createMaterialsDialogVisible = false
       this.materialParams.keyword = ''
+      console.log(this.formData.MaterialArr)
     },
     onTasteDialogSubmit() {
       var tmpTasteData = '';
@@ -576,7 +577,15 @@ export default {
     },
 
     onSubmit() {
-      console.log(this.formData.MaterialArr)
+      if (this.formData.MaterialArr.length == 0)  {
+        message_error("请添加物料")
+        return
+      }
+      
+      if (this.formData.TasteArr.length == 0)  {
+        message_error("请添加口味")
+        return
+      }
         this.formData.Materials = this.dynamicTags
         this.formData.Taste = this.tasteDynamicTags
       Recipe.saveOrUpdate(this.formData.Id ? "edit":"add", this.formData)
@@ -599,35 +608,28 @@ export default {
       this.formData.PotTypeName = this.potTypeList[index].Name
     },
     handleClose(tag,index) {
+      console.log(tag,index)
+      console.log(this.formData.MaterialArr)
         this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
-        console.log(this.formData.MaterialArr[index].Id)
         if ( this.formData.MaterialArr[index].Id === 'undefined' || this.formData.MaterialArr[index].Id == null || this.formData.MaterialArr[index].Id === '') {
-      
+          console.log(1111)
         } else { 
-          console.log(this.formData.MaterialArr[index].Id)
-          Recipe.delete_materials({ id: this.formData.MaterialArr[index].Id })
-        .then(({data}) => {
-          if (data.code == 200) {
-            console.log("删除成功")
-          }
-        })
+          console.log(2222)
+          this.formData.MaterialArr[index].Operate = "delete"
         }
-       
-        this.formData.MaterialArr.splice(index,1)
+        console.log(this.formData.MaterialArr)
       },
     handleTasteClose(tag,index) {
-      this.tasteDynamicTags.splice(this.tasteDynamicTags.indexOf(tag), 1);
+      console.log(tag,index)
+      console.log(this.formData.TasteArr)
       if ( this.formData.TasteArr[index].Id === 'undefined' || this.formData.TasteArr[index].Id == null || this.formData.TasteArr[index].Id === '') {
-      
+        console.log(1111)
     } else { 
-      Recipe.delete_taste({ id: this.formData.TasteArr[index].Id })
-    .then(({data}) => {
-      if (data.code == 200) {
-        console.log("删除成功")
-      }
-    })
+      console.log(2222)
+      this.formData.TasteArr[index].Operate = "delete"
     }
-        this.formData.TasteArr.splice(index,1)
+    this.tasteDynamicTags.splice(this.tasteDynamicTags.indexOf(tag), 1);
+    console.log(this.formData.TasteArr)
     }
   }
 }
