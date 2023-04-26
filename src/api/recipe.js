@@ -111,6 +111,58 @@ export default {
     },
 
     /**
+     * 获取物料
+     * @param data
+     * @returns {AxiosPromise}
+     */
+    get_material: (data) => {
+        return axios({
+            url: BASE_URL + "/get/material",
+            method: "post",
+            data
+        })
+    },
+
+    /**
+     * 物料创建
+     * @param data
+     * @returns {AxiosPromise}
+     */
+    create_material: (data) => {
+        return axios({
+            url: BASE_URL + "/material/create",
+            method: "post",
+            data
+        })
+    },
+
+    /**
+     * 搜索口味
+     * @param data
+     * @returns {AxiosPromise}
+     */
+    search_taste: (data) => {
+        return axios({
+            url: BASE_URL + "/search/taste",
+            method: "post",
+            data
+        })
+    },
+
+     /**
+     * 创建口味
+     * @param data
+     * @returns {AxiosPromise}
+     */
+     create_taste: (data) => {
+        return axios({
+            url: BASE_URL + "/taste/create",
+            method: "post",
+            data
+        })
+    },
+
+    /**
      * 删除
      * @param data
      * @returns {AxiosPromise}

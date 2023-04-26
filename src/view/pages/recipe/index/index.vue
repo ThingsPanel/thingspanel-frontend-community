@@ -136,7 +136,7 @@
       >
           <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_MATERIAL.MATERIAL')" prop="Matiral">
             <!-- <el-input v-model="formTasteData.Matiral"  @keyup.native="searchMatrialList()"></el-input> -->
-            <el-select v-model="formMertialsData.Name" filterable  allow-create  @change="selectQueryMaterial">
+            <el-select v-model="formMertialsData.Name" filterable  allow-create  @change="selectQueryMaterial" placeholder="请输入或选择">
                 <el-option v-for="item in materialList" :value="item.Name" :key="item.Id">{{ item.Name }}</el-option>
             </el-select>
           </el-form-item>
@@ -146,11 +146,12 @@
           <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_MATERIAL.UNIT')" prop="Unit">
             <el-input v-model="formMertialsData.Unit"></el-input>
         </el-form-item>
-        <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_MATERIAL.ADDSOUPWATERLINE')" prop="Unit">
+        <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_MATERIAL.ADDSOUPWATERLINE')" prop="WaterLine">
             <el-input-number v-model="formMertialsData.WaterLine"></el-input-number> ML
         </el-form-item>
-        <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_MATERIAL.STATION')" style="width: 100%">
+        <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_MATERIAL.STATION')" style="width: 100%" prop="Station">
           <el-select style="width: 100%"  :placeholder="$t('RECIPEMANAGEMENT.ADD_MATERIAL.STATION')" v-model="formMertialsData.Station">
+                <el-option label="所有工位" value="所有工位">所有工位</el-option>
                 <el-option label="鲜料工位" value="鲜料工位">鲜料工位</el-option>
                 <el-option label="传锅工位" value="传锅工位">传锅工位</el-option>
               </el-select>
@@ -174,15 +175,16 @@
                label-width="140px"
                :inline="false"
       >
-        <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.TASTE')" prop="Taste">
-            <el-input v-model="formTasteData.Taste"></el-input>
+          <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.TASTE')" prop="Taste">
+            <el-select v-model="formTasteData.Taste" filterable   allow-create  @change="selectTasteQuery" placeholder="请输入或选择">
+                <el-option v-for="item in tasteList" :value="item.Name" :key="item.Id" :label="item.Name"></el-option>
+            </el-select>
           </el-form-item>
-          <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.TASTEID')" prop="Taste">
+          <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.TASTEID')" prop="TasteId">
             <el-input v-model="formTasteData.TasteId"></el-input>
           </el-form-item>
           <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.MATRIAL')" prop="Matiral">
-            <!-- <el-input v-model="formTasteData.Matiral"  @keyup.native="searchMatrialList()"></el-input> -->
-            <el-select v-model="formTasteData.Matiral" filterable   allow-create  @change="selectQuery">
+            <el-select v-model="formTasteData.MaterialsName" filterable   allow-create  @change="selectMaterialOnTaste" placeholder="请输入或选择">
                 <el-option v-for="(item,index) in materialList" :value="index" :key="item.Id" :label="item.Name"></el-option>
             </el-select>
           </el-form-item>
@@ -198,6 +200,7 @@
         </el-form-item>
         <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.STATION')" style="width: 100%">
           <el-select style="width: 100%"  :placeholder="$t('RECIPEMANAGEMENT.ADD_TASTE.STATION')" v-model="formTasteData.Station">
+                <el-option label="所有工位" value="所有工位">所有工位</el-option>
                 <el-option label="鲜料工位" value="鲜料工位">鲜料工位</el-option>
                 <el-option label="传锅工位" value="传锅工位">传锅工位</el-option>
               </el-select>
@@ -286,6 +289,7 @@ export default {
       },
       potTypeList: [],
       materialList:[],
+      tasteList: [],
       dialogVisible: false,
       createMaterialsDialogVisible: false,
       createTasteDialogVisible: false,
@@ -318,14 +322,44 @@ export default {
       this.searchMatrialList1(val)
     },
 
-    selectQuery(index) {
-      this.formTasteData.Dosage = this.materialList[index].Dosage
-      this.formTasteData.Unit = this.materialList[index].Unit
-      this.formTasteData.WaterLine = this.materialList[index].WaterLine
-      this.formTasteData.Station = this.materialList[index].Station
+    selectMaterialOnTaste(index) {
+      if (this.materialList[index] === 'undefined' || this.materialList[index] == null || this.materialList[index] === '') {
+         
+      }else{
+        this.formTasteData.MaterialsName = this.materialList[index].Name
+          this.formTasteData.Dosage = this.materialList[index].Dosage
+          this.formTasteData.Unit = this.materialList[index].Unit
+          this.formTasteData.WaterLine = this.materialList[index].WaterLine
+          this.formTasteData.Station = this.materialList[index].Station
+          this.formTasteData.MaterialId = this.materialList[index].Id
+          this.formTasteData.Action = "GET"
+      }
+      
+    },
+
+    // selectQuery(index) {
+    //   this.formTasteData.MaterialsName = this.materialList[index].Name
+    //   this.formTasteData.Dosage = this.materialList[index].Dosage
+    //   this.formTasteData.Unit = this.materialList[index].Unit
+    //   this.formTasteData.WaterLine = this.materialList[index].WaterLine
+    //   this.formTasteData.Station = this.materialList[index].Station
+    // },
+
+    selectTasteQuery(index) {
+      Recipe.search_taste({keyword: index})
+            .then(({data}) => {
+              if (data.code == 200) {
+                if (data.data.length > 0 ) {
+                    this.formTasteData.TasteId = data.data[0].TasteId;
+                    this.formTasteData.Action = "GET"
+                }
+              }
+            })
+      
     },
 
     selectQueryMaterial(index) {
+      console.log(index)
       this.materialParams.keyword = index;
       Recipe.search_index(this.materialParams)
             .then(({data}) => {
@@ -335,6 +369,7 @@ export default {
                     this.formMertialsData.Unit = data.data[0].Unit;
                     this.formMertialsData.Station = data.data[0].Station;
                     this.formMertialsData.WaterLine = data.data[0].WaterLine;
+                    this.formMertialsData.Action = "GET"
                 }
               }
             })
@@ -359,6 +394,7 @@ export default {
                     this.formMertialsData.Unit = data.data[0].Unit;
                     this.formMertialsData.Station = data.data[0].Station;
                     this.formMertialsData.WaterLine = data.data[0].WaterLine;
+                    this.formMertialsData.Action = "GET";
                 }
               }
             })
@@ -375,9 +411,19 @@ export default {
        * 打开创建口味对话框
        */
        handleTasteCreate() {
+        this.getTasteList()
         this.searchMatrialList()
         this.createTasteDialogVisible = true;
         this.materialParams.keyword = ''
+      },
+
+      getTasteList() {
+        Recipe.search_taste({})
+            .then(({data}) => {
+              if (data.code == 200) {
+                  this.tasteList = data.data;
+              }
+            })
       },
     
     getList() {
@@ -485,7 +531,12 @@ export default {
     },
     onMaterialDialogSubmit() {
       var tmpMaterialData = '';
-      tmpMaterialData = this.formMertialsData.Name+this.formMertialsData.Dosage+this.formMertialsData.Unit
+      if (this.formMertialsData.Action !== "GET") {
+        tmpMaterialData = this.formMertialsData.Name+this.formMertialsData.Dosage+this.formMertialsData.Unit
+      } else{
+        tmpMaterialData = this.formMertialsData.Name
+      }
+      
       this.dynamicTags.push(tmpMaterialData)
       this.Materials.push(tmpMaterialData)
       if (this.formData.MaterialArr === 'undefined' || this.formData.MaterialArr == null || this.formData.MaterialArr === '') {
@@ -498,7 +549,20 @@ export default {
     },
     onTasteDialogSubmit() {
       var tmpTasteData = '';
-      tmpTasteData  = this.formTasteData.Taste+this.formTasteData.Dosage+this.formTasteData.Unit
+      if (this.formTasteData.Action !== "GET") {
+        tmpTasteData  = this.formTasteData.Taste+":"+this.formTasteData.MaterialsName+this.formTasteData.Dosage+this.formTasteData.Unit
+        if (this.formData.MaterialArr === 'undefined' || this.formData.MaterialArr == null || this.formData.MaterialArr === '') {
+        this.formData.MaterialArr = []
+      }
+      this.formMertialsData.Name = this.formTasteData.MaterialsName
+      this.formMertialsData.Dosage = this.formTasteData.Dosage
+      this.formMertialsData.Unit = this.formTasteData.Unit
+      this.formMertialsData.WaterLine = this.formTasteData.WaterLine
+      this.formMertialsData.Station = this.formTasteData.Station
+      this.formData.MaterialArr.unshift(this.formMertialsData)
+      }else{
+        tmpTasteData  = this.formTasteData.Taste+":"+this.formTasteData.MaterialsName
+      }
       this.tasteDynamicTags.push(tmpTasteData);
       this.Taste.push(tmpTasteData)
       if ( this.formData.TasteArr === 'undefined' || this.formData.TasteArr == null || this.formData.TasteArr === '') {
@@ -507,11 +571,12 @@ export default {
       this.formData.Taste = tmpTasteData
       this.formData.TasteArr.unshift(this.formTasteData)
       this.formTasteData = {}
+      this.formMertialsData = {}
       this.createTasteDialogVisible = false
     },
+
     onSubmit() {
-        // saveOrUpdate
-        
+      console.log(this.formData.MaterialArr)
         this.formData.Materials = this.dynamicTags
         this.formData.Taste = this.tasteDynamicTags
       Recipe.saveOrUpdate(this.formData.Id ? "edit":"add", this.formData)
