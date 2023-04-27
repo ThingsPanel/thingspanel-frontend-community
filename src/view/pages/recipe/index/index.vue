@@ -88,19 +88,17 @@
         </el-form-item>
 
         <el-form-item :label="$t('RECIPEMANAGEMENT.RECIPE_EDIT.MATERIAL')" style="width: 100%">
-          <el-button type="save" @click="handleMaterialsCreate">添加物料</el-button>
-          <div style="display: flex;">
-            <!-- <el-input size="medium" v-model="formData.Materials"></el-input> -->
-            <el-tag :key="tag" v-for="(tag,index) in dynamicTags" closable :disable-transitions="false" @close="handleClose(tag,index)">{{tag}}</el-tag>
+          <div>
+            <el-button type="save" @click="handleMaterialsCreate">添加物料</el-button>
           </div>
+          <el-tag :key="tag" v-for="(tag,index) in dynamicTags" closable :disable-transitions="false" @close="handleClose(tag,index)">{{tag}}</el-tag>
         </el-form-item>
 
         <el-form-item :label="$t('RECIPEMANAGEMENT.RECIPE_EDIT.TASTE')" style="width: 100%">
-          <el-button type="save" @click="handleTasteCreate">添加口味</el-button>
-          <div style="display: flex;">
-            <el-tag :key="tag" v-for="(tag,index) in tasteDynamicTags" closable :disable-transitions="false" @close="handleTasteClose(tag,index)">{{tag}}</el-tag>
+          <div>
+            <el-button type="save" @click="handleTasteCreate">添加口味</el-button>
           </div>
-
+          <el-tag :key="tag" v-for="(tag,index) in tasteDynamicTags" closable :disable-transitions="false" @close="handleTasteClose(tag,index)">{{tag}}</el-tag>
         </el-form-item>
 
         <el-form-item :label="$t('RECIPEMANAGEMENT.RECIPE_EDIT.BOTTOMPROPERTIES')" style="width: 100%">
@@ -111,7 +109,7 @@
         </el-form-item>
 
         <el-form-item :label="$t('RECIPEMANAGEMENT.RECIPE_EDIT.SOUPSTANDARD')" style="width: 100%">
-          <el-input-number size="medium" v-model="formData.SoupStandard"></el-input-number> ML 
+          <el-input-number size="medium" v-model="formData.SoupStandard" disabled></el-input-number> ML 
         </el-form-item>
 
         <div style="display: flex;justify-content: center">
@@ -137,20 +135,20 @@
           <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_MATERIAL.MATERIAL')" prop="Matiral">
             <!-- <el-input v-model="formTasteData.Matiral"  @keyup.native="searchMatrialList()"></el-input> -->
             <el-select v-model="formMertialsData.Name" filterable  allow-create  @change="selectQueryMaterial" placeholder="请输入或选择">
-                <el-option v-for="item in materialList" :value="item.Name" :key="item.Id">{{ item.Name }}</el-option>
+                <el-option v-for="(item,index) in materialList" :value="index" :key="item.Id" :label="item.Name">{{ item.Name }}{{ item.Dosage }}{{ item.Unit }}{{ item.WaterLine }} ML</el-option>
             </el-select>
           </el-form-item>
           <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_MATERIAL.DOSAGE')" prop="Dosage">
-            <el-input-number v-model="formMertialsData.Dosage">g/克</el-input-number>
+            <el-input-number v-model="formMertialsData.Dosage" :disabled="materialDosageDisabled">g/克</el-input-number>
           </el-form-item>
           <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_MATERIAL.UNIT')" prop="Unit">
-            <el-input v-model="formMertialsData.Unit"></el-input>
+            <el-input v-model="formMertialsData.Unit" :disabled="materialUnitDisabled"></el-input>
         </el-form-item>
         <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_MATERIAL.ADDSOUPWATERLINE')" prop="WaterLine">
-            <el-input-number v-model="formMertialsData.WaterLine"></el-input-number> ML
+            <el-input-number v-model="formMertialsData.WaterLine" :disabled="materialWaterLineIsDisabled"></el-input-number> ML
         </el-form-item>
         <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_MATERIAL.STATION')" style="width: 100%" prop="Station">
-          <el-select style="width: 100%"  :placeholder="$t('RECIPEMANAGEMENT.ADD_MATERIAL.STATION')" v-model="formMertialsData.Station">
+          <el-select style="width: 100%"  :placeholder="$t('RECIPEMANAGEMENT.ADD_MATERIAL.STATION')" v-model="formMertialsData.Station" :disabled="materialStationDisabled">
                 <el-option label="所有工位" value="所有工位">所有工位</el-option>
                 <el-option label="鲜料工位" value="鲜料工位">鲜料工位</el-option>
                 <el-option label="传锅工位" value="传锅工位">传锅工位</el-option>
@@ -177,29 +175,29 @@
       >
           <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.TASTE')" prop="Taste">
             <el-select v-model="formTasteData.Taste" filterable   allow-create  @change="selectTasteQuery" placeholder="请输入或选择">
-                <el-option v-for="item in tasteList" :value="item.Name" :key="item.Id" :label="item.Name"></el-option>
+                <el-option v-for="(item,index) in tasteList" :value="index" :key="index" :label="item.Name"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.TASTEID')" prop="TasteId">
-            <el-input v-model="formTasteData.TasteId"></el-input>
+            <el-input v-model="formTasteData.TasteId" :disabled="tasteIdIsDisabled"></el-input>
           </el-form-item>
-          <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.MATRIAL')" prop="Matiral">
-            <el-select v-model="formTasteData.MaterialsName" filterable   allow-create  @change="selectMaterialOnTaste" placeholder="请输入或选择">
-                <el-option v-for="(item,index) in materialList" :value="index" :key="item.Id" :label="item.Name"></el-option>
+          <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.MATRIAL')" prop="MaterialsName">
+            <el-select v-model="formTasteData.Material" filterable   allow-create  @change="selectMaterialOnTaste" placeholder="请输入或选择">
+                <el-option v-for="(item,index) in materialList" :value="index" :key="item.Id">{{ item.Name }}{{ item.Dosage }}{{ item.Unit }}{{ item.WaterLine }} ML</el-option>
             </el-select>
           </el-form-item>
           
           <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.DOSAGE')" prop="Dosage">
-            <el-input-number v-model="formTasteData.Dosage"></el-input-number>
+            <el-input-number v-model="formTasteData.Dosage" :disabled="dosageIsDisabled"></el-input-number>
           </el-form-item>
           <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.UNIT')" prop="Unit">
-            <el-input v-model="formTasteData.Unit"></el-input>
+            <el-input v-model="formTasteData.Unit" :disabled="unitIsDisabled"></el-input>
         </el-form-item>
-        <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.ADDSOUPWATERLINE')" prop="Unit">
-            <el-input-number v-model="formTasteData.WaterLine"></el-input-number> ML
+        <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.ADDSOUPWATERLINE')" prop="WaterLine">
+            <el-input-number v-model="formTasteData.WaterLine" :disabled="waterLineIsDisabled"></el-input-number> ML
         </el-form-item>
         <el-form-item :label="$t('RECIPEMANAGEMENT.ADD_TASTE.STATION')" style="width: 100%">
-          <el-select style="width: 100%"  :placeholder="$t('RECIPEMANAGEMENT.ADD_TASTE.STATION')" v-model="formTasteData.Station">
+          <el-select style="width: 100%"  :placeholder="$t('RECIPEMANAGEMENT.ADD_TASTE.STATION')" v-model="formTasteData.Station" :disabled="stationIsDisabled">
                 <el-option label="所有工位" value="所有工位">所有工位</el-option>
                 <el-option label="鲜料工位" value="鲜料工位">鲜料工位</el-option>
                 <el-option label="传锅工位" value="传锅工位">传锅工位</el-option>
@@ -302,7 +300,16 @@ export default {
       projectOptions: [],
       assetList: [],
       deviceList: [],
-      sendToMQTTData: []
+      sendToMQTTData: [],
+      tasteIdIsDisabled: false,
+      dosageIsDisabled: false,
+      unitIsDisabled: false,
+      waterLineIsDisabled: false,
+      stationIsDisabled: false,
+      materialDosageDisabled: false,
+      materialUnitDisabled: false,
+      materialWaterLineIsDisabled: false,
+      materialStationDisabled: false
     }
   },
   mounted() {
@@ -318,61 +325,73 @@ export default {
             })
     },
 
-    changQuery(val) {
-      this.searchMatrialList1(val)
-    },
-
     selectMaterialOnTaste(index) {
       if (this.materialList[index] === 'undefined' || this.materialList[index] == null || this.materialList[index] === '') {
-         
+          this.dosageIsDisabled = false
+          this.unitIsDisabled = false
+          this.waterLineIsDisabled = false
+          this.stationIsDisabled = false
+          this.formTasteData.Material = ''
+          this.formTasteData.Dosage = 0
+          this.formTasteData.Unit = ''
+          this.formTasteData.WaterLine = 0
+          this.formTasteData.Station = ''
+          this.formTasteData.MaterialId = ''
+          this.formTasteData.Action = ""
       }else{
-        this.formTasteData.MaterialsName = this.materialList[index].Name
+          this.formTasteData.Material = this.materialList[index].Name
           this.formTasteData.Dosage = this.materialList[index].Dosage
           this.formTasteData.Unit = this.materialList[index].Unit
           this.formTasteData.WaterLine = this.materialList[index].WaterLine
           this.formTasteData.Station = this.materialList[index].Station
           this.formTasteData.MaterialId = this.materialList[index].Id
           this.formTasteData.Action = "GET"
+          this.dosageIsDisabled = true
+          this.unitIsDisabled = true
+          this.waterLineIsDisabled = true
+          this.stationIsDisabled = true
       }
       
     },
 
-    // selectQuery(index) {
-    //   this.formTasteData.MaterialsName = this.materialList[index].Name
-    //   this.formTasteData.Dosage = this.materialList[index].Dosage
-    //   this.formTasteData.Unit = this.materialList[index].Unit
-    //   this.formTasteData.WaterLine = this.materialList[index].WaterLine
-    //   this.formTasteData.Station = this.materialList[index].Station
-    // },
 
     selectTasteQuery(index) {
-      Recipe.search_taste({keyword: index})
-            .then(({data}) => {
-              if (data.code == 200) {
-                if (data.data.length > 0 ) {
-                    this.formTasteData.TasteId = data.data[0].TasteId;
-                    this.formTasteData.Action = "GET"
-                }
-              }
-            })
-      
+      if (this.tasteList[index] === 'undefined' || this.tasteList[index] == null || this.tasteList[index] === ''){
+        this.tasteIdIsDisabled = false
+        this.formTasteData.TasteId = '' 
+        this.formTasteData.Taste = ''
+        this.formTasteData.Action = ''
+      }else{
+        this.formTasteData.TasteId = this.tasteList[index].TasteId 
+        this.formTasteData.Taste = this.tasteList[index].Name
+        this.formTasteData.Action = "GET"
+        this.tasteIdIsDisabled = true
+      }
+    
     },
 
     selectQueryMaterial(index) {
-      console.log(index)
-      this.materialParams.keyword = index;
-      Recipe.search_index(this.materialParams)
-            .then(({data}) => {
-              if (data.code == 200) {
-                if (data.data.length > 0 ) {
-                    this.formMertialsData.Dosage = data.data[0].Dosage;
-                    this.formMertialsData.Unit = data.data[0].Unit;
-                    this.formMertialsData.Station = data.data[0].Station;
-                    this.formMertialsData.WaterLine = data.data[0].WaterLine;
+      if (this.materialList[index] === 'undefined' || this.materialList[index] == null || this.materialList[index] === ''){
+                    this.materialDosageDisabled = false
+                    this.materialUnitDisabled = false
+                    this.materialWaterLineIsDisabled =  false
+                    this.materialStationDisabled=  false
+                    this.formMertialsData.Dosage = 0;
+                    this.formMertialsData.Unit = '';
+                    this.formMertialsData.Station = '';
+                    this.formMertialsData.WaterLine = 0;
+                    this.formMertialsData.Action = ""
+       }else{
+                    this.formMertialsData.Dosage = this.materialList[index].Dosage;
+                    this.formMertialsData.Unit = this.materialList[index].Unit;
+                    this.formMertialsData.Station = this.materialList[index].Station;
+                    this.formMertialsData.WaterLine = this.materialList[index].WaterLine;
                     this.formMertialsData.Action = "GET"
-                }
-              }
-            })
+                    this.materialDosageDisabled = true
+                    this.materialUnitDisabled = true
+                    this.materialWaterLineIsDisabled =  true
+                    this.materialStationDisabled=  true
+        }
     },
 
     /**
@@ -383,22 +402,7 @@ export default {
         this.createMaterialsDialogVisible = true;
         this.materialParams.keyword = ''
       },
-      searchMatrialList1(name) {
-        console.log(name)
-        this.materialParams.keyword = name;
-      Recipe.search_index(this.materialParams)
-            .then(({data}) => {
-              if (data.code == 200) {
-                if (data.data.length > 0 ) {
-                    this.formMertialsData.Dosage = data.data[0].Dosage;
-                    this.formMertialsData.Unit = data.data[0].Unit;
-                    this.formMertialsData.Station = data.data[0].Station;
-                    this.formMertialsData.WaterLine = data.data[0].WaterLine;
-                    this.formMertialsData.Action = "GET";
-                }
-              }
-            })
-    },
+
       searchMatrialList() {
       Recipe.search_index(this.materialParams)
             .then(({data}) => {
@@ -532,7 +536,7 @@ export default {
     onMaterialDialogSubmit() {
       var tmpMaterialData = '';
       if (this.formMertialsData.Action !== "GET") {
-        tmpMaterialData = this.formMertialsData.Name+this.formMertialsData.Dosage+this.formMertialsData.Unit
+        tmpMaterialData = this.formMertialsData.Name+this.formMertialsData.Dosage+this.formMertialsData.Unit+this.formMertialsData.WaterLine
       } else{
         tmpMaterialData = this.formMertialsData.Name
       }
@@ -551,18 +555,19 @@ export default {
     onTasteDialogSubmit() {
       var tmpTasteData = '';
       if (this.formTasteData.Action !== "GET") {
-        tmpTasteData  = this.formTasteData.Taste+":"+this.formTasteData.MaterialsName+this.formTasteData.Dosage+this.formTasteData.Unit
+        tmpTasteData  = this.formTasteData.Taste+":"+this.formTasteData.Material+this.formTasteData.Dosage+this.formTasteData.Unit
         if (this.formData.MaterialArr === 'undefined' || this.formData.MaterialArr == null || this.formData.MaterialArr === '') {
         this.formData.MaterialArr = []
       }
-      this.formMertialsData.Name = this.formTasteData.MaterialsName
+      this.formMertialsData.Name = this.formTasteData.Material
       this.formMertialsData.Dosage = this.formTasteData.Dosage
       this.formMertialsData.Unit = this.formTasteData.Unit
       this.formMertialsData.WaterLine = this.formTasteData.WaterLine
       this.formMertialsData.Station = this.formTasteData.Station
+      this.formMertialsData.Action = "Taste"
       this.formData.MaterialArr.unshift(this.formMertialsData)
       }else{
-        tmpTasteData  = this.formTasteData.Taste+":"+this.formTasteData.MaterialsName
+        tmpTasteData  = this.formTasteData.Taste+":"+this.formTasteData.Material
       }
       this.tasteDynamicTags.push(tmpTasteData);
       this.Taste.push(tmpTasteData)
@@ -577,12 +582,36 @@ export default {
     },
 
     onSubmit() {
-      if (this.formData.MaterialArr.length == 0)  {
+      var materialCount = this.formData.MaterialArr.length
+      var tasteCount = this.formData.TasteArr.length
+      var count = 0
+      var deleteCount = 0
+      if (materialCount == 0)  {
         message_error("请添加物料")
         return
       }
+      for (var i = 0; i < materialCount; i++ ) {
+                    if (this.formData.MaterialArr[i].Operate == "delete") {
+                        count ++
+                    }
+      }
+      if (count == materialCount) {
+        message_error("请添加物料")
+        return
+      }
+
+      for (var i = 0; i < tasteCount; i++ ) {
+                    if (this.formData.TasteArr[i].Operate == "delete") {
+                      deleteCount ++
+                    }
+      }
+
+      if (deleteCount == tasteCount) {
+        message_error("请添加口味")
+        return
+      }
       
-      if (this.formData.TasteArr.length == 0)  {
+      if (tasteCount == 0)  {
         message_error("请添加口味")
         return
       }
