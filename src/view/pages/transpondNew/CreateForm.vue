@@ -38,8 +38,7 @@
         </el-form-item>
 
         <el-form-item :label="$t('RULE_ENGINE.ACCESS_ENGINE.DATAPURPOSE')">
-          <el-button type="indigo" size="small" style="margin-left: auto"
-            @click="handleAdd()">{{ $t('RULE_ENGINE.ACCESS_ENGINE.ADDACTION')}}</el-button>
+          <el-button type="indigo" size="small" style="margin-left: auto" @click="handleAdd()">{{ $t('RULE_ENGINE.ACCESS_ENGINE.ADDACTION')}}</el-button>
 
             <!-- 列表 -->
             <div class="list_box" v-if="listData.length > 0">
@@ -208,6 +207,7 @@ export default {
     dialogUrlVisible: false,
     // 列表数据
     listData:[],
+    isShow:false,
     // 选中编辑数据
     editData:"",
     // 数据类型
@@ -325,7 +325,16 @@ export default {
     },
 
     handleAdd(){
-        this.dialogChooseVisible=true
+        console.log(this.listData,'this')
+        if(this.listData.length>0){
+          this.$message({message: "目前只支持新增一条", center: true, type: "waring"})
+          this.dialogChooseVisible=false
+          return
+        }else{
+   
+          this.dialogChooseVisible=true
+        }
+  
     },
 
     //二选一弹框

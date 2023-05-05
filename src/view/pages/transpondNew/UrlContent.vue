@@ -58,10 +58,8 @@ export default {
   methods: {
     edit(record){
       if(record.target_info){
-        console.log(record.target_info,'获取url')
         this.form = Object.assign({}, record.target_info);
       }else{
-        console.log(record,'获取')
         this.form = Object.assign({}, record);
       }
     },

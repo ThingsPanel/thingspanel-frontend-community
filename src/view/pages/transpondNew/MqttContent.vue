@@ -102,10 +102,8 @@ export default {
   methods: {
     edit(record) {
       if(record.target_info){
-        console.log(record.target_info.mqtt,'获取')
         this.form = Object.assign({}, record.target_info.mqtt);
       }else{
-        console.log(record,'获取')
         this.form = Object.assign({}, record);
       }
     },
