@@ -653,6 +653,7 @@ export const locale = {
     OPERATION: 'Operation',
     ADDINGCHILDDEVICE: 'Adding a child device',
     DEVICECONFIG: 'Device config',
+    DEVICE_DETAIL: "Device detail",
     DELETETHISITEM: 'Are you sure you want to delete this item?',
     DELETE: 'Delete',
     BINDDEVICEPLUG: 'Bind device plug-in',
@@ -1462,10 +1463,13 @@ export const locale = {
       LABLE5: 'Step Length',
       LABLE6: 'Unit (e.g：℃)',
       LABLE7: 'Description',
-      LABLE8: 'Function',
-      LABLE9: 'topic',
-      LABLE10: 'Description',
-      LABLE11: 'View'
+      LABLE8: 'Command name',
+      LABLE9: 'Command identifier',
+      LABLE10: 'Command params',
+      LABLE11: 'View',
+      LABLE12: 'Event name',
+      LABLE13: 'Event identifier',
+      LABLE14: 'Event params',
     },
     /**
    * 应用管理——设备插件——图表
