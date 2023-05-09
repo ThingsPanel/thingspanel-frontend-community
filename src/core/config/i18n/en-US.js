@@ -160,7 +160,7 @@ export const locale = {
     NETWORKCOMPONENTS: 'Access Engine',
     TRANSPOND: 'Data Switching',
     OPERATIONLOG: 'Logs',
-    PRODUCTION: '生产管理',
+    PRODUCTION: 'Production management',
     BUSINESSMANAGEMENT: 'Business Management',
     BUSINESSLIST: 'Project List',
     NEWLYADDED: 'New',
@@ -240,40 +240,40 @@ export const locale = {
     INSTALLING_TITLE: 'Installing...',
     ON: 'On',
     OFF: 'Off',
-    TEXT2: '数据间隔时间(秒)',
+    TEXT2: 'Data interval time (seconds)',
     TEXT3: 'Weather station',
-    TEXT4: '空气质量',
-    TEXT5: '二氧化碳',
-    TEXT6: '臭氧浓度',
-    TEXT7: '二氧化硫',
-    TEXT8: '负氧离子',
-    TEXT9: '一氧化碳',
-    TEXT10: '偏高',
-    TEXT11: '偏低',
-    TEXT12: '开关控制',
-    TEXT13: '自动',
-    TEXT14: '手动',
-    TEXT15: '温度',
-    TEXT16: '湿度',
-    TEXT17: '降雨概率',
-    TEXT18: '气压',
-    TEXT19: '紫外线',
-    TEXT20: '环境参数',
-    TEXT21: '光照强度',
-    TEXT22: '二氧化碳浓度',
-    TEXT23: '风速强度',
-    TEXT24: '牧畜地区温度',
-    TEXT25: '牧畜地区湿度',
-    TEXT26: '土壤参数',
-    TEXT27: '含氮量',
-    TEXT28: '土壤温度',
-    TEXT29: '土壤湿度(rh)',
-    TEXT30: '设置',
-    TEXT31: '频率（秒）',
-    TEXT32: '土壤参数配置',
-    TEXT33: '频率配置',
-    TEXT34: '牲畜管理',
-    // PLACEHOLDER1: "请输入资产名称",
+    TEXT4: 'Air Quality',
+    TEXT5: 'Carbon dioxide',
+    TEXT6: 'Ozone concentration',
+    TEXT7: 'Sulfur dioxide',
+    TEXT8: 'Negative oxygen ion',
+    TEXT9: 'Carbon monoxide',
+    TEXT10: 'High',
+    TEXT11: 'Low',
+    TEXT12: 'Switch control',
+    TEXT13: 'Auto',
+    TEXT14: 'Manual',
+    TEXT15: 'Temperature',
+    TEXT16: 'Humidity',
+    TEXT17: 'Rainfall Probability',
+    TEXT18: 'Air pressure',
+    TEXT19: 'Ultraviolet',
+    TEXT20: 'Environmental parameters',
+    TEXT21: 'Light intensity',
+    TEXT22: 'Carbon dioxide concentration',
+    TEXT23: 'Wind Speed Strength',
+    TEXT24: 'Temperature in livestock area',
+    TEXT25: 'humidity in livestock area',
+    TEXT26: 'Soil parameters',
+    TEXT27: 'Nitrogen content',
+    TEXT28: 'Soil temperature',
+    TEXT29: 'Soil moisture (rh)',
+    TEXT30: 'Settings',
+    TEXT31: 'Frequency (seconds)',
+    TEXT32: 'Soil parameter configuration',
+    TEXT33: 'Frequency Configuration',
+    TEXT34: 'Livestock Management',
+    // PLACEHOLDER1: "Please enter the asset name",
     PLACEHOLDER1: 'Please input assets name',
     PLACEHOLDER2: 'Please input assets alias name',
     PLACEHOLDER3: 'Please select device',
@@ -402,7 +402,7 @@ export const locale = {
     EQUIPMENTLOG1: 'EquipmentLog',
     QUERY1: 'QUERY',
     REST1: 'REST',
-    // ECHARTS: "设备地图"
+    // ECHARTS: "Device map"
     DEVICEMAP: 'Device map',
     DEVICE_GROUP_SELECTOR_PLACEHOLDER: 'Please select the devicelocation',
     DEVICE_PLUG_SELECTOR_PLACEHOLDER: 'Please select the deviceplug'
@@ -471,16 +471,16 @@ export const locale = {
   /**
    * ========================================================================================================
    */
-  // COMMON: {
-  //   HANDLE: "操作",
-  //   VIEW: "查看",
-  //   EDIT: "编辑",
-  //   DELETE: "删除",
-  //   ADD_LINE: "新增一行",
-  //   DEVICE_GROUP_SELECTOR_PLACEHOLDER: "请选择设备分组",
-  //   DEVICE_PLUG_SELECTOR_PLACEHOLDER: "请选择设备插件",
-  //   QUERY: "查询"
-  // },
+   // COMMON: {
+     // HANDLE: "Operation",
+     // VIEW: "View",
+     // EDIT: "Edit",
+     // DELETE: "Delete",
+     // ADD_LINE: "Add a new line",
+     // DEVICE_GROUP_SELECTOR_PLACEHOLDER: "Please select a device group",
+     // DEVICE_PLUG_SELECTOR_PLACEHOLDER: "Please select a device plug-in",
+     // QUERY: "Query"
+   // },
   /**
    * 菜单
   */
@@ -492,8 +492,8 @@ export const locale = {
     DATA_MANAGEMENT: 'Data Management',
     VISUALIZATION: 'Visualization',
     AUTOMATION: 'Automation',
-    SCENE_LINKAGE: '场景联动',
-    SCENE_MANAGEMENT: '场景管理',
+    SCENE_LINKAGE: 'Scene Linkage',
+    SCENE_MANAGEMENT: 'Scenen Management',
     WARNINFO: 'Alert Message',
     SYSTEMLOG: 'System Log',
     OPERATIONLOG: 'Logs',
@@ -505,6 +505,7 @@ export const locale = {
     RULEENGINE: 'Rule Engine',
     NETWORKCOMPONENTS: 'Access Engine',
     TRANSPOND: 'Data Switching',
+    TRANSPONDNEW: "Data Switching (New)",
     MARKET: 'Application Management',
     SYSTEMMANAGEMENT: 'System Management',
     SYSTEMSETUP: 'System Setup',
@@ -515,7 +516,7 @@ export const locale = {
     DELDEVICEPLUGIN: 'Del Device Plugin'
   },
   /**
-   * 认证
+   * Certified
    */
   AUTH: {
     GENERAL: {
@@ -569,7 +570,7 @@ export const locale = {
     SIGNOUT: 'logout'
   },
   /**
-   * 登录页面
+   * LogIn page
    */
   LOGIN: {
     SIGNIN: 'login',
@@ -585,7 +586,7 @@ export const locale = {
     LOADING: 'Loading....'
   },
   /**
-   * 首页
+   * Front Page
    */
   HOME: {
     QUICK_START: 'Quick Start',
@@ -607,7 +608,7 @@ export const locale = {
     TITLE22: 'Memory Usage Curve'
   },
   /**
-   * 设备接入
+   * Device Access
    */
   DEVICE_ACCESS: {
     DEVICEACCESS: 'Device Access',
@@ -624,7 +625,7 @@ export const locale = {
     DELETE: 'Delete'
   },
   /**
-   * 设备管理
+   * Device Management
    */
   DEVICE_MANAGEMENT: {
     PLACEHOLDER1: 'Select Project',
@@ -658,7 +659,7 @@ export const locale = {
     CANCEL: 'Cancel',
     SAVE: 'Save',
     /**
-   * 管理分组弹框
+   * Manage group popups
    */
     MANAGEMENT_GROUP_MODEL: {
       MANAGINGDEVICEGROUPS: 'Managing Device Groups',
@@ -672,7 +673,7 @@ export const locale = {
       DELETE: 'Delete'
     },
     /**
-     * 设备配置弹框
+     * Device configuration popup
      */
     DEVICE_CONFIG: {
       DEVICECONFIG: 'Device config',
@@ -692,7 +693,7 @@ export const locale = {
       CONFIRM: 'Submit'
     },
     /**
-     * 编辑参数弹框
+     * Edit parameter popup
      */
     EDIT_PARAMETER: {
       EDITPARAMETER: 'Edit parameter',
@@ -723,7 +724,7 @@ export const locale = {
       CANCEL: 'Cancel'
     },
     /**
-     * 配置参数弹框
+     * Configuration parameter popup
      */
     CONFIG_PARAMETER: {
       CONFIGPARAMETER: 'Config parameter',
@@ -734,7 +735,7 @@ export const locale = {
       CANCEL: 'Cancel'
     },
     /**
-     * 自定义数据解析脚本弹框
+     * Custom data parsing script pop-up box
      */
     CUSTOM_SCRIPT: {
       TITLE: 'Custom data parsing script',
@@ -747,7 +748,7 @@ export const locale = {
     }
   },
   /**
-   * 设备监控
+   * Equipment monitoring
    */
   DEVICE_MONITORING: {
     DEVICEMONITORING: 'Device Monitoring',
@@ -757,21 +758,21 @@ export const locale = {
     VIEW: 'View'
   },
   /**
-   * 设备监控详情
+   * Device Monitoring Details
    */
   DEVICE_WATCH_DETAIL: {
     RETURN: 'Back',
     SEARCH: 'Search'
   },
   /**
-   * 设备地图
+   * Device map
    */
   DEVICE_MAP: {
     PLACEHOLDER1: 'Please select device plug',
     PLACEHOLDER2: 'Full screen'
   },
   /**
-   * 数据管理
+   * Data management
    */
   DATA_MANAGEMENT: {
     DATAS: 'Data Management',
@@ -798,7 +799,7 @@ export const locale = {
     CLICKDOWNLOAD: 'Click download'
   },
   /**
-   * 可视化
+   * Visualization
    */
   VISUALIZATION: {
     TITLE: 'Visualization',
@@ -815,7 +816,7 @@ export const locale = {
     VIEW: 'View'
   },
   /**
-   * 自动化
+   * Automation
    */
   AUTOMATION: {
     SCENE_LINKAGE_LIST: 'Scene List',
@@ -839,6 +840,7 @@ export const locale = {
     DELETE_SUCCESS: 'Delete Succeeded!',
     SAVE: 'Save',
     CANCEL: 'cancel',
+    ADD:"Add",
     EDIT: 'Edit',
     DELETE: 'Delete',
     DISABLED: 'Disabled',
@@ -997,6 +999,7 @@ export const locale = {
       GROUP: 'Please select a group!',
       DEVICE: 'please select device！',
       STATE: 'Please select status or properties!',
+      MESSAGETYPE: "Please select messagetype",
       DURATION: 'Please enter duration!',
       SYMBOL: 'Please select an operation type！',
       PROPERTY: 'Please enter correct properties!',
@@ -1019,7 +1022,7 @@ export const locale = {
     }
   },
   /**
-   * 告警
+   * Alarm
    */
   ALARM: {
     WARNINFO: 'Alert Message',
@@ -1052,11 +1055,11 @@ export const locale = {
     }
   },
   /**
-   * 系统日志
+   * System Log
    */
   SYSTEM_LOG: {
     /**
-     * 操作日志
+     * Operation Log
      */
     OPERATION_LOG: {
       OPERATIONLOG: 'Logs',
@@ -1071,7 +1074,7 @@ export const locale = {
       USERNAME: 'username'
     },
     /**
-     * 设备日志
+     * Device Log
      */
     DEVICE_LOG: {
       EQUIPMENTLOG: 'Equipment Log',
@@ -1098,11 +1101,11 @@ export const locale = {
     }
   },
   /**
-   * 产品管理
+   * Product Management
    */
   PRODUCT_MANAGEMENT: {
     /**
-     * 产品列表
+     * Product List
      */
     PRODUCT_LIST: {
       PRODUCTLIST: 'product list',
@@ -1119,8 +1122,8 @@ export const locale = {
       DELETE: 'Delete',
       MQTTPROTOCOL: 'MQTT Protocol',
       /**
-     * 产品列表新增弹框
-     */
+      * Added a pop-up box to the product list
+      */
       PRODUCT_LIST_ADD: {
         CREATEPRODUCT: 'create product',
         PRODUCTNAME: 'product name',
@@ -1140,7 +1143,7 @@ export const locale = {
       PLACEHOLDER4: 'Select a authentication type'
     },
     /**
-     * 批次列表
+     * Batch List
      */
     BATCH_LIST: {
       BATCHLIST: 'batch list',
@@ -1160,8 +1163,8 @@ export const locale = {
       GENERATE_WAIT: 'Generating, please wait...',
       CLICKDOWNLOAD: 'Click download',
       /**
-     * 批次列表新增弹框
-     */
+      * Added a pop-up box to the batch list
+      */
       BATCH_LIST_ADD: {
         CREATEPRODUCT: 'create product',
         PRODUCT: 'product',
@@ -1178,7 +1181,7 @@ export const locale = {
       PLACEHOLDER4: 'Please enter the number of devices'
     },
     /**
-     * 固件升级列表
+     * Firmware Upgrade List
      */
     FIRMWARE_LIST: {
       FIRMWAREUPGRADE: 'firmware update',
@@ -1194,14 +1197,14 @@ export const locale = {
       DELETE: 'Delete',
       TITLE4: 'Are you sure you want to delete?',
       /**
-     * 固件升级新增弹框
-     */
+      * Added pop-up box for firmware upgrade
+      */
       FIRMWARE_LIST_ADD: {
-        PACKAGE_NAME: '升级包名称',
+        PACKAGE_NAME: 'Package name',
         ADDFIRMWARE: 'Add firmware',
         BELONGINGPRODUCT: 'Belonging product',
-        PACKAGE_MODULE: '升级包模块',
-        PACKAGE_VERSION: '升级包版本号',
+        PACKAGE_MODULE: 'package module',
+        PACKAGE_VERSION: 'package version number',
         FIRMWARENAME: 'firmware name',
         VERSION: 'version',
         SIGNTYPE: 'sign type',
@@ -1221,23 +1224,33 @@ export const locale = {
     }
   },
   /**
-   * 规则引擎
+   * rule engine
    */
   RULE_ENGINE: {
     /**
-     * 接入引擎
+     * access engine
      */
     ACCESS_ENGINE: {
       NETWORKCOMPONENTS: 'Access Engine',
       CREATACCESSRULSE: 'Creating Access Rules',
       NO: 'ID',
       RULE_NAME: 'Rule name',
+      RULE_NAME_NEW: "Forward Rule name",
+      RULE_DESCRIBE: "Forward Describe",
+      DATA: "data",
+      PARSING_SCRIPTS: "Parsing scripts",
+      DATAPURPOSE: "Data Purpose",
       TNTERFACESTATUS: 'Interface Status',
       SRARTED: 'Started',
       PUTONHOLD: 'Put on hold',
       OPERATION: 'Operation',
       START: 'Start ',
       SUSPENDED: 'suspended',
+      ADDACTION: "Add action",
+      EDITACTION: "Edit action",
+      ADDTITLE: "Add Forward Rule",
+      EDITACTION: "Edit Forward Rule",
+      ADD: "Add",
       EDIT: 'Edit',
       DELETE: 'Delete',
       CREATE: 'create',
@@ -1248,11 +1261,12 @@ export const locale = {
       PLACEHOLDER: 'Please enter a rule name'
     },
     /**
-     * 数据转发
+     * data forwarding
      */
     DATA_FORWARDING: {
       TRANSPOND: 'Data Switching',
       CREATINGFORWARDINGRULE: 'Creating a Forwarding Rule',
+      RELEASE:"release",
       NO: 'ID',
       RULE_NAME: 'Rule name',
       TNTERFACESTATUS: 'Interface Status',
@@ -1266,10 +1280,51 @@ export const locale = {
       CREATE: 'create',
       CONFIGURATION: 'configuration',
       TITLE4: 'Are you sure you want to delete?'
+    },
+    /**
+     * data forwarding new
+     */
+    DATA_FORWARDINGNEW: {
+      TRANSPOND: 'Data Switching New',
+      CREATINGFORWARDINGRULE: 'Creating a Forwarding Rule',
+      NO: 'ID',
+      RULE_NAME_NEW: 'Forward Rule name',
+      RULE_DESCRIBE: "describe",
+      DATA: "data",
+      PARSING_SCRIPTS: "Parsing scripts",
+      DATAPURPOSE: "Data Purpose",
+      LABLE1:"MQTT Server Host Name/IP",
+      LABLE2:"MQTT Server port",
+      LABLE3:"client ID",
+      LABLE4:"username",
+      LABLE5:"password",
+      LABLE6:"Publish to topic",
+      URL:"Push URL",
+      CREATEDATE:"Create date",
+      TNTERFACESTATUS: 'Interface Status',
+      SRARTED: 'Started',
+      PUTONHOLD: 'Put on hold',
+      OPERATION: 'Operation',
+      START: 'Start ',
+      SUSPENDED: 'suspended',
+      EDIT: 'Edit',
+      DELETE: 'Delete',
+      CREATE: 'create',
+      CONFIGURATION: 'configuration',
+      TITLE4: 'Are you sure you want to delete?',
+      PLACEHOLDER: "Please enter Forward Rule name",
+      PLACEHOLDER1: "Please enter Forward Rule describe",
+      PLACEHOLDER2: "Please enter MQTT IP",
+      PLACEHOLDER3: "Please enter MQTT port",
+      PLACEHOLDER4: "Please enter client ID",
+      PLACEHOLDER5: "Please enter username",
+      PLACEHOLDER6: "Please enter password",
+      PLACEHOLDER7: "Please enter topic",
+      PLACEHOLDER8: "Please enter URL",
     }
   },
   /**
-   * 应用管理
+   * application management
    */
   PLUGIN: {
     TAB1: 'Device Plugin',
@@ -1290,7 +1345,7 @@ export const locale = {
     PREV: 'prev',
     NEXT: 'next',
     /**
-   * 应用管理——设备插件
+   * Application Management - Device Plugin
    */
     TAB1_CONTENT: {
       PLACEHOLDER: 'Please enter a plug-in name',
@@ -1313,7 +1368,7 @@ export const locale = {
       TIP: 'Tip'
     },
     /**
-     * 应用管理——接入协议插件
+     * Application Management - Access Protocol Plug-in
      */
     TAB2_CONTENT: {
       TITLE: 'Access protocol plug-in',
@@ -1345,7 +1400,7 @@ export const locale = {
       CONFIRM: 'Submit'
     },
     /**
-     * 应用管理——插件编辑器
+     * Application Management - Plugin Editor
      */
     TAB3_CONTENT: {
       TITLE: 'Import JSON',
@@ -1360,7 +1415,7 @@ export const locale = {
       THEIMPORT: 'The import'
     },
     /**
-   * 应用管理——设备插件——设备信息
+   * Application management - device plug-in - device information
    */
     DEVICE_INFO_TAB: {
       LABLE1: 'Plug-in name：',
@@ -1375,7 +1430,7 @@ export const locale = {
       PLACEHOLDER1: 'Please select'
     },
     /**
-   * 应用管理——设备插件——物模型
+   * Application Management - Device Plugin - Thing Model
    */
     MATTER_MODEL_INFO_TAB: {
       RADIO_TAB1: 'Standard model',
@@ -1397,7 +1452,7 @@ export const locale = {
       CONFIRM: 'Submit'
     },
     /**
-   * 应用管理——设备插件——物模型——表格
+   * Application management - device plug-in - object model - table
    */
     MATTER_MODEL_TABLE: {
       LABLE1: 'Field name (e.g： temperature)',
@@ -1413,7 +1468,7 @@ export const locale = {
       LABLE11: 'View'
     },
     /**
-   * 应用管理——设备插件——图表
+   * Application Management - Device Plugins - Charts
    */
     CHART_INFO_TAB: {
       DASHBOARD: 'dashboard',
@@ -1458,8 +1513,8 @@ export const locale = {
       DELETE: 'Delete'
     },
     /**
-   * 应用管理——设备插件——图表——自定义仪表盘弹框
-   */
+    * Application management - device plug-in - chart - custom dashboard bullet box
+    */
     CUSTOM_DASHBOARD: {
       TITLE: 'Custom Dashboard',
       TAB_PANE_LABEL1: 'Configuration Chart',
@@ -1494,12 +1549,12 @@ export const locale = {
       CONFIRM: 'Submit'
     },
     /**
-   * 应用管理——设备插件——发布
-   */
+    * Application Management - Device Plugin - Publish
+    */
     RELEASE_INFO_TAB: { TEXT: 'Do you agree to publish to the App Store' }
   },
   /**
-   * 系统管理
+   * System Management
    */
   SYSTEM_MANAGEMENT: {
     GENERALSETTINGS: 'General Settings',
@@ -1512,7 +1567,7 @@ export const locale = {
     EDIT: 'Edit',
     CONFIRM: 'Submit',
     /**
-     * 系统设置 常规设置
+     * System Settings General Settings
      */
     SYSTEM_SETTING: {
       SYSTEMTITLE: 'System title',
@@ -1528,7 +1583,7 @@ export const locale = {
       BACKGROUND: 'Background'
     },
     /**
-     * 用户管理
+     * User Management
      */
     USER_MANAGEMENT: {
       USERS: 'User management',
@@ -1558,7 +1613,7 @@ export const locale = {
       TITLE: 'The password defaults to 123456'
     },
     /**
-     * 角色管理
+     * role management
      */
     ROLE_MANAGEMENT: {
       MANAGEMENT: 'Role management',
@@ -1572,7 +1627,7 @@ export const locale = {
       PERMISSIONEDIT: 'Permission editing'
     },
     /**
-     * 权限管理
+     * authority management
      */
     PERMISSION_MANAGEMENT: {
       PERMISSIONMANAGEMENT: 'Permission management',
@@ -1598,8 +1653,8 @@ export const locale = {
       CODE: 'code：',
       LABLETYPE: 'type：',
       PLACEHOLDER: 'Please select',
-      EDIT: '编辑',
-      DELETE: '删除'
+      EDIT: 'edit',
+      DELETE: 'delete'
     }
   }
 };
