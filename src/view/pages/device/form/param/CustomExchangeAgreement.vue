@@ -27,10 +27,27 @@
                   :copy_code="true" :hide_header="false" theme="dark" :wrap_code="true"
                   v-model="formData.script_content_b"></CodeEditor>
 
+      <el-tabs v-model="testTabValue" @tab-click="handleClick">
+        <el-tab-pane label="模拟输入" name="input">
+          <CodeEditor class="dark-code-editor" key="input" style="width: 100%;height: 100px" min_height="100px"
+                  :copy_code="true" :hide_header="true" theme="dark" :wrap_code="true"
+                  v-model="formData.msg_content"></CodeEditor>
+        </el-tab-pane>
+        <el-tab-pane label="运行结果" name="result">
+          <CodeEditor class="dark-code-editor" key="result" style="width: 100%;height: 100px" min_height="100px"
+                  :copy_code="true" :hide_header="true" theme="dark" :wrap_code="true"
+                  v-model="formData.result"></CodeEditor>
+        </el-tab-pane>
+      </el-tabs>
+
       <div style="margin-top: 10px;display: flex;justify-content: center">
-        <el-button type="cancel" style="color:#000" @click="closeDialog">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.CANCEL') }}</el-button>
+        <el-button type="save" @click="onUpTest">上行脚本调试</el-button>
+        <el-button type="save" @click="onDownTest">下行脚本调试</el-button>
+
         <el-button type="save" @click="onSubmit">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.SAVE') }}</el-button>
         <el-button type="save" @click="onPublish">发布</el-button>
+        <el-button type="cancel" style="color:#000" @click="closeDialog">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.CANCEL') }}</el-button>
+
       </div>
     </el-form>
 
@@ -43,7 +60,7 @@ import {defineComponent, ref, watch, reactive} from "@vue/composition-api";
 import CodeEditor from 'simple-code-editor';
 import {message_success} from "@/utils/helpers";
 import StoreAPI from "@/api/store"
-import {getCustomExchangeAgreementList, addCustomExchangeAgreement, editCustomExchangeAgreement} from "@/api/device";
+import {getCustomExchangeAgreementList, addCustomExchangeAgreement, editCustomExchangeAgreement, testScript} from "@/api/device";
 import LoginStore from "@/view/pages/auth/LoginStore"
 import useRoute from "@/utils/useRoute";
 import store from "@/core/services/store/index"
@@ -143,6 +160,34 @@ export default defineComponent ({
 
       
     const customForm = ref(null);
+
+    /**
+     * @description: 上行脚本调试
+     * @return {*}
+     */
+    function onUpTest() {
+      const { script_content_a, msg_content } = formData;
+      const params = {
+        script_content: JSON.stringify(script_content_a),
+        msg_content: JSON.stringify(msg_content)
+      }
+
+      testScript(params)
+        .then(res => {
+          console.log("testScript", res)
+        })
+    }
+
+    /**
+     * @description: 下行脚本调试
+     * @return {*}
+     */
+    function onDownTest() {
+      const { script_content_b: script_content, msg_content } = formData;
+      console.log("onDownTest", script_content, msg_content)
+
+    }
+
     /**
      * @description: 保存
      * @return {*}
@@ -211,6 +256,7 @@ export default defineComponent ({
     return {
       customForm, formRule, formData,
       closeDialog,
+      onUpTest, onDownTest,
       onSubmit,
       onPublish, loginStoreDialogVisible
     }

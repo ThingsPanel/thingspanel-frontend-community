@@ -247,6 +247,14 @@ export function deleteCustomExchangeAgreement(data){
     })
 }
 
+export function testScript(data){
+    return axios({
+        url: "/tp_script/quiz",
+        method: "post",
+        data
+    })
+}
+
 /**
  * 获取多个设备状态
  * @param data   设备列表

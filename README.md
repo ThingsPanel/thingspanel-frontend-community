@@ -135,6 +135,14 @@
 ![](README_files/8.png)
 ![](README_files/9.png)
 
+## 贡献者
+
+感谢您对ThingsPanel的贡献!
+
+<a href="https://github.com/ThingsPanel/ThingsPanel-Backend-Vue/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=ThingsPanel/ThingsPanel-Backend-Vue" />
+</a>
+
 ## 联系我们
 
 [wiki](http://wiki.thingspanel.cn/index.php?title=%E9%A6%96%E9%A1%B5)
