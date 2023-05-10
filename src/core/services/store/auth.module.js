@@ -29,6 +29,23 @@ export const SET_ERROR = "setError";
 
 const local_url = process.env.VUE_APP_BASE_URL  || document.location.origin;
 const base_url = local_url + (local_url.endsWith("/") ? "api" : "/api");
+/**
+ * 用户类型
+ */
+const UserType = {
+  /**
+   * 系统管理员
+   */
+  SYS_ADMIN: "SYS_ADMIN",
+  /**
+   * 租户管理员
+   */
+  TENANT_ADMIN: "TENANT_ADMIN",
+  /**
+   * 租户用户
+   */
+  TENANT_USER: "TENANT_USER",   
+}
 
 const state = {
   errors: "",
@@ -67,7 +84,6 @@ const getters = {
 
 const actions = {
   [LOGIN](context, credentials) {
-    console.log("====Login", local_url);
     return new Promise((resolve, reject) => {
       login(credentials).then(({ data }) => {
           if (data.code == 200) {
@@ -88,6 +104,23 @@ const actions = {
                     state.user.name = user.name;
                     state.errors = "";
                     JwtService.saveCurrentUser(user);
+
+                    switch (state.user.authority) {
+                      case UserType.TENANT_USER:
+                        setTimeout(() => {
+                          router.push({name: "DeviceWatch"}).catch(() =>{
+                            location.reload();
+                          });
+                        }, 500)
+                        break;
+                      default:
+                        setTimeout(() => {
+                          router.push({name: "home"}).catch(() =>{
+                            location.reload();
+                          });
+                        }, 500)
+                        break;
+                    }
                   }
                 })
 
@@ -107,12 +140,7 @@ const actions = {
                   })
             }
 
-            // 登录成功，延迟 500 ms 再跳转
-            setTimeout(() => {
-              router.push({name: "home"}).catch(() =>{
-                location.reload();
-              });
-            }, 500)
+            
           }
 
           resolve(data);

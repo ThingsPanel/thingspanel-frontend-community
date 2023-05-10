@@ -5,6 +5,7 @@
     v-bind:class="headerClasses"
   >
     <!--begin::Logo-->
+    
     <router-link to="/home" >
       <img alt="Logo" :src="headerLogo" class="xsheaderlogo" />
     </router-link>
@@ -59,6 +60,7 @@ export default {
   mounted() {
     // Init Header Topbar For Mobile Mode
     KTLayoutHeaderTopbar.init(this.$refs["kt_header_mobile_topbar_toggle"]);
+
   },
   computed: {
     ...mapGetters(["layoutConfig", "getClasses"]),
