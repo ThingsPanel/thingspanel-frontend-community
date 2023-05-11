@@ -11,13 +11,13 @@
       <el-form-item :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.LABLE2')" prop="port" required>
           <el-input v-model="form.port"></el-input>
       </el-form-item>
-      <el-form-item :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.LABLE3')" prop="client_id" required>
+      <el-form-item :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.LABLE3')" prop="client_id">
           <el-input v-model="form.client_id"></el-input>
       </el-form-item>
-      <el-form-item :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.LABLE4')" prop="username" required>
+      <el-form-item :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.LABLE4')" prop="username">
           <el-input v-model="form.username"></el-input>
       </el-form-item>
-      <el-form-item :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.LABLE5')" prop="password" required>
+      <el-form-item :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.LABLE5')" prop="password">
           <el-input v-model="form.password"></el-input>
       </el-form-item>
       <el-form-item :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.LABLE6')" prop="topic" required>
@@ -71,17 +71,17 @@ export default {
             trigger: "blur"
         }, ],
         client_id: [{
-            required: true,
+            required: false,
             message: i18n.t('RULE_ENGINE.DATA_FORWARDINGNEW.PLACEHOLDER4'),
             trigger: "blur"
         }, ],
         username: [{
-            required: true,
+            required: false,
             message: i18n.t('RULE_ENGINE.DATA_FORWARDINGNEW.PLACEHOLDER5'),
             trigger: "blur"
         }, ],
         password: [{
-            required: true,
+            required: false,
             message: i18n.t('RULE_ENGINE.DATA_FORWARDINGNEW.PLACEHOLDER6'),
             trigger: "blur"
         }, ],
