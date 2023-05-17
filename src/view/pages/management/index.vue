@@ -513,7 +513,7 @@ export default defineComponent({
   width: 380px;
   //height: 450px;
   overflow:auto;
-
+  height: calc(100% - 130px);
   padding: 0px 10px;
   border-radius:5px ;
   .el-tree {
