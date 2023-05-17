@@ -97,6 +97,8 @@ export default {
             delete data.index;
             this.tableData.splice(row.index, 1, data)
         }
+        console.log('handleSimpleSave', this.tableData)
+
         this.$emit("dataChange", this.tableData);
     },
     /**
@@ -115,6 +117,7 @@ export default {
             this.tableData.splice(index, 1, this.formData)
         }
         this.dialogVisible = false;
+        console.log('handleAdvanceSave', this.tableData)
         this.$emit("dataChange", this.tableData);
     },
     /**
@@ -176,7 +179,11 @@ export default {
                         check + "_header" :
                         check + "_row_" + row.index;
                     let dom = document.getElementById(id);
-                    dom.focus();
+                    if (!dom) {
+                        this.$refs[check].focus();
+                    } else {
+                        dom.focus();
+                    }
                 })
             }
         } else {

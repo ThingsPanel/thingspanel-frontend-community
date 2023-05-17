@@ -127,7 +127,7 @@
     </el-form>
 
     <!--    数据交换格式-->
-    <custom-exchange-agreement :dialog-visible.sync="customExchangeAgreementVisible"
+    <custom-exchange-agreement :dialog-visible.sync="customExchangeAgreementVisible" :connect-info="connectInfo"
                             :data="exchangeAgreementData" :device="deviceData" @submit="handleAddExchangeAgreement"
     ></custom-exchange-agreement>
   </el-dialog>
@@ -486,6 +486,7 @@ export default defineComponent({
 
     function handleAddExchangeAgreement(v) {
       console.log(v)
+      message_success("保存成功！");
       initCustomExchangeAgreementList(device.protocol);
       oldCustomExchangeAgreement = deviceData.dataExchangeAgreement = v;
     }

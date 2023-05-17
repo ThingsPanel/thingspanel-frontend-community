@@ -20,7 +20,7 @@
         <el-table-column :label="$t('AUTOMATION.ACTION_TYPE')" prop="process_result" width="100">
           <template v-slot="scope">
             <span v-if="scope.row.action_type==='1'">{{ $t('AUTOMATION.DEVICE_OUT') }}</span>
-            <span v-if="scope.row.action_type==='2'">{{ $t('AUTOMATION.TRIGGER_NAME') }}</span>
+            <span v-if="scope.row.action_type==='2'">{{ $t('AUTOMATION.TRIGGER_ALARM') }}</span>
             <span v-if="scope.row.action_type==='3'">{{ $t('AUTOMATION.ACTIVATE_SCENE') }}</span>
           </template>
         </el-table-column>

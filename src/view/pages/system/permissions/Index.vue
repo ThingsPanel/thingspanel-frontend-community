@@ -188,12 +188,17 @@ export default {
     },
     getList() {
       // console.log(11111,this.hasAuth('sys:permission:search'))
+      this.loading = true;
+
       if (this.hasAuth('sys:permission:search')) {
         Perm.list()
             .then(({data}) => {
               if (data.code == 200) {
                 this.tableData = data.data
               }
+            })
+            .finally(() => {
+              this.loading = false
             })
       }
     },

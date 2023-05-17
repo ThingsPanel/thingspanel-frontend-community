@@ -27,9 +27,27 @@
                   :copy_code="true" :hide_header="false" theme="dark" :wrap_code="true"
                   v-model="formData.script_content_b"></CodeEditor>
 
+      <el-tabs v-model="testTabValue">
+        <el-tab-pane label="模拟输入" name="input">
+          <CodeEditor class="dark-code-editor" key="input" style="width: 100%;height: 100px" min_height="100px"
+                  :copy_code="true" :hide_header="true" theme="dark" :wrap_code="true"
+                  v-model="formData.msg_content"></CodeEditor>
+        </el-tab-pane>
+        <el-tab-pane label="运行结果" name="result">
+          <CodeEditor class="dark-code-editor" key="result" style="width: 100%;height: 100px" min_height="100px"
+                  :copy_code="true" :hide_header="true" theme="dark" :wrap_code="true" :read_only="true"
+                  v-model="formData.result"></CodeEditor>
+        </el-tab-pane>
+      </el-tabs>
+
       <div style="margin-top: 10px;display: flex;justify-content: center">
-        <el-button type="cancel" style="color:#000" @click="closeDialog">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.CANCEL') }}</el-button>
+        <el-button type="save" @click="onUpTest">上行脚本调试</el-button>
+        <el-button type="save" @click="onDownTest">下行脚本调试</el-button>
+
         <el-button type="save" @click="onSubmit">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.SAVE') }}</el-button>
+        <el-button type="save" @click="onPublish">发布</el-button>
+        <el-button type="cancel" style="color:#000" @click="closeDialog">{{ $t('DEVICE_MANAGEMENT.CUSTOM_SCRIPT.CANCEL') }}</el-button>
+
       </div>
     </el-form>
 
@@ -41,7 +59,11 @@
 import {defineComponent, ref, watch, reactive} from "@vue/composition-api";
 import CodeEditor from 'simple-code-editor';
 import {message_success} from "@/utils/helpers";
-import {getCustomExchangeAgreementList, addCustomExchangeAgreement, editCustomExchangeAgreement} from "@/api/device";
+import StoreAPI from "@/api/store"
+import {getCustomExchangeAgreementList, addCustomExchangeAgreement, editCustomExchangeAgreement, testScript} from "@/api/device";
+import LoginStore from "@/view/pages/auth/LoginStore"
+import useRoute from "@/utils/useRoute";
+import store from "@/core/services/store/index"
 const upCodeTemp = " function encodeInp(msg, topic){\n" +
 "    // 将设备自定义msg（自定义形式）数据转换为json形式数据, 设备上报数据到物联网平台时调用\n" +
 "    // 入参：topic string 设备上报消息的 topic\n" +
@@ -56,7 +78,7 @@ const upCodeTemp = " function encodeInp(msg, topic){\n" +
 " }"
 
 const downCodeTemp = " function encodeInp(msg, topic){\n" +
-    "    // 将平台规范的msg（json形式）数据转换为设备自定义形式数据, 物联网平台发送数据数到设备时调用\n" +
+    "    // 将平台规范的msg（json形式）数据转换为设备自定义形式数据, 物联网平台发送数据到设备时调用\n" +
     "    // 入参：topic string 设备上报消息的 topic\n" +
     "    // 入参：msg byte[] 数组 不能为空\n" +
     "    // 出参：string\n" +
@@ -84,6 +106,9 @@ export default defineComponent ({
     },
     device: {
       type: [Object]
+    },
+    connectInfo: {
+      type: [Object, Array]
     }
   },
   setup(props, context) {
@@ -94,7 +119,9 @@ export default defineComponent ({
       product_name: "",
       script_content_a: upCodeTemp,
       script_content_b: downCodeTemp,
-      script_type: "javascript"
+      script_type: "javascript",
+      msg_content: "{}",
+      result: ""
     })
 
     let formRule = {
@@ -135,7 +162,46 @@ export default defineComponent ({
       context.emit("update:dialogVisible", false);
     }
 
+
     const customForm = ref(null);
+    const testTabValue = ref("input");
+    /**
+     * @description: 上行脚本调试
+     * @return {*}
+     */
+    function onUpTest() {
+      const { script_content_a, msg_content } = formData;
+      const topic = "device/attributes";
+      onTest(script_content_a, msg_content, topic)
+    }
+
+    /**
+     * @description: 下行脚本调试
+     * @return {*}
+     */
+    function onDownTest() {
+      const { script_content_b, msg_content } = formData;
+      const topic = "device/attributes/" + props.device.token;
+      onTest(script_content_b, msg_content, topic)
+    }
+
+    function onTest(script_content, msg_content, topic_content) {
+      formData.result = "";
+      testScript({script_content, msg_content, topic_content})
+        .then(({ data: result }) => {
+          if (result.code === 200) {
+            formData.result = result.message;
+          } else {
+            formData.result = result.message;
+          }
+          testTabValue.value = "result";
+        })
+    }
+
+    /**
+     * @description: 保存
+     * @return {*}
+     */  
     function onSubmit() {
       formData.script_name = formData.company + "" + formData.product_name;
       formData.protocol_type = props.device.protocol;
@@ -150,7 +216,7 @@ export default defineComponent ({
                 .then(({data}) => {
                   if (data.code == 200) {
                     context.emit("submit", formData.id);
-                    closeDialog();
+                    // closeDialog();
                   }
                 })
           } else {
@@ -158,7 +224,7 @@ export default defineComponent ({
                 .then(({data}) => {
                   if (data.code == 200) {
                     context.emit("submit", data.data.id);
-                    closeDialog();
+                    // closeDialog();
                   }
                 })
           }
@@ -173,7 +239,9 @@ export default defineComponent ({
       formRule,
       formData,
       closeDialog,
-      onSubmit
+      onUpTest, onDownTest, testTabValue,
+      onSubmit,
+      onPublish, loginStoreDialogVisible
     }
   }
 })
