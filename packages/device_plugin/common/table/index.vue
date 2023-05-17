@@ -34,6 +34,8 @@
               ></el-option>
             </el-select>
 
+            <multi-selector v-else-if="addOrEdit=='add' && showHandle && attr.type=='multiSelect'" :data.sync="newData[attr.field]"></multi-selector>
+
             <el-input v-else-if="addOrEdit=='add' && showHandle"
                       v-model="newData[attr.field]"
                       :id="attr.field + '_header'"
@@ -46,24 +48,38 @@
         <!-- 行，非操作列 -->
         <template v-slot="scope">
 
-          <!-- 编辑 -->
+          <!-- 编辑 start -->
           <div v-show="scope.row.edit && showHandle">
-            <el-select v-show="attr.type=='select'" v-model="editData[attr.field]"
+            <el-select v-if="attr.type=='select'" v-model="editData[attr.field]"
                        :id="attr.field + '_row_' + scope.row['index']" >
               <el-option v-for="(option, index) in attr.options" :key="index"
                          :label="option.label" :value="option.value"
               ></el-option>
+              
             </el-select>
+
             <!-- 编辑输入框 -->
-            <el-input v-show="attr.type!='select'" v-model="editData[attr.field]"
+            <multi-selector v-else-if="attr.type=='multiSelect'"  
+                      :ref="attr.field + '_row_' + scope.row['index']"
+                      :data.sync="editData[attr.field]"></multi-selector>
+
+            <el-input v-else v-model="editData[attr.field]"
                       :id="attr.field + '_row_' + scope.row['index']" ></el-input>
           </div>
+          <!-- 编辑 end -->
 
+
+          <!-- 显示 start -->
           <div v-show="!scope.row.edit || !showHandle">
             <el-tag v-if="attr.type=='select'">{{ scope.row[attr.field] }}</el-tag>
+
+            <div v-else-if="attr.type=='multiSelect'">
+                <el-tag style="margin-right:4px" type="success" v-for="(item, index) in scope.row[attr.field]" :key="index">{{ item.name }}</el-tag>
+            </div>
             <!-- 显示文本 -->
             <span v-else>{{ scope.row[attr.field] }}</span>
           </div>
+          <!-- 显示 end -->
 
         </template>
       </el-table-column>
@@ -118,8 +134,12 @@
               <range-input :data.sync="formData[attr.field]"></range-input>
           </span>
 
+          <multi-selector v-else-if="attr.type=='multiSelect'" :data.sync="formData[attr.field]"></multi-selector>
+
+
           <!-- 输入框 -->
           <el-input v-else v-model="formData[attr.field]"></el-input>
+
 
         </el-form-item>
       </el-form>
@@ -137,9 +157,10 @@ import data from "./data";
 import watch from "./watch";
 import methods from "./methods";
 import RangeInput from "./RangeInput"
+import MultiSelector from "./MultiSelector.vue";
 export default {
   name: "CommonTable",
-  components: { RangeInput },
+  components: { RangeInput, MultiSelector },
   props,
   data() {
     return data;

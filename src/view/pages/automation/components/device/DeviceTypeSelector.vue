@@ -13,13 +13,23 @@
     </el-select>
 
     <!-- 设备列表 -->
-    <el-select ref="deviceRef" style="width: 100px;margin-right:10px" v-if="formData.groupId" v-model="formData.device" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_DEVICE')"
+    <!-- <el-select ref="deviceRef" style="width: 100px;margin-right:10px" v-if="formData.groupId" v-model="formData.device" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_DEVICE')"
                @change="handleDeviceChange">
       <el-option v-for="(option, index) in deviceOptions" :key="index" :label="option.label" :value="option"></el-option>
-    </el-select>
+    </el-select> -->
+
+    <!-- 设备列表 -->
+    <el-cascader ref="deviceRef" style="width: 100px;margin-right:10px" v-if="formData.groupId" v-model="formData.device" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_DEVICE')"
+      :options="deviceOptions" clearable :props="{ checkStrictly: true, emitPath: false }"
+       @change="handleDeviceChange">
+       <template slot-scope="{ node, data }">
+        <span>{{ data.label }}</span>
+        <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
+      </template>
+    </el-cascader>
 
     <!-- 状态/属性列表 -->
-    <el-select ref="stateRef" style="width: 100px;margin-right:10px" v-if="formData.device && formData.device.value" 
+    <el-select ref="stateRef" style="width: 100px;margin-right:10px" v-if="formData.device" 
                v-model="formData.state" value-key="name" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_STATE')"
                @change="handleStateChange">
       <el-option-group v-for="group in stateOptions" :key="group.label" :label="group.label">
@@ -95,6 +105,7 @@ export default {
         console.log("data", newValue)
         if (newValue) {
           this.formData = JSON.parse(JSON.stringify(newValue));
+          console.log("formData", this.formData)
           
         }
       },
@@ -149,9 +160,12 @@ export default {
      * @param v
      */
     handleDeviceChange(v) {
-      this.formData.deviceId = v.value;
+      const deviceRef = this.$refs.deviceRef;
+      const { data } = deviceRef.getCheckedNodes()[0];
+      console.log("handleDeviceChange.device", this.formData.device)
+      this.formData.deviceId = data.value;
       this.updateData();
-      this.getStateList(v.pluginId);
+      this.getStateList(data.pluginId);
     },
     /**
      * 选择状态或属性
@@ -219,14 +233,46 @@ export default {
               let arr = data.data?.data || [];
 
               this.deviceOptions = arr.map(item => {
+                if (item.children && item.children.length > 0) {
+                  item.children = item.children.map(child => {
+                    return {
+                      label: child.device_name, value: child.device, pluginId: child.type
+                    }
+                  })
+                }
                 return {
-                  label: item.device_name, value: item.device, pluginId: item.type
+                  label: item.device_name, 
+                  value: item.device, 
+                  pluginId: item.type, 
+                  children: item.children || undefined
                 }
               });
+              console.log("this.deviceOptions", this.deviceOptions)
               
               if (this.formData.deviceId) {
-                this.formData.device = this.deviceOptions.find(item => item.value == this.formData.deviceId);
-                this.formData.device && this.getStateList(this.formData.device.pluginId);
+                this.formData.device = [];
+                let pluginId = null;
+                const deviceObj = this.deviceOptions.find(item => {
+                  if (item.children && item.children.length > 0) {
+                    return item.children.find(child => {
+                      if (child.value == this.formData.deviceId) {
+                        pluginId = child.pluginId;
+                        this.formData.device.push(item.value);
+                        this.formData.device.push(child.value);
+                        return true;
+                      }
+                    })
+                  }
+                  if (item.value == this.formData.deviceId) {
+                    pluginId = item.pluginId;
+                    this.formData.device.push(item.value);
+                    return true;
+                  }
+                });
+
+
+                this.getStateList(pluginId);
+                // console.log("getDeviceList.formData", this.formData.device);
                 this.updateData();
               }
             }
@@ -237,6 +283,7 @@ export default {
      * @param id  插件id
      */
     getStateList(id) {
+      console.log("getStateList", id)
       this.stateOptions = [];
       if (this.option.operator) {
         // 持续时间
@@ -280,6 +327,8 @@ export default {
 
               
               this.stateOptions.push({label: this.$t('AUTOMATION.PROPERTY'), options: arr});
+
+              console.log(this.stateOptions)
               this.updateData();
               
             }

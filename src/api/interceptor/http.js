@@ -25,6 +25,7 @@ instance.setToken = ({ access_token, expires_in }) => {
     // 设置新的 token
     instance.defaults.headers.Authorization = `Bearer ${access_token}`
     // 保存 token 到 localstorage
+    console.log("setToken", access_token, expires_in)
     JwtService.saveToken(access_token)
     JwtService.saveExpiresTime(expires_in)
 }

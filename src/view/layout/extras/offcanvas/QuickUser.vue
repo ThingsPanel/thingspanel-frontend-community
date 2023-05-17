@@ -8,7 +8,7 @@
     <span
             class=" text-white font-weight-bolder font-size-base d-none d-lg-block mr-3"
     >
-        {{ user.name }}
+        {{ user && user.name }}
       </span>
     </div>
    

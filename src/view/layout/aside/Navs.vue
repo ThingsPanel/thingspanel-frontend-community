@@ -5,14 +5,8 @@
     permanent
   >
     <v-list>
-      <NavItem :item="homeNav" key="home"></NavItem>
-
-<!--      <template v-for="(item, index) in homeNav">-->
-<!--        &lt;!&ndash;  list-group里是二级菜单  &ndash;&gt;-->
-<!--        <NavGroup v-if="'children' in item" :item="item" :key="item.path"></NavGroup>-->
-<!--        &lt;!&ndash;  一级的菜单  &ndash;&gt;-->
-<!--        <NavItem v-else :item="item" :key="item.path + index"></NavItem>-->
-<!--      </template>-->
+      <!--  -->
+      <NavItem v-if="UserType!=='TENANT_USER'"  :item="homeNav" key="home"></NavItem>
 
       <template v-for="(item, index) in navs">
         <!--  list-group里是二级菜单  -->
@@ -29,6 +23,7 @@ import NavGroup from "@/view/layout/aside/NavGroup";
 import NavItem from "@/view/layout/aside/NavItem";
 import router from "@/router";
 import axios from "axios";
+import JwtService from "@/core/services/jwt.service";
 
 export default {
   name: "Navs",
@@ -54,6 +49,9 @@ export default {
   computed: {
     navs() {
       return this.$store.getters.getNavs
+    },
+    UserType() {
+      return this.$store.getters.currentUser.authority || JwtService.getCurrentUser().authority;
     }
   },
   methods: {

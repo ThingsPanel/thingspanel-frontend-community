@@ -23,11 +23,6 @@
           <market-list ></market-list>
         </div>
 
-        <!-- 协议插件 -->
-        <div v-show="activeTab == 'protocolPlugin'">
-          <protocol-plugin ></protocol-plugin>
-        </div>
-
         <!-- 插件编辑器 -->
         <div v-show="activeTab == 'deviceEditor'">
           <device-plugin ref="pluginEditor"></device-plugin>
@@ -42,10 +37,9 @@
 import InstalledList from "./installed"
 import MarketList from "./market"
 import DevicePlugin from "./device";
-import ProtocolPlugin from "./protocol"
 export default {
   name: "index",
-  components: { InstalledList, MarketList, DevicePlugin, ProtocolPlugin },
+  components: { InstalledList, MarketList, DevicePlugin },
   data() {
     return {
       activeTab: "installed",
@@ -57,10 +51,6 @@ export default {
         {
           name: "应用市场",
           value: "market",
-        },
-        {
-          name: "PLUGIN.TAB2",
-          value: "protocolPlugin",
         },
         {
           name: "PLUGIN.TAB3",

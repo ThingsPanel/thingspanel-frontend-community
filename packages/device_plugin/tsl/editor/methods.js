@@ -15,6 +15,7 @@ export default {
             obj.events = data;
         }
         this.jsonStr = JSON.stringify(obj, null, 4);
+        console.log("====jsonStr:", obj)
         this.$emit("dataChange", obj);
     },
     handleGoToPlugin() {

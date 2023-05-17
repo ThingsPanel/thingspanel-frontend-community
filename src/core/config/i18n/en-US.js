@@ -107,7 +107,7 @@ export const locale = {
     TITLE2: 'please fill in avalible email address',
     TITLE3: 'password',
     WrongPassword: 'The user name or password is incorrect',
-    FORGETPASS: 'forgot password？',
+    FORGETPASS: 'forgot password?',
     NAME: 'name',
     REMARKS: 'Remark',
     PASSWORD: 'Password',
@@ -653,6 +653,7 @@ export const locale = {
     OPERATION: 'Operation',
     ADDINGCHILDDEVICE: 'Adding a child device',
     DEVICECONFIG: 'Device config',
+    DEVICE_DETAIL: "Device detail",
     DELETETHISITEM: 'Are you sure you want to delete this item?',
     DELETE: 'Delete',
     BINDDEVICEPLUG: 'Bind device plug-in',
@@ -682,7 +683,7 @@ export const locale = {
       OPERATION: 'Operation',
       SUBDEVICEADDRESS: 'Sub device address',
       PLACEHOLDER1: 'Please enter sub device address',
-      PLACEHOLDER2: 'Please enter device lot，separate with commas，e.g：116.462346, 39.356432',
+      PLACEHOLDER2: 'Please enter device lot，separate with commas，e.g:116.462346, 39.356432',
       PLACEHOLDER3: 'Please enter device location',
       LABLE1: 'Select device',
       ONLINE: 'On line',
@@ -697,14 +698,14 @@ export const locale = {
      */
     EDIT_PARAMETER: {
       EDITPARAMETER: 'Edit parameter',
-      LABLE1: 'Transmit protocol：',
-      LABLE2: 'Video address connect：',
-      LABLE3: 'Authentication：',
-      LABLE4: 'UserName：',
-      LABLE5: 'Password：',
-      LABLE6: 'Connect info：',
-      LABLE7: 'Data processing script：',
-      LABLE8: 'Video device code：',
+      LABLE1: 'Transmit protocol:',
+      LABLE2: 'Video address connect:',
+      LABLE3: 'Authentication:',
+      LABLE4: 'UserName:',
+      LABLE5: 'Password:',
+      LABLE6: 'Connect info:',
+      LABLE7: 'Data processing script:',
+      LABLE8: 'Video device code:',
       PLACEHOLDER1: 'please select a protocol',
       PLACEHOLDER2: 'please enter video address',
       PLACEHOLDER3: 'please select an authentication mode',
@@ -728,9 +729,9 @@ export const locale = {
      */
     CONFIG_PARAMETER: {
       CONFIGPARAMETER: 'Config parameter',
-      CHANGENUMBER: 'Channel number：',
-      DEVICEADDRESS: 'Device address：',
-      PLAYBACKADDRESS: 'Playback address：',
+      CHANGENUMBER: 'Channel number:',
+      DEVICEADDRESS: 'Device address:',
+      PLAYBACKADDRESS: 'Playback address:',
       SAVE: 'Save',
       CANCEL: 'Cancel'
     },
@@ -873,7 +874,7 @@ export const locale = {
     EDIT_SUCCESSFULLY: 'Updated!',
     ADD_SUCCESSFULLY: 'Added Successfully',
     IF: 'If:',
-    THEN: 'Then：',
+    THEN: 'Then:',
     ONCE: 'Once',
     DAYS: 'Daily',
     REPEAT: 'Repeat',
@@ -1282,7 +1283,7 @@ export const locale = {
       TITLE4: 'Are you sure you want to delete?'
     },
     /**
-     * data forwarding new
+     * 数据转发新
      */
     DATA_FORWARDINGNEW: {
       TRANSPOND: 'Data Switching New',
@@ -1345,8 +1346,8 @@ export const locale = {
     PREV: 'prev',
     NEXT: 'next',
     /**
-   * Application Management - Device Plugin
-   */
+    * Application Management - Device Plugin
+    */
     TAB1_CONTENT: {
       PLACEHOLDER: 'Please enter a plug-in name',
       PLACEHOLDER1: 'Please enter the content',
@@ -1386,7 +1387,7 @@ export const locale = {
       OPERATION: 'Operation',
       NEWWORK: 'network',
       DEVICE: 'device',
-      CONNECTNUMBER: 'Connect number：',
+      CONNECTNUMBER: 'Connect number:',
       ADDCONFIG: 'Add config',
       PLACEHOLDER1: 'Please enter a config name',
       PLACEHOLDER2: 'Please enter a config value',
@@ -1418,14 +1419,14 @@ export const locale = {
    * Application management - device plug-in - device information
    */
     DEVICE_INFO_TAB: {
-      LABLE1: 'Plug-in name：',
-      LABLE2: 'Plug-in classification：',
-      LABLE3: 'Author name：',
-      LABLE4: 'Plug-in version：',
-      LABLE5: 'Plug-in description：',
+      LABLE1: 'Plug-in name:',
+      LABLE2: 'Plug-in classification:',
+      LABLE3: 'Author name:',
+      LABLE4: 'Plug-in version:',
+      LABLE5: 'Plug-in description:',
       VALIDATE: 'Please enter a plug-in name',
       VALIDATE2: 'Please select plug-in classification',
-      PLUNGIN_COVER: 'Plug-in cover（474X246）：',
+      PLUNGIN_COVER: 'Plug-in cover(474X246):',
       CHOOSE_COVER: 'Choose cover',
       PLACEHOLDER1: 'Please select'
     },
@@ -1455,17 +1456,20 @@ export const locale = {
    * Application management - device plug-in - object model - table
    */
     MATTER_MODEL_TABLE: {
-      LABLE1: 'Field name (e.g： temperature)',
-      LABLE2: 'Field (e.g：temperature)',
+      LABLE1: 'Field name (e.g: temperature)',
+      LABLE2: 'Field (e.g:temperature)',
       LABLE3: 'Data type',
       LABLE4: 'Data Range',
       LABLE5: 'Step Length',
-      LABLE6: 'Unit (e.g：℃)',
+      LABLE6: 'Unit (e.g:℃)',
       LABLE7: 'Description',
-      LABLE8: 'Function',
-      LABLE9: 'topic',
-      LABLE10: 'Description',
-      LABLE11: 'View'
+      LABLE8: 'Command name',
+      LABLE9: 'Command identifier',
+      LABLE10: 'Command params',
+      LABLE11: 'View',
+      LABLE12: 'Event name',
+      LABLE13: 'Event identifier',
+      LABLE14: 'Event params',
     },
     /**
    * Application Management - Device Plugins - Charts
@@ -1485,22 +1489,22 @@ export const locale = {
       TAB_TITLE2: 'Interface configuration',
       TAB_TITLE3: 'Name',
       TAB_TITLE4: 'Select data',
-      TAB_TITLE5: 'Chart title：',
-      TAB_TITLE6: 'Text size：',
-      TAB_TITLE7: 'Back ground：',
+      TAB_TITLE5: 'Chart title:',
+      TAB_TITLE6: 'Text size:',
+      TAB_TITLE7: 'Back ground:',
       TAB_TITLE8: 'Please select',
-      TAB_TITLE9: 'Condition：',
-      TAB_TITLE10: 'Value：',
-      TAB_TITLE11: 'Info：',
+      TAB_TITLE9: 'Condition:',
+      TAB_TITLE10: 'Value:',
+      TAB_TITLE11: 'Info:',
       TAB_TITLE12: 'Offline time threshold',
       TAB_TITLE13: 'Please enter name',
       TAB_TITLE14: 'Please enter offline time threshold',
       TAB_TITLE15: 'Device state',
       TAB_TITLE16: 'Color',
-      TAB_TITLE17: 'On：',
-      TAB_TITLE18: 'Off：',
-      TAB_TITLE19: 'Max：',
-      TAB_TITLE20: 'Step：',
+      TAB_TITLE17: 'On:',
+      TAB_TITLE18: 'Off:',
+      TAB_TITLE19: 'Max:',
+      TAB_TITLE20: 'Step:',
       TAB_TITLE21: 'Is disabled',
       TAB_TITLE22: 'Binding',
       TAB_TITLE23: 'Src',
@@ -1644,14 +1648,14 @@ export const locale = {
       BUTTON: 'button',
       OPERATION: 'Operation',
       DELETETHISITEM: 'Are you sure you want to delete this item?',
-      PARENTMENU: 'Parent menu：',
-      LABLENAME: 'Name：',
-      COMPONENTPATH: 'Component path：',
-      LABLETITLE: 'Title：',
-      LABLEICON: 'icon：',
-      LABLETHESORTING: 'The sorting：',
-      CODE: 'code：',
-      LABLETYPE: 'type：',
+      PARENTMENU: 'Parent menu:',
+      LABLENAME: 'Name:',
+      COMPONENTPATH: 'Component path:',
+      LABLETITLE: 'Title:',
+      LABLEICON: 'icon:',
+      LABLETHESORTING: 'The sorting:',
+      CODE: 'code:',
+      LABLETYPE: 'type:',
       PLACEHOLDER: 'Please select',
       EDIT: 'edit',
       DELETE: 'delete'
