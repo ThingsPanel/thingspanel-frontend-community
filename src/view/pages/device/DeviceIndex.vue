@@ -170,7 +170,7 @@
           <el-button  v-show="scope.row.device_type==2" type="primary" size="mini"
                      @click="addChildDevice(scope.row)">{{ $t("DEVICE_MANAGEMENT.ADDINGCHILDDEVICE")}}</el-button>
           <el-button style="margin-right: 10px"  type="primary" size="mini"
-                     @click="deviceConfig(scope.row)">{{ $t("DEVICE_MANAGEMENT.DEVICECONFIG")}}</el-button>
+                     @click="deviceConfig(scope.row)">{{ $t("DEVICE_MANAGEMENT.DEVICE_DETAIL")}}</el-button>
 
            <el-popconfirm :disabled="!hasAuth('device:del')" :title="$t('DEVICE_MANAGEMENT.DELETETHISITEM')"
                           @confirm="handleDelete(scope.row, getDeviceIndex)">
@@ -253,8 +253,8 @@ import DeviceSettingForm from "./form/param/DeviceSettingForm.vue";
 import SubDeviceSettingForm from "./form/param/SubDeviceSettingForm";
 // 分组管理
 import ManagementGroupForm from "./form/group/ManagementGroupForm.vue"
-// 子设备配置
-import DeviceConfigForm from "./form/config/DeviceConfigForm"
+// 设备详情
+import DeviceConfigForm from "./form/config"
 
 export default defineComponent({
   name: "DeviceIndex",

@@ -157,6 +157,7 @@ export default defineComponent({
       password: "123456",
       password_confirmation: "123456",
       remark: "",
+      authority: "TENANT_USER"
     })
     // 角色折叠按钮，默认折叠
     let isCollapsed = ref(true);

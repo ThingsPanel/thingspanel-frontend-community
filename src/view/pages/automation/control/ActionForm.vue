@@ -181,7 +181,17 @@ export default {
       }
       return true;
     },
-    
+    /**
+     * @description: 删除动作
+     * @param {*} action
+     * @return {*}
+     */    
+    handleDeleteAction(action) {
+      const index = this.actions.findIndex(item => item == action);
+      this.actions.splice(index, 1);
+      this.setActionTypeOptions();
+      this.updateData();
+    },
   }
 }
 </script>

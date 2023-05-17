@@ -27,7 +27,7 @@
                   :copy_code="true" :hide_header="false" theme="dark" :wrap_code="true"
                   v-model="formData.script_content_b"></CodeEditor>
 
-      <el-tabs v-model="testTabValue" @tab-click="handleClick">
+      <el-tabs v-model="testTabValue">
         <el-tab-pane label="模拟输入" name="input">
           <CodeEditor class="dark-code-editor" key="input" style="width: 100%;height: 100px" min_height="100px"
                   :copy_code="true" :hide_header="true" theme="dark" :wrap_code="true"
@@ -35,7 +35,7 @@
         </el-tab-pane>
         <el-tab-pane label="运行结果" name="result">
           <CodeEditor class="dark-code-editor" key="result" style="width: 100%;height: 100px" min_height="100px"
-                  :copy_code="true" :hide_header="true" theme="dark" :wrap_code="true"
+                  :copy_code="true" :hide_header="true" theme="dark" :wrap_code="true" :read_only="true"
                   v-model="formData.result"></CodeEditor>
         </el-tab-pane>
       </el-tabs>
@@ -78,7 +78,7 @@ const upCodeTemp = " function encodeInp(msg, topic){\n" +
 " }"
 
 const downCodeTemp = " function encodeInp(msg, topic){\n" +
-    "    // 将平台规范的msg（json形式）数据转换为设备自定义形式数据, 物联网平台发送数据数到设备时调用\n" +
+    "    // 将平台规范的msg（json形式）数据转换为设备自定义形式数据, 物联网平台发送数据到设备时调用\n" +
     "    // 入参：topic string 设备上报消息的 topic\n" +
     "    // 入参：msg byte[] 数组 不能为空\n" +
     "    // 出参：string\n" +
@@ -106,6 +106,9 @@ export default defineComponent ({
     },
     device: {
       type: [Object]
+    },
+    connectInfo: {
+      type: [Object, Array]
     }
   },
   setup(props, context) {
@@ -117,7 +120,9 @@ export default defineComponent ({
       product_name: "",
       script_content_a: upCodeTemp,
       script_content_b: downCodeTemp,
-      script_type: "javascript"
+      script_type: "javascript",
+      msg_content: "{}",
+      result: ""
     })
 
     let formRule = {
@@ -160,22 +165,15 @@ export default defineComponent ({
 
       
     const customForm = ref(null);
-
+    const testTabValue = ref("input");
     /**
      * @description: 上行脚本调试
      * @return {*}
      */
     function onUpTest() {
       const { script_content_a, msg_content } = formData;
-      const params = {
-        script_content: JSON.stringify(script_content_a),
-        msg_content: JSON.stringify(msg_content)
-      }
-
-      testScript(params)
-        .then(res => {
-          console.log("testScript", res)
-        })
+      const topic = "device/attributes";
+      onTest(script_content_a, msg_content, topic)
     }
 
     /**
@@ -183,9 +181,22 @@ export default defineComponent ({
      * @return {*}
      */
     function onDownTest() {
-      const { script_content_b: script_content, msg_content } = formData;
-      console.log("onDownTest", script_content, msg_content)
+      const { script_content_b, msg_content } = formData;
+      const topic = "device/attributes/" + props.device.token;
+      onTest(script_content_b, msg_content, topic)
+    }
 
+    function onTest(script_content, msg_content, topic_content) {
+      formData.result = "";
+      testScript({script_content, msg_content, topic_content})
+        .then(({ data: result }) => {
+          if (result.code === 200) {
+            formData.result = result.message;
+          } else {
+            formData.result = result.message;
+          }
+          testTabValue.value = "result";
+        })
     }
 
     /**
@@ -206,7 +217,7 @@ export default defineComponent ({
                 .then(({data}) => {
                   if (data.code == 200) {
                     context.emit("submit", formData.id);
-                    closeDialog();
+                    // closeDialog();
                   }
                 })
           } else {
@@ -214,7 +225,7 @@ export default defineComponent ({
                 .then(({data}) => {
                   if (data.code == 200) {
                     context.emit("submit", data.data.id);
-                    closeDialog();
+                    // closeDialog();
                   }
                 })
           }
@@ -256,7 +267,7 @@ export default defineComponent ({
     return {
       customForm, formRule, formData,
       closeDialog,
-      onUpTest, onDownTest,
+      onUpTest, onDownTest, testTabValue,
       onSubmit,
       onPublish, loginStoreDialogVisible
     }

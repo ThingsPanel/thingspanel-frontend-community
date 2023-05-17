@@ -20,6 +20,7 @@
 <script>
 import { message_error } from '@/utils/helpers';
 import { Week } from "../../control/Const";
+
 export default {
   name: "WeeklySelector",
   props: {
@@ -42,16 +43,19 @@ export default {
         { label: this.$t('AUTOMATION.WEEK.FRIDAY'), value: Week.FRIDAY },
         { label: this.$t('AUTOMATION.WEEK.SATURDAY'), value: Week.SATURDAY },
         { label: this.$t('AUTOMATION.WEEK.SUDNAY'), value: Week.SUNDAY }
-      ]
+      ],
+      timeValue: ""
     }
   },
   watch: {
     data: {
       handler(newValue) {
-        if (newValue && newValue.week && newValue.time) {
-          console.log("RepeatTimeSelector", newValue);
-          this.weekValue = Number(newValue.week);
-          this.timeValue = newValue.time;
+        if (newValue) {
+          if (newValue && newValue.week && newValue.time) {
+            console.log("RepeatTimeSelector", newValue);
+            this.weekValue = Number(newValue.week);
+            this.timeValue = newValue.time;
+          }
         }
       },
       immediate: true

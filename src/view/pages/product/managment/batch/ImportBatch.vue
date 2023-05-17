@@ -27,9 +27,10 @@
             accept=".xlsx,.xls"
             :on-success="onUploadSuccess">
 
-          <el-button size="small" type="primary">点击上传</el-button>
-          <el-link style="margin-left:20px" type="success" :underline="false">下载模板</el-link>
-      </el-upload>
+            <el-button size="small" type="primary">点击上传</el-button>
+          </el-upload>
+          <!-- <el-link style="margin-left:20px" type="success" :underline="false">下载模板</el-link> -->
+
         </el-form-item>
       </el-form>
       <!-- </div> -->
