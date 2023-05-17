@@ -14,13 +14,13 @@
       <div class="content">
 
         <!-- 插件列表 -->
-        <div v-show="activeTab == 'devicePlugin'">
-          <plugin-list @edit="handleEditPlugin"></plugin-list>
+        <div v-show="activeTab == 'installed'">
+          <installed-list @edit="handleEditPlugin"></installed-list>
         </div>
 
-        <!-- 协议插件 -->
-        <div v-show="activeTab == 'protocolPlugin'">
-          <protocol-plugin ></protocol-plugin>
+        <!-- 应用市场 -->
+        <div v-show="activeTab == 'market'">
+          <market-list ></market-list>
         </div>
 
         <!-- 插件编辑器 -->
@@ -36,21 +36,20 @@
 <script>
 import PluginList from "./list";
 import DevicePlugin from "./device";
-import ProtocolPlugin from "./protocol"
 export default {
   name: "index",
-  components: { PluginList, DevicePlugin, ProtocolPlugin },
+  components: { InstalledList, MarketList, DevicePlugin },
   data() {
     return {
       activeTab: "devicePlugin",
       tabs: [
         {
-          name: "PLUGIN.TAB1",
-          value: "devicePlugin",
+          name: "已安装",
+          value: "installed",
         },
         {
-          name: "PLUGIN.TAB2",
-          value: "protocolPlugin",
+          name: "应用市场",
+          value: "market",
         },
         {
           name: "PLUGIN.TAB3",

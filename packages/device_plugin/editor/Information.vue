@@ -1,7 +1,7 @@
 <template>
   <div class="info-container">
       <el-form class="info-form" ref="information_form" style="text-align: center;width: 80%" label-position="left"
-               :inline="false" :rules="formRules" :model="formData">
+               :inline="false" :rules="formRules" :model="formData" >
         <el-row :gutter="80">
 
           <el-col :span="16" style="padding-top:10px">

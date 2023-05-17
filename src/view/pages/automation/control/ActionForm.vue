@@ -86,6 +86,8 @@ export default {
         }
       })
     },
+    handleChangeActionType(action, v) {
+    },
     /**
      * @description: 新增一个执行动作
      * @return {*}
@@ -102,8 +104,16 @@ export default {
       let arr = actionTypeOptions.filter(type => !list.some(item => item == type.value));
       this.actions.push({ type: "", typeOptions: arr, disabled: false})
     },
-    handleChangeActionType(action, v) {
-
+    /**
+     * @description: 删除动作
+     * @param {*} action
+     * @return {*}
+     */    
+     handleDeleteAction(action) {
+      const index = this.actions.findIndex(item => item == action);
+      this.actions.splice(index, 1);
+      this.setActionTypeOptions();
+      this.updateData();
     },
     /**
      * @description: 操作设备更改
@@ -179,6 +189,7 @@ export default {
       const index = this.actions.findIndex(item => item == action);
       this.actions.splice(index, 1);
       this.setActionTypeOptions();
+      this.updateData();
     },
   }
 }

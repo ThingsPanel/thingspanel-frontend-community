@@ -19,6 +19,8 @@
 
 <script>
 import { message_error } from '@/utils/helpers';
+import { Week } from "../../control/Const";
+
 export default {
   name: "WeeklySelector",
   props: {
@@ -33,13 +35,13 @@ export default {
     return {
       weekValue: "",
       weekOptions: [
-        { label: this.$t('AUTOMATION.WEEK.MONDAY'), value: 1 },
-        { label: this.$t('AUTOMATION.WEEK.TUESDAY'), value: 2 },
-        { label: this.$t('AUTOMATION.WEEK.WEDNESDAY'), value: 3 },
-        { label: this.$t('AUTOMATION.WEEK.THURSDAY'), value: 4 },
-        { label: this.$t('AUTOMATION.WEEK.FRIDAY'), value: 5 },
-        { label: this.$t('AUTOMATION.WEEK.SATURDAY'), value: 6 },
-        { label: this.$t('AUTOMATION.WEEK.SUDNAY'), value: 7 }
+        { label: this.$t('AUTOMATION.WEEK.MONDAY'), value: Week.MONDAY },
+        { label: this.$t('AUTOMATION.WEEK.TUESDAY'), value: Week.THURSDAY },
+        { label: this.$t('AUTOMATION.WEEK.WEDNESDAY'), value: Week.WEDNESDAY },
+        { label: this.$t('AUTOMATION.WEEK.THURSDAY'), value: Week.THURSDAY },
+        { label: this.$t('AUTOMATION.WEEK.FRIDAY'), value: Week.FRIDAY },
+        { label: this.$t('AUTOMATION.WEEK.SATURDAY'), value: Week.SATURDAY },
+        { label: this.$t('AUTOMATION.WEEK.SUDNAY'), value: Week.SUNDAY }
       ],
       timeValue: ""
     }
@@ -48,8 +50,11 @@ export default {
     data: {
       handler(newValue) {
         if (newValue) {
-          console.log("RepeatTimeSelector", newValue);
-          this.formData = JSON.parse(JSON.stringify(newValue));
+          if (newValue && newValue.week && newValue.time) {
+            console.log("RepeatTimeSelector", newValue);
+            this.weekValue = Number(newValue.week);
+            this.timeValue = newValue.time;
+          }
         }
       },
       immediate: true

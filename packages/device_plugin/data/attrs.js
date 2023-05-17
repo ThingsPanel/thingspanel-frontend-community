@@ -534,14 +534,14 @@ export const tableAttr = {
         { field: "description", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE7'), advanced, type: "textarea"},
     ],
     services: [
-        { field: "function", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE8')},
-        { field: "topic", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE9')},
-        { field: "description", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE10'), type: "select"}
+        { field: "commandName", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE8'), validate: {required}},
+        { field: "commandId", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE9'), validate: {required}},
+        { field: "commandParams", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE10'), validate: {required}, type: "multiSelect"}
     ],
     events: [
-        { field: "function", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE8')},
-        { field: "topic", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE9')},
-        { field: "description", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE10')}
+        { field: "eventName", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE12'), validate: {required}},
+        { field: "eventId", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE13'), validate: {required}},
+        { field: "eventParams", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE14'), validate: {required}, type: "multiSelect"}
     ]
 }
 

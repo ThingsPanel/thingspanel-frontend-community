@@ -8,6 +8,7 @@
       v-model="device_group_id"
       :disabled="disabled"
       filterable
+      autocomplete="off"
       :clearable="clearable"
       @change="handleChange()"
   >

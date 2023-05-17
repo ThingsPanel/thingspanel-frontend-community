@@ -176,9 +176,9 @@ import {
   onMounted,
   getCurrentInstance,
 } from "@vue/composition-api";
-import {message_error} from "../../../utils/helpers";
+import {message_error} from "@/utils/helpers";
 import i18n from "@/core/plugins/vue-i18n"
-import {local_url} from "../../../api/LocalUrl";
+import {local_url} from "@/api/LocalUrl";
 
 export default defineComponent({
   name: "Home",
@@ -226,7 +226,8 @@ export default defineComponent({
          current_page: paramsPage.page,
          per_page: paramsPage.limit
       }
-      ApiService.post(local_url + "api/user/role/list",query).then(({ data }) => {
+      console.log(local_url + "/api/user/role/list")
+      ApiService.post(local_url + "/api/user/role/list",query).then(({ data }) => {
         if (data.code == 200) {
           tableData.value = data.data.data;
           total.value = data.data.total; 
@@ -242,11 +243,12 @@ export default defineComponent({
             if (data.code == 200) {
               let user = JwtService.getCurrentUser();
               let tree = data.data;
-              if (user.email != "super@super.cn") {
+              if (user && user.email != "super@super.cn") {
+
                 tree.forEach(item => {
                   if (item.children && item.name == "SystemManagement") {
                     item.children.forEach(child => {
-                        child.children.forEach(leaf => {
+                        child.children && child.children.forEach(leaf => {
                           if (leaf.name == "AddPermission"
                               || leaf.name == "EditPermission"
                               || leaf.name == "DeletePermission"
@@ -315,7 +317,7 @@ export default defineComponent({
             role_name: item.role_name,
             role_describe:item.role_describe
           }
-          ApiService.post(local_url + "api/user/role/add", query)
+          ApiService.post(local_url + "/api/user/role/add", query)
               .then(({ data }) => {
                   if (data.code == 200) {
                     message_success("添加成功");
@@ -328,7 +330,7 @@ export default defineComponent({
           role_name: item.role_name,
           role_describe:item.role_describe
         };
-        ApiService.post(local_url + "api/user/role/edit", query).then(
+        ApiService.post(local_url + "/api/user/role/edit", query).then(
           ({ data }) => {
             if (data.code == 200) {
               message_success("修改成功");
@@ -340,7 +342,7 @@ export default defineComponent({
     };
     // 删除信息   /api/user/role/delete
     const handle_del = (item) => {
-      ApiService.post(local_url + "api/user/role/delete", {
+      ApiService.post(local_url + "/api/user/role/delete", {
         id: item.id,
       }).then(({ data }) => {
         if (data.code == 200) {
@@ -511,7 +513,7 @@ export default defineComponent({
   width: 380px;
   //height: 450px;
   overflow:auto;
-
+  height: calc(100% - 130px);
   padding: 0px 10px;
   border-radius:5px ;
   .el-tree {
