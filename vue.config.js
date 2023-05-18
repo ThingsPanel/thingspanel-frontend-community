@@ -1,12 +1,14 @@
+
 // const path = require("path");
 const CompressionPlugin = require("compression-webpack-plugin");
 
 module.exports = {
     // publicPath: "",
     productionSourceMap: false, // 生产打包时不输出map文件
-    runtimeCompiler: true,
+    // runtimeCompiler: true,
     devServer: {
         port: 8080,
+        host: 'localhost',
         open: true,
         overlay: {
             warnings: false,
@@ -28,7 +30,15 @@ module.exports = {
                     // 路径重写
                     "/red": ""
                 }
+            },
+            "/store": {
+                target: process.env.VUE_APP_STORE_BASE_URL,
+                changeOrigin: true, // 是否改变域名
+                pathRewrite: {
+                    "^/store": ""
+                }
             }
+            
         }
     },
     lintOnSave: false,
@@ -36,7 +46,7 @@ module.exports = {
         resolve: {
             alias: {
                 // If using the runtime only build
-                vue$: "vue/dist/vue.runtime.esm.js" // 'vue/dist/vue.runtime.common.js' for webpack 1
+                // vue$: "vue/dist/vue.runtime.esm.js" // 'vue/dist/vue.runtime.common.js' for webpack 1
                 // Or if using full build of Vue (runtime + compiler)
                 // vue$: 'vue/dist/vue.esm.js'      // 'vue/dist/vue.common.js' for webpack 1
             }
@@ -49,18 +59,7 @@ module.exports = {
                 threshold: 10240,
                 minRatio: 0.8
             }),
-        ],
-        module: {
-            rules: [
-                {
-                    test: /\.swf$/,
-                    loader: 'url-loader',
-                    options: {
-                        limit: 10000
-                    }
-                }
-            ]
-        },
+        ]
     },
     css: {
         loaderOptions: {

@@ -131,6 +131,15 @@ span.text-blue.font-weight-bold.font-size-base.d-none.d-lg-block.mr-1 {
     background-color: #202c62!important;
     color: #ccc!important;
 }
+.el-input__inner {
+    color: #fff!important;
+    background-color: rgba(22, 30, 67, 0.5) !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+}
+.el-input .el-input__count .el-input__count-inner {
+    background-color: transparent!important;
+}
+
 .el-dark-input .el-input__inner, .el-dark-input .el-textarea__inner {
     color: #fff;
     background-color: rgba(22, 30, 67, 0.5) !important;
@@ -401,7 +410,7 @@ span.text-blue.font-weight-bold.font-size-base.d-none.d-lg-block.mr-1 {
     border: none !important;
 }
 
-.el-dialog__header, .el-dialog__body {
+.el-dialog__header, .el-dialog__body, .el-dialog__footer {
     background-color: #2d3d88;
 }
 .el-dialog__body .label-name {
@@ -411,6 +420,40 @@ span.text-blue.font-weight-bold.font-size-base.d-none.d-lg-block.mr-1 {
     color: #a8c5ff!important;
 }
 
+
+
 .table-title {
     color: #ffffff!important;
 }
+
+.popper__arrow::after {
+    border-bottom-color: #2d3d88!important;
+}
+.el-popover {
+    background-color: #2d3d88!important;
+    border: 1px solid #212d66!important;
+    color:#fff!important;
+}
+/* .el-popover {
+    border: unset!important;
+    color:#000!important;
+}
+
+.el-popover.el-table.el-table__header-wrapper {
+    background-color: transparent!important;
+}
+.el-popover .el-table .el-table__header-wrapper th.el-table__cell {
+    background-color: transparent!important;
+}
+.el-popover .el-table tr {
+    background-color: transparent!important;
+}
+.el-popover .el-table .el-table__header-wrapper th.el-table__cell {
+    color:#000!important;
+}
+.el-popover .el-table td.el-table__cell div {
+    color:#000!important;
+}
+.el-popover .el-table tbody tr:hover>td {
+    background: #f5f7fa !important
+} */

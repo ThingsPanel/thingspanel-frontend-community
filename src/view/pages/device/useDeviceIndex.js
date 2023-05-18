@@ -90,6 +90,7 @@ export default function useDeviceIndex(business_id) {
             device_type: item.device_type,
             device_state: item.device_state,
             type: item.type,
+            plugin_name: item.plugin_name,
             latest_ts: item.latest_ts,
             protocol: item.protocol,
             d_id: item.d_id,

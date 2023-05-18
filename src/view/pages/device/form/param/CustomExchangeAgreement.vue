@@ -51,7 +51,7 @@
       </div>
     </el-form>
 
-
+    <login-store :visible.sync="loginStoreDialogVisible"></login-store>
   </el-dialog>
 </template>
 
@@ -93,7 +93,7 @@ const downCodeTemp = " function encodeInp(msg, topic){\n" +
 export default defineComponent ({
   name: "CustomExchangeAgreement",
   components: {
-    CodeEditor
+    CodeEditor, LoginStore
   },
   props: {
     dialogVisible: {
@@ -112,6 +112,7 @@ export default defineComponent ({
     }
   },
   setup(props, context) {
+    let {route} = useRoute();
 
     let formData = reactive({
       id: "",
@@ -162,7 +163,7 @@ export default defineComponent ({
       context.emit("update:dialogVisible", false);
     }
 
-
+      
     const customForm = ref(null);
     const testTabValue = ref("input");
     /**
@@ -234,10 +235,37 @@ export default defineComponent ({
       });
     }
 
+
+    const loginStoreDialogVisible = ref(false);
+    /**
+     * @description: 发布
+     * @return {*}
+     */    
+    function onPublish() {
+      const isAuth = store.getters.getStoreAuthenticated;
+      if (isAuth) {
+        const data = {
+          productCompany: formData.company,
+          productName: formData.product_name,
+          protocolType: props.device.protocol,
+          scriptAuthor: "",
+          scriptDescribe: "",
+          scriptName: formData.company + "" + formData.product_name,
+          uplinkScript: formData.script_content_a,
+          downlinkScript: formData.script_content_b
+        }
+        StoreAPI.publish.script(data)
+          .then(({ data: result }) => {
+            console.log(result)
+          })
+      } else {
+        loginStoreDialogVisible.value = true;
+      }
+      
+    }
+
     return {
-      customForm,
-      formRule,
-      formData,
+      customForm, formRule, formData,
       closeDialog,
       onUpTest, onDownTest, testTabValue,
       onSubmit,

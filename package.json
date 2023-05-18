@@ -32,6 +32,7 @@
     "element-ui": "^2.15.8",
     "express": "^4.18.2",
     "flv.js": "^1.6.2",
+    "fuzzysort": "^2.0.4",
     "highlight.js": "^9.18.1",
     "jquery": "^3.6.3",
     "js-base64": "^3.5.2",
