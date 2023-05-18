@@ -18,7 +18,7 @@
         </el-form-item>
 
         <el-form-item label="文件" required prop="file">
-          <el-upload
+          <el-upload style="float:left"
             class="upload-demo"
             :action="uploadUrl"
             :headers="headers"
@@ -26,10 +26,9 @@
             :file-list="fileList"
             accept=".xlsx,.xls"
             :on-success="onUploadSuccess">
-
             <el-button size="small" type="primary">点击上传</el-button>
           </el-upload>
-          <!-- <el-link style="margin-left:20px" type="success" :underline="false">下载模板</el-link> -->
+          <el-link style="margin-left:20px" type="success" :href="downloadUrl" :underline="false">下载模板</el-link>
 
         </el-form-item>
       </el-form>
@@ -45,7 +44,7 @@
 <script>
 import ProductAPI from '@/api/product';
 import JwtService from "@/core/services/jwt.service";
-
+const url = (process.env.VUE_APP_BASE_URL || document.location.protocol + "//" + document.domain + ":9999/")
 export default {
   components: {},
   props: {
@@ -85,7 +84,8 @@ export default {
         file: [
           { required: true, message: '请上传文件', trigger: 'blur' }
         ]
-      }
+      },
+      downloadUrl: url + "/files/init-images/batch_devices_template.xlsx"
     }
   },
   methods: {

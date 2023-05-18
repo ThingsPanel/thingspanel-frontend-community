@@ -117,6 +117,8 @@ export default {
         .then(({ data }) => {
           if (data.code == 200) {
             this.getVisualList();
+          } else {
+            this.tableData.splice(0, 1);
           }
         })
 
