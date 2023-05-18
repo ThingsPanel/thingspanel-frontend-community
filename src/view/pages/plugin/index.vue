@@ -34,7 +34,8 @@
 </template>
 
 <script>
-import PluginList from "./list";
+import InstalledList from "./installed"
+import MarketList from "./market"
 import DevicePlugin from "./device";
 export default {
   name: "index",

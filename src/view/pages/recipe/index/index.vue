@@ -7,7 +7,7 @@
       </el-col>
       <el-col :span="12" class="text-right">
         <!-- 添加权限按钮 -->
-        <el-button size="medium" type="indigo" @click="handleAdd" :disabled="!hasAuth('sys:permission:add')">{{ $t('RECIPEMANAGEMENT.CREATERECIPE') }}</el-button>
+        <el-button size="medium" type="indigo" @click="handleAdd" >{{ $t('RECIPEMANAGEMENT.CREATERECIPE') }}</el-button>
         <el-button size="medium" type="border" @click="showSendToMQTTVisity">下发配置</el-button>
       </el-col>
     </el-row>
