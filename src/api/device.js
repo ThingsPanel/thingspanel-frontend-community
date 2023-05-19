@@ -267,3 +267,29 @@ export function getDeviceListStatus(data) {
         data,
     })
 }
+
+/**
+ * 根据设备id获取设备的历史命令
+ * @param {*} data 
+ * @returns 
+ */
+export function getDeviceCommandHistoryList(data) {
+    return axios({
+        url: "/device/command/history/list",
+        method: "post",
+        data,
+    })
+}
+
+/**
+ * 根据设备id获取设备的历史事件
+ * @param {*} data 
+ * @returns 
+ */
+export function getDeviceEventHistoryList(data) {
+    return axios({
+        url: "/device/event/history/list",
+        method: "post",
+        data,
+    })
+}

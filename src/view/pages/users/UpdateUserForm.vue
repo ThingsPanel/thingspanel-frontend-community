@@ -51,7 +51,7 @@
       <el-row>
         <el-col :span="12">
           <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.EMAIL')" prop="email" style="margin-right: 15px">
-            <el-input size="medium" v-model="formData.email"></el-input>
+            <el-input size="medium" readonly v-model="formData.email"></el-input>
           </el-form-item>
         </el-col>
         <el-col :span="12">
