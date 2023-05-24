@@ -18,10 +18,10 @@
       <running-info v-else-if="activeName=='runningStatus'" :data.sync="runningFormData"></running-info>
 
       <!-- 事件 -->
-      <event v-else-if="activeName=='event'" :data.sync="eventFormData"></event>
+      <event v-else-if="activeName=='event'" :data.sync="eventFormData" :device="device"></event>
 
       <!-- 命令 -->
-      <command v-else-if="activeName=='command'" :data.sync="commandFormData"></command>
+      <command v-else-if="activeName=='command'" :data.sync="commandFormData" :device="device"></command>
     </div>
 
     <span slot="footer" class="dialog-footer">

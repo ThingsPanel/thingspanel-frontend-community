@@ -282,6 +282,32 @@ export function getDeviceCommandHistoryList(data) {
 }
 
 /**
+ * 根据设备id获取设备的命令列表
+ * @param {*} data 
+ * @returns 
+ */
+export function getDeviceCommandList(data) {
+    return axios({
+        url: "/device/command/list",
+        method: "post",
+        data,
+    })
+}
+
+/**
+ * 通过设备id发送命令
+ * @param {*} data 
+ * @returns 
+ */
+export function sendCommandByDeviceId(data) {
+    return axios({
+        url: "/device/command/send",
+        method: "post",
+        data,
+    })
+}
+
+/**
  * 根据设备id获取设备的历史事件
  * @param {*} data 
  * @returns 

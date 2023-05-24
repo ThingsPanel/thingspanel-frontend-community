@@ -37,7 +37,7 @@
           $t('PLUGIN.MATTER_MODEL_INFO_TAB.BTN') }}</el-link>
         <!-- <el-button type="border-warning" >{{ $t('PLUGIN.MATTER_MODEL_INFO_TAB.BTN') }}</el-button> -->
       </div>
-      <el-input size="medium" slot="reference" readonly v-model="data.plugin_name"></el-input>
+      <el-input size="medium" slot="reference" readonly v-model="data.plugin_name" placeholder="绑定插件"></el-input>
     </el-popover>
     <device-plugin-detail :visible.sync="showDetailDialog" :id="currentItem.id"></device-plugin-detail>
   </div>

@@ -6,8 +6,8 @@
       </el-col>
 
       <el-col :span="12" class="px-2 text-right">
-        <el-button size="medium" type="border"
-                   @click="handleCreate()">{{ $t('VISUALIZATION.NEWVISUALIZATION') }}</el-button>
+        <el-button size="medium" type="border" @click="handleCreate()">{{ $t('VISUALIZATION.NEWVISUALIZATION')
+        }}</el-button>
       </el-col>
     </el-row>
     <!-- 表 start -->
@@ -20,9 +20,9 @@
             <!-- 新建 -->
             <el-form-item v-if="scope.row.status" :error="scope.row.errors.dashboard_name">
               <el-input size="medium" v-model="scope.row.formData.dashboard_name" v-focus
-                        @keydown.enter.native.prevent="handleSave(scope.row)"></el-input>
+                @keydown.enter.native.prevent="handleSave(scope.row)"></el-input>
 
-                    
+
             </el-form-item>
 
             <div v-else class="w-100 cursor-pointer" @click="showDeviceChart(scope.row)">
@@ -35,14 +35,19 @@
           <template v-slot="scope">
             <div style="text-align: left">
               <div v-if="scope.row.status">
-                <el-button type="save" size="mini" @click="handleSave(scope.row)">{{ $t('VISUALIZATION.SAVE') }}</el-button>
-                <el-button type="cancel" size="mini" @click="handleCancel(scope.row)">{{ $t('VISUALIZATION.CANCEL') }}</el-button>
+                <el-button type="save" size="mini" @click="handleSave(scope.row)">{{ $t('VISUALIZATION.SAVE')
+                }}</el-button>
+                <el-button type="cancel" size="mini" @click="handleCancel(scope.row)">{{ $t('VISUALIZATION.CANCEL')
+                }}</el-button>
               </div>
               <div v-else>
-                <el-button type="yellow" size="mini" @click="showVisual(scope.row)">{{ $t('VISUALIZATION.VIEW') }}</el-button>
-                <el-button type="indigo" size="mini" @click="editVisual(scope.row)">{{ $t('VISUALIZATION.EDIT') }}</el-button>
-                <el-popconfirm :disabled="!hasAuth('visual:del')" style="margin-left: 10px" :title="$t('VISUALIZATION.TEXT44')" @confirm="delVisual(scope.row)">
-                  <el-button  slot="reference" type="danger" size="mini">{{ $t('VISUALIZATION.DELETE') }}</el-button>
+                <el-button type="yellow" size="mini" @click="showVisual(scope.row)">{{ $t('VISUALIZATION.VIEW')
+                }}</el-button>
+                <el-button type="indigo" size="mini" @click="editVisual(scope.row)">{{ $t('VISUALIZATION.EDIT')
+                }}</el-button>
+                <el-popconfirm :disabled="!hasAuth('visual:del')" style="margin-left: 10px"
+                  :title="$t('VISUALIZATION.TEXT44')" @confirm="delVisual(scope.row)">
+                  <el-button slot="reference" type="danger" size="mini">{{ $t('VISUALIZATION.DELETE') }}</el-button>
                 </el-popconfirm>
               </div>
             </div>
@@ -53,27 +58,26 @@
     <!-- 表 end -->
 
     <div class="text-right py-3">
-      <el-pagination
-          background
-          layout="prev, pager, next"
-          :total="total"
-          :current-page.sync="params.current_page"
-          :page-size="params.per_page"
-          @current-change="getVisualList"></el-pagination>
+      <el-pagination background layout="prev, pager, next" :total="total" :current-page.sync="params.current_page"
+        :page-size="params.per_page" @current-change="getVisualList"></el-pagination>
     </div>
 
   </div>
 </template>
 <style scoped>
-.mad{
+.mad {
   margin-bottom: 0;
 }
 </style>
 
 <script>
 import TableTitle from "@/components/common/TableTitle.vue"
-import {message_error, message_success} from "@/utils/helpers";
+import { message_error, message_success } from "@/utils/helpers";
 import VisualAPI from "@/api/visualization.js"
+import JwtService from "@/core/services/jwt.service";
+import { local_url } from "@/api/LocalUrl.js";
+const url = (process.env.VUE_APP_BASE_URL || document.location.protocol + "//" + document.domain + ":9999/")
+
 export default {
   name: "VisualizationList",
   components: {
@@ -86,7 +90,8 @@ export default {
     },
     loading: false,
     total: 0,
-    tableData: []
+    tableData: [],
+    localUrl: local_url
   }),
   created() {
     this.getVisualList();
@@ -108,7 +113,7 @@ export default {
     },
     handleSave(item) {
       // 验证
-      if(!item.formData.dashboard_name || !item.formData.dashboard_name.trim()){
+      if (!item.formData.dashboard_name || !item.formData.dashboard_name.trim()) {
         item.errors.dashboard_name = "请填写名称"
         message_error("可视化名称不能为空!")
         return true
@@ -136,7 +141,11 @@ export default {
      * 获取可视化列表
      */
     getVisualList() {
-      if(this.loading) return;
+      this.tableData = [];
+      this.tableData.push({ dashboard_name: "测试" })
+
+      // ==================================================
+      if (this.loading) return;
       this.loading = true
       VisualAPI.list(this.params)
         .then(({ data }) => {
@@ -146,9 +155,9 @@ export default {
             this.loading = false;
           }
         })
-      .finally(() => {
-        this.loading = false
-      })
+        .finally(() => {
+          this.loading = false
+        })
     },
     /**
      * 查看可视化
@@ -156,17 +165,28 @@ export default {
      */
     showVisual(item) {
       let query = { id: item.id, name: item.dashboard_name };
-      const{ href } = this.$router.resolve({ name:"VisualDisplay", query });
-      window.open(href,'_blank');
+      const { href } = this.$router.resolve({ name: "VisualDisplay", query });
+      window.open(href, '_blank');
     },
     /**
      * 编辑可视化
      * @param item
      */
     editVisual(item) {
-      let query = { id: item.id };
-      const{ href } = this.$router.resolve({ name:"VisualEditor", query });
-      window.open(href,'_blank');
+
+      // let query = { id: item.id };
+      // const{ href } = this.$router.resolve({ name:"VisualEditor", query });
+      // window.open(href,'_blank');
+      // =======================================================================
+      console.log("editVisual", document.location.hostname);
+      const token = JwtService.getToken();
+      const expiresTime = JwtService.getExpiresTime();
+      const url = `/visual/editor?id=123&token=${token}&expiresTime=${expiresTime}`
+      console.log('editVisual', url)
+
+      window.open(url, '_blank');
+
+
     },
     /**
      * 删除可视化
