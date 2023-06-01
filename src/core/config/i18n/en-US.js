@@ -1374,6 +1374,7 @@ export const locale = {
     TAB2_CONTENT: {
       TITLE: 'Access protocol plug-in',
       BTN: 'Register plug-in',
+	  EDIT_BTN: 'Edit plug-in',
       NAME: 'name',
       DEVICETYPE: 'Device type',
       PROTOCOLTYPE: 'Protocol Type',

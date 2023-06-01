@@ -49,9 +49,10 @@
         </el-table-column>
 
         <!-- 操作列-->
-        <el-table-column align="left" :label="$t('PLUGIN.TAB2_CONTENT.OPERATION')" width="120">
+        <el-table-column align="left" :label="$t('PLUGIN.TAB2_CONTENT.OPERATION')" width="200">
           <template v-slot="scope">
             <div style="text-align: left">
+			  <el-button type="save" size="mini" @click="handleShowEdit(scope.row)">编辑</el-button>
               <el-popconfirm :title="$t('PLUGIN.TAB2_CONTENT.TITLE4')" @confirm="handleDelete(scope.row)">
                 <el-button slot="reference" size="mini" type="danger" :disabled="!hasAuth('plugin:protocol:del')">{{ $t('PLUGIN.TAB2_CONTENT.DELETE') }}</el-button>
               </el-popconfirm>
@@ -73,6 +74,8 @@
     </div>
 
     <register-plugin :visible.sync="registerDialogVisible" :data="{}" @submit="handleRegistered"></register-plugin>
+
+	<edit-plugin :visible.sync="editDialogVisible" :data="currentItem" @submit="handleRegistered"></edit-plugin>
   </div>
 </template>
 
@@ -80,10 +83,11 @@
 import ProtocolPlugin from "@/api/protocolPlugin.js";
 import TableTitle from "@/components/common/TableTitle.vue";
 import RegisterPlugin from "./RegisterPlugin";
+import EditPlugin from "./EditPlugin";
 import {message_success} from "@/utils/helpers";
 export default {
   name: "index",
-  components: { TableTitle, RegisterPlugin },
+  components: { TableTitle, RegisterPlugin, EditPlugin },
   data() {
     return {
       loading: false,
@@ -93,7 +97,9 @@ export default {
         per_page: 10,
         data: []
       },
-      registerDialogVisible: false
+      registerDialogVisible: false,
+	  editDialogVisible: false,
+	  currentItem: {},
     }
   },
   mounted() {
@@ -126,6 +132,15 @@ export default {
           }
         })
     },
+	
+	/**
+	 * 显示修改页面
+	 * @param row
+	 */
+	handleShowEdit(row) {
+	  this.currentItem = { ...row };
+	  this.editDialogVisible = true;
+	},
     /**
      * 删除
      * @param row
