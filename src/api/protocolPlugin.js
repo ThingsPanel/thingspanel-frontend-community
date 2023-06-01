@@ -17,6 +17,19 @@ export default {
             data
         })
     },
+	
+	/**
+	 * 修改插件
+	 * @param data
+	 * @returns {AxiosPromise}
+	 */
+	edit: (data) => {
+	    return axios({
+	        url: "/tp_protocol_plugin/edit",
+	        method: "post",
+	        data
+	    })
+	},
 
 
     /**

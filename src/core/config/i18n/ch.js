@@ -1409,6 +1409,7 @@ export const locale = {
     TAB2_CONTENT: {
       TITLE: "接入协议插件",
       BTN: "注册插件",
+	  EDIT_BTN: "编辑插件",
       NAME: "名称",
       DEVICETYPE: "设备类型",
       PROTOCOLTYPE: "协议类型",
