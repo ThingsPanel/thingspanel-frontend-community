@@ -118,6 +118,7 @@ export default {
     handleRegistered() {
       this.getPluginList();
     },
+
     /**
      * 获取插件列表
      */
@@ -132,14 +133,23 @@ export default {
           }
         })
     },
-	
+
 	/**
 	 * 显示修改页面
 	 * @param row
 	 */
 	handleShowEdit(row) {
-	  this.currentItem = { ...row };
-	  this.editDialogVisible = true;
+	  let params = {
+        current_page: 1,
+        per_page: 1,
+        id: row.id,
+      };
+      ProtocolPlugin.page(params).then(({ data }) => {
+        if (data.code == 200) {
+          this.currentItem = data.data.data[0];
+        }
+      });
+      this.editDialogVisible = true;
 	},
     /**
      * 删除
