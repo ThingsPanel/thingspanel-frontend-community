@@ -518,17 +518,7 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.transpond-create{
-  //.el-form-item__label{
-  //  color: #fff;
-  //}
-  //.el-cascader{
-  //  width: 100%;
-  //}
-  //.el-select{
-  //  width: 100%;
-  //}
-}
+
 .code-editor-label {
   color: #fff;
   margin-top: 10px;
