@@ -31,11 +31,10 @@
           </div>
         </el-form-item>
 
-        <el-form-item :label="$t('RULE_ENGINE.ACCESS_ENGINE.PARSING_SCRIPTS')" prop="script">
-          <CodeEditor class="dark-code-editor" key="upside" style="width: 100%;height: 260px;overflow-y: auto"  min_height="260px"
-                    :copy_code="true" :hide_header="false" theme="dark" :wrap_code="true"
-                    v-model="form.script"></CodeEditor>
-        </el-form-item>
+        <p class="code-editor-label"><span style="color: red">* </span>{{ $t('RULE_ENGINE.ACCESS_ENGINE.PARSING_SCRIPTS') }}</p>
+        <CodeEditor class="dark-code-editor" key="upside" style="width: 100%;height: 260px;overflow-y: auto"  min_height="260px"
+                  :copy_code="true" :hide_header="false" theme="dark" :wrap_code="true"
+                  v-model="form.script"></CodeEditor>
 
         <el-form-item :label="$t('RULE_ENGINE.ACCESS_ENGINE.DATAPURPOSE')">
           <el-button type="indigo" size="small" style="margin-left: auto" @click="handleAdd()">{{ $t('RULE_ENGINE.ACCESS_ENGINE.ADDACTION')}}</el-button>
@@ -397,6 +396,7 @@ export default {
       if (!this.validate()) {
         return;
       }
+      
       let params = JSON.parse(JSON.stringify(this.form));
 
       params.device_info = this.form.commands.map(cmd => {
@@ -503,6 +503,10 @@ export default {
         message_error(this.$t('RULE_ENGINE.DATA_FORWARDINGNEW.PLACEHOLDER1'));
         return false;
       }
+      if (!this.form.script) {
+        message_error("解析脚本不能为空")
+        return;
+      }
       for(let i=0; i < this.$refs.deviceTypeRef.length; i++) {
         const ref = this.$refs.deviceTypeRef[i];
         if (!ref.validate()) return false;
@@ -525,7 +529,11 @@ export default {
   //  width: 100%;
   //}
 }
+.code-editor-label {
+  color: #fff;
+  margin-top: 10px;
 
+}
 ::v-deep .code_editor .code_area  textarea {
   overflow-y: auto;
 }

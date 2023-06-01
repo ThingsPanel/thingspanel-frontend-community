@@ -173,20 +173,15 @@ export default {
      * @param item
      */
     editVisual(item) {
-
       // let query = { id: item.id };
       // const{ href } = this.$router.resolve({ name:"VisualEditor", query });
       // window.open(href,'_blank');
       // =======================================================================
-      console.log("editVisual", document.location.hostname);
+      const id = item.id;
       const token = JwtService.getToken();
       const expiresTime = JwtService.getExpiresTime();
-      const url = `/visual/editor?id=123&token=${token}&expiresTime=${expiresTime}`
-      console.log('editVisual', url)
-
+      const url = `/visual/editor?id=${id}&token=${token}&expiresTime=${expiresTime}`
       window.open(url, '_blank');
-
-
     },
     /**
      * 删除可视化

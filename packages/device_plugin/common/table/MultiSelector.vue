@@ -11,7 +11,7 @@
     <el-button type="border" size="mini" @click="showAddDialog">新增</el-button>
 
     <el-dialog  title="新增参数" :append-to-body="true" :visible.sync="dialogVisible" width="30%" :before-close="handleClose">
-        <el-form ref="formRef" label-position="left" :model="formData" :rules="formRule" label-width="100px">
+        <el-form class="el-dark-input" ref="formRef" label-position="left" :model="formData" :rules="formRule" label-width="100px">
             <el-form-item label="参数名称" prop="name">
                 <el-input v-model="formData.name"></el-input>
             </el-form-item>
@@ -24,7 +24,7 @@
                 </el-select>
             </el-form-item>
             <el-form-item label="参数描述" prop="description">
-                <el-input type="textare" :rows="6" v-model="formData.description"></el-input>
+                <el-input type="textarea" :rows="6" v-model="formData.description"></el-input>
             </el-form-item>
         </el-form>
         <span slot="footer" class="dialog-footer">
@@ -62,7 +62,7 @@ export default {
         },
         options: [],
         optionArr: [],
-        typeOptions: Const.dataType
+        typeOptions: Const.commandDataType
     }
   },
   watch: {
@@ -83,7 +83,7 @@ export default {
         this.formData = {
             name: '',
             identifier: '',
-            type: 'integer',
+            type: 'text',
             description: ''
         }
     },
