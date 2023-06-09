@@ -505,7 +505,7 @@ export const locale = {
     RULEENGINE: 'Rule Engine',
     NETWORKCOMPONENTS: 'Access Engine',
     TRANSPOND: 'Data Switching',
-    TRANSPONDNEW: "Data Switching (New)",
+    TRANSPONDNEW: "Data Switching",
     MARKET: 'Application Management',
     SYSTEMMANAGEMENT: 'System Management',
     SYSTEMSETUP: 'System Setup',
@@ -1286,7 +1286,7 @@ export const locale = {
      * 数据转发新
      */
     DATA_FORWARDINGNEW: {
-      TRANSPOND: 'Data Switching New',
+      TRANSPOND: 'Data Switching',
       CREATINGFORWARDINGRULE: 'Creating a Forwarding Rule',
       NO: 'ID',
       RULE_NAME_NEW: 'Forward Rule name',

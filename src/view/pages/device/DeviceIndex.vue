@@ -135,7 +135,7 @@
     <!--  推送时间 start  -->
     <el-table-column :label="$t('DEVICE_MANAGEMENT.TITLE23')" min-width="16%">
       <template slot-scope="scope">
-        <div>{{scope.row.latest_ts ? dateFormat(scope.row.latest_ts/1000000) : ""}}</div>
+        <div>{{scope.row.latest_ts ? dateFormat(scope.row.latest_ts) : ""}}</div>
       </template>
     </el-table-column>
     <!--  推送时间 end  -->

@@ -508,7 +508,7 @@ export const locale = {
     RULEENGINE: "规则引擎",
     NETWORKCOMPONENTS: "规则引擎",
     TRANSPOND: "数据转发",
-    TRANSPONDNEW: "数据转发(新)",
+    TRANSPONDNEW: "数据转发",
     MARKET: "应用管理",
     SYSTEMMANAGEMENT: "系统管理",
     SYSTEMSETUP: "系统设置",
@@ -1320,7 +1320,7 @@ export const locale = {
      * 数据转发新
      */
      DATA_FORWARDINGNEW: {
-      TRANSPOND: "数据转发(新)",
+      TRANSPOND: "数据转发",
       CREATINGFORWARDINGRULE: "创建转发",
       NO: "序号",
       RULE_NAME: "规则名称",
