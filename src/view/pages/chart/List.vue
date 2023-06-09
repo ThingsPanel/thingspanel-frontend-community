@@ -164,9 +164,14 @@ export default {
      * @param item
      */
     showVisual(item) {
-      let query = { id: item.id, name: item.dashboard_name };
-      const { href } = this.$router.resolve({ name: "VisualDisplay", query });
-      window.open(href, '_blank');
+      // let query = { id: item.id, name: item.dashboard_name };
+      // const { href } = this.$router.resolve({ name: "VisualDisplay", query });
+      // window.open(href, '_blank');
+      const id = item.id;
+      const token = JwtService.getToken();
+      const expiresTime = JwtService.getExpiresTime();
+      const url = `/visual/display?id=${id}&token=${token}&expiresTime=${expiresTime}`
+      window.open(url, '_blank');
     },
     /**
      * 编辑可视化
@@ -198,6 +203,7 @@ export default {
     },
     showDeviceChart(row) {
       console.log(row)
+      
       // this.$router.push({name: "DeviceChart", query: {businessId: row.id, name: row.name}})
     },
   },
