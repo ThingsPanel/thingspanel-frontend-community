@@ -24,11 +24,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'pnpm'
         
     - run: npm ci
     - run: rm .env.dev
@@ -46,6 +41,7 @@ jobs:
     - name: Build Visual Editor
       run: 
         cd visual-editor
+        npm install -g pnpm
         pnpm run build
         ls -lrt
         
