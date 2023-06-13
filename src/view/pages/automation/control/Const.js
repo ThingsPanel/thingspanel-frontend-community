@@ -255,7 +255,8 @@ export function setActions(actions, name) {
                 action.warning_strategy.warning_level = a.data.warningLevel;     // 告警级别
                 action.warning_strategy.group = a.data.group;                    // 通知用户组
                 action.warning_strategy.repeat_count = Number(a.data.repeatTimes);      // 重复次数
-                action.warning_strategy.inform_way = a.data.notification.join(",");        // 通知方式
+                // action.warning_strategy.inform_way = a.data.notification.join(",");        // 通知方式
+                action.warning_strategy.inform_way = a.data.notification        // 通知方式
                 action.warning_strategy.warning_description = a.data.warning_description;  // 描述
                 actionList.push(action);
                 break;
@@ -447,7 +448,8 @@ export function getActions(actions) {
                 id: item.warning_strategy?.id || "",
                 warningLevel: item.warning_strategy?.warning_level || "",
                 repeatTimes: item.warning_strategy?.repeat_count || 0,
-                notification: item.warning_strategy?.inform_way.split(",") || [],
+                // notification: item.warning_strategy?.inform_way.split(",") || '',
+                notification: item.warning_strategy?.inform_way || '',
                 warning_description: item.warning_strategy?.warning_description || ""
             };
             actionList.push(action);
