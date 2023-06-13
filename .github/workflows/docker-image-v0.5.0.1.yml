@@ -24,17 +24,38 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'pnpm'
+        
     - run: npm ci
     - run: rm .env.dev
     - run: rm .env.production
     - run: npm run build --if-present
     - run: ls -lrt
     
+    - name: Set up working directory
+      run: mkdir -p ./visual_editor_build
+      working-directory: ./visual_editor_build
+     
+    - name: Clone Vue codebase
+      run: git clone https://github.com/ThingsPanel/visual-editor.git
+      
+    - name: Build Visual Editor
+      run: 
+        cd visual-editor
+        pnpm run build
+        ls -lrt
+        
     - name: Login to DockerHub
       uses: docker/login-action@v1 
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+      
     - name: Build and push
       id: docker_build
       uses: docker/build-push-action@v2
