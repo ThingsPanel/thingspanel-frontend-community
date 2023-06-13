@@ -66,7 +66,7 @@
   </template>
   
   <script>
-  import { user_find_all_roles } from "@/api/user"
+  import { user_find_all } from "@/api/user"
 import { message_error } from '@/utils/helpers'
   export default {
     name: "AlarmPanel",
