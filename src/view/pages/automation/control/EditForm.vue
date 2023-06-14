@@ -182,6 +182,7 @@ export default {
       if (!this.validate()) return;
       
       let data = JSON.parse(JSON.stringify(this.formData));
+      console.log(data,'data')
       data.enabled = enabled.toString();   // 是否启用
       
       data.automation_conditions = setConditions(data.conditions);

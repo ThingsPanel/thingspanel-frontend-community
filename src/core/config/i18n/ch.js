@@ -910,7 +910,7 @@ export const locale = {
     WARNING_LEVEL_LOW: "低",
     WARNING_LEVEL_MEDIUM: "中",
     WARNING_LEVEL_HIGH: "高",
-    NOTIFY_USER: "通知用户",
+    NOTIFY_USER: "通知组",
     ALL_USER: "所有用户",
     REPEAT_TIMES: "重复次数",
     NOTIFY_TYPE: "通知方式",
