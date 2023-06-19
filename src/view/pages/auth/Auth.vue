@@ -43,7 +43,7 @@
           <div class="row">
             <div class="col-12 col-md text-center text-md-left align-self-center">
               <p class="footer_copy">
-                {{ $t("LOGIN.TEXT1") }} <a href="http://thingspanel.io/" target="_blank">ThingsPanel</a>
+                {{ $t("LOGIN.TEXT1") }} <a href="http://thingspanel.io/" target="_blank">ThingPanel</a>
               </p>
             </div>
             <div class="col-12 col-md-auto text-center text-md-right">

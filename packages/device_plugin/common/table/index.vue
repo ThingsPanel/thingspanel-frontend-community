@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div style="height:100%;">
     <!-- 表格 -->
-    <el-table :data="tableData"  class="table-order">
+    <el-table :data="tableData"  class="table-order" style="height:100%;overflow-y: auto;">
       <el-table-column type="expand" :label="$t('PLUGIN.MATTER_MODEL_TABLE.LABLE11')" width="80" v-if="showView">
         <template slot-scope="props">
           <el-form label-position="left" class="table-form-expand">
