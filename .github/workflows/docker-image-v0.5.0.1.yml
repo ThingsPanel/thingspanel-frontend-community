@@ -38,7 +38,7 @@ jobs:
     
     - name: Build V
       run: |
-       pnpm ci
+       pnpm install --frozen-lockfile
        pnpm run build
       working-directory: ./visual-editor
         
