@@ -32,13 +32,14 @@ jobs:
     
     - name: Clone Vue codebase
       run: git clone https://github.com/ThingsPanel/visual-editor.git
-      
 
     - run: cd visual-editor
     - run: npm install -g pnpm
     
     - name: Build V
-      run: pnpm run build
+      run: |
+       pnpm ci
+       pnpm run build
       working-directory: ./visual-editor
         
     - name: Login to DockerHub
