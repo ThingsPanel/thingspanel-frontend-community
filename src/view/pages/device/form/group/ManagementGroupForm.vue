@@ -109,7 +109,8 @@ export default defineComponent({
 
     function handleChange(){
       context.emit('change')
-      getGroupOptions()
+      getGroupOptions();
+      getGroupIndex();
     }
 
     // 增删改
