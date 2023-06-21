@@ -47,7 +47,14 @@
         </el-form-item>
       </template>
     </el-table-column>
-    <el-table-column :label="$t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.OPERATION')" width="auto" min-width="20%">
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.THESORTING')" width="auto" min-width="10%">
+      <template v-slot="scope">
+        <el-form-item :error="scope.row.errors.sort">
+          <el-input size="medium" v-model="scope.row.sort" @change="handleSave(scope.row)"></el-input>
+        </el-form-item>
+      </template>
+    </el-table-column>
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.OPERATION')" width="auto" min-width="10%">
       <template v-slot="scope">
         <el-popconfirm :title="$t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.DELETETHISITEM')" @confirm="handleDelete(scope.row)">
           <el-button slot="reference" type="danger" size="medium">{{ $t('DEVICE_MANAGEMENT.MANAGEMENT_GROUP_MODEL.DELETE') }}</el-button>

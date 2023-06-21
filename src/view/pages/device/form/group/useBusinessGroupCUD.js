@@ -11,6 +11,7 @@ export default function useBusinessGroupCUD(tableData, business_id, handleChange
             id: "",
             name: "",
             parent_id: "0",
+            sort: 100,
             errors:{
                 name: "",
                 parent_id: "",
@@ -47,6 +48,7 @@ export default function useBusinessGroupCUD(tableData, business_id, handleChange
         // 先清空错误
         item.errors.name = ""
         item.errors.parent_id = ""
+        item.errors.sort = ""
 
         // 表单校验
         if(!item.name){
@@ -62,6 +64,10 @@ export default function useBusinessGroupCUD(tableData, business_id, handleChange
             message_error("上级分组不能是自己")
             return
         }
+        if(!item.sort){
+            item.errors.sort = "请设置排序"
+            return
+        }
 
         // 设备组的层级
         let tier = get_group_tier(item, deviceGroupOptions)
@@ -73,6 +79,7 @@ export default function useBusinessGroupCUD(tableData, business_id, handleChange
                 business_id: business_id.value,
                 id: item.id,
                 name: item.name,
+                sort: parseInt(item.sort),
                 parent_id: item.parent_id,
                 tier: tier
             }).then(({data})=>{
@@ -86,6 +93,7 @@ export default function useBusinessGroupCUD(tableData, business_id, handleChange
                 business_id: business_id.value,
                 name: item.name,
                 parent_id: item.parent_id,
+                sort: parseInt(item.sort),
                 tier: tier
             }).then(({data})=>{
                 if(data.code === 200){

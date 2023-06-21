@@ -26,6 +26,16 @@
       </template>
     </el-table-column>
 
+    <el-table-column :label="$t('DEVICE_ACCESS.THESORTING')" prop="sort">
+      <template v-slot="scope">
+        <el-form-item v-if="scope.row.status" :error="scope.row.errors.sort">
+          <el-input size="medium" v-model="scope.row.formData.sort"
+                    @keydown.enter.native.prevent="handleSave(scope.row)"></el-input>
+        </el-form-item>
+        <span v-else>{{scope.row.sort}}</span>
+      </template>
+    </el-table-column>
+
     <el-table-column :label="$t('DEVICE_ACCESS.TIMES')" prop="created_at">
       <template v-slot="scope">
         {{scope.row.created_at ? dateFormat(scope.row.created_at) : ""}}
@@ -48,7 +58,7 @@
            <el-button type="indigo" size="mini" @click="showDeviceWatch(scope.row)">{{ $t('DEVICE_MONITORING.DEVICEMONITORING') }}</el-button>
 
            <el-button type="blue" size="mini" class="mr-3"
-                       :disabled="!hasAuth('business:edit')" @click="handleEdit(scope.row)">{{ $t('DEVICE_ACCESS.EDIT_PROJECT_NAME') }}</el-button>
+                       :disabled="!hasAuth('business:edit')" @click="handleEdit(scope.row)">{{ $t('DEVICE_ACCESS.EDIT_PROJECT_INFO') }}</el-button>
 
 
             <el-popconfirm :title="$t('DEVICE_ACCESS.TEXT44')" @confirm="handleDelete(scope.row)">
@@ -121,7 +131,7 @@ export default defineComponent({
     // 跳转到设备
     function showDevice(item){
       console.log(item)
-      router.push({name: "device", query: {business_id: item.id}, params:{page: params.page}})
+      router.push({name: "device", query: {business_id: item.id, business_name: item.name}, params:{page: params.page}})
     }
 
     return {

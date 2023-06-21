@@ -2,7 +2,7 @@
 <div class="rounded card p-4 ">
   <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
     <el-col :span="12">
-      <TableTitle>{{ $t("DEVICE_ACCESS.DEVICE") }}</TableTitle>
+      <TableTitle>{{this.businessName}} {{ $t("DEVICE_ACCESS.DEVICE") }}</TableTitle>
     </el-col>
     <el-col :span="12" class="text-right">
 
@@ -112,6 +112,20 @@
         ></device-plugin-selector>
       </template>
     </el-table-column>
+
+    <!--  排序 start  -->
+    <el-table-column :label="$t('DEVICE_MANAGEMENT.THESORTING')" min-width="5%" width="auto" prop="sort">
+      <template slot-scope="scope">
+        <el-form-item :error="scope.row.errors.sort">
+          <el-input style="width: 100%"
+                    size="medium"
+                    v-model="scope.row.sort"
+                    @change="handleSave(scope.row, getDeviceIndex)"
+          ></el-input>
+        </el-form-item>
+      </template>
+    </el-table-column>
+    <!--  排序 end  -->
 
     <!-- 编辑参数   -->
     <el-table-column :label="$t('DEVICE_MANAGEMENT.CODEMANAGE')" min-width="13%">
@@ -274,6 +288,7 @@ export default defineComponent({
     // console.log(route.query.business_id)
 
     let business_id = route.query.business_id
+    let business_name = route.query.business_name
 
     // 设备分组的选项
     let {
@@ -479,6 +494,7 @@ export default defineComponent({
 
 
     return {
+      businessName: business_name,
       tableData,
       loading,
       params,

@@ -13,6 +13,7 @@ export default function useBusinessCUD(tableData){
         tableData.value.unshift({
             id: Date.now(),
             name: "",
+            sort: "",
             created_at: "",
             status: "creating",
             errors: {
@@ -31,6 +32,7 @@ export default function useBusinessCUD(tableData){
         item.status = "editing"
         // 表单赋值
         item.formData.name = item.name
+        item.formData.sort = item.sort
     }
 
     // 取消编辑或新建
@@ -55,28 +57,37 @@ export default function useBusinessCUD(tableData){
             return true
         }
 
+        if(!item.formData.sort){
+            item.errors.sort = "请设置排序"
+            message_error("排序不能为空!")
+            return true
+        }
+        item.formData.sort = parseInt(item.formData.sort)
+
         if(loading.value) return
         loading.value = true
 
         // 提交
         if(item.status === "editing"){
-            business_edit({id: item.id, name:item.formData.name}).then(({data})=>{
+            business_edit({id: item.id, name: item.formData.name, sort: item.formData.sort}).then(({data})=>{
                 if(data.code === 200){
                     message_success("修改成功")
                     // 跟新后 data 返回空，所以用 item.formData
                     item.name = item.formData.name
+                    item.sort = item.formData.sort
                     item.status = null
                 }
             }).finally(()=>{
                 loading.value = false
             })
         } else if(item.status === "creating") {
-            business_add({name: item.formData.name}).then(({data})=>{
+            business_add({name: item.formData.name, sort: item.formData.sort}).then(({data})=>{
                 if(data.code === 200) {
                     console.log("====creating", dateFormat(data.data.created_at))
                     // 洗一下数据 格式化日期
                     item.id = data.data.id
                     item.name = data.data.name
+                    item.sort = data.data.sort
                     item.created_at = data.data.created_at
                     item.status = null
                     message_success("创建成功")

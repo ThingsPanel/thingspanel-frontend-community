@@ -38,6 +38,7 @@ export default function useDeviceCUD(tableData){
 
         // 每次提交先清除错误
         item.errors.name = ""
+        item.errors.sort = ""
         item.errors.asset_id = ""
         item.errors.type = ""
 
@@ -51,6 +52,12 @@ export default function useDeviceCUD(tableData){
             item.errors.asset_id = "请选择分组"
             return
         }
+
+        if(!item.sort){
+            item.errors.sort = "请设置排序"
+            return
+        }
+        item.sort = parseInt(item.sort)
 
         console.log("====handleSave", loading.value)
         if(loading.value) return

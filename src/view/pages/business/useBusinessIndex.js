@@ -34,11 +34,13 @@ export default function useBusinessIndex(page){
 
             // 每个项的报错
             item.errors = {
-                name: ""
+                name: "",
+                sort: ""
             }
             // 每个项的表单
             item.formData = {
                 name: "",
+                sort: ""
             }
 
             // 增加状态判断新建还是编辑

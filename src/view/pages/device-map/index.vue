@@ -343,7 +343,7 @@ export default {
 };
 </script>
 
-<style  lang="scss">
+<style lang="scss">
 .amap-page-container {
   overflow: hidden;
 }
@@ -408,9 +408,7 @@ export default {
     margin-left: 20px;
   }
 }
-</style>
 
-<style lang="scss">
 .control {
   border: 1px solid #ccc;
   font-size: 12px;

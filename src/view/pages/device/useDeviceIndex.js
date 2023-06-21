@@ -90,6 +90,7 @@ export default function useDeviceIndex(business_id) {
             device_type: item.device_type,
             device_state: item.device_state,
             type: item.type,
+            sort: item.device_sort,
             plugin_name: item.plugin_name,
             latest_ts: item.latest_ts,
             protocol: item.protocol,
@@ -103,6 +104,7 @@ export default function useDeviceIndex(business_id) {
             chart_names: item.chart_names,
             errors: {
                 name: "",
+                sort: "",
                 asset_id: "",
                 type: "",
                 device_type: "",
