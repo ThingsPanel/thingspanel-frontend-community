@@ -21,7 +21,7 @@
 
         <el-form-item :label="$t('RULE_ENGINE.ACCESS_ENGINE.DATA')" required>
           <div style="display:flex;margin-bottom: 10px;" v-for="(command, index) in form.commands" :key="index">
-            <DeviceTypeSelector ref="deviceTypeRef" style="" :data="command.data" :option="{operator: false}" @change="v=>handleCommandChange(command, v)"/>
+            <DeviceTypeSelector ref="deviceTypeRef" style="" :data="command.data" @change="v=>handleCommandChange(command, v)"/>
             <!-- 新增一行 -->
             <el-button type="indigo" size="small" style="margin-left: auto"
                       v-if="index == 0" @click="handleAddCommand(command)">{{ $t('RULE_ENGINE.ACCESS_ENGINE.ADD')}}</el-button>
@@ -105,8 +105,7 @@ import MqttContent from "@/view/pages/transpondNew/MqttContent.vue";
 import UrlContent from "@/view/pages/transpondNew/UrlContent.vue";
 import CodeEditor from 'simple-code-editor';
 import DeviceTypeSelector from "./components/device/DeviceTypeSelector.vue";
-import { message_success, message_error } from '@/utils/helpers';
-import i18n from "@/core/plugins/vue-i18n.js"
+import { message_error } from '@/utils/helpers';
 import {getTranspondNewAdd,getTranspondNewEdit,getTranspondNewDetail} from "@/api/transpondNew";
 // const required = true;
 const upCodeTemp = " function encodeInp(msg, topic){\n" +
@@ -129,9 +128,9 @@ export default {
     //   request: true,
     //   type: Function,
     // },
-    init_data: {
-      default: null
-    },
+    // init_data: {
+    //   default: null
+    // },
     id: {
       default: null
     },
@@ -238,14 +237,13 @@ export default {
 
   }),
   created() {
-    if(this.init_data){
-      this.form.name = this.init_data.name
-    }
+    // if(this.init_data){
+    //   this.form.name = this.init_data.name
+    // }
   },
   methods: {
     // mq表提交
     create(data) {
-      console.log(data,'data')
       if(this.type == 'add') {
         data.title = '推送到外部 MQTT'
         this.listData.push(data)

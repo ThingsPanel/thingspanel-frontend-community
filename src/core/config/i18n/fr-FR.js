@@ -5,6 +5,7 @@ export const locale = {
     SYSTEMSETUP: '系统设置',
     MANAGEMENT: '角色管理',
     PERMISSIONMANAGEMENT: '权限管理',
+    NOTICE:"通知组",
     PERMISSIONADD: '添加权限',
     DEVICEACCESS: '设备接入',
     DEVICEWATCH: '设备监控',
@@ -513,7 +514,8 @@ export const locale = {
     MANAGEMENT: '角色管理',
     PERMISSIONMANAGEMENT: '权限管理',
     DELPROTOCOLPLUGIN: '删除协议插件',
-    DELDEVICEPLUGIN: '删除设备插件'
+    DELDEVICEPLUGIN: '删除设备插件',
+    NOTICE:"通知组",
   },
   /**
    * 认证
@@ -1657,6 +1659,45 @@ export const locale = {
       PLACEHOLDER: '请选择',
       EDIT: '编辑',
       DELETE: '删除'
-    }
+    },
+    /**
+     * 通知组管理
+     */
+    NOTICE_MANAGEMENT: {
+      NOTICE: "通知组",
+      NOTICEADD: "新增",
+      NO:"序号",
+      NOTICENAME:"通知组名称",
+      NOTICETYPE: "通知类型",
+      STATUS: "状态",
+      OPERATION:"操作",
+      ADDTITLE:"新增",
+      EDITTITLE:"编辑",
+      GROUPNAME:"通知组名称",
+      DESC:"通知组描述",
+      METHOD:"通知方式",
+      SETMETHOD:"设置成员通知方式",
+      ADD:"新增",
+      DELETE:"删除",
+      EMAIL:"邮件通知",
+      SMS:"短信通知",
+      PHONE:"电话通知",
+      SETEMAIL:"设置邮箱",
+      SETURL:"设置URL",
+      TITLE4: "你确定要删除吗？",
+      EDIT: "编辑",
+      CANCEL: "取消",
+      SAVE: "保存",
+      PLACEHOLDER:"请输入通知组名称",
+      PLACEHOLDER1:"请输入通知组描述",
+      PLACEHOLDER2:"请选择通知方式",
+      PLACEHOLDER3:"请选择用户",
+      PLACEHOLDER4:"请至少选择一个通知方式！",
+      PLACEHOLDER5:"请输入邮箱或手机号",
+      PLACEHOLDER6:"多个邮箱或手机号使用英文逗号隔开",
+      PLACEHOLDER7:"请输入url",
+      SRARTED: "已启用",
+      PUTONHOLD: "已停用",
+    },
   }
 };
