@@ -6,7 +6,6 @@
       </el-col>
       <el-col :span="12" class="px-2 text-right">
         <el-button size="medium" type="border" @click="handleShowAdd">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.NOTICEADD")}}</el-button>
-       
       </el-col>
     </el-row>
   

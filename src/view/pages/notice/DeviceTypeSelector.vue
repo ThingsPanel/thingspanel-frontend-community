@@ -18,10 +18,6 @@
 
 <script>
 import {getUserList,} from "@/api/notice";
-// import {device_group_drop} from "@/api/asset";
-// import {getDeviceTree} from "@/api/device";
-// import PluginAPI from "@/api/plugin";
-
 import { message_error } from '@/utils/helpers';
 import i18n from "@/core/plugins/vue-i18n"
 export default {
@@ -50,7 +46,7 @@ export default {
         is_phone: 0,
       },
       list: [],
-      // 项目列表
+      // 用户列表
       userOptions: [],
       params: {
         page: 1,
@@ -103,12 +99,11 @@ export default {
     
   },
   created() {
-    // 初始化项目列表
     this.getUser();
   },
   methods: {
     /**
-     * 选择项目
+     * 选择用户
      * @param v
      */
      handleUserChange(v) {

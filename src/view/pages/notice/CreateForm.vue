@@ -36,11 +36,8 @@
           <div style="display:flex;margin-bottom: 10px;" v-for="(command, index) in form.commands" :key="index">
             <DeviceTypeSelector ref="deviceTypeRef" style="" :data="command.data" :option="{operator: false}" @change="v=>handleCommandChange(command, v)"/>
             <!-- 新增一行 -->
-            <el-button type="indigo" size="small" style="margin-left: auto"
-                      v-if="index == 0" @click="handleAddCommand(command)">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.ADD')}}</el-button>
-
-            <el-button type="danger" size="small" style="margin-left: auto"
-                      v-if="index > 0" @click="handleDeleteCommand(command)">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.DELETE')}}</el-button>
+            <el-button type="indigo" size="small" style="margin-left: auto" v-if="index == 0" @click="handleAddCommand(command)">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.ADD')}}</el-button>
+            <el-button type="danger" size="small" style="margin-left: auto" v-if="index > 0" @click="handleDeleteCommand(command)">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.DELETE')}}</el-button>
           </div>
         </el-form-item>
        </div>
@@ -64,11 +61,9 @@
 </template>
 
 <script>
-import { message_success, message_error } from '@/utils/helpers';
-import i18n from "@/core/plugins/vue-i18n.js"
+import { message_error } from '@/utils/helpers';
 import DeviceTypeSelector from "@/view/pages/notice/DeviceTypeSelector.vue";
 import {getNotificationAdd,getNotificationDetail,getNotificationEdit} from "@/api/notice";
-const required = true;
 
 export default {
   name: "CreateForm",
@@ -102,10 +97,8 @@ export default {
           if (this.id) {
             // 编辑
             this.getDetail(this.id);
-            // this.form = JSON.parse(JSON.stringify(data.find(item => item.id = this.id)));
           } else {
             // 新增
-            
             this.form = {
               group_name: '',
               desc: '',
@@ -129,7 +122,6 @@ export default {
     },
   },
   data:()=>({
-
     // 通知方式类型
     noticeType:'',
     form:{
@@ -165,12 +157,10 @@ export default {
 
   },
   methods: {
-   
     handleTypeChange(e){
       this.form.notification_type=e
       this.noticeType=e
     },
-
 
     /**
     * @description: 新增一行命令
@@ -241,7 +231,6 @@ export default {
       }
       let params = JSON.parse(JSON.stringify(this.form));
       let jsonData={}
-      console.log(params,'params')
       if(!this.id){
         if(params.notification_type===1){
           params.notification_config={}
@@ -260,7 +249,6 @@ export default {
         }   
       }else{
          let objNum= JSON.parse(params.notification_config);
-         console.log(objNum,'objNum')
          if(params.notification_type===1){
           params.notification_config={}
           params.notification_members = this.form.commands.map(cmd => {

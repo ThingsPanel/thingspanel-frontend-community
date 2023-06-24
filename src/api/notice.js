@@ -8,7 +8,7 @@ export function getNotificationList(data) {
         data
     })
 }
-// 数据转发（新）新建
+// 通知组新建
 export function getNotificationAdd(data) {
     return axios({
         url: "/notification/save",
@@ -18,7 +18,7 @@ export function getNotificationAdd(data) {
 }
 
 
-// 数据转发（新）编辑
+// 通知组编辑
 export function getNotificationEdit(data) {
     return axios({
         url: "/notification/save",
@@ -28,7 +28,7 @@ export function getNotificationEdit(data) {
 }
 
 
-// 数据转发（新）详情
+// 通知组详情
 export function getNotificationDetail(data) {
     return axios({
         url: "/notification/detail",
@@ -38,7 +38,7 @@ export function getNotificationDetail(data) {
 }
 
 
-// 数据转发（新）删除
+// 通知组删除
 export function getNotificationDelete(data) {
     return axios({
         url: "/notification/delete",
