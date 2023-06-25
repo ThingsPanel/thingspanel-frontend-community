@@ -1560,6 +1560,8 @@ export const locale = {
       PLACEHOLDER7:"Please enter url",
       SRARTED: "Enabled",
       PUTONHOLD: "Deactivated",
+      START: 'Start ',
+      SUSPENDED: 'suspended',
     },
   }
 };

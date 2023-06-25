@@ -32,6 +32,8 @@
       </el-table-column>
       <el-table-column prop="actions" :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.OPERATION')" align="left" width="320px">
         <template v-slot="scope">
+          <el-button size="mini" v-if="scope.row.status == 2" type="success" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.START")}}</el-button>
+          <el-button size="mini" v-if="scope.row.status == 1"  type="yellow" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SUSPENDED")}}</el-button>
           <el-button class="mr-3" size="mini" type="indigo" @click="handleShowEdit(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.EDIT")}}</el-button>
           <el-popconfirm :title="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.TITLE4')" @confirm="handle_del(scope.row.id)">
             <el-button slot="reference" size="mini" type="danger">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.DELETE")}}</el-button>
@@ -57,7 +59,7 @@
   <script>
   import CreateForm from "@/view/pages/notice/CreateForm.vue";
   import TableTitle from "@/components/common/TableTitle.vue"
-  import {getNotificationList,getTranspondNewStatus,getNotificationDelete} from "@/api/notice";
+  import {getNotificationList,getStatus,getNotificationDelete} from "@/api/notice";
   import "@/core/mixins/common"
   import { message_success } from '@/utils/helpers';
   export default {
@@ -122,7 +124,7 @@
      
        //启动
       // handle_launch(item) {
-      //   getTranspondNewStatus({data_transpond_id:item.id,switch:1}).then(res => {
+      //   getStatus({id:item.id,switch:1}).then(res => {
       //     if (res.data.code === 200) {
       //       this.get_data()
       //       this.$message({message: "启动成功", center: true, type: "success"})
@@ -131,7 +133,7 @@
       // },
       // //关闭
       // handle_pause(item) {
-      //   getTranspondNewStatus({data_transpond_id:item.id,switch:0}).then(res => {
+      //   getStatus({id:item.id,switch:2}).then(res => {
       //     if (res.data.code === 200) {
       //       this.get_data()
       //       this.$message({message: "暂停成功", center: true, type: "success"})
@@ -140,9 +142,9 @@
       // },
 
       handleSetStatus(item) {
-        let status = item.status === 0 ? 1 : 0;
+        let status = item.status === 2 ? 1 : 2;
       
-        getTranspondNewStatus({data_transpond_id:item.id,switch:status}).then(res => {
+        getStatus({id:item.id,switch:status}).then(res => {
           if (res.data.code === 200) {
             this.get_data()
             message_success(

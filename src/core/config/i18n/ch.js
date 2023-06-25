@@ -1737,6 +1737,8 @@ export const locale = {
       PLACEHOLDER7:"请输入url",
       SRARTED: "已启用",
       PUTONHOLD: "已停用",
+      START: "启动",
+      SUSPENDED: "暂停",
     },
   }
 };

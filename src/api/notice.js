@@ -57,3 +57,11 @@ export function getUserList(data) {
     })
 }
 
+// 通知组状态开关
+export function getStatus(data) {
+    return axios({
+        url: "/notification/switch",
+        method: "post",
+        data
+    })
+}
