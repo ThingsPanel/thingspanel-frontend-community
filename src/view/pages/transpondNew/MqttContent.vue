@@ -42,12 +42,12 @@ export default {
   name: "MqttContent",
   components: {  },
   props: {
-    init_data: {
-      default: null
-    },
-    type : {
-      default: null
-    }
+    // init_data: {
+    //   default: null
+    // },
+    // type : {
+    //   default: null
+    // }
   },
   data () {
     return {

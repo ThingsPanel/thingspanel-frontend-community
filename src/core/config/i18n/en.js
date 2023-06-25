@@ -5,6 +5,7 @@ export const locale = {
     SYSTEMMANAGEMENT: "system management",
     SYSTEMSETUP: "System setup",
     PERMISSIONMANAGEMENT: "Permission management",
+    NOTICE:"Notice",
     PERMISSIONADD: "Add Permission",
     DEVICEACCESS: "Device Access",
     NEWPROJECT: "New Project",
@@ -445,6 +446,7 @@ export const locale = {
     PERMISSIONMANAGEMENT: "Permission Management",
     DELPROTOCOLPLUGIN: "Del Protocol Plugin",
     DELDEVICEPLUGIN: "Del Device Plugin",
+    NOTICE:"Notice",
   },
   AUTH: {
     GENERAL: {
@@ -1519,6 +1521,45 @@ export const locale = {
       CODE: "code：",
       LABLETYPE: "type：",
       PLACEHOLDER: "Please select",
-    }
+    },
+    /**
+     * notice management
+     */
+    NOTICE_MANAGEMENT: {
+      NOTICE: "Notice",
+      NOTICEADD: "Notice Add",
+      NO: 'ID',
+      NOTICENAME: "Notice Name",
+      NOTICETYPE: "Notice Type",
+      STATUS: "Status",
+      OPERATION:"Operation",
+      ADDTITLE:"Add",
+      EDITTITLE:"Edit",
+      GROUPNAME:"Notice Name",
+      DESC:"Notice Desc",
+      METHOD:"Notice Method",
+      SETMETHOD:"Set Method",
+      ADD:"add",
+      DELETE:"delete",
+      EMAIL: 'Email',
+      SMS: 'Sms',
+      PHONE: 'Phone Notifications',
+      SETEMAIL:"Set Email",
+      SETURL:"Set URL",
+      TITLE4: "Are you sure you want to delete?",
+      EDIT: "edit",
+      CANCEL: 'Cancel',
+      SAVE: 'Save',
+      PLACEHOLDER:"Please enter notice name",
+      PLACEHOLDER1:"Please enter notice desc",
+      PLACEHOLDER2:"Please select notice method",
+      PLACEHOLDER3:"Please select user",
+      PLACEHOLDER4:"Please select at least one notification method!",
+      PLACEHOLDER5:"Please enter email or phone",
+      PLACEHOLDER6:"Separate multiple email or phone numbers with English commas",
+      PLACEHOLDER7:"Please enter url",
+      SRARTED: "Enabled",
+      PUTONHOLD: "Deactivated",
+    },
   }
 };
