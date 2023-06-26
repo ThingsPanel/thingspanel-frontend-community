@@ -105,6 +105,7 @@ export default {
   padding-left: 10px;
   text-align: right;
   box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
+  z-index: 9999;
   .title {
     //width: 100%;
     //flex-grow: 1;
