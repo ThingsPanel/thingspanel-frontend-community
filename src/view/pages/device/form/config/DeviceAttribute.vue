@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <el-form label-position="left" :model="formData">
+    <div style="margin-top: 20px">
+        <el-form label-position="left" :model="formData" label-width="100px">
             <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.SUBDEVICEADDRESS')" v-if="device.device_type == '3'">
                 <el-input style="width: 100%" :placeholder="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PLACEHOLDER1')"
                     v-model="formData.subDeviceAddress"></el-input>
@@ -23,6 +23,11 @@
         </el-form>
       <device-location-config v-if="positionShow" :maker-position.sync="locationArray" :dialog-visible.sync="positionShow"></device-location-config>
 
+      <el-form>
+        <el-form-item label="固件版本">
+            {{ device.additional_info.version || '' }}
+        </el-form-item>
+      </el-form>
     </div>
 </template>
 
@@ -70,6 +75,9 @@ export default {
             this.formData.location = val.join(',')
         }
     },
+    mounted() {
+        console.log("DeviceAttribute", this.device)
+    },
     methods: {
         showCheckLocation() {
             this.positionShow = true
@@ -77,4 +85,8 @@ export default {
     }
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.el-form-item__content {
+    margin-left: 100px;
+}
+</style>
