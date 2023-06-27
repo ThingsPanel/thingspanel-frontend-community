@@ -27,13 +27,15 @@
       
       <el-table-column prop="status" :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.STATUS')">
         <template v-slot="scope">
-          <el-tag size="small">{{scope.row.status == 1 ? $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SRARTED') : $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PUTONHOLD')}}</el-tag>
+          <!-- <el-tag size="small">{{scope.row.status == 1 ? $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SRARTED') : $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PUTONHOLD')}}</el-tag> -->
+          <el-button size="mini" v-if="scope.row.status == 2" type="success" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PUTONHOLD")}}</el-button>
+          <el-button size="mini" v-if="scope.row.status == 1" type="yellow" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SRARTED")}}</el-button> 
         </template>
       </el-table-column>
       <el-table-column prop="actions" :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.OPERATION')" align="left" width="320px">
         <template v-slot="scope">
-          <el-button size="mini" v-if="scope.row.status == 2" type="success" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.START")}}</el-button>
-          <el-button size="mini" v-if="scope.row.status == 1"  type="yellow" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SUSPENDED")}}</el-button>
+          <!-- <el-button size="mini" v-if="scope.row.status == 2" type="success" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.START")}}</el-button>
+          <el-button size="mini" v-if="scope.row.status == 1"  type="yellow" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SUSPENDED")}}</el-button> -->
           <el-button class="mr-3" size="mini" type="indigo" @click="handleShowEdit(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.EDIT")}}</el-button>
           <el-popconfirm :title="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.TITLE4')" @confirm="handle_del(scope.row.id)">
             <el-button slot="reference" size="mini" type="danger">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.DELETE")}}</el-button>
