@@ -1,5 +1,8 @@
 <template>
   <div>
+    <div style="display: flex;float: left;margin-bottom: 10px">
+      <span>设备上报事件主题: device/event</span>
+    </div>
     <div style="display: flex;float: right;margin-bottom: 10px">
       <el-button type="border" size="medium" @click="getList">刷新</el-button>
     </div>

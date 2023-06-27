@@ -1,8 +1,11 @@
 <template>
     <div>
         <div style="justify-content: space-between;display: flex;margin-bottom: 10px">
-            <el-button type="border" size="medium" @click="commandDialogVisible = true">下发命令</el-button>
+            <span>{{ subscribeTitle }}</span>
             <el-button type="border" size="medium" @click="getList">刷新</el-button>
+        </div>
+        <div style="display: flex;float: left;margin-bottom: 10px">
+            <el-button type="border" size="medium" @click="commandDialogVisible = true">下发命令</el-button>
         </div>
         <el-table :data="tableData" v-loading="loading">
             <el-table-column label="命令标识符" prop="command_identify" width="240"></el-table-column>
@@ -89,10 +92,17 @@ export default {
                 command_data: [
                     { required: true, message: '请输入命令内容', trigger: 'blur' }
                 ]
-            }
+            },
+            subscribeTitle: "设备订阅命令主题:  device/command/<AccessToken>"
         }
     },
     mounted() {
+        if (this.device.device_type === "2") {
+            this.subscribeTitle = "设备订阅命令主题:  gateway/command/<AccessToken>"
+        } else {
+            this.subscribeTitle = "设备订阅命令主题:  device/command/<AccessToken>"
+        }
+        console.log('Command.device', this.device)
         this.getList();
         this.getDeviceCommandList();
     },
