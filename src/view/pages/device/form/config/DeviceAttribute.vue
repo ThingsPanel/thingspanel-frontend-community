@@ -25,7 +25,7 @@
 
       <el-form>
         <el-form-item label="固件版本">
-            {{ device.additional_info.version || '' }}
+            {{ device.current_version || '' }}
         </el-form-item>
       </el-form>
     </div>
