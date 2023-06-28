@@ -175,6 +175,12 @@ export default {
       this.$nextTick(() => {
         this.myEcharts.resize();
       });
+      this.optionData.tooltip = {
+        trigger: 'axis',
+        position: function (pt) {
+          return [pt[0], '10%'];
+        }
+      };
       this.optionData.backgroundColor = 'transparent';
       if (option) {
         this.myEcharts.setOption(option);
