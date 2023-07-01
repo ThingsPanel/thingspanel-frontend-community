@@ -5,6 +5,7 @@ export const locale = {
     SYSTEMSETUP: "系统设置",
     MANAGEMENT: "角色管理",
     PERMISSIONMANAGEMENT: "权限管理",
+    NOTICE:"通知组",
     PERMISSIONADD: "添加权限",
     DEVICEACCESS: "设备接入",
     DEVICEWATCH: "设备监控",
@@ -217,7 +218,6 @@ export const locale = {
     POLICYPRIORITY_TOOLTIP: "备注：值越小优先级越高",
     STRATRGYLISTTYPE: "策略类型",
     CONTINUED: "持续",
-  
     MINUTE: "分钟",
     INTERVAL: "每间隔",
     HOUR: "小时",
@@ -508,7 +508,7 @@ export const locale = {
     RULEENGINE: "规则引擎",
     NETWORKCOMPONENTS: "规则引擎",
     TRANSPOND: "数据转发",
-    TRANSPONDNEW: "数据转发(新)",
+    TRANSPONDNEW: "数据转发",
     MARKET: "应用管理",
     SYSTEMMANAGEMENT: "系统管理",
     SYSTEMSETUP: "系统设置",
@@ -517,6 +517,7 @@ export const locale = {
     PERMISSIONMANAGEMENT: "权限管理",
     DELPROTOCOLPLUGIN: "删除协议插件",
     DELDEVICEPLUGIN: "删除设备插件",
+    NOTICE:"通知组",
   },
   /**
    * 认证
@@ -910,7 +911,7 @@ export const locale = {
     WARNING_LEVEL_LOW: "低",
     WARNING_LEVEL_MEDIUM: "中",
     WARNING_LEVEL_HIGH: "高",
-    NOTIFY_USER: "通知用户",
+    NOTIFY_USER: "通知组",
     ALL_USER: "所有用户",
     REPEAT_TIMES: "重复次数",
     NOTIFY_TYPE: "通知方式",
@@ -940,7 +941,7 @@ export const locale = {
     FAILURE: "失败",
     DETAIL: "详情",
     CLOSE: "关闭",
-    LOG_DETAIL: "日期详情",
+    LOG_DETAIL: "日志详情",
     TARGET_NAME: "目标名称",
     ACTION_TYPE: "动作类型",
     DEVICE_OUT: "设备输出",
@@ -1320,7 +1321,7 @@ export const locale = {
      * 数据转发新
      */
      DATA_FORWARDINGNEW: {
-      TRANSPOND: "数据转发(新)",
+      TRANSPOND: "数据转发",
       CREATINGFORWARDINGRULE: "创建转发",
       NO: "序号",
       RULE_NAME: "规则名称",
@@ -1493,19 +1494,19 @@ export const locale = {
    */
     MATTER_MODEL_TABLE:{
       LABLE1: "字段名(例：温度)",
-      LABLE2: "字段(例：temperature)",
+      LABLE2: "字段(例: temperature)",
       LABLE3: "数据类型",
       LABLE4: "取值范围",
       LABLE5: "间距",
       LABLE6: "单位(例：℃)",
       LABLE7: "描述",
-      LABLE8: "命令名称",
-      LABLE9: "命令标识符",
+      LABLE8: "命令名称(例: 开启)",
+      LABLE9: "命令标识符(例: start)",
       LABLE10: "命令参数",
       LABLE11: "查看",
-      LABEL12: "事件名称",
-      LABEL13: "事件标识符",
-      LABEL14: "事件参数",
+      LABLE12: "事件名称(例: 预警)",
+      LABLE13: "事件标识符(例: warning)",
+      LABLE14: "事件参数",
     },
     /**
    * 应用管理——设备插件——图表
@@ -1697,6 +1698,47 @@ export const locale = {
       PLACEHOLDER: "请选择",
       EDIT: "编辑",
       DELETE: "删除"
-    }
+    },
+    /**
+     * 通知组管理
+     */
+    NOTICE_MANAGEMENT: {
+      NOTICE: "通知组",
+      NOTICEADD: "新增",
+      NO:"序号",
+      NOTICENAME:"通知组名称",
+      NOTICETYPE: "通知类型",
+      STATUS: "状态",
+      OPERATION:"操作",
+      ADDTITLE:"新增",
+      EDITTITLE:"编辑",
+      GROUPNAME:"通知组名称",
+      DESC:"通知组描述",
+      METHOD:"通知方式",
+      SETMETHOD:"设置成员通知方式",
+      ADD:"新增",
+      DELETE:"删除",
+      EMAIL:"邮件通知",
+      SMS:"短信通知",
+      PHONE:"电话通知",
+      SETEMAIL:"设置邮箱",
+      SETURL:"设置URL",
+      TITLE4: "你确定要删除吗？",
+      EDIT: "编辑",
+      CANCEL: "取消",
+      SAVE: "保存",
+      PLACEHOLDER:"请输入通知组名称",
+      PLACEHOLDER1:"请输入通知组描述",
+      PLACEHOLDER2:"请选择通知方式",
+      PLACEHOLDER3:"请选择用户",
+      PLACEHOLDER4:"请至少选择一个通知方式！",
+      PLACEHOLDER5:"请输入邮箱或手机号",
+      PLACEHOLDER6:"多个邮箱或手机号使用英文逗号隔开",
+      PLACEHOLDER7:"请输入url",
+      SRARTED: "已启用",
+      PUTONHOLD: "已停用",
+      START: "启动",
+      SUSPENDED: "暂停",
+    },
   }
 };

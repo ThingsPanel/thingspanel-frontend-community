@@ -52,7 +52,7 @@
 <script>
 import { business_index } from "@/api/business";
 import {device_group_drop} from "@/api/asset";
-import {getDeviceTree} from "@/api/device";
+import { getDeviceTree } from "@/api/device";
 import PluginAPI from "@/api/plugin";
 import OnlineDuration from "./OnlineDuration"
 import OperatorSelector from "./OperatorSelector";

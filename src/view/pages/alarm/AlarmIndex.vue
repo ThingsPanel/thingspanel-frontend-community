@@ -52,8 +52,8 @@
       <el-table-column :label="$t('ALARM.LEVEL')" prop="warning_level" width="60">
         <template v-slot="scope">
           <p class="table-describe mad" v-if="scope.row.warning_level==='1'">低</p>
-          <p class="table-describe mad" v-if="scope.row.warning_level==='2'">低</p>
-          <p class="table-describe mad" v-if="scope.row.warning_level==='3'">低</p>
+          <p class="table-describe mad" v-if="scope.row.warning_level==='2'">中</p>
+          <p class="table-describe mad" v-if="scope.row.warning_level==='3'">高</p>
         </template>
       </el-table-column>
       <el-table-column :label="$t('ALARM.WARNING_DESCRIPTION')" prop="warning_description" :show-overflow-tooltip="true" width="auto">

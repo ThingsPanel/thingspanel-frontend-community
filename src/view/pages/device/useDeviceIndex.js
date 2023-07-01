@@ -101,6 +101,7 @@ export default function useDeviceIndex(business_id) {
             protocol_config: item.protocol_config,
             subDeviceAddress: item.sub_device_addr ? item.sub_device_addr : "",
             chart_names: item.chart_names,
+            current_version: item.current_version || "",
             errors: {
                 name: "",
                 asset_id: "",

@@ -35,18 +35,7 @@ export const baseRoutes = [
                 component: () => import("@/view/pages/auth/Register")
             }
         ]
-    },
-    {
-        path: "/visual_editor",
-        name: "VisualEditor",
-        component: () => import("@/view/pages/visual/editor/index"),
-    },
-    {
-        path: "/visual_display",
-        name: "VisualDisplay",
-        component: () => import("@/view/pages/visual/display/index"),
     }
-
 ]
 
 

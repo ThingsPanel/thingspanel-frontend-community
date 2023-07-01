@@ -77,7 +77,7 @@ export default {
       formData: {},
       attrFormData: {},
       runningFormData: {
-        thresholdTime: 60
+        thresholdTime: 0
       },
       formRule: {},
       location: "",
@@ -93,7 +93,7 @@ export default {
           console.log("====DeviceConfigForm.newValue", this.device)
           this.location = this.device.location ? this.device.location : "";
           let additionalInfo = (this.device.additional_info && this.device.additional_info!="null") ? JSON.parse(this.device.additional_info) :
-              {runningInfo: {thresholdTime: 60}};
+              {runningInfo: {thresholdTime: 0}};
 
           this.attrFormData = {
             d_id: this.device.d_id,

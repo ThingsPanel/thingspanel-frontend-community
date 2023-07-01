@@ -66,6 +66,8 @@ export default function useBusinessGroupCUD(tableData, business_id, handleChange
         // 设备组的层级
         let tier = get_group_tier(item, deviceGroupOptions)
 
+        console.log('group', item)
+        
         if(item.id){
             asset_update({
                 business_id: business_id.value,

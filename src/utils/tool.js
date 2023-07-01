@@ -78,11 +78,11 @@ export function jsonProp(obj) {
 export function dateFormat(timestamp) {
   if (!timestamp) return "";
   if (timestamp.toString().length === 10) {
-    timestamp = timestamp * 1000;
+    timestamp = Number(timestamp) * 1000;
   } else if (timestamp.toString().length === 13) {
     timestamp = timestamp;
   } else if (timestamp.toString().length === 16) {  
-    timestamp = timestamp / 1000;
+    timestamp = timestamp.toString().substring(0, 13);
   } else {
     return "";
   }

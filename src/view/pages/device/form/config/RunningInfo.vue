@@ -3,7 +3,7 @@
         <el-form label-position="left" :model="formData">
             <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OFFLINETIME')" prop="thresholdTime">
                 <el-input-number controls-position="right" size="small" v-model="formData.thresholdTime"
-                    :min="5"></el-input-number>
+                    :min="0"></el-input-number>
                 秒
             </el-form-item>
         </el-form>

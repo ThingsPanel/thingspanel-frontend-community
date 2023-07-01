@@ -95,6 +95,7 @@ export default {
   height: 40px;
   padding-left: 10px;
   text-align: right;
+  z-index: 9999;
   //box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
   .title {
     //width: 100%;

@@ -22,10 +22,10 @@
 
       </el-form-item>
 
-      <el-form-item style="width: 100%">
-        <div style="overflow-y: auto">
+      <el-form-item style="width: 100%;height: 400px">
+        <div style="height: 400px;">
             <!-- 属性 -->
-            <common-table v-if="tslType=='properties'" border key="properties"
+            <common-table style="height:100%" v-if="tslType=='properties'" border key="properties"
                           :show-view="showView"
                           :addOrEdit="propertiesAddOrEdit"
                           :showHandle="showHandle"
@@ -37,7 +37,7 @@
             ></common-table>
 
             <!-- 服务 -->
-            <common-table v-else-if="tslType=='services'" border key="services"
+            <common-table style="height:100%" v-else-if="tslType=='services'" border key="services"
                           :show-view="showView"
                           :addOrEdit="servicesAddOrEdit"
                           :showHandle="showHandle"
@@ -49,7 +49,7 @@
             ></common-table>
 
             <!-- 事件 -->
-            <common-table v-else-if="tslType=='events'" border key="events"
+            <common-table style="height:100%" v-else-if="tslType=='events'" border key="events"
                           :show-view="showView"
                           :addOrEdit="eventsAddOrEdit"
                           :showHandle="showHandle"

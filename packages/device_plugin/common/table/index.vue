@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <div style="height:100%;">
     <!-- 表格 -->
-    <el-table :data="tableData"  class="table-order">
+    <el-table :data="tableData"  class="table-order" style="height:100%;overflow-y: auto;">
       <el-table-column type="expand" :label="$t('PLUGIN.MATTER_MODEL_TABLE.LABLE11')" width="80" v-if="showView">
         <template slot-scope="props">
           <el-form label-position="left" class="table-form-expand">
@@ -111,10 +111,10 @@
         :title="addOrEdit=='add'?$t('PLUGIN.MATTER_MODEL_INFO_TAB.ADD'):$t('PLUGIN.MATTER_MODEL_INFO_TAB.EDIT')"
         :visible.sync="dialogVisible" :append-to-body="true"
         @closed="handleClose">
-      <el-form style="padding-left: 30px; padding-right: 30px;" label-position="left" label-width="160px" :model="formData">
+      <el-form style="padding-left: 30px; padding-right: 30px;" label-position="left" label-width="180px" :model="formData">
 
         <el-form-item style="margin-bottom: 30px"
-            v-for="(attr , index) in dataAttr" :key="index" :label="attr.label + '：'">
+            v-for="(attr , index) in dataAttr" :key="index" :label="attr.label + ':'">
 
           <!-- 下拉列表 -->
           <el-select v-if="attr.type=='select'" style="width: 100%" :filterable="attr.filterable"

@@ -54,6 +54,16 @@ export function user_find_all_roles(data) {
     })
 }
 
+export function user_find_all(data) {
+    return axios({
+        url: "/notification/list",
+        method: "post",
+        data
+    })
+}
+
+
+
 // 删除用户
 export function user_delete(data) {
     return axios({

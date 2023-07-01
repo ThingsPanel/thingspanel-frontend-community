@@ -1,18 +1,22 @@
 <template>
   <div>
+    <div style="display: flex;float: left;margin-bottom: 10px">
+      <span>设备上报事件主题: device/event</span>
+    </div>
     <div style="display: flex;float: right;margin-bottom: 10px">
       <el-button type="border" size="medium" @click="getList">刷新</el-button>
     </div>
     <el-table :data="tableData" v-loading="loading">
       <el-table-column label="事件标识符" prop="event_identify" width="240"></el-table-column>
-      <el-table-column label="事件名称" prop="event_name" width="auto"></el-table-column>
+      <!-- <el-table-column label="事件名称" prop="event_name" width="auto"></el-table-column> -->
 
-      <el-table-column label="事件上报时间" prop="report_time" width="100">
+      <el-table-column label="事件上报时间" prop="report_time" width="160">
+        <templace slot-scope="scope">
+          {{ dateFormat(scope.row.report_time) }}
+        </templace>
       </el-table-column>
-      <el-table-column label="事件描述" prop="desc" width="auto"></el-table-column>
 
       <el-table-column label="事件内容" prop="data" width="auto"></el-table-column>
-
 
     </el-table>
     <!-- 表 end -->
@@ -26,6 +30,8 @@
 
 <script>
 import { getDeviceEventHistoryList } from '@/api/device';
+import { dateFormat } from '@/utils/tool.js'  
+
 export default {
   components: {},
   props: {
@@ -36,6 +42,7 @@ export default {
   },
   data() {
     return {
+      dateFormat: dateFormat,
       loading: false,
       tableData: [],
       total: 0,

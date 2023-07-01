@@ -14,6 +14,7 @@
                  :w="option.w"
                  :h="option.h"
                  :i="option.i"
+                 dragAllowFrom=".chart-header"
                  @moved="handleResized(option.i)"
                  @resized="(l, r, w, h) => handleResized(option.i, {l, r, w, h})">
 

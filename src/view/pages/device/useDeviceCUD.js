@@ -16,7 +16,7 @@ export default function useDeviceCUD(tableData){
             location: "",
             protocol: "mqtt",
             device_type: "1",
-            additional_info: "{\"runningInfo\":{\"thresholdTime\":60}}",
+            additional_info: "{\"runningInfo\":{\"thresholdTime\":0}}",
             errors: {
                 name: "",
                 asset_id: "",
