@@ -1521,6 +1521,11 @@ export const locale = {
       CODE: "code：",
       LABLETYPE: "type：",
       PLACEHOLDER: "Please select",
+	  LABELDESC: "Describe",
+	  LABELSYSFLAG: "Access identification",
+	  FLAG_TENANT: "Tenant",
+	  FLAG_SYSADMIN: "System admin",
+	  FLAG_COMMON: "common"
     },
     /**
      * notice management
