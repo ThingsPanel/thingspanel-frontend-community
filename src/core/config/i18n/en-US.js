@@ -1661,7 +1661,13 @@ export const locale = {
       LABLETYPE: 'type:',
       PLACEHOLDER: 'Please select',
       EDIT: 'edit',
-      DELETE: 'delete'
+      DELETE: 'delete',
+	  PLACEHOLDER: "Please select",
+	  LABELDESC: "Describe",
+	  LABELSYSFLAG: "Access identification",
+	  FLAG_TENANT: "Tenant",
+	  FLAG_SYSADMIN: "System admin",
+	  FLAG_COMMON: "common"
     },
     /**
      * notice management

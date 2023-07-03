@@ -1697,7 +1697,12 @@ export const locale = {
       LABLETYPE: "类型：",
       PLACEHOLDER: "请选择",
       EDIT: "编辑",
-      DELETE: "删除"
+      DELETE: "删除",
+	  LABELDESC: "描述",
+	  LABELSYSFLAG: "访问标识",
+	  FLAG_TENANT: "租户",
+	  FLAG_SYSADMIN: "系统管理员",
+	  FLAG_COMMON: "共有",
     },
     /**
      * 通知组管理

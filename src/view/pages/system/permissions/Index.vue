@@ -24,7 +24,6 @@
       <el-table-column :label="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.ICON')" prop="icon"></el-table-column>
       <el-table-column label="url" prop="path"></el-table-column>
       <el-table-column :label="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.COMPONENT')" prop="component"></el-table-column>
-      <el-table-column :label="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.THESORTING')" prop="sort"></el-table-column>
       <el-table-column :label="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.TYPE')" prop="type" align="left">
         <template v-slot="scope">
           <el-tag type="warning" v-show="scope.row.type == 0">{{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.DIRECTORY') }}</el-tag>
@@ -33,6 +32,15 @@
           <el-tag type="info" v-show="scope.row.type == 3">{{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.BUTTON') }}</el-tag>
         </template>
       </el-table-column>
+	  
+	  <el-table-column :label="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.LABELSYSFLAG')" prop="sys_flag" align="left">
+	    <template v-slot="scope">
+	      <el-tag type="warning" v-show="scope.row.sys_flag == 0">{{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.FLAG_TENANT') }}</el-tag>
+	      <el-tag type="danger" v-show="scope.row.sys_flag == 1">{{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.FLAG_SYSADMIN') }}</el-tag>
+	      <el-tag type="success" v-show="scope.row.sys_flag == 2">{{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.FLAG_COMMON') }}</el-tag>
+	    </template>
+	  </el-table-column>
+	  <el-table-column :label="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.LABELDESC')" prop="describe"></el-table-column>
 
       <el-table-column :label="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.OPERATION')" align="center" width="250">
         <template v-slot="scope">
@@ -133,6 +141,18 @@
             <el-radio label="3">{{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.BUTTON') }}</el-radio>
           </el-radio-group>
         </el-form-item>
+		
+		<el-form-item :label="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.LABELSYSFLAG')" style="width: 100%">
+		  <el-radio-group v-model="formData.sys_flag">
+		    <el-radio label="0">{{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.FLAG_TENANT') }}</el-radio>
+		    <el-radio label="1">{{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.FLAG_SYSADMIN') }}</el-radio>
+		    <el-radio label="2">{{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.FLAG_COMMON') }}</el-radio>
+		  </el-radio-group>
+		</el-form-item>
+		
+		<el-form-item :label="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.LABELDESC')">
+			<el-input type="textarea" :autosize="{ minRows: 2, maxRows: 4}" placeholder="请输入内容" v-model="formData.describe" maxlength="500" show-word-limit></el-input>
+		</el-form-item>
 
         <div style="display: flex;justify-content: center">
           <el-button type="cancel" @click="onCancel">{{ $t('SYSTEM_MANAGEMENT.CANCEL') }}</el-button>
@@ -203,7 +223,7 @@ export default {
       }
     },
     handleAdd() {
-      this.formData = { parent_id: "0", type: "1" }
+      this.formData = { parent_id: "0", type: "1", sys_flag: "0" }
       this.dialogVisible = true
     },
     handleEdit(row) {
