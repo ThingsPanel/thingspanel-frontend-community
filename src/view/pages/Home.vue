@@ -200,7 +200,7 @@ export default {
       }).then(({ data }) => {
         if (data.code == 200) {
           if (data.data.data.length > 0) {
-            this.isshowguide = true;
+            // this.isshowguide = true;
             this.getguidlist();
           }
         } else if (data.code == 401) {
