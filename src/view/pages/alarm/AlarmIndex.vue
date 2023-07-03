@@ -26,9 +26,9 @@
 
       <el-col :span="12" class="text-right">
         <el-select style="margin-right:10px" v-model="params.warningLevel" :placeholder="$t('ALARM.PLACEHOLDER.WARNING_LEVEL')" clearable @change="handleSearch">
-          <el-option value="low" :label="$t('AUTOMATION.WARNING_LEVEL_LOW')"></el-option>
-          <el-option value="medium" :label="$t('AUTOMATION.WARNING_LEVEL_MEDIUM')"></el-option>
-          <el-option value="high" :label="$t('AUTOMATION.WARNING_LEVEL_HIGH')"></el-option>
+          <el-option value="1" :label="$t('AUTOMATION.WARNING_LEVEL_LOW')"></el-option>
+          <el-option value="2" :label="$t('AUTOMATION.WARNING_LEVEL_MEDIUM')"></el-option>
+          <el-option value="3" :label="$t('AUTOMATION.WARNING_LEVEL_HIGH')"></el-option>
         </el-select>
 
         <el-select v-model="params.processing_result" :placeholder="$t('ALARM.PROCESSING_RESULT')" clearable @change="handleSearch">
@@ -58,7 +58,7 @@
       </el-table-column>
       <el-table-column :label="$t('ALARM.WARNING_DESCRIPTION')" prop="warning_description" :show-overflow-tooltip="true" width="auto">
         <template v-slot="scope">
-          <p class="table-describe mad">{{ scope.row.describe }}</p>
+          <p class="table-describe mad">{{ scope.row.warning_description }}</p>
         </template>
       </el-table-column>
 
