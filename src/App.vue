@@ -43,6 +43,7 @@ export default {
      */
     this.$store.dispatch(OVERRIDE_LAYOUT_CONFIG);
     window.localStorage.setItem("base_url", local_url);
+
   },
   beforeMount() {
     console.log("local_url", local_url)
