@@ -460,8 +460,8 @@ export default {
 
     // 短信发送
     onSend(){
-      this.form.phone_number = Number(this.form.phone_number)
-      getSendSms(this.form).then(res => {
+      this.formModel.phone_number = Number(this.formModel.phone_number)
+      getSendSms(this.formModel).then(res => {
           if (res.data.code === 200) {
             this.$message({message: "发送成功", center: true, type: "success"})
           }
@@ -470,7 +470,7 @@ export default {
 
     // 邮箱发送
     onSend2(){
-      getSendEmail(this.form2).then(res => {
+      getSendEmail(this.formModel2).then(res => {
           if (res.data.code === 200) {
             this.$message({message: "发送成功", center: true, type: "success"})
           }
