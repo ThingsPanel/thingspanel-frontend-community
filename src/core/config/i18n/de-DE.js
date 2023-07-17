@@ -6,6 +6,8 @@ export const locale = {
     MANAGEMENT: '角色管理',
     PERMISSIONMANAGEMENT: '权限管理',
     NOTICE:"通知组",
+    NOTICERECORD:"通知记录",
+    NOTICESERVICES: "通知服务配置",
     PERMISSIONADD: '添加权限',
     DEVICEACCESS: '设备接入',
     DEVICEWATCH: '设备监控',
@@ -515,7 +517,9 @@ export const locale = {
     PERMISSIONMANAGEMENT: '权限管理',
     DELPROTOCOLPLUGIN: '删除协议插件',
     DELDEVICEPLUGIN: '删除设备插件',
-    NOTICE:"通知组",
+    NOTICE: "通知组",
+    NOTICERECORD:"通知记录",
+    NOTICESERVICES: "通知服务配置",
   },
   /**
    * 认证
@@ -1659,11 +1663,11 @@ export const locale = {
       PLACEHOLDER: '请选择',
       EDIT: '编辑',
       DELETE: '删除',
-	  LABELDESC: "描述",
-	  LABELSYSFLAG: "访问标识",
-	  FLAG_TENANT: "租户",
-	  FLAG_SYSADMIN: "系统管理员",
-	  FLAG_COMMON: "共有"
+      LABELDESC: "描述",
+      LABELSYSFLAG: "访问标识",
+      FLAG_TENANT: "租户",
+      FLAG_SYSADMIN: "系统管理员",
+      FLAG_COMMON: "共有",
     },
     /**
      * 通知组管理
@@ -1705,6 +1709,66 @@ export const locale = {
       PUTONHOLD: "已停用",
       START: "启动",
       SUSPENDED: "暂停",
+    },
+    /**
+     * 通知服务配置
+     */
+    NOTICESERVICES_MANAGEMENT: {
+      SMS: "短信",
+      EMAIL:"邮箱",
+      PHONE:"电话",
+      LABLE1:"服务商",
+      ALY: "阿里云",
+      LABLE2:"AccessKeyId",
+      LABLE3:"AccessKeySecret",
+      LABLE4:"Endpoint",
+      LABLE5:"SignName",
+      LABLE6:"签名名称",
+      LABLE7:"模板CODE",
+      LABLE8:"开启/关闭服务",
+      LABLE9:"接收手机号",
+      LABLE10:"消息内容",
+      LABLE11:"收件邮箱",
+      LABLE12:"服务器地址",
+      LABLE13:"端口",
+      LABLE14:"发件人",
+      LABLE15:"密码",
+      PLACEHOLDER:"请选择服务商",
+      PLACEHOLDER1:"请输入AccessKeyId",
+      PLACEHOLDER2:"请输入AccessKeySecret",
+      PLACEHOLDER3:"请输入Endpoint",
+      PLACEHOLDER4:"请输入SignName",
+      PLACEHOLDER5:"请输入模板CODE",
+      PLACEHOLDER6:"请输入接收手机号",
+      PLACEHOLDER7:"请输入内容",
+      PLACEHOLDER8:"请输入服务器地址",
+      PLACEHOLDER9:"请输入端口",
+      PLACEHOLDER10:"请输入发件人",
+      PLACEHOLDER11:"请输入密码",
+      PLACEHOLDER12:"请输入收件邮箱",
+      DEBUG:"调试",
+      EDIT:"修改",
+      SAVE:"保存",
+      SEND:"发送",
+    },
+    /**
+     * 通知记录
+     */
+    NOTICERECORD_MANAGEMENT: {
+      NOTICERECORD: "通知记录",
+      PLACEHOLDER: {
+        RECORD_TYPE: "通知类型",
+        PLACEHOLDER: "请输入接收人"
+      },
+      SENDTIME:"发送时间",
+      SENDCONTENT:"发送内容",
+      RECIPIENT:"接收人",
+      SENDRESUIT:"发送结果",
+      TYPE:"通知类型",
+      AII:"全部",
+      SMS:"短信",
+      EMAIL:"邮箱",
+      PHONE:"电话",
     },
   }
 };
