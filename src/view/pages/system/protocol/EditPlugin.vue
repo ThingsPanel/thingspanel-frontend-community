@@ -219,7 +219,6 @@ export default {
           this.formData = {
             ...newValue,
           };
-
           this.connectForm = JSON.parse(newValue.additional_info);
         }
       },
@@ -245,6 +244,8 @@ export default {
     handleClose() {
       this.$emit("update:visible", false);
       this.dialogVisible = false;
+      this.formData = {};
+      this.connectForm= [];
     },
     addConnectForm() {
       this.connectForm.push({ key: "", value: "" });

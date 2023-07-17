@@ -6,6 +6,8 @@ export const locale = {
     SYSTEMSETUP: "System setup",
     PERMISSIONMANAGEMENT: "Permission management",
     NOTICE:"Notice",
+    NOTICERECORD:"Notice Record",
+    NOTICESERVICES: "Notification Service",
     PERMISSIONADD: "Add Permission",
     DEVICEACCESS: "Device Access",
     NEWPROJECT: "New Project",
@@ -447,6 +449,8 @@ export const locale = {
     DELPROTOCOLPLUGIN: "Del Protocol Plugin",
     DELDEVICEPLUGIN: "Del Device Plugin",
     NOTICE:"Notice",
+    NOTICERECORD:"Notice Record",
+    NOTICESERVICES: "Notification Service Configuration",
   },
   AUTH: {
     GENERAL: {
@@ -1232,7 +1236,7 @@ export const locale = {
     TAB2_CONTENT: {
       TITLE: "Access protocol plug-in",
       BTN: "Register plug-in",
-	  EDIT_BTN: "Edit plug-in",
+	    EDIT_BTN: "Edit plug-in",
       NAME: "name",
       DEVICETYPE: "Device type",
       PROTOCOLTYPE: "Protocol Type",
@@ -1521,6 +1525,11 @@ export const locale = {
       CODE: "code：",
       LABLETYPE: "type：",
       PLACEHOLDER: "Please select",
+      LABELDESC: "Describe",
+      LABELSYSFLAG: "Access identification",
+      FLAG_TENANT: "Tenant",
+      FLAG_SYSADMIN: "System admin",
+      FLAG_COMMON: "common",
     },
     /**
      * notice management
@@ -1562,6 +1571,66 @@ export const locale = {
       PUTONHOLD: "Deactivated",
       START: 'Start ',
       SUSPENDED: 'suspended',
+    },
+    /**
+     * 通知服务配置
+     */
+    NOTICESERVICES_MANAGEMENT: {
+      SMS: "Sms",
+      EMAIL:"Email",
+      PHONE:"Phone",
+      LABLE1:"Service",
+      ALY: "Alibaba Cloud",
+      LABLE2:"AccessKeyId",
+      LABLE3:"AccessKeySecret",
+      LABLE4:"Endpoint",
+      LABLE5:"SignName",
+      LABLE6:"SignatureName",
+      LABLE7:"TemplateCODE",
+      LABLE8:"open/close service",
+      LABLE9:"Iphone",
+      LABLE10:"message content",
+      LABLE11:"Email",
+      LABLE12:"Ip",
+      LABLE13:"Port",
+      LABLE14:"FromName",
+      LABLE15:"Password",
+      PLACEHOLDER:"Please select service",
+      PLACEHOLDER1:"Please enter AccessKeyId",
+      PLACEHOLDER2:"Please enter AccessKeySecret",
+      PLACEHOLDER3:"Please enter Endpoint",
+      PLACEHOLDER4:"Please enter SignName",
+      PLACEHOLDER5:"Please enter CODE",
+      PLACEHOLDER6:"Please enter phone",
+      PLACEHOLDER7:"Please enter content",
+      PLACEHOLDER8:"Please enter ip",
+      PLACEHOLDER9:"Please enter port",
+      PLACEHOLDER10:"Please enter fromName",
+      PLACEHOLDER11:"Please enter password",
+      PLACEHOLDER12:"Please enter email",
+      DEBUG:"Debug",
+      EDIT:"Edit",
+      SAVE:"Save",
+      SEND:"Send",
+    },
+    /**
+     * 通知记录
+     */
+    NOTICERECORD_MANAGEMENT: {
+      NOTICERECORD: "Notice Record",
+      PLACEHOLDER: {
+        RECORD_TYPE: "Record Type",
+        PLACEHOLDER: "Please enter recipient"
+      },
+      SENDTIME:"send time",
+      SENDCONTENT:"send content",
+      RECIPIENT:"recipient",
+      SENDRESUIT:"send result",
+      TYPE:"type",
+      AII:"All",
+      SMS: "Sms",
+      EMAIL:"Email",
+      PHONE:"Phone",
     },
   }
 };

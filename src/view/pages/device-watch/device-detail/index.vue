@@ -7,7 +7,7 @@
 
       <div class="left-tree">
         <el-input class="el-dark-input search-input" suffix-icon="el-icon-search" v-model="filterValue" autocomplete="off" :placeholder="$t('DEVICE_WATCH_DETAIL.SEARCH')"></el-input>
-        <el-tree class="el-dark-tree" ref="pluginTree" lazy
+        <el-tree class="el-dark-tree" ref="pluginTree" :lazy=true default-expand-all
                  :load="loadNode" :props="defaultProps" :filter-node-method="filterNode" 
                  @node-click="node => nodeClick(node, changeNode)"></el-tree>
       </div>
@@ -126,6 +126,9 @@ export default defineComponent({
         //border-color: #5867dd!important;
         border-radius: 10px;
         margin: 2px;
+      }
+      ::v-deep .el-icon-loading{
+        display: none !important;
       }
     }
 
