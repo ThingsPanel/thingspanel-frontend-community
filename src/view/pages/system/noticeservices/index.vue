@@ -337,24 +337,17 @@ export default {
   },
 
   methods: {
-   initData(){
+    initData(){
+      if(this.$refs.form !==undefined){
+        this.$refs['form'].clearValidate();
+      }
+      if(this.$refs.form2 !==undefined){
+        this.$refs['form2'].clearValidate();
+      }
     
-    if(this.$refs.form !==undefined){
-      this.$refs['form'].clearValidate();
-    }
-    if(this.$refs.form2 !==undefined){
-      this.$refs['form2'].clearValidate();
-    }
-   
-   },
-    // tab(v){
-    //   console.log(v,'vvv')
-    //   this.$refs.form.resetFields();
-    //   this.$refs.form2.resetFields();
+    },
 
-    //   this.set(this.activeTab,v)
-    // },
-
+    // 开关切换
     switchChange(value) {
       if(value===0){
         this.formObj.status=2
@@ -363,6 +356,7 @@ export default {
       }
     },
 
+    // 开关切换
     switchChange2(value) {
       if(value===0){
         this.objForm.status=2
@@ -370,13 +364,14 @@ export default {
         this.objForm.status=1
       }
     },
-
+    
     edit(){
       this.isDisabled=false
       this.isEdit=false
       this.isSave=true
     },
-
+    
+    // 短信保存
     save(){
       this.isDisabled=true
       this.isEdit=true
@@ -395,9 +390,8 @@ export default {
       })
     },
 
-
+    // 短信详情
     getSmsDetail(){
-   
       getDetail({notice_type:this.formObj.notice_type}).then(data => {
         if (data.data.code === 200) {
           let obj =data.data.data
@@ -412,8 +406,8 @@ export default {
       })
     },
 
+    // 邮箱详情
     getEmailDetail(){
-
       getDetail({notice_type:this.objForm.notice_type}).then(data => {
         if (data.data.code === 200) {
           let obj =data.data.data
@@ -439,6 +433,7 @@ export default {
       this.isSave2=true
     },
 
+    // 邮箱保存
     save2(){
       this.isDisabled2=true
       this.isEdit2=true
@@ -463,18 +458,19 @@ export default {
       this.dialogVisible2=true
     },
 
-
+    // 短信发送
     onSend(){
-      this.form.phone_number = Number(this.form.phone_number)
-      getSendSms(this.form).then(res => {
+      this.formModel.phone_number = Number(this.formModel.phone_number)
+      getSendSms(this.formModel).then(res => {
           if (res.data.code === 200) {
             this.$message({message: "发送成功", center: true, type: "success"})
           }
       })     
     },
 
+    // 邮箱发送
     onSend2(){
-      getSendEmail(this.form2).then(res => {
+      getSendEmail(this.formModel2).then(res => {
           if (res.data.code === 200) {
             this.$message({message: "发送成功", center: true, type: "success"})
           }

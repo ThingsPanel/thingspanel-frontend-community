@@ -59,13 +59,8 @@
           <p v-if="scope.row.notification_type == 2">邮箱</p>
         </template>
       </el-table-column>
-      
-
-     
     </el-table>
     <!-- 表 end -->
-
-
     <div class="text-right py-3">
       <el-pagination background layout="prev, pager, next" 
         :total="total" 
