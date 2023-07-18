@@ -18,7 +18,7 @@
            <span v-if="scope.row.notification_type == 2">邮箱通知</span>
            <span v-if="scope.row.notification_type == 3">webhook</span>
            <span v-if="scope.row.notification_type == 4">短信通知</span>
-           <span v-if="scope.row.notification_type == 5">电话通知</span>
+           <span v-if="scope.row.notification_type == 5">语音通知</span>
            <span v-if="scope.row.notification_type == 6">企业微信群机器人</span>
            <span v-if="scope.row.notification_type == 7">钉钉群机器人</span>
            <span v-if="scope.row.notification_type == 8">飞书群机器人</span>
