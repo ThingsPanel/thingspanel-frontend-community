@@ -185,6 +185,7 @@ export default {
       const id = item.id;
       const token = JwtService.getToken();
       const expiresTime = JwtService.getExpiresTime();
+      sessionStorage.setItem("thingspanel_token", token);
       const url = `/visual/editor?id=${id}&token=${token}&expiresTime=${expiresTime}`
       window.open(url, '_blank');
     },
