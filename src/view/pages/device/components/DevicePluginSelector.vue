@@ -114,6 +114,11 @@ export default {
      * @return {Array}
      */
     querySearch() {
+      if (!this.searchText) {
+        this.queryList = this.options;
+        this.getList();
+        return;
+      }
       const result = fuzzysort.go(this.searchText, this.options, { keys: ["name", "author"] });
       this.queryList = result.map(item => item.obj);
       this.getList();

@@ -27,9 +27,14 @@
       
       <el-table-column prop="status" :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.STATUS')">
         <template v-slot="scope">
+          <el-switch
+            v-model="scope.row.statusValue" @change="handleSetStatus(scope.row)"
+            :inactive-text="scope.row.statusValue ? $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SRARTED') : $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PUTONHOLD')"
+            active-text="">
+          </el-switch>
           <!-- <el-tag size="small">{{scope.row.status == 1 ? $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SRARTED') : $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PUTONHOLD')}}</el-tag> -->
-          <el-button size="mini" v-if="scope.row.status == 2" type="success" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PUTONHOLD")}}</el-button>
-          <el-button size="mini" v-if="scope.row.status == 1" type="yellow" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SRARTED")}}</el-button> 
+          <!-- <el-button size="mini" v-if="scope.row.status == 2" type="success" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PUTONHOLD")}}</el-button>
+          <el-button size="mini" v-if="scope.row.status == 1" type="yellow" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SRARTED")}}</el-button>  -->
         </template>
       </el-table-column>
       <el-table-column prop="actions" :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.OPERATION')" align="left" width="320px">
@@ -91,6 +96,9 @@
         getNotificationList(page).then(res => {
           if (res.status == 200) {
             this.tableData = res.data.data.data
+            this.tableData.forEach(item => {
+              item.statusValue = item.status == 1 ? true : false;
+            })
             this.data_count = res.data.data.total
             this.loading = false
           }
@@ -144,9 +152,8 @@
       // },
 
       handleSetStatus(item) {
-        let status = item.status === 2 ? 1 : 2;
-      
-        getStatus({id:item.id,switch:status}).then(res => {
+        let status = item.statusValue ? 1 : 2;
+        getStatus({id: item.id, switch: status}).then(res => {
           if (res.data.code === 200) {
             this.get_data()
             message_success(
@@ -162,5 +169,11 @@
   /deep/ .el-tag {
     border: 1px solid;
     background-color: transparent;
+  }
+  ::v-deep .el-switch__label {
+    color: #409EFF; 
+  }
+  ::v-deep span.el-switch__label.el-switch__label--left.is-active {
+    color: #C0CCDA;
   }
   </style>
