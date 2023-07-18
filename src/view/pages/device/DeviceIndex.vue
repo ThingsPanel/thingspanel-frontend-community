@@ -322,6 +322,10 @@ export default defineComponent({
           getDeviceIndex();
         });
       })
+      .catch(() => {
+        console.log("取消");
+        getDeviceIndex();
+      })
     }
 
     /**
