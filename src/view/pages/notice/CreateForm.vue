@@ -9,7 +9,7 @@
      height="60%"
      top="10vh"
  >
-   <el-form ref="CreateForm" label-position="left" label-width="120px" :model="form">
+   <el-form ref="CreateForm" label-position="left" label-width="140px" :model="form">
        <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.GROUPNAME')" required>
          <el-input ref="nameRef" v-model="form.group_name"></el-input>
        </el-form-item>
@@ -23,7 +23,7 @@
           <el-option label="成员通知" :value="1"></el-option>
           <el-option label="邮箱通知" :value="2"></el-option>
           <el-option label="短信通知" :value="4"></el-option>
-          <el-option label="电话通知" :value="5"></el-option>
+          <el-option label="语音通知" :value="5"></el-option>
           <el-option label="企业微信群机器人" :value="6"></el-option>
           <el-option label="钉钉群机器人" :value="7"></el-option>
           <el-option label="飞书群机器人" :value="8"></el-option>
@@ -42,11 +42,23 @@
         </el-form-item>
        </div>
 
-       <div v-if="noticeType==2 || noticeType==4 || noticeType==5">
+       <div v-if="noticeType==2">
         <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETEMAIL')" required>
           <el-input class="el-dark-input" type="textarea" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER6')" v-model="form.email"></el-input>
         </el-form-item>
        </div>
+
+       <div v-if="noticeType==4">
+        <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETSMS')" required>
+          <el-input class="el-dark-input" type="textarea" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER7')" v-model="form.message"></el-input>
+        </el-form-item>
+       </div>
+       <div v-if="noticeType==5">
+        <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETVOICE')" required>
+          <el-input class="el-dark-input" type="textarea" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER8')" v-model="form.phone"></el-input>
+        </el-form-item>
+       </div>
+
        <div v-if="noticeType==3 || noticeType==6 || noticeType==7 || noticeType==8">
         <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETURL')" required>
           <el-input v-model="form.webhook"></el-input>
@@ -112,6 +124,8 @@ export default {
 
               },
               email: '',
+              message:'',
+              phone:'',
               webhook: '',
             };
           }
@@ -137,6 +151,8 @@ export default {
     
       },
       email: '',
+      message:'',
+      phone:'',
       webhook: '',
     },
 
@@ -158,6 +174,8 @@ export default {
   },
   methods: {
     handleTypeChange(e){
+      console.log(e,'eeeeeeeee')
+      console.log(this.form.commands,'this.form.commands')
       this.form.notification_type=e
       this.noticeType=e
     },
@@ -192,16 +210,20 @@ export default {
     //详情
     getDetail(id){
       getNotificationDetail({id:id}).then(res => {
+        console.log(res,'res')
           if (res.data.code === 200) {
             let data = res.data.data
             if (data !== "{}") {
               let commands = this.getCommands(JSON.parse(JSON.stringify(data)))
               const tmp = JSON.parse(JSON.stringify(data));
+              console.log(tmp,'tmp')
               tmp.commands = commands;
               this.noticeType=tmp.notification_type
               const objData = JSON.parse(JSON.stringify(data));
               let obj= JSON.parse(objData.notification_config);
               tmp.email=obj.email
+              tmp.message=obj.message
+              tmp.phone=obj.phone
               tmp.webhook=obj.webhook
               this.form = tmp;
             }
@@ -210,7 +232,7 @@ export default {
     },
 
     getCommands(v) {
-      let cmds = v?.notification_members || [];
+      let cmds = v?.notification_members || [{ data: {}}];
       let commands = cmds.map(cmd => {
         return {
             data: {
@@ -242,8 +264,12 @@ export default {
               is_phone: cmd.data.is_phone,
             }
           })
-        }else if(params.notification_type===2 || params.notification_type===4 || params.notification_type===5){
+        }else if(params.notification_type===2){
           params.notification_config.email=this.form.email
+        }else if(params.notification_type===4){
+          params.notification_config.message=this.form.message
+        }else if(params.notification_type===5){
+          params.notification_config.phone=this.form.phone
         }else if(params.notification_type===3 || params.notification_type===6 || params.notification_type===7 || params.notification_type===8){
           params.notification_config.webhook=this.form.webhook
         }   
@@ -259,11 +285,18 @@ export default {
               is_phone: cmd.data.is_phone,
             }
           })
-        }else if(params.notification_type===2 || params.notification_type===4 || params.notification_type===5){
+        }else if(params.notification_type===2){
           objNum.email=this.form.email
           jsonData.email=objNum.email
           params.notification_config=jsonData
-
+        }else if(params.notification_type===4){
+          objNum.message=this.form.message
+          jsonData.message=objNum.message
+          params.notification_config=jsonData
+        }else if(params.notification_type===5){
+          objNum.phone=this.form.phone
+          jsonData.phone=objNum.phone
+          params.notification_config=jsonData
         }else if(params.notification_type===3 || params.notification_type===6 || params.notification_type===7 || params.notification_type===8){
           objNum.webhook=this.form.webhook
           jsonData.webhook=objNum.webhook
@@ -319,10 +352,25 @@ export default {
         return false;
       }
 
-      if(this.noticeType===2 || this.noticeType===4 || this.noticeType===5){
+      if(this.noticeType===2){
         if (!this.form.email || this.form.email === "") {
           // this.$refs.emailTextRef.focus();
           message_error(this.$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER5'));
+          return false;
+        }
+      }
+
+      if(this.noticeType===4){
+        if (!this.form.message || this.form.message === "") {
+          // this.$refs.emailTextRef.focus();
+          message_error(this.$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER10'));
+          return false;
+        }
+      }
+      if(this.noticeType===5){
+        if (!this.form.phone || this.form.phone === "") {
+          // this.$refs.emailTextRef.focus();
+          message_error(this.$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER10'));
           return false;
         }
       }
