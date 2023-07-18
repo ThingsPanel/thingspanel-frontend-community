@@ -26,7 +26,8 @@ import {
   Empty,
   TimeSelect,
   Progress,
-  Autocomplete
+  Autocomplete,
+  Popconfirm
 } from 'element-ui';
 
 // custom theme
@@ -63,8 +64,9 @@ GlobalComponents.install = (Vue) => {
   Vue.use(TimeSelect);
   Vue.use(Progress);
   Vue.use(Autocomplete);
+  Vue.use(Popconfirm);
 
-  Vue.use(VueClipboard)
+  Vue.use(VueClipboard);
   Vue.use(NumberChart);
   Vue.use(DashboardChart);
   Vue.use(CurveChart);

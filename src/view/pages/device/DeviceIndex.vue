@@ -255,6 +255,7 @@ import SubDeviceSettingForm from "./form/param/SubDeviceSettingForm";
 import ManagementGroupForm from "./form/group/ManagementGroupForm.vue"
 // 设备详情
 import DeviceConfigForm from "./form/config"
+import { MessageBox } from 'element-ui';
 
 export default defineComponent({
   name: "DeviceIndex",
@@ -303,16 +304,24 @@ export default defineComponent({
     } = useDeviceCUD(tableData)
 
     function deviceTypeChange(row) {
-      if (row.device_type == "1" || row.device_type == 1) {
-        row.protocol = "mqtt";
-      } else {
-        row.protocol = "MODBUS_TCP";
-      }
-      currentDeviceItem.value = row;
-      console.log("deviceTypeChange", row)
-      handleSave(row, () => {
-        getDeviceIndex();
-      });
+      
+      MessageBox.confirm("是否切换设备类型？", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      })
+      .then(() => {
+        if (row.device_type == "1" || row.device_type == 1) {
+          row.protocol = "mqtt";
+        } else {
+          row.protocol = "MODBUS_TCP";
+        }
+        currentDeviceItem.value = row;
+        console.log("deviceTypeChange", row)
+        handleSave(row, () => {
+          getDeviceIndex();
+        });
+      })
     }
 
     /**

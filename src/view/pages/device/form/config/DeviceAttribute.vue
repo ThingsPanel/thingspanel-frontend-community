@@ -1,6 +1,16 @@
 <template>
     <div style="margin-top: 20px">
         <el-form label-position="left" :model="formData" label-width="100px">
+            <el-form-item label="设备ID" >
+                <el-tooltip effect="dark" 
+                    :content="isCopy ? $t('DEVICE_MANAGEMENT.EDIT_PARAMETER.COPIED') : $t('DEVICE_MANAGEMENT.EDIT_PARAMETER.COPY')" 
+                    placement="right-start">
+                    <el-input style="width: 100%" readonly v-clipboard:copy="device.device"
+                        v-model="device.device" @click.native="handleCopy"></el-input>
+                </el-tooltip>
+                
+            </el-form-item>
+
             <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.SUBDEVICEADDRESS')" v-if="device.device_type == '3'">
                 <el-input style="width: 100%" :placeholder="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PLACEHOLDER1')"
                     v-model="formData.subDeviceAddress"></el-input>
@@ -58,6 +68,7 @@ export default {
         return {
             positionShow: false,
             locationArray: [],
+            isCopy: false
         }
     },
     computed: {
@@ -82,6 +93,9 @@ export default {
         showCheckLocation() {
             this.positionShow = true
         },
+        handleCopy() {
+            this.isCopy = true;
+        }
     }
 }
 </script>
