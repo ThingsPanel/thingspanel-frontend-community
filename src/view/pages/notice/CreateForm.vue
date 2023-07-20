@@ -1,75 +1,103 @@
 <template>
-  <el-dialog
-     :title="id ? $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.EDITTITLE') : $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.ADDTITLE')"
-     class="el-dark-dialog"
-     :close-on-click-modal="false"
-     :before-close="handleClose"
-     :visible.sync="dialogVisible"
-     width="60%"
-     height="60%"
-     top="10vh"
- >
-   <el-form ref="CreateForm" label-position="left" label-width="140px" :model="form">
-       <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.GROUPNAME')" required>
-         <el-input ref="nameRef" v-model="form.group_name"></el-input>
-       </el-form-item>
+  <div>
+    <el-dialog
+      :title="id ? $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.EDITTITLE') : $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.ADDTITLE')"
+      class="el-dark-dialog"
+      :close-on-click-modal="false"
+      :before-close="handleClose"
+      :visible.sync="dialogVisible"
+      width="60%"
+      height="60%"
+      top="10vh"
+    >
+      <el-form ref="CreateForm" label-position="left" label-width="140px" :model="form">
+          <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.GROUPNAME')" required>
+            <el-input ref="nameRef" v-model="form.group_name"></el-input>
+          </el-form-item>
 
-       <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.DESC')" required>
-         <el-input class="el-dark-input" ref="descRef" type="textarea" v-model="form.desc"></el-input>
-       </el-form-item>
-       
-       <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.METHOD')" required>
-        <el-select class="w-100" ref="selRef" v-model="form.notification_type" @change="handleTypeChange">
-          <el-option label="成员通知" :value="1"></el-option>
-          <el-option label="邮箱通知" :value="2"></el-option>
-          <el-option label="短信通知" :value="4"></el-option>
-          <el-option label="语音通知" :value="5"></el-option>
-          <el-option label="企业微信群机器人" :value="6"></el-option>
-          <el-option label="钉钉群机器人" :value="7"></el-option>
-          <el-option label="飞书群机器人" :value="8"></el-option>
-          <el-option label="webhook" :value="3"></el-option>
-        </el-select>
-       </el-form-item>
+          <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.DESC')" required>
+            <el-input class="el-dark-input" ref="descRef" type="textarea" v-model="form.desc"></el-input>
+          </el-form-item>
+          
+          <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.METHOD')" required>
+            <el-select class="w-100" ref="selRef" v-model="form.notification_type" @change="handleTypeChange">
+              <el-option label="成员通知" :value="1"></el-option>
+              <el-option label="邮箱通知" :value="2"></el-option>
+              <el-option label="短信通知" :value="4"></el-option>
+              <el-option label="语音通知" :value="5"></el-option>
+              <el-option label="企业微信群机器人" :value="6"></el-option>
+              <el-option label="钉钉群机器人" :value="7"></el-option>
+              <el-option label="飞书群机器人" :value="8"></el-option>
+              <el-option label="webhook" :value="3"></el-option>
+            </el-select>
+          </el-form-item>
 
-       <div v-if="noticeType==1">
-        <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETMETHOD')" required>
-          <div style="display:flex;margin-bottom: 10px;" v-for="(command, index) in form.commands" :key="index">
-            <DeviceTypeSelector ref="deviceTypeRef" style="" :data="command.data" :option="{operator: false}" @change="v=>handleCommandChange(command, v)"/>
-            <!-- 新增一行 -->
-            <el-button type="indigo" size="small" style="margin-left: auto" v-if="index == 0" @click="handleAddCommand(command)">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.ADD')}}</el-button>
-            <el-button type="danger" size="small" style="margin-left: auto" v-if="index > 0" @click="handleDeleteCommand(command)">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.DELETE')}}</el-button>
+          <div v-if="noticeType==1">
+            <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETMETHOD')" required>
+              <div style="display:flex;margin-bottom: 10px;" v-for="(command, index) in form.commands" :key="index">
+                <DeviceTypeSelector ref="deviceTypeRef" style="" :data="command.data" :option="{operator: false}" @change="v=>handleCommandChange(command, v)"/>
+                <!-- 新增一行 -->
+                <el-button type="indigo" size="small" style="margin-left: auto" v-if="index == 0" @click="handleAddCommand(command)">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.ADD')}}</el-button>
+                <el-button type="danger" size="small" style="margin-left: auto" v-if="index > 0" @click="handleDeleteCommand(command)">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.DELETE')}}</el-button>
+              </div>
+            </el-form-item>
           </div>
-        </el-form-item>
-       </div>
 
-       <div v-if="noticeType==2">
-        <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETEMAIL')" required>
-          <el-input class="el-dark-input" type="textarea" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER6')" v-model="form.email"></el-input>
-        </el-form-item>
-       </div>
+          <div v-if="noticeType==2">
+            <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETEMAIL')" required>
+              <el-input class="el-dark-input" type="textarea" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER6')" v-model="form.email"></el-input>
+            </el-form-item>
+          </div>
 
-       <div v-if="noticeType==4">
-        <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETSMS')" required>
-          <el-input class="el-dark-input" type="textarea" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER7')" v-model="form.message"></el-input>
-        </el-form-item>
-       </div>
-       <div v-if="noticeType==5">
-        <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETVOICE')" required>
-          <el-input class="el-dark-input" type="textarea" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER8')" v-model="form.phone"></el-input>
-        </el-form-item>
-       </div>
+          <div v-if="noticeType==4">
+            <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETSMS')" required>
+              <el-input class="el-dark-input" type="textarea" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER7')" v-model="form.message"></el-input>
+            </el-form-item>
+          </div>
+          <div v-if="noticeType==5">
+            <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETVOICE')" required>
+              <el-input class="el-dark-input" type="textarea" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER8')" v-model="form.phone"></el-input>
+            </el-form-item>
+          </div>
 
-       <div v-if="noticeType==3 || noticeType==6 || noticeType==7 || noticeType==8">
-        <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETURL')" required>
-          <el-input v-model="form.webhook"></el-input>
-        </el-form-item>
-       </div>
-       <div style="display: flex;justify-content: center">
-         <el-button class="cancel-button" type="cancel" size="medium" plain @click="cancelDialog">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.CANCEL') }}</el-button>
-         <el-button class="medium" type="save" size="medium" @click="onSubmit">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SAVE') }}</el-button>
-       </div>
-   </el-form>
- </el-dialog>
+          <div v-if="noticeType==3 || noticeType==6 || noticeType==7 || noticeType==8">
+            <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SETURL')" required>
+              <el-input v-model="form.webhook"></el-input>
+            </el-form-item>
+          </div>
+          <div style="display: flex;justify-content: center">
+            <el-button class="cancel-button" type="cancel" size="medium" plain @click="cancelDialog">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.CANCEL') }}</el-button>
+            <el-button class="medium" type="save" size="medium" @click="onSubmit">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SAVE') }}</el-button>
+          </div>
+      </el-form>
+    </el-dialog>
+    <div class="model">
+      <el-dialog class="el-dark-dialog el-dark-input"
+              :title="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.DEBUG')"
+              :visible.sync="dialogVisible"
+              :close-on-click-modal="false" :close-on-press-escape="false" :show-close="true" :append-to-body="true"
+              width="500px">
+              <div class="dialog-body">
+                <el-form
+                    ref="form3"
+                    :rules="rules3"
+                    label-position="left"
+                    :model="formModel"
+                    label-width="100px">
+                    <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE9')" prop="phone_number">
+                      <el-input v-model="formModel.phone_number"></el-input>
+                    </el-form-item>
+                    <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE10')" prop="content">
+                      <el-input type="textarea" v-model="formModel.content"></el-input>
+                    </el-form-item>
+                    <div style="display: flex;justify-content: center">
+                      <el-button class="medium" type="save" size="medium" @click="onSend">{{ $t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SEND') }}</el-button>
+                    </div>
+                </el-form>
+              </div>
+      </el-dialog>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -174,8 +202,6 @@ export default {
   },
   methods: {
     handleTypeChange(e){
-      console.log(e,'eeeeeeeee')
-      console.log(this.form.commands,'this.form.commands')
       this.form.notification_type=e
       this.noticeType=e
     },
@@ -216,7 +242,6 @@ export default {
             if (data !== "{}") {
               let commands = this.getCommands(JSON.parse(JSON.stringify(data)))
               const tmp = JSON.parse(JSON.stringify(data));
-              console.log(tmp,'tmp')
               tmp.commands = commands;
               this.noticeType=tmp.notification_type
               const objData = JSON.parse(JSON.stringify(data));
