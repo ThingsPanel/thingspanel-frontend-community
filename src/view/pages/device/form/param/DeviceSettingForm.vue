@@ -455,6 +455,7 @@ export default defineComponent({
     }
 
     function handleCopy(item) {
+      console.log(item,'item')
       let index = connectInfo.value.findIndex(it => it == item )
       connectInfo.value.forEach(it => {
         delete it.tooltip;

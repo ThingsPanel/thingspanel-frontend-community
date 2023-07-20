@@ -1804,6 +1804,7 @@ export const locale = {
     TITLE4: "你确定要删除吗？",
     EDIT: "编辑",
     DELETE:"删除",
+    VIEW:"查看秘钥",
     ADDTITLE:"新增",
     EDITTITLE:"编辑",
     FORMNAME:"名称",

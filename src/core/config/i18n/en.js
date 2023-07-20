@@ -1666,6 +1666,7 @@ export const locale = {
     TITLE4: "Are you sure you want to delete?",
     EDIT: "edit",
     DELETE:"delete",
+    VIEW:"view",
     ADDTITLE:"Add",
     EDITTITLE:"Edit",
     FORMNAME:"name",

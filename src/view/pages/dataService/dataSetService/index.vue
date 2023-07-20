@@ -13,8 +13,8 @@
         <el-input :placeholder="$t('DATASERVICE_MANAGEMENT.SEARCHPLACEHOLDER')" v-model="name"></el-input>
       </el-col>
       <el-col :span="4">
-        <el-select v-model="enable_flag" :placeholder="$t('DATASERVICE_MANAGEMENT.SEARCHPLACEHOLDER2')">
-          <el-option :label="$t('DATASERVICE_MANAGEMENT.SELECT')" :value="2"></el-option>
+        <el-select v-model="enable_flag" clearable :placeholder="$t('DATASERVICE_MANAGEMENT.SEARCHPLACEHOLDER2')">
+         
           <el-option :label="$t('DATASERVICE_MANAGEMENT.SELECT1')" :value="1"></el-option>
           <el-option :label="$t('DATASERVICE_MANAGEMENT.SELECT2')" :value="0"></el-option>
         </el-select>
@@ -59,6 +59,7 @@
         <template v-slot="scope">
           <!-- <el-button size="mini" v-if="scope.row.status == 2" type="success" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.START")}}</el-button>
           <el-button size="mini" v-if="scope.row.status == 1"  type="yellow" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SUSPENDED")}}</el-button> -->
+          <el-button size="mini" type="indigo" @click="handleView(scope.row.secret_key)">{{ $t("DATASERVICE_MANAGEMENT.VIEW") }}</el-button>
           <el-button class="mr-3" size="mini" type="indigo" @click="handleShowEdit(scope.row)">{{ $t("DATASERVICE_MANAGEMENT.EDIT")}}</el-button>
           <el-popconfirm :title="$t('DATASERVICE_MANAGEMENT.TITLE4')" @confirm="handle_del(scope.row.id)">
             <el-button slot="reference" size="mini" type="danger">{{ $t("DATASERVICE_MANAGEMENT.DELETE")}}</el-button>
@@ -78,6 +79,25 @@
     </div>
   
     <CreateForm :visible.sync="dialogVisible" :data="formData" @submit="get_data"/>
+
+    <el-dialog class="el-dark-dialog el-dark-input"
+      :title="$t('DATASERVICE_MANAGEMENT.VIEW')"
+      :visible.sync="dialogViewVisible"
+      :close-on-click-modal="false" :close-on-press-escape="false" :show-close="true" :append-to-body="true"
+      width="400px">
+      <div class="dialog-body">
+        <el-form
+            ref="form"
+            :rules="rules"
+            label-position="left"
+            :model="formModel"
+            label-width="100px">
+            <el-tooltip effect="dark" :content="formModel.tooltip ? formModel.tooltip : $t('DEVICE_MANAGEMENT.EDIT_PARAMETER.COPY')" placement="right-start">
+               <el-input readonly v-clipboard:copy="formModel.value" v-model="formModel.value" @focus="handleCopy(formModel)"></el-input>
+            </el-tooltip>    
+        </el-form>
+      </div>
+    </el-dialog>
   </div>
   </template>
   
@@ -96,6 +116,7 @@
     },
     data:()=>({
       dialogVisible:false,
+      dialogViewVisible:false,
       formData:'',
       loading: false,
       per_page: 10,
@@ -104,6 +125,12 @@
       enable_flag:"",
       data_count:2,
       tableData: [],
+      secret_key:"",
+      formModel:{
+       
+        tooltip:"",
+        value:"",
+      }
      
     }),
     created() {
@@ -158,6 +185,11 @@
         this.dialogVisible = true;
       },
 
+      handleView(data){
+        console.log(data)
+        this.formModel.value = data;
+        this.dialogViewVisible = true;
+      },
       getSearch(){
         this.get_data()
       },
@@ -191,6 +223,11 @@
           }
         })
       },
+
+      handleCopy(item) {
+        item.tooltip = this.$t('DEVICE_MANAGEMENT.EDIT_PARAMETER.COPIED');
+      },
+
 
       dateFormat(timestamp) {
         if (!timestamp) return "";
