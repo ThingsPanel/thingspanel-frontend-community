@@ -23,7 +23,7 @@
           </el-form-item>
           
           <el-form-item :label="$t('DATASERVICE_MANAGEMENT.FORMIPWHITELIST')">
-            <el-input class="el-dark-input" ref="ip_whitelistRef" type="textarea" v-model="form.ip_whitelist"></el-input>
+            <el-input class="el-dark-input" ref="ip_whitelistRef" :placeholder="$t('DATASERVICE_MANAGEMENT.PLACEHOLDER6')" type="textarea" v-model="form.ip_whitelist"></el-input>
           </el-form-item>
 
           <el-form-item :label="$t('DATASERVICE_MANAGEMENT.FORMINTERFACE_SUPPORT_FLAG')" required>
@@ -207,6 +207,18 @@ export default {
       if (!this.validate()) {
         return;
       }
+      if(this.form.ip_whitelist){
+       
+        var reg = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/
+        var valdata = this.form.ip_whitelist.split('|');
+        for(var i=0;i<valdata.length;i++){
+          if(reg.test(valdata[i])== false){
+            message_error(this.$t('DATASERVICE_MANAGEMENT.PLACEHOLDER7'));
+            return false;
+          }
+        }
+
+      }
       let params = this.form;
 
       if(!this.data){
@@ -273,7 +285,6 @@ export default {
         message_error(this.$t('DATASERVICE_MANAGEMENT.PLACEHOLDER2'));
         return false;
       }
-      console.log(this.form.api_flag,'this.form.api_flag')
       if (!this.form.api_flag || this.form.api_flag === "") {
         this.$refs.selRef.focus();
         message_error(this.$t('DATASERVICE_MANAGEMENT.PLACEHOLDER3'));

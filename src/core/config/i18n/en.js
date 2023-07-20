@@ -1686,5 +1686,7 @@ export const locale = {
     PLACEHOLDER3:"Please select Interface support flag",
     PLACEHOLDER4:"Please enter push data interval",
     PLACEHOLDER5:"Debug to fill in sql",
+    PLACEHOLDER6:"Multiple IPs separated by vertical lines",
+    PLACEHOLDER7:"ip address is illegal. Please re-enter it",
   }
 };

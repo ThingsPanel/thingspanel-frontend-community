@@ -1824,5 +1824,7 @@ export const locale = {
     PLACEHOLDER3:"请选择接口支持标志",
     PLACEHOLDER4:"请输入推送数据间隔",
     PLACEHOLDER5:"调试需填写sql",
+    PLACEHOLDER6:"多个ip用竖线分割",
+    PLACEHOLDER7:"ip不合法,请重新输入",
   }
 };
