@@ -27,26 +27,14 @@ export function getEdit(data) {
     })
 }
 
-
-// 通知组详情
-export function getNotificationDetail(data) {
-    return axios({
-        url: "/notification/detail",
-        method: "post",
-        data
-    })
-}
-
-
 // 数据服务配置删除
-export function getNotificationDelete(data) {
+export function getDelete(data) {
     return axios({
         url: "/tp_data_services_config/del",
         method: "post",
         data
     })
 }
-
 
 // 调试数据
 export function getSet(data) {

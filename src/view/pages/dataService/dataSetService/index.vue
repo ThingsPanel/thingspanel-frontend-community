@@ -104,7 +104,7 @@
   <script>
   import CreateForm from "@/view/pages/dataService/dataSetService/CreateForm.vue";
   import TableTitle from "@/components/common/TableTitle.vue"
-  import {getList,getStatus,getNotificationDelete} from "@/api/dataService";
+  import {getList,getEdit,getDelete} from "@/api/dataService";
 
   import "@/core/mixins/common"
   import { message_success } from '@/utils/helpers';
@@ -166,7 +166,7 @@
 
       //删除
       handle_del(id){
-        getNotificationDelete({id:id}).then(res => {
+        getDelete({id:id}).then(res => {
           if (res.data.code === 200) {
             this.get_data()
             this.$message({message: "删除成功", center: true, type: "success"})
@@ -214,12 +214,11 @@
       // },
 
       handleSetStatus(item) {
-        let status = item.statusValue ? 1 : 2;
-        getStatus({id: item.id, switch: status}).then(res => {
+        let status = item.statusValue ? "1" : "0";
+        getEdit({id: item.id, enable_flag: status}).then(res => {
           if (res.data.code === 200) {
             this.get_data()
-            message_success(
-              status === 1 ? this.$t("AUTOMATION.ENABLED") : this.$t("AUTOMATION.DISABLED"));
+            message_success(status === "1" ? this.$t("AUTOMATION.ENABLED") : this.$t("AUTOMATION.DISABLED"));
           }
         })
       },
