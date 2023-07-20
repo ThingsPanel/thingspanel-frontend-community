@@ -73,6 +73,11 @@
           "title": "COMMON.TRANSPOND",
           "icon": "menu-icon flaticon-upload-1",
           "link": "/transpond/index"
+        },
+        {
+          "title": "COMMON.DATAGATEWAY",
+          "icon": "menu-icon flaticon-upload-1",
+          "link": "/data-gateway/index"
         }
       ]
     },

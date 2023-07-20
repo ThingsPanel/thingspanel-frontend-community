@@ -109,6 +109,14 @@
           "title": "COMMON.TRANSPOND",
           "icon": "menu-icon flaticon-upload-1",
           "type": "1"
+        },
+        {
+          "path": "/data-gateway/index",
+          "name": "DataGateway",
+          "component": "/pages/data-gateway/index.vue",
+          "title": "COMMON.DATAGATEWAY",
+          "icon": "menu-icon flaticon-upload-1",
+          "type": "1"
         }
       ]
     },
