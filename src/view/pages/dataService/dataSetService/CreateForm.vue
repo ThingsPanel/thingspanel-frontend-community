@@ -40,7 +40,28 @@
           <el-form-item :label="$t('DATASERVICE_MANAGEMENT.FORMDESC')">
             <el-input class="el-dark-input" ref="remarkRef" type="textarea" v-model="form.remark"></el-input>
           </el-form-item>
-          
+
+          <el-form-item>
+            <el-form-item :label="$t('DATASERVICE_MANAGEMENT.FORMSQLWRITiINGASSISTANCE')">
+              <el-select class="w-100" ref="sqlIdRef" v-model="form.table_name" @change="handleSqlChange">
+                <el-option v-for="item in sqlList" :key="item.table_name" :label="item.table_name" :value="item.table_name"></el-option>
+              </el-select>
+            </el-form-item> 
+          </el-form-item>
+          <!-- <el-form-item :label="$t('DATASERVICE_MANAGEMENT.FORMSQLWRITiINGASSISTANCE')">
+            <el-select class="w-100" ref="sqlIdRef" v-model="form.table_name" @change="handleSqlChange">
+              <el-option v-for="item in sqlList" :key="item.table_name" :label="item.table_name" :value="item.table_name"></el-option>
+            </el-select>
+          </el-form-item> -->
+
+          <el-form-item>
+            <el-table :data="tableData">
+              <el-table-column prop="field" :label="$t('DATASERVICE_MANAGEMENT.TABLE')"></el-table-column>
+              <el-table-column prop="type" :label="$t('DATASERVICE_MANAGEMENT.TABLE1')"></el-table-column>
+              <el-table-column prop="comment" :label="$t('DATASERVICE_MANAGEMENT.TABLE2')"></el-table-column>
+            </el-table>
+          </el-form-item>
+
           <el-form-item :label="$t('DATASERVICE_MANAGEMENT.FORMSQL')">
             <el-input class="el-dark-input" ref="sqlRef" type="textarea" v-model="form.data_sql"></el-input>
           </el-form-item>
@@ -84,9 +105,7 @@
 
 <script>
 import { message_error } from '@/utils/helpers';
-
-import {getAdd,getEdit,getSet} from "@/api/dataService";
-
+import {getAdd,getEdit,getSet,getSqlList,getSqlTabelList} from "@/api/dataService";
 export default {
   name: "CreateForm",
   components: {  },
@@ -154,7 +173,9 @@ export default {
     formModel:{
       content:"",
     },
-    disabled:false
+    disabled:false,
+    sqlList:[],
+    tableData:[],
    //rules: {
     //  group_name: [
     //    {required, message: i18n.t('RULE_ENGINE.DATA_FORWARDINGNEW.PLACEHOLDER')}
@@ -168,31 +189,53 @@ export default {
    //},
   }),
   created() {
-
+    this.getSql()
 
   },
   methods: {
     handleTypeChange(e){
       this.form.api_flag=e
       this.noticeType=e
-     
     },
+
+    getSql(){
+      getSqlList({}).then(res => {
+          if (res.status == 200) {
+            this.sqlList = res.data.data
+            // this.tableData.forEach(item => {
+            //   // let enable_flag= item.enable_flag
+            //   // parseInt(enable_flag) == 1 ? true : false;
+            //   item.statusValue = item.enable_flag == 1 ? true : false;
+            // })
+            // this.data_count = res.data.data.total
+            // this.loading = false
+          }
+      })
+    },
+
+
+    handleSqlChange(e){
+      getSqlTabelList({table_name:e}).then(res => {
+          if (res.status == 200) {
+            this.tableData = res.data.data
+           
+          }
+      })
+    },
+
     onBtn(){
       if(this.form.data_sql==''){
        message_error(this.$t('DATASERVICE_MANAGEMENT.PLACEHOLDER5'));
        return
       }else{
-      
         this.dialogVisible2=true
         getSet({data_sql:this.form.data_sql}).then(res => {
           if (res.data.code === 200) {
              let params = JSON.stringify(res.data.data)
              this.formModel.content=params
-             console.log( params)
           }
         })
       }
-     
     },
 
     //详情
@@ -208,7 +251,6 @@ export default {
         return;
       }
       if(this.form.ip_whitelist){
-       
         var reg = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/
         var valdata = this.form.ip_whitelist.split('|');
         for(var i=0;i<valdata.length;i++){
@@ -217,10 +259,8 @@ export default {
             return false;
           }
         }
-
       }
       let params = this.form;
-
       if(!this.data){
         if(params.api_flag==="1"){
           params.time_interval=Number(this.form.time_interval)
@@ -228,7 +268,6 @@ export default {
           params.time_interval=0
         }
       }else{
-      
         if(params.api_flag==="1"){
           params.time_interval=Number(this.form.time_interval)
         }
@@ -265,13 +304,8 @@ export default {
       this.dialogVisible = false;
     },
 
-
-
     onSend(){
-
       this.dialogVisible2=false
-
-      
     },
 
     validate() {
@@ -298,17 +332,6 @@ export default {
         }
       }
 
-
-
-      // if(this.noticeType===4){
-      //   if (!this.form.message || this.form.message === "") {
-      //     // this.$refs.emailTextRef.focus();
-      //     message_error(this.$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.PLACEHOLDER10'));
-      //     return false;
-      //   }
-      // }
-
-    
       return true;
     }
   }

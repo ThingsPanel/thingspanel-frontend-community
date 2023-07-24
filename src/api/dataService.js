@@ -53,3 +53,20 @@ export function getStatus(data) {
         data
     })
 }
+
+// 获取sql下拉列表
+export function getSqlList(data) {
+    return axios({
+        url: "/tp_data_services_config/tptable",
+        method: "post",
+        data
+    })
+}
+// 获取sql表格列表
+export function getSqlTabelList(data) {
+    return axios({
+        url: "/tp_data_services_config/tptablefield",
+        method: "post",
+        data
+    })
+}
