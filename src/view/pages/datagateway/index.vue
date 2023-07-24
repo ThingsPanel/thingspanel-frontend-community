@@ -328,7 +328,6 @@ export default {
       this.formId = item.id;
       this.formData = item;
       this.dataGatewayDialogVisible = true;
-      console.log(this);
     },
     //编辑接口访问范围对话框
     handleShowApiDialog(item) {

@@ -51,6 +51,12 @@
         v-loading="loading"
         @selection-change="handleSelectionChange"
       >
+      <!-- <el-table
+        ref="formTable"
+        :data="listData"
+        v-loading="loading"
+        @selection-change="handleSelectionChange"
+      > -->
         <el-table-column
           type="selection"
           :label="$t('RULE_ENGINE.DATA_GATEWAY.INTERFACE_NAME')"
@@ -78,7 +84,7 @@
         ></el-table-column>
       </el-table>
 
-      <div class="text-right py-3">
+      <!-- <div class="text-right py-3">
         <el-pagination
           background
           layout="total, prev, pager, next"
@@ -87,7 +93,7 @@
           :page-size="page_size"
           @current-change="page_change"
         ></el-pagination>
-      </div>
+      </div> -->
 
       <div>
         <div style="width: 140px">已选择{{ this.choosedCount }}个接口</div>
@@ -153,10 +159,11 @@ export default {
         );
       }
       this.page = 1;
-      this.filteredData = data.slice(
-        (this.page - 1) * this.page_size,
-        this.page * this.page_size
-      );
+      // this.filteredData = data.slice(
+      //   (this.page - 1) * this.page_size,
+      //   this.page * this.page_size
+      // );
+      this.filteredData = data;
       this.data_count = data.length;
     },
     visible: {
@@ -196,27 +203,24 @@ export default {
     },
   }),
   methods: {
-    page_change(val) {
-      this.page = val;
-      console.log("page_change: ");
-      console.log(this.page);
+    // page_change(val) {
+    //   this.page = val;
 
-      let data = this.listData;
-      if (this.keyword) {
-        data = data.filter((item) =>
-          item.interface_name.includes(this.keyword)
-        );
-      }
-      this.filteredData = data.slice(
-        (this.page - 1) * this.page_size,
-        this.page * this.page_size
-      );
-      this.data_count = data.length;
-    },
+    //   let data = this.listData;
+    //   if (this.keyword) {
+    //     data = data.filter((item) =>
+    //       item.interface_name.includes(this.keyword)
+    //     );
+    //   }
+    //   this.filteredData = data.slice(
+    //     (this.page - 1) * this.page_size,
+    //     this.page * this.page_size
+    //   );
+    //   this.data_count = data.length;
+    // },
     get_interface_data() {
       getApiInterfaceList(this.id).then((res) => {
         if (res.data.code == 200) {
-          console.log(res);
           // this.listData = res.data.data.data;
           // this.data_count = res.data.data.total;
           this.listData = res.data.data;
@@ -230,10 +234,25 @@ export default {
             });
             this.choosedCount = this.choosedIdList.length;
           }
-          this.filteredData = this.listData.slice(
-            (this.page - 1) * this.page_size,
-            this.page * this.page_size
-          );
+          this.filteredData = this.listData;
+          // this.filteredData = this.listData.slice(
+          //   (this.page - 1) * this.page_size,
+          //   this.page * this.page_size
+          // );
+          // this.filteredData.forEach((row) => {
+          console.log(this.$refs.formTable);
+          this.listData.forEach((row) => {
+          // this.filteredData.map((row) => {
+            console.log("choose");
+
+            if (row.is_add === 1) {
+              this.$refs.formTable.toggleRowSelection(row, true);
+              console.log("choosed");
+              console.log(row);
+            }
+          });
+
+          this.SelectionChange();
           this.loading = false;
         }
       });
@@ -246,8 +265,8 @@ export default {
       };
 
       updateOpenApiInterfaceRelationship(params).then((res) => {
-        console.log(params)
-        console.log(res)
+        console.log(params);
+        console.log(res);
         if (res.data.code == 200) {
           this.$message({ message: "变更成功", center: true, type: "success" });
         }
@@ -275,8 +294,6 @@ export default {
         this.choosedIdList.push(element.id);
       });
       this.choosedCount = this.choosedIdList.length;
-      console.log(this.choosedIdList);
-      console.log(this.choosedCount);
     },
     cancelDialog() {
       this.page = 1;
@@ -289,9 +306,10 @@ export default {
     SelectionChange() {
       this.$nextTick(() => {
         let table = this.filteredData;
+        // let table = this.listData;
         // 从后台获取到的数据
         table.forEach((row) => {
-          if (row.isAdd == "1")
+          if (row.is_add === 1)
             this.$refs.formTable.toggleRowSelection(row, true);
         });
       });

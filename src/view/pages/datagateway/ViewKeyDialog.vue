@@ -115,8 +115,6 @@ export default {
           // 编辑
           this.page = 1;
           this.get_interface_data();
-          console.log(this.listData);
-          console.log(this.filteredData);
           this.data_count = this.filteredData.length;
         }
       },

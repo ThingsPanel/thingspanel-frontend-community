@@ -232,8 +232,6 @@ export default {
   methods: {
     get_device_data() {
       // this.loading = true;
-      console.log("get_device_data");
-      console.log(this.formData);
       let data = {
         current_page: this.page,
         per_page: this.page_size,
@@ -333,7 +331,6 @@ export default {
      */
     getProjectChoice() {
       business_index({ limit: 100, page: 1 }).then(({ data }) => {
-        console.log(data);
         if (data.code == 200) {
           this.projectOptions = data.data ? data.data.data : [];
         }

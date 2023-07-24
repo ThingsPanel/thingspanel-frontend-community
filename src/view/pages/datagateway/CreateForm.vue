@@ -253,7 +253,6 @@ export default {
     },
     // 数据格式校验
     validate() {
-      console.log(this.form);
       let mailReg =
         /^(?:(?:^|\|)(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])(?:\.(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])){3})+$/;
       if (!this.form.name || this.form.name == "") {
