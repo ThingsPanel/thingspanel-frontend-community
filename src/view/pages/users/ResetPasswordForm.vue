@@ -1,18 +1,18 @@
 <template>
   <el-dialog class="el-dark-dialog el-dark-input" :visible.sync="showDialog" width="30%"
     :title="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.CHANGEPASSWORD')" :close-on-click-modal="false">
-    <el-form ref="resetPasswordFormRef" label-width="80px" label-position="left" :model="formData" :rules="rules"
+    <el-form ref="resetPasswordFormRef" label-width="120px" label-position="left" :model="formData" :rules="rules"
       hide-required-asterisk>
 
-      <el-form-item label="原密码" prop="old_password">
+      <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.OLD_PASSWORD')" prop="old_password">
         <el-input size="medium" v-model="formData.old_password" show-password></el-input>
       </el-form-item>
 
-      <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PASSWORD')" prop="password">
+      <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.NEW_PASSWORDD')" prop="password">
         <el-input size="medium" v-model="formData.password" show-password></el-input>
       </el-form-item>
 
-      <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.CONPASSWORD')" prop="password_confirmation">
+      <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.CONFIRM_PASSWORD')" prop="password_confirmation">
         <el-input size="medium" v-model="formData.password_confirmation" show-password></el-input>
       </el-form-item>
 
