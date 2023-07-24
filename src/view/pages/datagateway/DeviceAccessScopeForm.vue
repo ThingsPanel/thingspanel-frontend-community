@@ -12,57 +12,59 @@
       <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
         <el-col :span="24">
           <el-select
-            style="width: 20%"
+            style="width: 20%; margin-right: 10px"
             class="el-dark-input"
+            v-model="formData.isAdd"
+            value-key="value"
             placeholder="未添加"
+            @change="handleIsAddChange"
           >
-            <!-- <el-option
-              class="el-dark"
-              value="-1"
-              style="display: none;"
-            ></el-option>
             <el-option
-              class="el-dark"
-              v-for="item in deviceAccessScopeChoice"
-              :key="item.value"
-              :label="item.name"
-              :value="item.value"
-            ></el-option> -->
+              v-for="option in isAddOptions"
+              :key="option.value"
+              :label="option.name"
+              :value="option"
+            ></el-option>
           </el-select>
 
+          <!-- 项目列表 -->
           <el-select
-            v-model="project_choice"
-            style="width: 20%"
-            class="el-dark-input"
-            placeholder="全部项目"
+            ref="projectRef"
+            style="width: 20%; margin-right: 10px"
+            :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_PROJECT')"
+            v-model="formData.projectId"
+            clearable
+            value-key="id"
+            @change="handleProjectChange"
           >
-            <el-option class="el-dark" value="智慧农业"></el-option>
-            <!-- <el-option
-              class="el-dark"
-              v-for="item in deviceAccessScopeChoice"
-              :key="item.value"
-              :label="item.name"
-              :value="item.value"
-            ></el-option> -->
+            <el-option
+              v-for="option in projectOptions"
+              :key="option.id"
+              :label="option.name"
+              :value="option.id"
+            ></el-option>
           </el-select>
 
+          <!-- 分组列表 -->
           <el-select
-            style="width: 20%"
-            class="el-dark-input"
-            placeholder="全部分组"
+            ref="groupRef"
+            style="width: 20%; margin-right: 10px"
+            clearable
+            v-model="formData.groupId"
+            :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_GROUP')"
+            @change="handleGroupChange"
           >
-            <!-- <el-option
-              class="el-dark"
-              v-for="item in deviceAccessScopeChoice"
-              :key="item.value"
-              :label="item.name"
-              :value="item.value"
-            ></el-option> -->
+            <el-option
+              v-for="(option, index) in groupOptions"
+              :key="index"
+              :label="option.device_group"
+              :value="option.id"
+            ></el-option>
           </el-select>
         </el-col>
       </el-row>
 
-      <el-table :data="displayData" v-loading="loading">
+      <el-table :data="listData" v-loading="loading">
         <el-table-column
           :label="$t('RULE_ENGINE.DATA_GATEWAY.DEVICE_NAME')"
           prop="device_name"
@@ -70,12 +72,12 @@
 
         <el-table-column
           :label="$t('RULE_ENGINE.DATA_GATEWAY.PROJECT_NAME')"
-          prop="project_name"
+          prop="business_name"
         ></el-table-column>
 
         <el-table-column
           :label="$t('RULE_ENGINE.DATA_GATEWAY.GROUP_NAME')"
-          prop="group_name"
+          prop="asset_name"
         ></el-table-column>
 
         <el-table-column
@@ -88,8 +90,16 @@
             <el-button
               size="mini"
               type="indigo"
-              @click="handleSetStatus(scope.row)"
+              v-if="formData.isAdd.value == 0"
+              @click="handleAddRelationship(scope.row)"
               >{{ $t("RULE_ENGINE.DATA_GATEWAY.ADD") }}</el-button
+            >
+            <el-button
+              size="mini"
+              type="indigo"
+              v-if="formData.isAdd.value == 1"
+              @click="handleDeleteRelationship(scope.row)"
+              >{{ $t("RULE_ENGINE.DATA_GATEWAY.DELETE") }}</el-button
             >
           </template>
         </el-table-column>
@@ -116,6 +126,15 @@
 </template>
 
 <script>
+import {
+  createOpenApiDeviceRelationship,
+  deleteOpenApiDeviceRelationship,
+  getDeviceList,
+} from "@/api/dataGateway";
+import { business_index } from "@/api/business";
+import { device_group_drop } from "@/api/asset";
+import data from "../../../../packages/device_plugin/common/table/data";
+
 export default {
   name: "DeviceAccessScopeForm",
   props: {
@@ -124,6 +143,20 @@ export default {
     visible: {
       type: [Boolean],
       default: false,
+    },
+    initForm: {
+      isAdd: { name: "未添加", value: 0 },
+      projectId: "",
+      groupId: "",
+      deviceId: "",
+      device: {},
+      state: {
+        duration: {},
+        operator: {
+          symbol: "",
+          value: "",
+        },
+      },
     },
   },
   computed: {
@@ -137,28 +170,16 @@ export default {
     },
   },
   watch: {
-    filteredData() {
-      this.displayData = this.filteredData.slice(
-        (this.page - 1) * this.page_size,
-        this.page * this.page_size
-      );
-    },
-    project_choice() {
-      let data = this.filteredData;
-      if (this.project_choice) {
-        data = data.filter((item) => item.project_name == this.project_choice);
-      }
-      this.page = 1;
-      this.filteredData = data;
-      this.data_count = data.length;
-    },
     visible: {
       handler(newValue) {
         if (newValue && this.id) {
+          this.loading = true;
+
           this.page = 1;
           this.get_device_data();
-          this.filteredData = this.listData;
           this.data_count = this.listData.length;
+
+          this.getProjectChoice();
         }
       },
     },
@@ -176,98 +197,190 @@ export default {
       { name: "全部", value: 1 },
       { name: "部分", value: 2 },
     ],
+    // 是否添加
+    isAddOptions: [
+      { name: "未添加", value: 0 },
+      { name: "已添加", value: 1 },
+    ],
+    // 项目列表
+    projectOptions: [],
+    // 分组列表
+    groupOptions: [],
     // 列表数据
     listData: [],
-    filteredData: [],
-    displayData: [],
+    // 列表数据
+    addedDeviceIdList: [],
+    loading: false,
     page: 0,
     page_size: 5,
     data_count: 0,
-    project_choice: "",
-    form: {
-      id: "",
-      name: "",
-      app_key: "",
-      signature_mode: "",
-      ip_whitelist: "",
-      device_access_scope: 0,
-      api_access_scope: 0,
-      created_at: 0,
-      tenant_id: "",
-      description: "",
+    formData: {
+      isAdd: { name: "未添加", value: 0 },
+      projectId: "",
+      groupId: "",
+      deviceId: "",
+      device: {},
+      state: {
+        duration: {},
+        operator: {
+          symbol: "",
+          value: "",
+        },
+      },
     },
   }),
   methods: {
     get_device_data() {
-      this.listData = [
-        {
-          device_name: "温湿度1",
-          project_name: "智慧农业",
-          group_name: "xxx",
-        },
-        {
-          device_name: "温湿度2",
-          project_name: "智慧农业",
-          group_name: "xxx",
-        },
-        {
-          device_name: "温湿度222",
-          project_name: "智慧农业",
-          group_name: "xxx",
-        },
-        {
-          device_name: "温湿度3",
-          project_name: "智慧农业",
-          group_name: "xxx",
-        },
-        {
-          device_name: "温湿度4",
-          project_name: "智慧农业",
-          group_name: "xxx",
-        },
-        {
-          device_name: "温湿度5",
-          project_name: "智慧农业",
-          group_name: "xxx",
-        },
-        {
-          device_name: "温湿度611",
-          project_name: "智慧农业",
-          group_name: "xxx",
-        },
-        {
-          device_name: "温湿度611",
-          project_name: "智慧农业44",
-          group_name: "xxx",
-        },
-        {
-          device_name: "温湿度22",
-          project_name: "智慧农业44",
-          group_name: "xxx",
-        },
-      ];
+      // this.loading = true;
+      console.log("get_device_data");
+      console.log(this.formData);
+      let data = {
+        current_page: this.page,
+        per_page: this.page_size,
+        tp_openapi_auth_id: this.id,
+        is_add: this.formData.isAdd.value,
+        business_id: this.formData.projectId,
+        asset_id: this.formData.groupId,
+      };
+      getDeviceList(data).then((res) => {
+        if (res.data.code == 200) {
+          this.listData = res.data.data.data;
+          this.data_count = res.data.data.total;
+
+          this.loading = false;
+        }
+      });
     },
     page_change(val) {
+      this.loading = true;
       this.page = val;
-
-      this.displayData = this.filteredData.slice(
-        (this.page - 1) * this.page_size,
-        this.page * this.page_size
-      );
+      this.get_device_data();
     },
     handleClose() {
       this.page = 1;
-      this.project_choice = "";
-      this.form = {};
+      this.formData = {
+        isAdd: { name: "未添加", value: 0 },
+        projectId: "",
+        groupId: "",
+        deviceId: "",
+        device: {},
+        state: {
+          duration: {},
+          operator: {
+            symbol: "",
+            value: "",
+          },
+        },
+      };
       this.listData = [];
       this.apiDialogVisible = false;
     },
     cancelDialog() {
       this.page = 1;
-      this.project_choice = "";
-      this.form = {};
+      this.formData = {
+        isAdd: { name: "未添加", value: 0 },
+        projectId: "",
+        groupId: "",
+        deviceId: "",
+        device: {},
+        state: {
+          duration: {},
+          operator: {
+            symbol: "",
+            value: "",
+          },
+        },
+      };
       this.listData = [];
       this.apiDialogVisible = false;
+    },
+
+    /**
+     * 删除绑定关系
+     * @param v
+     */
+    handleDeleteRelationship(v) {
+      this.loading = true;
+      let params = { tp_openapi_auth_id: this.id, device_id: v.device_id };
+      deleteOpenApiDeviceRelationship(params).then(({ data }) => {
+        if (data.code == 200) {
+          this.$message({ message: "删除成功", center: true, type: "success" });
+        }
+        this.loading = false;
+      });
+      this.get_device_data();
+    },
+
+    /**
+     * 添加绑定关系
+     * @param v
+     */
+    handleAddRelationship(v) {
+      this.loading = true;
+      let params = { tp_openapi_auth_id: this.id, device_id: v.device_id };
+      createOpenApiDeviceRelationship(params).then(({ data }) => {
+        if (data.code == 200) {
+          this.$message({ message: "添加成功", center: true, type: "success" });
+        }
+        this.loading = false;
+        this.get_device_data();
+      });
+    },
+
+    /**
+     * 选择项目
+     * @param v
+     */
+    getProjectChoice() {
+      business_index({ limit: 100, page: 1 }).then(({ data }) => {
+        console.log(data);
+        if (data.code == 200) {
+          this.projectOptions = data.data ? data.data.data : [];
+        }
+      });
+    },
+
+    /**
+     * 获取设备分组
+     * @param id  项目id
+     */
+    getGroupList(id) {
+      device_group_drop({ business_id: id }).then(({ data }) => {
+        if (data.code == 200) {
+          this.groupOptions = data?.data || [];
+        }
+      });
+    },
+    /**
+     * 选择项目
+     * @param v
+     */
+    handleProjectChange(v) {
+      this.loading = true;
+      this.formData.projectId = v;
+      this.formData.groupId = "";
+      this.get_device_data();
+      if (v) {
+        this.getGroupList(v);
+      }
+    },
+    /**
+     * 选择分组
+     * @param v
+     */
+    handleGroupChange(v) {
+      this.loading = true;
+      this.formData.groupId = v;
+      this.get_device_data();
+    },
+    /**
+     * 选择是否添加
+     * @param v
+     */
+    handleIsAddChange(v) {
+      this.loading = true;
+      this.formData.isAdd = v;
+      this.get_device_data();
     },
     validate() {
       return true;

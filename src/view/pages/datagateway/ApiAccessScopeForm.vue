@@ -45,16 +45,21 @@
         </el-col>
       </el-row>
 
-      <el-table :data="filteredData" v-loading="loading">
+      <el-table
+        ref="formTable"
+        :data="filteredData"
+        v-loading="loading"
+        @selection-change="handleSelectionChange"
+      >
         <el-table-column
           type="selection"
           :label="$t('RULE_ENGINE.DATA_GATEWAY.INTERFACE_NAME')"
-          prop="interface_name"
+          prop="id"
         ></el-table-column>
 
         <el-table-column
           :label="$t('RULE_ENGINE.DATA_GATEWAY.INTERFACE_NAME')"
-          prop="interface_name"
+          prop="name"
         ></el-table-column>
 
         <el-table-column
@@ -64,12 +69,12 @@
 
         <el-table-column
           :label="$t('RULE_ENGINE.DATA_GATEWAY.INTERFACE_TYPE')"
-          prop="interface_type"
+          prop="api_type"
         ></el-table-column>
 
         <el-table-column
           :label="$t('RULE_ENGINE.DATA_GATEWAY.INTERFACE_DESCRIPTION')"
-          prop="interface_description"
+          prop="remark"
         ></el-table-column>
       </el-table>
 
@@ -85,15 +90,35 @@
       </div>
 
       <div>
-        <el-button size="mini" type="indigo" @click="handleClose">{{
-          $t("RULE_ENGINE.DATA_GATEWAY.CLOSE")
-        }}</el-button>
+        <div style="width: 140px">已选择{{ this.choosedCount }}个接口</div>
+        <div style="text-align: right">
+          <el-button
+            class="cancel-button"
+            type="cancel"
+            size="medium"
+            plain
+            @click="handleClose"
+            >{{ $t("RULE_ENGINE.DATA_GATEWAY.CANCEL") }}</el-button
+          >
+          <el-button
+            style="margin-left: 10px"
+            class="medium"
+            type="save"
+            size="medium"
+            @click="handleSubmit"
+            >{{ $t("RULE_ENGINE.DATA_GATEWAY.SUBMIT") }}</el-button
+          >
+        </div>
       </div>
     </div>
   </el-dialog>
 </template>
 
 <script>
+import {
+  updateOpenApiInterfaceRelationship,
+  getApiInterfaceList,
+} from "@/api/dataGateway";
 export default {
   name: "ApiAccessScopeForm",
   props: {
@@ -105,6 +130,9 @@ export default {
       type: [Boolean],
       default: false,
     },
+  },
+  mounted() {
+    this.SelectionChange();
   },
   computed: {
     apiDialogVisible: {
@@ -134,14 +162,10 @@ export default {
     visible: {
       handler(newValue) {
         if (newValue && this.id) {
-          // 编辑
+          this.loading = true;
           this.page = 1;
           this.get_interface_data();
-          this.filteredData = this.listData.slice(
-            (this.page - 1) * this.page_size,
-            this.page * this.page_size
-          );
-          this.data_count = this.listData.length;
+          this.data_count = this.filteredData.length;
         }
       },
     },
@@ -150,6 +174,11 @@ export default {
     page: 0,
     page_size: 5,
     data_count: 0,
+    // 已选择数量
+    choosedCount: 0,
+    // 已选择id列表
+    choosedIdList: [],
+    loading: false,
     // 列表数据
     listData: [],
     filteredData: [],
@@ -185,62 +214,51 @@ export default {
       this.data_count = data.length;
     },
     get_interface_data() {
-      this.listData = [
-        {
-          interface_name: "查看",
-          url: "asd/asdasd",
-          interface_type: "温湿度",
-          interface_description: "温湿度",
-        },
-        {
-          interface_name: "查看4",
-          url: "asd/asdasd111",
-          interface_type: "温湿度",
-          interface_description: "温湿度",
-        },
-        {
-          interface_name: "查看44",
-          url: "asd/asdasd111",
-          interface_type: "温湿度",
-          interface_description: "温湿度",
-        },
-        {
-          interface_name: "查看4444",
-          url: "asd/asdasd111",
-          interface_type: "温湿度",
-          interface_description: "温湿度",
-        },
-        {
-          interface_name: "查看411",
-          url: "asd/asdasd111",
-          interface_type: "温湿度",
-          interface_description: "温湿度",
-        },
-        {
-          interface_name: "查看412311",
-          url: "asd/asdasd111",
-          interface_type: "温湿度",
-          interface_description: "温湿度",
-        },
-        {
-          interface_name: "查看412311",
-          url: "asd/asdasd111",
-          interface_type: "温湿度",
-          interface_description: "温湿度",
-        },
-        {
-          interface_name: "查看4",
-          url: "asd/asdasd111",
-          interface_type: "温湿度",
-          interface_description: "温湿度",
-        },
-        {
-          interface_name: "查看5",
-          url: "asd/asdasd222",
-          interface_type: "温湿度",
-          interface_description: "温湿度",
-        },
-      ];
+      getApiInterfaceList(this.id).then((res) => {
+        if (res.data.code == 200) {
+          console.log(res);
+          // this.listData = res.data.data.data;
+          // this.data_count = res.data.data.total;
+          this.listData = res.data.data;
+          this.data_count = res.data.data.length;
+
+          if (this.listData) {
+            this.listData.forEach((element) => {
+              if (this.choosedIdList.indexOf(element.id) == -1) {
+                this.choosedIdList.push(element.id);
+              }
+            });
+            this.choosedCount = this.choosedIdList.length;
+          }
+          this.filteredData = this.listData.slice(
+            (this.page - 1) * this.page_size,
+            this.page * this.page_size
+          );
+          this.loading = false;
+        }
+      });
+    },
+    handleSubmit() {
+      this.loading = true;
+      let params = {
+        tp_api_id: this.choosedIdList,
+        tp_openapi_auth_id: this.id,
+      };
+
+      updateOpenApiInterfaceRelationship(params).then((res) => {
+        console.log(params)
+        console.log(res)
+        if (res.data.code == 200) {
+          this.$message({ message: "变更成功", center: true, type: "success" });
+        }
+        this.get_interface_data();
+      });
+
+      this.page = 1;
+      this.keyword = "";
+      this.form = {};
+      this.listData = [];
+      this.apiDialogVisible = false;
     },
     handleClose() {
       this.page = 1;
@@ -249,12 +267,34 @@ export default {
       this.listData = [];
       this.apiDialogVisible = false;
     },
+    handleSelectionChange(val) {
+      // this.choosedCount = val.length;
+      this.choosedIdList = [];
+
+      val.forEach((element) => {
+        this.choosedIdList.push(element.id);
+      });
+      this.choosedCount = this.choosedIdList.length;
+      console.log(this.choosedIdList);
+      console.log(this.choosedCount);
+    },
     cancelDialog() {
       this.page = 1;
       this.keyword = "";
       this.form = {};
       this.listData = [];
       this.apiDialogVisible = false;
+    },
+    // 复选框选中
+    SelectionChange() {
+      this.$nextTick(() => {
+        let table = this.filteredData;
+        // 从后台获取到的数据
+        table.forEach((row) => {
+          if (row.isAdd == "1")
+            this.$refs.formTable.toggleRowSelection(row, true);
+        });
+      });
     },
   },
 };
