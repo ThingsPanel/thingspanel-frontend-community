@@ -22,7 +22,6 @@
           clearable
           @input="handleSearch"
         >
-          <!--        <template slot="prepend">IP</template>-->
         </el-input>
       </el-col>
     </el-row>

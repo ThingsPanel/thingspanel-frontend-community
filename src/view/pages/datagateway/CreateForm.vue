@@ -180,7 +180,7 @@ export default {
   },
   data: () => ({
     // 签名方式选项
-    signMethodChoice: ["MD5", "AES-256"],
+    signMethodChoice: ["MD5", "HAS256"],
     // 接口访问范围选项
     apiAccessScopeChoice: [
       { name: "全部", value: "1" },
@@ -240,6 +240,8 @@ export default {
           }
         });
       }
+      this.form = {};
+
     },
     handleClose() {
       this.form = {};

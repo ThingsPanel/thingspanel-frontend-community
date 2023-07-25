@@ -133,7 +133,6 @@ import {
 } from "@/api/dataGateway";
 import { business_index } from "@/api/business";
 import { device_group_drop } from "@/api/asset";
-import data from "../../../../packages/device_plugin/common/table/data";
 
 export default {
   name: "DeviceAccessScopeForm",
@@ -186,7 +185,7 @@ export default {
   },
   data: () => ({
     // 签名方式选项
-    signMethodChoice: ["MD5", "AES-256"],
+    signMethodChoice: ["MD5", "HAS256"],
     // 接口访问范围选项
     apiAccessScopeChoice: [
       { name: "全部", value: 1 },
