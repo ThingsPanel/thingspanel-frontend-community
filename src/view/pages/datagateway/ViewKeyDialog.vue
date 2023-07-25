@@ -8,7 +8,7 @@
     class="el-dark-dialog"
     :close-on-click-modal="false"
     :before-close="handleClose"
-    :visible.sync="apiDialogVisible"
+    :visible.sync="viewKeyDialogVisible"
     width="40%"
     height="60%"
     top="10vh"
@@ -21,6 +21,18 @@
             class="el-dark-input"
             placeholder="全部"
           >
+            <!-- <el-option
+              class="el-dark"
+              value="-1"
+              style="display: none;"
+            ></el-option>
+            <el-option
+              class="el-dark"
+              v-for="item in deviceAccessScopeChoice"
+              :key="item.value"
+              :label="item.name"
+              :value="item.value"
+            ></el-option> -->
           </el-select>
 
           <el-input
@@ -33,42 +45,8 @@
         </el-col>
       </el-row>
 
-      <el-table
-        ref="formTable"
-        :data="filteredData"
-        v-loading="loading"
-        @selection-change="handleSelectionChange"
-      >
-        <el-table-column
-          type="selection"
-          :label="$t('RULE_ENGINE.DATA_GATEWAY.INTERFACE_NAME')"
-          prop="id"
-        ></el-table-column>
-
-        <el-table-column
-          :label="$t('RULE_ENGINE.DATA_GATEWAY.INTERFACE_NAME')"
-          prop="name"
-        ></el-table-column>
-
-        <el-table-column
-          :label="$t('RULE_ENGINE.DATA_GATEWAY.URL')"
-          prop="url"
-        ></el-table-column>
-
-        <el-table-column
-          :label="$t('RULE_ENGINE.DATA_GATEWAY.INTERFACE_TYPE')"
-          prop="api_type"
-        ></el-table-column>
-
-        <el-table-column
-          :label="$t('RULE_ENGINE.DATA_GATEWAY.INTERFACE_DESCRIPTION')"
-          prop="remark"
-        ></el-table-column>
-      </el-table>
-
-
       <div>
-        <div style="width: 140px">已选择{{ this.choosedCount }}个接口</div>
+        <div style="width: 140px">已选择{{ this.choosed_count }}个接口</div>
         <div style="text-align: right">
           <el-button
             class="cancel-button"
@@ -83,7 +61,7 @@
             class="medium"
             type="save"
             size="medium"
-            @click="handleSubmit"
+            @click="onSubmit"
             >{{ $t("RULE_ENGINE.DATA_GATEWAY.SUBMIT") }}</el-button
           >
         </div>
@@ -93,27 +71,21 @@
 </template>
 
 <script>
-import {
-  updateOpenApiInterfaceRelationship,
-  getApiInterfaceList,
-} from "@/api/dataGateway";
 export default {
-  name: "ApiAccessScopeForm",
+  name: "ViewKeyDialog",
   props: {
     id: { default: null },
     data: { default: [] },
     tableData: { default: null },
     keyword: { default: "" },
+    choosed_count: { default: 0 },
     visible: {
       type: [Boolean],
       default: false,
     },
   },
-  mounted() {
-    this.SelectionChange();
-  },
   computed: {
-    apiDialogVisible: {
+    viewKeyDialogVisible: {
       get() {
         return this.visible;
       },
@@ -131,13 +103,16 @@ export default {
         );
       }
       this.page = 1;
-      this.filteredData = data;
+      this.filteredData = data.slice(
+        (this.page - 1) * this.page_size,
+        this.page * this.page_size
+      );
       this.data_count = data.length;
     },
     visible: {
       handler(newValue) {
         if (newValue && this.id) {
-          this.loading = true;
+          // 编辑
           this.page = 1;
           this.get_interface_data();
           this.data_count = this.filteredData.length;
@@ -149,11 +124,7 @@ export default {
     page: 0,
     page_size: 5,
     data_count: 0,
-    // 已选择数量
-    choosedCount: 0,
-    // 已选择id列表
-    choosedIdList: [],
-    loading: false,
+    loading: true,
     // 列表数据
     listData: [],
     filteredData: [],
@@ -171,80 +142,19 @@ export default {
     },
   }),
   methods: {
-    get_interface_data() {
-      getApiInterfaceList(this.id).then((res) => {
-        if (res.data.code == 200) {
-          this.listData = res.data.data;
-          this.data_count = res.data.data.length;
-
-          if (this.listData) {
-            this.listData.forEach((element) => {
-              if (this.choosedIdList.indexOf(element.id) == -1) {
-                this.choosedIdList.push(element.id);
-              }
-            });
-            this.choosedCount = this.choosedIdList.length;
-          }
-          this.filteredData = this.listData;
-
-          this.SelectionChange();
-          this.loading = false;
-        }
-      });
-    },
-    handleSubmit() {
-      this.loading = true;
-      let params = {
-        tp_api_id: this.choosedIdList,
-        tp_openapi_auth_id: this.id,
-      };
-
-      updateOpenApiInterfaceRelationship(params).then((res) => {
-        if (res.data.code == 200) {
-          this.$message({ message: "变更成功", center: true, type: "success" });
-        }
-        this.get_interface_data();
-      });
-
-      this.page = 1;
-      this.keyword = "";
-      this.form = {};
-      this.listData = [];
-      this.apiDialogVisible = false;
-    },
     handleClose() {
       this.page = 1;
       this.keyword = "";
       this.form = {};
       this.listData = [];
-      this.apiDialogVisible = false;
-    },
-    handleSelectionChange(val) {
-      // this.choosedCount = val.length;
-      this.choosedIdList = [];
-
-      val.forEach((element) => {
-        this.choosedIdList.push(element.id);
-      });
-      this.choosedCount = this.choosedIdList.length;
+      this.viewKeyDialogVisible = false;
     },
     cancelDialog() {
       this.page = 1;
       this.keyword = "";
       this.form = {};
       this.listData = [];
-      this.apiDialogVisible = false;
-    },
-    // 复选框选中
-    SelectionChange() {
-      this.$nextTick(() => {
-        let table = this.filteredData;
-        // 从后台获取到的数据
-        table.forEach((row) => {
-          if (row.is_add === 1)
-            this.$refs.formTable.toggleRowSelection(row, true);
-        });
-      });
+      this.viewKeyDialogVisible = false;
     },
   },
 };

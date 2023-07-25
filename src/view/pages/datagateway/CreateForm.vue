@@ -33,6 +33,7 @@
         <el-col :span="20">
           <el-select
             style="width: 100%"
+            ref="signatureModeRef"
             class="el-dark-input"
             v-model="form.signature_mode"
           >
@@ -55,9 +56,10 @@
           <el-input
             class="el-dark-input"
             type="textarea"
-            ref="nameRef"
+            ref="IPRef"
             rows="4"
             v-model="form.ip_whitelist"
+            placeholder="请输入IP地址,用'|'分割"
           ></el-input>
         </el-col>
       </el-form-item>
@@ -70,6 +72,7 @@
           <el-select
             style="width: 100%"
             class="el-dark-input"
+            ref="deviceAccessScopeRef"
             v-model="form.device_access_scope"
           >
             <el-option
@@ -91,6 +94,7 @@
           <el-select
             style="width: 100%"
             class="el-dark-input"
+            ref="apiAccessScopeRef"
             v-model="form.api_access_scope"
           >
             <el-option
@@ -142,6 +146,7 @@ import {
   updateOpenApiPermission,
   createOpenApiPermission,
 } from "@/api/dataGateway";
+import { message_error } from "@/utils/helpers";
 
 export default {
   name: "CreateForm",
@@ -175,7 +180,7 @@ export default {
   },
   data: () => ({
     // 签名方式选项
-    signMethodChoice: ["MD5", "AES-256"],
+    signMethodChoice: ["MD5", "HAS256"],
     // 接口访问范围选项
     apiAccessScopeChoice: [
       { name: "全部", value: "1" },
@@ -202,6 +207,10 @@ export default {
   methods: {
     //提交
     onSubmit() {
+      if (!this.validate()) {
+        return;
+      }
+
       let params = JSON.parse(JSON.stringify(this.form));
 
       if (!this.id) {
@@ -231,6 +240,8 @@ export default {
           }
         });
       }
+      this.form = {};
+
     },
     handleClose() {
       this.form = {};
@@ -242,7 +253,49 @@ export default {
       this.listData = [];
       this.dataGatewayDialogVisible = false;
     },
+    // 数据格式校验
     validate() {
+      let mailReg =
+        /^(?:(?:^|\|)(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])(?:\.(?:[0-9]|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])){3})+$/;
+      if (!this.form.name || this.form.name == "") {
+        this.$refs.nameRef.focus();
+        message_error(this.$t("RULE_ENGINE.DATA_GATEWAY.MSG_NAME_ERROR"));
+        return false;
+      }
+
+      if (!this.form.signature_mode || this.form.signature_mode == "") {
+        this.$refs.signatureModeRef.focus();
+        message_error(
+          this.$t("RULE_ENGINE.DATA_GATEWAY.MSG_SIGNATURE_MODE_ERROR")
+        );
+        return false;
+      }
+
+      if (
+        !this.form.ip_whitelist ||
+        this.form.ip_whitelist == "" ||
+        !mailReg.test(this.form.ip_whitelist)
+      ) {
+        message_error(this.$t("RULE_ENGINE.DATA_GATEWAY.MSG_IP_ERROR"));
+        return false;
+      }
+
+      if (
+        !this.form.device_access_scope ||
+        this.form.device_access_scope == ""
+      ) {
+        this.$refs.deviceAccessScopeRef.focus();
+        message_error(
+          this.$t("RULE_ENGINE.DATA_GATEWAY.MSG_DEVICE_ACCESS_SCOPE_ERROR")
+        );
+        return false;
+      }
+
+      if (!this.form.api_access_scope || this.form.api_access_scope == "") {
+        this.$refs.apiAccessScopeRef.focus();
+        message_error(this.$t("RULE_ENGINE.DATA_GATEWAY.请选择接口接入范围"));
+        return false;
+      }
       return true;
     },
   },

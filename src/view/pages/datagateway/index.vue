@@ -13,6 +13,19 @@
       </el-col>
     </el-row>
 
+    <el-row style="margin-bottom: 5px;">
+      <el-col :span="6">
+        <el-input
+          :placeholder="$t('RULE_ENGINE.DATA_GATEWAY.NAME')"
+          size="medium"
+          v-model="searchName"
+          clearable
+          @input="handleSearch"
+        >
+        </el-input>
+      </el-col>
+    </el-row>
+
     <el-table :data="tableData" v-loading="loading">
       <el-table-column
         :label="$t('RULE_ENGINE.DATA_GATEWAY.NAME')"
@@ -21,19 +34,18 @@
       <el-table-column
         prop="app_key"
         :label="$t('RULE_ENGINE.DATA_GATEWAY.APP_KEY')"
-        width="170px"
+        width="270px"
         v-slot="scope"
       >
         <el-row type="flex" justify="end">
           <el-col>
             {{ scope.row.app_key }}
-          </el-col>
-          <el-col>
             <el-button
               size="mini"
               type="success"
-              style=""
+              width="30px"
               v-clipboard:copy="scope.row.app_key"
+              v-clipboard:success="handleCopy"
               >{{ $t("RULE_ENGINE.DATA_GATEWAY.COPY") }}</el-button
             >
           </el-col>
@@ -53,10 +65,10 @@
         :span="12"
         v-slot="scope"
       >
-        <span v-if="scope.row.device_access_scope == 1">{{
+        <span v-if="scope.row.device_access_scope == '1'">{{
           $t("RULE_ENGINE.DATA_GATEWAY.ALL")
         }}</span>
-        <span v-else-if="scope.row.device_access_scope == 2">{{
+        <span v-else-if="scope.row.device_access_scope == '2'">{{
           $t("RULE_ENGINE.DATA_GATEWAY.PART")
         }}</span>
         <span v-else>error</span>
@@ -64,7 +76,7 @@
           size="mini"
           type="success"
           style="margin-left: 10px"
-          :disabled="scope.row.device_access_scope == 1"
+          :disabled="scope.row.device_access_scope == '1'"
           @click="handleShowDeviceDialog(scope.row)"
           >{{ $t("RULE_ENGINE.DATA_GATEWAY.CHOOSE") }}</el-button
         ></el-table-column
@@ -75,10 +87,10 @@
         width="120px"
         v-slot="scope"
       >
-        <span v-if="scope.row.api_access_scope == 1">{{
+        <span v-if="scope.row.api_access_scope == '1'">{{
           $t("RULE_ENGINE.DATA_GATEWAY.ALL")
         }}</span>
-        <span v-else-if="scope.row.api_access_scope == 2">{{
+        <span v-else-if="scope.row.api_access_scope == '2'">{{
           $t("RULE_ENGINE.DATA_GATEWAY.PART")
         }}</span>
         <span v-else>error</span>
@@ -86,7 +98,7 @@
           size="mini"
           type="success"
           style="margin-left: 10px"
-          :disabled="scope.row.api_access_scope == 1"
+          :disabled="scope.row.api_access_scope == '1'"
           @click="handleShowApiDialog(scope.row)"
           >{{ $t("RULE_ENGINE.DATA_GATEWAY.CHOOSE") }}</el-button
         >
@@ -113,7 +125,7 @@
           <el-button
             size="mini"
             type="indigo"
-            @click="handleSetStatus(scope.row)"
+            @click="handleShowKey(scope.row)"
             >{{ $t("RULE_ENGINE.DATA_GATEWAY.VIEW_KEY") }}</el-button
           >
           <el-button
@@ -127,7 +139,7 @@
           <el-popconfirm
             class="mr-1"
             :title="$t('AUTOMATION.TITLE4')"
-            @confirm="handleDelete(scope.row)"
+            @confirm="handle_del(scope.row.id)"
           >
             <el-button
               slot="reference"
@@ -170,8 +182,36 @@
       :visible.sync="deviceDialogVisible"
       :data="formData"
       :id="formId"
+      :loading="loading"
       @submit="get_data"
     />
+
+    <el-dialog
+      :visible="viewKeyDialogVisible"
+      width="35%"
+      height="60%"
+      :title="$t('RULE_ENGINE.DATA_GATEWAY.VIEW_KEY')"
+      :before-close="handleCloseViewKey"
+    >
+      <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
+        <el-col :span="3">
+          {{ $t("RULE_ENGINE.DATA_GATEWAY.SECRET_KEY") }}:
+        </el-col>
+        <el-col :span="18">
+          {{ this.viewSecretKey }}
+        </el-col>
+        <el-col :span="3">
+          <el-button
+            size="mini"
+            type="success"
+            width="30px"
+            v-clipboard:copy="viewSecretKey"
+            v-clipboard:success="handleCopy"
+            >{{ $t("RULE_ENGINE.DATA_GATEWAY.COPY") }}</el-button
+          >
+        </el-col>
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 
@@ -197,38 +237,17 @@ export default {
     dataGatewayDialogVisible: false,
     apiDialogVisible: false,
     deviceDialogVisible: false,
+    viewKeyDialogVisible: false,
+    viewAppKey: null,
+    viewSecretKey: null,
+    searchName: "",
     formId: "",
     formData: null,
     loading: false,
     per_page: 10,
     page: 1,
     data_count: 2,
-    tableData: [
-      {
-        id: "111",
-        name: "11bbb",
-        app_key: "1132245",
-        signature_mode: "MD5",
-        ip_whitelist: "11.12.23.12|33.33.33.33",
-        device_access_scope: 2,
-        api_access_scope: 1,
-        created_at: 1687325491,
-        tenant_id: "b9ccb761",
-        description: "1111b9ccb7612222",
-      },
-      {
-        id: "3123124",
-        name: "b1241241241bb",
-        app_key: "32ssssssssss45",
-        signature_mode: "AES-256",
-        ip_whitelist: "10.12.23.12|33.33.33.33",
-        device_access_scope: 1,
-        api_access_scope: 2,
-        created_at: 1687325491,
-        tenant_id: "b9ccb761",
-        description: "b9ccb7612222",
-      },
-    ],
+    tableData: [],
   }),
   created() {
     this.get_data();
@@ -237,11 +256,10 @@ export default {
     get_data() {
       let page = {
         current_page: this.page,
-        per_page: 10,
+        per_page: this.per_page,
       };
       getOpenApiPermissionList(page).then((res) => {
-        console.log(res);
-        if (res.code == 200) {
+        if (res.data.code == 200) {
           this.tableData = res.data.data.data;
           this.data_count = res.data.data.total;
           this.loading = false;
@@ -255,12 +273,34 @@ export default {
       this.get_data();
     },
 
+    handleCopy() {
+      this.$message.success("复制成功！");
+    },
+
     //删除
     handle_del(id) {
-      deleteOpenApiPermission({ data_transpond_id: id }).then((res) => {
+      deleteOpenApiPermission({ id }).then((res) => {
         if (res.data.code === 200) {
           this.get_data();
           this.$message({ message: "删除成功", center: true, type: "success" });
+        }
+      });
+    },
+
+    //查询
+    handleSearch(val) {
+      this.page = 1;
+
+      let params = {
+        current_page: this.page,
+        per_page: this.per_page,
+        name: val,
+      };
+      getOpenApiPermissionList(params).then((res) => {
+        if (res.data.code == 200) {
+          this.tableData = res.data.data.data;
+          this.data_count = res.data.data.total;
+          this.loading = false;
         }
       });
     },
@@ -269,14 +309,24 @@ export default {
     handleCreate() {
       this.formId = "";
       this.dataGatewayDialogVisible = true;
-      console.log(this);
+    },
+    //展示秘钥
+    handleShowKey(val) {
+      this.viewKeyDialogVisible = true;
+      this.viewAppKey = val.app_key;
+      this.viewSecretKey = val.secret_key;
+    },
+    //关闭秘钥
+    handleCloseViewKey() {
+      this.viewKeyDialogVisible = false;
+      this.viewAppKey = "";
+      this.viewSecretKey = "";
     },
     //编辑弹框
     handleShowEdit(item) {
       this.formId = item.id;
       this.formData = item;
       this.dataGatewayDialogVisible = true;
-      console.log(this);
     },
     //编辑接口访问范围对话框
     handleShowApiDialog(item) {
