@@ -13,7 +13,7 @@
       </el-col>
     </el-row>
 
-    <el-row style="margin-bottom: 5px;">
+    <el-row style="margin-bottom: 5px">
       <el-col :span="6">
         <el-input
           :placeholder="$t('RULE_ENGINE.DATA_GATEWAY.NAME')"
@@ -34,20 +34,37 @@
       <el-table-column
         prop="app_key"
         :label="$t('RULE_ENGINE.DATA_GATEWAY.APP_KEY')"
-        width="270px"
+        width="170px"
         v-slot="scope"
       >
         <el-row type="flex" justify="end">
           <el-col>
-            {{ scope.row.app_key }}
-            <el-button
-              size="mini"
-              type="success"
-              width="30px"
+            <i
+              class="el-icon-document-copy"
+              style="margin-right: 5px; cursor: pointer"
               v-clipboard:copy="scope.row.app_key"
               v-clipboard:success="handleCopy"
-              >{{ $t("RULE_ENGINE.DATA_GATEWAY.COPY") }}</el-button
+            ></i>
+            <!-- <el-button
+              size="mini"
+              circle
+              type="success"
+              icon="el-icon-document-copy"
+              style="margin-left: 5px"
+              v-clipboard:copy="scope.row.app_key"
+              v-clipboard:success="handleCopy"
+              ></el-button
+            > -->
+            <el-tooltip
+              class="item"
+              effect="dark"
+              :content="scope.row.app_key"
+              placement="top-start"
             >
+              <span>{{
+                scope.row.app_key ? scope.row.app_key.substr(0, 5) + "..." : ""
+              }}</span>
+            </el-tooltip>
           </el-col>
         </el-row>
       </el-table-column>
@@ -58,7 +75,21 @@
       <el-table-column
         prop="ip_whitelist"
         :label="$t('RULE_ENGINE.DATA_GATEWAY.IP_WHITELIST')"
-      ></el-table-column>
+        v-slot="scope"
+      >
+        <el-tooltip
+          class="item"
+          effect="dark"
+          :content="scope.row.ip_whitelist"
+          placement="top-start"
+        >
+          <span>{{
+            scope.row.ip_whitelist && scope.row.ip_whitelist.length > 24
+              ? scope.row.ip_whitelist.substr(0, 24) + "..."
+              : scope.row.ip_whitelist
+          }}</span>
+        </el-tooltip>
+      </el-table-column>
       <el-table-column
         prop="device_access_scope"
         :label="$t('RULE_ENGINE.DATA_GATEWAY.DEVICE_ACCESS_SCOPE')"
@@ -74,7 +105,7 @@
         <span v-else>error</span>
         <el-button
           size="mini"
-          type="success"
+          :type="scope.row.device_access_scope != '1' ? 'success' : 'info'"
           style="margin-left: 10px"
           :disabled="scope.row.device_access_scope == '1'"
           @click="handleShowDeviceDialog(scope.row)"
@@ -96,7 +127,7 @@
         <span v-else>error</span>
         <el-button
           size="mini"
-          type="success"
+          :type="scope.row.api_access_scope != '1' ? 'success' : 'info'"
           style="margin-left: 10px"
           :disabled="scope.row.api_access_scope == '1'"
           @click="handleShowApiDialog(scope.row)"
@@ -105,6 +136,7 @@
       </el-table-column>
       <el-table-column
         prop="description"
+        width="200px"
         :label="$t('RULE_ENGINE.DATA_GATEWAY.DESCRIPTION')"
       ></el-table-column>
       <el-table-column
@@ -119,7 +151,7 @@
         prop="actions"
         :label="$t('RULE_ENGINE.DATA_GATEWAY.OPERATION')"
         align="left"
-        width="320px"
+        width="270px"
       >
         <template v-slot="scope">
           <el-button
@@ -244,7 +276,7 @@ export default {
     formId: "",
     formData: null,
     loading: false,
-    per_page: 10,
+    per_page: 5,
     page: 1,
     data_count: 2,
     tableData: [],

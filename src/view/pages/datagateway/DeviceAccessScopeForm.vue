@@ -68,23 +68,26 @@
         <el-table-column
           :label="$t('RULE_ENGINE.DATA_GATEWAY.DEVICE_NAME')"
           prop="device_name"
+          width="160px"
         ></el-table-column>
 
         <el-table-column
           :label="$t('RULE_ENGINE.DATA_GATEWAY.PROJECT_NAME')"
           prop="business_name"
+          width="160px"
         ></el-table-column>
 
         <el-table-column
           :label="$t('RULE_ENGINE.DATA_GATEWAY.GROUP_NAME')"
           prop="asset_name"
+          width="160px"
         ></el-table-column>
 
         <el-table-column
           prop="actions"
           :label="$t('RULE_ENGINE.DATA_GATEWAY.OPERATION')"
           align="left"
-          width="320px"
+          width="100px"
         >
           <template v-slot="scope">
             <el-button
@@ -353,6 +356,7 @@ export default {
      */
     handleProjectChange(v) {
       this.loading = true;
+      this.page = 1;
       this.formData.projectId = v;
       this.formData.groupId = "";
       this.get_device_data();
@@ -365,6 +369,7 @@ export default {
      * @param v
      */
     handleGroupChange(v) {
+      this.page = 1;
       this.loading = true;
       this.formData.groupId = v;
       this.get_device_data();
@@ -375,6 +380,7 @@ export default {
      */
     handleIsAddChange(v) {
       this.loading = true;
+      this.page = 1;
       this.formData.isAdd = v;
       this.get_device_data();
     },
