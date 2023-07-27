@@ -33,7 +33,7 @@ export default {
   name: "ThingsPanel",
   
   mounted() {
-    console.log("==fizz==location", document.location.protocol + "//" + document.location.host );
+    console.log("====location", document.location.protocol + "//" + document.location.host );
 
     this.$store.dispatch("setRouters");
     this.$store.commit("refresh_page");
