@@ -1,0 +1,38 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: ssh deploy 
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js Build
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16.16.0
+        cache: 'npm'    
+    - run: npm install
+    - run: npm run build
+    - run: cd dist && ls -l
+    - name: scp ssh pipelines
+      uses: cross-the-world/ssh-scp-ssh-pipelines@latest
+      env:
+        LASTSSH: "Doing something after copying"
+      with:
+        host: ${{ secrets.DC_HOST }}
+        user: ${{ secrets.DC_USER }}
+        pass: ${{ secrets.DC_PASS }}
+        scp: |
+          ./dist/* => /home/dev
+        last_ssh: |
+          echo $LASTSSH 
+          nginx -t
+          nginx -s reload
