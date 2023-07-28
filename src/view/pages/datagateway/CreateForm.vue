@@ -48,10 +48,7 @@
         </el-col>
       </el-form-item>
 
-      <el-form-item
-        :label="$t('RULE_ENGINE.DATA_GATEWAY.IP_WHITELIST')"
-        required
-      >
+      <el-form-item :label="$t('RULE_ENGINE.DATA_GATEWAY.IP_WHITELIST')">
         <el-col :span="20">
           <el-input
             class="el-dark-input"
@@ -241,7 +238,6 @@ export default {
         });
       }
       this.form = {};
-
     },
     handleClose() {
       this.form = {};
@@ -271,11 +267,7 @@ export default {
         return false;
       }
 
-      if (
-        !this.form.ip_whitelist ||
-        this.form.ip_whitelist == "" ||
-        !mailReg.test(this.form.ip_whitelist)
-      ) {
+      if (this.form.ip_whitelist && !mailReg.test(this.form.ip_whitelist)) {
         message_error(this.$t("RULE_ENGINE.DATA_GATEWAY.MSG_IP_ERROR"));
         return false;
       }
