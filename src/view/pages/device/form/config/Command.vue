@@ -97,10 +97,13 @@ export default {
         }
     },
     mounted() {
-        if (this.device.device_type === "2") {
+        if (this.device.device_type === "1") {
+            this.subscribeTitle = "设备订阅命令主题:  device/command/<AccessToken>"
+        } else if (this.device.device_type === "2"  && this.device.protocol === 'MQTT') {
+            // 网关
             this.subscribeTitle = "设备订阅命令主题:  gateway/command/<AccessToken>"
         } else {
-            this.subscribeTitle = "设备订阅命令主题:  device/command/<AccessToken>"
+            this.subscribeTitle = "";
         }
         console.log('Command.device', this.device)
         this.getList();
