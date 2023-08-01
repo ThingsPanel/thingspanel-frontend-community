@@ -24,7 +24,9 @@
               <el-button type="text" size="mini" v-if="scope.row.status === 'store'"
                 >安装</el-button>
 
-              <el-button type="text" size="mini"  slot="reference" @click="handleView(scope.row)">查看</el-button>
+              <el-button type="text" size="mini"  slot="reference" v-if="scope.row.status !== 'store'"  @click="handleView(scope.row)">
+                查看
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
