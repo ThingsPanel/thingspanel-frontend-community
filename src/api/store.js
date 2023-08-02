@@ -24,7 +24,7 @@ export default {
          * @param {*} data 
          * @returns 
          */
-        device: data => app_axios.get("/Web/findTPluginDevice", data),
+        device: data => app_axios.get("/Web/findTPluginDevice?ID=" + data.id),
     },
 
     list: {

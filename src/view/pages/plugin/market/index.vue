@@ -216,19 +216,26 @@ export default {
      * @param {*} callback
      * @return {*}
      */    
-    installDevicePlugin(item, callback) {
-      let data = {
-          model_type: item.devicePluginType,
-          chart_data: item.jsonData,
-          model_name: item.name,
-          version: item.version,
-          author: item.author
+    async installDevicePlugin(item, callback) {
+      console.log('installDevicePlugin', item)
+      try {
+        let {data: res1} = await StoreAPI.get.device({id: item.storeId});
+        if (res1 === 0) throw new Error("获取插件失败！")
+        const data = res1.data.rePluginDevice;
+        const params = {
+          model_type: data.devicePluginType,
+          chart_data: data.dataResource,
+          model_name: data.pluginName,
+          version: data.versionNumber,
+          author: data.pluginAuthor
         }
-        PluginAPI.add(data).then(({data}) => {
-            if (data.code == 200) {
-              callback({ code: 200, data, msg: "安装成功！" })
-            }
-          })
+        const {data: res2 } = await PluginAPI.add(params);
+        if (res2.code !== 200) throw new Error("安装失败！")
+        callback({ code: 200, data, msg: "安装成功！" })
+      } catch(err) {
+        console.log(err)
+        callback({ code: 401, data, msg: err.message })
+      }
     },
     /**
      * @description: 安装脚本插件
