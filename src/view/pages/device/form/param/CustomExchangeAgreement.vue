@@ -29,6 +29,15 @@
 
       <el-tabs v-model="testTabValue">
         <el-tab-pane label="模拟输入" name="input">
+          <div style="margin-bottom:4px">
+            <span>Topic： </span>
+            <el-select size="small" v-model="formData.topic">
+              <el-option label="device/attributes" value="device/attributes"></el-option>
+              <el-option label="device/event " value="device/event "></el-option>
+              <el-option label="gateway/attributes " value="gateway/attributes "></el-option>
+              <el-option label="gateway/event " value="gateway/event "></el-option>
+            </el-select>
+          </div>
           <CodeEditor class="dark-code-editor" key="input" style="width: 100%;height: 100px" min_height="100px"
                   :copy_code="true" :hide_header="true" theme="dark" :wrap_code="true"
                   v-model="formData.msg_content"></CodeEditor>
@@ -121,6 +130,7 @@ export default defineComponent ({
       script_content_a: upCodeTemp,
       script_content_b: downCodeTemp,
       script_type: "javascript",
+      topic: "device/attributes",
       msg_content: "{}",
       result: ""
     })
@@ -171,8 +181,7 @@ export default defineComponent ({
      * @return {*}
      */
     function onUpTest() {
-      const { script_content_a, msg_content } = formData;
-      const topic = "device/attributes";
+      const { script_content_a, msg_content, topic } = formData;
       onTest(script_content_a, msg_content, topic)
     }
 
@@ -181,9 +190,8 @@ export default defineComponent ({
      * @return {*}
      */
     function onDownTest() {
-      const { script_content_b, msg_content } = formData;
-      const topic = "device/attributes/" + props.device.token;
-      onTest(script_content_b, msg_content, topic)
+      const { script_content_b, msg_content, topic } = formData;
+      onTest(script_content_b, msg_content, topic + "/" + props.device.token)
     }
 
     function onTest(script_content, msg_content, topic_content) {
