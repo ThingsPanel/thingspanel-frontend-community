@@ -71,10 +71,10 @@
           </div>
       </el-form>
     </el-dialog>
-    <div class="model">
+    <!-- <div class="model">
       <el-dialog class="el-dark-dialog el-dark-input"
               :title="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.DEBUG')"
-              :visible.sync="dialogVisible"
+              :visible.sync="dialogVisible2"
               :close-on-click-modal="false" :close-on-press-escape="false" :show-close="true" :append-to-body="true"
               width="500px">
               <div class="dialog-body">
@@ -96,7 +96,7 @@
                 </el-form>
               </div>
       </el-dialog>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -183,7 +183,10 @@ export default {
       phone:'',
       webhook: '',
     },
-
+    // formModel:{
+      
+    // },
+    // dialogVisible2:false,
    //rules: {
     //  group_name: [
     //    {required, message: i18n.t('RULE_ENGINE.DATA_FORWARDINGNEW.PLACEHOLDER')}
@@ -334,7 +337,7 @@ export default {
           if (res.data.code === 200) {
             this.$emit("submit");
             this.noticeType=""
-            this.dialogVisible = false;
+            this.dialogVisible2 = false;
             this.$message({message: "新建成功", center: true, type: "success"})
           }
         })  
@@ -343,7 +346,7 @@ export default {
           if (res.data.code === 200) {
             this.$emit("submit");
             this.noticeType=""
-            this.dialogVisible = false;
+            this.dialogVisible2 = false;
             this.$message({message: "编辑成功", center: true, type: "success"})
           }
         }) 
@@ -352,12 +355,12 @@ export default {
     handleClose(){
       this.form={}
       this.noticeType=""
-      this.dialogVisible = false;
+      this.dialogVisible2 = false;
     },
     cancelDialog() {
       this.form={}
       this.noticeType=""
-      this.dialogVisible = false;
+      this.dialogVisible2 = false;
     },
     validate() {
       if (!this.form.group_name || this.form.group_name === "") {
