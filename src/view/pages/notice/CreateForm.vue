@@ -337,7 +337,7 @@ export default {
           if (res.data.code === 200) {
             this.$emit("submit");
             this.noticeType=""
-            this.dialogVisible2 = false;
+            this.dialogVisible = false;
             this.$message({message: "新建成功", center: true, type: "success"})
           }
         })  
@@ -346,7 +346,7 @@ export default {
           if (res.data.code === 200) {
             this.$emit("submit");
             this.noticeType=""
-            this.dialogVisible2 = false;
+            this.dialogVisible = false;
             this.$message({message: "编辑成功", center: true, type: "success"})
           }
         }) 
@@ -355,12 +355,12 @@ export default {
     handleClose(){
       this.form={}
       this.noticeType=""
-      this.dialogVisible2 = false;
+      this.dialogVisible = false;
     },
     cancelDialog() {
       this.form={}
       this.noticeType=""
-      this.dialogVisible2 = false;
+      this.dialogVisible = false;
     },
     validate() {
       if (!this.form.group_name || this.form.group_name === "") {
