@@ -71,10 +71,10 @@
           </div>
       </el-form>
     </el-dialog>
-    <div class="model">
+    <!-- <div class="model">
       <el-dialog class="el-dark-dialog el-dark-input"
               :title="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.DEBUG')"
-              :visible.sync="dialogVisible"
+              :visible.sync="dialogVisible2"
               :close-on-click-modal="false" :close-on-press-escape="false" :show-close="true" :append-to-body="true"
               width="500px">
               <div class="dialog-body">
@@ -96,7 +96,7 @@
                 </el-form>
               </div>
       </el-dialog>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -183,7 +183,10 @@ export default {
       phone:'',
       webhook: '',
     },
-
+    // formModel:{
+      
+    // },
+    // dialogVisible2:false,
    //rules: {
     //  group_name: [
     //    {required, message: i18n.t('RULE_ENGINE.DATA_FORWARDINGNEW.PLACEHOLDER')}
