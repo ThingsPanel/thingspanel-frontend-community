@@ -71,7 +71,7 @@
 
           <!-- 显示 start -->
           <div v-show="!scope.row.edit || !showHandle">
-            <el-tag v-if="attr.type=='select'">{{ scope.row[attr.field] }}</el-tag>
+            <el-tag v-if="attr.type=='select'">{{ attr.options.find(item => item.value === (scope.row[attr.field] || attr.default)).label  }}</el-tag>
 
             <div v-else-if="attr.type=='multiSelect'">
                 <el-tag style="margin-right:4px" type="success" v-for="(item, index) in scope.row[attr.field]" :key="index">{{ item.name }}</el-tag>

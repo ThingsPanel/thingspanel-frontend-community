@@ -21,7 +21,9 @@
                   <el-select style="width: 100%; margin-bottom: 10px;"
                              v-model="item.value">
                     <el-option v-for="(option, index) in dataSrc" :key="index"
-                               :value="option.name" >{{option.title + '(' + option.name + ')'}}</el-option>
+                              :disabled="!option.readWrite || option.readWrite === 'r'"
+                              :label="option.title + '(' + option.name + ')' + (option.readWrite !== 'rw' ? ' - 只读' : '')"
+                              :value="option.name" ></el-option>
                   </el-select>
 
                   <el-row :gutter="20" v-if="item.type=='switch'">
@@ -174,7 +176,11 @@ export default {
         this.sceneDialogVisible = true;
         this.dataSrcOptions = [];
         for (let i = 0; i < this.dataSrc.length; i++) {
-          this.dataSrcOptions.push({key: this.dataSrc[i]['name'], label: this.dataSrc[i]['title'] + '(' + this.dataSrc[i]['name'] + ')'})
+          this.dataSrcOptions.push({
+              key: this.dataSrc[i]['name'], 
+              label: this.dataSrc[i]['title'] + '(' + this.dataSrc[i]['name'] + ')',
+              disabled: this.dataSrc[i]['readWrite'] !== 'rw' ? true : false,
+            })
         }
         this.dataSrcValue = option.mapping;
         this.controlName = option.name;

@@ -197,9 +197,7 @@ export default {
      */
     changeMappingDataSource(item) {
       let source = this.dataSrc.find(v => v.name == item.value);
-      if (this.echartName == "") {
-        this.echartName = source.title;
-      }
+      this.chartName = source.title;
     },
     handleCustom() {
       this.customDialogVisible = true;

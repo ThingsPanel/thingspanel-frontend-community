@@ -33,7 +33,11 @@
                v-model="formData.state" value-key="name" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_STATE')"
                @change="handleStateChange">
       <el-option-group v-for="group in stateOptions" :key="group.label" :label="group.label">
-        <el-option v-for="item in group.options" :key="item.name" :label="item.label" :value="item"></el-option>
+        <el-option v-for="item in group.options" :key="item.name" 
+          :label="item.label + (item.readWrite === 'r' ? ' (只读)' : '')" 
+          :value="item" 
+          :disabled="item.readWrite === 'r'">
+      </el-option>
       </el-option-group>
     </el-select>
 
@@ -320,15 +324,15 @@ export default {
 
               let arr = properties.map(item => {
                 if (this.formData.state && this.formData.state.name === item.name) {
-                  this.formData.state = { ...this.formData.state, unit: item.unit, type: item.type }
+                  this.formData.state = { ...this.formData.state, unit: item.unit, type: item.type, readWrite: item.readWrite || "r" }
                 }
-                return { label: item.title, name: item.name, unit: item.unit, mode: "property", type: item.dataType };
+                return { label: item.title, name: item.name, unit: item.unit, mode: "property", type: item.dataType, readWrite: item.readWrite || "r" };
               });
 
               
               this.stateOptions.push({label: this.$t('AUTOMATION.PROPERTY'), options: arr});
 
-              console.log(this.stateOptions)
+              console.log('DeviceTypeSelector', this.stateOptions)
               this.updateData();
               
             }
