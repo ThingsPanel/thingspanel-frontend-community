@@ -28,7 +28,7 @@
           <el-button :disabled="step == 0" type="primary" @click="handlePrev">{{ $t('PLUGIN.PREV') }}</el-button>
           <el-button v-if="step<(steps.length - 1)" type="primary" @click="handleNext">{{ $t('PLUGIN.NEXT') }}</el-button>
           <el-button v-if="step==(steps.length - 1)" :disabled="isSaving" type="primary" @click="handleSave">保存</el-button>
-          <el-button v-if="step==(steps.length - 1)"  type="primary" @click="handlePublish">{{ $t('PLUGIN.RELEASE') }}</el-button>
+          <el-button v-if="step==(steps.length - 1)" :disabled="isPublishing" type="primary" @click="handlePublish">{{ $t('PLUGIN.RELEASE') }}</el-button>
           <el-button type="primary" @click="handleClose">{{ $t('PLUGIN.CLOSE') }}</el-button>
         </div>
       </div>
@@ -130,7 +130,7 @@ export default {
       dialogVisible: false,
       steps,
       isSaving: false,
-      publishing: false,
+      isPublishing: false,
       step: 0,
       jsonData: {
         info: {
@@ -197,12 +197,15 @@ export default {
       })
     },
     handlePublish() {
-      this.publishing = true;
+      this.isPublishing = true;
       this.jsonData.publish = { isPus: true };
       this.$emit("publish", this.jsonData, res => {
         if (res.code === 200) {
           message_success(res.msg);
         }
+        setTimeout(() => {
+          this.isPublishing = false;
+        }, 3000);
       });
     }
 

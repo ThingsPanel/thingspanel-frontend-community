@@ -62,7 +62,7 @@
                 }
               },
               "detail": {
-                "formatter": "{value}°C",
+                "formatter": "{value}",
                 "fontSize": 16,
                 "color": "#63e33d"
               },

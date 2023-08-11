@@ -101,7 +101,7 @@ export default {
         }
         let series = [];
         series = value.map(item => {
-          let detail = { formatter: '{value}' + (item.unit != "-" ? item.unit : "") };
+          let detail = { formatter: '{value}' + (item.unit !== "-" ? item.unit : "") };
           return { data: [ { value: item.value, name } ], detail }
         })
         this.myEcharts.setOption({ series });
