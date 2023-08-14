@@ -93,18 +93,23 @@ export default {
      * @param value
      */
     updateOption(value) {
-      console.log("====更新图表的值", this.option)
+      console.log("====更新图表的值", this.option, value)
       if (this.option.controlType == "dashboard") {
-        let name = "";
-        if (this.option.series[0] && this.option.series[0].data[0] && this.option.series[0].data[0].name) {
-          name = this.option.series[0].data[0].name ;
+        try {
+          let name = "";
+          if (this.option.series[0] && this.option.series[0].data[0] && this.option.series[0].data[0].name) {
+            name = this.option.series[0].data[0].name ;
+          }
+          let series = [];
+          series = value.map(item => {
+            let detail = { formatter: '{value}' + ((item.unit && item.unit !== "-") ? item.unit : "") };
+            if (!item.value) throw new Error("value is null");
+            return { data: [ { value: item.value, name } ], detail }
+          })
+          this.myEcharts.setOption({ series });
+        } catch (e) {
+          console.log(e)
         }
-        let series = [];
-        series = value.map(item => {
-          let detail = { formatter: '{value}' + (item.unit !== "-" ? item.unit : "") };
-          return { data: [ { value: item.value, name } ], detail }
-        })
-        this.myEcharts.setOption({ series });
       }
     },
     /**
