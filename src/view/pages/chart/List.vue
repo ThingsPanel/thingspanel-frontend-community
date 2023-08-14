@@ -13,7 +13,11 @@
     <!-- 表 start -->
     <el-form class="inline-edit">
       <el-table :data="tableData" v-loading="loading">
-        <el-table-column :label="$t('VISUALIZATION.NO')" type="index" align="left" width="550"></el-table-column>
+        <el-table-column :label="$t('VISUALIZATION.NO')" type="index" align="left" width="550">
+          <template v-slot="scope">
+            <span>{{ (params.current_page - 1) * 10 + scope.$index + 1 }}</span>
+          </template>
+        </el-table-column>
 
         <el-table-column :label="$t('VISUALIZATION.VISUALIZATIONNAME')" prop="dashboard_name" align="left">
           <template v-slot="scope">
@@ -142,8 +146,6 @@ export default {
      */
     getVisualList() {
       this.tableData = [];
-      this.tableData.push({ dashboard_name: "测试" })
-
       // ==================================================
       if (this.loading) return;
       this.loading = true

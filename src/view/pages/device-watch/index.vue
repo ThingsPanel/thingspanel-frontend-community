@@ -10,7 +10,11 @@
     <!-- 表 start -->
     <el-form class="inline-edit">
       <el-table :data="tableData" v-loading="loading">
-        <el-table-column :label="$t('DEVICE_MONITORING.NO')" type="index" width="600"></el-table-column>
+        <el-table-column :label="$t('DEVICE_MONITORING.NO')" type="index" width="600">
+          <template v-slot="scope">
+            <span>{{ (params.page - 1) * 10 + scope.$index + 1 }}</span>
+          </template>
+        </el-table-column>
 
         <el-table-column :label="$t('DEVICE_MONITORING.PROJECT_NAME')" prop="name" align="left">
           <template v-slot="scope">

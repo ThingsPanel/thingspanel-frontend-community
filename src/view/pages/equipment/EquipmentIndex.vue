@@ -54,7 +54,11 @@
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column :label='$t("SYSTEM_LOG.DEVICE_LOG.NUMBERID")' type="index" width="50" align="left"></el-table-column>
+      <el-table-column :label='$t("SYSTEM_LOG.DEVICE_LOG.NUMBERID")' type="index" width="50" align="left">
+        <template v-slot="scope">
+          <span>{{ (params.page - 1) * 10 + scope.$index + 1 }}</span>
+        </template>
+      </el-table-column>
       <el-table-column :label='$t("SYSTEM_LOG.DEVICE_LOG.BUSINESSNAME1")'  width="270" align="left" prop="business_name">
         <template v-slot="scope">
           <span

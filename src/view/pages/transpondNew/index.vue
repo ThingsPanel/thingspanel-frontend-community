@@ -11,7 +11,11 @@
     </el-row>
   
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.NO')" type="index" width="100"></el-table-column>
+      <el-table-column :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.NO')" type="index" width="100">
+        <template v-slot="scope">
+          <span>{{ (page - 1) * 10 + scope.$index + 1 }}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="name" :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.RULE_NAME')"></el-table-column>
       <el-table-column prop="desc" :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.RULE_DESCRIBE')"></el-table-column>
       <el-table-column prop="create_time" :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.CREATEDATE')">

@@ -19,7 +19,11 @@
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column :label="$t('AUTOMATION.NO')" type="index" width="100" align="center"></el-table-column>
+      <el-table-column :label="$t('AUTOMATION.NO')" type="index" width="100" align="center">
+        <template v-slot="scope">
+          <span>{{ (params.current_page - 1) * 10 + scope.$index + 1 }}</span>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('AUTOMATION.SCENE_NAME')" prop="scenario_name" ></el-table-column>
       <el-table-column :label="$t('AUTOMATION.SCENE_DESCRIPTION')" prop="scenario_description" ></el-table-column>
       <el-table-column :label="$t('AUTOMATION.CREATE_AT')" prop="created_at">

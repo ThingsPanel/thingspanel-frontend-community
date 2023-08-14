@@ -14,7 +14,11 @@
 
   <!-- 表 start -->
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.NO')" type="index" width="50"></el-table-column>
+    <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.NO')" type="index" width="50">
+      <template v-slot="scope">
+        <span>{{ (params.page - 1) * 10 + scope.$index + 1 }}</span>
+      </template>
+    </el-table-column>
     <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.USERNAME')" prop="email"></el-table-column>
     <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.NAME')" prop="name"></el-table-column>
     <el-table-column :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.EMAIL')" prop="email"></el-table-column>

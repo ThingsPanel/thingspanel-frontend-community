@@ -85,7 +85,11 @@
 
   <!-- 表 start -->
   <el-table :data="tableData">
-    <el-table-column :label="$t('DATA_MANAGEMENT.NO')" type="index" width="50"></el-table-column>
+    <el-table-column :label="$t('DATA_MANAGEMENT.NO')" type="index" width="50">
+      <template v-slot="scope">
+        <span>{{ (params.page - 1) * 10 + scope.$index + 1 }}</span>
+      </template>
+    </el-table-column>
     <el-table-column :label="$t('DATA_MANAGEMENT.BUSINESSNAME1')" prop="bname"></el-table-column>
 
     <el-table-column :label="$t('DATA_MANAGEMENT.DWVICEGROUPNAME1')" prop="asset_name"></el-table-column>

@@ -10,7 +10,11 @@
     </el-row>
   
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.NO')" type="index" width="100"></el-table-column>
+      <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.NO')" type="index" width="100">
+        <template v-slot="scope">
+          <span>{{ (page - 1) * 10 + scope.$index + 1 }}</span>
+        </template>
+      </el-table-column>
       <el-table-column prop="group_name" :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.NOTICENAME')"></el-table-column>
       <el-table-column prop="notification_type" :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.NOTICETYPE')">
         <template v-slot="scope">

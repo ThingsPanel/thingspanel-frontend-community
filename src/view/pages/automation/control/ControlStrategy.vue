@@ -14,7 +14,11 @@
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
-    <el-table-column :label="$t('AUTOMATION.NO')" type="index" width="100" align="center"></el-table-column>
+    <el-table-column :label="$t('AUTOMATION.NO')" type="index" width="100" align="center">
+      <template v-slot="scope">
+        <span>{{ (params.current_page - 1) * 10 + scope.$index + 1 }}</span>
+      </template>
+    </el-table-column>
 
       <el-table-column :label="$t('AUTOMATION.RULE_NAME')" prop="automation_name"></el-table-column>
       <el-table-column :label="$t('AUTOMATION.RULE_DESCRIBE')" prop="automation_described"></el-table-column>

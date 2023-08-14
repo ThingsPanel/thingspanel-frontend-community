@@ -12,11 +12,11 @@
     </el-row>
     <el-form class="inline-edit">
       <el-table :data="tableData">
-        <el-table-column
-          :label="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.NO')"
-          type="index"
-
-        ></el-table-column>
+        <el-table-column :label="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.NO')" type="index">
+          <template v-slot="scope">
+            <span>{{ (page - 1) * 10 + scope.$index + 1 }}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="role_name" :label="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.ROLENAME')" width="200px">
           <template v-slot="scope">
             <!-- 新建或者编辑 -->

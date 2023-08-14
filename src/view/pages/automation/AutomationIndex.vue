@@ -8,7 +8,11 @@
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column :label="$t('AUTOMATION.NO')" type="index" width="260"></el-table-column>
+      <el-table-column :label="$t('AUTOMATION.NO')" type="index" width="260">
+        <template v-slot="scope">
+          <span>{{ (params.page - 1) * 10 + scope.$index + 1 }}</span>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('AUTOMATION.NAMES')" prop="name" ></el-table-column>
       <el-table-column :label="$t('AUTOMATION.TIMES')" prop="created_at">
         <template v-slot="scope">
