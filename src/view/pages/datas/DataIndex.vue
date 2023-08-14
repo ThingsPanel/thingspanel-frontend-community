@@ -104,7 +104,7 @@
     <el-table-column :label="$t('DATA_MANAGEMENT.TIMES')"  prop="ts"></el-table-column>
     <el-table-column :label="$t('DATA_MANAGEMENT.PROPERTY_ASLIAS')" prop="alias"></el-table-column>
     <el-table-column :label="$t('DATA_MANAGEMENT.TITLE30')" prop="key"></el-table-column>
-    <el-table-column :label="$t('DATA_MANAGEMENT.TITLE31')" prop="dbl_v">
+    <el-table-column :label="$t('DATA_MANAGEMENT.TITLE31')" prop="dbl_v" show-overflow-tooltip>
       <template v-slot="scope">
         <div v-if="scope.row.str_v.indexOf('file') == -1">
           {{ scope.row.str_v != "" ? scope.row.str_v : scope.row.dbl_v }}

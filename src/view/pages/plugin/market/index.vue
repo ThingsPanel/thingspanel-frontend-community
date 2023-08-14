@@ -35,7 +35,8 @@
 
       <div v-if="params.displayMode==='grid'" v-loading="listLoadig">
         <div class="width-20" v-for="(item,index) in listArr" :key="index">
-          <PluginCard :key="item.id" :data="item" :isInstalled="true" :category="category"
+          <PluginCard :key="item.storeId" :data="item" :isInstalled="true" :category="category"
+                      :pluginType="params.pluginType"
                       @edit="handleEditPlugin"
                       @delete="handleDelPlugin"
                       @install="handleInstallPlugin"

@@ -6,23 +6,23 @@ const PluginType = {
     /**
      * 设备插件
      */
-    Device: 1,
+    device: 1,
     /**
      * 协议插件
      */
-    Protocol: 2,
+    protocol: 4,
     /**
      * 解析脚本
      */
-    Script: 3,
+    script: 3,
     /**
      * 规则引擎
      */
-    NodRed: 4,
+    nodRed: 2,
     /**
      * 可视化插件
      */
-    Visual: 5
+    visual: 5
 }
 /**
  * 设备插件分类

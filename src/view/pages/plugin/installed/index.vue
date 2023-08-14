@@ -3,11 +3,11 @@
       <el-form label-position="left" label-width="120px">
            <el-form-item label="插件类型：">
              <el-radio-group v-model="params.pluginType" size="small" @change="handlePluginTypeChanged">
-               <el-radio-button :label="pluginType.Device">设备插件</el-radio-button>
-               <el-radio-button :label="pluginType.Script">解析脚本</el-radio-button>
-               <el-radio-button :label="pluginType.NodRed">规则引擎代码</el-radio-button>
-               <el-radio-button :label="pluginType.Protocol">协议插件</el-radio-button>
-               <el-radio-button :label="pluginType.Visual">可视化插件</el-radio-button>
+               <el-radio-button :label="pluginType.device">设备插件</el-radio-button>
+               <el-radio-button :label="pluginType.script">解析脚本</el-radio-button>
+               <el-radio-button :label="pluginType.nodRed">规则引擎代码</el-radio-button>
+               <el-radio-button :label="pluginType.protocol">协议插件</el-radio-button>
+               <el-radio-button :label="pluginType.visual">可视化插件</el-radio-button>
              </el-radio-group>
             </el-form-item>
 
@@ -63,7 +63,7 @@
               <template v-slot="scope">
                 <div style="text-align: left">
 
-                  <el-button v-if="scope.row.pluginType===pluginType.Device" slot="reference" size="mini" type="border" @click="handleEditPlugin(scope.row)">编辑</el-button>
+                  <el-button v-if="scope.row.pluginType===pluginType.device" slot="reference" size="mini" type="border" @click="handleEditPlugin(scope.row)">编辑</el-button>
                   <el-button slot="reference" size="mini" type="border" @click="handleExportPlugin(scope.row)">导出</el-button>
 
                   <el-popconfirm :title="$t('PLUGIN.TAB2_CONTENT.TITLE4')" @confirm="handleDelPlugin(scope.row)">
@@ -114,7 +114,7 @@ export default {
         total: 0,
         current_page: 1,
         per_page: 10,
-        pluginType: PluginType.Device,
+        pluginType: PluginType.device,
         installationStatus: "all",
         displayMode: "grid"
       },
@@ -140,11 +140,11 @@ export default {
      */
     loadList() {
       switch (this.params.pluginType) {
-        case PluginType.Device: {
+        case PluginType.device: {
           this.loadDevicePluginList();
           break;
         }
-        case PluginType.Script: {
+        case PluginType.script: {
           this.loadScriptPluginList();
           break;
         }
@@ -226,7 +226,7 @@ export default {
      * @return {*}
      */    
     handleEditPlugin(item) {
-      if (item.pluginType === PluginType.Device) {
+      if (item.pluginType === PluginType.device) {
         this.$emit("edit", item);
       }
     },
