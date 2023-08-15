@@ -226,7 +226,7 @@ export default {
      * @return {*}
      */    
     handleEditPlugin(item) {
-      if (item.pluginType === PluginType.device) {
+      if (this.params.pluginType === PluginType.device) {
         this.$emit("edit", item);
       }
     },
