@@ -167,19 +167,6 @@ const Wash = {
                 describe: data.remark
             }
         },
-        /*
-            {
-                "id": "1be2148e-ed44-52c6-3268-d441088579d5",
-                "script_name": "温湿度脚本",
-                "company": "温湿度脚本",
-                "product_name": "温湿度脚本",
-                "script_content_a": "func (){\"key\":\"value\"}",
-                "script_content_b": "func (){\"key\":\"value\"}",
-                "created_at": 1679561375,
-                "remark": "描述",
-                "device_type": "undefined"
-            }
-        */
     }
 }
 

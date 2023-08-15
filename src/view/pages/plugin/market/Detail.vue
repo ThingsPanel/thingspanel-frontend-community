@@ -1,5 +1,5 @@
 <template>
-    <el-dialog title="详情页面" :visible.sync="dialogVisible" width="80%">
+    <el-dialog :title="data.name" :visible.sync="dialogVisible" width="80%">
         <div v-loading="isLoading">
             <iframe ref="frameRef" style="width: 100%;height: calc(100vh - 200px);border: 0px;margin:0;background: #fff"></iframe>
         </div>
@@ -7,7 +7,6 @@
 </template>
 
 <script>
-import { handleServerErrorMsg } from '../../../../utils/helpers'
 
 export default {
   components: {},
@@ -19,6 +18,10 @@ export default {
     url: {
         type: String,
         default: ""
+    },
+    data: {
+        type: Object,
+        default: () => ({})
     }
   },
   data() {

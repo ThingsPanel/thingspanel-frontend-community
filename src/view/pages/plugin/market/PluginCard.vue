@@ -38,7 +38,7 @@
       </b-card-text>
 
     </b-card>
-    <Detail :visible.sync="detailDialogVisible" :url="detailUrl"></Detail>
+    <Detail :visible.sync="detailDialogVisible" :url="detailUrl" :data="data"></Detail>
   </div>
 </template>
 
@@ -53,7 +53,7 @@ export default {
   props: {
     data: {
       type: Object,
-      default: () => { }
+      default: () => ({})
     },
     category: {
       type: [Array],

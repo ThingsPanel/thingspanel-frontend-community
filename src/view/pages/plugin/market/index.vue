@@ -91,7 +91,6 @@
 <script>
 import PluginCard from "./PluginCard";
 import PluginAPI from "@/api/plugin.js";
-import ProtocolPlugin from "@/api/protocolPlugin.js";
 import LoginStore from '@/view/pages/auth/LoginStore';
 import StoreAPI from "@/api/store"
 import { Wash, PluginType } from "../Const";
