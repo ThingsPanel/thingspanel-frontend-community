@@ -98,7 +98,7 @@ export default {
                     this.$store.dispatch(LOGIN, this.formData)
                         .then(res => {
                             if (res.code === 0) {
-                                message_success("登陆成功！");
+                                message_success("登录成功！");
                                 this.dialogVisible = false;
                                 this.login({ code: 200, msg: "登录成功" })
                             }

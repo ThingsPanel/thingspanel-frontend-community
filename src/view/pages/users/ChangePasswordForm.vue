@@ -16,7 +16,12 @@
       @keydown.enter="handleSubmit()"
       hide-required-asterisk
   >
-    <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PASSWORD')" prop="password">
+
+  <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.OLD_PASSWORD')" prop="old_password">
+    <el-input size="medium" v-model="formData.old_password" show-password></el-input>
+  </el-form-item>
+
+    <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.NEW_PASSWORDD')" prop="password">
       <el-input size="medium" v-model="formData.password" show-password></el-input>
     </el-form-item>
     <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.CONPASSWORD')" prop="password_confirmation">
@@ -39,6 +44,8 @@ import {user_change_password} from "@/api/user";
 import {message_success} from "@/utils/helpers";
 import FormAlert from "@/components/common/FormAlert";
 import i18n from "@/core/plugins/vue-i18n.js"
+import JwtService from "@/core/services/jwt.service";
+
 export default defineComponent({
   name: "ChangePasswordForm",
   components: {
@@ -67,6 +74,7 @@ export default defineComponent({
 
     let formData = reactive({
       id: "",
+      old_password: "",
       password: "",
       password_confirmation: ""
     })
@@ -95,7 +103,7 @@ export default defineComponent({
     })
 
     function handleSubmit(){
-
+      console.log(JwtService.getCurrentUser())
       changePasswordForm.value.validate((valid)=>{
         if(!valid) return;
 
@@ -106,7 +114,7 @@ export default defineComponent({
         error_message.value = ""
 
         // 赋值user_id
-        formData.id = store.state.auth.user.id
+        formData.id = JwtService.getCurrentUser().id
 
         user_change_password(formData).then(({data})=>{
           if(data.code === 200) {

@@ -138,7 +138,8 @@ export default {
         this.listArr = [];
         const params = {
           page: this.params.page,
-          pageSize: this.params.pageSize
+          pageSize: this.params.pageSize,
+          approvalFlag: 1
         }
         StoreAPI.list[this.params.pluginType](params)
           .then(({data: result}) => {

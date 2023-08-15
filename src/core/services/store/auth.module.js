@@ -99,6 +99,7 @@ const actions = {
             getUserInfo()
                 .then(({data}) => {
                   if (data.code == 200) {
+                    console.log('getUserInfo', data)
                     let user = data.data;
                     state.user = user;
                     state.user.name = user.name;

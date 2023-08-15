@@ -142,20 +142,25 @@ export default {
           if (data.code == 200) {
             console.log("====getLayout", data.data)
             if (data.data['chart_option'] && data.data['chart_option'] != "[]" && data.data['chart_option'] != "{}") {
-              let layout = JSON.parse(data.data['chart_option']);
-              for (let i = 0; i < this.options.length; i++) {
-                let option = layout.find(item => item.id == this.options[i].id)
-                if (!option) {
-                  option = {x: 0, y: 0, w: 6, h: 6, i}
+              try {
+                let layout = JSON.parse(data.data['chart_option']);
+                for (let i = 0; i < this.options.length; i++) {
+                  let option = layout.find(item => item.id == this.options[i].id)
+                  if (!option) {
+                    option = {x: 0, y: 0, w: 6, h: 6, i}
+                  }
+                  options[i].x = option.x;
+                  options[i].y = option.y;
+                  options[i].w = option.w;
+                  options[i].h = option.h;
+                  options[i].i = option.i;
+                  // this.handleResized(i);
                 }
-                options[i].x = option.x;
-                options[i].y = option.y;
-                options[i].w = option.w;
-                options[i].h = option.h;
-                options[i].i = option.i;
-                // this.handleResized(i);
+                this.optionsData = options;
+              } catch(err) {
+                // 显示默认布局
+                this.optionsData = this.getDefaultLayout(options, 4)
               }
-              this.optionsData = options;
             } else {
               // 如果读取到的布局为空，则显示默认布局
               this.optionsData = this.getDefaultLayout(options, 4)
