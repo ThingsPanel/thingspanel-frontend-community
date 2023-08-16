@@ -166,13 +166,11 @@ export default {
      * @param item
      */
     showVisual(item) {
-      // let query = { id: item.id, name: item.dashboard_name };
-      // const { href } = this.$router.resolve({ name: "VisualDisplay", query });
-      // window.open(href, '_blank');
       const id = item.id;
       const token = JwtService.getToken();
       const expiresTime = JwtService.getExpiresTime();
-      const url = `/visual/display?id=${id}&token=${token}&expiresTime=${expiresTime}`
+      let visualUrl = process.env.NODE_ENV === "production" ? "/visual" : "http://localhost:5173"
+      const url = `${visualUrl}/display?id=${id}&token=${token}&expiresTime=${expiresTime}`
       window.open(url, '_blank');
     },
     /**
@@ -180,15 +178,12 @@ export default {
      * @param item
      */
     editVisual(item) {
-      // let query = { id: item.id };
-      // const{ href } = this.$router.resolve({ name:"VisualEditor", query });
-      // window.open(href,'_blank');
-      // =======================================================================
       const id = item.id;
       const token = JwtService.getToken();
       const expiresTime = JwtService.getExpiresTime();
       sessionStorage.setItem("thingspanel_token", token);
-      const url = `/visual/editor?id=${id}&token=${token}&expiresTime=${expiresTime}`
+      let visualUrl = process.env.NODE_ENV === "production" ? "/visual" : "http://localhost:5173"
+      const url = `${visualUrl}/editor?id=${id}&token=${token}&expiresTime=${expiresTime}`
       window.open(url, '_blank');
     },
     /**

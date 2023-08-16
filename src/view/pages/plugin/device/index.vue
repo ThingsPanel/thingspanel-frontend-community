@@ -120,9 +120,9 @@ export default {
       console.log("handleImport", this.pluginJsonData);
       this.showEditorDialog = true;
     },
-    save(jsonObj, callback) {
+    async save(jsonObj, callback) {
       console.log("save", jsonObj)
-
+      
       let data = {
         model_type: jsonObj.info.pluginCategory,
         chart_data: JSON.stringify(jsonObj),
@@ -154,10 +154,17 @@ export default {
      * @param data
      * @param callback
      */
-    publish(jsonObj, callback) {
+    async publish(jsonObj, callback) {
       console.log("publish", jsonObj)
+      
+
       const isAuth = this.$store.getters.getStoreAuthenticated;
       if (isAuth) {
+        const fd = new FormData()
+        fd.append('files', jsonObj.info.thumbImg[0].raw)
+        let result = await StoreAPI.upload(fd)
+        console.log(result)
+        if (true) return;
         // 已登录
         let deviceData = {
           devicePluginType: Number(jsonObj.info.pluginCategory),

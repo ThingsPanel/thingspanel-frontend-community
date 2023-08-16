@@ -82,5 +82,7 @@ export default {
          * @returns 
          */
         script: data => app_axios.post("/WebUser/createTProtocolScript", data),
-    }
+    },
+
+    upload: data => app_axios.post("http://119.91.238.241:8900/fileUploadAndDownload/upload", data)
 }

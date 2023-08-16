@@ -151,7 +151,7 @@ export default {
 const typeConvert = (value, type) => {
   if (type.toLowerCase() == "integer") return Number(value);
   if (type.toLowerCase() == "string" || type.toLowerCase() == "text") return String(value);
-  if (type.toLowerCase() == "bool" || type.toLowerCase() == "boolean") return Boolean(value);
+  if (type.toLowerCase() == "bool" || type.toLowerCase() == "boolean") return value === 'true' || value === true;
   if (type.toLowerCase() == "float") return parseFloat(value);
 }
 </script>
