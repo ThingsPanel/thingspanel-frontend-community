@@ -286,6 +286,7 @@ export default {
                     }
 
                     this.$nextTick(() => {
+                      console.log("====updateOption", option)
                       this.$refs["component_" + option.i][0].updateOption(values);
                     })
                   }
