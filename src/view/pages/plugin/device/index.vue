@@ -121,7 +121,6 @@ export default {
       this.showEditorDialog = true;
     },
     async save(jsonObj, callback) {
-      console.log("save", jsonObj)
       
       let data = {
         model_type: jsonObj.info.pluginCategory,
@@ -157,14 +156,8 @@ export default {
     async publish(jsonObj, callback) {
       console.log("publish", jsonObj)
       
-
       const isAuth = this.$store.getters.getStoreAuthenticated;
       if (isAuth) {
-        const fd = new FormData()
-        fd.append('files', jsonObj.info.thumbImg[0].raw)
-        let result = await StoreAPI.upload(fd)
-        console.log(result)
-        if (true) return;
         // 已登录
         let deviceData = {
           devicePluginType: Number(jsonObj.info.pluginCategory),
@@ -174,6 +167,15 @@ export default {
           versionNumber: jsonObj.info.version,
           pluginDescribe: jsonObj.info.description
         }
+        if (jsonObj.info.thumbImg && jsonObj.info.thumbImg[0].raw) {
+          // 上传图片到本地服务器
+          const fd = new FormData()
+          fd.append('file', jsonObj.info.thumbImg[0].raw)
+          let { data: result } = await StoreAPI.upload(fd)
+          deviceData.coverUrl = result.data.file.url
+        }
+        console.log('publish', jsonObj.info)
+        // if (true) return;
         StoreAPI.publish.device(deviceData)
           .then(({ data: result }) => {
             const msg = "上传成功，请等待审核，审核通过后可以在应用市场查看！";

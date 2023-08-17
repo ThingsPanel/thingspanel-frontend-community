@@ -30,14 +30,26 @@
                 <el-upload
                     action="#"
                     list-type="picture"
+                    :before-upload="checkFile"
                     :show-file-list="false"
                     :auto-upload="false"
+                    :multiple="false"
                     :on-change="handleChange">
-<!--                  <el-card class="upload-card">-->
                     <img class="upload-img" width="100%" v-show="thumbImg!=''" :src="thumbImg" alt="">
-<!--                  </el-card>-->
                   <el-button type="primary" style="margin-top:20px">{{ $t('PLUGIN.DEVICE_INFO_TAB.CHOOSE_COVER') }}</el-button>
                 </el-upload>
+                <!-- <el-upload
+                  action="http://119.91.238.241:8900/fileUploadAndDownload/upload"
+                  :headers="{ 'x-token': app_token }"
+
+                  :before-upload="checkFile"
+                  :on-error="uploadError"
+                  :on-success="uploadSuccess"
+                  :show-file-list="false"
+                  class="upload-btn"
+                >
+                  <el-button size="small" type="primary">普通上传</el-button>
+                </el-upload> -->
               </div>
 
               <!-- 查看大图-->
@@ -58,6 +70,8 @@
 
 <script>
 import i18n from "@/core/plugins/vue-i18n.js"
+import Store from "@/core/services/app-store.service"
+
 export default {
   name: "Information",
   props: {
@@ -72,6 +86,7 @@ export default {
   },
   data() {
     return {
+      app_token: Store.getToken(),
       formData: {},
       // 校验表单
       formRules: {
@@ -100,11 +115,21 @@ export default {
     }
   },
   methods: {
+    checkFile(file) {
+      const isJPG = file.type === 'image/jpeg'
+      const isPng = file.type === 'image/png'
+      const isLt2M = file.size / 1024 / 1024 < 0.5
+      if (!isJPG && !isPng) {
+      }
+      if (!isLt2M) {
+      }
+      return (isPng || isJPG) && isLt2M
+    },
     handleChange(file, fileList) {
       if (fileList.length >0) {
         this.showUpload = false;
         this.thumbImg = file.url;
-        this.formData['thumbImg'] = this.thumbImg;
+        this.formData['thumbImg'] = fileList;
       }
     },
     /**
