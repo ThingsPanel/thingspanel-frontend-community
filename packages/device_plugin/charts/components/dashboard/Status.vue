@@ -214,6 +214,8 @@ const iconList = [
   width: 100%;
   height: 100%;
   display: table;
+  position: absolute;
+  top: 0px;
   .center {
     display: table-cell;
     vertical-align: middle;

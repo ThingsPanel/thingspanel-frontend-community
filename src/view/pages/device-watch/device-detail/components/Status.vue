@@ -85,7 +85,8 @@ export default {
 <style scoped lang="scss">
 .chart-div {
   position: relative;
-
+  left: 0;
+  right: 0;
   //margin: 10px 20px 10px 10px;
   border-radius: 4px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);

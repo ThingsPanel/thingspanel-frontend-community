@@ -102,9 +102,13 @@ export default {
           }
           let series = [];
           series = value.map(item => {
-            let detail = { formatter: '{value}' + ((item.unit && item.unit !== "-") ? item.unit : "") };
-            if (!item.value) throw new Error("value is null");
-            return { data: [ { value: item.value, name } ], detail }
+            if (!item.value) {
+              let detail = { formatter: '无数据' };
+              return { data: [ { value: "", name } ], detail }
+            } else {
+              let detail = { formatter: '{value}' + ((item.unit && item.unit !== "-") ? item.unit : "") };
+              return { data: [ { value: item.value, name } ], detail }
+            }
           })
           this.myEcharts.setOption({ series });
         } catch (e) {

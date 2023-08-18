@@ -277,6 +277,7 @@ export default {
                         values = mapping.map(item => {
                           return {...item, value: data.data[0][item.name]}
                         });
+
                       }
                     } else if (option.controlType == "control") {
                       values = {};
@@ -355,7 +356,7 @@ export default {
 .component-item {
   width: 100%;
   height: 100%;
-  //position: absolute;
+  position: relative;
   top: 0;
   left: 0;
 }
