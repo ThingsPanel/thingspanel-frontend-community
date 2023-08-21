@@ -136,7 +136,8 @@ export default {
      * 读取设备的图表的布局
      * @param options
      */
-    getLayout(options) {
+    getLayout(opts) {
+      let options = JSON.parse(JSON.stringify(opts));
       device_info({id: this.device.device })
         .then(({data}) => {
           if (data.code == 200) {
@@ -275,7 +276,10 @@ export default {
                         values = data.data[0].systime;
                       } else {
                         values = mapping.map(item => {
-                          return {...item, value: data.data[0][item.name]}
+                          if (data.data && data.data[0][item.name]) {
+                            return {...item, value: data.data[0][item.name] || ""}
+                          }
+                          return {...item, value: ""}
                         });
 
                       }

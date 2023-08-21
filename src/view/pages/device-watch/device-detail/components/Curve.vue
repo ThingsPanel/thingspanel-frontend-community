@@ -109,6 +109,10 @@ export default {
       optionData: {},
       configurationVisible: false,
       rangeDialogVisible: false,
+      dataZoom: {
+        start: 70,
+        end: 100
+      },
       params: {
         period: 300,   // 采样周期，默认最近5分钟
         rate: 10     // 采样频率，默认10秒
@@ -163,51 +167,41 @@ export default {
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
     this.initEChart();
+    this.myEcharts.on('dataZoom', params => {
+      this.dataZoom.start = params.start;
+      this.dataZoom.end = params.end;
+    })
+    
   },
   methods: {
     /**
      * 加载EChats图表
      */
     initEChart(option) {
-      console.log("====Curve.option", option)
-      console.log("====Curve.optionData", this.optionData)
       this.myEcharts = this.$echarts.init(this.$refs.chart, 'dark');
       this.$nextTick(() => {
         this.myEcharts.resize();
       });
+      
       this.optionData.tooltip = {
         trigger: 'axis',
-        position: function (point, params, dom, rect, size) {
-            // 鼠标坐标和提示框位置的参考坐标系是：以外层div的左上角那一点为原点，x轴向右，y轴向下
-            var x = 0; // x坐标位置
-            var y = 0; // y坐标位置
-
-            var pointX = point[0];
-            var pointY = point[1];
-
-            // 提示框大小
-            var boxWidth = size.contentSize[0];
-            var boxHeight = size.contentSize[1];
-            
-            // boxWidth > pointX 说明鼠标左边放不下提示框
-            if (boxWidth > pointX) {
-                x = 5;
-            } else { // 左边放的下
-                x = pointX - boxWidth;
-            }
-            
-            // boxHeight > pointY 说明鼠标上边放不下提示框
-            if (boxHeight > pointY) {
-                y = 5;
-            } else { // 上边放得下
-                y = pointY - boxHeight;
-            }
-            return [x, y];
-        },
+        confine: true,
       };
       this.optionData.backgroundColor = 'transparent';
       if (option) {
+        const data = option.series[0].data;
+        let start = Math.ceil(this.dataZoom.start / 100 * data.length);
+        let end = Math.floor(this.dataZoom.end / 100 * data.length);
+        let displayedData = data.slice(start - 1, end + 1);
+        console.log("displayedData", displayedData)
+        let min = Math.floor(Math.min.apply(null, displayedData));
+        let max = Math.ceil(Math.max.apply(null, displayedData));
+        option.yAxis = option.yAxis ? option.yAxis : {};
+        option.yAxis.max = max;
+        option.yAxis.min = min;
+        console.log("option", option.yAxis)
         this.myEcharts.setOption(option);
+
       } else {
         this.myEcharts.setOption(this.optionData);
       }
