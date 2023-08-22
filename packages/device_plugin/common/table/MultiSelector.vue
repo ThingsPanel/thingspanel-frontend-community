@@ -1,6 +1,8 @@
 <template>
   <div style="display:flex;width:100%">
-    <el-select ref="selectRef" style="width:100%;margin-right:4px" multiple v-model="optionArr" @remove-tag="removeOption">
+    <el-select ref="selectRef" style="width:100%;margin-right:4px" multiple 
+        :placeholder="'请选择' + placeholder"
+        v-model="optionArr" @remove-tag="removeOption">
         <el-option
             v-for="item in options"
             :key="item.identifier"
@@ -44,6 +46,10 @@ export default {
       type: Array,
       default: () => []
     },
+    placeholder: {
+        type: String,
+        default: () => ''
+    }
   },
   data() {
     return {

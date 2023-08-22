@@ -28,13 +28,17 @@
           <div v-if="editInTable">
             <!-- editInTable为TRUE时，点击新增按钮在列头显示编辑框 -->
 
-            <el-select v-if="addOrEdit=='add' && showHandle && attr.type=='select'" v-model="newData[attr.field]">
+            <el-select v-if="addOrEdit=='add' && showHandle && attr.type=='select'" 
+              :placeholder="attr.label"  
+              v-model="newData[attr.field]">
               <el-option v-for="(option, index) in attr.options" :key="index"
                       :label="option.label" :value="option.value"
               ></el-option>
             </el-select>
 
-            <multi-selector v-else-if="addOrEdit=='add' && showHandle && attr.type=='multiSelect'" :data.sync="newData[attr.field]"></multi-selector>
+            <multi-selector v-else-if="addOrEdit=='add' && showHandle && attr.type=='multiSelect'" 
+              :placeholder="attr.label"  
+              :data.sync="newData[attr.field]"></multi-selector>
 
             <el-input v-else-if="addOrEdit=='add' && showHandle"
                       v-model="newData[attr.field]"
@@ -50,7 +54,7 @@
 
           <!-- 编辑 start -->
           <div v-show="scope.row.edit && showHandle">
-            <el-select v-if="attr.type=='select'" v-model="editData[attr.field]"
+            <el-select v-if="attr.type=='select'" v-model="editData[attr.field]" :placeholder="attr.label"  
                        :id="attr.field + '_row_' + scope.row['index']" >
               <el-option v-for="(option, index) in attr.options" :key="index"
                          :label="option.label" :value="option.value"
@@ -59,7 +63,7 @@
             </el-select>
 
             <!-- 编辑输入框 -->
-            <multi-selector v-else-if="attr.type=='multiSelect'"  
+            <multi-selector v-else-if="attr.type=='multiSelect'" :placeholder="attr.label"  
                       :ref="attr.field + '_row_' + scope.row['index']"
                       :data.sync="editData[attr.field]"></multi-selector>
 
@@ -134,7 +138,7 @@
               <range-input :data.sync="formData[attr.field]"></range-input>
           </span>
 
-          <multi-selector v-else-if="attr.type=='multiSelect'" :data.sync="formData[attr.field]"></multi-selector>
+          <multi-selector v-else-if="attr.type=='multiSelect'" :placeholder="attr.label" :data.sync="formData[attr.field]"></multi-selector>
 
 
           <!-- 输入框 -->

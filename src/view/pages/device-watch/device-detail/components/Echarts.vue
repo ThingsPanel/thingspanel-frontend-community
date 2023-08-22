@@ -101,10 +101,20 @@ export default {
             name = this.option.series[0].data[0].name ;
           }
           let series = [];
-          series = value.map(item => {
+          series = value.map((item, i) => {
+            
+            console.log("series", value)
             if (!item.value) {
+              let opts = this.myEcharts.getOption();
+              let { data } = opts.series[i];
               let detail = { formatter: '无数据' };
-              return { data: [ { value: "", name } ], detail }
+              if (data && data[0] && data[0].value) {
+                let detail = { formatter: '{value}' + ((item.unit && item.unit !== "-") ? item.unit : "") };
+                return { data: [ { value: data[0].value, name } ], detail }
+              } else {
+                detail = { formatter: '无数据' };
+                return { data: [ { value: "", name } ], detail }
+              }
             } else {
               let detail = { formatter: '{value}' + ((item.unit && item.unit !== "-") ? item.unit : "") };
               return { data: [ { value: item.value, name } ], detail }

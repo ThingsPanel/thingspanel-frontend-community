@@ -9,7 +9,7 @@
 <template>
   <div style="display: flex">
     <el-select ref="symbolRef" v-if="option.operator" style="width: 100px;margin-right:10px" :placeholder="$t('AUTOMATION.PLACEHOLDER.SYMBOL')" 
-    v-model="formData.symbol"
+                v-model="formData.symbol"
                @change="handleChange">
       <el-option v-for="(item, index) in symbolList" :key="index" :label="item" :value="item"></el-option>
     </el-select>

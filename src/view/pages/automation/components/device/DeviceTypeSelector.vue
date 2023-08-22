@@ -36,7 +36,7 @@
         <el-option v-for="item in group.options" :key="item.name" 
           :label="item.label + (item.readWrite === 'r' ? ' (只读)' : '')" 
           :value="item" 
-          :disabled="item.readWrite === 'r'">
+          :disabled="item.readWrite === 'r' && !option.operator">
       </el-option>
       </el-option-group>
     </el-select>
