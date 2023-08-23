@@ -101,6 +101,7 @@ export default {
   },
   methods: {
     customPlugin() {
+      this.id = "";
       this.pluginJsonData = {};
       this.showEditorDialog = true
       console.log("configuration")

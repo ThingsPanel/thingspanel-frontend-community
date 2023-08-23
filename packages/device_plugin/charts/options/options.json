@@ -366,10 +366,18 @@
       }
     },
     {
+      "type": "signalStatus",
+      "title": "状态信号",
+      "fontSize": 30,
+      "value": 0,
+      "on": 1,
+      "off": 0,
+      "onLabel": "开启",
+      "offLabel": "关闭"
+    },
+    {
       "type": "deviceStatus",
-      "series": {
-
-      }
+      "series": {}
     }
 
   ],

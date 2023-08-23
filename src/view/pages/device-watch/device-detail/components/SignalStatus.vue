@@ -1,21 +1,21 @@
 <template>
-  <div class="chart-div">
-    <div  v-if="showHeader" class="chart-header">
-      <span class="title">{{ option.name }}</span>
-      <div class="tool-right">
-        <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
+    <div class="chart-div">
+        <div  v-if="showHeader" class="chart-header">
+          <span class="title">{{ option.name }}</span>
+          <div class="tool-right">
+            <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
+          </div>
+        </div>
+    
+        <common-signal-status :option="option" :value="value"></common-signal-status>
       </div>
-    </div>
-
-    <common-status :option="optionData"></common-status>
-  </div>
-
 </template>
 
 <script>
 import {currentValue} from "@/api/device";
+
 export default {
-  name: "StatusIndex",
+  components: {},
   props: {
     showHeader: {
       type: [Boolean],
@@ -32,42 +32,22 @@ export default {
   },
   data() {
     return {
-      optionData: {},
-      timer: null,
-      flushTime: 5
+        value: false
     }
   },
-  watch: {
-  },
   mounted() {
-    this.optionData = JSON.parse(JSON.stringify(this.option));
-  },
-  beforeUpdate() {
+    // console.log("====signalStatus.mounted", this.option, this.device)
+    // this.optionData = JSON.parse(JSON.stringify(this.option));
   },
   methods: {
-    updateOption() {
-      let deviceId = this.device.device;
-      let attrs = this.option.mapping;
-      this.getValue(deviceId, attrs);
-    },
-    getValue(deviceId, attrs) {
-      currentValue({entity_id: deviceId, attribute: attrs})
-          .then(({data}) => {
-            if (data.code == 200 && data.data) {
-              let value = data.data[0][attrs[0]]
-              console.log(value)
-              this.optionData = {series: { value }}
-            }
-          })
-    },
-    sizeChange() {
+    updateOption(value) {
+      this.value = value;
+      console.log("====signalStatus.updateOption", value)
     }
   }
 }
-
 </script>
-
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .chart-div {
   position: relative;
   left: 0;

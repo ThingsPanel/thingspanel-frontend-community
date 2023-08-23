@@ -3,7 +3,7 @@ import TslEditor from "./tsl/editor";
 import CommonControl from "./charts/components/control";
 import CommonStatus from "./charts/components/dashboard/Status";
 import CommonDeviceStatus from "./charts/components/dashboard/DeviceStatus";
-
+import CommonSignalStatus from "./charts/components/dashboard/SignalStatus";
 import './style/dark-theme.scss'
 
 import {
@@ -29,6 +29,7 @@ const install = Vue => {
     Vue.component(CommonControl.name, CommonControl);
     Vue.component(CommonStatus.name, CommonStatus);
     Vue.component(CommonDeviceStatus.name, CommonDeviceStatus);
+    Vue.component(CommonSignalStatus.name, CommonSignalStatus);
 }
 
 if (typeof window.Vue !== 'undefined') {

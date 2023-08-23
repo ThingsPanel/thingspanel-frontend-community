@@ -226,12 +226,5 @@ const iconList = [
 
   }
 }
-//::v-deep .el-form-item {
-//  width: 100%;
-//}
-//::v-deep .el-form-item__content {
-//  width: 100%;
-//  display: inline-flex;
-//  margin-left: 0px!important;
-//}
+
 </style>

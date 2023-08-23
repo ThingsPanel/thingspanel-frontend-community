@@ -33,6 +33,10 @@
                 v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'"
                        :option="option" :device="device" :value="option.value"></device-status>
 
+        <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+               v-if="option.controlType == 'dashboard' && option.type == 'signalStatus'"
+               :option="option" :device="device" :value="option.value"></signal-status>
+
         <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
                  v-if="option.controlType == 'control'" :option="option" :device="device"></control>
 
@@ -62,6 +66,7 @@ import ECharts from "./components/Echarts"
 import Curve from "./components/Curve";
 import Control from "./components/Control";
 import Status from "./components/Status"
+import SignalStatus from "./components/SignalStatus"
 import DeviceStatus from "./components/DeviceStatus"
 import VideoComponent from "./components/Video";
 import {device_info} from "@/api/device";
@@ -70,7 +75,7 @@ import {currentValue} from "@/api/device";
 
 export default {
   name: "PluginCharts",
-  components: { GridLayout, GridItem, ECharts, Curve,  Control, Status, DeviceStatus, VideoComponent },
+  components: { GridLayout, GridItem, ECharts, Curve,  Control, Status, SignalStatus, DeviceStatus, VideoComponent },
   props: {
     options: {
       type: [Array],
@@ -129,7 +134,7 @@ export default {
     handleResized(i, rect) {
       console.log("====handleResized.i", i)
       this.$nextTick(() => {
-          this.$refs["component_" + i][0].sizeChange();
+        this.$refs["component_" + i][0].sizeChange && this.$refs["component_" + i][0].sizeChange();
       })
     },
     /**
@@ -274,6 +279,14 @@ export default {
                     if (option.controlType == "dashboard") {
                       if (option.type == "deviceStatus") {
                         values = data.data[0].systime;
+                      } else if (option.type == "signalStatus") {
+                        console.log("====signalStatus.mapping", mapping[0], data.data);
+                        if (data.data && data.data[0][mapping[0].name]) {
+                          values = data?.data[0][mapping[0].name];
+                        console.log("====signalStatus.values", mapping[0], values);
+                        } else {
+                          values = null;
+                        }
                       } else {
                         values = mapping.map(item => {
                           if (data.data && data.data[0][item.name]) {
@@ -291,7 +304,7 @@ export default {
                     }
 
                     this.$nextTick(() => {
-                      console.log("====updateOption", option)
+                      console.log("====updateOption", values)
                       this.$refs["component_" + option.i][0].updateOption(values);
                     })
                   }
@@ -312,13 +325,20 @@ export default {
     },
     getMapping(option) {
       if (option.mapping) {
+
         let mapping = [];
         this.tsl.map(property => {
-          option.mapping.forEach(item => {
-            if (property.name == item) {
+          if (typeof option.mapping == "object") {
+            option.mapping.forEach(item => {
+              if (property.name == item) {
+                mapping.push(property);
+              }
+            })
+          } else {
+            if (option.mapping === property.name) {
               mapping.push(property);
             }
-          })
+          }
         })
         return mapping;
       } else {

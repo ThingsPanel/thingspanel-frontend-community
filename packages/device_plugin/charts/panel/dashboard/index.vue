@@ -4,6 +4,7 @@
       <div class="charts-panel-item" v-for="(option, index) in chartList" :key="'dashboard'+index">
         <tp-status v-if="option.type=='status'" ref="tpStatus" :option="option" :data-src="dataSrc" @bind="handleBind"></tp-status>
         <tp-device-status v-else-if="option.type=='deviceStatus'" ref="tpDeviceStatus" mode="edit" :option="option" @bind="handleBind"></tp-device-status>
+        <tp-signal-status v-else-if="option.type=='signalStatus'" ref="tpSignalStatus" :data-src="dataSrc" mode="edit" :option="option" @bind="handleBind"></tp-signal-status>
         <tp-e-chart v-else style="width: 300px;height: 300px" :option="option" :data-src="dataSrc" @clickChart="showDialog"></tp-e-chart>
       </div>
     </div>
@@ -37,9 +38,7 @@
               <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE5')">
                 <el-input style="width: 200px" v-model="chartTitle"></el-input>
               </el-form-item>
-<!--              <el-form-item label="颜色">-->
 
-<!--              </el-form-item>-->
               <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE6')">
                 <el-input-number style="width: 200px" v-model="fontSize"></el-input-number>
               </el-form-item>
@@ -67,6 +66,7 @@
 <script>
 import TpStatus from "../../components/dashboard/Status"
 import TpEChart from "../../components/dashboard/EChart"
+import TpSignalStatus from "../../components/dashboard/SignalStatus"
 import TpDeviceStatus from "../../components/dashboard/DeviceStatus"
 import CustomEChartDialog from "./CustomEchartDialog";
 import global from "../../../common/global";
@@ -74,7 +74,7 @@ import {message_error} from "@/utils/helpers";
 
 export default {
   name: "DashboardPanel",
-  components: { TpEChart, TpStatus, TpDeviceStatus, CustomEChartDialog },
+  components: { TpEChart, TpStatus, TpSignalStatus, TpDeviceStatus, CustomEChartDialog },
   props: {
     charts: {
       type: [Object, Array],
@@ -129,6 +129,7 @@ export default {
      * @param v
      */
     showDialog(option) {
+      console.log("====showDialog", option)
       this.chartOption = option;
       if (option.type == "status") {
         this.$nextTick(() => {
@@ -138,6 +139,12 @@ export default {
       } else if (option.type == "deviceStatus") {
         this.$nextTick(() => {
           this.$refs["tpDeviceStatus"][0].showDialog(option);
+        })
+        return;
+      } else if (option.type == "signalStatus") {
+        this.$nextTick(() => {
+          console.log("====tpSignalStatus", this.$refs["tpSignalStatus"])
+          this.$refs["tpSignalStatus"][0].showDialog(option);
         })
         return;
       }
