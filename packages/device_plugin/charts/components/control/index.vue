@@ -93,10 +93,12 @@ export default {
   height:100%;
   text-align: center;
   display: table;
-  position: relative;
+  position: absolute;
+  top: 0px;
 }
 .switch-list {
-  display: table-cell;
+  top: 0;
+  display: table;
   vertical-align: middle;
 }
 .switch-component-title {
@@ -109,6 +111,9 @@ export default {
 .switch-item {
   /*height: 60px;*/
   /*line-height: 60px;*/
+  display: table-cell;
+      vertical-align: middle;
+      text-align: center;
 }
 
 

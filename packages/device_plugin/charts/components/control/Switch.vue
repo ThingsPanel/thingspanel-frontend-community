@@ -1,10 +1,12 @@
 <!-- 开关(0, 1) -->
 <template>
   <div class="switch-container">
-    <el-switch v-model="switchValue" active-color="#13ce66" inactive-color="#ff4949" :width="60"
-               :disabled="disabled"
-               @change="switchChange"></el-switch>
-    <span class="switch-state-box">{{ value ? "开启" : "关闭"}}</span>
+    <div class="center" >
+      <el-switch v-model="switchValue" active-color="#13ce66" inactive-color="#ff4949" :width="60"
+                :disabled="disabled"
+                @change="switchChange"></el-switch>
+      <span class="switch-state-box">{{ value ? "开启" : "关闭"}}</span>
+    </div>
   </div>
 
 </template>
@@ -61,6 +63,24 @@ export default {
 ::v-deep .is-checked {
   .el-switch__core {
     background-color: rgb(19, 206, 102)!important;
+  }
+}
+.switch-container {
+  width: 100%;
+  height: 100%;
+  display: table;
+  position: absolute;
+  top: 0px;
+  .center {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    padding: 20px!important;
+   
+    p {
+      margin: 10px;
+    }
+
   }
 }
 </style>

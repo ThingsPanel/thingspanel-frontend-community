@@ -1,11 +1,14 @@
 <!-- 滑动开关（0, 1, 2 ... n） -->
 <template>
   <div class="slide-container">
-    <span style="font-size: 30px;color:#fff">{{ value }}</span>
-    <el-slider style="width: 100%"
-               v-model="sliderValue" :max="sliderMax" :step="sliderStep"
-               @change="handleChange"
-    ></el-slider>
+    <div class="center">
+      <span style="font-size: 30px;color:#fff">{{ value }}</span>
+      <el-slider style="width: 100%"
+                 v-model="sliderValue" :max="sliderMax" :step="sliderStep"
+                 @change="handleChange"
+      ></el-slider>
+    </div>
+    
   </div>
 </template>
 
@@ -55,10 +58,23 @@ export default {
 </script>
 
 <style scoped>
+
 .slide-container {
   width: 100%;
-  padding-left:30px;
-  padding-right: 30px;
-  margin: 0;
+  height: 100%;
+  display: table;
+  position: absolute;
+  top: 0px;
+  .center {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center;
+    padding: 20px!important;
+   
+    p {
+      margin: 10px;
+    }
+
+  }
 }
 </style>
