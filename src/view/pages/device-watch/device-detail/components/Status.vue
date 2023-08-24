@@ -7,7 +7,7 @@
       </div>
     </div>
 
-    <common-status :option="optionData"></common-status>
+    <common-status :option="optionData" :value="value"></common-status>
   </div>
 
 </template>
@@ -34,7 +34,8 @@ export default {
     return {
       optionData: {},
       timer: null,
-      flushTime: 5
+      flushTime: 5,
+      value: null
     }
   },
   watch: {
@@ -55,8 +56,7 @@ export default {
           .then(({data}) => {
             if (data.code == 200 && data.data) {
               let value = data.data[0][attrs[0]]
-              console.log(value)
-              this.optionData = {series: { value }}
+              this.value = value;
             }
           })
     },

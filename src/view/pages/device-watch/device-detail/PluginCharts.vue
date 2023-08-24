@@ -299,7 +299,9 @@ export default {
                     } else if (option.controlType == "control") {
                       values = {};
                       mapping.forEach(item => {
-                        values[item] = data.data[0][item];
+                        if (data.data && data.data[0][item]) {
+                          values[item] = data.data[0][item];
+                        }
                       });
                     }
 

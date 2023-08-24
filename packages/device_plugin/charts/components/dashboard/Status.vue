@@ -1,8 +1,8 @@
 <template>
-  <div class="status-container" @click="showDialog">
+  <div class="status-container" @click="showDialog(null)">
     <div class="center">
-      <p :style="'font-size: ' + fontSize + 'px;'">{{ title }}</p>
-      <p :style="'font-size: ' + labelSize + 'px;color: ' + labelColor+';'">
+      <p :style="'font-size: ' + mapData.series.fontSize + 'px;'">{{ mapData.series.title }}</p>
+      <p :style="'font-size: ' + mapData.series.labelSize + 'px;color: ' + mapData.series.labelColor+';'">
         <i :class="labelIcon"></i>{{ label }}
       </p>
     </div>
@@ -16,31 +16,31 @@
               </el-form-item>
               <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE4')">
                 <!-- 从json中解析出物模型的所有属性 -->
-                <el-select style="width: 100%; margin-bottom: 10px;" :placeholder="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE8')" v-model="mapData.srcValue">
+                <el-select style="width: 100%; margin-bottom: 10px;" :placeholder="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE8')" v-model="mapData.map">
                   <el-option v-for="(option, index) in dataSrc" :key="index" :value="option.name" >
                     {{option.title + '(' + option.name + ')'}}
                   </el-option>
                 </el-select>
               </el-form-item>
 
-              <el-row :gutter="20" style="margin-bottom: 10px" v-for="(condition, index) in mapData.conditions" :key="index">
+              <el-row :gutter="20" style="margin-bottom: 10px" v-for="(item, index) in mapData.series.status" :key="index">
                 <el-col :span="7" style="display: inline-flex">
                   <span style="width: 100px;text-align: center;margin-top:6px">{{ $t('PLUGIN.CHART_INFO_TAB.TAB_TITLE9') }}</span>
-                  <el-select :placeholder="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE8')" v-model="condition.operator">
-                    <el-option v-for="(operator, index) in operators" :key="index" :label="operator" :value="operator"></el-option>
+                  <el-select :placeholder="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE8')" v-model="item.comparison">
+                    <el-option v-for="(comparison, index) in comparisons" :key="index" :label="comparison" :value="comparison"></el-option>
                   </el-select>
                 </el-col>
                 <el-col :span="6" style="display: inline-flex">
                   <span style="width: 80px;text-align: center;margin-top:6px">{{ $t('PLUGIN.CHART_INFO_TAB.TAB_TITLE10') }}</span>
-                  <el-input v-model="condition.value"></el-input>
+                  <el-input v-model="item.value"></el-input>
                 </el-col>
                 <el-col :span="8" style="display: inline-flex">
                   <span style="width: 60px;text-align: center;margin-top:6px">{{ $t('PLUGIN.CHART_INFO_TAB.TAB_TITLE11') }}</span>
-                  <el-input v-model="condition.label"></el-input>
+                  <el-input v-model="item.label"></el-input>
                 </el-col>
                 <el-col :span="3" style="display: inline-flex">
-                  <el-button v-if="condition.addEnable" type="primary" @click="handleAddCondition">{{ $t('PLUGIN.CHART_INFO_TAB.ADD') }}</el-button>
-                  <el-button v-if="condition.delEnable" type="danger" @click="handleDelCondition(condition)">{{ $t('PLUGIN.CHART_INFO_TAB.DELETE') }}</el-button>
+                  <el-button v-if="item.addEnable" type="primary" @click="handleAddItem">{{ $t('PLUGIN.CHART_INFO_TAB.ADD') }}</el-button>
+                  <el-button v-if="item.delEnable" type="danger" @click="handleDelItem(item)">{{ $t('PLUGIN.CHART_INFO_TAB.DELETE') }}</el-button>
                 </el-col>
               </el-row>
 
@@ -70,9 +70,15 @@
 </template>
 
 <script>
+import { message_error } from "@/utils/helpers"
+import optionData from "../../options/options.json"
 export default {
   name: "CommonStatus",
   props: {
+    value: {
+      type: [Number, String, Boolean, Object],
+      default: 0
+    },
     option: {
       type: [Object],
       default: () => { return {} }
@@ -87,7 +93,6 @@ export default {
       optionData: {},
       fontSize: 30,   // 标题文字大小
       title: "",   // 标题
-      value: null,   // 传入的值
       label: "",  // 信息
       labelSize: 20,   // 信息文字大小
       labelColor: "#DC143CFF",  // 信息文字颜色,
@@ -98,84 +103,89 @@ export default {
       tabsValue: "map",
       dataSrcOptions: [],
       mapData: {
-        name: "",
-        conditions: [
+      "type": "status",
+      "series": {
+        "title": "液位",
+        "fontSize": 30,
+        "value": 0,
+        "status": [
           {
-            operator: "",
-            srcValue: "",
-            label: "",
-            addEnable: true,
-            delEnable: false
+            "comparison": "==",
+            "value": 0,
+            "label": "缺液",
+            "color": "#",
+            "fontSize": 20,
+            "icon": "",
+            "addEnable": true,
+          },
+          {
+            "comparison": "==",
+            "value": 1,
+            "label": "有液",
+            "fontSize": 20
           }
         ]
-      },
-      operators: ["==", ">", ">=", "<", "<=", "!="]
+      }
+    },
+      comparisons: ["==", ">", ">=", "<", "<=", "!="]
     }
   },
   watch: {
-    option: {
-      handler(newValue) {
-        if (newValue.series) {
-          if (newValue.series.fontSize) this.fontSize = newValue.series.fontSize;
-          if (newValue.series.title) this.title = newValue.series.title;
-          if (newValue.series.status) this.status = newValue.series.status;
-          if (newValue.series.value != null && newValue.series.value != undefined) {
-            this.value = newValue.series.value;
-            this.status.forEach(item => {
-              if (toCompare(this.value, item.value, item.comparison)) {
-                this.label = item.label;
-                if (item.icon) this.labelIcon = item.icon;
-                if (item.fontSize) this.labelSize = item.fontSize;
-              }
-            })
-          }
+    value: {
+      handler(newVal) {
+        console.log("====status.value", newVal)
+        if (newVal !== null) {
+          this.label = this.mapData.series.status.find(item => item.value.toString() == newVal.toString()).label;
         }
-        if (newValue.mapping) this.mapping = newValue.mapping;
+      },
+      immediate: true
+    },
+    option: {
+      handler(newVal) {
+        if (newVal)
+          this.mapData = JSON.parse(JSON.stringify(newVal));
       },
       immediate: true,
       deep: true
     }
   },
   methods: {
-    showDialog(formData) {
+    showDialog(option) {
       if (this.mapping && this.mapping.length > 0) return;
-      this.mapData = {
-        name: "",
-            conditions: [
-          {
-            operator: "",
-            srcValue: "",
-            label: "",
-            addEnable: true,
-            delEnable: false
-          }
-        ]
+      if (option) {
+        this.mapData = JSON.parse(JSON.stringify(option));
       }
       this.dialogVisible = true;
     },
-    handleAddCondition() {
-
-      this.mapData.conditions.push({operator: "", srcValue: "", label: "", addEnable: false, delEnable: true})
+    handleAddItem() {
+      this.mapData.series.status.push({comparison: "", map: "", label: "", addEnable: false, delEnable: true})
     },
-    handleDelCondition(condition) {
-      if (this.mapData.conditions.length == 1) return;
-      let index = this.mapData.conditions.findIndex(item => item == condition);
-      this.mapData.conditions.splice(index, 1);
+    handleDelItem(condition) {
+      if (this.mapData.series.status.length == 1) return;
+      let index = this.mapData.series.status.findIndex(item => item == condition);
+      this.mapData.series.status.splice(index, 1);
     },
     submit() {
-      if (!this.mapData.name || !this.mapData.srcValue) return;
+      if (!this.validate()) return;
 
-      let opt = JSON.parse(JSON.stringify(this.option));
+      let opt = JSON.parse(JSON.stringify(this.mapData));
       opt.controlType = "dashboard";
-      opt.name = this.mapData.name;
-      opt.mapping = [];
-      opt.mapping.push(this.mapData.srcValue);
-      opt.series.title = this.mapData.title ? this.mapData.title : this.mapData.name;
-      opt.series.status = this.mapData.conditions.map(item => {
-        return {comparison: item.operator, value: item.value, label: item.label,}
-      })
+      opt.mapping = [this.mapData.map];
+      opt.series.mapping = [this.mapData.map];
+      console.log("====status.submit", opt)
       this.$emit("bind", opt);
       this.dialogVisible = false;
+    },
+    validate() {
+      if (!this.mapData.name) {
+        message_error("名称不能为空");
+        return false;
+      }
+      if (!this.mapData.map) {
+        message_error("数据源不能为空");
+        return false;
+      }
+      return true;
     }
   }
 }

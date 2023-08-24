@@ -346,6 +346,7 @@
       "series": {
         "title": "液位",
         "fontSize": 30,
+        "labelColor": "#ff4b55",
         "value": 0,
         "status": [
           {
@@ -354,13 +355,15 @@
             "label": "缺液",
             "color": "#",
             "fontSize": 20,
-            "icon": ""
+            "icon": "",
+            "addEnable": true
           },
           {
             "comparison": "==",
             "value": 1,
             "label": "有液",
-            "fontSize": 20
+            "fontSize": 20,
+            "delEnable": true
           }
         ]
       }

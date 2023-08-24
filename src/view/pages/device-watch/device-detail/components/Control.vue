@@ -68,7 +68,7 @@ export default {
     }
   },
   methods: {
-    handleChange(v) {
+    async handleChange(v) {
       // 获取绑定的属性
       let values = {};
 
@@ -84,12 +84,11 @@ export default {
 
       let param = { device_id: this.device.device, values };
       // 控制设备状态
-      turnSwitch(param)
-        .then(({data}) => {
-          if (data.code == 200) {
-            message_success("设备状态更新成功")
-          }
-        })
+      const { data } = await turnSwitch(param)
+      if (data.code == 200) {
+        this.getSwitchValue()
+        message_success("设备状态更新成功")
+      }
     },
     updateOption(values) {
       console.log("control.values", values)
@@ -108,39 +107,39 @@ export default {
       });
 
     },
-    getSwitchValue() {
+    async getSwitchValue() {
+      console.log("====control.getSwitchValue")
+
       let optionTmp = JSON.parse(JSON.stringify(this.optionData));
       let param = { entity_id: this.device.device, attribute: this.mapping }
-      currentValue(param)
-          .then(({data}) => {
-            if (data.code == 200 && data.data) {
-              let dataObj = data.data[0];
-              console.log("====control.dataObj", dataObj)
-              optionTmp.series.forEach(item => {
-                let map = item.mapping;
-                if (item.type == "switch") {
-                  if (dataObj[map.value] == map.on) {
-                    item.value = true;
-                  } else if (dataObj[map.value] == map.off){
-                    item.value = false;
-                  }
-                } else if (item.type == "slider") {
-                  item.value = dataObj[map.value];
-                }
-              })
-            } else {
-              optionTmp.series.forEach(item => {
-                if (item.type == "switch") {
-                    item.value = false;
-                } else if (item.type == "slider") {
-                  item.value = 0;
-                }
-              })
+      let { data } = await currentValue(param)
+      if (data.code == 200 && data.data) {
+        let dataObj = data.data[0];
+        console.log("====control.dataObj", dataObj)
+        optionTmp.series.forEach(item => {
+          let map = item.mapping;
+          if (item.type == "switch") {
+            if (dataObj[map.value] == map.on) {
+              item.value = true;
+            } else if (dataObj[map.value] == map.off){
+              item.value = false;
             }
+          } else if (item.type == "slider") {
+            item.value = dataObj[map.value];
+          }
+        })
+      } else {
+        optionTmp.series.forEach(item => {
+          if (item.type == "switch") {
+              item.value = false;
+          } else if (item.type == "slider") {
+            item.value = 0;
+          }
+        })
+      }
+      console.log("====getSwitchValue", optionTmp)
+      // this.optionData = JSON.parse(JSON.stringify(optionTmp))
 
-            this.optionData = JSON.parse(JSON.stringify(optionTmp))
-
-          })
     },
     sizeChange() {
 
