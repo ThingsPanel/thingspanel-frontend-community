@@ -47,7 +47,7 @@
 
       <!-- 操作符 -->
       <OperatorSelector ref="operatorSelectorRef" v-else-if="formData.state.mode == 'property'"
-                        :data="formData.state" :option="option" @change="handleOperatorChange"/>
+                        :chart="chartData" :data="formData.state" :option="option" @change="handleOperatorChange"/>
     </template>
 
   </div>
@@ -100,7 +100,9 @@ export default {
       // 设备列表
       deviceOptions: [],
       // 状态/属性列表
-      stateOptions: []
+      stateOptions: [],
+      chartList: [],
+      chartData: {}
     }
   },
   watch: {
@@ -176,7 +178,19 @@ export default {
      * @param v
      */
     handleStateChange(v) {
+      console.log("handleStateChange", v)
       this.formData.state = v;
+      if (v.readWrite && v.readWrite === "rw") {
+        this.chartList.forEach(item => {
+          if (item.controlType === "control") {
+            let map = item.series[0].mapping;
+            if (map.value === v.name && (true)) {
+              this.chartData = item;
+            }
+          }
+        });
+      }
+      console.log("handleStateChange.chartData", this.chartData)
       this.updateData();
     },
     /**
@@ -290,14 +304,6 @@ export default {
       console.log("getStateList", id)
       this.stateOptions = [];
       if (this.option.operator) {
-        // 持续时间
-        // this.stateOptions.push({
-        //   label: this.$t('AUTOMATION.ONLINE_STATUS'), 
-        //   options: [
-        //     { mode: "onlineDuration", label: this.$t('AUTOMATION.ONLINE_DURATION'), name: "onlineDuration" },
-        //   ]
-        // });
-
         // 在线状态
         this.stateOptions.push({
           label: this.$t('AUTOMATION.ONLINE_OFFLINE'), 
@@ -312,6 +318,7 @@ export default {
         this.updateData();
         return;
       }
+      console.log("getStateList.formData", this.formData)
       let params = {current_page: 1, per_page: 9999, id };
       PluginAPI.page(params)
           .then(({data}) => {
@@ -320,8 +327,11 @@ export default {
               let jsonObj = JSON.parse(jsonStr);
 
               // 物模型属性
-              let properties = jsonObj.tsl?.properties || [];
-
+              const { tsl, chart } = jsonObj;
+              let properties = tsl.properties || [];
+              this.chartList = chart;
+              console.log('DeviceTypeSelector.chartData', this.chartList )
+              let curProperty = {};
               let arr = properties.map(item => {
                 if (this.formData.state && this.formData.state.name === item.name) {
                   this.formData.state = { ...this.formData.state, unit: item.unit, type: item.type, readWrite: item.readWrite || "r" }
@@ -329,10 +339,12 @@ export default {
                 return { label: item.title, name: item.name, unit: item.unit, mode: "property", type: item.dataType, readWrite: item.readWrite || "r" };
               });
 
-              
               this.stateOptions.push({label: this.$t('AUTOMATION.PROPERTY'), options: arr});
 
-              console.log('DeviceTypeSelector', this.stateOptions)
+              curProperty = arr.find(item => item.name === this.formData.state.name) || arr[0];
+              curProperty.operator = this.formData.state.operator;
+              this.handleStateChange(curProperty);
+              console.log('DeviceTypeSelector.property', curProperty)
               this.updateData();
               
             }
