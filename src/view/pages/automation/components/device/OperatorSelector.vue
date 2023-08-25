@@ -67,6 +67,9 @@ export default {
         if (newVal) {
           if (newVal.operator) {
             this.formData = JSON.parse(JSON.stringify(newVal.operator));
+            this.formData.value = this.formData.value.toString();
+            // let { type } = this.data;
+            // this.formData.value = typeConvert(this.formData.value, type)
           } else {
             this.formData = { symbol: "", value: "" };
           }
@@ -82,9 +85,9 @@ export default {
           this.symbolList = [">", ">=", "<", "<=", "==", "!=", "in", "between"];
             if (newVal.type === "switch") {
               let { on, off } = newVal.series[0].mapping;
-              let { type } = this.data;
-              on = typeConvert(on, type);
-              off = typeConvert(off, type);
+              // let { type } = this.data;
+              // on = typeConvert(on, type);
+              // off = typeConvert(off, type);
               this.formData.switchList = [
                 { label: "开启", value: on },
                 { label: "关闭", value: off }
@@ -110,9 +113,9 @@ export default {
       if (this.option.operator === false) {
         data.symbol = "=";
       }
-      let { type } = this.data;
-      let value = typeConvert(data.value, type)
-      data.value = value;
+      // let { type } = this.data;
+      // let value = typeConvert(data.value, type)
+      // data.value = value;
       this.$emit("change", data);
     },
     validate() {
@@ -125,10 +128,13 @@ export default {
       let result = true;
       const type = this.data.type;
       if (type === "integer" || type === "number" || type === "float") {
-        result = this.formData.value.toString().match(/^(0|-?[1-9]\d*)\b/)
+        console.log("OperatorSelector.formData.value", this.formData.value.toString())
+        let pattern = /^[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?$/;
+        result = pattern.test(this.formData.value.toString());
+        // result = this.formData.value.toString().match(/^[-+]?(\d+(\.\d*)?|\.\d+)([eE][-+]?\d+)?$/)
       }
-      console.log("OperatorSelector", result)
-      if (!this.formData.value || this.formData.value === "" || !result) {
+      console.log("OperatorSelector.formData.value", result, this.formData.value)
+      if (this.formData.value === "" || this.formData.value === undefined || !result) {
         this.$refs.valueRef && this.$refs.valueRef.focus();
         message_error(this.$t('AUTOMATION.ERROR.PROPERTY'));
         return false;

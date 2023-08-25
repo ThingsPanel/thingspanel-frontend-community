@@ -49,7 +49,7 @@
 import data from "./data"
 import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
 import Auto from "@/api/automation_1.0"
-import { message_success, message_error } from '@/utils/helpers';
+import { message_success, message_error, typeConvert } from '@/utils/helpers';
 export default {
   name: "EditForm",
   components: { DeviceTypeSelector },
@@ -128,7 +128,7 @@ export default {
       params.scenario_actions = this.formData.commands.map(cmd => {
         let { name, type, operator } = cmd.data.state
         let instruct = {};
-        instruct[name] = this.jsonTypeConvert(type, operator.value);
+        instruct[name] = typeConvert(operator.value, type);
         return {
           action_type: "1",
           device_id: cmd.data.deviceId,
