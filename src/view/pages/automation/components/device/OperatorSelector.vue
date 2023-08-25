@@ -7,7 +7,7 @@
  * @Description: 操作设备
 -->
 <template>
-  <div style="display: flex">
+  <div style="width: 100%;display: flex;position:relative">
     <el-select ref="symbolRef" v-if="option.operator" style="width: 100px;margin-right:10px" :placeholder="$t('AUTOMATION.PLACEHOLDER.SYMBOL')" 
                 v-model="formData.symbol"
                @change="handleChange">
@@ -25,14 +25,14 @@
 
       <el-input v-else ref="valueRef" style="width: 100px;margin-right:10px" v-model="formData.value" @change="handleChange"></el-input>
     </template>
-    
-    {{ data.unit && chart.controlType !== 'control' ? data.unit : "" }}
+    <span style="">
+      {{ data.unit ? data.unit : "" }}
+    </span>
   </div>
 </template>
 
 <script>
-import { message_error } from '@/utils/helpers'
-
+import { message_error, typeConvert } from '@/utils/helpers'
 export default {
   name: "OperatorSelector",
   props: {
@@ -77,25 +77,27 @@ export default {
     chart: {
       handler(newVal) {
         console.log("DeviceTypeSelector.chart", newVal)
+
         if (newVal && JSON.stringify(newVal) !== "{}") {
           this.symbolList = [">", ">=", "<", "<=", "==", "!=", "in", "between"];
-          console.log("DeviceTypeSelector.operatorSelector", newVal.series[0].mapping)
-          
-          if (newVal.type === "switch") {
-            const { on, off } = newVal.series[0].mapping;
-            this.formData.switchList = [
-              { label: "开启", value: on },
-              { label: "关闭", value: off }
-            ]
-            this.symbolList = ["=="];
-            this.formData.symbol = "==";
-          } else if (newVal.type === 'slider' || newVal.type === 'setValue') {
-            let map = newVal.series[0].mapping;
-            this.formData.max = Number(map.max) || Number(map.attr.dataRange.split("-")[1]) || 100;
-            this.formData.min =  Number(map.attr.dataRange.split("-")[0]) || 0;
-            this.formData.step = Number(map.step) || Number(map.attr.stepLength) || 1;
-          } else {
-          }
+            if (newVal.type === "switch") {
+              let { on, off } = newVal.series[0].mapping;
+              let { type } = this.data;
+              on = typeConvert(on, type);
+              off = typeConvert(off, type);
+              this.formData.switchList = [
+                { label: "开启", value: on },
+                { label: "关闭", value: off }
+              ]
+              this.symbolList = ["=="];
+              this.formData.symbol = "==";
+            } else if (newVal.type === 'slider' || newVal.type === 'setValue') {
+              let map = newVal.series[0].mapping;
+              this.formData.max = Number(map.max) || Number(map.attr.dataRange.split("-")[1]) || 100;
+              this.formData.min =  Number(map.attr.dataRange.split("-")[0]) || 0;
+              this.formData.step = Number(map.step) || Number(map.attr.stepLength) || 1;
+            } else {
+            }
         }
       },
       immediate: true,
@@ -104,13 +106,16 @@ export default {
   },
   methods: {
     handleChange() {
+      let data = JSON.parse(JSON.stringify(this.formData))
       if (this.option.operator === false) {
-        this.formData.symbol = "=";
+        data.symbol = "=";
       }
-      this.$emit("change", this.formData);
+      let { type } = this.data;
+      let value = typeConvert(data.value, type)
+      data.value = value;
+      this.$emit("change", data);
     },
     validate() {
-      console.log("OperatorSelector", this.data)
       if (this.option.operator && (!this.formData.symbol || this.formData.symbol === "")) {
         this.$refs.symbolRef && this.$refs.symbolRef.focus();
         message_error(this.$t('AUTOMATION.ERROR.SYMBOL'));

@@ -1,27 +1,27 @@
 <template>
-  <div>
+  <div style="width: 100%">
       <el-form-item :label="$t('AUTOMATION.IF')">
         <div style="display: flex;margin-bottom: 10px" v-for="(condition, index) in conditions" :key="index">
-
-          <el-select ref="relationRef" style="position: absolute; width: 60px;margin-right:10px" 
-              v-if="condition.relation"
-              v-model="condition.relation" @change="v => handleRelationChange(condition,v )">
-            <!-- 且 -->
-            <el-option :label="$t('AUTOMATION.AND')" :value="'and'"></el-option>
-            <!-- 或 -->
-            <el-option :label="$t('AUTOMATION.OR')" :value="'or'"></el-option>
-          </el-select>
-
-            <el-select ref="typeRef" style="width: 100px;margin-left: 70px;margin-right:10px" v-model="condition.type">
+            <el-select ref="relationRef" style="position: absolute; width: 60px;margin-right:10px" 
+                v-if="condition.relation"
+                v-model="condition.relation" @change="v => handleRelationChange(condition,v )">
+              <!-- 且 -->
+              <el-option :label="$t('AUTOMATION.AND')" :value="'and'"></el-option>
+              <!-- 或 -->
+              <el-option :label="$t('AUTOMATION.OR')" :value="'or'"></el-option>
+            </el-select>
+          
+            <el-select ref="typeRef" style="width: 140px;margin-left: 70px;margin-right:10px" v-model="condition.type">
               <!-- 设备条件-->
               <el-option :label="$t('AUTOMATION.DEVICE_CONDITION')" :value="'device'"></el-option>
               <!-- 时间条件-->
               <el-option :label="$t('AUTOMATION.TIME_CONDITION')" :value="'time'"></el-option>
             </el-select>
 
+
           <!-- 选择设备条件后显示项目列表 -->
           <template v-if="condition.type=='device'">
-            <DeviceTypeSelector ref="deviceTypeSelectorRef" v-if="condition.type=='device'" :data="condition.data" 
+            <DeviceTypeSelector style="width: 100%" ref="deviceTypeSelectorRef" v-if="condition.type=='device'" :data="condition.data" 
                 @change="v=>handleDeviceChange(condition, v)"/>
           </template>
 
@@ -30,16 +30,17 @@
               @change="v=>handleTimeChange(condition, v)"/>
 
             
-          <!-- 新增一行 -->
-          <el-button type="indigo" size="small" style="margin-left: auto;height:40px"
-                     v-if="index == 0"
-                     @click="handleAddCondition">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
+          <div style="width: 120px;margin-left: auto;height:40px">
+            <!-- 新增一行 -->
+            <el-button type="indigo" size="small" style="margin-left: auto;height:40px"
+            v-if="index == 0"
+            @click="handleAddCondition">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
 
-          <!-- 删除 -->
-          <el-button type="danger" size="small" style="margin-left: auto;height:40px"
-                    v-if="index > 0"
-                    @click="handleDeleteCondition(condition)">{{ $t('AUTOMATION.DELETE') }}</el-button>
-          
+            <!-- 删除 -->
+            <el-button type="danger" size="small" style="margin-left: auto;height:40px"
+            v-if="index > 0"
+            @click="handleDeleteCondition(condition)">{{ $t('AUTOMATION.DELETE') }}</el-button>
+          </div>
 
         </div>
       </el-form-item>

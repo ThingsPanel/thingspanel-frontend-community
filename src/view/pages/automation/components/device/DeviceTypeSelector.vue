@@ -1,13 +1,13 @@
 <template>
-  <div style="display: flex">
+  <div style="width: 100%;display: flex">
     <!-- 项目列表 -->
-    <el-select ref="projectRef" style="width: 100px;margin-right:10px" v-model="formData.projectId" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_PROJECT')"
+    <el-select ref="projectRef" style="width: 16%;min-width: 100px;margin-right:10px" v-model="formData.projectId" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_PROJECT')"
                @change="handleProjectChange">
       <el-option v-for="(option, index) in projectOptions" :key="index" :label="option.name" :value="option.id"></el-option>
     </el-select>
 
     <!-- 分组列表 -->
-    <el-select ref="groupRef" style="width: 100px;margin-right:10px" v-if="formData.projectId" v-model="formData.groupId" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_GROUP')"
+    <el-select ref="groupRef" style="min-width: 100px;width:16%;margin-right:10px" v-if="formData.projectId" v-model="formData.groupId" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_GROUP')"
                @change="handleGroupChange">
       <el-option v-for="(option, index) in groupOptions" :key="index" :label="option.device_group" :value="option.id"></el-option>
     </el-select>
@@ -19,7 +19,7 @@
     </el-select> -->
 
     <!-- 设备列表 -->
-    <el-cascader ref="deviceRef" style="width: 100px;margin-right:10px" v-if="formData.groupId" v-model="formData.device" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_DEVICE')"
+    <el-cascader ref="deviceRef" style="min-width: 100px;width:16%;margin-right:10px" v-if="formData.groupId" v-model="formData.device" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_DEVICE')"
       :options="deviceOptions" clearable :props="{ checkStrictly: true, emitPath: false }"
        @change="handleDeviceChange">
        <template slot-scope="{ node, data }">
@@ -29,7 +29,7 @@
     </el-cascader>
 
     <!-- 状态/属性列表 -->
-    <el-select ref="stateRef" style="width: 100px;margin-right:10px" v-if="formData.device" 
+    <el-select ref="stateRef" style="min-width: 100px;width:16%;margin-right:10px" v-if="formData.device" 
                v-model="formData.state" value-key="name" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_STATE')"
                @change="handleStateChange">
       <el-option-group v-for="group in stateOptions" :key="group.label" :label="group.label">
@@ -43,10 +43,10 @@
 
     <template v-if="formData.state">
       <!-- 在线持续时间 -->
-      <OnlineDuration ref="onlineDurationRef" v-if="formData.state.mode=='onlineDuration'" :data="formData.state.duration" @change="handleDurationChange"/>
+      <OnlineDuration style="width: 24%" ref="onlineDurationRef" v-if="formData.state.mode=='onlineDuration'" :data="formData.state.duration" @change="handleDurationChange"/>
 
       <!-- 操作符 -->
-      <OperatorSelector ref="operatorSelectorRef" v-else-if="formData.state.mode == 'property'"
+      <OperatorSelector style="width: 280px" ref="operatorSelectorRef" v-else-if="formData.state.mode == 'property'"
                         :chart="chartData" :data="formData.state" :option="option" @change="handleOperatorChange"/>
     </template>
 
@@ -181,16 +181,19 @@ export default {
       console.log("handleStateChange", v)
       this.formData.state = v;
       if (v.readWrite && v.readWrite === "rw") {
+        this.chartData = { type: "", controlType: "control"}
         this.chartList.forEach(item => {
           if (item.controlType === "control") {
             let map = item.series[0].mapping;
             if (map.value === v.name && (true)) {
               this.chartData = item;
+              console.log("handleStateChange.chartData", this.chartData)
             }
           }
         });
+      } else {
+        this.chartData = { type: "", controlType: "" }
       }
-      console.log("handleStateChange.chartData", this.chartData)
       this.updateData();
     },
     /**
@@ -330,21 +333,23 @@ export default {
               const { tsl, chart } = jsonObj;
               let properties = tsl.properties || [];
               this.chartList = chart;
-              console.log('DeviceTypeSelector.chartData', this.chartList )
               let curProperty = {};
+              this.formData.state = {};
               let arr = properties.map(item => {
                 if (this.formData.state && this.formData.state.name === item.name) {
                   this.formData.state = { ...this.formData.state, unit: item.unit, type: item.type, readWrite: item.readWrite || "r" }
                 }
                 return { label: item.title, name: item.name, unit: item.unit, mode: "property", type: item.dataType, readWrite: item.readWrite || "r" };
               });
+              this.stateOptions.push({label: this.option.operator ? this.$t('AUTOMATION.PROPERTY') : "设定值", options: arr});
 
-              this.stateOptions.push({label: this.$t('AUTOMATION.PROPERTY'), options: arr});
-
-              curProperty = arr.find(item => item.name === this.formData.state.name) || arr[0];
-              curProperty.operator = this.formData.state.operator;
+              this.stateOptions.forEach(item => {
+                curProperty = item.options.find(it => it.name === this.data.state.name)
+              })
+              curProperty.operator = this.data.state.operator;
+              console.log("DeviceTypeSelector.curProperty", curProperty)
               this.handleStateChange(curProperty);
-              console.log('DeviceTypeSelector.property', curProperty)
+
               this.updateData();
               
             }

@@ -1,64 +1,30 @@
 <template>
     <div>
   <!--    <el-form label-position="right" label-width="85px">-->
+        <!-- 告警级别 -->
         <el-form-item :label="$t('AUTOMATION.WARNING_LEVEL')" required>
-            <el-select ref="warningLevelRef" style="width: 100px;" v-model="formData.warningLevel" @change="handleChange">
+            <el-select ref="warningLevelRef" style="width: 200px" v-model="formData.warningLevel" @change="handleChange">
                 <el-option :label="$t('AUTOMATION.WARNING_LEVEL_LOW')" :value="'1'"></el-option>
                 <el-option :label="$t('AUTOMATION.WARNING_LEVEL_MEDIUM')" :value="'2'"></el-option>
                 <el-option :label="$t('AUTOMATION.WARNING_LEVEL_HIGH')" :value="'3'"></el-option>
               </el-select>
         </el-form-item>
 
-        <!-- <el-form-item :label="$t('AUTOMATION.NOTIFY_USER')">
-          <div style="display: flex;margin-bottom: 10px" v-for="(group, index) in formData.groups" :key="index">
-  
-           
-            <el-select style="width: 100px;margin-right:10px" v-model="group.role" @change="handleRoleChange">
-              <el-option v-for="(role, index) in roleList" :key="index" :label="role.role_name" :value="role.id"></el-option>
-            </el-select> 
-
-            <el-select style="width: auto;margin-left: 10px;margin-right:10px" multiple v-model="group.users" @change="handleChange">
-              <el-option :label="$t('AUTOMATION.ALL_USER')" :value="'all'"></el-option>
-
-            </el-select> 
-
-  
-       
-            <el-button type="indigo" size="small" style="margin-left: auto"
-                       v-if="index == 0"
-                       @click="handleAddGroup">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-  
-    
-             <el-button type="danger" size="small" style="margin-left: auto"
-                       v-if="index > 0"
-                       @click="handleDeleteGrouop(group)">{{ $t('AUTOMATION.DELETE') }}</el-button>
-  
-          </div>
-        </el-form-item> -->
-
+        <!-- 通知组 -->
         <el-form-item :label="$t('AUTOMATION.NOTIFY_USER')">
-         
-  
-            <el-select style="width: 100px;margin-right:10px" v-model="formData.notification" @change="handleRoleChange">
+            <el-select style="width: 200px;margin-right:10px" v-model="formData.notification" @change="handleRoleChange">
               <el-option v-for="(item, index) in roleList" :key="index" :label="item.group_name" :value="item.id"></el-option>
             </el-select>
         </el-form-item>
 
+        <!-- 重复次数 -->
         <el-form-item :label="$t('AUTOMATION.REPEAT_TIMES')">
-          <el-input ref="repeatTimesRef" v-model="formData.repeatTimes" :placeholder="$t('AUTOMATION.PLACEHOLDER.ALARM_REPEAT_TIMES')" @change="handleChange"></el-input>
+          <el-input-number ref="repeatTimesRef" style="width: 200px" :min="1" v-model="formData.repeatTimes" :placeholder="$t('AUTOMATION.PLACEHOLDER.ALARM_REPEAT_TIMES')" @change="handleChange"/>
         </el-form-item>
 
-        <!-- <el-form-item :label="$t('AUTOMATION.NOTIFY_TYPE')" required>
-          <el-checkbox-group v-model="formData.notification" @change="handleChange">
-            <el-checkbox label="wechat">{{ $t('AUTOMATION.WECHAT') }}</el-checkbox>
-            <el-checkbox label="sms">{{  $t('AUTOMATION.SMS') }}</el-checkbox>
-            <el-checkbox label="email">{{  $t('AUTOMATION.EMAIL') }}</el-checkbox>
-            <el-checkbox label="phone">{{ $t('AUTOMATION.PHONE')}}</el-checkbox>
-          </el-checkbox-group>
-        </el-form-item> -->
-
+        <!-- 描述 -->
         <el-form-item :label="$t('AUTOMATION.ALARM_DESCRIPTION')">
-          <el-input v-model="formData.warning_description" :placeholder="$t('AUTOMATION.ALARM_DESCRIPTION')" @change="handleChange"></el-input>
+          <el-input style="width: 200px" v-model="formData.warning_description" :placeholder="$t('AUTOMATION.ALARM_DESCRIPTION')" @change="handleChange"></el-input>
         </el-form-item>
   
   <!--    </el-form>-->
@@ -80,6 +46,7 @@ import { message_error } from '@/utils/helpers'
     data() {
       return {
         formData: {
+          repeatTimes: 1,
             groups: [
                 {}
             ],

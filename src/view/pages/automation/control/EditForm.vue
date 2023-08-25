@@ -4,7 +4,7 @@
       class="el-dark-dialog"
       :close-on-click-modal="false"
       :visible.sync="dialogVisible"
-      width="1100px"
+      width="60%"
       height="60%"
       top="10vh"
   >

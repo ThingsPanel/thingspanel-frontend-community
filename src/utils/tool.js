@@ -122,6 +122,7 @@ export function dateFormat(timestamp) {
   return now_time;
 }
 
+
 export const getTimer = () => {
   let timers = JSON.parse(localStorage.getItem("timers"));
   return timers;

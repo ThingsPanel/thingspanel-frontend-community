@@ -191,3 +191,10 @@ export function _debounce(fn, wait) {
       }, wait);
     }    
 }
+
+export function typeConvert(value, type) {
+    if (type.toLowerCase() == "integer" || type.toLowerCase() == "number") return Number(value);
+    if (type.toLowerCase() == "string" || type.toLowerCase() == "text") return String(value);
+    if (type.toLowerCase() == "bool" || type.toLowerCase() == "boolean") return value === 'true' || value === true;
+    if (type.toLowerCase() == "float") return parseFloat(value);
+  }
