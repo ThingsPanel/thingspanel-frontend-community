@@ -78,11 +78,10 @@ export default {
     value: {
         handler(val) {
           const { on, off } = this.option;
-          console.log("signalStatus.value", val, on, off)
-          if (val === on) {
+          console.log("signalStatus.value.val", val, typeof val)
+          console.log("signalStatus.value.on", on, typeof on)
+          if (val.toString() === on.toString()) {
             this.status = true;
-          } else if (val === off) {
-            this.status = false;
           } else {
             this.status = false;
           }
