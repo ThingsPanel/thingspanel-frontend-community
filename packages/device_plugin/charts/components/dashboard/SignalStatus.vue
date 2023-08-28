@@ -77,38 +77,36 @@ export default {
   watch: {
     value: {
         handler(val) {
-          console.log("====signalStatus.value.val", val)
-          const { on, off } = this.option;
-          if (val && (val.toString() === on.toString())) {
-            this.status = true;
-          } else {
-            this.status = false;
-          }
         },
         immediate: true,
         deep: true
     },
     dataSrc: {
       handler(val, oldVal) {
-        console.log("signalStatus", val, oldVal)
-       
       },
       immediate: true
     },
     option: {
         handler(val, oldVal) {
-            console.log("signalStatus.option", val, oldVal)
         },
         immediate: true,
         deep: true
     }
   },
   mounted() {
-    console.log("====signalStatus.mounted", this.option, this.dataSrc)
   },
   methods: {
+    updateValue(val) {
+      const { on, off } = this.option;
+      console.log("====signalStatus.updateValue.val", val, on)
+
+      if (val && (val.toString() === on.toString())) {
+        this.status = true;
+      } else {
+        this.status = false;
+      }
+    },
     showDialog(option) {
-        console.log("====signalStatus.showDialog", option)
         if (this.mode != "edit") return;
         if (option) {
             this.optionData = { ...option };

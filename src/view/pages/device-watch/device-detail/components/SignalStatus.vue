@@ -7,7 +7,7 @@
           </div>
         </div>
     
-        <common-signal-status :option="option" :value="value"></common-signal-status>
+        <common-signal-status ref="signalStatusRef" :option="option" :value="value"></common-signal-status>
       </div>
 </template>
 
@@ -42,7 +42,7 @@ export default {
   methods: {
     updateOption(value) {
       this.value = value;
-      console.log("====signalStatus.updateOption", value)
+      this.$refs['signalStatusRef'].updateValue(value);
     }
   }
 }
