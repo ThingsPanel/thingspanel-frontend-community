@@ -77,10 +77,9 @@ export default {
   watch: {
     value: {
         handler(val) {
+          console.log("====signalStatus.value.val", val)
           const { on, off } = this.option;
-          console.log("signalStatus.value.val", val, typeof val)
-          console.log("signalStatus.value.on", on, typeof on)
-          if (val.toString() === on.toString()) {
+          if (val && (val.toString() === on.toString())) {
             this.status = true;
           } else {
             this.status = false;
