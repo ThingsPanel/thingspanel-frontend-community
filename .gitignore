@@ -22,3 +22,5 @@ yarn-error.log*
 
 yarn.lock
 .env.dev
+src/view/pages/weather-station/index.vue
+.gitignore

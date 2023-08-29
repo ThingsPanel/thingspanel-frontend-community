@@ -1,11 +1,18 @@
 import local_url from "@/api/LocalUrl";
 const link = true, payload = true;
+const getMqttIP = () => {
+    if (document.location.host === "dev.thingspanel.cn") {
+        return "dev.thingspanel.cn";
+    } else {
+        return "mqtt服务IP"
+    }
+}
 export default {
     /**
      * 标准设备mqtt协议信息
      */
     mqtt: [
-        { label: "MQTT接入点", value: "mqtt服务IP:1883" },
+        { label: "MQTT接入点", value: getMqttIP() + ":1883" },
         { label: "设备上报属性主题", value: "device/attributes" },
         { label: "设备订阅属性主题", value: "device/attributes/{AccessToken}" },
         { label: "MQTT用户名", value: "{AccessToken}" },
@@ -17,7 +24,7 @@ export default {
      * 网关mqtt协议信息
      */
     MQTT: [
-        { label: "MQTT接入点", value: "mqtt服务IP" },
+        { label: "MQTT接入点", value: getMqttIP() },
         { label: "网关设备上报属性主题", value: "gateway/attributes" },
         { label: "网关设备订阅属性主题", value: "gateway/attributes/{AccessToken}" },
         { label: "MQTT用户名", value: "{AccessToken}" },
