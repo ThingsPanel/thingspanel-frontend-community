@@ -11,14 +11,14 @@
     </el-row>
   
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.NO')" type="index" width="100">
+      <el-table-column :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.NO')" type="index" width="80">
         <template v-slot="scope">
           <span>{{ (page - 1) * 10 + scope.$index + 1 }}</span>
         </template>
       </el-table-column>
       <el-table-column prop="name" :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.RULE_NAME')"></el-table-column>
       <el-table-column prop="desc" :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.RULE_DESCRIBE')"></el-table-column>
-      <el-table-column prop="create_time" :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.CREATEDATE')">
+      <el-table-column prop="create_time" :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.CREATEDATE')" width="145">
         <template v-slot="scope">
           {{ formatDate(scope.row.create_time) }}
         </template>
@@ -28,7 +28,7 @@
           <el-tag size="small">{{scope.row.status == 1 ? $t('RULE_ENGINE.DATA_FORWARDINGNEW.SRARTED') : $t('RULE_ENGINE.DATA_FORWARDINGNEW.PUTONHOLD')}}</el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="actions" :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.OPERATION')" align="left" width="320px">
+      <el-table-column prop="actions" :label="$t('RULE_ENGINE.DATA_FORWARDINGNEW.OPERATION')" align="left" width="220px">
         <template v-slot="scope">
           <el-button size="mini" v-if="scope.row.status == 0" type="success" @click="handleSetStatus(scope.row)">{{ $t("RULE_ENGINE.DATA_FORWARDINGNEW.START")}}</el-button>
           <el-button size="mini" v-if="scope.row.status == 1"  type="yellow" @click="handleSetStatus(scope.row)">{{ $t("RULE_ENGINE.DATA_FORWARDINGNEW.SUSPENDED")}}</el-button>

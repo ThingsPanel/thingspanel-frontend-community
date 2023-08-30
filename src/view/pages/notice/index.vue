@@ -41,7 +41,7 @@
           <el-button size="mini" v-if="scope.row.status == 1" type="yellow" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SRARTED")}}</el-button>  -->
         </template>
       </el-table-column>
-      <el-table-column prop="actions" :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.OPERATION')" align="left" width="320px">
+      <el-table-column prop="actions" :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.OPERATION')" align="left" width="142px">
         <template v-slot="scope">
           <!-- <el-button size="mini" v-if="scope.row.status == 2" type="success" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.START")}}</el-button>
           <el-button size="mini" v-if="scope.row.status == 1"  type="yellow" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SUSPENDED")}}</el-button> -->

@@ -10,7 +10,7 @@
     <!-- 表 start -->
     <el-form class="inline-edit">
       <el-table :data="tableData" v-loading="loading">
-        <el-table-column :label="$t('DEVICE_MONITORING.NO')" type="index" width="600">
+        <el-table-column :label="$t('DEVICE_MONITORING.NO')" type="index" width="110">
           <template v-slot="scope">
             <span>{{ (params.page - 1) * 10 + scope.$index + 1 }}</span>
           </template>
@@ -24,7 +24,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column align="left" :label="$t('DEVICE_MONITORING.OPERATION')" width="160">
+        <el-table-column align="left" :label="$t('DEVICE_MONITORING.OPERATION')" width="90">
           <template v-slot="scope">
             <!-- <div class="text-center">
               <el-button type="indigo" size="mini" @click="showDeviceChart(scope.row)">查看</el-button>
