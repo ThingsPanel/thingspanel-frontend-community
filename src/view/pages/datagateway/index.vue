@@ -15,52 +15,20 @@
 
     <el-row style="margin-bottom: 5px">
       <el-col :span="6">
-        <el-input
-          :placeholder="$t('RULE_ENGINE.DATA_GATEWAY.NAME')"
-          size="medium"
-          v-model="searchName"
-          clearable
-          @input="handleSearch"
-        >
+        <el-input :placeholder="$t('RULE_ENGINE.DATA_GATEWAY.NAME')" size="medium" v-model="searchName" clearable
+          @input="handleSearch">
         </el-input>
       </el-col>
     </el-row>
 
     <el-table :data="tableData" v-loading="loading">
-      <el-table-column
-        :label="$t('RULE_ENGINE.DATA_GATEWAY.NAME')"
-        prop="name"
-      ></el-table-column>
-      <el-table-column
-        prop="app_key"
-        :label="$t('RULE_ENGINE.DATA_GATEWAY.APP_KEY')"
-        width="170px"
-        v-slot="scope"
-      >
+      <el-table-column :label="$t('RULE_ENGINE.DATA_GATEWAY.NAME')" prop="name" min-width="150"></el-table-column>
+      <el-table-column prop="app_key" :label="$t('RULE_ENGINE.DATA_GATEWAY.APP_KEY')" min-width="120" v-slot="scope">
         <el-row type="flex" justify="end">
           <el-col>
-            <i
-              class="el-icon-document-copy"
-              style="margin-right: 5px; cursor: pointer"
-              v-clipboard:copy="scope.row.app_key"
-              v-clipboard:success="handleCopy"
-            ></i>
-            <!-- <el-button
-              size="mini"
-              circle
-              type="success"
-              icon="el-icon-document-copy"
-              style="margin-left: 5px"
-              v-clipboard:copy="scope.row.app_key"
-              v-clipboard:success="handleCopy"
-              ></el-button
-            > -->
-            <el-tooltip
-              class="item"
-              effect="dark"
-              :content="scope.row.app_key"
-              placement="top-start"
-            >
+            <i class="el-icon-document-copy" style="margin-right: 5px; cursor: pointer"
+              v-clipboard:copy="scope.row.app_key" v-clipboard:success="handleCopy"></i>
+            <el-tooltip class="item" effect="dark" :content="scope.row.app_key" placement="top-start">
               <span>{{
                 scope.row.app_key ? scope.row.app_key.substr(0, 5) + "..." : ""
               }}</span>
@@ -68,34 +36,19 @@
           </el-col>
         </el-row>
       </el-table-column>
-      <el-table-column
-        prop="signature_mode"
-        :label="$t('RULE_ENGINE.DATA_GATEWAY.SIGNATURE_MODE')"
-      ></el-table-column>
-      <el-table-column
-        prop="ip_whitelist"
-        :label="$t('RULE_ENGINE.DATA_GATEWAY.IP_WHITELIST')"
-        v-slot="scope"
-      >
-        <el-tooltip
-          class="item"
-          effect="dark"
-          :content="scope.row.ip_whitelist"
-          placement="top-start"
-        >
+      <el-table-column prop="signature_mode" :label="$t('RULE_ENGINE.DATA_GATEWAY.SIGNATURE_MODE')"
+        width="90"></el-table-column>
+      <el-table-column prop="ip_whitelist" :label="$t('RULE_ENGINE.DATA_GATEWAY.IP_WHITELIST')" v-slot="scope" min-width="110">
+        <el-tooltip class="item" effect="dark" :content="scope.row.ip_whitelist" placement="top-start" width="110">
           <span>{{
             scope.row.ip_whitelist && scope.row.ip_whitelist.length > 24
-              ? scope.row.ip_whitelist.substr(0, 24) + "..."
-              : scope.row.ip_whitelist
+            ? scope.row.ip_whitelist.substr(0, 24) + "..."
+            : scope.row.ip_whitelist
           }}</span>
         </el-tooltip>
       </el-table-column>
-      <el-table-column
-        prop="device_access_scope"
-        :label="$t('RULE_ENGINE.DATA_GATEWAY.DEVICE_ACCESS_SCOPE')"
-        :span="12"
-        v-slot="scope"
-      >
+      <el-table-column prop="device_access_scope" :label="$t('RULE_ENGINE.DATA_GATEWAY.DEVICE_ACCESS_SCOPE')" :span="12"
+        min-width="125" v-slot="scope">
         <span v-if="scope.row.device_access_scope == '1'">{{
           $t("RULE_ENGINE.DATA_GATEWAY.ALL")
         }}</span>
@@ -103,21 +56,11 @@
           $t("RULE_ENGINE.DATA_GATEWAY.PART")
         }}</span>
         <span v-else>error</span>
-        <el-button
-          size="mini"
-          :type="scope.row.device_access_scope != '1' ? 'success' : 'info'"
-          style="margin-left: 10px"
-          :disabled="scope.row.device_access_scope == '1'"
-          @click="handleShowDeviceDialog(scope.row)"
-          >{{ $t("RULE_ENGINE.DATA_GATEWAY.CHOOSE") }}</el-button
-        ></el-table-column
-      >
-      <el-table-column
-        prop="api_access_scope"
-        :label="$t('RULE_ENGINE.DATA_GATEWAY.API_ACCESS_SCOPE')"
-        width="120px"
-        v-slot="scope"
-      >
+        <el-button size="mini" :type="scope.row.device_access_scope != '1' ? 'success' : 'info'" style="margin-left: 10px"
+          :disabled="scope.row.device_access_scope == '1'" @click="handleShowDeviceDialog(scope.row)">{{
+            $t("RULE_ENGINE.DATA_GATEWAY.CHOOSE") }}</el-button></el-table-column>
+      <el-table-column prop="api_access_scope" :label="$t('RULE_ENGINE.DATA_GATEWAY.API_ACCESS_SCOPE')" min-width="125"
+        v-slot="scope">
         <span v-if="scope.row.api_access_scope == '1'">{{
           $t("RULE_ENGINE.DATA_GATEWAY.ALL")
         }}</span>
@@ -125,106 +68,46 @@
           $t("RULE_ENGINE.DATA_GATEWAY.PART")
         }}</span>
         <span v-else>error</span>
-        <el-button
-          size="mini"
-          :type="scope.row.api_access_scope != '1' ? 'success' : 'info'"
-          style="margin-left: 10px"
-          :disabled="scope.row.api_access_scope == '1'"
-          @click="handleShowApiDialog(scope.row)"
-          >{{ $t("RULE_ENGINE.DATA_GATEWAY.CHOOSE") }}</el-button
-        >
+        <el-button size="mini" :type="scope.row.api_access_scope != '1' ? 'success' : 'info'" style="margin-left: 10px"
+          :disabled="scope.row.api_access_scope == '1'" @click="handleShowApiDialog(scope.row)">{{
+            $t("RULE_ENGINE.DATA_GATEWAY.CHOOSE") }}</el-button>
       </el-table-column>
-      <el-table-column
-        prop="description"
-        width="200px"
-        :label="$t('RULE_ENGINE.DATA_GATEWAY.DESCRIPTION')"
-      ></el-table-column>
-      <el-table-column
-        prop="created_at"
-        :label="$t('RULE_ENGINE.DATA_GATEWAY.CREATED_AT')"
-      >
+      <el-table-column prop="description"
+        :label="$t('RULE_ENGINE.DATA_GATEWAY.DESCRIPTION')"></el-table-column>
+      <el-table-column prop="created_at" :label="$t('RULE_ENGINE.DATA_GATEWAY.CREATED_AT')" width="145">
         <template v-slot="scope">
           {{ formatDate(scope.row.created_at) }}
         </template>
       </el-table-column>
-      <el-table-column
-        prop="actions"
-        :label="$t('RULE_ENGINE.DATA_GATEWAY.OPERATION')"
-        align="left"
-        width="270px"
-      >
+      <el-table-column prop="actions" :label="$t('RULE_ENGINE.DATA_GATEWAY.OPERATION')" align="left" width="245px">
         <template v-slot="scope">
-          <el-button
-            size="mini"
-            type="indigo"
-            @click="handleShowKey(scope.row)"
-            >{{ $t("RULE_ENGINE.DATA_GATEWAY.VIEW_KEY") }}</el-button
-          >
-          <el-button
-            class="mr-3"
-            size="mini"
-            type="indigo"
-            @click="handleShowEdit(scope.row)"
-            >{{ $t("RULE_ENGINE.DATA_GATEWAY.EDIT") }}</el-button
-          >
+          <el-button size="mini" type="indigo" @click="handleShowKey(scope.row)">{{
+            $t("RULE_ENGINE.DATA_GATEWAY.VIEW_KEY") }}</el-button>
+          <el-button class="mr-3" size="mini" type="indigo" @click="handleShowEdit(scope.row)">{{
+            $t("RULE_ENGINE.DATA_GATEWAY.EDIT") }}</el-button>
 
-          <el-popconfirm
-            class="mr-1"
-            :title="$t('AUTOMATION.TITLE4')"
-            @confirm="handle_del(scope.row.id)"
-          >
-            <el-button
-              slot="reference"
-              class="mr-3"
-              size="mini"
-              type="danger"
-              >{{ $t("RULE_ENGINE.DATA_GATEWAY.DELETE") }}</el-button
-            >
+          <el-popconfirm class="mr-1" :title="$t('AUTOMATION.TITLE4')" @confirm="handle_del(scope.row.id)">
+            <el-button slot="reference" class="mr-3" size="mini" type="danger">{{ $t("RULE_ENGINE.DATA_GATEWAY.DELETE")
+            }}</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
 
     <div class="text-right py-3">
-      <el-pagination
-        background
-        layout="prev, pager, next"
-        :total="data_count"
-        :current-page.sync="page"
-        :page-size="per_page"
-        @current-change="page_change"
-      ></el-pagination>
+      <el-pagination background layout="prev, pager, next" :total="data_count" :current-page.sync="page"
+        :page-size="per_page" @current-change="page_change"></el-pagination>
     </div>
 
-    <CreateForm
-      :visible.sync="dataGatewayDialogVisible"
-      :data="formData"
-      :id="formId"
-      @submit="get_data"
-    />
+    <CreateForm :visible.sync="dataGatewayDialogVisible" :data="formData" :id="formId" @submit="get_data" />
 
-    <ApiAccessScopeForm
-      :visible.sync="apiDialogVisible"
-      :data="formData"
-      :id="formId"
-      @submit="get_data"
-    />
+    <ApiAccessScopeForm :visible.sync="apiDialogVisible" :data="formData" :id="formId" @submit="get_data" />
 
-    <DeviceAccessScopeForm
-      :visible.sync="deviceDialogVisible"
-      :data="formData"
-      :id="formId"
-      :loading="loading"
-      @submit="get_data"
-    />
+    <DeviceAccessScopeForm :visible.sync="deviceDialogVisible" :data="formData" :id="formId" :loading="loading"
+      @submit="get_data" />
 
-    <el-dialog
-      :visible="viewKeyDialogVisible"
-      width="35%"
-      height="60%"
-      :title="$t('RULE_ENGINE.DATA_GATEWAY.VIEW_KEY')"
-      :before-close="handleCloseViewKey"
-    >
+    <el-dialog :visible="viewKeyDialogVisible" width="35%" height="60%" :title="$t('RULE_ENGINE.DATA_GATEWAY.VIEW_KEY')"
+      :before-close="handleCloseViewKey">
       <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
         <el-col :span="3">
           {{ $t("RULE_ENGINE.DATA_GATEWAY.SECRET_KEY") }}:
@@ -233,14 +116,8 @@
           {{ this.viewSecretKey }}
         </el-col>
         <el-col :span="3">
-          <el-button
-            size="mini"
-            type="success"
-            width="30px"
-            v-clipboard:copy="viewSecretKey"
-            v-clipboard:success="handleCopy"
-            >{{ $t("RULE_ENGINE.DATA_GATEWAY.COPY") }}</el-button
-          >
+          <el-button size="mini" type="success" width="30px" v-clipboard:copy="viewSecretKey"
+            v-clipboard:success="handleCopy">{{ $t("RULE_ENGINE.DATA_GATEWAY.COPY") }}</el-button>
         </el-col>
       </el-row>
     </el-dialog>
