@@ -37,23 +37,22 @@
 
     <!-- 表 start -->
     <el-table :data="tableData" v-loading="loading">
-   
-      <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.SENDTIME')" prop="send_time">
+      <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.SENDTIME')" prop="send_time" width="230px">
         <template v-slot="scope">
           {{ formatDate(scope.row.send_time) }}
         </template>
       </el-table-column>
-      <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.SENDCONTENT')" prop="send_content"></el-table-column>
-      <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.RECIPIENT')" prop="send_target" >
+        <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.SENDCONTENT')" prop="send_content" ></el-table-column>
+        <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.RECIPIENT')" prop="send_target"  >
 
       </el-table-column>
-      <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.SENDRESUIT')" prop="send_result">
+      <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.SENDRESUIT')" prop="send_result" width="130px">
         <template v-slot="scope">
-            <p class="table-describe mad" v-if="scope.row.send_result===1">成功</p>
-            <p class="table-describe mad" v-if="scope.row.send_result===2">失败</p>
+          <p class="table-describe mad" v-if="scope.row.send_result === 1">成功</p>
+          <p class="table-describe mad" v-if="scope.row.send_result === 2">失败</p>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.TYPE')" prop="notification_type">
+      <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.TYPE')" prop="notification_type" width="130px">
         <template v-slot="scope">
           <p v-if="scope.row.notification_type == 1">短信</p>
           <p v-if="scope.row.notification_type == 2">邮箱</p>

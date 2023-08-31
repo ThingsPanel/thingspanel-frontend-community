@@ -13,7 +13,7 @@
     <!-- 表 start -->
     <el-form class="inline-edit">
       <el-table :data="tableData" v-loading="loading">
-        <el-table-column :label="$t('VISUALIZATION.NO')" type="index" align="left" width="550">
+        <el-table-column :label="$t('VISUALIZATION.NO')" type="index" align="left" min-width="110" width="200">
           <template v-slot="scope">
             <span>{{ (params.current_page - 1) * 10 + scope.$index + 1 }}</span>
           </template>
@@ -35,7 +35,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column align="left" :label="$t('VISUALIZATION.OPERATION')" width="300">
+        <el-table-column align="left" :label="$t('VISUALIZATION.OPERATION')" width="230">
           <template v-slot="scope">
             <div style="text-align: left">
               <div v-if="scope.row.status">

@@ -13,7 +13,7 @@
   <!-- 表 start -->
   <el-form class="inline-edit">
   <el-table :data="tableData" v-loading="loading">
-    <el-table-column :label="$t('DEVICE_ACCESS.NO')" type="index" width="260">
+    <el-table-column :label="$t('DEVICE_ACCESS.NO')" type="index" width="90">
       <template v-slot="scope">
         <span>{{ (params.page - 1) * 10 + scope.$index + 1 }}</span>
       </template>
