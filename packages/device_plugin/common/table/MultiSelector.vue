@@ -17,7 +17,7 @@
             <el-form-item label="参数名称" prop="name">
                 <el-input v-model="formData.name"></el-input>
             </el-form-item>
-            <el-form-item label="命令内容" prop="identifier">
+            <el-form-item label="参数标识符" prop="identifier">
                 <el-input v-model="formData.identifier"></el-input>
             </el-form-item>
             <el-form-item label="数据类型" prop="type">
