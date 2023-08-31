@@ -75,7 +75,8 @@ export default {
           }
         }
       },
-      immediate: true
+      immediate: true,
+      deep: true
     },
     chart: {
       handler(newVal) {

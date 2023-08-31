@@ -117,7 +117,6 @@ export function setConditions(conditions) {
     let group_number = 1;
     const washCondition = (c) => {
         let condition = {};
-        console.log("Object.keys(c)",c)
 
         if (c.type === "device") {
             // ================================== 设备条件 =====================================
@@ -130,12 +129,25 @@ export function setConditions(conditions) {
                 condition['v1'] = c.data.state.name;
                 condition['v2'] = c.data.state.operator.symbol;
                 condition['v3'] = c.data.state.operator.value;
+                condition['v4'] = StateMode.property;
+
             } else if (condition.device_condition_type === StateMode.onlineState) {
                 condition['v2'] = OnlineState[c.data.state.name];
+            } else if (condition.device_condition_type === StateMode.event) {
+                /*
+                    {
+                        "label": "告警",
+                        "name": "warning",
+                        "mode": "event",
+                        "params": "{\"param\":\"\"}"
+                    }
+                */
+                condition['v1'] = c.data.state.name;
+                condition['v3'] = c.data.state.params;
+                condition['v4'] = StateMode.event;
             }
         } else if (c.type === "time") {
             // ================================== 时间条件 =====================================
-            console.log("时间条件", c)
             condition = {
                 condition_type: ConditionType.time,
                 time_condition_type: TimeType[c.data.type]
@@ -190,8 +202,6 @@ export function setConditions(conditions) {
                     break;
                 }
             }
-            console.log("setConditions", condition)
-
         }
 
         if (c.relation && c.relation == "or") {
@@ -220,17 +230,32 @@ export function setActions(actions, name) {
         let action = {};
         // 动作类型
         action.action_type = ActionType[a.type];
-        console.log("====washAction", a, action)
         switch (action.action_type) {
             case ActionType.device: {
                 // 操作设备
                 a.data.forEach(item => {
+                    let additionalInfo = {};
                     let instruct = {};
-                    instruct[item.state.name] = item.state.operator.value;
-                    let additionalInfo = {
-                        device_model: "1",
-                        instruct
+                    const { state } = item;
+                    if (item.state.mode === "command") {
+                        // {"method":"switch1","params":{"false":0}}
+                        /*
+                            {
+                                "label": "重启设备",
+                                "name": "restart",
+                                "mode": "command",
+                                "params": "{\"params\":\"\"}"
+                            }
+                        */
+                        additionalInfo["device_model"] = "2";
+                        instruct["method"] = state.name;
+                        instruct["params"] = JSON.parse(state.params);
+                    } else {
+                        // 设定属性
+                        additionalInfo["device_model"] = "1";
+                        instruct[item.state.name] = item.state.operator.value;
                     }
+                    additionalInfo["instruct"] = instruct;
                     actionList.push(
                         {
                             ...action,
@@ -280,11 +305,10 @@ export function setActions(actions, name) {
 export function getConditions(conditions) {
     let conditionList = [];
     let temp = 1;
-    console.log("getConditions", conditions)
     if (conditions && conditions.length > 0) {
-        conditions.forEach((item, index) => {
-            console.log(index, item.group_number)
-            let groupNumber = item.group_number; 
+        for (let index = 0; index < conditions.length; index++) {
+            const item = conditions[index];
+            let groupNumber = item.group_number;
             let condition = {};
             if (index === 0) {
                 condition.relation = "";
@@ -306,10 +330,14 @@ export function getConditions(conditions) {
                 };
 
                 let name = "";
+                let operator = {};
+                let params = "";
                 switch (item.device_condition_type) {
                     case StateMode.property: {
                         // 属性
                         name = item.v1;
+                        operator["symbol"] = item.v2;
+                        operator["value"] = item.v3
                         break;
                     }
                     case StateMode.onlineState: {
@@ -317,17 +345,21 @@ export function getConditions(conditions) {
                         name = OnlineState.getKey(item.v2);
                         break;
                     }
+                    case StateMode.event: {
+                        // 事件
+                        name = item.v1;
+                        params = item.v3;
+                        break;
+                    }
                 }
-                console.log(condition.data.state)
 
                 condition.data.state = {
                     name,
                     mode: StateMode.getKey(item.device_condition_type),
-                    operator: {
-                        symbol: item.v2,
-                        value: item.v3
-                    }
+                    operator,
+                    params
                 };
+                condition.data.stateJSON = JSON.stringify(condition.data.state)
                 // =================================================================================
                 // 设备条件 end
                 // =================================================================================
@@ -377,7 +409,7 @@ export function getConditions(conditions) {
                                     day: arr[0],
                                     time: arr[1] + ":" + arr[2]
                                 }
-                                
+
                                 break;
 
                             }
@@ -395,7 +427,7 @@ export function getConditions(conditions) {
                     }
                     case TimeType.custom: {
                         // 自定义
-    
+
                         break;
                     }
                 }
@@ -404,11 +436,12 @@ export function getConditions(conditions) {
                 // =================================================================================
             }
             conditionList.push(condition);
-        })
+        }
+       
     } else {
         conditionList.push({})
     }
-    
+
     return conditionList;
 }
 
@@ -431,14 +464,27 @@ export function getActions(actions) {
                 state: {}
             };
             const additionalInfo = item.additional_info ? JSON.parse(item.additional_info) : {};
-            const name = Object.keys(additionalInfo.instruct || {})[0];
-            command.state = {
-                name,
-                mode: "property",
-                operator: {
-                    symbol: "",
-                    value: additionalInfo.instruct ? additionalInfo.instruct[name] : ""
+            
+            if (additionalInfo.device_model === "1") {
+                // 属性
+                const name = Object.keys(additionalInfo.instruct || {})[0];
+                command.state = {
+                    name,
+                    mode: "property",
+                    operator: {
+                        symbol: "",
+                        value: additionalInfo.instruct ? additionalInfo.instruct[name] : ""
+                    }
                 }
+            } else {
+                // 命令
+                
+                command.state = {
+                    name: additionalInfo.instruct.method,
+                    mode: "command",
+                    params: JSON.stringify(additionalInfo.instruct.params)
+                }
+                command.stateJSON = JSON.stringify(command.state);
             }
             commands.push(command);
         } else if (item.action_type === ActionType.alarm) {
@@ -463,7 +509,6 @@ export function getActions(actions) {
     if (commands.length > 0) {
         actionList.push({ type: "device", data: commands });
     }
-    console.log("getActions.actionList", actionList);
     return actionList;
 }
 

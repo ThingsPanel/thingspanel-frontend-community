@@ -3,21 +3,21 @@
     <el-form-item style="width:100%" :label="$t('AUTOMATION.THEN')">
       <div style="display: flex;margin-bottom: 10px" v-for="(action, index) in actions" :key="index">
 
-        <el-select ref="actionTypeRef" style="width: 120px;margin-right:20px" :placeholder="$t('AUTOMATION.PLACEHOLDER.ACTION_TYPE')" v-model="action.type"
+        <el-select ref="actionTypeRef" style="width: 130px;margin-right:20px" :placeholder="$t('AUTOMATION.PLACEHOLDER.ACTION_TYPE')" v-model="action.type"
                    :disabled="actions.length > (index+1)"
                    @change="v=>handleChangeActionType(action, v)">
           <el-option v-for="(item, index) in action.typeOptions" :key="index" :label="item.label" :value="item.value"></el-option>
         </el-select>
 
         <!-- 操作设备 -->
-        <CommandDevice ref="commandRef" v-if="action.type=='device'" :data="action.data" @change="v=>handleCommandChange(action, v)"/>
+        <CommandDevice ref="commandRef" style="width:100%" v-if="action.type=='device'" :data="action.data" @change="v=>handleCommandChange(action, v)"/>
 
 
         <!-- 激活场景 -->
-        <SceneSelector ref="sceneRef" v-if="action.type=='scene'" :value="action.value" @change="v=>handleSceneChange(action, v)"/>
+        <SceneSelector ref="sceneRef" style="width:100%" v-if="action.type=='scene'" :value="action.value" @change="v=>handleSceneChange(action, v)"/>
 
         <!-- 告警通知 -->
-        <AlarmNotification ref="alarmRef" v-if="action.type=='alarm'" :data="action.data" @change="v=>handleAlarmChange(action, v)"/>
+        <AlarmNotification ref="alarmRef" style="width:100%" v-if="action.type=='alarm'" :data="action.data" @change="v=>handleAlarmChange(action, v)"/>
         <!-- <el-button v-if="action.type=='device'" type="danger" size="mini">{{ $t('AUTOMATION.DELETE') }}</el-button> -->
         
         <div style="margin-left:20px;">
@@ -124,7 +124,6 @@ export default {
       // for (const item in v) {
       //   action[item] = v[item];
       // }
-      console.log("====handleCommandChange====", action, v)
       action.data = v;
       action.type = "device";
       this.updateData();
@@ -174,7 +173,6 @@ export default {
           message_error(this.$t('AUTOMATION.ERROR.ATLEAST_ONE_ACTION_TYPE'));
           return false;
         }
-        console.log(this.$refs.commandRef, this.$refs.sceneRef, this.$refs.alarmRef)
         if (this.$refs.commandRef && this.$refs.commandRef.length > 0 && !this.$refs.commandRef[0].validate()) return false;
         if (this.$refs.sceneRef && this.$refs.sceneRef.length > 0 && !this.$refs.sceneRef[0].validate()) return false;
         if (this.$refs.alarmRef && this.$refs.alarmRef.length > 0 && !this.$refs.alarmRef[0].validate()) return false;

@@ -87,7 +87,11 @@ export default {
         automation_described: "",
         priority: "",
         conditions: [
-          {}
+          {
+            data: {
+              state: {}
+            }
+          }
         ],
         actions: []
       }
@@ -121,7 +125,7 @@ export default {
      * @description: 初始化表单数据
      * @return {*}
      */    
-    initFormData() {
+    async initFormData() {
       if (!this.data.id) {
         // 新增
         this.formData = {
@@ -133,23 +137,21 @@ export default {
         }
       } else {
         // 编辑
-        Auto.Control.get({id: this.data.id})
-          .then(({ data: result }) => {
-            if (result.code === 200) {
-              let data = JSON.parse(JSON.stringify(result?.data || {}));
-              data.conditions = getConditions(data.automation_conditions);
-              data.actions = getActions(data.automation_actions);
-              this.formData = data;
-            }
-          })
+        const { data: result } = await Auto.Control.get({id: this.data.id})
+        if (result.code === 200) {
+          let data = JSON.parse(JSON.stringify(result?.data || {}));
+          this.formData = { 
+            ...data, 
+            conditions: getConditions(data.automation_conditions),
+            actions: getActions(data.automation_actions)
+            };
+        }
       }
     },
     handleConditionChange(v) {
-      console.log("handleConditionChange", v);
       this.formData.conditions = v;
     },
     handleActionChange(v) {
-      console.log("handleActionChange", v);
       this.formData.actions = v;
     },
     /**
@@ -182,7 +184,6 @@ export default {
       if (!this.validate()) return;
       
       let data = JSON.parse(JSON.stringify(this.formData));
-      console.log(data,'data')
       data.enabled = enabled.toString();   // 是否启用
       
       data.automation_conditions = setConditions(data.conditions);
@@ -191,7 +192,6 @@ export default {
       data.automation_actions = setActions(data.actions, this.formData.automation_name);
       delete data.actions;
      
-      console.log("data", data)
       if (data.id) {
         // 编辑
         Auto.Control.edit(data)

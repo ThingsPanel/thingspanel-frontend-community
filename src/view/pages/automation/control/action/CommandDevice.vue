@@ -10,7 +10,7 @@
   <div class="command-device-box">
     <div style="display: flex;margin-bottom: 10px" v-for="(command, index) in commands" :key="index">
 
-      <DeviceTypeSelector ref="deviceTypeRef" :option="{operator: false}" :data="command" @change="v=>handleCommandChange(command, v)"/>
+      <DeviceTypeSelector ref="deviceTypeRef" :option="{operator: false, mode: 'action'}" :data="command" @change="v=>handleCommandChange(command, v)"/>
 
       <!-- 新增一行 -->
       <el-button type="indigo" size="small" style="margin-left: 10px;"

@@ -48,6 +48,9 @@
       <!-- 操作符 -->
       <OperatorSelector style="width: 280px" ref="operatorSelectorRef" v-else-if="formData.state.mode == 'property'"
                         :chart="chartData" :data="formData.state" :option="option" @change="handleOperatorChange"/>
+
+      <el-input style="width:20%;" v-else-if="formData.state.mode==='event'" v-model="formData.state.params" @change="handleChangeState"/>
+      <el-input style="width:20%;" v-else-if="formData.state.mode==='command'" v-model="formData.state.params" @change="handleChangeState"/>
     </template>
 
   </div>
@@ -68,10 +71,11 @@ export default {
   props: {
     /**
      * 配置
+     * mode: condition 条件; action 操作
      */
     option: {
       type: [Object],
-      default: () => { return { operator: true } }
+      default: () => { return { mode: "condition", operator: true } }
     },
     data: {
       type: [Object],
@@ -102,17 +106,16 @@ export default {
       // 状态/属性列表
       stateOptions: [],
       chartList: [],
-      chartData: {}
+      chartData: {},
+      eventList: [],
+      commandList: []
     }
   },
   watch: {
     data: {
       handler(newValue) {
-        console.log("data", newValue)
         if (newValue) {
           this.formData = JSON.parse(JSON.stringify(newValue));
-          console.log("formData", this.formData)
-          
         }
       },
       immediate: true
@@ -128,7 +131,6 @@ export default {
     "formData.groupId": {
       handler(newValue) {
         if (newValue) {
-          console.log("formData.groupId", newValue)
           this.getDeviceList(newValue);
         }
       },
@@ -155,7 +157,6 @@ export default {
      * @param v
      */
     handleGroupChange(v) {
-      console.log("handleGroupChange", v)
       this.formData.groupId = v;
       this.formData.deviceId = "";
       this.updateData();
@@ -168,7 +169,6 @@ export default {
     handleDeviceChange(v) {
       const deviceRef = this.$refs.deviceRef;
       const { data } = deviceRef.getCheckedNodes()[0];
-      console.log("handleDeviceChange.device", this.formData.device)
       this.formData.deviceId = data.value;
       this.updateData();
       this.getStateList(data.pluginId);
@@ -178,22 +178,31 @@ export default {
      * @param v
      */
     handleStateChange(v) {
-      console.log("handleStateChange", v)
-      this.formData.state = v;
-      if (v.readWrite && v.readWrite === "rw") {
-        this.chartData = { type: "", controlType: "control"}
-        this.chartList.forEach(item => {
-          if (item.controlType === "control") {
-            let map = item.series[0].mapping;
-            if (map.value === v.name && (true)) {
-              this.chartData = item;
-              console.log("handleStateChange.chartData", this.chartData)
+      if (v && v.mode === "properties") {
+        this.formData.state = { ...v };
+        if (v.readWrite && v.readWrite === "rw") {
+          this.chartData = { type: "", controlType: "control"}
+          this.chartList.forEach(item => {
+            if (item.controlType === "control") {
+              let map = item.series[0].mapping;
+              if (map.value === v.name && (true)) {
+                this.chartData = item;
+              }
             }
-          }
-        });
-      } else {
-        this.chartData = { type: "", controlType: "" }
+          });
+        } else {
+          this.chartData = { type: "", controlType: "" }
+        }
+      } else if (v && v.mode === "command") {
+        this.formData.state = this.commandList.find(item => {
+          return item.name === v.name;
+        })
+      } else if (v && v.mode === "event") {
+        this.formData.state = this.eventList.find(item => {
+          return item.name === v.name;
+        })
       }
+      
       this.updateData();
     },
     /**
@@ -212,11 +221,14 @@ export default {
       this.formData.state.operator = v;
       this.updateData();
     },
+    handleChangeState(v) {
+      // this.formData.state
+      this.updateData();
+    },
     /**
      * 向父组件传值
      */
     updateData() {
-      console.log("updateData", this.formData);
       this.$emit("change", this.formData);
     },
     /**
@@ -268,7 +280,6 @@ export default {
                   children: item.children || undefined
                 }
               });
-              console.log("this.deviceOptions", this.deviceOptions)
               
               if (this.formData.deviceId) {
                 this.formData.device = [];
@@ -293,7 +304,6 @@ export default {
 
 
                 this.getStateList(pluginId);
-                // console.log("getDeviceList.formData", this.formData.device);
                 this.updateData();
               }
             }
@@ -304,9 +314,8 @@ export default {
      * @param id  插件id
      */
     getStateList(id) {
-      console.log("getStateList", id)
       this.stateOptions = [];
-      if (this.option.operator) {
+      if (this.option.mode === "condition") {
         // 在线状态
         this.stateOptions.push({
           label: this.$t('AUTOMATION.ONLINE_OFFLINE'), 
@@ -321,7 +330,6 @@ export default {
         this.updateData();
         return;
       }
-      console.log("getStateList.formData", this.formData)
       let params = {current_page: 1, per_page: 9999, id };
       PluginAPI.page(params)
           .then(({data}) => {
@@ -332,9 +340,13 @@ export default {
               // 物模型属性
               const { tsl, chart } = jsonObj;
               let properties = tsl.properties || [];
+              let services = tsl.services || [];
+              let events = tsl.events || [];
               this.chartList = chart;
-              let curProperty = {};
+              let currentItem = {};
               this.formData.state = {};
+
+              // 属性
               let arr = properties.map(item => {
                 if (this.formData.state && this.formData.state.name === item.name) {
                   this.formData.state = { ...this.formData.state, unit: item.unit, type: item.type, readWrite: item.readWrite || "r" }
@@ -343,15 +355,53 @@ export default {
               });
               this.stateOptions.push({label: this.option.operator ? this.$t('AUTOMATION.PROPERTY') : "设定值", options: arr});
 
-              this.stateOptions.forEach(item => {
-                curProperty = item.options.find(it => it.name === this.data.state.name)
-              })
-              curProperty.operator = this.data.state.operator;
-              console.log("DeviceTypeSelector.curProperty", curProperty)
-              this.handleStateChange(curProperty);
+              if (this.option.mode === "action") {
+                // 命令标识符
+                let serviceArr = services.map(service => {
+                  let params = {};
+                  service.commandParams.forEach(item => {
+                    params[item.identifier] = ""
+                  })
+                  return { 
+                    label: service.commandName, name: service.commandId, mode: "command", params: JSON.stringify(params)
+                  };
+                })
+                this.commandList = serviceArr;
+                serviceArr.length && this.stateOptions.push({ label: "命令标识符", options: serviceArr})
 
+                // 自定义属性下发
+                // this.stateOptions.push({ label: "自定义", options: [
+                //   { label: "自定义属性", name: "custom", mode: "custom" }
+                // ] })
+              } else if (this.option.mode === "condition") {
+                // 事件标识符
+                let eventArr = events.map(event => {
+                  let params = {};
+                  event.eventParams.forEach(item => {
+                    params[item.identifier] = "";
+                  })
+                  return {
+                    label: event.eventName, name: event.eventId, mode: "event", params: JSON.stringify(params)
+                  }
+                })
+                this.eventList = eventArr;
+                eventArr.length && this.stateOptions.push({ label: "事件标识符", options: eventArr })
+              }
+
+              this.stateOptions.forEach(item => {
+                if (this.data.state) {
+                  currentItem = item.options.find(it => it.name === this.data.state.name)
+                }
+              })
+              if (currentItem && currentItem.mode === "property") {
+                currentItem.operator = this.data.state.operator;
+              } else if (currentItem && currentItem.mode === "event") {
+                currentItem.params = JSON.parse(this.data.stateJSON).params;
+              } else if (currentItem && currentItem.mode === "command") {
+                currentItem.params = JSON.parse(this.data.stateJSON).params;
+              }
+              this.handleStateChange(currentItem);
               this.updateData();
-              
             }
           })
     },
