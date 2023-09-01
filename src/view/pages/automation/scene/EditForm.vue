@@ -27,7 +27,7 @@
 
       <el-form-item :label="$t('')" required>
         <div style="display:flex;margin-bottom: 10px;" v-for="(command, index) in formData.commands" :key="index">
-          <DeviceTypeSelector ref="deviceTypeRef" style="" :data="command.data" :option="{operator: false}" @change="v=>handleCommandChange(command, v)"/>
+          <DeviceTypeSelector ref="deviceTypeRef" style="" :data="command.data" :option="{operator: false, mode: 'action'}" @change="v=>handleCommandChange(command, v)"/>
           <!-- 新增一行 -->
           <el-button type="indigo" size="small" style="margin-left: auto"
                      v-if="index == 0" @click="handleAddCommand(command)">{{ $t('AUTOMATION.ADD_LINE')}}</el-button>

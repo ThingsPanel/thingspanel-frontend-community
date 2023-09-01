@@ -354,8 +354,10 @@ export default {
                 return { label: item.title, name: item.name, unit: item.unit, mode: "property", type: item.dataType, readWrite: item.readWrite || "r" };
               });
               this.stateOptions.push({label: this.option.operator ? this.$t('AUTOMATION.PROPERTY') : "设定值", options: arr});
+              console.log("option.mode", this.option)
 
               if (this.option.mode === "action") {
+                console.log("services", services)
                 // 命令标识符
                 let serviceArr = services.map(service => {
                   let params = {};
