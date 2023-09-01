@@ -1,8 +1,8 @@
 <template>
     <div>
-  <!--    <el-form label-position="right" label-width="85px">-->
+     <!-- <el-form label-position="left" label-width="85px"> -->
         <!-- 告警级别 -->
-        <el-form-item :label="$t('AUTOMATION.WARNING_LEVEL')" required>
+        <el-form-item style="margin-bottom: 10px" :label="$t('AUTOMATION.WARNING_LEVEL')" required>
             <el-select ref="warningLevelRef" style="width: 200px" v-model="formData.warningLevel" @change="handleChange">
                 <el-option :label="$t('AUTOMATION.WARNING_LEVEL_LOW')" :value="'1'"></el-option>
                 <el-option :label="$t('AUTOMATION.WARNING_LEVEL_MEDIUM')" :value="'2'"></el-option>
@@ -11,23 +11,25 @@
         </el-form-item>
 
         <!-- 通知组 -->
-        <el-form-item :label="$t('AUTOMATION.NOTIFY_USER')">
-            <el-select style="width: 200px;margin-right:10px" v-model="formData.notification" @change="handleRoleChange">
+        <el-form-item  style="margin-bottom: 10px" :label="$t('AUTOMATION.NOTIFY_USER')">
+            <el-select style="width: 200px;margin-right:10px" clearable v-model="formData.notification" @change="handleRoleChange">
               <el-option v-for="(item, index) in roleList" :key="index" :label="item.group_name" :value="item.id"></el-option>
             </el-select>
         </el-form-item>
 
         <!-- 重复次数 -->
-        <el-form-item :label="$t('AUTOMATION.REPEAT_TIMES')">
-          <el-input-number ref="repeatTimesRef" style="width: 200px" :min="1" v-model="formData.repeatTimes" :placeholder="$t('AUTOMATION.PLACEHOLDER.ALARM_REPEAT_TIMES')" @change="handleChange"/>
+        <el-form-item  style="margin-bottom: 10px" label="告警条件">
+          条件触发达到
+          <el-input-number ref="repeatTimesRef"  :min="1" v-model="formData.repeatTimes" :placeholder="$t('AUTOMATION.PLACEHOLDER.ALARM_REPEAT_TIMES')" @change="handleChange"/>
+          次后触发告警
         </el-form-item>
 
         <!-- 描述 -->
-        <el-form-item :label="$t('AUTOMATION.ALARM_DESCRIPTION')">
+        <el-form-item  style="margin-bottom: 10px" :label="$t('AUTOMATION.ALARM_DESCRIPTION')">
           <el-input style="width: 200px" v-model="formData.warning_description" :placeholder="$t('AUTOMATION.ALARM_DESCRIPTION')" @change="handleChange"></el-input>
         </el-form-item>
   
-  <!--    </el-form>-->
+     <!-- </el-form> -->
     </div>
   </template>
   
