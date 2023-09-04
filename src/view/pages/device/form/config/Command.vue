@@ -10,7 +10,7 @@
         <el-table :data="tableData" v-loading="loading">
             <el-table-column label="命令标识符" prop="command_identify" width="240"></el-table-column>
             <!-- <el-table-column label="命令名称" prop="command_name" width="auto"></el-table-column> -->
-            <el-table-column label="命令内容" prop="data" width="auto"></el-table-column>
+            <el-table-column label="命令参数" prop="data" width="auto"></el-table-column>
             <el-table-column label="命令下发时间" prop="send_time" width="auto">
                 <template v-slot="scope">
                     {{ dateFormat(scope.row.send_time) }}
@@ -46,7 +46,7 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="命令内容" prop="command_data">
+                <el-form-item label="命令参数" prop="command_data">
                     <el-input type="textarea" :rows="12" v-model="commandFormData.command_data"></el-input>
                 </el-form-item>
             </el-form>

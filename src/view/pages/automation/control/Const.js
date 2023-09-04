@@ -238,6 +238,7 @@ export function setActions(actions, name) {
                     let instruct = {};
                     const { state } = item;
                     if (item.state.mode === "command") {
+                        // 命令
                         // {"method":"switch1","params":{"false":0}}
                         /*
                             {
@@ -250,10 +251,15 @@ export function setActions(actions, name) {
                         additionalInfo["device_model"] = "2";
                         instruct["method"] = state.name;
                         instruct["params"] = JSON.parse(state.params);
-                    } else {
+                    } else if (item.state.mode === "property") {
+                        console.log("属性", item.state)
                         // 设定属性
                         additionalInfo["device_model"] = "1";
                         instruct[item.state.name] = item.state.operator.value;
+                    } else if (item.state.mode ==="custom") {
+                        // 自定义属性
+                        additionalInfo["device_model"] = "3";
+                        instruct = item.state.params;
                     }
                     additionalInfo["instruct"] = instruct;
                     actionList.push(
@@ -476,7 +482,9 @@ export function getActions(actions) {
                         value: additionalInfo.instruct ? additionalInfo.instruct[name] : ""
                     }
                 }
-            } else {
+                command.stateJSON = JSON.stringify(command.state);
+
+            } else if (additionalInfo.device_model === "2") {
                 // 命令
                 
                 command.state = {
@@ -485,6 +493,14 @@ export function getActions(actions) {
                     params: JSON.stringify(additionalInfo.instruct.params)
                 }
                 command.stateJSON = JSON.stringify(command.state);
+            } else if (additionalInfo.device_model === "3") {
+                command.state = {
+                    name: "custom",
+                    mode: "custom",
+                    params: additionalInfo.instruct
+                }
+                command.stateJSON = JSON.stringify(command.state);
+
             }
             commands.push(command);
         } else if (item.action_type === ActionType.alarm) {

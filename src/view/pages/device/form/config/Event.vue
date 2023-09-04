@@ -16,7 +16,7 @@
         </templace>
       </el-table-column>
 
-      <el-table-column label="事件内容" prop="data" width="auto"></el-table-column>
+      <el-table-column label="事件参数" prop="data" width="auto"></el-table-column>
 
     </el-table>
     <!-- 表 end -->
