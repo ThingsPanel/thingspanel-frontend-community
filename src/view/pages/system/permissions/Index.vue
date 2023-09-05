@@ -51,7 +51,7 @@
               {{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.EDIT') }}
             </el-button>
 
-            <el-popconfirm :title="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.DELETETHISITEM')" 
+            <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.DELETETHISITEM')" 
               @confirm="handleDelete(scope.row)">
               <el-button slot="reference" type="danger" size="mini"  :disabled="!hasAuth('sys:permission:del')">
                 {{ $t('SYSTEM_MANAGEMENT.PERMISSION_MANAGEMENT.DELETE') }}

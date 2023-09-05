@@ -8,37 +8,37 @@
 -->
 <template>
     <div>
-        <el-dialog class="el-dark-dialog" title="新增升级任务" :append-to-body="true"
+        <el-dialog class="el-dark-dialog" :title="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.ADD_UPGRADE')" :append-to-body="true"
             :visible.sync="dialogVisible" width="30%" :before-close="() => dialogVisible=false" :close-on-click-modal="false">
             <el-form class="el-dark-input" ref="addTaskForm" label-position="left" :model="form" :rules="rules" 
                 label-width="150px">
 
-                <el-form-item :label="'任务名称'" prop="task_name" required>
+                <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.TASK_NAME')" prop="task_name" required>
                     <el-input v-model="form.task_name"></el-input>
                 </el-form-item>
 
-                <el-form-item :label="'升级时间'" prop="upgrade_time_type" required>
+                <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.UPGRADE_TIME')" prop="upgrade_time_type" required>
                     <el-select v-model="form.upgrade_time_type">
-                        <el-option label="立即升级" value="0"></el-option>
-                        <el-option label="待升级" value="1"></el-option>
+                        <el-option :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.UPGRADE_TIME_NOW')" value="0"></el-option>
+                        <el-option :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.UPGRADE_TIME_WAIT')" value="1"></el-option>
                     </el-select>
                 </el-form-item>
 
                 <el-form-item v-if="form.upgrade_time_type==='1'">
-                    <el-date-picker  type="datetime" placeholder="选择升级时间" value-format="yyyy-MM-dd HH:mm:ss"
+                    <el-date-picker  type="datetime" :placeholder="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.PLACEHOLDER2')" value-format="yyyy-MM-dd HH:mm:ss"
                         v-model="form.start_time" ></el-date-picker>
                 </el-form-item>
 
-                <el-form-item :label="'选择设备'" prop="select_device_flag" required>
+                <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.CHOOSE_DEVICE')" prop="select_device_flag" required>
                     <el-select v-model="form.select_device_flag">
-                        <el-option label="全部设备" value="0"></el-option>
-                        <el-option label="选择设备" value="1"></el-option>
+                        <el-option :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.CHOOSE_DEVICE_ALL')" value="0"></el-option>
+                        <el-option :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.CHOOSE_DEVICE')" value="1"></el-option>
                     </el-select>
                     
                 </el-form-item>
 
                 <el-form-item prop="devices" v-if="form.select_device_flag==='1'">
-                    <el-input readonly placeholder="点这里选择设备" v-model="deviceListStr"
+                    <el-input readonly :placeholder="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.PLACEHOLDER1')" v-model="deviceListStr"
                         @click.native="selectDeviceDialogVisible=true"></el-input>
                     <select-device :visible.sync="selectDeviceDialogVisible" :data="data" @change="changeSelectionDevie"></select-device>
                 </el-form-item>

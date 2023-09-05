@@ -7,19 +7,19 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
-  <el-dialog class="el-dark-dialog" title="创建批次" :visible.sync="dialogVisible" width="400px"
+  <el-dialog class="el-dark-dialog" :title="$t('PRODUCT_MANAGEMENT.BATCH_LIST.CREATEBATCH')" :visible.sync="dialogVisible" width="400px"
              :before-close="handleClose" :close-on-click-modal="false">
     <el-form :inline="false" label-position="left" label-width="80px" :model="formData" :rules="formRules">
 
       <el-row>
-        <el-form-item label="批次号" prop="batch_number">
+        <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCHNUMBER')" prop="batch_number">
           <el-input v-model="formData.batch_number"></el-input>
         </el-form-item>
       </el-row>
       
 
       <el-row>
-        <el-form-item label="数量" prop="device_number">
+        <el-form-item :label="$t('COMMON.COUNT')" prop="device_number">
           <el-input-number v-model="formData.device_number"></el-input-number>
         </el-form-item>
       </el-row>
@@ -27,7 +27,7 @@
     </el-form>
 
     <span slot="footer" class="dialog-footer">
-      <el-button type="save" @click="handleSubmit">创建批次</el-button>
+      <el-button type="save" @click="handleSubmit">{{ $t('COMMON.CREATE') }}</el-button>
     </span>
   </el-dialog>
 </template>

@@ -103,6 +103,10 @@
       </el-table-column>
       <el-table-column :label="$t('SYSTEM_LOG.DEVICE_LOG.PROTOCOLTYPE1')" prop="protocol_type" align="center"
         width="80"></el-table-column>
+        
+      <template #empty>
+        <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+      </template>
     </el-table>
     <!-- 表 end -->
 

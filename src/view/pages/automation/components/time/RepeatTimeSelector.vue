@@ -8,7 +8,7 @@
 -->
 <template>
   <div style="display: flex">
-    <el-select ref="typeRef" style="width: 100px;margin-right:10px" v-model="formData.type" @change="handleTypeChange">
+    <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="typeRef" style="width: 100px;margin-right:10px" v-model="formData.type" @change="handleTypeChange">
       <el-option :label="$t('AUTOMATION.PERHOUR')" value="perHour"></el-option>
       <el-option :label="$t('AUTOMATION.DAYS')" value="days"></el-option>
       <el-option :label="$t('AUTOMATION.WEEKLY')" value="weekly"></el-option>

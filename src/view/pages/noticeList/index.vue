@@ -48,16 +48,20 @@
       </el-table-column>
       <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.SENDRESUIT')" prop="send_result" width="130px">
         <template v-slot="scope">
-          <p class="table-describe mad" v-if="scope.row.send_result === 1">成功</p>
-          <p class="table-describe mad" v-if="scope.row.send_result === 2">失败</p>
+          <p class="table-describe mad" v-if="scope.row.send_result === 1">{{ $t('COMMON.SUCCESS') }}</p>
+          <p class="table-describe mad" v-if="scope.row.send_result === 2">{{ $t('COMMON.FAILED') }}</p>
         </template>
       </el-table-column>
       <el-table-column :label="$t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.TYPE')" prop="notification_type" width="130px">
         <template v-slot="scope">
-          <p v-if="scope.row.notification_type == 1">短信</p>
-          <p v-if="scope.row.notification_type == 2">邮箱</p>
+          <p v-if="scope.row.notification_type == 1">{{ $t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.SMS') }}</p>
+          <p v-if="scope.row.notification_type == 2">{{ $t('SYSTEM_MANAGEMENT.NOTICERECORD_MANAGEMENT.EMAIL') }}</p>
         </template>
       </el-table-column>
+      
+      <template #empty>
+        <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+      </template>
     </el-table>
     <!-- 表 end -->
     <div class="text-right py-3">

@@ -19,7 +19,7 @@
           <el-select
             style="width: 20%"
             class="el-dark-input"
-            placeholder="全部"
+            :placeholder="$t('COMMON.ALL')"
           >
           </el-select>
 
@@ -68,7 +68,7 @@
 
 
       <div>
-        <div style="width: 140px">已选择{{ this.choosedCount }}个接口</div>
+        <div>{{ $t('RULE_ENGINE.DATA_GATEWAY.MSG_SELECTED') }}{{ this.choosedCount }}{{ $t('RULE_ENGINE.DATA_GATEWAY.MSG_SELECTED_INTERFACE') }}</div>
         <div style="text-align: right">
           <el-button
             class="cancel-button"
@@ -111,6 +111,18 @@ export default {
   },
   mounted() {
     this.SelectionChange();
+      // 判断当前实例是否是 el-select
+      if (this.$options._componentTag === 'el-select') {
+        this.$el.setAttribute('no-data-text', 'someValue');
+        this.$el.setAttribute('noDataText', 'someValue');
+        this.$el.setAttribute('placeholder', 'someValue');
+        console.error(this.$el)
+    }
+    this.$nextTick(() => {
+      
+      this.$refs.aaaa.setAttribute('placeholder', 'someValue')
+      console.error(this.$refs.aaaa)
+    })
   },
   computed: {
     apiDialogVisible: {

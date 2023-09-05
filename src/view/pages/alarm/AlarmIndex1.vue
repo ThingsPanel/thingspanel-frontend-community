@@ -56,6 +56,10 @@
         <p class="table-describe mad">{{ scope.row.describe }}</p>
       </template>
     </el-table-column>
+
+    <template #empty>
+      <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+    </template>
   </el-table>
   <!-- 表 end -->
 

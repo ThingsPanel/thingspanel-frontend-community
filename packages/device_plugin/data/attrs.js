@@ -515,18 +515,18 @@ const unitOption = [
 ]
 const now = new Date().toLocaleDateString();
 const dataType = [
-    { value: "float", label: "浮点型", exValue: { dataRange: "0-999", stepLength: "0.1", unit: "-" }  },
-    { value: "bool", label: "布尔类型", exValue: { dataRange: "true-false", stepLength: "-", unit: "-" } },
-    { value: "integer", label: "整数", exValue: { dataRange: "0-999", stepLength: "1", unit: "°" }   },
-    { value: "text", label: "字符串", exValue: { dataRange: "-", stepLength: "-", unit: "-" }   },
-    { value: "date", label: "时间", exValue: { dataRange: now + "-" + now, stepLength: "-", unit: "-" }   },
-    { value: "object", label: "对象", exValue: { dataRange: "{}-{}", stepLength: "-", unit: "-" }   },
+    { value: "float", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.PARAM_TYPE.FLOAT'), exValue: { dataRange: "0-999", stepLength: "0.1", unit: "-" }  },
+    { value: "bool", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.PARAM_TYPE.BOOLEAN'), exValue: { dataRange: "true-false", stepLength: "-", unit: "-" } },
+    { value: "integer", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.PARAM_TYPE.INT'), exValue: { dataRange: "0-999", stepLength: "1", unit: "°" }   },
+    { value: "text", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.PARAM_TYPE.STRING'), exValue: { dataRange: "-", stepLength: "-", unit: "-" }   },
+    { value: "date", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.PARAM_TYPE.DATE'), exValue: { dataRange: now + "-" + now, stepLength: "-", unit: "-" }   },
+    { value: "object", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.PARAM_TYPE.OBJECT'), exValue: { dataRange: "{}-{}", stepLength: "-", unit: "-" }   },
 ]
 const commandDataType = [
-    { value: "number", label: "数字", exValue: { dataRange: "0-999", stepLength: "0.1", unit: "-" }   },
-    { value: "text", label: "字符串", exValue: { dataRange: "-", stepLength: "-", unit: "-" }   },
-    { value: "object", label: "对象", exValue: { dataRange: "{}-{}", stepLength: "-", unit: "-" }   },
-    { value: "list", label: "列表", exValue: { dataRange: "[]-[]", stepLength: "-", unit: "-" }   },
+    { value: "number", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.PARAM_TYPE.INT'), exValue: { dataRange: "0-999", stepLength: "0.1", unit: "-" }   },
+    { value: "text", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.PARAM_TYPE.STRING'), exValue: { dataRange: "-", stepLength: "-", unit: "-" }   },
+    { value: "object", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.PARAM_TYPE.OBJECT'), exValue: { dataRange: "{}-{}", stepLength: "-", unit: "-" }   },
+    { value: "list", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.PARAM_TYPE.LIST'), exValue: { dataRange: "[]-[]", stepLength: "-", unit: "-" }   },
 ]
 const required = true, only = true, advanced =true;
 export const tableAttr = {
@@ -537,7 +537,10 @@ export const tableAttr = {
         { field: "dataRange", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE4'), advanced, type: "range", default: "0-999"},
         { field: "stepLength", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE5'), advanced, default: 0.1},
         { field: "unit", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE6'), validate: { only}},
-        { field: "readWrite", label: "读写类型", type: "select", default: "r", options: [{ value: "r", label: "只读"}, { value: "rw", label: "读/写"}]},
+        {
+            field: "readWrite", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LOAD_TYPE'), type: "select", default: "r",
+            options: [{ value: "r", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LOAD_TYPE_R') }, { value: "rw", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LOAD_TYPE_RW') }]
+        },
         { field: "description", label: i18n.t('PLUGIN.MATTER_MODEL_TABLE.LABLE7'), advanced, type: "textarea"},
     ],
     services: [

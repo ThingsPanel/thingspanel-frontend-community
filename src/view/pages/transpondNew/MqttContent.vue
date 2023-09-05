@@ -24,8 +24,8 @@
           <el-input v-model="form.topic"></el-input>
       </el-form-item>
       <div style="display: flex;justify-content: center">
-        <el-button class="cancel-button" type="cancel" size="medium" plain @click="cancelDialog">{{ $t('RULE_ENGINE.ACCESS_ENGINE.CANCEL') }}</el-button>
-        <el-button class="medium" type="save" size="medium" @click="onSubmit">{{ $t('RULE_ENGINE.ACCESS_ENGINE.SUBMIT') }}</el-button>
+        <el-button class="cancel-button" type="cancel" size="medium" plain @click="cancelDialog">{{ $t('COMMON.CANCEL') }}</el-button>
+        <el-button class="medium" type="save" size="medium" @click="onSubmit">{{ $t('COMMON.SUBMIT') }}</el-button>
       </div>
   </el-form>
 

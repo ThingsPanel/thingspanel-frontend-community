@@ -2,16 +2,17 @@
   <div style="width: 100%">
       <el-form-item :label="$t('AUTOMATION.IF')">
         <div style="display: flex;margin-bottom: 10px" v-for="(condition, index) in conditions" :key="index">
-            <el-select ref="relationRef" style="position: absolute; width: 60px;margin-right:10px" 
-                v-if="condition.relation"
-                v-model="condition.relation" @change="v => handleRelationChange(condition,v )">
+            <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="relationRef" style="position: absolute; width: 60px;margin-right:10px" 
+                              v-if="condition.relation" placeholder=""
+                          v-model="condition.relation" @change="v => handleRelationChange(condition, v)">
               <!-- 且 -->
               <el-option :label="$t('AUTOMATION.AND')" :value="'and'"></el-option>
               <!-- 或 -->
               <el-option :label="$t('AUTOMATION.OR')" :value="'or'"></el-option>
             </el-select>
-          
-            <el-select ref="typeRef" style="width: 140px;margin-left: 70px;margin-right:10px" v-model="condition.type">
+
+            <el-select ref="typeRef" style="width: 140px;margin-left: 70px;margin-right:10px" v-model="condition.type"
+                :no-data-text="$t('COMMON.SELECT_NO_DATA')" :placeholder="$t('COMMON.PLACEHOLDER5')">
               <!-- 设备条件-->
               <el-option :label="$t('AUTOMATION.DEVICE_CONDITION')" :value="'device'"></el-option>
               <!-- 时间条件-->

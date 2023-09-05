@@ -25,13 +25,13 @@
       </el-col>
 
       <el-col :span="12" class="text-right">
-        <el-select style="margin-right:10px" v-model="params.warningLevel" :placeholder="$t('ALARM.PLACEHOLDER.WARNING_LEVEL')" clearable @change="handleSearch">
+        <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" style="margin-right:10px" v-model="params.warningLevel" :placeholder="$t('ALARM.PLACEHOLDER.WARNING_LEVEL')" clearable @change="handleSearch">
           <el-option value="1" :label="$t('AUTOMATION.WARNING_LEVEL_LOW')"></el-option>
           <el-option value="2" :label="$t('AUTOMATION.WARNING_LEVEL_MEDIUM')"></el-option>
           <el-option value="3" :label="$t('AUTOMATION.WARNING_LEVEL_HIGH')"></el-option>
         </el-select>
 
-        <el-select v-model="params.processing_result" :placeholder="$t('ALARM.PROCESSING_RESULT')" clearable @change="handleSearch">
+        <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" v-model="params.processing_result" :placeholder="$t('ALARM.PROCESSING_RESULT')" clearable @change="handleSearch">
           <el-option :value="ProcessingState.unprocessed" :label="$t('ALARM.UNPROCESSED')"></el-option>
           <el-option :value="ProcessingState.processed" :label="$t('ALARM.PROCESSED')"></el-option>
           <el-option :value="ProcessingState.ignored" :label="$t('ALARM.IGNORED')"></el-option>
@@ -62,7 +62,6 @@
         </template>
       </el-table-column>
 
-      <el-table-column :label="$t('ALARM.PROCESSING_RESULT')" prop="updated_at" width="180"></el-table-column>
       <el-table-column :label="$t('ALARM.PROCESSING_RESULT')" prop="handle_result" width="180">
         <template v-slot="scope">
           <p v-if="scope.row.processing_result == ProcessingState.processed">{{ $t('ALARM.PROCESSED') }}</p>
@@ -87,6 +86,10 @@
           </div>
         </template>
       </el-table-column>
+      
+      <template #empty>
+        <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+      </template>
     </el-table>
     <!-- 表 end -->
 

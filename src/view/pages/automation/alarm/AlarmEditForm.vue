@@ -57,7 +57,7 @@
           <el-row :gutter="20">
             <el-col :span="3" class="py-5" v-if="config_item.operator">
               <el-form-item>
-                <el-select v-model="config_item.operator">
+                <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" v-model="config_item.operator">
                   <el-option :value="item.value" :label="item.label" v-for="(item, index) in operatorOptions" :key="index"></el-option>
                 </el-select>
               </el-form-item>
@@ -68,7 +68,7 @@
           <el-row :gutter="20">
             <el-col :span="6">
               <el-form-item :prop="'config.'+index+'.field'" :rules="rules['config.field']">
-                <el-select class="w-100" v-model="config_item.field" :placeholder="$t('AUTOMATION.PLACEHOLDER2')">
+                <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" class="w-100" v-model="config_item.field" :placeholder="$t('AUTOMATION.PLACEHOLDER2')">
                   <el-option :value="item.name" :label="item.title" v-for="(item, index) in triggerOptions" :key="index"></el-option>
                 </el-select>
               </el-form-item>
@@ -76,7 +76,7 @@
 <!--           选择操作符 -->
             <el-col :span="6">
               <el-form-item :prop="'config.'+index+'.condition'" :rules="rules['config.condition']">
-                <el-select class="w-100" v-model="config_item.condition" :placeholder="$t('AUTOMATION.PLACEHOLDER3')">
+                <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" class="w-100" v-model="config_item.condition" :placeholder="$t('AUTOMATION.PLACEHOLDER3')">
                   <el-option :value="item.id" :label="item.name" v-for="(item,index) in symbolOptions" :key="index">{{ item.id }}</el-option>
                 </el-select>
               </el-form-item>
@@ -90,7 +90,7 @@
 <!--            新增一行-->
             <el-col :span="6">
               <el-button type="indigo" size="medium" @click="addLine" v-if="index===0">{{ $t('AUTOMATION.ADD_LINE') }}</el-button>
-              <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="removeLine(config_item)" v-else>
+              <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('AUTOMATION.TITLE4')" @confirm="removeLine(config_item)" v-else>
                 <el-button slot="reference" type="danger" size="medium">{{ $t('AUTOMATION.DELETE') }}</el-button>
               </el-popconfirm>
             </el-col>

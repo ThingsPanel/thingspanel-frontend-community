@@ -32,7 +32,7 @@
 
       <!-- 按钮 -->
       <b-card-text style="margin-top: 10px">
-        <el-button type="warning" @click="showDetail">详情</el-button>
+        <el-button type="warning" @click="showDetail">{{ $t('PLUGIN.TAB2_CONTENT.DETAIL') }}</el-button>
         <el-button type="success" v-loading="installing" @click="handleInstall">{{ $t("PLUGIN.TAB1_CONTENT.INSTALL")
         }}</el-button>
       </b-card-text>

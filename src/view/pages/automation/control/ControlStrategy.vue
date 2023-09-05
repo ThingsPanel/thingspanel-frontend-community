@@ -44,12 +44,15 @@
             <el-button type="info" size="mini" @click="handleLog(scope.row)">{{ $t('AUTOMATION.LOG') }}</el-button>
 
             <!-- 删除 -->
-            <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
+            <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
               <el-button style="margin-left:10px" slot="reference" type="danger" size="mini">{{ $t('AUTOMATION.DELETE') }}</el-button>
             </el-popconfirm>
           </div>
         </template>
       </el-table-column>
+      <template #empty>
+        <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+      </template>
     </el-table>
     <!-- 表 end -->
 

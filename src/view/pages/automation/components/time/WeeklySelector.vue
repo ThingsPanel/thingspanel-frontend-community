@@ -8,7 +8,7 @@
 -->
 <template>
   <div style="display: flex">
-    <el-select style="margin-right:10px" ref="weekRef" v-model="weekValue" @change="handleChange">
+    <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" style="margin-right:10px" ref="weekRef" v-model="weekValue" @change="handleChange">
       <el-option v-for="(week, index) in weekOptions" :key="index" :label="week.label" :value="week.value"></el-option>
     </el-select>
 

@@ -16,13 +16,13 @@
     <div class="rounded card p-4 el-table-transparent el-dark-input text-white">
         <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
             <el-col :span="6">
-                <el-input placeholder="请输入设备名称" v-model="params.name"></el-input>
+                <el-input :placeholder="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.PLACEHOLDER3')" v-model="params.name"></el-input>
             </el-col>
             <el-col :span="4">
-                <el-button type="border" @click="getList">搜索</el-button>
+                <el-button type="border" @click="getList">{{ $t('COMMON.SEARCH') }}</el-button>
             </el-col>
             <el-col :span="14" class="px-2 text-right">
-                <el-button size="medium" type="border" @click="getList">刷新</el-button>
+                <el-button size="medium" type="border" @click="getList">{{ $t('COMMON.THEREFRESH') }}</el-button>
               </el-col>
         </el-row>
 
@@ -31,26 +31,26 @@
         <el-table :data="tableData" v-loading="loading">
   
           <!-- 设备编号-->
-          <el-table-column :label="'设备编号'" prop="device_code" align="left" :show-overflow-tooltip="true"/>
+          <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.DEVICE_CODE')" prop="device_code" align="left" :show-overflow-tooltip="true"/>
   
           <!-- 设备名-->
-          <el-table-column :label="'设备名'" prop="name" align="left"/>
+          <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.DEVICE_NAME')" prop="name" align="left"/>
   
           <!--  当前版本号 -->
-          <el-table-column :label="'当前版本号'" prop="current_version" align="left"/>
+          <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.CURRENT_VERSION')" prop="current_version" align="left"/>
   
           <!-- 目标版本号 -->
-          <el-table-column :label="'目标版本号'" prop="target_version" align="left"/>
+          <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.TARGET_VERSION')" prop="target_version" align="left"/>
   
           <!-- 升级进度 -->
-          <el-table-column :label="'升级进度'" prop="upgrade_progress" align="left">
+          <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.UPGRADE_PROGERSS')" prop="upgrade_progress" align="left">
             <template v-slot="scope">
                <el-progress :percentage="getProgress(scope.row.upgrade_progress)"></el-progress>
             </template>
           </el-table-column>
   
           <!-- 状态更新时间-->
-          <el-table-column :label="'状态更新时间'" prop="status_update_time" align="left">
+          <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.STATUS_UPDATE_TIME')" prop="status_update_time" align="left">
             <template v-slot="scope">
               {{ scope.row.status_update_time ? scope.row.status_update_time : "--"}}
             </template>
@@ -58,14 +58,14 @@
 
           <!-- 状态:    0-待推送 1-已推送 2-升级中 3-升级成功 4-升级失败 5-已取消 -->
           <!-- 状态-->
-          <el-table-column :label="'状态'" prop="upgrade_status" align="left">
+          <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.UPGRADE_STATUS')" prop="upgrade_status" align="left">
             <template v-slot="scope">
               {{  upgradeState.getText(scope.row.upgrade_status) }}
             </template>
           </el-table-column>
 
           <!-- 状态详情-->
-          <el-table-column :label="'状态详情'" prop="status_detail" align="left"/>
+          <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.STATUS_DETAIL')" prop="status_detail" align="left"/>
          
   
           <!-- 操作列-->
@@ -75,11 +75,11 @@
                 
                 <div v-if="scope.row.upgrade_status===upgradeState.failed[0] || scope.row.upgrade_status===upgradeState.cancelled[0]">
                   <!-- 升级失败, 重升级 -->
-                  <el-popconfirm title="确定要重新升级吗？" @confirm="reUpgrading(scope.row)">
+                  <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" title="确定要重新升级吗？" @confirm="reUpgrading(scope.row)">
                     <!-- <el-button slot="reference" type="danger" 
                         v-loading="!!scope.row.isLoading" class="mr-1" size="mini">取消</el-button> -->
                         <el-button slot="reference" type="indigo" size="mini" class="mr-3"
-                          v-loading="!!scope.row.isLoading">重升级</el-button>
+                          v-loading="!!scope.row.isLoading">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.REUPGRADE') }}</el-button>
                   </el-popconfirm>
                 </div>
                 
@@ -88,7 +88,7 @@
                 <el-button type="indigo" size="mini" class="mr-3"
                   v-else-if="scope.row.status!==upgradeState.upgraded[0]"  
                   v-loading="!!scope.row.isLoading"
-                  @click="cancelUpgrading(scope.row)">取消升级</el-button>
+                  @click="cancelUpgrading(scope.row)">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.CANCEL_UPGRADE') }}</el-button>
               </div>
             </template>
           </el-table-column>

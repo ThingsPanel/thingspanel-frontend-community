@@ -16,7 +16,7 @@
           </el-form-item>
 
           <el-form-item :label="$t('DATASERVICE_MANAGEMENT.FORMWAY')" required>
-            <el-select class="w-100" ref="wayRef" v-model="form.signature_mode">
+            <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" class="w-100" ref="wayRef" v-model="form.signature_mode">
               <el-option label="MD5" :value="'MD5'"></el-option>
               <el-option label="HAS256" :value="'HAS256'"></el-option>
             </el-select>
@@ -27,7 +27,7 @@
           </el-form-item>
 
           <el-form-item :label="$t('DATASERVICE_MANAGEMENT.FORMINTERFACE_SUPPORT_FLAG')" required>
-            <el-select class="w-100" ref="selRef" v-model="form.api_flag" @change="handleTypeChange">
+            <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" class="w-100" ref="selRef" v-model="form.api_flag" @change="handleTypeChange">
               <el-option label="http接口" :value="'0'"></el-option>
               <el-option label="http和ws接口" :value="'1'"></el-option>
             </el-select>
@@ -43,7 +43,7 @@
 
           <el-form-item>
             <el-form-item :label="$t('DATASERVICE_MANAGEMENT.FORMSQLWRITiINGASSISTANCE')">
-              <el-select class="w-100" ref="sqlIdRef" v-model="form.table_name" @change="handleSqlChange">
+              <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" class="w-100" ref="sqlIdRef" v-model="form.table_name" @change="handleSqlChange">
                 <el-option v-for="item in sqlList" :key="item.table_name" :label="item.table_name" :value="item.table_name"></el-option>
               </el-select>
             </el-form-item> 

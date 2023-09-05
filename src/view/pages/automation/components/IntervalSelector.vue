@@ -3,6 +3,7 @@
     class="w-100"
     v-model="intervalValue"
     @change="handleChange"
+    :no-data-text="$t('COMMON.SELECT_NO_DATA')"
 >
   <el-option
       :value="item.value"

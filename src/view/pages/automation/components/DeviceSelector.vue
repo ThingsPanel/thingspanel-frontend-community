@@ -5,6 +5,7 @@
     :clearable="clearable"
     :filterable="filterable"
     :placeholder="$t('AUTOMATION.PLACEHOLDER1')"
+    :no-data-text="$t('COMMON.SELECT_NO_DATA')"
  
     @change="handleChange"
 >

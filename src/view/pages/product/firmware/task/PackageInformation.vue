@@ -10,16 +10,16 @@
 <template>
   <div class="rounded card p-4 el-table-transparent el-dark-input text-white">
     <el-form label-width="160px" label-position="left" style="padding:50px">
-        <el-form-item label="签名算法">
+        <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.SIGN_ALGORITHM')">
             <span>{{ formData.signature_algorithm }}</span>
         </el-form-item>
-        <el-form-item label="升级包签名">
+        <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.PACKAGE_SIGN')">
             <span style="margin-right:20px">{{ formData.sign }}</span>
             <span>
-              <a :href="formData.package_url" target="blank"><el-button type="border" size="small">下载</el-button></a>
+              <a :href="formData.package_url" target="blank"><el-button type="border" size="small">{{ $t('COMMON.DOWNLOAD') }}</el-button></a>
             </span>
         </el-form-item>
-        <el-form-item label="其他配置">
+        <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.OTHER_CONFIG')">
             <div v-for="(config, index) in formData.additional_info" :key="index">
                 <span style="margin-right:20px">{{  config.key }}</span>
                 <span>{{ config.value }}</span>

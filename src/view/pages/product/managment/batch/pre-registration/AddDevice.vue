@@ -7,37 +7,37 @@
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
-    <el-dialog class="el-dark-dialog" title="添加设备" :visible.sync="dialogVisible" width="400px" :before-close="handleClose"
+    <el-dialog class="el-dark-dialog" :title="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ADD_DEVICE')" :visible.sync="dialogVisible" width="400px" :before-close="handleClose"
         :close-on-click-modal="false">
         <el-form :inline="false" label-position="left" label-width="80px" ref="formRef" :model="formData" :rules="formRules">
             <el-row>
-                <el-form-item label="项目" prop="projectId" required>
+                <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.PROJECT')" prop="projectId" required>
                     <!-- 遍历项目列表 -->
-                    <el-select filterable v-model="formData.projectId" @change="handleChangeProject">
+                    <el-select filterable v-model="formData.projectId" @change="handleChangeProject" :placeholder="$t('COMMON.PLACEHOLDER5')">
                         <el-option v-for="item in projectList" :key="item.id" :label="item.name" :value="item.id"></el-option>
                     </el-select>
                 </el-form-item>
             </el-row>
 
             <el-row>
-                <el-form-item label="分组" prop="groupId">
+                <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.GROUP')" prop="groupId">
                     <!-- 遍历分组 -->
-                    <el-select filterable v-model="formData.groupId" required>
+                    <el-select filterable v-model="formData.groupId" required :placeholder="$t('COMMON.PLACEHOLDER5')">
                         <el-option v-for="item in groupList" :key="item.id" :label="item.device_group" :value="item.id"></el-option>    
                     </el-select>
                 </el-form-item>
             </el-row>
 
             <el-row>
-                <el-form-item label="设备名" prop="deviceName" required>
+                <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.DEVICE_NAME')" prop="deviceName" required>
                     <!-- 设备名 -->
-                    <el-input v-model="formData.deviceName" placeholder="请输入设备名"></el-input>
+                    <el-input v-model="formData.deviceName" :placeholder="$t('COMMON.PLACEHOLDER4')"></el-input>
                 </el-form-item>
             </el-row>
         </el-form>
 
         <span slot="footer" class="dialog-footer text-center">
-            <el-button type="save" @click="handleSubmit">保存</el-button>
+            <el-button type="save" @click="handleSubmit">{{ $t('COMMON.SAVE') }}</el-button>
         </span>
     </el-dialog>
 </template>
@@ -65,9 +65,9 @@ export default {
                 deviceName: ""
             },
             formRules: {
-                projectId: [{ required: true, message: "请选择项目" }],
-                groupId: [{ required: true, message: "请选择分组"}],
-                deviceName: [{ required: true, message: "请输入设备名"}]
+                projectId: [{ required: true, message: this.$t('COMMON.PLACEHOLDER5') }],
+                groupId: [{ required: true, message: this.$t('COMMON.PLACEHOLDER5') }],
+                deviceName: [{ required: true, message: this.$t('COMMON.PLACEHOLDER4') }]
             },
             // 项目列表
             projectList: [],

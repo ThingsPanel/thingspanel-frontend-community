@@ -8,14 +8,14 @@
 -->
 <template>
   <div style="width: 100%;display: flex;position:relative">
-    <el-select ref="symbolRef" v-if="option.operator" style="width: 100px;margin-right:10px" :placeholder="$t('AUTOMATION.PLACEHOLDER.SYMBOL')" 
+    <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="symbolRef" v-if="option.operator" style="width: 100px;margin-right:10px" :placeholder="$t('AUTOMATION.PLACEHOLDER.SYMBOL')" 
                 v-model="formData.symbol"
                @change="handleChange">
       <el-option v-for="(item, index) in symbolList" :key="index" :label="item" :value="item"></el-option>
     </el-select>
 
     <template>
-      <el-select style="width: 100px;margin-right:10px" v-if="chart.type === 'switch'" v-model="formData.value" @change="handleChange">
+      <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" style="width: 100px;margin-right:10px" v-if="chart.type === 'switch'" v-model="formData.value" @change="handleChange">
         <el-option v-for="(item, index) in formData.switchList" :key="index" :label="item.label" :value="item.value"></el-option>
       </el-select>
 

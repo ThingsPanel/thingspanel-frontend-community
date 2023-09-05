@@ -1,6 +1,6 @@
 <template>
    <el-dialog
-      :title="id ? $t('RULE_ENGINE.ACCESS_ENGINE.EDITTITLE') : $t('RULE_ENGINE.ACCESS_ENGINE.ADDTITLE')"
+      :title="id ? $t('RULE_ENGINE.DATA_FORWARDINGNEW.EDIT_TITLE') : $t('RULE_ENGINE.DATA_FORWARDINGNEW.ADD_TITLE')"
       class="el-dark-dialog"
       :close-on-click-modal="false"
       :before-close="handleClose"
@@ -52,8 +52,8 @@
 
 
         <div style="display: flex;justify-content: center">
-          <el-button class="cancel-button" type="cancel" size="medium" plain @click="cancelDialog">{{ $t('RULE_ENGINE.ACCESS_ENGINE.CANCEL') }}</el-button>
-          <el-button class="medium" type="save" size="medium" @click="onSubmit">{{ $t('RULE_ENGINE.ACCESS_ENGINE.SUBMIT') }}</el-button>
+          <el-button class="cancel-button" type="cancel" size="medium" plain @click="cancelDialog">{{ $t('COMMON.CANCEL') }}</el-button>
+          <el-button class="medium" type="save" size="medium" @click="onSubmit">{{ $t('COMMON.SUBMIT') }}</el-button>
         </div>
 
 
@@ -65,13 +65,13 @@
               width="400px">
               <div class="dialog-body">
                   <div :class="isChoose===0 ? 'dialog-border' : 'dialog-box'" @click="choose(0)">
-                      <p>推送到外部MQTT</p>
-                      <p>将设备上报的属性值转发到外部的MQTT Broker，实现更多基于实时数据的应用。</p>
+                      <p>{{ $t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_MQTT') }}</p>
+                      <p>{{ $t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_MQTT_DES') }}</p>
                   </div>
 
                   <div :class="isChoose===1 ? 'dialog-border' : 'dialog-box'" @click="choose(1)">
-                      <p>推送到外部URL</p>
-                      <p>将设备上报的属性值转发到外部的URL，方便Web应用获取设备实时数据。</p>
+                      <p>{{ $t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_URL') }}</p>
+                      <p>{{ $t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_URL_DES') }}</p>
                   </div>
               </div>
         </el-dialog>
@@ -107,19 +107,9 @@ import CodeEditor from 'simple-code-editor';
 import DeviceTypeSelector from "./components/device/DeviceTypeSelector.vue";
 import { message_error } from '@/utils/helpers';
 import {getTranspondNewAdd,getTranspondNewEdit,getTranspondNewDetail} from "@/api/transpondNew";
-// const required = true;
-const upCodeTemp = " function encodeInp(msg, topic){\n" +
-"    // 将设备自定义msg（自定义形式）数据转换为json形式数据, 设备上报数据到物联网平台时调用\n" +
-"    // 入参：topic string 设备上报消息的 topic\n" +
-"    // 入参：msg byte[] 数组 不能为空\n" +
-"    // 出参：string\n" +
-"    // 处理完后将对象转回字符串形式\n" +
-"    // 例，byte[]转string：var msgString = String.fromCharCode.apply(null, msg);\n" +
-"    // 例，string转jsonObj：msgJson = JSON.parse(msgString);\n" +
-"    // 例，jsonObj转string：msgString = JSON.stringify(msgJson);\n" +
-"    var msgString = String.fromCharCode.apply(null, msg);\n" +
-"    return msgString;\n" +
-" }"
+import i18n from "@/core/plugins/vue-i18n";
+
+const upCodeTemp = i18n.t('RULE_ENGINE.ACCESS_ENGINE.CODE_TEMP')
 export default {
   name: "CreateForm",
   components: { DeviceTypeSelector,CodeEditor,MqttContent,UrlContent },
@@ -245,12 +235,12 @@ export default {
     // mq表提交
     create(data) {
       if(this.type == 'add') {
-        data.title = '推送到外部 MQTT'
+        data.title = i18n.t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_MQTT')
         this.listData.push(data)
         this.form.target_info.mqtt=data
         this.dialogMQTTVisible = false
       } else {
-        data.title = '推送到外部 MQTT'
+        data.title = i18n.t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_MQTT')
         this.listData[this.editIndex] = data
         this.form.target_info.mqtt=data
         this.dialogMQTTVisible = false
@@ -259,12 +249,12 @@ export default {
     // url表提交
     create2(item) {
       if(this.type == 'add') {
-        item.title = '推送到外部 URL'
+        item.title = i18n.t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_URL')
         this.listData.push(item)
         this.form.target_info.url=item.url
         this.dialogUrlVisible = false
       } else {
-        item.title = '推送到外部 URL'
+        item.title = i18n.t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_URL')
         this.listData[this.editIndex] = item
         this.form.target_info.url=item.url
         this.dialogUrlVisible = false
@@ -280,13 +270,13 @@ export default {
       this.editIndex = index
       this.type = 'edit'
       switch(e.title) {
-        case '推送到外部 MQTT' :
+        case i18n.t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_MQTT') :
           this.dialogMQTTVisible = true
           this.$nextTick(()=>{
             this.$refs.realForm.edit(e)
           })
         break;
-        case '推送到外部 URL' :
+        case i18n.t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_URL') :
           this.dialogUrlVisible = true
           this.$nextTick(()=>{
             this.$refs.realForms.edit(e)
@@ -324,7 +314,7 @@ export default {
     handleAdd(){
         console.log(this.listData,'this')
         if(this.listData.length>0){
-          this.$message({message: "目前只支持新增一条", center: true, type: "waring"})
+          this.$message({message: i18n.t('RULE_ENGINE.DATA_FORWARDINGNEW.PLACEHOLDER9'), center: true, type: "waring"})
           this.dialogChooseVisible=false
           return
         }else{
@@ -362,10 +352,10 @@ export default {
               tmp.commands = commands;
               this.form = tmp;
               if(data.target_info.url!==''){
-                data.title = '推送到外部 URL'
+                data.title = i18n.t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_URL')
                 this.listData.push(data)
               }else{
-                data.title = '推送到外部 MQTT'
+                data.title = i18n.t('RULE_ENGINE.ACCESS_ENGINE.PUSH_OUTSIDE_MQTT')
                 this.listData.push(data)
               }
             }

@@ -33,11 +33,15 @@
           <el-button size="mini" v-if="scope.row.status == 0" type="success" @click="handleSetStatus(scope.row)">{{ $t("RULE_ENGINE.DATA_FORWARDINGNEW.START")}}</el-button>
           <el-button size="mini" v-if="scope.row.status == 1"  type="yellow" @click="handleSetStatus(scope.row)">{{ $t("RULE_ENGINE.DATA_FORWARDINGNEW.SUSPENDED")}}</el-button>
           <el-button class="mr-3" size="mini" type="indigo" @click="handleShowEdit(scope.row)">{{ $t("RULE_ENGINE.DATA_FORWARDINGNEW.EDIT")}}</el-button>
-          <el-popconfirm :title="$t('RULE_ENGINE.DATA_FORWARDINGNEW.TITLE4')" @confirm="handle_del(scope.row.id)">
+          <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('RULE_ENGINE.DATA_FORWARDINGNEW.TITLE4')" @confirm="handle_del(scope.row.id)">
             <el-button slot="reference" size="mini" type="danger">{{ $t("RULE_ENGINE.DATA_FORWARDINGNEW.DELETE")}}</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
+      
+      <template #empty>
+        <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+      </template>
     </el-table>
   
     <div class="text-right py-3">
