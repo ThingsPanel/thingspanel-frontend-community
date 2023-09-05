@@ -45,12 +45,16 @@
         <template v-slot="scope">
           <!-- <el-button size="mini" v-if="scope.row.status == 2" type="success" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.START")}}</el-button>
           <el-button size="mini" v-if="scope.row.status == 1"  type="yellow" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SUSPENDED")}}</el-button> -->
-          <el-button class="mr-3" size="mini" type="indigo" @click="handleShowEdit(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.EDIT")}}</el-button>
-          <el-popconfirm :title="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.TITLE4')" @confirm="handle_del(scope.row.id)">
-            <el-button slot="reference" size="mini" type="danger">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.DELETE")}}</el-button>
+          <el-button class="mr-3" size="mini" type="indigo" @click="handleShowEdit(scope.row)">{{ $t("COMMON.EDIT")}}</el-button>
+          <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.TITLE4')" @confirm="handle_del(scope.row.id)">
+            <el-button slot="reference" size="mini" type="danger">{{ $t("COMMON.DELETE")}}</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
+
+      <template #empty>
+        <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+      </template>
     </el-table>
   
     <div class="text-right py-3">

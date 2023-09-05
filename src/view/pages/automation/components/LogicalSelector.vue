@@ -1,5 +1,6 @@
 <template>
-<el-select
+<el-select 
+    :no-data-text="$t('COMMON.SELECT_NO_DATA')"
     class="w-100"
     v-model="logicalValue"
 >

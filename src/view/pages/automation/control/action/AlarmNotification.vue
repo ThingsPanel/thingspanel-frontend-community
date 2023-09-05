@@ -3,7 +3,7 @@
      <!-- <el-form label-position="left" label-width="85px"> -->
         <!-- 告警级别 -->
         <el-form-item style="margin-bottom: 10px" :label="$t('AUTOMATION.WARNING_LEVEL')" required>
-            <el-select ref="warningLevelRef" style="width: 200px" v-model="formData.warningLevel" @change="handleChange">
+            <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="warningLevelRef" style="width: 200px" v-model="formData.warningLevel" @change="handleChange">
                 <el-option :label="$t('AUTOMATION.WARNING_LEVEL_LOW')" :value="'1'"></el-option>
                 <el-option :label="$t('AUTOMATION.WARNING_LEVEL_MEDIUM')" :value="'2'"></el-option>
                 <el-option :label="$t('AUTOMATION.WARNING_LEVEL_HIGH')" :value="'3'"></el-option>
@@ -13,7 +13,7 @@
         <!-- 通知组 -->
         <el-form-item  style="margin-bottom: 10px" :label="$t('AUTOMATION.NOTIFY_USER')">
             <el-select style="width: 200px;margin-right:10px" clearable v-model="formData.notification" @change="handleRoleChange">
-              <el-option v-for="(item, index) in roleList" :key="index" :label="item.group_name" :value="item.id"></el-option>
+              <el-option :no-data-text="$t('COMMON.SELECT_NO_DATA')" v-for="(item, index) in roleList" :key="index" :label="item.group_name" :value="item.id"></el-option>
             </el-select>
         </el-form-item>
 

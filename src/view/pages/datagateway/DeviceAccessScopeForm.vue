@@ -12,6 +12,7 @@
       <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
         <el-col :span="24">
           <el-select
+            :no-data-text="$t('COMMON.SELECT_NO_DATA')"
             style="width: 20%; margin-right: 10px"
             class="el-dark-input"
             v-model="formData.isAdd"
@@ -29,6 +30,7 @@
 
           <!-- 项目列表 -->
           <el-select
+            :no-data-text="$t('COMMON.SELECT_NO_DATA')"
             ref="projectRef"
             style="width: 20%; margin-right: 10px"
             :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_PROJECT')"
@@ -47,6 +49,7 @@
 
           <!-- 分组列表 -->
           <el-select
+            :no-data-text="$t('COMMON.SELECT_NO_DATA')"
             ref="groupRef"
             style="width: 20%; margin-right: 10px"
             clearable
@@ -136,6 +139,7 @@ import {
 } from "@/api/dataGateway";
 import { business_index } from "@/api/business";
 import { device_group_drop } from "@/api/asset";
+import i18n from "@/core/plugins/vue-i18n";
 
 export default {
   name: "DeviceAccessScopeForm",
@@ -147,7 +151,7 @@ export default {
       default: false,
     },
     initForm: {
-      isAdd: { name: "未添加", value: 0 },
+      isAdd: { name: i18n.t("RULE_ENGINE.DATA_GATEWAY.MSG_NOT_ADDED"), value: 0 },
       projectId: "",
       groupId: "",
       deviceId: "",
@@ -191,18 +195,18 @@ export default {
     signMethodChoice: ["MD5", "HAS256"],
     // 接口访问范围选项
     apiAccessScopeChoice: [
-      { name: "全部", value: 1 },
-      { name: "部分", value: 2 },
+      { name: i18n.t("RULE_ENGINE.DATA_GATEWAY.ALL"), value: 1 },
+      { name: i18n.t("RULE_ENGINE.DATA_GATEWAY.PART"), value: 2 },
     ],
     // 设备访问范围选项
     deviceAccessScopeChoice: [
-      { name: "全部", value: 1 },
-      { name: "部分", value: 2 },
+      { name: i18n.t("RULE_ENGINE.DATA_GATEWAY.ALL"), value: 1 },
+      { name: i18n.t("RULE_ENGINE.DATA_GATEWAY.PART"), value: 2 },
     ],
     // 是否添加
     isAddOptions: [
-      { name: "未添加", value: 0 },
-      { name: "已添加", value: 1 },
+      { name: i18n.t("RULE_ENGINE.DATA_GATEWAY.MSG_NOT_ADDED"), value: 0 },
+      { name: i18n.t("RULE_ENGINE.DATA_GATEWAY.MSG_ADDED"), value: 1 },
     ],
     // 项目列表
     projectOptions: [],
@@ -217,7 +221,7 @@ export default {
     page_size: 5,
     data_count: 0,
     formData: {
-      isAdd: { name: "未添加", value: 0 },
+      isAdd: { name: i18n.t("RULE_ENGINE.DATA_GATEWAY.MSG_NOT_ADDED"), value: 0 },
       projectId: "",
       groupId: "",
       deviceId: "",
@@ -259,7 +263,7 @@ export default {
     handleClose() {
       this.page = 1;
       this.formData = {
-        isAdd: { name: "未添加", value: 0 },
+        isAdd: { name: i18n.t("RULE_ENGINE.DATA_GATEWAY.MSG_NOT_ADDED"), value: 0 },
         projectId: "",
         groupId: "",
         deviceId: "",
@@ -278,7 +282,7 @@ export default {
     cancelDialog() {
       this.page = 1;
       this.formData = {
-        isAdd: { name: "未添加", value: 0 },
+        isAdd: { name: i18n.t("RULE_ENGINE.DATA_GATEWAY.MSG_NOT_ADDED"), value: 0 },
         projectId: "",
         groupId: "",
         deviceId: "",
@@ -304,7 +308,7 @@ export default {
       let params = { tp_openapi_auth_id: this.id, device_id: v.device_id };
       deleteOpenApiDeviceRelationship(params).then(({ data }) => {
         if (data.code == 200) {
-          this.$message({ message: "删除成功", center: true, type: "success" });
+          this.$message({ message: i18n.t("COMMON.DELETE_SUCCESS"), center: true, type: "success" });
         }
         this.loading = false;
       });
@@ -320,7 +324,7 @@ export default {
       let params = { tp_openapi_auth_id: this.id, device_id: v.device_id };
       createOpenApiDeviceRelationship(params).then(({ data }) => {
         if (data.code == 200) {
-          this.$message({ message: "添加成功", center: true, type: "success" });
+          this.$message({ message: i18n.t("COMMON.ADD_SUCCESS"), center: true, type: "success" });
         }
         this.loading = false;
         this.get_device_data();

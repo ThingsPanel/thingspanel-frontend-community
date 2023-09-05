@@ -1,14 +1,14 @@
 <template>
   <div style="width: 100%;display: flex">
     <!-- 项目列表 -->
-    <el-select ref="projectRef" style="width: 16%;min-width: 100px;margin-right:10px" v-model="formData.projectId"
+    <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="projectRef" style="width: 16%;min-width: 100px;margin-right:10px" v-model="formData.projectId"
       :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_PROJECT')" @change="handleProjectChange">
       <el-option v-for="(option, index) in projectOptions" :key="index" :label="option.name"
         :value="option.id"></el-option>
     </el-select>
 
     <!-- 分组列表 -->
-    <el-select ref="groupRef" style="min-width: 100px;width:16%;margin-right:10px" v-if="formData.projectId"
+    <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="groupRef" style="min-width: 100px;width:16%;margin-right:10px" v-if="formData.projectId"
       v-model="formData.groupId" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_GROUP')" @change="handleGroupChange">
       <el-option v-for="(option, index) in groupOptions" :key="index" :label="option.device_group"
         :value="option.id"></el-option>
@@ -31,7 +31,7 @@
     </el-cascader>
 
     <!-- 状态/属性列表 -->
-    <el-select ref="stateRef" style="min-width: 100px;width:16%;margin-right:10px" v-if="formData.device"
+    <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="stateRef" style="min-width: 100px;width:16%;margin-right:10px" v-if="formData.device"
       v-model="formData.state" value-key="name" :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_STATE')"
       @change="handleStateChange">
       <el-option-group v-for="group in stateOptions" :key="group.label" :label="group.label">

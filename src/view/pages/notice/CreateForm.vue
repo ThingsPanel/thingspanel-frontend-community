@@ -20,7 +20,8 @@
           </el-form-item>
           
           <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.METHOD')" required>
-            <el-select class="w-100" ref="selRef" v-model="form.notification_type" @change="handleTypeChange">
+            <el-select class="w-100" ref="selRef" v-model="form.notification_type" @change="handleTypeChange"
+            :placeholder="$t('COMMON.PLACEHOLDER5')">
               <el-option label="成员通知" :value="1"></el-option>
               <el-option label="邮箱通知" :value="2"></el-option>
               <el-option label="短信通知" :value="4"></el-option>
@@ -37,8 +38,8 @@
               <div style="display:flex;margin-bottom: 10px;" v-for="(command, index) in form.commands" :key="index">
                 <DeviceTypeSelector ref="deviceTypeRef" style="" :data="command.data" :option="{operator: false}" @change="v=>handleCommandChange(command, v)"/>
                 <!-- 新增一行 -->
-                <el-button type="indigo" size="small" style="margin-left: auto" v-if="index == 0" @click="handleAddCommand(command)">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.ADD')}}</el-button>
-                <el-button type="danger" size="small" style="margin-left: auto" v-if="index > 0" @click="handleDeleteCommand(command)">{{ $t('SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.DELETE')}}</el-button>
+                <el-button type="indigo" size="small" style="margin-left: auto" v-if="index == 0" @click="handleAddCommand(command)">{{ $t('COMMON.ADD')}}</el-button>
+                <el-button type="danger" size="small" style="margin-left: auto" v-if="index > 0" @click="handleDeleteCommand(command)">{{ $t('COMMON.DELETE')}}</el-button>
               </div>
             </el-form-item>
           </div>

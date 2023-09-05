@@ -45,11 +45,11 @@ export default {
       activeTab: "installed",
       tabs: [
         {
-          name: "已安装",
+          name: "PLUGIN.TAB1",
           value: "installed",
         },
         {
-          name: "应用市场",
+          name: "PLUGIN.TAB2",
           value: "market",
         },
         {

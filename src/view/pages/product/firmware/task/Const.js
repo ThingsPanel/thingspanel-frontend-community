@@ -1,4 +1,5 @@
 // 状态 0-待推送 1-已推送 2-升级中 3-升级成功 4-升级失败 5-已取消
+import i18n from "@/core/plugins/vue-i18n";
 
 const UpgradeState = {
     // 所有状态
@@ -17,8 +18,9 @@ const UpgradeState = {
     cancelled: ["5", "已取消"],
     // 通过value获取text
     getText: value => {
-        const arr = Object.values(UpgradeState).find(v => typeof v != "function" && String(v[0]) === String(value));
-        return arr ? arr[1] : "";
+        return i18n.t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.UPGRADE_STATUS_CODE.'+ value)
+        // const arr = Object.values(UpgradeState).find(v => typeof v != "function" && String(v[0]) === String(value));
+        // return arr ? arr[1] : "";
     },
     // 通过value获取key
     getKey: value => Object.keys(UpgradeState).find(key => UpgradeState[key] === value),

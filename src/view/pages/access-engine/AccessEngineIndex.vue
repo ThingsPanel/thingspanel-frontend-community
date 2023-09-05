@@ -24,7 +24,7 @@
         <el-button size="mini" type="yellow" @click="handle_pause(scope.row)">{{ $t("RULE_ENGINE.ACCESS_ENGINE.SUSPENDED")}}</el-button>
         <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">{{ $t("RULE_ENGINE.ACCESS_ENGINE.EDIT")}}</el-button>
 
-        <el-popconfirm :title="$t('RULE_ENGINE.ACCESS_ENGINE.TITLE4')" @confirm="handle_del(scope.row)">
+        <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('RULE_ENGINE.ACCESS_ENGINE.TITLE4')" @confirm="handle_del(scope.row)">
           <el-button slot="reference" size="mini" type="danger">{{ $t("RULE_ENGINE.ACCESS_ENGINE.DELETE")}}</el-button>
         </el-popconfirm>
       </template>

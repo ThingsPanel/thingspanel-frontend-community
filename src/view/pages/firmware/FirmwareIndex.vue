@@ -66,13 +66,17 @@
                       <div class="text-center">
                           <el-button type="indigo" class="mr-1" size="mini" @click="viewTaskList(scope.row)">查看</el-button>
                           
-                          <el-popconfirm class="mr-1" :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
+                          <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" class="mr-1" :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
                               <el-button slot="reference" style="margin-left:10px" size="mini" type="danger">{{
                                   $t('PRODUCT_MANAGEMENT.BATCH_LIST.DELETE') }}</el-button>
                           </el-popconfirm>
                       </div>
                   </template>
               </el-table-column>
+              
+            <template #empty>
+              <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+            </template>
           </el-table>
       </el-form>
       <!-- 表 end -->

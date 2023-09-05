@@ -3,7 +3,7 @@
     <el-form-item style="width:100%" :label="$t('AUTOMATION.THEN')">
       <div style="display: flex;margin-bottom: 10px" v-for="(action, index) in actions" :key="index">
 
-        <el-select ref="actionTypeRef" style="width: 130px;margin-right:20px" :placeholder="$t('AUTOMATION.PLACEHOLDER.ACTION_TYPE')" v-model="action.type"
+        <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="actionTypeRef" style="width: 130px;margin-right:20px" :placeholder="$t('AUTOMATION.PLACEHOLDER.ACTION_TYPE')" v-model="action.type"
                    :disabled="actions.length > (index+1)"
                    @change="v=>handleChangeActionType(action, v)">
           <el-option v-for="(item, index) in action.typeOptions" :key="index" :label="item.label" :value="item.value"></el-option>

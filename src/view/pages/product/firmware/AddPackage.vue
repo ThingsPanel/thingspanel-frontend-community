@@ -1,6 +1,6 @@
 <template>
     <div class="firmware-create">
-        <el-dialog class="el-dark-dialog" title="添加升级包"
+        <el-dialog class="el-dark-dialog" :title="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.ADD_PACKAGE')"
             :visible.sync="dialogVisible" width="540px" :before-close="() => dialogVisible=false" :close-on-click-modal="false">
             <el-form ref="firmwareCreateForm" :rules="rules" label-position="left" :model="form"
                 label-width="150px">
@@ -18,7 +18,7 @@
                 <!-- 归属产品 -->
                 <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.BELONGINGPRODUCT')"
                     prop="product_id">
-                    <el-select v-model="form.product_id">
+                    <el-select v-model="form.product_id" :placeholder="$t('COMMON.PLACEHOLDER5')">
                         <el-option v-for="(product, index) in productList" :key="index"
                             :label="product.name" :value="product.id"></el-option>
                     </el-select>
@@ -51,7 +51,7 @@
                 </el-form-item>
 
                 <!-- 上传升级包 -->
-                <el-form-item label="上传升级包" required prop="packageUrl">
+                <el-form-item :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.UPLOAD_PACKAGE')" required prop="packageUrl">
                     <el-upload ref="upload"
                         class="upload-demo"
                         :action="uploadUrl"
@@ -64,10 +64,10 @@
                         :on-success="onUploadSuccess"
                         :auto-upload="false"
                         >
-                        <el-button slot="trigger" size="small" type="border">选取文件</el-button>
+                        <el-button slot="trigger" size="small" type="border">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.CHOOSE_FILE') }}</el-button>
                         <!-- 给el-button添加tooltip -->
                         <el-tooltip effect="dark" content="仅支持 bin、tar、gz、tar.xz、zip、gzip、apk、dav、pack 类型的文件，文件名支持中文、英文字母、数字和下划线，长度限制1~32个字符，文件总大小最大为1000MB" placement="top">
-                            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+                            <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.UPLOAD_TO_SERVER') }}</el-button>
                         </el-tooltip>
                     </el-upload>
                 </el-form-item>
@@ -80,7 +80,7 @@
                 </el-form-item>
 
                 <!-- 其他配置 -->
-                <el-form-item style="line-height: 30px;" :label="'其他配置'">
+                <el-form-item style="line-height: 30px;" :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.FIRMWARE_LIST_ADD.OTHER_CONFIG')">
                     <el-row v-for="(config, index) in form.additional_info" :key="index">
                         <el-col :span="7" style="margin-right:10px">
                             <el-input size="small" placeholder="key" v-model="config.key"></el-input>
@@ -89,8 +89,8 @@
                             <el-input size="small" placeholder="value" v-model="config.value"></el-input>
                         </el-col>
                         <el-col :span="6"  :offset="2">
-                            <el-button size="small" type="border" v-if="index===0" @click="handleAddConfig">增加一行</el-button>
-                            <el-button size="small" type="danger" v-else @click="handleDeleteConfig(config)">删除</el-button>
+                            <el-button size="small" type="border" v-if="index===0" @click="handleAddConfig">{{ $t('COMMON.ADD') }}</el-button>
+                            <el-button size="small" type="danger" v-else @click="handleDeleteConfig(config)">{{ $t('COMMON.DELETE') }}</el-button>
                         </el-col>
                     </el-row>
                 </el-form-item>

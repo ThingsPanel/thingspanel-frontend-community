@@ -7,7 +7,7 @@
 
       <el-col :span="12" class="px-2 text-right">
         <el-button size="medium" type="border" @click="handleCreate">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.CREATEBATCH') }}</el-button>
-        <el-button size="medium" type="border" @click="handleImport">导入数据</el-button>
+        <el-button size="medium" type="border" @click="handleImport">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA') }}</el-button>
       </el-col>
     </el-row>
 
@@ -41,14 +41,14 @@
                 v-if="scope.row.generate_flag !== '1'" @click="generateData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.GENERATEDATA') }}</el-button>
               
               <el-button type="indigo"  class="mr-1" size="mini" 
-                v-if="scope.row.generate_flag == '1'" @click="viewPreRegistration(scope.row)">查看预注册</el-button>
+                v-if="scope.row.generate_flag == '1'" @click="viewPreRegistration(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.VIEW_PREREGISTRATION') }}</el-button>
 
               <el-button type="indigo" class="mr-1" size="mini"
                 v-if="scope.row.generate_flag == '1'"  :loading="exportLoading"
-                @click="exportQRCodeAndData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA') }}</el-button>
+                @click="exportQRCodeAndData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.EXPORT') }}</el-button>
 
               <!-- <el-button type="indigo" class="mr-1" size="mini" @click="exportData(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA') }}</el-button> -->
-              <el-popconfirm class="mr-1" :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
+              <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" class="mr-1" :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
                 <el-button slot="reference" style="margin-left:10px" size="mini" type="danger">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.DELETE') }}</el-button>
               </el-popconfirm>
             </div>

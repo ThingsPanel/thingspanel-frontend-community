@@ -10,23 +10,23 @@
     <div class="rounded card p-4 el-table-transparent el-dark-input">
         <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
             <el-col :span="12">
-                <TableTitle>{{ params.productName + ' - ' + params.batchNumber}} - 预注册管理</TableTitle>
+                <TableTitle>{{ params.productName + ' - ' + params.batchNumber}} - {{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.PREREGISTRATION_MANAGEMENT') }}</TableTitle>
             </el-col>
 
         </el-row>
         <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
             <el-col :span="4">
-                <el-select v-model="params.add_flag">
-                    <el-option label="全部" value="all"></el-option>
-                    <el-option label="已添加" value="1"></el-option>
-                    <el-option label="未添加" value="0"></el-option>
+                <el-select v-model="params.add_flag" :placeholder="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.PLACEHOLDER1')">
+                    <el-option :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ALL')" value="all"></el-option>
+                    <el-option :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ADD_STATUS_DONE')" value="1"></el-option>
+                    <el-option :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ADD_STATUS_UNDO')" value="0"></el-option>
                 </el-select>
             </el-col>
             <el-col :span="4">
-                <el-input placeholder="请输入设备编号" v-model="params.device_number"></el-input>
+                <el-input :placeholder="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.PLACEHOLDER2')" v-model="params.device_number"></el-input>
             </el-col>
             <el-col :span="4">
-                <el-button type="border" @click="getPreRegistrationList">搜索</el-button>
+                <el-button type="border" @click="getPreRegistrationList">{{ $t('COMMON.SEARCH') }}</el-button>
             </el-col>
         </el-row>
         <!-- 表 start -->
@@ -34,24 +34,24 @@
             <el-table :data="tableData" v-loading="loading">
 
                 <!-- 批号-->
-                <el-table-column label="设备编号" prop="device_code" align="left"/>
+                <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.DEVICE_ID')" prop="device_code" align="left"/>
 
                 <!-- 添加状态 -->
-                <el-table-column label="添加状态" prop="add_flag" align="left">
+                <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ADD_STATUS')" prop="add_flag" align="left">
                     <template v-slot="scope">
-                        {{ scope.row.add_flag === '1' ? "已添加" : "未添加" }}  
+                        {{ scope.row.add_flag === '1' ? $t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ADD_STATUS_DONE') : $t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ADD_STATUS_UNDO') }}  
                     </template>
                 </el-table-column>
 
                 <!-- 添加日期 -->
-                <el-table-column label="添加日期" prop="add_date" align="center">
+                <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ADD_DATE')" prop="add_date" align="center">
                 </el-table-column>
                 
 
                 <!-- 激活状态-->
-                <el-table-column label="激活状态" prop="activate_flag" align="center">
+                <el-table-column :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ACTIVE_STATUS')" prop="activate_flag" align="center">
                     <template v-slot="scope">
-                        {{ scope.row.activate_flag === '1' ? "已激活" : "未激活" }}
+                        {{ scope.row.activate_flag === '1' ? $t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ACTIVE_STATUS_DONE') : $t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ACTIVE_STATUS_UNDO') }}
                     </template>
                 </el-table-column>
 
@@ -69,10 +69,14 @@
                         <div class="text-right">
                             <el-button slot="reference" style="margin-left:10px" size="mini" type="primary" 
                                 v-if="scope.row.add_flag !== '1'"
-                                @click="handleAddDevice(scope.row)">添加设备</el-button>
+                                @click="handleAddDevice(scope.row)">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.PREREGISTRATION.ADD_DEVICE') }}</el-button>
                             
-
-                            <el-popconfirm class="mr-1" :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
+                            <el-popconfirm
+                            :confirm-button-text="$t('COMMON.CONFIRM')"
+                            :cancel-button-text="$t('COMMON.CANCEL')" 
+                            class="mr-1" 
+                            :title="$t('AUTOMATION.TITLE4')" 
+                            @confirm="handleDelete(scope.row)">
                                 <el-button slot="reference" style="margin-left:10px" size="mini" type="danger">{{
                                     $t('PRODUCT_MANAGEMENT.BATCH_LIST.DELETE') }}</el-button>
                             </el-popconfirm>

@@ -86,12 +86,16 @@
           <el-button class="mr-3" size="mini" type="indigo" @click="handleShowEdit(scope.row)">{{
             $t("RULE_ENGINE.DATA_GATEWAY.EDIT") }}</el-button>
 
-          <el-popconfirm class="mr-1" :title="$t('AUTOMATION.TITLE4')" @confirm="handle_del(scope.row.id)">
+          <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" class="mr-1" :title="$t('AUTOMATION.TITLE4')" @confirm="handle_del(scope.row.id)">
             <el-button slot="reference" class="mr-3" size="mini" type="danger">{{ $t("RULE_ENGINE.DATA_GATEWAY.DELETE")
             }}</el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
+      
+      <template #empty>
+        <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+      </template>
     </el-table>
 
     <div class="text-right py-3">

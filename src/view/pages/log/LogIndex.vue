@@ -51,6 +51,10 @@
     <el-table-column :label="$t('SYSTEM_LOG.OPERATION_LOG.TIMES')" prop="created_at"></el-table-column>
     <el-table-column :label="$t('SYSTEM_LOG.OPERATION_LOG.CONSUMING')" prop="detailed.request_time"></el-table-column>
     <el-table-column :label="$t('SYSTEM_LOG.OPERATION_LOG.USERNAME')" prop="detailed.name"></el-table-column>
+    
+    <template #empty>
+      <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+    </template>
   </el-table>
   <!-- 表 end -->
 

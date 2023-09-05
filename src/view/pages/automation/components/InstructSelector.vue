@@ -3,6 +3,7 @@
     class="w-100"
     v-model="fieldValue"
     :placeholder="$t('AUTOMATION.COMMAND')"
+    :no-data-text="$t('COMMON.SELECT_NO_DATA')"
 
     filterable @change="handleChange"
 >

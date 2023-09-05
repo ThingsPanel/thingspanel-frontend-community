@@ -1,17 +1,17 @@
 <template>
     <div class="content-form">
       <el-form label-position="left" label-width="120px">
-           <el-form-item label="插件类型：">
+           <el-form-item :label="$t('PLUGIN.TAB1_CONTENT.PLUGIN_TYPE') + ': '">
              <el-radio-group v-model="params.pluginType" size="small" @change="handlePluginTypeChanged">
-               <el-radio-button label="device">设备插件</el-radio-button>
-               <el-radio-button label="script">解析脚本</el-radio-button>
-               <el-radio-button label="nodeRed">规则引擎代码</el-radio-button>
-               <el-radio-button label="protocol">协议插件</el-radio-button>
-               <el-radio-button label="visual">可视化插件</el-radio-button>
+               <el-radio-button label="device">{{ $t("PLUGIN.TAB1_CONTENT.DEVICE_PLUGIN") }}</el-radio-button>
+               <el-radio-button label="script">{{ $t("PLUGIN.TAB1_CONTENT.ANALYSIS_SCRIPT") }}</el-radio-button>
+               <el-radio-button label="nodeRed">{{ $t("PLUGIN.TAB1_CONTENT.RULE_ENGINE") }}</el-radio-button>
+               <el-radio-button label="protocol">{{ $t("PLUGIN.TAB1_CONTENT.PROTOCOL_PLUGIN") }}</el-radio-button>
+               <el-radio-button label="visual">{{ $t("PLUGIN.TAB1_CONTENT.VISUAL_PLUGIN") }}</el-radio-button>
              </el-radio-group>
             </el-form-item>
 
-             <el-form-item label="搜索：">
+             <el-form-item :label="$t('COMMON.SEARCH') + ': '">
                 <el-row>
                   <el-col :span="20">
                     <div class="flex">
@@ -50,20 +50,20 @@
           <el-table :data="listArr" v-loading="listLoadig">
 
             <!-- 名称 -->
-            <el-table-column label="名称" prop="name" align="left"></el-table-column>
+            <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.NAME')" prop="name" align="left"></el-table-column>
 
-            <el-table-column label="作者"  prop="author" align="left"></el-table-column>
+            <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.AUTHOR')"  prop="author" align="left"></el-table-column>
 
-            <el-table-column label="说明"  prop="describe" align="left"></el-table-column>
+            <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.DESCRIBE')"  prop="describe" align="left"></el-table-column>
 
-            <el-table-column label="插件分类"  prop="devicePluginTypeLabel" align="left"></el-table-column>
+            <el-table-column :label="$t('PLUGIN.TAB2_CONTENT.PLUGIN_TYPE')"  prop="devicePluginTypeLabel" align="left"></el-table-column>
 
 
             <!-- 操作列-->
             <el-table-column align="left" :label="$t('PLUGIN.TAB2_CONTENT.OPERATION')" width="240">
               <template v-slot="scope">
                 <div style="text-align: left">
-                  <el-button slot="reference" size="mini" type="border" @click="handleInstallPlugin(scope.row)">安装</el-button>
+                  <el-button slot="reference" size="mini" type="border" @click="handleInstallPlugin(scope.row)">{{ $t('PLUGIN.TAB2_CONTENT.INSTALL') }}</el-button>
                 </div>
               </template>
             </el-table-column>

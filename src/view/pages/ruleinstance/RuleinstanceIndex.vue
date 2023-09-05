@@ -23,7 +23,7 @@
           <el-button size="mini" type="indigo" @click="handle_launch(scope.row)">启动</el-button>
           <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">配置</el-button>
 
-          <el-popconfirm title="确定要删除吗？" @confirm="handle_del(scope.row)">
+          <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" title="确定要删除吗？" @confirm="handle_del(scope.row)">
             <el-button slot="reference" size="mini" type="danger">删除</el-button>
           </el-popconfirm>
         </template>

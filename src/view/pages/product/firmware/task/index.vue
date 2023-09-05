@@ -9,10 +9,10 @@
 <template>
     <div>
         <el-tabs v-model="activeName">
-            <el-tab-pane label="任务列表" name="task">
+            <el-tab-pane :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.TASK_LIST')" name="task">
                 <task-list :data="{otaId, productId}"></task-list>
             </el-tab-pane>
-            <el-tab-pane label="升级包信息" name="information">
+            <el-tab-pane :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.PACKAGE_INFO')" name="information">
                 <package-information  :id="otaId"></package-information>
             </el-tab-pane>
         </el-tabs>
