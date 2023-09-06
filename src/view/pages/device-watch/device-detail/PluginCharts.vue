@@ -113,7 +113,18 @@ export default {
           this.status = this.pluginStatus.NONE;
         }
       }
-    }
+    },
+    "device.device": {
+      handler(newValue) {
+        console.log("device", newValue)
+        if (this.socket) {
+          this.socket.close();
+          this.socket = null;
+        }
+      }
+    },
+    immediate: true,
+    deep: true
   },
   beforeDestroy() {
     if (this.timer) {
@@ -254,6 +265,10 @@ export default {
       // 先执行一次获取历史数据
       this.getHistory(componentMaps.history);
 
+      if (this.socket) {
+        this.socket.close();
+        this.socket = null;
+      }
       this.socket = new websocket();
       this.socket.init((event) => {
         console.log(event)
@@ -302,7 +317,6 @@ export default {
               if (option.type == "deviceStatus") {
                 values = data.systime || "";
               } else if (option.type == "signalStatus") {
-                console.log()
                 if (data && data[mapping[0].name]) {
                   values = data[mapping[0].name];
                 } else {

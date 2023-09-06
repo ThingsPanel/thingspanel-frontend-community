@@ -86,9 +86,9 @@ const websocket = () => {
     /**
      * 断开连接
      */
-    const close = () => {
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.close();
+    const close = async () => {
+        if (socket) {
+            await socket.close();
             socket = null;
         }
     }
