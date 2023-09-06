@@ -410,7 +410,23 @@ export const locale = {
     DEVICEMAP: "设备地图",
     DEVICE_GROUP_SELECTOR_PLACEHOLDER: "请选择分组",
     DEVICE_PLUG_SELECTOR_PLACEHOLDER: "请选择插件",
-  },
+    TABLE_NO_DATA: "暂无数据",
+    SELECT_NO_DATA: "无数据",
+    SUCCESS: "成功",
+    FAILED: "失败",
+    COUNT: "数量",
+    VIEW: "查看",
+    OTHER: "其他",
+    DOWNLOAD: "下载",
+    ALL: "全部",
+    DELETE_SUCCESS: "删除成功！",
+    DELETE_FAILED: "删除失败！",
+    ADD_SUCCESS: "添加成功！",
+    ADD_FAILED: "添加失败！",
+    EDIT_SUCCESS: "编辑成功！",
+    EDIT_FAILED: "编辑失败！",
+
+},
   TRANSLATOR: {
     SELECT: "选择你的语言",
   },
@@ -683,6 +699,7 @@ export const locale = {
       OPERATION: "操作",
       DELETETHISITEM: "确定要删除此项吗？",
       DELETE: "删除",
+      ALL_DEVICE_GROUP: "所有设备分组",
     },
     /**
      * 设备配置弹框
@@ -1163,6 +1180,7 @@ export const locale = {
       OPERATION: "操作",
       VIEWBATCH: "查看批次",
       DELETE: "删除",
+      BATCH_OPERATION: "批量操作",
       MQTTPROTOCOL: "MQTT协议",
       /**
      * 产品列表新增弹框
@@ -1201,7 +1219,7 @@ export const locale = {
       DELETE: "删除",
       GENERATEDATA: "生成数据",
       EXPORTQRCODEANDDATA: "导出二维码数据",
-      IMPORTDATA: "导出数据",
+      IMPORTDATA: "导入数据",
       EXPORT: "导出",
       GENERATE_WAIT: "生成中请稍后",
       CLICKDOWNLOAD: "点击下载",
@@ -1222,6 +1240,28 @@ export const locale = {
       PLACEHOLDER2: "请选择产品",
       PLACEHOLDER3: "请输入接入地址",
       PLACEHOLDER4: "请输入设备数量",
+      FILE: "文件",
+      UPLOAD: "上传",
+      DOWNLOAD_TEMPLATE: "下载模板",
+      VIEW_PREREGISTRATION:"查看预注册",
+      PREREGISTRATION: {
+        PREREGISTRATION_MANAGEMENT: "预注册管理",
+        PLACEHOLDER1:"请选择",
+        PLACEHOLDER2: "请输入设备编号",
+        DEVICE_ID: "设备编号",
+        ADD_STATUS: "添加状态",
+        ADD_STATUS_DONE: "已添加",
+        ADD_STATUS_UNDO: "未添加",
+        ADD_DATE: "添加日期",
+        ACTIVE_STATUS: "激活状态",
+        ACTIVE_STATUS_DONE: "已激活",
+        ACTIVE_STATUS_UNDO: "未激活",
+        ADD_DEVICE: "添加设备",
+        ALL: "全部",
+        PROJECT: "项目",
+        GROUP: "分组",
+        DEVICE_NAME: "设备名",
+      },
     },
     /**
      * 固件升级列表
@@ -1239,10 +1279,13 @@ export const locale = {
       CONFIG: "配置",
       DELETE:"删除",
       TITLE4: "确定要删除吗？",
+      ALL_PRODUCTS: "所有产品",
+      PLACEHOLDER1: "请输入升级包名称",
       /**
      * 固件升级新增弹框
      */
       FIRMWARE_LIST_ADD: {
+        ADD_PACKAGE: "添加升级包",
         PACKAGE_NAME: "升级包名称",
         ADDFIRMWARE: "新增固件",
         BELONGINGPRODUCT: "归属产品",
@@ -1263,6 +1306,48 @@ export const locale = {
         PLACEHOLDER4: "请填写签名类型",
         PLACEHOLDER5: "请填写签名",
         PLACEHOLDER6: "请填写固件描述",
+        UPLOAD_PACKAGE: "上传升级包",
+        CHOOSE_FILE: "选择文件",
+        UPLOAD_TO_SERVER: "上传到服务器",
+        OTHER_CONFIG: "其他配置",
+      },
+      TASK: {
+        ADD_UPGRADE: "添加升级任务",
+        TASK_LIST: "任务列表",
+        TASK_NAME: "任务名称",
+        TASK_STATUS: "任务状态",
+        DEVICE_COUNT: "设备数量",
+        PACKAGE_INFO: "升级包信息",
+        SIGN_ALGORITHM: "签名算法",
+        PACKAGE_SIGN: "升级包签名",
+        OTHER_CONFIG: "其他配置",
+        UPGRADE_TIME: "升级时间",
+        UPGRADE_TIME_NOW: "立即升级",
+        UPGRADE_TIME_WAIT: "待升级",
+        CHOOSE_DEVICE: "选择设备",
+        CHOOSE_DEVICE_ALL: "全部设备",
+        PLACEHOLDER1: "点这里选择设备",
+        PLACEHOLDER2: "选择升级时间",
+        PLACEHOLDER3: "请输入设备名称",
+        DEVICE_CODE: "设备编号",
+        DEVICE_NAME: "设备名称",
+        CURRENT_VERSION: "当前版本号",
+        TARGET_VERSION: "目标版本号",
+        UPGRADE_PROGERSS: "升级进度",
+        STATUS_UPDATE_TIME: "状态更新时间",
+        STATUS_DETAIL: "状态详情",
+        UPGRADE_STATUS: "升级状态",
+        REUPGRADE: "重新升级",
+        CANCEL_UPGRADE: "取消升级",
+        UPGRADE_STATUS_CODE: {
+          "-1": "所有状态",
+          "0": "待推送",
+          "1": "已推送",
+          "2": "升级中",
+          "3": "升级成功",
+          "4": "升级失败",
+          "5": "已取消",
+        }
       },
     },
   },
@@ -1302,6 +1387,22 @@ export const locale = {
       CANCEL: "取消",
       SUBMIT:" 创建",
       PLACEHOLDER: "请输入规则名称",
+      CODE_TEMP: " function encodeInp(msg, topic){\n" +
+        "    // 将设备自定义msg（自定义形式）数据转换为json形式数据, 设备上报数据到物联网平台时调用\n" +
+        "    // 入参：topic string 设备上报消息的 topic\n" +
+        "    // 入参：msg byte[] 数组 不能为空\n" +
+        "    // 出参：string\n" +
+        "    // 处理完后将对象转回字符串形式\n" +
+        "    // 例，byte[]转string：var msgString = String.fromCharCode.apply(null, msg);\n" +
+        "    // 例，string转jsonObj：msgJson = JSON.parse(msgString);\n" +
+        "    // 例，jsonObj转string：msgString = JSON.stringify(msgJson);\n" +
+        "    var msgString = String.fromCharCode.apply(null, msg);\n" +
+        "    return msgString;\n" +
+        " }",
+      PUSH_OUTSIDE_MQTT: "推送到外部MQTT",
+      PUSH_OUTSIDE_MQTT_DES: "将设备上报的属性值转发到外部的MQTT Broker，实现更多基于实时数据的应用。",
+      PUSH_OUTSIDE_URL: "推送到外部URL",
+      PUSH_OUTSIDE_URL_DES: "将设备上报的属性值转发到外部的URL，方便Web应用获取设备实时数据。",
     },
     /**
      * 数据转发
@@ -1364,6 +1465,9 @@ export const locale = {
       PLACEHOLDER6: "请输入password",
       PLACEHOLDER7: "请输入发布到 topic",
       PLACEHOLDER8: "请输入推送URL",
+      EDIT_TITLE: "编辑转发规则",
+      ADDTITLE: "创建转发规则",
+
     },
     /**
     * 数据网关
@@ -1399,11 +1503,16 @@ export const locale = {
       URL:"URL",
       SUBMIT:"确定",
       CANCEL:"取消",
+      MSG_IP_FORMAT: "请输入IP地址,用'|'分割",
       MSG_IP_ERROR:"请输入正确的IP地址",
       MSG_NAME_ERROR:"请输入名称",
       MSG_SIGNATURE_MODE_ERROR:"请选择签名方式",
       MSG_DEVICE_ACCESS_SCOPE_ERROR:"请选择设备接入范围",
       MSG_API_ACCESS_SCOPE_ERROR:"请选择接口接入范围",
+      MSG_SELECTED: "已选择",
+      MSG_SELECTED_INTERFACE: "个接口",
+      MSG_ADDED: "已添加",
+      MSG_NOT_ADDED: "未添加",
     },
   },
   
@@ -1437,6 +1546,14 @@ export const locale = {
       PLACEHOLDER2: "复制到剪贴板",
       SEARCH: "查询",
       CLASSIFY: "分类",
+      CLASSIFY_TYPE: {
+        SENSOR: "传感器",
+        CONTROLLER: "控制器",
+        LIGHTING: "照明",
+        ELECTRICITY: "电力",
+        CAMERA: "摄像头",
+        OTHER: "其他",
+      },
       VERSION: "版本号",
       AUTHOR: "作者",
       SCORE: "评分",
@@ -1450,6 +1567,12 @@ export const locale = {
       TITLE: "导出JSON",
       TIP_TEXT: "卸载该插件, 是否继续?",
       TIP: "提示",
+      PLUGIN_TYPE: "插件类型",
+      DEVICE_PLUGIN: "设备插件",
+      ANALYSIS_SCRIPT: "解析脚本",
+      RULE_ENGINE: "规则引擎",
+      PROTOCOL_PLUGIN: "协议插件",
+      VISUAL_PLUGIN: "可视化插件",
     },
     /**
      * 应用管理——接入协议插件
@@ -1466,6 +1589,7 @@ export const locale = {
       LABLE: "插件订阅主题前缀",
       AUTHOR: "作者",
       DESCRIBE: "描述",
+      PLUGIN_TYPE: "插件分类",
       TITLE4: "确定要删除吗？",
       DELETE: "删除",
       OPERATION: "操作",
@@ -1483,6 +1607,8 @@ export const locale = {
       PLACEHOLDER8: "请输入协议订阅主题前缀",
       CANCEL: "取消",
       CONFIRM: "确定",
+      INSTALL: "安装",
+      DETAIL: "详情",
     },
     /**
      * 应用管理——插件编辑器
@@ -1554,6 +1680,18 @@ export const locale = {
       LABLE12: "事件名称(例: 预警)",
       LABLE13: "事件标识符(例: warning)",
       LABLE14: "事件参数",
+      PARAM_TYPE: {
+        FLOAT: "浮点型",
+        INT: "整数",
+        BOOLEAN: "布尔类型",
+        STRING: "字符串",
+        DATE: "时间",
+        OBJECT: "对象",
+        LIST: "列表",
+      },
+      LOAD_TYPE: "读写类型",
+      LOAD_TYPE_R: "只读",
+      LOAD_TYPE_RW: "读/写",
     },
     /**
    * 应用管理——设备插件——图表

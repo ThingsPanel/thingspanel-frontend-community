@@ -9,7 +9,7 @@
 <template>
   <div style="display: flex;">
     {{ $t('AUTOMATION.ACTIVATE') }}<span style="color:red;margin-left:6px">*</span>
-    <el-select ref="sceneIdRef" style="width: 300px;margin-left: 10px;margin-right:10px" v-model="sceneId" @change="handleChange">
+    <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="sceneIdRef" style="width: 300px;margin-left: 10px;margin-right:10px" v-model="sceneId" @change="handleChange">
       <el-option v-for="(option, index) in options" :key="index" :label="option.scenario_name" :value="option.id"></el-option>
     </el-select>
   </div>

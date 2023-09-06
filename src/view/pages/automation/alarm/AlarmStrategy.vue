@@ -20,7 +20,7 @@
         <div class="text-right">
           <el-button type="yellow" size="mini" @click="handleEdit(scope.row)" class="mr-3">{{ $t('AUTOMATION.EDIT') }}</el-button>
 
-          <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
+          <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
             <el-button slot="reference" type="danger" size="mini">{{ $t('AUTOMATION.DELETE') }}</el-button>
           </el-popconfirm>
         </div>

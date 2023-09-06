@@ -35,6 +35,10 @@
           </div>
         </template>
       </el-table-column>
+      
+      <template #empty>
+        <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+      </template>
     </el-table>
     <!-- 表 end -->
 

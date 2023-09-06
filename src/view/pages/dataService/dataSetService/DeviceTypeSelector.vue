@@ -2,7 +2,7 @@
   <div style="display: flex">
    
     <!-- 用户列表 -->
-    <el-select ref="userRef" style="width: 200px;margin-right:10px" v-model="formData.user_id" @change="handleUserChange">
+    <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="userRef" style="width: 200px;margin-right:10px" v-model="formData.user_id" @change="handleUserChange">
       <el-option v-for="(option, index) in userOptions" :key="index" :label="option.name" :value="option.id"></el-option>
     </el-select>
 

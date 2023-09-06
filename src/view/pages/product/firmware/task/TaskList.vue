@@ -10,7 +10,7 @@
     <div class="rounded card p-4 el-table-transparent el-dark-input">
         <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
             <el-col :span="12" :offset="12" class="px-2 text-right">
-                <el-button size="medium" type="border" @click="handleCreate">添加升级任务</el-button>
+                <el-button size="medium" type="border" @click="handleCreate">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.ADD_UPGRADE') }}</el-button>
               </el-col>
         </el-row>
         
@@ -19,17 +19,17 @@
             <el-table :data="tableData" v-loading="loading">
               
                 <!-- 任务名称-->
-                <el-table-column label="任务名称" prop="task_name" align="left"/>
+                <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.TASK_NAME')" prop="task_name" align="left"/>
 
                 <!-- 状态-->
-                <el-table-column label="状态" prop="task_status" align="center">
+                <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.TASK_STATUS')" prop="task_status" align="center">
                     <template v-slot="scope">
                         {{ getUpgradeStatus(scope.row.task_status) }}
                     </template>
                 </el-table-column>
 
                 <!-- 设备数量-->
-                <el-table-column label="设备数量" prop="device_count" align="center">
+                <el-table-column :label="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TASK.DEVICE_COUNT')" prop="device_count" align="center">
                 </el-table-column>
 
               
@@ -44,11 +44,11 @@
                 <el-table-column align="right" :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.OPERATION')" width="240px">
                     <template v-slot="scope">
                         <div class="text-right">
-                            <el-button type="indigo" class="mr-1" size="mini" @click="viewTaskList(scope.row)">查看</el-button>
+                            <el-button type="indigo" class="mr-1" size="mini" @click="viewTaskList(scope.row)">{{ $t('COMMON.VIEW') }}</el-button>
                             
-                            <el-popconfirm title="确定要取消升级吗？" @confirm="cancelTask(scope.row)">
+                            <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" title="确定要取消升级吗？" @confirm="cancelTask(scope.row)">
                                 <el-button slot="reference" type="danger" 
-                                    v-loading="!!scope.row.isLoading" class="mr-1" size="mini">取消</el-button>
+                                    v-loading="!!scope.row.isLoading" class="mr-1" size="mini">{{ $t('COMMON.CANCEL') }}</el-button>
                               </el-popconfirm>
                         </div>
                     </template>

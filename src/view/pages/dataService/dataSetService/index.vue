@@ -61,7 +61,7 @@
           <el-button size="mini" v-if="scope.row.status == 1"  type="yellow" @click="handleSetStatus(scope.row)">{{ $t("SYSTEM_MANAGEMENT.NOTICE_MANAGEMENT.SUSPENDED")}}</el-button> -->
           <el-button size="mini" type="indigo" @click="handleView(scope.row.secret_key)">{{ $t("DATASERVICE_MANAGEMENT.VIEW") }}</el-button>
           <el-button class="mr-3" size="mini" type="indigo" @click="handleShowEdit(scope.row)">{{ $t("DATASERVICE_MANAGEMENT.EDIT")}}</el-button>
-          <el-popconfirm :title="$t('DATASERVICE_MANAGEMENT.TITLE4')" @confirm="handle_del(scope.row.id)">
+          <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('DATASERVICE_MANAGEMENT.TITLE4')" @confirm="handle_del(scope.row.id)">
             <el-button slot="reference" size="mini" type="danger">{{ $t("DATASERVICE_MANAGEMENT.DELETE")}}</el-button>
           </el-popconfirm>
         </template>

@@ -27,7 +27,7 @@
         <div class="text-right">
           <el-button :disabled="step == 0" type="primary" @click="handlePrev">{{ $t('PLUGIN.PREV') }}</el-button>
           <el-button v-if="step<(steps.length - 1)" type="primary" @click="handleNext">{{ $t('PLUGIN.NEXT') }}</el-button>
-          <el-button v-if="step==(steps.length - 1)" :disabled="isSaving" type="primary" @click="handleSave">保存</el-button>
+          <el-button v-if="step==(steps.length - 1)" :disabled="isSaving" type="primary" @click="handleSave">{{ $t('COMMON.SAVE') }}</el-button>
           <el-button v-if="step==(steps.length - 1)" :disabled="isPublishing" type="primary" @click="handlePublish">{{ $t('PLUGIN.RELEASE') }}</el-button>
           <el-button type="primary" @click="handleClose">{{ $t('PLUGIN.CLOSE') }}</el-button>
         </div>

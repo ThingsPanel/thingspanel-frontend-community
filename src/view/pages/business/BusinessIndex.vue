@@ -55,7 +55,7 @@
                        :disabled="!hasAuth('business:edit')" @click="handleEdit(scope.row)">{{ $t('DEVICE_ACCESS.EDIT_PROJECT_NAME') }}</el-button>
 
 
-            <el-popconfirm :title="$t('DEVICE_ACCESS.TEXT44')" @confirm="handleDelete(scope.row)">
+            <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('DEVICE_ACCESS.TEXT44')" @confirm="handleDelete(scope.row)">
               <el-button :disabled="!hasAuth('business:del')" slot="reference" type="danger" size="mini" >{{ $t('DEVICE_ACCESS.DELETE') }}</el-button>
             </el-popconfirm>
           </template>

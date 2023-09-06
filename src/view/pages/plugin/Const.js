@@ -1,3 +1,4 @@
+import i18n from "@/core/plugins/vue-i18n.js"
 
 /**
  * 插件类型
@@ -35,12 +36,12 @@ const DevicePluginType = {
     Camera: 5,
     Other: 6,
     Label: {
-        Sensor: "传感器",
-        Controller: "控制器",
-        Lighting: "照明",
-        Electricity: "电力",
-        Camera: "摄像头",
-        Other: "其他",
+        Sensor: i18n.t('PLUGIN.TAB1_CONTENT.CLASSIFY_TYPE.SENSOR'),
+        Controller: i18n.t('PLUGIN.TAB1_CONTENT.CLASSIFY_TYPE.CONTROLLER'),
+        Lighting: i18n.t('PLUGIN.TAB1_CONTENT.CLASSIFY_TYPE.LIGHTING'),
+        Electricity: i18n.t('PLUGIN.TAB1_CONTENT.CLASSIFY_TYPE.ELECTRICITY'),
+        Camera: i18n.t('PLUGIN.TAB1_CONTENT.CLASSIFY_TYPE.CAMERA'),
+        Other: i18n.t('PLUGIN.TAB1_CONTENT.CLASSIFY_TYPE.OTHER'),
     },
     /**
      * 通过value获取key

@@ -1,7 +1,7 @@
 <template>
   <div style="display: inline-flex;">
       <el-input-number v-model="timeInterval" :min="minInterval"></el-input-number>
-      <el-select style="width: 100px" placeholder="单位" v-model="timeIntervalUnit">
+      <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" style="width: 100px" placeholder="单位" v-model="timeIntervalUnit">
         <el-option value="second" label="秒/次">秒/次</el-option>
         <el-option value="minute" label="分钟/次">分钟/次</el-option>
         <el-option value="hour" label="小时/次">小时/次</el-option>

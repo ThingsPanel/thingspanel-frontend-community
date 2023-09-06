@@ -49,7 +49,7 @@
                 }}</el-button>
                 <el-button type="indigo" size="mini" @click="editVisual(scope.row)">{{ $t('VISUALIZATION.EDIT')
                 }}</el-button>
-                <el-popconfirm :disabled="!hasAuth('visual:del')" style="margin-left: 10px"
+                <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :disabled="!hasAuth('visual:del')" style="margin-left: 10px"
                   :title="$t('VISUALIZATION.TEXT44')" @confirm="delVisual(scope.row)">
                   <el-button slot="reference" type="danger" size="mini">{{ $t('VISUALIZATION.DELETE') }}</el-button>
                 </el-popconfirm>
@@ -57,6 +57,10 @@
             </div>
           </template>
         </el-table-column>
+        
+        <template #empty>
+          <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+        </template>
       </el-table>
     </el-form>
     <!-- 表 end -->

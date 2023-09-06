@@ -53,7 +53,7 @@
           <template v-slot="scope">
             <div style="text-align: left">
 			  <el-button type="save" size="mini" @click="handleShowEdit(scope.row)">编辑</el-button>
-              <el-popconfirm :title="$t('PLUGIN.TAB2_CONTENT.TITLE4')" @confirm="handleDelete(scope.row)">
+              <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('PLUGIN.TAB2_CONTENT.TITLE4')" @confirm="handleDelete(scope.row)">
                 <el-button slot="reference" size="mini" type="danger" :disabled="!hasAuth('plugin:protocol:del')">{{ $t('PLUGIN.TAB2_CONTENT.DELETE') }}</el-button>
               </el-popconfirm>
             </div>

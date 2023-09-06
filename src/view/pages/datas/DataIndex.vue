@@ -73,7 +73,7 @@
       <div>
         <el-button class="mr-2" type="border" size="medium" @click="handleSearch()">{{ $t('DATA_MANAGEMENT.SEARCH') }}</el-button>
 
-        <el-popconfirm :title="`确定导出 ${total} 条数据吗?`" @confirm="handleExport()">
+        <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="`确定导出 ${total} 条数据吗?`" @confirm="handleExport()">
           <el-button slot="reference" type="export" size="medium">{{ $t('DATA_MANAGEMENT.EXPORT') }}</el-button>
         </el-popconfirm>
 
@@ -119,6 +119,10 @@
     </el-table-column>
 
     <el-table-column :label="$t('DATA_MANAGEMENT.TITLE32')" prop="entity_type"></el-table-column>
+    
+    <template #empty>
+      <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+    </template>
   </el-table>
   <!-- 表 end -->
 

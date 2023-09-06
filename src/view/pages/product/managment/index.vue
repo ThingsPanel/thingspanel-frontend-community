@@ -70,13 +70,17 @@
         <el-table-column align="center" :label="$t('PRODUCT_MANAGEMENT.PRODUCT_LIST.OPERATION')" width="230">
           <template v-slot="scope">
             <div style="text-align: center">
-              <el-button type="indigo" size="mini" class="mr-3" @click="showBatch(scope.row)">批量管理</el-button>
-              <el-popconfirm :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
+              <el-button type="indigo" size="mini" class="mr-3" @click="showBatch(scope.row)">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.BATCH_OPERATION') }}</el-button>
+              <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('AUTOMATION.TITLE4')" @confirm="handleDelete(scope.row)">
                 <el-button slot="reference" size="mini" type="danger">{{ $t('PRODUCT_MANAGEMENT.PRODUCT_LIST.DELETE') }}</el-button>
               </el-popconfirm>
             </div>
           </template>
         </el-table-column>
+        
+        <template #empty>
+          <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+        </template>
       </el-table>
     </el-form>
     <!-- 表 end -->

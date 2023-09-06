@@ -1,11 +1,11 @@
 <template>
   <div>
-    <el-dialog class="el-dark-dialog" title="导入数据" :visible.sync="dialogVisible" width="400px"
+    <el-dialog class="el-dark-dialog" :title="$t('PRODUCT_MANAGEMENT.BATCH_LIST.IMPORTDATA')" :visible.sync="dialogVisible" width="400px"
              :before-close="handleClose" :close-on-click-modal="false">
       
       <!-- 给el-dialog自定义头部 -->
       <div slot="head" class="dialog-footer text-center">
-        <el-button type="save" @click="handleSubmit">提交</el-button> 
+        <el-button type="save" @click="handleSubmit">{{ $t('COMMON.CONFIRM') }}</el-button> 
       </div>
       <!-- <div slot="head" class="dialog-footer text-center">
         <el-button type="save" @click="handleSubmit">提交</el-button>
@@ -13,11 +13,11 @@
 
       <!-- <div class="text-center"> -->
       <el-form label-position="left" label-width="80px" ref="formRef" :model="form" :rules="rules">
-        <el-form-item label="批次号" required prop="batch_number">
+        <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.BATCHNUMBER')" required prop="batch_number">
           <el-input v-model="form.batch_number"></el-input>
         </el-form-item>
 
-        <el-form-item label="文件" required prop="file">
+        <el-form-item :label="$t('PRODUCT_MANAGEMENT.BATCH_LIST.FILE')" required prop="file">
           <el-upload style="float:left"
             class="upload-demo"
             :action="uploadUrl"
@@ -26,16 +26,16 @@
             :file-list="fileList"
             accept=".xlsx,.xls"
             :on-success="onUploadSuccess">
-            <el-button size="small" type="primary">点击上传</el-button>
+            <el-button size="small" type="primary">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.UPLOAD') }}</el-button>
           </el-upload>
-          <el-link style="margin-left:20px" type="success" :href="downloadUrl" :underline="false">下载模板</el-link>
+          <el-link style="margin-left:20px" type="success" :href="downloadUrl" :underline="false">{{ $t('PRODUCT_MANAGEMENT.BATCH_LIST.DOWNLOAD_TEMPLATE') }}</el-link>
 
         </el-form-item>
       </el-form>
       <!-- </div> -->
 
       <div slot="footer" class="dialog-footer text-center">
-        <el-button type="save" @click="handleSubmit">提交</el-button>
+        <el-button type="save" @click="handleSubmit">{{ $t('COMMON.CONFIRM') }}</el-button>
       </div>
   </el-dialog>
   </div>

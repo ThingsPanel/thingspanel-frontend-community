@@ -17,9 +17,10 @@
       <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
         <el-col :span="24">
           <el-select
+            :no-data-text="$t('COMMON.SELECT_NO_DATA')"
             style="width: 20%"
             class="el-dark-input"
-            placeholder="全部"
+            :placeholder="$t('COMMON.ALL')"
           >
             <!-- <el-option
               class="el-dark"

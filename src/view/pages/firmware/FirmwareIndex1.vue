@@ -29,7 +29,7 @@
       <template v-slot="scope">
         <el-button class="mr-3" size="mini" type="indigo" @click="startEditor(scope.row)">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.CONFIG') }}</el-button>
 
-        <el-popconfirm :title="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TITLE4')" @confirm="handle_del(scope.row)">
+        <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.TITLE4')" @confirm="handle_del(scope.row)">
           <el-button slot="reference" size="mini" type="danger">{{ $t('PRODUCT_MANAGEMENT.FIRMWARE_LIST.DELETE') }}</el-button>
         </el-popconfirm>
       </template>

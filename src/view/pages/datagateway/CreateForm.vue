@@ -32,6 +32,7 @@
       >
         <el-col :span="20">
           <el-select
+            :no-data-text="$t('COMMON.SELECT_NO_DATA')"
             style="width: 100%"
             ref="signatureModeRef"
             class="el-dark-input"
@@ -56,7 +57,7 @@
             ref="IPRef"
             rows="4"
             v-model="form.ip_whitelist"
-            placeholder="请输入IP地址,用'|'分割"
+            :placeholder="$t('RULE_ENGINE.DATA_GATEWAY.MSG_IP_FORMAT')"
           ></el-input>
         </el-col>
       </el-form-item>
@@ -67,6 +68,7 @@
       >
         <el-col :span="20">
           <el-select
+            :no-data-text="$t('COMMON.SELECT_NO_DATA')"
             style="width: 100%"
             class="el-dark-input"
             ref="deviceAccessScopeRef"
@@ -89,6 +91,7 @@
       >
         <el-col :span="20">
           <el-select
+            :no-data-text="$t('COMMON.SELECT_NO_DATA')"
             style="width: 100%"
             class="el-dark-input"
             ref="apiAccessScopeRef"
@@ -175,32 +178,34 @@ export default {
       },
     },
   },
-  data: () => ({
-    // 签名方式选项
-    signMethodChoice: ["MD5", "HAS256"],
-    // 接口访问范围选项
-    apiAccessScopeChoice: [
-      { name: "全部", value: "1" },
-      { name: "部分", value: "2" },
-    ],
-    // 设备访问范围选项
-    deviceAccessScopeChoice: [
-      { name: "全部", value: "1" },
-      { name: "部分", value: "2" },
-    ],
-    // 列表数据
-    listData: [],
-    form: {
-      id: "",
-      name: "",
-      signature_mode: "",
-      ip_whitelist: "",
-      device_access_scope: "1",
-      api_access_scope: "1",
-      created_at: 0,
-      description: "",
-    },
-  }),
+  data() {
+    return {
+      // 签名方式选项
+      signMethodChoice: ["MD5", "HAS256"],
+      // 接口访问范围选项
+      apiAccessScopeChoice: [
+        { name: this.$t('RULE_ENGINE.DATA_GATEWAY.ALL'), value: "1" },
+        { name: this.$t('RULE_ENGINE.DATA_GATEWAY.PART'), value: "2" },
+      ],
+      // 设备访问范围选项
+      deviceAccessScopeChoice: [
+        { name: this.$t('RULE_ENGINE.DATA_GATEWAY.ALL'), value: "1" },
+        { name: this.$t('RULE_ENGINE.DATA_GATEWAY.PART'), value: "2" },
+      ],
+      // 列表数据
+      listData: [],
+      form: {
+        id: "",
+        name: "",
+        signature_mode: "",
+        ip_whitelist: "",
+        device_access_scope: "1",
+        api_access_scope: "1",
+        created_at: 0,
+        description: "",
+      },
+    }
+  },
   methods: {
     //提交
     onSubmit() {
@@ -217,7 +222,7 @@ export default {
             this.listData = [];
             this.dataGatewayDialogVisible = false;
             this.$message({
-              message: "新建成功",
+              message: this.$t("COMMON.ADD_SUCCESS"),
               center: true,
               type: "success",
             });
@@ -230,7 +235,7 @@ export default {
             this.listData = [];
             this.dataGatewayDialogVisible = false;
             this.$message({
-              message: "编辑成功",
+              message: this.$t("COMMON.EDIT_SUCCESS"),
               center: true,
               type: "success",
             });
