@@ -38,7 +38,7 @@ const websocket = () => {
              */
             socket.onopen = () => {
                 console.log("ws连接成功");
-                onReadyCallback && onReadyCallback();
+                onReadyCallback && onReadyCallback(socket);
                 callback && callback({code: 200, message: "连接成功"})
             }
            

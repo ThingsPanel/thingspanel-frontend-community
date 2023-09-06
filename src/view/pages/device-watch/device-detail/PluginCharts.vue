@@ -94,7 +94,8 @@ export default {
       // 5秒刷新一次组件的值
       flushTime: 5,
       // 计时器
-      timer: null
+      timer: null,
+      socket: null
     }
   },
   watch: {
@@ -117,6 +118,9 @@ export default {
   beforeDestroy() {
     if (this.timer) {
       clearInterval(this.timer);
+    }
+    if (this.socket) {
+      this.socket.close();
     }
   },
   methods: {
@@ -239,28 +243,64 @@ export default {
      * @param componentMaps
      */
     updateComponents(componentMaps) {
-      let ws = new websocket();
-      ws.init((event) => {
+
+      this.timer = setInterval(() => {
+        this.getHistory(componentMaps.history);
+      }, this.flushTime * 1000);
+      localStorage.setItem("deviceWatch_timer", this.timer + "");
+
+      // 先执行一次获取当前值
+      this.getCurrent(componentMaps.current);
+      // 先执行一次获取历史数据
+      this.getHistory(componentMaps.history);
+
+      this.socket = new websocket();
+      this.socket.init((event) => {
         console.log(event)
       });
-      ws.onReady(() => {
-        ws.send({ device_id: this.device.device })
+      this.socket.onReady(() => {
+        this.socket.send({ device_id: this.device.device })
       })
-      ws.onMessage((result) => {
+      this.socket.onMessage((result) => {
         const data = JSON.parse(result)
-        console.log("onMessage", result)
-        let componentMap = [];
-        if (componentMaps.current.length > 0) {
-          componentMap = componentMaps.current;
-        }
-        this.optionsData.forEach(option => {
+        this.setComponentsValue(componentMaps.current, data)
+      })
+      
+    },
+    /**
+     * 从服务器获取指定设备的推送数据
+     * @param deviceId
+     * @param attrs
+     */
+    getCurrent(currentMap) {
+      currentValue({ entity_id: this.device.device })
+        .then(({ data }) => {
+          if (data.code == 200) {
+            this.setComponentsValue(currentMap, data.data[0])
+          }
+        })
+    },
+    getHistory(componentMap) {
+      if (!componentMap || componentMap.length === 0) return;
+      this.$nextTick(() => {
+        componentMap.forEach(item => {
+          let ref = this.$refs["component_" + item.i];
+          if (ref && ref[0]) {
+            ref[0].getHistory(item.map);
+          }
+        })
+      })
+    },
+    setComponentsValue(componentMap, data) {
+      if (!componentMap || componentMap.length === 0) return;
+      this.optionsData.forEach(option => {
           let index = componentMap.findIndex(item => item.id == option.id);
           if (componentMap[index]) {
             let mapping = componentMap[index].map;
             let values = null;
             if (option.controlType == "dashboard") {
               if (option.type == "deviceStatus") {
-                values = data.systime;
+                values = data.systime || "";
               } else if (option.type == "signalStatus") {
                 console.log()
                 if (data && data[mapping[0].name]) {
@@ -292,83 +332,6 @@ export default {
           }
           // }
         })
-
-      })
-      const fun = () => {
-        // if (componentMaps.current.length > 0) {
-        //   this.getCurrent(componentMaps.current);
-        // }
-        if (componentMaps.history.length > 0) {
-          this.getHistory(componentMaps.history);
-        }
-        return fun;
-      }
-      this.timer = setInterval(fun(), this.flushTime * 1000)
-      localStorage.setItem("deviceWatch_timer", this.timer + "");
-    },
-    /**
-     * 从服务器获取指定设备的推送数据
-     * @param deviceId
-     * @param attrs
-     */
-    getCurrent(componentMap) {
-
-      currentValue({ entity_id: this.device.device })
-        .then(({ data }) => {
-          if (data.code == 200) {
-            this.optionsData.forEach(option => {
-              let index = componentMap.findIndex(item => item.id == option.id);
-              if (componentMap[index]) {
-                let mapping = componentMap[index].map;
-                let values = null;
-                if (option.controlType == "dashboard") {
-                  if (option.type == "deviceStatus") {
-                    values = data.data[0].systime;
-                  } else if (option.type == "signalStatus") {
-                    console.log("====signalStatus.mapping", mapping[0], data.data);
-                    if (data.data && data.data[0][mapping[0].name]) {
-                      values = data?.data[0][mapping[0].name];
-                      console.log("====signalStatus.values", mapping[0], values);
-                    } else {
-                      values = null;
-                    }
-                  } else {
-                    values = mapping.map(item => {
-                      if (data.data && data.data[0][item.name]) {
-                        return { ...item, value: data.data[0][item.name] || "" }
-                      }
-                      return { ...item, value: "" }
-                    });
-
-                  }
-                } else if (option.controlType == "control") {
-                  values = {};
-                  mapping.forEach(item => {
-                    if (data.data && data.data[0][item]) {
-                      values[item] = data.data[0][item];
-                    }
-                  });
-                }
-
-                this.$nextTick(() => {
-                  console.log("====updateOption", values)
-                  this.$refs["component_" + option.i][0].updateOption(values);
-                })
-              }
-              // }
-            })
-          }
-        })
-    },
-    getHistory(componentMap) {
-      this.$nextTick(() => {
-        componentMap.forEach(item => {
-          let ref = this.$refs["component_" + item.i];
-          if (ref && ref[0]) {
-            ref[0].getHistory(item.map);
-          }
-        })
-      })
     },
     getMapping(option) {
       if (option.mapping) {
