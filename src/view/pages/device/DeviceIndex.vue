@@ -273,7 +273,6 @@ export default defineComponent({
   setup() {
     let {route} = useRoute()
     // console.log(route.query.business_id)
-
     let business_id = route.query.business_id
 
     // 设备分组的选项

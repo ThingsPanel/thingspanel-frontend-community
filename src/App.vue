@@ -29,12 +29,13 @@ body {
 import { OVERRIDE_LAYOUT_CONFIG } from "@/core/services/store/config.module";
 import {RESET_LAYOUT_CONFIG} from "./core/services/store/config.module";
 import {local_url} from "@/api/LocalUrl";
+
+
 export default {
   name: "ThingsPanel",
-  
   mounted() {
     console.log("====location", document.location.protocol + "//" + document.location.host );
-
+  
     this.$store.dispatch("setRouters");
     this.$store.commit("refresh_page");
     /**

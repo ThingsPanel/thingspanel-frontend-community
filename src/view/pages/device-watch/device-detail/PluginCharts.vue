@@ -1,62 +1,51 @@
 <!-- 点击设备默认显示插件图表 -->
 <template>
   <div style="width: 100%;height: 100%;overflow-y: auto">
-    <grid-layout  style="width: 100%;height: 100%"
-        :layout.sync="optionsData" :col-num="colNum" :row-height="30"
-        :is-draggable="true" :is-resizable="true" :is-mirrored="false"
-        :vertical-compact="true" :margin="[10, 10]" :use-css-transforms="true"
-         @layout-updated="handleLayoutUpdatedEvent"
-    >
+    <grid-layout style="width: 100%;height: 100%" :layout.sync="optionsData" :col-num="colNum" :row-height="30"
+      :is-draggable="true" :is-resizable="true" :is-mirrored="false" :vertical-compact="true" :margin="[10, 10]"
+      :use-css-transforms="true" @layout-updated="handleLayoutUpdatedEvent">
 
-      <grid-item class="grid-item" v-for="(option, index) in optionsData" :key="option['id'] + index"
-                 :x="option.x"
-                 :y="option.y"
-                 :w="option.w"
-                 :h="option.h"
-                 :i="option.i"
-                 dragAllowFrom=".chart-header"
-                 @moved="handleResized(option.i)"
-                 @resized="(l, r, w, h) => handleResized(option.i, {l, r, w, h})">
+      <grid-item class="grid-item" v-for="(option, index) in optionsData" :key="option['id'] + index" :x="option.x"
+        :y="option.y" :w="option.w" :h="option.h" :i="option.i" dragAllowFrom=".chart-header"
+        @moved="handleResized(option.i)" @resized="(l, r, w, h) => handleResized(option.i, { l, r, w, h })">
 
         <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-                  v-if="option.controlType == 'dashboard' && !option.type"
-                  :option="option" :device="device" :value="option.value"></e-charts>
+          v-if="option.controlType == 'dashboard' && !option.type" :option="option" :device="device"
+          :value="option.value"></e-charts>
 
         <curve class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-               v-if="option.controlType == 'history'"
-               :option="option" :device="device" :value="option.value"></curve>
+          v-if="option.controlType == 'history'" :option="option" :device="device" :value="option.value"></curve>
 
         <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-                v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>
+          v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>
 
         <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-                v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'"
-                       :option="option" :device="device" :value="option.value"></device-status>
+          v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'" :option="option" :device="device"
+          :value="option.value"></device-status>
 
         <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-               v-if="option.controlType == 'dashboard' && option.type == 'signalStatus'"
-               :option="option" :device="device" :value="option.value"></signal-status>
+          v-if="option.controlType == 'dashboard' && option.type == 'signalStatus'" :option="option" :device="device"
+          :value="option.value"></signal-status>
 
         <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-                 v-if="option.controlType == 'control'" :option="option" :device="device"></control>
+          v-if="option.controlType == 'control'" :option="option" :device="device"></control>
 
         <video-component class="component-item" style="min-width: 200px;min-height: 200px" :ref="'component_' + option.i"
-                         :key="option['id']" :show-header="true"
-                 v-if="option.controlType == 'video'" :option="option" :device="device"></video-component>
+          :key="option['id']" :show-header="true" v-if="option.controlType == 'video'" :option="option"
+          :device="device"></video-component>
 
       </grid-item>
     </grid-layout>
 
-<!--    <div v-show="status == pluginStatus.LOADING" class="plugin-loading">-->
-<!--      正在加载插件图表...-->
-<!--    </div>-->
+    <!--    <div v-show="status == pluginStatus.LOADING" class="plugin-loading">-->
+    <!--      正在加载插件图表...-->
+    <!--    </div>-->
 
-<!--    <div v-show="status == pluginStatus.NONE" class="plugin-loading">-->
-<!--      该设备未绑定插件，请绑定插件...-->
-<!--    </div>-->
+    <!--    <div v-show="status == pluginStatus.NONE" class="plugin-loading">-->
+    <!--      该设备未绑定插件，请绑定插件...-->
+    <!--    </div>-->
 
   </div>
-
 </template>
 
 
@@ -69,13 +58,13 @@ import Status from "./components/Status"
 import SignalStatus from "./components/SignalStatus"
 import DeviceStatus from "./components/DeviceStatus"
 import VideoComponent from "./components/Video";
-import {device_info} from "@/api/device";
-import {device_update, historyValue} from "@/api/device";
-import {currentValue} from "@/api/device";
-
+import { device_info } from "@/api/device";
+import { device_update, historyValue } from "@/api/device";
+import { currentValue } from "@/api/device";
+import { websocket } from "@/utils/websocket"
 export default {
   name: "PluginCharts",
-  components: { GridLayout, GridItem, ECharts, Curve,  Control, Status, SignalStatus, DeviceStatus, VideoComponent },
+  components: { GridLayout, GridItem, ECharts, Curve, Control, Status, SignalStatus, DeviceStatus, VideoComponent },
   props: {
     options: {
       type: [Array],
@@ -143,8 +132,8 @@ export default {
      */
     getLayout(opts) {
       let options = JSON.parse(JSON.stringify(opts));
-      device_info({id: this.device.device })
-        .then(({data}) => {
+      device_info({ id: this.device.device })
+        .then(({ data }) => {
           if (data.code == 200) {
             console.log("====getLayout", data.data)
             if (data.data['chart_option'] && data.data['chart_option'] != "[]" && data.data['chart_option'] != "{}") {
@@ -153,7 +142,7 @@ export default {
                 for (let i = 0; i < this.options.length; i++) {
                   let option = layout.find(item => item.id == this.options[i].id)
                   if (!option) {
-                    option = {x: 0, y: 0, w: 6, h: 6, i}
+                    option = { x: 0, y: 0, w: 6, h: 6, i }
                   }
                   options[i].x = option.x;
                   options[i].y = option.y;
@@ -163,7 +152,7 @@ export default {
                   // this.handleResized(i);
                 }
                 this.optionsData = options;
-              } catch(err) {
+              } catch (err) {
                 // 显示默认布局
                 this.optionsData = this.getDefaultLayout(options, 4)
               }
@@ -216,8 +205,8 @@ export default {
       let layout = this.optionsData.map(item => {
         return { x: item.x, y: item.y, w: item.w, h: item.h, i: item.i, id: item.id }
       })
-      device_update({id: this.device.device, chart_option: JSON.stringify(layout) })
-        .then(res => {})
+      device_update({ id: this.device.device, chart_option: JSON.stringify(layout) })
+        .then(res => { })
     },
     /**
      * 布局改变的回调
@@ -232,15 +221,15 @@ export default {
      * 3.给组件赋值
      */
     getComponentMaps(options) {
-      let componentMaps = {current: [], history: []};
+      let componentMaps = { current: [], history: [] };
       for (let i = 0; i < options.length; i++) {
         let option = options[i];
         if (option.controlType == "dashboard") {
-          componentMaps.current.push({id: option.id, map: this.getMapping(option)});
+          componentMaps.current.push({ id: option.id, map: this.getMapping(option) });
         } else if (option.controlType == "control" && option.type != "setValue") {
-          componentMaps.current.push({id: option.id, map: this.getControlMapping(option)});
+          componentMaps.current.push({ id: option.id, map: this.getControlMapping(option) });
         } else if (option.controlType == "history") {
-          componentMaps.history.push({id: option.id, i: option.i, map: this.getMapping(option)});
+          componentMaps.history.push({ id: option.id, i: option.i, map: this.getMapping(option) });
         }
       }
       this.updateComponents(componentMaps);
@@ -250,10 +239,65 @@ export default {
      * @param componentMaps
      */
     updateComponents(componentMaps) {
-      const fun = () => {
+      let ws = new websocket();
+      ws.init((event) => {
+        console.log(event)
+      });
+      ws.onReady(() => {
+        ws.send({ device_id: this.device.device })
+      })
+      ws.onMessage((result) => {
+        const data = JSON.parse(result)
+        console.log("onMessage", result)
+        let componentMap = [];
         if (componentMaps.current.length > 0) {
-          this.getCurrent(componentMaps.current);
+          componentMap = componentMaps.current;
         }
+        this.optionsData.forEach(option => {
+          let index = componentMap.findIndex(item => item.id == option.id);
+          if (componentMap[index]) {
+            let mapping = componentMap[index].map;
+            let values = null;
+            if (option.controlType == "dashboard") {
+              if (option.type == "deviceStatus") {
+                values = data.systime;
+              } else if (option.type == "signalStatus") {
+                console.log()
+                if (data && data[mapping[0].name]) {
+                  values = data[mapping[0].name];
+                } else {
+                  values = null;
+                }
+              } else {
+                values = mapping.map(item => {
+                  if (data && data[item.name]) {
+                    return { ...item, value: data[item.name] || "" }
+                  }
+                  return { ...item, value: "" }
+                });
+
+              }
+            } else if (option.controlType == "control") {
+              values = {};
+              mapping.forEach(item => {
+                if (data && data[item]) {
+                  values[item] = data[item];
+                }
+              });
+            }
+
+            this.$nextTick(() => {
+              this.$refs["component_" + option.i][0].updateOption(values);
+            })
+          }
+          // }
+        })
+
+      })
+      const fun = () => {
+        // if (componentMaps.current.length > 0) {
+        //   this.getCurrent(componentMaps.current);
+        // }
         if (componentMaps.history.length > 0) {
           this.getHistory(componentMaps.history);
         }
@@ -268,52 +312,53 @@ export default {
      * @param attrs
      */
     getCurrent(componentMap) {
-      currentValue({entity_id: this.device.device})
-          .then(({data}) => {
-            if (data.code == 200) {
-              this.optionsData.forEach(option => {
-                  let index = componentMap.findIndex(item => item.id == option.id);
-                  if (componentMap[index]) {
-                    let mapping = componentMap[index].map;
-                    let values = null;
-                    if (option.controlType == "dashboard") {
-                      if (option.type == "deviceStatus") {
-                        values = data.data[0].systime;
-                      } else if (option.type == "signalStatus") {
-                        console.log("====signalStatus.mapping", mapping[0], data.data);
-                        if (data.data && data.data[0][mapping[0].name]) {
-                          values = data?.data[0][mapping[0].name];
-                        console.log("====signalStatus.values", mapping[0], values);
-                        } else {
-                          values = null;
-                        }
-                      } else {
-                        values = mapping.map(item => {
-                          if (data.data && data.data[0][item.name]) {
-                            return {...item, value: data.data[0][item.name] || ""}
-                          }
-                          return {...item, value: ""}
-                        });
 
-                      }
-                    } else if (option.controlType == "control") {
-                      values = {};
-                      mapping.forEach(item => {
-                        if (data.data && data.data[0][item]) {
-                          values[item] = data.data[0][item];
-                        }
-                      });
+      currentValue({ entity_id: this.device.device })
+        .then(({ data }) => {
+          if (data.code == 200) {
+            this.optionsData.forEach(option => {
+              let index = componentMap.findIndex(item => item.id == option.id);
+              if (componentMap[index]) {
+                let mapping = componentMap[index].map;
+                let values = null;
+                if (option.controlType == "dashboard") {
+                  if (option.type == "deviceStatus") {
+                    values = data.data[0].systime;
+                  } else if (option.type == "signalStatus") {
+                    console.log("====signalStatus.mapping", mapping[0], data.data);
+                    if (data.data && data.data[0][mapping[0].name]) {
+                      values = data?.data[0][mapping[0].name];
+                      console.log("====signalStatus.values", mapping[0], values);
+                    } else {
+                      values = null;
                     }
+                  } else {
+                    values = mapping.map(item => {
+                      if (data.data && data.data[0][item.name]) {
+                        return { ...item, value: data.data[0][item.name] || "" }
+                      }
+                      return { ...item, value: "" }
+                    });
 
-                    this.$nextTick(() => {
-                      console.log("====updateOption", values)
-                      this.$refs["component_" + option.i][0].updateOption(values);
-                    })
                   }
-                // }
-              })
-            }
-          })
+                } else if (option.controlType == "control") {
+                  values = {};
+                  mapping.forEach(item => {
+                    if (data.data && data.data[0][item]) {
+                      values[item] = data.data[0][item];
+                    }
+                  });
+                }
+
+                this.$nextTick(() => {
+                  console.log("====updateOption", values)
+                  this.$refs["component_" + option.i][0].updateOption(values);
+                })
+              }
+              // }
+            })
+          }
+        })
     },
     getHistory(componentMap) {
       this.$nextTick(() => {
@@ -367,10 +412,12 @@ export default {
   height: 360px;
   /*background-color: #cc0000;*/
 }
+
 .chart-container {
   width: 100%;
   height: 100%;
   overflow-y: auto;
+
   .chart-item {
     float: left;
     padding-top: 30%;
@@ -379,6 +426,7 @@ export default {
     position: relative;
   }
 }
+
 .component-item {
   width: 100%;
   height: 100%;
@@ -386,10 +434,12 @@ export default {
   top: 0;
   left: 0;
 }
+
 .plugin-loading {
   color: #fff;
   font-size: 18px;
 }
+
 ::v-deep .vue-resizable-handle {
   background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBzdGFuZGFsb25lPSJubyI/PjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+PHN2ZyB0PSIxNjcxMDc3NzUzOTcyIiBjbGFzcz0iaWNvbiIgdmlld0JveD0iMCAwIDEwMjQgMTAyNCIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHAtaWQ9IjI5MjciIHdpZHRoPSI2IiBoZWlnaHQ9IjYiIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj48cGF0aCBkPSJNNzcyLjA5NiAyNDMuNzEycTE3LjQwOC0xNy40MDggMzkuNDI0LTIyLjUyOHQ0MC45NiAyLjA0OCAzMS43NDQgMjYuNjI0IDEyLjggNTAuMTc2bDAgNDYxLjgyNHEwIDI3LjY0OC05LjIxNiA1Mi4yMjR0LTI1LjYgNDMuMDA4LTM4LjkxMiAyOC42NzItNDkuMTUyIDEwLjI0bC00OTAuNDk2IDBxLTI2LjYyNCAwLTQzLjUyLTEzLjMxMnQtMjMuMDQtMzIuNzY4LTEuMDI0LTQxLjQ3MiAyMi41MjgtMzkuNDI0cTI1LjYtMjUuNiA3MC4xNDQtNjkuMTJ0OTguMzA0LTk2LjI1NiAxMTAuNTkyLTEwOS4wNTYgMTA3LjUyLTEwNS45ODQgOTAuMTEyLTg4LjU3NiA1Ni44MzItNTYuMzJ6IiBwLWlkPSIyOTI4IiBmaWxsPSIjZmZmZmZmIj48L3BhdGg+PC9zdmc+);
   background-position: 100% 100%;

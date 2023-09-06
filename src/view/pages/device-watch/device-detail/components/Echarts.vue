@@ -93,7 +93,6 @@ export default {
      * @param value
      */
     updateOption(value) {
-      console.log("====更新图表的值", this.option, value)
       if (this.option.controlType == "dashboard") {
         try {
           let name = "";
@@ -102,8 +101,6 @@ export default {
           }
           let series = [];
           series = value.map((item, i) => {
-            
-            console.log("series", value)
             if (!item.value) {
               let opts = this.myEcharts.getOption();
               let { data } = opts.series[i];
