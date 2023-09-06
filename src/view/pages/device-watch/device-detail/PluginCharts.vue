@@ -116,7 +116,6 @@ export default {
     },
     "device.device": {
       handler(newValue) {
-        console.log("device", newValue)
         if (this.socket) {
           this.socket.close();
           this.socket = null;
@@ -307,7 +306,7 @@ export default {
       })
     },
     setComponentsValue(componentMap, data) {
-      if (!componentMap || componentMap.length === 0) return;
+      if (!componentMap || componentMap.length === 0 || !data) return;
       this.optionsData.forEach(option => {
           let index = componentMap.findIndex(item => item.id == option.id);
           if (componentMap[index]) {
