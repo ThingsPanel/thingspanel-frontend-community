@@ -86,7 +86,7 @@ export default {
       // 控制设备状态
       const { data } = await turnSwitch(param)
       if (data.code == 200) {
-        this.getSwitchValue()
+        // this.getSwitchValue()
         message_success("设备状态更新成功")
       }
     },
