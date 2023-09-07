@@ -95,7 +95,8 @@ export default {
       flushTime: 5,
       // 计时器
       timer: null,
-      socket: null
+      socket: null,
+      firstLoaded: true
     }
   },
   watch: {
@@ -117,6 +118,7 @@ export default {
     "device.device": {
       handler(newValue) {
         if (this.socket) {
+          this.firstLoaded = true;
           this.socket.close();
           this.socket = null;
         }
@@ -220,8 +222,13 @@ export default {
       let layout = this.optionsData.map(item => {
         return { x: item.x, y: item.y, w: item.w, h: item.h, i: item.i, id: item.id }
       })
-      device_update({ id: this.device.device, chart_option: JSON.stringify(layout) })
-        .then(res => { })
+      console.log("更新布局")
+      if (!this.firstLoaded) {
+        device_update({ id: this.device.device, chart_option: JSON.stringify(layout) })
+            .then(res => { })
+      }
+      this.firstLoaded = false;
+      
     },
     /**
      * 布局改变的回调
@@ -269,6 +276,7 @@ export default {
         this.socket.close();
         this.socket = null;
       }
+      console.log("new websocket")
       this.socket = new websocket();
       this.socket.init((event) => {
         console.log(event)
@@ -284,6 +292,7 @@ export default {
           console.log(err)
         }
       })
+      
       
     },
     /**

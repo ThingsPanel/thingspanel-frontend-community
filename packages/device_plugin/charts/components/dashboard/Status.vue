@@ -135,7 +135,7 @@ export default {
       handler(newVal) {
         console.log("====status.value", newVal)
         if (newVal !== null) {
-          this.label = this.mapData.series.status.find(item => item.value.toString() == newVal.toString()).label;
+          this.label = this.mapData.series.status.find(item => item.value.toString() == newVal.toString())?.label || "";
         }
       },
       immediate: true

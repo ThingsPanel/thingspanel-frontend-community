@@ -5,6 +5,7 @@
         <tp-status v-if="option.type=='status'" ref="tpStatus" :option="option" :data-src="dataSrc" @bind="handleBind"></tp-status>
         <tp-device-status v-else-if="option.type=='deviceStatus'" ref="tpDeviceStatus" mode="edit" :option="option" @bind="handleBind"></tp-device-status>
         <tp-signal-status v-else-if="option.type=='signalStatus'" ref="tpSignalStatus" :data-src="dataSrc" mode="edit" :option="option" @bind="handleBind"></tp-signal-status>
+        <tp-text-info v-else-if="option.type=='textInfo'" ref="textInfo" :data-src="dataSrc" mode="edit" :option="option" @bind="handleBind"/>
         <tp-e-chart v-else style="width: 300px;height: 300px" :option="option" :data-src="dataSrc" @clickChart="showDialog"></tp-e-chart>
       </div>
     </div>
@@ -68,13 +69,14 @@ import TpStatus from "../../components/dashboard/Status"
 import TpEChart from "../../components/dashboard/EChart"
 import TpSignalStatus from "../../components/dashboard/SignalStatus"
 import TpDeviceStatus from "../../components/dashboard/DeviceStatus"
+import TpTextInfo from "../../components/dashboard/TextInfo"
 import CustomEChartDialog from "./CustomEchartDialog";
 import global from "../../../common/global";
 import {message_error} from "@/utils/helpers";
 
 export default {
   name: "DashboardPanel",
-  components: { TpEChart, TpStatus, TpSignalStatus, TpDeviceStatus, CustomEChartDialog },
+  components: { TpEChart, TpStatus, TpSignalStatus, TpDeviceStatus, TpTextInfo, CustomEChartDialog },
   props: {
     charts: {
       type: [Object, Array],
