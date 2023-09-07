@@ -7,13 +7,12 @@
       </div>
     </div>
 
-    <common-status :option="optionData" :value="value"></common-status>
+    <common-status :option="option" :value="value"></common-status>
   </div>
 
 </template>
 
 <script>
-import {currentValue} from "@/api/device";
 export default {
   name: "StatusIndex",
   props: {
@@ -32,33 +31,18 @@ export default {
   },
   data() {
     return {
-      optionData: {},
       timer: null,
       flushTime: 5,
       value: null
     }
   },
-  watch: {
-  },
-  mounted() {
-    this.optionData = JSON.parse(JSON.stringify(this.option));
-  },
-  beforeUpdate() {
-  },
   methods: {
-    updateOption() {
-      let deviceId = this.device.device;
-      let attrs = this.option.mapping;
-      this.getValue(deviceId, attrs);
-    },
-    getValue(deviceId, attrs) {
-      currentValue({entity_id: deviceId, attribute: attrs})
-          .then(({data}) => {
-            if (data.code == 200 && data.data) {
-              let value = data.data[0][attrs[0]]
-              this.value = value;
-            }
-          })
+    updateOption(value) {
+      try {
+        this.value = value[0].value;
+      } catch (e) {
+        console.log(e)
+      }
     },
     sizeChange() {
     }

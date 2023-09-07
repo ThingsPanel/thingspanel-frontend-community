@@ -78,6 +78,7 @@ const websocket = () => {
     const onMessage = (onReceive) => {
         if (socket) {
             socket.onmessage = (event) => {
+                console.log("onMessage", event.data)
                 onReceive && onReceive(event.data)
             }
         }

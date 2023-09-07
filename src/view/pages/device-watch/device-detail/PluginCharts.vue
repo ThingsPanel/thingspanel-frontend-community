@@ -156,7 +156,8 @@ export default {
                 for (let i = 0; i < this.options.length; i++) {
                   let option = layout.find(item => item.id == this.options[i].id)
                   if (!option) {
-                    option = { x: 0, y: 0, w: 6, h: 6, i }
+                    throw new Error("布局数据错误");
+                    // option = { x: 0, y: 0, w: 6, h: 6, i }
                   }
                   options[i].x = option.x;
                   options[i].y = option.y;
@@ -168,7 +169,7 @@ export default {
                 this.optionsData = options;
               } catch (err) {
                 // 显示默认布局
-                this.optionsData = this.getDefaultLayout(options, 4)
+                this.optionsData = this.getDefaultLayout(opts, 4)
               }
             } else {
               // 如果读取到的布局为空，则显示默认布局
@@ -260,7 +261,7 @@ export default {
       localStorage.setItem("deviceWatch_timer", this.timer + "");
 
       // 先执行一次获取当前值
-      this.getCurrent(componentMaps.current);
+      // this.getCurrent(componentMaps.current);
       // 先执行一次获取历史数据
       this.getHistory(componentMaps.history);
 
@@ -276,8 +277,12 @@ export default {
         this.socket.send({ device_id: this.device.device })
       })
       this.socket.onMessage((result) => {
-        const data = JSON.parse(result)
-        this.setComponentsValue(componentMaps.current, data)
+        try {
+          const data = JSON.parse(result)
+          this.setComponentsValue(componentMaps.current, data)
+        } catch(err) {
+          console.log(err)
+        }
       })
       
     },
@@ -306,8 +311,9 @@ export default {
       })
     },
     setComponentsValue(componentMap, data) {
-      if (!componentMap || componentMap.length === 0 || !data) return;
-      this.optionsData.forEach(option => {
+      if (!componentMap || componentMap.length === 0 || !data || JSON.stringify(data) === "{}") return;
+      try {
+        this.optionsData.forEach(option => {
           let index = componentMap.findIndex(item => item.id == option.id);
           if (componentMap[index]) {
             let mapping = componentMap[index].map;
@@ -330,6 +336,7 @@ export default {
                 });
 
               }
+              
             } else if (option.controlType == "control") {
               values = {};
               mapping.forEach(item => {
@@ -345,6 +352,10 @@ export default {
           }
           // }
         })
+      } catch (err) {
+        console.log(err)
+      }
+      
     },
     getMapping(option) {
       if (option.mapping) {

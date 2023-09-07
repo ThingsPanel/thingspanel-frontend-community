@@ -1,8 +1,8 @@
 <template>
   <div class="status-container" @click="showDialog(null)">
     <div class="center">
-      <p :style="'font-size: ' + mapData.series.fontSize + 'px;'">{{ mapData.series.title }}</p>
-      <p :style="'font-size: ' + mapData.series.labelSize + 'px;color: ' + mapData.series.labelColor+';'">
+      <p :style="'font-size: ' + (mapData.series.fontSize || '20') + 'px;'">{{ mapData.series.title }}</p>
+      <p :style="'font-size: ' + (mapData.series.labelSize || '20') + 'px;color: ' + mapData.series.labelColor+';'">
         <i :class="labelIcon"></i>{{ label }}
       </p>
     </div>
@@ -103,26 +103,26 @@ export default {
       tabsValue: "map",
       dataSrcOptions: [],
       mapData: {
-      "type": "status",
-      "series": {
-        "title": "液位",
-        "fontSize": 30,
-        "value": 0,
-        "status": [
+      type: "status",
+      series: {
+        title: "液位",
+        fontSize: 30,
+        value: 0,
+        status: [
           {
-            "comparison": "==",
-            "value": 0,
-            "label": "缺液",
-            "color": "#",
-            "fontSize": 20,
-            "icon": "",
-            "addEnable": true,
+            comparison: "==",
+            value: 0,
+            label: "缺液",
+            color: "#",
+            fontSize: 20,
+            icon: "",
+            addEnable: true,
           },
           {
-            "comparison": "==",
-            "value": 1,
-            "label": "有液",
-            "fontSize": 20
+            comparison: "==",
+            value: 1,
+            label: "有液",
+            fontSize: 20
           }
         ]
       }

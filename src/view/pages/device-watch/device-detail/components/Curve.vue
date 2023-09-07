@@ -188,7 +188,7 @@ export default {
         confine: true,
       };
       this.optionData.backgroundColor = 'transparent';
-      if (option) {
+      if (option && option.series[0].data) {
         const data = option.series[0].data;
         let start = Math.ceil(this.dataZoom.start / 100 * data.length);
         let end = Math.floor(this.dataZoom.end / 100 * data.length);
