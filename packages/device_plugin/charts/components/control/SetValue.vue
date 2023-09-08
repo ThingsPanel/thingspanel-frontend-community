@@ -47,7 +47,7 @@ export default {
   width: 100%;
 }
 .el-input-number {
-  margin-right: 10px;
+  margin-bottom: 16px;
 }
 .value-container {
   width: 100%;
@@ -60,7 +60,7 @@ export default {
     vertical-align: middle;
     text-align: center;
     padding: 20px!important;
-   
+    width: 100%;
     p {
       margin: 10px;
     }

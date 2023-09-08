@@ -1,9 +1,9 @@
-<!-- 设备状态仪表盘 -->
+<!-- 文字信息 -->
 <template>
     <div class="text-info-container" @click="showDialog(null)">
       <div class="center">
         <div class="label-box" :style="formData.style.label">{{ formData.label }}</div>
-        <div class="value-box" :style="formData.style.value">{{ value }}</div>
+        <div class="value-box" :style="formData.style.value">{{ value || '无数据' }}</div>
       </div>
       <el-dialog class="dark-dialog" :title="$t('PLUGIN.CHART_INFO_TAB.TEXT1')" width="500px" :visible.sync="dialogVisible" :append-to-body="true" :close-on-click-modal="false">
         <el-tabs v-model="tabsValue">
@@ -61,7 +61,7 @@
       },
       value: {
         type: [String],
-        default: ""
+        default: "无数据"
       },
       mode: {
         type: [String],
