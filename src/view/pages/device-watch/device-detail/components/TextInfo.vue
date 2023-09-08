@@ -7,7 +7,7 @@
           </div>
         </div>
     
-        <common-signal-status ref="signalStatusRef" :option="option" :value="value"></common-signal-status>
+        <common-text-info ref="textInfoRef" :option="option" :value="value"/>
       </div>
 </template>
 
@@ -31,13 +31,16 @@ export default {
   },
   data() {
     return {
-        value: false
+        value: ""
     }
   },
   methods: {
     updateOption(value) {
-      this.value = value;
-      this.$refs['signalStatusRef'].updateValue(value);
+      if (typeof value === "object") {
+        this.value = value[0].value
+      } else {
+        this.value = value;
+      }
     }
   }
 }

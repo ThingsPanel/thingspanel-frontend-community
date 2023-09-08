@@ -4,6 +4,8 @@ import CommonControl from "./charts/components/control";
 import CommonStatus from "./charts/components/dashboard/Status";
 import CommonDeviceStatus from "./charts/components/dashboard/DeviceStatus";
 import CommonSignalStatus from "./charts/components/dashboard/SignalStatus";
+import CommonTextInfo from "./charts/components/dashboard/TextInfo"
+
 import './style/dark-theme.scss'
 
 import {
@@ -30,6 +32,7 @@ const install = Vue => {
     Vue.component(CommonStatus.name, CommonStatus);
     Vue.component(CommonDeviceStatus.name, CommonDeviceStatus);
     Vue.component(CommonSignalStatus.name, CommonSignalStatus);
+    Vue.component(CommonTextInfo.name, CommonTextInfo);
 }
 
 if (typeof window.Vue !== 'undefined') {

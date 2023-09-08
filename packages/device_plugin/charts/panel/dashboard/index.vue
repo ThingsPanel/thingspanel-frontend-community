@@ -5,7 +5,7 @@
         <tp-status v-if="option.type=='status'" ref="tpStatus" :option="option" :data-src="dataSrc" @bind="handleBind"></tp-status>
         <tp-device-status v-else-if="option.type=='deviceStatus'" ref="tpDeviceStatus" mode="edit" :option="option" @bind="handleBind"></tp-device-status>
         <tp-signal-status v-else-if="option.type=='signalStatus'" ref="tpSignalStatus" :data-src="dataSrc" mode="edit" :option="option" @bind="handleBind"></tp-signal-status>
-        <tp-text-info v-else-if="option.type=='textInfo'" ref="textInfo" :data-src="dataSrc" mode="edit" :option="option" @bind="handleBind"/>
+        <tp-text-info v-else-if="option.type=='textInfo'" ref="tpTextInfo" :option="option" :data-src="dataSrc" mode="edit" @bind="handleBind"/>
         <tp-e-chart v-else style="width: 300px;height: 300px" :option="option" :data-src="dataSrc" @clickChart="showDialog"></tp-e-chart>
       </div>
     </div>
@@ -148,6 +148,9 @@ export default {
           console.log("====tpSignalStatus", this.$refs["tpSignalStatus"])
           this.$refs["tpSignalStatus"][0].showDialog(option);
         })
+        return;
+      } else if (option.type === "textInfo") {
+        this.$refs["tpTextInfo"][0].showDialog(option);
         return;
       }
       this.dialogVisible = true

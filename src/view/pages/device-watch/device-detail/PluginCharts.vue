@@ -11,28 +11,32 @@
 
         <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
           v-if="option.controlType == 'dashboard' && !option.type" :option="option" :device="device"
-          :value="option.value"></e-charts>
+          :value="option.value"/>
 
         <curve class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-          v-if="option.controlType == 'history'" :option="option" :device="device" :value="option.value"></curve>
+          v-if="option.controlType == 'history'" :option="option" :device="device" :value="option.value"/>
 
         <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-          v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"></status>
+          v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"/>
 
         <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
           v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'" :option="option" :device="device"
-          :value="option.value"></device-status>
+          :value="option.value"/>
 
         <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
           v-if="option.controlType == 'dashboard' && option.type == 'signalStatus'" :option="option" :device="device"
-          :value="option.value"></signal-status>
+          :value="option.value"/>
+
+        <text-info class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+          v-if="option.controlType == 'dashboard' && option.type == 'textInfo'" :option="option" :device="device"
+          :value="option.value"/>
 
         <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
           v-if="option.controlType == 'control'" :option="option" :device="device"></control>
 
         <video-component class="component-item" style="min-width: 200px;min-height: 200px" :ref="'component_' + option.i"
           :key="option['id']" :show-header="true" v-if="option.controlType == 'video'" :option="option"
-          :device="device"></video-component>
+          :device="device"/>
 
       </grid-item>
     </grid-layout>
@@ -57,6 +61,7 @@ import Control from "./components/Control";
 import Status from "./components/Status"
 import SignalStatus from "./components/SignalStatus"
 import DeviceStatus from "./components/DeviceStatus"
+import TextInfo from "./components/TextInfo"
 import VideoComponent from "./components/Video";
 import { device_info } from "@/api/device";
 import { device_update, historyValue } from "@/api/device";
@@ -64,7 +69,7 @@ import { currentValue } from "@/api/device";
 import { websocket } from "@/utils/websocket"
 export default {
   name: "PluginCharts",
-  components: { GridLayout, GridItem, ECharts, Curve, Control, Status, SignalStatus, DeviceStatus, VideoComponent },
+  components: { GridLayout, GridItem, ECharts, Curve, Control, Status, SignalStatus, DeviceStatus, TextInfo, VideoComponent },
   props: {
     options: {
       type: [Array],
@@ -225,10 +230,10 @@ export default {
       console.log("更新布局")
       if (!this.firstLoaded) {
         device_update({ id: this.device.device, chart_option: JSON.stringify(layout) })
-            .then(res => { })
+          .then(res => { })
       }
       this.firstLoaded = false;
-      
+
     },
     /**
      * 布局改变的回调
@@ -284,16 +289,15 @@ export default {
       this.socket.onReady(() => {
         this.socket.send({ device_id: this.device.device })
       })
+
       this.socket.onMessage((result) => {
         try {
           const data = JSON.parse(result)
           this.setComponentsValue(componentMaps.current, data)
-        } catch(err) {
+        } catch (err) {
           console.log(err)
         }
       })
-      
-      
     },
     /**
      * 从服务器获取指定设备的推送数据
@@ -337,7 +341,9 @@ export default {
                   values = null;
                 }
               } else {
+                console.log("echarts.updateOption.mapping", componentMap[index])
                 values = mapping.map(item => {
+                  console.log("echarts.updateOption.values", item)
                   if (data && data[item.name]) {
                     return { ...item, value: data[item.name] || "" }
                   }
@@ -345,7 +351,7 @@ export default {
                 });
 
               }
-              
+
             } else if (option.controlType == "control") {
               values = {};
               mapping.forEach(item => {
@@ -356,7 +362,10 @@ export default {
             }
 
             this.$nextTick(() => {
-              this.$refs["component_" + option.i][0].updateOption(values);
+              const ele = this.$refs["component_" + option.i];
+              if (ele && ele[0]) {
+                this.$refs["component_" + option.i][0].updateOption(values);
+              }
             })
           }
           // }
@@ -364,15 +373,16 @@ export default {
       } catch (err) {
         console.log(err)
       }
-      
+
     },
     getMapping(option) {
       if (option.mapping) {
-
         let mapping = [];
         this.tsl.map(property => {
           if (typeof option.mapping == "object") {
             option.mapping.forEach(item => {
+              console.log("getMapping", item, property)
+
               if (property.name == item) {
                 mapping.push(property);
               }

@@ -1,9 +1,9 @@
 <!-- 设备状态仪表盘 -->
 <template>
-    <div class="device-status-container" @click="showDialog(null)">
+    <div class="text-info-container" @click="showDialog(null)">
       <div class="center">
-        <div class="title-box">{{ title }}</div>
-        <div class="value-box">{{ value }}</div>
+        <div class="label-box" :style="formData.style.label">{{ formData.label }}</div>
+        <div class="value-box" :style="formData.style.value">{{ value }}</div>
       </div>
       <el-dialog class="dark-dialog" :title="$t('PLUGIN.CHART_INFO_TAB.TEXT1')" width="500px" :visible.sync="dialogVisible" :append-to-body="true" :close-on-click-modal="false">
         <el-tabs v-model="tabsValue">
@@ -16,8 +16,18 @@
                   <el-input v-model="formData.name"></el-input>
                 </el-form-item>
   
-                <el-form-item label="标题" prop="title">
-                  <el-input v-model="formData.title"></el-input>
+                <el-form-item label="信息" prop="label">
+                  <el-input v-model="formData.label"></el-input>
+                </el-form-item>
+
+                <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE4')">
+                  <!-- 从json中解析出物模型的所有属性 -->
+                  <el-select style="width: 100%; margin-bottom: 10px;" :placeholder="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE8')"
+                             v-model="formData.map" @change="changeMappingDataSource">
+                    <el-option v-for="(option, index) in dataSrc" :key="index"
+                               :value="option.name" >{{option.title + '(' + option.name + ')'}}</el-option>
+                  </el-select>
+  
                 </el-form-item>
   
   
@@ -42,9 +52,8 @@
   </template>
   
   <script>
-  import i18n from "@/core/plugins/vue-i18n.js"
   export default {
-    name: "CommonDeviceStatus",
+    name: "CommonTextInfo",
     props: {
       option: {
         type: [Object],
@@ -57,32 +66,53 @@
       mode: {
         type: [String],
         default: ""
+      },
+      dataSrc: {
+        type: [Array],
+        default: () => []
       }
     },
     data() {
       return {
         tabsValue: "map",
         formData: {
-          name: i18n.t('PLUGIN.CHART_INFO_TAB.TAB_TITLE15'),
-          title: ""   // 
+          name: "",
+          label: "文字信息",   // 
+          map: "",
+          style: {
+            label: {
+              fontSize: "30px",
+              color: "#ffffff"
+            },
+            value: {
+              fontSize: "20px",
+              color: "#ffffff"
+            }
+          }
         },
         formRule: {
-          name: [{required: true, message: i18n.t('PLUGIN.CHART_INFO_TAB.TAB_TITLE13')}],
-          title: [{required: true, message: "请输入标题"}]
+          name: [{required: true, message: "请输入组件名称"}],
+          label: [{required: true, message: "请输入信息"}],
+          map: [{required: true, message: "请选择数据源"}]
         },
-        fontSize: 30,   // 标题文字大小
-        title: "",   // 标题
         dialogVisible: false,   // 是否显示绑定图表对话框
       }
     },
+  
+    mounted() {
+      
+    },
     methods: {
       showDialog(option) {
-        console.log("====tpDeviceStatus", option)
+        console.log("====tpDeviceStatus", option, this.dataSrc)
         if (this.mode != "edit") return;
         if (option) {
-          let { name, thresholdTime } = option;
-          this.formData = { name, thresholdTime }
+          const { name, label, map, value, style } = option
+          this.formData = { name, label, map, value, style }
+          this.formData.map = option.mapping[0];
         }
+        this.formData.style.label.fontSize += "px" 
+        this.formData.style.value.fontSize += "px" 
         this.dialogVisible = true;
       },
       submit() {
@@ -91,31 +121,39 @@
           if (!valid) return;
           opt.controlType = "dashboard";
           opt.name = this.formData.name;
-          opt.thresholdTime = this.formData.thresholdTime;
+          opt.label = this.formData.label;
+          opt.mapping = [this.formData.map]
+          console.log(this.formData, this.formData.style.label.fontSize.replace(/px/g, ""))
+          opt.style.label.fontSize = Number(this.formData.style.label.fontSize.replace(/px/g, ""));
+          opt.style.value.fontSize = Number(this.formData.style.value.fontSize.replace(/px/g, ""));
           this.$emit("bind", opt);
           this.dialogVisible = false;
         })
   
+      },
+      changeMappingDataSource() {
+        console.log(this.dataSrc.find(item => item.name === this.formData.value))
+        this.formData.name = this.dataSrc.find(item => item.name === this.formData.map).title || ""
+        console.log("changeMappingDataSource", this.formData.value, this.dataSrc)
       }
     }
   }
   </script>
   
   <style scoped lang="scss">
-  .device-status-container {
+  .text-info-container {
     width: 100%;
     height: 100%;
     display: table;
+    position: absolute;
+    top: 0px;
     .center {
       display: table-cell;
       vertical-align: middle;
       text-align: center;
-      .device-status-box {
+      padding: 20px!important;
+      .label-box {
         margin: 10px;
-        color: #fff;
-      }
-      .device-push-time-box {
-        color: #fff;
       }
     }
   }

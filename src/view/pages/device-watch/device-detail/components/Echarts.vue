@@ -93,6 +93,7 @@ export default {
      * @param value
      */
     updateOption(value) {
+      console.log("echarts.updateOption", value)
       if (this.option.controlType == "dashboard") {
         try {
           let name = "";

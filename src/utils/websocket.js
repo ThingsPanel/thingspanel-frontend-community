@@ -18,6 +18,7 @@ let wsServer = ws_url + "/ws/device/current"
 const websocket = () => {
     let socket = null;
     let onReadyCallback = null;
+    let onCloseCallback = null;
     const init = (callback) => {
         if (typeof (WebSocket) === "undefined") {
             alert("您的浏览器不支持socket")
@@ -37,7 +38,7 @@ const websocket = () => {
              * 连接成功建立的回调方法
              */
             socket.onopen = () => {
-                console.log("ws连接成功");
+                console.log("ws连接成功", new Date());
                 onReadyCallback && onReadyCallback();
                 callback && callback({code: 200, message: "连接成功"})
             }
@@ -46,8 +47,9 @@ const websocket = () => {
              * 连接关闭的回调方法
              */
             socket.onclose = () => {
-                console.log("ws连接关闭");
+                console.log("ws连接关闭", new Date());
                 socket = null;
+                onCloseCallback && onCloseCallback();
                 callback && callback({code: 400, message: "连接关闭"})
             }
         }
@@ -59,6 +61,14 @@ const websocket = () => {
      */
     const onReady = (callback) => {
         onReadyCallback = callback;
+    };
+
+    /**
+     * 连接关闭后的回调
+     * @param {*} callback 
+     */
+    const onClose = (callback) => {
+        onCloseCallback = callback;
     };
 
     /**
@@ -98,6 +108,7 @@ const websocket = () => {
         init,
         send,
         onReady,
+        onClose,
         onMessage,
         close
     }

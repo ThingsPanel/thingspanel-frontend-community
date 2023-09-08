@@ -381,6 +381,21 @@
     {
       "type": "deviceStatus",
       "series": {}
+    },
+    {
+      "type": "textInfo",
+      "label": "信息",
+      "value": "",
+      "style": {
+        "label": {
+          "fontSize": 30,
+          "color": "#ffffff"
+        },
+        "value": {
+          "fontSize": 20,
+          "color": "#ffffff"
+        }
+      }
     }
 
   ],
