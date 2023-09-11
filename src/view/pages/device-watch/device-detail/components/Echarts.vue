@@ -3,6 +3,9 @@
     <div  v-if="showHeader" class="chart-header">
 
       <span class="title">{{ optionData.name }}</span>
+      <div class="tool-right">
+        <status-icon ref="statusIconRef" :status="status"/>
+      </div>
     </div>
 
     <div class="echarts" style="width: 100%; height:100%;position: absolute;top:0px;padding:6px" ref="chart" id="echarts"></div>
@@ -20,14 +23,14 @@
 </template>
 
 <script>
-import {  historyValue } from "@/api/device";
 import "@/core/mixins/charts.js"
-
+import StatusIcon from "./StatusIcon"
 let Echarts = require('echarts/lib/echarts');
 require('echarts/lib/chart/gauge');
 
 export default {
   name: "Echarts",
+  components: {StatusIcon},
   props: {
     showHeader: {
       type: [Boolean],
@@ -44,6 +47,10 @@ export default {
     device: {
       type: [Object],
       default: () => {return {}}
+    },
+    status: {
+      type: [Boolean],
+      default: false
     }
   },
   data() {
@@ -119,6 +126,7 @@ export default {
             }
           })
           this.myEcharts.setOption({ series });
+          this.$refs.statusIconRef.flush()
         } catch (e) {
           console.log(e)
         }
@@ -169,8 +177,11 @@ export default {
   z-index: 9999;
   //box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
   .title {
-    //width: 100%;
-    //flex-grow: 1;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     color: #fff;
     text-align: center;
     margin-top: 10px;

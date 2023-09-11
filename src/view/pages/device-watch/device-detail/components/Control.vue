@@ -3,6 +3,8 @@
     <div class="chart-header" v-if="showHeader">
       <span class="title">{{ optionData.name }}</span>
       <div class="tool-right">
+        <status-icon ref="statusIconRef" :status="status"/>
+
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
       </div>
     </div>
@@ -25,10 +27,11 @@
 <script>
 import { turnSwitch } from "@/api/device"
 import { currentValue } from "@/api/device";
-import {message_success} from "../../../../../utils/helpers";
-
+import {message_success} from "@/utils/helpers";
+import StatusIcon from "./StatusIcon.vue";
 export default {
   name: "Control",
+  components: { StatusIcon },
   props: {
     showHeader: {
       type: [Boolean],
@@ -41,6 +44,10 @@ export default {
     device: {
       type: [Object],
       default: () => {return {}}
+    },
+    status: {
+      type: [Boolean],
+      default: false
     }
   },
   data() {
@@ -104,6 +111,7 @@ export default {
         } else if (item.type == "slider") {
           item.value = values[map.value];
         }
+        this.$refs.statusIconRef.flush();
       });
 
     },
@@ -176,6 +184,8 @@ const typeConvert = (value, type) => {
   .title {
     //width: 100%;
     //flex-grow: 1;
+    display: flex;
+    align-items: center;
     color: #fff;
     text-align: center;
     margin-top: 10px;
@@ -184,8 +194,8 @@ const typeConvert = (value, type) => {
   }
   .tool-right {
     position: absolute;
+    display: flex;
     text-align: center;
-
     top:4px;
     right: 4px;
   }

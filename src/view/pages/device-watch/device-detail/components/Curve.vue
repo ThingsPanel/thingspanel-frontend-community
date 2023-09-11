@@ -4,7 +4,8 @@
 
       <span class="title">{{ optionData.name }}</span>
       <div class="tool-right">
-
+        <status-icon ref="statusIconRef" :status="status"/>
+        
         <!-- 采样区间 -->
         <el-button class="tool-item" size="mini" icon="el-icon-date" @click="handleShowRange"></el-button>
 
@@ -80,11 +81,12 @@
 
 <script>
 import { historyValue } from "@/api/device";
-
+import StatusIcon from "./StatusIcon"
 // let Echarts = require('echarts/lib/echarts');
 
 export default {
   name: "Curve.vue",
+  components: { StatusIcon },
   props: {
     showHeader: {
       type: [Boolean],
@@ -101,6 +103,10 @@ export default {
     device: {
       type: [Object],
       default: () => { return {} }
+    },
+    status: {
+      type: [Boolean],
+      default: false
     }
   },
   data() {
@@ -201,7 +207,7 @@ export default {
         option.yAxis.min = min;
         console.log("option", option.yAxis)
         this.myEcharts.setOption(option);
-
+        this.$refs.statusIconRef.flush();
       } else {
         this.myEcharts.setOption(this.optionData);
       }
@@ -329,6 +335,8 @@ export default {
   .title {
     //width: 100%;
     //flex-grow: 1;
+    display: flex;
+    align-items: center;
     color: #fff;
     text-align: center;
     margin-top: 10px;
@@ -338,8 +346,8 @@ export default {
 
   .tool-right {
     position: absolute;
+    display: flex;
     text-align: center;
-
     top: 4px;
     right: 4px;
   }

@@ -11,30 +11,30 @@
 
         <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
           v-if="option.controlType == 'dashboard' && !option.type" :option="option" :device="device"
-          :value="option.value"/>
+          :value="option.value" :status="deviceStatus"/>
 
-        <curve class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+        <curve class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true" :status="deviceStatus"
           v-if="option.controlType == 'history'" :option="option" :device="device" :value="option.value"/>
 
-        <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+        <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true" :status="deviceStatus"
           v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"/>
 
-        <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+        <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true" :status="deviceStatus"
           v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'" :option="option" :device="device"
           :value="option.value"/>
 
-        <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+        <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true" :status="deviceStatus"
           v-if="option.controlType == 'dashboard' && option.type == 'signalStatus'" :option="option" :device="device"
           :value="option.value"/>
 
-        <text-info class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+        <text-info class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true" :status="deviceStatus"
           v-if="option.controlType == 'dashboard' && option.type == 'textInfo'" :option="option" :device="device"
           :value="option.value"/>
 
-        <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+        <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true" :status="deviceStatus"
           v-if="option.controlType == 'control'" :option="option" :device="device"></control>
 
-        <video-component class="component-item" style="min-width: 200px;min-height: 200px" :ref="'component_' + option.i"
+        <video-component class="component-item" style="min-width: 200px;min-height: 200px" :ref="'component_' + option.i" :status="deviceStatus"
           :key="option['id']" :show-header="true" v-if="option.controlType == 'video'" :option="option"
           :device="device"/>
 
@@ -64,8 +64,7 @@ import DeviceStatus from "./components/DeviceStatus"
 import TextInfo from "./components/TextInfo"
 import VideoComponent from "./components/Video";
 import { device_info } from "@/api/device";
-import { device_update, historyValue } from "@/api/device";
-import { currentValue } from "@/api/device";
+import { device_update, getDeviceListStatus, historyValue } from "@/api/device";
 import { websocket } from "@/utils/websocket"
 export default {
   name: "PluginCharts",
@@ -101,7 +100,8 @@ export default {
       // 计时器
       timer: null,
       socket: null,
-      firstLoaded: true
+      firstLoaded: true,
+      deviceStatus: false
     }
   },
   watch: {
@@ -269,11 +269,12 @@ export default {
 
       this.timer = setInterval(() => {
         this.getHistory(componentMaps.history);
+        this.getDeviceStatus();
       }, this.flushTime * 1000);
       localStorage.setItem("deviceWatch_timer", this.timer + "");
 
-      // 先执行一次获取当前值
-      // this.getCurrent(componentMaps.current);
+      // 先执行一次获取设备状态
+      this.getDeviceStatus();
       // 先执行一次获取历史数据
       this.getHistory(componentMaps.history);
 
@@ -300,17 +301,18 @@ export default {
       })
     },
     /**
-     * 从服务器获取指定设备的推送数据
-     * @param deviceId
-     * @param attrs
-     */
-    getCurrent(currentMap) {
-      currentValue({ entity_id: this.device.device })
-        .then(({ data }) => {
-          if (data.code == 200) {
-            this.setComponentsValue(currentMap, data.data[0])
-          }
-        })
+     * 获取设备在线/离线状态
+    */
+    async getDeviceStatus() {
+      const params = {
+        device_id_list: [this.device.device]
+      }
+      let { data: result } =  await getDeviceListStatus(params);
+      if (result.code === 200) {
+        this.deviceStatus = (result.data[this.device.device].toString() === "1")
+        console.log('getDeviceStatus', result.data[this.device.device])
+
+      }
     },
     getHistory(componentMap) {
       if (!componentMap || componentMap.length === 0) return;

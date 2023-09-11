@@ -3,6 +3,7 @@
         <div  v-if="showHeader" class="chart-header">
           <span class="title">{{ option.name }}</span>
           <div class="tool-right">
+            <status-icon ref="statusIconRef" :status="status"/>
             <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
           </div>
         </div>
@@ -12,9 +13,10 @@
 </template>
 
 <script>
+import StatusIcon from "./StatusIcon.vue";
 
 export default {
-  components: {},
+  components: { StatusIcon },
   props: {
     showHeader: {
       type: [Boolean],
@@ -27,6 +29,10 @@ export default {
     device: {
       type: [Object],
       default: () => { return {} }
+    },
+    status: {
+      type: [Boolean],
+      default: false
     }
   },
   data() {
@@ -41,6 +47,7 @@ export default {
       } else {
         this.value = value;
       }
+      this.$refs.statusIconRef.flush();
     }
   }
 }
@@ -72,6 +79,8 @@ export default {
   .title {
     //width: 100%;
     //flex-grow: 1;
+    display: flex;
+    align-items: center;
     color: #fff;
     text-align: center;
     margin-top: 10px;
