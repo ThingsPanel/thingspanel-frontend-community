@@ -248,7 +248,7 @@ export default {
      * 获取项目列表
      */
     getProjectList() {
-      business_index({ limit: 100, page: 1 })
+      business_index({ limit: 9999, page: 1 })
         .then(({ data }) => {
           if (data.code == 200) {
             this.projectOptions = data.data?.data || [];
