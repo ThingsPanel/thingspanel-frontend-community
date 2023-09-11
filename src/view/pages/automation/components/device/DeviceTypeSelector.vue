@@ -2,7 +2,7 @@
   <div style="width: 100%;display: flex">
     <!-- 项目列表 -->
     <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="projectRef" style="width: 16%;min-width: 100px;margin-right:10px" v-model="formData.projectId"
-      :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_PROJECT')" @change="handleProjectChange">
+      filterable :placeholder="$t('AUTOMATION.PLACEHOLDER.SELECT_PROJECT')" @change="handleProjectChange">
       <el-option v-for="(option, index) in projectOptions" :key="index" :label="option.name"
         :value="option.id"></el-option>
     </el-select>
