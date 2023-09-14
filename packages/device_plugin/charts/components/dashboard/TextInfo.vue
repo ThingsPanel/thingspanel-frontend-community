@@ -81,11 +81,11 @@
           map: "",
           style: {
             label: {
-              fontSize: "30px",
+              fontSize: "20px",
               color: "#ffffff"
             },
             value: {
-              fontSize: "20px",
+              fontSize: "30px",
               color: "#ffffff"
             }
           }
@@ -119,7 +119,7 @@
         let opt = JSON.parse(JSON.stringify(this.option));
         this.$refs.mapFormRef.validate(valid => {
           if (!valid) return;
-          opt.controlType = "dashboard";
+          opt.controlType = "information";
           opt.name = this.formData.name;
           opt.label = this.formData.label;
           opt.mapping = [this.formData.map]
