@@ -104,7 +104,6 @@
     },
     methods: {
       showDialog(option) {
-        console.log("====tpDeviceStatus", option, this.dataSrc)
         if (this.mode != "edit") return;
         if (option) {
           const { name, label, map, value, style } = option
