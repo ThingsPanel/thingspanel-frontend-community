@@ -10,6 +10,7 @@
         <el-dropdown @command="handlePeriodCommand">
           <el-button class="tool-item" size="mini" icon="el-icon-time"></el-button>
           <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item :class="getPeriodClass('custom')" command="custom">自定义区间</el-dropdown-item>
             <el-dropdown-item :class="getPeriodClass('300')" command="300">最近5分钟</el-dropdown-item>
             <el-dropdown-item :class="getPeriodClass('900')" command="900">最近15分钟</el-dropdown-item>
             <el-dropdown-item :class="getPeriodClass('1800')" command="1800">最近半小时</el-dropdown-item>
@@ -23,7 +24,7 @@
         </el-dropdown>
 
         <!-- 采样区间 -->
-        <el-button class="tool-item" size="mini" icon="el-icon-date" @click="handleShowRange"></el-button>
+        <!-- <el-button class="tool-item" size="mini" icon="el-icon-date" @click="handleShowRange"></el-button> -->
 
         <!-- 采样频率 -->
         <el-dropdown @command="handleFrequencyCommand">
@@ -44,8 +45,8 @@
         </el-dropdown>
 
         <!-- 聚合选项 -->
-        <el-dropdown @command="handleAggregateCommand">
-          <el-button class="tool-item" size="mini" icon="el-icon-discover"></el-button>
+        <el-dropdown v-if="params.rate!=='no_aggregate'" @command="handleAggregateCommand">
+          <el-button class="tool-item" size="mini" icon="el-icon-connection"></el-button>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item :class="getAggregateClass('average')" command="average">平均值</el-dropdown-item>
             <el-dropdown-item :class="getAggregateClass('maximum')" command="maximum">最大值</el-dropdown-item>
@@ -140,8 +141,8 @@ export default {
       },
       params: {
         period: 300,   // 采样周期，默认最近5分钟
-        rate: 10,     // 采样频率，默认10秒
-        aggregate: ""
+        rate: "no_aggregate",     // 采样频率，默认10秒
+        aggregate: "average"
       },
       pickerOptions: {
         disabledDate(time) {
@@ -183,7 +184,8 @@ export default {
       range: {
         startTime: '',
         endTime: '',
-      }
+      },
+      requesting: false
     }
   },
   mounted() {
@@ -196,26 +198,18 @@ export default {
     this.myEcharts.on('dataZoom', params => {
       this.dataZoom.start = params.start;
       this.dataZoom.end = params.end;
-      console.log('dataZoom', this.dataZoom.start, this.dataZoom.end)
-
     })
     
   },
   computed: {
-    getFrequencyClass: {
-      get() {
-        return (v) => this.params.rate.toString() === v.toString() ? 'active' : 'noActive'
-      }
+    getFrequencyClass() {
+      return (v) => this.params.rate.toString() === v.toString() ? 'active' : 'noActive'
     },
-    getPeriodClass: {
-      get() {
-        return (v) => this.params.period.toString() === v.toString() ? 'active' : 'noActive'
-      }
+    getPeriodClass() {
+      return (v) => this.params.period.toString() === v.toString() ? 'active' : 'noActive'
     },
-    getAggregateClass: {
-      get() {
-        return (v) => this.params.aggregate.toString() === v.toString() ? 'active' : 'noActive'
-      }
+    getAggregateClass() {
+      return (v) => this.params.aggregate.toString() === v.toString() ? 'active' : 'noActive'
     }
   },
   methods: {
@@ -243,7 +237,6 @@ export default {
         option.yAxis = option.yAxis ? option.yAxis : {};
         option.yAxis.max = max;
         option.yAxis.min = min;
-        console.log("option", option.yAxis)
         this.myEcharts.setOption(option);
         this.$refs.statusIconRef.flush();
       } else {
@@ -272,22 +265,28 @@ export default {
           time_range: "last_3h"
       }
 
+      this.requesting = true;
       let { data: result } = await statistic(params);
+      this.requesting = false;
       let sysTimes = [];
       let data = [];
-      result.data.time_series.reverse().forEach(item => {
-        sysTimes.push(dateFormat(item.x));
-        data.push(item.y)
-      })
-      let xAxis = { data: sysTimes, type: 'category', axisLabel: { interval: 'auto' } };
-      let series = [
-        {
-          data,
-          type: 'line'
-        }
-      ]
-      this.initEChart({ xAxis, series});
-      console.log("statistic", { xAxis, series})
+      try {
+        result.data.time_series.reverse().forEach(item => {
+          sysTimes.push(dateFormat(item.x));
+          data.push(item.y)
+        })
+        let xAxis = { data: sysTimes, type: 'category', axisLabel: { interval: 'auto' } };
+        let series = [
+          {
+            data,
+            type: 'line'
+          }
+        ]
+        this.initEChart({ xAxis, series});
+      } catch(err) {
+
+      }
+      
     },
     /**
      * 从服务器获取指定设备的推送数据
@@ -295,49 +294,9 @@ export default {
      * @param attrs
      */
     async getHistory(mapping) {
-      if (true) {
+      if (!this.requesting) {
         this.getStatistic(mapping);
-        return;
       }
-      let attrs = mapping.map(item => item.name ? item.name : item);
-      if (!attrs || attrs.length == 0) return;
-
-      let endTime = (new Date()).getTime();
-      let startTime = endTime - (Number(this.params.period) * 1000);
-
-      // 如果有选择时间区间，则以选择的时间区间为准
-      if (this.range.startTime && this.range.endTime) {
-        startTime = new Date(this.range.startTime).getTime();
-        endTime = new Date(this.range.endTime).getTime();
-      }
-      
-      let rate = this.params.rate * 1000 * 1000;  // 微秒
-      let attribute = attrs.concat(["systime"])
-      let params = {
-        device_id: this.device.device,
-        attribute,
-        start_ts: startTime,
-        end_ts: endTime,
-        rate: rate + ""
-      }
-      
-      historyValue(params)
-        .then(({ data }) => {
-          if (data.code == 200) {
-            let series = [];
-            let sysTimes = [];
-            if (data.data && JSON.stringify(data.data) != "{}") {
-              for (let i = 0; i < attrs.length; i++) {
-                series.push({ data: data.data ? data.data[attrs[i]] : 0, type: "line" })
-              }
-              // sysTimes = data.data.systime.map(item => item = item.substring(12))
-              sysTimes = data.data.systime;
-              let xAxis = { data: sysTimes, type: 'category', interval: 10, axisLabel: { interval: 'auto' } };
-              let option = { series, xAxis };
-              this.initEChart(option);
-            }
-          }
-        })
     },
 
     handleShowRange() {
@@ -357,7 +316,15 @@ export default {
      * @param command
      */
     handlePeriodCommand(command) {
-      this.params.period = Number(command);
+      this.params.period = command;
+      if (command === "custom") {
+        this.rangeDialogVisible = true;
+        return;
+      }
+      let endTime = (new Date()).getTime();
+      let startTime = endTime - (Number(this.params.period) * 1000);
+      this.range = { startTime, endTime }
+      console.log("handlePeriodCommand", command)
       this.getHistory(this.optionData.mapping)
     },
     /**
@@ -369,7 +336,7 @@ export default {
       this.getHistory(this.optionData.mapping)
     },
     handleAggregateCommand(command) {
-
+      this.params.aggregate = command;
     },
     showConfiguration() {
     },
@@ -392,9 +359,6 @@ export default {
         backgroundColor
       }
     },
-    // getDropdownItem(e) {
-    //   console.log("getDropdownItem", e)
-    // }
   }
 }
 </script>

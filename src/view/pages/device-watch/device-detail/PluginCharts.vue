@@ -141,7 +141,6 @@ export default {
   },
   methods: {
     handleResized(i, rect) {
-      console.log("====handleResized.i", i)
       this.$nextTick(() => {
         this.$refs["component_" + i][0].sizeChange && this.$refs["component_" + i][0].sizeChange();
       })
@@ -155,7 +154,6 @@ export default {
       device_info({ id: this.device.device })
         .then(({ data }) => {
           if (data.code == 200) {
-            console.log("====getLayout", data.data)
             if (data.data['chart_option'] && data.data['chart_option'] != "[]" && data.data['chart_option'] != "{}") {
               try {
                 let layout = JSON.parse(data.data['chart_option']);
@@ -226,7 +224,6 @@ export default {
       let layout = this.optionsData.map(item => {
         return { x: item.x, y: item.y, w: item.w, h: item.h, i: item.i, id: item.id }
       })
-      console.log("更新布局")
       if (!this.firstLoaded) {
         device_update({ id: this.device.device, chart_option: JSON.stringify(layout) })
           .then(res => { })
@@ -283,7 +280,6 @@ export default {
       }
       this.socket = new websocket();
       this.socket.init((event) => {
-        console.log(event)
       });
       this.socket.onReady(() => {
         this.socket.send({ device_id: this.device.device })
@@ -308,8 +304,6 @@ export default {
       let { data: result } =  await getDeviceListStatus(params);
       if (result.code === 200) {
         this.deviceStatus = (result.data[this.device.device].toString() === "1")
-        console.log('getDeviceStatus', result.data[this.device.device])
-
       }
     },
     getHistory(componentMap) {
@@ -341,9 +335,7 @@ export default {
                   values = null;
                 }
               } else {
-                console.log("echarts.updateOption.mapping", componentMap[index])
                 values = mapping.map(item => {
-                  console.log("echarts.updateOption.values", item)
                   if (data && data[item.name]) {
                     return { ...item, value: data[item.name] || "" }
                   }
@@ -381,8 +373,6 @@ export default {
         this.tsl.map(property => {
           if (typeof option.mapping == "object") {
             option.mapping.forEach(item => {
-              console.log("getMapping", item, property)
-
               if (property.name == item) {
                 mapping.push(property);
               }
