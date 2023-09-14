@@ -5,8 +5,9 @@
         <div style="width: 100%;justify-content: space-between;display: flex">
           <el-radio-group v-model="chartCategory">
             <el-radio-button label="dashboard">{{ $t('PLUGIN.CHART_INFO_TAB.DASHBOARD') }}</el-radio-button>
-            <el-radio-button label="history">{{ $t('PLUGIN.CHART_INFO_TAB.HISTORY') }}</el-radio-button>
+            <el-radio-button label="information">数值/文字/状态</el-radio-button>
             <el-radio-button label="control">{{ $t('PLUGIN.CHART_INFO_TAB.CONTROL') }}</el-radio-button>
+            <el-radio-button label="history">统计</el-radio-button>
             <el-radio-button label="video">{{ $t('PLUGIN.CHART_INFO_TAB.VIDEO') }}</el-radio-button>
             <el-radio-button label="report">{{ $t('PLUGIN.CHART_INFO_TAB.REPORT') }}</el-radio-button>
             <el-radio-button label="other">{{ $t('PLUGIN.CHART_INFO_TAB.OTHER') }}</el-radio-button>
@@ -17,25 +18,26 @@
 
       <!-- 表盘 -->
       <dashboard-panel v-if="chartCategory=='dashboard'" ref="dashboard"
-                    :charts="options.dashboard" :data-src="dataSrc" @submit="componentSubmit"></dashboard-panel>
+                    :charts="options.dashboard" :data-src="dataSrc" @submit="componentSubmit"/>
 
+      <information-panel v-if="chartCategory=='information'" ref="information"
+                    :charts="options.information" :data-src="dataSrc" @submit="componentSubmit"/>
       <!-- 历史 -->
       <history-panel v-else-if="chartCategory=='history'" ref="history" :charts="options.history" :data-src="dataSrc"
-                     @submit="componentSubmit"></history-panel>
+                     @submit="componentSubmit"/>
 
       <!-- 控制组件 -->
       <control-panel v-else-if="chartCategory=='control'" ref="control"
                      :controls="options.control" :data-src="dataSrc"
-                     @submit="componentSubmit"
-      ></control-panel>
+                     @submit="componentSubmit"/>
 
       <video-panel v-else-if="chartCategory=='video'" ref="video" :charts="options.video"
                    @submit="componentSubmit"
       ></video-panel>
 
-      <report-panel v-else-if="chartCategory=='report'" ref="report" :charts="options.report"></report-panel>
+      <report-panel v-else-if="chartCategory=='report'" ref="report" :charts="options.report"/>
 
-      <other-panel v-else-if="chartCategory=='other'" ref="other" :charts="options.other"></other-panel>
+      <other-panel v-else-if="chartCategory=='other'" ref="other" :charts="options.other"/>
     
     </div>
 
@@ -64,6 +66,7 @@
 
 <script>
 import DashboardPanel from "../charts/panel/dashboard";
+import InformationPanel from "../charts/panel/information"
 import HistoryPanel from "../charts/panel/history";
 import ReportPanel from "../charts/panel/report"
 import VideoPanel from "../charts/panel/video"
@@ -75,7 +78,7 @@ import { getRandomString } from "../common/util";
 export default {
   name: "TpCharts",
   components: {
-    DashboardPanel, HistoryPanel, ControlPanel, ReportPanel, VideoPanel, OtherPanel
+    DashboardPanel, InformationPanel, HistoryPanel, ControlPanel, ReportPanel, VideoPanel, OtherPanel
   },
   props: {
     data: {
@@ -122,6 +125,7 @@ export default {
      */
     handleEditBinding(v) {
       this.chartCategory = v.controlType;
+      console.log("handleEditBinding", v)
       this.$nextTick(() => {
         this.$refs[v.controlType].showDialog(v);
       })

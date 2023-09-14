@@ -2,7 +2,9 @@
   <div class="charts-panel-content">
     <div class="charts-panel-list">
       <div class="charts-panel-item" v-for="(control, index) in controlList" :key="'item_'+index">
-        <control style="width: 300px;height: 300px" :show-name="true" :option="control" @click="showDialog(control)"></control>
+        <control :ref="control.type + control.series[0].id" style="width: 300px;height: 300px" 
+          :dataSrc="dataSrc" :show-name="true" :option="control"  mode="edit"
+          @click="showDialog(control, control.series[0].id)" @bind="submit" @send="handleSend"/>
       </div>
     </div>
 
@@ -70,7 +72,7 @@
       </el-tabs>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">{{ $t('PLUGIN.CHART_INFO_TAB.CANCEL') }}</el-button>
-        <el-button type="primary" @click="submit">{{ $t('PLUGIN.CHART_INFO_TAB.CONFIRM') }}</el-button>
+        <el-button type="primary" @click="submit(null)">{{ $t('PLUGIN.CHART_INFO_TAB.CONFIRM') }}</el-button>
       </span>
     </el-dialog>
 
@@ -159,16 +161,17 @@ export default {
     this.theme = global.theme;
     if (this.controls.length == 0) return;
     this.controlList = JSON.parse(JSON.stringify(this.controls))
+    console.log("controlList", this.controlList)
   },
   methods: {
     /**
      * 显示绑定对话框
      * @param v
      */
-    showDialog(option) {
-      console.log(option)
+    showDialog(option, id) {
+      console.log("control.panel", option)
       this.controlOption = option;
-      if (option.type && option.type == "scene") {
+      if (option.type && option.type === "scene") {
         // if (this.$refs.sceneFormRef.validate(valid => {
         //   if (!valid) return;
         // }))
@@ -184,7 +187,7 @@ export default {
         }
         this.dataSrcValue = option.mapping;
         this.controlName = option.name;
-      } else {
+      } else if (option.type === "switch" || option.type === "slider" || option.type === "setValue") {
         this.dialogVisible = true;
         this.dataSrcOptions = [];
         this.disabledChecked = option.disabled ? option.disabled : false;
@@ -209,19 +212,24 @@ export default {
             );
           }
         }
+      } else if (option.type === "sendAttribute" || option.type === "sendCommand") {
+        this.$refs[option.type + (id || option.series[0].id)][0].showDialog(option);
       }
     },
     /**
      * 绑定组件
      */
-    submit() {
-      if (!this.validate()) return;
-      let option = JSON.parse(JSON.stringify(this.controlOption))
+    submit(opt) {
+      console.log("submit", opt, this.controlOption)
+      if (!opt && !this.validate()) return;
+      let option = opt || JSON.parse(JSON.stringify(this.controlOption))
       if (option.type && option.type == "scene") {
         // 场景开关
+        option.name = this.controlName;
+        option.disabled = this.disabledChecked;
         option.mapping = this.dataSrcValue;
         this.sceneDialogVisible = false;
-      } else {
+      } else if (option.type === "switch" || option.type === "slider" || option.type === "setValue") {
         for(let i = 0; i < this.dataSrcOptions.length; i++) {
           let obj = {};
           obj.value = this.dataSrcOptions[i].value;
@@ -232,11 +240,13 @@ export default {
           obj.attr = this.dataSrc.find(v => v.name == obj.value)
           option.series[i].mapping = obj;
         }
+        option.name = this.controlName;
+        option.disabled = this.disabledChecked;
         this.dialogVisible = false;
+      } else if (option.type === "sendAttribute" || option.type === "sendCommand") {
+        console.log("sendAttribute", {...opt})
       }
-      option.name = this.controlName;
       option.controlType = "control";
-      option.disabled = this.disabledChecked;
       this.$emit("submit", option)
     },
     validate() {

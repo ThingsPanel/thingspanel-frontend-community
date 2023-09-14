@@ -17,18 +17,18 @@
           v-if="option.controlType == 'history'" :option="option" :device="device" :value="option.value"/>
 
         <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true" :status="deviceStatus"
-          v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option" :device="device"/>
+          v-if="option.type == 'status'" :option="option" :device="device"/>
 
         <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true" :status="deviceStatus"
-          v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'" :option="option" :device="device"
+          v-if="option.type == 'deviceStatus'" :option="option" :device="device"
           :value="option.value"/>
 
         <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true" :status="deviceStatus"
-          v-if="option.controlType == 'dashboard' && option.type == 'signalStatus'" :option="option" :device="device"
+          v-if="option.type == 'signalStatus'" :option="option" :device="device"
           :value="option.value"/>
 
         <text-info class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true" :status="deviceStatus"
-          v-if="option.controlType == 'dashboard' && option.type == 'textInfo'" :option="option" :device="device"
+          v-if="option.type == 'textInfo'" :option="option" :device="device"
           :value="option.value"/>
 
         <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true" :status="deviceStatus"
@@ -63,8 +63,7 @@ import SignalStatus from "./components/SignalStatus"
 import DeviceStatus from "./components/DeviceStatus"
 import TextInfo from "./components/TextInfo"
 import VideoComponent from "./components/Video";
-import { device_info } from "@/api/device";
-import { device_update, getDeviceListStatus, historyValue } from "@/api/device";
+import { device_info, device_update, getDeviceListStatus } from "@/api/device";
 import { websocket } from "@/utils/websocket"
 export default {
   name: "PluginCharts",
@@ -282,7 +281,6 @@ export default {
         this.socket.close();
         this.socket = null;
       }
-      console.log("new websocket")
       this.socket = new websocket();
       this.socket.init((event) => {
         console.log(event)
@@ -405,7 +403,8 @@ export default {
         // 开关的mapping
         let mapping = [];
         option.series.forEach(item => {
-          mapping.push(item.mapping.value);
+          if (item && item.mapping)
+            mapping.push(item.mapping.value);
         })
         return mapping;
       }

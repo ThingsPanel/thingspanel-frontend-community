@@ -1,7 +1,7 @@
 <template>
   <div class="status-icon">
     <el-tooltip class="item" effect="dark" :content="lastPushTime" placement="top">
-        <el-button class="tool-item" size="mini"  @click="handleShowRange">
+        <el-button class="tool-item" size="mini">
             <img v-if="status" src="./signal_status_on.svg" alt="">
             <img v-else src="./signal_status_off.svg" alt="">
         </el-button>

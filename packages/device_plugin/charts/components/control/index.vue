@@ -5,18 +5,24 @@
     <div class="switch-list">
       <div class="switch-item" v-for="item in optionData.series" :key="item.type + item.id">
 
-        <CommonSwitch :key="item.type + item.id" v-if="item.type=='switch'" :disabled="optionData.disabled" :value="item.value"
-                      @change="v => handleChange(item, v)"></CommonSwitch>
+        <CommonSwitch :ref="item.type + 'ref'" :key="item.type + item.id" v-if="item.type=='switch'" :disabled="optionData.disabled" :value="item.value"
+                  @change="v => handleChange(item, v)"/>
 
-        <SlideSwitch :key="item.type + item.id" v-if="item.type=='slider'" :disabled="optionData.disabled"
-                     :value.sync="item.value" :max="item.mapping.max" :step="item.mapping.step"
-                     @change="v => handleChange(item, v)"></SlideSwitch>
+        <SlideSwitch :ref="item.type + 'ref'" :key="item.type + item.id" v-if="item.type=='slider'" :disabled="optionData.disabled"
+                  :value.sync="item.value" :max="item.mapping.max" :step="item.mapping.step"
+                  @change="v => handleChange(item, v)"/>
 
-        <SetValue :key="item.type + item.id" v-if="item.type=='setValue'" :disabled="optionData.disabled" :value.sync="item.value"
-                   @change="v => handleChange(item, v)"
-                   ></SetValue>
+        <SetValue :ref="item.type + 'ref'" :key="item.type + item.id" v-if="item.type=='setValue'" :disabled="optionData.disabled" :value.sync="item.value"
+                  @change="v => handleChange(item, v)"/>
+                  
+        <SendAttribute :ref="item.type + 'ref'" :key="item.type + item.id" v-if="item.type=='sendAttribute'" :mode="mode" :option="optionData" :disabled="!!optionData.disabled" :value.sync="item.value"
+                  :dataSrc="dataSrc" @change="v => handleChange(item, v)" @bind="handleBind" @send="handleSend"/>
 
-        <MainSwitch :key="item.type + item.id" v-if="item.type=='mainSwitch'" :disabled="optionData.disabled" :value.sync="item.value"
+        <SendCommand :ref="item.type + 'ref'" :key="item.type + item.id" v-if="item.type=='sendCommand'" :mode="mode" :option="optionData" :disabled="!!optionData.disabled" :value.sync="item.value"
+                  :dataSrc="dataSrc" @change="v => handleChange(item, v)" @bind="handleBind" @send="handleSend"/>
+
+
+        <MainSwitch :ref="item.type + 'ref'" :key="item.type + item.id" v-if="item.type=='mainSwitch'" :disabled="optionData.disabled" :value.sync="item.value"
                   @change="v => handleChange(item, v)"
         ></MainSwitch>
 
@@ -30,13 +36,20 @@
 import CommonSwitch from "./Switch.vue"
 import SlideSwitch from "./SlideSwitch.vue"
 import SetValue from "./SetValue.vue"
+import SendAttribute from "./SendAttribute.vue"
+import SendCommand from "./SendCommand.vue"
 import MainSwitch from "./MainSwitch";
+
 export default {
   name: "CommonControl",
   components: {
-    CommonSwitch, SlideSwitch, SetValue, MainSwitch
+    CommonSwitch, SlideSwitch, SetValue, SendAttribute, SendCommand, MainSwitch
   },
   props: {
+    mode: {
+      type: [String],
+      defualt: ""
+    },
     type: {
       type: [String],
       default: "switch"
@@ -48,6 +61,10 @@ export default {
     option: {
       type: [Object],
       default: () => {return {}}
+    },
+    dataSrc: {
+      type: [Array],
+      default: () => []
     }
   },
   data() {
@@ -59,6 +76,7 @@ export default {
     option: {
       handler(newValue) {
         if (JSON.stringify(newValue) == "{}") return;
+
         this.optionData = JSON.parse(JSON.stringify(newValue));
         console.log("Control.option", this.optionData)
         // 重新渲染
@@ -71,6 +89,12 @@ export default {
   mounted() {
   },
   methods: {
+    showDialog(option) {
+      this.$refs[option.type + "ref"][0].showDialog(option);
+    },
+    handleSend(cb) {
+      this.$emit("send", cb);
+    },
     clickSwitch() {
       this.$emit("click", this.option);
     },
@@ -82,6 +106,10 @@ export default {
       this.optionData.series.splice(index, 1, serie);
       console.log(JSON.stringify(this.optionData.series))
       this.$emit("change", this.optionData);
+    },
+    handleBind(option) {
+      console.log("handleBind", option)
+      this.$emit("bind", option)
     }
   }
 }

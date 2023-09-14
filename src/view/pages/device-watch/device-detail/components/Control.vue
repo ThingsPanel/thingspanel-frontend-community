@@ -9,7 +9,7 @@
       </div>
     </div>
 
-    <common-control :option="optionData" @change="handleChange"></common-control>
+    <common-control :option="optionData" @change="handleChange" @send="handleSend"></common-control>
 
     <el-dialog title="配置" width="30%"
                :visible.sync="configurationVisible">
@@ -25,8 +25,7 @@
 </template>
 
 <script>
-import { turnSwitch } from "@/api/device"
-import { currentValue } from "@/api/device";
+import { turnSwitch, sendCommandByDeviceId, currentValue } from "@/api/device"
 import {message_success} from "@/utils/helpers";
 import StatusIcon from "./StatusIcon.vue";
 export default {
@@ -71,7 +70,7 @@ export default {
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
     if (this.option.series) {
-      this.mapping = this.option.series.map(item => {return item.mapping.value})
+      this.mapping = this.option.series.map(item => {return item?.mapping?.value || ""})
     }
   },
   methods: {
@@ -98,8 +97,6 @@ export default {
       }
     },
     updateOption(values) {
-      console.log("control.values", values)
-      // let optionTmp = JSON.parse(JSON.stringify(this.optionData));
       this.optionData.series.forEach(item => {
         let map = item.mapping;
         if (item.type == "switch") {
@@ -149,14 +146,53 @@ export default {
       // this.optionData = JSON.parse(JSON.stringify(optionTmp))
 
     },
-    sizeChange() {
+    async handleSend(cb) {
+      try {
+        const { type, identifier, name, params, dataType } = this.optionData;
+        if (type === "sendCommand") {
+          const data = {
+              device_id: this.device.device,
+              command_identifier: identifier,
+              command_data: params,
+              command_name: name
+          }
+          let { data: result } = await sendCommandByDeviceId(data);
+          if (result.code === 200) {
+            message_success("命令下发成功")
+          } else {
+            throw new Error("命令下发失败")
+          }
+          setTimeout(() => {
+            cb && cb();
+          }, 2000)
+        } else if (type === "sendAttribute") {
+          const data = {
+            device_id: this.device.device,
+            values: {}
+          }
+          data.values[identifier] = typeConvert(params, dataType);
+          let { data: result } = await turnSwitch(data);
+          if (result.code === 200) {
+            message_success("属性下发成功")
+          } else {
+            throw new Error("属性下发失败")
+          }
+          setTimeout(() => {
+            cb && cb();
+          }, 2000)
 
+        }
+      } catch(err) {
+        message_error(err.messsage);
+      }
+    },
+    sizeChange() {
     }
   }
 }
 
 const typeConvert = (value, type) => {
-  if (type.toLowerCase() == "integer") return Number(value);
+  if (type.toLowerCase() === "integer" || type.toLowerCase() === "number") return Number(value);
   if (type.toLowerCase() == "string" || type.toLowerCase() == "text") return String(value);
   if (type.toLowerCase() == "bool" || type.toLowerCase() == "boolean") return value === 'true' || value === true;
   if (type.toLowerCase() == "float") return parseFloat(value);

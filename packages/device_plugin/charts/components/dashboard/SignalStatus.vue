@@ -115,7 +115,7 @@ export default {
     },
     submit() {
         let opt = { ...this.option, ...this.optionData };
-        opt.controlType = "dashboard";
+        opt.controlType = "information";
         this.$emit("bind", opt);
         this.dialogVisible = false;
     }

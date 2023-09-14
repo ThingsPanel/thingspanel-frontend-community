@@ -1,14 +1,13 @@
 <!-- 开关(0, 1) -->
 <template>
   <div class="switch-container">
-    <div class="center" >
-      <el-switch v-model="switchValue" active-color="#13ce66" inactive-color="#ff4949" :width="60"
-                :disabled="disabled"
-                @change="switchChange"></el-switch>
-      <span class="switch-state-box">{{ value ? "开启" : "关闭"}}</span>
+    <div class="center">
+      <el-switch v-model="switchValue" active-color="#13ce66" inactive-color="#ff4949" :width="60" :disabled="disabled"
+        @change="switchChange"></el-switch>
+      <span class="switch-state-box">{{ value ? "开启" : "关闭" }}</span>
     </div>
-  </div>
 
+  </div>
 </template>
 
 <script>
@@ -26,7 +25,8 @@ export default {
   },
   data() {
     return {
-      switchValue: false
+      switchValue: false,
+      dialogVisible: false,
     }
   },
   watch: {
@@ -36,6 +36,8 @@ export default {
       },
       immediate: true
     }
+  },
+  mounted() {
   },
   methods: {
     switchChange(value) {
@@ -50,33 +52,38 @@ export default {
   height: 60px;
   line-height: 60px;
 }
+
 .switch-state-box {
   margin-left: 10px;
   color: #fff;
 }
+
 ::v-deep .el-switch {
   .el-switch__core {
     border-color: #b9b9b9 !important;
     background-color: #b9b9b9 !important;
   }
 }
+
 ::v-deep .is-checked {
   .el-switch__core {
-    background-color: rgb(19, 206, 102)!important;
+    background-color: rgb(19, 206, 102) !important;
   }
 }
+
 .switch-container {
   width: 100%;
   height: 100%;
   display: table;
   position: absolute;
   top: 0px;
+
   .center {
     display: table-cell;
     vertical-align: middle;
     text-align: center;
-    padding: 20px!important;
-   
+    padding: 20px !important;
+
     p {
       margin: 10px;
     }

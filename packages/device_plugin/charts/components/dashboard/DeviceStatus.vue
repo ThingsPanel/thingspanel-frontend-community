@@ -92,7 +92,7 @@ export default {
       let opt = JSON.parse(JSON.stringify(this.option));
       this.$refs.mapFormRef.validate(valid => {
         if (!valid) return;
-        opt.controlType = "dashboard";
+        opt.controlType = "information";
         opt.name = this.formData.name;
         opt.thresholdTime = this.formData.thresholdTime;
         this.$emit("bind", opt);

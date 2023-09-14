@@ -21,13 +21,13 @@
 
     <!-- 自定义物模性 start-->
     <div class="div-select category" v-else>
-      <el-form>
+      <!-- <el-form>
         <el-form-item :label="$t('PLUGIN.MATTER_MODEL_INFO_TAB.LABLE2')">
           <el-select v-model="categoryValue">
             <el-option v-for="(option, index) in tslOptions" :key="index" :value="option.value" :label="option.label"></el-option>
           </el-select>
         </el-form-item>
-      </el-form>
+      </el-form> -->
       <tsl-editor key="custom" :table-attr="tableAttr" :data="customData" :showHandle="true" @dataChange="dataChange"></tsl-editor>
     </div>
     <!-- 自定义物模性 end-->
@@ -120,10 +120,10 @@ export default {
           return false;
         }
       } else {
-        if (this.categoryValue == "") {
-          message_error("请选择分类！")
-          return false;
-        }
+        // if (this.categoryValue == "") {
+        //   message_error("请选择分类！")
+        //   return false;
+        // }
         if (this.customData.properties == undefined || this.customData.properties.length == 0) {
           message_error("物模型不能为空！")
           return false;
@@ -144,5 +144,6 @@ export default {
 }
 .div-select {
   margin-left: 10px;
+  padding-top: 10px;
 }
 </style>

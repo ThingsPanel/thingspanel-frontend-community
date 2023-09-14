@@ -143,6 +143,19 @@ export function historyValue(data) {
 }
 
 /**
+ * 获取统计数据
+ * @param {*} data 
+ * @returns 
+ */
+export function statistic(data) {
+    return axios({
+        url: "/kv/statistic",
+        method: "post",
+        data,
+    })
+}
+
+/**
  * 控制开关
  * @param data
  * @returns {AxiosPromise}

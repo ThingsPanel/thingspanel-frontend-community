@@ -2,7 +2,7 @@
   <div class="status-container" @click="showDialog(null)">
     <div class="center">
       <p :style="'font-size: ' + (mapData.series.fontSize || '20') + 'px;'">{{ mapData.series.title }}</p>
-      <p :style="'font-size: ' + (mapData.series.labelSize || '20') + 'px;color: ' + mapData.series.labelColor+';'">
+      <p :style="'font-size: ' + (mapData.series.labelSize || '30') + 'px;color: ' + mapData.series.labelColor+';'">
         <i :class="labelIcon"></i>{{ label }}
       </p>
     </div>
@@ -106,7 +106,7 @@ export default {
       type: "status",
       series: {
         title: "液位",
-        fontSize: 30,
+        fontSize: 20,
         value: 0,
         status: [
           {
@@ -114,7 +114,7 @@ export default {
             value: 0,
             label: "缺液",
             color: "#",
-            fontSize: 20,
+            fontSize: 30,
             icon: "",
             addEnable: true,
           },
@@ -122,7 +122,7 @@ export default {
             comparison: "==",
             value: 1,
             label: "有液",
-            fontSize: 20
+            fontSize: 30
           }
         ]
       }
@@ -169,7 +169,7 @@ export default {
       if (!this.validate()) return;
 
       let opt = JSON.parse(JSON.stringify(this.mapData));
-      opt.controlType = "dashboard";
+      opt.controlType = "information";
       opt.mapping = [this.mapData.map];
       opt.series.mapping = [this.mapData.map];
       console.log("====status.submit", opt)

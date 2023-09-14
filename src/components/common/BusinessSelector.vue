@@ -1,6 +1,6 @@
 <template>
   <el-cascader :placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER2')" v-model="businessCascaderData" :props="businessProps"
-    :clearable="clearable" class="w-100" @change="handleChange()">
+    :clearable="clearable" filterable class="w-100" @change="handleChange()">
   </el-cascader>
 </template>
 

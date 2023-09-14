@@ -6,39 +6,58 @@
       <div class="tool-right">
         <status-icon ref="statusIconRef" :status="status"/>
         
-        <!-- 采样区间 -->
-        <el-button class="tool-item" size="mini" icon="el-icon-date" @click="handleShowRange"></el-button>
-
         <!-- 采样周期  -->
         <el-dropdown @command="handlePeriodCommand">
           <el-button class="tool-item" size="mini" icon="el-icon-time"></el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="300">最近5分钟</el-dropdown-item>
-            <el-dropdown-item command="900">最近15分钟</el-dropdown-item>
-            <el-dropdown-item command="1800">最近半小时</el-dropdown-item>
-            <el-dropdown-item command="3600">最近1小时</el-dropdown-item>
-            <el-dropdown-item command="10800">最近3小时</el-dropdown-item>
-            <el-dropdown-item command="86400">最近一天</el-dropdown-item>
-            <el-dropdown-item command="259200">最近三天</el-dropdown-item>
-            <el-dropdown-item command="604800">最近一周</el-dropdown-item>
-            <el-dropdown-item command="2592000">最近一月</el-dropdown-item>
+            <el-dropdown-item :class="getPeriodClass('300')" command="300">最近5分钟</el-dropdown-item>
+            <el-dropdown-item :class="getPeriodClass('900')" command="900">最近15分钟</el-dropdown-item>
+            <el-dropdown-item :class="getPeriodClass('1800')" command="1800">最近半小时</el-dropdown-item>
+            <el-dropdown-item :class="getPeriodClass('3600')" command="3600">最近1小时</el-dropdown-item>
+            <el-dropdown-item :class="getPeriodClass('10800')" command="10800">最近3小时</el-dropdown-item>
+            <el-dropdown-item :class="getPeriodClass('86400')" command="86400">最近一天</el-dropdown-item>
+            <el-dropdown-item :class="getPeriodClass('259200')" command="259200">最近三天</el-dropdown-item>
+            <el-dropdown-item :class="getPeriodClass('604800')" command="604800">最近一周</el-dropdown-item>
+            <el-dropdown-item :class="getPeriodClass('2592000')" command="2592000">最近一月</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
+
+        <!-- 采样区间 -->
+        <el-button class="tool-item" size="mini" icon="el-icon-date" @click="handleShowRange"></el-button>
 
         <!-- 采样频率 -->
         <el-dropdown @command="handleFrequencyCommand">
           <el-button class="tool-item" size="mini" icon="el-icon-discover"></el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="5">5秒</el-dropdown-item>
-            <el-dropdown-item command="10">10秒</el-dropdown-item>
-            <el-dropdown-item command="30">30秒</el-dropdown-item>
-            <el-dropdown-item command="60">1分钟</el-dropdown-item>
-            <el-dropdown-item command="300">5分钟</el-dropdown-item>
-            <el-dropdown-item command="1800">半小时</el-dropdown-item>
+            <el-dropdown-item :class="getFrequencyClass('no_aggregate')" command="no_aggregate">不聚合</el-dropdown-item>
+            <el-dropdown-item :class="getFrequencyClass('5')" command="5">5秒</el-dropdown-item>
+            <el-dropdown-item :class="getFrequencyClass('10')" command="10">10秒</el-dropdown-item>
+            <el-dropdown-item :class="getFrequencyClass('30')" command="30">30秒</el-dropdown-item>
+            <el-dropdown-item :class="getFrequencyClass('60')" command="60">1分钟</el-dropdown-item>
+            <el-dropdown-item :class="getFrequencyClass('300')" command="300">5分钟</el-dropdown-item>
+            <el-dropdown-item :class="getFrequencyClass('600')" command="600">10分钟</el-dropdown-item>
+            <el-dropdown-item :class="getFrequencyClass('1800')" command="1800">半小时</el-dropdown-item>
+            <el-dropdown-item :class="getFrequencyClass('3600')" command="3600">1小时</el-dropdown-item>
+            <el-dropdown-item :class="getFrequencyClass('10800')" command="10800">3小时</el-dropdown-item>
+            <el-dropdown-item :class="getFrequencyClass('86400')" command="86400">1天</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
-        <!--        <el-button v-if="optionData.controlType == 'history'" class="tool-item" size="mini" icon="el-icon-picture-outline"></el-button>-->
 
+        <!-- 聚合选项 -->
+        <el-dropdown @command="handleAggregateCommand">
+          <el-button class="tool-item" size="mini" icon="el-icon-discover"></el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item :class="getAggregateClass('average')" command="average">平均值</el-dropdown-item>
+            <el-dropdown-item :class="getAggregateClass('maximum')" command="maximum">最大值</el-dropdown-item>
+            <el-dropdown-item :class="getAggregateClass('minimum')" command="minimum">最小值</el-dropdown-item>
+            <el-dropdown-item :class="getAggregateClass('median')" command="median">中位数</el-dropdown-item>
+            <el-dropdown-item :class="getAggregateClass('first')" command="first">首位数</el-dropdown-item>
+            <el-dropdown-item :class="getAggregateClass('last')" command="last">末尾数</el-dropdown-item>
+            <el-dropdown-item :class="getAggregateClass('range')" command="range">首尾差值</el-dropdown-item>
+            <el-dropdown-item :class="getAggregateClass('count')" command="count">次数统计</el-dropdown-item>
+            <el-dropdown-item :class="getAggregateClass('sum')" command="sum">求和</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
         <el-button class="tool-item" size="mini" icon="el-icon-more" @click="showConfiguration"></el-button>
       </div>
 
@@ -80,9 +99,9 @@
 </template>
 
 <script>
-import { historyValue } from "@/api/device";
+import { historyValue, statistic } from "@/api/device";
 import StatusIcon from "./StatusIcon"
-// let Echarts = require('echarts/lib/echarts');
+import { dateFormat } from "@/utils/tool.js"
 
 export default {
   name: "Curve.vue",
@@ -121,7 +140,8 @@ export default {
       },
       params: {
         period: 300,   // 采样周期，默认最近5分钟
-        rate: 10     // 采样频率，默认10秒
+        rate: 10,     // 采样频率，默认10秒
+        aggregate: ""
       },
       pickerOptions: {
         disabledDate(time) {
@@ -176,8 +196,27 @@ export default {
     this.myEcharts.on('dataZoom', params => {
       this.dataZoom.start = params.start;
       this.dataZoom.end = params.end;
+      console.log('dataZoom', this.dataZoom.start, this.dataZoom.end)
+
     })
     
+  },
+  computed: {
+    getFrequencyClass: {
+      get() {
+        return (v) => this.params.rate.toString() === v.toString() ? 'active' : 'noActive'
+      }
+    },
+    getPeriodClass: {
+      get() {
+        return (v) => this.params.period.toString() === v.toString() ? 'active' : 'noActive'
+      }
+    },
+    getAggregateClass: {
+      get() {
+        return (v) => this.params.aggregate.toString() === v.toString() ? 'active' : 'noActive'
+      }
+    }
   },
   methods: {
     /**
@@ -196,12 +235,11 @@ export default {
       this.optionData.backgroundColor = 'transparent';
       if (option && option.series[0].data) {
         const data = option.series[0].data;
-        let start = Math.ceil(this.dataZoom.start / 100 * data.length);
-        let end = Math.floor(this.dataZoom.end / 100 * data.length);
-        let displayedData = data.slice(start - 1, end + 1);
-        console.log("displayedData", displayedData)
-        let min = Math.floor(Math.min.apply(null, displayedData));
-        let max = Math.ceil(Math.max.apply(null, displayedData));
+        // let start = Math.ceil(this.dataZoom.start / 100 * data.length);
+        // let end = Math.floor(this.dataZoom.end / 100 * data.length);
+        // let displayedData = data.slice(start - 1, end + 1);
+        let min = Math.floor(Math.min.apply(null, data));
+        let max = Math.ceil(Math.max.apply(null, data));
         option.yAxis = option.yAxis ? option.yAxis : {};
         option.yAxis.max = max;
         option.yAxis.min = min;
@@ -212,12 +250,7 @@ export default {
         this.myEcharts.setOption(this.optionData);
       }
     },
-    /**
-     * 从服务器获取指定设备的推送数据
-     * @param deviceId
-     * @param attrs
-     */
-    getHistory(mapping) {
+    async getStatistic(mapping) {
       let attrs = mapping.map(item => item.name ? item.name : item);
       if (!attrs || attrs.length == 0) return;
 
@@ -230,16 +263,64 @@ export default {
         endTime = new Date(this.range.endTime).getTime();
       }
       
-      // let startTime = endTime-246060*1000;
+      let params = {
+          device_id: this.device.device,
+          key: attrs[0],
+          start_time: startTime * 1000,
+          end_time: endTime * 1000,
+          aggregate_window: "no_aggregate",
+          time_range: "last_3h"
+      }
+
+      let { data: result } = await statistic(params);
+      let sysTimes = [];
+      let data = [];
+      result.data.time_series.reverse().forEach(item => {
+        sysTimes.push(dateFormat(item.x));
+        data.push(item.y)
+      })
+      let xAxis = { data: sysTimes, type: 'category', axisLabel: { interval: 'auto' } };
+      let series = [
+        {
+          data,
+          type: 'line'
+        }
+      ]
+      this.initEChart({ xAxis, series});
+      console.log("statistic", { xAxis, series})
+    },
+    /**
+     * 从服务器获取指定设备的推送数据
+     * @param deviceId
+     * @param attrs
+     */
+    async getHistory(mapping) {
+      if (true) {
+        this.getStatistic(mapping);
+        return;
+      }
+      let attrs = mapping.map(item => item.name ? item.name : item);
+      if (!attrs || attrs.length == 0) return;
+
+      let endTime = (new Date()).getTime();
+      let startTime = endTime - (Number(this.params.period) * 1000);
+
+      // 如果有选择时间区间，则以选择的时间区间为准
+      if (this.range.startTime && this.range.endTime) {
+        startTime = new Date(this.range.startTime).getTime();
+        endTime = new Date(this.range.endTime).getTime();
+      }
+      
       let rate = this.params.rate * 1000 * 1000;  // 微秒
       let attribute = attrs.concat(["systime"])
       let params = {
         device_id: this.device.device,
         attribute,
-        "start_ts": startTime,
-        "end_ts": endTime,
+        start_ts: startTime,
+        end_ts: endTime,
         rate: rate + ""
       }
+      
       historyValue(params)
         .then(({ data }) => {
           if (data.code == 200) {
@@ -251,11 +332,10 @@ export default {
               }
               // sysTimes = data.data.systime.map(item => item = item.substring(12))
               sysTimes = data.data.systime;
+              let xAxis = { data: sysTimes, type: 'category', interval: 10, axisLabel: { interval: 'auto' } };
+              let option = { series, xAxis };
+              this.initEChart(option);
             }
-
-            let xAxis = { data: sysTimes, type: 'category' };
-            let option = { series, xAxis };
-            this.initEChart(option);
           }
         })
     },
@@ -285,8 +365,11 @@ export default {
      * @param command
      */
     handleFrequencyCommand(command) {
-      this.params.rate = Number(command);
+      this.params.rate = command;
       this.getHistory(this.optionData.mapping)
+    },
+    handleAggregateCommand(command) {
+
     },
     showConfiguration() {
     },
@@ -305,11 +388,13 @@ export default {
     getChartStyle() {
       let style = this.optionData.style ? this.optionData.style : {};
       let backgroundColor = style.backgroundColor ? style.backgroundColor : "#2d3d86";
-      console.log("getChartStyle", backgroundColor)
       return {
         backgroundColor
       }
-    }
+    },
+    // getDropdownItem(e) {
+    //   console.log("getDropdownItem", e)
+    // }
   }
 }
 </script>
@@ -355,6 +440,13 @@ export default {
   .tool-item {
     background: transparent !important;
     border: 0px solid transparent;
+      
   }
+
+}
+::v-deep .el-dropdown-menu__item.active {
+  font-weight: 800!important;
+  background-color: #ecf5ff;
+  // color: #66b1ff;
 }
 </style>

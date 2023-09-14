@@ -25,7 +25,7 @@
           </el-col>
 
           <el-col :span="8" >
-            <el-form-item :label="$t('PLUGIN.DEVICE_INFO_TAB.PLUNGIN_COVER')" label-width="auto" label-position="top">
+            <el-form-item :label="$t('PLUGIN.DEVICE_INFO_TAB.PLUNGIN_COVER')" label-width="100" label-position="top">
               <div >
                 <el-upload
                     action="#"
