@@ -4,7 +4,7 @@
           <span class="title">{{ option.name }}</span>
           <div class="tool-right">
             <status-icon ref="statusIconRef" :status="status"/>
-            <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
+            <!-- <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button> -->
           </div>
         </div>
     
