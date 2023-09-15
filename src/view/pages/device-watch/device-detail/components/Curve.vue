@@ -78,7 +78,7 @@
 import { statistic } from "@/api/device";
 import StatusIcon from "./StatusIcon"
 import { dateFormat } from "@/utils/tool.js"
-import { PeriodList, AggregateFuncList, getAggregateWindowList } from "./Const.js"
+import { PeriodList, AggregateFuncList, getAggregateWindowList, calcAggregate } from "./Const.js"
 
 export default {
   name: "Curve.vue",
@@ -185,10 +185,23 @@ export default {
   },
   computed: {
     getAggregateWindowList() {
-        const list = getAggregateWindowList(this.params.period);
-        console.log("getAggregateWindowList", list)
-        this.params.aggregate_window = list.sel;
-        return list.list;
+        if (this.params.period === "custom") {
+          if (this.range.startTime && this.range.endTime) {
+            const periodKey = calcAggregate(this.range.startTime, this.range.endTime)
+            console.log("getAggregateWindowList.periodKey", periodKey)
+
+            const list = getAggregateWindowList(periodKey);
+            console.log("getAggregateWindowList.list", list)
+
+            this.params.aggregate_window = list.sel;
+            return list.list;
+          }
+        } else {
+          const list = getAggregateWindowList(this.params.period);
+          // console.log("getAggregateWindowList", list)
+          this.params.aggregate_window = list.sel;
+          return list.list;
+        }
     },
     getAggregateWindowClass() {
       return (v) => this.params.aggregate_window.toString() === v.toString() ? 'active' : 'noActive'
@@ -237,12 +250,12 @@ export default {
       console.log("getStatistic", this.params)
       let endTime = (new Date()).getTime();
       let startTime = endTime - (Number(this.params.period) * 1000);
-
       // 如果有选择时间区间，则以选择的时间区间为准
-      if (this.range.startTime && this.range.endTime) {
+      if (this.params.period === "custom" && this.range.startTime && this.range.endTime) {
         startTime = new Date(this.range.startTime).getTime();
         endTime = new Date(this.range.endTime).getTime();
       }
+      if (!startTime || !endTime) return;
 
       let params = {
         device_id: this.device.device,
@@ -306,6 +319,7 @@ export default {
      * @param command
      */
     handlePeriodCommand(command) {
+      console.log("handlePeriodCommand", command)
       this.params.period = command;
       if (command === "custom") {
         this.rangeDialogVisible = true;

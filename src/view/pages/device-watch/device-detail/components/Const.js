@@ -8,7 +8,7 @@ const PeriodList = [
     { key: 900, label: "最近15分钟" },
     { key: 1800, label: "最近半小时" },
     { key: 3600, label: "最近1小时" },
-    { key: 10800, label: "最近3小时" },
+    { key: 10800, label: "最近3小时", aggregate: 120 },
     { key: 86400, label: "最近一天", aggregate: 300 },
     { key: 259200, label: "最近三天", aggregate: 600 },
     { key: 604800, label: "最近一周", aggregate: 1800 },
@@ -41,7 +41,7 @@ const getAggregateWindowList = (periodKey) => {
     let list = JSON.parse(JSON.stringify(AggregateWindowList));
     const period = PeriodList.find(item => item.key === periodKey);
     let sel = "no_aggregate";
-    if (period.aggregate) {
+    if (period && period.aggregate) {
         for (let i = 0; i < list.length ; i++) {
             const item = list[i];
             if (period.aggregate > item.sec  || item.key === "no_aggregate") {
@@ -52,6 +52,22 @@ const getAggregateWindowList = (periodKey) => {
     }
     return { list, sel };
 }
+
+function calcAggregate(startTime, endTime) {
+    const start = new Date(startTime); // 起始时间
+    const end = new Date(endTime); // 结束时间
+  
+    const duration = Math.abs(end - start); // 时间间隔的毫秒数
+    const seconds = Math.floor(duration / 1000); // 转换为秒数
+    let periodKey = "no_aggregate";
+    for (let i = 0; i < PeriodList.length; i++) {
+        const period = PeriodList[i];
+        if (seconds > period.key) {
+            periodKey = period.key;
+        }
+    }
+    return periodKey;
+  }
 
 
 const AggregateFuncList = {
@@ -69,7 +85,8 @@ const AggregateFuncList = {
 
 export {
     PeriodList,
-    getAggregateWindowList,
     AggregateWindowList,
-    AggregateFuncList
+    AggregateFuncList,
+    getAggregateWindowList,
+    calcAggregate,
 }
