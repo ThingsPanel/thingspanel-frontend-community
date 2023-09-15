@@ -112,7 +112,7 @@ export default {
               let opts = this.myEcharts.getOption();
               let { data } = opts.series[i];
               let detail = { formatter: '无数据' };
-              if (data && data[0] && data[0].value) {
+              if (data && data[0]) {
                 let detail = { formatter: '{value}' + ((item.unit && item.unit !== "-") ? item.unit : "") };
                 return { data: [ { value: data[0].value, name } ], detail }
               } else {
