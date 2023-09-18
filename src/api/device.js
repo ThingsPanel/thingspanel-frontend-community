@@ -187,7 +187,7 @@ export function historyValueData(data) {
  * @param data
  * @returns {AxiosPromise}
  */
-export function statisticValue(data) {
+export function statistic(data) {
     return axios({
         url: "/kv/statistic",
         method: "post",

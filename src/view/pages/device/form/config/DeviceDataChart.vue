@@ -142,7 +142,7 @@
 <script>
 import screenfull from "screenfull";
 import i18n from "@/core/plugins/vue-i18n.js"
-import { statisticValue } from "@/api/device";
+import { statistic } from "@/api/device";
 import { dateFormat } from "@/utils/tool.js";
 
 export default {
@@ -676,7 +676,7 @@ export default {
             if (this.selectedAggrigateOptions !== "no_aggregate") {
                 params.aggregate_function = this.selectedValueType
             }
-            statisticValue(params)
+            statistic(params)
                 .then(({ data }) => {
                     console.debug("====getHistoryData", data)
                     if (data.code == 200) {
@@ -917,7 +917,7 @@ export default {
             if (this.selectedAggrigateOptions !== "no_aggregate") {
                 params.aggregate_function = this.selectedValueType
             }
-            statisticValue(params)
+            statistic(params)
                 .then(({ data }) => {
                     console.debug("====handleExport", data)
                     if (data.code == 200) {
