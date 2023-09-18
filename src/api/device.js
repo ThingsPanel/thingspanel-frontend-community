@@ -129,6 +129,20 @@ export function currentValue(data) {
     })
 }
 
+
+/**
+ * 根据属性获取设备属性的详情
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function currentValueDetail(data) {
+    return axios({
+        url: "/kv/current/detail",
+        method: "post",
+        data,
+    })
+}
+
 /**
  * 根据属性获取设备的历史数据
  * @param data
@@ -143,11 +157,37 @@ export function historyValue(data) {
 }
 
 /**
- * 获取统计数据
- * @param {*} data 
- * @returns 
+ * 根据属性获取设备的历史数据
+ * @param data
+ * @returns {AxiosPromise}
  */
-export function statistic(data) {
+export function historyValueByKey(data) {
+    return axios({
+        url: "/kv/history/key",
+        method: "post",
+        data,
+    })
+}
+
+/**
+ * 根据属性获取设备的历史数据，带分页、导出
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function historyValueData(data) {
+    return axios({
+        url: "/kv/history/data",
+        method: "post",
+        data,
+    })
+}
+
+/**
+ * 根据属性获取设备的统计数据
+ * @param data
+ * @returns {AxiosPromise}
+ */
+export function statisticValue(data) {
     return axios({
         url: "/kv/statistic",
         method: "post",
@@ -328,6 +368,19 @@ export function sendCommandByDeviceId(data) {
 export function getDeviceEventHistoryList(data) {
     return axios({
         url: "/device/event/history/list",
+        method: "post",
+        data,
+    })
+}
+
+/**
+ * 根据设备属性删除历史数据
+ * @param {*} data 
+ * @returns 
+ */
+export function delHistoryData(data) {
+    return axios({
+        url: "/kv/history/delete",
         method: "post",
         data,
     })
