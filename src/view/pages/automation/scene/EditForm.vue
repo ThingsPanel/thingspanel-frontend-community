@@ -49,6 +49,7 @@
 import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
 import Auto from "@/api/automation_1.0"
 import { message_success, message_error, typeConvert } from '@/utils/helpers';
+import { getActions } from "../control/Const.js"
 export default {
   name: "EditForm",
   components: { DeviceTypeSelector },
@@ -128,16 +129,19 @@ export default {
         console.log("handleSubmit", cmd)
         let { name, type, mode, operator } = cmd.data.state
         let instruct = {};
+        let device_model = "1";
         if (mode === "custom") {
-
+          device_model = "3";
+          instruct = cmd.data.state.params;
         } else {
+          device_model = "1";
           instruct[name] = typeConvert(operator.value, type);
         }
         
         return {
           action_type: "1",
           device_id: cmd.data.deviceId,
-          device_model: "1",
+          device_model,
           instruct: JSON.stringify(instruct),
           remark: "备注"
           
@@ -190,7 +194,7 @@ export default {
             let result = data?.data || "{}";
             if (result !== "{}") {
               let commands = this.getCommands(JSON.parse(JSON.stringify(result)))
-              console.log("getScene", commands)
+              console.log("getScene.commands", commands)
               let tmp = JSON.parse(JSON.stringify(result));
               tmp.commands = commands;
               this.formData = tmp;
@@ -204,14 +208,39 @@ export default {
         let p = JSON.parse(cmd.instruct);
         let name = Object.keys(p)[0];
         let value = p[name];
-        const state = {
-                name,
-                mode: "property",
-                operator: {
-                    symbol: "",
-                    value
+        let state = {};
+        let stateJSON = "";
+        if (cmd.device_model === "1") {
+                // 属性
+                state = {
+                    name,
+                    mode: "property",
+                    operator: {
+                        symbol: "",
+                        value,
+                    }
                 }
-              };
+                stateJSON = JSON.stringify(state);
+
+            } else if (cmd.device_model === "2") {
+                // 命令
+                
+                state = {
+                    name: cmd.instruct.method,
+                    mode: "command",
+                    params: JSON.stringify(cmd.instruct.params)
+                }
+                stateJSON = JSON.parse(state);
+            } else if (cmd.device_model === "3") {
+                state = {
+                    name: "custom",
+                    mode: "custom",
+                    params: JSON.parse(cmd.instruct)
+                }
+                stateJSON = JSON.stringify(state);
+
+            }
+        
         return {
             data: {
               projectId: cmd.business_id,
