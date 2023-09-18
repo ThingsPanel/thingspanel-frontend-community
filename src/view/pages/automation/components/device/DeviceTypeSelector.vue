@@ -122,6 +122,7 @@ export default {
       handler(newValue) {
         if (newValue) {
           this.formData = JSON.parse(JSON.stringify(newValue));
+          console.log("DeviceTypeSelector.data.formData", this.formData )
         }
       },
       immediate: true

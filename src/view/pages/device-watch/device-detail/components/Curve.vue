@@ -31,7 +31,8 @@
         <el-dropdown v-if="params.aggregate_window !== 'no_aggregate'" @command="handleAggregateFuncCommand">
           <el-button class="tool-item" size="mini" icon="el-icon-connection"></el-button>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item v-for="(value, key) of aggregateFuncList" :key="key" :class="getAggregateFuncClass(key)" :command="key">{{value}}</el-dropdown-item>
+            <el-dropdown-item v-for="(item, index) of aggregateFuncList" :key="index" :class="getAggregateFuncClass(item.key)" 
+              :command="item.key" :disabled="item.disabled">{{item.label}}</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
         <el-button class="tool-item" size="mini" icon="el-icon-more" @click="showConfiguration"></el-button>

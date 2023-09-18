@@ -9,10 +9,13 @@ const PeriodList = [
     { key: 1800, label: "最近半小时" },
     { key: 3600, label: "最近1小时" },
     { key: 10800, label: "最近3小时" },
+    { key: 21600, label: "最近6小时", aggregate: 60 },
+    { key: 43200, label: "最近12小时", aggregate: 120 },
     { key: 86400, label: "最近一天", aggregate: 300 },
     { key: 259200, label: "最近三天", aggregate: 600 },
     { key: 604800, label: "最近一周", aggregate: 1800 },
     { key: 2592000, label: "最近一月", aggregate: 3600 },
+    { key: 7776000, label: "最近三月", aggregate: 21600 },
     { key: 15552000, label: "最近半年", aggregate: 21600 },
     { key: 31536000, label: "最近一年", aggregate: 2592000 }
 ]
@@ -37,8 +40,18 @@ const AggregateWindowList = [
     { key: "1mo", label: "1月", sec: 2592000, disabled: false }
 ];
 
-
-const AggregateFuncList = {
+const AggregateFuncList = [
+    { key: "avg", label: "平均值", disabled: false },
+    { key: "max", label: "最大值", disabled: false },
+    { key: "minimum", label: "最小值", disabled: true },
+    { key: "median", label: "中位数", disabled: true },
+    { key: "first", label: "首位数", disabled: true },
+    { key: "last", label: "末尾数", disabled: true },
+    { key: "range", label: "首尾差值", disabled: true },
+    { key: "count", label: "次数统计", disabled: true },
+    { key: "sum", label: "求和", disabled: true }
+  ]
+const AggregateFuncList1 = {
     "avg": "平均值",
     "max": "最大值",
     "minimum": "最小值",
@@ -66,7 +79,7 @@ const getAggregateWindowList = (periodKey) => {
     return { list, sel };
 }
 
-function calcAggregate(startTime, endTime) {
+const calcAggregate = (startTime, endTime) => {
     const start = new Date(startTime); // 起始时间
     const end = new Date(endTime); // 结束时间
 

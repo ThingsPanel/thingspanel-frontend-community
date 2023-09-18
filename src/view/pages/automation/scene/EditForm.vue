@@ -46,7 +46,6 @@
 </template>
 
 <script>
-import data from "./data"
 import DeviceTypeSelector from "../components/device/DeviceTypeSelector.vue";
 import Auto from "@/api/automation_1.0"
 import { message_success, message_error, typeConvert } from '@/utils/helpers';
@@ -126,9 +125,15 @@ export default {
       // 
       let params = JSON.parse(JSON.stringify(this.formData));
       params.scenario_actions = this.formData.commands.map(cmd => {
-        let { name, type, operator } = cmd.data.state
+        console.log("handleSubmit", cmd)
+        let { name, type, mode, operator } = cmd.data.state
         let instruct = {};
-        instruct[name] = typeConvert(operator.value, type);
+        if (mode === "custom") {
+
+        } else {
+          instruct[name] = typeConvert(operator.value, type);
+        }
+        
         return {
           action_type: "1",
           device_id: cmd.data.deviceId,
@@ -185,6 +190,7 @@ export default {
             let result = data?.data || "{}";
             if (result !== "{}") {
               let commands = this.getCommands(JSON.parse(JSON.stringify(result)))
+              console.log("getScene", commands)
               let tmp = JSON.parse(JSON.stringify(result));
               tmp.commands = commands;
               this.formData = tmp;
@@ -198,19 +204,21 @@ export default {
         let p = JSON.parse(cmd.instruct);
         let name = Object.keys(p)[0];
         let value = p[name];
-        return {
-            data: {
-              projectId: cmd.business_id,
-              groupId: cmd.asset_id,
-              deviceId: cmd.device_id,
-              state: {
+        const state = {
                 name,
                 mode: "property",
                 operator: {
                     symbol: "",
                     value
                 }
-              }
+              };
+        return {
+            data: {
+              projectId: cmd.business_id,
+              groupId: cmd.asset_id,
+              deviceId: cmd.device_id,
+              state,
+              stateJSON: JSON.stringify(state)
             }
         }
       })
