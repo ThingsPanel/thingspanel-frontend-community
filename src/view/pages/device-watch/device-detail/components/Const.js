@@ -105,6 +105,13 @@ const getSeries = (data, series) => {
             type: "line",
             symbol: 'none', // 设置坐标点样式为空
             symbolSize: 0,
+            smooth: true, 
+            animation: false,  // 开启动画效果
+            animationDuration: 1000,  // 动画持续时间为1秒
+            animationEasing: 'quadraticOut',
+            areaStyle: {
+                color: 'rgba(0, 128, 255, 0.3)'  // 填充颜色和透明度
+              },
             data: getSeriesData(item.time_series)
         }
     })

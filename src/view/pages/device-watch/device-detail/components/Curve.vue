@@ -225,7 +225,7 @@ export default {
         confine: true,
       };
       // 动画
-      this.optionData.animation = false;
+      // this.optionData.animation = false;
       this.optionData.backgroundColor = 'transparent';
       if (option && option.series[0].data) {
         option.yAxis = { 
