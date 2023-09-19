@@ -13,9 +13,11 @@ const PeriodList = [
     { key: 43200, label: "最近12小时", aggregate: 120 },
     { key: 86400, label: "最近一天", aggregate: 300 },
     { key: 259200, label: "最近三天", aggregate: 600 },
-    { key: 604800, label: "最近一周", aggregate: 1800 },
-    { key: 2592000, label: "最近一月", aggregate: 3600 },
-    { key: 7776000, label: "最近三月", aggregate: 21600 },
+    { key: 604800, label: "最近7天", aggregate: 1800 },
+    { key: 1296000, label: "最近15天", aggregate: 3600 },
+    { key: 2592000, label: "最近30天", aggregate: 3600 },
+    { key: 5184000, label: "最近60天", aggregate: 10800 },
+    { key: 7776000, label: "最近90天", aggregate: 21600 },
     { key: 15552000, label: "最近半年", aggregate: 21600 },
     { key: 31536000, label: "最近一年", aggregate: 2592000 }
 ]
@@ -51,17 +53,6 @@ const AggregateFuncList = [
     { key: "count", label: "次数统计", disabled: true },
     { key: "sum", label: "求和", disabled: true }
   ]
-const AggregateFuncList1 = {
-    "avg": "平均值",
-    "max": "最大值",
-    "minimum": "最小值",
-    "median": "中位数",
-    "first": "首位数",
-    "last": "末尾数",
-    "range": "首尾差值",
-    "count": "次数统计",
-    "sum": "求和"
-};
 
 const getAggregateWindowList = (periodKey) => {
     let list = JSON.parse(JSON.stringify(AggregateWindowList));
@@ -97,10 +88,34 @@ const calcAggregate = (startTime, endTime) => {
     return periodKey;
 }
 
+const getSeriesData = (time_series) => {
+    if (time_series && time_series.length > 0) {
+        return time_series.map(item => [Number((item.x / 1000).toFixed(0)), Number(item.y.toFixed(2))])
+    }
+    return [];
+}
+
+const getSeries = (data, series) => {
+    for (let i = 0; i < data.length; i++) {
+        data[i].title = series[i].name;
+    }
+    return data.map(item => {
+        return {
+            name: item.title,
+            type: "line",
+            symbol: 'none', // 设置坐标点样式为空
+            symbolSize: 0,
+            data: getSeriesData(item.time_series)
+        }
+    })
+}
+
+
 export {
     PeriodList,
     AggregateWindowList,
     AggregateFuncList,
     getAggregateWindowList,
     calcAggregate,
+    getSeries
 }

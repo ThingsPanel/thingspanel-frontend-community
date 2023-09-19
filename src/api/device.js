@@ -156,6 +156,20 @@ export function statistic(data) {
 }
 
 /**
+ * 批量获取历史统计数据
+ * @param {*} data 
+ * @returns 
+ */
+export function statisticBatch(data) {
+    return axios({
+        url: "/kv/statistic/batch",
+        method: "post",
+        data,
+    })
+}
+
+
+/**
  * 控制开关
  * @param data
  * @returns {AxiosPromise}

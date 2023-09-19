@@ -76,10 +76,10 @@
 </template>
 
 <script>
-import { statistic } from "@/api/device";
+import { statistic, statisticBatch } from "@/api/device";
 import StatusIcon from "./StatusIcon"
 import { dateFormat } from "@/utils/tool.js"
-import { PeriodList, AggregateFuncList, getAggregateWindowList, calcAggregate } from "./Const.js"
+import { PeriodList, AggregateFuncList, getAggregateWindowList, calcAggregate, getSeries } from "./Const.js"
 
 export default {
   name: "Curve.vue",
@@ -189,11 +189,7 @@ export default {
         if (this.params.period === "custom") {
           if (this.range.startTime && this.range.endTime) {
             const periodKey = calcAggregate(this.range.startTime, this.range.endTime)
-            console.log("getAggregateWindowList.periodKey", periodKey)
-
             const list = getAggregateWindowList(periodKey);
-            console.log("getAggregateWindowList.list", list)
-
             this.params.aggregate_window = list.sel;
             return list.list;
           }
@@ -228,22 +224,53 @@ export default {
         trigger: 'axis',
         confine: true,
       };
+      // 动画
+      this.optionData.animation = false;
       this.optionData.backgroundColor = 'transparent';
       if (option && option.series[0].data) {
-        const data = option.series[0].data;
-        // let start = Math.ceil(this.dataZoom.start / 100 * data.length);
-        // let end = Math.floor(this.dataZoom.end / 100 * data.length);
-        // let displayedData = data.slice(start - 1, end + 1);
-        let min = Math.floor(Math.min.apply(null, data));
-        let max = Math.ceil(Math.max.apply(null, data));
-        option.yAxis = option.yAxis ? option.yAxis : {};
-        option.yAxis.max = max;
-        option.yAxis.min = min;
+        option.yAxis = { 
+          type: "value",  
+          max: "dataMax",
+          min: "dataMin"
+        };
         this.myEcharts.setOption(option);
         this.$refs.statusIconRef.flush();
       } else {
         this.myEcharts.setOption(this.optionData);
       }
+    },
+    async getStatistic1(mapping) {
+      let attrs = mapping.map(item => item.name ? item.name : item);
+      if (!attrs || attrs.length == 0) return;
+      let endTime = (new Date()).getTime();
+      let startTime = endTime - (Number(this.params.period) * 1000);
+      // 如果有选择时间区间，则以选择的时间区间为准
+      if (this.params.period === "custom" && this.range.startTime && this.range.endTime) {
+        startTime = new Date(this.range.startTime).getTime();
+        endTime = new Date(this.range.endTime).getTime();
+      }
+      if (!startTime || !endTime) return;
+
+      
+      let d = mapping.map(item => {
+        return {
+          device_id: this.device.device,
+          key: item.name ? item.name : item
+        }
+      });
+      let params = {
+          data: d,
+          start_time: startTime * 1000,
+          end_time: endTime * 1000,
+          aggregate_window: this.params.aggregate_window,
+          aggregate_function: this.params.aggregate_function
+      }
+      this.requesting = true;
+      let { data: result } = await statisticBatch(params);
+      this.requesting = false;
+      const xAxis = { type: "time" }
+      const series = getSeries(result.data, this.optionData.series);
+      this.initEChart({ xAxis, series });
     },
     async getStatistic(mapping) {
       let attrs = mapping.map(item => item.name ? item.name : item);
@@ -298,7 +325,7 @@ export default {
     async getHistory(mapping) {
       if (!this.requesting) {
         try {
-          this.getStatistic(mapping);
+          this.getStatistic1(mapping);
         } catch(err) {}
       }
     },
