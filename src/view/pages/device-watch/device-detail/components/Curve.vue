@@ -165,7 +165,7 @@ export default {
         startTime: '',
         endTime: '',
       },
-      requesting: false,
+      loading: false,
       // 采样区间列表
       periodList: PeriodList,
       // 聚合方法列表
@@ -265,9 +265,9 @@ export default {
           aggregate_window: this.params.aggregate_window,
           aggregate_function: this.params.aggregate_function
       }
-      this.requesting = true;
+      this.loading = true;
       let { data: result } = await statisticBatch(params);
-      this.requesting = false;
+      this.loading = false;
       const xAxis = { type: "time" }
       const series = getSeries(result.data, this.optionData.series);
       this.initEChart({ xAxis, series });
@@ -294,9 +294,9 @@ export default {
         aggregate_function: this.params.aggregate_function
       }
 
-      this.requesting = true;
+      this.loading = true;
       let { data: result } = await statistic(params);
-      this.requesting = false;
+      this.loading = false;
       let sysTimes = [];
       let data = [];
       try {
@@ -323,9 +323,17 @@ export default {
      * @param attrs
      */
     async getHistory(mapping) {
-      if (!this.requesting) {
+      if (!this.loading) {
         try {
-          this.getStatistic1(mapping);
+          this.myEcharts.showLoading({
+            text: "数据加载中...",
+            color: "#3174F2",
+            textColor: "#ffffc2",
+            maskColor: "rgba(255, 255, 255, 0)",
+            zlevel: 0
+          });
+          await this.getStatistic1(mapping);
+          this.myEcharts.hideLoading();
         } catch(err) {}
       }
     },
@@ -358,7 +366,7 @@ export default {
       this.range = { startTime, endTime }
       setTimeout(() => {
         this.getHistory(this.optionData.mapping)
-      }, 200)
+      }, 50)
     },
     /**
      * 聚合间隔
@@ -402,6 +410,9 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.echarts-loading {
+  background-color: transparent !important;
+}
 .chart-div {
   position: relative;
   //margin: 10px 20px 20px 10px;

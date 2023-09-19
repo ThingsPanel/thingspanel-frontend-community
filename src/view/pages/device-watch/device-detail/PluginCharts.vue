@@ -250,11 +250,11 @@ export default {
       let componentMaps = { current: [], history: [] };
       for (let i = 0; i < options.length; i++) {
         let option = options[i];
-        if (option.controlType == "dashboard") {
+        if (option.controlType === "dashboard" || option.controlType === "information") {
           componentMaps.current.push({ id: option.id, map: this.getMapping(option) });
-        } else if (option.controlType == "control" && option.type != "setValue") {
+        } else if (option.controlType === "control" && option.type != "setValue") {
           componentMaps.current.push({ id: option.id, map: this.getControlMapping(option) });
-        } else if (option.controlType == "history") {
+        } else if (option.controlType === "history") {
           componentMaps.history.push({ id: option.id, i: option.i, map: this.getMapping(option) });
         }
       }
@@ -292,6 +292,8 @@ export default {
         try {
           let data = JSON.parse(result)
           this.deviceStatus.lastPushTime = data.systime || (new Date()).Format("yyyy-MM-dd hh:mm:ss");
+          console.log("onMessage", result)
+
           this.setComponentsValue(componentMaps.current, data)
         } catch (err) {
           console.log(err)
@@ -334,7 +336,7 @@ export default {
           if (componentMap[index]) {
             let mapping = componentMap[index].map;
             let values = null;
-            if (option.controlType == "dashboard") {
+            if (option.controlType == "dashboard" || option.controlType == "information") {
               if (option.type == "deviceStatus") {
                 values = data.systime || "";
               } else if (option.type == "signalStatus") {
@@ -361,7 +363,7 @@ export default {
                 }
               });
             }
-
+            console.log("pluginCharts.values", values)
             this.$nextTick(() => {
               const ele = this.$refs["component_" + option.i];
               if (ele && ele[0]) {
