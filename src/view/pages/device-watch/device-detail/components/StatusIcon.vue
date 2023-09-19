@@ -2,7 +2,7 @@
   <div class="status-icon">
     <el-tooltip class="item" effect="dark" :content="lastPushTime" placement="top">
         <el-button class="tool-item" size="mini">
-            <img v-if="status" src="./signal_status_on.svg" alt="">
+            <img v-if="status.status" src="./signal_status_on.svg" alt="">
             <img v-else src="./signal_status_off.svg" alt="">
         </el-button>
     </el-tooltip>
@@ -14,8 +14,8 @@ export default {
   components: {},
   props: {
     status: {
-        type: [Boolean],
-        default: false
+        type: [Boolean, Object],
+        default: () => ({ status: false, lastPushTime: "无"})
     },
     systime: {
         type: [String],
@@ -29,8 +29,8 @@ export default {
   },
   methods: {
     flush() {
-        const time = (new Date()).Format("yyyy-M-d hh:mm:ss");
-        this.lastPushTime = "上次推送时间: " + time;
+        // const time = (new Date()).Format("yyyy-M-d hh:mm:ss");
+        this.lastPushTime = "上次推送时间: " + this.status.lastPushTime;
     }
   }
 }

@@ -45,8 +45,8 @@ export default {
       default: () => {return {}}
     },
     status: {
-      type: [Boolean],
-      default: false
+      type: [Boolean, Object],
+      default: () => ({})
     }
   },
   data() {

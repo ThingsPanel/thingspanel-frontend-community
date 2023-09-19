@@ -91,19 +91,19 @@ export default {
     },
     option: {
       type: [Object],
-      default: () => { return {} }
+      default: () => ({})
     },
     value: {
       type: [Object, String, Array],
-      default: () => { return {} }
+      default: () => ({})
     },
     device: {
       type: [Object],
-      default: () => { return {} }
+      default: () => ({})
     },
     status: {
-      type: [Boolean],
-      default: false
+      type: [Boolean, Object],
+      default: () => ({})
     }
   },
   data() {

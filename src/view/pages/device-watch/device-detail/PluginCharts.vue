@@ -100,7 +100,10 @@ export default {
       timer: null,
       socket: null,
       firstLoaded: true,
-      deviceStatus: false
+      deviceStatus: {
+        status: false,
+        lastPushTime: ""
+      }
     }
   },
   watch: {
@@ -287,7 +290,8 @@ export default {
 
       this.socket.onMessage((result) => {
         try {
-          const data = JSON.parse(result)
+          let data = JSON.parse(result)
+          this.deviceStatus.lastPushTime = data.systime || (new Date()).Format("yyyy-MM-dd hh:mm:ss");
           this.setComponentsValue(componentMaps.current, data)
         } catch (err) {
           console.log(err)
@@ -301,10 +305,15 @@ export default {
       const params = {
         device_id_list: [this.device.device]
       }
-      let { data: result } =  await getDeviceListStatus(params);
-      if (result.code === 200) {
-        this.deviceStatus = (result.data[this.device.device].toString() === "1")
+      try {
+        let { data: result } =  await getDeviceListStatus(params);
+        if (result.code === 200) {
+          this.deviceStatus.status = (result.data[this.device.device].toString() === "1");
+        }
+      } catch( err) {
+        this.deviceStatus.status = false;
       }
+      
     },
     getHistory(componentMap) {
       if (!componentMap || componentMap.length === 0) return;
