@@ -93,7 +93,7 @@ export default {
       this.$refs[option.type + "ref"][0].showDialog(option);
     },
     handleSend(cb) {
-      this.$emit("send", cb);
+        this.$emit("send", cb);
     },
     clickSwitch() {
       this.$emit("click", this.option);

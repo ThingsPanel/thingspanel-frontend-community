@@ -4,7 +4,7 @@
       <div class="charts-panel-item" v-for="(control, index) in controlList" :key="'item_'+index">
         <control :ref="control.type + control.series[0].id" style="width: 300px;height: 300px" 
           :dataSrc="dataSrc" :show-name="true" :option="control"  mode="edit"
-          @click="showDialog(control, control.series[0].id)" @bind="submit" @send="handleSend"/>
+          @click="showDialog(control, control.series[0].id)" @bind="submit"/>
       </div>
     </div>
 

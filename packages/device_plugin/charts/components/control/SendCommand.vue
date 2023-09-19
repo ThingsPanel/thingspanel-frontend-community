@@ -52,17 +52,20 @@ export default {
             optionData: {
                 name: "",
                 identifier: "",
-                params: ""
+                params: {}
             },
             isSending: false
         }
     },
     methods: {
         showDialog(option) {
-            console.log("showDialog", option)
+            console.log("showDialog", this.optionData)
             if (this.mode !== "edit") return;
             if (option) {
-                this.optionData = { ...option };
+                const params = option.params ? JSON.stringify(JSON.parse(option.params), null, 4) : "{}";
+                console.log("showDialog.params", params)
+                this.optionData = { ...option, params };
+                console.log(this.optionData)
             }
             this.dialogVisible = true;
         },
@@ -78,11 +81,12 @@ export default {
                 console.log("发送成功")
             });
             this.isSending = true;
+            
         },
         submit() {
             if (!this.validate()) return;
             let opt = JSON.parse(JSON.stringify(this.optionData));
-            opt.params = JSON.stringify(opt.params);
+            // opt.params = JSON.stringify(opt.params);
             this.$emit("bind", opt);
             this.dialogVisible = false;
         },
