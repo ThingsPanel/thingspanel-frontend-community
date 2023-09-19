@@ -11,8 +11,11 @@
       <!-- 数据解析 -->
       <data-parse ref="dataParse" v-if="activeName=='configParse'" :data.sync="formData" :attrs="formAttr"></data-parse>
 
+      <!-- 设备概览 -->
+      <device-attribute v-else-if="activeName=='deviceAttribute'" :data.sync="attrFormData" :device="device" :wvpDevice="wvpDeviceList" :attributeCard="deviceAttributeCardList"></device-attribute>
+
       <!-- 设备属性 -->
-      <device-attribute v-else-if="activeName=='deviceAttribute'" :data.sync="attrFormData" :device="device" :wvpDevice="wvpDeviceList"></device-attribute>
+      <attribute v-else-if="activeName=='attribute'" :data.sync="attrFormData" :device="device" :wvpDevice="wvpDeviceList"></attribute>
 
       <!-- 运维信息 -->
       <running-info v-else-if="activeName=='runningStatus'" :data.sync="runningFormData"></running-info>
@@ -36,25 +39,29 @@
 <script>
 import ModbusAPI from "@/api/modbus"
 import ProtocolPluginAPI from "@/api/protocolPlugin"
+import { currentValueDetail } from "@/api/device"
 import {message_success} from "@/utils/helpers";
 import DataParse from "./DataParse.vue"
 import DeviceAttribute from './DeviceAttribute'
 import RunningInfo from "./RunningInfo.vue"
 import Event from "./Event.vue"
 import Command from "./Command.vue"
+import Attribute from "./attribute.vue"
 import i18n from "@/core/plugins/vue-i18n.js"
 const tabList = [
         { value: "configParse", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DATAANALYSIS')},
-        { value: "deviceAttribute", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICEPROPERTIES')},
+        { value: "deviceAttribute", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OVERVIEW')},
+        { value: "attribute", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PROPERTIES_REPORT') },
         { value: "runningStatus", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OPERATION')},
-        { value: "event", label: "事件(上报)"},
-        { value: "command", label: "命令(下发)"}
+        { value: "event", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.EVENT_REPORT') },
+        { value: "command", label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.COMMAND_DELIVERY')}
       ]
 export default {
   name: "DeviceDetail",
   components: {
     DataParse,
     DeviceAttribute,
+    Attribute,
     RunningInfo,
     Event,
     Command
@@ -83,7 +90,8 @@ export default {
       location: "",
       wvpDeviceList: [],
       eventFormData: {},
-      commandFormData: {}
+      commandFormData: {},
+      deviceAttributeCardList: [],
     }
   },
   watch: {
@@ -140,6 +148,9 @@ export default {
               this.getWVPDeviceList();
             }
           }
+
+          this.getDeviceAttributeCardList()
+
         }
       }
     }
@@ -154,6 +165,15 @@ export default {
           console.log("====getWVPDeviceList", data)
           if (data.code == 200) {
             this.wvpDeviceList = data.data.list ? data.data.list : [];
+          }
+        })
+    },
+    getDeviceAttributeCardList() {
+      currentValueDetail({"device_id": this.device.id})
+        .then(data => {
+          console.debug("====getDeviceAttributeCardList", data)
+          if (data.data.code == 200) {
+            this.deviceAttributeCardList = data.data.data ? data.data.data : [];
           }
         })
     },
