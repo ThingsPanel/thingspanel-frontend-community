@@ -1,17 +1,29 @@
 <template>
     <div style="margin-top: 20px">
         <el-form label-position="left" :model="formData" label-width="120px">
-            <div v-if="device.device_type !== '2'" style="margin-bottom: 30px;">
-                <div style="margin-bottom: 20px;">
-                    <h1>{{ $t('DEVICE_MANAGEMENT.DEVICE_CONFIG.CURRENT_PROPERTIES') }}</h1>
-                </div>
+            <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICE_ID')">
+                <el-tooltip effect="dark"
+                    :content="isCopy ? $t('DEVICE_MANAGEMENT.EDIT_PARAMETER.COPIED') : $t('DEVICE_MANAGEMENT.EDIT_PARAMETER.COPY')">
+                    <el-input style="width: 30%" readonly v-clipboard:copy="device.device" v-model="device.device"
+                        @click.native="handleCopy"></el-input>
+                </el-tooltip>
 
+            </el-form-item>
+
+            <el-form-item v-if="device.device_type == '2' && device.protocol.startsWith('WVP_')"
+                :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.LABLE1')">
+                <el-select style="width: 100%" v-model="formData.d_id">
+                    <el-option v-for="(item, index) in wvpDevice" :key="item.deviceId"
+                        :label="item.deviceId + ' [' + item.createTime + '] ' + (item.online == 1 ? $t('DEVICE_MANAGEMENT.DEVICE_CONFIG.ONLINE') : $t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OFFLINE'))"
+                        :value="item.deviceId"></el-option>
+                </el-select>
+            </el-form-item>
+
+            <div v-if="device.device_type !== '2'" style="margin-bottom: 30px;">
                 <!-- 属性卡片 -->
                 <el-row :gutter=12>
-                    <!-- <el-tab-pane v-for="item in tabList" :key="item.value" :label="item.label" :name="item.value"></el-tab-pane>
-                    </el-tab-pane> -->
 
-                    <el-col :span=6 style="margin-bottom: 10px;" v-for="item in attributeCard" :key="item.key"
+                    <el-col :xs="24" :sm="12" :md="8" :lg="6" style="margin-bottom: 10px;" v-for="item in deviceAttributeCardList" :key="item.key"
                         v-if="item.key !== 'systime' && item.key !== 'SYS_ONLINE'">
                         <div style="height 150px; background-color: #2d3d88; border-radius: 4px;border: 1px solid #EBEEF5;">
                             <div style="padding: 10px 10px 10px 20px; height: 30px;">
@@ -22,8 +34,7 @@
                                     <i v-if="isShowDataChart(item)" @click="showDeviceDataChart(item)"
                                         style="float: right; padding: 3px 5px; cursor:pointer;"
                                         class="el-icon-pie-chart"></i>
-                                    <i v-else 
-                                        style="float: right; padding: 3px 5px; cursor:not-allowed;"
+                                    <i v-else style="float: right; padding: 3px 5px; cursor:not-allowed;"
                                         class="el-icon-pie-chart"></i>
                                 </el-tooltip>
                                 <el-tooltip class="item" effect="dark"
@@ -39,9 +50,9 @@
                             </div>
                             <div style="height:115px; padding:10px 5px 0px 10px">
                                 <div style="height: 63px;">
-                                    <span style="font-size: 50px; padding-left:10px">{{ item.str_v ? item.str_v : item.dbl_v
+                                    <span style="font-size: 45px; padding-left:10px">{{ item.str_v ? item.str_v : item.dbl_v
                                     }}</span>
-                                    <!-- <span style="font-size: 50px; ">°</span> -->
+                                    <span style="font-size: 25px; ">{{ item.unit || ""}}</span>
                                 </div>
                                 <div style="float: right; padding: 3px 5px; margin-bottom: 3px; margin-top: 11px">{{
                                     calculateUpdateTime(item.ts) }}</div>
@@ -50,47 +61,6 @@
                     </el-col>
                 </el-row>
             </div>
-
-            <div v-if="device.device_type !== '2'" style="margin-bottom: 20px;">
-                <h1>{{ $t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OTHER_PROPERTIES') }}</h1>
-            </div>
-
-            <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICE_ID')">
-                <el-tooltip effect="dark"
-                    :content="isCopy ? $t('DEVICE_MANAGEMENT.EDIT_PARAMETER.COPIED') : $t('DEVICE_MANAGEMENT.EDIT_PARAMETER.COPY')">
-                    <el-input style="width: 100%" readonly v-clipboard:copy="device.device" v-model="device.device"
-                        @click.native="handleCopy"></el-input>
-                </el-tooltip>
-
-            </el-form-item>
-
-            <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.SUBDEVICEADDRESS')" v-if="device.device_type == '3'">
-                <el-input style="width: 100%" :placeholder="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PLACEHOLDER1')"
-                    v-model="formData.subDeviceAddress"></el-input>
-            </el-form-item>
-
-            <el-form-item v-if="device.device_type == '2' && device.protocol.startsWith('WVP_')"
-                :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.LABLE1')">
-                <el-select style="width: 100%" v-model="formData.d_id">
-                    <el-option v-for="(item, index) in wvpDevice" :key="item.deviceId"
-                        :label="item.deviceId + ' [' + item.createTime + '] ' + (item.online == 1 ? $t('DEVICE_MANAGEMENT.DEVICE_CONFIG.ONLINE') : $t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OFFLINE'))"
-                        :value="item.deviceId"></el-option>
-                </el-select>
-            </el-form-item>
-
-            <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICELOCATION')">
-                <el-input readonly @click.native="showCheckLocation" style="width: 100%"
-                    :placeholder="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PLACEHOLDER2')"
-                    v-model="formData.location"></el-input>
-            </el-form-item>
-        </el-form>
-        <device-location-config v-if="positionShow" :maker-position.sync="locationArray"
-            :dialog-visible.sync="positionShow"></device-location-config>
-
-        <el-form>
-            <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.FIRMWARE_VERSION')">
-                {{ device.current_version || '' }}
-            </el-form-item>
         </el-form>
 
         <!-- 属性历史数据 -->
@@ -103,14 +73,13 @@
 </template>
 
 <script>
-import DeviceLocationConfig from "@/components/common/DeviceLocationConfig.vue"
 import DeviceHistory from "./DeviceHistory.vue"
 import DeviceDataChart from "./DeviceDataChart.vue"
 import i18n from "@/core/plugins/vue-i18n.js"
+import { currentValueDetail } from "@/api/device"
 
 export default {
     components: {
-        DeviceLocationConfig,
         DeviceHistory,
         DeviceDataChart,
     },
@@ -129,19 +98,18 @@ export default {
             type: Array,
             default: () => { return [] }
         },
-        attributeCard: {
-            type: Array,
-            default: () => { return [] }
-        }
+        initAttributeCard: {
+            type: Boolean,
+            default: false
+        },
     },
     data() {
         return {
-            positionShow: false,
-            locationArray: [],
             isCopy: false,
             choosedAttribute: "",
             deviceHistoryVisible: false,
             deviceDataChartVisible: false,
+            deviceAttributeCardList: [],
         }
     },
     computed: {
@@ -155,17 +123,28 @@ export default {
         }
     },
     watch: {
-        locationArray(val) {
-            this.formData.location = val.join(',')
+        initAttributeCard: {
+            handler(newValue){
+                if (newValue) {
+                    this.getDeviceAttributeCardList()
+                }
+            }
         }
     },
     mounted() {
         console.log("DeviceAttribute", this.device)
+        this.getDeviceAttributeCardList()
     },
     methods: {
-        showCheckLocation() {
-            this.positionShow = true
-        },
+        getDeviceAttributeCardList() {
+            currentValueDetail({ "device_id": this.device.id })
+                .then(data => {
+                    console.debug("====getDeviceAttributeCardList", data)
+                    if (data.data.code == 200) {
+                        this.deviceAttributeCardList = data.data.data ? data.data.data : [];
+                    }
+                })
+        }, 
         handleCopy() {
             this.isCopy = true;
         },
@@ -209,12 +188,12 @@ export default {
 
             return lang === '中文' ? "刚刚更新" : "Just updated";
         },
-        isShowDataChart(item){
+        isShowDataChart(item) {
             if (!item) {
                 return false
             }
             let value = item.str_v ? item.str_v : item.dbl_v
-            if(!value || typeof value === "number"){
+            if (!value || typeof value === "number") {
                 return true
             }
             return false
@@ -222,6 +201,8 @@ export default {
     }
 }
 </script>
-<style lang="scss" scoped>.el-form-item__content {
+<style lang="scss" scoped>
+.el-form-item__content {
     margin-left: 100px;
-}</style>
+}
+</style>

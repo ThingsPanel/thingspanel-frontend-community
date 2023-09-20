@@ -42,9 +42,9 @@
                         <el-button @click="changeChartType('bar')" icon="el-icon-data-line" :type="buttonType.bar"
                             style="width: 47px; border-color:#747474; margin:0" :style="chartTypeOption.bar"
                             size="small"></el-button>
-                        <el-button @click="changeChartType('scatter')" icon="el-icon-data-analysis" :type="buttonType.scatter"
-                            style="width: 47px; border-color:#747474; margin:0" :style="chartTypeOption.scatter"
-                            size="small"></el-button>
+                        <el-button @click="changeChartType('scatter')" icon="el-icon-data-analysis"
+                            :type="buttonType.scatter" style="width: 47px; border-color:#747474; margin:0"
+                            :style="chartTypeOption.scatter" size="small"></el-button>
                     </el-button-group>
                     <el-button @click="getStatisticValue()" icon="el-icon-refresh-right" type="border"
                         style="width: 47px; border-color:#747474; margin-left:22px" size="small"></el-button>
@@ -117,9 +117,9 @@
                 </el-table>
 
                 <div style="float: right; margin-bottom: 20px">
-                    <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="currentPage"
-                        :page-sizes="[5, 10, 50]" :page-size="pageSize" layout="total, sizes, prev, pager, next"
-                        :total="tableData.length">
+                    <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange"
+                        :current-page="currentPage" :page-sizes="[5, 10, 50]" :page-size="pageSize"
+                        layout="total, sizes, prev, pager, next" :total="tableData.length">
                     </el-pagination>
                 </div>
             </div>
@@ -655,12 +655,12 @@ export default {
         },
         // 获取属性统计数据
         getStatisticValue(isInit = false) {
-            
+
             let startTime, endTime;
-            if(isInit){
+            if (isInit) {
                 startTime = new Date(Date.now() - 1000 * 60 * 60).getTime() * 1000;
                 endTime = new Date(Date.now()).getTime() * 1000;
-            }else{
+            } else {
                 startTime = new Date(this.choosedTimeRange[0]).getTime() * 1000;
                 endTime = new Date(this.choosedTimeRange[1]).getTime() * 1000;
             }
@@ -680,10 +680,8 @@ export default {
                 .then(({ data }) => {
                     console.debug("====getHistoryData", data)
                     if (data.code == 200) {
-                        // this.historyData = data.data.data ? data.data.data : []
                         this.historyData = data.data.time_series ? data.data.time_series : []
-                        // this.historyData = this.historyData.length > 100 ? this.historyData.slice(-100, -1) : this.historyData
-
+                        this.historyData.reverse()
                     }
                     console.debug(this.historyData)
                     this.transformChartData()
@@ -696,14 +694,13 @@ export default {
             this.selectedAggrigateOptions = "no_aggregate"
             let now = Date.now();
 
-            this.timeRangeOptions = [
+            this.choosedTimeRange = [
                 new Date(now - 1000 * 60 * 60),
                 new Date(now)
             ]
 
-            this.changeChartType('line')
+            this.changeChartType('line', false)
 
-            console.debug("handleClose", this.dialogVisible, this.$refs, this)
             if (!this.bindc) {
                 this.btn()
             }
@@ -756,51 +753,62 @@ export default {
 
             this.getStatisticValue()
         },
-        handleDatePickerChange(val) {
+        handleDatePickerChange() {
             this.selectedTimeRangeOptions = "custom"
 
             // 根据选择范围禁用聚合范围
-            let list = this.aggrigateOptions;
-            const period = this.timeRangeOptions.find(item => item.value === this.selectedTimeRangeOptions);
-            let sel = "";
-            if (period.aggregateLimit) {
-                for (let i = 0; i < list.length; i++) {
-                    const item = list[i];
-                    item.disabled = false;
-                    if (period.aggregateLimit > item.sec || item.value === "no_aggregate") {
-                        item.disabled = true;
-                        sel = list[i + 1].value;
-                    }
-                }
-                if (sel === "") {
-                    sel = "no_aggregate"
+            const startTime = new Date(this.choosedTimeRange[0]).getTime() / 1000;
+            const endTime = new Date(this.choosedTimeRange[1]).getTime() / 1000;
+            const interval = endTime - startTime;
+            let choosedAggregate;
+
+            const timeRangeToInterval = {
+                300: "all", // 最近5分钟
+                900: "all", // 最近15分钟
+                1800: "all", // 最近30分钟
+                3600: "all", // 最近1小时
+                10800: 30, // 最近3小时
+                21600: 60, // 最近6小时
+                43200: 120, // 最近12小时
+                86400: 300, // 最近24小时
+                259200: 600, // 最近3天
+                604800: 1800, // 最近7天
+                1296000: 3600, // 最近15天
+                2592000: 3600, // 最近30天
+                5184000: 10800, // 最近60天
+                7776000: 21600, // 最近90天
+                15552000: 21600, // 最近6个月
+                31104000: 2592000, // 最近1年
+            };
+            
+            // 返回需要禁用的选项
+            function getMinMatchingKey(intervalInSeconds) {
+                const keysGreaterThanInterval = Object.keys(timeRangeToInterval).filter(key => intervalInSeconds <= key);
+                if (keysGreaterThanInterval.length === 0) {
+                    return null;
                 }
 
-                this.aggrigateOptions = list;
-                this.selectedAggrigateOptions = sel;
+                return Math.min(...keysGreaterThanInterval.map(key => parseInt(key)));
             }
 
-            const getAggregateWindowList = (periodKey) => {
-                let list = JSON.parse(JSON.stringify(AggregateWindowList));
-                const period = PeriodList.find(item => item.key === periodKey);
-                let sel = "";
-                if (period.aggregate) {
-                    for (let i = 0; i < list.length; i++) {
-                        const item = list[i];
-                        item.default = false;
-                        if (period.aggregate > item.sec || item.key === "no_aggregate") {
-                            item.disabled = true;
-                            sel = list[i + 1].key;
+            const aggregateWindow = getMinMatchingKey(interval);
+            if (aggregateWindow) {
+                choosedAggregate = timeRangeToInterval[aggregateWindow];
+                console.debug(interval, aggregateWindow, choosedAggregate, choosedAggregate !== 'all')
+                if (choosedAggregate !== 'all') {
+                    this.selectedAggrigateOptions = this.aggrigateOptions.find(item => item.sec === choosedAggregate).value
+                    for (let i = 0; i < this.aggrigateOptions.length; i++) {
+                        if (this.aggrigateOptions[i].sec < choosedAggregate) {
+                            this.aggrigateOptions[i].disabled = true;
                         }
                     }
                 }
-                return { list, sel };
             }
 
             this.getStatisticValue()
         },
         // 修改图表类型
-        changeChartType(buttonOption) {
+        changeChartType(buttonOption, reloadChart = true) {
             this.choosedChartType = buttonOption;
             this.buttonType = {
                 line: "border",
@@ -817,7 +825,9 @@ export default {
                 backgroundColor: '#647bf3',
             }
             console.debug(this.chartTypeOption)
-            this.myEcharts.setOption(this.defaultChartOptions[buttonOption]);
+            if (reloadChart) {
+                this.myEcharts.setOption(this.defaultChartOptions[buttonOption]);
+            }
         },
         /**
          * 全屏显示
