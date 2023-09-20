@@ -93,15 +93,15 @@ export default {
                     { required: true, message: '请输入命令内容', trigger: 'blur' }
                 ]
             },
-            subscribeTitle: "设备订阅命令主题:  device/command/<AccessToken>"
+            subscribeTitle: "设备订阅命令主题:  device/command/" +  this.device.token
         }
     },
     mounted() {
         if (this.device.device_type === "1") {
-            this.subscribeTitle = "设备订阅命令主题:  device/command/<AccessToken>"
+            this.subscribeTitle = "设备订阅命令主题:  device/command/" + this.device.token
         } else if (this.device.device_type === "2"  && this.device.protocol === 'MQTT') {
             // 网关
-            this.subscribeTitle = "设备订阅命令主题:  gateway/command/<AccessToken>"
+            this.subscribeTitle = "设备订阅命令主题:  gateway/command/" + this.device.token
         } else {
             this.subscribeTitle = "";
         }
