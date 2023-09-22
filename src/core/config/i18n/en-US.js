@@ -615,6 +615,13 @@ export const locale = {
     TEXT4: "Contact us",
     WrongPassword: "The user name or password is incorrect",
     LOADING: "Loading....",
+    PASSWORD_LOGIN: "Password Login",
+    CAPTCHA_LOGIN: "",
+    PHONE_NUMBER: "手机号",
+    PASSWORD: "密码",
+    NO_LOGIN_10_DAY: "十天内免登录",
+    FORGOT_PASSWORD: "忘记密码？",
+    SIGN_UP: "去注册",
   },
   /**
    * Front Page
@@ -2017,6 +2024,13 @@ export const locale = {
       EDIT: "Edit",
       SAVE: "Save",
       SEND: "Send",
+      NOTICE_TYPE: "Notice Type",
+      ALERT_MESSAGE_NOTICE: "Alert Message Notice",
+      SMS_CODE_NOTICE: "SMS Code Notice",
+      ALERT_TEMPLATE_PLACEHOLDER: "Template code content description: Respected user, you have a ${level} alarm, alarm name ${name}, occurrence time ${time}.",
+      SMS_CODE_TEMPLATE_PLACEHOLDER: "Template code content description: your captCHA is ${code}, the captCHA is valid for 5 minutes, do not leak to others!",
+      ALERT_CONTENT_PLACEHOLDER: "Input variables ${ level }, ${ name }, and ${ time } in sequence, separated by commas(,), and containing a maximum of 35 characters.",
+      SMS_CODE_CONTENT_PLACEHOLDER: "Input variable ${code}",
     },
     /**
      * 通知记录
