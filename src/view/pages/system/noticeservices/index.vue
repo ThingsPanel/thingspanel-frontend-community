@@ -11,7 +11,13 @@
         <div v-if="activeTab == 1">
           <!-- 短信设置 -->
           <div class="content-form">
-            <el-form ref="form" :rules="rules" :label-position="'left'" label-width="140px" :model="formObj" >
+            <el-form ref="form"  class="el-dark-input" :rules="rules" :label-position="'left'" label-width="140px" :model="formObj" >
+              <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.NOTICE_TYPE')" prop="config.cloud_type">
+                <el-select :disabled="isDisabled" v-model="formObj.notice_type" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.PLACEHOLDER')" style="width: 330px">
+                  <el-option v-for="option in noticeTypeOptions" :label="option.label" :value="option.value"></el-option>
+                </el-select>
+              </el-form-item>
+              
               <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE1')" prop="config.cloud_type">
                 <el-select :disabled="isDisabled" v-model="formObj.config.cloud_type" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.PLACEHOLDER')" style="width: 330px">
                   <el-option :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.ALY')" :value="1"></el-option>
@@ -64,16 +70,16 @@
                 ></el-input>
               </el-form-item>
 
-              <!-- <el-form-item label="">
+              <el-form-item label="">
                 <el-input
-                  type="textarea"
                   disabled
+                  type="textarea"
                   rows="5"
-                  style="width: 330px"
+                  style="width: 330px;"
                   v-model="formObj.system_name"
-                 
+                  :placeholder="templatePlaceholderOptions[formObj.notice_type].template"
                 ></el-input>
-              </el-form-item> -->
+              </el-form-item>
 
               <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE8')">
                 <el-switch :disabled="isDisabled" v-model="formObj.status" :active-value="1" :inactive-value="0" @change="switchChange"></el-switch>
@@ -153,7 +159,11 @@
                       <el-input v-model="formModel.phone_number"></el-input>
                     </el-form-item>
                     <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE10')" prop="content">
-                      <el-input type="textarea" v-model="formModel.content"></el-input>
+                      <el-input 
+                      type="textarea" 
+                      :placeholder="templatePlaceholderOptions[formObj.notice_type].messageContent"
+                      v-model="formModel.content">
+                    </el-input>
                     </el-form-item>
                     <div style="display: flex;justify-content: center">
                       <el-button class="medium" type="save" size="medium" @click="onSend">{{ $t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SEND') }}</el-button>
@@ -322,6 +332,20 @@ export default {
         content: [
           {required: true, message: i18n.t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.PLACEHOLDER7'), trigger: "blur"}
         ],
+      },
+      noticeTypeOptions: [
+        { label: i18n.t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SMS_CODE_NOTICE'), value: 3 },
+        { label: i18n.t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.ALERT_MESSAGE_NOTICE'), value: 1 },
+      ],
+      templatePlaceholderOptions: {
+        1: {
+          template: i18n.t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.ALERT_TEMPLATE_PLACEHOLDER'),
+          messageContent: i18n.t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.ALERT_CONTENT_PLACEHOLDER'),
+        },
+        3: {
+          template: i18n.t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SMS_CODE_TEMPLATE_PLACEHOLDER'),
+          messageContent: i18n.t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SMS_CODE_CONTENT_PLACEHOLDER'),
+        },
       }
     }
   },

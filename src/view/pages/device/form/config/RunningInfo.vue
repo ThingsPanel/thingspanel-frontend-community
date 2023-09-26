@@ -1,28 +1,58 @@
 <template>
     <div>
-        <el-form label-position="left" :model="formData">
+        <el-form label-position="left" :model="formData" label-width="120px">
             <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OFFLINETIME')" prop="thresholdTime">
                 <el-input-number controls-position="right" size="small" v-model="formData.thresholdTime"
                     :min="0"></el-input-number>
                 秒
             </el-form-item>
+
+            <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.SUBDEVICEADDRESS')" v-if="device.device_type == '3'">
+                <el-input style="width: 100%" :placeholder="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PLACEHOLDER1')"
+                    v-model="formData.subDeviceAddress"></el-input>
+            </el-form-item>
+
+            <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICELOCATION')">
+                <el-input readonly @click.native="showCheckLocation" style="width: 100%"
+                    :placeholder="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PLACEHOLDER2')"
+                    v-model="formData.location"></el-input>
+            </el-form-item>
         </el-form>
+            <device-location-config v-if="positionShow" :maker-position.sync="locationArray"
+                :dialog-visible.sync="positionShow"></device-location-config>
+
     </div>
 </template>
 
 <script>
+import DeviceLocationConfig from "@/components/common/DeviceLocationConfig.vue"
+
+
 export default {
-    components: {},
+    components: {
+        DeviceLocationConfig,
+    },
     props: {
         data: {
             type: Object,
             default: () => {
                 return {}
             }
-        }
+        },
+        device: {
+            type: [Object],
+            default: () => { return {} }
+        },
     },
     data() {
         return {
+            positionShow: false,
+            locationArray: [],
+        }
+    },
+    watch:{
+        locationArray(val) {
+            this.formData.location = val.join(',')
         }
     },
     computed: {
@@ -35,7 +65,12 @@ export default {
             }
         }
     },
-    methods: {}
+    methods: {
+        showCheckLocation() {
+            this.positionShow = true
+        }
+
+    }
 }
 </script>
 <style lang="scss" scoped></style>

@@ -428,6 +428,7 @@ export const locale = {
     CURRENT_LANGUAGE: "中文",
     REFRESH: "刷新",
     EXPORT_CONFIRM: "确定导出数据吗?",
+    DELETE_CONFIRM: "确定删除吗?",
     GENERATE_WAIT: "生成中，请稍候...",
 },
   TRANSLATOR: {
@@ -727,6 +728,8 @@ export const locale = {
       PROPERTIES_REPORT: "属性(上报)",
       EVENT_REPORT: "事件(上报)",
       COMMAND_DELIVERY:"命令(下发)",
+      DEVICE_PLUGIN:"设备插件",
+      DEVICE_LOG:"设备日志",
       CURRENT_PROPERTIES: "当前属性",
       OTHER_PROPERTIES: "其他属性",
       DEVICE_ID: "设备ID",
@@ -1225,7 +1228,7 @@ export const locale = {
       SEARCH: "查询",
       RESET: "重置",
       NUMBERID: "序号",
-      BUSINESSNAME1: "业务名称",
+      BUSINESSNAME1: "项目名称",
       DEVICENAME1: "设备名称",
       DWVICEGROUPNAME1: "设备分组名称",
       INSTRUCTION1: "指令",
@@ -2053,7 +2056,13 @@ export const locale = {
       EDIT:"修改",
       SAVE:"保存",
       SEND:"发送",
-    
+      NOTICE_TYPE: "通知类型",
+      ALERT_MESSAGE_NOTICE: "告警信息通知",
+      SMS_CODE_NOTICE: "短信验证码通知",
+      ALERT_TEMPLATE_PLACEHOLDER: "模板CODE内容说明：尊敬的用户，您有一条${level}告警信息，告警名称${name},发生时间${time}。",
+      SMS_CODE_TEMPLATE_PLACEHOLDER: "模板CODE内容说明：您的验证码是${code},该验证码5分钟内有效，请勿泄露于他人！",
+      ALERT_CONTENT_PLACEHOLDER: "依次输入变量${level}、${name}、${time}、使用英文逗号隔开，长度不能超过35个字符",
+      SMS_CODE_CONTENT_PLACEHOLDER: "输入变量${code}",
     },
     /**
      * 通知记录
