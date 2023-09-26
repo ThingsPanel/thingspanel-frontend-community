@@ -266,11 +266,11 @@ export default {
      */
     updateComponents(componentMaps) {
 
-      this.timer = setInterval(() => {
-        this.getHistory(componentMaps.history);
-        this.getDeviceStatus();
-      }, this.flushTime * 1000);
-      localStorage.setItem("deviceWatch_timer", this.timer + "");
+      // this.timer = setInterval(() => {
+      //   this.getHistory(componentMaps.history);
+      //   this.getDeviceStatus();
+      // }, this.flushTime * 1000);
+      // localStorage.setItem("deviceWatch_timer", this.timer + "");
 
       // 先执行一次获取设备状态
       this.getDeviceStatus();
@@ -292,11 +292,9 @@ export default {
         try {
           let data = JSON.parse(result)
           this.deviceStatus.lastPushTime = data.systime || (new Date()).Format("yyyy-MM-dd hh:mm:ss");
-          console.log("onMessage", result)
-
           this.setComponentsValue(componentMaps.current, data)
+          this.setComponentsValue(componentMaps.history, data)
         } catch (err) {
-          console.log(err)
         }
       })
     },
@@ -339,7 +337,7 @@ export default {
             if (option.controlType == "dashboard" || option.controlType == "information") {
               if (option.type == "deviceStatus") {
                 values = data.systime || "";
-              } else if (option.type == "signalStatus") {
+              } else if (option.type == "signalStatus" || option.type == "textInfo") {
                 if (data && data[mapping[0].name]) {
                   values = data[mapping[0].name];
                 } else {
@@ -362,8 +360,16 @@ export default {
                   values[item] = data[item];
                 }
               });
+            } else if (option.controlType === "history") {
+              console.log("curve.history", mapping, data, option);
+              values = {};
+              mapping.forEach(item => {
+                if (data && data[item.name]) {
+                  values[item.name] = data[item.name];
+                  values["systime"] = data["systime"];
+                }
+              });
             }
-            console.log("pluginCharts.values", values)
             this.$nextTick(() => {
               const ele = this.$refs["component_" + option.i];
               if (ele && ele[0]) {
@@ -374,7 +380,6 @@ export default {
           // }
         })
       } catch (err) {
-        console.log(err)
       }
 
     },

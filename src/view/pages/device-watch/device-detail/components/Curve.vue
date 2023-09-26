@@ -35,8 +35,15 @@
               :command="item.key" :disabled="item.disabled">{{item.label}}</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
+
+        <!-- 刷新 -->
+        <el-button v-if="params.aggregate_window !== 'no_aggregate'" class="tool-item" size="mini" icon="el-icon-refresh" @click="handleRefresh"></el-button>
+
         <el-button class="tool-item" size="mini" icon="el-icon-more" @click="showConfiguration"></el-button>
       </div>
+
+      
+
 
     </div>
 
@@ -113,12 +120,12 @@ export default {
       configurationVisible: false,
       rangeDialogVisible: false,
       dataZoom: {
-        start: 70,
+        start: 0,
         end: 100
       },
       params: {
-        // 采样周期，默认最近5分钟
-        period: 300,   
+        // 采样周期，默认最近1小时
+        period: 3600,   
         // 聚合方法
         aggregate_function: "avg",     
         // 聚合间隔
@@ -239,7 +246,31 @@ export default {
         this.myEcharts.setOption(this.optionData);
       }
     },
-    async getStatistic1(mapping) {
+    updateOption(values) {
+      if (this.params.aggregate_window !== "no_aggregate") return;
+      var currentOption = this.myEcharts.getOption();
+      let series = [];
+      for (let i = 0; i < currentOption.series.length; i++) {
+        let data = JSON.parse(JSON.stringify(currentOption.series[i])).data;
+
+        let value = values[this.optionData.mapping[i]]
+        var timestamp = new Date(values["systime"]).getTime();
+        if (!data) {
+          data = [];
+        }
+        let len = data.unshift([timestamp, value]);
+        // 如果第一个数据和最后一个数据的间隔时间大于采样周期则删除最后一个元素
+        if (timestamp - data[len -1][0] > this.params.period * 1000) {
+          data.pop();
+        }
+        series.push({ data })
+      }
+      const xAxis = { type: "time" }
+      
+      this.initEChart({ xAxis, series });
+      
+    },
+    async getStatistic(mapping) {
       let attrs = mapping.map(item => item.name ? item.name : item);
       if (!attrs || attrs.length == 0) return;
       let endTime = (new Date()).getTime();
@@ -272,51 +303,51 @@ export default {
       const series = getSeries(result.data, this.optionData.series);
       this.initEChart({ xAxis, series });
     },
-    async getStatistic(mapping) {
-      let attrs = mapping.map(item => item.name ? item.name : item);
-      if (!attrs || attrs.length == 0) return;
-      console.log("getStatistic", this.params)
-      let endTime = (new Date()).getTime();
-      let startTime = endTime - (Number(this.params.period) * 1000);
-      // 如果有选择时间区间，则以选择的时间区间为准
-      if (this.params.period === "custom" && this.range.startTime && this.range.endTime) {
-        startTime = new Date(this.range.startTime).getTime();
-        endTime = new Date(this.range.endTime).getTime();
-      }
-      if (!startTime || !endTime) return;
+    // async getStatistic(mapping) {
+    //   let attrs = mapping.map(item => item.name ? item.name : item);
+    //   if (!attrs || attrs.length == 0) return;
+    //   console.log("getStatistic", this.params)
+    //   let endTime = (new Date()).getTime();
+    //   let startTime = endTime - (Number(this.params.period) * 1000);
+    //   // 如果有选择时间区间，则以选择的时间区间为准
+    //   if (this.params.period === "custom" && this.range.startTime && this.range.endTime) {
+    //     startTime = new Date(this.range.startTime).getTime();
+    //     endTime = new Date(this.range.endTime).getTime();
+    //   }
+    //   if (!startTime || !endTime) return;
 
-      let params = {
-        device_id: this.device.device,
-        key: attrs[0],
-        start_time: startTime * 1000,
-        end_time: endTime * 1000,
-        aggregate_window: this.params.aggregate_window,
-        aggregate_function: this.params.aggregate_function
-      }
+    //   let params = {
+    //     device_id: this.device.device,
+    //     key: attrs[0],
+    //     start_time: startTime * 1000,
+    //     end_time: endTime * 1000,
+    //     aggregate_window: this.params.aggregate_window,
+    //     aggregate_function: this.params.aggregate_function
+    //   }
 
-      this.loading = true;
-      let { data: result } = await statistic(params);
-      this.loading = false;
-      let sysTimes = [];
-      let data = [];
-      try {
-        result.data.time_series.reverse().forEach(item => {
-          sysTimes.push(dateFormat(item.x));
-          data.push(item.y)
-        })
-        let xAxis = { data: sysTimes, type: 'category', axisLabel: { interval: 'auto' } };
-        let series = [
-          {
-            data,
-            type: 'line'
-          }
-        ]
-        this.initEChart({ xAxis, series });
-      } catch (err) {
+    //   this.loading = true;
+    //   let { data: result } = await statistic(params);
+    //   this.loading = false;
+    //   let sysTimes = [];
+    //   let data = [];
+    //   try {
+    //     result.data.time_series.reverse().forEach(item => {
+    //       sysTimes.push(dateFormat(item.x));
+    //       data.push(item.y)
+    //     })
+    //     let xAxis = { data: sysTimes, type: 'category', axisLabel: { interval: 'auto' } };
+    //     let series = [
+    //       {
+    //         data,
+    //         type: 'line'
+    //       }
+    //     ]
+    //     this.initEChart({ xAxis, series });
+    //   } catch (err) {
 
-      }
+    //   }
 
-    },
+    // },
     /**
      * 从服务器获取指定设备的推送数据
      * @param deviceId
@@ -332,7 +363,7 @@ export default {
             maskColor: "rgba(255, 255, 255, 0)",
             zlevel: 0
           });
-          await this.getStatistic1(mapping);
+          await this.getStatistic(mapping);
           this.myEcharts.hideLoading();
         } catch(err) {}
       }
@@ -382,7 +413,13 @@ export default {
      */ 
     handleAggregateFuncCommand(command) {
       this.params.aggregate_function = command;
-      this.getHistory(this.optionData.mapping)
+      this.getHistory(this.optionData.mapping);
+    },
+    /**
+     * 手动刷新
+     */
+    handleRefresh() {
+      this.getHistory(this.optionData.mapping);
     },
     showConfiguration() {
     },
