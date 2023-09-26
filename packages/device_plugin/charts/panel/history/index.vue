@@ -19,7 +19,7 @@
               </el-form-item>
               <el-form-item :label="$t('PLUGIN.CHART_INFO_TAB.TAB_TITLE4')">
                 <!-- 从json中解析出物模型的所有属性 -->
-                <el-transfer style="width: 100%;height: 240px"
+                <el-transfer style="width: 100%;height: 100%"
                              :titles="['数据源', '已选择数据源']"
                              v-model="dataSrcValue"
                              :data="dataSrcOptions"></el-transfer>
