@@ -152,18 +152,14 @@ export default {
                     && this.device.protocol_config != ""
                     && this.device.protocol_config != undefined) {
                     this.formData = JSON.parse(this.device.protocol_config);
-                  } else {
-                    this.tabList = this.tabList.filter(item => item.value !== "configParse")
-                    this.activeName = "deviceAttribute";
-                  }
+                  } 
                 } else {
-                  this.tabList.splice(0, 1);
+                  this.tabList = this.tabList.filter(item => item.value !== "configParse")
                   this.activeName = "deviceAttribute";
                 }
               })
           } else {
             this.tabList = JSON.parse(JSON.stringify(tabList));
-            // const configParseIndex = this.tabList.findIndex(item => item.value === "configParse");
             this.tabList = this.tabList.filter(item => item.value !== "configParse")
             this.activeName = "deviceAttribute";
             this.formRule = {
