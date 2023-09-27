@@ -34,3 +34,39 @@ export function getUserInfo() {
         method: 'post',
     })
 }
+
+/**
+ * 注册租户
+ * @returns {AxiosPromise}
+ */
+export function register(data) {
+    return axios({
+        url: '/auth/tenant/register',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 租户密码重置
+ * @returns {AxiosPromise}
+ */
+export function passwordReset(data) {
+    return axios({
+        url: '/auth/change_password',
+        method: 'post',
+        data
+    })
+}
+
+/**
+ * 发送验证码
+ * @returns {AxiosPromise}
+ */
+export function sendCaptchaCode(data) {
+    return axios({
+        url: '/auth/captcha',
+        method: 'post',
+        data
+    })
+}

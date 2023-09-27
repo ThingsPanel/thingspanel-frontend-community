@@ -1,215 +1,288 @@
 <template>
   <div>
-    <!--begin::Content header-->
-    <div
-      class="position-absolute top-0 right-0 text-right mt-5 mb-15 mb-lg-0 flex-column-auto justify-content-center py-5 px-10"
-    >
-      <span class="font-weight-bold font-size-3 text-dark-60">
-        Already have an account?
-      </span>
-      <router-link
-        class="font-weight-bold font-size-3 ml-2"
-        :to="{ name: 'login' }"
-      >
-        Sign In!
-      </router-link>
-    </div>
-    <!--end::Content header-->
+    <div class="loginrow login-row-height">
+      <div class="login-form login-signin col-md-6">
+        <div class="shadow-lg">
+          <div class="card-body" style="margin: 0 6%;">
+            <h5 class="font-weight-light mb-1 text-mute-high" style="margin-bottom: 10px;">ThingsPanel</h5>
+            <h2 class="font-weight-normal mb-4">{{ $t("LOGIN.SIGN_UP") }}</h2>
 
-    <!--begin::Signup-->
-    <div class="login-form login-signin">
-      <div class="text-center mb-10 mb-lg-20">
-        <h3 class="font-size-h1">Sign Up</h3>
-        <p class="text-muted font-weight-semi-bold">
-          Enter your details to create your account
-        </p>
-      </div>
+            <el-form ref="registerFormRef" :model="formData" :rules="rules" @keyup.enter.native="handleSubmit">
+              <!-- email -->
+              <el-form-item prop="email" :error="errors.email">
+                <el-input v-model.trim="formData.email" clearable auto-complete="on" name="email"
+                  prefix-icon="el-icon-message" :placeholder="$t('LOGIN.EMAIL')"></el-input>
+              </el-form-item>
 
-      <!--begin::Form-->
-      <b-form class="form" @submit.stop.prevent="onSubmit">
-        <b-form-group
-          id="example-input-group-0"
-          label=""
-          label-for="example-input-0"
-        >
-          <b-form-input
-            class="form-control form-control-solid h-auto py-5 px-6"
-            id="example-input-0"
-            name="example-input-0"
-            v-model="$v.form.username.$model"
-            :state="validateState('username')"
-            aria-describedby="input-0-live-feedback"
-            placeholder="Username"
-          ></b-form-input>
+              <el-form-item prop="phone" :error="errors.phone">
+                <el-input v-model.trim="formData.phone" clearable auto-complete="on" name="phone"
+                  prefix-icon="el-icon-phone" :placeholder="$t('LOGIN.PHONE_NUMBER')"></el-input>
+              </el-form-item>
+              <el-form-item prop="captcha" :error="errors.captcha">
+                <el-input style="width: 45%; display: inline-block; margin-right:10px" v-model.trim="formData.captcha"
+                  name="captcha" prefix-icon="el-icon-postcard" :placeholder="$t('LOGIN.CAPTCHA')"></el-input>
+                <el-button type="primary" :disabled="isCapchaDisabled" :loading="smsCodeLoading" @click="sendCode"
+                  style="float: right;">{{ buttonText }}</el-button>
+              </el-form-item>
 
-          <b-form-invalid-feedback id="input-0-live-feedback">
-            Username is required.
-          </b-form-invalid-feedback>
-        </b-form-group>
+              <el-form-item prop="password" :error="errors.password">
+                <el-input v-model.trim="formData.password" type="password" show-password name="password"
+                  prefix-icon="el-icon-lock" :placeholder="$t('LOGIN.PASSWORD')"></el-input>
+              </el-form-item>
+              <el-button type="primary" class="w-100" :loading="loading" @click="handleSubmit">{{ $t("LOGIN.SIGN_UP")
+              }}</el-button>
 
-        <b-form-group
-          id="example-input-group-1"
-          label=""
-          label-for="example-input-1"
-        >
-          <b-form-input
-            class="form-control form-control-solid h-auto py-5 px-6"
-            id="example-input-1"
-            name="example-input-1"
-            v-model="$v.form.email.$model"
-            :state="validateState('email')"
-            aria-describedby="input-1-live-feedback"
-            placeholder="Email address"
-          ></b-form-input>
-
-          <b-form-invalid-feedback id="input-1-live-feedback">
-            Email is required and a valid email address.
-          </b-form-invalid-feedback>
-        </b-form-group>
-
-        <b-form-group
-          id="example-input-group-2"
-          label=""
-          label-for="example-input-2"
-        >
-          <b-form-input
-            class="form-control form-control-solid h-auto py-5 px-6"
-            type="password"
-            id="example-input-2"
-            name="example-input-2"
-            v-model="$v.form.password.$model"
-            :state="validateState('password')"
-            aria-describedby="input-2-live-feedback"
-            placeholder="Password"
-          ></b-form-input>
-
-          <b-form-invalid-feedback id="input-2-live-feedback">
-            Password is required.
-          </b-form-invalid-feedback>
-        </b-form-group>
-
-        <!--begin::Action-->
-        <div class="form-group d-flex flex-wrap flex-center">
-          <button
-            type="submit"
-            ref="kt_login_signup_submit"
-            class="btn btn-primary font-weight-bold px-9 py-4 my-3 font-size-3 mx-4"
-          >
-            Submit
-          </button>
-          <button
-            v-on:click="$router.push('login')"
-            class="btn btn-light-primary font-weight-bold px-9 py-4 my-3 font-size-3 mx-4"
-          >
-            Cancel
-          </button>
+              <el-row type="flex" class="row-bg" justify="space-between" style="margin-top: 12px;">
+                <el-col :span=16>
+                  <a href="/#/login" style="color: white;">{{ $t("LOGIN.SIGN_IN_WITH_EXIST_ACCOUNT") }}></a>
+                </el-col>
+              </el-row>
+            </el-form>
+          </div>
         </div>
-        <!--end::Action-->
-      </b-form>
-      <!--end::Form-->
+      </div>
     </div>
-    <!--end::Signup-->
   </div>
 </template>
+
+
+<script>
+import useRegisterForm from "@/view/pages/auth/useRegisterForm";
+import { computed, defineComponent, ref, onBeforeUnmount } from "@vue/composition-api";
+import i18n from "@/core/plugins/vue-i18n.js"
+
+export default defineComponent({
+  name: "register",
+  setup() {
+
+    const countdown = ref(0);
+    const initialTime = 60;
+    let timer = null;
+
+    const isCapchaDisabled = ref(false);
+    const sendCode = () => {
+      try {
+        // 这里调用发送验证码的 API
+        console.debug(formData)
+        sendCaptchaCode(startCountdown);
+      } catch (error) {
+      }
+    };
+    const startCountdown = () => {
+      countdown.value = initialTime;
+      isCapchaDisabled.value = true;
+
+      timer = setInterval(() => {
+        if (countdown.value > 0) {
+          countdown.value--;
+        } else {
+          clearInterval(timer);
+          isCapchaDisabled.value = false;
+        }
+      }, 1000);
+    };
+
+    const buttonText = computed(() => {
+      return countdown.value > 0 ? `${countdown.value} ` + i18n.t("LOGIN.RESEND_TEXT") : i18n.t("LOGIN.GET_SMS_CODE");
+    });
+
+    onBeforeUnmount(() => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    });
+
+
+    let {
+      registerFormRef,
+      formData,
+      loading,
+      smsCodeLoading,
+      rules,
+      errors,
+      sendCaptchaCode,
+      handleSubmit
+    } = useRegisterForm();
+
+
+    return {
+      registerFormRef,
+      formData,
+      loading,
+      smsCodeLoading,
+      rules,
+      errors,
+      handleSubmit,
+      sendCaptchaCode,
+      isCapchaDisabled,
+      buttonText,
+      sendCode,
+    }
+  }
+});
+</script>
 
 <style lang="scss" scoped>
 .spinner.spinner-right {
   padding-right: 3.5rem !important;
 }
-</style>
 
-<script>
-import { mapState } from "vuex";
-import { REGISTER } from "@/core/services/store/auth.module";
-import { LOGOUT } from "@/core/services/store/auth.module";
+.infologin {
+  display: block !important;
+}
 
-import { validationMixin } from "vuelidate";
-import { email, required, minLength } from "vuelidate/lib/validators";
+.infologin h3 {
+  font-size: 56px;
+  font-family: Source Han Sans CN;
+  font-weight: 400;
+  color: #ffffff;
+  margin-top: 82px;
+}
 
-export default {
-  mixins: [validationMixin],
-  name: "register",
-  data() {
-    return {
-      // Remove this dummy login info
-      form: {
-        email: "admin@demo.com",
-        password: "demo"
-      }
-    };
-  },
-  validations: {
-    form: {
-      username: {
-        required,
-        minLength: minLength(3)
-      },
-      email: {
-        required,
-        email
-      },
-      password: {
-        required,
-        minLength: minLength(3)
-      }
-    }
-  },
-  methods: {
-    validateState(name) {
-      const { $dirty, $error } = this.$v.form[name];
-      return $dirty ? !$error : null;
-    },
-    resetForm() {
-      this.form = {
-        username: null,
-        email: null,
-        password: null
-      };
+.infologin span {
+  margin-top: 40px;
+  font-size: 36px;
+  font-family: Source Han Sans CN;
+  font-weight: 400;
+  color: #ffffff;
+}
 
-      this.$nextTick(() => {
-        this.$v.$reset();
-      });
-    },
-    onSubmit() {
-      this.$v.form.$touch();
-      if (this.$v.form.$anyError) {
-        return;
-      }
+.spinner.spinner-right {
+  padding-right: 3.5rem !important;
+}
 
-      const username = this.$v.form.username.$model;
-      const email = this.$v.form.email.$model;
-      const password = this.$v.form.password.$model;
+.login-form {
+  min-width: 450px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 20px 30px;
+  border-radius: 8px;
+}
 
-      // clear existing errors
-      this.$store.dispatch(LOGOUT);
+/*登录*/
+.loginrow {
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+  margin-top: 15%;
+  color: #fff !important;
+  position: relative;
 
-      // set spinner to submit button
-      const submitButton = this.$refs["kt_login_signup_submit"];
-      submitButton.classList.add("spinner", "spinner-light", "spinner-right");
+}
 
-      // dummy delay
-      setTimeout(() => {
-        // send register request
-        this.$store
-          .dispatch(REGISTER, {
-            email: email,
-            password: password,
-            username: username
-          })
-          .then(() => this.$router.push({ name: "home" }));
+.login-signin {
+  align-self: center !important;
+  flex: 0 0 33.33333%;
+  margin: 0 auto;
+  max-width: 20%;
+  background: unset;
+  position: absolute;
+  right: 15%;
+  top: 3%;
+}
 
-        submitButton.classList.remove(
-          "spinner",
-          "spinner-light",
-          "spinner-right"
-        );
-      }, 2000);
-    }
-  },
-  computed: {
-    ...mapState({
-      errors: state => state.auth.errors
-    })
+.shadow-lg {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-color: #fff;
+  background-clip: border-box;
+  border-radius: 0.25rem;
+  backdrop-filter: saturate(125%) blur(10px);
+  background-color: rgba(168, 197, 255, 0.25);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important;
+  border: 0 !important;
+}
+
+.card-body {
+  padding: 15px;
+  padding-bottom: 3rem !important;
+  padding-top: 3rem !important;
+  flex: 1 1 auto;
+}
+
+.font-weight-light {
+  font-weight: 300 !important;
+  margin-bottom: 0.25rem !important;
+  font-size: 1.25rem;
+  line-height: 1.2;
+  margin-top: 0;
+  font-family: "Roboto", sans-serif;
+}
+
+.loginform {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  word-wrap: break-word;
+  background-clip: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.125);
+  border-radius: 0.25rem;
+  background-color: #2d3d88;
+  margin-bottom: 0.5rem !important;
+  overflow: hidden !important;
+}
+
+.invalid-feedback {
+  margin-top: 0 !important;
+}
+
+.no-bg {
+  background: unset !important;
+  border-color: unset !important;
+  padding: 8px !important;
+  border-radius: 4px;
+}
+
+.form-group {
+  margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .d-md-flex {
+    // display: flex !important;
+    flex: 0 0 58.33333%;
+    max-width: 58.33333%;
   }
-};
-</script>
+}
+
+@media (max-width: 600px) {
+  .login-form {
+    margin-top: 15% !important;
+    min-width: 320px;
+    margin: 0 auto;
+  }
+
+  .loginrow {
+    height: unset;
+  }
+}
+
+.form-control.form-control-solid {
+  background-color: rgba(22, 30, 67, 0.5) !important;
+}
+
+#example-input-1 {
+  -webkit-text-fill-color: #fff !important;
+  transition: background-color 50000s ease-in-out 0s;
+}
+
+#example-input-2 {
+  -webkit-text-fill-color: #fff !important;
+  transition: background-color 50000s ease-in-out 0s;
+}
+
+.el-tabs__item {
+  font-size: 17px;
+}
+
+::v-deep .el-tabs__nav-scroll {
+
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+}
+</style>

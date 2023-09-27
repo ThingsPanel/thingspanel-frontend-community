@@ -33,6 +33,11 @@ export const baseRoutes = [
                 path: "/register",
                 name: "register",
                 component: () => import("@/view/pages/auth/Register")
+            },
+            {
+                path: "/reset",
+                name: "reset",
+                component: () => import("@/view/pages/auth/PasswordReset")
             }
         ]
     }
@@ -51,7 +56,7 @@ router.beforeEach((to, from, next) => {
     const token_expires_in = JwtService.getExpiresTime()
     const now = Date.now();
 
-    if (to.name == 'login') {
+    if (to.name == 'login' || to.name == 'register' || to.name == 'reset') {
         next();
     } else if (!token || !token_expires_in) {
         // token不存在
