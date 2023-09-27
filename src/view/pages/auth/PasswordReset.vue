@@ -1,48 +1,113 @@
 <template>
   <div>
-    <!--begin::Signin-->
     <div class="loginrow login-row-height">
-      <!--      <div class="col-md-6 d-none d-md-flex infologin">-->
-      <!--       -->
-      <!--      </div>-->
       <div class="login-form login-signin col-md-6">
         <div class="shadow-lg">
           <div class="card-body" style="margin: 0 6%;">
             <h5 class="font-weight-light mb-1 text-mute-high" style="margin-bottom: 10px;">ThingsPanel</h5>
-            <h2 class="font-weight-normal mb-4">{{ $t("LOGIN.SIGNIN") }}</h2>
+            <h2 class="font-weight-normal mb-4">{{ $t("LOGIN.PASSWORD_RESET") }}</h2>
 
-            <el-tabs v-model="activeName" stretch>
-              <el-tab-pane :label="$t('LOGIN.PASSWORD_LOGIN')" name="password">
-                <LoginForm loginType="email"></LoginForm>
+            <div style="margin-top: 20px;">
+              <el-form ref="resetFormRef" :model="formData" :rules="rules" @keyup.enter.native="handleSubmit">
+                <el-form-item prop="phone" :error="errors.phone">
+                  <el-input v-model.trim="formData.phone" clearable auto-complete="on" name="phone"
+                    prefix-icon="el-icon-phone" :placeholder="$t('LOGIN.PHONE_NUMBER')"></el-input>
+                </el-form-item>
 
-              </el-tab-pane>
-              <el-tab-pane :label="$t('LOGIN.CAPTCHA_LOGIN')" name="captcha">
-                <LoginForm loginType="phone"></LoginForm>
+                <el-form-item prop="captcha" :error="errors.captcha">
+                  <el-input style="width: 45%; display: inline-block; margin-right:10px" v-model.trim="formData.captcha"
+                    name="captcha" prefix-icon="el-icon-postcard" auto-complete="captcha" :placeholder="$t('LOGIN.CAPTCHA')"></el-input>
+                  <el-button type="primary" :disabled="isCapchaDisabled" :loading="smsCodeLoading" @click="sendCode"
+                    style="float: right;">{{ buttonText }}</el-button>
+                </el-form-item>
 
-              </el-tab-pane>
-            </el-tabs>
+                <el-form-item prop="password" :error="errors.password">
+                  <el-input v-model.trim="formData.password" type="password" show-password name="password"
+                    prefix-icon="el-icon-lock" :placeholder="$t('LOGIN.PASSWORD')"></el-input>
+                </el-form-item>
+                <el-button type="primary" class="w-100" :loading="loading" @click="handleSubmit">{{ $t("LOGIN.RESET_NOW")
+                }}</el-button>
+
+              </el-form>
+            </div>
 
           </div>
         </div>
       </div>
     </div>
-    <!--end::Signin-->
   </div>
 </template>
-<script>
-import LoginForm from "@/view/pages/auth/LoginForm";
 
-export default {
-  components: {
-    LoginForm
-  },
-  name: "login",
-  data() {
-    return {
-      activeName: "password",
+<script>
+import useResetForm from "@/view/pages/auth/useResetForm";
+import { computed, defineComponent, ref, onBeforeUnmount } from "@vue/composition-api";
+import i18n from "@/core/plugins/vue-i18n.js"
+
+export default defineComponent({
+  name: "ResetForm",
+  setup() {
+    const countdown = ref(0);
+    const initialTime = 60;
+    let timer = null;
+
+    const isCapchaDisabled = ref(false);
+    const sendCode = () => {
+      try {
+        // 这里调用发送验证码的 API
+        console.debug(formData)
+        sendCaptchaCode(startCountdown);
+      } catch (error) {
+      }
     };
-  },
-};
+    const startCountdown = () => {
+      countdown.value = initialTime;
+      isCapchaDisabled.value = true;
+
+      timer = setInterval(() => {
+        if (countdown.value > 0) {
+          countdown.value--;
+        } else {
+          clearInterval(timer);
+          isCapchaDisabled.value = false;
+        }
+      }, 1000);
+    };
+
+    const buttonText = computed(() => {
+      return countdown.value > 0 ? `${countdown.value} ` + i18n.t("LOGIN.RESEND_TEXT") : i18n.t("LOGIN.GET_SMS_CODE");
+    });
+
+    onBeforeUnmount(() => {
+      if (timer) {
+        clearInterval(timer);
+      }
+    });
+    let {
+      resetFormRef,
+      formData,
+      loading,
+      smsCodeLoading,
+      rules,
+      errors,
+      sendCaptchaCode,
+      handleSubmit
+    } = useResetForm();
+
+    return {
+      resetFormRef,
+      formData,
+      loading,
+      rules,
+      errors,
+      handleSubmit,
+      smsCodeLoading,
+      sendCaptchaCode,
+      isCapchaDisabled,
+      buttonText,
+      sendCode,
+    }
+  }
+})
 </script>
 
 <style lang="scss" scoped>
@@ -203,4 +268,5 @@ export default {
   width: 100%;
   display: flex;
   justify-content: space-around;
-}</style>
+}
+</style>

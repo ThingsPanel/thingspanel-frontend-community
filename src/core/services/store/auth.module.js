@@ -3,7 +3,7 @@ import JwtService from "@/core/services/jwt.service";
 import PermissionService from "../permission.service"
 
 // 登录和用户详情接口
-import { login, logout, getUserInfo } from "@/api/auth";
+import { login, logout, getUserInfo, register, sendCaptchaCode, passwordReset } from "@/api/auth";
 import Perm from "@/api/permission"
 // 引入路由下面调用 router.push 跳转
 import router from "@/router"
@@ -20,6 +20,9 @@ export const REGISTER = "register";
 export const UPDATE_USER = "updateUser";
 export const SET_ROUTERS = "setRouters"
 export const GET_ROUTERS = "getRouters"
+export const REGIST_TENANT = "registTenant"
+export const PASSWORD_RESET = "passwordReset"
+export const SEND_CAPTCHA = "sendCaptcha"
 
 // mutation types
 export const PURGE_AUTH = "logOut";
@@ -204,6 +207,33 @@ const actions = {
         .catch(({ response }) => {
           /*context.commit(SET_ERROR, response.data.errors);
           reject(response);*/
+        });
+    });
+  },
+  [REGIST_TENANT](context, credentials) {
+    return new Promise((resolve, reject) => {
+      register(credentials).then(({ data }) => {
+        resolve(data);
+      }).catch(({ response }) => {
+          reject(response)
+        });
+    });
+  },
+  [SEND_CAPTCHA](context, credentials) {
+    return new Promise((resolve, reject) => {
+      sendCaptchaCode(credentials).then(({ data }) => {
+        resolve(data);
+      }).catch(({ response }) => {
+          reject(response)
+        });
+    });
+  },
+  [PASSWORD_RESET](context, credentials) {
+    return new Promise((resolve, reject) => {
+      passwordReset(credentials).then(({ data }) => {
+        resolve(data);
+      }).catch(({ response }) => {
+          reject(response)
         });
     });
   },
