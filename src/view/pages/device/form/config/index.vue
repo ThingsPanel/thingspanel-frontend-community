@@ -15,8 +15,8 @@
       <data-parse ref="dataParse" v-else-if="activeName=='configParse'" :data.sync="formData" :attrs="formAttr"></data-parse>
 
       <!-- 设备属性 -->
-      <attribute v-else-if="activeName == 'attribute'" :data.sync="attrFormData" :device="device"
-        :wvpDevice="wvpDeviceList"></attribute>
+      <attribute v-else-if="activeName == 'attribute'" :device="device"
+        ></attribute>
 
       <!-- 运维信息 -->
       <running-info v-else-if="activeName=='runningStatus'" :data.sync="runningFormData" :device="device" ></running-info>
@@ -126,12 +126,14 @@ export default {
 
           this.attrFormData = {
             d_id: this.device.d_id,
-            subDeviceAddress: this.device.subDeviceAddress,
-            location: this.device.location,
             subDeviceVideoAddress: additionalInfo.video_address
           };
 
-          this.runningFormData = additionalInfo.runningInfo ? additionalInfo.runningInfo : {};
+          this.runningFormData = additionalInfo.runningInfo ? {
+            ...additionalInfo.runningInfo,
+            location: this.device.location,
+            subDeviceAddress: this.device.subDeviceAddress
+          } : {};
           this.formData = {};
           if (JSON.stringify(this.device) == "{}" || this.device == "") { return; }
           if (this.device.device_type == "3" || (this.device.device_type == "1" && this.device.protocol != "mqtt")) {
@@ -203,8 +205,8 @@ export default {
           id: device.id,
           d_id: this.attrFormData.d_id,
           additional_info: JSON.stringify(additionalInfo),
-          location: this.attrFormData.location,
-          sub_device_addr: this.attrFormData.subDeviceAddress,
+          location: this.runningFormData.location,
+          sub_device_addr: this.runningFormData.subDeviceAddress,
           protocol_config: JSON.stringify({ DeviceId: device.id, AccessToken: device.token, ...this.formData })
         }
         console.log("====DeviceConfigForm.config", config, this.attrFormData)

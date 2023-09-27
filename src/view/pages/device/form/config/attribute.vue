@@ -91,12 +91,12 @@ export default {
         DeviceDataChart,
     },
     props: {
-        data: {
-            type: Object,
-            default: () => {
-                return {}
-            }
-        },
+        // data: {
+        //     type: Object,
+        //     default: () => {
+        //         return {}
+        //     }
+        // },
         device: {
             type: [Object],
             default: () => { return {} }
