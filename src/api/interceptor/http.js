@@ -44,7 +44,7 @@ instance.interceptors.request.use(
         token && (config.headers.Authorization = `Bearer ${token}`)
 
         // 登录接口和刷新token接口绕过，不进入刷新 token 判断
-        if (config.url.indexOf('/refresh') >= 0 || config.url.indexOf('/register') >= 0 || config.url.indexOf('/passwordReset') >= 0 || config.url.indexOf('/login') >= 0) {
+        if (config.url.indexOf('/refresh') >= 0 || config.url.indexOf('/register') >= 0 || config.url.indexOf('/passwordReset') >= 0 || config.url.indexOf('/login') >= 0 || config.url.indexOf('/captcha') >= 0) {
             return config
         }
 
