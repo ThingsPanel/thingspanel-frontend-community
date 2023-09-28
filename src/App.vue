@@ -29,6 +29,7 @@ body {
 import { OVERRIDE_LAYOUT_CONFIG } from "@/core/services/store/config.module";
 import {RESET_LAYOUT_CONFIG} from "./core/services/store/config.module";
 import {local_url} from "@/api/LocalUrl";
+import JwtService from "@/core/services/jwt.service";
 
 
 export default {
@@ -36,7 +37,10 @@ export default {
   mounted() {
     console.log("====location", document.location.protocol + "//" + document.location.host );
   
-    this.$store.dispatch("setRouters");
+    // 只有已经认证的用户才会请求路由
+    if (!!JwtService.getToken()) {
+      this.$store.dispatch("setRouters");
+    }
     this.$store.commit("refresh_page");
     /**
      * this is to override the layout config using saved data from localStorage
