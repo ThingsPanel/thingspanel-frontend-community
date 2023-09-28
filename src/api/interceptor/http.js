@@ -98,7 +98,6 @@ instance.interceptors.request.use(
 // axios 响应拦截器
 instance.interceptors.response.use(
     (response) => {
-        console.error(response, "instance.interceptors.response")
         const {code, message} = response.data
         // 刷新 token 失败或者 401 返回登录页
         if ((code === 400 && message === "token异常") || code === 401) {
