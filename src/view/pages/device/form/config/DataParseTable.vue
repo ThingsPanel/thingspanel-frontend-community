@@ -13,21 +13,25 @@
                     <el-form ref="tableRef" :model="scope.row" :rules="item.rules">
                         <el-form-item :prop="item.dataKey">
                             <template v-if="item.type === 'input'">
-                                <el-input-number size="small" v-if="item.validate.type === 'number'"
-                                    v-model="scope.row[item.dataKey]" :placeholder="item.placeholder" />
+                                <el-tooltip class="item" effect="dark" :content="item.placeholder" placement="top-start">
+                                    <el-input-number size="small" v-if="item.validate.type === 'number'"
+                                        v-model="scope.row[item.dataKey]" :placeholder="item.placeholder" />
 
-                                <el-input size="small" v-else v-model="scope.row[item.dataKey]"
-                                    :placeholder="item.placeholder" />
+                                    <el-input size="small" v-else v-model="scope.row[item.dataKey]"
+                                        :placeholder="item.placeholder" />
+                                </el-tooltip>
                                 <!-- <span slot="error" class="el-form-input_tip el-form-item__error">
                                     {{ item.validate.message }}
                                 </span> -->
                             </template>
 
                             <template v-else-if="item.type === 'select'">
-                                <el-select size="small" v-model="scope.row[item.dataKey]" :placeholder="item.placeholder">
-                                    <el-option v-for="(option, index) in item.options" :key="index" :label="option.label"
-                                        :value="option.value" />
-                                </el-select>
+                                <el-tooltip class="item" effect="dark" :content="item.placeholder" placement="top-start">
+                                    <el-select size="small" v-model="scope.row[item.dataKey]" :placeholder="item.placeholder">
+                                        <el-option v-for="(option, index) in item.options" :key="index" :label="option.label"
+                                            :value="option.value" />
+                                    </el-select>
+                                </el-tooltip>
                                 <span slot="error" class="el-form-input_tip el-form-item__error">
                                     {{ item.validate.message }}
                                 </span>
