@@ -13,7 +13,7 @@
                     </el-date-picker>
                 </el-col>
                 <el-col :span=3>
-                    <el-button type="border" size="medium" @click="getHistoryData()">{{
+                    <el-button type="border" size="medium" @click="handleRefresh()">{{
                         $t('COMMON.REFRESH') }}</el-button>
                 </el-col>
 
@@ -45,7 +45,7 @@
 
             <div class="text-center py-3">
                 <el-row type="flex" justify="center">
-                    <el-col :span=2 style="display: inline-block;">
+                    <el-col :span=8 style="display: inline-block;">
 
                         <el-button @click="pageChange(page - 1)" icon="el-icon-back" type="border"
                             style="width: 45px; border-color:#747474" :disabled="this.page === 1" size="small"></el-button>
@@ -142,7 +142,6 @@ export default {
             handler(newValue) {
                 console.debug("DeviceHistory", this)
                 if (newValue) {
-                    const now = Date.now();
                     this.getHistoryData()
                 }
             }
@@ -208,6 +207,14 @@ export default {
             }).finally(() => {
                 this.exporting = false
             })
+        },
+        handleRefresh() {
+            let now = Date.now();
+            this.choosedTimeRange = [
+                new Date(now - 1000 * 60 * 60),
+                new Date(now)
+            ]
+            this.getHistoryData()
         }
     }
 }

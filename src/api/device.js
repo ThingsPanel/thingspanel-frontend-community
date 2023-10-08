@@ -399,3 +399,15 @@ export function delHistoryData(data) {
         data,
     })
 }
+
+
+/**
+ * 获取系统时间
+ * @returns 
+ */
+export function getSystemTime() {
+    return axios({
+        url: "/home/system/time",
+        method: "post",
+    })
+}
