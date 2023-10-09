@@ -224,7 +224,7 @@ export default {
         if (res1 === 0) throw new Error("获取插件失败！")
         const data = res1.data.rePluginDevice;
         const params = {
-          model_type: data.devicePluginType,
+          model_type: data.devicePluginType + "",
           chart_data: data.dataResource,
           model_name: data.pluginName,
           version: data.versionNumber,
