@@ -1575,8 +1575,8 @@ export const locale = {
    * application management
    */
   PLUGIN: {
-    TAB1: "Device Plugin",
-    TAB2: "Protocol Plugin",
+    TAB1: "Installed",
+    TAB2: "Market",
     TAB3: "Device Editor",
     CUSTOM_DEVICE_PLUGIN: "Custom Device Plugin",
     DEVICE_INFO: "Device Info",

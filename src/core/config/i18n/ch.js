@@ -1616,8 +1616,8 @@ export const locale = {
    * 应用管理
    */
   PLUGIN: {
-    TAB1: "设备插件",
-    TAB2: "接入协议",
+    TAB1: "已安装",
+    TAB2: "插件市场",
     TAB3: "设备插件生成器",
     CUSTOM_DEVICE_PLUGIN: "自定义设备插件",
     DEVICE_INFO: "设备信息",
