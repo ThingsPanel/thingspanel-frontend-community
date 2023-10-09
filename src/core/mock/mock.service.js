@@ -8,6 +8,7 @@ const MockService = {
     let mock = new MockAdapter(axios);
     mock.onGet("/menu/getAllNavs").reply(200, navs)
     mock.onGet("/menu/getPermissions").reply(200, permissions)
+    console.error("mock init")
   }
 };
 
