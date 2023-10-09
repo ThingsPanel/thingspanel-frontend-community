@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="alarm-device-box" >
      <!-- <el-form label-position="left" label-width="85px"> -->
         <!-- 告警级别 -->
         <el-form-item style="margin-bottom: 10px" :label="$t('AUTOMATION.WARNING_LEVEL')" required>
@@ -20,7 +20,7 @@
         <!-- 重复次数 -->
         <el-form-item  style="margin-bottom: 10px" label="告警条件">
           条件触发达到
-          <el-input-number ref="repeatTimesRef"  :min="1" v-model="formData.repeatTimes" :placeholder="$t('AUTOMATION.PLACEHOLDER.ALARM_REPEAT_TIMES')" @change="handleChange"/>
+          <el-input-number ref="repeatTimesRef" size="small" :min="1" v-model="formData.repeatTimes" :placeholder="$t('AUTOMATION.PLACEHOLDER.ALARM_REPEAT_TIMES')" @change="handleChange"/>
           次后触发告警
         </el-form-item>
 
@@ -138,5 +138,9 @@ import { message_error } from '@/utils/helpers'
   </script>
   
   <style scoped>
-  
+  .alarm-device-box {
+    padding: 10px;
+    border: 1px solid #4d96e0;
+    border-radius: 6px;
+  }
   </style>

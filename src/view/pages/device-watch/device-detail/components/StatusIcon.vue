@@ -29,7 +29,6 @@ export default {
   },
   methods: {
     flush() {
-        // const time = (new Date()).Format("yyyy-M-d hh:mm:ss");
         this.lastPushTime = "上次推送时间: " + this.status.lastPushTime;
     }
   }

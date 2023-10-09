@@ -470,11 +470,11 @@
       "dataZoom": [
         {
           "type": "inside",
-          "start": 70,
+          "start": 0,
           "end": 100
         },
         {
-          "start": 70,
+          "start": 0,
           "end": 100
         }
       ],

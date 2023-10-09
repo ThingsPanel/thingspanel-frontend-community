@@ -193,8 +193,9 @@ export default {
           this.chartData = { type: "", controlType: "control" }
           this.chartList.forEach(item => {
             if (item.controlType === "control") {
+              console.log("handleStateChange", item)
               let map = item.series[0].mapping;
-              if (map.value === v.name && (true)) {
+              if (map && map.value === v.name) {
                 this.chartData = item;
               }
             }
@@ -386,13 +387,16 @@ export default {
               })
               this.commandList = serviceArr;
               serviceArr.length && this.stateOptions.push({ label: "命令标识符", mode: "command", options: serviceArr })
-
-              // 自定义属性下发
-              this.stateOptions.push({
-                label: "其他", options: [
-                  { label: "自定义属性", name: "custom", mode: "custom" }
-                ]
-              })
+              
+              if (this.option.mode !== "action") {
+                // 自定义属性下发
+                this.stateOptions.push({
+                  label: "其他", options: [
+                    { label: "自定义属性", name: "custom", mode: "custom" }
+                  ]
+                })
+              }
+              
             } else if (this.option.mode === "condition") {
               // 事件标识符
               let eventArr = events.map(event => {

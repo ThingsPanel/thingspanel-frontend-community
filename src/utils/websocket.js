@@ -61,7 +61,9 @@ const websocket = () => {
      */
     const onReady = (callback) => {
         onReadyCallback = callback;
+
     };
+        
 
     /**
      * 连接关闭后的回调

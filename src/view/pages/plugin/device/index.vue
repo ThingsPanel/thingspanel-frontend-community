@@ -136,7 +136,8 @@ export default {
         PluginAPI.edit(data).then(({data}) => {
           if (data.code == 200) {
             this.importDialogVisible = false;
-            if (callback) callback({ code: 200, msg: "修改成功"})
+            if (callback) callback({ code: 200, msg: "修改成功"});
+            this.$emit("save");
           }
         })
       } else {

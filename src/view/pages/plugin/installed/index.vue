@@ -139,6 +139,7 @@ export default {
      * 加载插件列表
      */
     loadList() {
+      console.log("loadList", this.params)
       switch (this.params.pluginType) {
         case PluginType.device: {
           this.loadDevicePluginList();
@@ -158,6 +159,7 @@ export default {
      */
     loadDevicePluginList() {
       this.listLoadig = true;
+      this.listArr = [];
       // 加载插件列表
       PluginAPI.page(this.params)
         .then(({data}) => {

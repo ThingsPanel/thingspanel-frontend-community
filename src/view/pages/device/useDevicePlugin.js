@@ -23,12 +23,12 @@ export default function useDevicePlugin() {
 
 
             let storeList = [];
-            const { data:storeRes } = await StoreAPI.list.device();
-            if (storeRes.code === 0) {
-                storeList = washStorePlugin(storeRes.data.list);
-            } else {
-                storeList = [];
-            }
+            // const { data:storeRes } = await StoreAPI.list.device();
+            // if (storeRes.code === 0) {
+            //     storeList = washStorePlugin(storeRes.data.list);
+            // } else {
+            //     storeList = [];
+            // }
 
             // 合并数组
             pluginList = installList.concat(storeList);

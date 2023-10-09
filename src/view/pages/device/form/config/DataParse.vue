@@ -2,7 +2,7 @@
     <div style="margin: 20px 0">
         <el-form ref="configForm" :model="formData" :rules="formRules" label-width="260px" >
             <el-form-item v-for="(attr, index) in attrs" :key="index" :label="attr.label" :prop="attr.dataKey">
-
+                
                 <el-input style="width: 80%" v-if="attr.type === 'input' && attr.validate.type !== 'number'"
                     v-model="formData[attr.dataKey]" :placeholder="attr.placeholder"></el-input>
 

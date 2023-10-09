@@ -15,7 +15,7 @@
 
         <!-- 插件列表 -->
         <div v-show="activeTab == 'installed'">
-          <installed-list @edit="handleEditPlugin"></installed-list>
+          <installed-list ref="installList" @edit="handleEditPlugin"></installed-list>
         </div>
 
         <!-- 应用市场 -->
@@ -25,7 +25,7 @@
 
         <!-- 插件编辑器 -->
         <div v-show="activeTab == 'deviceEditor'">
-          <device-plugin ref="pluginEditor"></device-plugin>
+          <device-plugin ref="pluginEditor" @save="handleSavePlugin"></device-plugin>
         </div>
 
       </div>
@@ -68,6 +68,10 @@ export default {
   methods: {
     handleEditPlugin(item) {
       this.$refs.pluginEditor.handleImport(item);
+    },
+    handleSavePlugin() {
+      console.log("handleSavePlugin")
+      this.$refs.installList.loadList();
     }
   }
 }

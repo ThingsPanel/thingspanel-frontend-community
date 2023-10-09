@@ -42,7 +42,7 @@ export default {
   },
   methods: {
     updateOption(value) {
-      console.log("textinfo.updateOption", value)
+      if (!value) return;
       if (typeof value === "object") {
         this.value = value[0].value
       } else {

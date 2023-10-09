@@ -84,9 +84,9 @@ export default {
   watch: {
     searchText: {
       handler(newValue) {
-        if (newValue) {
+        // if (newValue) {
           this.debounceSearchTextChange();
-        }
+        // }
       },
       immediate: true
     },
@@ -116,6 +116,7 @@ export default {
      * @return {Array}
      */
     querySearch() {
+      console.log("querySearch", this.searchText)
       if (!this.searchText) {
         this.queryList = this.options;
         this.getList();
