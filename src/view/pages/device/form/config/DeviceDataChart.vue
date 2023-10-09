@@ -7,7 +7,7 @@
         <div>
             <!-- <div class="full-screen-div"> -->
             <el-row :gutter=10 justify="space-between">
-                <el-col :span=17>
+                <el-col :span=15>
                     <el-select v-model="selectedTimeRangeOptions" style="width: 18%; " @change="changeTimeRange()">
                         <el-option v-for="item in timeRangeOptions" :key="item.value" :label="item.label"
                             :value="item.value">
@@ -34,7 +34,7 @@
                         </el-option>
                     </el-select>
                 </el-col>
-                <el-col :span=7 style="float: right;">
+                <el-col :span=9 style="float: right;">
                     <el-button-group>
                         <el-button @click="changeChartType('line')" icon="el-icon-s-data" :type="buttonType.line"
                             style="width: 47px; border-color:#747474" :style="chartTypeOption.line"
@@ -46,7 +46,7 @@
                             :type="buttonType.scatter" style="width: 47px; border-color:#747474; margin:0"
                             :style="chartTypeOption.scatter" size="small"></el-button>
                     </el-button-group>
-                    <el-button @click="getStatisticValue()" icon="el-icon-refresh-right" type="border"
+                    <el-button @click="refreshChart()" icon="el-icon-refresh-right" type="border"
                         style="width: 47px; border-color:#747474; margin-left:22px" size="small"></el-button>
                     <el-button icon="el-icon-full-screen" type="border" @click="btn"
                         style="width: 47px; border-color:#747474; margin-left:22px" size="small"></el-button>
@@ -142,7 +142,7 @@
 <script>
 import screenfull from "screenfull";
 import i18n from "@/core/plugins/vue-i18n.js"
-import { statistic } from "@/api/device";
+import { statistic, getSystemTime } from "@/api/device";
 import { dateFormat } from "@/utils/tool.js";
 
 export default {
@@ -290,109 +290,80 @@ export default {
                     timeRange: []
                     // Custom range, no fixed time range
                 },
-                // {
-                //     value: '30_seconds',
-                //     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_THIRTY_SECONDS'),
-                //     timeRange: [new Date(Date.now() - 30000), new Date(Date.now())]
-                //     // 30 * 1000 milliseconds
-                // },
-                // {
-                //     value: '1_minute',
-                //     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_ONE_MINUTE'),
-                //     timeRange: [new Date(Date.now() - 60000), new Date(Date.now())]
-                //     // 60 * 1000 milliseconds
-                // },
-                // {
-                //     value: '2_minutes',
-                //     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_TWO_MINUTES'),
-                //     timeRange: [new Date(Date.now() - 120000), new Date(Date.now())]
-                //     // 2 * 60 * 1000 milliseconds
-                // },
                 {
                     value: '5_minutes',
                     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_FIVE_MINUTES'),
-                    timeRange: [new Date(Date.now() - 300000), new Date(Date.now())]
-                    // 5 * 60 * 1000 milliseconds
+                    timeRange: [new Date(Date.now() - 300000), new Date(Date.now())],
+                    interval: 300000 // 5 * 60 * 1000 milliseconds
                 },
-                // {
-                //     value: '10_minutes',
-                //     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_TEN_MINUTES'),
-                //     timeRange: [new Date(Date.now() - 600000), new Date(Date.now())]
-                //     // 10 * 60 * 1000 milliseconds
-                // },
                 {
                     value: '15_minutes',
                     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_FIFTEEN_MINUTES'),
-                    timeRange: [new Date(Date.now() - 900000), new Date(Date.now())]
-                    // 15 * 60 * 1000 milliseconds
+                    timeRange: [new Date(Date.now() - 900000), new Date(Date.now())],
+                    interval: 900000 // 15 * 60 * 1000 milliseconds
                 },
                 {
                     value: '30_minutes',
                     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_THIRTY_MINUTES'),
-                    timeRange: [new Date(Date.now() - 1800000), new Date(Date.now())]
-                    // 30 * 60 * 1000 milliseconds
+                    timeRange: [new Date(Date.now() - 1800000), new Date(Date.now())],
+                    interval: 1800000 // 30 * 60 * 1000 milliseconds
                 },
                 {
                     value: '1_hour',
                     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_ONE_HOUR'),
-                    timeRange: [new Date(Date.now() - 3600000), new Date(Date.now())]
-                    // 60 * 60 * 1000 milliseconds
+                    timeRange: [new Date(Date.now() - 3600000), new Date(Date.now())],
+                    interval: 3600000 // 60 * 60 * 1000 milliseconds
                 },
                 {
                     value: '3_hour',
                     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_THREE_HOURS'),
-                    timeRange: [new Date(Date.now() - 10800000), new Date(Date.now())]
-                    // 3 * 60 * 60 * 1000 milliseconds
+                    timeRange: [new Date(Date.now() - 10800000), new Date(Date.now())],
+                    interval: 10800000 // 3 * 60 * 60 * 1000 milliseconds
                 },
-                // {
-                //     value: '6_hour',
-                //     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_SIX_HOURS'),
-                //     timeRange: [new Date(Date.now() - 21600000), new Date(Date.now())]
-                //     // 6 * 60 * 60 * 1000 milliseconds
-                // },
                 {
                     value: '1_day',
                     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_ONE_DAY'),
                     timeRange: [new Date(Date.now() - 86400000), new Date(Date.now())],
                     aggregateLimit: 300,
-                    // 24 * 60 * 60 * 1000 milliseconds
+                    interval: 86400000 // 24 * 60 * 60 * 1000 milliseconds
                 },
                 {
                     value: '3_day',
                     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_THREE_DAYS'),
                     timeRange: [new Date(Date.now() - 259200000), new Date(Date.now())],
                     aggregateLimit: 600,
-                    // 3 * 24 * 60 * 60 * 1000 milliseconds
+                    interval: 259200000 // 3 * 24 * 60 * 60 * 1000 milliseconds
                 },
                 {
                     value: '7_day',
                     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_SEVEN_DAYS'),
                     timeRange: [new Date(Date.now() - 604800000), new Date(Date.now())],
                     aggregateLimit: 1800,
-                    // 7 * 24 * 60 * 60 * 1000 milliseconds
+                    interval: 604800000 // 7 * 24 * 60 * 60 * 1000 milliseconds
                 },
                 {
                     value: '1_month',
                     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_ONE_MONTH'),
                     timeRange: [new Date(Date.now() - 2592000000), new Date(Date.now())],
                     aggregateLimit: 3600,
-                    // Approximately 30 days, 30 * 24 * 60 * 60 * 1000 milliseconds
+                    interval: 2592000000 // Approximately 30 days, 30 * 24 * 60 * 60 * 1000 milliseconds
                 },
                 {
                     value: '6_month',
                     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_SIX_MONTHS'),
                     timeRange: [new Date(Date.now() - 15552000000), new Date(Date.now())],
                     aggregateLimit: 21600,
-                    // Approximately 180 days, 180 * 24 * 60 * 60 * 1000 milliseconds
+                    interval: 15552000000 // Approximately 180 days, 180 * 24 * 60 * 60 * 1000 milliseconds
                 },
                 {
                     value: '1_year',
                     label: i18n.t('DEVICE_MANAGEMENT.DEVICE_CONFIG.RANGE.LAST_ONE_YEAR'),
                     timeRange: [new Date(Date.now() - 31104000000), new Date(Date.now())],
                     aggregateLimit: 2592000,
-                    // Approximately 360 days, 360 * 24 * 60 * 60 * 1000 milliseconds
+                    interval: 31104000000 // Approximately 360 days, 360 * 24 * 60 * 60 * 1000 milliseconds
                 }
-            ],
+            ]
+            ,
 
             // 聚合范围
             displayValueType: false,
@@ -531,6 +502,7 @@ export default {
             downloadUrl: "",
             currentPage: 1,
             pageSize: 10,
+            systemTimeInterval: null,
         }
     },
     computed: {
@@ -556,11 +528,20 @@ export default {
             return this.tableData.slice(start, end);
         },
     },
+    mounted() {
+        // 自适应大小
+        window.addEventListener("resize", () => {
+            console.debug("resize")
+            this.myEcharts.resize();
+        });
+    },
     watch: {
         dialogVisible: {
             handler(newValue) {
                 if (newValue) {
-                    this.getStatisticValue(true);
+                    Promise.resolve(this.refreshSystime()).then(() => {
+                        this.getStatisticValue(true);
+                    })
                 }
                 this.$nextTick(() => {
                     this.initEChart();
@@ -657,13 +638,44 @@ export default {
         getStatisticValue(isInit = false) {
 
             let startTime, endTime;
+            let now = Date.now();
+
+            // 初始化范围
             if (isInit) {
-                startTime = new Date(Date.now() - 1000 * 60 * 60).getTime() * 1000;
-                endTime = new Date(Date.now()).getTime() * 1000;
+                // 如果时间有误差，修正时间
+                if (this.systemTimeInterval) {
+                    now = now + this.systemTimeInterval;
+                    console.debug("修正时间", now, this.systemTimeInterval, Date.now())
+                }
+                startTime = new Date(now - 1000 * 60 * 60).getTime() * 1000;
+                endTime = new Date(now).getTime() * 1000;
+                console.debug("初始化时间范围", new Date(startTime / 1000), new Date(endTime / 1000))
+            // 选择时间范围
             } else {
-                startTime = new Date(this.choosedTimeRange[0]).getTime() * 1000;
-                endTime = new Date(this.choosedTimeRange[1]).getTime() * 1000;
+                if (this.systemTimeInterval) {
+                    now = now + this.systemTimeInterval;
+                }
+                // 选择已有时间时，重置当前时间
+                if (this.selectedTimeRangeOptions !== "custom") {
+                    
+                    let interval = 0;
+                    let option = this.timeRangeOptions.filter(item => item.value === this.selectedTimeRangeOptions)
+                    if (option.length > 0) {
+                        interval = option[0].interval;
+                    }
+                    console.debug("选择已有时间范围", option, now, interval, this.selectedTimeRangeOptions)
+
+                    now = Date.now() + this.systemTimeInterval;
+                    startTime = new Date(now - interval).getTime() * 1000;
+                    endTime = new Date(now).getTime() * 1000;
+                } else {
+                    startTime = (new Date(this.choosedTimeRange[0]).getTime() + this.systemTimeInterval) * 1000;
+                    endTime = (new Date(this.choosedTimeRange[1]).getTime() + this.systemTimeInterval) * 1000;
+                }
+                    
+                console.debug("自定义时间范围", new Date(startTime / 1000), new Date(endTime / 1000))
             }
+
             let params = {
                 "device_id": this.device.id,
                 "key": this.attributeName,
@@ -713,6 +725,9 @@ export default {
             }
 
             // 根据选择范围禁用聚合范围
+            for (let i = 0; i < this.aggrigateOptions.length; i++) {
+                this.aggrigateOptions[i].disabled = false;
+            }
             let list = this.aggrigateOptions;
             const period = this.timeRangeOptions.find(item => item.value === this.selectedTimeRangeOptions);
             let sel = "";
@@ -733,22 +748,6 @@ export default {
                 this.selectedAggrigateOptions = sel;
             }
 
-            const getAggregateWindowList = (periodKey) => {
-                let list = JSON.parse(JSON.stringify(AggregateWindowList));
-                const period = PeriodList.find(item => item.key === periodKey);
-                let sel = "";
-                if (period.aggregate) {
-                    for (let i = 0; i < list.length; i++) {
-                        const item = list[i];
-                        item.default = false;
-                        if (period.aggregate > item.sec || item.key === "no_aggregate") {
-                            item.disabled = true;
-                            sel = list[i + 1].key;
-                        }
-                    }
-                }
-                return { list, sel };
-            }
             console.debug(this.selectedTimeRangeOptions, this.selectedAggrigateOptions)
 
             this.getStatisticValue()
@@ -791,7 +790,11 @@ export default {
                 return Math.min(...keysGreaterThanInterval.map(key => parseInt(key)));
             }
 
+            for (let i = 0; i < this.aggrigateOptions.length; i++) {
+                this.aggrigateOptions[i].disabled = false;
+            }
             const aggregateWindow = getMinMatchingKey(interval);
+            // 存在需要禁用的聚合选项
             if (aggregateWindow) {
                 choosedAggregate = timeRangeToInterval[aggregateWindow];
                 console.debug(interval, aggregateWindow, choosedAggregate, choosedAggregate !== 'all')
@@ -856,55 +859,6 @@ export default {
             })
         },
         transformTimestamp(timestamp) {
-            const PeriodList = [
-                { key: 'custom', label: "自定义区间" },
-                { key: 300, label: "最近5分钟" },
-                { key: 900, label: "最近15分钟" },
-                { key: 1800, label: "最近半小时" },
-                { key: 3600, label: "最近1小时" },
-                { key: 10800, label: "最近3小时" },
-                { key: 86400, label: "最近一天", aggregate: 300 },
-                { key: 259200, label: "最近三天", aggregate: 600 },
-                { key: 604800, label: "最近一周", aggregate: 1800 },
-                { key: 2592000, label: "最近一月", aggregate: 3600 },
-                { key: 15552000, label: "最近半年", aggregate: 21600 },
-                { key: 31536000, label: "最近一年", aggregate: 2592000 }
-            ]
-
-            /**
-             * 曲线图聚合间隔
-             */
-            const AggregateWindowList = [
-                { key: "no_aggregate", label: "不聚合", disabled: false },
-                { key: "30s", label: "30秒", sec: 30, disabled: false },
-                { key: "1m", label: "1分钟", sec: 60, disabled: false },
-                { key: "2m", label: "2分钟", sec: 120, disabled: false },
-                { key: "5m", label: "5分钟", sec: 300, disabled: false },
-                { key: "10m", label: "10分钟", sec: 600, disabled: false },
-                { key: "30m", label: "30分钟", sec: 1800, disabled: false },
-                { key: "1h", label: "1小时", sec: 3600, disabled: false },
-                { key: "3h", label: "3小时", sec: 10800, disabled: false },
-                { key: "6h", label: "6小时", sec: 21600, disabled: false },
-                { key: "1d", label: "1天", sec: 86400, disabled: false },
-                { key: "7d", label: "7天", sec: 604800, disabled: false },
-                { key: "1mo", label: "1月", sec: 2592000, disabled: false }
-            ];
-            const getAggregateWindowList = (periodKey) => {
-                let list = JSON.parse(JSON.stringify(AggregateWindowList));
-                const period = PeriodList.find(item => item.key === periodKey);
-                let sel = "";
-                if (period.aggregate) {
-                    for (let i = 0; i < list.length; i++) {
-                        const item = list[i];
-                        item.default = false;
-                        if (period.aggregate > item.sec || item.key === "no_aggregate") {
-                            item.disabled = true;
-                            sel = list[i + 1].key;
-                        }
-                    }
-                }
-                return { list, sel };
-            }
             return dateFormat(timestamp)
         },
         handleExport() {
@@ -942,6 +896,24 @@ export default {
         },
         handleCurrentChange(newPage) {
             this.currentPage = newPage;
+        },
+        refreshSystime() {
+            getSystemTime()
+                .then(({ data }) => {
+                    console.debug("====getHistoryData", data)
+                    if (data.code == 200) {
+                        let now = Date.now();
+                        this.systemTimeInterval = data.data.timestamp ? data.data.timestamp - now : null
+                        console.error(data.data.timestamp, now, this.systemTimeInterval, "====getHistoryData")
+                    }
+                })
+        },
+        refreshChart() {
+            this.getStatisticValue()
+            this.$nextTick(() => {
+                this.myEcharts.clear();
+                this.myEcharts.setOption(this.defaultChartOptions[this.choosedChartType]);
+            })
         },
     }
 }
