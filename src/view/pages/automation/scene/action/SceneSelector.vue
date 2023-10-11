@@ -15,8 +15,8 @@
         <el-option v-for="(option, index) in options" :key="index" :label="option.automation_name" :value="option.id"></el-option>
       </el-select>
       <el-select style="width: 100px;margin-right:10px" v-model="item.switch" @change="handleChange">
-        <el-option :value="0" label="停用"></el-option>
-        <el-option :value="1" label="启用"></el-option>
+        <el-option value="0" label="停用"></el-option>
+        <el-option value="1" label="启用"></el-option>
       </el-select>
       <el-button v-if="index === 0" type="border" size="mini" @click="handleAddScene">新增一行</el-button>
       <el-button v-if="index > 0" style="height:40px" type="danger" size="small" 
@@ -35,7 +35,7 @@ export default {
   props: {
     data: {
       type: [Array],
-      default: () => ([{ id: "", switch: 0 }])
+      default: () => ([{ id: "", switch: "0" }])
     }
   },
   data() {
@@ -67,7 +67,7 @@ export default {
       this.$emit("change", data);
     },
     handleAddScene() {
-      this.sceneList.push({ id: "", switch: 0 })
+      this.sceneList.push({ id: "", switch: "0" })
       console.log("handleAddScene", this.sceneList)
     },
     handleDeleteScene(index) {
