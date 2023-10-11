@@ -74,6 +74,10 @@ import { message_error } from '@/utils/helpers'
         }, immediate: true
       },
     },
+    async created() {
+      await this.$nextTick();
+      this.handleChange();
+    },
     methods: {
       /**
        * @description: 新增用户组

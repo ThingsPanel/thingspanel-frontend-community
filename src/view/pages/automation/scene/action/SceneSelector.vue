@@ -45,8 +45,9 @@ export default {
       sceneList: []
     }
   },
-  created() {
+  async created() {
     this.getSceneList();
+    await this.$nextTick();
     this.sceneList = JSON.parse(JSON.stringify(this.data));
     this.handleChange();
   },

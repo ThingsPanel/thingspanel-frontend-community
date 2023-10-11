@@ -51,6 +51,7 @@ export default {
         console.log("CommandDevice.data", newValue)
         if (newValue && newValue.length > 0) {
           this.commands = JSON.parse(JSON.stringify(newValue));
+          // this.$emit("change", this.commands);
         } else {
           this.commands = [{}]
         }
@@ -58,6 +59,10 @@ export default {
       immediate: true,
       deep: true
     }
+  },
+  async created() {
+    await this.$nextTick();
+    this.$emit("change", this.commands);
   },
   methods: {
     /**
