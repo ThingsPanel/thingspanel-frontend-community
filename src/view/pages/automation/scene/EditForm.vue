@@ -8,7 +8,7 @@
 -->
 <template>
     <el-dialog :title="formData.id ? '编辑' : '新增'" class="el-dark-dialog" :close-on-click-modal="false"
-        :visible.sync="dialogVisible" width="60%" height="60%" top="10vh">
+        :visible.sync="dialogVisible" height="60%" top="10vh" custom-class="edit-dialog">
 
         <el-form label-position="left" label-width="85px">
             <!-- 场景标题 -->
@@ -448,4 +448,9 @@ export default {
 }
 </script>
   
-<style scoped></style>
+<style scoped>
+.edit-dialog {
+    width: 60%!important;
+    min-width: 1147px!important;
+  }
+</style>

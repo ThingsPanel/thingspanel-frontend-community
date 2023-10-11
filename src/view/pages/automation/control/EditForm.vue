@@ -4,9 +4,9 @@
       class="el-dark-dialog"
       :close-on-click-modal="false"
       :visible.sync="dialogVisible"
-      width="60%"
       height="60%"
       top="10vh"
+      custom-class="edit-dialog"
   >
     <el-form ref="formRules" label-position="left" label-width="85px" :model="formData">
       <el-row :gutter="20">
@@ -239,5 +239,9 @@ export default {
   font-size: 18px;
   color: #F56C6C;
   margin-left: 4px;
+}
+.edit-dialog {
+  width: 60%!important;
+  min-width: 1147px!important;
 }
 </style>
