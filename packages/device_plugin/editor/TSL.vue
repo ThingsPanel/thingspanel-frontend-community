@@ -102,6 +102,7 @@ export default {
   },
   methods: {
     dataChange(data) {
+      console.log("dataChange", data);
       this.customData = data;
       this.customData.option = { classify: "custom" };
     },

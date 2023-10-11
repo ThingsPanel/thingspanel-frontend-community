@@ -105,7 +105,19 @@ export default {
             })
         },
 
-        
+        /**
+         * 手动激活场景
+         * @param {*} data 
+         * @returns 
+         */
+        active: (data) => {
+            return axios({
+                url: "/scenario/strategy/activate",
+                method: "post",
+                data
+            })
+        },
+
         
     },
 

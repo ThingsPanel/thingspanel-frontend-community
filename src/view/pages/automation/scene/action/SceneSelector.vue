@@ -12,7 +12,11 @@
       <!-- {{ $t('AUTOMATION.ACTIVATE') }}<span style="color:red;margin-left:6px">*</span> -->
       <el-select :no-data-text="$t('COMMON.SELECT_NO_DATA')" ref="sceneIdRef" style="width: 300px;margin-left: 10px;margin-right:10px" 
         v-model="item.id" @change="handleChange">
-        <el-option v-for="(option, index) in options" :key="index" :label="option.scenario_name" :value="option.id"></el-option>
+        <el-option v-for="(option, index) in options" :key="index" :label="option.automation_name" :value="option.id"></el-option>
+      </el-select>
+      <el-select style="width: 100px;margin-right:10px" v-model="item.switch" @change="handleChange">
+        <el-option :value="0" label="停用"></el-option>
+        <el-option :value="1" label="启用"></el-option>
       </el-select>
       <el-button v-if="index === 0" type="border" size="mini" @click="handleAddScene">新增一行</el-button>
       <el-button v-if="index > 0" style="height:40px" type="danger" size="small" 
@@ -31,7 +35,7 @@ export default {
   props: {
     data: {
       type: [Array],
-      default: () => ([{ id: "" }])
+      default: () => ([{ id: "", switch: 0 }])
     }
   },
   data() {
@@ -44,23 +48,25 @@ export default {
   created() {
     this.getSceneList();
     this.sceneList = JSON.parse(JSON.stringify(this.data));
+    this.handleChange();
   },
   methods: {
     getSceneList() {
-      Auto.Scene.list({ current_page: 1, per_page: 9999 })
+      Auto.Control.list({ current_page: 1, per_page: 9999 })
         .then(({data}) => {
           if (data.code === 200) {
+            console.log("getSceneList", data.data)
             this.options = data.data?.data || [];
             this.sceneId = this.value;
           }
         })
     },
     handleChange() {
-      const data = this.sceneList.map(item => ({ id: item.id }))
+      const data = this.sceneList.map(item => ({ id: item.id, switch: item.switch }))
       this.$emit("change", data);
     },
     handleAddScene() {
-      this.sceneList.push({ id: "" })
+      this.sceneList.push({ id: "", switch: 0 })
       console.log("handleAddScene", this.sceneList)
     },
     handleDeleteScene(index) {

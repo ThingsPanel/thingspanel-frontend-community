@@ -34,6 +34,7 @@
       <el-table-column align="left" :label="$t('AUTOMATION.OPERATION')"  width="280">
         <template v-slot="scope">
           <div style="text-align: right">
+            <el-button type="border" size="mini"  @click="handleActive(scope.row)">激活</el-button>
             <el-button type="border" size="mini"  @click="handleShowEdit(scope.row)">{{ $t('AUTOMATION.EDIT')}}</el-button>
             <el-button type="info" size="mini"  @click="handleShowLog(scope.row)">{{ $t('AUTOMATION.LOG')}}</el-button>
             <!-- <el-button type="danger" size="mini"  @click="handleDelete(scope.row)">删除</el-button> -->
@@ -115,6 +116,17 @@ export default {
     handleShowAdd() {
       this.formId = "";
       this.editDialogVisible = true;
+    },
+    /**
+     * 激活
+     */
+    handleActive(item) {
+      Auto.Scene.active({id: item.id})
+        .then(res => {
+          if (res.data.code === 200) {
+            message_success("激活成功");
+          }
+        })
     },
     handleShowEdit(item) {
       this.formId = item.id;
