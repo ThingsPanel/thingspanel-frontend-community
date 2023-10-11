@@ -1,14 +1,28 @@
 <template>
-  <el-dialog top="5vh" :append-to-body="true" title="获取地图坐标" :visible.sync="dialogVisible" :before-close="handleClose"
+  <el-dialog top="5vh" :append-to-body="true" :title="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICE_LOCATION.GET_MAP_LOCATION')" :visible.sync="dialogVisible" :before-close="handleClose"
     width="1000px">
     <div class="amap-page-container">
-      <el-amap-search-box class="search-box" :search-option="searchOption" :on-search-result="onSearchResult" />
-      <div class="toolbar">
-        当前坐标: {{ lng }}, {{ lat }}
-        当前位置: {{ address }}
-        <el-button type="primary" @click="select">确定</el-button>
-
-      </div>
+      <el-row style="margin-bottom: 20px;" :gutter=20 type="flex" align="middle"  justify="center">
+        <el-col :span=9>
+          <el-amap-search-box class="search-box" :search-option="searchOption" :on-search-result="onSearchResult" />
+          
+        </el-col>
+        <el-col :span=12 style="color: white; height: 100%">
+          <div class="toolbar" style="color: white; height: 100%">
+            <div>
+            {{ $t("DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICE_LOCATION.CURRENT_COORDINATE") }}: {{ lng }}, {{ lat }}
+              
+            </div>
+            <div>
+            {{ $t("DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICE_LOCATION.CURRENT_LOCATION") }}: {{ address }}
+              
+            </div>
+          </div>
+        </el-col>
+        <el-col :span=3>
+          <el-button type="primary" @click="select">{{ $t("COMMON.CONFIRM") }}</el-button>
+        </el-col>
+      </el-row>
       <el-amap vid="amap" :amap-manager="amapManager" :plugin="plugin" class="amap-box" :center="center" ref="centerMap"
         :zoom="zoom" viewMode="3D" :events="events">
         <el-amap-marker v-for="(marker, index) in markers" :key="index" :position="marker.position" />
@@ -17,7 +31,12 @@
     </div>
   </el-dialog>
 </template>
-  
+
+<script type="text/javascript">
+window._AMapSecurityConfig = {
+  securityJsCode: '0e3695afbd6670b268044894df285dde'
+}
+</script>
 <script>
 import { AMapManager } from "vue-amap"
 let amapManager = new AMapManager();
@@ -42,6 +61,7 @@ export default {
       center: [121.59996, 31.197646],
       amapManager,
       address: '',
+      cityCode: '',
       searchOption: {
         city: '上海',
         citylimit: false
@@ -54,7 +74,32 @@ export default {
           init(instance) {
           }
         }
-      }],
+      },
+      {
+        pName: 'Geolocation',
+        events: {
+          init(o) {
+            console.error("init geolocation")
+            // o 是高德地图定位插件实例
+            o.getCurrentPosition((status, result) => {
+              console.error(result, status, "getCurrentPosition")
+              if (result && result.position) {
+                // 如果key是企业的，还可以直接result.addressComponent获取省市，周边等信息
+
+                console.log(result);
+                self.address = result.formattedAddress;
+                self.center = [result.position.lng, result.position.lat];
+                self.loaded = true;
+                self.$nextTick();
+                
+                self.lng = result.position.lng
+                self.lat = result.position.lat
+              }
+            });
+          }
+        }
+      },
+    ],
       events: {
         click(e) {
           const { lng, lat } = e.lnglat
@@ -127,7 +172,7 @@ export default {
 
 .search-box {
   z-index: 999;
-  margin-bottom: 20px;
+  // margin-bottom: 20px;
 }
 
 .amap-page-container {

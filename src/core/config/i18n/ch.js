@@ -155,6 +155,7 @@ export const locale = {
     DELVISUALIZATION: "删除可视化",
     DEVICE_CHART: "设备图表",
     WARNINFO: "告警信息",
+    ALERM: "告警",
     SYSTEMLOG: "系统日志",
     EQUIPMENTLOG: "设备日志",
     PRODUCTMANAGEMENT: "产品管理",
@@ -544,7 +545,7 @@ export const locale = {
     NOTICE: "通知组",
     NOTICERECORD:"通知记录",
     NOTICESERVICES: "通知服务配置",
-    DATASETSERVICE: "数据服务配置",
+    DATASETSERVICE: "数据库接口服务",
   },
   /**
    * 认证
@@ -815,6 +816,11 @@ export const locale = {
         CHART_ANALYSIS: "图表分析",
         ATTRIBUTE_JSON_OBJECT: "属性JSON对象",
         DELETE_HISTORY_DATA: "删除历史数据",
+      },
+      DEVICE_LOCATION:{
+        GET_MAP_LOCATION: "获取地图位置",
+        CURRENT_LOCATION: "当前位置",
+        CURRENT_COORDINATE: "当前坐标",
       },
     },
     /**
@@ -1251,6 +1257,7 @@ export const locale = {
       DWVICEGROUPNAME1: "设备分组名称",
       INSTRUCTION1: "指令",
       OPERATIONTYPE1: "操作类型",
+      OPERATE_USER: "操作用户",
       TRIGGERINGTIME1: "触发时间",
       SENDTHERESULIT1: "发送结果",
       PROTOCOLTYPE1: "协议类型",
