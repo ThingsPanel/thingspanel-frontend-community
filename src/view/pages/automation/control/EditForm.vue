@@ -230,7 +230,7 @@ export default {
 <style scope>
 
 </style>
-<style>
+<style lang="scss"  scoped>
 .el-form-item.is-required:not(.is-no-asterisk) .el-form-item__label-wrap>.el-form-item__label:before, .el-form-item.is-required:not(.is-no-asterisk)>.el-form-item__label:before {
   content: unset;
 }
@@ -240,7 +240,7 @@ export default {
   color: #F56C6C;
   margin-left: 4px;
 }
-.edit-dialog {
+::v-deep .edit-dialog {
   width: 60%!important;
   min-width: 1147px!important;
 }

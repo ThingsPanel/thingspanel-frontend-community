@@ -122,12 +122,7 @@ export default {
                         // 新增
                         this.formData = {
                             scenario_name: "",
-                            scenario_description: "",
-                            // commands: [
-                            //     {
-                            //         data: {}
-                            //     }
-                            // ]
+                            scenario_description: ""
                         };
                         this.actions = [];
                         this.setActionTypeOptions();
@@ -200,6 +195,10 @@ export default {
             let params = JSON.parse(JSON.stringify(this.formData));
             params.scenario_actions = [];
             // 操作设备
+            this.actions.commands = this.actions.commands ? 
+                this.actions.commands :
+                this.actions.find(item => item.type === "device")?.commands || null;
+            console.log("this.actions.commands", this.actions)
             this.actions.commands && this.actions.commands.forEach(cmd => {
                 console.log("cmd", cmd)
                 let { name, type, mode, operator } = cmd.state
@@ -222,8 +221,9 @@ export default {
                 })
             })
             // 场景
-            console.log("this.actions.scenes", this.actions.scenes);
-
+            this.actions.scenes = this.actions.scenes ?  
+                this.actions.scenes : 
+                this.actions.find(item => item.type === "scene");
             this.actions.scenes && this.actions.scenes.forEach(scene => {
                 let instruct = { automation_id: scene.id, switch: scene.switch }
                 params.scenario_actions.push({
@@ -235,6 +235,9 @@ export default {
                 })
             })
 
+            this.actions.alarm = this.actions.alarm ?  
+                this.actions.alarm : 
+                this.actions.find(item => item.type === "alarm");
             if (this.actions.alarm) {
                const alarm = this.actions.alarm;
                 params.scenario_actions.push({
@@ -448,8 +451,8 @@ export default {
 }
 </script>
   
-<style scoped>
-.edit-dialog {
+<style lang="scss" scoped>
+::v-deep .edit-dialog {
     width: 60%!important;
     min-width: 1147px!important;
   }

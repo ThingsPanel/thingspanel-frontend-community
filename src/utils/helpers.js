@@ -193,6 +193,7 @@ export function _debounce(fn, wait) {
 }
 
 export function typeConvert(value, type) {
+    if (!type) return value;
     if (type.toLowerCase() == "integer" || type.toLowerCase() == "number") return Number(value) || 0;
     if (type.toLowerCase() == "string" || type.toLowerCase() == "text") return String(value);
     if (type.toLowerCase() == "bool" || type.toLowerCase() == "boolean") return value === 'true' || value === true;
