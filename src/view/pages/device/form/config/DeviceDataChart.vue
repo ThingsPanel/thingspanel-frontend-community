@@ -36,10 +36,10 @@
                 </el-col>
                 <el-col :span=9 style="float: right;">
                     <el-button-group>
-                        <el-button @click="changeChartType('line')" icon="el-icon-s-data" :type="buttonType.line"
+                        <el-button @click="changeChartType('line')" icon="el-icon-data-line" :type="buttonType.line"
                             style="width: 47px; border-color:#747474" :style="chartTypeOption.line"
                             size="small"></el-button>
-                        <el-button @click="changeChartType('bar')" icon="el-icon-data-line" :type="buttonType.bar"
+                        <el-button @click="changeChartType('bar')" icon="el-icon-s-data" :type="buttonType.bar"
                             style="width: 47px; border-color:#747474; margin:0" :style="chartTypeOption.bar"
                             size="small"></el-button>
                         <el-button @click="changeChartType('scatter')" icon="el-icon-data-analysis"

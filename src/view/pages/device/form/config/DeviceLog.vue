@@ -71,6 +71,15 @@
                     <!--           <p class="green" v-if="scope.row.operation_type == '3'"><span>{{"自动控制"}}</span></p>-->
                 </template>
             </el-table-column>
+            <el-table-column :label="$t('SYSTEM_LOG.DEVICE_LOG.OPERATE_USER')" prop="operation_type" width="90">
+                <template v-slot="scope">
+                    <el-tooltip class="item" effect="dark" :content="scope.row.user_name" placement="top-start">
+                        <span>{{
+                            scope.row.user_name ? scope.row.user_name.length > 10 ? scope.row.user_name.substr(0, 5) + "..." : scope.row.user_name : ""
+                        }}</span>
+                    </el-tooltip>
+                </template>
+            </el-table-column>
             <el-table-column :label="$t('SYSTEM_LOG.DEVICE_LOG.TRIGGERINGTIME1')" prop="cteate_time"
                 width="90"></el-table-column>
             <!-- <el-table-column :label='$t("COMMON.BUSINESS")' ></el-table-column> -->
