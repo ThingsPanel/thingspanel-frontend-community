@@ -135,7 +135,7 @@ export default {
     },
     handleBindPluginSubmit(pluginId, pluginName) {
       console.log("handleBindPluginSubmit", pluginId)
-      this.formData.plugin = pluginId;
+      this.formData.device_model_id = pluginId;
       this.formData.pluginName = pluginName;
     },
     handleClose() {
