@@ -32,17 +32,6 @@
     </el-form>
     <el-button type="primary" class="w-100" :loading="loading" @click="handleSubmit(loginType)">{{ $t("LOGIN.SIGNIN")
     }}</el-button>
-
-    <el-row type="flex" class="row-bg" justify="space-between" style="margin-top: 12px;">
-      <el-col :span=16>
-        <!-- <el-checkbox v-model="formData.remember">{{ $t("LOGIN.NO_LOGIN_10_DAY") }}</el-checkbox>
-          <span> | </span> -->
-        <a href="/#/reset" style="color: white;">{{ $t("LOGIN.FORGOT_PASSWORD") }}</a>
-      </el-col>
-      <el-col :span=4>
-        <a href="/#/register" style="color: white;">{{ $t("LOGIN.GO_SIGN_UP") }}></a>
-      </el-col>
-    </el-row>
   </div>
 </template>
 

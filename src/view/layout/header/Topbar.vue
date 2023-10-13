@@ -1,7 +1,34 @@
 <template>
   <!-- begin:: Header Topbar -->
   <div class="topbar">
-
+        <div class="header_url">
+          <a style="color: white;" href="http://thingspanel.io/" target="_blank">{{ $t('COMMON.DOCUMENTATION') }}</a>
+        </div>
+        <div class="header_url">
+          <el-tooltip class="item" placement="bottom-start" effect="light">
+            <div slot="content" style="width: 9vw;">
+              <el-row type="flex" align="middle" style="flex-wrap: wrap">
+                <el-col :span=7 style="padding-left: 1vw;">
+                  <div>{{ $t('COMMON.QQ') }}</div>
+                </el-col>
+                <el-col :span=17>
+                  <img :src="imageSrcQQ" alt="" style="width: 80%;">
+                  <div style="width: 100%; text-align:center; padding-right: 30px; padding-top: 10px;">{{ $t('COMMON.QQ_GROUP_NUMBER') + ": 371794256" }}</div>
+                </el-col>
+                <el-col :span=24>
+                  <el-divider></el-divider>
+                </el-col>
+                <el-col :span=7 style="padding-left: 1vw;">
+                  <div>{{ $t('COMMON.WECHAT') }}</div>
+                </el-col>
+                <el-col :span=17>
+                  <img :src="imageSrcWeChat" alt="" style="width: 80%;">
+                </el-col>
+              </el-row>
+            </div>
+            <div>{{ $t('COMMON.PROBLEM_FEEDBACK') }}</div>
+          </el-tooltip>
+        </div>
     <!--begin: Language bar -->
     <div class="topbar-item">
       <!-- <el-select class="topbar-select" v-model="themeValue" placeholder="主题颜色" @change="handleChangeTheme">
@@ -47,7 +74,9 @@ export default {
       themeOptions: [
         { label: "默认", value: "default" },
         { label: "白色", value: "white" },
-      ]
+      ],
+      imageSrcQQ: require('/src/assets/images/qq.jpg'),
+      imageSrcWeChat: require('/src/assets/images/weixin.jpeg')
     };
   },
   components: {
@@ -87,6 +116,10 @@ export default {
 </script>
 
 <style lang="scss">
+.header_url{
+  padding: 4% 30px 0 0;
+  color: #fff;
+}
 .topbar {
   .el-input__inner{
     height: 30px;
