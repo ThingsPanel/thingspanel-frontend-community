@@ -21,9 +21,8 @@
 
             <div v-if="device.device_type !== '2'" style="margin-bottom: 30px;">
                 <!-- 属性卡片 -->
-                <el-row :gutter=12>
-
-                    <el-col :xs="24" :sm="12" :md="8" :lg="6" style="margin-bottom: 10px;" v-for="item in deviceAttributeCardList" :key="item.key"
+                <el-row :gutter=12 type="flex" style="flex-wrap:wrap;">
+                    <el-col :xs="24" :sm="12" :md="8" :lg="8" :xl="6" style="min-width:250px; margin-bottom: 10px;" v-for="item in deviceAttributeCardList" :key="item.key"
                         v-if="item.key !== 'systime' && item.key !== 'SYS_ONLINE'">
                         <div style="height 150px; background-color: #2d3d88; border-radius: 4px;border: 1px solid #EBEEF5;">
                             <div style="padding: 10px 10px 10px 20px; height: 30px;">
@@ -50,9 +49,12 @@
                             </div>
                             <div style="height:115px; padding:10px 5px 0px 10px">
                                 <div style="height: 63px;">
-                                    <span style="font-size: 45px; padding-left:10px">{{ item.str_v ? item.str_v : item.dbl_v
-                                    }}</span>
-                                    <span style="font-size: 25px; ">{{ item.unit || ""}}</span>
+                                    <el-tooltip :content="getCardFullValue(item)" placement="top">
+                                        <div style="display: flex;">
+                                            <div class="card_value_content">{{ item.str_v ? item.str_v : item.dbl_v }}</div>
+                                            <div class="card_value_unit">{{ item.unit || ""}}</div>
+                                        </div>
+                                    </el-tooltip>
                                 </div>
                                 <div style="float: right; padding: 3px 5px; margin-bottom: 3px; margin-top: 11px">{{
                                     calculateUpdateTime(item.ts) }}</div>
@@ -77,6 +79,7 @@ import DeviceHistory from "./DeviceHistory.vue"
 import DeviceDataChart from "./DeviceDataChart.vue"
 import i18n from "@/core/plugins/vue-i18n.js"
 import { currentValueDetail } from "@/api/device"
+import { websocket } from "@/utils/websocket"
 
 export default {
     components: {
@@ -110,6 +113,9 @@ export default {
             deviceHistoryVisible: false,
             deviceDataChartVisible: false,
             deviceAttributeCardList: [],
+            socket: null,
+            // 首次加载时不使用websocket的数据
+            firstLoad: false,
         }
     },
     computed: {
@@ -126,21 +132,28 @@ export default {
         initAttributeCard: {
             handler(newValue){
                 if (newValue) {
+                    console.debug("initAttributeCard", newValue)
                     this.getDeviceAttributeCardList()
                 }
             }
+        },
+    },
+    beforeDestroy() {
+        if (this.socket) {
+            this.socket.close();
         }
     },
     mounted() {
         console.log("DeviceAttribute", this.device)
         this.getDeviceAttributeCardList()
+        this.updateComponents()
     },
     methods: {
         getDeviceAttributeCardList() {
             currentValueDetail({ "device_id": this.device.id })
                 .then(data => {
                     console.debug("====getDeviceAttributeCardList", data)
-                    if (data.data.code == 200) {
+                    if (data.data.code === 200) {
                         this.deviceAttributeCardList = data.data.data ? data.data.data : [];
                     }
                 })
@@ -198,11 +211,73 @@ export default {
             }
             return false
         },
+        getCardFullValue(item) {
+            let value = String(item.str_v ? item.str_v : item.dbl_v)
+            if ( item.unit) {
+                value += " " + item.unit
+            }
+            console.error(item, value)
+            return value
+        },
+        /**
+         * 更新组件的值
+         */
+        updateComponents() {
+            console.error(this.device, this.websocket)
+
+            if (this.socket) {
+                this.socket.close();
+                this.socket = null;
+            }
+            this.socket = new websocket();
+            this.socket.init((event) => {
+            });
+            this.socket.onReady(() => {
+                this.socket.send({ device_id: this.device.device })
+            })
+
+            this.socket.onMessage((result) => {
+                if (!this.firstLoad){
+                    this.firstLoad = true;
+                    return
+                }
+                try {
+                    let data = JSON.parse(result)
+                    console.error(data)
+                    const timestamp = new Date(data.ts).getTime() * 1000;
+                    
+                    for (let i = 0; i < this.deviceAttributeCardList.length; i++) {
+                        const item = this.deviceAttributeCardList[i];
+                        let value = data[item.key];
+                        if (value === undefined) {
+                            continue
+                        }
+                        item.str_v = value;
+                        item.ts = timestamp;
+                    }
+                } catch (err) {
+                }
+            })
+        },
     }
 }
 </script>
 <style lang="scss" scoped>
 .el-form-item__content {
     margin-left: 100px;
+}
+.card_value_content{
+    font-size: 40px; 
+    margin-left:10px; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 10vw;
+    display: inline-block;
+}
+.card_value_unit{
+    padding-top: 20px;
+    display:inline-block; 
+    font-size: 22px;
 }
 </style>

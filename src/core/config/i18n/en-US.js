@@ -431,6 +431,12 @@ export const locale = {
     EXPORT_CONFIRM: "Are you sure to export the data?",
     DELETE_CONFIRM: "Are you sure to delete the data?",
     GENERATE_WAIT: "Generating, please wait...",
+    DOCUMENTATION: "Documentation",
+    PROBLEM_FEEDBACK: "Feedback",
+    QQ: "QQ",
+    QQ_GROUP_NUMBER: "QQ Group",
+    WECHAT: "WeChat",
+    DOWNLOAD_APP: "Download APP",
   },
   TRANSLATOR: {
     SELECT: "Please select language",
