@@ -552,6 +552,9 @@ export const locale = {
     NOTICERECORD: "Notice Record",
     NOTICESERVICES: "Notification Service Configuration",
     DATASETSERVICE: "Data Service Set",
+    ALARM: "Alarm",
+    DATA_SERVICE: "Data Service",
+    DATA_GATEWAY: "Data Gateway",
   },
   /**
    * Certified

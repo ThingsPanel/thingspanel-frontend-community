@@ -552,6 +552,9 @@ export const locale = {
     NOTICERECORD:"通知记录",
     NOTICESERVICES: "通知服务配置",
     DATASETSERVICE: "数据库接口服务",
+    ALARM: "告警",
+    DATA_SERVICE: "数据服务",
+    DATA_GATEWAY: "数据网关",
   },
   /**
    * 认证
