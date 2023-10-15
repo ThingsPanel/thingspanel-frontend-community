@@ -132,8 +132,14 @@ export default {
         initAttributeCard: {
             handler(newValue){
                 if (newValue) {
-                    console.debug("initAttributeCard", newValue)
                     this.getDeviceAttributeCardList()
+                    this.updateComponents()
+                } else {
+                    if (this.socket) {
+                        this.socket.close();
+                        this.socket = null;
+                        console.debug("close socket", this.socket)
+                    }
                 }
             }
         },
