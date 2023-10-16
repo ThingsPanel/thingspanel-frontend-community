@@ -639,6 +639,12 @@ export default {
 
             let startTime, endTime;
             let now = Date.now();
+            if (this.myEcharts) {
+                this.myEcharts.showLoading({
+                    text: "loading",
+                    maskColor: 'rgba(45, 61, 136, 0.8)',
+                })
+            }
 
             // 初始化范围
             if (isInit) {
@@ -697,6 +703,8 @@ export default {
                     }
                     console.debug(this.historyData)
                     this.transformChartData()
+                }).finally(() => {
+                    this.myEcharts.hideLoading()
                 })
 
         },
@@ -904,7 +912,7 @@ export default {
                     if (data.code == 200) {
                         let now = Date.now();
                         this.systemTimeInterval = data.data.timestamp ? data.data.timestamp - now : null
-                        console.error(data.data.timestamp, now, this.systemTimeInterval, "====getHistoryData")
+                        console.debug(data.data.timestamp, now, this.systemTimeInterval, "====getHistoryData")
                     }
                 })
         },

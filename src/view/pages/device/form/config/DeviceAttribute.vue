@@ -216,15 +216,12 @@ export default {
             if ( item.unit) {
                 value += " " + item.unit
             }
-            console.error(item, value)
             return value
         },
         /**
          * 更新组件的值
          */
         updateComponents() {
-            console.error(this.device, this.websocket)
-
             if (this.socket) {
                 this.socket.close();
                 this.socket = null;
@@ -243,7 +240,6 @@ export default {
                 }
                 try {
                     let data = JSON.parse(result)
-                    console.error(data)
                     const timestamp = new Date(data.ts).getTime() * 1000;
                     
                     for (let i = 0; i < this.deviceAttributeCardList.length; i++) {

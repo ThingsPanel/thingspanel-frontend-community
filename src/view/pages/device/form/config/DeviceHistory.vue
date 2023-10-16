@@ -151,16 +151,27 @@ export default {
     },
     methods: {
         // 获取属性历史数据
-        getHistoryData(page, pageSize) {
+        getHistoryData(lastPage) {
             let startTime = new Date(this.choosedTimeRange[0]).getTime() * 1000;
             let endTime = new Date(this.choosedTimeRange[1]).getTime() * 1000;
+            let firstDataTime = 0;
+            let endDataTime = 0;
+            if (lastPage) {
+                if (lastPage > this.page) {
+                    firstDataTime = this.historyData[0].ts
+                } else if (lastPage < this.page) {
+                    endDataTime = this.historyData[this.historyData.length - 1].ts
+                }
+            }
             historyValueData({
                 "device_id": this.device.id,
                 "key": this.attributeName,
                 "start_time": startTime,
                 "end_time": endTime,
-                "page": page ? page : this.page,
-                "page_records": pageSize ? pageSize : this.pageSize
+                "page": this.page,
+                "page_records": this.pageSize,
+                "first_data_time": firstDataTime,
+                "end_data_time": endDataTime,
             }).then(({ data }) => {
                 console.debug("====getHistoryData", data)
                 if (data.code == 200) {
@@ -180,8 +191,9 @@ export default {
             return dateFormat(timestamp)
         },
         pageChange(val) {
+            let lastPage = this.page;
             this.page = val;
-            this.getHistoryData();
+            this.getHistoryData(lastPage);
         },
         handleExport() {
             if (this.exporting) return
