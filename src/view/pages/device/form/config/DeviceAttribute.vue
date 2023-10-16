@@ -26,7 +26,7 @@
                         v-if="item.key !== 'systime' && item.key !== 'SYS_ONLINE'">
                         <div style="height 150px; background-color: #2d3d88; border-radius: 4px;border: 1px solid #EBEEF5;">
                             <div style="padding: 10px 10px 10px 20px; height: 30px;">
-                                <span style="font-size: 18px;">{{ item.name }}</span>
+                                <span style="font-size: 18px;">{{ item.name ? item.name : item.key }}</span>
                                 <el-tooltip class="item" effect="dark"
                                     :content="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.CHECK_TIMING_CHART')"
                                     placement="top-start">
