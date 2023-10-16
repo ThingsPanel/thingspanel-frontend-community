@@ -908,7 +908,7 @@ export default {
         refreshSystime() {
             getSystemTime()
                 .then(({ data }) => {
-                    console.debug("====getHistoryData", data)
+                    console.debug("====getSystemTime", data)
                     if (data.code == 200) {
                         let now = Date.now();
                         this.systemTimeInterval = data.data.timestamp ? data.data.timestamp - now : null

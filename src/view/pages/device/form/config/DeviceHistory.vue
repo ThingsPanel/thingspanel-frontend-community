@@ -75,7 +75,7 @@
 </template>
 
 <script>
-import { historyValueData } from "@/api/device"
+import { historyValueData, getSystemTime } from "@/api/device"
 import { dateFormat } from "@/utils/tool.js";
 
 export default {
@@ -117,6 +117,7 @@ export default {
             exporting: false,
             exportVisible: false,
             downloadUrl: "",
+            systemTimeInterval: null,
         }
     },
     computed: {
@@ -142,7 +143,9 @@ export default {
             handler(newValue) {
                 console.debug("DeviceHistory", this)
                 if (newValue) {
-                    this.getHistoryData()
+                    Promise.resolve(this.refreshSystime()).then(() => {
+                        this.getHistoryData(true, 0);
+                    })
                 }
             }
         },
@@ -151,9 +154,10 @@ export default {
     },
     methods: {
         // 获取属性历史数据
-        getHistoryData(lastPage) {
+        getHistoryData(isInit=false, lastPage=0) {
             let startTime = new Date(this.choosedTimeRange[0]).getTime() * 1000;
             let endTime = new Date(this.choosedTimeRange[1]).getTime() * 1000;
+            let now = Date.now();
             let firstDataTime = 0;
             let endDataTime = 0;
             if (lastPage) {
@@ -163,6 +167,30 @@ export default {
                     endDataTime = this.historyData[this.historyData.length - 1].ts
                 }
             }
+
+
+            // 初始化范围
+            if (isInit) {
+                // 如果时间有误差，修正时间
+                if (this.systemTimeInterval) {
+                    now = now + this.systemTimeInterval;
+                    console.debug("修正时间", now, this.systemTimeInterval, Date.now())
+                }
+                startTime = new Date(now - 1000 * 60 * 60).getTime() * 1000;
+                endTime = new Date(now).getTime() * 1000;
+                console.debug("初始化时间范围", new Date(startTime / 1000), new Date(endTime / 1000))
+                // 选择时间范围
+            } else {
+                if (this.systemTimeInterval) {
+                    now = now + this.systemTimeInterval;
+                }
+                startTime = (new Date(this.choosedTimeRange[0]).getTime() + this.systemTimeInterval) * 1000;
+                endTime = (new Date(this.choosedTimeRange[1]).getTime() + this.systemTimeInterval) * 1000;
+
+                console.debug("自定义时间范围", new Date(startTime / 1000), new Date(endTime / 1000))
+            }
+
+
             historyValueData({
                 "device_id": this.device.id,
                 "key": this.attributeName,
@@ -193,7 +221,7 @@ export default {
         pageChange(val) {
             let lastPage = this.page;
             this.page = val;
-            this.getHistoryData(lastPage);
+            this.getHistoryData(false, lastPage);
         },
         handleExport() {
             if (this.exporting) return
@@ -219,6 +247,17 @@ export default {
             }).finally(() => {
                 this.exporting = false
             })
+        },
+        refreshSystime() {
+            getSystemTime()
+                .then(({ data }) => {
+                    console.debug("====getSystemTime", data)
+                    if (data.code == 200) {
+                        let now = Date.now();
+                        this.systemTimeInterval = data.data.timestamp ? data.data.timestamp - now : null
+                        console.debug(data.data.timestamp, now, this.systemTimeInterval, "====getHistoryData")
+                    }
+                })
         },
         handleRefresh() {
             let now = Date.now();
