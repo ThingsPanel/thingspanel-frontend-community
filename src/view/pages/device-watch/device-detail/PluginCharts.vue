@@ -282,10 +282,12 @@ export default {
         this.socket = null;
       }
       this.socket = new websocket();
-      this.socket.init((event) => {
-      });
+      this.socket.init((event) => {});
       this.socket.onReady(() => {
-        this.socket.send({ device_id: this.device.device })
+        this.socket.send({ device_id: this.device.device });
+        setInterval(() => {
+          this.socket.send({ type: "ping" });
+        }, 30 * 1000);
       })
 
       this.socket.onMessage((result) => {
