@@ -84,9 +84,9 @@ export default {
   watch: {
     searchText: {
       handler(newValue) {
-        // if (newValue) {
+        if (this.debounceSearchTextChange) {
           this.debounceSearchTextChange();
-        // }
+        }
       },
       immediate: true
     },
