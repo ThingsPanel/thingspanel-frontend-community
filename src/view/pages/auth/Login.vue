@@ -21,7 +21,23 @@
 
               </el-tab-pane>
             </el-tabs>
-
+            
+            <el-row type="flex" class="row-bg" justify="space-between" style="margin-top: 12px;">
+              <el-col :span=9>
+                <a href="/#/reset" style="color: white;">{{ $t("LOGIN.FORGOT_PASSWORD") }}</a>
+              </el-col>
+              <el-col :span=8>
+                <el-tooltip class="item" placement="bottom" effect="light" popper-class="download_tooltip">
+                  <div slot="content" style="width: 135px; height: 135px">
+                    <img :src="imageSrc" alt="" style="width: 100%;">
+                  </div>
+                  <div style="width: 150px; cursor: pointer">{{ $t("COMMON.DOWNLOAD_APP") }}</div>
+                </el-tooltip>
+              </el-col>
+              <el-col :span=6 style="text-align: right;">
+                <a href="/#/register" style="color: white;">{{ $t("LOGIN.GO_SIGN_UP") }}></a>
+              </el-col>
+            </el-row>
           </div>
         </div>
       </div>
@@ -40,6 +56,7 @@ export default {
   data() {
     return {
       activeName: "password",
+      imageSrc: require('/src/assets/images/download_app.png'),
     };
   },
 };

@@ -431,6 +431,12 @@ export const locale = {
     EXPORT_CONFIRM: "确定导出数据吗?",
     DELETE_CONFIRM: "确定删除吗?",
     GENERATE_WAIT: "生成中，请稍候...",
+    DOCUMENTATION: "帮助文档",
+    PROBLEM_FEEDBACK: "问题反馈",
+    QQ: "QQ",
+    QQ_GROUP_NUMBER: "群号",
+    WECHAT: "微信",
+    DOWNLOAD_APP: "下载APP",
 },
   TRANSLATOR: {
     SELECT: "选择你的语言",
@@ -546,6 +552,9 @@ export const locale = {
     NOTICERECORD:"通知记录",
     NOTICESERVICES: "通知服务配置",
     DATASETSERVICE: "数据库接口服务",
+    ALARM: "告警",
+    DATA_SERVICE: "数据服务",
+    DATA_GATEWAY: "数据网关",
   },
   /**
    * 认证

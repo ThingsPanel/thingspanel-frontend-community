@@ -1,7 +1,7 @@
 <!-- 设备配置 -->
 <template>
   <el-dialog class="el-dark-dialog el-dark-input" :title="device.name + ' - ' + $t('DEVICE_MANAGEMENT.DEVICE_DETAIL')" width="60%"
-             :close-on-click-modal="false" :close-on-press-escape="false" :show-close="false" :append-to-body="true"
+             :close-on-press-escape="false" :show-close="false" :append-to-body="true"
              :visible.sync="dialogVisible" @close="handleClose">
     <div class="container-fluid">
       <el-tabs v-model="activeName">
