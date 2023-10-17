@@ -94,7 +94,8 @@
     <el-table-column :label="$t('DEVICE_MANAGEMENT.GATEWAYDEVICE')" width="auto" min-width="15%">
       <template slot-scope="scope">
         <el-form-item :error="scope.row.errors.device_type">
-          <DeviceTypeSelector :current-item="scope.row" :deviceType.sync="scope.row.device_type" @change="deviceTypeChange(scope.row)"
+          <DeviceTypeSelector ref="deviceTypeSelectorRef" 
+            :current-item="scope.row" :deviceType.sync="scope.row.device_type" @change="deviceTypeChange(scope.row)"
           ></DeviceTypeSelector>
         </el-form-item>
       </template>
@@ -230,7 +231,7 @@
 </template>
 
 <script>
-import {defineComponent, onBeforeUnmount} from "@vue/composition-api";
+import {defineComponent, onBeforeUnmount, getCurrentInstance} from "@vue/composition-api";
 import {ref, nextTick} from "@vue/composition-api/dist/vue-composition-api";
 
 import useRoute from "@/utils/useRoute";
@@ -277,6 +278,7 @@ export default defineComponent({
     let {route} = useRoute()
     // console.log(route.query.business_id)
     let business_id = route.query.business_id
+    const { refs } = getCurrentInstance();
 
     // 设备分组的选项
     let {
@@ -306,28 +308,41 @@ export default defineComponent({
     } = useDeviceCUD(tableData)
 
     function deviceTypeChange(row) {
-      
-      MessageBox.confirm("是否切换设备类型？", "提示", {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-        type: "warning",
-      })
-      .then(() => {
-        if (row.device_type == "1" || row.device_type == 1) {
-          row.protocol = "mqtt";
-        } else {
-          row.protocol = "MODBUS_TCP";
-        }
-        currentDeviceItem.value = row;
-        console.log("deviceTypeChange", row)
-        handleSave(row, () => {
-          getDeviceIndex();
-        });
-      })
-      .catch(() => {
-        console.log("取消");
+      if (row.device_type == "1" || row.device_type == 1) {
+        row.protocol = "mqtt";
+      } else {
+        row.protocol = "MODBUS_TCP";
+      }
+      currentDeviceItem.value = row;
+      // row.deviceTypeChanging = true;
+      handleSave(row, () => {
         getDeviceIndex();
-      })
+        // setTimeout(() => {
+        //   row.deviceTypeChanging = false;
+        // }, 3000)
+        // console.log("deviceTypeChange", refs.deviceTypeSelectorRef)
+      });
+      // MessageBox.confirm("是否切换设备类型？", "提示", {
+      //   confirmButtonText: "确定",
+      //   cancelButtonText: "取消",
+      //   type: "warning",
+      // })
+      // .then(() => {
+      //   if (row.device_type == "1" || row.device_type == 1) {
+      //     row.protocol = "mqtt";
+      //   } else {
+      //     row.protocol = "MODBUS_TCP";
+      //   }
+      //   currentDeviceItem.value = row;
+
+      //   handleSave(row, () => {
+      //     getDeviceIndex();
+      //   });
+      // })
+      // .catch(async () => {
+      //   console.log("取消");
+      //   // getDeviceIndex();
+      // })
     }
 
     /**

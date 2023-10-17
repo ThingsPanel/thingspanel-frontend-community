@@ -1,6 +1,5 @@
-<!-- 设备类型下拉列表：网关/设备 -->
 <template>
-  <el-select
+  <el-select ref="selectRef"
       class="w-100"
       size="medium"
       :placeholder="$t('DEVICE_MANAGEMENT.PLACEHOLDER4')"
@@ -15,7 +14,7 @@
 </template>
 
 <script>
-import {computed, defineComponent} from "@vue/composition-api";
+import {computed, ref, defineComponent, getCurrentInstance } from "@vue/composition-api";
 import i18n from "@/core/plugins/vue-i18n.js"
 export default defineComponent({
   name: "DeviceTypeSelector",
@@ -49,6 +48,7 @@ export default defineComponent({
   },
   emits:["change"],
   setup(props, context){
+    
 
     let deviceTypeId = computed({
       get(){
@@ -59,16 +59,20 @@ export default defineComponent({
         context.emit("change", val)
       }
     })
-
-
     function handleChange(value){
       // console.log("====handleChange", props.currentItem, value)
       // context.emit("change", value)
     }
 
+    const { refs } = getCurrentInstance();
+    function blur() {
+      refs.selectRef.blur();
+    }
+
     return {
       deviceTypeId,
       handleChange,
+      blur
     }
   }
 })
