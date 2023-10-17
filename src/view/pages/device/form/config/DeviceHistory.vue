@@ -106,10 +106,7 @@ export default {
             historyData: [],
             positionShow: false,
             locationArray: [],
-            choosedTimeRange: [
-                new Date(now - 1000 * 60 * 60),
-                new Date(now)
-            ],
+            choosedTimeRange: [],
             isCopy: false,
             pageSize: 10,
             page: 1,
@@ -141,8 +138,13 @@ export default {
     watch: {
         dialogVisible: {
             handler(newValue) {
+                let now = Date.now();
                 console.debug("DeviceHistory", this)
                 if (newValue) {
+                    this.choosedTimeRange = [
+                        new Date(now - 1000 * 60 * 60),
+                        new Date(now)
+                    ]
                     Promise.resolve(this.refreshSystime()).then(() => {
                         this.getHistoryData(true, 0);
                     })
