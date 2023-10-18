@@ -135,19 +135,14 @@ export default {
                     this.getDeviceAttributeCardList()
                     this.updateComponents()
                 } else {
-                    if (this.socket) {
-                        this.socket.close();
-                        this.socket = null;
-                        console.debug("close socket", this.socket)
-                    }
+                    this.closeSocket();
                 }
             }
         },
     },
     beforeDestroy() {
-        if (this.socket) {
-            this.socket.close();
-        }
+        console.debug("beforeDestroy")
+        this.closeSocket();
     },
     mounted() {
         console.log("DeviceAttribute", this.device)
@@ -224,14 +219,18 @@ export default {
             }
             return value
         },
+        closeSocket() {
+            if (this.socket) {
+                this.socket.close();
+                this.socket = null;
+                this.firstLoad = false;
+            }
+        },
         /**
          * 更新组件的值
          */
         updateComponents() {
-            if (this.socket) {
-                this.socket.close();
-                this.socket = null;
-            }
+            this.closeSocket();
             this.socket = new websocket();
             this.socket.init((event) => {
             });
@@ -241,6 +240,7 @@ export default {
 
             this.socket.onMessage((result) => {
                 if (!this.firstLoad){
+                    console.debug("first load ws")
                     this.firstLoad = true;
                     return
                 }
