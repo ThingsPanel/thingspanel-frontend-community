@@ -99,6 +99,8 @@ export default {
       // 计时器
       timer: null,
       socket: null,
+      // 心跳计时器
+      heartbeatTimer: null,
       firstLoaded: true,
       deviceStatus: {
         status: false,
@@ -140,6 +142,9 @@ export default {
     }
     if (this.socket) {
       this.socket.close();
+    }
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
     }
   },
   methods: {
@@ -266,12 +271,6 @@ export default {
      */
     updateComponents(componentMaps) {
 
-      // this.timer = setInterval(() => {
-      //   this.getHistory(componentMaps.history);
-      //   this.getDeviceStatus();
-      // }, this.flushTime * 1000);
-      // localStorage.setItem("deviceWatch_timer", this.timer + "");
-
       // 先执行一次获取设备状态
       this.getDeviceStatus();
       // 先执行一次获取历史数据
@@ -282,10 +281,13 @@ export default {
         this.socket = null;
       }
       this.socket = new websocket();
-      this.socket.init((event) => {});
+      this.socket.init();
       this.socket.onReady(() => {
         this.socket.send({ device_id: this.device.device });
-        setInterval(() => {
+        if (this.heartbeatTimer) {
+          clearInterval(this.heartbeatTimer);
+        }
+        this.heartbeatTimer = setInterval(() => {
           this.socket.send({ type: "ping" });
         }, 30 * 1000);
       })
