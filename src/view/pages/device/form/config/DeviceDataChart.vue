@@ -14,7 +14,8 @@
                         </el-option>
                     </el-select>
                     <el-date-picker v-model="choosedTimeRange" :clearable="false" @change="handleDatePickerChange()"
-                        value-format="yyyy-MM-dd HH:mm:ss" format="yyyy-MM-dd" type="datetimerange"
+                        @input="$forceUpdate()" format="yyyy-MM-dd" type="datetimerange"
+                        value-format="yyyy-MM-dd HH:mm:ss" 
                         :start-placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER5')"
                         :range-separator="$t('DATA_MANAGEMENT.PLACEHOLDER6')"
                         :end-placeholder="$t('DATA_MANAGEMENT.PLACEHOLDER7')" style="width:40%; margin-left:10px">
@@ -255,10 +256,7 @@ export default {
             isCopy: false,
 
             // 时间选择
-            choosedTimeRange: [
-                new Date(now - 1000 * 60 * 60),
-                new Date(now)
-            ],
+            choosedTimeRange: [],
             selectedTimeRangeOptions: '1_hour',
             timeRangeOptions: [
                 {
@@ -516,13 +514,10 @@ export default {
         dialogVisible: {
             handler(newValue) {
                 if (newValue) {
-                    Promise.resolve(this.refreshSystime()).then(() => {
-                        this.getStatisticValue(true);
-                    })
+                    this.refreshSystime(true)
                 }
                 this.$nextTick(() => {
                     this.initEChart();
-
                 })
             },
         },
@@ -612,8 +607,7 @@ export default {
             this.calculateData.cnt = yAxis.length;
         },
         // 获取属性统计数据
-        getStatisticValue(isInit = false) {
-
+        getStatisticValue() {
             let startTime, endTime;
             let now = Date.now();
             if (this.myEcharts) {
@@ -623,41 +617,8 @@ export default {
                 })
             }
 
-            // 初始化范围
-            if (isInit) {
-                // 如果时间有误差，修正时间
-                if (this.systemTimeInterval) {
-                    now = now + this.systemTimeInterval;
-                    console.debug("修正时间", now, this.systemTimeInterval, Date.now())
-                }
-                startTime = new Date(now - 1000 * 60 * 60).getTime() * 1000;
-                endTime = new Date(now).getTime() * 1000;
-                console.debug("初始化时间范围", new Date(startTime / 1000), new Date(endTime / 1000))
-            // 选择时间范围
-            } else {
-                if (this.systemTimeInterval) {
-                    now = now + this.systemTimeInterval;
-                }
-                // 选择已有时间时，重置当前时间
-                if (this.selectedTimeRangeOptions !== "custom") {
-                    
-                    let interval = 0;
-                    let option = this.timeRangeOptions.filter(item => item.value === this.selectedTimeRangeOptions)
-                    if (option.length > 0) {
-                        interval = option[0].interval;
-                    }
-                    console.debug("选择已有时间范围", option, now, interval, this.selectedTimeRangeOptions)
-
-                    now = Date.now() + this.systemTimeInterval;
-                    startTime = new Date(now - interval).getTime() * 1000;
-                    endTime = new Date(now).getTime() * 1000;
-                } else {
-                    startTime = (new Date(this.choosedTimeRange[0]).getTime() + this.systemTimeInterval) * 1000;
-                    endTime = (new Date(this.choosedTimeRange[1]).getTime() + this.systemTimeInterval) * 1000;
-                }
-                    
-                console.debug("自定义时间范围", new Date(startTime / 1000), new Date(endTime / 1000))
-            }
+            startTime = (new Date(this.choosedTimeRange[0]).getTime()) * 1000;
+            endTime = (new Date(this.choosedTimeRange[1]).getTime()) * 1000;
 
             let params = {
                 "device_id": this.device.id,
@@ -667,12 +628,12 @@ export default {
                 "aggregate_window": this.selectedAggrigateOptions,
                 "time_range": "custom",
             }
-            console.debug(params, this.choosedTimeRange)
             if (this.selectedAggrigateOptions !== "no_aggregate") {
                 params.aggregate_function = this.selectedValueType
             }
             statistic(params)
                 .then(({ data }) => {
+                    console.debug("req time", new Date(startTime / 1000), new Date(endTime / 1000), this.choosedTimeRange, this.systemTimeInterval)
                     console.debug("====getHistoryData", data)
                     if (data.code == 200) {
                         this.historyData = data.data.time_series ? data.data.time_series : []
@@ -689,12 +650,6 @@ export default {
             this.dialogVisible = false
             this.selectedTimeRangeOptions = "1_hour"
             this.selectedAggrigateOptions = "no_aggregate"
-            let now = Date.now();
-
-            this.choosedTimeRange = [
-                new Date(now - 1000 * 60 * 60),
-                new Date(now)
-            ]
 
             this.changeChartType('line', false)
 
@@ -704,9 +659,16 @@ export default {
         },
         // 根据选择框修改时间范围
         changeTimeRange() {
+     
+            // 选择时间选项时，重置已选择时间
             if (this.selectedTimeRangeOptions !== "custom") {
                 let option = this.timeRangeOptions.filter(item => item.value === this.selectedTimeRangeOptions)
-                this.choosedTimeRange = option[0].timeRange;
+                let now = Date.now() + this.systemTimeInterval;
+                this.choosedTimeRange = [
+                    new Date(now - option[0].interval),
+                    new Date(now)
+                ]
+                console.debug("changeTimeRange", this.choosedTimeRange, option[0].interval, now, this.systemTimeInterval)
             }
 
             // 根据选择范围禁用聚合范围
@@ -882,19 +844,46 @@ export default {
         handleCurrentChange(newPage) {
             this.currentPage = newPage;
         },
-        refreshSystime() {
+        refreshSystime(isInit = false) {
             getSystemTime()
                 .then(({ data }) => {
                     console.debug("====getSystemTime", data)
                     if (data.code == 200) {
                         let now = Date.now();
                         this.systemTimeInterval = data.data.timestamp ? data.data.timestamp - now : null
-                        console.debug(data.data.timestamp, now, this.systemTimeInterval, "====getHistoryData")
+                        console.debug("server:", new Date(data.data.timestamp), "system:", new Date(now), this.systemTimeInterval, "====getHistoryData")
+
+                        // 初始化时直接重置时间参数
+                        if (isInit) {
+                            this.choosedTimeRange = [
+                                new Date(data.data.timestamp - 3600000),
+                                new Date(data.data.timestamp)
+                            ]
+                        } else {
+                            // 选择已有时间时，重置当前时间
+                            if (this.selectedTimeRangeOptions !== "custom") {
+                                let interval = 0;
+                                let option = this.timeRangeOptions.filter(item => item.value === this.selectedTimeRangeOptions)
+                                if (option.length > 0) {
+                                    interval = option[0].interval;
+                                }
+                                console.debug("选择已有时间范围", option, now, interval, this.selectedTimeRangeOptions)
+
+                                now = Date.now() + this.systemTimeInterval;
+                                this.choosedTimeRange = [
+                                    new Date(now - interval),
+                                    new Date(now)
+                                ]
+                            }
+                        }
+                        console.error(this.choosedTimeRange)
                     }
+                }).then(() => {
+                    this.getStatisticValue()
                 })
         },
         refreshChart() {
-            this.getStatisticValue()
+            this.refreshSystime()
             this.$nextTick(() => {
                 this.myEcharts.clear();
                 this.myEcharts.setOption(this.defaultChartOptions[this.choosedChartType]);

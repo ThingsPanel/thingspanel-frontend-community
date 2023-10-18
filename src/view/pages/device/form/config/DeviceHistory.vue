@@ -138,16 +138,8 @@ export default {
     watch: {
         dialogVisible: {
             handler(newValue) {
-                let now = Date.now();
-                console.debug("DeviceHistory", this)
                 if (newValue) {
-                    this.choosedTimeRange = [
-                        new Date(now - 1000 * 60 * 60),
-                        new Date(now)
-                    ]
-                    Promise.resolve(this.refreshSystime()).then(() => {
-                        this.getHistoryData(true, 0);
-                    })
+                    this.refreshSystime()
                 }
             }
         },
@@ -156,10 +148,7 @@ export default {
     },
     methods: {
         // 获取属性历史数据
-        getHistoryData(isInit=false, lastPage=0) {
-            let startTime = new Date(this.choosedTimeRange[0]).getTime() * 1000;
-            let endTime = new Date(this.choosedTimeRange[1]).getTime() * 1000;
-            let now = Date.now();
+        getHistoryData(lastPage=0) {
             let firstDataTime = 0;
             let endDataTime = 0;
             if (lastPage) {
@@ -170,28 +159,8 @@ export default {
                 }
             }
 
-
-            // 初始化范围
-            if (isInit) {
-                // 如果时间有误差，修正时间
-                if (this.systemTimeInterval) {
-                    now = now + this.systemTimeInterval;
-                    console.debug("修正时间", now, this.systemTimeInterval, Date.now())
-                }
-                startTime = new Date(now - 1000 * 60 * 60).getTime() * 1000;
-                endTime = new Date(now).getTime() * 1000;
-                console.debug("初始化时间范围", new Date(startTime / 1000), new Date(endTime / 1000))
-                // 选择时间范围
-            } else {
-                if (this.systemTimeInterval) {
-                    now = now + this.systemTimeInterval;
-                }
-                startTime = (new Date(this.choosedTimeRange[0]).getTime() + this.systemTimeInterval) * 1000;
-                endTime = (new Date(this.choosedTimeRange[1]).getTime() + this.systemTimeInterval) * 1000;
-
-                console.debug("自定义时间范围", new Date(startTime / 1000), new Date(endTime / 1000))
-            }
-
+            let startTime = (new Date(this.choosedTimeRange[0]).getTime()) * 1000;
+            let endTime = (new Date(this.choosedTimeRange[1]).getTime()) * 1000;
 
             historyValueData({
                 "device_id": this.device.id,
@@ -203,6 +172,7 @@ export default {
                 "first_data_time": firstDataTime,
                 "end_data_time": endDataTime,
             }).then(({ data }) => {
+                console.debug("req time", new Date(startTime / 1000), new Date(endTime / 1000), this.choosedTimeRange)
                 console.debug("====getHistoryData", data)
                 if (data.code == 200) {
                     // this.historyData = data.data.data ? data.data.data : []
@@ -223,7 +193,7 @@ export default {
         pageChange(val) {
             let lastPage = this.page;
             this.page = val;
-            this.getHistoryData(false, lastPage);
+            this.getHistoryData(lastPage);
         },
         handleExport() {
             if (this.exporting) return
@@ -258,16 +228,21 @@ export default {
                         let now = Date.now();
                         this.systemTimeInterval = data.data.timestamp ? data.data.timestamp - now : null
                         console.debug(data.data.timestamp, now, this.systemTimeInterval, "====getHistoryData")
+                        
+                        let today = new Date(data.data.timestamp);
+                        today.setHours(0, 0, 0, 0);
+                        let tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                        this.choosedTimeRange = [
+                            today,
+                            tomorrow
+                        ]
                     }
+                }).then(()=> {
+                    this.getHistoryData();
                 })
         },
         handleRefresh() {
-            let now = Date.now();
-            this.choosedTimeRange = [
-                new Date(now - 1000 * 60 * 60),
-                new Date(now)
-            ]
-            this.getHistoryData()
+            this.refreshSystime()
         }
     }
 }
