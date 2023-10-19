@@ -211,6 +211,7 @@ export default {
                                 console.log("handleCreate", result);
                                 if (result.code === 200) {
                                     message_success("创建看板成功");
+                                    this.getList();
                                 }
                             })
                     }
