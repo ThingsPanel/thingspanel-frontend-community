@@ -61,7 +61,6 @@ const websocket = () => {
      */
     const onReady = (callback) => {
         onReadyCallback = callback;
-
     };
         
 
@@ -90,7 +89,6 @@ const websocket = () => {
     const onMessage = (onReceive) => {
         if (socket) {
             socket.onmessage = (event) => {
-                console.log("onMessage", event.data)
                 onReceive && onReceive(event.data)
             }
         }
@@ -99,11 +97,17 @@ const websocket = () => {
     /**
      * 断开连接
      */
-    const close = async () => {
-        if (socket) {
-            await socket.close();
-            socket = null;
-        }
+    const close = () => {
+        return new Promise((resolve, reject) => {
+            if (socket) {
+                socket.close();
+                socket = null;
+                socket.onClose(() => {
+                    resolve(true);
+                })
+            }
+            resolve(true);
+        });
     }
 
     return { 
