@@ -1,8 +1,9 @@
 <template>
   <div class="chart-div"  >
     <div class="chart-header" v-if="showHeader">
-      <span class="title">{{ optionData.name }}</span>
-      <div class="tool-right" v-if="showTools">
+      <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
+
+      <div class="tool-right" v-if="mode==='view'">
         <status-icon ref="statusIconRef" :status="status"/>
 
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
@@ -31,17 +32,19 @@
 import { turnSwitch, sendCommandByDeviceId, currentValue } from "@/api/device"
 import {message_success} from "@/utils/helpers";
 import StatusIcon from "./StatusIcon.vue";
+import DashboardTitle from "./DashboardTitle.vue"
+
 export default {
   name: "Control",
-  components: { StatusIcon },
+  components: { StatusIcon, DashboardTitle  },
   props: {
+    mode: {
+      type: [String],
+      default: "view"
+    },
     showHeader: {
       type: [Boolean],
       default: false
-    },
-    showTools: {
-      type: [Boolean],
-      default: true
     },
     select: {
       type: [Boolean],
@@ -79,6 +82,14 @@ export default {
       handler(newValue) {
         if (JSON.stringify(newValue) == "{}") return;
       }
+    },
+    "optionData.name": {
+      handler(newValue) {
+        if (!newValue) return;
+        this.$emit("changeName", newValue)
+      },
+      immediate: true,
+      deep: true
     }
   },
   mounted() {

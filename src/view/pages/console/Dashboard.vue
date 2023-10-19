@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-19 11:38:18
+ * @LastEditTime: 2023-10-19 16:03:38
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -38,48 +38,56 @@
 
           <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
             v-if="option.controlType == 'dashboard' && !option.type" :option="option" :device="option.device"
-            :value="option.value" :status="option.deviceStatus" :showTools="mode === 'view'" :select.sync="option.select">
+            :value="option.value" :status="option.deviceStatus" :mode="mode" :select.sync="option.select"
+            @changeName="name => changeName(option, name)">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </e-charts>
 
           <curve class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-            :showTools="mode === 'view'" v-if="option.controlType == 'history'" :option="option" :value="option.value"
-            :select.sync="option.select" :status="option.deviceStatus" :device="option.device">
+            :mode="mode" v-if="option.controlType == 'history'" :option="option" :value="option.value"
+            :select.sync="option.select" :status="option.deviceStatus" :device="option.device"
+            @changeName="name => changeName(option, name)">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </curve>
 
           <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-            :showTools="mode === 'view'" v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option"
-            :select.sync="option.select" :status="option.deviceStatus" :device="option.device">
+            :mode="mode" v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option"
+            :select.sync="option.select" :status="option.deviceStatus" :device="option.device"
+            @changeName="name => changeName(option, name)">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </status>
 
           <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-            :showTools="mode === 'view'" v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'" :option="option"
-            :value="option.value" :select.sync="option.select" :status="option.deviceStatus" :device="option.device">
+            :mode="mode" v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'" :option="option"
+            :value="option.value" :select.sync="option.select" :status="option.deviceStatus" :device="option.device"
+            @changeName="name => changeName(option, name)">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </device-status>
 
           <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-            :showTools="mode === 'view'" :status="option.deviceStatus" v-if="option.type == 'signalStatus'" :option="option"
-            :device="option.device" :value="option.value" :select.sync="option.select">
+            :mode="mode" :status="option.deviceStatus" v-if="option.type == 'signalStatus'" :option="option"
+            :device="option.device" :value="option.value" :select.sync="option.select"
+            @changeName="name => changeName(option, name)">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </signal-status>
 
           <text-info class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-            :showTools="mode === 'view'" :status="option.deviceStatus" v-if="option.type == 'textInfo'" :option="option"
-            :device="option.device" :value="option.value" :select.sync="option.select">
+            :mode="mode" :status="option.deviceStatus" v-if="option.type == 'textInfo'" :option="option"
+            :device="option.device" :value="option.value" :select.sync="option.select"
+            @changeName="name => changeName(option, name)">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </text-info>
           <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-            :device="option.device" :showTools="mode === 'view'" v-if="option.controlType == 'control'" :option="option"
-            :select.sync="option.select" :disabled="true" :status="option.deviceStatus">
+            :mode="mode" :device="option.device" v-if="option.controlType == 'control'" :option="option"
+            :select.sync="option.select" :disabled="true" :status="option.deviceStatus"
+            @changeName="name => changeName(option, name)">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </control>
 
           <video-component class="component-item" style="min-width: 200px;min-height: 200px"
-            :ref="'component_' + option.i" :key="option['id']" :show-header="true" :showTools="mode === 'view'"
-            v-if="option.controlType == 'video'" :option="option" :select.sync="option.select" :status="option.deviceStatus">
+            :ref="'component_' + option.i" :key="option['id']" :show-header="true" :mode="mode" 
+            v-if="option.controlType == 'video'" :option="option" :select.sync="option.select" :status="option.deviceStatus"
+            @changeName="name => changeName(option, name)">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </video-component>
         </grid-item>
@@ -107,7 +115,6 @@ import screenfull from "screenfull";
 import { websocket } from "@/utils/websocket"
 import { getDeviceListStatus } from "@/api/device.js"
 import ConsoleAPI from "@/api/console.js"
-import { dashboardList } from "./data.js"
 export default {
   components: {
     GridLayout, GridItem, AddComponent, Setting,
@@ -226,6 +233,13 @@ export default {
     handleCancel() {
       this.mode = "view";
       this.editData.template = this.viewData.template;
+    },
+    changeName(option, name) {
+      if (option.name !== name) {
+        console.log("changeName", option, name);
+        option.name = name;
+        // this.handleSaveConsole();
+      }
     },
     /**
      * @description: 添加组件

@@ -92,7 +92,6 @@
 import TableTitle from "@/components/common/TableTitle.vue";
 import ConsoleAPI from "@/api/console.js";
 import { message_success } from "@/utils/helpers.js";
-import { dashboardList } from "./data.js";
 export default {
     components: { TableTitle },
     props: {},
@@ -109,7 +108,7 @@ export default {
         };
         return {
             // 列表数据
-            tableData: dashboardList,
+            tableData: [],
             // 表格加载中
             loading: false,
             // 分页参数

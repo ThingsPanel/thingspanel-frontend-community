@@ -2,8 +2,9 @@
   <div class="chart-div" :style="getChartStyle()" >
     <div  v-if="showHeader" class="chart-header">
       
-      <span class="title">{{ optionData.name }}</span>
-      <div class="tool-right" v-if="showTools">
+      <!-- <span class="title">{{ optionData.name }}</span> -->
+      <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
+      <div class="tool-right" v-if="mode==='view'">
         <status-icon ref="statusIconRef" :status="status"/>
       </div>
       <div class="tool-right">
@@ -26,22 +27,23 @@
 </template>
 
 <script>
-import "@/core/mixins/charts.js"
 import StatusIcon from "./StatusIcon"
+import DashboardTitle from "./DashboardTitle.vue"
+import "@/core/mixins/charts.js"
 let Echarts = require('echarts/lib/echarts');
 require('echarts/lib/chart/gauge');
 
 export default {
   name: "Echarts",
-  components: {StatusIcon},
+  components: { StatusIcon, DashboardTitle },
   props: {
+    mode: {
+      type: [String],
+      default: "view"
+    },
     showHeader: {
       type: [Boolean],
       default: false
-    },
-    showTools: {
-      type: [Boolean],
-      default: true
     },
     select: {
       type: [Boolean],
@@ -78,6 +80,15 @@ export default {
     value: {
       handler(newValue) {
       }
+    },
+    "optionData.name": {
+      handler(newValue) {
+        console.log("optionData.name", newValue)
+        if (!newValue) return;
+        this.$emit("changeName", newValue)
+      },
+      immediate: true,
+      deep: true
     }
   },
   mounted() {
@@ -188,10 +199,11 @@ export default {
   display: flex;
   width: 100%;
   height: 40px;
-  padding-left: 10px;
+  // padding-left: 10px;
   text-align: right;
   z-index: 9999;
   //box-shadow: 0 2px 0px 0 rgba(0, 0, 0, 0.1);
+  /*
   .title {
     display: flex;
     align-items: center;
@@ -204,6 +216,7 @@ export default {
     margin-bottom: 10px;
     font-size: 18px;
   }
+  */
   .tool-right {
     position: absolute;
     text-align: center;

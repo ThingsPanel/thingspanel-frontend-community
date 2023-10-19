@@ -1,9 +1,9 @@
 <template>
     <div class="chart-div"  >
         <div  v-if="showHeader" class="chart-header">
-          <span class="title">{{ option.name }}</span>
+          <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
 
-          <div class="tool-right" v-if="showTools">
+          <div class="tool-right" v-if="mode==='view'">
             <status-icon ref="statusIconRef" :status="status"/>
             <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
           </div>
@@ -18,17 +18,18 @@
 
 <script>
 import StatusIcon from "./StatusIcon"
+import DashboardTitle from "./DashboardTitle.vue"
 
 export default {
-  components: { StatusIcon },
+  components: { StatusIcon, DashboardTitle  },
   props: {
+    mode: {
+      type: [String],
+      default: "view"
+    },
     showHeader: {
       type: [Boolean],
       default: false
-    },
-    showTools: {
-      type: [Boolean],
-      default: true
     },
     select: {
       type: [Boolean],
@@ -50,6 +51,16 @@ export default {
   data() {
     return {
         value: false
+    }
+  },
+  watch: {
+    "optionData.name": {
+      handler(newValue) {
+        if (!newValue) return;
+        this.$emit("changeName", newValue)
+      },
+      immediate: true,
+      deep: true
     }
   },
   methods: {

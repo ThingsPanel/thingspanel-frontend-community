@@ -30,49 +30,49 @@
                     <grid-item class="grid-item" v-for="(option, index) in optionsData" :key="option['id'] + index"
                         :x="option.x" :y="option.y" :w="option.w" :h="option.h" :i="option.i">
 
-                        <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']"
+                        <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" mode="edit"
                             :show-header="true" v-if="option.controlType == 'dashboard' && !option.type" :option="option"
-                            :value="option.value" :showTools="false" :select.sync="option.select">
+                            :value="option.value" :select.sync="option.select">
                             <el-checkbox v-model="option.select"></el-checkbox>
                         </e-charts>
 
                         <curve class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
-                            :showTools="false" v-if="option.controlType == 'history'" :option="option" :value="option.value"
+                            mode="edit" v-if="option.controlType == 'history'" :option="option" :value="option.value"
                             :select.sync="option.select">
                             <el-checkbox v-model="option.select"></el-checkbox>
                         </curve>
 
                         <status class="component-item" :ref="'component_' + option.i" :key="option['id']"
-                            :show-header="true" :showTools="false" v-if="option.controlType == 'dashboard' && option.type == 'status'"
+                            mode="edit" :show-header="true" v-if="option.controlType == 'dashboard' && option.type == 'status'"
                             :option="option"  :select.sync="option.select">
                             <el-checkbox v-model="option.select"></el-checkbox>
                         </status>
 
                         <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']"
-                            :show-header="true" :showTools="false" v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'"
+                            mode="edit" :show-header="true" v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'"
                             :option="option" :value="option.value" :select.sync="option.select">
                             <el-checkbox v-model="option.select"></el-checkbox>
                         </device-status>
 
                         <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']"
-                            :show-header="true" :showTools="false" :status="deviceStatus" v-if="option.type == 'signalStatus'" :option="option"
+                            mode="edit" :show-header="true" :status="deviceStatus" v-if="option.type == 'signalStatus'" :option="option"
                             :device="device" :value="option.value"  :select.sync="option.select">
                             <el-checkbox v-model="option.select"></el-checkbox>
                         </signal-status>
 
                         <text-info class="component-item" :ref="'component_' + option.i" :key="option['id']"
-                            :show-header="true" :showTools="false" :status="deviceStatus" v-if="option.type == 'textInfo'" :option="option"
+                            mode="edit" :show-header="true" :status="deviceStatus" v-if="option.type == 'textInfo'" :option="option"
                             :device="device" :value="option.value"  :select.sync="option.select">
                             <el-checkbox v-model="option.select"></el-checkbox>
                         </text-info>
                         <control class="component-item" :ref="'component_' + option.i" :key="option['id']"
-                            :show-header="true" :showTools="false" v-if="option.controlType == 'control'" :option="option"
+                            mode="edit" :show-header="true" v-if="option.controlType == 'control'" :option="option"
                             :select.sync="option.select" :disabled="true">
                             <el-checkbox v-model="option.select"></el-checkbox>
                         </control>
 
                         <video-component class="component-item" style="min-width: 200px;min-height: 200px"
-                            :ref="'component_' + option.i" :key="option['id']" :show-header="true" :showTools="false" 
+                            mode="edit" :ref="'component_' + option.i" :key="option['id']" :show-header="true" 
                             v-if="option.controlType == 'video'" :option="option" :select.sync="option.select">
                             <el-checkbox v-model="option.select"></el-checkbox>
                         </video-component>

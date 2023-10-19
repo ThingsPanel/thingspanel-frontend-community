@@ -1,8 +1,9 @@
 <template>
   <div class="chart-div"  > 
     <div  v-if="showHeader" class="chart-header">
-      <span class="title">{{ option.name }}</span>
-      <div class="tool-right" v-if="showTools">
+      <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
+
+      <div class="tool-right" v-if="mode==='view'">
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
       </div>
       <div class="tool-right">
@@ -16,16 +17,19 @@
 </template>
 
 <script>
+import DashboardTitle from "./DashboardTitle.vue"
+
 export default {
   name: "DeviceStatus",
+  components: { DashboardTitle },
   props: {
+    mode: {
+      type: [String],
+      default: "view"
+    },
     showHeader: {
       type: [Boolean],
       default: false
-    },
-    showTools: {
-      type: [Boolean],
-      default: true
     },
     select: {
       type: [Boolean],
@@ -53,6 +57,14 @@ export default {
     value: {
       handler(newValue) {
       }
+    },
+    "optionData.name": {
+      handler(newValue) {
+        if (!newValue) return;
+        this.$emit("changeName", newValue)
+      },
+      immediate: true,
+      deep: true
     }
   },
   mounted() {

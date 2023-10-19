@@ -64,19 +64,6 @@ export default {
             get() { return this.visible },
             set(val) { this.$emit("update:visible", val) }
         },
-        // // 表单数据
-        // formData: {
-        //     get() {
-        //         let { id, name, code: template_code, config } = this.data;
-        //         let configData = {
-        //             background: "",
-        //             dragable: false,
-        //             showTools: false,
-        //             editTitle: false
-        //         }
-        //         return { id, name, template_code, configData };
-        //     }
-        // }
     },
     data() {
         return {
@@ -85,9 +72,9 @@ export default {
                 code: "",
                 config: {
                     background: "",
-                    dragable: false,
-                    showTools: false,
-                    editTitle: false
+                    dragable: true,
+                    showTools: true,
+                    editTitle: true
                 }
             },
             // 表单验证
@@ -99,15 +86,12 @@ export default {
             handler(newValue) {
                 if (newValue) {
                     let { id, name, code, config } = this.data;
-                    this.formData = { 
-                        id, 
-                        name, 
-                        code, 
+                    this.formData = { id, name, code, 
                         configData: {
                             background: "",
-                            dragable: false,
-                            showTools: false,
-                            editTitle: false
+                            dragable: true,
+                            showTools: true,
+                            editTitle: true
                         }
                     };
                 }

@@ -1,8 +1,9 @@
 <template>
   <div class="chart-div"  >
     <div class="chart-header" v-if="showHeader">
-      <span class="title">{{ optionData.name }}</span>
-      <div class="tool-right"  v-if="showTools && optionData.type=='monitor'">
+      <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
+
+      <div class="tool-right"  v-if="mode==='view' && optionData.type=='monitor'">
         <status-icon ref="statusIconRef" :status="status"/>
 
         <el-button class="tool-item" :class="monitorType==='control' ? 'selected' : ''" size="mini" 
@@ -48,20 +49,21 @@ import VideoPlayer from "@/components/video/video";
 import MonitorPlayer from "@/components/video/monitor";
 import EzvizPlayer from "@/components/video/ezviz";
 import StatusIcon from "./StatusIcon.vue";
+import DashboardTitle from "./DashboardTitle.vue"
 
 export default {
   name: "Video",
   components: {
-    VideoPlayer, MonitorPlayer, EzvizPlayer, StatusIcon
+    VideoPlayer, MonitorPlayer, EzvizPlayer, StatusIcon, DashboardTitle 
   },
   props: {
+    mode: {
+      type: [String],
+      default: "view"
+    },
     showHeader: {
       type: [Boolean],
       default: false
-    },
-    showTools: {
-      type: [Boolean],
-      default: true
     },
     select: {
       type: [Boolean],
@@ -108,6 +110,14 @@ export default {
         }
       },
       immediate: true
+    },
+    "optionData.name": {
+      handler(newValue) {
+        if (!newValue) return;
+        this.$emit("changeName", newValue)
+      },
+      immediate: true,
+      deep: true
     }
   },
   methods: {

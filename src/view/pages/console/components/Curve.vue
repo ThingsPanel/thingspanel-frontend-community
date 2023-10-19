@@ -1,9 +1,9 @@
 <template>
   <div class="chart-div" :style="getChartStyle()"  >
     <div v-if="showHeader" class="chart-header">
-      <span class="title">{{ optionData.name }}</span>
+      <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
     
-      <div class="tool-right" v-if="showTools">
+      <div class="tool-right" v-if="mode==='view'">
         <status-icon ref="statusIconRef" :status="status" />
 
         <!-- 采样区间 如最近5分钟，最近30分钟  -->
@@ -84,20 +84,22 @@
 <script>
 import { statistic, statisticBatch } from "@/api/device";
 import StatusIcon from "./StatusIcon"
+import DashboardTitle from "./DashboardTitle.vue"
+
 import { dateFormat } from "@/utils/tool.js"
 import { PeriodList, AggregateFuncList, getAggregateWindowList, calcAggregate, getSeries } from "./Const.js"
 
 export default {
   name: "Curve",
-  components: { StatusIcon },
+  components: { StatusIcon, DashboardTitle  },
   props: {
+    mode: {
+      type: [String],
+      default: "view"
+    },
     showHeader: {
       type: [Boolean],
       default: false
-    },
-    showTools: {
-      type: [Boolean],
-      default: true
     },
     select: {
       type: [Boolean],
@@ -222,6 +224,16 @@ export default {
     },
     getAggregateFuncClass() {
       return (v) => this.params.aggregate_function.toString() === v.toString() ? 'active' : 'noActive'
+    }
+  },
+  watch: {
+    "optionData.name": {
+      handler(newValue) {
+        if (!newValue) return;
+        this.$emit("changeName", newValue)
+      },
+      immediate: true,
+      deep: true
     }
   },
   methods: {
@@ -474,6 +486,8 @@ export default {
 .chart-header {
   position: relative;
   display: flex;
+  justify-content: space-between;
+
   width: 100%;
   height: 40px;
   padding-left: 10px;
