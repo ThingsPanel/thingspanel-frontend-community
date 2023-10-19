@@ -33,7 +33,7 @@
                             <el-button type="indigo" size="mini" @click="editConsole(scope.row)">{{ $t('VISUALIZATION.EDIT')
                             }}</el-button>
                             <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')"
-                                :cancel-button-text="$t('COMMON.CANCEL')" :disabled="!hasAuth('console:del')"
+                                :cancel-button-text="$t('COMMON.CANCEL')"
                                 style="margin-left: 10px" :title="$t('VISUALIZATION.TEXT44')"
                                 @confirm="delConsole(scope.row)">
                                 <el-button slot="reference" type="danger" size="mini">{{ $t('VISUALIZATION.DELETE')
@@ -192,6 +192,7 @@ export default {
                 .then(({ data: result }) => {
                     if (result.code === 200) {
                         message_success("已删除看板");
+                        this.getList();
                     }
                 })
         },
