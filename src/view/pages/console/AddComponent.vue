@@ -365,6 +365,9 @@ export default {
             line-height: unset;
         }
     }
+    .dialog-footer {
+        text-align: center;
+    }
 }
 .grid-box {
     width: 100%;

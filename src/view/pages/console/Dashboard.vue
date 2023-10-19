@@ -2,31 +2,37 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-19 16:03:38
+ * @LastEditTime: 2023-10-19 16:19:41
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
   <div id="containerId" class="dashboard-container">
-    <div class="dashboard-tools">
-      <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-plus"
-        @click="addDialogVisible = true"></el-button>
-
-      <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-setting"
-        @click="settingDialogVisible = true"></el-button>
-
-      <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-download"></el-button>
-      <el-button v-if="mode === 'view'" type="border" size="small" icon="el-icon-edit-outline"
-        @click="mode = 'edit'"></el-button>
-
-      <el-button type="border" size="small" icon="el-icon-full-screen" @click="handleFullScreen"></el-button>
-
-      <el-divider v-if="mode === 'edit'" direction="vertical"></el-divider>
-
-      <el-button v-if="mode === 'edit'" type="border" size="small" @click="handleCancel">取消</el-button>
-
-      <el-button v-if="mode === 'edit'" type="border" size="small" @click="handleSaveConsole">保存</el-button>
+    <div class="dashboard-top">
+      <div style="padding-left: 10px">
+        <el-button type="border" size="small"  icon="el-icon-back" @click="back">返回</el-button>
+      </div>
+      <div class="dashboard-tools">
+        <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-plus"
+          @click="addDialogVisible = true"></el-button>
+  
+        <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-setting"
+          @click="settingDialogVisible = true"></el-button>
+  
+        <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-download"></el-button>
+        <el-button v-if="mode === 'view'" type="border" size="small" icon="el-icon-edit-outline"
+          @click="mode = 'edit'"></el-button>
+  
+        <el-button type="border" size="small" icon="el-icon-full-screen" @click="handleFullScreen"></el-button>
+  
+        <el-divider v-if="mode === 'edit'" direction="vertical"></el-divider>
+  
+        <el-button v-if="mode === 'edit'" type="border" size="small" @click="handleCancel">取消</el-button>
+  
+        <el-button v-if="mode === 'edit'" type="border" size="small" @click="handleSaveConsole">保存</el-button>
+      </div>
     </div>
+    
 
     <div id="consoleBox" style="width: 100%;height:calc(100vh - 160px);overflow-y: auto">
       <grid-layout style="width: 100%;height: 100%" :layout.sync="mode==='view'? viewData.template : editData.template" :col-num="colNum" :row-height="30"
@@ -165,6 +171,9 @@ export default {
     }
   },
   methods: {
+    back() {
+      this.$router.push({ name: "Console" })
+    },
     handleLayoutUpdatedEvent() {
       console.log()
     },
@@ -484,26 +493,31 @@ export default {
 </script>
 <style lang="scss" scoped>
 .dashboard-container {
-  margin-top: -16px;
-}
-.dashboard-tools {
-  width: 100%;
-  text-align: right;
-
-  .el-button--small {
-    margin-top: 0;
-    height: 32px;
-    line-height: 32px;
-    padding: 0px 15px;
+  margin-top: -20px;
+  .dashboard-top{
+    display: flex;
+    justify-content: space-between;
+    .dashboard-tools {
+      width: 100%;
+      text-align: right;
+    
+      .el-button--small {
+        margin-top: 0;
+        height: 32px;
+        line-height: 32px;
+        padding: 0px 15px;
+      }
+    
+      .el-divider.el-divider--vertical {
+        height: 26px;
+        line-height: 26px;
+        margin: 0px 14px;
+        padding: 0px;
+      }
+    }
   }
-
-  .el-divider.el-divider--vertical {
-    height: 26px;
-    line-height: 26px;
-    margin: 0px 14px;
-    padding: 0px;
-  }
 }
+
 
 .grid-box {
   width: 100%;
