@@ -637,7 +637,6 @@ export default {
                     console.debug("====getHistoryData", data)
                     if (data.code == 200) {
                         this.historyData = data.data.time_series ? data.data.time_series : []
-                        this.historyData.reverse()
                     }
                     console.debug(this.historyData)
                     this.transformChartData()
