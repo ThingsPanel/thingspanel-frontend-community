@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-20 08:55:55
+ * @LastEditTime: 2023-10-20 09:08:53
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -282,7 +282,7 @@ export default {
      * @return {*}
      */
     handleFullScreen() {
-      let element = document.getElementById("containerId"); //指定全屏区域元素
+      let element = document.getElementById("consoleBox"); //指定全屏区域元素
       screenfull.toggle(element); //全屏显示
     },
     /**
