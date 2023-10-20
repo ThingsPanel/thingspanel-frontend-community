@@ -158,13 +158,13 @@ export default {
      * 修改 e-chart 大小
      */
     sizeChange(){
-      let mainRef = this.$refs.chart;
-      let width = mainRef.clientWidth;
-      let height = mainRef.clientHeight;
-      let length = Math.min(width, height);
-      let option = this.resizeECharts(this.option, length);
-      this.myEcharts.setOption(option)
-        this.myEcharts.resize();
+      // let mainRef = this.$refs.chart;
+      // let width = mainRef.clientWidth;
+      // let height = mainRef.clientHeight;
+      // let length = Math.min(width, height);
+      // let option = this.resizeECharts(this.option, length);
+      // this.myEcharts.setOption(option)
+      this.myEcharts.resize();
     },
     getChartStyle() {
       let style = this.optionData.style ? this.optionData.style : {};

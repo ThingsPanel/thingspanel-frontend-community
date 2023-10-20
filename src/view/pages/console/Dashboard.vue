@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-19 16:19:41
+ * @LastEditTime: 2023-10-20 08:55:55
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -174,8 +174,14 @@ export default {
     back() {
       this.$router.push({ name: "Console" })
     },
-    handleLayoutUpdatedEvent() {
-      console.log()
+    handleLayoutUpdatedEvent(layouts) {
+      layouts.forEach(item => {
+        let ref = this.$refs["component_" + item.i];
+        if (ref && ref[0]) {
+          console.log("handleLayoutUpdatedEvent", ref[0])
+          ref[0].sizeChange();
+        }
+      })
     },
     /**
      * @description: 获取看板
@@ -243,6 +249,12 @@ export default {
       this.mode = "view";
       this.editData.template = this.viewData.template;
     },
+    /**
+     * @description: 改变图表名称
+     * @param {*} option
+     * @param {*} name
+     * @return {*}
+     */    
     changeName(option, name) {
       if (option.name !== name) {
         console.log("changeName", option, name);
@@ -382,20 +394,6 @@ export default {
       // 通过deviceId获取对应的图表
       const cpts = this.viewData.data.filter(item => item.deviceId === deviceId);
       if (!cpts || !cpts.length) return;
-      /*
-        cpts: [
-            {
-                "uId": "dLt1gr8qs4Qe",
-                "deviceId": "b662e611-f584-0837-ef55-1b738f42cc29"
-            },
-            ...
-        ]
-        data: {
-            "SYS_ONLINE": "1",
-            "humidity": 33,
-            "temperature": 44
-        }
-      */
       for (let i = 0; i < cpts.length; i++) {
         const cpt = cpts[i];
         const option = this.viewData.template.find(item => item.uId === cpt.uId);
