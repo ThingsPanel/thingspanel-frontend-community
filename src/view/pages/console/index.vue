@@ -69,7 +69,7 @@
                 <el-form-item label="创建方式" prop="mode">
                     <el-radio-group v-model="formData.mode" size="small">
                         <div style="display: flex">
-                            <el-radio label="template">从模板导入</el-radio>
+                            <el-radio :disabled="true" label="template">从模板导入</el-radio>
                             <el-input :disabled="formData.mode!=='template'" v-model="formData.code"
                                 :placeholder="'请输入模板编码'"
                                 ></el-input>
@@ -213,6 +213,7 @@ export default {
                                 if (result.code === 200) {
                                     message_success("创建看板成功");
                                     this.dialogVisible = false;
+                                    this.resetForm();
                                     this.getList();
                                 }
                             })
@@ -220,6 +221,13 @@ export default {
                     // this.$router.push({name: "Dashboard", query: {consoleId: this.formData.id}})
                 }
             })
+        },
+        resetForm() {
+            this.formData = {
+                name: "",
+                mode: "blank",
+                code: ""
+            }
         }
     }
 }
