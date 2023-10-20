@@ -114,7 +114,7 @@ export default {
         }
       })
 
-      let param = { device_id: this.device.device, values };
+      let param = { device_id: this.device.deviceId, values };
       // 控制设备状态
       const { data } = await turnSwitch(param)
       if (data.code == 200) {
@@ -142,7 +142,7 @@ export default {
       console.log("====control.getSwitchValue")
 
       let optionTmp = JSON.parse(JSON.stringify(this.optionData));
-      let param = { entity_id: this.device.device, attribute: this.mapping }
+      let param = { entity_id: this.device.deviceId, attribute: this.mapping }
       let { data } = await currentValue(param)
       if (data.code == 200 && data.data) {
         let dataObj = data.data[0];
@@ -177,7 +177,7 @@ export default {
         const { type, identifier, name, params, dataType } = this.optionData;
         if (type === "sendCommand") {
           const data = {
-              device_id: this.device.device,
+              device_id: this.device.deviceId,
               command_identifier: identifier,
               command_data: params,
               command_name: name
@@ -193,7 +193,7 @@ export default {
           }, 2000)
         } else if (type === "sendAttribute") {
           const data = {
-            device_id: this.device.device,
+            device_id: this.device.deviceId,
             values: {}
           }
           data.values[identifier] = typeConvert(params, dataType);
