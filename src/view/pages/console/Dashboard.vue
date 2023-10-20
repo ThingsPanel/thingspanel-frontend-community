@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-20 10:04:45
+ * @LastEditTime: 2023-10-20 14:18:15
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -10,37 +10,39 @@
   <div id="containerId" class="dashboard-container">
     <div class="dashboard-top">
       <div style="padding-left: 10px">
-        <el-button type="border" size="small"  icon="el-icon-back" @click="back">返回</el-button>
+        <el-button type="border" size="small" icon="el-icon-back" @click="back">返回</el-button>
       </div>
       <div class="dashboard-tools">
         <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-plus"
           @click="addDialogVisible = true"></el-button>
-  
+
         <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-setting"
           @click="settingDialogVisible = true"></el-button>
-  
+
         <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-download"></el-button>
         <el-button v-if="mode === 'view'" type="border" size="small" icon="el-icon-edit-outline"
           @click="mode = 'edit'"></el-button>
-  
+
         <el-button type="border" size="small" icon="el-icon-full-screen" @click="handleFullScreen"></el-button>
-  
+
         <el-divider v-if="mode === 'edit'" direction="vertical"></el-divider>
-  
+
         <el-button v-if="mode === 'edit'" type="border" size="small" @click="handleCancel">取消</el-button>
-  
+
         <el-button v-if="mode === 'edit'" type="border" size="small" @click="handleSaveConsole">保存</el-button>
       </div>
     </div>
-    
 
-    <div id="consoleBox" style="width: 100%;height:calc(100vh - 160px);overflow-y: auto">
-      <grid-layout style="width: 100%;height: 100%" :layout.sync="mode==='view'? viewData.template : editData.template" :col-num="colNum" :row-height="30"
-        :is-draggable="mode === 'edit'" :is-resizable="mode === 'edit'" :is-mirrored="false" :vertical-compact="true"
-        :margin="[10, 10]" :use-css-transforms="true" @layout-updated="handleLayoutUpdatedEvent">
 
-        <grid-item class="grid-item" v-for="(option, index) in (mode==='view'? viewData.template : editData.template)" :key="option['id'] + index" :x="option.x"
-          :y="option.y" :w="option.w" :h="option.h" :i="option.i">
+    <div id="consoleBox" style="width: 100%;height:calc(100vh - 160px);overflow-y: auto;" :style="getConsoleStyle">
+      <grid-layout :class="mode==='edit' ? 'grid-layout' : ''"  
+        :layout.sync="mode === 'view' ? viewData.template : editData.template"
+        :col-num="colNum" :row-height="30" :is-draggable="mode === 'edit'" :is-resizable="mode === 'edit'"
+        :is-mirrored="false" :vertical-compact="true" :margin="[10, 10]" :use-css-transforms="true"
+        @layout-updated="handleLayoutUpdatedEvent">
+
+        <grid-item class="grid-item" v-for="(option, index) in (mode === 'view' ? viewData.template : editData.template)"
+          :key="option['id'] + index" :x="option.x" :y="option.y" :w="option.w" :h="option.h" :i="option.i">
 
           <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
             v-if="option.controlType == 'dashboard' && !option.type" :option="option" :device="option.device"
@@ -91,9 +93,9 @@
           </control>
 
           <video-component class="component-item" style="min-width: 200px;min-height: 200px"
-            :ref="'component_' + option.i" :key="option['id']" :show-header="true" :mode="mode" 
-            v-if="option.controlType == 'video'" :option="option" :select.sync="option.select" :status="option.deviceStatus"
-            @changeName="name => changeName(option, name)">
+            :ref="'component_' + option.i" :key="option['id']" :show-header="true" :mode="mode"
+            v-if="option.controlType == 'video'" :option="option" :select.sync="option.select"
+            :status="option.deviceStatus" @changeName="name => changeName(option, name)">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </video-component>
         </grid-item>
@@ -101,7 +103,7 @@
       </grid-layout>
     </div>
     <add-component :visible.sync="addDialogVisible" @change="handleAddComponent" />
-    <setting :visible.sync="settingDialogVisible" :data="viewData"/>
+    <setting :visible.sync="settingDialogVisible" :data.sync="settingData" />
   </div>
 </template>
 
@@ -137,12 +139,12 @@ export default {
       settingDialogVisible: false,
       // 模式  view: 查看模式  edit: 编辑模式
       mode: "view",
-      // 查看模式下的数据
+      // 查看模式下的看板数据
       viewData: {
         template: [],
         data: []
       },
-      // 编辑模式下的数据
+      // 编辑模式下的看板数据
       editData: {
         template: [],
         data: []
@@ -153,22 +155,35 @@ export default {
       socket: null,
       // Webscket列表
       sockets: [],
+      // 心跳计时器
       beatHeartTimers: [],
-      device: {}
+      // 看板配置
+      settingData: {}
     }
   },
   computed: {
-
+    getConsoleStyle() {
+      const { config } = this.settingData;
+      if (config && config !== "{}") {
+        const { background } = JSON.parse(config);
+        return { background }
+      }
+      return {};
+    }
   },
   watch: {
     $route: {
       handler(route) {
         const { consoleId } = route.query;
         this.params.id = consoleId;
-        this.getConsole();
+        this.initConsole();
         // this.updateComponents(this.viewData.template);
       }, immediate: true
     }
+  },
+  beforeDestroy() {
+    this.clearSockets();
+    this.cleatBeatHearts();
   },
   methods: {
     back() {
@@ -184,17 +199,14 @@ export default {
       })
     },
     /**
-     * @description: 获取看板
-     * @param {*} id 看板id
+     * @description: 初始化看板
      * @return {*}
-     */    
-    getConsole() {
+     */
+    initConsole() {
       ConsoleAPI.get({ id: this.params.id })
         .then(({ data: result }) => {
           if (result.code === 200) {
-
-            console.log("getConsole0", JSON.stringify([]));
-            let { template , data } = result.data;
+            let { id, name, code, config, template, data } = result.data;
             if (template && template !== "{}") {
               template = JSON.parse(template);
             } else {
@@ -207,12 +219,11 @@ export default {
             }
             this.viewData = { ...result.data, template, data };
             this.editData = JSON.parse(JSON.stringify(this.viewData));
-            console.log("getConsole2", this.viewData);
+            this.settingData = { id, name, code, config }
             this.updateComponents();
           }
         })
     },
-  
     /**
      * @description: 保存看板
      * @return {*}
@@ -227,7 +238,7 @@ export default {
         tmp.push(d);
       })
       this.viewData.data = tmp;
-     
+      // 当前看板设置为查看模式
       this.mode = "view";
       const params = {
         id: this.viewData.id,
@@ -237,14 +248,14 @@ export default {
       ConsoleAPI.edit(params)
         .then(({ data: result }) => {
           console.log("handleSaveConsole", result);
-          
+
         })
       this.updateComponents();
     },
     /**
      * @description: 取消
      * @return {*}
-     */    
+     */
     handleCancel() {
       this.mode = "view";
       this.editData.template = this.viewData.template;
@@ -254,7 +265,7 @@ export default {
      * @param {*} option
      * @param {*} name
      * @return {*}
-     */    
+     */
     changeName(option, name) {
       if (option.name !== name) {
         console.log("changeName", option, name);
@@ -278,13 +289,13 @@ export default {
       this.editData.template = this.getDefaultLayout(opts, 4);
       this.$nextTick(() => {
         this.editData.template.forEach(item => {
-        let ref = this.$refs["component_" + item.i];
-        if (ref && ref[0]) {
-          ref[0].sizeChange();
-        }
+          let ref = this.$refs["component_" + item.i];
+          if (ref && ref[0]) {
+            ref[0].sizeChange();
+          }
+        })
       })
-      })
-      
+
     },
     /**
      * @description: 全屏
@@ -327,16 +338,10 @@ export default {
      * 更新组件的值
      */
     async updateComponents() {
-      const options = this.viewData.template; 
+      const options = this.viewData.template;
       console.log("updateComponents", options);
-      for (let i = 0; i < this.sockets.length; i++) {
-        const socket = this.sockets[i];
-        const timer = this.beatHeartTimers[i];
-        await socket.close();
-        socket = null;
-        clearInterval(timer);
-      }
-     
+
+
       if (!options || !options.length) return;
       console.log("updateComponents", !options.length);
 
@@ -344,7 +349,7 @@ export default {
       this.viewData.template.forEach(item => {
         item.device = { deviceId: this.viewData.data.find(d => d.uId === item.uId).deviceId };
         item.deviceStatus = { status: false, lastPushTime: "" }
-      }) 
+      })
 
 
       // 去除重复设备
@@ -357,7 +362,7 @@ export default {
       this.flushDeviceStatus(uniqueDeviceIds);
       // 先执行一次获取历史数据
       this.getHistory();
-      
+
       // 根据设备列表创建websocket连接
       for (let i = 0; i < uniqueDeviceIds.length; i++) {
         const socket = this.sockets[i];
@@ -462,21 +467,19 @@ export default {
      * 刷新设备在线/离线状态
     */
     async flushDeviceStatus(deviceIds) {
-      console.log("flushDeviceStatus", deviceIds)
       const params = { device_id_list: deviceIds };
       try {
         let { data: result } = await getDeviceListStatus(params);
         if (result.code === 200) {
           const deviceStatusList = result.data;
-          for (const deviceId in deviceStatusList) {
-              for (let i = 0; i < this.viewData.template.length; i++) {
-                const option = this.viewData.template[i];
-                console.log("flushDeviceStatus", option.device.deviceId, deviceStatusList[deviceId])
-
-                if (option.device.deviceId === deviceId) {
-                  option.deviceStatus.status = deviceStatusList[deviceId].toString() === "1";
-                }
+          for (let i = 0; i < this.viewData.template.length; i++) {
+            const option = this.viewData.template[i];
+            for (const deviceId in deviceStatusList) {
+              const status = deviceStatusList[deviceId].toString() === "1";
+              if (option.device.deviceId === deviceId) {
+                option.deviceStatus = { lastPushTime: option.deviceStatus.lastPushTime, status }
               }
+            }
           }
         }
       } catch (err) {
@@ -495,26 +498,55 @@ export default {
         })
       })
     },
+    /**
+     * @description: 清空sockets
+     * @return {*}
+     */
+    clearSockets() {
+      for (let i = 0; i < this.sockets.length; i++) {
+        const socket = this.sockets[i];
+        if (socket) {
+          socket.close();
+          socket = null;
+        }
+      }
+      this.sockets = [];
+    },
+    /**
+     * @description: 清空心跳计时器
+     * @return {*}
+     */
+    cleatBeatHearts() {
+      for (let i = 0; i < this.beatHeartTimers.length; i++) {
+        const timer = this.beatHeartTimers[i];
+        if (timer) {
+          clearInterval(timer);
+        }
+      }
+      this.beatHeartTimers = [];
+    }
   }
 }
 </script>
 <style lang="scss" scoped>
 .dashboard-container {
   margin-top: -20px;
-  .dashboard-top{
+
+  .dashboard-top {
     display: flex;
     justify-content: space-between;
+
     .dashboard-tools {
       width: 100%;
       text-align: right;
-    
+
       .el-button--small {
         margin-top: 0;
         height: 32px;
         line-height: 32px;
         padding: 0px 15px;
       }
-    
+
       .el-divider.el-divider--vertical {
         height: 26px;
         line-height: 26px;
@@ -539,5 +571,19 @@ export default {
   //position: absolute;
   top: 0;
   left: 0;
+}
+.grid-layout {
+    content: '';
+    background-size: calc(calc(100% - 2px) / 12) 40px;
+    background-image: linear-gradient(
+            to right,
+            #2d3d88 1px,
+            transparent 1px
+    ),
+    linear-gradient(to bottom, #2d3d88 1px, transparent 1px);
+    height: calc(100% - 2px);
+    width: calc(100% - 2px);
+    background-repeat: repeat;
+    margin: 2px;
 }
 </style>
