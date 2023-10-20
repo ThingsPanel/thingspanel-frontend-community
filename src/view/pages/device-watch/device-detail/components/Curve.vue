@@ -258,10 +258,15 @@ export default {
         if (!data) {
           data = [];
         }
-        let len = data.unshift([timestamp, value]);
-        // 如果第一个数据和最后一个数据的间隔时间大于采样周期则删除最后一个元素
-        if (timestamp - data[len -1][0] > this.params.period * 1000) {
-          data.pop();
+        // let len = data.unshift([timestamp, value]);
+        // // 如果第一个数据和最后一个数据的间隔时间大于采样周期则删除最后一个元素
+        // if (timestamp - data[len -1][0] > this.params.period * 1000) {
+        //   data.pop();
+        // }
+        let len = data.push([timestamp, value]);
+        // 如果长度大于100且第一个数据和最后一个数据的间隔时间大于采样周期则删除最后一个元素
+        if (len >= 100 && timestamp - data[len -1][0] > this.params.period * 1000) {
+          data.shift();
         }
         series.push({ data })
       }

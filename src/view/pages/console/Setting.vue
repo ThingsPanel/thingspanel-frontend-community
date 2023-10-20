@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-13 09:35:09
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-19 16:21:40
+ * @LastEditTime: 2023-10-20 09:14:10
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Setting.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -38,6 +38,7 @@
             </el-form>
             <div class="dialog-footer">
                 <el-button type="primary" @click="handleSubmit">确定</el-button>
+                <el-button type="cancel" @click="dialogVisible=false">取消</el-button>
             </div>
         </el-dialog>
         <!-- 看板设置对话框 end -->
