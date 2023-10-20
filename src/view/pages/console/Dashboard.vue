@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-20 14:18:15
+ * @LastEditTime: 2023-10-20 14:43:10
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -14,7 +14,7 @@
       </div>
       <div class="dashboard-tools">
         <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-plus"
-          @click="addDialogVisible = true"></el-button>
+          @click="addDialogVisible = true">新增</el-button>
 
         <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-setting"
           @click="settingDialogVisible = true"></el-button>
@@ -574,7 +574,7 @@ export default {
 }
 .grid-layout {
     content: '';
-    background-size: calc(calc(100% - 2px) / 12) 40px;
+    background-size: calc(calc(100% - 2px) / 24) 40px;
     background-image: linear-gradient(
             to right,
             #2d3d88 1px,
