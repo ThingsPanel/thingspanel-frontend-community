@@ -1,19 +1,22 @@
 <template>
     <div>
         <!-- 添加组件对话框 start -->
-        <el-dialog class="el-dark-dialog" title="添加组件" width="996px" custom-class="edit-dialog" :visible.sync="dialogVisible"
-            :close-on-click-modal="false" @close="resetForm()">
+        <el-dialog class="el-dark-dialog" :visible.sync="dialogVisible" v-bind="dialogSettings" v-on="dialogEvents">
+
             <el-form class="console-create-form el-dark-input" label-position="left" label-width="80px" ref="createFormRef"
-                :model="formData" :rules="formRules">
+                :model="formData" >
                 <div class="create-select">
-                    <el-select v-model="formData.projectId">
+
+                    <el-select v-model="formData.projectId" @change="handleProjectChange">
                         <el-option v-for="(item, index) in projectList" :key="index" :value="item.id"
                             :label="item.name" />
                     </el-select>
-                    <el-select v-model="formData.groupId">
+
+                    <el-select v-model="formData.groupId" @change="handleGroupChange">
                         <el-option v-for="(item, index) in groupList" :key="index" :value="item.id"
                             :label="item.name" />
                     </el-select>
+
                     <el-cascader ref="deviceRef" v-model="formData.device" :options="deviceList" clearable
                             :props="{ checkStrictly: true, emitPath: false }" @change="handleDeviceChange">
                             <template slot-scope="{ node, data }">
@@ -98,45 +101,36 @@ import SignalStatus from "./components/SignalStatus"
 import DeviceStatus from "./components/DeviceStatus"
 import TextInfo from "./components/TextInfo"
 import VideoComponent from "./components/Video";
-import { business_index } from "@/api/business.js"
-import { device_group_drop } from "@/api/asset.js"
-import { getDeviceTree } from "@/api/device";
 import PluginAPI from "@/api/plugin.js"
 import { message_error, getRandomString } from "@/utils/helpers";
+import { CommonProps, commonData, commonComputed, commonWatch, commonMethods } from "./Const.js";
+
 export default {
     components: { GridLayout, GridItem, ECharts, Curve, Control, Status, DeviceStatus, VideoComponent },
     props: {
-        visible: {
-            type: [Boolean],
-            default: false
-        },
+        ...CommonProps,
         data: {
             type: [Object, Array],
             default: () => ({})
         }
     },
     computed: {
-        dialogVisible: {
-            get() { return this.visible },
-            set(val) { this.$emit("update:visible", val) }
-        }
+        ...commonComputed
     },
     data() {
         return {
-            // 表单数据
-            formData: {
-                projectId: "",
-                groupId: "",
-                device: []
+            ...commonData,
+            // 对话框配置
+            dialogSettings: {
+                title: "添加组件",
+                width: "996px",
+                customClass: "edit-dialog",
+                closeOnClickModal: false
             },
-            // 表单验证
-            formRules: {},
-            // 项目列表
-            projectList: [],
-            // 分组列表
-            groupList: [],
-            // 设备列表
-            deviceList: [],
+            // 对话框事件
+            dialogEvents: {
+                close: this.resetForm
+            },
             // 插件数据
             pluginData: {},
             // 图表数据
@@ -146,30 +140,14 @@ export default {
         }
     },
     watch: {
-        "formData.projectId": {
-            handler(projectId) {
-                if (projectId) {
-                    this.getGroupList(projectId);
-                    this.formData.groupId = "";
-                    this.optionsData = [];
-                }
-            }, deep: true
-        },
-        "formData.groupId": {
-            handler(groupId) {
-                if (groupId) {
-                    this.getDeviceList(groupId)
-                    this.formData.device = [];
-                    this.optionsData = [];
-                }
-            }, deep: true
-        }
+        ...commonWatch
     },
     mounted() {
         console.log("addComponent.model", this.model)
         this.getProjectList();
     },
     methods: {
+        ...commonMethods,
         /**
          * @description: 提交
          * @return {*}
@@ -202,65 +180,12 @@ export default {
                         }
                         
                     })
-                    console.log("handleSubmit.pluginData", tsl.properties);
-                    console.log("handleSubmit.optionsData", options);
                     this.$emit("change", JSON.parse(JSON.stringify(options)), this.formData.device);
                     this.resetForm();
                 }
             })
         },
-        /**
-         * @description: 获取项目列表
-         * @return {*}
-         */        
-        getProjectList() {
-            business_index({ limit: 10, page: 1 })
-                .then(({ data: result }) => {
-                    if (result.code === 200) {
-                        console.log("getProjectList", result.data.data)
-                        this.projectList = result.data.data || [];
-                    }
-                })
-        },
-        /**
-         * @description: 获取分组列表
-         * @param {*} projectId
-         * @return {*}
-         */        
-        async getGroupList(projectId) {
-            let { data: result } = await device_group_drop({ business_id: projectId });
-            if (result.code === 200) {
-                this.groupList = result?.data.map(item => ({ name: item.device_group, id: item.id })) || [];
-                this.formData.device = [];
-                console.log("getGroupList", this.groupList)
-            }
-        },
-        /**
-         * @description: 获取设备列表
-         * @param {*} groupId
-         * @return {*}
-         */        
-        async getDeviceList(groupId) {
-            const params = { current_page: 1, per_page: 9999, asset_id: groupId }
-            let { data: result } = await getDeviceTree(params);
-            if (result.code == 200) {
-                let arr = result.data?.data || [];
-                this.deviceList = arr.map(item => {
-                    if (item.children && item.children.length > 0) {
-                        item.children = item.children.map(child => {
-                            return {
-                                label: child.device_name, value: child.device, pluginId: child.type
-                            };
-                        });
-                    } else {
-                        item.children = undefined;
-                    }
-                    return {
-                        label: item.device_name, value: item.device, pluginId: item.type, children: item.children
-                    };
-                });
-            }
-        },
+        
         /**
          * @description: 选择设备的回调
          * @param {*} v
@@ -269,7 +194,6 @@ export default {
         handleDeviceChange(v) {
             const deviceRef = this.$refs.deviceRef;
             const { data } = deviceRef.getCheckedNodes()[0];
-            console.log("handleDeviceChange", v, data)
             this.getPluginData(data.pluginId);
         },
         /**
@@ -282,7 +206,6 @@ export default {
                 const data = result.data.data[0];
                 const jsonObj = JSON.parse(data?.chart_data || "{}");
                 this.pluginData = JSON.parse(JSON.stringify(jsonObj));
-                console.log("getPluginData", jsonObj);
                 // this.pluginName = data.model_name;
                 // this.tslData = jsonObj.tsl || {}
                 let chartData = jsonObj.chart || [];

@@ -39,10 +39,11 @@
         <!-- 刷新 -->
         <el-button v-if="params.aggregate_window !== 'no_aggregate'" class="tool-item" size="mini" icon="el-icon-refresh" @click="handleRefresh"></el-button>
 
-        <el-button class="tool-item" size="mini" icon="el-icon-more" @click="showConfiguration"></el-button>
       </div>
-      <div class="tool-right">
-        <slot></slot>
+      <div v-else class="tool-right">
+        <el-button v-if="showConfig" class="tool-item" style="padding-top: 2px" size="mini" icon="el-icon-setting" @click="showConfiguration"/>
+        <slot ></slot>
+
       </div>
     </div>
 
@@ -85,42 +86,15 @@
 import { statistic, statisticBatch } from "@/api/device";
 import StatusIcon from "./StatusIcon"
 import DashboardTitle from "./DashboardTitle.vue"
-
+import Vue from "vue";
 import { dateFormat } from "@/utils/tool.js"
 import { PeriodList, AggregateFuncList, getAggregateWindowList, calcAggregate, getSeries } from "./Const.js"
-
+import { commonProps } from "./Const";
 export default {
   name: "Curve",
   components: { StatusIcon, DashboardTitle  },
   props: {
-    mode: {
-      type: [String],
-      default: "view"
-    },
-    showHeader: {
-      type: [Boolean],
-      default: false
-    },
-    select: {
-      type: [Boolean],
-      default: true
-    },
-    option: {
-      type: [Object],
-      default: () => ({})
-    },
-    value: {
-      type: [Object, String, Array],
-      default: () => ({})
-    },
-    device: {
-      type: [Object],
-      default: () => ({})
-    },
-    status: {
-      type: [Boolean, Object],
-      default: () => ({})
-    }
+    ...commonProps
   },
   data() {
     return {
@@ -397,8 +371,6 @@ export default {
     handleRefresh() {
       this.getHistory(this.optionData.mapping);
     },
-    showConfiguration() {
-    },
     /**
      * 修改 e-chart 大小
      */
@@ -422,7 +394,11 @@ export default {
       if (this.$slots.default && this.$slots.default.length) {
         this.$emit("update:select", !this.select)
       }
+    },
+    showConfiguration() {
+      this.$emit("config", this.option)
     }
+
   }
 }
 </script>
@@ -474,7 +450,7 @@ export default {
   .tool-item {
     background: transparent !important;
     border: 0px solid transparent;
-
+    
   }
 
 }

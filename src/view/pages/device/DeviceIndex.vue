@@ -506,6 +506,10 @@ export default defineComponent({
 
     }
 
+    onBeforeUnmount(() => {
+      
+    }) 
+
 
 
     return {

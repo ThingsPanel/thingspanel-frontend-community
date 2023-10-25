@@ -7,8 +7,9 @@
       <div class="tool-right" v-if="mode==='view'">
         <status-icon ref="statusIconRef" :status="status"/>
       </div>
-      <div class="tool-right">
-        <slot></slot>
+      <div v-else class="tool-right">
+        <el-button v-if="showConfig" class="tool-item" style="padding-top: 2px" size="mini" icon="el-icon-setting" @click="showConfiguration"/>
+        <slot ></slot>
       </div>
     </div>
 
@@ -32,39 +33,13 @@ import DashboardTitle from "./DashboardTitle.vue"
 import "@/core/mixins/charts.js"
 let Echarts = require('echarts/lib/echarts');
 require('echarts/lib/chart/gauge');
+import { commonProps } from "./Const";
 
 export default {
   name: "Echarts",
   components: { StatusIcon, DashboardTitle },
   props: {
-    mode: {
-      type: [String],
-      default: "view"
-    },
-    showHeader: {
-      type: [Boolean],
-      default: false
-    },
-    select: {
-      type: [Boolean],
-      default: true
-    },
-    option: {
-      type: [Object],
-      default: () => ({})
-    },
-    value: {
-      type: [Object, String, Array],
-      default: () => ({})
-    },
-    device: {
-      type: [Object],
-      default: () => ({})
-    },
-    status: {
-      type: [Boolean, Object],
-      default: () => ({})
-    }
+    ...commonProps
   },
   data() {
     return {
@@ -178,6 +153,9 @@ export default {
       if (this.$slots.default && this.$slots.default.length) {
         this.$emit("update:select", !this.select)
       }
+    },
+    showConfiguration() {
+      this.$emit("config", this.option)
     }
   },
 }
@@ -220,6 +198,7 @@ export default {
   .tool-right {
     position: absolute;
     text-align: center;
+    display: flex;
 
     top:4px;
     right: 4px;

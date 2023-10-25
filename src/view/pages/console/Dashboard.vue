@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-20 14:43:10
+ * @LastEditTime: 2023-10-25 14:34:00
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -44,88 +44,94 @@
         <grid-item class="grid-item" v-for="(option, index) in (mode === 'view' ? viewData.template : editData.template)"
           :key="option['id'] + index" :x="option.x" :y="option.y" :w="option.w" :h="option.h" :i="option.i">
 
-          <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+          <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
             v-if="option.controlType == 'dashboard' && !option.type" :option="option" :device="option.device"
             :value="option.value" :status="option.deviceStatus" :mode="mode" :select.sync="option.select"
-            @changeName="name => changeName(option, name)">
+            @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </e-charts>
 
-          <curve class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+          <curve class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
             :mode="mode" v-if="option.controlType == 'history'" :option="option" :value="option.value"
             :select.sync="option.select" :status="option.deviceStatus" :device="option.device"
-            @changeName="name => changeName(option, name)">
+            @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </curve>
 
-          <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+          <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
             :mode="mode" v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option"
             :select.sync="option.select" :status="option.deviceStatus" :device="option.device"
-            @changeName="name => changeName(option, name)">
+            @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </status>
 
-          <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+          <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
             :mode="mode" v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'" :option="option"
             :value="option.value" :select.sync="option.select" :status="option.deviceStatus" :device="option.device"
-            @changeName="name => changeName(option, name)">
+            @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </device-status>
 
-          <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+          <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
             :mode="mode" :status="option.deviceStatus" v-if="option.type == 'signalStatus'" :option="option"
             :device="option.device" :value="option.value" :select.sync="option.select"
-            @changeName="name => changeName(option, name)">
+            @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </signal-status>
 
-          <text-info class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+          <text-info class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
             :mode="mode" :status="option.deviceStatus" v-if="option.type == 'textInfo'" :option="option"
             :device="option.device" :value="option.value" :select.sync="option.select"
-            @changeName="name => changeName(option, name)">
+            @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </text-info>
-          <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+
+          <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
             :mode="mode" :device="option.device" v-if="option.controlType == 'control'" :option="option"
             :select.sync="option.select" :disabled="true" :status="option.deviceStatus"
-            @changeName="name => changeName(option, name)">
+            @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </control>
 
           <video-component class="component-item" style="min-width: 200px;min-height: 200px"
-            :ref="'component_' + option.i" :key="option['id']" :show-header="true" :mode="mode"
+            :ref="'component_' + option.i" :key="option['id']" :show-header="true" :mode="mode"  :show-config="true"
             v-if="option.controlType == 'video'" :option="option" :select.sync="option.select"
-            :status="option.deviceStatus" @changeName="name => changeName(option, name)">
+            :status="option.deviceStatus" @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </video-component>
         </grid-item>
 
       </grid-layout>
     </div>
+    <!-- 添加组件 -->
     <add-component :visible.sync="addDialogVisible" @change="handleAddComponent" />
+    <!-- 看板配置 -->
     <setting :visible.sync="settingDialogVisible" :data.sync="settingData" />
+    <!-- 单个图表配置 -->
+    <!-- <component-config :visible.sync="cptConfigVisible" :data="configData" @change="handleComponentConfig"/> -->
   </div>
 </template>
 
 <script>
 import { GridLayout, GridItem } from "vue-grid-layout";
-import ECharts from "./components/Echarts"
+import ECharts from "./components/Echarts";
 import Curve from "./components/Curve";
 import Control from "./components/Control";
-import Status from "./components/Status"
-import SignalStatus from "./components/SignalStatus"
-import DeviceStatus from "./components/DeviceStatus"
+import Status from "./components/Status";
+import SignalStatus from "./components/SignalStatus";
+import DeviceStatus from "./components/DeviceStatus";
 import TextInfo from "./components/TextInfo"
 import VideoComponent from "./components/Video";
 import AddComponent from "./AddComponent.vue";
 import Setting from "./Setting.vue";
+import ComponentConfig from "./ComponentConfig.vue";
 import screenfull from "screenfull";
-import { websocket } from "@/utils/websocket"
-import { getDeviceListStatus } from "@/api/device.js"
-import ConsoleAPI from "@/api/console.js"
+import { websocket } from "@/utils/websocket";
+import { getDeviceListStatus } from "@/api/device.js";
+import ConsoleAPI from "@/api/console.js";
 export default {
   components: {
-    GridLayout, GridItem, AddComponent, Setting,
+    GridLayout, GridItem, AddComponent, Setting, ComponentConfig,
     ECharts, Curve, Control, Status, DeviceStatus, VideoComponent
   },
   props: {},
@@ -137,6 +143,8 @@ export default {
       addDialogVisible: false,
       // 是否显示设置对话框
       settingDialogVisible: false,
+      // 图表配置对话框
+      cptConfigVisible: false,
       // 模式  view: 查看模式  edit: 编辑模式
       mode: "view",
       // 查看模式下的看板数据
@@ -158,7 +166,9 @@ export default {
       // 心跳计时器
       beatHeartTimers: [],
       // 看板配置
-      settingData: {}
+      settingData: {},
+      // 组件数据
+      configData: {}
     }
   },
   computed: {
@@ -177,13 +187,12 @@ export default {
         const { consoleId } = route.query;
         this.params.id = consoleId;
         this.initConsole();
-        // this.updateComponents(this.viewData.template);
       }, immediate: true
     }
   },
   beforeDestroy() {
     this.clearSockets();
-    this.cleatBeatHearts();
+    this.clearBeatHearts();
   },
   methods: {
     back() {
@@ -298,6 +307,14 @@ export default {
 
     },
     /**
+     * @description: 
+     * @param {*} v
+     * @return {*}
+     */    
+    handleComponentConfig(v) {
+      console.log("handleComponentConfig", v);
+    },
+    /**
      * @description: 全屏
      * @return {*}
      */
@@ -339,11 +356,8 @@ export default {
      */
     async updateComponents() {
       const options = this.viewData.template;
-      console.log("updateComponents", options);
-
 
       if (!options || !options.length) return;
-      console.log("updateComponents", !options.length);
 
       // 设备id存入组件
       this.viewData.template.forEach(item => {
@@ -516,7 +530,7 @@ export default {
      * @description: 清空心跳计时器
      * @return {*}
      */
-    cleatBeatHearts() {
+    clearBeatHearts() {
       for (let i = 0; i < this.beatHeartTimers.length; i++) {
         const timer = this.beatHeartTimers[i];
         if (timer) {
@@ -524,6 +538,16 @@ export default {
         }
       }
       this.beatHeartTimers = [];
+    },
+    /**
+     * @description: 打开图表配置
+     * @param {*} opt
+     * @return {*}
+     */    
+    handleShowConfig(opt) {
+      console.log("handleShowConfig", opt);
+      this.cptConfigVisible = true;
+      this.configData = JSON.parse(JSON.stringify(opt));
     }
   }
 }

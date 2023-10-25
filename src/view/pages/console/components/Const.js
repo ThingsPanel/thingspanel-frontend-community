@@ -117,6 +117,42 @@ const getSeries = (data, series) => {
     })
 }
 
+const commonProps = {
+    mode: {
+        type: [String],
+        default: "view"
+      },
+      showHeader: {
+        type: [Boolean],
+        default: false
+      },
+      showConfig: {
+        type: [Boolean],
+        default: false
+      },
+      select: {
+        type: [Boolean],
+        default: true
+      },
+      option: {
+        type: [Object],
+        default: () => ({})
+      },
+      value: {
+        type: [Object, String, Array],
+        default: () => ({})
+      },
+      device: {
+        type: [Object],
+        default: () => ({})
+      },
+      status: {
+        type: [Boolean, Object],
+        default: () => ({})
+      }
+}
+
+
 
 export {
     PeriodList,
@@ -124,5 +160,6 @@ export {
     AggregateFuncList,
     getAggregateWindowList,
     calcAggregate,
-    getSeries
+    getSeries,
+    commonProps,
 }

@@ -6,7 +6,7 @@
   >
     <v-list>
       <!--  -->
-      <NavItem v-if="UserType!=='TENANT_USER'"  :item="homeNav" key="home"></NavItem>
+      <NavItem v-if="UserType!=='TENANT_USER'" :item="homeNav" key="home"></NavItem>
 
       <template v-for="(item, index) in navs">
         <!--  list-group里是二级菜单  -->

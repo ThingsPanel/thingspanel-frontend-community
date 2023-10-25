@@ -73,104 +73,31 @@
             </router-link>
           </div>
         </div>
-        <!--<div v-for="item in guidlist" class="float-left inline-block mr-10 mb-5">
-            &lt;!&ndash;可视化&ndash;&gt;
-            <router-link v-if="item.type==4" :to="{ path: 'chart/chart', query: { chart_id: item.data.chart_id,business_id:item.data.business_id }}">
-              <div class="guidbtn">
-                <div>{{item.name}}<i class="fa fa-caret-right float-right arrowicon"></i></div>
-                <div class="font-des">{{ $t("COMMON.VISUALIZATION") }}</div>
-              </div>
-            </router-link>
-            &lt;!&ndash;业务编辑资产&ndash;&gt;
-            <router-link v-if="item.type==1" :to="{ path: 'editbusiness', query: { id: item.data.id }}">
-              <div class="guidbtn">
-                <div>{{item.name}}<i class="fa fa-caret-right float-right arrowicon"></i></div>
-                <div class="font-des">{{ $t("COMMON.BUSINESS") }}</div>
-              </div>
-            </router-link>
-            &lt;!&ndash;告警策略&ndash;&gt;
-            <router-link v-if="item.type==3" :to="{ path: 'strategy/alarmlist', query: { id: item.data.id }}">
-              <div class="guidbtn">
-                <div>{{ $t("COMMON.ALARMSTRATEGY") }}<i class="fa fa-caret-right float-right arrowicon"></i></div>
-                <div class="font-des">{{ $t("COMMON.AUTOMATION") }} -> {{item.name}}</div>
-              </div>
-            </router-link>
-            &lt;!&ndash;控制策略&ndash;&gt;
-            <router-link v-if="item.type==2" :to="{ path: 'strategy/strlist', query: { id: item.data.id }}">
-              <div class="guidbtn">
-                <div>{{ $t("COMMON.CONTROLSTRATRGY") }}<i class="fa fa-caret-right float-right arrowicon"></i></div>
-                <div class="font-des">{{ $t("COMMON.AUTOMATION") }} -> {{item.name}}</div>
-              </div>
-            </router-link>
-          </div>
-        </div>-->
+
       </div>
     </div>
     <div class="card-custom card-stretch gutter-b mb-4.5">
-      <MixedWidget3></MixedWidget3>
+      <!-- <MixedWidget3_A/> -->
+      <component :is="middleWidget"/>
     </div>
     <div class="card-custom card-stretch gutter-b mb-4.5" style="margin-top:-22px">
-      <MixedWidget4></MixedWidget4>
+      <!-- 底部卡片 -->
+      <component :is="bottomWidget"/>
     </div>
-    <!--运行状态-->
-    <!--<div>
-      <MixedWidget2></MixedWidget2>
-    </div>-->
-    <!--<div class="row">
-      <div class="col-md-6">
-      &lt;!&ndash;告警信息&ndash;&gt;
-        <ListWidget3></ListWidget3>
-      </div>
-      <div class="col-md-6">
-      &lt;!&ndash;操作日志&ndash;&gt;
-        <ListWidget9></ListWidget9>
-      </div>
-      <div class="clear"></div>
-    </div>-->
-    <!--end::Home-->
+
   </div>
 </template>
-<style>
-.clear {
-  clear: both;
-}
- 
-</style>
-<style scoped>
-/* #app {
-    height: 100%;
-    width: 100%;
-    padding: 0px;
-    margin: 0px;
-  } */
-.guidbtn {
-  /*background: #5B92FF;padding: 15px 15px;*/
-  color: #fff;
-  border-radius: 4px; /*font-size: 15px;font-weight: bolder;*/
-}
-.font-des {
-  font-size: 12px;
-  font-weight: 100;
-  color: #a8c5ff;
-}
-.arrowicon {
-  margin-left: 20px;
-  color: #2a45c5;
-  font-size: 25px;
-  position: relative;
-  bottom: 3px;
-}
-
-</style>
 <script>
-import MixedWidget3 from "@/view/content/widgets/mixed/Widget3.vue";
-import MixedWidget4 from "@/view/content/widgets/mixed/Widget4.vue";
+import MixedWidget3_A from "@/view/content/widgets/mixed/Widget3_A.vue";
+import MixedWidget3_B from "@/view/content/widgets/mixed/Widget3_B.vue";
+import MixedWidget4_A from "@/view/content/widgets/mixed/Widget4_A.vue";
+import MixedWidget4_B from "@/view/content/widgets/mixed/Widget4_B.vue";
 import ListWidget10 from "@/view/content/widgets/list/Widget10.vue";
 
 import { REFRESH } from "@/core/services/store/auth.module";
 import { local_url } from "@/api/LocalUrl"
 import ApiService from "@/core/services/api.service";
-import axios from "axios"
+import JwtService from "@/core/services/jwt.service";
 
 export default {
   name: "home",
@@ -180,8 +107,10 @@ export default {
   }),
   components: {
     ListWidget10,
-    MixedWidget3,
-    MixedWidget4,
+    MixedWidget3_A,
+    MixedWidget3_B,
+    MixedWidget4_A,
+    MixedWidget4_B
   },
   created() {
     this.ajaxdata();
@@ -191,6 +120,25 @@ export default {
     //     console.log("localhost:3001", res)
     //   })
     
+  },
+  computed: {
+    middleWidget() {
+      let userType = this.$store.getters.currentUser.authority || JwtService.getCurrentUser().authority;
+      if (userType === "TENANT_ADMIN") {
+        return "MixedWidget3_B";
+      } else {
+        return "MixedWidget3_A";
+      }
+    },
+    bottomWidget() {
+      let userType = this.$store.getters.currentUser.authority || JwtService.getCurrentUser().authority;
+      console.log("bottomWidget", userType);
+      if (userType === "TENANT_ADMIN") {
+        return "MixedWidget4_B";
+      } else {
+        return "MixedWidget4_A";
+      }
+    }
   },
   methods: {
     ajaxdata() {
@@ -229,3 +177,36 @@ export default {
   },
 };
 </script>
+<style>
+.clear {
+  clear: both;
+}
+ 
+</style>
+<style scoped>
+/* #app {
+    height: 100%;
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
+  } */
+.guidbtn {
+  /*background: #5B92FF;padding: 15px 15px;*/
+  color: #fff;
+  border-radius: 4px; /*font-size: 15px;font-weight: bolder;*/
+}
+.font-des {
+  font-size: 12px;
+  font-weight: 100;
+  color: #a8c5ff;
+}
+.arrowicon {
+  margin-left: 20px;
+  color: #2a45c5;
+  font-size: 25px;
+  position: relative;
+  bottom: 3px;
+}
+
+</style>
+

@@ -17,8 +17,9 @@
 
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
       </div>
-      <div class="tool-right">
-        <slot></slot>
+      <div v-else class="tool-right">
+        <el-button v-if="showConfig" class="tool-item" style="padding-top: 2px" size="mini" icon="el-icon-setting" @click="showConfiguration"/>
+        <slot ></slot>
       </div>
     </div>
 
@@ -50,6 +51,7 @@ import MonitorPlayer from "@/components/video/monitor";
 import EzvizPlayer from "@/components/video/ezviz";
 import StatusIcon from "./StatusIcon.vue";
 import DashboardTitle from "./DashboardTitle.vue"
+import { commonProps } from "./Const";
 
 export default {
   name: "Video",
@@ -57,30 +59,7 @@ export default {
     VideoPlayer, MonitorPlayer, EzvizPlayer, StatusIcon, DashboardTitle 
   },
   props: {
-    mode: {
-      type: [String],
-      default: "view"
-    },
-    showHeader: {
-      type: [Boolean],
-      default: false
-    },
-    select: {
-      type: [Boolean],
-      default: true
-    },
-    option: {
-      type: [Object],
-      default: () => {return {}}
-    },
-    device: {
-      type: [Object],
-      default: () => {return {}}
-    },
-    status: {
-      type: [Boolean, Object],
-      default: () => ({})
-    }
+    ...commonProps
   },
   data() {
     return {
@@ -138,6 +117,9 @@ export default {
       if (this.$slots.default && this.$slots.default.length) {
         this.$emit("update:select", !this.select)
       }
+    },
+    showConfiguration() {
+      this.$emit("config", this.option)
     }
   }
 }
@@ -175,7 +157,7 @@ export default {
     .tool-right {
       position: absolute;
       text-align: center;
-
+      display: flex;
       top: 4px;
       right: 4px;
     }

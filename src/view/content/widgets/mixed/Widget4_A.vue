@@ -1,3 +1,4 @@
+<!-- CPU/内存占用曲线 -->
 <template>
   <div class="row">
     <div class="col-md-6">

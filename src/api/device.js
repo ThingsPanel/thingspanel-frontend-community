@@ -234,6 +234,14 @@ export function getDeviceTree(data) {
     })
 }
 
+export function getProjectGroup(data) {
+    return axios({
+        url: "/device/business/asset",
+        method: "post",
+        data,
+    })
+}
+
 
 /**
  * 获取设备信息
@@ -409,5 +417,17 @@ export function getSystemTime() {
     return axios({
         url: "/home/system/time",
         method: "post",
+    })
+}
+
+/**
+ * @description: 获取设备在线/离线总数
+ * @return {*}
+ */
+export function getDeviceStatusCount(data) {
+    return axios({
+        url: "/device/tenant/count",
+        method: "post",
+        data
     })
 }

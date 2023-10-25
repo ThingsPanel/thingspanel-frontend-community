@@ -8,8 +8,9 @@
 
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
       </div>
-      <div class="tool-right">
-        <slot></slot>
+      <div v-else class="tool-right">
+        <el-button v-if="showConfig" class="tool-item" style="padding-top: 2px" size="mini" icon="el-icon-setting" @click="showConfiguration"/>
+        <slot ></slot>
       </div>
     </div>
 
@@ -33,35 +34,13 @@ import { turnSwitch, sendCommandByDeviceId, currentValue } from "@/api/device"
 import {message_success} from "@/utils/helpers";
 import StatusIcon from "./StatusIcon.vue";
 import DashboardTitle from "./DashboardTitle.vue"
+import { commonProps } from "./Const";
 
 export default {
   name: "Control",
   components: { StatusIcon, DashboardTitle  },
   props: {
-    mode: {
-      type: [String],
-      default: "view"
-    },
-    showHeader: {
-      type: [Boolean],
-      default: false
-    },
-    select: {
-      type: [Boolean],
-      default: true
-    },
-    option: {
-      type: [Object],
-      default: () => {return {}}
-    },
-    device: {
-      type: [Object],
-      default: () => {return {}}
-    },
-    status: {
-      type: [Boolean, Object],
-      default: () => ({})
-    },
+    ...commonProps,
     disabled: {
       type: [Boolean],
       default: false
@@ -218,6 +197,9 @@ export default {
       if (this.$slots.default && this.$slots.default.length) {
         this.$emit("update:select", !this.select)
       }
+    },
+    showConfiguration() {
+      this.$emit("config", this.option)
     }
   }
 }
