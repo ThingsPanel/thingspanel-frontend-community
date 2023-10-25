@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-25 14:34:00
+ * @LastEditTime: 2023-10-25 15:23:17
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -29,7 +29,7 @@
 
         <el-button v-if="mode === 'edit'" type="border" size="small" @click="handleCancel">取消</el-button>
 
-        <el-button v-if="mode === 'edit'" type="border" size="small" @click="handleSaveConsole">保存</el-button>
+        <el-button v-if="mode === 'edit'" type="indigo" size="small" @click="handleSaveConsole">保存</el-button>
       </div>
     </div>
 
@@ -108,7 +108,7 @@
     <!-- 看板配置 -->
     <setting :visible.sync="settingDialogVisible" :data.sync="settingData" />
     <!-- 单个图表配置 -->
-    <!-- <component-config :visible.sync="cptConfigVisible" :data="configData" @change="handleComponentConfig"/> -->
+    <component-config :visible.sync="cptConfigVisible" :data="configData" @change="handleComponentConfig"/>
   </div>
 </template>
 
@@ -312,7 +312,8 @@ export default {
      * @return {*}
      */    
     handleComponentConfig(v) {
-      console.log("handleComponentConfig", v);
+      const index = this.editData.template.findIndex(item => item.uId === v.uId);
+      this.editData.template.splice(index, 1, JSON.parse(JSON.stringify(v)))
     },
     /**
      * @description: 全屏

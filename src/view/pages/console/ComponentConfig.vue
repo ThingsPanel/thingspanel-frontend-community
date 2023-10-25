@@ -37,7 +37,7 @@
                 </el-form-item>
             </el-form>
             <div class="footer" style="text-align: center;">
-                <el-button size="small " class="buttStyle" @click="dialogVisible=false">{{ $t("SYSTEM_MANAGEMENT.CANCEL") }}</el-button>
+                <el-button size="small " type="border" @click="dialogVisible=false">{{ $t("SYSTEM_MANAGEMENT.CANCEL") }}</el-button>
                 <el-button size="small" type="indigo" @click="handleSubmit">确认</el-button>
             </div>
         </div>
