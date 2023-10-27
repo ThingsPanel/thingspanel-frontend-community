@@ -30,6 +30,7 @@ import Vue from "vue";
 import stringify from 'qs/lib/stringify';
 import VueAxiosPlugin from 'vue-axios-plugin';
 import App from "./App.vue";
+import Share from "./Share.vue"
 import router from "./router";
 import store from "./core/services/store";
 import GlobalComponents from './components/global-components';
@@ -131,13 +132,12 @@ Vue.directive('focus', {
     }
 })
 
-
 new Vue({
     router,
     store,
     i18n,
     vuetify,
-    template: '<App/>',
+    template: "<App/>",
     components: { App },
     render: h => h(App)
 }).$mount("#app");

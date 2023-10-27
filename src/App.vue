@@ -1,5 +1,5 @@
+
 <template>
-  
   <router-view></router-view>
 </template>
 
@@ -35,8 +35,6 @@ import JwtService from "@/core/services/jwt.service";
 export default {
   name: "ThingsPanel",
   mounted() {
-    console.log("====location", document.location.protocol + "//" + document.location.host );
-  
     // 只有已经认证的用户才会请求路由
     if (!!JwtService.getToken()) {
       this.$store.dispatch("setRouters");

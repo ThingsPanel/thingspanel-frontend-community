@@ -50,12 +50,13 @@
                 <div class="alarm-info">
                     <div style="margin-right: 20px">
                         <span class="circle processed"></span>
-                        <span>已处理<span style="font-size: 18px;">{{ progress.processed }}</span>条</span>
+                        <span>已处理{{ progress.processed }}条</span>
                     </div>
                     <div>
                         <span class="circle unprocessed"></span>
-                        <span>未处理<span style="font-size: 18px;">{{ progress.unprocessed }}</span>条</span>
+                        <span>未处理{{ progress.unprocessed }}条</span>
                     </div>
+                    
                 </div>
             </div>
 
@@ -75,7 +76,7 @@ export default {
             tableData: [],
             // 进度条
             progress: {
-                percentage: 25,    // 进度
+                percentage: 0,    // 进度
                 strokeWidth: 16,   // 进度条宽度
                 width: 100,        // 进度条画布宽
                 color: "#ef9175",
@@ -124,9 +125,9 @@ export default {
             if (result.code === 200) {
                 let processed = Number(result.data.processed);
                 let unprocessed = Number(result.data.unprocessed);
-                this.progress.percentage = processed === 0 ? 0 : Number(((processed / (processed + unprocessed)) * 100).toFixed(0));
-                this.progress.processed = processed;
-                this.progress.unprocessed = unprocessed;
+                this.progress.percentage = processed === 0 ? 0 : Number(((processed / (processed + unprocessed)) * 100).toFixed(2));
+                this.progress.processed = processed + "";
+                this.progress.unprocessed = unprocessed + "";
             }
         },
         /**

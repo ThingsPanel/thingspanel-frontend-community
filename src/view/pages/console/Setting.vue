@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-13 09:35:09
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-24 17:26:01
+ * @LastEditTime: 2023-10-27 16:18:42
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Setting.vue
  * @Description: 
 -->
@@ -52,7 +52,7 @@ import { CommonProps, commonComputed } from "./Const.js";
 import ConsoleAPI from "@/api/console.js";
 import { message_success } from "@/utils/helpers.js";
 const initConfigObj = {
-    background: "", dragable: true, resizable: true, showTools: true, editTitle: true
+    background: "#1f2a5d", dragable: true, resizable: true, showTools: true, editTitle: true
 }
 export default {
     components: {},
@@ -116,7 +116,6 @@ export default {
          * @return {*}
          */        
         handleSubmit() {
-            console.log("setting", this.formData);
             this.formData.config = JSON.stringify(this.formData.configObj);
             ConsoleAPI.edit(this.formData)
                 .then(({ data: result }) => {

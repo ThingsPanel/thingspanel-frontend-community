@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column flex-root">
+  <div class="d-flex flex-column flex-root" style="background-color: #161e43!important;">
     <!-- begin:: Header Mobile -->
     <KTHeaderMobile></KTHeaderMobile>
     <!-- end:: Header Mobile -->

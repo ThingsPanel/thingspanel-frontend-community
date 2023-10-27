@@ -3,7 +3,7 @@
         <div  v-if="showHeader" class="chart-header">
           <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
 
-          <div class="tool-right" v-if="mode==='view'">
+          <div class="tool-right" v-if="mode!=='edit'">
             <status-icon ref="statusIconRef" :status="status"/>
             <!-- <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button> -->
           </div>

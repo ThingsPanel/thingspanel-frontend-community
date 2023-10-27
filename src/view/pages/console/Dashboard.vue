@@ -2,13 +2,13 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-25 15:23:17
+ * @LastEditTime: 2023-10-27 17:12:58
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
-  <div id="containerId" class="dashboard-container">
-    <div class="dashboard-top">
+  <div id="containerId" class="dashboard-container" :style="getContainerStyle">
+    <div class="dashboard-top" v-if="mode!=='share'">
       <div style="padding-left: 10px">
         <el-button type="border" size="small" icon="el-icon-back" @click="back">返回</el-button>
       </div>
@@ -34,7 +34,7 @@
     </div>
 
 
-    <div id="consoleBox" style="width: 100%;height:calc(100vh - 160px);overflow-y: auto;" :style="getConsoleStyle">
+    <div id="consoleBox" style="width: 100%;overflow-y: auto;" :style="getConsoleBoxStyle">
       <grid-layout :class="mode==='edit' ? 'grid-layout' : ''"  
         :layout.sync="mode === 'view' ? viewData.template : editData.template"
         :col-num="colNum" :row-height="30" :is-draggable="mode === 'edit'" :is-resizable="mode === 'edit'"
@@ -129,6 +129,7 @@ import screenfull from "screenfull";
 import { websocket } from "@/utils/websocket";
 import { getDeviceListStatus } from "@/api/device.js";
 import ConsoleAPI from "@/api/console.js";
+import { DEFAULT_SETTING_DATA } from "./Const.js";
 export default {
   components: {
     GridLayout, GridItem, AddComponent, Setting, ComponentConfig,
@@ -145,7 +146,7 @@ export default {
       settingDialogVisible: false,
       // 图表配置对话框
       cptConfigVisible: false,
-      // 模式  view: 查看模式  edit: 编辑模式
+      // 模式  view: 查看模式  edit: 编辑模式 share: 分享模式
       mode: "view",
       // 查看模式下的看板数据
       viewData: {
@@ -166,38 +167,66 @@ export default {
       // 心跳计时器
       beatHeartTimers: [],
       // 看板配置
-      settingData: {},
+      settingData: {...DEFAULT_SETTING_DATA},
       // 组件数据
       configData: {}
     }
   },
   computed: {
-    getConsoleStyle() {
+    /**
+     * @description: 看板容器
+     * @return {*}
+     */    
+    getContainerStyle() {
+      if (this.mode === "share") {
+        return { height: "100vh" };
+      } 
+      return {};
+    },
+    /**
+     * @description: 看板样式
+     * @return {*}
+     */    
+    getConsoleBoxStyle() {
       const { config } = this.settingData;
+      const height = this.mode === "share" ? "100%" : "calc(100% - 160px)";
       if (config && config !== "{}") {
         const { background } = JSON.parse(config);
-        return { background }
+        return { background, height }
       }
-      return {};
+      return { height };
     }
   },
   watch: {
     $route: {
       handler(route) {
-        const { consoleId } = route.query;
-        this.params.id = consoleId;
+        console.log(route)
+        if (route.path === "/share_console") {
+          this.mode = "share"
+        }
+        const { id } = route.query;
+        this.params.id = id;
         this.initConsole();
       }, immediate: true
-    }
+    },
   },
   beforeDestroy() {
     this.clearSockets();
     this.clearBeatHearts();
   },
   methods: {
+    /**
+     * @description: 返回上一页
+     * @return {*}
+     */    
     back() {
       this.$router.push({ name: "Console" })
     },
+    /**
+     * @description: 调整容器大小时图表自适应
+     * @param {*} layouts
+     * @return {*}
+     */    
     handleLayoutUpdatedEvent(layouts) {
       layouts.forEach(item => {
         let ref = this.$refs["component_" + item.i];
@@ -239,7 +268,8 @@ export default {
      */
     handleSaveConsole() {
       console.log("handleSaveConsole", this.viewData);
-      this.viewData.template = this.editData.template = this.editData.template.filter(item => item.select);
+      this.editData.template = this.editData.template.filter(item => item.select);
+      this.viewData.template = JSON.parse(JSON.stringify(this.editData.template));
       let uIds = this.editData.template.map(item => item.uId);
       let tmp = [];
       uIds.forEach(uId => {
@@ -267,7 +297,12 @@ export default {
      */
     handleCancel() {
       this.mode = "view";
-      this.editData.template = this.viewData.template;
+      let tmp = JSON.parse(JSON.stringify(this.viewData.template));
+      this.viewData.template = [];
+      setTimeout(() => {
+        this.viewData.template = tmp;
+        this.editData.template = JSON.parse(JSON.stringify(tmp));
+      }, 50);
     },
     /**
      * @description: 改变图表名称
@@ -312,8 +347,11 @@ export default {
      * @return {*}
      */    
     handleComponentConfig(v) {
-      const index = this.editData.template.findIndex(item => item.uId === v.uId);
-      this.editData.template.splice(index, 1, JSON.parse(JSON.stringify(v)))
+      let tmp = JSON.parse(JSON.stringify(this.editData.template));
+      const index = tmp.findIndex(item => item.uId === v.uId);
+      tmp.splice(index, 1, JSON.parse(JSON.stringify(v)));
+      this.editData.template = [];
+      setTimeout(() => this.editData.template = tmp, 50);
     },
     /**
      * @description: 全屏
@@ -483,6 +521,7 @@ export default {
     */
     async flushDeviceStatus(deviceIds) {
       const params = { device_id_list: deviceIds };
+
       try {
         let { data: result } = await getDeviceListStatus(params);
         if (result.code === 200) {
@@ -491,13 +530,25 @@ export default {
             const option = this.viewData.template[i];
             for (const deviceId in deviceStatusList) {
               const status = deviceStatusList[deviceId].toString() === "1";
+
               if (option.device.deviceId === deviceId) {
-                option.deviceStatus = { lastPushTime: option.deviceStatus.lastPushTime, status }
+                let tmp = JSON.parse(JSON.stringify(option));
+                tmp.deviceStatus = { lastPushTime: option.deviceStatus.lastPushTime, status };
+                // tmp.state = status;
+                this.viewData.template.splice(i, 1, tmp);
+                // console.log("option.deviceStatus", tmp.state);
+                // option.deviceStatus = { lastPushTime: option.deviceStatus.lastPushTime, status }
+                // option.deviceStatus1 = JSON.stringify(option.deviceStatus);
+                // console.log("option.deviceStatus1", option.deviceStatus, option.deviceStatus1);
               }
+              // debugger;
+
             }
           }
         }
+
       } catch (err) {
+        console.log("dashboard.error", err.message);
       }
 
     },
@@ -554,10 +605,11 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-.dashboard-container {
-  margin-top: -20px;
 
+.dashboard-container {
+  // height: 100vh;
   .dashboard-top {
+    margin-top: -20px;
     display: flex;
     justify-content: space-between;
 

@@ -3,7 +3,7 @@
     <div v-if="showHeader" class="chart-header">
       <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
     
-      <div class="tool-right" v-if="mode==='view'">
+      <div class="tool-right" v-if="mode!=='edit'">
         <status-icon ref="statusIconRef" :status="status" />
 
         <!-- 采样区间 如最近5分钟，最近30分钟  -->

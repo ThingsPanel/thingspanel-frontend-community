@@ -1,9 +1,9 @@
 <template>
-  <div class="chart-div"  >
+  <div class="chart-div" :style="getChartStyle()">
     <div class="chart-header" v-if="showHeader">
       <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
 
-      <div class="tool-right" v-if="mode==='view'">
+      <div class="tool-right" v-if="mode!=='edit'">
         <status-icon ref="statusIconRef" :status="status"/>
 
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
@@ -200,7 +200,14 @@ export default {
     },
     showConfiguration() {
       this.$emit("config", this.option)
-    }
+    },
+    getChartStyle() {
+      let style = this.optionData.style ? this.optionData.style : {};
+      let backgroundColor = style.backgroundColor ? style.backgroundColor : "#f9f9fc";
+      return {
+        backgroundColor
+      }
+    },
   }
 }
 

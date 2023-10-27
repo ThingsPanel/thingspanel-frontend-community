@@ -1,5 +1,6 @@
 html,body{
-    background: #161e43!important;
+    /* background: #161e43!important; */
+    background: transparent!important;
 }
 
 .w-100{

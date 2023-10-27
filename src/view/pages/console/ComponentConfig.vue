@@ -1,45 +1,69 @@
 <template>
     <el-drawer custom-class="drawer-config" :visible.sync="dialogVisible" v-bind="drawerSetting" v-on="drawerEvents">
         <template #title>
-            <h2>数据源设置</h2>
+            <h2>组件设置</h2>
+            <el-button size="small " type="border" @click="dialogVisible = false">{{ $t("SYSTEM_MANAGEMENT.CANCEL")
+            }}</el-button>
+            <el-button size="small" type="indigo" @click="handleSubmit">确认</el-button>
         </template>
         <div class="drawer-box">
-            <el-form label-width="100px">
-                <!-- 项目列表 -->
-                <el-form-item label="项目">
-                    <el-select v-model="formData.projectId" @change="handleProjectChange">
-                        <el-option v-for="(item, index) in projectList" :key="index" :value="item.id"
-                            :label="item.name" />
-                    </el-select>
-                </el-form-item>
-                <!-- 分组列表 -->
-                <el-form-item label="分组">
-                    <el-select v-model="formData.groupId" @change="handleGroupChange">
-                        <el-option v-for="(item, index) in groupList" :key="index" :value="item.id"
-                            :label="item.name" />
-                    </el-select>
-                </el-form-item>
-                <!-- 设备列表 -->
-                <el-form-item label="设备">
-                    <el-cascader style="width: 100%" ref="deviceRef" v-model="formData.device" :options="deviceList" clearable
-                            :props="{ checkStrictly: true, emitPath: false }" @change="handleDeviceChange">
-                            <template slot-scope="{ node, data }">
-                                <span>{{ data.label }}</span>
-                                <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
-                            </template>
-                        </el-cascader>
-                </el-form-item>
-                <!-- 物模型属性列表 -->
-                <el-form-item label="属性">
-                    <el-select v-model="formData.properties" multiple>
-                        <el-option v-for="(item, index) in propertyList" :key="index" :label="item.title" :value="item.name"></el-option>
-                    </el-select>
-                </el-form-item>
-            </el-form>
-            <div class="footer" style="text-align: center;">
-                <el-button size="small " type="border" @click="dialogVisible=false">{{ $t("SYSTEM_MANAGEMENT.CANCEL") }}</el-button>
-                <el-button size="small" type="indigo" @click="handleSubmit">确认</el-button>
-            </div>
+            <el-tabs type="border-card" v-model="activeName" >
+                <el-tab-pane class="data-pane" label="数据源" name="data">
+                    <el-form label-width="100px" label-position="left">
+                        <!-- 项目列表 -->
+                        <el-form-item label="项目:">
+                            <el-select v-model="formData.data.projectId" @change="handleProjectChange">
+                                <el-option v-for="(item, index) in projectList" :key="index" :value="item.id"
+                                    :label="item.name" />
+                            </el-select>
+                        </el-form-item>
+                        <!-- 分组列表 -->
+                        <el-form-item label="分组:">
+                            <el-select v-model="formData.data.groupId" @change="handleGroupChange">
+                                <el-option v-for="(item, index) in groupList" :key="index" :value="item.id"
+                                    :label="item.name" />
+                            </el-select>
+                        </el-form-item>
+                        <!-- 设备列表 -->
+                        <el-form-item label="设备:">
+                            <el-cascader ref="deviceRef" v-model="formData.data.device"
+                                :options="deviceList" clearable :props="{ checkStrictly: true, emitPath: false }"
+                                @change="handleDeviceChange">
+                                <template slot-scope="{ node, data }">
+                                    <span>{{ data.label }}</span>
+                                    <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
+                                </template>
+                            </el-cascader>
+                        </el-form-item>
+                        <!-- 物模型属性列表 -->
+                        <el-form-item label="属性:">
+                            <el-select v-model="formData.data.properties" multiple>
+                                <el-option v-for="(item, index) in propertyList" :key="index" :label="item.title"
+                                    :value="item.name"></el-option>
+                            </el-select>
+                        </el-form-item>
+                    </el-form>
+                </el-tab-pane>
+                <el-tab-pane class="appearance-pane" label="外观" name="appearance" >
+                    <el-form label-width="140px" label-position="left">
+                        <el-form-item label="显示标题:" >
+                            <!-- <el-checkbox :disabled="true" v-model="formData.appearance.showTitle"></el-checkbox> -->
+                            <el-switch v-model="formData.appearance.showTitle" disabled active-color="#13ce66" inactive-color="#8a8ea1"/>
+                        </el-form-item>
+                        <el-form-item label="标题:" v-if="formData.appearance.showTitle">
+                            <el-input v-model="formData.appearance.name" ></el-input>
+                        </el-form-item>
+                        <el-form-item label="背景颜色:">
+                            <el-color-picker v-model="formData.appearance.backgroundColor"></el-color-picker>
+                        </el-form-item>
+                        <el-form-item label="文字颜色:">
+                            <el-color-picker v-model="formData.appearance.color" disabled></el-color-picker>
+                        </el-form-item>
+                    </el-form>
+                </el-tab-pane>
+                <el-tab-pane v-if="data.controlType==='dashboard'" label="仪表盘" disabled></el-tab-pane>
+            </el-tabs>
+
         </div>
     </el-drawer>
 </template>
@@ -62,13 +86,43 @@ export default {
     },
     data() {
         return {
-            ...commonData,
+            // ...commonData,
+            activeName: "data",
+            // 表单数据
+            formData: {
+                // 数据源
+                data: {
+                    projectId: "",
+                    groupId: "",
+                    device: "",
+                    pluginId: "",
+                    properties: "",
+                },
+                // 外观
+                appearance: {
+                    showTitle: true,
+                    name: "",
+                    backgroundColor: "#1f2a5d",
+                    color: "#ffffff"
+                },
+                // 仪表盘
+                dashboard: {
+                }
+            },
+            // 项目列表
+            projectList: [],
+            // 分组列表
+            groupList: [],
+            // 设备列表
+            deviceList: [],
             // 抽屉参数
             drawerSetting: {
                 // 抽屉出现的方向
                 direction: "rtl",
                 // 抽屉的宽
                 size: '40%',
+                // 不显示关闭按钮
+                showClose: false
             },
             // 抽屉事件
             drawerEvents: {
@@ -82,16 +136,30 @@ export default {
         ...commonComputed
     },
     watch: {
-        ...commonWatch,
-        "formData.device": {
+        "formData.data.projectId": {
+            async handler(projectId) {
+                if (projectId) {
+                    await this.getGroupList(projectId);
+                }
+            }, deep: true
+        },
+        "formData.data.groupId": {
+            async handler(groupId) {
+                if (groupId) {
+                    await this.getDeviceList(groupId)
+                }
+            }, deep: true
+        },
+        "formData.data.device": {
             handler(device) {
                 console.log("watch.device", device);
                 if (device && typeof device === "string") {
                     this.getDevice(device);
                 }
-            }
+            },
+            deep: true
         },
-        "formData.pluginId": {
+        "formData.data.pluginId": {
             handler(pluginId) {
                 if (pluginId) {
                     this.getPropertyList(pluginId);
@@ -107,21 +175,23 @@ export default {
         /**
          * @description: 初始化表单
          * @return {*}
-         */        
+         */
         initForm() {
+            console.log("componentConfig.initForm", this.data);
+            this.formData.appearance.name = this.data.name;
+            this.formData.appearance.backgroundColor = this.data.style.backgroundColor;
             const id = this.data.device.deviceId;
             if (!id) return;
             getProjectGroup({ id })
                 .then(({ data: result }) => {
                     if (result.code === 200) {
-                        this.formData.projectId = result.data?.business_id || "";
-                        this.formData.groupId = result.data?.asset_id || "";
-                        this.formData.device = result.data?.device_id || "";
+                        this.formData.data.projectId = result.data?.business_id || "";
+                        this.formData.data.groupId = result.data?.asset_id || "";
+                        this.formData.data.device = result.data?.device_id || "";
                         if (this.data.type === "switch") {
-                            console.log("initForm1", this.data.series[0].mapping.attr.name);
-                            this.formData.properties = [this.data.series[0].mapping.attr.name];
+                            this.formData.data.properties = [this.data.series[0].mapping.attr.name];
                         } else {
-                            this.formData.properties = this.data.mapping || "";
+                            this.formData.data.properties = this.data.mapping || "";
                         }
                     }
                 })
@@ -130,8 +200,8 @@ export default {
          * @description: 选择设备的回调
          * @param {*} v
          * @return {*}
-         */        
-         handleDeviceChange(v) {
+         */
+        handleDeviceChange(v) {
             const deviceRef = this.$refs.deviceRef;
             const { data } = deviceRef.getCheckedNodes()[0];
             this.getPropertyList(data.pluginId);
@@ -139,20 +209,20 @@ export default {
         /**
          * @description: 获取设备详情
          * @return {*}
-         */        
+         */
         async getDevice(id) {
             if (!id) return;
             let { data: result } = await getDeviceInfo({ id })
             if (result.code === 200) {
-                this.formData.pluginId = result.data?.type || "";
-                console.log("watch:pluginId", result.data, this.formData.pluginId);
+                this.formData.data.pluginId = result.data?.type || "";
+                console.log("watch:pluginId", result.data, this.formData.data.pluginId);
             }
         },
         /**
-         * @description: 获取插件信息
+         * @description: 获取插件物模型属性
          * @param {*} id
          * @return {*}
-         */        
+         */
         async getPropertyList(id) {
             this.propertyList = [];
             if (!id) return;
@@ -165,20 +235,24 @@ export default {
                     this.propertyList = obj.tsl.properties;
 
                 }
-            } catch(err) {}
-            
+            } catch (err) { }
+
         },
         /**
          * @description: 确认
          * @return {*}
-         */        
+         */
         handleSubmit() {
             this.validate((valid) => {
                 if (valid) {
                     console.log("handleSubmit", this.data, this.formData);
-                    const { device: deviceId, properties } = this.formData;
+                    const { device: deviceId, properties } = this.formData.data;
+                    const { name, backgroundColor } = this.formData.appearance;
+                    
                     const tmp = JSON.parse(JSON.stringify(this.data));
                     tmp.device = { deviceId };
+                    tmp.name = name;
+                    tmp.style = { backgroundColor };
                     // 绑定的物模型属性
                     tmp.dataSource = this.propertyList.filter(item => properties.indexOf(item.name) !== -1);
                     if (this.data.controlType === "control") {
@@ -195,10 +269,10 @@ export default {
         /**
          * @description: 表单验证
          * @return {*}
-         */        
+         */
         validate(callback) {
             try {
-                const { projectId, groupId, device, properties } = this.formData;
+                const { projectId, groupId, device, properties } = this.formData.data;
                 if (!projectId) throw new Error("请选择项目");
                 if (!groupId) throw new Error("请选择分组");
                 if (!device || !device.length) throw new Error("请选择设备");
@@ -207,8 +281,10 @@ export default {
                         throw new Error("请选择属性");
                     }
                 }
+                const { name } = this.formData.appearance;
+                if (!name) throw new Error("标题不能为空");
                 callback(true);
-            } catch(err) {
+            } catch (err) {
                 message_error(err.message);
                 callback(false);
             }
@@ -220,7 +296,8 @@ export default {
 ::v-deep .drawer-config {
     background-color: #263d8b;
     color: #ffffff;
-    text-align:center;
+    text-align: center;
+
     .el-drawer__header {
         border-bottom: 1px solid #344a9a;
         color: #ffffff !important;
@@ -228,12 +305,70 @@ export default {
     }
 
     .drawer-box {
-        padding: 20px;
-        .el-select {
-            width: calc(100% - 100px);
+        .el-tabs {
+            background-color: #263d8b;
+
+            .el-tabs__header {
+                background-color: #263d8b;
+                border-bottom: unset !important;
+                margin-left: 20px;
+
+            }
+
+            .el-tabs__nav.is-top {
+                background-color: #344a9a;
+                border-radius: 50px;
+            }
+
+            .el-tabs__item {
+                background-color: #344a9a;
+                border-right-color: #344a9a;
+                border-left-color: #344a9a;
+                border-radius: 50px;
+                height: 30px;
+                line-height: 30px;
+            }
+
+            .el-tabs__item.is-active {
+                background-color: #1e2d67;
+                border-radius: 50px;
+                border-right-color: #1e2d67;
+                border-left-color: #1e2d67;
+                //border-right-color: #263d8b;
+                //border-left-color: #263d8b;
+            }
         }
-        .el-cascader {
-            width: calc(100% - 100px)!important;
+
+        .el-tabs--border-card {
+            border: unset !important;
+            box-shadow: unset !important;
+        }
+
+        .el-form {
+            margin-top: 20px;
+            margin-left: 40px;
+            
+            .el-select {
+                width: calc(100% - 100px);
+            }
+            .el-cascader {
+                width: calc(100% - 100px) ;
+                padding-left:0;
+            
+            }
+            .el-cascader .el-input {
+                width: 100%;
+                margin-left: 0px;
+            }
+        }
+
+        .appearance-pane .el-form {
+            .el-form-item__content {
+                text-align: left;
+            }
+            .el-input {
+                width: calc(100% - 100px);
+            }
         }
     }
 

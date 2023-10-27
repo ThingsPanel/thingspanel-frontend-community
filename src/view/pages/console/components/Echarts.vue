@@ -4,8 +4,8 @@
       
       <!-- <span class="title">{{ optionData.name }}</span> -->
       <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
-      <div class="tool-right" v-if="mode==='view'">
-        <status-icon ref="statusIconRef" :status="status"/>
+      <div class="tool-right" v-if="mode!=='edit'">
+        <status-icon ref="statusIconRef" :status="option.deviceStatus"/>
       </div>
       <div v-else class="tool-right">
         <el-button v-if="showConfig" class="tool-item" style="padding-top: 2px" size="mini" icon="el-icon-setting" @click="showConfiguration"/>
@@ -55,6 +55,13 @@ export default {
     value: {
       handler(newValue) {
       }
+    },
+    "option": {
+      handler(newValue) {
+        console.log("option.deviceStatus.echarts", {...newValue.state})
+      },
+      immediate: true,
+      deep: true
     },
     "optionData.name": {
       handler(newValue) {
@@ -143,7 +150,7 @@ export default {
     },
     getChartStyle() {
       let style = this.optionData.style ? this.optionData.style : {};
-      let backgroundColor = style.backgroundColor ? style.backgroundColor : "#2d3d86";
+      let backgroundColor = style.backgroundColor ? style.backgroundColor : "#f9f9fc";
       console.log("getChartStyle", backgroundColor)
       return {
         backgroundColor
@@ -168,7 +175,8 @@ export default {
   position: relative;
   //margin: 10px 20px 20px 10px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  background-color: #2d3d86;
+  // background-color: #2d3d86;
+  background-color: #f9f9fc;
   border-radius: 4px;
   
 }

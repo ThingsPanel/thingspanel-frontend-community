@@ -6,7 +6,6 @@
           img-alt="Image"
           img-top
           tag="article"
-
   >
 
     <div style="padding: 2.25rem;">
@@ -61,7 +60,7 @@
 
 <script>
 import { MessageBox } from 'element-ui';
-import {message_success} from "../../../../utils/helpers";
+import {message_success} from "@/utils/helpers";
 import PluginAPI from "@/api/plugin.js"
 import { PluginType } from "../Const";
 export default {
@@ -170,8 +169,14 @@ export default {
 </script>
 
 <style scoped>
+
 .marketbox {
   border-radius: 8px;
+}
+.card-title {
+  white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .text-overflow {
   text-overflow: ellipsis;

@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-24 09:04:17
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-24 17:18:59
+ * @LastEditTime: 2023-10-27 17:13:24
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Const.js
  * @Description: 
  */
@@ -21,6 +21,13 @@ const DEFAULT_LIMIT = 9999;
  * 默认当前页
  */
 const DEFAULT_PAGE = 1;
+
+/**
+ * 看板默认设置
+ */
+export const DEFAULT_SETTING_DATA = {
+    background: "#28367a"
+};
 
 
 export const CommonProps = {
