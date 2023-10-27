@@ -484,7 +484,7 @@ export default defineComponent({
 });
 </script>
 
-<style scope lang="scss">
+<style scoped lang="scss">
 .el-input__inner {
   color: aliceblue;
   background: #090944;
