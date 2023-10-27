@@ -169,8 +169,8 @@ export default {
                 "end_time": endTime,
                 "page": this.page,
                 "page_records": this.pageSize,
-                "first_data_time": firstDataTime,
-                "end_data_time": endDataTime,
+                "first_data_time": firstDataTime * 1000,
+                "end_data_time": endDataTime * 1000,
             }).then(({ data }) => {
                 console.debug("req time", new Date(startTime / 1000), new Date(endTime / 1000), this.choosedTimeRange)
                 console.debug("====getHistoryData", data)
