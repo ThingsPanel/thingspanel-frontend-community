@@ -203,7 +203,7 @@ export default {
     },
     getChartStyle() {
       let style = this.optionData.style ? this.optionData.style : {};
-      let backgroundColor = style.backgroundColor ? style.backgroundColor : "#f9f9fc";
+      let backgroundColor = style.backgroundColor ? style.backgroundColor : "#2d3d86";
       return {
         backgroundColor
       }
