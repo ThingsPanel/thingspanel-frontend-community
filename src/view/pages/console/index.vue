@@ -32,7 +32,7 @@
                 <el-table-column align="left" :label="$t('VISUALIZATION.OPERATION')" width="230">
                     <template v-slot="scope">
                         <div style="text-align: left">
-                            <!-- 分享 -->
+                            <!-- 分享 --> 
                             <!-- <el-button type="yellow" size="mini" @click="shareConsole(scope.row)">分享</el-button> -->
                             <!-- 编辑 -->
                             <el-button type="indigo" size="mini" @click="editConsole(scope.row)">{{ $t('VISUALIZATION.EDIT')}}</el-button>
