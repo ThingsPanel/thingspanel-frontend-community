@@ -179,7 +179,7 @@ export default {
         initForm() {
             console.log("componentConfig.initForm", this.data);
             this.formData.appearance.name = this.data.name;
-            this.formData.appearance.backgroundColor = this.data.style.backgroundColor;
+            this.formData.appearance.backgroundColor = this.data.style?.backgroundColor || "";
             const id = this.data.device.deviceId;
             if (!id) return;
             getProjectGroup({ id })

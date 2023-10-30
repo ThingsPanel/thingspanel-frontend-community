@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-27 17:12:58
+ * @LastEditTime: 2023-10-30 09:23:34
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -256,6 +256,11 @@ export default {
               data = [];
             }
             this.viewData = { ...result.data, template, data };
+            // 设备id存入组件
+            this.viewData.template.forEach(item => {
+              item.device = { deviceId: this.viewData.data.find(d => d.uId === item.uId).deviceId };
+              item.deviceStatus = { status: false, lastPushTime: "" }
+            });
             this.editData = JSON.parse(JSON.stringify(this.viewData));
             this.settingData = { id, name, code, config }
             this.updateComponents();
@@ -398,11 +403,9 @@ export default {
 
       if (!options || !options.length) return;
 
-      // 设备id存入组件
-      this.viewData.template.forEach(item => {
-        item.device = { deviceId: this.viewData.data.find(d => d.uId === item.uId).deviceId };
-        item.deviceStatus = { status: false, lastPushTime: "" }
-      })
+      
+
+      console.log("this.viewData.template", this.viewData.template);
 
 
       // 去除重复设备
