@@ -192,6 +192,7 @@ export default {
             ConsoleAPI.list(this.params)
                 .then(({ data: result }) => {
                     this.tableData = result.data?.data || [];
+                    this.total = result.data?.total || 0;
                 })
         },
         /**
