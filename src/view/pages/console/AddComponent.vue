@@ -129,6 +129,7 @@ export default {
             },
             // 对话框事件
             dialogEvents: {
+                open: this.initForm,
                 close: this.resetForm
             },
             // 插件数据
@@ -143,11 +144,23 @@ export default {
         ...commonWatch
     },
     mounted() {
-        console.log("addComponent.model", this.model)
-        this.getProjectList();
     },
     methods: {
         ...commonMethods,
+        /**
+         * @description: 初始化表单
+         * @return {*}
+         */        
+        initForm() {
+            this.formData = {
+                projectId: "",
+                groupId: "",
+                device: [],
+                // 插件id
+                pluginId: ""
+            }
+            this.getProjectList();
+        },
         /**
          * @description: 提交
          * @return {*}

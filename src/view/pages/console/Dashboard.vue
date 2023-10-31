@@ -2,14 +2,14 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-30 09:23:34
+ * @LastEditTime: 2023-10-31 11:01:58
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
   <div id="containerId" class="dashboard-container" :style="getContainerStyle">
     <div class="dashboard-top" v-if="mode!=='share'">
-      <div style="padding-left: 10px">
+      <div >
         <el-button type="border" size="small" icon="el-icon-back" @click="back">返回</el-button>
       </div>
       <div class="dashboard-tools">
@@ -34,7 +34,7 @@
     </div>
 
 
-    <div id="consoleBox" style="width: 100%;overflow-y: auto;" :style="getConsoleBoxStyle">
+    <div v-if="viewData.template.length !== 0 || editData.template.length !== 0" id="consoleBox" style="width: 100%;overflow-y: auto;" :style="getConsoleBoxStyle">
       <grid-layout :class="mode==='edit' ? 'grid-layout' : ''"  
         :layout.sync="mode === 'view' ? viewData.template : editData.template"
         :col-num="colNum" :row-height="30" :is-draggable="mode === 'edit'" :is-resizable="mode === 'edit'"
@@ -263,6 +263,8 @@ export default {
             });
             this.editData = JSON.parse(JSON.stringify(this.viewData));
             this.settingData = { id, name, code, config }
+
+            console.log("viewData.template", this.viewData.template.length);
             this.updateComponents();
           }
         })
@@ -613,9 +615,16 @@ export default {
   // height: 100vh;
   .dashboard-top {
     margin-top: -20px;
+    margin-bottom: 4px;
     display: flex;
     justify-content: space-between;
 
+    .el-button--small {
+      margin-top: 0;
+      height: 32px;
+      line-height: 32px;
+      padding: 0px 15px;
+    }
     .dashboard-tools {
       width: 100%;
       text-align: right;
