@@ -35,12 +35,12 @@
                             <!-- 分享 --> 
                             <!-- <el-button type="yellow" size="mini" @click="shareConsole(scope.row)">分享</el-button> -->
                             <!-- 编辑 -->
-                            <el-button type="indigo" size="mini" @click="editConsole(scope.row)">{{ $t('VISUALIZATION.EDIT')}}</el-button>
+                            <el-button type="indigo" size="mini" @click="handleEditConsole(scope.row)">{{ $t('VISUALIZATION.EDIT')}}</el-button>
                             <!-- 删除 -->
                             <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')"
                                 :cancel-button-text="$t('COMMON.CANCEL')"
                                 style="margin-left: 10px" :title="$t('VISUALIZATION.TEXT44')"
-                                @confirm="delConsole(scope.row)">
+                                @confirm="handleDelConsole(scope.row)">
                                 <el-button slot="reference" type="danger" size="mini">{{ $t('VISUALIZATION.DELETE')
                                 }}</el-button>
                             </el-popconfirm>
@@ -208,7 +208,7 @@ export default {
          * @return {*}
          */
         handleViewConsole(item) {
-            this.$router.push({ name: "Dashboard", query: { id: item.id } })
+            this.handleEditConsole(item);
         },
         /**
          * @description: 分享看板
@@ -226,14 +226,14 @@ export default {
          * @param {*} item
          * @return {*}
          */        
-        editConsole(item) {
-            this.$router.push({ name: "Dashboard", query: { id: item.id } })
+        handleEditConsole(item) {
+            this.$router.push({ name: "Dashboard", query: { ...this.params, id: item.id } })
         },
         /**
          * @description: 删除看板
          * @return {*}
          */        
-        delConsole(item) {
+        handleDelConsole(item) {
             if (!item.id) return;
             ConsoleAPI.delete({ id: item.id })
                 .then(({ data: result }) => {

@@ -7,17 +7,17 @@
                 :model="formData" >
                 <div class="create-select">
 
-                    <el-select v-model="formData.projectId" @change="handleProjectChange">
+                    <el-select filterable v-model="formData.projectId" @change="handleProjectChange">
                         <el-option v-for="(item, index) in projectList" :key="index" :value="item.id"
                             :label="item.name" />
                     </el-select>
 
-                    <el-select v-model="formData.groupId" @change="handleGroupChange">
+                    <el-select filterable v-model="formData.groupId" @change="handleGroupChange">
                         <el-option v-for="(item, index) in groupList" :key="index" :value="item.id"
                             :label="item.name" />
                     </el-select>
 
-                    <el-cascader ref="deviceRef" v-model="formData.device" :options="deviceList" clearable
+                    <el-cascader filterable ref="deviceRef" v-model="formData.device" :options="deviceList" clearable
                             :props="{ checkStrictly: true, emitPath: false }" @change="handleDeviceChange">
                             <template slot-scope="{ node, data }">
                                 <span>{{ data.label }}</span>
