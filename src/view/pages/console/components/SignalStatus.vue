@@ -29,7 +29,8 @@ export default {
   },
   data() {
     return {
-        value: false
+        value: false,
+        optionData: {},
     }
   },
   watch: {
@@ -44,7 +45,7 @@ export default {
   },
   methods: {
     updateOption(value) {
-      this.value = value;
+      this.value = value === 0;
       this.$refs['signalStatusRef'].updateValue(value);
       this.$refs['statusIconRef'].flush();
     },
@@ -55,6 +56,8 @@ export default {
     },
     showConfiguration() {
       this.$emit("config", this.option)
+    },
+    sizeChange() {
     }
   }
 }

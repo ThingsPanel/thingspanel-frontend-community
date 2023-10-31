@@ -179,6 +179,10 @@ export default {
     watch: {
         $route: {
             handler(route) {
+                console.log("$route", route);
+                if (JSON.stringify(route.query) !=="{}") {
+                    this.params = { ...route.query };
+                }
                 this.getList();
             }, immediate: true
         }

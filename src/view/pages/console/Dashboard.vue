@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-31 14:21:24
+ * @LastEditTime: 2023-10-31 16:18:07
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -133,7 +133,7 @@ import { DEFAULT_SETTING_DATA } from "./Const.js";
 export default {
   components: {
     GridLayout, GridItem, AddComponent, Setting, ComponentConfig,
-    ECharts, Curve, Control, Status, DeviceStatus, VideoComponent
+    ECharts, Curve, Control, Status, SignalStatus, DeviceStatus, VideoComponent
   },
   props: {},
   data() {
@@ -204,8 +204,7 @@ export default {
         if (route.path === "/share_console") {
           this.mode = "share"
         }
-        const { id } = route.query;
-        this.params.id = id;
+        this.params = { ...route.query };
         this.initConsole();
       }, immediate: true
     },
@@ -220,7 +219,7 @@ export default {
      * @return {*}
      */    
     back() {
-      this.$router.push({ name: "Console" })
+      this.$router.push({ name: "Console", query: { ...this.params } })
     },
     /**
      * @description: 调整容器大小时图表自适应
@@ -320,9 +319,7 @@ export default {
      */
     changeName(option, name) {
       if (option.name !== name) {
-        console.log("changeName", option, name);
         option.name = name;
-        // this.handleSaveConsole();
       }
     },
     /**

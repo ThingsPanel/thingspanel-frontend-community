@@ -47,13 +47,13 @@
 
                         <status class="component-item" :ref="'component_' + option.i" :key="option['id']"
                             mode="edit" :show-header="true" v-if="option.controlType == 'dashboard' && option.type == 'status'"
-                            :option="option"  :select.sync="option.select">
+                            :device="device" :option="option"  :select.sync="option.select">
                             <el-checkbox v-model="option.select"></el-checkbox>
                         </status>
 
                         <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']"
                             mode="edit" :show-header="true" v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'"
-                            :option="option" :value="option.value" :select.sync="option.select">
+                            :device="device" :option="option" :value="option.value" :select.sync="option.select">
                             <el-checkbox v-model="option.select"></el-checkbox>
                         </device-status>
 
@@ -106,7 +106,7 @@ import { message_error, getRandomString } from "@/utils/helpers";
 import { CommonProps, commonData, commonComputed, commonWatch, commonMethods } from "./Const.js";
 
 export default {
-    components: { GridLayout, GridItem, ECharts, Curve, Control, Status, DeviceStatus, VideoComponent },
+    components: { GridLayout, GridItem, ECharts, Curve, Control, Status, SignalStatus, DeviceStatus, VideoComponent },
     props: {
         ...CommonProps,
         data: {
@@ -138,6 +138,8 @@ export default {
             optionsData: [],
             // grid-layout的列数
             colNum: 24,
+            deviceStatus: false,
+            device: {}
         }
     },
     watch: {
