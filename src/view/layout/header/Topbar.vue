@@ -26,7 +26,7 @@
                 </el-col>
               </el-row>
             </div>
-            <div>{{ $t('COMMON.PROBLEM_FEEDBACK') }}</div>
+            <div>{{ $t('COMMON.COMMUNITY') }}</div>
           </el-tooltip>
         </div>
     <!--begin: Language bar -->

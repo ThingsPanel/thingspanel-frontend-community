@@ -432,7 +432,7 @@ export const locale = {
     DELETE_CONFIRM: "确定删除吗?",
     GENERATE_WAIT: "生成中，请稍候...",
     DOCUMENTATION: "帮助文档",
-    PROBLEM_FEEDBACK: "问题反馈",
+    COMMUNITY: "加入社区",
     QQ: "QQ",
     QQ_GROUP_NUMBER: "群号",
     WECHAT: "微信",
