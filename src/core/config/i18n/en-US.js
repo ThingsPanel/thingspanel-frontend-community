@@ -432,7 +432,7 @@ export const locale = {
     DELETE_CONFIRM: "Are you sure to delete the data?",
     GENERATE_WAIT: "Generating, please wait...",
     DOCUMENTATION: "Documentation",
-    PROBLEM_FEEDBACK: "Feedback",
+    COMMUNITY: "Community",
     QQ: "QQ",
     QQ_GROUP_NUMBER: "QQ Group",
     WECHAT: "WeChat",
