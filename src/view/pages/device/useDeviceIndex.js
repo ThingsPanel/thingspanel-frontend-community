@@ -31,7 +31,6 @@ export default function useDeviceIndex(business_id) {
                 let { table, ids } = washData(data.data.data);
                 tableData.value = data.data.data ? table : [];
                 deviceIds.value = ids;
-                console.log("====getDeviceTree.ids", ids);
                 getDeviceStatus(ids);
             }
         }).finally(() => {
@@ -173,7 +172,6 @@ export default function useDeviceIndex(business_id) {
      * @param ids
      */
     function getDeviceStatus(ids) {
-        console.log("====getDeviceStatus.getTimers:", store.getters.getTimers(business_id))
         if (timer) clearInterval(timer);
         if (!ids || ids.length == 0) return;
         const fn = () => {

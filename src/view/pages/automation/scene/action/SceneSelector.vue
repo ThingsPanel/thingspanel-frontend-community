@@ -56,7 +56,6 @@ export default {
       Auto.Control.list({ current_page: 1, per_page: 9999 })
         .then(({data}) => {
           if (data.code === 200) {
-            console.log("getSceneList", data.data)
             this.options = data.data?.data || [];
             this.sceneId = this.value;
           }
@@ -68,16 +67,13 @@ export default {
     },
     handleAddScene() {
       this.sceneList.push({ id: "", switch: "0" })
-      console.log("handleAddScene", this.sceneList)
     },
     handleDeleteScene(index) {
       this.sceneList.splice(index, 1);
       const data = this.sceneList.map(item => ({ id: item.id }))
-      console.log("handleDeleteScene", data)
       this.$emit("change", data);
     },
     validate() {
-      console.log("scene.validate");
       try {
         for (let i = 0; i < this.sceneList.length; i++) {
           const ele = this.sceneList[i];

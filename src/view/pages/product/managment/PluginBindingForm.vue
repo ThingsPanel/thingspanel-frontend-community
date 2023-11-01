@@ -78,7 +78,6 @@ export default defineComponent({
       PluginAPI.tree({})
           .then(({data}) => {
             if (data.code == 200) {
-              console.log("PluginAPI.tree", data.data)
               pluginTree.value = data.data
             }
           })
@@ -109,7 +108,6 @@ export default defineComponent({
       PluginAPI.page({"current_page": 1, "per_page": 10, "id": pId})
           .then(({data}) => {
             if (data.code == 200) {
-              console.log("getPluginData", data.data.data[0])
               pluginName = data.data.data[0]?.model_name || "";
               tslData.value = JSON.parse(data.data.data[0].chart_data).tsl
             }

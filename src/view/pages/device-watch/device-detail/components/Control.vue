@@ -113,14 +113,11 @@ export default {
 
     },
     async getSwitchValue() {
-      console.log("====control.getSwitchValue")
-
       let optionTmp = JSON.parse(JSON.stringify(this.optionData));
       let param = { entity_id: this.device.device, attribute: this.mapping }
       let { data } = await currentValue(param)
       if (data.code == 200 && data.data) {
         let dataObj = data.data[0];
-        console.log("====control.dataObj", dataObj)
         optionTmp.series.forEach(item => {
           let map = item.mapping;
           if (item.type == "switch") {
@@ -142,7 +139,6 @@ export default {
           }
         })
       }
-      console.log("====getSwitchValue", optionTmp)
       // this.optionData = JSON.parse(JSON.stringify(optionTmp))
 
     },

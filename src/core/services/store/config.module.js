@@ -80,7 +80,6 @@ export default {
       state.config = payload;
     },
     [RESET_LAYOUT_CONFIG](state) {
-      console.log("====local_url", base_url)
       axios_prototype.post(base_url + "/system/logo/index")
           .then(({ data }) => {
             if (data.code == 200) {

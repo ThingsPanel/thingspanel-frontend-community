@@ -109,7 +109,6 @@ export default {
             this.deviceSelection = val;
         },
         onSubmit() {
-            console.log("SelectDevice", this.deviceSelection)
             if (this.deviceSelection.length === 0) {
                 message_error("请至少选择一个设备");
                 return;

@@ -129,7 +129,6 @@ export default {
       this.params.product_id = this.$route.query.product_id;
       this.params.product_name = this.$route.query.product_name;
     }
-    console.log(this.params)
     this.getBatchList();
   },
   methods: {
@@ -146,7 +145,6 @@ export default {
                 item.created = dateFormat(item.created_time)
                 return item;
               })
-              console.log("tableData", this.tableData)
             }
           })
           .finally(() => {
@@ -159,7 +157,6 @@ export default {
      * @return {*}
      */       
     viewPreRegistration(item) {
-      console.log("viewPreRegistration", this.$route.query, item)
       const { product_id, product_name } = this.$route.query;
       this.$router.push({ path: "/product/batch/pre-registration", 
         query: { 

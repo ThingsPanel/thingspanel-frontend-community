@@ -64,7 +64,6 @@ export default {
         .then(({ data: result }) => {
           if (result.code === 200) {
             this.formData = result.data?.data[0] || {};
-            console.log("getOTA", this.formData);
           }
         })
     }

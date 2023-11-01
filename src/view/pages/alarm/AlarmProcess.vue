@@ -64,7 +64,6 @@ export default {
     },
     methods: {
         initFormData() {
-            console.log("initFormData", this.data)
             if (Object.prototype.toString.call(this.data) === '[object Array]') {
                 this.formData.id = this.data.map(item => item.id) || [];
             } else {

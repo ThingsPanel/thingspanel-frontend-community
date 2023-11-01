@@ -78,7 +78,6 @@ export default defineComponent({
 
     // 编辑
     function editItem(item) {
-      console.log(item);
     }
 
     // 删除操作

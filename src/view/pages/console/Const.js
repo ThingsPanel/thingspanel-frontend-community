@@ -2,14 +2,13 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-24 09:04:17
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-27 17:13:24
+ * @LastEditTime: 2023-10-31 17:24:55
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Const.js
  * @Description: 
  */
 import { business_index } from "@/api/business.js"
 import { device_group_drop } from "@/api/asset.js"
 import { getDeviceTree } from "@/api/device";
-import PluginAPI from "@/api/plugin.js"
 
 
 

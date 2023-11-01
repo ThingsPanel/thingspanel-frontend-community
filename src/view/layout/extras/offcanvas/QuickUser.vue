@@ -108,9 +108,6 @@ export default {
     KTLayoutQuickUser.init(this.$refs["kt_quick_user"]);
     this.auth = AUTH.state;
     this.user = JwtService.getCurrentUser();
-
-    console.log("==============user: " ,JSON.stringify(this.user))
-
   },
   methods: {
     onLogout() {

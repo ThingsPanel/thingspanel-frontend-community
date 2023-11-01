@@ -122,7 +122,6 @@ export default {
       handler(newValue) {
         if (newValue) {
           this.formData = JSON.parse(JSON.stringify(newValue));
-          console.log("DeviceTypeSelector.data.formData", this.formData )
         }
       },
       immediate: true
@@ -193,7 +192,6 @@ export default {
           this.chartData = { type: "", controlType: "control" }
           this.chartList.forEach(item => {
             if (item.controlType === "control") {
-              console.log("handleStateChange", item)
               let map = item.series[0].mapping;
               if (map && map.value === v.name) {
                 this.chartData = item;
@@ -204,18 +202,15 @@ export default {
           this.chartData = { type: "", controlType: "" }
         }
       } else if (v && v.mode === "command") {
-        console.log("handleStateChange", this.commandList, v)
         this.formData.state = this.commandList.find(item => {
           return item.name === v.name;
         })
       } else if (v && v.mode === "event") {
-        console.log("handleStateChange", this.eventList, v)
         this.formData.state = this.eventList.find(item => {
           return item.name === v.name;
         })
       } else if (v && v.mode === "custom") {
         this.formData.state = { ...v };
-        console.log("handleStateChange.custom", this.formData.state)
       }
 
       this.updateData();
@@ -455,7 +450,6 @@ export default {
 
       const refs = this.$refs;
       const form = this.formData;
-      console.log("form.state", form.state)
 
       try {
         if (!form.projectId || form.projectId === "") {

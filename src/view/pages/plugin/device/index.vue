@@ -95,7 +95,6 @@ export default {
           this.pluginCategory = arr.map(item => {
             return { label: item.describe, value: item['dict_value'] }
           }).reverse();
-          console.log(this.pluginCategory)
         }
       })
   },
@@ -104,7 +103,6 @@ export default {
       this.id = "";
       this.pluginJsonData = {};
       this.showEditorDialog = true
-      console.log("configuration")
       // return false
     },
     showImportPlugin() {
@@ -118,7 +116,6 @@ export default {
         this.pluginJsonData = JSON.parse(this.importPluginJson);
         this.id = "";
       }
-      console.log("handleImport", this.pluginJsonData);
       this.showEditorDialog = true;
     },
     async save(jsonObj, callback) {
@@ -156,8 +153,6 @@ export default {
      * @param callback
      */
     async publish(jsonObj, callback) {
-      console.log("publish", jsonObj)
-      
       const isAuth = this.$store.getters.getStoreAuthenticated;
       if (isAuth) {
         // 已登录
@@ -176,8 +171,6 @@ export default {
           let { data: result } = await StoreAPI.upload(fd)
           deviceData.coverUrl = result.data.file.url
         }
-        console.log('publish', jsonObj.info)
-        // if (true) return;
         StoreAPI.publish.device(deviceData)
           .then(({ data: result }) => {
             const msg = "上传成功，请等待审核，审核通过后可以在应用市场查看！";

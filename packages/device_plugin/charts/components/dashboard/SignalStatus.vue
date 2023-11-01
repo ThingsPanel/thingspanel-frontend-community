@@ -48,7 +48,7 @@ export default {
   components: {},
   props: {
     value: {
-        type: [Boolean, String, Number],
+        type: [Boolean, String, Number, Object],
         default: false
     },
     mode: {
@@ -98,7 +98,6 @@ export default {
   methods: {
     updateValue(val) {
       const { on, off } = this.option;
-      console.log("====signalStatus.updateValue.val", val, on)
 
       if (val && (val.toString() === on.toString())) {
         this.status = true;

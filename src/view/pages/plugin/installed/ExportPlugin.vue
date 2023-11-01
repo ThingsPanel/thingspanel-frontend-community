@@ -85,7 +85,6 @@ export default {
      * @param e
      */
     onError(e) {
-      console.log(e)
     }
   }
 }

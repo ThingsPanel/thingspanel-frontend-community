@@ -144,10 +144,8 @@ export default defineComponent({
             .then(res => {
               let { data, code } = res.data;
               if (code == 200 && data) {
-                console.log(data)
                 formData.roles = data
               }
-              console.log(formData.roles)
             })
       }
     })
@@ -184,8 +182,6 @@ export default defineComponent({
             // 分配角色
             user_edit_roles(params)
                 .then(({data}) => {
-                  console.log(data)
-
                   // 通知父级关闭弹窗
                   context.emit('update:updateUserDialogVisible', false)
                 })

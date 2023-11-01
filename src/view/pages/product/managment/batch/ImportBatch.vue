@@ -90,15 +90,12 @@ export default {
   },
   methods: {
     onUploadSuccess(response, file, fileList) {
-      console.log(response, response.data)
-
       this.form.file = response.data;
     },
     handleClose() {
       this.dialogVisible = false
     },
     handleSubmit() {
-        console.log(this.form)
         this.form.product_id = this.$route.query.product_id;
         this.$refs.formRef.validate((valid) => {
           if (valid) {

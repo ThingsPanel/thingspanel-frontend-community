@@ -127,7 +127,6 @@ export default {
           this.myEcharts.setOption({ series });
           this.$refs.statusIconRef.flush()
         } catch (e) {
-          console.log(e)
         }
       }
     },
@@ -146,7 +145,6 @@ export default {
     getChartStyle() {
       let style = this.optionData.style ? this.optionData.style : {};
       let backgroundColor = style.backgroundColor ? style.backgroundColor : "#2d3d86";
-      console.log("getChartStyle", backgroundColor)
       return {
         backgroundColor
       }

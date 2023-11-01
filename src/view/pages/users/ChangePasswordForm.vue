@@ -103,7 +103,6 @@ export default defineComponent({
     })
 
     function handleSubmit(){
-      console.log(JwtService.getCurrentUser())
       changePasswordForm.value.validate((valid)=>{
         if(!valid) return;
 

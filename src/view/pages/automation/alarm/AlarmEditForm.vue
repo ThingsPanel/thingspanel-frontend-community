@@ -325,10 +325,7 @@ export default defineComponent({
 
     // 设备更改时
     function handleDeviceChange(deviceId, pluginId){
-      console.log("handleDeviceChange.deviceId", deviceId)
-      console.log("handleDeviceChange.pluginId", pluginId)
       formData.pluginId = pluginId;
-      console.log("handleDeviceChange.formData", formData)
       // 触发条件置空
       formData.config = [
         {field: "", condition: "", value: ""}

@@ -113,7 +113,6 @@ export default {
         getList() {
             this.params.ota_id = this.$route.query.otaId;
             this.loading = true;
-            console.log("taskList", this.params)
             OTAAPI.taskList(this.params)
                 .then(({ data: result }) => {
                     if (result.code === 200) {

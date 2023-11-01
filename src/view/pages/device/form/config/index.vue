@@ -119,7 +119,6 @@ export default {
           this.initAttributeCard = false
         }
         if (newValue) {
-          console.log("====DeviceConfigForm.newValue", this.device)
           this.location = this.device.location ? this.device.location : "";
           let additionalInfo = (this.device.additional_info && this.device.additional_info != "null") ? JSON.parse(this.device.additional_info) :
             { runningInfo: { thresholdTime: 0 } };
@@ -147,9 +146,6 @@ export default {
                 if (data.code == 200 && data.data && data.data.config) {
                   
                   this.formAttr = data.data.config;
-                  console.log("data.data.config", data.data.config)
-                  console.log("this.device.protocol_config", this.device.protocol_config)
-
                   if (this.device.protocol_config != "{}"
                     && this.device.protocol_config != ""
                     && this.device.protocol_config != undefined) {
@@ -187,15 +183,12 @@ export default {
     getWVPDeviceList() {
       ProtocolPluginAPI.getWVPDevices({ "id": this.device.id, "count": "9999", "page": "1" })
         .then(({ data }) => {
-          console.log("====getWVPDeviceList", data)
           if (data.code == 200) {
             this.wvpDeviceList = data.data.list ? data.data.list : [];
           }
         })
     },
     handleSubmit() {
-      console.log("====DeviceConfigForm", this.formData)
-      
       const submit = () => {
         let device = this.device;
         let additionalInfo = (this.device.additional_info && this.device.additional_info != "null") ? JSON.parse(this.device.additional_info) : {};
@@ -209,8 +202,6 @@ export default {
           sub_device_addr: this.runningFormData.subDeviceAddress,
           protocol_config: JSON.stringify({ DeviceId: device.id, AccessToken: device.token, ...this.formData })
         }
-        console.log("====DeviceConfigForm.config", config, this.attrFormData)
-
         ModbusAPI.updateDeviceConfig(config)
           .then(({ data }) => {
             if (data.code == 200) {
@@ -222,7 +213,6 @@ export default {
       }
       if (this.$refs["dataParse"]) {
         this.$refs["dataParse"].validate((valid) => {
-          console.log('====DeviceConfigForm.valid', valid);
           if (valid) {
             submit();
           }

@@ -1,3 +1,4 @@
+
 <template>
   <div>
     <div style="display: flex;float: left;margin-bottom: 10px">
@@ -63,7 +64,6 @@ export default {
     } else {
       this.eventSubject = '';
     }
-    console.log('event.device', this.device)
     this.getList();
   },
   methods: {

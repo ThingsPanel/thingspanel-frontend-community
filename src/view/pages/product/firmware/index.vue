@@ -156,14 +156,12 @@ export default {
             this.params.product_id = this.params.product_id === "all" ? "" : this.params.product_id;
             OTAAPI.list(this.params)
                 .then(({ data: result }) => {
-                    console.log(result);
                     if (result.code === 200) {
                         this.tableData = result.data?.data || [];
                         this.params.total = result.data.total;
                     }
                 })
             this.tableData = data;
-            console.log(this.tableData)
         },
         handleCreate() {
             this.addPackageDialogVisible = true;

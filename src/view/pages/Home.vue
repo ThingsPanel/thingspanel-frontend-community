@@ -114,12 +114,6 @@ export default {
   },
   created() {
     this.ajaxdata();
-
-    // axios.get('http://localhost:3001/test')
-    //   .then(res => {
-    //     console.log("localhost:3001", res)
-    //   })
-    
   },
   computed: {
     middleWidget() {
@@ -132,7 +126,6 @@ export default {
     },
     bottomWidget() {
       let userType = this.$store.getters.currentUser.authority || JwtService.getCurrentUser().authority;
-      console.log("bottomWidget", userType);
       if (userType === "TENANT_ADMIN") {
         return "MixedWidget4_B";
       } else {
@@ -163,8 +156,6 @@ export default {
       ApiService.post(local_url + "api/navigation/list", {
         work_name: "",
       }).then(({ data }) => {
-        console.log("指南列表");
-        console.log(data);
         if (data.code == 200) {
           this.guidlist = data.data;
         } else if (data.code == 401) {

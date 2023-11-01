@@ -58,14 +58,12 @@ export default {
     },
     "option": {
       handler(newValue) {
-        console.log("option.deviceStatus.echarts", {...newValue.state})
       },
       immediate: true,
       deep: true
     },
     "optionData.name": {
       handler(newValue) {
-        console.log("optionData.name", newValue)
         if (!newValue) return;
         this.$emit("changeName", newValue)
       },
@@ -150,8 +148,7 @@ export default {
     },
     getChartStyle() {
       let style = this.optionData.style ? this.optionData.style : {};
-      let backgroundColor = style.backgroundColor ? style.backgroundColor : "#f9f9fc";
-      console.log("getChartStyle", backgroundColor)
+      let backgroundColor = style.backgroundColor ? style.backgroundColor : "#2d3d86";
       return {
         backgroundColor
       }
@@ -176,7 +173,7 @@ export default {
   //margin: 10px 20px 20px 10px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   // background-color: #2d3d86;
-  background-color: #f9f9fc;
+  background-color: #2d3d86;
   border-radius: 4px;
   
 }

@@ -141,11 +141,9 @@ export default {
         },
     },
     beforeDestroy() {
-        console.debug("beforeDestroy")
         this.closeSocket();
     },
     mounted() {
-        console.log("DeviceAttribute", this.device)
         this.getDeviceAttributeCardList()
         this.updateComponents()
     },
@@ -153,7 +151,6 @@ export default {
         getDeviceAttributeCardList() {
             currentValueDetail({ "device_id": this.device.id })
                 .then(data => {
-                    console.debug("====getDeviceAttributeCardList", data)
                     if (data.data.code === 200) {
                         this.deviceAttributeCardList = data.data.data ? data.data.data : [];
                     }
@@ -240,7 +237,6 @@ export default {
 
             this.socket.onMessage((result) => {
                 if (!this.firstLoad){
-                    console.debug("first load ws")
                     this.firstLoad = true;
                     return
                 }

@@ -69,7 +69,6 @@ export default {
       this.tableData.splice(index, 1)
     },
     startEditor(item){
-      console.log(item)
     },
     handle_create(form){
       this.tableData.unshift(form)

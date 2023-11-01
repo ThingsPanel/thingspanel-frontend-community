@@ -88,7 +88,6 @@ export default {
   },
   created() {
     this.pluginData = JSON.parse(JSON.stringify(this.data));
-    console.log("===PluginCard.pluginData" , this.pluginData)
   },
   methods: {
     /**
@@ -114,7 +113,6 @@ export default {
      * @param item
      */
     clickPlugin(item) {
-      console.log("====clickPlugin", item)
     },
     /**
      * 打开导出对话框
@@ -162,7 +160,6 @@ export default {
      * @param e
      */
     onError(e) {
-      console.log(e)
     }
   }
 }

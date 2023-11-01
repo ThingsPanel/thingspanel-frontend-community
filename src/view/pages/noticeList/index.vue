@@ -143,7 +143,6 @@ export default {
       getList(this.params)
         .then(({ data: result }) => {
           if (result.code === 200) {
-            console.log(result.data)
             this.tableData = result.data?.data || [];
             this.total = result.data.total;
           }

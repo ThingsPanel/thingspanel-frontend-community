@@ -365,7 +365,6 @@ export default {
                 }
               });
             } else if (option.controlType === "history") {
-              console.log("curve.history", mapping, data, option);
               values = {};
               mapping.forEach(item => {
                 if (data && data[item.name]) {

@@ -35,7 +35,6 @@ export default function useUserIndex(){
      * 获取所有角色列表
      */
     function getAllRoles(){
-        console.log("=================getAllRoles==============")
         let query = {
             current_page: 1,
             per_page: 36

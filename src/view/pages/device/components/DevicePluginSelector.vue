@@ -116,7 +116,6 @@ export default {
      * @return {Array}
      */
     querySearch() {
-      console.log("querySearch", this.searchText)
       if (!this.searchText) {
         this.queryList = this.options;
         this.getList();
@@ -156,14 +155,12 @@ export default {
      */
     showPopover() {
       this.$nextTick(() => {
-        console.log("showPopover", this.data.plugin_name)
         this.$refs.searchInput.focus();
         this.debounceSearchTextChange();
       });
     },
     handleSelect(row) {
       this.$emit("select", row, () => {
-        console.log("handleSelect", row)
         this.searchText = row.name;
         this.debounceSearchTextChange();
       });
@@ -171,7 +168,6 @@ export default {
     handleView(row) {
       this.currentItem = row;
       this.showDetailDialog = true;
-      console.log("handleView", row);
       // this.$emit("view", row);
     },
     handleGoToPlugin() {

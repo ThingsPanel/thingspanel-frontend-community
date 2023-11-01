@@ -38,7 +38,6 @@ export default function useOperationIndex() {
     function handleSearch(filter){
         // 有传参的时候才赋值查询
         if(filter){
-            console.log(filter)
             if('ip' in filter && is_string(filter.ip)){
                 params.ip = filter.ip
             }

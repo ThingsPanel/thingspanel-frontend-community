@@ -160,7 +160,6 @@ export default {
     watch: {
     },
     mounted() {
-        console.log("DevicePlugin", this.device)
         this.queryValue();
     },
     methods: {
@@ -171,7 +170,6 @@ export default {
             ApiService.post(local_url + "api/conditions/log/index", this.params)
                 .then(({ data }) => {
                     if (data.code == 200) {
-                        console.log(data.data.data);
                         this.tableData = data.data.data;
                         this.logTotal = data.data.total;
                         this.logLoading = false;

@@ -46,7 +46,6 @@ export default {
                 this.isLoading = true
                 this.$nextTick(() => {
                     const myFrame = this.$refs.frameRef;
-                    console.log("myFrame", this.url)
                     myFrame.contentWindow.location = this.url
                     this.isLoading = false
                 })

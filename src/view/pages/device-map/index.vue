@@ -270,7 +270,6 @@ export default {
      * @returns {Promise<void>}
      */
     async createWindow(boatData) {
-      console.log("====map.createWindow.boatData", boatData)
       const windows = [];
 
       /*

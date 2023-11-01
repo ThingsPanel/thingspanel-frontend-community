@@ -32,7 +32,6 @@ export default function useDevicePlugin() {
 
             // 合并数组
             pluginList = installList.concat(storeList);
-            console.log("pluginList", pluginList)
         } 
         return pluginList;
     }

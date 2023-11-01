@@ -1,3 +1,11 @@
+<!--
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-07-31 10:24:33
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-10-31 17:40:29
+ * @FilePath: \ThingsPanel-Backend-Vue\src\view\layout\brand\Brand.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
   <!-- begin:: Aside -->
   <div class="brand flex-column-auto" id="kt_brand" ref="kt_brand">
@@ -68,7 +76,6 @@ export default {
       if (logo[0] != "/" && !logo.startsWith("http")) {
         logo = "/" + logo;
       }
-      console.log("====Brand", logo)
 
       return logo;
     }

@@ -123,7 +123,6 @@ export default {
     props: {},
     data() {
         const validateTemplateCode = (rule, value, callback) => {
-            console.log("validateTemplateCode", rule, value);
             if (value === "template") {
                 callback(new Error("请输入模板编码!"));
             } else if (!value) {
@@ -179,7 +178,6 @@ export default {
     watch: {
         $route: {
             handler(route) {
-                console.log("$route", route);
                 if (JSON.stringify(route.query) !=="{}") {
                     this.params = { ...route.query };
                 }
@@ -220,7 +218,6 @@ export default {
          * @return {*}
          */        
         shareConsole(item) {
-            console.log("shareConsole", item.id, document.location.origin);
             this.shareData.url = `${document.location.origin}/#/share_console?id=${item.id}#${item.name}`
             this.shareDialogVisible = true;
             // this.$router.push({ name: "ShareConsole", query: { id: item.id } })
@@ -284,7 +281,6 @@ export default {
                         }
                         ConsoleAPI.add(params)
                             .then(({ data: result }) => {
-                                console.log("handleCreate", result);
                                 if (result.code === 200) {
                                     message_success("创建看板成功");
                                     this.createDialogVisible = false;

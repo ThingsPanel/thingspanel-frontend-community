@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-02-06 09:04:58
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-30 10:23:34
+ * @LastEditTime: 2023-11-01 10:53:15
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\automation\control\CommandDevice.vue
  * @Description: 操作设备
 -->
@@ -48,7 +48,6 @@ export default {
   watch: {
     data: {
       handler(newValue) {
-        console.log("CommandDevice.data", newValue)
         if (newValue && newValue.length > 0) {
           this.commands = JSON.parse(JSON.stringify(newValue));
         } else {

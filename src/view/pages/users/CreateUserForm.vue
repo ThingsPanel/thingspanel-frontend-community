@@ -201,7 +201,6 @@ export default defineComponent({
 
       createUserForm.value.validate((valid)=>{
 
-        console.log("createUserForm", valid)
         if(!valid) return;
 
 
@@ -210,16 +209,12 @@ export default defineComponent({
 
         // 提交前清除错误
         error_message.value = ""
-        console.log("=======================")
-        console.log({...formData})
-        console.log("=======================")
         // 发送请求
         user_add(formData).then(({data})=>{
           if( data.code === 200) {
             // 分配角色
             user_add_roles({user: data.data.email, roles: formData.roles })
                 .then(({data}) => {
-                  console.log(data)
                 })
             message_success(data.message)
             // 调用 props 方法向列表添加新数据

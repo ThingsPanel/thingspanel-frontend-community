@@ -78,7 +78,6 @@ export default defineComponent({
 
     let id = computed({
       get() {
-        console.log("plugin.id", )
         return props.device_item.id;
       }
     })
@@ -99,7 +98,6 @@ export default defineComponent({
       PluginAPI.tree({})
           .then(({data}) => {
             if (data.code == 200) {
-              console.log("PluginAPI.tree", data.data)
               pluginTree.value = data.data
             }
           })
@@ -138,13 +136,10 @@ export default defineComponent({
      * 绑定插件
      */
     function handleSubmit() {
-      console.log("handleSubmit")
       this.showDialog = false;
       let data = { id: id.value, type: pluginId }
-      console.log(data)
       device_update(data)
         .then(({data}) => {
-          console.log(data)
           if (data.code == 200) {
             message_success("绑定成功！")
             this.$emit("submit")

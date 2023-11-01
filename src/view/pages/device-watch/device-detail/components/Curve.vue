@@ -391,7 +391,6 @@ export default {
      * @param command
      */
     handlePeriodCommand(command) {
-      console.log("handlePeriodCommand", command)
       this.params.period = command;
       if (command === "custom") {
         this.rangeDialogVisible = true;

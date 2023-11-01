@@ -185,9 +185,6 @@ export default {
          * @return {*}
          */
         handleSubmit() {
-            console.log("handleSubmit.formData", this.formData)
-            console.log("handleSubmit.actions", this.actions)
-            // return;
             if (!this.validate()) {
                 return;
             }
@@ -198,9 +195,7 @@ export default {
             this.actions.commands = this.actions.commands ? 
                 this.actions.commands :
                 this.actions.find(item => item.type === "device")?.commands || null;
-            console.log("this.actions.commands", this.actions)
             this.actions.commands && this.actions.commands.forEach(cmd => {
-                console.log("cmd", cmd)
                 let { name, type, mode, operator } = cmd.state
                 let instruct = {};
                 let device_model = "1";
@@ -256,9 +251,6 @@ export default {
                 })
             }
 
-            console.log("handleSubmit.params", { ...params })
-            // return;
-
             if (!this.formData.id) {
                 Auto.Scene.add(params)
                     .then(({ data }) => {
@@ -278,7 +270,6 @@ export default {
                         }
                     })
             }
-            console.log("====scene.EditForm", this.formData)
         },
         /**
          * @description: 改变指定行
@@ -302,7 +293,6 @@ export default {
             // tmp.scenes = JSON.parse(JSON.stringify(v));
             // this.actions.splice(index, 1, tmp);
             this.actions.scenes = v;
-            console.log("handleSceneChange", this.actions)
         },
         handleAlarmChange(action, v) {
             this.actions.alarm = v;
@@ -323,7 +313,6 @@ export default {
                     if (data.code === 200) {
                         let result = data?.data || "{}";
                         if (result !== "{}") {
-                            console.log("getScene.result", result)
                             let tmp = JSON.parse(JSON.stringify(result));
                             // tmp.commands = commands;
                             tmp.commands = this.getCommands(tmp)
@@ -331,12 +320,10 @@ export default {
                             tmp.alarm = this.getAlarm(tmp)
                             this.formData = tmp;
                             this.actions = [];
-                            console.log("getSceneDetail.tmp.alarm", tmp.alarm)
                             tmp.commands.length && this.actions.push({ type: "device", commands: tmp.commands })
                             tmp.scenes.length && this.actions.push({ type: "scene", scenes: tmp.scenes })
                             tmp.alarm && this.actions.push({ type: "alarm", alarm: tmp.alarm })
 
-                            console.log("getSceneDetail", this.actions)
                             this.setActionTypeOptions();
                         }
                     }
@@ -364,14 +351,12 @@ export default {
 
                 } else if (cmd.device_model === "2") {
                     // 命令
-                    console.log("state11", p)
 
                     state = {
                         name: p.method || "",
                         mode: "command",
                         params: p.params || ""
                     }
-                    console.log("state11", state)
                     stateJSON = JSON.stringify(state);
                 } else if (cmd.device_model === "3") {
                     state = {
@@ -397,9 +382,7 @@ export default {
             return commands;
         },
         getScenes(v) {
-            console.log("getScenes.v", v);
             let scenes = v?.scenario_actions.filter(item => item.action_type === "2") || [];
-            console.log("getScenes.scenes", scenes);
             return scenes.map(scene => {
                 let instruct = JSON.parse(scene.instruct)
                 return {

@@ -303,7 +303,6 @@ export default {
      * @param attrs
      */
     async getHistory() {
-      console.log("getHistory.item", this.device,this.option);
       if (!this.loading) {
         try {
           this.myEcharts.showLoading({

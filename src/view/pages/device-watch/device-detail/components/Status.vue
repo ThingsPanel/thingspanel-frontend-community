@@ -50,7 +50,6 @@ export default {
         this.value = value[0].value;
         this.$refs.statusIconRef.flush();
       } catch (e) {
-        console.log(e)
       }
     },
     sizeChange() {

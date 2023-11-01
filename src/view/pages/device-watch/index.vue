@@ -87,14 +87,12 @@ export default {
         if(data.code === 200) {
           this.tableData = data.data.data ? data.data.data : []
           this.total = data.data.total
-          console.log(data.data.data)
         }
       }).finally(()=>{
         this.loading = false
       })
     },
     showDeviceChart(row) {
-      console.log(row)
       this.$router.push({name: "DeviceDetail", query: {businessId: row.id, name: row.name}})
     },
   },

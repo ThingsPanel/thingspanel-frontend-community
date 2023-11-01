@@ -119,7 +119,6 @@ export default {
     watch: {
     },
     mounted() {
-        console.log("DeviceAttribute", this.device)
         this.getAttributeList();
     },
     methods: {
@@ -128,7 +127,6 @@ export default {
             this.attributeLoading = true;
             currentValueDetail({ "device_id": this.device.id })
                 .then(({ data }) => {
-                    console.debug("====getAttributeList", data)
                     if (data.code == 200) {
                         let list = data.data ? data.data : [];
                         this.attributeList = list.filter(currentValue => currentValue.key !== "systime" && currentValue.key !== "SYS_ONLINE")

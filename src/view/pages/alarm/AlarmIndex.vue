@@ -187,7 +187,6 @@ export default {
       AlarmAPI.list(this.params)
         .then(({ data: result }) => {
           if (result.code === 200) {
-            console.log(result.data)
             this.tableData = result.data?.data || [];
             this.total = result.data.total;
           }
@@ -219,7 +218,6 @@ export default {
      * @return {*}
      */    
     handleShowBatchProcessing() {
-      console.log(this.selectRows)
       this.currentItem = this.selectRows;
       this.processDialogVisible = true;
     },

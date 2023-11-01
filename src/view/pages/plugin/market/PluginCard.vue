@@ -88,7 +88,6 @@ export default {
      * 显示详情
      */
     showDetail() {
-      console.log("====showDetail", PluginType[this.pluginType])
       const url = "http://r.thingspanel.cn/detail?id=" + this.data.storeId + "&type=" + PluginType[this.pluginType]
       this.detailUrl = url
       this.detailDialogVisible = true
@@ -113,7 +112,6 @@ export default {
      * @param item
      */
     clickPlugin(item) {
-      console.log("====clickPlugin", item)
     },
 
   }

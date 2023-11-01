@@ -127,14 +127,12 @@ export default {
           })
       } else {
         // edit
-        console.log("edit")
       }
     },
     handleBindPlugin(item) {
       this.pluginDialogVisible = true;
     },
     handleBindPluginSubmit(pluginId, pluginName) {
-      console.log("handleBindPluginSubmit", pluginId)
       this.formData.device_model_id = pluginId;
       this.formData.pluginName = pluginName;
     },

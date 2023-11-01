@@ -203,7 +203,6 @@ export default {
          * @return {*}
          */
         handleSubmit() {
-            console.log("handleSubmit", this.form, this.fileList)
             this.$refs.firmwareCreateForm.validate((valid) => {
                 if (valid) {
                     let formData = JSON.parse(JSON.stringify(this.form))
@@ -215,7 +214,6 @@ export default {
                     formData.created_at = moment().format("YYYY-MM-DD HH:mm:ss")
                     OTAAPI.add(formData)
                         .then(({ data: result }) => {
-                            console.log("handleSubmit", result)
                             if (result.code === 200) {
                                 this.dialogVisible = false;
                                 message_success("添加成功!")
@@ -261,7 +259,6 @@ export default {
             this.fileList.push(file);
         },
         onUploadSuccess(response, file, fileList) {
-            console.log("onUploadSuccess", response, file, fileList)
             if (response.code === 200) {
                 this.form.packageUrl = local_url + this.removeDotSlash(response.data);
                 this.form.package_path = this.form.packageUrl;

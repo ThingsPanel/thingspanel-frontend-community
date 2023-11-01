@@ -198,7 +198,6 @@ export default {
          * @return {*}
          */
         async flushDeviceStatusCount() {
-            console.log("flushDeviceStatusCount");
             let { data: result } = await getDeviceStatusCount({});
             const { all, online } = result.data;
             let onlinePercent = Number(Number((online / all) * 100).toFixed(0));
@@ -210,7 +209,6 @@ export default {
             this.myChart.setOption({ series });
         },
         ajaxdata() {
-            console.log("====document.location.origin", document.location.origin);
             ApiService.post(local_url + (local_url.endsWith("/") ? "api" : "/api") + "/home/list")
                 .then(({ data }) => {
                     if (data.code == 200) {

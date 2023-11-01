@@ -75,14 +75,12 @@ export default {
         if (newValue) {
           let arr=[]
           for (let key in newValue) {
-            console.log(key)
             if(newValue[key] === 1){
               arr.push(key)
             }
           }
           this.list=arr
           this.formData = JSON.parse(JSON.stringify(newValue));
-          console.log("formData", this.formData)
         }
       },
       immediate: true
@@ -127,7 +125,6 @@ export default {
      * 向父组件传值
      */
     updateData() {
-      console.log("updateData", this.formData);
       this.$emit("change", this.formData);
     },
 

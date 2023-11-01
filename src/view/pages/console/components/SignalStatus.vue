@@ -1,5 +1,5 @@
 <template>
-    <div class="chart-div"  >
+    <div class="chart-div"  :style="getChartStyle()" >
         <div  v-if="showHeader" class="chart-header">
           <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
 
@@ -13,7 +13,7 @@
           </div>
         </div>
     
-        <common-signal-status ref="signalStatusRef" :option="option" :value="value" @click="handleClick"></common-signal-status>
+        <common-signal-status ref="signalStatusRef" :option="option" :value="statusValue" @click="handleClick"></common-signal-status>
       </div>
 </template>
 
@@ -29,7 +29,7 @@ export default {
   },
   data() {
     return {
-        value: false,
+        statusValue: false,
         optionData: {},
     }
   },
@@ -45,13 +45,25 @@ export default {
   },
   methods: {
     updateOption(value) {
-      this.value = value === 0;
-      this.$refs['signalStatusRef'].updateValue(value);
+      console.log("SignalStatus.updateOption", value)
+      if (typeof value === "boolean") {
+        this.statusValue = value
+      } else {
+        this.statusValue = false
+      }
+      this.$refs['signalStatusRef'].updateValue(statusValue);
       this.$refs['statusIconRef'].flush();
     },
     handleClick() {
       if (this.$slots.default && this.$slots.default.length) {
         this.$emit("update:select", !this.select)
+      }
+    },
+    getChartStyle() {
+      let style = this.optionData.style ? this.optionData.style : {};
+      let backgroundColor = style.backgroundColor ? style.backgroundColor : "#2d3d86";
+      return {
+        backgroundColor
       }
     },
     showConfiguration() {
@@ -69,8 +81,6 @@ export default {
   right: 0;
   //margin: 10px 20px 10px 10px;
   border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  background-color: #2d3d86;
   text-align: center;
   ::v-deep .status-container {
     p {
@@ -86,17 +96,7 @@ export default {
   padding-left: 10px;
   text-align: right;
   z-index: 9999;
-  .title {
-    //width: 100%;
-    //flex-grow: 1;
-    display: flex;
-    align-items: center;
-    color: #fff;
-    text-align: center;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    font-size: 18px;
-  }
+  
   .tool-right {
     position: absolute;
     text-align: center;

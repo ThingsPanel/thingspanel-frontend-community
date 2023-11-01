@@ -157,7 +157,6 @@ export default defineComponent({
       ApiService.post(local_url + "api/conditions/log/index", params)
         .then(({ data }) => {
           if (data.code == 200) {
-            console.log(data.data.data);
             tableData.value = data.data.data;
             total.value = data.data.total;
             loading.value = false;

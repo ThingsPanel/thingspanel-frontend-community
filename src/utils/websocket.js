@@ -30,7 +30,6 @@ const websocket = () => {
              * @param {*} err 
              */
             socket.onerror = (err) => {
-                console.log("ws连接发生错误", err);
                 socket = null;
                 callback && callback({code: 401, message: "连接失败"})
             };
@@ -38,7 +37,6 @@ const websocket = () => {
              * 连接成功建立的回调方法
              */
             socket.onopen = () => {
-                console.log("ws连接成功", new Date());
                 onReadyCallback && onReadyCallback();
                 callback && callback({code: 200, message: "连接成功"})
             }
@@ -47,7 +45,6 @@ const websocket = () => {
              * 连接关闭的回调方法
              */
             socket.onclose = () => {
-                console.log("ws连接关闭", new Date());
                 socket = null;
                 onCloseCallback && onCloseCallback();
                 callback && callback({code: 400, message: "连接关闭"})
@@ -102,9 +99,6 @@ const websocket = () => {
             if (socket) {
                 socket.close();
                 socket = null;
-                socket.onClose(() => {
-                    resolve(true);
-                })
             }
             resolve(true);
         });

@@ -105,7 +105,6 @@ export default {
         } else {
             this.subscribeTitle = "";
         }
-        console.log('Command.device', this.device)
         this.getList();
         this.getDeviceCommandList();
     },
@@ -119,7 +118,6 @@ export default {
                     if (data.code === 200) {
                         this.tableData = data.data.data
                         this.total = data.data.total
-                        console.log(this.tableData)
                     }
                 })
         },
@@ -143,7 +141,6 @@ export default {
                 if (command.commandId === id) {
                     // {"method":"{命令标识符}","params":{"key1":"1","key2":""}}
                     // this.commandFormData.command_data = JSON.stringify(command.commandParams, null, 4);
-                    console.log('command.commandParams', command.commandParams)
                     let params = {};
                     command.commandParams.forEach(param => {
                         switch (param.type.toLowerCase()) {
@@ -173,11 +170,9 @@ export default {
 
                     })
                     this.commandFormData.command_data = JSON.stringify(params, null, 4);
-                    console.log('params', params)
 
                 }
             })
-            console.log('handleChangeCommandId', id, this.commands)
         },
         /**
          * 发送命令

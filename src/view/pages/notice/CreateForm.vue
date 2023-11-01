@@ -240,7 +240,6 @@ export default {
     //详情
     getDetail(id){
       getNotificationDetail({id:id}).then(res => {
-        console.log(res,'res')
           if (res.data.code === 200) {
             let data = res.data.data
             if (data !== "{}") {

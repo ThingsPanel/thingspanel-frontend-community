@@ -143,7 +143,6 @@ export default {
         }
         StoreAPI.list[this.params.pluginType](params)
           .then(({data: result}) => {
-            console.log(result)
             if (result.code === 0) {
               const list = result.data?.list || [];
               this.total = result.data?.total || 0;
@@ -179,7 +178,6 @@ export default {
      * @param v
      */
     handlePluginTypeChanged(v) {
-      console.log("handlePluginTypeChanged", v)
       switch (v) {
         case "device": {
 
@@ -190,7 +188,6 @@ export default {
     },
     handleInstallPlugin(item, cb) {
       const isAuth = this.$store.getters.getStoreAuthenticated;
-      console.log("handleInstallPlugin", item, isAuth)
       if (isAuth) {
         // 安装
         switch(item.pluginType) {
@@ -218,7 +215,6 @@ export default {
      * @return {*}
      */    
     async installDevicePlugin(item, callback) {
-      console.log('installDevicePlugin', item)
       try {
         let {data: res1} = await StoreAPI.get.device({id: item.storeId});
         if (res1 === 0) throw new Error("获取插件失败！")
@@ -234,7 +230,6 @@ export default {
         if (res2.code !== 200) throw new Error("安装失败！")
         callback({ code: 200, data, msg: "安装成功！" })
       } catch(err) {
-        console.log(err)
         callback({ code: 401, data, msg: err.message })
       }
     },
@@ -257,7 +252,6 @@ export default {
       };
       addCustomExchangeAgreement(data)
         .then(({ data: result }) => {
-          console.log("addCustomExchangeAgreement", result)
           if (result.code === 200) {
             callback({ code: 200, msg: "安装成功!"})
           }

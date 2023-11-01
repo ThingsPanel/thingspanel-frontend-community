@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-10-31 16:18:07
+ * @LastEditTime: 2023-11-01 09:52:49
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -74,7 +74,7 @@
 
           <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
             :mode="mode" :status="option.deviceStatus" v-if="option.type == 'signalStatus'" :option="option"
-            :device="option.device" :value="option.value" :select.sync="option.select"
+            :device="option.device"  :select.sync="option.select"
             @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </signal-status>
@@ -144,7 +144,7 @@ export default {
       addDialogVisible: false,
       // 是否显示设置对话框
       settingDialogVisible: false,
-      // 图表配置对话框
+      // 单个图表配置对话框
       cptConfigVisible: false,
       // 模式  view: 查看模式  edit: 编辑模式 share: 分享模式
       mode: "view",
@@ -200,7 +200,6 @@ export default {
   watch: {
     $route: {
       handler(route) {
-        console.log(route)
         if (route.path === "/share_console") {
           this.mode = "share"
         }
@@ -230,7 +229,6 @@ export default {
       layouts.forEach(item => {
         let ref = this.$refs["component_" + item.i];
         if (ref && ref[0]) {
-          console.log("handleLayoutUpdatedEvent", ref[0])
           ref[0].sizeChange();
         }
       })
@@ -263,7 +261,6 @@ export default {
             this.editData = JSON.parse(JSON.stringify(this.viewData));
             this.settingData = { id, name, code, config }
 
-            console.log("viewData.template", this.viewData.template.length);
             this.updateComponents();
           }
         })
@@ -273,7 +270,6 @@ export default {
      * @return {*}
      */
     handleSaveConsole() {
-      console.log("handleSaveConsole", this.viewData);
       this.editData.template = this.editData.template.filter(item => item.select);
       this.viewData.template = JSON.parse(JSON.stringify(this.editData.template));
       let uIds = this.editData.template.map(item => item.uId);
@@ -292,7 +288,6 @@ export default {
       }
       ConsoleAPI.edit(params)
         .then(({ data: result }) => {
-          console.log("handleSaveConsole", result);
 
         })
       this.updateComponents();
@@ -308,6 +303,7 @@ export default {
       setTimeout(() => {
         this.viewData.template = tmp;
         this.editData.template = JSON.parse(JSON.stringify(tmp));
+        
         this.updateComponents();
       }, 50);
     },
@@ -335,7 +331,13 @@ export default {
         const deviceId = typeof v2 === "string" ? v2 : v2[1]
         this.editData.data.push({ uId: item.uId, deviceId })
       })
+      
       this.editData.template = this.getDefaultLayout(opts, 4);
+      // 设备id存入组件
+      this.editData.template.forEach(item => {
+        if (!item.device) item.device = { deviceId: this.editData.data.find(d => d.uId === item.uId).deviceId };
+        if (!item.deviceStatus) item.deviceStatus = { status: false, lastPushTime: "" }
+      });
       this.$nextTick(() => {
         this.editData.template.forEach(item => {
           let ref = this.$refs["component_" + item.i];
@@ -404,16 +406,10 @@ export default {
 
       if (!options || !options.length) return;
 
-      
-
-      console.log("this.viewData.template", this.viewData.template);
-
-
       // 去除重复设备
       const deviceIds = this.viewData.data.map(item => item.deviceId);
       const set = new Set(deviceIds);
       const uniqueDeviceIds = [...set];
-      console.log("uniqueDeviceIds", uniqueDeviceIds);
 
       // 先执行一次刷新设备在线/离线状态
       this.flushDeviceStatus(uniqueDeviceIds);
@@ -483,7 +479,6 @@ export default {
               values = null;
             }
           } else {
-            console.log("dashboard.onMessage", deviceId, data);
 
             values = mapping.map(item => {
               if (data && data[item.name]) {
@@ -503,7 +498,6 @@ export default {
             }
           });
         } else if (option.controlType === "history") {
-          console.log("curve.history", mapping, data, option);
           values = {};
           mapping.forEach(item => {
             if (data && data[item.name]) {
@@ -601,7 +595,6 @@ export default {
      * @return {*}
      */    
     handleShowConfig(opt) {
-      console.log("handleShowConfig", opt);
       this.cptConfigVisible = true;
       this.configData = JSON.parse(JSON.stringify(opt));
     }

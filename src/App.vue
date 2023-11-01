@@ -49,7 +49,6 @@ export default {
 
   },
   beforeMount() {
-    console.log("local_url", local_url)
     this.$store.dispatch(RESET_LAYOUT_CONFIG);
     // // show page loading
     // this.$store.dispatch(ADD_BODY_CLASSNAME, "page-loading");

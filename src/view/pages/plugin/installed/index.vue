@@ -139,7 +139,6 @@ export default {
      * 加载插件列表
      */
     loadList() {
-      console.log("loadList", this.params)
       switch (this.params.pluginType) {
         case PluginType.device: {
           this.loadDevicePluginList();
@@ -249,7 +248,6 @@ export default {
     handleDelPlugin(item) {
       PluginAPI.del({ id: item.id })
         .then(({data}) => {
-          console.log("handleDelPlugin", data)
           if (data.code == 200) {
             message_success("删除成功");
             this.loadList();
@@ -264,7 +262,6 @@ export default {
      * @param v
      */
     handlePluginTypeChanged(v) {
-      console.log("handlePluginTypeChanged", v)
       switch (v) {
         case "device": {
 

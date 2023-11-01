@@ -276,7 +276,6 @@ export default defineComponent({
   },
   setup() {
     let {route} = useRoute()
-    // console.log(route.query.business_id)
     let business_id = route.query.business_id
     const { refs } = getCurrentInstance();
 
@@ -317,32 +316,7 @@ export default defineComponent({
       // row.deviceTypeChanging = true;
       handleSave(row, () => {
         getDeviceIndex();
-        // setTimeout(() => {
-        //   row.deviceTypeChanging = false;
-        // }, 3000)
-        // console.log("deviceTypeChange", refs.deviceTypeSelectorRef)
       });
-      // MessageBox.confirm("是否切换设备类型？", "提示", {
-      //   confirmButtonText: "确定",
-      //   cancelButtonText: "取消",
-      //   type: "warning",
-      // })
-      // .then(() => {
-      //   if (row.device_type == "1" || row.device_type == 1) {
-      //     row.protocol = "mqtt";
-      //   } else {
-      //     row.protocol = "MODBUS_TCP";
-      //   }
-      //   currentDeviceItem.value = row;
-
-      //   handleSave(row, () => {
-      //     getDeviceIndex();
-      //   });
-      // })
-      // .catch(async () => {
-      //   console.log("取消");
-      //   // getDeviceIndex();
-      // })
     }
 
     /**
@@ -357,7 +331,6 @@ export default defineComponent({
 
     const devicePluginSelectorRef = ref(null);
     function handleSelectPlugin(row, v, callback) {
-      console.log("handleSelectPlugin", row)
       bindPlugin(row, v, () => {
         callback && callback();
         getDeviceIndex();
@@ -412,7 +385,6 @@ export default defineComponent({
 
     // 编辑子设备参数
     function handleEditSubParameter(item) {
-      console.log("====handleEditSubParameter", item)
       if (!item.name) {
         item.errors.name = "请输入子设备名称"
         message_error(item.errors.name)
@@ -452,7 +424,6 @@ export default defineComponent({
      * @param item
      */
     function addChildDevice(row) {
-      console.log("addChildDevice", row)
       let rowData = JSON.parse(JSON.stringify(row));
       let childDevice = {
         id: "",
@@ -490,9 +461,7 @@ export default defineComponent({
       }
       currentDeviceItem.value = JSON.parse(JSON.stringify(row));
       deviceConfigVisible.value = true;
-      console.log("deviceConfig", row)
       let index = tableData.value.findIndex(item => item.id == row.id);
-      console.log(index)
 
     }
 
@@ -502,8 +471,6 @@ export default defineComponent({
 
     function handleHoverOmit(item) {
       item.showAllChartName = true;
-      console.log("====handleHoverOmit", item)
-
     }
 
     onBeforeUnmount(() => {

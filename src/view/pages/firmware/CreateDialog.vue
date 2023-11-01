@@ -86,7 +86,6 @@ export default defineComponent({
     })
 
     function handleCreate(){
-        console.log('create')
         dialog.value = false
     }
 

@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-03-28 13:49:38
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-03-28 14:55:14
+ * @LastEditTime: 2023-11-01 10:57:23
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\product\managment\batch\pre-registration\AddDevice.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -95,7 +95,6 @@ export default {
     methods: {
         initForm() {
             this.formData = JSON.parse(JSON.stringify(this.data));
-            console.log("initForm", this.formData);
             // 初始化项目列表
             const params = { page: 1,limit: 100 }
             business_index(params)
@@ -107,10 +106,8 @@ export default {
         },
         handleChangeProject(projectId) {
             // 选择项目后, 获取项目下的分组列表
-            console.log( "handleChangeProject",   projectId)
             device_group_drop({ business_id: projectId })
                 .then(({ data: result }) => {
-                    console.log("asset_index", result);
                     this.groupList = result.data || [];
                 });
         },

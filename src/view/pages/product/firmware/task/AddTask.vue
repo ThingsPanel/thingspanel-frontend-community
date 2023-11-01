@@ -139,7 +139,6 @@ export default {
                     }
                     OTAAPI.taskAdd(data)
                         .then(({ data: result }) => {
-                            console.log(result)
                             if (result.code === 200) {
                                 message_success("添加成功！");
                                 this.dialogVisible = false;

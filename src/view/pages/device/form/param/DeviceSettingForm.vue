@@ -214,7 +214,6 @@ export default defineComponent({
       getDeviceInfo({ id: device.id })
           .then(({data}) => {
             if (data.code == 200) {
-              console.log("getDeviceInformation", data.data)
               initForm(data.data);
             }
           })
@@ -252,7 +251,6 @@ export default defineComponent({
         // 获取网关传输协议
         protocolOptions.value = await getGatewayProtocolList();
       }
-      console.log("====protocolOptions")
       deviceData.dataExchangeAgreement = d.script_id ? d.script_id : "";
       deviceData.id = d.id;
       deviceData.hasChildDevice = !!device.children && device.children.length > 0
@@ -333,14 +331,12 @@ export default defineComponent({
      * @param v
      */
     function handleChange(v){
-      console.log("handleChange", v)
       getDefaultSetting(v);
       initCustomExchangeAgreementList(v);
     }
 
 
     function handleAuthModeChange(v) {
-      console.log("====handleAuthModeChange", deviceData)
       getDefaultSetting(deviceData.protocol);
 
     }
@@ -351,9 +347,6 @@ export default defineComponent({
      * 获取token和配置说明
      */
     async function getDefaultSetting(protocol) {
-      console.log("getDefaultSetting", deviceData)
-      console.log("getDefaultSetting.protocolOptions", protocolOptions.value)
-
       const setConnectSetting = () => {
         let defaultSetting = JSON.parse(JSON.stringify(ProtocolInfo[protocol]));
         let payload = getPayload();
@@ -387,8 +380,6 @@ export default defineComponent({
         } else {
           // 自定义协议
           connectInfo.value = await getCustomConnectInformation(deviceData);
-          console.log("====getDefaultSetting.getCustomConnectInformation", connectInfo)
-
         }
       }
 
@@ -409,13 +400,11 @@ export default defineComponent({
 
       } else {
         // 获取网关的推送格式   {sub_device_addr:{key:value...},sub_device_addr:{key:value...}...}
-        console.log("tslProperties", tslProperties)
         for (let subAddr in tslProperties) {
           let tslList = tslProperties[subAddr];
           // 遍历物模型
           let subTsl = {};
           tslList.forEach(item => {
-            console.log("tslList", item)
             subTsl[item.name] = item.title + "值";
           })
           if (subAddr) {
@@ -455,7 +444,6 @@ export default defineComponent({
     }
 
     function handleCopy(item) {
-      console.log(item,'item')
       let index = connectInfo.value.findIndex(it => it == item )
       connectInfo.value.forEach(it => {
         delete it.tooltip;
@@ -511,7 +499,6 @@ export default defineComponent({
     }
 
     function handleAddExchangeAgreement(v) {
-      console.log(v)
       message_success("保存成功！");
       initCustomExchangeAgreementList(device.protocol);
       oldCustomExchangeAgreement = deviceData.dataExchangeAgreement = v;
@@ -534,7 +521,6 @@ export default defineComponent({
             })
         })
         .catch(() => {
-          console.log("====cancel")
         })
     }
 

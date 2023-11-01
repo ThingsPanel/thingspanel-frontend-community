@@ -122,7 +122,7 @@
       </el-pagination>
     </div>
     <div class="home">
-      <el-drawer
+      <el-drawer custom-class="drawer-config"
         :title="$t('SYSTEM_MANAGEMENT.ROLE_MANAGEMENT.PERMISSIONEDIT')"
         :visible.sync="drawer"
         direction="rtl"
@@ -214,8 +214,6 @@ export default defineComponent({
     let total = ref(0)
     // 初始化获取数据
     onMounted(() => {
-      console.log(AUTH.state)
-
       sbdata();
       getAllPermissions();
     });
@@ -226,7 +224,6 @@ export default defineComponent({
          current_page: paramsPage.page,
          per_page: paramsPage.limit
       }
-      console.log(local_url + "/api/user/role/list")
       ApiService.post(local_url + "/api/user/role/list",query).then(({ data }) => {
         if (data.code == 200) {
           tableData.value = data.data.data;
@@ -239,7 +236,6 @@ export default defineComponent({
     const getAllPermissions = () => {
       Perm.tree()
           .then(({data}) => {
-            console.log("=================role tree===================")
             if (data.code == 200) {
               let user = JwtService.getCurrentUser();
               let tree = data.data;
@@ -266,9 +262,7 @@ export default defineComponent({
               }
               treeData.value = tree
 
-              console.log(tree)
             }
-            console.log("=================role tree===================")
           })
     }
 
@@ -293,7 +287,6 @@ export default defineComponent({
               //   console.log("==============treeData=================")
               //
               // })
-              console.log(treeCheckeds.value)
               self.$refs.permTree.setCheckedKeys(treeCheckeds.value);
             }
           })
@@ -302,7 +295,6 @@ export default defineComponent({
 
     // 信息编辑
     const handle_launch = (item) => {
-      console.log(item);
       inputVal.value = item.id;
     };
     // 信息保存  /api/user/role/edit     /api/user/role/add
@@ -388,14 +380,9 @@ export default defineComponent({
     const jurisdiction = () => {
       var halfCheckedKeys = self.$refs.permTree.getHalfCheckedKeys();
       var checkedKeys = self.$refs.permTree.getCheckedKeys();
-      console.log("================权限保存======================")
       checkedKeyObj.functions = halfCheckedKeys.concat(checkedKeys)
-      console.log(checkedKeyObj)
-      console.log("==================权限保存=====================")
-
       Perm.assignPermissions(checkedKeyObj)
         .then(({data}) => {
-          console.log(data)
           message_success("保存成功!")
           drawer.value = false;
         })
@@ -440,7 +427,6 @@ export default defineComponent({
     }
     // 取消编辑或新建
     const  handleCancel = (item)=>{
-      console.log(item)
       if (item.id == "") {
         let index = tableData.value.indexOf(item)
         tableData.value.splice(index, 1)
@@ -485,10 +471,19 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+::v-deep .drawer-config {
+  background-color: #263d8b;
+  color: #ffffff;
+  text-align: center;
+  .el-drawer__header {
+    color: #ffffff !important;
+  }
+}
 .el-input__inner {
   color: aliceblue;
   background: #090944;
   height: 30px;
+  
 }
 .el-input--medium .el-input__inner {
   height: 30px;

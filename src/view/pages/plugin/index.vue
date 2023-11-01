@@ -70,7 +70,6 @@ export default {
       this.$refs.pluginEditor.handleImport(item);
     },
     handleSavePlugin() {
-      console.log("handleSavePlugin")
       this.$refs.installList.loadList();
     }
   }
