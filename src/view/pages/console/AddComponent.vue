@@ -18,7 +18,7 @@
                     </el-select>
 
                     <el-cascader filterable ref="deviceRef" v-model="formData.device" :options="deviceList" clearable
-                            :props="{ checkStrictly: true, emitPath: false }" @change="handleDeviceChange">
+                            :props="{ checkStrictly: false, emitPath: false }" @change="handleDeviceChange">
                             <template slot-scope="{ node, data }">
                                 <span>{{ data.label }}</span>
                                 <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
