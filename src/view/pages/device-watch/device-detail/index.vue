@@ -108,6 +108,8 @@ export default defineComponent({
     height: 48px;
     padding-bottom: 10px;
     margin-top: -20px;
+    background-color: transparent;
+
   }
   .content {
     display: inline-flex;

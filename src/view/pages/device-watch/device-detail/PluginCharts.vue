@@ -334,9 +334,13 @@ export default {
       if (!componentMap || componentMap.length === 0 || !data || JSON.stringify(data) === "{}") return;
       try {
         this.optionsData.forEach(option => {
+
           let index = componentMap.findIndex(item => item.id == option.id);
           if (componentMap[index]) {
+
             let mapping = componentMap[index].map;
+            console.log("setComponentsValue.option", mapping, data)
+            
             let values = null;
             if (option.controlType == "dashboard" || option.controlType == "information") {
               if (option.type == "deviceStatus") {
@@ -372,10 +376,13 @@ export default {
                   values["systime"] = data["systime"];
                 }
               });
+
             }
+            console.log("plugincharts.values", values)
+
             this.$nextTick(() => {
               const ele = this.$refs["component_" + option.i];
-              if (ele && ele[0]) {
+              if (ele && ele[0] && JSON.stringify(values) !== "{}") {
                 this.$refs["component_" + option.i][0].updateOption(values);
               }
             })

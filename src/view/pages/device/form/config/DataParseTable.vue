@@ -144,8 +144,9 @@ export default {
          * 删除一行
          */
         handleDel(index, item) {
-            this.tableData[this.attrs.dataKey].splice(index, 1)
-            console.log("handleDel", index, this.tableData)
+            console.log("handleDel", index, this.tableData, this.attrs.dataKey)
+            // this.tableData[this.attrs.dataKey].splice(index, 1)
+            this.tableData.splice(index, 1)
 
         },
         /**
