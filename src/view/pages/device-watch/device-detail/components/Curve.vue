@@ -87,7 +87,14 @@ import { statistic, statisticBatch } from "@/api/device";
 import StatusIcon from "./StatusIcon"
 import { dateFormat } from "@/utils/tool.js"
 import { PeriodList, AggregateFuncList, getAggregateWindowList, calcAggregate, getSeries } from "./Const.js"
-
+const LoadingState = {
+  // 未加载
+  NOTLOADED: 0,
+  // 加载中
+  LOADING: 1,
+  // 已加载
+  LOADED: 2
+}
 export default {
   name: "Curve.vue",
   components: { StatusIcon },
@@ -172,7 +179,7 @@ export default {
         startTime: '',
         endTime: '',
       },
-      loading: false,
+      loadingState: LoadingState.NOTLOADED,
       // 采样区间列表
       periodList: PeriodList,
       // 聚合方法列表
@@ -180,6 +187,7 @@ export default {
     }
   },
   mounted() {
+    this.loadingState = LoadingState.NOTLOADED;
     window.addEventListener("resize", () => {
       this.myEcharts.resize();
     });
@@ -247,7 +255,7 @@ export default {
       }
     },
     updateOption(values) {
-      if (this.params.aggregate_window !== "no_aggregate") return;
+      if (this.params.aggregate_window !== "no_aggregate" || this.loadingState !== LoadingState.LOADED) return;
       var currentOption = this.myEcharts.getOption();
       let series = [];
       for (let i = 0; i < currentOption.series.length; i++) {
@@ -258,11 +266,7 @@ export default {
         if (!data) {
           data = [];
         }
-        // let len = data.unshift([timestamp, value]);
-        // // 如果第一个数据和最后一个数据的间隔时间大于采样周期则删除最后一个元素
-        // if (timestamp - data[len -1][0] > this.params.period * 1000) {
-        //   data.pop();
-        // }
+      
         let len = data.push([timestamp, value]);
         // 如果长度大于100且第一个数据和最后一个数据的间隔时间大于采样周期则删除最后一个元素
         if (len >= 100 && timestamp - data[len -1][0] > this.params.period * 1000) {
@@ -271,6 +275,7 @@ export default {
         series.push({ data })
       }
       const xAxis = { type: "time" }
+      console.log("curve.updateOption");
       
       this.initEChart({ xAxis, series });
       
@@ -301,9 +306,10 @@ export default {
           aggregate_window: this.params.aggregate_window,
           aggregate_function: this.params.aggregate_function
       }
-      this.loading = true;
+      this.loadingState = LoadingState.LOADING;
       let { data: result } = await statisticBatch(params);
-      this.loading = false;
+      this.loadingState = LoadingState.LOADED;
+      console.log("curve.statisticBatch");
       const xAxis = { type: "time" }
       const series = getSeries(result.data, this.optionData.series);
       this.initEChart({ xAxis, series });
@@ -359,7 +365,7 @@ export default {
      * @param attrs
      */
     async getHistory(mapping) {
-      if (!this.loading) {
+      if (this.loadingState === LoadingState.NOTLOADED) {
         try {
           this.myEcharts.showLoading({
             text: "数据加载中...",

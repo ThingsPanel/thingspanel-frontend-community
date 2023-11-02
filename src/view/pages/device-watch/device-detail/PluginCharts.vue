@@ -339,7 +339,6 @@ export default {
           if (componentMap[index]) {
 
             let mapping = componentMap[index].map;
-            console.log("setComponentsValue.option", mapping, data)
             
             let values = null;
             if (option.controlType == "dashboard" || option.controlType == "information") {
@@ -378,7 +377,6 @@ export default {
               });
 
             }
-            console.log("plugincharts.values", values)
 
             this.$nextTick(() => {
               const ele = this.$refs["component_" + option.i];
