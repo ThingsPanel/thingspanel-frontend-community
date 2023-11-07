@@ -1,27 +1,27 @@
 <template>
   <div>
-    <el-dialog class="el-dark-dialog" :title="formData.id ? '编辑租户' : '新增租户'" :visible.sync="dialogVisible" width="540px"
+    <el-dialog class="el-dark-dialog" :title="formData.id ? $t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.EDIT_TENANT') : $t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.ADD_TENANT')" :visible.sync="dialogVisible" width="540px"
       :before-close="() => dialogVisible = false" :close-on-click-modal="false">
       <el-form class="form-box" ref="formRef" :rules="rules" label-position="left" :model="formData" label-width="100px">
 
         <!-- 姓名 -->
-        <el-form-item label="姓名" prop="name" required autocomplete="off">
+        <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.NAME')" prop="name" required autocomplete="off">
           <el-input v-model="formData.name"></el-input>
         </el-form-item>
 
         <!-- 邮箱 -->
-        <el-form-item label="邮箱" prop="email" required autocomplete="off">
+        <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.EMAIL')" prop="email" required autocomplete="off">
           <el-input v-model="formData.email"></el-input>
         </el-form-item>
 
         <!-- 手机 -->
-        <el-form-item label="手机" prop="mobile" required autocomplete="off">
+        <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.TELEPHONE')" prop="mobile" required autocomplete="off">
           <el-input v-model="formData.mobile"></el-input>
         </el-form-item>
 
         <template v-if="!formData.id">
           <!-- 密码 -->
-          <el-form-item label="密码" prop="password" required autocomplete="off">
+          <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.PASSWORD')" prop="password" required autocomplete="off">
             <el-input v-model="formData.password" type="password"></el-input>
             <el-alert show-icon
                   :title="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.TITLE')"
@@ -30,13 +30,13 @@
           </el-form-item>
 
           <!-- 重复密码 -->
-          <el-form-item label="确认密码" prop="password_confirmation" required  autocomplete="off">
+          <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.CONPASSWORD')" prop="password_confirmation" required  autocomplete="off">
             <el-input v-model="formData.password_confirmation"  type="password"></el-input>
           </el-form-item>
         </template>
 
         <!-- 备注 -->
-        <el-form-item label="备注" prop="remark">
+        <el-form-item :label="$t('SYSTEM_MANAGEMENT.USER_MANAGEMENT.REMARKS')" prop="remark">
           <el-input v-model="formData.remark"></el-input>
         </el-form-item>
 
