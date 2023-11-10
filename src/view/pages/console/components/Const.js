@@ -54,6 +54,15 @@ const AggregateFuncList = [
     { key: "sum", label: "求和", disabled: true }
   ]
 
+const LoadingState = {
+    // 未加载
+    NOTLOADED: 0,
+    // 加载中
+    LOADING: 1,
+    // 已加载
+    LOADED: 2
+}
+
 const getAggregateWindowList = (periodKey) => {
     let list = JSON.parse(JSON.stringify(AggregateWindowList));
     const period = PeriodList.find(item => item.key === periodKey);
@@ -158,6 +167,7 @@ export {
     PeriodList,
     AggregateWindowList,
     AggregateFuncList,
+    LoadingState,
     getAggregateWindowList,
     calcAggregate,
     getSeries,

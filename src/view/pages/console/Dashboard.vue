@@ -2,14 +2,14 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-11-02 09:09:33
+ * @LastEditTime: 2023-11-08 09:46:46
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
 <template>
   <div id="containerId" class="dashboard-container" :style="getContainerStyle">
-    <div class="dashboard-top" v-if="mode!=='share'">
-      <div >
+    <div class="dashboard-top" v-if="mode !== 'share'">
+      <div>
         <el-button type="border" size="small" icon="el-icon-back" @click="back">返回</el-button>
       </div>
       <div class="dashboard-tools">
@@ -34,67 +34,67 @@
     </div>
 
 
-    <div v-if="viewData.template.length !== 0 || editData.template.length !== 0" id="consoleBox" style="width: 100%;overflow-y: auto;" :style="getConsoleBoxStyle">
-      <grid-layout :class="mode==='edit' ? 'grid-layout' : ''"  
-        :layout.sync="mode === 'view' ? viewData.template : editData.template"
-        :col-num="colNum" :row-height="30" :is-draggable="mode === 'edit'" :is-resizable="mode === 'edit'"
-        :is-mirrored="false" :vertical-compact="true" :margin="[10, 10]" :use-css-transforms="true"
-        @layout-updated="handleLayoutUpdatedEvent">
+    <div v-if="viewData.template.length !== 0 || editData.template.length !== 0" id="consoleBox"
+      style="width: 100%;overflow-y: auto;" :style="getConsoleBoxStyle">
+      <grid-layout :class="mode === 'edit' ? 'grid-layout' : ''"
+        :layout.sync="mode === 'view' ? viewData.template : editData.template" :col-num="colNum" :row-height="30"
+        :is-draggable="mode === 'edit'" :is-resizable="mode === 'edit'" :is-mirrored="false" :vertical-compact="true"
+        :margin="[10, 10]" :use-css-transforms="true" @layout-updated="handleLayoutUpdatedEvent">
 
         <grid-item class="grid-item" v-for="(option, index) in (mode === 'view' ? viewData.template : editData.template)"
           :key="option['id'] + index" :x="option.x" :y="option.y" :w="option.w" :h="option.h" :i="option.i">
 
-          <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
-            v-if="option.controlType == 'dashboard' && !option.type" :option="option" :device="option.device"
-            :value="option.value" :status="option.deviceStatus" :mode="mode" :select.sync="option.select"
-            @changeName="name => changeName(option, name)" @config="handleShowConfig">
+          <e-charts class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+            :show-config="true" v-if="option.controlType == 'dashboard' && !option.type" :option="option"
+            :device="option.device" :value="option.value" :status="option.deviceStatus" :mode="mode"
+            :select.sync="option.select" @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </e-charts>
 
-          <curve class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
-            :mode="mode" v-if="option.controlType == 'history'" :option="option" :value="option.value"
+          <curve class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+            :show-config="true" :mode="mode" v-if="option.controlType == 'history'" :option="option" :value="option.value"
             :select.sync="option.select" :status="option.deviceStatus" :device="option.device"
             @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </curve>
 
-          <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
-            :mode="mode" v-if="option.controlType == 'dashboard' && option.type == 'status'" :option="option"
-            :select.sync="option.select" :status="option.deviceStatus" :device="option.device"
+          <status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+            :show-config="true" :mode="mode" v-if="option.controlType == 'dashboard' && option.type == 'status'"
+            :option="option" :select.sync="option.select" :status="option.deviceStatus" :device="option.device"
             @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </status>
 
-          <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
-            :mode="mode" v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'" :option="option"
-            :value="option.value" :select.sync="option.select" :status="option.deviceStatus" :device="option.device"
-            @changeName="name => changeName(option, name)" @config="handleShowConfig">
+          <device-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+            :show-config="true" :mode="mode" v-if="option.controlType == 'dashboard' && option.type == 'deviceStatus'"
+            :option="option" :value="option.value" :select.sync="option.select" :status="option.deviceStatus"
+            :device="option.device" @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </device-status>
 
-          <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
-            :mode="mode" :status="option.deviceStatus" v-if="option.type == 'signalStatus'" :option="option"
-            :device="option.device"  :select.sync="option.select"
+          <signal-status class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+            :show-config="true" :mode="mode" :status="option.deviceStatus" v-if="option.type == 'signalStatus'"
+            :option="option" :device="option.device" :select.sync="option.select"
             @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </signal-status>
 
-          <text-info class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
-            :mode="mode" :status="option.deviceStatus" v-if="option.type == 'textInfo'" :option="option"
-            :device="option.device" :value="option.value" :select.sync="option.select"
+          <text-info class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+            :show-config="true" :mode="mode" :status="option.deviceStatus" v-if="option.type == 'textInfo'"
+            :option="option" :device="option.device" :value="option.value" :select.sync="option.select"
             @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </text-info>
 
-          <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"  :show-config="true"
-            :mode="mode" :device="option.device" v-if="option.controlType == 'control'" :option="option"
-            :select.sync="option.select" :disabled="true" :status="option.deviceStatus"
+          <control class="component-item" :ref="'component_' + option.i" :key="option['id']" :show-header="true"
+            :show-config="true" :mode="mode" :device="option.device" v-if="option.controlType == 'control'"
+            :option="option" :select.sync="option.select" :disabled="true" :status="option.deviceStatus"
             @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
           </control>
 
           <video-component class="component-item" style="min-width: 200px;min-height: 200px"
-            :ref="'component_' + option.i" :key="option['id']" :show-header="true" :mode="mode"  :show-config="true"
+            :ref="'component_' + option.i" :key="option['id']" :show-header="true" :mode="mode" :show-config="true"
             v-if="option.controlType == 'video'" :option="option" :select.sync="option.select"
             :status="option.deviceStatus" @changeName="name => changeName(option, name)" @config="handleShowConfig">
             <el-checkbox v-if="mode === 'edit'" v-model="option.select"></el-checkbox>
@@ -108,7 +108,7 @@
     <!-- 看板配置 -->
     <setting :visible.sync="settingDialogVisible" :data.sync="settingData" />
     <!-- 单个图表配置 -->
-    <component-config :visible.sync="cptConfigVisible" :data="configData" @change="handleComponentConfig"/>
+    <component-config :visible.sync="cptConfigVisible" :data="configData" @change="handleComponentConfig" />
   </div>
 </template>
 
@@ -167,7 +167,7 @@ export default {
       // 心跳计时器
       beatHeartTimers: [],
       // 看板配置
-      settingData: {...DEFAULT_SETTING_DATA},
+      settingData: { ...DEFAULT_SETTING_DATA },
       // 组件数据
       configData: {}
     }
@@ -176,17 +176,17 @@ export default {
     /**
      * @description: 看板容器
      * @return {*}
-     */    
+     */
     getContainerStyle() {
       if (this.mode === "share") {
         return { height: "100vh" };
-      } 
+      }
       return {};
     },
     /**
      * @description: 看板样式
      * @return {*}
-     */    
+     */
     getConsoleBoxStyle() {
       const { config } = this.settingData;
       const height = this.mode === "share" ? "100%" : "calc(100% - 160px)";
@@ -216,7 +216,7 @@ export default {
     /**
      * @description: 返回上一页
      * @return {*}
-     */    
+     */
     back() {
       delete this.params.id;
       this.$router.push({ name: "Console", query: { ...this.params } })
@@ -225,7 +225,7 @@ export default {
      * @description: 调整容器大小时图表自适应
      * @param {*} layouts
      * @return {*}
-     */    
+     */
     handleLayoutUpdatedEvent(layouts) {
       layouts.forEach(item => {
         let ref = this.$refs["component_" + item.i];
@@ -261,7 +261,15 @@ export default {
             });
             this.editData = JSON.parse(JSON.stringify(this.viewData));
             this.settingData = { id, name, code, config }
-
+            this.$nextTick(() => {
+              this.viewData.template.forEach(item => {
+                let ref = this.$refs["component_" + item.i];
+                if (ref && ref[0]) {
+                  setTimeout(() => ref[0].sizeChange(), 1)
+                }
+              });
+            })
+            
             this.updateComponents();
           }
         })
@@ -289,7 +297,6 @@ export default {
       }
       ConsoleAPI.edit(params)
         .then(({ data: result }) => {
-
         })
       this.updateComponents();
     },
@@ -304,7 +311,7 @@ export default {
       setTimeout(() => {
         this.viewData.template = tmp;
         this.editData.template = JSON.parse(JSON.stringify(tmp));
-        
+
         this.updateComponents();
       }, 50);
     },
@@ -332,7 +339,7 @@ export default {
         const deviceId = typeof v2 === "string" ? v2 : v2[1]
         this.editData.data.push({ uId: item.uId, deviceId })
       })
-      
+
       this.editData.template = this.getDefaultLayout(opts, 4);
       // 设备id存入组件
       this.editData.template.forEach(item => {
@@ -356,7 +363,7 @@ export default {
      * @description: 
      * @param {*} v
      * @return {*}
-     */    
+     */
     handleComponentConfig(v) {
       let tmp = JSON.parse(JSON.stringify(this.editData.template));
       const index = tmp.findIndex(item => item.uId === v.uId);
@@ -511,7 +518,7 @@ export default {
         }
         this.$nextTick(() => {
           const ele = this.$refs["component_" + option.i];
-          if (ele && ele[0]) {
+          if (ele && ele[0] && JSON.stringify(values) !== "{}") {
             this.$refs["component_" + option.i][0].updateOption(values);
           }
         })
@@ -596,7 +603,7 @@ export default {
      * @description: 打开图表配置
      * @param {*} opt
      * @return {*}
-     */    
+     */
     handleShowConfig(opt) {
       this.cptConfigVisible = true;
       this.configData = JSON.parse(JSON.stringify(opt));
@@ -605,8 +612,8 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-
 .dashboard-container {
+
   // height: 100vh;
   .dashboard-top {
     margin-top: -20px;
@@ -620,6 +627,7 @@ export default {
       line-height: 32px;
       padding: 0px 15px;
     }
+
     .dashboard-tools {
       width: 100%;
       text-align: right;
@@ -656,18 +664,17 @@ export default {
   top: 0;
   left: 0;
 }
+
 .grid-layout {
-    content: '';
-    background-size: calc(calc(100% - 2px) / 24) 40px;
-    background-image: linear-gradient(
-            to right,
-            #2d3d88 1px,
-            transparent 1px
-    ),
+  content: '';
+  background-size: calc(calc(100% - 2px) / 24) 40px;
+  background-image: linear-gradient(to right,
+      #2d3d88 1px,
+      transparent 1px),
     linear-gradient(to bottom, #2d3d88 1px, transparent 1px);
-    height: calc(100% - 2px);
-    width: calc(100% - 2px);
-    background-repeat: repeat;
-    margin: 2px;
+  height: calc(100% - 2px);
+  width: calc(100% - 2px);
+  background-repeat: repeat;
+  margin: 2px;
 }
 </style>

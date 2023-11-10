@@ -89,7 +89,7 @@ import DashboardTitle from "./DashboardTitle.vue"
 import Vue from "vue";
 import { dateFormat } from "@/utils/tool.js"
 import { PeriodList, AggregateFuncList, getAggregateWindowList, calcAggregate, getSeries } from "./Const.js"
-import { commonProps } from "./Const";
+import { commonProps, LoadingState } from "./Const";
 export default {
   name: "Curve",
   components: { StatusIcon, DashboardTitle  },
@@ -155,7 +155,8 @@ export default {
         startTime: '',
         endTime: '',
       },
-      loading: false,
+      // 曲线图加载状态
+      loadingState: LoadingState,
       // 采样区间列表
       periodList: PeriodList,
       // 聚合方法列表
@@ -163,6 +164,7 @@ export default {
     }
   },
   mounted() {
+    this.loadingState = LoadingState.NOTLOADED;
     window.addEventListener("resize", () => {
       this.myEcharts.resize();
     });
@@ -240,7 +242,7 @@ export default {
       }
     },
     updateOption(values) {
-      if (this.params.aggregate_window !== "no_aggregate") return;
+      if (this.params.aggregate_window !== "no_aggregate" || this.loadingState !== LoadingState.LOADED) return;
       var currentOption = this.myEcharts.getOption();
       let series = [];
       for (let i = 0; i < currentOption.series.length; i++) {
@@ -290,9 +292,9 @@ export default {
           aggregate_window: this.params.aggregate_window,
           aggregate_function: this.params.aggregate_function
       }
-      this.loading = true;
+      this.loadingState = LoadingState.LOADING;
       let { data: result } = await statisticBatch(params);
-      this.loading = false;
+      this.loadingState = LoadingState.LOADED;
       const xAxis = { type: "time" }
       const series = getSeries(result.data, this.optionData.series);
       this.initEChart({ xAxis, series });
@@ -303,7 +305,7 @@ export default {
      * @param attrs
      */
     async getHistory() {
-      if (!this.loading) {
+      if (this.loadingState === LoadingState.LOADING) {
         try {
           this.myEcharts.showLoading({
             text: "数据加载中...",
