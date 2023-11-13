@@ -305,7 +305,7 @@ export default {
      * @param attrs
      */
     async getHistory() {
-      if (this.loadingState === LoadingState.LOADING) {
+      if (this.loadingState === LoadingState.NOTLOADED) {
         try {
           this.myEcharts.showLoading({
             text: "数据加载中...",
@@ -337,7 +337,6 @@ export default {
      * @param command
      */
     handlePeriodCommand(command) {
-      console.log("handlePeriodCommand", command)
       this.params.period = command;
       if (command === "custom") {
         this.rangeDialogVisible = true;
@@ -347,6 +346,7 @@ export default {
       let startTime = endTime - (Number(this.params.period) * 1000);
       this.range = { startTime, endTime }
       setTimeout(() => {
+        this.loadingState = LoadingState.NOTLOADED;
         this.getHistory(this.optionData.mapping)
       }, 50)
     },

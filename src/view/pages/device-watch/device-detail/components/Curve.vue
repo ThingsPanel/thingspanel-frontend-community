@@ -406,6 +406,7 @@ export default {
       let startTime = endTime - (Number(this.params.period) * 1000);
       this.range = { startTime, endTime }
       setTimeout(() => {
+        this.loadingState = LoadingState.NOTLOADED;
         this.getHistory(this.optionData.mapping)
       }, 50)
     },
