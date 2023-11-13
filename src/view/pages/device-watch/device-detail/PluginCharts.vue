@@ -325,6 +325,7 @@ export default {
         componentMap.forEach(item => {
           let ref = this.$refs["component_" + item.i];
           if (ref && ref[0]) {
+            ref[0].loadingState === LoadingState.NOTLOADED;
             ref[0].getHistory(item.map);
           }
         })

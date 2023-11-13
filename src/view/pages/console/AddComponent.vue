@@ -106,7 +106,7 @@ import { message_error, getRandomString } from "@/utils/helpers";
 import { CommonProps, commonData, commonComputed, commonWatch, commonMethods } from "./Const.js";
 
 export default {
-    components: { GridLayout, GridItem, ECharts, Curve, Control, Status, SignalStatus, DeviceStatus, VideoComponent },
+    components: { GridLayout, GridItem, ECharts, Curve, TextInfo, Control, Status, SignalStatus, DeviceStatus, VideoComponent },
     props: {
         ...CommonProps,
         data: {

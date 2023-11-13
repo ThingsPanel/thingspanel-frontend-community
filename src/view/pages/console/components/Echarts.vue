@@ -128,7 +128,7 @@ export default {
             }
           })
           this.myEcharts.setOption({ series });
-          this.$refs.statusIconRef.flush()
+          this.$refs.statusIconRef?.flush()
         } catch (e) {
           console.log(e)
         }

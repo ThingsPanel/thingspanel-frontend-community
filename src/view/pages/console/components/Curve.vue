@@ -236,7 +236,7 @@ export default {
           min: "dataMin"
         };
         this.myEcharts.setOption(option);
-        this.$refs.statusIconRef.flush();
+        this.$refs.statusIconRef?.flush();
       } else {
         this.myEcharts.setOption(this.optionData);
       }

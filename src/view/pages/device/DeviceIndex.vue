@@ -173,7 +173,7 @@
           <el-button style="margin-right: 10px"  type="primary" size="mini"
                      @click="deviceConfig(scope.row)">{{ $t("DEVICE_MANAGEMENT.DEVICE_DETAIL")}}</el-button>
 
-           <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :disabled="!hasAuth('device:del')" :title="$t('DEVICE_MANAGEMENT.DELETETHISITEM')"
+           <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')" :cancel-button-text="$t('COMMON.CANCEL')" :title="$t('DEVICE_MANAGEMENT.DELETETHISITEM')"
                           @confirm="handleDelete(scope.row, getDeviceIndex)">
               <el-button slot="reference" type="danger" size="mini">{{ $t("DEVICE_MANAGEMENT.DELETE")}}</el-button>
            </el-popconfirm>

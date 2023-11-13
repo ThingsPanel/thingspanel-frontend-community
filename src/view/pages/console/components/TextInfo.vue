@@ -29,7 +29,8 @@ export default {
   },
   data() {
     return {
-        value: ""
+        value: "",
+        optionData: {},
     }
   },
   watch: {
@@ -41,6 +42,9 @@ export default {
       immediate: true,
       deep: true
     }
+  },
+  mounted() {
+    this.optionData = JSON.parse(JSON.stringify(this.option));
   },
   methods: {
     updateOption(value) {
@@ -59,7 +63,8 @@ export default {
     },
     showConfiguration() {
       this.$emit("config", this.option)
-    }
+    },
+    sizeChange() {}
   }
 }
 </script>

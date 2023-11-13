@@ -1,6 +1,6 @@
 import {ref} from "@vue/composition-api";
 import {device_add, device_delete, device_update} from "@/api/device";
-import {message_success} from "@/utils/helpers";
+import {message_success, message_error} from "@/utils/helpers";
 
 export default function useDeviceCUD(tableData){
     let deviceForm = ref()
@@ -86,6 +86,10 @@ export default function useDeviceCUD(tableData){
     }
 
     function handleDelete(item, call){
+        if (!this.hasAuth('device:del')) {
+            message_error("没有删除的权限!");
+            return;
+        }
         if(item.id){
             if(loading.value) return
             loading.value = true

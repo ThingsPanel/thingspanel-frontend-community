@@ -51,7 +51,7 @@ export default {
       return this.$store.getters.getNavs
     },
     UserType() {
-      return this.$store.getters.currentUser.authority || JwtService.getCurrentUser().authority;
+      return this.$store.getters.currentUser?.authority || JwtService.getCurrentUser()?.authority || "";
     }
   },
   methods: {
