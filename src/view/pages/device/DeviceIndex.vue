@@ -128,7 +128,7 @@
     <el-table-column :label="$t('DEVICE_MANAGEMENT.STATE')" min-width="10%">
       <template slot-scope="scope">
         <el-tag v-if="scope.row.device_state === '1'">{{ $t('DEVICE_MANAGEMENT.ONLINE') }}</el-tag>
-        <el-tag v-else-if="scope.row.device_type!=='3'" type="info">{{ $t('DEVICE_MANAGEMENT.OFFLINE') }}</el-tag>
+        <el-tag v-else type="info">{{ $t('DEVICE_MANAGEMENT.OFFLINE') }}</el-tag>
       </template>
     </el-table-column>
     <!--  推送时间 end  -->

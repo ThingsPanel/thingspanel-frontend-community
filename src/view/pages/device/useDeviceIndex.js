@@ -70,7 +70,7 @@ export default function useDeviceIndex(business_id) {
                 row.children = [];
                 item.children.forEach(child => {
                     row.children.push(fillData(child));
-                    // ids.push(child.device);
+                    ids.push(child.device);
                 })
             }
             ids.push(row.device);
