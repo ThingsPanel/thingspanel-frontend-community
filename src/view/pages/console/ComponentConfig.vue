@@ -168,7 +168,9 @@ export default {
         },
     },
     mounted() {
-        this.getProjectList();
+        if (window.location.href.indexOf('share_console') !== -1){
+            this.getProjectList();
+        }
     },
     methods: {
         ...commonMethods,
