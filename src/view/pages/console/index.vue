@@ -63,12 +63,24 @@
         <!-- 分页 end -->
 
         <!-- 分享看板对话框 start -->
-        <el-dialog class="el-dark-dialog" title="分享看板" v-bind="dialogSettings" :visible.sync="shareDialogVisible">
-            <el-form class="console-shaer-form el-dark-input" label-position="left"  label-width="80px">
+        <el-dialog class="el-dark-dialog" title="分享看板" v-bind="dialogSettings" :visible.sync="shareDialogVisible" close-on-click-modal>
+            <el-form class="console-shaer-form el-dark-input" label-position="left"  label-width="120px">
 
                 <!-- 分享链接 -->
                 <el-form-item label="分享链接:">
                     <el-input readonly v-model="shareData.url"></el-input>
+                </el-form-item>
+
+                <el-form-item label="谁可以查看">
+                    <el-row class="w-full">
+                        <el-col :span="3">
+                            <el-radio-group v-model="shareData.permission" type="vertical" @change="handleSharePermissionChange">
+                                <el-radio label="0" size="small" class="my-5">仅我自己</el-radio>
+                                <el-radio label="1" size="small">所有人可查看</el-radio>
+                            </el-radio-group>
+                        </el-col>
+                    </el-row>
+
                 </el-form-item>
                 
             </el-form>
@@ -171,7 +183,10 @@ export default {
             },
             // 分享看板数据
             shareData: {
-                url: ""
+                console_id: "",
+                id: "",
+                url: "",
+                permission: "0"
             },
         }
     },
@@ -183,7 +198,20 @@ export default {
                 }
                 this.getList();
             }, immediate: true
+        },
+        shareDialogVisible:{
+            handler(newValue){
+                if(!newValue) {
+                    this.shareData = {
+                        console_id: "",
+                        id: "",
+                        url: "",
+                        permission: "0"
+                    }
+                }
+            }
         }
+        
     },
     methods: {
         /**
@@ -218,7 +246,9 @@ export default {
          * @return {*}
          */        
         shareConsole(item) {
-            this.shareData.url = `${document.location.origin}/#/share_console?id=${item.id}#${item.name}`
+            this.shareData.console_id = item.id;
+            this.shareData.id = item.share_id;
+            this.shareData.url = `${document.location.origin}/#/console/dashboard?id=${item.id}`
             this.shareDialogVisible = true;
             // this.$router.push({ name: "ShareConsole", query: { id: item.id } })
         },
@@ -299,6 +329,27 @@ export default {
                 mode: "blank",
                 code: ""
             }
+        },
+        // 根据权限生成分享链接
+        handleSharePermissionChange(){
+            console.error(this.shareData.permission)
+            if(this.shareData.permission !== "1"){
+                this.shareData.url = `${document.location.origin}/#/console/dashboard?id=${this.shareData.console_id}`
+                return;
+            };
+            if(!this.shareData.console_id) return;
+            if(!this.shareData.id) {
+                
+                ConsoleAPI.generateShareID({id: this.shareData.console_id, share_type: "console"})
+                    .then(({ data: result }) => {
+                        console.error(result, result.data?.share_id)
+                        this.shareData.id = result.data?.share_id;
+                        this.shareData.url = `${document.location.origin}/#/share_console?id=${result.data?.share_id}`
+
+                        message_success("生成分享ID成功");
+                    })
+            };
+            this.shareData.url = `${document.location.origin}/#/share_console?id=${this.shareData.id}`
         }
     }
 }

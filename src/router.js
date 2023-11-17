@@ -70,7 +70,7 @@ const router = new VueRouter({
     routes: baseRoutes
 })
 // 允许通过的路由名称
-const passRouters = [ "login", "register", "reset"];
+const passRouters = ["login", "register", "reset", "ShareConsole"];
 router.beforeEach((to, from, next) => {
 
     const token = JwtService.getToken()

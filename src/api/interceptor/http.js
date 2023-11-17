@@ -43,6 +43,16 @@ instance.interceptors.request.use(
         const token_expires_in = JwtService.getExpiresTime()
         token && (config.headers.Authorization = `Bearer ${token}`)
 
+        // 看板分享接口增加分享token
+        if (config.url.indexOf('/kv/statistic/batch') >= 0 || config.url.indexOf('/device/status') >= 0 || config.url.indexOf('/console/detail') >= 0 || config.url.indexOf('/share/get') >= 0 ) {
+            const share_token = config.data?.shareId
+            if (share_token) {
+                config.headers['Authorization'] = `ShareID ${share_token}`
+                delete config.data.shareId
+            }
+            return config
+        }
+
         // 登录接口和刷新token接口绕过，不进入刷新 token 判断
         if (config.url.indexOf('/refresh') >= 0 || config.url.indexOf('/register') >= 0 || config.url.indexOf('/passwordReset') >= 0 || config.url.indexOf('/login') >= 0 || config.url.indexOf('/captcha') >= 0) {
             return config

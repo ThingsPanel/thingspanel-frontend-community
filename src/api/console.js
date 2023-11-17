@@ -69,4 +69,30 @@ export default {
             data
         })
     },
+
+    /**
+     * 生成分享id
+     * @param data
+     * @returns {AxiosPromise}
+     */
+    generateShareID: (data) => {
+        return axios({
+            url: "/share/generate",
+            method: "post",
+            data
+        })
+    },
+
+    /**
+     * 根据分享id请求看板数据
+     * @param data
+     * @returns {AxiosPromise}
+     */
+    getInfoByShareID: (data) => {
+        return axios({
+            url: "/share/get",
+            method: "post",
+            data
+        })
+    },
 }
