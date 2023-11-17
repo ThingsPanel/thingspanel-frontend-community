@@ -64,7 +64,7 @@
         :total="total"
         :current-page.sync="params.current_page"
         :page-size="params.per_page"
-        @change="getGroupIndex"></el-pagination>
+        @current-change="getGroupIndex"></el-pagination>
   </div>
 
 </div>
