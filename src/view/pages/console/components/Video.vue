@@ -45,7 +45,6 @@
 </template>
 
 <script>
-import ProtocolPluginAPI from "@/api/protocolPlugin"
 import VideoPlayer from "@/components/video/video";
 import MonitorPlayer from "@/components/video/monitor";
 import EzvizPlayer from "@/components/video/ezviz";

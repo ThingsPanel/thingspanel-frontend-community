@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { statistic, statisticBatch } from "@/api/device";
+import { statisticBatch } from "@/api/device";
 import StatusIcon from "./StatusIcon"
 import DashboardTitle from "./DashboardTitle.vue"
 import Vue from "vue";
@@ -292,6 +292,11 @@ export default {
           aggregate_window: this.params.aggregate_window,
           aggregate_function: this.params.aggregate_function
       }
+
+      if (this.$route.path === "/share_console") {
+        params.shareId = this.$route.query?.id;
+      }
+
       this.loadingState = LoadingState.LOADING;
       let { data: result } = await statisticBatch(params);
       this.loadingState = LoadingState.LOADED;
