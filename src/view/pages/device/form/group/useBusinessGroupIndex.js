@@ -15,8 +15,9 @@ export default function useBusinessGroupIndex(business_id){
     function getGroupIndex(){
         asset_list_c(params).then(({data})=>{
             if(data.code === 200){
-                if(data.data){
-                    tableData.value = washData(data.data)
+                if(data.data?.data){
+                    total.value = data.data.total;
+                    tableData.value = washData(data.data.data);
                 }else{
                     tableData.value = []
                 }

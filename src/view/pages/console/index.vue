@@ -33,7 +33,7 @@
                     <template v-slot="scope">
                         <div style="text-align: left">
                             <!-- 分享 --> 
-                            <!-- <el-button type="yellow" size="mini" @click="shareConsole(scope.row)">分享</el-button> -->
+                            <el-button type="yellow" size="mini" @click="shareConsole(scope.row)">分享</el-button>
                             <!-- 编辑 -->
                             <el-button type="indigo" size="mini" @click="handleEditConsole(scope.row)">{{ $t('VISUALIZATION.EDIT')}}</el-button>
                             <!-- 删除 -->
