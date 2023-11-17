@@ -453,10 +453,12 @@ export default {
         socket = new websocket();
         socket.init();
         socket.onReady(() => {
-          socket.send({ device_id: deviceId });
+          const shareParams = {};
+          if(this.mode === 'share') shareParams.shareId = this.$route.query?.id;
+          socket.send({ device_id: deviceId, ...shareParams });
           // 发送心跳
           this.beatHeartTimers.push(setInterval(() => {
-            socket.send({ type: "ping" });
+            socket.send({ type: "ping", ...shareParams });
           }, 30 * 1000));
         })
         // 接收消息
