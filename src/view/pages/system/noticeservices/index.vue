@@ -14,7 +14,7 @@
             <el-form ref="form"  class="el-dark-input" :rules="rules" :label-position="'left'" label-width="140px" :model="formObj" >
               <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.NOTICE_TYPE')" prop="config.cloud_type">
                 <el-select :disabled="isDisabled" v-model="formObj.notice_type" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.PLACEHOLDER')" style="width: 330px">
-                  <el-option v-for="option in noticeTypeOptions" :label="option.label" :value="option.value"></el-option>
+                  <el-option v-for="option in noticeTypeOptions" :key="option.value" :label="option.label" :value="option.value"></el-option>
                 </el-select>
               </el-form-item>
               
@@ -112,7 +112,15 @@
                 <span class="span-check"><el-checkbox v-model="objForm.obj.ssl">开启ssl</el-checkbox></span>
               </el-form-item>
               
-              <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE14')" prop="obj.from_password">
+              <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE14')" prop="obj.from_email">
+                <el-input
+                  style="width: 330px"
+                  v-model="objForm.obj.from_email"
+                  :disabled="isDisabled2"
+                ></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE15')" prop="obj.from_password">
                 <el-input
                   style="width: 330px"
                   v-model="objForm.obj.from_password"
@@ -120,13 +128,7 @@
                 ></el-input>
               </el-form-item>
 
-              <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE15')" prop="obj.from_email">
-                <el-input
-                  style="width: 330px"
-                  v-model="objForm.obj.from_email"
-                  :disabled="isDisabled2"
-                ></el-input>
-              </el-form-item>
+              
 
               <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE8')">
                 <el-switch :disabled="isDisabled2" v-model="objForm.status" :active-value="1" :inactive-value="0" @change="switchChange2"></el-switch>
