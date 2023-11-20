@@ -28,6 +28,13 @@
                     </template>
                 </el-table-column>
 
+                <!-- 创建时间 -->
+                <el-table-column label="创建时间" prop="created_at" align="left">
+                    <template v-slot="scope">
+                        {{ scope.row.created_at ? formatDate(scope.row.created_at) : "" }}
+                    </template>
+                </el-table-column>
+
                 <!-- 操作 -->
                 <el-table-column align="left" :label="$t('VISUALIZATION.OPERATION')" width="230">
                     <template v-slot="scope">
@@ -64,7 +71,7 @@
 
         <!-- 分享看板对话框 start -->
         <el-dialog class="el-dark-dialog" title="分享看板" v-bind="dialogSettings" :visible.sync="shareDialogVisible" close-on-click-modal>
-            <el-form class="console-shaer-form el-dark-input" label-position="left"  label-width="120px">
+            <el-form class="console-share-form el-dark-input" label-position="left"  label-width="120px">
 
                 <!-- 分享链接 -->
                 <el-form-item label="分享链接:">
@@ -130,6 +137,8 @@ import TableTitle from "@/components/common/TableTitle.vue";
 import ConsoleAPI from "@/api/console.js";
 import { message_success } from "@/utils/helpers.js";
 import { DEFAULT_SETTING_DATA } from "./Const.js";
+import "@/core/mixins/common"
+
 export default {
     components: { TableTitle },
     props: {},
@@ -193,6 +202,7 @@ export default {
     watch: {
         $route: {
             handler(route) {
+                document.title = "看板列表 | ThingsPanel";
                 if (JSON.stringify(route.query) !=="{}") {
                     this.params = { 
                         current_page:  Number(route.query.current_page), 
@@ -251,7 +261,7 @@ export default {
         shareConsole(item) {
             this.shareData.console_id = item.id;
             this.shareData.id = item.share_id;
-            this.shareData.url = `${document.location.origin}/#/console/dashboard?id=${item.id}`
+            this.shareData.url = `${document.location.origin}/#/kanban/detail?id=${item.id}`
             this.shareDialogVisible = true;
             // this.$router.push({ name: "ShareConsole", query: { id: item.id } })
         },
@@ -335,9 +345,8 @@ export default {
         },
         // 根据权限生成分享链接
         handleSharePermissionChange(){
-            console.error(this.shareData.permission)
             if(this.shareData.permission !== "1"){
-                this.shareData.url = `${document.location.origin}/#/console/dashboard?id=${this.shareData.console_id}`
+                this.shareData.url = `${document.location.origin}/#/kanban/detail?id=${this.shareData.console_id}`
                 return;
             };
             if(!this.shareData.console_id) return;
@@ -347,12 +356,12 @@ export default {
                     .then(({ data: result }) => {
                         console.error(result, result.data?.share_id)
                         this.shareData.id = result.data?.share_id;
-                        this.shareData.url = `${document.location.origin}/#/share_console?id=${result.data?.share_id}`
+                        this.shareData.url = `${document.location.origin}/#/kanban/share?id=${result.data?.share_id}`
 
                         message_success("生成分享ID成功");
                     })
             };
-            this.shareData.url = `${document.location.origin}/#/share_console?id=${this.shareData.id}`
+            this.shareData.url = `${document.location.origin}/#/kanban/share?id=${this.shareData.id}`
         }
     }
 }
@@ -366,7 +375,7 @@ export default {
             line-height: 40px;
         }
     }
-    .console-shaer-form {
+    .console-share-form {
         margin: 40px;
         .el-input {
             width: 100%!important;
