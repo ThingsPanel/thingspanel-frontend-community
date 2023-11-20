@@ -13,13 +13,13 @@
           <div class="content-form">
             <el-form ref="form"  class="el-dark-input" :rules="rules" :label-position="'left'" label-width="140px" :model="formObj" >
               <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.NOTICE_TYPE')" prop="config.cloud_type">
-                <el-select :disabled="isDisabled" v-model="formObj.notice_type" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.PLACEHOLDER')" style="width: 330px">
+                <el-select v-model="formObj.notice_type" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.PLACEHOLDER')" style="width: 330px">
                   <el-option v-for="option in noticeTypeOptions" :key="option.value" :label="option.label" :value="option.value"></el-option>
                 </el-select>
               </el-form-item>
               
               <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE1')" prop="config.cloud_type">
-                <el-select :disabled="isDisabled" v-model="formObj.config.cloud_type" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.PLACEHOLDER')" style="width: 330px">
+                <el-select v-model="formObj.config.cloud_type" :placeholder="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.PLACEHOLDER')" style="width: 330px">
                   <el-option :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.ALY')" :value="1"></el-option>
                 </el-select>
               </el-form-item>
@@ -27,14 +27,12 @@
                 <el-input
                   style="width: 330px"
                   v-model="formObj.config.access_key_id"
-                  :disabled="isDisabled"
                 ></el-input>
               </el-form-item>
               <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE3')" prop="config.access_key_secret">
                 <el-input
                   style="width: 330px"
                   v-model="formObj.config.access_key_secret"
-                  :disabled="isDisabled"
                 ></el-input>
               </el-form-item>
               
@@ -42,7 +40,6 @@
                 <el-input
                   style="width: 330px"
                   v-model="formObj.config.endpoint"
-                  :disabled="isDisabled"
                 ></el-input>
               </el-form-item>
 
@@ -50,7 +47,6 @@
                 <el-input
                   style="width: 330px"
                   v-model="formObj.config.sign_name"
-                  :disabled="isDisabled"
                 ></el-input>
               </el-form-item>
 
@@ -58,7 +54,6 @@
                 <el-input
                   style="width: 330px"
                   v-model="formObj.name"
-                  :disabled="isDisabled"
                 ></el-input>
               </el-form-item> -->
 
@@ -66,7 +61,6 @@
                 <el-input
                   style="width: 330px"
                   v-model="formObj.config.template_code"
-                  :disabled="isDisabled"
                 ></el-input>
               </el-form-item>
 
@@ -82,17 +76,18 @@
               </el-form-item>
 
               <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE8')">
-                <el-switch :disabled="isDisabled" v-model="formObj.status" :active-value="1" :inactive-value="0" @change="switchChange"></el-switch>
+                <el-switch v-model="formObj.status" :active-value="1" :inactive-value="0" @change="switchChange"></el-switch>
               </el-form-item>
             </el-form>
           </div>
           <div style="padding-left: 120px; margin-bottom: 20px;">
-            <el-button type="yellow" @click="debug">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.DEBUG')}} </el-button>
-            <el-button type="indigo" v-if="isEdit" @click="edit()">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.EDIT')}} </el-button>
-            <el-button type="save" v-if="isSave" @click="save">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SAVE')}} </el-button>
+            <el-button type="yellow" @click="showSmsDebug">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.DEBUG')}} </el-button>
+            <!-- <el-button type="indigo" v-if="isEdit" @click="edit()">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.EDIT')}} </el-button> -->
+            <el-button type="save" @click="handleSaveSms">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SAVE')}} </el-button>
           </div>
         </div>
         <div v-if="activeTab == 2">
+          <!-- 邮箱配置 -->
           <div class="content-form">
             <el-form ref="form2" :rules="rules2" :label-position="'left'" label-width="140px" :model="objForm" >
              
@@ -100,14 +95,12 @@
                 <el-input
                   style="width: 330px"
                   v-model="objForm.obj.host"
-                  :disabled="isDisabled2"
                 ></el-input>
               </el-form-item>
               <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE13')" prop="obj.port">
                 <el-input
                   style="width: 330px"
                   v-model="objForm.obj.port"
-                  :disabled="isDisabled2"
                 ></el-input>
                 <span class="span-check"><el-checkbox v-model="objForm.obj.ssl">开启ssl</el-checkbox></span>
               </el-form-item>
@@ -116,34 +109,33 @@
                 <el-input
                   style="width: 330px"
                   v-model="objForm.obj.from_email"
-                  :disabled="isDisabled2"
                 ></el-input>
               </el-form-item>
 
+              <!-- 授权码/密码 -->
               <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE15')" prop="obj.from_password">
                 <el-input
                   style="width: 330px"
                   v-model="objForm.obj.from_password"
-                  :disabled="isDisabled2"
                 ></el-input>
               </el-form-item>
 
-              
-
+              <!-- 开启/关闭服务 -->
               <el-form-item :label="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.LABLE8')">
-                <el-switch :disabled="isDisabled2" v-model="objForm.status" :active-value="1" :inactive-value="0" @change="switchChange2"></el-switch>
+                <el-switch v-model="objForm.status" :active-value="1" :inactive-value="0" @change="switchChange2"></el-switch>
               </el-form-item>
             </el-form>
           </div>
           <div style="padding-left: 120px; margin-bottom: 20px;">
-            <el-button type="yellow" @click="debug2">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.DEBUG')}} </el-button>
-            <el-button type="indigo" v-if="isEdit2" @click="edit2()">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.EDIT')}} </el-button>
-            <el-button type="save" v-if="isSave2" @click="save2()">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SAVE')}} </el-button>
+            <el-button type="yellow" @click="showEmailDebug">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.DEBUG')}} </el-button>
+            <!-- <el-button type="indigo" v-if="isEdit2" @click="edit2()">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.EDIT')}} </el-button> -->
+            <el-button type="save" @click="handleSaveEmail()">{{$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SAVE')}} </el-button>
           </div>
         </div>  
       </div>
     </div>
     
+    <!-- 短信调试窗口 -->
     <div class="model">
       <el-dialog class="el-dark-dialog el-dark-input"
               :title="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.DEBUG')"
@@ -152,7 +144,7 @@
               width="500px">
               <div class="dialog-body">
                 <el-form
-                    ref="form3"
+                    ref="smsDebugForm"
                     :rules="rules3"
                     label-position="left"
                     :model="formModel"
@@ -168,7 +160,7 @@
                     </el-input>
                     </el-form-item>
                     <div style="display: flex;justify-content: center">
-                      <el-button class="medium" type="save" size="medium" @click="onSend">{{ $t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SEND') }}</el-button>
+                      <el-button class="medium" type="save" size="medium" :disabled="submitLoading" @click="handleSmsDebugSend">{{ $t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SEND') + sendTimeout}}</el-button>
                     </div>
                 </el-form>
               </div>
@@ -176,6 +168,7 @@
     </div>
 
 
+    <!-- 邮箱调试窗口 -->
     <div class="model">
       <el-dialog class="el-dark-dialog el-dark-input"
               :title="$t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.DEBUG')"
@@ -184,7 +177,7 @@
               width="500px">
               <div class="dialog-body">
                 <el-form
-                    ref="form4"
+                    ref="emailDebugForm"
                     :rules="rules4"
                     label-position="left"
                     :model="formModel2"
@@ -196,7 +189,7 @@
                       <el-input type="textarea" v-model="formModel2.content"></el-input>
                     </el-form-item>
                     <div style="display: flex;justify-content: center">
-                      <el-button class="medium" type="save" size="medium" @click="onSend2">{{ $t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SEND') }}</el-button>
+                      <el-button class="medium" type="save" size="medium" :disabled="submitLoading" @click="handleEmailDebugSend">{{ $t('SYSTEM_MANAGEMENT.NOTICESERVICES_MANAGEMENT.SEND') + sendTimeout}}</el-button>
                     </div>
                 </el-form>
               </div>
@@ -210,10 +203,7 @@
 import { local_url } from "@/api/LocalUrl"
 import i18n from "@/core/plugins/vue-i18n.js"
 import {getSmsSave, getDetail,getSendSms,getSendEmail} from "@/api/noticeservices";
-import ApiService from "@/core/services/api.service";
-import JwtService from "@/core/services/jwt.service";
-import { REFRESH } from "@/core/services/store/auth.module";
-import { RESET_LAYOUT_CONFIG } from "@/core/services/store/config.module"
+import { message_error } from "@/utils/helpers.js";
 export default {
   data () {
     return {
@@ -273,7 +263,8 @@ export default {
         email:"",
         content:"",
       },
-
+      sendTimeout: "",
+      submitLoading: false,
       isDisabled:true,
       isDisabled2:true,
       isEdit:true,
@@ -390,15 +381,8 @@ export default {
         this.objForm.status=1
       }
     },
-    
-    edit(){
-      this.isDisabled=false
-      this.isEdit=false
-      this.isSave=true
-    },
-    
     // 短信保存
-    save(){
+    handleSaveSms(){
       this.isDisabled=true
       this.isEdit=true
       this.isSave=false
@@ -448,19 +432,20 @@ export default {
       })
     },
 
-   
-    debug() {
+    /**
+     * @description: 短信调试
+     * @return {*}
+     */    
+    showSmsDebug() {
+      this.sendTimeout = "";
+      this.submitLoading = false;
       this.dialogVisible=true
     },
-
-    edit2(){
-      this.isDisabled2=false
-      this.isEdit2=false
-      this.isSave2=true
-    },
-
-    // 邮箱保存
-    save2(){
+    /**
+     * @description: 邮箱保存
+     * @return {*}
+     */    
+    handleSaveEmail(){
       this.isDisabled2=true
       this.isEdit2=true
       this.isSave2=false
@@ -479,28 +464,77 @@ export default {
         }
       })
     },
-
-    debug2() {
-      this.dialogVisible2=true
+    /**
+     * @description: 打开邮箱调试窗口
+     * @return {*}
+     */
+    showEmailDebug() {
+      this.sendTimeout = "";
+      this.submitLoading = false;
+      this.dialogVisible2 = true
     },
-
-    // 短信发送
-    onSend(){
-      this.formModel.phone_number = Number(this.formModel.phone_number)
-      getSendSms(this.formModel).then(res => {
-          if (res.data.code === 200) {
-            this.$message({message: "发送成功", center: true, type: "success"})
+    /**
+     * @description: 短信调试发送
+     * @return {*}
+     */    
+    handleSmsDebugSend(){
+      this.$refs["smsDebugForm"].validate(valid => {
+        if (valid) {
+          if (this.submitLoading) {
+            message_error("短信发送太频繁了!");
           }
-      })     
+          this.submitLoading = true;
+          this.formModel.phone_number = Number(this.formModel.phone_number)
+          getSendSms(this.formModel)
+            .then(res => {
+                if (res.data.code === 200) {
+                  this.$message({message: "发送成功", center: true, type: "success"})
+                }
+            }) 
+          let count = 5;
+          const timer = setInterval(() => {
+            this.sendTimeout = `(${count})`
+            count--;
+            if (count === -1) {
+              clearInterval(timer);
+              this.sendTimeout = "";
+              this.submitLoading = false;
+            }
+          }, 1000);
+        }
+      })
+          
     },
-
-    // 邮箱发送
-    onSend2(){
-      getSendEmail(this.formModel2).then(res => {
-          if (res.data.code === 200) {
-            this.$message({message: "发送成功", center: true, type: "success"})
+    /**
+     * @description: 邮箱调试发送
+     * @return {*}
+     */    
+    handleEmailDebugSend(){
+      this.$refs["emailDebugForm"].validate(valid => {
+        if (valid) {
+          if (this.submitLoading) {
+            message_error("邮箱发送太频繁了!");
           }
-      })     
+          this.submitLoading = true;
+          this.formModel2 = { ...this.objForm.obj, email: this.formModel2.email, content: this.formModel2.content };
+          getSendEmail(this.formModel2).then(res => {
+              if (res.data.code === 200) {
+                this.$message({message: "发送成功", center: true, type: "success"});
+              }
+          })  
+          let count = 5;
+          const timer = setInterval(() => {
+            this.sendTimeout = `(${count})`
+            count--;
+            if (count === -1) {
+              clearInterval(timer);
+              this.sendTimeout = "";
+              this.submitLoading = false;
+            }
+          }, 1000);
+        } 
+      })
+         
     },
     
   },
