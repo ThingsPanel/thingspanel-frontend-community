@@ -4,7 +4,7 @@
       <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
 
       <div class="tool-right" v-if="mode!=='edit'">
-        <status-icon ref="statusIconRef" :status="status"/>
+        <status-icon ref="statusIconRef" :status="deviceStatus"/>
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
       </div>
       <div v-else class="tool-right">
@@ -33,7 +33,8 @@ export default {
     return {
       timer: null,
       flushTime: 5,
-      value: null
+      value: null,
+      deviceStatus: {}
     }
   },
   watch: {
@@ -64,7 +65,15 @@ export default {
     },
     showConfiguration() {
       this.$emit("config", this.option)
-    }
+    },
+    /**
+     * @description: 更新图表状态
+     * @param {*} deviceStatus
+     * @return {*}
+     */    
+     updateStatus(deviceStatus) {
+      this.deviceStatus = deviceStatus;
+    },
   }
 }
 

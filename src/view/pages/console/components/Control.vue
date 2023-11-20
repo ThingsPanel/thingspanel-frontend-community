@@ -4,7 +4,7 @@
       <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
 
       <div class="tool-right" v-if="mode!=='edit'">
-        <status-icon ref="statusIconRef" :status="status"/>
+        <status-icon ref="statusIconRef" :status="deviceStatus"/>
 
         <el-button class="tool-item" size="mini" icon="el-icon-more"></el-button>
       </div>
@@ -54,6 +54,7 @@ export default {
       controlType: "",
       optionData: {},
       mapping: [],
+      deviceStatus: {}
     }
   },
   watch: {
@@ -190,6 +191,14 @@ export default {
       } catch(err) {
         message_error(err.messsage);
       }
+    },
+    /**
+     * @description: 更新图表状态
+     * @param {*} deviceStatus
+     * @return {*}
+     */    
+     updateStatus(deviceStatus) {
+      this.deviceStatus = deviceStatus;
     },
     sizeChange() {
     },

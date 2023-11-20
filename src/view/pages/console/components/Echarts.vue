@@ -5,7 +5,7 @@
       <!-- <span class="title">{{ optionData.name }}</span> -->
       <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
       <div class="tool-right" v-if="mode!=='edit'">
-        <status-icon ref="statusIconRef" :status="option.deviceStatus"/>
+        <status-icon ref="statusIconRef" :status="deviceStatus"/>
       </div>
       <div v-else class="tool-right">
         <el-button v-if="showConfig" class="tool-item" style="padding-top: 2px" size="mini" icon="el-icon-setting" @click="showConfiguration"/>
@@ -49,15 +49,20 @@ export default {
       configurationVisible: false,
       flushTime: 5,
       timer: null,
+      deviceStatus: {}
     }
   },
   watch: {
-    value: {
+    status: {
       handler(newValue) {
-      }
+        console.log("Echarts.status", newValue);
+      },
+      immediate: true,
+      deep: true
     },
     "option": {
       handler(newValue) {
+        console.log("Echarts.option", newValue);
       },
       immediate: true,
       deep: true
@@ -133,6 +138,14 @@ export default {
           console.log(e)
         }
       }
+    },
+    /**
+     * @description: 更新图表状态
+     * @param {*} deviceStatus
+     * @return {*}
+     */    
+    updateStatus(deviceStatus) {
+      this.deviceStatus = deviceStatus;
     },
     /**
      * 修改 e-chart 大小

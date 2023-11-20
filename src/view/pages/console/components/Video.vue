@@ -4,7 +4,7 @@
       <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
 
       <div class="tool-right"  v-if="mode!=='edit' && optionData.type=='monitor'">
-        <status-icon ref="statusIconRef" :status="status"/>
+        <status-icon ref="statusIconRef" :status="deviceStatus"/>
 
         <el-button class="tool-item" :class="monitorType==='control' ? 'selected' : ''" size="mini" 
           @click="handleChangeMonitorType('control')">控制</el-button>
@@ -63,7 +63,8 @@ export default {
   data() {
     return {
       optionData: {},
-      monitorType: "default"
+      monitorType: "default",
+      deviceStatus: {}
     }
   },
   mounted() {
@@ -119,7 +120,15 @@ export default {
     },
     showConfiguration() {
       this.$emit("config", this.option)
-    }
+    },
+    /**
+     * @description: 更新图表状态
+     * @param {*} deviceStatus
+     * @return {*}
+     */    
+     updateStatus(deviceStatus) {
+      this.deviceStatus = deviceStatus;
+    },
   }
 }
 </script>

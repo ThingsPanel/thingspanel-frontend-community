@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-11-13 15:25:07
+ * @LastEditTime: 2023-11-20 10:54:11
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -539,7 +539,7 @@ export default {
           if (ele && ele[0] && JSON.stringify(values) !== "{}") {
             this.$refs["component_" + option.i][0].updateOption(values);
           }
-        })
+        });
       }
     },
     /**
@@ -561,17 +561,15 @@ export default {
               const status = deviceStatusList[deviceId].toString() === "1";
 
               if (option.device.deviceId === deviceId) {
-                let tmp = JSON.parse(JSON.stringify(option));
-                tmp.deviceStatus = { lastPushTime: option.deviceStatus.lastPushTime, status };
-                // tmp.state = status;
-                this.viewData.template.splice(i, 1, tmp);
-                // console.log("option.deviceStatus", tmp.state);
-                // option.deviceStatus = { lastPushTime: option.deviceStatus.lastPushTime, status }
-                // option.deviceStatus1 = JSON.stringify(option.deviceStatus);
-                // console.log("option.deviceStatus1", option.deviceStatus, option.deviceStatus1);
+                const deviceStatus = { lastPushTime: option.deviceStatus.lastPushTime, status };
+                this.$nextTick(() => {
+                  const ele = this.$refs["component_" + option.i];
+                  if (ele && ele[0]) {
+                    this.$refs["component_" + option.i][0].updateStatus &&
+                    this.$refs["component_" + option.i][0].updateStatus(deviceStatus);
+                  }
+                })
               }
-              // debugger;
-
             }
           }
         }

@@ -4,7 +4,7 @@
       <dashboard-title :mode="mode" :value.sync="optionData.name"></dashboard-title>
     
       <div class="tool-right" v-if="mode!=='edit'">
-        <status-icon ref="statusIconRef" :status="status" />
+        <status-icon ref="statusIconRef" :status="deviceStatus" />
 
         <!-- 采样区间 如最近5分钟，最近30分钟  -->
         <el-dropdown @command="handlePeriodCommand">
@@ -160,7 +160,8 @@ export default {
       // 采样区间列表
       periodList: PeriodList,
       // 聚合方法列表
-      aggregateFuncList: AggregateFuncList
+      aggregateFuncList: AggregateFuncList,
+      deviceStatus: {}
     }
   },
   mounted() {
@@ -376,6 +377,14 @@ export default {
      */
     handleRefresh() {
       this.getHistory(this.optionData.mapping);
+    },
+    /**
+     * @description: 更新图表状态
+     * @param {*} deviceStatus
+     * @return {*}
+     */    
+    updateStatus(deviceStatus) {
+      this.deviceStatus = deviceStatus;
     },
     /**
      * 修改 e-chart 大小

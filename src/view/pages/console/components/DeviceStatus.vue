@@ -50,7 +50,8 @@ export default {
       timer: null,
       flushTime: 5,
       statusText: "离线",
-      pushTime: ""
+      pushTime: "",
+      deviceStatus: {}
     }
   },
   watch: {
@@ -86,6 +87,14 @@ export default {
         this.statusText = "离线";
         this.pushTime = "";
       }
+    },
+    /**
+     * @description: 更新图表状态
+     * @param {*} deviceStatus
+     * @return {*}
+     */    
+     updateStatus(deviceStatus) {
+      this.deviceStatus = deviceStatus;
     },
     sizeChange() {
 
