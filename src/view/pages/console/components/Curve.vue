@@ -294,7 +294,7 @@ export default {
           aggregate_function: this.params.aggregate_function
       }
 
-      if (this.$route.path === "/share_console") {
+      if (this.$route.path === "/kanban/share") {
         params.shareId = this.$route.query?.id;
       }
 

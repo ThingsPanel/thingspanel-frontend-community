@@ -74,6 +74,10 @@ export default {
   },
   mounted() {
     this.optionData = JSON.parse(JSON.stringify(this.option));
+    // 分享页面下不允许操作设备
+    if (this.$route.fullPath.indexOf("/kanban/share") > -1) {
+      this.optionData.disabled = true;
+    }
     this.controlType = this.optionData.controlType;
     if (this.option.series) {
       this.mapping = this.option.series.map(item => {return item?.mapping?.value || ""})

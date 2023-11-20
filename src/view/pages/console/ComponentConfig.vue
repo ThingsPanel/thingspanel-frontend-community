@@ -168,7 +168,7 @@ export default {
         },
     },
     mounted() {
-        if (window.location.href.indexOf('share_console') === -1){
+        if (window.location.href.indexOf('/kanban/share') === -1){
             this.getProjectList();
         }
     },

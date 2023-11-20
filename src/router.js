@@ -54,7 +54,7 @@ export const baseRoutes = [
         component: () => import("@/Share"),
         children: [
             {
-                path: "/share_console",
+                path: "/kanban/share",
                 name: "ShareConsole",
                 component: () => import("@/view/pages/console/Dashboard")
             }

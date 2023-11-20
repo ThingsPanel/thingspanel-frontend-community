@@ -20,6 +20,10 @@
           @click="settingDialogVisible = true"></el-button>
 
         <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-download"></el-button>
+
+        <el-button v-if="mode === 'view'" type="border" size="small" icon="el-icon-share"
+          @click="shareConsole"></el-button>
+
         <el-button v-if="mode === 'view'" type="border" size="small" icon="el-icon-edit-outline"
           @click="mode = 'edit'"></el-button>
 
@@ -116,6 +120,37 @@
     <setting :visible.sync="settingDialogVisible" :data.sync="settingData" />
     <!-- 单个图表配置 -->
     <component-config :visible.sync="cptConfigVisible" :data="configData" @change="handleComponentConfig" />
+    
+    <!-- 分享看板对话框 start -->
+    <el-dialog class="el-dark-dialog" width="800px" title="分享看板" :visible.sync="shareDialogVisible" close-on-click-modal>
+        <el-form class="console-share-form el-dark-input" label-position="left"  label-width="120px">
+
+            <!-- 分享链接 -->
+            <el-form-item label="分享链接:">
+                <el-input readonly v-model="shareData.url"></el-input>
+            </el-form-item>
+
+            <el-form-item label="谁可以查看">
+                <el-row class="w-full">
+                    <el-col :span="3">
+                        <el-radio-group v-model="shareData.permission" type="vertical" @change="handleSharePermissionChange">
+                            <el-radio label="0" size="small" class="my-5">仅我自己</el-radio>
+                            <el-radio label="1" size="small">所有人可查看</el-radio>
+                        </el-radio-group>
+                    </el-col>
+                </el-row>
+
+            </el-form-item>
+          
+        </el-form>
+        <div class="dialog-footer" style="text-align: center;">
+            <el-button type="primary" @click="gotoShare">打开链接</el-button>
+            <el-button class="copy-qb" type="primary" @click="handleCopyAndClose">复制链接并关闭</el-button>
+            <!-- <el-button type="primary" @click="shareDialogVisible=false">关闭</el-button> -->
+        </div>
+    </el-dialog>
+    <!-- 创建分享对话框 end -->
+
   </div>
 </template>
 
@@ -137,6 +172,8 @@ import { websocket } from "@/utils/websocket";
 import { getDeviceListStatus } from "@/api/device.js";
 import ConsoleAPI from "@/api/console.js";
 import { DEFAULT_SETTING_DATA } from "./Const.js";
+import { message_success } from "@/utils/helpers.js";
+
 export default {
   components: {
     GridLayout, GridItem, AddComponent, Setting, ComponentConfig,
@@ -153,6 +190,8 @@ export default {
       settingDialogVisible: false,
       // 单个图表配置对话框
       cptConfigVisible: false,
+      // 是否显示分享看板对话框
+      shareDialogVisible: false,
       // 模式  view: 查看模式  edit: 编辑模式 share: 分享模式
       mode: "view",
       // 查看模式下的看板数据
@@ -176,7 +215,14 @@ export default {
       // 看板配置
       settingData: { ...DEFAULT_SETTING_DATA },
       // 组件数据
-      configData: {}
+      configData: {},
+      // 分享看板数据
+      shareData: {
+        console_id: "",
+        id: "",
+        url: "",
+        permission: "0"
+      },
     }
   },
   computed: {
@@ -207,7 +253,8 @@ export default {
   watch: {
     $route: {
       handler(route) {
-        if (route.path === "/share_console") {
+        if (route.path === "/kanban/share") {
+          document.title = "分享看板 | ThingsPanel";
           this.mode = "share"
           ConsoleAPI.getInfoByShareID({id: route.query?.id, shareId: route.query?.id }).then(({ data: result }) => {
             if (result.code === 200) {
@@ -217,10 +264,23 @@ export default {
           })
           return;
         }
+        document.title = "看板详情 | ThingsPanel";
         this.params = { ...route.query };
         this.initConsole();
       }, immediate: true
     },
+    shareDialogVisible: {
+      handler(newValue) {
+        if (!newValue) {
+          this.shareData = {
+            console_id: "",
+            id: "",
+            url: "",
+            permission: "0"
+          }
+        }
+      }
+    }
   },
   beforeDestroy() {
     this.clearSockets();
@@ -548,7 +608,7 @@ export default {
     async flushDeviceStatus(deviceIds) {
       const params = { device_id_list: deviceIds };
 
-      if (this.$route.path === "/share_console") {
+      if (this.$route.path === "/kanban/share") {
         params.shareId = this.$route.query?.id;
       }
       try {
@@ -626,6 +686,62 @@ export default {
     handleShowConfig(opt) {
       this.cptConfigVisible = true;
       this.configData = JSON.parse(JSON.stringify(opt));
+    },
+    /**
+     * @description: 分享看板
+     * @param {*} item
+     * @return {*}
+     */
+    shareConsole() {
+      this.shareData.console_id = this.viewData.id;
+      if (this.viewData.share_id){
+        this.shareData.id = this.viewData.share_id;
+      }
+      this.shareData.url = `${document.location.origin}/#/kanban/detail?id=${this.viewData.id}`
+      this.shareDialogVisible = true;
+    },
+    /**
+     * @description: 打开链接
+     * @return {*}
+     */
+    gotoShare() {
+      window.open(this.shareData.url, '_blank');
+    },
+    /**
+     * @description: 复制链接并关闭
+     * @return {*}
+     */
+    handleCopyAndClose() {
+      let clipboard = new ClipboardJS('.copy-qb', {
+        text: () => {
+          return this.shareData.url
+        }
+      })
+      clipboard.on('success', () => {
+        message_success("复制成功！");
+        clipboard.destroy()
+        this.shareDialogVisible = false;
+      })
+    },
+    // 根据权限生成分享链接
+    handleSharePermissionChange() {
+      if (this.shareData.permission !== "1") {
+        this.shareData.url = `${document.location.origin}/#/kanban/detail?id=${this.shareData.console_id}`
+        return;
+      };
+      if (!this.shareData.console_id) return;
+      if (!this.shareData.id) {
+
+        ConsoleAPI.generateShareID({ id: this.shareData.console_id, share_type: "console" })
+          .then(({ data: result }) => {
+            console.error(result, result.data?.share_id)
+            this.shareData.id = result.data?.share_id;
+            this.shareData.url = `${document.location.origin}/#/kanban/share?id=${result.data?.share_id}`
+
+            message_success("生成分享ID成功");
+          })
+      };
+      this.shareData.url = `${document.location.origin}/#/kanban/share?id=${this.shareData.id}`
     }
   }
 }
@@ -695,5 +811,16 @@ export default {
   width: calc(100% - 2px);
   background-repeat: repeat;
   margin: 2px;
+}
+
+.console-share-form {
+    width: 800px!important;
+    margin: 40px;
+    .el-input {
+      width: 560px;
+    }
+    .dialog-footer {
+    text-align: center !important;
+}
 }
 </style>
