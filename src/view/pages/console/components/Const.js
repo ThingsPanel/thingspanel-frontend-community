@@ -55,12 +55,12 @@ const AggregateFuncList = [
   ]
 
 const LoadingState = {
-    // 未加载
-    NOTLOADED: 0,
+    // 图表未渲染
+    UNRENDERED: -1,
+    // 图表已渲染或已加载完毕
+    FINISHED: 0,
     // 加载中
     LOADING: 1,
-    // 已加载
-    LOADED: 2
 }
 
 const getAggregateWindowList = (periodKey) => {

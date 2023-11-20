@@ -194,7 +194,10 @@ export default {
         $route: {
             handler(route) {
                 if (JSON.stringify(route.query) !=="{}") {
-                    this.params = { ...route.query };
+                    this.params = { 
+                        current_page:  Number(route.query.current_page), 
+                        per_page: Number(route.query.per_page) 
+                    };
                 }
                 this.getList();
             }, immediate: true

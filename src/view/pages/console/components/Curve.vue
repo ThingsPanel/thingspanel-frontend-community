@@ -156,7 +156,7 @@ export default {
         endTime: '',
       },
       // 曲线图加载状态
-      loadingState: LoadingState,
+      loadingState: LoadingState.UNRENDERED,
       // 采样区间列表
       periodList: PeriodList,
       // 聚合方法列表
@@ -165,17 +165,14 @@ export default {
     }
   },
   mounted() {
-    this.loadingState = LoadingState.NOTLOADED;
+    // 状态置为未渲染
+    this.loadingState = LoadingState.UNRENDERED;
     window.addEventListener("resize", () => {
-      this.myEcharts.resize();
+      this.myEcharts && this.myEcharts.resize();
     });
     this.optionData = JSON.parse(JSON.stringify(this.option));
     this.controlType = this.optionData.controlType;
     this.initEChart();
-    this.myEcharts.on('dataZoom', params => {
-      this.dataZoom.start = params.start;
-      this.dataZoom.end = params.end;
-    })
   },
   computed: {
     getAggregateWindowList() {
@@ -217,33 +214,44 @@ export default {
     /**
      * 加载EChats图表
      */
-    initEChart(option) {
+    initEChart() {
+      console.log("====initEChart", this.loadingState);
       this.myEcharts = this.$echarts.init(this.$refs.chart, 'dark');
+      this.myEcharts && this.myEcharts.on('dataZoom', params => {
+        this.dataZoom.start = params.start;
+        this.dataZoom.end = params.end;
+      })
       this.$nextTick(() => {
         this.myEcharts.resize();
       });
 
-      this.optionData.tooltip = {
-        trigger: 'axis',
-        confine: true,
-      };
-      // 动画
-      // this.optionData.animation = false;
+      this.optionData.tooltip = { trigger: 'axis', confine: true };
       this.optionData.backgroundColor = 'transparent';
-      if (option && option.series[0].data) {
-        option.yAxis = { 
-          type: "value",  
-          max: "dataMax",
-          min: "dataMin"
-        };
-        this.myEcharts.setOption(option);
-        this.$refs.statusIconRef?.flush();
-      } else {
-        this.myEcharts.setOption(this.optionData);
-      }
+      this.myEcharts.setOption(this.optionData);
+      // 图表已完成渲染
+      // this.myEcharts.on('finished', () => {
+      //   this.loadingState = LoadingState.FINISHED;
+      //   console.log("====initEChart", this.loadingState);
+      // });
     },
+    /**
+     * @description: 改变数据
+     * @param {*} series
+     * @return {*}
+     */    
+    changeData(series) {
+      const xAxis = { type: "time" };
+      const yAxis = { type: "value", max: "dataMax", min: "dataMin" };
+      this.myEcharts && this.myEcharts.setOption({ xAxis, yAxis, series });
+      this.$refs.statusIconRef?.flush();
+    },
+    /**
+     * @description: 更新图表的值
+     * @param {*} values
+     * @return {*}
+     */    
     updateOption(values) {
-      if (this.params.aggregate_window !== "no_aggregate" || this.loadingState !== LoadingState.LOADED) return;
+      if (this.params.aggregate_window !== "no_aggregate" || this.loadingState !== LoadingState.FINISHED) return;
       var currentOption = this.myEcharts.getOption();
       let series = [];
       for (let i = 0; i < currentOption.series.length; i++) {
@@ -260,13 +268,50 @@ export default {
         if (len >= 100 && timestamp - data[len -1][0] > this.params.period * 1000) {
           data.shift();
         }
-        series.push({ data })
+        series.push({ 
+          type: "line",
+          symbol: 'none', // 设置坐标点样式为空
+          symbolSize: 0,
+          smooth: true, 
+          animation: false,  // 开启动画效果
+          animationDuration: 1000,  // 动画持续时间为1秒
+          animationEasing: 'quadraticOut',
+          areaStyle: {
+              color: 'rgba(0, 128, 255, 0.3)'  // 填充颜色和透明度
+          },
+          data 
+        })
       }
-      const xAxis = { type: "time" }
-      
-      this.initEChart({ xAxis, series });
-      
+      this.changeData(series);
     },
+    /**
+     * 从服务器获取指定设备的推送数据
+     * @param deviceId
+     * @param attrs
+     */
+     async getHistory() {
+      if (true || this.loadingState === LoadingState.FINISHED) {
+        // 如果已渲染完成或已加载完毕
+        try {
+          this.myEcharts.showLoading({
+            text: "数据加载中...",
+            color: "#3174F2",
+            textColor: "#ffffc2",
+            maskColor: "rgba(255, 255, 255, 0)",
+            zlevel: 0
+          }); 
+          setTimeout(async () => {
+            await this.getStatistic(this.option.dataSource);
+            this.myEcharts.hideLoading();
+          }, 500);
+        } catch(err) {}
+      }
+    },
+    /**
+     * @description: 
+     * @param {*} mapping
+     * @return {*}
+     */    
     async getStatistic(mapping) {
       let attrs = mapping.map(item => item.name ? item.name : item);
       if (!attrs || attrs.length == 0) return;
@@ -278,7 +323,6 @@ export default {
         endTime = new Date(this.range.endTime).getTime();
       }
       if (!startTime || !endTime) return;
-
       
       let d = mapping.map(item => {
         return {
@@ -297,34 +341,13 @@ export default {
       if (this.$route.path === "/share_console") {
         params.shareId = this.$route.query?.id;
       }
-
       this.loadingState = LoadingState.LOADING;
       let { data: result } = await statisticBatch(params);
-      this.loadingState = LoadingState.LOADED;
-      const xAxis = { type: "time" }
       const series = getSeries(result.data, this.optionData.series);
-      this.initEChart({ xAxis, series });
+      this.changeData(series);
+      this.loadingState = LoadingState.FINISHED;
     },
-    /**
-     * 从服务器获取指定设备的推送数据
-     * @param deviceId
-     * @param attrs
-     */
-    async getHistory() {
-      if (this.loadingState === LoadingState.NOTLOADED) {
-        try {
-          this.myEcharts.showLoading({
-            text: "数据加载中...",
-            color: "#3174F2",
-            textColor: "#ffffc2",
-            maskColor: "rgba(255, 255, 255, 0)",
-            zlevel: 0
-          });
-          await this.getStatistic(this.option.dataSource);
-          this.myEcharts.hideLoading();
-        } catch(err) {}
-      }
-    },
+    
 
     handleShowRange() {
       this.rangeDialogVisible = true;
@@ -352,7 +375,7 @@ export default {
       let startTime = endTime - (Number(this.params.period) * 1000);
       this.range = { startTime, endTime }
       setTimeout(() => {
-        this.loadingState = LoadingState.NOTLOADED;
+        this.loadingState = LoadingState.FINISHED;
         this.getHistory(this.optionData.mapping)
       }, 50)
     },
@@ -395,8 +418,8 @@ export default {
       let height = mainRef.clientHeight;
       let length = Math.min(width, height);
       let option = this.resizeECharts(this.option, length);
-      this.myEcharts.setOption(option)
-      this.myEcharts.resize();
+      this.myEcharts && this.myEcharts.setOption && this.myEcharts.setOption(option)
+      this.myEcharts && this.myEcharts.resize && this.myEcharts.resize();
     },
     getChartStyle() {
       let style = this.optionData.style ? this.optionData.style : {};
