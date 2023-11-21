@@ -30,6 +30,7 @@ export default function useDeviceIndex(business_id) {
                 total.value = data.data.total
                 let { table, ids } = washData(data.data.data);
                 tableData.value = data.data.data ? table : [];
+                console.log("getDeviceIndex", tableData.value)
                 deviceIds.value = ids;
                 getDeviceStatus(ids);
             }
@@ -180,6 +181,9 @@ export default function useDeviceIndex(business_id) {
                     if (data.code == 200) {
                         tableData.value.forEach(item => {
                             item.device_state = data.data[item.id] ? data.data[item.id] : "0";
+                            item.children && item.children.forEach(child => {
+                                child.device_state = data.data[child.id] ? data.data[child.id] : "0";
+                            })
                         })
                     }
                 })
