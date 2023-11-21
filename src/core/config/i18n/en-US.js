@@ -1857,6 +1857,7 @@ export const locale = {
   SYSTEM_MANAGEMENT: {
     GENERALSETTINGS: "General Settings",
     NOTIFICATIONSETTINGS: "Notification Settings",
+    DATA_CLEANUP_SETTINGS: "Data Cleanup Settings",
     SYSTEMAUTHORIZATION: "System Authorization",
     TITLE4: "Are you sure you want to delete?",
     CANCEL: "Cancel",
@@ -1879,6 +1880,15 @@ export const locale = {
       LOADINGPAGE: "Loading page",
       WEBSITE: "Website",
       BACKGROUND: "Background",
+      // 数据清理设置
+      ID: "ID",
+      CLEANUP_TYPE: "Cleanup Type",
+      RETENTION_DAYS: "Retention Days",
+      LAST_CLEANUP_TIME: "Last Cleanup Time",
+      LAST_CLEANUP_DATA_TIME: "Last Cleanup Data Time",
+      REMARK: "Remark",
+      DEVICE_DATA: "Device Data",
+      OPERATION_LOG: "Operation Log",
     },
     /**
      * User Management

@@ -1899,6 +1899,7 @@ export const locale = {
   SYSTEM_MANAGEMENT: {
     GENERALSETTINGS: "常规设置",
     NOTIFICATIONSETTINGS: "通知设置",
+    DATA_CLEANUP_SETTINGS: "数据清理设置",
     SYSTEMAUTHORIZATION: "系统授权",
     TITLE4: "你确定要删除吗？",
     CANCEL: "取消",
@@ -1921,6 +1922,15 @@ export const locale = {
       LOADINGPAGE: "加载页面",
       WEBSITE: "站标",
       BACKGROUND: "背景图片",
+      // 数据清理设置
+      ID: "ID",
+      CLEANUP_TYPE: "清理类型",
+      RETENTION_DAYS: "保留天数",
+      LAST_CLEANUP_TIME: "上次清理时间",
+      LAST_CLEANUP_DATA_TIME: "上次清理数据时间节点",
+      REMARK: "备注",
+      DEVICE_DATA: "设备数据",
+      OPERATION_LOG: "操作日志",
     },
     /**
      * 用户管理

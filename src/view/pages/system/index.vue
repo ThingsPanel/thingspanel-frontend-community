@@ -157,25 +157,102 @@
             <el-button type="save" @click="submitData()">{{$t('SYSTEM_MANAGEMENT.SAVE')}} </el-button>
           </div>
         </div>
-        <!-- <div v-if="activeTab == 2">
-          <p>通知设置</p>
+        <div v-if="activeTab == 2">
+          
+          <el-table :data="tableData" v-loading="tableLoading">
+              <!-- id -->
+              <el-table-column :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.ID')" type="index" align="left" min-width="110" width="200">
+              </el-table-column>
+
+              <!-- 清理类型 -->
+              <el-table-column :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.CLEANUP_TYPE')" prop="cleanup_type" align="left">
+                  <template v-slot="scope">
+                    <el-tag type="primary" class="transparent-tag-blue" v-if="scope.row.cleanup_type === 1">{{ $t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.DEVICE_DATA') }}</el-tag>
+                    <el-tag type="success"  class="transparent-tag-green" v-if="scope.row.cleanup_type === 2">{{ $t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.OPERATION_LOG') }}</el-tag>
+                  </template>
+              </el-table-column>
+
+              <!-- 保留天数 -->
+              <el-table-column :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.RETENTION_DAYS')" prop="retention_days" align="left">
+              </el-table-column>
+
+              <!-- 上次清理时间 -->
+              <el-table-column :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.LAST_CLEANUP_TIME')" prop="last_cleanup_time" align="left">
+                  <template v-slot="scope">
+                      {{ scope.row.last_cleanup_time ? formatTimestamp(scope.row.last_cleanup_time) : "" }}
+                  </template>
+              </el-table-column>
+
+              <!-- 上次清理数据时间节点 -->
+              <el-table-column :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.LAST_CLEANUP_DATA_TIME')" prop="last_cleanup_data_time" align="left">
+                  <template v-slot="scope">
+                      {{ scope.row.last_cleanup_data_time ? formatTimestamp(scope.row.last_cleanup_data_time) : "" }}
+                  </template>
+              </el-table-column>
+
+              <!-- 备注 -->
+              <el-table-column :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.REMARK')" prop="remark" align="left">
+              </el-table-column>
+
+              <!-- 操作 -->
+              <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="230">
+                  <template v-slot="scope">
+                      <div style="text-align: left">
+                          <!-- 编辑 -->
+                          <el-button type="indigo" size="mini" @click="handleEdit(scope.row)">{{ $t('COMMON.EDIT') }}</el-button>
+                      </div>
+                  </template>
+              </el-table-column>
+
+              <template #empty>
+                  <div>{{ $t('COMMON.TABLE_NO_DATA') }}</div>
+              </template>
+          </el-table>
         </div>
-        <div v-if="activeTab == 3">
+        <!-- <div v-if="activeTab == 3">
           <p>系统授权</p>
         </div> -->
       </div>
     </div>
+
+    <!-- 编辑对话框 start -->
+    <el-dialog class="el-dark-dialog" :title="$t('COMMON.EDIT')" width="600px" :visible.sync="editVisible">
+        <el-form class="console-create-form el-dark-input" label-position="left"  label-width="100px" 
+            ref="createFormRef" :model="formData">
+
+            <!-- 保留天数 -->
+            <el-form-item :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.RETENTION_DAYS')" prop="retention_days">
+                <el-input type="number" style="width: 280px" v-model.number="formData.retention_days"></el-input>
+            </el-form-item>
+            
+            <!-- 备注 -->
+            <el-form-item :label="$t('SYSTEM_MANAGEMENT.SYSTEM_SETTING.REMARK')" prop="remark">
+                <el-input type="textarea" :rows="3" style="width: 280px" v-model="formData.remark"></el-input>
+            </el-form-item>
+
+        </el-form>
+        <div class="dialog-footer" style="text-align: center;">
+            <el-button type="primary" @click="sumbitEdit">{{ $t('COMMON.EDIT') }}</el-button>
+        </div>
+    </el-dialog>
+    <!-- 编辑对话框 end -->
+
+
   </div>
 </template>
 
 
 <script>
 import { local_url } from "@/api/LocalUrl"
-import AUTH from "@/core/services/store/auth.module";
 import ApiService from "@/core/services/api.service";
 import JwtService from "@/core/services/jwt.service";
+import { get_cleanup_list, edit_cleanup_data } from "@/api/system";
 import { REFRESH } from "@/core/services/store/auth.module";
 import { RESET_LAYOUT_CONFIG } from "@/core/services/store/config.module"
+import "@/core/mixins/common"
+import { message_success } from "@/utils/helpers.js";
+
+
 export default {
   data: () => ({
     activeTab: "1",
@@ -185,7 +262,7 @@ export default {
         value: "1",
       },
       {
-        name: "SYSTEM_MANAGEMENT.NOTIFICATIONSETTINGS",
+        name: "SYSTEM_MANAGEMENT.DATA_CLEANUP_SETTINGS",
         value: "2",
       },
       {
@@ -213,6 +290,14 @@ export default {
     text:'',
     snackbar:false,
     vertical: true,
+    tableData: [],
+    tableLoading: false,
+    formData: {
+      id: "",
+      retention_days: 0,
+      remark: "",
+    },
+    editVisible: false,
   }),
 
   created() {
@@ -229,6 +314,13 @@ export default {
         }
       }
     );
+  },
+  watch: {
+    activeTab(val) {
+      if (val === "2") {
+        this.getCleanUpList();
+      }
+    }
   },
 
   methods: {
@@ -264,6 +356,66 @@ export default {
           }
         }
       );
+    },
+    getCleanUpList(){
+      this.tableLoading = true;
+      get_cleanup_list().then(({data}) => {
+        if (data.code == 200) {
+          this.tableData = data.data;
+        }
+      }).finally(() => {
+        this.tableLoading = false;
+      })
+
+    },
+    formatTimestamp(timestamp) {
+      if (!timestamp) {
+        return '';
+      }
+
+      // Determine the length of the timestamp
+      const length = timestamp.toString().length;
+
+      // Convert to milliseconds
+      if (length === 10) { // seconds
+        timestamp *= 1000;
+      } else if (length === 16) { // microseconds
+        timestamp /= 1000;
+      }
+
+      // Create a Date object
+      const date = new Date(timestamp);
+
+      // Format the date
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const seconds = date.getSeconds().toString().padStart(2, '0');
+
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    },
+    handleEdit(v) {
+      this.editVisible = true;
+      let data = JSON.parse(JSON.stringify(v));
+      this.formData = {
+        id: data.id,
+        retention_days: data.retention_days,
+        remark: data.remark,
+      }
+    },
+    sumbitEdit() {
+      this.tableLoading = true;
+      edit_cleanup_data(this.formData).then(({data}) => {
+        if (data.code == 200) {
+          message_success(this.$t('COMMON.EDIT_SUCCESS'));
+          this.editVisible = false;
+          this.getCleanUpList();
+        }
+      }).finally(() => {
+        this.tableLoading = false;
+      })
     },
   },
 };
@@ -316,5 +468,19 @@ export default {
       width: 100%;
     }
   }
+}
+.transparent-tag-green {
+  background-color: transparent !important;
+  border-color: #67c23a;
+}
+.transparent-tag-blue {
+  background-color: transparent !important;
+  border-color: #409EFF;
+}
+.console-create-form {
+    margin: 30px 12%;
+    .el-radio {
+        line-height: 40px;
+    }
 }
 </style>
