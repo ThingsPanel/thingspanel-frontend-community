@@ -1,11 +1,17 @@
 
 <template>
     <div>
-        <el-form label-position="left" :model="formData" label-width="120px">
+        <el-form label-position="left" :model="formData" label-width="140px">
             <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.OFFLINETIME')" prop="thresholdTime">
                 <el-input-number controls-position="right" size="small" v-model="formData.thresholdTime"
                     :min="0"></el-input-number>
                 秒
+            </el-form-item>
+
+            <el-form-item label="手动调节设备状态" prop="deviceState">
+                <el-switch v-model="formData.deviceState" :active-text="formData.deviceState ==='1' ? '在线' : '离线'"
+                    active-value="1" inactive-value="0"
+                    @change="onDeviceStateChange"></el-switch>
             </el-form-item>
 
             <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.SUBDEVICEADDRESS')" v-if="device.device_type == '3'">
@@ -31,7 +37,7 @@
 
 <script>
 import DeviceLocationConfig from "@/components/common/DeviceLocationConfig.vue"
-
+import { getDeviceListStatus, setDeviceStatus } from "@/api/device.js"
 
 export default {
     components: {
@@ -53,6 +59,7 @@ export default {
         return {
             positionShow: false,
             locationArray: [],
+
         }
     },
     watch:{
@@ -70,12 +77,45 @@ export default {
             }
         }
     },
+    mounted() {
+        // 初始化设备状态
+        this.getDeviceState();
+    },
     methods: {
         showCheckLocation() {
             this.positionShow = true
+        },
+        /**
+         * @description: 获取设备状态
+         * @return {*}
+         */        
+        getDeviceState() {
+            getDeviceListStatus({ device_id_list: [this.device.id] })
+                .then(({ data: result }) => {
+                    if (result.code === 200) {
+                        this.formData.deviceState = result.data[this.device.id];
+                    }
+                })
+        },
+        /**
+         * @description: 手动设置设备当前状态
+         * @param {*} v
+         * @return {*}
+         */        
+        onDeviceStateChange(v) {
+            setDeviceStatus({ id: this.device.id, status: v })
+                .then(({ data: result }) => {
+                    console.log("setDeviceStatus", result)
+                })
         }
-
     }
 }
 </script>
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+::v-deep .el-switch__label {
+    color: #949393;
+}
+::v-deep .el-switch__label.is-active {
+    color: #0af144;
+}
+</style>

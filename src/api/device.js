@@ -431,3 +431,16 @@ export function getDeviceStatusCount(data) {
         data
     })
 }
+
+/**
+ * @description: 手动设置设备在线/离线状态
+ * @param {*} data
+ * @return {*}
+ */
+export function setDeviceStatus(data) {
+    return axios({
+        url: "/device/online/status",
+        method: "post",
+        data
+    })
+}
