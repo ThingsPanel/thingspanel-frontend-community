@@ -1,3 +1,4 @@
+
 <template>
     <div>
         <el-form label-position="left" :model="formData" label-width="120px">
@@ -13,13 +14,17 @@
             </el-form-item>
 
             <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.DEVICELOCATION')">
-                <el-input readonly @click.native="showCheckLocation" style="width: 100%"
-                    :placeholder="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PLACEHOLDER2')"
-                    v-model="formData.location"></el-input>
+                <div style="display: flex" >
+                    <el-input style="width: 100%;float:left" :placeholder="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.PLACEHOLDER2')"
+                        v-model="formData.location"></el-input>
+                    <el-button style="float:right" size="medium" icon="el-icon-location-outline" type="border"
+                        @click.native="showCheckLocation">定位</el-button>    
+                </div>
+                
             </el-form-item>
         </el-form>
             <device-location-config v-if="positionShow" :maker-position.sync="locationArray"
-                :dialog-visible.sync="positionShow"></device-location-config>
+                :dialog-visible.sync="positionShow"/>
 
     </div>
 </template>
