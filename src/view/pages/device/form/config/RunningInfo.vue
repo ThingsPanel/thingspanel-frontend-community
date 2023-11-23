@@ -12,6 +12,7 @@
                 <el-switch v-model="formData.deviceState" :active-text="formData.deviceState ==='1' ? '在线' : '离线'"
                     active-value="1" inactive-value="0"
                     @change="onDeviceStateChange"></el-switch>
+                <div style="color: #78a7cc">离线时间阈值为0时手动调节生效</div>
             </el-form-item>
 
             <el-form-item :label="$t('DEVICE_MANAGEMENT.DEVICE_CONFIG.SUBDEVICEADDRESS')" v-if="device.device_type == '3'">
