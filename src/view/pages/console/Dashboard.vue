@@ -10,11 +10,11 @@
   <div id="containerId" class="dashboard-container" :style="getContainerStyle">
     <div class="dashboard-top" v-if="mode !== 'share'">
       <div>
-        <el-button type="border" size="small" icon="el-icon-back" @click="back">返回</el-button>
+        <el-button type="border" size="small" icon="el-icon-back" @click="back">{{ $t('COMMON.BACK') }}</el-button>
       </div>
       <div class="dashboard-tools">
         <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-plus"
-          @click="addDialogVisible = true">新增</el-button>
+          @click="addDialogVisible = true">{{ $t('COMMON.CREATE') }}</el-button>
 
         <el-button v-if="mode === 'edit'" type="border" size="small" icon="el-icon-setting"
           @click="settingDialogVisible = true"></el-button>
@@ -31,15 +31,42 @@
 
         <el-divider v-if="mode === 'edit'" direction="vertical"></el-divider>
 
-        <el-button v-if="mode === 'edit'" type="border" size="small" @click="handleCancel">取消</el-button>
+        <el-button v-if="mode === 'edit'" type="border" size="small" @click="handleCancel">{{ $t('COMMON.CANCEL') }}</el-button>
 
-        <el-button v-if="mode === 'edit'" type="indigo" size="small" @click="handleSaveConsole">保存</el-button>
+        <el-button v-if="mode === 'edit'" type="indigo" size="small" @click="handleSaveConsole">{{ $t('COMMON.SAVE') }}</el-button>
+      </div>
+    </div>
+
+    <div v-if="mode === 'share'">
+      <div @mousemove="handleMouseMove" style="width: 100%; height: 20px;" >
+        <!-- 悬浮栏 -->
+        <div :class="['floating-bar', { 'is-visible': isBarVisible, 'is-fixed': isFixed }]"
+        @mouseleave="handleTopTitleLeave" style="color: white; background-color: #161E43 !important; z-index: 999;">
+          <!-- 悬浮栏内容 -->
+          <div style="padding: 1rem;">
+            <el-row type="flex" align="center">
+              <el-col :span=11 :xl=5 :lg=7 :md=11>
+                <a href="" class="logo text-white" style="padding-left: 10vh;">
+                  <img :src="siteLogo()" alt="" class="logo-icon" />
+                </a>
+              </el-col>
+              <el-col :span=12 :xl=18 :lg=16 :md=12 style="text-align: center;display:flex; align-items:center">
+                <div style="font-size: 25px; line-height: 100%">{{ this.settingData && this.settingData.name ? this.settingData.name : '' }}</div>
+              </el-col>
+              <el-col :span=1 style="text-align: center;display:flex; align-items:center">
+                <el-tooltip :content="$t('VISUALIZATION.CONSOLE.LOCK_TITLE_OR_NOT')">
+                  <i :class="topTitleIcon" style="cursor: pointer; font-size: 30px" @click="toggleFixed"></i>
+                </el-tooltip>
+              </el-col>
+            </el-row>
+          </div>
+        </div>
       </div>
     </div>
 
 
     <div v-if="viewData.template.length !== 0 || editData.template.length !== 0" id="consoleBox"
-      style="width: 100%;overflow-y: auto;" :style="getConsoleBoxStyle">
+      style="width: 100%;overflow-y: auto;" :style="getConsoleBoxStyle" :class="['page-content', { 'with-fixed-bar': isBarVisible }]">
       <grid-layout :class="mode === 'edit' ? 'grid-layout' : ''"
         :layout.sync="mode === 'view' ? viewData.template : editData.template" :col-num="colNum" :row-height="30"
         :is-draggable="mode === 'edit'" :is-resizable="mode === 'edit'" :is-mirrored="false" :vertical-compact="true"
@@ -108,8 +135,8 @@
       </grid-layout>
     </div>
 
-    <div v-else style="height: 100%; width:100%; padding: 18% 0 30% 0; text-align:center;    background: radial-gradient(ellipse at center, #29387d 0%, #1a234f 100%);">
-        <div>
+    <div v-else style="height: 100%; width:100%; padding: 18% 0 30% 0; text-align:center;">
+      <div>
           <svg width="184" height="152" viewBox="0 0 184 152" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g transform="translate(24 31.67)"><ellipse fill-opacity=".8" fill="#F5F5F7" cx="67.797" cy="106.89" rx="67.797" ry="12.668"></ellipse><path d="M122.034 69.674L98.109 40.229c-1.148-1.386-2.826-2.225-4.593-2.225h-51.44c-1.766 0-3.444.839-4.592 2.225L13.56 69.674v15.383h108.475V69.674z" fill="#AEB8C2"></path><path d="M101.537 86.214L80.63 61.102c-1.001-1.207-2.507-1.867-4.048-1.867H31.724c-1.54 0-3.047.66-4.048 1.867L6.769 86.214v13.792h94.768V86.214z" fill="url(#linearGradient-1)" transform="translate(13.56)"></path><path d="M33.83 0h67.933a4 4 0 0 1 4 4v93.344a4 4 0 0 1-4 4H33.83a4 4 0 0 1-4-4V4a4 4 0 0 1 4-4z" fill="#F5F5F7"></path><path d="M42.678 9.953h50.237a2 2 0 0 1 2 2V36.91a2 2 0 0 1-2 2H42.678a2 2 0 0 1-2-2V11.953a2 2 0 0 1 2-2zM42.94 49.767h49.713a2.262 2.262 0 1 1 0 4.524H42.94a2.262 2.262 0 0 1 0-4.524zM42.94 61.53h49.713a2.262 2.262 0 1 1 0 4.525H42.94a2.262 2.262 0 0 1 0-4.525zM121.813 105.032c-.775 3.071-3.497 5.36-6.735 5.36H20.515c-3.238 0-5.96-2.29-6.734-5.36a7.309 7.309 0 0 1-.222-1.79V69.675h26.318c2.907 0 5.25 2.448 5.25 5.42v.04c0 2.971 2.37 5.37 5.277 5.37h34.785c2.907 0 5.277-2.421 5.277-5.393V75.1c0-2.972 2.343-5.426 5.25-5.426h26.318v33.569c0 .617-.077 1.216-.221 1.789z" fill="#DCE0E6"></path></g><path d="M149.121 33.292l-6.83 2.65a1 1 0 0 1-1.317-1.23l1.937-6.207c-2.589-2.944-4.109-6.534-4.109-10.408C138.802 8.102 148.92 0 161.402 0 173.881 0 184 8.102 184 18.097c0 9.995-10.118 18.097-22.599 18.097-4.528 0-8.744-1.066-12.28-2.902z" fill="#DCE0E6"></path><g transform="translate(149.65 15.383)" fill="#FFF"><ellipse cx="20.654" cy="3.167" rx="2.849" ry="2.815"></ellipse><path d="M5.698 5.63H0L2.898.704zM9.259.704h4.985V5.63H9.259z"></path></g></g></svg>
           <h2 style="margin-top: 20px;">No Data</h2>
         </div>
@@ -122,20 +149,20 @@
     <component-config :visible.sync="cptConfigVisible" :data="configData" @change="handleComponentConfig" />
     
     <!-- 分享看板对话框 start -->
-    <el-dialog class="el-dark-dialog" width="800px" title="分享看板" :visible.sync="shareDialogVisible" close-on-click-modal>
+    <el-dialog class="el-dark-dialog" width="800px" :title="$t('VISUALIZATION.CONSOLE.SHARE_COSNOLE')" :visible.sync="shareDialogVisible" close-on-click-modal>
         <el-form class="console-share-form el-dark-input" label-position="left"  label-width="120px">
 
             <!-- 分享链接 -->
-            <el-form-item label="分享链接:">
+            <el-form-item :label="$t('VISUALIZATION.CONSOLE.SHARE_LINK')">
                 <el-input readonly v-model="shareData.url"></el-input>
             </el-form-item>
 
-            <el-form-item label="谁可以查看">
+            <el-form-item :label="$t('VISUALIZATION.CONSOLE.WHO_CAN_ACCESS')">
                 <el-row class="w-full">
                     <el-col :span="3">
                         <el-radio-group v-model="shareData.permission" type="vertical" @change="handleSharePermissionChange">
-                            <el-radio label="0" size="small" class="my-5">仅我自己</el-radio>
-                            <el-radio label="1" size="small">所有人可查看</el-radio>
+                            <el-radio label="0" size="small" class="my-5">{{ $t('VISUALIZATION.CONSOLE.ONLY_ME') }}</el-radio>
+                            <el-radio label="1" size="small">{{ $t('VISUALIZATION.CONSOLE.EVERYONE') }}</el-radio>
                         </el-radio-group>
                     </el-col>
                 </el-row>
@@ -144,8 +171,8 @@
           
         </el-form>
         <div class="dialog-footer" style="text-align: center;">
-            <el-button type="primary" @click="gotoShare">打开链接</el-button>
-            <el-button class="copy-qb" type="primary" @click="handleCopyAndClose">复制链接并关闭</el-button>
+            <el-button type="primary" @click="gotoShare">{{ $t('VISUALIZATION.CONSOLE.OPEN_LINK') }}</el-button>
+            <el-button class="copy-qb" type="primary" @click="handleCopyAndClose">{{ $t('VISUALIZATION.CONSOLE.COPY_AND_CLOSE') }}</el-button>
             <!-- <el-button type="primary" @click="shareDialogVisible=false">关闭</el-button> -->
         </div>
     </el-dialog>
@@ -173,6 +200,8 @@ import { getDeviceListStatus } from "@/api/device.js";
 import ConsoleAPI from "@/api/console.js";
 import { DEFAULT_SETTING_DATA } from "./Const.js";
 import { message_success } from "@/utils/helpers.js";
+import { mapGetters } from "vuex";
+import objectPath from "object-path";
 
 export default {
   components: {
@@ -223,6 +252,11 @@ export default {
         url: "",
         permission: "0"
       },
+      // 是否显示顶部标题
+      topTitleVisible: false,
+      isBarVisible: false, // 控制悬浮栏显示
+      isFixed: false, // 控制悬浮栏是否固定
+      
     }
   },
   computed: {
@@ -232,7 +266,12 @@ export default {
      */
     getContainerStyle() {
       if (this.mode === "share") {
-        return { height: "100vh" };
+        const { config } = this.settingData;
+        if (config && config !== "{}") {
+          const { background } = JSON.parse(config);
+          return { background: background + "!important", height: "100%" }
+        }
+        return { height: "100%", background: "radial-gradient(ellipse at center, #29387d 0%, #1a234f 100%);" };
       }
       return {};
     },
@@ -248,6 +287,10 @@ export default {
         return { background, height }
       }
       return { height };
+    },
+    ...mapGetters(["layoutConfig", "layoutInitial"]),
+    topTitleIcon() {
+      return this.isFixed ? 'el-icon-lock' : 'el-icon-unlock';
     }
   },
   watch: {
@@ -742,6 +785,49 @@ export default {
           })
       };
       this.shareData.url = `${document.location.origin}/#/kanban/share?id=${this.shareData.id}`
+    },
+    
+    handleMouseMove(event) {
+      // 当鼠标接近顶部时显示悬浮栏
+      if (event.clientY < 150) {
+        this.isBarVisible = true;
+      }
+    },
+    handleTopTitleLeave() {
+      // 如果悬浮栏未固定，鼠标离开时隐藏
+      if (!this.isFixed) {
+        this.isBarVisible = false;
+      }
+    },
+    toggleFixed() {
+      this.isFixed = !this.isFixed;
+      if (this.isFixed) {
+        this.isBarVisible = true;
+      }
+    },
+    getSystemLogo() {
+      const bg = this.layoutInitial("loader.background");
+      return bg;
+    },
+    siteLogo() {
+      const menuAsideLeftSkin = this.layoutConfig("brand.self.theme");
+      // set brand logo
+      const logoObject = this.layoutConfig("self.logo");
+
+      let logo = null;
+
+      if (typeof logoObject === "string") {
+        logo = logoObject;
+      }
+      if (typeof logoObject === "object") {
+        logo = objectPath.get(logoObject, menuAsideLeftSkin + "");
+      }
+      if (typeof logo === "undefined") {
+        const logos = this.layoutConfig("self.logo");
+        logo = logos[Object.keys(logos)[0]];
+      }
+
+      return logo;
     }
   }
 }
@@ -823,4 +909,35 @@ export default {
     text-align: center !important;
 }
 }
+
+.floating-bar {
+  position: fixed;
+  top: -100px; /* 初始隐藏 */
+  left: 0;
+  width: 100%;
+  background-color: #f0f0f0;
+  transition: top 0.3s;
+}
+
+.floating-bar.is-visible {
+  top: 0; /* 显示 */
+  margin-bottom: 150px;
+}
+
+.floating-bar.is-fixed {
+  top: 0; /* 固定 */
+}
+.logo-icon {
+  height: 47px;
+  /* width: 98px; */
+  margin-bottom: 10px;
+}
+.page-content {
+  transition: padding-top 0.3s;
+}
+
+.page-content.with-fixed-bar {
+  padding-top: 83px; /* 悬浮栏的高度，根据实际情况调整 */
+}
+
 </style>

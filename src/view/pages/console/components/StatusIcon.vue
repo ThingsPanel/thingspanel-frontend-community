@@ -33,12 +33,12 @@ export default {
   },
   data() {
     return {
-        lastPushTime: "上次推送时间: 无"
+        lastPushTime: this.$t('VISUALIZATION.CONSOLE.LAST_PUSH_TIME') + ": None"
     }
   },
   methods: {
     flush() {
-        this.lastPushTime = "上次推送时间: " + this.status.lastPushTime;
+        this.lastPushTime = this.$t('VISUALIZATION.CONSOLE.LAST_PUSH_TIME') + ': '+ this.status.lastPushTime;
     }
   }
 }

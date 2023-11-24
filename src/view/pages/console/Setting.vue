@@ -9,38 +9,38 @@
 <template>
     <div>
         <!-- 看板设置对话框 start -->
-        <el-dialog class="el-dark-dialog" :visible.sync="dialogVisible" v-bind="dialogSetting" v-on="dialogEvents">
-            <el-form class="console-setting-form el-dark-input" label-position="left" label-width="120px"
+        <el-dialog class="el-dark-dialog" :visible.sync="dialogVisible" v-bind="dialogSetting" v-on="dialogEvents" :title="$t('VISUALIZATION.CONSOLE.CONSOLE_SETTING')">
+            <el-form class="console-setting-form el-dark-input" label-position="left" label-width="140px"
                 ref="settingFormRef" :model="formData" :rules="formRules">
 
-            <el-form-item label="看板编号" prop="template_code">
+            <el-form-item :label="$t('VISUALIZATION.CONSOLE.CONSOLE_ID')" prop="template_code">
                 {{ data.code }}
             </el-form-item>
 
-            <el-form-item label="看板名称" prop="name">
+            <el-form-item :label="$t('VISUALIZATION.CONSOLE.CONSOLE_NAME')" prop="name">
                 <el-input v-model="formData.name"></el-input>
             </el-form-item>
 
-            <el-form-item label="看板背景颜色">
+            <el-form-item :label="$t('VISUALIZATION.CONSOLE.BACKGROUND_COLOR')">
                 <el-color-picker v-model="formData.configObj.background"></el-color-picker>
             </el-form-item>
             <el-row>
-                <el-checkbox :disabled="true" v-model="formData.configObj.dragable">组件是否可拖拽</el-checkbox>
+                <el-checkbox :disabled="true" v-model="formData.configObj.dragable">{{ $t('VISUALIZATION.CONSOLE.WHETHER_COMPONENT_CAN_BE_DRAGGED') }}</el-checkbox>
             </el-row>
             <el-row>
-                <el-checkbox :disabled="true" v-model="formData.configObj.resizable">组件是否可调整大小</el-checkbox>
+                <el-checkbox :disabled="true" v-model="formData.configObj.resizable">{{ $t('VISUALIZATION.CONSOLE.WHETHER_COMPONENT_CAN_BE_RESIZED') }}</el-checkbox>
             </el-row>
             <el-row>
-                <el-checkbox :disabled="true" v-model="formData.configObj.showTools">是否显示组件工具栏</el-checkbox>
+                <el-checkbox :disabled="true" v-model="formData.configObj.showTools">{{ $t('VISUALIZATION.CONSOLE.WHETHER_DISPLAY_COMPONENT_TOOLBAR') }}</el-checkbox>
             </el-row>
             <el-row>
-                <el-checkbox :disabled="true" v-model="formData.configObj.editTitle">是否可编辑组件标题（双击标题编辑）</el-checkbox>
+                <el-checkbox :disabled="true" v-model="formData.configObj.editTitle">{{ $t('VISUALIZATION.CONSOLE.WHETHER_COMPONENT_TITLE_CAN_BE_EDITED__DOUBLE_CLICK') }}</el-checkbox>
             </el-row>
 
             </el-form>
             <div class="dialog-footer">
-                <el-button type="cancel" @click="dialogVisible=false">取消</el-button>
-                <el-button type="primary" @click="handleSubmit">确定</el-button>
+                <el-button type="cancel" @click="dialogVisible=false">{{ $t('COMMON.CANCEL') }}</el-button>
+                <el-button type="primary" @click="handleSubmit">{{ $t('COMMON.SAVE') }}</el-button>
             </div>
         </el-dialog>
         <!-- 看板设置对话框 end -->

@@ -1,31 +1,31 @@
 <template>
     <el-drawer custom-class="drawer-config" :visible.sync="dialogVisible" v-bind="drawerSetting" v-on="drawerEvents">
         <template #title>
-            <h2>组件设置</h2>
+            <h2>{{ $t('VISUALIZATION.CONSOLE.COMPONENT_SETTING') }}</h2>
             <el-button size="small " type="border" @click="dialogVisible = false">{{ $t("SYSTEM_MANAGEMENT.CANCEL")
             }}</el-button>
-            <el-button size="small" type="indigo" @click="handleSubmit">确认</el-button>
+            <el-button size="small" type="indigo" @click="handleSubmit">{{ $t('COMMON.SAVE') }}</el-button>
         </template>
         <div class="drawer-box">
             <el-tabs type="border-card" v-model="activeName" >
-                <el-tab-pane class="data-pane" label="数据源" name="data">
+                <el-tab-pane class="data-pane" :label="$t('VISUALIZATION.CONSOLE.DATA_SOURCE')" name="data">
                     <el-form label-width="100px" label-position="left">
                         <!-- 项目列表 -->
-                        <el-form-item label="项目:">
+                        <el-form-item :label="$t('VISUALIZATION.CONSOLE.PROJECT')">
                             <el-select v-model="formData.data.projectId" @change="handleProjectChange">
                                 <el-option v-for="(item, index) in projectList" :key="index" :value="item.id"
                                     :label="item.name" />
                             </el-select>
                         </el-form-item>
                         <!-- 分组列表 -->
-                        <el-form-item label="分组:">
+                        <el-form-item :label="$t('VISUALIZATION.CONSOLE.GROUP')">
                             <el-select v-model="formData.data.groupId" @change="handleGroupChange">
                                 <el-option v-for="(item, index) in groupList" :key="index" :value="item.id"
                                     :label="item.name" />
                             </el-select>
                         </el-form-item>
                         <!-- 设备列表 -->
-                        <el-form-item label="设备:">
+                        <el-form-item :label="$t('VISUALIZATION.CONSOLE.DEVICE')">
                             <el-cascader ref="deviceRef" v-model="formData.data.device"
                                 :options="deviceList" clearable :props="{ checkStrictly: true, emitPath: false }"
                                 @change="handleDeviceChange">
@@ -36,7 +36,7 @@
                             </el-cascader>
                         </el-form-item>
                         <!-- 物模型属性列表 -->
-                        <el-form-item label="属性:">
+                        <el-form-item :label="$t('VISUALIZATION.CONSOLE.ATTRIBUTE')">
                             <el-select v-model="formData.data.properties" multiple>
                                 <el-option v-for="(item, index) in propertyList" :key="index" :label="item.title"
                                     :value="item.name"></el-option>
@@ -44,24 +44,24 @@
                         </el-form-item>
                     </el-form>
                 </el-tab-pane>
-                <el-tab-pane class="appearance-pane" label="外观" name="appearance" >
+                <el-tab-pane class="appearance-pane" :label="$t('VISUALIZATION.CONSOLE.APPEARANCE')" name="appearance" >
                     <el-form label-width="140px" label-position="left">
-                        <el-form-item label="显示标题:" >
+                        <el-form-item :label="$t('VISUALIZATION.CONSOLE.SHOW_TITLE')" >
                             <!-- <el-checkbox :disabled="true" v-model="formData.appearance.showTitle"></el-checkbox> -->
                             <el-switch v-model="formData.appearance.showTitle" disabled active-color="#13ce66" inactive-color="#8a8ea1"/>
                         </el-form-item>
-                        <el-form-item label="标题:" v-if="formData.appearance.showTitle">
+                        <el-form-item :label="$t('VISUALIZATION.CONSOLE.TITLE')" v-if="formData.appearance.showTitle">
                             <el-input v-model="formData.appearance.name" ></el-input>
                         </el-form-item>
-                        <el-form-item label="背景颜色:">
+                        <el-form-item :label="$t('VISUALIZATION.CONSOLE.BACKGROUND_COLOR')">
                             <el-color-picker v-model="formData.appearance.backgroundColor"></el-color-picker>
                         </el-form-item>
-                        <el-form-item label="文字颜色:">
+                        <el-form-item :label="$t('VISUALIZATION.CONSOLE.TEXT_COLOR')">
                             <el-color-picker v-model="formData.appearance.color" disabled></el-color-picker>
                         </el-form-item>
                     </el-form>
                 </el-tab-pane>
-                <el-tab-pane v-if="data.controlType==='dashboard'" label="仪表盘" disabled></el-tab-pane>
+                <el-tab-pane v-if="data.controlType==='dashboard'" :label="$t('VISUALIZATION.CONSOLE.DASHBOARD')" disabled></el-tab-pane>
             </el-tabs>
 
         </div>

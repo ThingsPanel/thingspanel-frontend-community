@@ -1,24 +1,24 @@
 <template>
     <div>
         <!-- 添加组件对话框 start -->
-        <el-dialog class="el-dark-dialog" :visible.sync="dialogVisible" v-bind="dialogSettings" v-on="dialogEvents">
+        <el-dialog class="el-dark-dialog" :title="$t('VISUALIZATION.CONSOLE.ADD_COMPONENT')" :visible.sync="dialogVisible" v-bind="dialogSettings" v-on="dialogEvents">
 
             <el-form class="console-create-form el-dark-input" label-position="left" label-width="80px" ref="createFormRef"
                 :model="formData" >
                 <div class="create-select">
 
-                    <el-select filterable v-model="formData.projectId" @change="handleProjectChange">
+                    <el-select filterable v-model="formData.projectId" @change="handleProjectChange" :placeholder="$t('COMMON.PLEASE_CHOOSE')">
                         <el-option v-for="(item, index) in projectList" :key="index" :value="item.id"
                             :label="item.name" />
                     </el-select>
 
-                    <el-select filterable v-model="formData.groupId" @change="handleGroupChange">
+                    <el-select filterable v-model="formData.groupId" @change="handleGroupChange" :placeholder="$t('COMMON.PLEASE_CHOOSE')">
                         <el-option v-for="(item, index) in groupList" :key="index" :value="item.id"
                             :label="item.name" />
                     </el-select>
 
                     <el-cascader filterable ref="deviceRef" v-model="formData.device" :options="deviceList" clearable
-                            :props="{ checkStrictly: false, emitPath: false }" @change="handleDeviceChange">
+                            :props="{ checkStrictly: false, emitPath: false }" @change="handleDeviceChange" :placeholder="$t('COMMON.PLEASE_CHOOSE')">
                             <template slot-scope="{ node, data }">
                                 <span>{{ data.label }}</span>
                                 <span v-if="!node.isLeaf"> ({{ data.children.length }}) </span>
@@ -84,7 +84,7 @@
                 </grid-layout>
             </el-form>
             <div class="dialog-footer">
-                <el-button type="primary" @click="handleSubmit">创建</el-button>
+                <el-button type="primary" @click="handleSubmit">{{ $t('COMMON.CREATE') }}</el-button>
             </div>
         </el-dialog>
         <!-- 添加组件对话框 end -->
