@@ -46,7 +46,8 @@
 
       <el-button type="border" size="medium" @click="handleCreate()">{{ $t("DEVICE_MANAGEMENT.CREATEDEVICE")}}</el-button>
 
-      <el-button type="indigo" size="medium" @click="showManagementGroup=true">{{ $t("DEVICE_MANAGEMENT.MANAGEMENTGROUP")}}</el-button>
+      <!-- <el-button type="indigo" size="medium" @click="showManagementGroup=true">{{ $t("DEVICE_MANAGEMENT.MANAGEMENTGROUP")}}</el-button> -->
+      <el-button type="indigo" size="medium" @click="handleGroupManagement">{{ $t("DEVICE_MANAGEMENT.MANAGEMENTGROUP")}}</el-button>
     </el-col>
   </el-row>
   <!-- 筛选 end -->
@@ -275,7 +276,7 @@ export default defineComponent({
     SubDeviceSettingForm
   },
   setup() {
-    let {route} = useRoute()
+    let { router, route } = useRoute()
     let business_id = route.query.business_id
     const { refs } = getCurrentInstance();
 
@@ -284,6 +285,11 @@ export default defineComponent({
       deviceGroupOptions,
       getGroupOptions,
     } = useDeviceGroup(business_id)
+
+    // 打开分组管理页面
+    function handleGroupManagement() {
+      router.push({name: "GroupManagement", query: { business_id }})
+    }
 
     // 设备列表
     let {
@@ -492,7 +498,7 @@ export default defineComponent({
       devicePluginSelectorRef,
       handleSelectPlugin,
       devicePluginOptions,
-
+      handleGroupManagement,
       deviceTypeMap,
       handleCreate,
       handleSave,

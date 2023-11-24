@@ -1,3 +1,11 @@
+<!--
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-11-20 16:27:47
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-11-22 14:19:04
+ * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\index.vue
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 <template>
     <div class="rounded card p-4">
         <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
