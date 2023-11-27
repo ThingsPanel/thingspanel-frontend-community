@@ -171,7 +171,7 @@ export default {
         accordion: true,
         // 筛选函数
         filterNodeMethod: (value, data) => {
-          console.log("filterNodeMethod", value,data)
+          // console.log("filterNodeMethod", data.name.toLowerCase(),value.toLowerCase())
           if (!value) return true;
           return data.name.indexOf(value) !== -1;
         },
