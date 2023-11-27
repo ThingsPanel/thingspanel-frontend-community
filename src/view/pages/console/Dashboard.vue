@@ -43,19 +43,19 @@
         <div :class="['floating-bar', { 'is-visible': isBarVisible, 'is-fixed': isFixed }]"
         @mouseleave="handleTopTitleLeave" style="color: white; background-color: #161E43 !important; z-index: 999;">
           <!-- 悬浮栏内容 -->
-          <div style="padding: 1rem;">
+          <div style="padding: 0rem;">
             <el-row type="flex" align="center">
-              <el-col :span=11 :xl=5 :lg=7 :md=11>
-                <a href="" class="logo text-white" style="padding-left: 10vh;">
+              <el-col :span=11 :xl=3 :lg=5 :md=8>
+                <a href="" class="logo text-white" style="padding-left: 1vh;">
                   <img :src="siteLogo()" alt="" class="logo-icon" />
                 </a>
               </el-col>
-              <el-col :span=12 :xl=18 :lg=16 :md=12 style="text-align: center;display:flex; align-items:center">
-                <div style="font-size: 25px; line-height: 100%">{{ this.settingData && this.settingData.name ? this.settingData.name : '' }}</div>
+              <el-col :span=12 :xl=20 :lg=18 :md=15 style="text-align: center;display:flex; align-items:center">
+                <div style="font-weight:bold ; font-size: 18px; line-height: 100%">{{ this.settingData && this.settingData.name ? this.settingData.name : '' }}</div>
               </el-col>
               <el-col :span=1 style="text-align: center;display:flex; align-items:center">
                 <el-tooltip :content="$t('VISUALIZATION.CONSOLE.LOCK_TITLE_OR_NOT')">
-                  <i :class="topTitleIcon" style="cursor: pointer; font-size: 30px" @click="toggleFixed"></i>
+                  <i :class="topTitleIcon" style="cursor: pointer; font-size: 25px" @click="toggleFixed"></i>
                 </el-tooltip>
               </el-col>
             </el-row>
@@ -253,9 +253,8 @@ export default {
         permission: "0"
       },
       // 是否显示顶部标题
-      topTitleVisible: false,
-      isBarVisible: false, // 控制悬浮栏显示
-      isFixed: false, // 控制悬浮栏是否固定
+      isBarVisible: true, // 控制悬浮栏显示
+      isFixed: true, // 控制悬浮栏是否固定
       
     }
   },
@@ -931,13 +930,14 @@ export default {
   height: 47px;
   /* width: 98px; */
   margin-bottom: 10px;
+  margin-top: 10px;
 }
 .page-content {
   transition: padding-top 0.3s;
 }
 
 .page-content.with-fixed-bar {
-  padding-top: 83px; /* 悬浮栏的高度，根据实际情况调整 */
+  padding-top: 56px; /* 悬浮栏的高度，根据实际情况调整 */
 }
 
 </style>
