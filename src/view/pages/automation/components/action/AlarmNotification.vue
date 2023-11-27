@@ -41,7 +41,7 @@ import { message_error } from '@/utils/helpers'
     components: {  },
     props: {
       data: {
-        type: [Object],
+        type: [Object, Array],
         default: () => { return {} }
       }
     },
@@ -63,7 +63,7 @@ import { message_error } from '@/utils/helpers'
     watch: {
       data: {
         handler(newValue) {
-          if (newValue && JSON.stringify(newValue) !== "{}") {
+          if (newValue && JSON.stringify(newValue) !== "{}" && !Array.isArray(newValue)) {
             this.formData = JSON.parse(JSON.stringify(newValue));
             console.log("回显", this.formData)
            
