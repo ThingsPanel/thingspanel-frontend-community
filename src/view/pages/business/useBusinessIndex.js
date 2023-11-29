@@ -1,6 +1,6 @@
 import {reactive, ref} from "@vue/composition-api";
 import {business_index} from "@/api/business";
-
+import { _debounce } from "@/utils/helpers.js";
 export default function useBusinessIndex(page){
     let tableData = ref([])
     let loading = ref(false)
@@ -47,11 +47,24 @@ export default function useBusinessIndex(page){
         })
     }
 
+    const filterInput = ref("");
+    // 防抖
+    const debounceSearchTextChange = _debounce((v) => {
+        params.name = v;
+        getBusinessIndex();
+    }, 1000);
+    
+    function filterChange(v) {
+        debounceSearchTextChange(v)
+    }
+
     return{
         tableData,
         getBusinessIndex,
         loading,
         params,
         total,
+        filterInput,
+        filterChange
     }
 }

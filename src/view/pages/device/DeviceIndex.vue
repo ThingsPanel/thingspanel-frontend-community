@@ -2,7 +2,7 @@
 <div class="rounded card p-4 ">
   <el-row type="flex" :gutter="20" class="pt-3 pb-3 px-3">
     <el-col :span="12">
-      <TableTitle>{{ $t("DEVICE_ACCESS.DEVICE") }}</TableTitle>
+      <TableTitle>{{ name }} - {{ $t("DEVICE_ACCESS.DEVICE") }}</TableTitle>
     </el-col>
     <el-col :span="12" class="text-right">
 
@@ -277,7 +277,7 @@ export default defineComponent({
   },
   setup() {
     let { router, route } = useRoute()
-    let business_id = route.query.business_id
+    const { business_id, name } = route.query;
     const { refs } = getCurrentInstance();
 
     // 设备分组的选项
@@ -486,6 +486,7 @@ export default defineComponent({
 
 
     return {
+      name,
       tableData,
       loading,
       params,

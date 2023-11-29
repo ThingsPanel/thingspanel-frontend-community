@@ -5,8 +5,13 @@
       <TableTitle>{{ $t('DEVICE_ACCESS.DEVICEACCESS') }}</TableTitle>
     </el-col>
     <el-col :span="12" class="px-2 text-right">
-      <el-button size="medium" type="border"
-                 v-if="hasAuth('business:add')" @click="handleCreate()">{{  $t('DEVICE_ACCESS.NEW_PROJECT') }}</el-button>
+      <div style="width: 100%;text-align:right">
+        <el-input style="width: 160px;margin-right:12px" size="medium" :placeholder="'输入名称检索'" clearable v-model="filterInput" @input="filterChange"></el-input>
+        <el-button style="float:right" size="medium" type="border"
+          v-if="hasAuth('business:add')" @click="handleCreate()">{{  $t('DEVICE_ACCESS.NEW_PROJECT') }}</el-button>
+      </div>
+          
+      
     </el-col>
   </el-row>
 
@@ -106,6 +111,8 @@ export default defineComponent({
       loading,
       params,
       total,
+      filterInput,
+      filterChange
     } = useBusinessIndex(page)
 
     // 业务的增删改
@@ -124,8 +131,10 @@ export default defineComponent({
 
     // 跳转到设备
     function showDevice(item){
-      router.push({name: "device", query: {business_id: item.id}, params:{page: params.page}})
+      router.push({name: "device", query: {business_id: item.id, name: item.name}, params:{page: params.page}})
     }
+
+    
 
     return {
       tableData,
@@ -141,6 +150,8 @@ export default defineComponent({
       handleSave,
       handleDelete,
       dateFormat,
+      filterInput,
+      filterChange
     }
   }
 })

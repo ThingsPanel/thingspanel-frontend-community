@@ -185,9 +185,10 @@ export function _debounce(fn, wait) {
     wait = wait || 600;
     return function () {
       let that = this;
+      let args = arguments;
       if(timeout !== null)   clearTimeout(timeout);  
       timeout = setTimeout(() => {
-        fn.apply(that);
+        fn.apply(that, args);
       }, wait);
     }    
 }
