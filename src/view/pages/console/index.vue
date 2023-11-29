@@ -210,7 +210,6 @@ export default {
     watch: {
         $route: {
             handler(route) {
-                document.title = "看板列表 | ThingsPanel";
                 if (JSON.stringify(route.query) !=="{}") {
                     this.params = { 
                         current_page:  Number(route.query.current_page), 

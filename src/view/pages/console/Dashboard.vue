@@ -307,7 +307,6 @@ export default {
           })
           return;
         }
-        document.title = "看板详情 | ThingsPanel";
         this.params = { ...route.query };
         this.initConsole();
       }, immediate: true
