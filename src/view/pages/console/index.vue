@@ -10,25 +10,25 @@
     <div class="rounded card p-4">
         <el-row type="flex" :gutter="20" class="pt-3 pb-4 px-3">
             <el-col :span="12">
-                <TableTitle>看板</TableTitle>
+                <TableTitle>{{ $t('VISUALIZATION.CONSOLE.CONSOLE') }}</TableTitle>
             </el-col>
 
             <el-col :span="12" class="px-2 text-right">
-                <el-button size="medium" type="border" @click="handleCreate()">创建看板</el-button>
+                <el-button size="medium" type="border" @click="handleCreate()">{{ $t('VISUALIZATION.CONSOLE.CREATE_CONSOLE') }}</el-button>
             </el-col>
         </el-row>
         <!-- 表 start -->
         <el-form class="inline-edit">
             <el-table :data="tableData" v-loading="loading">
                 <!-- 序号 -->
-                <el-table-column :label="$t('VISUALIZATION.NO')" type="index" align="left" min-width="110" width="200">
+                <el-table-column :label="$t('VISUALIZATION.CONSOLE.NO')" type="index" align="left" min-width="110" width="200">
                     <template v-slot="scope">
                         <span>{{ (params.current_page - 1) * 10 + scope.$index + 1 }}</span>
                     </template>
                 </el-table-column>
 
                 <!-- 看板名称 -->
-                <el-table-column label="看板名称" prop="name" align="left">
+                <el-table-column :label="$t('VISUALIZATION.CONSOLE.CONSOLE_NAME')" prop="name" align="left">
                     <template v-slot="scope">
                         <div class="w-100 cursor-pointer" @click="handleViewConsole(scope.row)">
                             <p class="mad">{{ scope.row.name }}</p>
@@ -37,20 +37,20 @@
                 </el-table-column>
 
                 <!-- 创建时间 -->
-                <el-table-column label="创建时间" prop="created_at" align="left">
+                <el-table-column :label="$t('VISUALIZATION.CONSOLE.CREATED_TIME')" prop="created_at" align="left">
                     <template v-slot="scope">
                         {{ scope.row.created_at ? formatDate(scope.row.created_at) : "" }}
                     </template>
                 </el-table-column>
 
                 <!-- 操作 -->
-                <el-table-column align="left" :label="$t('VISUALIZATION.OPERATION')" width="230">
+                <el-table-column align="left" :label="$t('COMMON.OPERATION')" width="230">
                     <template v-slot="scope">
                         <div style="text-align: left">
                             <!-- 分享 --> 
-                            <el-button type="yellow" size="mini" @click="shareConsole(scope.row)">分享</el-button>
+                            <el-button type="yellow" size="mini" @click="shareConsole(scope.row)">{{ $t('COMMON.SHARE') }}</el-button>
                             <!-- 编辑 -->
-                            <el-button type="indigo" size="mini" @click="handleEditConsole(scope.row)">{{ $t('VISUALIZATION.EDIT')}}</el-button>
+                            <el-button type="indigo" size="mini" @click="handleEditConsole(scope.row)">{{ $t('COMMON.EDIT')}}</el-button>
                             <!-- 删除 -->
                             <el-popconfirm :confirm-button-text="$t('COMMON.CONFIRM')"
                                 :cancel-button-text="$t('COMMON.CANCEL')"
@@ -78,20 +78,20 @@
         <!-- 分页 end -->
 
         <!-- 分享看板对话框 start -->
-        <el-dialog class="el-dark-dialog" title="分享看板" v-bind="dialogSettings" :visible.sync="shareDialogVisible" close-on-click-modal>
+        <el-dialog class="el-dark-dialog" :title="$t('VISUALIZATION.CONSOLE.SHARE_COSNOLE')" v-bind="dialogSettings" :visible.sync="shareDialogVisible" close-on-click-modal>
             <el-form class="console-share-form el-dark-input" label-position="left"  label-width="120px">
 
                 <!-- 分享链接 -->
-                <el-form-item label="分享链接:">
+                <el-form-item :label="$t('VISUALIZATION.CONSOLE.SHARE_LINK')">
                     <el-input readonly v-model="shareData.url"></el-input>
                 </el-form-item>
 
-                <el-form-item label="谁可以查看">
+                <el-form-item :label="$t('VISUALIZATION.CONSOLE.WHO_CAN_ACCESS')">
                     <el-row class="w-full">
                         <el-col :span="3">
                             <el-radio-group v-model="shareData.permission" type="vertical" @change="handleSharePermissionChange">
-                                <el-radio label="0" size="small" class="my-5">仅我自己</el-radio>
-                                <el-radio label="1" size="small">所有人可查看</el-radio>
+                                <el-radio label="0" size="small" class="my-5">{{ $t('VISUALIZATION.CONSOLE.ONLY_ME') }}</el-radio>
+                                <el-radio label="1" size="small">{{ $t('VISUALIZATION.CONSOLE.EVERYONE') }}</el-radio>
                             </el-radio-group>
                         </el-col>
                     </el-row>
@@ -100,39 +100,39 @@
                 
             </el-form>
             <div class="dialog-footer">
-                <el-button type="primary" @click="gotoShare">打开链接</el-button>
-                <el-button class="copy-qb" type="primary" @click="handleCopyAndClose">复制链接并关闭</el-button>
+                <el-button type="primary" @click="gotoShare">{{ $t('VISUALIZATION.CONSOLE.OPEN_LINK') }}</el-button>
+                <el-button class="copy-qb" type="primary" @click="handleCopyAndClose">{{ $t('VISUALIZATION.CONSOLE.COPY_AND_CLOSE') }}</el-button>
                 <!-- <el-button type="primary" @click="shareDialogVisible=false">关闭</el-button> -->
             </div>
         </el-dialog>
         <!-- 创建分享对话框 end -->
 
         <!-- 创建看板对话框 start -->
-        <el-dialog class="el-dark-dialog" title="创建看板" v-bind="dialogSettings"  :visible.sync="createDialogVisible">
-            <el-form class="console-create-form el-dark-input" label-position="left"  label-width="80px" 
+        <el-dialog class="el-dark-dialog" :title="$t('VISUALIZATION.CONSOLE.CREATE_CONSOLE')" v-bind="dialogSettings"  :visible.sync="createDialogVisible">
+            <el-form class="console-create-form el-dark-input" label-position="left"  label-width="140px" 
                 ref="createFormRef" :model="formData" :rules="formRules">
 
                 <!-- 看板名称 -->
-                <el-form-item label="看板名称" prop="name">
+                <el-form-item :label="$t('VISUALIZATION.CONSOLE.CONSOLE_NAME')" prop="name">
                     <el-input style="width: 280px" v-model="formData.name"></el-input>
                 </el-form-item>
 
                 <!-- 创建方式 -->
-                <el-form-item label="创建方式" prop="mode">
+                <el-form-item :label="$t('VISUALIZATION.CONSOLE.CREATE_METHOD')" prop="mode">
                     <el-radio-group v-model="formData.mode" size="small">
                         <div style="display: flex">
-                            <el-radio :disabled="true" label="template">从模板导入</el-radio>
+                            <el-radio :disabled="true" label="template">{{ $t('VISUALIZATION.CONSOLE.IMPORT_FROM_TEMPLATE') }}</el-radio>
                             <el-input :disabled="formData.mode!=='template'" v-model="formData.code"
-                                :placeholder="'请输入模板编码'"
+                                :placeholder="$t('VISUALIZATION.CONSOLE.PLEASE_INPUT_TEMPLATE_ID')"
                                 ></el-input>
                         </div>
-                        <div><el-radio label="blank">创建空白模板</el-radio></div>
+                        <div><el-radio label="blank">{{ $t('VISUALIZATION.CONSOLE.CREATE_BLANK_CONSOLE') }}</el-radio></div>
                       </el-radio-group>
                 </el-form-item>
                 
             </el-form>
             <div class="dialog-footer">
-                <el-button type="primary" @click="handleSubmit">创建</el-button>
+                <el-button type="primary" @click="handleSubmit">{{ $t('COMMON.CREATE') }}</el-button>
             </div>
         </el-dialog>
         <!-- 创建看板对话框 end -->
