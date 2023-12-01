@@ -43,20 +43,35 @@ export default defineComponent({
 
 
 
-    const defaultProps = { label: 'label', isLeaf: 'leaf'}
+    const defaultProps = { label: 'label', isLeaf: 'leaf', children: 'children', device: 'device', asset_name: 'asset_name'}
     /**
      * 节点过滤
      * @type {null}
      */
     const pluginTree = reference(null);
     let filterValue = ref("")
+    let filteredSubDeviceList = ref([])
     watch(filterValue, value => {
       pluginTree.value.filter(value)
+      filteredSubDeviceList.value = []
     })
 
     function filterNode(value, data) {
       if (!value) return true;
-      return data[defaultProps.label].indexOf(value) !== -1;
+      // 查询命中最外层节点时，返回所有数据
+      if (name.indexOf(value) !== -1) {
+        return true;
+      }
+      let isFilter = data[defaultProps.label].indexOf(value) !== -1 || (data[defaultProps.asset_name] && data[defaultProps.asset_name].indexOf(value) !== -1);
+
+      // 查询命中网关时，添加网关下的所有子设备到过滤列表
+      if (isFilter && data[defaultProps.children] && data[defaultProps.children].length > 0) {
+        for (let i = 0; i < data[defaultProps.children].length; i++) {
+          filteredSubDeviceList.value.push(data[defaultProps.children][i][defaultProps.device])
+        }
+      }
+
+      return isFilter || filteredSubDeviceList.value.indexOf(data[defaultProps.device]) !== -1;
     }
 
 
@@ -81,6 +96,8 @@ export default defineComponent({
       back,
       defaultProps,
       filterValue,
+      // 当查询命中网关时，对应的子设备列表
+      filteredSubDeviceList,
       pluginTree,
       filterNode,
       loadNode,
