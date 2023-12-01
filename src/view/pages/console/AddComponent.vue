@@ -183,7 +183,7 @@ export default {
                         item.uId = getRandomString(12);
                         if (typeof item.mapping === "string") {
                             let p = tsl.properties.find(p => p.name === item.mapping);
-                            item.dataSrouce = [p];
+                            item.dataSource = [p];
                         } else if (typeof item.mapping === "object") {
                             let ps = [];
                             item.mapping.forEach(m => {

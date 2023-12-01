@@ -107,6 +107,7 @@ export default {
       }
     },
     updateOption(values) {
+      console.log("Control.updateOption", this.optionData, values)
       this.optionData.series.forEach(item => {
         let map = item.mapping;
         if (item.type == "switch") {

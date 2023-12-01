@@ -1,3 +1,11 @@
+/*
+ * @Author: chaoxiaoshu-mx leukotrichia@163.com
+ * @Date: 2023-07-31 10:24:33
+ * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
+ * @LastEditTime: 2023-12-01 10:16:23
+ * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\business\useBusinessIndex.js
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import {reactive, ref} from "@vue/composition-api";
 import {business_index} from "@/api/business";
 import { _debounce } from "@/utils/helpers.js";
@@ -50,7 +58,7 @@ export default function useBusinessIndex(page){
     const filterInput = ref("");
     // 防抖
     const debounceSearchTextChange = _debounce((v) => {
-        params.name = v;
+        params.name = v.trim();
         getBusinessIndex();
     }, 1000);
     

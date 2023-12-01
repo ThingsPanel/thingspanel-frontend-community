@@ -13,7 +13,7 @@
           </div>
         </div>
     
-        <common-signal-status ref="signalStatusRef" :option="option" :value="statusValue" @click="handleClick"></common-signal-status>
+        <common-signal-status ref="signalStatusRef" :option="option" @click="handleClick"></common-signal-status>
       </div>
 </template>
 
@@ -44,15 +44,13 @@ export default {
       deep: true
     }
   },
+  mounted() {
+    this.optionData = JSON.parse(JSON.stringify(this.option));
+    console.log("mounted", this.optionData)
+  },
   methods: {
     updateOption(value) {
-      console.log("SignalStatus.updateOption", value)
-      if (typeof value === "boolean") {
-        this.statusValue = value
-      } else {
-        this.statusValue = false
-      }
-      this.$refs['signalStatusRef'].updateValue(statusValue);
+      this.$refs['signalStatusRef'].updateValue(value);
       this.$refs['statusIconRef'].flush();
     },
     handleClick() {

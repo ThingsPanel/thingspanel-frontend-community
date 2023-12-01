@@ -2,7 +2,7 @@
  * @Author: chaoxiaoshu-mx leukotrichia@163.com
  * @Date: 2023-10-12 20:49:12
  * @LastEditors: chaoxiaoshu-mx leukotrichia@163.com
- * @LastEditTime: 2023-11-30 08:55:45
+ * @LastEditTime: 2023-12-01 13:13:00
  * @FilePath: \ThingsPanel-Backend-Vue\src\view\pages\console\Dashboard.vue
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -586,13 +586,14 @@ export default {
      * @return {*}
      */
     setComponentsValue(deviceId, data) {
-
       // 通过deviceId获取对应的图表
       const cpts = this.viewData.data.filter(item => item.deviceId === deviceId);
+
       if (!cpts || !cpts.length) return;
       for (let i = 0; i < cpts.length; i++) {
         const cpt = cpts[i];
         const option = this.viewData.template.find(item => item.uId === cpt.uId);
+
         let mapping = option.dataSource || null;
         let values = null;
         // 刷新图表最近推送时间
@@ -607,6 +608,7 @@ export default {
             } else {
               values = null;
             }
+
           } else {
 
             values = mapping.map(item => {
@@ -619,13 +621,17 @@ export default {
           }
 
         } else if (option.controlType == "control") {
+          console.log("dashboard.mapping 1", mapping)
           mapping = option.series.map(item => item.mapping.attr)
+          console.log("dashboard.mapping 2", mapping)
+
           values = {};
           mapping.forEach(item => {
-            if (data && data[item]) {
-              values[item] = data[item];
+            if (data && data[item.name]) {
+              values[item.name] = data[item.name];
             }
           });
+          console.log("dashboard.mapping 3", values)
         } else if (option.controlType === "history") {
           values = {};
           mapping.forEach(item => {
@@ -639,7 +645,6 @@ export default {
           const ele = this.$refs["component_" + option.i];
           if (ele && ele[0]) {
             JSON.stringify(values) !== "{}" && ele[0].updateOption(values);
-            console.log("option.deviceStatus", option.deviceStatus)
             option.deviceStatus.lastPushTime = data["systime"] || "";
             ele[0].updateStatus && ele[0].updateStatus(option.deviceStatus);
           }
