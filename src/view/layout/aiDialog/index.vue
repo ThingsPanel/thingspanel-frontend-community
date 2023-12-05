@@ -23,7 +23,6 @@ export default {
   methods: {
     openDialog() {
       this.dialogVisible = true;
-      console.error('openDialog', this.dialogVisible)
     }
   }
 };

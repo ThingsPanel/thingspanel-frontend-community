@@ -138,7 +138,8 @@ export default {
         return
       }
       this.closeSocket();
-      this.socket = new websocket(ws_url + "/ws/ai");
+      // this.socket = new websocket(ws_url + "/ws/ai");
+      this.socket = new websocket("ws://dev.thingspanel.cn" + "/ws/ai");
       this.socket.init((event) => {
       });
       this.socket.onReady(() => {
