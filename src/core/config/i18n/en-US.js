@@ -440,6 +440,8 @@ export const locale = {
     QQ_GROUP_NUMBER: "QQ Group",
     WECHAT: "WeChat",
     DOWNLOAD_APP: "Download APP",
+    AI_ASSISTANT: "AI",
+    SEND: "Send",
   },
   TRANSLATOR: {
     SELECT: "Please select language",

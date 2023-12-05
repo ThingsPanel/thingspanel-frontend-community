@@ -440,6 +440,8 @@ export const locale = {
     QQ_GROUP_NUMBER: "群号",
     WECHAT: "微信",
     DOWNLOAD_APP: "下载APP",
+    AI_ASSISTANT: "AI助理",
+    SEND: "发送",
 },
   TRANSLATOR: {
     SELECT: "选择你的语言",

@@ -15,7 +15,7 @@ let wsServer = ws_url + "/ws/device/current"
  *  })
  * @returns 
  */
-const websocket = () => {
+const websocket = (wsUrl = wsServer) => {
     let socket = null;
     let onReadyCallback = null;
     let onCloseCallback = null;
@@ -24,7 +24,7 @@ const websocket = () => {
             alert("您的浏览器不支持socket")
         } else {
             // 创建websocket连接
-            socket = new WebSocket(wsServer);
+            socket = new WebSocket(wsUrl);
             /**
              * 连接发生错误的回调方法
              * @param {*} err 
@@ -73,13 +73,19 @@ const websocket = () => {
      * 发送消息
      * @param {*} deviceId 
      */
-    const send = (data) => {
-        const params = {
-            ...data,
-            token: JwtService.getToken()
-        }
-        if (socket) {
-            socket.send(JSON.stringify(params))
+    const send = (data, type="json") => {
+        if (type === "json") {
+            const params = {
+                ...data,
+                token: JwtService.getToken()
+            }
+            if (socket) {
+                socket.send(JSON.stringify(params))
+            }
+        } else if (type === "string") {
+            if (socket) {
+                socket.send(data)
+            }
         }
     };
 

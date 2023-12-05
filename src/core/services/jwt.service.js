@@ -3,6 +3,7 @@ import storage from "../../storage";
 const ID_TOKEN_KEY = "id_token";
 const TOKEN_EXPIRES_KEY = "id_token_expires_in";
 const USER = "user";
+const AI_CONVERSATION = "chatHistory";
 const ls = window.localStorage;
 
 export const getCurrentUser = () => {
@@ -14,6 +15,7 @@ export const saveCurrentUser = (user) => {
 }
 export const removeCurrentUser = () => {
   ls.removeItem(USER);
+  ls.removeItem(AI_CONVERSATION);
 }
 
 export const getToken = () => {
@@ -28,6 +30,7 @@ export const saveToken = (token) => {
 export const destroyToken = () => {
   window.localStorage.removeItem(ID_TOKEN_KEY);
   window.localStorage.removeItem(TOKEN_EXPIRES_KEY);
+  window.localStorage.removeItem(AI_CONVERSATION);
 };
 
 export const getExpiresTime = () => {

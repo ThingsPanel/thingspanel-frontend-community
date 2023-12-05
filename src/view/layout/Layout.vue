@@ -47,6 +47,7 @@
     </div>
     <!-- <KTStickyToolbar v-if="toolbarDisplay"></KTStickyToolbar> -->
     <KTScrollTop></KTScrollTop>
+    <AIDialog></AIDialog>
   </div>
 </template>
 <style>
@@ -60,6 +61,7 @@ import KTAside from "@/view/layout/aside/Aside.vue";
 import KTHeader from "@/view/layout/header/Header.vue";
 import KTHeaderMobile from "@/view/layout/header/HeaderMobile.vue";
 import KTFooter from "@/view/layout/footer/Footer.vue";
+import AIDialog from "@/view/layout/aiDialog/index.vue";
 import HtmlClass from "@/core/services/htmlclass.service";
 // import KTSubheader from "@/view/layout/subheader/Subheader.vue";
 // import KTStickyToolbar from "@/view/layout/extras/StickyToolbar.vue";
@@ -84,7 +86,8 @@ export default {
     // KTSubheader,
     // KTStickyToolbar,
     KTScrollTop,
-    Loader
+    Loader,
+    AIDialog
   },
   beforeMount() {
     // this.$store.dispatch(RESET_LAYOUT_CONFIG);
