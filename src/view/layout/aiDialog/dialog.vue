@@ -149,18 +149,15 @@ export default {
 
       this.socket.onMessage((result) => {
         try {
-          if (result === '认证完成！请问有什么可以帮助您的？') {
-            this.saveConversation({ user: 'ai', message: result.replace('AI: ', '') })
-            return
-          } 
           if (result.indexOf('You: ') > -1) {
-            this.saveConversation({ user: 'you', message: result.replace('You: ', '') })
-            return
+            this.saveConversation({ user: 'you', message: typeof result === 'string' ? result.slice(5): result })
           } else if (result.indexOf('AI: ') > -1){
-            this.saveConversation({ user: 'ai', message: result.replace('AI: ', '') })
-            return
+            this.saveConversation({ user: 'ai', message: typeof result === 'string' ? result.slice(4) : result })
+          } else {
+            this.saveConversation({ user: 'ai', message: result })
           }
         } catch (err) {
+          console.error(err)
         }
       })
     },
