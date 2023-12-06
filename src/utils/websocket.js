@@ -1,6 +1,6 @@
 import JwtService from "@/core/services/jwt.service";
 import { ws_url } from "@/api/LocalUrl"
-let wsServer = ws_url + "/ws/device/current"
+let wsServer = ws_url + (ws_url.endsWith("/") ? "ws/device/current" : "/ws/device/current")
 /**
  * websocket封装
  * let ws = new websocket();
