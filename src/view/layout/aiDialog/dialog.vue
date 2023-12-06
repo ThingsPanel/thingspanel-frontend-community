@@ -99,6 +99,7 @@ export default {
     },
     handleRefresh() {
       this.content = [];
+      localStorage.removeItem('chatHistory');
       this.closeSocket();
       this.initSocket();
       this.loadConversation();
@@ -138,8 +139,7 @@ export default {
         return
       }
       this.closeSocket();
-      // this.socket = new websocket(ws_url + "/ws/ai");
-      this.socket = new websocket("ws://dev.thingspanel.cn" + "/ws/ai");
+      this.socket = new websocket(ws_url + "/ws/ai");
       this.socket.init((event) => {
       });
       this.socket.onReady(() => {
@@ -150,6 +150,7 @@ export default {
       this.socket.onMessage((result) => {
         try {
           if (result === '认证完成！请问有什么可以帮助您的？') {
+            this.saveConversation({ user: 'ai', message: result.replace('AI: ', '') })
             return
           } 
           if (result.indexOf('You: ') > -1) {
