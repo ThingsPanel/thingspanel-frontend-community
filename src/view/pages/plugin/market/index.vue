@@ -139,7 +139,8 @@ export default {
         const params = {
           page: this.params.page,
           pageSize: this.params.pageSize,
-          approvalFlag: 1
+          approvalFlag: 1,
+          pluginName: this.searchValue
         }
         StoreAPI.list[this.params.pluginType](params)
           .then(({data: result}) => {
@@ -164,11 +165,7 @@ export default {
       this.load();
     },
     searchPlugin(value) {
-      if (value == "") {
-        this.listArr = this.list;
-      } else {
-        this.listArr = this.list.filter(item => item.name.indexOf(this.searchValue) > -1);
-      }
+      this.loadList();
     },
     handleChangeDisplayMode(mode) {
       this.params.displayMode = mode;
