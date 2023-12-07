@@ -63,8 +63,8 @@ export default {
             }, 30000);
           }
         }else {
-          this.closeSocket();
-          clearInterval();
+          // this.closeSocket();
+          // clearInterval();
         }
         return this.visible
       },
