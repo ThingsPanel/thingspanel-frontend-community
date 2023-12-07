@@ -119,3 +119,21 @@ export async function get_roles(data) {
         data
     })
 }
+
+// 获取租户配置
+export async function get_tenant_config(data) {
+    return axios({
+        url: "/user/tenant/config/index",
+        method: "post",
+        data
+    })
+}
+
+// 修改租户配置
+export async function save_tenant_config(data) {
+    return axios({
+        url: "/user/tenant/config/save",
+        method: "post",
+        data
+    })
+}

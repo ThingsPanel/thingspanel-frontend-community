@@ -2135,6 +2135,17 @@ export const locale = {
       EMAIL: "Email",
       PHONE: "Phone",
     },
+    /**
+     * 租户系统设置
+     */
+    TENANT_SETTING: {
+      AI_ASSISTANT: "AI Assistant",
+      OTHER: "Other",
+      MODEL_TYPE: "Model Type",
+      API_SECRET: "API Secret Key",
+      BASE_URL: "Base URL",
+      OPENAI: "Open AI",
+    },
   },
   /**
    * 数据服务配置
