@@ -26,9 +26,9 @@
             ></el-input>
           </el-form-item>
           
-          <el-form-item :label="$t('SYSTEM_MANAGEMENT.TENANT_SETTING.BASE_URL')" prop="bash_url">
+          <el-form-item :label="$t('SYSTEM_MANAGEMENT.TENANT_SETTING.BASE_URL')" prop="base_url">
             <el-input
-              style="width: 328px" v-model="formObj.bash_url"
+              style="width: 328px" v-model="formObj.base_url"
             ></el-input>
           </el-form-item>
 
@@ -54,7 +54,7 @@ export default {
       formObj: {
         model_type: '',
         api_key: '',
-        bash_url: '',
+        base_url: '',
       },
       rules: {
         model_type: [
