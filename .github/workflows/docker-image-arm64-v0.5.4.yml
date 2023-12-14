@@ -1,4 +1,4 @@
-name: docker-image-v0.5.4
+name: docker-image-arm64-v0.5.4
 
 on:
  workflow_dispatch:
@@ -53,4 +53,4 @@ jobs:
         file: ./Dockerfile
         push: true
         platforms: linux/arm64
-        tags: thingspanel/thingspanel-vue:v0.5.4
+        tags: thingspanel/thingspanel-vue-arm64:v0.5.4
