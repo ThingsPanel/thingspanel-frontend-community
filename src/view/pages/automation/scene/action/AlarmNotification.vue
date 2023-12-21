@@ -57,9 +57,9 @@ import { message_error } from '@/utils/helpers'
         roleList: []
       }
     },
-    created() {
-      this.getRoleList();
-    },
+    // created() {
+    //   this.getRoleList();
+    // },
     watch: {
       data: {
         handler(newValue) {
@@ -75,6 +75,7 @@ import { message_error } from '@/utils/helpers'
       },
     },
     async created() {
+      this.getRoleList();
       await this.$nextTick();
       this.handleChange();
     },
