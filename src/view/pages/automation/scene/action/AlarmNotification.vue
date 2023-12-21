@@ -57,9 +57,6 @@ import { message_error } from '@/utils/helpers'
         roleList: []
       }
     },
-    // created() {
-    //   this.getRoleList();
-    // },
     watch: {
       data: {
         handler(newValue) {
