@@ -135,30 +135,20 @@ export default {
           } : {};
           this.formData = {};
           if (JSON.stringify(this.device) == "{}" || this.device == "") { return; }
-          if (this.device.device_type == "3" || (this.device.device_type == "1" && this.device.protocol != "mqtt")) {
+          if (this.device.device_type == "3" || (this.device.device_type == "1" && this.device.protocol.toLowerCase() != "mqtt")) {
             // 子设备所有协议都要数据解析，直连设备所有自定义协议(mqtt协议之外)都要数据解析
             this.tabList = JSON.parse(JSON.stringify(tabList));
             this.activeName = "deviceAttribute";
             let deviceType = this.device.device_type == "1" ? "1" : "2";
-            // 获取表单的属性
-            ModbusAPI.getFormAttr({ protocol_type: this.device.protocol, device_type: deviceType })
-              .then(({ data }) => {
-                if (data.code == 200 && data.data && data.data.config) {
-                  
-                  this.formAttr = data.data.config;
-                  if (this.device.protocol_config != "{}"
-                    && this.device.protocol_config != ""
-                    && this.device.protocol_config != undefined) {
-                    this.formData = JSON.parse(this.device.protocol_config);
-                  } 
-                } else {
-                  this.tabList = this.tabList.filter(item => item.value !== "configParse")
-                  this.activeName = "deviceAttribute";
-                }
-              })
+            this.getFormConfig(this.device.protocol, deviceType);
           } else {
             this.tabList = JSON.parse(JSON.stringify(tabList));
-            this.tabList = this.tabList.filter(item => item.value !== "configParse")
+            if(this.device.protocol.toLowerCase() === "mqtt"){
+              this.tabList = this.tabList.filter(item => item.value !== "configParse")
+            }else{
+              let deviceType = this.device.device_type == "1" ? "1" : "2";
+              this.getFormConfig(this.device.protocol, deviceType);
+            }
             this.activeName = "deviceAttribute";
             this.formRule = {
               location: [
@@ -177,6 +167,26 @@ export default {
     }
   },
   methods: {
+    getFormConfig(protocol, deviceType){
+       // 获取表单的属性
+       ModbusAPI.getFormAttr({ protocol_type: protocol, device_type: deviceType })
+              .then(({ data }) => {
+                if (data.code == 200 && data.data && data.data.config) {
+                  
+                  this.formAttr = data.data.config;
+                  if (this.device.protocol_config != "{}"
+                    && this.device.protocol_config != ""
+                    && this.device.protocol_config != undefined) {
+                    this.formData = JSON.parse(this.device.protocol_config);
+                  } 
+                } else {
+                  this.tabList = this.tabList.filter(item => item.value !== "configParse")
+                  this.activeName = "deviceAttribute";
+                }
+              })
+       
+
+    },
     handleClose() {
       this.$emit("update:dialogVisible", false);
     },
