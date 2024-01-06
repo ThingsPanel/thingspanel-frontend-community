@@ -139,14 +139,14 @@ export default {
             // 子设备所有协议都要数据解析，直连设备所有自定义协议(mqtt协议之外)都要数据解析
             this.tabList = JSON.parse(JSON.stringify(tabList));
             this.activeName = "deviceAttribute";
-            let deviceType = this.device.device_type == "1" ? "1" : "2";
+            let deviceType = this.device.device_type == "3" ? "2" : "1";
             this.getFormConfig(this.device.protocol, deviceType);
           } else {
             this.tabList = JSON.parse(JSON.stringify(tabList));
             if(this.device.protocol.toLowerCase() === "mqtt"){
               this.tabList = this.tabList.filter(item => item.value !== "configParse")
             }else{
-              let deviceType = this.device.device_type == "1" ? "1" : "2";
+              let deviceType = this.device.device_type == "3" ? "2" : "1";
               this.getFormConfig(this.device.protocol, deviceType);
             }
             this.activeName = "deviceAttribute";
