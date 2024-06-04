@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { NButton, NFlex } from 'naive-ui';
-import type { FormInst } from 'naive-ui';
-import { IosAlert, IosRefresh } from '@vicons/ionicons4';
-import { repeat } from 'seemly';
-import { deviceGroupTree } from '@/service/api';
+import {onMounted, ref, watch} from 'vue';
+import {useRoute} from 'vue-router';
+import {NButton, NFlex} from 'naive-ui';
+import type {FormInst} from 'naive-ui';
+import {IosAlert, IosRefresh} from '@vicons/ionicons4';
+import {repeat} from 'seemly';
+import {deviceGroupTree} from '@/service/api';
 import {
   configMetricsConditionMenu,
   deviceConfigAll,
   deviceListAll,
   deviceMetricsConditionMenu
 } from '@/service/api/automation';
-import { $t } from '@/locales';
+import {$t} from '@/locales';
 
 interface Emits {
   (e: 'conditionChose', data: any): void;
@@ -245,9 +245,9 @@ const actionParamShow = async (ifItem: any, data: any) => {
     ifItem.triggerParamOptions = [];
     let res = null as any;
     if (ifItem.trigger_conditions_type === '10') {
-      res = await deviceMetricsConditionMenu({ device_id: ifItem.trigger_source });
+      res = await deviceMetricsConditionMenu({device_id: ifItem.trigger_source});
     } else if (ifItem.trigger_conditions_type === '11') {
-      res = await configMetricsConditionMenu({ device_config_id: ifItem.trigger_source });
+      res = await configMetricsConditionMenu({device_config_id: ifItem.trigger_source});
     }
     // eslint-disable-next-line array-callback-return
     if (res.data) {
@@ -738,7 +738,7 @@ onMounted(() => {
                       :rule="premiseFormRules.trigger_operator"
                       class="max-w-35 w-full"
                     >
-                      <NSelect v-model:value="ifItem.trigger_operator" :options="determineOptions" />
+                      <NSelect v-model:value="ifItem.trigger_operator" :options="determineOptions"/>
                     </NFormItem>
                     <template v-if="ifItem.trigger_operator === 'in'">
                       <!--          设备条件下->单个设备/单类设备>-设备ID/选择设备类ID>触发消息标识符是遥测->操作符是in(包含在)->输入范围值 --->
@@ -762,7 +762,7 @@ onMounted(() => {
                         :rule="premiseFormRules.minValue"
                         class="max-w-35 w-full"
                       >
-                        <NInput v-model:value="ifItem.minValue" :placeholder="$t('generate.min-value')" />
+                        <NInput v-model:value="ifItem.minValue" :placeholder="$t('generate.min-value')"/>
                       </NFormItem>
                       <NFormItem
                         :show-label="false"
@@ -770,7 +770,7 @@ onMounted(() => {
                         :rule="premiseFormRules.maxValue"
                         class="max-w-30 w-full"
                       >
-                        <NInput v-model:value="ifItem.maxValue" :placeholder="$t('generate.max-value')" />
+                        <NInput v-model:value="ifItem.maxValue" :placeholder="$t('generate.max-value')"/>
                       </NFormItem>
                     </template>
                     <template v-else>
@@ -781,7 +781,7 @@ onMounted(() => {
                         :rule="premiseFormRules.trigger_value"
                         class="max-w-40 w-full"
                       >
-                        <NInput v-model:value="ifItem.trigger_value" :placeholder="$t('generate.value')" />
+                        <NInput v-model:value="ifItem.trigger_value" :placeholder="$t('generate.value')"/>
                       </NFormItem>
                     </template>
                   </template>
@@ -853,7 +853,7 @@ onMounted(() => {
                     {{ $t('generate.not-executed') }}
                     <NButton text class="refresh-class">
                       <n-icon>
-                        <IosRefresh />
+                        <IosRefresh/>
                       </n-icon>
                     </NButton>
                   </NFlex>
@@ -873,7 +873,7 @@ onMounted(() => {
                     <n-tooltip placement="top-start" trigger="hover">
                       <template #trigger>
                         <n-icon size="24" class="ml-2">
-                          <IosAlert />
+                          <IosAlert/>
                         </n-icon>
                       </template>
                       超过执行时间{{ expirationTimeOptions.find(data => ifItem['expiration_time'])?.label || '' }}后失效
@@ -908,18 +908,21 @@ onMounted(() => {
                   <template v-if="ifItem.task_type === 'HOUR'">
                     <!--  时间条件下->重复->每小时->选择分-->
                     <NFormItem
+                      key="hourTimeValue"
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].hourTimeValue`"
                       :rule="premiseFormRules.hourTimeValue"
                       class="max-w-25 w-full"
                     >
                       <NTimePicker
+
                         v-model:value="ifItem.hourTimeValue"
                         :placeholder="$t('common.select')"
                         format="mm"
                       />
                     </NFormItem>
                     <NFormItem
+                      key="expiration_time0"
                       :label="$t('generate.expiration-time')"
                       label-width="80px"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].expiration_time`"
@@ -934,7 +937,7 @@ onMounted(() => {
                       <n-tooltip placement="top-start" trigger="hover">
                         <template #trigger>
                           <n-icon size="24" class="ml-2">
-                            <IosAlert />
+                            <IosAlert/>
                           </n-icon>
                         </template>
                         超过执行时间{{
@@ -946,6 +949,7 @@ onMounted(() => {
                   <template v-if="ifItem.task_type === 'DAY'">
                     <!--  时间条件下->重复->每天->选择时分秒-->
                     <NFormItem
+                      key="dayTimeValue"
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].dayTimeValue`"
                       :rule="premiseFormRules.dayTimeValue"
@@ -959,6 +963,7 @@ onMounted(() => {
                       />
                     </NFormItem>
                     <NFormItem
+                      key="expiration_time1"
                       :label="$t('generate.expiration-time')"
                       label-width="80px"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].expiration_time`"
@@ -973,7 +978,7 @@ onMounted(() => {
                       <n-tooltip placement="top-start" trigger="hover">
                         <template #trigger>
                           <n-icon size="24" class="ml-2">
-                            <IosAlert />
+                            <IosAlert/>
                           </n-icon>
                         </template>
                         超过执行时间{{
@@ -986,6 +991,7 @@ onMounted(() => {
                     <!--  时间条件下->重复->每周->选择星期和输入时分-->
                     <div class="weekChoseValue-box w-120">
                       <NFormItem
+                        key="weekChoseValue"
                         :show-label="false"
                         :path="`ifGroups[${ifGroupIndex}][${ifIndex}].weekChoseValue`"
                         :rule="premiseFormRules.weekChoseValue"
@@ -1005,6 +1011,7 @@ onMounted(() => {
                       </NFormItem>
                     </div>
                     <NFormItem
+                      key="weekTimeValue"
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].weekTimeValue`"
                       :rule="premiseFormRules.weekTimeValue"
@@ -1018,6 +1025,7 @@ onMounted(() => {
                       />
                     </NFormItem>
                     <NFormItem
+                      key="expiration_time2"
                       :label="$t('generate.expiration-time')"
                       label-width="80px"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].expiration_time`"
@@ -1032,7 +1040,7 @@ onMounted(() => {
                       <n-tooltip placement="top-start" trigger="hover">
                         <template #trigger>
                           <n-icon size="24" class="ml-2">
-                            <IosAlert />
+                            <IosAlert/>
                           </n-icon>
                         </template>
                         超过执行时间{{
@@ -1044,6 +1052,7 @@ onMounted(() => {
                   <template v-if="ifItem.task_type === 'MONTH'">
                     <!--  时间条件下->重复->每月->选择日期和时分-->
                     <NFormItem
+                      key="monthChoseValue"
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].monthChoseValue`"
                       :rule="premiseFormRules.monthChoseValue"
@@ -1056,6 +1065,7 @@ onMounted(() => {
                       />
                     </NFormItem>
                     <NFormItem
+                      key="monthTimeValue"
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].monthTimeValue`"
                       :rule="premiseFormRules.monthTimeValue"
@@ -1069,6 +1079,7 @@ onMounted(() => {
                       />
                     </NFormItem>
                     <NFormItem
+                      key="expiration_time3"
                       :label="$t('generate.expiration-time')"
                       label-width="80px"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].expiration_time`"
@@ -1083,7 +1094,7 @@ onMounted(() => {
                       <n-tooltip placement="top-start" trigger="hover">
                         <template #trigger>
                           <n-icon size="24" class="ml-2">
-                            <IosAlert />
+                            <IosAlert/>
                           </n-icon>
                         </template>
                         超过执行时间{{
@@ -1164,7 +1175,7 @@ onMounted(() => {
                   :rule="premiseFormRules.weatherValue"
                   class="max-w-40 w-full"
                 >
-                  <NSelect v-model:value="ifItem.weatherValue" :options="weatherOptions" />
+                  <NSelect v-model:value="ifItem.weatherValue" :options="weatherOptions"/>
                 </NFormItem>
               </NFlex>
             </NFlex>
