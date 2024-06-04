@@ -459,8 +459,9 @@ defineExpose({
       item => item.deviceId === deviceId && item.metricsId === metricsId
     );
     // const seriesData = JSON.parse(JSON.stringify(option.value.series[deviceIndex]))?.data;
-    const seriesData = option.value.series ? option.value.series[deviceIndex || 0].data : [];
-    const value = data[metricsId || ''];
+    const seriesData =
+      option.value.series && option.value.series[deviceIndex || 0] ? option.value.series[deviceIndex || 0].data : [];
+    const value = metricsId && data && data[metricsId];
 
     if (value && data.systime) {
       const timestamp = new Date(data.systime).getTime();

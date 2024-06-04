@@ -136,10 +136,10 @@ const updateComponentsData = async () => {
   const deviceMetricsIds = layout.value
     .filter(
       item =>
-        item.data?.useShareData &&
         item.data?.dataSource?.deviceSource &&
         item.data?.dataSource?.deviceSource[0]?.deviceId &&
-        item.data?.dataSource?.deviceSource[0]?.metricsId
+        item.data?.dataSource?.deviceSource[0]?.metricsId &&
+        cr.value?.getCardComponent(item)?.getComponent()?.updateData
     )
     .map(
       item =>

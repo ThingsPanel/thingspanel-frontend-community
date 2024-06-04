@@ -5,7 +5,6 @@ import poster from './poster.png';
 export default {
   id: 'chart-curve',
   type: 'chart',
-  useShareData: true,
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
   title: '曲线',
