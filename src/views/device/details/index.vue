@@ -19,7 +19,7 @@ import { useAppStore } from '@/store/modules/app';
 import { deviceAlarmStatus, deviceDetail, deviceUpdate } from '@/service/api/device';
 import { localStg } from '@/utils/storage';
 import { useRouterPush } from '@/hooks/common/router';
-import { createServiceConfig } from '~/env.config';
+import { getWebsocketServerUrl } from '@/utils/common/tool';
 
 const { query } = useRoute();
 const appStore = useAppStore();
@@ -49,8 +49,7 @@ const icon_type = ref('');
 const device_number = ref('');
 const device_is_online = ref(0);
 const device_loop = ref(false);
-const { otherBaseURL } = createServiceConfig(import.meta.env);
-let wsUrl = otherBaseURL.demo.replace('http', 'ws').replace('http', 'ws');
+let wsUrl = getWebsocketServerUrl();
 
 wsUrl += `/device/online/status/ws`;
 const { send } = useWebSocket(wsUrl, {
@@ -107,6 +106,14 @@ const getDeviceDetail = async () => {
   const { error, data } = await deviceDetail(d_id);
   device_loop.value = true;
   deviceData.value = data;
+  labels.value.length = 0;
+  if (data.label !== '') {
+    if (data.label.includes(',')) {
+      labels.value = data.label.split(',');
+    } else {
+      labels.value.push(data.label);
+    }
+  }
   if (!error) {
     device_number.value = data.device_number;
     device_is_online.value = data.is_online;

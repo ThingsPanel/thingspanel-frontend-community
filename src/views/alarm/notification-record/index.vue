@@ -3,7 +3,7 @@ import { computed, getCurrentInstance, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
 import { NButton } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import dayjs from 'dayjs';
+import moment from 'moment';
 import { getNotificationHistoryList } from '@/service/api/notification';
 import { notificationOptions } from '@/constants/business';
 import { $t } from '@/locales';
@@ -12,10 +12,14 @@ import { useLoading } from '~/packages/hooks';
 
 const { loading, startLoading, endLoading } = useLoading(false);
 
+const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()]);
+
 const queryParams = reactive({
   notification_type: '',
   selected_time: null,
-  send_target: ''
+  send_target: '',
+  send_time_start: '',
+  send_time_end: ''
 });
 const total = ref(0);
 
@@ -23,6 +27,15 @@ const tableData = ref<Api.Alarm.NotificationHistoryList[]>([]);
 
 function setTableData(data: Api.Alarm.NotificationHistoryList[] | []) {
   tableData.value = data || [];
+}
+function pickerChange() {
+  if (range.value && range.value.length > 0) {
+    queryParams.send_time_start = moment(range.value[0]).format('YYYY-MM-DDTHH:mm:ssZ');
+    queryParams.send_time_end = moment(range.value[1]).format('YYYY-MM-DDTHH:mm:ssZ');
+  } else {
+    queryParams.send_time_start = '';
+    queryParams.send_time_end = '';
+  }
 }
 
 const pagination: PaginationProps = reactive({
@@ -39,24 +52,15 @@ const pagination: PaginationProps = reactive({
   }
 });
 
-const formatTime = (time: string | null) => {
-  if (time) {
-    return dayjs(time).format('YYYY-MM-DD HH:mm:ss');
-  }
-  return '';
-};
-
 const getTableData = async () => {
   startLoading();
-  const start_time = queryParams.selected_time ? queryParams.selected_time[0] : null;
-  const end_time = queryParams.selected_time ? queryParams.selected_time[1] : null;
   const prams = {
     page: pagination.page || 1,
     page_size: pagination.pageSize || 10,
     notification_type: queryParams.notification_type,
     send_target: queryParams.send_target,
-    send_time_start: formatTime(start_time),
-    send_time_stop: formatTime(end_time)
+    send_time_start: queryParams.send_time_start,
+    send_time_stop: queryParams.send_time_end
   };
   const res = await getNotificationHistoryList(prams);
   if (res?.data) {
@@ -127,12 +131,18 @@ getTableData();
             />
           </NFormItem>
           <NFormItem path="selected_time">
-            <NDatePicker v-model:value="queryParams.selected_time" type="datetimerange" clearable separator="-" />
+            <NDatePicker
+              v-model:value="range"
+              type="datetimerange"
+              clearable
+              separator="-"
+              @update:value="pickerChange"
+            />
           </NFormItem>
           <NFormItem path="send_target">
             <NInput v-model:value="queryParams.send_target" :placeholder="$t('generate.recipient')" />
           </NFormItem>
-          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+          <NButton class="w-72px" type="primary" @click="handleQuery">00</NButton>
         </NForm>
         <NDataTable :columns="columns" :data="tableData" :loading="loading" class="flex-1-hidden" />
         <div class="pagination-box">

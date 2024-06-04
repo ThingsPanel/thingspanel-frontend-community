@@ -72,7 +72,7 @@ async function getTableData() {
   startLoading();
   const { data } = await fetchUserList(queryParams);
   if (data) {
-    const list: UserManagement.User[] = data.list;
+    const list: UserManagement.User[] = data.list || [];
     pagination.itemCount = data.total;
     setTableData(list);
     endLoading();

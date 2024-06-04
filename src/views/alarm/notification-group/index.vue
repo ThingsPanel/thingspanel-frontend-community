@@ -61,7 +61,9 @@ const handleSwitchChange = async (row, value) => {
 };
 const handleDeleteTable = async (rowId: string) => {
   await deleteNotificationGroup({ id: rowId });
+
   window.$message?.info($t('generate.notificationGroup'));
+  getTableData();
 };
 const editData = ref<Api.Alarm.NotificationGroupList | null>(null);
 const handleEditTable = async (rowId: string) => {

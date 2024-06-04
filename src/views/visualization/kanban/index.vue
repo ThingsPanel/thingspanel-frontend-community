@@ -140,7 +140,7 @@ onMounted(fetchBoards);
               {{ board.description }}
             </NTooltip>
             <div class="mt-4 flex justify-end gap-2">
-              <NButton circle strong secondary @click.stop="editBoard(board)">
+              <NButton strong circle secondary @click.stop="editBoard(board)">
                 <template #icon>
                   <icon-material-symbols:contract-edit-outline class="text-24px text-blue" />
                 </template>
@@ -205,7 +205,15 @@ onMounted(fetchBoards);
             >
               {{ $t('generate.cancel') }}
             </NButton>
-            <NButton type="primary" @click="submitForm">{{ $t('common.save') }}</NButton>
+            <n-popconfirm v-if="formData.home_flag === 'Y'" @positive-click="submitForm">
+              <template #trigger>
+                <NButton type="primary">{{ $t('common.save') }}</NButton>
+              </template>
+              仅一个看板能被设置到首页，之前设置过的将被替换
+            </n-popconfirm>
+            <NButton v-if="formData.home_flag === 'N'" type="primary" @click="submitForm">
+              {{ $t('common.save') }}
+            </NButton>
           </div>
         </template>
       </NCard>

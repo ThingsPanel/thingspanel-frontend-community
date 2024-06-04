@@ -2,7 +2,7 @@ import { useRouter } from 'vue-router';
 import type { RouteLocationRaw } from 'vue-router';
 import type { LastLevelRouteKey, RouteKey } from '@elegant-router/types';
 import { router as globalRouter } from '@/router';
-import { useAuthStore } from '@/store/modules/auth';
+// import { useAuthStore } from '@/store/modules/auth';
 
 /**
  * Router push
@@ -24,7 +24,7 @@ export function useRouterPush(inSetup = true) {
     params?: Record<string, string>;
   }
 
-  const authStore = useAuthStore();
+  // const authStore = useAuthStore();
 
   async function routerPushByKey(key: LastLevelRouteKey | RouteKey, options?: RouterPushOptions) {
     const { query, params } = options || {};
@@ -43,12 +43,12 @@ export function useRouterPush(inSetup = true) {
   }
 
   async function toHome() {
-    let home;
-    if (authStore.userInfo.authority === 'SYS_ADMIN') {
-      home = 'home';
-    } else {
-      home = 'device';
-    }
+    const home: LastLevelRouteKey = 'home';
+    // if (authStore.userInfo.authority === 'SYS_ADMIN') {
+    //   home = 'home';
+    // } else {
+    //   home = 'device';
+    // }
 
     return routerPushByKey(home);
   }

@@ -246,7 +246,7 @@ const searchConfigs = ref<SearchConfig[]>([
     ]
   },
   {
-    key: 'procotol_dict',
+    key: 'protocol_dict',
     label: $t('custom.devicePage.unlimitedAccessMode'),
     type: 'select',
     renderLabel(option: any) {
@@ -277,7 +277,7 @@ const searchConfigs = ref<SearchConfig[]>([
     },
     extendParams: [
       {
-        label: 'procotol_type',
+        label: 'protocol_type',
         value: 'dict_value'
       },
       {
@@ -321,7 +321,7 @@ const getDictServiceList = async () => {
     return item;
   });
   searchConfigs.value.map((item: any) => {
-    if (item.key === 'procotol_dict') {
+    if (item.key === 'protocol_dict') {
       item.options = data;
     }
     return item;

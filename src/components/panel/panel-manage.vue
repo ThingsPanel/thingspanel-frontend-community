@@ -10,7 +10,7 @@ import { PutBoard, deviceTemplateSelect, getBoard } from '@/service/api';
 import { localStg } from '@/utils/storage';
 import { useAppStore } from '@/store/modules/app';
 import { $t } from '@/locales';
-import { createServiceConfig } from '~/env.config';
+import { getWebsocketServerUrl } from '@/utils/common/tool';
 
 const dialog = useDialog();
 
@@ -26,8 +26,7 @@ const isEditing = ref(false);
 const editingCard = ref(false);
 const deviceOptions = ref<UnwrapRefSimple<any>[]>();
 
-const { otherBaseURL } = createServiceConfig(import.meta.env);
-let wsUrl = otherBaseURL.demo.replace('http', 'ws').replace('http', 'ws');
+let wsUrl = getWebsocketServerUrl();
 wsUrl += '/telemetry/datas/current/keys/ws';
 
 const getDeviceOptions = async () => {
@@ -137,10 +136,10 @@ const updateComponentsData = async () => {
   const deviceMetricsIds = layout.value
     .filter(
       item =>
-        item.data?.useShareData &&
         item.data?.dataSource?.deviceSource &&
         item.data?.dataSource?.deviceSource[0]?.deviceId &&
-        item.data?.dataSource?.deviceSource[0]?.metricsId
+        item.data?.dataSource?.deviceSource[0]?.metricsId &&
+        cr.value?.getCardComponent(item)?.getComponent()?.updateData
     )
     .map(
       item =>

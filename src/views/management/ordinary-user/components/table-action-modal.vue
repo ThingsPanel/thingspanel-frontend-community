@@ -126,11 +126,14 @@ async function getRoleOptions() {
 
 async function handleSubmit() {
   await formRef.value?.validate();
+  const params: any = { ...formModel };
+
   let data: any;
   if (props.type === 'add') {
-    data = await addUser(formModel);
+    data = await addUser(params);
   } else if (props.type === 'edit') {
-    data = await editUser(formModel);
+    delete params.password;
+    data = await editUser(params);
   }
   if (!data.error) {
     // window.$message?.success(data.msg);

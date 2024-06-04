@@ -17,17 +17,16 @@ import {
 import { localStg } from '@/utils/storage';
 import { deviceDetail } from '@/service/api/device';
 import { $t } from '@/locales';
+import { getWebsocketServerUrl } from '@/utils/common/tool';
 import HistoryData from './modules/history-data.vue';
 import TimeSeriesData from './modules/time-series-data.vue';
 import { useLoading } from '~/packages/hooks';
-import { createServiceConfig } from '~/env.config';
 
 const props = defineProps<{
   id: string;
 }>();
 
-const { otherBaseURL } = createServiceConfig(import.meta.env);
-let wsUrl = otherBaseURL.demo.replace('http', 'ws').replace('http', 'ws');
+let wsUrl = getWebsocketServerUrl();
 wsUrl += '/telemetry/datas/current/ws';
 const showDialog = ref(false);
 const showLogDialog = ref(false);

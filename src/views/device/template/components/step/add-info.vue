@@ -4,7 +4,7 @@ import type { UploadFileInfo } from 'naive-ui';
 import { localStg } from '@/utils/storage';
 import { addTemplat, getTemplat, putTemplat } from '@/service/api/system-data';
 import { $t } from '@/locales';
-import { createServiceConfig } from '~/env.config';
+import { getDemoServerUrl } from '@/utils/common/tool';
 
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible', 'update:deviceTemplateId']);
 
@@ -82,8 +82,8 @@ const tagsClose: (index: number) => void = index => {
 };
 
 // upload
-const { otherBaseURL } = createServiceConfig(import.meta.env);
-const url: any = ref(otherBaseURL.demo);
+const demoUrl = getDemoServerUrl();
+const url: any = ref(demoUrl);
 const pngPath: any = ref('');
 
 const customRequest = ({ file, event }: { file: UploadFileInfo; event?: ProgressEvent }) => {

@@ -32,13 +32,6 @@ const showMarker = (markerArr, bounds) => {
 };
 let ignoreMapClick = false;
 const telemetryValue = ref<any>([]);
-// 获取最新一条设备遥测数据
-const telemetryData: (id: string) => void = async id => {
-  const data: any = await telemetryLatestApi(id);
-  telemetryValue.value = data.data;
-  telemetryValue.value = data.data.filter(item => item.label || item.key);
-  console.log(telemetryValue.value, '最新的遥测数据');
-};
 
 async function renderMap() {
   await load(true);
@@ -108,41 +101,10 @@ async function renderMap() {
   // 监听地图的点击事件
 
   multiMarker.on('click', (evt: any) => {
-    telemetryData(evt.geometry.data.id);
-
-    ignoreMapClick = true;
-    setTimeout(() => {
-      ignoreMapClick = false;
-    }, 10);
-    // 创建一个新的 Vue 实例
-    const app = createApp({
-      render() {
-        const statusText: any = {
-          0: $t('custom.devicePage.online'),
-          1: $t('custom.devicePage.offline')
-        };
-        // 在模板中使用 Naive UI 的组件
-        return (
-          <NCard
-            header-style="padding:10px"
-            title={`${$t('custom.devicePage.deviceName')}：${evt.geometry.data.name}`}
-            class="min-h-130px min-w-200px"
-          >
-            <div>
-              {$t('custom.devicePage.lastPushTime')}：
-              {evt.geometry.data.ts ? dayjs(evt.geometry.data.ts).format('YYYY-MM-DD HH:mm:ss') : '-'}
-            </div>
-            <div v-html={evt.geometry.dom}></div>
-            <div>
-              {$t('generate.status')}：{statusText[evt.geometry.data.is_online]}
-            </div>
-          </NCard>
-        );
-      }
-    });
-    setTimeout(() => {
+    telemetryLatestApi(evt.geometry.data.id).then((res: any) => {
+      const arr = res.data.filter((item: any) => item.label || item.key);
       let dom = ``;
-      telemetryValue.value.filter(item => {
+      arr.filter(item => {
         if (item.label) {
           dom = `${dom}<div class='item_label'>${item?.label ?? ''}(${item?.key ?? ''})：<span class='card_val'>${item?.value ?? ''} </span> ${item?.unit ?? ''}</div>`;
         } else if (item.key) {
@@ -151,6 +113,36 @@ async function renderMap() {
       });
       evt.geometry.dom = dom;
 
+      ignoreMapClick = true;
+      setTimeout(() => {
+        ignoreMapClick = false;
+      }, 10);
+      // 创建一个新的 Vue 实例
+      const app = createApp({
+        render() {
+          const statusText: any = {
+            0: $t('custom.devicePage.online'),
+            1: $t('custom.devicePage.offline')
+          };
+          // 在模板中使用 Naive UI 的组件
+          return (
+            <NCard
+              header-style="padding:10px"
+              title={`${$t('custom.devicePage.deviceName')}：${evt.geometry.data.name}`}
+              class="min-h-130px min-w-200px"
+            >
+              <div>
+                {$t('custom.devicePage.lastPushTime')}：
+                {evt.geometry.data.ts ? dayjs(evt.geometry.data.ts).format('YYYY-MM-DD HH:mm:ss') : '-'}
+              </div>
+              <div v-html={evt.geometry.dom}></div>
+              <div>
+                {$t('generate.status')}：{statusText[evt.geometry.data.is_online]}
+              </div>
+            </NCard>
+          );
+        }
+      });
       // 挂载这个实例，并获取它的 HTML
       const html = app.mount(document.createElement('div')).$el.outerHTML;
       // 设置infoWindow
@@ -159,7 +151,7 @@ async function renderMap() {
       infoWindow.setContent(html); // 设置信息窗内容
       evt.originalEvent.stopPropagation();
       console.log(evt, telemetryValue.value, '点击了弹窗');
-    }, 100);
+    });
   });
 }
 

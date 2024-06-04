@@ -5,8 +5,8 @@ import dayjs from 'dayjs';
 import { addMonths } from 'date-fns';
 import { telemetryHistoryData } from '@/service/api';
 import { $t } from '@/locales';
+import { getBaseServerUrl } from '@/utils/common/tool';
 import { useLoading } from '~/packages/hooks';
-import { createServiceConfig } from '~/env.config';
 
 interface Created {
   deviceId: string;
@@ -14,7 +14,7 @@ interface Created {
 }
 
 const props = defineProps<Created>();
-const { baseURL } = createServiceConfig(import.meta.env);
+const baseURL = getBaseServerUrl();
 interface Params {
   device_id: string;
   end_time: number;

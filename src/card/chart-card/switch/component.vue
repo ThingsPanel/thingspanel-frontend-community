@@ -3,8 +3,8 @@ import { onMounted, onUnmounted, ref, watch } from 'vue';
 import type { ICardData } from '@/components/panel/card';
 import { localStg } from '@/utils/storage';
 import { $t } from '@/locales';
+import { getWebsocketServerUrl } from '@/utils/common/tool';
 import { deviceDatas, deviceDetail } from './api';
-import { createServiceConfig } from '~/env.config';
 
 const active: any = ref(false);
 const props = defineProps<{
@@ -38,8 +38,7 @@ const setSeries: (obj: any) => void = async obj => {
 };
 
 const fun: () => void = () => {
-  const { otherBaseURL } = createServiceConfig(import.meta.env);
-  let wsUrl = otherBaseURL.demo.replace('http', 'ws');
+  let wsUrl = getWebsocketServerUrl();
   wsUrl += `/telemetry/datas/current/keys/ws`;
   socket.value = new WebSocket(wsUrl); // 替换为你的WebSocket URL
 
@@ -51,7 +50,7 @@ const fun: () => void = () => {
   socket.value.onmessage = event => {
     const receivedData = JSON.parse(event.data);
     active.value = receivedData.switch !== 0;
-    console.log('接收到数据:', receivedData);
+    // console.log('接收到数据:', receivedData);
     // 在这里处理接收到的数据
   };
 
