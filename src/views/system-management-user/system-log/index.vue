@@ -3,6 +3,7 @@ import { computed, getCurrentInstance, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
 import { NButton } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import moment from 'moment';
 import { getSystemLogList } from '@/service/api/system-management-user';
 import { $t } from '@/locales';
 import { formatDateTime } from '@/utils/common/datetime';
@@ -10,9 +11,13 @@ import { useLoading } from '~/packages/hooks';
 
 const { loading, startLoading, endLoading } = useLoading(false);
 
+const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()]);
+
 const queryParams = reactive({
   username: '',
-  selected_time: null
+  selected_time: null,
+  start_time: '',
+  end_time: ''
 });
 const total = ref(0);
 
@@ -36,23 +41,14 @@ const pagination: PaginationProps = reactive({
   }
 });
 
-const formatTime = (time: string | null) => {
-  if (time) {
-    return new Date(time + 8 * 60 * 60 * 1000).toISOString().toString();
-  }
-  return '';
-};
-
 const getTableData = async () => {
   startLoading();
-  const start_time = queryParams.selected_time ? queryParams.selected_time[0] : null;
-  const end_time = queryParams.selected_time ? queryParams.selected_time[1] : null;
   const prams = {
     page: pagination.page || 1,
     page_size: pagination.pageSize || 10,
     username: queryParams.username,
-    start_time: formatTime(start_time),
-    end_time: formatTime(end_time)
+    start_time: queryParams.start_time,
+    end_time: queryParams.end_time
   };
   const res = await getSystemLogList(prams);
   console.log(res);
@@ -108,6 +104,15 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
 function handleQuery() {
   getTableData();
 }
+function pickerChange() {
+  if (range.value && range.value.length > 0) {
+    queryParams.start_time = moment(range.value[0]).format('YYYY-MM-DDTHH:mm:ssZ');
+    queryParams.end_time = moment(range.value[1]).format('YYYY-MM-DDTHH:mm:ssZ');
+  } else {
+    queryParams.start_time = '';
+    queryParams.end_time = '';
+  }
+}
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance();
   return proxy.getPlatform();
@@ -123,7 +128,13 @@ getTableData();
           <NInput v-model:value="queryParams.username" />
         </NFormItem>
         <NFormItem path="selected_time">
-          <NDatePicker v-model:value="queryParams.selected_time" type="datetimerange" clearable separator="-" />
+          <NDatePicker
+            v-model:value="range"
+            type="datetimerange"
+            clearable
+            separator="-"
+            @update:value="pickerChange"
+          />
         </NFormItem>
         <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('generate.query') }}</NButton>
       </NForm>
