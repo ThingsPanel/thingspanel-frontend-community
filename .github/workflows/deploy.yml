@@ -28,8 +28,8 @@ jobs:
             ${{ runner.os }}-pnpm-
       - run: npm install -g pnpm@8.15.5
       - run: pnpm i
-      - name: Increase Node.js memory limit and build
-        run: node --max-old-space-size=4096 ./node_modules/.bin/vite build
+      - name: Build with increased memory limit
+        run: pnpm build
         env:
           CI: true
       - run: cd dist && ls -l
