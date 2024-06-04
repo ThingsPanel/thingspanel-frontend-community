@@ -28,7 +28,10 @@ jobs:
             ${{ runner.os }}-pnpm-
       - run: npm install -g pnpm@8.15.5
       - run: pnpm i
-      - run: pnpm build
+      - name: Build with increased memory limit
+        run: pnpm build
+        env:
+          CI: true
       - run: cd dist && ls -l
       - name: scp ssh pipelines
         uses: cross-the-world/ssh-scp-ssh-pipelines@latest

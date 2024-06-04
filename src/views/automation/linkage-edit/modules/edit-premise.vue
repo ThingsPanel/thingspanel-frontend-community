@@ -830,6 +830,7 @@ onMounted(() => {
                     v-model:value="ifItem.trigger_conditions_type"
                     :options="timeConditionOptions"
                     :placeholder="$t('common.select')"
+                    @update:value="ifItem.task_type = null"
                   />
                 </NFormItem>
                 <template v-if="ifItem.trigger_conditions_type === '20'">
@@ -891,6 +892,17 @@ onMounted(() => {
                       v-model:value="ifItem.task_type"
                       :options="cycleOptions"
                       :placeholder="$t('generate.please-select')"
+                      @update:value="
+                        () => {
+                          ifItem.hourTimeValue = null;
+                          ifItem.expiration_time = null;
+                          ifItem.dayTimeValue = null;
+                          ifItem.weekTimeValue = null;
+                          ifItem.monthChoseValue = null;
+                          ifItem.weekChoseValue = null;
+                          ifItem.monthTimeValue = null;
+                        }
+                      "
                     />
                   </NFormItem>
                   <template v-if="ifItem.task_type === 'HOUR'">
