@@ -318,7 +318,7 @@ watch(props, newValue => {
           :placeholder="$t('generate.trigger-duration')"
           :options="alarmKeepTime"
         />
-      </n-form-item> 
+      </n-form-item>
 -->
 
       <n-form-item :label="$t('generate.notification-group')" path="selectValue">

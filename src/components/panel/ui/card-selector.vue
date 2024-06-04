@@ -63,7 +63,6 @@ const selectFinalCard = (item: ICardDefine) => {
   state.curCardData = {
     cardId: item.id,
     type: item.type,
-    useShareData: item.useShareData,
     title: item.title,
     config: item.preset?.config || {},
     layout: item.preset?.iCardViewDefault,

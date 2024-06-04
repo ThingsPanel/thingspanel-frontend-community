@@ -1,16 +1,12 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue';
-import { useWebSocket } from '@vueuse/core';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { ICardData } from '@/components/panel/card';
-import { localStg } from '@/utils/storage';
-import { getWebsocketServerUrl } from '@/utils/common/tool';
 import { deviceDetail } from '../curve/modules/api';
 import { icons as iconOptions } from './icons';
 
 // 正式环境可根据api获取
-const value = ref(1);
-const detail: any = ref(null);
-const intervalNum = ref();
+const detail = ref<string>('');
+const unit = ref<string>('');
 const props = defineProps<{
   card: ICardData;
 }>();
@@ -19,40 +15,11 @@ const fontSize = ref('14px');
 const myCard = ref<any | null>(null); // 创建一个ref来引用NCard
 let resizeObserver: ResizeObserver | null = null;
 
-let wsUrl = getWebsocketServerUrl();
-wsUrl += `/telemetry/datas/current/keys/ws`;
-// eslint-disable-next-line no-constant-binary-expression
-const keys = [props?.card?.dataSource?.deviceSource?.[0]?.metricsId || 'externalVol'];
-const { data, status, send, close } = useWebSocket(wsUrl, {
-  heartbeat: {
-    message: 'ping',
-    interval: 8000,
-    pongTimeout: 3000
+defineExpose({
+  updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
+    detail.value = metricsId ? data[metricsId] : '';
   }
 });
-
-if (props?.card?.dataSource?.deviceSource && props?.card?.dataSource?.deviceSource?.[0]?.deviceId) {
-  const token = localStg.get('token');
-  const dataw = {
-    // eslint-disable-next-line no-constant-binary-expression
-    device_id: props?.card?.dataSource?.deviceSource?.[0]?.deviceId || '84fd5c8f-9c6c-ea57-a7b7-d32dce6b65af',
-    keys,
-    token
-  };
-  send(JSON.stringify(dataw));
-}
-
-watch(
-  () => data.value,
-  newVal => {
-    if (newVal === 'pong') {
-      console.log('心跳');
-    } else {
-      value.value = JSON.parse(newVal)[keys[0]] as number;
-      console.log(newVal);
-    }
-  }
-);
 
 const setSeries: (dataSource) => void = async dataSource => {
   const arr: any = dataSource;
@@ -61,7 +28,13 @@ const setSeries: (dataSource) => void = async dataSource => {
     keys: arr.deviceSource ? arr.deviceSource[0]?.metricsId : ''
   };
   if (querDetail.device_id && querDetail.keys) {
-    detail.value = await deviceDetail(querDetail);
+    const detailValue = await deviceDetail(querDetail);
+    if (detailValue?.data[0]?.unit) {
+      unit.value = detailValue?.data[0]?.unit;
+    }
+    if (detailValue?.data[0]?.value) {
+      detail.value = detailValue.data[0].value;
+    }
   } else {
     // window.$message?.error("查询不到设备");
   }
@@ -82,16 +55,15 @@ const handleResize = entries => {
 watch(
   () => props.card?.dataSource?.deviceSource,
   () => {
+    detail.value = '';
+    unit.value = '';
     setSeries(props.card?.dataSource);
   },
   { deep: true }
 );
 
 onMounted(() => {
-  // setSeries(props?.card?.dataSource);
-  intervalNum.value = setInterval(() => {
-    setSeries(props?.card?.dataSource);
-  }, 500);
+  setSeries(props?.card?.dataSource);
   // 确保DOM已经挂载后再初始化ResizeObserver
   if (myCard.value) {
     resizeObserver = new ResizeObserver(handleResize);
@@ -105,12 +77,6 @@ onBeforeUnmount(() => {
     resizeObserver.disconnect();
     resizeObserver = null;
   }
-});
-
-onUnmounted(() => {
-  console.log(status.value);
-  clearInterval(intervalNum.value);
-  close();
 });
 </script>
 
@@ -126,14 +92,11 @@ onUnmounted(() => {
             <component :is="iconOptions[props?.card?.config?.iconName || 'ClipboardCode20Regular']" />
           </NIcon>
           <div class="value-wrap">
-            <span class="value" :title="detail?.data && detail.data[0] ? detail.data[0]?.value : ''">
-              {{ detail?.data && detail.data[0] ? detail.data[0]?.value : '8' }}
+            <span class="value" :title="detail != null && detail != '' ? detail : '8'">
+              {{ detail != null && detail !== '' ? detail : '8' }}
             </span>
-            <span
-              class="unit"
-              :title="props?.card?.config?.unit || (detail?.data && detail.data[0] ? detail.data[0]?.unit : '')"
-            >
-              {{ props?.card?.config?.unit || (detail?.data && detail.data[0] ? detail.data[0]?.unit : '') }}
+            <span class="unit" :title="props?.card?.config?.unit || unit">
+              {{ props?.card?.config?.unit || unit }}
             </span>
           </div>
         </div>

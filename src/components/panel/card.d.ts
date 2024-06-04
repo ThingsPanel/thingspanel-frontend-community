@@ -4,7 +4,6 @@ export interface ICardData {
   // 组件自定义配置
   config?: Record<string, any>;
   title?: string;
-  useShareData?: boolean; // 是否使用共享数据
   // 基础配置
   basicSettings?: {
     showTitle?: boolean;
@@ -55,7 +54,6 @@ export interface ICardDefine {
   title: string; // 卡片标题，英文，后期作为国际化key
   poster: string; // 示例图 尺寸193*120
   type: 'builtin' | 'device' | 'plugin' | 'chart'; // 卡片类型
-  useShareData?: boolean; // 是否使用共享数据
   // 不存在就是all
   scene?: 'mobile' | 'pc' | 'all';
   configForm?: any; // 卡片配置文件，一般就是 card-config.vue
