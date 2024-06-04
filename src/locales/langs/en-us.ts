@@ -860,7 +860,8 @@ const local: App.I18n.Schema = {
       windDirection: 'WindDirection',
       humidity: 'Humidity',
       pressure: 'Pressure',
-      rainfall: 'Rainfall'
+      rainfall: 'Rainfall',
+      instrumentPanel: 'InstrumentPanel'
     }
   },
   device_template: {
