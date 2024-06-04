@@ -74,10 +74,9 @@ const treeOptions = ref<any>([]);
 const initRolePermissions = async () => {
   // 首页默认选中
   const data = treeOptions.value.find(item => item.label === '首页');
-  console.log(data);
   if (props.editData) {
     const permissions = await getRolePermissions(props.editData.id);
-    selectedPermissions.value = [data.key, ...permissions];
+    selectedPermissions.value = [...new Set([data.key, ...permissions])];
   } else {
     selectedPermissions.value = [data.key];
   }
