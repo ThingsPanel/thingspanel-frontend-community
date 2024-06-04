@@ -19,7 +19,7 @@
     "ThingsPanel"
   ],
   "scripts": {
-    "build": "npm run typecheck && node --max-old-space-size=4096 ./node_modules/.bin/cross-env VITE_SERVICE_ENV=prod vite build",
+    "build": "npm run typecheck && cross-env VITE_SERVICE_ENV=prod vite build",
     "build:dev": "npm run typecheck && cross-env VITE_SERVICE_ENV=dev vite build",
     "build:test": "npm run typecheck && cross-env VITE_SERVICE_ENV=test vite build",
     "build:vercel": "cross-env VITE_HASH_ROUTE=Y VITE_VERCEL=Y vite build",
@@ -37,7 +37,7 @@
     "release": "sa release",
     "start": "cross-env VITE_SERVICE_ENV=dev vite",
     "tsx": "tsx",
-    "typecheck": "vue-tsc --noEmit --skipLibCheck",
+    "typecheck": "set NODE_OPTIONS='--max-old-space-size=4096' vue-tsc --noEmit --skipLibCheck",
     "update-pkg": "sa update-pkg"
   },
   "dependencies": {
