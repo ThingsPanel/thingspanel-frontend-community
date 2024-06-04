@@ -208,7 +208,9 @@ const actionParamShow = async (instructItem: any, data: any) => {
     if (instructItem.action_type === '10') {
       res = await deviceMetricsMenu({ device_id: instructItem.action_target });
     } else if (instructItem.action_type === '11') {
-      res = await deviceConfigMetricsMenu({ device_config_id: instructItem.action_target });
+      res = await deviceConfigMetricsMenu({
+        device_config_id: instructItem.action_target
+      });
     }
     // eslint-disable-next-line array-callback-return
     if (res.data) {

@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAuthStore } from '@/store/modules/auth';
-import { sumData, totalNumber } from '../../../service/api';
+import { tenantNum } from '../../../service/api';
 import { GradientBg } from './components';
 
 defineOptions({ name: 'NumCard' });
-
-const authStore = useAuthStore();
 
 const cardData = ref<any>({
   id: 'trade',
@@ -20,10 +17,10 @@ const cardData = ref<any>({
 // 获取数据
 const getData: () => void = async () => {
   try {
-    const response: { data: any } =
-      authStore?.$state.userInfo.authority === 'TENANT_ADMIN' ? await sumData() : await totalNumber();
+    const response: { data: any } = await tenantNum();
+    console.log(response, '消息总数');
     if (response.data) {
-      cardData.value.value = response.data.device_total;
+      cardData.value.value = response.data?.device_total ?? 0;
     } else {
       console.error('Data does not contain the required properties or they are not numbers.');
     }
