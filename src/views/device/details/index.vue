@@ -46,6 +46,7 @@ const labels = ref<string[]>([]);
 const deviceData: any = ref({});
 const device_type = ref('');
 const icon_type = ref('');
+const name = ref('');
 const device_number = ref('');
 const device_is_online = ref(0);
 const device_loop = ref(false);
@@ -85,9 +86,6 @@ const changeTabs = v => {
 const editConfig = () => {
   showDialog.value = true;
 };
-const closeModal = async () => {
-  showDialog.value = false;
-};
 
 const rules = {
   name: {
@@ -117,6 +115,7 @@ const getDeviceDetail = async () => {
   if (!error) {
     device_number.value = data.device_number;
     device_is_online.value = data.is_online;
+    name.value = data.name;
 
     if (data?.device_config) {
       device_type.value = data.device_config.device_type;
@@ -137,6 +136,10 @@ const getDeviceDetail = async () => {
     );
   }
 };
+const closeModal = async () => {
+  await getDeviceDetail();
+  showDialog.value = false;
+};
 const { routerPushByKey } = useRouterPush();
 const clickConfig: () => void = () => {
   routerPushByKey('device_config-detail', {
@@ -147,8 +150,8 @@ const clickConfig: () => void = () => {
 };
 const alarmStatus = ref(false);
 const getAlarmStatus = async () => {
-  const res = await deviceAlarmStatus({ device_id: d_id });
-  alarmStatus.value = res.data.alarm;
+  const { data } = await deviceAlarmStatus({ device_id: d_id });
+  alarmStatus.value = data.alarm;
 };
 onBeforeMount(() => {
   getDeviceDetail();
@@ -205,7 +208,7 @@ const getPlatform = computed(() => {
     <n-card>
       <div>
         <div style="display: flex; margin-top: -5px">
-          <span style="margin-right: 20px">{{ deviceData?.name || '--' }}</span>
+          <span style="margin-right: 20px">{{ name || '--' }}</span>
           <NButton v-show="true" type="primary" style="margin-top: -5px" @click="editConfig">
             {{ $t('common.edit') }}
           </NButton>
