@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, getCurrentInstance, ref } from 'vue';
 import type { FormInst } from 'naive-ui';
 import { delRolePermissions, fetchUIElementList, getRolePermissions, modifyRolePermissions } from '@/service/api';
 import { $t } from '@/locales';
-
+const { proxy }: any = getCurrentInstance();
 export interface Props {
   /** 弹窗可见性 */
   visible: boolean;
@@ -30,6 +30,7 @@ function convertToTreeNodes(elements: Element[]): TreeNode[] {
   return elements.map(item => ({
     label: item.description,
     key: item.id,
+    disabled: item.element_code === 'home', // 禁止选中首页
     children: item.children.length > 0 ? convertToTreeNodes(item.children) : []
   }));
 }
@@ -71,26 +72,31 @@ const selectedPermissions = ref<string[]>([]);
 const treeOptions = ref<any>([]);
 
 const initRolePermissions = async () => {
+  // 首页默认选中
+  const data = treeOptions.value.find(item => item.label === '首页');
+  console.log(data);
   if (props.editData) {
     const permissions = await getRolePermissions(props.editData.id);
-    selectedPermissions.value = permissions;
+    selectedPermissions.value = [data.key, ...permissions];
   } else {
-    selectedPermissions.value = [];
+    selectedPermissions.value = [data.key];
   }
 };
 
 const initUIElementList = async () => {
   const uiElementList = await fetchUIElementList();
   treeOptions.value = convertToTreeNodes(uiElementList);
+  initRolePermissions();
 };
 
 async function handleSubmit() {
   let data: any;
   // delete first element which is the root node
-  const currentPermissions = [...selectedPermissions.value];
-  currentPermissions.shift();
+  const indeterminateData = proxy.$refs.treeRef.getIndeterminateData().keys;
+  const currentPermissions = [...selectedPermissions.value, ...indeterminateData];
+  // currentPermissions.shift();
   selectedPermissions.value = [];
-
+  console.log(currentPermissions);
   if (currentPermissions.length === 0) {
     data = await delRolePermissions(props.editData?.id);
   } else {
@@ -110,13 +116,20 @@ async function handleSubmit() {
     :title="title"
     :on-after-enter="
       () => {
-        initUIElementList(), initRolePermissions();
+        initUIElementList();
       }
     "
   >
     <n-form ref="formRef" label-placement="left" :label-width="80">
       <div class="h-300px overflow-y-auto">
-        <n-tree v-model:checked-keys="selectedPermissions" :data="treeOptions" cascade checkable block-line />
+        <n-tree
+          ref="treeRef"
+          v-model:checked-keys="selectedPermissions"
+          :data="treeOptions"
+          :cascade="false"
+          checkable
+          block-line
+        />
       </div>
       <n-space class="w-full pt-16px" :size="24" justify="end">
         <n-button class="w-72px" @click="closeModal">{{ $t('generate.cancel') }}</n-button>
