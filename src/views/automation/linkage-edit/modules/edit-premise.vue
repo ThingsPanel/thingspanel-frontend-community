@@ -189,13 +189,15 @@ const queryDevice = ref({
   group_id: null as any,
   device_name: null as any
 });
-
+const btnloading = ref(false);
 // 获取设备列表
 const getDevice = async (groupId: any, name: any) => {
   queryDevice.value.group_id = groupId || null;
   queryDevice.value.device_name = name || null;
+  btnloading.value = false;
   const res = await deviceListAll(queryDevice.value);
-  deviceOptions.value = res.data;
+  btnloading.value = true;
+  deviceOptions.value = res.data || [];
 };
 // 选择设备
 const triggerSourceChange = (ifItem: any) => {
@@ -601,6 +603,7 @@ onMounted(() => {
       ref="premiseFormRef"
       :model="premiseForm"
       :rules="premiseFormRules"
+      :submit-on-enter="false"
       label-placement="left"
       size="small"
       :show-feedback="false"
@@ -655,6 +658,7 @@ onMounted(() => {
                       label-field="name"
                       :consistent-menu-width="false"
                       :loading="loadingSelect"
+                      @keydown.enter.prevent
                       @update:value="() => triggerSourceChange(ifItem)"
                       @update:show="data => triggerSourceShow(data)"
                     >
@@ -677,9 +681,11 @@ onMounted(() => {
                             class="flex-1"
                             clearable
                             :placeholder="$t('common.input')"
+                            @keydown.enter.prevent
                             @click="handleFocus(ifIndex)"
                           ></NInput>
                           <NButton
+                            :disabled="!btnloading"
                             type="primary"
                             @click.stop="getDevice(queryDevice.group_id, queryDevice.device_name)"
                           >
