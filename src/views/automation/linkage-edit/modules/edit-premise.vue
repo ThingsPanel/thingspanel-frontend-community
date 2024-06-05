@@ -606,7 +606,8 @@ onMounted(() => {
       :show-feedback="false"
     >
       {{ $t('generate.condition-trigger') }}
-      <NFlex v-for="(ifGroupItem, ifGroupIndex) in premiseForm.ifGroups" :key="ifGroupIndex" class="w-100%">
+      <NFlex v-for="(ifGroupItem, ifGroupIndex) in premiseForm.ifGroups" :key="ifGroupIndex" class="relative w-100%">
+        <NTag v-if="ifGroupIndex !== 0" type="info" class="tag-or-class" size="small">{{ $t('generate.or') }}</NTag>
         <NCard class="mb-2 w-[calc(100%-78px)]">
           <NFlex v-for="(ifItem, ifIndex) in ifGroupItem" :key="ifIndex" class="ifGroupItem-class mb-2 w-100%">
             <NFlex class="flex-1" align="center">
@@ -1203,7 +1204,7 @@ onMounted(() => {
         </NButton>
       </NFlex>
     </NForm>
-    <NButton type="primary" class="w-30" @click="addIfGroupItem(null)">{{ $t('generate.add-group') }}</NButton>
+    <NButton type="primary" class="w-30" @click="addIfGroupItem(null)">{{ $t('generate.orIf') }}</NButton>
   </NFlex>
 </template>
 
@@ -1215,6 +1216,10 @@ onMounted(() => {
     position: absolute;
     top: 5px;
   }
+}
+.tag-or-class {
+  position: absolute;
+  left: -30px;
 }
 
 .refresh-class {

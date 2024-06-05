@@ -1008,6 +1008,7 @@ const local: App.I18n.Schema = {
     code: '代码',
     name: '姓名',
     greeting: '你好',
+    orIf: '或者如果',
     'add-group': '新增一个组',
     'delete-group': '删除组',
     'delete-condition': '删除一个条件',

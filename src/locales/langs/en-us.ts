@@ -1010,6 +1010,7 @@ const local: App.I18n.Schema = {
     code: 'code',
     name: 'name',
     greeting: 'hello',
+    orIf: 'or if',
     'add-group': 'add a group',
     'delete-group': 'delete group',
     'delete-condition': 'delete a condition',

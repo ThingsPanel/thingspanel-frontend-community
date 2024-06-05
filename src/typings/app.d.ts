@@ -1323,6 +1323,7 @@ declare namespace App {
         code: string;
         name: string;
         greeting: string;
+        orIf: string;
         'add-group': string;
         'delete-group': string;
         'delete-condition': string;
