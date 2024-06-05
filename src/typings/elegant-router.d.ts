@@ -99,6 +99,8 @@ declare module "@elegant-router/types" {
     "plugin_swiper": "/plugin/swiper";
     "plugin_video": "/plugin/video";
     "rule-engine": "/rule-engine";
+    "system-management-user": "/system-management-user";
+    "system-management-user_system-log": "/system-management-user/system-log";
     "test": "/test";
     "test_kan-ban-details-test": "/test/kan-ban-details-test";
     "test_kan-ban-test": "/test/kan-ban-test";
@@ -162,6 +164,7 @@ declare module "@elegant-router/types" {
     | "personal-center"
     | "plugin"
     | "rule-engine"
+    | "system-management-user"
     | "test"
     | "user-center"
     | "visualization"
@@ -242,6 +245,7 @@ declare module "@elegant-router/types" {
     | "plugin_swiper"
     | "plugin_video"
     | "rule-engine"
+    | "system-management-user_system-log"
     | "test_kan-ban-details-test"
     | "test_kan-ban-test"
     | "user-center"

@@ -784,6 +784,26 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'system-management-user',
+    path: '/system-management-user',
+    component: 'layout.base',
+    meta: {
+      title: 'system-management-user',
+      i18nKey: 'route.system-management-user'
+    },
+    children: [
+      {
+        name: 'system-management-user_system-log',
+        path: '/system-management-user/system-log',
+        component: 'view.system-management-user_system-log',
+        meta: {
+          title: 'system-management-user_system-log',
+          i18nKey: 'route.system-management-user_system-log'
+        }
+      }
+    ]
+  },
+  {
     name: 'test',
     path: '/test',
     component: 'layout.base',

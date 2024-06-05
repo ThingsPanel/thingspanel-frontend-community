@@ -75,6 +75,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   plugin_swiper: () => import("@/views/plugin/swiper/index.vue"),
   plugin_video: () => import("@/views/plugin/video/index.vue"),
   "rule-engine": () => import("@/views/rule-engine/index.vue"),
+  "system-management-user_system-log": () => import("@/views/system-management-user/system-log/index.vue"),
   "test_kan-ban-details-test": () => import("@/views/test/kan-ban-details-test/index.vue"),
   "test_kan-ban-test": () => import("@/views/test/kan-ban-test/index.vue"),
   "user-center": () => import("@/views/user-center/index.vue"),
