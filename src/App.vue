@@ -1,67 +1,63 @@
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted } from 'vue';
+import { NConfigProvider, darkTheme } from 'naive-ui';
+import { useFullscreen } from '@vueuse/core';
+import json from 'highlight.js/lib/languages/json';
+import hljs from 'highlight.js/lib/core';
+import { useAppStore } from './store/modules/app';
+import { useThemeStore } from './store/modules/theme';
+import { naiveDateLocales, naiveLocales } from './locales/naive';
+import Content from './components/content/index.vue';
 
-<template>
-  <router-view></router-view>
-</template>
+hljs.registerLanguage('json', json);
+defineOptions({
+  name: 'App'
+});
+const appStore = useAppStore();
+const themeStore = useThemeStore();
+const { isFullscreen, toggle } = useFullscreen();
+const naiveDarkTheme = computed(() => (themeStore.darkMode ? darkTheme : undefined));
 
-<style lang="scss">
-body {
-  zoom:1!important;
-}
-// 3rd party plugins css
-@import "~vuetify/dist/vuetify.css";
-@import "~bootstrap-vue/dist/bootstrap-vue.css";
-@import "~perfect-scrollbar/css/perfect-scrollbar.css";
-@import "~socicon/css/socicon.css";
-@import "~@fortawesome/fontawesome-free/css/all.css";
-@import "~line-awesome/dist/line-awesome/css/line-awesome.css";
-@import "assets/plugins/flaticon/flaticon.css";
-@import "assets/plugins/flaticon2/flaticon.css";
-@import "assets/plugins/keenthemes-icons/font/ki.css";
+const naiveLocale = computed(() => {
+  return naiveLocales[appStore.locale];
+});
 
-// Main demo style scss
-@import "assets/sass/style.vue";
-
-// Check documentation for RTL css
-/*@import "assets/css/style.vue.rtl";*/
-</style>
-
-<script>
-import { OVERRIDE_LAYOUT_CONFIG } from "@/core/services/store/config.module";
-import {RESET_LAYOUT_CONFIG} from "./core/services/store/config.module";
-import {local_url} from "@/api/LocalUrl";
-import JwtService from "@/core/services/jwt.service";
-
-
-export default {
-  name: "ThingsPanel",
-  mounted() {
-    // 只有已经认证的用户才会请求路由
-    if (!!JwtService.getToken()) {
-      this.$store.dispatch("setRouters");
+const naiveDateLocale = computed(() => {
+  return naiveDateLocales[appStore.locale];
+});
+const handleFullScreenChange = () => {
+  if (!document.fullscreenElement) {
+    if (isFullscreen) {
+      toggle();
     }
-    this.$store.commit("refresh_page");
-    /**
-     * this is to override the layout config using saved data from localStorage
-     * remove this to use config only from static json (@/core/config/layout.config.json)
-     */
-    this.$store.dispatch(OVERRIDE_LAYOUT_CONFIG);
-    window.localStorage.setItem("base_url", local_url);
-
-  },
-  beforeMount() {
-    this.$store.dispatch(RESET_LAYOUT_CONFIG);
-    // // show page loading
-    // this.$store.dispatch(ADD_BODY_CLASSNAME, "page-loading");
-    // // initialize html element classes
-    // HtmlClass.init(this.layoutConfig());
-  },
-  created() {
-    let theme = localStorage.getItem("style");
-    let themeFile = "themes/default.css";
-    if (theme){
-      themeFile = "themes/" + theme + ".css";
-    }
-    document.getElementById('style').setAttribute("href", themeFile); //实现将主题保存在内存中刷新浏览器不改变
   }
 };
+
+onMounted(() => {
+  // 当组件挂载时，添加全屏变化事件的监听器
+  document.addEventListener('fullscreenchange', handleFullScreenChange);
+});
+
+onBeforeUnmount(() => {
+  // 当组件卸载前，移除全屏变化事件的监听器
+  document.removeEventListener('fullscreenchange', handleFullScreenChange);
+});
 </script>
+
+<template>
+  <NMessageProvider>
+    <Content />
+  </NMessageProvider>
+  <NConfigProvider
+    :hljs="hljs"
+    :theme="naiveDarkTheme"
+    :theme-overrides="themeStore.naiveTheme"
+    :locale="naiveLocale"
+    :date-locale="naiveDateLocale"
+    class="h-full"
+  >
+    <AppProvider>
+      <RouterView class="bg-layout" />
+    </AppProvider>
+  </NConfigProvider>
+</template>

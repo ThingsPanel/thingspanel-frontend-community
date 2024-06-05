@@ -1,0 +1,70 @@
+.vue-grid-item {
+  touch-action: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  transition-property: left, top, right;
+}
+
+.vue-grid-item.no-touch {
+  touch-action: none;
+}
+
+.vue-grid-item.css-transforms {
+  transition-property: transform;
+  left: 0;
+  right: auto;
+}
+
+.vue-grid-item.resizing {
+  opacity: 0.6;
+  z-index: 3;
+}
+
+.vue-grid-item.vue-draggable-dragging {
+  transition: none;
+  z-index: 3;
+}
+
+.vue-grid-item.vue-grid-placeholder {
+  z-index: 2;
+  transition-property: width, height, transform;
+  @apply select-none bg-blue-500/20;
+}
+
+.vue-grid-item > .vue-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  z-index: 200;
+  bottom: 0;
+  right: 0;
+  background-position: bottom right;
+  background-repeat: no-repeat;
+  padding: 0 3px 3px 0;
+  background-origin: content-box;
+  box-sizing: border-box;
+  cursor: se-resize;
+  &:before {
+    content: '';
+    @apply h-2 absolute right-0 bottom-0 w-0.5 dark:bg-gray-500 block duration-200 bg-gray-300;
+  }
+  &:after {
+    content: '';
+    @apply w-2 absolute right-0 bottom-0 h-0.5 dark:bg-gray-500 block duration-200 bg-gray-300;
+  }
+  &:hover {
+    &:before,
+    &:after {
+      @apply dark:bg-gray-300 bg-gray-500;
+    }
+  }
+}
+
+.vue-grid-item.disable-user-select {
+  user-select: none;
+}
+
+.vue-grid-layout {
+  position: relative;
+  transition: height 0.2s ease;
+}
