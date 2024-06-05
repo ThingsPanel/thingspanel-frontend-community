@@ -18,6 +18,7 @@ const authStore = useAuthStore();
 const { loading, startLoading, endLoading } = useLoading(false);
 const { bool: visible, setTrue: openModal } = useBoolean();
 const { bool: editPwdVisible, setTrue: openEditPwdModal } = useBoolean();
+const showEmpty = ref(false);
 
 const customUserStatusOptions = computed(() => {
   return userStatusOptions.map(item => {
@@ -65,7 +66,13 @@ const pagination: PaginationProps = reactive({
 const tableData = ref<UserManagement.User[]>([]);
 
 function setTableData(data: UserManagement.User[]) {
-  tableData.value = data;
+  console.log(data);
+  if (data === null) {
+    showEmpty.value = true;
+  } else {
+    showEmpty.value = false;
+    tableData.value = data;
+  }
 }
 
 async function getTableData() {
@@ -307,7 +314,10 @@ init();
           </n-space>
 -->
         </NSpace>
+        <NCard></NCard>
+
         <NDataTable
+          v-if="!showEmpty"
           :row-key="row => row.id"
           :remote="true"
           :columns="columns"
@@ -316,6 +326,9 @@ init();
           :pagination="pagination"
           class="flex-1-hidden"
         />
+        <div v-if="showEmpty" class="h-500px flex-center flex-col">
+          <n-empty :description="$t('common.nodata')"></n-empty>
+        </div>
         <TableActionModal v-model:visible="visible" :type="modalType" :edit-data="editData" @success="getTableData" />
         <EditPasswordModal
           v-model:visible="editPwdVisible"

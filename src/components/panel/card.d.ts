@@ -80,6 +80,11 @@ export interface IConfigCtx {
   view?: boolean; // 预览模式
 }
 
+export interface ICardItem {
+  getComponent(): any;
+}
+
 export interface ICardRender {
   addCard(data: ICardData): void;
+  getCardComponent(cardView: ICardView): ICardItem | null;
 }

@@ -44,7 +44,7 @@ export const addUser = async (params: any) => {
 
 /** 编辑用户 */
 export const editUser = async (params: any) => {
-  delete params.password;
+  // delete params.password;
   const data = await request.put<Api.BaseApi.Data>('/user', params);
   return data;
 };

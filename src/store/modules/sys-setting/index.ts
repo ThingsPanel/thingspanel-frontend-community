@@ -4,7 +4,7 @@ import { localStg } from '@/utils/storage';
 import { createServiceConfig } from '~/env.config';
 
 const { otherBaseURL } = createServiceConfig(import.meta.env);
-const url = new URL(otherBaseURL.demo);
+const url = new URL(otherBaseURL.demo ? otherBaseURL.demo : `${window.location.origin}/api/v1`);
 
 type SysSetting = Omit<Api.GeneralSetting.ThemeSetting, 'id'>;
 export const useSysSettingStore = defineStore('sys-setting', {

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUpdated } from 'vue';
-import { GridItem, GridLayout } from 'vue3-drr-grid-layout';
+import { onMounted, onUpdated, reactive } from 'vue';
+import { GridItem, GridLayout } from 'vue3-grid-layout';
 import type { ICardData, ICardView } from '@/components/panel/card';
 import './gird.css';
 import { $t } from '@/locales';
@@ -12,6 +12,8 @@ const props = defineProps<{
   rowHeight: number;
   isPreview?: boolean;
 }>();
+
+const cardRefs = reactive<{ [key: string]: any | undefined }>({});
 
 const generateUniqueNumberId = () => {
   const timestamp = Date.now(); // 获取当前时间戳
@@ -72,6 +74,9 @@ defineExpose({
         data
       }
     ]);
+  },
+  getCardComponent: (card: ICardView) => {
+    return cardRefs[`card-${card.i}`];
   }
 });
 
@@ -80,6 +85,10 @@ const removeLayout = (i: number) => {
     'update:layout',
     props.layout.filter(item => item.i !== i)
   );
+};
+const breakpointChanged = (newBreakpoint: any, newLayout: any) => {
+  console.log(newBreakpoint, 'breakpoint');
+  emit('update:layout', newLayout);
 };
 onMounted(() => {});
 onUpdated(() => {
@@ -98,7 +107,13 @@ onUpdated(() => {
     class="w-full"
     :breakpoints="{ lg: 780, md: 500, sm: 0 }"
     :cols="{ lg: 12, md: 6, sm: 1 }"
-    @update:layout="data => emit('update:layout', data)"
+    @breakpoint-changed="breakpointChanged"
+    @layout-updated="
+      data => {
+        console.log(data, 'layout updated');
+        emit('update:layout', data);
+      }
+    "
   >
     <template #default="{ gridItemProps }">
       <GridItem
@@ -139,7 +154,12 @@ onUpdated(() => {
             </template>
             <span>{{ $t('generate.confirm-delete-dashboard') }}</span>
           </NPopconfirm>
-          <CardItem :data="item.data!" :view="isPreview" class="h-full w-full overflow-hidden" />
+          <CardItem
+            :ref="el => (cardRefs[`card-${item.i}`] = el)"
+            :data="item.data!"
+            :view="isPreview"
+            class="h-full w-full overflow-hidden"
+          />
         </div>
       </GridItem>
     </template>

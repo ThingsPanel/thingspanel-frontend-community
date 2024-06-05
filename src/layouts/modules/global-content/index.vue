@@ -31,7 +31,7 @@ const routeStore = useRouteStore();
         <component :is="Component" v-if="appStore.reloadFlag" :key="route.path" :class="{ 'p-16px': showPadding }"
           class="flex-grow bg-layout transition-300" />
       </KeepAlive>
-    </Transition> 
+    </Transition>
 -->
     <KeepAlive :include="routeStore.cacheRoutes">
       <component

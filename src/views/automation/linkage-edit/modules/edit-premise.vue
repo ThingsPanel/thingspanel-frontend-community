@@ -147,13 +147,11 @@ const ifTypeChange = (ifItem: any, data: any) => {
 const deviceConditionOptions = ref([
   {
     label: $t('common.singleDevice'),
-    value: '10',
-    disabled: false
+    value: '10'
   },
   {
     label: $t('common.singleClassDevice'),
-    value: '11',
-    disabled: false
+    value: '11'
   }
 ]);
 const deviceConfigDisabled = ref(false);
@@ -166,22 +164,8 @@ const triggerConditionsTypeChange = (ifItem: any, data: any) => {
   ifItem.minValue = null;
   ifItem.maxValue = null;
   deviceConfigDisabled.value = false;
-  if (!data) {
-    // eslint-disable-next-line array-callback-return
-    deviceConditionOptions.value.map(item => {
-      item.disabled = false;
-    });
-  }
-  if (data === '10') {
-    // eslint-disable-next-line array-callback-return
-    deviceConditionOptions.value.map(item => {
-      item.disabled = item.value !== data;
-    });
-  } else if (data === '11') {
-    // eslint-disable-next-line array-callback-return
-    deviceConditionOptions.value.map(item => {
-      item.disabled = true;
-    });
+
+  if (data === '11') {
     deviceConfigDisabled.value = true;
   }
   emit('conditionChose', data);
@@ -205,13 +189,15 @@ const queryDevice = ref({
   group_id: null as any,
   device_name: null as any
 });
-
+const btnloading = ref(false);
 // 获取设备列表
 const getDevice = async (groupId: any, name: any) => {
   queryDevice.value.group_id = groupId || null;
   queryDevice.value.device_name = name || null;
+  btnloading.value = false;
   const res = await deviceListAll(queryDevice.value);
-  deviceOptions.value = res.data;
+  btnloading.value = true;
+  deviceOptions.value = res.data || [];
 };
 // 选择设备
 const triggerSourceChange = (ifItem: any) => {
@@ -599,17 +585,10 @@ onMounted(() => {
       judgeItemData.trigger_conditions_type = '10';
       judgeItemData.trigger_source = props.device_id;
       // eslint-disable-next-line array-callback-return
-      deviceConditionOptions.value.map(item => {
-        item.disabled = item.value !== judgeItemData.trigger_conditions_type;
-      });
     } else if (props.device_config_id) {
       judgeItemData.ifType = '1';
       judgeItemData.trigger_conditions_type = '11';
       judgeItemData.trigger_source = props.device_config_id;
-      // eslint-disable-next-line array-callback-return
-      deviceConditionOptions.value.map(item => {
-        item.disabled = true;
-      });
       deviceConfigDisabled.value = true;
     }
     emit('conditionChose', judgeItemData.trigger_conditions_type);
@@ -624,6 +603,7 @@ onMounted(() => {
       ref="premiseFormRef"
       :model="premiseForm"
       :rules="premiseFormRules"
+      :submit-on-enter="false"
       label-placement="left"
       size="small"
       :show-feedback="false"
@@ -678,6 +658,7 @@ onMounted(() => {
                       label-field="name"
                       :consistent-menu-width="false"
                       :loading="loadingSelect"
+                      @keydown.enter.prevent
                       @update:value="() => triggerSourceChange(ifItem)"
                       @update:show="data => triggerSourceShow(data)"
                     >
@@ -700,9 +681,11 @@ onMounted(() => {
                             class="flex-1"
                             clearable
                             :placeholder="$t('common.input')"
+                            @keydown.enter.prevent
                             @click="handleFocus(ifIndex)"
                           ></NInput>
                           <NButton
+                            :disabled="!btnloading"
                             type="primary"
                             @click.stop="getDevice(queryDevice.group_id, queryDevice.device_name)"
                           >
@@ -853,6 +836,7 @@ onMounted(() => {
                     v-model:value="ifItem.trigger_conditions_type"
                     :options="timeConditionOptions"
                     :placeholder="$t('common.select')"
+                    @update:value="ifItem.task_type = null"
                   />
                 </NFormItem>
                 <template v-if="ifItem.trigger_conditions_type === '20'">
@@ -914,11 +898,23 @@ onMounted(() => {
                       v-model:value="ifItem.task_type"
                       :options="cycleOptions"
                       :placeholder="$t('generate.please-select')"
+                      @update:value="
+                        () => {
+                          ifItem.hourTimeValue = null;
+                          ifItem.expiration_time = null;
+                          ifItem.dayTimeValue = null;
+                          ifItem.weekTimeValue = null;
+                          ifItem.monthChoseValue = null;
+                          ifItem.weekChoseValue = null;
+                          ifItem.monthTimeValue = null;
+                        }
+                      "
                     />
                   </NFormItem>
                   <template v-if="ifItem.task_type === 'HOUR'">
                     <!--  时间条件下->重复->每小时->选择分-->
                     <NFormItem
+                      key="hourTimeValue"
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].hourTimeValue`"
                       :rule="premiseFormRules.hourTimeValue"
@@ -931,6 +927,7 @@ onMounted(() => {
                       />
                     </NFormItem>
                     <NFormItem
+                      key="expiration_time0"
                       :label="$t('generate.expiration-time')"
                       label-width="80px"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].expiration_time`"
@@ -957,6 +954,7 @@ onMounted(() => {
                   <template v-if="ifItem.task_type === 'DAY'">
                     <!--  时间条件下->重复->每天->选择时分秒-->
                     <NFormItem
+                      key="dayTimeValue"
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].dayTimeValue`"
                       :rule="premiseFormRules.dayTimeValue"
@@ -970,6 +968,7 @@ onMounted(() => {
                       />
                     </NFormItem>
                     <NFormItem
+                      key="expiration_time1"
                       :label="$t('generate.expiration-time')"
                       label-width="80px"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].expiration_time`"
@@ -997,6 +996,7 @@ onMounted(() => {
                     <!--  时间条件下->重复->每周->选择星期和输入时分-->
                     <div class="weekChoseValue-box w-120">
                       <NFormItem
+                        key="weekChoseValue"
                         :show-label="false"
                         :path="`ifGroups[${ifGroupIndex}][${ifIndex}].weekChoseValue`"
                         :rule="premiseFormRules.weekChoseValue"
@@ -1016,6 +1016,7 @@ onMounted(() => {
                       </NFormItem>
                     </div>
                     <NFormItem
+                      key="weekTimeValue"
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].weekTimeValue`"
                       :rule="premiseFormRules.weekTimeValue"
@@ -1029,6 +1030,7 @@ onMounted(() => {
                       />
                     </NFormItem>
                     <NFormItem
+                      key="expiration_time2"
                       :label="$t('generate.expiration-time')"
                       label-width="80px"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].expiration_time`"
@@ -1055,6 +1057,7 @@ onMounted(() => {
                   <template v-if="ifItem.task_type === 'MONTH'">
                     <!--  时间条件下->重复->每月->选择日期和时分-->
                     <NFormItem
+                      key="monthChoseValue"
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].monthChoseValue`"
                       :rule="premiseFormRules.monthChoseValue"
@@ -1067,6 +1070,7 @@ onMounted(() => {
                       />
                     </NFormItem>
                     <NFormItem
+                      key="monthTimeValue"
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].monthTimeValue`"
                       :rule="premiseFormRules.monthTimeValue"
@@ -1080,6 +1084,7 @@ onMounted(() => {
                       />
                     </NFormItem>
                     <NFormItem
+                      key="expiration_time3"
                       :label="$t('generate.expiration-time')"
                       label-width="80px"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].expiration_time`"

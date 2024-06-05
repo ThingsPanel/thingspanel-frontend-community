@@ -1,4 +1,5 @@
 import { STATIC_BASE_URL } from '@/constants/common';
+import { createServiceConfig } from '~/env.config';
 
 export function typeOf(obj: any): any {
   const toString: any = Object.prototype.toString;
@@ -29,6 +30,28 @@ export const getStaticUrl = (url: string, showError: boolean = true): string => 
     return '';
   }
   return url.replace('.', STATIC_BASE_URL);
+};
+
+export const getBaseServerUrl = (): string => {
+  const { baseURL } = createServiceConfig(import.meta.env);
+  return baseURL || `${window.location.origin}/api/v1`;
+};
+
+export const getDemoServerUrl = (): string => {
+  const { otherBaseURL } = createServiceConfig(import.meta.env);
+  console.log(`demo url:${otherBaseURL.demo}`);
+  return otherBaseURL.demo ? otherBaseURL.demo : `${window.location.origin}/api/v1`;
+};
+
+/**
+ * get web socket server url
+ *
+ * @returns web socket server url
+ */
+export const getWebsocketServerUrl = (): string => {
+  const demoUrl = getDemoServerUrl();
+  console.log(`demo url:${demoUrl.replace(window.location.protocol, 'ws:')}`);
+  return demoUrl.replace(window.location.protocol, 'ws:');
 };
 
 export function deepClone(data: any): any {

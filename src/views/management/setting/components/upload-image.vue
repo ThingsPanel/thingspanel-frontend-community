@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { getCurrentInstance, ref, watch } from 'vue';
 // eslint-disable-next-line import/order
-import { createServiceConfig } from '~/env.config';
 import type { UploadFileInfo } from 'naive-ui';
+import { getDemoServerUrl, getFileName } from '@/utils/common/tool';
 import { localStg } from '@/utils/storage';
-import { getFileName } from '@/utils/common/tool';
 import { $t } from '@/locales';
-const { otherBaseURL } = createServiceConfig(import.meta.env);
-const url = ref(new URL(otherBaseURL.demo));
+const url = ref(new URL(getDemoServerUrl()));
 defineOptions({ name: 'UploadFile' });
 
 const { proxy } = getCurrentInstance() as any;

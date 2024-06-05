@@ -7,7 +7,7 @@ export function createServiceConfig(env: Env.ImportMeta) {
   const mockURL = 'https://mock.apifox.com/m1/4080832-0-default';
   const devURL = 'http://47.115.210.16:9999/api/v1';
   const testURL = '';
-  const prodURL = 'http://47.115.210.16:9999/api/v1';
+  const prodURL = '';
 
   const serviceConfigMap: App.Service.ServiceConfigMap = {
     dev: {

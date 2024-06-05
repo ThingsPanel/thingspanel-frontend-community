@@ -5,14 +5,13 @@ import { ref } from 'vue';
 import type { UploadFileInfo } from 'naive-ui';
 import { localStg } from '@/utils/storage';
 import { STATIC_BASE_URL } from '@/constants/common';
-import { createServiceConfig } from '~/env.config';
+import { getDemoServerUrl } from '@/utils/common/tool';
 import { $t } from '~/src/locales';
 // eslint-disable-next-line import/order
 
 defineOptions({ name: 'UploadFile' });
 
-const { otherBaseURL } = createServiceConfig(import.meta.env);
-const url = ref(new URL(otherBaseURL.demo));
+const url = ref(new URL(getDemoServerUrl()));
 
 enum SourceType {
   image = 'image',

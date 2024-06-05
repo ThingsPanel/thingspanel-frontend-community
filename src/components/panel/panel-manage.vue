@@ -1,13 +1,16 @@
 <script lang="tsx" setup>
-import { nextTick, onMounted, reactive, ref } from 'vue';
+import { nextTick, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useDialog } from 'naive-ui';
-import { useFullscreen } from '@vueuse/core';
+import { useFullscreen, useWebSocket } from '@vueuse/core';
+import { debounce } from 'lodash';
 // eslint-disable-next-line vue/prefer-import-from-vue
 import type { UnwrapRefSimple } from '@vue/reactivity';
 import type { ICardData, ICardFormIns, ICardRender, ICardView } from '@/components/panel/card';
 import { PutBoard, deviceTemplateSelect, getBoard } from '@/service/api';
+import { localStg } from '@/utils/storage';
 import { useAppStore } from '@/store/modules/app';
 import { $t } from '@/locales';
+import { getWebsocketServerUrl } from '@/utils/common/tool';
 
 const dialog = useDialog();
 
@@ -16,11 +19,15 @@ const panelDate = ref<Panel.Board>();
 const cr = ref<ICardRender>();
 const fullui = ref();
 
+const socketMap = new Map(); // from device id to socket
+
 const showingCardList = ref(false);
 const isEditing = ref(false);
 const editingCard = ref(false);
 const deviceOptions = ref<UnwrapRefSimple<any>[]>();
-const webChartConfig = ref<any>([]);
+
+let wsUrl = getWebsocketServerUrl();
+wsUrl += '/telemetry/datas/current/keys/ws';
 
 const getDeviceOptions = async () => {
   const { data, error } = await deviceTemplateSelect();
@@ -103,6 +110,93 @@ const quitEditMode = () => {
   }
 };
 
+const setComponentsValue = (deviceId: string | undefined, metricsId: string | undefined, data: any) => {
+  const cardViews = layout.value.filter(
+    item =>
+      item.data?.dataSource?.deviceSource?.[0]?.deviceId === deviceId &&
+      item.data?.dataSource?.deviceSource?.[0]?.metricsId === metricsId
+  );
+  for (const cardView of cardViews) {
+    const cardComponent = cr.value?.getCardComponent(cardView)?.getComponent();
+    cardComponent?.updateData && cardComponent?.updateData(deviceId, metricsId, data);
+  }
+};
+
+const token = localStg.get('token');
+
+/**
+ * First, get all unique device ids from the layout. Then check socketMap, if a device id in socketMap is not in the
+ * unique device ids, close the socket. Then, for each unique device id, check if there is a socket in socketMap, if
+ * not, create a new socket. if yes, close the socket and create a new socket.
+ */
+const updateComponentsData = async () => {
+  console.log('updateComponentsData enter');
+
+  // 去除重复设备
+  const deviceMetricsIds = layout.value
+    .filter(
+      item =>
+        item.data?.dataSource?.deviceSource &&
+        item.data?.dataSource?.deviceSource[0]?.deviceId &&
+        item.data?.dataSource?.deviceSource[0]?.metricsId &&
+        cr.value?.getCardComponent(item)?.getComponent()?.updateData
+    )
+    .map(
+      item =>
+        `${item.data?.dataSource?.deviceSource?.[0]?.deviceId}|${item.data?.dataSource?.deviceSource?.[0]?.metricsId}`
+    );
+  const set = new Set(deviceMetricsIds);
+  const uniqueDeviceMetricsIds = [...set];
+  console.log('uniqueDeviceMetricsIds', uniqueDeviceMetricsIds);
+
+  // 关闭不在layout中的socket
+  for (const [deviceMetricsId, socket] of socketMap.entries()) {
+    if (!uniqueDeviceMetricsIds.includes(deviceMetricsId)) {
+      console.log('close socket', deviceMetricsId);
+      socket.close();
+      socketMap.delete(deviceMetricsId);
+    }
+  }
+
+  // 创建新的socket
+  for (const deviceMetricsId of uniqueDeviceMetricsIds) {
+    const [deviceId, metricsId] = deviceMetricsId.split('|');
+    if (!socketMap.has(deviceMetricsId)) {
+      console.log('create socket', deviceMetricsId);
+      const { ws, send } = useWebSocket(wsUrl, {
+        heartbeat: {
+          message: 'ping',
+          interval: 8000,
+          pongTimeout: 3000
+        },
+        onMessage(_websocket: WebSocket, event: MessageEvent) {
+          if (event.data && event.data !== 'pong') {
+            const data = JSON.parse(event.data);
+            console.log(`get event data: ${deviceMetricsId} ${event.data}`);
+            setComponentsValue(deviceId, metricsId, data);
+          }
+        },
+        onConnected() {
+          console.log('ws connected');
+          const dataw = {
+            // eslint-disable-next-line no-constant-binary-expression
+            device_id: deviceId,
+            keys: [metricsId],
+            token
+          };
+          console.log('ws send data', JSON.stringify(dataw));
+          send(JSON.stringify(dataw));
+        }
+      });
+      socketMap.set(deviceMetricsId, ws.value);
+    }
+  }
+};
+
+const throttledWatcher = debounce(() => {
+  updateComponentsData();
+}, 300);
+
 const insertCard = (card: ICardData) => {
   cr.value?.addCard(card);
   editView.value = null;
@@ -113,7 +207,14 @@ const insertCard = (card: ICardData) => {
 const updateCard = (card: ICardData) => {
   if (editView.value) {
     editView.value.data = card;
+    throttledWatcher();
   }
+};
+
+const updateLayoutData = (data: ICardView[]) => {
+  nextTick(() => {
+    layout.value = data;
+  });
 };
 
 const edit = (view: ICardView) => {
@@ -122,15 +223,6 @@ const edit = (view: ICardView) => {
   editView.value = view;
   state.cardData = view.data || null;
 
-  if (state.cardData?.dataSource?.deviceSource && state.cardData?.dataSource?.deviceSource?.length > 0) {
-    const deviceSelectId = state.cardData?.dataSource?.deviceSource[0]?.deviceId || '';
-    const deviceOption = deviceOptions.value?.find(item => item.device_id === deviceSelectId);
-    if (deviceOption && deviceOption.web_chart_config) {
-      webChartConfig.value = JSON.parse(deviceOption?.web_chart_config);
-    } else {
-      webChartConfig.value = [];
-    }
-  }
   nextTick(() => {
     formRef.value?.setCard(state.cardData as any);
   });
@@ -152,9 +244,26 @@ const savePanel = async () => {
   preLayout.value = layout.value;
 };
 
+watch(
+  () => layout,
+  newLayout => {
+    console.log('layout change', newLayout);
+    throttledWatcher();
+  },
+  { deep: true }
+);
+
 onMounted(() => {
   fetchBroad();
   getDeviceOptions();
+});
+
+onUnmounted(() => {
+  for (const [deviceMetricsId, socket] of socketMap.entries()) {
+    console.log('close socket', deviceMetricsId);
+    socket.close();
+  }
+  socketMap.clear();
 });
 </script>
 
@@ -219,12 +328,18 @@ onMounted(() => {
         </div>
         <CardRender
           ref="cr"
-          v-model:layout="layout"
+          :layout="layout"
           :is-preview="!isEditing"
           :col-num="12"
           :default-card-col="4"
           :row-height="85"
           @edit="edit"
+          @update:layout="
+            data => {
+              console.log('panel manage update layout', data);
+              updateLayoutData(data);
+            }
+          "
         />
       </div>
 
@@ -239,7 +354,7 @@ onMounted(() => {
           <CardForm
             ref="formRef"
             class="h-full w-full overflow-auto"
-            :device-web-chart-config="webChartConfig"
+            :device-web-chart-config="[]"
             @update="(data: any) => updateCard(data)"
           />
         </n-drawer-content>

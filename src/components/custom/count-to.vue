@@ -62,7 +62,7 @@ function formatValue(num: number) {
     }
   }
 
-  return prefix + x1 + x2 + suffix;
+  return `${x1 + x2 + suffix} ${prefix}`;
 }
 
 async function start() {

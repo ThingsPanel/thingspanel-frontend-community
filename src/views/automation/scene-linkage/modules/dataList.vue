@@ -1,6 +1,6 @@
 <script lang="tsx" setup>
 import { computed, getCurrentInstance, onMounted, ref } from 'vue';
-import { NButton, NCard, NFlex, NGrid, NGridItem, NPagination, useDialog, useMessage } from 'naive-ui';
+import { NButton, NCard, NFlex, NGrid, NGridItem, NPagination, useDialog } from 'naive-ui';
 import { CopyOutline as copyIcon, PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5';
 import moment from 'moment';
 import { useRouterPush } from '@/hooks/common/router';
@@ -13,7 +13,6 @@ import {
 import { $t } from '@/locales';
 import { deviceAlarmList } from '@/service/api';
 const dialog = useDialog();
-const message = useMessage();
 const { routerPushByKey } = useRouterPush();
 
 interface Props {
@@ -51,7 +50,6 @@ const linkActivation = async (item: any) => {
   if (!res.error) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     await getData();
-    message.success($t('custom.grouping_details.operationSuccess'));
   }
 };
 
@@ -144,7 +142,6 @@ const deleteLink = async (item: any) => {
       const res = await sceneAutomationsDel(item.id);
       if (!res.error) {
         await getData();
-        message.success($t('custom.grouping_details.operationSuccess'));
       }
     }
   });

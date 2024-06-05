@@ -86,37 +86,42 @@ const getDeviceList = async () => {
 };
 
 const deviceSelectChange = async (v, item) => {
-  console.log(v);
   const res = await deviceMetricsList(v);
-  console.log(res.data);
   item.metricsOptions = res?.data || [];
 };
 const metricsOptionRender = (info, item) => {
   return (
-    <n-card
-      class="border-b border-#d9d9d9"
-      title={<span style="font-size: 16px;color:#999">{info?.option?.data_source_type}</span>}
-      bordered={false}
-    >
+    <div class="border-b border-#d9d9d9 p-x-10px p-y-15px">
+      <div class="m-b-5px">{<span style="font-size: 16px;color:#999">{info?.option?.data_source_type}</span>}</div>
       {info?.option?.options?.map(it => {
         return (
           <div
+            class="m-b-2px"
+            v-if="it.label"
             onClick={() => {
-              console.log(it);
               item.metricsId = it.key;
               item.metricsName = it.label || '';
-
               updateDropdownShow(false, item);
             }}
           >
-            <span class={it.key === item.metricsId ? 'mr-6 color-primary-700' : 'mr-2 color-#333'}>
-              {it.key}({it.label || '--'})
-            </span>
-            <span class="text-#999">{it.data_type} </span>
+            {it.label ? (
+              <div class="flex items-center gap-5px">
+                <div class="flex flex-1 items-center gap-5px">
+                  <span>{it.label}</span>
+                  <span class="color-#cccc">({it.key})</span>
+                </div>
+                <span class="text-#999">{it.data_type}</span>
+              </div>
+            ) : (
+              <div class="flex items-center gap-5px">
+                <span class="flex-1">{it.key}</span>
+                <span class="text-#999">{it.data_type}</span>
+              </div>
+            )}
           </div>
         );
       })}
-    </n-card>
+    </div>
   );
 };
 
@@ -153,7 +158,7 @@ watch(
       <NTabPane v-if="state.selectCard.type === 'chart'" name="dataSource" tab="数据源">
         <div :class="`${mobile ? '' : 'h-[calc(100vh_-_270px)] '} overflow-y-auto py-5`">
           <NForm>
-            <div v-if="state.data.dataSource?.origin === 'device'">
+            <div v-if="state.data.dataSource?.origin === 'device' || state.data.dataSource?.origin === 'system'">
               <n-input-number
                 v-model:value="deviceCount"
                 :disabled="props?.deviceWebChartConfig?.length !== 0"
@@ -172,6 +177,7 @@ watch(
                 <NSelect
                   v-if="i <= deviceCount - 1"
                   v-model:value="item.deviceId"
+                  clearable
                   :disabled="props?.deviceWebChartConfig?.length !== 0"
                   class="w-120px"
                   :options="deviceOption"
@@ -185,6 +191,7 @@ watch(
                 <NSelect
                   v-if="i <= deviceCount - 1"
                   v-model:value="item.metricsId"
+                  clearable
                   :disabled="props?.deviceWebChartConfig?.length !== 0"
                   class="w-225px"
                   :show="item.metricsShow"
@@ -232,6 +239,7 @@ watch(
 
 <style scoped>
 .custom-select-container .v-binder-follower-container {
-  width: 300px !important; /* 只会影响该组件内的 NSelect 下拉宽度 */
+  width: 300px !important;
+  /* 只会影响该组件内的 NSelect 下拉宽度 */
 }
 </style>

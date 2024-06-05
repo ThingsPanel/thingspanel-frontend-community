@@ -4,7 +4,7 @@ import { useMessage } from 'naive-ui';
 import AMapLoader from '@amap/amap-jsapi-loader';
 import { useNaiveForm } from '@/hooks/common/form';
 import { addArea, spacesData } from '@/service/api/equipment-map';
-import { createServiceConfig } from '~/env.config';
+import { getDemoServerUrl } from '@/utils/common/tool';
 
 export default {
   setup(props, context) {
@@ -295,8 +295,7 @@ export default {
           });
       }
     };
-    const { otherBaseURL } = createServiceConfig(import.meta.env);
-    const url = ref(otherBaseURL.demo);
+    const url = ref(getDemoServerUrl());
     onMounted(() => {
       methods.mapInit(state.dimension);
       methods.spacesList();

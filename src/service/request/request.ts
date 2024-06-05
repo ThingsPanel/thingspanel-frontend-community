@@ -5,10 +5,11 @@ import { createProxyPattern, createServiceConfig } from '~/env.config';
 
 const { otherBaseURL } = createServiceConfig(import.meta.env);
 const isHttpProxy = import.meta.env.VITE_HTTP_PROXY === 'Y';
+const demoUrl = otherBaseURL.demo ? otherBaseURL.demo : `${window.location.origin}/api/v1`;
 
 export const request = createFlatRequest<App.Service.DEVResponse>(
   {
-    baseURL: isHttpProxy ? createProxyPattern() : otherBaseURL.demo,
+    baseURL: isHttpProxy ? createProxyPattern() : demoUrl,
     headers: {
       apifoxToken: 'XL299LiMEDZ0H5h3A29PxwQXdMJqWyY2'
     }

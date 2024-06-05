@@ -2,6 +2,7 @@
 import { onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import type { SelectOption } from 'naive-ui';
 import { useMessage } from 'naive-ui';
+import { debounce } from 'lodash';
 import { use } from 'echarts/core';
 import { LineChart } from 'echarts/charts';
 import { v4 as uuid4 } from 'uuid';
@@ -20,7 +21,6 @@ import type {
 } from 'echarts/components';
 import { addMonths } from 'date-fns';
 import { $t } from '@/locales';
-import { localStg } from '@/utils/storage';
 import { deviceTelemetryList } from '@/card/chart-card/curve/api';
 import type { ICardData } from '@/components/panel/card';
 import { deviceDetail } from './api';
@@ -34,9 +34,7 @@ const isAggregate = ref<boolean>(false);
 const isTimeSelect = ref<boolean>(false);
 const dateRange = ref<[number, number] | null>(null);
 
-const socket: any = ref(null);
 const detail: any = ref(null);
-// const intervalNum = ref();
 
 const props = defineProps<{
   card: ICardData;
@@ -396,22 +394,11 @@ const reFresh = () => {
 const setSeries: (dataSource) => void = async dataSource => {
   const arr: any = dataSource;
   const querDetail = {
-    device_id: dataSource.deviceSource[0]?.deviceId ?? '',
-    keys: arr.deviceSource[0].metricsId
+    device_id: dataSource?.deviceSource ? dataSource?.deviceSource[0]?.deviceId ?? '' : '',
+    keys: arr?.deviceSource ? arr.deviceSource[0]?.metricsId : ''
   };
   if (querDetail.device_id && querDetail.keys) {
     detail.value = await deviceDetail(querDetail);
-    const queryInfo = {
-      device_id: dataSource.deviceSource[0]?.deviceId ?? '',
-      keys: [arr.deviceSource[0].metricsId || 'externalVol'],
-      token: localStg.get('token')
-    };
-    console.log(arr.deviceSource[0].metricsId, '11');
-    if (socket.value && socket.value.readyState === WebSocket.OPEN) {
-      socket.value.send(JSON.stringify(queryInfo)); // 将对象转换为JSON字符串后发送
-    } else {
-      console.error('WebSocket连接未建立或已关闭');
-    }
   } else {
     // window.$message?.error("查询不到设备");
   }
@@ -461,10 +448,42 @@ const setSeries: (dataSource) => void = async dataSource => {
   }
 };
 
+defineExpose({
+  updateData: (deviceId: string | undefined, metricsId: string | undefined, data: any) => {
+    if (params.aggregate_window !== 'no_aggregate') {
+      console.log('Update data: Curve is aggregate, return directly');
+      return;
+    }
+    console.log('Curve updateData:', deviceId, metricsId, data);
+    const deviceIndex = props?.card?.dataSource?.deviceSource?.findIndex(
+      item => item.deviceId === deviceId && item.metricsId === metricsId
+    );
+    // const seriesData = JSON.parse(JSON.stringify(option.value.series[deviceIndex]))?.data;
+    const seriesData =
+      option.value.series && option.value.series[deviceIndex || 0] ? option.value.series[deviceIndex || 0].data : [];
+    const value = metricsId && data && data[metricsId];
+
+    if (value && data.systime) {
+      const timestamp = new Date(data.systime).getTime();
+      const len = seriesData?.push([timestamp, value]);
+      // 如果长度大于100且第一个数据和最后一个数据的间隔时间大于采样周期则删除最后一个元素
+      if (len >= 100) {
+        seriesData.shift();
+      }
+    }
+    console.log('Curve updateData:', data);
+  }
+});
+
+const throttledWatcher = debounce(() => {
+  setSeries(props?.card?.dataSource);
+}, 300);
+
 watch(
   () => params,
   () => {
-    setSeries(props?.card?.dataSource);
+    console.log(`params changed:${new Date().getTime()}`);
+    throttledWatcher();
   },
   { deep: true }
 );
