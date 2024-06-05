@@ -5,7 +5,7 @@
 name: docker-image-v1.0.0
 
 on:
- workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,22 +14,41 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.11]
+        node-version: [18.17]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
+    # - uses: actions/checkout@v3
+    # - name: Use Node.js ${{ matrix.node-version }}
+    #   uses: actions/setup-node@v3
+    #   with:
+    #     node-version: ${{ matrix.node-version }}
+    #     cache: 'npm'
+        
+    # - run: npm ci
+    # - run: rm .env.dev
+    # - run: npm run build --if-present
+    # - run: ls -lrt
+
     - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js Build
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        
-    - run: npm ci
-    - run: rm .env.dev
-    - run: npm run build --if-present
+        node-version: 18.17.0
+    - name: Cache pnpm modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.pnpm-store
+        key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-pnpm-
+    - run: npm install -g pnpm@8.15.5
+    - run: pnpm i
+    - name: Build with increased memory limit
+      run: pnpm build:4096
+      env:
+        CI: true
     - run: ls -lrt
-    
     #- name: Clone Vue codebase
     #  run: git clone https://github.com/ThingsPanel/visual-editor.git
 
