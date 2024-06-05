@@ -336,7 +336,7 @@ const instructListItem = ref({
 
 // 动作数组的item
 const actionItem = ref({
-  actionType: null,
+  actionType: '30',
   action_type: null, // 动作类型后端
   action_target: null, // 动作目标id   设备id、设备配置id，场景id、告警id
   actionInstructList: []

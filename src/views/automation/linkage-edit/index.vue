@@ -20,7 +20,7 @@ const configFormRules = ref({
     trigger: 'blur'
   },
   description: {
-    required: true,
+    required: false,
     message: $t('generate.sceneLinkDesc'),
     trigger: 'blur'
   },
@@ -59,10 +59,62 @@ const submitData = async () => {
   // 处理条件的数据保存
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   configForm.value.trigger_condition_groups = handleIfData();
+  const isTimeRangeError = configForm.value.trigger_condition_groups.some((item: any) => {
+    if (
+      item.every(subItem => {
+        return subItem.trigger_conditions_type === '22';
+      })
+    ) {
+      return true;
+    }
+    return false;
+  });
+  if (isTimeRangeError) {
+    window.$message?.error('单个条件组内不能只有时间范围的条件');
+    return;
+  }
+
   // 处理动作数据保存
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   configForm.value.actions = handleActionData();
+  console.log(configForm.value.actions, 'actionsactionsactionsactionsactions.value');
 
+  const isAlarmError =
+    configForm.value.trigger_condition_groups.some((item: any) => {
+      if (
+        item.some(subItem => {
+          return subItem.ifType === '2';
+        })
+      ) {
+        return true;
+      }
+      return false;
+    }) &&
+    configForm.value.actions.some((item: any) => {
+      return item.actionType === '30';
+    });
+  if (isAlarmError) {
+    window.$message?.error('时间类型的条件无法触发告警');
+    return;
+  }
+
+  const isConditionError = configForm.value.trigger_condition_groups.some((item: any) => {
+    if (
+      item.some(subItem => {
+        return subItem.ifType === '1';
+      }) &&
+      item.some(subItem => {
+        return subItem.trigger_conditions_type === '20' || subItem.trigger_conditions_type === '21';
+      })
+    ) {
+      return true;
+    }
+    return false;
+  });
+  if (isConditionError) {
+    window.$message?.error('单次/重复时间 + 设备类型的 无法并存');
+    return;
+  }
   await configFormRef?.value?.validate();
   await editPremise.value.premiseFormRefReturn()?.validate();
   await editAction.value.actionFormRefReturn()?.validate();
@@ -115,6 +167,7 @@ const getSceneAutomationsInfo = async () => {
 const handleIfData = () => {
   const ifGroupsData = JSON.parse(JSON.stringify(editPremise.value.ifGroupsData()));
   // eslint-disable-next-line array-callback-return
+  console.log(ifGroupsData, 'ifGroupsData');
   ifGroupsData.map((ifGroupItem: any) => {
     // eslint-disable-next-line array-callback-return
     ifGroupItem.map((ifItem: any) => {

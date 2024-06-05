@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import {onMounted, ref, watch} from 'vue';
-import {useRoute} from 'vue-router';
-import {NButton, NFlex} from 'naive-ui';
-import type {FormInst} from 'naive-ui';
-import {IosAlert, IosRefresh} from '@vicons/ionicons4';
-import {repeat} from 'seemly';
-import {deviceGroupTree} from '@/service/api';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import { NButton, NFlex } from 'naive-ui';
+import type { FormInst } from 'naive-ui';
+import { IosAlert, IosRefresh } from '@vicons/ionicons4';
+import { repeat } from 'seemly';
+import { deviceGroupTree } from '@/service/api';
 import {
   configMetricsConditionMenu,
   deviceConfigAll,
   deviceListAll,
   deviceMetricsConditionMenu
 } from '@/service/api/automation';
-import {$t} from '@/locales';
+import { $t } from '@/locales';
 
 interface Emits {
   (e: 'conditionChose', data: any): void;
@@ -122,20 +122,36 @@ const premiseFormRules = ref({
 
 /** if分组的数据类型 */
 // 选项一条件类型的下拉
-const ifTypeOptions = ref([
-  {
-    label: $t('common.deviceConditions'),
-    value: '1'
-  },
-  {
-    label: $t('common.timeConditions'),
-    value: '2'
-  }
-  // {
-  //   label: '服务条件',
-  //   value: '3'
-  // }
-]);
+// const ifTypeOptions = ref([
+//   {
+//     label: $t('common.deviceConditions'),
+//     value: '1'
+//   },
+//   {
+//     label: $t('common.timeConditions'),
+//     value: '2'
+//   }
+//   // {
+//   //   label: '服务条件',
+//   //   value: '3'
+//   // }
+// ]);
+
+const getIfTypeOptions = ifGroup => {
+  return [
+    {
+      label: $t('common.deviceConditions'),
+      value: '1',
+      disabled: ifGroup.some(item => {
+        return item.trigger_conditions_type === '20' || item.trigger_conditions_type === '21';
+      })
+    },
+    {
+      label: $t('common.timeConditions'),
+      value: '2'
+    }
+  ];
+};
 const ifTypeChange = (ifItem: any, data: any) => {
   ifItem.trigger_conditions_type = null;
   // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-use-before-define
@@ -245,9 +261,9 @@ const actionParamShow = async (ifItem: any, data: any) => {
     ifItem.triggerParamOptions = [];
     let res = null as any;
     if (ifItem.trigger_conditions_type === '10') {
-      res = await deviceMetricsConditionMenu({device_id: ifItem.trigger_source});
+      res = await deviceMetricsConditionMenu({ device_id: ifItem.trigger_source });
     } else if (ifItem.trigger_conditions_type === '11') {
-      res = await configMetricsConditionMenu({device_config_id: ifItem.trigger_source});
+      res = await configMetricsConditionMenu({ device_config_id: ifItem.trigger_source });
     }
     // eslint-disable-next-line array-callback-return
     if (res.data) {
@@ -287,21 +303,43 @@ const actionParamShow = async (ifItem: any, data: any) => {
   }
 };
 
+const getTimeConditionOptions = ifGroup => {
+  console.log(
+    ifGroup.some(item => item.ifType === '1'),
+    'asasasa'
+  );
+  return [
+    {
+      label: $t('common.single'),
+      value: '20',
+      disabled: ifGroup.some(item => item.ifType === '1')
+    },
+    {
+      label: $t('common.repeat'),
+      value: '21',
+      disabled: ifGroup.some(item => item.ifType === '1')
+    },
+    {
+      label: $t('common.timeFrame'),
+      value: '22'
+    }
+  ];
+};
 // 时间条件类型下选项2使用的下拉
-const timeConditionOptions = ref([
-  {
-    label: $t('common.single'),
-    value: '20'
-  },
-  {
-    label: $t('common.repeat'),
-    value: '21'
-  },
-  {
-    label: $t('common.timeFrame'),
-    value: '22'
-  }
-]);
+// const timeConditionOptions = ref([
+//   {
+//     label: $t('common.single'),
+//     value: '20'
+//   },
+//   {
+//     label: $t('common.repeat'),
+//     value: '21'
+//   },
+//   {
+//     label: $t('common.timeFrame'),
+//     value: '22'
+//   }
+// ]);
 // 服务条件类型下选项2使用的下拉
 const serviceConditionOptions = ref([
   {
@@ -507,6 +545,7 @@ const addIfGroupsSubItem = async (ifGroupIndex: any) => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   await premiseFormRef.value?.validate();
   premiseForm.value.ifGroups[ifGroupIndex].push(JSON.parse(JSON.stringify(judgeItem.value)));
+  console.log(premiseForm.value.ifGroups);
 };
 // 删除某个条进组中的某个条件
 const deleteIfGroupsSubItem = (ifGroupIndex: any, ifIndex: any) => {
@@ -620,7 +659,7 @@ onMounted(() => {
               >
                 <NSelect
                   v-model:value="ifItem.ifType"
-                  :options="ifTypeOptions"
+                  :options="getIfTypeOptions(ifGroupItem)"
                   :placeholder="$t('common.select')"
                   @update-value="data => ifTypeChange(ifItem, data)"
                 />
@@ -738,7 +777,7 @@ onMounted(() => {
                       :rule="premiseFormRules.trigger_operator"
                       class="max-w-35 w-full"
                     >
-                      <NSelect v-model:value="ifItem.trigger_operator" :options="determineOptions"/>
+                      <NSelect v-model:value="ifItem.trigger_operator" :options="determineOptions" />
                     </NFormItem>
                     <template v-if="ifItem.trigger_operator === 'in'">
                       <!--          设备条件下->单个设备/单类设备>-设备ID/选择设备类ID>触发消息标识符是遥测->操作符是in(包含在)->输入范围值 --->
@@ -762,7 +801,7 @@ onMounted(() => {
                         :rule="premiseFormRules.minValue"
                         class="max-w-35 w-full"
                       >
-                        <NInput v-model:value="ifItem.minValue" :placeholder="$t('generate.min-value')"/>
+                        <NInput v-model:value="ifItem.minValue" :placeholder="$t('generate.min-value')" />
                       </NFormItem>
                       <NFormItem
                         :show-label="false"
@@ -770,7 +809,7 @@ onMounted(() => {
                         :rule="premiseFormRules.maxValue"
                         class="max-w-30 w-full"
                       >
-                        <NInput v-model:value="ifItem.maxValue" :placeholder="$t('generate.max-value')"/>
+                        <NInput v-model:value="ifItem.maxValue" :placeholder="$t('generate.max-value')" />
                       </NFormItem>
                     </template>
                     <template v-else>
@@ -781,7 +820,7 @@ onMounted(() => {
                         :rule="premiseFormRules.trigger_value"
                         class="max-w-40 w-full"
                       >
-                        <NInput v-model:value="ifItem.trigger_value" :placeholder="$t('generate.value')"/>
+                        <NInput v-model:value="ifItem.trigger_value" :placeholder="$t('generate.value')" />
                       </NFormItem>
                     </template>
                   </template>
@@ -828,7 +867,7 @@ onMounted(() => {
                 >
                   <NSelect
                     v-model:value="ifItem.trigger_conditions_type"
-                    :options="timeConditionOptions"
+                    :options="getTimeConditionOptions(ifGroupItem)"
                     :placeholder="$t('common.select')"
                     @update:value="ifItem.task_type = null"
                   />
@@ -853,7 +892,7 @@ onMounted(() => {
                     {{ $t('generate.not-executed') }}
                     <NButton text class="refresh-class">
                       <n-icon>
-                        <IosRefresh/>
+                        <IosRefresh />
                       </n-icon>
                     </NButton>
                   </NFlex>
@@ -873,7 +912,7 @@ onMounted(() => {
                     <n-tooltip placement="top-start" trigger="hover">
                       <template #trigger>
                         <n-icon size="24" class="ml-2">
-                          <IosAlert/>
+                          <IosAlert />
                         </n-icon>
                       </template>
                       超过执行时间{{ expirationTimeOptions.find(data => ifItem['expiration_time'])?.label || '' }}后失效
@@ -915,7 +954,6 @@ onMounted(() => {
                       class="max-w-25 w-full"
                     >
                       <NTimePicker
-
                         v-model:value="ifItem.hourTimeValue"
                         :placeholder="$t('common.select')"
                         format="mm"
@@ -937,7 +975,7 @@ onMounted(() => {
                       <n-tooltip placement="top-start" trigger="hover">
                         <template #trigger>
                           <n-icon size="24" class="ml-2">
-                            <IosAlert/>
+                            <IosAlert />
                           </n-icon>
                         </template>
                         超过执行时间{{
@@ -978,7 +1016,7 @@ onMounted(() => {
                       <n-tooltip placement="top-start" trigger="hover">
                         <template #trigger>
                           <n-icon size="24" class="ml-2">
-                            <IosAlert/>
+                            <IosAlert />
                           </n-icon>
                         </template>
                         超过执行时间{{
@@ -1040,7 +1078,7 @@ onMounted(() => {
                       <n-tooltip placement="top-start" trigger="hover">
                         <template #trigger>
                           <n-icon size="24" class="ml-2">
-                            <IosAlert/>
+                            <IosAlert />
                           </n-icon>
                         </template>
                         超过执行时间{{
@@ -1094,7 +1132,7 @@ onMounted(() => {
                       <n-tooltip placement="top-start" trigger="hover">
                         <template #trigger>
                           <n-icon size="24" class="ml-2">
-                            <IosAlert/>
+                            <IosAlert />
                           </n-icon>
                         </template>
                         超过执行时间{{
@@ -1175,13 +1213,13 @@ onMounted(() => {
                   :rule="premiseFormRules.weatherValue"
                   class="max-w-40 w-full"
                 >
-                  <NSelect v-model:value="ifItem.weatherValue" :options="weatherOptions"/>
+                  <NSelect v-model:value="ifItem.weatherValue" :options="weatherOptions" />
                 </NFormItem>
               </NFlex>
             </NFlex>
             <NFlex class="w-100px">
               <NButton
-                v-if="ifIndex === 0 && ifItem.ifType !== '2'"
+                v-if="ifIndex === 0"
                 type="primary"
                 class="absolute right-0"
                 @click="addIfGroupsSubItem(ifGroupIndex)"
