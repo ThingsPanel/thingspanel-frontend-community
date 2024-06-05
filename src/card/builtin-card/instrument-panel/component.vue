@@ -48,27 +48,54 @@ const setSeries: (dataSource) => void = async dataSource => {
   }
 };
 
+const updateSvgSize = () => {
+  const svgDom = document.getElementsByClassName('instrument-svg')[0];
+  const svgWidth = svgDom.clientWidth;
+  const radius = 0.2 * svgWidth;
+  const perimeter = 2 * Math.PI * radius;
+  const strokeDasharray = Math.ceil(perimeter / 2);
+
+  const circleDoms = document.getElementsByClassName('instrument-svg-circle') || [];
+  const len = circleDoms.length;
+  const strokeWidthMax = 16;
+
+  for (let i = 0; i < len; i += 1) {
+    const theWidth = svgWidth * 0.05;
+    circleDoms[i].setAttribute('stroke-width', `${theWidth > strokeWidthMax ? strokeWidthMax : theWidth}`);
+    circleDoms[i].setAttribute('r', `${radius}`);
+  }
+
+  circleDoms[0].setAttribute('stroke-dasharray', `${strokeDasharray}`);
+  const baseStrokeDasharray = circleDoms[1].getAttribute('stroke-dasharray');
+  const baseValue = baseStrokeDasharray?.split(' ') || [];
+  const ratio = Number(baseValue?.[0]) / Number(baseValue?.[1]);
+  const newValue = Math.ceil(strokeDasharray * ratio);
+  circleDoms[1].setAttribute('stroke-dasharray', `${newValue} ${strokeDasharray}`);
+
+  circleDoms[0].setAttribute('stroke-dashoffset', `${-strokeDasharray}`);
+  circleDoms[1].setAttribute('stroke-dashoffset', `${-strokeDasharray}`);
+};
+
 const updateProgress = () => {
+  const svgDom = document.getElementsByClassName('instrument-svg')[0];
+  const svgWidth = svgDom.clientWidth;
+  const radius = 0.2 * svgWidth;
+  const perimeter = 2 * Math.PI * radius;
+  const strokeDasharray = Math.ceil(perimeter / 2);
+
   const val = detailValue.value;
   const range = propsMax.value - propsMin.value;
   const percent = val / range;
-  const strokeDasharray = `${Math.floor(158 * percent)} 158`;
-  const progressCircle = document.getElementById(circleId.value);
-  progressCircle && (progressCircle.style.strokeDasharray = strokeDasharray);
-};
+  const strokeDasharrayChange = `${Math.ceil(strokeDasharray * percent)} ${strokeDasharray}`;
 
-const updateSvgSize = () => {
-  const circleDoms = document.getElementsByClassName('instrument-svg-circle') || [];
-  const len = circleDoms.length;
-  const max = 10;
-  for (let i = 0; i < len; i += 1) {
-    const theWidth = circleDoms?.[i]?.getAttribute('stroke-width') || 0;
-    circleDoms?.[i]?.setAttribute('stroke-width', `${Number(theWidth) > max ? max : theWidth}`);
-  }
+  const circleDom1 = document.getElementsByClassName('instrument-svg-circle')[1];
+  circleDom1.setAttribute('stroke-dasharray', `${strokeDasharrayChange}`);
+
+  updateSvgSize();
 };
 
 watch(
-  () => detailValue,
+  () => detail?.value?.data[0]?.value,
   () => {
     updateProgress();
   }
@@ -109,7 +136,7 @@ onUnmounted(() => {
     <div class="instrument-top h-full w-full flex flex-col flex-justify-between flex-items-center">
       <div class="instrument-title">{{ $t('dashboard_panel.cardName.instrumentPanel') }}</div>
       <div class="instrument-panel">
-        <svg width="100%" height="100%">
+        <svg width="100%" height="100%" class="instrument-svg">
           <circle
             class="instrument-svg-circle"
             cx="50%"
@@ -131,7 +158,7 @@ onUnmounted(() => {
             stroke="#00a5e0"
             stroke-width="5%"
             fill="none"
-            stroke-dasharray="100 158"
+            stroke-dasharray="158"
             stroke-dashoffset="-158"
             stroke-linecap="round"
           />
@@ -143,7 +170,7 @@ onUnmounted(() => {
         <div class="instrument-max">{{ propsMax }}</div>
       </div>
     </div>
-    <div class="instrument-bottom m-t3 w-full text-center">
+    <div class="instrument-bottom w-full text-center">
       <p>{{ metricsName }}</p>
     </div>
   </div>
@@ -154,7 +181,8 @@ onUnmounted(() => {
   &-panel {
     position: relative;
     width: 60%;
-    height: 60%;
+    height: 100%;
+    margin-top: 20px;
   }
   &-min,
   &-max {
@@ -171,13 +199,14 @@ onUnmounted(() => {
     position: absolute;
     left: 50%;
     top: 50%;
-    transform: translate(-50%, -100%);
+    transform: translate(-50%, -80%);
     font-weight: bold;
-    font-size: 1.2em;
+    font-size: 1.5vw;
     width: 100%;
     text-align: center;
     &-overflow {
-      top: 5%;
+      top: auto;
+      bottom: 5%;
     }
   }
 }
