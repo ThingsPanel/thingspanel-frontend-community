@@ -309,11 +309,14 @@ const dropOption = [
   },
   {
     label: () => $t('custom.devicePage.addByServer'),
-    key: 'server'
+    key: 'server',
+    disabled: true
   }
 ];
 const getDictServiceList = async () => {
-  const { data }: any = await deviceDictProtocolService({ language_code: localStg.get('lang') });
+  const { data }: any = await deviceDictProtocolService({
+    language_code: localStg.get('lang')
+  });
 
   data.map((item: any) => {
     item.value = item.dict_value + item.device_type;
