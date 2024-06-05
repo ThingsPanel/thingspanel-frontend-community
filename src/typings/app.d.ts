@@ -247,6 +247,7 @@ declare namespace App {
     };
 
     type Schema = {
+      title: string;
       default: string;
       system: {
         title: string;

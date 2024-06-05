@@ -4,6 +4,7 @@ import { productLocaleEn } from '~/src/views/product/locales/en';
 
 const local: App.I18n.Schema = {
   default: '',
+  title: 'ThingsPanel',
   system: {
     title: 'ThingsPanel'
   },

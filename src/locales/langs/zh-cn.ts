@@ -5,6 +5,7 @@ import { czh_cn } from './你新增的路由相关的国际化';
 const local: App.I18n.Schema = {
   custom: pzh_cn,
   default: '',
+  title: 'ThingsPanel',
   system: {
     title: 'System Name: {name}'
   },
