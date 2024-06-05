@@ -22,7 +22,7 @@ export function setupUnocss(viteEnv: Env.ImportMeta) {
         },
         collections: {
           [collectionName]: FileSystemIconLoader(localIconPath, svg =>
-            svg ? svg.replace(/^<svg\s/, '<svg width="1em" height="1em" ') : ''
+            svg.replace(/^<svg\s/, '<svg width="1em" height="1em" ')
           )
         },
         warn: true
