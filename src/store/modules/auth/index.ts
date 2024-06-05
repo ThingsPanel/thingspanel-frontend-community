@@ -18,8 +18,6 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
   const token = ref(getToken());
 
-  const userInfo: Api.Auth.UserInfo = reactive(getUserInfo());
-
   /** Is login */
   const isLogin = computed(() => Boolean(token.value));
 
@@ -88,16 +86,15 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       const pass = await loginByToken(loginToken);
 
       clearTabs();
-
       if (pass) {
         await routeStore.initAuthRoute();
 
         await redirectFromLogin();
-
+        const userInfo: Api.Auth.UserInfo = reactive(getUserInfo());
         if (routeStore.isInitAuthRoute) {
           window.$notification?.success({
             title: $t('page.login.common.loginSuccess'),
-            content: $t('page.login.common.welcomeBack', { userName: userInfo.userName }),
+            content: $t('page.login.common.welcomeBack', { userName: userInfo?.userName ?? userInfo.name }),
             duration: 4500
           });
         }
@@ -109,6 +106,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     endLoading();
   }
 
+  const userInfo: Api.Auth.UserInfo = reactive(getUserInfo());
   async function loginByToken(loginToken: Api.Auth.LoginToken) {
     // 1. stored in the localStorage, the later requests need it in headers
     localStg.set('token', loginToken.token);
