@@ -252,9 +252,13 @@ const actionParamShow = async (ifItem: any, data: any) => {
     ifItem.triggerParamOptions = [];
     let res = null as any;
     if (ifItem.trigger_conditions_type === '10') {
-      res = await deviceMetricsConditionMenu({ device_id: ifItem.trigger_source });
+      res = await deviceMetricsConditionMenu({
+        device_id: ifItem.trigger_source
+      });
     } else if (ifItem.trigger_conditions_type === '11') {
-      res = await configMetricsConditionMenu({ device_config_id: ifItem.trigger_source });
+      res = await configMetricsConditionMenu({
+        device_config_id: ifItem.trigger_source
+      });
     }
     // eslint-disable-next-line array-callback-return
     if (res.data) {
