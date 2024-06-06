@@ -142,7 +142,7 @@ getTableData();
           <NFormItem path="send_target">
             <NInput v-model:value="queryParams.send_target" :placeholder="$t('generate.recipient')" />
           </NFormItem>
-          <NButton class="w-72px" type="primary" @click="handleQuery">00</NButton>
+          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
         </NForm>
         <NDataTable :columns="columns" :data="tableData" :loading="loading" class="flex-1-hidden" />
         <div class="pagination-box">
