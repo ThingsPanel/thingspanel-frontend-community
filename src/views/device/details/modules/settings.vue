@@ -34,7 +34,11 @@ const options = ref<Option[]>();
 const sOptions = ref<any[]>([{ label: $t('generate.unbind'), value: '' }]);
 const { query } = useRoute();
 const deviceConfigList = async name => {
-  const { data, error } = await getDeviceConfigList({ page: 1, page_size: 99, name });
+  const { data, error } = await getDeviceConfigList({
+    page: 1,
+    page_size: 99,
+    name
+  });
   if (!error && data) {
     const tempSOptions = data?.list?.map(item => {
       return { label: item.name, value: item.id };
@@ -121,9 +125,15 @@ const renderSourceList: TransferRenderSourceList = ({ pattern }) => {
         valueRef.value = keys;
         if (meta.node) {
           if (meta.action === 'check') {
-            deviceGroupRelation({ group_id: meta.node.value, device_id_list: [props.id] });
+            deviceGroupRelation({
+              group_id: meta.node.value,
+              device_id_list: [props.id]
+            });
           } else {
-            deleteDeviceGroupRelation({ group_id: meta.node.value, device_id: props.id });
+            deleteDeviceGroupRelation({
+              group_id: meta.node.value,
+              device_id: props.id
+            });
           }
         }
         //
@@ -162,6 +172,7 @@ const selectConfig = v => {
   deviceUpdateConfig({ device_id: props.id, device_config_id: v });
   deviceDataStore.fetchData(props.id);
   initData();
+  emit('change');
 };
 </script>
 
