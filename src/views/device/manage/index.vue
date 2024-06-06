@@ -72,7 +72,8 @@ const getDeviceGroupOptions = async () => {
   if (res.data) {
     options = convertTreeNodesToTarget(res.data);
   }
-  return options;
+
+  return [{ label: $t('generate.group'), key: '', children: options }];
 };
 
 const getDeviceConfigOptions = async pattern => {
@@ -202,7 +203,9 @@ const searchConfigs = ref<SearchConfig[]>([
     label: $t('custom.devicePage.group'),
     type: 'tree-select',
     multiple: false,
-    options: [{ label: $t('generate.group'), key: '' }],
+    clearable: true,
+    defaultExpandAll: true,
+    options: [],
     loadOptions: getDeviceGroupOptions
   },
   {

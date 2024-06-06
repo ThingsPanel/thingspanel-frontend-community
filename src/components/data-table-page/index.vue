@@ -325,8 +325,10 @@ loadOptionsOnMount2();
                 v-model:value="searchCriteria[config.key]"
                 size="small"
                 filterable
+                :clearable="config.clearable"
                 :options="config.options"
                 :multiple="config.multiple"
+                :default-expand-all="config.defaultExpandAll"
                 class="input-style"
                 @update:value="value => handleTreeSelectUpdate(value, config.key)"
               />
