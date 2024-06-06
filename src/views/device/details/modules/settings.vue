@@ -155,7 +155,7 @@ watch(
 );
 
 const initData = async () => {
-  console.log(new Date());
+  console.log(new Date(), 1111);
   const result = await deviceDetail(query.d_id as string);
   selectedValues.value = result?.data?.device_config_id || '';
   getTreeData();
