@@ -325,6 +325,7 @@ loadOptionsOnMount2();
                 v-model:value="searchCriteria[config.key]"
                 size="small"
                 filterable
+                clearable
                 :options="config.options"
                 :multiple="config.multiple"
                 class="input-style"
