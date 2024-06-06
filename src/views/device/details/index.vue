@@ -26,17 +26,61 @@ const appStore = useAppStore();
 const { d_id } = query;
 const { loading, startLoading, endLoading } = useLoading();
 let components = [
-  { key: 'telemetry', name: () => $t('custom.device_details.telemetry'), component: Telemetry },
-  { key: 'join', name: () => $t('custom.device_details.join'), component: Join },
-  { key: 'device-analysis', name: () => $t('custom.device_details.deviceAnalysis'), component: DeviceAnalysis },
-  { key: 'message', name: () => $t('custom.device_details.message'), component: Message },
-  { key: 'stats', name: () => $t('custom.device_details.stats'), component: Stats },
-  { key: 'event-report', name: () => $t('custom.device_details.eventReport'), component: EventReport },
-  { key: 'command-delivery', name: () => $t('custom.device_details.commandDelivery'), component: CommandDelivery },
-  { key: 'automate', name: () => $t('custom.device_details.automate'), component: Automate },
-  { key: 'give-an-alarm', name: () => $t('custom.device_details.giveAnAlarm'), component: GiveAnAlarm },
-  { key: 'user', name: () => $t('custom.device_details.user'), component: User },
-  { key: 'settings', name: () => $t('custom.device_details.settings'), component: Settings }
+  {
+    key: 'telemetry',
+    name: () => $t('custom.device_details.telemetry'),
+    component: Telemetry
+  },
+  {
+    key: 'join',
+    name: () => $t('custom.device_details.join'),
+    component: Join
+  },
+  {
+    key: 'device-analysis',
+    name: () => $t('custom.device_details.deviceAnalysis'),
+    component: DeviceAnalysis
+  },
+  {
+    key: 'message',
+    name: () => $t('custom.device_details.message'),
+    component: Message
+  },
+  {
+    key: 'stats',
+    name: () => $t('custom.device_details.stats'),
+    component: Stats
+  },
+  {
+    key: 'event-report',
+    name: () => $t('custom.device_details.eventReport'),
+    component: EventReport
+  },
+  {
+    key: 'command-delivery',
+    name: () => $t('custom.device_details.commandDelivery'),
+    component: CommandDelivery
+  },
+  {
+    key: 'automate',
+    name: () => $t('custom.device_details.automate'),
+    component: Automate
+  },
+  {
+    key: 'give-an-alarm',
+    name: () => $t('custom.device_details.giveAnAlarm'),
+    component: GiveAnAlarm
+  },
+  {
+    key: 'user',
+    name: () => $t('custom.device_details.user'),
+    component: User
+  },
+  {
+    key: 'settings',
+    name: () => $t('custom.device_details.settings'),
+    component: Settings
+  }
 ];
 
 const tabValue = ref<any>('telemetry');
@@ -154,6 +198,7 @@ const getAlarmStatus = async () => {
   alarmStatus.value = data.alarm;
 };
 onBeforeMount(() => {
+  console.log('成功啦');
   getDeviceDetail();
   getAlarmStatus();
 });
@@ -264,7 +309,11 @@ const getPlatform = computed(() => {
               class="text-20px text-primary"
               :stroke="device_is_online === 1 ? 'rgb(2,153,52)' : '#ccc'"
             />
-            <span :style="{ color: device_is_online === 1 ? 'rgb(2,153,52)' : '#ccc' }">
+            <span
+              :style="{
+                color: device_is_online === 1 ? 'rgb(2,153,52)' : '#ccc'
+              }"
+            >
               {{ device_is_online === 1 ? $t('custom.device_details.online') : $t('custom.device_details.offline') }}
             </span>
           </div>
