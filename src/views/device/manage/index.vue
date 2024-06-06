@@ -203,6 +203,8 @@ const searchConfigs = ref<SearchConfig[]>([
     label: $t('custom.devicePage.group'),
     type: 'tree-select',
     multiple: false,
+    clearable: true,
+    defaultExpandAll: true,
     options: [],
     loadOptions: getDeviceGroupOptions
   },
