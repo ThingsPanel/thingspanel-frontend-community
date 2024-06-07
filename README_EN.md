@@ -72,44 +72,43 @@ Password: 123456
 - **Dependency Plugins**: Dependency plugins for industry solutions, based on device plugins and other features and data, visualization invocation, iframe code inclusion, plugin reuse.
 
 ## Frontend Tech Stack
-* TypeScript: A strongly-typed programming language that builds on JavaScript.
-* Vue.js (3): An easy-to-learn frontend framework.
-* Vite: A frontend development and build tool.
-* vue-router: The official router manager for Vue.js.
-* pinia: The next-generation state management library for Vue.js, offering a simpler and more user-friendly API compared to Vuex.
-* naive-ui: A UI component library for Vue 3.
-* vue-echarts: The Vue component for ECharts, integrating Baidu's ECharts chart library.
-* @antv/g2: A data visualization chart library.
-* @vicons: Vue component wrappers for multiple icon libraries, supporting Ant Design, Carbon, Fluent, Ionicons, etc.
-* axios: A library for making HTTP requests.
-* socket.io-client: Provides WebSocket encapsulation.
+* **TypeScript**: A strongly-typed programming language that builds on JavaScript.
+* **Vue.js (3)**: An easy-to-learn frontend framework.
+* **Vite**: A frontend development and build tool.
+* **vue-router**: The official router manager for Vue.js.
+* **pinia**: The next-generation state management library for Vue.js, offering a simpler and more user-friendly API compared to Vuex.
+* **naive-ui**: A UI component library for Vue 3.
+* **vue-echarts**: The Vue component for ECharts, integrating Baidu's ECharts chart library.
+* **@antv/g2**: A data visualization chart library.
+* **@vicons**: Vue component wrappers for multiple icon libraries, supporting Ant Design, Carbon, Fluent, Ionicons, etc.
+* **axios**: A library for making HTTP requests.
+* **socket.io-client**: Provides WebSocket encapsulation.
 
 ## Frontend Developer Guide
-1. Recommended IDE: VSCode
-  Install the following plugins to enhance the development experience:
+1. Recommended IDE: **VSCode**. Install the following plugins to enhance the development experience:
     - Vetur: Syntax highlighting and intelligent hints for Vue.js.
     - ESLint: Code checking plugin for JavaScript and TypeScript.
     - Prettier: Code formatting tool.
     - Volar: Enhanced support plugin for Vue 3.
     - Vite: Support plugin for the Vite toolchain.
-2. Clone the project
-3. Install Dependencies
+2. **Clone the project**.
+3. **Install Dependencies**.
   Install Node.js and pnpm:
   `npm install -g pnpm`
   Install project dependencies:
   `pnpm install`
-4. Start the Development Server
-  `pnpm dev` or `npm run dev`
-5. Create a Branch for Development
+4. **Start the Development Server**.
+  `pnpm dev` or `npm run dev`.
+5. **Create a Branch for Development**.
   Pull a branch from the main branch to start development.
-6. Local Code Checking
+6. **Local Code Checking**.
   Code checks will be triggered automatically when committing code, but you can also manually run the checks:
      - `pnpm lint` Run ESLint for code checking
      - `pnpm typecheck` Run TypeScript type checking
      - `pnpm format` Format the code
-1. CI/CD with GitHub Actions
-  Ensure that the CI/CD checks pass and make necessary modifications if needed.
-2. Submit a Pull Request
+1. CI/CD with GitHub Actions, 
+  **Ensure that the CI/CD checks pass and make necessary modifications if needed**.
+2. **Submit a Pull Request**
   After committing code, submit a pull request and wait for review.
 3. Merge Code into the Main Branch
   Once the code review is approved, the code will be merged into the main branch.

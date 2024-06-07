@@ -66,44 +66,43 @@ ThingsPanel的插件主要有如下几类，分别是：
 - **依赖型插件**： 依赖型插件为行业解决方案、基于设备插件和其他功能与数据、可视化调用、iframe代码引入、插件复用
 
 ## 前端技术栈
-* TypeScript：JavaScript的超集，强类型编程语言
-* Vue.js(3)：简单易上手的前端框架
-* Vite：前端开发和构建工具
-* vue-router：Vue.js官方的路由管理器
-* pinia：新一代的Vue.js状态管理库，提供了比Vuex更简洁和易用的API
-* naive-ui：Vue3 UI组件库
-* vue-echarts：Echarts的Vue组件，集成了百度的ECharts图表库
-* @antv/g2：数据可视化图表库
-* @vicons：多种图标库的Vue组件封装，支持Ant Design、Carbon、Fluent、Ionicons等图标库
-* axios：HTTP请求库
-* socket.io-client：提供WebSocket封装
+* **TypeScript**：JavaScript的超集，强类型编程语言
+* **Vue.js(3)**：简单易上手的前端框架
+* **Vite**：前端开发和构建工具
+* **vue-router**：Vue.js官方的路由管理器
+* **pinia**：新一代的Vue.js状态管理库，提供了比Vuex更简洁和易用的API
+* **naive-ui**：Vue3 UI组件库
+* **vue-echarts**：Echarts的Vue组件，集成了百度的ECharts图表库
+* **@antv/g2**：数据可视化图表库
+* **@vicons**：多种图标库的Vue组件封装，支持Ant Design、Carbon、Fluent、Ionicons等图标库
+* **axios**：HTTP请求库
+* **socket.io-client**：提供WebSocket封装
 
 ## 前端开发者指南
-1. 推荐开发IDE：VSCode
-  安装以下插件以增强开发体验：
+1. 推荐开发IDE：**VSCode**。安装以下插件以增强开发体验：
      - Vetur：Vue.js 的语法高亮和智能提示插件
      - ESLint： JavaScript 和 TypeScript 代码检查插件
      - Prettier：代码格式化工具
      - Volar：Vue3 支持的增强插件
      - Vite：Vite 工具链的相关支持插件
-1. 克隆本项目
-2. 安装依赖 
+2. **克隆本项目**。
+3. **安装依赖**。
   安装node和pnpm：
-  `npm install -g pnpm`
+  `npm install -g pnpm`；
   安装项目依赖：
   `pnpm install`
-1. 启动服务
-  `pnpm dev` 或 `npm run dev`
-1. 从主分支拉取一个分支进行开发
-2. 本地代码检查
-  提交代码时会自动触发代码检查，也可以自己手动进行代码检查
-    - `pnpm lint` 运行ESLint进行代码检查
-    - `pnpm typecheck` 运行TypeScript类型检查
-    - `pnpm format` 格式化代码
-1. 项目使用Github Actions进行CI/CD，需检查CI/CD是否通过，并做出相应修改
-2. 代码提交后提交PR，等待审核
-3. 代码审核通过后会被合并到主分支
-4. 主分支代码会自动部署到生产环境
+1. **启动服务**。
+  `pnpm dev` 或 `npm run dev`。
+1. **从主分支拉取一个分支进行开发**。
+2. **本地代码检查**。
+  提交代码时会自动触发代码检查，也可以自己手动进行代码检查：
+    - `pnpm lint` 运行ESLint进行代码检查；
+    - `pnpm typecheck` 运行TypeScript类型检查；
+    - `pnpm format` 格式化代码。
+1. 项目使用Github Actions进行CI/CD，需**检查CI/CD是否通过，并做出相应修改**。
+2. 代码提交后**提交PR**，等待审核。
+3. 代码审核通过后会被合并到主分支。
+4. 主分支代码会自动部署到生产环境。
 
 ## API文档链接
 [https://docs.qq.com/doc/DZVZKc2FCTE1EblBX](https://apifox.com/apidoc/shared-754c3f13-b1c0-44fe-905d-c75e3210d509)
