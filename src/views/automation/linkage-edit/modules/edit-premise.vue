@@ -20,7 +20,6 @@ interface Emits {
 
 const route = useRoute();
 const emit = defineEmits<Emits>();
-const loadingSelect = ref(false);
 
 const premiseFormRef = ref<FormInst | null>(null);
 const premiseForm = ref({
@@ -189,13 +188,27 @@ const queryDevice = ref({
   group_id: null as any,
   device_name: null as any
 });
+const btnloading = ref(false);
 
+const selectInstRef = ref(false);
+const onKeydownEnter = e => {
+  selectInstRef.value = true;
+  e.preventDefault();
+
+  return false;
+};
 // 获取设备列表
 const getDevice = async (groupId: any, name: any) => {
   queryDevice.value.group_id = groupId || null;
   queryDevice.value.device_name = name || null;
+  btnloading.value = false;
+  deviceOptions.value = [];
   const res = await deviceListAll(queryDevice.value);
-  deviceOptions.value = res.data;
+  btnloading.value = true;
+  deviceOptions.value = res.data || [];
+  if (!deviceOptions.value.length) {
+    selectInstRef.value = false;
+  }
 };
 // 选择设备
 const triggerSourceChange = (ifItem: any) => {
@@ -215,13 +228,7 @@ const triggerSourceChange = (ifItem: any) => {
 //     queryDeviceName.value[0].focus();
 //   }, 100);
 // };
-const triggerSourceShow = data => {
-  if (data) {
-    queryDevice.value.device_name = '';
-    queryDevice.value.group_id = '';
-    getDevice(null, null);
-  }
-};
+
 const queryDeviceName = ref([] as any);
 const handleFocus = (ifIndex: any) => {
   queryDeviceName.value[ifIndex].focus();
@@ -245,9 +252,13 @@ const actionParamShow = async (ifItem: any, data: any) => {
     ifItem.triggerParamOptions = [];
     let res = null as any;
     if (ifItem.trigger_conditions_type === '10') {
-      res = await deviceMetricsConditionMenu({ device_id: ifItem.trigger_source });
+      res = await deviceMetricsConditionMenu({
+        device_id: ifItem.trigger_source
+      });
     } else if (ifItem.trigger_conditions_type === '11') {
-      res = await configMetricsConditionMenu({ device_config_id: ifItem.trigger_source });
+      res = await configMetricsConditionMenu({
+        device_config_id: ifItem.trigger_source
+      });
     }
     // eslint-disable-next-line array-callback-return
     if (res.data) {
@@ -275,7 +286,7 @@ const actionParamShow = async (ifItem: any, data: any) => {
         },
         {
           value: 'Off-line',
-          label: 'Off-line(上线)'
+          label: 'Off-line(下线)'
         },
         {
           value: 'All',
@@ -563,6 +574,14 @@ const props = withDefaults(defineProps<Props>(), {
   device_config_id: ''
 });
 
+const onTapInput = (item: any) => {
+  if (item.group_id || item.device_name) {
+    getDevice(item.group_id, item.device_name);
+  } else {
+    selectInstRef.value = true;
+  }
+};
+
 watch(
   () => props.conditionData,
   newValue => {
@@ -593,6 +612,14 @@ onMounted(() => {
     addIfGroupItem(judgeItemData);
   }
 });
+
+watch(
+  premiseForm.value.ifGroups,
+  () => {
+    selectInstRef.value = false;
+  },
+  { deep: true }
+);
 </script>
 
 <template>
@@ -601,13 +628,14 @@ onMounted(() => {
       ref="premiseFormRef"
       :model="premiseForm"
       :rules="premiseFormRules"
+      :submit-on-enter="false"
       label-placement="left"
       size="small"
       :show-feedback="false"
+      @keydown.enter="onKeydownEnter"
     >
       {{ $t('generate.condition-trigger') }}
-      <NFlex v-for="(ifGroupItem, ifGroupIndex) in premiseForm.ifGroups" :key="ifGroupIndex" class="relative w-100%">
-        <NTag v-if="ifGroupIndex !== 0" type="info" class="tag-or-class" size="small">{{ $t('generate.or') }}</NTag>
+      <NFlex v-for="(ifGroupItem, ifGroupIndex) in premiseForm.ifGroups" :key="ifGroupIndex" class="w-100%">
         <NCard class="mb-2 w-[calc(100%-78px)]">
           <NFlex v-for="(ifItem, ifIndex) in ifGroupItem" :key="ifIndex" class="ifGroupItem-class mb-2 w-100%">
             <NFlex class="flex-1" align="center">
@@ -654,10 +682,12 @@ onMounted(() => {
                       :options="deviceOptions"
                       value-field="id"
                       label-field="name"
+                      clearable
+                      :show="selectInstRef"
                       :consistent-menu-width="false"
-                      :loading="loadingSelect"
+                      @click.prevent="onKeydownEnter"
+                      @keydown.enter="onKeydownEnter"
                       @update:value="() => triggerSourceChange(ifItem)"
-                      @update:show="data => triggerSourceShow(data)"
                     >
                       <template #header>
                         <NFlex align="center" class="w-500px">
@@ -670,6 +700,7 @@ onMounted(() => {
                             class="max-w-40"
                             clearable
                             :placeholder="$t('common.select')"
+                            @keydown.enter="onKeydownEnter"
                             @update:value="data => getDevice(data, queryDevice.device_name)"
                           />
                           <NInput
@@ -678,9 +709,11 @@ onMounted(() => {
                             class="flex-1"
                             clearable
                             :placeholder="$t('common.input')"
+                            @keydown.enter="onTapInput(queryDevice)"
                             @click="handleFocus(ifIndex)"
                           ></NInput>
                           <NButton
+                            :disabled="!btnloading"
                             type="primary"
                             @click.stop="getDevice(queryDevice.group_id, queryDevice.device_name)"
                           >
@@ -1204,7 +1237,7 @@ onMounted(() => {
         </NButton>
       </NFlex>
     </NForm>
-    <NButton type="primary" class="w-30" @click="addIfGroupItem(null)">{{ $t('generate.orIf') }}</NButton>
+    <NButton type="primary" class="w-30" @click="addIfGroupItem(null)">{{ $t('generate.add-group') }}</NButton>
   </NFlex>
 </template>
 
@@ -1216,10 +1249,6 @@ onMounted(() => {
     position: absolute;
     top: 5px;
   }
-}
-.tag-or-class {
-  position: absolute;
-  left: -30px;
 }
 
 .refresh-class {

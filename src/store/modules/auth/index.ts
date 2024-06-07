@@ -18,11 +18,10 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
   const token = ref(getToken());
 
-  const userInfo: Api.Auth.UserInfo = reactive(getUserInfo());
-
   /** Is login */
   const isLogin = computed(() => Boolean(token.value));
 
+  const userInfo: Api.Auth.UserInfo = reactive(getUserInfo());
   /** Reset auth store */
   async function resetStore() {
     const authStore = useAuthStore();
@@ -50,9 +49,9 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     const { data: loginToken, error } = await fetchLogin(userName, password);
 
     if (!error) {
-      const pass = await loginByToken(loginToken);
+      const { loop } = await loginByToken(loginToken);
 
-      if (pass) {
+      if (loop) {
         await routeStore.initAuthRoute();
 
         await redirectFromLogin();
@@ -85,19 +84,16 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     });
 
     if (!error) {
-      const pass = await loginByToken(loginToken);
+      const { info, loop } = await loginByToken(loginToken);
 
       clearTabs();
-
-      if (pass) {
+      if (loop) {
         await routeStore.initAuthRoute();
-
         await redirectFromLogin();
-
         if (routeStore.isInitAuthRoute) {
           window.$notification?.success({
             title: $t('page.login.common.loginSuccess'),
-            content: $t('page.login.common.welcomeBack', { userName: userInfo.userName }),
+            content: $t('page.login.common.welcomeBack', { userName: info?.name }),
             duration: 4500
           });
         }
@@ -126,10 +122,10 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       token.value = loginToken.token;
       Object.assign(userInfo, info);
 
-      return true;
+      return { loop: true, info };
     }
 
-    return false;
+    return { loop: false, info };
   }
 
   return {
