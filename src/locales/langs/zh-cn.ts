@@ -861,7 +861,8 @@ const local: App.I18n.Schema = {
       windDirection: '风向',
       humidity: '湿度',
       pressure: '气压',
-      rainfall: '雨量'
+      rainfall: '雨量',
+      instrumentPanel: '仪表盘'
     }
   },
   device_template: {
@@ -1003,8 +1004,8 @@ const local: App.I18n.Schema = {
     errorMessage: '错误信息',
     returnSuccess: '返回成功',
     returnFail: '返回失败',
-    sendingSuccess: '发送失败',
-    sendingFail: '发送成功',
+    sendingSuccess: '发送成功',
+    sendingFail: '发送失败',
     code: '代码',
     name: '姓名',
     greeting: '你好',

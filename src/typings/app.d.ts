@@ -1008,6 +1008,7 @@ declare namespace App {
           humidity: string;
           pressure: string;
           rainfall: string;
+          instrumentPanel: string;
         };
       };
       device_template: {
