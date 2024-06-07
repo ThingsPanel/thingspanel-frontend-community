@@ -39,7 +39,7 @@ jobs:
           host: ${{ secrets.C_HOST }}
           user: ${{ secrets.C_USER }}
           pass: ${{ secrets.C_PASS }}
-          scp: './dist.tar.gz => /home/thingspanel/nginx/www/dist.tar.gz'
+          scp: './dist.tar.gz => /home/thingspanel/nginx/www'
           last_ssh: |
             echo "Starting deployment..."
             cd /home/thingspanel/nginx/www
