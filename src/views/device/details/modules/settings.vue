@@ -173,7 +173,7 @@ const selectConfig = v => {
   deviceUpdateConfig({ device_id: props.id, device_config_id: v });
   deviceDataStore.fetchData(props.id);
   initData();
-  console.log('成功啦,77777777777');
+  console.log('成功啦,999999999999');
   emit('change');
 };
 </script>
