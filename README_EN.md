@@ -94,7 +94,7 @@ Password: 123456
 2. **Clone the project**.
 3. **Install Dependencies**.
   Install Node.js and pnpm:
-  `npm install -g pnpm`
+  `npm install -g pnpm`, 
   Install project dependencies:
   `pnpm install`
 4. **Start the Development Server**.
