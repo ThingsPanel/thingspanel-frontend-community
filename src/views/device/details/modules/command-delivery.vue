@@ -8,20 +8,15 @@ defineProps<{
 }>();
 
 // 状态
-const formatStatus = status => {
-  console.log(status);
-  switch (status) {
-    case '1':
-      return $t('generate.sendingSuccess');
-    case '2':
-      return $t('generate.sendingFail');
-    case '3':
-      return $t('generate.returnSuccess');
-    case '4':
-      return $t('generate.returnFail');
-    default:
-      return '';
-  }
+const formatStatus = (status: string) => {
+  const statusjson = {
+    '1': $t('generate.sendingSuccess'),
+    '2': $t('generate.sendingFail'),
+    '3': $t('generate.returnSuccess'),
+    '4': $t('generate.returnFail')
+  };
+
+  return statusjson[status] || '';
 };
 
 const columns = [

@@ -155,8 +155,8 @@ watch(
 );
 
 const initData = async () => {
-  console.log(new Date(), 1111);
   const result = await deviceDetail(query.d_id as string);
+  device_coding.value = result?.data?.device_number;
   selectedValues.value = result?.data?.device_config_id || '';
   getTreeData();
   getTreeRelationData();
@@ -191,10 +191,9 @@ const selectConfig = v => {
         @search="deviceConfigList"
       />
     </div>
-    <div class="flex items-center">
+    <div class="flex items-center gap-13px">
       <span>{{ $t('generate.deviceCode') }}</span>
       <span>{{ device_coding }}</span>
-      <NButton type="primary" text class="ml-4">{{ $t('generate.view') }}</NButton>
     </div>
 
     <div class="flex-col gap-10px">
