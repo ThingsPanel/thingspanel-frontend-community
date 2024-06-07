@@ -861,7 +861,8 @@ const local: App.I18n.Schema = {
       windDirection: '风向',
       humidity: '湿度',
       pressure: '气压',
-      rainfall: '雨量'
+      rainfall: '雨量',
+      instrumentPanel: '仪表盘'
     }
   },
   device_template: {
