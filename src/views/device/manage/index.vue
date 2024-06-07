@@ -305,15 +305,15 @@ const dropOption = [
   {
     label: () => $t('custom.devicePage.manualAdd'),
     key: 'hands'
-  },
-  {
-    label: () => $t('custom.devicePage.addByNumber'),
-    key: 'number'
-  },
-  {
-    label: () => $t('custom.devicePage.addByServer'),
-    key: 'server'
   }
+  // {
+  //   label: () => $t('custom.devicePage.addByNumber'),
+  //   key: 'number'
+  // },
+  // {
+  //   label: () => $t('custom.devicePage.addByServer'),
+  //   key: 'server'
+  // }
 ];
 const getDictServiceList = async () => {
   const { data }: any = await deviceDictProtocolService({ language_code: localStg.get('lang') });

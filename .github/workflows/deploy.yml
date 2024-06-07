@@ -1,6 +1,3 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
 name: ssh deploy
 
 on:
@@ -10,15 +7,15 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js Build
+      
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.17.0
+          node-version: 20.11
+
       - name: Cache pnpm modules
         uses: actions/cache@v3
         with:
@@ -26,24 +23,27 @@ jobs:
           key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-
-      - run: npm install -g pnpm@8.15.5
-      - run: pnpm i
-      - name: Build with increased memory limit
-        run: pnpm build:4096
-        env:
-          CI: true
-      - run: cd dist && ls -l
-      - name: scp ssh pipelines
+
+      - name: Install dependencies and build
+        run: |
+          npm install -g pnpm@8.15.5
+          pnpm i
+          pnpm build:4096
+
+      - name: Compress build output
+        run: tar -czf dist.tar.gz -C dist .
+
+      - name: Deploy via SCP
         uses: cross-the-world/ssh-scp-ssh-pipelines@latest
-        env:
-          LASTSSH: "Doing something after copying"
         with:
           host: ${{ secrets.C_HOST }}
           user: ${{ secrets.C_USER }}
           pass: ${{ secrets.C_PASS }}
-          scp: |
-            ./dist/* => /home/thingspanel/nginx/www/dist/
-          # last_ssh: |
-          #   echo $LASTSSH
-          #   nginx -t
-          #   nginx -s reload
+          scp: './dist.tar.gz => /home/thingspanel/nginx/www'
+          last_ssh: |
+            echo "Starting deployment..."
+            cd /home/thingspanel/nginx/www
+            tar -xzf dist.tar.gz
+            rm dist.tar.gz
+            nginx -t && nginx -s reload
+            echo "Deployment completed successfully."
