@@ -70,14 +70,13 @@ const submitData = async () => {
     return false;
   });
   if (isTimeRangeError) {
-    window.$message?.error('单个条件组内不能只有时间范围的条件');
+    window.$message?.error($t('generate.timeRangeWarning'));
     return;
   }
 
   // 处理动作数据保存
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   configForm.value.actions = handleActionData();
-  console.log(configForm.value.actions, 'actionsactionsactionsactionsactions.value');
 
   const isAlarmError =
     configForm.value.trigger_condition_groups.some((item: any) => {
@@ -94,27 +93,27 @@ const submitData = async () => {
       return item.actionType === '30';
     });
   if (isAlarmError) {
-    window.$message?.error('时间类型的条件无法触发告警');
+    window.$message?.error($t('generate.timeTypeWarning'));
     return;
   }
 
-  const isConditionError = configForm.value.trigger_condition_groups.some((item: any) => {
-    if (
-      item.some(subItem => {
-        return subItem.ifType === '1';
-      }) &&
-      item.some(subItem => {
-        return subItem.trigger_conditions_type === '20' || subItem.trigger_conditions_type === '21';
-      })
-    ) {
-      return true;
-    }
-    return false;
-  });
-  if (isConditionError) {
-    window.$message?.error('单次/重复时间 + 设备类型的 无法并存');
-    return;
-  }
+  // const isConditionError = configForm.value.trigger_condition_groups.some((item: any) => {
+  //   if (
+  //     item.some(subItem => {
+  //       return subItem.ifType === '1';
+  //     }) &&
+  //     item.some(subItem => {
+  //       return subItem.trigger_conditions_type === '20' || subItem.trigger_conditions_type === '21';
+  //     })
+  //   ) {
+  //     return true;
+  //   }
+  //   return false;
+  // });
+  // if (isConditionError) {
+  //   window.$message?.error('单次/重复时间 + 设备类型的 无法并存');
+  //   return;
+  // }
   await configFormRef?.value?.validate();
   await editPremise.value.premiseFormRefReturn()?.validate();
   await editAction.value.actionFormRefReturn()?.validate();

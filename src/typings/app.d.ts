@@ -1702,6 +1702,8 @@ declare namespace App {
         thirdElement: string;
         individual: string;
         'alarm-info': string;
+        timeRangeWarning: string;
+        timeTypeWarning: string;
       };
       kanban: {
         'add-cards': string;
