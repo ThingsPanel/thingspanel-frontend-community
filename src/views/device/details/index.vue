@@ -198,7 +198,7 @@ const getAlarmStatus = async () => {
   alarmStatus.value = data.alarm;
 };
 onBeforeMount(() => {
-  console.log('成功啦');
+  console.log('成功啦!!!!!!!!!!!!');
   getDeviceDetail();
   getAlarmStatus();
 });
