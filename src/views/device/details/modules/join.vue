@@ -74,7 +74,7 @@ watchEffect(() => {
         });
       } else {
         formRules.value[element.dataKey] = element.validate || {};
-        formData[element.dataKey] ??= thejson[element.dataKey] || '';
+        formData[element.dataKey] = thejson[element.dataKey] || '';
       }
     });
   }
