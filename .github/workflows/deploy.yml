@@ -30,7 +30,8 @@ jobs:
           pnpm i
           pnpm build:4096
 
-      - run: cd dist && ls -l
+      - name: Compress build output
+        run: tar -czf dist.tar.gz -C dist .
 
       - name: Deploy via SCP
         uses: cross-the-world/ssh-scp-ssh-pipelines@latest
