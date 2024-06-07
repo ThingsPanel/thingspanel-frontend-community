@@ -275,7 +275,7 @@ const actionParamShow = async (ifItem: any, data: any) => {
         },
         {
           value: 'Off-line',
-          label: 'Off-line(上线)'
+          label: 'Off-line(下线)'
         },
         {
           value: 'All',
