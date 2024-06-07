@@ -90,7 +90,7 @@ ThingsPanel的插件主要有如下几类，分别是：
   安装node和pnpm：
   `npm install -g pnpm`；
   安装项目依赖：
-  `pnpm install`
+  `pnpm install`。
 1. **启动服务**。
   `pnpm dev` 或 `npm run dev`。
 1. **从主分支拉取一个分支进行开发**。
