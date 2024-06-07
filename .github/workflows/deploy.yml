@@ -38,8 +38,11 @@ jobs:
           host: ${{ secrets.C_HOST }}
           user: ${{ secrets.C_USER }}
           pass: ${{ secrets.C_PASS }}
-          scp: './dist/* => /home/thingspanel/nginx/www/dist/'
+          scp: './dist.tar.gz => /home/thingspanel/nginx/www/dist.tar.gz'
           last_ssh: |
-            echo $LASTSSH
-            nginx -t
-            nginx -s reload
+            echo "Starting deployment..."
+            cd /home/thingspanel/nginx/www
+            tar -xzf dist.tar.gz
+            rm dist.tar.gz
+            nginx -t && nginx -s reload
+            echo "Deployment completed successfully."
