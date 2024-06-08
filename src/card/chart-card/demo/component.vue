@@ -131,30 +131,28 @@ onBeforeUnmount(() => {
 .iconclass {
   position: absolute;
   bottom: 20%;
-  left: 15%;
+  left: 7%;
   width: 25%;
   height: 25%;
 }
 
 .value-wrap {
-  position: absolute; /* 新增: 使得 .unit 可以相对于此元素定位 */
-  display: inline-block; /* 确保包裹元素不影响外部布局 */
-  bottom: 16%;
-  left: 60%;
-  width: 40%;
+  position: absolute;
+  display: flex;
+  bottom: 20%;
+  left: 55%;
+  width: 45%;
+  line-height: 1;
 }
 
 .unit {
-  position: absolute;
-  top: -8%;
-  right: 10%;
-  width: 50%;
+  margin-left: 10px;
   font-size: 1em;
   overflow: hidden;
   display: block;
   white-space: nowrap;
   text-overflow: ellipsis;
-  transform: translateY(-50%); /* 可选: 微调垂直对齐 */
+  transform: translateY(-50%);
 }
 
 .name {
@@ -170,10 +168,12 @@ onBeforeUnmount(() => {
 }
 
 .value {
+  flex-shrink: 0;
+  max-width: 75%;
   font-size: 2.5em;
-  display: block;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  vertical-align: text-bottom;
 }
 </style>
