@@ -121,20 +121,36 @@ const premiseFormRules = ref({
 
 /** if分组的数据类型 */
 // 选项一条件类型的下拉
-const ifTypeOptions = ref([
-  {
-    label: $t('common.deviceConditions'),
-    value: '1'
-  },
-  {
-    label: $t('common.timeConditions'),
-    value: '2'
-  }
-  // {
-  //   label: '服务条件',
-  //   value: '3'
-  // }
-]);
+// const ifTypeOptions = ref([
+//   {
+//     label: $t('common.deviceConditions'),
+//     value: '1'
+//   },
+//   {
+//     label: $t('common.timeConditions'),
+//     value: '2'
+//   }
+//   // {
+//   //   label: '服务条件',
+//   //   value: '3'
+//   // }
+// ]);
+
+const getIfTypeOptions = ifGroup => {
+  return [
+    {
+      label: $t('common.deviceConditions'),
+      value: '1',
+      disabled: ifGroup.some(item => {
+        return item.trigger_conditions_type === '20' || item.trigger_conditions_type === '21';
+      })
+    },
+    {
+      label: $t('common.timeConditions'),
+      value: '2'
+    }
+  ];
+};
 const ifTypeChange = (ifItem: any, data: any) => {
   ifItem.trigger_conditions_type = null;
   // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-use-before-define
@@ -299,20 +315,39 @@ const actionParamShow = async (ifItem: any, data: any) => {
 };
 
 // 时间条件类型下选项2使用的下拉
-const timeConditionOptions = ref([
-  {
-    label: $t('common.single'),
-    value: '20'
-  },
-  {
-    label: $t('common.repeat'),
-    value: '21'
-  },
-  {
-    label: $t('common.timeFrame'),
-    value: '22'
-  }
-]);
+const getTimeConditionOptions = ifGroup => {
+  return [
+    {
+      label: $t('common.single'),
+      value: '20',
+      disabled: ifGroup.some(item => item.ifType === '1')
+    },
+    {
+      label: $t('common.repeat'),
+
+      value: '21',
+      disabled: ifGroup.some(item => item.ifType === '1')
+    },
+    {
+      label: $t('common.timeFrame'),
+      value: '22'
+    }
+  ];
+};
+// const timeConditionOptions = ref([
+//   {
+//     label: $t('common.single'),
+//     value: '20'
+//   },
+//   {
+//     label: $t('common.repeat'),
+//     value: '21'
+//   },
+//   {
+//     label: $t('common.timeFrame'),
+//     value: '22'
+//   }
+// ]);
 // 服务条件类型下选项2使用的下拉
 const serviceConditionOptions = ref([
   {
@@ -649,7 +684,7 @@ watch(
               >
                 <NSelect
                   v-model:value="ifItem.ifType"
-                  :options="ifTypeOptions"
+                  :options="getIfTypeOptions(ifGroupItem)"
                   :placeholder="$t('common.select')"
                   @update-value="data => ifTypeChange(ifItem, data)"
                 />
@@ -862,7 +897,7 @@ watch(
                 >
                   <NSelect
                     v-model:value="ifItem.trigger_conditions_type"
-                    :options="timeConditionOptions"
+                    :options="getTimeConditionOptions(ifGroupItem)"
                     :placeholder="$t('common.select')"
                     @update:value="ifItem.task_type = null"
                   />
@@ -1214,7 +1249,7 @@ watch(
             </NFlex>
             <NFlex class="w-100px">
               <NButton
-                v-if="ifIndex === 0 && ifItem.ifType !== '2'"
+                v-if="ifIndex === 0"
                 type="primary"
                 class="absolute right-0"
                 @click="addIfGroupsSubItem(ifGroupIndex)"
