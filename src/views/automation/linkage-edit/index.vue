@@ -20,7 +20,7 @@ const configFormRules = ref({
     trigger: 'blur'
   },
   description: {
-    required: true,
+    required: false,
     message: $t('generate.sceneLinkDesc'),
     trigger: 'blur'
   },
@@ -62,6 +62,30 @@ const submitData = async () => {
   // 处理动作数据保存
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   configForm.value.actions = handleActionData();
+
+  const isTimeRangeError = configForm.value.trigger_condition_groups.some((item: any) => {
+    return item.every(subItem => {
+      return subItem.trigger_conditions_type === '22';
+    });
+  });
+  if (isTimeRangeError) {
+    window.$message?.error($t('generate.timeRangeWarning'));
+    return;
+  }
+
+  const isAlarmError =
+    configForm.value.trigger_condition_groups.some((item: any) => {
+      return item.some(subItem => {
+        return subItem.ifType === '2';
+      });
+    }) &&
+    configForm.value.actions.some((item: any) => {
+      return item.actionType === '30';
+    });
+  if (isAlarmError) {
+    window.$message?.error($t('generate.timeTypeWarning'));
+    return;
+  }
 
   await configFormRef?.value?.validate();
   await editPremise.value.premiseFormRefReturn()?.validate();
