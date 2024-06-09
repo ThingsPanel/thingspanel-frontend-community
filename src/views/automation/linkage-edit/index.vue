@@ -64,14 +64,9 @@ const submitData = async () => {
   configForm.value.actions = handleActionData();
 
   const isTimeRangeError = configForm.value.trigger_condition_groups.some((item: any) => {
-    if (
-      item.every(subItem => {
-        return subItem.trigger_conditions_type === '22';
-      })
-    ) {
-      return true;
-    }
-    return false;
+    return item.every(subItem => {
+      return subItem.trigger_conditions_type === '22';
+    });
   });
   if (isTimeRangeError) {
     window.$message?.error($t('generate.timeRangeWarning'));
@@ -80,14 +75,9 @@ const submitData = async () => {
 
   const isAlarmError =
     configForm.value.trigger_condition_groups.some((item: any) => {
-      if (
-        item.some(subItem => {
-          return subItem.ifType === '2';
-        })
-      ) {
-        return true;
-      }
-      return false;
+      return item.some(subItem => {
+        return subItem.ifType === '2';
+      });
     }) &&
     configForm.value.actions.some((item: any) => {
       return item.actionType === '30';
@@ -96,6 +86,7 @@ const submitData = async () => {
     window.$message?.error($t('generate.timeTypeWarning'));
     return;
   }
+
   await configFormRef?.value?.validate();
   await editPremise.value.premiseFormRefReturn()?.validate();
   await editAction.value.actionFormRefReturn()?.validate();
