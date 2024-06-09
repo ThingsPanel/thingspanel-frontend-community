@@ -1004,8 +1004,8 @@ const local: App.I18n.Schema = {
     errorMessage: '错误信息',
     returnSuccess: '返回成功',
     returnFail: '返回失败',
-    sendingSuccess: '发送失败',
-    sendingFail: '发送成功',
+    sendingSuccess: '发送成功',
+    sendingFail: '发送失败',
     code: '代码',
     name: '姓名',
     greeting: '你好',
@@ -1392,7 +1392,9 @@ const local: App.I18n.Schema = {
     secondElement: '二',
     thirdElement: '三',
     individual: '个',
-    'alarm-info': '告警详情'
+    'alarm-info': '告警详情',
+    timeRangeWarning: '单个条件组内不能只有时间范围的条件',
+    timeTypeWarning: '时间类型的条件无法触发告警'
   },
   kanban: {
     'add-cards': '添加卡片'

@@ -21,16 +21,6 @@ interface Props {
   conditionsType?: object | any;
   actionData?: any;
 }
-// 操作设备类型的数据Item
-const instructListItem = ref({
-  action_target: null, //  动作目标id  设备id、设备配置id，场景id、告警id
-  action_type: null, // 动作标识符类型
-  action_param_type: null, // 动作标识符类型
-  action_param: null, // 动作标识符类型
-  action_value: null, // 参数值
-  deviceGroupId: null, // 设备分组ID
-  actionParamOptions: [] // 动作标识菜单下拉列表数据选项
-});
 
 const props = withDefaults(defineProps<Props>(), {
   conditionsType: null,
@@ -152,34 +142,26 @@ const actionOptions = ref([
   }
 ]);
 
-// 给某个动作组中增加指令
-const addIfGroupsSubItem = async (actionGroupIndex: any) => {
-  await configFormRef.value?.validate();
-  const data = JSON.parse(JSON.stringify(instructListItem.value));
-  if (props.conditionsType === '11') {
-    data.action_type = '11';
-  }
-  actionForm.value.actionGroups[actionGroupIndex].actionInstructList.push(data);
-};
-
 // 动作选择action值改变时
 const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) => {
   // eslint-disable-next-line array-callback-return
   actionOptions.value.map(item => {
     item.disabled = false;
   });
-  if (data === '40') actionGroupItem.actionInstructList = [];
+  actionGroupItem.actionInstructList = [];
   actionGroupItem.action_type = null;
   actionGroupItem.action_target = null;
-  console.log(actionForm.value, actionGroupIndex, data, '测试数据源');
-  // if (data === '1') {
-  //   actionOptions.value.map(item => {
-  //     if (item.value === '1') {
-  //     }
-  //   });
-  // }
-  // eslint-disable-next-line require-atomic-updates
-  addIfGroupsSubItem(actionGroupIndex);
+  if (data === '1') {
+    // eslint-disable-next-line array-callback-return
+    actionOptions.value.map(item => {
+      if (item.value === '1') {
+        item.disabled = true;
+        actionForm.value.actionGroups = JSON.parse(JSON.stringify(props.actionData));
+      }
+    });
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    addIfGroupsSubItem(actionGroupIndex);
+  }
 };
 // 设备类型选项
 const actionTypeOptions = ref([
@@ -331,6 +313,17 @@ const getAlarmList = async (name: string) => {
   alarmList.value = res.data.list;
 };
 
+// 操作设备类型的数据Item
+const instructListItem = ref({
+  action_target: null, //  动作目标id  设备id、设备配置id，场景id、告警id
+  action_type: null, // 动作标识符类型
+  action_param_type: null, // 动作标识符类型
+  action_param: null, // 动作标识符类型
+  action_value: null, // 参数值
+  deviceGroupId: null, // 设备分组ID
+  actionParamOptions: [] // 动作标识菜单下拉列表数据选项
+});
+
 // interface ActionInstructItem {
 //   action_target: string;
 //   action_type: string;
@@ -343,7 +336,7 @@ const getAlarmList = async (name: string) => {
 
 // 动作数组的item
 const actionItem = ref({
-  actionType: null,
+  actionType: '30',
   action_type: null, // 动作类型后端
   action_target: null, // 动作目标id   设备id、设备配置id，场景id、告警id
   actionInstructList: []
@@ -374,6 +367,15 @@ const deleteActionGroupItem = (actionGroupIndex: any) => {
   actionForm.value.actionGroups.splice(actionGroupIndex, 1);
 };
 
+// 给某个动作组中增加指令
+const addIfGroupsSubItem = async (actionGroupIndex: any) => {
+  await configFormRef.value?.validate();
+  const data = JSON.parse(JSON.stringify(instructListItem.value));
+  if (props.conditionsType === '11') {
+    data.action_type = '11';
+  }
+  actionForm.value.actionGroups[actionGroupIndex].actionInstructList.push(data);
+};
 // 删除某个动作组中的某个指令
 const deleteIfGroupsSubItem = (actionGroupIndex: any, ifIndex: any) => {
   actionForm.value.actionGroups[actionGroupIndex].actionInstructList.splice(ifIndex, 1);

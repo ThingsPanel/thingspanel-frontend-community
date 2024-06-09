@@ -34,7 +34,11 @@ const options = ref<Option[]>();
 const sOptions = ref<any[]>([{ label: $t('generate.unbind'), value: '' }]);
 const { query } = useRoute();
 const deviceConfigList = async name => {
-  const { data, error } = await getDeviceConfigList({ page: 1, page_size: 99, name });
+  const { data, error } = await getDeviceConfigList({
+    page: 1,
+    page_size: 99,
+    name
+  });
   if (!error && data) {
     const tempSOptions = data?.list?.map(item => {
       return { label: item.name, value: item.id };
@@ -121,9 +125,15 @@ const renderSourceList: TransferRenderSourceList = ({ pattern }) => {
         valueRef.value = keys;
         if (meta.node) {
           if (meta.action === 'check') {
-            deviceGroupRelation({ group_id: meta.node.value, device_id_list: [props.id] });
+            deviceGroupRelation({
+              group_id: meta.node.value,
+              device_id_list: [props.id]
+            });
           } else {
-            deleteDeviceGroupRelation({ group_id: meta.node.value, device_id: props.id });
+            deleteDeviceGroupRelation({
+              group_id: meta.node.value,
+              device_id: props.id
+            });
           }
         }
         //
@@ -146,6 +156,7 @@ watch(
 
 const initData = async () => {
   const result = await deviceDetail(query.d_id as string);
+  device_coding.value = result?.data?.device_number;
   selectedValues.value = result?.data?.device_config_id || '';
   getTreeData();
   getTreeRelationData();
@@ -162,6 +173,8 @@ const selectConfig = v => {
   deviceUpdateConfig({ device_id: props.id, device_config_id: v });
   deviceDataStore.fetchData(props.id);
   initData();
+  console.log('成功啦,999999999999');
+  emit('change');
 };
 </script>
 
@@ -178,10 +191,9 @@ const selectConfig = v => {
         @search="deviceConfigList"
       />
     </div>
-    <div class="flex items-center">
+    <div class="flex items-center gap-13px">
       <span>{{ $t('generate.deviceCode') }}</span>
       <span>{{ device_coding }}</span>
-      <NButton type="primary" text class="ml-4">{{ $t('generate.view') }}</NButton>
     </div>
 
     <div class="flex-col gap-10px">

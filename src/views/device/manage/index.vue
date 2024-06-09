@@ -72,8 +72,7 @@ const getDeviceGroupOptions = async () => {
   if (res.data) {
     options = convertTreeNodesToTarget(res.data);
   }
-
-  return [{ label: $t('generate.group'), key: '', children: options }];
+  return options;
 };
 
 const getDeviceConfigOptions = async pattern => {
@@ -203,9 +202,7 @@ const searchConfigs = ref<SearchConfig[]>([
     label: $t('custom.devicePage.group'),
     type: 'tree-select',
     multiple: false,
-    clearable: true,
-    defaultExpandAll: true,
-    options: [],
+    options: [{ label: $t('generate.group'), key: '' }],
     loadOptions: getDeviceGroupOptions
   },
   {
@@ -305,18 +302,21 @@ const dropOption = [
   {
     label: () => $t('custom.devicePage.manualAdd'),
     key: 'hands'
+  },
+  {
+    label: () => $t('custom.devicePage.addByNumber'),
+    key: 'number'
+  },
+  {
+    label: () => $t('custom.devicePage.addByServer'),
+    key: 'server',
+    disabled: true
   }
-  // {
-  //   label: () => $t('custom.devicePage.addByNumber'),
-  //   key: 'number'
-  // },
-  // {
-  //   label: () => $t('custom.devicePage.addByServer'),
-  //   key: 'server'
-  // }
 ];
 const getDictServiceList = async () => {
-  const { data }: any = await deviceDictProtocolService({ language_code: localStg.get('lang') });
+  const { data }: any = await deviceDictProtocolService({
+    language_code: localStg.get('lang')
+  });
 
   data.map((item: any) => {
     item.value = item.dict_value + item.device_type;

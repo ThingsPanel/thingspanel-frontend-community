@@ -94,18 +94,18 @@ Password: 123456
 2. **Clone the project**.
 3. **Install Dependencies**.
   Install Node.js and pnpm:
-  `npm install -g pnpm`
+  `npm install -g pnpm`, 
   Install project dependencies:
-  `pnpm install`
+  `pnpm install`.
 4. **Start the Development Server**.
   `pnpm dev` or `npm run dev`.
 5. **Create a Branch for Development**.
   Pull a branch from the main branch to start development.
 6. **Local Code Checking**.
   Code checks will be triggered automatically when committing code, but you can also manually run the checks:
-     - `pnpm lint` Run ESLint for code checking
-     - `pnpm typecheck` Run TypeScript type checking
-     - `pnpm format` Format the code
+     - `pnpm lint` Run ESLint for code checking;
+     - `pnpm typecheck` Run TypeScript type checking;
+     - `pnpm format` Format the code.
 1. CI/CD with GitHub Actions, 
   **Ensure that the CI/CD checks pass and make necessary modifications if needed**.
 2. **Submit a Pull Request**
