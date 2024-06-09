@@ -1,41 +1,73 @@
-<script lang="ts" setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
-import type { ICardData } from '@/components/panel/card';
-import { $t } from '@/locales';
+<script setup lang="ts">
+import { defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import VChart from 'vue-echarts';
+import * as echarts from 'echarts';
+import { CanvasRenderer } from 'echarts/renderers';
+import { GaugeChart } from 'echarts/charts';
+import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components';
 import { deviceDetail } from '../../chart-card/curve/modules/api';
 
-const initDetailValue = 8;
+// 注册 ECharts 所需的组件和渲染器
+echarts.use([CanvasRenderer, GaugeChart, TitleComponent, TooltipComponent, LegendComponent]);
 
-const props = defineProps<{
-  card: ICardData;
-}>();
-const detail: any = ref(null);
-const detailValue = computed(() => {
-  return detail?.value?.data && detail?.value?.data[0] ? detail?.value?.data[0]?.value : initDetailValue;
-});
-const propsUnit = computed(() => {
-  return (
-    props?.card?.config?.unit ||
-    (detail?.value?.data && detail?.value?.data[0] ? detail?.value?.data[0]?.unit || '' : '')
-  );
-});
-const detailValueAndUnit = computed(() => {
-  return `${detailValue.value} ${propsUnit.value}`;
-});
-const detailValueAndUnitLen = computed(() => {
-  return detailValueAndUnit.value.length;
-});
-const metricsName = computed(() => {
-  return props?.card?.dataSource?.deviceSource?.[0]?.metricsName || '仪表盘';
-});
-const propsMin = computed(() => {
-  return props?.card?.config?.min || 0;
-});
-const propsMax = computed(() => {
-  return props?.card?.config?.max || 200;
-});
-const circleId = computed(() => {
-  return `instrument-circle-${props?.card?.dataSource?.deviceSource?.[0]?.deviceId}`;
+interface ICardData {
+  dataSource: any; // 定义数据源接口
+}
+
+const initDetailValue = 8;
+const valueColor = '#105ba8';
+
+const props = defineProps<{ card: ICardData }>();
+
+const cardRef = ref(null);
+const chartRef = ref<VChart | null>(null);
+
+const detail = ref<string>('');
+
+const chartOptions = ref({
+  series: [
+    {
+      type: 'gauge',
+      startAngle: 180,
+      endAngle: -45,
+      min: 0, // 动态变化
+      max: 100, // 动态变化
+      radius: '90%',
+      center: ['50%', '60%'],
+      splitNumber: 1, // 只展示最大和最小值
+      axisLine: {
+        lineStyle: {
+          width: 30,
+          color: [
+            [0.064, valueColor],
+            [0.8, '#ddd']
+          ] // 动态变化
+        }
+      },
+      axisTick: { show: false },
+      axisLabel: {
+        show: true,
+        fontSize: 14,
+        verticalAlign: 'bottom', // 垂直对齐方式
+        align: 'center',
+        distance: 12
+      },
+      splitLine: { show: false },
+      pointer: { show: false },
+      detail: { show: true, offsetCenter: [0, '-20%'], fontSize: 20 },
+      data: [
+        {
+          value: initDetailValue,
+          detail: {
+            show: true,
+            width: '100%',
+            overflow: 'breakAll',
+            formatter: value => value
+          }
+        }
+      ]
+    }
+  ]
 });
 
 const setSeries: (dataSource) => void = async dataSource => {
@@ -48,166 +80,136 @@ const setSeries: (dataSource) => void = async dataSource => {
   }
 };
 
-const updateSvgSize = () => {
-  const svgDom = document.getElementsByClassName('instrument-svg')[0];
-  const svgWidth = svgDom.clientWidth;
-  const radius = 0.2 * svgWidth;
-  const perimeter = 2 * Math.PI * radius;
-  const strokeDasharray = Math.ceil(perimeter / 2);
+// const updateChart = (newValue: number) => {
+//   chartOptions.value.series[0].data[0].value = newValue;
+//   const chartInstance = chartRef.value;
+//   if (chartInstance) {
+//     chartInstance.setOption(chartOptions.value, true);
+//   }
+// };
 
-  const circleDoms = document.getElementsByClassName('instrument-svg-circle') || [];
-  const len = circleDoms.length;
-  const strokeWidthMax = 16;
+// const updateData = (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
+//   detail.value = metricsId ? data[metricsId] : '';
+//   // updateChart(Number(detail.value));
+// };
 
-  for (let i = 0; i < len; i += 1) {
-    const theWidth = svgWidth * 0.05;
-    circleDoms[i].setAttribute('stroke-width', `${theWidth > strokeWidthMax ? strokeWidthMax : theWidth}`);
-    circleDoms[i].setAttribute('r', `${radius}`);
+const resizeChart = () => {
+  const chartInstance = chartRef.value;
+  if (chartInstance) {
+    chartInstance.resize();
+
+    const containerWidth = Math.min(chartRef.value.$el.clientWidth, chartRef.value.$el.clientHeight);
+    const adjustedOptions = chartOptions.value;
+    const min = props?.card?.config?.min || 0;
+    const max = props?.card?.config?.max || 100;
+    adjustedOptions.series[0].min = min;
+    adjustedOptions.series[0].max = max;
+    const detailValue = detail?.value?.data && detail?.value?.data[0] ? detail?.value?.data[0]?.value : initDetailValue;
+    const unit =
+      props?.card?.config?.unit ||
+      (detail?.value?.data && detail?.value?.data[0] ? detail?.value?.data[0]?.unit || '' : '');
+    let ratio = 0.064;
+    if (detailValue >= max) {
+      ratio = 1;
+    } else if (detailValue <= min) {
+      ratio = 0;
+    } else {
+      ratio = (detailValue - min) / (max - min);
+    }
+    const changeColorArr = [ratio * 0.8, valueColor];
+    adjustedOptions.series[0].axisLine.lineStyle.color[0] = changeColorArr;
+    adjustedOptions.series[0].detail.fontSize = containerWidth / 10;
+    adjustedOptions.series[0].axisLabel.fontSize = containerWidth / 16;
+    adjustedOptions.series[0].data[0].value = detailValue;
+    adjustedOptions.series[0].data[0].detail.formatter = value => `${value} ${unit}`;
+    adjustedOptions.series[0].data[0].detail.lineHeight = containerWidth / 16;
+    // adjustedOptions.series[0].axisLine.lineStyle.width = containerWidth / 14;
+    chartInstance.setOption(adjustedOptions);
   }
-
-  circleDoms[0].setAttribute('stroke-dasharray', `${strokeDasharray}`);
-  const baseStrokeDasharray = circleDoms[1].getAttribute('stroke-dasharray');
-  const baseValue = baseStrokeDasharray?.split(' ') || [];
-  const ratio = Number(baseValue?.[0]) / Number(baseValue?.[1]);
-  const newValue = Math.ceil(strokeDasharray * ratio);
-  circleDoms[1].setAttribute('stroke-dasharray', `${newValue} ${strokeDasharray}`);
-
-  circleDoms[0].setAttribute('stroke-dashoffset', `${-strokeDasharray}`);
-  circleDoms[1].setAttribute('stroke-dashoffset', `${-strokeDasharray}`);
-};
-
-const updateProgress = () => {
-  const svgDom = document.getElementsByClassName('instrument-svg')[0];
-  const svgWidth = svgDom.clientWidth;
-  const radius = 0.2 * svgWidth;
-  const perimeter = 2 * Math.PI * radius;
-  const strokeDasharray = Math.ceil(perimeter / 2);
-
-  const val = detailValue.value;
-  const range = propsMax.value - propsMin.value;
-  const percent = val / range;
-  const strokeDasharrayChange = `${Math.ceil(strokeDasharray * percent)} ${strokeDasharray}`;
-
-  const circleDom1 = document.getElementsByClassName('instrument-svg-circle')[1];
-  circleDom1.setAttribute('stroke-dasharray', `${strokeDasharrayChange}`);
-
-  updateSvgSize();
 };
 
 watch(
-  () => detail?.value?.data[0]?.value,
+  () => props.card.dataSource,
+  () => setSeries(props.card.dataSource),
+  { immediate: true, deep: true }
+);
+watch(
+  () => detail?.value?.data?.[0]?.value,
   () => {
-    updateProgress();
+    resizeChart();
+  }
+);
+watch(
+  () => props?.card?.config?.unit,
+  () => {
+    resizeChart();
   }
 );
 watch(
   () => props?.card?.config?.min,
   () => {
-    updateProgress();
+    resizeChart();
   }
 );
 watch(
   () => props?.card?.config?.max,
   () => {
-    updateProgress();
+    resizeChart();
   }
-);
-watch(
-  () => props.card?.dataSource?.deviceSource,
-  () => {
-    setSeries(props.card?.dataSource);
-  },
-  { deep: true }
 );
 
 onMounted(() => {
-  window.addEventListener('resize', updateSvgSize);
-  setSeries(props?.card?.dataSource);
-  updateProgress();
-});
+  setSeries(props.card.dataSource);
+  resizeChart();
+  window.addEventListener('resize', resizeChart);
 
-onUnmounted(() => {
-  window.removeEventListener('resize', updateSvgSize);
+  const resizeObserver = new ResizeObserver(() => {
+    resizeChart();
+  });
+
+  if (cardRef.value) {
+    resizeObserver.observe(cardRef.value.$el);
+  }
+
+  onBeforeUnmount(() => {
+    window.removeEventListener('resize', resizeChart);
+    resizeObserver.disconnect();
+  });
 });
 </script>
 
 <template>
-  <div class="instrument flex-col flex-justify-center flex-items-center">
-    <div class="instrument-top h-full w-full flex flex-col flex-justify-between flex-items-center">
-      <div class="instrument-title">{{ $t('dashboard_panel.cardName.instrumentPanel') }}</div>
-      <div class="instrument-panel">
-        <svg width="100%" height="100%" class="instrument-svg">
-          <circle
-            class="instrument-svg-circle"
-            cx="50%"
-            cy="51%"
-            r="50"
-            stroke="#d1d3d7"
-            stroke-width="5%"
-            fill="none"
-            stroke-dasharray="158"
-            stroke-dashoffset="-158"
-            stroke-linecap="round"
-          />
-          <circle
-            :id="circleId"
-            class="instrument-svg-circle"
-            cx="50%"
-            cy="51%"
-            r="50"
-            stroke="#00a5e0"
-            stroke-width="5%"
-            fill="none"
-            stroke-dasharray="158"
-            stroke-dashoffset="-158"
-            stroke-linecap="round"
-          />
-        </svg>
-        <span class="instrument-valueunit" :class="{ 'instrument-valueunit-overflow': detailValueAndUnitLen > 6 }">
-          {{ detailValueAndUnit }}
-        </span>
-        <div class="instrument-min">{{ propsMin }}</div>
-        <div class="instrument-max">{{ propsMax }}</div>
+  <div class="dashboard-card">
+    <n-card ref="cardRef" :bordered="false" class="h-full w-full">
+      <div class="chart-container">
+        <VChart ref="chartRef" :option="chartOptions" class="chart" />
       </div>
-    </div>
-    <div class="instrument-bottom w-full text-center">
-      <p>{{ metricsName }}</p>
-    </div>
+      <div class="data-info">
+        <span class="title">{{ card.dataSource?.deviceSource[0]?.metricsName || '仪表盘' }}</span>
+      </div>
+    </n-card>
   </div>
 </template>
 
-<style lang="scss" scoped>
-.instrument {
-  &-panel {
-    position: relative;
-    width: 60%;
-    height: 100%;
-    margin-top: 20px;
-  }
-  &-min,
-  &-max {
-    position: absolute;
-    top: 55%;
-  }
-  &-min {
-    left: 22%;
-  }
-  &-max {
-    right: 22%;
-  }
-  &-valueunit {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -80%);
-    font-weight: bold;
-    font-size: 1.5vw;
-    width: 100%;
-    text-align: center;
-    &-overflow {
-      top: auto;
-      bottom: 5%;
-    }
-  }
+<style scoped>
+.dashboard-card {
+  height: 100%;
+}
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 80%;
+}
+.chart {
+  width: 100%;
+  height: 100%;
+}
+.data-info {
+  text-align: center;
+  /* padding: 10px 0; */
+}
+.title {
+  font-size: 16px;
+  margin-bottom: 5px;
 }
 </style>
