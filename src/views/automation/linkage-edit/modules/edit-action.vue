@@ -135,11 +135,11 @@ const actionOptions = ref([
   {
     label: $t('common.triggerAlarm'),
     value: '30'
-  },
-  {
-    label: $t('common.triggerService'),
-    value: '40'
   }
+  // {
+  //   label: $t('common.triggerService'),
+  //   value: '40'
+  // }
 ]);
 
 // 动作选择action值改变时
@@ -148,15 +148,27 @@ const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) =>
   actionOptions.value.map(item => {
     item.disabled = false;
   });
-  actionGroupItem.actionInstructList = [];
+  actionGroupItem.actionInstructList = [
+    {
+      actionParamOptions: [],
+      action_param: null,
+      action_param_type: null,
+      action_target: null,
+      action_type: null,
+      action_value: null,
+      deviceGroupId: null
+    }
+  ];
   actionGroupItem.action_type = null;
   actionGroupItem.action_target = null;
+  console.log(actionGroupItem, actionGroupItem.actionInstructList, props.actionData, '测试');
+
   if (data === '1') {
     // eslint-disable-next-line array-callback-return
     actionOptions.value.map(item => {
       if (item.value === '1') {
-        item.disabled = true;
-        actionForm.value.actionGroups = JSON.parse(JSON.stringify(props.actionData));
+        // item.disabled = true;
+        // if (actionGroupItem.actionInstructList.length <= 0) actionForm.value.actionGroups = JSON.parse(JSON.stringify(props.actionData));
       }
     });
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -374,6 +386,7 @@ const addIfGroupsSubItem = async (actionGroupIndex: any) => {
   if (props.conditionsType === '11') {
     data.action_type = '11';
   }
+  console.log(actionGroupIndex, '我被执行了');
   actionForm.value.actionGroups[actionGroupIndex].actionInstructList.push(data);
 };
 // 删除某个动作组中的某个指令
