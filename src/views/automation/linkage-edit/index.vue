@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { FormInst } from 'naive-ui';
 import { NButton, NCard, useDialog } from 'naive-ui';
@@ -217,6 +217,7 @@ const echoIfData = (ifData: any) => {
           ifItem.minValue = ifItem.trigger_value.split('-')[0];
           ifItem.maxValue = ifItem.trigger_value.split('-')[1];
         }
+        ifItem.trigger_param_key = `${ifItem.trigger_param_type}/${ifItem.trigger_param}`;
       }
       if (ifItem.trigger_conditions_type === '22') {
         ifItem.ifType = '2';
@@ -282,13 +283,11 @@ const echoActionData = (actionsData: any) => {
   }
   return actionGroupsData;
 };
-onMounted(() => {
-  if (configId.value) {
-    // eslint-disable-next-line no-unused-expressions
-    typeof configId.value === 'string' ? (configForm.value.id = configId.value) : '';
-    getSceneAutomationsInfo();
-  }
-});
+if (configId.value) {
+  // eslint-disable-next-line no-unused-expressions
+  typeof configId.value === 'string' ? (configForm.value.id = configId.value) : '';
+  getSceneAutomationsInfo();
+}
 </script>
 
 <template>

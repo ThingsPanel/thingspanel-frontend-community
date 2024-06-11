@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onBeforeMount, reactive, ref, watch } from 'vue';
+import { computed, getCurrentInstance, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useLoading } from '@sa/hooks';
 import { useWebSocket } from '@vueuse/core';
@@ -197,12 +197,8 @@ const getAlarmStatus = async () => {
   const { data } = await deviceAlarmStatus({ device_id: d_id });
   alarmStatus.value = data.alarm;
 };
-onBeforeMount(() => {
-  console.log('成功啦!!!!!!!!!!!!');
-  getDeviceDetail();
-  getAlarmStatus();
-});
-
+getDeviceDetail();
+getAlarmStatus();
 const save = async () => {
   if (!deviceData.value?.name) {
     window.NMessage.error($t('custom.devicePage.enterDeviceName'));
