@@ -248,7 +248,7 @@ onMounted(() => {
 
 <template>
   <div class="m-b-20px flex items-center gap-20px">
-    <n-select v-model:value="queryData.script_type" :options="scripTypeOpt" class="max-w-40" />
+    <n-select v-model:value="queryData.script_type" :options="scripTypeOpt" class="max-w-40" clearable />
     <NButton type="primary" @click="openModal($t('common.add'), null)">
       {{ $t('generate.add-data-processing') }}
     </NButton>

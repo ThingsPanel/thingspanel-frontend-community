@@ -20,7 +20,7 @@ const getData: () => void = async () => {
     const response: { data: any } = await tenantNum();
     console.log(response, '消息总数');
     if (response.data) {
-      cardData.value.value = response.data?.device_total ?? 0;
+      cardData.value.value = response.data?.msg ?? 0;
     } else {
       console.error('Data does not contain the required properties or they are not numbers.');
     }
