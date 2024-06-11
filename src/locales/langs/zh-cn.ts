@@ -1394,7 +1394,8 @@ const local: App.I18n.Schema = {
     individual: '个',
     'alarm-info': '告警详情',
     timeRangeWarning: '单个条件组内不能只有时间范围的条件',
-    timeTypeWarning: '时间类型的条件无法触发告警'
+    timeTypeWarning: '时间类型的条件无法触发告警',
+    controlCommands: '控制命令'
   },
   kanban: {
     'add-cards': '添加卡片'

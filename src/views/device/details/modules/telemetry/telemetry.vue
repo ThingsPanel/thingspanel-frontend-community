@@ -73,7 +73,7 @@ const { status, send, close } = useWebSocket(wsUrl, {
     pongTimeout: 3000
   },
   onMessage(ws: WebSocket, event: MessageEvent) {
-    console.log('ws---', ws);
+    console.log(ws, 'ws---');
     if (event.data && event.data !== 'pong') {
       const info = JSON.parse(event.data);
       const currTelemetryKey = telemetryData.value
@@ -85,7 +85,7 @@ const { status, send, close } = useWebSocket(wsUrl, {
         return {
           ...item,
           value: info[item.key] || item.value,
-          ts: info.systime || item.ts
+          ts: info[item.key] && info.systime ? info.systime : item.ts || ''
         };
       });
       const newTelemetry: any[] = [];
@@ -152,6 +152,7 @@ const sendSimulationList = async () => {
     window.$message?.error($t('custom.device_details.sendInputData'));
     return;
   }
+
   const { error } = await sendSimulation({
     command: device_order.value
   });
@@ -282,10 +283,12 @@ const isColor = (i: any) => {
   }
   return '';
 };
+
 onMounted(() => {
   fetchData();
   fetchTelemetry();
 });
+
 onUnmounted(() => {
   if (status.value === 'OPEN') {
     close();
@@ -456,7 +459,7 @@ const getPlatform = computed(() => {
     >
       <n-card>
         <n-form>
-          <n-form-item :label="$t('generate.attribute')">
+          <n-form-item :label="$t('generate.controlCommands')">
             <n-input v-model:value="formValue" type="textarea" />
           </n-form-item>
           <n-space align="end">
