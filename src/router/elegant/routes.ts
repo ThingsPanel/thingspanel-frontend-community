@@ -350,15 +350,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
-    name: 'edit-area',
-    path: '/edit-area',
-    component: 'layout.base$view.edit-area',
-    meta: {
-      title: 'edit-area',
-      i18nKey: 'route.edit-area'
-    }
-  },
-  {
     name: 'function',
     path: '/function',
     component: 'layout.base',
@@ -450,44 +441,6 @@ export const generatedRoutes: GeneratedRoute[] = [
       icon: 'mdi:monitor-dashboard',
       order: 1
     }
-  },
-  {
-    name: 'irrigation',
-    path: '/irrigation',
-    component: 'layout.base',
-    meta: {
-      title: 'irrigation',
-      i18nKey: 'route.irrigation'
-    },
-    children: [
-      {
-        name: 'irrigation_group',
-        path: '/irrigation/group',
-        component: 'view.irrigation_group',
-        meta: {
-          title: 'irrigation_group',
-          i18nKey: 'route.irrigation_group'
-        }
-      },
-      {
-        name: 'irrigation_rotation',
-        path: '/irrigation/rotation',
-        component: 'view.irrigation_rotation',
-        meta: {
-          title: 'irrigation_rotation',
-          i18nKey: 'route.irrigation_rotation'
-        }
-      },
-      {
-        name: 'irrigation_time',
-        path: '/irrigation/time',
-        component: 'view.irrigation_time',
-        meta: {
-          title: 'irrigation_time',
-          i18nKey: 'route.irrigation_time'
-        }
-      }
-    ]
   },
   {
     name: 'login',
@@ -592,15 +545,6 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
-        name: 'management_ordinary-user',
-        path: '/management/ordinary-user',
-        component: 'view.management_ordinary-user',
-        meta: {
-          title: 'management_ordinary-user',
-          i18nKey: 'route.management_ordinary-user'
-        }
-      },
-      {
         name: 'management_role',
         path: '/management/role',
         component: 'view.management_role',
@@ -699,15 +643,6 @@ export const generatedRoutes: GeneratedRoute[] = [
         ]
       }
     ]
-  },
-  {
-    name: 'new-area',
-    path: '/new-area',
-    component: 'layout.base$view.new-area',
-    meta: {
-      title: 'new-area',
-      i18nKey: 'route.new-area'
-    }
   },
   {
     name: 'personal-center',
@@ -840,59 +775,12 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
-    name: 'product',
-    path: '/product',
-    component: 'layout.base',
-    meta: {
-      title: 'product',
-      i18nKey: 'route.product'
-    },
-    children: [
-      {
-        name: 'product_list',
-        path: '/product/list',
-        component: 'view.product_list',
-        meta: {
-          title: 'product_list',
-          i18nKey: 'route.product_list'
-        }
-      },
-      {
-        name: 'product_update-ota',
-        path: '/product/update-ota',
-        component: 'view.product_update-ota',
-        meta: {
-          title: 'product_update-ota',
-          i18nKey: 'route.product_update-ota'
-        }
-      },
-      {
-        name: 'product_update-package',
-        path: '/product/update-package',
-        component: 'view.product_update-package',
-        meta: {
-          title: 'product_update-package',
-          i18nKey: 'route.product_update-package'
-        }
-      }
-    ]
-  },
-  {
     name: 'rule-engine',
     path: '/rule-engine',
     component: 'layout.base$view.rule-engine',
     meta: {
       title: 'rule-engine',
       i18nKey: 'route.rule-engine'
-    }
-  },
-  {
-    name: 'space-management',
-    path: '/space-management',
-    component: 'layout.base$view.space-management',
-    meta: {
-      title: 'space-management',
-      i18nKey: 'route.space-management'
     }
   },
   {
@@ -904,15 +792,6 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.system-management-user'
     },
     children: [
-      {
-        name: 'system-management-user_equipment-map',
-        path: '/system-management-user/equipment-map',
-        component: 'view.system-management-user_equipment-map',
-        meta: {
-          title: 'system-management-user_equipment-map',
-          i18nKey: 'route.system-management-user_equipment-map'
-        }
-      },
       {
         name: 'system-management-user_system-log',
         path: '/system-management-user/system-log',
@@ -972,15 +851,6 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.visualization'
     },
     children: [
-      {
-        name: 'visualization_big-screen',
-        path: '/visualization/big-screen',
-        component: 'view.visualization_big-screen',
-        meta: {
-          title: 'visualization_big-screen',
-          i18nKey: 'route.visualization_big-screen'
-        }
-      },
       {
         name: 'visualization_kanban',
         path: '/visualization/kanban',

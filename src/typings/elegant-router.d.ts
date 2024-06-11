@@ -57,7 +57,6 @@ declare module "@elegant-router/types" {
     "device_grouping-details": "/device/grouping-details";
     "device_manage": "/device/manage";
     "device_template": "/device/template";
-    "edit-area": "/edit-area";
     "function": "/function";
     "function_hide-child": "/function/hide-child";
     "function_hide-child_one": "/function/hide-child/one";
@@ -66,10 +65,6 @@ declare module "@elegant-router/types" {
     "function_multi-tab": "/function/multi-tab";
     "function_tab": "/function/tab";
     "home": "/home";
-    "irrigation": "/irrigation";
-    "irrigation_group": "/irrigation/group";
-    "irrigation_rotation": "/irrigation/rotation";
-    "irrigation_time": "/irrigation/time";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
     "manage": "/manage";
     "manage_menu": "/manage/menu";
@@ -79,7 +74,6 @@ declare module "@elegant-router/types" {
     "management": "/management";
     "management_auth": "/management/auth";
     "management_notification": "/management/notification";
-    "management_ordinary-user": "/management/ordinary-user";
     "management_role": "/management/role";
     "management_route": "/management/route";
     "management_setting": "/management/setting";
@@ -90,7 +84,6 @@ declare module "@elegant-router/types" {
     "multi-menu_second": "/multi-menu/second";
     "multi-menu_second_child": "/multi-menu/second/child";
     "multi-menu_second_child_home": "/multi-menu/second/child/home";
-    "new-area": "/new-area";
     "personal-center": "/personal-center";
     "plugin": "/plugin";
     "plugin_charts": "/plugin/charts";
@@ -105,21 +98,14 @@ declare module "@elegant-router/types" {
     "plugin_print": "/plugin/print";
     "plugin_swiper": "/plugin/swiper";
     "plugin_video": "/plugin/video";
-    "product": "/product";
-    "product_list": "/product/list";
-    "product_update-ota": "/product/update-ota";
-    "product_update-package": "/product/update-package";
     "rule-engine": "/rule-engine";
-    "space-management": "/space-management";
     "system-management-user": "/system-management-user";
-    "system-management-user_equipment-map": "/system-management-user/equipment-map";
     "system-management-user_system-log": "/system-management-user/system-log";
     "test": "/test";
     "test_kan-ban-details-test": "/test/kan-ban-details-test";
     "test_kan-ban-test": "/test/kan-ban-test";
     "user-center": "/user-center";
     "visualization": "/visualization";
-    "visualization_big-screen": "/visualization/big-screen";
     "visualization_kanban": "/visualization/kanban";
     "visualization_kanban-details": "/visualization/kanban-details";
     "visualization_panel-preview": "/visualization/panel-preview";
@@ -169,20 +155,15 @@ declare module "@elegant-router/types" {
     | "dashboard"
     | "data-service"
     | "device"
-    | "edit-area"
     | "function"
     | "home"
-    | "irrigation"
     | "login"
     | "manage"
     | "management"
     | "multi-menu"
-    | "new-area"
     | "personal-center"
     | "plugin"
-    | "product"
     | "rule-engine"
-    | "space-management"
     | "system-management-user"
     | "test"
     | "user-center"
@@ -204,9 +185,6 @@ declare module "@elegant-router/types" {
    */
   export type LastLevelRouteKey = Extract<
     RouteKey,
-    | "irrigation_group"
-    | "irrigation_rotation"
-    | "irrigation_time"
     | "403"
     | "404"
     | "500"
@@ -237,7 +215,6 @@ declare module "@elegant-router/types" {
     | "device_grouping"
     | "device_manage"
     | "device_template"
-    | "edit-area"
     | "function_hide-child_one"
     | "function_hide-child_three"
     | "function_hide-child_two"
@@ -250,14 +227,12 @@ declare module "@elegant-router/types" {
     | "manage_user"
     | "management_auth"
     | "management_notification"
-    | "management_ordinary-user"
     | "management_role"
     | "management_route"
     | "management_setting"
     | "management_user"
     | "multi-menu_first_child"
     | "multi-menu_second_child_home"
-    | "new-area"
     | "personal-center"
     | "plugin_charts_antv"
     | "plugin_charts_echarts"
@@ -269,17 +244,11 @@ declare module "@elegant-router/types" {
     | "plugin_print"
     | "plugin_swiper"
     | "plugin_video"
-    | "product_list"
-    | "product_update-ota"
-    | "product_update-package"
     | "rule-engine"
-    | "space-management"
-    | "system-management-user_equipment-map"
     | "system-management-user_system-log"
     | "test_kan-ban-details-test"
     | "test_kan-ban-test"
     | "user-center"
-    | "visualization_big-screen"
     | "visualization_kanban-details"
     | "visualization_kanban"
     | "visualization_panel-preview"
