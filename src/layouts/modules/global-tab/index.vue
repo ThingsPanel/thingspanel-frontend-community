@@ -80,6 +80,7 @@ function getContextMenuDisabledKeys(tabId: string) {
 }
 
 async function handleCloseTab(tab: App.Global.Tab) {
+  console.log(tab);
   await tabStore.removeTab(tab.id);
   await routeStore.reCacheRoutesByKey(tab.routeKey);
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { type FormInst, NButton, NCard, NFlex, useDialog } from 'naive-ui';
 import { deviceGroupTree } from '@/service/api';
 import { warningMessageList } from '@/service/api/alarm';
@@ -15,12 +15,13 @@ import {
   sceneGet,
   sceneInfo
 } from '@/service/api/automation';
-import { useRouterPush } from '@/hooks/common/router';
+// import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales';
-
+import { useTabStore } from '@/store/modules/tab';
 const route = useRoute();
+const router = useRouter();
 const dialog = useDialog();
-const { routerBack } = useRouterPush();
+// const { routerBack } = useRouterPush();
 
 const configId = ref(route.query.id || '');
 
@@ -137,6 +138,7 @@ const actionTypeChange = (instructItem: any, data: any) => {
   instructItem.action_target = null;
   instructItem.action_param_type = null;
   instructItem.action_param = null;
+  instructItem.action_param_key = null;
   instructItem.action_value = null;
 
   if (data === '10') {
@@ -164,7 +166,8 @@ const getGroup = async () => {
 const deviceOptions = ref([] as any);
 const queryDevice = ref({
   group_id: null,
-  device_name: null
+  device_name: null,
+  bind_config: 2
 });
 
 // 获取设备列表
@@ -197,6 +200,7 @@ const getDeviceConfig = async (name: any) => {
 const actionTargetChange = (instructItem: any) => {
   instructItem.action_param_type = null;
   instructItem.action_param = null;
+  instructItem.action_param_key = null;
   instructItem.action_value = null;
 };
 
@@ -221,7 +225,8 @@ const actionParamShow = async (instructItem: any, data: any) => {
 
         // eslint-disable-next-line array-callback-return
         item.options.map((subItem: any) => {
-          subItem.value = subItem.key;
+          // subItem.value = subItem.key;
+          subItem.value = `${item.value}/${subItem.key}`;
           subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`;
         });
       });
@@ -234,6 +239,8 @@ const actionParamShow = async (instructItem: any, data: any) => {
 // 选择动作标识符
 const actionParamChange = (instructItem: any, pathValues: any) => {
   instructItem.action_param_type = pathValues[0].value;
+  instructItem.action_param = pathValues[1].key;
+  // instructItem.action_param_type = pathValues[0].value;
   instructItem.action_value = null;
 };
 
@@ -276,6 +283,7 @@ const instructListItem = ref({
   action_type: null, // 动作标识符类型
   action_param_type: null, // 动作标识符类型
   action_param: null, // 动作标识符类型
+  action_param_key: null,
   action_value: null, // 参数值
   deviceGroupId: null, // 设备分组ID
   actionParamType: [] // 动作标识菜单下拉列表数据选项
@@ -336,6 +344,7 @@ const deleteIfGroupsSubItem = (actionGroupIndex: any, ifIndex: any) => {
   configForm.value.actions[actionGroupIndex].actionInstructList.splice(ifIndex, 1);
 };
 
+const tabStore = useTabStore();
 // 表单提交
 const submitData = async () => {
   await configFormRef.value?.validate();
@@ -362,12 +371,14 @@ const submitData = async () => {
       if (configId.value) {
         const res = await sceneEdit(configForm.value);
         if (!res.error) {
-          routerBack();
+          router.replace({ path: '/automation/scene-linkage' });
+          await tabStore.removeTab(route.path);
         }
       } else {
         const res = await sceneAdd(configForm.value);
         if (!res.error) {
-          routerBack();
+          router.replace({ path: '/automation/scene-linkage' });
+          await tabStore.removeTab(route.path);
         }
       }
     }
@@ -389,6 +400,7 @@ const dataEcho = actionsData => {
   // eslint-disable-next-line array-callback-return
   actionsData.map((item: any) => {
     if (item.action_type === '10' || item.action_type === '11') {
+      item.action_param_key = `${item.action_param_type}/${item.action_param}`;
       actionInstructList.push(item);
     } else {
       item.actionType = item.action_type;
@@ -562,7 +574,7 @@ onMounted(() => {
                         class="max-w-40 w-full"
                       >
                         <NCascader
-                          v-model:value="instructItem.action_param"
+                          v-model:value="instructItem.action_param_key"
                           :placeholder="$t('common.select')"
                           :options="instructItem.actionParamType"
                           check-strategy="child"

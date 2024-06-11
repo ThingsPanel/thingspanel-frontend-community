@@ -151,8 +151,9 @@ const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) =>
   actionGroupItem.actionInstructList = [
     {
       actionParamOptions: [],
-      action_param: null,
       action_param_type: null,
+      action_param: null,
+      action_param_key: null,
       action_target: null,
       action_type: null,
       action_value: null,
@@ -192,6 +193,7 @@ const actionTypeChange = (instructItem: any, data: any) => {
   instructItem.action_target = null;
   instructItem.action_param_type = null;
   instructItem.action_param = null;
+  instructItem.action_param_key = null;
   instructItem.action_value = null;
 
   if (data === '10') {
@@ -219,7 +221,8 @@ const getGroup = async () => {
 const deviceOptions = ref([] as any);
 const queryDevice = ref({
   group_id: null,
-  device_name: null
+  device_name: null,
+  bind_config: 2
 });
 
 // 获取设备列表
@@ -252,6 +255,7 @@ const getDeviceConfig = async (name: any) => {
 const actionTargetChange = (instructItem: any) => {
   instructItem.action_param_type = null;
   instructItem.action_param = null;
+  instructItem.action_param_key = null;
   instructItem.action_value = null;
 };
 
@@ -276,7 +280,8 @@ const actionParamShow = async (instructItem: any, data: any) => {
 
         // eslint-disable-next-line array-callback-return
         item.options.map((subItem: any) => {
-          subItem.value = subItem.key;
+          // subItem.value = subItem.key;
+          subItem.value = `${item.value}/${subItem.key}`;
           subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`;
         });
       });
@@ -289,6 +294,9 @@ const actionParamShow = async (instructItem: any, data: any) => {
 // 选择动作标识符
 const actionParamChange = (instructItem: any, pathValues: any) => {
   instructItem.action_param_type = pathValues[0].value;
+  instructItem.action_param = pathValues[1].key;
+  // instructItem.action_param_type = pathValues[0].value;
+  //
   instructItem.action_value = null;
 };
 
@@ -331,6 +339,7 @@ const instructListItem = ref({
   action_type: null, // 动作标识符类型
   action_param_type: null, // 动作标识符类型
   action_param: null, // 动作标识符类型
+  action_param_key: null,
   action_value: null, // 参数值
   deviceGroupId: null, // 设备分组ID
   actionParamOptions: [] // 动作标识菜单下拉列表数据选项
@@ -535,7 +544,7 @@ onMounted(() => {
                         class="w-40"
                       >
                         <NCascader
-                          v-model:value="instructItem.action_param"
+                          v-model:value="instructItem.action_param_key"
                           :placeholder="$t('common.select')"
                           :options="instructItem.actionParamOptions"
                           check-strategy="child"
