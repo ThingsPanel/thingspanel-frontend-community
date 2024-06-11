@@ -58,21 +58,14 @@ const modalVisible = computed({
   }
 });
 
-// const generalOptions = ref([]);
-// const notificationGroupTotal = ref(0);
-// const notificationGroupLoading = ref(false);
-// const notificationGroupPageNo = ref(1);
-// const notificationGroupPageSize = 10;
-// const notificationGroupHasMore = ref(true);
 const state = reactive({
   generalOptions: [] as Array<{ id: string; name: string }>,
   notificationGroupTotal: 0,
   notificationGroupLoading: false,
   notificationGroupPageNo: 1,
-  notificationGroupPageSize: 10,
+  notificationGroupPageSize: 20,
   notificationGroupHasMore: true
 });
-
 const loadMoreNotificationGroupData = async () => {
   if (state.notificationGroupLoading || !state.notificationGroupHasMore) return;
   state.notificationGroupLoading = true;
@@ -368,10 +361,10 @@ watch(props, newValue => {
         <n-select
           v-model:value="formData.notification_group_id"
           :placeholder="$t('generate.select-notification-group')"
-          :options="generalOptions"
+          :options="state.generalOptions"
           label-field="name"
           value-field="id"
-          :loading="notificationGroupLoading"
+          :loading="state.notificationGroupLoading"
           @scroll="notificationGroupHandleScroll"
         />
       </n-form-item>
