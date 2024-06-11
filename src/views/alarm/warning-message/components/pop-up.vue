@@ -7,9 +7,10 @@
  * @LastEditTime: 2024-03-20 19:43:18
 -->
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useMessage } from 'naive-ui';
 import { addWarningMessage, editInfo } from '@/service/api/alarm';
+import { getNotificationGroupList } from '@/service/api/notification';
 import { useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
 // interface ColumnsData {
@@ -57,7 +58,49 @@ const modalVisible = computed({
   }
 });
 
-const generalOptions = ref([]);
+// const generalOptions = ref([]);
+// const notificationGroupTotal = ref(0);
+// const notificationGroupLoading = ref(false);
+// const notificationGroupPageNo = ref(1);
+// const notificationGroupPageSize = 10;
+// const notificationGroupHasMore = ref(true);
+const state = reactive({
+  generalOptions: [] as Array<{ id: string; name: string }>,
+  notificationGroupTotal: 0,
+  notificationGroupLoading: false,
+  notificationGroupPageNo: 1,
+  notificationGroupPageSize: 10,
+  notificationGroupHasMore: true
+});
+
+const loadMoreNotificationGroupData = async () => {
+  if (state.notificationGroupLoading || !state.notificationGroupHasMore) return;
+  state.notificationGroupLoading = true;
+  try {
+    const params = {
+      page: state.notificationGroupPageNo,
+      page_size: state.notificationGroupPageSize
+    };
+    const res = await getNotificationGroupList(params);
+    const list = res?.data?.list || [];
+    const total = res?.data?.total || 0;
+    state.generalOptions = [...state.generalOptions, ...list];
+    state.notificationGroupTotal = total;
+    state.notificationGroupPageNo += 1;
+    state.notificationGroupHasMore = total > state.notificationGroupPageNo * state.notificationGroupPageSize;
+  } finally {
+    state.notificationGroupLoading = false;
+  }
+};
+const notificationGroupHandleScroll = async e => {
+  const target = e.target;
+  if (target.scrollTop + target.clientHeight >= target.scrollHeight) {
+    await loadMoreNotificationGroupData();
+  }
+};
+onMounted(() => {
+  loadMoreNotificationGroupData();
+});
 // const alarmRepeatTime = ref([
 //   {
 //     label: $t('common.times1'),
@@ -326,6 +369,10 @@ watch(props, newValue => {
           v-model:value="formData.notification_group_id"
           :placeholder="$t('generate.select-notification-group')"
           :options="generalOptions"
+          label-field="name"
+          value-field="id"
+          :loading="notificationGroupLoading"
+          @scroll="notificationGroupHandleScroll"
         />
       </n-form-item>
 
