@@ -29,7 +29,12 @@ defineExpose({ showModal });
 interface Props {
   isPidNoEdit?: boolean;
   isEdit?: boolean;
-  editData?: { id: string; parent_id: string; name: string; description: string };
+  editData?: {
+    id: string;
+    parent_id: string;
+    name: string;
+    description: string;
+  };
   refreshData: () => void;
 }
 

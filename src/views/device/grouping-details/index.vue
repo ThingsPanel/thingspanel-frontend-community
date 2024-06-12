@@ -29,7 +29,12 @@ const the_modal2 = ref();
 
 const editData = ref({ id: '', parent_id: '', name: '', description: '' });
 
-const addChildData = reactive({ id: '', parent_id: currentId.value as string, name: '', description: '' });
+const addChildData = reactive({
+  id: '',
+  parent_id: currentId.value as string,
+  name: '',
+  description: ''
+});
 const details_data = ref({
   detail: {
     created_at: '',
@@ -48,7 +53,11 @@ const details_data = ref({
 });
 const message = useMessage();
 
-const queryParams = reactive<{ parent_id: string; page: number; page_size: number }>({
+const queryParams = reactive<{
+  parent_id: string;
+  page: number;
+  page_size: number;
+}>({
   parent_id: '',
   page: 1,
   page_size: 10
@@ -131,7 +140,11 @@ const showGroupModalChild = () => {
   }
 };
 
-const queryParams2 = reactive<{ group_id: string; page: number; page_size: number }>({
+const queryParams2 = reactive<{
+  group_id: string;
+  page: number;
+  page_size: number;
+}>({
   group_id: currentId.value as string,
   page: 1,
   page_size: 5
@@ -188,7 +201,10 @@ const reload = async (nid: string) => {
 const goWhere = (key: string) => {
   switch (key) {
     case 'up':
-      router.push({ name: 'device_grouping-details', query: { id: editData.value.parent_id } });
+      router.push({
+        name: 'device_grouping-details',
+        query: { id: editData.value.parent_id }
+      });
       break;
     case 'back':
       router.go(-1);
@@ -202,7 +218,10 @@ const goWhere = (key: string) => {
 
   if (key === 'back') {
     if (details_data.value.detail.parent_id !== '0') {
-      router.push({ name: 'device_grouping-details', query: { id: editData.value.parent_id } });
+      router.push({
+        name: 'device_grouping-details',
+        query: { id: editData.value.parent_id }
+      });
     }
   } else {
     router.push({ name: 'device_grouping' });
@@ -291,7 +310,7 @@ watch(
 
             <AddOrEditDevices
               ref="the_modal1"
-              :is-edit="false"
+              :is-edit="true"
               :edit-data="addChildData"
               is-pid-no-edit
               :refresh-data="
@@ -304,10 +323,9 @@ watch(
 
           <NTabPane name="$t('common.edit')" :tab="$t('custom.grouping_details.setting')">
             <NButton type="primary" @click="showGroupModal">{{ $t('custom.grouping_details.detail') }}</NButton>
-
             <AddOrEditDevices
               ref="the_modal2"
-              :is-edit="true"
+              :is-edit="false"
               :edit-data="editData"
               :refresh-data="
                 () => {
