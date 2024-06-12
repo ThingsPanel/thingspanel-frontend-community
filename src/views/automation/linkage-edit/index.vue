@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import type { FormInst } from 'naive-ui';
 import { NButton, NCard, useDialog } from 'naive-ui';
 import moment from 'moment';
 import EditAction from '@/views/automation/linkage-edit/modules/edit-action.vue';
 import EditPremise from '@/views/automation/linkage-edit/modules/edit-premise.vue';
 import { sceneAutomationsAdd, sceneAutomationsEdit, sceneAutomationsInfo } from '@/service/api/automation';
-import { useRouterPush } from '@/hooks/common/router';
+// import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales';
+// import {useRouteStore} from "@/store/modules/route";
+import { useTabStore } from '@/store/modules/tab';
 
-const { routerBack } = useRouterPush();
+// const { routerBack } = useRouterPush();
 const dialog = useDialog();
 const route = useRoute();
+const router = useRouter();
 const configFormRules = ref({
   name: {
     required: true,
@@ -52,10 +55,12 @@ function defaultConfigForm() {
     actions: []
   };
 }
-
+const tabStore = useTabStore();
 const editPremise = ref();
 const editAction = ref();
 const submitData = async () => {
+  console.log(route);
+
   // 处理条件的数据保存
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   configForm.value.trigger_condition_groups = handleIfData();
@@ -99,12 +104,20 @@ const submitData = async () => {
       if (configId.value) {
         const res = await sceneAutomationsEdit(configForm.value);
         if (!res.error) {
-          routerBack();
+          // router.replace()
+          router.replace({ path: '/automation/scene-linkage' });
+          await tabStore.removeTab(route.path);
+          // await routeStore.reCacheRoutesByKey(route.name);
+          // routerBack();
         }
       } else {
         const res = await sceneAutomationsAdd(configForm.value);
         if (!res.error) {
-          routerBack();
+          router.replace({ path: '/automation/scene-linkage' });
+          await tabStore.removeTab(route.path);
+          // await routeStore.reCacheRoutesByKey(route.name);
+          // router.back()
+          // routerBack();
         }
       }
     }
@@ -217,6 +230,7 @@ const echoIfData = (ifData: any) => {
           ifItem.minValue = ifItem.trigger_value.split('-')[0];
           ifItem.maxValue = ifItem.trigger_value.split('-')[1];
         }
+        ifItem.trigger_param_key = `${ifItem.trigger_param_type}/${ifItem.trigger_param}`;
       }
       if (ifItem.trigger_conditions_type === '22') {
         ifItem.ifType = '2';
@@ -267,6 +281,7 @@ const echoActionData = (actionsData: any) => {
   // eslint-disable-next-line array-callback-return
   actionsData.map((item: any) => {
     if (item.action_type === '10' || item.action_type === '11') {
+      item.action_param_key = `${item.action_param_type}/${item.action_param}`;
       actionInstructList.push(item);
     } else {
       item.actionType = item.action_type;
@@ -282,13 +297,11 @@ const echoActionData = (actionsData: any) => {
   }
   return actionGroupsData;
 };
-onMounted(() => {
-  if (configId.value) {
-    // eslint-disable-next-line no-unused-expressions
-    typeof configId.value === 'string' ? (configForm.value.id = configId.value) : '';
-    getSceneAutomationsInfo();
-  }
-});
+if (configId.value) {
+  // eslint-disable-next-line no-unused-expressions
+  typeof configId.value === 'string' ? (configForm.value.id = configId.value) : '';
+  getSceneAutomationsInfo();
+}
 </script>
 
 <template>

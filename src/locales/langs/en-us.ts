@@ -1399,7 +1399,8 @@ const local: App.I18n.Schema = {
     individual: 'individual',
     'alarm-info': 'alarm info',
     timeRangeWarning: 'A single condition group cannot only have time range conditions.',
-    timeTypeWarning: 'Time type conditions cannot trigger alarms.'
+    timeTypeWarning: 'Time type conditions cannot trigger alarms.',
+    controlCommands: 'Control Commands'
   },
   kanban: {
     'add-cards': 'add cards'

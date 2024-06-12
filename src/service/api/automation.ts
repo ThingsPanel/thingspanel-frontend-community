@@ -9,12 +9,12 @@ export const deviceConfigAll = async (params: any) => {
   return await request.get<any>('/device_config/menu', { params });
 };
 
-/** 单个设备动作选择下拉菜单 */
+/** 单个设备条件选择下拉菜单 */
 export const deviceMetricsConditionMenu = async (params: any) => {
   return await request.get<any>(`/device/metrics/condition/menu`, { params });
 };
 
-/** 单类设备动作选择下拉菜单 */
+/** 单类设备条件选择下拉菜单 */
 export const configMetricsConditionMenu = async (params: any) => {
   return await request.get<any>(`/device_config/metrics/condition/menu`, { params });
 };

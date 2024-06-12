@@ -1,5 +1,5 @@
 <script lang="tsx" setup>
-import { computed, getCurrentInstance, onMounted, ref } from 'vue';
+import { computed, getCurrentInstance, ref } from 'vue';
 import { NButton, NCard, NFlex, NGrid, NGridItem, NPagination, useDialog } from 'naive-ui';
 import { CopyOutline as copyIcon, PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5';
 import moment from 'moment';
@@ -163,9 +163,7 @@ const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance();
   return proxy.getPlatform();
 });
-onMounted(() => {
-  getData();
-});
+getData();
 </script>
 
 <template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onBeforeMount, reactive, ref, watch } from 'vue';
+import { computed, getCurrentInstance, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useLoading } from '@sa/hooks';
 import { useWebSocket } from '@vueuse/core';
@@ -21,65 +21,77 @@ import { localStg } from '@/utils/storage';
 import { useRouterPush } from '@/hooks/common/router';
 import { getWebsocketServerUrl } from '@/utils/common/tool';
 
+const route = useRoute();
 const { query } = useRoute();
 const appStore = useAppStore();
-const { d_id } = query;
+let { d_id } = query;
 const { loading, startLoading, endLoading } = useLoading();
 let components = [
   {
     key: 'telemetry',
     name: () => $t('custom.device_details.telemetry'),
-    component: Telemetry
+    component: Telemetry,
+    refreshKey: 0
   },
   {
     key: 'join',
     name: () => $t('custom.device_details.join'),
-    component: Join
+    component: Join,
+    refreshKey: 0
   },
   {
     key: 'device-analysis',
     name: () => $t('custom.device_details.deviceAnalysis'),
-    component: DeviceAnalysis
+    component: DeviceAnalysis,
+    refreshKey: 0
   },
   {
     key: 'message',
     name: () => $t('custom.device_details.message'),
-    component: Message
+    component: Message,
+    refreshKey: 0
   },
   {
     key: 'stats',
     name: () => $t('custom.device_details.stats'),
-    component: Stats
+    component: Stats,
+    refreshKey: 0
   },
   {
     key: 'event-report',
     name: () => $t('custom.device_details.eventReport'),
-    component: EventReport
+    component: EventReport,
+    refreshKey: 0
   },
   {
     key: 'command-delivery',
     name: () => $t('custom.device_details.commandDelivery'),
-    component: CommandDelivery
+    component: CommandDelivery,
+    refreshKey: 0
   },
   {
     key: 'automate',
     name: () => $t('custom.device_details.automate'),
-    component: Automate
+    component: Automate,
+    refreshKey: 0
   },
   {
     key: 'give-an-alarm',
     name: () => $t('custom.device_details.giveAnAlarm'),
-    component: GiveAnAlarm
+    component: GiveAnAlarm,
+    refreshKey: 0
   },
   {
     key: 'user',
     name: () => $t('custom.device_details.user'),
-    component: User
+    component: User,
+    refreshKey: 0
   },
   {
     key: 'settings',
     name: () => $t('custom.device_details.settings'),
-    component: Settings
+    component: Settings,
+    refreshKey: 0
   }
 ];
 
@@ -192,16 +204,38 @@ const clickConfig: () => void = () => {
     }
   });
 };
+const clickGateway = () => {
+  routerPushByKey('device_details', {
+    query: {
+      d_id: deviceData.value?.parent_id
+    }
+  });
+};
 const alarmStatus = ref(false);
 const getAlarmStatus = async () => {
   const { data } = await deviceAlarmStatus({ device_id: d_id });
   alarmStatus.value = data.alarm;
 };
+
 onBeforeMount(() => {
   console.log('成功啦!!!!!!!!!!!!');
   getDeviceDetail();
   getAlarmStatus();
 });
+
+watch(
+  () => route.query.d_id,
+  async newVal => {
+    d_id = newVal;
+    const currentComponent = components.find(c => c.key === tabValue.value);
+    if (currentComponent) {
+      currentComponent.refreshKey += 1;
+    }
+    getDeviceDetail();
+    getAlarmStatus();
+  },
+  { deep: true }
+);
 
 const save = async () => {
   if (!deviceData.value?.name) {
@@ -301,6 +335,12 @@ const getPlatform = computed(() => {
               {{ deviceData?.device_config_name || '--' }}
             </span>
           </div>
+          <div v-if="device_type === '3'" class="mr-4" style="color: #ccc">
+            <span class="mr-2">{{ $t('generate.gateway') }}:</span>
+            <span style="color: blue; cursor: pointer" @click="clickGateway">
+              {{ deviceData?.gateway_device_name || '--' }}
+            </span>
+          </div>
           <div class="mr-4" style="display: flex">
             <!-- <span class="mr-2">{{ $t('generate.status') }}:</span> -->
             <SvgIcon
@@ -347,6 +387,7 @@ const getPlatform = computed(() => {
               <component
                 :is="component.component"
                 :id="d_id as string"
+                :key="component.refreshKey"
                 :online="device_is_online"
                 :device-config-id="deviceData?.device_config_id || ''"
                 @change="getDeviceDetail"

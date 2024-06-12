@@ -174,6 +174,7 @@ const triggerConditionsTypeChange = (ifItem: any, data: any) => {
   ifItem.trigger_source = null;
   ifItem.trigger_param_type = null;
   ifItem.trigger_param = null;
+  ifItem.trigger_param_key = null;
   ifItem.trigger_operator = null;
   ifItem.trigger_value = null;
   ifItem.minValue = null;
@@ -202,7 +203,8 @@ const getGroup = async () => {
 const deviceOptions = ref([] as any);
 const queryDevice = ref({
   group_id: null as any,
-  device_name: null as any
+  device_name: null as any,
+  bind_config: 2
 });
 const btnloading = ref(false);
 
@@ -230,10 +232,12 @@ const getDevice = async (groupId: any, name: any) => {
 const triggerSourceChange = (ifItem: any) => {
   ifItem.trigger_param_type = null;
   ifItem.trigger_param = null;
+  ifItem.trigger_param_key = null;
   ifItem.trigger_operator = null;
   ifItem.trigger_value = null;
   ifItem.minValue = null;
   ifItem.maxValue = null;
+  selectInstRef.value = false;
   // ifItem.action_param_type = null;
   // ifItem.action_param = null;
   // ifItem.action_value = null;
@@ -285,7 +289,7 @@ const actionParamShow = async (ifItem: any, data: any) => {
 
         // eslint-disable-next-line array-callback-return
         item.options.map((subItem: any) => {
-          subItem.value = subItem.key;
+          subItem.value = `${item.value}/${subItem.key}`;
           subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`;
         });
       });
@@ -298,15 +302,18 @@ const actionParamShow = async (ifItem: any, data: any) => {
       options: [
         {
           value: 'On-line',
-          label: 'On-line(上线)'
+          label: 'On-line(上线)',
+          key: 'On-line'
         },
         {
           value: 'Off-line',
-          label: 'Off-line(下线)'
+          label: 'Off-line(下线)',
+          key: 'Off-line'
         },
         {
           value: 'All',
-          label: 'All(全部)'
+          label: 'All(全部)',
+          key: 'All'
         }
       ]
     };
@@ -491,6 +498,7 @@ const judgeItem = ref({
   trigger_source: null, // 设备/设备类ID值-后端
   trigger_param_type: null, // 触发消息标识符-后端
   trigger_param: null, // 触发参数-后端
+  trigger_param_key: null, // 触发参数-
   trigger_operator: null, // 操作符
   trigger_value: null, // 目标值(后端)
   task_type: null, // 重复时间周期值-后端
@@ -590,7 +598,7 @@ defineExpose({
 
 const triggerParamChange = (ifItem: any, data: any) => {
   ifItem.trigger_param_type = data[0].value;
-  // ifItem.trigger_param = data[1].value;
+  ifItem.trigger_param = data[1].key;
 };
 
 interface Props {
@@ -789,7 +797,7 @@ watch(
                     class="max-w-40 w-full"
                   >
                     <NCascader
-                      v-model:value="ifItem.trigger_param"
+                      v-model:value="ifItem.trigger_param_key"
                       :placeholder="$t('common.select')"
                       :options="ifItem.triggerParamOptions"
                       check-strategy="child"
