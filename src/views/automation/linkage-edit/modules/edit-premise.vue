@@ -237,6 +237,7 @@ const triggerSourceChange = (ifItem: any) => {
   ifItem.trigger_value = null;
   ifItem.minValue = null;
   ifItem.maxValue = null;
+  selectInstRef.value = false;
   // ifItem.action_param_type = null;
   // ifItem.action_param = null;
   // ifItem.action_value = null;
