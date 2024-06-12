@@ -1009,6 +1009,7 @@ declare namespace App {
           pressure: string;
           rainfall: string;
           instrumentPanel: string;
+          videoPlayer: string;
         };
       };
       device_template: {

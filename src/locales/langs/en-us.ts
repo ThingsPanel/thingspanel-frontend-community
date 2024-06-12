@@ -862,7 +862,8 @@ const local: App.I18n.Schema = {
       humidity: 'Humidity',
       pressure: 'Pressure',
       rainfall: 'Rainfall',
-      instrumentPanel: 'InstrumentPanel'
+      instrumentPanel: 'InstrumentPanel',
+      videoPlayer: 'VideoPlayer'
     }
   },
   device_template: {

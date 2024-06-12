@@ -862,7 +862,8 @@ const local: App.I18n.Schema = {
       humidity: '湿度',
       pressure: '气压',
       rainfall: '雨量',
-      instrumentPanel: '仪表盘'
+      instrumentPanel: '仪表盘',
+      videoPlayer: '视频播放器'
     }
   },
   device_template: {
