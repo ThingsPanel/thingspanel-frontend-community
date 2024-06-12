@@ -1707,6 +1707,7 @@ declare namespace App {
         'alarm-info': string;
         timeRangeWarning: string;
         timeTypeWarning: string;
+        controlCommands: string;
       };
       kanban: {
         'add-cards': string;
