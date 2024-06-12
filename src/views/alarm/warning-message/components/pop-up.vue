@@ -75,7 +75,8 @@ const loadMoreNotificationGroupData = async () => {
       page_size: state.notificationGroupPageSize
     };
     const res = await getNotificationGroupList(params);
-    const list = res?.data?.list || [];
+    let list = res?.data?.list || [];
+    list = list.filter(item => item.status === 'OPEN'); // 只展示生效的通知组
     const total = res?.data?.total || 0;
     state.generalOptions = [...state.generalOptions, ...list];
     state.notificationGroupTotal = total;
