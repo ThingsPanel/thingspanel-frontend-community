@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, reactive, ref, watch } from 'vue';
+import { computed, getCurrentInstance, onBeforeMount, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useLoading } from '@sa/hooks';
 import { useWebSocket } from '@vueuse/core';
