@@ -305,7 +305,8 @@ const dropOption = [
   },
   {
     label: () => $t('custom.devicePage.addByNumber'),
-    key: 'number'
+    key: 'number',
+    disabled: true
   },
   {
     label: () => $t('custom.devicePage.addByServer'),
