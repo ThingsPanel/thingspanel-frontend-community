@@ -204,7 +204,7 @@ const deviceOptions = ref([] as any);
 const queryDevice = ref({
   group_id: null as any,
   device_name: null as any,
-  bind_config: 2
+  bind_config: 0
 });
 const btnloading = ref(false);
 

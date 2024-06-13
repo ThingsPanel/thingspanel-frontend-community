@@ -86,7 +86,7 @@ const actionOptions = ref([
     label: $t('common.operateDevice'),
     value: '1',
     disabled: false
-  },
+  }
   // {
   //   label: $t('common.activateScene'),
   //   value: '20'
@@ -95,10 +95,10 @@ const actionOptions = ref([
   //   label: $t('common.triggerAlarm'),
   //   value: '30'
   // },
-  {
-    label: $t('common.triggerService'),
-    value: '40'
-  }
+  // {
+  //   label: $t('common.triggerService'),
+  //   value: '40'
+  // }
 ]);
 
 // 动作选择action值改变时
@@ -167,7 +167,7 @@ const deviceOptions = ref([] as any);
 const queryDevice = ref({
   group_id: null,
   device_name: null,
-  bind_config: 2
+  bind_config: 0
 });
 
 // 获取设备列表
@@ -361,24 +361,24 @@ const submitData = async () => {
       actionsData.push(item);
     }
   });
-  configForm.value.actions = actionsData;
   dialog.warning({
     title: $t('common.tip'),
     content: $t('common.saveSceneInfo'),
     positiveText: $t('device_template.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
+      configForm.value.actions = actionsData;
       if (configId.value) {
         const res = await sceneEdit(configForm.value);
         if (!res.error) {
-          router.replace({ path: '/automation/scene-linkage' });
           await tabStore.removeTab(route.path);
+          router.replace({ path: '/automation/scene-manage' });
         }
       } else {
         const res = await sceneAdd(configForm.value);
         if (!res.error) {
-          router.replace({ path: '/automation/scene-linkage' });
           await tabStore.removeTab(route.path);
+          router.replace({ path: '/automation/scene-manage' });
         }
       }
     }
