@@ -10,8 +10,16 @@ defineProps<{
 }>();
 const attributeRef = ref();
 const columns0 = [
-  { title: $t('device_template.table_header.attributeIdentifier'), minWidth: '140px', key: 'key' },
-  { title: $t('device_template.table_header.attributeName'), minWidth: '140px', key: 'data_name' },
+  {
+    title: $t('device_template.table_header.attributeIdentifier'),
+    minWidth: '140px',
+    key: 'key'
+  },
+  {
+    title: $t('device_template.table_header.attributeName'),
+    minWidth: '140px',
+    key: 'data_name'
+  },
   {
     title: $t('device_template.table_header.attributeValue'),
     minWidth: '140px',
@@ -31,7 +39,7 @@ const columns0 = [
     render: row => (
       <NPopconfirm
         onPositiveClick={async () => {
-          await deleteAttributeDataSet(row.device_id);
+          await deleteAttributeDataSet(row.id);
           attributeRef.value.refresh();
         }}
       >
@@ -82,16 +90,33 @@ const columns = [
     key: 'created_at',
     render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
   },
-  { title: $t('custom.device_details.messageId'), minWidth: '140px', key: 'message_id' },
-  { title: $t('custom.device_details.sendContent'), minWidth: '140px', key: 'data' },
+  {
+    title: $t('custom.device_details.messageId'),
+    minWidth: '140px',
+    key: 'message_id'
+  },
+  {
+    title: $t('custom.device_details.sendContent'),
+    minWidth: '140px',
+    key: 'data'
+  },
   {
     title: $t('custom.device_details.operationType'),
     minWidth: '140px',
     key: 'operation_type',
     render: row => formatOperationType(row.status)
   },
-  { title: $t('generate.status'), minWidth: '140px', key: 'status', render: row => formatStatus(row.status) },
-  { title: $t('generate.errorMessage'), minWidth: '140px', key: 'error_message' }
+  {
+    title: $t('generate.status'),
+    minWidth: '140px',
+    key: 'status',
+    render: row => formatStatus(row.status)
+  },
+  {
+    title: $t('generate.errorMessage'),
+    minWidth: '140px',
+    key: 'error_message'
+  }
 ];
 </script>
 
