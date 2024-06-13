@@ -86,7 +86,7 @@ const actionOptions = ref([
     label: $t('common.operateDevice'),
     value: '1',
     disabled: false
-  },
+  }
   // {
   //   label: $t('common.activateScene'),
   //   value: '20'
@@ -95,10 +95,10 @@ const actionOptions = ref([
   //   label: $t('common.triggerAlarm'),
   //   value: '30'
   // },
-  {
-    label: $t('common.triggerService'),
-    value: '40'
-  }
+  // {
+  //   label: $t('common.triggerService'),
+  //   value: '40'
+  // }
 ]);
 
 // 动作选择action值改变时
