@@ -105,16 +105,16 @@ const submitData = async () => {
         const res = await sceneAutomationsEdit(configForm.value);
         if (!res.error) {
           // router.replace()
-          router.replace({ path: '/automation/scene-linkage' });
           await tabStore.removeTab(route.path);
+          router.replace({ path: '/automation/scene-linkage' });
           // await routeStore.reCacheRoutesByKey(route.name);
           // routerBack();
         }
       } else {
         const res = await sceneAutomationsAdd(configForm.value);
         if (!res.error) {
-          router.replace({ path: '/automation/scene-linkage' });
           await tabStore.removeTab(route.path);
+          router.replace({ path: '/automation/scene-linkage' });
           // await routeStore.reCacheRoutesByKey(route.name);
           // router.back()
           // routerBack();

@@ -222,7 +222,7 @@ const deviceOptions = ref([] as any);
 const queryDevice = ref({
   group_id: null,
   device_name: null,
-  bind_config: 2
+  bind_config: 0
 });
 
 // 获取设备列表
