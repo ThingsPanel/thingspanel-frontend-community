@@ -9,9 +9,9 @@ defineProps<{
 
 const columns = [
   { title: $t('device_template.table_header.eventIdentifier'), minWidth: '140px', key: 'identify' },
-  { title: $t('device_template.table_header.eventName'), minWidth: '140px', key: '' },
+  { title: $t('device_template.table_header.eventName'), minWidth: '140px', key: 'data_name' },
   {
-    title: $t('device_template.table_header.eventName'),
+    title: $t('device_template.table_header.eventReportingTime'),
     minWidth: '140px',
     key: 'ts',
     render: row => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
