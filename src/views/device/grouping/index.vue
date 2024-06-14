@@ -77,7 +77,7 @@ onMounted(getDevice); // Fetch device groups on component mount
 <template>
   <div class="h-full overflow-auto">
     <!-- Add or edit device modal component with props for edit mode and data -->
-    <AddOrEditDevices ref="the_modal" :is-edit="true" :refresh-data="getDevice" />
+    <AddOrEditDevices ref="the_modal" :is-edit="false" :refresh-data="getDevice" />
     <NCard>
       <NFlex justify="start">
         <!-- Button to trigger modal for creating a new device group -->

@@ -163,7 +163,7 @@ const getPlatform = computed(() => {
   <NModal v-model:show="showModal" @after-enter="getOptions">
     <NCard
       :bordered="false"
-      :title="props.isEdit ? $t('custom.groupPage.addGroup') : $t('custom.groupPage.editGroup')"
+      :title="!props.isEdit ? $t('custom.groupPage.addGroup') : $t('custom.groupPage.editGroup')"
       size="huge"
       :class="getPlatform ? 'w-90%' : 'w-600px'"
     >
