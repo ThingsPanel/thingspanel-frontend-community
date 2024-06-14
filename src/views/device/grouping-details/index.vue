@@ -310,7 +310,7 @@ watch(
 
             <AddOrEditDevices
               ref="the_modal1"
-              :is-edit="true"
+              :is-edit="false"
               :edit-data="addChildData"
               is-pid-no-edit
               :refresh-data="
@@ -325,7 +325,7 @@ watch(
             <NButton type="primary" @click="showGroupModal">{{ $t('custom.grouping_details.detail') }}</NButton>
             <AddOrEditDevices
               ref="the_modal2"
-              :is-edit="false"
+              :is-edit="true"
               :edit-data="editData"
               :refresh-data="
                 () => {
