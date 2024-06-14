@@ -16,6 +16,7 @@ import { useTabStore } from '@/store/modules/tab';
 const dialog = useDialog();
 const route = useRoute();
 const router = useRouter();
+const backType = ref(route.query.backType || '');
 const configFormRules = ref({
   name: {
     required: true,
@@ -60,7 +61,7 @@ const editPremise = ref();
 const editAction = ref();
 const submitData = async () => {
   console.log(route);
-
+  console.log(router);
   // 处理条件的数据保存
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   configForm.value.trigger_condition_groups = handleIfData();
@@ -91,7 +92,6 @@ const submitData = async () => {
     window.$message?.error($t('generate.timeTypeWarning'));
     return;
   }
-
   await configFormRef?.value?.validate();
   await editPremise.value.premiseFormRefReturn()?.validate();
   await editAction.value.actionFormRefReturn()?.validate();
@@ -104,20 +104,20 @@ const submitData = async () => {
       if (configId.value) {
         const res = await sceneAutomationsEdit(configForm.value);
         if (!res.error) {
-          // router.replace()
           await tabStore.removeTab(route.path);
-          router.replace({ path: '/automation/scene-linkage' });
-          // await routeStore.reCacheRoutesByKey(route.name);
-          // routerBack();
+          if (backType.value === 'device') {
+            router.replace({ path: '/device/details', query: { d_id: propsData.value.device_id } });
+          } else if (backType.value === 'config') {
+            router.replace({ path: '/device/config-detail', query: { id: propsData.value.device_config_id } });
+          } else {
+            router.replace({ path: '/automation/scene-linkage' });
+          }
         }
       } else {
         const res = await sceneAutomationsAdd(configForm.value);
         if (!res.error) {
           await tabStore.removeTab(route.path);
           router.replace({ path: '/automation/scene-linkage' });
-          // await routeStore.reCacheRoutesByKey(route.name);
-          // router.back()
-          // routerBack();
         }
       }
     }

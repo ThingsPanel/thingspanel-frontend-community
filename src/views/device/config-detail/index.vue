@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { NButton } from 'naive-ui';
 import { deviceConfigInfo } from '@/service/api/device';
@@ -16,7 +16,7 @@ import Automate from './modules/automate.vue';
 
 const { routerPushByKey } = useRouterPush();
 const route = useRoute();
-const configId = ref(route.query.id || ('' as any));
+const configId = ref(route.query.id || '');
 
 const configForm = ref({
   id: route.query.id || '',
@@ -36,16 +36,14 @@ const editConfig = () => {
 };
 const getConfig = async () => {
   const res = await deviceConfigInfo({ id: configId.value });
-  console.log(res.data);
   configForm.value = res.data;
 };
-
-onMounted(async () => {
-  // configId.value = <string>route.query.id || ''
-  if (configId.value) {
-    await getConfig();
-  }
-});
+const activeName = ref('关联设备');
+// configId.value = <string>route.query.id || ''
+if (configId.value) {
+  getConfig();
+  activeName.value = '关联设备';
+}
 </script>
 
 <template>
@@ -60,7 +58,7 @@ onMounted(async () => {
         <template v-if="configForm.device_type === '2'">{{ $t('generate.gateway') }}</template>
         <template v-if="configForm.device_type === '3'">{{ $t('generate.gateway-sub-device') }}</template>
       </div>
-      <n-tabs animated type="line">
+      <n-tabs v-model:value="activeName" animated type="line">
         <n-tab-pane :name="$t('common.associatedDevices')" :tab="$t('common.associatedDevices')">
           <AssociatedDevices :device-config-id="configId" />
         </n-tab-pane>

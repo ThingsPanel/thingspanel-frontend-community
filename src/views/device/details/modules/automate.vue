@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <sceneLinkage :device_id="id" />
+  <sceneLinkage :device_id="id" back-type="device" />
 </template>
 
 <style scoped></style>

@@ -300,7 +300,7 @@ onMounted(() => {
     </div>
   </div>
   <div v-if="tabValue === 2" class="alarm-list">
-    <alarmDataList :is-alarm="true" :device_id="props.id"></alarmDataList>
+    <alarmDataList :is-alarm="true" :device_id="props.id" back-type="device"></alarmDataList>
   </div>
 </template>
 

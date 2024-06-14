@@ -1,5 +1,6 @@
 <script lang="tsx" setup>
 import { computed, getCurrentInstance, ref } from 'vue';
+// import { useRouter } from 'vue-router';
 import { NButton, NCard, NFlex, NGrid, NGridItem, NPagination, useDialog } from 'naive-ui';
 import { CopyOutline as copyIcon, PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5';
 import moment from 'moment';
@@ -13,6 +14,7 @@ import {
 import { $t } from '@/locales';
 import { deviceAlarmList } from '@/service/api';
 const dialog = useDialog();
+// const router = useRouter();
 const { routerPushByKey } = useRouterPush();
 
 interface Props {
@@ -21,13 +23,16 @@ interface Props {
   // eslint-disable-next-line vue/prop-name-casing
   device_config_id?: string;
   isAlarm?: boolean;
+  // eslint-disable-next-line vue/no-unused-properties
+  backType?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   // eslint-disable-next-line vue/require-valid-default-prop
   device_id: '',
   device_config_id: '',
-  isAlarm: false
+  isAlarm: false,
+  backType: 'automation'
 });
 
 const sceneLinkageList = ref([] as any);
@@ -41,7 +46,16 @@ const linkAdd = () => {
 
 // 编辑场景
 const linkEdit = (item: any) => {
-  routerPushByKey('automation_linkage-edit', { query: { id: item.id } });
+  // router.push({ path: '/automation/linkage-edit', query: { id: item.id, backType: props.backType }});
+
+  routerPushByKey('automation_linkage-edit', {
+    query: {
+      id: item.id,
+      backType: props.backType,
+      device_id: props.device_id,
+      device_config_id: props.device_config_id
+    }
+  });
 };
 
 // 开启/关闭场景

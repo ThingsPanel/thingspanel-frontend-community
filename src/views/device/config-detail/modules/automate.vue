@@ -10,7 +10,7 @@ defineProps<{
 <template>
   <div class="h-500px flex-col">
     <!--      <n-empty :description="$t('common.nodata')"></n-empty>-->
-    <sceneLinkage :device_config_id="config_id" />
+    <sceneLinkage :device_config_id="config_id" back-type="config" />
   </div>
 </template>
 

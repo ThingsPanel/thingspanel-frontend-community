@@ -1,11 +1,12 @@
 <script lang="tsx" setup>
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { NButton, NCard, NFlex, NGrid, NGridItem, NPagination } from 'naive-ui';
 import { IosSearch } from '@vicons/ionicons4';
-import type { LastLevelRouteKey } from '@elegant-router/types';
 import { deviceConfig } from '@/service/api/device';
 import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales';
+const router = useRouter();
 
 const { routerPushByKey } = useRouterPush();
 
@@ -39,8 +40,9 @@ const handleClearQuery = async () => {
   await getData();
 };
 // 页面跳转
-const goRouter = (name: LastLevelRouteKey, id: string) => {
-  routerPushByKey(name, { query: { id } });
+const goRouter = (id: string) => {
+  // routerPushByKey(name, { query: { id } });
+  router.replace({ path: '/device/config-detail', query: { id } });
 };
 
 onMounted(() => {
@@ -79,7 +81,7 @@ onMounted(() => {
       ></n-empty>
       <template v-else>
         <NGrid x-gap="20" y-gap="20" cols="1 s:2 m:3 l:4" responsive="screen">
-          <NGridItem v-for="item in deviceConfigList" :key="item.id" @click="goRouter('device_config-detail', item.id)">
+          <NGridItem v-for="item in deviceConfigList" :key="item.id" @click="goRouter(item.id)">
             <NCard hoverable style="height: 160px">
               <div class="title text-16px font-600">
                 {{ item.name }}

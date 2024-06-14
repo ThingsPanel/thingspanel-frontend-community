@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import { NButton, NFlex } from 'naive-ui';
 import { useRouterPush } from '@/hooks/common/router';
 import alarmDataList from '@/views/automation/scene-linkage/modules/dataList.vue';
@@ -16,7 +15,6 @@ const alarmAdd = () => {
     query: { device_config_id: props.config_id }
   });
 };
-onMounted(() => {});
 </script>
 
 <template>
@@ -24,7 +22,7 @@ onMounted(() => {});
     <NFlex justify="flex-end" class="mb-4">
       <NButton type="primary" @click="alarmAdd()">{{ $t('generate.addAlarmRule') }}</NButton>
     </NFlex>
-    <alarmDataList :is-alarm="true" :device_config_id="props.config_id"></alarmDataList>
+    <alarmDataList :is-alarm="true" :device_config_id="props.config_id" back-type="config"></alarmDataList>
   </div>
 </template>
 
