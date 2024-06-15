@@ -1,0 +1,64 @@
+name: Batch Export and Apply Patches from Commit Range
+
+on:
+  workflow_dispatch:
+    inputs:
+      commitRange:
+        description: 'Commit range like commit1-hash-key..commit2-hash-key or -1 commit1-hash-key or commit1-hash-key'
+        required: true
+
+jobs:
+  export_and_apply_patches:
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_REPO: "ThingsPanel/thingspanel-frontend-community"
+      SOURCE_BRANCH: "master"
+      TARGET_REPO: "ThingsPanel/thingspanel-frontend-enterprise"
+      TARGET_BRANCH: "fromcommunity"
+      USER_NAME: "icestone2000"
+      USER_EMAIL: "liangqian@outlook.com"
+    steps:
+    - name: Export Commits as Patches
+      run: |
+        git clone https://${{ secrets.PAT }}@github.com/$SOURCE_REPO.git source_repo
+        cd source_repo
+        git checkout $SOURCE_BRANCH
+        git format-patch ${{ github.event.inputs.commitRange }} -o ../patches/
+        echo The patches path
+        pwd
+        ls -l ../patches/*
+
+    - name: Clone and Update Target Repo
+      run: |
+        pwd
+        git clone https://${{ secrets.PAT }}@github.com/$TARGET_REPO.git destination_repo
+        cd destination_repo
+        git checkout $TARGET_BRANCH
+
+    - name: Apply and Commit Patches
+      run: |
+        cd destination_repo
+        echo destination path
+        pwd
+        git config --global user.name "$USER_NAME"
+        git config --global user.email "$USER_EMAIL"
+        for patch in $(ls ../patches/*.patch); do
+          echo begin apply patch $patch
+          patch_filename=$(basename "$patch")
+          echo begin real apply $patch_filename
+          pwd
+          git apply "$patch" && {
+            git add .
+            git commit -m "$patch_filename"
+            echo "Committed changes from patch $patch_filename with message: $patch_filename"
+          } || {
+            echo "Failed to apply patch $patch, skipping."
+            git apply --reverse "$patch"
+          }
+        done
+
+    - name: Push Changes to Target Repo
+      if: success()
+      run: |
+        cd destination_repo
+        git push origin $TARGET_BRANCH
