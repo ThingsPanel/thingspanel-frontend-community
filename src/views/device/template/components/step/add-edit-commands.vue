@@ -40,7 +40,7 @@ const objItem = reactive<any>(props.objItem);
 let addParameterFrom: any = reactive({
   data_name: '',
   data_identifier: '',
-  read_write_flag: 'string',
+  param_type: 'string',
   description: ''
 });
 
@@ -55,7 +55,7 @@ const addParameterRules: any = reactive({
     trigger: ['blur', 'input'],
     message: $t('device_template.table_header.PleaseEnterTheParameterIdentifier')
   },
-  read_write_flag: {
+  param_type: {
     required: true,
     trigger: ['blur', 'input'],
     message: $t('device_template.table_header.PleaseSelectParameterType')
@@ -89,7 +89,7 @@ const col: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
     align: 'center'
   },
   {
-    key: 'read_write_flag',
+    key: 'param_type',
     title: $t('device_template.table_header.ParameterType'),
     align: 'center'
   },
@@ -224,7 +224,7 @@ const addParameterClone: () => void = () => {
   addParameterFrom = reactive({
     data_name: '',
     data_identifier: '',
-    read_write_flag: 'string',
+    param_type: 'string',
     description: ''
   });
 };
@@ -237,7 +237,7 @@ const parameterSubmit: () => void = async () => {
     addParameterFrom = reactive({
       data_name: '',
       data_identifier: '',
-      read_write_flag: 'string',
+      param_type: 'string',
       description: ''
     });
   } else {
@@ -322,9 +322,9 @@ const parameterSubmit: () => void = async () => {
           :placeholder="$t('device_template.table_header.PleaseEnterTheParameterIdentifier')"
         />
       </n-form-item>
-      <n-form-item :label="$t('device_template.table_header.ParameterType')" path="read_write_flag">
+      <n-form-item :label="$t('device_template.table_header.ParameterType')" path="param_type">
         <n-select
-          v-model:value="addParameterFrom.read_write_flag"
+          v-model:value="addParameterFrom.param_type"
           :options="generalOptions"
           :placeholder="$t('device_template.table_header.PleaseSelectParameterType')"
         />
