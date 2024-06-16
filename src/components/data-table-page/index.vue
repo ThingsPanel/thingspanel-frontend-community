@@ -336,7 +336,9 @@ loadOptionsOnMount2();
           </div>
           <div>
             <NButton v-if="0" class="btn-style" size="small" @click="handleSearch">{{ $t('common.search') }}</NButton>
-            <NButton class="btn-style" size="small" @click="handleReset">{{ $t('common.reset') }}</NButton>
+            <NButton class="ml-20px w-65px" size="small" type="primary" @click="handleReset">
+              {{ $t('common.reset') }}
+            </NButton>
           </div>
         </div>
         <!-- 新建与返回按钮 -->
