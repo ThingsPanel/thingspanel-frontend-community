@@ -126,7 +126,7 @@ function submit() {
           :label="$t('generate.old-password')"
           path="description"
         >
-          <NInput v-model:value="formData.old_password" type="password" show-password-on="mousedown" />
+          <NInput v-model:value="formData.old_password" type="password" show-password-on="click" />
         </NFormItemGridItem>
         <NFormItemGridItem
           v-if="estimate === 'changePassword'"
@@ -135,7 +135,7 @@ function submit() {
           :label="$t('generate.new-password')"
           path="description"
         >
-          <NInput v-model:value="formData.password" type="password" show-password-on="mousedown" />
+          <NInput v-model:value="formData.password" type="password" show-password-on="click" />
         </NFormItemGridItem>
         <NFormItemGridItem
           v-if="estimate === 'changePassword'"
@@ -144,7 +144,7 @@ function submit() {
           :label="$t('generate.repeat-new-password')"
           path="description"
         >
-          <NInput v-model:value="formData.passwords" type="password" show-password-on="mousedown" />
+          <NInput v-model:value="formData.passwords" type="password" show-password-on="click" />
         </NFormItemGridItem>
       </NGrid>
       <NSpace class="w-full pt-16px" :size="24" justify="end">
