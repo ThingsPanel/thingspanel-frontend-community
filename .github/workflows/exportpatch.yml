@@ -47,7 +47,7 @@ jobs:
           patch_filename=$(basename "$patch")
           echo begin real apply $patch_filename
           pwd
-          git apply --v "$patch" && {
+          git apply --verbose --3way --build-fake-ancestor "$patch" && {
             git add .
             git commit -m "$patch_filename"
             echo "Committed changes from patch $patch_filename with message: $patch_filename"
