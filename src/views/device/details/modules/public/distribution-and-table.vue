@@ -23,7 +23,11 @@ const textValue = ref('');
 const commandValue = ref('');
 const options = ref();
 const { loading, startLoading, endLoading } = useLoading();
-
+const paramsSelect = ref<any>([
+  { label: 'true', value: true },
+  { label: 'false', value: false }
+]);
+const paramsData = ref<any>([]);
 const fetchDataFunction = async () => {
   startLoading();
 
@@ -48,10 +52,17 @@ const openDialog = () => {
 const closeDialog = () => {
   showDialog.value = false;
   textValue.value = '';
+  paramsData.value = [];
+  commandValue.value = '';
 };
 
 const submit = async () => {
   let parms;
+  const params: any = {};
+  paramsData.value.filter((item: any) => {
+    params[item.data_identifier] = item[item.data_identifier];
+  });
+  textValue.value = JSON.stringify(params);
   if (props.isCommand) {
     parms = { device_id: props.id, value: textValue.value, identify: commandValue.value };
   } else {
@@ -87,6 +98,12 @@ const getOptions = async show => {
     options.value = res.data;
   }
 };
+
+const selectVal: (arr: any, option: any) => void = (arr, option) => {
+  paramsData.value = JSON.parse(option.params);
+  console.log(arr);
+};
+
 const commandList = ref();
 
 const getListData = async () => {
@@ -151,13 +168,31 @@ const getPlatform = computed(() => {
               value-field="data_identifier"
               :options="options"
               @update:show="getOptions"
+              @update:value="selectVal"
             />
             <span class="ml-4 mr-4">{{ $t('generate.or') }}</span>
             <NInput v-model:value="commandValue" :placeholder="$t('generate.or-enter-here')" />
           </NFormItem>
-          <NFormItem :label="$t('generate.attribute')">
+          <div v-if="commandValue !== ''" class="title">参数</div>
+          <div v-for="item in paramsData" :key="item.id" class="form_box">
+            <div class="form_table">
+              <NFormItem :label="item.data_identifier" required label-placement="left">
+                <NInput v-if="item.param_type === 'string'" v-model:value="item[item.data_identifier]" />
+                <n-input-number v-else-if="item.param_type === 'Number'" v-model:value="item[item.data_identifier]" />
+                <n-select
+                  v-else-if="item.param_type === 'Boolean'"
+                  v-model:value="item[item.data_identifier]"
+                  :options="paramsSelect"
+                />
+                <div class="description">{{ item.description }}</div>
+              </NFormItem>
+            </div>
+          </div>
+          <!--
+ <NFormItem :label="$t('generate.attribute')">
             <NInput v-model:value="textValue" type="textarea" />
-          </NFormItem>
+          </NFormItem> 
+-->
           <NFlex justify="end">
             <NButton @click="closeDialog">{{ $t('generate.cancel') }}</NButton>
             <NButton type="primary" @click="submit">{{ $t('page.irrigation.distribute') }}</NButton>
@@ -167,3 +202,39 @@ const getPlatform = computed(() => {
     </NModal>
   </div>
 </template>
+
+<style lang="scss" scoped>
+.form_box {
+  width: 100%;
+}
+
+.title {
+  font-weight: 900;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.form_table {
+  display: flex;
+
+  .n-form-item {
+    flex: 1;
+    margin-right: 10px;
+
+    :deep(.n-form-item-blank) {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .description {
+      margin-top: 10px;
+      font-size: 12px;
+    }
+  }
+
+  .n-input-number {
+    width: 100%;
+  }
+}
+</style>
