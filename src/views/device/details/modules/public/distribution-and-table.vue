@@ -28,6 +28,7 @@ const paramsSelect = ref<any>([
   { label: 'false', value: false }
 ]);
 const paramsData = ref<any>([]);
+const isTextArea = ref<any>(true);
 const fetchDataFunction = async () => {
   startLoading();
 
@@ -54,26 +55,42 @@ const closeDialog = () => {
   textValue.value = '';
   paramsData.value = [];
   commandValue.value = '';
+  isTextArea.value = true;
+};
+
+const isValidJSON = text => {
+  try {
+    console.log(text);
+    JSON.parse(text);
+    return true;
+  } catch (error) {
+    return false;
+  }
 };
 
 const submit = async () => {
   let parms;
   const params: any = {};
-  paramsData.value.filter((item: any) => {
-    params[item.data_identifier] = item[item.data_identifier];
-  });
-  textValue.value = JSON.stringify(params);
-  if (props.isCommand) {
-    parms = { device_id: props.id, value: textValue.value, identify: commandValue.value };
+  if (!isTextArea.value) {
+    paramsData.value.filter((item: any) => {
+      params[item.data_identifier] = item[item.data_identifier];
+    });
+    textValue.value = JSON.stringify(params);
+  }
+  if (isValidJSON(textValue.value)) {
+    if (props.isCommand) {
+      parms = { device_id: props.id, value: textValue.value, identify: commandValue.value };
+    } else {
+      parms = { device_id: props.id, value: textValue.value };
+    }
+    if (props.submitApi) {
+      await props.submitApi(parms);
+    }
+    await fetchDataFunction();
+    closeDialog();
   } else {
-    parms = { device_id: props.id, value: textValue.value };
+    window.$message?.error('请输入json格式的数据');
   }
-
-  if (props.submitApi) {
-    await props.submitApi(parms);
-  }
-  await fetchDataFunction();
-  closeDialog();
 };
 
 const onCommandChange = async (row: any) => {
@@ -97,6 +114,11 @@ const getOptions = async show => {
     const res = await commandDataById(props.id);
     options.value = res.data;
   }
+};
+
+const selectBtn: () => void = () => {
+  commandValue.value = '';
+  isTextArea.value = !isTextArea.value;
 };
 
 const selectVal: (arr: any, option: any) => void = (arr, option) => {
@@ -162,7 +184,9 @@ const getPlatform = computed(() => {
       <n-card>
         <NForm>
           <NFormItem v-if="isCommand" :label="$t('generate.command-identifier')" required :options="options">
+            <NInput v-if="isTextArea" v-model:value="commandValue" :placeholder="$t('generate.or-enter-here')" />
             <NSelect
+              v-else
               v-model:value="commandValue"
               label-field="data_name"
               value-field="data_identifier"
@@ -170,29 +194,31 @@ const getPlatform = computed(() => {
               @update:show="getOptions"
               @update:value="selectVal"
             />
-            <span class="ml-4 mr-4">{{ $t('generate.or') }}</span>
-            <NInput v-model:value="commandValue" :placeholder="$t('generate.or-enter-here')" />
+            <NButton type="primary" class="selectBtn" @click="selectBtn">
+              {{ isTextArea ? '从已有标识符里选择' : '手动输入' }}
+            </NButton>
+            <!-- <span class="ml-4 mr-4">{{ $t('generate.or') }}</span> -->
           </NFormItem>
-          <div v-if="commandValue !== ''" class="title">参数</div>
-          <div v-for="item in paramsData" :key="item.id" class="form_box">
-            <div class="form_table">
-              <NFormItem :label="item.data_identifier" required label-placement="left">
-                <NInput v-if="item.param_type === 'string'" v-model:value="item[item.data_identifier]" />
-                <n-input-number v-else-if="item.param_type === 'Number'" v-model:value="item[item.data_identifier]" />
-                <n-select
-                  v-else-if="item.param_type === 'Boolean'"
-                  v-model:value="item[item.data_identifier]"
-                  :options="paramsSelect"
-                />
-                <div class="description">{{ item.description }}</div>
-              </NFormItem>
+          <NFormItem v-if="isTextArea" :label="$t('generate.attribute')">
+            <NInput v-model:value="textValue" type="textarea" />
+          </NFormItem>
+          <div v-else>
+            <div v-if="commandValue !== ''" class="title">参数</div>
+            <div v-for="item in paramsData" :key="item.id" class="form_box">
+              <div class="form_table">
+                <NFormItem :label="item.data_name" label-placement="left">
+                  <NInput v-if="item.param_type === 'string'" v-model:value="item[item.data_identifier]" />
+                  <n-input-number v-else-if="item.param_type === 'Number'" v-model:value="item[item.data_identifier]" />
+                  <n-select
+                    v-else-if="item.param_type === 'Boolean'"
+                    v-model:value="item[item.data_identifier]"
+                    :options="paramsSelect"
+                  />
+                  <div class="description">{{ item.description }}</div>
+                </NFormItem>
+              </div>
             </div>
           </div>
-          <!--
- <NFormItem :label="$t('generate.attribute')">
-            <NInput v-model:value="textValue" type="textarea" />
-          </NFormItem> 
--->
           <NFlex justify="end">
             <NButton @click="closeDialog">{{ $t('generate.cancel') }}</NButton>
             <NButton type="primary" @click="submit">{{ $t('page.irrigation.distribute') }}</NButton>
@@ -236,5 +262,9 @@ const getPlatform = computed(() => {
   .n-input-number {
     width: 100%;
   }
+}
+
+.selectBtn {
+  margin-left: 20px;
 }
 </style>
