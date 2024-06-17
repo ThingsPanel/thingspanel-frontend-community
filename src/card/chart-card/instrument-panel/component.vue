@@ -5,7 +5,7 @@ import * as echarts from 'echarts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { GaugeChart } from 'echarts/charts';
 import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components';
-import { deviceDetail } from '../../chart-card/curve/modules/api';
+import { deviceDetail } from '../curve/modules/api';
 
 // 注册 ECharts 所需的组件和渲染器
 echarts.use([CanvasRenderer, GaugeChart, TitleComponent, TooltipComponent, LegendComponent]);
@@ -213,3 +213,4 @@ onMounted(() => {
   margin-bottom: 5px;
 }
 </style>
+../curve/modules/api
