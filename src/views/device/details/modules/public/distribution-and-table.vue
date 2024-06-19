@@ -38,7 +38,7 @@ const fetchDataFunction = async () => {
     device_id: props.id
   });
   if (!error) {
-    tableData.value = data?.value || data?.list || data || [];
+    tableData.value = data?.value || data?.list || (Array.isArray(data) ? data : []) || [];
     if (data?.count) {
       page_coune.value = Math.ceil(data.count / 4);
     }
