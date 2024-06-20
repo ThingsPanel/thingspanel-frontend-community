@@ -9,6 +9,7 @@ import { localStg } from '@/utils/storage';
 import { $t } from '@/locales';
 import { getWebsocketServerUrl } from '@/utils/common/tool';
 
+const layoutFetched = ref(false);
 const layout = ref<ICardView[]>([]);
 const isError = ref<boolean>(false);
 const active = ref<boolean>(true);
@@ -25,6 +26,7 @@ const getLayout = async () => {
     const configJson = JSON.parse(data.config);
     updateConfigData(configJson);
     layout.value = [...configJson, ...layout.value];
+    layoutFetched.value = true;
   }
 };
 
@@ -154,6 +156,12 @@ function updateConfigData(configJson: ICardView[]) {
     }
   }
 }
+
+const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
+  setTimeout(() => {
+    layout.value = newLayout;
+  }, 300);
+};
 </script>
 
 <template>
@@ -189,7 +197,7 @@ function updateConfigData(configJson: ICardView[]) {
   </div> 
 -->
   <CardRender
-    v-else
+    v-else-if="layoutFetched"
     ref="cr"
     :layout="layout"
     :is-preview="true"
@@ -203,6 +211,7 @@ function updateConfigData(configJson: ICardView[]) {
         });
       }
     "
+    @breakpoint-changed="breakpointChanged"
   />
 </template>
 

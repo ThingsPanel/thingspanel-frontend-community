@@ -38,6 +38,7 @@ const getDeviceOptions = async () => {
 
 const { isFullscreen, toggle } = useFullscreen(fullui);
 const appStore = useAppStore();
+const dataFetched = ref(false);
 const layout = ref<ICardView[]>([]);
 const preLayout = ref<ICardView[]>([]); // 用来保存用户修改前的内容
 const fetchBroad = async () => {
@@ -49,6 +50,7 @@ const fetchBroad = async () => {
       updateConfigData(configJson);
       layout.value = [...configJson, ...layout.value];
       preLayout.value = layout.value;
+      dataFetched.value = true;
     }
   }
 };
@@ -217,6 +219,12 @@ const updateLayoutData = (data: ICardView[]) => {
   });
 };
 
+const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
+  setTimeout(() => {
+    layout.value = newLayout;
+  }, 300);
+};
+
 const edit = (view: ICardView) => {
   editingCard.value = true;
 
@@ -327,6 +335,7 @@ onUnmounted(() => {
           <NEmpty :description="$t('common.componentsAddedYet')"></NEmpty>
         </div>
         <CardRender
+          v-if="dataFetched"
           ref="cr"
           :layout="layout"
           :is-preview="!isEditing"
@@ -334,12 +343,8 @@ onUnmounted(() => {
           :default-card-col="4"
           :row-height="85"
           @edit="edit"
-          @update:layout="
-            data => {
-              console.log('panel manage update layout', data);
-              updateLayoutData(data);
-            }
-          "
+          @update:layout="updateLayoutData"
+          @breakpoint-changed="breakpointChanged"
         />
       </div>
 

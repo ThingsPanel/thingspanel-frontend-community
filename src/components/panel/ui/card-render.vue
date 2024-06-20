@@ -35,6 +35,7 @@ const countSpace = (data: ICardView[], y: number) => {
 };
 const emit = defineEmits<{
   (e: 'update:layout', layout: ICardView[] | any): void;
+  (e: 'breakpoint-changed', newBreakpoint: any, newLayout: ICardView[] | any): void;
   (e: 'edit', view: ICardView): void;
   // (e: 'remove', view: ICardView): void;
 }>();
@@ -87,8 +88,7 @@ const removeLayout = (i: number) => {
   );
 };
 const breakpointChanged = (newBreakpoint: any, newLayout: any) => {
-  console.log(newBreakpoint, 'breakpoint');
-  emit('update:layout', newLayout);
+  emit('breakpoint-changed', newBreakpoint, newLayout);
 };
 onMounted(() => {});
 onUpdated(() => {
@@ -106,7 +106,7 @@ onUpdated(() => {
     :margin="[10, 10]"
     class="w-full"
     :breakpoints="{ lg: 780, md: 500, sm: 0 }"
-    :cols="{ lg: 12, md: 6, sm: 1 }"
+    :cols="{ lg: 12, md: 6, sm: 3 }"
     @breakpoint-changed="breakpointChanged"
     @layout-updated="
       data => {
