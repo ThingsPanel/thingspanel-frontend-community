@@ -48,10 +48,12 @@ const next = async () => {
     }
   });
 
-  if (web_chart_config.value.length < 1 || flag) {
-    window.NMessage.error(
-      flag ? `${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}` : $t('common.leastOneChart')
-    );
+  // if (web_chart_config.value.length < 1 || flag) {
+  //   window.NMessage.error(
+  //     flag ? `${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}` : $t('common.leastOneChart')
+  //   );
+  if (flag) {
+    window.NMessage.error(`${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}`);
   } else {
     const res = await getTemplat(props.deviceTemplateId);
     await putTemplat({ ...res.data, web_chart_config: JSON.stringify(web_chart_config.value) });
