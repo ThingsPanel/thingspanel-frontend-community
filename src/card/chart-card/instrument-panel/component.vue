@@ -23,6 +23,7 @@ const cardRef = ref(null);
 const chartRef = ref<VChart | null>(null);
 
 const detail = ref<string>('');
+const unit = ref<string>('');
 
 const chartOptions = ref({
   series: [
@@ -32,8 +33,8 @@ const chartOptions = ref({
       endAngle: -45,
       min: 0, // 动态变化
       max: 100, // 动态变化
-      radius: '90%',
-      center: ['50%', '60%'],
+      radius: '140%',
+      center: ['50%', '80%'],
       splitNumber: 1, // 只展示最大和最小值
       axisLine: {
         lineStyle: {
@@ -76,55 +77,54 @@ const setSeries: (dataSource) => void = async dataSource => {
     keys: dataSource?.deviceSource ? dataSource?.deviceSource?.[0]?.metricsId : ''
   };
   if (querDetail.device_id && querDetail.keys) {
-    detail.value = await deviceDetail(querDetail);
+    const detailValue = await deviceDetail(querDetail);
+    if (detailValue?.data[0]?.unit) {
+      unit.value = detailValue?.data[0]?.unit;
+    }
+    if (detailValue?.data[0]?.value) {
+      detail.value = detailValue.data[0].value;
+    }
   }
 };
 
-// const updateChart = (newValue: number) => {
-//   chartOptions.value.series[0].data[0].value = newValue;
-//   const chartInstance = chartRef.value;
-//   if (chartInstance) {
-//     chartInstance.setOption(chartOptions.value, true);
-//   }
-// };
+defineExpose({
+  updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
+    detail.value = metricsId ? data[metricsId] : '';
+  }
+});
 
-// const updateData = (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
-//   detail.value = metricsId ? data[metricsId] : '';
-//   // updateChart(Number(detail.value));
-// };
+const handleDataChange = () => {
+  const adjustedOptions = chartOptions.value;
+  const min = props?.card?.config?.min || 0;
+  const max = props?.card?.config?.max || 100;
+  adjustedOptions.series[0].min = min;
+  adjustedOptions.series[0].max = max;
+  const detailValue = detail.value;
+  const unitValue = props?.card?.config?.unit || unit.value;
+  let ratio = 0.064;
+  if (detailValue >= max) {
+    ratio = 1;
+  } else if (detailValue <= min) {
+    ratio = 0;
+  } else {
+    ratio = (detailValue - min) / (max - min);
+  }
+  const changeColorArr = [ratio * 0.8, valueColor];
+  adjustedOptions.series[0].axisLine.lineStyle.color[0] = changeColorArr;
+  adjustedOptions.series[0].data[0].value = detailValue;
+  adjustedOptions.series[0].data[0].detail.formatter = value => `${value} ${unitValue}`;
+};
 
-const resizeChart = () => {
+const handleResize = () => {
   const chartInstance = chartRef.value;
   if (chartInstance) {
     chartInstance.resize();
 
     const containerWidth = Math.min(chartRef.value.$el.clientWidth, chartRef.value.$el.clientHeight);
     const adjustedOptions = chartOptions.value;
-    const min = props?.card?.config?.min || 0;
-    const max = props?.card?.config?.max || 100;
-    adjustedOptions.series[0].min = min;
-    adjustedOptions.series[0].max = max;
-    const detailValue = detail?.value?.data && detail?.value?.data[0] ? detail?.value?.data[0]?.value : initDetailValue;
-    const unit =
-      props?.card?.config?.unit ||
-      (detail?.value?.data && detail?.value?.data[0] ? detail?.value?.data[0]?.unit || '' : '');
-    let ratio = 0.064;
-    if (detailValue >= max) {
-      ratio = 1;
-    } else if (detailValue <= min) {
-      ratio = 0;
-    } else {
-      ratio = (detailValue - min) / (max - min);
-    }
-    const changeColorArr = [ratio * 0.8, valueColor];
-    adjustedOptions.series[0].axisLine.lineStyle.color[0] = changeColorArr;
     adjustedOptions.series[0].detail.fontSize = containerWidth / 10;
     adjustedOptions.series[0].axisLabel.fontSize = containerWidth / 16;
-    adjustedOptions.series[0].data[0].value = detailValue;
-    adjustedOptions.series[0].data[0].detail.formatter = value => `${value} ${unit}`;
     adjustedOptions.series[0].data[0].detail.lineHeight = containerWidth / 16;
-    // adjustedOptions.series[0].axisLine.lineStyle.width = containerWidth / 14;
-    chartInstance.setOption(adjustedOptions);
   }
 };
 
@@ -134,37 +134,26 @@ watch(
   { immediate: true, deep: true }
 );
 watch(
-  () => detail?.value?.data?.[0]?.value,
+  () => detail.value,
   () => {
-    resizeChart();
+    handleDataChange();
   }
 );
 watch(
-  () => props?.card?.config?.unit,
+  () => props?.card?.config,
   () => {
-    resizeChart();
-  }
-);
-watch(
-  () => props?.card?.config?.min,
-  () => {
-    resizeChart();
-  }
-);
-watch(
-  () => props?.card?.config?.max,
-  () => {
-    resizeChart();
-  }
+    handleDataChange();
+  },
+  { deep: true }
 );
 
 onMounted(() => {
   setSeries(props.card.dataSource);
-  resizeChart();
-  window.addEventListener('resize', resizeChart);
+  handleDataChange();
+  handleResize();
 
   const resizeObserver = new ResizeObserver(() => {
-    resizeChart();
+    handleResize();
   });
 
   if (cardRef.value) {
@@ -172,7 +161,6 @@ onMounted(() => {
   }
 
   onBeforeUnmount(() => {
-    window.removeEventListener('resize', resizeChart);
     resizeObserver.disconnect();
   });
 });
