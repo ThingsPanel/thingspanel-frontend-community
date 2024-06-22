@@ -33,7 +33,7 @@ const chartOptions = ref({
       endAngle: -45,
       min: 0, // 动态变化
       max: 100, // 动态变化
-      radius: '140%',
+      radius: '100%',
       center: ['50%', '80%'],
       splitNumber: 1, // 只展示最大和最小值
       axisLine: {

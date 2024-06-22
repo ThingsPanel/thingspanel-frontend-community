@@ -425,11 +425,11 @@ const setSeries: (dataSource) => void = async dataSource => {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
               {
                 offset: 0,
-                color: props.colorGroup[1].top
+                color: props.colorGroup[0].top
               },
               {
                 offset: 1,
-                color: props.colorGroup[1].bottom
+                color: props.colorGroup[0].bottom
               }
             ])
           },
@@ -489,6 +489,13 @@ watch(
 );
 watch(
   () => props.card?.dataSource?.deviceSource,
+  () => {
+    setSeries(props?.card?.dataSource);
+  },
+  { deep: true }
+);
+watch(
+  () => props.colorGroup,
   () => {
     setSeries(props?.card?.dataSource);
   },
