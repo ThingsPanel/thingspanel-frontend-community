@@ -16,30 +16,28 @@ const themeOptions = [
   { label: '配色主题2', value: 'colorGroups2' }
 ];
 
-const selectedTheme = ref('');
 const themeUpdate = () => {
+  const selectedTheme = ctx.config.selectedTheme;
   ctx.config.colorGroups = {
-    colorGroup: colorGroups.value[selectedTheme.value],
-    themeNumber: themeOptions.findIndex(option => option.value === selectedTheme.value)
+    colorGroup: colorGroups.value[selectedTheme]
   };
 };
 const updateColor = (newColor, index, position) => {
   // This method updates the color and ensures reactivity
-
-  colorGroups.value[selectedTheme.value][index][position] = newColor;
+  const selectedTheme = ctx.config.selectedTheme;
+  colorGroups.value[selectedTheme][index][position] = newColor;
   ctx.config.colorGroups = {
-    colorGroup: colorGroups.value[selectedTheme.value],
-    themeNumber: themeOptions.findIndex(option => option.value === selectedTheme.value)
+    colorGroup: colorGroups.value[selectedTheme]
   };
 };
 const gradientStyle = group => {
   return `background: linear-gradient(to right, ${group.top}, ${group.bottom});`;
 };
 const resetTheme = () => {
+  const selectedTheme = ctx.config.selectedTheme;
   colorGroups.value = JSON.parse(JSON.stringify(originalColorGroups));
   ctx.config.colorGroups = {
-    colorGroup: colorGroups.value[selectedTheme.value],
-    themeNumber: themeOptions.findIndex(option => option.value === selectedTheme.value)
+    colorGroup: colorGroups.value[selectedTheme.value]
   };
 };
 </script>
@@ -49,7 +47,7 @@ const resetTheme = () => {
     <n-flex align="center" class="mb-2">
       <div>{{ $t('generate.color-theme') }}</div>
       <NSelect
-        v-model:value="selectedTheme"
+        v-model:value="ctx.config.selectedTheme"
         class="flex-1"
         :options="themeOptions"
         :placeholder="$t('generate.select-theme')"
@@ -57,9 +55,12 @@ const resetTheme = () => {
       />
       <div @click="resetTheme">{{ $t('common.reset') }}</div>
     </n-flex>
-    <div v-if="selectedTheme" class="color-groups">
+    <div v-if="ctx.config.selectedTheme" class="color-groups">
       <n-grid x-gap="6" y-gap="6" :cols="2">
-        <n-gi v-for="(group, index) in colorGroups[selectedTheme]" :key="group.name">
+        <n-gi
+          v-for="(group, index) in ctx.config.colorGroups?.colorGroup || colorGroups[ctx.config.selectedTheme]"
+          :key="group.name"
+        >
           <div class="color-group">
             <div>{{ index + 1 }}.</div>
             <!-- Top Color Picker Popover -->
