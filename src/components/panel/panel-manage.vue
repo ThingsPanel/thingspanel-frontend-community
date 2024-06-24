@@ -47,9 +47,12 @@ const fetchBroad = async () => {
     panelDate.value = data;
     if (data.config) {
       const configJson = JSON.parse(data.config);
-      updateConfigData(configJson);
-      layout.value = [...configJson, ...layout.value];
-      preLayout.value = layout.value;
+      // check configJson is an array
+      if (Array.isArray(configJson)) {
+        updateConfigData(configJson);
+        layout.value = [...configJson, ...layout.value];
+        preLayout.value = layout.value;
+      }
       dataFetched.value = true;
     }
   }
