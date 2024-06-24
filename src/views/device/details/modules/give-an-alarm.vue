@@ -131,7 +131,7 @@ const submitCallback = async () => {
 };
 const alarmAdd = () => {
   routerPushByKey('automation_linkage-edit', {
-    query: { device_id: props.id }
+    query: { device_id: props.id, backType: 'device' }
   });
 };
 const loading = ref(false);

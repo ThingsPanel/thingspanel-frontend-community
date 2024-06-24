@@ -117,7 +117,13 @@ const submitData = async () => {
         const res = await sceneAutomationsAdd(configForm.value);
         if (!res.error) {
           await tabStore.removeTab(route.path);
-          router.replace({ path: '/automation/scene-linkage' });
+          if (backType.value === 'device') {
+            router.replace({ path: '/device/details', query: { d_id: propsData.value.device_id } });
+          } else if (backType.value === 'config') {
+            router.replace({ path: '/device/config-detail', query: { id: propsData.value.device_config_id } });
+          } else {
+            router.replace({ path: '/automation/scene-linkage' });
+          }
         }
       }
     }
