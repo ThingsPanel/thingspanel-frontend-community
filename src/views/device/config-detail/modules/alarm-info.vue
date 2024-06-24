@@ -12,7 +12,7 @@ const props = defineProps<{
 }>();
 const alarmAdd = () => {
   routerPushByKey('automation_linkage-edit', {
-    query: { device_config_id: props.config_id }
+    query: { device_config_id: props.config_id, backType: 'config' }
   });
 };
 </script>

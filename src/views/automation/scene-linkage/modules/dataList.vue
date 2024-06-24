@@ -40,7 +40,7 @@ const sceneLinkageList = ref([] as any);
 // 新建场景
 const linkAdd = () => {
   routerPushByKey('automation_linkage-edit', {
-    query: { device_id: props.device_id, device_config_id: props.device_config_id }
+    query: { device_id: props.device_id, device_config_id: props.device_config_id, backType: props.backType }
   });
 };
 

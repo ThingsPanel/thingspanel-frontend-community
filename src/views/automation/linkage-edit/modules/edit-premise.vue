@@ -224,9 +224,9 @@ const getDevice = async (groupId: any, name: any) => {
   const res = await deviceListAll(queryDevice.value);
   btnloading.value = true;
   deviceOptions.value = res.data || [];
-  if (!deviceOptions.value.length) {
-    selectInstRef.value = false;
-  }
+  // if (!deviceOptions.value.length) {
+  //   selectInstRef.value = false;
+  // }
 };
 // 选择设备
 const triggerSourceChange = (ifItem: any) => {
