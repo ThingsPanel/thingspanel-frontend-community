@@ -116,6 +116,10 @@ const cancelCallback = () => {
   description.value = '';
   showModal.value = false;
 };
+const showDescModal = (item: any) => {
+  showModal.value = true;
+  infoData.value = item;
+};
 const submitCallback = async () => {
   if (description.value === '') {
     window.$message?.error($t('common.enterAlarmDesc'));
@@ -126,8 +130,13 @@ const submitCallback = async () => {
     description: description.value
   };
   await deviceAlarmHistoryPut(putData);
+  alarmHistory.value.map(item => {
+    if (item.id === infoData.value.id) {
+      item.description = description.value;
+    }
+  });
   cancelCallback();
-  await getAlarmHistory();
+  // await getAlarmHistory();
 };
 const alarmAdd = () => {
   routerPushByKey('automation_linkage-edit', {
@@ -222,7 +231,7 @@ onMounted(() => {
                 </NIcon>
                 {{ $t('custom.devicePage.details') }}
               </NButton>
-              <NButton text class="ml-8" @click="showModal = true">
+              <NButton text class="ml-8" @click="showDescModal(item)">
                 <NIcon size="18">
                   <Edit />
                 </NIcon>
