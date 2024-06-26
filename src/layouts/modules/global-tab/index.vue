@@ -6,7 +6,7 @@ import { PageTab } from '@sa/materials';
 import BetterScroll from '@/components/custom/better-scroll.vue';
 import { useAppStore } from '@/store/modules/app';
 import { useThemeStore } from '@/store/modules/theme';
-import { useRouteStore } from '@/store/modules/route';
+// import { useRouteStore } from '@/store/modules/route';
 import { useTabStore } from '@/store/modules/tab';
 import ContextMenu from './context-menu.vue';
 
@@ -17,7 +17,7 @@ defineOptions({
 const route = useRoute();
 const appStore = useAppStore();
 const themeStore = useThemeStore();
-const routeStore = useRouteStore();
+// const routeStore = useRouteStore();
 const tabStore = useTabStore();
 
 const bsWrapper = ref<HTMLElement>();
@@ -80,9 +80,8 @@ function getContextMenuDisabledKeys(tabId: string) {
 }
 
 async function handleCloseTab(tab: App.Global.Tab) {
-  console.log(tab);
   await tabStore.removeTab(tab.id);
-  await routeStore.reCacheRoutesByKey(tab.routeKey);
+  // await routeStore.reCacheRoutesByKey(tab.routeKey);
 }
 
 async function refresh() {
