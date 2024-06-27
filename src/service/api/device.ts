@@ -338,3 +338,7 @@ export const sendSimulation = async (params: any) => {
 export const deviceCustomCommandsIdList = async (paramsId: any) => {
   return await request.get<any>(`/device/model/custom/commands/${paramsId}`);
 };
+
+export const deviceProtocalServiceList = async (params: any) => {
+  return await request.get<any>(`/service/plugin/select`, { params });
+};

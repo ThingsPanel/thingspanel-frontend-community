@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue';
 import { NButton, NFormItem, NSelect } from 'naive-ui';
-import { dictQuery } from '@/service/api/setting';
-import { deviceConfigEdit, deviceConfigVoucherType, protocolPluginConfigForm } from '@/service/api/device';
+import {
+  deviceConfigEdit,
+  deviceConfigVoucherType,
+  deviceProtocalServiceList,
+  protocolPluginConfigForm
+} from '@/service/api/device';
 // protocolPluginConfigInput
 import { $t } from '@/locales';
 import FormInput from './form.vue';
@@ -69,13 +73,15 @@ const handleSubmit = async () => {
     emit('upDateConfig');
   }
 };
-const getDict = async dictCode => {
+
+const getProtocolList = async (deviceCode: string) => {
   const queryData = {
-    dict_code: dictCode
+    device_code: deviceCode
   };
-  const res = await dictQuery(queryData);
-  typeOptions.value = res.data || [];
+  const res = await deviceProtocalServiceList(queryData);
+  typeOptions.value = res.data.protocol.concat(res.data.service);
 };
+
 const connectOptions = ref([] as any);
 const getConfigForm = async data => {
   const res = await protocolPluginConfigForm({ device_type: props.configInfo.device_type, protocol_type: data });
@@ -106,11 +112,7 @@ onMounted(async () => {
   if (props.configInfo.protocol_config) {
     protocol_config.value = JSON.parse(props.configInfo.protocol_config);
   }
-  if (props.configInfo.device_type === '1') {
-    getDict('DRIECT_ATTACHED_PROTOCOL');
-  } else {
-    getDict('GATEWAY_PROTOCOL');
-  }
+  getProtocolList(props.configInfo.device_type);
   extendForm.value = props.configInfo;
   await getVoucherType(extendForm.value.protocol_type);
 
@@ -127,8 +129,8 @@ onMounted(async () => {
           v-model:value="extendForm.protocol_type"
           :options="typeOptions"
           :placeholder="$t('generate.select-protocol-service')"
-          label-field="translation"
-          value-field="dict_value"
+          label-field="name"
+          value-field="service_identifier"
           @change="choseProtocolType"
         ></NSelect>
       </NFormItem>
