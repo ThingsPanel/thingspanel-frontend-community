@@ -91,8 +91,9 @@ const { status, send, close } = useWebSocket(wsUrl, {
       const newTelemetry: any[] = [];
       for (const key in info) {
         if (key !== 'systime' && !currTelemetryKey.includes(key)) {
+          const { key: _originKey, label: _label, ...rest } = initTelemetryData.value;
           newTelemetry.push({
-            ...initTelemetryData.value,
+            ...rest,
             key,
             value: info[key],
             ts: info.systime
