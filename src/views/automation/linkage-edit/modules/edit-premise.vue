@@ -136,13 +136,13 @@ const premiseFormRules = ref({
 //   // }
 // ]);
 
-const getIfTypeOptions = ifGroup => {
+const getIfTypeOptions = (ifGroup, ifIndex) => {
   return [
     {
       label: $t('common.deviceConditions'),
       value: '1',
       disabled: ifGroup.some(item => {
-        return item.trigger_conditions_type === '20' || item.trigger_conditions_type === '21';
+        return (item.trigger_conditions_type === '20' || item.trigger_conditions_type === '21') && ifIndex > 0;
       })
     },
     {
@@ -692,7 +692,7 @@ watch(
               >
                 <NSelect
                   v-model:value="ifItem.ifType"
-                  :options="getIfTypeOptions(ifGroupItem)"
+                  :options="getIfTypeOptions(ifGroupItem, ifIndex)"
                   :placeholder="$t('common.select')"
                   @update-value="data => ifTypeChange(ifItem, data)"
                 />
