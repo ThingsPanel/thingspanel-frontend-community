@@ -190,6 +190,7 @@ const fetchTelemetry = async () => {
   if (!error && data) {
     telemetryData.value = data;
     initTelemetryData.value = data[0] || {}; // 存储一份模板
+    initTelemetryData.value.device_id = props.id;
     const dataw = {
       // eslint-disable-next-line no-constant-binary-expression
       device_id: props.id,
