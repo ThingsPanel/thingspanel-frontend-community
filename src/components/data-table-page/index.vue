@@ -35,8 +35,9 @@ export type SearchConfig =
       loadOptions?: () => Promise<TreeSelectOption[]>;
     };
 
-// 通过props从父组件接收参数
+const emits = defineEmits(['paramsUpdate']);
 
+// 通过props从父组件接收参数
 const props = defineProps<{
   fetchData: (data: any) => Promise<any>; // 数据获取函数
   columnsToShow: // 表格列配置
@@ -194,6 +195,7 @@ watchEffect(() => {
     }
   });
   console.log(searchCriteria.value);
+  emits('paramsUpdate', searchCriteria.value);
   getData();
 });
 
@@ -211,8 +213,20 @@ const handleReset = () => {
 
   handleSearch(); // 重置后重新获取数据
 };
+
+const forceChangeParamsByKey = newParams => {
+  // 子组件强制修改表单数值
+  const theKeys = Object.keys(newParams);
+  Object.keys(searchCriteria.value).forEach(key => {
+    if (theKeys.includes(key)) {
+      searchCriteria.value[key] = newParams[key];
+    }
+  });
+};
+
 defineExpose({
-  handleReset
+  handleReset,
+  forceChangeParamsByKey
 });
 // 更新树形选择器的选项
 const handleTreeSelectUpdate = (value, key) => {
