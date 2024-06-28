@@ -30,6 +30,7 @@ declare module "@elegant-router/types" {
     "alarm_notification-record": "/alarm/notification-record";
     "alarm_warning-message": "/alarm/warning-message";
     "apply": "/apply";
+    "apply_plugin": "/apply/plugin";
     "apply_service": "/apply/service";
     "automation": "/automation";
     "automation_linkage-edit": "/automation/linkage-edit";
@@ -193,6 +194,7 @@ declare module "@elegant-router/types" {
     | "alarm_notification-group"
     | "alarm_notification-record"
     | "alarm_warning-message"
+    | "apply_plugin"
     | "apply_service"
     | "automation_linkage-edit"
     | "automation_scene-edit"

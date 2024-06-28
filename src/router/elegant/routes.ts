@@ -95,6 +95,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
+        name: 'apply_plugin',
+        path: '/apply/plugin',
+        component: 'view.apply_plugin',
+        meta: {
+          title: 'apply_plugin',
+          i18nKey: 'route.apply_plugin'
+        }
+      },
+      {
         name: 'apply_service',
         path: '/apply/service',
         component: 'view.apply_service',
