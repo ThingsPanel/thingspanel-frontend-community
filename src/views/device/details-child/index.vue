@@ -17,6 +17,7 @@ import Settings from '@/views/device/details/modules/settings.vue';
 import { $t } from '@/locales';
 import { useAppStore } from '@/store/modules/app';
 import { deviceDetail, deviceUpdate } from '@/service/api/device';
+import { useRouterPush } from '@/hooks/common/router';
 
 const { query } = useRoute();
 const appStore = useAppStore();
@@ -123,6 +124,15 @@ const getDeviceDetail = async () => {
     }
   }
 };
+
+const { routerPushByKey } = useRouterPush();
+const clickGateway = () => {
+  routerPushByKey('device_details', {
+    query: {
+      d_id: deviceDataStore?.deviceData?.device_config_id
+    }
+  });
+};
 onMounted(() => {
   getDeviceDetail();
   deviceDataStore.fetchData(d_id as string);
@@ -187,7 +197,9 @@ watch(
           </div>
           <div class="mr-4" style="color: #ccc">
             <span class="mr-2">{{ $t('custom.device_details.deviceConfig') }}:</span>
-            <span style="color: blue">{{ deviceDataStore?.deviceData?.device_config_name || '--' }}</span>
+            <span style="color: blue; cursor: pointer" @click="clickGateway">
+              {{ deviceDataStore?.deviceData?.device_config_name || '--' }}
+            </span>
           </div>
           <div class="mr-4" style="display: flex">
             <!-- <span class="mr-2">{{ $t('generate.status') }}:</span> -->
