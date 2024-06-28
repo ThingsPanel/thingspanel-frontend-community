@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { h, onBeforeMount, ref, watch } from 'vue';
+import { onBeforeMount, ref, watch } from 'vue';
 import type { Ref } from 'vue';
 import type { DrawerPlacement, StepsProps } from 'naive-ui';
 import { NSpace, NTag } from 'naive-ui';
@@ -10,7 +10,8 @@ import {
   checkDevice,
   deleteDevice,
   devicCeonnectForm,
-  deviceDictProtocolService,
+  deviceDictProtocolServiceFirstLevel,
+  deviceDictProtocolServiceSecondLevel,
   deviceGroupTree,
   deviceList,
   getDeviceConfigList,
@@ -35,6 +36,11 @@ const tablePageRef = ref();
 const buttonDisabled = ref(true);
 const showMessage = ref(false);
 const messageColor = ref('');
+
+const secondLevelOptions = ref<DeviceManagement.ServiceData[]>([]);
+const selectedFirstLevel = ref<string | null>(null);
+const serviceIds = ref<string[]>([]);
+
 const getFormJson = async id => {
   const res = await devicCeonnectForm({ device_id: id });
 
@@ -246,45 +252,9 @@ const searchConfigs = ref<SearchConfig[]>([
     ]
   },
   {
-    key: 'protocol_dict',
-    label: $t('custom.devicePage.unlimitedAccessMode'),
+    key: 'service_identifier',
+    label: '选择协议/服务',
     type: 'select',
-    renderLabel(option: any) {
-      const deviceText = {
-        '1': $t('generate.direct-connected-device'),
-        '2': $t('generate.gateway'),
-        '3': $t('custom.device_details.deviceAnalysis')
-      };
-      return h(
-        'div',
-        {
-          class: 'm-b-5px'
-        },
-        [
-          h('div', null, option.label as string),
-          h(
-            'div',
-            {
-              class: ' color-#ccc'
-            },
-            deviceText[option.device_type] as string
-          )
-        ]
-      );
-    },
-    renderTag({ option }: any) {
-      return h('div', option.label as string);
-    },
-    extendParams: [
-      {
-        label: 'protocol_type',
-        value: 'dict_value'
-      },
-      {
-        label: 'device_type',
-        value: 'device_type'
-      }
-    ],
     options: []
   },
   {
@@ -314,26 +284,119 @@ const dropOption = [
     disabled: true
   }
 ];
-const getDictServiceList = async () => {
-  const { data }: any = await deviceDictProtocolService({
+
+const fetchFirstLevelOptions = async () => {
+  const { data } = await deviceDictProtocolServiceFirstLevel({
     language_code: localStg.get('lang')
   });
 
-  data.map((item: any) => {
-    item.value = item.dict_value + item.device_type;
-    item.label = item.translation;
-    return item;
+  const protocolOptions = data.protocol.map(item => ({
+    label: item.name,
+    value: item.service_identifier,
+    type: 'protocol'
+  }));
+
+  const serviceOptions = data.service.map(item => {
+    serviceIds.value.push(item.service_identifier);
+    return {
+      label: item.name,
+      value: item.service_identifier,
+      type: 'service'
+    };
   });
+
   searchConfigs.value.map((item: any) => {
-    if (item.key === 'protocol_dict') {
-      item.options = data;
+    if (item.key === 'service_identifier') {
+      item.options = [
+        {
+          type: 'group',
+          label: '协议',
+          key: 'protocol',
+          children: [...protocolOptions]
+        },
+        {
+          type: 'group',
+          label: '服务',
+          key: 'service',
+          children: [...serviceOptions]
+        }
+      ];
     }
     return item;
   });
 };
 
+const fetchSecondLevelOptions = async (firstLevelValue, page = 1) => {
+  if (!firstLevelValue) return;
+  if (page === 1) {
+    // 清空二级选项
+    secondLevelOptions.value = [];
+    searchConfigs.value.map((item: any) => {
+      if (item.key === 'service_access_id') {
+        item.options = [];
+      }
+      return item;
+    });
+  }
+
+  const { data } = await deviceDictProtocolServiceSecondLevel({
+    params: {
+      service_plugin_id: firstLevelValue,
+      page,
+      page_size: 100
+    }
+  });
+
+  const { list, total } = data;
+  if (page === 1) {
+    secondLevelOptions.value = list;
+  } else {
+    secondLevelOptions.value = [...secondLevelOptions.value, ...list];
+  }
+  if (total > secondLevelOptions.value.length) {
+    await fetchSecondLevelOptions(firstLevelValue, page + 1);
+  } else {
+    searchConfigs.value.map((item: any) => {
+      if (item.key === 'service_access_id') {
+        item.options = secondLevelOptions.value.map(item2 => ({
+          label: item2.name,
+          value: item2.id
+        }));
+      }
+      return item;
+    });
+  }
+};
+
+const paramsUpdateHandle = async params => {
+  const firstSelected = params.service_identifier;
+  if (firstSelected && selectedFirstLevel.value !== firstSelected) {
+    selectedFirstLevel.value = firstSelected;
+    const identifierIndex = searchConfigs.value.findIndex(item => item.key === 'service_identifier');
+    const accessIndex = searchConfigs.value.findIndex(item => item.key === 'service_access_id');
+    // 重置二级选项
+    const isService = serviceIds.value.includes(firstSelected);
+    if (isService) {
+      if (accessIndex === -1) {
+        searchConfigs.value.splice(identifierIndex + 1, 0, {
+          key: 'service_access_id',
+          label: '选择二级服务',
+          type: 'select',
+          options: []
+        });
+      }
+      await fetchSecondLevelOptions(firstSelected);
+    } else if (accessIndex > -1) {
+      searchConfigs.value.splice(accessIndex, 1);
+      tablePageRef.value?.forceChangeParamsByKey({
+        service_access_id: null
+      });
+    }
+  }
+};
+
 onBeforeMount(() => {
-  getDictServiceList();
+  fetchFirstLevelOptions();
 });
 const topActions = [
   {
@@ -420,6 +483,7 @@ watch(
       :search-configs="searchConfigs"
       :top-actions="topActions"
       :row-click="goDeviceDetails"
+      @params-update="paramsUpdateHandle"
     />
     <n-drawer v-model:show="active" :height="720" :placement="placement" @after-leave="completeHandAdd">
       <n-drawer-content

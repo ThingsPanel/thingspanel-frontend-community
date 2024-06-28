@@ -125,4 +125,32 @@ declare namespace DeviceManagement {
     list: ConfigData[];
     total: number;
   }
+
+  interface ProtocolAndServiceData {
+    name: string;
+    service_identifier: string;
+  }
+
+  interface ProtocolAndService {
+    protocal: ProtocolAndServiceData[];
+    service: ProtocolAndServiceData[];
+  }
+
+  interface ServiceData {
+    id: string;
+    name: string;
+    service_plugin_id: string;
+    voucher: string;
+    description: string;
+    service_access_config: string;
+    remark: string;
+    create_at: string;
+    update_at: string;
+    tenant_id: string;
+  }
+
+  interface ServiceList {
+    list: ServiceData[];
+    total: number;
+  }
 }

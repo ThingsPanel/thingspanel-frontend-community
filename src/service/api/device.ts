@@ -20,9 +20,17 @@ export const getDeviceGroup = async (params: any) => {
 };
 
 //
-/** 接入方式下拉菜单 */
+/** 接入方式下拉菜单（旧） */
 export const deviceDictProtocolService = async (params: any) => {
   return await request.get<DeviceManagement.TreeStructure | any>('/dict/protocol/service', params);
+};
+/** 接入方式下拉一级菜单 */
+export const deviceDictProtocolServiceFirstLevel = async (params: any) => {
+  return await request.get<DeviceManagement.ProtocolAndService | any>('/service/plugin/select', params);
+};
+/** 接入方式下拉二级菜单 */
+export const deviceDictProtocolServiceSecondLevel = async (params: any) => {
+  return await request.get<DeviceManagement.ServiceList | any>('/service/access/list', params);
 };
 
 /** 获取设备分组树 */
