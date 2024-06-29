@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
-import { deviceDetail } from '../../chart-card/curve/modules/api';
+import { telemetryDataCurrentKeys } from '@/service/api/device';
 
 interface ICardData {
   dataSource: any; // 定义数据源接口
@@ -31,7 +31,7 @@ const setSeries: (dataSource) => void = async dataSource => {
     keys: dataSource?.deviceSource ? dataSource?.deviceSource?.[0]?.metricsId : ''
   };
   if (querDetail.device_id && querDetail.keys) {
-    detail.data = await deviceDetail(querDetail);
+    detail.data = await telemetryDataCurrentKeys(querDetail);
   }
 };
 

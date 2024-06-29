@@ -5,7 +5,7 @@ import * as echarts from 'echarts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { GaugeChart } from 'echarts/charts';
 import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components';
-import { deviceDetail } from '../curve/modules/api';
+import { telemetryDataCurrentKeys } from '@/service/api/device';
 
 // 注册 ECharts 所需的组件和渲染器
 echarts.use([CanvasRenderer, GaugeChart, TitleComponent, TooltipComponent, LegendComponent]);
@@ -77,7 +77,7 @@ const setSeries: (dataSource) => void = async dataSource => {
     keys: dataSource?.deviceSource ? dataSource?.deviceSource?.[0]?.metricsId : ''
   };
   if (querDetail.device_id && querDetail.keys) {
-    const detailValue = await deviceDetail(querDetail);
+    const detailValue = await telemetryDataCurrentKeys(querDetail);
     if (detailValue?.data[0]?.unit) {
       unit.value = detailValue?.data[0]?.unit;
     }
