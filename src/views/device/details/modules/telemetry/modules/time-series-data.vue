@@ -2,7 +2,7 @@
 import { defineProps, reactive, ref, watch } from 'vue';
 import { useFullscreen } from '@vueuse/core';
 import dayjs from 'dayjs';
-import { deviceTelemetryList } from '@/card/chart-card/curve/api';
+import { telemetryDataHistoryList } from '@/service/api/device';
 import { $t } from '@/locales';
 import ChartComponent from './ChartComponent.vue';
 import AggregationSelector from './AggregationSelector.vue';
@@ -123,7 +123,7 @@ watch(
       return;
     }
     startLoading();
-    const { data, error } = await deviceTelemetryList({
+    const { data, error } = await telemetryDataHistoryList({
       ...v
     });
     if (!error && data && initialOptions.value.series) {

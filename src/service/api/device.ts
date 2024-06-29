@@ -235,6 +235,23 @@ export const telemetryDataCurrent = async (id: any) => {
   return await request.get<DeviceManagement.telemetryCurrent | any>(url);
 };
 
+/**
+ * @param params {device_id:string,keys:string}
+ * @returns
+ */
+export const telemetryDataCurrentKeys = async (params: any) => {
+  return await request.get<any>('/telemetry/datas/current/keys', { params });
+};
+
+/**
+ * @param params { device_id: string, key: string, start_time: string, end_time: string, aggregate_window: string,
+ *   aggregate_function: string, time_range: string }
+ * @returns
+ */
+export const telemetryDataHistoryList = async (params: any) => {
+  return await request.get<any>('/telemetry/datas/statistic', { params });
+};
+
 /** 遥测删除数据处理 */
 export const telemetryDataDel = async (params: any) => {
   return await request.delete2<Api.BaseApi.Data | any>(`telemetry/datas`, params);

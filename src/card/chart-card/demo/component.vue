@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { ICardData } from '@/components/panel/card';
-import { deviceDetail } from '../curve/modules/api';
+import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device';
 import { icons as iconOptions } from './icons';
 
 // 正式环境可根据api获取
@@ -23,20 +23,32 @@ defineExpose({
 
 const setSeries: (dataSource) => void = async dataSource => {
   const arr: any = dataSource;
-  const querDetail = {
-    device_id: dataSource?.deviceSource ? dataSource?.deviceSource[0]?.deviceId ?? '' : '',
-    keys: arr.deviceSource ? arr.deviceSource[0]?.metricsId : ''
-  };
-  if (querDetail.device_id && querDetail.keys) {
-    const detailValue = await deviceDetail(querDetail);
-    if (detailValue?.data[0]?.unit) {
-      unit.value = detailValue?.data[0]?.unit;
+  const metricsType = arr.deviceSource ? arr.deviceSource[0]?.metricsType : '';
+  const deviceId = dataSource?.deviceSource ? dataSource?.deviceSource[0]?.deviceId ?? '' : '';
+  const metricsId = arr.deviceSource ? arr.deviceSource[0]?.metricsId : '';
+  if (metricsType === 'telemetry') {
+    const querDetail = {
+      device_id: deviceId,
+      keys: metricsId
+    };
+    if (querDetail.device_id && querDetail.keys) {
+      const detailValue = await telemetryDataCurrentKeys(querDetail);
+      if (detailValue?.data[0]?.unit) {
+        unit.value = detailValue?.data[0]?.unit;
+      }
+      if (detailValue?.data[0]?.value) {
+        detail.value = detailValue.data[0].value;
+      }
     }
-    if (detailValue?.data[0]?.value) {
-      detail.value = detailValue.data[0].value;
+  } else if (metricsType === 'attributes') {
+    if (deviceId && metricsId) {
+      const res = await getAttributeDataSet({ device_id: deviceId });
+      const attributeData = res.data.find(item => item.key === metricsId);
+      detail.value = attributeData?.value;
+      if (attributeData?.unit) {
+        unit.value = attributeData?.unit;
+      }
     }
-  } else {
-    // window.$message?.error("查询不到设备");
   }
 };
 
