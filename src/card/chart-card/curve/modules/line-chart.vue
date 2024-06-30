@@ -21,9 +21,8 @@ import type {
 } from 'echarts/components';
 import { addMonths } from 'date-fns';
 import { $t } from '@/locales';
-import { deviceTelemetryList } from '@/card/chart-card/curve/api';
 import type { ICardData } from '@/components/panel/card';
-import { deviceDetail } from './api';
+import { telemetryDataCurrentKeys, telemetryDataHistoryList } from '@/service/api/device';
 
 type EChartsOption = ComposeOption<
   TooltipComponentOption | LegendComponentOption | ToolboxComponentOption | GridComponentOption | LineSeriesOption
@@ -215,7 +214,7 @@ const getTelemetryList = async (device_id, key, index) => {
     return;
   }
   if (option.value.series) {
-    const { data, error } = await deviceTelemetryList({
+    const { data, error } = await telemetryDataHistoryList({
       device_id,
       key,
       ...params
@@ -398,7 +397,7 @@ const setSeries: (dataSource) => void = async dataSource => {
     keys: arr?.deviceSource ? arr.deviceSource[0]?.metricsId : ''
   };
   if (querDetail.device_id && querDetail.keys) {
-    detail.value = await deviceDetail(querDetail);
+    detail.value = await telemetryDataCurrentKeys(querDetail);
   } else {
     // window.$message?.error("查询不到设备");
   }

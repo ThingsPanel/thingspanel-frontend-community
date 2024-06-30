@@ -144,6 +144,7 @@ const updateComponentsData = async () => {
         item.data?.dataSource?.deviceSource &&
         item.data?.dataSource?.deviceSource[0]?.deviceId &&
         item.data?.dataSource?.deviceSource[0]?.metricsId &&
+        item.data?.dataSource?.deviceSource[0]?.metricsType === 'telemetry' &&
         cr.value?.getCardComponent(item)?.getComponent()?.updateData
     )
     .map(

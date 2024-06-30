@@ -4,7 +4,8 @@ import type { ICardData } from '@/components/panel/card';
 import { localStg } from '@/utils/storage';
 import { $t } from '@/locales';
 import { getWebsocketServerUrl } from '@/utils/common/tool';
-import { deviceDatas, deviceDetail } from './api';
+import { telemetryDataCurrentKeys } from '@/service/api/device';
+import { deviceDatas } from './api';
 
 const active: any = ref(false);
 const props = defineProps<{
@@ -20,7 +21,7 @@ const setSeries: (obj: any) => void = async obj => {
     keys: arr.deviceSource[0].metricsId
   };
   if (querDetail.device_id && querDetail.keys) {
-    detail.value = await deviceDetail(querDetail);
+    detail.value = await telemetryDataCurrentKeys(querDetail);
     const queryInfo = {
       device_id: obj.deviceSource[0]?.deviceId ?? '',
       keys: [arr.deviceSource[0].metricsId || 'externalVol'],

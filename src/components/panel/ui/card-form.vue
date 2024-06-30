@@ -101,6 +101,7 @@ const metricsOptionRender = (info, item) => {
             onClick={() => {
               item.metricsId = it.key;
               item.metricsName = it.label || '';
+              item.metricsType = info?.option?.data_source_type;
               updateDropdownShow(false, item);
             }}
           >
