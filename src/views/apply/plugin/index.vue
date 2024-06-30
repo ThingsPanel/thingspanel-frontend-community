@@ -1,9 +1,7 @@
 <!-- eslint-disable require-atomic-updates -->
 <script setup lang="tsx">
-import { ref } from 'vue';
-import type { Ref } from 'vue';
+import { ref, watch } from 'vue';
 import { NButton, NPopconfirm, NSpace } from 'naive-ui';
-import type { DataTableColumns } from 'naive-ui';
 import { delRegisterService, getServiceList } from '@/service/api/plugin.ts';
 import { $t } from '@/locales';
 import serviceConfigModal from './components/serviceConfigModal.vue';
@@ -62,14 +60,14 @@ const edit: (row: any) => void = row => {
   serviceModalRef.value.openModal(row);
 };
 const del: (row: any) => void = async row => {
-  const data = await delRegisterService(row);
-  console.log(data, '删除');
+  await delRegisterService(row);
+  getList();
 };
 const config: (row: any) => void = async row => {
   console.log('服务配置');
   serviceConfigModalRef.value.openModal(row);
 };
-const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
+const columns: any = ref([
   {
     title: '服务名称',
     key: 'name',
@@ -79,7 +77,13 @@ const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
     title: '类别',
     key: 'service_type',
     minWidth: '140px',
-    align: 'center'
+    align: 'center',
+    render: row => {
+      if (row.service_type) {
+        return <span>{row.service_type === 1 ? '接入协议' : '接入服务'}</span>;
+      }
+      return <span></span>;
+    }
   },
   {
     title: '描述',
@@ -93,7 +97,13 @@ const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
     title: '状态',
     key: 'service_heartbeat',
     minWidth: '140px',
-    align: 'center'
+    align: 'center',
+    render: row => {
+      if (row.service_heartbeat) {
+        return <span>{row.service_heartbeat === 1 ? '运行中' : '已停止'}</span>;
+      }
+      return <span></span>;
+    }
   },
   {
     key: 'actions',
@@ -131,11 +141,19 @@ const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
       );
     }
   }
-]) as Ref<DataTableColumns<ServiceManagement.Service>>;
+]);
 
 const addData: () => void = () => {
   serviceModalRef.value.openModal();
 };
+
+watch(
+  () => queryInfo.value.service_type,
+  () => {
+    getList();
+  },
+  { deep: true }
+);
 
 getList();
 </script>
@@ -144,9 +162,12 @@ getList();
   <div>
     <NCard :title="$t('route.apply_service')" :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="header">
-        <NSpace vertical class="selectType">
-          <n-select v-model:value="queryInfo.service_type" :options="pageData.options" />
-        </NSpace>
+        <n-select
+          v-model:value="queryInfo.service_type"
+          class="selectType"
+          placeholder="选择歌曲"
+          :options="pageData.options"
+        />
         <NButton type="primary" @click="addData">添加新服务</NButton>
       </div>
       <div class="h">
@@ -161,7 +182,7 @@ getList();
       </div>
     </NCard>
     <serviceModal ref="serviceModalRef" @get-list="getList"></serviceModal>
-    <serviceConfigModal ref="serviceConfigModalRef"></serviceConfigModal>
+    <serviceConfigModal ref="serviceConfigModalRef" @get-list="getList"></serviceConfigModal>
   </div>
 </template>
 

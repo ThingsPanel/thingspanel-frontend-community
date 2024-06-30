@@ -31,7 +31,6 @@ const rules = ref<any>({
   },
   service_type: {
     required: true,
-    trigger: ['blur', 'change'],
     message: '请选择服务类别'
   }
 });
@@ -59,21 +58,24 @@ const close: () => void = () => {
 };
 
 const submitSevice: () => void = async () => {
-  loading.value = true;
-  const data: any = isEdit.value ? await putRegisterService(form.value) : await registerService(form.value);
-  console.log(data, '提交');
-  if (data.data) {
-    emit('getList');
-    close();
-  }
-  loading.value = false;
+  formRef.value?.validate(async errors => {
+    if (errors) return;
+    loading.value = true;
+    const data: any = isEdit.value ? await putRegisterService(form.value) : await registerService(form.value);
+    console.log(data, '提交');
+    if (data.data) {
+      emit('getList');
+      close();
+    }
+    loading.value = false;
+  });
 };
 
 defineExpose({ openModal });
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModal" preset="dialog" title="添加/修改服务">
+  <n-modal v-model:show="serviceModal" preset="dialog" title="服务配置">
     <n-space vertical>
       <n-spin :show="loading">
         <n-form
@@ -84,6 +86,7 @@ defineExpose({ openModal });
           label-width="auto"
           require-mark-placement="right-hanging"
           :disabled="loading"
+          @after-leave="close"
         >
           <n-form-item label="服务名称" path="name">
             <n-input v-model:value="form.name" placeholder="请输入服务名称" />

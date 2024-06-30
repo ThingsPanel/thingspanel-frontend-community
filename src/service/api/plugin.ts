@@ -17,5 +17,5 @@ export const putRegisterService = async (params: any) => {
 
 // 删除服务
 export const delRegisterService = async (id: any) => {
-  return await request.delete<Panel.Data>(`/service?id=${id}`);
+  return await request.delete<Panel.Data>(`/service/${id}`);
 };
