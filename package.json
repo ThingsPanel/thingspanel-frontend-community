@@ -147,7 +147,7 @@
     "vite-plugin-progress": "0.0.7",
     "vite-plugin-pwa": "0.16.5",
     "vite-plugin-svg-icons": "2.0.1",
-    "vite-plugin-vue-devtools": "7.0.16",
+    "vite-plugin-vue-devtools": "7.3.2",
     "vite-svg-loader": "^5.1.0",
     "vue-eslint-parser": "9.4.2",
     "vue-tsc": "2.0.3"
