@@ -174,6 +174,7 @@ const routeMap: RouteMap = {
   "alarm_notification-record": "/alarm/notification-record",
   "alarm_warning-message": "/alarm/warning-message",
   "apply": "/apply",
+  "apply_plugin": "/apply/plugin",
   "apply_service": "/apply/service",
   "automation": "/automation",
   "automation_linkage-edit": "/automation/linkage-edit",

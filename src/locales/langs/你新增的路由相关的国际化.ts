@@ -5,6 +5,7 @@
 export const czh_cn = {
   apply: '应用管理',
   apply_service: '协议插件管理',
+  apply_in: '插件管理',
   test: '页面测试用',
   'rule-engine': '规则引擎',
   'data-service_rule-engine': '规则引擎',

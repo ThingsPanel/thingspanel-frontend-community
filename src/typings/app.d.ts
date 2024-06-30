@@ -253,6 +253,7 @@ declare namespace App {
         title: string;
       };
       common: {
+        serviceConfi: string;
         deleteThePlan: string;
         cancelThePlan: string;
         planTheDevice: string;

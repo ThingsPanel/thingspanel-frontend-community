@@ -10,6 +10,7 @@ const local: App.I18n.Schema = {
     title: 'System Name: {name}'
   },
   common: {
+    serviceConfi: '服务配置',
     deleteThePlan: '确定删除计划吗',
     cancelThePlan: '确定取消计划吗',
     planTheDevice: '确定将计划下发给设备吗',
