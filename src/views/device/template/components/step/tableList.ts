@@ -95,7 +95,7 @@ export const events: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
     align: 'center'
   },
   {
-    key: 'data_type',
+    key: 'params',
     minWidth: '100px',
     title: $t('device_template.table_header.eventParameters'),
     align: 'center'
@@ -122,7 +122,7 @@ export const command: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
     align: 'center'
   },
   {
-    key: 'data_type',
+    key: 'params',
     minWidth: '100px',
     title: $t('device_template.table_header.commandParameters'),
     align: 'center'
