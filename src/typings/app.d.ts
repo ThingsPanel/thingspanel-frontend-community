@@ -1138,6 +1138,8 @@ declare namespace App {
           attributeReporting: string;
           transmissionPreprocessing: string;
           reportPreprocessing: string;
+          commandDeliveryPreprocessing: string;
+          eventReportPreprocessing: string;
           pushTime: string;
           handle: string;
           deviceNumberMax: string;
