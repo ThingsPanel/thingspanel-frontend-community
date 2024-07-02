@@ -111,8 +111,8 @@ const handleDataChange = () => {
   }
   const changeColorArr = [ratio * 0.8, valueColor];
   adjustedOptions.series[0].axisLine.lineStyle.color[0] = changeColorArr;
-  adjustedOptions.series[0].data[0].value = detailValue;
-  adjustedOptions.series[0].data[0].detail.formatter = value => `${value} ${unitValue}`;
+  adjustedOptions.series[0].data[0].value = detailValue || 0;
+  adjustedOptions.series[0].data[0].detail.formatter = value => `${value || 0} ${unitValue}`;
 };
 
 const handleResize = () => {
@@ -124,7 +124,7 @@ const handleResize = () => {
     const adjustedOptions = chartOptions.value;
     adjustedOptions.series[0].detail.fontSize = containerWidth / 10;
     adjustedOptions.series[0].axisLabel.fontSize = containerWidth / 16;
-    adjustedOptions.series[0].data[0].detail.lineHeight = containerWidth / 16;
+    adjustedOptions.series[0].data[0].detail.lineHeight = containerWidth / 10;
   }
 };
 
