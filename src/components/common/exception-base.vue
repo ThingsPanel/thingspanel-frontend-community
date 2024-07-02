@@ -1,6 +1,8 @@
 <script lang="ts" setup>
 import { computed } from 'vue';
 import { $t } from '@/locales';
+import { useRouterPush } from '@/hooks/common/router';
+import { useAuthStore } from '@/store/modules/auth';
 
 defineOptions({ name: 'ExceptionBase' });
 
@@ -26,10 +28,30 @@ const iconMap: Record<ExceptionType, string> = {
 };
 
 const icon = computed(() => iconMap[props.type]);
+
+const { toLogin } = useRouterPush();
+const authStore = useAuthStore();
+
+function logout() {
+  window.$dialog?.info({
+    title: $t('common.tip'),
+    content: $t('common.logoutConfirm'),
+    positiveText: $t('common.confirm'),
+    negativeText: $t('common.cancel'),
+    onPositiveClick: () => {
+      authStore.resetStore();
+      toLogin();
+    }
+  });
+}
 </script>
 
 <template>
   <div class="min-h-520px wh-full flex-vertical-center gap-24px overflow-hidden">
+    <ButtonIcon class="position-absolute position-right-2xl position-top-2xl" @click="logout">
+      <SvgIcon icon="ph:sign-out" class="text-icon-medium" />
+      <span class="text-14px font-medium">{{ $t('common.logout') }}</span>
+    </ButtonIcon>
     <div class="flex text-400px text-primary">
       <SvgIcon :local-icon="icon" />
     </div>
