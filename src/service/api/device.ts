@@ -117,6 +117,13 @@ export const deviceTemplate = async (params: any) => {
   });
 };
 
+/** 获取服务列表 */
+export const getServiceList = async (params: any) => {
+  return await request.get<Api.BaseApi.Data | any>(`/service/list`, {
+    params
+  });
+};
+
 /** 获取设备功能模板列表 */
 export const deviceTemplateDetail = async (params: any) => {
   return await request.get<Api.BaseApi.Data | any>(`/device/template/detail/${params.id}`);

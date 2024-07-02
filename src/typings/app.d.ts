@@ -1014,6 +1014,13 @@ declare namespace App {
         };
       };
       device_template: {
+        selectServices: string;
+        stepOneDescribe: string;
+        serviceConfig: string;
+        stepTwoDescribe: string;
+        equipmentConfig: string;
+        stepThreeDescribe: string;
+        adoptDeviceAdd: string;
         templateInfo: string;
         editTemplateInfo: string;
         addDeviceInfo: string;
