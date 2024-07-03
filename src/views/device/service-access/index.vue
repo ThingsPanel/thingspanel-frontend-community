@@ -29,7 +29,7 @@ const getData = async () => {
 getData();
 
 const clickDevice = async row => {
-  router.push('/device/service-details');
+  router.push(`/device/service-details?id=${row}`);
   console.log(row, '点击了模块');
 };
 </script>
