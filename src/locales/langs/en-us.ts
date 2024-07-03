@@ -62,6 +62,7 @@ const local: App.I18n.Schema = {
     enterNumberTriggering: 'Please enter the number of triggering repetitions',
     enterAlarmLevel: 'Please enter the alarm level',
     enterAlarmName: 'Please enter the alarm name',
+    enterJson: 'Please enter the correct JSON format',
     nodata: 'There is currently no data available',
     halfYear: 'Half a year',
     lastYears1: 'Last 1 years',

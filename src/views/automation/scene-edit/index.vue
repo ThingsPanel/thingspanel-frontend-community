@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { type FormInst, NButton, NCard, NFlex, useDialog } from 'naive-ui';
+import { NButton, NCard, NFlex, useDialog, useMessage } from 'naive-ui';
+import type { FormInst } from 'naive-ui';
 import { deviceGroupTree } from '@/service/api';
 import { warningMessageList } from '@/service/api/alarm';
 import PopUp from '@/views/alarm/warning-message/components/pop-up.vue';
@@ -18,6 +19,7 @@ import {
 // import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales';
 import { useTabStore } from '@/store/modules/tab';
+// eslint-disable-next-line import/no-duplicates
 const route = useRoute();
 const router = useRouter();
 const dialog = useDialog();
@@ -78,7 +80,7 @@ const configFormRules = ref({
   },
   actionValue: {
     required: true,
-    message: $t('common.input')
+    message: $t('common.select')
   }
 });
 // 下拉选择器加载状态
@@ -275,6 +277,31 @@ const actionParamTypeChange = (instructItem: any, data: any) => {
 const actionParamChange = (instructItem: any, data: any) => {
   instructItem.actionParamData = instructItem.actionParamOptions.find(item => item.key === data) || null;
 };
+const message = useMessage();
+// 动作值标识
+const actionValueChange = (instructItem: any) => {
+  if (
+    instructItem.action_param_type === 'command' ||
+    instructItem.action_param_type === 'c_attributes' ||
+    instructItem.action_param_type === 'c_telemetry' ||
+    instructItem.action_param_type === 'c_command'
+  ) {
+    try {
+      JSON.parse(instructItem.actionValue);
+      if (typeof JSON.parse(instructItem.actionValue) === 'object') {
+        instructItem.inputFeedback = '';
+        instructItem.inputValidationStatus = undefined;
+      } else {
+        message.error($t('common.enterJson'));
+        instructItem.inputValidationStatus = 'error';
+      }
+    } catch (e) {
+      message.error($t('common.enterJson'));
+      // instructItem.inputFeedback=$t('common.enterJson')
+      instructItem.inputValidationStatus = 'error';
+    }
+  }
+};
 // // 选择动作标识符
 // const actionParamChange = (instructItem: any, pathValues: any) => {
 //   instructItem.action_param_type = pathValues[0].value;
@@ -414,7 +441,7 @@ const submitData = async () => {
         if (instructItem.action_param_type === 'command') {
           const action_value = {
             method: instructItem.action_param,
-            params: instructItem.actionValue
+            params: JSON.stringify(JSON.parse(instructItem.actionValue))
           };
           instructItem.action_value = JSON.stringify(action_value);
         }
@@ -690,9 +717,11 @@ onMounted(() => {
                       </NFormItem>
                       <NFormItem
                         :show-label="false"
-                        :show-feedback="false"
+                        :show-feedback="instructItem.actionParamData?.data_type === 'Boolean'"
                         :path="`actions[${actionGroupIndex}].actionInstructList[${instructIndex}].actionValue`"
                         :rule="configFormRules.actionValue"
+                        :validation-status="instructItem.inputValidationStatus"
+                        :feedback="instructItem.inputFeedback"
                         class="max-w-60 w-full"
                       >
                         <NInput
@@ -700,6 +729,7 @@ onMounted(() => {
                           v-model:value="instructItem.actionValue"
                           :placeholder="$t('common.as') + '：' + instructItem.placeholder"
                           class="w-full"
+                          @blur="actionValueChange(instructItem)"
                         />
                         <n-input-number
                           v-if="
@@ -712,6 +742,16 @@ onMounted(() => {
                           :placeholder="$t('common.as') + '：' + instructItem.placeholder"
                           :show-button="false"
                         />
+                        <n-radio-group
+                          v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'Boolean'"
+                          v-model:value="instructItem.actionValue"
+                          name="radiogroup"
+                        >
+                          <n-space>
+                            <n-radio :value="true">true</n-radio>
+                            <n-radio :value="false">false</n-radio>
+                          </n-space>
+                        </n-radio-group>
                       </NFormItem>
                     </template>
                     <NButton
