@@ -35,9 +35,7 @@ const getData = async () => {
     id: props.id
   });
   console.log(res.data.list);
-  if (res.data.list !== null) {
-    tableData.value = tableData.value.concat(res.data.list);
-  }
+  tableData.value = res.data.list || [];
   total.value = res.data.total;
 };
 const selectConfig = v => {
@@ -215,7 +213,7 @@ onMounted(() => {});
     <n-data-table :columns="columns" :data="tableData" class="mt-4" />
     <div class="mt-4 w-full flex justify-end">
       <n-pagination
-        :page-count="total"
+        :item-count="total"
         :page-size="5"
         @update:page="
           page => {
