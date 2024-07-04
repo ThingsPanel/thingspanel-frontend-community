@@ -200,7 +200,12 @@ watch(
                   :render-option="info => metricsOptionRender(info, item)"
                   @update:show="show => updateDropdownShow(show, item)"
                 ></NSelect>
-                <NInput v-if="i <= deviceCount - 1" v-model:value="item.metricsName" style="max-width: 140px" />
+                <NInput
+                  v-if="i <= deviceCount - 1"
+                  v-model:value="item.metricsName"
+                  style="max-width: 140px"
+                  placeholder="请输入名称"
+                />
               </div>
             </div>
           </NForm>

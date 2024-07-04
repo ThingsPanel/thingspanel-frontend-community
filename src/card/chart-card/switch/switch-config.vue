@@ -2,7 +2,7 @@
 import { inject, ref, watch } from 'vue';
 import type { ICardData, IConfigCtx } from '@/components/panel/card';
 import { $t } from '@/locales';
-import { deviceDatas } from './api';
+import { deviceDatas, deviceDetail } from './api';
 
 const flag: any = ref(false);
 const active0: any = ref('');
@@ -10,7 +10,6 @@ const active1: any = ref('');
 const ctx = inject<IConfigCtx>('config-ctx')!;
 
 const props = defineProps<{
-  // card: ICardData,
   data: ICardData;
 }>();
 
@@ -40,10 +39,29 @@ const blurClick: () => void = () => {
   }
 };
 
+const setSeries: (obj: any) => void = async obj => {
+  const arr: any = props?.data?.dataSource;
+  const querDetail = {
+    device_id: obj.deviceSource[0]?.deviceId ?? '',
+    keys: arr.deviceSource[0].metricsId
+  };
+  if (querDetail.device_id && querDetail.keys) {
+    const detail = await deviceDetail(querDetail);
+    const theValue = detail?.data?.[0].value;
+    if (theValue === 0) {
+      active1.value = '0';
+    } else if (theValue === 1) {
+      active0.value = '1';
+    }
+    flag.value = active0.value === '1';
+  }
+};
+
 watch(
   () => props.data?.dataSource?.deviceSource,
   () => {
     console.log(props?.data?.dataSource, $t('common.test'));
+    setSeries(props?.data?.dataSource);
   },
   { deep: true, immediate: true }
 );

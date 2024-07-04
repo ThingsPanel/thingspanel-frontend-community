@@ -72,7 +72,7 @@ const clickSwitch: () => void = async () => {
     const obj = {
       device_id,
       value: JSON.stringify({
-        switch: active.value ? 1 : 0
+        [arr.deviceSource[0]?.metricsId]: active.value ? 1 : 0
       })
     };
     await deviceDatas(obj);
@@ -104,7 +104,7 @@ onUnmounted(() => {
     <div>
       <!-- {{  props?.card?.dataSource?.deviceSource[0] }} -->
       <n-switch v-model:value="active" @change="clickSwitch" />
-      <div class="switch">{{ $t('generate.switch') }}</div>
+      <div class="switch">{{ card.dataSource?.deviceSource[0]?.metricsName || $t('generate.switch') }}</div>
     </div>
   </div>
 </template>
