@@ -310,6 +310,7 @@ const fetchFirstLevelOptions = async () => {
   searchConfigs.value.map((item: any) => {
     if (item.key === 'service_identifier') {
       item.options = [
+        { label: '不限协议/服务', value: '' },
         {
           type: 'group',
           label: '协议',
