@@ -306,6 +306,7 @@ declare namespace App {
         enterNumberTriggering: string;
         enterAlarmLevel: string;
         enterAlarmName: string;
+        enterJson: string;
         nodata: string;
         halfYear: string;
         lastYears1: string;

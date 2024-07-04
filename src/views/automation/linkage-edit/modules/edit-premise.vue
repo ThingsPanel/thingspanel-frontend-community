@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { NButton, NFlex } from 'naive-ui';
+import { NButton, NFlex, useMessage } from 'naive-ui';
 import type { FormInst } from 'naive-ui';
 import { IosAlert, IosRefresh } from '@vicons/ionicons4';
 import { repeat } from 'seemly';
@@ -318,6 +318,26 @@ const actionParamShow = async (ifItem: any, data: any) => {
       ]
     };
     ifItem.triggerParamOptions.push(statusData);
+  }
+};
+const message = useMessage();
+
+// 动作值标识
+const actionValueChange = (ifItem: any) => {
+  if (ifItem.trigger_param_type === 'event') {
+    try {
+      JSON.parse(ifItem.trigger_value);
+      if (typeof JSON.parse(ifItem.trigger_value) === 'object') {
+        ifItem.inputFeedback = '';
+        ifItem.inputValidationStatus = undefined;
+      } else {
+        message.error($t('common.enterJson'));
+        ifItem.inputValidationStatus = 'error';
+      }
+    } catch (e) {
+      message.error($t('common.enterJson'));
+      ifItem.inputValidationStatus = 'error';
+    }
   }
 };
 
@@ -807,8 +827,10 @@ watch(
                       @update:value="(value, option, pathValues) => triggerParamChange(ifItem, pathValues)"
                     />
                   </NFormItem>
-                  <template v-if="ifItem.trigger_param_type === 'telemetry'">
-                    <!--          设备条件下->单个设备/单类设备>-设备ID/选择设备类ID>触发消息标识符是遥测->选择操作符 --->
+                  <template
+                    v-if="ifItem.trigger_param_type === 'telemetry' || ifItem.trigger_param_type === 'attributes'"
+                  >
+                    <!--          设备条件下->单个设备/单类设备>-设备ID/选择设备类ID>触发消息标识符是遥测/属性->选择操作符 --->
                     <NFormItem
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].trigger_operator`"
@@ -862,31 +884,34 @@ watch(
                       </NFormItem>
                     </template>
                   </template>
-                  <template v-if="ifItem.trigger_param_type === 'attributes'">
-                    <!--          设备条件下->单个设备/单类设备>-设备ID/选择设备类ID>触发消息标识符是属性->输入参数 --->
-                    <NFormItem
-                      :show-label="false"
-                      :path="`ifGroups[${ifGroupIndex}][${ifIndex}].trigger_value`"
-                      :rule="premiseFormRules.trigger_value"
-                      class="max-w-40 w-full"
-                    >
-                      <NInput
-                        v-model:value="ifItem.trigger_value"
-                        :placeholder="$t('common.param') + '，' + $t('common.as') + '：{param1:1}'"
-                      />
-                    </NFormItem>
-                  </template>
+                  <!--                  <template v-if="ifItem.trigger_param_type === 'attributes'">-->
+                  <!--                    &lt;!&ndash;          设备条件下->单个设备/单类设备>-设备ID/选择设备类ID>触发消息标识符是属性->输入参数 -&ndash;&gt;-->
+                  <!--                    <NFormItem-->
+                  <!--                      :show-label="false"-->
+                  <!--                      :path="`ifGroups[${ifGroupIndex}][${ifIndex}].trigger_value`"-->
+                  <!--                      :rule="premiseFormRules.trigger_value"-->
+                  <!--                      class="max-w-40 w-full"-->
+                  <!--                    >-->
+                  <!--                      <NInput-->
+                  <!--                        v-model:value="ifItem.trigger_value"-->
+                  <!--                        :placeholder="$t('common.param') + '，' + $t('common.as') + '：{param1:1}'"-->
+                  <!--                      />-->
+                  <!--                    </NFormItem>-->
+                  <!--                  </template>-->
                   <template v-if="ifItem.trigger_param_type === 'event'">
                     <!--          设备条件下->单个设备/单类设备>-设备ID/选择设备类ID>触发消息标识符是事件->输入参数 --->
                     <NFormItem
                       :show-label="false"
                       :path="`ifGroups[${ifGroupIndex}][${ifIndex}].trigger_value`"
                       :rule="premiseFormRules.trigger_value"
+                      :validation-status="ifItem.inputValidationStatus"
+                      :feedback="ifItem.inputFeedback"
                       class="max-w-40 w-full"
                     >
                       <NInput
                         v-model:value="ifItem.trigger_value"
-                        :placeholder="$t('common.param') + '，' + $t('common.as') + '：{param1:1}'"
+                        :placeholder="`${$t('common.param')},${$t('common.as')}:{&quot;param1&quot;:1}`"
+                        @blur="actionValueChange(ifItem)"
                       />
                     </NFormItem>
                   </template>

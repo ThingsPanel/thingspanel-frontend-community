@@ -60,8 +60,6 @@ const tabStore = useTabStore();
 const editPremise = ref();
 const editAction = ref();
 const submitData = async () => {
-  console.log(route);
-  console.log(router);
   // 处理条件的数据保存
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   configForm.value.trigger_condition_groups = handleIfData();
@@ -214,6 +212,29 @@ const handleActionData = () => {
     if (item.actionType === '1') {
       // eslint-disable-next-line array-callback-return
       item.actionInstructList.map((instructItem: any) => {
+        // 如果是c_telemetry/c_attribute,那么action_value示例格式：{"c_telemetry":2}
+        // 如果是c_command,那么action_value示例格式：{"method":"switch1","params":{"false":0}}
+        if (
+          instructItem.action_param_type === 'c_telemetry' ||
+          instructItem.action_param_type === 'c_attribute' ||
+          instructItem.action_param_type === 'c_command'
+        ) {
+          instructItem.action_value = instructItem.actionValue;
+        }
+        // 如果是telemetry/attribute，那么 action_value示例格式：{"humidity":2}
+        if (instructItem.action_param_type === 'telemetry' || instructItem.action_param_type === 'attributes') {
+          const action_value = {};
+          action_value[instructItem.action_param] = instructItem.actionValue;
+          instructItem.action_value = JSON.stringify(action_value);
+        }
+        // 如果是command/c_command，那么 action_value示例格式:	{"method":"ReSet","params":{"switch":1,"light":"close"}}
+        if (instructItem.action_param_type === 'command') {
+          const action_value = {
+            method: instructItem.action_param,
+            params: instructItem.actionValue
+          };
+          instructItem.action_value = JSON.stringify(action_value);
+        }
         actionsData.push(instructItem);
       });
     } else {
@@ -287,7 +308,24 @@ const echoActionData = (actionsData: any) => {
   // eslint-disable-next-line array-callback-return
   actionsData.map((item: any) => {
     if (item.action_type === '10' || item.action_type === '11') {
-      item.action_param_key = `${item.action_param_type}/${item.action_param}`;
+      item.actionParamOptions = [];
+      const actionValueObj = JSON.parse(item.action_value);
+      if (
+        item.action_param_type === 'c_telemetry' ||
+        item.action_param_type === 'c_attribute' ||
+        item.action_param_type === 'c_command'
+      ) {
+        item.actionValue = item.action_value;
+      }
+      // 如果是telemetry/attribute，那么 action_value示例格式：{"humidity":2}
+      if (item.action_param_type === 'telemetry' || item.action_param_type === 'attributes') {
+        // item.action_value = JSON.stringify(action_value);
+        item.actionValue = actionValueObj[item.action_param];
+      }
+      // 如果是command/c_command，那么 action_value示例格式:	{"method":"ReSet","params":{"switch":1,"light":"close"}}
+      if (item.action_param_type === 'command') {
+        item.actionValue = actionValueObj.params;
+      }
       actionInstructList.push(item);
     } else {
       item.actionType = item.action_type;

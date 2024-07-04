@@ -63,6 +63,7 @@ const local: App.I18n.Schema = {
     enterNumberTriggering: '请输入触发重复次数',
     enterAlarmLevel: '请输入告警级别',
     enterAlarmName: '请输入告警名称',
+    enterJson: '请输入正确的JSON格式',
     nodata: '暂无数据',
     halfYear: '最近半年',
     lastYears1: '最近1年',
