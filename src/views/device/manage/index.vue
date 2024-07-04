@@ -296,14 +296,16 @@ const fetchFirstLevelOptions = async () => {
     type: 'protocol'
   }));
 
-  const serviceOptions = data.service.map(item => {
-    serviceIds.value.push(item.service_identifier);
-    return {
-      label: item.name,
-      value: item.service_identifier,
-      type: 'service'
-    };
-  });
+  const serviceOptions = data.service
+    ? data.service.map(item => {
+        serviceIds.value.push(item.service_identifier);
+        return {
+          label: item.name,
+          value: item.service_identifier,
+          type: 'service'
+        };
+      })
+    : [];
 
   searchConfigs.value.map((item: any) => {
     if (item.key === 'service_identifier') {
