@@ -1296,7 +1296,7 @@ const local: App.I18n.Schema = {
     open: 'open:',
     copy: 'copy',
     'basic-info': 'basic info',
-    'set-default-device-open-status': 'set default device open status',
+    'set-default-device-open-status': 'set device open/close value',
     'copy-one-type-one-secret-device-password': 'copy one-type-one-secret device password',
     'search-icon': 'search icon',
     'allow-device-auto-create': 'allow device auto-create',
