@@ -642,7 +642,11 @@ onMounted(() => {
                         class="w-60"
                       >
                         <NInput
-                          v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'string'"
+                          v-if="
+                            instructItem.actionParamData &&
+                            (instructItem.actionParamData.data_type === 'string' ||
+                              instructItem.actionParamData.data_type === 'String')
+                          "
                           v-model:value="instructItem.actionValue"
                           :placeholder="$t('common.as') + '：' + instructItem.placeholder"
                           class="w-full"
@@ -660,7 +664,11 @@ onMounted(() => {
                           :show-button="false"
                         />
                         <n-radio-group
-                          v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'Boolean'"
+                          v-if="
+                            instructItem.actionParamData &&
+                            (instructItem.actionParamData.data_type === 'Boolean' ||
+                              instructItem.actionParamData.data_type === 'boolean')
+                          "
                           v-model:value="instructItem.actionValue"
                           name="radiogroup"
                         >
