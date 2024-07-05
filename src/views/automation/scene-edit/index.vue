@@ -254,6 +254,9 @@ const actionParamShow = async (instructItem: any) => {
     if (instructItem.action_param && instructItem.actionParamOptions.length > 0) {
       instructItem.actionParamData =
         instructItem.actionParamOptions.find(item => item.key === instructItem.action_param) || null;
+      if (instructItem.actionParamData.data_type) {
+        instructItem.actionParamData.data_type = instructItem.actionParamData.data_type.toLowerCase();
+      }
     }
   }
 };
@@ -276,6 +279,9 @@ const actionParamTypeChange = (instructItem: any, data: any) => {
 // 选择动作标识符
 const actionParamChange = (instructItem: any, data: any) => {
   instructItem.actionParamData = instructItem.actionParamOptions.find(item => item.key === data) || null;
+  if (instructItem.actionParamData.data_type) {
+    instructItem.actionParamData.data_type = instructItem.actionParamData.data_type.toLowerCase();
+  }
 };
 const message = useMessage();
 // 动作值标识
@@ -458,15 +464,17 @@ const submitData = async () => {
     positiveText: $t('device_template.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
-      configForm.value.actions = actionsData;
+      // configForm.value.actions = actionsData;
+      const configFormData = JSON.parse(JSON.stringify(configForm.value));
+      configFormData.actions = actionsData;
       if (configId.value) {
-        const res = await sceneEdit(configForm.value);
+        const res = await sceneEdit(configFormData);
         if (!res.error) {
           await tabStore.removeTab(route.path);
           router.replace({ path: '/automation/scene-manage' });
         }
       } else {
-        const res = await sceneAdd(configForm.value);
+        const res = await sceneAdd(configFormData);
         if (!res.error) {
           await tabStore.removeTab(route.path);
           router.replace({ path: '/automation/scene-manage' });
@@ -717,7 +725,7 @@ onMounted(() => {
                       </NFormItem>
                       <NFormItem
                         :show-label="false"
-                        :show-feedback="instructItem.actionParamData?.data_type === 'Boolean'"
+                        :show-feedback="instructItem.actionParamData?.data_type === 'boolean'"
                         :path="`actions[${actionGroupIndex}].actionInstructList[${instructIndex}].actionValue`"
                         :rule="configFormRules.actionValue"
                         :validation-status="instructItem.inputValidationStatus"
@@ -725,33 +733,21 @@ onMounted(() => {
                         class="max-w-60 w-full"
                       >
                         <NInput
-                          v-if="
-                            instructItem.actionParamData &&
-                            (instructItem.actionParamData.data_type === 'string' ||
-                              instructItem.actionParamData.data_type === 'String')
-                          "
+                          v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'string'"
                           v-model:value="instructItem.actionValue"
                           :placeholder="$t('common.as') + '：' + instructItem.placeholder"
                           class="w-full"
                           @blur="actionValueChange(instructItem)"
                         />
                         <n-input-number
-                          v-if="
-                            instructItem.actionParamData &&
-                            (instructItem.actionParamData.data_type === 'Number' ||
-                              instructItem.actionParamData.data_type === 'number')
-                          "
+                          v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'number'"
                           v-model:value="instructItem.actionValue"
                           class="w-full"
                           :placeholder="$t('common.as') + '：' + instructItem.placeholder"
                           :show-button="false"
                         />
                         <n-radio-group
-                          v-if="
-                            instructItem.actionParamData &&
-                            (instructItem.actionParamData.data_type === 'Boolean' ||
-                              instructItem.actionParamData.data_type === 'boolean')
-                          "
+                          v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'boolean'"
                           v-model:value="instructItem.actionValue"
                           name="radiogroup"
                         >
