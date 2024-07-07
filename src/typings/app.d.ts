@@ -306,6 +306,7 @@ declare namespace App {
         enterNumberTriggering: string;
         enterAlarmLevel: string;
         enterAlarmName: string;
+        enterJson: string;
         nodata: string;
         halfYear: string;
         lastYears1: string;
@@ -1138,6 +1139,8 @@ declare namespace App {
           attributeReporting: string;
           transmissionPreprocessing: string;
           reportPreprocessing: string;
+          commandDeliveryPreprocessing: string;
+          eventReportPreprocessing: string;
           pushTime: string;
           handle: string;
           deviceNumberMax: string;

@@ -32,6 +32,8 @@ export const pzh_cn: any = {
     attributeReporting: '属性上报预处理',
     transmissionPreprocessing: '遥测下发预处理',
     reportPreprocessing: '遥测上报预处理',
+    commandDeliveryPreprocessing: '命令下发预处理',
+    eventReportPreprocessing: '事件上报预处理',
     pushTime: '推送时间',
     deviceNumberMax: '设备编号不能超过36位',
     deviceNumberNotVvailable: '设备编号不可用',
