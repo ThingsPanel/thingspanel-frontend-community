@@ -149,8 +149,8 @@ watch(
         device_template_id: deviceTemplateId,
         ...newVal
       });
-      eventsData = reactive(JSON.parse(newVal.params));
-      console.log(JSON.parse(newVal.params), '父级');
+      eventsData = reactive(JSON.parse(newVal.paramsOrigin));
+      console.log(JSON.parse(newVal.paramsOrigin), '父级');
     } else {
       addFrom = reactive({
         device_template_id: deviceTemplateId,
