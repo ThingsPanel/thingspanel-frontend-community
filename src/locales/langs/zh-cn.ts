@@ -1294,7 +1294,7 @@ const local: App.I18n.Schema = {
     open: '开启：',
     copy: '复制',
     'basic-info': '基本信息',
-    'set-default-device-open-status': '设置设备默认的开启状态',
+    'set-default-device-open-status': '设置控制设备开启和关闭时的状态值',
     'copy-one-type-one-secret-device-password': '复制一型一密设备的密码',
     'search-icon': '搜索图标',
     'allow-device-auto-create': '允许设备自动创建',

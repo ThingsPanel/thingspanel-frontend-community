@@ -1,0 +1,80 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name'
+        required: false
+        default: 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.11
+          
+      - name: Cache pnpm modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+            
+      - name: Install dependencies and build
+        run: |
+          npm install -g pnpm@8.15.5
+          pnpm i
+          pnpm build:4096
+
+      - name: Get tag name
+        id: get_tag
+        run: echo "::set-output name=tag::$(echo ${GITHUB_REF#refs/tags/})"
+        
+      - name: Check if tag matches pattern
+        run: |
+          if [[ "${{ steps.get_tag.outputs.tag }}" =~ ^v.*$ ]]; then
+            echo "Tag matches pattern."
+          else
+            echo "Tag does not match pattern. Exiting..."
+            exit 0
+          fi
+          
+      - name: Compress build output
+        run: tar -czf dist.tar.gz -C dist .
+        
+      - name: Create Release
+        id: create_release
+        if: ${{ steps.get_tag.outputs.tag =~ '^v.*$' }}
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.get_tag.outputs.tag }}
+          release_name: Release ${{ steps.get_tag.outputs.tag }}
+          body: Release created by GitHub Actions. Tag ${{ steps.get_tag.outputs.tag }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        if: ${{ steps.get_tag.outputs.tag =~ '^v.*$' }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist.tar.gz
+          asset_name: dist.tar.gz
+          asset_content_type: application/gzip

@@ -1,84 +1,94 @@
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 import type { ICardData } from '@/components/panel/card';
-import { localStg } from '@/utils/storage';
 import { $t } from '@/locales';
-import { getWebsocketServerUrl } from '@/utils/common/tool';
-import { telemetryDataCurrentKeys } from '@/service/api/device';
-import { deviceDatas } from './api';
+import { attributeDataPub, getAttributeDataSet, telemetryDataPub } from '@/service/api/device';
 
 const active: any = ref(false);
+const detail: any = ref(0);
 const props = defineProps<{
   card: ICardData;
 }>();
-const socket: any = ref(null);
-const detail: any = ref(null);
-// sendMessage()
-const setSeries: (obj: any) => void = async obj => {
-  const arr: any = props?.card?.dataSource;
-  const querDetail = {
-    device_id: obj.deviceSource[0]?.deviceId ?? '',
-    keys: arr.deviceSource[0].metricsId
-  };
-  if (querDetail.device_id && querDetail.keys) {
-    detail.value = await telemetryDataCurrentKeys(querDetail);
-    const queryInfo = {
-      device_id: obj.deviceSource[0]?.deviceId ?? '',
-      keys: [arr.deviceSource[0].metricsId || 'externalVol'],
-      token: localStg.get('token')
-    };
-    console.log(arr.deviceSource[0].metricsId, '11');
-    if (socket.value && socket.value.readyState === WebSocket.OPEN) {
-      socket.value.send(JSON.stringify(queryInfo)); // 将对象转换为JSON字符串后发送
-    } else {
-      console.error('WebSocket连接未建立或已关闭');
-    }
-  } else {
-    console.log('WebSocket连接未建立或已关闭');
+
+defineExpose({
+  updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
+    detail.value = metricsId ? data[metricsId] : 0;
   }
+});
+
+/**
+ * Metrics data type can be string, number or boolean. If config.active0 is not empty, it will be used as the value when
+ * the switch is on. If config.active1 is not empty, it will be used as the value when the switch is off. active0 and
+ * active1 is string type and need to be converted according to the data type of metrics.
+ *
+ * @param swtichState
+ */
+const getSwitchValue: (swtichState: boolean) => any = (swtichState: boolean) => {
+  const config = props?.card?.config;
+  const dataType = props?.card?.dataSource?.deviceSource[0]?.metricsDataType;
+  if (dataType === 'string') {
+    if (swtichState) {
+      return config?.active0 ? config.active0 : '1';
+    }
+    return config?.active1 ? config.active1 : '0';
+  } else if (dataType === 'number') {
+    if (swtichState) {
+      return config?.active0 ? Number.parseFloat(config.active0) : 1;
+    }
+    return config?.active1 ? Number.parseFloat(config.active1) : 0;
+  } else if (dataType === 'boolean') {
+    if (swtichState) {
+      return config?.active0 ? Boolean(config.active0) : true;
+    }
+    return config?.active1 ? Boolean(config.active1) : true;
+  }
+  return swtichState ? 1 : 0;
 };
 
-const fun: () => void = () => {
-  let wsUrl = getWebsocketServerUrl();
-  wsUrl += `/telemetry/datas/current/keys/ws`;
-  socket.value = new WebSocket(wsUrl); // 替换为你的WebSocket URL
-
-  socket.value.onopen = () => {
-    setSeries(props?.card?.dataSource);
-    console.log('WebSocket连接已打开');
-  };
-
-  socket.value.onmessage = event => {
-    const receivedData = JSON.parse(event.data);
-    active.value = receivedData.switch !== 0;
-    // console.log('接收到数据:', receivedData);
-    // 在这里处理接收到的数据
-  };
-
-  socket.value.onerror = error => {
-    console.error('WebSocket错误:', error);
-  };
-
-  socket.value.onclose = () => {
-    console.log('WebSocket连接已关闭');
-  };
+const setSeries: (dataSource: any) => void = async dataSource => {
+  const arr = dataSource;
+  const metricsType = arr.deviceSource ? arr.deviceSource[0]?.metricsType : '';
+  const deviceId = arr.deviceSource ? arr.deviceSource[0]?.deviceId ?? '' : '';
+  const metricsId = arr.deviceSource ? arr.deviceSource[0]?.metricsId : '';
+  if (metricsType === 'attributes') {
+    if (deviceId && metricsId) {
+      const res = await getAttributeDataSet({ device_id: deviceId });
+      const attributeData = res.data.find(item => item.key === metricsId);
+      detail.value = attributeData?.value;
+    }
+  }
 };
 
 const clickSwitch: () => void = async () => {
   const arr: any = props?.card?.dataSource;
   const device_id = arr.deviceSource[0]?.deviceId ?? '';
+  const metricsId = arr.deviceSource ? arr.deviceSource[0]?.metricsId : 'swtich';
+  const metricsType = arr.deviceSource ? arr.deviceSource[0]?.metricsType : '';
   if (device_id && device_id !== '') {
-    console.log(arr.deviceSource[0], '测试4');
     const obj = {
       device_id,
       value: JSON.stringify({
-        [arr.deviceSource[0]?.metricsId]: active.value ? 1 : 0
+        [metricsId]: getSwitchValue(active.value) // key is metricsId
       })
     };
-    await deviceDatas(obj);
-    fun();
-  } else {
-    console.log('查询不到设备');
+    if (metricsType === 'attributes') {
+      await attributeDataPub(obj);
+    } else if (metricsType === 'telemetry') {
+      await telemetryDataPub(obj);
+    }
+  }
+};
+
+/**
+ * Calculate the switch state based on the metrics data. metrics data is in detail.value. If active0 is not empty, check
+ * detail.value is equal to active0. If true, switch is on. If active1 is not empty, check detail.value is equal to
+ * active1. If true, switch is off.
+ */
+const calculateState: () => void = () => {
+  if (props?.card?.config?.active0) {
+    active.value = detail.value === getSwitchValue(true);
+  } else if (props?.card?.config?.active1) {
+    active.value = detail.value !== getSwitchValue(false);
   }
 };
 
@@ -89,14 +99,22 @@ watch(
   },
   { deep: true }
 );
-onMounted(() => {
-  fun();
-});
-onUnmounted(() => {
-  if (socket.value) {
-    socket.value.close();
-  }
-});
+
+watch(
+  () => detail.value,
+  () => {
+    calculateState();
+  },
+  { deep: true }
+);
+
+watch(
+  () => props.card?.config,
+  () => {
+    calculateState();
+  },
+  { deep: true }
+);
 </script>
 
 <template>

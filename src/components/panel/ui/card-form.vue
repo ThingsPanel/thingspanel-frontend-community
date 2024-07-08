@@ -102,6 +102,7 @@ const metricsOptionRender = (info, item) => {
               item.metricsId = it.key;
               item.metricsName = it.label || '';
               item.metricsType = info?.option?.data_source_type;
+              item.metricsDataType = it.data_type;
               updateDropdownShow(false, item);
             }}
           >
