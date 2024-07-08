@@ -119,6 +119,7 @@ const cancelCallback = () => {
 const showDescModal = (item: any) => {
   showModal.value = true;
   infoData.value = item;
+  description.value = infoData.value.description;
 };
 const submitCallback = async () => {
   if (description.value === '') {
