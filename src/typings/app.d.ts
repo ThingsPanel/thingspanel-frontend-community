@@ -476,6 +476,8 @@ declare namespace App {
         debug: string;
         send: string;
         creationTime: string;
+        service: string;
+        protocol: string;
       };
       theme: {
         themeSchema: { title: string } & Record<UnionKey.ThemeScheme, string>;
