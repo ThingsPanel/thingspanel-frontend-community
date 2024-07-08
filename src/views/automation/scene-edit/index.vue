@@ -250,6 +250,15 @@ const actionParamShow = async (instructItem: any) => {
       instructItem.actionParamOptions =
         instructItem.actionParamOptionsData.find(item => item.data_source_type === instructItem.action_param_type)
           ?.options || [];
+      if (
+        instructItem.action_param_type === 'c_attribute' ||
+        instructItem.action_param_type === 'c_telemetry' ||
+        instructItem.action_param_type === 'c_command'
+      ) {
+        instructItem.showSubSelect = false;
+      } else {
+        instructItem.showSubSelect = true;
+      }
     }
     if (instructItem.action_param && instructItem.actionParamOptions.length > 0) {
       instructItem.actionParamData =
@@ -265,7 +274,7 @@ const placeholderMap = {
   attributes: 'on-line',
   command: '{"param1":1}',
   c_telemetry: '{"switch":1,"switch1":0}',
-  c_attributes: '{"switch":1,"switch1":0}',
+  c_attribute: '{"addr":1,"port":0}',
   c_command: '{"method":"switch1","params":{"false":0}}'
 };
 // 选择设备属性类型
@@ -275,9 +284,20 @@ const actionParamTypeChange = (instructItem: any, data: any) => {
   instructItem.actionParamOptions =
     instructItem.actionParamOptionsData.find(item => item.data_source_type === data)?.options || [];
   instructItem.placeholder = placeholderMap[data];
+  instructItem.actionValue = null;
+  if (
+    instructItem.action_param_type === 'c_attribute' ||
+    instructItem.action_param_type === 'c_telemetry' ||
+    instructItem.action_param_type === 'c_command'
+  ) {
+    instructItem.showSubSelect = false;
+  } else {
+    instructItem.showSubSelect = true;
+  }
 };
 // 选择动作标识符
 const actionParamChange = (instructItem: any, data: any) => {
+  instructItem.actionValue = null;
   instructItem.actionParamData = instructItem.actionParamOptions.find(item => item.key === data) || null;
   if (instructItem.actionParamData.data_type) {
     instructItem.actionParamData.data_type = instructItem.actionParamData.data_type.toLowerCase();
@@ -288,7 +308,7 @@ const message = useMessage();
 const actionValueChange = (instructItem: any) => {
   if (
     instructItem.action_param_type === 'command' ||
-    instructItem.action_param_type === 'c_attributes' ||
+    instructItem.action_param_type === 'c_attribute' ||
     instructItem.action_param_type === 'c_telemetry' ||
     instructItem.action_param_type === 'c_command'
   ) {
@@ -711,6 +731,7 @@ onMounted(() => {
                         <!--                        />-->
                       </NFormItem>
                       <NFormItem
+                        v-if="instructItem.showSubSelect"
                         :show-label="false"
                         :show-feedback="false"
                         :path="`actions[${actionGroupIndex}].actionInstructList[${instructIndex}].action_param`"
@@ -724,8 +745,9 @@ onMounted(() => {
                         />
                       </NFormItem>
                       <NFormItem
+                        v-if="instructItem.showSubSelect && instructItem.actionParamData"
                         :show-label="false"
-                        :show-feedback="instructItem.actionParamData?.data_type === 'boolean'"
+                        :show-feedback="false"
                         :path="`actions[${actionGroupIndex}].actionInstructList[${instructIndex}].actionValue`"
                         :rule="configFormRules.actionValue"
                         :validation-status="instructItem.inputValidationStatus"
@@ -733,21 +755,21 @@ onMounted(() => {
                         class="max-w-60 w-full"
                       >
                         <NInput
-                          v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'string'"
+                          v-if="instructItem.actionParamData.data_type === 'string'"
                           v-model:value="instructItem.actionValue"
                           :placeholder="$t('common.as') + '：' + instructItem.placeholder"
                           class="w-full"
                           @blur="actionValueChange(instructItem)"
                         />
                         <n-input-number
-                          v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'number'"
+                          v-if="instructItem.actionParamData.data_type === 'number'"
                           v-model:value="instructItem.actionValue"
                           class="w-full"
                           :placeholder="$t('common.as') + '：' + instructItem.placeholder"
                           :show-button="false"
                         />
                         <n-radio-group
-                          v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'boolean'"
+                          v-if="instructItem.actionParamData.data_type === 'boolean'"
                           v-model:value="instructItem.actionValue"
                           name="radiogroup"
                         >
@@ -756,6 +778,23 @@ onMounted(() => {
                             <n-radio :value="false">false</n-radio>
                           </n-space>
                         </n-radio-group>
+                      </NFormItem>
+                      <NFormItem
+                        v-if="!instructItem.showSubSelect"
+                        :show-label="false"
+                        :show-feedback="false"
+                        :path="`actions[${actionGroupIndex}].actionInstructList[${instructIndex}].actionValue`"
+                        :rule="configFormRules.actionValue"
+                        :validation-status="instructItem.inputValidationStatus"
+                        :feedback="instructItem.inputFeedback"
+                        class="w-60"
+                      >
+                        <NInput
+                          v-model:value="instructItem.actionValue"
+                          :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                          class="w-full"
+                          @blur="actionValueChange(instructItem)"
+                        />
                       </NFormItem>
                     </template>
                     <NButton
