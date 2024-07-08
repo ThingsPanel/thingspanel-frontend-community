@@ -233,7 +233,9 @@ const local: App.I18n.Schema = {
     },
     debug: 'Debug',
     send: 'Send',
-    creationTime: 'Creation time'
+    creationTime: 'Creation time',
+    service: 'Service',
+    protocol: 'Protocol'
   },
   theme: {
     themeSchema: {

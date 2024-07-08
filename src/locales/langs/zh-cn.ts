@@ -234,7 +234,9 @@ const local: App.I18n.Schema = {
     },
     debug: '调试',
     send: '发送',
-    creationTime: '创建时间'
+    creationTime: '创建时间',
+    service: '服务',
+    protocol: '协议'
   },
   theme: {
     themeSchema: {
