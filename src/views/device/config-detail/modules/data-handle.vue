@@ -43,6 +43,14 @@ const scripTypeOpt = ref([
   {
     label: $t('custom.devicePage.attributeDistribution'),
     value: 'D'
+  },
+  {
+    label: $t('custom.devicePage.commandDeliveryPreprocessing'),
+    value: 'E'
+  },
+  {
+    label: $t('custom.devicePage.eventReportPreprocessing'),
+    value: 'F'
   }
 ]);
 

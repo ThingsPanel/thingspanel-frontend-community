@@ -129,10 +129,10 @@ const getDeviceDetail = async () => {
 };
 
 const { routerPushByKey } = useRouterPush();
-const clickGateway = () => {
-  routerPushByKey('device_details', {
+const clickConfig = () => {
+  routerPushByKey('device_config-detail', {
     query: {
-      d_id: deviceDataStore?.deviceData?.device_config_id
+      id: deviceDataStore?.deviceData?.device_config_id
     }
   });
 };
@@ -200,7 +200,7 @@ watch(
           </div>
           <div class="mr-4" style="color: #ccc">
             <span class="mr-2">{{ $t('custom.device_details.deviceConfig') }}:</span>
-            <span style="color: blue; cursor: pointer" @click="clickGateway">
+            <span style="color: blue; cursor: pointer" @click="clickConfig">
               {{ deviceDataStore?.deviceData?.device_config_name || '--' }}
             </span>
           </div>

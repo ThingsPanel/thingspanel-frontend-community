@@ -116,7 +116,12 @@ const columns = [
         ? $t('custom.device_details.manualOperation')
         : $t('custom.device_details.manualOperation')
   },
-  { title: $t('custom.device_details.operationUsers'), minWidth: '140px', key: 'username' },
+  {
+    title: $t('custom.device_details.operationUsers'),
+    minWidth: '140px',
+    key: 'username',
+    render: row => (row.operation_type === '1' ? row.username : '系统')
+  },
   {
     title: $t('custom.device_details.operationTime'),
     key: 'created_at',

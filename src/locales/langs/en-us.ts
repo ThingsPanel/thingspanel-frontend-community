@@ -62,6 +62,7 @@ const local: App.I18n.Schema = {
     enterNumberTriggering: 'Please enter the number of triggering repetitions',
     enterAlarmLevel: 'Please enter the alarm level',
     enterAlarmName: 'Please enter the alarm name',
+    enterJson: 'Please enter the correct JSON format',
     nodata: 'There is currently no data available',
     halfYear: 'Half a year',
     lastYears1: 'Last 1 years',
@@ -232,7 +233,9 @@ const local: App.I18n.Schema = {
     },
     debug: 'Debug',
     send: 'Send',
-    creationTime: 'Creation time'
+    creationTime: 'Creation time',
+    service: 'Service',
+    protocol: 'Protocol'
   },
   theme: {
     themeSchema: {
@@ -1302,7 +1305,7 @@ const local: App.I18n.Schema = {
     open: 'open:',
     copy: 'copy',
     'basic-info': 'basic info',
-    'set-default-device-open-status': 'set default device open status',
+    'set-default-device-open-status': 'set device open/close value',
     'copy-one-type-one-secret-device-password': 'copy one-type-one-secret device password',
     'search-icon': 'search icon',
     'allow-device-auto-create': 'allow device auto-create',

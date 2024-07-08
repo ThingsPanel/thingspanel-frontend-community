@@ -305,7 +305,19 @@ const columnsList: any = reactive([
     ]
   }
 ]);
-
+const handleParamsOfEventsAndcommands = data => {
+  if (!data || !Array.isArray(data)) {
+    return data;
+  }
+  return data.map(item => {
+    const paramsArr = JSON.parse(item.params) || [];
+    return {
+      ...item,
+      paramsOrigin: item.params,
+      params: paramsArr.map(param => param.data_name).join(', ')
+    };
+  });
+};
 const getTableData: (value?: string) => void = async value => {
   startLoading();
   console.log(value);
@@ -320,11 +332,11 @@ const getTableData: (value?: string) => void = async value => {
       columnsList[1].total = Math.ceil(data1?.total / 5);
     } else if (value === 'events') {
       const { data: data2 }: any = await eventsApi(queryParams[2]);
-      columnsList[2].data = data2?.list ?? [];
+      columnsList[2].data = handleParamsOfEventsAndcommands(data2?.list ?? []);
       columnsList[2].total = Math.ceil(data2?.total / 5);
     } else {
       const { data: data3 }: any = await commandsApi(queryParams[3]);
-      columnsList[3].data = data3?.list ?? [];
+      columnsList[3].data = handleParamsOfEventsAndcommands(data3?.list ?? []);
       columnsList[3].total = Math.ceil(data3?.total / 5);
     }
     endLoading();
@@ -336,10 +348,10 @@ const getTableData: (value?: string) => void = async value => {
     columnsList[1].data = data1?.list ?? [];
     columnsList[1].total = Math.ceil(data1?.total / 5);
     const { data: data2 }: any = await eventsApi(queryParams[2]);
-    columnsList[2].data = data2?.list ?? [];
+    columnsList[2].data = handleParamsOfEventsAndcommands(data2?.list ?? []);
     columnsList[2].total = Math.ceil(data2?.total / 5);
     const { data: data3 }: any = await commandsApi(queryParams[3]);
-    columnsList[3].data = data3?.list ?? [];
+    columnsList[3].data = handleParamsOfEventsAndcommands(data3?.list ?? []);
     columnsList[3].total = Math.ceil(data3?.total / 5);
     console.log(data0, data1, data2, data3, '请求到了遥远的数据');
     endLoading();

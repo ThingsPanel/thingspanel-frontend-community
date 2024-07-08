@@ -331,9 +331,10 @@ const getPlatform = computed(() => {
           </div>
           <div class="mr-4" style="color: #ccc">
             <span class="mr-2">{{ $t('custom.device_details.deviceConfig') }}:</span>
-            <span style="color: blue; cursor: pointer" @click="clickConfig">
-              {{ deviceData?.device_config_name || '--' }}
+            <span v-if="deviceData?.device_config_name" style="color: blue; cursor: pointer" @click="clickConfig">
+              {{ deviceData?.device_config_name }}
             </span>
+            <span v-else>--</span>
           </div>
           <div v-if="device_type === '3'" class="mr-4" style="color: #ccc">
             <span class="mr-2">{{ $t('generate.gateway') }}:</span>

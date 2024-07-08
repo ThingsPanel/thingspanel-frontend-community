@@ -306,6 +306,7 @@ declare namespace App {
         enterNumberTriggering: string;
         enterAlarmLevel: string;
         enterAlarmName: string;
+        enterJson: string;
         nodata: string;
         halfYear: string;
         lastYears1: string;
@@ -477,6 +478,8 @@ declare namespace App {
         debug: string;
         send: string;
         creationTime: string;
+        service: string;
+        protocol: string;
       };
       theme: {
         themeSchema: { title: string } & Record<UnionKey.ThemeScheme, string>;
@@ -1145,6 +1148,8 @@ declare namespace App {
           attributeReporting: string;
           transmissionPreprocessing: string;
           reportPreprocessing: string;
+          commandDeliveryPreprocessing: string;
+          eventReportPreprocessing: string;
           pushTime: string;
           handle: string;
           deviceNumberMax: string;

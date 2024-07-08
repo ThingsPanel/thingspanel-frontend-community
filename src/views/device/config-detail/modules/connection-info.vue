@@ -43,7 +43,7 @@ interface Emits {
 
 const emit = defineEmits<Emits>();
 
-const typeOptions = ref([]);
+const typeOptions: any = ref([]);
 const active: any = ref(false);
 
 interface Props {
@@ -79,7 +79,20 @@ const getProtocolList = async (deviceCode: string) => {
     device_code: deviceCode
   };
   const res = await deviceProtocalServiceList(queryData);
-  typeOptions.value = res.data.protocol.concat(res.data.service);
+  typeOptions.value = [
+    {
+      type: 'group',
+      name: $t('common.protocol'),
+      key: 'protocol',
+      children: res.data.protocol || []
+    },
+    {
+      type: 'group',
+      name: $t('common.service'),
+      key: 'service',
+      children: res.data.service || []
+    }
+  ];
 };
 
 const connectOptions = ref([] as any);

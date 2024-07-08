@@ -1,6 +1,5 @@
 import { BACKEND_ERROR_CODE, createFlatRequest } from '@sa/axios';
 import { localStg } from '@/utils/storage';
-import { $t } from '@/locales';
 import { createProxyPattern, createServiceConfig } from '~/env.config';
 
 const { otherBaseURL } = createServiceConfig(import.meta.env);
@@ -44,9 +43,6 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
     transformBackendResponse(response) {
       if (response.config.method !== 'get') {
         window.$message?.destroyAll();
-        if (response?.request?.responseURL?.indexOf('login') === -1) {
-          window.$message?.success($t('custom.grouping_details.operationSuccess'));
-        }
       }
       if ((response as any).config?.needMessage) {
         return response.data;

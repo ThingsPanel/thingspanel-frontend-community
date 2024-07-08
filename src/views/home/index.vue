@@ -24,9 +24,11 @@ const getLayout = async () => {
 
   if (!isError.value && data) {
     const configJson = JSON.parse(data.config);
-    updateConfigData(configJson);
-    layout.value = [...configJson, ...layout.value];
-    layoutFetched.value = true;
+    if (Array.isArray(configJson)) {
+      updateConfigData(configJson);
+      layout.value = [...configJson, ...layout.value];
+      layoutFetched.value = true;
+    }
   }
 };
 

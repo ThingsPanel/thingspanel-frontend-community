@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { type FormInst, NButton, NCard, NFlex } from 'naive-ui';
+import { type FormInst, NButton, NCard, NFlex, useMessage } from 'naive-ui';
 import { deviceGroupTree } from '@/service/api';
 import { warningMessageList } from '@/service/api/alarm';
 import PopUp from '@/views/alarm/warning-message/components/pop-up.vue';
@@ -58,6 +58,16 @@ watch(
       actionForm.value.actionGroups = [];
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       actionForm.value.actionGroups = JSON.parse(JSON.stringify(props.actionData));
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      actionForm.value.actionGroups.map((item: any) => {
+        if (item.actionType === '1') {
+          item.actionInstructList.map(instructItem => {
+            instructItem.actionParamOptions = [];
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define
+            actionParamShow(instructItem);
+          });
+        }
+      });
     }
   }
 );
@@ -108,14 +118,19 @@ const configFormRules = ref({
     message: $t('common.select'),
     trigger: 'change'
   },
-  actionParamOptions: {
+  action_param_type: {
+    required: true,
+    message: $t('common.select'),
+    trigger: 'change'
+  },
+  action_param: {
+    required: true,
+    message: $t('common.select'),
+    trigger: 'change'
+  },
+  actionValue: {
     required: true,
     message: $t('common.select')
-  },
-  action_value: {
-    required: true,
-    message: $t('common.input'),
-    trigger: 'blur'
   }
 });
 // 下拉选择器加载状态
@@ -150,19 +165,19 @@ const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) =>
   });
   actionGroupItem.actionInstructList = [
     {
+      actionParamOptionsData: [],
+      actionParamTypeOptions: [],
       actionParamOptions: [],
       action_param_type: null,
       action_param: null,
-      action_param_key: null,
       action_target: null,
       action_type: null,
-      action_value: null,
+      actionValue: null,
       deviceGroupId: null
     }
   ];
   actionGroupItem.action_type = null;
   actionGroupItem.action_target = null;
-  console.log(actionGroupItem, actionGroupItem.actionInstructList, props.actionData, '测试');
 
   if (data === '1') {
     // eslint-disable-next-line array-callback-return
@@ -193,8 +208,7 @@ const actionTypeChange = (instructItem: any, data: any) => {
   instructItem.action_target = null;
   instructItem.action_param_type = null;
   instructItem.action_param = null;
-  instructItem.action_param_key = null;
-  instructItem.action_value = null;
+  instructItem.actionValue = null;
 
   if (data === '10') {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -255,14 +269,17 @@ const getDeviceConfig = async (name: any) => {
 const actionTargetChange = (instructItem: any) => {
   instructItem.action_param_type = null;
   instructItem.action_param = null;
-  instructItem.action_param_key = null;
-  instructItem.action_value = null;
+  instructItem.actionValue = null;
+  instructItem.actionParamOptionsData = [];
+  instructItem.actionParamTypeOptions = [];
+  instructItem.actionParamOptions = [];
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  actionParamShow(instructItem);
 };
 
 // 下拉获取的动作标识符
-const actionParamShow = async (instructItem: any, data: any) => {
-  if (data === true && instructItem.action_target) {
-    instructItem.actionParamOptions = [];
+const actionParamShow = async (instructItem: any) => {
+  if (instructItem.action_target) {
     let res = null as any;
     if (instructItem.action_type === '10') {
       res = await deviceMetricsMenu({ device_id: instructItem.action_target });
@@ -280,26 +297,102 @@ const actionParamShow = async (instructItem: any, data: any) => {
 
         // eslint-disable-next-line array-callback-return
         item.options.map((subItem: any) => {
-          // subItem.value = subItem.key;
-          subItem.value = `${item.value}/${subItem.key}`;
+          subItem.value = subItem.key;
           subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`;
         });
       });
       // eslint-disable-next-line require-atomic-updates
-      instructItem.actionParamOptions = res.data;
+      instructItem.actionParamOptionsData = res.data;
+      // eslint-disable-next-line require-atomic-updates
+      instructItem.actionParamTypeOptions = res.data.map((item: any) => {
+        return {
+          label: item.label,
+          value: item.value
+        };
+      });
+      if (instructItem.action_param_type) {
+        instructItem.actionParamOptions =
+          instructItem.actionParamOptionsData.find(item => item.data_source_type === instructItem.action_param_type)
+            ?.options || [];
+        if (
+          instructItem.action_param_type === 'c_attribute' ||
+          instructItem.action_param_type === 'c_telemetry' ||
+          instructItem.action_param_type === 'c_command'
+        ) {
+          instructItem.showSubSelect = false;
+        } else {
+          instructItem.showSubSelect = true;
+        }
+      }
+      if (instructItem.action_param && instructItem.actionParamOptions.length > 0) {
+        instructItem.actionParamData =
+          instructItem.actionParamOptions.find(item => item.key === instructItem.action_param) || null;
+        if (instructItem.actionParamData.data_type) {
+          instructItem.actionParamData.data_type = instructItem.actionParamData.data_type.toLowerCase();
+        }
+      }
     }
   }
 };
-
-// 选择动作标识符
-const actionParamChange = (instructItem: any, pathValues: any) => {
-  instructItem.action_param_type = pathValues[0].value;
-  instructItem.action_param = pathValues[1].key;
-  // instructItem.action_param_type = pathValues[0].value;
-  //
-  instructItem.action_value = null;
+const placeholderMap = {
+  telemetry: '20',
+  attributes: 'on-line',
+  command: '{"param1":1}',
+  c_telemetry: '{"switch":1,"switch1":0}',
+  c_attribute: '{"addr":1,"port":0}',
+  c_command: '{"method":"switch1","params":{"false":0}}'
 };
-
+// 选择设备属性类型
+const actionParamTypeChange = (instructItem: any, data: any) => {
+  instructItem.action_param = null;
+  instructItem.actionParamData = null;
+  instructItem.actionParamOptions =
+    instructItem.actionParamOptionsData.find(item => item.data_source_type === data)?.options || [];
+  instructItem.placeholder = placeholderMap[data];
+  instructItem.actionValue = null;
+  if (
+    instructItem.action_param_type === 'c_attribute' ||
+    instructItem.action_param_type === 'c_telemetry' ||
+    instructItem.action_param_type === 'c_command'
+  ) {
+    instructItem.showSubSelect = false;
+  } else {
+    instructItem.showSubSelect = true;
+  }
+};
+// 选择动作标识符
+const actionParamChange = (instructItem: any, data: any) => {
+  instructItem.actionValue = null;
+  instructItem.actionParamData = instructItem.actionParamOptions.find(item => item.key === data) || null;
+  if (instructItem.actionParamData.data_type) {
+    instructItem.actionParamData.data_type = instructItem.actionParamData.data_type.toLowerCase();
+  }
+};
+const message = useMessage();
+// 动作值标识
+const actionValueChange = (instructItem: any) => {
+  if (
+    instructItem.action_param_type === 'command' ||
+    instructItem.action_param_type === 'c_attribute' ||
+    instructItem.action_param_type === 'c_telemetry' ||
+    instructItem.action_param_type === 'c_command'
+  ) {
+    try {
+      JSON.parse(instructItem.actionValue);
+      if (typeof JSON.parse(instructItem.actionValue) === 'object') {
+        instructItem.inputFeedback = '';
+        instructItem.inputValidationStatus = undefined;
+      } else {
+        message.error($t('common.enterJson'));
+        instructItem.inputValidationStatus = 'error';
+      }
+    } catch (e) {
+      message.error($t('common.enterJson'));
+      // instructItem.inputFeedback=$t('common.enterJson')
+      instructItem.inputValidationStatus = 'error';
+    }
+  }
+};
 // 场景列表
 const sceneList = ref([]);
 // 场景查询条件
@@ -337,12 +430,13 @@ const getAlarmList = async (name: string) => {
 const instructListItem = ref({
   action_target: null, //  动作目标id  设备id、设备配置id，场景id、告警id
   action_type: null, // 动作标识符类型
-  action_param_type: null, // 动作标识符类型
-  action_param: null, // 动作标识符类型
-  action_param_key: null,
-  action_value: null, // 参数值
+  action_param_type: null, // 属性类型
+  action_param: null, // 属性值
+  actionValue: null, // 参数/命令值
   deviceGroupId: null, // 设备分组ID
-  actionParamOptions: [] // 动作标识菜单下拉列表数据选项
+  actionParamOptions: [], // 动作标识属性下拉列表数据选项
+  actionParamOptionsData: [], // 动作标识菜单下拉列表数据选项
+  actionParamTypeOptions: [] // 动作标识类型下拉列表
 });
 
 // interface ActionInstructItem {
@@ -350,7 +444,7 @@ const instructListItem = ref({
 //   action_type: string;
 //   action_param_type: string;
 //   action_param: string; // 动作标识符类型
-//   action_value: string; // 参数值
+//   actionValue: string; // 参数值
 //   deviceGroupId: string;
 //   actionParamOptions: object | any;
 // }
@@ -395,7 +489,6 @@ const addIfGroupsSubItem = async (actionGroupIndex: any) => {
   if (props.conditionsType === '11') {
     data.action_type = '11';
   }
-  console.log(actionGroupIndex, '我被执行了');
   actionForm.value.actionGroups[actionGroupIndex].actionInstructList.push(data);
 };
 // 删除某个动作组中的某个指令
@@ -469,6 +562,7 @@ onMounted(() => {
                       </NFormItem>
                     </template>
                     <template v-if="instructItem.action_type === '10'">
+                      <!--                      选择单个设备-->
                       <NFormItem
                         :show-label="false"
                         :path="`actionGroups[${actionGroupIndex}].actionInstructList[${instructIndex}].action_target`"
@@ -516,6 +610,7 @@ onMounted(() => {
                       </NFormItem>
                     </template>
                     <template v-if="instructItem.action_type === '11'">
+                      <!--                      选择单类设备-->
                       <NFormItem
                         :show-label="false"
                         :path="`actionGroups[${actionGroupIndex}].actionInstructList[${instructIndex}].action_target`"
@@ -537,38 +632,88 @@ onMounted(() => {
                       </NFormItem>
                     </template>
                     <template v-if="instructItem.action_type">
+                      <!--                      选择属性-->
                       <NFormItem
+                        :show-label="false"
+                        :path="`actionGroups[${actionGroupIndex}].actionInstructList[${instructIndex}].action_param_type`"
+                        :rule="configFormRules.action_param_type"
+                        class="w-40"
+                      >
+                        <NSelect
+                          v-model:value="instructItem.action_param_type"
+                          :options="instructItem.actionParamTypeOptions"
+                          class="max-w-40"
+                          @update:value="data => actionParamTypeChange(instructItem, data)"
+                        />
+                      </NFormItem>
+                      <NFormItem
+                        v-if="instructItem.showSubSelect"
                         :show-label="false"
                         :path="`actionGroups[${actionGroupIndex}].actionInstructList[${instructIndex}].action_param`"
-                        :rule="configFormRules.actionParamOptions"
+                        :rule="configFormRules.action_param"
                         class="w-40"
                       >
-                        <NCascader
-                          v-model:value="instructItem.action_param_key"
-                          :placeholder="$t('common.select')"
+                        <NSelect
+                          v-model:value="instructItem.action_param"
                           :options="instructItem.actionParamOptions"
-                          check-strategy="child"
-                          children-field="options"
-                          size="small"
-                          class="max-w-40"
-                          @update:show="data => actionParamShow(instructItem, data)"
-                          @update:value="(value, option, pathValues) => actionParamChange(instructItem, pathValues)"
+                          @update:value="data => actionParamChange(instructItem, data)"
                         />
                       </NFormItem>
-                      <NFormItem
-                        :show-label="false"
-                        :path="`actionGroups[${actionGroupIndex}].actionInstructList[${instructIndex}].action_value`"
-                        :rule="configFormRules.action_value"
-                        class="w-40"
-                      >
-                        <NInput
-                          v-model:value="instructItem.action_value"
-                          :placeholder="$t('common.param') + '，' + $t('common.as') + '：{param1:1}'"
-                          class="max-w-40"
-                        />
-                      </NFormItem>
+                      <template v-if="instructItem.showSubSelect && instructItem.actionParamData">
+                        <NFormItem
+                          :show-label="false"
+                          :show-feedback="instructItem.actionParamData?.data_type === 'boolean'"
+                          :path="`actionGroups[${actionGroupIndex}].actionInstructList[${instructIndex}].actionValue`"
+                          :rule="configFormRules.actionValue"
+                          :validation-status="instructItem.inputValidationStatus"
+                          :feedback="instructItem.inputFeedback"
+                          class="w-60"
+                        >
+                          <NInput
+                            v-if="instructItem.actionParamData.data_type === 'string'"
+                            v-model:value="instructItem.actionValue"
+                            :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                            class="w-full"
+                            @blur="actionValueChange(instructItem)"
+                          />
+                          <n-input-number
+                            v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'number'"
+                            v-model:value="instructItem.actionValue"
+                            class="w-full"
+                            :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                            :show-button="false"
+                          />
+                          <n-radio-group
+                            v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'boolean'"
+                            v-model:value="instructItem.actionValue"
+                            name="radiogroup"
+                          >
+                            <n-space>
+                              <n-radio :value="true">true</n-radio>
+                              <n-radio :value="false">false</n-radio>
+                            </n-space>
+                          </n-radio-group>
+                        </NFormItem>
+                      </template>
+                      <template v-if="!instructItem.showSubSelect">
+                        <NFormItem
+                          :show-label="false"
+                          :show-feedback="false"
+                          :path="`actionGroups[${actionGroupIndex}].actionInstructList[${instructIndex}].actionValue`"
+                          :rule="configFormRules.actionValue"
+                          :validation-status="instructItem.inputValidationStatus"
+                          :feedback="instructItem.inputFeedback"
+                          class="w-60"
+                        >
+                          <NInput
+                            v-model:value="instructItem.actionValue"
+                            :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                            class="w-full"
+                            @blur="actionValueChange(instructItem)"
+                          />
+                        </NFormItem>
+                      </template>
                     </template>
-
                     <NButton
                       v-if="instructIndex === 0"
                       type="primary"
@@ -589,6 +734,7 @@ onMounted(() => {
                 </NCard>
               </template>
               <template v-if="actionGroupItem.actionType === '20'">
+                <!--          执行动作是激活场景->添加指令--->
                 <NFlex class="ml-6" align="center">
                   <NFormItem
                     label-width="60"
@@ -612,6 +758,7 @@ onMounted(() => {
                 </NFlex>
               </template>
               <template v-if="actionGroupItem.actionType === '30'">
+                <!--          执行动作是触发告警->添加指令--->
                 <NFlex class="ml-6">
                   <NFormItem
                     label-width="60"

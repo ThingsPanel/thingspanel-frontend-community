@@ -28,7 +28,8 @@ export interface ICardData {
       deviceMetrics?: string;
       name?: string;
       metricsId?: string;
-      metricsType?: string;
+      metricsType?: string; // telemetry | attributes | event | command
+      metricsDataType?: string; // number | string | boolean
       metricsName?: string;
       metricsOptions?: any[];
       metricsShow: boolean;

@@ -63,6 +63,7 @@ const local: App.I18n.Schema = {
     enterNumberTriggering: '请输入触发重复次数',
     enterAlarmLevel: '请输入告警级别',
     enterAlarmName: '请输入告警名称',
+    enterJson: '请输入正确的JSON格式',
     nodata: '暂无数据',
     halfYear: '最近半年',
     lastYears1: '最近1年',
@@ -233,7 +234,9 @@ const local: App.I18n.Schema = {
     },
     debug: '调试',
     send: '发送',
-    creationTime: '创建时间'
+    creationTime: '创建时间',
+    service: '服务',
+    protocol: '协议'
   },
   theme: {
     themeSchema: {
@@ -1300,7 +1303,7 @@ const local: App.I18n.Schema = {
     open: '开启：',
     copy: '复制',
     'basic-info': '基本信息',
-    'set-default-device-open-status': '设置设备默认的开启状态',
+    'set-default-device-open-status': '设置控制设备开启和关闭时的状态值',
     'copy-one-type-one-secret-device-password': '复制一型一密设备的密码',
     'search-icon': '搜索图标',
     'allow-device-auto-create': '允许设备自动创建',
