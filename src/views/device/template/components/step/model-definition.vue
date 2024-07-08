@@ -313,6 +313,7 @@ const handleParamsOfEventsAndcommands = data => {
     const paramsArr = JSON.parse(item.params) || [];
     return {
       ...item,
+      paramsOrigin: item.params,
       params: paramsArr.map(param => param.data_name).join(', ')
     };
   });
