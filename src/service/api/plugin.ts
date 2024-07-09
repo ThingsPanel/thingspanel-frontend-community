@@ -1,7 +1,7 @@
 import { request } from '../request';
 
 // 获取服务列表数据
-export const getServiceList = async (params: any) => {
+export const getServiceLists = async (params: any) => {
   return await request.get<Panel.Data>('/service/list', { params });
 };
 
@@ -33,7 +33,6 @@ export const getServiceAccessForm = async (params: any) => {
 };
 
 // 删除租户服务接入点
-
 export const delServiceAccess = async (id: any) => {
   return await request.delete<Panel.Data>(`/service/access/${id}`);
 };

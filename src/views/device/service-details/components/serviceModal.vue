@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { getServiceAccessForm, putRegisterService, registerService } from '@/service/api/plugin.ts';
+import FormInput from './form.vue';
 const isEdit = ref<any>(false);
 const emit = defineEmits(['getList']);
 const serviceModal = ref<any>(false);
 const formRef = ref<any>(null);
 const loading = ref<any>(false);
 const service_plugin_id = ref<any>('');
+const formElements = ref<any>([]);
+const protocol_config = defineModel<any>('protocolConfig', { default: {} });
 
 const defaultForm = {
   name: '',
@@ -35,16 +38,6 @@ const rules = ref<any>({
     message: '请选择服务类别'
   }
 });
-const options = ref<any>([
-  {
-    label: '接入协议',
-    value: 1
-  },
-  {
-    label: '接入服务',
-    value: 2
-  }
-]);
 const getServiceForm: () => void = async () => {
   const data = await getServiceAccessForm({
     service_plugin_id: service_plugin_id.value
@@ -104,12 +97,9 @@ defineExpose({ openModal });
           <n-form-item label="请输入key" path="service_identifier">
             <n-input v-model:value="form.service_identifier" placeholder="请输入服务标识符" />
           </n-form-item>
-          <n-form-item label="类别" path="service_type">
-            <n-space vertical class="selectType" placeholder="请选择服务类别">
-              <n-select v-model:value="form.service_type" :options="options" />
-            </n-space>
-          </n-form-item>
         </n-form>
+        <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements"></FormInput>
+
         <div class="footer">
           <NButton type="primary" class="btn" @click="submitSevice">确认</NButton>
           <NButton @click="close">取消</NButton>

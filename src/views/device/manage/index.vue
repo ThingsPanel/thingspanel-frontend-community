@@ -281,7 +281,7 @@ const dropOption = [
   {
     label: () => $t('custom.devicePage.addByServer'),
     key: 'server',
-    disabled: true
+    disabled: false
   }
 ];
 
