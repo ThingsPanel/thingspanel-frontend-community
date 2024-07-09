@@ -871,6 +871,13 @@ const local: App.I18n.Schema = {
     }
   },
   device_template: {
+    selectServices: 'Select Services',
+    stepOneDescribe: 'Choose the device you need to access the service',
+    serviceConfig: 'Service configuration',
+    stepTwoDescribe: 'Authentication service authorized',
+    equipmentConfig: 'Equipment configuration',
+    stepThreeDescribe: 'Set whether the device is imported and bound to a device configuration template',
+    adoptDeviceAdd: 'Adopt Device Add',
     templateInfo: 'TemplateInfo',
     editTemplateInfo: 'EditTemplateInfo',
     addDeviceInfo: 'AddDeviceInfo',
