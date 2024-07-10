@@ -38,7 +38,7 @@ const onCreate = () => {
       <div class="w-full">
         <template v-for="element in props.formElements" :key="element.dataKey">
           <div v-if="element.type === 'input'">
-            <NFormItem :label="element.label" :path="element.dataKey" class="w-300">
+            <NFormItem :label="element.label" :path="element.dataKey">
               <NInputNumber
                 v-if="element.validate.type === 'number'"
                 v-model:value="protocol_config[element.dataKey]"
