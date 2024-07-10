@@ -6,7 +6,6 @@ import { NButton, NPopconfirm, NSpace } from 'naive-ui';
 import dayjs from 'dayjs';
 import { delServiceAccess, getServiceAccess } from '@/service/api/plugin.ts';
 import { $t } from '@/locales';
-import serviceConfigModal from './components/serviceConfigModal.vue';
 import serviceModal from './components/serviceModal.vue';
 
 const router = useRoute();
@@ -144,7 +143,6 @@ getList();
       </div>
     </NCard>
     <serviceModal ref="serviceModalRef" @get-list="getList"></serviceModal>
-    <serviceConfigModal ref="serviceConfigModalRef" @get-list="getList"></serviceConfigModal>
   </div>
 </template>
 

@@ -2,7 +2,7 @@
 <script setup lang="tsx">
 import { ref, watch } from 'vue';
 import { NButton, NPopconfirm, NSpace } from 'naive-ui';
-import { delRegisterService, getServiceLists } from '@/service/api/plugin.ts';
+import { delRegisterService, getServices } from '@/service/api/plugin.ts';
 import { $t } from '@/locales';
 import serviceConfigModal from './components/serviceConfigModal.vue';
 import serviceModal from './components/serviceModal.vue';
@@ -50,7 +50,7 @@ const queryInfo = ref<any>({
 });
 
 const getList: () => void = async () => {
-  const { data }: { data: any } = await getServiceLists(queryInfo.value);
+  const { data }: { data: any } = await getServices(queryInfo.value);
   pageData.value.tableData = data.list;
   queryInfo.value.itemCount = data.total;
   console.log(pageData.value.tableData, data, '获取列表数据');
