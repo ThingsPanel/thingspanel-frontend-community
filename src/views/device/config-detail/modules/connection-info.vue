@@ -104,6 +104,7 @@ const getConfigForm = async data => {
   console.log(res.data, '表单');
 };
 const getVoucherType = async data => {
+  connectOptions.value = [];
   const res = await deviceConfigVoucherType({ device_type: props.configInfo.device_type, protocol_type: data });
   if (res.data) {
     connectOptions.value = Object.keys(res.data).map(key => {
@@ -115,12 +116,14 @@ const getVoucherType = async data => {
 const openForm = () => {
   active.value = true;
 };
+
 const choseProtocolType = async data => {
   extendForm.value.voucher_type = null;
   // connectOptions.value = [];
   await getVoucherType(data);
   await getConfigForm(data);
 };
+
 onMounted(async () => {
   if (props.configInfo.protocol_config) {
     protocol_config.value = JSON.parse(props.configInfo.protocol_config);
