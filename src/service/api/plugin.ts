@@ -53,3 +53,15 @@ export const getServiceListDrop = async (params: any) => {
     params
   });
 };
+
+// 设备配置下拉菜单✅
+export const getSelectServiceMenuList = async (params: any) => {
+  return await request.get<Panel.Data>('/device_config/menu', {
+    params
+  });
+};
+
+// 批量添加服务
+export const batchAddServiceMenuList = async (params: any) => {
+  return await request.post<Panel.Data>('/device/service/access/batch', params);
+};

@@ -29,7 +29,7 @@ const getData = async () => {
 getData();
 
 const clickDevice = async row => {
-  router.push(`/device/service-details?id=${row}`);
+  router.push(`/device/service-details?id=${row.id}&service_identifier=${row.service_identifier}`);
   console.log(row, '点击了模块');
 };
 </script>
@@ -38,7 +38,7 @@ const clickDevice = async row => {
   <div>
     <n-card>
       <NGrid x-gap="20" y-gap="20" cols="1 s:2 m:3 l:4" responsive="screen">
-        <NGridItem v-for="item in deviceTemplateList" :key="item.id" @click="clickDevice(item.id)">
+        <NGridItem v-for="item in deviceTemplateList" :key="item.id" @click="clickDevice(item)">
           <NCard hoverable style="height: 190px">
             <div class="title text-16px font-600">
               {{ item.name }}
