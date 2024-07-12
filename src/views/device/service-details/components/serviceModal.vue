@@ -1,83 +1,61 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getServiceAccessForm, putRegisterService, registerService } from '@/service/api/plugin.ts';
+import { useMessage } from 'naive-ui';
+import { createServiceDrop, getServiceAccessForm, putServiceDrop } from '@/service/api/plugin.ts';
+import FormInput from './form.vue';
+
+const message = useMessage();
 const isEdit = ref<any>(false);
 const emit = defineEmits(['getList']);
 const serviceModal = ref<any>(false);
 const formRef = ref<any>(null);
-const loading = ref<any>(false);
-const service_plugin_id = ref<any>('');
 
+const service_plugin_id = ref<any>('');
+const formElements = ref<any>([]);
 const defaultForm = {
   name: '',
-  service_identifier: '',
-  service_type: null,
-  version: '',
-  description: '',
-  service_config: '',
-  remark: ''
+  service_plugin_id: '',
+  voucher: {},
+  vouchers: {}
 };
 const form = ref<any>({ ...defaultForm });
-
 const rules = ref<any>({
   name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: '请输入服务名称'
-  },
-  service_identifier: {
-    required: true,
-    trigger: ['blur', 'input'],
-    message: '请输入服务标识符'
-  },
-  service_type: {
-    required: true,
-    message: '请选择服务类别'
+    message: '请输入接入点名称'
   }
 });
-const options = ref<any>([
-  {
-    label: '接入协议',
-    value: 1
-  },
-  {
-    label: '接入服务',
-    value: 2
+const openModal: (id: any, row?: any) => void = async (id, row) => {
+  if (row) {
+    isEdit.value = true;
   }
-]);
-const getServiceForm: () => void = async () => {
+  service_plugin_id.value = id;
+  form.value.service_plugin_id = id;
   const data = await getServiceAccessForm({
     service_plugin_id: service_plugin_id.value
   });
-  console.log(data, '提交');
-};
-
-const openModal: (id: any, row?: any) => void = (id, row) => {
-  if (row) {
-    isEdit.value = true;
-    Object.assign(form.value, row);
+  if (data.data) {
+    formElements.value = data.data;
+    serviceModal.value = true;
+  } else {
+    message.error('暂无服务接入点数据');
   }
-  service_plugin_id.value = id;
-  console.log(service_plugin_id.value, 'id');
-  serviceModal.value = true;
-  getServiceForm();
 };
 const close: () => void = () => {
   serviceModal.value = false;
-  Object.assign(form.value, defaultForm);
 };
 
 const submitSevice: () => void = async () => {
+  form.value.voucher = JSON.stringify(form.value.vouchers);
   formRef.value?.validate(async errors => {
     if (errors) return;
-    loading.value = true;
-    const data: any = isEdit.value ? await putRegisterService(form.value) : await registerService(form.value);
+    const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value);
+    serviceModal.value = false;
+    emit('getList', form.value.voucher);
+    form.value = { ...defaultForm };
+    form.value.vouchers = {};
     console.log(data, '提交');
-    if (data.data) {
-      emit('getList');
-      close();
-    }
-    loading.value = false;
   });
 };
 
@@ -85,37 +63,26 @@ defineExpose({ openModal });
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModal" preset="dialog" title="新增接入点">
-    <n-space vertical>
-      <n-spin :show="loading">
-        <n-form
-          ref="formRef"
-          :model="form"
-          :rules="rules"
-          label-placement="left"
-          label-width="auto"
-          require-mark-placement="right-hanging"
-          :disabled="loading"
-          @after-leave="close"
-        >
-          <n-form-item label="服务接入点名称" path="name">
-            <n-input v-model:value="form.name" placeholder="请输入服务名称" />
-          </n-form-item>
-          <n-form-item label="请输入key" path="service_identifier">
-            <n-input v-model:value="form.service_identifier" placeholder="请输入服务标识符" />
-          </n-form-item>
-          <n-form-item label="类别" path="service_type">
-            <n-space vertical class="selectType" placeholder="请选择服务类别">
-              <n-select v-model:value="form.service_type" :options="options" />
-            </n-space>
-          </n-form-item>
-        </n-form>
-        <div class="footer">
-          <NButton type="primary" class="btn" @click="submitSevice">确认</NButton>
-          <NButton @click="close">取消</NButton>
-        </div>
-      </n-spin>
-    </n-space>
+  <n-modal v-model:show="serviceModal" preset="dialog" title="新增接入点" class="w">
+    <n-form
+      ref="formRef"
+      :model="form"
+      :rules="rules"
+      label-placement="left"
+      label-width="auto"
+      require-mark-placement="right-hanging"
+    >
+      <n-form-item label="接入点名称" path="name">
+        <n-input v-model:value="form.name" placeholder="请输入接入点名称" />
+      </n-form-item>
+    </n-form>
+    <div class="box">
+      <FormInput v-model:protocol-config="form.vouchers" :form-elements="formElements"></FormInput>
+    </div>
+    <div class="footer">
+      <NButton type="primary" class="btn" @click="submitSevice">保存并下一步</NButton>
+      <NButton @click="close">取消</NButton>
+    </div>
   </n-modal>
 </template>
 
@@ -129,5 +96,18 @@ defineExpose({ openModal });
   .btn {
     margin-left: 10px;
   }
+}
+.box {
+  width: 100%;
+  height: 100%;
+}
+</style>
+
+<style lang="scss">
+.w {
+  width: 1300px !important;
+  margin-top: 20vh;
+  height: max-content !important;
+  max-height: 600px !important;
 }
 </style>

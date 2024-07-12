@@ -6,8 +6,8 @@ import { NButton, NPopconfirm, NSpace } from 'naive-ui';
 import dayjs from 'dayjs';
 import { delServiceAccess, getServiceAccess } from '@/service/api/plugin.ts';
 import { $t } from '@/locales';
-import serviceConfigModal from './components/serviceConfigModal.vue';
 import serviceModal from './components/serviceModal.vue';
+import serviceConfigModal from './components/serviceConfigModal.vue';
 
 const router = useRoute();
 const serviceModalRef = ref<any>(null);
@@ -37,7 +37,10 @@ const queryInfo = ref<any>({
   }
 });
 
-const getList: () => void = async () => {
+const getList: (val?: any) => void = async val => {
+  if (val) {
+    serviceConfigModalRef.value.openModal(val);
+  }
   console.log(queryInfo.value, '获取列表数据');
   const { data }: { data: any } = await getServiceAccess(queryInfo.value);
   pageData.value.tableData = data.list;
@@ -111,7 +114,6 @@ const columns: any = ref([
 
 const addData: () => void = () => {
   console.log(service_plugin_id.value, '打开弹窗');
-
   serviceModalRef.value.openModal(service_plugin_id.value);
 };
 
@@ -143,8 +145,8 @@ getList();
         />
       </div>
     </NCard>
-    <serviceModal ref="serviceModalRef" @get-list="getList"></serviceModal>
     <serviceConfigModal ref="serviceConfigModalRef" @get-list="getList"></serviceConfigModal>
+    <serviceModal ref="serviceModalRef" @get-list="getList"></serviceModal>
   </div>
 </template>
 

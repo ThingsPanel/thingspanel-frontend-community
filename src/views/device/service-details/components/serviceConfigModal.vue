@@ -1,119 +1,150 @@
-<script setup lang="ts">
+<!-- eslint-disable require-atomic-updates -->
+<script setup lang="tsx">
 import { ref } from 'vue';
-import { putRegisterService } from '@/service/api/plugin.ts';
-const serviceType = ref<any>('接入协议');
+import { useRoute } from 'vue-router';
+import { NSelect } from 'naive-ui';
+import { batchAddServiceMenuList, getSelectServiceMenuList, getServiceListDrop } from '@/service/api/plugin.ts';
 const emit = defineEmits(['getList']);
+
+const router = useRoute();
+const service_identifier = ref<any>(router.query.service_identifier);
 const serviceModal = ref<any>(false);
-const formRef = ref<any>(null);
-const details = ref<any>({});
+const chekeds = ref<any>([]);
+const pageData = ref<any>({
+  loading: false,
+  tableData: []
+});
 
-const loading = ref<any>(false);
-const defaultForm = {
-  http_address: '',
-  device_type: 1,
-  sub_topic_prefix: '',
-  access_address: ''
-};
-const form = ref<any>({ ...defaultForm });
-
-const rules = ref<any>({
-  http_address: {
-    required: true,
-    trigger: ['blur', 'input'],
-    message: '请输入HTTP服务地址'
+const queryInfo = ref<any>({
+  voucher: '',
+  page: 1,
+  page_size: 10,
+  total: 0,
+  pageSizes: [10, 15, 20, 25, 30],
+  onChange: (page: number) => {
+    queryInfo.value.page = page;
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    getLists();
   },
-  device_type: {
-    required: true,
-    message: '请选择设备类型'
-  },
-  sub_topic_prefix: {
-    required: true,
-    trigger: ['blur', 'input'],
-    message: '请输入服服务订阅主题前缀'
+  onUpdatePageSize: (pageSize: number) => {
+    queryInfo.value.page_size = pageSize;
+    queryInfo.value.page = 1;
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    getLists();
   }
 });
-const options = ref<any>([
+
+const getLists: () => void = async () => {
+  pageData.value.loading = true;
+  const { data }: { data: any } = await getServiceListDrop(queryInfo.value);
+  pageData.value.tableData = data.list;
+  const params: any = {
+    device_type: '',
+    device_config_name: '',
+    protocol_type: service_identifier.value
+  };
+  const { data: res }: { data: any } = await getSelectServiceMenuList(params);
+  console.log(res, '提交上');
+  pageData.value.tableData.forEach((item: any) => {
+    item.options = res;
+  });
+  queryInfo.value.itemCount = data.total;
+  pageData.value.loading = false;
+};
+
+const columns: any = ref([
   {
-    label: '直连设备',
-    value: 1
+    type: 'selection',
+    disabled(row: any) {
+      return row.name === 'Edward King 3';
+    }
   },
   {
-    label: '网关设备',
-    value: 2
+    title: '设备名称',
+    key: 'device_name',
+    minWidth: '200px'
   },
   {
-    label: '网关子设备',
-    value: 3
+    title: '设备编号',
+    key: 'device_number',
+    minWidth: '400px'
+  },
+  {
+    title: '设备配置模版',
+    key: 'create_at',
+    render: row => {
+      return (
+        <NSelect
+          v-model:value={row.device_config_id}
+          label-field={'name'}
+          value-field={'id'}
+          placeholder={'请选择设备类型'}
+          options={row.options}
+        />
+      );
+    }
   }
 ]);
-
-const openModal: (row: any) => void = row => {
-  if (row) {
-    serviceType.value = row.service_type === 1 ? '接入协议' : '接入服务';
-    Object.assign(details.value, row);
-    if (details.value.service_config === '') return;
-    Object.assign(form.value, JSON.parse(row.service_config));
+const submitSevice: () => void = async () => {
+  const params = {
+    service_access_id: service_identifier.value,
+    device_list: chekeds.value
+  };
+  const data: any = await batchAddServiceMenuList(params);
+  if (data.data) {
+    serviceModal.value = false;
+    emit('getList');
+  } else {
+    serviceModal.value = false;
   }
-  serviceModal.value = true;
+  console.log(data, '提交3');
 };
+const openModal: (row: any) => void = async row => {
+  queryInfo.value.voucher = row;
+  serviceModal.value = true;
+  console.log(queryInfo.value, '打开弹窗');
+  getLists();
+};
+
 const close: () => void = () => {
   serviceModal.value = false;
-  Object.assign(details.value, {});
-  Object.assign(form.value, defaultForm);
-  console.log(form.value, defaultForm, '弹窗关闭');
 };
 
-const submitSevice: () => void = () => {
-  formRef.value?.validate(async errors => {
-    if (errors) return;
-    loading.value = true;
-    const params = details.value;
-    params.service_config = JSON.stringify(form.value);
-    const data: any = await putRegisterService(params);
-    console.log(data, '提交');
-    if (data.data) {
-      emit('getList');
-      close();
-    }
-    loading.value = false;
+const handleCheck: (rowKeys: any) => void = rowKeys => {
+  chekeds.value = pageData.value.tableData.map((item: any) => {
+    let obj: any = null;
+    rowKeys.forEach(val => {
+      if (item.device_number === val) {
+        obj = {};
+        obj.device_name = item.device_name;
+        obj.device_number = item.device_number;
+        obj.device_config_id = item.device_config_id;
+      }
+    });
+    return obj;
   });
+  console.log(chekeds.value, '选择');
 };
 
 defineExpose({ openModal });
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModal" preset="dialog" :title="`服务配置(${serviceType})`" @after-leave="close">
-    <n-space vertical>
-      <n-spin :show="loading">
-        <n-form
-          ref="formRef"
-          :model="form"
-          :rules="rules"
-          label-placement="left"
-          label-width="auto"
-          require-mark-placement="right-hanging"
-          :disabled="loading"
-        >
-          <n-form-item label="HTTP服务地址" path="http_address">
-            <n-input v-model:value="form.http_address" placeholder="127.0.0.1:503" />
-          </n-form-item>
-          <n-form-item v-if="serviceType === '接入协议'" label="设备类型" path="device_type">
-            <n-select v-model:value="form.device_type" placeholder="请选择设备类型" :options="options" />
-          </n-form-item>
-          <n-form-item label="服务订阅主题前缀" path="sub_topic_prefix">
-            <n-input v-model:value="form.sub_topic_prefix" placeholder="plugin/xxx/" />
-          </n-form-item>
-          <n-form-item v-if="serviceType === '接入协议'" label="设备接入地址" path="access_address">
-            <n-input v-model:value="form.access_address" placeholder="请输入设备接入地址" type="textarea" />
-          </n-form-item>
-        </n-form>
-        <div class="footer">
-          <NButton type="primary" class="btn" @click="submitSevice">确认</NButton>
-          <NButton @click="close">取消</NButton>
-        </div>
-      </n-spin>
-    </n-space>
+  <n-modal v-model:show="serviceModal" preset="dialog" title="配置设备" class="w">
+    <NDataTable
+      :remote="true"
+      :columns="columns"
+      :data="pageData.tableData"
+      :loading="pageData.loading"
+      :pagination="queryInfo"
+      :row-key="row => row.device_number"
+      class="flex-1-hidden"
+      @update:checked-row-keys="handleCheck"
+    />
+    <div class="footer">
+      <NButton type="primary" class="btn" @click="submitSevice">确认</NButton>
+      <NButton @click="close">取消</NButton>
+    </div>
   </n-modal>
 </template>
 
@@ -124,6 +155,7 @@ defineExpose({ openModal });
 .footer {
   display: flex;
   flex-direction: row-reverse;
+  margin-top: 20px;
   .btn {
     margin-left: 10px;
   }

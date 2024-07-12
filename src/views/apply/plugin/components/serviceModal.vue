@@ -1,12 +1,35 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { putRegisterService, registerService } from '@/service/api/plugin.ts';
+import { getServiceAccessForm, putRegisterService, registerService } from '@/service/api/plugin';
+import FormInput from './form.vue';
+
 const isEdit = ref<any>(false);
 const emit = defineEmits(['getList']);
 const serviceModal = ref<any>(false);
 const formRef = ref<any>(null);
-
 const loading = ref<any>(false);
+const service_plugin_id = ref<any>('');
+
+type FormElementType = 'input' | 'table' | 'select';
+
+interface Validate {
+  message: string; // 验证失败时显示的错误消息
+  required?: boolean; // 指定字段是否必填
+  rules?: string; // 用于验证字段值的正则表达式规则
+  type?: 'number' | 'string' | 'array' | 'boolean' | 'object'; // 验证的类型
+}
+
+interface FormElement {
+  type: FormElementType; // 表单元素的类型
+  dataKey: string; // 用于唯一标识表单元素的键
+  label: string; // 显示为表单元素标签的文本
+  placeholder?: string; // 提示文本，仅 input 类型时有效
+  validate?: Validate; // 包含表单验证规则的对象
+  array?: FormElement[]; // 仅 table 类型时有效，定义表格列的配置
+}
+const formElements = ref<FormElement[]>([]);
+const config_data = ref({});
+
 const defaultForm = {
   name: '',
   service_identifier: '',
@@ -34,23 +57,24 @@ const rules = ref<any>({
     message: '请选择服务类别'
   }
 });
-const options = ref<any>([
-  {
-    label: '接入协议',
-    value: 1
-  },
-  {
-    label: '接入服务',
-    value: 2
-  }
-]);
 
-const openModal: (row: any) => void = row => {
+const getServiceForm: () => void = async () => {
+  const data = await getServiceAccessForm({
+    service_plugin_id: service_plugin_id.value
+  });
+  formElements.value = data.data;
+  console.log(data, '提交');
+};
+
+const openModal: (id: any, row?: any) => void = (id, row) => {
   if (row) {
     isEdit.value = true;
     Object.assign(form.value, row);
   }
+  service_plugin_id.value = id;
+  console.log(service_plugin_id.value, 'id');
   serviceModal.value = true;
+  getServiceForm();
 };
 const close: () => void = () => {
   serviceModal.value = false;
@@ -63,6 +87,7 @@ const submitSevice: () => void = async () => {
     loading.value = true;
     const data: any = isEdit.value ? await putRegisterService(form.value) : await registerService(form.value);
     console.log(data, '提交');
+    console.log(config_data.value, '配置');
     if (data.data) {
       emit('getList');
       close();
@@ -75,7 +100,7 @@ defineExpose({ openModal });
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModal" preset="dialog" title="服务配置">
+  <n-modal v-model:show="serviceModal" preset="dialog" title="新增接入点">
     <n-space vertical>
       <n-spin :show="loading">
         <n-form
@@ -88,24 +113,11 @@ defineExpose({ openModal });
           :disabled="loading"
           @after-leave="close"
         >
-          <n-form-item label="服务名称" path="name">
+          <n-form-item label="服务接入点名称" path="name">
             <n-input v-model:value="form.name" placeholder="请输入服务名称" />
           </n-form-item>
-          <n-form-item label="服务标识符" path="service_identifier">
-            <n-input v-model:value="form.service_identifier" placeholder="请输入服务标识符" />
-          </n-form-item>
-          <n-form-item label="类别" path="service_type">
-            <n-space vertical class="selectType" placeholder="请选择服务类别">
-              <n-select v-model:value="form.service_type" :options="options" />
-            </n-space>
-          </n-form-item>
-          <n-form-item label="版本" path="version">
-            <n-input v-model:value="form.version" placeholder="请输入版本" />
-          </n-form-item>
-          <n-form-item label="描述" path="description">
-            <n-input v-model:value="form.description" placeholder="请输入描述" type="textarea" />
-          </n-form-item>
         </n-form>
+        <FormInput v-model:protocol-config="config_data" :form-elements="formElements"></FormInput>
         <div class="footer">
           <NButton type="primary" class="btn" @click="submitSevice">确认</NButton>
           <NButton @click="close">取消</NButton>
