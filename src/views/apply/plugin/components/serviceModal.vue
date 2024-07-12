@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { getServiceAccessForm, putRegisterService, registerService } from '@/service/api/plugin';
+import FormInput from './form.vue';
 
 const isEdit = ref<any>(false);
 const emit = defineEmits(['getList']);
@@ -58,7 +59,7 @@ const rules = ref<any>({
 });
 
 const getServiceForm: () => void = async () => {
-  const data = await getServiceAccessForm({
+  const data: any = await getServiceAccessForm({
     service_plugin_id: service_plugin_id.value
   });
   formElements.value = data.data;
