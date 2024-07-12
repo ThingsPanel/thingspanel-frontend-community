@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { getServiceAccessForm, putRegisterService, registerService } from '@/service/api/plugin';
-import FormInput from './form.vue';
 
 const isEdit = ref<any>(false);
 const emit = defineEmits(['getList']);
