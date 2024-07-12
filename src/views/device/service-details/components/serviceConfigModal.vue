@@ -9,7 +9,10 @@ const emit = defineEmits(['getList']);
 const router = useRoute();
 const service_identifier = ref<any>(router.query.service_identifier);
 const serviceModal = ref<any>(false);
+const isEdit = ref<any>(false);
 const chekeds = ref<any>([]);
+const checkedRowKeys = ref<any>([]);
+
 const pageData = ref<any>({
   loading: false,
   tableData: []
@@ -44,7 +47,11 @@ const getLists: () => void = async () => {
     protocol_type: service_identifier.value
   };
   const { data: res }: { data: any } = await getSelectServiceMenuList(params);
-  console.log(res, '提交上');
+  if (isEdit.value) {
+    checkedRowKeys.value = pageData.value.tableData.map((item: any) => {
+      return item.is_bind ? item.device_number : null;
+    });
+  }
   pageData.value.tableData.forEach((item: any) => {
     item.options = res;
   });
@@ -56,7 +63,7 @@ const columns: any = ref([
   {
     type: 'selection',
     disabled(row: any) {
-      return row.name === 'Edward King 3';
+      return row.is_bind;
     }
   },
   {
@@ -97,13 +104,19 @@ const submitSevice: () => void = async () => {
   } else {
     serviceModal.value = false;
   }
-  console.log(data, '提交3');
 };
-const openModal: (row: any) => void = async row => {
-  queryInfo.value.voucher = row;
-  serviceModal.value = true;
-  console.log(queryInfo.value, '打开弹窗');
-  getLists();
+const openModal: (val: any, row: any, edit: any) => void = async (val, row, edit) => {
+  console.log(row, '提交3');
+  if (edit) {
+    isEdit.value = edit;
+    queryInfo.value.voucher = val;
+    serviceModal.value = true;
+    getLists();
+  } else {
+    queryInfo.value.voucher = val;
+    serviceModal.value = true;
+    getLists();
+  }
 };
 
 const close: () => void = () => {
@@ -114,7 +127,7 @@ const handleCheck: (rowKeys: any) => void = rowKeys => {
   chekeds.value = pageData.value.tableData.map((item: any) => {
     let obj: any = null;
     rowKeys.forEach(val => {
-      if (item.device_number === val) {
+      if (item.device_number === val && !item.is_bind) {
         obj = {};
         obj.device_name = item.device_name;
         obj.device_number = item.device_number;
@@ -123,7 +136,6 @@ const handleCheck: (rowKeys: any) => void = rowKeys => {
     });
     return obj;
   });
-  console.log(chekeds.value, '选择');
 };
 
 defineExpose({ openModal });
@@ -132,6 +144,7 @@ defineExpose({ openModal });
 <template>
   <n-modal v-model:show="serviceModal" preset="dialog" title="配置设备" class="w">
     <NDataTable
+      v-model:checked-row-keys="checkedRowKeys"
       :remote="true"
       :columns="columns"
       :data="pageData.tableData"

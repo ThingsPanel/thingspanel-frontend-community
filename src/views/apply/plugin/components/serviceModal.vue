@@ -59,7 +59,7 @@ const rules = ref<any>({
 });
 
 const getServiceForm: () => void = async () => {
-  const data = await getServiceAccessForm({
+  const data: any = await getServiceAccessForm({
     service_plugin_id: service_plugin_id.value
   });
   formElements.value = data.data;

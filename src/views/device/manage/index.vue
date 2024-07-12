@@ -1,6 +1,7 @@
 <script setup lang="tsx">
 import { onBeforeMount, ref, watch } from 'vue';
 import type { Ref } from 'vue';
+import { useRouter } from 'vue-router';
 import type { DrawerPlacement, StepsProps } from 'naive-ui';
 import { NSpace, NTag } from 'naive-ui';
 import _ from 'lodash';
@@ -36,6 +37,7 @@ const tablePageRef = ref();
 const buttonDisabled = ref(true);
 const showMessage = ref(false);
 const messageColor = ref('');
+const router: any = useRouter();
 
 const secondLevelOptions = ref<DeviceManagement.ServiceData[]>([]);
 const selectedFirstLevel = ref<string | null>(null);
@@ -422,11 +424,16 @@ const currentStatus = ref<StepsProps['status']>('process');
 const currentServer = ref<number>(1);
 const currentServerStatus = ref<StepsProps['status']>('process');
 const activate = (place: DrawerPlacement, key: string | number) => {
-  current.value = 1;
-  currentServer.value = 1;
-  active.value = true;
-  addKey.value = key;
-  placement.value = place;
+  if (key === 'server') {
+    router.push('/device/service-access');
+  } else {
+    current.value = 1;
+    currentServer.value = 1;
+    active.value = true;
+    addKey.value = key;
+    placement.value = place;
+    console.log(place, key, '通过服务添加');
+  }
 };
 
 const completeAdd = async () => {

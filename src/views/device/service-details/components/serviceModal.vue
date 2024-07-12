@@ -6,8 +6,8 @@ import FormInput from './form.vue';
 
 const message = useMessage();
 const isEdit = ref<any>(false);
-const emit = defineEmits(['getList']);
-const serviceModal = ref<any>(false);
+const emit = defineEmits(['getList', 'isEdit']);
+const serviceModals = ref<any>(false);
 const formRef = ref<any>(null);
 
 const service_plugin_id = ref<any>('');
@@ -28,7 +28,10 @@ const rules = ref<any>({
 });
 const openModal: (id: any, row?: any) => void = async (id, row) => {
   if (row) {
+    console.log(row, '修改设备');
     isEdit.value = true;
+    Object.assign(form.value, row);
+    Object.assign(form.value.vouchers, JSON.parse(row.voucher));
   }
   service_plugin_id.value = id;
   form.value.service_plugin_id = id;
@@ -37,13 +40,13 @@ const openModal: (id: any, row?: any) => void = async (id, row) => {
   });
   if (data.data) {
     formElements.value = data.data;
-    serviceModal.value = true;
+    serviceModals.value = true;
   } else {
     message.error('暂无服务接入点数据');
   }
 };
 const close: () => void = () => {
-  serviceModal.value = false;
+  serviceModals.value = false;
 };
 
 const submitSevice: () => void = async () => {
@@ -51,8 +54,8 @@ const submitSevice: () => void = async () => {
   formRef.value?.validate(async errors => {
     if (errors) return;
     const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value);
-    serviceModal.value = false;
-    emit('getList', form.value.voucher);
+    serviceModals.value = false;
+    emit('isEdit', form.value.voucher, form.value, isEdit.value);
     form.value = { ...defaultForm };
     form.value.vouchers = {};
     console.log(data, '提交');
@@ -63,7 +66,7 @@ defineExpose({ openModal });
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModal" preset="dialog" title="新增接入点" class="w">
+  <n-modal v-model:show="serviceModals" preset="dialog" title="新增接入点" class="w">
     <n-form
       ref="formRef"
       :model="form"
