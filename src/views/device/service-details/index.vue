@@ -1,41 +1,30 @@
 <!-- eslint-disable require-atomic-updates -->
 <script setup lang="tsx">
 import { ref, watch } from 'vue';
-import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
-import { delRegisterService, getServices } from '@/service/api/plugin.ts';
+import { useRoute, useRouter } from 'vue-router';
+import { NButton, NPopconfirm, NSpace } from 'naive-ui';
+import dayjs from 'dayjs';
+import { delServiceAccess, getServiceAccess } from '@/service/api/plugin.ts';
 import { $t } from '@/locales';
-import serviceConfigModal from './components/serviceConfigModal.vue';
 import serviceModal from './components/serviceModal.vue';
+import serviceConfigModal from './components/serviceConfigModal.vue';
+
+const route: any = useRoute();
+const router: any = useRouter();
 const serviceModalRef = ref<any>(null);
 const serviceConfigModalRef = ref<any>(null);
-
+const service_plugin_id = ref<any>(route.query.id);
 const pageData = ref<any>({
   loading: false,
-  tableData: [],
-  options: [
-    {
-      label: '全部',
-      value: ''
-    },
-    {
-      label: '接入协议',
-      value: 1
-    },
-    {
-      label: '接入服务',
-      value: 2
-    }
-  ]
+  tableData: []
 });
 
 const queryInfo = ref<any>({
+  service_plugin_id: service_plugin_id.value,
   page: 1,
   page_size: 10,
-  service_type: '',
   total: 0,
-  showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
-  itemCount: 0,
   onChange: (page: number) => {
     queryInfo.value.page = page;
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -50,22 +39,21 @@ const queryInfo = ref<any>({
 });
 
 const getList: () => void = async () => {
-  const { data }: { data: any } = await getServices(queryInfo.value);
+  const { data }: { data: any } = await getServiceAccess(queryInfo.value);
   pageData.value.tableData = data.list;
   queryInfo.value.itemCount = data.total;
-  console.log(pageData.value.tableData, data, '获取列表数据');
 };
 
-const edit: (row: any) => void = row => {
-  serviceModalRef.value.openModal(row);
+const see: () => void = () => {
+  router.push(`/device/manage`);
 };
 const del: (row: any) => void = async row => {
-  await delRegisterService(row);
+  await delServiceAccess(row);
   getList();
 };
 const config: (row: any) => void = async row => {
   console.log('服务配置');
-  serviceConfigModalRef.value.openModal(row);
+  serviceModalRef.value.openModal(service_plugin_id.value, row);
 };
 const columns: any = ref([
   {
@@ -74,37 +62,11 @@ const columns: any = ref([
     minWidth: '200px'
   },
   {
-    title: '类别',
-    key: 'service_type',
-    minWidth: '140px',
-    align: 'center',
+    title: '创建时间',
+    key: 'create_at',
     render: row => {
-      if (row.service_type) {
-        return <span>{row.service_type === 1 ? '接入协议' : '接入服务'}</span>;
-      }
-      return <span></span>;
-    }
-  },
-  {
-    title: '描述',
-    key: 'description'
-  },
-  {
-    title: '版本',
-    key: 'version'
-  },
-  {
-    title: '状态',
-    key: 'service_heartbeat',
-    minWidth: '140px',
-    align: 'center',
-    render: row => {
-      if (row.service_heartbeat) {
-        return (
-          <NTag type={row.service_heartbeat === 1 ? 'success' : 'error'}>
-            {row.service_heartbeat === 1 ? '运行中' : '已停止'}
-          </NTag>
-        );
+      if (row.create_at) {
+        return <span>{dayjs(row.create_at).format('YYYY-MM-DD HH:mm:ss')}</span>;
       }
       return <span></span>;
     }
@@ -113,18 +75,18 @@ const columns: any = ref([
     key: 'actions',
     title: () => $t('common.action'),
     align: 'center',
-    minWidth: '220px',
+    width: '250px',
     render: row => {
       return (
         <NSpace justify={'center'}>
           {
-            <NButton size={'small'} type="primary" onClick={() => edit(row)}>
-              {$t('common.edit')}
+            <NButton size={'small'} type="primary" onClick={() => see(row)}>
+              查看设备
             </NButton>
           }
           {
             <NButton size={'small'} type="primary" onClick={() => config(row)}>
-              {$t('common.serviceConfi')}
+              修改配置
             </NButton>
           }
           <NPopconfirm
@@ -148,9 +110,19 @@ const columns: any = ref([
 ]);
 
 const addData: () => void = () => {
-  serviceModalRef.value.openModal();
+  console.log(service_plugin_id.value, '打开弹窗');
+  serviceModalRef.value.openModal(service_plugin_id.value);
 };
 
+const isEdit: (val: any, row: any, edit: any) => void = (val, row, edit) => {
+  if (edit) {
+    serviceConfigModalRef.value.openModal(val, row, edit);
+    getList();
+  } else {
+    serviceConfigModalRef.value.openModal(val);
+    getList();
+  }
+};
 watch(
   () => queryInfo.value.service_type,
   () => {
@@ -164,15 +136,9 @@ getList();
 
 <template>
   <div>
-    <NCard :title="$t('route.apply_service')" :bordered="false" class="h-full rounded-8px shadow-sm">
+    <NCard :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="header">
-        <n-select
-          v-model:value="queryInfo.service_type"
-          class="selectType"
-          placeholder="选择歌曲"
-          :options="pageData.options"
-        />
-        <NButton type="primary" @click="addData">添加新服务</NButton>
+        <NButton type="primary" @click="addData">新增接入</NButton>
       </div>
       <div class="h">
         <NDataTable
@@ -185,8 +151,8 @@ getList();
         />
       </div>
     </NCard>
-    <serviceModal ref="serviceModalRef" @get-list="getList"></serviceModal>
     <serviceConfigModal ref="serviceConfigModalRef" @get-list="getList"></serviceConfigModal>
+    <serviceModal ref="serviceModalRef" @is-edit="isEdit"></serviceModal>
   </div>
 </template>
 

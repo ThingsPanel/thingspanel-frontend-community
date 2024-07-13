@@ -5,7 +5,6 @@ const isEdit = ref<any>(false);
 const emit = defineEmits(['getList']);
 const serviceModal = ref<any>(false);
 const formRef = ref<any>(null);
-
 const loading = ref<any>(false);
 const defaultForm = {
   name: '',
@@ -17,7 +16,6 @@ const defaultForm = {
   remark: ''
 };
 const form = ref<any>({ ...defaultForm });
-
 const rules = ref<any>({
   name: {
     required: true,
@@ -44,7 +42,6 @@ const options = ref<any>([
     value: 2
   }
 ]);
-
 const openModal: (row: any) => void = row => {
   if (row) {
     isEdit.value = true;
@@ -56,7 +53,6 @@ const close: () => void = () => {
   serviceModal.value = false;
   Object.assign(form.value, defaultForm);
 };
-
 const submitSevice: () => void = async () => {
   formRef.value?.validate(async errors => {
     if (errors) return;
@@ -70,7 +66,6 @@ const submitSevice: () => void = async () => {
     loading.value = false;
   });
 };
-
 defineExpose({ openModal });
 </script>
 
@@ -96,7 +91,7 @@ defineExpose({ openModal });
           </n-form-item>
           <n-form-item label="类别" path="service_type">
             <n-space vertical class="selectType" placeholder="请选择服务类别">
-              <n-select v-model:value="form.service_type" :options="options" />
+              <n-select v-model:value="form.service_type" :options="options" :disabled="isEdit" />
             </n-space>
           </n-form-item>
           <n-form-item label="版本" path="version">

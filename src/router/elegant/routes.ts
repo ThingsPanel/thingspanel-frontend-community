@@ -348,6 +348,24 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'device_service-access',
+        path: '/device/service-access',
+        component: 'view.device_service-access',
+        meta: {
+          title: 'device_service-access',
+          i18nKey: 'route.device_service-access'
+        }
+      },
+      {
+        name: 'device_service-details',
+        path: '/device/service-details',
+        component: 'view.device_service-details',
+        meta: {
+          title: 'device_service-details',
+          i18nKey: 'route.device_service-details'
+        }
+      },
+      {
         name: 'device_template',
         path: '/device/template',
         component: 'view.device_template',

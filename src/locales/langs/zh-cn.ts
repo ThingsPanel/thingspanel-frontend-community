@@ -871,6 +871,13 @@ const local: App.I18n.Schema = {
     }
   },
   device_template: {
+    selectServices: '选择服务',
+    stepOneDescribe: '选择你需要的设备接入服务',
+    serviceConfig: '服务配置',
+    stepTwoDescribe: '验证服务获得授权',
+    equipmentConfig: '设备配置',
+    stepThreeDescribe: '设置设备是否导入并绑定设备配置模板',
+    adoptDeviceAdd: '通过服务添加',
     templateInfo: '模板信息',
     editTemplateInfo: '修改模板信息',
     addDeviceInfo: '添加设备的基本信息',
