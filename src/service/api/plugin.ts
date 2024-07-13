@@ -65,3 +65,8 @@ export const getSelectServiceMenuList = async (params: any) => {
 export const batchAddServiceMenuList = async (params: any) => {
   return await request.post<Panel.Data>('/device/service/access/batch', params);
 };
+
+// // 修改服务接入点
+// export const putServiceMenuDrop = async (params: any) => {
+//   return await request.put<Panel.Data>("/service/access", params);
+// };

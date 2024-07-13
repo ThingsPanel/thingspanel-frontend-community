@@ -1,7 +1,7 @@
 <!-- eslint-disable require-atomic-updates -->
 <script setup lang="tsx">
 import { ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { NButton, NPopconfirm, NSpace } from 'naive-ui';
 import dayjs from 'dayjs';
 import { delServiceAccess, getServiceAccess } from '@/service/api/plugin.ts';
@@ -9,10 +9,11 @@ import { $t } from '@/locales';
 import serviceModal from './components/serviceModal.vue';
 import serviceConfigModal from './components/serviceConfigModal.vue';
 
-const router = useRoute();
+const route: any = useRoute();
+const router: any = useRouter();
 const serviceModalRef = ref<any>(null);
 const serviceConfigModalRef = ref<any>(null);
-const service_plugin_id = ref<any>(router.query.id);
+const service_plugin_id = ref<any>(route.query.id);
 const pageData = ref<any>({
   loading: false,
   tableData: []
@@ -37,18 +38,14 @@ const queryInfo = ref<any>({
   }
 });
 
-const getList: (val?: any) => void = async val => {
-  if (val) {
-    serviceConfigModalRef.value.openModal(val);
-  }
-  console.log(queryInfo.value, '获取列表数据');
+const getList: () => void = async () => {
   const { data }: { data: any } = await getServiceAccess(queryInfo.value);
   pageData.value.tableData = data.list;
   queryInfo.value.itemCount = data.total;
 };
 
-const edit: (row: any) => void = row => {
-  serviceModalRef.value.openModal(row);
+const see: () => void = () => {
+  router.push(`/device/manage`);
 };
 const del: (row: any) => void = async row => {
   await delServiceAccess(row);
@@ -56,7 +53,7 @@ const del: (row: any) => void = async row => {
 };
 const config: (row: any) => void = async row => {
   console.log('服务配置');
-  serviceConfigModalRef.value.openModal(row);
+  serviceModalRef.value.openModal(service_plugin_id.value, row);
 };
 const columns: any = ref([
   {
@@ -83,7 +80,7 @@ const columns: any = ref([
       return (
         <NSpace justify={'center'}>
           {
-            <NButton size={'small'} type="primary" onClick={() => edit(row)}>
+            <NButton size={'small'} type="primary" onClick={() => see(row)}>
               查看设备
             </NButton>
           }
@@ -117,6 +114,15 @@ const addData: () => void = () => {
   serviceModalRef.value.openModal(service_plugin_id.value);
 };
 
+const isEdit: (val: any, row: any, edit: any) => void = (val, row, edit) => {
+  if (edit) {
+    serviceConfigModalRef.value.openModal(val, row, edit);
+    getList();
+  } else {
+    serviceConfigModalRef.value.openModal(val);
+    getList();
+  }
+};
 watch(
   () => queryInfo.value.service_type,
   () => {
@@ -146,7 +152,7 @@ getList();
       </div>
     </NCard>
     <serviceConfigModal ref="serviceConfigModalRef" @get-list="getList"></serviceConfigModal>
-    <serviceModal ref="serviceModalRef" @get-list="getList"></serviceModal>
+    <serviceModal ref="serviceModalRef" @is-edit="isEdit"></serviceModal>
   </div>
 </template>
 

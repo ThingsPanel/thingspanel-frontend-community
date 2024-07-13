@@ -124,4 +124,8 @@ const onCreate = () => {
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.connection-box {
+  width: 100%;
+}
+</style>

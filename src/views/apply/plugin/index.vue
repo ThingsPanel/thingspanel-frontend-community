@@ -1,7 +1,7 @@
 <!-- eslint-disable require-atomic-updates -->
 <script setup lang="tsx">
 import { ref, watch } from 'vue';
-import { NButton, NPopconfirm, NSpace } from 'naive-ui';
+import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
 import { delRegisterService, getServices } from '@/service/api/plugin.ts';
 import { $t } from '@/locales';
 import serviceConfigModal from './components/serviceConfigModal.vue';
@@ -100,7 +100,11 @@ const columns: any = ref([
     align: 'center',
     render: row => {
       if (row.service_heartbeat) {
-        return <span>{row.service_heartbeat === 1 ? '运行中' : '已停止'}</span>;
+        return (
+          <NTag type={row.service_heartbeat === 1 ? 'success' : 'error'}>
+            {row.service_heartbeat === 1 ? '运行中' : '已停止'}
+          </NTag>
+        );
       }
       return <span></span>;
     }
