@@ -56,7 +56,7 @@ jobs:
         
       - name: Create Release
         id: create_release
-        if: ${{ steps.get_tag.outputs.tag =~ '^v.*$' }}
+        if: startsWith(${{ steps.get_tag.outputs.tag}}, 'v')
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -69,7 +69,7 @@ jobs:
 
       - name: Upload Release Asset
         id: upload-release-asset
-        if: ${{ steps.get_tag.outputs.tag =~ '^v.*$' }}
+        if: startsWith(${{ steps.get_tag.outputs.tag}}, 'v')
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
