@@ -29,6 +29,7 @@ declare module 'vue' {
     GridItem: typeof import('./../components/drg-grid-layout/modules/grid-item.vue')['default']
     GridLayout: typeof import('./../components/drg-grid-layout/modules/grid-layout.vue')['default']
     IconAntDesignReloadOutlined: typeof import('~icons/ant-design/reload-outlined')['default']
+<<<<<<< HEAD
     IconAntDesignSettingOutlined: (typeof import("~icons/ant-design/setting-outlined"))["default"]
     IconGridiconsFullscreen: (typeof import("~icons/gridicons/fullscreen"))["default"]
     IconGridiconsFullscreenExit: (typeof import("~icons/gridicons/fullscreen-exit"))["default"]
@@ -47,6 +48,8 @@ declare module 'vue' {
     'IconMaterialSymbols:tableRowsNarrowOutlineSharp': typeof import('~icons/material-symbols/table-rows-narrow-outline-sharp')['default']
     IconMdiDrag: (typeof import("~icons/mdi/drag"))["default"]
     IconMdiRefresh: (typeof import("~icons/mdi/refresh"))["default"]
+=======
+>>>>>>> master
     IconSelect: typeof import('./../components/custom/icon-select.vue')['default']
     ImageVerify: typeof import('./../components/custom/image-verify.vue')['default']
     JsonToForm: typeof import('./../components/json-to-form/index.vue')['default']
@@ -62,6 +65,7 @@ declare module 'vue' {
     NBreadcrumb: typeof import('naive-ui')['NBreadcrumb']
     NBreadcrumbItem: typeof import('naive-ui')['NBreadcrumbItem']
     NButton: typeof import('naive-ui')['NButton']
+<<<<<<< HEAD
     NButtonGroup: typeof import('naive-ui')['NButtonGroup']
     NCard: typeof import('naive-ui')['NCard']
     NCascader: (typeof import("naive-ui"))["NCascader"]
@@ -74,11 +78,17 @@ declare module 'vue' {
     NDatePicker: typeof import('naive-ui')['NDatePicker']
     NDescriptions: (typeof import("naive-ui"))["NDescriptions"]
     NDescriptionsItem: (typeof import("naive-ui"))["NDescriptionsItem"]
+=======
+    NCard: typeof import('naive-ui')['NCard']
+    NCheckbox: typeof import('naive-ui')['NCheckbox']
+    NColorPicker: typeof import('naive-ui')['NColorPicker']
+>>>>>>> master
     NDialogProvider: typeof import('naive-ui')['NDialogProvider']
     NDivider: typeof import('naive-ui')['NDivider']
     NDrawer: typeof import('naive-ui')['NDrawer']
     NDrawerContent: typeof import('naive-ui')['NDrawerContent']
     NDropdown: typeof import('naive-ui')['NDropdown']
+<<<<<<< HEAD
     NDynamicInput: (typeof import("naive-ui"))["NDynamicInput"]
     NDynamicTags: (typeof import("naive-ui"))["NDynamicTags"]
     NEllipsis: (typeof import("naive-ui"))["NEllipsis"]
@@ -140,6 +150,23 @@ declare module 'vue' {
     NUpload: typeof import('naive-ui')['NUpload']
     NUploadDragger: typeof import('naive-ui')['NUploadDragger']
     NUploadTrigger: typeof import('naive-ui')['NUploadTrigger']
+=======
+    NForm: typeof import('naive-ui')['NForm']
+    NFormItem: typeof import('naive-ui')['NFormItem']
+    NImage: typeof import('naive-ui')['NImage']
+    NInput: typeof import('naive-ui')['NInput']
+    NInputNumber: typeof import('naive-ui')['NInputNumber']
+    NLoadingBarProvider: typeof import('naive-ui')['NLoadingBarProvider']
+    NMenu: typeof import('naive-ui')['NMenu']
+    NMessageProvider: typeof import('naive-ui')['NMessageProvider']
+    NNotificationProvider: typeof import('naive-ui')['NNotificationProvider']
+    NSelect: typeof import('naive-ui')['NSelect']
+    NSpace: typeof import('naive-ui')['NSpace']
+    NSwitch: typeof import('naive-ui')['NSwitch']
+    NTab: typeof import('naive-ui')['NTab']
+    NTabs: typeof import('naive-ui')['NTabs']
+    NTooltip: typeof import('naive-ui')['NTooltip']
+>>>>>>> master
     PanelManage: typeof import('./../components/panel/panel-manage.vue')['default']
     PinToggler: typeof import('./../components/common/pin-toggler.vue')['default']
     ReloadButton: typeof import('./../components/common/reload-button.vue')['default']

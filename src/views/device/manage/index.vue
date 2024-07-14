@@ -26,6 +26,11 @@ import AddDevicesServer1 from '@/views/device/manage/modules/add-devices-server1
 import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales';
 
+interface ServiceIds {
+  service_identifier: string;
+  service_plugin_id: string;
+}
+
 const addKey = ref();
 const deviceNumber = ref();
 const configOptions = ref();
@@ -41,7 +46,7 @@ const router: any = useRouter();
 
 const secondLevelOptions = ref<DeviceManagement.ServiceData[]>([]);
 const selectedFirstLevel = ref<string | null>(null);
-const serviceIds = ref<string[]>([]);
+const serviceIds = ref<ServiceIds[]>([]);
 
 const getFormJson = async id => {
   const res = await devicCeonnectForm({ device_id: id });
@@ -300,7 +305,11 @@ const fetchFirstLevelOptions = async () => {
 
   const serviceOptions = data.service
     ? data.service.map(item => {
-        serviceIds.value.push(item.service_identifier);
+        serviceIds.value.push({
+          service_identifier: item.service_identifier,
+          service_plugin_id: item.service_plugin_id
+        });
+
         return {
           label: item.name,
           value: item.service_identifier,
@@ -344,9 +353,10 @@ const fetchSecondLevelOptions = async (firstLevelValue, page = 1) => {
     });
   }
 
+  const pluginId = serviceIds.value.filter(item => item.service_identifier === firstLevelValue)[0]?.service_plugin_id;
   const { data } = await deviceDictProtocolServiceSecondLevel({
     params: {
-      service_plugin_id: firstLevelValue,
+      service_plugin_id: pluginId,
       page,
       page_size: 100
     }
@@ -380,7 +390,7 @@ const paramsUpdateHandle = async params => {
     const identifierIndex = searchConfigs.value.findIndex(item => item.key === 'service_identifier');
     const accessIndex = searchConfigs.value.findIndex(item => item.key === 'service_access_id');
     // 重置二级选项
-    const isService = serviceIds.value.includes(firstSelected);
+    const isService = serviceIds.value.map(item => item.service_identifier).includes(firstSelected);
     if (isService) {
       if (accessIndex === -1) {
         searchConfigs.value.splice(identifierIndex + 1, 0, {
@@ -388,6 +398,10 @@ const paramsUpdateHandle = async params => {
           label: '选择二级服务',
           type: 'select',
           options: []
+        });
+      } else if (accessIndex > -1) {
+        tablePageRef.value?.forceChangeParamsByKey({
+          service_access_id: null
         });
       }
       await fetchSecondLevelOptions(firstSelected);
