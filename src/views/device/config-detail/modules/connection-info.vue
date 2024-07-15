@@ -97,7 +97,10 @@ const getProtocolList = async (deviceCode: string) => {
 
 const connectOptions = ref([] as any);
 const getConfigForm = async data => {
-  const res = await protocolPluginConfigForm({ device_type: props.configInfo.device_type, protocol_type: data });
+  const res = await protocolPluginConfigForm({
+    device_type: props.configInfo.device_type,
+    protocol_type: data
+  });
   dynamicForm = reactive(res.data);
 
   formElements.value = res.data;
@@ -105,7 +108,10 @@ const getConfigForm = async data => {
 };
 const getVoucherType = async data => {
   connectOptions.value = [];
-  const res = await deviceConfigVoucherType({ device_type: props.configInfo.device_type, protocol_type: data });
+  const res = await deviceConfigVoucherType({
+    device_type: props.configInfo.device_type,
+    protocol_type: data
+  });
   if (res.data) {
     connectOptions.value = Object.keys(res.data).map(key => {
       return { label: key, value: res.data[key] };
@@ -138,7 +144,9 @@ onMounted(async () => {
 
 <template>
   <div class="connection-box">
-    <div class="connection-title">{{ $t('generate.through-protocol-access') }}</div>
+    <div class="connection-title">
+      {{ $t('generate.through-protocol-access') }}
+    </div>
     <NForm :model="extendForm" :rules="extendFormRules" label-placement="left" label-width="auto">
       <NFormItem :label="$t('generate.choose-protocol-or-Service')" path="protocol_type" class="w-300">
         <NSelect
