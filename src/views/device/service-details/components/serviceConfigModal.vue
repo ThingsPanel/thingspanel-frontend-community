@@ -20,6 +20,7 @@ const pageData = ref<any>({
 
 const queryInfo = ref<any>({
   voucher: '',
+  service_type: router.query.service_type,
   page: 1,
   page_size: 10,
   total: 0,
@@ -94,7 +95,7 @@ const columns: any = ref([
 ]);
 const submitSevice: () => void = async () => {
   const params = {
-    service_access_id: service_identifier.value,
+    service_access_id: router.query.id,
     device_list: chekeds.value
   };
   const data: any = await batchAddServiceMenuList(params);
