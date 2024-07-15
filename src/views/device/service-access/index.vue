@@ -10,7 +10,8 @@ const pagination: PaginationProps = reactive({
   pageCount: 1
 });
 const queryParams = reactive({
-  page_size: 12
+  page_size: 12,
+  service_type: 2
 });
 const deviceTemplateList = ref([] as any[]);
 
