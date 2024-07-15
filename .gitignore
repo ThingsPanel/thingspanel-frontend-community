@@ -36,8 +36,8 @@ vite.config.ts.timestamp-*-*.mjs
 .tsbuildinfo
 .eslintcache
 .env.development
-pnpm-lock.yaml
-/src/typings/components.d.ts
+
+
 
 
 
