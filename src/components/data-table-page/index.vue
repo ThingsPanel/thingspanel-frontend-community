@@ -217,11 +217,16 @@ const handleReset = () => {
 const forceChangeParamsByKey = newParams => {
   // 子组件强制修改表单数值
   const theKeys = Object.keys(newParams);
-  Object.keys(searchCriteria.value).forEach(key => {
-    if (theKeys.includes(key)) {
-      searchCriteria.value[key] = newParams[key];
-    }
-  });
+  const keys = Object.keys(searchCriteria.value);
+  if (keys.length <= 0) {
+    searchCriteria.value = newParams;
+  } else {
+    keys.forEach(key => {
+      if (theKeys.includes(key)) {
+        searchCriteria.value[key] = newParams[key];
+      }
+    });
+  }
 };
 
 defineExpose({

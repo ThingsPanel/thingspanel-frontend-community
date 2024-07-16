@@ -45,7 +45,9 @@ const getList: () => void = async () => {
 };
 
 const see: (row: any) => void = row => {
-  router.push(`/device/manage?service_identifier=${route.query.service_identifier}&device_name=${row.name}`);
+  router.push(
+    `/device/manage?service_identifier=${route.query.service_identifier}&device_name=${row.name}&service_access_id=${row.id}`
+  );
 };
 const del: (row: any) => void = async row => {
   await delServiceAccess(row);

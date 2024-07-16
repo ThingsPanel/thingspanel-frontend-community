@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { onBeforeMount, ref, watch } from 'vue';
 import type { Ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import type { DrawerPlacement, StepsProps } from 'naive-ui';
 import { NSpace, NTag } from 'naive-ui';
 import _ from 'lodash';
@@ -42,11 +42,14 @@ const tablePageRef = ref();
 const buttonDisabled = ref(true);
 const showMessage = ref(false);
 const messageColor = ref('');
+const route: any = useRoute();
 const router: any = useRouter();
 
 const secondLevelOptions = ref<DeviceManagement.ServiceData[]>([]);
 const selectedFirstLevel = ref<string | null>(null);
 const serviceIds = ref<ServiceIds[]>([]);
+const queryOfServiceIdentifier = ref(route.query.service_identifier);
+const queryOfServiceAccessId = ref(route.query.service_access_id);
 
 const getFormJson = async id => {
   const res = await devicCeonnectForm({ device_id: id });
@@ -414,9 +417,18 @@ const paramsUpdateHandle = async params => {
   }
 };
 
-onBeforeMount(() => {
-  fetchFirstLevelOptions();
+const setServiceParams = () => {
+  tablePageRef.value?.forceChangeParamsByKey({
+    service_identifier: queryOfServiceIdentifier.value,
+    service_access_id: queryOfServiceAccessId.value
+  });
+};
+
+onBeforeMount(async () => {
+  await fetchFirstLevelOptions();
+  setServiceParams();
 });
+
 const topActions = [
   {
     element: () => (
