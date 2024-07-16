@@ -44,8 +44,8 @@ const getList: () => void = async () => {
   queryInfo.value.itemCount = data.total;
 };
 
-const see: () => void = () => {
-  router.push(`/device/manage`);
+const see: (row: any) => void = row => {
+  router.push(`/device/manage?service_identifier=${route.query.service_identifier}&device_name=${row.name}`);
 };
 const del: (row: any) => void = async row => {
   await delServiceAccess(row);
