@@ -12,6 +12,8 @@ const serviceModal = ref<any>(false);
 const isEdit = ref<any>(false);
 const chekeds = ref<any>([]);
 const checkedRowKeys = ref<any>([]);
+const device_config_id = ref<any>('');
+const NTableRef = ref<any>(null);
 
 const pageData = ref<any>({
   loading: false,
@@ -95,7 +97,7 @@ const columns: any = ref([
 ]);
 const submitSevice: () => void = async () => {
   const params = {
-    service_access_id: router.query.id,
+    service_access_id: device_config_id.value,
     device_list: chekeds.value
   };
   const data: any = await batchAddServiceMenuList(params);
@@ -113,10 +115,12 @@ const openModal: (val: any, row: any, edit: any) => void = async (val, row, edit
     queryInfo.value.voucher = val;
     serviceModal.value = true;
     getLists();
+    device_config_id.value = row;
   } else {
     queryInfo.value.voucher = val;
     serviceModal.value = true;
     getLists();
+    device_config_id.value = row;
   }
 };
 
@@ -124,19 +128,24 @@ const close: () => void = () => {
   serviceModal.value = false;
 };
 
-const handleCheck: (rowKeys: any) => void = rowKeys => {
-  chekeds.value = pageData.value.tableData.map((item: any) => {
-    let obj: any = null;
-    rowKeys.forEach(val => {
-      if (item.device_number === val && !item.is_bind) {
-        obj = {};
-        obj.device_name = item.device_name;
-        obj.device_number = item.device_number;
-        obj.device_config_id = item.device_config_id;
-      }
+const handleCheck: (rowKeys: any, row: any) => void = (rowKeys, row) => {
+  if (row[0] && row[0].device_config_id) {
+    chekeds.value = pageData.value.tableData.map((item: any) => {
+      let obj: any = null;
+      rowKeys.forEach(val => {
+        if (item.device_number === val && !item.is_bind) {
+          obj = {};
+          obj.device_name = item.device_name;
+          obj.device_number = item.device_number;
+          obj.device_config_id = item.device_config_id;
+        }
+      });
+      return obj;
     });
-    return obj;
-  });
+  } else {
+    window.$message?.error('未设置模板，请设置模板后再勾选');
+    checkedRowKeys.value = [];
+  }
 };
 
 defineExpose({ openModal });
@@ -145,6 +154,7 @@ defineExpose({ openModal });
 <template>
   <n-modal v-model:show="serviceModal" preset="dialog" title="配置设备" class="w">
     <NDataTable
+      ref="NTableRef"
       v-model:checked-row-keys="checkedRowKeys"
       :remote="true"
       :columns="columns"

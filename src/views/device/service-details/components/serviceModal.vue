@@ -47,6 +47,8 @@ const openModal: (id: any, row?: any) => void = async (id, row) => {
 };
 const close: () => void = () => {
   serviceModals.value = false;
+  form.value = { ...defaultForm };
+  form.value.vouchers = {};
 };
 
 const submitSevice: () => void = async () => {
@@ -55,7 +57,7 @@ const submitSevice: () => void = async () => {
     if (errors) return;
     const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value);
     serviceModals.value = false;
-    emit('isEdit', form.value.voucher, form.value, isEdit.value);
+    emit('isEdit', form.value.voucher, data.data.id, isEdit.value);
     form.value = { ...defaultForm };
     form.value.vouchers = {};
     console.log(data, '提交');
@@ -66,7 +68,7 @@ defineExpose({ openModal });
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModals" preset="dialog" title="新增接入点" class="w">
+  <n-modal v-model:show="serviceModals" preset="dialog" title="新增接入点" class="w" @after-leave="close">
     <n-form
       ref="formRef"
       :model="form"
