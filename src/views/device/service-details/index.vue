@@ -115,11 +115,12 @@ const addData: () => void = () => {
 };
 
 const isEdit: (val: any, row: any, edit: any) => void = (val, row, edit) => {
+  console.log(val, row, edit, '打开弹窗1');
   if (edit) {
     serviceConfigModalRef.value.openModal(val, row, edit);
     getList();
   } else {
-    serviceConfigModalRef.value.openModal(val);
+    serviceConfigModalRef.value.openModal(val, row);
     getList();
   }
 };
