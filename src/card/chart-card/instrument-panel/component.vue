@@ -1,28 +1,26 @@
 <script setup lang="ts">
 import { defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { NCard } from 'naive-ui';
 import VChart from 'vue-echarts';
-import * as echarts from 'echarts';
+import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { GaugeChart } from 'echarts/charts';
 import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components';
+import type { ICardData } from '@/components/panel/card';
 import { telemetryDataCurrentKeys } from '@/service/api/device';
 
 // 注册 ECharts 所需的组件和渲染器
-echarts.use([CanvasRenderer, GaugeChart, TitleComponent, TooltipComponent, LegendComponent]);
-
-interface ICardData {
-  dataSource: any; // 定义数据源接口
-}
+use([CanvasRenderer, GaugeChart, TitleComponent, TooltipComponent, LegendComponent]);
 
 const initDetailValue = 8;
 const valueColor = '#105ba8';
 
 const props = defineProps<{ card: ICardData }>();
 
-const cardRef = ref(null);
-const chartRef = ref<VChart | null>(null);
+const cardRef = ref(NCard);
+const chartRef = ref<typeof VChart | null>(null);
 
-const detail = ref<string>('');
+const detail = ref<number>(0);
 const unit = ref<string>('');
 
 const chartOptions = ref({
@@ -120,7 +118,7 @@ const handleResize = () => {
   if (chartInstance) {
     chartInstance.resize();
 
-    const containerWidth = Math.min(chartRef.value.$el.clientWidth, chartRef.value.$el.clientHeight);
+    const containerWidth = Math.min(chartRef.value?.$el.clientWidth, chartRef.value?.$el.clientHeight);
     const adjustedOptions = chartOptions.value;
     adjustedOptions.series[0].detail.fontSize = containerWidth / 10;
     adjustedOptions.series[0].axisLabel.fontSize = containerWidth / 16;
@@ -168,14 +166,14 @@ onMounted(() => {
 
 <template>
   <div class="dashboard-card">
-    <n-card ref="cardRef" :bordered="false" class="h-full w-full">
+    <NCard ref="cardRef" :bordered="false" class="h-full w-full">
       <div class="chart-container">
         <VChart ref="chartRef" :option="chartOptions" class="chart" />
       </div>
       <div class="data-info">
-        <span class="title">{{ card.dataSource?.deviceSource[0]?.metricsName || '仪表盘' }}</span>
+        <span class="title">{{ card.dataSource?.deviceSource?.[0]?.metricsName || '仪表盘' }}</span>
       </div>
-    </n-card>
+    </NCard>
   </div>
 </template>
 
