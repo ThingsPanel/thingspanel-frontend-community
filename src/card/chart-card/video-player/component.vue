@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
-import { getAttributeDataSet } from '@/service/api/device';
+import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device';
 
 interface ICardData {
   dataSource: any; // 定义数据源接口
@@ -30,8 +30,15 @@ const setSeries: (dataSource) => void = async dataSource => {
     device_id: dataSource?.deviceSource ? dataSource?.deviceSource?.[0]?.deviceId ?? '' : '',
     keys: dataSource?.deviceSource ? dataSource?.deviceSource?.[0]?.metricsId : ''
   };
+  const metricsType = dataSource.deviceSource ? dataSource.deviceSource[0]?.metricsType : '';
+
   if (querDetail.device_id && querDetail.keys) {
-    const res = await getAttributeDataSet(querDetail);
+    let res;
+    if (metricsType === 'telemetry') {
+      res = await telemetryDataCurrentKeys(querDetail);
+    } else if (metricsType === 'attributes') {
+      res = await getAttributeDataSet(querDetail);
+    }
     detail.data = res.data;
   }
 };
