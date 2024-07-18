@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
-import { telemetryDataCurrentKeys } from '@/service/api/device';
+import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device';
 
 interface ICardData {
   dataSource: any; // 定义数据源接口
@@ -30,8 +30,16 @@ const setSeries: (dataSource) => void = async dataSource => {
     device_id: dataSource?.deviceSource ? dataSource?.deviceSource?.[0]?.deviceId ?? '' : '',
     keys: dataSource?.deviceSource ? dataSource?.deviceSource?.[0]?.metricsId : ''
   };
+  const metricsType = dataSource.deviceSource ? dataSource.deviceSource[0]?.metricsType : '';
+
   if (querDetail.device_id && querDetail.keys) {
-    detail.data = await telemetryDataCurrentKeys(querDetail);
+    let res;
+    if (metricsType === 'telemetry') {
+      res = await telemetryDataCurrentKeys(querDetail);
+    } else if (metricsType === 'attributes') {
+      res = await getAttributeDataSet(querDetail);
+    }
+    detail.data = res.data;
   }
 };
 
@@ -62,9 +70,9 @@ onBeforeUnmount(() => {
     <n-card ref="cardRef" :bordered="false" class="h-full w-full">
       <div class="video-container">
         <video ref="video" class="video" controls @timeupdate="updateCurrentTime" @loadedmetadata="updateDuration">
-          <source :src="detail?.data?.data?.[0]?.value" type="video/mp4" />
-          <source :src="detail?.data?.data?.[0]?.value" type="video/webm" />
-          <source :src="detail?.data?.data?.[0]?.value" type="video/ogg" />
+          <source v-if="detail.data.length > 0" :src="detail.data[0].value" type="video/mp4" />
+          <source v-if="detail.data.length > 0" :src="detail.data[0].value" type="video/webm" />
+          <source v-if="detail.data.length > 0" :src="detail.data[0].value" type="video/ogg" />
           Your browser does not support the video tag.
         </video>
       </div>
