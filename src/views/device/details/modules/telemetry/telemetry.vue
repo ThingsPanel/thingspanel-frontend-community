@@ -264,9 +264,13 @@ const copy = event => {
 const isJSON = str => {
   if (typeof str === 'string') {
     try {
-      JSON.parse(str);
-      return true;
-    } catch (e) {
+      const obj = JSON.parse(str);
+      if (typeof obj === 'object' && obj) {
+        return obj;
+      }
+      return false;
+    } catch (error) {
+      console.log(error);
       return false;
     }
   }
