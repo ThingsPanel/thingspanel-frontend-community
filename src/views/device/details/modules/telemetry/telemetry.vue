@@ -158,7 +158,6 @@ const sendSimulationList = async () => {
     window.$message?.error($t('custom.device_details.sendInputData'));
     return;
   }
-
   const { error } = await sendSimulation({
     command: device_order.value
   });
@@ -262,17 +261,32 @@ const copy = event => {
   document.execCommand('copy');
   window.$message?.success($t('theme.configOperation.copySuccess'));
 };
+const isJSON = str => {
+  if (typeof str === 'string') {
+    try {
+      JSON.parse(str);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  return false;
+};
 
 const sends = async () => {
-  // 发送属性的逻辑...
-  const { error } = await telemetryDataPub({
-    device_id: props.id,
-    value: formValue.value
-  });
-  if (!error) {
-    showDialog.value = false;
-    fetchData();
-    fetchTelemetry();
+  if (isJSON(formValue.value)) {
+    // 发送属性的逻辑...
+    const { error } = await telemetryDataPub({
+      device_id: props.id,
+      value: formValue.value
+    });
+    if (!error) {
+      showDialog.value = false;
+      fetchData();
+      fetchTelemetry();
+    }
+  } else {
+    window.$message?.error($t('generate.inputRightCommand'));
   }
 };
 const onTapTableTools = (i: any) => {

@@ -1284,6 +1284,7 @@ declare namespace App {
         };
       };
       generate: {
+        inputRightCommand: string;
         customCommand: string;
         addCustomCommand: string;
         btnname: string;
