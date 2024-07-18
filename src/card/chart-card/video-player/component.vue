@@ -6,8 +6,12 @@ interface ICardData {
   dataSource: any; // 定义数据源接口
 }
 
+interface DataDetail {
+  value: string;
+}
+
 interface Detail {
-  data: Array<{ value: string }>;
+  data: DataDetail[];
 }
 
 const props = defineProps<{ card: ICardData }>();
@@ -39,7 +43,12 @@ const setSeries: (dataSource) => void = async dataSource => {
     } else if (metricsType === 'attributes') {
       res = await getAttributeDataSet(querDetail);
     }
-    detail.data = res.data;
+
+    if (res && Array.isArray(res.data)) {
+      detail.data = res.data.map(item => ({ value: item.value }));
+    } else {
+      console.error('Unexpected response format:', res);
+    }
   }
 };
 
