@@ -360,7 +360,10 @@ const local: App.I18n.Schema = {
     device_template: '功能模板',
     'personal-center': '个人中心',
     'edit-area': '编辑空间/区域',
-    'new-area': '添加空间/区域'
+    'new-area': '添加空间/区域',
+    apply_plugin: '应用插件',
+    'device_service-access': '设备服务访问',
+    'device_service-details': '设备服务详情'
   },
   page: {
     product: productLocaleZhCn,
