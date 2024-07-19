@@ -971,7 +971,7 @@ const local: App.I18n.Schema = {
     }
   },
   generate: {
-    inputRightCommand: '请输入正确的控制命令',
+    inputRightJson: '输入的不是有效的JSON格式',
     customCommand: '自定义命令',
     addCustomCommand: '新增自定义命令',
     btnname: '按钮名称',

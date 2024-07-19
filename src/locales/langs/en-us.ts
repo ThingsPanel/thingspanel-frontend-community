@@ -972,7 +972,7 @@ const local: App.I18n.Schema = {
   },
   custom: pen,
   generate: {
-    inputRightCommand: 'Input right command,please',
+    inputRightJson: 'Input right json,please',
     customCommand: 'custom command',
     addCustomCommand: 'Add custom commands',
     btnname: 'Button Name',
