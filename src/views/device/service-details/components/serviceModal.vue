@@ -57,7 +57,8 @@ const submitSevice: () => void = async () => {
     if (errors) return;
     const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value);
     serviceModals.value = false;
-    emit('isEdit', form.value.voucher, data.data.id, isEdit.value);
+    const id = isEdit.value ? form.value.id : data.data.id;
+    emit('isEdit', form.value.voucher, id, isEdit.value);
     form.value = { ...defaultForm };
     form.value.vouchers = {};
     console.log(data, '提交');
