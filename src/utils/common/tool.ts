@@ -96,3 +96,19 @@ export function getFileName(url: string): string {
   const matches = url.match(regex);
   return matches ? matches[0] : 'unknown.file';
 }
+
+export function isJSON(str: string): boolean {
+  if (typeof str === 'string') {
+    try {
+      const obj = JSON.parse(str);
+      if (typeof obj === 'object' && obj) {
+        return obj;
+      }
+      return false;
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+  }
+  return false;
+}

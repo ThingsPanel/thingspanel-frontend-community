@@ -17,7 +17,7 @@ import {
 import { localStg } from '@/utils/storage';
 import { deviceDetail } from '@/service/api/device';
 import { $t } from '@/locales';
-import { getWebsocketServerUrl } from '@/utils/common/tool';
+import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool';
 import HistoryData from './modules/history-data.vue';
 import TimeSeriesData from './modules/time-series-data.vue';
 import { useLoading } from '~/packages/hooks';
@@ -106,7 +106,11 @@ const { status, send, close } = useWebSocket(wsUrl, {
 });
 
 const columns = [
-  { title: $t('custom.device_details.command'), minWidth: '140px', key: 'data' },
+  {
+    title: $t('custom.device_details.command'),
+    minWidth: '140px',
+    key: 'data'
+  },
   {
     title: $t('custom.device_details.operationType'),
     key: 'operation_type',
@@ -261,21 +265,6 @@ const copy = event => {
   document.execCommand('copy');
   window.$message?.success($t('theme.configOperation.copySuccess'));
 };
-const isJSON = str => {
-  if (typeof str === 'string') {
-    try {
-      const obj = JSON.parse(str);
-      if (typeof obj === 'object' && obj) {
-        return obj;
-      }
-      return false;
-    } catch (error) {
-      console.log(error);
-      return false;
-    }
-  }
-  return false;
-};
 
 const sends = async () => {
   if (isJSON(formValue.value)) {
@@ -289,8 +278,6 @@ const sends = async () => {
       fetchData();
       fetchTelemetry();
     }
-  } else {
-    window.$message?.error($t('generate.inputRightCommand'));
   }
 };
 const onTapTableTools = (i: any) => {
@@ -323,6 +310,19 @@ onUnmounted(() => {
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance();
   return proxy.getPlatform();
+});
+
+const validationJson = computed(() => {
+  if (formValue.value && !isJSON(formValue.value)) {
+    return 'error';
+  }
+  return undefined;
+});
+const inputFeedback = computed(() => {
+  if (formValue.value && !isJSON(formValue.value)) {
+    return $t('generate.inputRightJson');
+  }
+  return '';
 });
 </script>
 
@@ -484,7 +484,11 @@ const getPlatform = computed(() => {
     >
       <n-card>
         <n-form>
-          <n-form-item :label="$t('generate.controlCommands')">
+          <n-form-item
+            :label="$t('generate.controlCommands')"
+            :validation-status="validationJson"
+            :feedback="inputFeedback"
+          >
             <n-input v-model:value="formValue" type="textarea" />
           </n-form-item>
           <n-space align="end">
