@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useMessage } from 'naive-ui';
+// import { useMessage } from "naive-ui";
 import { createServiceDrop, getServiceAccessForm, putServiceDrop } from '@/service/api/plugin.ts';
 import FormInput from './form.vue';
 
-const message = useMessage();
+// const message = useMessage();
 const isEdit = ref<any>(false);
 const emit = defineEmits(['getList', 'isEdit']);
 const serviceModals = ref<any>(false);
@@ -41,8 +41,6 @@ const openModal: (id: any, row?: any) => void = async (id, row) => {
   if (data.data) {
     formElements.value = data.data;
     serviceModals.value = true;
-  } else {
-    message.error('暂无服务接入点数据');
   }
 };
 const close: () => void = () => {
@@ -112,8 +110,9 @@ defineExpose({ openModal });
 <style lang="scss">
 .w {
   width: 1300px !important;
-  margin-top: 20vh;
+  margin-top: 15vh;
   height: max-content !important;
-  max-height: 600px !important;
+  max-height: 800px !important;
+  overflow: auto;
 }
 </style>

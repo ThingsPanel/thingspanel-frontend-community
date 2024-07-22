@@ -142,6 +142,7 @@ const handleCheck: (rowKeys: any, row: any) => void = (rowKeys, row) => {
       });
       return obj;
     });
+    chekeds.value = chekeds.value.filter((val: any) => val);
   } else {
     window.$message?.error('未设置模板，请设置模板后再勾选');
     checkedRowKeys.value = [];
@@ -152,7 +153,7 @@ defineExpose({ openModal });
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModal" preset="dialog" title="配置设备" class="w">
+  <n-modal v-model:show="serviceModal" preset="dialog" title="配置设备" class="device_model">
     <NDataTable
       ref="NTableRef"
       v-model:checked-row-keys="checkedRowKeys"
@@ -183,5 +184,13 @@ defineExpose({ openModal });
   .btn {
     margin-left: 10px;
   }
+}
+</style>
+
+<style>
+.device_model {
+  height: 800px;
+  overflow: auto;
+  width: 1200px !important;
 }
 </style>
