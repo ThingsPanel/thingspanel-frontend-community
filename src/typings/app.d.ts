@@ -450,6 +450,7 @@ declare namespace App {
         columnSetting: string;
         confirm: string;
         delete: string;
+        remove: string;
         deleteSuccess: string;
         confirmDelete: string;
         edit: string;
@@ -1059,6 +1060,10 @@ declare namespace App {
         addAndEditAttributes: string;
         addAndEditEvents: string;
         addAndEditCommand: string;
+        setEnumItem: string;
+        enumValue: string;
+        enumDesc: string;
+        addEnumItem: string;
         table_header: {
           dataName: string;
           eventContent: string;
@@ -1093,6 +1098,7 @@ declare namespace App {
           ParameterIdentifier: string;
           PleaseEnterTheParameterIdentifier: string;
           ParameterType: string;
+
           PleaseSelectParameterType: string;
           singleControlTask: string;
           addParameters: string;
@@ -1159,6 +1165,7 @@ declare namespace App {
           deviceName: string;
           deviceNumber: string;
           deviceConfig: string;
+          configTemplate: string;
           unlimitedDeviceConfig: string;
           online: string;
           offline: string;

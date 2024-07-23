@@ -330,7 +330,7 @@ const getPlatform = computed(() => {
             <span style="color: #ccc">{{ d_id || '--' }}</span>
           </div>
           <div class="mr-4" style="color: #ccc">
-            <span class="mr-2">{{ $t('custom.device_details.deviceConfig') }}:</span>
+            <span class="mr-2">{{ $t('custom.devicePage.configTemplate') }}:</span>
             <span v-if="deviceData?.device_config_name" style="color: blue; cursor: pointer" @click="clickConfig">
               {{ deviceData?.device_config_name }}
             </span>
