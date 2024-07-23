@@ -191,6 +191,6 @@ defineExpose({ openModal });
 .device_model {
   height: 800px;
   overflow: auto;
-  width: 1200px !important;
+  width: 70% !important;
 }
 </style>

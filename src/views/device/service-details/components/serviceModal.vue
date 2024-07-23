@@ -109,7 +109,7 @@ defineExpose({ openModal });
 
 <style lang="scss">
 .w {
-  width: 1300px !important;
+  width: 70% !important;
   margin-top: 15vh;
   height: max-content !important;
   max-height: 800px !important;
