@@ -207,6 +207,7 @@ const local: App.I18n.Schema = {
     columnSetting: '列设置',
     confirm: '确认',
     delete: '删除',
+    remove: '移除',
     deleteSuccess: '删除成功',
     confirmDelete: '确认删除吗？',
     edit: '编辑',
@@ -913,6 +914,10 @@ const local: App.I18n.Schema = {
     addAndEditAttributes: '新增/编辑属性',
     addAndEditEvents: '新增/编辑事件',
     addAndEditCommand: '新增/编辑命令',
+    setEnumItem: '设置枚举项',
+    enumValue: '枚举值',
+    enumDesc: '枚举描述',
+    addEnumItem: '添加枚举项',
     table_header: {
       eventContent: '事件内容',
       dataName: '数据名称',
@@ -947,6 +952,7 @@ const local: App.I18n.Schema = {
       ParameterIdentifier: '参数标识符',
       PleaseEnterTheParameterIdentifier: '请输入参数标识符',
       ParameterType: '参数类型',
+
       PleaseSelectParameterType: '请选择参数类型',
       singleControlTask: '单次控制任务',
       addParameters: '添加参数',

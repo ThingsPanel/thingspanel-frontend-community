@@ -42,6 +42,7 @@ export const pzh_cn: any = {
     deviceName: '设备名称',
     deviceNumber: '设备编码',
     deviceConfig: '设备配置',
+    configTemplate: '配置模版',
     unlimitedDeviceConfig: '不限设备配置',
     online: '在线',
     offline: '离线',

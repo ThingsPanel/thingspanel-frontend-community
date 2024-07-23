@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import type { PaginationProps } from 'naive-ui';
 import { Delete20Regular } from '@vicons/fluent';
 import { deleteDeviceTemplate, deviceTemplate } from '@/service/api/device-template-model';
@@ -7,6 +8,7 @@ import { $t } from '@/locales';
 import TemplateModal from './components/template-modal.vue';
 import { useBoolean, useLoading } from '~/packages/hooks/src';
 
+const route = useRoute();
 const { startLoading, endLoading } = useLoading(false);
 const { bool: visible, setTrue: openModal } = useBoolean();
 const pagination: PaginationProps = reactive({
@@ -39,19 +41,22 @@ const handleQuery = async () => {
   await getData();
 };
 
+const handleEdit = async (id: string) => {
+  modalType.value = 'edit';
+  templateId.value = id;
+  openModal();
+};
+
 getData();
+setTimeout(() => {
+  handleEdit(route.query.id);
+}, 0);
 
 function handleAddTemplate() {
   modalType.value = 'add';
   templateId.value = '';
   openModal();
 }
-
-const handleEdit = async (id: string) => {
-  modalType.value = 'edit';
-  templateId.value = id;
-  openModal();
-};
 
 const handleRemove = async (id: string) => {
   const { error } = await deleteDeviceTemplate(id);

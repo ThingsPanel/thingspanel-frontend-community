@@ -397,7 +397,7 @@ getTableData();
     v-model:show="addAndEditModalVisible"
     preset="card"
     :title="addAndEditTitle"
-    class="w-50%"
+    class="mw-600px w-50%"
     @after-leave="cloneaddAndEditVisible"
   >
     <component
@@ -416,7 +416,9 @@ getTableData();
   right: 0;
   top: 0.5rem;
 }
-
+.mw-600px {
+  min-width: 600px !important;
+}
 .box1 {
   display: flex;
   flex-direction: row-reverse;
