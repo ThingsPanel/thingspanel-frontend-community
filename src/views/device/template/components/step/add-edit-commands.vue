@@ -247,6 +247,14 @@ const removeEnumItem = index => {
 // 新增确定参数的按钮
 const parameterSubmit: () => void = async () => {
   await formRefs.value?.validate();
+  if (addParameterFrom.param_type === 'Enum') {
+    const enum_config = addParameterFrom.enum_config.filter(v => v.value && v.desc);
+    if (enum_config.length < 1) {
+      window.$message?.error('请添加枚举项！');
+      return;
+    }
+    addParameterFrom.enum_config = enum_config;
+  }
   if (addFlag.value) {
     if (addParameterFrom.param_type === 'Enum') {
       const enum_config = addParameterFrom.enum_config.filter(v => v.value && v.desc);

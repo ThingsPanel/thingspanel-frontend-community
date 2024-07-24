@@ -150,18 +150,18 @@ const inputFeedback = computed(() => {
   }
   return '';
 });
-const validationJson1 = computed(() => {
-  if (commandValue.value && !isJSON(commandValue.value)) {
-    return 'error';
-  }
-  return undefined;
-});
-const inputFeedback1 = computed(() => {
-  if (commandValue.value && !isJSON(commandValue.value)) {
-    return $t('generate.inputRightJson');
-  }
-  return '';
-});
+// const validationJson1 = computed(() => {
+//   if (isTextArea.value&&commandValue.value && !isJSON(commandValue.value)) {
+//     return 'error';
+//   }
+//   return undefined;
+// });
+// const inputFeedback1 = computed(() => {
+//   if (isTextArea.value&&commandValue.value && !isJSON(commandValue.value)) {
+//     return $t('generate.inputRightJson');
+//   }
+//   return '';
+// });
 </script>
 
 <template>
@@ -205,14 +205,7 @@ const inputFeedback1 = computed(() => {
     >
       <n-card>
         <NForm>
-          <NFormItem
-            v-if="isCommand"
-            :label="$t('generate.command-identifier')"
-            required
-            :options="options"
-            :validation-status="validationJson1"
-            :feedback="inputFeedback1"
-          >
+          <NFormItem v-if="isCommand" :label="$t('generate.command-identifier')" required :options="options">
             <NInput v-if="isTextArea" v-model:value="commandValue" :placeholder="$t('generate.or-enter-here')" />
             <NSelect
               v-else
