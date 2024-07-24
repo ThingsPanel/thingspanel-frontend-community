@@ -12,7 +12,7 @@ const addParameter: Ref<boolean> = ref(false);
 let eventsData: any = reactive([]);
 
 const generalOptions: any = reactive(
-  ['String', 'Number', 'Boolean'].map(v => ({
+  ['String', 'Number', 'Boolean', 'Enum'].map(v => ({
     label: v,
     value: v
   }))
@@ -41,7 +41,9 @@ let addParameterFrom: any = reactive({
   data_name: '',
   data_identifier: '',
   param_type: 'string',
-  description: ''
+  description: '',
+  data_type: 'string',
+  enum_config: []
 });
 
 const addParameterRules: any = reactive({
@@ -100,7 +102,7 @@ const col: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   },
   {
     key: 'actions',
-    width: 350,
+
     title: () => $t('common.action'),
     align: 'center',
     render: row => {
@@ -225,20 +227,43 @@ const addParameterClone: () => void = () => {
     data_name: '',
     data_identifier: '',
     param_type: 'string',
-    description: ''
+    description: '',
+    enum_config: []
   });
+};
+
+// 添加枚举值
+const addEnumItem = () => {
+  addParameterFrom.enum_config.push({
+    value: '',
+    desc: ''
+  });
+};
+// 移除枚举值
+const removeEnumItem = index => {
+  addParameterFrom.enum_config.splice(index, 1);
 };
 
 // 新增确定参数的按钮
 const parameterSubmit: () => void = async () => {
   await formRefs.value?.validate();
   if (addFlag.value) {
+    if (addParameterFrom.param_type === 'Enum') {
+      const enum_config = addParameterFrom.enum_config.filter(v => v.value && v.desc);
+      if (enum_config.length < 1) {
+        window.$message?.error('请添加枚举项！');
+        return;
+      }
+      addParameterFrom.enum_config = enum_config;
+    }
     eventsData.push({ ...addParameterFrom, id: Math.random() });
     addParameterFrom = reactive({
       data_name: '',
       data_identifier: '',
       param_type: 'string',
-      description: ''
+      description: '',
+      data_type: 'string',
+      enum_config: []
     });
   } else {
     const index: number = eventsData.findIndex(item => item.id === addParameterFrom.id);
@@ -298,7 +323,7 @@ const parameterSubmit: () => void = async () => {
     v-model:show="addParameter"
     preset="card"
     :title="$t('device_template.table_header.addEditParameters')"
-    class="w-30%"
+    class="mw-600px w-50%"
     @after-leave="addParameterClone"
   >
     <n-form
@@ -323,11 +348,47 @@ const parameterSubmit: () => void = async () => {
         />
       </n-form-item>
       <n-form-item :label="$t('device_template.table_header.ParameterType')" path="param_type">
-        <n-select
-          v-model:value="addParameterFrom.param_type"
-          :options="generalOptions"
-          :placeholder="$t('device_template.table_header.PleaseSelectParameterType')"
-        />
+        <div>
+          <n-select
+            v-model:value="addParameterFrom.param_type"
+            :options="generalOptions"
+            :placeholder="$t('device_template.table_header.PleaseSelectParameterType')"
+            class="w-150px"
+          />
+          <template v-if="addParameterFrom.param_type === 'Enum'">
+            <div class="mtb-10px">{{ $t('device_template.setEnumItem') }}</div>
+
+            <div class="flex">
+              <div class="data-type-label">
+                {{ $t('device_template.table_header.dataType') }}
+              </div>
+              <n-select
+                v-model:value="addParameterFrom.data_type"
+                :options="generalOptions.filter(v => v.value !== 'Enum')"
+                :placeholder="$t('generate.please-select')"
+              />
+            </div>
+            <div class="enum-item-list">
+              <div class="row th">
+                <div class="col">{{ $t('device_template.enumValue') }}</div>
+                <div class="col">{{ $t('device_template.enumDesc') }}</div>
+                <div class="col"></div>
+              </div>
+              <div v-for="(item, index) in addParameterFrom.enum_config" :key="index" class="row tr">
+                <div class="col value">
+                  <n-input v-model:value.trim="item.value" :placeholder="$t('common.input')" />
+                </div>
+                <div class="col desc">
+                  <n-input v-model:value.trim="item.desc" :placeholder="$t('common.input')" />
+                </div>
+                <div class="col">
+                  <NButton type="primary" @click="removeEnumItem(index)">{{ $t('common.remove') }}</NButton>
+                </div>
+              </div>
+              <NButton type="primary" @click="addEnumItem">{{ $t('device_template.addEnumItem') }}</NButton>
+            </div>
+          </template>
+        </div>
       </n-form-item>
       <n-form-item :label="$t('device_template.table_header.description')">
         <n-input
@@ -345,6 +406,9 @@ const parameterSubmit: () => void = async () => {
 </template>
 
 <style lang="scss" scoped>
+.mw-600px {
+  min-width: 600px !important;
+}
 .box {
   position: relative;
   padding-top: 3rem;
@@ -360,5 +424,29 @@ const parameterSubmit: () => void = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+.flex {
+  display: flex;
+}
+.data-type-label {
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+.mtb-10px {
+  margin: 10px 0;
+}
+.enum-item-list {
+  .row {
+    display: flex;
+    .col {
+      flex-shrink: 0;
+      padding: 5px 10px 5px 0;
+      width: 100px;
+      box-sizing: border-box;
+      &.desc {
+        width: 200px;
+      }
+    }
+  }
 }
 </style>
