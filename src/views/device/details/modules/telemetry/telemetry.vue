@@ -17,7 +17,7 @@ import {
 import { localStg } from '@/utils/storage';
 import { deviceDetail } from '@/service/api/device';
 import { $t } from '@/locales';
-import { getWebsocketServerUrl } from '@/utils/common/tool';
+import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool';
 import HistoryData from './modules/history-data.vue';
 import TimeSeriesData from './modules/time-series-data.vue';
 import { useLoading } from '~/packages/hooks';
@@ -106,7 +106,11 @@ const { status, send, close } = useWebSocket(wsUrl, {
 });
 
 const columns = [
-  { title: $t('custom.device_details.command'), minWidth: '140px', key: 'data' },
+  {
+    title: $t('custom.device_details.command'),
+    minWidth: '140px',
+    key: 'data'
+  },
   {
     title: $t('custom.device_details.operationType'),
     key: 'operation_type',
@@ -158,7 +162,6 @@ const sendSimulationList = async () => {
     window.$message?.error($t('custom.device_details.sendInputData'));
     return;
   }
-
   const { error } = await sendSimulation({
     command: device_order.value
   });
@@ -264,15 +267,17 @@ const copy = event => {
 };
 
 const sends = async () => {
-  // 发送属性的逻辑...
-  const { error } = await telemetryDataPub({
-    device_id: props.id,
-    value: formValue.value
-  });
-  if (!error) {
-    showDialog.value = false;
-    fetchData();
-    fetchTelemetry();
+  if (isJSON(formValue.value)) {
+    // 发送属性的逻辑...
+    const { error } = await telemetryDataPub({
+      device_id: props.id,
+      value: formValue.value
+    });
+    if (!error) {
+      showDialog.value = false;
+      fetchData();
+      fetchTelemetry();
+    }
   }
 };
 const onTapTableTools = (i: any) => {
@@ -305,6 +310,19 @@ onUnmounted(() => {
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance();
   return proxy.getPlatform();
+});
+
+const validationJson = computed(() => {
+  if (formValue.value && !isJSON(formValue.value)) {
+    return 'error';
+  }
+  return undefined;
+});
+const inputFeedback = computed(() => {
+  if (formValue.value && !isJSON(formValue.value)) {
+    return $t('generate.inputRightJson');
+  }
+  return '';
 });
 </script>
 
@@ -466,7 +484,11 @@ const getPlatform = computed(() => {
     >
       <n-card>
         <n-form>
-          <n-form-item :label="$t('generate.controlCommands')">
+          <n-form-item
+            :label="$t('generate.controlCommands')"
+            :validation-status="validationJson"
+            :feedback="inputFeedback"
+          >
             <n-input v-model:value="formValue" type="textarea" />
           </n-form-item>
           <n-space align="end">

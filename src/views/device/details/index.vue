@@ -161,7 +161,8 @@ const getDeviceDetail = async () => {
   device_loop.value = true;
   deviceData.value = data;
   labels.value.length = 0;
-  if (data.label !== '') {
+
+  if (data.label) {
     if (data.label.includes(',')) {
       labels.value = data.label.split(',');
     } else {

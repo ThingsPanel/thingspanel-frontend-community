@@ -361,7 +361,10 @@ const local: App.I18n.Schema = {
     device_template: 'deviceTemplate',
     'personal-center': 'personalCenter',
     'edit-area': 'editArea',
-    'new-area': 'newArea'
+    'new-area': 'newArea',
+    apply_plugin: 'applyPlugin',
+    'device_service-access': 'deviceServiceAccess',
+    'device_service-details': 'deviceServiceDetails'
   },
   page: {
     product: productLocaleEn,
@@ -975,6 +978,7 @@ const local: App.I18n.Schema = {
   },
   custom: pen,
   generate: {
+    inputRightJson: 'Input right json,please',
     customCommand: 'custom command',
     addCustomCommand: 'Add custom commands',
     btnname: 'Button Name',

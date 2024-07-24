@@ -6,6 +6,8 @@ import { Refresh } from '@vicons/ionicons5';
 import type { FlatResponseFailData, FlatResponseSuccessData } from '@sa/axios';
 import { commandDataById, commandDataPub, deviceCustomCommandsIdList } from '@/service/api';
 import { $t } from '@/locales';
+import { isJSON } from '@/utils/common/tool';
+
 const props = defineProps<{
   id: string;
   noRefresh?: boolean;
@@ -58,16 +60,6 @@ const closeDialog = () => {
   isTextArea.value = true;
 };
 
-const isValidJSON = text => {
-  try {
-    console.log(text);
-    JSON.parse(text);
-    return true;
-  } catch (error) {
-    return false;
-  }
-};
-
 const submit = async () => {
   let parms;
   const params: any = {};
@@ -77,7 +69,7 @@ const submit = async () => {
     });
     textValue.value = JSON.stringify(params);
   }
-  if (isValidJSON(textValue.value)) {
+  if (isJSON(textValue.value)) {
     if (props.isCommand) {
       parms = {
         device_id: props.id,
@@ -92,8 +84,6 @@ const submit = async () => {
     }
     await fetchDataFunction();
     closeDialog();
-  } else {
-    window.$message?.error('请输入json格式的数据');
   }
 };
 
@@ -148,6 +138,30 @@ const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance();
   return proxy.getPlatform();
 });
+const validationJson = computed(() => {
+  if (textValue.value && !isJSON(textValue.value)) {
+    return 'error';
+  }
+  return undefined;
+});
+const inputFeedback = computed(() => {
+  if (textValue.value && !isJSON(textValue.value)) {
+    return $t('generate.inputRightJson');
+  }
+  return '';
+});
+const validationJson1 = computed(() => {
+  if (commandValue.value && !isJSON(commandValue.value)) {
+    return 'error';
+  }
+  return undefined;
+});
+const inputFeedback1 = computed(() => {
+  if (commandValue.value && !isJSON(commandValue.value)) {
+    return $t('generate.inputRightJson');
+  }
+  return '';
+});
 </script>
 
 <template>
@@ -191,7 +205,14 @@ const getPlatform = computed(() => {
     >
       <n-card>
         <NForm>
-          <NFormItem v-if="isCommand" :label="$t('generate.command-identifier')" required :options="options">
+          <NFormItem
+            v-if="isCommand"
+            :label="$t('generate.command-identifier')"
+            required
+            :options="options"
+            :validation-status="validationJson1"
+            :feedback="inputFeedback1"
+          >
             <NInput v-if="isTextArea" v-model:value="commandValue" :placeholder="$t('generate.or-enter-here')" />
             <NSelect
               v-else
@@ -207,7 +228,12 @@ const getPlatform = computed(() => {
             </NButton>
             <!-- <span class="ml-4 mr-4">{{ $t('generate.or') }}</span> -->
           </NFormItem>
-          <NFormItem v-if="isTextArea" :label="$t('generate.attribute')">
+          <NFormItem
+            v-if="isTextArea"
+            :label="$t('generate.attribute')"
+            :validation-status="validationJson"
+            :feedback="inputFeedback"
+          >
             <NInput v-model:value="textValue" type="textarea" />
           </NFormItem>
           <div v-else>

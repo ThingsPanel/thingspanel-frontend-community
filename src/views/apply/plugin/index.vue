@@ -2,7 +2,7 @@
 <script setup lang="tsx">
 import { ref, watch } from 'vue';
 import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
-import { delRegisterService, getServices } from '@/service/api/plugin.ts';
+import { delRegisterService, getServices } from '@/service/api/plugin';
 import { $t } from '@/locales';
 import serviceConfigModal from './components/serviceConfigModal.vue';
 import serviceModal from './components/serviceModal.vue';

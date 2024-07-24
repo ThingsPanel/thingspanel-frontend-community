@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { putRegisterService } from '@/service/api/plugin.ts';
+import { putRegisterService } from '@/service/api/plugin';
 const serviceType = ref<any>('接入协议');
 const emit = defineEmits(['getList']);
 const serviceModal = ref<any>(false);

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { putRegisterService, registerService } from '@/service/api/plugin.ts';
+import { putRegisterService, registerService } from '@/service/api/plugin';
 const isEdit = ref<any>(false);
 const emit = defineEmits(['getList']);
 const serviceModal = ref<any>(false);
