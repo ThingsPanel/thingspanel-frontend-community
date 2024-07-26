@@ -263,9 +263,9 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'service_identifier',
-    label: '选择协议/服务',
+    label: '不限协议/服务',
     type: 'select',
-    options: []
+    options: [{ label: '不限协议/服务', value: '' }]
   },
   {
     key: 'search',
