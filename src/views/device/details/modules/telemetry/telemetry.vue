@@ -115,10 +115,7 @@ const columns = [
     title: $t('custom.device_details.operationType'),
     key: 'operation_type',
     minWidth: '140px',
-    render: row =>
-      row.operation_type === '1'
-        ? $t('custom.device_details.manualOperation')
-        : $t('custom.device_details.manualOperation')
+    render: row => (row.operation_type === '1' ? $t('custom.device_details.manualOperation') : '触发操作')
   },
   {
     title: $t('custom.device_details.operationUsers'),
