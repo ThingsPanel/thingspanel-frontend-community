@@ -1,6 +1,6 @@
 <script lang="tsx" setup>
 import type { VueElement } from 'vue';
-import { computed, defineProps, getCurrentInstance, ref, watchEffect } from 'vue';
+import { computed, defineProps, ref, watchEffect } from 'vue';
 import { NButton, NDataTable, NDatePicker, NInput, NPopconfirm, NSelect, NSpace } from 'naive-ui';
 import type { TreeSelectOption } from 'naive-ui';
 import { throttle } from 'lodash-es';
@@ -107,7 +107,12 @@ const generatedColumns = computed(() => {
     columns = (columnsToShow === 'all' ? Object.keys(dataList.value[0]) : columnsToShow).map(item => {
       if (item.render) {
         // 使用自定义的render函数渲染列
-        return { ...item, title: item.label, key: item.key, render: row => item.render(row) };
+        return {
+          ...item,
+          title: item.label,
+          key: item.key,
+          render: row => item.render(row)
+        };
       }
       return {
         ...item,
@@ -270,10 +275,6 @@ const loadOptionsOnMount2 = async () => {
   }
 };
 
-const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
 // 使用throttle减少动态加载选项时的请求频率
 const throttledLoadOptionsOnMount = throttle(loadOptionsOnMount, 300);
 
@@ -288,40 +289,41 @@ loadOptionsOnMount2();
       <!-- 搜索区域与操作按钮 -->
       <div class="row flex items-end justify-between gap-4">
         <!-- 搜索输入和选择器 -->
-        <div class="flex flex-1 flex-wrap items-end gap-4">
-          <div
+        <!-- <div class="flex flex-1 flex-wrap items-end gap-4"> -->
+        <NForm class="flex-wrap" inline label-placement="left" label-align="right" label-width="120">
+          <!--
+ <div
             v-for="config in searchConfigs"
             :key="config.key"
             class="flex flex-col gap-2"
             :class="getPlatform ? 'min-w-100%' : ''"
-          >
+          > 
+-->
+          <NFormItem v-for="config in searchConfigs" :key="config.key" :label="config.name">
             <template v-if="config.type === 'input'">
               <NInput
                 v-model:value="searchCriteria[config.key]"
-                size="small"
                 :placeholder="config.label"
-                class="input-style"
+                class="input-style w-200px"
               />
             </template>
             <template v-else-if="config.type === 'date-range'">
               <NDatePicker
                 v-model:value="searchCriteria[config.key]"
-                size="small"
                 type="daterange"
                 :placeholder="config.label"
-                class="input-style"
+                class="input-style w-200px"
               />
             </template>
             <template v-else-if="config.type === 'select'">
               <NSelect
                 v-model:value="searchCriteria[config.key]"
-                size="small"
                 filterable
                 :options="config.options"
                 :render-label="config.renderLabel"
                 :render-tag="config.renderTag"
                 :placeholder="config.label"
-                class="input-style"
+                class="input-style w-200px"
                 @update:value="currentPage = 1"
                 @search="
                   value => {
@@ -333,33 +335,33 @@ loadOptionsOnMount2();
             <template v-else-if="config.type === 'date'">
               <NDatePicker
                 v-model:value="searchCriteria[config.key]"
-                size="small"
                 type="date"
                 :placeholder="config.label"
-                class="input-style"
+                class="input-style w-200px"
               />
             </template>
             <template v-else-if="config.type === 'tree-select'">
               <n-tree-select
                 v-model:value="searchCriteria[config.key]"
-                size="small"
                 filterable
                 :clearable="config.clearable"
                 :options="config.options"
                 :multiple="config.multiple"
                 :default-expand-all="config.defaultExpandAll"
-                class="input-style"
+                class="input-style w-200px"
                 @update:value="value => handleTreeSelectUpdate(value, config.key)"
               />
             </template>
-          </div>
+          </NFormItem>
           <div>
-            <NButton v-if="0" class="btn-style" size="small" @click="handleSearch">{{ $t('common.search') }}</NButton>
-            <NButton class="ml-20px w-65px" size="small" type="primary" @click="handleReset">
+            <NButton v-if="0" class="btn-style mr-20px w-72px" type="primary" @click="handleSearch">
+              {{ $t('common.search') }}
+            </NButton>
+            <NButton class="w-72px" type="primary" @click="handleReset">
               {{ $t('common.reset') }}
             </NButton>
           </div>
-        </div>
+        </NForm>
         <!-- 新建与返回按钮 -->
       </div>
 
@@ -435,5 +437,11 @@ loadOptionsOnMount2();
   @apply rounded-lg shadow overflow-hidden;
   margin: 0 auto;
   padding: 16px;
+}
+.w-200px {
+  width: 200px !important;
+}
+.mr-20px {
+  margin-right: 20px;
 }
 </style>
