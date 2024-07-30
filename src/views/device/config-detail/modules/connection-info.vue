@@ -76,7 +76,7 @@ const handleSubmit = async () => {
 
 const getProtocolList = async (deviceCode: string) => {
   const queryData = {
-    device_code: deviceCode
+    device_type: deviceCode
   };
   const res = await deviceProtocalServiceList(queryData);
   typeOptions.value = [
