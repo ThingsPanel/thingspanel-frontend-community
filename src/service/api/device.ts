@@ -68,6 +68,10 @@ export const deviceList = async (params: any) => {
     params
   });
 };
+/** 删除某个设备 */
+export const deviceDelete = async (params: any) => {
+  return await request.put<DeviceManagement.DeviceDatas | any>(`/device/update/config`, params);
+};
 /** 获取设备列表 */
 export const deviceListByGroup = async (params: any) => {
   return await request.get<DeviceManagement.DeviceDatas | any>(`/device/group/relation/list`, {

@@ -1,3 +1,4 @@
+import JSEncrypt from 'jsencrypt';
 import { STATIC_BASE_URL } from '@/constants/common';
 import { createServiceConfig } from '~/env.config';
 
@@ -111,4 +112,56 @@ export function isJSON(str: string): boolean {
     }
   }
   return false;
+}
+
+// 校验密码强度
+export function validPassword(str: string): boolean {
+  if (str.length < 8) {
+    return false;
+  }
+  if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}/.test(str)) {
+    return false;
+  }
+  return true;
+}
+
+// RSA 公钥加密
+export function encryptDataByRsa(data): string {
+  const pubKey = `-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCZl8ytw/KIs1lTX+wMtQnZYa/c
+IvFMkRaSq3sqJ5FUeOEGH/Y05jIa6eEcLy9WwdjhxXK9h6rOX74n1gN6YZ+qSdz2
+yc7y4MGzmOsN7uYSCekwK55EQK/I13KNzvw7dAN46MAGORLeqeLNUoxFii+Ok10+
+7fzYDIzVJpccqWbfUwIDAQAB
+-----END PUBLIC KEY-----`;
+
+  const encrypt = new JSEncrypt();
+  encrypt.setPublicKey(pubKey);
+
+  // 使用公钥进行加密
+  return encrypt.encrypt(data) || '';
+}
+
+// RSA 私钥解密
+export function decryptDataByRsa(data): string {
+  const priKey = `-----BEGIN RSA PRIVATE KEY-----
+MIICXQIBAAKBgQCZl8ytw/KIs1lTX+wMtQnZYa/cIvFMkRaSq3sqJ5FUeOEGH/Y0
+5jIa6eEcLy9WwdjhxXK9h6rOX74n1gN6YZ+qSdz2yc7y4MGzmOsN7uYSCekwK55E
+QK/I13KNzvw7dAN46MAGORLeqeLNUoxFii+Ok10+7fzYDIzVJpccqWbfUwIDAQAB
+AoGASe0+nwSJYDKy8+Zff15D91WFh7dp3SiYbNAM4CVbVgU4ifIoVx3VUA7yQtaT
+OnbjJQgcSg1asSp0JEhmNCl454WjgaeO/RXIqNjBAK4g2wbNCBaCI/ENTSe5r8Yi
+tv01GhuWzWcNZdx0NTmzlWFTlTxZn8nQklRCs5AxhJMXPQECQQDe74Slf6SrH+pm
+SDtwTSQ+cTQVDUttJU4ZrkjRsFskLJL0oXSXt3cHs4jKyvryQIDAv/HUjeWWDwgo
+KGVY1KJDAkEAsF910VSG2bdaKg0HOIfYHNHJBznSjzrEEOFcK07i2DbMXhHmgULj
+Xav5sEME9C9G09t3Rdbb1GW3BpJi3+UlsQJBAL5qZKkbSmIjw4kTfzlfmmp/NJYa
+oeca6weCVo5MDLzsGaU7VqPTv6ZjUZ6tGwTZ1V9NU1hSztuKAVSTlGT4UZMCQDp0
+mR71DfCwxVB0mvUQiP8cRK2Ba5kPGBakKqEr9yFEID35XtVurt7H9eyGeejYlnf3
+IDPkf12JDL0/3UdpsjECQQDUjAkG686qnyy/nJvX5y2I3hLoh9vWe0oVyTD6etP8
+XugcGmZmuGu+/cNeiU3lH4cArL5zNnLvRqCU+ceU9Dik
+-----END RSA PRIVATE KEY-----`;
+
+  const encrypt = new JSEncrypt();
+  encrypt.setPublicKey(priKey);
+
+  // 使用公钥进行加密
+  return encrypt.decrypt(data) || '';
 }
