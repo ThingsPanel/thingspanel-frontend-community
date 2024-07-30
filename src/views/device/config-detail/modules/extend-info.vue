@@ -148,31 +148,31 @@ const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
     key: 'name',
     title: $t('page.manage.menu.form.name'),
     minWidth: '140px',
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'type',
     minWidth: '140px',
     title: $t('page.manage.menu.form.type'),
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'default_value',
     title: $t('generate.default-value'),
     minWidth: '140px',
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'desc',
     title: $t('custom.groupPage.description'),
     minWidth: '140px',
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'enable',
     minWidth: '140px',
     title: $t('page.manage.common.status.enable'),
-    align: 'center',
+    align: 'left',
     render: (row: any) => {
       return <NSwitch value={Boolean(row.enable)} onChange={() => handleSwitchChange(row)} />;
     }
@@ -181,10 +181,10 @@ const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
     key: 'operate',
     minWidth: '140px',
     title: $t('common.action'),
-    align: 'center',
+    align: 'left',
     render: (row: any) => {
       return (
-        <NSpace justify={'center'}>
+        <NSpace>
           <NButton size={'small'} type="primary" onClick={() => handleEditTable(row)}>
             {$t('common.edit')}
           </NButton>
