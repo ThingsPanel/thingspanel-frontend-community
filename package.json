@@ -52,6 +52,8 @@
     "@sa/materials": "workspace:*",
     "@sa/utils": "workspace:*",
     "@soybeanjs/vue-materials": "0.2.0",
+    "@vexip-ui/hooks": "^2.4.0",
+    "@vexip-ui/utils": "^2.13.0",
     "@vue/runtime-dom": "^3.4.21",
     "@vueuse/core": "10.9.0",
     "axios": "1.5.1",
@@ -63,6 +65,8 @@
     "dayjs": "1.11.10",
     "echarts": "5.5.0",
     "form-data": "4.0.0",
+    "interactjs": "^1.10.26",
+    "jsencrypt": "^3.3.2",
     "lodash-es": "4.17.21",
     "moment": "^2.30.1",
     "moving-numbers-vue3": "^1.1.3",
@@ -87,10 +91,7 @@
     "vue3-grid-layout": "^1.0.0",
     "vuedraggable": "4.1.0",
     "wangeditor": "4.7.15",
-    "xgplayer": "3.0.9",
-    "@vexip-ui/hooks": "^2.4.0",
-    "@vexip-ui/utils": "^2.13.0",
-    "interactjs": "^1.10.26"
+    "xgplayer": "3.0.9"
   },
   "devDependencies": {
     "@amap/amap-jsapi-types": "0.0.13",

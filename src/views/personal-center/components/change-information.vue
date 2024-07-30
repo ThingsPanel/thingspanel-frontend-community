@@ -8,10 +8,11 @@
 -->
 <script setup lang="ts">
 import { computed, ref } from 'vue';
+import type { FormItemRule, FormRules } from 'naive-ui';
 import { useMessage } from 'naive-ui';
 import { changeInformation, passwordModification } from '@/service/api/personal-center';
 import { $t } from '@/locales';
-
+import { encryptDataByRsa, validPassword } from '@/utils/common/tool';
 export interface Props {
   /** 弹窗可见性 */
   visible: boolean;
@@ -83,6 +84,10 @@ const editName = async () => {
 };
 /** passwordModification */
 const password = async () => {
+  if (import.meta.env.VITE_ENCRYPT_PASSWORD === '1') {
+    console.log('加密后密码：', encryptDataByRsa(formData.value.password));
+    formData.value.password = encryptDataByRsa(formData.value.password);
+  }
   const data = {
     old_password: formData.value.old_password,
     password: formData.value.password
@@ -103,18 +108,41 @@ function submit() {
     password();
   }
 }
+const rules: FormRules = {
+  password: [
+    {
+      required: true,
+      validator(rule: FormItemRule, value: string) {
+        console.log(rule);
+        if (!validPassword(value)) {
+          return new Error('密码长度8位，包含大小写字母、数字和特殊字');
+        }
+        return true;
+      },
+      trigger: ['input', 'blur']
+    }
+  ],
+  passwords: [
+    {
+      required: true,
+      validator(rule: FormItemRule, value: string) {
+        console.log(rule);
+        if (!validPassword(value)) {
+          return new Error('密码长度8位，包含大小写字母、数字和特殊字');
+        }
+        return true;
+      },
+      trigger: ['input', 'blur']
+    }
+  ]
+};
 </script>
 
 <template>
   <NModal v-model:show="modalVisible" preset="card" :title="title" class="w-500px">
-    <NForm ref="formRef" label-placement="left" :model="formData">
+    <NForm label-placement="left" :model="formData" :rules="rules">
       <NGrid :cols="2" :x-gap="18">
-        <NFormItemGridItem
-          v-if="estimate === 'amend'"
-          :span="24"
-          :label="$t('page.manage.user.userName')"
-          path="description"
-        >
+        <NFormItemGridItem v-if="estimate === 'amend'" :span="24" :label="$t('page.manage.user.userName')" path="name">
           <NInput v-model:value="formData.name" />
         </NFormItemGridItem>
         <NFormItemGridItem
@@ -124,7 +152,7 @@ function submit() {
           type="password"
           show-password-on="mousedown"
           :label="$t('generate.old-password')"
-          path="description"
+          path="old_password"
         >
           <NInput v-model:value="formData.old_password" type="password" show-password-on="click" />
         </NFormItemGridItem>
@@ -133,7 +161,7 @@ function submit() {
           label-width="100"
           :span="24"
           :label="$t('generate.new-password')"
-          path="description"
+          path="password"
         >
           <NInput v-model:value="formData.password" type="password" show-password-on="click" />
         </NFormItemGridItem>
@@ -142,7 +170,7 @@ function submit() {
           :span="24"
           label-width="100"
           :label="$t('generate.repeat-new-password')"
-          path="description"
+          path="passwords"
         >
           <NInput v-model:value="formData.passwords" type="password" show-password-on="click" />
         </NFormItemGridItem>
