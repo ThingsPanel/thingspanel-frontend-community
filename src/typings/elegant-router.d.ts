@@ -60,6 +60,7 @@ declare module "@elegant-router/types" {
     "device_service-access": "/device/service-access";
     "device_service-details": "/device/service-details";
     "device_template": "/device/template";
+    "device-details-app": "/device-details-app";
     "function": "/function";
     "function_hide-child": "/function/hide-child";
     "function_hide-child_one": "/function/hide-child/one";
@@ -158,6 +159,7 @@ declare module "@elegant-router/types" {
     | "dashboard"
     | "data-service"
     | "device"
+    | "device-details-app"
     | "function"
     | "home"
     | "login"
@@ -210,6 +212,7 @@ declare module "@elegant-router/types" {
     | "dashboard_panel"
     | "dashboard_workbench"
     | "data-service_rule-engine"
+    | "device-details-app"
     | "device_config-detail"
     | "device_config-edit"
     | "device_config"

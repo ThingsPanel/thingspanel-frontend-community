@@ -7,13 +7,14 @@ import { fetchGetUserInfo, fetchLogin } from '@/service/api';
 import { transformUser } from '@/service/api/auth';
 import { localStg } from '@/utils/storage';
 import { $t } from '@/locales';
+import { encryptDataByRsa, validPassword } from '@/utils/common/tool';
 import { useRouteStore } from '../route';
 import { useTabStore } from '../tab';
 import { clearAuthStorage, getToken, getUserInfo } from './shared';
 
 export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   const routeStore = useRouteStore();
-  const { route, toLogin, redirectFromLogin } = useRouterPush(false);
+  const { route, toLogin, redirectFromLogin, routerPush } = useRouterPush(false);
   const { loading: loginLoading, startLoading, endLoading } = useLoading();
 
   const token = ref(getToken());
@@ -45,16 +46,28 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
    */
   async function login(userName: string, password: string) {
     startLoading();
-
-    const { data: loginToken, error } = await fetchLogin(userName, password);
-
+    let newP = password;
+    if (import.meta.env.VITE_ENCRYPT_PASSWORD === '1') {
+      // console.log("加密后密码：", encryptDataByRsa(password),import.meta.env.VITE_ENCRYPT_PASSWORD);
+      newP = encryptDataByRsa(password);
+      // console.log("解密后密码：",decryptDataByRsa(password))
+    }
+    const { data: loginToken, error } = await fetchLogin(userName, newP);
     if (!error) {
       const { loop } = await loginByToken(loginToken);
 
       if (loop) {
-        await routeStore.initAuthRoute();
-
-        await redirectFromLogin();
+        if (!validPassword(newP)) {
+          routerPush({
+            path: '/personal-center',
+            query: {
+              password: 'invalid'
+            }
+          });
+        } else {
+          await routeStore.initAuthRoute();
+          await redirectFromLogin();
+        }
 
         // if (routeStore.isInitAuthRoute) {
         //   window.$notification?.success({
@@ -93,7 +106,9 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
         if (routeStore.isInitAuthRoute) {
           window.$notification?.success({
             title: $t('page.login.common.loginSuccess'),
-            content: $t('page.login.common.welcomeBack', { userName: info?.name }),
+            content: $t('page.login.common.welcomeBack', {
+              userName: info?.name
+            }),
             duration: 4500
           });
         }

@@ -181,7 +181,7 @@ const selectConfig = v => {
 <template>
   <div class="flex-col gap-16px p-t-10px">
     <div class="flex items-center">
-      <div>{{ $t('generate.device-configuration') }}</div>
+      <div>配置模版：</div>
       <NSelect
         v-model:value="selectedValues"
         filterable

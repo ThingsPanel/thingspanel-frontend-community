@@ -206,6 +206,7 @@ const local: App.I18n.Schema = {
     columnSetting: 'Column Setting',
     confirm: 'Confirm',
     delete: 'Delete',
+    remove: 'Remove',
     deleteSuccess: 'Delete Success',
     confirmDelete: 'Are you sure you want to delete?',
     edit: 'Edit',
@@ -916,6 +917,10 @@ const local: App.I18n.Schema = {
     addAndEditAttributes: 'AddAndEditAttributes',
     addAndEditEvents: 'AddAndEditEvents',
     addAndEditCommand: 'AddAndEditCommand',
+    setEnumItem: 'Set Enum item',
+    enumValue: 'Enum Value',
+    enumDesc: 'Enum Description',
+    addEnumItem: 'Add Enum item',
     table_header: {
       eventContent: 'Event content',
       dataName: 'DataName',
@@ -950,6 +955,7 @@ const local: App.I18n.Schema = {
       ParameterIdentifier: 'ParameterIdentifier',
       PleaseEnterTheParameterIdentifier: 'PleaseEnterTheParameterIdentifier',
       ParameterType: 'ParameterType',
+
       PleaseSelectParameterType: 'PleaseSelectParameterType',
       singleControlTask: 'AingleControlTask',
       addParameters: 'AddParameters',

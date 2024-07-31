@@ -44,6 +44,13 @@ if (configId.value) {
   getConfig();
   activeName.value = '关联设备';
 }
+const clickConfig: () => void = () => {
+  routerPushByKey('device_template', {
+    query: {
+      id: configForm.value.device_template_id
+    }
+  });
+};
 </script>
 
 <template>
@@ -52,12 +59,19 @@ if (configId.value) {
       <template #header-extra>
         <NButton type="primary" @click="editConfig">{{ $t('common.edit') }}</NButton>
       </template>
-      <div class="mb-4">
+      <div class="mb-4 flex">
         {{ $t('generate.deviceAccessType') }}
         <template v-if="configForm.device_type === '1'">{{ $t('generate.direct-connected-device') }}</template>
         <template v-if="configForm.device_type === '2'">{{ $t('generate.gateway') }}</template>
         <template v-if="configForm.device_type === '3'">{{ $t('generate.gateway-sub-device') }}</template>
+        <div class="ml-20">
+          {{ $t('route.device_template') }}：
+          <span style="color: blue; cursor: pointer" @click="clickConfig">
+            {{ configForm.name }}
+          </span>
+        </div>
       </div>
+
       <n-tabs v-model:value="activeName" animated type="line">
         <n-tab-pane :name="$t('common.associatedDevices')" :tab="$t('common.associatedDevices')">
           <AssociatedDevices :device-config-id="configId" />
@@ -101,5 +115,11 @@ if (configId.value) {
 
 :deep(.n-tabs) {
   height: calc(100% - 80px);
+}
+.flex {
+  display: flex;
+}
+.ml-20 {
+  margin-left: 20px;
 }
 </style>

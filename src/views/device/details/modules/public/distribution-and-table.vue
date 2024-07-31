@@ -71,7 +71,11 @@ const submit = async () => {
   }
   if (isJSON(textValue.value)) {
     if (props.isCommand) {
-      parms = { device_id: props.id, value: textValue.value, identify: commandValue.value };
+      parms = {
+        device_id: props.id,
+        value: textValue.value,
+        identify: commandValue.value
+      };
     } else {
       parms = { device_id: props.id, value: textValue.value };
     }
@@ -84,7 +88,11 @@ const submit = async () => {
 };
 
 const onCommandChange = async (row: any) => {
-  const parms = { device_id: props.id, value: row.instruct, identify: row.data_identifier };
+  const parms = {
+    device_id: props.id,
+    value: row.instruct,
+    identify: row.data_identifier
+  };
   await commandDataPub(parms);
   fetchDataFunction();
 };
@@ -142,18 +150,18 @@ const inputFeedback = computed(() => {
   }
   return '';
 });
-const validationJson1 = computed(() => {
-  if (commandValue.value && !isJSON(commandValue.value)) {
-    return 'error';
-  }
-  return undefined;
-});
-const inputFeedback1 = computed(() => {
-  if (commandValue.value && !isJSON(commandValue.value)) {
-    return $t('generate.inputRightJson');
-  }
-  return '';
-});
+// const validationJson1 = computed(() => {
+//   if (isTextArea.value&&commandValue.value && !isJSON(commandValue.value)) {
+//     return 'error';
+//   }
+//   return undefined;
+// });
+// const inputFeedback1 = computed(() => {
+//   if (isTextArea.value&&commandValue.value && !isJSON(commandValue.value)) {
+//     return $t('generate.inputRightJson');
+//   }
+//   return '';
+// });
 </script>
 
 <template>
@@ -197,14 +205,7 @@ const inputFeedback1 = computed(() => {
     >
       <n-card>
         <NForm>
-          <NFormItem
-            v-if="isCommand"
-            :label="$t('generate.command-identifier')"
-            required
-            :options="options"
-            :validation-status="validationJson1"
-            :feedback="inputFeedback1"
-          >
+          <NFormItem v-if="isCommand" :label="$t('generate.command-identifier')" required :options="options">
             <NInput v-if="isTextArea" v-model:value="commandValue" :placeholder="$t('generate.or-enter-here')" />
             <NSelect
               v-else
@@ -232,13 +233,26 @@ const inputFeedback1 = computed(() => {
             <div v-if="commandValue !== ''" class="title">参数</div>
             <div v-for="item in paramsData" :key="item.id" class="form_box">
               <div class="form_table">
-                <NFormItem :label="item.data_name" label-placement="left">
+                <NFormItem :label="item.data_name" label-placement="left" label-width="80px" label-align="left">
                   <NInput v-if="item.param_type === 'string'" v-model:value="item[item.data_identifier]" />
                   <n-input-number v-else-if="item.param_type === 'Number'" v-model:value="item[item.data_identifier]" />
                   <n-select
                     v-else-if="item.param_type === 'Boolean'"
                     v-model:value="item[item.data_identifier]"
                     :options="paramsSelect"
+                  />
+                  <n-select
+                    v-else-if="item.param_type === 'Enum'"
+                    v-model:value="item[item.data_identifier]"
+                    :options="
+                      item.enum_config.map(v => {
+                        return {
+                          ...v,
+                          label: v.desc
+                        };
+                      })
+                    "
+                    :placeholder="$t('generate.please-select')"
                   />
                   <div class="description">{{ item.description }}</div>
                 </NFormItem>

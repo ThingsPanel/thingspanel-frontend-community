@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import type { Ref } from 'vue';
-import { computed, getCurrentInstance, onMounted, ref } from 'vue';
+import { computed, getCurrentInstance, h, onMounted, ref } from 'vue';
 import type { DataTableColumns, FormInst } from 'naive-ui';
-import { NButton, NPagination } from 'naive-ui';
+import { NButton, NPagination, NPopconfirm, useMessage } from 'naive-ui';
 import moment from 'moment/moment';
-import { deviceConfigBatch, deviceList } from '@/service/api/device';
+import { deviceConfigBatch, deviceDelete, deviceList } from '@/service/api/device';
 import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales';
 
-// const message = useMessage();
+const message = useMessage();
 
 interface Props {
   deviceConfigId?: string;
@@ -106,6 +106,28 @@ const getDeviceOptions = async () => {
   // eslint-disable-next-line require-atomic-updates
   queryDevice.value.total = res.data.total;
 };
+const configDevice = ref([]);
+const configDeviceTotal = ref(0);
+const getDeviceList = async () => {
+  queryData.value.device_config_id = props.deviceConfigId;
+  const res = await deviceList(queryData.value);
+  res.data.list.map(sitem => {
+    sitem.activate_flag = sitem.is_online === 0 ? $t('custom.devicePage.offline') : $t('custom.devicePage.online');
+    return sitem;
+  });
+  configDevice.value = res.data.list || [];
+  configDeviceTotal.value = res.data.total;
+};
+
+const handleDelete = async row => {
+  await deviceDelete({
+    device_id: row.id,
+    device_config_id: queryData.value.device_config_id
+  });
+  message.success('移除成功');
+  getDeviceList();
+};
+
 const columnsData: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
   {
     key: 'name',
@@ -132,21 +154,39 @@ const columnsData: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
       }
       return '';
     }
+  },
+  {
+    key: 'actions',
+    title: () => $t('common.action'),
+    align: 'center',
+    width: '250px',
+    render: row => {
+      return h(
+        NPopconfirm,
+        {
+          onPositiveClick: () => handleDelete(row)
+        },
+        {
+          default: () => $t('common.confirmDelete'),
+          trigger: () => {
+            return h(
+              NButton,
+              {
+                type: 'error',
+                size: 'small',
+                onClick: e => {
+                  e.stopPropagation();
+                }
+              },
+              { default: () => $t('common.remove') }
+            );
+          }
+        }
+      );
+    }
   }
 ]);
 
-const configDevice = ref([]);
-const configDeviceTotal = ref(0);
-const getDeviceList = async () => {
-  queryData.value.device_config_id = props.deviceConfigId;
-  const res = await deviceList(queryData.value);
-  res.data.list.map(sitem => {
-    sitem.activate_flag = sitem.is_online === 0 ? $t('custom.devicePage.offline') : $t('custom.devicePage.online');
-    return sitem;
-  });
-  configDevice.value = res.data.list || [];
-  configDeviceTotal.value = res.data.total;
-};
 const { routerPushByKey } = useRouterPush();
 const rowProps = (row: any) => {
   return {

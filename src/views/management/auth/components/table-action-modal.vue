@@ -182,6 +182,7 @@ watch(
             :options="parentOptions"
             label-field="description"
             key-field="id"
+            clearable
           />
         </NFormItemGridItem>
 

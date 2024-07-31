@@ -12,9 +12,11 @@ import { NButton, NTag, useMessage } from 'naive-ui';
 import { useBoolean } from '@sa/hooks';
 import { useAuthStore } from '@/store/modules/auth';
 import { $t } from '@/locales';
+import { useRouterPush } from '@/hooks/common/router';
 import type { ModalType } from './components/change-information.vue';
 import ChangeInformation from './components/change-information.vue';
 
+const { route } = useRouterPush(false);
 const { bool: visible, setTrue: openModal } = useBoolean();
 const authStore = useAuthStore();
 const modalType = ref<ModalType>('amend');
@@ -34,6 +36,10 @@ function changePassword() {
   setModalType('changePassword');
 }
 
+// 校验登录密码是否合规，不合规则弹窗修改密码
+if (route.value.query.password && route.value.query.password === 'invalid') {
+  changePassword();
+}
 function modification(e) {
   console.log(895656, e);
   if (!e) {

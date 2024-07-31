@@ -29,14 +29,24 @@ const copyText = (): void => {
   const textElement = document.getElementById('text-to-copy');
   if (textElement) {
     const text: string | null = textElement.textContent;
-    navigator.clipboard
-      .writeText(typeof text === 'string' ? text : '')
-      .then(() => {
-        window.NMessage.info($t('common.copiedClipboard'));
-      })
-      .catch(err => {
-        window.NMessage.error(`${$t('common.copyingFailed')}:`, err);
-      });
+    if (window.isSecureContext && navigator.clipboard) {
+      navigator.clipboard
+        .writeText(typeof text === 'string' ? text : '')
+        .then(() => {
+          window.NMessage.info($t('common.copiedClipboard'));
+        })
+        .catch(err => {
+          window.NMessage.error(`${$t('common.copyingFailed')}:`, err);
+        });
+    } else {
+      const range = document.createRange();
+      range.selectNodeContents(textElement!);
+      const selection = document.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      document.execCommand('Copy');
+      window.$message?.success($t('theme.configOperation.copySuccess'));
+    }
   }
 };
 onMounted(getTemplate);
