@@ -122,7 +122,8 @@ const getDeviceList = async () => {
 const handleDelete = async row => {
   await deviceDelete({
     device_id: row.id,
-    device_config_id: queryData.value.device_config_id
+    // device_config_id: queryData.value.device_config_id
+    device_config_id: ''
   });
   message.success('移除成功');
   getDeviceList();
