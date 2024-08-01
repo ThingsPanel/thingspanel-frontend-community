@@ -178,7 +178,6 @@ const updateComponentsData = async () => {
         onMessage(_websocket: WebSocket, event: MessageEvent) {
           if (event.data && event.data !== 'pong') {
             const data = JSON.parse(event.data);
-            console.log(`get event data: ${deviceMetricsId} ${event.data}`);
             setComponentsValue(deviceId, metricsId, data);
           }
         },

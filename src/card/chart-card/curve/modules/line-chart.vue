@@ -416,7 +416,7 @@ const setSeries: (dataSource) => void = async dataSource => {
           stack: 'Total',
           smooth: true,
           lineStyle: {
-            width: 0
+            width: 1
           },
           showSymbol: false,
           areaStyle: {
