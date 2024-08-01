@@ -19,7 +19,7 @@ export interface ICardData {
   dataSource?: {
     // 系统 或 设备
     origin: 'system' | 'device';
-    sourceNum?: number; // 不填写即为 1-任意多个，如需固定数量，填写整数
+    sourceNum?: number; // 不填写即为 1-任意多个，最多9个，如需固定数量，填写整数
     systemSource?: { type?: number; name?: string }[];
     deviceCount?: number;
     deviceSource?: {

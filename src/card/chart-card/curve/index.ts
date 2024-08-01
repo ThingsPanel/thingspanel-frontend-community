@@ -12,7 +12,7 @@ export default {
   preset: {
     dataSource: {
       origin: 'device',
-      sourceNum: 1,
+      sourceNum: 9,
       systemSource: [{}],
       deviceSource: [{}]
     },

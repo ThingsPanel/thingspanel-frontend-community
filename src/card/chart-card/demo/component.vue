@@ -33,10 +33,10 @@ const setSeries: (dataSource) => void = async dataSource => {
     };
     if (querDetail.device_id && querDetail.keys) {
       const detailValue = await telemetryDataCurrentKeys(querDetail);
-      if (detailValue?.data[0]?.unit) {
+      if (detailValue?.data?.[0]?.unit) {
         unit.value = detailValue?.data[0]?.unit;
       }
-      if (detailValue?.data[0]?.value) {
+      if (detailValue?.data?.[0]?.value) {
         detail.value = detailValue.data[0].value;
       }
     }
