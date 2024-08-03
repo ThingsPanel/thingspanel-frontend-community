@@ -7,7 +7,7 @@ import { fetchGetUserInfo, fetchLogin } from '@/service/api';
 import { transformUser } from '@/service/api/auth';
 import { localStg } from '@/utils/storage';
 import { $t } from '@/locales';
-import { decryptDataByRsa, encryptDataByRsa, generateRandomHexString, validPassword } from '@/utils/common/tool';
+import { encryptDataByRsa, generateRandomHexString, validPassword } from '@/utils/common/tool';
 import { useRouteStore } from '../route';
 import { useTabStore } from '../tab';
 import { clearAuthStorage, getToken, getUserInfo } from './shared';
@@ -54,7 +54,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       console.log('salt', salt); // 输出16字节的随机十六进制字符串
       newP = encryptDataByRsa(password + salt);
       console.log('加密后密码：', newP);
-      console.log('解密后密码：', decryptDataByRsa(newP));
+      // console.log('解密后密码：', decryptDataByRsa(newP));
     }
     const { data: loginToken, error } = await fetchLogin(userName, newP, salt);
     if (!error) {
