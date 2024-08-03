@@ -7,8 +7,8 @@ import { request } from '../request';
  * @param password Password
  */
 
-export function fetchLogin(email: string, password: string) {
-  return request.post<Api.Auth.LoginToken>('/login', { email, password });
+export function fetchLogin(email: string, password: string, salt: string | null) {
+  return request.post<Api.Auth.LoginToken>('/login', { email, password, salt });
 }
 
 /** Get user info */

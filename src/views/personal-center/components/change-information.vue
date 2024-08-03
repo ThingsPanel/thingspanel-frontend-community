@@ -12,7 +12,8 @@ import type { FormItemRule, FormRules } from 'naive-ui';
 import { useMessage } from 'naive-ui';
 import { changeInformation, passwordModification } from '@/service/api/personal-center';
 import { $t } from '@/locales';
-import { encryptDataByRsa, validPassword } from '@/utils/common/tool';
+import { encryptDataByRsa, generateRandomHexString, validPassword } from '@/utils/common/tool';
+
 export interface Props {
   /** 弹窗可见性 */
   visible: boolean;
@@ -84,15 +85,20 @@ const editName = async () => {
 };
 /** passwordModification */
 const password = async () => {
-  if (import.meta.env.VITE_ENCRYPT_PASSWORD === '1') {
-    console.log('加密后密码：', encryptDataByRsa(formData.value.password));
-    formData.value.password = encryptDataByRsa(formData.value.password);
+  const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')) : [];
+  let salt = null;
+  let password1 = formData.value.password;
+  if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
+    salt = generateRandomHexString(16);
+    password1 = encryptDataByRsa(password1 + salt);
+    console.log('加密后密码：', password1);
   }
-  const data = {
+  const param = {
     old_password: formData.value.old_password,
-    password: formData.value.password
+    password: password1,
+    salt
   };
-  const res = await passwordModification(data);
+  const res = await passwordModification(param);
   if (!res.error) {
     modalVisible.value = false;
     emit('modification');

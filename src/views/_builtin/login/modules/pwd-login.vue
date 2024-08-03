@@ -5,6 +5,7 @@ import { loginModuleRecord } from '@/constants/app';
 import { useRouterPush } from '@/hooks/common/router';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { useAuthStore } from '@/store/modules/auth';
+import { getFunction } from '@/service/api/setting';
 
 defineOptions({
   name: 'PwdLogin'
@@ -51,22 +52,20 @@ async function handleSubmit() {
 //   authStore.login(userName, password);
 // }
 
+async function getFunctionOption() {
+  const { data } = await getFunction();
+  if (data) {
+    localStorage.setItem('enableZcAndYzm', JSON.stringify(data));
+    showZc.value = data.find(v => v.name === 'enable_reg')?.enable_flag;
+    showYzm.value = data.find(v => v.name === 'use_captcha')?.enable_flag;
+  }
+}
 onMounted(() => {
   const is_remember_rath = localStorage.getItem('isRememberPath');
   if (is_remember_rath === '0' || is_remember_rath === '1') {
     isRememberPath.value = is_remember_rath === '1';
   }
-  const data = localStorage.getItem('enableZcAndYzm') as string;
-  if (data) {
-    const param = JSON.parse(data);
-    console.log(param);
-    if (param !== undefined && param !== null && param.includes('enable_reg')) {
-      showZc.value = param.enable_reg;
-    }
-    if (param !== undefined && param !== null && param.includes('use_captcha')) {
-      showYzm.value = param.use_captcha;
-    }
-  }
+  getFunctionOption();
 });
 </script>
 
