@@ -36,6 +36,7 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
     password: formRules.pwd
   };
 });
+
 const rememberPath = e => {
   console.log(e);
   isRememberPath.value = !isRememberPath.value;
@@ -46,11 +47,6 @@ async function handleSubmit() {
   await validate();
   await authStore.login(model.userName.trim(), model.password);
 }
-
-// function handleLoginOtherAccount(param: { userName: string; password: string }) {
-//   const { userName, password } = param;
-//   authStore.login(userName, password);
-// }
 
 async function getFunctionOption() {
   const { data } = await getFunction();

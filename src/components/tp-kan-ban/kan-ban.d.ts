@@ -20,7 +20,7 @@ export interface CardData {
   cardId: string; // 卡片id
   renderID: string; /// 渲染id，请确保当前看板的唯一性  没有就是cardId
   config: cardConfig; // 配置数据
-  sourceNumber: number;
+  sourceNumber: number; // 数据指标个数，缺省最多为9个
 }
 
 export interface CardView extends LayoutItem {

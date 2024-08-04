@@ -412,14 +412,11 @@ const setSeries: (dataSource) => void = async dataSource => {
         getTelemetryList(i.deviceId, i.metricsId, index);
         return {
           name: str,
-          type: 'line',
+          type: 'bar',
           stack: 'Total',
           smooth: true,
-          lineStyle: {
-            width: 1
-          },
           showSymbol: false,
-          areaStyle: {
+          itemStyle: {
             opacity: 0.8,
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
               {

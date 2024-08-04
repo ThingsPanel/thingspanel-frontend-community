@@ -74,6 +74,8 @@ const deviceCountUpdate = v => {
     for (let i = 0; i <= v - state.data.dataSource.deviceSource.length + 1; i++) {
       state.data.dataSource.deviceSource.push({});
     }
+  } else if (state.data.dataSource.deviceSource.length > v) {
+    state.data.dataSource.deviceSource.splice(v, state.data.dataSource.deviceSource.length - v);
   }
 };
 const updateDropdownShow = (show: boolean, item) => {
@@ -152,6 +154,10 @@ watch(
     }
   }
 );
+
+watch(deviceCount, v => {
+  deviceCountUpdate(v);
+});
 </script>
 
 <template>
@@ -165,10 +171,9 @@ watch(
                 v-model:value="deviceCount"
                 :disabled="props?.deviceWebChartConfig?.length !== 0"
                 :min="1"
-                :hidden="true"
+                :hidden="state.data.dataSource.sourceNum === 1"
                 :max="state.data.dataSource.sourceNum || 9"
                 class="m-b-2 w-360px"
-                @update:value="deviceCountUpdate"
               >
                 <template #prefix>
                   <span class="text-#999">{{ $t('generate.device-count') }}</span>

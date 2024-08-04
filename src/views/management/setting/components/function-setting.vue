@@ -37,11 +37,6 @@ getFunctionOption();
         <NFormItemGridItem v-for="(item, index) in funcOptions" :key="index" :span="24" :label="item.description">
           <n-switch v-model:value="item.value" @change="val => changeFunc(item)" />
         </NFormItemGridItem>
-        <!--
- <NFormItemGridItem :span="24" label="是否开启系统注册">
-          <n-switch v-model:value="zc_active" @change="changeZc" />
-        </NFormItemGridItem> 
--->
       </NGrid>
       <NSpace class="w-full pt-16px" :size="24" justify="start"></NSpace>
     </NForm>

@@ -3,11 +3,11 @@ import type { ICardDefine } from '@/components/panel/card';
 import poster from './poster.png';
 
 export default {
-  id: 'chart-curve',
+  id: 'chart-bar',
   type: 'chart',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: '曲线',
+  title: '柱状图',
   configForm: defineAsyncComponent(() => import('./card-config.vue')),
   preset: {
     dataSource: {
