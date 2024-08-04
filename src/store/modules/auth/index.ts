@@ -7,7 +7,7 @@ import { fetchGetUserInfo, fetchLogin } from '@/service/api';
 import { transformUser } from '@/service/api/auth';
 import { localStg } from '@/utils/storage';
 import { $t } from '@/locales';
-import { encryptDataByRsa, validPassword } from '@/utils/common/tool';
+import { encryptDataByRsa, generateRandomHexString, validPassword } from '@/utils/common/tool';
 import { useRouteStore } from '../route';
 import { useTabStore } from '../tab';
 import { clearAuthStorage, getToken, getUserInfo } from './shared';
@@ -47,17 +47,18 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   async function login(userName: string, password: string) {
     startLoading();
     let newP = password;
-    if (import.meta.env.VITE_ENCRYPT_PASSWORD === '1') {
-      // console.log("加密后密码：", encryptDataByRsa(password),import.meta.env.VITE_ENCRYPT_PASSWORD);
-      newP = encryptDataByRsa(password);
-      // console.log("解密后密码：",decryptDataByRsa(password))
+    const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')) : [];
+    let salt: string | null = null;
+    if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
+      salt = generateRandomHexString(16);
+
+      newP = encryptDataByRsa(password + salt);
     }
-    const { data: loginToken, error } = await fetchLogin(userName, newP);
+    const { data: loginToken, error } = await fetchLogin(userName, newP, salt);
     if (!error) {
       const { loop } = await loginByToken(loginToken);
-
       if (loop) {
-        if (!validPassword(newP)) {
+        if (!validPassword(password)) {
           routerPush({
             path: '/personal-center',
             query: {

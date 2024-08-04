@@ -36,6 +36,7 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
     password: formRules.pwd
   };
 });
+
 const rememberPath = e => {
   console.log(e);
   isRememberPath.value = !isRememberPath.value;
@@ -46,33 +47,22 @@ async function handleSubmit() {
   await validate();
   await authStore.login(model.userName.trim(), model.password);
 }
-const requestFunction = async () => {
-  const { data, error } = await getFunction();
-  if (!error) {
-    data.forEach(item => {
-      if (item.id === 'function_1') {
-        if (item.enable_flag === 'enable') {
-          showYzm.value = true;
-        } else {
-          showYzm.value = false;
-        }
-      } else if (item.id === 'function_2') {
-        if (item.enable_flag === 'enable') {
-          showZc.value = true;
-        } else {
-          showZc.value = false;
-        }
-      }
-    });
-  }
-};
-// function handleLoginOtherAccount(param: { userName: string; password: string }) {
-//   const { userName, password } = param;
-//   authStore.login(userName, password);
-// }
 
+async function getFunctionOption() {
+  const { data } = await getFunction();
+  if (data) {
+    localStorage.setItem('enableZcAndYzm', JSON.stringify(data));
+    showZc.value = data.find(v => v.name === 'enable_reg')?.enable_flag === 'enable';
+
+    showYzm.value = data.find(v => v.name === 'use_captcha')?.enable_flag === 'enable';
+  }
+}
 onMounted(() => {
-  requestFunction();
+  const is_remember_rath = localStorage.getItem('isRememberPath');
+  if (is_remember_rath === '0' || is_remember_rath === '1') {
+    isRememberPath.value = is_remember_rath === '1';
+  }
+  getFunctionOption();
 });
 </script>
 

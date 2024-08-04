@@ -125,39 +125,73 @@ export function validPassword(str: string): boolean {
   return true;
 }
 
+function getRandomBytes(length) {
+  return window.crypto.getRandomValues(new Uint8Array(length));
+}
+
+function randomBytesToHex(bytes) {
+  return Array.from(bytes)
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+export function generateRandomHexString(length) {
+  const bytes = getRandomBytes(length);
+  const hexString = randomBytesToHex(bytes);
+  return hexString;
+}
+
 // RSA 公钥加密
 export function encryptDataByRsa(data): string {
   const pubKey = `-----BEGIN PUBLIC KEY-----
-MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCZl8ytw/KIs1lTX+wMtQnZYa/c
-IvFMkRaSq3sqJ5FUeOEGH/Y05jIa6eEcLy9WwdjhxXK9h6rOX74n1gN6YZ+qSdz2
-yc7y4MGzmOsN7uYSCekwK55EQK/I13KNzvw7dAN46MAGORLeqeLNUoxFii+Ok10+
-7fzYDIzVJpccqWbfUwIDAQAB
+MIIBCgKCAQEA35ATUHHwTvEHxaOKG/8xTETHq7+syHqEkDXSuKf2irYZefaKe4n2
+GiM6uWFBgaXX/LxvxkbIQ0WK0R+mIziaF3mTa3gs7n5OiJgJDsqzZHzS9to6j9Mc
+NG3v2R0wgjCs9FCR51ZEZIxxC5YYlHd2ZQoVZ8oLMdg9bhop5CsG9J1spkhx8cmY
+r50hSenA7rxTQ7fSc8TmMgR6Env84rjUMgxBO7RgnbaURzde0UPOrEmc7FGCZJix
+fSkMao0ZoWz5PNE7tNU9LYQJThy+T46HAu5V5zWOuo9AdBdJvQH43yhIptLB/Z1p
+UsdVUZ0ESaoP326ag8R5EqBSa2+4gce14QIDAQAB
 -----END PUBLIC KEY-----`;
-
   const encrypt = new JSEncrypt();
   encrypt.setPublicKey(pubKey);
-
   // 使用公钥进行加密
-  return encrypt.encrypt(data) || '';
+  try {
+    return encrypt.encrypt(data) || '';
+  } catch (e) {
+    console.error(e);
+    return '';
+  }
 }
 
 // RSA 私钥解密
 export function decryptDataByRsa(data): string {
-  const priKey = `-----BEGIN RSA PRIVATE KEY-----
-MIICXQIBAAKBgQCZl8ytw/KIs1lTX+wMtQnZYa/cIvFMkRaSq3sqJ5FUeOEGH/Y0
-5jIa6eEcLy9WwdjhxXK9h6rOX74n1gN6YZ+qSdz2yc7y4MGzmOsN7uYSCekwK55E
-QK/I13KNzvw7dAN46MAGORLeqeLNUoxFii+Ok10+7fzYDIzVJpccqWbfUwIDAQAB
-AoGASe0+nwSJYDKy8+Zff15D91WFh7dp3SiYbNAM4CVbVgU4ifIoVx3VUA7yQtaT
-OnbjJQgcSg1asSp0JEhmNCl454WjgaeO/RXIqNjBAK4g2wbNCBaCI/ENTSe5r8Yi
-tv01GhuWzWcNZdx0NTmzlWFTlTxZn8nQklRCs5AxhJMXPQECQQDe74Slf6SrH+pm
-SDtwTSQ+cTQVDUttJU4ZrkjRsFskLJL0oXSXt3cHs4jKyvryQIDAv/HUjeWWDwgo
-KGVY1KJDAkEAsF910VSG2bdaKg0HOIfYHNHJBznSjzrEEOFcK07i2DbMXhHmgULj
-Xav5sEME9C9G09t3Rdbb1GW3BpJi3+UlsQJBAL5qZKkbSmIjw4kTfzlfmmp/NJYa
-oeca6weCVo5MDLzsGaU7VqPTv6ZjUZ6tGwTZ1V9NU1hSztuKAVSTlGT4UZMCQDp0
-mR71DfCwxVB0mvUQiP8cRK2Ba5kPGBakKqEr9yFEID35XtVurt7H9eyGeejYlnf3
-IDPkf12JDL0/3UdpsjECQQDUjAkG686qnyy/nJvX5y2I3hLoh9vWe0oVyTD6etP8
-XugcGmZmuGu+/cNeiU3lH4cArL5zNnLvRqCU+ceU9Dik
------END RSA PRIVATE KEY-----`;
+  //   const priKey = `-----BEGIN RSA PRIVATE KEY-----
+  // MIIEowIBAAKCAQEA35ATUHHwTvEHxaOKG/8xTETHq7+syHqEkDXSuKf2irYZefaK
+  // e4n2GiM6uWFBgaXX/LxvxkbIQ0WK0R+mIziaF3mTa3gs7n5OiJgJDsqzZHzS9to6
+  // j9McNG3v2R0wgjCs9FCR51ZEZIxxC5YYlHd2ZQoVZ8oLMdg9bhop5CsG9J1spkhx
+  // 8cmYr50hSenA7rxTQ7fSc8TmMgR6Env84rjUMgxBO7RgnbaURzde0UPOrEmc7FGC
+  // ZJixfSkMao0ZoWz5PNE7tNU9LYQJThy+T46HAu5V5zWOuo9AdBdJvQH43yhIptLB
+  // /Z1pUsdVUZ0ESaoP326ag8R5EqBSa2+4gce14QIDAQABAoIBAGbkta75scNzdcNF
+  // 4KPAER1sLoXioxBmKysASqrIS1VOOG2ExfnT5lvjSPzXQUH9ZWoiBEO6giNMF3bm
+  // XR2qyGjzgKEe33co1NZTOx/+tRATzzjj+b4GSN3sl05S++d/paqQhoZ1kubAKKtP
+  // eqKiVPBt8qohOIPJZYSOMCeekgX0rgIIDMURcv88qb0Sulb9KbLPGIJqh8VMZn6V
+  // GOFcMgq5UB36G2VX8pkVAqCHX5zK2eOHt/E92ItvTClAfBVIpVqDk0YIfW5WK6b3
+  // bN2TZs0HsyTdXj8WOCOErC0c4sZ6ENsYcxJP0XShuAynbVxWfFdOoU5UE3Lh58uh
+  // eWk1xn0CgYEA+nFkZ+7DbK5miEx315DB52zcIyfccuMi3fy0m5ukvQtRGuhCmEHE
+  // MgLXQNq36DL4ctOVKzPyhu9TffAbkdCuOcASvTwAAuOYlVKarhk6o8DKfE5mA/Pu
+  // /Nq+EsoKo+XnO5DZnlxTt4S/V5BbB30Dk+W9Kvz/gdpYC9Pjd53KenMCgYEA5IX+
+  // gQKW4w0frIEexpjtGVXUJTjaltZLHbgRALBwLGDmQfU3quEVOXF9BLwG8DUTbDEd
+  // RORVdF+dOMli2ESJ3gGG+x5eob/aYHpH74/XEkyibUlmYm6pGOtEzAdnIGRqQyGO
+  // P+2uqRWpcBVEycSL3NMk94sAU8PM/BHUVcfCVVsCgYBxH/UtqUEm/2QbHwdnHOEp
+  // ixeo3aGLV6PxR+vA+j4gklMRZ2ZlZhecS4I1rlYyEYv+OiqAOFfNsZ8yHNonNG7u
+  // cR9F0StkIrBSityJ1aWSQEx2d+dG09HY72m6DP9fZ0LauiRCjwvVsqXHhNJJgKO0
+  // E6suFtfHLPxmY1C1QFYslwKBgQCIw8CbCSewXwxTuzrl9GQBw6IhXLNFjp6J/L0A
+  // Qpf/l0Z2twFH3UlMhaUijj1AySMEnyg7MMQLz6VSdQQZFnvER/m2lGhiOWXCU6x1
+  // rQo0Q3T6HvGNe1jsNvGHge6wLiiCYLS3gdIEE5jCIZh3gI+L6zm2hJP/jbFCMpF3
+  // fQPK/QKBgGv5g7zk5zxZsS2LNANbOjSCmJsQRjd83LN4nt08N/ro7ZRCh1XL6HIE
+  // XBkFA8ndBXMeOdpjXk//ydrzfy0v5bbVTGNg+qu27sSl5F0h29fX5WvyFssZafYB
+  // jP7gB07O9kSkzCAh96hMLemrdxUtvpc7HwuRTDYBVsurPo+9dG7l
+  // -----END RSA PRIVATE KEY-----`;
+  const priKey = '';
 
   const encrypt = new JSEncrypt();
   encrypt.setPublicKey(priKey);
