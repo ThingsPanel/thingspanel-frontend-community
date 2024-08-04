@@ -51,10 +51,8 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     let salt: string | null = null;
     if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
       salt = generateRandomHexString(16);
-      console.log('salt', salt); // 输出16字节的随机十六进制字符串
+
       newP = encryptDataByRsa(password + salt);
-      console.log('加密后密码：', newP);
-      // console.log('解密后密码：', decryptDataByRsa(newP));
     }
     const { data: loginToken, error } = await fetchLogin(userName, newP, salt);
     if (!error) {
