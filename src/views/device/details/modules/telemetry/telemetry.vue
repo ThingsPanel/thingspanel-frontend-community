@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, onMounted, onUnmounted, ref } from 'vue';
+import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch } from 'vue';
 import type { NumberAnimationInst } from 'naive-ui';
 import dayjs from 'dayjs';
 import { Activity } from '@vicons/tabler';
@@ -18,12 +18,14 @@ import { localStg } from '@/utils/storage';
 import { deviceDetail } from '@/service/api/device';
 import { $t } from '@/locales';
 import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool';
+import { deviceCustomControlList } from '@/service/api/system-data';
 import HistoryData from './modules/history-data.vue';
 import TimeSeriesData from './modules/time-series-data.vue';
 import { useLoading } from '~/packages/hooks';
 
 const props = defineProps<{
   id: string;
+  deviceTemplateId: string;
 }>();
 
 let wsUrl = getWebsocketServerUrl();
@@ -293,9 +295,31 @@ const isColor = (i: any) => {
   return '';
 };
 
+const controlList = ref([]);
+const getControlList = () => {
+  if (props.deviceTemplateId) {
+    const queryjson = {
+      device_template_id: props.deviceTemplateId,
+      page: 1,
+      page_size: 100
+    };
+    deviceCustomControlList(queryjson).then(({ data }) => {
+      controlList.value = data.list || [];
+    });
+  }
+};
+
+watch(
+  () => props.deviceTemplateId,
+  val => {
+    if (!val) return;
+    getControlList();
+  }
+);
 onMounted(() => {
   fetchData();
   fetchTelemetry();
+  getControlList();
 });
 
 onUnmounted(() => {
@@ -303,6 +327,14 @@ onUnmounted(() => {
     close();
   }
 });
+
+const onControlChange = async (row: any) => {
+  await telemetryDataPub({
+    device_id: props.id,
+    value: row.content
+  });
+  fetchData();
+};
 
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance();
@@ -333,6 +365,17 @@ const inputFeedback = computed(() => {
         {{ $t('generate.simulate-report-data') }}
       </n-button>
     </NFlex>
+
+    <!-- 自定义控制 -->
+    <NGrid x-gap="20" y-gap="20" cols="1 s:2 m:3 l:4" responsive="screen" class="mb-4">
+      <NGridItem v-for="item in controlList" :key="item.id">
+        <NCard hoverable>
+          <div class="title cursor-pointer ellipsis-text text-16px font-600" @click="onControlChange(item)">
+            {{ item.name }}
+          </div>
+        </NCard>
+      </NGridItem>
+    </NGrid>
 
     <!-- 第二行 -->
     <n-card class="mb-4">

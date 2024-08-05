@@ -20,6 +20,7 @@ import AddEditAttributes from './add-edit-attributes.vue';
 import AddEditEvents from './add-edit-events.vue';
 import AddEditCommands from './add-edit-commands.vue';
 import CustomCommands from './custom-commands.vue';
+import CustomControls from './custom-controls.vue';
 const emit = defineEmits(['update:stepCurrent', 'update:modalVisible']);
 const { loading, startLoading, endLoading } = useLoading(false);
 
@@ -384,6 +385,7 @@ getTableData();
             "
           />
         </div>
+        <CustomControls v-if="item.name === 'telemetry'" :id="deviceTemplateId"></CustomControls>
         <CustomCommands v-if="item.name === 'command'" :id="deviceTemplateId"></CustomCommands>
       </n-tab-pane>
     </n-tabs>

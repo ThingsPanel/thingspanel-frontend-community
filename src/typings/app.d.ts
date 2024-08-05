@@ -1294,6 +1294,9 @@ declare namespace App {
         inputRightJson: string;
         customCommand: string;
         addCustomCommand: string;
+        customControl: string;
+        commandContent: string;
+        enableStatus: string;
         btnname: string;
         sceneLinkageName: string;
         alarmConfugName: string;
