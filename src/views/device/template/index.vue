@@ -48,9 +48,11 @@ const handleEdit = async (id: string) => {
 };
 
 getData();
-setTimeout(() => {
-  handleEdit(route.query.id);
-}, 0);
+if (route.query?.id) {
+  setTimeout(() => {
+    handleEdit(route.query?.id);
+  }, 0);
+}
 
 function handleAddTemplate() {
   modalType.value = 'add';

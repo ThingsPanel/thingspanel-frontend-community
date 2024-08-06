@@ -163,3 +163,27 @@ export const deviceCustomCommandsPut = async (params: any): Promise<any> => {
   const data = await request.put('/device/model/custom/commands', params);
   return data;
 };
+
+/** 自定义控制列表 */
+export const deviceCustomControlList = async (params: any): Promise<any> => {
+  const data = await request.get('/device/model/custom/control', { params });
+  return data;
+};
+
+/** 删除自定义控制 */
+export const deviceCustomControlDel = async (paramsId: any): Promise<any> => {
+  const data = await request.delete(`/device/model/custom/control/${paramsId}`);
+  return data;
+};
+
+/** 新建自定义控制 */
+export const deviceCustomControlAdd = async (params: any): Promise<any> => {
+  const data = await request.post('/device/model/custom/control', params);
+  return data;
+};
+
+/** 编辑自定义命令 */
+export const deviceCustomControlPut = async (params: any): Promise<any> => {
+  const data = await request.put('/device/model/custom/control', params);
+  return data;
+};
