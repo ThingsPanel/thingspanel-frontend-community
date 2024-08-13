@@ -82,6 +82,8 @@ const local: App.I18n.Schema = {
     last_5m: 'Last 5 minutes',
     custom: 'custom',
     average: 'average',
+    sum: 'sum',
+    diffValue: 'diff Value',
     months1: '1 months',
     days7: '7 days',
     hours6: '6 hours',

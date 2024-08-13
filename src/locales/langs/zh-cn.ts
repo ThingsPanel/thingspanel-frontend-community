@@ -83,6 +83,8 @@ const local: App.I18n.Schema = {
     last_5m: '最近5分钟',
     custom: '自定义',
     average: '平均数',
+    sum: '求和',
+    diffValue: '差值',
     months1: '1个月',
     days7: '7天',
     hours6: '6小时',

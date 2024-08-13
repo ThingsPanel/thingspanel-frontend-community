@@ -25,7 +25,7 @@ defineExpose({
  */
 const getSwitchValue: (swtichState: boolean) => any = (swtichState: boolean) => {
   const config = props?.card?.config;
-  const dataType = props?.card?.dataSource?.deviceSource[0]?.metricsDataType;
+  const dataType = props?.card?.dataSource?.deviceSource?.[0]?.metricsDataType;
   if (dataType === 'string') {
     if (swtichState) {
       return config?.active0 ? config.active0 : '1';
@@ -122,7 +122,7 @@ watch(
     <div>
       <!-- {{  props?.card?.dataSource?.deviceSource[0] }} -->
       <n-switch v-model:value="active" @change="clickSwitch" />
-      <div class="switch">{{ card.dataSource?.deviceSource[0]?.metricsName || $t('generate.switch') }}</div>
+      <div class="switch">{{ card.dataSource?.deviceSource?.[0]?.metricsName || $t('generate.switch') }}</div>
     </div>
   </div>
 </template>

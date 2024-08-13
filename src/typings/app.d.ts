@@ -326,6 +326,8 @@ declare namespace App {
         last_5m: string;
         custom: string;
         average: string;
+        sum: string;
+        diffValue: string;
         months1: string;
         days7: string;
         hours6: string;

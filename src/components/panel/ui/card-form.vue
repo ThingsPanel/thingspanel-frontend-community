@@ -26,6 +26,44 @@ const defData = {
     deviceSource: [{}]
   } as any
 };
+const dataTimeRangeOptions = [
+  { label: $t('common.last_5m'), value: 'last_5m' },
+  { label: $t('common.last_15m'), value: 'last_15m' },
+  { label: $t('common.last_30m'), value: 'last_30m' },
+  { label: $t('common.lastHours1'), value: 'last_1h' },
+  { label: $t('common.lastHours3'), value: 'last_3h' },
+  { label: $t('common.lastHours6'), value: 'last_6h' },
+  { label: $t('common.lastHours12'), value: 'last_12h' },
+  { label: $t('common.lastHours24'), value: 'last_24h' },
+  { label: $t('common.lastDays3'), value: 'last_3d' },
+  { label: $t('common.lastDays7'), value: 'last_7d' },
+  { label: $t('common.lastDays15'), value: 'last_15d' },
+  { label: $t('common.lastDays30'), value: 'last_30d' },
+  { label: $t('common.lastDays60'), value: 'last_60d' },
+  { label: $t('common.lastDays90'), value: 'last_90d' }
+];
+
+const dataAggregateRangeOptions = [
+  { label: $t('common.notAggre'), value: 'no_aggregate', disabled: false },
+  { label: $t('common.seconds30'), value: '30s', disabled: false },
+  { label: $t('common.minute1'), value: '1m', disabled: false },
+  { label: $t('common.minute2'), value: '2m', disabled: false },
+  { label: $t('common.minutes5'), value: '5m', disabled: false },
+  { label: $t('common.minutes10'), value: '10m', disabled: false },
+  { label: $t('common.minutes30'), value: '30m', disabled: false },
+  { label: $t('common.hours1'), value: '1h', disabled: false },
+  { label: $t('common.hours3'), value: '3h', disabled: false },
+  { label: $t('common.hours6'), value: '6h', disabled: false },
+  { label: $t('common.days1'), value: '1d', disabled: false },
+  { label: $t('common.days7'), value: '7d', disabled: false },
+  { label: '1月', value: '1mo', disabled: false }
+];
+const aggregateFunctionOptions: SelectOption[] = [
+  { label: $t('common.average'), value: 'avg' },
+  { label: $t('generate.max-value'), value: 'max' },
+  { label: $t('common.sum'), value: 'sum' },
+  { label: $t('common.diffValue'), value: 'diff' }
+];
 const state = reactive({
   tab: 'device',
   selectCard: null as null | ICardDefine,
@@ -91,6 +129,7 @@ const deviceSelectChange = async (v, item) => {
   const res = await deviceMetricsList(v);
   item.metricsOptions = res?.data || [];
 };
+
 const metricsOptionRender = (info, item) => {
   return (
     <div class="border-b border-#d9d9d9 p-x-10px p-y-15px">
@@ -166,6 +205,20 @@ watch(deviceCount, v => {
       <NTabPane v-if="state.selectCard.type === 'chart'" name="dataSource" tab="数据源">
         <div :class="`${mobile ? '' : 'h-[calc(100vh_-_270px)] '} overflow-y-auto py-5`">
           <NForm>
+            <NSelect
+              v-if="state.data.dataSource.isSupportTimeRange"
+              v-model:value="state.data.dataSource.dataTimeRange"
+              clearable
+              :options="dataTimeRangeOptions"
+              placeholder="请选择数据时间范围"
+            />
+            <NSelect
+              v-if="state.data.dataSource.isSupportAggregate"
+              v-model:value="state.data.dataSource.dataAggregateRange"
+              clearable
+              :options="dataAggregateRangeOptions"
+              placeholder="请选择数据聚合范围"
+            />
             <div v-if="state.data.dataSource?.origin === 'device' || state.data.dataSource?.origin === 'system'">
               <n-input-number
                 v-model:value="deviceCount"
@@ -209,8 +262,16 @@ watch(deviceCount, v => {
                 <NInput
                   v-if="i <= deviceCount - 1"
                   v-model:value="item.metricsName"
-                  style="max-width: 140px"
+                  class="metrics-name-input"
                   placeholder="请输入名称"
+                />
+                <NSelect
+                  v-if="i <= deviceCount - 1 && state.data.dataSource.isSupportAggregate"
+                  v-model:value="item.aggregate_function"
+                  clearable
+                  class="w-120px"
+                  :options="aggregateFunctionOptions"
+                  placeholder="请选择数据聚合方式"
                 />
               </div>
             </div>
@@ -253,5 +314,8 @@ watch(deviceCount, v => {
 .custom-select-container .v-binder-follower-container {
   width: 300px !important;
   /* 只会影响该组件内的 NSelect 下拉宽度 */
+}
+.metrics-name-input {
+  max-width: 140px;
 }
 </style>

@@ -34,7 +34,7 @@ defineExpose({
     >
       {{ data.basicSettings?.title }}
     </div>
-    <div class="w-full flex-1 p-4">
+    <div class="h-full w-full flex-1 p-4">
       <component
         :is="findCardComponent(cardId || '')"
         ref="refComp"
