@@ -1,3 +1,17 @@
+export type DeviceSourceItem = {
+  cardId?: string;
+  deviceId?: string;
+  deviceMetrics?: string;
+  name?: string;
+  metricsId?: string;
+  metricsType?: string; // telemetry | attributes | event | command
+  metricsDataType?: string; // number | string | boolean
+  metricsName?: string;
+  metricsOptions?: any[];
+  metricsShow: boolean;
+  aggregate_function: string;
+};
+
 export interface ICardData {
   type?: ICardDefine['type'];
   cardId?: string;
@@ -22,18 +36,11 @@ export interface ICardData {
     sourceNum?: number; // 不填写即为 1-任意多个，最多9个，如需固定数量，填写整数
     systemSource?: { type?: number; name?: string }[];
     deviceCount?: number;
-    deviceSource?: {
-      cardId?: string;
-      deviceId?: string;
-      deviceMetrics?: string;
-      name?: string;
-      metricsId?: string;
-      metricsType?: string; // telemetry | attributes | event | command
-      metricsDataType?: string; // number | string | boolean
-      metricsName?: string;
-      metricsOptions?: any[];
-      metricsShow: boolean;
-    }[];
+    isSupportTimeRange: boolean; // 是否支持指定时间范围
+    dataTimeRange: string; // 时间范围，custom，last_5m，last_15m，last_30m，last_1h，last_3h，last_6h，last_12h，last_24h，last_3d，last_7d，last_15d，last_30d，last_60d，last_90d，last_6m，last_1y
+    isSupportAggregate: boolean; // 是否支持聚合
+    dataAggregateRange: string; // 聚合时间范围
+    deviceSource?: DeviceSourceItem[];
   };
 }
 
