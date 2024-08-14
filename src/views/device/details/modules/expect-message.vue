@@ -13,7 +13,7 @@ const props = defineProps<{
 const tableData = ref([]);
 const statusOptions = ref([
   { label: $t('page.expect.pending'), value: 'pending' },
-  { label: $t('page.expect.send'), value: 'send' },
+  { label: $t('page.expect.send'), value: 'sent' },
   { label: $t('page.expect.expired'), value: 'expired' }
 ]);
 const typeOptions = ref([

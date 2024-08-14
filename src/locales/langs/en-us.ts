@@ -668,7 +668,7 @@ const local: App.I18n.Schema = {
       operate: 'Operate',
       pending: 'Pending',
       send: 'Send',
-      expired: 'Expired',
+      expired: 'Expire',
       selectCommandTypePlease: 'Select command type,please',
       command: 'Command',
       inputLabelPlease: 'Input label,please'
