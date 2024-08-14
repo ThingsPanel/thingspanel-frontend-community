@@ -50,6 +50,7 @@ const pagination: PaginationProps = reactive({
 async function getTableData() {
   const { data, error } = await expectMessageList({
     device_id: props.id,
+    send_type: query.type,
     ...query
   });
   if (!error) {
