@@ -154,7 +154,7 @@ init();
       </NGrid>
       <NGrid :cols="24">
         <NFormItemGridItem :span="6" :label="$t('page.manage.notification.enableDisableService')" path="status">
-          <n-switch v-model:value="formModel.status" checked-value="OPEN" />
+          <n-switch v-model:value="formModel.status" checked-value="OPEN" unchecked-value="CLOSE" />
         </NFormItemGridItem>
       </NGrid>
       <NGrid :cols="24">
