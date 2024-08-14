@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import dayjs from 'dayjs';
 import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue';
-import { commandDataPub, getCommandDataSetLogs } from '@/service/api';
+import { commandDataPub, expectMessageAdd, getCommandDataSetLogs } from '@/service/api';
 import { $t } from '@/locales';
 defineProps<{
   id: string;
@@ -60,6 +60,8 @@ const columns = [
       :table-columns="columns"
       :fetch-data-api="getCommandDataSetLogs"
       :submit-api="commandDataPub"
+      :expect="true"
+      :expect-api="expectMessageAdd"
     />
   </div>
 </template>

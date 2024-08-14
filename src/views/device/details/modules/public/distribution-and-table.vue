@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, defineExpose, getCurrentInstance, onMounted, ref } from 'vue';
+import { computed, defineExpose, getCurrentInstance, onMounted, reactive, ref } from 'vue';
 import { NButton, NDataTable, NForm, NFormItem, NInput, NModal, NPagination } from 'naive-ui';
 import { useLoading } from '@sa/hooks';
 import { Refresh } from '@vicons/ionicons5';
 import type { FlatResponseFailData, FlatResponseSuccessData } from '@sa/axios';
+import moment from 'moment';
 import { commandDataById, commandDataPub, deviceCustomCommandsIdList } from '@/service/api';
 import { $t } from '@/locales';
 import { isJSON } from '@/utils/common/tool';
@@ -14,7 +15,9 @@ const props = defineProps<{
   isCommand?: boolean;
   buttonName?: string;
   tableColumns: any[] | undefined;
+  expect?: boolean;
   submitApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>;
+  expectApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>;
   fetchDataApi: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>;
 }>();
 const tableData = ref<any[] | undefined>();
@@ -23,6 +26,10 @@ const the_page = ref(1);
 const showDialog = ref(false);
 const textValue = ref('');
 const commandValue = ref('');
+const form = reactive({
+  expected: false,
+  time: null
+});
 const options = ref();
 const { loading, startLoading, endLoading } = useLoading();
 const paramsSelect = ref<any>([
@@ -58,6 +65,10 @@ const closeDialog = () => {
   paramsData.value = [];
   commandValue.value = '';
   isTextArea.value = true;
+  form.value = {
+    expected: false,
+    time: null
+  };
 };
 
 const submit = async () => {
@@ -79,9 +90,20 @@ const submit = async () => {
     } else {
       parms = { device_id: props.id, value: textValue.value };
     }
-    if (props.submitApi) {
+    if (form.expected) {
+      if (props.expectApi) {
+        const expiry = new Date().getTime() + (form.time ? form.time * 60 * 60 * 1000 : 0);
+        await props.expectApi({
+          device_id: props.id,
+          payload: textValue.value,
+          send_type: props.isCommand ? 'command' : 'attribute',
+          expiry: moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ')
+        });
+      }
+    } else if (props.submitApi) {
       await props.submitApi(parms);
     }
+
     await fetchDataFunction();
     closeDialog();
   }
@@ -197,14 +219,44 @@ const inputFeedback = computed(() => {
         @update:page="updatePage"
       />
     </div>
-    <NModal
-      v-if="submitApi"
-      v-model:show="showDialog"
-      :title="$t('generate.issue-attribute')"
-      :class="getPlatform ? 'w-90%' : 'w-400px'"
-    >
-      <n-card>
-        <NForm>
+    <NModal v-if="submitApi" v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-400px'">
+      <n-card :title="isCommand ? $t('generate.issueCommand') : $t('generate.issue-attribute')">
+        <NForm :label-placement="expect ? 'left' : 'top'">
+          <div v-if="expect" class="flex">
+            <NFormItem>
+              <template #label>
+                <div class="flex-ai-c flex">
+                  {{ $t('generate.expectedMessage') }}
+                  <n-popover trigger="hover">
+                    <template #trigger>
+                      <svg
+                        style="width: 20px"
+                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                        viewBox="0 0 20 20"
+                      >
+                        <g fill="none">
+                          <path
+                            d="M10 2a8 8 0 1 1-3.613 15.14l-.121-.065l-3.645.91a.5.5 0 0 1-.62-.441v-.082l.014-.083l.91-3.644l-.063-.12a7.95 7.95 0 0 1-.83-2.887l-.025-.382L2 10a8 8 0 0 1 8-8zm0 1a7 7 0 0 0-6.106 10.425a.5.5 0 0 1 .063.272l-.014.094l-.756 3.021l3.024-.754a.502.502 0 0 1 .188-.01l.091.021l.087.039A7 7 0 1 0 10 3zm0 2.5a.5.5 0 0 1 .5.5v5.5a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm0 9a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5z"
+                            fill="currentColor"
+                          ></path>
+                        </g>
+                      </svg>
+                    </template>
+                    <span>{{ $t('generate.expectedMessageTip') }}</span>
+                  </n-popover>
+                </div>
+              </template>
+
+              <n-switch v-model:value="form.expected" />
+            </NFormItem>
+            <NFormItem v-if="form.expected" :label="$t('generate.expirationTime')" class="ml-20px">
+              <div class="flex-ai-c flex">
+                <n-input-number v-model:value="form.time" :show-button="false" class="w-80px" />
+                <div class="fs-0">{{ $t('generate.hour') }}</div>
+              </div>
+            </NFormItem>
+          </div>
           <NFormItem v-if="isCommand" :label="$t('generate.command-identifier')" required :options="options">
             <NInput v-if="isTextArea" v-model:value="commandValue" :placeholder="$t('generate.or-enter-here')" />
             <NSelect
@@ -221,12 +273,7 @@ const inputFeedback = computed(() => {
             </NButton>
             <!-- <span class="ml-4 mr-4">{{ $t('generate.or') }}</span> -->
           </NFormItem>
-          <NFormItem
-            v-if="isTextArea"
-            :label="$t('generate.attribute')"
-            :validation-status="validationJson"
-            :feedback="inputFeedback"
-          >
+          <NFormItem v-if="isTextArea" label="" :validation-status="validationJson" :feedback="inputFeedback">
             <NInput v-model:value="textValue" type="textarea" />
           </NFormItem>
           <div v-else>

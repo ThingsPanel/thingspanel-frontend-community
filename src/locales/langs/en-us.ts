@@ -197,6 +197,7 @@ const local: App.I18n.Schema = {
     add: 'Add',
     input: 'Place Input ',
     select: 'Place Select ',
+    selectOrInput: 'Select or Input',
     save: 'save',
     addSuccess: 'Add Success',
     backToHome: 'Back to home',
@@ -654,6 +655,23 @@ const local: App.I18n.Schema = {
           title: 'SME'
         }
       }
+    },
+    expect: {
+      createTime: '创建时间',
+      commandType: 'Command Type',
+      label: 'Label',
+      commandContent: 'Command Content',
+      expireTime: 'Expire Time',
+      status: 'Status',
+      statusInfo: 'Status Info',
+      dealTime: 'Deal Time',
+      operate: 'Operate',
+      pending: 'Pending',
+      send: 'Send',
+      expired: 'Expired',
+      selectCommandTypePlease: 'Select command type,please',
+      command: 'Command',
+      inputLabelPlease: 'Input label,please'
     },
     irrigation: {
       name: 'Name',
@@ -1424,7 +1442,13 @@ const local: App.I18n.Schema = {
     'alarm-info': 'alarm info',
     timeRangeWarning: 'A single condition group cannot only have time range conditions.',
     timeTypeWarning: 'Time type conditions cannot trigger alarms.',
-    controlCommands: 'Control Commands'
+    controlCommands: 'Control Commands',
+    distributeControlToDevice: 'Distribute control to device',
+    expectedMessage: 'Expected message',
+    expirationTime: 'Expiration time',
+    hour: 'hour',
+    expectedMessageTip:
+      'Expected Message Tip: After activation, if the device is not online, messages will be cached and sent after the device is online'
   },
   kanban: {
     'add-cards': 'add cards'

@@ -277,6 +277,19 @@ export const telemetryDataPub = async (params: any) => {
   return await request.post<any>(`/telemetry/datas/pub`, params);
 };
 
+/** 新增期望消息 */
+export const expectMessageAdd = async (params: any) => {
+  return await request.post<any>(`/expected/data`, params);
+};
+/** 期望消息列表 */
+export const expectMessageList = async (params: any) => {
+  return await request.get<any>(`/expected/data/list`, { params });
+};
+
+/** 期望消息删除 */
+export const expectMessageDelete = async (params: any) => {
+  return await request.delete<any>(`/expected/data/${params}`);
+};
 export const getAttributeDataSet = async (params: any) => {
   return await request.get<any>(`attribute/datas/${params.device_id}`);
 };

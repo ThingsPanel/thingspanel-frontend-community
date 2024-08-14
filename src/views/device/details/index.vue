@@ -10,6 +10,7 @@ import Message from '@/views/device/details/modules/message.vue';
 import Stats from '@/views/device/details/modules/stats.vue';
 import EventReport from '@/views/device/details/modules/event-report.vue';
 import CommandDelivery from '@/views/device/details/modules/command-delivery.vue';
+import ExpectMessage from '@/views/device/details/modules/expect-message.vue';
 import Automate from '@/views/device/details/modules/automate.vue';
 import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue';
 import User from '@/views/device/details/modules/user.vue';
@@ -67,6 +68,12 @@ let components = [
     key: 'command-delivery',
     name: () => $t('custom.device_details.commandDelivery'),
     component: CommandDelivery,
+    refreshKey: 0
+  },
+  {
+    key: 'expect-message',
+    name: () => $t('custom.device_details.expectMessage'),
+    component: ExpectMessage,
     refreshKey: 0
   },
   {

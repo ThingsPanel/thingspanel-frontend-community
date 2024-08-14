@@ -121,8 +121,8 @@ async function renderMap() {
       const app = createApp({
         render() {
           const statusText: any = {
-            0: $t('custom.devicePage.online'),
-            1: $t('custom.devicePage.offline')
+            1: $t('custom.devicePage.online'),
+            0: $t('custom.devicePage.offline')
           };
           // 在模板中使用 Naive UI 的组件
           return (

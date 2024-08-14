@@ -1,12 +1,14 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import type { NumberAnimationInst } from 'naive-ui';
 import dayjs from 'dayjs';
 import { Activity } from '@vicons/tabler';
 import { DocumentOnePage24Regular } from '@vicons/fluent';
 import { useWebSocket } from '@vueuse/core';
 import { MovingNumbers } from 'moving-numbers-vue3';
+import moment from 'moment';
 import {
+  expectMessageAdd,
   getSimulation,
   getTelemetryLogList,
   sendSimulation,
@@ -22,7 +24,6 @@ import { deviceCustomControlList } from '@/service/api/system-data';
 import HistoryData from './modules/history-data.vue';
 import TimeSeriesData from './modules/time-series-data.vue';
 import { useLoading } from '~/packages/hooks';
-
 const props = defineProps<{
   id: string;
   deviceTemplateId: string;
@@ -38,6 +39,10 @@ const telemetryKey = ref();
 const modelType = ref<string>('');
 
 const formValue = ref('');
+const form = reactive({
+  expected: false,
+  time: null
+});
 const operationType = ref('');
 const sendResult = ref('');
 const tableData = ref([]);
@@ -149,6 +154,9 @@ const requestSimulationList = async () => {
 
 const openDialog = () => {
   showDialog.value = true;
+  formValue.value = '';
+  form.expected = false;
+  form.time = null;
 };
 const openUpLog = () => {
   showError.value = false;
@@ -267,12 +275,24 @@ const copy = event => {
 
 const sends = async () => {
   if (isJSON(formValue.value)) {
-    // 发送属性的逻辑...
-    const { error } = await telemetryDataPub({
-      device_id: props.id,
-      value: formValue.value
-    });
-    if (!error) {
+    let res: any = {};
+    if (form.expected) {
+      // 新增期望消息
+      const expiry = new Date().getTime() + (form.time ? form.time * 60 * 60 * 1000 : 0);
+      res = await expectMessageAdd({
+        device_id: props.id,
+        payload: formValue.value,
+        send_type: 'telemetry',
+        expiry: moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ')
+      });
+    } else {
+      // 发送属性的逻辑...
+      res = await telemetryDataPub({
+        device_id: props.id,
+        value: formValue.value
+      });
+    }
+    if (res && !res.error) {
       showDialog.value = false;
       fetchData();
       fetchTelemetry();
@@ -517,18 +537,45 @@ const inputFeedback = computed(() => {
         </n-form>
       </n-card>
     </n-modal>
-    <n-modal
-      v-model:show="showDialog"
-      :title="$t('generate.issue-attribute')"
-      :class="getPlatform ? 'w-90%' : 'w-400px'"
-    >
-      <n-card>
-        <n-form>
-          <n-form-item
-            :label="$t('generate.controlCommands')"
-            :validation-status="validationJson"
-            :feedback="inputFeedback"
-          >
+    <n-modal v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-400px'">
+      <n-card :title="$t('generate.distributeControlToDevice')">
+        <n-form label-placement="left">
+          <div class="flex">
+            <n-form-item>
+              <template #label>
+                <div class="flex-ai-c flex">
+                  {{ $t('generate.expectedMessage') }}
+                  <n-popover trigger="hover">
+                    <template #trigger>
+                      <svg
+                        style="width: 20px"
+                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                        viewBox="0 0 20 20"
+                      >
+                        <g fill="none">
+                          <path
+                            d="M10 2a8 8 0 1 1-3.613 15.14l-.121-.065l-3.645.91a.5.5 0 0 1-.62-.441v-.082l.014-.083l.91-3.644l-.063-.12a7.95 7.95 0 0 1-.83-2.887l-.025-.382L2 10a8 8 0 0 1 8-8zm0 1a7 7 0 0 0-6.106 10.425a.5.5 0 0 1 .063.272l-.014.094l-.756 3.021l3.024-.754a.502.502 0 0 1 .188-.01l.091.021l.087.039A7 7 0 1 0 10 3zm0 2.5a.5.5 0 0 1 .5.5v5.5a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm0 9a.75.75 0 1 0 0-1.5a.75.75 0 0 0 0 1.5z"
+                            fill="currentColor"
+                          ></path>
+                        </g>
+                      </svg>
+                    </template>
+                    <span>{{ $t('generate.expectedMessageTip') }}</span>
+                  </n-popover>
+                </div>
+              </template>
+
+              <n-switch v-model:value="form.expected" />
+            </n-form-item>
+            <n-form-item v-if="form.expected" :label="$t('generate.expirationTime')" class="ml-20px">
+              <div class="flex-ai-c flex">
+                <n-input-number v-model:value="form.time" :show-button="false" class="w-80px" />
+                <div class="fs-0">{{ $t('generate.hour') }}</div>
+              </div>
+            </n-form-item>
+          </div>
+          <n-form-item label="" :validation-status="validationJson" :feedback="inputFeedback">
             <n-input v-model:value="formValue" type="textarea" />
           </n-form-item>
           <n-space align="end">
@@ -585,5 +632,17 @@ const inputFeedback = computed(() => {
       line-height: 1;
     }
   }
+}
+.ml-20px {
+  margin-left: 20px;
+}
+.flex-ai-c {
+  align-items: center;
+}
+.w-80px {
+  width: 80px;
+}
+.fs-0 {
+  flex-shrink: 0;
 }
 </style>

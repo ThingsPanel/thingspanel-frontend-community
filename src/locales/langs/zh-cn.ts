@@ -196,6 +196,7 @@ const local: App.I18n.Schema = {
     action: '操作',
     input: '请输入',
     select: '请选择',
+    selectOrInput: '选择或输入',
     remark: '备注',
     add: '新增',
     save: '保存',
@@ -654,6 +655,23 @@ const local: App.I18n.Schema = {
           title: '短信'
         }
       }
+    },
+    expect: {
+      createTime: '创建时间',
+      commandType: '指令类型',
+      label: '标签',
+      commandContent: '指令内容',
+      expireTime: '过期时间',
+      status: '状态',
+      statusInfo: '状态信息',
+      dealTime: '处理时间',
+      operate: '操作',
+      pending: '待发送',
+      send: '已发送',
+      expired: '已过期',
+      selectCommandTypePlease: '请选择指令类型',
+      command: '命令',
+      inputLabelPlease: '请输入标签'
     },
     irrigation: {
       name: '灌溉计划',
@@ -1420,7 +1438,12 @@ const local: App.I18n.Schema = {
     'alarm-info': '告警详情',
     timeRangeWarning: '单个条件组内不能只有时间范围的条件',
     timeTypeWarning: '时间类型的条件无法触发告警',
-    controlCommands: '控制命令'
+    controlCommands: '控制命令',
+    distributeControlToDevice: '下发控制到设备',
+    expectedMessage: '期望消息',
+    expirationTime: '过期时间',
+    hour: '小时',
+    expectedMessageTip: '开启后，如果设备不在线，会缓存消息，等设备上线后再发送'
   },
   kanban: {
     'add-cards': '添加卡片'

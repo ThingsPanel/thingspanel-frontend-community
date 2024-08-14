@@ -187,6 +187,7 @@ const onUpdatePageSize = newPageSize => {
 };
 // 观察分页和搜索条件的变化，自动重新获取数据
 watchEffect(() => {
+  if (!searchConfigs) return;
   searchConfigs.map((item: any) => {
     const vals = searchCriteria.value[item.key];
     if (item?.extendParams && vals) {
@@ -246,6 +247,7 @@ const handleTreeSelectUpdate = (value, key) => {
 
 // 用于加载动态选项的函数，适用于select和tree-select类型的搜索配置
 const loadOptionsOnMount = async pattern => {
+  if (!searchConfigs) return;
   for (const config of searchConfigs) {
     if (config.type === 'select' && config.loadOptions) {
       // eslint-disable-next-line no-await-in-loop
@@ -266,6 +268,7 @@ const rowProps = row => {
   return {};
 };
 const loadOptionsOnMount2 = async () => {
+  if (!searchConfigs) return;
   for (const config of searchConfigs) {
     if (config.type === 'tree-select' && config.loadOptions) {
       // eslint-disable-next-line no-await-in-loop
