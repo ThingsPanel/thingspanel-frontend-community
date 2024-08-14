@@ -1,5 +1,6 @@
 import { computed, reactive, ref } from 'vue';
 import { defineStore } from 'pinia';
+import { createDiscreteApi } from 'naive-ui';
 import { useLoading } from '@sa/hooks';
 import { SetupStoreId } from '@/enum';
 import { useRouterPush } from '@/hooks/common/router';
@@ -11,6 +12,8 @@ import { encryptDataByRsa, generateRandomHexString, validPassword } from '@/util
 import { useRouteStore } from '../route';
 import { useTabStore } from '../tab';
 import { clearAuthStorage, getToken, getUserInfo } from './shared';
+
+const { dialog } = createDiscreteApi(['dialog']);
 
 export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
   const routeStore = useRouteStore();
@@ -51,7 +54,6 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     let salt: string | null = null;
     if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
       salt = generateRandomHexString(16);
-
       newP = encryptDataByRsa(password + salt);
     }
     const { data: loginToken, error } = await fetchLogin(userName, newP, salt);
@@ -59,10 +61,21 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
       const { loop } = await loginByToken(loginToken);
       if (loop) {
         if (!validPassword(password)) {
-          routerPush({
-            path: '/personal-center',
-            query: {
-              password: 'invalid'
+          dialog.warning({
+            content: '为了您的账户安全，密码应至少8位且包含字母、数字及符号，请重新设置密码。',
+            positiveText: '确认',
+            onPositiveClick: () => {
+              routerPush({
+                path: '/personal-center',
+                query: {
+                  password: 'invalid'
+                }
+              });
+            },
+            negativeText: '取消',
+            onNegativeClick: async () => {
+              await routeStore.initAuthRoute();
+              await redirectFromLogin();
             }
           });
         } else {

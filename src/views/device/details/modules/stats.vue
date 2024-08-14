@@ -4,7 +4,13 @@ import { NButton, NPopconfirm } from 'naive-ui';
 import dayjs from 'dayjs';
 import { $t } from '@/locales';
 import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue';
-import { attributeDataPub, deleteAttributeDataSet, getAttributeDataSet, getAttributeDataSetLogs } from '@/service/api';
+import {
+  attributeDataPub,
+  deleteAttributeDataSet,
+  expectMessageAdd,
+  getAttributeDataSet,
+  getAttributeDataSetLogs
+} from '@/service/api';
 defineProps<{
   id: string;
 }>();
@@ -138,6 +144,8 @@ const columns = [
       :table-columns="columns"
       :fetch-data-api="getAttributeDataSetLogs"
       :submit-api="attributeDataPub"
+      :expect="true"
+      :expect-api="expectMessageAdd"
     />
   </div>
 </template>

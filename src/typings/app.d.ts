@@ -441,6 +441,7 @@ declare namespace App {
         action: string;
         input: string;
         select: string;
+        selectOrInput: string;
         remark: string;
         add: string;
         save: string;
@@ -823,6 +824,23 @@ declare namespace App {
               title: string;
             };
           };
+        };
+        expect: {
+          createTime: string;
+          commandType: string;
+          label: string;
+          commandContent: string;
+          expireTime: string;
+          status: string;
+          statusInfo: string;
+          dealTime: string;
+          operate: string;
+          pending: string;
+          send: string;
+          expired: string;
+          selectCommandTypePlease: string;
+          command: string;
+          inputLabelPlease: string;
         };
         irrigation: {
           name: string;
@@ -1735,6 +1753,11 @@ declare namespace App {
         timeRangeWarning: string;
         timeTypeWarning: string;
         controlCommands: string;
+        distributeControlToDevice: string;
+        expectedMessage: string;
+        expirationTime: string;
+        hour: string;
+        expectedMessageTip: string;
       };
       kanban: {
         'add-cards': string;
