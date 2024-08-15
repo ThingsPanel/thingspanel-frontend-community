@@ -134,6 +134,11 @@ defineExpose({
   setCard: (data?: ICardData) => {
     state.selectCard = null;
     state.data = copy(data || defData);
+    // clear metricsOptions when change card, metricsOptions will be fetched when open
+    state.data.dataSource.deviceSource.forEach(item => {
+      item.metricsOptions = [];
+      item.metricsOptionsFetched = false;
+    });
     setTimeout(() => {
       state.selectCard = findCard(state.data.cardId);
       if (state.data.type === 'chart') state.tab = 'dataSource';
@@ -159,8 +164,14 @@ const deviceCountUpdate = v => {
     state.data.dataSource.deviceSource.splice(v, state.data.dataSource.deviceSource.length - v);
   }
 };
-const updateDropdownShow = (show: boolean, item) => {
-  item.metricsShow = show;
+const updateDropdownShow = async (show: boolean, item) => {
+  const reactiveItem = reactive(item);
+  if (show && reactiveItem.deviceId && !reactiveItem.metricsOptionsFetched) {
+    const res = await deviceMetricsList(reactiveItem.deviceId);
+    reactiveItem.metricsOptions = res?.data || [];
+    reactiveItem.metricsOptionsFetched = true;
+  }
+  reactiveItem.metricsShow = show;
 };
 
 const getDeviceList = async () => {
@@ -168,9 +179,9 @@ const getDeviceList = async () => {
   deviceOption.value = res.data;
 };
 
-const deviceSelectChange = async (v, item) => {
-  const res = await deviceMetricsList(v);
-  item.metricsOptions = res?.data || [];
+const deviceSelectChange = async (_v, item) => {
+  item.metricsOptions = [];
+  item.metricsOptionsFetched = false;
   item.metricsId = '';
   item.metricsName = '';
 };
