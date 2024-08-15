@@ -65,10 +65,8 @@ const closeDialog = () => {
   paramsData.value = [];
   commandValue.value = '';
   isTextArea.value = true;
-  form.value = {
-    expected: false,
-    time: null
-  };
+  form.expected = false;
+  form.time = null;
 };
 
 const submit = async () => {
@@ -80,7 +78,7 @@ const submit = async () => {
     });
     textValue.value = JSON.stringify(params);
   }
-  if (isJSON(textValue.value)) {
+  if (isJSON(textValue.value) || !textValue.value) {
     if (props.isCommand) {
       parms = {
         device_id: props.id,
@@ -91,13 +89,14 @@ const submit = async () => {
       parms = { device_id: props.id, value: textValue.value };
     }
     if (form.expected) {
-      if (props.expectApi) {
-        const expiry = new Date().getTime() + (form.time ? form.time * 60 * 60 * 1000 : 0);
+      if (props.expectApi && textValue.value) {
+        const expiry = form.time ? new Date().getTime() + form.time * 60 * 60 * 1000 : null;
         await props.expectApi({
           device_id: props.id,
           payload: textValue.value,
           send_type: props.isCommand ? 'command' : 'attribute',
-          expiry: moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ')
+          expiry: expiry ? moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ') : null,
+          identify: props.isCommand ? commandValue.value : null
         });
       }
     } else if (props.submitApi) {

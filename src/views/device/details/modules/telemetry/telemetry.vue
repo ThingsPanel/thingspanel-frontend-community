@@ -278,12 +278,12 @@ const sends = async () => {
     let res: any = {};
     if (form.expected) {
       // 新增期望消息
-      const expiry = new Date().getTime() + (form.time ? form.time * 60 * 60 * 1000 : 0);
+      const expiry = form.time ? new Date().getTime() + form.time * 60 * 60 * 1000 : null;
       res = await expectMessageAdd({
         device_id: props.id,
         payload: formValue.value,
         send_type: 'telemetry',
-        expiry: moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ')
+        expiry: expiry ? moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ') : null
       });
     } else {
       // 发送属性的逻辑...

@@ -670,7 +670,7 @@ const local: App.I18n.Schema = {
       operate: '操作',
       pending: '待发送',
       send: '已发送',
-      expired: '已过期',
+      expired: '失效',
       selectCommandTypePlease: '请选择指令类型',
       command: '命令',
       inputLabelPlease: '请输入标签'
