@@ -171,6 +171,8 @@ const getDeviceList = async () => {
 const deviceSelectChange = async (v, item) => {
   const res = await deviceMetricsList(v);
   item.metricsOptions = res?.data || [];
+  item.metricsId = '';
+  item.metricsName = '';
 };
 
 const metricsOptionRender = (info, item) => {
