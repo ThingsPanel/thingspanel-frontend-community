@@ -378,3 +378,27 @@ export const deviceCustomCommandsIdList = async (paramsId: any) => {
 export const deviceProtocalServiceList = async (params: any) => {
   return await request.get<any>(`/service/plugin/select`, { params });
 };
+
+export const getDeviceUserList = async (id: string) => {
+  return await request.get<any>(`/device/detail/${id}/user`);
+};
+
+export const assignUserToDevice = async (data: any) => {
+  return await request.post<any>(`/casbin/user/device`, data);
+};
+
+export const deleteUserToDevice = async (data: any) => {
+  return await request.delete<any>(`/casbin/user/device`, { data });
+};
+
+export const getDeviceGroupUserList = async (id: string) => {
+  return await request.get<any>(`/device/group/detail/${id}/user`);
+};
+
+export const assignUserToGroupDevice = async (data: any) => {
+  return await request.post<any>(`/casbin/user/device_group`, data);
+};
+
+export const deleteUserToGroupDevice = async (data: any) => {
+  return await request.delete<any>(`/casbin/user/device_group`, { data });
+};

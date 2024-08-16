@@ -10,6 +10,7 @@ import {
   getDeviceGroup
 } from '@/service/api/device';
 import { AddOrEditDevices } from '@/views/device/grouping/components';
+import User from '@/views/device/grouping-details/modules/user.vue';
 import { createNoSelectDeviceColumns, group_columns } from '@/views/device/modules/all-columns';
 import useLoadingEmpty from '@/hooks/common/use-loading-empty';
 import DeviceSelectList from '@/views/device/grouping-details/modules/device-select-list.vue';
@@ -333,6 +334,9 @@ watch(
                 }
               "
             />
+          </NTabPane>
+          <NTabPane name="$t('generate.user')" :tab="$t('generate.user')">
+            <User :id="currentId as string"></User>
           </NTabPane>
         </NTabs>
       </NCard>

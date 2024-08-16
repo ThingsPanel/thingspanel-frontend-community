@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import type { PaginationProps } from 'naive-ui';
 import { useDialog, useMessage } from 'naive-ui';
 import { $t } from '@/locales';
-import { assignUserToDevice, deleteUserToDevice, getDeviceUserList } from '@/service/api/device.ts';
+import { assignUserToGroupDevice, deleteUserToGroupDevice, getDeviceGroupUserList } from '@/service/api/device.ts';
 import { getUserList } from '@/service/api/notification.ts';
 
 const dialog = useDialog();
@@ -46,7 +46,7 @@ const state = reactive({
 });
 
 const getTableData = () => {
-  getDeviceUserList(props.id).then(res => {
+  getDeviceGroupUserList(props.id).then(res => {
     console.log(res);
     state.tableData = res.data || [];
   });
@@ -94,14 +94,18 @@ function handleCheck(rowKeys: any) {
 }
 
 const toAdd = () => {
-  assignUserToDevice({
+  assignUserToGroupDevice({
     user_ids: [state.selectedUser],
-    device_ids: [props.id]
+    group_ids: [props.id]
   }).then(_ => {
     state.showModal = false;
     getTableData();
     message.success($t('common.addSuccess'));
   });
+};
+
+const toCreate = () => {
+  router.push('/management/ordinary-user');
 };
 
 const toDelete = () => {
@@ -111,19 +115,15 @@ const toDelete = () => {
     positiveText: $t('device_template.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
-      deleteUserToDevice({
+      deleteUserToGroupDevice({
         user_ids: state.selectedList,
-        device_ids: [props.id]
+        group_ids: [props.id]
       }).then(_ => {
         getTableData();
         message.success($t('common.deleteSuccess'));
       });
     }
   });
-};
-
-const toCreate = () => {
-  router.push('/management/ordinary-user');
 };
 </script>
 

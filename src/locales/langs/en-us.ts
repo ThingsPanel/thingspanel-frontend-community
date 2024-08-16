@@ -209,6 +209,7 @@ const local: App.I18n.Schema = {
     remove: 'Remove',
     deleteSuccess: 'Delete Success',
     confirmDelete: 'Are you sure you want to delete?',
+    confirmRemove: 'Are you sure you want to remove?',
     edit: 'Edit',
     index: 'Index',
     logout: 'Logout',
@@ -236,7 +237,15 @@ const local: App.I18n.Schema = {
     send: 'Send',
     creationTime: 'Creation time',
     service: 'Service',
-    protocol: 'Protocol'
+    protocol: 'Protocol',
+    createUser: 'Create New User',
+    addRelatedUser: 'Add Related User',
+    removeRelatedUser: 'Remove Related User',
+    loginName: 'Login Name',
+    lastLoginTime: 'Last Login Time',
+    userName: 'User Name',
+    addUserToDeviceInfo:
+      'You can associate the device with multiple users, and also allow users to add the device actively.'
   },
   theme: {
     themeSchema: {

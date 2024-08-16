@@ -210,6 +210,7 @@ const local: App.I18n.Schema = {
     remove: '移除',
     deleteSuccess: '删除成功',
     confirmDelete: '确认删除吗？',
+    confirmRemove: '确认移除吗？',
     edit: '编辑',
     index: '序号',
     logout: '退出登录',
@@ -237,7 +238,14 @@ const local: App.I18n.Schema = {
     send: '发送',
     creationTime: '创建时间',
     service: '服务',
-    protocol: '协议'
+    protocol: '协议',
+    createUser: '创建新用户',
+    addRelatedUser: '添加关联用户',
+    removeRelatedUser: '移除关联用户',
+    loginName: '登录名',
+    lastLoginTime: '最后访问时间',
+    userName: '用户名称',
+    addUserToDeviceInfo: '您可以将设备关联到多个用户, 也可让用户主动添加设备。'
   },
   theme: {
     themeSchema: {

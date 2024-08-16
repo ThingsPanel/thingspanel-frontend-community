@@ -453,6 +453,7 @@ declare namespace App {
         remove: string;
         deleteSuccess: string;
         confirmDelete: string;
+        confirmRemove: string;
         edit: string;
         index: string;
         logout: string;
@@ -481,6 +482,13 @@ declare namespace App {
         creationTime: string;
         service: string;
         protocol: string;
+        createUser: string;
+        addRelatedUser: string;
+        removeRelatedUser: string;
+        loginName: string;
+        lastLoginTime: string;
+        userName: string;
+        addUserToDeviceInfo: string;
       };
       theme: {
         themeSchema: { title: string } & Record<UnionKey.ThemeScheme, string>;
