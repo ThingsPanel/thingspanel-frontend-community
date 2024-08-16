@@ -37,7 +37,8 @@ jobs:
 
       - name: Get tag name
         id: get_tag
-        run: echo "::set-output name=tag::$(echo ${GITHUB_REF#refs/tags/})"
+        #run: echo "::set-output name=tag::$(echo ${GITHUB_REF#refs/tags/})"
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
         
       - name: Check if tag matches pattern
         run: |
