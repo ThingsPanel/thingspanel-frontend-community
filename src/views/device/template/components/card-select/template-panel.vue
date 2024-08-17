@@ -1,11 +1,10 @@
 <script lang="tsx" setup>
 import type { Ref } from 'vue';
-import { inject, onMounted, provide, reactive, ref, watch } from 'vue';
+import { inject, nextTick, onMounted, provide, reactive, ref, watch } from 'vue';
 import type { ICardData, ICardRender, ICardView } from '@/components/panel/card';
 import { getTemplat } from '@/service/api';
 import { $t } from '@/locales';
 import AddTemplateCard from './ui/add-template-card.vue';
-import CardTemplateRender from './ui/card-template-render.vue';
 
 const props = defineProps<{ templateId: string; isApp: boolean }>();
 
@@ -71,6 +70,12 @@ const edit = (view: ICardView) => {
   state.openAddPanel = true;
 };
 
+const updateLayoutData = (data: ICardView[]) => {
+  nextTick(() => {
+    layout.value = data;
+  });
+};
+
 watch(
   () => layout.value,
   () => {
@@ -95,15 +100,20 @@ onMounted(fetchBroad);
     <div v-if="!layout.length" class="mt-20 text-center text-gray-500 dark:text-gray-400">
       <NEmpty :description="$t('common.componentsAddedYet')"></NEmpty>
     </div>
-    <CardTemplateRender
-      ref="cr"
-      v-model:layout="layout"
-      :is-app="props.isApp"
-      :col-num="12"
-      :default-card-col="4"
-      :row-height="65"
-      @edit="edit"
-    />
+    <div :class="props.isApp ? 'screena overflow-auto h-[600px]' : 'window-screen'">
+      <div :class="props.isApp ? 'm-auto w-480px smartphone overflow-auto' : 'w-full relative'">
+        <CardRender
+          ref="cr"
+          :layout="layout"
+          :is-preview="false"
+          :col-num="props.isApp ? 3 : 12"
+          :default-card-col="props.isApp ? 3 : 4"
+          :row-height="85"
+          @update:layout="updateLayoutData"
+          @edit="edit"
+        />
+      </div>
+    </div>
     <AddTemplateCard v-model:open="state.openAddPanel" :data="state.cardData" @save="insertCard" />
   </div>
 </template>
@@ -111,5 +121,45 @@ onMounted(fetchBroad);
 <style lang="scss" scoped>
 .panel {
   @apply border border-transparent;
+}
+.smartphone {
+  width: 480px; /* 设置手机外框的宽度 */
+  height: 960px; /* 设置手机外框的高度 */
+  border: 16px solid black; /* 设置边框模拟手机边框 */
+  border-radius: 32px; /* 设置边框圆角模拟手机的圆角 */
+  display: flex; /* 使用flex布局 */
+  justify-content: center; /* 水平居中 */
+  align-items: start; /* 垂直居中 */
+  background: #f3f3f3; /* 设置背景颜色 */
+  box-shadow: 0 0 10px #999; /* 添加阴影效果 */
+}
+
+.screen {
+  width: 90%; /* 设置屏幕宽度为手机宽度的90% */
+  height: 90%; /* 设置屏幕高度为手机高度的90% */
+  background: white; /* 设置屏幕背景颜色为白色 */
+  border-radius: 24px; /* 设置屏幕边框圆角 */
+  display: flex; /* 使用flex布局 */
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  color: black; /* 设置文本颜色 */
+  font-family: Arial, sans-serif; /* 设置字体 */
+}
+
+/* 定制滚动条的整体样式 */
+.screena::-webkit-scrollbar {
+  width: 4px; /* 滚动条宽度 */
+}
+
+/* 定制滚动条滑块（thumb）的样式 */
+.screena::-webkit-scrollbar-thumb {
+  background: #888; /* 滚动条滑块颜色 */
+  border-radius: 4px; /* 滚动条滑块圆角 */
+}
+
+/* 定制滚动条轨道（track）的样式 */
+.screena::-webkit-scrollbar-track {
+  background: #f0f0f0; /* 滚动条轨道颜色 */
+  border-radius: 4px; /* 滚动条轨道圆角 */
 }
 </style>

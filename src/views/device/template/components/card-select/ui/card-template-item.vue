@@ -3,6 +3,8 @@ import { computed } from 'vue';
 import { usePanelStore } from '@/store/modules/panel';
 import type { ICardData } from '@/components/panel/card';
 
+// This file is not used anymore, but it's kept here for reference.
+
 const props = defineProps<{
   view?: boolean;
   data: ICardData;
