@@ -4,6 +4,9 @@ import './gird.css';
 import { $t } from '@/locales';
 import CardTemplateItem from './card-template-item.vue';
 
+// This file is not used any more, but I keep it here for reference.
+// Standard card render component is used instead.
+
 const props = defineProps<{
   layout: ICardView[];
   isApp: boolean;
