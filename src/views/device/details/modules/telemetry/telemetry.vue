@@ -272,18 +272,17 @@ const copy = event => {
   document.execCommand('copy');
   window.$message?.success($t('theme.configOperation.copySuccess'));
 };
-
-const sends = async () => {
+const handlePositiveClick = async () => {
   if (isJSON(formValue.value)) {
     let res: any = {};
     if (form.expected) {
       // 新增期望消息
-      const expiry = form.time ? new Date().getTime() + form.time * 60 * 60 * 1000 : null;
+      const expiry = new Date().getTime() + (form.time ? form.time * 60 * 60 * 1000 : 0);
       res = await expectMessageAdd({
         device_id: props.id,
         payload: formValue.value,
         send_type: 'telemetry',
-        expiry: expiry ? moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ') : null
+        expiry: moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ')
       });
     } else {
       // 发送属性的逻辑...
@@ -299,6 +298,7 @@ const sends = async () => {
     }
   }
 };
+
 const onTapTableTools = (i: any) => {
   if (typeof i.value === 'number') {
     modelType.value = $t('custom.device_details.sequential');
@@ -580,7 +580,13 @@ const inputFeedback = computed(() => {
           </n-form-item>
           <n-space align="end">
             <n-button @click="showDialog = false">{{ $t('generate.cancel') }}</n-button>
-            <n-button type="primary" @click="sends">{{ $t('generate.send') }}</n-button>
+
+            <n-popconfirm @positive-click="handlePositiveClick">
+              <template #trigger>
+                <n-button type="primary">{{ $t('generate.send') }}1</n-button>
+              </template>
+              确定发送指令吗
+            </n-popconfirm>
           </n-space>
         </n-form>
       </n-card>
