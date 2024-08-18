@@ -22,17 +22,42 @@ const generateUniqueNumberId = () => {
   return uniqueId;
 };
 
-const countSpace = (data: ICardView[], y: number) => {
-  const cols = data.filter(d => d.y === y).sort((a, b) => (a.x > b.x ? 1 : -1));
-  let start = 0;
-  for (const c of cols) {
-    if (c.x - start > 0) {
-      start += c.x - start;
+function calcNewCardPos(
+  existingViews: ICardView[],
+  colNum: number,
+  newCardSize: { w: number; h: number }
+): { x: number; y: number } {
+  // Ensure the width of the new card does not exceed the grid's column number
+  const new_viewToBeAdd_W_colNum = Math.min(newCardSize.w, colNum);
+  const highestY = existingViews.reduce((maxY, view) => Math.max(maxY, view.y + view.h), 0);
+
+  // Function to check if a position is available for the new card
+  const isPositionAvailable = (x: number, y: number): boolean => {
+    return !existingViews.some(view => {
+      return !(
+        x + new_viewToBeAdd_W_colNum <= view.x ||
+        x >= view.x + view.w ||
+        y + newCardSize.h <= view.y ||
+        y >= view.y + view.h
+      );
+    });
+  };
+
+  // Iterate through the grid to find an available position
+  // eslint-disable-next-line no-plusplus
+  for (let y = 0; y <= highestY + newCardSize.h; y++) {
+    // eslint-disable-next-line no-plusplus
+    for (let x = 0; x <= colNum - new_viewToBeAdd_W_colNum; x++) {
+      if (isPositionAvailable(x, y)) {
+        return { x, y };
+      }
     }
-    start += c.w;
   }
-  return start;
-};
+
+  // If no position is found, return the highest y value and x as 0
+  return { x: 0, y: highestY };
+}
+
 const emit = defineEmits<{
   (e: 'update:layout', layout: ICardView[] | any): void;
   (e: 'breakpoint-changed', newBreakpoint: any, newLayout: ICardView[] | any): void;
@@ -42,26 +67,14 @@ const emit = defineEmits<{
 
 defineExpose({
   addCard: (data: ICardData) => {
-    const yList: number[] = [];
     const layout = props.layout;
     const layoutData = layout.sort((a, b) => {
       return a.y > b.y ? 1 : -1;
     });
-    layoutData.forEach(item => {
-      if (!yList.includes(item.y)) yList.push(item.y);
+    const { x, y } = calcNewCardPos(layoutData, props.colNum || 12, {
+      w: data.layout?.w || props.defaultCardCol,
+      h: data.layout?.h || 4
     });
-    let y = yList.shift() || 0;
-    let x = 0;
-    const max = yList[yList.length - 1] || 0;
-    while (y <= max) {
-      const space = countSpace(layoutData, y);
-      if (space <= 8) {
-        x = space;
-        break;
-      } else {
-        y = yList.shift() || y + 1;
-      }
-    }
     emit('update:layout', [
       ...layout,
       {
