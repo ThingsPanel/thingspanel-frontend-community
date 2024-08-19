@@ -42,13 +42,17 @@ const getDeviceDetail = async () => {
     if (res.data) {
       if (res.data.app_chart_config) {
         const configJson = JSON.parse(res.data.app_chart_config);
-        configJson.forEach(item => {
-          item.data?.dataSource?.deviceSource?.forEach(device => {
-            device.deviceId = d_id;
+        if (configJson.length > 0) {
+          configJson.forEach(item => {
+            item.data?.dataSource?.deviceSource?.forEach(device => {
+              device.deviceId = d_id;
+            });
           });
-        });
-        layout.value = [...configJson];
-        showAppChart.value = true;
+          layout.value = [...configJson];
+          showAppChart.value = true;
+        } else {
+          showDefaultCards.value = true;
+        }
       } else {
         showDefaultCards.value = true;
       }
