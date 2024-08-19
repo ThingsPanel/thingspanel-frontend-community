@@ -21,6 +21,8 @@ const video = ref<HTMLVideoElement | null>(null);
 const currentTime = ref(0);
 const duration = ref(0);
 
+const player = ref();
+
 const updateCurrentTime = () => {
   if (video.value) currentTime.value = video.value.currentTime;
 };
@@ -52,9 +54,35 @@ const setSeries: (dataSource) => void = async dataSource => {
   }
 };
 
+const createPlayer = () => {
+  player.value = new (window as any).WasmPlayer(null, 'easy-player', () => {}, { Height: true, openAudio: false });
+};
+
+const play = src => {
+  if (!src) return;
+  if (!player.value) {
+    createPlayer();
+  }
+  setTimeout(() => {
+    player.value.play(src, 1);
+  }, 50);
+};
+
+const destroy = () => {
+  if (!player.value) return;
+  player.value.destroy();
+  player.value = null;
+};
+
 watch(
   () => props.card.dataSource,
   () => setSeries(props.card.dataSource),
+  { immediate: true, deep: true }
+);
+
+watch(
+  () => detail.data?.[0]?.value,
+  () => play(detail.data?.[0]?.value),
   { immediate: true, deep: true }
 );
 
@@ -64,6 +92,7 @@ onMounted(() => {
     video.value.addEventListener('timeupdate', updateCurrentTime);
     video.value.addEventListener('loadedmetadata', updateDuration);
   }
+  createPlayer();
 });
 
 onBeforeUnmount(() => {
@@ -71,6 +100,7 @@ onBeforeUnmount(() => {
     video.value.removeEventListener('timeupdate', updateCurrentTime);
     video.value.removeEventListener('loadedmetadata', updateDuration);
   }
+  destroy();
 });
 </script>
 
@@ -78,12 +108,15 @@ onBeforeUnmount(() => {
   <div class="video-player">
     <n-card ref="cardRef" :bordered="false" class="h-full w-full">
       <div class="video-container">
-        <video ref="video" class="video" controls @timeupdate="updateCurrentTime" @loadedmetadata="updateDuration">
+        <!--
+ <video ref="video" class="video" controls @timeupdate="updateCurrentTime" @loadedmetadata="updateDuration">
           <source v-if="detail.data.length > 0" :src="detail.data[0].value" type="video/mp4" />
           <source v-if="detail.data.length > 0" :src="detail.data[0].value" type="video/webm" />
           <source v-if="detail.data.length > 0" :src="detail.data[0].value" type="video/ogg" />
           Your browser does not support the video tag.
-        </video>
+        </video> 
+-->
+        <div id="easy-player"></div>
       </div>
     </n-card>
   </div>

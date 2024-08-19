@@ -45,6 +45,7 @@
     "@antv/data-set": "0.11.8",
     "@antv/g2": "4.2.10",
     "@better-scroll/core": "2.5.1",
+    "@easydarwin/easywasmplayer": "^4.0.13",
     "@iconify/vue": "4.1.1",
     "@sa/axios": "workspace:*",
     "@sa/color-palette": "workspace:*",
