@@ -183,6 +183,13 @@ export const getDeviceConnectInfo = async (params: any) => {
   });
 };
 
+/** 获取设备连接信息 */
+export const getPlugininfoByService = async (params: any) => {
+  return await request.get<Api.BaseApi.Data | any>(`/service/plugin/info`, {
+    params
+  });
+};
+
 /** 获取设备配置列表 */
 export const getDeviceConfigList = async (params: any) => {
   return await request.get<DeviceManagement.ConfigDatas>(`/device_config`, {

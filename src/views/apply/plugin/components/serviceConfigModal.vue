@@ -83,7 +83,7 @@ defineExpose({ openModal });
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModal" preset="dialog" :title="`服务配置(${serviceType})`" @after-leave="close">
+  <n-modal v-model:show="serviceModal" preset="dialog" :title="`插件配置(${serviceType})`" @after-leave="close">
     <n-space vertical>
       <n-spin :show="loading">
         <n-form

@@ -10,6 +10,7 @@ const local: App.I18n.Schema = {
   },
   common: {
     serviceConfi: 'Service Configuration',
+    pluginConfig: 'Plugin Configuration',
     deleteThePlan: 'Are you sure to delete the plan',
     cancelThePlan: 'Are you sure to cancel the plan',
     planTheDevice: 'Are you sure to distribute the plan to the device',

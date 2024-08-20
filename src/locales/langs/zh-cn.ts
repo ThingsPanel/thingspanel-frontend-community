@@ -11,6 +11,7 @@ const local: App.I18n.Schema = {
   },
   common: {
     serviceConfi: '服务配置',
+    pluginConfig: '插件配置',
     deleteThePlan: '确定删除计划吗',
     cancelThePlan: '确定取消计划吗',
     planTheDevice: '确定将计划下发给设备吗',

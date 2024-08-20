@@ -46,6 +46,9 @@ const clickDevice = async row => {
             <div class="title text-16px font-600">
               {{ item.name }}
             </div>
+            <div class="mt-4">
+              {{ item.description }}
+            </div>
           </NCard>
         </NGridItem>
       </NGrid>
