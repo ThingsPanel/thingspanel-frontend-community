@@ -64,7 +64,11 @@ const play = src => {
     createPlayer();
   }
   setTimeout(() => {
-    player.value.play(src, 1);
+    try {
+      player.value.play(src, 1);
+    } catch (e) {
+      console.error('EasyWasmPlayer error:', e);
+    }
   }, 50);
 };
 
