@@ -215,10 +215,10 @@ const actions = [
 const searchConfigs = ref<SearchConfig[]>([
   {
     key: 'group_id',
-    label: $t('custom.devicePage.group'),
+    label: $t('custom.devicePage.selectGroup'),
     type: 'tree-select',
     multiple: false,
-    options: [{ label: $t('generate.group'), key: '' }],
+    options: [{ label: $t('custom.devicePage.group'), key: '' }],
     loadOptions: getDeviceGroupOptions
   },
   {

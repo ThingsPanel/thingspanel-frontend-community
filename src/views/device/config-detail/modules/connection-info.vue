@@ -119,9 +119,9 @@ const getVoucherType = async data => {
   }
 };
 
-const openForm = () => {
-  active.value = true;
-};
+// const openForm = () => {
+//   active.value = true;
+// };
 
 const choseProtocolType = async data => {
   extendForm.value.voucher_type = null;
@@ -172,7 +172,8 @@ onMounted(async () => {
         ></NSelect>
       </NFormItem>
       <NFormItem>
-        <NButton type="primary" @click="openForm">{{ $t('generate.data-parsing') }}</NButton>
+        <!-- <NButton type="primary" @click="openForm">{{ $t('generate.data-parsing') }}</NButton> -->
+        <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements"></FormInput>
       </NFormItem>
       <NFormItem>
         <NButton type="primary" @click="handleSubmit">{{ $t('common.save') }}</NButton>

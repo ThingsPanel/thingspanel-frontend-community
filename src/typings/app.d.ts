@@ -254,6 +254,7 @@ declare namespace App {
       };
       common: {
         serviceConfi: string;
+        pluginConfig: string;
         deleteThePlan: string;
         cancelThePlan: string;
         planTheDevice: string;

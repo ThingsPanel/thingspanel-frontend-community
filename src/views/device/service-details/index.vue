@@ -59,7 +59,7 @@ const config: (row: any) => void = async row => {
 };
 const columns: any = ref([
   {
-    title: '服务名称',
+    title: '接入点名称',
     key: 'name',
     minWidth: '200px'
   },
@@ -139,7 +139,7 @@ getList();
 
 <template>
   <div>
-    <NCard :bordered="false" class="h-full rounded-8px shadow-sm">
+    <NCard :bordered="false" class="h-full rounded-8px shadow-sm" :title="route.query.service_name || '--'">
       <div class="header">
         <NButton type="primary" @click="addData">新增接入</NButton>
       </div>

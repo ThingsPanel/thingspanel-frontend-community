@@ -352,6 +352,7 @@ loadOptionsOnMount2();
                 :multiple="config.multiple"
                 :default-expand-all="config.defaultExpandAll"
                 class="input-style w-200px"
+                :placeholder="config.label"
                 @update:value="value => handleTreeSelectUpdate(value, config.key)"
               />
             </template>

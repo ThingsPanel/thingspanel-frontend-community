@@ -69,7 +69,7 @@ const config: (row: any) => void = async row => {
 };
 const columns: any = ref([
   {
-    title: '服务名称',
+    title: '插件名称',
     key: 'name',
     minWidth: '200px'
   },
@@ -124,7 +124,7 @@ const columns: any = ref([
           }
           {
             <NButton size={'small'} type="primary" onClick={() => config(row)}>
-              {$t('common.serviceConfi')}
+              {$t('common.pluginConfig')}
             </NButton>
           }
           <NPopconfirm
@@ -172,7 +172,7 @@ getList();
           placeholder="选择歌曲"
           :options="pageData.options"
         />
-        <NButton type="primary" @click="addData">添加新服务</NButton>
+        <NButton type="primary" @click="addData">添加新插件</NButton>
       </div>
       <div class="h">
         <NDataTable

@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { defineProps, onMounted, reactive, ref, watchEffect } from 'vue';
+import { useRouter } from 'vue-router';
 import type { FormInst, FormRules } from 'naive-ui';
 import { NButton, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 import type { SelectMixedOption } from 'naive-ui/es/select/src/interface';
-import { devicCeonnectForm, getDeviceConnectInfo, updateDeviceVoucher } from '@/service/api/device';
+import {
+  devicCeonnectForm,
+  getDeviceConnectInfo,
+  getPlugininfoByService,
+  updateDeviceVoucher
+} from '@/service/api/device';
 import { useDeviceDataStore } from '@/store/modules/device';
 import { $t } from '@/locales';
+const router = useRouter();
 // 定义支持的表单元素类型
 type FormElementType = 'input' | 'table' | 'select';
 const formRef = ref<FormInst | null>(null);
@@ -56,8 +63,22 @@ const feachConnectInfo = async () => {
   console.log(res);
 };
 
-onMounted(() => {
-  deviceDataStore.fetchData(props.id);
+const pluginInfo = ref<object>({});
+const getPlugininfoByServiceReq = async str => {
+  const { error, data } = await getPlugininfoByService(str);
+  if (!error) {
+    console.log(data);
+    pluginInfo.value = data;
+  }
+};
+
+onMounted(async () => {
+  await deviceDataStore.fetchData(props.id);
+  const service_identifier = deviceDataStore?.deviceData?.device_config?.protocol_type;
+  if (service_identifier) {
+    getPlugininfoByServiceReq({ service_identifier });
+  }
+
   feachConnectInfo();
   getFormJson();
 });
@@ -97,17 +118,26 @@ const copy = async param => {
   document.execCommand('Copy');
   window.$message?.success($t('theme.configOperation.copySuccess'));
 };
+const toServiceClick = () => {
+  if (deviceDataStore?.deviceData?.access_way === 'B') {
+    router.push(
+      `/device/service-details?id=${pluginInfo.value.id}&service_type=${pluginInfo.value.service_type}&service_name=${pluginInfo.value.name}&service_identifier=${pluginInfo.value.service_identifier}`
+    );
+  }
+};
 </script>
 
 <template>
   <div>
     <n-descriptions label-placement="left" :column="1" class="mt-6">
       <n-descriptions-item :label="$t('generate.access-method-service')">
-        {{ deviceDataStore?.deviceData?.device_config?.protocol_type || '--' }}
+        <div :class="deviceDataStore?.deviceData?.access_way === 'B' ? 'blue-text' : ''" @click="toServiceClick">
+          {{ deviceDataStore?.deviceData?.device_config?.protocol_type || '--' }}
+        </div>
       </n-descriptions-item>
     </n-descriptions>
 
-    <NCard :title="$t('generate.credential')" class="mb-6 mt-6">
+    <NCard v-if="deviceDataStore?.deviceData?.access_way !== 'B'" :title="$t('generate.credential')" class="mb-6 mt-6">
       <NForm ref="formRef" :rules="formRules" :model="formData">
         <template v-for="element in formElements" :key="element.dataKey">
           <div v-if="element.type === 'input'" class="form-item">
@@ -143,7 +173,7 @@ const copy = async param => {
         </template>
       </NForm>
     </NCard>
-    <n-scrollbar class="h-400px">
+    <n-scrollbar v-if="deviceDataStore?.deviceData?.access_way !== 'B'" class="h-400px">
       <NCard :title="$t('generate.connection-info')">
         <NDescriptions :column="1">
           <NDescriptionsItem v-for="(value, key, index) in connectInfo" :key="key" :index="index" :label="key">
@@ -152,7 +182,7 @@ const copy = async param => {
         </NDescriptions>
       </NCard>
     </n-scrollbar>
-    <div class="mt-4 w-full flex-center">
+    <div v-if="deviceDataStore?.deviceData?.access_way !== 'B'" class="mt-4 w-full flex-center">
       <NButton type="primary" @click="handleSubmit">{{ $t('common.save') }}</NButton>
     </div>
   </div>
@@ -180,5 +210,9 @@ const copy = async param => {
 
 .table-item {
   margin-bottom: 8px;
+}
+.blue-text {
+  color: blue;
+  cursor: pointer;
 }
 </style>
