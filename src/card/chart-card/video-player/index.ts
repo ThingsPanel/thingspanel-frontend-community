@@ -2,7 +2,7 @@ import { defineAsyncComponent } from 'vue';
 import type { ICardDefine } from '@/components/panel/card';
 import poster from './poster.png';
 export default {
-  id: 'video-player',
+  id: 'chart-videoplayer',
   type: 'chart',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,

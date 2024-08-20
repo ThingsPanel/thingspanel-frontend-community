@@ -9,6 +9,7 @@ import { $t } from '@/locales';
 import curvePoster from '@/card/chart-card/curve/poster.png';
 import demoPoster from '@/card/chart-card/demo/poster.png';
 import switchPoster from '@/card/chart-card/switch/poster.png';
+import videoPlayerPoster from '@/card/chart-card/video-player/poster.png';
 
 const props = defineProps<{
   class?: string | undefined;
@@ -46,7 +47,7 @@ const selectCard = item => {
   emit('selectCard', JSON.parse(JSON.stringify(state.curCardData)));
 };
 const getImagePath = item => {
-  const cardType = item.data.cardId.match(/curve|demo|switch/);
+  const cardType = item.data.cardId.match(/curve|demo|switch|videoplayer/);
 
   if (!cardType) {
     return demoPoster;
@@ -56,6 +57,8 @@ const getImagePath = item => {
     return curvePoster;
   } else if (cardType[0] === 'switch') {
     return switchPoster;
+  } else if (cardType[0] === 'videoplayer') {
+    return videoPlayerPoster;
   }
   return demoPoster;
 };
