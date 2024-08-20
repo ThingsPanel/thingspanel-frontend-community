@@ -65,77 +65,80 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    <n-card>
-      <div>
-        <div class="flex -mt-1">
-          <span class="mr-5">{{ deviceData?.name || '--' }}</span>
-        </div>
+  <div class="mx-auto max-w-md rounded-3xl bg-gray-50 p-6 shadow-lg">
+    <div class="mb-6 flex items-center justify-between">
+      <h1 class="text-2xl text-gray-900 font-semibold">{{ deviceData?.name || '--' }}</h1>
+      <div class="flex items-center">
+        <SvgIcon
+          local-icon="CellTowerRound"
+          style="margin-right: 5px"
+          class="color-ccc text-20px text-primary"
+          :stroke="icon_type"
+        />
+        <span class="text-sm text-blue-500 font-medium">
+          {{ deviceData?.is_online === 1 ? $t('custom.device_details.online') : $t('custom.device_details.offline') }}
+        </span>
+        <template v-if="deviceData?.alarmStatus === true">
+          <SvgIcon
+            local-icon="AlertFilled"
+            style="color: #ee0808; margin-right: 5px"
+            class="text-20px text-primary"
+            :stroke="icon_type"
+          />
+          <span style="color: #ee0808">{{ $t('custom.device_details.alarm') }}</span>
+        </template>
+      </div>
+    </div>
 
-        <NFlex class="mt-2">
-          <div class="mr-4 flex">
-            <SvgIcon
-              local-icon="CellTowerRound"
-              style="margin-right: 5px"
-              class="color-ccc text-20px text-primary"
-              :stroke="icon_type"
+    <div class="mb-6 text-sm text-gray-500">最后更新: {{ formatDateTime(deviceData?.update_at) || '--' }}</div>
+
+    <n-divider title-placement="left"></n-divider>
+    <div>
+      <TelemetryDataCards
+        v-if="showDefaultCards"
+        :id="d_id as string"
+        :card-height="cardHeight"
+        :card-margin="cardMargin"
+      />
+      <CardRender
+        v-if="showAppChart"
+        ref="cr"
+        class="card-render"
+        :layout="layout"
+        :is-preview="true"
+        :col-num="3"
+        :default-card-col="3"
+        :row-height="85"
+      />
+    </div>
+    <!--
+    <div>
+      <n-tabs v-model:value="tabValue" animated type="line" @update:value="changeTabs">
+        <n-tab-pane v-for="component in components" :key="component.key" :tab="component.name" :name="component.key">
+          <n-spin size="small" :show="loading">
+            <component
+              :is="component.component"
+              :id="d_id as string"
+              :device-config-id="deviceData?.device_config_id || ''"
             />
-            <span :style="{ color: device_color }">
-              {{
-                deviceData?.is_online === 1 ? $t('custom.device_details.online') : $t('custom.device_details.offline')
-              }}
-            </span>
-          </div>
-          <div class="mr-4 flex">
-            <SvgIcon local-icon="AlertFilled" class="color-ccc mr-1 text-20px text-primary" :stroke="icon_type" />
-            <span class="color-ccc">
-              {{ $t('custom.device_details.noAlarm') }}
-            </span>
-          </div>
-          <div class="mr-4 flex">
-            <span class="color-ccc">上报时间：{{ formatDateTime(deviceData?.update_at) || '--' }}</span>
-          </div>
-        </NFlex>
-      </div>
-      <n-divider title-placement="left"></n-divider>
-      <div>
-        <TelemetryDataCards
-          v-if="showDefaultCards"
-          :id="d_id as string"
-          :card-height="cardHeight"
-          :card-margin="cardMargin"
-        />
-        <CardRender
-          v-if="showAppChart"
-          ref="cr"
-          :layout="layout"
-          :is-preview="true"
-          :col-num="3"
-          :default-card-col="3"
-          :row-height="85"
-        />
-      </div>
-      <!--
-      <div>
-        <n-tabs v-model:value="tabValue" animated type="line" @update:value="changeTabs">
-          <n-tab-pane v-for="component in components" :key="component.key" :tab="component.name" :name="component.key">
-            <n-spin size="small" :show="loading">
-              <component
-                :is="component.component"
-                :id="d_id as string"
-                :device-config-id="deviceData?.device_config_id || ''"
-              />
-            </n-spin>
-          </n-tab-pane>
-        </n-tabs>
-      </div>
-      -->
-    </n-card>
+          </n-spin>
+        </n-tab-pane>
+      </n-tabs>
+    </div>
+    -->
   </div>
 </template>
 
 <style scoped>
 .color-ccc {
   color: #ccc;
+}
+:root {
+  --n-padding-left: 0px;
+  --n-padding-right: 0px;
+}
+:deep(.n-card__content) {
+  padding-left: 5px !important;
+  padding-right: 5px !important;
 }
 </style>
