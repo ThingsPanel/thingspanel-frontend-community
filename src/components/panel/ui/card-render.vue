@@ -11,6 +11,8 @@ const props = defineProps<{
   defaultCardCol: number;
   rowHeight: number;
   isPreview?: boolean;
+  breakpoints?: any;
+  cols?: any;
 }>();
 
 const cardRefs = reactive<{ [key: string]: any | undefined }>({});
@@ -118,8 +120,8 @@ onUpdated(() => {
     :auto-size="true"
     :margin="[10, 10]"
     class="w-full"
-    :breakpoints="{ lg: 780, md: 500, sm: 0 }"
-    :cols="{ lg: 12, md: 6, sm: 3 }"
+    :breakpoints="props.breakpoints || { lg: 780, md: 500, sm: 0 }"
+    :cols="props.cols || { lg: 12, md: 6, sm: 3 }"
     @breakpoint-changed="breakpointChanged"
     @layout-updated="
       data => {

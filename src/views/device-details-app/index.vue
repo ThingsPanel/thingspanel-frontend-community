@@ -93,22 +93,24 @@ onMounted(() => {
     <div class="mb-6 text-sm text-gray-500">最后更新: {{ formatDateTime(deviceData?.update_at) || '--' }}</div>
 
     <n-divider title-placement="left"></n-divider>
-    <div>
-      <TelemetryDataCards
-        v-if="showDefaultCards"
-        :id="d_id as string"
-        :card-height="cardHeight"
-        :card-margin="cardMargin"
-      />
+
+    <TelemetryDataCards
+      v-if="showDefaultCards"
+      :id="d_id as string"
+      :card-height="cardHeight"
+      :card-margin="cardMargin"
+    />
+    <div v-if="showAppChart" style="width: calc(100% + 20px); margin-left: -10px">
       <CardRender
-        v-if="showAppChart"
         ref="cr"
         class="card-render"
         :layout="layout"
         :is-preview="true"
-        :col-num="3"
-        :default-card-col="3"
+        :col-num="4"
+        :default-card-col="4"
         :row-height="85"
+        :breakpoints="{ lg: 780, md: 500, sm: 0 }"
+        :cols="{ lg: 12, md: 6, sm: 4 }"
       />
     </div>
     <!--
