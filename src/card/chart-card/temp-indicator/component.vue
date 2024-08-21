@@ -109,6 +109,10 @@ defineExpose({
   height: 100%;
 }
 
+:deep(.n-card__content) {
+  padding: 0;
+}
+
 .card-content {
   height: 100%;
   display: flex;
@@ -137,7 +141,7 @@ defineExpose({
 }
 
 .value {
-  font-size: 2.5em;
+  font-size: 2em;
   font-weight: bold;
   text-wrap: nowrap;
   overflow: hidden;
