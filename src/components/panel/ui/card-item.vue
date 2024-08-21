@@ -41,7 +41,6 @@ defineExpose({
         class="relative h-full w-full"
         :card="props.data"
         :view="view"
-        @drag.stop="console.log(1)"
       />
     </div>
   </NCard>
