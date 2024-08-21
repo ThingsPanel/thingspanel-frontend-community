@@ -173,7 +173,7 @@ onUpdated(() => {
             :ref="el => (cardRefs[`card-${item.i}`] = el)"
             :data="item.data!"
             :view="isPreview"
-            class="h-full w-full overflow-hidden"
+            class="h-full w-full"
           />
         </div>
       </GridItem>
