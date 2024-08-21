@@ -87,7 +87,7 @@ watch(props, pr => {
     @mask-click="emit('update:open', false)"
   >
     <div class="h-[calc(100vh_-_170px)] w-full flex">
-      <div class="relative h-full flex flex-col flex-[44] overflow-hidden p-4">
+      <div v-if="!props.data" class="relative h-full flex flex-col flex-[44] overflow-hidden p-4">
         <NTabs type="line" default-value="chart" animated class="h-full">
           <NTabPane class="h-full" name="chart" value="chart" :tab="$t('common.chart')">
             <n-scrollbar style="height: 100%; padding: 4px">
