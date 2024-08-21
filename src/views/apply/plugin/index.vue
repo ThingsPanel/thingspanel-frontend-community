@@ -164,7 +164,7 @@ getList();
 
 <template>
   <div>
-    <NCard :title="$t('route.apply_service')" :bordered="false" class="h-full rounded-8px shadow-sm">
+    <NCard :title="$t('route.apply_in')" :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="header">
         <n-select
           v-model:value="queryInfo.service_type"
