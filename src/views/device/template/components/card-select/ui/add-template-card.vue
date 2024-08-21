@@ -112,7 +112,7 @@ watch(props, pr => {
         </NTabs>
       </div>
       <div class="relative h-full flex-[54] overflow-hidden p-4">
-        <div class="mt-4 h-full flex-col justify-start">
+        <div class="mt-4 h-full flex-col justify-start overflow-auto">
           <CardTemplateForm ref="formRef" @update="(data: any) => (state.curCardData = data)" />
         </div>
       </div>

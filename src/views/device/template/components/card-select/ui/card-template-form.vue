@@ -153,6 +153,16 @@ onMounted(() => {
           </NForm>
         </div>
       </NTabPane>
+      <NTabPane v-if="!!state.selectCard?.configForm" name="config" tab="组件设置">
+        <div :class="`${mobile ? '' : 'overflow-y-auto'} py-5`">
+          <div class="max-w-[600px]">
+            <ConfigCtx v-model:config="state.data.config" mode="insert">
+              <component :is="state.selectCard?.configForm" :data="state.data" />
+              <!-- v-model:data="state" -->
+            </ConfigCtx>
+          </div>
+        </div>
+      </NTabPane>
     </NTabs>
   </div>
 </template>
