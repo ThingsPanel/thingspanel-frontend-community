@@ -132,11 +132,11 @@ const option = ref<EChartsOption>({
     bottom: '3%',
     containLabel: true
   },
-  toolbox: {
+  /* toolbox: {
     feature: {
       saveAsImage: {}
     }
-  },
+  }, */
   xAxis: {
     boundaryGap: false,
     type: 'time' as 'category',
@@ -161,19 +161,19 @@ const params = reactive({
 });
 const timeOptions: SelectOption[] = [
   { label: $t('common.custom'), value: 300000 },
-  { label: $t('common.last_15m'), value: 900000 },
-  { label: $t('common.last_30m'), value: 1800000 },
-  { label: $t('common.lastHours1'), value: 3600000 },
-  { label: $t('common.lastHours3'), value: 10800000 },
-  { label: $t('common.lastHours6'), value: 21600000 },
-  { label: $t('common.lastHours12'), value: 43200000 },
-  { label: $t('common.lastHours24'), value: 86400000 },
-  { label: $t('common.lastDays3'), value: 259200000 },
-  { label: $t('common.lastDays7'), value: 604800000 },
-  { label: $t('common.lastDays15'), value: 1296000000 },
-  { label: $t('common.lastDays30'), value: 2592000000 },
-  { label: $t('common.lastDays60'), value: 5184000000 },
-  { label: $t('common.lastDays90'), value: 7776000000 },
+  { label: $t('common.last_15m'), value: 900000, id: 'last_15m' },
+  { label: $t('common.last_30m'), value: 1800000, id: 'last_30m' },
+  { label: $t('common.lastHours1'), value: 3600000, id: 'last_1h' },
+  { label: $t('common.lastHours3'), value: 10800000, id: 'last_3h' },
+  { label: $t('common.lastHours6'), value: 21600000, id: 'last_6h' },
+  { label: $t('common.lastHours12'), value: 43200000, id: 'last_12h' },
+  { label: $t('common.lastHours24'), value: 86400000, id: 'last_24h' },
+  { label: $t('common.lastDays3'), value: 259200000, id: 'last_3d' },
+  { label: $t('common.lastDays7'), value: 604800000, id: 'last_7d' },
+  { label: $t('common.lastDays15'), value: 1296000000, id: 'last_15d' },
+  { label: $t('common.lastDays30'), value: 2592000000, id: 'last_30d' },
+  { label: $t('common.lastDays60'), value: 5184000000, id: 'last_60d' },
+  { label: $t('common.lastDays90'), value: 7776000000, id: 'last_90d' },
   { label: '最近6个月', value: 15811200000 },
   { label: '最近1年', value: 31536000000 },
   { label: '今天', value: 28740000 },
@@ -206,7 +206,9 @@ const aggregateOptions: SelectOption[] = [
 const aggregateOptionsValue = ref<string>('');
 const aggregateFunctionOptions: SelectOption[] = [
   { label: $t('common.average'), value: 'avg' },
-  { label: $t('generate.max-value'), value: 'max' }
+  { label: $t('generate.max-value'), value: 'max' },
+  { label: $t('common.sum'), value: 'sum' },
+  { label: $t('common.diffValue'), value: 'diff' }
 ];
 const aggregateFunctionValue = ref<string>('avg');
 const getTelemetryList = async (device_id, key, index) => {
@@ -214,11 +216,14 @@ const getTelemetryList = async (device_id, key, index) => {
     return;
   }
   if (option.value.series) {
-    const { data, error } = await telemetryDataHistoryList({
+    const metricsParams = {
       device_id,
       key,
       ...params
-    });
+    };
+    metricsParams.aggregate_function =
+      props.card?.dataSource?.deviceSource?.[index].aggregate_function || params.aggregate_function || 'avg';
+    const { data, error } = await telemetryDataHistoryList(metricsParams);
     if (!error) {
       if (data) {
         // eslint-disable-next-line require-atomic-updates
@@ -475,6 +480,19 @@ const throttledWatcher = debounce(() => {
   setSeries(props?.card?.dataSource);
 }, 300);
 
+const initDateTimeRange = () => {
+  if (props.card?.dataSource?.dataTimeRange) {
+    const timeOption = timeOptions.find(item => item.id === props.card?.dataSource?.dataTimeRange);
+    if (timeOption) {
+      timeOptionsValue.value = timeOption.value;
+      updateTime(timeOption.value as number, timeOption);
+      if (props.card?.dataSource?.dataAggregateRange) {
+        updateAggregate(props.card?.dataSource?.dataAggregateRange);
+      }
+    }
+  }
+};
+
 watch(
   () => params,
   () => {
@@ -497,7 +515,24 @@ watch(
   },
   { deep: true }
 );
+watch(
+  () => props.card?.dataSource?.dataTimeRange,
+  newDateTiemRange => {
+    if (newDateTiemRange) {
+      initDateTimeRange();
+    } else {
+      reFresh();
+    }
+  }
+);
+watch(
+  () => props.card?.dataSource?.dataAggregateRange,
+  () => {
+    initDateTimeRange();
+  }
+);
 onMounted(() => {
+  initDateTimeRange();
   setSeries(props?.card?.dataSource);
 });
 onUnmounted(() => {

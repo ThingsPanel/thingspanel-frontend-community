@@ -13,6 +13,8 @@ export default {
     dataSource: {
       origin: 'device',
       sourceNum: 9,
+      isSupportTimeRange: true,
+      isSupportAggregate: true,
       systemSource: [{}],
       deviceSource: [{}]
     },
