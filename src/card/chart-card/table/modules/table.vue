@@ -83,7 +83,7 @@ const fetchData = async () => {
       key: source.metricsId,
       aggregate_window: props.card?.dataSource?.dataAggregateRange || 'no_aggregate',
       aggregate_function: source.aggregate_function,
-      time_range: props.card?.dataSource?.dataTimeRange
+      time_range: props.card?.dataSource?.dataTimeRange || 'last_1h'
     };
     return telemetryDataHistoryList(params).then(res =>
       res.data.map(item => ({
