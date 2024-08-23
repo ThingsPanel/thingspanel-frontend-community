@@ -87,7 +87,7 @@ const clickSwitch: () => void = async () => {
 const calculateState: () => void = () => {
   if (props?.card?.config?.active0) {
     active.value = detail.value === getSwitchValue(true);
-  } else if (props?.card?.config?.active1) {
+  } else {
     active.value = detail.value !== getSwitchValue(false);
   }
 };
@@ -101,7 +101,7 @@ watch(
 );
 
 watch(
-  () => detail.value,
+  () => detail,
   () => {
     calculateState();
   },
