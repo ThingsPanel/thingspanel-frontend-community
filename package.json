@@ -65,6 +65,7 @@
     "crypto-js": "4.1.1",
     "dayjs": "1.11.10",
     "echarts": "5.5.0",
+    "event-source-polyfill": "^1.0.31",
     "form-data": "4.0.0",
     "interactjs": "^1.10.26",
     "jsencrypt": "^3.3.2",
