@@ -1,3 +1,4 @@
+import type { Ref } from 'vue';
 import { useWebSocket } from '@vueuse/core';
 import { getWebsocketServerUrl } from '@/utils/common/tool';
 
@@ -30,12 +31,14 @@ export function useWebsocketUtil(layout: Ref<ICardView[]>, cr: Ref<ICardRender |
   const setComponentsValue = (deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     const cardViews = layout.value.filter(
       item =>
-        item.data?.dataSource?.deviceSource?.[0]?.deviceId === deviceId &&
-        item.data?.dataSource?.deviceSource?.[0]?.metricsId === metricsId
+        item.data?.dataSource?.deviceSource &&
+        Array.isArray(item.data.dataSource.deviceSource) &&
+        item.data.dataSource.deviceSource.some(source => source.deviceId === deviceId && source.metricsId === metricsId)
     );
+
     for (const cardView of cardViews) {
       const cardComponent = cr.value?.getCardComponent(cardView)?.getComponent();
-      cardComponent?.updateData && cardComponent?.updateData(deviceId, metricsId, data);
+      cardComponent?.updateData && cardComponent.updateData(deviceId, metricsId, data);
     }
   };
 
@@ -44,14 +47,14 @@ export function useWebsocketUtil(layout: Ref<ICardView[]>, cr: Ref<ICardRender |
       .filter(
         item =>
           item.data?.dataSource?.deviceSource &&
-          item.data?.dataSource?.deviceSource[0]?.deviceId &&
-          item.data?.dataSource?.deviceSource[0]?.metricsId &&
-          item.data?.dataSource?.deviceSource[0]?.metricsType === 'telemetry' &&
+          Array.isArray(item.data.dataSource.deviceSource) &&
+          item.data.dataSource.deviceSource.length > 0 &&
           item.data?.type === 'chart'
       )
-      .map(
-        item =>
-          `${item.data?.dataSource?.deviceSource?.[0]?.deviceId}|${item.data?.dataSource?.deviceSource?.[0]?.metricsId}`
+      .flatMap(item =>
+        item.data.dataSource.deviceSource
+          .filter(source => source.deviceId && source.metricsId && source.metricsType === 'telemetry')
+          .map(source => `${source.deviceId}|${source.metricsId}`)
       );
     const set = new Set(deviceMetricsIds);
     const uniqueDeviceMetricsIds = [...set];
