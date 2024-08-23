@@ -103,7 +103,8 @@ const { status, send, close } = useWebSocket(wsUrl, {
             ...rest,
             key,
             value: info[key],
-            ts: info.systime
+            ts: info.systime,
+            unit: ''
           });
         }
       }
@@ -583,7 +584,7 @@ const inputFeedback = computed(() => {
 
             <n-popconfirm @positive-click="handlePositiveClick">
               <template #trigger>
-                <n-button type="primary">{{ $t('generate.send') }}1</n-button>
+                <n-button type="primary">{{ $t('generate.send') }}</n-button>
               </template>
               确定发送指令吗
             </n-popconfirm>
