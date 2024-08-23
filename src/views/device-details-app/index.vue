@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import type { ICardView } from '@/components/panel/card';
+import type { ICardRender, ICardView } from '@/components/panel/card';
 import { $t } from '@/locales';
 import { deviceDetail, deviceTemplateDetail } from '@/service/api/device';
 import { formatDateTime } from '@/utils/common/datetime';
 import { localStg } from '@/utils/storage';
+import { useWebsocketUtil } from '@/utils/websocketUtil';
 import TelemetryDataCards from './telemetryDataCards.vue';
 
 const { query } = useRoute();
@@ -25,6 +26,10 @@ const showDefaultCards = ref(false);
 const showAppChart = ref(false);
 const cardHeight = ref(160); // 卡片的高度
 const cardMargin = ref(15); // 卡片的间距
+
+const cr = ref<ICardRender>();
+
+const { updateComponentsData } = useWebsocketUtil(layout, cr, token as string);
 
 const getDeviceDetail = async () => {
   const { data, error } = await deviceDetail(d_id);
@@ -50,6 +55,7 @@ const getDeviceDetail = async () => {
           });
           layout.value = [...configJson];
           showAppChart.value = true;
+          updateComponentsData();
         } else {
           showDefaultCards.value = true;
         }
@@ -59,6 +65,7 @@ const getDeviceDetail = async () => {
     }
   }
 };
+
 onMounted(() => {
   getDeviceDetail();
 });
@@ -90,7 +97,7 @@ onMounted(() => {
       </div>
     </div>
 
-    <div class="mb-6 text-sm text-gray-500">最后更新: {{ formatDateTime(deviceData?.update_at) || '--' }}</div>
+    <div class="mb-6 text-sm text-gray-500">最后更新: {{ formatDateTime(deviceData?.ts) || '--' }}</div>
 
     <n-divider title-placement="left"></n-divider>
 
