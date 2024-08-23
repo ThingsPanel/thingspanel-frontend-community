@@ -42,6 +42,11 @@ export function useWebsocketUtil(layout: Ref<ICardView[]>, cr: Ref<ICardRender |
     }
   };
 
+  /**
+   * First, get all unique device ids from the layout. Then check socketMap, if a device id in socketMap is not in the
+   * unique device ids, close the socket. Then, for each unique device id, check if there is a socket in socketMap, if
+   * not, create a new socket. if yes, close the socket and create a new socket.
+   */
   const updateComponentsData = async () => {
     const deviceMetricsIds = layout.value
       .filter(
