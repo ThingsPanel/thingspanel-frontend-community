@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, onMounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { debounce } from 'lodash';
 import { router } from '@/router';
 import { useWebsocketUtil } from '@/utils/websocketUtil';
@@ -14,7 +14,7 @@ const isError = ref<boolean>(false);
 const active = ref<boolean>(true);
 const token = localStg.get('token');
 const cr = ref<ICardRender>();
-const { updateComponentsData } = useWebsocketUtil(layout, cr, token as string);
+const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr, token as string);
 
 const getLayout = async () => {
   const { data, error } = await fetchHomeData({});
@@ -33,8 +33,12 @@ const getLayout = async () => {
 
 onMounted(getLayout);
 
+onUnmounted(() => {
+  closeAllSockets();
+});
+
 const throttledWatcher = debounce(() => {
-  updateComponentsData();
+  updateComponentsData(layout);
 }, 300);
 
 watch(

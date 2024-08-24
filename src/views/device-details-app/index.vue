@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ICardRender, ICardView } from '@/components/panel/card';
 import { $t } from '@/locales';
@@ -29,7 +29,7 @@ const cardMargin = ref(15); // 卡片的间距
 
 const cr = ref<ICardRender>();
 
-const { updateComponentsData } = useWebsocketUtil(layout, cr, token as string);
+const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr, token as string);
 
 const getDeviceDetail = async () => {
   const { data, error } = await deviceDetail(d_id);
@@ -55,7 +55,7 @@ const getDeviceDetail = async () => {
           });
           layout.value = [...configJson];
           showAppChart.value = true;
-          updateComponentsData();
+          updateComponentsData(layout);
         } else {
           showDefaultCards.value = true;
         }
@@ -68,6 +68,10 @@ const getDeviceDetail = async () => {
 
 onMounted(() => {
   getDeviceDetail();
+});
+
+onUnmounted(() => {
+  closeAllSockets();
 });
 </script>
 
