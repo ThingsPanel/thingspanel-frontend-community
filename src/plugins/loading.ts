@@ -20,7 +20,7 @@ export function setupLoading() {
   ];
 
   const logoWithClass = logoLoading
-    ? `<img src="${logoLoading}">`
+    ? `<img src="${logoLoading}" style="max-width: 20%; height: auto">`
     : systemLogo.replace('<svg', `<svg class="size-128px text-primary"`);
 
   const dot = loadingClasses
