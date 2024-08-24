@@ -35,14 +35,17 @@ function calcNewCardPos(
 
   // Function to check if a position is available for the new card
   const isPositionAvailable = (x: number, y: number): boolean => {
-    return !existingViews.some(view => {
-      return !(
-        x + new_viewToBeAdd_W_colNum <= view.x ||
-        x >= view.x + view.w ||
-        y + newCardSize.h <= view.y ||
-        y >= view.y + view.h
-      );
-    });
+    for (const view of existingViews) {
+      if (
+        x + new_viewToBeAdd_W_colNum > view.x &&
+        x < view.x + view.w &&
+        y + newCardSize.h > view.y &&
+        y < view.y + view.h
+      ) {
+        return false;
+      }
+    }
+    return true;
   };
 
   // Iterate through the grid to find an available position
