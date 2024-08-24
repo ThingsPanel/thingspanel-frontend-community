@@ -19,8 +19,6 @@ const panelDate = ref<Panel.Board>();
 const cr = ref<ICardRender>();
 const fullui = ref();
 
-const socketMap = new Map(); // from device id to socket
-
 const showingCardList = ref(false);
 const isEditing = ref(false);
 const editingCard = ref(false);
@@ -113,10 +111,10 @@ const quitEditMode = () => {
 };
 
 const token = localStg.get('token');
-const { updateComponentsData } = useWebsocketUtil(layout, cr, token as string);
+const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr, token as string);
 
 const throttledWatcher = debounce(() => {
-  updateComponentsData();
+  updateComponentsData(layout);
 }, 300);
 
 const insertCard = (card: ICardData) => {
@@ -187,11 +185,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  for (const [deviceMetricsId, socket] of socketMap.entries()) {
-    console.log('close socket', deviceMetricsId);
-    socket.close();
-  }
-  socketMap.clear();
+  closeAllSockets();
 });
 </script>
 

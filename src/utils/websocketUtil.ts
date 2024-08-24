@@ -2,7 +2,6 @@ import type { Ref } from 'vue';
 import { useWebSocket } from '@vueuse/core';
 import { getWebsocketServerUrl } from '@/utils/common/tool';
 
-const socketMap = new Map(); // from device id to socket
 const wsUrl = `${getWebsocketServerUrl()}/telemetry/datas/current/keys/ws`;
 
 export interface ICardView {
@@ -27,8 +26,16 @@ export interface ICardRender {
   };
 }
 
-export function useWebsocketUtil(layout: Ref<ICardView[]>, cr: Ref<ICardRender | undefined>, token: string | string[]) {
-  const setComponentsValue = (deviceId: string | undefined, metricsId: string | undefined, data: any) => {
+export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string | string[]) {
+  const socketMap = new Map(); // from device id to socket
+
+  /* eslint-disable max-params */
+  const setComponentsValue = (
+    layout: Ref<ICardView[]>,
+    deviceId: string | undefined,
+    metricsId: string | undefined,
+    data: any
+  ) => {
     const cardViews = layout.value.filter(
       item =>
         item.data?.dataSource?.deviceSource &&
@@ -41,13 +48,14 @@ export function useWebsocketUtil(layout: Ref<ICardView[]>, cr: Ref<ICardRender |
       cardComponent?.updateData && cardComponent.updateData(deviceId, metricsId, data);
     }
   };
+  /* eslint-enable max-params */
 
   /**
    * First, get all unique device ids from the layout. Then check socketMap, if a device id in socketMap is not in the
    * unique device ids, close the socket. Then, for each unique device id, check if there is a socket in socketMap, if
    * not, create a new socket. if yes, close the socket and create a new socket.
    */
-  const updateComponentsData = async () => {
+  const updateComponentsData = async (layout: Ref<ICardView[]>) => {
     const deviceMetricsIds = layout.value
       .filter(
         item =>
@@ -85,7 +93,7 @@ export function useWebsocketUtil(layout: Ref<ICardView[]>, cr: Ref<ICardRender |
           onMessage(_websocket: WebSocket, event: MessageEvent) {
             if (event.data && event.data !== 'pong') {
               const data = JSON.parse(event.data);
-              setComponentsValue(deviceId, metricsId, data);
+              setComponentsValue(layout, deviceId, metricsId, data);
             }
           },
           onConnected() {
@@ -102,7 +110,16 @@ export function useWebsocketUtil(layout: Ref<ICardView[]>, cr: Ref<ICardRender |
     }
   };
 
+  const closeAllSockets = () => {
+    for (const [deviceMetricsId, socket] of socketMap.entries()) {
+      console.log('close socket', deviceMetricsId);
+      socket.close();
+      socketMap.delete(deviceMetricsId);
+    }
+  };
+
   return {
-    updateComponentsData
+    updateComponentsData,
+    closeAllSockets
   };
 }
