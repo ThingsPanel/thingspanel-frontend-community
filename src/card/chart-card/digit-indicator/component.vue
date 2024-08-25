@@ -3,7 +3,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { NCard, NIcon } from 'naive-ui';
 import type { ICardData } from '@/components/panel/card';
 import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device';
-import { icons as iconOptions } from './icons';
+import { icons as iconOptions } from '@/components/common/icons';
 
 const props = defineProps<{
   card: ICardData;
