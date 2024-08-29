@@ -1070,6 +1070,8 @@ const local: App.I18n.Schema = {
     value: '取值',
     'max-value': '最大值',
     'min-value': '最小值',
+    sum: '总和',
+    diff: '最大最小差值',
     'save-scene-configuration': '保存场景配置',
     'add-execution-action': '新增执行动作',
     'delete-execution-action': '删除执行动作',

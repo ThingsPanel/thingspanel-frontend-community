@@ -84,7 +84,10 @@ const aggregationIntervalOptions = [
 ];
 const statisticsOptions = [
   { label: $t('common.average'), value: 'avg', disabled: false },
-  { label: $t('generate.max-value'), value: 'max', disabled: false }
+  { label: $t('generate.max-value'), value: 'max', disabled: false },
+  { label: $t('generate.min-value'), value: 'min', disabled: false },
+  { label: $t('generate.sum'), value: 'sum', disabled: false },
+  { label: $t('generate.diff'), value: 'diff', disabled: false }
 ];
 
 const aggregationTtemToFalse = (weight: number) => {
