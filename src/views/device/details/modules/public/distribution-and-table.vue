@@ -82,18 +82,18 @@ const submit = async () => {
     if (props.isCommand) {
       parms = {
         device_id: props.id,
-        value: textValue.value,
+        value: textValue.value ? textValue.value : null,
         identify: commandValue.value
       };
     } else {
-      parms = { device_id: props.id, value: textValue.value };
+      parms = { device_id: props.id, value: textValue.value ? textValue.value : null };
     }
     if (form.expected) {
-      if (props.expectApi && textValue.value) {
+      if (props.expectApi) {
         const expiry = form.time ? new Date().getTime() + form.time * 60 * 60 * 1000 : null;
         await props.expectApi({
           device_id: props.id,
-          payload: textValue.value,
+          payload: textValue.value ? textValue.value : null,
           send_type: props.isCommand ? 'command' : 'attribute',
           expiry: expiry ? moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ') : null,
           identify: props.isCommand ? commandValue.value : null
