@@ -1072,6 +1072,8 @@ const local: App.I18n.Schema = {
     value: 'value',
     'max-value': 'max value',
     'min-value': 'min value',
+    sum: 'sum',
+    diff: 'diff',
     'save-scene-configuration': 'save scene configuration',
     'add-execution-action': 'add execution action',
     'delete-execution-action': 'delete execution action',

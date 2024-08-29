@@ -1385,6 +1385,8 @@ declare namespace App {
         value: string;
         'max-value': string;
         'min-value': string;
+        sum: string;
+        diff: string;
         'save-scene-configuration': string;
         'add-execution-action': string;
         'delete-execution-action': string;
