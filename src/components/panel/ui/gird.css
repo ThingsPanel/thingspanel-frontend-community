@@ -80,10 +80,6 @@
   background-color: inherit;
 }
 
-.--theme--applied.vue-grid-layout .n-card.n-card--bordered {
-  border-width: 0;
-}
-
 /* Light Mode - Light Green */
 .theme-light-mode-light-green.vue-grid-layout {
   background: linear-gradient(135deg, #4a8c7b 0%, #76b39d 100%);
@@ -93,6 +89,7 @@
   color: #2c5543;
   background-color: rgba(164, 219, 193, 0.7);
   border-radius: 10px;
+  border-width: 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -299,6 +296,7 @@
 .theme-tech-blue.vue-grid-layout .n-card {
   color: rgb(219, 234, 254);
   background-color: rgb(37 99 235/0.5);
+  border-width: 0;
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -313,6 +311,7 @@
   color: #4B0082;
   background-color: rgba(230, 230, 250, 0.9);
   border-radius: 0.5rem;
+  border-width: 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -326,6 +325,7 @@
   color: rgba(0, 0, 0, 0.8);
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 0.5rem;
+  border-width: 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
 }
