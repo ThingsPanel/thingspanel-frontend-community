@@ -30,11 +30,11 @@ defineExpose({
   >
     <div
       v-if="data.basicSettings?.showTitle"
-      class="min-title-height h-7 w-full truncate border-b border-gray-200 px-2 text-sm leading-7 dark:border-gray-200/10"
+      class="min-title-height h-7 w-full truncate border-gray-200 px-2 text-sm leading-7 dark:border-gray-200/10"
     >
       {{ data.basicSettings?.title }}
     </div>
-    <div class="h-full w-full flex-1" :class="{ 'p-1': view, 'p-4': !view }">
+    <div class="h-full w-full flex-1" :class="{ 'p-0': view, 'p-4': !view }">
       <component
         :is="findCardComponent(cardId || '')"
         ref="refComp"

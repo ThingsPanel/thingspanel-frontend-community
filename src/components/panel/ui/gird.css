@@ -298,3 +298,30 @@
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+/* 苹果紫 */
+.theme-royal-purple.vue-grid-layout {
+  background: linear-gradient(135deg, #8A2BE2, #9370DB);
+  color: #F8F8FF;
+}
+
+.theme-royal-purple.vue-grid-layout .n-card {
+  color: #4B0082;
+  background-color: rgba(230, 230, 250, 0.9);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 微软风 */
+.theme-microsoft-style.vue-grid-layout {
+  background: linear-gradient(135deg, #0078d4, #50e6ff);
+  color: #ffffff;
+}
+
+.theme-microsoft-style.vue-grid-layout .n-card {
+  color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+}

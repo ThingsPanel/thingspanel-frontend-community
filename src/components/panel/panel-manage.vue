@@ -263,7 +263,9 @@ onUnmounted(() => {
             { label: $t('明净深蓝主题'), value: 'theme-light-mode-dark-blue' },
             { label: $t('明净炽橙主题'), value: 'theme-light-mode-dark-orange' },
             { label: $t('明净烈红主题'), value: 'theme-light-mode-dark-red' },
-            { label: $t('科技蓝主题'), value: 'theme-tech-blue' }
+            { label: $t('科技蓝主题'), value: 'theme-tech-blue' },
+            { label: $t('苹果紫主题'), value: 'theme-royal-purple' },
+            { label: $t('微软风主题'), value: 'theme-microsoft-style' }
           ]"
         ></NSelect>
         <NButton v-if="isEditing" @click="quitEditMode">退出编辑</NButton>
