@@ -10,6 +10,7 @@ import { $t } from '@/locales';
 
 const layoutFetched = ref(false);
 const layout = ref<ICardView[]>([]);
+const theme = ref('');
 const isError = ref<boolean>(false);
 const active = ref<boolean>(true);
 const token = localStg.get('token');
@@ -27,6 +28,15 @@ const getLayout = async () => {
       updateConfigData(configJson);
       layout.value = [...configJson, ...layout.value];
       layoutFetched.value = true;
+    } else if (typeof configJson === 'object') {
+      if (configJson.layout) {
+        updateConfigData(configJson.layout);
+        layout.value = configJson.layout;
+        layoutFetched.value = true;
+      }
+      if (configJson.theme) {
+        theme.value = configJson.theme;
+      }
     }
   }
 };
@@ -126,6 +136,7 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
     :col-num="12"
     :default-card-col="4"
     :row-height="85"
+    :theme="theme"
     @update:layout="
       data => {
         nextTick(() => {
