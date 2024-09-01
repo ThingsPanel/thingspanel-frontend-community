@@ -179,11 +179,12 @@ const getDeviceList = async () => {
   deviceOption.value = res.data;
 };
 
-const deviceSelectChange = async (_v, item) => {
+const deviceSelectChange = async (_v, option, item) => {
   item.metricsOptions = [];
   item.metricsOptionsFetched = false;
   item.metricsId = '';
   item.metricsName = '';
+  item.name = option.name;
 };
 
 const metricsOptionRender = (info, item) => {
@@ -300,7 +301,7 @@ watch(deviceCount, v => {
                   :options="deviceOption"
                   label-field="name"
                   value-field="id"
-                  @update:value="value => deviceSelectChange(value, item)"
+                  @update:value="(value, option) => deviceSelectChange(value, option, item)"
                 >
                   <template #header>{{ $t('generate.device') }}</template>
                 </NSelect>
