@@ -12,6 +12,7 @@ import { useAppStore } from '@/store/modules/app';
 import { $t } from '@/locales';
 import { useWebsocketUtil } from '@/utils/websocketUtil';
 
+const NO_THEME = '--no--theme--';
 const dialog = useDialog();
 
 const props = defineProps<{ panelId: string }>();
@@ -35,6 +36,8 @@ const { isFullscreen, toggle } = useFullscreen(fullui);
 const appStore = useAppStore();
 const dataFetched = ref(false);
 const layout = ref<ICardView[]>([]);
+const theme = ref(NO_THEME);
+const preTheme = ref(NO_THEME);
 const preLayout = ref<ICardView[]>([]); // 用来保存用户修改前的内容
 const fetchBroad = async () => {
   const { data } = await getBoard(props.panelId);
@@ -45,8 +48,18 @@ const fetchBroad = async () => {
       // check configJson is an array
       if (Array.isArray(configJson)) {
         updateConfigData(configJson);
-        layout.value = [...configJson, ...layout.value];
+        layout.value = configJson;
         preLayout.value = layout.value;
+      } else if (typeof configJson === 'object') {
+        if (configJson.layout) {
+          updateConfigData(configJson.layout);
+          layout.value = configJson.layout;
+          preLayout.value = layout.value;
+        }
+        if (configJson.theme) {
+          theme.value = configJson.theme;
+          preTheme.value = theme.value;
+        }
       }
       dataFetched.value = true;
     }
@@ -95,7 +108,7 @@ const toEditMode = () => {
 };
 
 const quitEditMode = () => {
-  if (JSON.stringify(layout.value) !== JSON.stringify(preLayout.value)) {
+  if (JSON.stringify(layout.value) !== JSON.stringify(preLayout.value) || preTheme.value !== theme.value) {
     dialog.warning({
       title: '您尚未保存，确定退出编辑？',
       positiveText: $t('device_template.confirm'),
@@ -103,6 +116,7 @@ const quitEditMode = () => {
       onPositiveClick: () => {
         isEditing.value = false;
         layout.value = preLayout.value;
+        theme.value = preTheme.value;
       }
     });
   } else {
@@ -158,16 +172,25 @@ const showCardList = () => {
 };
 
 const savePanel = async () => {
-  const layoutJson = JSON.stringify(layout.value);
+  let resultStr = '';
+  if (theme.value !== NO_THEME) {
+    resultStr = JSON.stringify({
+      layout: layout.value,
+      theme: theme.value
+    });
+  } else {
+    resultStr = JSON.stringify(layout.value);
+  }
 
   await PutBoard({
     id: props.panelId,
-    config: layoutJson,
+    config: resultStr,
     name: panelDate.value?.name,
     home_flag: panelDate.value?.home_flag
   });
 
   preLayout.value = layout.value;
+  preTheme.value = theme.value;
 };
 
 watch(
@@ -219,6 +242,30 @@ onUnmounted(() => {
           <SvgIcon icon="material-symbols:edit" class="mr-0.5 text-lg" />
           {{ $t('generate.edit') }}
         </NButton>
+        <NSelect
+          v-if="isEditing"
+          v-model:value="theme"
+          :options="[
+            { label: $t('-- 默认无主题 --'), value: NO_THEME },
+            { label: $t('清新浅绿主题'), value: 'theme-light-mode-light-green' },
+            { label: $t('静谧浅蓝主题'), value: 'theme-light-mode-light-blue' },
+            { label: $t('温暖浅橙主题'), value: 'theme-light-mode-light-orange' },
+            { label: $t('活力浅红主题'), value: 'theme-light-mode-light-red' },
+            { label: $t('暗调清新绿主题'), value: 'theme-dark-mode-light-green' },
+            { label: $t('暗调静谧蓝主题'), value: 'theme-dark-mode-light-blue' },
+            { label: $t('暗调温暖橙主题'), value: 'theme-dark-mode-light-orange' },
+            { label: $t('暗调活力红主题'), value: 'theme-dark-mode-light-red' },
+            { label: $t('深邃暗绿主题'), value: 'theme-dark-mode-dark-green' },
+            { label: $t('宁静暗蓝主题'), value: 'theme-dark-mode-dark-blue' },
+            { label: $t('炽热暗橙主题'), value: 'theme-dark-mode-dark-orange' },
+            { label: $t('热烈暗红主题'), value: 'theme-dark-mode-dark-red' },
+            { label: $t('明净深绿主题'), value: 'theme-light-mode-dark-green' },
+            { label: $t('明净深蓝主题'), value: 'theme-light-mode-dark-blue' },
+            { label: $t('明净炽橙主题'), value: 'theme-light-mode-dark-orange' },
+            { label: $t('明净烈红主题'), value: 'theme-light-mode-dark-red' },
+            { label: $t('科技蓝主题'), value: 'theme-tech-blue' }
+          ]"
+        ></NSelect>
         <NButton v-if="isEditing" @click="quitEditMode">退出编辑</NButton>
         <NButton v-show="isEditing" @click="savePanel">{{ $t('common.save') }}</NButton>
         <FullScreen
@@ -256,6 +303,7 @@ onUnmounted(() => {
           :col-num="12"
           :default-card-col="4"
           :row-height="85"
+          :theme="theme"
           @edit="edit"
           @update:layout="updateLayoutData"
           @breakpoint-changed="breakpointChanged"

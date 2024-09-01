@@ -13,6 +13,7 @@ const props = defineProps<{
   isPreview?: boolean;
   breakpoints?: any;
   cols?: any;
+  theme?: string;
 }>();
 
 const cardRefs = reactive<{ [key: string]: any | undefined }>({});
@@ -122,7 +123,7 @@ onUpdated(() => {
     :responsive="true"
     :auto-size="true"
     :margin="[10, 10]"
-    class="w-full"
+    :class="`w-full ${theme ? theme + ' --theme--applied' : ''}`"
     :breakpoints="props.breakpoints || { lg: 780, md: 500, sm: 0 }"
     :cols="props.cols || { lg: 12, md: 6, sm: 3 }"
     @breakpoint-changed="breakpointChanged"
