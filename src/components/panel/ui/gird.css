@@ -80,6 +80,10 @@
   background-color: inherit;
 }
 
+.--theme--applied.vue-grid-layout .n-card.n-card--bordered {
+  border-width: 0;
+}
+
 /* Light Mode - Light Green */
 .theme-light-mode-light-green.vue-grid-layout {
   background: linear-gradient(135deg, #4a8c7b 0%, #76b39d 100%);
