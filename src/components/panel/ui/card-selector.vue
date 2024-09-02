@@ -6,9 +6,19 @@ import type { ICardData, ICardDefine } from '@/components/panel/card';
 import { PanelCards } from '@/components/panel';
 import { deviceTemplateSelect } from '@/service/api';
 import { $t } from '@/locales';
+import barPoster from '@/card/chart-card/bar/poster.png';
 import curvePoster from '@/card/chart-card/curve/poster.png';
 import demoPoster from '@/card/chart-card/demo/poster.png';
+import digitIndicatorPoster from '@/card/chart-card/digit-indicator/poster.png';
+import digitSetterPoster from '@/card/chart-card/digit-setter/poster.png';
+import dispatchDataPoster from '@/card/chart-card/dispatch-data/poster.png';
+import humidityIndicatorPoster from '@/card/chart-card/humidity-indicator/poster.png';
+import instrumentPanelPoster from '@/card/chart-card/instrument-panel/poster.png';
+import stateDisplayPoster from '@/card/chart-card/state-display/poster.png';
 import switchPoster from '@/card/chart-card/switch/poster.png';
+import tablePoster from '@/card/chart-card/table/poster.png';
+import tempIndicatorPoster from '@/card/chart-card/temp-indicator/poster.png';
+import textInfoPoster from '@/card/chart-card/text-info/poster.png';
 import videoPlayerPoster from '@/card/chart-card/video-player/poster.png';
 
 const props = defineProps<{
@@ -47,7 +57,9 @@ const selectCard = item => {
   emit('selectCard', JSON.parse(JSON.stringify(state.curCardData)));
 };
 const getImagePath = item => {
-  const cardType = item.data.cardId.match(/curve|demo|switch|videoplayer/);
+  const cardType = item.data.cardId.match(
+    /bar|curve|demo|digit|digitsetter|dispatch|humidity|instrument-panel|state|switch|table|temprature|text|videoplayer/
+  );
 
   if (!cardType) {
     return demoPoster;
@@ -59,6 +71,26 @@ const getImagePath = item => {
     return switchPoster;
   } else if (cardType[0] === 'videoplayer') {
     return videoPlayerPoster;
+  } else if (cardType[0] === 'bar') {
+    return barPoster;
+  } else if (cardType[0] === 'digit') {
+    return digitIndicatorPoster;
+  } else if (cardType[0] === 'digitsetter') {
+    return digitSetterPoster;
+  } else if (cardType[0] === 'dispatch') {
+    return dispatchDataPoster;
+  } else if (cardType[0] === 'humidity') {
+    return humidityIndicatorPoster;
+  } else if (cardType[0] === 'instrument-panel') {
+    return instrumentPanelPoster;
+  } else if (cardType[0] === 'state') {
+    return stateDisplayPoster;
+  } else if (cardType[0] === 'table') {
+    return tablePoster;
+  } else if (cardType[0] === 'temprature') {
+    return tempIndicatorPoster;
+  } else if (cardType[0] === 'text') {
+    return textInfoPoster;
   }
   return demoPoster;
 };
@@ -191,32 +223,6 @@ onMounted(() => {
                         {{ item.data.dataSource?.deviceSource?.[0]?.metricsName || $t(item.data.title) }}
                       </div>
                       <div class="h-148px w-full">
-                        <!--
-        <img
-                                :src="
-                                    item.data.cardId.indexOf('chart-curve') != -1
-                                    ? '../../../../card/chart-card/curve/poster.png'
-                                    : '../chart-card/demo/poster.png'
-                                "
-                                alt=""
-                                style="width: 100%; height: 100%; object-fit: contain"
-        -->
-                        <!-- /> -->
-                        <!--                        <img-->
-                        <!--                          v-if="item.data.cardId.indexOf('curve') != -1"-->
-                        <!--                          src="../../../card/chart-card/curve/poster.png"-->
-                        <!--                          style="width: 100%; height: 100%; object-fit: contain"-->
-                        <!--                        />-->
-                        <!--                        <img-->
-                        <!--                          v-if="item.data.cardId.indexOf('demo') != -1"-->
-                        <!--                          src="../../../card/chart-card/demo/poster.png"-->
-                        <!--                          style="width: 100%; height: 100%; object-fit: contain"-->
-                        <!--                        />-->
-                        <!--                        <img-->
-                        <!--                          v-if="item.data.cardId.indexOf('switch') != -1"-->
-                        <!--                          src="../../../card/chart-card/switch/poster.png"-->
-                        <!--                          style="width: 100%; height: 100%; object-fit: contain"-->
-                        <!--                        />-->
                         <img :src="getImagePath(item)" style="width: 100%; height: 100%; object-fit: contain" />
                       </div>
                     </div>
@@ -225,19 +231,21 @@ onMounted(() => {
               </div>
               <div v-else>
                 <n-grid :x-gap="10" :y-gap="10" cols="1 240:1 480:2 720:3">
-                  <n-gi v-for="item in PanelCards[item1.type]" :key="item.id" class="min-w-240px">
+                  <n-gi v-for="item in PanelCards[item1.type]" :key="item.id" class="min-w-240px p-4px">
                     <div
-                      class="cursor-pointer overflow-hidden border rounded p-2px duration-200"
+                      class="cursor-pointer overflow-hidden border rounded p-0px duration-200"
                       :style="
-                        item.id === state?.curCardData?.cardId ? 'border-color: #2d3d88' : 'border-color: #f6f9f8'
+                        item.id === state?.curCardData?.cardId
+                          ? 'border-color: #2d3d88'
+                          : 'border-color: rgb(0, 249, 248)'
                       "
                       @click="selectFinalCard(item)"
                     >
-                      <div class="text-center font-medium leading-8 dark:bg-zinc-900">
+                      <div class="text-center font-medium leading-8 dark:bg-zinc-900" style="background-color: #efefef">
                         {{ $t(item.title) }}
                       </div>
-                      <div class="h-148px w-full">
-                        <img :src="item.poster" alt="" style="width: 100%; height: 100%; object-fit: contain" />
+                      <div class="h-148px w-full flex items-center justify-center p-8px">
+                        <img :src="item.poster" alt="" style="width: 90%; height: 100%; object-fit: contain" />
                       </div>
                     </div>
                   </n-gi>
