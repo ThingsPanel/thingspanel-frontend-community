@@ -455,7 +455,6 @@ defineExpose({
       console.log('Update data: Curve is aggregate, return directly');
       return;
     }
-    console.log('Curve updateData:', deviceId, metricsId, data);
     const deviceIndex = props?.card?.dataSource?.deviceSource?.findIndex(
       item => item.deviceId === deviceId && item.metricsId === metricsId
     );
@@ -472,7 +471,6 @@ defineExpose({
         seriesData.shift();
       }
     }
-    console.log('Curve updateData:', data);
   }
 });
 

@@ -12,6 +12,11 @@ const props = defineProps<{
 
 defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
+    // Only update detail value when data[metricsId] is not undefined, null or ''
+    if (!metricsId || data[metricsId] === undefined || data[metricsId] === null || data[metricsId] === '') {
+      console.warn(`No data returned from websocket for ${metricsId}`);
+      return;
+    }
     detail.value = metricsId ? data[metricsId] : 0;
   }
 });

@@ -19,7 +19,6 @@ watch(
 
 defineExpose({
   updateData: (deviceId: string | undefined, metricsId: string | undefined, data: any) => {
-    console.log('Curve updateData:', data);
     barChart.value?.updateData(deviceId, metricsId, data);
   }
 });

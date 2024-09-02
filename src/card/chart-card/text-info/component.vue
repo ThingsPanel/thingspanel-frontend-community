@@ -60,7 +60,7 @@ onBeforeUnmount(() => {
 
 defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
-    if (metricsId && data[metricsId] !== undefined) {
+    if (metricsId && data[metricsId] !== undefined && data[metricsId] !== null && data[metricsId] !== '') {
       detail.value = data[metricsId];
     }
   }
