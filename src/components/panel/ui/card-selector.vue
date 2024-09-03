@@ -208,22 +208,22 @@ onMounted(() => {
             <n-scrollbar style="height: 100%; padding: 4px">
               <div v-if="item1.tab === '设备'">
                 <n-grid :x-gap="10" :y-gap="10" cols="1 240:1 480:2 720:3">
-                  <n-gi v-for="item in webChartConfig" :key="item.data.cardId" class="min-w-240px">
+                  <n-gi v-for="item in webChartConfig" :key="item.data.cardId" class="min-w-240px p-4px">
                     <div
                       v-if="item.data.cardId.indexOf('chart') != -1"
-                      class="cursor-pointer overflow-hidden border rounded p-2px duration-200"
+                      class="cursor-pointer overflow-hidden border rounded p-0px duration-200"
                       :style="
                         item.data.cardId === state?.curCardData?.cardId
                           ? 'border-color: #2d3d88'
-                          : 'border-color: #f6f9f8'
+                          : 'border-color: #DEE0E5'
                       "
                       @click="selectCard(item.data)"
                     >
-                      <div class="text-center font-medium leading-8 dark:bg-zinc-900">
+                      <div class="text-center font-medium leading-8 dark:bg-zinc-900" style="background-color: #efefef">
                         {{ item.data.dataSource?.deviceSource?.[0]?.metricsName || $t(item.data.title) }}
                       </div>
-                      <div class="h-148px w-full">
-                        <img :src="getImagePath(item)" style="width: 100%; height: 100%; object-fit: contain" />
+                      <div class="h-148px w-full flex items-center justify-center p-8px">
+                        <img :src="getImagePath(item)" style="width: 90%; height: 100%; object-fit: contain" />
                       </div>
                     </div>
                   </n-gi>
@@ -235,9 +235,7 @@ onMounted(() => {
                     <div
                       class="cursor-pointer overflow-hidden border rounded p-0px duration-200"
                       :style="
-                        item.id === state?.curCardData?.cardId
-                          ? 'border-color: #2d3d88'
-                          : 'border-color: rgb(0, 249, 248)'
+                        item.id === state?.curCardData?.cardId ? 'border-color: #2d3d88' : 'border-color: #DEE0E5'
                       "
                       @click="selectFinalCard(item)"
                     >
