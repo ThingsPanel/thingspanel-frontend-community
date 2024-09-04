@@ -127,7 +127,11 @@ watch(
       ...v
     });
     if (!error && data && initialOptions.value.series) {
-      tableData.value = data;
+      // 对数据进行排序，确保最新的数据在前面
+      const sortedData = data.sort((a, b) => {
+        return b.x - a.x;
+      });
+      tableData.value = sortedData;
       // 这里是当 通过接口改变 initialOptions的数据
       initialOptions.value.series.forEach(series => {
         series.data = data.map(item => {
