@@ -54,7 +54,12 @@ function updateExpandedKeys() {
     expandedKeys.value = [];
     return;
   }
-  expandedKeys.value = routeStore.getSelectedMenuKeyPath(selectedKey.value);
+  if (selectedKey.value) {
+    const newKeys = routeStore.getSelectedMenuKeyPath(selectedKey.value);
+    if (newKeys && newKeys.length > 0) {
+      expandedKeys.value = newKeys;
+    }
+  }
 }
 
 function handleClickMenu(key: RouteKey) {
