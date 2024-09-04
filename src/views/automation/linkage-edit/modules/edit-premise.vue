@@ -208,11 +208,16 @@ const queryDevice = ref({
 });
 const btnloading = ref(false);
 
-const selectInstRef = ref(false);
+const selectInstRef = ref({});
 const onKeydownEnter = e => {
-  selectInstRef.value = true;
+  // selectInstRef.value = true;
   e.preventDefault();
 
+  return false;
+};
+const onDeviceKeydownEnter = (e: any, ifIndex: number) => {
+  selectInstRef.value[ifIndex] = true;
+  e.preventDefault();
   return false;
 };
 // 获取设备列表
@@ -229,7 +234,7 @@ const getDevice = async (groupId: any, name: any) => {
   // }
 };
 // 选择设备
-const triggerSourceChange = (ifItem: any) => {
+const triggerSourceChange = (ifItem: any, ifIndex: number) => {
   ifItem.trigger_param_type = null;
   ifItem.trigger_param = null;
   ifItem.trigger_param_key = null;
@@ -237,7 +242,7 @@ const triggerSourceChange = (ifItem: any) => {
   ifItem.trigger_value = null;
   ifItem.minValue = null;
   ifItem.maxValue = null;
-  selectInstRef.value = false;
+  selectInstRef.value[ifIndex] = false;
   // ifItem.action_param_type = null;
   // ifItem.action_param = null;
   // ifItem.action_value = null;
@@ -637,11 +642,11 @@ const props = withDefaults(defineProps<Props>(), {
   device_config_id: ''
 });
 
-const onTapInput = (item: any) => {
+const onTapInput = (item: any, ifIndex: number) => {
   if (item.group_id || item.device_name) {
     getDevice(item.group_id, item.device_name);
   } else {
-    selectInstRef.value = true;
+    selectInstRef.value[ifIndex] = true;
   }
 };
 
@@ -679,7 +684,7 @@ onMounted(() => {
 watch(
   premiseForm.value.ifGroups,
   () => {
-    selectInstRef.value = false;
+    // selectInstRef.value = false;
   },
   { deep: true }
 );
@@ -746,11 +751,19 @@ watch(
                       value-field="id"
                       label-field="name"
                       clearable
-                      :show="selectInstRef"
+                      :show="selectInstRef[ifIndex]"
                       :consistent-menu-width="false"
-                      @click.prevent="onKeydownEnter"
-                      @keydown.enter="onKeydownEnter"
-                      @update:value="() => triggerSourceChange(ifItem)"
+                      @click.prevent="
+                        e => {
+                          onDeviceKeydownEnter(e, ifIndex);
+                        }
+                      "
+                      @keydown.enter="
+                        e => {
+                          onDeviceKeydownEnter(e, ifIndex);
+                        }
+                      "
+                      @update:value="() => triggerSourceChange(ifItem, ifIndex)"
                     >
                       <template #header>
                         <NFlex align="center" class="w-500px">
@@ -767,12 +780,12 @@ watch(
                             @update:value="data => getDevice(data, queryDevice.device_name)"
                           />
                           <NInput
-                            ref="queryDeviceName"
+                            ref="queryDeviceName[ifIndex]"
                             v-model:value="queryDevice.device_name"
                             class="flex-1"
                             clearable
                             :placeholder="$t('common.input')"
-                            @keydown.enter="onTapInput(queryDevice)"
+                            @keydown.enter="onTapInput(queryDevice, ifIndex)"
                             @click="handleFocus(ifIndex)"
                           ></NInput>
                           <NButton
@@ -804,7 +817,7 @@ watch(
                       remote
                       filterable
                       @search="getDeviceConfig"
-                      @update:value="() => triggerSourceChange(ifItem)"
+                      @update:value="() => triggerSourceChange(ifItem, ifIndex)"
                     />
                   </NFormItem>
                 </template>
