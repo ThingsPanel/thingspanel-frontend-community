@@ -295,7 +295,10 @@ onUnmounted(() => {
       </n-drawer>
 
       <div class="h-full flex-1 overflow-auto">
-        <div v-if="!layout.length" class="text-center text-gray-500 dark:text-gray-400">
+        <div
+          v-if="!layout.length"
+          class="h-full flex items-center justify-center text-center text-gray-500 dark:text-gray-400"
+        >
           <NEmpty :description="$t('common.componentsAddedYet')"></NEmpty>
         </div>
         <CardRender
