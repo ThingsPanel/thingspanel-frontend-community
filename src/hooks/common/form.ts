@@ -3,7 +3,7 @@ import type { FormInst } from 'naive-ui';
 import { REG_CODE_SIX, REG_DEFAULT, REG_EMAIL, REG_PHONE, REG_PWD } from '@/constants/reg';
 import { $t } from '@/locales';
 
-export function useFormRules() {
+export function useFormRules(paramObj?) {
   const patternRules = {
     userName: {
       pattern: REG_DEFAULT,
@@ -35,7 +35,7 @@ export function useFormRules() {
   const formRules = {
     userName: [createRequiredRule($t('form.userName.required')), patternRules.userName],
     phone: [createRequiredRule($t('form.phone.required')), patternRules.phone],
-    pwd: [createRequiredRule($t('form.pwd.required')), patternRules.pwd],
+    pwd: [createRequiredRule($t('form.pwd.required')), paramObj && paramObj.pwd ? paramObj.pwd : patternRules.pwd],
     code: [createRequiredRule($t('form.code.required')), patternRules.code],
     email: [createRequiredRule($t('form.email.required')), patternRules.email]
   } satisfies Record<string, App.Global.FormRule[]>;

@@ -244,6 +244,7 @@ declare namespace App {
     type FormMsg = {
       required: string;
       invalid: string;
+      lenMin6: string;
     };
 
     type Schema = {
