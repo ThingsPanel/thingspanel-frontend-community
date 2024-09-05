@@ -1,6 +1,6 @@
 export const colorGroups = [
-  { name: 'Sunrise Glow', top: 'rgb(255, 227, 157)', bottom: 'rgb(255, 182, 185)' },
-  { name: 'Sky Reflection', top: 'rgb(157, 236, 255)', bottom: 'rgb(102, 153, 255)' },
+  { name: 'Sky Reflection', top: '#2563EB', bottom: '#2563EB' },
+  { name: 'Lilac Dreams', top: 'rgb(214, 209, 250)', bottom: 'rgb(246, 243, 253)' },
   { name: 'Spring Meadow', top: 'rgb(182, 255, 187)', bottom: 'rgb(153, 255, 204)' },
   { name: 'Peach Blossom', top: 'rgb(255, 197, 157)', bottom: 'rgb(255, 159, 128)' },
   { name: 'Mint Breeze', top: 'rgb(206, 255, 157)', bottom: 'rgb(159, 255, 128)' },
