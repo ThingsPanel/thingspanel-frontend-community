@@ -792,8 +792,10 @@ const local: App.I18n.Schema = {
     },
     pwd: {
       required: '请输入密码',
-      invalid: '6 ~ 18个字符，由字母、数字、下划线组成'
+      invalid: '6 ~ 18个字符，由字母、数字、下划线组成',
+      lenMin6: '密码长度至少6位'
     },
+
     code: {
       required: '请输入验证码',
       invalid: '验证码格式不正确'
