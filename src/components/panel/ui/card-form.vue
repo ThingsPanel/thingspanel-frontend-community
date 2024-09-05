@@ -260,7 +260,7 @@ watch(deviceCount, v => {
   <div>
     <NTabs v-if="state.selectCard" v-model:value="state.tab" type="line" animated>
       <NTabPane v-if="state.selectCard.type === 'chart'" name="dataSource" tab="数据源">
-        <div :class="`${mobile ? '' : 'h-[calc(100vh_-_270px)] '} overflow-y-auto py-5`">
+        <div :class="`${mobile ? '' : 'h-[calc(100vh_-_150px)] '} overflow-y-auto py-5`">
           <NForm>
             <NSelect
               v-if="state.data.dataSource.isSupportTimeRange"
@@ -291,13 +291,19 @@ watch(deviceCount, v => {
                 </template>
               </n-input-number>
 
-              <div v-for="(item, i) in state.data.dataSource.deviceSource" :key="i" class="mb-4 flex space-x-2">
+              <div
+                v-for="(item, i) in state.data.dataSource.deviceSource"
+                :key="i"
+                class="mb-4 flex flex-wrap space-x-2"
+              >
                 <NSelect
                   v-if="i <= deviceCount - 1"
                   v-model:value="item.deviceId"
                   clearable
                   :disabled="props?.deviceWebChartConfig?.length !== 0"
-                  class="w-120px"
+                  class="w-135px"
+                  placeholder="请选择设备"
+                  :consistent-menu-width="false"
                   :options="deviceOption"
                   label-field="name"
                   value-field="id"
@@ -310,8 +316,10 @@ watch(deviceCount, v => {
                   v-if="i <= deviceCount - 1"
                   v-model:value="item.metricsId"
                   clearable
+                  placeholder="请选择指标"
                   :disabled="props?.deviceWebChartConfig?.length !== 0"
-                  class="w-225px"
+                  class="w-140px"
+                  :consistent-menu-width="false"
                   :show="item.metricsShow"
                   :options="item?.metricsOptions"
                   :render-option="info => metricsOptionRender(info, item)"
@@ -327,7 +335,6 @@ watch(deviceCount, v => {
                   v-if="i <= deviceCount - 1 && state.data.dataSource.isSupportAggregate"
                   v-model:value="item.aggregate_function"
                   clearable
-                  class="w-120px"
                   :options="aggregateFunctionOptions"
                   placeholder="请选择数据聚合方式"
                 />

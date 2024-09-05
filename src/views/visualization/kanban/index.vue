@@ -120,7 +120,7 @@ onMounted(fetchBoards);
           :key="board.id"
           @click="goRouter('visualization_kanban-details', board.id as string)"
         >
-          <NCard hoverable style="height: 160px">
+          <NCard hoverable style="height: 160px" content-style="display: flex; flex-direction: column; height: 100%;">
             <div class="flex justify-between">
               <div class="text-16px font-600">
                 {{ board.name }}
@@ -133,13 +133,18 @@ onMounted(fetchBoards);
               </div>
             </div>
             <!-- 使用NTooltip组件 -->
-            <NTooltip trigger="hover" placement="top-start" :style="{ maxWidth: '200px' }">
+            <NTooltip
+              trigger="hover"
+              :disabled="!board.description || !board.description.trim()"
+              placement="top-start"
+              :style="{ maxWidth: '200px' }"
+            >
               <template #trigger>
                 <div class="description">{{ board.description }}</div>
               </template>
               {{ board.description }}
             </NTooltip>
-            <div class="mt-4 flex justify-end gap-2">
+            <div class="flex justify-end">
               <NButton strong circle secondary @click.stop="editBoard(board)">
                 <template #icon>
                   <icon-material-symbols:contract-edit-outline class="text-24px text-blue" />
@@ -225,11 +230,11 @@ onMounted(fetchBoards);
 .description {
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
   display: block;
+  text-wrap: wrap;
+  flex: 1;
   /* 确保这是一个块级元素 */
   max-width: 100%;
   color: #666;
-  margin-bottom: 12px;
 }
 </style>
