@@ -540,7 +540,7 @@ onUnmounted(() => {
 
 <template>
   <div class="h-full flex flex-col">
-    <div class="flex justify-between pb-4 pt-1">
+    <div class="flex justify-between pt-1">
       <div class="name-unit"></div>
       <div class="flex justify-end">
         <n-popselect
