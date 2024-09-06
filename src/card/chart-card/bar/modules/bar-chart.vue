@@ -542,7 +542,7 @@ onUnmounted(() => {
   <div class="h-full flex flex-col">
     <div class="flex justify-between pt-1">
       <div class="name-unit"></div>
-      <div class="flex justify-end">
+      <div class="flex justify-end pr-2">
         <n-popselect
           v-model:value="timeOptionsValue"
           class="mr-4px"
