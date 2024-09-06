@@ -131,6 +131,7 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
   <CardRender
     v-else-if="layoutFetched"
     ref="cr"
+    class="home-panel"
     :layout="layout"
     :is-preview="true"
     :col-num="12"
@@ -148,4 +149,11 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
   />
 </template>
 
-<style scoped></style>
+<style scoped>
+.home-panel {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.5) transparent;
+}
+</style>
