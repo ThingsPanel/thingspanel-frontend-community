@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { NCard, NIcon } from 'naive-ui';
+import { NIcon } from 'naive-ui';
 import { Water } from '@vicons/ionicons5'; // Changed the icon to represent humidity
 import type { ICardData } from '@/components/panel/card';
 import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device';
@@ -12,7 +12,7 @@ const props = defineProps<{
 const detail = ref<string>('');
 const unit = ref<string>(''); // Unit will be '%' for humidity
 const fontSize = ref('14px');
-const cardRef = ref<InstanceType<typeof NCard> | null>(null);
+const cardRef = ref(null);
 let resizeObserver: ResizeObserver | null = null;
 
 const setSeries = async (dataSource: ICardData['dataSource']) => {
@@ -55,9 +55,9 @@ watch(
 
 onMounted(() => {
   setSeries(props.card?.dataSource);
-  if (cardRef.value?.$el) {
+  if (cardRef.value) {
     resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(cardRef.value.$el);
+    resizeObserver.observe(cardRef.value);
   }
 });
 
@@ -81,27 +81,25 @@ defineExpose({
 </script>
 
 <template>
-  <div class="card-container">
-    <NCard ref="cardRef" :bordered="false" class="card">
-      <div class="card-content" :style="{ fontSize: fontSize }">
-        <div class="icon-container">
-          <NIcon class="icon" :color="props?.card?.config?.color || 'blue'">
-            <!-- Changed the color to blue -->
-            <Water />
-          </NIcon>
-        </div>
-        <div class="value-container">
-          <span class="value" :title="(detail || '45') + (props?.card?.config?.unit || unit || '%')">
-            {{ detail || '45' }} {{ props?.card?.config?.unit || unit || '%' }}
-          </span>
-        </div>
-        <div class="metric-name-container">
-          <span class="metric-name" :title="card?.dataSource?.deviceSource?.[0]?.metricsName">
-            {{ card?.dataSource?.deviceSource?.[0]?.metricsName || '湿度' }}
-          </span>
-        </div>
+  <div ref="cardRef" class="card-container">
+    <div class="card-content" :style="{ fontSize: fontSize }">
+      <div class="icon-container">
+        <NIcon class="icon" :color="props?.card?.config?.color || 'blue'">
+          <!-- Changed the color to blue -->
+          <Water />
+        </NIcon>
       </div>
-    </NCard>
+      <div class="value-container">
+        <span class="value" :title="(detail || '45') + (props?.card?.config?.unit || unit || '%')">
+          {{ detail || '45' }} {{ props?.card?.config?.unit || unit || '%' }}
+        </span>
+      </div>
+      <div class="metric-name-container">
+        <span class="metric-name" :title="card?.dataSource?.deviceSource?.[0]?.metricsName">
+          {{ card?.dataSource?.deviceSource?.[0]?.metricsName || '湿度' }}
+        </span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -109,14 +107,6 @@ defineExpose({
 .card-container {
   width: 100%;
   height: 100%;
-}
-
-.card {
-  height: 100%;
-}
-
-:deep(.n-card__content) {
-  padding: 0;
 }
 
 .card-content {
