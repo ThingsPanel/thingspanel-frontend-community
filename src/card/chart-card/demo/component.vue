@@ -84,7 +84,7 @@ onMounted(() => {
   // 确保DOM已经挂载后再初始化ResizeObserver
   if (myCard.value) {
     resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(myCard.value.$el);
+    resizeObserver.observe(myCard.value);
   }
 });
 
@@ -98,26 +98,24 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="h-full">
-    <div class="h-full flex-col items-center">
-      <NCard ref="myCard" :bordered="false" class="box">
-        <div class="bt-data" :style="'font-size:' + fontSize">
-          <span class="name" :title="card?.dataSource?.deviceSource?.[0]?.metricsName || ''">
-            {{ card?.dataSource?.deviceSource?.[0]?.metricsName }}
+  <div ref="myCard" class="h-full">
+    <div class="h-full w-full flex flex-col items-center">
+      <div class="bt-data" :style="'font-size:' + fontSize">
+        <span class="name" :title="card?.dataSource?.deviceSource?.[0]?.metricsName || ''">
+          {{ card?.dataSource?.deviceSource?.[0]?.metricsName }}
+        </span>
+        <NIcon class="iconclass" :color="props?.card?.config?.color || 'black'">
+          <component :is="iconOptions[props?.card?.config?.iconName || 'ClipboardCode20Regular']" />
+        </NIcon>
+        <div class="value-wrap">
+          <span class="value" :title="detail != null && detail != '' ? detail : '8'">
+            {{ detail != null && detail !== '' ? detail : '8' }}
           </span>
-          <NIcon class="iconclass" :color="props?.card?.config?.color || 'black'">
-            <component :is="iconOptions[props?.card?.config?.iconName || 'ClipboardCode20Regular']" />
-          </NIcon>
-          <div class="value-wrap">
-            <span class="value" :title="detail != null && detail != '' ? detail : '8'">
-              {{ detail != null && detail !== '' ? detail : '8' }}
-            </span>
-            <span class="unit" :title="props?.card?.config?.unit || unit">
-              {{ props?.card?.config?.unit || unit }}
-            </span>
-          </div>
+          <span class="unit" :title="props?.card?.config?.unit || unit">
+            {{ props?.card?.config?.unit || unit }}
+          </span>
         </div>
-      </NCard>
+      </div>
     </div>
   </div>
 </template>
@@ -125,16 +123,6 @@ onBeforeUnmount(() => {
 <style scoped>
 .items-center {
   padding: 0;
-}
-:deep(.n-card__content:first-child) {
-  padding-top: 0;
-}
-.box {
-  display: flex;
-  position: relative;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
 }
 .iconclass.n-icon svg {
   width: 100%;
