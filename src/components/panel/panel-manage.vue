@@ -247,11 +247,11 @@ onUnmounted(() => {
           v-model:value="theme"
           :consistent-menu-width="false"
           :options="[
-            { label: $t('-- 默认无主题 --'), value: NO_THEME },
+            { label: $t('极简白主题'), value: NO_THEME },
             { label: $t('科技蓝主题'), value: 'theme-tech-blue' },
             { label: $t('苹果紫主题'), value: 'theme-royal-purple' },
-            { label: $t('微软风主题'), value: 'theme-microsoft-style' },
-            { label: $t('清新浅绿主题'), value: 'theme-light-mode-light-green' },
+            { label: $t('微软风主题'), value: 'theme-microsoft-style' }
+            /*{ label: $t('清新浅绿主题'), value: 'theme-light-mode-light-green' },
             { label: $t('静谧浅蓝主题'), value: 'theme-light-mode-light-blue' },
             { label: $t('温暖浅橙主题'), value: 'theme-light-mode-light-orange' },
             { label: $t('活力浅红主题'), value: 'theme-light-mode-light-red' },
@@ -266,7 +266,7 @@ onUnmounted(() => {
             { label: $t('明净深绿主题'), value: 'theme-light-mode-dark-green' },
             { label: $t('明净深蓝主题'), value: 'theme-light-mode-dark-blue' },
             { label: $t('明净炽橙主题'), value: 'theme-light-mode-dark-orange' },
-            { label: $t('明净烈红主题'), value: 'theme-light-mode-dark-red' }
+            { label: $t('明净烈红主题'), value: 'theme-light-mode-dark-red' }*/
           ]"
         ></NSelect>
         <NButton v-if="isEditing" @click="quitEditMode">退出编辑</NButton>
