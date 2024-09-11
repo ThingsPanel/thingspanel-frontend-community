@@ -89,7 +89,7 @@ let eventSource = null;
 let tryNum = 0;
 const createEventSource = () => {
   const token = localStg.get('token');
-  eventSource = new EventSourcePolyfill(`/proxy-default/events`, {
+  eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/events`, {
     heartbeatTimeout: 3 * 60 * 1000, // 这是自定义配置请求超时时间  默认是4500ms(印象中是)
     headers: {
       'x-token': token
