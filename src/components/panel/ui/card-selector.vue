@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { onMounted, onUpdated, reactive, ref } from 'vue';
+import { computed, onMounted, onUpdated, reactive, ref } from 'vue';
 // eslint-disable-next-line vue/prefer-import-from-vue
 import type { UnwrapRefSimple } from '@vue/reactivity';
 import type { ICardData, ICardDefine } from '@/components/panel/card';
@@ -32,6 +32,23 @@ const tabList = [
   { tab: '插件', type: 'plugin' },
   { tab: '图表', type: 'chart' }
 ];
+
+const priorityCardIds = ref(['chart-demo', 'chart-digit']);
+const sortedPanelCards = computed(() => {
+  const result = {};
+  Object.keys(PanelCards).forEach(key => {
+    result[key] = [...PanelCards[key]].sort((a, b) => {
+      const indexA = priorityCardIds.value.indexOf(a.id);
+      const indexB = priorityCardIds.value.indexOf(b.id);
+      if (indexA === -1 && indexB === -1) return 0;
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    });
+  });
+  return result;
+});
+
 const state = reactive({
   curCardData: null as null | Record<string, any>
 });
@@ -231,7 +248,7 @@ onMounted(() => {
               </div>
               <div v-else>
                 <n-grid :x-gap="10" :y-gap="10" cols="1 240:1 480:2 720:3">
-                  <n-gi v-for="item in PanelCards[item1.type]" :key="item.id" class="min-w-240px p-4px">
+                  <n-gi v-for="item in sortedPanelCards[item1.type]" :key="item.id" class="min-w-240px p-4px">
                     <div
                       class="cursor-pointer overflow-hidden border rounded p-0px duration-200"
                       :style="
