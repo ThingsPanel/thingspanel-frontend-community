@@ -155,7 +155,7 @@ onMounted(() => {
   });
 
   if (cardRef.value) {
-    resizeObserver.observe(cardRef.value.$el);
+    resizeObserver.observe(cardRef.value);
   }
 
   onBeforeUnmount(() => {
@@ -165,21 +165,20 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="dashboard-card">
-    <NCard ref="cardRef" :bordered="false" class="h-full w-full">
-      <div class="chart-container">
-        <VChart ref="chartRef" :option="chartOptions" class="chart" />
-      </div>
-      <div class="data-info">
-        <span class="title">{{ card.dataSource?.deviceSource?.[0]?.metricsName || '仪表盘' }}</span>
-      </div>
-    </NCard>
+  <div ref="cardRef" class="dashboard-card">
+    <div class="chart-container">
+      <VChart ref="chartRef" :option="chartOptions" class="chart" />
+    </div>
+    <div class="data-info">
+      <span class="title">{{ card.dataSource?.deviceSource?.[0]?.metricsName || '仪表盘' }}</span>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .dashboard-card {
   height: 100%;
+  width: 100%;
 }
 .chart-container {
   position: relative;

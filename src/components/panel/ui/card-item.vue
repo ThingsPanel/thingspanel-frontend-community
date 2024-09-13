@@ -16,6 +16,9 @@ const findCardComponent = (id: string) => {
   const cId = `${cIds[0]}-${cIds[1]}`;
   return store.$state.cardMap.get(cId)?.component || null;
 };
+const componentStyle = computed(() => ({
+  height: props.data.basicSettings?.showTitle ? 'calc(100% - 28px)' : '100%'
+}));
 defineExpose({
   getComponent: () => {
     return refComp.value;
@@ -35,7 +38,8 @@ defineExpose({
       {{ data.basicSettings?.title }}
     </div>
     <div
-      class="h-full w-full flex-1"
+      class="w-full flex-1"
+      :style="componentStyle"
       :class="{ 'p-0 pb-1px': view, 'p-4': !view, 'pt-0': data.basicSettings?.showTitle }"
     >
       <component
