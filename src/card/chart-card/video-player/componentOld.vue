@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { defineProps, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
-import zh from 'video.js/dist/lang/zh-CN.json';
-import type { VideoJsPlayer } from 'video.js';
-import videojs from 'video.js';
 import { attributeDatasKey, telemetryDataCurrentKeys } from '@/service/api/device';
-import 'video.js/dist/video-js.css';
 
 interface ICardData {
   dataSource: any; // 定义数据源接口
@@ -20,6 +16,20 @@ interface Detail {
 
 const props = defineProps<{ card: ICardData }>();
 const detail = reactive<Detail>({ data: [] });
+
+const video = ref<HTMLVideoElement | null>(null);
+const currentTime = ref(0);
+const duration = ref(0);
+
+const player = ref();
+
+const updateCurrentTime = () => {
+  if (video.value) currentTime.value = video.value.currentTime;
+};
+
+const updateDuration = () => {
+  if (video.value) duration.value = video.value.duration;
+};
 
 const setSeries: (dataSource) => void = async dataSource => {
   const querDetail = {
@@ -58,25 +68,32 @@ const setSeries: (dataSource) => void = async dataSource => {
     }
   }
 };
-const m3u8_video = ref(null);
-let player: VideoJsPlayer;
-const createPlayer = async () => {
-  videojs.addLanguage('zh-CN', zh);
-  await nextTick();
-  const options = {
-    muted: true,
-    controls: true,
-    autoplay: true,
-    loop: true,
-    language: 'zh-CN',
-    techOrder: ['html5']
-  };
-  player = videojs(m3u8_video.value, options, () => {
-    videojs.log('播放器已经准备好了!');
-    player.on('error', () => {
-      videojs.log('播放器解析出错!');
-    });
+
+const createPlayer = () => {
+  player.value = new (window as any).WasmPlayer(null, 'easy-player', () => {}, {
+    Height: true,
+    openAudio: false
   });
+};
+
+const play = src => {
+  if (!src) return;
+  if (!player.value) {
+    createPlayer();
+  }
+  setTimeout(() => {
+    try {
+      player.value.play(src, 1);
+    } catch (e) {
+      console.error('EasyWasmPlayer error:', e);
+    }
+  }, 50);
+};
+
+const destroy = () => {
+  if (!player.value) return;
+  player.value.destroy();
+  player.value = null;
 };
 
 watch(
@@ -84,45 +101,44 @@ watch(
   () => setSeries(props.card.dataSource),
   { immediate: true, deep: true }
 );
-const videoUrl = ref('');
+
 watch(
   () => detail.data?.[0]?.value,
-  () => {
-    videoUrl.value = detail.data?.[0]?.value || '';
-  },
+  () => play(detail.data?.[0]?.value),
   { immediate: true, deep: true }
 );
 
 onMounted(() => {
   setSeries(props.card.dataSource);
-  // if (video.value) {
-  //   video.value.addEventListener("timeupdate", updateCurrentTime);
-  //   video.value.addEventListener("loadedmetadata", updateDuration);
-  // }
+  if (video.value) {
+    video.value.addEventListener('timeupdate', updateCurrentTime);
+    video.value.addEventListener('loadedmetadata', updateDuration);
+  }
   createPlayer();
 });
 
 onBeforeUnmount(() => {
-  // if (video.value) {
-  //   video.value.removeEventListener("timeupdate", updateCurrentTime);
-  //   video.value.removeEventListener("loadedmetadata", updateDuration);
-  // }
-  player?.dispose();
+  if (video.value) {
+    video.value.removeEventListener('timeupdate', updateCurrentTime);
+    video.value.removeEventListener('loadedmetadata', updateDuration);
+  }
+  destroy();
 });
 </script>
 
 <template>
   <div class="video-player">
-    <n-card :bordered="false" class="h-full w-full">
+    <n-card ref="cardRef" :bordered="false" class="h-full w-full">
       <div class="video-container">
-        <video
-          ref="m3u8_video"
-          class="video-js vjs-default-skin vjs-big-play-centered"
-          controls
-          autoplay
-          preload="auto"
-          :src="videoUrl"
-        ></video>
+        <!--
+ <video ref="video" class="video" controls @timeupdate="updateCurrentTime" @loadedmetadata="updateDuration">
+          <source v-if="detail.data.length > 0" :src="detail.data[0].value" type="video/mp4" />
+          <source v-if="detail.data.length > 0" :src="detail.data[0].value" type="video/webm" />
+          <source v-if="detail.data.length > 0" :src="detail.data[0].value" type="video/ogg" />
+          Your browser does not support the video tag.
+        </video> 
+-->
+        <div id="easy-player"></div>
       </div>
     </n-card>
   </div>
@@ -143,16 +159,18 @@ onBeforeUnmount(() => {
   top: 10px;
 }
 
+.video {
+  width: 100%;
+  height: 100%;
+}
+
 .controls {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-top: 10px;
 }
-.video-js {
-  width: 100%;
-  height: 100%;
-}
+
 .controls button {
   margin: 5px;
 }

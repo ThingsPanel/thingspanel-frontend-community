@@ -260,6 +260,13 @@ export const telemetryDataCurrent = async (id: any) => {
 export const telemetryDataCurrentKeys = async (params: any) => {
   return await request.get<any>('/telemetry/datas/current/keys', { params });
 };
+/**
+ * @param params {device_id:string,keys:string}
+ * @returns
+ */
+export const attributeDatasKey = async (params: any) => {
+  return await request.get<any>('/attribute/datas/key', { params });
+};
 
 /**
  * @param params { device_id: string, key: string, start_time: string, end_time: string, aggregate_window: string,
