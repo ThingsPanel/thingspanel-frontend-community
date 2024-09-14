@@ -60,6 +60,7 @@ const setSeries: (dataSource) => void = async dataSource => {
 };
 const m3u8_video = ref(null);
 let player: VideoJsPlayer;
+const videoUrl = ref('');
 const createPlayer = async () => {
   videojs.addLanguage('zh-CN', zh);
   await nextTick();
@@ -84,7 +85,7 @@ watch(
   () => setSeries(props.card.dataSource),
   { immediate: true, deep: true }
 );
-const videoUrl = ref('');
+
 watch(
   () => detail.data?.[0]?.value,
   () => {
