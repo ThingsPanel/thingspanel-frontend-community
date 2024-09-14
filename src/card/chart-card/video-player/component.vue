@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { defineProps, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import zh from 'video.js/dist/lang/zh-CN.json';
 import type { VideoJsPlayer } from 'video.js';
 import videojs from 'video.js';
