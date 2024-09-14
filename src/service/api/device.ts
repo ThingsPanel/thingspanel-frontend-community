@@ -315,6 +315,14 @@ export const attributeDataPub = async (params: any) => {
   return await request.post<any>(`/attribute/datas/pub`, params);
 };
 
+/**
+ * @param params {device_id:string,key:string}
+ * @returns
+ */
+export const getAttributeDatasKey = async (params: any) => {
+  return await request.get<any>('/attribute/datas/key', { params });
+};
+
 /** 属性下发记录查询（分页） */
 export const getEventDataSet = async (params: any) => {
   return await request.get<any>(`/event/datas`, { params });
