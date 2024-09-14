@@ -240,7 +240,7 @@ const getTelemetryList = async (device_id, key, index) => {
     }
   }
 };
-const updateSggregateFunction = v => {
+const updateAggregateFunction = v => {
   aggregateFunctionValue.value = v;
   params.aggregate_function = v;
 };
@@ -490,6 +490,9 @@ const initDateTimeRange = () => {
       if (props.card?.dataSource?.dataAggregateRange) {
         updateAggregate(props.card?.dataSource?.dataAggregateRange);
       }
+      if (props.card?.dataSource?.deviceSource?.length === 1) {
+        updateAggregateFunction(props.card?.dataSource?.deviceSource[0]?.aggregate_function);
+      }
     }
   }
 };
@@ -587,7 +590,7 @@ onUnmounted(() => {
           :options="aggregateFunctionOptions"
           trigger="hover"
           scrollable
-          @update:value="updateSggregateFunction"
+          @update:value="updateAggregateFunction"
         >
           <n-icon size="24" class="hover:text-primary-500">
             <FilterCircleOutline />
