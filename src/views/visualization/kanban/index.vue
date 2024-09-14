@@ -120,7 +120,11 @@ onMounted(fetchBoards);
           :key="board.id"
           @click="goRouter('visualization_kanban-details', board.id as string)"
         >
-          <NCard hoverable style="height: 160px" content-style="display: flex; flex-direction: column; height: 100%;">
+          <NCard
+            hoverable
+            style="height: 160px"
+            content-style="display: flex; flex-direction: column; height: 100%; gap: 8px;"
+          >
             <div class="flex justify-between">
               <div class="text-16px font-600">
                 {{ board.name }}
