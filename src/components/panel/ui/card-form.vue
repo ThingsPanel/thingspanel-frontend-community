@@ -1,5 +1,5 @@
 <script lang="tsx" setup>
-import { onMounted, onUpdated, reactive, ref, watch } from 'vue';
+import { computed, onMounted, onUpdated, reactive, ref, watch } from 'vue';
 import type { SelectOption } from 'naive-ui';
 import { usePanelStore } from '@/store/modules/panel';
 import ConfigCtx from '@/components/panel/ui/config-ctx.vue';
@@ -100,7 +100,7 @@ const updateDisabledOptions = (timeFrame: string) => {
     去年: 12 // 1月
   };
 
-  // 默认不禁用“不聚合”，根据时间范围禁用其余选项
+  // 默认不禁用"不聚合"，根据时间范围禁用其余选项
   dataAggregateRangeOptions.forEach((item, index, array) => {
     if (!disableBeforeIndex[timeFrame]) {
       item.disabled = false;
@@ -254,6 +254,8 @@ watch(
 watch(deviceCount, v => {
   deviceCountUpdate(v);
 });
+
+const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange === 'no_aggregate');
 </script>
 
 <template>
@@ -337,6 +339,7 @@ watch(deviceCount, v => {
                   clearable
                   :options="aggregateFunctionOptions"
                   placeholder="请选择数据聚合方式"
+                  :disabled="isNoAggregate"
                 />
               </div>
             </div>

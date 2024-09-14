@@ -240,10 +240,6 @@ const getTelemetryList = async (device_id, key, index) => {
     }
   }
 };
-const updateSggregateFunction = v => {
-  aggregateFunctionValue.value = v;
-  params.aggregate_function = v;
-};
 const updateAggregate = (v: string) => {
   aggregateOptionsValue.value = v;
   params.aggregate_window = v;
@@ -373,6 +369,12 @@ const updateTime = (v: number, o: SelectOption) => {
   params.start_time = start_time.getTime();
   params.end_time = end_time.getTime();
 };
+
+const updateAggregateFunction = (v: string) => {
+  aggregateFunctionValue.value = v;
+  params.aggregate_function = v;
+};
+
 const checkDateRange = value => {
   const [start, end] = value;
   if (start && end && addMonths(start, 1) < end) {
@@ -487,6 +489,9 @@ const initDateTimeRange = () => {
       if (props.card?.dataSource?.dataAggregateRange) {
         updateAggregate(props.card?.dataSource?.dataAggregateRange);
       }
+      if (props.card?.dataSource?.deviceSource?.length === 1) {
+        updateAggregateFunction(props.card?.dataSource?.deviceSource[0]?.aggregate_function);
+      }
     }
   }
 };
@@ -583,7 +588,7 @@ onUnmounted(() => {
           :options="aggregateFunctionOptions"
           trigger="hover"
           scrollable
-          @update:value="updateSggregateFunction"
+          @update:value="updateAggregateFunction"
         >
           <n-icon size="24" class="hover:text-primary-500">
             <FilterCircleOutline />
