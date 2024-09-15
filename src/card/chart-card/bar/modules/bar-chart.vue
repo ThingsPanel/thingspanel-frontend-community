@@ -28,10 +28,13 @@ type EChartsOption = ComposeOption<
   TooltipComponentOption | LegendComponentOption | ToolboxComponentOption | GridComponentOption | LineSeriesOption
 >;
 use([TooltipComponent, LegendComponent, ToolboxComponent, GridComponent, LineChart, CanvasRenderer]);
+const chartContainer = ref<HTMLElement | null>(null);
 const chartRef = ref();
 const isAggregate = ref<boolean>(false);
 const isTimeSelect = ref<boolean>(false);
 const dateRange = ref<[number, number] | null>(null);
+
+const legendColor = ref('auto');
 
 const detail: any = ref(null);
 
@@ -39,6 +42,7 @@ const props = defineProps<{
   card: ICardData;
   colorGroup: { name: string; top: string; bottom: string }[];
 }>();
+
 const message = useMessage();
 const deviceList = ref<any[]>([
   [20, 32, 11, 34, 90, 30, 10],
@@ -106,7 +110,10 @@ const option = ref<EChartsOption>({
     // }
   },
   legend: {
-    data: legendData.value
+    data: legendData.value,
+    textStyle: {
+      color: legendColor.value
+    }
   },
   dataZoom: [
     // 1.横向使用滚动条
@@ -149,6 +156,13 @@ const option = ref<EChartsOption>({
   },
   series: [] as any[]
 });
+const updateLegendColor = () => {
+  if (chartContainer.value) {
+    const computedStyle = window.getComputedStyle(chartContainer.value);
+    legendColor.value = computedStyle.color;
+    option.value.legend.textStyle.color = legendColor.value;
+  }
+};
 const d_end_time = new Date().getTime();
 // 获取1小时前的时间
 const d_start_time = d_end_time - 3600000;
@@ -537,6 +551,20 @@ watch(
 onMounted(() => {
   initDateTimeRange();
   setSeries(props?.card?.dataSource);
+
+  updateLegendColor(); // 初始设置
+
+  const resizeObserver = new ResizeObserver(() => {
+    updateLegendColor();
+  });
+
+  if (chartContainer.value) {
+    resizeObserver.observe(chartContainer.value);
+  }
+
+  onUnmounted(() => {
+    resizeObserver.disconnect();
+  });
 });
 onUnmounted(() => {
   // clearInterval(intervalNum.value);
@@ -544,7 +572,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div ref="chartContainer" class="chart-container h-full flex flex-col">
     <div class="flex justify-between pt-1">
       <div class="name-unit"></div>
       <div class="flex justify-end pr-2">
@@ -606,5 +634,8 @@ onUnmounted(() => {
 <style scoped>
 .name-unit {
   font-size: 18px;
+}
+.chart-container {
+  color: var(--chart-legend-color); /* 使用 CSS 变量 */
 }
 </style>
