@@ -40,7 +40,7 @@ const columns = [
 ];
 const pagination = reactive({
   page: 1,
-  pageSize: 5,
+  pageSize: 10,
   pageCount: 1,
   onChange: (page: number) => {
     pagination.page = page;
@@ -374,8 +374,8 @@ onMounted(() => {
 
 <template>
   <NSpace vertical>
-    <div class="w-full flex flex-row">
-      <div class="w-60% flex flex-col items-center">
+    <div class="w-full flex flex-row flex-wrap">
+      <div class="time-range flex flex-col items-center">
         <div class="w-full flex flex-row items-center">
           <span>时间范围：</span>
           <NSelect
@@ -400,7 +400,7 @@ onMounted(() => {
             @update:value="onCustomDateChange"
           />
         </div>
-        <div class="mt-2 w-full flex flex-row justify-between pl-72px">
+        <div class="mt-2 w-full flex flex-row flex-wrap justify-between pl-72px">
           <NButton @click="navigateTime('prevMonth')">上一月</NButton>
           <NButton @click="navigateTime('prevDay')">前一天</NButton>
           <NButton @click="navigateTime('prevHour')">前一小时</NButton>
@@ -409,7 +409,7 @@ onMounted(() => {
           <NButton @click="navigateTime('nextMonth')">下一月</NButton>
         </div>
       </div>
-      <div class="w-40% flex flex-row pl-2">
+      <div class="aggregation-range flex flex-row pl-2">
         <span class="pt-1">聚合范围：</span>
         <NSelect
           v-model:value="selectedOption.aggregate_window"
@@ -438,7 +438,7 @@ onMounted(() => {
         :pagination="pagination"
       />
       <div ref="chartRef" class="telemetry-chart relative m-0 p-0">
-        <div :class="`${isFullscreen ? 'h-full' : 'h-320px'} p-2`">
+        <div :class="`${isFullscreen ? 'h-full' : 'chart-height'} p-2`">
           <ChartComponent :initial-options="initialOptions" />
         </div>
         <div class="absolute right-0px top-5px">
@@ -465,6 +465,17 @@ onMounted(() => {
 .telemetry-table {
   width: 40%;
 }
+.chart-height {
+  height: calc(100% - 24px);
+}
+.time-range {
+  width: 60%;
+  flex-wrap: wrap;
+}
+.aggregation-range {
+  width: 40%;
+  flex-wrap: wrap;
+}
 @media (max-width: 768px) {
   .container-table-chart {
     flex-direction: column;
@@ -473,6 +484,15 @@ onMounted(() => {
     width: 100%;
   }
   .telemetry-table {
+    width: 100%;
+  }
+  .chart-height {
+    height: 400px;
+  }
+  .time-range {
+    width: 100%;
+  }
+  .aggregation-range {
     width: 100%;
   }
 }
