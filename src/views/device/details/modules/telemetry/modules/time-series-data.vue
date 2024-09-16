@@ -11,6 +11,7 @@ import { useLoading } from '~/packages/hooks';
 const tableData = ref<any[]>([]);
 const chartRef = ref();
 const { isFullscreen, toggle } = useFullscreen(chartRef);
+const datePickerValue = ref<[number, number] | null>(null);
 
 interface Created {
   deviceId: string;
@@ -203,6 +204,53 @@ const aggregationTtemToFalse = (weight: number) => {
   });
 };
 
+const navigateTime = (direction: string) => {
+  let start: number | undefined = selectedOption.value.start_time;
+  let end: number | undefined = selectedOption.value.end_time;
+
+  if (!start || !end) {
+    // 如果没有设置时间范围，使用当前时间
+    end = dayjs().endOf('hour').valueOf();
+    start = dayjs(end).subtract(1, 'hour').valueOf();
+  }
+
+  switch (direction) {
+    case 'prevMonth':
+      start = dayjs(start).subtract(1, 'month').valueOf();
+      end = dayjs(end).subtract(1, 'month').valueOf();
+      break;
+    case 'prevDay':
+      start = dayjs(start).subtract(1, 'day').valueOf();
+      end = dayjs(end).subtract(1, 'day').valueOf();
+      break;
+    case 'prevHour':
+      start = dayjs(start).subtract(1, 'hour').valueOf();
+      end = dayjs(end).subtract(1, 'hour').valueOf();
+      break;
+    case 'nextHour':
+      start = dayjs(start).add(1, 'hour').valueOf();
+      end = dayjs(end).add(1, 'hour').valueOf();
+      break;
+    case 'nextDay':
+      start = dayjs(start).add(1, 'day').valueOf();
+      end = dayjs(end).add(1, 'day').valueOf();
+      break;
+    case 'nextMonth':
+      start = dayjs(start).add(1, 'month').valueOf();
+      end = dayjs(end).add(1, 'month').valueOf();
+      break;
+    default:
+      break;
+  }
+
+  selectedOption.value.start_time = start;
+  selectedOption.value.end_time = end;
+  selectedOption.value.time_range = 'custom';
+
+  // 更新日期选择器的值
+  datePickerValue.value = [start, end];
+};
+
 watch(
   selectedOption,
   async v => {
@@ -240,6 +288,7 @@ const onTimeRangeChange = value => {
   if (value !== 'custom') {
     selectedOption.value.start_time = undefined;
     selectedOption.value.end_time = undefined;
+    datePickerValue.value = null;
   }
   aggregationTtemToFalse(timeWeighting[value]);
 };
@@ -249,6 +298,7 @@ const onCustomDateChange = value => {
     selectedOption.value.start_time = value[0];
     selectedOption.value.end_time = value[1];
     selectedOption.value.time_range = 'custom';
+    datePickerValue.value = value;
   }
 };
 
@@ -277,42 +327,61 @@ onMounted(() => {
 
 <template>
   <NSpace vertical>
-    <NSpace align="center">
-      <span>时间范围：</span>
-      <NSelect
-        v-model:value="selectedOption.time_range"
-        :options="timeOptions"
-        :consistent-menu-width="false"
-        @update:value="onTimeRangeChange"
-      />
-      <NDatePicker
-        type="datetimerange"
-        value-format="timestamp"
-        format="yyyy-MM-dd HH:mm"
-        :time-picker-props="{
-          format: 'HH',
-          isHourDisabled: () => false,
-          isMinuteDisabled: () => true,
-          isSecondDisabled: () => true
-        }"
-        @update:value="onCustomDateChange"
-      />
-      <span>聚合范围：</span>
-      <NSelect
-        v-model:value="selectedOption.aggregate_window"
-        :options="aggregationIntervalOptions"
-        :consistent-menu-width="false"
-        @update:value="onAggregationChange"
-      />
-      <span v-if="selectedOption.aggregate_window !== 'no_aggregate'">聚合方法：</span>
-      <NSelect
-        v-if="selectedOption.aggregate_window !== 'no_aggregate'"
-        v-model:value="selectedOption.aggregate_function"
-        :options="statisticsOptions"
-        :consistent-menu-width="false"
-        @update:value="onStatisticsChange"
-      />
-    </NSpace>
+    <div class="w-full flex flex-row">
+      <div class="w-60% flex flex-col items-center">
+        <div class="w-full flex flex-row items-center">
+          <span>时间范围：</span>
+          <NSelect
+            v-model:value="selectedOption.time_range"
+            :options="timeOptions"
+            :consistent-menu-width="false"
+            class="select-item mr-2"
+            @update:value="onTimeRangeChange"
+          />
+          <NDatePicker
+            v-model:value="datePickerValue"
+            type="datetimerange"
+            value-format="timestamp"
+            class="flex-1"
+            format="yyyy-MM-dd HH:mm"
+            :time-picker-props="{
+              format: 'HH',
+              isHourDisabled: () => false,
+              isMinuteDisabled: () => true,
+              isSecondDisabled: () => true
+            }"
+            @update:value="onCustomDateChange"
+          />
+        </div>
+        <div class="mt-2 w-full flex flex-row justify-between pl-72px">
+          <NButton @click="navigateTime('prevMonth')">上一月</NButton>
+          <NButton @click="navigateTime('prevDay')">前一天</NButton>
+          <NButton @click="navigateTime('prevHour')">前一小时</NButton>
+          <NButton @click="navigateTime('nextHour')">后一小时</NButton>
+          <NButton @click="navigateTime('nextDay')">后一天</NButton>
+          <NButton @click="navigateTime('nextMonth')">下一月</NButton>
+        </div>
+      </div>
+      <div class="w-40% flex flex-row pl-2">
+        <span class="pt-1">聚合范围：</span>
+        <NSelect
+          v-model:value="selectedOption.aggregate_window"
+          :options="aggregationIntervalOptions"
+          :consistent-menu-width="false"
+          class="select-item mr-2"
+          @update:value="onAggregationChange"
+        />
+        <span v-if="selectedOption.aggregate_window !== 'no_aggregate'" class="pt-1">聚合方法：</span>
+        <NSelect
+          v-if="selectedOption.aggregate_window !== 'no_aggregate'"
+          v-model:value="selectedOption.aggregate_function"
+          :options="statisticsOptions"
+          :consistent-menu-width="false"
+          class="select-item"
+          @update:value="onStatisticsChange"
+        />
+      </div>
+    </div>
     <div class="container-table-chart">
       <n-data-table
         class="telemetry-table"
@@ -354,5 +423,8 @@ onMounted(() => {
   .telemetry-table {
     width: 100%;
   }
+}
+.select-item {
+  flex: 0;
 }
 </style>
