@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { defineProps, reactive, ref, watch } from 'vue';
+import { defineProps, onMounted, reactive, ref, watch } from 'vue';
+import { NDatePicker, NSelect, NSpace } from 'naive-ui';
 import { useFullscreen } from '@vueuse/core';
 import dayjs from 'dayjs';
 import { telemetryDataHistoryList } from '@/service/api/device';
 import { $t } from '@/locales';
 import ChartComponent from './ChartComponent.vue';
-import AggregationSelector from './AggregationSelector.vue';
 import { useLoading } from '~/packages/hooks';
 
 const tableData = ref<any[]>([]);
@@ -18,7 +18,15 @@ interface Created {
 }
 
 const props = defineProps<Created>();
-const selectedOption = ref();
+const selectedOption = ref({
+  device_id: props.deviceId,
+  key: props.theKey,
+  aggregate_window: 'no_aggregate',
+  time_range: 'last_1h',
+  start_time: undefined,
+  end_time: undefined,
+  aggregate_function: undefined
+});
 const { loading, startLoading, endLoading } = useLoading();
 const columns = [
   { title: $t('common.time'), key: 'x', render: row => dayjs(row.x).format('YYYY-MM-DD HH:mm:ss') },
@@ -112,6 +120,89 @@ const initialOptions = ref({
     }
   ]
 });
+
+const timeOptions = [
+  { label: $t('common.custom'), value: 'custom' },
+  { label: $t('common.last_5m'), value: 'last_5m' },
+  { label: $t('common.last_15m'), value: 'last_15m' },
+  { label: $t('common.last_30m'), value: 'last_30m' },
+  { label: $t('common.lastHours1'), value: 'last_1h' },
+  { label: $t('common.lastHours3'), value: 'last_3h' },
+  { label: $t('common.lastHours6'), value: 'last_6h' },
+  { label: $t('common.lastHours12'), value: 'last_12h' },
+  { label: $t('common.lastHours24'), value: 'last_24h' },
+  { label: $t('common.lastDays3'), value: 'last_3d' },
+  { label: $t('common.lastDays7'), value: 'last_7d' },
+  { label: $t('common.lastDays15'), value: 'last_15d' },
+  { label: $t('common.lastDays30'), value: 'last_30d' },
+  { label: $t('common.lastDays60'), value: 'last_60d' },
+  { label: $t('common.lastDays90'), value: 'last_90d' },
+  { label: $t('common.halfYear'), value: 'last_6m' },
+  { label: $t('common.lastYears1'), value: 'last_1y' }
+];
+const timeWeighting = {
+  custom: 0,
+  last_5m: 0,
+  last_15m: 0,
+  last_30m: 0,
+  last_1h: 0,
+  last_3h: 1,
+  last_6h: 2,
+  last_12h: 3,
+  last_24h: 4,
+  last_3d: 5,
+  last_7d: 6,
+  last_15d: 7,
+  last_30d: 8,
+  last_60d: 9,
+  last_90d: 10,
+  last_6m: 11,
+  last_1y: 12
+};
+
+const aggregationIntervalOptions = [
+  { label: $t('common.notAggre'), value: 'no_aggregate', disabled: false },
+  { label: $t('common.seconds30'), value: '30s', disabled: false },
+  { label: $t('common.minute1'), value: '1m', disabled: false },
+  { label: $t('common.minute2'), value: '2m', disabled: false },
+  { label: $t('common.minutes5'), value: '5m', disabled: false },
+  { label: $t('common.minutes10'), value: '10m', disabled: false },
+  { label: $t('common.minutes30'), value: '30m', disabled: false },
+  { label: $t('common.hours1'), value: '1h', disabled: false },
+  { label: $t('common.hours3'), value: '3h', disabled: false },
+  { label: $t('common.hours6'), value: '6h', disabled: false },
+  { label: $t('common.days1'), value: '1d', disabled: false },
+  { label: $t('common.days7'), value: '7d', disabled: false },
+  { label: $t('common.months1'), value: '1mo', disabled: false }
+];
+
+const statisticsOptions = [
+  { label: $t('common.average'), value: 'avg' },
+  { label: $t('generate.max-value'), value: 'max' },
+  { label: $t('generate.min-value'), value: 'min' },
+  { label: $t('generate.sum'), value: 'sum' },
+  { label: $t('generate.diff'), value: 'diff' }
+];
+
+const aggregationTtemToFalse = (weight: number) => {
+  aggregationIntervalOptions.forEach((item, index) => {
+    if (index < weight) {
+      item.disabled = true;
+    } else {
+      item.disabled = false;
+    }
+    if (index < weight + 1) {
+      selectedOption.value.aggregate_window = item.value;
+      if (selectedOption.value.aggregate_window !== 'no_aggregate' && !selectedOption.value.aggregate_function) {
+        selectedOption.value.aggregate_function = 'avg';
+      }
+      if (selectedOption.value.aggregate_window === 'no_aggregate') {
+        selectedOption.value.aggregate_function = undefined;
+      }
+    }
+  });
+};
+
 watch(
   selectedOption,
   async v => {
@@ -143,25 +234,125 @@ watch(
   },
   { deep: true }
 );
+
+const onTimeRangeChange = value => {
+  selectedOption.value.time_range = value;
+  if (value !== 'custom') {
+    selectedOption.value.start_time = undefined;
+    selectedOption.value.end_time = undefined;
+  }
+  aggregationTtemToFalse(timeWeighting[value]);
+};
+
+const onCustomDateChange = value => {
+  if (value) {
+    selectedOption.value.start_time = value[0];
+    selectedOption.value.end_time = value[1];
+    selectedOption.value.time_range = 'custom';
+  }
+};
+
+const onAggregationChange = value => {
+  selectedOption.value.aggregate_window = value;
+  if (value !== 'no_aggregate' && !selectedOption.value.aggregate_function) {
+    selectedOption.value.aggregate_function = 'avg';
+  }
+  if (value === 'no_aggregate') {
+    selectedOption.value.aggregate_function = undefined;
+  }
+};
+
+const onStatisticsChange = value => {
+  selectedOption.value.aggregate_function = value;
+};
+
+const initData = () => {
+  selectedOption.value = { ...selectedOption.value, time_range: 'last_1h' };
+};
+
+onMounted(() => {
+  initData();
+});
 </script>
 
 <template>
-  <n-card ref="chartRef" :bordered="false" class="m-0 p-0">
-    <div :class="`${isFullscreen ? 'm-0' : 'mb-4 mt--16 ml--26px mr--36px'} flex items-center justify-between`">
-      <div :class="`${isFullscreen ? 'top-36px' : 'top-56px'} relative  z-9999`">
-        <AggregationSelector v-model:value="selectedOption" :device_id="props.deviceId" :thekey="props.theKey" />
-      </div>
-      <div class="relative right-0px top-56px z-9999">
-        <FullScreen v-if="!isFullscreen" :full="isFullscreen" @click="toggle" />
+  <NSpace vertical>
+    <NSpace align="center">
+      <span>时间范围：</span>
+      <NSelect
+        v-model:value="selectedOption.time_range"
+        :options="timeOptions"
+        :consistent-menu-width="false"
+        @update:value="onTimeRangeChange"
+      />
+      <NDatePicker
+        type="datetimerange"
+        value-format="timestamp"
+        format="yyyy-MM-dd HH:mm"
+        :time-picker-props="{
+          format: 'HH',
+          isHourDisabled: () => false,
+          isMinuteDisabled: () => true,
+          isSecondDisabled: () => true
+        }"
+        @update:value="onCustomDateChange"
+      />
+      <span>聚合范围：</span>
+      <NSelect
+        v-model:value="selectedOption.aggregate_window"
+        :options="aggregationIntervalOptions"
+        :consistent-menu-width="false"
+        @update:value="onAggregationChange"
+      />
+      <span v-if="selectedOption.aggregate_window !== 'no_aggregate'">聚合方法：</span>
+      <NSelect
+        v-if="selectedOption.aggregate_window !== 'no_aggregate'"
+        v-model:value="selectedOption.aggregate_function"
+        :options="statisticsOptions"
+        :consistent-menu-width="false"
+        @update:value="onStatisticsChange"
+      />
+    </NSpace>
+    <div class="container-table-chart">
+      <n-data-table
+        class="telemetry-table"
+        :loading="loading"
+        :columns="columns"
+        :data="tableData"
+        :pagination="pagination"
+      />
+      <div ref="chartRef" class="telemetry-chart relative m-0 p-0">
+        <div :class="`${isFullscreen ? 'h-full' : 'h-320px'} p-2`">
+          <ChartComponent :initial-options="initialOptions" />
+        </div>
+        <div class="absolute right-0px top-5px">
+          <FullScreen v-if="!isFullscreen" :full="isFullscreen" @click="toggle" />
+        </div>
       </div>
     </div>
-    <div :class="`${isFullscreen ? 'h-full' : 'h-320px'}  p-2 `">
-      <ChartComponent :initial-options="initialOptions" />
-    </div>
-  </n-card>
-  <div class="mt-8">
-    <n-data-table :loading="loading" :columns="columns" :data="tableData" :pagination="pagination" />
-  </div>
+  </NSpace>
 </template>
 
-<style scoped></style>
+<style scoped>
+.container-table-chart {
+  display: flex;
+  flex-direction: row;
+}
+.telemetry-chart {
+  width: 60%;
+}
+.telemetry-table {
+  width: 40%;
+}
+@media (max-width: 768px) {
+  .container-table-chart {
+    flex-direction: column;
+  }
+  .telemetry-chart {
+    width: 100%;
+  }
+  .telemetry-table {
+    width: 100%;
+  }
+}
+</style>
