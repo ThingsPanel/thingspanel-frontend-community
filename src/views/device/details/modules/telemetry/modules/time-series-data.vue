@@ -12,10 +12,15 @@ const tableData = ref<any[]>([]);
 const chartRef = ref();
 const { isFullscreen, toggle } = useFullscreen(chartRef);
 const datePickerValue = ref<[number, number] | null>(null);
+const avgValue = ref<number | undefined>(undefined);
+const maxValue = ref<number | undefined>(undefined);
+const minValue = ref<number | undefined>(undefined);
 
 interface Created {
   deviceId: string;
   theKey: string;
+  theName: string;
+  theUnit: string;
 }
 
 const props = defineProps<Created>();
@@ -31,7 +36,7 @@ const selectedOption = ref({
 const { loading, startLoading, endLoading } = useLoading();
 const columns = [
   { title: $t('common.time'), key: 'x', render: row => dayjs(row.x).format('YYYY-MM-DD HH:mm:ss') },
-  { title: $t('generate.fieldValue'), key: 'y' }
+  { title: (props.theName ? props.theName : props.theKey) + (props.theUnit ? `(${props.theUnit})` : ''), key: 'y' }
 ];
 const pagination = reactive({
   page: 1,
@@ -43,13 +48,40 @@ const pagination = reactive({
 });
 const initialOptions = ref({
   baseOption: undefined,
+  title: {
+    text: props.theName ? props.theName : props.theKey
+  },
   options: [],
   tooltip: {
-    trigger: 'axis'
+    trigger: 'axis',
+    formatter(params) {
+      let result = `${dayjs(params[0].value[0]).format('YYYY-MM-DD HH:mm:ss')}<br/>`;
+      params.forEach(param => {
+        result += `${param.marker} ${props.theName ? props.theName : props.theKey}: ${param.value[1]}${
+          props.theUnit ? props.theUnit : ''
+        }<br/>`;
+      });
+      return result;
+    }
   },
   legend: {
     data: ['test_key']
   },
+  dataZoom: [
+    {
+      type: 'slider', // 添加一个滑动条型的 dataZoom
+      show: true,
+      xAxisIndex: [0],
+      start: 0,
+      end: 100
+    },
+    {
+      type: 'inside', // 添加一个内置型的 dataZoom，支持鼠标滚轮或触摸板缩放
+      xAxisIndex: [0],
+      start: 0,
+      end: 100
+    }
+  ],
   grid: {
     left: '3%',
     right: '4%',
@@ -271,6 +303,21 @@ watch(
         return b.x - a.x;
       });
       tableData.value = sortedData;
+      let sumValue = 0;
+      minValue.value = data[0].y || Number.NEGATIVE_INFINITY;
+      maxValue.value = data[0].y || Number.POSITIVE_INFINITY;
+      data.forEach(item => {
+        if (item.y) {
+          sumValue += item.y;
+          if (item.y < minValue.value) {
+            minValue.value = item.y;
+          }
+          if (item.y > maxValue.value) {
+            maxValue.value = item.y;
+          }
+        }
+      });
+      avgValue.value = sumValue / data.length;
       // 这里是当 通过接口改变 initialOptions的数据
       initialOptions.value.series.forEach(series => {
         series.data = data.map(item => {
@@ -396,6 +443,11 @@ onMounted(() => {
         </div>
         <div class="absolute right-0px top-5px">
           <FullScreen v-if="!isFullscreen" :full="isFullscreen" @click="toggle" />
+        </div>
+        <div class="flex flex-row justify-between pl-4 pr-4 font-bold">
+          <span>平均值：{{ avgValue !== undefined ? avgValue.toFixed(2) : '-' }}</span>
+          <span>最大值：{{ maxValue !== undefined ? maxValue : '-' }}</span>
+          <span>最小值：{{ minValue !== undefined ? minValue : '-' }}</span>
         </div>
       </div>
     </div>

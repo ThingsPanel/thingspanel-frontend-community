@@ -36,6 +36,8 @@ const showLogDialog = ref(false);
 const showHistory = ref(false);
 const telemetryId = ref();
 const telemetryKey = ref();
+const telemetryName = ref();
+const telemetryUnit = ref();
 const modelType = ref<string>('');
 
 const formValue = ref('');
@@ -304,7 +306,9 @@ const onTapTableTools = (i: any) => {
   if (typeof i.value === 'number') {
     modelType.value = $t('custom.device_details.sequential');
     telemetryKey.value = i.key;
+    telemetryName.value = i.label;
     telemetryId.value = i.device_id;
+    telemetryUnit.value = i.unit;
     showHistory.value = true;
   }
 };
@@ -441,6 +445,8 @@ const inputFeedback = computed(() => {
                     () => {
                       modelType = $t('custom.device_details.history');
                       telemetryKey = i.key;
+                      telemetryName = i.label;
+                      telemetryUnit = i.unit;
                       telemetryId = i.device_id;
                       showHistory = true;
                     }
@@ -602,11 +608,15 @@ const inputFeedback = computed(() => {
           v-if="modelType === $t('custom.device_details.history')"
           :device-id="telemetryId"
           :the-key="telemetryKey"
+          :the-name="telemetryName"
+          :the-unit="telemetryUnit"
         />
         <TimeSeriesData
           v-if="modelType === $t('custom.device_details.sequential')"
           :device-id="telemetryId"
           :the-key="telemetryKey"
+          :the-name="telemetryName"
+          :the-unit="telemetryUnit"
         />
       </NCard>
     </n-modal>
