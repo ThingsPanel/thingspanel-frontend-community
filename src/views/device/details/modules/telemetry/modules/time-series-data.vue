@@ -303,29 +303,31 @@ watch(
         return b.x - a.x;
       });
       tableData.value = sortedData;
-      let sumValue = 0;
-      minValue.value = data[0].y || Number.NEGATIVE_INFINITY;
-      maxValue.value = data[0].y || Number.POSITIVE_INFINITY;
-      data.forEach(item => {
-        if (item.y) {
-          sumValue += item.y;
-          if (item.y < minValue.value) {
-            minValue.value = item.y;
+      if (data.length > 0) {
+        let sumValue = 0;
+        minValue.value = data[0].y || Number.NEGATIVE_INFINITY;
+        maxValue.value = data[0].y || Number.POSITIVE_INFINITY;
+        data.forEach(item => {
+          if (item.y) {
+            sumValue += item.y;
+            if (item.y < minValue.value) {
+              minValue.value = item.y;
+            }
+            if (item.y > maxValue.value) {
+              maxValue.value = item.y;
+            }
           }
-          if (item.y > maxValue.value) {
-            maxValue.value = item.y;
-          }
-        }
-      });
-      avgValue.value = sumValue / data.length;
-      // 这里是当 通过接口改变 initialOptions的数据
-      initialOptions.value.series.forEach(series => {
-        series.data = data.map(item => {
-          return [item.x, item.y];
         });
-      });
-      endLoading();
+        avgValue.value = sumValue / data.length;
+        // 这里是当 通过接口改变 initialOptions的数据
+        initialOptions.value.series.forEach(series => {
+          series.data = data.map(item => {
+            return [item.x, item.y];
+          });
+        });
+      }
     }
+    endLoading();
   },
   { deep: true }
 );
@@ -365,6 +367,24 @@ const onStatisticsChange = value => {
 
 const initData = () => {
   selectedOption.value = { ...selectedOption.value, time_range: 'last_1h' };
+};
+
+const exportData = () => {
+  const excelData = [
+    ['时间', (props.theName ? props.theName : props.theKey) + (props.theUnit ? `(${props.theUnit})` : '')], // 表头
+    ...tableData.value.map(item => [dayjs(item.x).format('YYYY-MM-DD HH:mm:ss'), item.y])
+  ];
+  // save as csv
+  const csvContent = excelData.map(row => row.join(',')).join('\n');
+  const excelBlob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+  const excelUrl = URL.createObjectURL(excelBlob);
+  const a = document.createElement('a');
+  a.href = excelUrl;
+  a.download = 'telemetry_data.csv';
+  a.click();
+  URL.revokeObjectURL(excelUrl);
+  a.remove();
 };
 
 onMounted(() => {
@@ -427,6 +447,7 @@ onMounted(() => {
           class="select-item"
           @update:value="onStatisticsChange"
         />
+        <NButton class="ml-auto" @click="exportData()">导出数据</NButton>
       </div>
     </div>
     <div class="container-table-chart">
