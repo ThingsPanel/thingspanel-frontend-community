@@ -601,7 +601,7 @@ const inputFeedback = computed(() => {
     <n-modal
       v-model:show="showHistory"
       :title="$t('generate.telemetry-history-data')"
-      :class="getPlatform ? 'w-90%' : 'w-80%'"
+      :class="getPlatform ? 'w-90%' : 'chart-table-dialog'"
     >
       <NCard>
         <HistoryData
@@ -661,5 +661,9 @@ const inputFeedback = computed(() => {
 }
 .fs-0 {
   flex-shrink: 0;
+}
+.chart-table-dialog {
+  width: 80%;
+  max-width: 1000px;
 }
 </style>
