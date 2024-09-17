@@ -483,10 +483,12 @@ defineExpose({
 
     if (value && data.systime) {
       const timestamp = new Date(data.systime).getTime();
-      const len = seriesData?.push([timestamp, value]);
-      // 如果长度大于100且第一个数据和最后一个数据的间隔时间大于采样周期则删除最后一个元素
-      if (len >= 100) {
-        seriesData.shift();
+      if (seriesData.length === 0 || timestamp !== seriesData[seriesData.length - 1][0]) {
+        const len = seriesData?.push([timestamp, value]);
+        // 如果长度大于100且第一个数据和最后一个数据的间隔时间大于采样周期则删除最后一个元素
+        if (len >= 100) {
+          seriesData.shift();
+        }
       }
     }
   }
