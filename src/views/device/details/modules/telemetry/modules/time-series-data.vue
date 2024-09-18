@@ -238,42 +238,47 @@ const aggregationTtemToFalse = (weight: number) => {
 
 const navigateTime = (direction: string) => {
   let start: number | undefined = selectedOption.value.start_time;
-  let end: number | undefined = selectedOption.value.end_time;
+  let end: number | undefined;
 
-  if (!start || !end) {
-    // 如果没有设置时间范围，使用当前时间
-    end = dayjs().endOf('hour').valueOf();
-    start = dayjs(end).subtract(1, 'hour').valueOf();
+  if (!start) {
+    // 如果没有设置开始时间，使用当前时间
+    start = dayjs().startOf('hour').valueOf();
   }
+
+  let startDate = dayjs(start);
 
   switch (direction) {
     case 'prevMonth':
-      start = dayjs(start).subtract(1, 'month').valueOf();
-      end = dayjs(end).subtract(1, 'month').valueOf();
+      startDate = startDate.subtract(1, 'month').startOf('month');
+      end = startDate.endOf('month').valueOf();
       break;
     case 'prevDay':
-      start = dayjs(start).subtract(1, 'day').valueOf();
-      end = dayjs(end).subtract(1, 'day').valueOf();
+      startDate = startDate.subtract(1, 'day').startOf('day');
+      end = startDate.endOf('day').valueOf();
       break;
     case 'prevHour':
-      start = dayjs(start).subtract(1, 'hour').valueOf();
-      end = dayjs(end).subtract(1, 'hour').valueOf();
+      startDate = startDate.subtract(1, 'hour').startOf('hour');
+      end = startDate.endOf('hour').valueOf();
       break;
     case 'nextHour':
-      start = dayjs(start).add(1, 'hour').valueOf();
-      end = dayjs(end).add(1, 'hour').valueOf();
+      startDate = startDate.add(1, 'hour').startOf('hour');
+      end = startDate.endOf('hour').valueOf();
       break;
     case 'nextDay':
-      start = dayjs(start).add(1, 'day').valueOf();
-      end = dayjs(end).add(1, 'day').valueOf();
+      startDate = startDate.add(1, 'day').startOf('day');
+      end = startDate.endOf('day').valueOf();
       break;
     case 'nextMonth':
-      start = dayjs(start).add(1, 'month').valueOf();
-      end = dayjs(end).add(1, 'month').valueOf();
+      startDate = startDate.add(1, 'month').startOf('month');
+      end = startDate.endOf('month').valueOf();
       break;
     default:
+      // 如果没有匹配的方向，保持当前开始时间不变，结束时间设置为开始时间的结束
+      end = startDate.endOf('hour').valueOf();
       break;
   }
+
+  start = startDate.valueOf();
 
   selectedOption.value.start_time = start;
   selectedOption.value.end_time = end;
@@ -342,12 +347,65 @@ const onTimeRangeChange = value => {
   aggregationTtemToFalse(timeWeighting[value]);
 };
 
+/**
+ * 根据开始时间和结束时间计算一个权重，权重越大，表示时间范围越大 1小时内，权重为0 3小时内，权重为1 6小时内，权重为2 12小时内，权重为3 24小时内，权重为4 3天内，权重为5 7天内，权重为6 15天内，权重为7
+ * 30天内，权重为8
+ */
+const calculateTimeWeight = (start: number, end: number) => {
+  const startDate = dayjs(start);
+  const endDate = dayjs(end);
+  const diffInHours = endDate.diff(startDate, 'hour');
+  console.log('diffInHours', diffInHours);
+  if (diffInHours < 1) {
+    return 0;
+  }
+  if (diffInHours < 3) {
+    return 1;
+  }
+  if (diffInHours < 6) {
+    return 2;
+  }
+  if (diffInHours < 12) {
+    return 3;
+  }
+  if (diffInHours < 24) {
+    return 4;
+  }
+  if (diffInHours < 3 * 24) {
+    return 5;
+  }
+  if (diffInHours < 7 * 24) {
+    return 6;
+  }
+  if (diffInHours < 15 * 24) {
+    return 7;
+  }
+  if (diffInHours < 30 * 24) {
+    return 8;
+  }
+  if (diffInHours < 60 * 24) {
+    return 9;
+  }
+  if (diffInHours < 90 * 24) {
+    return 10;
+  }
+  if (diffInHours < 6 * 30 * 24) {
+    return 11;
+  }
+  if (diffInHours < 12 * 30 * 24) {
+    return 12;
+  }
+  return 13;
+};
+
 const onCustomDateChange = value => {
   if (value) {
     selectedOption.value.start_time = value[0];
     selectedOption.value.end_time = value[1];
     selectedOption.value.time_range = 'custom';
     datePickerValue.value = value;
+    const weight = calculateTimeWeight(value[0], value[1]);
+    aggregationTtemToFalse(weight);
   }
 };
 
@@ -485,9 +543,11 @@ onMounted(() => {
 }
 .telemetry-table {
   width: 40%;
+  min-height: 200px;
 }
 .chart-height {
   height: calc(100% - 24px);
+  min-height: 200px;
 }
 .time-range {
   width: 60%;
