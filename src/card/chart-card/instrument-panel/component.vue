@@ -61,7 +61,8 @@ const chartOptions = ref({
             show: true,
             width: '100%',
             overflow: 'breakAll',
-            formatter: value => value
+            formatter: value => value,
+            color: 'inherit'
           }
         }
       ]
