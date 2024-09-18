@@ -311,48 +311,97 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --chart-legend-color: #2f241c;
 }
-
+/* 科技蓝 */
 .theme-tech-blue.vue-grid-layout {
-  background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
-  color: blue;
+  background: linear-gradient(135deg, #04206c, #0b47ed);
+  color: rgb(253, 253, 255);
 }
 
 .theme-tech-blue.vue-grid-layout .n-card {
-  color: rgb(219, 234, 254);
-  background-color: rgb(37 99 235/0.5);
+  color: rgb(219, 234, 254,1);
+  background-color: rgb(37 99 235/0.8);
   border-width: 0;
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --chart-legend-color: rgb(219, 234, 254);
 }
-
+/* 添加悬停效果 */
+.theme-tech-blue.vue-grid-layout .n-card:hover {
+  background-color: rgba(69, 66, 243, 0.6);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.theme-tech-blue.vue-grid-layout .n-card .n-data-table .n-data-table-th,
+.theme-tech-blue.vue-grid-layout .n-card .n-data-table .n-data-table-td,
+.theme-tech-blue.vue-grid-layout .n-card .n-pagination .n-pagination-item,
+.theme-tech-blue.vue-grid-layout .n-card .n-base-selection .n-base-selection-label .n-base-selection-input {
+  color: rgba(255, 255, 255, 1);
+}
+.theme-tech-blue.vue-grid-layout .n-card .n-data-table .n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-th,
+.theme-tech-blue.vue-grid-layout .n-card .n-data-table .n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td {
+  color: black;
+}
 /* 苹果紫 */
 .theme-royal-purple.vue-grid-layout {
-  background: linear-gradient(135deg, #8A2BE2, #9370DB);
-  color: #F8F8FF;
+  background: linear-gradient(135deg, #ae04c1, #3307e0);
+  color: #ffffff;
 }
 
 .theme-royal-purple.vue-grid-layout .n-card {
-  color: #4B0082;
-  background-color: rgba(230, 230, 250, 0.9);
+  color:  rgba(255, 255, 255, 1);
+  background-color: rgba(230, 230, 250, 0.2);
   border-radius: 0.5rem;
   border-width: 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --chart-legend-color: #4B0082;
+  --chart-legend-color: #f8f7fa;
+}
+.theme-royal-purple.vue-grid-layout .n-card .n-data-table .n-data-table-th,
+.theme-royal-purple.vue-grid-layout .n-card .n-data-table .n-data-table-td,
+.theme-royal-purple.vue-grid-layout .n-card .n-pagination .n-pagination-item,
+.theme-royal-purple.vue-grid-layout .n-card .n-base-selection .n-base-selection-label .n-base-selection-input {
+  color: rgba(255, 255, 255, 1);
+}
+.theme-royal-purple.vue-grid-layout .n-card .n-data-table .n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-th,
+.theme-royal-purple.vue-grid-layout .n-card .n-data-table .n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td {
+  color: black;
 }
 
-/* 微软风 */
+/* 添加悬停效果 */
+.theme-royal-purple.vue-grid-layout .n-card:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 微软Windows风格 */
 .theme-microsoft-style.vue-grid-layout {
-  background: linear-gradient(135deg, #0078d4, #50e6ff);
+  background: linear-gradient(135deg, #0078D4, #005A9E);  /* 微软蓝色渐变 */
   color: #ffffff;
 }
 
 .theme-microsoft-style.vue-grid-layout .n-card {
-  color: rgba(0, 0, 0, 0.8);
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 0.5rem;
+  color: rgba(255, 255, 255, 0.9);  /* 略微降低文字不透明度 */
+  background-color: rgba(255, 255, 255, 0.1);  /* 降低卡片背景不透明度 */
+  border-radius: 0.5rem;  /* 稍微减小圆角 */
   border-width: 0;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-  --chart-legend-color: rgba(0, 0, 0, 0.8);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);  /* 调整阴影 */
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);  /* Safari支持 */
+  --chart-legend-color: rgba(255, 255, 255, 0.7);  /* 调整图表图例颜色 */
+  transition: all 0.2s ease;  /* 平滑过渡效果 */
+}
+
+/* 添加悬停效果 */
+.theme-microsoft-style.vue-grid-layout .n-card:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.theme-microsoft-style.vue-grid-layout .n-card .n-data-table .n-data-table-th,
+.theme-microsoft-style.vue-grid-layout .n-card .n-data-table .n-data-table-td,
+.theme-microsoft-style.vue-grid-layout .n-card .n-pagination .n-pagination-item,
+.theme-microsoft-style.vue-grid-layout .n-card .n-base-selection .n-base-selection-label .n-base-selection-input {
+  color: rgba(255, 255, 255, 1);
+}
+.theme-microsoft-style.vue-grid-layout .n-card .n-data-table .n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-th,
+.theme-microsoft-style.vue-grid-layout .n-card .n-data-table .n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td {
+  color: black;
 }
