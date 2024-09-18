@@ -356,43 +356,43 @@ const calculateTimeWeight = (start: number, end: number) => {
   const endDate = dayjs(end);
   const diffInHours = endDate.diff(startDate, 'hour');
   console.log('diffInHours', diffInHours);
-  if (diffInHours < 1) {
+  if (diffInHours <= 1) {
     return 0;
   }
-  if (diffInHours < 3) {
+  if (diffInHours <= 3) {
     return 1;
   }
-  if (diffInHours < 6) {
+  if (diffInHours <= 6) {
     return 2;
   }
-  if (diffInHours < 12) {
+  if (diffInHours <= 12) {
     return 3;
   }
-  if (diffInHours < 24) {
+  if (diffInHours <= 24) {
     return 4;
   }
-  if (diffInHours < 3 * 24) {
+  if (diffInHours <= 3 * 24) {
     return 5;
   }
-  if (diffInHours < 7 * 24) {
+  if (diffInHours <= 7 * 24) {
     return 6;
   }
-  if (diffInHours < 15 * 24) {
+  if (diffInHours <= 15 * 24) {
     return 7;
   }
-  if (diffInHours < 30 * 24) {
+  if (diffInHours <= 30 * 24) {
     return 8;
   }
-  if (diffInHours < 60 * 24) {
+  if (diffInHours <= 60 * 24) {
     return 9;
   }
-  if (diffInHours < 90 * 24) {
+  if (diffInHours <= 90 * 24) {
     return 10;
   }
-  if (diffInHours < 6 * 30 * 24) {
+  if (diffInHours <= 6 * 30 * 24) {
     return 11;
   }
-  if (diffInHours < 12 * 30 * 24) {
+  if (diffInHours <= 365) {
     return 12;
   }
   return 13;
