@@ -143,6 +143,7 @@ onMounted(fetchData);
     :columns="columns"
     :data="paginatedData"
     :pagination="pagination"
+    :bordered="false"
     remote
     @update:page="handlePageChange"
     @update:page-size="handlePageSizeChange"
