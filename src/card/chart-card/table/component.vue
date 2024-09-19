@@ -19,7 +19,7 @@ watch(
 </script>
 
 <template>
-  <TableComponent ref="tableInst" :card="cardData" class="pb-10px" />
+  <TableComponent ref="tableInst" :card="cardData" class="pb-15px pl-15px pr-15px" />
 </template>
 
 <style scoped></style>

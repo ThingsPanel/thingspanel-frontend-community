@@ -112,7 +112,8 @@ const option = ref<EChartsOption>({
   legend: {
     data: legendData.value,
     textStyle: {
-      color: legendColor.value
+      color: legendColor.value,
+      fontSize: '1.2em'
     }
   },
   dataZoom: [
@@ -136,7 +137,7 @@ const option = ref<EChartsOption>({
   grid: {
     left: '3%',
     right: '4%',
-    bottom: '55px',
+    bottom: '50px',
     containLabel: true
   },
   /* toolbox: {
