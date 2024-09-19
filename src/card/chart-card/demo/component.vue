@@ -136,7 +136,7 @@ onBeforeUnmount(() => {
 .iconclass {
   position: absolute;
   bottom: 20%;
-  left: 7%;
+  left: 4%;
   width: 25%;
   height: 25%;
 }
@@ -145,13 +145,13 @@ onBeforeUnmount(() => {
   position: absolute;
   display: flex;
   bottom: 20%;
-  left: 55%;
+  left: 50%;
   width: 45%;
   line-height: 1;
 }
 
 .unit {
-  margin-left: 10px;
+  margin-left: 5px;
   font-size: 1em;
   overflow: hidden;
   display: block;
@@ -163,7 +163,7 @@ onBeforeUnmount(() => {
 .name {
   position: absolute;
   top: 15%;
-  left: 15%;
+  left: 8%;
   width: 45%;
   font-size: 1.2em;
   display: block;
