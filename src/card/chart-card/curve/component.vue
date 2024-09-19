@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import type { ICardData } from '@/components/panel/card';
 import LineChart from '@/card/chart-card/curve/modules/line-chart.vue';
 import { colorGroups } from './theme';
@@ -9,13 +9,6 @@ const props = defineProps<{
 }>();
 
 const lineChart = ref<InstanceType<typeof LineChart>>();
-
-watch(
-  () => props.card,
-  newVal => {
-    console.log('newVal', newVal);
-  }
-);
 
 defineExpose({
   updateData: (deviceId: string | undefined, metricsId: string | undefined, data: any) => {
@@ -32,8 +25,4 @@ defineExpose({
   />
 </template>
 
-<style scoped>
-:deep(.n-card__content) {
-  width: 100%;
-}
-</style>
+<style scoped></style>
