@@ -405,3 +405,37 @@
 .theme-microsoft-style.vue-grid-layout .n-card .n-data-table .n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td {
   color: black;
 }
+
+/* 酷炫黑风格 */
+.theme-cool-black.vue-grid-layout {
+  background: linear-gradient(135deg, #000000, #020010);  /* 微软蓝色渐变 */
+  color: #ffffff;
+}
+.theme-cool-black.vue-grid-layout .n-card {
+  color: rgba(255, 255, 255, 0.9);  /* 略微降低文字不透明度 */
+  background-color: rgb(12, 2, 45);  /* 降低卡片背景不透明度 */
+  border-radius:  0.5rem;  /* 稍微减小圆角 */
+  border-width: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);  /* 调整阴影 */
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);  /* Safari支持 */
+  --chart-legend-color: rgba(255, 255, 255, 0.7);  /* 调整图表图例颜色 */
+  transition: all 0.2s ease;  /* 平滑过渡效果 */
+}
+
+/* 添加悬停效果 */
+.theme-cool-black.vue-grid-layout .n-card:hover {
+  background-color: rgb(13, 2, 69);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.theme-cool-black.vue-grid-layout .n-card .n-data-table .n-data-table-th,
+.theme-cool-black.vue-grid-layout .n-card .n-data-table .n-data-table-td,
+.theme-cool-black.vue-grid-layout .n-card .n-pagination .n-pagination-item,
+.theme-cool-black.vue-grid-layout .n-card .n-base-selection .n-base-selection-label .n-base-selection-input {
+  color: rgba(255, 255, 255, 1);
+}
+.theme-cool-black.vue-grid-layout .n-card .n-data-table .n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-th,
+.theme-cool-black.vue-grid-layout .n-card .n-data-table .n-data-table-tr:not(.n-data-table-tr--summary):hover > .n-data-table-td {
+  color: black;
+}

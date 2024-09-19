@@ -175,7 +175,7 @@ onBeforeUnmount(() => {
 .value {
   flex-shrink: 0;
   max-width: 75%;
-  font-size: 2.5em;
+  font-size: 2em;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
