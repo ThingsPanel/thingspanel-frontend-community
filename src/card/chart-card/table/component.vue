@@ -19,11 +19,7 @@ watch(
 </script>
 
 <template>
-  <TableComponent ref="tableInst" :card="cardData" />
+  <TableComponent ref="tableInst" :card="cardData" class="pb-10px" />
 </template>
 
-<style scoped>
-:deep(.n-card__content) {
-  height: 100%;
-}
-</style>
+<style scoped></style>
