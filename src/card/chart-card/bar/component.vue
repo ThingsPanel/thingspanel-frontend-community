@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import type { ICardData } from '@/components/panel/card';
 import BarChart from '@/card/chart-card/bar/modules/bar-chart.vue';
 import { colorGroups } from './theme';
@@ -9,13 +9,6 @@ const props = defineProps<{
 }>();
 
 const barChart = ref<InstanceType<typeof BarChart>>();
-
-watch(
-  () => props.card,
-  newVal => {
-    console.log('newVal', newVal);
-  }
-);
 
 defineExpose({
   updateData: (deviceId: string | undefined, metricsId: string | undefined, data: any) => {

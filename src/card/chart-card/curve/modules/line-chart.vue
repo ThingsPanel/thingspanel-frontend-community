@@ -148,11 +148,19 @@ const option = ref<EChartsOption>({
     boundaryGap: false,
     type: 'time' as 'category',
     axisLabel: {
-      interval: 'auto'
+      interval: 'auto',
+      textStyle: {
+        color: 'auto'
+      }
     }
   },
   yAxis: {
-    type: 'value'
+    type: 'value',
+    axisLabel: {
+      textStyle: {
+        color: 'auto'
+      }
+    }
   },
   series: [] as any[]
 });
@@ -162,6 +170,7 @@ const updateLegendColor = () => {
     const computedStyle = window.getComputedStyle(chartContainer.value);
     legendColor.value = computedStyle.color;
     option.value.legend.textStyle.color = legendColor.value;
+    option.value.yAxis.axisLabel.textStyle.color = legendColor.value;
   }
 };
 const d_end_time = new Date().getTime();

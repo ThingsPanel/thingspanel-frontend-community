@@ -74,9 +74,6 @@ const fetchData = async () => {
   const deviceSources = (props.card?.dataSource?.deviceSource ?? []).filter(deviceSource => {
     return deviceSource.deviceId && deviceSource.metricsId;
   });
-  // const endTimeValue = new Date().getTime();
-  console.log(`dataTimeRange:${props.card?.dataSource?.dataTimeRange}`);
-  // const startTimeValue = endTimeValue - (props.card?.dataSource?.dataTimeRange ?? 3600000);
   const promises = deviceSources.map(source => {
     const params = {
       device_id: source.deviceId,
@@ -153,5 +150,6 @@ onMounted(fetchData);
 <style scoped>
 :deep(.n-data-table-wrapper) {
   overflow: auto !important;
+  scrollbar-width: thin;
 }
 </style>
