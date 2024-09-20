@@ -82,7 +82,7 @@ const getDetails = async (tid: string) => {
     const res2 = await getDeviceGroup(queryParams);
     group_data.value = res2.data.list;
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    group_pagination.pageCount = Math.ceil(res2.data.total / 10);
+    group_pagination.itemCount = res2.data.total;
 
     endLoading();
   }
@@ -286,6 +286,7 @@ watch(
                 :columns="group_column"
                 :data="group_data"
                 :loading="loading"
+                remote
                 :pagination="group_pagination"
                 class="h-auto"
               ></NDataTable>
