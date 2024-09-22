@@ -33,9 +33,11 @@ defineExpose({
   >
     <div
       v-if="data.basicSettings?.showTitle"
-      class="min-title-height h-7 w-full truncate border-gray-200 px-2 font-size-16px leading-7 dark:border-gray-200/10"
+      class="min-title-height relative h-7 w-full border-gray-200 px-4 font-size-16px leading-7 dark:border-gray-200/10"
     >
-      {{ data.basicSettings?.title }}
+      <span class="absolute left-4 right-4 -bottom-5px">
+        {{ data.basicSettings?.title }}
+      </span>
     </div>
     <div
       class="w-full flex-1"

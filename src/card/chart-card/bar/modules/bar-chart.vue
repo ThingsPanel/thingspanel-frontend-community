@@ -40,21 +40,10 @@ const detail: any = ref(null);
 
 const props = defineProps<{
   card: ICardData;
-  colorGroup: { name: string; top: string; bottom: string }[];
+  colorGroup: { name: string; top: string; bottom: string; line: string }[];
 }>();
 
 const message = useMessage();
-const deviceList = ref<any[]>([
-  [20, 32, 11, 34, 90, 30, 10],
-  [120, 132, 101, 134, 90, 230, 210],
-  [232, 282, 291, 334, 390, 430, 510],
-  [220, 182, 191, 234, 290, 330, 310],
-  [150, 232, 201, 154, 190, 330, 410],
-  [320, 332, 301, 334, 390, 330, 320],
-  [820, 932, 901, 934, 1290, 1330, 1320],
-  [720, 832, 801, 834, 1190, 1230, 1220],
-  [920, 1032, 1001, 1034, 1390, 1430, 1420]
-]);
 const sampleData = [
   [1716986172333, 8],
   [1716986177338, 21],
@@ -113,7 +102,7 @@ const option = ref<EChartsOption>({
     data: legendData.value,
     textStyle: {
       color: legendColor.value,
-      fontSize: '1.2em'
+      fontSize: '1.1em'
     }
   },
   dataZoom: [
@@ -236,35 +225,7 @@ const aggregateFunctionOptions: SelectOption[] = [
   { label: $t('common.diffValue'), value: 'diff' }
 ];
 const aggregateFunctionValue = ref<string>('avg');
-const getTelemetryList = async (device_id, key, index) => {
-  if (!device_id || !key) {
-    return;
-  }
-  if (option.value.series) {
-    const metricsParams = {
-      device_id,
-      key,
-      ...params
-    };
-    metricsParams.aggregate_function =
-      props.card?.dataSource?.deviceSource?.[index].aggregate_function || params.aggregate_function || 'avg';
-    const { data, error } = await telemetryDataHistoryList(metricsParams);
-    if (!error) {
-      if (data) {
-        // eslint-disable-next-line require-atomic-updates
-        option.value.series[index].data = data.map(item => {
-          return [item.x, item.y];
-        });
-      } else {
-        // eslint-disable-next-line require-atomic-updates
-        option.value.series[index].data = sampleData;
-      }
-    } else {
-      // eslint-disable-next-line require-atomic-updates
-      option.value.series[index].data = deviceList.value[index];
-    }
-  }
-};
+
 const updateAggregate = (v: string) => {
   aggregateOptionsValue.value = v;
   params.aggregate_window = v;
@@ -422,58 +383,94 @@ const reFresh = () => {
   params.aggregate_function = 'avg';
   params.time_range = 'custom';
 };
-const setSeries: (dataSource) => void = async dataSource => {
-  const arr: any = dataSource;
-  const querDetail = {
-    device_id: dataSource?.deviceSource ? dataSource?.deviceSource[0]?.deviceId ?? '' : '',
-    keys: arr?.deviceSource ? arr.deviceSource[0]?.metricsId : ''
+
+// eslint-disable-next-line max-params
+const getTelemetryData = async (device_id, key, index, metricName) => {
+  const sampleObj = {
+    name: metricName,
+    type: 'bar',
+    stack: 'Total',
+    smooth: true,
+    showSymbol: false,
+    itemStyle: {
+      opacity: 0.8,
+      color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        {
+          offset: 0,
+          color: props.colorGroup[index].top
+        },
+        {
+          offset: 1,
+          color: props.colorGroup[index].bottom
+        }
+      ])
+    },
+    emphasis: {
+      focus: 'series'
+    },
+    data: sampleData,
+    tooltip: {
+      valueFormatter: value => value + (detail?.value?.data[0]?.unit || '')
+    }
   };
+  if (!device_id || !key) return sampleObj;
+
+  const aggregateFunction =
+    props.card?.dataSource?.deviceSource?.[index]?.aggregate_function || params.aggregate_function || 'avg';
+
+  const metricsParams = {
+    device_id,
+    key,
+    ...params,
+    aggregate_function: aggregateFunction
+  };
+
+  try {
+    const { data } = await telemetryDataHistoryList(metricsParams);
+    const seriesData = data ? data.map(item => [item.x, item.y]) : sampleData;
+
+    sampleObj.data = seriesData;
+
+    return sampleObj;
+  } catch (error) {
+    // 如果发生错误，返回默认数据
+    return sampleObj;
+  }
+};
+
+const setSeries = async dataSource => {
+  if (!dataSource) return;
+
+  const deviceSource = dataSource.deviceSource || [];
+  const deviceCount = dataSource.deviceCount || 1;
+
+  const firstDevice = deviceSource[0] || {};
+  const querDetail = {
+    device_id: firstDevice.deviceId || '',
+    keys: firstDevice.metricsId || ''
+  };
+
   if (querDetail.device_id && querDetail.keys) {
     detail.value = await telemetryDataCurrentKeys(querDetail);
   } else {
     // window.$message?.error("查询不到设备");
   }
-  if (dataSource) {
-    option.value.series =
-      dataSource.deviceSource?.slice(0, dataSource.deviceCount || 1).map((i, index) => {
-        let str: any = '';
-        // str = `${i?.metricsId || '-'}_${i?.metricsName || '-'}`;
-        str = `${i?.metricsName || ''}`;
-        name.value = str;
-        legendData.value.push(str as string);
-        getTelemetryList(i.deviceId, i.metricsId, index);
-        return {
-          name: str,
-          type: 'bar',
-          stack: 'Total',
-          smooth: true,
-          showSymbol: false,
-          itemStyle: {
-            opacity: 0.8,
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              {
-                offset: 0,
-                color: props.colorGroup[index].top
-              },
-              {
-                offset: 1,
-                color: props.colorGroup[index].bottom
-              }
-            ])
-          },
-          emphasis: {
-            focus: 'series'
-          },
-          data: sampleData,
-          // Mouse moves into add unit
-          tooltip: {
-            valueFormatter(value) {
-              return value + (detail?.value?.data[0]?.unit || '');
-            }
-          }
-        };
-      }) || [];
-  }
+
+  // 收集所有系列数据的Promise
+  const seriesPromises = deviceSource.slice(0, deviceCount).map((item, index) => {
+    const metricName = item.metricsName || item.metricsId || '';
+    name.value = metricName;
+    legendData.value.push(metricName);
+
+    // 返回一个Promise，包含系列配置和数据
+    return getTelemetryData(item.deviceId, item.metricsId, index, metricName);
+  });
+
+  // 等待所有系列数据获取完成
+  const seriesData = await Promise.all(seriesPromises);
+
+  // 一次性赋值给option.value.series
+  option.value.series = seriesData;
 };
 
 defineExpose({
@@ -585,8 +582,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div ref="chartContainer" class="chart-container h-full flex flex-col">
-    <div class="flex justify-between pt-1">
+  <div ref="chartContainer" class="chart-container h-full flex flex-col pt-4px">
+    <div class="absolute right-0 flex justify-between pt-1">
       <div class="name-unit"></div>
       <div class="flex justify-end pr-2">
         <n-popselect

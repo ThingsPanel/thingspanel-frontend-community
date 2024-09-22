@@ -22,6 +22,7 @@ defineExpose({
     ref="lineChart"
     :card="props.card"
     :color-group="props?.card?.config?.colorGroups?.colorGroup || colorGroups"
+    :curve-width="props?.card?.config?.curveWidth || 1"
   />
 </template>
 
