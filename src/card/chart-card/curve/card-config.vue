@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { inject, reactive, ref } from 'vue';
-import { NColorPicker, NSelect } from 'naive-ui';
+import { NColorPicker, NInputNumber, NSelect } from 'naive-ui';
 import type { IConfigCtx } from '@/components/panel/card';
 import { $t } from '@/locales';
 import CurveTheme from './theme';
@@ -22,6 +22,7 @@ const themeUpdate = () => {
     colorGroup: colorGroups.value[selectedTheme]
   };
 };
+
 const updateColor = (newColor, index, position) => {
   // This method updates the color and ensures reactivity
   const selectedTheme = ctx.config.selectedTheme;
@@ -30,9 +31,11 @@ const updateColor = (newColor, index, position) => {
     colorGroup: colorGroups.value[selectedTheme]
   };
 };
+
 const gradientStyle = group => {
   return `background: linear-gradient(to right, ${group.top}, ${group.bottom});`;
 };
+
 const resetTheme = () => {
   const selectedTheme = ctx.config.selectedTheme;
   colorGroups.value = JSON.parse(JSON.stringify(originalColorGroups));
@@ -44,6 +47,12 @@ const resetTheme = () => {
 
 <template>
   <div>
+    <!-- Curve Width Configuration -->
+    <n-flex align="center" class="mb-2">
+      <div>{{ $t('曲线宽度：') }}</div>
+      <NInputNumber v-model:value="ctx.config.curveWidth" :min="1" :max="10" :step="1" class="flex-1" />
+    </n-flex>
+
     <n-flex align="center" class="mb-2">
       <div>{{ $t('generate.color-theme') }}</div>
       <NSelect
@@ -56,13 +65,24 @@ const resetTheme = () => {
       <div @click="resetTheme">{{ $t('common.reset') }}</div>
     </n-flex>
     <div v-if="ctx.config.selectedTheme" class="color-groups">
-      <n-grid x-gap="6" y-gap="6" :cols="2">
+      <n-grid x-gap="6" y-gap="6" :cols="1">
         <n-gi
           v-for="(group, index) in ctx.config.colorGroups?.colorGroup || colorGroups[ctx.config.selectedTheme]"
           :key="group.name"
         >
           <div class="color-group">
             <div>{{ index + 1 }}.</div>
+            <!-- Top Color Picker Popover -->
+            <NColorPicker
+              v-model:value="group.line"
+              class="w-28px"
+              size="small"
+              @update:value="value => updateColor(value, index, 'line')"
+            >
+              <template #label>
+                <span />
+              </template>
+            </NColorPicker>
             <!-- Top Color Picker Popover -->
             <NColorPicker
               v-model:value="group.top"
