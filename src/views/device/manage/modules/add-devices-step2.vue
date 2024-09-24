@@ -80,7 +80,7 @@ const handleSubmit = async () => {
 
   const res = await updateDeviceVoucher({
     device_id: props.device_id,
-    voucher: JSON.stringify(formData)
+    voucher: JSON.stringify(formData) || '{}'
   });
 
   if (!res.error) {
