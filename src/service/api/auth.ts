@@ -16,6 +16,10 @@ export function fetchGetUserInfo() {
   return request.get<Api.Auth.UserInfo>('/user/detail');
 }
 
+// 登出接口
+export function logout() {
+  return request.get('/user/logout');
+}
 /**
  * Refresh token
  *

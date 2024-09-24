@@ -2,9 +2,10 @@ import { computed, reactive, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { createDiscreteApi } from 'naive-ui';
 import { useLoading } from '@sa/hooks';
+import moment from 'moment';
 import { SetupStoreId } from '@/enum';
 import { useRouterPush } from '@/hooks/common/router';
-import { fetchGetUserInfo, fetchLogin } from '@/service/api';
+import { fetchGetUserInfo, fetchLogin, logout } from '@/service/api';
 import { transformUser } from '@/service/api/auth';
 import { localStg } from '@/utils/storage';
 import { $t } from '@/locales';
@@ -58,11 +59,15 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     }
     const { data: loginToken, error } = await fetchLogin(userName, newP, salt);
     if (!error) {
-      const { loop } = await loginByToken(loginToken);
+      const { loop, info } = await loginByToken(loginToken);
       if (loop) {
-        if (!validPassword(password)) {
+        const password_last_updated = info.password_last_updated;
+        const now = new Date();
+        const cha = moment(now).diff(password_last_updated, 'days');
+        console.log(cha);
+        const tipFunc = str => {
           dialog.warning({
-            content: '为了您的账户安全，密码应至少8位且包含字母、数字及符号，请重新设置密码。',
+            content: str,
             positiveText: '确认',
             onPositiveClick: () => {
               routerPush({
@@ -78,18 +83,15 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
               await redirectFromLogin();
             }
           });
+        };
+        if (!validPassword(password)) {
+          tipFunc('为了您的账户安全，密码应至少8位且包含字母、数字及符号，请重新设置密码。');
+        } else if (!data.password_last_updated || cha > 90) {
+          tipFunc('为了您的账户安全，请重新设置密码。');
         } else {
           await routeStore.initAuthRoute();
           await redirectFromLogin();
         }
-
-        // if (routeStore.isInitAuthRoute) {
-        //   window.$notification?.success({
-        //     title: $t('page.login.common.loginSuccess'),
-        //     content: $t('page.login.common.welcomeBack', { userName: userInfo.name }),
-        //     duration: 4500
-        //   });
-        // }
       }
     } else {
       await resetStore();
@@ -156,6 +158,10 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
 
     return { loop: false, info };
   }
+  async function requestLogout() {
+    await logout();
+    resetStore();
+  }
 
   return {
     token,
@@ -164,6 +170,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
     loginLoading,
     resetStore,
     login,
-    enter
+    enter,
+    requestLogout
   };
 });

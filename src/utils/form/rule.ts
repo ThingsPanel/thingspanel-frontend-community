@@ -31,9 +31,20 @@ export const formRules: CustomFormRules = {
   ],
   code: [
     createRequiredFormRule($t('form.code.required')),
-    { pattern: REG_CODE_SIX, message: $t('form.code.invalid'), trigger: 'input' }
+    {
+      pattern: REG_CODE_SIX,
+      message: $t('form.code.invalid'),
+      trigger: 'input'
+    }
   ],
-  email: [{ required: true, pattern: REG_EMAIL, message: $t('form.email.required'), trigger: 'blur' }]
+  email: [
+    {
+      required: true,
+      pattern: REG_EMAIL,
+      message: $t('form.email.required'),
+      trigger: 'blur'
+    }
+  ]
 };
 
 /** 是否为空字符串 */
@@ -44,7 +55,7 @@ function isBlankString(str: string) {
 /** 获取确认密码的表单规则 */
 export function getConfirmPwdRule(pwd: Ref<string>) {
   const confirmPwdRule: FormItemRule[] = [
-    { required: true, message: $t('form.pwd.invalid') },
+    { required: true, message: $t('form.pwd.tip') },
     {
       validator: (rule, value) => {
         if (!isBlankString(value) && value !== pwd.value) {

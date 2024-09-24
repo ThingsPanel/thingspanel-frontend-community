@@ -193,3 +193,17 @@ export function decryptDataByRsa(data): string {
   // 使用公钥进行加密
   return encrypt.decrypt(data) || '';
 }
+
+export function validUsername(str) {
+  if (!/^[a-zA-Z0-9_]+$/.test(str)) {
+    return false;
+  }
+  return true;
+}
+
+export function validPasswordByExp(str) {
+  if (!/^[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]+$/.test(str)) { // eslint-disable-line
+    return false;
+  }
+  return true;
+}

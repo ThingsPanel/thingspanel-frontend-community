@@ -779,7 +779,7 @@ const local: App.I18n.Schema = {
   form: {
     manycheck: {
       required: 'The entered value does not match the password',
-      invalid: ''
+      invalid: 'The entered value does not match the password'
     },
     required: 'Cannot be empty',
     userName: {
@@ -793,7 +793,8 @@ const local: App.I18n.Schema = {
     pwd: {
       required: 'Please enter password',
       invalid: '6-18 characters, including letters, numbers, and underscores',
-      lenMin6: 'Password length should be at least six digits'
+      lenMin6: 'Password length should be at least six digits',
+      tip: 'Please enter 8-18 characters,and the character must be right'
     },
     code: {
       required: 'Please enter verification code',

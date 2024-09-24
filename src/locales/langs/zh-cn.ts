@@ -788,12 +788,13 @@ const local: App.I18n.Schema = {
     },
     manycheck: {
       required: '输入的值与密码不一致',
-      invalid: ''
+      invalid: '输入的值与密码不一致'
     },
     pwd: {
       required: '请输入密码',
       invalid: '6 ~ 18个字符，由字母、数字、下划线组成',
-      lenMin6: '密码长度至少6位'
+      lenMin6: '密码长度至少6位',
+      tip: '请输入8~18位格式有效的密码'
     },
 
     code: {
