@@ -46,6 +46,8 @@ const openModal: (row: any) => void = row => {
   if (row) {
     isEdit.value = true;
     Object.assign(form.value, row);
+  } else {
+    Object.assign(form.value, defaultForm);
   }
   serviceModal.value = true;
 };
