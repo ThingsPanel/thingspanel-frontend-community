@@ -107,6 +107,7 @@ const handleSubmit = async () => {
     device_id: props.id,
     voucher: JSON.stringify(formData)
   });
+  window.$message?.success($t('common.updateSuccess'));
 };
 const copy = async param => {
   const element = document.getElementById(param.toString());
