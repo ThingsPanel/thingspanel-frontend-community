@@ -80,7 +80,14 @@ function getContextMenuDisabledKeys(tabId: string) {
 }
 
 async function handleCloseTab(tab: App.Global.Tab) {
+  const currentIndex = tabStore.tabs.findIndex(t => t.id === tab.id);
+  const nextTab = tabStore.tabs[currentIndex + 1] || tabStore.tabs[currentIndex - 1];
+
   await tabStore.removeTab(tab.id);
+
+  if (nextTab) {
+    await tabStore.switchRouteByTab(nextTab);
+  }
   // await routeStore.reCacheRoutesByKey(tab.routeKey);
 }
 
