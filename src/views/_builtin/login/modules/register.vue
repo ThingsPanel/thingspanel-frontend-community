@@ -6,8 +6,10 @@ import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import useSmsCode from '@/hooks/business/use-sms-code';
 import { useAuthStore } from '@/store/modules/auth';
 import { getConfirmPwdRule } from '@/utils/form/rule';
+import { validPasswordByExp } from '@/utils/common/tool';
+
 defineOptions({
-  name: 'Register'
+  name: 'RegisterPage'
 });
 
 const auth = useAuthStore();
@@ -35,7 +37,21 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
   return {
     phone: formRules.phone,
     code: formRules.code,
-    pwd: formRules.pwd,
+    pwd: [
+      {
+        validator: (rule, value) => {
+          if (value.length < 8 || value.length > 18) {
+            return Promise.reject(rule.message);
+          }
+          if (!validPasswordByExp(value)) {
+            return Promise.reject(rule.message);
+          }
+          return Promise.resolve();
+        },
+        message: $t('form.pwd.tip'),
+        trigger: ['input', 'blur']
+      }
+    ],
     confirmPwd: getConfirmPwdRule(toRefs(model).pwd)
   };
 });

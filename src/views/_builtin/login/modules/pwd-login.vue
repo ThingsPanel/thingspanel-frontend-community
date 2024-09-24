@@ -29,17 +29,10 @@ const model: FormModel = reactive({
 });
 
 const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
-  const { formRules } = useFormRules({
-    pwd: {
-      pattern: /^.{6,}$/,
-      message: $t('form.pwd.lenMin6'),
-      trigger: 'change'
-    }
-  }); // inside computed to make locale reactive
+  const { formRules } = useFormRules(); // inside computed to make locale reactive
 
   return {
-    userName: formRules.userName,
-    password: formRules.pwd
+    userName: formRules.userName
   };
 });
 

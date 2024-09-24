@@ -245,6 +245,7 @@ declare namespace App {
       required: string;
       invalid: string;
       lenMin6: string;
+      tip: string;
     };
 
     type Schema = {

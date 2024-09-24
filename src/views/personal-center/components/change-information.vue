@@ -7,12 +7,13 @@
  * @LastEditTime: 2024-03-20 17:13:33
 -->
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, toRefs } from 'vue';
 import type { FormItemRule, FormRules } from 'naive-ui';
-import { useMessage } from 'naive-ui';
+import { useNaiveForm } from '@/hooks/common/form';
+import { getConfirmPwdRule } from '@/utils/form/rule';
 import { changeInformation, passwordModification } from '@/service/api/personal-center';
 import { $t } from '@/locales';
-import { encryptDataByRsa, generateRandomHexString, validPassword } from '@/utils/common/tool';
+import { encryptDataByRsa, generateRandomHexString, validPasswordByExp, validUsername } from '@/utils/common/tool';
 
 export interface Props {
   /** 弹窗可见性 */
@@ -33,9 +34,9 @@ interface Emits {
 
   (e: 'modification'): void;
 }
-
+const { formRef, validate } = useNaiveForm();
 const emit = defineEmits<Emits>();
-const message = useMessage();
+
 const modalVisible = computed({
   get() {
     return props.visible;
@@ -58,10 +59,7 @@ const estimate = computed(() => {
   };
   return titles[props.type];
 });
-/** 关闭弹框 */
-const closeModal = () => {
-  modalVisible.value = false;
-};
+
 /** 初始from数据 */
 const formData = ref({
   name: '',
@@ -69,12 +67,18 @@ const formData = ref({
   password: '',
   passwords: ''
 });
+/** 关闭弹框 */
+const closeModal = () => {
+  modalVisible.value = false;
+  formData.value.name = '';
+};
 /**
  * 修改姓名
  *
  * @param name
  */
 const editName = async () => {
+  await validate();
   const data = { name: formData.value.name };
   const res = await changeInformation(data);
 
@@ -85,6 +89,7 @@ const editName = async () => {
 };
 /** passwordModification */
 const password = async () => {
+  await validate();
   const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')) : [];
   let salt = null;
   let password1 = formData.value.password;
@@ -108,45 +113,47 @@ const password = async () => {
 function submit() {
   if (estimate.value === 'amend') {
     editName();
-  } else if (formData.value.password !== formData.value.passwords) {
-    message.warning('两次密码输入不一致');
   } else {
     password();
   }
 }
 const rules: FormRules = {
-  password: [
+  name: [
     {
       required: true,
       validator(rule: FormItemRule, value: string) {
         console.log(rule);
-        if (!validPassword(value)) {
-          return new Error('密码长度8位，包含大小写字母、数字和特殊字');
+        if (!validUsername(value)) {
+          return new Error('用户名只允许字母、数字和下划线');
         }
         return true;
       },
       trigger: ['input', 'blur']
     }
   ],
-  passwords: [
+  password: [
     {
       required: true,
       validator(rule: FormItemRule, value: string) {
-        console.log(rule);
-        if (!validPassword(value)) {
-          return new Error('密码长度8位，包含大小写字母、数字和特殊字');
+        if (value.length < 8 || value.length > 18) {
+          return Promise.reject(rule.message);
         }
-        return true;
+        if (!validPasswordByExp(value)) {
+          return Promise.reject(rule.message);
+        }
+        return Promise.resolve();
       },
+      message: $t('form.pwd.tip'),
       trigger: ['input', 'blur']
     }
-  ]
+  ],
+  passwords: getConfirmPwdRule(toRefs(formData.value).password)
 };
 </script>
 
 <template>
   <NModal v-model:show="modalVisible" preset="card" :title="title" class="w-500px">
-    <NForm label-placement="left" :model="formData" :rules="rules">
+    <NForm ref="formRef" label-placement="left" :model="formData" :rules="rules">
       <NGrid :cols="2" :x-gap="18">
         <NFormItemGridItem v-if="estimate === 'amend'" :span="24" :label="$t('page.manage.user.userName')" path="name">
           <NInput v-model:value="formData.name" />
