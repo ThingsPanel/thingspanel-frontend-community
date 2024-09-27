@@ -1305,6 +1305,8 @@ const local: App.I18n.Schema = {
     'search-by-name': '按名称搜索',
     'confirm-password': '确认密码',
     username: '用户名',
+    requestMethod: '请求方法',
+    ipAddress: 'ip地址',
     'change-password': '修改密码',
     'notification-record': '通知记录',
     'add-chart': '添加图表',

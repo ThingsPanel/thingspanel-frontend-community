@@ -1620,6 +1620,8 @@ declare namespace App {
         'search-by-name': string;
         'confirm-password': string;
         username: string;
+        requestMethod: string;
+        ipAddress: string;
         'change-password': string;
         'notification-record': string;
         'add-chart': string;

@@ -1,23 +1,44 @@
 <script setup lang="tsx">
 import { computed, getCurrentInstance, reactive, ref } from 'vue';
 import type { Ref } from 'vue';
-import { NButton } from 'naive-ui';
+import { NButton, NSelect } from 'naive-ui';
 import type { DataTableColumns, PaginationProps } from 'naive-ui';
 import moment from 'moment';
 import { getSystemLogList } from '@/service/api/system-management-user';
 import { $t } from '@/locales';
 import { formatDateTime } from '@/utils/common/datetime';
+import DetailModal from './components/detail-modal.vue';
 import { useLoading } from '~/packages/hooks';
 
 const { loading, startLoading, endLoading } = useLoading(false);
 
 const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()]);
-
+// POST PUT DELETE
+const requestMethodOptions = reactive([
+  {
+    label: '全部',
+    value: ''
+  },
+  {
+    label: 'POST',
+    value: 'POST'
+  },
+  {
+    label: 'PUT',
+    value: 'PUT'
+  },
+  {
+    label: 'DELETE',
+    value: 'DELETE'
+  }
+]);
 const queryParams = reactive({
   username: '',
   selected_time: null,
   start_time: '',
-  end_time: ''
+  end_time: '',
+  method: '',
+  ip: ''
 });
 const total = ref(0);
 
@@ -46,9 +67,7 @@ const getTableData = async () => {
   const prams = {
     page: pagination.page || 1,
     page_size: pagination.pageSize || 10,
-    username: queryParams.username,
-    start_time: queryParams.start_time,
-    end_time: queryParams.end_time
+    ...queryParams
   };
   const res = await getSystemLogList(prams);
   console.log(res);
@@ -58,7 +77,10 @@ const getTableData = async () => {
   }
   endLoading();
 };
-
+const detailModalRef = ref(null);
+const handleDetail = item => {
+  detailModalRef.value && detailModalRef.value.show(item);
+};
 const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   {
     key: 'created_at',
@@ -91,18 +113,42 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
     key: 'latency',
     title: $t('common.requestTime'),
     minWidth: '140px',
-    align: 'left'
+    align: 'left',
+    render: row => `${row.latency}ms`
   },
   {
     key: 'username',
     title: $t('generate.username'),
     minWidth: '140px',
     align: 'left'
+  },
+  {
+    key: '',
+    title: $t('generate.action'),
+    minWidth: '140px',
+    align: 'left',
+    render: row => {
+      return (
+        <NButton type="primary" size={'small'} onClick={() => handleDetail(row)}>
+          {$t('generate.details')}
+        </NButton>
+      );
+    }
   }
 ]) as Ref<DataTableColumns<DataService.Data>>;
 
 function handleQuery() {
   getTableData();
+}
+function handleReset() {
+  queryParams.start_time = '';
+  queryParams.end_time = '';
+  queryParams.ip = '';
+  queryParams.method = '';
+  queryParams.username = '';
+  queryParams.selected_time = null;
+  pagination.page = 1;
+  handleQuery();
 }
 function pickerChange() {
   if (range.value && range.value.length > 0) {
@@ -123,26 +169,36 @@ getTableData();
 <template>
   <div>
     <NCard :title="$t('generate.system-log')">
-      <NForm class="m-b-20px" :inline="!getPlatform" label-placement="left" :model="queryParams">
-        <NFormItem class="max-w-200px" :label="$t('generate.username')" path="name">
-          <NInput v-model:value="queryParams.username" />
-        </NFormItem>
-        <NFormItem path="selected_time">
-          <NDatePicker
-            v-model:value="range"
-            type="datetimerange"
-            clearable
-            separator="-"
-            @update:value="pickerChange"
-          />
-        </NFormItem>
+      <NForm class="mb-20px align-end" :inline="!getPlatform" label-placement="left" :model="queryParams">
+        <view class="flex flex-wrap">
+          <NFormItem class="w-200px" :label="$t('generate.username')" path="name">
+            <NInput v-model:value="queryParams.username" />
+          </NFormItem>
+          <NFormItem path="selected_time">
+            <NDatePicker
+              v-model:value="range"
+              type="datetimerange"
+              clearable
+              separator="-"
+              @update:value="pickerChange"
+            />
+          </NFormItem>
+          <NFormItem :label="$t('generate.requestMethod')" path="method">
+            <NSelect v-model:value="queryParams.method" class="w-200px" :options="requestMethodOptions"></NSelect>
+          </NFormItem>
+          <NFormItem :label="$t('generate.ipAddress')" path="ip">
+            <NInput v-model:value="queryParams.ip" />
+          </NFormItem>
+        </view>
         <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('generate.query') }}</NButton>
+        <NButton class="ml-15px w-72px" type="primary" @click="handleReset">{{ $t('generate.reset') }}</NButton>
       </NForm>
       <NDataTable :columns="columns" :data="tableData" :loading="loading" class="flex-1-hidden" />
       <div class="pagination-box">
         <NPagination v-model:page="pagination.page" :item-count="total" @update:page="getTableData" />
       </div>
     </NCard>
+    <DetailModal ref="detailModalRef"></DetailModal>
   </div>
 </template>
 
@@ -151,5 +207,9 @@ getTableData();
   margin-top: 12px;
   display: flex;
   justify-content: flex-end;
+}
+
+.align-end {
+  align-items: flex-end;
 }
 </style>
