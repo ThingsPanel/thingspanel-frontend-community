@@ -169,9 +169,9 @@ getTableData();
 <template>
   <div>
     <NCard :title="$t('generate.system-log')">
-      <NForm class="m-b-20px align-end" :inline="!getPlatform" label-placement="left" :model="queryParams">
+      <NForm class="mb-20px align-end" :inline="!getPlatform" label-placement="left" :model="queryParams">
         <view class="flex flex-wrap">
-          <NFormItem class="max-w-200px" :label="$t('generate.username')" path="name">
+          <NFormItem class="w-200px" :label="$t('generate.username')" path="name">
             <NInput v-model:value="queryParams.username" />
           </NFormItem>
           <NFormItem path="selected_time">
@@ -184,14 +184,14 @@ getTableData();
             />
           </NFormItem>
           <NFormItem :label="$t('generate.requestMethod')" path="method">
-            <NSelect v-model:value="queryParams.method" class="w-200" :options="requestMethodOptions"></NSelect>
+            <NSelect v-model:value="queryParams.method" class="w-200px" :options="requestMethodOptions"></NSelect>
           </NFormItem>
           <NFormItem :label="$t('generate.ipAddress')" path="ip">
             <NInput v-model:value="queryParams.ip" />
           </NFormItem>
         </view>
         <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('generate.query') }}</NButton>
-        <NButton class="ml-15 w-72px" type="primary" @click="handleReset">{{ $t('generate.reset') }}</NButton>
+        <NButton class="ml-15px w-72px" type="primary" @click="handleReset">{{ $t('generate.reset') }}</NButton>
       </NForm>
       <NDataTable :columns="columns" :data="tableData" :loading="loading" class="flex-1-hidden" />
       <div class="pagination-box">
@@ -208,12 +208,7 @@ getTableData();
   display: flex;
   justify-content: flex-end;
 }
-.w-200 {
-  width: 200px;
-}
-.ml-15 {
-  margin-left: 15px;
-}
+
 .align-end {
   align-items: flex-end;
 }

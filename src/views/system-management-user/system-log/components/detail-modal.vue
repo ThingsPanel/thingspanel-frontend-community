@@ -76,7 +76,4 @@ defineExpose({
   font-size: 14px;
   color: #101010;
 }
-.text-right {
-  text-align: right;
-}
 </style>
