@@ -314,7 +314,7 @@ const onTapTableTools = (i: any) => {
 };
 
 const isColor = (i: any) => {
-  if (typeof i.value === 'string') {
+  if (typeof i.value === 'string' || typeof i.value === 'boolean') {
     return '#cccccc';
   }
   return '';
