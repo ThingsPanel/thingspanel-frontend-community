@@ -1267,6 +1267,7 @@ declare namespace App {
           device: string;
           addDeviceToGroup: string;
           detail: string;
+          basic: string;
           setting: string;
           edit: string;
           noGroupId: string;

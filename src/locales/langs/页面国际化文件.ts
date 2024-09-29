@@ -120,6 +120,7 @@ export const pzh_cn: any = {
     device: '设备',
     addDeviceToGroup: '添加设备到分组',
     detail: '详情',
+    basic: '基本',
     setting: '设置',
     edit: '编辑',
     noGroupId: '没有传人的分组id',
