@@ -260,22 +260,7 @@ watch(
           </NSpace>
         </template>
         <NTabs type="line" animated>
-          <NTabPane :name="$t('custom.devicePage.details')" :tab="$t('custom.grouping_details.detail')">
-            <NDescriptions label-class="min-w-100px" label-placement="top" bordered :column="6">
-              <NDescriptionsItem :label="$t('custom.grouping_details.groupLevel')">
-                {{ details_data.tier.group_path }}
-              </NDescriptionsItem>
-              <NDescriptionsItem :label="$t('custom.grouping_details.groupId')">
-                {{ details_data.detail.id }}
-              </NDescriptionsItem>
-              <NDescriptionsItem :label="$t('custom.grouping_details.description')">
-                {{ details_data.detail.description }}
-              </NDescriptionsItem>
-              <NDescriptionsItem :label="$t('custom.grouping_details.createTime')">
-                {{ formatDateTime(details_data.detail.created_at) }}
-              </NDescriptionsItem>
-            </NDescriptions>
-            <NDivider title-placement="left">{{ $t('custom.grouping_details.subGroup') }}</NDivider>
+          <NTabPane :name="$t('custom.grouping_details.subGroup')" :tab="$t('custom.grouping_details.subGroup')">
             <NSpace>
               <NButton type="primary" @click="showGroupModalChild">
                 {{ $t('custom.grouping_details.addSubGroup') }}
@@ -291,8 +276,9 @@ watch(
                 class="h-auto"
               ></NDataTable>
             </NSpace>
+          </NTabPane>
 
-            <NDivider title-placement="left">{{ $t('custom.grouping_details.device') }}</NDivider>
+          <NTabPane name="device" :tab="$t('custom.grouping_details.device')">
             <NSpace class="mb6">
               <NButton type="primary" @click="showGroupDeviceModal = true">
                 {{ $t('custom.grouping_details.addDeviceToGroup') }}
@@ -322,8 +308,19 @@ watch(
             />
           </NTabPane>
 
-          <NTabPane name="$t('common.edit')" :tab="$t('custom.grouping_details.setting')">
-            <NButton type="primary" @click="showGroupModal">{{ $t('custom.grouping_details.detail') }}</NButton>
+          <NTabPane name="$t('common.edit')" :tab="$t('custom.grouping_details.basic')">
+            <NButton type="primary" @click="showGroupModal">{{ $t('custom.grouping_details.edit') }}</NButton>
+            <NDescriptions label-class="min-w-100px" label-placement="top" bordered :column="3">
+              <NDescriptionsItem :label="$t('custom.grouping_details.groupLevel')">
+                {{ details_data.tier.group_path }}
+              </NDescriptionsItem>
+              <NDescriptionsItem :label="$t('custom.grouping_details.description')">
+                {{ details_data.detail.description }}
+              </NDescriptionsItem>
+              <NDescriptionsItem :label="$t('custom.grouping_details.createTime')">
+                {{ formatDateTime(details_data.detail.created_at) }}
+              </NDescriptionsItem>
+            </NDescriptions>
             <AddOrEditDevices
               ref="the_modal2"
               :is-edit="true"
