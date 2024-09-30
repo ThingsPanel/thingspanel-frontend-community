@@ -276,6 +276,17 @@ watch(
                 class="h-auto"
               ></NDataTable>
             </NSpace>
+            <AddOrEditDevices
+              ref="the_modal1"
+              :is-edit="false"
+              :edit-data="addChildData"
+              is-pid-no-edit
+              :refresh-data="
+                () => {
+                  getDetails(currentId as string);
+                }
+              "
+            />
           </NTabPane>
 
           <NTabPane name="device" :tab="$t('custom.grouping_details.device')">
@@ -294,18 +305,6 @@ watch(
                 @update:page="devicePagination.onChange"
               />
             </NFlex>
-
-            <AddOrEditDevices
-              ref="the_modal1"
-              :is-edit="false"
-              :edit-data="addChildData"
-              is-pid-no-edit
-              :refresh-data="
-                () => {
-                  getDetails(currentId as string);
-                }
-              "
-            />
           </NTabPane>
 
           <NTabPane name="$t('common.edit')" :tab="$t('custom.grouping_details.basic')">
