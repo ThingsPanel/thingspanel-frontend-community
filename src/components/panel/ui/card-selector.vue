@@ -12,12 +12,10 @@ import demoPoster from '@/card/chart-card/demo/poster.png';
 import digitIndicatorPoster from '@/card/chart-card/digit-indicator/poster.png';
 import digitSetterPoster from '@/card/chart-card/digit-setter/poster.png';
 import dispatchDataPoster from '@/card/chart-card/dispatch-data/poster.png';
-import humidityIndicatorPoster from '@/card/chart-card/humidity-indicator/poster.png';
 import instrumentPanelPoster from '@/card/chart-card/instrument-panel/poster.png';
 import stateDisplayPoster from '@/card/chart-card/state-display/poster.png';
 import switchPoster from '@/card/chart-card/switch/poster.png';
 import tablePoster from '@/card/chart-card/table/poster.png';
-import tempIndicatorPoster from '@/card/chart-card/temp-indicator/poster.png';
 import textInfoPoster from '@/card/chart-card/text-info/poster.png';
 import videoPlayerPoster from '@/card/chart-card/video-player/poster.png';
 
@@ -96,16 +94,12 @@ const getImagePath = item => {
     return digitSetterPoster;
   } else if (cardType[0] === 'dispatch') {
     return dispatchDataPoster;
-  } else if (cardType[0] === 'humidity') {
-    return humidityIndicatorPoster;
   } else if (cardType[0] === 'instrument-panel') {
     return instrumentPanelPoster;
   } else if (cardType[0] === 'state') {
     return stateDisplayPoster;
   } else if (cardType[0] === 'table') {
     return tablePoster;
-  } else if (cardType[0] === 'temprature') {
-    return tempIndicatorPoster;
   } else if (cardType[0] === 'text') {
     return textInfoPoster;
   }
