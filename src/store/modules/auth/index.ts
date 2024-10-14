@@ -84,9 +84,10 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
             }
           });
         };
+
         if (!validPassword(password)) {
           tipFunc('为了您的账户安全，密码应至少8位且包含字母、数字及符号，请重新设置密码。');
-        } else if (!data.password_last_updated || cha > 90) {
+        } else if (!info.password_last_updated || cha > 90) {
           tipFunc('为了您的账户安全，请重新设置密码。');
         } else {
           await routeStore.initAuthRoute();
