@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { defineProps, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
-import zh from 'video.js/dist/lang/zh-CN.json';
 import type { VideoJsPlayer } from 'video.js';
 import videojs from 'video.js';
 import { getAttributeDatasKey, telemetryDataCurrentKeys } from '@/service/api/device';
@@ -62,27 +61,32 @@ const m3u8_video = ref(null);
 let player: VideoJsPlayer;
 const videoUrl = ref('');
 const createPlayer = async () => {
-  videojs.addLanguage('zh-CN', zh);
   await nextTick();
-  const options = {
-    muted: true,
-    controls: true,
-    autoplay: true,
-    loop: true,
-    language: 'zh-CN',
-    techOrder: ['html5']
-  };
+  let options = {};
+  if (videoUrl.value.includes('.m3u8')) {
+    options = {
+      liveui: true,
+      liveTracker: {
+        trackingThreshold: 0,
+        liveTolerance: 15
+      }
+    };
+  }
   player = videojs(m3u8_video.value, options, () => {
     videojs.log('播放器已经准备好了!');
     player.on('error', () => {
-      videojs.log('播放器解析出错!');
+      videojs.log('播放器解析出错!', player.error());
     });
   });
+  player?.dispose();
 };
 
 watch(
   () => props.card.dataSource,
-  () => setSeries(props.card.dataSource),
+  () => {
+    setSeries(props.card.dataSource);
+    createPlayer();
+  },
   { immediate: true, deep: true }
 );
 
@@ -96,18 +100,11 @@ watch(
 
 onMounted(() => {
   setSeries(props.card.dataSource);
-  // if (video.value) {
-  //   video.value.addEventListener("timeupdate", updateCurrentTime);
-  //   video.value.addEventListener("loadedmetadata", updateDuration);
-  // }
+
   createPlayer();
 });
 
 onBeforeUnmount(() => {
-  // if (video.value) {
-  //   video.value.removeEventListener("timeupdate", updateCurrentTime);
-  //   video.value.removeEventListener("loadedmetadata", updateDuration);
-  // }
   player?.dispose();
 });
 </script>
@@ -117,13 +114,37 @@ onBeforeUnmount(() => {
     <n-card :bordered="false" class="h-full w-full">
       <div class="video-container">
         <video
+          v-if="videoUrl.indexOf('.m3u8') > -1"
+          ref="m3u8_video"
+          class="video-js vjs-default-skin vjs-big-play-centered"
+          controls
+          preload="auto"
+          data-setup="{}"
+        >
+          <source :src="videoUrl" type="application/x-mpegURL" />
+          <p class="vjs-no-js">
+            To view this video please enable JavaScript, and consider upgrading to a web browser that
+            <a href="https://videojs.com/html5-video-support/" target="_blank" rel="noopener noreferrer">
+              supports HTML5 video
+            </a>
+          </p>
+        </video>
+        <video
+          v-else
           ref="m3u8_video"
           class="video-js vjs-default-skin vjs-big-play-centered"
           controls
           autoplay
           preload="auto"
           :src="videoUrl"
-        ></video>
+        >
+          <p class="vjs-no-js">
+            To view this video please enable JavaScript, and consider upgrading to a web browser that
+            <a href="https://videojs.com/html5-video-support/" target="_blank" rel="noopener noreferrer">
+              supports HTML5 video
+            </a>
+          </p>
+        </video>
       </div>
     </n-card>
   </div>
