@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { defineProps, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import type { VideoJsPlayer } from 'video.js';
 import videojs from 'video.js';
 import { getAttributeDatasKey, telemetryDataCurrentKeys } from '@/service/api/device';
@@ -62,30 +62,27 @@ let player: VideoJsPlayer;
 const videoUrl = ref('');
 const createPlayer = async () => {
   await nextTick();
-  let options = {};
-  if (videoUrl.value.includes('.m3u8')) {
-    options = {
-      liveui: true,
-      liveTracker: {
-        trackingThreshold: 0,
-        liveTolerance: 15
-      }
-    };
-  }
+  const options = {
+    autoplay: true, // 设置自动播放
+    muted: true, // 设置了它为true，才可实现自动播放,同时视频也被静音 （Chrome66及以上版本，禁止音视频的自动播放）
+    preload: 'auto', // 预加载
+    controls: false // 显示播放的控件
+  };
+  // if(videoUrl.value.indexOf('.mp4')>-1){
+  //   options.src = videoUrl.value
+  // }
   player = videojs(m3u8_video.value, options, () => {
     videojs.log('播放器已经准备好了!');
     player.on('error', () => {
       videojs.log('播放器解析出错!', player.error());
     });
   });
-  player?.dispose();
 };
 
 watch(
   () => props.card.dataSource,
   () => {
     setSeries(props.card.dataSource);
-    createPlayer();
   },
   { immediate: true, deep: true }
 );
@@ -93,16 +90,22 @@ watch(
 watch(
   () => detail.data?.[0]?.value,
   () => {
-    videoUrl.value = detail.data?.[0]?.value || '';
+    if (detail.data?.[0]?.value) {
+      videoUrl.value = detail.data?.[0]?.value;
+      // if(videoUrl.value.indexOf('.m3u8')>-1){
+      // videoUrl.value ='http://218.6.43.28:83/openUrl/YpAvS48/live.m3u8'
+      // }
+      console.log('videoUrl.value:', videoUrl.value);
+      player?.dispose();
+      setTimeout(() => {
+        if (detail.data?.[0]?.value) {
+          createPlayer();
+        }
+      }, 0);
+    }
   },
   { immediate: true, deep: true }
 );
-
-onMounted(() => {
-  setSeries(props.card.dataSource);
-
-  createPlayer();
-});
 
 onBeforeUnmount(() => {
   player?.dispose();
@@ -116,12 +119,14 @@ onBeforeUnmount(() => {
         <video
           v-if="videoUrl.indexOf('.m3u8') > -1"
           ref="m3u8_video"
+          autoplay
           class="video-js vjs-default-skin vjs-big-play-centered"
           controls
-          preload="auto"
+          preload
           data-setup="{}"
         >
           <source :src="videoUrl" type="application/x-mpegURL" />
+
           <p class="vjs-no-js">
             To view this video please enable JavaScript, and consider upgrading to a web browser that
             <a href="https://videojs.com/html5-video-support/" target="_blank" rel="noopener noreferrer">
@@ -132,19 +137,13 @@ onBeforeUnmount(() => {
         <video
           v-else
           ref="m3u8_video"
+          autoplay
           class="video-js vjs-default-skin vjs-big-play-centered"
           controls
-          autoplay
-          preload="auto"
+          preload
+          data-setup="{}"
           :src="videoUrl"
-        >
-          <p class="vjs-no-js">
-            To view this video please enable JavaScript, and consider upgrading to a web browser that
-            <a href="https://videojs.com/html5-video-support/" target="_blank" rel="noopener noreferrer">
-              supports HTML5 video
-            </a>
-          </p>
-        </video>
+        ></video>
       </div>
     </n-card>
   </div>
