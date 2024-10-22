@@ -35,8 +35,8 @@ const columns0 = [
   {
     title: $t('device_template.table_header.updateTime'),
     minWidth: '140px',
-    key: 'created_at',
-    render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
+    key: 'ts',
+    render: row => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
   },
   {
     title: $t('common.action'),
