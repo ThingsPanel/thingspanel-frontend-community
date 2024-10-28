@@ -35,8 +35,15 @@ const selectedOption = ref({
 });
 const { loading, startLoading, endLoading } = useLoading();
 const columns = [
-  { title: $t('common.time'), key: 'x', render: row => dayjs(row.x).format('YYYY-MM-DD HH:mm:ss') },
-  { title: (props.theName ? props.theName : props.theKey) + (props.theUnit ? `(${props.theUnit})` : ''), key: 'y' }
+  {
+    title: $t('common.time'),
+    key: 'x',
+    render: row => dayjs(row.x).format('YYYY-MM-DD HH:mm:ss')
+  },
+  {
+    title: (props.theName ? props.theName : props.theKey) + (props.theUnit ? `(${props.theUnit})` : ''),
+    key: 'y'
+  }
 ];
 const pagination = reactive({
   page: 1,
@@ -143,7 +150,10 @@ const initialOptions = ref({
     type: 'time' as 'category'
   },
   yAxis: {
-    type: 'value'
+    type: 'value',
+    // min: 0, // 设置 y 轴的最小值
+    // max: 0, // 设置 y 轴的最大值
+    scale: true
   },
   series: [
     {
@@ -325,6 +335,7 @@ watch(
         });
         avgValue.value = sumValue / data.length;
         // 这里是当 通过接口改变 initialOptions的数据
+
         initialOptions.value.series.forEach(series => {
           series.data = data.map(item => {
             return [item.x, item.y];
