@@ -1049,6 +1049,7 @@ const local: App.I18n.Schema = {
     commandConetnt: '命令内容',
     selectSubDevices: '请选择子设备',
     unbind: '不绑定',
+    unbound: '未绑定',
     setSubDevices: '设置子设备',
     errorMessage: '错误信息',
     returnSuccess: '返回成功',
