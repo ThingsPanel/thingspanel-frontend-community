@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { NButton } from 'naive-ui';
-import { deviceConfigInfo } from '@/service/api/device';
+import { deviceConfigInfo, deviceTemplateDetail } from '@/service/api/device';
 import SettingInfo from '@/views/device/config-detail/modules/setting-info.vue';
 import DataHandle from '@/views/device/config-detail/modules/data-handle.vue';
 import { useRouterPush } from '@/hooks/common/router';
@@ -24,6 +24,7 @@ const configForm = ref({
   description: null,
   device_conn_type: null,
   device_template_id: null,
+  device_template_name: '',
   device_type: '',
   name: '',
   protocol_config: null,
@@ -34,9 +35,19 @@ const configForm = ref({
 const editConfig = () => {
   routerPushByKey('device_config-edit', { query: { id: configId.value } });
 };
+const getTemplateDetail = async (templateId: string) => {
+  const res = await deviceTemplateDetail({ id: templateId });
+  if (res.data) {
+    configForm.value.device_template_name = res.data.name;
+  }
+};
 const getConfig = async () => {
   const res = await deviceConfigInfo({ id: configId.value });
   configForm.value = res.data;
+  if (configForm.value.device_template_id) {
+    configForm.value.device_template_name = '';
+    getTemplateDetail(configForm.value.device_template_id);
+  }
 };
 const activeName = ref('关联设备');
 // configId.value = <string>route.query.id || ''
@@ -67,7 +78,11 @@ const clickConfig: () => void = () => {
         <div class="ml-20">
           {{ $t('route.device_template') }}：
           <span style="color: blue; cursor: pointer" @click="clickConfig">
-            {{ configForm.name }}
+            {{
+              configForm.device_template_name || configForm.device_template_name === ''
+                ? configForm.device_template_name
+                : $t('generate.unbound')
+            }}
           </span>
         </div>
       </div>

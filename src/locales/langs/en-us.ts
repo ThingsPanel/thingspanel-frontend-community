@@ -1051,6 +1051,7 @@ const local: App.I18n.Schema = {
     selectSubDevices: 'Please select sub devices',
     setSubDevices: 'Set up sub devices',
     unbind: 'unbind',
+    unbound: 'unbound',
     errorMessage: 'error-message',
     returnSuccess: 'return success',
     returnFail: 'return fail',
