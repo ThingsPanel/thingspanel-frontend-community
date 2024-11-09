@@ -61,17 +61,18 @@ function modification(e) {
             <n-gi>
               <NCard class="i-flex-vertical" :bordered="false">
                 <NSpace vertical>
-                  <NForm
-                    label-placement="left"
-                    :style="{
-                      maxWidth: '640px'
-                    }"
-                  >
+                  <NForm label-placement="left" :style="{ maxWidth: '640px' }">
                     <NFormItem :label="$t('generate.last-name')" path="inputValue">
                       <span>{{ authStore.userInfo.name }}</span>
                     </NFormItem>
                     <NFormItem :label="$t('generate.account-type')" path="inputValue">
-                      <span>{{ $t('generate.super-admin') }}</span>
+                      <span>
+                        {{
+                          authStore.userInfo.roles.includes('SYS_ADMIN')
+                            ? $t('generate.super-admin')
+                            : $t('generate.tenant')
+                        }}
+                      </span>
                     </NFormItem>
                     <NFormItem :label="$t('generate.email-address')" path="inputValue">
                       <span>{{ authStore.userInfo.email }}</span>
