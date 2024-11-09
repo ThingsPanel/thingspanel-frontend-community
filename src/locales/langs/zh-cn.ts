@@ -1329,6 +1329,7 @@ const local: App.I18n.Schema = {
     demo: '插件demo地址：',
     'device-location': '设备位置',
     'super-admin': '超管',
+    tenant: '租户',
     'account-type': '账户类型',
     'vue3-doc-url': 'vue3版文档地址：',
     'select-theme': '请选择主题',

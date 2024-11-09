@@ -1330,6 +1330,7 @@ const local: App.I18n.Schema = {
     demo: 'plugin demo URL:',
     'device-location': 'device location',
     'super-admin': 'super admin',
+    tenant: 'tenant',
     'account-type': 'account type',
     'vue3-doc-url': 'vue3 documentation URL:',
     'select-theme': 'please select theme',
