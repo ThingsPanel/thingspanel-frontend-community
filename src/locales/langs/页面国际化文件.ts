@@ -35,7 +35,7 @@ export const pzh_cn: any = {
     commandDeliveryPreprocessing: '命令下发预处理',
     eventReportPreprocessing: '事件上报预处理',
     pushTime: '推送时间',
-    deviceNumberMax: '设备编号不能超过36位',
+    deviceNumberMax: '设备编号不能超过100位',
     deviceNumberNotVvailable: '设备编号不可用',
     subDeviceAddress: '子设备地址',
     deviceKey: 'key验证错误，服务不可用',
@@ -180,7 +180,7 @@ export const pen: any = {
     kanbanNameNull: 'Kanban name cannot be empty'
   },
   groupPage: {
-    deviceNumberMax: 'The equipment number cannot exceed 36 digits',
+    deviceNumberMax: 'The equipment number cannot exceed 100 letters',
     deviceNumberNotVvailable: 'Equipment number not available',
     deviceAvailable: 'Device available',
     groupName: 'Group Name',

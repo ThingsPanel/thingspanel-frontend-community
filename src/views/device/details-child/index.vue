@@ -77,7 +77,7 @@ const save = async () => {
     window.NMessage.error($t('custom.devicePage.enterDeviceNumber'));
     return;
   }
-  if (deviceDataStore?.deviceData?.device_number.length > 36) {
+  if (deviceDataStore?.deviceData?.device_number.length > 100) {
     window.NMessage.error($t('custom.devicePage.deviceNumberMax'));
     return;
   }
