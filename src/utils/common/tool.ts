@@ -201,6 +201,13 @@ export function validUsername(str) {
   return true;
 }
 
+export function validName(str) {
+  if (!str || str?.length > 50) {
+    return false;
+  }
+  return true;
+}
+
 export function validPasswordByExp(str) {
   if (!/^[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]+$/.test(str)) { // eslint-disable-line
     return false;
