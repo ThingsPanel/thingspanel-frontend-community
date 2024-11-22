@@ -751,7 +751,7 @@ watch(
                       value-field="id"
                       label-field="name"
                       clearable
-                      :show="selectInstRef[ifIndex]"
+               
                       :consistent-menu-width="false"
                       @click.prevent="
                         e => {
