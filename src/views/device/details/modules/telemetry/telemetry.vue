@@ -82,7 +82,7 @@ const token = localStg.get('token');
 
 // CardRender相关
 const layout = ref<ICardView[]>([]);
-const showDefaultCards = ref(false);
+const showDefaultCards = ref(true);
 const showAppChart = ref(false);
 const cr = ref<ICardRender>();
 const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr, token);
@@ -248,8 +248,11 @@ const initTemplateData = async (deviceTemplateId: string) => {
           });
         });
         layout.value = [...configJson];
-        showAppChart.value = true;
-        updateComponentsData(layout);
+        if (configJson.length > 0) {
+          showDefaultCards.value = false;
+          showAppChart.value = true;
+          updateComponentsData(layout);
+        }
       } else {
         showDefaultCards.value = true;
       }
