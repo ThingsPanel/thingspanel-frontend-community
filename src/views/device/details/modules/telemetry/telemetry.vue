@@ -7,7 +7,8 @@ import { DocumentOnePage24Regular } from '@vicons/fluent';
 import { useWebSocket } from '@vueuse/core';
 import { MovingNumbers } from 'moving-numbers-vue3';
 import moment from 'moment';
-import type { ICardRender, ICardView } from '@/components/panel/card';
+import type { ICardView } from '@/components/panel/card';
+import type { ICardRender } from '@/utils/websocketUtil';
 import {
   expectMessageAdd,
   getSimulation,
@@ -77,12 +78,14 @@ const log_page = ref(1);
 const showError = ref(false);
 const erroMessage = ref('');
 
+const token = localStg.get('token');
+
 // CardRender相关
 const layout = ref<ICardView[]>([]);
 const showDefaultCards = ref(false);
 const showAppChart = ref(false);
 const cr = ref<ICardRender>();
-const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr);
+const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr, token);
 
 const { status, send, close } = useWebSocket(wsUrl, {
   heartbeat: {
@@ -208,8 +211,6 @@ const fetchData = async () => {
     endLoading();
   }
 };
-
-const token = localStg.get('token');
 
 const fetchTelemetry = async () => {
   // eslint-disable-next-line @typescript-eslint/no-shadow
