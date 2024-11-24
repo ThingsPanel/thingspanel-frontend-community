@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import type { ICardRender, ICardView } from '@/components/panel/card';
+import type { ICardView } from '@/components/panel/card';
+import type { ICardRender } from '@/utils/websocketUtil';
 import { $t } from '@/locales';
 import { deviceDetail, deviceTemplateDetail } from '@/service/api/device';
 import { formatDateTime } from '@/utils/common/datetime';
