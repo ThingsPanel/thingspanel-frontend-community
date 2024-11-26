@@ -42,8 +42,9 @@ if (route.value.query.password && route.value.query.password === 'invalid') {
 }
 function modification(e) {
   console.log(895656, e);
-  if (!e) {
+  if (e) {
     useAuthStore();
+    authStore.userInfo.name = e;
     message.success($t('common.modifySuccess'));
   } else {
     message.error('修改失败');
