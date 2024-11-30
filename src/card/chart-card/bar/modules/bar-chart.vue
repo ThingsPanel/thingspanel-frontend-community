@@ -583,7 +583,7 @@ onUnmounted(() => {
 
 <template>
   <div ref="chartContainer" class="chart-container h-full flex flex-col pt-4px">
-    <div class="absolute right-0 flex justify-between pt-1">
+    <div class="button-container absolute right-0 flex justify-between pt-1">
       <div class="name-unit"></div>
       <div class="flex justify-end pr-2">
         <n-popselect
@@ -647,5 +647,8 @@ onUnmounted(() => {
 }
 .chart-container {
   color: var(--chart-legend-color); /* 使用 CSS 变量 */
+}
+.button-container {
+  z-index: 99;
 }
 </style>
