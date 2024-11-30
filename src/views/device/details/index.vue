@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 import { useLoading } from '@sa/hooks';
 import { useWebSocket } from '@vueuse/core';
 import Telemetry from '@/views/device/details/modules/telemetry/telemetry.vue';
+import TelemetryChart from '@/views/device/details/modules/telemetry-chart.vue';
 import Join from '@/views/device/details/modules/join.vue';
 import DeviceAnalysis from '@/views/device/details/modules/device-analysis.vue';
 import Message from '@/views/device/details/modules/message.vue';
@@ -32,6 +33,12 @@ let components = [
     key: 'telemetry',
     name: () => $t('custom.device_details.telemetry'),
     component: Telemetry,
+    refreshKey: 0
+  },
+  {
+    key: 'chart',
+    name: () => $t('custom.device_details.chart'),
+    component: TelemetryChart,
     refreshKey: 0
   },
   {

@@ -140,6 +140,7 @@ export const pzh_cn: any = {
     telemetry: '遥测',
     join: '连接',
     deviceAnalysis: '子设备',
+    chart: '图表',
     message: '信息',
     stats: '属性',
 
@@ -326,6 +327,7 @@ export const pen: any = {
     telemetry: 'telemetry',
     join: 'join',
     deviceAnalysis: 'deviceAnalysis',
+    chart: 'chart',
     message: 'message',
     stats: 'stats',
     eventReport: 'eventReport',

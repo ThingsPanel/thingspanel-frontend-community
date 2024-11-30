@@ -7,8 +7,6 @@ import { DocumentOnePage24Regular } from '@vicons/fluent';
 import { useWebSocket } from '@vueuse/core';
 import { MovingNumbers } from 'moving-numbers-vue3';
 import moment from 'moment';
-import type { ICardView } from '@/components/panel/card';
-import type { ICardRender } from '@/utils/websocketUtil';
 import {
   expectMessageAdd,
   getSimulation,
@@ -19,10 +17,9 @@ import {
   telemetryDataPub
 } from '@/service/api';
 import { localStg } from '@/utils/storage';
-import { deviceDetail, deviceTemplateDetail } from '@/service/api/device';
+import { deviceDetail } from '@/service/api/device';
 import { $t } from '@/locales';
 import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool';
-import { useWebsocketUtil } from '@/utils/websocketUtil';
 import { deviceCustomControlList } from '@/service/api/system-data';
 import HistoryData from './modules/history-data.vue';
 import TimeSeriesData from './modules/time-series-data.vue';
@@ -79,13 +76,6 @@ const showError = ref(false);
 const erroMessage = ref('');
 
 const token = localStg.get('token');
-
-// CardRender相关
-const layout = ref<ICardView[]>([]);
-const showDefaultCards = ref(true);
-const showAppChart = ref(false);
-const cr = ref<ICardRender>();
-const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr, token);
 
 const { status, send, close } = useWebSocket(wsUrl, {
   heartbeat: {
@@ -236,33 +226,6 @@ const setItemRef = el => {
     numberAnimationInstRef.value[index] = el;
   }
 };
-const initTemplateData = async (deviceTemplateId: string) => {
-  if (deviceTemplateId) {
-    const res = await deviceTemplateDetail({ id: deviceTemplateId });
-    if (res.data && res.data.web_chart_config) {
-      const configJson = JSON.parse(res.data.web_chart_config);
-      if (configJson.length > 0) {
-        configJson.forEach(item => {
-          item.data?.dataSource?.deviceSource?.forEach(device => {
-            device.deviceId = props.id;
-          });
-        });
-        layout.value = [...configJson];
-        if (configJson.length > 0) {
-          showDefaultCards.value = false;
-          showAppChart.value = true;
-          updateComponentsData(layout);
-        }
-      } else {
-        showDefaultCards.value = true;
-      }
-    } else {
-      showDefaultCards.value = true;
-    }
-  } else {
-    showDefaultCards.value = true;
-  }
-};
 const getDeviceDetail = async () => {
   const { data, error } = await deviceDetail(props.id);
   if (!error) {
@@ -272,7 +235,6 @@ const getDeviceDetail = async () => {
       } else {
         showLog.value = false;
       }
-      initTemplateData(data.device_config.device_template_id);
     } else {
       showLog.value = true;
     }
@@ -389,7 +351,6 @@ onUnmounted(() => {
   if (status.value === 'OPEN') {
     close();
   }
-  closeAllSockets();
 });
 
 const onControlChange = async (row: any) => {
@@ -442,7 +403,7 @@ const inputFeedback = computed(() => {
     </NGrid>
 
     <!-- 第二行 -->
-    <n-card v-if="showDefaultCards" class="mb-4">
+    <n-card class="mb-4">
       <n-grid :x-gap="cardMargin" :y-gap="cardMargin" cols="1 600:2 900:3 1200:4">
         <n-gi v-for="(i, index) in telemetryData" :key="i.tenant_id">
           <n-card header-class="border-b h-36px" hoverable :style="{ height: cardHeight + 'px' }">
@@ -519,21 +480,6 @@ const inputFeedback = computed(() => {
         </n-gi>
       </n-grid>
     </n-card>
-    <template v-if="showAppChart">
-      <div style="width: calc(100% + 20px); margin-left: -10px">
-        <CardRender
-          ref="cr"
-          class="card-render"
-          :layout="layout"
-          :is-preview="true"
-          :col-num="4"
-          :default-card-col="4"
-          :row-height="85"
-          :breakpoints="{ lg: 780, md: 500, sm: 0 }"
-          :cols="{ lg: 12, md: 6, sm: 4 }"
-        />
-      </div>
-    </template>
 
     <!-- 第三行 -->
     <n-space>
