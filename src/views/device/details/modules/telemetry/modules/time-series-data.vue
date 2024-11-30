@@ -341,6 +341,13 @@ watch(
             return [item.x, item.y];
           });
         });
+      } else {
+        initialOptions.value.series.forEach(series => {
+          series.data = [];
+        });
+        maxValue.value = undefined;
+        minValue.value = undefined;
+        avgValue.value = undefined;
       }
     }
     endLoading();
