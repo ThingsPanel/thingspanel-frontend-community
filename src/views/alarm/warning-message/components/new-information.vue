@@ -203,7 +203,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
     key: 'actions',
     minWidth: '140px',
     title: $t('common.action'),
-    align: 'center',
+    align: 'left',
     render: (row: any) => {
       const operatorBtn = row.operatorBtn.map(item => {
         if (item.type === 'delete') {

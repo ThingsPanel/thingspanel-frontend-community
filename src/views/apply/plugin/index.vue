@@ -112,11 +112,11 @@ const columns: any = ref([
   {
     key: 'actions',
     title: () => $t('common.action'),
-    align: 'center',
+    align: 'left',
     minWidth: '220px',
     render: row => {
       return (
-        <NSpace justify={'center'}>
+        <NSpace justify={'start'}>
           {
             <NButton size={'small'} type="primary" onClick={() => edit(row)}>
               {$t('common.edit')}

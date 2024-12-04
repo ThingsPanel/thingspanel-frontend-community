@@ -417,6 +417,8 @@ declare namespace Api {
       created_at: string | null;
       /** 更新時間 */
       updated_at: string | null;
+      /** 上次访问时间 */
+      lastVisitTime: string | null;
     }
 
     interface Data {
