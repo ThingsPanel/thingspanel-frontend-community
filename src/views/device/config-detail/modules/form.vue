@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watchEffect } from 'vue';
 import type { SelectMixedOption } from 'naive-ui/es/select/src/interface';
-
+import { find } from 'lodash';
 const rules = ref({});
 
 const protocol_config = defineModel<any>('protocolConfig', { default: {} });
@@ -38,21 +38,44 @@ const onCreate = () => {
       <div class="w-full">
         <template v-for="element in props.formElements" :key="element.dataKey">
           <div v-if="element.type === 'input'">
-            <NFormItem :label="element.label" :path="element.dataKey" class="w-300">
-              <NInputNumber
-                v-if="element.validate.type === 'number'"
-                v-model:value="protocol_config[element.dataKey]"
-                :placeholder="element.placeholder"
-              />
-              <NInput v-else v-model:value="protocol_config[element.dataKey]" :placeholder="element.placeholder" />
+            <NFormItem
+              :label="element.label"
+              :path="element.dataKey"
+              class="w-300"
+              :rules="[element.validate || { required: false }]"
+            >
+              <NTooltip trigger="hover" placement="top">
+                <template #trigger>
+                  <NInputNumber
+                    v-if="element.validate.type === 'number'"
+                    v-model:value="protocol_config[element.dataKey]"
+                    :placeholder="element.placeholder"
+                  />
+                  <NInput v-else v-model:value="protocol_config[element.dataKey]" :placeholder="element.placeholder" />
+                </template>
+                <template #default>
+                  <span>{{ protocol_config[element.dataKey] }}</span>
+                </template>
+              </NTooltip>
             </NFormItem>
           </div>
           <div v-if="element.type === 'select'">
-            <NFormItem :label="element.label" :path="element.dataKey">
-              <NSelect
-                v-model:value="protocol_config[element.dataKey]"
-                :options="element.options as SelectMixedOption[]"
-              />
+            <NFormItem
+              :label="element.label"
+              :path="element.dataKey"
+              :rules="[element.validate || { required: false }]"
+            >
+              <NTooltip trigger="hover" placement="top">
+                <template #trigger>
+                  <NSelect
+                    v-model:value="protocol_config[element.dataKey]"
+                    :options="element.options as SelectMixedOption[]"
+                  />
+                </template>
+                <template #default>
+                  <span>{{ find(element.options, { value: protocol_config[element.dataKey] })?.label }}</span>
+                </template>
+              </NTooltip>
             </NFormItem>
           </div>
 
@@ -63,7 +86,10 @@ const onCreate = () => {
                 :key="subElement.dataKey + element.dataKey"
                 class="mr-24px flex-1"
               >
+                <span v-if="subElement?.validate?.required" class="text-[#FF3838]">*</span>
+
                 {{ subElement.label }}
+                <span>{{ subElement?.validate?.required ? '(必填)' : '(非必填)' }}</span>
               </n-ellipsis>
               <div class="ml-20px w-68px"></div>
             </div>
@@ -82,20 +108,27 @@ const onCreate = () => {
                       :show-label="false"
                       :label="subElement.label"
                       :path="`${element.dataKey}[${index}]${subElement.dataKey}`"
-                      :rule="element.validate"
+                      :rules="[element.validate || { required: false }]"
                     >
-                      <NInputNumber
-                        v-if="subElement.validate.type === 'number'"
-                        v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
-                        :placeholder="subElement.placeholder"
-                        @keydown.enter.prevent
-                      />
-                      <NInput
-                        v-else
-                        v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
-                        :placeholder="subElement.placeholder"
-                        @keydown.enter.prevent
-                      />
+                      <NTooltip trigger="hover" placement="top">
+                        <template #trigger>
+                          <NInputNumber
+                            v-if="subElement.validate.type === 'number'"
+                            v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
+                            :placeholder="subElement.placeholder"
+                            @keydown.enter.prevent
+                          />
+                          <NInput
+                            v-else
+                            v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
+                            :placeholder="subElement.placeholder"
+                            @keydown.enter.prevent
+                          />
+                        </template>
+                        <template #default>
+                          <span>{{ protocol_config[element.dataKey][index][subElement.dataKey] }}</span>
+                        </template>
+                      </NTooltip>
                     </n-form-item>
                   </template>
                   <template v-if="subElement.type === 'select'">
@@ -105,12 +138,25 @@ const onCreate = () => {
                       :show-label="false"
                       :label="subElement.label"
                       :path="`${element.dataKey}[${index}]${subElement.dataKey}`"
-                      :rule="element.validate"
+                      :rules="[element.validate || { required: false }]"
                     >
-                      <NSelect
-                        v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
-                        :options="subElement.options as SelectMixedOption[]"
-                      />
+                      <NTooltip trigger="hover" placement="top">
+                        <template #trigger>
+                          <NSelect
+                            v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
+                            :options="subElement.options as SelectMixedOption[]"
+                          />
+                        </template>
+                        <template #default>
+                          <span>
+                            {{
+                              find(subElement.options, {
+                                value: protocol_config[element.dataKey][index][subElement.dataKey]
+                              })?.label
+                            }}
+                          </span>
+                        </template>
+                      </NTooltip>
                     </n-form-item>
                   </template>
                   <div class="w-12px"></div>

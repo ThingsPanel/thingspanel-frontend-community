@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import type { FormInst } from 'naive-ui';
-import { useMessage } from 'naive-ui';
+import { NSelect, useMessage } from 'naive-ui';
 import { deviceAdd } from '@/service/api/device';
 import { $t } from '@/locales';
 
@@ -53,9 +53,12 @@ function handleValidateClick(e: MouseEvent) {
           <n-dynamic-tags v-model:value="formValue.label" />
         </n-form-item>
         <n-form-item :label="$t('custom.devicePage.deviceConfig')" path="device_config_id">
-          <n-select
+          <NSelect
             v-model:value="formValue.device_config_id"
             :placeholder="() => $t('custom.devicePage.selectDeviceConfig')"
+            value-field="id"
+            label-field="name"
+            filterable
             :options="configOptions"
           />
         </n-form-item>

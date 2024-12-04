@@ -91,25 +91,20 @@ const getDeviceGroupOptions = async () => {
   return options;
 };
 
-const getDeviceConfigOptions = async pattern => {
-  console.log(pattern, '我请求了筛选');
+const getDeviceConfigOptions = async () => {
+  // console.log(pattern, '我请求了筛选');
   const res = await getDeviceConfigList({
     page: 1,
-    page_size: 99,
-    device_type: pattern
+    page_size: 99
+    // device_type: pattern
   });
-  const options: any[] = [];
+  let options: any[] = [];
   if (res.data && res.data.list) {
-    // eslint-disable-next-line array-callback-return
-    res.data.list.map(ietm => {
-      options.push({
-        label: ietm.name,
-        value: ietm.id
-      });
-    });
+    options = res.data.list;
   }
-  configOptions.value = [{ label: $t('custom.devicePage.unlimitedDeviceConfig'), value: '' }, ...options];
-  return options;
+  configOptions.value = [{ name: $t('custom.devicePage.unlimitedDeviceConfig'), id: '' }, ...options];
+
+  return configOptions.value;
 };
 
 const columns_to_show: Ref<any> = ref([
@@ -225,8 +220,10 @@ const searchConfigs = ref<SearchConfig[]>([
     key: 'device_config_id',
     label: $t('custom.devicePage.unlimitedDeviceConfig'),
     type: 'select',
-    options: [{ label: () => $t('custom.devicePage.unlimitedDeviceConfig'), value: '' }],
-    loadOptions: pattern => getDeviceConfigOptions(pattern)
+    options: [],
+    labelField: 'name',
+    valueField: 'id',
+    loadOptions: getDeviceConfigOptions
   },
   {
     key: 'is_online',

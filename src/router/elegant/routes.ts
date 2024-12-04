@@ -379,11 +379,10 @@ export const generatedRoutes: GeneratedRoute[] = [
   {
     name: 'device-details-app',
     path: '/device-details-app',
-    component: 'layout.blank$view.device-details-app',
+    component: 'layout.base$view.device-details-app',
     meta: {
       title: 'device-details-app',
-      i18nKey: 'route.device-details-app',
-      constant: true
+      i18nKey: 'route.device-details-app'
     }
   },
   {
