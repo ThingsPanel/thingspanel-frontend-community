@@ -40,8 +40,7 @@ export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (r
           }}
         >
           <NFlex justify={'start'}>
-            <NButton
-              quaternary
+            <NButton              
               type="primary"
               size={'small'}
               onClick={() => {
@@ -59,7 +58,7 @@ export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (r
               {{
                 default: () => $t('common.confirmDelete'),
                 trigger: () => (
-                  <NButton quaternary type="primary" size={'small'}>
+                  <NButton type="error" size={'small'}>
                     {$t('common.delete')}
                   </NButton>
                 )

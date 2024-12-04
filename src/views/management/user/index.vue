@@ -129,6 +129,13 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
       return <span></span>;
     }
   },
+  {
+    key: 'lastVisitTime',
+    minWidth: '140px',
+    title: () => '上次访问时间',
+    align: 'center',
+    render: row => dayjs(row.lastVisitTime).format('YYYY-MM-DD HH:mm:ss')
+  },
   // {
   //   key: 'gender',
   //   title: '性别',
@@ -155,10 +162,10 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
     key: 'actions',
     minWidth: '140px',
     title: () => $t('common.action'),
-    align: 'center',
+    align: 'left',
     render: row => {
       return (
-        <NSpace justify={'center'}>
+        <NSpace justify={'start'}>
           <NPopconfirm
             negative-text={$t('common.cancel')}
             positive-text={$t('common.confirm')}

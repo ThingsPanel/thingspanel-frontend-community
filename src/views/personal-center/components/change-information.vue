@@ -32,7 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
 interface Emits {
   (e: 'update:visible', visible: boolean): void;
 
-  (e: 'modification'): void;
+  (e: 'modification', name: string): void;
 }
 const { formRef, validate } = useNaiveForm();
 const emit = defineEmits<Emits>();
@@ -84,7 +84,7 @@ const editName = async () => {
 
   if (!res.error) {
     modalVisible.value = false;
-    emit('modification');
+    emit('modification', formData.value.name);
   }
 };
 /** passwordModification */
