@@ -13,7 +13,7 @@ import { useNaiveForm } from '@/hooks/common/form';
 import { getConfirmPwdRule } from '@/utils/form/rule';
 import { changeInformation, passwordModification } from '@/service/api/personal-center';
 import { $t } from '@/locales';
-import { encryptDataByRsa, generateRandomHexString, validPasswordByExp } from '@/utils/common/tool';
+import { encryptDataByRsa, generateRandomHexString, validName, validPasswordByExp } from '@/utils/common/tool';
 
 export interface Props {
   /** 弹窗可见性 */
@@ -110,12 +110,6 @@ const password = async () => {
   }
 };
 
-const validateUsername = (username: string) => {
-  // 定义正则表达式
-  const regex = /^[a-zA-Z0-9_]+$/; // 使用正则表达式测试用户名
-  return regex.test(username);
-};
-
 function submit() {
   if (estimate.value === 'amend') {
     editName();
@@ -129,8 +123,8 @@ const rules: FormRules = {
       required: true,
       validator(rule: FormItemRule, value: string) {
         console.log(rule);
-        if (!validateUsername(value)) {
-          return new Error('用户名只允许字母、数字和下划线');
+        if (!validName(value)) {
+          return new Error('姓名不能为空且小于50个字符!');
         }
         return true;
       },
