@@ -1,9 +1,8 @@
 <script lang="tsx" setup>
 import type { VueElement } from 'vue';
-import { computed, defineProps, ref, watchEffect } from 'vue';
+import { computed, defineProps, getCurrentInstance, ref, watchEffect } from 'vue';
 import { NButton, NDataTable, NDatePicker, NInput, NPopconfirm, NSelect, NSpace } from 'naive-ui';
 import type { TreeSelectOption } from 'naive-ui';
-import { throttle } from 'lodash-es';
 import { useLoading } from '@sa/hooks';
 import { $t } from '@/locales';
 import { formatDateTime } from '@/utils/common/datetime';
@@ -24,6 +23,8 @@ export type SearchConfig =
       renderTag?: any;
       extendParams?: object;
       options: { label: theLabel; value: any }[];
+      labelField?: string;
+      valueField?: string;
       loadOptions?: (pattern) => Promise<{ label: theLabel; value: any }[]>;
     }
   | {
@@ -35,9 +36,8 @@ export type SearchConfig =
       loadOptions?: () => Promise<TreeSelectOption[]>;
     };
 
-const emits = defineEmits(['paramsUpdate']);
-
 // 通过props从父组件接收参数
+
 const props = defineProps<{
   fetchData: (data: any) => Promise<any>; // 数据获取函数
   columnsToShow: // 表格列配置
@@ -187,7 +187,6 @@ const onUpdatePageSize = newPageSize => {
 };
 // 观察分页和搜索条件的变化，自动重新获取数据
 watchEffect(() => {
-  if (!searchConfigs) return;
   searchConfigs.map((item: any) => {
     const vals = searchCriteria.value[item.key];
     if (item?.extendParams && vals) {
@@ -200,8 +199,6 @@ watchEffect(() => {
       });
     }
   });
-  console.log(searchCriteria.value);
-  emits('paramsUpdate', searchCriteria.value);
   getData();
 });
 
@@ -219,25 +216,8 @@ const handleReset = () => {
 
   handleSearch(); // 重置后重新获取数据
 };
-
-const forceChangeParamsByKey = newParams => {
-  // 子组件强制修改表单数值
-  const theKeys = Object.keys(newParams);
-  const keys = Object.keys(searchCriteria.value);
-  if (keys.length <= 0) {
-    searchCriteria.value = newParams;
-  } else {
-    keys.forEach(key => {
-      if (theKeys.includes(key)) {
-        searchCriteria.value[key] = newParams[key];
-      }
-    });
-  }
-};
-
 defineExpose({
-  handleReset,
-  forceChangeParamsByKey
+  handleReset
 });
 // 更新树形选择器的选项
 const handleTreeSelectUpdate = (value, key) => {
@@ -247,7 +227,6 @@ const handleTreeSelectUpdate = (value, key) => {
 
 // 用于加载动态选项的函数，适用于select和tree-select类型的搜索配置
 const loadOptionsOnMount = async pattern => {
-  if (!searchConfigs) return;
   for (const config of searchConfigs) {
     if (config.type === 'select' && config.loadOptions) {
       // eslint-disable-next-line no-await-in-loop
@@ -268,7 +247,6 @@ const rowProps = row => {
   return {};
 };
 const loadOptionsOnMount2 = async () => {
-  if (!searchConfigs) return;
   for (const config of searchConfigs) {
     if (config.type === 'tree-select' && config.loadOptions) {
       // eslint-disable-next-line no-await-in-loop
@@ -278,8 +256,12 @@ const loadOptionsOnMount2 = async () => {
   }
 };
 
+const getPlatform = computed(() => {
+  const { proxy }: any = getCurrentInstance();
+  return proxy.getPlatform();
+});
 // 使用throttle减少动态加载选项时的请求频率
-const throttledLoadOptionsOnMount = throttle(loadOptionsOnMount, 300);
+// const throttledLoadOptionsOnMount = throttle(loadOptionsOnMount, 300);
 
 // 在组件挂载时加载选项
 loadOptionsOnMount('');
@@ -292,80 +274,71 @@ loadOptionsOnMount2();
       <!-- 搜索区域与操作按钮 -->
       <div class="row flex items-end justify-between gap-4">
         <!-- 搜索输入和选择器 -->
-        <!-- <div class="flex flex-1 flex-wrap items-end gap-4"> -->
-        <NForm class="flex-wrap" inline label-placement="left" label-align="right" label-width="120">
-          <!--
- <div
+        <div class="flex flex-1 flex-wrap items-end gap-4">
+          <div
             v-for="config in searchConfigs"
             :key="config.key"
             class="flex flex-col gap-2"
             :class="getPlatform ? 'min-w-100%' : ''"
-          > 
--->
-          <NFormItem v-for="config in searchConfigs" :key="config.key" :label="config.name">
+          >
             <template v-if="config.type === 'input'">
               <NInput
                 v-model:value="searchCriteria[config.key]"
+                size="small"
                 :placeholder="config.label"
-                class="input-style w-200px"
+                class="input-style"
               />
             </template>
             <template v-else-if="config.type === 'date-range'">
               <NDatePicker
                 v-model:value="searchCriteria[config.key]"
+                size="small"
                 type="daterange"
                 :placeholder="config.label"
-                class="input-style w-200px"
+                class="input-style"
               />
             </template>
             <template v-else-if="config.type === 'select'">
               <NSelect
                 v-model:value="searchCriteria[config.key]"
+                :value-field="config.valueField"
+                :label-field="config.labelField"
+                size="small"
                 filterable
                 :options="config.options"
                 :render-label="config.renderLabel"
                 :render-tag="config.renderTag"
                 :placeholder="config.label"
-                class="input-style w-200px"
+                class="input-style"
                 @update:value="currentPage = 1"
-                @search="
-                  value => {
-                    throttledLoadOptionsOnMount(value);
-                  }
-                "
               />
             </template>
             <template v-else-if="config.type === 'date'">
               <NDatePicker
                 v-model:value="searchCriteria[config.key]"
+                size="small"
                 type="date"
                 :placeholder="config.label"
-                class="input-style w-200px"
+                class="input-style"
               />
             </template>
             <template v-else-if="config.type === 'tree-select'">
               <n-tree-select
                 v-model:value="searchCriteria[config.key]"
+                size="small"
                 filterable
-                :clearable="config.clearable"
                 :options="config.options"
                 :multiple="config.multiple"
-                :default-expand-all="config.defaultExpandAll"
-                class="input-style w-200px"
-                :placeholder="config.label"
+                class="input-style"
                 @update:value="value => handleTreeSelectUpdate(value, config.key)"
               />
             </template>
-          </NFormItem>
-          <div>
-            <NButton v-if="0" class="btn-style mr-20px w-72px" type="primary" @click="handleSearch">
-              {{ $t('common.search') }}
-            </NButton>
-            <NButton class="w-72px" type="primary" @click="handleReset">
-              {{ $t('common.reset') }}
-            </NButton>
           </div>
-        </NForm>
+          <div>
+            <NButton v-if="0" class="btn-style" size="small" @click="handleSearch">{{ $t('common.search') }}</NButton>
+            <NButton class="btn-style" size="small" @click="handleReset">{{ $t('common.reset') }}</NButton>
+          </div>
+        </div>
         <!-- 新建与返回按钮 -->
       </div>
 
@@ -441,11 +414,5 @@ loadOptionsOnMount2();
   @apply rounded-lg shadow overflow-hidden;
   margin: 0 auto;
   padding: 16px;
-}
-.w-200px {
-  width: 200px !important;
-}
-.mr-20px {
-  margin-right: 20px;
 }
 </style>

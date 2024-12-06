@@ -311,6 +311,7 @@ const isNoAggregate = computed(
               v-if="state.data.dataSource.isSupportAggregate"
               v-model:value="state.data.dataSource.dataAggregateRange"
               clearable
+              filterable
               :options="dataAggregateRangeOptions || []"
               placeholder="请选择数据聚合范围"
             />
@@ -340,7 +341,7 @@ const isNoAggregate = computed(
                 :key="i"
                 class="mb-4 flex flex-wrap space-x-2"
               >
-             
+
                 <NSelect
                   v-if="i <= deviceCount - 1"
                   v-model:value="item.deviceId"
@@ -352,6 +353,7 @@ const isNoAggregate = computed(
                   :options="deviceOption || []"
                   label-field="name"
                   value-field="id"
+                  filterable
                   @update:value="
                     (value, option) => deviceSelectChange(value, option, item)
                   "
@@ -363,6 +365,7 @@ const isNoAggregate = computed(
                   v-if="i <= deviceCount - 1"
                   v-model:value="item.metricsId"
                   clearable
+                  filterable
                   placeholder="请选择指标"
                   :disabled="props?.deviceWebChartConfig?.length !== 0"
                   class="w-140px"
@@ -385,6 +388,7 @@ const isNoAggregate = computed(
                   "
                   v-model:value="item.aggregate_function"
                   clearable
+                  filterable
                   :options="aggregateFunctionOptions || []"
                   placeholder="请选择数据聚合方式"
                   :disabled="isNoAggregate"
