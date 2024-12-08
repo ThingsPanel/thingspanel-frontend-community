@@ -149,7 +149,7 @@ const columns: Ref<any> = ref([
     minWidth: '140px',
     render: row => {
       return (
-        <NSpace justify={'center'}>
+        <NSpace justify={'start'}>
           <NButton size={'small'} type="success" onClick={() => sceneActivation(row)}>
             {$t('generate.activate')}
           </NButton>

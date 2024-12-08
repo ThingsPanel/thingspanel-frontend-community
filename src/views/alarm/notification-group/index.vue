@@ -103,11 +103,11 @@ const columns = ref([
   {
     key: 'actions',
     title: $t('common.action'),
-    align: 'center',
-    minWidth: '140px',
+    align: 'left',
+    width: '200px',
     render: (row: any) => {
       return (
-        <NSpace justify={'center'}>
+        <NSpace justify={'start'}>
           <NButton size={'small'} type="primary" onClick={() => handleEditTable(row.id)}>
             {$t('common.edit')}
           </NButton>

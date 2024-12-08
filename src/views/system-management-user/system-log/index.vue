@@ -124,7 +124,7 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   },
   {
     key: '',
-    title: $t('generate.action'),
+    title: '操作',
     minWidth: '140px',
     align: 'left',
     render: row => {
@@ -189,9 +189,10 @@ getTableData();
           <NFormItem :label="$t('generate.ipAddress')" path="ip">
             <NInput v-model:value="queryParams.ip" />
           </NFormItem>
+
+          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('generate.query') }}</NButton>
+          <NButton class="ml-15px w-72px" type="primary" @click="handleReset">{{ $t('generate.reset') }}</NButton>
         </view>
-        <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('generate.query') }}</NButton>
-        <NButton class="ml-15px w-72px" type="primary" @click="handleReset">{{ $t('generate.reset') }}</NButton>
       </NForm>
       <NDataTable :columns="columns" :data="tableData" :loading="loading" class="flex-1-hidden" />
       <div class="pagination-box">
