@@ -466,6 +466,7 @@ declare namespace App {
         lookForward: string;
         modify: string;
         modifySuccess: string;
+        modifyFail: string;
         pleaseCheckValue: string;
         refresh: string;
         reset: string;
