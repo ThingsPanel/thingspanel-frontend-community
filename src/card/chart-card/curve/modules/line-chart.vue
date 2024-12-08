@@ -94,17 +94,16 @@ const name = ref('');
 
 const option = ref<EChartsOption>({
   tooltip: {
-    trigger: 'axis'
-    // formatter(datas) {
-    //   return datas[0].value[1] + detail.value.data[0].unit;
-    // }
+    trigger: 'axis',
   },
   legend: {
     data: legendData.value,
     textStyle: {
       color: legendColor.value,
       fontSize: '1.1em'
-    }
+    },
+    itemGap: 15,
+    orient: 'horizontal'
   },
   dataZoom: [
     // 1.横向使用滚动条
@@ -395,6 +394,12 @@ const getTelemetryData = async (device_id, key, index, metricName) => {
       color: props.colorGroup[index].line || 'blue'
     },
     showSymbol: false,
+    itemStyle: {
+      color:  new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+        { offset: 0, color: props.colorGroup[index].top },
+        { offset: 1, color: props.colorGroup[index].bottom }
+      ]) // 自定义颜色
+    },
     areaStyle: {
       opacity: 0.8,
       color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -424,9 +429,10 @@ const getTelemetryData = async (device_id, key, index, metricName) => {
 
   try {
     const { data } = await telemetryDataHistoryList(metricsParams);
-    const seriesData = data ? data.map(item => [item.x, item.y]) : sampleData;
+    const seriesData = data ? data.map((item) => [item.x, item.y]) : sampleData;
     return {
       ...sampleObj,
+      stack: `Total${index}`,
       data: seriesData
     };
   } catch (error) {
@@ -457,8 +463,12 @@ const setSeries = async dataSource => {
   const seriesPromises = deviceSource.slice(0, deviceCount).map((item, index) => {
     const metricName = item.metricsName || item.metricsId || '';
     name.value = metricName;
-    legendData.value.push(metricName);
-
+    const color=new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      { offset: 0, color: props.colorGroup[index].top },
+      { offset: 1, color: props.colorGroup[index].bottom }
+    ])
+    const obj={ name: metricName, icon: 'circle', itemStyle: { color } }
+    legendData.value.push(obj);
     // 返回一个Promise，包含系列配置和数据
     return getTelemetryData(item.deviceId, item.metricsId, index, metricName);
   });
