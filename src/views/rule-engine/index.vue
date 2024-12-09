@@ -7,8 +7,10 @@ import { useBoolean, useLoading } from '@sa/hooks';
 import { ruleEngineStatusLabels } from '@/constants/business';
 import { fetchRuleEngineList } from '@/service/api_demo/management';
 import { $t } from '@/locales';
+import { createLogger } from '@/utils/logger';
 import type { ModalType } from './components/table-action-modal.vue';
 import TableActionModal from './components/table-action-modal.vue';
+const logger = createLogger('Engie');
 
 const { loading, startLoading, endLoading } = useLoading(false);
 const { bool: visible, setTrue: openModal } = useBoolean();
@@ -110,11 +112,11 @@ function handleAddTable() {
 }
 
 function handleActivate(rowId: string) {
-  console.log(rowId);
+  logger.info(rowId);
 }
 
 function handlePause(rowId: string) {
-  console.log(rowId);
+  logger.info(rowId);
 }
 
 function handleEditTable(rowId: string) {

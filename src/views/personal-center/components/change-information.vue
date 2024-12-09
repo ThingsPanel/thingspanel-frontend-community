@@ -96,7 +96,6 @@ const password = async () => {
   if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
     salt = generateRandomHexString(16);
     password1 = encryptDataByRsa(password1 + salt);
-    console.log('加密后密码：', password1);
   }
   const param = {
     old_password: formData.value.old_password,
@@ -122,8 +121,7 @@ const rules: FormRules = {
     {
       required: true,
       validator(rule: FormItemRule, value: string) {
-        console.log(rule);
-        if (!validName(value)) {
+        if (rule && !validName(value)) {
           return new Error('姓名不能为空且小于50个字符!');
         }
         return true;

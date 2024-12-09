@@ -20,7 +20,6 @@ const getTemplate = async () => {
     data.web_chart_config = JSON.parse(data.web_chart_config);
     code.value = JSON.stringify(data, null, 2);
   }
-  console.log(data);
 };
 const back: () => void = async () => {
   emit('update:stepCurrent', 4);

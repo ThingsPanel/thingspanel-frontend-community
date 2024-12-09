@@ -54,7 +54,6 @@ const del: (row: any) => void = async row => {
   getList();
 };
 const config: (row: any) => void = async row => {
-  console.log('服务配置');
   serviceModalRef.value.openModal(service_plugin_id.value, row);
 };
 const columns: any = ref([
@@ -112,12 +111,10 @@ const columns: any = ref([
 ]);
 
 const addData: () => void = () => {
-  console.log(service_plugin_id.value, '打开弹窗');
   serviceModalRef.value.openModal(service_plugin_id.value);
 };
 
 const isEdit: (val: any, row: any, edit: any) => void = (val, row, edit) => {
-  console.log(val, row, edit, '打开弹窗1');
   if (edit) {
     serviceConfigModalRef.value.openModal(val, row, edit);
     getList();

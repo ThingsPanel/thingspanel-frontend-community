@@ -23,7 +23,6 @@ watchEffect(() => {
         protocol_config.value[element.dataKey] ??= thejson[element.dataKey] || '';
       }
     });
-    console.log(rules);
   }
 });
 

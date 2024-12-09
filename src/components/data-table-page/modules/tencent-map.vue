@@ -6,10 +6,12 @@ import dayjs from 'dayjs';
 import { TENCENT_MAP_SDK_URL } from '@/constants/map-sdk';
 import { $t } from '@/locales';
 import { telemetryLatestApi } from '@/service/api/system-data';
+import { createLogger } from '@/utils/logger';
+
+const logger = createLogger('GaodeMap');
 defineOptions({ name: 'TencentMap' });
 
 const props = defineProps<{ devices: any[] }>();
-console.log(props, 'props');
 
 const { load } = useScriptTag(TENCENT_MAP_SDK_URL);
 
@@ -31,7 +33,6 @@ const showMarker = (markerArr, bounds) => {
   });
 };
 let ignoreMapClick = false;
-const telemetryValue = ref<any>([]);
 
 async function renderMap() {
   await load(true);
@@ -46,16 +47,13 @@ async function renderMap() {
     });
     map.on('click', async () => {
       // 在短暂的时间窗口内忽略点击事件
-      console.log(1);
       if (ignoreMapClick) {
         ignoreMapClick = false; // 重置标志
         return;
       }
       // 执行正常的点击处理逻辑
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      console.log(2);
       infoWindow.close();
-      console.log(3);
     });
   }
 
@@ -76,7 +74,6 @@ async function renderMap() {
       });
     }
   });
-  console.log(markers.length);
   multiMarker = new TMap.MultiMarker({
     map,
     styles: {
@@ -150,7 +147,6 @@ async function renderMap() {
       infoWindow.setPosition(evt.geometry.position); // 设置信息窗位置
       infoWindow.setContent(html); // 设置信息窗内容
       evt.originalEvent.stopPropagation();
-      console.log(evt, telemetryValue.value, '点击了弹窗');
     });
   });
 }
@@ -162,7 +158,7 @@ onMounted(() => {
 watch(
   () => props.devices,
   newValue => {
-    console.log(newValue, '我改变了');
+    logger.info(newValue);
     renderMap();
     infoWindow.close();
   },

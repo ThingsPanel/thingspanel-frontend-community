@@ -60,12 +60,10 @@ const onReady = cm => {
   const lastCh = cm.getLine(lastLine).length;
   cm.focus();
   cm.setCursor({ line: lastLine, ch: lastCh });
-  console.log(cm);
 };
 const setupEditor = () => {
   nextTick(() => {
     if (cmRef.value) {
-      console.log(cmRef.value);
       cmRef.value.refresh(); // ensure the editor is correctly refreshed
     }
   });

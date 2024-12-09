@@ -193,7 +193,6 @@ const rowProps = (row: any) => {
   return {
     style: 'cursor: pointer;',
     onClick: () => {
-      console.log(row);
       routerPushByKey('device_details', {
         query: {
           d_id: row.id

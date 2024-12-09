@@ -136,15 +136,13 @@ async function handleBatchDelete() {
 const editingData = ref<Api.SystemManage.Role | null>(null);
 
 function handleEdit(id: number) {
-  console.log('id: ', id);
   operateType.value = 'edit';
   editingData.value = data.value.find(item => item.id === id) || null;
   openDrawer();
 }
-
+// eslint-disable-next-line
 async function handleDelete(id: number) {
   // requestTs
-  console.log(id);
   // window.$message?.success($t('common.deleteSuccess'));
 
   getData();

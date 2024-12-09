@@ -37,7 +37,6 @@ export function useArrayUnique<T>(inputArray: T[] | Ref<T[]>, criteria: Criteria
   watchEffect(() => {
     const currentArray = getArray();
     if (!Array.isArray(currentArray)) {
-      console.error('inputArray must be an array');
       return;
     }
 
@@ -54,15 +53,11 @@ export function useArrayUnique<T>(inputArray: T[] | Ref<T[]>, criteria: Criteria
       } else {
         keyValue = String(getValueByPath(item, criteria)); // Safely converting potential undefined to string
       }
-      console.log(keyValue, '-:-', item);
       if (!uniqueMap.has(keyValue)) {
         uniqueMap.set(keyValue, item);
       }
-      console.log('-:-', uniqueMap);
     }
     uniqueArray.value = Array.from(uniqueMap.values()) as any;
-
-    console.log('-:-', uniqueArray.value.length);
   });
 
   return uniqueArray as any;

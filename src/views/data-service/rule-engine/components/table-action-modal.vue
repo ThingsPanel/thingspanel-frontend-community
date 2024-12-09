@@ -5,7 +5,8 @@ import type { DataTableColumns, FormInst, FormItemRule, SelectOption } from 'nai
 import { dataServiceFlagOptions, dataServiceSignModeOptions } from '@/constants/business';
 import { createRequiredFormRule } from '@/utils/form/rule';
 import { $t } from '@/locales';
-
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('TableAction');
 export interface Props {
   /** 弹窗可见性 */
   visible: boolean;
@@ -151,8 +152,7 @@ function setTableData(data: Columns[]) {
 }
 
 function handleChangeFlag(value: string, option: SelectOption) {
-  console.log(value);
-  console.log(option);
+  logger.info(value, option);
   setTableData([{ name: 'ceshi', dataType: 'ceshi', annotation: 'ceshi' }]);
 }
 

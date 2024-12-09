@@ -4,7 +4,8 @@ import { NDataTable } from 'naive-ui';
 import moment from 'moment';
 import type { ICardData } from '@/components/panel/card';
 import { telemetryDataHistoryList } from '@/service/api/device';
-
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('Chart');
 // 定义组件props
 const props = defineProps<{
   card: ICardData;
@@ -96,7 +97,7 @@ const fetchData = async () => {
     allTableData.value = processData(combinedData);
     pagination.itemCount = allTableData.value.length;
   } catch (error) {
-    console.error('Error fetching data:', error);
+    logger.error('Error fetching data:');
   }
 };
 

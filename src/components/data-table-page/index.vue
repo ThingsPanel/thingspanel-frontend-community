@@ -7,7 +7,9 @@ import { throttle } from 'lodash-es';
 import { useLoading } from '@sa/hooks';
 import { $t } from '@/locales';
 import { formatDateTime } from '@/utils/common/datetime';
+import { createLogger } from '@/utils/logger';
 import TencentMap from './modules/tencent-map.vue';
+const logger = createLogger('TablePage');
 // 定义搜索配置项的类型，支持多种输入类型：纯文本、日期选择器、日期范围选择器、下拉选择和树形选择器
 export type theLabel = string | (() => string) | undefined;
 export type SearchConfig =
@@ -93,7 +95,7 @@ const getData = async () => {
     dataList.value = response.data.list;
     total.value = response.data.total;
   } else {
-    console.error('Error fetching data:', response.error);
+    logger.error({ 'Error fetching data:': response.error });
   }
   endLoading();
 };
@@ -200,7 +202,6 @@ watchEffect(() => {
       });
     }
   });
-  console.log(searchCriteria.value);
   emits('paramsUpdate', searchCriteria.value);
   getData();
 });

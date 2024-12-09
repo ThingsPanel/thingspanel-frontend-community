@@ -6,6 +6,8 @@ import { useRouterPush } from '@/hooks/common/router';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { useAuthStore } from '@/store/modules/auth';
 import { getFunction } from '@/service/api/setting';
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('PwdLogin');
 
 defineOptions({
   name: 'PwdLogin'
@@ -37,7 +39,7 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
 });
 
 const rememberPath = e => {
-  console.log(e);
+  logger.info(e);
   isRememberPath.value = !isRememberPath.value;
   localStorage.setItem('isRememberPath', isRememberPath.value ? '1' : '0');
 };

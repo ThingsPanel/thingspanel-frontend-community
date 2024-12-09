@@ -24,8 +24,8 @@ const data = [
 ];
 
 // The server configuration dialog box is displayed
+// eslint-disable-next-line
 function handleSelectClick(index: number) {
-  console.log(`被点击${index}${1}`);
   openModal();
 }
 </script>

@@ -22,7 +22,8 @@ import { deviceAlarmStatus, deviceDetail, deviceUpdate } from '@/service/api/dev
 import { localStg } from '@/utils/storage';
 import { useRouterPush } from '@/hooks/common/router';
 import { getWebsocketServerUrl } from '@/utils/common/tool';
-
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('Detail');
 const route = useRoute();
 const { query } = useRoute();
 const appStore = useAppStore();
@@ -130,7 +131,7 @@ const { send } = useWebSocket(wsUrl, {
     pongTimeout: 3000
   },
   onMessage(ws: WebSocket, event: MessageEvent) {
-    console.log('ws---', ws);
+    logger.info(ws);
     if (event.data && event.data !== 'pong') {
       const info = JSON.parse(event.data);
       device_is_online.value = info.is_online;
@@ -233,7 +234,6 @@ const getAlarmStatus = async () => {
 };
 
 onBeforeMount(() => {
-  console.log('成功啦!!!!!!!!!!!!');
   getDeviceDetail();
   getAlarmStatus();
 });
@@ -281,7 +281,6 @@ const save = async () => {
 watch(
   () => appStore.locale,
   () => {
-    console.log(appStore.locale);
     let temporary: any;
     // eslint-disable-next-line prefer-const
     temporary = tabValue.value;

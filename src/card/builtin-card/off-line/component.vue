@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useAuthStore } from '@/store/modules/auth';
+import { createLogger } from '@/utils/logger';
 import { sumData, totalNumber } from '../../../service/api';
 import { GradientBg } from './components';
+const logger = createLogger('OffLine');
 
 defineOptions({ name: 'NumCard' });
 
@@ -25,11 +27,11 @@ const getData: () => void = async () => {
     if (response.data) {
       cardData.value.value = response.data.device_total - response.data.device_on;
     } else {
-      console.error('Data does not contain the required properties or they are not numbers.');
+      logger.error('Data does not contain the required properties or they are not numbers.');
     }
   } catch (error) {
     // 处理请求数据时的错误
-    console.error('Error fetching data:', error);
+    logger.error('Error fetching data:', error);
   }
 };
 

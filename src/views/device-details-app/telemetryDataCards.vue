@@ -6,8 +6,10 @@ import { DocumentOnePage24Regular } from '@vicons/fluent';
 import dayjs from 'dayjs';
 import { $t } from '@/locales';
 import { telemetryDataCurrent } from '@/service/api/device'; // 假设此路径正确
+import { createLogger } from '@/utils/logger';
 import HistoryData from '../device/details/modules/telemetry/modules/history-data.vue';
 import TimeSeriesData from '../device/details/modules/telemetry/modules/time-series-data.vue';
+const logger = createLogger('TelemetryData');
 
 const props = defineProps<{
   id: string;
@@ -34,7 +36,7 @@ const fetchTelemetry = async () => {
 };
 
 const setItemRef = (el: any) => {
-  console.log(el);
+  logger.info(el);
 };
 
 const isColor = (i: any) => {

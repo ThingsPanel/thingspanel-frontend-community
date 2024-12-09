@@ -51,7 +51,6 @@ const connectInfo = ref<object>({});
 const feachConnectInfo = async () => {
   const res = await getDeviceConnectInfo({ device_id: props.device_id });
   connectInfo.value = res.data;
-  console.log(res);
 };
 
 onMounted(() => {
@@ -66,7 +65,6 @@ watchEffect(() => {
           formData[subElement.dataKey] ??= props.formData[subElement.dataKey] || '';
         });
       } else {
-        console.log();
         formRules.value[element.dataKey] = element.validate || {};
         formData[element.dataKey] ??= props.formData[element.dataKey] || '';
       }

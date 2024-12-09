@@ -20,7 +20,6 @@ const currentBatchDevices = computed(() => {
 });
 
 const adjustDeviceCount = (value: number | null) => {
-  console.log('value', value);
   if (!value) return;
   const totalBatches = Math.ceil(value / pageSize);
 
@@ -90,9 +89,7 @@ const getDeviceList = async () => {
   deviceOption.value = res.data || [];
 };
 const deviceSelectChange = async (v, item) => {
-  console.log(v);
   const res = await deviceMetricsList(v);
-  console.log(res.data);
   item.metricsOptions = res?.data || [];
 };
 const updateDropdownShow = (show: boolean, item) => {
@@ -109,7 +106,6 @@ const metricsOptionRender = (info, item) => {
         return (
           <div
             onClick={() => {
-              console.log(it);
               item.metricsId = it.key;
               item.metricsName = it.label || '';
 
@@ -147,7 +143,6 @@ const previousPage = () => {
 
 const getSwlection = debounce(() => {
   const flatDevices = selections.flat().slice(0, sourceCount.value);
-  console.log(flatDevices);
   emits(
     'update:selection',
     flatDevices.filter(i => !Object.values(i).includes(''))
@@ -160,7 +155,6 @@ watch(selections, () => {
 
 getDeviceList();
 if (props.deviceSource && props.deviceSource.length > 0) {
-  console.log(props.deviceSource.length);
   sourceCount.value = props.deviceSource.length;
   adjustDeviceCount(props.deviceSource.length);
 } else {

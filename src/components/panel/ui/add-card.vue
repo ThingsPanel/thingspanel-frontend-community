@@ -103,7 +103,6 @@ const save = () => {
       state.curCardData.dataSource.deviceSource.length > state.curCardData.dataSource.deviceCount
     ) {
       state.curCardData.dataSource.deviceSource.splice(state.curCardData.dataSource.deviceCount);
-      console.log(state.curCardData.dataSource.deviceCount, ':', state.curCardData.dataSource.deviceSource);
     }
     if (state.curCardData.dataSource.deviceSource.length === 0) {
       state.curCardData.dataSource.deviceSource = [{}];
@@ -156,7 +155,6 @@ const collectData = (v, o) => {
 };
 
 onUpdated(() => {
-  // console.log(webChartConfig.value, '4234324324');
   if (props?.data?.dataSource?.deviceSource && props?.data?.dataSource?.deviceSource?.length > 0) {
     deviceSelectId.value = props?.data?.dataSource?.deviceSource[0]?.deviceId || '';
     collectData(
@@ -234,7 +232,6 @@ onMounted(() => {
           class="h-full"
           @update:value="
             value => {
-              console.log(value);
               if (state.curCardData) {
                 state.curCardData.cardId = '';
               }

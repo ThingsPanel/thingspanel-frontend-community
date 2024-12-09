@@ -200,9 +200,8 @@ async function handleBatchDelete() {
 
   getData();
 }
-
+// eslint-disable-next-line
 function handleAddChildMenu(id: number) {
-  console.log('id: ', id);
   operateType.value = 'add';
   openDrawer();
 }
@@ -211,15 +210,13 @@ function handleAddChildMenu(id: number) {
 const editingData = ref<Api.SystemManage.Menu | null>(null);
 
 function handleEdit(id: number) {
-  console.log('id: ', id);
   operateType.value = 'edit';
   editingData.value = data.value.find(item => item.id === id) || null;
   openDrawer();
 }
-
+// eslint-disable-next-line
 async function handleDelete(id: number) {
   // requestTs
-  console.log(id);
   // window.$message?.success($t('common.deleteSuccess'));
 
   getData();

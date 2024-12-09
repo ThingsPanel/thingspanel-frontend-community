@@ -14,7 +14,6 @@ export const useDeviceDataStore = defineStore(SetupStoreId.Device, () => {
         deviceData.value = {};
       }
     } catch (error) {
-      console.error('fetchData error:', error);
       deviceData.value = {};
     }
   }

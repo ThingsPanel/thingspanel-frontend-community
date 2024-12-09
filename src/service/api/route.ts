@@ -1,5 +1,7 @@
 import { adapterOfFetchRouterList, adapterOfFetchUserRouterList } from '@/service/api/management.adapter';
+import { createLogger } from '@/utils/logger';
 import { request } from '../request';
+const logger = createLogger('Routes');
 
 /** get user routes */
 export async function fetchGetUserRoutes() {
@@ -47,6 +49,6 @@ export const fetchUIElementList = async () => {
  * @param routeName route name
  */
 export function fetchIsRouteExist(routeName: string) {
-  console.log(routeName);
+  logger.info(routeName);
   return false;
 }

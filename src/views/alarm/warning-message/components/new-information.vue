@@ -14,10 +14,11 @@ import { NButton, NPopconfirm, useMessage } from 'naive-ui';
 import { getNotificationGroupList } from '@/service/api/notification';
 import { delInfo, editInfo, warningMessageList } from '@/service/api/alarm';
 import { $t } from '@/locales';
+import { createLogger } from '@/utils/logger';
 import type { ModalType } from './pop-up.vue';
 import popUp from './pop-up.vue';
 import { useBoolean } from '~/packages/hooks';
-
+const logger = createLogger('Information');
 const rowKey = (row: DeviceManagement.DeviceData) => row.id;
 const { bool: visible, setTrue: openModal } = useBoolean();
 const modalType = ref<ModalType>('add');
@@ -140,7 +141,7 @@ const getTableData = async () => {
     page_size: 100
   };
   const res = await getNotificationGroupList(prams);
-  console.log('通知组', res);
+  logger.info(res);
 };
 getTableData();
 const columns: Ref<DataTableColumns<ColumnsData>> = ref([
@@ -257,7 +258,6 @@ async function editInfos() {
 
 async function deleteInfo() {
   const { data } = await delInfo(deleteId.value);
-  console.log('删除', data);
   if (!data) {
     message.success($t('common.deleteSuccess'));
   } else {

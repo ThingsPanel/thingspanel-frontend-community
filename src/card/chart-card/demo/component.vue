@@ -2,6 +2,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { ICardData } from '@/components/panel/card';
 import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device';
+import { createLogger } from '@/utils/logger';
 import { icons as iconOptions } from './icons';
 
 // 正式环境可根据api获取
@@ -11,7 +12,7 @@ const props = defineProps<{
   card: ICardData;
 }>();
 const fontSize = ref('14px');
-
+const logger = createLogger('Component');
 const myCard = ref<any | null>(null); // 创建一个ref来引用NCard
 let resizeObserver: ResizeObserver | null = null;
 
@@ -19,7 +20,7 @@ defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     // Only update detail value when data[metricsId] is not undefined, null or ''
     if (!metricsId || data[metricsId] === undefined || data[metricsId] === null || data[metricsId] === '') {
-      console.warn(`No data returned from websocket for ${metricsId}`);
+      logger.warn(`No data returned from websocket for ${metricsId}`);
       return;
     }
     detail.value = metricsId ? data[metricsId] : '';
@@ -64,7 +65,6 @@ const handleResize = entries => {
     if (entry.contentRect.width / entry.contentRect.height > 3) {
       dFontSize = `${(entry.contentRect.width + (entry.contentRect.height * entry.contentRect.width) / entry.contentRect.height / 2) / 20 / (1 + entry.contentRect.width / entry.contentRect.height / 2)}px`;
     }
-    console.log('font size:', dFontSize);
     fontSize.value = dFontSize;
   }
 };

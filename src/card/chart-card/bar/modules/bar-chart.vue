@@ -23,7 +23,8 @@ import { addMonths } from 'date-fns';
 import { $t } from '@/locales';
 import type { ICardData } from '@/components/panel/card';
 import { telemetryDataCurrentKeys, telemetryDataHistoryList } from '@/service/api/device';
-
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('Chart');
 type EChartsOption = ComposeOption<
   TooltipComponentOption | LegendComponentOption | ToolboxComponentOption | GridComponentOption | LineSeriesOption
 >;
@@ -476,7 +477,7 @@ const setSeries = async dataSource => {
 defineExpose({
   updateData: (deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     if (params.aggregate_window !== 'no_aggregate') {
-      console.log('Update data: Curve is aggregate, return directly');
+      logger.info('Update data: Curve is aggregate, return directly');
       return;
     }
     const deviceIndex = props?.card?.dataSource?.deviceSource?.findIndex(
@@ -523,7 +524,6 @@ const initDateTimeRange = () => {
 watch(
   () => params,
   () => {
-    console.log(`params changed:${new Date().getTime()}`);
     throttledWatcher();
   },
   { deep: true }

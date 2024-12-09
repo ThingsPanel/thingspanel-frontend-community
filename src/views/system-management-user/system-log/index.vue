@@ -70,7 +70,6 @@ const getTableData = async () => {
     ...queryParams
   };
   const res = await getSystemLogList(prams);
-  console.log(res);
   if (res?.data) {
     setTableData(res?.data.list || []);
     total.value = res.data.total || 0;
