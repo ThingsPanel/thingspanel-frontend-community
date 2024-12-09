@@ -196,8 +196,12 @@ const getDeviceDetail = async () => {
       if (device_type.value === '3') {
         components = components.filter(item => item.key !== 'join');
       }
+      if (!data.device_config.device_template_id) {
+        components = components.filter(item => item.key !== 'chart');
+      }
     } else if (!data?.device_config_name) {
       components = components.filter(item => item.key !== 'device-analysis');
+      components = components.filter(item => item.key !== 'chart');
     }
     send(
       JSON.stringify({
