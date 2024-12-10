@@ -91,7 +91,7 @@ defineExpose({
       </div>
       <div class="value-container">
         <span class="value" :title="(detail || '45') + (props?.card?.config?.unit || unit || '%')">
-          {{ detail || '45' }} {{ props?.card?.config?.unit || unit || '%' }}
+          {{ detail !== null && detail !== '' ? detail : '45' }} {{ props?.card?.config?.unit || unit || '%' }}
         </span>
       </div>
       <div class="metric-name-container">
