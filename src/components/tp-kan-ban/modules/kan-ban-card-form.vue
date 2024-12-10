@@ -3,7 +3,8 @@ import { reactive, watch } from 'vue';
 import type { CardItem } from '@/cards2.0/card';
 import type { CardView } from '@/components/tp-kan-ban/kan-ban';
 import { useKanBanStore } from '@/cards2.0/store/kan-ban-store';
-
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('KanBanCard');
 const { cardMap } = useKanBanStore();
 const copy = (obj: object) => JSON.parse(JSON.stringify(obj));
 const defData: CardView = {
@@ -46,7 +47,7 @@ const emit = defineEmits<{
 watch(
   () => state.cardView.data.config,
   value => {
-    console.log(value, '4324343');
+    logger.info(value);
     emit('update', state.cardView as any);
   },
   { deep: true }

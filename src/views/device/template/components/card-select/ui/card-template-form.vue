@@ -119,13 +119,11 @@ onUpdated(() => {
   }
   indicateValue.value = [];
   state.data.dataSource.deviceSource.forEach(item => {
-    console.log(item, 'onUpdated');
     if (item.metricsName) {
       const value = `${item.metricsType}-${item.metricsName}-${item.metricsId}`;
       indicateValue.value.push(value);
     }
   });
-  console.log(indicateValue.value, 'onUpdated');
 });
 
 onMounted(() => {

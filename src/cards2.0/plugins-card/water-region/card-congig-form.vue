@@ -2,9 +2,7 @@
 import { inject, onMounted } from 'vue';
 import CardBaseForm from '@/cards2.0/modules/card-base-form.vue';
 import type { CardData, IConfigCtx } from '@/components/tp-kan-ban/kan-ban';
-import { $t } from '@/locales';
 
-console.log($t);
 const props = defineProps<{
   data: CardData;
 }>();

@@ -33,7 +33,6 @@ const clickDevice = async row => {
   router.push(
     `/device/service-details?id=${row.id}&service_type=${row.service_type}&service_name=${row.name}&service_identifier=${row.service_identifier}`
   );
-  console.log(row, '点击了模块');
 };
 </script>
 

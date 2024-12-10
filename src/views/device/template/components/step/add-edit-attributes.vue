@@ -70,7 +70,6 @@ const objItem = reactive<any>(props.objItem);
 watch(
   objItem,
   newVal => {
-    console.log('objItem changed', newVal.id);
     if (objItem.id) {
       addFrom = reactive({
         device_template_id: deviceTemplateId,
@@ -126,7 +125,6 @@ const submit: () => void = async () => {
       emit('determine');
       window.$message?.success($t('common.editSuccess'));
     }
-    console.log(response, '提交');
   } else {
     const response: any = await addAttributes(updateForm);
     if (response.data) {
@@ -144,7 +142,6 @@ const submit: () => void = async () => {
 const clear: () => void = () => {
   emit('update:objItem', {});
   emit('update:addAndEditModalVisible', false);
-  console.log(props.objItem, $t('common.cancel'));
 };
 
 const updateAdditionalInfo: (newVal) => void = newVal => {

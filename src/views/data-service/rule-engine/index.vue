@@ -35,7 +35,6 @@ function setTableData(data: DataService.Data[]) {
 async function getTableData() {
   startLoading();
   const { data } = (await fetchDataServiceList()) as any;
-  console.log(data);
   if (data) {
     setTimeout(() => {
       setTableData(data);

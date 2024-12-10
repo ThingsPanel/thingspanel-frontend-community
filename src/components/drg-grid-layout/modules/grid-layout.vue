@@ -331,7 +331,6 @@ function updateHeight() {
 
 function onWindowResize() {
   if (wrapper.value) {
-    console.log(wrapper.value);
     state.width = wrapper.value.offsetWidth;
   }
   if (props.responsive) {

@@ -60,14 +60,12 @@ const connectInfo = ref<object>({});
 const feachConnectInfo = async () => {
   const res = await getDeviceConnectInfo({ device_id: props.id });
   connectInfo.value = res.data;
-  console.log(res);
 };
 
 const pluginInfo = ref<object>({});
 const getPlugininfoByServiceReq = async str => {
   const { error, data } = await getPlugininfoByService(str);
   if (!error) {
-    console.log(data);
     pluginInfo.value = data;
   }
 };

@@ -23,7 +23,8 @@ import { addMonths } from 'date-fns';
 import { $t } from '@/locales';
 import type { ICardData } from '@/components/panel/card';
 import { telemetryDataCurrentKeys, telemetryDataHistoryList } from '@/service/api/device';
-
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('chart');
 type EChartsOption = ComposeOption<
   TooltipComponentOption | LegendComponentOption | ToolboxComponentOption | GridComponentOption | LineSeriesOption
 >;
@@ -94,7 +95,7 @@ const name = ref('');
 
 const option = ref<EChartsOption>({
   tooltip: {
-    trigger: 'axis',
+    trigger: 'axis'
   },
   legend: {
     data: legendData.value,
@@ -395,7 +396,7 @@ const getTelemetryData = async (device_id, key, index, metricName) => {
     },
     showSymbol: false,
     itemStyle: {
-      color:  new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+      color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
         { offset: 0, color: props.colorGroup[index].top },
         { offset: 1, color: props.colorGroup[index].bottom }
       ]) // 自定义颜色
@@ -429,7 +430,7 @@ const getTelemetryData = async (device_id, key, index, metricName) => {
 
   try {
     const { data } = await telemetryDataHistoryList(metricsParams);
-    const seriesData = data ? data.map((item) => [item.x, item.y]) : sampleData;
+    const seriesData = data ? data.map(item => [item.x, item.y]) : sampleData;
     return {
       ...sampleObj,
       stack: `Total${index}`,
@@ -463,11 +464,11 @@ const setSeries = async dataSource => {
   const seriesPromises = deviceSource.slice(0, deviceCount).map((item, index) => {
     const metricName = item.metricsName || item.metricsId || '';
     name.value = metricName;
-    const color=new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+    const color = new echarts.graphic.LinearGradient(0, 0, 0, 1, [
       { offset: 0, color: props.colorGroup[index].top },
       { offset: 1, color: props.colorGroup[index].bottom }
-    ])
-    const obj={ name: metricName, icon: 'circle', itemStyle: { color } }
+    ]);
+    const obj = { name: metricName, icon: 'circle', itemStyle: { color } };
     legendData.value.push(obj);
     // 返回一个Promise，包含系列配置和数据
     return getTelemetryData(item.deviceId, item.metricsId, index, metricName);
@@ -483,7 +484,7 @@ const setSeries = async dataSource => {
 defineExpose({
   updateData: (deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     if (params.aggregate_window !== 'no_aggregate') {
-      console.log('Update data: Curve is aggregate, return directly');
+      logger.info('Update data: Curve is aggregate, return directly');
       return;
     }
     const deviceIndex = props?.card?.dataSource?.deviceSource?.findIndex(
@@ -530,7 +531,6 @@ const initDateTimeRange = () => {
 watch(
   () => params,
   () => {
-    console.log(`params changed:${new Date().getTime()}`);
     throttledWatcher();
   },
   { deep: true }

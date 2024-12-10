@@ -13,6 +13,8 @@ import {
   setDeviceScriptEnable
 } from '@/service/api/device';
 import { $t } from '@/locales';
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('DataHandle');
 // const message = useMessage();
 const dialog = useDialog();
 
@@ -163,7 +165,6 @@ const searchDataScript = () => {
 };
 
 const handleChange = async (item: object) => {
-  console.log(item);
   await setDeviceScriptEnable(item);
 };
 const handleClose = () => {
@@ -223,12 +224,11 @@ const cmOptions = {
 };
 
 const onChange = (val, cm) => {
-  console.log(val);
-  console.log(cm.getValue());
+  logger.info({ val, cm });
 };
 
 const onInput = val => {
-  console.log(val);
+  logger.info({ val });
 };
 
 const onReady = cm => {
@@ -236,12 +236,10 @@ const onReady = cm => {
   const lastCh = cm.getLine(lastLine).length;
   cm.focus();
   cm.setCursor({ line: lastLine, ch: lastCh });
-  console.log(cm);
 };
 const setupEditor = () => {
   nextTick(() => {
     if (cmRef.value) {
-      console.log(cmRef.value);
       cmRef.value.refresh(); // ensure the editor is correctly refreshed
     }
   });

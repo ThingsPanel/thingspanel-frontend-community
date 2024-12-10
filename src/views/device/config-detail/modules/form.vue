@@ -23,7 +23,6 @@ watchEffect(() => {
         protocol_config.value[element.dataKey] ??= thejson[element.dataKey] || '';
       }
     });
-    console.log(rules);
   }
 });
 
@@ -92,9 +91,8 @@ const onCreate = () => {
                   {{ subElement.label }}
                   <span>{{ subElement?.validate?.required ? '(必填)' : '(非必填)' }}</span>
                 </n-ellipsis>
-                <div class="mr-20px w-68px "></div>
+                <div class="mr-20px w-68px"></div>
               </div>
-
 
               <n-dynamic-input
                 v-model:value="protocol_config[element.dataKey]"
@@ -106,67 +104,65 @@ const onCreate = () => {
                 <div class="mb-12px w-full flex justify-between">
                   <template v-for="subElement in element.array" :key="subElement.dataKey">
                     <template v-if="subElement.type === 'input'">
-                      <div     class="mr-24px min-w-[100px] flex-1">
-                      <n-form-item
-
-
-                        ignore-path-change
-                        :show-label="false"
-                        :label="subElement.label"
-                        :path="`${element.dataKey}[${index}]${subElement.dataKey}`"
-                        :rules="[element.validate || { required: false }]"
-                      >
-                        <NTooltip trigger="hover" placement="top">
-                          <template #trigger>
-                            <NInputNumber
-                              v-if="subElement.validate.type === 'number'"
-                              v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
-                              :placeholder="subElement.placeholder"
-                              @keydown.enter.prevent
-                            />
-                            <NInput
-                              v-else
-                              v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
-                              :placeholder="subElement.placeholder"
-                              @keydown.enter.prevent
-                            />
-                          </template>
-                          <template #default>
-                            <span>{{ protocol_config[element.dataKey][index][subElement.dataKey] }}</span>
-                          </template>
-                        </NTooltip>
-                      </n-form-item>
+                      <div class="mr-24px min-w-[100px] flex-1">
+                        <n-form-item
+                          ignore-path-change
+                          :show-label="false"
+                          :label="subElement.label"
+                          :path="`${element.dataKey}[${index}]${subElement.dataKey}`"
+                          :rules="[element.validate || { required: false }]"
+                        >
+                          <NTooltip trigger="hover" placement="top">
+                            <template #trigger>
+                              <NInputNumber
+                                v-if="subElement.validate.type === 'number'"
+                                v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
+                                :placeholder="subElement.placeholder"
+                                @keydown.enter.prevent
+                              />
+                              <NInput
+                                v-else
+                                v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
+                                :placeholder="subElement.placeholder"
+                                @keydown.enter.prevent
+                              />
+                            </template>
+                            <template #default>
+                              <span>{{ protocol_config[element.dataKey][index][subElement.dataKey] }}</span>
+                            </template>
+                          </NTooltip>
+                        </n-form-item>
                       </div>
                     </template>
                     <template v-if="subElement.type === 'select'">
-                      <div     class="mr-24px min-w-[100px] flex-1">
-                      <n-form-item
-                        style="margin-right: 24px"
-                        class="mr-24px min-w-[100px] flex-1"
-                        ignore-path-change
-                        :show-label="false"
-                        :label="subElement.label"
-                        :path="`${element.dataKey}[${index}]${subElement.dataKey}`"
-                        :rules="[element.validate || { required: false }]"
-                      >
-                        <NTooltip trigger="hover" placement="top">
-                          <template #trigger>
-                            <NSelect
-                              v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
-                              :options="subElement.options as SelectMixedOption[]"
-                            />
-                          </template>
-                          <template #default>
-                            <span>
-                              {{
-                                find(subElement.options, {
-                                  value: protocol_config[element.dataKey][index][subElement.dataKey]
-                                })?.label
-                              }}
-                            </span>
-                          </template>
-                        </NTooltip>
-                      </n-form-item>
+                      <div class="mr-24px min-w-[100px] flex-1">
+                        <n-form-item
+                          style="margin-right: 24px"
+                          class="mr-24px min-w-[100px] flex-1"
+                          ignore-path-change
+                          :show-label="false"
+                          :label="subElement.label"
+                          :path="`${element.dataKey}[${index}]${subElement.dataKey}`"
+                          :rules="[element.validate || { required: false }]"
+                        >
+                          <NTooltip trigger="hover" placement="top">
+                            <template #trigger>
+                              <NSelect
+                                v-model:value="protocol_config[element.dataKey][index][subElement.dataKey]"
+                                :options="subElement.options as SelectMixedOption[]"
+                              />
+                            </template>
+                            <template #default>
+                              <span>
+                                {{
+                                  find(subElement.options, {
+                                    value: protocol_config[element.dataKey][index][subElement.dataKey]
+                                  })?.label
+                                }}
+                              </span>
+                            </template>
+                          </NTooltip>
+                        </n-form-item>
                       </div>
                     </template>
                   </template>

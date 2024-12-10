@@ -60,7 +60,6 @@ const submitSevice: () => void = async () => {
     if (errors) return;
     loading.value = true;
     const data: any = isEdit.value ? await putRegisterService(form.value) : await registerService(form.value);
-    console.log(data, '提交');
     if (data.data) {
       emit('getList');
       close();

@@ -39,9 +39,7 @@ const onDialogVisble = () => {
 const onOpenDialogModal = (val: number) => {
   modalIndex.value = val;
   onDialogVisble();
-  if (modalIndex.value === 1) {
-    console.log('1');
-  } else {
+  if (modalIndex.value !== 1) {
     const { online_timeout, heartbeat }: any = JSON.parse(props.configInfo?.other_config || {});
     onlinejson.online_timeout = online_timeout || 0;
     onlinejson.heartbeat = heartbeat || 0;
@@ -49,9 +47,7 @@ const onOpenDialogModal = (val: number) => {
 };
 const onSubmit = async () => {
   onDialogVisble();
-  if (modalIndex.value === 1) {
-    console.log('1');
-  } else {
+  if (modalIndex.value !== 1) {
     const { error }: any = await deviceConfigEdit({
       id: props.configInfo.id,
       other_config: JSON.stringify({

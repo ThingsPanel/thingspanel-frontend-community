@@ -43,9 +43,7 @@ function createDefaultFormModel(): FormModel {
   };
 }
 
-function handleSubmit() {
-  console.log('提交');
-}
+function handleSubmit() {}
 
 watch(
   () => props.visible,

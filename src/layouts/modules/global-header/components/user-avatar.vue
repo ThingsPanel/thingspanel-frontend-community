@@ -69,7 +69,6 @@ function handleDropdown(key: DropdownKey) {
   if (key === 'logout') {
     logout();
   } else if (key === 'user-center') {
-    console.log('个人中心');
     router.push('/personal-center');
   } else {
     routerPushByKey(key);

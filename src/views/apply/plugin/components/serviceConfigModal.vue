@@ -60,7 +60,6 @@ const close: () => void = () => {
   serviceModal.value = false;
   Object.assign(details.value, {});
   Object.assign(form.value, defaultForm);
-  console.log(form.value, defaultForm, '弹窗关闭');
 };
 
 const submitSevice: () => void = () => {
@@ -70,7 +69,6 @@ const submitSevice: () => void = () => {
     const params = details.value;
     params.service_config = JSON.stringify(form.value);
     const data: any = await putRegisterService(params);
-    console.log(data, '提交');
     if (data.data) {
       emit('getList');
       close();

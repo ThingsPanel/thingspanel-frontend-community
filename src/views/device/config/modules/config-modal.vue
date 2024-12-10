@@ -100,13 +100,11 @@ const handleSubmit = async () => {
   if (props.modalType === 'add') {
     const res = await deviceConfigAdd(configForm.value);
     if (!res.error) {
-      console.log(res);
       // message.success('新增成功');
     }
   } else {
     const res = await deviceConfigEdit(configForm.value);
     if (!res.error) {
-      console.log(res);
       // message.success('修改成功');
     }
   }

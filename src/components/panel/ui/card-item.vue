@@ -11,7 +11,6 @@ const refComp = ref<any>();
 const cardId = computed(() => props.data?.cardId);
 const store = usePanelStore();
 const findCardComponent = (id: string) => {
-  console.log('zh_favor', id);
   const cIds = id.split('-');
   const cId = `${cIds[0]}-${cIds[1]}`;
   return store.$state.cardMap.get(cId)?.component || null;

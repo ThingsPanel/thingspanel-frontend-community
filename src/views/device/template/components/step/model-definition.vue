@@ -86,7 +86,6 @@ const queryParams: any = reactive([
 
 const checkedTabs: (value: string | number) => void = value => {
   tabsCurrent.value = value;
-  console.log(value, '切换标签了');
 };
 
 // 分页参数
@@ -116,7 +115,6 @@ let objItem = reactive<any>({});
 const edit: (row: any) => void = row => {
   addAndEditModalVisible.value = true;
   objItem = row;
-  console.log(row, '点击了编辑');
 };
 
 // 新增或者编辑成功后的回调函数
@@ -321,7 +319,6 @@ const handleParamsOfEventsAndcommands = data => {
 };
 const getTableData: (value?: string) => void = async value => {
   startLoading();
-  console.log(value);
   if (value) {
     if (value === 'telemetry') {
       const { data: data0 }: any = await telemetryApi(queryParams[0]);
@@ -354,7 +351,6 @@ const getTableData: (value?: string) => void = async value => {
     const { data: data3 }: any = await commandsApi(queryParams[3]);
     columnsList[3].data = handleParamsOfEventsAndcommands(data3?.list ?? []);
     columnsList[3].total = Math.ceil(data3?.total / 5);
-    console.log(data0, data1, data2, data3, '请求到了遥远的数据');
     endLoading();
   }
 };

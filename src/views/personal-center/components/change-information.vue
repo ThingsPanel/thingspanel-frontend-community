@@ -121,8 +121,7 @@ const rules: FormRules = {
     {
       required: true,
       validator(rule: FormItemRule, value: string) {
-        console.log(rule);
-        if (!validName(value)) {
+        if (rule && !validName(value)) {
           return new Error('姓名不能为空且小于50个字符!');
         }
         return true;

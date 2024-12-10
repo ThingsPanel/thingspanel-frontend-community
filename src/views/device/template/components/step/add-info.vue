@@ -85,19 +85,16 @@ const tagsClose: (index: number) => void = index => {
 const demoUrl = getDemoServerUrl();
 const url: any = ref(demoUrl);
 const pngPath: any = ref('');
-
+// eslint-disable-next-line
 const customRequest = ({ file, event }: { file: UploadFileInfo; event?: ProgressEvent }) => {
   if (!event || !event.target) return;
 
   const xhr = event.target as XMLHttpRequest;
   const response = JSON.parse(xhr.response);
 
-  console.log(response.data.path, 'response');
   addFrom.path = response.data.path;
-  console.log(addFrom.path, 'addFrom.path');
   const relativePath = response.data.path.replace(/^\.\//, '');
   pngPath.value = `${url.value.replace('api/v1', '') + relativePath}`;
-  console.log(pngPath.value, file);
 };
 
 // 新增设备功能模板
@@ -122,7 +119,6 @@ const cancellation: () => void = () => {
 
 watchEffect(async () => {
   deviceTemplateId.value = props.deviceTemplateId;
-  console.log(deviceTemplateId.value, 'deviceTemplateId.value');
   if (deviceTemplateId.value) {
     const { data, error } = await getTemplat(deviceTemplateId.value);
     if (!error) {

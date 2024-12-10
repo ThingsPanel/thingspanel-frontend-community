@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { createLogger } from '@/utils/logger';
 import { tenantNum } from '../../../service/api';
 import { GradientBg } from './components';
 
 defineOptions({ name: 'NumCard' });
+
+const logger = createLogger('News');
 
 const cardData = ref<any>({
   id: 'trade',
@@ -18,15 +21,14 @@ const cardData = ref<any>({
 const getData: () => void = async () => {
   try {
     const response: { data: any } = await tenantNum();
-    console.log(response, '消息总数');
     if (response.data) {
       cardData.value.value = response.data?.msg ?? 0;
     } else {
-      console.error('Data does not contain the required properties or they are not numbers.');
+      logger.error('Data does not contain the required properties or they are not numbers.');
     }
   } catch (error) {
     // 处理请求数据时的错误
-    console.error('Error fetching data:', error);
+    logger.error('Error fetching data:');
   }
 };
 

@@ -20,23 +20,6 @@ async function renderMap() {
     maxZoom: 13,
     minZoom: 6
   });
-  const MultiMarker = new TMap.MultiMarker({
-    map,
-    geometries: [
-      {
-        position: center, // 标注点位置
-        rank: 4
-      }
-    ],
-    collisionOptions: {
-      sameSource: true,
-      crossSource: true,
-      vectorBaseMapSource: true
-    },
-    zIndex: 30
-  });
-
-  console.log(MultiMarker);
   map.on('click', event => {
     emit('position-selected', { lat: event.latLng.getLat(), lng: event.latLng.getLng() });
   });

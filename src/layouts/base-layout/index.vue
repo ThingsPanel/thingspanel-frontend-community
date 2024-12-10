@@ -9,6 +9,7 @@ import { useThemeStore } from '@/store/modules/theme';
 import { localStg } from '@/utils/storage';
 import deviceStatusMp3 from '@/assets/audio/device-status.mp3';
 import { useRouterPush } from '@/hooks/common/router';
+import { createLogger } from '@/utils/logger';
 import GlobalHeader from '../modules/global-header/index.vue';
 import GlobalSider from '../modules/global-sider/index.vue';
 import GlobalTab from '../modules/global-tab/index.vue';
@@ -16,6 +17,8 @@ import GlobalContent from '../modules/global-content/index.vue';
 import GlobalFooter from '../modules/global-footer/index.vue';
 import ThemeDrawer from '../modules/theme-drawer/index.vue';
 import { setupMixMenuContext } from '../hooks/use-mix-menu';
+const logger = createLogger('Layout');
+
 const { routerPushByKey } = useRouterPush();
 defineOptions({
   name: 'BaseLayout'
@@ -100,7 +103,6 @@ onMounted(() => {
   createEventSource();
   if (eventSource) {
     eventSource.onopen = () => {
-      console.log('SSE连接已建立');
       tryNum = 0;
     };
 
@@ -167,7 +169,7 @@ onMounted(() => {
       false
     );
     eventSource.onerror = error => {
-      console.error('SSE error:', error);
+      logger.error(error);
       eventSource.close();
       if (tryNum < 3) {
         tryNum += 1;

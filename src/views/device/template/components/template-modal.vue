@@ -63,7 +63,6 @@ const title = computed(() => {
 });
 
 watchEffect(() => {
-  console.log(props.templateId);
   deviceTemplateId.value = props.templateId;
 });
 

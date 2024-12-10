@@ -41,8 +41,6 @@ export function setupLoading() {
 </div>`;
 
   const app = document.getElementById('app');
-  console.log($t('system.title'), '5435435435435');
-
   if (app) {
     app.innerHTML = loading;
   }

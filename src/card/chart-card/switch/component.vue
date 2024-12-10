@@ -3,7 +3,8 @@ import { ref, watch } from 'vue';
 import type { ICardData } from '@/components/panel/card';
 import { $t } from '@/locales';
 import { attributeDataPub, getAttributeDataSet, telemetryDataPub } from '@/service/api/device';
-
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('Control');
 const active: any = ref(false);
 const detail: any = ref(0);
 const props = defineProps<{
@@ -14,7 +15,7 @@ defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     // Only update detail value when data[metricsId] is not undefined, null or ''
     if (!metricsId || data[metricsId] === undefined || data[metricsId] === null || data[metricsId] === '') {
-      console.warn(`No data returned from websocket for ${metricsId}`);
+      logger.warn(`No data returned from websocket for ${metricsId}`);
       return;
     }
     detail.value = metricsId ? data[metricsId] : 0;

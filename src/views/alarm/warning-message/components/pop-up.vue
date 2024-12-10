@@ -13,6 +13,8 @@ import { addWarningMessage, editInfo } from '@/service/api/alarm';
 import { getNotificationGroupList } from '@/service/api/notification';
 import { useNaiveForm } from '@/hooks/common/form';
 import { $t } from '@/locales';
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('PopUp');
 // interface ColumnsData {
 //   [key: string]: any;
 // }
@@ -37,8 +39,6 @@ const title = computed(() => {
   };
   return titles[props.type];
 });
-
-console.log('props.type88888888', title);
 
 interface Emits {
   (e: 'update:visible', visible: boolean): void;
@@ -294,14 +294,12 @@ function handleReset(e) {
       } else {
         editInfoText();
       }
-    } else {
-      console.log('验证失败');
     }
   });
 }
 
 watch(props, newValue => {
-  console.log('newValue', newValue);
+  logger.info(newValue);
   if (props.type === 'edit') {
     formData.value = props.editData;
     formData.value.alarm_keep_time = String(formData.value.alarm_keep_time);

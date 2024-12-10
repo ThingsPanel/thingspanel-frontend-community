@@ -26,7 +26,6 @@ const saveKanBan = async () => {
     window.NMessage.destroyAll();
     window.NMessage.error('无效的看板id');
   } else {
-    console.log(layouts.value);
     const layoutJson = JSON.stringify(layouts.value);
 
     await PutBoard({

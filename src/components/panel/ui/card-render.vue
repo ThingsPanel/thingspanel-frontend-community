@@ -110,9 +110,7 @@ const breakpointChanged = (newBreakpoint: any, newLayout: any) => {
   emit('breakpoint-changed', newBreakpoint, newLayout);
 };
 onMounted(() => {});
-onUpdated(() => {
-  console.log(props.layout, 'props.layout');
-});
+onUpdated(() => {});
 </script>
 
 <template>
@@ -129,7 +127,6 @@ onUpdated(() => {
     @breakpoint-changed="breakpointChanged"
     @layout-updated="
       data => {
-        console.log(data, 'layout updated');
         emit('update:layout', data);
       }
     "

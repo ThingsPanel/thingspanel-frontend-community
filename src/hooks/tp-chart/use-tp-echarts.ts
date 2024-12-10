@@ -154,7 +154,6 @@ export function useTpECharts<T extends ECOption>(optionsFactory: () => T, hooks:
       const chartTheme = darkMode.value ? 'dark' : 'light';
 
       await nextTick();
-      console.log(chartTheme, '43243243243');
       chart = echarts.init(domRef.value as unknown as HTMLElement, chartTheme, { renderer: 'canvas' });
 
       chart.setOption({ ...chartOptions, backgroundColor: 'transparent' });

@@ -110,7 +110,6 @@ const aggregationTtemToFalse = (weight: number) => {
 };
 
 function onChangeTime(v) {
-  console.log(v, 'custom');
   if (v !== 'custom') {
     aggregation_data.value.start_time = undefined;
     aggregation_data.value.end_time = undefined;
@@ -153,7 +152,6 @@ function getWeightNumber(diffHours, diffDays, diffMonths) {
 }
 
 const checkDateRange = value => {
-  console.log(value);
   const [start, end] = value;
   if (start && end && addYears(start, 1) < end) {
     dateRange.value = null;

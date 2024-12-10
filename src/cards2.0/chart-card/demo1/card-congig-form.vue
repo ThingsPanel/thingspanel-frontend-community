@@ -3,10 +3,8 @@ import { inject, onMounted } from 'vue';
 import CardBaseForm from '@/cards2.0/modules/card-base-form.vue';
 import CardDataSourceForm from '@/cards2.0/modules/card-data-source-form.vue';
 import type { CardData, IConfigCtx } from '@/components/tp-kan-ban/kan-ban';
-import { $t } from '@/locales';
 
 // 控制台打印多语言函数，用于调试
-console.log($t);
 
 // 定义组件接收的 props
 const props = defineProps<{

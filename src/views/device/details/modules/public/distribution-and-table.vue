@@ -8,7 +8,8 @@ import moment from 'moment';
 import { commandDataById, commandDataPub, deviceCustomCommandsIdList } from '@/service/api';
 import { $t } from '@/locales';
 import { isJSON } from '@/utils/common/tool';
-
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('Table');
 const props = defineProps<{
   id: string;
   noRefresh?: boolean;
@@ -141,8 +142,8 @@ const selectBtn: () => void = () => {
 };
 
 const selectVal: (arr: any, option: any) => void = (arr, option) => {
+  logger.info(arr);
   paramsData.value = JSON.parse(option.params);
-  console.log(arr);
 };
 
 const commandList = ref();

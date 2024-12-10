@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { NButton, NFormItem, NSelect } from 'naive-ui';
 import {
   deviceConfigEdit,
@@ -59,8 +59,6 @@ const extendForm = ref({
 } as any);
 const extendFormRules = ref({});
 const protocol_config = ref({});
-let dynamicForm: any = reactive({});
-console.log(dynamicForm);
 const handleSubmit = async () => {
   const postData = props.configInfo;
   postData.protocol_type = extendForm.value.protocol_type;
@@ -101,10 +99,7 @@ const getConfigForm = async data => {
     device_type: props.configInfo.device_type,
     protocol_type: data
   });
-  dynamicForm = reactive(res.data);
-
   formElements.value = res.data;
-  console.log(res.data, '表单');
 };
 const getVoucherType = async data => {
   connectOptions.value = [];

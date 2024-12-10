@@ -66,7 +66,6 @@ const pagination: PaginationProps = reactive({
 const tableData = ref<UserManagement.User[]>([]);
 
 function setTableData(data: UserManagement.User[]) {
-  console.log(data);
   if (data === null) {
     showEmpty.value = true;
   } else {

@@ -373,7 +373,6 @@ const calculateTimeWeight = (start: number, end: number) => {
   const startDate = dayjs(start);
   const endDate = dayjs(end);
   const diffInHours = endDate.diff(startDate, 'hour');
-  console.log('diffInHours', diffInHours);
   if (diffInHours <= 1) {
     return 0;
   }

@@ -72,17 +72,14 @@ function transformDataToOptions(data) {
 const getTreeData = async () => {
   const { data, error } = await deviceGroupTree({});
   if (!error && data) {
-    console.log(data);
     treeData.value = transformDataToOptions(data);
     options.value = flattenTree(treeData.value);
   }
 };
 const getTreeRelationData = async () => {
-  console.log(props.id);
   const { data, error } = await getDeviceGroupRelation({ device_id: props.id });
   if (!error && data) {
     valueRef.value = data?.map(item => item.group_id);
-    console.log(data);
   }
 };
 const deviceDataStore = useDeviceDataStore();
@@ -173,7 +170,6 @@ const selectConfig = v => {
   deviceUpdateConfig({ device_id: props.id, device_config_id: v });
   deviceDataStore.fetchData(props.id);
   initData();
-  console.log('成功啦,999999999999');
   emit('change');
 };
 </script>

@@ -34,7 +34,6 @@ const getData = async () => {
     page_size: 5,
     id: props.id
   });
-  console.log(res.data.list);
   tableData.value = res.data.list || [];
   total.value = res.data.total;
 };
@@ -54,8 +53,6 @@ const deleteDevice = async id => {
 };
 
 const handleLook = (id: string) => {
-  console.log('测试跳转id--', id);
-
   router.push({ path: 'details-child', query: { d_id: id } });
   // routerPushByKey('device_details-child', {
   //   query: { d_id: id }
@@ -140,7 +137,6 @@ const addChildDeviceSure = () => {
       id: props.id,
       son_id: selectChild.value.join(',')
     }).then(res => {
-      console.log(res.error);
       if (!res.error) {
         showAddDialog.value = false;
         selectChild.value = [];

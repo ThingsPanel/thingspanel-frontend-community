@@ -109,7 +109,6 @@ const submitSevice: () => void = async () => {
   }
 };
 const openModal: (val: any, row: any, edit: any) => void = async (val, row, edit) => {
-  console.log(row, '提交3');
   if (edit) {
     isEdit.value = edit;
     queryInfo.value.voucher = val;

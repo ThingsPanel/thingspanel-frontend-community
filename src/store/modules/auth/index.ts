@@ -64,7 +64,6 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
         const password_last_updated = info.password_last_updated;
         const now = new Date();
         const cha = moment(now).diff(password_last_updated, 'days');
-        console.log(cha);
         const tipFunc = str => {
           dialog.warning({
             content: str,

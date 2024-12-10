@@ -28,7 +28,6 @@ const rules = ref<any>({
 });
 const openModal: (id: any, row?: any) => void = async (id, row) => {
   if (row) {
-    console.log(row, '修改设备');
     isEdit.value = true;
     Object.assign(form.value, row);
     Object.assign(form.value.vouchers, JSON.parse(row.voucher));
@@ -59,7 +58,6 @@ const submitSevice: () => void = async () => {
     emit('isEdit', form.value.voucher, id, isEdit.value);
     form.value = { ...defaultForm };
     form.value.vouchers = {};
-    console.log(data, '提交');
   });
 };
 

@@ -4,6 +4,8 @@ import type { NumberAnimationInst } from 'naive-ui';
 import * as echarts from 'echarts';
 import { totalNumber } from '@/service/api';
 import { $t } from '@/locales';
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('TablePage');
 const numberAnimationInstRef = ref<NumberAnimationInst | null>(null);
 
 // 设备总数
@@ -27,11 +29,11 @@ const getData: () => void = async () => {
       const rate = activeNum.value === 0 || deviceNum.value === 0 ? 0 : (activeNum.value / deviceNum.value) * 100;
       activeRateNum.value = Number(rate.toFixed(2)); // 转换为数字并保留四位小数
     } else {
-      console.error('Data does not contain the required properties or they are not numbers.');
+      logger.error('Data does not contain the required properties or they are not numbers.');
     }
   } catch (error) {
     // 处理请求数据时的错误
-    console.error('Error fetching data:', error);
+    logger.error({ 'Error fetching data:': error });
   }
 };
 // 调用 getData 函数
