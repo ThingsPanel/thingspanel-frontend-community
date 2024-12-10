@@ -53,6 +53,9 @@ export const getDemoServerUrl = (): string => {
 export const getWebsocketServerUrl = (): string => {
   const demoUrl = getDemoServerUrl();
   console.log(`demo url:${demoUrl.replace(window.location.protocol, 'ws:')}`);
+  if (window.location.protocol === 'https:') {
+    return demoUrl.replace(window.location.protocol, 'wss:');
+  }
   return demoUrl.replace(window.location.protocol, 'ws:');
 };
 
