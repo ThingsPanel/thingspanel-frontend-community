@@ -77,7 +77,6 @@ export interface CardItem {
   import {$t} from '@/locales';
 
   // 控制台打印多语言函数，用于调试
-  console.log($t);
 
   // 定义组件接收的 props
   const props = defineProps<{

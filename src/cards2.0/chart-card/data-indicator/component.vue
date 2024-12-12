@@ -5,8 +5,10 @@ import { useWebSocket } from '@vueuse/core';
 import { localStg } from '@/utils/storage';
 import type { CardData } from '@/components/tp-kan-ban/kan-ban';
 import { getWebsocketServerUrl } from '@/utils/common/tool';
+import { createLogger } from '@/utils/Logger';
 import { deviceDetail } from '../api';
 import icons from './icon';
+const logger = createLogger('Indicator');
 
 const iconMap = new Map(icons.map(c => [c.name, c.value]));
 // 正式环境可根据api获取
@@ -48,10 +50,9 @@ watch(
   () => data.value,
   newVal => {
     if (newVal === 'pong') {
-      console.log('心跳');
+      logger.info(newVal);
     } else {
       value.value = JSON.parse(newVal)[keys[0]] as number;
-      console.log(newVal);
     }
   }
 );

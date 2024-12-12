@@ -56,7 +56,6 @@ const emit = defineEmits<{
 }>();
 
 const selectCard = item => {
-  console.log('selectCard', item);
   state.curCardData = {
     cardId: item.cardId,
     type: item.type,
@@ -147,7 +146,6 @@ const collectData = (v, o) => {
 };
 
 onUpdated(() => {
-  // console.log(webChartConfig.value, '4234324324');
   if (props?.data?.dataSource?.deviceSource && props?.data?.dataSource?.deviceSource?.length > 0) {
     deviceSelectId.value = props?.data?.dataSource?.deviceSource[0]?.deviceId || '';
     collectData(
@@ -160,7 +158,6 @@ onUpdated(() => {
 });
 
 onMounted(() => {
-  console.log(`data:${props?.data}`);
   if (props?.data?.dataSource?.deviceSource && props?.data?.dataSource?.deviceSource?.length > 0) {
     deviceSelectId.value = props?.data?.dataSource?.deviceSource[0]?.deviceId || '';
     collectData(
@@ -187,7 +184,6 @@ onMounted(() => {
           class="h-full"
           @update:value="
             value => {
-              console.log(value);
               if (state.curCardData) {
                 state.curCardData.cardId = '';
               }

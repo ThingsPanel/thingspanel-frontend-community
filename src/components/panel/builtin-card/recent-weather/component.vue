@@ -5,7 +5,6 @@ import { $t } from '@/locales';
 const active: any = ref('0');
 const submit: (item: any) => void = item => {
   active.value = item.id;
-  console.log(active, '我被点击了');
 };
 
 interface WeatherItem {

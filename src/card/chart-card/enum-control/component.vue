@@ -2,12 +2,12 @@
 import { ref, watch } from 'vue';
 import type { ICardData } from '@/components/panel/card';
 import { attributeDataPub, commandDataPub, telemetryDataPub } from '@/service/api/device';
-
+import { createLogger } from '@/utils/logger';
+const logger = createLogger('Control');
 // Props接收传入的ICardData对象
 const props = defineProps<{
   card: ICardData;
 }>();
-
 const detail: any = ref('0');
 
 // 从props.card.config中获取按钮配置信息
@@ -35,7 +35,7 @@ defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     // Only update detail value when data[metricsId] is not undefined, null or ''
     if (!metricsId || data[metricsId] === undefined || data[metricsId] === null || data[metricsId] === '') {
-      console.warn(`No data returned from websocket for ${metricsId}`);
+      logger.warn(`No data returned from websocket for ${metricsId}`);
       return;
     }
     detail.value = metricsId ? `${data[metricsId]}` : '0';

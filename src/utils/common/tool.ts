@@ -41,7 +41,6 @@ export const getBaseServerUrl = (): string => {
 
 export const getDemoServerUrl = (): string => {
   const { otherBaseURL } = createServiceConfig(import.meta.env);
-  console.log(`demo url:${otherBaseURL.demo}`);
   return otherBaseURL.demo ? otherBaseURL.demo : `${window.location.origin}/api/v1`;
 };
 
@@ -52,7 +51,6 @@ export const getDemoServerUrl = (): string => {
  */
 export const getWebsocketServerUrl = (): string => {
   const demoUrl = getDemoServerUrl();
-  console.log(`demo url:${demoUrl.replace(window.location.protocol, 'ws:')}`);
   if (window.location.protocol === 'https:') {
     return demoUrl.replace(window.location.protocol, 'wss:');
   }
@@ -111,7 +109,6 @@ export function isJSON(str: string): boolean {
       }
       return false;
     } catch (error) {
-      console.log(error);
       return false;
     }
   }
@@ -154,7 +151,6 @@ export function encryptDataByRsa(data): string {
   try {
     return encrypt.encrypt(data) || '';
   } catch (e) {
-    console.error(e);
     return '';
   }
 }

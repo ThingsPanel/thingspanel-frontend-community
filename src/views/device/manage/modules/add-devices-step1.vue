@@ -35,7 +35,6 @@ function handleValidateClick(e: MouseEvent) {
       props.setIdCallback(deviceId, configId, res.data.voucher);
       props.nextCallback();
     } else {
-      console.log(errors);
       message.error($t('custom.devicePage.validationFailed'));
     }
   });

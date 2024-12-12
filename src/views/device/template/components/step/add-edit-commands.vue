@@ -127,8 +127,6 @@ const col: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   }
 ]);
 
-console.log(props.objItem, $t('common.test'));
-
 // 提交表单
 const formRef: any = ref(null);
 const formRefs: any = ref(null);
@@ -145,14 +143,12 @@ let addFrom: any = reactive({
 watch(
   objItem,
   newVal => {
-    console.log('objItem changed', newVal.id);
     if (objItem.id) {
       addFrom = reactive({
         device_template_id: deviceTemplateId,
         ...newVal
       });
       eventsData = reactive(JSON.parse(newVal.paramsOrigin));
-      console.log(JSON.parse(newVal.paramsOrigin), '父级');
     } else {
       addFrom = reactive({
         device_template_id: deviceTemplateId,

@@ -24,7 +24,6 @@ const gridLayout = ref<InstanceType<typeof GridLayout>>();
 const theLayout = ref<CardView[]>(cloneDeep(props.layout));
 
 function onDrop(event) {
-  console.log(0, event);
   event.preventDefault();
   // eslint-disable-next-line @typescript-eslint/no-shadow
   // theLayout.value = theLayout.value.filter(item => item.i !== dropId);
@@ -100,7 +99,6 @@ const layoutUpdated = layout => {
 watch(
   () => props.layout,
   () => {
-    console.log(1);
     theLayout.value = props.layout;
   },
   { deep: true }

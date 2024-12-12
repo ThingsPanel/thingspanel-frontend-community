@@ -93,6 +93,7 @@ const getDeviceGroupOptions = async () => {
 
 const getDeviceConfigOptions = async () => {
   // console.log(pattern, '我请求了筛选');
+
   const res = await getDeviceConfigList({
     page: 1,
     page_size: 99
@@ -305,17 +306,17 @@ const fetchFirstLevelOptions = async () => {
 
   const serviceOptions = data.service
     ? data.service.map(item => {
-      serviceIds.value.push({
-        service_identifier: item.service_identifier,
-        service_plugin_id: item.service_plugin_id
-      });
+        serviceIds.value.push({
+          service_identifier: item.service_identifier,
+          service_plugin_id: item.service_plugin_id
+        });
 
-      return {
-        label: item.name,
-        value: item.service_identifier,
-        type: 'service'
-      };
-    })
+        return {
+          label: item.name,
+          value: item.service_identifier,
+          type: 'service'
+        };
+      })
     : [];
 
   searchConfigs.value.map((item: any) => {
@@ -455,7 +456,6 @@ const activate = (place: DrawerPlacement, key: string | number) => {
     active.value = true;
     addKey.value = key;
     placement.value = place;
-    console.log(place, key, '通过服务添加');
   }
 };
 

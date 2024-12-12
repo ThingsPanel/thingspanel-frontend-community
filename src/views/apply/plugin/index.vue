@@ -53,7 +53,6 @@ const getList: () => void = async () => {
   const { data }: { data: any } = await getServices(queryInfo.value);
   pageData.value.tableData = data.list;
   queryInfo.value.itemCount = data.total;
-  console.log(pageData.value.tableData, data, '获取列表数据');
 };
 
 const edit: (row: any) => void = row => {
@@ -64,7 +63,6 @@ const del: (row: any) => void = async row => {
   getList();
 };
 const config: (row: any) => void = async row => {
-  console.log('服务配置');
   serviceConfigModalRef.value.openModal(row);
 };
 const columns: any = ref([

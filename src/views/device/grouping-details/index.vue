@@ -110,7 +110,6 @@ const group_pagination: PaginationProps = reactive({
   }
 });
 const router = useRouter();
-console.log(router);
 const viewDetails = (rid: string) => {
   router.push({ name: 'device_grouping-details', query: { id: rid } });
 };
@@ -135,8 +134,6 @@ const showGroupModalChild = () => {
   addChildData.parent_id = currentId.value as string;
   if (the_modal1.value) {
     the_modal1.value.showModal = true;
-  } else {
-    console.log(addChildData.parent_id);
   }
 };
 

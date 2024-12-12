@@ -74,7 +74,6 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
 
     for (const [deviceMetricsId, socket] of socketMap.entries()) {
       if (!uniqueDeviceMetricsIds.includes(deviceMetricsId)) {
-        console.log('close socket', deviceMetricsId);
         socket.close();
         socketMap.delete(deviceMetricsId);
       }
@@ -83,7 +82,6 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
     for (const deviceMetricsId of uniqueDeviceMetricsIds) {
       const [deviceId, metricsId] = deviceMetricsId.split('|');
       if (!socketMap.has(deviceMetricsId)) {
-        console.log('create socket', deviceMetricsId);
         const { ws, send } = useWebSocket(wsUrl, {
           heartbeat: {
             message: 'ping',
@@ -112,7 +110,6 @@ export function useWebsocketUtil(cr: Ref<ICardRender | undefined>, token: string
 
   const closeAllSockets = () => {
     for (const [deviceMetricsId, socket] of socketMap.entries()) {
-      console.log('close socket', deviceMetricsId);
       socket.close();
       socketMap.delete(deviceMetricsId);
     }

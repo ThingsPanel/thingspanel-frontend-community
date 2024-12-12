@@ -1,6 +1,9 @@
 import { type DataTableColumns, NButton, NFlex, NPopconfirm } from 'naive-ui';
 import dayjs from 'dayjs';
 import { $t } from '@/locales';
+import Logger from '@/utils/logger'
+
+
 
 export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (rid: string) => void) => [
   {
@@ -116,8 +119,7 @@ export const createNoSelectDeviceColumns = (
       render: row => {
         return (
           <NFlex justify={'start'}>
-            <NButton
-              quaternary
+            <NButton            
               type="primary"
               size={'small'}
               onClick={() => {
@@ -134,8 +136,8 @@ export const createNoSelectDeviceColumns = (
               {{
                 default: () => $t('common.confirmDelete'),
                 trigger: () => (
-                  <NButton quaternary type="primary" size={'small'}>
-                    {$t('custom.groupPage.removeFromGroup')}
+                  <NButton type="error" size={'small'}>
+                    {$t('custom.groupPage.removeFromGroup')}1
                   </NButton>
                 )
               }}

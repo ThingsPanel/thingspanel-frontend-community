@@ -122,7 +122,6 @@ function handleUpdateFormModelByModalType() {
       if (props.editData) {
         handleUpdateFormModel(props.editData);
       }
-      console.log(props.editData);
     }
   };
 

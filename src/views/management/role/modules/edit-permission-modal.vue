@@ -95,7 +95,6 @@ async function handleSubmit() {
   const currentPermissions = [...selectedPermissions.value, ...indeterminateData];
   // currentPermissions.shift();
   selectedPermissions.value = [];
-  console.log(currentPermissions);
   if (currentPermissions.length === 0) {
     data = await delRolePermissions(props.editData?.id);
   } else {

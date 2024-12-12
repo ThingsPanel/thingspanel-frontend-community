@@ -83,8 +83,8 @@ const { status, send, close } = useWebSocket(wsUrl, {
     interval: 8000,
     pongTimeout: 3000
   },
+  // eslint-disable-next-line
   onMessage(ws: WebSocket, event: MessageEvent) {
-    console.log(ws, 'ws---');
     if (event.data && event.data !== 'pong') {
       const info = JSON.parse(event.data);
       const currTelemetryKey = telemetryData.value
@@ -219,8 +219,6 @@ const fetchTelemetry = async () => {
   }
 };
 const setItemRef = el => {
-  console.log(el);
-
   if (el) {
     const index = el.$attrs['data-index'];
     numberAnimationInstRef.value[index] = el;
@@ -239,7 +237,6 @@ const getDeviceDetail = async () => {
       showLog.value = true;
     }
   }
-  console.log(showLog.value);
 };
 getDeviceDetail();
 

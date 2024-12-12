@@ -143,7 +143,6 @@ onMounted(() => {
 watch(
   () => appStore.locale,
   () => {
-    console.log(appStore.locale);
     let temporary: any;
     // eslint-disable-next-line prefer-const
     temporary = tabValue.value;
