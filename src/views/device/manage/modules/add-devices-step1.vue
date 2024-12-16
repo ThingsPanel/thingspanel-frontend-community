@@ -55,6 +55,8 @@ function handleValidateClick(e: MouseEvent) {
           <n-select
             v-model:value="formValue.device_config_id"
             :placeholder="() => $t('custom.devicePage.selectDeviceConfig')"
+            label-field="name"
+            value-field="id"
             :options="configOptions"
           />
         </n-form-item>
