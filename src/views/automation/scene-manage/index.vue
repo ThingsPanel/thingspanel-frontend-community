@@ -146,7 +146,7 @@ const columns: Ref<any> = ref([
     key: 'actions',
     title: $t('common.action'),
     align: 'left',
-    minWidth: '140px',
+    width: '300px',
     render: row => {
       return (
         <NSpace justify={'start'}>

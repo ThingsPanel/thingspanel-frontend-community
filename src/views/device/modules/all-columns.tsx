@@ -34,7 +34,7 @@ export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (r
   },
   {
     title: () => $t('custom.groupPage.actions'),
-    key: 'actions',minWidth:'140px',
+    key: 'actions',width:'200px',
     render: (row: { id: string; name: string; description: string; created_at: string; [key: string]: any }) => {
       return (
         <div

@@ -36,7 +36,7 @@ const columns: Ref<DataTableColumns<RuleEngine.Rule>> = ref([
   {
     key: 'index',
     title: $t('common.index'),
-    align: 'center',
+    align: 'left',
     minWidth: '140px'
   },
   {
@@ -64,8 +64,8 @@ const columns: Ref<DataTableColumns<RuleEngine.Rule>> = ref([
   {
     key: 'actions',
     title: $t('common.action'),
-    align: 'center',
-    minWidth: '140px',
+    align: 'left',
+    width: '300px',
     render: row => {
       return (
         <NSpace justify={'center'}>
