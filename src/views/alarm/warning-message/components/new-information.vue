@@ -148,7 +148,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'name',
     title: $t('generate.alarm-name'),
-    align: 'center',
+    align: 'left',
     minWidth: '140px',
     ellipsis: {
       tooltip: true
@@ -157,7 +157,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'description',
     title: $t('generate.alarm-description'),
-    align: 'center',
+    align: 'left',
     minWidth: '180px',
     ellipsis: {
       tooltip: true
@@ -166,7 +166,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'alarm_level',
     title: $t('common.alarm_level'),
-    align: 'center',
+    align: 'left',
     minWidth: '100px',
     render(row) {
       if (row.alarm_level === 'H') {
@@ -181,7 +181,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'notification_group_name',
     title: $t('generate.notification-group'),
-    align: 'center',
+    align: 'left',
     minWidth: '140px',
     ellipsis: {
       tooltip: true
@@ -190,7 +190,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'enabled',
     title: $t('generate.runstate'),
-    align: 'center',
+    align: 'left',
     minWidth: '100px',
     render(row) {
       if (row.enabled === 'Y') {
@@ -202,7 +202,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
 
   {
     key: 'actions',
-    minWidth: '140px',
+    width: '200px',
     title: $t('common.action'),
     align: 'left',
     render: (row: any) => {

@@ -90,32 +90,32 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
     key: 'email',
     minWidth: '140px',
     title: () => $t('page.manage.user.userEmail'),
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'name',
     minWidth: '140px',
     title: () => $t('page.manage.user.userName'),
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'phone_number',
     minWidth: '140px',
     title: () => $t('page.manage.user.userPhone'),
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'created_at',
     minWidth: '140px',
     title: () => $t('common.creationTime'),
-    align: 'center',
+    align: 'left',
     render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
   },
   {
     key: 'status',
     minWidth: '140px',
     title: () => $t('page.manage.user.userStatus'),
-    align: 'center',
+    align: 'left',
     render: row => {
       if (row.status) {
         const tagTypes: Record<UserManagement.UserStatusKey, NaiveUI.ThemeColor> = {
@@ -132,7 +132,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
     key: 'lastVisitTime',
     minWidth: '140px',
     title: () => '上次访问时间',
-    align: 'center',
+    align: 'left',
     render: row => dayjs(row.lastVisitTime).format('YYYY-MM-DD HH:mm:ss')
   },
   // {
@@ -155,11 +155,11 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
     key: 'remark',
     minWidth: '140px',
     title: () => $t('common.remark'),
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'actions',
-    minWidth: '140px',
+    width: '300px',
     title: () => $t('common.action'),
     align: 'left',
     render: row => {

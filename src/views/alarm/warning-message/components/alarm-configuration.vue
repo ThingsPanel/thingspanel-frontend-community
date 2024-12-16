@@ -42,8 +42,8 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'alarm_time',
     title: $t('common.alarm_time'),
-    align: 'center',
-    width: '170px',
+    align: 'left',
+    minWidth: '170px',
     render(row: { id: string; name: string; description: string; created_at: string; [key: string]: any }) {
       return dayjs(row.create_at).format('YYYY-MM-DD HH:mm:ss');
     }
@@ -51,7 +51,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'name',
     title: $t('generate.alarm-name'),
-    align: 'center',
+    align: 'left',
     minWidth: '100px',
     ellipsis: {
       tooltip: true
@@ -60,8 +60,8 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'alarm_level',
     title: $t('generate.alarm-status'),
-    align: 'center',
-    width: '120px',
+    align: 'left',
+    minWidth: '120px',
     render(row: any) {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       return alarmStatusOptions.value.find(data => data.value === row.alarm_status)?.label || '';
@@ -70,7 +70,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'content',
     title: $t('generate.alarm-content'),
-    align: 'center',
+    align: 'left',
     minWidth: '100px',
     ellipsis: {
       tooltip: true
@@ -79,7 +79,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'description',
     title: $t('generate.alarm-description'),
-    align: 'center',
+    align: 'left',
     minWidth: '80px',
     ellipsis: {
       tooltip: true

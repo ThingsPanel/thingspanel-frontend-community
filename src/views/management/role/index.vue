@@ -53,19 +53,19 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
     key: 'name',
     minWidth: '100px',
     title: $t('page.manage.role.roleName'),
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'description',
     minWidth: '100px',
     title: $t('page.manage.role.roleDesc'),
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'created_at',
     title: $t('page.product.update-ota.createTime'),
-    minWidth: '180px',
-    align: 'center',
+    minWidth: '100px',
+    align: 'left',
     render: row => {
       return formatDateTime(row.created_at);
     }
@@ -73,8 +73,8 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   {
     key: 'updated_at',
     title: $t('page.product.update-ota.updateDate'),
-    minWidth: '180px',
-    align: 'center',
+    minWidth: '130px',
+    align: 'left',
     render: row => {
       return formatDateTime(row.updated_at);
     }
@@ -82,11 +82,11 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   {
     key: 'actions',
     title: $t('common.action'),
-    align: 'center',
-    minWidth: '140px',
+    align: 'left',
+    width: '250px',
     render: row => {
       return (
-        <NSpace justify={'center'}>
+        <NSpace justify={'left'}>
           <NButton type="primary" size={'small'} onClick={() => handleEditTable(row.id)}>
             {$t('common.edit')}
           </NButton>
@@ -214,7 +214,7 @@ init();
           </NButton>
         </NSpace>
 
-        <n-data-table
+        <NDataTable
           :columns="columns"
           :data="tableData"
           :loading="loading"
