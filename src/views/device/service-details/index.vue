@@ -1,6 +1,6 @@
 <!-- eslint-disable require-atomic-updates -->
 <script setup lang="tsx">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { NButton, NPopconfirm, NSpace } from 'naive-ui';
 import dayjs from 'dayjs';
@@ -56,14 +56,14 @@ const del: (row: any) => void = async row => {
 const config: (row: any) => void = async row => {
   serviceModalRef.value.openModal(service_plugin_id.value, row);
 };
-const columns: any = ref([
+const columns: any = computed(() => [
   {
-    title: '接入点名称',
+    title: $t('custom.devicePage.accessPointName'),
     key: 'name',
     minWidth: '200px'
   },
   {
-    title: '创建时间',
+    title: $t('common.creationTime'),
     key: 'create_at',
     render: row => {
       if (row.create_at) {
@@ -76,18 +76,18 @@ const columns: any = ref([
     key: 'actions',
     title: () => $t('common.action'),
     align: 'center',
-    width: '250px',
+    width: '320px',
     render: row => {
       return (
         <NSpace justify={'center'}>
           {
             <NButton size={'small'} type="primary" onClick={() => see(row)}>
-              查看设备
+              {$t('custom.devicePage.view')}
             </NButton>
           }
           {
             <NButton size={'small'} type="primary" onClick={() => config(row)}>
-              修改配置
+              {$t('custom.devicePage.editConfig')}
             </NButton>
           }
           <NPopconfirm
@@ -138,7 +138,7 @@ getList();
   <div>
     <NCard :bordered="false" class="h-full rounded-8px shadow-sm" :title="route.query.service_name || '--'">
       <div class="header">
-        <NButton type="primary" @click="addData">新增接入</NButton>
+        <NButton type="primary" @click="addData">{{ $t('custom.devicePage.newAccess') }}</NButton>
       </div>
       <div class="h">
         <NDataTable

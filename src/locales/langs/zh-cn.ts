@@ -10,6 +10,7 @@ const local: App.I18n.Schema = {
     title: 'System Name: {name}'
   },
   common: {
+    all: '全部',
     serviceConfi: '服务配置',
     pluginConfig: '插件配置',
     deleteThePlan: '确定删除计划吗',

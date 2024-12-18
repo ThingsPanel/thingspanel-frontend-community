@@ -1,3 +1,4 @@
+import { computed } from 'vue';
 import { transformObjectToOption, transformRecordToOption } from '@/utils/common4';
 import { $t } from '@/locales';
 
@@ -153,28 +154,28 @@ export const memberNotificationLabels: Record<CustomRoute.routerSysFlagKey, stri
 
 export const MemberNotificationOptions = transformObjectToOption(memberNotificationLabels);
 
-export const notificationOptions = [
+export const notificationOptions = computed(() => [
   {
-    label: '成员通知',
+    label: $t('custom.alarm.memberNotification'),
     value: 'MEMBER'
   },
   {
-    label: '邮箱通知',
+    label: $t('custom.alarm.emailNotification'),
     value: 'EMAIL'
   },
   {
-    label: '短信通知',
+    label: $t('custom.alarm.SMSNotification'),
     value: 'SME'
   },
   {
-    label: '语音通知',
+    label: $t('custom.alarm.voiceNotification'),
     value: 'VOICE'
   },
   {
     label: 'webhook',
     value: 'WEBHOOK'
   }
-];
+]);
 
 /** 灌溉计划-计划状态 */
 export const irrigationPlanStatus: Record<DataService.FlagKey, string> = {

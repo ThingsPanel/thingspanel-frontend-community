@@ -3,6 +3,7 @@
 // 只写你自己加的路由的名字 中文写在czh_cn里 英文写在cen里，在这里你可以任性一点 ，随便加吧，因为报错了你会处理的
 
 export const czh_cn = {
+  all: '全部',
   apply: '应用管理',
   apply_service: '协议插件管理',
   apply_in: '插件管理',
@@ -62,6 +63,8 @@ export const czh_cn = {
   'automation_scene-linkage': '场景联动',
   'automation_linkage-edit': '联动编辑',
   alarm: '告警',
+  alarm_member_notification: 'Member notification',
+
   'alarm_notification-group': '通知组',
   'alarm_notification-record': '通知记录',
   'alarm_warning-message': '告警信息',
@@ -77,10 +80,13 @@ export const czh_cn = {
   'new-area': '新建区域',
   'automation_scene-edit': `场景编辑`,
   'test_kan-ban-details-test': '看板详情测试',
-  'test_kan-ban-test': '看板测试'
+  'test_kan-ban-test': '看板测试',
+  'data-services': '数据服务',
+  'data-services_data-forward': '数据转发'
 };
 
 export const cen = {
+  all: 'All',
   apply: 'ApplicationManagement',
   apply_service: 'ProtocolPlugInManagement',
   test: 'page_testing',
@@ -117,6 +123,8 @@ export const cen = {
   management_route: 'RouteManagement',
   management_setting: 'SystemSetting',
   device: 'Device Access',
+  device_service_access: 'Service Access',
+  device_service_details: 'Service Details',
   device_access: 'Service Access',
   device_grouping: 'Group Management',
   'device_grouping-details': 'Group Details',
@@ -138,6 +146,8 @@ export const cen = {
   'automation_linkage-edit': 'linkage edit',
   automation: 'automation',
   alarm: 'alarm',
+  alarm_member_notification: 'Member notification',
+
   'alarm_notification-group': 'notification group',
   'alarm_notification-record': 'notification record',
   'walarm_arning-message': 'Warning Message',
@@ -153,5 +163,7 @@ export const cen = {
   'new-area': 'New Area',
   'automation_scene-edit': `场景编辑`,
   'test_kan-ban-details-test': 'test_kan-ban-details-test',
-  'test_kan-ban-test': 'test_kan-ban-test'
+  'test_kan-ban-test': 'test_kan-ban-test',
+  'data-services': 'Data services',
+  'data-services_data-forward': 'Data forward'
 };

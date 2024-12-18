@@ -54,6 +54,8 @@ export const pzh_cn: any = {
     details: '详情',
     delete: '删除',
     group: '分组',
+    view: '查看设备',
+    editConfig: '修改配置',
     unlimitedOnlineStatus: '不限在线状态',
     unlimitedAlarmStatus: '不限告警状态',
     alarm: '告警',
@@ -105,7 +107,9 @@ export const pzh_cn: any = {
     close: '关闭',
     fail: '失败',
     deviceConfigFail: '设备配遇到问题，请返回重试',
-    back: '返回'
+    back: '返回',
+    newAccess: 'New access',
+    accessPointName: '接入点名称'
   },
   grouping_details: {
     previousPage: '上一页',
@@ -170,6 +174,12 @@ export const pzh_cn: any = {
     titleOrContent: '发送标题和内容',
     attributeDistributionTime: '属性下发时间',
     sendTime: '发送时间'
+  },
+  alarm: {
+    memberNotification: '成员通知',
+    emailNotification: '邮箱通知',
+    SMSNotification: '短信通知',
+    voiceNotification: '语音通知'
   }
 };
 
@@ -227,6 +237,8 @@ export const pen: any = {
     serviceProtocol: 'Service Protocol',
     details: 'Details',
     delete: 'Delete',
+    view: 'View Device',
+    editConfig: 'Edit Config',
     group: 'Group',
     unlimitedOnlineStatus: 'Unlimited Online Status',
     unlimitedAlarmStatus: 'Unlimited Alarm Status',
@@ -281,7 +293,9 @@ export const pen: any = {
     close: 'Close',
     fail: 'Fail',
     deviceConfigFail: 'Problem encountered with device configuration, please return and try again',
-    back: 'Back'
+    back: 'Back',
+    newAccess: 'New access',
+    accessPointName: 'Access Point Name'
   },
   grouping_details: {
     messageId: 'messageId',
@@ -344,5 +358,11 @@ export const pen: any = {
     offline: 'offline',
     alarm: 'alarm',
     noAlarm: 'noAlarm'
+  },
+  alarm: {
+    memberNotification: 'Member Notification',
+    emailNotification: 'Email Notification',
+    SMSNotification: 'SMS Notification',
+    voiceNotification: 'Voice Notification'
   }
 };

@@ -88,7 +88,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'actions',
     title: $t('common.action'),
-    width: '200px',
+    width: '220px',
     align: 'left',
     render: row => {
       return (

@@ -14,9 +14,9 @@ const { loading, startLoading, endLoading } = useLoading(false);
 
 const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()]);
 // POST PUT DELETE
-const requestMethodOptions = reactive([
+const requestMethodOptions = ref([
   {
-    label: '全部',
+    label: computed(() => $t('common.all')),
     value: ''
   },
   {

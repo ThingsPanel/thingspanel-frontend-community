@@ -9,6 +9,7 @@ const local: App.I18n.Schema = {
     title: 'ThingsPanel'
   },
   common: {
+    all: 'All',
     serviceConfi: 'Service Configuration',
     pluginConfig: 'Plugin Configuration',
     deleteThePlan: 'Are you sure to delete the plan',
