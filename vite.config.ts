@@ -16,7 +16,8 @@ export default defineConfig(configEnv => {
     resolve: {
       alias: {
         '~': fileURLToPath(new URL('./', import.meta.url)),
-        '@': fileURLToPath(new URL('./src', import.meta.url))
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+        './src/utils/Logger.ts': './src/utils/Logger.ts',
       }
     },
     css: {
