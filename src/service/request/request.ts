@@ -18,8 +18,12 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
       const { headers, params } = config;
       // set token
       const token = localStg.get('token');
+      const userLanguage = localStg.get('lang');
       // const Authorization = token ? `Bearer ${token}` : null;
       const headersWithToken = token ? { 'x-token': token } : {};
+      if (userLanguage) {
+        headersWithToken['Accept-Language'] = userLanguage;
+      }
       Object.assign(headers, headersWithToken);
       if (params && typeof params === 'object' && !Array.isArray(params)) {
         Object.keys(params).forEach(key => {
