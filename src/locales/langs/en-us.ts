@@ -1464,6 +1464,11 @@ const local: App.I18n.Schema = {
   },
   kanban: {
     'add-cards': 'add cards'
+  },
+  card: {
+    deviceTotal: 'Total number of devices',
+    deviceUnit: 'Unit',
+    accessQuantity: 'Access Quantity'
   }
 };
 

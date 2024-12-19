@@ -1460,6 +1460,11 @@ const local: App.I18n.Schema = {
   },
   kanban: {
     'add-cards': '添加卡片'
+  },
+  card: {
+    deviceTotal: '设备总数',
+    deviceUnit: '个',
+    accessQuantity: '访问量'
   }
 };
 
