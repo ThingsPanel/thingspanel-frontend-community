@@ -4,6 +4,7 @@ import { NIcon } from 'naive-ui';
 import * as ionicons5 from '@vicons/ionicons5';
 import type { ICardData } from '@/components/panel/card';
 import { getAttributeDataSet } from '@/service/api/device';
+import { $t } from '@/locales';
 
 const props = defineProps<{
   card: ICardData;
@@ -113,7 +114,7 @@ defineExpose({
         <component :is="getIcon(isActive ? activeIconName : inactiveIconName)" />
       </NIcon>
       <div class="metric-name">
-        {{ props.card?.dataSource?.deviceSource?.[0]?.metricsName || '状态' }}
+        {{ props.card?.dataSource?.deviceSource?.[0]?.metricsName || $t('generate.status') }}
       </div>
     </div>
   </div>

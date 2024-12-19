@@ -241,7 +241,20 @@ const local: App.I18n.Schema = {
     send: 'Send',
     creationTime: 'Creation time',
     service: 'Service',
-    protocol: 'Protocol'
+    protocol: 'Protocol',
+    today: 'Today',
+    yesterday: 'Yesterday',
+    dayBeforeYesterday: 'Day before yesterday',
+    thisWeek: 'This week',
+    lastWeek: 'Last week',
+    thisMonth: 'This month',
+    lastMonth: 'Last month',
+    thisYear: 'This year',
+    lastYear: 'Last year',
+    lastSixMonth: 'Last 6 months',
+    lastOneYear: 'Last one year',
+    lastWeekToday: 'Last week today',
+    January: 'January'
   },
   theme: {
     themeSchema: {
@@ -1076,6 +1089,8 @@ const local: App.I18n.Schema = {
     value: 'value',
     'max-value': 'max value',
     'min-value': 'min value',
+    inputMaxValue: '请输入最大值',
+    inputMinValue: '请输入最小值',
     sum: 'sum',
     diff: 'diff',
     'save-scene-configuration': 'save scene configuration',
@@ -1460,10 +1475,53 @@ const local: App.I18n.Schema = {
     expirationTime: 'Expiration time',
     hour: 'hour',
     expectedMessageTip:
-      'Expected Message Tip: After activation, if the device is not online, messages will be cached and sent after the device is online'
+      'Expected Message Tip: After activation, if the device is not online, messages will be cached and sent after the device is online',
+    curveWidth: 'Curve Width',
+    stateOnIcon: 'State on icon',
+    stateOnColor: 'State on color',
+    stateOffIcon: 'State off icon',
+    stateOffColor: 'State off color'
   },
   kanban: {
     'add-cards': 'add cards'
+  },
+  card: {
+    deviceTotal: 'Total devices',
+    deviceUnit: 'Unit',
+    accessQuantity: 'Access Quantity',
+    msgTotal: 'Total messages',
+    msgUnit: 'piece',
+    offlineDev: 'Offline devices',
+    onlineDev: 'Online devices',
+    barChart: 'Bar Chart',
+    curve: 'Curve',
+    selectedIcon: 'Selected Icon',
+    digitalIndicator: 'Digital indicator',
+    humidity: 'Humidity',
+    numControl: 'Numerical Control',
+    customData: 'Custom data delivery',
+    buttonIcon: 'Button icon',
+    buttonIconColor: 'Button icon color',
+    buttonBgColor: 'Button background color',
+    buttonText: 'Button text',
+    sentData: 'Sent data',
+    dataType: 'Data type',
+    dataSentSuccess: 'Data sent successful',
+    dataSentFail: 'Data sent failed',
+    dataSent: 'Data has been sent',
+    heating: 'Heating',
+    cooling: 'Cooling',
+    ventilate: 'Ventilate',
+    automatic: 'Automatic',
+    inputButtonName: 'Please input button name',
+    inputButtonValue: 'Please input button value',
+    addButton: 'Add button',
+    airConditioningStatus: 'Air conditioning status',
+    enumController: 'Enum controller',
+    statusCard: 'Status card',
+    deviceStateController: 'Device status controller',
+    firmVersion: 'Firmware version',
+    textInfo: 'Text information'
   }
 };
 

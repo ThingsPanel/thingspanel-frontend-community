@@ -20,7 +20,7 @@ const config = computed(() => props.card?.config || {});
 const buttonIcon = computed(() => (ionicons5 as any)[config.value.iconName || 'Play']);
 const buttonIconColor = computed(() => config.value.buttonIconColor || '#fff');
 const buttonColor = computed(() => config.value.buttonColor || '#ff4d4f');
-const buttonText = computed(() => config.value.buttonText || '自定义数据下发');
+const buttonText = computed(() => config.value.buttonText || $t('card.customData'));
 
 const deviceId = computed(() => props.card?.dataSource?.deviceSource?.[0]?.deviceId);
 
@@ -41,9 +41,9 @@ const handleButtonClick = async () => {
     } else if (config.value.dataType === 'command') {
       await commandDataPub(obj);
     }
-    window.$message?.success($t('数据发送成功'));
+    window.$message?.success($t('card.dataSentSuccess'));
   } catch (error) {
-    window.$message?.error($t('数据发送失败'));
+    window.$message?.error($t('card.dataSentFail'));
   }
 };
 

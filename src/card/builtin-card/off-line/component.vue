@@ -2,8 +2,10 @@
 import { ref } from 'vue';
 import { useAuthStore } from '@/store/modules/auth';
 import { createLogger } from '@/utils/logger';
+import { $t } from '@/locales';
 import { sumData, totalNumber } from '../../../service/api';
 import { GradientBg } from './components';
+
 const logger = createLogger('OffLine');
 
 defineOptions({ name: 'NumCard' });
@@ -12,9 +14,9 @@ const authStore = useAuthStore();
 
 const cardData = ref<any>({
   id: 'download',
-  title: '离线设备数',
+  title: $t('card.offlineDev'),
   value: 0,
-  unit: '个',
+  unit: $t('card.deviceUnit'),
   colors: ['#56cdf3', '#719de3'],
   icon: 'fa-ban'
 });

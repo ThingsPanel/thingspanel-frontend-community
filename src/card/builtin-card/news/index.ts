@@ -1,12 +1,14 @@
 import { defineAsyncComponent } from 'vue';
 import type { ICardDefine } from '@/components/panel/card';
+import { $t } from '@/locales';
 import poster from './news.png';
+
 export default {
   id: 'news-num',
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: '消息总数',
+  title: $t('card.msgTotal'),
   preset: {
     iCardViewDefault: {
       w: 3,

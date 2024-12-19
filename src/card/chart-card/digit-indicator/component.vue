@@ -5,6 +5,8 @@ import type { ICardData } from '@/components/panel/card';
 import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device';
 import { icons as iconOptions } from '@/components/common/icons';
 import { createLogger } from '@/utils/logger';
+import { $t } from '@/locales';
+
 const logger = createLogger('Indicator');
 const props = defineProps<{
   card: ICardData;
@@ -96,7 +98,7 @@ defineExpose({
       </div>
       <div class="metric-name-container">
         <span class="metric-name" :title="card?.dataSource?.deviceSource?.[0]?.metricsName">
-          {{ card?.dataSource?.deviceSource?.[0]?.metricsName || '湿度' }}
+          {{ card?.dataSource?.deviceSource?.[0]?.metricsName || $t('card.humidity') }}
         </span>
       </div>
     </div>

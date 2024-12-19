@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { createLogger } from '@/utils/logger';
+import { $t } from '@/locales';
 import { tenantNum } from '../../../service/api';
 import { GradientBg } from './components';
 
@@ -10,9 +11,9 @@ const logger = createLogger('News');
 
 const cardData = ref<any>({
   id: 'trade',
-  title: '消息总数',
+  title: $t('card.msgTotal'),
   value: 0,
-  unit: '条',
+  unit: $t('card.msgUnit'),
   colors: ['#fcbc25', '#f68057'],
   icon: 'fa-envelope'
 });

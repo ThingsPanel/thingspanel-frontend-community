@@ -5,6 +5,8 @@ import moment from 'moment';
 import type { ICardData } from '@/components/panel/card';
 import { telemetryDataHistoryList } from '@/service/api/device';
 import { createLogger } from '@/utils/logger';
+import { $t } from '@/locales';
+
 const logger = createLogger('Chart');
 // 定义组件props
 const props = defineProps<{
@@ -39,7 +41,7 @@ const handlePageSizeChange = (pageSize: number) => {
 // 动态生成表格列
 const columns = ref<any[]>([
   {
-    title: '时间',
+    title: $t('common.time'),
     key: 'time',
     render(row) {
       return moment(row.time).format('YYYY-MM-DD HH:mm:ss');
@@ -106,7 +108,7 @@ watch(
   () => {
     columns.value = [
       {
-        title: '时间',
+        title: $t('common.time'),
         key: 'time',
         render(row) {
           return moment(row.time).format('YYYY-MM-DD HH:mm:ss');

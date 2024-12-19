@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/modules/auth';
 import { createLogger } from '@/utils/logger';
 import { sumData, totalNumber } from '../../../service/api';
 import { GradientBg } from './components';
+import { $t } from '@/locales';
 
 defineOptions({ name: 'NumCard' });
 
@@ -13,9 +14,9 @@ const logger = createLogger('Access');
 
 const cardData = ref<any>({
   id: 'visit',
-  title: '设备总数',
+  title: $t('card.deviceTotal'),
   value: 0,
-  unit: '个',
+  unit: $t('card.deviceUnit'),
   colors: ['#ec4786', '#b955a4'],
   icon: 'ant-design:bar-chart-outlined'
 });

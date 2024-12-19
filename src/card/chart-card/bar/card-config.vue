@@ -12,8 +12,8 @@ const originalColorGroups = reactive(CurveTheme);
 const colorGroups = ref(JSON.parse(JSON.stringify(originalColorGroups))); // Deep copy to preserve original data
 
 const themeOptions = [
-  { label: '配色主题1', value: 'colorGroups' },
-  { label: '配色主题2', value: 'colorGroups2' }
+  { label: `$t('generate.color-theme')1`, value: 'colorGroups' },
+  { label: `$t('generate.color-theme')2`, value: 'colorGroups2' }
 ];
 
 const themeUpdate = () => {
