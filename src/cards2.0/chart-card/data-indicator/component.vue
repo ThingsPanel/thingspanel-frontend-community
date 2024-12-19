@@ -5,7 +5,7 @@ import { useWebSocket } from '@vueuse/core';
 import { localStg } from '@/utils/storage';
 import type { CardData } from '@/components/tp-kan-ban/kan-ban';
 import { getWebsocketServerUrl } from '@/utils/common/tool';
-import { createLogger } from '@/utils/Logger';
+import { createLogger } from '@/utils/logger';
 import { deviceDetail } from '../api';
 import icons from './icon';
 const logger = createLogger('Indicator');
