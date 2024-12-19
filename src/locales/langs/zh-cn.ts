@@ -242,7 +242,20 @@ const local: App.I18n.Schema = {
     send: '发送',
     creationTime: '创建时间',
     service: '服务',
-    protocol: '协议'
+    protocol: '协议',
+    today: '今天',
+    yesterday: '昨天',
+    dayBeforeYesterday: '前天',
+    thisWeek: '本周',
+    lastWeek: '上周',
+    thisMonth: '本月',
+    lastMonth: '上个月',
+    thisYear: '今年',
+    lastYear: '去年',
+    lastSixMonth: '最近6个月',
+    lastOneYear: '最近1年',
+    lastWeekToday: '上周今日',
+    January: '1月'
   },
   theme: {
     themeSchema: {
@@ -1075,6 +1088,8 @@ const local: App.I18n.Schema = {
     value: '取值',
     'max-value': '最大值',
     'min-value': '最小值',
+    inputMaxValue: '请输入最大值',
+    inputMinValue: '请输入最小值',
     sum: '总和',
     diff: '最大最小差值',
     'save-scene-configuration': '保存场景配置',
@@ -1456,7 +1471,12 @@ const local: App.I18n.Schema = {
     expectedMessage: '期望消息',
     expirationTime: '过期时间',
     hour: '小时',
-    expectedMessageTip: '开启后，如果设备不在线，会缓存消息，等设备上线后再发送'
+    expectedMessageTip: '开启后，如果设备不在线，会缓存消息，等设备上线后再发送',
+    curveWidth: '曲线宽度',
+    stateOnIcon: '状态开图标',
+    stateOnColor: '状态开颜色',
+    stateOffIcon: '状态关图标',
+    stateOffColor: '状态关颜色'
   },
   kanban: {
     'add-cards': '添加卡片'
@@ -1464,7 +1484,40 @@ const local: App.I18n.Schema = {
   card: {
     deviceTotal: '设备总数',
     deviceUnit: '个',
-    accessQuantity: '访问量'
+    accessQuantity: '访问量',
+    msgTotal: '消息总数',
+    msgUnit: '条',
+    offlineDev: '离线设备数',
+    onlineDev: '在线设备数',
+    barChart: '柱状图',
+    curve: '曲线',
+    selectedIcon: '选中图标',
+    digitalIndicator: '数字指示器',
+    humidity: '湿度',
+    numControl: '数值控制',
+    customData: '自定义数据下发',
+    buttonIcon: '按钮图标',
+    buttonIconColor: '按钮图标颜色',
+    buttonBgColor: '按钮背景色',
+    buttonText: '按钮下的文字',
+    sentData: '发送的数据',
+    dataType: '数据类型',
+    dataSentSuccess: '数据发送成功',
+    dataSentFail: '数据发送失败',
+    dataSent: '数据下发',
+    heating: '制热',
+    cooling: '制冷',
+    ventilate: '通风',
+    automatic: '自动',
+    inputButtonName: '请输入按钮名称',
+    inputButtonValue: '请输入按钮值',
+    addButton: '添加按钮',
+    airConditioningStatus: '空调状态',
+    enumControl: '枚举控制',
+    statusCard: '状态卡片',
+    deviceStateController: '设备开关控制',
+    firmVersion: '固件版本',
+    textInfo: '文字信息'
   }
 };
 

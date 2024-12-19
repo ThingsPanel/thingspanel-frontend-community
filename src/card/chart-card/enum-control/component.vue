@@ -3,6 +3,8 @@ import { ref, watch } from 'vue';
 import type { ICardData } from '@/components/panel/card';
 import { attributeDataPub, commandDataPub, telemetryDataPub } from '@/service/api/device';
 import { createLogger } from '@/utils/logger';
+import { $t } from '@/locales';
+
 const logger = createLogger('Control');
 // Props接收传入的ICardData对象
 const props = defineProps<{
@@ -12,20 +14,20 @@ const detail: any = ref('0');
 
 // 从props.card.config中获取按钮配置信息
 const configOptions = ref<Array<{ label: string; value: string | number }>>([
-  { label: '制热', value: 'heat' },
-  { label: '制冷', value: 'cool' },
-  { label: '通风', value: 'fan' },
-  { label: '自动', value: 'auto' }
+  { label: $t('card.heating'), value: 'heat' },
+  { label: $t('card.cooling'), value: 'cool' },
+  { label: $t('card.ventilate'), value: 'fan' },
+  { label: $t('card.automatic'), value: 'auto' }
 ]);
 
 watch(
   () => props.card.config.btOptions,
   () => {
     configOptions.value = props.card?.config?.btOptions || [
-      { label: '制热', value: 'heat' },
-      { label: '制冷', value: 'cool' },
-      { label: '通风', value: 'fan' },
-      { label: '自动', value: 'auto' }
+      { label: $t('card.heating'), value: 'heat' },
+      { label: $t('card.cooling'), value: 'cool' },
+      { label: $t('card.ventilate'), value: 'fan' },
+      { label: $t('card.automatic'), value: 'auto' }
     ];
   },
   { immediate: true, deep: true }
@@ -76,9 +78,9 @@ const handleClick = async (value: string | number) => {
       } else if (metricsType === 'command') {
         await commandDataPub(payload);
       }
-      window.$message?.success('数据发送成功');
+      window.$message?.success($t('card.dataSentSuccess'));
     } catch (error) {
-      window.$message?.error('数据发送失败');
+      window.$message?.error($t('card.dataSentFail'));
     }
   }
 };
@@ -88,7 +90,7 @@ const handleClick = async (value: string | number) => {
   <div class="ac-card">
     <!-- 上方的文字通过props.card.dataSource.deviceSource[0]?.name获取 -->
     <div class="ac-title">
-      {{ props.card?.dataSource?.deviceSource[0]?.metricsName || '空调状态' }}
+      {{ props.card?.dataSource?.deviceSource[0]?.metricsName || $t('card.airConditioningStatus') }}
     </div>
 
     <!-- 按钮组 -->

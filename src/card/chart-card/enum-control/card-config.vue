@@ -3,6 +3,7 @@ import { inject, onMounted } from 'vue';
 import { NButton, NForm, NIcon, NInput } from 'naive-ui';
 import { DeleteOutlined, PlusOutlined } from '@vicons/antd';
 import type { IConfigCtx } from '@/components/panel/card';
+import { $t } from '@/locales';
 
 const ctx = inject<IConfigCtx>('config-ctx')!;
 
@@ -11,8 +12,8 @@ const addButtonConfig = () => {
   ctx.config.btOptions = [
     ...ctx.config.btOptions,
     {
-      label: `按钮${ctx.config.btOptions.length + 1}`,
-      value: `值`
+      label: `$t('generate.button')${ctx.config.btOptions.length + 1}`,
+      value: $t('generate.fieldValue')
     }
   ];
 };
@@ -27,10 +28,10 @@ const removeButtonConfig = (index: number) => {
 onMounted(() => {
   if (!ctx.config.btOptions) {
     ctx.config.btOptions = [
-      { label: '制热', value: 'heat' },
-      { label: '制冷', value: 'cool' },
-      { label: '通风', value: 'fan' },
-      { label: '自动', value: 'auto' }
+      { label: $t('card.heating'), value: 'heat' },
+      { label: $t('card.cooling'), value: 'cool' },
+      { label: $t('card.ventilate'), value: 'fan' },
+      { label: $t('card.automatic'), value: 'auto' }
     ];
   }
 });
@@ -43,8 +44,8 @@ onMounted(() => {
       <div v-for="(button, index) in ctx.config.btOptions" :key="index" class="button-config">
         <div class="flex flex-row items-center gap-2">
           <span>{{ index + 1 }}</span>
-          <NInput v-model:value="button.label" placeholder="请输入按钮名称" />
-          <NInput v-model:value="button.value" placeholder="请输入按钮值" />
+          <NInput v-model:value="button.label" :placeholder="$t('card.inputButtonName')" />
+          <NInput v-model:value="button.value" :placeholder="$t('card.inputButtonValue')" />
           <NButton v-if="ctx.config.btOptions.length > 2" type="error" text @click="removeButtonConfig(index)">
             <NIcon size="20">
               <DeleteOutlined />
@@ -60,7 +61,7 @@ onMounted(() => {
         <NIcon size="20">
           <PlusOutlined />
         </NIcon>
-        添加按钮
+        {{ $t('card.addButton') }}
       </NButton>
     </NForm>
   </div>

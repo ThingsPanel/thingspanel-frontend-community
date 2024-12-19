@@ -8,6 +8,7 @@ import { GaugeChart } from 'echarts/charts';
 import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components';
 import type { ICardData } from '@/components/panel/card';
 import { telemetryDataCurrentKeys } from '@/service/api/device';
+import { $t } from '@/locales';
 
 // 注册 ECharts 所需的组件和渲染器
 use([CanvasRenderer, GaugeChart, TitleComponent, TooltipComponent, LegendComponent]);
@@ -171,7 +172,9 @@ onMounted(() => {
       <VChart ref="chartRef" :option="chartOptions" class="chart" />
     </div>
     <div class="data-info">
-      <span class="title">{{ card.dataSource?.deviceSource?.[0]?.metricsName || '仪表盘' }}</span>
+      <span class="title">
+        {{ card.dataSource?.deviceSource?.[0]?.metricsName || $t('dashboard_panel.cardName.instrumentPanel') }}
+      </span>
     </div>
   </div>
 </template>

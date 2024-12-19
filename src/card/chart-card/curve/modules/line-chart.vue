@@ -189,18 +189,18 @@ const timeOptions: SelectOption[] = [
   { label: $t('common.lastDays30'), value: 2592000000, id: 'last_30d' },
   { label: $t('common.lastDays60'), value: 5184000000, id: 'last_60d' },
   { label: $t('common.lastDays90'), value: 7776000000, id: 'last_90d' },
-  { label: '最近6个月', value: 15811200000 },
-  { label: '最近1年', value: 31536000000 },
-  { label: '今天', value: 28740000 },
-  { label: '昨天', value: 86400000 },
-  { label: '前天', value: 172800000 },
-  { label: '上周今日', value: 604800000 },
-  { label: '本周', value: 518400000 },
-  { label: '上周', value: 604800000 },
-  { label: '本月', value: 2592000000 },
-  { label: '上个月', value: 2592000000 },
-  { label: '今年', value: 7776000000 },
-  { label: '去年', value: 31536000000 }
+  { label: $t('common.lastSixMonth'), value: 15811200000 },
+  { label: $t('common.lastOneYear'), value: 31536000000 },
+  { label: $t('common.today'), value: 28740000 },
+  { label: $t('common.yesterday'), value: 86400000 },
+  { label: $t('common.dayBeforeYesterday'), value: 172800000 },
+  { label: $t('common.lastWeekToday'), value: 604800000 },
+  { label: $t('common.thisWeek'), value: 518400000 },
+  { label: $t('common.lastWeek'), value: 604800000 },
+  { label: $t('common.thisMonth'), value: 2592000000 },
+  { label: $t('common.lastMonth'), value: 2592000000 },
+  { label: $t('common.thisYear'), value: 7776000000 },
+  { label: $t('common.lastYear'), value: 31536000000 }
 ];
 const timeOptionsValue = ref();
 const aggregateOptions: SelectOption[] = [
@@ -216,7 +216,7 @@ const aggregateOptions: SelectOption[] = [
   { label: $t('common.hours6'), value: '6h', disabled: false },
   { label: $t('common.days1'), value: '1d', disabled: false },
   { label: $t('common.days7'), value: '7d', disabled: false },
-  { label: '1月', value: '1mo', disabled: false }
+  { label: $t('common.January'), value: '1mo', disabled: false }
 ];
 const aggregateOptionsValue = ref<string>('');
 const aggregateFunctionOptions: SelectOption[] = [
@@ -297,26 +297,26 @@ const updateTime = (v: number, o: SelectOption) => {
       isTimeSelect.value = true;
       isAggregate.value = false;
       return;
-    case '今天':
+    case $t('common.today'):
       start_time = new Date(now.setHours(0, 0, 0, 0));
       now = new Date(); // 重新获取当前时间，避免修改
       end_time = new Date(now.setHours(23, 59, 59, 999));
       break;
-    case '昨天':
+    case $t('common.yesterday'):
       start_time = new Date();
       start_time.setDate(now.getDate() - 1);
       start_time.setHours(0, 0, 0, 0);
       end_time = new Date(start_time);
       end_time.setHours(23, 59, 59, 999);
       break;
-    case '前天':
+    case $t('common.dayBeforeYesterday'):
       start_time = new Date();
       start_time.setDate(start_time.getDate() - 2); // 设置为两天前的日期
       start_time.setHours(0, 0, 0, 0); // 那一天的开始
       end_time = new Date(start_time);
       end_time.setHours(23, 59, 59, 999); // 那一天的结束一天的结束
       break;
-    case '本周':
+    case $t('common.thisWeek'):
       // eslint-disable-next-line no-case-declarations
       const currentDayOfWeek = now.getDay(); // 当前是周几，周日为0
       // eslint-disable-next-line no-case-declarations
@@ -326,7 +326,7 @@ const updateTime = (v: number, o: SelectOption) => {
       start_time.setHours(0, 0, 0, 0); // 本周一的开始
       end_time = new Date(); // 本周的当前时间
       break;
-    case '上周':
+    case $t('common.lastWeek'):
       // eslint-disable-next-line no-case-declarations
       const daysToLastMonday = now.getDay() === 0 ? -6 : 1; // 如果今天是周日，则上周一是6天前
       start_time = new Date();
@@ -336,19 +336,19 @@ const updateTime = (v: number, o: SelectOption) => {
       end_time.setDate(start_time.getDate() + 6);
       end_time.setHours(23, 59, 59, 999);
       break;
-    case '本月':
+    case $t('common.thisMonth'):
       start_time = new Date(now.getFullYear(), now.getMonth(), 1);
       end_time = now;
       break;
-    case '上个月':
+    case $t('common.lastMonth'):
       start_time = new Date(now.getFullYear(), now.getMonth() - 1, 1);
       end_time = new Date(now.getFullYear(), now.getMonth(), 0);
       break;
-    case '今年':
+    case $t('common.thisYear'):
       start_time = new Date(now.getFullYear(), 0, 1);
       end_time = now;
       break;
-    case '去年':
+    case $t('common.lastYear'):
       start_time = new Date(now.getFullYear() - 1, 0, 1);
       end_time = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
       break;
