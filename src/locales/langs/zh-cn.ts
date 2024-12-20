@@ -1547,7 +1547,28 @@ const local: App.I18n.Schema = {
     responsive: '响应式',
     noWidgetDragToCard: '暂未添加组件,移入添加按钮，然后拖入卡片吧',
     undefined: '未定义',
-    modalBox: '模态框'
+    modalBox: '模态框',
+    menu: '菜单',
+    route: '路由',
+    systemAdmin: '系统管理员',
+    tenantAdmin: '租户管理员',
+    started: '已启动',
+    paused: '已暂停',
+    httpInterface: 'http接口',
+    httpwsInterface: 'http和ws接口',
+    stopped: '已停止',
+    deviceData: '设备数据',
+    operationLog: '操作日志',
+    emailNotice: '邮箱通知',
+    smsNotice: '短信通知',
+    voicemailNotice: '语音通知',
+    memberNotice: '成员通知',
+    issued: '已下发',
+    toBeIssued: '待下发',
+    cancelled: '已取消',
+    capacity: '容量',
+    singleControl: '单次控制',
+    loopControl: '循环控制'
   }
 };
 
