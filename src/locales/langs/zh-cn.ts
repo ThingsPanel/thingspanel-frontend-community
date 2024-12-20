@@ -1568,7 +1568,10 @@ const local: App.I18n.Schema = {
     cancelled: '已取消',
     capacity: '容量',
     singleControl: '单次控制',
-    loopControl: '循环控制'
+    loopControl: '循环控制',
+    deviceConnected: '设备已连接',
+    toDeviceDetailPage: '点击进入设备详情页面',
+    deviceDisconnected: '设备断开连接'
   }
 };
 

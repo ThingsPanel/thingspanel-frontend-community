@@ -1572,7 +1572,10 @@ const local: App.I18n.Schema = {
     cancelled: 'Cancelled',
     capacity: 'Capacity',
     singleControl: 'Single Control',
-    loopControl: 'Loop control'
+    loopControl: 'Loop control',
+    deviceConnected: 'Device is connected',
+    toDeviceDetailPage: 'Click to enter the device details page',
+    deviceDisconnected: 'Device is disconnected'
   }
 };
 
