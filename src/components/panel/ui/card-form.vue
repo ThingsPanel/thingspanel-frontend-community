@@ -274,7 +274,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
               v-model:value="state.data.dataSource.dataTimeRange"
               clearable
               :options="dataTimeRangeOptions || []"
-              placeholder="请选择数据时间范围"
+              :placeholder="$t('card.selectDataTimeFrame')"
               @update:value="updateTime"
             />
             <NSelect
@@ -283,7 +283,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
               clearable
               filterable
               :options="dataAggregateRangeOptions || []"
-              placeholder="请选择数据聚合范围"
+              :placeholder="$t('card.selectDataAggregationRange')"
             />
             <div v-if="state.data.dataSource?.origin === 'device' || state.data.dataSource?.origin === 'system'">
               <n-input-number
@@ -310,7 +310,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                   clearable
                   :disabled="props?.deviceWebChartConfig?.length !== 0"
                   class="w-135px"
-                  placeholder="请选择设备"
+                  :placeholder="$t('generate.select-device')"
                   :consistent-menu-width="false"
                   :options="deviceOption || []"
                   label-field="name"
@@ -326,7 +326,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                   v-model:value="item.metricsId"
                   clearable
                   filterable
-                  placeholder="请选择指标"
+                  :placeholder="$t('card.selectIndicator')"
                   :disabled="props?.deviceWebChartConfig?.length !== 0"
                   class="w-140px"
                   :consistent-menu-width="false"
@@ -339,7 +339,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                   v-if="i <= deviceCount - 1"
                   v-model:value="item.metricsName"
                   class="metrics-name-input"
-                  placeholder="请输入名称"
+                  :placeholder="$t('common.enterName')"
                 />
                 <NSelect
                   v-if="i <= deviceCount - 1 && state.data.dataSource.isSupportAggregate"
@@ -347,7 +347,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                   clearable
                   filterable
                   :options="aggregateFunctionOptions || []"
-                  placeholder="请选择数据聚合方式"
+                  :placeholder="$t('card.selectDataAggregationMethod')"
                   :disabled="isNoAggregate"
                 />
               </div>
