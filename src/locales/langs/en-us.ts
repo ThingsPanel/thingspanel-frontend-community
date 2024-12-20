@@ -1551,7 +1551,31 @@ const local: App.I18n.Schema = {
     responsive: 'Responsive',
     noWidgetDragToCard: 'No components have been added yet. Move the add button and then drag in the card.',
     undefined: 'Undefined',
-    modalBox: 'Modal box'
+    modalBox: 'Modal box',
+    menu: 'Menu',
+    route: '路由',
+    systemAdmin: 'System administrator',
+    tenantAdmin: 'Tenant administrator',
+    started: 'Started',
+    paused: 'Paused',
+    httpInterface: 'http interface',
+    httpwsInterface: 'http ws interface',
+    stopped: 'Stopped',
+    deviceData: 'Device data',
+    operationLog: 'Operation log',
+    emailNotice: 'Email notice',
+    smsNotice: 'Sms notice',
+    voicemailNotice: 'Voicemail notice',
+    memberNotice: 'Member notice',
+    issued: 'Issued',
+    toBeIssued: 'To be issued',
+    cancelled: 'Cancelled',
+    capacity: 'Capacity',
+    singleControl: 'Single Control',
+    loopControl: 'Loop control',
+    deviceConnected: 'Device is connected',
+    toDeviceDetailPage: 'Click to enter the device details page',
+    deviceDisconnected: 'Device is disconnected'
   }
 };
 

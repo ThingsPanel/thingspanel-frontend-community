@@ -10,6 +10,7 @@ import { localStg } from '@/utils/storage';
 import deviceStatusMp3 from '@/assets/audio/device-status.mp3';
 import { useRouterPush } from '@/hooks/common/router';
 import { createLogger } from '@/utils/logger';
+import { $t } from '@/locales';
 import GlobalHeader from '../modules/global-header/index.vue';
 import GlobalSider from '../modules/global-sider/index.vue';
 import GlobalTab from '../modules/global-tab/index.vue';
@@ -112,7 +113,7 @@ onMounted(() => {
         const data = event.data ? JSON.parse(event.data) : {};
         if (data.is_online) {
           window.$notification?.success({
-            title: `${data.device_name}设备已连接`,
+            title: `${data.device_name}{$t('card.deviceConnected')}`,
 
             duration: 5000,
 
@@ -131,13 +132,13 @@ onMounted(() => {
                   }
                 },
                 {
-                  default: () => '点击进入设备详情页面'
+                  default: () => $t('card.toDeviceDetailPage')
                 }
               )
           });
         } else {
           window.$notification?.info({
-            title: `${data.device_name}设备断开连接`,
+            title: `${data.device_name}{$t('card.deviceDisconnected')}`,
 
             duration: 5000,
             action: () =>
@@ -155,7 +156,7 @@ onMounted(() => {
                   }
                 },
                 {
-                  default: () => '点击进入设备详情页面'
+                  default: () => $t('card.toDeviceDetailPage')
                 }
               )
           });
