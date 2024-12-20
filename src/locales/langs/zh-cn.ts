@@ -1354,6 +1354,8 @@ const local: App.I18n.Schema = {
     'last-name': ' 姓 名',
     'select-user': '选择用户',
     'color-theme': '配色主题：',
+    'color-theme1': '配色主题1',
+    'color-theme2': '配色主题2',
     'copy-json': '复制json',
     'enter-config-name': '请输入配置名称',
     'enter-key': '请输入key',

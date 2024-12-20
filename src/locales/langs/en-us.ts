@@ -1355,6 +1355,8 @@ const local: App.I18n.Schema = {
     'last-name': 'last name',
     'select-user': 'select user',
     'color-theme': 'color theme:',
+    'color-theme1': 'color theme1',
+    'color-theme2': 'color theme2',
     'copy-json': 'copy json',
     'enter-config-name': 'please enter config name',
     'enter-key': 'please enter key',

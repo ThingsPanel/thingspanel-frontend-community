@@ -339,7 +339,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                   v-if="i <= deviceCount - 1"
                   v-model:value="item.metricsName"
                   class="metrics-name-input"
-                  :placeholder="$('common.enterName')"
+                  :placeholder="$t('common.enterName')"
                 />
                 <NSelect
                   v-if="i <= deviceCount - 1 && state.data.dataSource.isSupportAggregate"
