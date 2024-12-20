@@ -7,6 +7,7 @@ import { useLayouts } from '@/components/tp-kan-ban/hooks/useLayouts';
 import type { CardFormIns, CardView } from '@/components/tp-kan-ban/kan-ban';
 import { PutBoard } from '@/service/api';
 import { useResponsiveStore } from '@/components/tp-kan-ban/store';
+import { $t } from '@/locales';
 
 const formRef = ref<CardFormIns>();
 const appStore = useAppStore();
@@ -70,7 +71,7 @@ const changeCurCardData = (data: CardView) => {
         :toggle="toggle"
         :is-fullscreen="isFullscreen"
         :save-kan-ban="saveKanBan"
-        :tittle="panelDate?.name || '未定义'"
+        :tittle="panelDate?.name || $t('card.undefined')"
         class="w-full"
       />
     </div>
@@ -91,16 +92,23 @@ const changeCurCardData = (data: CardView) => {
         :show-mask="false"
         style="box-shadow: 0 8px 16px 0 rgba(156, 107, 255, 0.4)"
       >
-        <n-drawer-content title="卡片列表" class="shadow-sm" closable>
+        <n-drawer-content :title="$t('card.cardList')" class="shadow-sm" closable>
           <KanBanCardList v-model:active-type="activeType" />
         </n-drawer-content>
       </n-drawer>
 
       <n-modal v-model:show="showModal">
-        <n-card style="width: 800px" title="模态框" :bordered="false" size="huge" role="dialog" aria-modal="true">
+        <n-card
+          style="width: 800px"
+          :title="$t('card.modalBox')"
+          :bordered="false"
+          size="huge"
+          role="dialog"
+          aria-modal="true"
+        >
           <KanBanCardForm ref="formRef" @update="changeCurCardData" />
           <n-space justify="center">
-            <NButton type="primary" class="text-center" @click="showModal = false">完成</NButton>
+            <NButton type="primary" class="text-center" @click="showModal = false">{{ $t('common.complete') }}</NButton>
           </n-space>
         </n-card>
       </n-modal>

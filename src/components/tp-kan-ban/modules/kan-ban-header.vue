@@ -27,7 +27,7 @@ defineProps<{ saveKanBan: () => Promise<void>; isFullscreen: boolean; toggle: ()
     </div>
     <div class="flex items-center justify-end">
       <n-space align="center">
-        <n-checkbox v-model:checked="responsive">响应式</n-checkbox>
+        <n-checkbox v-model:checked="responsive">{{ $t('card.responsive') }}</n-checkbox>
         <NButton @click="saveKanBan">{{ $t('common.save') }}</NButton>
         <FullScreen
           :full="isFullscreen"

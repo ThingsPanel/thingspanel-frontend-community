@@ -2,9 +2,9 @@
 import { ref } from 'vue';
 import { useAuthStore } from '@/store/modules/auth';
 import { createLogger } from '@/utils/logger';
+import { $t } from '@/locales';
 import { sumData, totalNumber } from '../../../service/api';
 import { GradientBg } from './components';
-import { $t } from '@/locales';
 
 defineOptions({ name: 'NumCard' });
 

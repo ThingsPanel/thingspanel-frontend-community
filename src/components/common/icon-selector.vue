@@ -2,6 +2,7 @@
 import { defineEmits, defineProps, onMounted, ref } from 'vue';
 import { NButton, NIcon } from 'naive-ui';
 import { CaretDownOutline, CaretUpOutline } from '@vicons/ionicons5';
+import { $t } from '@/locales';
 import { icons } from './icons';
 
 const emit = defineEmits(['iconSelected']);
@@ -44,11 +45,11 @@ onMounted(() => {
 <template>
   <div>
     <div class="icon-display">
-      <span>选中图标：</span>
+      <span>{{ $t('card.selectedIcon') }}：</span>
       <NIcon v-if="selectedIcon" size="30" :component="selectedIcon" />
-      <span v-else>未选择</span>
+      <span v-else>{{ $t('card.notSelected') }}</span>
       <NButton class="icon-picker-btn" @click="toggleExpand">
-        {{ isExpanded ? '收起' : '展开' }}
+        {{ isExpanded ? $t('card.collapse') : $t('card.expand') }}
         <template #icon>
           <NIcon>
             <component :is="isExpanded ? CaretUpOutline : CaretDownOutline" />

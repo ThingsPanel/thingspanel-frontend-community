@@ -1,7 +1,7 @@
 import { defineAsyncComponent } from 'vue';
 import type { ICardDefine } from '@/components/panel/card';
-import poster from './access.png';
 import { $t } from '@/locales';
+import poster from './access.png';
 
 export default {
   id: 'access-num',

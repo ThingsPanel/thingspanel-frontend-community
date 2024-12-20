@@ -1,13 +1,14 @@
 import { defineAsyncComponent } from 'vue';
 import poster from '@/components/panel/chart-card/demo/poster.png';
 import type { ICardDefine } from '@/components/panel/card';
+import { $t } from '@/locales';
 
 export default {
   id: 'chart-demo',
   type: 'chart',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: '数字指示器',
+  title: $t('card.digitalIndicator'),
   configForm: defineAsyncComponent(() => import('./card-config.vue')),
   preset: {
     dataSource: {

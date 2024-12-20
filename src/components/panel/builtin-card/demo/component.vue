@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { ICardData } from '@/components/panel/card';
+import { $t } from '@/locales';
 
 defineProps<{
   card: ICardData;
@@ -7,5 +8,8 @@ defineProps<{
 </script>
 
 <template>
-  <div>测试：{{ card.type }} 用户名：{{ card.config?.username }}。 年龄：{{ card.config?.age }}</div>
+  <div>
+    {{ $t('common.test') }} ：{{ card.type }} {{ $t('generate.username') }} ：{{ card.config?.username }}。
+    {{ $t('generate.age') }}：{{ card.config?.age }}
+  </div>
 </template>

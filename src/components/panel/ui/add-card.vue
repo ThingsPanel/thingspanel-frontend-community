@@ -339,7 +339,7 @@ onMounted(() => {
       </div>
       <div :class="'h-full flex-center justify-center border-r bg-[#f6f9f8] p-2 overflow-hidden ' + widths[1]">
         <div v-if="!state.curCardData?.cardId" class="mt-32">
-          <NEmpty description="请选择要添加的卡片"></NEmpty>
+          <NEmpty :description="$t('card.selectCard')"></NEmpty>
         </div>
         <div
           v-if="state.curCardData?.cardId"
