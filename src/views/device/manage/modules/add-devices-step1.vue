@@ -46,7 +46,7 @@ function handleValidateClick(e: MouseEvent) {
     <n-card :bordered="false">
       <n-form ref="formRef" :label-width="80" :model="formValue" :rules="rules" size="small">
         <n-form-item :label="$t('custom.devicePage.deviceName')" path="name">
-          <n-input v-model:value="formValue.name" :placeholder="() => $t('custom.devicePage.inputDeviceName')" />
+          <n-input v-model:value="formValue.name" :placeholder="$t('custom.devicePage.inputDeviceName')" />
         </n-form-item>
         <n-form-item :label="$t('custom.devicePage.label')" path="label">
           <n-dynamic-tags v-model:value="formValue.label" />
@@ -54,7 +54,7 @@ function handleValidateClick(e: MouseEvent) {
         <n-form-item :label="$t('custom.devicePage.deviceConfig')" path="device_config_id">
           <n-select
             v-model:value="formValue.device_config_id"
-            :placeholder="() => $t('custom.devicePage.selectDeviceConfig')"
+            :placeholder="$t('custom.devicePage.selectDeviceConfig')"
             label-field="name"
             value-field="id"
             :options="configOptions"
