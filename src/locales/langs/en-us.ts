@@ -1575,7 +1575,12 @@ const local: App.I18n.Schema = {
     loopControl: 'Loop control',
     deviceConnected: 'Device is connected',
     toDeviceDetailPage: 'Click to enter the device details page',
-    deviceDisconnected: 'Device is disconnected'
+    deviceDisconnected: 'Device is disconnected',
+    pwdRuleReset:
+      'For the security of your account, your password should be at least 8 characters long and contain letters, numbers and symbols. Please reset your password.',
+    resetPwd: 'For your account security, please reset your password.',
+    dupCardId: 'Duplicate Kanban card, id: ',
+    resourceNotExist: "Resource doesn't exist"
   }
 };
 

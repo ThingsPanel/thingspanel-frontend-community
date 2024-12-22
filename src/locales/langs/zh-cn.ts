@@ -1571,7 +1571,11 @@ const local: App.I18n.Schema = {
     loopControl: '循环控制',
     deviceConnected: '设备已连接',
     toDeviceDetailPage: '点击进入设备详情页面',
-    deviceDisconnected: '设备断开连接'
+    deviceDisconnected: '设备断开连接',
+    pwdRuleReset: '为了您的账户安全，密码应至少8位且包含字母、数字及符号，请重新设置密码。',
+    resetPwd: '为了您的账户安全，请重新设置密码。',
+    dupCardId: '重复的看板卡片，id: ',
+    resourceNotExist: '资源不存在'
   }
 };
 
