@@ -177,7 +177,7 @@ const selectConfig = v => {
 <template>
   <div class="flex-col gap-16px p-t-10px">
     <div class="flex items-center">
-      <div>配置模版：</div>
+      <div>{{ $t('card.configTemplate') }}：</div>
       <NSelect
         v-model:value="selectedValues"
         filterable

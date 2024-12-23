@@ -2,6 +2,7 @@
 import { ref, watchEffect } from 'vue';
 import type { SelectMixedOption } from 'naive-ui/es/select/src/interface';
 import { find } from 'lodash';
+import { $t } from '@/locales';
 const rules = ref({});
 
 const protocol_config = defineModel<any>('protocolConfig', { default: {} });
@@ -95,9 +96,9 @@ const onCreate = () => {
                   <span v-if="subElement?.validate?.required" class="text-[#FF3838]">*</span>
 
                   {{ subElement.label }}
-                  <span>{{ subElement?.validate?.required ? '(必填)' : '(非必填)' }}</span>
+                  <span>{{ subElement?.validate?.required ? $t('card.required') : $t('card.notRequired') }}</span>
                 </n-ellipsis>
-                <div class="mr-20px min-w-[68px] w-[68px] "></div>
+                <div class="mr-20px min-w-[68px] w-[68px]"></div>
               </div>
               <n-dynamic-input
                 v-model:value="protocol_config[element.dataKey]"

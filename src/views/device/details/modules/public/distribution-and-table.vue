@@ -269,7 +269,7 @@ const inputFeedback = computed(() => {
               @update:value="selectVal"
             />
             <NButton type="primary" class="selectBtn" @click="selectBtn">
-              {{ isTextArea ? '从已有标识符里选择' : '手动输入' }}
+              {{ isTextArea ? $t('card.selectFromExisting') : $t('card.manualInput') }}
             </NButton>
             <!-- <span class="ml-4 mr-4">{{ $t('generate.or') }}</span> -->
           </NFormItem>
@@ -277,7 +277,7 @@ const inputFeedback = computed(() => {
             <NInput v-model:value="textValue" type="textarea" />
           </NFormItem>
           <div v-else>
-            <div v-if="commandValue !== ''" class="title">参数</div>
+            <div v-if="commandValue !== ''" class="title">{{ $t('common.param') }}</div>
             <div v-for="item in paramsData" :key="item.id" class="form_box">
               <div class="form_table">
                 <NFormItem :label="item.data_name" label-placement="left" label-width="80px" label-align="left">

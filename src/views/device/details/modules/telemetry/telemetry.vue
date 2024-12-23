@@ -127,13 +127,13 @@ const columns = [
     title: $t('custom.device_details.operationType'),
     key: 'operation_type',
     minWidth: '140px',
-    render: row => (row.operation_type === '1' ? $t('custom.device_details.manualOperation') : '触发操作')
+    render: row => (row.operation_type === '1' ? $t('custom.device_details.manualOperation') : $t('card.triggerAction'))
   },
   {
     title: $t('custom.device_details.operationUsers'),
     minWidth: '140px',
     key: 'username',
-    render: row => (row.operation_type === '1' ? row.username : '系统')
+    render: row => (row.operation_type === '1' ? row.username : $t('generate.system'))
   },
   {
     title: $t('custom.device_details.operationTime'),
