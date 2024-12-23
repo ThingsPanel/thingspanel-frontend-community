@@ -574,7 +574,7 @@ onMounted(() => {
 
 <template>
   <div class="scene-edit">
-    <NCard :bordered="false" :title="`${configId ? $t('common.edit') : $t('common.add')}场景`">
+    <NCard :bordered="false" :title="`${configId ? $t('card.editScene') : $t('card.addScene')}`">
       <NForm
         ref="configFormRef"
         :model="configForm"

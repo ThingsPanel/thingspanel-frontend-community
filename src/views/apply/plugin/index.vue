@@ -14,15 +14,15 @@ const pageData = ref<any>({
   tableData: [],
   options: [
     {
-      label: '全部',
+      label: $t('generate.all'),
       value: ''
     },
     {
-      label: '接入协议',
+      label: $t('card.accessProtocol'),
       value: 1
     },
     {
-      label: '接入服务',
+      label: $t('card.accessService'),
       value: 2
     }
   ]
@@ -67,32 +67,32 @@ const config: (row: any) => void = async row => {
 };
 const columns: any = ref([
   {
-    title: '插件名称',
+    title: $t('card.pluginName'),
     key: 'name',
     minWidth: '200px'
   },
   {
-    title: '类别',
+    title: $t('card.type'),
     key: 'service_type',
     minWidth: '140px',
     align: 'center',
     render: row => {
       if (row.service_type) {
-        return <span>{row.service_type === 1 ? '接入协议' : '接入服务'}</span>;
+        return <span>{row.service_type === 1 ? $t('card.accessProtocol') : $t('card.accessService')}</span>;
       }
       return <span></span>;
     }
   },
   {
-    title: '描述',
+    title: $t('card.description'),
     key: 'description'
   },
   {
-    title: '版本',
+    title: $t('card.version'),
     key: 'version'
   },
   {
-    title: '状态',
+    title: $t('generate.status'),
     key: 'service_heartbeat',
     minWidth: '140px',
     align: 'center',
@@ -100,7 +100,7 @@ const columns: any = ref([
       if (row.service_heartbeat) {
         return (
           <NTag type={row.service_heartbeat === 1 ? 'success' : 'error'}>
-            {row.service_heartbeat === 1 ? '运行中' : '已停止'}
+            {row.service_heartbeat === 1 ? $t('card.running') : $t('card.stopped')}
           </NTag>
         );
       }
@@ -167,10 +167,10 @@ getList();
         <n-select
           v-model:value="queryInfo.service_type"
           class="selectType"
-          placeholder="选择歌曲"
+          :placeholder="$t('card.selectSong')"
           :options="pageData.options"
         />
-        <NButton type="primary" @click="addData">添加新插件</NButton>
+        <NButton type="primary" @click="addData">{{ $t('card.addNewPlugin') }}</NButton>
       </div>
       <div class="h">
         <NDataTable

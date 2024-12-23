@@ -12,9 +12,9 @@ import { $t } from '@/locales';
         </NCard>
         <NCard :title="$t('generate.size')">
           <p class="pb-16px">
-            <span>卡片有</span>
+            <span>{{ $t('card.cardHas') }}</span>
             small、medium、large、huge
-            <span>尺寸</span>
+            <span>{{ $t('card.size') }}</span>
             。
           </p>
           <NSpace vertical>
@@ -26,7 +26,7 @@ import { $t } from '@/locales';
         </NCard>
         <NCard :title="$t('generate.text-button')">
           <p class="pb-16px">
-            content 和 footer 可以被 hard 或 soft 分段，action 可以被分段。分段分割线会在区域的上方出现。
+            {{ $t('card.contentFooter') }}
           </p>
           <NCard
             :title="$t('generate.card-segment-example')"

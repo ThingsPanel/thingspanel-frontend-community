@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from '@/locales';
 import { GradientBg } from './components';
 
 defineOptions({ name: 'DashboardAnalysisDataCard' });
@@ -15,7 +16,7 @@ interface CardData {
 const cardData: CardData[] = [
   {
     id: 'visit',
-    title: '访问量',
+    title: $t('card.visitors'),
     value: 1000000,
     unit: '',
     colors: ['#ec4786', '#b955a4'],
@@ -23,7 +24,7 @@ const cardData: CardData[] = [
   },
   {
     id: 'amount',
-    title: '成交额',
+    title: $t('card.volumeTransaction'),
     value: 234567.89,
     unit: '$',
     colors: ['#865ec0', '#5144b4'],
@@ -31,7 +32,7 @@ const cardData: CardData[] = [
   },
   {
     id: 'download',
-    title: '下载数',
+    title: $t('card.downloads'),
     value: 666666,
     unit: '',
     colors: ['#56cdf3', '#719de3'],
@@ -39,7 +40,7 @@ const cardData: CardData[] = [
   },
   {
     id: 'trade',
-    title: '成交数',
+    title: $t('card.turnover'),
     value: 999999,
     unit: '',
     colors: ['#fcbc25', '#f68057'],
