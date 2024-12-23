@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { NSelect } from 'naive-ui';
 import { batchAddServiceMenuList, getSelectServiceMenuList, getServiceListDrop } from '@/service/api/plugin.ts';
+import { $t } from '@/locales';
 const emit = defineEmits(['getList']);
 
 const router = useRoute();
@@ -70,17 +71,17 @@ const columns: any = ref([
     }
   },
   {
-    title: '设备名称',
+    title: $t('generate.device-name'),
     key: 'device_name',
     minWidth: '200px'
   },
   {
-    title: '设备编号',
+    title: $t('generate.device-number'),
     key: 'device_number',
     minWidth: '400px'
   },
   {
-    title: '设备配置模版',
+    title: $t('card.deviceConfigTemplate'),
     key: 'create_at',
     render: row => {
       return (
@@ -88,7 +89,7 @@ const columns: any = ref([
           v-model:value={row.device_config_id}
           label-field={'name'}
           value-field={'id'}
-          placeholder={'请选择设备类型'}
+          placeholder={$t('card.chooseDeviceType')}
           options={row.options}
         />
       );
@@ -143,7 +144,7 @@ const handleCheck: (rowKeys: any, row: any) => void = (rowKeys, row) => {
     });
     chekeds.value = chekeds.value.filter((val: any) => val);
   } else {
-    window.$message?.error('未设置模板，请设置模板后再勾选');
+    window.$message?.error($t('card.templateNotSet'));
     checkedRowKeys.value = [];
   }
 };
@@ -152,7 +153,7 @@ defineExpose({ openModal });
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModal" preset="dialog" title="配置设备" class="device_model">
+  <n-modal v-model:show="serviceModal" preset="dialog" :title="$t('card.configDevice')" class="device_model">
     <NDataTable
       ref="NTableRef"
       v-model:checked-row-keys="checkedRowKeys"
@@ -166,8 +167,8 @@ defineExpose({ openModal });
       @update:checked-row-keys="handleCheck"
     />
     <div class="footer">
-      <NButton type="primary" class="btn" @click="submitSevice">确认</NButton>
-      <NButton @click="close">取消</NButton>
+      <NButton type="primary" class="btn" @click="submitSevice">{{ $t('common.confirm') }}</NButton>
+      <NButton @click="close">{{ $t('common.cancel') }}</NButton>
     </div>
   </n-modal>
 </template>

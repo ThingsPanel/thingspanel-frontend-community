@@ -6,8 +6,7 @@
 import type { RouteRecordRaw, RouteComponent } from 'vue-router';
 import type { ElegantConstRoute } from '@elegant-router/vue';
 import type { RouteMap, RouteKey, RoutePath } from '@elegant-router/types';
-import { createLogger } from '@/utils/logger'
-const logger = createLogger('Transform')
+
 /**
  * transform elegant const routes to vue routes
  * @param routes elegant const routes
@@ -129,7 +128,7 @@ function transformElegantRouteToVueRoute(
   
     }
   } catch (error: any) {
-    logger.error(`Error transforming route "${route.name}": ${error.toString()}`);
+    console.error(`Error transforming route "${route.name}": ${error.toString()}`);
     return [];
   }
 

@@ -18,7 +18,7 @@ const technology: Technology[] = [
   {
     id: 0,
     name: 'Vue',
-    description: '一套用于构建用户界面的渐进式框架',
+    description: $t('card.vueDesc'),
     author: '尤雨溪 - Evan You',
     site: 'https://v3.cn.vuejs.org/',
     icon: 'logos:vue'
@@ -26,7 +26,7 @@ const technology: Technology[] = [
   {
     id: 1,
     name: 'TypeScript',
-    description: 'JavaScript类型的超集，它可以编译成纯JavaScript',
+    description: $t('card.typeScriptDesc'),
     author: '微软 - Microsoft',
     site: 'https://www.typescriptlang.org/',
     icon: 'logos:typescript-icon'
@@ -34,7 +34,7 @@ const technology: Technology[] = [
   {
     id: 2,
     name: 'Vite',
-    description: '下一代前端开发与构建工具',
+    description: $t('card.viteDesc'),
     author: '尤雨溪 - Evan You',
     site: 'https://vitejs.cn/',
     icon: 'logos:vitejs'
@@ -42,7 +42,7 @@ const technology: Technology[] = [
   {
     id: 3,
     name: 'NaiveUI',
-    description: '一个 Vue 3 组件库',
+    description: $t('card.naviewUIDesc'),
     author: '图森未来 - TuSimple',
     site: 'https://www.naiveui.com/zh-CN/os-theme',
     icon: 'logos:naiveui'
@@ -50,7 +50,7 @@ const technology: Technology[] = [
   {
     id: 4,
     name: 'UnoCSS',
-    description: '下一代实用优先的CSS框架',
+    description: $t('card.UnoCssDesc'),
     author: 'Anthony Fu',
     site: 'https://uno.antfu.me/?s=',
     icon: 'logos:unocss'
@@ -58,7 +58,7 @@ const technology: Technology[] = [
   {
     id: 5,
     name: 'Pinia',
-    description: 'vue状态管理框架，支持vue2、vue3',
+    description: $t('card.piniaDesc'),
     author: 'Posva',
     site: 'https://pinia.esm.dev/',
     icon: 'noto:pineapple'

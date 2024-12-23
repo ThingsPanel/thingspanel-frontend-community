@@ -60,11 +60,11 @@ const buttonExample: ButtonExample[] = [
         label: 'Error'
       }
     ],
-    desc: '按钮的 type 分别为 default、primary、info、success、warning 和 error。'
+    desc: $t('card.buttonTypeDesc')
   },
   {
     id: 1,
-    label: '次要按钮',
+    label: $t('card.secondaryButton'),
     buttons: [
       {
         id: 0,
@@ -140,7 +140,7 @@ const buttonExample: ButtonExample[] = [
   },
   {
     id: 2,
-    label: '次次要按钮',
+    label: $t('card.tertiaryButton'),
     buttons: [
       {
         id: 0,
@@ -206,7 +206,7 @@ const buttonExample: ButtonExample[] = [
   },
   {
     id: 3,
-    label: '次次次要按钮',
+    label: $t('card.subsequentlyButton'),
     buttons: [
       {
         id: 0,
@@ -272,7 +272,7 @@ const buttonExample: ButtonExample[] = [
   },
   {
     id: 4,
-    label: '虚线按钮',
+    label: $t('card.dashLineButton'),
     buttons: [
       {
         id: 0,
@@ -313,45 +313,45 @@ const buttonExample: ButtonExample[] = [
   },
   {
     id: 5,
-    label: '尺寸',
+    label: $t('card.size'),
     buttons: [
       {
         id: 0,
         props: { size: 'tiny', strong: true },
-        label: '小小'
+        label: $t('card.extremeSmall')
       },
       {
         id: 1,
         props: { size: 'small', strong: true },
-        label: '小'
+        label: $t('card.small')
       },
       {
         id: 2,
         props: { size: 'medium', strong: true },
-        label: '不小'
+        label: $t('card.large')
       },
       {
         id: 3,
         props: { size: 'large', strong: true },
-        label: '不不小'
+        label: $t('card.extremeLarge')
       }
     ]
   },
   {
     id: 6,
-    label: '文本按钮',
+    label: $t('card.textButton'),
     buttons: [
       {
         id: 0,
         props: { text: true },
-        label: '那车头依然吐着烟',
+        label: $t('card.carHeadSmoke'),
         icon: 'mdi:train'
       }
     ]
   },
   {
     id: 7,
-    label: '自定义标签按钮',
+    label: $t('card.customButton'),
     buttons: [
       {
         id: 0,
@@ -365,25 +365,25 @@ const buttonExample: ButtonExample[] = [
         label: 'soybean-admin'
       }
     ],
-    desc: '你可以把按钮渲染成不同的标签，比如 a标签 。'
+    desc: $t('card.renderButton')
   },
   {
     id: 8,
-    label: '按钮禁用',
+    label: $t('card.disabledButton'),
     buttons: [
       {
         id: 0,
         props: {
           disabled: true
         },
-        label: '不许点'
+        label: $t('card.dontClick')
       }
     ],
-    desc: '按钮可以被禁用'
+    desc: $t('card.buttonDisabled')
   },
   {
     id: 9,
-    label: '图标按钮',
+    label: $t('card.iconButton'),
     buttons: [
       {
         id: 0,
@@ -391,7 +391,7 @@ const buttonExample: ButtonExample[] = [
           secondary: true,
           strong: true
         },
-        label: '+100元',
+        label: $t('card.rmbYuan'),
         icon: 'mdi:cash-100'
       },
       {
@@ -401,15 +401,15 @@ const buttonExample: ButtonExample[] = [
           secondary: true,
           strong: true
         },
-        label: '+100元',
+        label: $t('card.rmbYuan'),
         icon: 'mdi:cash-100'
       }
     ],
-    desc: '在按钮上使用图标。'
+    desc: $t('card.useIconButton')
   },
   {
     id: 10,
-    label: '不同形状按钮',
+    label: $t('card.differentShapeButton'),
     buttons: [
       {
         id: 0,
@@ -423,19 +423,19 @@ const buttonExample: ButtonExample[] = [
         props: {
           round: true
         },
-        label: '圆角'
+        label: $t('card.roundCorner')
       },
       {
         id: 2,
         props: {},
-        label: '方'
+        label: $t('card.square')
       }
     ],
-    desc: '按钮拥有不同的形状。'
+    desc: $t('card.buttonWithDifferentShape')
   },
   {
     id: 11,
-    label: '透明背景按钮',
+    label: $t('card.transparentBgButton'),
     buttons: [
       {
         id: 0,
@@ -473,11 +473,11 @@ const buttonExample: ButtonExample[] = [
         label: 'Error'
       }
     ],
-    desc: 'Ghost 按钮有透明的背景。'
+    desc: $t('card.ghostButton')
   },
   {
     id: 12,
-    label: '自定义颜色',
+    label: $t('card.customColor'),
     buttons: [
       {
         id: 0,

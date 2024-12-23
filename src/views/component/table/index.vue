@@ -43,7 +43,7 @@ const columns: DataTableColumn<DataSource>[] = [
               handleEdit(row.name);
             }}
           >
-            编辑
+            $t('common.edit')
           </NButton>
           <NPopconfirm
             onPositiveClick={() => {
@@ -52,7 +52,7 @@ const columns: DataTableColumn<DataSource>[] = [
           >
             {{
               default: () => $t('common.confirmDelete'),
-              trigger: () => <NButton size={'small'}>删除</NButton>
+              trigger: () => <NButton size={'small'}>$t('common.delete')</NButton>
             }}
           </NPopconfirm>
         </NSpace>
@@ -70,7 +70,7 @@ function createDataSource(): DataSource[] {
       return {
         name: `Name${index}`,
         age: getRandomInteger(30, 20),
-        address: '中国'
+        address: $t('card.china')
       };
     });
 }

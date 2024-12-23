@@ -106,14 +106,13 @@ onMounted(() => {
     eventSource.onopen = () => {
       tryNum = 0;
     };
-
     eventSource.addEventListener(
       'device_online',
       event => {
         const data = event.data ? JSON.parse(event.data) : {};
         if (data.is_online) {
           window.$notification?.success({
-            title: `${data.device_name}{$t('card.deviceConnected')}`,
+            title: `${data.device_name}${$t('card.deviceConnected')}`,
 
             duration: 5000,
 
@@ -138,7 +137,7 @@ onMounted(() => {
           });
         } else {
           window.$notification?.info({
-            title: `${data.device_name}{$t('card.deviceDisconnected')}`,
+            title: `${data.device_name}${$t('card.deviceDisconnected')}`,
 
             duration: 5000,
             action: () =>

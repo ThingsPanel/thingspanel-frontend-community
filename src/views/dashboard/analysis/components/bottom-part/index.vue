@@ -21,7 +21,7 @@ interface TableData {
 }
 
 const timelines: TimelineData[] = [
-  { type: 'default', title: '啊', content: '', time: '2021-10-10 20:46' },
+  { type: 'default', title: $t('card.ah'), content: '', time: '2021-10-10 20:46' },
   {
     type: 'success',
     title: $t('custom.devicePage.success'),
@@ -30,17 +30,17 @@ const timelines: TimelineData[] = [
   },
   {
     type: 'error',
-    title: '错误',
-    content: '哪里错误',
+    title: $t('card.error'),
+    content: $t('card.whereSuccess'),
     time: '2021-10-10 20:46'
   },
   {
     type: 'warning',
-    title: '警告',
-    content: '哪里警告',
+    title: $t('card.warning'),
+    content: $t('card.whereWarning'),
     time: '2021-10-10 20:46'
   },
-  { type: 'info', title: '信息', content: '是的', time: '2021-10-10 20:46' }
+  { type: 'info', title: $t('card.info'), content: $t('card.yes'), time: '2021-10-10 20:46' }
 ];
 
 const columns = [

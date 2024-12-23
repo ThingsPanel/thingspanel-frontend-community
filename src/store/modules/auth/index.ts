@@ -67,7 +67,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
         const tipFunc = str => {
           dialog.warning({
             content: str,
-            positiveText: '确认',
+            positiveText: $t('common.confirm'),
             onPositiveClick: () => {
               routerPush({
                 path: '/personal-center',
@@ -76,7 +76,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
                 }
               });
             },
-            negativeText: '取消',
+            negativeText: $t('common.cancel'),
             onNegativeClick: async () => {
               await routeStore.initAuthRoute();
               await redirectFromLogin();
@@ -85,9 +85,9 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
         };
 
         if (!validPassword(password)) {
-          tipFunc('为了您的账户安全，密码应至少8位且包含字母、数字及符号，请重新设置密码。');
+          tipFunc($t('card.pwdRuleReset'));
         } else if (!info.password_last_updated || cha > 90) {
-          tipFunc('为了您的账户安全，请重新设置密码。');
+          tipFunc($t('card.resetPwd'));
         } else {
           await routeStore.initAuthRoute();
           await redirectFromLogin();
