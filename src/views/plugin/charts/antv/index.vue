@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue';
 import DataSet from '@antv/data-set';
 import { Chart } from '@antv/g2';
+import { $t } from '@/locales';
 
 const pieRef = ref<HTMLElement>();
 const lineRef = ref<HTMLElement>();
@@ -151,7 +152,7 @@ function renderLineChart() {
         })
         .tooltip(false);
       view1.annotation().text({
-        content: '趋势线',
+        content: $t('custom.plugin.trendLine'),
         position: ['1970', 2500],
         style: {
           fill: '#8c8c8c',
@@ -168,13 +169,13 @@ function renderBarChart() {
   if (!barRef.value) return;
 
   const data = [
-    { type: '未知', value: 654, percent: 0.02 },
-    { type: '17 岁以下', value: 654, percent: 0.02 },
-    { type: '18-24 岁', value: 4400, percent: 0.2 },
-    { type: '25-29 岁', value: 5300, percent: 0.24 },
-    { type: '30-39 岁', value: 6200, percent: 0.28 },
-    { type: '40-49 岁', value: 3300, percent: 0.14 },
-    { type: '50 岁以上', value: 1500, percent: 0.06 }
+    { type: $t('custom.plugin.unknown'), value: 654, percent: 0.02 },
+    { type: $t('custom.plugin.under17'), value: 654, percent: 0.02 },
+    { type: $t('custom.plugin.between1824'), value: 4400, percent: 0.2 },
+    { type: $t('custom.plugin.between2529'), value: 5300, percent: 0.24 },
+    { type: $t('custom.plugin.between3039'), value: 6200, percent: 0.28 },
+    { type: $t('custom.plugin.between4049'), value: 3300, percent: 0.14 },
+    { type: $t('custom.plugin.over50'), value: 1500, percent: 0.06 }
   ];
 
   const chart = new Chart({
@@ -185,7 +186,7 @@ function renderBarChart() {
   });
   chart.data(data);
   chart.scale('value', {
-    alias: '销售额(万)'
+    alias: $t('custom.plugin.sale')
   });
 
   chart.axis('type', {
@@ -246,19 +247,19 @@ function renderScatterChart() {
       // 为各个字段设置别名
       chart.scale({
         LifeExpectancy: {
-          alias: '人均寿命（年）',
+          alias: $t('custom.plugin.lifeExpectancy'),
           nice: true
         },
         Population: {
           type: 'pow',
-          alias: '人口总数'
+          alias: $t('custom.plugin.population')
         },
         GDP: {
-          alias: '人均国内生产总值($)',
+          alias: $t('custom.plugin.gdp'),
           nice: true
         },
         Country: {
-          alias: '国家/地区'
+          alias: $t('custom.plugin.countryRegion')
         }
       });
       chart.axis('GDP', {

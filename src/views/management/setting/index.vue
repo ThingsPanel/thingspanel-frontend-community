@@ -16,7 +16,7 @@ import DataClearSetting from './components/data-clear-setting.vue';
           <NTabPane name="2" :tab="$t('page.manage.setting.dataClearSetting.title')">
             <DataClearSetting></DataClearSetting>
           </NTabPane>
-          <NTabPane name="3" tab="功能设置">
+          <NTabPane name="3" :tab="$t('custom.management.configSetting')">
             <FunctionSetting></FunctionSetting>
           </NTabPane>
         </NTabs>

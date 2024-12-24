@@ -169,7 +169,49 @@ export const pzh_cn: any = {
     messageId: '消息ID',
     titleOrContent: '发送标题和内容',
     attributeDistributionTime: '属性下发时间',
-    sendTime: '发送时间'
+    sendTime: '发送时间',
+    lastUpdate: '最后更新'
+  },
+  management: {
+    uploadFailed: '文件上传失败，请重试',
+    configSetting: '功能设置',
+    lastAccessTime: '上次访问时间',
+    logDetail: '日志详情',
+    account: '账号',
+    username: '用户名',
+    requestTime: '请求耗时',
+    time: '时间',
+    requestPath: '请求路径',
+    requestMethod: '请求方法',
+    ipAddress: 'IP地址',
+    requestContent: '请求内容',
+    responseContent: '响应内容',
+    close: '关闭',
+    all: '全部'
+  },
+  personalCenter: {
+    nameFieldNotEmpty: '姓名不能为空且小于50个字符!'
+  },
+  plugin: {
+    trendLine: '趋势线',
+    unknown: '未知',
+    under17: '17 岁以下',
+    between1824: '18-24 岁',
+    between2529: '25-29 岁',
+    between3039: '30-39 岁',
+    between4049: '40-49 岁',
+    over50: '50 岁以上',
+    sale: '销售额(万)',
+    lifeExpectancy: '人均寿命（年）',
+    population: '人口总数',
+    gdp: '人均国内生产总值($)',
+    countryRegion: '国家/地区',
+    gaodeMap: '高德地图',
+    tencentMap: '腾讯地图',
+    baiduMap: '百度地图'
+  },
+  visualization: {
+    onlyOneHomepage: ' 仅一个看板能被设置到首页，之前设置过的将被替换'
   }
 };
 
@@ -343,6 +385,48 @@ export const pen: any = {
     online: 'online',
     offline: 'offline',
     alarm: 'alarm',
-    noAlarm: 'noAlarm'
+    noAlarm: 'noAlarm',
+    lastUpdate: 'Last update'
+  },
+  management: {
+    uploadFailed: 'File upload failed, please try again',
+    configSetting: 'Configuration settings',
+    lastAccessTime: 'Last access time',
+    logDetail: 'Log detail',
+    account: 'Account',
+    username: 'User name',
+    requestTime: 'Request time',
+    time: 'time',
+    requestPath: 'Request path',
+    requestMethod: 'Request method',
+    ipAddress: 'IP address',
+    requestContent: 'Request content',
+    responseContent: 'Response content',
+    close: 'Close',
+    all: 'All'
+  },
+  personalCenter: {
+    nameFieldNotEmpty: 'The name cannot be empty and must be less than 50 characters.!'
+  },
+  plugin: {
+    trendLine: 'Trend line',
+    unknown: 'Unknown',
+    under17: 'Under 17 years old',
+    between1824: '18-24 years old',
+    between2529: '25-29 years old',
+    between3039: '30-39 years old',
+    between4049: '40-49 years old',
+    over50: 'Over 50 years old',
+    sale: 'Sales (million)',
+    lifeExpectancy: 'Life expectancy (years)',
+    population: 'Population',
+    gdp: 'GDP($)',
+    countryRegion: 'Country/Region',
+    gaodeMap: 'Gaode Map',
+    tencentMap: 'Tencent Map',
+    baiduMap: 'Baidu Map'
+  },
+  visualization: {
+    onlyOneHomepage: 'Only one dashboard can be set to the homepage, the previously set one will be replaced'
   }
 };

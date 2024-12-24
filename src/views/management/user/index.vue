@@ -131,7 +131,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   {
     key: 'lastVisitTime',
     minWidth: '140px',
-    title: () => '上次访问时间',
+    title: () => $t('custom.management.lastAccessTime'),
     align: 'left',
     render: row => dayjs(row.lastVisitTime).format('YYYY-MM-DD HH:mm:ss')
   },
