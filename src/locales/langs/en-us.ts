@@ -395,6 +395,8 @@ const local: App.I18n.Schema = {
         passwordPlaceholder: 'Please enter password',
         confirmPasswordPlaceholder: 'Please enter password again',
         codeLogin: 'Verification code login',
+        codeSent: 'Verification code sent',
+        codeError: 'Verification code sent error',
         confirm: 'Confirm',
         back: 'Back',
         validateSuccess: 'Verification passed',
@@ -420,6 +422,9 @@ const local: App.I18n.Schema = {
       register: {
         title: 'Register',
         agreement: 'I have read and agree to',
+        emailPlaceholder: 'Please input email address',
+        registerSuccess: 'Register successfully',
+        registerError: 'Register failed',
         protocol: '《User Agreement》',
         policy: '《Privacy Policy》'
       },

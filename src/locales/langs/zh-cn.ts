@@ -395,6 +395,8 @@ const local: App.I18n.Schema = {
         passwordPlaceholder: '请输入密码',
         confirmPasswordPlaceholder: '请再次输入密码',
         codeLogin: '验证码登录',
+        codeSent: '验证码已发送',
+        codeError: '验证码发送失败',
         confirm: '确定',
         back: '返回',
         validateSuccess: '验证成功',
@@ -420,6 +422,9 @@ const local: App.I18n.Schema = {
       register: {
         title: '注册账号',
         agreement: '我已经仔细阅读并接受',
+        emailPlaceholder: '请输入邮件地址',
+        registerSuccess: '注册成功',
+        registerError: '注册失败',
         protocol: '《用户协议》',
         policy: '《隐私权政策》'
       },
