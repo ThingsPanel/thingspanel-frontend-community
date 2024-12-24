@@ -10,9 +10,9 @@ interface Map {
 }
 
 const maps: Map[] = [
-  { id: 'gaode', label: '高德地图', component: GaodeMap },
-  { id: 'tencent', label: '腾讯地图', component: TencentMap },
-  { id: 'baidu', label: '百度地图', component: BaiduMap }
+  { id: 'gaode', label: $t('custom.plugin.gaodeMap'), component: GaodeMap },
+  { id: 'tencent', label: $t('custom.plugin.tencentMap'), component: TencentMap },
+  { id: 'baidu', label: $t('custom.plugin.baiduMap'), component: BaiduMap }
 ];
 </script>
 

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { defineExpose, ref } from 'vue';
 import moment from 'moment';
+import { $t } from '@/locales';
 
 const modalVisible = ref(false);
 const detailInfo = ref({
@@ -29,40 +30,40 @@ defineExpose({
 </script>
 
 <template>
-  <NModal v-model:show="modalVisible" preset="card" title="日志详情" class="w-80%">
+  <NModal v-model:show="modalVisible" preset="card" :title="$t('custom.management.logDetail')" class="w-80%">
     <NForm v-model="detailInfo" label-placement="left" label-align="left" label-width="80px">
-      <NFormItem label="账号">
+      <NFormItem :label="$t('custom.management.account')">
         <div class="result">{{ detailInfo.email }}</div>
       </NFormItem>
-      <NFormItem label="用户名">
+      <NFormItem label="$t('custom.management.account')">
         <div class="result">{{ detailInfo.username }}</div>
       </NFormItem>
-      <NFormItem label="请求耗时">
+      <NFormItem :label="$t('custom.management.requestTime')">
         <div class="result">{{ detailInfo.latency }}ms</div>
       </NFormItem>
-      <NFormItem label="时间">
+      <NFormItem :label="$t('custom.management.time')">
         <div class="result">
           {{ moment(detailInfo.created_at).format('YYYY-MM-DD hh:mm:ss') }}
         </div>
       </NFormItem>
-      <NFormItem label="请求路径">
+      <NFormItem :label="$t('custom.management.requestPath')">
         <div class="result">{{ detailInfo.path }}</div>
       </NFormItem>
-      <NFormItem label="请求方法">
+      <NFormItem :label="$t('custom.management.requestMethod')">
         <div class="result">{{ detailInfo.name }}</div>
       </NFormItem>
-      <NFormItem label="IP地址">
+      <NFormItem :label="$t('custom.management.ipAddresst')">
         <div class="result">{{ detailInfo.ip }}</div>
       </NFormItem>
-      <NFormItem label="请求内容">
+      <NFormItem :label="$t('custom.management.requestContent')">
         <NInput v-model:value="detailInfo.request_message" type="textarea" readonly disabled></NInput>
       </NFormItem>
-      <NFormItem label="响应内容">
+      <NFormItem :label="$t('custom.management.responseContent')">
         <NInput v-model:value="detailInfo.response_message" type="textarea" readonly disabled></NInput>
       </NFormItem>
     </NForm>
     <div class="text-right">
-      <NButton @click="closeModal">关闭</NButton>
+      <NButton @click="closeModal">{$t('custom.management.close')}</NButton>
     </div>
   </NModal>
 </template>

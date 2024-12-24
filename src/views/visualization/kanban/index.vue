@@ -218,7 +218,7 @@ onMounted(fetchBoards);
               <template #trigger>
                 <NButton type="primary">{{ $t('common.save') }}</NButton>
               </template>
-              仅一个看板能被设置到首页，之前设置过的将被替换
+              {$t('custom.visualization.onlyOneHomepage')}
             </n-popconfirm>
             <NButton v-if="formData.home_flag === 'N'" type="primary" @click="submitForm">
               {{ $t('common.save') }}

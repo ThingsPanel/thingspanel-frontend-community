@@ -102,7 +102,9 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div class="mb-6 text-sm text-gray-500">最后更新: {{ formatDateTime(deviceData?.ts) || '--' }}</div>
+    <div class="mb-6 text-sm text-gray-500">
+      {{ $t('custom.device_details.lastUpdate') }}: {{ formatDateTime(deviceData?.ts) || '--' }}
+    </div>
 
     <n-divider title-placement="left"></n-divider>
 

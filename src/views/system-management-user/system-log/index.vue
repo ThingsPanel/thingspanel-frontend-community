@@ -16,7 +16,7 @@ const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), m
 // POST PUT DELETE
 const requestMethodOptions = reactive([
   {
-    label: '全部',
+    label: $t('custom.management.all'),
     value: ''
   },
   {

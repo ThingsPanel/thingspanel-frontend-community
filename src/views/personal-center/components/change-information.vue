@@ -122,7 +122,7 @@ const rules: FormRules = {
       required: true,
       validator(rule: FormItemRule, value: string) {
         if (rule && !validName(value)) {
-          return new Error('姓名不能为空且小于50个字符!');
+          return new Error($t('custom.personalCenter.nameFieldNotEmpty'));
         }
         return true;
       },
