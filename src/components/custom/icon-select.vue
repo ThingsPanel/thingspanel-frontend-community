@@ -64,7 +64,7 @@ function handleChange(iconItem: string) {
         />
       </span>
     </div>
-    <NEmpty v-else class="w-306px" description="你什么也找不到" />
+    <NEmpty v-else class="w-306px" :description="$t('card.cannotFound')" />
   </NPopover>
 </template>
 

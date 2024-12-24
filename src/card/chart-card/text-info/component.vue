@@ -2,6 +2,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { ICardData } from '@/components/panel/card';
 import { getAttributeDataSet } from '@/service/api/device';
+import { $t } from '@/locales';
 
 const props = defineProps<{
   card: ICardData;
@@ -71,7 +72,7 @@ defineExpose({
   <div ref="cardRef" class="card-container">
     <div class="card-content" :style="{ fontSize: fontSize }">
       <div class="metric-name">
-        {{ props.card?.dataSource?.deviceSource?.[0]?.metricsName || '固件版本' }}
+        {{ props.card?.dataSource?.deviceSource?.[0]?.metricsName || $t('card.firmVersion') }}
       </div>
       <div class="value-container">
         <span class="value">{{ detail ?? '1.9.2' }}</span>

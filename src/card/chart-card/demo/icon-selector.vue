@@ -1,5 +1,6 @@
 <script>
 import { ref } from 'vue';
+// import { $t } from '@/locales';
 import { icons } from './icons';
 
 export default {
@@ -29,7 +30,7 @@ export default {
 
 <template>
   <div>
-    <span style="vertical-align: middle; line-height: 30px">选中图标：</span>
+    <span style="vertical-align: middle; line-height: 30px">{{ $t('card.selectedIcon') }}:</span>
     <NIcon size="30" :component="selectedIcon" style="vertical-align: middle" />
     <div class="icon-picker-dialog">
       <div class="icon-grid">

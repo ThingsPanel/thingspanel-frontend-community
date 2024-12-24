@@ -472,7 +472,7 @@ onMounted(() => {
     <div class="w-full flex flex-row flex-wrap">
       <div class="time-range flex flex-col items-center">
         <div class="w-full flex flex-row items-center">
-          <span>时间范围：</span>
+          <span>{{ $t('common.timeFrame') }}：</span>
           <NSelect
             v-model:value="selectedOption.time_range"
             :options="timeOptions"
@@ -496,16 +496,16 @@ onMounted(() => {
           />
         </div>
         <div class="mt-2 w-full flex flex-row flex-wrap justify-between pl-72px">
-          <NButton @click="navigateTime('prevMonth')">上一月</NButton>
-          <NButton @click="navigateTime('prevDay')">前一天</NButton>
-          <NButton @click="navigateTime('prevHour')">前一小时</NButton>
-          <NButton @click="navigateTime('nextHour')">后一小时</NButton>
-          <NButton @click="navigateTime('nextDay')">后一天</NButton>
-          <NButton @click="navigateTime('nextMonth')">下一月</NButton>
+          <NButton @click="navigateTime('prevMonth')">{{ $t('card.lastOneMonth') }}</NButton>
+          <NButton @click="navigateTime('prevDay')">{{ $t('card.yesterday') }}</NButton>
+          <NButton @click="navigateTime('prevHour')">{{ $t('card.lastOneHour') }}</NButton>
+          <NButton @click="navigateTime('nextHour')">{{ $t('card.nextOneHour') }}</NButton>
+          <NButton @click="navigateTime('nextDay')">{{ $t('card.tomorrow') }}</NButton>
+          <NButton @click="navigateTime('nextMonth')">{{ $t('card.nextOneMonth') }}</NButton>
         </div>
       </div>
       <div class="aggregation-range flex flex-row pl-2">
-        <span class="pt-1">聚合范围：</span>
+        <span class="pt-1">{{ $t('card.aggregationScope') }}}：</span>
         <NSelect
           v-model:value="selectedOption.aggregate_window"
           :options="aggregationIntervalOptions"
@@ -513,7 +513,9 @@ onMounted(() => {
           class="select-item mr-2"
           @update:value="onAggregationChange"
         />
-        <span v-if="selectedOption.aggregate_window !== 'no_aggregate'" class="pt-1">聚合方法：</span>
+        <span v-if="selectedOption.aggregate_window !== 'no_aggregate'" class="pt-1">
+          {{ $t('card.aggregationMethod') }}：
+        </span>
         <NSelect
           v-if="selectedOption.aggregate_window !== 'no_aggregate'"
           v-model:value="selectedOption.aggregate_function"
@@ -522,7 +524,7 @@ onMounted(() => {
           class="select-item"
           @update:value="onStatisticsChange"
         />
-        <NButton class="ml-auto" @click="exportData()">导出数据</NButton>
+        <NButton class="ml-auto" @click="exportData()">{{ $t('card.exportData') }}</NButton>
       </div>
     </div>
     <div class="container-table-chart">
@@ -541,9 +543,9 @@ onMounted(() => {
           <FullScreen v-if="!isFullscreen" :full="isFullscreen" @click="toggle" />
         </div>
         <div class="flex flex-row justify-between pl-4 pr-4 font-bold">
-          <span>平均值：{{ avgValue !== undefined ? avgValue.toFixed(2) : '-' }}</span>
-          <span>最大值：{{ maxValue !== undefined ? maxValue : '-' }}</span>
-          <span>最小值：{{ minValue !== undefined ? minValue : '-' }}</span>
+          <span>{{ $t('card.average') }}：{{ avgValue !== undefined ? avgValue.toFixed(2) : '-' }}</span>
+          <span>{{ $t('card.maxValue') }}：{{ maxValue !== undefined ? maxValue : '-' }}</span>
+          <span>{{ $t('card.minValue') }}：{{ minValue !== undefined ? minValue : '-' }}</span>
         </div>
       </div>
     </div>

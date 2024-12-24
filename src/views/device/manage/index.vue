@@ -261,9 +261,9 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'service_identifier',
-    label: '不限协议/服务',
+    label: $t('card.anyProtocolService'),
     type: 'select',
-    options: [{ label: '不限协议/服务', value: '' }]
+    options: [{ label: $t('card.anyProtocolService'), value: '' }]
   },
   {
     key: 'search',
@@ -322,16 +322,16 @@ const fetchFirstLevelOptions = async () => {
   searchConfigs.value.map((item: any) => {
     if (item.key === 'service_identifier') {
       item.options = [
-        { label: '不限协议/服务', value: '' },
+        { label: $t('card.anyProtocolService'), value: '' },
         {
           type: 'group',
-          label: '协议',
+          label: $t('common.protocol'),
           key: 'protocol',
           children: [...protocolOptions]
         },
         {
           type: 'group',
-          label: '服务',
+          label: $t('common.service'),
           key: 'service',
           children: [...serviceOptions]
         }

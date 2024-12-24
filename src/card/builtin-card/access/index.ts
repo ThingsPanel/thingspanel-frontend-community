@@ -1,12 +1,14 @@
 import { defineAsyncComponent } from 'vue';
 import type { ICardDefine } from '@/components/panel/card';
+import { $t } from '@/locales';
 import poster from './access.png';
+
 export default {
   id: 'access-num',
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: '访问量',
+  title: $t('card.accessQuantity'),
   preset: {
     iCardViewDefault: {
       w: 3,

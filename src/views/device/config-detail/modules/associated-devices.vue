@@ -125,7 +125,7 @@ const handleDelete = async row => {
     // device_config_id: queryData.value.device_config_id
     device_config_id: ''
   });
-  message.success('移除成功');
+  message.success($t('card.removeSuccess'));
   getDeviceList();
 };
 

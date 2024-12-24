@@ -51,17 +51,17 @@ export const routeComponentTypeOptions = transformObjectToOption(routeComponentT
 
 /** 路由管理 - 路由类型 */
 export const routerTypeLabels: Record<CustomRoute.routerTypeKey, string> = {
-  1: '菜单',
+  1: $t('card.menu'),
   // 2: '目录',
-  3: '路由'
+  3: $t('card.route')
   // 4: '按钮',
   // 5: '隐藏'
 };
 export const routeTypeOptions = transformObjectToOption(routerTypeLabels);
 /** 路由管理 - 访问标识 */
 export const routerSysFlagLabels: Record<CustomRoute.routerSysFlagKey, string> = {
-  SYS_ADMIN: '系统管理员',
-  TENANT_ADMIN: '租户管理员'
+  SYS_ADMIN: $t('card.systemAdmin'),
+  TENANT_ADMIN: $t('card.tenantAdmin')
 };
 
 export const routeSysFlagOptions = transformObjectToOption(routerSysFlagLabels);
@@ -82,8 +82,8 @@ export const serviceManagementProtocolTypeOptions = transformObjectToOption(serv
 
 /** 规则引擎状态状态 */
 export const ruleEngineStatusLabels: Record<RuleEngine.StatusKey, string> = {
-  1: '已启动',
-  2: '已暂停'
+  1: $t('card.started'),
+  2: $t('card.paused')
 };
 export const ruleEngineStatusOptions = transformObjectToOption(ruleEngineStatusLabels);
 
@@ -97,15 +97,15 @@ export const dataServiceSignModeOptions = transformObjectToOption(dataServiceSig
 
 /** 数据服务-接口支持标志 */
 export const dataServiceFlagLabels: Record<DataService.FlagKey, string> = {
-  1: 'http接口',
-  2: 'http和ws接口'
+  1: $t('card.httpInterface'),
+  2: $t('card.httpwsInterface')
 };
 export const dataServiceFlagOptions = transformObjectToOption(dataServiceFlagLabels);
 
 /** 数据服务-状态 */
 export const dataServiceStatusLabels: Record<DataService.StatusKey, string> = {
-  1: '已启动',
-  2: '已停止'
+  1: $t('card.started'),
+  2: $t('card.stopped')
 };
 export const dataServiceStatusOptions = transformObjectToOption(dataServiceStatusLabels);
 
@@ -125,8 +125,8 @@ export const dataClearSettingEnabledTypeOptions = transformObjectToOption(dataCl
 
 /** 系统管理 - 常规设置 - 数据清理 清理类型 */
 export const dataClearSettingCleanupTypeLabels: Record<GeneralSetting.CleanupTypeKey, string> = {
-  1: '设备数据',
-  2: '操作日志'
+  1: $t('card.deviceData'),
+  2: $t('card.operationLog')
 };
 
 export const signModeOptions = [
@@ -146,28 +146,28 @@ export const packageOptions = [
 ];
 
 export const memberNotificationLabels: Record<CustomRoute.routerSysFlagKey, string> = {
-  EMAIL: '邮箱通知',
-  SME: '短信通知',
-  VOICE: '语音通知'
+  EMAIL: $t('card.emailNotice'),
+  SME: $t('card.smsNotice'),
+  VOICE: $t('card.voicemailNotice')
 };
 
 export const MemberNotificationOptions = transformObjectToOption(memberNotificationLabels);
 
 export const notificationOptions = [
   {
-    label: '成员通知',
+    label: $t('card.memberNotice'),
     value: 'MEMBER'
   },
   {
-    label: '邮箱通知',
+    label: $t('card.emailNotice'),
     value: 'EMAIL'
   },
   {
-    label: '短信通知',
+    label: $t('card.smsNotice'),
     value: 'SME'
   },
   {
-    label: '语音通知',
+    label: $t('card.voicemailNotice'),
     value: 'VOICE'
   },
   {
@@ -178,23 +178,23 @@ export const notificationOptions = [
 
 /** 灌溉计划-计划状态 */
 export const irrigationPlanStatus: Record<DataService.FlagKey, string> = {
-  ISS: '已下发',
-  PND: '待下发 ',
-  CNL: '已取消'
+  ISS: $t('card.issued'),
+  PND: $t('card.toBeIssued'),
+  CNL: $t('card.cancelled')
 };
 export const irrigationPlanStatusOption = transformObjectToOption(irrigationPlanStatus);
 
 /** 灌溉计划-控制类型 */
 export const irrigationControlType: Record<DataService.FlagKey, string> = {
   A: $t('page.irrigation.duration'),
-  B: '容量 '
+  B: $t('card.capacity')
 };
 export const irrigationControlTypeOption = transformObjectToOption(irrigationControlType);
 
 /** 灌溉计划-控制模式 */
 export const irrigationScheduleType: Record<DataService.FlagKey, string> = {
-  A: '单次控制',
-  B: '循环控制 '
+  A: $t('card.singleControl'),
+  B: $t('card.loopControl')
 };
 export const irrigationScheduleTypeOption = transformObjectToOption(irrigationScheduleType);
 

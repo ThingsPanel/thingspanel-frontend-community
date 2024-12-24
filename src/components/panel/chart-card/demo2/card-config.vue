@@ -39,7 +39,7 @@ const options = [
 
 <template>
   <NForm :model="ctx.config">
-    <NFormItem label="选择icon">
+    <NFormItem :label="$t('card.selectIcon')">
       <NSelect v-model:value="ctx.config.times" multiple :options="options" />
     </NFormItem>
     <NFormItem :label="$t('generate.color')">

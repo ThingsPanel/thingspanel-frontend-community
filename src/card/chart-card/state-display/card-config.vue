@@ -26,16 +26,16 @@ onMounted(() => {
 <template>
   <div>
     <NForm :model="ctx.config">
-      <NFormItem :label="$t('状态开图标')">
+      <NFormItem :label="$t('generate.stateOnIcon')">
         <IconSelector default-icon="BulbOutline" @icon-selected="setActiveIcon" />
       </NFormItem>
-      <NFormItem :label="$t('状态开颜色')">
+      <NFormItem :label="$t('generate.stateOnColor')">
         <NColorPicker v-model:value="ctx.config.activeColor" :show-alpha="false" />
       </NFormItem>
-      <NFormItem :label="$t('状态关图标')">
+      <NFormItem :label="$t('generate.stateOffIcon')">
         <IconSelector default-icon="Bulb" @icon-selected="setInactiveIcon" />
       </NFormItem>
-      <NFormItem :label="$t('状态关颜色')">
+      <NFormItem :label="$t('generate.stateOffColor')">
         <NColorPicker v-model:value="ctx.config.inactiveColor" :show-alpha="false" />
       </NFormItem>
       <div class="title">{{ $t('generate.set-default-device-open-status') }}</div>

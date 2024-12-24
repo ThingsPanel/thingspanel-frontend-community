@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { NSlider } from 'naive-ui';
 import type { ICardData } from '@/components/panel/card';
+import { $t } from '@/locales';
 import {
   attributeDataPub,
   getAttributeDataSet,
@@ -129,7 +130,7 @@ defineExpose({
       </div>
       <NSlider v-model:value="detail" :min="min" :max="max" :step="step" @update:value="updateValue" />
       <div class="metric-name">
-        {{ props.card?.dataSource?.deviceSource?.[0]?.metricsName || '设备1' }}
+        {{ props.card?.dataSource?.deviceSource?.[0]?.metricsName || $t('generate.device') + '1' }}
       </div>
     </div>
   </div>

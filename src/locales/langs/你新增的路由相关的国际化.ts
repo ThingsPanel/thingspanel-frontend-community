@@ -153,5 +153,6 @@ export const cen = {
   'new-area': 'New Area',
   'automation_scene-edit': `场景编辑`,
   'test_kan-ban-details-test': 'test_kan-ban-details-test',
-  'test_kan-ban-test': 'test_kan-ban-test'
+  'test_kan-ban-test': 'test_kan-ban-test',
+  device_service_access: 'Service access'
 };

@@ -1,5 +1,6 @@
 import JSEncrypt from 'jsencrypt';
 import { STATIC_BASE_URL } from '@/constants/common';
+import { $t } from '@/locales';
 import { createServiceConfig } from '~/env.config';
 import { rsaPublicKey } from '~/rsa.js';
 
@@ -28,7 +29,7 @@ export function typeOf(obj: any): any {
  */
 export const getStaticUrl = (url: string, showError: boolean = true): string => {
   if (!url) {
-    if (showError) window.NMessage.error('资源不存在');
+    if (showError) window.NMessage.error($t('card.resourceNotExist'));
     return '';
   }
   return url.replace('.', STATIC_BASE_URL);

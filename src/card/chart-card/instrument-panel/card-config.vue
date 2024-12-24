@@ -12,10 +12,10 @@ const ctx = inject<IConfigCtx>('config-ctx')!;
       <NInput v-model:value="ctx.config.unit" :placeholder="$t('device_template.table_header.pleaseEnterTheUnit')" />
     </NFormItem>
     <NFormItem :label="$t('generate.min-value')">
-      <NInputNumber v-model:value="ctx.config.min" :placeholder="`请输入${$t('generate.min-value')}`" />
+      <NInputNumber v-model:value="ctx.config.min" :placeholder="$t('generate.InputMinValue')" />
     </NFormItem>
     <NFormItem :label="$t('generate.max-value')">
-      <NInputNumber v-model:value="ctx.config.max" :placeholder="`请输入${$t('generate.max-value')}`" />
+      <NInputNumber v-model:value="ctx.config.max" :placeholder="$t('generate.inputMaxValue')" />
     </NFormItem>
   </NForm>
 </template>

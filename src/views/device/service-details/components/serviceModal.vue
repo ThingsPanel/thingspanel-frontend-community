@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 // import { useMessage } from "naive-ui";
 import { createServiceDrop, getServiceAccessForm, putServiceDrop } from '@/service/api/plugin.ts';
+import { $t } from '@/locales';
 import FormInput from './form.vue';
 
 // const message = useMessage();
@@ -65,7 +66,13 @@ defineExpose({ openModal });
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModals" preset="dialog" title="新增接入点" class="w" @after-leave="close">
+  <n-modal
+    v-model:show="serviceModals"
+    preset="dialog"
+    :title="$t('card.addNewAccessPoint')"
+    class="w"
+    @after-leave="close"
+  >
     <n-form
       ref="formRef"
       :model="form"
@@ -74,7 +81,7 @@ defineExpose({ openModal });
       label-width="auto"
       require-mark-placement="right-hanging"
     >
-      <n-form-item label="接入点名称" path="name">
+      <n-form-item :label="$t('card.accessPointName')" path="name">
         <n-input v-model:value="form.name" placeholder="请输入接入点名称" />
       </n-form-item>
     </n-form>
@@ -82,8 +89,8 @@ defineExpose({ openModal });
       <FormInput v-model:protocol-config="form.vouchers" :form-elements="formElements"></FormInput>
     </div>
     <div class="footer">
-      <NButton type="primary" class="btn" @click="submitSevice">保存并下一步</NButton>
-      <NButton @click="close">取消</NButton>
+      <NButton type="primary" class="btn" @click="submitSevice">{{ $t('card.saveNext') }}</NButton>
+      <NButton @click="close">{{ $t('common.cancel') }}</NButton>
     </div>
   </n-modal>
 </template>

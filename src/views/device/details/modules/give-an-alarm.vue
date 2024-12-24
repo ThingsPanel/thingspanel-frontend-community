@@ -241,8 +241,8 @@ onMounted(() => {
             </div>
           </div>
         </div>
-        <div v-if="loading" class="text">加载中...</div>
-        <div v-if="noMore" class="text">没有更多了</div>
+        <div v-if="loading" class="text">{{ $t('card.loading') }}</div>
+        <div v-if="noMore" class="text">{{ $t('card.noMore') }}</div>
       </n-infinite-scroll>
       <n-empty
         v-if="alarmHistory.length === 0"

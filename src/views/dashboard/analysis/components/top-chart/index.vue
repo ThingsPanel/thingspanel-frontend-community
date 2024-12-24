@@ -12,7 +12,7 @@ defineOptions({ name: 'DashboardAnalysisTopCard' });
       <NCard :bordered="false" class="rounded-8px shadow-sm">
         <div class="h-360px w-full py-12px">
           <h3 class="text-16px font-bold">Dashboard</h3>
-          <p class="text-#aaa">上月概览</p>
+          <p class="text-#aaa">{{ $t('card.lastMonthOverview') }}</p>
           <h3 class="pt-32px text-24px font-bold">
             <CountTo prefix="$" :start-value="0" :end-value="7754" />
           </h3>
