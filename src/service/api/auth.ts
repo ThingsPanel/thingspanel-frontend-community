@@ -32,6 +32,15 @@ export function fetchSmsCode(phone: string) {
   });
 }
 
+export function fetchEmailCode(email: string) {
+  return request.get<{ email: string; is_register: number } | null>('/verification/code', {
+    params: {
+      email,
+      is_register: 1
+    }
+  });
+}
+
 /** 获取用户列表 */
 export const fetchUserList = async (params: any) => {
   const data = await request.get<Api.UserManagement.Data | null>('/user', {
@@ -71,3 +80,18 @@ export const fetchHomeData = async (params: any) => {
   });
   return data;
 };
+
+export function registerByEmail(data: {
+  email: string; // 邮箱
+  verify_code: string; // 邮箱验证码
+  password: string; // 用户密码
+  confirm_password: string; // 确认密码
+  phone_prefix: string; // 手机前缀
+  phone_number: string; // 手机号码
+}) {
+  return request.post('/tenant/email/register', data, {
+    headers: {
+      'Content-Type': 'application/json' // 设置请求体类型为 application/json
+    }
+  });
+}

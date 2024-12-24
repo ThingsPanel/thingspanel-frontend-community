@@ -98,7 +98,7 @@ onMounted(() => {
         <NButton v-if="showYzm" class="flex-1" block @click="toggleLoginModule('code-login')">
           {{ $t(loginModuleRecord['code-login']) }}
         </NButton>
-        <NButton v-if="showZc" class="flex-1" block @click="toggleLoginModule('register')">
+        <NButton v-if="showZc" class="flex-1" block @click="toggleLoginModule('register-email')">
           {{ $t(loginModuleRecord.register) }}
         </NButton>
       </div>

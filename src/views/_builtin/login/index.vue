@@ -10,6 +10,7 @@ import { useSysSettingStore } from '@/store/modules/sys-setting';
 import PwdLogin from './modules/pwd-login.vue';
 import CodeLogin from './modules/code-login.vue';
 import Register from './modules/register.vue';
+import RegisterByEmail from './modules/register-email.vue';
 import ResetPwd from './modules/reset-pwd.vue';
 import BindWechat from './modules/bind-wechat.vue';
 import LoginBg from './modules/login-bg.vue';
@@ -37,6 +38,7 @@ const modules: LoginModule[] = [
   { key: 'pwd-login', label: loginModuleRecord['pwd-login'], component: PwdLogin },
   { key: 'code-login', label: loginModuleRecord['code-login'], component: CodeLogin },
   { key: 'register', label: loginModuleRecord.register, component: Register },
+  { key: 'register-email', label: loginModuleRecord.register, component: RegisterByEmail },
   { key: 'reset-pwd', label: loginModuleRecord['reset-pwd'], component: ResetPwd },
   { key: 'bind-wechat', label: loginModuleRecord['bind-wechat'], component: BindWechat }
 ];

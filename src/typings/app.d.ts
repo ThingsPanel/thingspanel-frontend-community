@@ -551,6 +551,8 @@ declare namespace App {
             passwordPlaceholder: string;
             confirmPasswordPlaceholder: string;
             codeLogin: string;
+            codeSent: string;
+            codeError: string;
             confirm: string;
             back: string;
             validateSuccess: string;
@@ -576,6 +578,9 @@ declare namespace App {
           register: {
             title: string;
             agreement: string;
+            emailPlaceholder: string;
+            registerSuccess: string;
+            registerError: string;
             protocol: string;
             policy: string;
           };
