@@ -1,0 +1,106 @@
+# ThingsPanel Docker 镜像自动构建工作流
+#
+# 功能说明:
+# 1. 自动构建 Docker 镜像并推送到三个镜像仓库:
+#    - DockerHub (thingspanel/thingspanel-go)
+#    - GitHub Container Registry (ghcr.io)
+#    - 极狐容器镜像仓库 (registry.jihulab.com)
+#
+# 触发方式:
+# - Release触发: 当创建或更新 Release 时自动触发构建
+# - 手动触发: 可以通过 GitHub Actions 页面手动触发
+#
+# 版本号处理:
+# - Release 触发: 使用 Release 的 tag 作为版本号
+# - 手动触发: 使用最新的 tag 作为版本号
+# - 无 tag 时: 使用 'latest' 作为版本号
+#
+# 必需的 Secrets:
+# - DOCKERHUB_USERNAME: DockerHub 用户名
+# - DOCKERHUB_TOKEN: DockerHub 访问令牌
+# - GITHUB_TOKEN: GitHub 访问令牌 (自动提供)
+# - JH_USER: 极狐仓库用户名
+# - JH_PASS: 极狐仓库密码
+
+name: Docker Image Build
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.17]
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+      
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+            node-version: ${{ matrix.node-version }}
+
+      - name: Cache pnpm modules
+        uses: actions/cache@v3
+        with:
+            path: ~/.pnpm-store
+            key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+            restore-keys: |
+                ${{ runner.os }}-pnpm-
+
+      - name: Install pnpm
+        run: npm install -g pnpm@8.15.5
+
+      - name: Install dependencies
+        run: pnpm i
+
+      - name: Build with increased memory limit
+        run: pnpm build:4096
+        env:
+          CI: true
+      
+      - name: Create Dockerfile
+        run: |
+            echo 'FROM nginx:latest' > Dockerfile
+            echo 'COPY dist /usr/share/nginx/html/' >> Dockerfile
+            echo 'COPY nginx.conf /etc/nginx/nginx.conf' >> Dockerfile
+            echo 'EXPOSE 8080' >> Dockerfile
+            echo 'ENTRYPOINT ["nginx", "-g", "daemon off;"]' >> Dockerfile
+
+
+      - name: 获取版本号
+        id: get_version
+        run: |
+          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo 'latest')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          # 添加仓库名小写转换
+          echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
+
+      - name: 登录镜像仓库
+        run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+          echo "${{ secrets.JH_PASS }}" | docker login registry.jihulab.com -u ${{ secrets.JH_USER }} --password-stdin
+
+      - name: 设置 Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: 构建并推送到 GitHub/DockerHub
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: |
+            thingspanel/thingspanel-vue:${{ env.VERSION }}
+            ghcr.io/${{ env.OWNER_LC }}/thingspanel-go:${{ env.VERSION }}
+
+      - name: 推送到极狐
+        run: |
+          docker pull ghcr.io/${{ env.OWNER_LC }}/thingspanel-vue:${{ env.VERSION }}
+          docker tag ghcr.io/${{ env.OWNER_LC }}/thingspanel-vue:${{ env.VERSION }} registry.jihulab.com/thingspanel/docker-images/thingspanel-go:${{ env.VERSION }}
+          docker push registry.jihulab.com/thingspanel/docker-images/thingspanel-vue:${{ env.VERSION }}
