@@ -23,28 +23,26 @@
 # - JH_PASS: 极狐仓库密码
 
 name: Docker Image Build
-
 on:
   release:
     types: [published]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         node-version: [18.17]
-
     steps:
       - name: 检出代码
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 添加这行以获取完整的 git 历史和标签
       
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
             node-version: ${{ matrix.node-version }}
-
       - name: Cache pnpm modules
         uses: actions/cache@v3
         with:
@@ -52,13 +50,10 @@ jobs:
             key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
             restore-keys: |
                 ${{ runner.os }}-pnpm-
-
       - name: Install pnpm
         run: npm install -g pnpm@8.15.5
-
       - name: Install dependencies
         run: pnpm i
-
       - name: Build with increased memory limit
         run: pnpm build:4096
         env:
@@ -71,8 +66,6 @@ jobs:
             echo 'COPY nginx.conf /etc/nginx/nginx.conf' >> Dockerfile
             echo 'EXPOSE 8080' >> Dockerfile
             echo 'ENTRYPOINT ["nginx", "-g", "daemon off;"]' >> Dockerfile
-
-
       - name: 获取版本号
         id: get_version
         run: |
@@ -80,16 +73,13 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           # 添加仓库名小写转换
           echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
-
       - name: 登录镜像仓库
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
           echo "${{ secrets.JH_PASS }}" | docker login registry.jihulab.com -u ${{ secrets.JH_USER }} --password-stdin
-
       - name: 设置 Docker Buildx
         uses: docker/setup-buildx-action@v1
-
       - name: 构建并推送到 GitHub/DockerHub
         uses: docker/build-push-action@v4
         with:
@@ -98,9 +88,8 @@ jobs:
           tags: |
             thingspanel/thingspanel-vue:${{ env.VERSION }}
             ghcr.io/${{ env.OWNER_LC }}/thingspanel-vue:${{ env.VERSION }}
-
       - name: 推送到极狐
         run: |
           docker pull ghcr.io/${{ env.OWNER_LC }}/thingspanel-vue:${{ env.VERSION }}
-          docker tag ghcr.io/${{ env.OWNER_LC }}/thingspanel-vue:${{ env.VERSION }} registry.jihulab.com/thingspanel/docker-images/thingspanel-go:${{ env.VERSION }}
+          docker tag ghcr.io/${{ env.OWNER_LC }}/thingspanel-vue:${{ env.VERSION }} registry.jihulab.com/thingspanel/docker-images/thingspanel-vue:${{ env.VERSION }}
           docker push registry.jihulab.com/thingspanel/docker-images/thingspanel-vue:${{ env.VERSION }}
