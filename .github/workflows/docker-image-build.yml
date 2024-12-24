@@ -2,7 +2,7 @@
 #
 # 功能说明:
 # 1. 自动构建 Docker 镜像并推送到三个镜像仓库:
-#    - DockerHub (thingspanel/thingspanel-go)
+#    - DockerHub (thingspanel/thingspanel-vue)
 #    - GitHub Container Registry (ghcr.io)
 #    - 极狐容器镜像仓库 (registry.jihulab.com)
 #
@@ -97,7 +97,7 @@ jobs:
           push: true
           tags: |
             thingspanel/thingspanel-vue:${{ env.VERSION }}
-            ghcr.io/${{ env.OWNER_LC }}/thingspanel-go:${{ env.VERSION }}
+            ghcr.io/${{ env.OWNER_LC }}/thingspanel-vue:${{ env.VERSION }}
 
       - name: 推送到极狐
         run: |
