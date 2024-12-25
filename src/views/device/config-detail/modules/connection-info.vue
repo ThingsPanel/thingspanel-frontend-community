@@ -142,39 +142,41 @@ onMounted(async () => {
     <div class="connection-title">
       {{ $t('generate.through-protocol-access') }}
     </div>
-    <NForm :model="extendForm" :rules="extendFormRules" label-placement="left" label-width="auto">
-      <NFormItem :label="$t('generate.choose-protocol-or-Service')" path="protocol_type" class="w-300">
-        <NSelect
-          v-model:value="extendForm.protocol_type"
-          :options="typeOptions"
-          :placeholder="$t('generate.select-protocol-service')"
-          label-field="name"
-          value-field="service_identifier"
-          @change="choseProtocolType"
-        ></NSelect>
-      </NFormItem>
-      <NFormItem
-        v-show="configInfo.device_type !== '3'"
-        :label="$t('generate.authentication-type')"
-        path="voucher_type"
-        class="w-300"
-      >
-        <NSelect
-          v-if="props.configInfo.device_type !== 1"
-          v-model:value="extendForm.voucher_type"
-          :options="connectOptions"
-          :placeholder="$t('generate.select-authentication-type')"
-        ></NSelect>
-      </NFormItem>
-      <NFormItem>
-        <!-- <NButton type="primary" @click="openForm">{{ $t('generate.data-parsing') }}</NButton> -->
-        <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements"></FormInput>
-      </NFormItem>
-      <NFormItem>
-        <NButton type="primary" @click="handleSubmit">{{ $t('common.save') }}</NButton>
-      </NFormItem>
-      <NFlex justify="flex-end"></NFlex>
-    </NForm>
+    <n-scrollbar class="h-[400px] overflow-y-scroll">
+      <NForm :model="extendForm" :rules="extendFormRules" label-placement="left" label-width="auto">
+        <NFormItem :label="$t('generate.choose-protocol-or-Service')" path="protocol_type" class="w-300">
+          <NSelect
+            v-model:value="extendForm.protocol_type"
+            :options="typeOptions"
+            :placeholder="$t('generate.select-protocol-service')"
+            label-field="name"
+            value-field="service_identifier"
+            @change="choseProtocolType"
+          ></NSelect>
+        </NFormItem>
+        <NFormItem
+          v-show="configInfo.device_type !== '3'"
+          :label="$t('generate.authentication-type')"
+          path="voucher_type"
+          class="w-300"
+        >
+          <NSelect
+            v-if="props.configInfo.device_type !== 1"
+            v-model:value="extendForm.voucher_type"
+            :options="connectOptions"
+            :placeholder="$t('generate.select-authentication-type')"
+          ></NSelect>
+        </NFormItem>
+        <NFormItem>
+          <!-- <NButton type="primary" @click="openForm">{{ $t('generate.data-parsing') }}</NButton> -->
+          <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements"></FormInput>
+        </NFormItem>
+        <NFormItem>
+          <NButton type="primary" @click="handleSubmit">{{ $t('common.save') }}</NButton>
+        </NFormItem>
+        <NFlex justify="flex-end"></NFlex>
+      </NForm>
+    </n-scrollbar>
     <n-drawer v-model:show="active" height="90%" placement="bottom">
       <n-drawer-content :title="$t('generate.form-configuration')">
         <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements"></FormInput>
