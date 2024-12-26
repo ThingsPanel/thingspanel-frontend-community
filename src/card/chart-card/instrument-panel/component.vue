@@ -99,7 +99,7 @@ const handleDataChange = () => {
   const max = props?.card?.config?.max || 100;
   adjustedOptions.series[0].min = min;
   adjustedOptions.series[0].max = max;
-  const detailValue = detail.value;
+  const detailValue = !detail.value ? 0 : detail.value;
   const unitValue = props?.card?.config?.unit || unit.value;
   let ratio = 0.064;
   if (detailValue >= max) {
