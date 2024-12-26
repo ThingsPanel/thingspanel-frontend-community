@@ -69,7 +69,9 @@ const processData = data => {
     }
     timeMap.get(x)[key] = y;
   });
-  return Array.from(timeMap.values());
+
+  // 将 Map 转换为数组并按时间降序排列
+  return Array.from(timeMap.values()).sort((a, b) => b.time - a.time);
 };
 
 // 数据获取函数
