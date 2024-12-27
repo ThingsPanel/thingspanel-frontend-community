@@ -77,7 +77,11 @@ export const czh_cn = {
   'new-area': '新建区域',
   'automation_scene-edit': `场景编辑`,
   'test_kan-ban-details-test': '看板详情测试',
-  'test_kan-ban-test': '看板测试'
+  'test_kan-ban-test': '看板测试',
+  'data-services': '数据服务',
+  'data-services_data-forward': '数据转发',
+  'data-services_forward-config': '转发配置',
+  'device-details-app': 'device-details-app'
 };
 
 export const cen = {
@@ -154,5 +158,9 @@ export const cen = {
   'automation_scene-edit': `Scene Editing`,
   'test_kan-ban-details-test': 'test_kan-ban-details-test',
   'test_kan-ban-test': 'test_kan-ban-test',
-  device_service_access: 'Service Access'
+  device_service_access: 'Service Access',
+  'data-services': 'Data Services',
+  'data-services_data-forward': 'Data Forward',
+  'data-services_forward-config': 'Forward Config',
+  'device-details-app': 'Device Details App'
 };
