@@ -654,7 +654,7 @@ const local: App.I18n.Schema = {
             enabled: 'Enabled'
           },
           type: {
-            equipmentData: 'Equipment Data',
+            equipmentData: 'Device Data',
             operationLog: 'Operation Log'
           }
         }
@@ -771,7 +771,7 @@ const local: App.I18n.Schema = {
       rotation: {
         addRotationPlane: 'Add Rotation Plane',
         name: 'Rotation Plan',
-        waterPumpEquipment: 'Water Pump Equipment',
+        waterPumpEquipment: 'Water Pump Device',
         waterPumpDoorOpening: 'Water Pump DoorOpening',
         waterPumpPressure: 'Water Pump Pressure',
         rotationDuration: 'Rotation Duration',
