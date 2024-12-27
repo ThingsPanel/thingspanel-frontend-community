@@ -11,6 +11,7 @@ const local: App.I18n.Schema = {
   },
   common: {
     serviceConfi: '服务配置',
+    config: '配置',
     pluginConfig: '插件配置',
     deleteThePlan: '确定删除计划吗',
     cancelThePlan: '确定取消计划吗',
@@ -243,6 +244,13 @@ const local: App.I18n.Schema = {
     creationTime: '创建时间',
     service: '服务',
     protocol: '协议',
+    createUser: '创建新用户',
+    addRelatedUser: '添加关联用户',
+    removeRelatedUser: '移除关联用户',
+    loginName: '登录名',
+    lastLoginTime: '最后访问时间',
+    userName: '用户名称',
+    addUserToDeviceInfo: '您可以将设备关联到多个用户, 也可让用户主动添加设备。',
     today: '今天',
     yesterday: '昨天',
     dayBeforeYesterday: '前天',
@@ -677,6 +685,15 @@ const local: App.I18n.Schema = {
           title: '短信'
         }
       }
+    },
+    dataForward: {
+      title: '数据转发',
+      config: '数据转发配置',
+      ruleName: '规则名称',
+      des: '描述',
+      ctime: '创建时间',
+      utime: '修改时间',
+      op: '操作'
     },
     expect: {
       createTime: '创建时间',
