@@ -304,7 +304,7 @@ watch(
             </NFlex>
           </NTabPane>
 
-          <NTabPane name="$t('common.edit')" :tab="$t('custom.grouping_details.basic')">
+          <NTabPane name="$t('common.edit')" :tab="$t('custom.grouping_details.setting')">
             <NButton type="primary" @click="showGroupModal">{{ $t('custom.grouping_details.edit') }}</NButton>
             <NDescriptions label-class="min-w-100px" label-placement="top" bordered :column="3">
               <NDescriptionsItem :label="$t('custom.grouping_details.groupLevel')">
