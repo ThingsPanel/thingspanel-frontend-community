@@ -223,8 +223,8 @@ export const pen: any = {
     kanbanNameNull: 'Kanban name cannot be empty'
   },
   groupPage: {
-    deviceNumberMax: 'The equipment number cannot exceed 100 letters',
-    deviceNumberNotVvailable: 'Equipment number not available',
+    deviceNumberMax: 'The device number cannot exceed 100 letters',
+    deviceNumberNotVvailable: 'Device number not available',
     deviceAvailable: 'Device available',
     groupName: 'Group Name',
     description: 'Description',
@@ -277,7 +277,7 @@ export const pen: any = {
     unlimitedAccessType: 'Unlimited Access Type',
     directConnectedDevices: 'direct Connected Devices',
     gateway: 'gateway',
-    gatewaySubEquipment: 'gateway Sub Equipment',
+    gatewaySubEquipment: 'gateway Sub Device',
     unlimitedAccessMode: 'Unlimited Access Mode',
     byProtocol: 'By Protocol',
     byService: 'By Service',
