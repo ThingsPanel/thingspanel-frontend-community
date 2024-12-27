@@ -190,7 +190,9 @@ export const pzh_cn: any = {
     all: '全部'
   },
   personalCenter: {
-    nameFieldNotEmpty: '姓名不能为空且小于50个字符!'
+    nameFieldNotEmpty: '姓名不能为空且小于50个字符!',
+    modifyBasicInfo: '基本信息修改',
+    changePassword: '密码修改'
   },
   plugin: {
     trendLine: '趋势线',
@@ -253,6 +255,8 @@ export const pen: any = {
     attributeDistribution: 'Pre processing of attribute distribution',
     attributeReporting: 'Preprocessing of attribute reporting',
     reportPreprocessing: 'Telemetry report preprocessing',
+    commandDeliveryPreprocessing: 'Command preprocessing',
+    eventReportPreprocessing: 'Event reporting preprocessing',
     pushTime: 'Push Time',
     subDeviceAddress: 'Sub Device Address',
     deviceKey: 'Key verification error, service unavailable',
@@ -326,7 +330,6 @@ export const pen: any = {
     back: 'Back'
   },
   grouping_details: {
-    messageId: 'Message ID',
     previousPage: 'Previous Page',
     sendContent: 'Send Content',
     previousLevel: 'Previous Level',
@@ -354,7 +357,7 @@ export const pen: any = {
     notificationType: 'Notification Type',
     attributeDistributionTime: 'Attribute Distribution Time',
     triggerOperation: 'Trigger Operation',
-    whole: 'whole',
+    whole: 'Whole',
     sendResults: 'Send Results',
     automaticTriggering: 'Automatic Triggering',
     manualOperation: 'Manual Operation',
@@ -367,7 +370,7 @@ export const pen: any = {
     operationType: 'Operation Type',
     command: 'Command',
     telemetry: 'Telemetry',
-    join: 'join',
+    join: 'Join',
     deviceAnalysis: 'Device Analysis',
     chart: 'Chart',
     message: 'Message',
@@ -386,6 +389,7 @@ export const pen: any = {
     offline: 'oOffline',
     alarm: 'Alarm',
     noAlarm: 'No Alarm',
+    messageId: 'Message ID',
     lastUpdate: 'Last Update'
   },
   management: {
@@ -406,7 +410,9 @@ export const pen: any = {
     all: 'All'
   },
   personalCenter: {
-    nameFieldNotEmpty: 'The name cannot be empty and must be less than 50 characters.!'
+    nameFieldNotEmpty: 'The name cannot be empty and must be less than 50 characters.!',
+    modifyBasicInfo: 'Basic Information Modification',
+    changePassword: 'Change Password'
   },
   plugin: {
     trendLine: 'Trend line',

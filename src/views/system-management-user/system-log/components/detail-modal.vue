@@ -35,7 +35,7 @@ defineExpose({
       <NFormItem :label="$t('custom.management.account')">
         <div class="result">{{ detailInfo.email }}</div>
       </NFormItem>
-      <NFormItem label="$t('custom.management.account')">
+      <NFormItem :label="$t('custom.management.account')">
         <div class="result">{{ detailInfo.username }}</div>
       </NFormItem>
       <NFormItem :label="$t('custom.management.requestTime')">
@@ -52,7 +52,7 @@ defineExpose({
       <NFormItem :label="$t('custom.management.requestMethod')">
         <div class="result">{{ detailInfo.name }}</div>
       </NFormItem>
-      <NFormItem :label="$t('custom.management.ipAddresst')">
+      <NFormItem :label="$t('custom.management.ipAddress')">
         <div class="result">{{ detailInfo.ip }}</div>
       </NFormItem>
       <NFormItem :label="$t('custom.management.requestContent')">
@@ -63,7 +63,7 @@ defineExpose({
       </NFormItem>
     </NForm>
     <div class="text-right">
-      <NButton @click="closeModal">{$t('custom.management.close')}</NButton>
+      <NButton @click="closeModal">{{ $t('custom.management.close') }}</NButton>
     </div>
   </NModal>
 </template>

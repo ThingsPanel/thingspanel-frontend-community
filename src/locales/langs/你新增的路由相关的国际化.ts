@@ -159,6 +159,7 @@ export const cen = {
   'test_kan-ban-details-test': 'test_kan-ban-details-test',
   'test_kan-ban-test': 'test_kan-ban-test',
   device_service_access: 'Service Access',
+  device_service_details: 'Service Access Details',
   'data-services': 'Data Services',
   'data-services_data-forward': 'Data Forward',
   'data-services_forward-config': 'Forward Config',
