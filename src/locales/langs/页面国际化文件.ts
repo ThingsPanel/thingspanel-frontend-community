@@ -355,7 +355,7 @@ export const pen: any = {
     attributeDistributionTime: 'Attribute distribution time',
     triggerOperation: 'trigger operation',
     whole: 'whole',
-    sendResults: 'send results',
+    sendResults: 'Send Results',
     automaticTriggering: 'automatic triggering',
     manualOperation: 'manual operation',
     sequential: 'sequential',
