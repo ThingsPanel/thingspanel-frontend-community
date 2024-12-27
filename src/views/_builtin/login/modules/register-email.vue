@@ -77,15 +77,19 @@ function handleSmsCode() {
 async function handleSubmit() {
   await validate();
   try {
-    await registerByEmail({
+    const resp = (await registerByEmail({
       email: model.email,
       verify_code: model.code,
       password: model.pwd,
       confirm_password: model.confirmPwd,
-      phone_prefix: '+86', // 如果需要，可以添加手机前缀
-      phone_number: model.phone // 使用输入的电话号码
-    });
-    window.$message?.success($t('page.login.register.registerSuccess'));
+      phone_prefix: '+86',
+      phone_number: model.phone
+    })) as any;
+    if (resp.code > 200000) {
+      window.$message?.error(resp.message || $t('page.login.register.registerError'));
+    } else {
+      window.$message?.success($t('page.login.register.registerSuccess'));
+    }
     // 处理注册成功后的逻辑，例如跳转到登录页面
   } catch (error) {
     window.$message?.error(error.message || $t('page.login.register.registerError'));
