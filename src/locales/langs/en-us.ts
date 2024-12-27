@@ -112,7 +112,7 @@ const local: App.I18n.Schema = {
     dataProces: 'data processing',
     deleteProcessing: 'Please confirm whether to delete the data processing?',
     timeConditions: 'time condition',
-    deviceConditions: 'equipment conditions',
+    deviceConditions: 'Device conditions',
     timeFrame: 'time frame',
     repeat: 'repeat',
     single: 'single',
@@ -654,7 +654,7 @@ const local: App.I18n.Schema = {
             enabled: 'Enabled'
           },
           type: {
-            equipmentData: 'Equipment Data',
+            equipmentData: 'Device Data',
             operationLog: 'Operation Log'
           }
         }
@@ -771,7 +771,7 @@ const local: App.I18n.Schema = {
       rotation: {
         addRotationPlane: 'Add Rotation Plane',
         name: 'Rotation Plan',
-        waterPumpEquipment: 'Water Pump Equipment',
+        waterPumpEquipment: 'Water Pump Device',
         waterPumpDoorOpening: 'Water Pump DoorOpening',
         waterPumpPressure: 'Water Pump Pressure',
         rotationDuration: 'Rotation Duration',
@@ -921,7 +921,7 @@ const local: App.I18n.Schema = {
     stepOneDescribe: 'Choose the device you need to access the service',
     serviceConfig: 'Service configuration',
     stepTwoDescribe: 'Authentication service authorized',
-    equipmentConfig: 'Equipment configuration',
+    equipmentConfig: 'Device configuration',
     stepThreeDescribe: 'Set whether the device is imported and bound to a device configuration template',
     adoptDeviceAdd: 'Adopt Device Add',
     templateInfo: 'TemplateInfo',
