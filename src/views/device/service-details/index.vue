@@ -82,12 +82,12 @@ const columns: any = ref([
         <NSpace justify={'center'}>
           {
             <NButton size={'small'} type="primary" onClick={() => see(row)}>
-              $t('card.viewDevice')
+              {$t('card.viewDevice')}
             </NButton>
           }
           {
             <NButton size={'small'} type="primary" onClick={() => config(row)}>
-              $t('card.modifyConfig')
+              {$t('card.modifyConfig')}
             </NButton>
           }
           <NPopconfirm

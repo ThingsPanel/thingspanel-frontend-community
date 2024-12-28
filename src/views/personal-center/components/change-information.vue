@@ -47,8 +47,8 @@ const modalVisible = computed({
 });
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
-    amend: '基本信息修改',
-    changePassword: '密码修改'
+    amend: $t('custom.personalCenter.modifyBasicInfo'),
+    changePassword: $t('custom.personalCenter.changePassword')
   };
   return titles[props.type];
 });
