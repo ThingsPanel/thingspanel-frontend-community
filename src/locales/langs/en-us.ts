@@ -98,7 +98,7 @@ const local: App.I18n.Schema = {
     alreadyScatterPlot: 'It is already a scatter plot',
     switchScatterPlots: 'Switch scatter plots',
     alreadyToChart: 'It is already a bar chart',
-    switchBarChart: 'Switch Bar Chart',
+    switchBarChart: 'Switch bar chart',
     alreadyCurveChart: 'It is already a curve chart',
     switchLineChart: 'Switch Line Chart',
     deleteDeviceConfig: 'Please confirm whether to delete the device configuration?',
@@ -127,7 +127,7 @@ const local: App.I18n.Schema = {
     minutes30: '30 minutes',
     minutes10: '10 minutes',
     minutes5: '5 minutes',
-    includeList: 'Include in List',
+    includeList: 'Include in list',
     between: 'Between',
     lessOrEqual: 'Less than or equal to',
     greaterOrEqual: 'Greater than or equal to',
@@ -425,7 +425,7 @@ const local: App.I18n.Schema = {
       },
       codeLogin: {
         title: 'Verification Code Login',
-        getCode: 'Get Verification Code',
+        getCode: 'Get verification code',
         imageCodePlaceholder: 'Please enter image verification code'
       },
       register: {
@@ -465,7 +465,7 @@ const local: App.I18n.Schema = {
       message: 'Message',
       downloadCount: 'Download Count',
       registerCount: 'Register Count',
-      schedule: 'Work and Rest Schedule',
+      schedule: 'Work and rest schedule',
       study: 'Study',
       work: 'Work',
       rest: 'Rest',

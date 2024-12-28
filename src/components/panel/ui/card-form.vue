@@ -74,7 +74,6 @@ const findCard = (id: string) => {
   const cId = `${cIds[0]}-${cIds[1]}`;
   return store.$state.cardMap.get(cId) || null;
 };
-const deviceOption = ref<SelectOption[]>([]);
 const updateDisabledOptions = (timeFrame: string) => {
   const disableBeforeIndex: { [key: string]: number } = {
     最近3小时: 1, // 30秒
@@ -130,11 +129,16 @@ watch(
   },
   { deep: true }
 );
+
+// deviceList;
+// deviceMetricsList;
+const deviceOption = ref<SelectOption[]>([]);
+const deviceCount = ref();
 const getDeviceList = async () => {
   const res = await deviceListForPanel({});
   deviceOption.value = res.data || [];
 };
-const deviceCount = ref();
+
 defineExpose({
   setCard: (data?: ICardData) => {
     state.selectCard = null;
@@ -158,9 +162,6 @@ defineExpose({
     }
   }
 });
-
-// deviceList;
-// deviceMetricsList;
 
 const deviceCountUpdate = v => {
   state.data.dataSource.deviceCount = v;
