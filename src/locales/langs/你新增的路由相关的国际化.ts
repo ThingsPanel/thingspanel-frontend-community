@@ -87,6 +87,7 @@ export const czh_cn = {
 export const cen = {
   apply: 'Application Management',
   apply_service: 'Protocol PlugIn Management',
+  apply_in: 'Plugin Management',
   test: 'page_testing',
   'rule-engine': 'Rule Engine',
   'data-service_rule-engine': 'Rule Engine',

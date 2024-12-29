@@ -395,7 +395,7 @@ export const pen: any = {
   },
   management: {
     uploadFailed: 'File upload failed, please try again',
-    configSetting: 'Configuration settings',
+    configSetting: 'Configuration Settings',
     lastAccessTime: 'Last access time',
     logDetail: 'Log Detail',
     account: 'Account',
