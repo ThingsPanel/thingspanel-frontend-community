@@ -218,7 +218,7 @@ onMounted(fetchBoards);
               <template #trigger>
                 <NButton type="primary">{{ $t('common.save') }}</NButton>
               </template>
-              {$t('custom.visualization.onlyOneHomepage')}
+              {{ $t('custom.visualization.onlyOneHomepage') }}
             </n-popconfirm>
             <NButton v-if="formData.home_flag === 'N'" type="primary" @click="submitForm">
               {{ $t('common.save') }}
