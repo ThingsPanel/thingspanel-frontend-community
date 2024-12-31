@@ -383,6 +383,7 @@ const local: App.I18n.Schema = {
     component_button: 'Button',
     component_card: 'Card',
     component_table: 'Table',
+    device_template: 'Device Model',
     ...cen,
     'alarm_warning-message': 'Alarm Warning Message',
     device_template: 'Device Configuration Template',
