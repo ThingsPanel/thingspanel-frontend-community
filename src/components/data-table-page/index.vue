@@ -132,7 +132,7 @@ const generatedColumns = computed(() => {
     columns.push({
       title: $t('custom.groupPage.actions'),
       key: 'actions',
-      width: 150,
+      width: 180,
       render: row => (
         <div
           onClick={e => {
