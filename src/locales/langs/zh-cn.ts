@@ -986,6 +986,8 @@ const local: App.I18n.Schema = {
       dataName: '数据名称',
       dataIdentifier: '数据标识符',
       readAndWriteSign: '读写标志',
+      readAndWrite: '读写',
+      readOnly: '只读',
       dataType: '数据类型',
       unit: '单位',
       pleaseEnterTheUnit: '请输入单位',

@@ -989,6 +989,8 @@ const local: App.I18n.Schema = {
       eventReportingTime: 'Event Reporting Time',
       dataIdentifier: 'Data Identifier',
       readAndWriteSign: 'Read And Write Sign',
+      readAndWrite: 'Read And Write',
+      readOnly: 'Read Only',
       dataType: 'DataType',
       unit: 'Unit',
       description: 'Description',

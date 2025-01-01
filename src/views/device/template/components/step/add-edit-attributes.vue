@@ -114,6 +114,11 @@ const submit: () => void = async () => {
   } else {
     updateForm.additional_info = '[]';
   }
+  if (updateForm.read_write_flag === 'R-只读'){
+    updateForm.read_write_flag = 'R'
+  } else {
+    updateForm.read_write_flag = 'RW'
+  }
   if (props.objItem.id) {
     const response: any = await putAttributes(updateForm);
     if (response.data) {

@@ -1098,6 +1098,8 @@ declare namespace App {
           eventContent: string;
           dataIdentifier: string;
           readAndWriteSign: string;
+          readAndWrite: string;
+          readOnly: string;
           dataType: string;
           eventReportingTime: string;
           updateTime: string;
