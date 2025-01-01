@@ -319,15 +319,31 @@ const handleParamsOfEventsAndcommands = data => {
 };
 const getTableData: (value?: string) => void = async value => {
   startLoading();
+ 
   if (value) {
     if (value === 'telemetry') {
       const { data: data0 }: any = await telemetryApi(queryParams[0]);
       columnsList[0].data = data0?.list ?? [];
       columnsList[0].total = Math.ceil(data0?.total / 5);
-    } else if (value === 'attributes') {
+      columnsList[0].data.forEach((item: any) => {
+       if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读'){
+          item.read_write_flag = $t('device_template.table_header.readOnly')
+       } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写'){
+          item.read_write_flag = $t('device_template.table_header.readAndWrite')
+       }         
+    });
+    } else if (value === 'attributes') {    
       const { data: data1 }: any = await attributesApi(queryParams[1]);
       columnsList[1].data = data1?.list ?? [];
       columnsList[1].total = Math.ceil(data1?.total / 5);
+      columnsList[1].data?.forEach((item: any )=> {
+       if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读'){
+          item.read_write_flag = $t('device_template.table_header.readOnly')
+       } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写'){
+          item.read_write_flag = $t('device_template.table_header.readAndWrite')
+       }         
+      }); 
+     
     } else if (value === 'events') {
       const { data: data2 }: any = await eventsApi(queryParams[2]);
       columnsList[2].data = handleParamsOfEventsAndcommands(data2?.list ?? []);
@@ -339,12 +355,27 @@ const getTableData: (value?: string) => void = async value => {
     }
     endLoading();
   } else {
+    
     const { data: data0 }: any = await telemetryApi(queryParams[0]);
     columnsList[0].data = data0?.list ?? [];
     columnsList[0].total = Math.ceil(data0?.total / 5);
+    columnsList[0].data.forEach((item: any)=> {
+       if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读'){
+          item.read_write_flag = $t('device_template.table_header.readOnly')
+       } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写'){
+          item.read_write_flag = $t('device_template.table_header.readAndWrite')
+       }         
+    });
     const { data: data1 }: any = await attributesApi(queryParams[1]);
     columnsList[1].data = data1?.list ?? [];
     columnsList[1].total = Math.ceil(data1?.total / 5);
+    columnsList[1].data?.forEach((item: any) => {
+       if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读'){
+          item.read_write_flag = $t('device_template.table_header.readOnly')
+       } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写'){
+          item.read_write_flag = $t('device_template.table_header.readAndWrite')
+       }         
+    }); 
     const { data: data2 }: any = await eventsApi(queryParams[2]);
     columnsList[2].data = handleParamsOfEventsAndcommands(data2?.list ?? []);
     columnsList[2].total = Math.ceil(data2?.total / 5);
