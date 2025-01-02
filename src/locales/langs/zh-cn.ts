@@ -1,3 +1,5 @@
+import { productLocaleZhCn } from '@/views/product/locales/zh-CN';
+
 const local: App.I18n.Schema = {
   custom: {
     home: {
@@ -666,8 +668,8 @@ const local: App.I18n.Schema = {
     personal_center: '个人中心',
     'space-management': '空间管理',
     'system-management-user_equipment-map': '设备地图',
-    'edit-area': '编辑区域',
-    'new-area': '新建区域',
+    'edit-area': '编辑空间/区域',
+    'new-area': '添加空间/区域',
     'automation_scene-edit': `场景编辑`,
     'test_kan-ban-details-test': '看板详情测试',
     'test_kan-ban-test': '看板测试',
@@ -682,19 +684,7 @@ const local: App.I18n.Schema = {
     'device_service-details': '设备服务详情'
   },
   page: {
-    product: {
-      'update-package': {
-        diff: '差分',
-        full: '整包'
-      },
-      list: {
-        operate: '操作'
-      },
-      'update-ota': {
-        createTime: '添加日期',
-        updateTime: '状态更新时间'
-      }
-    },
+    product: productLocaleZhCn,
     login: {
       common: {
         loginOrRegister: '登录 / 注册',
