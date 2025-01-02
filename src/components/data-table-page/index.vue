@@ -300,6 +300,7 @@ loadOptionsOnMount2();
                 class="input-style"
               />
             </template>
+
             <template v-else-if="config.type === 'select'">
               <NSelect
                 v-model:value="searchCriteria[config.key]"
@@ -307,6 +308,15 @@ loadOptionsOnMount2();
                 :label-field="config.labelField"
                 size="small"
                 filterable
+                :filter="
+                  (pattern, option) => {
+                    const label = option.label || ''; // 获取选项的 label
+                    const patternLower = pattern; // 保持原样（区分大小写）
+
+                    // 执行区分大小写的过滤
+                    return label.indexOf(patternLower) !== -1;
+                  }
+                "
                 :options="config.options"
                 :render-label="config.renderLabel"
                 :render-tag="config.renderTag"
