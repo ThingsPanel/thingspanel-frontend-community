@@ -1,5 +1,3 @@
-import { productLocaleEn } from '~/src/views/product/locales/en';
-
 const local: App.I18n.Schema = {
   default: '',
   title: 'ThingsPanel',
@@ -469,7 +467,19 @@ const local: App.I18n.Schema = {
     'device_service-details': 'Device Service Details'
   },
   page: {
-    product: productLocaleEn,
+    product: {
+      'update-package': {
+        diff: 'Differential',
+        full: 'Full Package'
+      },
+      list: {
+        operate: 'Operate'
+      },
+      'update-ota': {
+        createTime: 'Creation Date',
+        updateTime: 'Status Update Time'
+      }
+    },
     login: {
       common: {
         loginOrRegister: 'Login / Register',
