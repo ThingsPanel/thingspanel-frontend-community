@@ -1,3 +1,5 @@
+import { productLocaleZhCn } from '@/views/product/locales/zh-CN';
+
 const local: App.I18n.Schema = {
   custom: {
     home: {
@@ -682,19 +684,7 @@ const local: App.I18n.Schema = {
     'device_service-details': '设备服务详情'
   },
   page: {
-    product: {
-      'update-package': {
-        diff: '差分',
-        full: '整包'
-      },
-      list: {
-        operate: '操作'
-      },
-      'update-ota': {
-        createTime: '添加日期',
-        updateTime: '状态更新时间'
-      }
-    },
+    product: productLocaleZhCn,
     login: {
       common: {
         loginOrRegister: '登录 / 注册',
