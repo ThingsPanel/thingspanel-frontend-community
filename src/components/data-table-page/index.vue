@@ -86,7 +86,7 @@ const getData = async () => {
   // 调用提供的fetchData函数获取数据
 
   const response = await fetchData({
-    page: currentPage.value,
+    page: 1, // Change starting page from current page to the first page
     page_size: pageSize.value,
     ...processedSearchCriteria
   });
