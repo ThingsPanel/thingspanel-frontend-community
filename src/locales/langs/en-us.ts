@@ -1837,7 +1837,7 @@ const local: App.I18n.Schema = {
     inputButtonValue: 'Please input button value',
     addButton: 'Add button',
     airConditioningStatus: 'Air conditioning status',
-    enumController: 'Enum controller',
+    enumControl: 'Enum controller',
     statusCard: 'Status card',
     deviceStateController: 'Device status controller',
     firmVersion: 'Firmware version',
