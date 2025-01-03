@@ -1,18 +1,41 @@
 <script lang="ts" setup>
-import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import type { FormInst } from 'naive-ui';
-// import {useMessage} from 'naive-ui';
 import { router } from '@/router';
-import { deviceConfigAdd, deviceConfigEdit, deviceConfigInfo, deviceTemplate } from '@/service/api/device';
+import {
+  deviceConfigAdd,
+  deviceConfigEdit,
+  deviceConfigInfo,
+  deviceConfigVoucherType,
+  deviceProtocalServiceList,
+  deviceTemplate,
+  protocolPluginConfigForm
+} from '@/service/api/device';
 import { $t } from '@/locales';
+import FormInput from '../config-detail/modules/form.vue';
 
 const route = useRoute();
-// const message = useMessage();
 const configId = ref(route.query.id || null);
 const modalTitle = ref($t('generate.add'));
 const configForm = ref(defaultConfigForm());
 const isEdit = ref(false);
+// 合并字段
+const typeOptions = ref([]);
+const connectOptions = ref([]);
+const protocol_config = ref({});
+type FormElementType = 'input' | 'table' | 'select';
+interface FormElement {
+  type: FormElementType;
+  dataKey: string;
+  label: string;
+  options?: Option[];
+  placeholder?: string;
+  validate?: Validate;
+  array?: FormElement[];
+}
+
+const formElements = ref<FormElement[]>([]);
 
 function defaultConfigForm() {
   return {
@@ -47,12 +70,14 @@ const configFormRules = ref({
     trigger: 'change'
   }
 });
+
 const queryTemplate = ref({
   page: 1,
   page_size: 20,
   total: 0
 });
 const deviceTemplateOptions = ref([{ name: $t('generate.unbind'), id: '' }]);
+
 const getDeviceTemplate = () => {
   deviceTemplate(queryTemplate.value).then(res => {
     deviceTemplateOptions.value = deviceTemplateOptions.value.concat(res.data.list);
@@ -69,32 +94,39 @@ const deviceTemplateScroll = (e: Event) => {
     }
   }
 };
+
 const configFormRef = ref<HTMLElement & FormInst>();
+
 const handleClose = () => {
   configFormRef.value?.restoreValidation();
   configForm.value = defaultConfigForm();
   router.go(-1);
 };
+
 // 提交表单
 const handleSubmit = async () => {
   await configFormRef?.value?.validate();
+  const postData = { ...configForm.value };
+  postData.protocol_config = JSON.stringify(protocol_config.value);
+
   if (!configId.value) {
-    const res = await deviceConfigAdd(configForm.value);
+    const res = await deviceConfigAdd(postData);
     if (!res.error) {
-      // message.success('新增成功');
       handleClose();
     }
   } else {
-    const res = await deviceConfigEdit(configForm.value);
+    const res = await deviceConfigEdit(postData);
     if (!res.error) {
-      // message.success('修改成功');
       handleClose();
     }
   }
 };
+
 const getConfig = async () => {
   const res = await deviceConfigInfo({ id: configId.value });
   configForm.value = { ...res.data };
+
+  protocol_config.value = JSON.parse(res.data.protocol_config);
 };
 
 watch(
@@ -105,9 +137,54 @@ watch(
     }
   }
 );
+const getProtocolList = async (deviceCode: string) => {
+  const queryData = { device_type: deviceCode };
+  const res = await deviceProtocalServiceList(queryData);
+  if (res.data) {
+    typeOptions.value = [
+      {
+        type: 'group',
+        name: $t('common.protocol'),
+        key: 'protocol',
+        children: res.data.protocol || []
+      },
+      {
+        type: 'group',
+        name: $t('common.service'),
+        key: 'service',
+        children: res.data.service || []
+      }
+    ];
+  }
+};
 
+const getConfigForm = async data => {
+  const res = await protocolPluginConfigForm({
+    device_type: configForm.value.device_type,
+    protocol_type: data
+  });
+  formElements.value = res.data || [];
+};
+
+const getVoucherType = async data => {
+  connectOptions.value = [];
+  const res = await deviceConfigVoucherType({
+    device_type: configForm.value.device_type,
+    protocol_type: data
+  });
+  if (res.data) {
+    connectOptions.value = Object.keys(res.data).map(key => {
+      return { label: key, value: res.data[key] };
+    });
+  }
+};
+
+const choseProtocolType = async data => {
+  configForm.value.voucher_type = null;
+  await getVoucherType(data);
+  await getConfigForm(data);
+};
 onMounted(async () => {
-  // configId.value=<string>route.query.id || ''
   if (configId.value) {
     modalTitle.value = $t('common.edit');
     isEdit.value = true;
@@ -117,29 +194,30 @@ onMounted(async () => {
     modalTitle.value = $t('generate.add');
   }
   getDeviceTemplate();
+
+  await getProtocolList(configForm.value.device_type);
+
+  if (configForm.value.protocol_type) {
+    await getVoucherType(configForm.value.protocol_type);
+    await getConfigForm(configForm.value.protocol_type);
+  }
 });
 
-const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+// const getPlatform = computed(() => {
+//   const { proxy }: any = getCurrentInstance();
+//   return proxy.getPlatform();
+// });
 </script>
 
 <template>
   <div class="overflow-y-auto">
     <NCard :title="`${modalTitle}${$t('custom.devicePage.deviceConfig')}`">
-      <NForm
-        ref="configFormRef"
-        :model="configForm"
-        :rules="configFormRules"
-        label-placement="left"
-        label-width="auto"
-        :class="getPlatform ? '90%' : 'w-600'"
-      >
-        <NFormItem :label="$t('generate.device-configuration-name')" path="name">
+      <NForm ref="configFormRef" :model="configForm" :rules="configFormRules" label-placement="left" label-width="auto">
+        <!-- 第一个文件中的原表单项 -->
+        <NFormItem :label="$t('generate.device-configuration-name')" path="name" class="w-[600px]">
           <NInput v-model:value="configForm.name" :placeholder="$t('generate.enter-device-name')" />
         </NFormItem>
-        <NFormItem :label="$t('generate.select-device-function-template')" path="device_template_id">
+        <NFormItem class="w-[600px]" :label="$t('generate.select-device-function-template')" path="device_template_id">
           <NSelect
             v-model:value="configForm.device_template_id"
             :options="deviceTemplateOptions"
@@ -150,7 +228,17 @@ const getPlatform = computed(() => {
           ></NSelect>
         </NFormItem>
         <NFormItem :label="$t('generate.device-access-type')" path="device_type">
-          <n-radio-group v-model:value="configForm.device_type" name="device_type">
+          <n-radio-group
+            v-model:value="configForm.device_type"
+            name="device_type"
+            @update:value="
+              v => {
+                protocol_config.value = null;
+                configForm.voucher_type = null;
+                configForm.protocol_type = null;
+              }
+            "
+          >
             <n-space>
               <n-radio value="1" :disabled="isEdit">{{ $t('generate.direct-connected-device') }}</n-radio>
               <n-radio value="2" :disabled="isEdit">{{ $t('generate.gateway') }}</n-radio>
@@ -158,15 +246,37 @@ const getPlatform = computed(() => {
             </n-space>
           </n-radio-group>
         </NFormItem>
-        <!--        <NFormItem label="设备连接方式" path="device_conn_type">-->
-        <!--          <n-radio-group v-model:value="configForm.device_conn_type" name="device_conn_type">-->
-        <!--            <n-space>-->
-        <!--              <n-radio value="A">设备连接平台</n-radio>-->
-        <!--              <n-radio value="B">平台连接设备</n-radio>-->
-        <!--            </n-space>-->
-        <!--          </n-radio-group>-->
-        <!--        </NFormItem>-->
-        <NFlex justify="flex-end">
+
+        <!-- 第二个文件中的新增表单项 -->
+        <template v-if="configForm.device_type">
+          <NFormItem class="w-[600px]" :label="$t('generate.choose-protocol-or-Service')" path="protocol_type">
+            <NSelect
+              v-model:value="configForm.protocol_type"
+              :options="typeOptions"
+              :placeholder="$t('generate.select-protocol-service')"
+              label-field="name"
+              value-field="service_identifier"
+              @update:value="choseProtocolType"
+            ></NSelect>
+          </NFormItem>
+
+          <NFormItem
+            v-show="configForm.device_type === '2'"
+            class="w-[600px]"
+            :label="$t('generate.authentication-type')"
+            path="voucher_type"
+          >
+            <NSelect
+              v-model:value="configForm.voucher_type"
+              :options="connectOptions"
+              :placeholder="$t('generate.select-authentication-type')"
+            ></NSelect>
+          </NFormItem>
+        </template>
+        <NFormItem v-if="configForm.device_type === '3'">
+          <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements"></FormInput>
+        </NFormItem>
+        <NFlex justify="flex-start">
           <NButton type="primary" @click="handleSubmit">{{ $t('page.login.common.confirm') }}</NButton>
         </NFlex>
       </NForm>
