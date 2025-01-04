@@ -65,6 +65,7 @@ const columns: any = ref([
   {
     title: $t('common.creationTime'),
     key: 'create_at',
+    minWidth: '200px',
     render: row => {
       if (row.create_at) {
         return <span>{dayjs(row.create_at).format('YYYY-MM-DD HH:mm:ss')}</span>;
@@ -75,11 +76,16 @@ const columns: any = ref([
   {
     key: 'actions',
     title: () => $t('common.action'),
-    align: 'center',
-    width: '250px',
+    align: 'left',
+    width: '420px',
+    ellipsis: {
+      tooltip: {
+        width: 420
+      }
+    },
     render: row => {
       return (
-        <NSpace justify={'center'}>
+        <NSpace justify={'left'}>
           {
             <NButton size={'small'} type="primary" onClick={() => see(row)}>
               {$t('card.viewDevice')}
