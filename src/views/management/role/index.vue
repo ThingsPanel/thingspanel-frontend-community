@@ -83,7 +83,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
     key: 'actions',
     title: $t('common.action'),
     align: 'left',
-    width: '250px',
+    width: '320px',
     render: row => {
       return (
         <NSpace justify={'left'}>
