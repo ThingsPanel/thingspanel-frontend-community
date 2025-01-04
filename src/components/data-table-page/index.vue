@@ -1,6 +1,6 @@
 <script lang="tsx" setup>
 import type { VueElement } from 'vue';
-import { computed, defineProps, getCurrentInstance, ref, watchEffect } from 'vue';
+import { computed, defineProps, getCurrentInstance, ref, watch, watchEffect } from 'vue';
 import { NButton, NDataTable, NDatePicker, NInput, NPopconfirm, NSelect, NSpace } from 'naive-ui';
 import type { TreeSelectOption } from 'naive-ui';
 import { useLoading } from '@sa/hooks';
@@ -67,7 +67,7 @@ const dataList = ref([]); // 表格数据列表
 const total = ref(0); // 数据总数
 const currentPage = ref(1); // 当前页码
 const pageSize = ref(10); // 每页显示数量
-const searchCriteria: any = ref({}); // 每页显示数量
+const searchCriteria: any = ref({}); // 搜索条件
 
 // 获取数据的函数，结合搜索条件、分页等
 const getData = async () => {
@@ -187,6 +187,20 @@ const onUpdatePageSize = newPageSize => {
   currentPage.value = 1; // 重置为第一页
   getData(); // 更新数据
 };
+
+// 添加对 searchCriteria 的监听
+watch(
+  searchCriteria,
+  (newVal, oldVal) => {
+    // 检查是否真的发生了变化
+    if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+      currentPage.value = 1; // 重置到第一页
+      getData(); // 重新获取数据
+    }
+  },
+  { deep: true } // 深度监听对象的变化
+);
+
 // 观察分页和搜索条件的变化，自动重新获取数据
 watchEffect(() => {
   searchConfigs.map((item: any) => {
@@ -268,6 +282,12 @@ const getPlatform = computed(() => {
 // 在组件挂载时加载选项
 loadOptionsOnMount('');
 loadOptionsOnMount2();
+
+// 为 input 类型添加专门的处理函数
+const handleInputChange = () => {
+  currentPage.value = 1;
+  getData();
+};
 </script>
 
 <template>
@@ -289,6 +309,7 @@ loadOptionsOnMount2();
                 size="small"
                 :placeholder="config.label"
                 class="input-style"
+                @update:value="handleInputChange"
               />
             </template>
             <template v-else-if="config.type === 'date-range'">
@@ -300,6 +321,7 @@ loadOptionsOnMount2();
                 class="input-style"
               />
             </template>
+
             <template v-else-if="config.type === 'select'">
               <NSelect
                 v-model:value="searchCriteria[config.key]"
@@ -307,6 +329,15 @@ loadOptionsOnMount2();
                 :label-field="config.labelField"
                 size="small"
                 filterable
+                :filter="
+                  (pattern, option) => {
+                    const label = option.label || ''; // 获取选项的 label
+                    const patternLower = pattern; // 保持原样（区分大小写）
+
+                    // 执行区分大小写的过滤
+                    return label.indexOf(patternLower) !== -1;
+                  }
+                "
                 :options="config.options"
                 :render-label="config.renderLabel"
                 :render-tag="config.renderTag"

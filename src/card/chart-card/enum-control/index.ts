@@ -9,7 +9,7 @@ export default {
   component: defineAsyncComponent(() => import('./component.vue')),
   configForm: defineAsyncComponent(() => import('./card-config.vue')),
   poster,
-  title: $t('card.enumController'),
+  title: $t('card.enumControl'),
   preset: {
     dataSource: {
       origin: 'device',

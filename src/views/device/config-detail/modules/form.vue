@@ -33,7 +33,7 @@ const onCreate = () => {
 </script>
 
 <template>
-  <div class="connection-box w-full">
+  <div class="connection-box h-full w-full">
     <NForm :model="protocol_config" :rules="rules" label-placement="top" class="w-full">
       <div class="w-full">
         <template v-for="element in props.formElements" :key="element.dataKey">
