@@ -350,7 +350,7 @@ export const deviceTemplateSelect = async () => {
 };
 
 export const telemetryHistoryData = async (params: any) => {
-  return await request.get<any>(`/telemetry/datas/history/pagination`, {
+  return await request.get<any>(`/telemetry/datas/history/page`, {
     params
   });
 };

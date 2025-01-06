@@ -141,7 +141,7 @@ const generatedColumns = computed(() => {
         >
           <NSpace>
             {tableActions.map(action => {
-              if (action.theKey === $t('custom.devicePage.delete')) {
+              if (action.theKey === $t('custom.devicePage.delete') || action.theKey === '删除') {
                 return (
                   <NPopconfirm
                     onPositiveClick={async e => {

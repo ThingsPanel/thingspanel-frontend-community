@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { defineProps, onMounted, reactive, ref } from 'vue';
+import type { PaginationProps } from 'naive-ui';
 import { useMessage } from 'naive-ui';
 import dayjs from 'dayjs';
 import { addMonths } from 'date-fns';
@@ -21,6 +22,8 @@ interface Params {
   start_time: number;
   export_excel: boolean;
   key: string;
+  page: number;
+  page_size: number;
 }
 
 interface HistoryData {
@@ -42,28 +45,39 @@ const params = reactive<Params>({
   end_time,
   start_time,
   export_excel: false,
-  key: props.theKey
+  key: props.theKey,
+  page: 1,
+  page_size: 5
 });
 const message = useMessage();
-const pagination = reactive({
-  page: 1,
-  pageSize: 5,
-  pageCount: 1,
-  onChange: (page: number) => {
-    pagination.page = page;
-  }
-});
 
 const dateRange = ref<[number, number] | null>([params.start_time, params.end_time]);
 const tableData = ref<HistoryData[]>([]);
-const columns = [
-  { title: $t('common.time'), key: 'time', render: row => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss') },
-  { title: $t('device_template.table_header.dataIdentifier'), key: 'key' },
-  { title: $t('generate.fieldValue'), key: 'value' }
-];
+const pagination: PaginationProps = reactive({
+  page: 1,
+  pageSize: 5,
+  showSizePicker: true,
+  pageSizes: [5, 10, 15, 20],
+  itemCount: 0,
+  onChange: (page: number) => {
+    pagination.page = page;
+    params.page = page;
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    getTelemetryHistoryData();
+  },
+  onUpdatePageSize: (pageSize: number) => {
+    pagination.pageSize = pageSize;
+    pagination.page = 1;
+    params.page_size = pageSize;
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    getTelemetryHistoryData();
+  }
+});
+
 const getTelemetryHistoryData = async () => {
   if (!props.deviceId && !props.theKey) {
     tableData.value = [];
+
     return;
   }
   startLoading();
@@ -73,17 +87,23 @@ const getTelemetryHistoryData = async () => {
     endLoading();
     if (baseURL.includes('api/v1')) {
       const urls = baseURL.split('api/v1');
-      window.open(urls[0] + data);
+      window.open(urls[0] + data?.list);
     }
   }
 
   if (!error && !params.export_excel) {
-    tableData.value = data || [];
-    pagination.pageCount = Math.ceil(data?.length || 1 / pagination.pageSize);
-
+    tableData.value = data.list || [];
+    pagination.pageCount = data?.list?.length || 0;
     endLoading();
   }
 };
+
+const columns = [
+  { title: $t('common.time'), key: 'time', render: row => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss') },
+  { title: $t('device_template.table_header.dataIdentifier'), key: 'key' },
+  { title: $t('generate.fieldValue'), key: 'value' }
+];
+
 const checkDateRange = value => {
   const [start, end] = value;
 
