@@ -3,6 +3,7 @@ import { inject, onMounted } from 'vue';
 import CardBaseForm from '@/cards2.0/modules/card-base-form.vue';
 import CardDataSourceForm from '@/cards2.0/modules/card-data-source-form.vue';
 import type { CardData, IConfigCtx } from '@/components/tp-kan-ban/kan-ban';
+import { $t } from '@/locales';
 
 const props = defineProps<{
   data: CardData;
@@ -31,21 +32,21 @@ onMounted(() => {
     pane-style="padding-left: 4px; padding-right: 4px; box-sizing: border-box;"
   >
     <!-- 固定模式基础配置，迭代时才需要修改下面的组件-->
-    <n-tab-pane name="basic" tab="基础配置">
+    <n-tab-pane name="basic" :tab="$t('card.basicConfig')">
       <CardBaseForm :default-basis-data="props.data.config.basis" :change-ctx-config="changeCtxConfig" />
     </n-tab-pane>
     <!--固定模式数据源配置，迭代时才需要修改下面的组件-->
-    <n-tab-pane name="source" tab="数据源">
+    <n-tab-pane name="source" :tab="$t('card.dataSource')">
       <CardDataSourceForm
         :max-source-number="props.data.sourceNumber || 9"
         :default-source-data="props.data.config.source"
         :change-ctx-config="changeCtxConfig"
       />
     </n-tab-pane>
-    <n-tab-pane name="card-config" tab="卡片配置">
+    <n-tab-pane name="card-config" :tab="$t('card.cardConfig')">
       <!-- 你需要编写配置的地方-->
       <NForm :model="ctx.config.cardUI">
-        <NFormItem label="字体大小">
+        <NFormItem :label="$t('card.shadowColor')">
           <n-color-picker v-model:value="ctx.config.cardUI.shadowColor" />
         </NFormItem>
       </NForm>
