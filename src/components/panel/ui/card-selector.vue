@@ -25,10 +25,10 @@ const props = defineProps<{
 }>();
 const tabValue = ref('builtin');
 const tabList = [
-  { tab: '系统', type: 'builtin' },
-  { tab: '设备', type: 'device' },
-  { tab: '插件', type: 'plugin' },
-  { tab: '图表', type: 'chart' }
+  { tab: $t('card.systemTab'), type: 'builtin' },
+  { tab: $t('card.deviceTab'), type: 'device' },
+  { tab: $t('card.pluginTab'), type: 'plugin' },
+  { tab: $t('card.chartTab'), type: 'chart' }
 ];
 
 const priorityCardIds = ref(['chart-demo', 'chart-digit']);

@@ -1505,7 +1505,6 @@ declare namespace App {
         sha256hmac: string;
         'select-processing-type': string;
         'select-device': string;
-        'device-management': string;
         'processing-type': string;
         'device-number': string;
         secret: string;

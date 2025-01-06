@@ -1512,7 +1512,6 @@ const local: App.I18n.Schema = {
     sha256hmac: '签名：使用 SHA-256 哈希函数和 HMAC 生成',
     'select-processing-type': '请选择处理类型',
     'select-device': '请选择设备',
-    'device-management': '设备管理',
     'processing-type': '处理类型',
     'device-number': '设备编号',
     secret: 'Secret',
@@ -2031,7 +2030,18 @@ const local: App.I18n.Schema = {
     metric: '指标',
     previousPage: '上一页',
     nextPage: '下一页',
-    networkImageText: '一张网络图片（这字的大小是{size}px）'
+    networkImageText: '一张网络图片（这字的大小是{size}px）',
+    systemTab: '系统',
+    deviceTab: '设备',
+    pluginTab: '插件',
+    chartTab: '图表',
+    expandCard: '展开卡片',
+    expandConfiguration: '展开配置',
+    configurationEntry: '配置入口',
+    cancel: '取消',
+    confirm: '确认',
+    componentSettings: '组件设置',
+    basicSettings: '基础设置'
   }
 };
 
