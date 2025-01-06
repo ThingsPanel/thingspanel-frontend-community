@@ -164,12 +164,12 @@ if (props.deviceSource && props.deviceSource.length > 0) {
 
 <template>
   <NForm ref="formRef" label-placement="left" label-align="right" require-mark-placement="right-hanging" size="small">
-    <NFormItem label="设备数量">
+    <NFormItem :label="$t('card.deviceQuantity')">
       <NInputNumber v-model:value="sourceCount" :max="maxSourceNumber" :min="1" @update:value="adjustDeviceCount" />
     </NFormItem>
     <n-grid :cols="3" x-gap="18">
       <template v-for="(selection, index) in currentBatchDevices" :key="index">
-        <NFormItemGi label="设备">
+        <NFormItemGi :label="$t('card.device')">
           <NSelect
             v-if="index <= sourceCount - 1"
             v-model:value="selection.deviceId"
@@ -182,7 +182,7 @@ if (props.deviceSource && props.deviceSource.length > 0) {
             <template #header>{{ $t('generate.device') }}</template>
           </NSelect>
         </NFormItemGi>
-        <NFormItemGi label="指标">
+        <NFormItemGi :label="$t('card.metric')">
           <NSelect
             v-if="index <= sourceCount - 1"
             v-model:value="selection.metricsId"
@@ -193,14 +193,16 @@ if (props.deviceSource && props.deviceSource.length > 0) {
             @update:show="show => updateDropdownShow(show, selection)"
           ></NSelect>
         </NFormItemGi>
-        <NFormItemGi label="数据名称">
+        <NFormItemGi :label="$t('card.dataName')">
           <NInput v-if="index <= sourceCount - 1" v-model:value="selection.metricsName" style="max-width: 140px" />
         </NFormItemGi>
       </template>
     </n-grid>
     <NSpace v-if="totalPages > 1" justify="space-between">
-      <NButton :disabled="currentPage === 1" @click="previousPage">上一页</NButton>
-      <NButton :disabled="!isCurrentPageComplete() || currentPage === totalPages" @click="nextPage">下一页</NButton>
+      <NButton :disabled="currentPage === 1" @click="previousPage">{{ $t('card.previousPage') }}</NButton>
+      <NButton :disabled="!isCurrentPageComplete() || currentPage === totalPages" @click="nextPage">
+        {{ $t('card.nextPage') }}
+      </NButton>
     </NSpace>
   </NForm>
 </template>

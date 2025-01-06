@@ -21,9 +21,9 @@ const sourceData = reactive<{
   deviceSource?: any[];
 }>({ ...props.defaultSourceData });
 const systemNorm = [
-  { label: '设备总数', value: 1 },
-  { label: '在线设备数量', value: 2 },
-  { label: '离线设备数量', value: 3 }
+  { label: $t('card.totalDevices'), value: 1 },
+  { label: $t('card.onlineDevices'), value: 2 },
+  { label: $t('card.offlineDevices'), value: 3 }
 ];
 const throttledWatcher = debounce(() => {
   props.changeCtxConfig('source', sourceData);
@@ -88,7 +88,7 @@ watch(
       </NRadioGroup>
     </NFormItem>
     <div v-if="sourceData.dataSource && sourceData.dataSource === 'system'">
-      <NFormItem label="系统数据个数">
+      <NFormItem :label="$t('card.systemDataCount')">
         <NInputNumber
           v-model:value="sourceData.systemCount"
           :min="1"
@@ -98,10 +98,10 @@ watch(
       </NFormItem>
       <template v-for="item in sourceData.systemSource" :key="item">
         <n-grid :cols="3" :x-gap="12" :y-gap="12">
-          <n-form-item-gi label="数据名称">
+          <n-form-item-gi :label="$t('card.dataName')">
             <NSelect v-model:value="item.type" :options="systemNorm" />
           </n-form-item-gi>
-          <n-form-item-gi label="数据名称">
+          <n-form-item-gi :label="$t('card.dataName')">
             <NInput v-model:value="item.name" />
           </n-form-item-gi>
         </n-grid>

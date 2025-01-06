@@ -6,6 +6,7 @@ import { localStg } from '@/utils/storage';
 import type { CardData } from '@/components/tp-kan-ban/kan-ban';
 import { getWebsocketServerUrl } from '@/utils/common/tool';
 import { createLogger } from '@/utils/logger';
+import { $t } from '@/locales';
 import { deviceDetail } from '../api';
 import icons from './icon';
 const logger = createLogger('Indicator');
@@ -119,7 +120,7 @@ onUnmounted(() => {
           <div>
             <span class="value">{{ detail?.data && detail.data[0] ? detail.data[0]?.value : '-1' }}</span>
           </div>
-          <span class="unit">{{ detail?.data && detail.data[0] ? detail.data[0]?.unit : '无' }}</span>
+          <span class="unit">{{ detail?.data && detail.data[0] ? detail.data[0]?.unit : $t('card.noUnit') }}</span>
         </div>
       </NCard>
     </div>

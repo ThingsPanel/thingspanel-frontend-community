@@ -189,18 +189,18 @@ const timeOptions: SelectOption[] = [
   { label: $t('common.lastDays30'), value: 2592000000, id: 'last_30d' },
   { label: $t('common.lastDays60'), value: 5184000000, id: 'last_60d' },
   { label: $t('common.lastDays90'), value: 7776000000, id: 'last_90d' },
-  { label: '最近6个月', value: 15811200000 },
-  { label: '最近1年', value: 31536000000 },
-  { label: '今天', value: 28740000 },
-  { label: '昨天', value: 86400000 },
-  { label: '前天', value: 172800000 },
-  { label: '上周今日', value: 604800000 },
-  { label: '本周', value: 518400000 },
-  { label: '上周', value: 604800000 },
-  { label: '本月', value: 2592000000 },
-  { label: '上个月', value: 2592000000 },
-  { label: '今年', value: 7776000000 },
-  { label: '去年', value: 31536000000 }
+  { label: $t('common.lastSixMonth'), value: 15811200000 },
+  { label: $t('common.lastOneYear'), value: 31536000000 },
+  { label: $t('common.today'), value: 28740000 },
+  { label: $t('common.yesterday'), value: 86400000 },
+  { label: $t('common.dayBeforeYesterday'), value: 172800000 },
+  { label: $t('common.lastWeekToday'), value: 604800000 },
+  { label: $t('common.thisWeek'), value: 518400000 },
+  { label: $t('common.lastWeek'), value: 604800000 },
+  { label: $t('common.thisMonth'), value: 2592000000 },
+  { label: $t('common.lastMonth'), value: 2592000000 },
+  { label: $t('common.thisYear'), value: 7776000000 },
+  { label: $t('common.lastYear'), value: 31536000000 }
 ];
 const timeOptionsValue = ref();
 const aggregateOptions: SelectOption[] = [
