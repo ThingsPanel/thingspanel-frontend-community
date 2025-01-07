@@ -431,7 +431,7 @@ const local: App.I18n.Schema = {
     'system-management-user': 'Tenant Management',
     'system-management-user_system-log': 'System Log',
     visualization: 'Visualization',
-    visualization_panel: 'Kan Ban',
+    visualization_panel: 'Boards',
     'visualization_kanban-details': 'Kanban Details',
     'visualization_panel-preview': 'Kanban Preview',
     'visualization_big-screen': 'Screens',
@@ -937,8 +937,8 @@ const local: App.I18n.Schema = {
     unpin: 'Unpin'
   },
   dashboard_panel: {
-    addKanBan: 'New Kan Ban',
-    editKanban: 'Edit Kan Ban',
+    addKanBan: 'New Board',
+    editKanban: 'Edit Board',
     cardName: {
       date: {
         january: 'January',
