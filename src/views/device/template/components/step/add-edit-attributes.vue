@@ -114,10 +114,10 @@ const submit: () => void = async () => {
   } else {
     updateForm.additional_info = '[]';
   }
-  if (updateForm.read_write_flag === 'R-只读'){
-    updateForm.read_write_flag = 'R'
+  if (updateForm.read_write_flag === 'R-只读') {
+    updateForm.read_write_flag = 'R';
   } else {
-    updateForm.read_write_flag = 'RW'
+    updateForm.read_write_flag = 'RW';
   }
   if (props.objItem.id) {
     const response: any = await putAttributes(updateForm);
@@ -205,7 +205,7 @@ const updateAdditionalInfo: (newVal) => void = newVal => {
     </n-form-item>
   </n-form>
   <div class="box1">
-    <n-button class="m-r3" @click="clear">{{ $t('device_template.cancellation') }}</n-button>
+    <n-button class="m-r3" @click="clear">{{ $t('generate.cancel') }}</n-button>
     <n-button type="primary" @click="submit">{{ $t('device_template.confirm') }}</n-button>
   </div>
 </template>

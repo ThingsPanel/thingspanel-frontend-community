@@ -189,7 +189,7 @@ getTableData();
             <NInput v-model:value="queryParams.ip" />
           </NFormItem>
 
-          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('generate.query') }}</NButton>
+          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('generate.search') }}</NButton>
           <NButton class="ml-15px w-72px" type="primary" @click="handleReset">{{ $t('generate.reset') }}</NButton>
         </view>
       </NForm>

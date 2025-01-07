@@ -68,7 +68,7 @@ const next = async () => {
     <div class="box1 m-t2">
       <NButton type="primary" @click="next">{{ $t('device_template.nextStep') }}</NButton>
       <NButton class="m-r3" ghost type="primary" @click="back">{{ $t('device_template.back') }}</NButton>
-      <NButton class="m-r3" @click="cancellation">{{ $t('device_template.cancellation') }}</NButton>
+      <NButton class="m-r3" @click="cancellation">{{ $t('generate.cancel') }}</NButton>
     </div>
   </div>
 </template>
