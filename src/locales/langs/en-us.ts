@@ -422,7 +422,7 @@ const local: App.I18n.Schema = {
     device_access: 'Service Access',
     device_grouping: 'Group Management',
     'device_grouping-details': 'Group Details',
-    device_manage: 'Device Registry',
+    device_manage: 'Device Management',
     device_details: 'Device Details',
     'device_details-child': 'Child Device Details',
     device_config: 'Device Template',
@@ -1519,7 +1519,6 @@ const local: App.I18n.Schema = {
     sha256hmac: 'signature: generate using SHA-256 hash function and HMAC',
     'select-processing-type': 'Please Select Processing Type',
     'select-device': 'Please Select Device',
-    'device-management': 'Device Registry',
     'processing-type': 'Processing Type',
     'device-number': 'Device Number',
     secret: 'Secret',
@@ -2040,7 +2039,18 @@ const local: App.I18n.Schema = {
     metric: 'Metric',
     previousPage: 'Previous Page',
     nextPage: 'Next Page',
-    networkImageText: 'A network image (text size is {size}px)'
+    networkImageText: 'A network image (text size is {size}px)',
+    systemTab: 'System',
+    deviceTab: 'Device',
+    pluginTab: 'Plugin',
+    chartTab: 'Chart',
+    expandCard: 'Expand Card',
+    expandConfiguration: 'Expand Configuration',
+    configurationEntry: 'Configuration Entry',
+    cancel: 'Cancel',
+    confirm: 'Confirm',
+    componentSettings: 'Component Settings',
+    basicSettings: 'Basic Settings'
   }
 };
 

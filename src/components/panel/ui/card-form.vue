@@ -267,7 +267,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
 <template>
   <div>
     <NTabs v-if="state.selectCard" v-model:value="state.tab" type="line" animated>
-      <NTabPane v-if="state.selectCard.type === 'chart'" name="dataSource" tab="数据源">
+      <NTabPane v-if="state.selectCard.type === 'chart'" name="dataSource" :tab="$t('card.dataSource')">
         <div :class="`${mobile ? '' : 'h-[calc(100vh_-_150px)] '} overflow-y-auto py-5`">
           <NForm>
             <NSelect
@@ -356,7 +356,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
           </NForm>
         </div>
       </NTabPane>
-      <NTabPane v-if="!!state.selectCard?.configForm" name="config" tab="组件设置">
+      <NTabPane v-if="!!state.selectCard?.configForm" name="config" :tab="$t('card.componentSettings')">
         <div :class="`${mobile ? '' : 'overflow-y-auto'} py-5`">
           <div class="max-w-[600px]">
             <ConfigCtx v-model:config="state.data.config" mode="insert">
@@ -366,7 +366,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
           </div>
         </div>
       </NTabPane>
-      <NTabPane name="basic" tab="基础设置">
+      <NTabPane name="basic" :tab="$t('card.basicSettings')">
         <NForm>
           <NFormItem :label="$t('page.manage.menu.form.title')">
             <div class="flex items-center">

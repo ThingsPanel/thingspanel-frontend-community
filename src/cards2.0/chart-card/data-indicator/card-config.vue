@@ -29,11 +29,11 @@ onMounted(() => {
     pane-style="padding-left: 4px; padding-right: 4px; box-sizing: border-box;"
   >
     <!-- 基础配置标签页 必须有-->
-    <n-tab-pane name="basic" tab="基础配置">
+    <n-tab-pane name="basic" :tab="$t('card.basicSettings')">
       <!-- 嵌入 CardBaseForm 组件，传递基础配置数据和修改配置的方法 -->
       <CardBaseForm :default-basis-data="props.data.config.basis" :change-ctx-config="changeCtxConfig" />
     </n-tab-pane>
-    <n-tab-pane name="source" tab="数据源">
+    <n-tab-pane name="source" :tab="$t('card.dataSource')">
       <!-- 嵌入 CardDataSourceForm 组件，传递数据源配置数据和修改配置的方法 -->
       <CardDataSourceForm
         :max-source-number="props.data.sourceNumber || 9"
@@ -42,9 +42,9 @@ onMounted(() => {
       />
     </n-tab-pane>
     <!-- 卡片配置标签页 可以没有，需要自己编辑-->
-    <n-tab-pane name="card-config" tab="卡片配置">
+    <n-tab-pane name="card-config" :tab="$t('card.componentSettings')">
       <NForm :model="ctx.config">
-        <NFormItem label="选择icon">
+        <NFormItem :label="$t('card.selectIcon')">
           <div class="flex space-x-3">
             <div
               v-for="item in icons"
