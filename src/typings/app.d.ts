@@ -1076,7 +1076,6 @@ declare namespace App {
         enterIllustrate: string;
         selectCover: string;
         nextStep: string;
-        cancellation: string;
         addTage: string;
         back: string;
         add: string;

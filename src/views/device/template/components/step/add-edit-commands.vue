@@ -320,7 +320,7 @@ const parameterSubmit: () => void = async () => {
     </n-form-item>
   </n-form>
   <div class="box2">
-    <NButton class="m-r3" @click="clear">{{ $t('device_template.cancellation') }}</NButton>
+    <NButton class="m-r3" @click="clear">{{ $t('generate.cancel') }}</NButton>
     <NButton type="primary" @click="submit">{{ $t('device_template.confirm') }}</NButton>
   </div>
   <NModal
@@ -403,7 +403,7 @@ const parameterSubmit: () => void = async () => {
       </n-form-item>
     </n-form>
     <div class="box2">
-      <NButton class="m-r3" @click="addParameter = false">{{ $t('device_template.cancellation') }}</NButton>
+      <NButton class="m-r3" @click="addParameter = false">{{ $t('generate.cancel') }}</NButton>
       <NButton type="primary" @click="parameterSubmit">{{ $t('device_template.confirm') }}</NButton>
     </div>
   </NModal>

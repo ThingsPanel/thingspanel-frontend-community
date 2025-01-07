@@ -226,7 +226,7 @@ watchEffect(async () => {
   </div>
   <div class="box1 m-t2">
     <n-button type="primary" @click="next">{{ $t('device_template.nextStep') }}</n-button>
-    <n-button class="m-r3" @click="cancellation">{{ $t('device_template.cancellation') }}</n-button>
+    <n-button class="m-r3" @click="cancellation">{{ $t('generate.cancel') }}</n-button>
   </div>
 </template>
 
