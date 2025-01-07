@@ -18,7 +18,7 @@ const statusOptions = ref([
 ]);
 const typeOptions = ref([
   { label: $t('custom.device_details.telemetry'), value: 'telemetry' },
-  { label: $t('custom.device_details.stats'), value: 'attribute' },
+  { label: $t('custom.device_details.attributes'), value: 'attribute' },
   { label: $t('page.expect.command'), value: 'command' }
 ]);
 
@@ -124,7 +124,7 @@ const columns: Ref<any> = ref([
     }
   },
   {
-    title: $t('common.action'),
+    title: $t('common.actions'),
     key: 'created_at',
     minWidth: '100px',
     render: row => {

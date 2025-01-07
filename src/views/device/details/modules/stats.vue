@@ -39,7 +39,7 @@ const columns0 = [
     render: row => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
   },
   {
-    title: $t('common.action'),
+    title: $t('common.actions'),
     key: 'created_at',
     minWidth: '140px',
     render: row => (

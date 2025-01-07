@@ -63,7 +63,7 @@ const columns: Ref<DataTableColumns<RuleEngine.Rule>> = ref([
   },
   {
     key: 'actions',
-    title: $t('common.action'),
+    title: $t('common.actions'),
     align: 'left',
     width: '300px',
     render: row => {

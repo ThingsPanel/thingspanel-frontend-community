@@ -166,7 +166,7 @@ const columnsList: any = reactive([
       {
         key: 'actions',
         width: 350,
-        title: () => $t('common.action'),
+        title: () => $t('common.actions'),
         align: 'center',
         render: row => {
           return (
@@ -203,7 +203,7 @@ const columnsList: any = reactive([
       {
         key: 'actions',
         width: 350,
-        title: () => $t('common.action'),
+        title: () => $t('common.actions'),
         align: 'center',
         render: row => {
           return (
@@ -240,7 +240,7 @@ const columnsList: any = reactive([
       {
         key: 'actions',
         width: 350,
-        title: () => $t('common.action'),
+        title: () => $t('common.actions'),
         align: 'center',
         render: row => {
           return (
@@ -277,7 +277,7 @@ const columnsList: any = reactive([
       {
         key: 'actions',
         width: 350,
-        title: () => $t('common.action'),
+        title: () => $t('common.actions'),
         align: 'center',
         render: row => {
           return (
@@ -304,6 +304,19 @@ const columnsList: any = reactive([
     ]
   }
 ]);
+
+const updateAttributesData = (data: any) => {
+  columnsList[1].data = data?.list ?? [];
+  columnsList[1].total = Math.ceil(data?.total / 5);
+  columnsList[1].data?.forEach((item: any) => {
+    if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读') {
+      item.read_write_flag = $t('device_template.table_header.readOnly');
+    } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写') {
+      item.read_write_flag = $t('device_template.table_header.readAndWrite');
+    }
+  });
+};
+
 const handleParamsOfEventsAndcommands = data => {
   if (!data || !Array.isArray(data)) {
     return data;
@@ -317,74 +330,68 @@ const handleParamsOfEventsAndcommands = data => {
     };
   });
 };
-const getTableData: (value?: string) => void = async value => {
-  startLoading();
- 
-  if (value) {
-    if (value === 'telemetry') {
-      const { data: data0 }: any = await telemetryApi(queryParams[0]);
-      columnsList[0].data = data0?.list ?? [];
-      columnsList[0].total = Math.ceil(data0?.total / 5);
-      columnsList[0].data.forEach((item: any) => {
-       if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读'){
-          item.read_write_flag = $t('device_template.table_header.readOnly')
-       } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写'){
-          item.read_write_flag = $t('device_template.table_header.readAndWrite')
-       }         
-    });
-    } else if (value === 'attributes') {    
-      const { data: data1 }: any = await attributesApi(queryParams[1]);
-      columnsList[1].data = data1?.list ?? [];
-      columnsList[1].total = Math.ceil(data1?.total / 5);
-      columnsList[1].data?.forEach((item: any )=> {
-       if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读'){
-          item.read_write_flag = $t('device_template.table_header.readOnly')
-       } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写'){
-          item.read_write_flag = $t('device_template.table_header.readAndWrite')
-       }         
-      }); 
-     
-    } else if (value === 'events') {
-      const { data: data2 }: any = await eventsApi(queryParams[2]);
-      columnsList[2].data = handleParamsOfEventsAndcommands(data2?.list ?? []);
-      columnsList[2].total = Math.ceil(data2?.total / 5);
-    } else {
-      const { data: data3 }: any = await commandsApi(queryParams[3]);
-      columnsList[3].data = handleParamsOfEventsAndcommands(data3?.list ?? []);
-      columnsList[3].total = Math.ceil(data3?.total / 5);
+
+// Helper functions to update data
+const updateTelemetryData = (data: any) => {
+  columnsList[0].data = data?.list ?? [];
+  columnsList[0].total = Math.ceil(data?.total / 5);
+  columnsList[0].data.forEach((item: any) => {
+    if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读') {
+      item.read_write_flag = $t('device_template.table_header.readOnly');
+    } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写') {
+      item.read_write_flag = $t('device_template.table_header.readAndWrite');
     }
-    endLoading();
-  } else {
-    
-    const { data: data0 }: any = await telemetryApi(queryParams[0]);
-    columnsList[0].data = data0?.list ?? [];
-    columnsList[0].total = Math.ceil(data0?.total / 5);
-    columnsList[0].data.forEach((item: any)=> {
-       if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读'){
-          item.read_write_flag = $t('device_template.table_header.readOnly')
-       } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写'){
-          item.read_write_flag = $t('device_template.table_header.readAndWrite')
-       }         
-    });
-    const { data: data1 }: any = await attributesApi(queryParams[1]);
-    columnsList[1].data = data1?.list ?? [];
-    columnsList[1].total = Math.ceil(data1?.total / 5);
-    columnsList[1].data?.forEach((item: any) => {
-       if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读'){
-          item.read_write_flag = $t('device_template.table_header.readOnly')
-       } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写'){
-          item.read_write_flag = $t('device_template.table_header.readAndWrite')
-       }         
-    }); 
-    const { data: data2 }: any = await eventsApi(queryParams[2]);
-    columnsList[2].data = handleParamsOfEventsAndcommands(data2?.list ?? []);
-    columnsList[2].total = Math.ceil(data2?.total / 5);
-    const { data: data3 }: any = await commandsApi(queryParams[3]);
-    columnsList[3].data = handleParamsOfEventsAndcommands(data3?.list ?? []);
-    columnsList[3].total = Math.ceil(data3?.total / 5);
+  });
+};
+
+const updateEventsData = (data: any) => {
+  columnsList[2].data = handleParamsOfEventsAndcommands(data?.list ?? []);
+  columnsList[2].total = Math.ceil(data?.total / 5);
+};
+
+const updateCommandsData = (data: any) => {
+  columnsList[3].data = handleParamsOfEventsAndcommands(data?.list ?? []);
+  columnsList[3].total = Math.ceil(data?.total / 5);
+};
+const getTableData: (value?: string) => Promise<void> = async value => {
+  startLoading();
+  try {
+    if (value) {
+      // Handle single tab data loading
+      if (value === 'telemetry') {
+        const { data: data0 }: any = await telemetryApi(queryParams[0]);
+        updateTelemetryData(data0);
+      } else if (value === 'attributes') {
+        const { data: data1 }: any = await attributesApi(queryParams[1]);
+        updateAttributesData(data1);
+      } else if (value === 'events') {
+        const { data: data2 }: any = await eventsApi(queryParams[2]);
+        updateEventsData(data2);
+      } else {
+        const { data: data3 }: any = await commandsApi(queryParams[3]);
+        updateCommandsData(data3);
+      }
+    } else {
+      // Load all tabs data concurrently
+      const [telemetryRes, attributesRes, eventsRes, commandsRes] = await Promise.all([
+        telemetryApi(queryParams[0]),
+        attributesApi(queryParams[1]),
+        eventsApi(queryParams[2]),
+        commandsApi(queryParams[3])
+      ]);
+
+      updateTelemetryData(telemetryRes.data);
+      updateAttributesData(attributesRes.data);
+      updateEventsData(eventsRes.data);
+      updateCommandsData(commandsRes.data);
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  } finally {
     endLoading();
   }
 };
+
 getTableData();
 </script>
 

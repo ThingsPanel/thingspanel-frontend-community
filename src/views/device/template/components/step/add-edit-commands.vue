@@ -103,7 +103,7 @@ const col: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
     key: 'actions',
 
-    title: () => $t('common.action'),
+    title: () => $t('common.actions'),
     align: 'center',
     render: row => {
       return (

@@ -173,7 +173,7 @@ const toServiceClick = () => {
       </NForm>
     </NCard>
     <n-scrollbar v-if="deviceDataStore?.deviceData?.access_way !== 'B'" class="h-400px">
-      <NCard :title="$t('generate.connection-info')">
+      <NCard :title="$t('custom.devicePage.connectInfo')">
         <NDescriptions :column="1">
           <NDescriptionsItem v-for="(value, key, index) in connectInfo" :key="key" :index="index" :label="key">
             <span :id="index.toString()" class="font-600" @click="copy(index)">{{ value }}</span>

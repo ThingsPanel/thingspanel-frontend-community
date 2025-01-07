@@ -56,13 +56,13 @@ let components = [
   },
   {
     key: 'message',
-    name: () => $t('custom.device_details.message'),
+    name: () => $t('custom.device_details.AdditionalDetails'),
     component: Message,
     refreshKey: 0
   },
   {
     key: 'stats',
-    name: () => $t('custom.device_details.stats'),
+    name: () => $t('custom.device_details.attributes'),
     component: Stats,
     refreshKey: 0
   },

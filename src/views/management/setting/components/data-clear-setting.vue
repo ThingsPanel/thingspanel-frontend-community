@@ -93,7 +93,7 @@ const columns: Ref<DataTableColumns<GeneralSetting.DataClearSetting>> = ref([
   },
   {
     key: 'actions',
-    title: () => $t('common.action'),
+    title: () => $t('common.actions'),
     align: 'center',
     width: '100px',
     render: row => {

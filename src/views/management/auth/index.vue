@@ -159,7 +159,7 @@ const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
   },
   {
     key: 'actions',
-    title: () => $t('common.action'),
+    title: () => $t('common.actions'),
     align: 'left',
     minWidth: '140px',
     render: row => {
