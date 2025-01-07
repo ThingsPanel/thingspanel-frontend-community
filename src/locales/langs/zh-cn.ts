@@ -1709,7 +1709,7 @@ const local: App.I18n.Schema = {
     'rich-text-plugin': '富文本插件',
     'text-copy': '文本复制',
     'medium-card': '中卡片',
-    dashboard: 'Dashboard',
+    dashboard: 'ToBeDel-Dashboard',
     'map-plugin': '地图插件',
     'small-card': '小卡片',
     'alarm-center': '告警中心',
