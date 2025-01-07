@@ -109,7 +109,7 @@ const columns: any = ref([
   },
   {
     key: 'actions',
-    title: () => $t('common.action'),
+    title: () => $t('common.actions'),
     align: 'left',
     minWidth: '220px',
     render: row => {

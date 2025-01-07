@@ -1307,7 +1307,7 @@ declare namespace App {
           join: string;
           deviceAnalysis: string;
           message: string;
-          stats: string;
+          attributes: string;
           eventReport: string;
           commandDelivery: string;
           automate: string;
@@ -1373,6 +1373,7 @@ declare namespace App {
         selectSubDevices: string;
         setSubDevices: string;
         unbind: string;
+        unbound: string;
         errorMessage: string;
         returnFail: string;
         returnSuccess: string;

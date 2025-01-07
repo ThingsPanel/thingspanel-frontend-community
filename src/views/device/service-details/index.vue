@@ -75,7 +75,7 @@ const columns: any = ref([
   },
   {
     key: 'actions',
-    title: () => $t('common.action'),
+    title: () => $t('common.actions'),
     align: 'left',
     width: '420px',
     ellipsis: {

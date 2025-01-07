@@ -203,7 +203,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'actions',
     width: '200px',
-    title: $t('common.action'),
+    title: $t('common.actions'),
     align: 'left',
     render: (row: any) => {
       const operatorBtn = row.operatorBtn.map(item => {

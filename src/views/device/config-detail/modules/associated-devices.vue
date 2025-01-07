@@ -158,7 +158,7 @@ const columnsData: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
   },
   {
     key: 'actions',
-    title: () => $t('common.action'),
+    title: () => $t('common.actions'),
     align: 'center',
     width: '250px',
     render: row => {
@@ -251,8 +251,8 @@ onMounted(async () => {
             :options="deviceOptions"
             label-field="name"
             value-field="id"
-            filterable
             multiple
+            filterable
             @scroll="handleScroll"
           ></NSelect>
         </NFormItem>

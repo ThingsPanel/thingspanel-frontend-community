@@ -117,7 +117,7 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   },
   {
     key: 'actions',
-    title: $t('common.action'),
+    title: $t('common.actions'),
     align: 'center',
     width: '300px',
     render: row => {
