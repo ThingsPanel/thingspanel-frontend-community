@@ -45,7 +45,7 @@ export const productLocaleEn: ProductLocal = {
     noActive: 'Inactive' // 未激活
   },
   'update-package': {
-    packageList: 'Upgrade Package List',
+    packageList: 'Upgrade Packages',
     packageName: 'Upgrade Package Name',
     version: 'Target Version for Upgrade',
     versionText: 'Version Code',
