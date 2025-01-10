@@ -591,7 +591,7 @@ watch(
           <NText v-if="showMessage" :style="messageStyle">
             {{
               buttonDisabled
-                ? $t('custom.devicePage.deviceNumberNotVvailable')
+                ? $t('custom.devicePage.deviceNumberNotAvailable')
                 : $t('custom.devicePage.enterDeviceNumber')
             }}
           </NText>
