@@ -90,6 +90,7 @@ onMounted(() => {
                 <div>
                   {{ item.device_count }}
                   <span>{{ $t('generate.individual') }}</span>
+                  &nbsp;
                   <span>{{ $t('generate.device') }}</span>
                 </div>
                 <div>
