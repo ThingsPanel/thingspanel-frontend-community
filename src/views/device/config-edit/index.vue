@@ -195,7 +195,7 @@ onMounted(async () => {
   }
   getDeviceTemplate();
 
-  await getProtocolList(configForm.value.device_type);
+  await getProtocolList(configForm?.value.device_type || '1');
 
   if (configForm.value.protocol_type) {
     await getVoucherType(configForm.value.protocol_type);
@@ -236,6 +236,7 @@ onMounted(async () => {
                 protocol_config.value = null;
                 configForm.voucher_type = null;
                 configForm.protocol_type = null;
+                getProtocolList(v);
               }
             "
           >
