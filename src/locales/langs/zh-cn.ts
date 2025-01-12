@@ -641,7 +641,7 @@ const local: App.I18n.Schema = {
     device_manage: '设备管理',
     device_details: '设备详情',
     'device_details-child': '子设备详情',
-    device_config: '配置模板',
+    device_config: '设备模板',
     'device_config-detail': '设备模板详情',
     'device_config-edit': '编辑设备',
     'system-management-user': '系统管理(租户)',
