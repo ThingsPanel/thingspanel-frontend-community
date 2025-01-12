@@ -141,7 +141,7 @@ const local: App.I18n.Schema = {
       operationUsers: '操作用户',
       operationType: '操作类型',
       telemetry: '遥测',
-      join: '设备连接',
+      join: '连接',
       deviceAnalysis: '子设备',
       chart: '图表',
       AdditionalDetails: '信息',
