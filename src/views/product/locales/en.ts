@@ -23,7 +23,7 @@ export const productLocaleEn: ProductLocal = {
     productKey: 'ProductKey',
     productImage: 'Image',
     preRegister: 'Pre-registration Management',
-    deviceNumber: 'Device Number',
+    deviceNumber: 'Device ID',
     batchNumber: 'Batch Number',
     firmwareVersion: 'Firmware Version',
     onlineDate: 'Launch Date',
