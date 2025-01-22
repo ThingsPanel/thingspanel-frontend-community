@@ -562,7 +562,7 @@ const local: App.I18n.Schema = {
     function: {
       tab: {
         tabOperate: {
-          title: 'Tab Operation',
+          title: 'Tab Actions',
           addTab: 'Create Tab',
           addTabDesc: 'To about page',
           closeTab: 'Close Tab',
@@ -739,7 +739,7 @@ const local: App.I18n.Schema = {
           },
           type: {
             equipmentData: 'Device Data',
-            operationLog: 'Operation Log'
+            operationLog: 'Actions Log'
           }
         }
       },
@@ -1511,9 +1511,9 @@ const local: App.I18n.Schema = {
     delete: 'Delete',
     'add-row': 'Add a Row',
     search: 'Search',
-    'delete-operation': 'Delete an Operation',
+    'delete-operation': 'Delete an Action',
     enter: 'Enter',
-    'add-operation': 'Add an Operation',
+    'add-operation': 'Add an Action',
     group: 'Group',
     and: 'and',
     save: 'Save',
@@ -1657,7 +1657,7 @@ const local: App.I18n.Schema = {
     'add-extension-info': 'Add Extended Details',
     'rule-engine': 'Rule Engine',
     'device-group': 'Device Group',
-    operation: 'Operation',
+    operation: 'Actions',
     'api-support-flag': 'API support flag',
     'modification-time': 'Modification Time',
     system: 'System',
@@ -1681,7 +1681,7 @@ const local: App.I18n.Schema = {
     'gateway-sub-device': 'Sub-device',
     'device-configuration': 'Device Configuration:',
     gateway: 'Gateway',
-    'quick-operation': 'Quick Operation',
+    'quick-operation': 'Quick Action',
     'direct-connected-device': 'Direct Device',
     'authentication-type': 'Auth Method',
     publish: 'Publish',
@@ -1966,7 +1966,7 @@ const local: App.I18n.Schema = {
     httpwsInterface: 'http WS Interface',
     stopped: 'Stopped',
     deviceData: 'Device Data',
-    operationLog: 'Operation Log',
+    operationLog: 'Actions Log',
     emailNotice: 'Email Notice',
     smsNotice: 'SMS Notice',
     voicemailNotice: 'Voicemail Notice',
