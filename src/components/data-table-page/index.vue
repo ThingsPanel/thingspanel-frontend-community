@@ -307,7 +307,7 @@ const handleInputChange = () => {
               <NInput
                 v-model:value="searchCriteria[config.key]"
                 size="small"
-                :placeholder="config.label"
+                :placeholder="$t(config.label)"
                 class="input-style"
                 @update:value="handleInputChange"
               />
@@ -317,7 +317,7 @@ const handleInputChange = () => {
                 v-model:value="searchCriteria[config.key]"
                 size="small"
                 type="daterange"
-                :placeholder="config.label"
+                :placeholder="$t(config.label)"
                 class="input-style"
               />
             </template>
@@ -341,7 +341,7 @@ const handleInputChange = () => {
                 :options="config.options"
                 :render-label="config.renderLabel"
                 :render-tag="config.renderTag"
-                :placeholder="config.label"
+                :placeholder="$t(config.label)"
                 class="input-style"
                 @update:value="currentPage = 1"
               />
@@ -351,7 +351,7 @@ const handleInputChange = () => {
                 v-model:value="searchCriteria[config.key]"
                 size="small"
                 type="date"
-                :placeholder="config.label"
+                :placeholder="$t(config.label)"
                 class="input-style"
               />
             </template>
