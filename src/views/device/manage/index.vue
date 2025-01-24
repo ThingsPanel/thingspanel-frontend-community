@@ -211,7 +211,7 @@ const actions = [
 const searchConfigs = ref<SearchConfig[]>([
   {
     key: 'group_id',
-    label: $t('custom.devicePage.selectGroup'),
+    label: 'custom.devicePage.selectGroup',
     type: 'tree-select',
     multiple: false,
     options: [{ label: $t('custom.devicePage.group'), key: '' }],
@@ -219,7 +219,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'device_config_id',
-    label: $t('custom.devicePage.unlimitedDeviceConfig'),
+    label: 'custom.devicePage.unlimitedDeviceConfig',
     type: 'select',
     options: [],
     labelField: 'name',
@@ -228,7 +228,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'is_online',
-    label: $t('custom.devicePage.unlimitedOnlineStatus'),
+    label: 'custom.devicePage.unlimitedOnlineStatus',
     type: 'select',
     options: [
       { label: () => $t('custom.devicePage.unlimitedOnlineStatus'), value: '' },
@@ -238,7 +238,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'warn_status',
-    label: $t('custom.devicePage.unlimitedAlarmStatus'),
+    label: 'custom.devicePage.unlimitedAlarmStatus',
     type: 'select',
     options: [
       { label: () => $t('custom.devicePage.unlimitedAlarmStatus'), value: '' },
@@ -248,7 +248,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'device_type',
-    label: $t('custom.devicePage.unlimitedAccessType'),
+    label: 'custom.devicePage.unlimitedAccessType',
     type: 'select',
     options: [
       { label: $t('custom.devicePage.unlimitedAccessType'), value: '' },
@@ -261,18 +261,18 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'service_identifier',
-    label: $t('card.anyProtocolService'),
+    label: 'card.anyProtocolService',
     type: 'select',
     options: [{ label: $t('card.anyProtocolService'), value: '' }]
   },
   {
     key: 'search',
-    label: $t('custom.devicePage.deviceNameOrNumber'),
+    label: 'custom.devicePage.deviceNameOrNumber',
     type: 'input'
   },
   {
     key: 'label',
-    label: $t('custom.devicePage.label'),
+    label: 'custom.devicePage.label',
     type: 'input'
   }
 ]);
