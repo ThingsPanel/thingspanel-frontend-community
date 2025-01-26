@@ -808,6 +808,10 @@ declare namespace App {
               iconify: string;
               local: string;
             };
+            tooltip: {
+              deviceConfig: string;
+              deviceTemplate: string;
+            };
           };
           setting: {
             themeSetting: {

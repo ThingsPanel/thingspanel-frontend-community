@@ -9,6 +9,7 @@ import { useAppStore } from '@/store/modules/app';
 import { useThemeStore } from '@/store/modules/theme';
 import { useRouteStore } from '@/store/modules/route';
 import { useRouterPush } from '@/hooks/common/router';
+import { $t } from '@/locales';
 
 defineOptions({
   name: 'BaseMenu'
@@ -73,7 +74,7 @@ const renderMenuLabel = op => {
       NTooltip,
       { trigger: 'hover' },
       {
-        default: op.remark,
+        default: $t(op.remark),
         trigger: op.label
       }
     );

@@ -714,6 +714,10 @@ const local: App.I18n.Schema = {
         iconType: {
           iconify: 'Iconify Icon',
           local: 'Local Icon'
+        },
+        tooltip: {
+          deviceConfig: 'All configurations such as the protocol and other parameters of the device',
+          deviceTemplate: 'Define the physical model and display the chart'
         }
       },
       setting: {
