@@ -3,8 +3,6 @@ import { productLocaleEn } from '@/views/product/locales/en';
 const local: App.I18n.Schema = {
   default: '',
   title: 'ThingsPanel',
-  定义物模型和显示图表: 'Define the physical model and display the chart',
-  设备的协议和其他参数等所有配置: 'All configurations such as the protocol and other parameters of the device',
   system: {
     title: 'ThingsPanel'
   },
@@ -716,6 +714,10 @@ const local: App.I18n.Schema = {
         iconType: {
           iconify: 'Iconify Icon',
           local: 'Local Icon'
+        },
+        tooltip: {
+          deviceConfig: 'All configurations such as the protocol and other parameters of the device',
+          deviceTemplate: 'Define the physical model and display the chart'
         }
       },
       setting: {

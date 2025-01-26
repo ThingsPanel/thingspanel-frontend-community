@@ -928,6 +928,10 @@ const local: App.I18n.Schema = {
         iconType: {
           iconify: 'iconify图标',
           local: '本地图标'
+        },
+        tooltip: {
+          deviceConfig: '设备的协议和其他参数等所有配置',
+          deviceTemplate: '定义物模型和显示图表'
         }
       },
       setting: {
