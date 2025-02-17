@@ -9,3 +9,4 @@ export * from './notification-services';
 export * from './device';
 export * from './irrigation';
 export * from './plugin';
+export * from './apikey';
