@@ -218,7 +218,7 @@ getData();
           <n-ellipsis :line-clamp="2" class="h-40px">
             {{ item.description }}
           </n-ellipsis>
-          <NFlex justify="flex-end" class="mt-4">
+          <NFlex justify="flex-end" class="mt-4" style="display: flex; position: absolute; bottom: 15px; right: 20px">
             <NTooltip trigger="hover">
               <template #trigger>
                 <NButton tertiary circle type="warning" @click="linkEdit(item)">
