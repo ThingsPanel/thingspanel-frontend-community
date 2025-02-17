@@ -630,6 +630,7 @@ const local: App.I18n.Schema = {
     management_auth: '菜单管理',
     management_role: '角色管理',
     management_user: '租户管理',
+    management_api: 'API key',
     'management_ordinary-user': '用户管理',
     management_route: '路由管理',
     management_setting: '系统设置',
@@ -821,6 +822,22 @@ const local: App.I18n.Schema = {
         addRole: '新增角色',
         editRole: '编辑角色',
         editPermission: '编辑权限'
+      },
+      api: {
+        title: 'API key',
+        addApiKey: '创建API key',
+        apiName: '名称',
+        api_key: 'key',
+        apiStatus: '状态',
+        created_at: '创建时间',
+        apiStatus1: {
+          freeze: '停用',
+          normal: '启用'
+        },
+        form: {
+          apiName: '请输入API key的名称'
+        },
+        editAPi: '编辑'
       },
       user: {
         title: '用户列表',

@@ -420,9 +420,36 @@ declare namespace Api {
       /** 上次访问时间 */
       lastVisitTime: string | null;
     }
+    interface UserKey {
+      /** 用户id */
+      id: string;
+      /** 用户名 */
+      name: string | null;
+      /** key */
+      api_key: string | null;
+      /**
+       * 用户状态
+       *
+       * - N: 正常
+       * - F: 冻结
+       */
+      status: 0 | 1 | null;
+      /** 创建时间 */
+      created_at: string | null;
+      /** 更新時間 */
+      updated_at: string | null;
+      /** 是否明文显示 */
+      show: boolean | false;
+      /** 租户id */
+      tenant_id: string | null;
+    }
 
     interface Data {
       list: User[];
+      total: number;
+    }
+    interface KeyData {
+      list: UserKey[];
       total: number;
     }
   }

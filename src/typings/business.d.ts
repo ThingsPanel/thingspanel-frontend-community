@@ -118,6 +118,8 @@ declare namespace NotificationServices {
 declare namespace UserManagement {
   interface User extends Api.UserManagement.User {}
 
+  interface UserKey extends Api.UserManagement.UserKey {}
+
   /**
    * 用户性别
    *

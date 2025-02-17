@@ -701,6 +701,22 @@ declare namespace App {
             editRole: string;
             editPermission: string;
           };
+          api: {
+            title: string;
+            addApiKey: string;
+            apiName: string;
+            api_key: string;
+            apiStatus: string;
+            created_at: string;
+            apiStatus1: {
+              freeze: string;
+              normal: string;
+            };
+            form: {
+              apiName: string;
+            };
+            editAPi: string;
+          };
           user: {
             title: string;
             userName: string;

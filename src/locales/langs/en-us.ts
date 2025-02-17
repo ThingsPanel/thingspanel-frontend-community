@@ -608,6 +608,22 @@ const local: App.I18n.Schema = {
         editRole: 'Edit Role',
         editPermission: 'Edit Permission'
       },
+      api: {
+        title: 'API key',
+        addApiKey: 'Create API key',
+        apiName: 'name',
+        api_key: 'key',
+        apiStatus: 'status',
+        created_at: 'Create Time',
+        apiStatus1: {
+          freeze: 'Stop',
+          normal: 'Start'
+        },
+        form: {
+          apiName: 'Enter API key Name'
+        },
+        editAPi: 'Edit'
+      },
       user: {
         title: 'User List',
         userName: 'User Name',

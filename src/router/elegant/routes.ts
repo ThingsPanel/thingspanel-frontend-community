@@ -564,6 +564,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
+        name: 'management_api',
+        path: '/management/api',
+        component: 'view.management_api',
+        meta: {
+          title: 'management_api',
+          i18nKey: 'route.management_api'
+        }
+      },
+      {
         name: 'management_auth',
         path: '/management/auth',
         component: 'view.management_auth',
