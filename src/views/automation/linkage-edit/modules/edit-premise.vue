@@ -508,7 +508,7 @@ const expirationTimeOptions = ref([
   },
   {
     label: $t('common.days1'),
-    value: 1140
+    value: 1440
   }
 ]);
 
@@ -751,7 +751,6 @@ watch(
                       value-field="id"
                       label-field="name"
                       clearable
-               
                       :consistent-menu-width="false"
                       @click.prevent="
                         e => {
