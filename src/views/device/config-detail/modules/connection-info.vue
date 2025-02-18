@@ -118,12 +118,12 @@ const getVoucherType = async data => {
 //   active.value = true;
 // };
 
-const choseProtocolType = async data => {
-  extendForm.value.voucher_type = null;
-  // connectOptions.value = [];
-  await getVoucherType(data);
-  await getConfigForm(data);
-};
+// const choseProtocolType = async data => {
+//   extendForm.value.voucher_type = null;
+//   // connectOptions.value = [];
+//   await getVoucherType(data);
+//   await getConfigForm(data);
+// };
 
 onMounted(async () => {
   if (props.configInfo.protocol_config) {
