@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, toRefs } from 'vue';
+import { computed, reactive, ref, toRefs } from 'vue';
 import { $t } from '@/locales';
 import { useRouterPush } from '@/hooks/common/router';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
@@ -13,7 +13,7 @@ defineOptions({
 const auth = useAuthStore();
 const { toggleLoginModule } = useRouterPush();
 const { formRef, validate } = useNaiveForm();
-
+const readOnly = ref(true);
 interface FormModel {
   phone: string;
   code: string;
@@ -39,17 +39,22 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
     confirmPwd: getConfirmPwdRule(toRefs(model).pwd)
   };
 });
-// function handleSmsCode() {
-//   getSmsCode(model.phone)
-// }
 
 function handleSmsCode() {
-  start();
+  if (model.phone) {
+    start();
+  } else {
+    window.$message?.error($t('page.login.common.phonePlaceholder'));
+  }
 }
 async function handleSubmit() {
   await validate();
   window.$message?.success($t('page.login.common.validateSuccess'));
 }
+
+setTimeout(() => {
+  readOnly.value = false;
+}, 1000);
 </script>
 
 <template>
@@ -59,7 +64,11 @@ async function handleSubmit() {
     </NFormItem>
     <NFormItem path="code">
       <div class="w-full flex-y-center">
-        <NInput v-model:value="model.code" :placeholder="$t('page.login.common.codePlaceholder')" />
+        <NInput
+          v-model:value="model.code"
+          :readonly="readOnly"
+          :placeholder="$t('page.login.common.codePlaceholder')"
+        />
         <div class="w-18px"></div>
         <NButton size="large" :disabled="isCounting" :loading="smsLoading" @click="handleSmsCode">
           {{ label }}
@@ -71,6 +80,7 @@ async function handleSubmit() {
       <NInput
         v-model:value="model.pwd"
         type="password"
+        autocomplete="new-password"
         show-password-on="click"
         :placeholder="$t('page.login.common.passwordPlaceholder')"
       />
