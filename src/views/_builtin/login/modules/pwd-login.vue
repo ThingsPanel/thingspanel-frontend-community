@@ -84,7 +84,7 @@ onMounted(() => {
       <div class="flex-y-center justify-between">
         <NCheckbox>{{ $t('page.login.pwdLogin.rememberMe') }}</NCheckbox>
         <!--         <NButton quaternary @click="toggleLoginModule('reset-pwd')">-->
-        <NButton quaternary>
+        <NButton quaternary @click="toggleLoginModule('reset-pwd')">
           {{ $t('page.login.pwdLogin.forgetPassword') }}
         </NButton>
       </div>
