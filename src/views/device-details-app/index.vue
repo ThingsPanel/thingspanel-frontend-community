@@ -3,7 +3,7 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ICardView } from '@/components/panel/card';
 import type { ICardRender } from '@/utils/websocketUtil';
-import { $t } from '@/locales';
+import { $t, setLocale } from '@/locales';
 import { deviceDetail, deviceTemplateDetail } from '@/service/api/device';
 import { formatDateTime } from '@/utils/common/datetime';
 import { localStg } from '@/utils/storage';
@@ -19,7 +19,7 @@ if (token) {
 }
 
 if (lang) {
-  localStg.set('lang', lang as App.I18n.LangType);
+  setLocale(lang as App.I18n.LangType);
 }
 
 const device_color = ref('#ccc');
