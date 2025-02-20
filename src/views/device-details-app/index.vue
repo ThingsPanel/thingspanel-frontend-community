@@ -3,7 +3,7 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { ICardView } from '@/components/panel/card';
 import type { ICardRender } from '@/utils/websocketUtil';
-import { $t } from '@/locales';
+import { $t, setLocale } from '@/locales';
 import { deviceDetail, deviceTemplateDetail } from '@/service/api/device';
 import { formatDateTime } from '@/utils/common/datetime';
 import { localStg } from '@/utils/storage';
@@ -11,11 +11,15 @@ import { useWebsocketUtil } from '@/utils/websocketUtil';
 import TelemetryDataCards from './telemetryDataCards.vue';
 
 const { query } = useRoute();
-const { d_id, token } = query;
+const { d_id, token, lang } = query;
 const deviceData: any = ref({});
 
 if (token) {
   localStg.set('token', token as string);
+}
+
+if (lang) {
+  setLocale(lang as App.I18n.LangType);
 }
 
 const device_color = ref('#ccc');
