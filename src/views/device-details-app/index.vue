@@ -11,11 +11,15 @@ import { useWebsocketUtil } from '@/utils/websocketUtil';
 import TelemetryDataCards from './telemetryDataCards.vue';
 
 const { query } = useRoute();
-const { d_id, token } = query;
+const { d_id, token, lang } = query;
 const deviceData: any = ref({});
 
 if (token) {
   localStg.set('token', token as string);
+}
+
+if (lang) {
+  localStg.set('lang', lang as App.I18n.LangType);
 }
 
 const device_color = ref('#ccc');
