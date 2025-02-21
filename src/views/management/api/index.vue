@@ -74,7 +74,7 @@ const columns: Ref<DataTableColumns<UserManagement.UserKey>> = ref([
             <span>{row.api_key}</span>
             <NSpace>
               <svg-icon local-icon="eye-close" class="text-20px" onClick={() => handleCloseEye(row.id)} />
-              <svg-icon local-icon="copy" class="text-20px" onClick={() => handleCopyKey(row.id)} />
+              <svg-icon local-icon="copy" class="text-20px" onClick={() => handleCopyKey(row.api_key)} />
             </NSpace>
           </NSpace>
         );
