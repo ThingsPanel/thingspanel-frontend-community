@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, reactive, ref, toRefs } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { $t } from '@/locales';
 import { useRouterPush } from '@/hooks/common/router';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import useSmsCode from '@/hooks/business/use-sms-code';
 import { useAuthStore } from '@/store/modules/auth';
-import { getConfirmPwdRule } from '@/utils/form/rule';
+import { editUserPassWord } from '@/service/api/auth';
 defineOptions({
   name: 'ResetPwd'
 });
@@ -14,42 +14,55 @@ const auth = useAuthStore();
 const { toggleLoginModule } = useRouterPush();
 const { formRef, validate } = useNaiveForm();
 const readOnly = ref(true);
+const confirmPassWord = ref('');
 interface FormModel {
-  phone: string;
-  code: string;
-  pwd: string;
-  confirmPwd: string;
+  email: string;
+  verify_code: string;
+  password: string;
+  is_register: number;
 }
 
 const model: FormModel = reactive({
-  phone: '',
-  code: '',
-  pwd: '',
-  confirmPwd: ''
+  email: '',
+  verify_code: '',
+  password: '',
+  is_register: 2
 });
-const { label, isCounting, loading: smsLoading, start } = useSmsCode();
+const { label, isCounting, loading: smsLoading, start, isValidEmail, getSmsCodeByEmail } = useSmsCode();
 
 const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
   const { formRules } = useFormRules(); // inside computed to make locale reactive
 
   return {
-    phone: formRules.phone,
-    code: formRules.code,
-    pwd: formRules.pwd,
-    confirmPwd: getConfirmPwdRule(toRefs(model).pwd)
+    email: formRules.email,
+    verify_code: formRules.code,
+    password: formRules.pwd,
+    is_register: formRules.pwd
   };
 });
 
-function handleSmsCode() {
-  if (model.phone) {
-    start();
+async function handleSmsCode() {
+  if (model.email) {
+    if (await isValidEmail(model.email)) {
+      start();
+      await getSmsCodeByEmail(model.email);
+      window.$message?.success($t('custom.grouping_details.operationSuccess'));
+    }
   } else {
-    window.$message?.error($t('page.login.common.phonePlaceholder'));
+    window.$message?.error($t('page.manage.user.form.userEmail'));
   }
 }
 async function handleSubmit() {
   await validate();
-  window.$message?.success($t('page.login.common.validateSuccess'));
+  if (model.password === confirmPassWord.value) {
+    const { error } = await editUserPassWord(model);
+    if (!error) {
+      window.$message?.success($t('page.login.common.validateSuccess'));
+      toggleLoginModule('pwd-login');
+    }
+  } else {
+    window.$message?.error($t('form.manycheck.required'));
+  }
 }
 
 setTimeout(() => {
@@ -59,13 +72,13 @@ setTimeout(() => {
 
 <template>
   <NForm ref="formRef" :model="model" :rules="rules" size="large" :show-label="false">
-    <NFormItem path="phone">
-      <NInput v-model:value="model.phone" :placeholder="$t('page.login.common.phonePlaceholder')" />
+    <NFormItem path="email">
+      <NInput v-model:value="model.email" :placeholder="$t('page.manage.user.form.userEmail')" />
     </NFormItem>
     <NFormItem path="code">
       <div class="w-full flex-y-center">
         <NInput
-          v-model:value="model.code"
+          v-model:value="model.verify_code"
           :readonly="readOnly"
           :placeholder="$t('page.login.common.codePlaceholder')"
         />
@@ -78,7 +91,7 @@ setTimeout(() => {
 
     <NFormItem path="pwd">
       <NInput
-        v-model:value="model.pwd"
+        v-model:value="model.password"
         type="password"
         autocomplete="new-password"
         show-password-on="click"
@@ -87,7 +100,7 @@ setTimeout(() => {
     </NFormItem>
     <NFormItem path="confirmPwd">
       <NInput
-        v-model:value="model.confirmPwd"
+        v-model:value="confirmPassWord"
         type="password"
         show-password-on="click"
         :placeholder="$t('page.login.common.confirmPasswordPlaceholder')"
