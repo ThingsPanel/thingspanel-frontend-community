@@ -1,7 +1,7 @@
 import { computed } from 'vue';
 import { useLoading } from '@sa/hooks';
 import { REG_PHONE } from '@/constants/reg';
-import { fetchSmsCode } from '@/service/api/auth';
+import { fetchEmailCodeByEmail, fetchSmsCode } from '@/service/api/auth';
 import useCountDown from './use-count-down';
 
 export default function useSmsCode() {
@@ -32,6 +32,12 @@ export default function useSmsCode() {
     }
     return valid;
   }
+  /** 判断邮箱格式是否正确 */
+  async function isValidEmail(email) {
+    // 正则表达式来匹配邮箱格式
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    return emailRegex.test(email);
+  }
 
   /**
    * 获取短信验证码
@@ -49,12 +55,29 @@ export default function useSmsCode() {
     }
     endLoading();
   }
+  /**
+   * 根据邮箱获取短信验证码
+   *
+   * @param phone - 手机号
+   */
+  async function getSmsCodeByEmail(phone: string) {
+    const valid = isValidEmail(phone);
+    if (!valid || loading.value) return;
 
+    startLoading();
+    const { data } = await fetchEmailCodeByEmail(phone);
+    if (data) {
+      start();
+    }
+    endLoading();
+  }
   return {
     label,
     start,
     isCounting,
     getSmsCode,
-    loading
+    loading,
+    isValidEmail,
+    getSmsCodeByEmail
   };
 }

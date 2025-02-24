@@ -40,7 +40,14 @@ export function fetchEmailCode(email: string) {
     }
   });
 }
-
+export function fetchEmailCodeByEmail(email: string) {
+  return request.get<{ email: string; is_register: number } | null>('/verification/code', {
+    params: {
+      email,
+      is_register: 2
+    }
+  });
+}
 /** 获取用户列表 */
 export const fetchUserList = async (params: any) => {
   const data = await request.get<Api.UserManagement.Data | null>('/user', {
@@ -71,6 +78,11 @@ export const delUser = async (id: string) => {
 /** 切换用户 */
 export const transformUser = async (params: any) => {
   const data = await request.post<Api.Auth.LoginToken>(`/user/transform`, params);
+  return data;
+};
+/** 修改密码 */
+export const editUserPassWord = async (params: any) => {
+  const data = await request.post<Api.BaseApi.Data>(`/reset/password`, params);
   return data;
 };
 
