@@ -187,3 +187,9 @@ export const deviceCustomControlPut = async (params: any): Promise<any> => {
   const data = await request.put('/device/model/custom/control', params);
   return data;
 };
+
+/** 获取设备在线趋势 */
+export const getOnlineDeviceTrend = async () => {
+  const data = await request.get<Api.BaseApi.Data | null>('/board/trend');
+  return data;
+};
