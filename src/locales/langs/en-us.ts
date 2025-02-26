@@ -1919,6 +1919,8 @@ const local: App.I18n.Schema = {
     msgUnit: 'piece',
     offlineDev: 'Offline devices',
     onlineDev: 'Online devices',
+    onlineTrend: 'Device Online Trend',
+    onlineRate: 'Device Online Rate',
     barChart: 'Bar Chart',
     curve: 'Curve',
     selectedIcon: 'Selected Icon',
