@@ -204,9 +204,11 @@ getData();
     <NGrid v-else x-gap="20px" y-gap="20px" cols="1 s:2 m:3 l:4" responsive="screen">
       <NGridItem v-for="(item, index) in sceneLinkageList" :key="index">
         <NCard hoverable style="height: 180px">
-          <NFlex justify="space-between" align="center" class="mb-4">
-            <div class="text-16px font-600">
-              {{ item.name }}
+          <NFlex justify="space-between" align="center" class="mb-4" :wrap="false">
+            <div class="mr-2 flex-1 overflow-hidden text-16px font-600">
+              <n-ellipsis>
+                {{ item.name }}
+              </n-ellipsis>
             </div>
             <n-switch
               v-model:value="item.enabled"

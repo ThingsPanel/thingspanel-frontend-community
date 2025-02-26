@@ -1913,6 +1913,8 @@ const local: App.I18n.Schema = {
     msgUnit: '条',
     offlineDev: '离线设备数',
     onlineDev: '在线设备数',
+    onlineTrend: '设备在线趋势',
+    onlineRate: '设备在线率（12小时）',
     barChart: '柱状图',
     curve: '曲线',
     selectedIcon: '选中图标',
