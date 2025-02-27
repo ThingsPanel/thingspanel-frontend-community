@@ -8,6 +8,10 @@
  */
 import { request } from '../request';
 
+/** 获取个人信息 */
+export const fetchUserInfo = async () => {
+  return await request.get<Api.BaseApi.Data | any>('/board/user/info', {});
+};
 /** 修改个人基本信息 */
 export const changeInformation = async (params: any): Promise<any> => {
   const data = await request.post<Api.BaseApi.Data>('/board/user/update', params);
