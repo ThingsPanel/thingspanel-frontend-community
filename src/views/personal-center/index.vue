@@ -9,13 +9,14 @@
 <script setup lang="tsx">
 import { onMounted, ref, toRefs } from 'vue';
 import { NButton } from 'naive-ui';
-import type { FormItemRule, FormRules } from 'naive-ui';
+import type { FormItemRule, FormRules, UploadFileInfo } from 'naive-ui';
 // import { useAuthStore } from '@/store/modules/auth';
 import { $t } from '@/locales';
+import { localStg } from '@/utils/storage';
 import { getConfirmPwdRule } from '@/utils/form/rule';
 // import ChangeInformation from './components/change-information.vue';
 import { useNaiveForm } from '@/hooks/common/form';
-import { changeInformation, fetchUserInfo, passwordModification } from '@/service/api/personal-center';
+import { changeInformation, fetchUserInfo, passwordModification, uploadFile } from '@/service/api/personal-center';
 import { encryptDataByRsa, generateRandomHexString, validName, validPasswordByExp } from '@/utils/common/tool';
 import Camera from '@/assets/imgs/camera.png';
 import CameraBg from '@/assets/imgs/camera-bg.png';
@@ -23,7 +24,6 @@ import CameraBg from '@/assets/imgs/camera-bg.png';
 // const authStore = useAuthStore();
 const { formRef, validate } = useNaiveForm();
 // const message = useMessage();
-
 const currentIndex = ref(0);
 const editType = ref(false);
 const header = ref(false);
@@ -140,6 +140,14 @@ const submitPass = async () => {
   }
 };
 
+/** 上传头像 */
+const customRequest = async (file: UploadFileInfo, fileList: Array<UploadFileInfo>) => {
+  console.log('-----file', String(file) + fileList);
+  const form = new FormData();
+  form.append('type', 'user_icon');
+  form.append('avatar', file.file as File);
+  await uploadFile(form);
+};
 // 校验登录密码是否合规，不合规则弹窗修改密码
 // if (route.value.query.password && route.value.query.password === 'invalid') {
 //   changePassword();
@@ -159,6 +167,14 @@ onMounted(async () => {
   const { data } = await fetchUserInfo();
   userInfoData.value = data;
   console.log('res----', userInfoData.value.name);
+
+  const formdata = new FormData();
+  formdata.append('name', 'zbt');
+  formdata.append('name', 'hhh');
+
+  console.log('------', formdata);
+
+  console.log(formdata.get('name')); // 获取key为name的第一个值
 });
 </script>
 
@@ -167,13 +183,16 @@ onMounted(async () => {
     <div style="display: flex; margin-top: 30px; margin-bottom: 15px">
       <n-upload
         style="width: 100px"
-        action="https://www.mocky.io/v2/5e4bafc63100007100d8b70f"
+        action="#"
+        :show-file-list="false"
         :headers="{
-          'naive-info': 'hello!'
+          'x-token': localStg.get('token') || '',
+          'Acess-Control-Allow-Origin': '*'
         }"
         :data="{
-          'naive-data': 'cool! naive!'
+          type: 'user_icon'
         }"
+        :on-before-upload="customRequest"
       >
         <div style="">
           <SvgIcon v-if="!header" local-icon="avatar" style="width: 80px; height: 80px" />

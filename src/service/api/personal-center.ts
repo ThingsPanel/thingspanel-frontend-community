@@ -22,3 +22,8 @@ export const passwordModification = async (params: any): Promise<any> => {
   const data = await request.post('/board/user/update/password', params);
   return data;
 };
+/** 上传文件 */
+export const uploadFile = async (params: any): Promise<any> => {
+  const data = await request.post<Api.BaseApi.Data>('/file/up', params);
+  return data;
+};
