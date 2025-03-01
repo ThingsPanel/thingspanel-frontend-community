@@ -1900,7 +1900,9 @@ const local: App.I18n.Schema = {
     stateOnColor: '状态开颜色',
     stateOffIcon: '状态关图标',
     stateOffColor: '状态关颜色',
-    createForwardRule: '创建转发规则'
+    createForwardRule: '创建转发规则',
+    baseInfo: '基础信息',
+    secureSet: '安全设置'
   },
   kanban: {
     'add-cards': '添加卡片'

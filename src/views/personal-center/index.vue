@@ -9,26 +9,30 @@
 <script setup lang="tsx">
 import { onMounted, ref, toRefs } from 'vue';
 import { NButton } from 'naive-ui';
-import type { FormItemRule, FormRules, UploadFileInfo } from 'naive-ui';
-// import { useAuthStore } from '@/store/modules/auth';
+import type { FormItemRule, FormRules } from 'naive-ui';
 import { $t } from '@/locales';
 import { localStg } from '@/utils/storage';
 import { getConfirmPwdRule } from '@/utils/form/rule';
-// import ChangeInformation from './components/change-information.vue';
 import { useNaiveForm } from '@/hooks/common/form';
-import { changeInformation, fetchUserInfo, passwordModification, uploadFile } from '@/service/api/personal-center';
-import { encryptDataByRsa, generateRandomHexString, validName, validPasswordByExp } from '@/utils/common/tool';
+import { changeInformation, fetchUserInfo, passwordModification } from '@/service/api/personal-center';
+import {
+  encryptDataByRsa,
+  generateRandomHexString,
+  getDemoServerUrl,
+  validName,
+  validPasswordByExp
+} from '@/utils/common/tool';
 import Camera from '@/assets/imgs/camera.png';
 import CameraBg from '@/assets/imgs/camera-bg.png';
 
-// const authStore = useAuthStore();
+const url = ref(new URL(getDemoServerUrl()));
 const { formRef, validate } = useNaiveForm();
-// const message = useMessage();
 const currentIndex = ref(0);
 const editType = ref(false);
 const header = ref(false);
-
+const headUrl = ref('');
 const userInfoData = ref({
+  additional_info: '',
   name: '',
   email: '',
   phone_num: ''
@@ -140,41 +144,29 @@ const submitPass = async () => {
   }
 };
 
-/** 上传头像 */
-const customRequest = async (file: UploadFileInfo, fileList: Array<UploadFileInfo>) => {
-  console.log('-----file', String(file) + fileList);
-  const form = new FormData();
-  form.append('type', 'user_icon');
-  form.append('avatar', file.file as File);
-  await uploadFile(form);
-};
-// 校验登录密码是否合规，不合规则弹窗修改密码
-// if (route.value.query.password && route.value.query.password === 'invalid') {
-//   changePassword();
-// }
-// function modification(e) {
-//   if (e) {
-//     useAuthStore();
-//     authStore.userInfo.name = e;
-//     message.success($t('common.modifySuccess'));
-//   } else {
-//     message.error($t('common.modifyFail'));
-//   }
-// }
-
+async function handleFinish({ event }: { event?: ProgressEvent }) {
+  const response = JSON.parse((event?.target as XMLHttpRequest).response);
+  // 字符串转成对象
+  const obj = JSON.parse(userInfoData.value.additional_info);
+  obj.user_icon = response.data.path;
+  const info = JSON.stringify(obj);
+  userInfoData.value.additional_info = info;
+  const { error } = await changeInformation(userInfoData.value);
+  if (!error) {
+    headUrl.value = String(url.value.origin) + response.data.path.substring(1, obj.user_icon.length);
+    window.$message?.success($t('custom.grouping_details.operationSuccess'));
+  }
+}
 onMounted(async () => {
-  console.log('-----dds');
   const { data } = await fetchUserInfo();
   userInfoData.value = data;
-  console.log('res----', userInfoData.value.name);
-
-  const formdata = new FormData();
-  formdata.append('name', 'zbt');
-  formdata.append('name', 'hhh');
-
-  console.log('------', formdata);
-
-  console.log(formdata.get('name')); // 获取key为name的第一个值
+  if (userInfoData.value.additional_info === '{}') {
+    header.value = false;
+  } else {
+    header.value = true;
+    const obj = JSON.parse(userInfoData.value.additional_info);
+    headUrl.value = String(url.value.origin) + obj.user_icon.substring(1, obj.user_icon.length);
+  }
 });
 </script>
 
@@ -183,26 +175,19 @@ onMounted(async () => {
     <div style="display: flex; margin-top: 30px; margin-bottom: 15px">
       <n-upload
         style="width: 100px"
-        action="#"
+        :action="url + '/file/up'"
         :show-file-list="false"
         :headers="{
-          'x-token': localStg.get('token') || '',
-          'Acess-Control-Allow-Origin': '*'
+          'x-token': localStg.get('token') || ''
         }"
         :data="{
           type: 'user_icon'
         }"
-        :on-before-upload="customRequest"
+        @finish="handleFinish"
       >
         <div style="">
           <SvgIcon v-if="!header" local-icon="avatar" style="width: 80px; height: 80px" />
-          <n-avatar
-            v-else
-            style="width: 80px; height: 80px"
-            round
-            size="small"
-            src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-          />
+          <n-avatar v-else style="width: 80px; height: 80px" round size="small" :src="headUrl" />
           <div style="display: flex; width: 30px; height: 30px; margin-left: 50px; margin-top: -25px; z-index: 999">
             <img :src="CameraBg" style="width: 30px; height: 30px" />
             <img
@@ -214,7 +199,7 @@ onMounted(async () => {
       </n-upload>
 
       <div style="display: flex; flex-direction: column; margin-left: 20px">
-        <span style="font-size: 28px">个人空间</span>
+        <span style="font-size: 28px">{{ $t('generate.personal-space') }}</span>
         <span style="margin-top: 10px">{{ userInfoData.name }}</span>
       </div>
     </div>
@@ -229,7 +214,7 @@ onMounted(async () => {
             class="mt-5"
             @click="changeBtnType(0)"
           >
-            基础信息
+            {{ $t('generate.baseInfo') }}
           </NButton>
 
           <NButton
@@ -239,7 +224,7 @@ onMounted(async () => {
             class="mt-5"
             @click="changeBtnType(1)"
           >
-            安全设置
+            {{ $t('generate.secureSet') }}
           </NButton>
 
           <SvgIcon
