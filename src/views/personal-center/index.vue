@@ -280,28 +280,27 @@ onMounted(async () => {
                   :rules="rules"
                   :style="{ maxWidth: '440px' }"
                 >
-                  <NFormItem :label="$t('generate.last-name')" path="name">
+                  <NFormItem :label="$t('generate.last-name')" path="name" label-width="100">
                     <NInput
                       v-model:value="userInfoData.name"
                       :placeholder="$t('page.login.common.codePlaceholder')"
                       round
                     />
                   </NFormItem>
-                  <NFormItem :label="$t('generate.email-address')" path="email">
-                    <NInput
-                      v-model:value="userInfoData.email"
-                      :placeholder="$t('page.login.common.codePlaceholder')"
-                      round
-                    />
-                  </NFormItem>
-                  <NFormItem :label="$t('generate.phoneNumber')" path="phone_num">
+                  <NFormItem :label="$t('generate.phoneNumber')" path="phone_num" label-width="100">
                     <NInput
                       v-model:value="userInfoData.phone_num"
                       :placeholder="$t('page.login.common.codePlaceholder')"
                       round
                     />
                   </NFormItem>
-
+                  <NFormItem :label="$t('generate.email-address')" path="email" label-width="100">
+                    <NInput
+                      v-model:value="userInfoData.email"
+                      :placeholder="$t('page.login.common.codePlaceholder')"
+                      round
+                    />
+                  </NFormItem>
                   <NFormItem path="">
                     <NButton
                       style="width: 100px; margin-right: 50px"
