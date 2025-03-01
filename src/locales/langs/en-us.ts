@@ -1906,7 +1906,9 @@ const local: App.I18n.Schema = {
     stateOnColor: 'State on Color',
     stateOffIcon: 'State off Icon',
     stateOffColor: 'State off Color',
-    createForwardRule: 'Create Forward Rule'
+    createForwardRule: 'Create Forward Rule',
+    baseInfo: 'Base Info',
+    secureSet: 'Secure Set'
   },
   kanban: {
     'add-cards': 'Create Cards'
