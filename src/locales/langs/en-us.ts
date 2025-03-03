@@ -381,6 +381,7 @@ const local: App.I18n.Schema = {
     component_button: 'Button',
     component_card: 'Card',
     component_table: 'Table',
+    management_api: 'API keys',
     device_template: 'Device Model',
     apply: 'Application Management',
     apply_service: 'Protocol Plugin Management',

@@ -630,7 +630,7 @@ const local: App.I18n.Schema = {
     management_auth: '菜单管理',
     management_role: '角色管理',
     management_user: '租户管理',
-    management_api: 'API key',
+    management_api: 'API keys',
     'management_ordinary-user': '用户管理',
     management_route: '路由管理',
     management_setting: '系统设置',
