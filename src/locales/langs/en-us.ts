@@ -780,6 +780,10 @@ const local: App.I18n.Schema = {
         },
         shortMessage: {
           title: 'SME'
+        },
+        pushNotification: {
+          title: 'Push Notification',
+          pushServer: 'Push Notification Server'
         }
       }
     },

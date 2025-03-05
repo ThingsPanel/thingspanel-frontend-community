@@ -105,6 +105,7 @@ declare namespace GeneralSetting {
 
 declare namespace NotificationServices {
   interface Email extends Api.NotificationServices.Email {}
+  interface PushNotification extends Api.NotificationServices.PushNotification {}
 
   /**
    * 开启/关闭 服务
