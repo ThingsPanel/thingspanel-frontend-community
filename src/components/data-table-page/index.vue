@@ -16,6 +16,7 @@ export type SearchConfig =
       key: string;
       label: string;
       type: 'input' | 'date' | 'date-range';
+      initValue?: any;
     }
   | {
       key: string;
@@ -23,6 +24,7 @@ export type SearchConfig =
       type: 'select';
       renderLabel?: any;
       renderTag?: any;
+      initValue?: any;
       extendParams?: object;
       options: { label: theLabel; value: any }[];
       labelField?: string;
@@ -33,6 +35,7 @@ export type SearchConfig =
       key: string;
       label: string;
       type: 'tree-select';
+      initValue?: any;
       options: TreeSelectOption[];
       multiple: boolean;
       loadOptions?: () => Promise<TreeSelectOption[]>;
@@ -58,6 +61,8 @@ const props = defineProps<{
   }>;
   topActions: { element: () => JSX.Element }[]; // 顶部操作组件列表
   rowClick?: (row: any) => void; // 表格行点击回调
+  initPage?: number;
+  initPageSize?: number;
 }>();
 const { loading, startLoading, endLoading } = useLoading();
 // 解构props以简化访问
@@ -65,9 +70,9 @@ const { fetchData, columnsToShow, tableActions, searchConfigs }: any = props;
 const isTableView = ref(true); // 默认显示表格视图
 const dataList = ref([]); // 表格数据列表
 const total = ref(0); // 数据总数
-const currentPage = ref(1); // 当前页码
-const pageSize = ref(10); // 每页显示数量
-const searchCriteria: any = ref({}); // 搜索条件
+const currentPage = ref(props.initPage || 1); // 当前页码
+const pageSize = ref(props.initPageSize || 10); // 每页显示数量
+const searchCriteria: any = ref(Object.fromEntries(searchConfigs.map(item => [item.key, item.initValue]))); // 搜索条件
 
 // 获取数据的函数，结合搜索条件、分页等
 const getData = async () => {
