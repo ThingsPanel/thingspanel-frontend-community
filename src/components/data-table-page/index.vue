@@ -4,6 +4,7 @@ import { computed, defineProps, getCurrentInstance, ref, watch, watchEffect } fr
 import { NButton, NDataTable, NDatePicker, NInput, NPopconfirm, NSelect, NSpace } from 'naive-ui';
 import type { TreeSelectOption } from 'naive-ui';
 import { useLoading } from '@sa/hooks';
+import { debounce, throttle } from 'lodash-es';
 import { $t } from '@/locales';
 import { formatDateTime } from '@/utils/common/datetime';
 import { createLogger } from '@/utils/logger';
@@ -42,7 +43,7 @@ export type SearchConfig =
     };
 
 // 通过props从父组件接收参数
-
+const emits = defineEmits(['paramsUpdate']);
 const props = defineProps<{
   fetchData: (data: any) => Promise<any>; // 数据获取函数
   columnsToShow: // 表格列配置
@@ -193,12 +194,15 @@ const onUpdatePageSize = newPageSize => {
   getData(); // 更新数据
 };
 
+// 添加一个标志位，用于防止重复调用
+const isUpdatingFromInput = ref(false);
+
 // 添加对 searchCriteria 的监听
 watch(
   searchCriteria,
   (newVal, oldVal) => {
-    // 检查是否真的发生了变化
-    if (JSON.stringify(newVal) !== JSON.stringify(oldVal)) {
+    // 检查是否真的发生了变化，且不是由输入框直接触发的
+    if (JSON.stringify(newVal) !== JSON.stringify(oldVal) && !isUpdatingFromInput.value) {
       currentPage.value = 1; // 重置到第一页
       getData(); // 重新获取数据
     }
@@ -208,6 +212,11 @@ watch(
 
 // 观察分页和搜索条件的变化，自动重新获取数据
 watchEffect(() => {
+  if (!searchConfigs) return;
+
+  // 如果是由输入框更新触发的，则跳过
+  if (isUpdatingFromInput.value) return;
+
   searchConfigs.map((item: any) => {
     const vals = searchCriteria.value[item.key];
     if (item?.extendParams && vals) {
@@ -220,6 +229,7 @@ watchEffect(() => {
       });
     }
   });
+  emits('paramsUpdate', searchCriteria.value);
   getData();
 });
 
@@ -237,8 +247,23 @@ const handleReset = () => {
 
   handleSearch(); // 重置后重新获取数据
 };
+const forceChangeParamsByKey = newParams => {
+  // 子组件强制修改表单数值
+  const theKeys = Object.keys(newParams);
+  const keys = Object.keys(searchCriteria.value);
+  if (keys.length <= 0) {
+    searchCriteria.value = newParams;
+  } else {
+    keys.forEach(key => {
+      if (theKeys.includes(key)) {
+        searchCriteria.value[key] = newParams[key];
+      }
+    });
+  }
+};
 defineExpose({
-  handleReset
+  handleReset,
+  forceChangeParamsByKey
 });
 // 更新树形选择器的选项
 const handleTreeSelectUpdate = (value, key) => {
@@ -246,7 +271,7 @@ const handleTreeSelectUpdate = (value, key) => {
   searchCriteria.value[key] = value;
 };
 
-// 用于加载动态选项的函数，适用于select和tree-select类型的搜索配置
+// 用于加载动态选项
 const loadOptionsOnMount = async pattern => {
   for (const config of searchConfigs) {
     if (config.type === 'select' && config.loadOptions) {
@@ -268,6 +293,7 @@ const rowProps = row => {
   return {};
 };
 const loadOptionsOnMount2 = async () => {
+  if (!searchConfigs) return;
   for (const config of searchConfigs) {
     if (config.type === 'tree-select' && config.loadOptions) {
       // eslint-disable-next-line no-await-in-loop
@@ -282,17 +308,30 @@ const getPlatform = computed(() => {
   return proxy.getPlatform();
 });
 // 使用throttle减少动态加载选项时的请求频率
-// const throttledLoadOptionsOnMount = throttle(loadOptionsOnMount, 300);
-
+throttle(loadOptionsOnMount, 300);
 // 在组件挂载时加载选项
 loadOptionsOnMount('');
 loadOptionsOnMount2();
 
-// 为 input 类型添加专门的处理函数
-const handleInputChange = () => {
+// 为 input 类型添加专门的防抖处理函数，使用防抖优化
+const handleInputChange = debounce((value, key) => {
+  // 设置标志位，防止watch和watchEffect重复触发
+  isUpdatingFromInput.value = true;
+
+  // 更新值
+  searchCriteria.value[key] = value;
+
+  // 重置页码
   currentPage.value = 1;
+
+  // 获取数据
   getData();
-};
+
+  // 延迟重置标志位，确保watch和watchEffect不会再次触发
+  setTimeout(() => {
+    isUpdatingFromInput.value = false;
+  }, 0);
+}, 500); // 500毫秒的防抖延迟
 </script>
 
 <template>
@@ -314,7 +353,7 @@ const handleInputChange = () => {
                 size="small"
                 :placeholder="$t(config.label)"
                 class="input-style"
-                @update:value="handleInputChange"
+                @update:value="val => handleInputChange(val, config.key)"
               />
             </template>
             <template v-else-if="config.type === 'date-range'">
@@ -336,10 +375,12 @@ const handleInputChange = () => {
                 filterable
                 :filter="
                   (pattern, option) => {
-                    const label = option.label || ''; // 获取选项的 label
+                    const label = option.label || option.name || ''; // 获取选项的 label
                     const patternLower = pattern; // 保持原样（区分大小写）
-
                     // 执行区分大小写的过滤
+                    if (typeof label === 'function') {
+                      return true;
+                    }
                     return label.indexOf(patternLower) !== -1;
                   }
                 "
