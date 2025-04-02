@@ -1778,7 +1778,7 @@ declare namespace App {
         'command-identifier': string;
         status: string;
         selected: string;
-        'remember-last-path': string;
+        'remember-path': string;
         table: string;
         'old-password': string;
         'notification-type': string;

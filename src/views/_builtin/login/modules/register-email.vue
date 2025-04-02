@@ -6,8 +6,8 @@ import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import useSmsCode from '@/hooks/business/use-sms-code';
 import { useAuthStore } from '@/store/modules/auth';
 import { getConfirmPwdRule } from '@/utils/form/rule';
-import { validPasswordByExp } from '@/utils/common/tool';
 import { fetchEmailCode, registerByEmail } from '@/service/api/auth'; // 导入相关函数
+import { localStg } from '@/utils/storage';
 
 defineOptions({
   name: 'RegisterPage'
@@ -44,10 +44,10 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
     pwd: [
       {
         validator: (rule, value) => {
-          if (value.length < 8 || value.length > 18) {
+          if (value.length < 6) {
             return Promise.reject(rule.message);
           }
-          if (!validPasswordByExp(value)) {
+          if (!/[a-z]/.test(value)) {
             return Promise.reject(rule.message);
           }
           return Promise.resolve();
@@ -75,8 +75,9 @@ function handleSmsCode() {
 }
 
 async function handleSubmit() {
-  await validate();
   try {
+    await validate();
+
     const resp = (await registerByEmail({
       email: model.email,
       verify_code: model.code,
@@ -85,13 +86,35 @@ async function handleSubmit() {
       phone_prefix: '+86',
       phone_number: model.phone
     })) as any;
-    if (resp.code > 200000) {
+
+    // 检查响应状态，只有在成功时才显示成功消息
+    if (resp.code > 200000 || resp.error) {
+      // 显示错误消息
       window.$message?.error(resp.message || $t('page.login.register.registerError'));
     } else {
+      // 显示成功消息并处理登录
       window.$message?.success($t('page.login.register.registerSuccess'));
+
+      // 如果响应中有 token，直接使用它进行登录
+      if (resp.data && resp.data.token) {
+        // 存储 token 和过期时间
+        localStg.set('token', resp.data.token);
+        const expires_in = Date.now() + (resp.data.expires_in || 360000) * 1000;
+        localStg.set('token_expires_in', expires_in.toString());
+
+        // 重载页面以应用新 token
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1500);
+      } else {
+        // 如果没有 token，则跳转到登录页面
+        setTimeout(() => {
+          toggleLoginModule('pwd-login');
+        }, 1500);
+      }
     }
-    // 处理注册成功后的逻辑，例如跳转到登录页面
-  } catch (error) {
+  } catch (error: any) {
+    // 处理验证失败或其他异常
     window.$message?.error(error.message || $t('page.login.register.registerError'));
   }
 }
