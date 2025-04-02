@@ -1,0 +1,52 @@
+name: Batch Export and Apply Patches from Commit Range
+
+on:
+  workflow_dispatch:
+    inputs:
+      commitRange:
+        description: 'Commit range like commit1..commit2 or -1 commit1'
+        required: true
+
+jobs:
+  export_and_apply_patches:
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_REPO: "ThingsPanel/thingspanel-frontend-community"
+      SOURCE_BRANCH: "master"
+      TARGET_REPO: "ThingsPanel/thingspanel-frontend-enterprise"
+      TARGET_BRANCH: "fromcommunity"
+    steps:
+    - name: Export Commits as Patches
+      run: |
+        # 排除 pnpm-lock.yaml 并限制补丁路径
+        git clone --depth=100 https://${{ secrets.PAT }}@github.com/$SOURCE_REPO.git source_repo
+        cd source_repo
+        git checkout $SOURCE_BRANCH
+        git format-patch -U10 ${{ github.event.inputs.commitRange }} -- . ":(exclude)pnpm-lock.yaml" -o ../patches/
+
+    - name: Clone Target Repo with Full History
+      run: |
+        git clone --depth=100 https://${{ secrets.PAT }}@github.com/$TARGET_REPO.git destination_repo
+        cd destination_repo
+        git checkout $TARGET_BRANCH
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+
+    - name: Apply Patches with git am
+      run: |
+        cd destination_repo
+        for patch in ../patches/*.patch; do
+          echo "Applying patch: $(basename "$patch")"
+          # 使用 git am 代替 git apply
+          if ! git am --ignore-whitespace --3way "$patch"; then
+            echo "::error::Failed to apply patch: $(basename "$patch")"
+            git am --abort
+            exit 1
+          fi
+        done
+
+    - name: Push Changes
+      if: success()
+      run: |
+        cd destination_repo
+        git push origin $TARGET_BRANCH
