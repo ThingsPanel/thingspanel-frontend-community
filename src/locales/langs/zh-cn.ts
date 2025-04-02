@@ -994,6 +994,10 @@ const local: App.I18n.Schema = {
         },
         shortMessage: {
           title: '短信'
+        },
+        pushNotification: {
+          title: '推送信息',
+          pushServer: '推送服务器'
         }
       }
     },

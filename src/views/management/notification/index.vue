@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Email from './components/email.vue';
 import ShortMessage from './components/short-message.vue';
+import PushNotification from './components/push-notification.vue';
 import { $t } from '~/src/locales';
 </script>
 
@@ -14,6 +15,9 @@ import { $t } from '~/src/locales';
           </NTabPane>
           <NTabPane name="2" :tab="$t('page.manage.notification.shortMessage.title')">
             <ShortMessage></ShortMessage>
+          </NTabPane>
+          <NTabPane name="3" :tab="$t('page.manage.notification.pushNotification.title')">
+            <PushNotification></PushNotification>
           </NTabPane>
         </NTabs>
       </div>

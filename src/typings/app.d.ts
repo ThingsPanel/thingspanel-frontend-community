@@ -873,6 +873,10 @@ declare namespace App {
             shortMessage: {
               title: string;
             };
+            pushNotification: {
+              title: string;
+              pushServer: string;
+            };
           };
         };
         dataForward: {
