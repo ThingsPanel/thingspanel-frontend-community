@@ -209,8 +209,14 @@ export function validName(str) {
 }
 
 export function validPasswordByExp(str) {
-  if (!/^[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]+$/.test(str)) { // eslint-disable-line
+  if (!str || str.length < 6) {
     return false;
   }
+
+  // 检查是否包含小写字母
+  if (!/[a-z]/.test(str)) {
+    return false;
+  }
+
   return true;
 }

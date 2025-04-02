@@ -36,7 +36,21 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
   return {
     email: formRules.email,
     verify_code: formRules.code,
-    password: formRules.pwd,
+    password: [
+      {
+        validator: (rule, value) => {
+          if (value.length < 6) {
+            return Promise.reject(rule.message);
+          }
+          if (!/[a-z]/.test(value)) {
+            return Promise.reject(rule.message);
+          }
+          return Promise.resolve();
+        },
+        message: $t('form.pwd.tip'),
+        trigger: ['input', 'blur']
+      }
+    ],
     is_register: formRules.pwd
   };
 });
@@ -89,14 +103,17 @@ setTimeout(() => {
       </div>
     </NFormItem>
 
-    <NFormItem path="pwd">
-      <NInput
-        v-model:value="model.password"
-        type="password"
-        autocomplete="new-password"
-        show-password-on="click"
-        :placeholder="$t('page.login.common.passwordPlaceholder')"
-      />
+    <NFormItem path="password">
+      <div class="w-full">
+        <NInput
+          v-model:value="model.password"
+          type="password"
+          autocomplete="new-password"
+          show-password-on="click"
+          :placeholder="$t('page.login.common.passwordPlaceholder')"
+        />
+        <div class="mt-1 text-xs text-gray-500">{{ $t('form.pwd.tip') }}</div>
+      </div>
     </NFormItem>
     <NFormItem path="confirmPwd">
       <NInput

@@ -688,7 +688,7 @@ const local: App.I18n.Schema = {
     login: {
       common: {
         loginOrRegister: '登录 / 注册',
-        userNamePlaceholder: '请输入用户名',
+        userNamePlaceholder: '请输入邮箱/手机号',
         phonePlaceholder: '请输入手机号',
         codePlaceholder: '请输入验证码',
         passwordPlaceholder: '请输入密码',
@@ -1229,9 +1229,9 @@ const local: App.I18n.Schema = {
     },
     pwd: {
       required: '请输入密码',
-      invalid: '6 ~ 18个字符，由字母、数字、下划线组成',
-      lenMin6: '密码长度至少6位',
-      tip: '请输入8~18位格式有效的密码'
+      invalid: '密码必须包含至少6个字符，且必须包含小写字母',
+      lenMin6: '密码必须包含至少6个字符，且必须包含小写字母',
+      tip: '密码必须包含至少6个字符，且必须包含小写字母'
     },
 
     code: {
@@ -1736,7 +1736,7 @@ const local: App.I18n.Schema = {
     'command-identifier': '命令标识符',
     status: '状态',
     selected: '已选择',
-    'remember-last-path': '记住上次路径',
+    'remember-path': '记住本次路径',
     table: '表格',
     'old-password': ' 原 密 码 ',
     'notification-type': '通知类型',

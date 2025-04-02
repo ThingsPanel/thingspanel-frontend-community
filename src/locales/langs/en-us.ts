@@ -473,7 +473,7 @@ const local: App.I18n.Schema = {
     login: {
       common: {
         loginOrRegister: 'Login / Register',
-        userNamePlaceholder: 'Enter user name',
+        userNamePlaceholder: 'Enter email/phone number',
         phonePlaceholder: 'Enter phone number',
         codePlaceholder: 'Enter verification code',
         passwordPlaceholder: 'Enter password',
@@ -1013,10 +1013,10 @@ const local: App.I18n.Schema = {
       invalid: 'Phone number format is incorrect'
     },
     pwd: {
-      required: 'Enter password',
-      invalid: '6-18 characters, including letters, numbers, and underscores',
-      lenMin6: 'Password length should be at least six digits',
-      tip: 'Enter 8-18 characters,and the character must be right'
+      required: 'Please enter your password',
+      invalid: 'Password must contain at least 6 characters and must include lowercase letters',
+      lenMin6: 'Password must contain at least 6 characters and must include lowercase letters',
+      tip: 'Password must contain at least 6 characters and must include lowercase letters'
     },
     code: {
       required: 'Enter verification code',
@@ -1741,7 +1741,7 @@ const local: App.I18n.Schema = {
     'command-identifier': 'Command ID',
     status: 'Status',
     selected: 'Selected',
-    'remember-last-path': 'Remember Last Path',
+    'remember-path': 'Remember Path',
     table: 'Table',
     'old-password': 'Old Password',
     'notification-type': 'Notification Type',

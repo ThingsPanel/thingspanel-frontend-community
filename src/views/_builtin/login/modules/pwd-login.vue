@@ -14,6 +14,7 @@ defineOptions({
 });
 
 const isRememberPath = ref(true);
+const rememberMe = ref(false);
 const authStore = useAuthStore();
 const { toggleLoginModule } = useRouterPush();
 const { formRef, validate } = useNaiveForm();
@@ -47,6 +48,16 @@ const rememberPath = e => {
 async function handleSubmit() {
   await validate();
   await authStore.login(model.userName.trim(), model.password);
+
+  if (rememberMe.value) {
+    localStorage.setItem('rememberMe', 'true');
+    localStorage.setItem('rememberedUserName', model.userName.trim());
+    localStorage.setItem('rememberedPassword', window.btoa(model.password));
+  } else {
+    localStorage.removeItem('rememberMe');
+    localStorage.removeItem('rememberedUserName');
+    localStorage.removeItem('rememberedPassword');
+  }
 }
 
 async function getFunctionOption() {
@@ -58,12 +69,31 @@ async function getFunctionOption() {
     showYzm.value = data.find(v => v.name === 'use_captcha')?.enable_flag === 'enable';
   }
 }
+
+function loadSavedCredentials() {
+  const savedRememberMe = localStorage.getItem('rememberMe');
+  if (savedRememberMe === 'true') {
+    rememberMe.value = true;
+    const savedUserName = localStorage.getItem('rememberedUserName');
+    const savedPassword = localStorage.getItem('rememberedPassword');
+
+    if (savedUserName) {
+      model.userName = savedUserName;
+    }
+
+    if (savedPassword) {
+      model.password = window.atob(savedPassword);
+    }
+  }
+}
+
 onMounted(() => {
   const is_remember_rath = localStorage.getItem('isRememberPath');
   if (is_remember_rath === '0' || is_remember_rath === '1') {
     isRememberPath.value = is_remember_rath === '1';
   }
   getFunctionOption();
+  loadSavedCredentials();
 });
 </script>
 
@@ -82,7 +112,7 @@ onMounted(() => {
     </NFormItem>
     <NSpace vertical :size="24">
       <div class="flex-y-center justify-between">
-        <NCheckbox>{{ $t('page.login.pwdLogin.rememberMe') }}</NCheckbox>
+        <NCheckbox v-model:checked="rememberMe">{{ $t('page.login.pwdLogin.rememberMe') }}</NCheckbox>
         <!--         <NButton quaternary @click="toggleLoginModule('reset-pwd')">-->
         <NButton quaternary @click="toggleLoginModule('reset-pwd')">
           {{ $t('page.login.pwdLogin.forgetPassword') }}
@@ -92,7 +122,7 @@ onMounted(() => {
         {{ $t('common.confirm') }}
       </NButton>
       <NCheckbox :checked="isRememberPath" @update:checked="rememberPath">
-        {{ $t('generate.remember-last-path') }}
+        {{ $t('generate.remember-path') }}
       </NCheckbox>
       <div class="flex-y-center justify-between gap-12px">
         <NButton v-if="showYzm" class="flex-1" block @click="toggleLoginModule('code-login')">
