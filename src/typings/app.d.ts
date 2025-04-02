@@ -873,6 +873,10 @@ declare namespace App {
             shortMessage: {
               title: string;
             };
+            pushNotification: {
+              title: string;
+              pushServer: string;
+            };
           };
         };
         dataForward: {
@@ -1935,6 +1939,8 @@ declare namespace App {
         stateOffIcon: string;
         stateOffColor: string;
         createForwardRule: string;
+        baseInfo: string;
+        secureSet: string;
       };
       kanban: {
         'add-cards': string;

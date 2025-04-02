@@ -5,7 +5,8 @@ import { useRouterPush } from '@/hooks/common/router';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import useSmsCode from '@/hooks/business/use-sms-code';
 import { useAuthStore } from '@/store/modules/auth';
-import { editUserPassWord } from '@/service/api/auth';
+import { editUserPassWord, fetchEmailCodeByEmail } from '@/service/api/auth';
+
 defineOptions({
   name: 'ResetPwd'
 });
@@ -28,7 +29,7 @@ const model: FormModel = reactive({
   password: '',
   is_register: 2
 });
-const { label, isCounting, loading: smsLoading, start, isValidEmail, getSmsCodeByEmail } = useSmsCode();
+const { label, isCounting, loading: smsLoading, start, isValidEmail } = useSmsCode();
 
 const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
   const { formRules } = useFormRules(); // inside computed to make locale reactive
@@ -58,9 +59,11 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
 async function handleSmsCode() {
   if (model.email) {
     if (await isValidEmail(model.email)) {
-      start();
-      await getSmsCodeByEmail(model.email);
-      window.$message?.success($t('custom.grouping_details.operationSuccess'));
+      const { error } = await fetchEmailCodeByEmail(model.email);
+      if (!error) {
+        start();
+        window.$message?.success($t('custom.grouping_details.operationSuccess'));
+      }
     }
   } else {
     window.$message?.error($t('page.manage.user.form.userEmail'));

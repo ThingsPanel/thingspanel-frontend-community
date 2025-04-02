@@ -381,6 +381,7 @@ const local: App.I18n.Schema = {
     component_button: 'Button',
     component_card: 'Card',
     component_table: 'Table',
+    management_api: 'API keys',
     device_template: 'Device Model',
     apply: 'Application Management',
     apply_service: 'Protocol Plugin Management',
@@ -779,6 +780,10 @@ const local: App.I18n.Schema = {
         },
         shortMessage: {
           title: 'SME'
+        },
+        pushNotification: {
+          title: 'Push Notification',
+          pushServer: 'Push Notification Server'
         }
       }
     },
@@ -1906,7 +1911,9 @@ const local: App.I18n.Schema = {
     stateOnColor: 'State on Color',
     stateOffIcon: 'State off Icon',
     stateOffColor: 'State off Color',
-    createForwardRule: 'Create Forward Rule'
+    createForwardRule: 'Create Forward Rule',
+    baseInfo: 'Base Info',
+    secureSet: 'Secure Set'
   },
   kanban: {
     'add-cards': 'Create Cards'
@@ -1919,6 +1926,8 @@ const local: App.I18n.Schema = {
     msgUnit: 'piece',
     offlineDev: 'Offline devices',
     onlineDev: 'Online devices',
+    onlineTrend: 'Device Online Trend',
+    onlineRate: 'Device Online Rate',
     barChart: 'Bar Chart',
     curve: 'Curve',
     selectedIcon: 'Selected Icon',

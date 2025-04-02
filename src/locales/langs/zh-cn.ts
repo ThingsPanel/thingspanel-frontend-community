@@ -630,7 +630,7 @@ const local: App.I18n.Schema = {
     management_auth: '菜单管理',
     management_role: '角色管理',
     management_user: '租户管理',
-    management_api: 'API key',
+    management_api: 'API keys',
     'management_ordinary-user': '用户管理',
     management_route: '路由管理',
     management_setting: '系统设置',
@@ -994,6 +994,10 @@ const local: App.I18n.Schema = {
         },
         shortMessage: {
           title: '短信'
+        },
+        pushNotification: {
+          title: '推送信息',
+          pushServer: '推送服务器'
         }
       }
     },
@@ -1900,7 +1904,9 @@ const local: App.I18n.Schema = {
     stateOnColor: '状态开颜色',
     stateOffIcon: '状态关图标',
     stateOffColor: '状态关颜色',
-    createForwardRule: '创建转发规则'
+    createForwardRule: '创建转发规则',
+    baseInfo: '基础信息',
+    secureSet: '安全设置'
   },
   kanban: {
     'add-cards': '添加卡片'
@@ -1913,6 +1919,8 @@ const local: App.I18n.Schema = {
     msgUnit: '条',
     offlineDev: '离线设备数',
     onlineDev: '在线设备数',
+    onlineTrend: '设备在线趋势',
+    onlineRate: '设备在线率（12小时）',
     barChart: '柱状图',
     curve: '曲线',
     selectedIcon: '选中图标',

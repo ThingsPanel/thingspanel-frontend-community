@@ -25,6 +25,7 @@ import AddDevicesStep3 from '@/views/device/manage/modules/add-devices-step3.vue
 import AddDevicesServer1 from '@/views/device/manage/modules/add-devices-server1.vue';
 import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales';
+import { usePageCache } from '../../../utils/usePageCache';
 
 interface ServiceIds {
   service_identifier: string;
@@ -50,7 +51,7 @@ const selectedFirstLevel = ref<string | null>(null);
 const serviceIds = ref<ServiceIds[]>([]);
 const queryOfServiceIdentifier = ref(route.query.service_identifier);
 const queryOfServiceAccessId = ref(route.query.service_access_id);
-
+const { cache: query, setCache } = usePageCache();
 const getFormJson = async id => {
   const res = await devicCeonnectForm({ device_id: id });
 
@@ -214,6 +215,7 @@ const searchConfigs = ref<SearchConfig[]>([
     label: 'custom.devicePage.selectGroup',
     type: 'tree-select',
     multiple: false,
+    initValue: query.group_id,
     options: [{ label: $t('custom.devicePage.group'), key: '' }],
     loadOptions: getDeviceGroupOptions
   },
@@ -222,6 +224,7 @@ const searchConfigs = ref<SearchConfig[]>([
     label: 'custom.devicePage.unlimitedDeviceConfig',
     type: 'select',
     options: [],
+    initValue: query.device_config_id,
     labelField: 'name',
     valueField: 'id',
     loadOptions: getDeviceConfigOptions
@@ -230,6 +233,7 @@ const searchConfigs = ref<SearchConfig[]>([
     key: 'is_online',
     label: 'custom.devicePage.unlimitedOnlineStatus',
     type: 'select',
+    initValue: query.is_online,
     options: [
       { label: () => $t('custom.devicePage.unlimitedOnlineStatus'), value: '' },
       { label: () => $t('custom.devicePage.online'), value: 1 },
@@ -240,6 +244,7 @@ const searchConfigs = ref<SearchConfig[]>([
     key: 'warn_status',
     label: 'custom.devicePage.unlimitedAlarmStatus',
     type: 'select',
+    initValue: query.warn_status,
     options: [
       { label: () => $t('custom.devicePage.unlimitedAlarmStatus'), value: '' },
       { label: () => $t('custom.devicePage.alarm'), value: 'Y' },
@@ -249,6 +254,7 @@ const searchConfigs = ref<SearchConfig[]>([
   {
     key: 'device_type',
     label: 'custom.devicePage.unlimitedAccessType',
+    initValue: query.device_type,
     type: 'select',
     options: [
       { label: $t('custom.devicePage.unlimitedAccessType'), value: '' },
@@ -263,15 +269,18 @@ const searchConfigs = ref<SearchConfig[]>([
     key: 'service_identifier',
     label: 'card.anyProtocolService',
     type: 'select',
+    initValue: query.service_identifier,
     options: [{ label: $t('card.anyProtocolService'), value: '' }]
   },
   {
     key: 'search',
+    initValue: query.search,
     label: 'custom.devicePage.deviceNameOrNumber',
     type: 'input'
   },
   {
     key: 'label',
+    initValue: query.label,
     label: 'custom.devicePage.label',
     type: 'input'
   }
@@ -504,17 +513,23 @@ watch(
     }
   }, 500)
 );
+const fetchData = (params: Record<string, any>) => {
+  setCache(params);
+  return deviceList(params);
+};
 </script>
 
 <template>
   <div>
     <data-table-page
       ref="tablePageRef"
-      :fetch-data="deviceList"
+      :fetch-data="fetchData"
       :columns-to-show="columns_to_show"
       :table-actions="actions"
       :search-configs="searchConfigs"
       :top-actions="topActions"
+      :init-page="query.page"
+      :init-page-size="query.page_size"
       :row-click="goDeviceDetails"
       @params-update="paramsUpdateHandle"
     />

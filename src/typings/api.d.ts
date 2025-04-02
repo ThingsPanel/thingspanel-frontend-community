@@ -384,6 +384,9 @@ declare namespace Api {
       remark: string;
       status: string;
     }
+    interface PushNotification {
+      pushServer: string;
+    }
   }
   namespace UserManagement {
     interface User {
