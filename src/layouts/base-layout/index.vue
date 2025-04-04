@@ -34,7 +34,10 @@ const layoutMode = computed(() => {
   return themeStore.layout.mode.includes(vertical) ? vertical : horizontal;
 });
 
-const headerPropsConfig: Record<UnionKey.ThemeLayoutMode, App.Global.HeaderProps> = {
+const headerPropsConfig: Record<
+  UnionKey.ThemeLayoutMode,
+  App.Global.HeaderProps
+> = {
   vertical: {
     showLogo: false,
     showMenu: false,
@@ -63,7 +66,9 @@ const siderVisible = computed(() => themeStore.layout.mode !== 'horizontal');
 
 const isVerticalMix = computed(() => themeStore.layout.mode === 'vertical-mix');
 
-const isHorizontalMix = computed(() => themeStore.layout.mode === 'horizontal-mix');
+const isHorizontalMix = computed(
+  () => themeStore.layout.mode === 'horizontal-mix'
+);
 
 const siderWidth = computed(() => getSiderWidth());
 
@@ -79,8 +84,12 @@ function getSiderWidth() {
 }
 
 function getSiderCollapsedWidth() {
-  const { collapsedWidth, mixCollapsedWidth, mixChildMenuWidth } = themeStore.sider;
-  let w = isVerticalMix.value || isHorizontalMix.value ? mixCollapsedWidth : collapsedWidth;
+  const { collapsedWidth, mixCollapsedWidth, mixChildMenuWidth } =
+    themeStore.sider;
+  let w =
+    isVerticalMix.value || isHorizontalMix.value
+      ? mixCollapsedWidth
+      : collapsedWidth;
 
   if (isVerticalMix.value && appStore.mixSiderFixed) {
     w += mixChildMenuWidth;
@@ -93,12 +102,17 @@ let eventSource = null;
 let tryNum = 0;
 const createEventSource = () => {
   const token = localStg.get('token');
-  eventSource = new EventSourcePolyfill(`${import.meta.env.MODE === 'development' ? '/proxy-default' : ''}/events`, {
-    heartbeatTimeout: 3 * 60 * 1000, // 这是自定义配置请求超时时间  默认是4500ms(印象中是)
-    headers: {
-      'x-token': token
+  eventSource = new EventSourcePolyfill(
+    `${
+      import.meta.env.MODE === 'development' ? '/proxy-default' : '/api/v1'
+    }/events`,
+    {
+      heartbeatTimeout: 3 * 60 * 1000, // 这是自定义配置请求超时时间  默认是4500ms(印象中是)
+      headers: {
+        'x-token': token
+      }
     }
-  });
+  );
 };
 onMounted(() => {
   createEventSource();
@@ -108,7 +122,7 @@ onMounted(() => {
     };
     eventSource.addEventListener(
       'device_online',
-      event => {
+      (event) => {
         const data = event.data ? JSON.parse(event.data) : {};
         if (data.is_online) {
           window.$notification?.success({
@@ -168,7 +182,7 @@ onMounted(() => {
       },
       false
     );
-    eventSource.onerror = error => {
+    eventSource.onerror = (error) => {
       logger.error(error);
       eventSource.close();
       if (tryNum < 3) {
