@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, toRefs } from 'vue';
+import { NAutoComplete, NButton, NForm, NFormItem, NInput, NSpace } from 'naive-ui';
 import { $t } from '@/locales';
 import { useRouterPush } from '@/hooks/common/router';
 import { useFormRules, useNaiveForm } from '@/hooks/common/form';
@@ -33,6 +34,33 @@ const model: FormModel = reactive({
   confirmPwd: ''
 });
 const { label, isCounting, loading: smsLoading, start } = useSmsCode();
+
+// 常用邮箱后缀列表
+const commonDomains = ['qq.com', '163.com', 'gmail.com', 'outlook.com', 'sina.com', 'hotmail.com', 'yahoo.com'];
+
+// 计算邮箱自动补全选项
+const emailOptions = computed(() => {
+  const email = model.email;
+  if (!email || !email.includes('@')) {
+    return []; // 如果没有输入或不包含 @，则不提示
+  }
+
+  const parts = email.split('@');
+  const username = parts[0];
+  const domainInput = parts[1] || ''; // @ 后面的部分
+
+  if (username === '') {
+    return []; // 如果 @ 前面为空，则不提示
+  }
+
+  // 过滤常用域名，基于用户在 @ 后输入的内容
+  const filteredDomains = commonDomains.filter(
+    domain => domain.startsWith(domainInput) && domain !== domainInput // 只有当域名部分匹配且不等于完整域名时才提示
+  );
+
+  // 生成完整的邮箱建议
+  return filteredDomains.map(domain => `${username}@${domain}`);
+});
 
 const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
   const { formRules } = useFormRules(); // inside computed to make locale reactive
@@ -123,7 +151,13 @@ async function handleSubmit() {
 <template>
   <NForm ref="formRef" :model="model" :rules="rules" size="large" :show-label="false">
     <NFormItem path="email">
-      <NInput v-model:value="model.email" :placeholder="$t('page.login.register.emailPlaceholder')" />
+      <NAutoComplete
+        v-model:value="model.email"
+        :options="emailOptions"
+        :placeholder="$t('page.login.register.emailPlaceholder')"
+        clearable
+        @keydown.enter="handleSubmit"
+      />
     </NFormItem>
     <NFormItem path="code">
       <div class="w-full flex-y-center">
