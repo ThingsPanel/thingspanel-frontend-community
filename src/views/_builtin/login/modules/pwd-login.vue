@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
+import { NAutoComplete } from 'naive-ui';
+import { useI18n } from 'vue-i18n';
 import { $t } from '@/locales';
 import { loginModuleRecord } from '@/constants/app';
 import { useRouterPush } from '@/hooks/common/router';
@@ -7,12 +9,14 @@ import { useFormRules, useNaiveForm } from '@/hooks/common/form';
 import { useAuthStore } from '@/store/modules/auth';
 import { getFunction } from '@/service/api/setting';
 import { createLogger } from '@/utils/logger';
+
 const logger = createLogger('PwdLogin');
 
 defineOptions({
   name: 'PwdLogin'
 });
 
+const { locale } = useI18n();
 const isRememberPath = ref(true);
 const rememberMe = ref(false);
 const authStore = useAuthStore();
@@ -32,11 +36,49 @@ const model: FormModel = reactive({
 });
 
 const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
-  const { formRules } = useFormRules(); // inside computed to make locale reactive
-
+  const { formRules } = useFormRules();
   return {
-    userName: formRules.userName
+    userName: formRules.userName,
+    password: [
+      {
+        validator: (_rule, value) => {
+          if (value.length < 6) {
+            return Promise.reject(new Error($t('form.pwd.lenMin6')));
+          }
+          return Promise.resolve();
+        },
+        message: () => $t('form.pwd.lenMin6'),
+        trigger: ['input', 'blur']
+      }
+    ]
   };
+});
+
+// 常用邮箱后缀列表
+const commonDomains = ['qq.com', '163.com', 'gmail.com', 'outlook.com', 'sina.com', 'hotmail.com', 'yahoo.com'];
+
+// 计算邮箱自动补全选项
+const emailOptions = computed(() => {
+  const userName = model.userName;
+  if (!userName || !userName.includes('@')) {
+    return []; // 如果没有输入或不包含 @，则不提示
+  }
+
+  const parts = userName.split('@');
+  const username = parts[0];
+  const domainInput = parts[1] || ''; // @ 后面的部分
+
+  if (username === '') {
+    return []; // 如果 @ 前面为空，则不提示
+  }
+
+  // 过滤常用域名，基于用户在 @ 后输入的内容
+  const filteredDomains = commonDomains.filter(
+    domain => domain.startsWith(domainInput) && domain !== domainInput // 只有当域名部分匹配且不等于完整域名时才提示
+  );
+
+  // 生成完整的邮箱建议
+  return filteredDomains.map(domain => `${username}@${domain}`);
 });
 
 const rememberPath = e => {
@@ -46,6 +88,12 @@ const rememberPath = e => {
 };
 
 async function handleSubmit() {
+  // 先判断密码长度
+  if (model.password.length < 6) {
+    window.$message?.error($t('form.pwd.lenMin6'));
+    return;
+  }
+
   await validate();
   await authStore.login(model.userName.trim(), model.password);
 
@@ -98,9 +146,15 @@ onMounted(() => {
 </script>
 
 <template>
-  <NForm ref="formRef" :model="model" :rules="rules" size="large" :show-label="false">
+  <NForm ref="formRef" :key="locale" :model="model" :rules="rules" size="large" :show-label="false">
     <NFormItem path="userName">
-      <NInput v-model:value="model.userName" :placeholder="$t('page.login.common.userNamePlaceholder')" />
+      <NAutoComplete
+        v-model:value="model.userName"
+        :options="emailOptions"
+        :placeholder="$t('page.login.common.userNamePlaceholder')"
+        clearable
+        @keydown.enter="handleSubmit"
+      />
     </NFormItem>
     <NFormItem path="password">
       <NInput

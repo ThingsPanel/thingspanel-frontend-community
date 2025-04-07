@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, watch } from 'vue';
 import type { Component } from 'vue';
 import { getColorPalette, mixColor } from '@sa/utils';
-// import { $t } from '@/locales';
+import { useTitle } from '@vueuse/core';
+import { $t } from '@/locales';
 import { useAppStore } from '@/store/modules/app';
 import { useThemeStore } from '@/store/modules/theme';
 import { loginModuleRecord } from '@/constants/app';
@@ -59,6 +60,27 @@ const bgColor = computed(() => {
 
   return mixColor(COLOR_WHITE, themeStore.themeColor, ratio);
 });
+
+// 计算当前模块的标题
+const moduleTitle = computed(() => {
+  switch (props.module) {
+    case 'pwd-login':
+      return $t('page.login.pwdLogin.title');
+    case 'register-email':
+      return $t('page.login.register.title');
+    case 'reset-pwd':
+      return $t('page.login.resetPwd.title');
+    case 'code-login':
+      return $t('page.login.codeLogin.title');
+    default:
+      return $t('page.login.pwdLogin.title');
+  }
+});
+
+// 监听标题变化
+watch(moduleTitle, newTitle => {
+  useTitle(newTitle);
+});
 </script>
 
 <template>
@@ -83,9 +105,13 @@ const bgColor = computed(() => {
     <!--    <WaveBg :theme-color="bgThemeColor" />-->
     <NCard :bordered="false" class="relative z-4 w-auto rd-12px">
       <div class="w-300px sm:w-360px">
-        <header class="flex-col-center justify-center">
-          <SystemLogo width="80" class="text-60px text-primary <sm:text-64px" />
-          <!-- <NGradientText class="mb-6 mt--8" type="primary" :size="28">{{ $t('system.title') }}</NGradientText> -->
+        <header class="w-full flex-col-center justify-start">
+          <div class="w-full flex items-center justify-start">
+            <div class="w-300px flex items-center justify-start sm:w-360px">
+              <SystemLogo width="60" class="text-60px text-primary <sm:text-64px" />
+              <NGradientText class="ml-2 mt--2" type="primary" :size="20">{{ $t('system.title') }}</NGradientText>
+            </div>
+          </div>
         </header>
         <main>
           <!-- <h3 class="text-18px text-primary font-medium">{{ $t('activeModule.label' as any) }}</h3> -->

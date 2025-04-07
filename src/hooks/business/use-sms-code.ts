@@ -2,13 +2,14 @@ import { computed } from 'vue';
 import { useLoading } from '@sa/hooks';
 import { REG_PHONE } from '@/constants/reg';
 import { fetchEmailCodeByEmail, fetchSmsCode } from '@/service/api/auth';
+import { $t } from '@/locales';
 import useCountDown from './use-count-down';
 
 export default function useSmsCode() {
   const { loading, startLoading, endLoading } = useLoading();
   const { counts, start, isCounting } = useCountDown(60);
-  const initLabel = '获取验证码';
-  const countingLabel = (second: number) => `${second}秒后重新获取`;
+  const initLabel = $t('page.login.common.getCode');
+  const countingLabel = (second: number) => $t('page.login.common.countingLabel', { second });
   const label = computed(() => {
     let text = initLabel;
     if (loading.value) {
@@ -24,10 +25,10 @@ export default function useSmsCode() {
   function isPhoneValid(phone: string) {
     let valid = true;
     if (phone.trim() === '') {
-      window.$message?.error('手机号码不能为空！');
+      window.$message?.error($t('page.login.common.phoneRequired'));
       valid = false;
     } else if (!REG_PHONE.test(phone)) {
-      window.$message?.error('手机号码格式错误！');
+      window.$message?.error($t('page.login.common.phoneInvalid'));
       valid = false;
     }
     return valid;
@@ -36,7 +37,13 @@ export default function useSmsCode() {
   async function isValidEmail(email) {
     // 正则表达式来匹配邮箱格式
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-    return emailRegex.test(email);
+    const valid = emailRegex.test(email);
+    if (!valid) {
+      window.$message?.error($t('page.login.common.emailInvalid'));
+    } else if (email.trim() === '') {
+      window.$message?.error($t('page.login.common.emailRequired'));
+    }
+    return valid;
   }
 
   /**
@@ -49,28 +56,53 @@ export default function useSmsCode() {
     if (!valid || loading.value) return;
 
     startLoading();
-    const { data } = await fetchSmsCode(phone);
-    if (data) {
-      start();
+    try {
+      const { error, data } = await fetchSmsCode(phone);
+      console.log('data', data, error);
+      if (!error && data) {
+        start(); // 只有在发送成功时才启动倒计时
+        window.$message?.success($t('page.login.common.codeSent'));
+      } else {
+        // 接口返回错误时不显示成功提示
+        window.$message?.error($t('page.login.common.codeError'));
+      }
+    } catch (err) {
+      // 接口调用失败时不显示成功提示
+      window.$message?.error($t('page.login.common.codeError'));
+    } finally {
+      endLoading();
     }
-    endLoading();
   }
+
   /**
    * 根据邮箱获取短信验证码
    *
-   * @param phone - 手机号
+   * @param email - 邮箱
    */
-  async function getSmsCodeByEmail(phone: string) {
-    const valid = isValidEmail(phone);
+  async function getSmsCodeByEmail(email: string) {
+    const valid = await isValidEmail(email);
     if (!valid || loading.value) return;
 
     startLoading();
-    const { data } = await fetchEmailCodeByEmail(phone);
-    if (data) {
-      start();
+    try {
+      const { error, data, code, message } = await fetchEmailCodeByEmail(email);
+      if (code === 200 && !error && data) {
+        start(); // 只有在发送成功时才启动倒计时
+        window.$message?.success($t('page.login.common.codeSent'));
+      } else if (code === 200008) {
+        // 邮箱已注册的错误码
+        window.$message?.error(message || $t('page.login.common.emailRegistered'));
+      } else {
+        window.$message?.error(message || $t('page.login.common.codeError'));
+      }
+    } catch (err) {
+      // 接口调用失败时不显示成功提示
+      window.$message?.error($t('page.login.common.codeError'));
+    } finally {
+      endLoading();
     }
-    endLoading();
   }
+
   return {
     label,
     start,
