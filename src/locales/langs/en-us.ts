@@ -261,7 +261,11 @@ const local: App.I18n.Schema = {
     lastSixMonth: 'Last 6 months',
     lastOneYear: 'Last one year',
     lastWeekToday: 'Last week today',
-    January: 'January'
+    January: 'January',
+    getCode: 'Get Code',
+    countingLabel: 'Resend in {second}s',
+    phoneRequired: 'Phone number is required!',
+    phoneInvalid: 'Invalid phone number format!'
   },
   theme: {
     themeSchema: {
@@ -486,7 +490,13 @@ const local: App.I18n.Schema = {
         back: 'Back',
         validateSuccess: 'Verification Passed',
         loginSuccess: 'Login Successfully',
-        welcomeBack: 'Welcome back, {userName} !'
+        welcomeBack: 'Welcome back, {userName} !',
+        getCode: 'Get Code',
+        countingLabel: 'Resend in {second}s',
+        phoneRequired: 'Phone number is required!',
+        phoneInvalid: 'Invalid phone number format!',
+        emailRequired: 'Email is required!',
+        emailInvalid: 'Invalid email format!'
       },
       pwdLogin: {
         title: 'Password Login',
@@ -511,7 +521,8 @@ const local: App.I18n.Schema = {
         registerSuccess: 'Register successfully',
         registerError: 'Register failed',
         protocol: '《User Agreement》',
-        policy: '《Privacy Policy》'
+        policy: '《Privacy Policy》',
+        agreementRequired: 'Please read and agree to the User Agreement and Privacy Policy'
       },
       resetPwd: {
         title: 'Reset Password'
@@ -1004,32 +1015,42 @@ const local: App.I18n.Schema = {
     }
   },
   form: {
-    manycheck: {
-      required: 'The entered value does not match the password',
-      invalid: 'The entered value does not match the password'
-    },
     required: 'Cannot be empty',
     userName: {
       required: 'Enter user name',
-      invalid: 'User name format is incorrect'
+      invalid: 'User name format is incorrect',
+      lenMin6: 'User name must be at least 6 characters',
+      tip: 'User name must be at least 6 characters'
     },
     phone: {
       required: 'Enter phone number',
-      invalid: 'Phone number format is incorrect'
+      invalid: 'Phone number format is incorrect',
+      lenMin6: 'Phone number must be at least 6 characters',
+      tip: 'Phone number must be at least 6 characters'
     },
     pwd: {
       required: 'Please enter your password',
-      invalid: 'Password must contain at least 6 characters and must include lowercase letters',
-      lenMin6: 'Password must contain at least 6 characters and must include lowercase letters',
-      tip: 'Password must contain at least 6 characters and must include lowercase letters'
+      invalid: 'Password format is incorrect',
+      lenMin6: 'Password must be at least 6 characters',
+      tip: 'Password must be at least 6 characters'
     },
     code: {
       required: 'Enter verification code',
-      invalid: 'Verification code format is incorrect'
+      invalid: 'Verification code format is incorrect',
+      lenMin6: 'Verification code must be at least 6 characters',
+      tip: 'Verification code must be at least 6 characters'
     },
     email: {
       required: 'Enter email',
-      invalid: 'Email format is incorrect'
+      invalid: 'Email format is incorrect',
+      lenMin6: 'Email must be at least 6 characters',
+      tip: 'Email must be at least 6 characters'
+    },
+    manycheck: {
+      required: 'The entered value does not match the password',
+      invalid: 'The entered value does not match the password',
+      lenMin6: 'The entered value must be at least 6 characters',
+      tip: 'The entered value must be at least 6 characters'
     }
   },
   dropdown: {
