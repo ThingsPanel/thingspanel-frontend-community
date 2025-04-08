@@ -137,7 +137,7 @@ async function handleSubmit() {
     })) as any;
 
     // 只在注册成功时显示消息并处理后续操作
-    if (!resp.error && resp.code <= 200000) {
+    if (!resp.error) {
       window.$message?.success($t('page.login.register.registerSuccess'));
 
       // 如果响应中有 token，直接使用它进行登录
