@@ -35,10 +35,10 @@ interface HistoryData {
 const { loading, startLoading, endLoading } = useLoading();
 
 // 获取当前具体时间的毫秒数
-const end_time = dayjs(new Date()).valueOf();
+const end_time = dayjs().endOf('day').valueOf();
 
 // 获取上一天当前时刻的毫秒数
-const start_time = dayjs().subtract(1, 'day').valueOf();
+const start_time = dayjs().subtract(1, 'day').startOf('day').valueOf();
 
 const params = reactive<Params>({
   device_id: props.deviceId,
@@ -85,9 +85,10 @@ const getTelemetryHistoryData = async () => {
 
   if (params.export_excel) {
     endLoading();
-    if (baseURL.includes('api/v1')) {
-      const urls = baseURL.split('api/v1');
-      window.open(urls[0] + data?.list);
+    if (data?.filePath) {
+      const baseUrlWithoutApi = baseURL.replace('/api/v1', '/');
+      const downloadUrl = `${baseUrlWithoutApi}${data.filePath}`;
+      window.open(downloadUrl);
     }
   }
 
@@ -111,6 +112,7 @@ const checkDateRange = value => {
     dateRange.value = null;
     message.error($t('common.withinOneMonth'));
   } else {
+    // 直接使用用户选择的时间
     params.start_time = start;
     params.end_time = end;
     params.export_excel = false;
@@ -135,6 +137,8 @@ onMounted(getTelemetryHistoryData);
           class="w-400px"
           type="datetimerange"
           format="yyyy-MM-dd HH:mm:ss"
+          :default-time="['00:00:00', '23:59:59']"
+          :time-picker-props="[{ defaultValue: 0 }, { defaultValue: 86399 }]"
           @update:value="checkDateRange"
         />
         <n-button class="ml-2" @click="refresh">{{ $t('generate.refresh') }}</n-button>
