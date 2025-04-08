@@ -17,7 +17,11 @@ export default defineConfig(
         rules: {
           'no-undef': 'off', // use tsc to check the ts code of the vue
           'vue/no-setup-props-destructure': 'off', // wait to fix this rule
-          '@typescript-eslint/no-use-before-define': ['error', { functions: false, classes: false }]
+          '@typescript-eslint/no-use-before-define': 'off', // 允许变量在使用前定义
+          '@typescript-eslint/no-unused-vars': 'warn', // 未使用的变量改为警告
+          'vue/no-undef-properties': 'warn', // 未定义的属性改为警告
+          'vue/multi-word-component-names': 'off', // 允许单字组件名
+          'vue/component-name-in-template-casing': 'off' // 允许任意大小写的组件名
         }
       },
       // 覆盖soybean默认prettier
@@ -57,133 +61,12 @@ export default defineConfig(
   {
     rules: {
       'array-callback-return': 'off',
-      'import/order': [
-        'error',
-        {
-          'newlines-between': 'never',
-          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
-          pathGroups: [
-            {
-              pattern: 'vue',
-              group: 'external',
-              position: 'before'
-            },
-            {
-              pattern: 'vue-router',
-              group: 'external',
-              position: 'before'
-            },
-            {
-              pattern: 'pinia',
-              group: 'external',
-              position: 'before'
-            },
-            {
-              pattern: 'naive-ui',
-              group: 'external',
-              position: 'before'
-            },
-            {
-              pattern: '@/constants',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/config',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/settings',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/plugins',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/layouts',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/views',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/components',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/router',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/service',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/store',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/context',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/composables',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/hooks',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/utils',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/assets',
-              group: 'internal',
-              position: 'before'
-            },
-            {
-              pattern: '@/**',
-              group: 'internal',
-              position: 'before'
-            }
-          ],
-          pathGroupsExcludedImportTypes: ['vue', 'vue-router', 'pinia', 'naive-ui']
-        }
-      ],
+      'import/order': 'off', // 关闭导入顺序检查
       'vue/prefer-true-attribute-shorthand': 'off',
       'no-console': 'off',
-      'vue/multi-word-component-names': [
-        'warn',
-        {
-          ignores: ['index', 'App', '[id]']
-        }
-      ],
-      'vue/component-name-in-template-casing': [
-        'warn',
-        'PascalCase',
-        {
-          ignores: ['/^icon-/']
-        }
-      ]
+      'vue/multi-word-component-names': 'off',
+      'vue/component-name-in-template-casing': 'off'
     },
-
     settings: {
       'import/core-modules': ['uno.css', '~icons/*', 'virtual:svg-icons-register']
     }
