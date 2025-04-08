@@ -133,7 +133,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
     minWidth: '140px',
     title: () => $t('custom.management.lastAccessTime'),
     align: 'left',
-    render: row => dayjs(row.lastVisitTime).format('YYYY-MM-DD HH:mm:ss')
+    render: row => dayjs(row.lastVisitTime || row.created_at).format('YYYY-MM-DD HH:mm:ss')
   },
   // {
   //   key: 'gender',
