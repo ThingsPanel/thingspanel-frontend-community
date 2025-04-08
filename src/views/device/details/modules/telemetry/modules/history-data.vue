@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { defineProps, onMounted, reactive, ref } from 'vue';
-import type { PaginationProps } from 'naive-ui';
 import { useMessage } from 'naive-ui';
 import dayjs from 'dayjs';
 import { addMonths } from 'date-fns';
@@ -31,7 +30,6 @@ interface HistoryData {
   ts: string;
   value: number;
 }
-
 const { loading, startLoading, endLoading } = useLoading();
 
 // 获取当前具体时间的毫秒数
@@ -39,7 +37,6 @@ const end_time = dayjs().endOf('day').valueOf();
 
 // 获取上一天当前时刻的毫秒数
 const start_time = dayjs().subtract(1, 'day').startOf('day').valueOf();
-
 const params = reactive<Params>({
   device_id: props.deviceId,
   end_time,
@@ -49,11 +46,12 @@ const params = reactive<Params>({
   page: 1,
   page_size: 5
 });
-const message = useMessage();
 
-const dateRange = ref<[number, number] | null>([params.start_time, params.end_time]);
+// eslint-disable-next-line @typescript-eslint/no-use-before-define
 const tableData = ref<HistoryData[]>([]);
-const pagination: PaginationProps = reactive({
+
+// eslint-disable-next-line @typescript-eslint/no-use-before-define
+const pagination = reactive({
   page: 1,
   pageSize: 5,
   showSizePicker: true,
@@ -74,10 +72,10 @@ const pagination: PaginationProps = reactive({
   }
 });
 
+// 定义函数
 const getTelemetryHistoryData = async () => {
   if (!props.deviceId && !props.theKey) {
     tableData.value = [];
-
     return;
   }
   startLoading();
@@ -94,15 +92,31 @@ const getTelemetryHistoryData = async () => {
 
   if (!error && !params.export_excel) {
     tableData.value = data.list || [];
-    pagination.pageCount = data?.list?.length || 0;
+    pagination.itemCount = data.total || 0;
     endLoading();
   }
 };
 
+const message = useMessage();
+
+// 然后定义变量
+const dateRange = ref<[number, number] | null>([params.start_time, params.end_time]);
+
+// 修复类型实例化过深的问题
 const columns = [
-  { title: $t('common.time'), key: 'time', render: row => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss') },
-  { title: $t('device_template.table_header.dataIdentifier'), key: 'key' },
-  { title: $t('generate.fieldValue'), key: 'value' }
+  {
+    title: $t('common.time'),
+    key: 'time',
+    render: (row: HistoryData) => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
+  },
+  {
+    title: $t('device_template.table_header.dataIdentifier'),
+    key: 'key'
+  },
+  {
+    title: $t('generate.fieldValue'),
+    key: 'value'
+  }
 ];
 
 const checkDateRange = value => {
@@ -158,7 +172,18 @@ onMounted(getTelemetryHistoryData);
     </n-flex>
     <div class="mt-4">
       <n-text v-if="!dateRange" depth="3">{{ $t('generate.hour-24') }}</n-text>
-      <n-data-table :loading="loading" :columns="columns" :data="tableData" :pagination="pagination" />
+      <n-data-table :loading="loading" :columns="columns" :data="tableData" />
+      <div class="mt-4 flex justify-end">
+        <n-pagination
+          v-model:page="pagination.page"
+          v-model:page-size="pagination.pageSize"
+          :item-count="pagination.itemCount"
+          :page-sizes="pagination.pageSizes"
+          :show-size-picker="pagination.showSizePicker"
+          @update:page="pagination.onChange"
+          @update:page-size="pagination.onUpdatePageSize"
+        />
+      </div>
     </div>
   </n-card>
 </template>

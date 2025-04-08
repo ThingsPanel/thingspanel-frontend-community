@@ -2,7 +2,7 @@
 import type { Ref } from 'vue';
 import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import type { DataTableColumns, FormInst } from 'naive-ui';
+import type { FormInst } from 'naive-ui';
 import { NButton, NPopconfirm, NSpace, NSwitch, useMessage } from 'naive-ui';
 import { deviceConfigInfo, deviceDetail, deviceLocation } from '@/service/api';
 import { deviceConfigEdit } from '@/service/api/device';
@@ -106,19 +106,7 @@ const handleDeleteTable = async row => {
   }
   window.$message?.info($t('common.extensionInfoDeleted'));
 };
-const handleEditTable = async row => {
-  editIndex.value = (additionInfo.value || []).findIndex(item => {
-    return (
-      item.name === row.name &&
-      item.type === row.type &&
-      item.default_value === row.default_value &&
-      item.desc === row.desc
-    );
-  });
-  extendForm.value = row;
-  isEdit.value = true;
-  visible.value = true;
-};
+
 const typeOptions = ref([
   {
     label: 'String',
@@ -133,6 +121,19 @@ const typeOptions = ref([
     value: 'Boolean'
   }
 ]);
+const handleEditTable = async row => {
+  editIndex.value = (additionInfo.value || []).findIndex(item => {
+    return (
+      item.name === row.name &&
+      item.type === row.type &&
+      item.default_value === row.default_value &&
+      item.desc === row.desc
+    );
+  });
+  extendForm.value = row;
+  isEdit.value = true;
+  visible.value = true;
+};
 const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
   {
     key: 'name',
