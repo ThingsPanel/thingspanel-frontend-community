@@ -97,7 +97,6 @@ export function registerByEmail(data: {
   email: string; // 邮箱
   verify_code: string; // 邮箱验证码
   password: string; // 用户密码
-  confirm_password: string; // 确认密码
   phone_prefix: string; // 手机前缀
   phone_number: string; // 手机号码
 }) {

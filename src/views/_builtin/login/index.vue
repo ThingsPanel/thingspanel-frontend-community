@@ -48,7 +48,7 @@ const activeModule = computed(() => {
   const findItem = modules.find(item => item.key === props.module);
   return findItem || modules[0];
 });
-
+console.log(activeModule.value.label);
 const bgThemeColor = computed(() =>
   themeStore.darkMode ? getColorPalette(themeStore.themeColor, 7) : themeStore.themeColor
 );
@@ -84,8 +84,9 @@ watch(moduleTitle, newTitle => {
 </script>
 
 <template>
-  <div class="relative wh-full flex-center overflow-hidden" :style="{ backgroundColor: bgColor }">
-    <div class="absolute left-48px top-24px z-99">
+  <div class="relative size-full flex-center overflow-hidden" :style="{ backgroundColor: bgColor }">
+    <!--
+ <div class="absolute left-48px top-24px z-99">
       <div class="flex-center">
         <ThemeSchemaSwitch
           :theme-schema="themeStore.themeScheme"
@@ -100,22 +101,33 @@ watch(moduleTitle, newTitle => {
           @change-lang="appStore.changeLocale"
         />
       </div>
-    </div>
+    </div> 
+-->
 
     <!--    <WaveBg :theme-color="bgThemeColor" />-->
     <NCard :bordered="false" class="relative z-4 w-auto rd-12px">
-      <div class="w-300px sm:w-360px">
-        <header class="w-full flex-col-center justify-start">
-          <div class="w-full flex items-center justify-start">
-            <div class="w-300px flex items-center justify-start sm:w-360px">
-              <SystemLogo width="60" class="text-60px text-primary <sm:text-64px" />
-              <NGradientText class="ml-2 mt--2" type="primary" :size="20">{{ $t('system.title') }}</NGradientText>
-            </div>
+      <div class="w-400px lt-sm:w-300px">
+        <header class="flex-y-center justify-between">
+          <SystemLogo class="text-64px text-primary lt-sm:text-48px" width="70" />
+          <h3 class="ml--8 mt--4 text-28px text-primary font-500 lt-sm:text-22px">{{ $t('system.title') }}</h3>
+          <div class="i-flex-col">
+            <ThemeSchemaSwitch
+              :theme-schema="themeStore.themeScheme"
+              :show-tooltip="false"
+              class="text-20px lt-sm:text-18px"
+              @switch="themeStore.toggleThemeScheme"
+            />
+            <LangSwitch
+              :lang="appStore.locale"
+              :lang-options="appStore.localeOptions"
+              :show-tooltip="false"
+              @change-lang="appStore.changeLocale"
+            />
           </div>
         </header>
-        <main>
-          <!-- <h3 class="text-18px text-primary font-medium">{{ $t('activeModule.label' as any) }}</h3> -->
-          <div>
+        <main class="pt-24px">
+          <h3 class="text-18px text-primary font-medium">{{ $t(activeModule.label as any) }}</h3>
+          <div class="pt-24px">
             <Transition :name="themeStore.page.animateMode" mode="out-in" appear>
               <component :is="activeModule.component" />
             </Transition>
