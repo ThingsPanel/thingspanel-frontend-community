@@ -152,8 +152,8 @@ const generatedColumns = computed(() => {
                     onPositiveClick={async e => {
                       e.stopPropagation();
                       await action.callback(row);
-                      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-                      handleReset();
+                      // 删除后只刷新数据，不重置搜索条件
+                      getData();
                     }}
                   >
                     {{
@@ -230,16 +230,47 @@ const handleSearch = () => {
 };
 
 const handleReset = () => {
-  // 重置搜索条件
+  // 重置搜索条件为初始值
   Object.keys(searchCriteria.value).forEach(key => {
-    searchCriteria.value[key] = ''; // 或者对应字段的默认值
+    const config = searchConfigs.find(item => item.key === key);
+    if (config) {
+      // 如果是日期范围选择器，设置为空数组
+      if (config.type === 'date-range') {
+        searchCriteria.value[key] = [];
+      }
+      // 如果是树形选择器，根据 multiple 属性设置空值
+      else if (config.type === 'tree-select') {
+        searchCriteria.value[key] = config.multiple ? [] : null;
+      }
+      // 如果是下拉选择框，设置为 null 以显示占位符
+      else if (config.type === 'select') {
+        searchCriteria.value[key] = null;
+      }
+      // 其他类型设置为空字符串
+      else {
+        searchCriteria.value[key] = '';
+      }
+    }
   });
 
   handleSearch(); // 重置后重新获取数据
 };
+
+// 强制更新指定参数并刷新数据
+const forceChangeParamsByKey = (params: Record<string, any>) => {
+  Object.entries(params).forEach(([key, value]) => {
+    if (key in searchCriteria.value) {
+      searchCriteria.value[key] = value;
+    }
+  });
+  getData();
+};
+
+// 暴露方法给父组件
 defineExpose({
-  handleReset
+  forceChangeParamsByKey
 });
+
 // 更新树形选择器的选项
 const handleTreeSelectUpdate = (value, key) => {
   currentPage.value = 1;
@@ -293,6 +324,12 @@ const handleInputChange = () => {
   currentPage.value = 1;
   getData();
 };
+
+// 修复 NSelect 的 filter 函数类型错误
+const filterSelectOption = (pattern: string, option: any) => {
+  const label = typeof option.label === 'string' ? option.label : '';
+  return label.includes(pattern);
+};
 </script>
 
 <template>
@@ -334,15 +371,7 @@ const handleInputChange = () => {
                 :label-field="config.labelField"
                 size="small"
                 filterable
-                :filter="
-                  (pattern, option) => {
-                    const label = option.label || ''; // 获取选项的 label
-                    const patternLower = pattern; // 保持原样（区分大小写）
-
-                    // 执行区分大小写的过滤
-                    return label.indexOf(patternLower) !== -1;
-                  }
-                "
+                :filter="filterSelectOption"
                 :options="config.options"
                 :render-label="config.renderLabel"
                 :render-tag="config.renderTag"
@@ -389,22 +418,22 @@ const handleInputChange = () => {
         <div>
           <NButton quaternary @click="isTableView = true">
             <template #icon>
-              <n-icon text style="font-size: 24px">
-                <icon-material-symbols:table-rows-narrow-outline-sharp class="text-24px" />
+              <n-icon class="text-24px">
+                <icon-material-symbols:table-rows-narrow-outline-sharp />
               </n-icon>
             </template>
           </NButton>
           <NButton quaternary @click="isTableView = false">
             <template #icon>
-              <n-icon text style="font-size: 24px">
-                <icon-material-symbols:map-rounded class="text-24px" />
+              <n-icon class="text-24px">
+                <icon-material-symbols:map-rounded />
               </n-icon>
             </template>
           </NButton>
           <NButton quaternary @click="getData">
             <template #icon>
-              <n-icon text style="font-size: 24px">
-                <icon-material-symbols:refresh class="text-24px" />
+              <n-icon class="text-24px">
+                <icon-material-symbols:refresh />
               </n-icon>
             </template>
           </NButton>
