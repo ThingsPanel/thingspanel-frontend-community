@@ -1,9 +1,15 @@
 <script setup lang="tsx">
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import type { Ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { NButton, NPopconfirm, NSpace } from 'naive-ui';
-import { childDeviceSelectList, childDeviceTableList, removeChildDevice } from '@/service/api/device';
+import {
+  addChildDevice,
+  childDeviceSelectList,
+  childDeviceTableList,
+  deviceUpdate,
+  removeChildDevice
+} from '@/service/api/device';
 // import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales';
 
@@ -20,25 +26,8 @@ const deviceSetId = ref();
 const tableData = ref([]);
 const total = ref(0);
 const log_page = ref(1);
+const selectChild = ref<string[]>([]);
 const sOptions = ref<any[]>([]);
-const loading = ref(false);
-const rowKey = (row: any) => row.id;
-const handleCheck = () => {
-  // 处理选中逻辑
-};
-const pagination = reactive({
-  page: 1,
-  pageSize: 10,
-  showSizePicker: true,
-  pageSizes: [10, 20, 30, 40],
-  onChange: (page: number) => {
-    pagination.page = page;
-  },
-  onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
-  }
-});
 const getData = async () => {
   const res = await childDeviceTableList({
     page: log_page.value,
@@ -47,6 +36,9 @@ const getData = async () => {
   });
   tableData.value = res.data.list || [];
   total.value = res.data.total;
+};
+const selectConfig = v => {
+  selectChild.value = v;
 };
 const deleteDevice = async id => {
   const { error } = await removeChildDevice({
@@ -87,7 +79,7 @@ const columns: Ref<any> = ref([
     key: 'subDeviceAddr'
   },
   {
-    title: $t('common.actions'),
+    title: $t('common.action'),
     key: '',
     minWidth: '140px',
     render: row => {
@@ -119,6 +111,43 @@ const columns: Ref<any> = ref([
   }
 ]) as Ref<any>;
 
+const setDeviceAddress = async () => {
+  if (!deviceSetName.value) {
+    window.$message?.error($t('generate.enter-sub-device-address'));
+    return;
+  }
+  const res = await deviceUpdate({
+    id: deviceSetId.value,
+    parent_id: props.id,
+    sub_device_addr: deviceSetName.value
+  });
+  if (res) {
+    tableData.value = [];
+    showSetDialog.value = false;
+    log_page.value = 1;
+    getData();
+  }
+};
+
+const addChildDeviceSure = () => {
+  if (selectChild.value.length === 0) {
+    window.$message?.error($t('generate.selectSubDevices'));
+  } else {
+    addChildDevice({
+      id: props.id,
+      son_id: selectChild.value.join(',')
+    }).then(res => {
+      if (!res.error) {
+        showAddDialog.value = false;
+        selectChild.value = [];
+        sOptions.value = [];
+        tableData.value = [];
+        getData();
+      }
+    });
+  }
+};
+
 const getDeviceList = async () => {
   const res = await childDeviceSelectList();
   if (res.data.length !== 0) {
@@ -141,58 +170,57 @@ onMounted(() => {});
 </script>
 
 <template>
-  <div class="device-analysis">
-    <n-card class="w-full">
-      <NButton type="primary" @click="addDevice">{{ $t('generate.add-sub-device') }}</NButton>
-      <div class="analysis-container">
-        <div class="analysis-content">
-          <div class="analysis-table">
-            <n-data-table
-              :columns="columns"
-              :data="tableData"
-              :pagination="pagination"
-              :loading="loading"
-              :row-key="rowKey"
-              @update:checked-row-keys="handleCheck"
-            />
-          </div>
-          <div class="mt-4 w-full flex justify-end">
-            <n-pagination
-              :item-count="total"
-              :page-size="5"
-              @update:page="
-                page => {
-                  log_page = page;
-                  log_page = page;
-                  getData();
-                }
-              "
-            />
-          </div>
-        </div>
-      </div>
-    </n-card>
-  </div>
+  <n-card class="w-full">
+    <NButton type="primary" @click="addDevice">{{ $t('generate.add-sub-device') }}</NButton>
+    <n-modal
+      v-model:show="showAddDialog"
+      :title="$t('generate.issue-attribute')"
+      style="height: 300px"
+      class="w-[400px]"
+    >
+      <n-card>
+        <n-form>
+          <n-form-item :label="$t('generate.add-sub-device')">
+            <n-select v-model:value="selectChild" multiple :options="sOptions" @update:value="selectConfig">
+              <template #header>{{ $t('page.irrigation.group.deviceName') }}</template>
+            </n-select>
+          </n-form-item>
+          <NSpace style="display: flex; justify-content: flex-end; margin-top: 140px">
+            <NButton @click="showAddDialog = false">{{ $t('generate.cancel') }}</NButton>
+            <NButton @click="addChildDeviceSure">{{ $t('page.login.common.confirm') }}</NButton>
+          </NSpace>
+        </n-form>
+      </n-card>
+    </n-modal>
+    <n-modal v-model:show="showSetDialog" :title="$t('generate.issue-attribute')" class="w-[400px]">
+      <n-card>
+        <n-form>
+          <n-form-item :label="$t('generate.sub-device-address-setting')">
+            <n-input v-model:value="deviceSetName" type="text" :placeholder="$t('generate.enter-sub-device-address')" />
+          </n-form-item>
+          <NSpace style="display: flex; justify-content: flex-end">
+            <NButton @click="showSetDialog = false">{{ $t('generate.cancel') }}</NButton>
+            <NButton @click="setDeviceAddress">{{ $t('page.login.common.confirm') }}</NButton>
+          </NSpace>
+        </n-form>
+      </n-card>
+    </n-modal>
+
+    <n-data-table :columns="columns" :data="tableData" class="mt-4" />
+    <div class="mt-4 w-full flex justify-end">
+      <n-pagination
+        :item-count="total"
+        :page-size="5"
+        @update:page="
+          page => {
+            log_page = page;
+            log_page = page;
+            getData();
+          }
+        "
+      />
+    </div>
+  </n-card>
 </template>
 
-<style scoped>
-.device-analysis {
-  width: 100%;
-}
-
-.analysis-container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  margin-top: 16px;
-}
-
-.analysis-content {
-  flex: 1;
-  overflow: auto;
-}
-
-.analysis-table {
-  width: 100%;
-}
-</style>
+<style scoped></style>
