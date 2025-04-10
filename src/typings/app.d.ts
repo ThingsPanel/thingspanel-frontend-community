@@ -509,6 +509,12 @@ declare namespace App {
         lastOneYear: string;
         lastWeekToday: string;
         January: string;
+        getCode: string;
+        countingLabel: string;
+        phoneRequired: string;
+        phoneInvalid: string;
+        emailRequired: string;
+        emailInvalid: string;
       };
       theme: {
         themeSchema: { title: string } & Record<UnionKey.ThemeScheme, string>;
@@ -2110,3 +2116,5 @@ declare namespace App {
     }
   }
 }
+
+type ProductLocal = Record<string, any>;
