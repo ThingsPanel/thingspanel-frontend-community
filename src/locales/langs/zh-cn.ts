@@ -1235,6 +1235,7 @@ const local: App.I18n.Schema = {
     userName: {
       required: '请输入用户名',
       invalid: '用户名格式不正确',
+      invalidFormat: '请输入正确的邮箱或手机号',
       lenMin6: '用户名至少需要6个字符',
       tip: '用户名至少需要6个字符'
     },
@@ -1247,8 +1248,8 @@ const local: App.I18n.Schema = {
     pwd: {
       required: '请输入密码',
       invalid: '密码格式不正确',
-      lenMin6: '密码长度不能小于6位',
-      tip: '密码长度不能小于6位'
+      lenMin6: '密码长度不能小于6位，且必须包含小写字母',
+      tip: '密码长度不能小于6位，且必须包含小写字母'
     },
     code: {
       required: '请输入验证码',

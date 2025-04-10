@@ -1019,6 +1019,7 @@ const local: App.I18n.Schema = {
     userName: {
       required: 'Enter user name',
       invalid: 'User name format is incorrect',
+      invalidFormat: 'Please enter a valid email or phone number',
       lenMin6: 'User name must be at least 6 characters',
       tip: 'User name must be at least 6 characters'
     },
@@ -1031,8 +1032,8 @@ const local: App.I18n.Schema = {
     pwd: {
       required: 'Please enter your password',
       invalid: 'Password format is incorrect',
-      lenMin6: 'Password must be at least 6 characters',
-      tip: 'Password must be at least 6 characters'
+      lenMin6: 'Password must be at least 6 characters and contain lowercase letters',
+      tip: 'Password must be at least 6 characters and contain lowercase letters'
     },
     code: {
       required: 'Enter verification code',

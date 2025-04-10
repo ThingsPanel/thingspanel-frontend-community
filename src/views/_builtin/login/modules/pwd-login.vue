@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n';
 import { $t } from '@/locales';
 import { loginModuleRecord } from '@/constants/app';
 import { useRouterPush } from '@/hooks/common/router';
-import { useFormRules, useNaiveForm } from '@/hooks/common/form';
+import { useNaiveForm } from '@/hooks/common/form';
 import { useAuthStore } from '@/store/modules/auth';
 import { getFunction } from '@/service/api/setting';
 import { createLogger } from '@/utils/logger';
@@ -36,18 +36,33 @@ const model: FormModel = reactive({
 });
 
 const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
-  const { formRules } = useFormRules();
+  // 定义邮箱和手机号的正则表达式
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^1[3-9]\d{9}$/; // 中国大陆手机号基本格式
+
   return {
-    userName: formRules.userName,
-    password: [
+    userName: [
+      {
+        required: true,
+        message: () => $t('form.userName.required'),
+        trigger: ['blur'] // required 规则在 blur 时触发
+      },
       {
         validator: (_rule, value) => {
-          if (value.length < 6) {
-            return Promise.reject(new Error($t('form.pwd.lenMin6')));
+          // 仅在有值时校验格式
+          if (value && !emailRegex.test(value) && !phoneRegex.test(value)) {
+            return Promise.reject(new Error($t('form.userName.invalidFormat'))); // 使用格式错误提示
           }
-          return Promise.resolve();
+          return Promise.resolve(); // 值为空或格式正确时通过
         },
-        message: () => $t('form.pwd.lenMin6'),
+        message: () => $t('form.userName.invalidFormat'), // 格式错误时的提示
+        trigger: ['input', 'blur'] // input 时也校验格式，但不提示 required
+      }
+    ],
+    password: [
+      {
+        required: true,
+        message: () => $t('form.pwd.required'),
         trigger: ['input', 'blur']
       }
     ]
@@ -90,8 +105,7 @@ const rememberPath = e => {
 async function handleSubmit() {
   // 先判断密码长度
   if (model.password.length < 6) {
-    window.$message?.error($t('form.pwd.lenMin6'));
-    return;
+    return; // 仍然阻止提交
   }
 
   await validate();
