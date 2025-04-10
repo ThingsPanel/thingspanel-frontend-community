@@ -176,7 +176,7 @@ watch(
         <!-- 加载中提示：放在 NInfiniteScroll 内容的末尾 -->
         <NFlex v-if="props.loading" justify="center" class="loading-indicator">
           <NSpin size="small" />
-          <span class="loading-text">{{ $t('common.loading') || '加载中...' }}</span>
+          <span class="loading-text">{{ $t('card.loading') }}</span>
         </NFlex>
 
         <!-- 没有更多提示 -->

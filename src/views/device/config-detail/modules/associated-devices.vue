@@ -70,6 +70,7 @@ const addDevice = () => {
 };
 const modalClose = () => {
   initQueryDevice();
+  associatedForm.value = defaultAssociatedForm();
 };
 const handleSubmit = async () => {
   await associatedFormRef?.value?.validate();
