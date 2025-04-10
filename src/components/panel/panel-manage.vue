@@ -11,7 +11,7 @@ import { localStg } from '@/utils/storage';
 import { useAppStore } from '@/store/modules/app';
 import { $t } from '@/locales';
 import { useWebsocketUtil } from '@/utils/websocketUtil';
-import { createLogger } from '@/utils/logger.ts';
+import { createLogger } from '@/utils/logger';
 const logger = createLogger('PanelManage');
 
 const NO_THEME = '--no--theme--';
