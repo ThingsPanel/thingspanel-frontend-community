@@ -197,5 +197,8 @@ export default {
       title: 'Push Notification',
       pushServer: 'Push Server'
     }
+  },
+  validation: {
+    commandIdentifierRequired: 'Command Identifier is required'
   }
 };

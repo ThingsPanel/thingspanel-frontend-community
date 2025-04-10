@@ -615,4 +615,26 @@ declare namespace Api {
       [key: string]: any;
     }
   }
+
+  /**
+   * namespace Device
+   *
+   * backend api module: "device"
+   */
+  namespace Device {
+    // 定义设备选择器项的类型
+    interface DeviceSelectItem {
+      device_id: string;
+      device_name: string;
+    }
+
+    // 定义设备选择器请求参数的类型
+    interface DeviceSelectorParams {
+      page?: string; // 注意文档类型为 string
+      page_size?: string; // 注意文档类型为 string
+      has_device_config?: boolean;
+    }
+
+    // ... (这里可以添加其他与 device 相关的类型)
+  }
 }

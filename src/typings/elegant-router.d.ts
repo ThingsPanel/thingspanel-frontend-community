@@ -114,7 +114,6 @@ declare module "@elegant-router/types" {
     "visualization_kanban": "/visualization/kanban";
     "visualization_kanban-details": "/visualization/kanban-details";
     "visualization_panel-preview": "/visualization/panel-preview";
-
   };
 
   /**

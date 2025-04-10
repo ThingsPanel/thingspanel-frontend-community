@@ -2,11 +2,12 @@
 import type { Ref } from 'vue';
 import { computed, getCurrentInstance, h, onMounted, ref } from 'vue';
 import type { DataTableColumns, FormInst } from 'naive-ui';
-import { NButton, NPagination, NPopconfirm, useMessage } from 'naive-ui';
+import { NButton, NDataTable, NFlex, NForm, NFormItem, NModal, NPagination, NPopconfirm, useMessage } from 'naive-ui';
 import moment from 'moment/moment';
-import { deviceConfigBatch, deviceDelete, deviceList } from '@/service/api/device';
+import { deviceConfigBatch, deviceDelete, deviceList, getDeviceListForSelect } from '@/service/api';
 import { useRouterPush } from '@/hooks/common/router';
 import { $t } from '@/locales';
+import DeviceSelectWithScroll from './DeviceSelectWithScroll.vue';
 
 const message = useMessage();
 
@@ -19,26 +20,28 @@ const props = withDefaults(defineProps<Props>(), {
 });
 const visible = ref(false);
 const associatedFormRef = ref<HTMLElement & FormInst>();
-const associatedForm = ref(defaultAssociatedForm());
-const deviceOptions = ref([] as any[]);
 
-const queryDevice = ref<{
-  page: number;
-  page_size: number;
-  total: number;
-}>({
+interface AssociatedFormType {
+  device_ids: string[] | null;
+  device_config_id: string;
+}
+const associatedForm = ref<AssociatedFormType>(defaultAssociatedForm());
+const deviceOptions = ref<Api.Device.DeviceSelectItem[]>([]);
+const hasMoreDevices = ref(true);
+const loadingMore = ref(false);
+
+const queryDevice = ref({
   page: 1,
-  page_size: 20,
-  total: 0
+  page_size: 30
 });
 
 function initQueryDevice() {
   queryDevice.value = {
     page: 1,
-    page_size: 20,
-    total: 0
+    page_size: 30
   };
   deviceOptions.value = [];
+  hasMoreDevices.value = true;
 }
 
 function defaultAssociatedForm() {
@@ -63,8 +66,6 @@ const associatedFormRules = ref({
 });
 
 const addDevice = () => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  getDeviceOptions();
   visible.value = true;
 };
 const modalClose = () => {
@@ -72,10 +73,13 @@ const modalClose = () => {
 };
 const handleSubmit = async () => {
   await associatedFormRef?.value?.validate();
+  if (!associatedForm.value.device_ids) {
+    associatedForm.value.device_ids = [];
+  }
   associatedForm.value.device_config_id = props.deviceConfigId;
-  const res = await deviceConfigBatch(associatedForm.value);
-  if (!res.error) {
-    // message.success('新增成功');
+  const { error } = await deviceConfigBatch(associatedForm.value);
+  if (!error) {
+    message.success($t('common.addSuccess') || 'Added successfully');
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     handleClose();
   }
@@ -85,51 +89,102 @@ const handleClose = () => {
   associatedForm.value = defaultAssociatedForm();
   visible.value = false;
   queryData.value.page = 1;
-  initQueryDevice();
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   getDeviceList();
 };
-const handleScroll = (e: Event) => {
-  const currentTarget = e.currentTarget as HTMLElement;
-  if (currentTarget.scrollTop + currentTarget.offsetHeight >= currentTarget.scrollHeight) {
-    if (deviceOptions.value.length <= queryDevice.value.total) {
-      queryDevice.value.page += 1;
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      getDeviceOptions();
+
+const getDeviceOptions = async (isInitialLoad = false) => {
+  if (loadingMore.value) {
+    console.warn('Load request ignored, already loading.');
+    return;
+  }
+  if (!isInitialLoad && !hasMoreDevices.value) return;
+
+  if (isInitialLoad) {
+    queryDevice.value.page = 1;
+    deviceOptions.value = [];
+    hasMoreDevices.value = true;
+  } else if (!hasMoreDevices.value) {
+    return;
+  }
+
+  loadingMore.value = true;
+
+  const params: Api.Device.DeviceSelectorParams = {
+    page: String(queryDevice.value.page),
+    page_size: String(queryDevice.value.page_size),
+    has_device_config: false
+  };
+
+  try {
+    const { data, error } = await getDeviceListForSelect(params);
+
+    if (!error && data) {
+      deviceOptions.value.push(...data);
+
+      if (data.length < queryDevice.value.page_size) {
+        // eslint-disable-next-line require-atomic-updates
+        hasMoreDevices.value = false;
+      } else {
+        // eslint-disable-next-line require-atomic-updates
+        hasMoreDevices.value = true;
+      }
+    } else {
+      // eslint-disable-next-line require-atomic-updates
+      hasMoreDevices.value = false;
+      if (error) {
+        message.error($t('common.fetchDataFailed') || '获取设备列表失败');
+      }
     }
+  } catch (apiError) {
+    message.error($t('common.networkError') || '网络错误，获取设备列表失败');
+    // eslint-disable-next-line require-atomic-updates
+    hasMoreDevices.value = false;
+  } finally {
+    // eslint-disable-next-line require-atomic-updates
+    loadingMore.value = false;
   }
 };
 
-const getDeviceOptions = async () => {
-  const res = await deviceList(queryDevice.value);
-  deviceOptions.value = deviceOptions.value.concat(res.data.list);
-  // eslint-disable-next-line require-atomic-updates
-  queryDevice.value.total = res.data.total;
+const handleLoadMoreDevices = () => {
+  queryDevice.value.page += 1;
+  getDeviceOptions();
 };
+
+const handleInitialLoadDevices = () => {
+  getDeviceOptions(true);
+};
+
 const configDevice = ref([]);
 const configDeviceTotal = ref(0);
 const getDeviceList = async () => {
   queryData.value.device_config_id = props.deviceConfigId;
-  const res = await deviceList(queryData.value);
-  res.data.list.map(sitem => {
-    sitem.activate_flag = sitem.is_online === 0 ? $t('custom.devicePage.offline') : $t('custom.devicePage.online');
-    return sitem;
-  });
-  configDevice.value = res.data.list || [];
-  configDeviceTotal.value = res.data.total;
+  const { data, error } = await deviceList(queryData.value);
+  if (!error && data?.list) {
+    data.list.forEach(sitem => {
+      sitem.activate_flag = sitem.is_online === 0 ? $t('custom.devicePage.offline') : $t('custom.devicePage.online');
+    });
+    configDevice.value = data.list || [];
+    configDeviceTotal.value = data.total || 0;
+  } else {
+    configDevice.value = [];
+    configDeviceTotal.value = 0;
+  }
 };
 
 const handleDelete = async row => {
-  await deviceDelete({
+  const { error } = await deviceDelete({
     device_id: row.id,
-    // device_config_id: queryData.value.device_config_id
     device_config_id: ''
   });
-  message.success($t('card.removeSuccess'));
-  getDeviceList();
+  if (!error) {
+    message.success($t('card.removeSuccess') || 'Removed successfully');
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    getDeviceList();
+  }
 };
 
-const columnsData: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
+const columnsData: Ref<DataTableColumns<any>> = ref([
   {
     key: 'name',
     minWidth: '140px',
@@ -151,7 +206,7 @@ const columnsData: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
     title: $t('custom.devicePage.pushTime'),
     render: row => {
       if (row.ts) {
-        return moment(row.ts).format('YYYY-MM-DD hh:mm:ss');
+        return moment(row.ts).format('YYYY-MM-DD HH:mm:ss');
       }
       return '';
     }
@@ -206,6 +261,7 @@ const getPlatform = computed(() => {
   return proxy.getPlatform();
 });
 onMounted(async () => {
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   await getDeviceList();
 });
 </script>
@@ -246,15 +302,15 @@ onMounted(async () => {
         label-width="auto"
       >
         <NFormItem :label="$t('page.irrigation.rotation.chooseDevice')" path="device_ids">
-          <NSelect
-            v-model:value="associatedForm.device_ids"
+          <DeviceSelectWithScroll
+            v-model:modelValue="associatedForm.device_ids"
             :options="deviceOptions"
-            label-field="name"
-            value-field="id"
-            multiple
-            filterable
-            @scroll="handleScroll"
-          ></NSelect>
+            :loading="loadingMore"
+            :has-more="hasMoreDevices"
+            :placeholder="$t('page.irrigation.rotation.chooseDevice') || '请选择设备'"
+            @load-more="handleLoadMoreDevices"
+            @initial-load="handleInitialLoadDevices"
+          />
         </NFormItem>
         <NFlex justify="flex-end">
           <NButton @click="handleClose">{{ $t('generate.cancel') }}</NButton>

@@ -137,7 +137,7 @@ export const createNoSelectDeviceColumns = (
                 default: () => $t('common.confirmDelete'),
                 trigger: () => (
                   <NButton type="error" size={'small'}>
-                    {$t('custom.groupPage.removeFromGroup')}1
+                    {$t('custom.groupPage.removeFromGroup')}
                   </NButton>
                 )
               }}

@@ -28,8 +28,10 @@ const columns = [
   {
     title: $t('device_template.table_header.commandName'),
     minWidth: '140px',
-    key: ''
+    key: 'identify_name',
+    render: row => row.identify_name || '--'
   },
+
   {
     title: $t('generate.commandIssuanceTime'),
     minWidth: '140px',
@@ -46,7 +48,7 @@ const columns = [
   {
     title: $t('generate.errorMessage'),
     minWidth: '140px',
-    key: 'error_message'
+    render: row => row.error_message || '--'
   }
 ];
 </script>

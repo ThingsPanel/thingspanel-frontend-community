@@ -39,3 +39,14 @@ export const putDeviceModel = async (params: {
 }) => {
   return await request.put<Api.BaseApi.Data | any>(`/device/model/telemetry`, { params });
 };
+
+/**
+ * 获取用于下拉选择的设备列表 (根据文档更新)
+ *
+ * @param params - 查询参数 (可选)
+ */
+export const getDeviceListForSelect = async (params?: Api.Device.DeviceSelectorParams) => {
+  // 使用文档提供的 URL 和参数类型
+  // 假设 request.get 返回的 data 部分是 Api.Device.DeviceSelectItem[]
+  return await request.get<Api.Device.DeviceSelectItem[]>(`/device/selector`, { params });
+};

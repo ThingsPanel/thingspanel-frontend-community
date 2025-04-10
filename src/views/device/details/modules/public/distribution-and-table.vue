@@ -1,6 +1,25 @@
 <script setup lang="ts">
 import { computed, defineExpose, getCurrentInstance, onMounted, reactive, ref } from 'vue';
-import { NButton, NDataTable, NForm, NFormItem, NInput, NModal, NPagination } from 'naive-ui';
+import {
+  type FormInst,
+  type FormRules,
+  NButton,
+  NCard,
+  NDataTable,
+  NFlex,
+  NForm,
+  NFormItem,
+  NGrid,
+  NGridItem,
+  NIcon,
+  NInput,
+  NInputNumber,
+  NModal,
+  NPagination,
+  NPopover,
+  NSelect,
+  NSwitch
+} from 'naive-ui';
 import { useLoading } from '@sa/hooks';
 import { Refresh } from '@vicons/ionicons5';
 import type { FlatResponseFailData, FlatResponseSuccessData } from '@sa/axios';
@@ -25,11 +44,12 @@ const tableData = ref<any[] | undefined>();
 const page_coune = ref(0);
 const the_page = ref(1);
 const showDialog = ref(false);
-const textValue = ref('');
-const commandValue = ref('');
-const form = reactive({
+const formRef = ref<FormInst | null>(null);
+const formModel = reactive({
+  commandValue: '',
+  textValue: '',
   expected: false,
-  time: null
+  time: null as number | null
 });
 const options = ref();
 const { loading, startLoading, endLoading } = useLoading();
@@ -39,6 +59,17 @@ const paramsSelect = ref<any>([
 ]);
 const paramsData = ref<any>([]);
 const isTextArea = ref<any>(true);
+const rules = computed<FormRules>(() => {
+  const r: FormRules = {};
+  if (props.isCommand && isTextArea.value) {
+    r.commandValue = {
+      required: true,
+      message: $t('page.manage.validation.commandIdentifierRequired'),
+      trigger: ['input', 'blur']
+    };
+  }
+  return r;
+});
 const fetchDataFunction = async () => {
   startLoading();
 
@@ -62,42 +93,52 @@ const openDialog = () => {
 
 const closeDialog = () => {
   showDialog.value = false;
-  textValue.value = '';
+  formModel.textValue = '';
   paramsData.value = [];
-  commandValue.value = '';
+  formModel.commandValue = '';
   isTextArea.value = true;
-  form.expected = false;
-  form.time = null;
+  formModel.expected = false;
+  formModel.time = null;
+  formRef.value?.restoreValidation();
 };
 
 const submit = async () => {
-  let parms;
-  const params: any = {};
-  if (!isTextArea.value) {
-    paramsData.value.filter((item: any) => {
-      params[item.data_identifier] = item[item.data_identifier];
-    });
-    textValue.value = JSON.stringify(params);
-  }
-  if (isJSON(textValue.value) || !textValue.value) {
+  try {
+    await formRef.value?.validate();
+
+    let parms;
+    const params: any = {};
+    if (!isTextArea.value) {
+      paramsData.value.forEach((item: any) => {
+        params[item.data_identifier] = item[item.data_identifier];
+      });
+      formModel.textValue = JSON.stringify(params);
+    }
+
+    if (formModel.textValue && !isJSON(formModel.textValue)) {
+      window.$message?.error($t('generate.inputRightJson'));
+      return;
+    }
+
     if (props.isCommand) {
       parms = {
         device_id: props.id,
-        value: textValue.value ? textValue.value : null,
-        identify: commandValue.value
+        value: formModel.textValue ? formModel.textValue : null,
+        identify: formModel.commandValue
       };
     } else {
-      parms = { device_id: props.id, value: textValue.value ? textValue.value : null };
+      parms = { device_id: props.id, value: formModel.textValue ? formModel.textValue : null };
     }
-    if (form.expected) {
+
+    if (formModel.expected) {
       if (props.expectApi) {
-        const expiry = form.time ? new Date().getTime() + form.time * 60 * 60 * 1000 : null;
+        const expiry = formModel.time ? new Date().getTime() + formModel.time * 60 * 60 * 1000 : null;
         await props.expectApi({
           device_id: props.id,
-          payload: textValue.value ? textValue.value : null,
+          payload: formModel.textValue ? formModel.textValue : null,
           send_type: props.isCommand ? 'command' : 'attribute',
           expiry: expiry ? moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ') : null,
-          identify: props.isCommand ? commandValue.value : null
+          identify: props.isCommand ? formModel.commandValue : null
         });
       }
     } else if (props.submitApi) {
@@ -106,6 +147,9 @@ const submit = async () => {
 
     await fetchDataFunction();
     closeDialog();
+  } catch (errors) {
+    window.$message?.error($t('common.validateFail') || 'Validation failed, please check your input.');
+    logger.error('Form validation failed:', errors);
   }
 };
 
@@ -132,18 +176,33 @@ defineExpose({ refresh });
 const getOptions = async show => {
   if (show) {
     const res = await commandDataById(props.id);
-    options.value = res.data;
+
+    if (res && Array.isArray(res.data)) {
+      options.value = res.data;
+    } else {
+      options.value = [];
+    }
   }
 };
 
 const selectBtn: () => void = () => {
-  commandValue.value = '';
+  formModel.commandValue = '';
   isTextArea.value = !isTextArea.value;
 };
 
 const selectVal: (arr: any, option: any) => void = (arr, option) => {
   logger.info(arr);
-  paramsData.value = JSON.parse(option.params);
+  formModel.commandValue = arr;
+  if (option && option.params) {
+    try {
+      paramsData.value = JSON.parse(option.params);
+    } catch (e) {
+      logger.error('Failed to parse params for selected command:', e);
+      paramsData.value = [];
+    }
+  } else {
+    paramsData.value = [];
+  }
 };
 
 const commandList = ref();
@@ -161,29 +220,31 @@ const getPlatform = computed(() => {
   return proxy.getPlatform();
 });
 const validationJson = computed(() => {
-  if (textValue.value && !isJSON(textValue.value)) {
+  if (formModel.textValue && !isJSON(formModel.textValue)) {
     return 'error';
   }
   return undefined;
 });
 const inputFeedback = computed(() => {
-  if (textValue.value && !isJSON(textValue.value)) {
+  if (formModel.textValue && !isJSON(formModel.textValue)) {
     return $t('generate.inputRightJson');
   }
   return '';
 });
-// const validationJson1 = computed(() => {
-//   if (isTextArea.value&&commandValue.value && !isJSON(commandValue.value)) {
-//     return 'error';
-//   }
-//   return undefined;
-// });
-// const inputFeedback1 = computed(() => {
-//   if (isTextArea.value&&commandValue.value && !isJSON(commandValue.value)) {
-//     return $t('generate.inputRightJson');
-//   }
-//   return '';
-// });
+
+// 更新计算属性，移除 isTextArea 的判断，命令标识符在 isCommand 为 true 时总是需要
+const isSubmitDisabled = computed(() => {
+  // 条件1：如果需要命令标识符，且该值为空，则禁用
+  if (props.isCommand && !formModel.commandValue) {
+    return true;
+  }
+  // 条件2：如果载荷文本框有内容但不是有效的 JSON，则禁用
+  if (formModel.textValue && !isJSON(formModel.textValue)) {
+    return true;
+  }
+  // 其他情况不禁用
+  return false;
+});
 </script>
 
 <template>
@@ -221,7 +282,7 @@ const inputFeedback = computed(() => {
     </div>
     <NModal v-if="submitApi" v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-400px'">
       <n-card :title="isCommand ? $t('generate.issueCommand') : $t('generate.issue-attribute')">
-        <NForm :label-placement="expect ? 'left' : 'top'">
+        <NForm ref="formRef" :model="formModel" :rules="rules" :label-placement="formModel.expected ? 'left' : 'top'">
           <div v-if="expect" class="flex">
             <NFormItem>
               <template #label>
@@ -248,20 +309,24 @@ const inputFeedback = computed(() => {
                 </div>
               </template>
 
-              <n-switch v-model:value="form.expected" />
+              <n-switch v-model:value="formModel.expected" />
             </NFormItem>
-            <NFormItem v-if="form.expected" :label="$t('generate.expirationTime')" class="ml-20px">
+            <NFormItem v-if="formModel.expected" :label="$t('generate.expirationTime')" class="ml-20px">
               <div class="flex-ai-c flex">
-                <n-input-number v-model:value="form.time" :show-button="false" class="w-80px" />
+                <n-input-number v-model:value="formModel.time" :show-button="false" class="w-80px" />
                 <div class="fs-0">{{ $t('generate.hour') }}</div>
               </div>
             </NFormItem>
           </div>
-          <NFormItem v-if="isCommand" :label="$t('generate.command-identifier')" required :options="options">
-            <NInput v-if="isTextArea" v-model:value="commandValue" :placeholder="$t('generate.or-enter-here')" />
+          <NFormItem v-if="isCommand" path="commandValue" :label="$t('generate.command-identifier')" required>
+            <NInput
+              v-if="isTextArea"
+              v-model:value="formModel.commandValue"
+              :placeholder="$t('generate.or-enter-here')"
+            />
             <NSelect
               v-else
-              v-model:value="commandValue"
+              v-model:value="formModel.commandValue"
               label-field="data_name"
               value-field="data_identifier"
               :options="options"
@@ -271,13 +336,12 @@ const inputFeedback = computed(() => {
             <NButton type="primary" class="selectBtn" @click="selectBtn">
               {{ isTextArea ? $t('card.selectFromExisting') : $t('card.manualInput') }}
             </NButton>
-            <!-- <span class="ml-4 mr-4">{{ $t('generate.or') }}</span> -->
           </NFormItem>
           <NFormItem v-if="isTextArea" label="" :validation-status="validationJson" :feedback="inputFeedback">
-            <NInput v-model:value="textValue" type="textarea" />
+            <NInput v-model:value="formModel.textValue" type="textarea" />
           </NFormItem>
           <div v-else>
-            <div v-if="commandValue !== ''" class="title">{{ $t('common.param') }}</div>
+            <div v-if="formModel.commandValue !== ''" class="title">{{ $t('common.param') }}</div>
             <div v-for="item in paramsData" :key="item.id" class="form_box">
               <div class="form_table">
                 <NFormItem :label="item.data_name" label-placement="left" label-width="80px" label-align="left">
@@ -292,12 +356,12 @@ const inputFeedback = computed(() => {
                     v-else-if="item.param_type === 'Enum'"
                     v-model:value="item[item.data_identifier]"
                     :options="
-                      item.enum_config.map(v => {
+                      item.enum_config?.map(v => {
                         return {
                           ...v,
                           label: v.desc
                         };
-                      })
+                      }) || []
                     "
                     :placeholder="$t('generate.please-select')"
                   />
@@ -308,7 +372,9 @@ const inputFeedback = computed(() => {
           </div>
           <NFlex justify="end">
             <NButton @click="closeDialog">{{ $t('generate.cancel') }}</NButton>
-            <NButton type="primary" @click="submit">{{ $t('page.irrigation.distribute') }}</NButton>
+            <NButton type="primary" :disabled="isSubmitDisabled" @click="submit">
+              {{ $t('page.irrigation.distribute') }}
+            </NButton>
           </NFlex>
         </NForm>
       </n-card>

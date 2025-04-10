@@ -197,5 +197,8 @@ export default {
       title: '推送信息',
       pushServer: '推送服务器'
     }
+  },
+  validation: {
+    commandIdentifierRequired: '命令标识符不能为空'
   }
 };
