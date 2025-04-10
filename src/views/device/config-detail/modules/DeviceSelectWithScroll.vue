@@ -131,6 +131,7 @@ watch(
     trigger="click"
     placement="bottom-start"
     class="device-select-popover"
+    width="trigger"
     :show="showPopover"
     :disabled="props.disabled"
     @update:show="handlePopoverUpdateShow"
@@ -194,8 +195,9 @@ watch(
 <style scoped lang="scss">
 .device-select-popover {
   padding: 0 !important; // Override default popover padding
-  width: 100%;
-  max-width: 400px; // Consistent max-width
+  // 移除固定的宽度限制，交给 width="trigger"
+  // width: 100%;
+  // max-width: 400px;
 }
 
 .select-trigger-wrapper {
@@ -210,12 +212,14 @@ watch(
 }
 
 .device-select-popover-content {
+  // 恢复外部容器的高度限制和滚动
   max-height: 300px;
-  overflow: hidden; // Prevent content overflow before scrollbar appears
+  overflow-y: auto;
 }
 
 .options-scroll-container {
-  max-height: 300px; // Ensure scroll applies
+  // 移除内部 NInfiniteScroll 的高度限制
+  // max-height: 300px;
 }
 
 .options-list {
