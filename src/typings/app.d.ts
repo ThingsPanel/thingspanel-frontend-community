@@ -566,7 +566,36 @@ declare namespace App {
           resetSuccessMsg: string;
         };
       };
-      route: Record<I18nRouteKey, string>;
+      route: {
+        apply_in: string;
+        product: string;
+        product_list: string;
+        'product_update-ota': string;
+        'product_update-package': string;
+        'management_ordinary-user': string;
+        visualization_panel: string;
+        'visualization_big-screen': string;
+        irrigation: string;
+        irrigation_time: string;
+        irrigation_group: string;
+        irrigation_rotation: string;
+        personal_center: string;
+        'space-management': string;
+        'system-management-user_equipment-map': string;
+        'edit-area': string;
+        'new-area': string;
+        device_service_access: string;
+        device_service_details: string;
+        'data-services': string;
+        'data-services_data-forward': string;
+        'data-services_forward-config': string;
+        'device-details-app': string;
+        'alarm_warning-message': string;
+        'personal-center': string;
+        apply_plugin: string;
+        'device_service-access': string;
+        'device_service-details': string;
+      } & Record<I18nRouteKey, string>;
       page: {
         product: ProductLocal;
         login: {
@@ -1951,6 +1980,7 @@ declare namespace App {
       kanban: {
         'add-cards': string;
       };
+      card: any;
     };
 
     type GetI18nKey<T extends Record<string, unknown>, K extends keyof T = keyof T> = K extends string
@@ -1959,7 +1989,8 @@ declare namespace App {
         : K
       : never;
 
-    type I18nKey = GetI18nKey<Schema>;
+    // 将 I18nKey 定义为 string 来避免无限递归错误
+    type I18nKey = string;
 
     type TranslateOptions<Locales extends string> = import('vue-i18n').TranslateOptions<Locales>;
 
