@@ -1,10 +1,14 @@
-import { defineConfig } from '@soybeanjs/eslint-config';
+// 移除 defineConfig 导入
+// import { defineConfig } from '@soybeanjs/eslint-config';
 
 console.log('4324324');
-export default defineConfig(
+
+// 直接导出配置数组
+export default [
+  // 第一个配置对象 (原 defineConfig 的第一个参数，移除了 vue 和 unocss)
   {
-    vue: true,
-    unocss: true,
+    // vue: true, // 移除
+    // unocss: true, // 移除
     overrides: [
       {
         files: ['./scripts/*.ts'],
@@ -58,6 +62,7 @@ export default defineConfig(
       }
     ]
   },
+  // 第二个配置对象 (原 defineConfig 的第二个参数)
   {
     rules: {
       'array-callback-return': 'off',
@@ -71,5 +76,6 @@ export default defineConfig(
       'import/core-modules': ['uno.css', '~icons/*', 'virtual:svg-icons-register']
     }
   }
-);
+];
+
 console.log('4324324');
