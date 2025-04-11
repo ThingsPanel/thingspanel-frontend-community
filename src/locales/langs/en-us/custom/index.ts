@@ -8,6 +8,11 @@ import personalCenter from './personalCenter';
 import plugin from './plugin';
 import visualization from './visualization';
 
+// Placeholder for associated devices translations
+const associatedDevices = {
+  selectDeviceFirst: 'Please select at least one device.' // Added key
+};
+
 export default {
   home,
   groupPage,
@@ -17,5 +22,6 @@ export default {
   management,
   personalCenter,
   plugin,
-  visualization
+  visualization,
+  associatedDevices // Added new object
 };

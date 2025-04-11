@@ -273,7 +273,11 @@ const local: App.I18n.Schema = {
     getCode: 'Get Code',
     countingLabel: 'Resend in {second}s',
     phoneRequired: 'Phone number is required!',
-    phoneInvalid: 'Invalid phone number format!'
+    phoneInvalid: 'Invalid phone number format!',
+    networkError: 'Network Error',
+    fetchDataFailed: 'Failed to fetch data',
+    // emailRequired: 'Email is required!',
+    // emailInvalid: 'Invalid email format!'
   },
   theme: {
     themeSchema: {

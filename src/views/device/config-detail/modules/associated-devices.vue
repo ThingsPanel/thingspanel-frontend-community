@@ -74,14 +74,16 @@ const modalClose = () => {
 };
 const handleSubmit = async () => {
   await associatedFormRef?.value?.validate();
-  if (!associatedForm.value.device_ids) {
-    associatedForm.value.device_ids = [];
+
+  if (!associatedForm.value.device_ids || associatedForm.value.device_ids.length === 0) {
+    message.warning($t('custom.associatedDevices.selectDeviceFirst'));
+    return;
   }
+
   associatedForm.value.device_config_id = props.deviceConfigId;
   const { error } = await deviceConfigBatch(associatedForm.value);
   if (!error) {
     message.success($t('common.addSuccess') || 'Added successfully');
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     handleClose();
   }
 };
@@ -90,7 +92,6 @@ const handleClose = () => {
   associatedForm.value = defaultAssociatedForm();
   visible.value = false;
   queryData.value.page = 1;
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   getDeviceList();
 };
 
@@ -105,8 +106,6 @@ const getDeviceOptions = async (isInitialLoad = false) => {
     queryDevice.value.page = 1;
     deviceOptions.value = [];
     hasMoreDevices.value = true;
-  } else if (!hasMoreDevices.value) {
-    return;
   }
 
   loadingMore.value = true;
@@ -120,10 +119,10 @@ const getDeviceOptions = async (isInitialLoad = false) => {
   try {
     const { data, error } = await getDeviceListForSelect(params);
 
-    if (!error && data) {
-      deviceOptions.value.push(...data);
+    if (!error && data?.list) {
+      deviceOptions.value.push(...data.list);
 
-      if (data.length < queryDevice.value.page_size) {
+      if (data.list.length < queryDevice.value.page_size) {
         // eslint-disable-next-line require-atomic-updates
         hasMoreDevices.value = false;
       } else {
@@ -134,11 +133,11 @@ const getDeviceOptions = async (isInitialLoad = false) => {
       // eslint-disable-next-line require-atomic-updates
       hasMoreDevices.value = false;
       if (error) {
-        message.error($t('common.fetchDataFailed') || '获取设备列表失败');
+        message.error($t('common.fetchDataFailed'));
       }
     }
   } catch (apiError) {
-    message.error($t('common.networkError') || '网络错误，获取设备列表失败');
+    message.error($t('common.networkError') );
     // eslint-disable-next-line require-atomic-updates
     hasMoreDevices.value = false;
   } finally {
@@ -180,7 +179,6 @@ const handleDelete = async row => {
   });
   if (!error) {
     message.success($t('card.removeSuccess') || 'Removed successfully');
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     getDeviceList();
   }
 };
@@ -262,7 +260,6 @@ const getPlatform = computed(() => {
   return proxy.getPlatform();
 });
 onMounted(async () => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   await getDeviceList();
 });
 </script>
@@ -315,7 +312,13 @@ onMounted(async () => {
         </NFormItem>
         <NFlex justify="flex-end">
           <NButton @click="handleClose">{{ $t('generate.cancel') }}</NButton>
-          <NButton type="primary" @click="handleSubmit">{{ $t('generate.add') }}</NButton>
+          <NButton
+             type="primary"
+             :disabled="!associatedForm.device_ids || associatedForm.device_ids.length === 0"
+             @click="handleSubmit"
+             >
+             {{ $t('generate.add') }}
+           </NButton>
         </NFlex>
       </NForm>
     </NModal>

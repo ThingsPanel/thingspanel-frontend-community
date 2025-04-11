@@ -274,7 +274,9 @@ const local: App.I18n.Schema = {
     phoneRequired: '手机号码不能为空！',
     phoneInvalid: '手机号码格式错误！',
     emailRequired: '邮箱不能为空！',
-    emailInvalid: '邮箱格式错误！'
+    emailInvalid: '邮箱格式错误！',
+    networkError: '网络错误',
+    fetchDataFailed: '获取数据失败'
   },
   theme: {
     themeSchema: {
