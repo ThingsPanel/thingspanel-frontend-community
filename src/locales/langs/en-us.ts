@@ -276,6 +276,7 @@ const local: App.I18n.Schema = {
     phoneInvalid: 'Invalid phone number format!',
     networkError: 'Network Error',
     fetchDataFailed: 'Failed to fetch data',
+    noMoreData: 'No more data',
     // emailRequired: 'Email is required!',
     // emailInvalid: 'Invalid email format!'
   },

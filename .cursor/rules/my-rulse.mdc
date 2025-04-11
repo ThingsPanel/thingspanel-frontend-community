@@ -8,11 +8,17 @@ description:
 globs: 
 alwaysApply: false
 ---
+---
+description: 
+globs: 
+alwaysApply: false
+---
 
 # Your rule content
 
 - You can @ files here
 - You can use markdown but dont have to
+#always use 中文
 # Project Rules for tp-tenant (Vue 3 + TypeScript + Naive UI + UnoCSS)
 
 ## Framework & Core Patterns
