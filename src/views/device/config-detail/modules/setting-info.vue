@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance, reactive, ref } from 'vue';
-import { NButton, useDialog } from 'naive-ui';
-import { router } from '@/router';
+import { NButton, useDialog, useMessage } from 'naive-ui';
+import { useRoute } from 'vue-router';
+import { useTabStore } from '@/store/modules/tab';
+import { useRouterPush } from '@/hooks/common/router';
 import { deviceConfigDel, deviceConfigEdit } from '@/service/api/device';
 import { $t } from '@/locales';
 
@@ -13,7 +15,10 @@ const props = withDefaults(defineProps<Props>(), {
   configInfo: null
 });
 const dialog = useDialog();
-// const message = useMessage();
+const message = useMessage();
+const route = useRoute();
+const tabStore = useTabStore();
+const { routerPush } = useRouterPush();
 const deleteConfig = () => {
   dialog.warning({
     title: $t('common.tip'),
@@ -21,9 +26,13 @@ const deleteConfig = () => {
     positiveText: $t('device_template.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
-      await deviceConfigDel({ id: props.configInfo.id });
-      // message.success($t('custom.grouping_details.operationSuccess'));
-      router.back();
+      const res: any = await deviceConfigDel({ id: props.configInfo.id });
+
+      if (!res || !res.error) {
+        message.success($t('custom.grouping_details.operationSuccess'));
+        await tabStore.removeTab(route.path);
+        await routerPush({ path: '/device/config' });
+      }
     }
   });
 };

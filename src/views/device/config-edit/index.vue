@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import type { FormInst } from 'naive-ui';
+import type { FormInst, SelectOption, FormRules, SelectGroupOption } from 'naive-ui';
+import { NTooltip, NIcon, NFlex } from 'naive-ui';
+import { HelpCircle } from '@vicons/ionicons5';
 import { router } from '@/router';
 import {
   deviceConfigAdd,
@@ -17,43 +19,70 @@ import FormInput from '../config-detail/modules/form.vue';
 
 const route = useRoute();
 const configId = ref(route.query.id || null);
-const modalTitle = ref($t('generate.add'));
-const configForm = ref(defaultConfigForm());
+const modalTitle = ref('generate.add');
+const configForm = ref<Record<string, any> >(defaultConfigForm());
 const isEdit = ref(false);
+
+// 为 options 定义类型
+interface Option {
+  name: string;
+  id: string | number;
+  [key: string]: any; // 允许其他属性
+}
+
 // 合并字段
-const typeOptions = ref([]);
-const connectOptions = ref([]);
-const protocol_config = ref({});
+const typeOptions = ref<(SelectOption | SelectGroupOption)[]>([]);
+const connectOptions = ref<SelectOption[]>([]);
+const protocol_config = ref<Record<string, any> >({});
 type FormElementType = 'input' | 'table' | 'select';
+
+// 假设 Validate 是一个已定义的类型或接口，如果不是，需要定义或移除
+// 如果 Validate 是 naive-ui 的 FormItemRule，可以这样写：
+// import type { FormItemRule } from 'naive-ui';
+// type Validate = FormItemRule | FormItemRule[];
+
 interface FormElement {
   type: FormElementType;
   dataKey: string;
   label: string;
   options?: Option[];
   placeholder?: string;
-  validate?: Validate;
+  // validate?: Validate; // 暂时注释掉，除非能找到 Validate 定义
   array?: FormElement[];
 }
-
 const formElements = ref<FormElement[]>([]);
+// 定义表单数据类型
+interface ConfigFormData {
+  id: string | number | null;
+  additional_info: string | null;
+  description: string | null;
+  device_conn_type: string | number | null;
+  device_template_id: string | number | '' | null; // 允许空字符串
+  device_type: string | number | null;
+  name: string | null;
+  protocol_config: Record<string, any> | string | null; // 允许对象、字符串或 null
+  protocol_type: string | number | null;
+  remark: string | null;
+  voucher_type: string | number | null;
+}
 
-function defaultConfigForm() {
+function defaultConfigForm(): ConfigFormData {
   return {
     id: null,
     additional_info: null,
     description: null,
     device_conn_type: null,
-    device_template_id: null,
+    device_template_id: '', // 默认值是空字符串
     device_type: null,
     name: null,
-    protocol_config: null,
+    protocol_config: null, // 默认是 null
     protocol_type: null,
     remark: null,
     voucher_type: null
   };
 }
 
-const configFormRules = ref({
+const configFormRules = ref<FormRules>({
   name: {
     required: true,
     message: $t('common.deviceConfigName'),
@@ -76,7 +105,7 @@ const queryTemplate = ref({
   page_size: 20,
   total: 0
 });
-const deviceTemplateOptions = ref([{ name: $t('generate.unbind'), id: '' }]);
+const deviceTemplateOptions = ref([{ name: ()=>$t('generate.unbind'), id: '' }]);
 
 const getDeviceTemplate = () => {
   deviceTemplate(queryTemplate.value).then(res => {
@@ -95,7 +124,7 @@ const deviceTemplateScroll = (e: Event) => {
   }
 };
 
-const configFormRef = ref<HTMLElement & FormInst>();
+const configFormRef = ref<FormInst>();
 
 const handleClose = () => {
   configFormRef.value?.restoreValidation();
@@ -106,8 +135,23 @@ const handleClose = () => {
 // 提交表单
 const handleSubmit = async () => {
   await configFormRef?.value?.validate();
-  const postData = { ...configForm.value };
-  postData.protocol_config = JSON.stringify(protocol_config.value);
+  // 明确 postData 类型
+  const postData: ConfigFormData = {
+    ...configForm.value,
+    id: null,
+    additional_info: null,
+    description: null,
+    device_conn_type: null,
+    device_template_id: null,
+    device_type: null,
+    name: null,
+    protocol_config: null,
+    protocol_type: null,
+    remark: null,
+    voucher_type: null
+  };
+  // 确保 postData.protocol_config 可以接受字符串
+  postData.protocol_config = JSON.stringify(protocol_config.value || {});
 
   if (!configId.value) {
     const res = await deviceConfigAdd(postData);
@@ -133,26 +177,27 @@ watch(
   () => configId.value,
   async newId => {
     if (newId) {
-      modalTitle.value = $t('common.edit');
+      modalTitle.value = 'common.edit';
     }
   }
 );
-const getProtocolList = async (deviceCode: string) => {
+const getProtocolList = async (deviceCode: string | number) => {
   const queryData = { device_type: deviceCode };
   const res = await deviceProtocalServiceList(queryData);
   if (res.data) {
+    // 明确数组元素的类型
     typeOptions.value = [
       {
         type: 'group',
-        name: $t('common.protocol'),
+        label: $t('common.protocol'), // naive-ui group 使用 label
         key: 'protocol',
-        children: res.data.protocol || []
+        children: (res.data.protocol || []).map((p: any) => ({ label: p.name, value: p.service_identifier })) as SelectOption[]
       },
       {
         type: 'group',
-        name: $t('common.service'),
+        label: $t('common.service'), // naive-ui group 使用 label
         key: 'service',
-        children: res.data.service || []
+        children: (res.data.service || []).map((s: any) => ({ label: s.name, value: s.service_identifier })) as SelectOption[]
       }
     ];
   }
@@ -160,21 +205,22 @@ const getProtocolList = async (deviceCode: string) => {
 
 const getConfigForm = async data => {
   const res = await protocolPluginConfigForm({
-    device_type: configForm.value.device_type,
+    device_type: configForm?.value?.device_type,
     protocol_type: data
   });
   formElements.value = res.data || [];
 };
 
-const getVoucherType = async data => {
+const getVoucherType = async (data: any) => {
   connectOptions.value = [];
   const res = await deviceConfigVoucherType({
-    device_type: configForm.value.device_type,
+    device_type: configForm?.value?.device_type,
     protocol_type: data
   });
   if (res.data) {
+    // 明确 map 返回类型
     connectOptions.value = Object.keys(res.data).map(key => {
-      return { label: key, value: res.data[key] };
+      return { label: key, value: res.data[key] } as SelectOption;
     });
   }
 };
@@ -184,14 +230,22 @@ const choseProtocolType = async data => {
   await getVoucherType(data);
   await getConfigForm(data);
 };
+
+// 定义设备类型及其帮助信息的数组
+const deviceTypes = ref([
+  { value: '1', labelKey: 'generate.direct-connected-device', helpKey: 'generate.deviceTypeHelp.direct' },
+  { value: '2', labelKey: 'generate.gateway', helpKey: 'generate.deviceTypeHelp.gateway' },
+  { value: '3', labelKey: 'generate.gateway-sub-device', helpKey: 'generate.deviceTypeHelp.subDevice' }
+]);
+
 onMounted(async () => {
   if (configId.value) {
-    modalTitle.value = $t('common.edit');
+    modalTitle.value = 'common.edit';
     isEdit.value = true;
     await getConfig();
   } else {
     isEdit.value = false;
-    modalTitle.value = $t('generate.add');
+    modalTitle.value = 'generate.add';
   }
   getDeviceTemplate();
 
@@ -211,7 +265,7 @@ onMounted(async () => {
 
 <template>
   <div class="overflow-y-auto">
-    <NCard :title="`${modalTitle}${$t('custom.devicePage.deviceConfig')}`">
+    <NCard :title="`${$t(modalTitle)}${$t('custom.devicePage.deviceConfig')}`">
       <NForm ref="configFormRef" :model="configForm" :rules="configFormRules" label-placement="left" label-width="auto">
         <!-- 第一个文件中的原表单项 -->
         <NFormItem :label="$t('generate.device-configuration-name')" path="name" class="w-[600px]">
@@ -232,18 +286,27 @@ onMounted(async () => {
             v-model:value="configForm.device_type"
             name="device_type"
             @update:value="
-              v => {
-                protocol_config.value = null;
-                configForm.voucher_type = null;
-                configForm.protocol_type = null;
+              (v: string | number) => {
+                protocol_config.value = {};
+                configForm.value.voucher_type = null;
+                configForm.value.protocol_type = null;
                 getProtocolList(v);
               }
             "
           >
             <n-space>
-              <n-radio value="1" :disabled="isEdit">{{ $t('generate.direct-connected-device') }}</n-radio>
-              <n-radio value="2" :disabled="isEdit">{{ $t('generate.gateway') }}</n-radio>
-              <n-radio value="3" :disabled="isEdit">{{ $t('generate.gateway-sub-device') }}</n-radio>
+              <!-- 使用 v-for 循环渲染 -->
+              <div v-for="dtype in deviceTypes" :key="dtype.value" class="flex">
+                <n-radio :value="dtype.value" :disabled="isEdit">{{ $t(dtype.labelKey) }}</n-radio>
+                <NTooltip trigger="hover" :content-style="{ whiteSpace: 'pre-wrap',textAlign:'left', maxWidth: '400px' }">
+                  <template #trigger>
+                    <NIcon class="cursor-help ml-1 mr-4">
+                      <HelpCircle class="text-6" />
+                    </NIcon>
+                  </template>
+                  {{ $t(dtype.helpKey) }}
+                </NTooltip>
+              </div>
             </n-space>
           </n-radio-group>
         </NFormItem>
@@ -288,5 +351,9 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .w-600 {
   width: 600px;
+}
+// Add style for cursor
+.cursor-help {
+  cursor: help;
 }
 </style>

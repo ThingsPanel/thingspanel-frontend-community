@@ -2,6 +2,8 @@ export default {
   previousPage: 'Previous Page',
   previousLevel: 'Previous Level',
   backToGroupList: 'Back to Group List',
+  parentLevel: 'Parent Level',
+  allGroups: 'All Groups',
   groupLevel: 'Group Level',
   groupId: 'Group ID',
   description: 'Description',

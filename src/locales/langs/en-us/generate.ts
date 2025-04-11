@@ -459,5 +459,10 @@ export default {
   stateOffColor: 'State Off Color',
   createForwardRule: 'Create Forward Rule',
   baseInfo: 'Base Info',
-  secureSet: 'Secure Set'
+  secureSet: 'Secure Set',
+  deviceTypeHelp: {
+    direct: '● Applicability: Any device that can directly report telemetry data to the platform.\n● Features: Sends data directly to the platform without an intermediary layer.\n○ Includes all devices capable of independent communication (WiFi, 4G, Ethernet, etc.).\n○ Note: Some devices named "Gateway" that only report data directly without managing sub-devices should actually be treated as directly connected devices.',
+    gateway: '● Applicability: Devices that genuinely act as intermediaries to manage and connect other devices.\n● Features: Must have the capability to manage sub-devices.\n○ Platform Requirement: The gateway must be added to the platform before adding its sub-devices.\n○ Configuration: May require additional parameters for sub-device communication. Gateway parameters and sub-device communication parameters need configuration.',
+    subDevice: '● Applicability: Devices unable to communicate directly and must connect to the platform via a gateway.\n● Features: Lacks independent communication capabilities.\n○ Dependency: Relies on the gateway device for data transmission.\n○ Configuration: Requires configuration of sub-device address or other identifiers. The device template is primarily used for data parsing configuration, not communication functions.'
+  }
 };

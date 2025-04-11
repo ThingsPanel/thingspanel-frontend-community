@@ -15,6 +15,7 @@ import useLoadingEmpty from '@/hooks/common/use-loading-empty';
 import DeviceSelectList from '@/views/device/grouping-details/modules/device-select-list.vue';
 import { $t } from '@/locales';
 import { formatDateTime } from '@/utils/common/datetime';
+import { useRouterPush } from '@/hooks/common/router';
 
 const group_data = ref([]);
 const device_data = ref<DeviceManagement.DeviceData[]>([]);
@@ -62,6 +63,8 @@ const queryParams = reactive<{
   page: 1,
   page_size: 10
 });
+
+const { routerPush } = useRouterPush();
 
 const getDetails = async (tid: string) => {
   if (!currentId.value) {
@@ -195,35 +198,24 @@ const reload = async (nid: string) => {
   await getDeviceList(nid);
 };
 
-const goWhere = (key: string) => {
-  switch (key) {
-    case 'up':
-      router.push({
-        name: 'device_grouping-details',
-        query: { id: editData.value.parent_id }
-      });
-      break;
-    case 'back':
-      router.go(-1);
-      break;
-    case 'first':
-      router.push({ name: 'device_grouping' });
-      break;
-    default:
-      break;
-  }
-
-  if (key === 'back') {
-    if (details_data.value.detail.parent_id !== '0') {
-      router.push({
-        name: 'device_grouping-details',
-        query: { id: editData.value.parent_id }
-      });
-    }
+/**
+ * 导航到父级分组详情页
+ */
+const goToParentGroup = () => {
+  if (details_data.value.detail.parent_id && details_data.value.detail.parent_id !== '0') {
+    routerPush({ name: 'device_grouping-details', query: { id: details_data.value.detail.parent_id } });
   } else {
-    router.push({ name: 'device_grouping' });
+    console.error('无法导航到父级分组，parent_id 无效或为顶级:', details_data.value.detail.parent_id);
   }
 };
+
+/**
+ * 导航到顶层分组列表页
+ */
+const goToGroupListRoot = () => {
+  routerPush({ name: 'device_grouping' });
+};
+
 watch(
   () => route.query.id,
   newId => {
@@ -241,19 +233,15 @@ watch(
       <NCard :title="details_data.detail.name">
         <template #header-extra>
           <NSpace>
-            <NButton quaternary type="info" @click="goWhere('back')">
+            <NButton v-if="details_data.detail.parent_id !== '0'" type="primary" @click="goToParentGroup">
               <template #icon>
-                <svg-icon icon="material-symbols:arrow-back" />
+                <svg-icon icon="material-symbols:arrow-upward" />
               </template>
-              {{ $t('custom.grouping_details.previousPage') }}
+              {{ $t('custom.grouping_details.parentLevel') }}
             </NButton>
-            <NButton v-if="details_data.detail.parent_id !== '0'" type="primary" @click="goWhere('up')">
-              <template #icon>
-                <svg-icon icon="material-symbols:fitbit-arrow-upward" />
-              </template>
-              {{ $t('custom.grouping_details.previousLevel') }}
+            <NButton @click="goToGroupListRoot">
+              {{ $t('custom.grouping_details.allGroups') }}
             </NButton>
-            <NButton @click="goWhere('first')">{{ $t('custom.grouping_details.backToGroupList') }}</NButton>
           </NSpace>
         </template>
         <NTabs type="line" animated>

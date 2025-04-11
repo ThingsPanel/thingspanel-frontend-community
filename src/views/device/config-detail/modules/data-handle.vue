@@ -112,12 +112,27 @@ const showModal = ref(false);
 
 const openModal = (type: any, item: any) => {
   modalTitle.value = type;
+  // 先用默认值初始化表单
   configForm.value = defaultConfigForm();
+
   if (modalTitle.value === $t('common.edit')) {
-    // 查询详情
+    // 编辑模式：加载选中项的数据
     configForm.value = JSON.parse(JSON.stringify(item));
+  } else {
+    // 添加模式：检查筛选器是否有值
+    if (queryData.value.script_type) {
+      // 如果筛选器有值，则将该值预设给表单的 script_type 字段
+      configForm.value.script_type = queryData.value.script_type;
+    }
   }
+  // 先设置 showModal 为 true，让模态框和表单开始渲染
   showModal.value = true;
+
+  // 使用 nextTick 确保 VDOM 更新和组件挂载完成后执行
+  nextTick(() => {
+    // 清除可能由初始数据绑定触发的校验提示
+    configFormRef.value?.restoreValidation();
+  });
 };
 
 const getPlatform = computed(() => {
@@ -125,7 +140,7 @@ const getPlatform = computed(() => {
   return proxy.getPlatform();
 });
 const bodyStyle = ref({
-  width: getPlatform.value ? '90%' : '600px'
+  width: getPlatform.value ? '90%' : '800px'
 });
 const queryData: any = ref({
   device_config_id: '',
@@ -208,7 +223,7 @@ const doQuiz = async () => {
   await configFormRef?.value?.validate();
 
   dataScriptQuiz(configForm.value).then(({ data }: any) => {
-    configForm.value.resolt_analog_input = data.message || '';
+    configForm.value.resolt_analog_input = data ? JSON.stringify(data, null, 2) : ''; 
   });
   // const { data, error } = await dataScriptQuiz(configForm.value);
   // if (!error) {
@@ -220,7 +235,8 @@ const doQuiz = async () => {
 const cmRef = ref();
 const cmOptions = {
   mode: 'text/javascript',
-  lineNumbers: false
+  indentUnit:4,
+  lineWrapping: true
 };
 
 const onChange = (val, cm) => {
@@ -301,6 +317,7 @@ onMounted(() => {
   <n-modal
     v-model:show="showModal"
     preset="dialog"
+    :width="800"
     :title="modalTitle + $t('common.dataProces')"
     :show-icon="false"
     :style="bodyStyle"
@@ -330,6 +347,7 @@ onMounted(() => {
         <NInput
           v-model:value="configForm.description"
           type="textarea"
+          :rows="2"
           :placeholder="$t('generate.enter-description')"
         />
       </NFormItem>
@@ -338,7 +356,7 @@ onMounted(() => {
           ref="cmRef"
           v-model:value="configForm.content"
           :options="cmOptions"
-          height="200"
+          height="260"
           keepcursorinend
           border
           @change="onChange"
@@ -356,10 +374,11 @@ onMounted(() => {
         <NSwitch v-model:value="configForm.enable_flag" checked-value="Y" unchecked-value="N" />
       </NFormItem>
       <NFormItem class="w-100%" :label="$t('generate.simulate-input')" path="last_analog_input">
-        <NInput v-model:value="configForm.last_analog_input" type="textarea" />
+        <NInput v-model:value="configForm.last_analog_input" type="textarea"  :rows="2"/>
       </NFormItem>
       <NFormItem class="w-100%" :label="$t('generate.debug-run-result')" path="resolt_analog_input">
-        <NInput v-model:value="configForm.resolt_analog_input" :disabled="true" type="textarea" />
+        <NInput v-model:value="configForm.resolt_analog_input"  :rows="5" :disabled="true" type="textarea" />
+      
       </NFormItem>
       <NFormItem>
         <NButton type="primary" @click="doQuiz">{{ $t('common.debug') }}</NButton>
@@ -418,4 +437,10 @@ onMounted(() => {
   -webkit-line-clamp: 2;
   overflow: hidden;
 }
+:deep( pre.CodeMirror-line ) {
+  /* 在这里设置你想要的内边距，例如 10px */
+  margin: 0 12px;
+  /* 你也可以分别设置 padding-top, padding-right, padding-bottom, padding-left */
+}
+
 </style>

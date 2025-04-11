@@ -492,7 +492,15 @@ const local: App.I18n.Schema = {
   kanban: {
     'add-cards': 'Create Cards'
   },
-  card
+  card,
+  grouping_details: {
+    previousPage: 'Previous Page',
+    previousLevel: 'Previous Level',
+    backToGroupList: 'Back To Group List',
+    parentLevel: 'Parent Level',
+    allGroups: 'All Groups',
+    subGroup: 'SubGroup'
+  }
 };
 
 export default local;

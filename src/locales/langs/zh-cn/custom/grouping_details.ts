@@ -2,6 +2,8 @@ export default {
   previousPage: '上一页',
   previousLevel: '上一级',
   backToGroupList: '返回分组列表',
+  parentLevel: '返回上一级',
+  allGroups: '返回分组列表',
   groupLevel: '分组层级',
   groupId: '分组ID',
   description: '描述',

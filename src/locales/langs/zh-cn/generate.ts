@@ -463,7 +463,11 @@ export default {
   createForwardRule: '创建转发规则',
   baseInfo: '基础信息',
   secureSet: '安全设置',
-  // Added missing keys for generate based on linter error
-  'connection-info': '连接信息', // Placeholder translation
-  query: '查询' // Placeholder translation
+  'connection-info': '连接信息',
+  query: '查询',
+  deviceTypeHelp: {
+    direct: '● 适用情况：任何能够直接向平台报送遥测数据的设备\n● 特点：直接将数据发送到平台，无需中间层处理\n○ 包括所有能自主通信的设备(WiFi、4G、有线网络等)\n○ 某些设备虽然名为"网关"，但如果其只是直接报送数据而不管理子设备，实际上应当作为直连设备处理',
+    gateway: '● 适用情况：确实作为中介来管理和连接其他设备的设备\n● 特点：需要具备管理子设备的能力\n○ 在平台上需要先添加网关，再添加子设备\n○ 可能需要配置额外的参数来处理子设备通信\n● 配置特点：需要配置网关自身的参数以及与子设备通信的参数',
+    subDevice: '● 适用情况：无法直接通信，必须通过网关连接到平台的设备\n● 特点：没有独立的通信功能\n○ 依赖网关设备进行数据传输\n○ 需要配置子设备地址等标识信息\n● 配置特点：设备模板主要用于配置数据解析，无法配置通信功能'
+  }
 };
