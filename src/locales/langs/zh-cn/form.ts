@@ -2,7 +2,7 @@ export default {
   required: '不能为空',
   userName: {
     required: '请输入用户名',
-    invalid: '用户名格式不正确',
+    invalidFormat: '用户名格式不正确',
     lenMin6: '用户名至少需要6个字符',
     tip: '用户名至少需要6个字符'
   },

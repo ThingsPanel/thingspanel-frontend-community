@@ -13,7 +13,8 @@ export default {
     back: 'Back',
     validateSuccess: 'Validation Successful',
     loginSuccess: 'Login Successful',
-    welcomeBack: 'Welcome back, {userName}!'
+    welcomeBack: 'Welcome back, {userName}!',
+    getCode: 'Get Code'
   },
   pwdLogin: {
     title: 'Password Login',
@@ -28,7 +29,6 @@ export default {
   },
   codeLogin: {
     title: 'Code Login',
-    getCode: 'Get Code',
     imageCodePlaceholder: 'Enter image verification code'
   },
   register: {

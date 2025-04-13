@@ -13,7 +13,8 @@ export default {
     back: '返回',
     validateSuccess: '验证成功',
     loginSuccess: '登录成功',
-    welcomeBack: '欢迎回来，{userName} ！'
+    welcomeBack: '欢迎回来，{userName} ！',
+    getCode: '获取验证码'
   },
   pwdLogin: {
     title: '密码登录',
@@ -28,7 +29,6 @@ export default {
   },
   codeLogin: {
     title: '验证码登录',
-    getCode: '获取验证码',
     imageCodePlaceholder: '请输入图片验证码'
   },
   register: {

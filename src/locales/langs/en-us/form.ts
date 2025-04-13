@@ -2,7 +2,7 @@ export default {
   required: 'Cannot be empty',
   userName: {
     required: 'Please enter username',
-    invalid: 'Invalid username format',
+    invalidFormat: 'Invalid username format',
     lenMin6: 'Username must be at least 6 characters',
     tip: 'Username must be at least 6 characters'
   },
