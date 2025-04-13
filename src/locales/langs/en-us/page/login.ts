@@ -14,7 +14,10 @@ export default {
     validateSuccess: 'Validation Successful',
     loginSuccess: 'Login Successful',
     welcomeBack: 'Welcome back, {userName}!',
-    getCode: 'Get Code'
+    getCode: 'Get Code',
+    emailRegistered: 'Email is already registered',
+    rememberPath: 'Remember path on this browser',
+    countingLabel: 'Resend in {second}s'
   },
   pwdLogin: {
     title: 'Password Login',
@@ -38,7 +41,8 @@ export default {
     registerSuccess: 'Registration Successful',
     registerError: 'Registration Failed',
     protocol: 'User Agreement',
-    policy: 'Privacy Policy'
+    policy: 'Privacy Policy',
+    agreementRequired: 'Please agree to the terms first.'
   },
   resetPwd: {
     title: 'Reset Password'

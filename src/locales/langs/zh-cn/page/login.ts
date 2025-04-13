@@ -14,7 +14,10 @@ export default {
     validateSuccess: '验证成功',
     loginSuccess: '登录成功',
     welcomeBack: '欢迎回来，{userName} ！',
-    getCode: '获取验证码'
+    getCode: '获取验证码',
+    emailRegistered: '邮箱已被注册',
+    rememberPath: '在此浏览器上记住路径',
+    countingLabel: '{second}秒后重新获取',
   },
   pwdLogin: {
     title: '密码登录',
@@ -38,7 +41,8 @@ export default {
     registerSuccess: '注册成功',
     registerError: '注册失败',
     protocol: '《用户协议》',
-    policy: '《隐私权政策》'
+    policy: '《隐私权政策》',
+    agreementRequired: '请先同意协议。'
   },
   resetPwd: {
     title: '重置密码'

@@ -8,10 +8,10 @@ import useCountDown from './use-count-down';
 export default function useSmsCode() {
   const { loading, startLoading, endLoading } = useLoading();
   const { counts, start, isCounting } = useCountDown(60);
-  const initLabel = $t('page.login.common.getCode');
+  const initLabel = computed(() => $t('page.login.common.getCode'));
   const countingLabel = (second: number) => $t('page.login.common.countingLabel', { second });
   const label = computed(() => {
-    let text = initLabel;
+    let text = initLabel.value;
     if (loading.value) {
       text = '';
     }

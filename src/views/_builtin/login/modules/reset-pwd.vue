@@ -100,7 +100,7 @@ async function handleSmsCode() {
       }
     }
   } else {
-    window.$message?.error($t('page.manage.user.form.userEmail'));
+    window.$message?.error($t('form.email.required'));
   }
 }
 

@@ -190,7 +190,7 @@ onMounted(() => {
         {{ $t('common.confirm') }}
       </NButton>
       <NCheckbox :checked="isRememberPath" @update:checked="rememberPath">
-        {{ $t('generate.remember-path') }}
+        {{ $t('page.login.common.rememberPath') }}
       </NCheckbox>
       <div class="flex-y-center justify-between gap-12px">
         <NButton v-if="showYzm" class="flex-1" block @click="toggleLoginModule('code-login')">
