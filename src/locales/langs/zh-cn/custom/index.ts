@@ -13,6 +13,12 @@ const associatedDevices = {
   selectDeviceFirst: '请至少选择一个设备。' // Added key
 };
 
+// Placeholder for config edit translations
+const configEdit = {
+  parseProtocolError: '解析协议配置失败', // Added key
+  loadConfigError: '加载配置失败' // Added key
+};
+
 export default {
   home,
   groupPage,
@@ -23,5 +29,6 @@ export default {
   personalCenter,
   plugin,
   visualization,
-  associatedDevices // Added new object
+  associatedDevices, // Added new object
+  configEdit // Added new object
 };

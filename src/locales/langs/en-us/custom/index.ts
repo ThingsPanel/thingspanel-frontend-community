@@ -10,18 +10,25 @@ import visualization from './visualization';
 
 // Placeholder for associated devices translations
 const associatedDevices = {
-  selectDeviceFirst: 'Please select at least one device.' // Added key
+  selectDeviceFirst: 'Please select at least one device.'
+};
+
+// Placeholder for config edit translations
+const configEdit = {
+  parseProtocolError: 'Failed to parse protocol config',
+  loadConfigError: 'Failed to load configuration'
 };
 
 export default {
   home,
   groupPage,
   devicePage,
-  grouping_details: groupingDetails, // Keep original key format
-  device_details: deviceDetails, // Keep original key format
+  grouping_details: groupingDetails,
+  device_details: deviceDetails,
   management,
   personalCenter,
   plugin,
   visualization,
-  associatedDevices // Added new object
+  associatedDevices,
+  configEdit
 };

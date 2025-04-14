@@ -16,6 +16,7 @@ import {
 } from '@/service/api/device';
 import { $t } from '@/locales';
 import FormInput from '../config-detail/modules/form.vue';
+import { log } from 'node:console';
 
 const route = useRoute();
 const configId = ref(route.query.id || null);
@@ -182,9 +183,11 @@ watch(
   }
 );
 const getProtocolList = async (deviceCode: string | number) => {
+
   const queryData = { device_type: deviceCode };
   const res = await deviceProtocalServiceList(queryData);
   if (res.data) {
+  
     // 明确数组元素的类型
     typeOptions.value = [
       {
@@ -248,7 +251,8 @@ onMounted(async () => {
     modalTitle.value = 'generate.add';
   }
   getDeviceTemplate();
-
+  console.log(1);
+    
   await getProtocolList(configForm?.value.device_type || '1');
 
   if (configForm.value.protocol_type) {
@@ -287,6 +291,10 @@ onMounted(async () => {
             name="device_type"
             @update:value="
               (v: string | number) => {
+                if (!configForm.value) {
+                  console.error('configForm.value is unexpectedly null/undefined in radio group update');
+                  return;
+                }
                 protocol_config.value = {};
                 configForm.value.voucher_type = null;
                 configForm.value.protocol_type = null;
@@ -318,8 +326,6 @@ onMounted(async () => {
               v-model:value="configForm.protocol_type"
               :options="typeOptions"
               :placeholder="$t('generate.select-protocol-service')"
-              label-field="name"
-              value-field="service_identifier"
               @update:value="choseProtocolType"
             ></NSelect>
           </NFormItem>
