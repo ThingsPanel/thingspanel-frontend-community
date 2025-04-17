@@ -136,30 +136,21 @@ const handleClose = () => {
 // 提交表单
 const handleSubmit = async () => {
   await configFormRef?.value?.validate();
-  // 明确 postData 类型
-  const postData: ConfigFormData = {
-    ...configForm.value,
-    id: null,
-    additional_info: null,
-    description: null,
-    device_conn_type: null,
-    device_template_id: null,
-    device_type: null,
-    name: null,
-    protocol_config: null,
-    protocol_type: null,
-    remark: null,
-    voucher_type: null
-  };
-  // 确保 postData.protocol_config 可以接受字符串
+
+  // 1. 直接复制当前的表单值
+  const postData = { ...configForm.value };
+
+  // 2. 单独处理 protocol_config，将其从对象转换为 JSON 字符串
   postData.protocol_config = JSON.stringify(protocol_config.value || {});
 
-  if (!configId.value) {
+  if (!configId.value) { // 添加模式
+    // 确保添加时不传递 id (defaultConfigForm 已将 id 设为 null)
     const res = await deviceConfigAdd(postData);
     if (!res.error) {
       handleClose();
     }
-  } else {
+  } else { // 编辑模式
+    // 确保 postData 中包含正确的 id (来自 configForm.value)
     const res = await deviceConfigEdit(postData);
     if (!res.error) {
       handleClose();
