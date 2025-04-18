@@ -229,7 +229,7 @@ const actionParamShow = async (instructItem: any) => {
     // eslint-disable-next-line array-callback-return
     res.data.map((item: any) => {
       item.value = item.data_source_type;
-      item.label = `${item.data_source_type}${item.label ? `(${item.label})` : ''}`;
+      item.label = `${item.label ? `(${item.label})` : ''}${item.data_source_type}`;
 
       // eslint-disable-next-line array-callback-return
       item.options.map((subItem: any) => {
@@ -711,13 +711,15 @@ onMounted(() => {
                         :path="`actions[${actionGroupIndex}].actionInstructList[${instructIndex}].action_param_type`"
                         :rule="configFormRules.action_param_type"
                         class="max-w-30 w-full"
+                 
                       >
+                      
                         <NSelect
                           v-model:value="instructItem.action_param_type"
                           :options="instructItem.actionParamTypeOptions"
-                          class="max-w-40"
-                          @update:value="data => actionParamTypeChange(instructItem, data)"
-                        />
+            
+                          @update:value="data => actionParamTypeChange(instructItem, data)"/>
+                          
                         <!--                        <NCascader-->
                         <!--                          v-model:value="instructItem.action_param_key"-->
                         <!--                          :placeholder="$t('common.select')"-->

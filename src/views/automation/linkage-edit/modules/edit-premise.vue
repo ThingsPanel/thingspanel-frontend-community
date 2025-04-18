@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch, onBeforeUpdate } from 'vue';
 import { useRoute } from 'vue-router';
 import { NButton, NFlex, useMessage } from 'naive-ui';
 import type { FormInst } from 'naive-ui';
@@ -254,10 +254,28 @@ const triggerSourceChange = (ifItem: any, ifIndex: number) => {
 //   }, 100);
 // };
 
-const queryDeviceName = ref([] as any);
-const handleFocus = (ifIndex: any) => {
-  queryDeviceName.value[ifIndex].focus();
+const queryDeviceName = ref<Record<number, any>>({});
+
+// 清理 refs 的函数
+onBeforeUpdate(() => {
+  queryDeviceName.value = {};
+});
+
+// 设置 ref 的函数
+const setQueryDeviceNameRef = (el: any, index: number) => {
+  if (el) {
+    queryDeviceName.value[index] = el;
+  }
 };
+
+const handleFocus = (ifIndex: any) => {
+  if (queryDeviceName.value[ifIndex]) {
+    queryDeviceName.value[ifIndex].focus();
+  } else {
+    console.warn(`Ref for queryDeviceName at index ${ifIndex} not found.`);
+  }
+};
+
 // 设备配置列表
 const deviceConfigOption = ref([]);
 // 设备配置列表查询条件
@@ -779,7 +797,7 @@ watch(
                             @update:value="data => getDevice(data, queryDevice.device_name)"
                           />
                           <NInput
-                            ref="queryDeviceName[ifIndex]"
+                            :ref="(el) => setQueryDeviceNameRef(el, ifIndex)"
                             v-model:value="queryDevice.device_name"
                             class="flex-1"
                             clearable
