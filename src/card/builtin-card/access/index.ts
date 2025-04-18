@@ -8,7 +8,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('card.accessQuantity'),
+  title: $t('card.deviceTotal'),
   preset: {
     iCardViewDefault: {
       w: 3,

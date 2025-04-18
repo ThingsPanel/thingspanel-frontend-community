@@ -29,7 +29,7 @@ type EChartsOption = ComposeOption<
   TooltipComponentOption | LegendComponentOption | ToolboxComponentOption | GridComponentOption | LineSeriesOption
 >;
 use([TooltipComponent, LegendComponent, ToolboxComponent, GridComponent, LineChart, CanvasRenderer]);
-const chartContainer = ref<HTMLElement | null>(null);
+const chartContainer = ref<HTMLDivElement | null>(null);
 const chartRef = ref();
 const isAggregate = ref<boolean>(false);
 const isTimeSelect = ref<boolean>(false);
@@ -140,28 +140,38 @@ const option = ref<EChartsOption>({
     type: 'time' as 'category',
     axisLabel: {
       interval: 'auto',
-      textStyle: {
-        color: legendColor.value
-      }
+      color: legendColor.value
     }
   },
   yAxis: {
     type: 'value',
     axisLabel: {
-      textStyle: {
-        color: legendColor.value
-      }
+      color: legendColor.value
     }
   },
   series: [] as any[]
 });
 const updateLegendColor = () => {
   if (chartContainer.value) {
-    const computedStyle = window.getComputedStyle(chartContainer.value);
+    // @ts-ignore // 或者使用 as any
+    const computedStyle = window.getComputedStyle(chartContainer.value as Element);
     legendColor.value = computedStyle.color;
-    option.value.legend.textStyle.color = legendColor.value;
-    option.value.xAxis.axisLabel.textStyle.color = legendColor.value;
-    option.value.yAxis.axisLabel.textStyle.color = legendColor.value;
+
+    // 使用 as any 来绕过 legend/axisLabel 的类型检查
+    const legendOption = option.value.legend as any;
+    if (legendOption && legendOption.textStyle) {
+      legendOption.textStyle.color = legendColor.value;
+    }
+
+    const xAxisOption = option.value.xAxis as any;
+    if (xAxisOption && xAxisOption.axisLabel) {
+      xAxisOption.axisLabel.color = legendColor.value;
+    }
+
+    const yAxisOption = option.value.yAxis as any;
+    if (yAxisOption && yAxisOption.axisLabel) {
+      yAxisOption.axisLabel.color = legendColor.value;
+    }
   }
 };
 const d_end_time = new Date().getTime();
@@ -264,7 +274,7 @@ const updateDisabledOptions = (timeFrame: string) => {
     去年: 12 // 1月
   };
 
-  // 默认不禁用“不聚合”，根据时间范围禁用其余选项
+  // 默认不禁用"不聚合"，根据时间范围禁用其余选项
   aggregateOptions.forEach((item, index, array) => {
     if (!disableBeforeIndex[timeFrame]) {
       item.disabled = false;
@@ -444,6 +454,7 @@ const setSeries = async dataSource => {
 
   const deviceSource = dataSource.deviceSource || [];
   const deviceCount = dataSource.deviceCount || 1;
+  const newLegendData = []; // Create temporary array for new legend
 
   const firstDevice = deviceSource[0] || {};
   const querDetail = {
@@ -461,7 +472,8 @@ const setSeries = async dataSource => {
   const seriesPromises = deviceSource.slice(0, deviceCount).map((item, index) => {
     const metricName = item.metricsName || item.metricsId || '';
     name.value = metricName;
-    legendData.value.push(metricName);
+    // legendData.value.push(metricName); // Don't push to the old ref here
+    newLegendData.push(metricName); // Build the new legend array
 
     // 返回一个Promise，包含系列配置和数据
     return getTelemetryData(item.deviceId, item.metricsId, index, metricName);
@@ -470,8 +482,12 @@ const setSeries = async dataSource => {
   // 等待所有系列数据获取完成
   const seriesData = await Promise.all(seriesPromises);
 
-  // 一次性赋值给option.value.series
+  // 一次性赋值给option.value.series 和 option.value.legend.data
+  if (option.value.legend) { // Ensure legend object exists
+    option.value.legend.data = newLegendData; // Assign new legend data directly
+  }
   option.value.series = seriesData;
+  legendData.value = newLegendData; // Also update the standalone ref if used elsewhere
 };
 
 defineExpose({
@@ -531,6 +547,7 @@ watch(
 watch(
   () => props.card?.dataSource?.deviceSource,
   () => {
+    // legendData.value = []; // Remove this line
     setSeries(props?.card?.dataSource);
   },
   { deep: true }
@@ -569,7 +586,8 @@ onMounted(() => {
   });
 
   if (chartContainer.value) {
-    resizeObserver.observe(chartContainer.value);
+    // @ts-ignore // 或者使用 as any
+    resizeObserver.observe(chartContainer.value as Element);
   }
 
   onUnmounted(() => {

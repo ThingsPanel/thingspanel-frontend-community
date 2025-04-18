@@ -268,7 +268,7 @@ const updateDisabledOptions = (timeFrame: string) => {
     去年: 12 // 1月
   };
 
-  // 默认不禁用“不聚合”，根据时间范围禁用其余选项
+  // 默认不禁用"不聚合"，根据时间范围禁用其余选项
   aggregateOptions.forEach((item, index, array) => {
     if (!disableBeforeIndex[timeFrame]) {
       item.disabled = false;
@@ -447,6 +447,7 @@ const setSeries = async dataSource => {
 
   const deviceSource = dataSource.deviceSource || [];
   const deviceCount = dataSource.deviceCount || 1;
+  const newLegendData = []; // Create temporary array for new legend
 
   const firstDevice = deviceSource[0] || {};
   const querDetail = {
@@ -469,7 +470,9 @@ const setSeries = async dataSource => {
       { offset: 1, color: props.colorGroup[index].bottom }
     ]);
     const obj = { name: metricName, icon: 'circle', itemStyle: { color } };
-    legendData.value.push(obj);
+    // legendData.value.push(obj); // Don't push to the old ref here
+    newLegendData.push(obj); // Build the new legend array
+
     // 返回一个Promise，包含系列配置和数据
     return getTelemetryData(item.deviceId, item.metricsId, index, metricName);
   });
@@ -477,8 +480,12 @@ const setSeries = async dataSource => {
   // 等待所有系列数据获取完成
   const seriesData = await Promise.all(seriesPromises);
 
-  // 一次性赋值给option.value.series
+  // 一次性赋值给option.value.series 和 option.value.legend.data
+  if (option.value.legend) { // Ensure legend object exists
+    option.value.legend.data = newLegendData; // Assign new legend data directly
+  }
   option.value.series = seriesData;
+  legendData.value = newLegendData; // Also update the standalone ref if used elsewhere
 };
 
 defineExpose({
@@ -538,6 +545,7 @@ watch(
 watch(
   () => props.card?.dataSource?.deviceSource,
   () => {
+    // legendData.value = []; // Remove this line (It was already correctly removed in the previous turn for line-chart)
     setSeries(props?.card?.dataSource);
   },
   { deep: true }

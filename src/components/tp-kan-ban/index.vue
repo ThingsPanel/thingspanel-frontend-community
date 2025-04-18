@@ -93,6 +93,7 @@ const changeCurCardData = (data: CardView) => {
         style="box-shadow: 0 8px 16px 0 rgba(156, 107, 255, 0.4)"
       >
         <n-drawer-content :title="$t('card.cardList')" class="shadow-sm" closable>
+          111
           <KanBanCardList v-model:active-type="activeType" />
         </n-drawer-content>
       </n-drawer>

@@ -124,12 +124,25 @@ const selectFinalCard = (item: ICardDefine) => {
 const deviceOptions = ref<UnwrapRefSimple<any>[]>();
 const webChartConfig = ref<any>([]);
 const availableCardIds = ref<string[]>([]);
-const deviceSelectId = ref<string>('');
+const deviceSelectId = ref<string | null>(null);
+
+const handleTabUpdate = (value: string) => {
+  if (state.curCardData) {
+    state.curCardData.cardId = '';
+  }
+  availableCardIds.value = [];
+  webChartConfig.value = [];
+  deviceSelectId.value = null;
+  tabValue.value = value;
+  console.log('[handleTabUpdate] deviceSelectId set to:', deviceSelectId.value);
+};
 
 const getDeviceOptions = async () => {
   const { data, error } = await deviceTemplateSelect();
-  if (!error) {
-    deviceOptions.value = data;
+  if (!error && data) {
+    deviceOptions.value = [...data].reverse();
+  } else {
+    deviceOptions.value = [];
   }
 };
 const collectData = (v, o) => {
@@ -146,27 +159,27 @@ const collectData = (v, o) => {
 };
 
 onUpdated(() => {
-  if (props?.data?.dataSource?.deviceSource && props?.data?.dataSource?.deviceSource?.length > 0) {
-    deviceSelectId.value = props?.data?.dataSource?.deviceSource[0]?.deviceId || '';
-    collectData(
-      deviceSelectId.value,
-      deviceOptions.value?.find(item => item.device_id === deviceSelectId.value)
-    );
-  } else {
+  if (!(props?.data?.dataSource?.deviceSource && props?.data?.dataSource?.deviceSource?.length > 0)) {
     availableCardIds.value = [];
   }
 });
 
 onMounted(() => {
-  if (props?.data?.dataSource?.deviceSource && props?.data?.dataSource?.deviceSource?.length > 0) {
-    deviceSelectId.value = props?.data?.dataSource?.deviceSource[0]?.deviceId || '';
+  const initialDeviceId = props?.data?.dataSource?.deviceSource?.[0]?.deviceId;
+  if (initialDeviceId) {
+    deviceSelectId.value = initialDeviceId;
+    console.log('[onMounted] deviceSelectId set from props:', deviceSelectId.value);
     collectData(
       deviceSelectId.value,
       deviceOptions.value?.find(item => item.device_id === deviceSelectId.value)
     );
   } else {
+    console.log('[onMounted] No props.data, deviceSelectId remains:', deviceSelectId.value);
+  }
+  if (!deviceSelectId.value) {
     availableCardIds.value = [];
   }
+
   tabValue.value = props?.data?.type || 'builtin';
   getDeviceOptions();
 });
@@ -182,24 +195,17 @@ onMounted(() => {
           :value="tabValue"
           animated
           class="h-full"
-          @update:value="
-            value => {
-              if (state.curCardData) {
-                state.curCardData.cardId = '';
-              }
-              availableCardIds = [];
-              webChartConfig = [];
-              deviceSelectId = null;
-              tabValue = value;
-            }
-          "
+          @update:value="handleTabUpdate"
         >
           <NTabPane v-for="item1 in tabList" :key="item1.type" class="h-full" :name="item1.type" :tab="item1.tab">
+            {{ console.log('[Template Render] deviceSelectId:', deviceSelectId) }}
             <div v-if="item1.tab === '设备'">
               <NSelect
                 v-model:value="deviceSelectId"
                 :placeholder="$t('generate.select-device')"
                 :options="deviceOptions"
+                filterable
+                clearable
                 value-field="device_id"
                 label-field="device_name"
                 @update:value="
