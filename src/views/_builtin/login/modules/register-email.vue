@@ -91,9 +91,6 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
   };
 });
 
-const agreement = ref(false);
-const agreementRef = ref<HTMLElement | null>(null);
-
 function handleSmsCode() {
   // 调用 fetchEmailCode 函数获取验证码
   fetchEmailCode(model.email)
@@ -108,19 +105,6 @@ function handleSmsCode() {
 
 // 处理按钮点击
 function handleButtonClick() {
-  if (!agreement.value) {
-    // 添加晃动动画类
-    if (agreementRef.value) {
-      agreementRef.value.classList.add('shake-animation');
-      // 动画结束后移除类名
-      setTimeout(() => {
-        agreementRef.value?.classList.remove('shake-animation');
-        // 动画结束后显示提示
-        window.$message?.warning($t('page.login.register.agreementRequired'));
-      }, 500);
-    }
-    return;
-  }
   handleSubmit();
 }
 
@@ -206,9 +190,6 @@ async function handleSubmit() {
     </NFormItem>
 
     <NSpace vertical :size="18" class="w-full">
-      <div ref="agreementRef">
-        <LoginAgreement v-model:value="agreement" />
-      </div>
       <NButton
         type="primary"
         size="large"
@@ -236,30 +217,5 @@ input:-webkit-autofill:active {
   -webkit-box-shadow: 0 0 0 30px white inset !important;
   -webkit-text-fill-color: inherit !important;
   transition: background-color 5000s ease-in-out 0s;
-}
-
-/* 添加晃动动画 */
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
-    transform: translateX(-4px);
-  }
-  20%,
-  40%,
-  60%,
-  80% {
-    transform: translateX(4px);
-  }
-}
-
-.shake-animation {
-  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
 }
 </style>
