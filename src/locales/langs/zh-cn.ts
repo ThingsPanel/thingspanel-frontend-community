@@ -277,7 +277,8 @@ const local: App.I18n.Schema = {
     emailInvalid: '邮箱格式错误！',
     networkError: '网络错误',
     fetchDataFailed: '获取数据失败',
-    noMoreData: '没有更多数据了'
+    noMoreData: '没有更多数据了',
+    operationFailed: '操作失败'
   },
   theme: {
     themeSchema: {

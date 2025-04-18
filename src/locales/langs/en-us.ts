@@ -277,6 +277,7 @@ const local: App.I18n.Schema = {
     networkError: 'Network Error',
     fetchDataFailed: 'Failed to fetch data',
     noMoreData: 'No more data',
+    operationFailed: 'Operation Failed',
     // emailRequired: 'Email is required!',
     // emailInvalid: 'Invalid email format!'
   },

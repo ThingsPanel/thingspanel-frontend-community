@@ -246,5 +246,6 @@ export default {
   cancel: 'Cancel',
   confirm: 'Confirm', // Using Confirm as it seems more appropriate here
   componentSettings: 'Component Settings',
-  basicSettings: 'Basic Settings'
+  basicSettings: 'Basic Settings',
+  checkedDeviceTemplateNotSet: 'Template not set for some selected devices on the current page. Please check.'
 };

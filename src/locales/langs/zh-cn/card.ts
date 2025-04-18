@@ -197,7 +197,7 @@ export default {
   configTemplate: '配置模版',
   anyProtocolService: '不限协议/服务',
   deviceConfigTemplate: '设备模板',
-  templateNotSet: '未设置模板，请设置模板后再勾选',
+  templateNotSet: '请先为设备选择模板',
   configDevice: '配置设备',
   addNewAccessPoint: '新增接入点',
   accessPointName: '接入点名称',
@@ -244,5 +244,10 @@ export default {
   cancel: '取消',
   confirm: '确认',
   componentSettings: '组件设置',
-  basicSettings: '基础设置'
+  basicSettings: '基础设置',
+  pleaseSelectDevice: '请选择设备',
+  someDevicesNotSetTemplate: '部分选中设备未设置模板或操作失败',
+  serviceAccessIdNotSet: '服务访问ID未设置，无法提交',
+  checkedDeviceTemplateNotSet: '当前页选中的设备中有未设置模板的，请检查。',
+
 };
