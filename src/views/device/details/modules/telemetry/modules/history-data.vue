@@ -67,6 +67,7 @@ const pagination = reactive({
     pagination.pageSize = pageSize;
     pagination.page = 1;
     params.page_size = pageSize;
+    params.page = 1;
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     getTelemetryHistoryData();
   }

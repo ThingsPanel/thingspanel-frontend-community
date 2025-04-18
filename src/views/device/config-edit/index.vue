@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import type { AxiosError } from 'axios';
 import type { FormInst, SelectOption, FormRules, SelectGroupOption } from 'naive-ui';
-import { NTooltip, NIcon, NFlex } from 'naive-ui';
+import { NTooltip, NIcon, NFlex, useMessage } from 'naive-ui';
 import { HelpCircle } from '@vicons/ionicons5';
 import { router } from '@/router';
 import {
@@ -16,43 +17,14 @@ import {
 } from '@/service/api/device';
 import { $t } from '@/locales';
 import FormInput from '../config-detail/modules/form.vue';
-import { log } from 'node:console';
+
+const message = useMessage();
 
 const route = useRoute();
 const configId = ref(route.query.id || null);
 const modalTitle = ref('generate.add');
-const configForm = ref<Record<string, any> >(defaultConfigForm());
-const isEdit = ref(false);
 
-// 为 options 定义类型
-interface Option {
-  name: string;
-  id: string | number;
-  [key: string]: any; // 允许其他属性
-}
-
-// 合并字段
-const typeOptions = ref<(SelectOption | SelectGroupOption)[]>([]);
-const connectOptions = ref<SelectOption[]>([]);
-const protocol_config = ref<Record<string, any> >({});
-type FormElementType = 'input' | 'table' | 'select';
-
-// 假设 Validate 是一个已定义的类型或接口，如果不是，需要定义或移除
-// 如果 Validate 是 naive-ui 的 FormItemRule，可以这样写：
-// import type { FormItemRule } from 'naive-ui';
-// type Validate = FormItemRule | FormItemRule[];
-
-interface FormElement {
-  type: FormElementType;
-  dataKey: string;
-  label: string;
-  options?: Option[];
-  placeholder?: string;
-  // validate?: Validate; // 暂时注释掉，除非能找到 Validate 定义
-  array?: FormElement[];
-}
-const formElements = ref<FormElement[]>([]);
-// 定义表单数据类型
+// 定义表单数据类型 - 放在 configForm 定义之前
 interface ConfigFormData {
   id: string | number | null;
   additional_info: string | null;
@@ -83,6 +55,39 @@ function defaultConfigForm(): ConfigFormData {
   };
 }
 
+// 使用更具体的类型 ConfigFormData
+const configForm = ref<ConfigFormData>(defaultConfigForm());
+const isEdit = ref(false);
+
+// 为 options 定义类型
+interface Option {
+  name: string;
+  id: string | number;
+  [key: string]: any; // 允许其他属性
+}
+
+// 合并字段
+const typeOptions = ref<(SelectOption | SelectGroupOption)[]>([]);
+const connectOptions = ref<SelectOption[]>([]);
+const protocol_config = ref<Record<string, any> >({});
+type FormElementType = 'input' | 'table' | 'select';
+
+// 假设 Validate 是一个已定义的类型或接口，如果不是，需要定义或移除
+// 如果 Validate 是 naive-ui 的 FormItemRule，可以这样写：
+// import type { FormItemRule } from 'naive-ui';
+// type Validate = FormItemRule | FormItemRule[];
+
+interface FormElement {
+  type: FormElementType;
+  dataKey: string;
+  label: string;
+  options?: Option[];
+  placeholder?: string;
+  // validate?: Validate; // 暂时注释掉，除非能找到 Validate 定义
+  array?: FormElement[];
+}
+const formElements = ref<FormElement[]>([]);
+
 const configFormRules = ref<FormRules>({
   name: {
     required: true,
@@ -112,6 +117,10 @@ const getDeviceTemplate = () => {
   deviceTemplate(queryTemplate.value).then(res => {
     deviceTemplateOptions.value = deviceTemplateOptions.value.concat(res.data.list);
     queryTemplate.value.total = res.data.total;
+  })
+  .catch(error => {
+    console.error("Failed to get device templates:", error);
+    message.error($t('generate.failedToLoadDeviceTemplates'));
   });
 };
 
@@ -148,21 +157,45 @@ const handleSubmit = async () => {
     const res = await deviceConfigAdd(postData);
     if (!res.error) {
       handleClose();
+    } else {
+      message.error((res as any)?.message || $t("generate.addFailed"));
     }
   } else { // 编辑模式
     // 确保 postData 中包含正确的 id (来自 configForm.value)
-    const res = await deviceConfigEdit(postData);
+    const res = await deviceConfigEdit(postData).catch((error: AxiosError) => {
+      message.error((error && 'message' in error && error.message) || $t('generate.editFailed'));
+      return { error: true };
+    });
     if (!res.error) {
       handleClose();
+    } else {
+      message.error((res as any)?.message || $t("generate.editFailed"));
     }
   }
 };
 
 const getConfig = async () => {
-  const res = await deviceConfigInfo({ id: configId.value });
-  configForm.value = { ...res.data };
+  try {
+    const res = await deviceConfigInfo({ id: configId.value });
+    configForm.value = { ...res.data };
 
-  protocol_config.value = JSON.parse(res.data.protocol_config);
+    try {
+      if (typeof res.data.protocol_config === 'string') {
+        protocol_config.value = JSON.parse(res.data.protocol_config);
+      } else if (typeof res.data.protocol_config === 'object' && res.data.protocol_config !== null) {
+        protocol_config.value = res.data.protocol_config;
+      } else {
+        protocol_config.value = {};
+      }
+    } catch (e) {
+      console.error("Failed to parse protocol_config:", e);
+      message.error($t('generate.failedToParseProtocolConfig'));
+      protocol_config.value = {};
+    }
+  } catch (error) {
+    console.error("Failed to get device config info:", error);
+    message.error($t('generate.failedToLoadConfig'));
+  }
 };
 
 watch(
@@ -252,6 +285,19 @@ onMounted(async () => {
   }
 });
 
+// 新增：处理设备类型变更的函数
+function handleDeviceTypeChange(newValue: string | number) {
+  // 在 script 块中访问，类型检查通常更可靠
+  if (!configForm.value) { // 可以保留检查以防万一
+    console.error('configForm.value is unexpectedly null/undefined during device type change');
+    return;
+  }
+  protocol_config.value = {};
+  configForm.value.voucher_type = null;
+  configForm.value.protocol_type = null;
+  getProtocolList(newValue);
+}
+
 // const getPlatform = computed(() => {
 //   const { proxy }: any = getCurrentInstance();
 //   return proxy.getPlatform();
@@ -280,18 +326,7 @@ onMounted(async () => {
           <n-radio-group
             v-model:value="configForm.device_type"
             name="device_type"
-            @update:value="
-              (v: string | number) => {
-                if (!configForm.value) {
-                  console.error('configForm.value is unexpectedly null/undefined in radio group update');
-                  return;
-                }
-                protocol_config.value = {};
-                configForm.value.voucher_type = null;
-                configForm.value.protocol_type = null;
-                getProtocolList(v);
-              }
-            "
+            @update:value="handleDeviceTypeChange"
           >
             <n-space>
               <!-- 使用 v-for 循环渲染 -->

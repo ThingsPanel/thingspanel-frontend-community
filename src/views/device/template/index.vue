@@ -48,9 +48,11 @@ const handleEdit = async (id: string) => {
 };
 
 getData();
-if (route.query?.id) {
+
+const idParam = route.query?.id;
+if (typeof idParam === 'string' && idParam) {
   setTimeout(() => {
-    handleEdit(route.query?.id);
+    handleEdit(idParam);
   }, 0);
 }
 

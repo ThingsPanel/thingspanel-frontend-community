@@ -478,7 +478,9 @@ const completeAdd = async () => {
 };
 
 const completeHandAdd = () => {
-  tablePageRef.value?.handleReset();
+  console.log('tablePageRef in completeHandAdd:', tablePageRef.value);
+
+  tablePageRef.value?.handleSearch();
 };
 
 function handleSelect(key: string | number) {

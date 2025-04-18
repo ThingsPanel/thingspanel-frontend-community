@@ -1,9 +1,6 @@
 import { type DataTableColumns, NButton, NFlex, NPopconfirm } from 'naive-ui';
 import dayjs from 'dayjs';
 import { $t } from '@/locales';
-import Logger from '@/utils/logger'
-
-
 
 export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (rid: string) => void) => [
   {

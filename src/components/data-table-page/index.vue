@@ -268,6 +268,8 @@ const forceChangeParamsByKey = (params: Record<string, any>) => {
 
 // 暴露方法给父组件
 defineExpose({
+  handleSearch,
+  handleReset,
   forceChangeParamsByKey
 });
 
