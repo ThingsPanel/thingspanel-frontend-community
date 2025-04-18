@@ -12,8 +12,10 @@ alwaysApply: false
 description: 
 globs: 
 alwaysApply: false
+"always use 中文"
 ---
-
+"always use 中文"
+"always use 中文"
 # Your rule content
 
 - You can @ files here
