@@ -67,6 +67,9 @@ const submitData = async () => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   configForm.value.actions = handleActionData();
 
+
+  console.log(configForm.value.trigger_condition_groups,"configForm.value.trigger_condition_groups")
+  return
   const isTimeRangeError = configForm.value.trigger_condition_groups.some((item: any) => {
     return item.every(subItem => {
       return subItem.trigger_conditions_type === '22';
@@ -146,6 +149,7 @@ const getSceneAutomationsInfo = async () => {
     // 条件数据回显
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     conditionData.value = echoIfData(automationsInfo.value.trigger_condition_groups);
+    console.log(conditionData.value,"conditionData.value")
     // 动作数据回显
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     actionData.value = echoActionData(automationsInfo.value.actions);

@@ -289,59 +289,134 @@ const getDeviceConfig = async (name: string) => {
   deviceConfigOption.value = res.data || [];
 };
 
+// 新增：主动加载选项的函数
+const loadTriggerParamOptions = async (ifItem: any) => {
+  // 避免重复加载，如果选项已存在则不重新加载
+  if (ifItem.triggerParamOptions && ifItem.triggerParamOptions.length > 0) {
+    return;
+  }
+
+  if (ifItem.trigger_source && (ifItem.trigger_conditions_type === '10' || ifItem.trigger_conditions_type === '11')) {
+    ifItem.triggerParamOptions = []; // 初始化为空数组
+    let res = null as any;
+    try {
+      if (ifItem.trigger_conditions_type === '10') {
+        res = await deviceMetricsConditionMenu({
+          device_id: ifItem.trigger_source
+        });
+      } else if (ifItem.trigger_conditions_type === '11') {
+        res = await configMetricsConditionMenu({
+          device_config_id: ifItem.trigger_source
+        });
+      }
+
+      if (res && res.data) {
+        // (Processing logic copied from actionParamShow)
+        res.data.map((item: any) => {
+          item.value = item.data_source_type;
+          item.label = `${item.data_source_type}${item.label ? `(${item.label})` : ''}`;
+          item.options.map((subItem: any) => {
+            subItem.value = `${item.value}/${subItem.key}`;
+            subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`;
+          });
+        });
+        ifItem.triggerParamOptions = res.data; // Assign processed data
+      } else {
+         ifItem.triggerParamOptions = []; // Ensure array on API failure
+      }
+    } catch (error) {
+      console.error("Error loading trigger param options during echo:", error);
+      ifItem.triggerParamOptions = []; // Ensure array on error
+    } finally {
+      // Add statusData regardless of API outcome
+      const statusData = {
+        value: 'status',
+        label: 'status(状态)',
+        options: [
+          {
+            value: 'status/On-line', // Value needs to match v-model format
+            label: 'On-line(上线)',
+            key: 'On-line' // Keep original key if needed elsewhere
+          },
+          {
+            value: 'status/Off-line',
+            label: 'Off-line(下线)',
+            key: 'Off-line'
+          },
+          {
+            value: 'status/All',
+            label: 'All(全部)',
+            key: 'All'
+          }
+        ]
+      };
+      // Ensure statusData is not added multiple times if loaded elsewhere
+      if (!ifItem.triggerParamOptions.some(opt => opt.value === 'status')) {
+         ifItem.triggerParamOptions.push(statusData);
+      }
+    }
+  }
+};
+
 // 下拉获取的动作标识符
 const actionParamShow = async (ifItem: any, data: any) => {
-  if (data === true && ifItem.trigger_source) {
-    ifItem.triggerParamOptions = [];
-    let res = null as any;
-    if (ifItem.trigger_conditions_type === '10') {
-      res = await deviceMetricsConditionMenu({
-        device_id: ifItem.trigger_source
-      });
-    } else if (ifItem.trigger_conditions_type === '11') {
-      res = await configMetricsConditionMenu({
-        device_config_id: ifItem.trigger_source
-      });
-    }
-    // eslint-disable-next-line array-callback-return
-    if (res.data) {
-      // eslint-disable-next-line array-callback-return
-      res.data.map((item: any) => {
-        item.value = item.data_source_type;
-        item.label = `${item.data_source_type}${item.label ? `(${item.label})` : ''}`;
-
-        // eslint-disable-next-line array-callback-return
-        item.options.map((subItem: any) => {
-          subItem.value = `${item.value}/${subItem.key}`;
-          subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`;
-        });
-      });
-      // eslint-disable-next-line require-atomic-updates
-      ifItem.triggerParamOptions = res.data;
-    }
-    const statusData = {
-      value: 'status',
-      label: 'status(状态)',
-      options: [
-        {
-          value: 'On-line',
-          label: 'On-line(上线)',
-          key: 'On-line'
-        },
-        {
-          value: 'Off-line',
-          label: 'Off-line(下线)',
-          key: 'Off-line'
-        },
-        {
-          value: 'All',
-          label: 'All(全部)',
-          key: 'All'
-        }
-      ]
-    };
-    ifItem.triggerParamOptions.push(statusData);
+  // 调用主动加载函数，它会处理重复加载的问题
+  if (data === true) {
+     await loadTriggerParamOptions(ifItem);
   }
+  // 原有的 actionParamShow 逻辑可以简化或移除，因为 loadTriggerParamOptions 做了主要工作
+  // 保留原始注释掉的逻辑以供参考，或者完全移除
+  // if (data === true && ifItem.trigger_source) {
+  //   ifItem.triggerParamOptions = [];
+  //   let res = null as any;
+  //   if (ifItem.trigger_conditions_type === '10') {
+  //     res = await deviceMetricsConditionMenu({
+  //       device_id: ifItem.trigger_source
+  //     });
+  //   } else if (ifItem.trigger_conditions_type === '11') {
+  //     res = await configMetricsConditionMenu({
+  //       device_config_id: ifItem.trigger_source
+  //     });
+  //   }
+  //   // eslint-disable-next-line array-callback-return
+  //   if (res.data) {
+  //     // eslint-disable-next-line array-callback-return
+  //     res.data.map((item: any) => {
+  //       item.value = item.data_source_type;
+  //       item.label = `${item.data_source_type}${item.label ? `(${item.label})` : ''}`;
+
+  //       // eslint-disable-next-line array-callback-return
+  //       item.options.map((subItem: any) => {
+  //         subItem.value = `${item.value}/${subItem.key}`;
+  //         subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`;
+  //       });
+  //     });
+  //     // eslint-disable-next-line require-atomic-updates
+  //     ifItem.triggerParamOptions = res.data;
+  //   }
+  //   const statusData = {
+  //     value: 'status',
+  //     label: 'status(状态)',
+  //     options: [
+  //       {
+  //         value: 'status/On-line',
+  //         label: 'On-line(上线)',
+  //         key: 'On-line'
+  //       },
+  //       {
+  //         value: 'status/Off-line',
+  //         label: 'Off-line(下线)',
+  //         key: 'Off-line'
+  //       },
+  //       {
+  //         value: 'status/All',
+  //         label: 'All(全部)',
+  //         key: 'All'
+  //       }
+  //     ]
+  //   };
+  //   ifItem.triggerParamOptions.push(statusData);
+  // }
 };
 const message = useMessage();
 
@@ -670,11 +745,22 @@ const onTapInput = (item: any, ifIndex: number) => {
 
 watch(
   () => props.conditionData,
-  newValue => {
-    if (newValue) {
-      premiseForm.value.ifGroups = props.conditionData;
+  (newValue) => {
+    if (newValue && Array.isArray(newValue)) {
+      // 使用深拷贝确保响应性
+      premiseForm.value.ifGroups = JSON.parse(JSON.stringify(newValue));
+      // 遍历并主动加载选项
+      premiseForm.value.ifGroups.forEach(ifGroup => {
+        if (Array.isArray(ifGroup)) {
+          ifGroup.forEach(ifItem => {
+            // Call the function defined earlier to load options
+            loadTriggerParamOptions(ifItem);
+          });
+        }
+      });
     }
-  }
+  },
+  { deep: true } // Options object
 );
 const configId = ref(route.query.id || null);
 onMounted(() => {

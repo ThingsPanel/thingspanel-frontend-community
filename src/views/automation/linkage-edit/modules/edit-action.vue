@@ -672,7 +672,7 @@ onMounted(() => {
                           <NInput
                             v-if="instructItem.actionParamData.data_type === 'string'"
                             v-model:value="instructItem.actionValue"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                            :placeholder="$t('common.as') + '：' + instructItem.placeholder||'--'"
                             class="w-full"
                             @blur="actionValueChange(instructItem)"
                           />
@@ -680,7 +680,7 @@ onMounted(() => {
                             v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'number'"
                             v-model:value="instructItem.actionValue"
                             class="w-full"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                            :placeholder="$t('common.as') + '：' + instructItem.placeholder||'--'"
                             :show-button="false"
                           />
                           <n-radio-group
@@ -707,7 +707,7 @@ onMounted(() => {
                         >
                           <NInput
                             v-model:value="instructItem.actionValue"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder"
+                            :placeholder="$t('common.as') + '：' + instructItem.placeholder||'--'"
                             class="w-full"
                             @blur="actionValueChange(instructItem)"
                           />

@@ -37,7 +37,7 @@ export function createPermissionGuard(router: Router) {
     const strategicPatterns: CommonType.StrategicPattern[] = [
       // 1. if it is login route when logged in, change to the root page
       {
-        condition: isLogin && to.name === loginRoute,
+        condition: isLogin && to.path.startsWith('/login'),
         callback: () => {
           next({ name: rootRoute });
         }
