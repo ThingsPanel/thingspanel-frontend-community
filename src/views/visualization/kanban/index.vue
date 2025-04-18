@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue';
 // import {useRouter} from 'vue-router';
-import { NButton, NCard, NForm, NFormItem, NGrid, NGridItem, NInput, NModal, useMessage } from 'naive-ui';
+import { NButton, NCard, NForm, NFormItem, NGrid, NGridItem, NInput, NModal, useMessage, NPopconfirm } from 'naive-ui';
 import type { LastLevelRouteKey } from '@elegant-router/types'; // 假设您已经定义好了这些API
 import { DelBoard, PostBoard, PutBoard, getBoardList } from '@/service/api/index';
 import { useRouterPush } from '@/hooks/common/router';
@@ -154,11 +154,17 @@ onMounted(fetchBoards);
                   <icon-material-symbols:contract-edit-outline class="text-24px text-blue" />
                 </template>
               </NButton>
-              <NButton strong secondary circle @click.stop="deleteBoard(board.id as string)">
-                <template #icon>
-                  <icon-material-symbols:delete-outline class="text-24px text-red" />
+              <!-- 使用 Vue 模板语法的 NPopconfirm -->
+              <NPopconfirm @positive-click="deleteBoard(board.id as string)">
+                <template #trigger>
+                  <NButton strong secondary circle @click.stop>
+                    <template #icon>
+                      <icon-material-symbols:delete-outline class="text-24px text-red" />
+                    </template>
+                  </NButton>
                 </template>
-              </NButton>
+                {{ $t('common.confirmDelete') }}
+              </NPopconfirm>
             </div>
           </NCard>
         </NGridItem>

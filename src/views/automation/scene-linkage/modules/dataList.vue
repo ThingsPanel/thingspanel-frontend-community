@@ -2,7 +2,8 @@
 import { computed, getCurrentInstance, ref } from 'vue';
 // import { useRouter } from 'vue-router';
 import { NButton, NCard, NFlex, NGrid, NGridItem, NPagination, useDialog } from 'naive-ui';
-import { CopyOutline as copyIcon, PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5';
+import {  PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5';
+import { DocumentOnePage24Regular } from '@vicons/fluent';
 import moment from 'moment';
 import { useRouterPush } from '@/hooks/common/router';
 import {
@@ -238,7 +239,7 @@ getData();
                 <NButton circle tertiary type="info" @click="openLog(item)">
                   <template #icon>
                     <n-icon>
-                      <copyIcon />
+                      <DocumentOnePage24Regular />
                     </n-icon>
                   </template>
                 </NButton>
