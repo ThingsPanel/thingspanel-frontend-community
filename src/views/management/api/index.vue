@@ -159,8 +159,19 @@ function handleCloseEye(rowId: string) {
   findItem!.show = false;
 }
 async function handleCopyKey(key: string) {
-  await navigator.clipboard.writeText(key);
-  window.$message?.success($t('theme.configOperation.copySuccess'));
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(key);
+      window.$message?.success($t('theme.configOperation.copySuccess'));
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      window.$message?.error($t('theme.configOperation.copyFail') || '复制失败');
+    }
+  } else {
+    // Fallback or error message when clipboard API is not available
+    console.error('Clipboard API not available in this context.');
+    window.$message?.error($t('theme.configOperation.copyFailSecure') || '复制功能在此环境不可用 (请使用HTTPS或localhost)');
+  }
 }
 function handleEditTable(rowId: string) {
   const findItem = tableData.value.find(item => item.id === rowId);

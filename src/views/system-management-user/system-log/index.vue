@@ -76,9 +76,10 @@ const getTableData = async () => {
   }
   endLoading();
 };
-const detailModalRef = ref(null);
+const detailModalRef = ref<any>(null);
 const handleDetail = item => {
-  detailModalRef.value && detailModalRef.value.show(item);
+
+  detailModalRef.value && detailModalRef.value.show && detailModalRef.value.show(item);
 };
 const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   {
@@ -146,16 +147,41 @@ function handleReset() {
   queryParams.method = '';
   queryParams.username = '';
   queryParams.selected_time = null;
+  range.value = [moment().subtract(1, 'months').valueOf(), moment().valueOf()];
   pagination.page = 1;
   handleQuery();
 }
-function pickerChange() {
-  if (range.value && range.value.length > 0) {
-    queryParams.start_time = moment(range.value[0]).format('YYYY-MM-DDTHH:mm:ssZ');
-    queryParams.end_time = moment(range.value[1]).format('YYYY-MM-DDTHH:mm:ssZ');
+function pickerChange(value: [number, number] | null) {
+  if (value && value.length === 2) {
+    const startDate = moment(value[0]);
+    const endDateMoment = moment(value[1]);
+    // console.log('Original end timestamp:', value[1], 'Moment object:', endDateMoment.toISOString());
+
+    // 检查用户是否可能只选了日期（时间部分为 00:00:00）
+    // 如果是，则将结束时间调整到 23:59:59.999
+    // 如果用户明确选择了时间，则尊重用户的选择
+    let adjustedEndDateMoment;
+    if (endDateMoment.hour() === 0 && endDateMoment.minute() === 0 && endDateMoment.second() === 0 && endDateMoment.millisecond() === 0) {
+      adjustedEndDateMoment = endDateMoment.endOf('day'); 
+      // console.log('Adjusted end moment object (end of day):', adjustedEndDateMoment.toISOString());
+    } else {
+      adjustedEndDateMoment = endDateMoment; // 用户选择了具体时间，保持不变
+      // console.log('End moment object (user selected time):', adjustedEndDateMoment.toISOString());
+    }
+
+    queryParams.start_time = startDate.format('YYYY-MM-DDTHH:mm:ssZ');
+    queryParams.end_time = adjustedEndDateMoment.format('YYYY-MM-DDTHH:mm:ssZ');
+    // console.log('Assigned queryParams.end_time:', queryParams.end_time);
+
+    // 尝试更新 range ref 本身以改变输入框显示
+    // 注意：这可能会触发组件更新，需要测试
+    // @ts-ignore // 忽略类型检查，因为我们在可变元组中修改元素
+    range.value[1] = adjustedEndDateMoment.valueOf(); 
+
   } else {
     queryParams.start_time = '';
     queryParams.end_time = '';
+    // console.log('Date range cleared');
   }
 }
 const getPlatform = computed(() => {
@@ -181,6 +207,7 @@ getTableData();
               separator="-"
               @update:value="pickerChange"
             />
+            55
           </NFormItem>
           <NFormItem :label="$t('generate.requestMethod')" path="method">
             <NSelect v-model:value="queryParams.method" class="w-200px" :options="requestMethodOptions"></NSelect>

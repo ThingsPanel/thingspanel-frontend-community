@@ -101,7 +101,7 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   },
   {
     key: 'notification_type',
-    title: $t('common.addSuccess'),
+    title: $t('generate.notification-type'),
     minWidth: '140px',
     align: 'left'
   }
