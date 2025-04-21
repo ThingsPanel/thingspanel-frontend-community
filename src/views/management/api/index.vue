@@ -62,17 +62,18 @@ const columns: Ref<DataTableColumns<UserManagement.UserKey>> = ref([
       if (row.show === false) {
         return (
           <NSpace justify="space-between">
-            <span>xxxxxx</span>
-            <div>
+            <NSpace>
+              <span>********</span>
               <svg-icon local-icon="eye" class="text-20px" onClick={() => handleOpenEye(row.id)} />
-            </div>
+            </NSpace>
           </NSpace>
         );
       } else if (row.show === true) {
         return (
           <NSpace justify="space-between">
-            <span>{row.api_key}</span>
+   
             <NSpace>
+              <span>{row.api_key}</span>
               <svg-icon local-icon="eye-close" class="text-20px" onClick={() => handleCloseEye(row.id)} />
               <svg-icon local-icon="copy" class="text-20px" onClick={() => handleCopyKey(row.api_key)} />
             </NSpace>
