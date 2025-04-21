@@ -69,10 +69,10 @@ const transformForTransfer = data => {
   data.forEach(group => {
     group.options.forEach(option => {
       // 在label中添加data_source_type来模拟分组效果
-      const label = `${group.data_source_type} - ${option.label}`;
+      const label = `${group.data_source_type} -- ${option.label}`;
       transformed.push({
         label,
-        value: `${group.data_source_type}-${option.label}-${option.key}`
+        value: `${group.data_source_type}~${option.label}~${option.key}`
         // 这里可以根据需要添加其他属性，比如 data_type
       });
     });
@@ -101,8 +101,8 @@ const changeIndicate = value => {
   state.data.dataSource.deviceSource = [];
   // const cardId: any = state.data.cardId;
   indicateValue.value.forEach(item => {
-    const arr = item?.split('-') || [];
-    if (arr.length > 0) {
+    const arr = item?.split('~') || [];
+    if (arr.length === 3) {
       const obj = {
         metricsId: arr[2],
         metricsName: arr[1],
@@ -119,8 +119,8 @@ onUpdated(() => {
   }
   indicateValue.value = [];
   state.data.dataSource.deviceSource.forEach(item => {
-    if (item.metricsName) {
-      const value = `${item.metricsType}-${item.metricsName}-${item.metricsId}`;
+    if (item.metricsName && item.metricsType && item.metricsId) {
+      const value = `${item.metricsType}~${item.metricsName}~${item.metricsId}`;
       indicateValue.value.push(value);
     }
   });

@@ -323,7 +323,8 @@ const getControlList = () => {
     const queryjson = {
       device_template_id: props.deviceTemplateId,
       page: 1,
-      page_size: 100
+      page_size: 100,
+      enable_status: 'enable'
     };
     deviceCustomControlList(queryjson).then(({ data }) => {
       controlList.value = data.list || [];

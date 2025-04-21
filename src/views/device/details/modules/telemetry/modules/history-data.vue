@@ -116,7 +116,8 @@ const columns = [
   },
   {
     title: $t('generate.fieldValue'),
-    key: 'value'
+    key: 'value',
+    render: (row: HistoryData) => row.value.toString()
   }
 ];
 
