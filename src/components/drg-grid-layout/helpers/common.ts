@@ -531,7 +531,7 @@ export const hyphenateRE = /([a-z\d])([A-Z])/g;
  * @returns
  */
 export function hyphenate(str: string) {
-  return str.replace(hyphenateRE, '$1-$2').toLowerCase();
+  return str?.replace(hyphenateRE, '$1-$2')?.toLowerCase();
 }
 
 export function findItemInArray(array: any[], property: string, value: any) {

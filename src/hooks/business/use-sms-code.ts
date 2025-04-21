@@ -85,18 +85,30 @@ export default function useSmsCode() {
 
     startLoading();
     try {
-      const { error, data, code, message } = await fetchEmailCodeByEmail(email);
-      if (code === 200 && !error && data) {
-        start(); // 只有在发送成功时才启动倒计时
+      const { error, data } = await fetchEmailCodeByEmail(email);
+
+      if (!error && data) {
+        // Success case
+        start(); // Start countdown on success
         window.$message?.success($t('page.login.common.codeSent'));
-      } else if (code === 200008) {
-        // 邮箱已注册的错误码
-        window.$message?.error(message || $t('page.login.common.emailRegistered'));
+      } else if (error) {
+        // Error case: Try to access potential custom properties on the error object
+        const errorCode = (error as any)?.code; // Safely access potential code
+        const errorMessage = (error as any)?.message; // Safely access potential message
+
+        if (errorCode === 200008) {
+          // Specific error code for email registered
+          window.$message?.error(errorMessage || $t('page.login.common.emailRegistered'));
+        } else {
+          // Other errors reported by the API
+          window.$message?.error(errorMessage || $t('page.login.common.codeError'));
+        }
       } else {
-        window.$message?.error(message || $t('page.login.common.codeError'));
+        // Fallback for unexpected scenarios (e.g., no error, no data)
+        window.$message?.error($t('page.login.common.codeError'));
       }
     } catch (err) {
-      // 接口调用失败时不显示成功提示
+      // Catch exceptions during the API call itself (e.g., network error)
       window.$message?.error($t('page.login.common.codeError'));
     } finally {
       endLoading();

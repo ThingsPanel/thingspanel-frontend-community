@@ -263,8 +263,8 @@ const actionParamShow = async (instructItem: any) => {
     if (instructItem.action_param && instructItem.actionParamOptions.length > 0) {
       instructItem.actionParamData =
         instructItem.actionParamOptions.find(item => item.key === instructItem.action_param) || null;
-      if (instructItem.actionParamData.data_type) {
-        instructItem.actionParamData.data_type = instructItem.actionParamData.data_type.toLowerCase();
+      if (instructItem.actionParamData?.data_type) {
+        instructItem.actionParamData.data_type = instructItem?.actionParamData?.data_type?.toLowerCase();
       }
     }
   }
@@ -299,8 +299,8 @@ const actionParamTypeChange = (instructItem: any, data: any) => {
 const actionParamChange = (instructItem: any, data: any) => {
   instructItem.actionValue = null;
   instructItem.actionParamData = instructItem.actionParamOptions.find(item => item.key === data) || null;
-  if (instructItem.actionParamData.data_type) {
-    instructItem.actionParamData.data_type = instructItem.actionParamData.data_type.toLowerCase();
+  if (instructItem.actionParamData?.data_type) {
+    instructItem.actionParamData.data_type = instructItem?.actionParamData?.data_type?.toLowerCase();
   }
 };
 const message = useMessage();

@@ -94,8 +94,14 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
 function handleSmsCode() {
   // 调用 fetchEmailCode 函数获取验证码
   fetchEmailCode(model.email)
-    .then(() => {
-      start(); // 开始计时
+    .then((res:any) => {
+      console.log(res);
+      const { error } = res;
+      if (!error) {
+        start(); // 开始计时
+        window.$message?.success($t('page.login.common.codeSent'));
+      }
+    
     })
     .catch(error => {
       // 错误处理已经在 useSmsCode 中完成，这里不需要重复处理
