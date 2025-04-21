@@ -57,7 +57,7 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
       // when the requestTs is fail, you can show error message
 
       if (error?.response?.status === 401) {
-        window.$message?.error('非法授权，请重新登录');
+        window.$message?.error('无法验证身份或获取权限，请重新登录。');
 
         setTimeout(() => {
           localStg.remove('token');
@@ -71,12 +71,16 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
       }
 
       let message = error.message;
-
+      if (error.response?.status === 404) {
+        window.$message?.error('请求的资源未找到 (404)。');
+        return;
+      }
       // show backend error message
       if (error.code === BACKEND_ERROR_CODE) {
         message = error.response?.data?.message || message;
       }
 
+    
       window.$message?.error(message);
     }
   }

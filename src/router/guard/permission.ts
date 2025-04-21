@@ -128,7 +128,15 @@ async function createAuthRouteGuard(
   }
 
   // 5. init auth route
-  await routeStore.initAuthRoute();
+  const initSuccess = await routeStore.initAuthRoute();
+
+  // If init failed, reset store (which likely redirects to login) and stop navigation
+  if (!initSuccess) {
+    const authStore = useAuthStore();
+    await authStore.resetStore(); // This typically handles redirection to login
+
+    return false;
+  }
 
   // 6. the route is caught by the "not-found" route because the auto route is not initialized. after the auto route is initialized, redirect to the original route.
   if (isNotFoundRoute) {

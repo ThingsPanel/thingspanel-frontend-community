@@ -144,18 +144,23 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
   }
 
   /** Init auth route */
-  async function initAuthRoute() {
+  async function initAuthRoute(): Promise<boolean> {
+    let success = false;
     if (authRouteMode.value === 'static') {
-      await initStaticAuthRoute();
+      success = await initStaticAuthRoute();
     } else {
-      await initDynamicAuthRoute();
+      success = await initDynamicAuthRoute();
     }
 
-    tabStore.initHomeTab();
+    if (success) {
+      tabStore.initHomeTab();
+    }
+
+    return success;
   }
 
   /** Init static auth route */
-  async function initStaticAuthRoute() {
+  async function initStaticAuthRoute(): Promise<boolean> {
     const { authRoutes } = createRoutes();
 
     const filteredAuthRoutes = filterAuthRoutesByRoles(authRoutes, authStore?.userInfo?.roles as string[]);
@@ -163,10 +168,12 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
     handleAuthRoutes(filteredAuthRoutes);
 
     setIsInitAuthRoute(true);
+
+    return true; // Indicate success
   }
 
   /** Init dynamic auth route */
-  async function initDynamicAuthRoute() {
+  async function initDynamicAuthRoute(): Promise<boolean> {
     const { data, error } = await fetchGetUserRoutes();
 
     if (!error) {
@@ -179,7 +186,14 @@ export const useRouteStore = defineStore(SetupStoreId.Route, () => {
       handleUpdateRootRouteRedirect('home');
 
       setIsInitAuthRoute(true);
+
+      return true; // Indicate success
     }
+
+    // Optionally handle the error, e.g., show a notification
+    // window.$message?.error('Failed to fetch user routes.');
+
+    return false; // Indicate failure
   }
 
   /**
