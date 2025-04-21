@@ -67,9 +67,6 @@ const submitData = async () => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   configForm.value.actions = handleActionData();
 
-
-  console.log(configForm.value.trigger_condition_groups,"configForm.value.trigger_condition_groups")
-  return
   const isTimeRangeError = configForm.value.trigger_condition_groups.some((item: any) => {
     return item.every(subItem => {
       return subItem.trigger_conditions_type === '22';
@@ -158,6 +155,10 @@ const getSceneAutomationsInfo = async () => {
 
 // 提交时处理条件数据
 const handleIfData = () => {
+  if (!editPremise.value) {
+    console.error('EditPremise component ref is not available yet.');
+    return []; // Return empty array if the ref is not ready
+  }
   const ifGroupsData = JSON.parse(JSON.stringify(editPremise.value.ifGroupsData()));
   // eslint-disable-next-line array-callback-return
   ifGroupsData.map((ifGroupItem: any) => {
@@ -208,6 +209,10 @@ const handleIfData = () => {
 
 // 提交时处理动作数据
 const handleActionData = () => {
+  if (!editAction.value) {
+    console.error('EditAction component ref is not available yet.');
+    return []; // Return empty array if the ref is not ready
+  }
   // 处理动作的数据
   const actionGroupsData = JSON.parse(JSON.stringify(editAction.value.actionGroupsReturn()));
   const actionsData = [] as any;
