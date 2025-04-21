@@ -76,9 +76,18 @@ const loadMoreNotificationGroupData = async () => {
     };
     const res = await getNotificationGroupList(params);
     let list = res?.data?.list || [];
-    list = list.filter(item => item.status === 'OPEN'); // 只展示生效的通知组
+    // list = list.filter(item => item.status === 'OPEN'); // 只展示生效的通知组
     const total = res?.data?.total || 0;
     state.generalOptions = [...state.generalOptions, ...list];
+
+    state.generalOptions = state.generalOptions.map((item: any) => {
+      console.log(item, 'item');
+      return {
+        id: item.id,
+        name: item.name,
+        disabled: item?.status !== 'OPEN'
+      };
+    });
     state.notificationGroupTotal = total;
     state.notificationGroupPageNo += 1;
     state.notificationGroupHasMore = total > state.notificationGroupPageNo * state.notificationGroupPageSize;

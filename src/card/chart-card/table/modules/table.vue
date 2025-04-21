@@ -21,7 +21,7 @@ const pagination = reactive({
   showSizePicker: true,
   pageSizes: [10, 15, 20]
 });
-
+console.log(props.card?.dataSource?.deviceSource, 'props.card');
 const allTableData = ref<any[]>([]);
 const paginatedData = computed(() => {
   const startIndex = (pagination.page - 1) * pagination.pageSize;
@@ -49,15 +49,17 @@ const columns = ref<any[]>([
   },
   ...(props.card?.dataSource?.deviceSource
     ?.filter(deviceSource => {
-      return deviceSource.deviceId && deviceSource.metricsId;
+      return deviceSource.deviceId || deviceSource.metricsId;
     })
-    .map(source => ({
+    .map(source => {
+      console.log(source, 'props.card');
+      return ({
       title: source.metricsName,
       key: source.metricsId,
       render(row) {
         return row[source.metricsId!] ?? '';
       }
-    })) ?? [])
+    })}) ?? [])
 ]);
 
 // 数据处理函数：合并相同时间的数据

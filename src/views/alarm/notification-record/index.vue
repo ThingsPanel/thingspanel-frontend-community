@@ -128,6 +128,7 @@ getTableData();
               :options="notificationOptions"
               :placeholder="$t('generate.notification-type')"
               class="input-style min-w-160px"
+              clearable
             />
           </NFormItem>
           <NFormItem path="selected_time">
@@ -140,7 +141,7 @@ getTableData();
             />
           </NFormItem>
           <NFormItem path="send_target">
-            <NInput v-model:value="queryParams.send_target" :placeholder="$t('generate.recipient')" />
+            <NInput  clearable v-model:value="queryParams.send_target" :placeholder="$t('generate.recipient')" />
           </NFormItem>
           <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
         </NForm>
