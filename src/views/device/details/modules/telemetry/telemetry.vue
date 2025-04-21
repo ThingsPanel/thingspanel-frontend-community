@@ -589,7 +589,7 @@ const inputFeedback = computed(() => {
 
             <n-popconfirm @positive-click="handlePositiveClick">
               <template #trigger>
-                <n-button type="primary">{{ $t('generate.send') }}</n-button>
+                <n-button type="primary" :disabled="!formValue || validationJson === 'error'">{{ $t('generate.send') }}</n-button>
               </template>
               确定发送指令吗
             </n-popconfirm>

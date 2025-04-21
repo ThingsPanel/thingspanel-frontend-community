@@ -34,6 +34,7 @@ const handleButtonClick = async () => {
   };
 
   try {
+    console.log(config.value.dataType);
     if (config.value.dataType === 'attributes') {
       await attributeDataPub(obj);
     } else if (config.value.dataType === 'telemetry') {

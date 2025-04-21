@@ -12,7 +12,7 @@ const addButtonConfig = () => {
   ctx.config.btOptions = [
     ...ctx.config.btOptions,
     {
-      label: `$t('generate.button')${ctx.config.btOptions.length + 1}`,
+      label: `${$t('generate.button')}${ctx.config.btOptions.length + 1}`,
       value: $t('generate.fieldValue')
     }
   ];
