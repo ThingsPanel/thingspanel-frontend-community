@@ -57,6 +57,7 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
       // when the requestTs is fail, you can show error message
 
       if (error?.response?.status === 401) {
+        window.$message?.destroyAll()
         window.$message?.error('无法验证身份或获取权限，请重新登录。');
 
         setTimeout(() => {
@@ -72,6 +73,7 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
 
       let message = error.message;
       if (error.response?.status === 404) {
+        window.$message?.destroyAll()
         window.$message?.error('请求的资源未找到 (404)。');
         return;
       }
@@ -79,7 +81,7 @@ export const request = createFlatRequest<App.Service.DEVResponse>(
       if (error.code === BACKEND_ERROR_CODE) {
         message = error.response?.data?.message || message;
       }
-
+      window.$message?.destroyAll()
     
       window.$message?.error(message);
     }
