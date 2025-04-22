@@ -247,5 +247,18 @@ export default {
   confirm: 'Confirm', // Using Confirm as it seems more appropriate here
   componentSettings: 'Component Settings',
   basicSettings: 'Basic Settings',
-  checkedDeviceTemplateNotSet: 'Template not set for some selected devices on the current page. Please check.'
+  pleaseSelectDevice: 'Please select device',
+  someDevicesNotSetTemplate: 'Template not set for some selected devices or operation failed',
+  serviceAccessIdNotSet: 'Service access ID not set, cannot submit',
+  checkedDeviceTemplateNotSet: 'Template not set for some selected devices on the current page. Please check.',
+  operationGuide: 'Operation Guide',
+  noData: 'No Data',
+  uiSettings: 'UI Settings',
+  serialBgColor: 'Serial BG', // Abbreviated for potential space constraints
+  itemBgColor: 'Item BG',
+  itemHoverBgColor: 'Item Hover BG',
+  titleColor: 'Title Color',
+  descriptionColor: 'Desc Color',
+  guideList: 'Guide List',
+  pleaseEnterLink: 'Please enter link', // Already exists
 };

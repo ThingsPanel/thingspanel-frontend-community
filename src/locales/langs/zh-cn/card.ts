@@ -250,4 +250,27 @@ export default {
   serviceAccessIdNotSet: '服务访问ID未设置，无法提交',
   checkedDeviceTemplateNotSet: '当前页选中的设备中有未设置模板的，请检查。',
 
+  // Card Titles
+  operationGuide: '操作向导',
+
+  // Operation Guide Card
+  cardInner: {
+    operationGuideTitle: '操作向导',
+  },
+  // Config specific texts (or move to a dedicated config section/file)
+  config: {
+    serialBgColor: '序号背景色',
+    itemBgColor: '列表项背景色',
+    itemHoverBgColor: '列表项浮动色',
+  },
+  // Other card related texts
+  pleaseEnterLink: '请输入链接',
+  noData: '暂无数据',
+  uiSettings: 'UI 设置',
+  serialBgColor: '序号背景',
+  itemBgColor: '列表项背景',
+  itemHoverBgColor: '列表项浮动',
+  titleColor: '标题颜色',
+  descriptionColor: '描述颜色',
+  guideList: '向导列表',
 };

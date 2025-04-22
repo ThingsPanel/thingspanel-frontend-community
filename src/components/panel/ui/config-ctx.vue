@@ -1,18 +1,23 @@
 <script lang="ts" setup>
-import { onMounted, provide, reactive, toRaw, watch } from 'vue';
-import { cloneDeep } from 'lodash';
+import { provide, reactive, toRaw, watch } from 'vue';
+import { cloneDeep } from 'lodash-es';
 import type { IConfigCtx } from '@/components/panel/card';
 
 const props = defineProps<IConfigCtx>();
-const model = reactive<Record<string, any>>({});
 
-onMounted(() => {
-  if (props.config) {
-    Object.keys(toRaw(props.config)).forEach((key: string) => {
-      model[key] = props.config[key];
-    });
-  }
-});
+const model = reactive<Record<string, any>>(cloneDeep(props.config || {}));
+
+watch(
+  () => props.config,
+  (newConfig) => {
+    const newClonedConfig = cloneDeep(newConfig || {});
+    if (JSON.stringify(model) !== JSON.stringify(newClonedConfig)) {
+       Object.keys(model).forEach(key => delete model[key]);
+       Object.assign(model, newClonedConfig);
+    }
+  },
+  { deep: true }
+);
 
 provide('config-ctx', {
   config: model,
@@ -30,7 +35,7 @@ const emit = defineEmits<{
 watch(
   model,
   v => {
-    emit('update:config', v);
+    emit('update:config', cloneDeep(toRaw(v)));
   },
   { deep: true }
 );

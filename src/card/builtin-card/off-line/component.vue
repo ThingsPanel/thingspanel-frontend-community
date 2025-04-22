@@ -44,8 +44,10 @@ getData();
 <template>
   <GradientBg class="access" :start-color="cardData.colors[0]" :end-color="cardData.colors[1]">
     <h3 class="text-16px">{{ cardData.title }}</h3>
+   
     <div class="icon-items flex justify-between pt-30px">
       <SvgIcon :icon="cardData.icon" class="text-32px" />
+  
       <CountTo
         :prefix="cardData.unit"
         :start-value="1"
