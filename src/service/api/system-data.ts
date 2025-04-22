@@ -50,6 +50,12 @@ export const telemetryLatestApi = async (id: any) => {
   return data;
 };
 
+/** 获取最新的遥测数据 */
+export const getLatestTelemetryData = async (deviceId: string): Promise<any> => {
+  const data = await request.get<any>(`/device/telemetry/latest/${deviceId}`);
+  return data;
+};
+
 /** 获取属性数据 */
 export const attributesApi = async (params: any) => {
   const data = await request.get<Api.BaseApi.Data | null>('/device/model/attributes', { params });
@@ -191,5 +197,11 @@ export const deviceCustomControlPut = async (params: any): Promise<any> => {
 /** 获取设备在线趋势 */
 export const getOnlineDeviceTrend = async () => {
   const data = await request.get<Api.BaseApi.Data | null>('/board/trend');
+  return data;
+};
+
+/** 获取告警数量 */
+export const getAlarmCount = async () => {
+  const data = await request.get<Api.BaseApi.Data | null>('/alarm/device/counts');
   return data;
 };

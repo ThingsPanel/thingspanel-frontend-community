@@ -251,6 +251,8 @@ export default {
   someDevicesNotSetTemplate: 'Template not set for some selected devices or operation failed',
   serviceAccessIdNotSet: 'Service access ID not set, cannot submit',
   checkedDeviceTemplateNotSet: 'Template not set for some selected devices on the current page. Please check.',
+  alarmCount: 'Alarm Count',
+  alarmUnit: 'Count',
   operationGuide: 'Operation Guide',
   noData: 'No Data',
   uiSettings: 'UI Settings',

@@ -249,6 +249,8 @@ export default {
   someDevicesNotSetTemplate: '部分选中设备未设置模板或操作失败',
   serviceAccessIdNotSet: '服务访问ID未设置，无法提交',
   checkedDeviceTemplateNotSet: '当前页选中的设备中有未设置模板的，请检查。',
+  alarmCount: '告警数量',
+  alarmUnit: '条',
 
   // Card Titles
   operationGuide: '操作向导',
@@ -272,5 +274,5 @@ export default {
   itemHoverBgColor: '列表项浮动',
   titleColor: '标题颜色',
   descriptionColor: '描述颜色',
-  guideList: '向导列表',
+  guideList: '向导列表'
 };
