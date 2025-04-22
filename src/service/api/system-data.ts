@@ -1,5 +1,28 @@
 import { request } from '../request';
 
+// --- 添加接口定义 ---
+// (如果这些类型已在全局定义，例如 src/types/api.d.ts，则应从那里导入)
+export interface TelemetryItem {
+  key: string;
+  label: string | null;
+  unit: string | null;
+  value: any;
+}
+
+export interface DeviceData {
+  device_id: string;
+  device_name: string;
+  is_online: number;
+  last_push_time: string;
+  telemetry_data: TelemetryItem[];
+}
+
+export interface ApiLatestTelemetryResponse {
+  data: DeviceData[] | null;
+  error: string | object | null; // 允许不同的错误类型
+}
+// --- 接口定义结束 ---
+
 /** 获取设备总数和激活数 */
 export const totalNumber = async () => {
   const data = await request.get<Api.BaseApi.Data | null>('/board/device');
@@ -51,9 +74,12 @@ export const telemetryLatestApi = async (id: any) => {
 };
 
 /** 获取最新的遥测数据 */
-export const getLatestTelemetryData = async (deviceId: string): Promise<any> => {
-  const data = await request.get<any>(`/device/telemetry/latest/${deviceId}`);
-  return data;
+export const getLatestTelemetryData = async (): Promise<ApiLatestTelemetryResponse> => {
+  // 使用定义好的接口作为返回类型
+  // 注意：这假设 request.get 能够正确地将后端响应映射到这个结构
+  // 或者后端直接返回 { data: ..., error: ... } 结构
+  const response = await request.get<ApiLatestTelemetryResponse>(`/device/telemetry/latest`);
+  return response;
 };
 
 /** 获取属性数据 */
