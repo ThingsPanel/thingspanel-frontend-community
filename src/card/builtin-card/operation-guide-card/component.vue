@@ -35,7 +35,7 @@ const navigateTo = (link: string) => {
     <!-- 使用 card.operationGuide 作为内部标题 -->
     <h3 class="internal-title mb-3 font-semibold text-lg">{{ $t('card.operationGuide') }}</h3>
 
-    <NList v-if="guideList.length > 0" hoverable clickable class="flex-1 overflow-auto"> <!-- 移除 bordered, 添加 flex-1 和 overflow -->
+    <NList v-if="guideList.length > 0" hoverable clickable class="flex-1 overflow-auto bg-[#00000000]"> <!-- 移除 bordered, 添加 flex-1 和 overflow -->
       <NListItem
         v-for="(item, index) in guideList"
         :key="index"
@@ -96,17 +96,13 @@ const navigateTo = (link: string) => {
   transition: background-color 0.3s;
   /* Add flex alignment for centering avatar */
   display: flex; /* Needed for align-items */
-  align-items: center; /* Vertically center content including avatar */
+  align-items: center; 
 }
 /* Ensure NThing takes available space */
 .guide-container :deep(.n-list-item .n-thing) {
   flex: 1; /* Allow NThing to grow */
 }
-/* Style avatar container if needed (centering is mostly handled by align-items on parent) */
-.guide-container :deep(.n-thing .n-thing-avatar) {
-  /* margin-top: auto; /* Example: Adjust vertical alignment if needed */
-  /* margin-bottom: auto; */
-}
+
 /* 应用 hover 颜色 */
 .guide-container :deep(.n-list-item):hover {
   background-color: var(--item-hover-bg-color) !important; /* 使用 CSS 变量 */
@@ -116,16 +112,9 @@ const navigateTo = (link: string) => {
     font-weight: 600;
     color: var(--title-color); /* Apply the CSS variable here */
 }
-/* Optionally remove or adjust the old selector if it's no longer needed */
-/*
-.guide-container :deep(.n-thing-header__title) {
-    font-weight: 600;
-    color: var(--title-color);
-}
-*/
+
 .guide-container :deep(.n-thing-main__description) {
     font-size: 13px;
     color: var(--description-color);
-    /* NEllipsis handles overflow, CSS line clamp properties removed */
 }
-</style> 
+</style>
