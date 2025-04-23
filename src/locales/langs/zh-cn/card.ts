@@ -251,9 +251,19 @@ export default {
   checkedDeviceTemplateNotSet: '当前页选中的设备中有未设置模板的，请检查。',
   alarmCount: '告警数量',
   alarmUnit: '条',
+  viewAll: '查看全部数据',
 
   // Card Titles
   operationGuide: '操作向导',
+
+  // --- Add keys for Reported Data Card --- 
+  reportedData: {
+    title: '最新上报数据',
+    refreshing: '实时刷新中',
+    startRefresh: '开启实时刷新',
+    noTelemetry: '无遥测数据',
+  },
+  // --- End Reported Data Card keys --- 
 
   // Operation Guide Card
   cardInner: {

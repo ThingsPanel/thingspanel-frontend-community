@@ -253,7 +253,14 @@ export default {
   checkedDeviceTemplateNotSet: 'Template not set for some selected devices on the current page. Please check.',
   alarmCount: 'Alarm Count',
   alarmUnit: 'Count',
+  viewAll: 'View All Data',
   operationGuide: 'Operation Guide',
+  reportedData: {
+    title: 'Latest Reported Data',
+    refreshing: 'Refreshing',
+    startRefresh: 'Start Refresh',
+    noTelemetry: 'No telemetry data',
+  },
   noData: 'No Data',
   uiSettings: 'UI Settings',
   serialBgColor: 'Serial BG', // Abbreviated for potential space constraints
