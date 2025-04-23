@@ -253,6 +253,12 @@ export default {
   checkedDeviceTemplateNotSet: 'Template not set for some selected devices on the current page. Please check.',
   alarmCount: 'Alarm Count',
   alarmUnit: 'Count',
+  memoryUsage: 'Memory Usage',
+  memoryUnit: '%',
+  cpuUsage: 'CPU Usage',
+  cpuUnit: '%',
+  diskUsage: 'Disk Usage',
+  diskUnit: '%',
   viewAll: 'View All Data',
   operationGuide: 'Operation Guide',
   reportedData: {

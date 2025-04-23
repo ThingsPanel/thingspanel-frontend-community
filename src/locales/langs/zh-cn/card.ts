@@ -243,18 +243,26 @@ export default {
   configurationEntry: '配置入口',
   cancel: '取消',
   confirm: '确认',
-  componentSettings: '组件设置',
-  basicSettings: '基础设置',
+  componentSettings: '组件配置',
+  basicSettings: '基本设置',
   pleaseSelectDevice: '请选择设备',
-  someDevicesNotSetTemplate: '部分选中设备未设置模板或操作失败',
-  serviceAccessIdNotSet: '服务访问ID未设置，无法提交',
-  checkedDeviceTemplateNotSet: '当前页选中的设备中有未设置模板的，请检查。',
-  alarmCount: '告警数量',
-  alarmUnit: '条',
+  someDevicesNotSetTemplate: '部分已选设备未设置模板或操作失败',
+  serviceAccessIdNotSet: '服务访问标识未设置，无法提交',
+  checkedDeviceTemplateNotSet: '当前页选中部分设备未设置模板，请检查。',
+  alarmCount: '告警统计',
+  alarmUnit: '个',
+  memoryUsage: '内存使用率',
+  memoryUnit: '%',
+  cpuUsage: 'CPU 使用率',
+  cpuUnit: '%',
+  // Add Disk keys
+  diskUsage: '硬盘使用率',
+  diskUnit: '%',
+  // End Disk keys
   viewAll: '查看全部数据',
 
   // Card Titles
-  operationGuide: '操作向导',
+  operationGuide: '操作指引',
 
   // Reported Data Card Keys
   reportedData: {

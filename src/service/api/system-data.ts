@@ -74,12 +74,28 @@ export const telemetryLatestApi = async (id: any) => {
 };
 
 /** 获取最新的遥测数据 */
-export const getLatestTelemetryData = async (): Promise<ApiLatestTelemetryResponse> => {
-  // 使用定义好的接口作为返回类型
-  // 注意：这假设 request.get 能够正确地将后端响应映射到这个结构
-  // 或者后端直接返回 { data: ..., error: ... } 结构
-  const response = await request.get<ApiLatestTelemetryResponse>(`/device/telemetry/latest`);
-  return response;
+export const getLatestTelemetryData = async (): Promise<DeviceData[] | null> => { 
+  // Temporarily cast to any to bypass wrapper type issues
+  const response: any = await request.get<any>(`/device/telemetry/latest`);
+
+  // Now, safely check the expected nested structure
+  // Check for the outer wrapper structure first
+  if (response && typeof response === 'object') {
+      // Check for the inner ApiLatestTelemetryResponse structure
+      const innerResponse = response.data as ApiLatestTelemetryResponse | null;
+      if (innerResponse && typeof innerResponse === 'object' && !response.error) {
+          // Check if the actual device data array exists
+          if (Array.isArray(innerResponse.data)) {
+              return innerResponse.data; // Return DeviceData[]
+          } else if (innerResponse.data === null) {
+              return null; // API returned null data successfully
+          }
+      }
+  }
+  
+  // If structure is not as expected or error exists in outer wrapper
+  console.error("Error fetching or parsing latest telemetry:", response?.error || response);
+  return null; 
 };
 
 /** 获取属性数据 */
@@ -229,5 +245,12 @@ export const getOnlineDeviceTrend = async () => {
 /** 获取告警数量 */
 export const getAlarmCount = async () => {
   const data = await request.get<Api.BaseApi.Data | null>('/alarm/device/counts');
+  return data;
+};
+
+/** 获取当前系统指标 */
+export const getSystemMetricsCurrent = async (params?: any): Promise<any> => {
+  // Assuming the endpoint returns a generic structure or the exact structure is unknown
+  const data = await request.get<any>('/system/metrics/current', { params });
   return data;
 };
