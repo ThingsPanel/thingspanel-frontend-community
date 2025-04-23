@@ -1,4 +1,6 @@
 import { request } from '../request';
+// Remove the incorrect import, as DeviceData is defined locally
+// import type { DeviceData } from '@/views/device/utils/types';
 
 // --- 添加接口定义 ---
 // (如果这些类型已在全局定义，例如 src/types/api.d.ts，则应从那里导入)
@@ -21,6 +23,14 @@ export interface ApiLatestTelemetryResponse {
   data: DeviceData[] | null;
   error: string | object | null; // 允许不同的错误类型
 }
+
+// Reintroduce the interface for the expected API response structure
+interface ApiResponse<T> {
+  code: number;
+  message: string;
+  data: T;
+}
+
 // --- 接口定义结束 ---
 
 /** 获取设备总数和激活数 */
@@ -73,29 +83,18 @@ export const telemetryLatestApi = async (id: any) => {
   return data;
 };
 
-/** 获取最新的遥测数据 */
-export const getLatestTelemetryData = async (): Promise<DeviceData[] | null> => { 
-  // Temporarily cast to any to bypass wrapper type issues
-  const response: any = await request.get<any>(`/device/telemetry/latest`);
+/** 获取最新的遥测数据 - Simplified Implementation */
+export const getLatestTelemetryData = async () => {
 
-  // Now, safely check the expected nested structure
-  // Check for the outer wrapper structure first
-  if (response && typeof response === 'object') {
-      // Check for the inner ApiLatestTelemetryResponse structure
-      const innerResponse = response.data as ApiLatestTelemetryResponse | null;
-      if (innerResponse && typeof innerResponse === 'object' && !response.error) {
-          // Check if the actual device data array exists
-          if (Array.isArray(innerResponse.data)) {
-              return innerResponse.data; // Return DeviceData[]
-          } else if (innerResponse.data === null) {
-              return null; // API returned null data successfully
-          }
-      }
-  }
+    // 1. 调用 request.get，获取包装后的响应
+    const data = await request.get<any>(`/device/telemetry/latest`); // 使用 any 避免复杂的包装类型
+
+
+
+    // 3. 检查提取的 data 是否为数组或 null，然后返回
+    return data
+
   
-  // If structure is not as expected or error exists in outer wrapper
-  console.error("Error fetching or parsing latest telemetry:", response?.error || response);
-  return null; 
 };
 
 /** 获取属性数据 */
