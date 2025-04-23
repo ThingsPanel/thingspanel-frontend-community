@@ -256,21 +256,38 @@ export default {
   // Card Titles
   operationGuide: '操作向导',
 
-  // --- Add keys for Reported Data Card --- 
+  // Reported Data Card Keys
   reportedData: {
     title: '最新上报数据',
     refreshing: '实时刷新中',
     startRefresh: '开启实时刷新',
     noTelemetry: '无遥测数据',
   },
-  // --- End Reported Data Card keys --- 
 
-  // Operation Guide Card
-  cardInner: {
-    operationGuideTitle: '操作向导',
+  // --- Add keys for Operation Guide Card --- 
+  operationGuideCard: {
+    guideItems: {
+      addDevice: {
+        title: '添加设备',
+        description: '将您的物联网设备添加到平台中，建立设备连接井管理'
+      },
+      configureDevice: {
+        title: '配置设备',
+        description: '为设备设置参数和属性，自定义数据收集规则'
+      },
+      createDashboard: {
+        title: '创建看板',
+        description: '可视化设备数据，创建实时监控仪表盘'
+      }
+    }
   },
-  // Config specific texts (or move to a dedicated config section/file)
-  config: {
+  // --- End Operation Guide Card keys --- 
+
+  // Operation Guide Card Config (old structure, might need merge/cleanup)
+  cardInner: {
+    operationGuideTitle: '操作向导', 
+  },
+  config: { 
     serialBgColor: '序号背景色',
     itemBgColor: '列表项背景色',
     itemHoverBgColor: '列表项浮动色',

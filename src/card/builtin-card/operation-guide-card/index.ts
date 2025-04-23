@@ -20,10 +20,10 @@ export default {
       deviceSource: []
     },
     config: {
-      guideList: [ // 重新添加 guideList 预设
-        { title: '添加设备', description: '将您的物联网设备添加到平台中，建立设备连接井管理' ,link:'/device/manage'},
-        { title: '配置设备', description: '为设备设置参数和属性，自定义数据收集规则' },
-        { title: '创建看板', description: '可视化设备数据，创建实时监控仪表盘' },
+      guideList: [ // 使用 key 替代硬编码文本
+        { titleKey: 'card.operationGuideCard.guideItems.addDevice.title', descriptionKey: 'card.operationGuideCard.guideItems.addDevice.description', link:'/device/manage'},
+        { titleKey: 'card.operationGuideCard.guideItems.configureDevice.title', descriptionKey: 'card.operationGuideCard.guideItems.configureDevice.description' },
+        { titleKey: 'card.operationGuideCard.guideItems.createDashboard.title', descriptionKey: 'card.operationGuideCard.guideItems.createDashboard.description' },
       ]
     },
     iCardViewDefault: {

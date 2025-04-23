@@ -261,6 +261,22 @@ export default {
     startRefresh: 'Start Refresh',
     noTelemetry: 'No telemetry data',
   },
+  operationGuideCard: {
+    guideItems: {
+      addDevice: {
+        title: 'Add Device',
+        description: 'Add your IoT devices to the platform, establish connections, and manage them.'
+      },
+      configureDevice: {
+        title: 'Configure Device',
+        description: 'Set parameters and attributes for devices, customize data collection rules.'
+      },
+      createDashboard: {
+        title: 'Create Dashboard',
+        description: 'Visualize device data and create real-time monitoring dashboards.'
+      }
+    }
+  },
   noData: 'No Data',
   uiSettings: 'UI Settings',
   serialBgColor: 'Serial BG', // Abbreviated for potential space constraints

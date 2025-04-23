@@ -26,16 +26,15 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="text-center py-8 text-gray-500">{{ $t('common.loading') }}</div>
+    <div v-if="loading" class="text-center py-8 text-gray-500">{{ $t('card.loading') }}</div>
 
-    <!-- Error State -->
-    <div v-else-if="error" class="text-center py-8 text-red-500">{{ $t('common.loadError') }}: {{ error.message }}</div>
+
 
     <!-- Data Display Area (Wrapped with NSpin) -->
     <n-spin v-else :show="isFetchingUpdate">
       <div class="space-y-3">
         <!-- No Data State -->
-        <div v-if="!devices || devices.length === 0" class="text-center py-8 text-gray-400">{{ $t('common.noData') }}</div>
+        <div v-if="!devices || devices.length === 0" class="text-center py-8 text-gray-400">{{ $t('card.noData') }}</div>
         <!-- Device List -->
         <div v-for="(device, index) in devices" :key="device.device_id" class="p-3 rounded-md " :class="getDeviceBgColor(index)">
           <!-- Device Header -->
@@ -47,8 +46,8 @@
               </span>
               <span class="text-sm truncate" :title="device.device_name">{{ device.device_name }}</span>
               <!-- Online Status Indicator -->
-              <span v-if="device.is_online === 1" class="ml-1.5 w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0" :title="$t('common.online')"></span>
-              <span v-else class="ml-1.5 w-1.5 h-1.5 bg-gray-400 rounded-full flex-shrink-0" :title="$t('common.offline')"></span>
+              <span v-if="device.is_online === 1" class="ml-1.5 w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0" :title="$t('card.online')"></span>
+              <span v-else class="ml-1.5 w-1.5 h-1.5 bg-gray-400 rounded-full flex-shrink-0" :title="$t('card.offline')"></span>
             </div>
             <!-- Last Push Time -->
             <div class="text-gray-500 flex items-center flex-shrink-0 pl-2">
@@ -288,7 +287,7 @@ const formatValue = (item: TelemetryItem | any): string => {
    if (item !== null && typeof item !== 'object') {
      if (typeof item === 'string') return item;
      if (typeof item === 'number') return String(item);
-     if (typeof item === 'boolean') return item ? $t('common.yes', '是') : $t('common.no', '否');
+     if (typeof item === 'boolean') return item ? $t('card.yes') : $t('card.no');
      return String(item);
    }
    
@@ -299,9 +298,9 @@ const formatValue = (item: TelemetryItem | any): string => {
    let displayValue = '';
  
    if (typeof value === 'boolean') {
-     displayValue = value ? $t('common.yes', '是') : $t('common.no', '否');
+     displayValue = value ? $t('card.yes') : $t('card.no');
      if (key?.includes('switch')) {
-       displayValue = value ? $t('common.on', '开') : $t('common.off', '关');
+       displayValue = value ? $t('card.on') : $t('card.off');
      }
    } else if (typeof value === 'number') {
      if ((key === 'temperature' || key === 'humidity') && value != null) {

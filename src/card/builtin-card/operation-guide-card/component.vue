@@ -57,9 +57,9 @@ const navigateTo = (link: string) => {
           </template>
           
             <template #header>
-              <!-- Wrap title with NEllipsis, remove tooltip=false -->
-              <NEllipsis :line-clamp="1">
-              {{ item.title }}
+              <!-- Wrap title with NEllipsis, use $t with titleKey -->
+              <NEllipsis :line-clamp="1" :title="$t(item.titleKey)"> 
+              {{ $t(item.titleKey) }}
             </NEllipsis>
           </template>
           <template #header-extra v-if="index===0" >
@@ -69,9 +69,9 @@ const navigateTo = (link: string) => {
                 </NButton>
           </template>
           <template #description>
-            <!-- Wrap description with NEllipsis, remove tooltip=false -->
-            <NEllipsis :line-clamp="2">
-                 {{ item.description }}  
+            <!-- Wrap description with NEllipsis, use $t with descriptionKey -->
+            <NEllipsis :line-clamp="2" :title="$t(item.descriptionKey)"> 
+                 {{ $t(item.descriptionKey) }}  
             </NEllipsis>
           </template>
         </NThing>
