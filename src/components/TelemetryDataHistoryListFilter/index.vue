@@ -3,7 +3,7 @@ import { reactive, ref, watch, onMounted, computed } from 'vue';
 import { telemetryDataHistoryList } from '@/service/api/device';
 import { useLoading } from '~/packages/hooks'; // 假设 useLoading hook 可用
 import { createLogger } from '@/utils/logger'; // 引入日志
-import { NSpace, NSelect, NDatePicker, NButton, NTooltip, NPopselect, NIcon } from 'naive-ui'; // 引入 Naive UI 组件
+import { NSpace, NDatePicker, NButton, NTooltip, NPopselect, NIcon } from 'naive-ui'; // 引入 Naive UI 组件
 import {
   WorkspacesFilled,
   DateRangeSharp,
@@ -28,6 +28,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   (event: 'update:data', data: TimeSeriesItem[]): void;    // 数据更新事件
   (event: 'update:loading', isLoading: boolean): void; // 加载状态更新事件
+  (event: 'update:filterParams', params: FilterParams): void; // 筛选参数更新事件
 }>();
 
 // --- 类型定义 ---
@@ -350,10 +351,22 @@ watch(() => filterParams.aggregate_window, (newWindow) => {
     } else if (!filterParams.aggregate_function) {
         filterParams.aggregate_function = 'avg';
     }
-    // Fetch data if parameters are valid (validation is implicitly done by the time_range watcher before this)
-    // Avoid redundant fetch if time_range watcher already triggered it
-    // We might need a debounce or check if already fetching here if performance is an issue.
-    // For now, assume the main watcher handles the primary fetch trigger.
+    // Trigger validation and fetch/emit after aggregate window changes
+    validateAndFetch(); 
+});
+
+// *** ADD THIS WATCHER ***
+// Watch aggregate_function separately to trigger update
+watch(() => filterParams.aggregate_function, (newFunction) => {
+    // Check if the function is relevant (i.e., window is not 'no_aggregate')
+    if (filterParams.aggregate_window !== 'no_aggregate') {
+        logger.info(`Aggregate function changed to: ${newFunction}, triggering validation.`);
+        // Trigger validation and fetch/emit
+        validateAndFetch(); 
+    } else {
+        // This case shouldn't happen if logic is correct, but log if it does
+        logger.warn(`Aggregate function changed (${newFunction}) while window is 'no_aggregate'. Ignoring.`);
+    }
 });
 
 // Central validation and fetch triggering function (Refined)
@@ -394,8 +407,12 @@ const validateAndFetch = () => {
     // Fetch data if parameters are valid (logic remains the same)
     if (filterParams.time_range === 'custom' && (!filterParams.start_time || !filterParams.end_time)) {
         logger.info('Validation complete. Waiting for custom date range selection...');
+        // Even if waiting, emit the current valid (but incomplete for custom) params
+        emit('update:filterParams', JSON.parse(JSON.stringify(filterParams)));
     } else {
-        logger.info('Validation complete. Triggering fetchData.');
+        logger.info('Validation complete. Triggering fetchData and emitting filterParams.');
+        // Emit the validated and complete parameters before fetching data
+        emit('update:filterParams', JSON.parse(JSON.stringify(filterParams)));
         fetchData();
     }
 };
@@ -422,6 +439,8 @@ const handleExport = () => {
       return;
   }
   logger.info('Export button clicked.');
+  // Emit current params before triggering export fetch
+  emit('update:filterParams', JSON.parse(JSON.stringify(filterParams)));
   fetchData(true);
 };
 
@@ -562,4 +581,4 @@ button[disabled] {
   opacity: 0.6;
   cursor: not-allowed;
 }
-</style> 
+</style>
