@@ -8,7 +8,7 @@ export default {
   type: 'builtin', // 修改为有效的类型 'builtin'
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('card.operationGuide'), // 需要在语言文件中添加 'card.operationGuide'
+  title: $t('card.operationGuide')+'-'+$t('generate.tenant'), // 需要在语言文件中添加 'card.operationGuide'
   preset: {
     dataSource: { // 操作向导通常不需要外部数据源，但需要提供完整结构以避免类型错误
       origin: 'system',

@@ -7,7 +7,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('cards.reportedData'), // 需要在语言文件中添加 'page.dashboard.cards.reportedData' 键值对
+  title: $t('card.reportedData.title'), // 需要在语言文件中添加 'page.dashboard.cards.reportedData' 键值对
   preset: {
     dataSource: {
       origin: 'device', // 数据源通常来自设备

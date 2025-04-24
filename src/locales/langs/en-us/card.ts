@@ -292,4 +292,9 @@ export default {
   descriptionColor: 'Desc Color',
   guideList: 'Guide List',
   pleaseEnterLink: 'Please enter link', // Already exists
+  recentlyVisited: {
+    title: 'Recently Visited',
+    description: 'List of recently visited pages',
+    noRecords: 'No records yet'
+  },
 };

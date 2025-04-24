@@ -309,5 +309,12 @@ export default {
   itemHoverBgColor: '列表项浮动',
   titleColor: '标题颜色',
   descriptionColor: '描述颜色',
-  guideList: '向导列表'
+  guideList: '向导列表',
+  // --- 添加最近访问卡片翻译 ---
+  recentlyVisited: {
+    title: '最近访问',
+    description: '显示最近访问的页面列表',
+    noRecords: '暂无访问记录'
+  },
+  // --- 结束最近访问卡片翻译 ---
 };

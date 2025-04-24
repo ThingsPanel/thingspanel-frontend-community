@@ -3,7 +3,7 @@ import type { ICardDefine } from '@/components/panel/card';
 import { $t } from '@/locales';
 import poster from './image.png'; 
 export default {
-  id: 'alarm-info',
+  id: 'alarm-info999',
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,

@@ -207,7 +207,6 @@ getTableData();
               separator="-"
               @update:value="pickerChange"
             />
-            55
           </NFormItem>
           <NFormItem :label="$t('generate.requestMethod')" path="method">
             <NSelect v-model:value="queryParams.method" class="w-200px" :options="requestMethodOptions"></NSelect>
