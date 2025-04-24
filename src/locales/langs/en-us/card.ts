@@ -112,10 +112,8 @@ export default {
   serviceName: 'Service Name',
   serviceIdentifier: 'Service Identifier',
   type: 'Type',
-  version: 'Version',
   enterVersion: 'Please enter the version',
   description: 'Description',
-  enterDescription: 'Please enter description',
   pluginName: 'Plugin Name',
   running: 'Running',
   selectSong: 'Select Song',
@@ -345,5 +343,14 @@ export default {
     totalUsers: 'Total Users',
     addedMonth: 'Added This Month',
     addedYesterday: 'Added Yesterday'
+  },
+  appDownload: {
+    title: 'Download Mobile App',
+    scanOrClick: 'Scan or Click to Download'
+  },
+  version: {
+    title: 'Version Information',
+    currentVersion: 'Current Version',
+    latest: 'Latest'
   }
 };

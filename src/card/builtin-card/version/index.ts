@@ -3,27 +3,18 @@ import type { ICardDefine } from '@/components/panel/card';
 import { $t } from '@/locales';
 import poster from './image.png'; 
 export default {
-  id: 'alarm-info999',
+  id: 'version-info',
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('cards.alarmInfo'),
+  title: $t('card.versionInfo.title'),
   preset: {
-    dataSource: {
-      origin: 'device',
-      isSupportTimeRange: true,
-      dataTimeRange: '1h',
-      isSupportAggregate: true,
-      dataAggregateRange: '1m',
-      systemSource: [],
-      deviceSource: []
-    },
     config: {},
     iCardViewDefault: {
-      w: 2,
-      h: 2,
+      w: 3,
+      h: 1,
       minW: 2,
-      minH: 2
+      minH: 1
     }
   }
 } as ICardDefine;

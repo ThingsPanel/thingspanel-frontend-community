@@ -380,4 +380,18 @@ export default {
     addedYesterday: '昨日新增'
   },
   // --- End Tenant Chart Card translations ---
+
+  // --- 添加 App 下载卡片翻译 ---
+  appDownload: {
+    title: '下载移动端',
+    scanOrClick: '扫码或点击下载'
+  },
+  // --- 结束 App 下载卡片翻译 ---
+  // --- 添加版本信息卡片翻译 ---
+  versionInfo: {
+    title: '版本信息',
+    currentVersion: '当前版本',
+    latest: '已是最新'
+  }
+  // --- 结束版本信息卡片翻译 ---
 };
