@@ -11,8 +11,8 @@ import App from './App.vue';
 const RECENTLY_VISITED_ROUTES_KEY = 'RECENTLY_VISITED_ROUTES';
 const MAX_RECENT_ROUTES = 8;
 
-// 1. 定义需要排除的路径列表
-const excludedPaths = ['/login', '/404','/home','/visualization/kanban-details']; // 你可以根据需要添加更多路径
+// --- 更新排除路径列表，支持通配符 --- 
+const excludedPaths = ['/login/*', '/404', '/home', '/visualization/kanban-details']; 
 
 async function setupApp() {
   const app = createApp(App);
@@ -44,10 +44,22 @@ async function setupApp() {
 
   // 添加路由后置守卫
   router.afterEach((to) => {
-    // 1. 添加排除路径判断
-    if (excludedPaths.includes(to.path)) {
+    // --- 更新排除逻辑以支持通配符 --- 
+    const isExcluded = excludedPaths.some(pattern => {
+      if (pattern.endsWith('/*')) {
+        // 处理通配符模式，确保匹配 /login/ 而不是 /login-other
+        const prefix = pattern.slice(0, -1); // /login/
+        return to.path.startsWith(prefix);
+      } else {
+        // 处理精确匹配模式
+        return to.path === pattern;
+      }
+    });
+
+    if (isExcluded) {
       return;
     }
+    // --- 排除逻辑结束 ---
 
     // 简单过滤掉没有名称或者 title 的路由，以及重定向的路由
     if (!to.name || !to.meta?.title || to.redirectedFrom) {

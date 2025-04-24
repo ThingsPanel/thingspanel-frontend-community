@@ -302,6 +302,7 @@ export default {
   },
   // Other card related texts
   pleaseEnterLink: '请输入链接',
+  view: '查看',
   noData: '暂无数据',
   uiSettings: 'UI 设置',
   serialBgColor: '序号背景',
@@ -317,4 +318,66 @@ export default {
     noRecords: '暂无访问记录'
   },
   // --- 结束最近访问卡片翻译 ---
+  // --- 添加告警信息卡片翻译 ---
+  alarmInfo: {
+    title: '告警信息',
+    viewAll: '查看全部',
+    noAlarms: '暂无告警信息'
+  },
+  // --- 结束告警信息卡片翻译 ---
+  // --- 添加或确保存在以下 common 键 ---
+  common: {
+    // @ts-ignore
+    // ... 其他 common 键
+    loading: '加载中...',
+    highAlarm: '高',
+    intermediateAlarm: '中',
+    lowAlarm: '低',
+    normal: '正常'
+    // ...
+  },
+  // --- Add System Metrics History Card translations ---
+  systemMetricsHistory: {
+    title: '系统指标历史',
+    description: '显示CPU、内存、磁盘使用率历史曲线'
+  },
+  // --- End System Metrics History Card translations ---
+  // --- Add Tenant and Admin Operation Guide translations ---
+  operationGuideTenant: {
+    title: '操作指引-租户'
+  },
+  operationGuideAdmin: {
+    title: '操作指引-管理员',
+    guideItems: {
+      createTenant: {
+        title: '创建租户',
+        description: '租户配置和租户创建, 管理平台用户及权限'
+      },
+      configureNotification: {
+        title: '配置通知',
+        description: '邮件和短信通知, 设置系统事件提醒方式'
+      },
+      configurePlugin: {
+        title: '配置插件',
+        description: '协议接入和三方接入, 管理设备连接方式'
+      }
+    }
+  },
+  // --- End Tenant and Admin Operation Guide translations ---
+  // --- Add Tenant Count Card translations ---
+  tenantCount: {
+    title: '租户数量',
+    unit: '个'
+  },
+  // --- End Tenant Count Card translations ---
+  // --- Add Tenant Chart Card translations ---
+  tenantChart: {
+    title: '月用户增长统计',
+    description: '按月显示新增用户数量',
+    seriesName: '新增用户数',
+    totalUsers: '总用户数',
+    addedMonth: '本月新增',
+    addedYesterday: '昨日新增'
+  },
+  // --- End Tenant Chart Card translations ---
 };

@@ -2,12 +2,14 @@ import { defineAsyncComponent } from 'vue';
 import type { ICardDefine } from '@/components/panel/card';
 import { $t } from '@/locales';
 import poster from './image.png'; 
+
 export default {
-  id: 'alarm-info',
+  id: 'tenant-chart',
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('card.alarmInfo.title'),
+  title: $t('card.tenantChart.title'),
+  description: $t('card.tenantChart.description'),
   preset: {
     dataSource: {
       origin: 'device',
@@ -20,10 +22,11 @@ export default {
     },
     config: {},
     iCardViewDefault: {
-      w: 2,
-      h: 2,
-      minW: 2,
-      minH: 2
+      lg: { w: 6, h: 8, x: 0, y: 0 },
+      md: { w: 5, h: 8, x: 0, y: 0 },
+      sm: { w: 4, h: 7, x: 0, y: 0 },
+      minW: 3,
+      minH: 5
     }
   }
 } as ICardDefine;

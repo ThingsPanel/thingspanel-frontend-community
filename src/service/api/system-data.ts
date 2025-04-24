@@ -33,6 +33,20 @@ interface ApiResponse<T> {
 
 // --- 接口定义结束 ---
 
+// --- 定义 /board/tenant 返回的 data 类型 ---
+interface TenantMonthData {
+  mon: number;
+  num: number;
+}
+
+interface TenantBoardData {
+  user_total: number;
+  user_added_yesterday: number;
+  user_added_month: number;
+  user_list_month: TenantMonthData[];
+}
+// --- 类型定义结束 ---
+
 /** 获取设备总数和激活数 */
 export const totalNumber = async () => {
   const data = await request.get<Api.BaseApi.Data | null>('/board/device');
@@ -54,6 +68,8 @@ export const tenant = async () => {
   const data = await request.get<Api.BaseApi.Data | null>('/board/tenant');
   return data;
 };
+
+/** 获取租户看板数据 /board/tenant */
 
 /** 新增设备功能模板信息 */
 export const addTemplat = async (params: any): Promise<any> => {
@@ -252,4 +268,17 @@ export const getSystemMetricsCurrent = async (params?: any): Promise<any> => {
   // Assuming the endpoint returns a generic structure or the exact structure is unknown
   const data = await request.get<any>('/system/metrics/current', { params });
   return data;
+};
+
+/** 获取系统指标历史数据 */
+export const getSystemMetricsHistory = async (params?: any): Promise<any> => {
+  console.log('Fetching system metrics history with params:', params);
+  try {
+    const data = await request.get<any>('/system/metrics/history', { params });
+    console.log('Raw response from /system/metrics/history:', data); // Log raw response
+    return data;
+  } catch (error) {
+    console.error('Error fetching system metrics history:', error);
+    throw error; // Re-throw the error after logging
+  }
 };

@@ -283,6 +283,7 @@ export default {
       }
     }
   },
+  view: 'View',
   noData: 'No Data',
   uiSettings: 'UI Settings',
   serialBgColor: 'Serial BG', // Abbreviated for potential space constraints
@@ -297,4 +298,52 @@ export default {
     description: 'List of recently visited pages',
     noRecords: 'No records yet'
   },
+  alarmInfo: {
+    title: 'Alarm Information',
+    viewAll: 'View All',
+    noAlarms: 'No alarm information'
+  },
+  common: {
+    loading: 'Loading...',
+    highAlarm: 'High',
+    intermediateAlarm: 'Medium',
+    lowAlarm: 'Low',
+    normal: 'Normal'
+  },
+  systemMetricsHistory: {
+    title: 'System Metrics History',
+    description: 'Displays historical curves for CPU, Memory, Disk usage'
+  },
+  operationGuideTenant: {
+    title: 'Operation Guide - Tenant'
+  },
+  operationGuideAdmin: {
+    title: 'Operation Guide - Admin',
+    guideItems: {
+      createTenant: {
+        title: 'Create Tenant',
+        description: 'Tenant configuration and creation, manage platform users and permissions'
+      },
+      configureNotification: {
+        title: 'Configure Notification',
+        description: 'Email and SMS notifications, configure system event alert methods'
+      },
+      configurePlugin: {
+        title: 'Configure Plugin',
+        description: 'Protocol access and third-party access, manage device connection methods'
+      }
+    }
+  },
+  tenantCount: {
+    title: 'Tenant Count',
+    unit: '' 
+  },
+  tenantChart: {
+    title: 'Monthly User Growth',
+    description: 'Displays the number of new users per month',
+    seriesName: 'New Users',
+    totalUsers: 'Total Users',
+    addedMonth: 'Added This Month',
+    addedYesterday: 'Added Yesterday'
+  }
 };

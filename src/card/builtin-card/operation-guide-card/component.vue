@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
-import { NList, NListItem, NThing, NAvatar, NIcon, NEllipsis, NEmpty } from 'naive-ui'; // 导入 Naive UI 组件
+import { computed, ref, onMounted } from 'vue';
+import { NList, NListItem, NThing, NAvatar, NIcon, NEllipsis, NEmpty, NButton } from 'naive-ui'; // 导入 Naive UI 组件
 import { ChevronForwardOutline } from '@vicons/ionicons5'; // 导入图标
 import type { ICardData } from '@/components/panel/card';
 import { $t } from '@/locales';
@@ -9,11 +9,50 @@ const props = defineProps<{
   card: ICardData;
 }>();
 
-// 使用 computed 使 guideList 响应 props 的变化
-const guideList = computed(() => {
-  // console.log('[Component] Computed guideList evaluating. props.card.config.guideList:', JSON.stringify(props.card?.config?.guideList));
-  return props.card?.config?.guideList || [];
+// --- Logic to determine user role and select guide list --- 
+const isAdmin = ref(false); // Reactive variable to store admin status
+
+const checkUserRole = () => {
+  try {
+    // --- IMPORTANT: Replace 'userInfo' with the actual localStorage key if different --- 
+    const userInfoRaw = localStorage.getItem('userInfo'); 
+    if (userInfoRaw) {
+      const userInfo = JSON.parse(userInfoRaw);
+      // Check if roles array exists and includes 'SYS_ADMIN'
+      if (Array.isArray(userInfo?.roles) && userInfo.roles.includes('SYS_ADMIN')) {
+        isAdmin.value = true;
+        console.log('User is SYS_ADMIN, using guideListAdmin.');
+      } else {
+        isAdmin.value = false;
+        console.log('User is not SYS_ADMIN, using guideList.');
+      }
+    } else {
+       isAdmin.value = false; // Default to non-admin if userInfo not found
+       console.log('UserInfo not found in localStorage, using default guideList.');
+    }
+  } catch (error) {
+    console.error('Error reading or parsing userInfo from localStorage:', error);
+    isAdmin.value = false; // Default to non-admin on error
+  }
+};
+
+// Check role when component mounts
+onMounted(() => {
+  checkUserRole();
 });
+
+// Modify computed property to select list based on isAdmin
+const guideList = computed(() => {
+  const config = props.card?.config;
+  if (isAdmin.value) {
+    console.log('Returning guideListAdmin:', config?.guideListAdmin);
+    return config?.guideListAdmin || []; // Use admin list if admin
+  } else {
+    console.log('Returning guideList:', config?.guideList);
+    return config?.guideList || []; // Use default list otherwise
+  }
+});
+// --- End of role logic ---
 
 // 计算属性获取颜色配置，提供默认值
 const serialBgColor = computed(() => props.card?.config?.serialBgColor || '#2080f0');
@@ -62,10 +101,9 @@ const navigateTo = (link: string) => {
               {{ $t(item.titleKey) }}
             </NEllipsis>
           </template>
-          <template #header-extra v-if="index===0" >
-            <!-- 右侧箭头图标 -->
-            <NButton @click="navigateTo(item.link)" type="primary" text style="margin-bottom: 12px;">
-                  前往添加<NIcon :component="ChevronForwardOutline" color="#2080f0" />
+          <template #header-extra>
+            <NButton v-if="item.link" @click="navigateTo(item.link)" type="primary" text style="margin-bottom: 12px;">
+                  {{ $t('card.view') }}<NIcon :component="ChevronForwardOutline" color="#2080f0" />
                 </NButton>
           </template>
           <template #description>
