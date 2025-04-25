@@ -14,7 +14,7 @@ export default {
   deviceKey: 'Key verification error, service unavailable',
   deviceName: 'Device Name',
   deviceNumber: 'Device Number',
-  deviceConfig: 'Device Model',
+  deviceConfig: 'Device Template',
   configTemplate: 'Configuration Template',
   unlimitedDeviceConfig: 'Any Device Template',
   selectGroup: 'Please select group',
