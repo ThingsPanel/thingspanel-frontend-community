@@ -3,7 +3,11 @@ export default {
     copySuccess: 'Copy success',
     copyFail: 'Copy failed',
     copyFailSecure: 'Copy function requires HTTPS or localhost environment',
-    copyFailSecureFallback: 'Copy failed. Please try in an HTTPS environment or copy manually.'
+    copyFailSecureFallback: 'Copy failed. Please try in an HTTPS environment or copy manually.',
+    copyConfig: 'Copy Config',
+    copySuccessMsg: 'Copy Success, Please replace the variable "themeSettings" in "src/theme/settings.ts"',
+    resetConfig: 'Reset Config',
+    resetSuccessMsg: 'Reset Success'
   },
   themeSchema: {
     title: 'Theme Schema',
@@ -79,11 +83,5 @@ export default {
   },
   themeDrawerTitle: 'Theme Configuration',
   pageFunTitle: 'Page Function',
-  configOperation: {
-    copySuccess: 'Copy Success',
-    copyConfig: 'Copy Config',
-    copySuccessMsg: 'Copy Success, Please replace the variable "themeSettings" in "src/theme/settings.ts"',
-    resetConfig: 'Reset Config',
-    resetSuccessMsg: 'Reset Success'
-  }
+
 };

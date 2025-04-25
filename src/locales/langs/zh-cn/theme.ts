@@ -3,7 +3,11 @@ export default {
     copySuccess: '复制成功',
     copyFail: '复制失败',
     copyFailSecure: '复制功能需要HTTPS或localhost环境',
-    copyFailSecureFallback: '复制失败，请尝试在HTTPS环境下操作或手动复制。'
+    copyFailSecureFallback: '复制失败，请尝试在HTTPS环境下操作或手动复制。',
+    copyConfig: '复制配置',
+    copySuccessMsg: '复制成功，请替换 src/theme/settings.ts 中的变量 themeSettings',
+    resetConfig: '重置配置',
+    resetSuccessMsg: '重置成功'
   },
   themeSchema: {
     title: '主题模式',
@@ -79,11 +83,4 @@ export default {
   },
   themeDrawerTitle: '主题配置',
   pageFunTitle: '页面功能',
-  configOperation: {
-    copySuccess: '复制成功',
-    copyConfig: '复制配置',
-    copySuccessMsg: '复制成功，请替换 src/theme/settings.ts 中的变量 themeSettings',
-    resetConfig: '重置配置',
-    resetSuccessMsg: '重置成功'
-  }
 };
