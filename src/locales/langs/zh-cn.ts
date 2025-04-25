@@ -7,7 +7,7 @@ import dashboard_panel from './zh-cn/dashboard_panel';
 import form from './zh-cn/form';
 import dropdown from './zh-cn/dropdown';
 import icon from './zh-cn/icon';
-
+import theme from './zh-cn/theme';
 const local: App.I18n.Schema = {
   default: '',
   title: 'ThingsPanel',
