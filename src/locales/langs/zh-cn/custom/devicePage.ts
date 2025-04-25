@@ -14,7 +14,7 @@ export default {
   deviceKey: 'key验证错误，服务不可用',
   deviceName: '设备名称',
   deviceNumber: '设备编码',
-  deviceConfig: '设备配置',
+  deviceConfig: '设备模型',
   configTemplate: '配置模版',
   unlimitedDeviceConfig: '不限设备模板',
   selectGroup: '请选择分组',
