@@ -79,9 +79,8 @@ const navigateTo = (link: string) => {
         v-for="(item, index) in guideList"
         :key="index"
         @click="navigateTo(item.link)"
-  
+        class="bg-[#f2f2f2] dark:bg-[#1f2937]"
         :style="{
-          backgroundColor: itemBgColor, // 应用列表项背景色
           '--item-hover-bg-color': itemHoverBgColor, // 设置 CSS 变量给 hover 使用
           '--title-color': titleColor,
           '--description-color': descriptionColor

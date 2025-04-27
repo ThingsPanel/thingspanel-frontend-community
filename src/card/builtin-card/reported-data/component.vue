@@ -1,127 +1,166 @@
 <template>
-  <div 
-    class="reported-data-card p-4 bg-white rounded-lg shadow-sm border border-gray-100 transition duration-700 ease-in-out"
-    :class="{}" 
+  <n-card 
+    :title="$t('card.reportedData.title')" 
+    :bordered="false" 
+    size="small" 
+    class="reported-data-card shadow-sm transition duration-700 ease-in-out"
+    :loading="loading"
   >
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-base font-semibold flex items-center text-gray-700">
-        <!-- Header Icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-        </svg>
-        {{ $t('card.reportedData.title') }}
-      </h2>
-      <!-- Refresh Toggle Button -->
-      <button 
-        @click="toggleRefresh"
-        class="text-xs flex items-center hover:text-blue-700"
-        :class="isRefreshing ? 'text-blue-500' : 'text-gray-500'"
+    <!-- Card Header Extra: Refresh Button -->
+    <template #header-extra>
+      <n-button 
+        text 
+        size="small" 
+        @click="toggleRefresh" 
+        :type="isRefreshing ? 'primary' : 'default'"
+        :loading="isFetchingUpdate && !isRefreshing"
       >
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-        </svg>
+        <template #icon>
+          <n-icon><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8zm0 18v-2a8 8 0 0 1-8-8H2a10 10 0 0 0 10 10zm8-10h2a10 10 0 0 0-10-10v2a8 8 0 0 1 8 8z"></path></svg></n-icon> <!-- Simplified refresh icon -->
+        </template>
         {{ isRefreshing ? $t('card.reportedData.refreshing') : $t('card.reportedData.startRefresh') }}
-      </button>
-    </div>
+      </n-button>
+    </template>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="text-center py-8 text-gray-500">{{ $t('card.loading') }}</div>
+    <!-- Card Title Icon (Optional, if you want it next to the title) -->
+    <template #header>
+       <div class="flex items-center">
+         <n-icon size="20" class="mr-2 text-blue-500">
+           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="currentColor" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+         </n-icon>
+         {{ $t('card.reportedData.title') }}
+       </div>
+    </template>
 
+    <!-- Error Display -->
+    <n-alert v-if="error && !loading" type="error" :title="$t('common.error')">
+      {{ error.message || $t('card.fetchError') }}
+    </n-alert>
 
+    <!-- Content Area: Use NSpin only for refresh updates -->
+    <n-spin :show="isFetchingUpdate && !loading">
+      <!-- No Data State -->
+      <n-empty v-if="!loading && !error && (!devices || devices.length === 0)" :description="$t('card.noData')" class="py-8" />
 
-    <!-- Data Display Area (Wrapped with NSpin) -->
-    <n-spin v-else :show="isFetchingUpdate">
-      <div class="space-y-3">
-        <!-- No Data State -->
-        <div v-if="!devices || devices.length === 0" class="text-center py-8 text-gray-400">{{ $t('card.noData') }}</div>
-        <!-- Device List -->
-        <div v-for="(device, index) in devices" :key="device.device_id" class="p-3 rounded-md " :class="getDeviceBgColor(index)">
+      <!-- Device List -->
+      <div v-else-if="!loading && devices && devices.length > 0" class="space-y-3 mt-2">
+        <n-thing 
+          v-for="(device, index) in devices" 
+          :key="device.device_id" 
+          class="device-item p-3 rounded-md border" 
+          :class="{
+            'border-l-4': index === 0,
+            'bg-blue-50 dark:bg-slate-800': index === 0, 
+            'bg-gray-50 dark:bg-gray-800': index !== 0
+          }" 
+          :style="{
+             borderColor: 'var(--n-border-color)', 
+             borderLeftColor: index === 0 ? '#646cff' : 'var(--n-border-color)'
+          }"
+        >
           <!-- Device Header -->
-          <div class="flex justify-between items-center mb-2 text-xs mt--1">
-            <div class="flex items-center font-medium text-gray-800"> 
-              <span class="mr-1.5 text-gray-600">
-                <!-- Generic Device Icon Placeholder -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-              </span>
-              <span class="text-sm truncate" :title="device.device_name">{{ device.device_name }}</span>
-              <!-- Online Status Indicator -->
-              <span v-if="device.is_online === 1" class="ml-1.5 w-1.5 h-1.5 bg-green-500 rounded-full flex-shrink-0" :title="$t('card.online')"></span>
-              <span v-else class="ml-1.5 w-1.5 h-1.5 bg-gray-400 rounded-full flex-shrink-0" :title="$t('card.offline')"></span>
+          <template #header>
+            <div class="flex items-center justify-between w-full">
+                <div class="flex items-center flex-grow min-w-0">
+                    <n-icon size="16" class="mr-1.5" :style="{ color: 'var(--n-text-color-disabled)' }">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                    </n-icon>
+                    <span class="text-sm font-medium truncate mr-1.5" :title="device.device_name" :style="{ color: 'var(--n-text-color)' }">
+                        {{ device.device_name }}
+                    </span>
+                    <n-tag :type="device.is_online === 1 ? 'success' : 'default'" size="tiny" round class="flex-shrink-0">
+                        {{ device.is_online === 1 ? $t('card.online') : $t('card.offline') }}
+                    </n-tag>
+                </div>
+                <!-- Last Push Time -->
+                <div class="text-xs flex items-center flex-shrink-0 pl-2" :style="{ color: 'var(--n-text-color-disabled)' }">
+                    <n-icon size="12" class="mr-0.5">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </n-icon>
+                   {{ formatRelativeTime(device.last_push_time) }}
+                </div>
             </div>
-            <!-- Last Push Time -->
-            <div class="text-gray-500 flex items-center flex-shrink-0 pl-2">
-               <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-               {{ formatRelativeTime(device.last_push_time) }}
-            </div>
-          </div>
-          <!-- Device Telemetry Data (Using Scroller with Paired Items) -->
-          <div class="telemetry-scroller-container ">
-            <BottomUpInfiniteScroller
+          </template>
+
+          <!-- Device Telemetry Data -->
+          <div class="telemetry-scroller-container mt-1">
+             <BottomUpInfiniteScroller
                v-if="device.telemetry_data && device.telemetry_data.length > 0"
                :list="getPairedTelemetry(device.telemetry_data)" 
                height="76px" 
-               :scrollSpeed="20" 
-               :startDelay="1500"
              >
                <template #default="{ item: pair }"> 
-                 <!-- Render a row with two columns -->
-                 <div class="flex text-xs py-1.5 border-b border-gray-200/30 last:border-b-0 mt--2">
+                 <n-grid 
+                   x-gap="12" 
+                   :cols="2" 
+                   class="text-xs py-1.5 border-b last:border-b-0" 
+                   style="border-color: var(--n-border-color);"
+                 >
                    <!-- Left Column -->
-                   <div class="w-1/2 pr-2">
+                   <n-gi>
                      <template v-if="pair.left">
-                       <div class="text-gray-500 truncate" :title="pair.left.label || pair.left.key">{{ pair.left.label || pair.left.key }}</div>
-                       <div class="font-medium text-gray-800 truncate mt-0.5" :title="String(pair.left.value)">
+                       <div class="truncate" :title="pair.left.label || pair.left.key" style="color: var(--n-text-color-disabled);">
+                         {{ pair.left.label || pair.left.key }}
+                       </div>
+                       <div class="font-medium truncate mt-0.5" :title="String(pair.left.value)" style="color: var(--n-text-color);">
                          {{ formatValue(pair.left) }}
                        </div>
                      </template>
-                     <template v-else>&nbsp;</template>
-                   </div>
+                     <template v-else><div class="h-8"></div></template> <!-- Placeholder for height consistency -->
+                   </n-gi>
                    <!-- Right Column -->
-                   <div class="w-1/2 pl-2 border-l border-gray-200/30">
+                   <n-gi class="border-l pl-3" style="border-color: var(--n-border-color);">
                      <template v-if="pair.right">
-                       <div class="text-gray-500 truncate" :title="pair.right.label || pair.right.key">{{ pair.right.label || pair.right.key }}</div>
-                       <div class="font-medium text-gray-800 truncate mt-0.5" :title="String(pair.right.value)">
+                       <div class="truncate" :title="pair.right.label || pair.right.key" style="color: var(--n-text-color-disabled);">
+                         {{ pair.right.label || pair.right.key }}
+                       </div>
+                       <div class="font-medium truncate mt-0.5" :title="String(pair.right.value)" style="color: var(--n-text-color);">
                          {{ formatValue(pair.right) }}
                        </div>
                      </template>
-                     <template v-else>&nbsp;</template>
-                   </div>
-                 </div>
+                      <template v-else><div class="h-8"></div></template> <!-- Placeholder for height consistency -->
+                   </n-gi>
+                 </n-grid>
                </template>
              </BottomUpInfiniteScroller>
              <!-- Show message if no telemetry data -->
-             <div v-else class="text-xs text-gray-400 text-center py-2">{{ $t('card.reportedData.noTelemetry') }}</div>
+             <div v-else class="text-xs text-center py-2" style="color: var(--n-text-color-disabled);">{{ $t('card.reportedData.noTelemetry') }}</div>
           </div>
-        </div>
+        </n-thing>
       </div>
     </n-spin>
 
     <!-- Footer Link -->
-    <div class="mt-4 text-center">
-      <a href="/device/manage" class="text-blue-500 text-xs hover:underline">{{ $t('card.viewAll') }} ></a>
-    </div>
-  </div>
+    <template #footer>
+      <div class="text-center">
+         <router-link to="/device/manage" class="text-blue-500 text-xs hover:underline">{{ $t('card.viewAll') }} ></router-link>
+      </div>
+    </template>
+  </n-card>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { $t } from '@/locales';
 import { getLatestTelemetryData } from '@/service/api';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import 'dayjs/locale/zh-cn';
+import 'dayjs/locale/zh-cn'; // Make sure locale is loaded
 import BottomUpInfiniteScroller from '@/components/BottomUpInfiniteScroller.vue';
-import { NSpin } from 'naive-ui';
+// Import Naive UI components
+import { NCard, NButton, NIcon, NSpin, NEmpty, NThing, NTag, NGrid, NGi, NAlert } from 'naive-ui';
+import { useRouter } from 'vue-router'; // Import useRouter for router-link
 
 dayjs.extend(relativeTime);
-dayjs.locale('zh-cn');
+// Ensure locale is set correctly if needed globally elsewhere, otherwise consider local setting
+// Assuming 'zh-cn' is globally set or this component needs it specifically.
+// dayjs.locale('zh-cn'); 
 
 defineOptions({
   name: 'ReportedDataCard'
 });
 
-// --- 在组件内部定义数据结构接口 ---
+// --- Interfaces (Keep as they are) ---
 interface TelemetryItem {
   key: string;
   label: string | null;
@@ -137,30 +176,45 @@ interface DeviceData {
   telemetry_data: TelemetryItem[];
 }
 
-// 定义 API 响应的本地接口
 interface ApiLatestTelemetryResponse {
   data: DeviceData[] | null;
-  error: any; // 使用 any 避免复杂的错误类型定义
+  error: any; 
 }
 
-// --- 创建响应式变量 ---
-const devices = ref<DeviceData[]>([]);
-const loading = ref(true);
-const error = ref<Error | null>(null);
-const isRefreshing = ref(true);
-const refreshIntervalId = ref<NodeJS.Timeout | null>(null);
-const REFRESH_INTERVAL = 6000;
-const isFetchingUpdate = ref(false);
-
-// --- 计算属性：将遥测数据配对用于两列显示 ---
 interface PairedTelemetryItem {
   left: TelemetryItem | null;
   right: TelemetryItem | null;
 }
 
-// 为每个设备创建一个计算属性，返回配对后的遥测数据
-// 注意：这不能直接在 v-for 内部定义 computed，我们需要一个方法或在渲染时处理
-// 更简单的方法是创建一个方法来处理配对
+// --- Reactive State ---
+const devices = ref<DeviceData[]>([]);
+const loading = ref(true); // Tracks initial load
+const error = ref<Error | null>(null);
+const isRefreshing = ref(true); // Controls polling state
+const refreshIntervalId = ref<ReturnType<typeof setInterval> | null>(null); // Use ReturnType for better type safety
+const REFRESH_INTERVAL = 6000;
+const isFetchingUpdate = ref(false); // Tracks background refresh loading state
+const router = useRouter(); // Get router instance
+
+// --- Computed Locale for Dayjs ---
+// This ensures reactivity if the global locale changes, though unlikely needed here.
+const currentLocale = computed(() => dayjs.locale()); 
+
+// --- Helper function for dynamic styles ---
+// const getDeviceItemStyle = (index: number) => {
+//   const style: Record<string, string> = {
+//     borderColor: 'var(--n-border-color)',
+//     // Use primary-color-suppl for the first item's background, embedded-color for others
+//     backgroundColor: index === 0 ? 'var(--n-primary-color-suppl)' : 'var(--n-color-embedded)'
+//   };
+//   if (index === 0) {
+//     // Override left border color for the first item with the main primary color
+//     style.borderLeftColor = 'var(--n-primary-color)';
+//   }
+//   return style;
+// };
+
+// --- Pairing Logic (Keep as is) ---
 const getPairedTelemetry = (telemetry: TelemetryItem[]): PairedTelemetryItem[] => {
   if (!Array.isArray(telemetry)) return [];
   const paired: PairedTelemetryItem[] = [];
@@ -173,15 +227,15 @@ const getPairedTelemetry = (telemetry: TelemetryItem[]): PairedTelemetryItem[] =
   return paired;
 };
 
-// --- 数据获取函数 ---
+// --- Data Fetching ---
 const fetchData = async (initialLoad = false) => {
-  if (!initialLoad) {
-      isFetchingUpdate.value = true;
-  } else {
+  if (initialLoad) {
       loading.value = true;
+  } else {
+      isFetchingUpdate.value = true; // Show spinner for background refresh
   }
-  error.value = null;
-
+  // Clear previous error only when starting a new fetch
+  error.value = null; 
   console.log(`[ReportedData] Fetching data... Initial: ${initialLoad}`);
 
   try {
@@ -189,43 +243,40 @@ const fetchData = async (initialLoad = false) => {
     console.log('[ReportedData] API Response:', response);
 
     if (response.error) {
-      let errorMessage = 'API 返回错误';
-      if (typeof response.error === 'string') errorMessage = response.error;
-      else if (typeof response.error === 'object' && response.error !== null && (response.error as any).message) errorMessage = (response.error as any).message;
-      console.error('[ReportedData] API error during fetch:', errorMessage);
-      error.value = new Error(errorMessage);
+       let errorMessage = $t('card.fetchError'); // Default error message
+       if (typeof response.error === 'string') errorMessage = response.error;
+       else if (typeof response.error === 'object' && response.error !== null && (response.error as any).message) errorMessage = (response.error as any).message;
+       console.error('[ReportedData] API error during fetch:', errorMessage);
+       error.value = new Error(errorMessage);
+       devices.value = []; // Clear devices on error
     } else {
-      error.value = null;
+      // Ensure data is an array, default to empty array if null/undefined
       devices.value = Array.isArray(response.data) ? response.data : [];
       console.log('[ReportedData] Processed Devices:', devices.value);
     }
 
   } catch (err) {
     console.error('[ReportedData] Error in fetchData catch block:', err);
-    if (initialLoad) {
-        error.value = err instanceof Error ? err : new Error('加载数据时发生未知错误');
-        devices.value = [];
-    } else {
-        error.value = err instanceof Error ? err : new Error('刷新数据时发生错误');
-    }
+    const catchErrorMessage = err instanceof Error ? err.message : $t('card.unknownError');
+    error.value = new Error(catchErrorMessage);
+    devices.value = []; // Clear devices on catch error
   } finally {
     if (initialLoad) {
-      
         loading.value = false;
     }
-    isFetchingUpdate.value = false;
+    isFetchingUpdate.value = false; // Hide spinner after fetch completes
   }
 };
 
-// --- 轮询控制函数 ---
+// --- Polling Control ---
 const startPolling = () => {
-  stopPolling(); // Clear any existing timer first
-  if (!isRefreshing.value) return; // Don't start if toggled off
+  stopPolling(); 
+  if (!isRefreshing.value) return; 
 
   console.log(`[ReportedData] Starting polling every ${REFRESH_INTERVAL}ms`);
   refreshIntervalId.value = setInterval(() => {
     console.log('[ReportedData] Polling tick: fetching data...');
-    fetchData(false); // Fetch data without setting the main loading state
+    fetchData(false); 
   }, REFRESH_INTERVAL);
 };
 
@@ -237,7 +288,7 @@ const stopPolling = () => {
   }
 };
 
-// --- 切换刷新状态 --- 
+// --- Toggle Refresh --- 
 const toggleRefresh = () => {
   isRefreshing.value = !isRefreshing.value;
   if (isRefreshing.value) {
@@ -250,39 +301,41 @@ const toggleRefresh = () => {
   }
 };
 
-// --- 组件挂载和卸载 ---
+// --- Lifecycle Hooks ---
 onMounted(() => {
-  fetchData(true); // Initial data load
+  fetchData(true); // Initial load
   if (isRefreshing.value) {
-      startPolling();
+      startPolling(); // Start polling if initially enabled
   }
 });
 
 onUnmounted(() => {
-  stopPolling();
+  stopPolling(); // Clean up timer
 });
 
-// --- 添加辅助函数 ---
+// --- Formatting Helpers ---
 
-// 格式化相对时间
+// Format relative time using current Dayjs locale
 const formatRelativeTime = (timeStr: string | null | undefined): string => {
   if (!timeStr) return '-';
-  const time = dayjs(timeStr);
-  if (!time.isValid()) return '-'; // Handle invalid date strings
-  const now = dayjs();
-  if (now.diff(time, 'minute') < 1) return '刚刚';
-  if (now.diff(time, 'hour') < 1) return `${now.diff(time, 'minute')}分钟前`;
-  if (now.diff(time, 'day') < 1) return `${now.diff(time, 'hour')}小时前`;
+  // Explicitly use the current locale for formatting
+  const time = dayjs(timeStr).locale(currentLocale.value); 
+  if (!time.isValid()) return '-'; 
+  const now = dayjs().locale(currentLocale.value);
+  // Use more specific relative time outputs or keep as is
+  if (now.diff(time, 'minute') < 1) return $t('time.justNow'); // Assuming you have i18n key
   return time.fromNow();
 };
 
-// 根据索引获取设备背景色 (模拟图片效果)
-const getDeviceBgColor = (index: number): string => {
-   if (index === 0) return 'bg-blue-50 border border-blue-100 border-l-4 border-l-blue-500';
-   return 'bg-gray-50 border border-gray-100';
-};
+// Get device background (keep simple logic or integrate with NThing props if needed)
+// Note: 'index' is not directly available in v-for with NThing easily unless passed. 
+// We might need to rethink this or pass index explicitly if the blue highlight is critical.
+// For now, removing the index-based styling simplification. Add it back if needed.
+// const getDeviceBgColor = (index: number): string => {
+//    // Removed for simplicity with NThing, apply styling directly or via classes if needed
+// };
 
-// 格式化顶层值或递归中的基本类型
+// Format telemetry value (keep as is, logic seems fine)
 const formatValue = (item: TelemetryItem | any): string => {
    if (item !== null && typeof item !== 'object') {
      if (typeof item === 'string') return item;
@@ -303,8 +356,10 @@ const formatValue = (item: TelemetryItem | any): string => {
        displayValue = value ? $t('card.on') : $t('card.off');
      }
    } else if (typeof value === 'number') {
-     if ((key === 'temperature' || key === 'humidity') && value != null) {
-       displayValue = value.toFixed(1);
+     // Keep precision formatting
+     if ((key === 'temperature' || key === 'humidity' || typeof key === 'string' && (key.toLowerCase().includes('temp') || key.toLowerCase().includes('hum'))) && value != null) {
+        // Round to 1 decimal place only if it has decimals
+        displayValue = Number.isInteger(value) ? String(value) : value.toFixed(1);
      } else {
        displayValue = String(value);
      }
@@ -313,10 +368,11 @@ const formatValue = (item: TelemetryItem | any): string => {
    }
  
    if (unit) {
-     if (unit === '%' || unit === '°C') {
+     // Handle units better
+     if (['%', '°C', '°F'].includes(unit)) { // Units typically attached without space
        displayValue += unit;
-     } else {
-       displayValue += ` ${unit}`;
+     } else if (unit.trim()) { // Other units with a space
+       displayValue += ` ${unit.trim()}`;
      }
    }
  
@@ -326,13 +382,14 @@ const formatValue = (item: TelemetryItem | any): string => {
 </script>
 
 <style scoped>
-/* 可以添加一些微调样式 */
-.reported-data-card {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-}
+/* Reduce reliance on Tailwind where Naive UI provides styling */
+
+
+/* Ensure truncate works, though Naive components might handle it */
 .truncate {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 </style>

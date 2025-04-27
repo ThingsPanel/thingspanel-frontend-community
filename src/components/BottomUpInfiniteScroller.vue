@@ -1,27 +1,31 @@
 <template>
-  <div 
-    ref="scrollerRef"
-    class="infinite-scroller-outer" 
-    @wheel="handleWheel" 
+  <!-- Replace root div with NScrollbar -->
+  <n-scrollbar 
+    ref="scrollbarInstRef" 
+    :scrollbar-ref="scrollbarRootRef"
     :style="{ height: height }"
+    @wheel.capture="handleWheel"
+    class="bottom-up-scroller" 
+    content-style="padding: 0;" 
   >
-    <!-- Simple content wrapper -->
-    <div class="infinite-scroller-content"> 
-      <!-- Directly iterate over the list prop -->
-      <div v-for="(item, index) in list" :key="index" class="infinite-scroller-item">
+    <!-- Use n-el instead of div for the content wrapper -->
+    <n-el tag="div" class="infinite-scroller-content" ref="scrollbarContentRef">
+      <!-- Use n-el for each item wrapper -->
+      <n-el tag="div" v-for="(item, index) in list" :key="index" class="infinite-scroller-item">
         <slot :item="item" :index="index">
-          <!-- Fallback content -->
           <span>{{ item }}</span>
         </slot>
-      </div>
-    </div>
-  </div>
+      </n-el>
+    </n-el>
+  </n-scrollbar>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'; // Keep only necessary imports
+import { ref } from 'vue';
+// Import NEl along with NScrollbar
+import { NScrollbar, ScrollbarInst, NEl } from 'naive-ui'; 
 
-// --- Simplified Props --- 
+// --- Props remain the same ---
 const props = defineProps({
   list: {
     type: Array as () => any[],
@@ -33,23 +37,36 @@ const props = defineProps({
   }
 });
 
-// --- Simplified Refs --- 
-const scrollerRef = ref<HTMLElement | null>(null);
+// --- Update Ref for NScrollbar instance ---
+const scrollbarInstRef = ref<ScrollbarInst | null>(null);
+// Template ref for the scrollable DOM element
+const scrollbarRootRef = ref<HTMLElement | null>(null); 
+// Ref for the content inside (might be needed to get correct scrollHeight)
+const scrollbarContentRef = ref<HTMLElement | null>(null);
 
 // --- Handle Wheel Event to Prevent Scroll Chaining --- 
-// (Keep the handleWheel function as it was correctly implemented)
 const handleWheel = (event: WheelEvent) => {
-  const element = scrollerRef.value;
-  if (!element) return;
-  const { scrollTop, scrollHeight, clientHeight } = element;
+  // Use the template ref to get the scrollable DOM element
+  const scrollContainer = scrollbarRootRef.value;
+  const contentElement = scrollbarContentRef.value; // Get content element
+  
+  if (!scrollContainer || !contentElement) return;
+
+  // Get scroll properties from the container
+  const { scrollTop, clientHeight } = scrollContainer;
+  // Get scrollHeight from the content element
+  const scrollHeight = contentElement.scrollHeight; 
+  
   const deltaY = event.deltaY;
+
   // Prevent scroll up when at top
-  if (scrollTop === 0 && deltaY < 0) {
+  if (scrollTop <= 0 && deltaY < 0) { 
     event.preventDefault();
     return;
   }
   // Prevent scroll down when at bottom (with tolerance)
-  if (scrollHeight - scrollTop <= clientHeight + 1 && deltaY > 0) { 
+  // Compare container's scrollTop + clientHeight with content's scrollHeight
+  if (Math.ceil(scrollTop + clientHeight) >= scrollHeight - 1 && deltaY > 0) { 
     event.preventDefault();
     return;
   }
@@ -60,31 +77,12 @@ const handleWheel = (event: WheelEvent) => {
 </script>
 
 <style scoped>
-.infinite-scroller-outer {
-  overflow-y: auto; /* Always show scrollbar on overflow */
-  overflow-x: hidden; /* Hide horizontal scrollbar */
-  position: relative;
-  /* Scrollbar styling */
-  scrollbar-width: thin; /* Firefox */
-  scrollbar-color: rgba(150, 150, 150, 0.5) transparent; /* Firefox */
-}
-
-.infinite-scroller-outer::-webkit-scrollbar {
-  width: 6px;
-}
-
-.infinite-scroller-outer::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.infinite-scroller-outer::-webkit-scrollbar-thumb {
-  background-color: rgba(150, 150, 150, 0.5);
-  border-radius: 3px;
-  border: none; 
+/* Remove custom scrollbar styles as NScrollbar handles it */
+.bottom-up-scroller {
+  /* Add any specific styles for the NScrollbar component itself if needed */
+   position: relative; /* Ensure position is relative if needed */
 }
 
 /* Optional: Add padding or margin to items if needed */
-/* .infinite-scroller-item {
-  padding-bottom: 4px;
-} */
+
 </style> 
