@@ -93,7 +93,8 @@ const onSubmit = async () => {
       id: props.configInfo.id,
       auto_register: auto_register.value ? 1 : 0
     });
-    !error && emit('change')&&message.success($t('custom.grouping_details.operationSuccess'));
+    message.success($t('custom.grouping_details.operationSuccess'));
+    !error && emit('change')
   }
 };
 const getPlatform = computed(() => {
