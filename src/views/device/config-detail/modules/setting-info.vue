@@ -77,7 +77,7 @@ const onSubmit = async () => {
       id: props.configInfo.id,
       auto_register: auto_register.value ? 1 : 0
     });
-    !error && emit('change');
+    !error && emit('change')&&message.success($t('custom.grouping_details.operationSuccess'));
   }
 };
 const getPlatform = computed(() => {
