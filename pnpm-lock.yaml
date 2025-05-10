@@ -38,9 +38,6 @@ importers:
       '@sa/utils':
         specifier: workspace:*
         version: link:packages/utils
-      '@soerenmartius/vue3-clipboard':
-        specifier: ^0.1.2
-        version: 0.1.2
       '@soybeanjs/vue-materials':
         specifier: 0.2.0
         version: 0.2.0(vue@3.4.19(typescript@5.3.3))
@@ -1673,9 +1670,6 @@ packages:
 
   '@socket.io/component-emitter@3.1.2':
     resolution: {integrity: sha512-9BCxFwvbGg/RsZK9tjXd8s4UcwR0MWeFQ1XEKIQVVvAGJyINdrqKMcTRyLoK8Rse1GjzLV9cwjWV1olXRWEXVA==}
-
-  '@soerenmartius/vue3-clipboard@0.1.2':
-    resolution: {integrity: sha512-a5er6cFGcFIQ/3qg6kWvU0yFqIz9iWoQGEVs9azjevyRyMAKvj1w3JuLH9y6+u0WhMNby3kn7nuR8nktSnDesg==}
 
   '@soybeanjs/changelog@0.3.12':
     resolution: {integrity: sha512-pqxINyDJo8Z9DHffrus2lu8U1huN0a11OSgzQrYJtMFLz3LXW3uJM3+bkuf4s4MzS6DfSsKtf365dq19KHzRfw==}
@@ -8302,10 +8296,6 @@ snapshots:
   '@sindresorhus/is@5.6.0': {}
 
   '@socket.io/component-emitter@3.1.2': {}
-
-  '@soerenmartius/vue3-clipboard@0.1.2':
-    dependencies:
-      clipboard: 2.0.11
 
   '@soybeanjs/changelog@0.3.12(@unocss/eslint-config@0.58.5(eslint@8.57.0)(typescript@5.3.3))(eslint-plugin-vue@9.22.0(eslint@8.57.0))(eslint@8.57.0)(typescript@5.3.3)(vue-eslint-parser@9.4.2(eslint@8.57.0))':
     dependencies:

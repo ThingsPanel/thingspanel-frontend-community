@@ -6,7 +6,6 @@ import { setupStore } from './store';
 import { router, setupRouter } from './router';
 import { i18n, setupI18n } from './locales';
 import App from './App.vue';
-import { VueClipboard } from '@soerenmartius/vue3-clipboard'
 // 定义 localStorage 的 key
 const RECENTLY_VISITED_ROUTES_KEY = 'RECENTLY_VISITED_ROUTES';
 const MAX_RECENT_ROUTES = 8;
@@ -104,7 +103,7 @@ async function setupApp() {
     }
     return false;
   };
-  app.use(VueClipboard);
+
   app.mount('#app');
 }
 
