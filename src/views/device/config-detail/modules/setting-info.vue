@@ -190,6 +190,7 @@ onMounted(() => {
           <dd>{{ $t('generate.copy-one-type-one-secret-device-password') }}</dd>
           <dd>
             <NButton type="primary" @click="copyOneTypeOneSecretDevicePassword">{{ $t('generate.copy') }}</NButton>
+            <NButton type="primary" v-clipboard="configInfo.template_secret">{{ $t('generate.copy') }}1</NButton>
           </dd>
         </dl>
       </template>

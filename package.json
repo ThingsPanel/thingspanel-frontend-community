@@ -51,6 +51,7 @@
     "@sa/hooks": "workspace:*",
     "@sa/materials": "workspace:*",
     "@sa/utils": "workspace:*",
+    "@soerenmartius/vue3-clipboard": "^0.1.2",
     "@soybeanjs/vue-materials": "0.2.0",
     "@vexip-ui/hooks": "^2.4.0",
     "@vexip-ui/utils": "^2.13.0",
