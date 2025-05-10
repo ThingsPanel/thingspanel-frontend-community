@@ -56,9 +56,25 @@ const onOpenDialogModal = (val: number) => {
     onlinejson.heartbeat = heartbeat || 0;
   }
 };
-const copyOneTypeOneSecretDevicePassword = () => {
-  navigator.clipboard.writeText(props.configInfo?.template_secret || '');
-  message.success($t('custom.grouping_details.operationSuccess'));
+const copyOneTypeOneSecretDevicePassword = async () => {
+  try {
+    if (!navigator.clipboard) {
+      // 如果 clipboard API 不可用，使用传统方法
+      const textArea = document.createElement('textarea');
+      textArea.value = props.configInfo?.template_secret || '';
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+    } else {
+      // 使用现代的 Clipboard API
+      await navigator.clipboard.writeText(props.configInfo?.template_secret || '');
+    }
+    message.success($t('custom.grouping_details.operationSuccess'));
+  } catch (error) {
+    console.error('复制失败:', error);
+    message.error($t('common.copyFailed'));
+  }
 };
 const onSubmit = async () => {
 
