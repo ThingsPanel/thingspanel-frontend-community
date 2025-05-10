@@ -279,6 +279,7 @@ const local: App.I18n.Schema = {
     fetchDataFailed: 'Failed to fetch data',
     noMoreData: 'No more data',
     operationFailed: 'Operation Failed',
+    noContentToCopy: 'No content to copy',
     // emailRequired: 'Email is required!',
     // emailInvalid: 'Invalid email format!'
   },

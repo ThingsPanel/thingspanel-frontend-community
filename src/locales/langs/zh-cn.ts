@@ -278,7 +278,8 @@ const local: App.I18n.Schema = {
     networkError: '网络错误',
     fetchDataFailed: '获取数据失败',
     noMoreData: '没有更多数据了',
-    operationFailed: '操作失败'
+    operationFailed: '操作失败',
+    noContentToCopy: '没有内容可复制'
   },
   theme,
   route: {
