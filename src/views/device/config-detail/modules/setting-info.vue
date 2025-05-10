@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onMounted, reactive, ref, h } from 'vue';
+import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue';
 import { NButton, useDialog, useMessage } from 'naive-ui';
 import { useRoute } from 'vue-router';
+import ClipboardJS from 'clipboard';
 import { useTabStore } from '@/store/modules/tab';
 import { useRouterPush } from '@/hooks/common/router';
 import { deviceConfigDel, deviceConfigEdit } from '@/service/api/device';
@@ -56,48 +57,78 @@ const onOpenDialogModal = (val: number) => {
     onlinejson.heartbeat = heartbeat || 0;
   }
 };
-const copyOneTypeOneSecretDevicePassword = async () => {
+const copyOneTypeOneSecretDevicePassword = () => {
   const textToCopy = props.configInfo?.template_secret || '';
-  console.log('要复制的内容:', textToCopy);
+  console.log('要复制的内容 (clipboard.js - refined):', textToCopy);
 
   if (!textToCopy) {
     message.error($t('common.noContentToCopy'));
     return;
   }
 
-  try {
-    await navigator.clipboard.writeText(textToCopy);
+  // 1. 创建一个 textarea 作为临时元素
+  const textarea = document.createElement('textarea');
+  textarea.value = textToCopy;
+  // 设置样式使其不可见且不影响布局
+  textarea.style.position = 'fixed';
+  textarea.style.top = '-9999px';
+  textarea.style.left = '-9999px';
+  // 确保元素是可编辑的（尽管readonly也可以，但默认状态通常更好）
+  // textarea.setAttribute('readonly', ''); 
+  document.body.appendChild(textarea);
+
+  // 2. 使用 clipboard.js 实例，但目标是这个 textarea
+  // 我们这里不直接将 clipboard 绑定到 textarea，而是利用其API来触发复制
+  // clipboard.js 通常需要一个触发元素，我们仍然用一个假的按钮
+  const triggerElement = document.createElement('button');
+  document.body.appendChild(triggerElement); // 必须在DOM中才能绑定
+
+  const clipboard = new ClipboardJS(triggerElement, {
+    target: () => textarea, // 明确指定从 textarea 复制
+    // text: () => textToCopy, // 如果用 target, text 选项会被忽略
+    container: document.body
+  });
+
+  let success = false;
+
+  clipboard.on('success', (e) => {
+    success = true;
+    console.log('Clipboard.js success event. Copied text:', e.text);
     message.success($t('custom.grouping_details.operationSuccess'));
-  } catch (err) {
-    console.error('navigator.clipboard.writeText 失败:', err);
-    // 自动复制失败，弹窗提示用户手动复制
-    message.error($t('common.copyFailed') + '，' + $t('generate.pleaseCopyManually'));
-    
-    dialog.info({
-      title: $t('generate.manualCopyTitle'),
-      content: () =>
-        h('div', null, [
-          h('p', { style: 'margin-bottom: 8px;' }, $t('generate.copyManualTip')),
-          h(
-            'div',
-            {
-              style:
-                'padding: 8px; background-color: var(--n-code-block-background-color, #f4f4f5); border-radius: 3px; user-select: all; word-break: break-all; font-family: monospace;'
-            },
-            textToCopy
-          )
-        ]),
-      positiveText: $t('common.ok'),
-      // 为确保文本可选，添加一些样式
-      style: {
-        userSelect: 'text'
-      },
-      maskClosable: false
-    });
-  }
+    e.clearSelection();
+    cleanup();
+  });
+
+  clipboard.on('error', (e) => {
+    console.error('Clipboard.js error event:', e);
+    message.error($t('common.copyFailed'));
+    cleanup();
+  });
+
+  const cleanup = () => {
+    clipboard.destroy();
+    document.body.removeChild(textarea);
+    document.body.removeChild(triggerElement);
+  };
+
+  // 3. 显式选择 textarea 中的文本
+  textarea.select();
+  textarea.setSelectionRange(0, textToCopy.length); // 兼容移动设备
+  textarea.focus(); // 尝试给予焦点
+
+  // 4. 触发复制
+  triggerElement.click();
+
+  // 5. 为防止某些情况下事件未立即触发或清理过早，可以加一个小的延时
+  //    但这通常不应该是首选，如果 clipboard.js 工作正常，其事件应能处理。
+  //    如果以上仍然失败，可以考虑一个非常短的延时来执行 cleanup。
+  // setTimeout(() => {
+  //   if (!success) { // 如果没有成功事件触发（理论上不应该）
+  //     cleanup();
+  //   }
+  // }, 100); // 100ms 应该足够
 };
 const onSubmit = async () => {
-
   onDialogVisble();
   if (modalIndex.value !== 1) {
     const { error }: any = await deviceConfigEdit({
