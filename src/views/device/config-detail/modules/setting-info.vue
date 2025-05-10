@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue';
+import { computed, getCurrentInstance, onMounted, reactive, ref, h } from 'vue';
 import { NButton, useDialog, useMessage } from 'naive-ui';
 import { useRoute } from 'vue-router';
 import { useTabStore } from '@/store/modules/tab';
@@ -57,23 +57,43 @@ const onOpenDialogModal = (val: number) => {
   }
 };
 const copyOneTypeOneSecretDevicePassword = async () => {
+  const textToCopy = props.configInfo?.template_secret || '';
+  console.log('要复制的内容:', textToCopy);
+
+  if (!textToCopy) {
+    message.error($t('common.noContentToCopy'));
+    return;
+  }
+
   try {
-    if (!navigator.clipboard) {
-      // 如果 clipboard API 不可用，使用传统方法
-      const textArea = document.createElement('textarea');
-      textArea.value = props.configInfo?.template_secret || '';
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-    } else {
-      // 使用现代的 Clipboard API
-      await navigator.clipboard.writeText(props.configInfo?.template_secret || '');
-    }
+    await navigator.clipboard.writeText(textToCopy);
     message.success($t('custom.grouping_details.operationSuccess'));
-  } catch (error) {
-    console.error('复制失败:', error);
-    message.error($t('common.copyFailed'));
+  } catch (err) {
+    console.error('navigator.clipboard.writeText 失败:', err);
+    // 自动复制失败，弹窗提示用户手动复制
+    message.error($t('common.copyFailed') + '，' + $t('generate.pleaseCopyManually'));
+    
+    dialog.info({
+      title: $t('generate.manualCopyTitle'),
+      content: () =>
+        h('div', null, [
+          h('p', { style: 'margin-bottom: 8px;' }, $t('generate.copyManualTip')),
+          h(
+            'div',
+            {
+              style:
+                'padding: 8px; background-color: var(--n-code-block-background-color, #f4f4f5); border-radius: 3px; user-select: all; word-break: break-all; font-family: monospace;'
+            },
+            textToCopy
+          )
+        ]),
+      positiveText: $t('common.ok'),
+      // 为确保文本可选，添加一些样式
+      style: {
+        userSelect: 'text'
+      },
+      maskClosable: false
+    });
   }
 };
 const onSubmit = async () => {
