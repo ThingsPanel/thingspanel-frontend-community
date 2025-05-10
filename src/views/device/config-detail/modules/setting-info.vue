@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, reactive, ref } from 'vue';
+import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue';
 import { NButton, useDialog, useMessage } from 'naive-ui';
 import { useRoute } from 'vue-router';
 import { useTabStore } from '@/store/modules/tab';
@@ -38,6 +38,8 @@ const deleteConfig = () => {
 };
 const showModal = ref(false);
 const modalIndex = ref(1);
+console.log(props.configInfo);
+const auto_register = ref(props.configInfo?.auto_register===1 || false);
 const onlinejson = reactive({
   online_timeout: 0,
   heartbeat: 0
@@ -54,7 +56,12 @@ const onOpenDialogModal = (val: number) => {
     onlinejson.heartbeat = heartbeat || 0;
   }
 };
+const copyOneTypeOneSecretDevicePassword = () => {
+  navigator.clipboard.writeText(props.configInfo?.template_secret || '');
+  message.success($t('custom.grouping_details.operationSuccess'));
+};
 const onSubmit = async () => {
+
   onDialogVisble();
   if (modalIndex.value !== 1) {
     const { error }: any = await deviceConfigEdit({
@@ -65,11 +72,21 @@ const onSubmit = async () => {
       })
     });
     !error && emit('change');
+  } else {
+    const { error }: any = await deviceConfigEdit({
+      id: props.configInfo.id,
+      auto_register: auto_register.value ? 1 : 0
+    });
+    !error && emit('change');
   }
 };
 const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance();
   return proxy.getPlatform();
+});
+onMounted(() => {
+  console.log(props.configInfo.auto_register,'auto_register');
+  auto_register.value = props.configInfo?.auto_register===1 || false;
 });
 </script>
 
@@ -100,11 +117,11 @@ const getPlatform = computed(() => {
         <dl class="flex-col gap-20px">
           <dd>{{ $t('generate.allow-device-auto-create') }}</dd>
           <dd>
-            <n-switch />
+            <n-switch v-model:value="auto_register" />
           </dd>
           <dd>{{ $t('generate.copy-one-type-one-secret-device-password') }}</dd>
           <dd>
-            <NButton type="success">{{ $t('generate.copy') }}</NButton>
+            <NButton type="primary" @click="copyOneTypeOneSecretDevicePassword">{{ $t('generate.copy') }}</NButton>
           </dd>
         </dl>
       </template>
