@@ -37,6 +37,7 @@ watch(guideListRef, (newValue) => {
 }, { deep: true });
 
 watch(() => ctx.config.guideList, (newConfigValue) => {
+
   if (JSON.stringify(newConfigValue) !== JSON.stringify(guideListRef.value)) {
     guideListRef.value = cloneDeep(newConfigValue as GuideItem[]) || [];
   }

@@ -22,8 +22,8 @@ export default {
     config: {
       guideList: [ // 使用 key 替代硬编码文本
         { titleKey: 'card.operationGuideCard.guideItems.addDevice.title', descriptionKey: 'card.operationGuideCard.guideItems.addDevice.description', link:'/device/manage'},
-        { titleKey: 'card.operationGuideCard.guideItems.configureDevice.title', descriptionKey: 'card.operationGuideCard.guideItems.configureDevice.description' },
-        { titleKey: 'card.operationGuideCard.guideItems.createDashboard.title', descriptionKey: 'card.operationGuideCard.guideItems.createDashboard.description' },
+        { titleKey: 'card.operationGuideCard.guideItems.configureDevice.title', descriptionKey: 'card.operationGuideCard.guideItems.configureDevice.description' , link:'/device/manage'},
+        { titleKey: 'card.operationGuideCard.guideItems.createDashboard.title', descriptionKey: 'card.operationGuideCard.guideItems.createDashboard.description' ,link:'/visualization/kanban'},
       ],
       guideListAdmin: [ 
         {

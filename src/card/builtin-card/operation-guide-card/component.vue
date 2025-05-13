@@ -56,7 +56,6 @@ const guideList = computed(() => {
 
 // 计算属性获取颜色配置，提供默认值
 const serialBgColor = computed(() => props.card?.config?.serialBgColor || '#2080f0');
-const itemBgColor = computed(() => props.card?.config?.itemBgColor || '#F3F3F5');
 const itemHoverBgColor = computed(() => props.card?.config?.itemHoverBgColor || '#EDEDFF');
 const titleColor = computed(() => props.card?.config?.titleColor || '#333639');
 const descriptionColor = computed(() => props.card?.config?.descriptionColor || '#666');
@@ -98,6 +97,7 @@ const navigateTo = (link: string) => {
               <!-- Wrap title with NEllipsis, use $t with titleKey -->
               <NEllipsis :line-clamp="1" :title="$t(item.titleKey)"> 
               {{ $t(item.titleKey) }}
+              
             </NEllipsis>
           </template>
           <template #header-extra>
