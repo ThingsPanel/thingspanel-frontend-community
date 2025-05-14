@@ -280,8 +280,11 @@ const local: App.I18n.Schema = {
     noMoreData: 'No more data',
     operationFailed: 'Operation Failed',
     noContentToCopy: 'No content to copy',
-    // emailRequired: 'Email is required!',
-    // emailInvalid: 'Invalid email format!'
+    selectionMode: 'Selection Mode',
+    manual: 'Manual',
+    automatic: 'Automatic',
+    nextStep: 'Next',
+    automaticModeNextStepPlaceholder: 'Automatic mode next step content placeholder'
   },
   theme,
   route: {

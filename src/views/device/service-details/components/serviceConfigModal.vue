@@ -5,15 +5,22 @@ import { useRoute } from 'vue-router';
 import { NSelect } from 'naive-ui';
 import { batchAddServiceMenuList, getSelectServiceMenuList, getServiceListDrop } from '@/service/api/plugin';
 import { $t } from '@/locales';
+import AutomaticModeStep from './AutomaticModeStep.vue';
+
 const emit = defineEmits(['getList']);
 
 const router = useRoute();
 const service_identifier = ref<any>(router.query.service_identifier);
 const serviceModal = ref<any>(false);
 const isEdit = ref<any>(false);
+const currentStep = ref(1);
 const checkedRowKeys = ref<any>([]);
 const device_config_id = ref<any>('');
 const NTableRef = ref<any>(null);
+const form = ref<any>({
+  mode: 'manual',
+  name: ''
+});
 
 const pageData = ref<any>({
   loading: false,
@@ -201,8 +208,17 @@ const openModal: (val: any, row: any, edit: any) => void = async (val, row, edit
     isEdit.value = edit;
     queryInfo.value.voucher = val;
     serviceModal.value = true;
-    getLists();
-    device_config_id.value = row;
+    if (row.mode === 'automatic') {
+      currentStep.value = 2;
+      form.value = {
+        mode: row.mode,
+        name: row.name
+      };
+    } else {
+      currentStep.value = 1;
+      getLists();
+      device_config_id.value = row;
+    }
   } else {
     queryInfo.value.voucher = val;
     serviceModal.value = true;
@@ -213,6 +229,7 @@ const openModal: (val: any, row: any, edit: any) => void = async (val, row, edit
 
 const close: () => void = () => {
   serviceModal.value = false;
+  currentStep.value = 1;
 };
 
 const handleCheck = (rowKeys: any /*, rows: any, meta: any */) => {
@@ -225,22 +242,31 @@ defineExpose({ openModal });
 
 <template>
   <n-modal v-model:show="serviceModal" preset="dialog" :title="$t('card.configDevice')" class="device_model">
-    <NDataTable
-      ref="NTableRef"
-      v-model:checked-row-keys="checkedRowKeys"
-      :remote="true"
-      :columns="columns"
-      :data="pageData.tableData"
-      :loading="pageData.loading"
-      :pagination="queryInfo"
-      :row-key="row => row.device_number"
-      class="flex-1-hidden"
-      @update:checked-row-keys="handleCheck"
+    <!-- 自动模式的第二步 -->
+    <AutomaticModeStep
+      v-if="currentStep === 2"
+      :access-point-name="form.name"
+      :mode="form.mode"
     />
-    <div class="footer">
-      <NButton type="primary" class="btn" @click="submitSevice">{{ $t('common.confirm') }}</NButton>
-      <NButton @click="close">{{ $t('common.cancel') }}</NButton>
-    </div>
+    <!-- 手动模式或第一步 -->
+    <template v-else>
+      <NDataTable
+        ref="NTableRef"
+        v-model:checked-row-keys="checkedRowKeys"
+        :remote="true"
+        :columns="columns"
+        :data="pageData.tableData"
+        :loading="pageData.loading"
+        :pagination="queryInfo"
+        :row-key="row => row.device_number"
+        class="flex-1-hidden"
+        @update:checked-row-keys="handleCheck"
+      />
+      <div class="footer">
+        <NButton type="primary" class="btn" @click="submitSevice">{{ $t('common.confirm') }}</NButton>
+        <NButton @click="close">{{ $t('common.cancel') }}</NButton>
+      </div>
+    </template>
   </n-modal>
 </template>
 

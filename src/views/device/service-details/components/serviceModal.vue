@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 // import { useMessage } from "naive-ui";
-import { createServiceDrop, getServiceAccessForm, putServiceDrop } from '@/service/api/plugin.ts';
+import { createServiceDrop, getServiceAccessForm, putServiceDrop } from '@/service/api/plugin';
 import { $t } from '@/locales';
 import FormInput from './form.vue';
+import AutomaticModeStep from './AutomaticModeStep.vue';
 
 // const message = useMessage();
 const isEdit = ref<any>(false);
 const emit = defineEmits(['getList', 'isEdit']);
 const serviceModals = ref<any>(false);
 const formRef = ref<any>(null);
+const currentStep = ref(1);
 
 const service_plugin_id = ref<any>('');
 const formElements = ref<any>([]);
@@ -17,7 +19,8 @@ const defaultForm = {
   name: '',
   service_plugin_id: '',
   voucher: {},
-  vouchers: {}
+  vouchers: {},
+  mode: 'manual' // 添加模式字段，默认为手动
 };
 const form = ref<any>({ ...defaultForm });
 const rules = ref<any>({
@@ -25,6 +28,11 @@ const rules = ref<any>({
     required: true,
     trigger: ['blur', 'input'],
     message: '请输入接入点名称'
+  },
+  mode: {
+    required: true,
+    trigger: ['change'],
+    message: '请选择模式'
   }
 });
 const openModal: (id: any, row?: any) => void = async (id, row) => {
@@ -47,18 +55,30 @@ const close: () => void = () => {
   serviceModals.value = false;
   form.value = { ...defaultForm };
   form.value.vouchers = {};
+  currentStep.value = 1;
 };
 
 const submitSevice: () => void = async () => {
-  form.value.voucher = JSON.stringify(form.value.vouchers);
   formRef.value?.validate(async errors => {
     if (errors) return;
-    const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value);
-    serviceModals.value = false;
-    const id = isEdit.value ? form.value.id : data.data.id;
-    emit('isEdit', form.value.voucher, id, isEdit.value);
-    form.value = { ...defaultForm };
-    form.value.vouchers = {};
+    if (form.value.mode === 'automatic') {
+      // 自动模式，直接关闭当前弹窗，并打开配置弹窗
+      serviceModals.value = false;
+      emit('isEdit', form.value.voucher, {
+        id: form.value.id,
+        mode: form.value.mode,
+        name: form.value.name
+      }, true);
+    } else {
+      // 手动模式继续原有逻辑
+      form.value.voucher = JSON.stringify(form.value.vouchers);
+      const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value);
+      serviceModals.value = false;
+      const id = isEdit.value ? form.value.id : data.data.id;
+      emit('isEdit', form.value.voucher, id, isEdit.value);
+      form.value = { ...defaultForm };
+      form.value.vouchers = {};
+    }
   });
 };
 
@@ -83,6 +103,12 @@ defineExpose({ openModal });
     >
       <n-form-item :label="$t('card.accessPointName')" path="name">
         <n-input v-model:value="form.name" placeholder="请输入接入点名称" />
+      </n-form-item>
+      <n-form-item :label="$t('common.selectionMode')" path="mode">
+        <n-radio-group v-model:value="form.mode">
+          <n-radio value="manual">{{ $t('common.manual') }}</n-radio>
+          <n-radio value="automatic">{{ $t('common.automatic') }}</n-radio>
+        </n-radio-group>
       </n-form-item>
     </n-form>
     <div class="box">

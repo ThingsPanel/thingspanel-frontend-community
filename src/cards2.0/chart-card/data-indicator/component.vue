@@ -24,7 +24,7 @@ const props = defineProps<{
 let wsUrl = getWebsocketServerUrl();
 wsUrl += `/telemetry/datas/current/keys/ws`;
 // eslint-disable-next-line no-constant-binary-expression
-const keys = ['externalVol' || props?.card?.config?.source?.dataSource?.deviceSource?.[0]?.metricsId];
+const keys = [props?.card?.config?.source?.dataSource?.deviceSource?.[0]?.metricsId];
 const { data, send, close } = useWebSocket(wsUrl, {
   heartbeat: {
     message: 'ping',

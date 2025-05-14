@@ -279,7 +279,12 @@ const local: App.I18n.Schema = {
     fetchDataFailed: '获取数据失败',
     noMoreData: '没有更多数据了',
     operationFailed: '操作失败',
-    noContentToCopy: '没有内容可复制'
+    noContentToCopy: '没有内容可复制',
+    selectionMode: '选择模式',
+    manual: '手动',
+    automatic: '自动',
+    nextStep: '下一步',
+    automaticModeNextStepPlaceholder: '自动模式下一步的界面内容'
   },
   theme,
   route: {
