@@ -90,8 +90,6 @@ const setSeries: (dataSource) => void = async dataSource => {
 defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     if (metricsId && data && typeof data === 'object' && Object.prototype.hasOwnProperty.call(data, metricsId)) {
-      // 如果键存在，则获取其值并更新 detail.value
-      // 即便服务器返回的值是 null 或 undefined (但键是存在的)，也会用这个值更新
       detail.value = data[metricsId];
     }
   }
