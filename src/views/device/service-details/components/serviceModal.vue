@@ -61,24 +61,29 @@ const close: () => void = () => {
 const submitSevice: () => void = async () => {
   formRef.value?.validate(async errors => {
     if (errors) return;
+    
+    // 无论是手动还是自动模式，都先调用接口创建/更新服务
+    form.value.voucher = JSON.stringify(form.value.vouchers);
+    const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value);
+    serviceModals.value = false;
+    
     if (form.value.auth_type === 'auto') {
-      // 自动模式，直接关闭当前弹窗，并打开配置弹窗
-      serviceModals.value = false;
+      // 自动模式，关闭当前弹窗，并打开配置弹窗
+      const id = isEdit.value ? form.value.id : data.data.id;
       emit('isEdit', form.value.voucher, {
-        id: form.value.id,
+        id: id,
         auth_type: form.value.auth_type,
         name: form.value.name
       }, true);
     } else {
-      // 手动模式继续原有逻辑
-      form.value.voucher = JSON.stringify(form.value.vouchers);
-      const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value);
-      serviceModals.value = false;
+      // 手动模式处理
       const id = isEdit.value ? form.value.id : data.data.id;
       emit('isEdit', form.value.voucher, id, isEdit.value);
-      form.value = { ...defaultForm };
-      form.value.vouchers = {};
     }
+    
+    // 重置表单
+    form.value = { ...defaultForm };
+    form.value.vouchers = {};
   });
 };
 
