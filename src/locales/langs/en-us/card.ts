@@ -352,5 +352,10 @@ export default {
     title: 'Version Information',
     currentVersion: 'Current Version',
     latest: 'Latest'
-  }
+  },
+  deviceTemplate: 'Device Template',
+  templateKey: 'Template Key',
+  templateSecret: 'Template Secret',
+  templateNotConfigured: '-Not Configured-',
+  loadDeviceConfigFailed: 'Failed to load device configuration list',
 };

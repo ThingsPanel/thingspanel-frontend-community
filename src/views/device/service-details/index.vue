@@ -122,7 +122,15 @@ const addData: () => void = () => {
 
 const isEdit: (val: any, row: any, edit: any) => void = (val, row, edit) => {
   if (edit) {
-    serviceConfigModalRef.value.openModal(val, row, edit);
+    if (row && row.auth_type === 'auto') {
+      const adaptedRow = {
+        ...row,
+        mode: 'automatic'
+      };
+      serviceConfigModalRef.value.openModal(val, adaptedRow, edit);
+    } else {
+      serviceConfigModalRef.value.openModal(val, row, edit);
+    }
     getList();
   } else {
     serviceConfigModalRef.value.openModal(val, row);

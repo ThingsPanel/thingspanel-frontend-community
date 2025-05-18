@@ -392,6 +392,11 @@ export default {
     title: '版本信息',
     currentVersion: '当前版本',
     latest: '已是最新'
-  }
+  },
   // --- 结束版本信息卡片翻译 ---
+  deviceTemplate: '设备模板',
+  templateKey: '模板Key',
+  templateSecret: '模板Secret',
+  templateNotConfigured: '-未设置-',
+  loadDeviceConfigFailed: '加载设备配置列表失败',
 };

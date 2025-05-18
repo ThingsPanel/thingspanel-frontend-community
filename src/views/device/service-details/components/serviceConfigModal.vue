@@ -208,13 +208,15 @@ const openModal: (val: any, row: any, edit: any) => void = async (val, row, edit
     isEdit.value = edit;
     queryInfo.value.voucher = val;
     serviceModal.value = true;
-    if (row.mode === 'automatic') {
+    // 检查是否为自动模式
+    if (row && row.auth_type === 'auto') {
       currentStep.value = 2;
       form.value = {
-        mode: row.mode,
+        mode: 'automatic', // 为了兼容AutomaticModeStep组件
         name: row.name
       };
     } else {
+      // 手动模式保持不变
       currentStep.value = 1;
       getLists();
       device_config_id.value = row;

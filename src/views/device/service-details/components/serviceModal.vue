@@ -20,7 +20,7 @@ const defaultForm = {
   service_plugin_id: '',
   voucher: {},
   vouchers: {},
-  mode: 'manual' // 添加模式字段，默认为手动
+  auth_type: 'manual' // 添加模式字段，默认为手动
 };
 const form = ref<any>({ ...defaultForm });
 const rules = ref<any>({
@@ -29,7 +29,7 @@ const rules = ref<any>({
     trigger: ['blur', 'input'],
     message: '请输入接入点名称'
   },
-  mode: {
+  auth_type: {
     required: true,
     trigger: ['change'],
     message: '请选择模式'
@@ -61,12 +61,12 @@ const close: () => void = () => {
 const submitSevice: () => void = async () => {
   formRef.value?.validate(async errors => {
     if (errors) return;
-    if (form.value.mode === 'automatic') {
+    if (form.value.auth_type === 'auto') {
       // 自动模式，直接关闭当前弹窗，并打开配置弹窗
       serviceModals.value = false;
       emit('isEdit', form.value.voucher, {
         id: form.value.id,
-        mode: form.value.mode,
+        auth_type: form.value.auth_type,
         name: form.value.name
       }, true);
     } else {
@@ -104,10 +104,10 @@ defineExpose({ openModal });
       <n-form-item :label="$t('card.accessPointName')" path="name">
         <n-input v-model:value="form.name" placeholder="请输入接入点名称" />
       </n-form-item>
-      <n-form-item :label="$t('common.selectionMode')" path="mode">
-        <n-radio-group v-model:value="form.mode">
+      <n-form-item :label="$t('common.selectionMode')" path="auth_type">
+        <n-radio-group v-model:value="form.auth_type">
           <n-radio value="manual">{{ $t('common.manual') }}</n-radio>
-          <n-radio value="automatic">{{ $t('common.automatic') }}</n-radio>
+          <n-radio value="auto">{{ $t('common.automatic') }}</n-radio>
         </n-radio-group>
       </n-form-item>
     </n-form>

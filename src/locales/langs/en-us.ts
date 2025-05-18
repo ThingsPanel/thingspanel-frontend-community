@@ -284,7 +284,8 @@ const local: App.I18n.Schema = {
     manual: 'Manual',
     automatic: 'Automatic',
     nextStep: 'Next',
-    automaticModeNextStepPlaceholder: 'Automatic mode next step content placeholder'
+    automaticModeNextStepPlaceholder: 'Automatic mode next step content placeholder',
+    total: 'Total'
   },
   theme,
   route: {
@@ -398,8 +399,8 @@ const local: App.I18n.Schema = {
     'automation_scene-edit': `Scene Editing`,
     'test_kan-ban-details-test': 'test_kan-ban-details-test',
     'test_kan-ban-test': 'test_kan-ban-test',
-    device_service_access: 'Integration',
-    device_service_details: 'Service Access Details',
+    device_service_access: 'Third-party Integration',
+    device_service_details: 'Third-party Integration Details',
     'data-services': 'Data Services',
     'data-services_data-forward': 'Data Forwarding',
     'data-services_forward-config': 'Forwarding Configuration',
@@ -407,8 +408,8 @@ const local: App.I18n.Schema = {
     'alarm_warning-message': 'Alert Center',
     'personal-center': 'Personal Center',
     apply_plugin: 'Apply Plugin',
-    'device_service-access': 'Integration',
-    'device_service-details': 'Device Service Details'
+    'device_service-access': 'Third-party Integration',
+    'device_service-details': 'Third-party Integration Details'
   },
   page,
   form,

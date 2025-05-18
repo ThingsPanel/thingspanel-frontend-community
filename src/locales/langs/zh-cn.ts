@@ -284,7 +284,8 @@ const local: App.I18n.Schema = {
     manual: '手动',
     automatic: '自动',
     nextStep: '下一步',
-    automaticModeNextStepPlaceholder: '自动模式下一步的界面内容'
+    automaticModeNextStepPlaceholder: '自动模式下一步的界面内容',
+    total: '总计'
   },
   theme,
   route: {
@@ -360,8 +361,8 @@ const local: App.I18n.Schema = {
     management_route: '路由管理',
     management_setting: '系统设置',
     device: '设备接入',
-    device_service_access: '服务接入',
-    device_service_details: '服务接入详情',
+    device_service_access: '三方接入',
+    device_service_details: '三方接入详情',
     device_grouping: '分组管理',
     'device_grouping-details': '分组详情',
     device_manage: '设备管理',
@@ -405,8 +406,8 @@ const local: App.I18n.Schema = {
     device_template: '设备模型',
     'personal-center': '个人中心',
     apply_plugin: '应用插件',
-    'device_service-access': '设备服务访问',
-    'device_service-details': '设备服务详情'
+    'device_service-access': '三方接入',
+    'device_service-details': '三方接入详情'
   },
   form,
   dropdown,
