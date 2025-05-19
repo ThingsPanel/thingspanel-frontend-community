@@ -95,12 +95,13 @@ const { status, send, close } = useWebSocket(wsUrl, {
       const newData = telemetryData.value.map(item => {
         return {
           ...item,
-          value: info[item.key] || item.value,
+          value: (info[item.key] === null || info[item.key] === undefined || info[item.key] === '') ? item.value : info[item.key],
           ts: info[item.key] && info.systime ? info.systime : item.ts || ''
         };
       });
       const newTelemetry: any[] = [];
       for (const key in info) {
+
         if (key !== 'systime' && !currTelemetryKey.includes(key)) {
           const { key: _originKey, label: _label, ...rest } = initTelemetryData.value;
           newTelemetry.push({
@@ -311,13 +312,13 @@ const onTapTableTools = (i: any) => {
 };
 
 const isColor = (i: any) => {
-  if (typeof i.value === 'string' || typeof i.value === 'boolean') {
+  if (typeof i.value !== 'number') {
     return '#cccccc';
   }
   return '';
 };
 
-const controlList = ref([]);
+const controlList = ref<any[]>([]);
 const getControlList = () => {
   if (props.deviceTemplateId) {
     const queryjson = {
@@ -406,14 +407,18 @@ const inputFeedback = computed(() => {
         <n-gi v-for="(i, index) in telemetryData" :key="i.tenant_id">
           <n-card header-class="border-b h-36px" hoverable :style="{ height: cardHeight + 'px' }">
             <div class="card-body">
-              <span v-if="isColor(i)" style="font-size: 24px">
-                {{ i.value }}
-              </span>
+              <n-tooltip v-if="isColor(i)" trigger="hover" placement="top">
+                <template #trigger>
+                  <span class="value-display-ellipsis" style="font-size: 24px;">
+                    {{ i.value }}
+                  </span>
+                </template>
+                <div style="max-width: 300px; word-break: break-all;">{{ i.value }}</div>
+              </n-tooltip>
               <MovingNumbers
                 v-else
                 :ref="setItemRef"
                 :data-index="index"
-                class="c1"
                 :m-num="i.value"
                 :quantile-show="true"
               ></MovingNumbers>
@@ -664,5 +669,14 @@ const inputFeedback = computed(() => {
 .chart-table-dialog {
   width: 80%;
   max-width: 1000px;
+}
+
+.value-display-ellipsis {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all; /* Or 'break-word' if preferred */
 }
 </style>
