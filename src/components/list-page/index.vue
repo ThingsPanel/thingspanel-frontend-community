@@ -8,10 +8,10 @@
             <slot name="search-form-content" />
           </div>
           <div class="search-button">
-            <n-button type="primary" size="small" @click="handleQuery">
+            <n-button v-if="showQueryButton" type="primary" size="small" @click="handleQuery">
               {{ $t('generate.query') }}
             </n-button>
-            <n-button type="default" size="small" @click="handleReset">
+            <n-button v-if="showResetButton" type="default" size="small" @click="handleReset">
               {{ $t('generate.reset') }}
             </n-button>
           </div>
@@ -116,6 +116,8 @@ interface Props {
   addButtonI18nKey?: string;
   initialView?: string;
   availableViews?: ViewItem[];
+  showQueryButton?: boolean;
+  showResetButton?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -126,7 +128,9 @@ const props = withDefaults(defineProps<Props>(), {
     { key: 'card', icon: CardIcon, label: 'views.card' },
     { key: 'list', icon: ListIcon, label: 'views.list' },
     { key: 'map', icon: MapIcon, label: 'views.map' }
-  ]
+  ],
+  showQueryButton: true,
+  showResetButton: true
 });
 
 // Emits 定义
