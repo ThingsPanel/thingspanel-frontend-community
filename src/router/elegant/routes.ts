@@ -850,35 +850,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
-    name: 'test',
-    path: '/test',
-    component: 'layout.base',
-    meta: {
-      title: 'test',
-      i18nKey: 'route.test'
-    },
-    children: [
-      {
-        name: 'test_kan-ban-details-test',
-        path: '/test/kan-ban-details-test',
-        component: 'view.test_kan-ban-details-test',
-        meta: {
-          title: 'test_kan-ban-details-test',
-          i18nKey: 'route.test_kan-ban-details-test'
-        }
-      },
-      {
-        name: 'test_kan-ban-test',
-        path: '/test/kan-ban-test',
-        component: 'view.test_kan-ban-test',
-        meta: {
-          title: 'test_kan-ban-test',
-          i18nKey: 'route.test_kan-ban-test'
-        }
-      }
-    ]
-  },
-  {
     name: 'user-center',
     path: '/user-center',
     component: 'layout.base$view.user-center',
