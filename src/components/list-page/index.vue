@@ -3,7 +3,7 @@
     <n-card style="height: 100%" footer-style="padding-top: 0px; padding-bottom: 0px; margin-top: -19px">
       <div class="advanced-list-layout">
         <!-- 搜索区域 -->
-        <div class="search">
+        <div v-if="shouldShowSearchArea" class="search">
           <div class="search-form-content">
             <slot name="search-form-content" />
           </div>
@@ -16,40 +16,51 @@
             </n-button>
           </div>
         </div>
-        
+
         <!-- 内容区域 -->
         <div class="list-content">
           <!-- 内容头部 -->
           <div class="list-content-header">
-            <n-button type="primary" size="small" @click="handleAddNew">
-              <template #icon>
-                <n-icon><plus-icon /></n-icon>
-              </template>
-              {{ getAddButtonText() }}
-            </n-button>
-            <div class="list-content-header-right">
-              <n-space v-if="shouldShowViewSwitcher || hasRefreshButton" align="center">
-                <n-button-group v-if="shouldShowViewSwitcher">
-                  <n-button
-                    v-for="view in getAvailableViewsWithSlots()"
-                    :key="view.key"
-                    :type="currentView === view.key ? 'primary' : 'default'"
-                    size="small"
-                    @click="handleViewChange(view.key)"
-                    :title="view.label ? $t(view.label) : view.key"
-                  >
-                    <n-icon size="14">
-                      <component :is="view.icon" />
-                    </n-icon>
+            <!-- 左侧操作区域 -->
+            <div class="list-content-header-left">
+              <slot name="header-left">
+                <!-- 默认新建按钮 -->
+                <slot name="add-button">
+                  <n-button type="primary" size="small" @click="handleAddNew">
+                    <template #icon>
+                      <n-icon><plus-icon /></n-icon>
+                    </template>
+                    {{ getAddButtonText() }}
                   </n-button>
-                </n-button-group>
-                <n-button size="small" @click="handleRefresh" :title="$t('buttons.refresh')">
-                  <n-icon size="14"><refresh-icon /></n-icon>
-                </n-button>
-              </n-space>
+                </slot>
+              </slot>
+            </div>
+            <!-- 右侧操作区域 -->
+            <div class="list-content-header-right">
+              <slot name="header-right">
+                <n-space v-if="shouldShowViewSwitcher || hasRefreshButton" align="center">
+                  <n-button-group v-if="shouldShowViewSwitcher">
+                    <n-button
+                      v-for="view in getAvailableViewsWithSlots()"
+                      :key="view.key"
+                      :type="currentView === view.key ? 'primary' : 'default'"
+                      size="small"
+                      @click="handleViewChange(view.key)"
+                      :title="view.label ? $t(view.label) : view.key"
+                    >
+                      <n-icon size="14">
+                        <component :is="view.icon" />
+                      </n-icon>
+                    </n-button>
+                  </n-button-group>
+                  <n-button size="small" @click="handleRefresh" :title="$t('buttons.refresh')">
+                    <n-icon size="14"><refresh-icon /></n-icon>
+                  </n-button>
+                </n-space>
+              </slot>
             </div>
           </div>
-          
+
           <!-- 内容主体 -->
           <div class="list-content-body">
             <n-scrollbar>
@@ -69,7 +80,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 底部区域 -->
       <template #footer v-if="hasSlot('footer')">
         <div class="list-content-footer">
@@ -82,10 +93,10 @@
 
 <script setup lang="ts">
 import { ref, computed, useSlots, onMounted } from 'vue';
-import { 
+import {
   NCard,
-  NButton, 
-  NButtonGroup, 
+  NButton,
+  NButtonGroup,
   NIcon,
   NSpace,
   NScrollbar
@@ -149,6 +160,11 @@ const slots = useSlots();
 const currentView = ref<string>('');
 
 // 计算属性
+const shouldShowSearchArea = computed(() => {
+  // 如果有搜索表单内容插槽，或者显示查询/重置按钮，则显示搜索区域
+  return hasSlot('search-form-content') || props.showQueryButton || props.showResetButton;
+});
+
 const shouldShowViewSwitcher = computed(() => {
   const availableSlots = getAvailableViewsWithSlots();
   return availableSlots.length > 1;
@@ -173,12 +189,12 @@ const getAddButtonText = (): string => {
     }
     return props.addButtonText;
   }
-  
+
   // 其次使用国际化key
   if (props.addButtonI18nKey) {
     return $t(props.addButtonI18nKey);
   }
-  
+
   // 最后使用默认值
   return $t('card.addButton');
 };
@@ -194,7 +210,7 @@ const initializeView = () => {
     currentView.value = props.initialView;
     return;
   }
-  
+
   // 否则找到第一个有对应插槽的视图
   const availableSlots = getAvailableViewsWithSlots();
   if (availableSlots.length > 0) {
@@ -241,7 +257,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  
+
   .search {
     flex-shrink: 0;
     min-height: 0;
@@ -251,44 +267,50 @@ onMounted(() => {
     gap: 16px;
     border-bottom: 1px solid #e0e0e0;
     margin-bottom: 16px;
-    
+
     .search-form-content {
       flex: 1;
       min-height: 0;
       padding-bottom: 16px;
     }
-    
+
     .search-button {
       flex-shrink: 0;
       display: flex;
       gap: 8px;
     }
   }
-  
+
   .list-content {
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
-    
+
     .list-content-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
       margin-bottom: 16px;
-      
+
+      .list-content-header-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
       .list-content-header-right {
         display: flex;
         align-items: center;
       }
     }
-    
+
     .list-content-body {
       flex: 1;
       min-height: 0;
       overflow: hidden;
-      
+
       .view-wrapper {
         height: 100%;
       }
