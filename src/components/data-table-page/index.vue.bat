@@ -1,49 +1,14 @@
 <script lang="tsx" setup>
 import type { VueElement } from 'vue';
 import { computed, defineProps, getCurrentInstance, ref, watch, watchEffect } from 'vue';
-import { NButton, NDataTable, NDatePicker, NInput, NPopconfirm, NSelect, NSpace, NPagination } from 'naive-ui';
+import { NButton, NDataTable, NDatePicker, NInput, NPopconfirm, NSelect, NSpace } from 'naive-ui';
 import type { TreeSelectOption } from 'naive-ui';
 import { useLoading } from '@sa/hooks';
 import { $t } from '@/locales';
 import { formatDateTime } from '@/utils/common/datetime';
 import { createLogger } from '@/utils/logger';
-import AdvancedListLayout from '@/components/list-page/index.vue';
 import TencentMap from './modules/tencent-map.vue';
-import DevCardItem from '@/components/dev-card-item/index.vue';
-
-// 新增 DeviceItem 接口定义
-interface DeviceItem {
-  id: string;
-  device_number: string;
-  name: string;
-  device_config_id: string;
-  device_config_name: string;
-  ts: string | null;
-  activate_flag: string;
-  activate_at: string | null;
-  batch_number: string;
-  current_version: string;
-  created_at: string;
-  is_online: 0 | 1;
-  location: string;
-  access_way: string;
-  protocol_type: string;
-  device_status: number;
-  warn_status: string; // 例如 'N' 表示正常, 'Y' 表示告警
-  device_type: string;
-  // 根据实际情况可以添加更多字段
-  title?: string; // DevCardItem 可能用到的备用字段
-  description?: string; // DevCardItem 可能用到的备用字段
-  status?: string | number; // DevCardItem 可能用到的备用字段
-  value?: string; // DevCardItem 可能用到的备用字段
-  indicator?: string; // DevCardItem 可能用到的备用字段
-  timestamp?: string; // DevCardItem 可能用到的备用字段
-  updatedAt?: string; // DevCardItem 可能用到的备用字段
-  key?: string; // DevCardItem 可能用到的备用字段
-}
-
 const logger = createLogger('TablePage');
-
 // 定义搜索配置项的类型，支持多种输入类型：纯文本、日期选择器、日期范围选择器、下拉选择和树形选择器
 export type theLabel = string | (() => string) | undefined;
 export type SearchConfig =
@@ -77,6 +42,7 @@ export type SearchConfig =
     };
 
 // 通过props从父组件接收参数
+
 const props = defineProps<{
   fetchData: (data: any) => Promise<any>; // 数据获取函数
   columnsToShow: // 表格列配置
@@ -98,19 +64,15 @@ const props = defineProps<{
   initPage?: number;
   initPageSize?: number;
 }>();
-
 const { loading, startLoading, endLoading } = useLoading();
 // 解构props以简化访问
 const { fetchData, columnsToShow, tableActions, searchConfigs }: any = props;
-
-const dataList = ref<DeviceItem[]>([]); // 为 dataList 指定类型
+const isTableView = ref(true); // 默认显示表格视图
+const dataList = ref([]); // 表格数据列表
 const total = ref(0); // 数据总数
 const currentPage = ref(props.initPage || 1); // 当前页码
 const pageSize = ref(props.initPageSize || 10); // 每页显示数量
 const searchCriteria: any = ref(Object.fromEntries(searchConfigs.map(item => [item.key, item.initValue]))); // 搜索条件
-
-// 添加当前视图状态管理
-const currentViewType = ref('list'); // 默认为列表视图
 
 // 获取数据的函数，结合搜索条件、分页等
 const getData = async () => {
@@ -321,12 +283,12 @@ const handleTreeSelectUpdate = (value, key) => {
 const loadOptionsOnMount = async pattern => {
   for (const config of searchConfigs) {
     if (config.type === 'select' && config.loadOptions) {
-      const opts = await config.loadOptions(pattern);
+      // eslint-disable-next-line no-await-in-loop
+      const opts = await config.loadOptions(pattern); // 调用传入的loadOptions函数加载选项数据
       config.options = [...config.options, ...opts];
     }
   }
 };
-
 const rowProps = row => {
   if (props && props.rowClick) {
     return {
@@ -338,11 +300,11 @@ const rowProps = row => {
   }
   return {};
 };
-
 const loadOptionsOnMount2 = async () => {
   for (const config of searchConfigs) {
     if (config.type === 'tree-select' && config.loadOptions) {
-      const opts = await config.loadOptions();
+      // eslint-disable-next-line no-await-in-loop
+      const opts = await config.loadOptions(); // 调用传入的loadOptions函数加载选项数据
       config.options = [...config.options, ...opts];
     }
   }
@@ -352,6 +314,8 @@ const getPlatform = computed(() => {
   const { proxy }: any = getCurrentInstance();
   return proxy.getPlatform();
 });
+// 使用throttle减少动态加载选项时的请求频率
+// const throttledLoadOptionsOnMount = throttle(loadOptionsOnMount, 300);
 
 // 在组件挂载时加载选项
 loadOptionsOnMount('');
@@ -368,216 +332,117 @@ const filterSelectOption = (pattern: string, option: any) => {
   const label = typeof option.label === 'string' ? option.label : '';
   return label.includes(pattern);
 };
-
-// AdvancedListLayout 事件处理
-const handleLayoutQuery = (filterData: Record<string, any>) => {
-  handleSearch();
-};
-
-const handleLayoutReset = () => {
-  handleReset();
-};
-
-const handleAddNew = () => {
-  // 触发新建事件，由父组件或第一个 topAction 处理
-  if (props.topActions && props.topActions.length > 0) {
-    // 这里可以根据实际需求调整
-    console.log('Add new action triggered');
-  }
-};
-
-const handleViewChange = ({ viewType }: { viewType: string }) => {
-  // 更新当前视图类型
-  currentViewType.value = viewType;
-  console.log('View changed to:', viewType);
-};
-
-const handleRefresh = () => {
-  getData();
-};
-
-// 导入您在 modules 文件夹下创建的SVG图标 (使用 ?url 后缀)
-import directDeviceIconUrl from './modules/svg/direct.svg?url';
-import gatewayIconUrl from './modules/svg/gateway.svg?url';
-import subDeviceIconUrl from './modules/svg/subdevice.svg?url';
-import defaultDeviceIconUrl from './modules/svg/defaultdevice.svg?url';
-
-// 设备类型到图标URL的映射 (现在使用导入的SVG路径)
-const deviceTypeIconUrls = {
-  '1': directDeviceIconUrl,         // 直连设备图标
-  '2': gatewayIconUrl,            // 网关图标
-  '3': subDeviceIconUrl,           // 网关子设备图标
-  default: '' // 如果没有匹配的类型，则不显示图标
-};
-
-// 修改获取设备图标URL的函数，针对"默认配置"使用直连设备图标
-const getDeviceIconUrl = (deviceType: string, deviceConfigName?: string): string => {
-  // 当配置是默认配置时，强制使用直连设备图标
-  if (!deviceConfigName || deviceConfigName === '默认配置') {
-    return deviceTypeIconUrls['1']; // 直连设备图标
-  }
-  return deviceTypeIconUrls[deviceType] || deviceTypeIconUrls.default;
-};
-
-// 导入图标组件（修复图标显示问题）
-import { ListOutline, MapOutline, GridOutline as CardIcon } from '@vicons/ionicons5';
-
-// 定义可用视图，修复图标引用
-const availableViews = [
-  { key: 'card', icon: CardIcon, label: 'views.card' },
-  { key: 'list', icon: ListOutline, label: 'views.list' },
-  { key: 'map', icon: MapOutline, label: 'views.map' }
-];
-
-// 处理告警铃铛图标点击事件
-const handleWarningClick = (item: DeviceItem) => {
-  // 根据设备信息跳转到相应的告警页面
-  // 可以传递设备ID等参数
-  if (item.warn_status === 'Y') {
-    // 有告警时跳转到具体设备的告警详情
-    window.location.href = `/alarm/warning-message?device_id=${item.id}`
-  } else {
-    // 无告警时可能跳转到告警管理页面
-    window.location.href = '/alarm/warning-message'
-  }
-}
 </script>
 
 <template>
-  <AdvancedListLayout
-    :initial-view="'card'"
-    :available-views="availableViews"
-    @query="handleLayoutQuery"
-    @reset="handleLayoutReset"
-    @add-new="handleAddNew"
-    @view-change="handleViewChange"
-    @refresh="handleRefresh"
-  >
-    <!-- 搜索表单内容 -->
-    <template #search-form-content>
-      <div class="flex flex-1 flex-wrap items-end gap-4">
-        <div
-          v-for="config in searchConfigs"
-          :key="config.key"
-          class="flex flex-col gap-2"
-          :class="getPlatform ? 'min-w-100%' : ''"
-        >
-          <template v-if="config.type === 'input'">
-            <NInput
-              v-model:value="searchCriteria[config.key]"
-              size="small"
-              :placeholder="$t(config.label)"
-              class="input-style"
-              @update:value="handleInputChange"
-            />
-          </template>
-          <template v-else-if="config.type === 'date-range'">
-            <NDatePicker
-              v-model:value="searchCriteria[config.key]"
-              size="small"
-              type="daterange"
-              :placeholder="$t(config.label)"
-              class="input-style"
-            />
-          </template>
-          <template v-else-if="config.type === 'select'">
-            <NSelect
-              v-model:value="searchCriteria[config.key]"
-              :value-field="config.valueField"
-              :label-field="config.labelField"
-              size="small"
-              filterable
-              :filter="filterSelectOption"
-              :options="config.options"
-              :render-label="config.renderLabel"
-              :render-tag="config.renderTag"
-              :placeholder="$t(config.label)"
-              class="input-style"
-              @update:value="currentPage = 1"
-            />
-          </template>
-          <template v-else-if="config.type === 'date'">
-            <NDatePicker
-              v-model:value="searchCriteria[config.key]"
-              size="small"
-              type="date"
-              :placeholder="$t(config.label)"
-              class="input-style"
-            />
-          </template>
-          <template v-else-if="config.type === 'tree-select'">
-            <n-tree-select
-              v-model:value="searchCriteria[config.key]"
-              size="small"
-              filterable
-              :options="config.options"
-              :multiple="config.multiple"
-              class="input-style"
-              @update:value="value => handleTreeSelectUpdate(value, config.key)"
-            />
-          </template>
+  <n-card>
+    <div class="flex flex-col gap-15px rounded-lg">
+      <!-- 搜索区域与操作按钮 -->
+      <div class="row flex items-end justify-between gap-4">
+        <!-- 搜索输入和选择器 -->
+        <div class="flex flex-1 flex-wrap items-end gap-4">
+          <div
+            v-for="config in searchConfigs"
+            :key="config.key"
+            class="flex flex-col gap-2"
+            :class="getPlatform ? 'min-w-100%' : ''"
+          >
+            <template v-if="config.type === 'input'">
+              <NInput
+                v-model:value="searchCriteria[config.key]"
+                size="small"
+                :placeholder="$t(config.label)"
+                class="input-style"
+                @update:value="handleInputChange"
+              />
+            </template>
+            <template v-else-if="config.type === 'date-range'">
+              <NDatePicker
+                v-model:value="searchCriteria[config.key]"
+                size="small"
+                type="daterange"
+                :placeholder="$t(config.label)"
+                class="input-style"
+              />
+            </template>
+
+            <template v-else-if="config.type === 'select'">
+              <NSelect
+                v-model:value="searchCriteria[config.key]"
+                :value-field="config.valueField"
+                :label-field="config.labelField"
+                size="small"
+                filterable
+                :filter="filterSelectOption"
+                :options="config.options"
+                :render-label="config.renderLabel"
+                :render-tag="config.renderTag"
+                :placeholder="$t(config.label)"
+                class="input-style"
+                @update:value="currentPage = 1"
+              />
+            </template>
+            <template v-else-if="config.type === 'date'">
+              <NDatePicker
+                v-model:value="searchCriteria[config.key]"
+                size="small"
+                type="date"
+                :placeholder="$t(config.label)"
+                class="input-style"
+              />
+            </template>
+            <template v-else-if="config.type === 'tree-select'">
+              <n-tree-select
+                v-model:value="searchCriteria[config.key]"
+                size="small"
+                filterable
+                :options="config.options"
+                :multiple="config.multiple"
+                class="input-style"
+                @update:value="value => handleTreeSelectUpdate(value, config.key)"
+              />
+            </template>
+          </div>
+          <div>
+            <NButton v-if="0" class="btn-style" size="small" @click="handleSearch">{{ $t('common.search') }}</NButton>
+            <NButton class="btn-style" size="small" @click="handleReset">{{ $t('common.reset') }}</NButton>
+          </div>
+        </div>
+        <!-- 新建与返回按钮 -->
+      </div>
+
+      <div class="h-2px w-full bg-[#f6f9f8]"></div>
+      <div class="flex items-center justify-between">
+        <div class="flex gap-2">
+          <component :is="action.element" v-for="(action, index) in topActions" :key="index"></component>
+        </div>
+        <!-- 组件内部的表操作 -->
+        <div>
+          <NButton quaternary @click="isTableView = true">
+            <template #icon>
+              <n-icon class="text-24px">
+                <icon-material-symbols:table-rows-narrow-outline-sharp />
+              </n-icon>
+            </template>
+          </NButton>
+          <NButton quaternary @click="isTableView = false">
+            <template #icon>
+              <n-icon class="text-24px">
+                <icon-material-symbols:map-rounded />
+              </n-icon>
+            </template>
+          </NButton>
+          <NButton quaternary @click="getData">
+            <template #icon>
+              <n-icon class="text-24px">
+                <icon-material-symbols:refresh />
+              </n-icon>
+            </template>
+          </NButton>
         </div>
       </div>
-    </template>
-
-    <!-- 头部左侧操作区域 -->
-    <template #header-left>
-      <div class="flex gap-2">
-        <component :is="action.element" v-for="(action, index) in topActions" :key="index"></component>
-      </div>
-    </template>
-
-    <!-- 卡片视图 - 使用铃铛图标插槽 -->
-    <template #card-view>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
-        <DevCardItem
-          v-for="item in dataList"
-          :key="item.id" 
-          :title="item.name || 'N/A'" 
-          :status-active="item.is_online === 1"
-          :subtitle="item.device_config_name || '默认配置'"
-          :footer-text="(item.ts ? formatDateTime(item.ts) : null) ?? ''"
-          :warn-status="item.warn_status"
-          :device-id="item.id"
-          :device-config-id="item.device_config_id"
-          @click-top-right-icon="handleWarningClick(item)"
-        >
-          <template #subtitle-icon>
-            <img 
-              :src="getDeviceIconUrl(item.device_type, item.device_config_name)" 
-              alt="device type icon" 
-              class="image-icon" 
-            />
-          </template>
-          
-          <!-- 右上角铃铛图标插槽 -->
-          <template #top-right-icon>
-            <svg 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              :fill="item.warn_status === 'Y' ? '#ff4d4f' : '#d9d9d9'"
-              class="bell-icon"
-            >
-              <!-- 铃铛图标 SVG 路径 -->
-              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-            </svg>
-          </template>
-          
-          <template #footer-icon>
-            <img 
-              :src="defaultDeviceIconUrl" 
-              alt="device type icon" 
-              class="image-icon" 
-            />
-          </template>
-        </DevCardItem>
-      </div>
-    </template>
-
-    <!-- 列表视图 -->
-    <template #list-view>
-      <div class="overflow-x-auto">
+      <!-- 数据表格 -->
+      <div v-if="isTableView" class="overflow-x-auto">
         <NDataTable
           :row-props="rowProps"
           :loading="loading"
@@ -586,18 +451,12 @@ const handleWarningClick = (item: DeviceItem) => {
           class="w-full"
         />
       </div>
-    </template>
-
-    <!-- 地图视图 -->
-    <template #map-view>
-      <div class="h-525px">
+      <div v-else class="h-525px">
+        <!-- 地图视图占位 -->
         <TencentMap :devices="dataList" />
       </div>
-    </template>
 
-    <!-- 底部分页 -->
-    <template #footer>
-      <NPagination
+      <n-pagination
         v-model:page="currentPage"
         v-model:page-size="pageSize"
         class="justify-end"
@@ -607,8 +466,8 @@ const handleWarningClick = (item: DeviceItem) => {
         @update:page="onUpdatePage"
         @update:page-size="onUpdatePageSize"
       />
-    </template>
-  </AdvancedListLayout>
+    </div>
+  </n-card>
 </template>
 
 <style scoped lang="scss">
@@ -624,15 +483,5 @@ const handleWarningClick = (item: DeviceItem) => {
   @apply rounded-lg shadow overflow-hidden;
   margin: 0 auto;
   padding: 16px;
-}
-
-.image-icon {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-.bell-icon {
-  transition: fill 0.3s ease;
 }
 </style>

@@ -319,9 +319,9 @@ onMounted(() => {
 }
 
 .list-content-footer {
-  height: 40px;
+  height: 60px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: end;
 }
 </style>

@@ -1,0 +1,19 @@
+<svg width="120" height="100" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- 顶部虚线横线 -->
+  <line x1="20" y1="20" x2="100" y2="20" stroke="#aaa" stroke-dasharray="5,5" stroke-width="2"></line>
+
+  <!-- 三条竖向虚线连接线 -->
+  <line x1="40" y1="20" x2="40" y2="45" stroke="#aaa" stroke-dasharray="4,4" stroke-width="1.5"></line>
+  <line x1="60" y1="20" x2="60" y2="45" stroke="#aaa" stroke-dasharray="4,4" stroke-width="1.5"></line>
+  <line x1="80" y1="20" x2="80" y2="45" stroke="#aaa" stroke-dasharray="4,4" stroke-width="1.5"></line>
+
+  <!-- 子设备图标（小盒子） -->
+  <rect x="32" y="45" width="16" height="16" rx="3" fill="#F5A623"></rect>
+  <rect x="52" y="45" width="16" height="16" rx="3" fill="#F5A623"></rect>
+  <rect x="72" y="45" width="16" height="16" rx="3" fill="#F5A623"></rect>
+
+  <!-- 指示灯或端口 -->
+  <circle cx="40" cy="53" r="2" fill="#fff"></circle>
+  <circle cx="60" cy="53" r="2" fill="#fff"></circle>
+  <circle cx="80" cy="53" r="2" fill="#fff"></circle>
+</svg>

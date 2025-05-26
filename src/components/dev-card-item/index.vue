@@ -1,257 +1,421 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed } from 'vue'
+import { NCard, NSpace, NText, NEllipsis } from 'naive-ui'
 
 interface Props {
-  title: string;
-  statusActive?: boolean; // For the small status dot, optional
-  subtitle?: string;
-  indicator?: 'normal' | 'warning' | 'error' | 'info' | string; // For the top-right indicator icon's color/state
-  footerTimestamp?: string;
-
-  // New props for image URLs (can be SVG, PNG, etc.)
-  subtitleIconUrl?: string;
-  indicatorIconUrl?: string;
-  footerIconUrl?: string;
+  /** 卡片主标题 */
+  title: string
+  /** 卡片副标题，可选，支持两行显示 */
+  subtitle?: string
+  /** 状态点是否激活，undefined时不显示状态点 */
+  statusActive?: boolean
+  /** 状态点类型，影响激活时的颜色 */
+  statusType?: 'success' | 'warning' | 'error' | 'info' | 'default'
+  /** 底部右侧显示的文本，可以是时间戳或其他文本 */
+  footerText?: string
+  /** 是否显示边框 */
+  bordered?: boolean
+  /** 是否支持悬停效果 */
+  hoverable?: boolean
+  /** 告警状态，用于右上角图标 */
+  warnStatus?: string
+  /** 设备ID，用于跳转 */
+  deviceId?: string
+  /** 设备配置ID，用于副标题跳转 */
+  deviceConfigId?: string
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  statusType: 'default',
+  bordered: true,
+  hoverable: true
+})
 
-// --- Default SVG Icons (simple placeholders) ---
-const defaultSubtitleIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>';
-const defaultIndicatorIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>';
-const defaultFooterIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>';
-// ----------------------------------------------
+// 定义组件事件
+const emit = defineEmits<{
+  /** 点击整个卡片时触发 */
+  'click-card': []
+  /** 点击标题区域时触发 */
+  'click-title': []
+  /** 点击副标题区域时触发 */
+  'click-subtitle': []
+  /** 点击告警图标时触发 */
+  'click-warning': []
+  /** 点击右上角图标时触发 */
+  'click-top-right-icon': []
+}>()
 
-const statusDotClass = computed(() => {
-  if (props.statusActive === undefined) return ''; // No dot if prop not provided
-  return props.statusActive ? 'status-active' : 'status-inactive';
-});
-
-const indicatorClass = computed(() => {
-  if (!props.indicator) return ''; // No specific indicator class if prop not provided
-  // Mapping general states to color classes. Customize as needed.
-  switch (props.indicator) {
-    case 'normal':
-      return 'indicator-normal';
-    case 'warning':
-      return 'indicator-warning';
-    case 'error':
-      return 'indicator-error';
-    case 'info':
-      return 'indicator-info';
-    default:
-      // If indicator is a custom string, it could be a class name itself or unstyled
-      return typeof props.indicator === 'string' ? `indicator-${props.indicator.toLowerCase()}` : ''; 
+// 计算状态点颜色
+const statusColor = computed(() => {
+  if (props.statusActive === undefined) return undefined
+  
+  // 根据状态类型和激活状态返回对应颜色
+  const colorMap = {
+    success: props.statusActive ? '#52c41a' : '#d9d9d9',
+    warning: props.statusActive ? '#faad14' : '#d9d9d9', 
+    error: props.statusActive ? '#ff4d4f' : '#d9d9d9',
+    info: props.statusActive ? '#1890ff' : '#d9d9d9',
+    default: props.statusActive ? '#52c41a' : '#d9d9d9'
   }
-});
+  
+  return colorMap[props.statusType]
+})
 
+// 计算告警图标颜色
+const warningIconColor = computed(() => {
+  return props.warnStatus === 'Y' ? '#ff4d4f' : '#d9d9d9'
+})
+
+// 点击事件处理函数
+const handleCardClick = () => {
+  // 跳转到设备详情页
+  if (props.deviceId) {
+    window.location.href = `/device/details?d_id=${props.deviceId}`
+  }
+  emit('click-card')
+}
+
+const handleTitleClick = (e: Event) => {
+  // 阻止事件冒泡，避免触发卡片点击事件
+  e.stopPropagation()
+  // 跳转到设备详情页
+  if (props.deviceId) {
+    window.location.href = `/device/details?d_id=${props.deviceId}`
+  }
+  emit('click-title')
+}
+
+const handleSubtitleClick = (e: Event) => {
+  // 阻止事件冒泡，避免触发卡片点击事件
+  e.stopPropagation()
+  // 跳转到设备配置详情页
+  if (props.deviceConfigId) {
+    window.location.href = `/device/config-detail?id=${props.deviceConfigId}`
+  }
+  emit('click-subtitle')
+}
+
+const handleWarningClick = (e: Event) => {
+  // 阻止事件冒泡，避免触发卡片点击事件
+  e.stopPropagation()
+  // 跳转到告警信息页
+  window.location.href = '/alarm/warning-message'
+  emit('click-warning')
+}
+
+const handleTopRightIconClick = (e: Event) => {
+  // 阻止事件冒泡，避免触发卡片点击事件
+  e.stopPropagation()
+  emit('click-top-right-icon')
+}
 </script>
 
 <template>
-  <div class="item-card">
-    <div class="card-header-main">
-      <div class="card-title-area">
-        <div class="card-primary-info-row">
-          <div class="card-title-text">{{ title }}</div>
-          <div v-if="statusActive !== undefined" class="status-dot" :class="statusDotClass"></div>
+  <NCard
+    content-style="padding: 0px;margin: 0px;"
+    :bordered="bordered"
+    :hoverable="hoverable"
+    class="item-card"
+    @click="handleCardClick"
+  >
+    <!-- 卡片头部：包含标题、副标题和右侧指示器 -->
+    <div class="card-header">
+      <!-- 左侧标题区域 -->
+      <div class="title-section">
+        <!-- 主标题行：标题文本 + 状态点 -->
+        <div class="title-row" @click="handleTitleClick">
+          <div class="title-content">
+            <!-- 主标题，支持单行省略 -->
+            <NEllipsis class="card-title" :tooltip="false">
+              {{ title }}
+            </NEllipsis>
+            
+            <!-- 状态点，紧跟标题显示 -->
+            <div
+              v-if="statusActive !== undefined"
+              class="status-dot"
+              :style="{ backgroundColor: statusColor }"
+            />
+          </div>
         </div>
-        <div v-if="subtitle || $slots['subtitle-icon'] || props.subtitleIconUrl !== undefined" class="card-secondary-info-row">
-          <span class="subtitle-icon-container icon-container">
-            <slot name="subtitle-icon">
-              <img v-if="props.subtitleIconUrl" :src="props.subtitleIconUrl" alt="subtitle icon" class="image-icon" />
-              <span v-else v-html="defaultSubtitleIconSvg" class="default-svg-icon"></span>
-            </slot>
-          </span>
-          <span v-if="subtitle" class="subtitle-text">{{ subtitle }}</span>
+        
+        <!-- 副标题行：图标 + 副标题文本 -->
+        <div 
+          v-if="subtitle || $slots['subtitle-icon']" 
+          class="subtitle-row"
+          @click="handleSubtitleClick"
+        >
+          <!-- 副标题图标插槽，顶部对齐 -->
+          <div v-if="$slots['subtitle-icon']" class="subtitle-icon-container">
+            <slot name="subtitle-icon" />
+          </div>
+          <!-- 副标题文本，支持两行省略 -->
+          <div v-if="subtitle" class="subtitle-text-container">
+            <NEllipsis 
+              :line-clamp="2" 
+              class="subtitle-text"
+              :tooltip="false"
+            >
+              {{ subtitle }}
+            </NEllipsis>
+          </div>
         </div>
       </div>
-      <div v-if="indicator || $slots['indicator-icon'] || props.indicatorIconUrl !== undefined" class="indicator-icon-container icon-container" :class="indicatorClass">
-        <slot name="indicator-icon">
-          <img v-if="props.indicatorIconUrl" :src="props.indicatorIconUrl" alt="indicator icon" class="image-icon" />
-          <span v-else v-html="defaultIndicatorIconSvg" class="default-svg-icon"></span>
-        </slot>
+      
+      <!-- 右上角图标区域 - 支持插槽自定义 -->
+      <div class="indicator-section">
+        <div 
+          class="top-right-icon-container"
+          @click="handleTopRightIconClick"
+        >
+          <!-- 右上角图标插槽，如果没有提供插槽则显示默认的三角形告警图标 -->
+          <slot name="top-right-icon">
+            <!-- 默认的三角形告警图标 -->
+            <svg 
+              width="20" 
+              height="20" 
+              viewBox="0 0 24 24" 
+              :fill="warningIconColor"
+              class="warning-icon"
+            >
+              <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/>
+            </svg>
+          </slot>
+        </div>
       </div>
     </div>
     
-    <div v-if="footerTimestamp || $slots['footer-icon'] || props.footerIconUrl !== undefined" class="card-footer-main">
-      <div class="footer-icon-container icon-container">
-        <slot name="footer-icon">
-          <img v-if="props.footerIconUrl" :src="props.footerIconUrl" alt="footer icon" class="image-icon" />
-          <span v-else v-html="defaultFooterIconSvg" class="default-svg-icon"></span>
-        </slot>
-      </div>
-      <div v-if="footerTimestamp" class="footer-timestamp-text">{{ footerTimestamp }}</div>
+    <!-- 卡片内容区域：自定义内容插槽 -->
+    <div v-if="$slots.default" class="card-content">
+      <slot />
     </div>
-  </div>
+    
+    <!-- 卡片底部 -->
+    <div 
+      v-if="footerText || $slots['footer-icon'] || $slots.footer" 
+      class="card-footer"
+    >
+      <!-- 底部左侧：图标 + 自定义内容 -->
+      <div class="footer-left">
+        <div class="footer-icon-container">
+          <!-- 如果没有提供footer-icon插槽，显示默认设备图标 -->
+          <slot name="footer-icon">
+            <!-- 默认设备图标 SVG -->
+            <svg 
+              width="18" 
+              height="18" 
+              viewBox="0 0 24 24" 
+              fill="#666"
+              class="default-device-icon"
+            >
+              <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+            </svg>
+          </slot>
+        </div>
+        <slot name="footer" />
+      </div>
+      
+      <!-- 底部右侧：文本内容（可以是时间戳或其他文本） -->
+      <div v-if="footerText" class="footer-right">
+        <NEllipsis class="footer-text" :tooltip="false">
+          {{ footerText }}
+        </NEllipsis>
+      </div>
+    </div>
+  </NCard>
 </template>
 
 <style scoped>
 .item-card {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
   width: 100%;
-  min-height: 180px; /* Use min-height for flexibility */
+  min-height: 180px;
+  padding: 20px;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 1px solid #e1e5e9;
   display: flex;
   flex-direction: column;
-  position: relative;
+  cursor: pointer;
 }
 
-.card-header-main {
+.card-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start; 
+  align-items: flex-start;
   margin-bottom: 16px;
 }
 
-.card-title-area {
-  flex: 1; 
+.title-section {
+  flex: 1;
+  min-width: 0;
 }
 
-.card-primary-info-row {
+.title-row {
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.title-content {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 12px; /* Only if subtitle exists or row is always present */
 }
 
-.card-title-text {
+.card-title {
   font-size: 18px;
   font-weight: 600;
   color: #1a1a1a;
+  line-height: 1.4;
+  min-width: 0;
 }
 
 .status-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  flex-shrink: 0; 
+  flex-shrink: 0;
+  transition: background-color 0.3s ease;
 }
 
-.status-active {
-  background-color: #52c41a; /* Green for active */
-}
-
-.status-inactive {
-  background-color: #d9d9d9; /* Grey for inactive */
-}
-
-.card-secondary-info-row {
+.subtitle-row {
   display: flex;
-  align-items: center;
   gap: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #888;
-}
-
-.icon-container {
-  display: inline-flex; 
-  align-items: center;
-  justify-content: center;
+  cursor: pointer;
 }
 
 .subtitle-icon-container {
-  font-size: 14px; 
-  /* max-width to prevent overly large SVGs if not sized intrinsically */
-  max-width: 16px; 
-  max-height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.subtitle-text-container {
+  flex: 1;
+  min-width: 0;
 }
 
 .subtitle-text {
-  /* Styles for subtitle text if any */
+  font-size: 14px;
+  color: #888;
+
 }
 
-/* Styling for the indicator icon container and its states */
-.indicator-icon-container {
+.indicator-section {
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.top-right-icon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  font-size: 16px; 
-  flex-shrink: 0; 
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.image-icon, .default-svg-icon :deep(svg) {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+.top-right-icon-container:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
-.default-svg-icon :deep(svg) {
-  display: block; /* Helps with consistent rendering of inline SVGs */
+.warning-icon {
+  transition: fill 0.3s ease;
 }
 
-.indicator-normal {
-  color: #52c41a; /* Green */
-}
-.indicator-normal :deep(svg path), .indicator-normal :deep(svg circle), .indicator-normal :deep(svg line) {
-  stroke: #52c41a; /* If default SVG uses currentColor */
+.card-content {
+  flex: 1;
+  margin: 16px 0;
 }
 
-.indicator-warning {
-  color: #faad14; /* Orange/Yellow for warning */
-}
-.indicator-warning :deep(svg path), .indicator-warning :deep(svg circle), .indicator-warning :deep(svg line) {
-  stroke: #faad14;
-}
-
-.indicator-error {
-  color: #ff4d4f; /* Red for error */
-}
-.indicator-error :deep(svg path), .indicator-error :deep(svg circle), .indicator-error :deep(svg line) {
-  stroke: #ff4d4f;
-}
-
-.indicator-info {
-  color: #1890ff; /* Blue for info */
-}
-.indicator-info :deep(svg path), .indicator-info :deep(svg circle), .indicator-info :deep(svg line) {
-  stroke: #1890ff;
-}
-
-.card-footer-main {
+.card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: auto; 
-  padding-top: 16px; /* Add some space if footer is present */
-  border-top: 1px solid #f0f0f0; /* Optional: a light separator for the footer */
+  margin-top: auto;
+  padding-top: 16px;
 }
 
-.card-footer-main:empty {
-    display: none; /* Hide footer if completely empty */
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 
 .footer-icon-container {
-  width: 44px; /* Or make it more flexible */
-  height: 35.5px; 
-  font-size: 18px; 
-  color: #666; 
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  width: 40px;
+  height: 40px;
+  margin-left: -8px;
+  flex-shrink: 0;
 }
 
-.footer-timestamp-text {
+.default-device-icon {
+  opacity: 0.6;
+}
+
+.footer-right {
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.footer-text {
   font-size: 14px;
   color: #888;
+  max-width: 150px;
 }
 
-/* Fallback icon styles (if using Font Awesome for fallbacks in slots) */
-:deep(.subtitle-icon-container .fa-question-circle),
-:deep(.indicator-icon-container .fa-bell),
-:deep(.footer-icon-container .fa-info-circle) {
-  /* Default styling for any fallback icons */
+/* 悬停效果 */
+.title-row:hover .card-title {
+  color: #1890ff;
+  transition: color 0.2s ease;
 }
 
-/* Example :deep styling for icons passed via slots, if parent applies these classes */
-:deep(.subtitle-icon-container .direct-icon-style) {
-  color: #52c41a;
-}
-:deep(.subtitle-icon-container .sub-icon-style) {
-  color: #fa8c16;
-}
-:deep(.subtitle-icon-container .default-icon-color) { 
-  color: #1890ff; 
+.subtitle-row:hover .subtitle-text {
+  color: #1890ff;
+  transition: color 0.2s ease;
 }
 
+/* 响应式设计：移动端适配 */
+@media (max-width: 768px) {
+  .item-card {
+    padding: 16px;
+    min-height: 160px;
+  }
+  
+  .card-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .indicator-section {
+    margin-left: 0;
+    align-self: flex-end;
+  }
+  
+  .card-footer {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  .footer-right {
+    align-self: flex-end;
+    margin-left: 0;
+  }
+  
+  .footer-text {
+    max-width: none;
+  }
+}
 </style>
