@@ -1,7 +1,7 @@
 <script lang="tsx" setup>
 import type { VueElement } from 'vue';
 import { computed, defineProps, getCurrentInstance, ref, watch, watchEffect } from 'vue';
-import { NButton, NDataTable, NDatePicker, NInput, NPopconfirm, NSelect, NSpace, NPagination } from 'naive-ui';
+import { NButton, NDataTable, NDatePicker, NInput, NPopconfirm, NSelect, NSpace, NPagination, NSpin } from 'naive-ui';
 import type { TreeSelectOption } from 'naive-ui';
 import { useLoading } from '@sa/hooks';
 import { $t } from '@/locales';
@@ -529,50 +529,52 @@ const handleWarningClick = (item: DeviceItem) => {
 
     <!-- 卡片视图 - 使用铃铛图标插槽 -->
     <template #card-view>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
-        <DevCardItem
-          v-for="item in dataList"
-          :key="item.id" 
-          :title="item.name || 'N/A'" 
-          :status-active="item.is_online === 1"
-          :subtitle="item.device_config_name || '默认配置'"
-          :footer-text="(item.ts ? formatDateTime(item.ts) : null) ?? ''"
-          :warn-status="item.warn_status"
-          :device-id="item.id"
-          :device-config-id="item.device_config_id"
-          @click-top-right-icon="handleWarningClick(item)"
-        >
-          <template #subtitle-icon>
-            <img 
-              :src="getDeviceIconUrl(item.device_type, item.device_config_name)" 
-              alt="device type icon" 
-              class="image-icon" 
-            />
-          </template>
-          
-          <!-- 右上角铃铛图标插槽 -->
-          <template #top-right-icon>
-            <svg 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              :fill="item.warn_status === 'Y' ? '#ff4d4f' : '#d9d9d9'"
-              class="bell-icon"
-            >
-              <!-- 铃铛图标 SVG 路径 -->
-              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-            </svg>
-          </template>
-          
-          <template #footer-icon>
-            <img 
-              :src="defaultDeviceIconUrl" 
-              alt="device type icon" 
-              class="image-icon" 
-            />
-          </template>
-        </DevCardItem>
-      </div>
+      <n-spin :show="loading">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
+          <DevCardItem
+            v-for="item in dataList"
+            :key="item.id" 
+            :title="item.name || 'N/A'" 
+            :status-active="item.is_online === 1"
+            :subtitle="item.device_config_name || '默认配置'"
+            :footer-text="(item.ts ? formatDateTime(item.ts) : null) ?? ''"
+            :warn-status="item.warn_status"
+            :device-id="item.id"
+            :device-config-id="item.device_config_id"
+            @click-top-right-icon="handleWarningClick(item)"
+          >
+            <template #subtitle-icon>
+              <img 
+                :src="getDeviceIconUrl(item.device_type, item.device_config_name)" 
+                alt="device type icon" 
+                class="image-icon" 
+              />
+            </template>
+            
+            <!-- 右上角铃铛图标插槽 -->
+            <template #top-right-icon>
+              <svg 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                :fill="item.warn_status === 'Y' ? '#ff4d4f' : '#d9d9d9'"
+                class="bell-icon"
+              >
+                <!-- 铃铛图标 SVG 路径 -->
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+              </svg>
+            </template>
+            
+            <template #footer-icon>
+              <img 
+                :src="defaultDeviceIconUrl" 
+                alt="device type icon" 
+                class="image-icon" 
+              />
+            </template>
+          </DevCardItem>
+        </div>
+      </n-spin>
     </template>
 
     <!-- 列表视图 -->
@@ -590,9 +592,11 @@ const handleWarningClick = (item: DeviceItem) => {
 
     <!-- 地图视图 -->
     <template #map-view>
-      <div class="h-525px">
-        <TencentMap :devices="dataList" />
-      </div>
+      <n-spin :show="loading">
+        <div class="h-525px">
+          <TencentMap :devices="dataList" />
+        </div>
+      </n-spin>
     </template>
 
     <!-- 底部分页 -->
