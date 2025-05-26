@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <n-card style="height: 100%" footer-style="padding-top: 0px; padding-bottom: 0px; margin-top: -19px">
+  <div class="advanced-list-container">
+    <n-card class="full-height-card" footer-style="padding-top: 0px; padding-bottom: 0px; margin-top: -19px">
       <div class="advanced-list-layout">
         <!-- 搜索区域 -->
         <div v-if="shouldShowSearchArea" class="search">
@@ -16,7 +16,7 @@
             </n-button>
           </div>
         </div>
-
+        <n-divider style="margin-top: 10px;"/>
         <!-- 内容区域 -->
         <div class="list-content">
           <!-- 内容头部 -->
@@ -63,7 +63,7 @@
 
           <!-- 内容主体 -->
           <div class="list-content-body">
-            <n-scrollbar>
+            <n-scrollbar class="content-scrollbar">
               <div v-if="currentView === 'card' && hasSlot('card-view')" class="view-wrapper">
                 <slot name="card-view"></slot>
               </div>
@@ -253,11 +253,28 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.advanced-list-layout {
+/* 最外层容器：占满父容器的全部高度 */
+.advanced-list-container {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  height: 100%;
+}
 
+/* 卡片容器：占满剩余高度 */
+.full-height-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 主布局容器：使用 flex 布局，确保高度分配 */
+.advanced-list-layout {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 防止内容溢出 */
+
+  /* 搜索区域：固定高度，不参与 flex 分配 */
   .search {
     flex-shrink: 0;
     min-height: 0;
@@ -265,9 +282,6 @@ onMounted(() => {
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
-    border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 16px;
-
     .search-form-content {
       flex: 1;
       min-height: 0;
@@ -281,13 +295,17 @@ onMounted(() => {
     }
   }
 
+  /* 列表内容区域：占用剩余空间 */
   .list-content {
     flex: 1;
     min-height: 0;
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* 确保不会超出容器 */
 
+    /* 内容头部：固定高度 */
     .list-content-header {
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -306,22 +324,60 @@ onMounted(() => {
       }
     }
 
+    /* 内容主体：占用剩余空间，内容超出时滚动 */
     .list-content-body {
       flex: 1;
       min-height: 0;
       overflow: hidden;
 
-      .view-wrapper {
+      /* 滚动条容器：占满父容器高度 */
+      .content-scrollbar {
         height: 100%;
+      }
+
+      /* 视图包装器：确保内容正确显示 */
+      .view-wrapper {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
       }
     }
   }
 }
 
+/* 底部区域：固定高度 */
 .list-content-footer {
+  flex-shrink: 0;
   height: 60px;
   display: flex;
   align-items: center;
   justify-content: end;
+}
+
+/* 为了确保在 naive-ui 的 Card 组件中正确工作，需要覆盖一些默认样式 */
+:deep(.n-card__content) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px; /* 根据需要调整内边距 */
+}
+
+:deep(.n-card) {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 确保 n-scrollbar 正确工作 */
+:deep(.n-scrollbar) {
+  height: 100%;
+}
+
+:deep(.n-scrollbar > .n-scrollbar-container) {
+  height: 100%;
+}
+
+:deep(.n-scrollbar > .n-scrollbar-container > .n-scrollbar-content) {
+  min-height: 100%;
 }
 </style>

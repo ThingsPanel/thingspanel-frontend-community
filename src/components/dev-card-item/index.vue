@@ -118,108 +118,111 @@ const handleTopRightIconClick = (e: Event) => {
     class="item-card"
     @click="handleCardClick"
   >
-    <!-- 卡片头部：包含标题、副标题和右侧指示器 -->
-    <div class="card-header">
-      <!-- 左侧标题区域 -->
-      <div class="title-section">
-        <!-- 主标题行：标题文本 + 状态点 -->
-        <div class="title-row" @click="handleTitleClick">
-          <div class="title-content">
-            <!-- 主标题，支持单行省略 -->
-            <NEllipsis class="card-title" :tooltip="false">
-              {{ title }}
-            </NEllipsis>
-            
-            <!-- 状态点，紧跟标题显示 -->
-            <div
-              v-if="statusActive !== undefined"
-              class="status-dot"
-              :style="{ backgroundColor: statusColor }"
-            />
+    <!-- 卡片内容容器 -->
+    <div class="card-container">
+      <!-- 卡片头部：包含标题、副标题和右侧指示器 -->
+      <div class="card-header">
+        <!-- 左侧标题区域 -->
+        <div class="title-section">
+          <!-- 主标题行：标题文本 + 状态点 -->
+          <div class="title-row" @click="handleTitleClick">
+            <div class="title-content">
+              <!-- 主标题，支持单行省略 -->
+              <NEllipsis class="card-title" :tooltip="false">
+                {{ title }}
+              </NEllipsis>
+              
+              <!-- 状态点，紧跟标题显示 -->
+              <div
+                v-if="statusActive !== undefined"
+                class="status-dot"
+                :style="{ backgroundColor: statusColor }"
+              />
+            </div>
+          </div>
+          
+          <!-- 副标题行：图标 + 副标题文本 -->
+          <div 
+            v-if="subtitle || $slots['subtitle-icon']" 
+            class="subtitle-row"
+            @click="handleSubtitleClick"
+          >
+            <!-- 副标题图标插槽，顶部对齐 -->
+            <div v-if="$slots['subtitle-icon']" class="subtitle-icon-container">
+              <slot name="subtitle-icon" />
+            </div>
+            <!-- 副标题文本，支持两行省略 -->
+            <div v-if="subtitle" class="subtitle-text-container">
+              <NEllipsis 
+                :line-clamp="2" 
+                class="subtitle-text"
+                :tooltip="false"
+              >
+                {{ subtitle }}
+              </NEllipsis>
+            </div>
           </div>
         </div>
         
-        <!-- 副标题行：图标 + 副标题文本 -->
-        <div 
-          v-if="subtitle || $slots['subtitle-icon']" 
-          class="subtitle-row"
-          @click="handleSubtitleClick"
-        >
-          <!-- 副标题图标插槽，顶部对齐 -->
-          <div v-if="$slots['subtitle-icon']" class="subtitle-icon-container">
-            <slot name="subtitle-icon" />
-          </div>
-          <!-- 副标题文本，支持两行省略 -->
-          <div v-if="subtitle" class="subtitle-text-container">
-            <NEllipsis 
-              :line-clamp="2" 
-              class="subtitle-text"
-              :tooltip="false"
-            >
-              {{ subtitle }}
-            </NEllipsis>
+        <!-- 右上角图标区域 - 支持插槽自定义 -->
+        <div class="indicator-section">
+          <div 
+            class="top-right-icon-container"
+            @click="handleTopRightIconClick"
+          >
+            <!-- 右上角图标插槽，如果没有提供插槽则显示默认的三角形告警图标 -->
+            <slot name="top-right-icon">
+              <!-- 默认的三角形告警图标 -->
+              <svg 
+                width="20" 
+                height="20" 
+                viewBox="0 0 24 24" 
+                :fill="warningIconColor"
+                class="warning-icon"
+              >
+                <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/>
+              </svg>
+            </slot>
           </div>
         </div>
       </div>
       
-      <!-- 右上角图标区域 - 支持插槽自定义 -->
-      <div class="indicator-section">
-        <div 
-          class="top-right-icon-container"
-          @click="handleTopRightIconClick"
-        >
-          <!-- 右上角图标插槽，如果没有提供插槽则显示默认的三角形告警图标 -->
-          <slot name="top-right-icon">
-            <!-- 默认的三角形告警图标 -->
-            <svg 
-              width="20" 
-              height="20" 
-              viewBox="0 0 24 24" 
-              :fill="warningIconColor"
-              class="warning-icon"
-            >
-              <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/>
-            </svg>
-          </slot>
-        </div>
-      </div>
-    </div>
-    
-    <!-- 卡片内容区域：自定义内容插槽 -->
-    <div v-if="$slots.default" class="card-content">
-      <slot />
-    </div>
-    
-    <!-- 卡片底部 -->
-    <div 
-      v-if="footerText || $slots['footer-icon'] || $slots.footer" 
-      class="card-footer"
-    >
-      <!-- 底部左侧：图标 + 自定义内容 -->
-      <div class="footer-left">
-        <div class="footer-icon-container">
-          <!-- 如果没有提供footer-icon插槽，显示默认设备图标 -->
-          <slot name="footer-icon">
-            <!-- 默认设备图标 SVG -->
-            <svg 
-              width="18" 
-              height="18" 
-              viewBox="0 0 24 24" 
-              fill="#666"
-              class="default-device-icon"
-            >
-              <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
-            </svg>
-          </slot>
-        </div>
-        <slot name="footer" />
+      <!-- 卡片内容区域：自定义内容插槽 - 这个区域会自动填充剩余空间 -->
+      <div v-if="$slots.default" class="card-content">
+        <slot />
       </div>
       
-      <!-- 底部右侧：文本内容（可以是时间戳或其他文本） -->
-      <div v-if="footerText" class="footer-right">
-        <NEllipsis class="footer-text" :tooltip="false">
-          {{ footerText }}
-        </NEllipsis>
+      <!-- 卡片底部 - 固定在底部 -->
+      <div 
+        v-if="footerText || $slots['footer-icon'] || $slots.footer" 
+        class="card-footer"
+      >
+        <!-- 底部左侧：图标 + 自定义内容 -->
+        <div class="footer-left">
+          <div class="footer-icon-container">
+            <!-- 如果没有提供footer-icon插槽，显示默认设备图标 -->
+            <slot name="footer-icon">
+              <!-- 默认设备图标 SVG -->
+              <svg 
+                width="18" 
+                height="18" 
+                viewBox="0 0 24 24" 
+                fill="#666"
+                class="default-device-icon"
+              >
+                <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+              </svg>
+            </slot>
+          </div>
+          <slot name="footer" />
+        </div>
+        
+        <!-- 底部右侧：文本内容（可以是时间戳或其他文本） -->
+        <div v-if="footerText" class="footer-right">
+          <NEllipsis class="footer-text" :tooltip="false">
+            {{ footerText }}
+          </NEllipsis>
+        </div>
       </div>
     </div>
   </NCard>
@@ -228,14 +231,35 @@ const handleTopRightIconClick = (e: Event) => {
 <style scoped>
 .item-card {
   width: 100%;
-  min-height: 180px;
-  padding: 20px;
+  height: 200px;
   border-radius: 12px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e1e5e9;
+}
+
+/* 悬停效果 - 简洁优雅 */
+.item-card:hover {
+  transform: translateY(4px) translateX(4px);
+  box-shadow: 
+    0 8px 25px rgba(0, 0, 0, 0.12),
+    0 4px 10px rgba(0, 0, 0, 0.08);
+  border-color: rgba(24, 144, 255, 0.3);
+}
+
+/* 点击时的动画 */
+.item-card:active {
+  transform: translateY(-2px);
+  transition: all 0.1s ease;
+}
+
+/* 新增：卡片内容容器，使用flexbox布局 */
+.card-container {
+  padding: 20px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  cursor: pointer;
 }
 
 .card-header {
@@ -243,16 +267,21 @@ const handleTopRightIconClick = (e: Event) => {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 16px;
+  flex-shrink: 0;
 }
 
 .title-section {
   flex: 1;
   min-width: 0;
+  height: 80px;
+  display: flex;
+  flex-direction: column;
 }
 
 .title-row {
   margin-bottom: 12px;
   cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
 .title-content {
@@ -264,9 +293,10 @@ const handleTopRightIconClick = (e: Event) => {
 .card-title {
   font-size: 18px;
   font-weight: 600;
-  color: #1a1a1a;
+
   line-height: 1.4;
   min-width: 0;
+  transition: color 0.2s ease;
 }
 
 .status-dot {
@@ -281,6 +311,9 @@ const handleTopRightIconClick = (e: Event) => {
   display: flex;
   gap: 8px;
   cursor: pointer;
+  flex: 1;
+  min-height: 36px;
+  transition: transform 0.2s ease;
 }
 
 .subtitle-icon-container {
@@ -302,7 +335,7 @@ const handleTopRightIconClick = (e: Event) => {
 .subtitle-text {
   font-size: 14px;
   color: #888;
-
+  transition: color 0.2s ease;
 }
 
 .indicator-section {
@@ -322,7 +355,7 @@ const handleTopRightIconClick = (e: Event) => {
 }
 
 .top-right-icon-container:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  transform:  scale(1.5);
 }
 
 .warning-icon {
@@ -338,6 +371,7 @@ const handleTopRightIconClick = (e: Event) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-shrink: 0;
   margin-top: auto;
   padding-top: 16px;
 }
@@ -375,7 +409,7 @@ const handleTopRightIconClick = (e: Event) => {
   max-width: 150px;
 }
 
-/* 悬停效果 */
+/* 悬停效果 - 简洁优雅 */
 .title-row:hover .card-title {
   color: #1890ff;
   transition: color 0.2s ease;
@@ -386,11 +420,27 @@ const handleTopRightIconClick = (e: Event) => {
   transition: color 0.2s ease;
 }
 
+/* 标题和副标题的点击悬停效果 */
+.title-row:hover {
+  transform: translateX(2px);
+}
+
+.subtitle-row:hover {
+  transform: translateX(2px);
+}
+
 /* 响应式设计：移动端适配 */
 @media (max-width: 768px) {
   .item-card {
+    height: 180px;
+  }
+  
+  .card-container {
     padding: 16px;
-    min-height: 160px;
+  }
+  
+  .title-section {
+    height: 70px;
   }
   
   .card-header {
