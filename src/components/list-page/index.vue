@@ -74,8 +74,9 @@
           </div>
 
           <!-- 内容主体 -->
+          <n-scrollbar style="height: calc(100vh - 410px);"  :size="1">
           <div class="list-content-body">
-            <n-scrollbar style="height: calc(100vh - 458px);">
+           
               <div v-if="currentView === 'card' && hasSlot('card-view')" class="view-wrapper">
                 <slot name="card-view"></slot>
               </div>
@@ -88,8 +89,9 @@
               <div v-else class="view-wrapper">
                 <slot :name="getDefaultViewSlot()"></slot>
               </div>
-            </n-scrollbar>
+        
           </div>
+        </n-scrollbar>
         </div>
       </div>
 
@@ -381,11 +383,10 @@ onUnmounted(() => {
     /* 内容主体：可滚动区域 */
     .list-content-body {
       height: 100%;
-      overflow: auto;
+      margin-top: 20px;
 
       /* 视图包装器：确保内容正确显示 */
       .view-wrapper {
-        padding: 16px 0;
         min-height: calc(100% - 32px); /* 减去padding */
       }
     }
@@ -395,7 +396,7 @@ onUnmounted(() => {
 /* 底部区域：固定高度 */
 .list-content-footer {
   flex-shrink: 0;
-  height: 60px;
+  height: 50px;
   display: flex;
   align-items: center;
   justify-content: end;
