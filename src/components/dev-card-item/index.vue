@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { NCard, NSpace, NText, NEllipsis } from 'naive-ui'
+import { computed, getCurrentInstance } from 'vue'
+import { NCard,NEllipsis } from 'naive-ui'
 
 interface Props {
   /** 卡片主标题 */
@@ -66,6 +66,27 @@ const warningIconColor = computed(() => {
   return props.warnStatus === 'Y' ? '#ff4d4f' : '#d9d9d9'
 })
 
+// 检查是否有监听器的工具函数
+const hasListener = (eventName: string) => {
+  const listeners = getCurrentInstance()?.vnode.props
+  return listeners && `on${eventName.charAt(0).toUpperCase() + eventName.slice(1)}` in listeners
+}
+
+// 检查是否应该处理标题点击
+const shouldHandleTitleClick = computed(() => {
+  return hasListener('click-title') || props.deviceId
+})
+
+// 检查是否应该处理副标题点击
+const shouldHandleSubtitleClick = computed(() => {
+  return hasListener('click-subtitle') || props.deviceConfigId
+})
+
+// 检查是否应该处理右上角图标点击
+const shouldHandleTopRightIconClick = computed(() => {
+  return hasListener('click-top-right-icon') || props.warnStatus
+})
+
 // 点击事件处理函数
 const handleCardClick = () => {
   // 跳转到设备详情页
@@ -76,23 +97,27 @@ const handleCardClick = () => {
 }
 
 const handleTitleClick = (e: Event) => {
-  // 阻止事件冒泡，避免触发卡片点击事件
-  e.stopPropagation()
-  // 跳转到设备详情页
-  if (props.deviceId) {
-    window.location.href = `/device/details?d_id=${props.deviceId}`
+  // 只有在需要处理点击时才阻止冒泡
+  if (shouldHandleTitleClick.value) {
+    e.stopPropagation()
+    // 跳转到设备详情页
+    if (props.deviceId) {
+      window.location.href = `/device/details?d_id=${props.deviceId}`
+    }
+    emit('click-title')
   }
-  emit('click-title')
 }
 
 const handleSubtitleClick = (e: Event) => {
-  // 阻止事件冒泡，避免触发卡片点击事件
-  e.stopPropagation()
-  // 跳转到设备配置详情页
-  if (props.deviceConfigId) {
-    window.location.href = `/device/config-detail?id=${props.deviceConfigId}`
+  // 只有在需要处理点击时才阻止冒泡
+  if (shouldHandleSubtitleClick.value) {
+    e.stopPropagation()
+    // 跳转到设备配置详情页
+    if (props.deviceConfigId) {
+      window.location.href = `/device/config-detail?id=${props.deviceConfigId}`
+    }
+    emit('click-subtitle')
   }
-  emit('click-subtitle')
 }
 
 const handleWarningClick = (e: Event) => {
@@ -104,9 +129,11 @@ const handleWarningClick = (e: Event) => {
 }
 
 const handleTopRightIconClick = (e: Event) => {
-  // 阻止事件冒泡，避免触发卡片点击事件
-  e.stopPropagation()
-  emit('click-top-right-icon')
+  // 只有在需要处理点击时才阻止冒泡
+  if (shouldHandleTopRightIconClick.value) {
+    e.stopPropagation()
+    emit('click-top-right-icon')
+  }
 }
 </script>
 
@@ -125,7 +152,11 @@ const handleTopRightIconClick = (e: Event) => {
         <!-- 左侧标题区域 -->
         <div class="title-section">
           <!-- 主标题行：标题文本 + 状态点 -->
-          <div class="title-row" @click="handleTitleClick">
+          <div 
+            class="title-row" 
+            :class="{ 'clickable': shouldHandleTitleClick }"
+            @click="handleTitleClick"
+          >
             <div class="title-content">
               <!-- 主标题，支持单行省略 -->
               <NEllipsis class="card-title" :tooltip="false">
@@ -134,7 +165,7 @@ const handleTopRightIconClick = (e: Event) => {
               
               <!-- 状态点，紧跟标题显示 -->
               <div
-                v-if="statusActive !== undefined"
+                v-if="statusActive"
                 class="status-dot"
                 :style="{ backgroundColor: statusColor }"
               />
@@ -145,6 +176,7 @@ const handleTopRightIconClick = (e: Event) => {
           <div 
             v-if="subtitle || $slots['subtitle-icon']" 
             class="subtitle-row"
+            :class="{ 'clickable': shouldHandleSubtitleClick }"
             @click="handleSubtitleClick"
           >
             <!-- 副标题图标插槽，顶部对齐 -->
@@ -168,21 +200,11 @@ const handleTopRightIconClick = (e: Event) => {
         <div class="indicator-section">
           <div 
             class="top-right-icon-container"
+            :class="{ 'clickable': shouldHandleTopRightIconClick }"
             @click="handleTopRightIconClick"
           >
             <!-- 右上角图标插槽，如果没有提供插槽则显示默认的三角形告警图标 -->
-            <slot name="top-right-icon">
-              <!-- 默认的三角形告警图标 -->
-              <svg 
-                width="20" 
-                height="20" 
-                viewBox="0 0 24 24" 
-                :fill="warningIconColor"
-                class="warning-icon"
-              >
-                <path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/>
-              </svg>
-            </slot>
+            <slot name="top-right-icon"> </slot>
           </div>
         </div>
       </div>
@@ -280,8 +302,21 @@ const handleTopRightIconClick = (e: Event) => {
 
 .title-row {
   margin-bottom: 12px;
-  cursor: pointer;
   transition: transform 0.2s ease;
+}
+
+/* 只有可点击的标题才显示指针和悬停效果 */
+.title-row.clickable {
+  cursor: pointer;
+}
+
+.title-row.clickable:hover {
+  transform: translateX(2px);
+}
+
+.title-row.clickable:hover .card-title {
+  color: #1890ff;
+  transition: color 0.2s ease;
 }
 
 .title-content {
@@ -293,7 +328,6 @@ const handleTopRightIconClick = (e: Event) => {
 .card-title {
   font-size: 18px;
   font-weight: 600;
-
   line-height: 1.4;
   min-width: 0;
   transition: color 0.2s ease;
@@ -310,10 +344,23 @@ const handleTopRightIconClick = (e: Event) => {
 .subtitle-row {
   display: flex;
   gap: 8px;
-  cursor: pointer;
   flex: 1;
   min-height: 36px;
   transition: transform 0.2s ease;
+}
+
+/* 只有可点击的副标题才显示指针和悬停效果 */
+.subtitle-row.clickable {
+  cursor: pointer;
+}
+
+.subtitle-row.clickable:hover {
+  transform: translateX(2px);
+}
+
+.subtitle-row.clickable:hover .subtitle-text {
+  color: #1890ff;
+  transition: color 0.2s ease;
 }
 
 .subtitle-icon-container {
@@ -350,12 +397,16 @@ const handleTopRightIconClick = (e: Event) => {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
-.top-right-icon-container:hover {
-  transform:  scale(1.5);
+/* 只有可点击的右上角图标才显示指针和悬停效果 */
+.top-right-icon-container.clickable {
+  cursor: pointer;
+}
+
+.top-right-icon-container.clickable:hover {
+  transform: scale(1.5);
 }
 
 .warning-icon {
@@ -408,27 +459,4 @@ const handleTopRightIconClick = (e: Event) => {
   color: #888;
   max-width: 150px;
 }
-
-/* 悬停效果 - 简洁优雅 */
-.title-row:hover .card-title {
-  color: #1890ff;
-  transition: color 0.2s ease;
-}
-
-.subtitle-row:hover .subtitle-text {
-  color: #1890ff;
-  transition: color 0.2s ease;
-}
-
-/* 标题和副标题的点击悬停效果 */
-.title-row:hover {
-  transform: translateX(2px);
-}
-
-.subtitle-row:hover {
-  transform: translateX(2px);
-}
-
-
-
 </style>

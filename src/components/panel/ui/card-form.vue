@@ -296,7 +296,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                 class="m-b-2 w-360px"
               >
                 <template #prefix>
-                  <span class="text-#999">{{ $t('generate.device-count') }}</span>
+                  <span class="text-#999">{{ $t('generate.device-num-count') }}</span>
                 </template>
               </n-input-number>
 
