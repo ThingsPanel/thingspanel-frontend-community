@@ -455,12 +455,10 @@ const handleWarningClick = (item: DeviceItem) => {
   >
     <!-- 搜索表单内容 -->
     <template #search-form-content>
-      <div class="flex flex-1 flex-wrap items-end gap-4">
-        <div
+      <n-grid   cols="1 s:2 m:3 l:4 xl:6 2xl:8"   x-gap="18" y-gap="18" responsive="screen">
+        <n-gi
           v-for="config in searchConfigs"
           :key="config.key"
-          class="flex flex-col gap-2"
-          :class="getPlatform ? 'min-w-100%' : ''"
         >
           <template v-if="config.type === 'input'">
             <NInput
@@ -516,8 +514,8 @@ const handleWarningClick = (item: DeviceItem) => {
               @update:value="value => handleTreeSelectUpdate(value, config.key)"
             />
           </template>
-        </div>
-      </div>
+        </n-gi>
+      </n-grid>
     </template>
 
     <!-- 头部左侧操作区域 -->
@@ -530,10 +528,10 @@ const handleWarningClick = (item: DeviceItem) => {
     <!-- 卡片视图 - 使用铃铛图标插槽 -->
     <template #card-view>
       <n-spin :show="loading">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 p-4">
+        <n-grid   cols="1 s:2 m:3 l:4 xl:5 2xl:8"   x-gap="18" y-gap="18" responsive="screen">
+          <n-gi   v-for="item in dataList"
+          :key="item.id"  >
           <DevCardItem
-            v-for="item in dataList"
-            :key="item.id" 
             :title="item.name || 'N/A'" 
             :status-active="item.is_online === 1"
             :subtitle="item.device_config_name || '--'"
@@ -573,7 +571,8 @@ const handleWarningClick = (item: DeviceItem) => {
               />
             </template>
           </DevCardItem>
-        </div>
+        </n-gi>
+        </n-grid>
       </n-spin>
     </template>
 
@@ -581,6 +580,7 @@ const handleWarningClick = (item: DeviceItem) => {
     <template #list-view>
       <div class="overflow-x-auto">
         <NDataTable
+          size="small"
           :row-props="rowProps"
           :loading="loading"
           :columns="generatedColumns"
@@ -593,7 +593,7 @@ const handleWarningClick = (item: DeviceItem) => {
     <!-- 地图视图 -->
     <template #map-view>
       <n-spin :show="loading">
-        <div class="h-525px">
+        <div class="h-495px">
           <TencentMap :devices="dataList" />
         </div>
       </n-spin>
@@ -616,9 +616,7 @@ const handleWarningClick = (item: DeviceItem) => {
 </template>
 
 <style scoped lang="scss">
-.input-style {
-  min-width: 140px;
-}
+
 
 .btn-style {
   @apply hover:bg-[var(--color-primary-hover)] rounded-md shadow;

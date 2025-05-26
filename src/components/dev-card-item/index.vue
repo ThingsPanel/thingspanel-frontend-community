@@ -429,43 +429,6 @@ const handleTopRightIconClick = (e: Event) => {
   transform: translateX(2px);
 }
 
-/* 响应式设计：移动端适配 */
-@media (max-width: 768px) {
-  .item-card {
-    height: 180px;
-  }
-  
-  .card-container {
-    padding: 16px;
-  }
-  
-  .title-section {
-    height: 70px;
-  }
-  
-  .card-header {
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .indicator-section {
-    margin-left: 0;
-    align-self: flex-end;
-  }
-  
-  .card-footer {
-    flex-direction: column;
-    gap: 8px;
-    align-items: flex-start;
-  }
-  
-  .footer-right {
-    align-self: flex-end;
-    margin-left: 0;
-  }
-  
-  .footer-text {
-    max-width: none;
-  }
-}
+
+
 </style>

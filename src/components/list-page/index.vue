@@ -7,16 +7,28 @@
           <div class="search-form-content">
             <slot name="search-form-content" />
           </div>
-          <div class="search-button">
-            <n-button v-if="showQueryButton" type="primary" size="small" @click="handleQuery">
+          <div class="search-button" :class="{ 'search-button-mobile': isMobileLayout }">
+            <n-button 
+              v-if="showQueryButton" 
+              type="primary" 
+              size="small" 
+              :class="{ 'mobile-button': isMobileLayout }"
+              @click="handleQuery"
+            >
               {{ $t('generate.query') }}
             </n-button>
-            <n-button v-if="showResetButton" type="default" size="small" @click="handleReset">
+            <n-button 
+              v-if="showResetButton" 
+              type="default" 
+              size="small" 
+              :class="{ 'mobile-button': isMobileLayout }"
+              @click="handleReset"
+            >
               {{ $t('generate.reset') }}
             </n-button>
           </div>
         </div>
-        <n-divider style="margin-top: 10px;"/>
+        <n-divider style="margin-top: 10px;margin-bottom: 10px;"/>
         <!-- 内容区域 -->
         <div class="list-content">
           <!-- 内容头部 -->
@@ -63,7 +75,7 @@
 
           <!-- 内容主体 -->
           <div class="list-content-body">
-            <n-scrollbar class="content-scrollbar">
+            <n-scrollbar style="height: calc(100vh - 458px);">
               <div v-if="currentView === 'card' && hasSlot('card-view')" class="view-wrapper">
                 <slot name="card-view"></slot>
               </div>
@@ -92,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, useSlots, onMounted } from 'vue';
+import { ref, computed, useSlots, onMounted, onUnmounted } from 'vue';
 import {
   NCard,
   NButton,
@@ -129,6 +141,7 @@ interface Props {
   availableViews?: ViewItem[];
   showQueryButton?: boolean;
   showResetButton?: boolean;
+  mobileBreakpoint?: number; // 移动端断点，默认768px
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -141,7 +154,8 @@ const props = withDefaults(defineProps<Props>(), {
     { key: 'map', icon: MapIcon, label: 'views.map' }
   ],
   showQueryButton: true,
-  showResetButton: true
+  showResetButton: true,
+  mobileBreakpoint: 768
 });
 
 // Emits 定义
@@ -158,8 +172,18 @@ const slots = useSlots();
 
 // 响应式数据
 const currentView = ref<string>('');
+const windowWidth = ref<number>(window.innerWidth);
+
+// 监听窗口大小变化
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
 
 // 计算属性
+const isMobileLayout = computed(() => {
+  return windowWidth.value <= props.mobileBreakpoint;
+});
+
 const shouldShowSearchArea = computed(() => {
   // 如果有搜索表单内容插槽，或者显示查询/重置按钮，则显示搜索区域
   return hasSlot('search-form-content') || props.showQueryButton || props.showResetButton;
@@ -249,6 +273,11 @@ const handleRefresh = () => {
 // 生命周期
 onMounted(() => {
   initializeView();
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
 });
 </script>
 
@@ -277,14 +306,16 @@ onMounted(() => {
   /* 搜索区域：固定高度，不参与 flex 分配 */
   .search {
     flex-shrink: 0;
-    min-height: 0;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 16px;
+    z-index: 10; /* 确保在滚动内容之上 */
+
+    /* 桌面端布局 */
     .search-form-content {
       flex: 1;
-      min-height: 0;
+      min-width: 0;
       padding-bottom: 16px;
     }
 
@@ -293,24 +324,47 @@ onMounted(() => {
       display: flex;
       gap: 8px;
     }
+
+    /* 移动端布局 */
+    &:has(.search-button-mobile) {
+      flex-direction: column;
+      align-items: stretch;
+      
+      .search-form-content {
+        padding-bottom: 8px;
+      }
+      
+      .search-button-mobile {
+        flex-direction: row;
+        gap: 8px;
+        width: 100%;
+        
+        .mobile-button {
+          flex: 1;
+        }
+      }
+    }
   }
 
-  /* 列表内容区域：占用剩余空间 */
+  /* 列表内容区域：占用剩余空间，整个区域可滚动 */
   .list-content {
     flex: 1;
     min-height: 0;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden; /* 确保不会超出容器 */
+    overflow: hidden;
+    position: relative;
 
-    /* 内容头部：固定高度 */
+    /* 内容头部：固定在列表内容区域顶部 */
     .list-content-header {
-      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      padding: 6px 0;
+      margin-bottom: 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 16px;
+      flex-shrink: 0;
 
       .list-content-header-left {
         display: flex;
@@ -324,22 +378,15 @@ onMounted(() => {
       }
     }
 
-    /* 内容主体：占用剩余空间，内容超出时滚动 */
+    /* 内容主体：可滚动区域 */
     .list-content-body {
-      flex: 1;
-      min-height: 0;
-      overflow: hidden;
-
-      /* 滚动条容器：占满父容器高度 */
-      .content-scrollbar {
-        height: 100%;
-      }
+      height: 100%;
+      overflow: auto;
 
       /* 视图包装器：确保内容正确显示 */
       .view-wrapper {
-        min-height: 100%;
-        display: flex;
-        flex-direction: column;
+        padding: 16px 0;
+        min-height: calc(100% - 32px); /* 减去padding */
       }
     }
   }
@@ -352,6 +399,28 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: end;
+}
+
+/* 移动端特定样式 */
+@media (max-width: 768px) {
+  .search {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    
+    .search-form-content {
+      padding-bottom: 8px !important;
+    }
+    
+    .search-button {
+      flex-direction: row !important;
+      gap: 8px !important;
+      width: 100% !important;
+      
+      .n-button {
+        flex: 1 !important;
+      }
+    }
+  }
 }
 
 /* 为了确保在 naive-ui 的 Card 组件中正确工作，需要覆盖一些默认样式 */
