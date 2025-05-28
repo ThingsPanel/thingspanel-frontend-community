@@ -61,10 +61,6 @@ const statusColor = computed(() => {
   return colorMap[props.statusType]
 })
 
-// 计算告警图标颜色
-const warningIconColor = computed(() => {
-  return props.warnStatus === 'Y' ? '#ff4d4f' : '#d9d9d9'
-})
 
 // 检查是否有监听器的工具函数
 const hasListener = (eventName: string) => {
@@ -120,13 +116,6 @@ const handleSubtitleClick = (e: Event) => {
   }
 }
 
-const handleWarningClick = (e: Event) => {
-  // 阻止事件冒泡，避免触发卡片点击事件
-  e.stopPropagation()
-  // 跳转到告警信息页
-  window.location.href = '/alarm/warning-message'
-  emit('click-warning')
-}
 
 const handleTopRightIconClick = (e: Event) => {
   // 只有在需要处理点击时才阻止冒泡
@@ -165,7 +154,7 @@ const handleTopRightIconClick = (e: Event) => {
               
               <!-- 状态点，紧跟标题显示 -->
               <div
-                v-if="statusActive"
+                v-if="statusActive !== undefined"
                 class="status-dot"
                 :style="{ backgroundColor: statusColor }"
               />
@@ -203,7 +192,7 @@ const handleTopRightIconClick = (e: Event) => {
             :class="{ 'clickable': shouldHandleTopRightIconClick }"
             @click="handleTopRightIconClick"
           >
-            <!-- 右上角图标插槽，如果没有提供插槽则显示默认的三角形告警图标 -->
+            <!-- 右上角图标插槽 -->
             <slot name="top-right-icon"> </slot>
           </div>
         </div>
@@ -253,30 +242,32 @@ const handleTopRightIconClick = (e: Event) => {
 <style scoped>
 .item-card {
   width: 100%;
-  height: 200px;
+  height: 180px;
   border-radius: 12px;
   cursor: pointer;
   position: relative;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+ 
 }
 
-/* 悬停效果 - 简洁优雅 */
+/* 悬停效果 - 调整为与用户提供的HTML示例一致 (无特定transform, box-shadow, border-color变化) */
 .item-card:hover {
-  transform: translateY(4px) translateX(4px);
-  box-shadow: 
+  /* transform: translateY(4px) translateX(4px); */ /* Removed for consistency */
+  /* box-shadow:
     0 8px 25px rgba(0, 0, 0, 0.12),
-    0 4px 10px rgba(0, 0, 0, 0.08);
-  border-color: rgba(24, 144, 255, 0.3);
+    0 4px 10px rgba(0, 0, 0, 0.08); */ /* Removed for consistency */
+  /* border-color: rgba(24, 144, 255, 0.3); */ /* Removed for consistency */
+  /* 如果需要特定的悬停效果，应在此处明确定义 */
 }
 
-/* 点击时的动画 */
+/* 点击时的动画 - kept subtle, can be removed if not desired */
 .item-card:active {
-  transform: translateY(-2px);
+  transform: translateY(2px) translateX(2px);
   transition: all 0.1s ease;
 }
 
-/* 新增：卡片内容容器，使用flexbox布局 */
+/* 卡片内容容器，使用flexbox布局 */
 .card-container {
   padding: 20px;
   height: 100%;
@@ -295,9 +286,9 @@ const handleTopRightIconClick = (e: Event) => {
 .title-section {
   flex: 1;
   min-width: 0;
-  height: 80px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 .title-row {
@@ -331,6 +322,7 @@ const handleTopRightIconClick = (e: Event) => {
   line-height: 1.4;
   min-width: 0;
   transition: color 0.2s ease;
+
 }
 
 .status-dot {
@@ -343,9 +335,9 @@ const handleTopRightIconClick = (e: Event) => {
 
 .subtitle-row {
   display: flex;
+  align-items: center;
   gap: 8px;
-  flex: 1;
-  min-height: 36px;
+  margin-bottom: 8px;
   transition: transform 0.2s ease;
 }
 
@@ -371,7 +363,6 @@ const handleTopRightIconClick = (e: Event) => {
   height: 20px;
   font-size: 14px;
   flex-shrink: 0;
-  margin-top: 2px;
 }
 
 .subtitle-text-container {
@@ -397,7 +388,7 @@ const handleTopRightIconClick = (e: Event) => {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  transition: background-color 0.2s ease;
+  transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
 /* 只有可点击的右上角图标才显示指针和悬停效果 */
@@ -406,11 +397,7 @@ const handleTopRightIconClick = (e: Event) => {
 }
 
 .top-right-icon-container.clickable:hover {
-  transform: scale(1.5);
-}
-
-.warning-icon {
-  transition: fill 0.3s ease;
+  transform: scale(1.2);
 }
 
 .card-content {
@@ -424,7 +411,6 @@ const handleTopRightIconClick = (e: Event) => {
   align-items: center;
   flex-shrink: 0;
   margin-top: auto;
-  padding-top: 16px;
 }
 
 .footer-left {
@@ -438,15 +424,18 @@ const handleTopRightIconClick = (e: Event) => {
 .footer-icon-container {
   display: flex;
   align-items: center;
-  justify-content: start;
-  width: 40px;
-  height: 40px;
-  margin-left: -8px;
+  justify-content: center;
+  width: 44px;
+  height: 35.5px;
+  border-radius: 8px;
   flex-shrink: 0;
 }
 
 .default-device-icon {
-  opacity: 0.6;
+  width: 18px;
+  height: 18px;
+  fill: #666;
+  opacity: 0.8;
 }
 
 .footer-right {
