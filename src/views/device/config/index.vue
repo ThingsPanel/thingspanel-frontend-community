@@ -203,8 +203,8 @@ const availableViews = [
           :key="item.id"  >
           <ItemCard
             :title="item.name"
-            :subtitle="`${item.device_count} ${$t('generate.individual')} ${$t('generate.device')}`"
-            :footer-text="deviceTypeMap[item.device_type as keyof typeof deviceTypeMap]"
+            :footer-text ="`${item.device_count} ${$t('generate.individual')} ${$t('generate.device')}`"
+            :subtitle="deviceTypeMap[item.device_type as keyof typeof deviceTypeMap]"
             :device-config-id="item.id"
             :status-active="false"
             @click-card="goToDetail(item.id)"
@@ -215,10 +215,9 @@ const availableViews = [
                 alt="device type icon" 
                 class="image-icon" 
               />
-            </template>
-            
-            <!-- 卡片内容区域可以显示更多信息 -->
-       
+          </template>
+          
+          <!-- 卡片内容区域可以显示更多信息 -->
           </ItemCard>
         </n-gi>
       </n-grid>

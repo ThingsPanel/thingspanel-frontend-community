@@ -74,7 +74,7 @@
           </div>
 
           <!-- 内容主体 -->
-          <n-scrollbar style="height: calc(100vh - 410px);"  :size="1">
+          
           <div class="list-content-body">
            
               <div v-if="currentView === 'card' && hasSlot('card-view')" class="view-wrapper">
@@ -91,7 +91,7 @@
               </div>
         
           </div>
-        </n-scrollbar>
+        
         </div>
       </div>
 

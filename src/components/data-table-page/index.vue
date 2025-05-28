@@ -348,10 +348,6 @@ const loadOptionsOnMount2 = async () => {
   }
 };
 
-const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
 
 // 在组件挂载时加载选项
 loadOptionsOnMount('');
@@ -428,7 +424,7 @@ const availableViews = [
   { key: 'list', icon: ListOutline, label: 'views.list' },
   { key: 'map', icon: MapOutline, label: 'views.map' }
 ];
-
+const formSize = ref(undefined);
 // 处理告警铃铛图标点击事件
 const handleWarningClick = (item: DeviceItem) => {
   // 根据设备信息跳转到相应的告警页面
@@ -463,7 +459,7 @@ const handleWarningClick = (item: DeviceItem) => {
           <template v-if="config.type === 'input'">
             <NInput
               v-model:value="searchCriteria[config.key]"
-              size="small"
+              :size="formSize"
               :placeholder="$t(config.label)"
               class="input-style"
               @update:value="handleInputChange"
@@ -472,7 +468,7 @@ const handleWarningClick = (item: DeviceItem) => {
           <template v-else-if="config.type === 'date-range'">
             <NDatePicker
               v-model:value="searchCriteria[config.key]"
-              size="small"
+              :size="formSize"
               type="daterange"
               :placeholder="$t(config.label)"
               class="input-style"
@@ -483,7 +479,7 @@ const handleWarningClick = (item: DeviceItem) => {
               v-model:value="searchCriteria[config.key]"
               :value-field="config.valueField"
               :label-field="config.labelField"
-              size="small"
+              :size="formSize"
               filterable
               :filter="filterSelectOption"
               :options="config.options"
@@ -497,7 +493,7 @@ const handleWarningClick = (item: DeviceItem) => {
           <template v-else-if="config.type === 'date'">
             <NDatePicker
               v-model:value="searchCriteria[config.key]"
-              size="small"
+              :size="formSize"
               type="date"
               :placeholder="$t(config.label)"
               class="input-style"
@@ -506,7 +502,7 @@ const handleWarningClick = (item: DeviceItem) => {
           <template v-else-if="config.type === 'tree-select'">
             <n-tree-select
               v-model:value="searchCriteria[config.key]"
-              size="small"
+             :size="formSize"
               filterable
               :options="config.options"
               :multiple="config.multiple"
@@ -527,6 +523,7 @@ const handleWarningClick = (item: DeviceItem) => {
 
     <!-- 卡片视图 - 使用铃铛图标插槽 -->
     <template #card-view>
+      <n-scrollbar style="height: calc(100vh - 442px);"  :size="1">
       <n-spin :show="loading">
         <n-grid   cols="1 s:2 m:3 l:4 xl:5 2xl:8"   x-gap="18" y-gap="18" responsive="screen">
           <n-gi   v-for="item in dataList"
@@ -574,11 +571,12 @@ const handleWarningClick = (item: DeviceItem) => {
         </n-gi>
         </n-grid>
       </n-spin>
+    </n-scrollbar>
     </template>
 
     <!-- 列表视图 -->
     <template #list-view>
-      <div class="overflow-x-auto">
+      <n-scrollbar style="height: calc(100vh - 442px);"  :size="1">
         <NDataTable
           size="small"
           :row-props="rowProps"
@@ -587,16 +585,18 @@ const handleWarningClick = (item: DeviceItem) => {
           :data="dataList"
           class="w-full"
         />
-      </div>
+      </n-scrollbar>
     </template>
 
     <!-- 地图视图 -->
     <template #map-view>
+     
       <n-spin :show="loading">
         <div class="h-495px">
           <TencentMap :devices="dataList" />
         </div>
       </n-spin>
+ 
     </template>
 
     <!-- 底部分页 -->
