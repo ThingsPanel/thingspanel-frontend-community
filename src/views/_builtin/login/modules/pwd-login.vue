@@ -96,11 +96,11 @@ const emailOptions = computed(() => {
   return filteredDomains.map(domain => `${username}@${domain}`);
 });
 
-const rememberPath = e => {
-  logger.info(e);
-  isRememberPath.value = !isRememberPath.value;
-  localStorage.setItem('isRememberPath', isRememberPath.value ? '1' : '0');
-};
+// const rememberPath = e => {
+//   logger.info(e);
+//   isRememberPath.value = !isRememberPath.value;
+//   localStorage.setItem('isRememberPath', isRememberPath.value ? '1' : '0');
+// };
 
 async function handleSubmit() {
   // 先判断密码长度
@@ -163,6 +163,7 @@ onMounted(() => {
   <NForm ref="formRef" :key="locale" :model="model" :rules="rules" size="large" :show-label="false">
     <NFormItem path="userName">
       <NAutoComplete
+      
         v-model:value="model.userName"
         :options="emailOptions"
         :placeholder="$t('page.login.common.userNamePlaceholder')"
@@ -172,6 +173,7 @@ onMounted(() => {
     </NFormItem>
     <NFormItem path="password">
       <NInput
+     
         v-model:value="model.password"
         type="password"
         show-password-on="click"
@@ -189,15 +191,19 @@ onMounted(() => {
       <NButton type="primary" size="large" round block :loading="authStore.loginLoading" @click="handleSubmit">
         {{ $t('common.confirm') }}
       </NButton>
-      <NCheckbox :checked="isRememberPath" @update:checked="rememberPath">
+      <!-- <NCheckbox :checked="isRememberPath" @update:checked="rememberPath">
         {{ $t('page.login.common.rememberPath') }}
-      </NCheckbox>
-      <div class="flex-y-center justify-between gap-12px">
+      </NCheckbox> -->
+      <n-divider title-placement="center" style="padding: 0px;margin: 0px;">
+        {{ $t('generate.or') }}
+      </n-divider>
+      <div class="flex-y-center justify-between gap-12px mt--4">
         <NButton v-if="showYzm" class="flex-1" block @click="toggleLoginModule('code-login')">
           {{ $t(loginModuleRecord['code-login']) }}
         </NButton>
-        <NButton v-if="showZc" class="flex-1" block @click="toggleLoginModule('register-email')">
-          {{ $t(loginModuleRecord.register) }}
+      
+        <NButton v-if="showZc" class="flex-1" block  type="primary" quaternary @click="toggleLoginModule('register-email')">
+          <span class="text-#999"> 还没有账号?</span> {{ $t(loginModuleRecord.register) }}
         </NButton>
       </div>
     </NSpace>

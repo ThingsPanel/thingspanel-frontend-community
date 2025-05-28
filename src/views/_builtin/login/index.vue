@@ -14,7 +14,6 @@ import Register from './modules/register.vue';
 import RegisterByEmail from './modules/register-email.vue';
 import ResetPwd from './modules/reset-pwd.vue';
 import BindWechat from './modules/bind-wechat.vue';
-import LoginBg from './modules/login-bg.vue';
 
 interface Props {
   /** The login module */
@@ -48,18 +47,6 @@ const activeModule = computed(() => {
   const findItem = modules.find(item => item.key === props.module);
   return findItem || modules[0];
 });
-console.log(activeModule.value.label);
-const bgThemeColor = computed(() =>
-  themeStore.darkMode ? getColorPalette(themeStore.themeColor, 7) : themeStore.themeColor
-);
-
-const bgColor = computed(() => {
-  const COLOR_WHITE = '#ffffff';
-
-  const ratio = themeStore.darkMode ? 0.5 : 0.2;
-
-  return mixColor(COLOR_WHITE, themeStore.themeColor, ratio);
-});
 
 // 计算当前模块的标题
 const moduleTitle = computed(() => {
@@ -77,6 +64,30 @@ const moduleTitle = computed(() => {
   }
 });
 
+// 背景颜色计算
+const bgGradient = computed(() => {
+  if (themeStore.darkMode) {
+    return 'linear-gradient(135deg, #1f2937 0%, #374151 50%, #111827 100%)';
+  }
+  return 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%)';
+});
+
+// 卡片背景色
+const cardBgColor = computed(() => {
+  if (themeStore.darkMode) {
+    return 'rgba(31, 41, 55, 0.95)';
+  }
+  return 'rgba(255, 255, 255, 0.95)';
+});
+
+// 边框颜色
+const borderColor = computed(() => {
+  if (themeStore.darkMode) {
+    return '#374151';
+  }
+  return '#e5e7eb';
+});
+
 // 监听标题变化
 watch(moduleTitle, newTitle => {
   useTitle(newTitle);
@@ -84,59 +95,171 @@ watch(moduleTitle, newTitle => {
 </script>
 
 <template>
-  <div class="relative size-full flex-center overflow-hidden" :style="{ backgroundColor: bgColor }">
-    <!--
- <div class="absolute left-48px top-24px z-99">
-      <div class="flex-center">
-        <ThemeSchemaSwitch
-          :theme-schema="themeStore.themeScheme"
-          :show-tooltip="false"
-          @switch="themeStore.toggleThemeScheme"
-        />
+  <div 
+    class="relative size-full flex-center overflow-hidden min-h-screen"
+    :style="{ 
+      background: bgGradient,
+      fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, sans-serif'
+    }"
+  >
+   
+    <div class="absolute inset-0 opacity-60 pointer-events-none">
+      <div 
+        class="absolute inset-0 animate-pulse"
+        :style="{
+          background: `
+            radial-gradient(circle at 20% 30%, ${themeStore.darkMode ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.1)'} 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, ${themeStore.darkMode ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.1)'} 0%, transparent 50%),
+            radial-gradient(circle at 40% 80%, ${themeStore.darkMode ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.1)'} 0%, transparent 50%)
+          `,
+          animation: 'bgFloat 10s ease-in-out infinite'
+        }"
+      />
+    </div>
 
-        <LangSwitch
-          :lang="appStore.locale"
-          :lang-options="appStore.localeOptions"
-          :show-tooltip="false"
-          @change-lang="appStore.changeLocale"
-        />
+    <!-- 登录卡片 -->
+    <div 
+      class=" relative z-10 w-full max-w-md mx-4 p-8 rounded-2xl shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom-4 duration-500"
+      :style="{ 
+        width: '400px',
+        background: cardBgColor,
+        border: `1px solid ${borderColor}`,
+        boxShadow: themeStore.darkMode 
+          ? '0 20px 60px rgba(0, 0, 0, 0.3)' 
+          : '0 20px 60px rgba(0, 0, 0, 0.1)'
+      }"
+    >
+      <!-- 顶部控制栏 -->
+      <div class="flex justify-end gap-2 mb-4">
+        <button 
+          class="flex items-center gap-1 px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 hover:scale-105"
+          :style="{
+            background: themeStore.darkMode ? '#374151' : '#f9fafb',
+            border: `1px solid ${borderColor}`,
+            color: themeStore.darkMode ? '#d1d5db' : '#6b7280'
+          }"
+          @click="themeStore.toggleThemeScheme"
+        >
+          <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24">
+            <path v-if="themeStore.darkMode" d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+            <path v-else d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
+          </svg>
+        </button>
+        <button 
+          class="flex items-center gap-1 px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 hover:scale-105"
+          :style="{
+            background: themeStore.darkMode ? '#374151' : '#f9fafb',
+            border: `1px solid ${borderColor}`,
+            color: themeStore.darkMode ? '#d1d5db' : '#6b7280'
+          }"
+          @click="appStore.changeLocale(appStore.locale === 'zh-CN' ? 'en-US' : 'zh-CN')"
+        >
+          <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24">
+            <path d="M12.87 15.07l-2.54-2.51.03-.03c1.74-1.94 2.98-4.17 3.71-6.53H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/>
+          </svg>
+          <span>{{ appStore.locale === 'zh-CN' ? '中文' : 'EN' }}</span>
+        </button>
       </div>
-    </div> 
--->
 
-    <!--    <WaveBg :theme-color="bgThemeColor" />-->
-    <NCard :bordered="false" class="relative z-4 w-auto rd-12px">
-      <div class="w-400px lt-sm:w-300px">
-        <header class="flex-y-center justify-between">
-          <SystemLogo class="text-64px text-primary lt-sm:text-48px" width="70" />
-          <h3 class="ml--8 mt--4 text-28px text-primary font-500 lt-sm:text-22px">{{ $t('system.title') }}</h3>
-          <div class="i-flex-col">
-            <ThemeSchemaSwitch
-              :theme-schema="themeStore.themeScheme"
-              :show-tooltip="false"
-              class="text-20px lt-sm:text-18px"
-              @switch="themeStore.toggleThemeScheme"
-            />
-            <LangSwitch
-              :lang="appStore.locale"
-              :lang-options="appStore.localeOptions"
-              :show-tooltip="false"
-              @change-lang="appStore.changeLocale"
-            />
-          </div>
-        </header>
-        <main class="pt-24px">
-          <h3 class="text-18px text-primary font-medium">{{ $t(activeModule.label as any) }}</h3>
-          <div class="pt-24px">
-            <Transition :name="themeStore.page.animateMode" mode="out-in" appear>
-              <component :is="activeModule.component" />
-            </Transition>
-          </div>
-        </main>
+      <!-- Logo区域 -->
+      <div class="text-center mb-6">
+        <div 
+          class="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3 shadow-lg transition-transform duration-300 hover:scale-110"
+          :style="{ background: themeStore.themeColor }"
+        >
+          <SystemLogo width="32" class="text-white" />
+        </div>
+        <h1 
+          class="text-xl font-semibold mb-1"
+          :style="{ color: themeStore.darkMode ? '#f9fafb' : '#1f2937' }"
+        >
+          {{ $t('system.title') }}
+        </h1>
+        <p 
+          class="text-xs opacity-60"
+          :style="{ color: themeStore.darkMode ? '#9ca3af' : '#6b7280' }"
+        >
+          {{ $t('system.description') }}
+        </p>
       </div>
-    </NCard>
-    <LoginBg :theme-color="bgThemeColor" :sys-setting="sysSetting" />
+
+      <!-- 表单区域 -->
+      <div class="space-y-6">
+        <!-- <h2 
+          class="text-lg font-medium text-center"
+          :style="{ color: themeStore.darkMode ? '#f9fafb' : '#1f2937' }"
+        >
+          {{ $t(activeModule.label as any) }}
+        </h2> -->
+        
+        <div class="transition-all duration-300">
+          <Transition :name="themeStore.page.animateMode" mode="out-in" appear>
+            <component :is="activeModule.component" />
+          </Transition>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* 背景动画 */
+@keyframes bgFloat {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg); 
+  }
+  50% { 
+    transform: translateY(-20px) rotate(180deg); 
+  }
+}
+
+/* 进入动画 */
+@keyframes slide-in-from-bottom {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: slide-in-from-bottom 0.5s ease-out;
+}
+
+/* 响应式适配 */
+@media (max-width: 640px) {
+  .size-full {
+    padding: 1rem;
+  }
+}
+
+/* 过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.slide-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+</style>
