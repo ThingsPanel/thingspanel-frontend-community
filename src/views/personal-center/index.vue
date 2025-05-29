@@ -190,7 +190,7 @@ onMounted(async () => {
             <div v-if="!header" class="avatar" >
               {{ userInfoData.name.slice(0,1).toUpperCase() }}
             </div>
-            <n-avatar class="w-90px h-90px" v-else round :src="headUrl" />
+            <n-avatar class="w-100px h-100px" v-else round :src="headUrl" />
             <div class="absolute bottom-0 right-0 w-32px h-32px bg-#6366f1 rounded-50% z-9999 flex justify-center items-center">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
                 <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z"></path>

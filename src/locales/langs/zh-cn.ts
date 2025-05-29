@@ -12,7 +12,8 @@ const local: App.I18n.Schema = {
   default: '',
   title: 'ThingsPanel',
   system: {
-    title: 'System Name: {name}'
+    title: 'System Name: {name}',
+    description:'连接万物，智慧生活',
   },
   common: {
     serviceConfi: '服务配置',

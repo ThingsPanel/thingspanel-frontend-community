@@ -253,6 +253,7 @@ declare namespace App {
       default: string;
       system: {
         title: string;
+        description: string;
       };
       common: {
         serviceConfi: string;

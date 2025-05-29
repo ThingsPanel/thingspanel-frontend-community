@@ -13,7 +13,8 @@ const local: App.I18n.Schema = {
   default: '',
   title: 'ThingsPanel',
   system: {
-    title: 'ThingsPanel'
+    title: 'ThingsPanel',
+    description: 'Connect Everything, Smart Living',
   },
   common: {
     serviceConfi: 'Service Configuration',
