@@ -1,17 +1,17 @@
 <template>
-  <n-card 
-    :title="$t('card.reportedData.title')" 
-    :bordered="false" 
-    size="small" 
+  <n-card
+    :title="$t('card.reportedData.title')"
+    :bordered="false"
+    size="small"
     class="reported-data-card shadow-sm transition duration-700 ease-in-out"
     :loading="loading"
   >
     <!-- Card Header Extra: Refresh Button -->
     <template #header-extra>
-      <n-button 
-        text 
-        size="small" 
-        @click="toggleRefresh" 
+      <n-button
+        text
+        size="small"
+        @click="toggleRefresh"
         :type="isRefreshing ? 'primary' : 'default'"
         :loading="isFetchingUpdate && !isRefreshing"
       >
@@ -44,17 +44,17 @@
 
       <!-- Device List -->
       <div v-else-if="!loading && devices && devices.length > 0" class="space-y-3 mt-2">
-        <n-thing 
-          v-for="(device, index) in devices" 
-          :key="device.device_id" 
-          class="device-item p-3 rounded-md border" 
+        <n-thing
+          v-for="(device, index) in devices"
+          :key="device.device_id"
+          class="device-item p-3 rounded-md border"
           :class="{
             'border-l-4': index === 0,
-            'bg-blue-50 dark:bg-slate-800': index === 0, 
+            'bg-blue-50 dark:bg-slate-800': index === 0,
             'bg-gray-50 dark:bg-gray-800': index !== 0
-          }" 
+          }"
           :style="{
-             borderColor: 'var(--n-border-color)', 
+             borderColor: 'var(--n-border-color)',
              borderLeftColor: index === 0 ? '#646cff' : 'var(--n-border-color)'
           }"
         >
@@ -86,14 +86,14 @@
           <div class="telemetry-scroller-container mt-1">
              <BottomUpInfiniteScroller
                v-if="device.telemetry_data && device.telemetry_data.length > 0"
-               :list="getPairedTelemetry(device.telemetry_data)" 
-               height="76px" 
+               :list="getPairedTelemetry(device.telemetry_data)"
+               height="76px"
              >
-               <template #default="{ item: pair }"> 
-                 <n-grid 
-                   x-gap="12" 
-                   :cols="2" 
-                   class="text-xs py-1.5 border-b last:border-b-0" 
+               <template #default="{ item: pair }">
+                 <n-grid
+                   x-gap="12"
+                   :cols="2"
+                   class="text-xs py-1.5 border-b last:border-b-0"
                    style="border-color: var(--n-border-color);"
                  >
                    <!-- Left Column -->
@@ -154,7 +154,7 @@ import { useRouter } from 'vue-router'; // Import useRouter for router-link
 dayjs.extend(relativeTime);
 // Ensure locale is set correctly if needed globally elsewhere, otherwise consider local setting
 // Assuming 'zh-cn' is globally set or this component needs it specifically.
-// dayjs.locale('zh-cn'); 
+// dayjs.locale('zh-cn');
 
 defineOptions({
   name: 'ReportedDataCard'
@@ -178,7 +178,7 @@ interface DeviceData {
 
 interface ApiLatestTelemetryResponse {
   data: DeviceData[] | null;
-  error: any; 
+  error: any;
 }
 
 interface PairedTelemetryItem {
@@ -198,7 +198,7 @@ const router = useRouter(); // Get router instance
 
 // --- Computed Locale for Dayjs ---
 // This ensures reactivity if the global locale changes, though unlikely needed here.
-const currentLocale = computed(() => dayjs.locale()); 
+const currentLocale = computed(() => dayjs.locale());
 
 // --- Helper function for dynamic styles ---
 // const getDeviceItemStyle = (index: number) => {
@@ -235,28 +235,23 @@ const fetchData = async (initialLoad = false) => {
       isFetchingUpdate.value = true; // Show spinner for background refresh
   }
   // Clear previous error only when starting a new fetch
-  error.value = null; 
+  error.value = null;
   console.log(`[ReportedData] Fetching data... Initial: ${initialLoad}`);
 
   try {
     const response: ApiLatestTelemetryResponse = await getLatestTelemetryData();
-    console.log('[ReportedData] API Response:', response);
-
     if (response.error) {
        let errorMessage = $t('card.fetchError'); // Default error message
        if (typeof response.error === 'string') errorMessage = response.error;
        else if (typeof response.error === 'object' && response.error !== null && (response.error as any).message) errorMessage = (response.error as any).message;
-       console.error('[ReportedData] API error during fetch:', errorMessage);
        error.value = new Error(errorMessage);
        devices.value = []; // Clear devices on error
     } else {
       // Ensure data is an array, default to empty array if null/undefined
       devices.value = Array.isArray(response.data) ? response.data : [];
-      console.log('[ReportedData] Processed Devices:', devices.value);
     }
 
   } catch (err) {
-    console.error('[ReportedData] Error in fetchData catch block:', err);
     const catchErrorMessage = err instanceof Error ? err.message : $t('card.unknownError');
     error.value = new Error(catchErrorMessage);
     devices.value = []; // Clear devices on catch error
@@ -270,13 +265,13 @@ const fetchData = async (initialLoad = false) => {
 
 // --- Polling Control ---
 const startPolling = () => {
-  stopPolling(); 
-  if (!isRefreshing.value) return; 
+  stopPolling();
+  if (!isRefreshing.value) return;
 
   console.log(`[ReportedData] Starting polling every ${REFRESH_INTERVAL}ms`);
   refreshIntervalId.value = setInterval(() => {
     console.log('[ReportedData] Polling tick: fetching data...');
-    fetchData(false); 
+    fetchData(false);
   }, REFRESH_INTERVAL);
 };
 
@@ -288,7 +283,7 @@ const stopPolling = () => {
   }
 };
 
-// --- Toggle Refresh --- 
+// --- Toggle Refresh ---
 const toggleRefresh = () => {
   isRefreshing.value = !isRefreshing.value;
   if (isRefreshing.value) {
@@ -319,8 +314,8 @@ onUnmounted(() => {
 const formatRelativeTime = (timeStr: string | null | undefined): string => {
   if (!timeStr) return '-';
   // Explicitly use the current locale for formatting
-  const time = dayjs(timeStr).locale(currentLocale.value); 
-  if (!time.isValid()) return '-'; 
+  const time = dayjs(timeStr).locale(currentLocale.value);
+  if (!time.isValid()) return '-';
   const now = dayjs().locale(currentLocale.value);
   // Use more specific relative time outputs or keep as is
   if (now.diff(time, 'minute') < 1) return $t('time.justNow'); // Assuming you have i18n key
@@ -328,7 +323,7 @@ const formatRelativeTime = (timeStr: string | null | undefined): string => {
 };
 
 // Get device background (keep simple logic or integrate with NThing props if needed)
-// Note: 'index' is not directly available in v-for with NThing easily unless passed. 
+// Note: 'index' is not directly available in v-for with NThing easily unless passed.
 // We might need to rethink this or pass index explicitly if the blue highlight is critical.
 // For now, removing the index-based styling simplification. Add it back if needed.
 // const getDeviceBgColor = (index: number): string => {
@@ -343,13 +338,13 @@ const formatValue = (item: TelemetryItem | any): string => {
      if (typeof item === 'boolean') return item ? $t('card.yes') : $t('card.no');
      return String(item);
    }
-   
+
    if (!item || item.value === null || item.value === undefined) return '-';
    const value = item.value;
    const key = item.key;
    const unit = item.unit;
    let displayValue = '';
- 
+
    if (typeof value === 'boolean') {
      displayValue = value ? $t('card.yes') : $t('card.no');
      if (key?.includes('switch')) {
@@ -366,7 +361,7 @@ const formatValue = (item: TelemetryItem | any): string => {
    } else {
      displayValue = String(value);
    }
- 
+
    if (unit) {
      // Handle units better
      if (['%', '°C', '°F'].includes(unit)) { // Units typically attached without space
@@ -375,7 +370,7 @@ const formatValue = (item: TelemetryItem | any): string => {
        displayValue += ` ${unit.trim()}`;
      }
    }
- 
+
    return displayValue;
  };
 

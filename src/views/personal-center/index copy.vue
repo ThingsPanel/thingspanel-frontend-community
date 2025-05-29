@@ -351,7 +351,7 @@ onMounted(async () => {
             </n-gi>
             <n-gi>
               <NButton class="mt-5" @click="changePassword">{{ $t('generate.change-password') }}</NButton>
-            </n-gi> 
+            </n-gi>
 -->
         </n-grid>
       </div>
