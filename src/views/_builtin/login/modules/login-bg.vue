@@ -13,7 +13,7 @@ const props = defineProps<Props>();
 // const darkColor = computed(() => getColorPalette(props.themeColor, 6))
 
 const bgColor = computed(() => {
-  return props.sysSetting.home_background;
+  return props.sysSetting?.home_background || '';
 });
 </script>
 

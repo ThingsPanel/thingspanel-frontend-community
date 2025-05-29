@@ -14,6 +14,7 @@ import Register from './modules/register.vue';
 import RegisterByEmail from './modules/register-email.vue';
 import ResetPwd from './modules/reset-pwd.vue';
 import BindWechat from './modules/bind-wechat.vue';
+import LoginBg from './modules/login-bg.vue';
 
 interface Props {
   /** The login module */
@@ -27,6 +28,7 @@ const props = withDefaults(defineProps<Props>(), {
 const appStore = useAppStore();
 const themeStore = useThemeStore();
 const sysSetting = useSysSettingStore();
+
 
 interface LoginModule {
   key: UnionKey.LoginModule;
@@ -64,13 +66,7 @@ const moduleTitle = computed(() => {
   }
 });
 
-// 背景颜色计算
-const bgGradient = computed(() => {
-  if (themeStore.darkMode) {
-    return 'linear-gradient(135deg, #1f2937 0%, #374151 50%, #111827 100%)';
-  }
-  return 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%)';
-});
+
 
 // 卡片背景色
 const cardBgColor = computed(() => {
@@ -95,43 +91,35 @@ watch(moduleTitle, newTitle => {
 </script>
 
 <template>
-  <div 
+  <div
     class="relative size-full flex-center overflow-hidden min-h-screen"
-    :style="{ 
-      background: bgGradient,
-      fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, sans-serif'
+    :style="{
+      fontFamily: '-apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, sans-serif',
+      background: themeStore.darkMode
+        ? 'linear-gradient(135deg, #1f2937 0%, #374151 50%, #111827 100%)'
+        : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #06b6d4 100%)'
     }"
   >
-   
-    <div class="absolute inset-0 opacity-60 pointer-events-none">
-      <div 
-        class="absolute inset-0 animate-pulse"
-        :style="{
-          background: `
-            radial-gradient(circle at 20% 30%, ${themeStore.darkMode ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.1)'} 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, ${themeStore.darkMode ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.1)'} 0%, transparent 50%),
-            radial-gradient(circle at 40% 80%, ${themeStore.darkMode ? 'rgba(99, 102, 241, 0.1)' : 'rgba(255, 255, 255, 0.1)'} 0%, transparent 50%)
-          `,
-          animation: 'bgFloat 10s ease-in-out infinite'
-        }"
-      />
+    <!-- 背景动画效果 -->
+    <div class="bg-animation">
+      <div class="bg-animation-inner" :class="{ 'dark-theme': themeStore.darkMode }"></div>
     </div>
 
     <!-- 登录卡片 -->
-    <div 
+    <div
       class=" relative z-10 w-full max-w-md mx-4 p-8 rounded-2xl shadow-2xl backdrop-blur-xl animate-in slide-in-from-bottom-4 duration-500"
-      :style="{ 
+      :style="{
         width: '400px',
         background: cardBgColor,
         border: `1px solid ${borderColor}`,
-        boxShadow: themeStore.darkMode 
-          ? '0 20px 60px rgba(0, 0, 0, 0.3)' 
+        boxShadow: themeStore.darkMode
+          ? '0 20px 60px rgba(0, 0, 0, 0.3)'
           : '0 20px 60px rgba(0, 0, 0, 0.1)'
       }"
     >
       <!-- 顶部控制栏 -->
       <div class="flex justify-end gap-2 mb-4">
-        <button 
+        <button
           class="flex items-center gap-1 px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 hover:scale-105"
           :style="{
             background: themeStore.darkMode ? '#374151' : '#f9fafb',
@@ -145,7 +133,7 @@ watch(moduleTitle, newTitle => {
             <path v-else d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.59a.75.75 0 101.06 1.061l1.591-1.59zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 10-1.061 1.06l1.59 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.59a.75.75 0 001.06 1.061l1.591-1.59zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06l-1.59-1.591a.75.75 0 00-1.061 1.06l1.59 1.591z"/>
           </svg>
         </button>
-        <button 
+        <button
           class="flex items-center gap-1 px-2 py-1.5 text-xs rounded-lg border transition-all duration-200 hover:scale-105"
           :style="{
             background: themeStore.darkMode ? '#374151' : '#f9fafb',
@@ -163,19 +151,19 @@ watch(moduleTitle, newTitle => {
 
       <!-- Logo区域 -->
       <div class="text-center mb-6">
-        <div 
+        <div
           class="inline-flex items-center justify-center w-12 h-12 rounded-xl mb-3 shadow-lg transition-transform duration-300 hover:scale-110"
           :style="{ background: themeStore.themeColor }"
         >
           <SystemLogo width="32" class="text-white" />
         </div>
-        <h1 
+        <h1
           class="text-xl font-semibold mb-1"
           :style="{ color: themeStore.darkMode ? '#f9fafb' : '#1f2937' }"
         >
           {{ $t('system.title') }}
         </h1>
-        <p 
+        <p
           class="text-xs opacity-60"
           :style="{ color: themeStore.darkMode ? '#9ca3af' : '#6b7280' }"
         >
@@ -185,13 +173,13 @@ watch(moduleTitle, newTitle => {
 
       <!-- 表单区域 -->
       <div class="space-y-6">
-        <!-- <h2 
+        <!-- <h2
           class="text-lg font-medium text-center"
           :style="{ color: themeStore.darkMode ? '#f9fafb' : '#1f2937' }"
         >
           {{ $t(activeModule.label as any) }}
         </h2> -->
-        
+
         <div class="transition-all duration-300">
           <Transition :name="themeStore.page.animateMode" mode="out-in" appear>
             <component :is="activeModule.component" />
@@ -203,13 +191,38 @@ watch(moduleTitle, newTitle => {
 </template>
 
 <style scoped>
-/* 背景动画 */
+/* 背景动画效果 */
+.bg-animation {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  opacity: 0.6;
+}
+
+.bg-animation-inner::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  animation: bgFloat 10s ease-in-out infinite;
+}
+
+.bg-animation-inner.dark-theme::before {
+   background: radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+               radial-gradient(circle at 80% 70%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+               radial-gradient(circle at 40% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%);
+ }
+
 @keyframes bgFloat {
-  0%, 100% { 
-    transform: translateY(0px) rotate(0deg); 
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
   }
-  50% { 
-    transform: translateY(-20px) rotate(180deg); 
+  50% {
+    transform: translateY(-20px) rotate(180deg);
   }
 }
 
