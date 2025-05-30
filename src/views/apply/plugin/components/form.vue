@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue';
-import type { SelectMixedOption } from 'naive-ui/es/select/src/interface';
+import { ref, watchEffect } from 'vue'
+import type { SelectMixedOption } from 'naive-ui/es/select/src/interface'
 
-const rules = ref({});
+const rules = ref({})
 
-const protocol_config = defineModel<any>('protocolConfig', { default: {} });
+const protocol_config = defineModel<any>('protocolConfig', { default: {} })
 
 interface Props {
-  formElements?: object | any;
+  formElements?: object | any
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 watchEffect(() => {
-  const str = '{}';
-  const thejson = JSON.parse(str);
+  const str = '{}'
+  const thejson = JSON.parse(str)
   if (props.formElements) {
     props.formElements.forEach(element => {
       if (element.type === 'table') {
-        protocol_config.value[element.dataKey] ??= thejson[element.dataKey] || [];
+        protocol_config.value[element.dataKey] ??= thejson[element.dataKey] || []
       } else {
-        rules.value[element.dataKey] = element.validate || {};
-        protocol_config.value[element.dataKey] ??= thejson[element.dataKey] || '';
+        rules.value[element.dataKey] = element.validate || {}
+        protocol_config.value[element.dataKey] ??= thejson[element.dataKey] || ''
       }
-    });
+    })
   }
-});
+})
 
 const onCreate = () => {
-  return {};
-};
+  return {}
+}
 </script>
 
 <template>

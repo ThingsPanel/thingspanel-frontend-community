@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { CardData } from '@/components/tp-kan-ban/kan-ban';
-import { useKanBanStore } from '@/cards2.0/store/kan-ban-store';
+import type { CardData } from '@/components/tp-kan-ban/kan-ban'
+import { useKanBanStore } from '@/cards2.0/store/kan-ban-store'
 
-defineOptions({ name: 'TpCardItem' });
+defineOptions({ name: 'TpCardItem' })
 
-const props = defineProps<{ data: CardData; view: boolean }>();
+const props = defineProps<{ data: CardData; view: boolean }>()
 
-const { cardMap } = useKanBanStore();
+const { cardMap } = useKanBanStore()
 </script>
 
 <template>

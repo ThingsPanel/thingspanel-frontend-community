@@ -1,4 +1,3 @@
-
 export const rsaPublicKey = `-----BEGIN PUBLIC KEY-----
 MIIBCgKCAQEA35ATUHHwTvEHxaOKG/8xTETHq7+syHqEkDXSuKf2irYZefaKe4n2
 GiM6uWFBgaXX/LxvxkbIQ0WK0R+mIziaF3mTa3gs7n5OiJgJDsqzZHzS9to6j9Mc

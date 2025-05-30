@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { $t } from '@/locales';
+import { $t } from '@/locales'
 </script>
 
 <template>

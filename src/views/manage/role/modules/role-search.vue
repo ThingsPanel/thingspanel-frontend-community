@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { $t } from '@/locales';
-import { enableStatusOptions } from '@/constants/business';
-import { translateOptions } from '@/utils/common4';
+import { $t } from '@/locales'
+import { enableStatusOptions } from '@/constants/business'
+import { translateOptions } from '@/utils/common4'
 
 defineOptions({
   name: 'RoleSearch'
-});
+})
 
 interface Emits {
-  (e: 'reset'): void;
+  (e: 'reset'): void
 
-  (e: 'search'): void;
+  (e: 'search'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
-const model = defineModel<Api.SystemManage.RoleSearchParams>('model', { required: true });
+const model = defineModel<Api.SystemManage.RoleSearchParams>('model', { required: true })
 
 function reset() {
-  emit('reset');
+  emit('reset')
 }
 
 function search() {
-  emit('search');
+  emit('search')
 }
 </script>
 

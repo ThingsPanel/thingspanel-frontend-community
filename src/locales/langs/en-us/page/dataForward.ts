@@ -96,4 +96,4 @@ export default {
   secretLength: 'Secret key length should be between 8 and 128 characters',
   secretFormat: 'Secret key can only contain letters and numbers',
   saveSuccess: 'Save Successful'
-};
+}

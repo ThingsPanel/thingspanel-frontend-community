@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { useAppStore } from '@/store/modules/app';
-import { useThemeStore } from '@/store/modules/theme';
-import { $t } from '@/locales';
-import LayoutModeCard from '../components/layout-mode-card.vue';
+import { useAppStore } from '@/store/modules/app'
+import { useThemeStore } from '@/store/modules/theme'
+import { $t } from '@/locales'
+import LayoutModeCard from '../components/layout-mode-card.vue'
 
 defineOptions({
   name: 'LayoutMode'
-});
+})
 
-const appStore = useAppStore();
-const themeStore = useThemeStore();
+const appStore = useAppStore()
+const themeStore = useThemeStore()
 </script>
 
 <template>

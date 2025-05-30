@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { createLogger } from '@/utils/logger';
-import { $t } from '@/locales';
-import { getAlarmCount } from '../../../service/api'; // Placeholder for actual alarm count API
-import { GradientBg } from './components';
-const logger = createLogger('AlarmCount');
+import { ref } from 'vue'
+import { createLogger } from '@/utils/logger'
+import { $t } from '@/locales'
+import { getAlarmCount } from '../../../service/api' // Placeholder for actual alarm count API
+import { GradientBg } from './components'
+const logger = createLogger('AlarmCount')
 
-defineOptions({ name: 'AlarmCountCard' });
+defineOptions({ name: 'AlarmCountCard' })
 
 const cardData = ref<any>({
   id: 'alarm-count',
@@ -15,33 +15,33 @@ const cardData = ref<any>({
   unit: $t('card.alarmUnit'), // Assuming translation key exists (e.g., '条')
   colors: ['#f97316', '#ef4444'], // Example alarm colors
   icon: 'fa-bell' // Example alarm icon
-});
+})
 
 // 获取数据
 const getData: () => void = async () => {
   try {
     // TODO: Replace with actual API call and response handling for alarm count
-    const response: { data: any } = await getAlarmCount(); // Example API call
+    const response: { data: any } = await getAlarmCount() // Example API call
     // Mock data for now
     // const response = { data: { alarm_count: Math.floor(Math.random() * 100) } }; // Mock data
 
     // Check if response, response.data, and alarm_device_total exist and if alarm_device_total is a number
     if (response && response.data && typeof response.data.alarm_device_total === 'number') {
-      cardData.value.value = response.data.alarm_device_total;
+      cardData.value.value = response.data.alarm_device_total
     } else {
       // Log the actual response structure if it's unexpected
-      logger.error('Alarm count data is missing, not a number, or response structure is unexpected.', response);
-      cardData.value.value = 0; // Set to 0 if data is invalid or missing
+      logger.error('Alarm count data is missing, not a number, or response structure is unexpected.', response)
+      cardData.value.value = 0 // Set to 0 if data is invalid or missing
     }
   } catch (error) {
     // 处理请求数据时的错误
-    logger.error('Error fetching alarm count data:', error);
-    cardData.value.value = 0; // Set to 0 on error
+    logger.error('Error fetching alarm count data:', error)
+    cardData.value.value = 0 // Set to 0 on error
   }
-};
+}
 
 // 调用 getData 函数
-getData();
+getData()
 </script>
 
 <template>

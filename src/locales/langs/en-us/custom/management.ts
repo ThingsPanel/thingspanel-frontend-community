@@ -14,4 +14,4 @@ export default {
   responseContent: 'Response Content',
   close: 'Close',
   all: 'All'
-};
+}

@@ -1,29 +1,29 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, ref } from 'vue';
-import type { FormInst } from 'naive-ui';
-import { delRolePermissions, fetchUIElementList, getRolePermissions, modifyRolePermissions } from '@/service/api';
-import { $t } from '@/locales';
-const { proxy }: any = getCurrentInstance();
+import { computed, getCurrentInstance, ref } from 'vue'
+import type { FormInst } from 'naive-ui'
+import { delRolePermissions, fetchUIElementList, getRolePermissions, modifyRolePermissions } from '@/service/api'
+import { $t } from '@/locales'
+const { proxy }: any = getCurrentInstance()
 export interface Props {
   /** 弹窗可见性 */
-  visible: boolean;
+  visible: boolean
   /** 编辑的表格行数据 */
-  editData?: any | null;
+  editData?: any | null
 }
 
 interface Element {
-  id: string;
-  parent_id: string;
-  element_code: string;
-  element_type: number;
-  description: string;
-  children: Element[];
+  id: string
+  parent_id: string
+  element_code: string
+  element_type: number
+  description: string
+  children: Element[]
 }
 
 interface TreeNode {
-  label: string;
-  key: string;
-  children: TreeNode[];
+  label: string
+  key: string
+  children: TreeNode[]
 }
 
 function convertToTreeNodes(elements: Element[]): TreeNode[] {
@@ -32,77 +32,77 @@ function convertToTreeNodes(elements: Element[]): TreeNode[] {
     key: item.id,
     disabled: item.element_code === 'home', // 禁止选中首页
     children: item.children.length > 0 ? convertToTreeNodes(item.children) : []
-  }));
+  }))
 }
 
-defineOptions({ name: 'EditPermissionModal' });
+defineOptions({ name: 'EditPermissionModal' })
 
 const props = withDefaults(defineProps<Props>(), {
   editData: null
-});
+})
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void;
+  (e: 'update:visible', visible: boolean): void
 
   /** 点击协议 */
-  (e: 'success'): void;
+  (e: 'success'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const modalVisible = computed({
   get() {
-    return props.visible;
+    return props.visible
   },
   set(visible) {
-    emit('update:visible', visible);
+    emit('update:visible', visible)
   }
-});
+})
 const closeModal = () => {
-  modalVisible.value = false;
-};
+  modalVisible.value = false
+}
 
 const title = computed(() => {
-  return `${$t('page.manage.role.editPermission')} - ${props.editData?.name}`;
-});
+  return `${$t('page.manage.role.editPermission')} - ${props.editData?.name}`
+})
 
-const formRef = ref<HTMLElement & FormInst>();
+const formRef = ref<HTMLElement & FormInst>()
 
-const selectedPermissions = ref<string[]>([]);
-const treeOptions = ref<any>([]);
+const selectedPermissions = ref<string[]>([])
+const treeOptions = ref<any>([])
 
 const initRolePermissions = async () => {
   // 首页默认选中
-  const data = treeOptions.value.find(item => item.label === '首页');
+  const data = treeOptions.value.find(item => item.label === '首页')
   if (props.editData) {
-    const permissions = await getRolePermissions(props.editData.id);
-    selectedPermissions.value = [...new Set([data.key, ...permissions])];
+    const permissions = await getRolePermissions(props.editData.id)
+    selectedPermissions.value = [...new Set([data.key, ...permissions])]
   } else {
-    selectedPermissions.value = [data.key];
+    selectedPermissions.value = [data.key]
   }
-};
+}
 
 const initUIElementList = async () => {
-  const uiElementList = await fetchUIElementList();
-  treeOptions.value = convertToTreeNodes(uiElementList);
-  initRolePermissions();
-};
+  const uiElementList = await fetchUIElementList()
+  treeOptions.value = convertToTreeNodes(uiElementList)
+  initRolePermissions()
+}
 
 async function handleSubmit() {
-  let data: any;
+  let data: any
   // delete first element which is the root node
-  const indeterminateData = proxy.$refs.treeRef.getIndeterminateData().keys;
-  const currentPermissions = [...selectedPermissions.value, ...indeterminateData];
+  const indeterminateData = proxy.$refs.treeRef.getIndeterminateData().keys
+  const currentPermissions = [...selectedPermissions.value, ...indeterminateData]
   // currentPermissions.shift();
-  selectedPermissions.value = [];
+  selectedPermissions.value = []
   if (currentPermissions.length === 0) {
-    data = await delRolePermissions(props.editData?.id);
+    data = await delRolePermissions(props.editData?.id)
   } else {
-    data = await modifyRolePermissions(props.editData?.id, currentPermissions);
+    data = await modifyRolePermissions(props.editData?.id, currentPermissions)
   }
-  closeModal();
+  closeModal()
   if (!data.error) {
-    emit('success');
+    emit('success')
   }
 }
 </script>
@@ -114,7 +114,7 @@ async function handleSubmit() {
     :title="title"
     :on-after-enter="
       () => {
-        initUIElementList();
+        initUIElementList()
       }
     "
   >

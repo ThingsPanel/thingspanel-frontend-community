@@ -1,7 +1,7 @@
-import { defineAsyncComponent } from 'vue';
-import type { ICardDefine } from '@/components/panel/card';
-import { $t } from '@/locales';
-import poster from './memory-usage.png'; // Ensure this matches renamed file
+import { defineAsyncComponent } from 'vue'
+import type { ICardDefine } from '@/components/panel/card'
+import { $t } from '@/locales'
+import poster from './memory-usage.png' // Ensure this matches renamed file
 
 export default {
   id: 'memory-usage', // Changed ID
@@ -17,4 +17,4 @@ export default {
       minW: 2
     }
   }
-} as ICardDefine;
+} as ICardDefine

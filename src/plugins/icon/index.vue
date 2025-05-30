@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { icons } from './icons';
+import { ref } from 'vue'
+import { icons } from './icons'
 
-const selectValue = ref('');
+const selectValue = ref('')
 
-const localIcons = ['custom-icon', 'activity', 'at-sign', 'cast', 'chrome', 'copy', 'wind'];
+const localIcons = ['custom-icon', 'activity', 'at-sign', 'cast', 'chrome', 'copy', 'wind']
 </script>
 
 <template>

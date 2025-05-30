@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import printJS from 'print-js';
-import { $t } from '@/locales';
+import printJS from 'print-js'
+import { $t } from '@/locales'
 
 function printTable() {
   printJS({
@@ -10,7 +10,7 @@ function printTable() {
     ],
     properties: ['name', 'wechat', 'remark'],
     type: 'json'
-  });
+  })
 }
 
 function printImage() {
@@ -22,7 +22,7 @@ function printImage() {
     type: 'image',
     header: 'Multiple Images',
     imageStyle: 'width:100%;'
-  });
+  })
 }
 </script>
 

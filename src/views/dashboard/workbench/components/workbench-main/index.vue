@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { $t } from '@/locales';
-import { ShortcutsCard, TechnologyCard } from './components';
+import { $t } from '@/locales'
+import { ShortcutsCard, TechnologyCard } from './components'
 
-defineOptions({ name: 'DashboardWorkbenchMain' });
+defineOptions({ name: 'DashboardWorkbenchMain' })
 
 interface Technology {
-  id: number;
-  name: string;
-  description: string;
-  author: string;
-  site: string;
-  icon: string;
-  iconColor?: string;
+  id: number
+  name: string
+  description: string
+  author: string
+  site: string
+  icon: string
+  iconColor?: string
 }
 
 const technology: Technology[] = [
@@ -63,12 +63,12 @@ const technology: Technology[] = [
     site: 'https://pinia.esm.dev/',
     icon: 'noto:pineapple'
   }
-];
+]
 
 interface Activity {
-  id: number;
-  content: string;
-  time: string;
+  id: number
+  content: string
+  time: string
 }
 
 const activity: Activity[] = [
@@ -97,13 +97,13 @@ const activity: Activity[] = [
     content: 'Soybean 在2021年5月28日创建了开源项目soybean-admin！',
     time: '2021-05-28 22:22:22'
   }
-];
+]
 
 interface Shortcuts {
-  id: number;
-  label: string;
-  icon: string;
-  iconColor: string;
+  id: number
+  label: string
+  icon: string
+  iconColor: string
 }
 
 const shortcuts: Shortcuts[] = [
@@ -128,7 +128,7 @@ const shortcuts: Shortcuts[] = [
   },
   { id: 4, label: '表格', icon: 'mdi:table-large', iconColor: '#fab251' },
   { id: 5, label: '图表', icon: 'mdi:chart-areaspline', iconColor: '#8aca6b' }
-];
+]
 </script>
 
 <template>

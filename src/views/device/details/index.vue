@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onBeforeMount, reactive, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { useLoading } from '@sa/hooks';
-import { useWebSocket } from '@vueuse/core';
-import Telemetry from '@/views/device/details/modules/telemetry/telemetry.vue';
-import TelemetryChart from '@/views/device/details/modules/telemetry-chart.vue';
-import Join from '@/views/device/details/modules/join.vue';
-import DeviceAnalysis from '@/views/device/details/modules/device-analysis.vue';
-import Message from '@/views/device/details/modules/message.vue';
-import Stats from '@/views/device/details/modules/stats.vue';
-import EventReport from '@/views/device/details/modules/event-report.vue';
-import CommandDelivery from '@/views/device/details/modules/command-delivery.vue';
-import ExpectMessage from '@/views/device/details/modules/expect-message.vue';
-import Automate from '@/views/device/details/modules/automate.vue';
-import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue';
-import User from '@/views/device/details/modules/user.vue';
-import Settings from '@/views/device/details/modules/settings.vue';
-import { $t } from '@/locales';
-import { useAppStore } from '@/store/modules/app';
-import { deviceAlarmStatus, deviceDetail, deviceUpdate } from '@/service/api/device';
-import { localStg } from '@/utils/storage';
-import { useRouterPush } from '@/hooks/common/router';
-import { getWebsocketServerUrl } from '@/utils/common/tool';
-import { createLogger } from '@/utils/logger';
-const logger = createLogger('Detail');
-const route = useRoute();
-const { query } = useRoute();
-const appStore = useAppStore();
-let { d_id } = query;
-const { loading, startLoading, endLoading } = useLoading();
+import { computed, getCurrentInstance, onBeforeMount, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useLoading } from '@sa/hooks'
+import { useWebSocket } from '@vueuse/core'
+import Telemetry from '@/views/device/details/modules/telemetry/telemetry.vue'
+import TelemetryChart from '@/views/device/details/modules/telemetry-chart.vue'
+import Join from '@/views/device/details/modules/join.vue'
+import DeviceAnalysis from '@/views/device/details/modules/device-analysis.vue'
+import Message from '@/views/device/details/modules/message.vue'
+import Stats from '@/views/device/details/modules/stats.vue'
+import EventReport from '@/views/device/details/modules/event-report.vue'
+import CommandDelivery from '@/views/device/details/modules/command-delivery.vue'
+import ExpectMessage from '@/views/device/details/modules/expect-message.vue'
+import Automate from '@/views/device/details/modules/automate.vue'
+import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue'
+import User from '@/views/device/details/modules/user.vue'
+import Settings from '@/views/device/details/modules/settings.vue'
+import { $t } from '@/locales'
+import { useAppStore } from '@/store/modules/app'
+import { deviceAlarmStatus, deviceDetail, deviceUpdate } from '@/service/api/device'
+import { localStg } from '@/utils/storage'
+import { useRouterPush } from '@/hooks/common/router'
+import { getWebsocketServerUrl } from '@/utils/common/tool'
+import { createLogger } from '@/utils/logger'
+const logger = createLogger('Detail')
+const route = useRoute()
+const { query } = useRoute()
+const appStore = useAppStore()
+let { d_id } = query
+const { loading, startLoading, endLoading } = useLoading()
 let components = [
   {
     key: 'telemetry',
@@ -108,22 +108,22 @@ let components = [
     component: Settings,
     refreshKey: 0
   }
-];
+]
 
-const tabValue = ref<any>('telemetry');
-const showDialog = ref(false);
-const labels = ref<string[]>([]);
+const tabValue = ref<any>('telemetry')
+const showDialog = ref(false)
+const labels = ref<string[]>([])
 
-const deviceData: any = ref({});
-const device_type = ref('');
-const icon_type = ref('');
-const name = ref('');
-const device_number = ref('');
-const device_is_online = ref(0);
-const device_loop = ref(false);
-let wsUrl = getWebsocketServerUrl();
+const deviceData: any = ref({})
+const device_type = ref('')
+const icon_type = ref('')
+const name = ref('')
+const device_number = ref('')
+const device_is_online = ref(0)
+const device_loop = ref(false)
+let wsUrl = getWebsocketServerUrl()
 
-wsUrl += `/device/online/status/ws`;
+wsUrl += `/device/online/status/ws`
 const { send } = useWebSocket(wsUrl, {
   heartbeat: {
     message: 'ping',
@@ -131,13 +131,13 @@ const { send } = useWebSocket(wsUrl, {
     pongTimeout: 3000
   },
   onMessage(ws: WebSocket, event: MessageEvent) {
-    logger.info(ws);
+    logger.info(ws)
     if (event.data && event.data !== 'pong') {
-      const info = JSON.parse(event.data);
-      device_is_online.value = info.is_online;
+      const info = JSON.parse(event.data)
+      device_is_online.value = info.is_online
     }
   }
-});
+})
 
 const queryParams = reactive({
   label: '',
@@ -145,18 +145,18 @@ const queryParams = reactive({
   name: '',
   device_number: '',
   description: ''
-});
+})
 const changeTabs = v => {
-  startLoading();
+  startLoading()
 
-  tabValue.value = v;
+  tabValue.value = v
   setTimeout(() => {
-    endLoading();
-  }, 500);
-};
+    endLoading()
+  }, 500)
+}
 const editConfig = () => {
-  showDialog.value = true;
-};
+  showDialog.value = true
+}
 
 const rules = {
   name: {
@@ -169,135 +169,135 @@ const rules = {
     message: $t('custom.devicePage.enterDeviceNumber'),
     trigger: 'blur'
   }
-};
+}
 const getDeviceDetail = async () => {
-  device_loop.value = false;
-  const { error, data } = await deviceDetail(d_id);
-  device_loop.value = true;
-  deviceData.value = data;
-  labels.value.length = 0;
+  device_loop.value = false
+  const { error, data } = await deviceDetail(d_id)
+  device_loop.value = true
+  deviceData.value = data
+  labels.value.length = 0
 
   if (data.label) {
     if (data.label.includes(',')) {
-      labels.value = data.label.split(',');
+      labels.value = data.label.split(',')
     } else {
-      labels.value.push(data.label);
+      labels.value.push(data.label)
     }
   }
   if (!error) {
-    device_number.value = data.device_number;
-    device_is_online.value = data.is_online;
-    name.value = data.name;
+    device_number.value = data.device_number
+    device_is_online.value = data.is_online
+    name.value = data.name
 
     if (data?.device_config) {
-      device_type.value = data.device_config.device_type;
+      device_type.value = data.device_config.device_type
       if (device_type.value !== '2' || !data?.device_config_name) {
-        components = components.filter(item => item.key !== 'device-analysis');
+        components = components.filter(item => item.key !== 'device-analysis')
       }
       if (device_type.value === '3') {
-        components = components.filter(item => item.key !== 'join');
+        components = components.filter(item => item.key !== 'join')
       }
       if (!data.device_config.device_template_id) {
-        components = components.filter(item => item.key !== 'chart');
+        components = components.filter(item => item.key !== 'chart')
       }
     } else if (!data?.device_config_name) {
-      components = components.filter(item => item.key !== 'device-analysis');
-      components = components.filter(item => item.key !== 'chart');
+      components = components.filter(item => item.key !== 'device-analysis')
+      components = components.filter(item => item.key !== 'chart')
     }
     send(
       JSON.stringify({
         device_id: d_id,
         token: localStg.get('token')
       })
-    );
+    )
   }
-};
+}
 const closeModal = async () => {
-  await getDeviceDetail();
-  showDialog.value = false;
-};
-const { routerPushByKey } = useRouterPush();
+  await getDeviceDetail()
+  showDialog.value = false
+}
+const { routerPushByKey } = useRouterPush()
 const clickConfig: () => void = () => {
   routerPushByKey('device_config-detail', {
     query: {
       id: deviceData.value?.device_config_id
     }
-  });
-};
+  })
+}
 const clickGateway = () => {
   routerPushByKey('device_details', {
     query: {
       d_id: deviceData.value?.parent_id
     }
-  });
-};
-const alarmStatus = ref(false);
+  })
+}
+const alarmStatus = ref(false)
 const getAlarmStatus = async () => {
-  const { data } = await deviceAlarmStatus({ device_id: d_id });
-  alarmStatus.value = data.alarm;
-};
+  const { data } = await deviceAlarmStatus({ device_id: d_id })
+  alarmStatus.value = data.alarm
+}
 
 onBeforeMount(() => {
-  getDeviceDetail();
-  getAlarmStatus();
-});
+  getDeviceDetail()
+  getAlarmStatus()
+})
 
 watch(
   () => route.query.d_id,
   async newVal => {
-    d_id = newVal;
-    const currentComponent = components.find(c => c.key === tabValue.value);
+    d_id = newVal
+    const currentComponent = components.find(c => c.key === tabValue.value)
     if (currentComponent) {
-      currentComponent.refreshKey += 1;
+      currentComponent.refreshKey += 1
     }
-    getDeviceDetail();
-    getAlarmStatus();
+    getDeviceDetail()
+    getAlarmStatus()
   },
   { deep: true }
-);
+)
 
 const save = async () => {
   if (!deviceData.value?.name) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceName'));
-    return;
+    window.NMessage.error($t('custom.devicePage.enterDeviceName'))
+    return
   }
   if (!deviceData.value?.device_number) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceNumber'));
-    return;
+    window.NMessage.error($t('custom.devicePage.enterDeviceNumber'))
+    return
   }
   if (deviceData.value?.device_number.length > 100) {
-    window.NMessage.error($t('custom.devicePage.deviceNumberMax'));
-    return;
+    window.NMessage.error($t('custom.devicePage.deviceNumberMax'))
+    return
   }
-  device_number.value = deviceData.value.device_number;
-  queryParams.id = deviceData.value?.id;
-  queryParams.name = deviceData.value?.name;
-  queryParams.device_number = deviceData.value?.device_number;
-  queryParams.label = labels.value.join(',');
-  queryParams.description = deviceData.value?.description;
+  device_number.value = deviceData.value.device_number
+  queryParams.id = deviceData.value?.id
+  queryParams.name = deviceData.value?.name
+  queryParams.device_number = deviceData.value?.device_number
+  queryParams.label = labels.value.join(',')
+  queryParams.description = deviceData.value?.description
 
-  const { error } = await deviceUpdate(queryParams);
+  const { error } = await deviceUpdate(queryParams)
   if (!error) {
-    showDialog.value = false;
-    getDeviceDetail();
+    showDialog.value = false
+    getDeviceDetail()
   }
-};
+}
 watch(
   () => appStore.locale,
   () => {
-    let temporary: any;
+    let temporary: any
     // eslint-disable-next-line prefer-const
-    temporary = tabValue.value;
-    tabValue.value = '';
+    temporary = tabValue.value
+    tabValue.value = ''
     setTimeout(() => {
-      tabValue.value = temporary;
-    }, 50);
+      tabValue.value = temporary
+    }, 50)
   }
-);
+)
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
 </script>
 
 <template>

@@ -1,47 +1,47 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { PopoverPlacement } from 'naive-ui';
-import { $t } from '@/locales';
+import { computed } from 'vue'
+import type { PopoverPlacement } from 'naive-ui'
+import { $t } from '@/locales'
 
-defineOptions({ name: 'ThemeSchemaSwitch' });
+defineOptions({ name: 'ThemeSchemaSwitch' })
 
 interface Props {
   /** Theme schema */
-  themeSchema: UnionKey.ThemeScheme;
+  themeSchema: UnionKey.ThemeScheme
   /** Show tooltip */
-  showTooltip?: boolean;
+  showTooltip?: boolean
   /** Tooltip placement */
-  tooltipPlacement?: PopoverPlacement;
+  tooltipPlacement?: PopoverPlacement
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showTooltip: true,
   tooltipPlacement: 'bottom'
-});
+})
 
 interface Emits {
-  (e: 'switch'): void;
+  (e: 'switch'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 function handleSwitch() {
-  emit('switch');
+  emit('switch')
 }
 
 const icons: Record<UnionKey.ThemeScheme, string> = {
   light: 'material-symbols:sunny',
   dark: 'material-symbols:nightlight-rounded',
   auto: 'material-symbols:hdr-auto'
-};
+}
 
-const icon = computed(() => icons[props.themeSchema]);
+const icon = computed(() => icons[props.themeSchema])
 
 const tooltipContent = computed(() => {
-  if (!props.showTooltip) return '';
+  if (!props.showTooltip) return ''
 
-  return $t('icon.themeSchema');
-});
+  return $t('icon.themeSchema')
+})
 </script>
 
 <template>

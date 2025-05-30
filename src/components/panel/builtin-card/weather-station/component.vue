@@ -1,24 +1,24 @@
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue';
-import * as echarts from 'echarts';
-import { $t } from '@/locales';
+import { onMounted, reactive, ref } from 'vue'
+import * as echarts from 'echarts'
+import { $t } from '@/locales'
 
-const active = ref('3');
+const active = ref('3')
 
 const submit: (item: string) => void = item => {
-  active.value = item;
-};
+  active.value = item
+}
 
 interface WeatherItem {
-  id: string;
-  icons1: string;
-  icons2: string;
-  mark1: string;
-  mark2: string;
-  text1: string;
-  text2: string;
-  value1: string;
-  value2: string;
+  id: string
+  icons1: string
+  icons2: string
+  mark1: string
+  mark2: string
+  text1: string
+  text2: string
+  value1: string
+  value2: string
 }
 
 const weatherList: WeatherItem[] = reactive([
@@ -55,13 +55,13 @@ const weatherList: WeatherItem[] = reactive([
     mark2: 'mm',
     text2: $t('dashboard_panel.cardName.rainfall')
   }
-]);
+])
 
 // 图表
-const foldLine = ref(null);
+const foldLine = ref(null)
 
 const init: () => void = () => {
-  const myecharts = echarts.init(foldLine.value, null, { renderer: 'svg' });
+  const myecharts = echarts.init(foldLine.value, null, { renderer: 'svg' })
   const option = {
     title: {
       show: false
@@ -76,9 +76,9 @@ const init: () => void = () => {
           return (
             `<span style="font-size: 14px;font-weight: 600; color:rgba(35, 43, 46, 1); ">${item.seriesName}<br/>${item.data}mm` +
             `</span>`
-          );
-        });
-        return res.join('<br/>'); // 使用换行符将多个数据项分隔开
+          )
+        })
+        return res.join('<br/>') // 使用换行符将多个数据项分隔开
       }
     },
     legend: {
@@ -156,18 +156,18 @@ const init: () => void = () => {
         }
       }
     ]
-  };
-  const dom = document.getElementById('foldLine')!;
+  }
+  const dom = document.getElementById('foldLine')!
   const ro = new ResizeObserver(_entries => {
-    myecharts.resize();
-  });
-  ro.observe(dom);
+    myecharts.resize()
+  })
+  ro.observe(dom)
   // 监听窗口大小变化
-  myecharts.setOption(option);
-};
+  myecharts.setOption(option)
+}
 onMounted(() => {
-  init();
-});
+  init()
+})
 </script>
 
 <template>

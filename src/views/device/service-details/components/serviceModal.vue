@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref } from 'vue'
 // import { useMessage } from "naive-ui";
-import { createServiceDrop, getServiceAccessForm, putServiceDrop } from '@/service/api/plugin';
-import { $t } from '@/locales';
-import FormInput from './form.vue';
-import AutomaticModeStep from './AutomaticModeStep.vue';
+import { createServiceDrop, getServiceAccessForm, putServiceDrop } from '@/service/api/plugin'
+import { $t } from '@/locales'
+import FormInput from './form.vue'
+import AutomaticModeStep from './AutomaticModeStep.vue'
 
 // const message = useMessage();
-const isEdit = ref<any>(false);
-const emit = defineEmits(['getList', 'isEdit']);
-const serviceModals = ref<any>(false);
-const formRef = ref<any>(null);
-const currentStep = ref(1);
+const isEdit = ref<any>(false)
+const emit = defineEmits(['getList', 'isEdit'])
+const serviceModals = ref<any>(false)
+const formRef = ref<any>(null)
+const currentStep = ref(1)
 
-const service_plugin_id = ref<any>('');
-const formElements = ref<any>([]);
+const service_plugin_id = ref<any>('')
+const formElements = ref<any>([])
 const defaultForm = {
   name: '',
   service_plugin_id: '',
   voucher: {},
   vouchers: {},
   auth_type: 'manual' // 添加模式字段，默认为手动
-};
-const form = ref<any>({ ...defaultForm });
+}
+const form = ref<any>({ ...defaultForm })
 const rules = ref<any>({
   name: {
     required: true,
@@ -34,60 +34,65 @@ const rules = ref<any>({
     trigger: ['change'],
     message: '请选择模式'
   }
-});
+})
 const openModal: (id: any, row?: any) => void = async (id, row) => {
   if (row) {
-    isEdit.value = true;
-    Object.assign(form.value, row);
-    Object.assign(form.value.vouchers, JSON.parse(row.voucher));
+    isEdit.value = true
+    Object.assign(form.value, row)
+    Object.assign(form.value.vouchers, JSON.parse(row.voucher))
   }
-  service_plugin_id.value = id;
-  form.value.service_plugin_id = id;
+  service_plugin_id.value = id
+  form.value.service_plugin_id = id
   const data = await getServiceAccessForm({
     service_plugin_id: service_plugin_id.value
-  });
+  })
   if (data.data) {
-    formElements.value = data.data;
-    serviceModals.value = true;
+    formElements.value = data.data
+    serviceModals.value = true
   }
-};
+}
 const close: () => void = () => {
-  serviceModals.value = false;
-  form.value = { ...defaultForm };
-  form.value.vouchers = {};
-  currentStep.value = 1;
-};
+  serviceModals.value = false
+  form.value = { ...defaultForm }
+  form.value.vouchers = {}
+  currentStep.value = 1
+}
 
 const submitSevice: () => void = async () => {
   formRef.value?.validate(async errors => {
-    if (errors) return;
-    
+    if (errors) return
+
     // 无论是手动还是自动模式，都先调用接口创建/更新服务
-    form.value.voucher = JSON.stringify(form.value.vouchers);
-    const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value);
-    serviceModals.value = false;
-    
+    form.value.voucher = JSON.stringify(form.value.vouchers)
+    const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value)
+    serviceModals.value = false
+
     if (form.value.auth_type === 'auto') {
       // 自动模式，关闭当前弹窗，并打开配置弹窗
-      const id = isEdit.value ? form.value.id : data.data.id;
-      emit('isEdit', form.value.voucher, {
-        id: id,
-        auth_type: form.value.auth_type,
-        name: form.value.name
-      }, true);
+      const id = isEdit.value ? form.value.id : data.data.id
+      emit(
+        'isEdit',
+        form.value.voucher,
+        {
+          id: id,
+          auth_type: form.value.auth_type,
+          name: form.value.name
+        },
+        true
+      )
     } else {
       // 手动模式处理
-      const id = isEdit.value ? form.value.id : data.data.id;
-      emit('isEdit', form.value.voucher, id, isEdit.value);
+      const id = isEdit.value ? form.value.id : data.data.id
+      emit('isEdit', form.value.voucher, id, isEdit.value)
     }
-    
-    // 重置表单
-    form.value = { ...defaultForm };
-    form.value.vouchers = {};
-  });
-};
 
-defineExpose({ openModal });
+    // 重置表单
+    form.value = { ...defaultForm }
+    form.value.vouchers = {}
+  })
+}
+
+defineExpose({ openModal })
 </script>
 
 <template>

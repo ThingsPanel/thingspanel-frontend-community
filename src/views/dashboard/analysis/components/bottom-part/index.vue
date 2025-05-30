@@ -1,23 +1,24 @@
 <script setup lang="ts">
-import { h } from 'vue';
-import { NTag } from 'naive-ui';
-import { $t } from '@/locales';
+import { h } from 'vue'
+import { NTag } from 'naive-ui'
+import { $t } from '@/locales'
 
-defineOptions({ name: 'DashboardAnalysisBottomPart' });
+// eslint-disable-next-line prettier/prettier
+defineOptions({ name: 'DashboardAnalysisBottomPart' })
 
 interface TimelineData {
-  type: 'default' | 'info' | 'success' | 'warning' | 'error';
-  title: string;
-  content: string;
-  time: string;
+  type: 'default' | 'info' | 'success' | 'warning' | 'error'
+  title: string
+  content: string
+  time: string
 }
 
 interface TableData {
-  key: number;
-  name: string;
-  age: number;
-  address: string;
-  tags: string[];
+  key: number
+  name: string
+  age: number
+  address: string
+  tags: string[]
 }
 
 const timelines: TimelineData[] = [
@@ -41,7 +42,7 @@ const timelines: TimelineData[] = [
     time: '2021-10-10 20:46'
   },
   { type: 'info', title: $t('card.info'), content: $t('card.yes'), time: '2021-10-10 20:46' }
-];
+]
 
 const columns = [
   {
@@ -72,12 +73,12 @@ const columns = [
           {
             default: () => tagKey
           }
-        );
-      });
-      return tags;
+        )
+      })
+      return tags
     }
   }
-];
+]
 
 const tableData: TableData[] = [
   {
@@ -129,7 +130,7 @@ const tableData: TableData[] = [
     address: 'Sidney No. 1 Lake Park',
     tags: ['cool', 'teacher']
   }
-];
+]
 </script>
 
 <template>

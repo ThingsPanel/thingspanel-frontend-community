@@ -70,4 +70,4 @@ export default {
     instrumentPanel: 'Instrument Panel',
     videoPlayer: 'Video Player'
   }
-};
+}

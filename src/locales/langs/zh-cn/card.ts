@@ -269,10 +269,10 @@ export default {
     title: '最新上报数据',
     refreshing: '实时刷新中',
     startRefresh: '开启实时刷新',
-    noTelemetry: '无遥测数据',
+    noTelemetry: '无遥测数据'
   },
 
-  // --- Add keys for Operation Guide Card --- 
+  // --- Add keys for Operation Guide Card ---
   operationGuideCard: {
     guideItems: {
       addDevice: {
@@ -289,16 +289,16 @@ export default {
       }
     }
   },
-  // --- End Operation Guide Card keys --- 
+  // --- End Operation Guide Card keys ---
 
   // Operation Guide Card Config (old structure, might need merge/cleanup)
   cardInner: {
-    operationGuideTitle: '操作向导', 
+    operationGuideTitle: '操作向导'
   },
-  config: { 
+  config: {
     serialBgColor: '序号背景色',
     itemBgColor: '列表项背景色',
-    itemHoverBgColor: '列表项浮动色',
+    itemHoverBgColor: '列表项浮动色'
   },
   // Other card related texts
   pleaseEnterLink: '请输入链接',
@@ -327,7 +327,6 @@ export default {
   // --- 结束告警信息卡片翻译 ---
   // --- 添加或确保存在以下 common 键 ---
   common: {
-    // @ts-ignore
     // ... 其他 common 键
     loading: '加载中...',
     highAlarm: '高',
@@ -398,5 +397,5 @@ export default {
   templateKey: '模板Key',
   templateSecret: '模板Secret',
   templateNotConfigured: '-未设置-',
-  loadDeviceConfigFailed: '加载设备配置列表失败',
-};
+  loadDeviceConfigFailed: '加载设备配置列表失败'
+}

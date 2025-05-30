@@ -82,4 +82,4 @@ export default {
   // Added missing keys based on linter error
   onlineOption: '在线', // Placeholder
   offlineOption: '离线' // Placeholder
-};
+}

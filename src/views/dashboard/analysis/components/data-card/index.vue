@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { $t } from '@/locales';
-import { GradientBg } from './components';
+import { $t } from '@/locales'
+import { GradientBg } from './components'
 
-defineOptions({ name: 'DashboardAnalysisDataCard' });
+defineOptions({ name: 'DashboardAnalysisDataCard' })
 
 interface CardData {
-  id: string;
-  title: string;
-  value: number;
-  unit: string;
-  colors: [string, string];
-  icon: string;
+  id: string
+  title: string
+  value: number
+  unit: string
+  colors: [string, string]
+  icon: string
 }
 
 const cardData: CardData[] = [
@@ -46,7 +46,7 @@ const cardData: CardData[] = [
     colors: ['#fcbc25', '#f68057'],
     icon: 'ant-design:trademark-circle-outlined'
   }
-];
+]
 </script>
 
 <template>

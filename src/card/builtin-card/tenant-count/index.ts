@@ -1,7 +1,7 @@
-import { defineAsyncComponent } from 'vue';
-import type { ICardDefine } from '@/components/panel/card';
-import { $t } from '@/locales';
-import poster from './image.png'; // Placeholder, will copy image later
+import { defineAsyncComponent } from 'vue'
+import type { ICardDefine } from '@/components/panel/card'
+import { $t } from '@/locales'
+import poster from './image.png' // Placeholder, will copy image later
 
 export default {
   id: 'tenant-count', // Changed ID to tenant-count
@@ -17,4 +17,4 @@ export default {
       minW: 2
     }
   }
-} as ICardDefine;
+} as ICardDefine

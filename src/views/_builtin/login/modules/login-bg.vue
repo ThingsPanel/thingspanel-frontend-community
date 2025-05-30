@@ -1,20 +1,20 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
+import { computed } from 'vue'
 // import { getColorPalette } from '@/utils'
 // import { CornerBottom, CornerTop } from './components'
-type SysSetting = Omit<Api.GeneralSetting.ThemeSetting, 'id'>;
+type SysSetting = Omit<Api.GeneralSetting.ThemeSetting, 'id'>
 interface Props {
   /** 主题颜色 */
-  themeColor: string;
-  sysSetting: SysSetting;
+  themeColor: string
+  sysSetting: SysSetting
 }
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 // const lightColor = computed(() => getColorPalette(props.themeColor, 3))
 // const darkColor = computed(() => getColorPalette(props.themeColor, 6))
 
 const bgColor = computed(() => {
-  return props.sysSetting?.home_background || '';
-});
+  return props.sysSetting?.home_background || ''
+})
 </script>
 
 <template>

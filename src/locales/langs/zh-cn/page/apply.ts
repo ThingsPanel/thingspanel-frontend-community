@@ -10,4 +10,4 @@ export default {
       additionalInfo: '链接参数'
     }
   }
-};
+}

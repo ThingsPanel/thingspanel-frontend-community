@@ -1,15 +1,15 @@
 <script setup lang="ts" generic="T extends Record<string, unknown>, K = never">
-import { VueDraggable } from 'vue-draggable-plus';
-import type { FilteredColumn } from '@/hooks/common/table';
-import { $t } from '@/locales';
+import { VueDraggable } from 'vue-draggable-plus'
+import type { FilteredColumn } from '@/hooks/common/table'
+import { $t } from '@/locales'
 
 defineOptions({
   name: 'TableColumnSetting'
-});
+})
 
 const columns = defineModel<FilteredColumn[]>('columns', {
   required: true
-});
+})
 </script>
 
 <template>

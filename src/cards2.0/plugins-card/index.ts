@@ -1,3 +1,3 @@
-const pluginsCards = import.meta.glob('./*/index.ts', { eager: true });
+const pluginsCards = import.meta.glob('./*/index.ts', { eager: true })
 
-export default pluginsCards;
+export default pluginsCards

@@ -106,4 +106,4 @@ export const productLocaleZhCn: ProductLocal = {
     batchSelectDevice: '批量选择设备',
     selectDevice: '选择设备'
   }
-};
+}

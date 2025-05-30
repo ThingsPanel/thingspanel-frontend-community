@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { watch } from 'vue';
-import { $t } from '@/locales';
-import { useAppStore } from '@/store/modules/app';
-import { useEcharts } from '@/hooks/chart/use-echarts';
+import { watch } from 'vue'
+import { $t } from '@/locales'
+import { useAppStore } from '@/store/modules/app'
+import { useEcharts } from '@/hooks/chart/use-echarts'
 
 defineOptions({
   name: 'LineChart'
-});
+})
 
-const appStore = useAppStore();
+const appStore = useAppStore()
 
 const { domRef, updateOptions } = useEcharts(() => ({
   tooltip: {
@@ -99,47 +99,47 @@ const { domRef, updateOptions } = useEcharts(() => ({
       data: []
     }
   ]
-}));
+}))
 
 async function mockData() {
   await new Promise(resolve => {
-    setTimeout(resolve, 1000);
-  });
+    setTimeout(resolve, 1000)
+  })
 
   await updateOptions(opts => {
-    opts.xAxis.data = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '24:00'];
-    opts.series[0].data = [4623, 6145, 6268, 6411, 1890, 4251, 2978, 3880, 3606, 4311];
-    opts.series[1].data = [2208, 2016, 2916, 4512, 8281, 2008, 1963, 2367, 2956, 678];
+    opts.xAxis.data = ['06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '24:00']
+    opts.series[0].data = [4623, 6145, 6268, 6411, 1890, 4251, 2978, 3880, 3606, 4311]
+    opts.series[1].data = [2208, 2016, 2916, 4512, 8281, 2008, 1963, 2367, 2956, 678]
 
-    return opts;
-  });
+    return opts
+  })
 }
 
 function updateLocale() {
   updateOptions((opts, factory) => {
-    const originOpts = factory();
+    const originOpts = factory()
 
-    opts.legend.data = originOpts.legend.data;
-    opts.series[0].name = originOpts.series[0].name;
-    opts.series[1].name = originOpts.series[1].name;
+    opts.legend.data = originOpts.legend.data
+    opts.series[0].name = originOpts.series[0].name
+    opts.series[1].name = originOpts.series[1].name
 
-    return opts;
-  });
+    return opts
+  })
 }
 
 async function init() {
-  mockData();
+  mockData()
 }
 
 watch(
   () => appStore.locale,
   () => {
-    updateLocale();
+    updateLocale()
   }
-);
+)
 
 // init
-init();
+init()
 </script>
 
 <template>

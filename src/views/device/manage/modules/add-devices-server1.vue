@@ -1,9 +1,9 @@
 <!-- Select Service -->
 <script setup lang="ts">
-import AddDeviceServiceModal from './add-device-server-modal.vue';
-import { useBoolean } from '~/packages/hooks';
+import AddDeviceServiceModal from './add-device-server-modal.vue'
+import { useBoolean } from '~/packages/hooks'
 
-const { bool: visible, setTrue: openModal } = useBoolean();
+const { bool: visible, setTrue: openModal } = useBoolean()
 
 const data = [
   {
@@ -21,12 +21,12 @@ const data = [
   {
     title: 'xxx'
   }
-];
+]
 
 // The server configuration dialog box is displayed
 // eslint-disable-next-line
 function handleSelectClick(index: number) {
-  openModal();
+  openModal()
 }
 </script>
 

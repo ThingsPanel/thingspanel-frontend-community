@@ -1,26 +1,26 @@
 <script lang="ts" setup>
-import { inject, onMounted } from 'vue';
-import { NColorPicker, NForm, NFormItem, NInput } from 'naive-ui';
-import type { IConfigCtx } from '@/components/panel/card';
-import { $t } from '@/locales';
-import IconSelector from '@/components/common/icon-selector.vue';
+import { inject, onMounted } from 'vue'
+import { NColorPicker, NForm, NFormItem, NInput } from 'naive-ui'
+import type { IConfigCtx } from '@/components/panel/card'
+import { $t } from '@/locales'
+import IconSelector from '@/components/common/icon-selector.vue'
 
-const ctx = inject<IConfigCtx>('config-ctx')!;
+const ctx = inject<IConfigCtx>('config-ctx')!
 const setActiveIcon = (icon: string) => {
-  ctx.config.activeIconName = icon;
-};
+  ctx.config.activeIconName = icon
+}
 
 const setInactiveIcon = (icon: string) => {
-  ctx.config.inactiveIconName = icon;
-};
+  ctx.config.inactiveIconName = icon
+}
 
 onMounted(() => {
   // 设置配置项的默认值
-  if (!ctx.config.activeIconName) ctx.config.activeIconName = 'BulbOutline';
-  if (!ctx.config.inactiveIconName) ctx.config.inactiveIconName = 'Bulb';
-  if (!ctx.config.activeColor) ctx.config.activeColor = '#FFA500';
-  if (!ctx.config.inactiveColor) ctx.config.inactiveColor = '#808080';
-});
+  if (!ctx.config.activeIconName) ctx.config.activeIconName = 'BulbOutline'
+  if (!ctx.config.inactiveIconName) ctx.config.inactiveIconName = 'Bulb'
+  if (!ctx.config.activeColor) ctx.config.activeColor = '#FFA500'
+  if (!ctx.config.inactiveColor) ctx.config.inactiveColor = '#808080'
+})
 </script>
 
 <template>

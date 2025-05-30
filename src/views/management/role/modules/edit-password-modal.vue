@@ -1,85 +1,85 @@
 <script setup lang="ts">
-import { computed, reactive, ref, toRefs, watch } from 'vue';
-import type { FormInst, FormItemRule } from 'naive-ui';
-import { formRules, getConfirmPwdRule } from '@/utils/form/rule';
-import { editUser } from '@/service/api';
-import { $t } from '@/locales';
+import { computed, reactive, ref, toRefs, watch } from 'vue'
+import type { FormInst, FormItemRule } from 'naive-ui'
+import { formRules, getConfirmPwdRule } from '@/utils/form/rule'
+import { editUser } from '@/service/api'
+import { $t } from '@/locales'
 
 export interface Props {
   /** 弹窗可见性 */
-  visible: boolean;
+  visible: boolean
   /** 编辑的表格行数据 */
-  editData?: UserManagement.User | null;
+  editData?: UserManagement.User | null
 }
 
-defineOptions({ name: 'EditPasswordModal' });
+defineOptions({ name: 'EditPasswordModal' })
 
 const props = withDefaults(defineProps<Props>(), {
   editData: null
-});
+})
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void;
+  (e: 'update:visible', visible: boolean): void
 
   /** 点击协议 */
-  (e: 'success'): void;
+  (e: 'success'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const modalVisible = computed({
   get() {
-    return props.visible;
+    return props.visible
   },
   set(visible) {
-    emit('update:visible', visible);
+    emit('update:visible', visible)
   }
-});
+})
 const closeModal = () => {
-  modalVisible.value = false;
-};
+  modalVisible.value = false
+}
 
-const formRef = ref<HTMLElement & FormInst>();
+const formRef = ref<HTMLElement & FormInst>()
 
 type FormModel = Pick<UserManagement.User, 'email'> & {
-  password: string;
-  confirmPwd: string;
-};
+  password: string
+  confirmPwd: string
+}
 
-const formModel = reactive<FormModel>(createDefaultFormModel());
+const formModel = reactive<FormModel>(createDefaultFormModel())
 
 const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
   email: formRules.email,
   password: formRules.pwd,
   confirmPwd: getConfirmPwdRule(toRefs(formModel).password)
-};
+}
 
 function createDefaultFormModel(): FormModel {
   return {
     email: '',
     password: '',
     confirmPwd: ''
-  };
+  }
 }
 
 function handleUpdateFormModel(model: Partial<FormModel>) {
-  Object.assign(formModel, model);
+  Object.assign(formModel, model)
 }
 
 function handleUpdateFormModelByModalType() {
   if (props.editData) {
-    handleUpdateFormModel(props.editData);
+    handleUpdateFormModel(props.editData)
   }
 }
 
 async function handleSubmit() {
-  await formRef.value?.validate();
-  const data: any = await editUser(formModel);
+  await formRef.value?.validate()
+  const data: any = await editUser(formModel)
   if (!data.error) {
-    window.$message?.success(data.msg);
-    handleUpdateFormModel(createDefaultFormModel());
-    closeModal();
-    emit('success');
+    window.$message?.success(data.msg)
+    handleUpdateFormModel(createDefaultFormModel())
+    closeModal()
+    emit('success')
   }
 }
 
@@ -87,10 +87,10 @@ watch(
   () => props.visible,
   newValue => {
     if (newValue) {
-      handleUpdateFormModelByModalType();
+      handleUpdateFormModelByModalType()
     }
   }
-);
+)
 </script>
 
 <template>

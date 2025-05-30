@@ -9,4 +9,4 @@ export default {
   expand: 'Expand Menu',
   pin: 'Pin',
   unpin: 'Unpin'
-};
+}

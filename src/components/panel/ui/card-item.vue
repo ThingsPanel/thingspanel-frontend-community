@@ -1,28 +1,28 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
-import { usePanelStore } from '@/store/modules/panel';
+import { computed, ref } from 'vue'
+import { usePanelStore } from '@/store/modules/panel'
 // import type { ICardData } from "@/components/panel/card";
 
 const props = defineProps<{
-  view?: boolean;
-  data: any;
-}>();
-const refComp = ref<any>();
-const cardId = computed(() => props.data?.cardId);
-const store = usePanelStore();
+  view?: boolean
+  data: any
+}>()
+const refComp = ref<any>()
+const cardId = computed(() => props.data?.cardId)
+const store = usePanelStore()
 const findCardComponent = (id: string) => {
-  const cIds = id.split('-');
-  const cId = `${cIds[0]}-${cIds[1]}`;
-  return store.$state.cardMap.get(cId)?.component || null;
-};
+  const cIds = id.split('-')
+  const cId = `${cIds[0]}-${cIds[1]}`
+  return store.$state.cardMap.get(cId)?.component || null
+}
 const componentStyle = computed(() => ({
   height: props.data.basicSettings?.showTitle ? 'calc(100% - 28px)' : '100%'
-}));
+}))
 defineExpose({
   getComponent: () => {
-    return refComp.value;
+    return refComp.value
   }
-});
+})
 </script>
 
 <template>

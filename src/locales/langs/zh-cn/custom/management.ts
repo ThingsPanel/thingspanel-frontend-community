@@ -14,4 +14,4 @@ export default {
   responseContent: '响应内容',
   close: '关闭',
   all: '全部'
-};
+}

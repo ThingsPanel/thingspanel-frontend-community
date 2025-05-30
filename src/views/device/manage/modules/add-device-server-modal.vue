@@ -1,46 +1,46 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
-import type { FormInst, FormItemRule } from 'naive-ui';
-import { createRequiredFormRule } from '@/utils/form/rule';
-import { $t } from '@/locales';
+import { computed, reactive, ref, watch } from 'vue'
+import type { FormInst, FormItemRule } from 'naive-ui'
+import { createRequiredFormRule } from '@/utils/form/rule'
+import { $t } from '@/locales'
 
 export interface Props {
-  visible: boolean;
+  visible: boolean
 }
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void;
+  (e: 'update:visible', visible: boolean): void
 }
 
-const emit = defineEmits<Emits>();
-const props = withDefaults(defineProps<Props>(), {});
-const title = ref('OpenWeather气象服务');
+const emit = defineEmits<Emits>()
+const props = withDefaults(defineProps<Props>(), {})
+const title = ref('OpenWeather气象服务')
 
 const modalVisible = computed({
   get() {
-    return props.visible;
+    return props.visible
   },
   set(visible) {
-    emit('update:visible', visible);
+    emit('update:visible', visible)
   }
-});
+})
 
 function handleUpdateFormModelByModalType() {}
 
-const formRef = ref<HTMLElement & FormInst>();
+const formRef = ref<HTMLElement & FormInst>()
 
-type FormModel = Pick<DataService.Data, 'name'>;
+type FormModel = Pick<DataService.Data, 'name'>
 
-const formModel = reactive<FormModel>(createDefaultFormModel());
+const formModel = reactive<FormModel>(createDefaultFormModel())
 
 const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
   name: createRequiredFormRule($t('custom.devicePage.deviceKey'))
-};
+}
 
 function createDefaultFormModel(): FormModel {
   return {
     name: ''
-  };
+  }
 }
 
 function handleSubmit() {}
@@ -49,10 +49,10 @@ watch(
   () => props.visible,
   newValue => {
     if (newValue) {
-      handleUpdateFormModelByModalType();
+      handleUpdateFormModelByModalType()
     }
   }
-);
+)
 </script>
 
 <template>

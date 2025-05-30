@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { useRouterPush } from '@/hooks/common/router';
-import { useMixMenuContext } from '../../hooks/use-mix-menu';
-import FirstLevelMenu from './first-level-menu.vue';
+import { useRouterPush } from '@/hooks/common/router'
+import { useMixMenuContext } from '../../hooks/use-mix-menu'
+import FirstLevelMenu from './first-level-menu.vue'
 
 defineOptions({
   name: 'HorizontalMixMenu'
-});
+})
 
-const { activeFirstLevelMenuKey, setActiveFirstLevelMenuKey } = useMixMenuContext();
-const { routerPushByKey } = useRouterPush();
+const { activeFirstLevelMenuKey, setActiveFirstLevelMenuKey } = useMixMenuContext()
+const { routerPushByKey } = useRouterPush()
 
 function handleSelectMixMenu(menu: App.Global.Menu) {
-  setActiveFirstLevelMenuKey(menu.key);
+  setActiveFirstLevelMenuKey(menu.key)
 
   if (!menu.children?.length) {
-    routerPushByKey(menu.routeKey);
+    routerPushByKey(menu.routeKey)
   }
 }
 </script>

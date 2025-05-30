@@ -24,4 +24,4 @@ export default {
     desc5: 'Soybean just casually wrote the workbench page, it looks passable now!'
   },
   creativity: 'Creativity'
-};
+}

@@ -1,18 +1,18 @@
 <script lang="ts" setup>
-import { userRoleLabels } from '@/constants/business';
-import { $t } from '@/locales';
+import { userRoleLabels } from '@/constants/business'
+import { $t } from '@/locales'
 
 interface Emits {
-  (e: 'login', param: { userName: string; password: string }): void;
+  (e: 'login', param: { userName: string; password: string }): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 interface Account {
-  key: Api.Auth.RoleType;
-  label: string;
-  userName: string;
-  password: string;
+  key: Api.Auth.RoleType
+  label: string
+  userName: string
+  password: string
 }
 
 const accounts: Account[] = [
@@ -34,10 +34,10 @@ const accounts: Account[] = [
     userName: 'User01',
     password: 'user01123'
   }
-];
+]
 
 function login(userName: string, password: string) {
-  emit('login', { userName, password });
+  emit('login', { userName, password })
 }
 </script>
 

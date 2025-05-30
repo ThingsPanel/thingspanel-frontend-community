@@ -7,9 +7,9 @@
  * @LastEditTime: 2024-03-20 16:43:27
 -->
 <script setup lang="tsx">
-import { $t } from '@/locales';
-import AlarmConfiguration from './components/alarm-configuration.vue';
-import NewInformation from './components/new-information.vue';
+import { $t } from '@/locales'
+import AlarmConfiguration from './components/alarm-configuration.vue'
+import NewInformation from './components/new-information.vue'
 </script>
 
 <template>

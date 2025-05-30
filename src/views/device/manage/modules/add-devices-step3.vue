@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { $t } from '@/locales';
+import { $t } from '@/locales'
 // eslint-disable-next-line
 const props = defineProps<{
-  isSuccess: boolean;
-  closeCallback: () => void;
-  backCallback: () => void;
-}>();
+  isSuccess: boolean
+  closeCallback: () => void
+  backCallback: () => void
+}>()
 </script>
 
 <template>

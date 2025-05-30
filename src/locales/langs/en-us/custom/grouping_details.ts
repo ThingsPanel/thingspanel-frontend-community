@@ -23,4 +23,4 @@ export default {
   confirm: 'Confirm',
   messageId: 'Message ID',
   sendContent: 'Send Content'
-};
+}

@@ -1,105 +1,96 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { type FormInst, NButton, NCard, NFlex, useMessage } from 'naive-ui';
-import { deviceGroupTree } from '@/service/api';
-import { warningMessageList } from '@/service/api/alarm';
-import PopUp from '@/views/alarm/warning-message/components/pop-up.vue';
+import { onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { type FormInst, NButton, NCard, NFlex, useMessage } from 'naive-ui'
+import { deviceGroupTree } from '@/service/api'
+import { warningMessageList } from '@/service/api/alarm'
+import PopUp from '@/views/alarm/warning-message/components/pop-up.vue'
 import {
   deviceConfigAll,
   deviceConfigMetricsMenu,
   deviceListAll,
   deviceMetricsMenu,
   sceneGet
-} from '@/service/api/automation';
-import { $t } from '@/locales';
+} from '@/service/api/automation'
+import { $t } from '@/locales'
 
-const route = useRoute();
+const route = useRoute()
 
 interface Props {
   // eslint-disable-next-line vue/no-unused-properties
-  conditionsType?: object | any;
-  actionData?: any;
+  conditionsType?: object | any
+  actionData?: any
 }
 
 const props = withDefaults(defineProps<Props>(), {
   conditionsType: null,
   actionData: []
-});
+})
 
 // 条件中单个/单类设备变化时,重置操作动作中的设备内容
 const resetActionData = () => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define,array-callback-return
   actionForm.value.actionGroups.map((item: any) => {
     if (item.actionInstructList && item.actionInstructList.length > 0) {
-      const data = [] as any;
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      const instructItem = JSON.parse(JSON.stringify(instructListItem.value));
-      instructItem.action_type = props.conditionsType;
-      data.push(instructItem);
-      item.actionInstructList = data;
+      const data = [] as any
+      const instructItem = JSON.parse(JSON.stringify(instructListItem.value))
+      instructItem.action_type = props.conditionsType
+      data.push(instructItem)
+      item.actionInstructList = data
     }
-  });
-};
+  })
+}
 
 watch(
   () => props.conditionsType,
   newValue => {
     if (newValue) {
-      resetActionData();
+      resetActionData()
     }
   }
-);
+)
 watch(
   () => props.actionData,
   newValue => {
     if (newValue) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      actionForm.value.actionGroups = [];
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      actionForm.value.actionGroups = JSON.parse(JSON.stringify(props.actionData));
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      actionForm.value.actionGroups = []
+      actionForm.value.actionGroups = JSON.parse(JSON.stringify(props.actionData))
       actionForm.value.actionGroups.map((item: any) => {
         if (item.actionType === '1') {
           item.actionInstructList.map(instructItem => {
-            instructItem.actionParamOptions = [];
-            // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            actionParamShow(instructItem);
-          });
+            instructItem.actionParamOptions = []
+            actionParamShow(instructItem)
+          })
         }
-      });
+      })
     }
   }
-);
+)
 
-const configId = ref(route.query.id || null);
+const configId = ref(route.query.id || null)
 
 // 新建告警弹窗显示状态
-const popUpVisible = ref(false);
+const popUpVisible = ref(false)
 // 新建告警回执
 const newEdit = () => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  getAlarmList('');
-};
+  getAlarmList('')
+}
 // 场景表单实例
-const configFormRef = ref<FormInst | null>(null);
+const configFormRef = ref<FormInst | null>(null)
 const actionGroupsReturn = () => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  return actionForm.value.actionGroups;
-};
+  return actionForm.value.actionGroups
+}
 const actionFormRefReturn = () => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  return configFormRef.value;
-};
+  return configFormRef.value
+}
 // 场景表单数据
 const actionForm = ref({
   actionGroups: [] as any
-});
+})
 
 defineExpose({
   actionGroupsReturn,
   actionFormRefReturn
-});
+})
 
 // 场景表单规则
 const configFormRules = ref({
@@ -132,9 +123,9 @@ const configFormRules = ref({
     required: true,
     message: $t('common.select')
   }
-});
+})
 // 下拉选择器加载状态
-const loadingSelect = ref(false);
+const loadingSelect = ref(false)
 
 // 动作选项
 const actionOptions = ref([
@@ -155,14 +146,14 @@ const actionOptions = ref([
   //   label: $t('common.triggerService'),
   //   value: '40'
   // }
-]);
+])
 
 // 动作选择action值改变时
 const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) => {
   // eslint-disable-next-line array-callback-return
   actionOptions.value.map(item => {
-    item.disabled = false;
-  });
+    item.disabled = false
+  })
   actionGroupItem.actionInstructList = [
     {
       actionParamOptionsData: [],
@@ -175,9 +166,9 @@ const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) =>
       actionValue: null,
       deviceGroupId: null
     }
-  ];
-  actionGroupItem.action_type = null;
-  actionGroupItem.action_target = null;
+  ]
+  actionGroupItem.action_type = null
+  actionGroupItem.action_target = null
 
   if (data === '1') {
     // eslint-disable-next-line array-callback-return
@@ -186,11 +177,10 @@ const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) =>
         // item.disabled = true;
         // if (actionGroupItem.actionInstructList.length <= 0) actionForm.value.actionGroups = JSON.parse(JSON.stringify(props.actionData));
       }
-    });
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    addIfGroupsSubItem(actionGroupIndex);
+    })
+    addIfGroupsSubItem(actionGroupIndex)
   }
-};
+}
 // 设备类型选项
 const actionTypeOptions = ref([
   {
@@ -201,139 +191,136 @@ const actionTypeOptions = ref([
     label: $t('common.singleClassDevice'),
     value: '11'
   }
-]);
+])
 
 // 选择设备类型
 const actionTypeChange = (instructItem: any, data: any) => {
-  instructItem.action_target = null;
-  instructItem.action_param_type = null;
-  instructItem.action_param = null;
-  instructItem.actionValue = null;
+  instructItem.action_target = null
+  instructItem.action_param_type = null
+  instructItem.action_param = null
+  instructItem.actionValue = null
 
   if (data === '10') {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getDevice('', '');
+    getDevice('', '')
   } else if (data === '11') {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getDeviceConfig('');
+    getDeviceConfig('')
   }
-};
+}
 
 // 设备分组列表
-const deviceGroupOptions = ref([] as any);
+const deviceGroupOptions = ref([] as any)
 // 获取设备分组
 const getGroup = async () => {
-  deviceGroupOptions.value = [];
-  const res = await deviceGroupTree({});
+  deviceGroupOptions.value = []
+  const res = await deviceGroupTree({})
   // eslint-disable-next-line array-callback-return
   res.data.map((item: any) => {
-    deviceGroupOptions.value.push(item.group);
-  });
-};
+    deviceGroupOptions.value.push(item.group)
+  })
+}
 
 // 设备列表
-const deviceOptions = ref([] as any);
+const deviceOptions = ref([] as any)
 const queryDevice = ref({
   group_id: null,
   device_name: null,
   bind_config: 0
-});
+})
 
 // 获取设备列表
 const getDevice = async (groupId: any, name: any) => {
-  queryDevice.value.group_id = groupId || null;
-  queryDevice.value.device_name = name || null;
-  const res = await deviceListAll(queryDevice.value);
-  deviceOptions.value = res.data;
-};
+  queryDevice.value.group_id = groupId || null
+  queryDevice.value.device_name = name || null
+  const res = await deviceListAll(queryDevice.value)
+  deviceOptions.value = res.data
+}
 
-const queryDeviceName = ref([] as any);
+const queryDeviceName = ref([] as any)
 const handleFocus = (ifIndex: any) => {
-  queryDeviceName.value[ifIndex].focus();
-};
+  queryDeviceName.value[ifIndex].focus()
+}
 
 // 设备配置列表
-const deviceConfigOption = ref([]);
+const deviceConfigOption = ref([])
 // 设备配置列表查询条件
 const queryDeviceConfig = ref({
   device_config_name: ''
-});
+})
 // 获取设备配置列表
 const getDeviceConfig = async (name: any) => {
-  queryDeviceConfig.value.device_config_name = name || '';
-  const res = await deviceConfigAll(queryDeviceConfig.value);
-  deviceConfigOption.value = res.data || [];
-};
+  queryDeviceConfig.value.device_config_name = name || ''
+  const res = await deviceConfigAll(queryDeviceConfig.value)
+  deviceConfigOption.value = res.data || []
+}
 
 // 选择动作目标
 const actionTargetChange = (instructItem: any) => {
-  instructItem.action_param_type = null;
-  instructItem.action_param = null;
-  instructItem.actionValue = null;
-  instructItem.actionParamOptionsData = [];
-  instructItem.actionParamTypeOptions = [];
-  instructItem.actionParamOptions = [];
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  actionParamShow(instructItem);
-};
+  instructItem.action_param_type = null
+  instructItem.action_param = null
+  instructItem.actionValue = null
+  instructItem.actionParamOptionsData = []
+  instructItem.actionParamTypeOptions = []
+  instructItem.actionParamOptions = []
+  actionParamShow(instructItem)
+}
 
 // 下拉获取的动作标识符
 const actionParamShow = async (instructItem: any) => {
   if (instructItem.action_target) {
-    let res = null as any;
+    let res = null as any
     if (instructItem.action_type === '10') {
-      res = await deviceMetricsMenu({ device_id: instructItem.action_target });
+      res = await deviceMetricsMenu({ device_id: instructItem.action_target })
     } else if (instructItem.action_type === '11') {
       res = await deviceConfigMetricsMenu({
         device_config_id: instructItem.action_target
-      });
+      })
     }
     // eslint-disable-next-line array-callback-return
     if (res.data) {
       // eslint-disable-next-line array-callback-return
       res.data.map((item: any) => {
-        item.value = item.data_source_type;
-        item.label = `${item.data_source_type}${item.label ? `(${item.label})` : ''}`;
+        item.value = item.data_source_type
+        item.label = `${item.data_source_type}${item.label ? `(${item.label})` : ''}`
 
         // eslint-disable-next-line array-callback-return
         item.options.map((subItem: any) => {
-          subItem.value = subItem.key;
-          subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`;
-        });
-      });
+          subItem.value = subItem.key
+          subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`
+        })
+      })
       // eslint-disable-next-line require-atomic-updates
-      instructItem.actionParamOptionsData = res.data;
+      instructItem.actionParamOptionsData = res.data
       // eslint-disable-next-line require-atomic-updates
       instructItem.actionParamTypeOptions = res.data.map((item: any) => {
         return {
           label: item.label,
           value: item.value
-        };
-      });
+        }
+      })
       if (instructItem.action_param_type) {
         instructItem.actionParamOptions =
           instructItem.actionParamOptionsData.find(item => item.data_source_type === instructItem.action_param_type)
-            ?.options || [];
+            ?.options || []
         if (
           instructItem.action_param_type === 'c_attribute' ||
           instructItem.action_param_type === 'c_telemetry' ||
           instructItem.action_param_type === 'c_command'
         ) {
-          instructItem.showSubSelect = false;
+          instructItem.showSubSelect = false
         } else {
-          instructItem.showSubSelect = true;
+          instructItem.showSubSelect = true
         }
       }
       if (instructItem.action_param && instructItem.actionParamOptions.length > 0) {
         instructItem.actionParamData =
-          instructItem.actionParamOptions.find(item => item.key === instructItem.action_param) || null;
+          instructItem.actionParamOptions.find(item => item.key === instructItem.action_param) || null
         if (instructItem.actionParamData?.data_type) {
-          instructItem.actionParamData.data_type = instructItem?.actionParamData?.data_type?.toLowerCase();
+          instructItem.actionParamData.data_type = instructItem?.actionParamData?.data_type?.toLowerCase()
         }
       }
     }
   }
-};
+}
 const placeholderMap = {
   telemetry: '20',
   attributes: 'on-line',
@@ -341,34 +328,34 @@ const placeholderMap = {
   c_telemetry: '{"switch":1,"switch1":0}',
   c_attribute: '{"addr":1,"port":0}',
   c_command: '{"method":"switch1","params":{"false":0}}'
-};
+}
 // 选择设备属性类型
 const actionParamTypeChange = (instructItem: any, data: any) => {
-  instructItem.action_param = null;
-  instructItem.actionParamData = null;
+  instructItem.action_param = null
+  instructItem.actionParamData = null
   instructItem.actionParamOptions =
-    instructItem.actionParamOptionsData.find(item => item.data_source_type === data)?.options || [];
-  instructItem.placeholder = placeholderMap[data];
-  instructItem.actionValue = null;
+    instructItem.actionParamOptionsData.find(item => item.data_source_type === data)?.options || []
+  instructItem.placeholder = placeholderMap[data]
+  instructItem.actionValue = null
   if (
     instructItem.action_param_type === 'c_attribute' ||
     instructItem.action_param_type === 'c_telemetry' ||
     instructItem.action_param_type === 'c_command'
   ) {
-    instructItem.showSubSelect = false;
+    instructItem.showSubSelect = false
   } else {
-    instructItem.showSubSelect = true;
+    instructItem.showSubSelect = true
   }
-};
+}
 // 选择动作标识符
 const actionParamChange = (instructItem: any, data: any) => {
-  instructItem.actionValue = null;
-  instructItem.actionParamData = instructItem.actionParamOptions.find(item => item.key === data) || null;
+  instructItem.actionValue = null
+  instructItem.actionParamData = instructItem.actionParamOptions.find(item => item.key === data) || null
   if (instructItem.actionParamData?.data_type) {
-    instructItem.actionParamData.data_type = instructItem?.actionParamData?.data_type?.toLowerCase();
+    instructItem.actionParamData.data_type = instructItem?.actionParamData?.data_type?.toLowerCase()
   }
-};
-const message = useMessage();
+}
+const message = useMessage()
 // 动作值标识
 const actionValueChange = (instructItem: any) => {
   if (
@@ -378,53 +365,53 @@ const actionValueChange = (instructItem: any) => {
     instructItem.action_param_type === 'c_command'
   ) {
     try {
-      JSON.parse(instructItem.actionValue);
+      JSON.parse(instructItem.actionValue)
       if (typeof JSON.parse(instructItem.actionValue) === 'object') {
-        instructItem.inputFeedback = '';
-        instructItem.inputValidationStatus = undefined;
+        instructItem.inputFeedback = ''
+        instructItem.inputValidationStatus = undefined
       } else {
-        message.error($t('common.enterJson'));
-        instructItem.inputValidationStatus = 'error';
+        message.error($t('common.enterJson'))
+        instructItem.inputValidationStatus = 'error'
       }
     } catch (e) {
-      message.error($t('common.enterJson'));
+      message.error($t('common.enterJson'))
       // instructItem.inputFeedback=$t('common.enterJson')
-      instructItem.inputValidationStatus = 'error';
+      instructItem.inputValidationStatus = 'error'
     }
   }
-};
+}
 // 场景列表
-const sceneList = ref([]);
+const sceneList = ref([])
 // 场景查询条件
 const queryScene = ref({
   page: 1,
   page_size: 10,
   name: ''
-});
+})
 // 获取场景列表
 const getSceneList = async (name: string) => {
-  queryScene.value.name = name || '';
-  loadingSelect.value = true;
-  const res = await sceneGet(queryScene.value);
-  sceneList.value = res.data.list;
-  loadingSelect.value = false;
-};
+  queryScene.value.name = name || ''
+  loadingSelect.value = true
+  const res = await sceneGet(queryScene.value)
+  sceneList.value = res.data.list
+  loadingSelect.value = false
+}
 
 // 告警列表
-const alarmList = ref([]);
+const alarmList = ref([])
 // 告警列表查询条件
 const queryAlarm = ref({
   page: 1,
   page_size: 10,
   name: ''
-});
+})
 const getAlarmList = async (name: string) => {
-  queryAlarm.value.name = name || '';
-  loadingSelect.value = true;
-  const res = await warningMessageList(queryAlarm.value);
-  loadingSelect.value = false;
-  alarmList.value = res.data.list;
-};
+  queryAlarm.value.name = name || ''
+  loadingSelect.value = true
+  const res = await warningMessageList(queryAlarm.value)
+  loadingSelect.value = false
+  alarmList.value = res.data.list
+}
 
 // 操作设备类型的数据Item
 const instructListItem = ref({
@@ -437,7 +424,7 @@ const instructListItem = ref({
   actionParamOptions: [], // 动作标识属性下拉列表数据选项
   actionParamOptionsData: [], // 动作标识菜单下拉列表数据选项
   actionParamTypeOptions: [] // 动作标识类型下拉列表
-});
+})
 
 // interface ActionInstructItem {
 //   action_target: string;
@@ -455,7 +442,7 @@ const actionItem = ref({
   action_type: null, // 动作类型后端
   action_target: null, // 动作目标id   设备id、设备配置id，场景id、告警id
   actionInstructList: []
-});
+})
 // interface ActionItem {
 //   actionType: string;
 //   action_type: string;
@@ -472,40 +459,40 @@ const actionItem = ref({
 
 // 新增一个动作组
 const addActionGroupItem = async () => {
-  await configFormRef.value?.validate();
-  const actionItemData = JSON.parse(JSON.stringify(actionItem.value));
+  await configFormRef.value?.validate()
+  const actionItemData = JSON.parse(JSON.stringify(actionItem.value))
   // actionItemData.actionInstructList.push(JSON.parse(JSON.stringify(instructListItem.value)));
-  actionForm.value.actionGroups.push(actionItemData);
-};
+  actionForm.value.actionGroups.push(actionItemData)
+}
 // 删除一个动作组
 const deleteActionGroupItem = (actionGroupIndex: any) => {
-  actionForm.value.actionGroups.splice(actionGroupIndex, 1);
-};
+  actionForm.value.actionGroups.splice(actionGroupIndex, 1)
+}
 
 // 给某个动作组中增加指令
 const addIfGroupsSubItem = async (actionGroupIndex: any) => {
-  await configFormRef.value?.validate();
-  const data = JSON.parse(JSON.stringify(instructListItem.value));
+  await configFormRef.value?.validate()
+  const data = JSON.parse(JSON.stringify(instructListItem.value))
   if (props.conditionsType === '11') {
-    data.action_type = '11';
+    data.action_type = '11'
   }
-  actionForm.value.actionGroups[actionGroupIndex].actionInstructList.push(data);
-};
+  actionForm.value.actionGroups[actionGroupIndex].actionInstructList.push(data)
+}
 // 删除某个动作组中的某个指令
 const deleteIfGroupsSubItem = (actionGroupIndex: any, ifIndex: any) => {
-  actionForm.value.actionGroups[actionGroupIndex].actionInstructList.splice(ifIndex, 1);
-};
+  actionForm.value.actionGroups[actionGroupIndex].actionInstructList.splice(ifIndex, 1)
+}
 
 onMounted(() => {
-  getGroup();
-  getDevice(null, null);
-  getDeviceConfig('');
-  getAlarmList('');
-  getSceneList('');
+  getGroup()
+  getDevice(null, null)
+  getDeviceConfig('')
+  getAlarmList('')
+  getSceneList('')
   if (!configId.value) {
-    addActionGroupItem();
+    addActionGroupItem()
   }
-});
+})
 </script>
 
 <template>
@@ -672,7 +659,7 @@ onMounted(() => {
                           <NInput
                             v-if="instructItem.actionParamData.data_type === 'string'"
                             v-model:value="instructItem.actionValue"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder||'--'"
+                            :placeholder="$t('common.as') + '：' + instructItem.placeholder || '--'"
                             class="w-full"
                             @blur="actionValueChange(instructItem)"
                           />
@@ -680,7 +667,7 @@ onMounted(() => {
                             v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'number'"
                             v-model:value="instructItem.actionValue"
                             class="w-full"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder||'--'"
+                            :placeholder="$t('common.as') + '：' + instructItem.placeholder || '--'"
                             :show-button="false"
                           />
                           <n-radio-group
@@ -707,7 +694,7 @@ onMounted(() => {
                         >
                           <NInput
                             v-model:value="instructItem.actionValue"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder||'--'"
+                            :placeholder="$t('common.as') + '：' + instructItem.placeholder || '--'"
                             class="w-full"
                             @blur="actionValueChange(instructItem)"
                           />

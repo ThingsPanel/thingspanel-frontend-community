@@ -10,4 +10,4 @@ export default {
   },
   prdDep: 'Production Dependencies',
   devDep: 'Development Dependencies'
-};
+}

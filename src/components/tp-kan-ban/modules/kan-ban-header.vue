@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { router } from '@/router';
-import { $t } from '@/locales';
+import { router } from '@/router'
+import { $t } from '@/locales'
 
-defineOptions({ name: 'KanBanHeader' });
-const active = defineModel<boolean>('active', { required: true, default: false });
-const responsive = defineModel<boolean>('responsive', { required: true, default: false });
+defineOptions({ name: 'KanBanHeader' })
+const active = defineModel<boolean>('active', { required: true, default: false })
+const responsive = defineModel<boolean>('responsive', { required: true, default: false })
 
-defineProps<{ saveKanBan: () => Promise<void>; isFullscreen: boolean; toggle: () => Promise<void>; tittle: string }>();
+defineProps<{ saveKanBan: () => Promise<void>; isFullscreen: boolean; toggle: () => Promise<void>; tittle: string }>()
 </script>
 
 <template>
@@ -33,7 +33,7 @@ defineProps<{ saveKanBan: () => Promise<void>; isFullscreen: boolean; toggle: ()
           :full="isFullscreen"
           @click="
             () => {
-              toggle();
+              toggle()
             }
           "
         />

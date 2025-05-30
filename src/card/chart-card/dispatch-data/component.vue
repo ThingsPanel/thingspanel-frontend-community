@@ -1,74 +1,74 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { NIcon } from 'naive-ui';
-import * as ionicons5 from '@vicons/ionicons5';
-import type { ICardData } from '@/components/panel/card';
-import { $t } from '@/locales';
-import { attributeDataPub, commandDataPub, telemetryDataPub } from '@/service/api/device';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { NIcon } from 'naive-ui'
+import * as ionicons5 from '@vicons/ionicons5'
+import type { ICardData } from '@/components/panel/card'
+import { $t } from '@/locales'
+import { attributeDataPub, commandDataPub, telemetryDataPub } from '@/service/api/device'
 
 const props = defineProps<{
-  card: ICardData;
-}>();
+  card: ICardData
+}>()
 
-const cardRef = ref<HTMLElement | null>(null);
-const fontSize = ref('14px');
-const iconSize = ref('24px');
-let resizeObserver: ResizeObserver | null = null;
-const deviceName = computed(() => props.card?.dataSource?.deviceSource?.[0]?.name || '设备1');
+const cardRef = ref<HTMLElement | null>(null)
+const fontSize = ref('14px')
+const iconSize = ref('24px')
+let resizeObserver: ResizeObserver | null = null
+const deviceName = computed(() => props.card?.dataSource?.deviceSource?.[0]?.name || '设备1')
 
-const config = computed(() => props.card?.config || {});
-const buttonIcon = computed(() => (ionicons5 as any)[config.value.iconName || 'Play']);
-const buttonIconColor = computed(() => config.value.buttonIconColor || '#fff');
-const buttonColor = computed(() => config.value.buttonColor || '#ff4d4f');
-const buttonText = computed(() => config.value.buttonText || $t('card.customData'));
+const config = computed(() => props.card?.config || {})
+const buttonIcon = computed(() => (ionicons5 as any)[config.value.iconName || 'Play'])
+const buttonIconColor = computed(() => config.value.buttonIconColor || '#fff')
+const buttonColor = computed(() => config.value.buttonColor || '#ff4d4f')
+const buttonText = computed(() => config.value.buttonText || $t('card.customData'))
 
-const deviceId = computed(() => props.card?.dataSource?.deviceSource?.[0]?.deviceId);
+const deviceId = computed(() => props.card?.dataSource?.deviceSource?.[0]?.deviceId)
 
 const handleButtonClick = async () => {
-  if (!deviceId.value) return;
+  if (!deviceId.value) return
 
-  const valueToBeSent = config.value.valueToSend || '1';
+  const valueToBeSent = config.value.valueToSend || '1'
   const obj = {
     device_id: deviceId.value,
     value: valueToBeSent
-  };
+  }
 
   try {
-    console.log(config.value.dataType);
+    console.log(config.value.dataType)
     if (config.value.dataType === 'attributes') {
-      await attributeDataPub(obj);
+      await attributeDataPub(obj)
     } else if (config.value.dataType === 'telemetry') {
-      await telemetryDataPub(obj);
+      await telemetryDataPub(obj)
     } else if (config.value.dataType === 'command') {
-      await commandDataPub(obj);
+      await commandDataPub(obj)
     }
-    window.$message?.success($t('card.dataSentSuccess'));
+    window.$message?.success($t('card.dataSentSuccess'))
   } catch (error) {
-    window.$message?.error($t('card.dataSentFail'));
+    window.$message?.error($t('card.dataSentFail'))
   }
-};
+}
 
 const handleResize = (entries: ResizeObserverEntry[]) => {
   for (const entry of entries) {
-    const { width, height } = entry.contentRect;
-    const minDimension = Math.min(width, height);
-    fontSize.value = `${minDimension / 10}px`;
-    iconSize.value = `${minDimension / 5}px`;
+    const { width, height } = entry.contentRect
+    const minDimension = Math.min(width, height)
+    fontSize.value = `${minDimension / 10}px`
+    iconSize.value = `${minDimension / 5}px`
   }
-};
+}
 
 onMounted(() => {
   if (cardRef.value) {
-    resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(cardRef.value);
+    resizeObserver = new ResizeObserver(handleResize)
+    resizeObserver.observe(cardRef.value)
   }
-});
+})
 
 onBeforeUnmount(() => {
   if (resizeObserver) {
-    resizeObserver.disconnect();
+    resizeObserver.disconnect()
   }
-});
+})
 </script>
 
 <template>

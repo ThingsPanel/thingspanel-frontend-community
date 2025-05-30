@@ -81,4 +81,4 @@ export default {
   back: 'Back',
   onlineOption: 'Online',
   offlineOption: 'Offline'
-};
+}

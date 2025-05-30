@@ -3,4 +3,4 @@ export default {
   description: '一切尽在不言中',
   refresh: '刷新',
   kanbanNameNull: '看板名称不能为空'
-};
+}

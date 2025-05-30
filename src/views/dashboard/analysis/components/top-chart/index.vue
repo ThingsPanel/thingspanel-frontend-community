@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import LineChart from '@/views/home/modules/line-chart.vue';
-import PieChart from '@/views/home/modules/pie-chart.vue';
-import { $t } from '@/locales';
+import LineChart from '@/views/home/modules/line-chart.vue'
+import PieChart from '@/views/home/modules/pie-chart.vue'
+import { $t } from '@/locales'
 
-defineOptions({ name: 'DashboardAnalysisTopCard' });
+defineOptions({ name: 'DashboardAnalysisTopCard' })
 </script>
 
 <template>

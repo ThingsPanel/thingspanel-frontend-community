@@ -1,53 +1,53 @@
 <script setup lang="tsx">
-import { reactive, watch } from 'vue';
-import { NForm } from 'naive-ui';
-import { debounce } from 'lodash';
-import { $t } from '@/locales';
-import DeviceSelector from '@/cards2.0/modules/device-selector.vue';
+import { reactive, watch } from 'vue'
+import { NForm } from 'naive-ui'
+import { debounce } from 'lodash'
+import { $t } from '@/locales'
+import DeviceSelector from '@/cards2.0/modules/device-selector.vue'
 
-defineOptions({ name: 'CardDataSourceForm' });
+defineOptions({ name: 'CardDataSourceForm' })
 
 const props = defineProps<{
-  changeCtxConfig: (key: string, data: any) => void;
-  defaultSourceData?: Record<string, any>;
-  maxSourceNumber: number;
-}>();
+  changeCtxConfig: (key: string, data: any) => void
+  defaultSourceData?: Record<string, any>
+  maxSourceNumber: number
+}>()
 
 const sourceData = reactive<{
-  dataSource?: string;
-  deviceCount?: number;
-  systemCount?: number;
-  systemSource?: any[];
-  deviceSource?: any[];
-}>({ ...props.defaultSourceData });
+  dataSource?: string
+  deviceCount?: number
+  systemCount?: number
+  systemSource?: any[]
+  deviceSource?: any[]
+}>({ ...props.defaultSourceData })
 const systemNorm = [
   { label: $t('card.totalDevices'), value: 1 },
   { label: $t('card.onlineDevices'), value: 2 },
   { label: $t('card.offlineDevices'), value: 3 }
-];
+]
 const throttledWatcher = debounce(() => {
-  props.changeCtxConfig('source', sourceData);
-}, 300);
+  props.changeCtxConfig('source', sourceData)
+}, 300)
 
 const selection = v => {
-  v.deviceCount = v.deviceSource?.length || 0;
-  sourceData.deviceSource = v;
-};
+  v.deviceCount = v.deviceSource?.length || 0
+  sourceData.deviceSource = v
+}
 const updateSystemSource = v => {
-  const arr: any[] = [];
+  const arr: any[] = []
   if (sourceData?.systemSource) {
-    sourceData.systemCount = v;
+    sourceData.systemCount = v
     if (v !== sourceData.systemSource.length) {
       if (v > sourceData.systemSource.length) {
         for (let i = sourceData.systemSource.length; i < v; i += 1) {
           sourceData.systemSource.push({
             name: '',
             type: ''
-          });
+          })
         }
       } else {
         for (let i = v; i < sourceData.systemSource.length; i += 1) {
-          sourceData.systemSource.pop();
+          sourceData.systemSource.pop()
         }
       }
     }
@@ -56,19 +56,19 @@ const updateSystemSource = v => {
       arr.push({
         name: '',
         type: ''
-      });
+      })
     }
-    sourceData.systemSource = arr;
+    sourceData.systemSource = arr
   }
-};
+}
 
 watch(
   () => sourceData,
   () => {
-    throttledWatcher();
+    throttledWatcher()
   },
   { deep: true }
-);
+)
 </script>
 
 <template>

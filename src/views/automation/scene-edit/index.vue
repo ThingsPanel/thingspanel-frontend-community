@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { NButton, NCard, NFlex, useDialog, useMessage } from 'naive-ui';
-import type { FormInst } from 'naive-ui';
-import { deviceGroupTree } from '@/service/api';
-import { warningMessageList } from '@/service/api/alarm';
-import PopUp from '@/views/alarm/warning-message/components/pop-up.vue';
+import { onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { NButton, NCard, NFlex, useDialog, useMessage } from 'naive-ui'
+import type { FormInst } from 'naive-ui'
+import { deviceGroupTree } from '@/service/api'
+import { warningMessageList } from '@/service/api/alarm'
+import PopUp from '@/views/alarm/warning-message/components/pop-up.vue'
 import {
   deviceConfigAll,
   deviceConfigMetricsMenu,
@@ -15,34 +15,33 @@ import {
   sceneEdit,
   sceneGet,
   sceneInfo
-} from '@/service/api/automation';
+} from '@/service/api/automation'
 // import { useRouterPush } from '@/hooks/common/router';
-import { $t } from '@/locales';
-import { useTabStore } from '@/store/modules/tab';
-// eslint-disable-next-line import/no-duplicates
-const route = useRoute();
-const router = useRouter();
-const dialog = useDialog();
+import { $t } from '@/locales'
+import { useTabStore } from '@/store/modules/tab'
+const route = useRoute()
+const router = useRouter()
+const dialog = useDialog()
 // const { routerBack } = useRouterPush();
 
-const configId = ref(route.query.id || '');
+const configId = ref(route.query.id || '')
 
 // 新建告警弹窗显示状态
-const popUpVisible = ref(false);
+const popUpVisible = ref(false)
 // 新建告警回执
 const newEdit = () => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  getAlarmList('');
-};
+
+  getAlarmList('')
+}
 // 场景表单实例
-const configFormRef = ref<FormInst | null>(null);
+const configFormRef = ref<FormInst | null>(null)
 // 场景表单数据
 const configForm = ref({
   id: '',
   name: '',
   description: '',
   actions: [] as any
-});
+})
 // 场景表单规则
 const configFormRules = ref({
   name: {
@@ -82,9 +81,9 @@ const configFormRules = ref({
     required: true,
     message: $t('common.select')
   }
-});
+})
 // 下拉选择器加载状态
-const loadingSelect = ref(false);
+const loadingSelect = ref(false)
 
 // 动作选项
 const actionOptions = ref([
@@ -105,28 +104,28 @@ const actionOptions = ref([
   //   label: $t('common.triggerService'),
   //   value: '40'
   // }
-]);
+])
 
 // 动作选择action值改变时
 const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) => {
   // eslint-disable-next-line array-callback-return
   actionOptions.value.map(item => {
-    item.disabled = false;
-  });
-  actionGroupItem.actionInstructList = [];
-  actionGroupItem.action_type = null;
-  actionGroupItem.action_target = null;
+    item.disabled = false
+  })
+  actionGroupItem.actionInstructList = []
+  actionGroupItem.action_type = null
+  actionGroupItem.action_target = null
   if (data === '1') {
     // eslint-disable-next-line array-callback-return
     actionOptions.value.map(item => {
       if (item.value === '1') {
-        item.disabled = true;
+        item.disabled = true
       }
-    });
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    addIfGroupsSubItem(actionGroupIndex);
+    })
+
+    addIfGroupsSubItem(actionGroupIndex)
   }
-};
+}
 // 设备类型选项
 const actionTypeOptions = ref([
   {
@@ -137,138 +136,135 @@ const actionTypeOptions = ref([
     label: $t('common.singleClassDevice'),
     value: '11'
   }
-]);
+])
 
 // 选择设备类型
 const actionTypeChange = (instructItem: any, data: any) => {
-  instructItem.action_target = null;
-  instructItem.action_param_type = null;
-  instructItem.action_param = null;
-  instructItem.action_param_key = null;
-  instructItem.action_value = null;
+  instructItem.action_target = null
+  instructItem.action_param_type = null
+  instructItem.action_param = null
+  instructItem.action_param_key = null
+  instructItem.action_value = null
 
   if (data === '10') {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getDevice(null, null);
+    getDevice(null, null)
   } else if (data === '11') {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getDeviceConfig('');
+    getDeviceConfig('')
   }
-};
+}
 
 // 设备分组列表
-const deviceGroupOptions = ref([] as any);
+const deviceGroupOptions = ref([] as any)
 // 获取设备分组
 const getGroup = async () => {
-  deviceGroupOptions.value = [];
-  const res = await deviceGroupTree({});
+  deviceGroupOptions.value = []
+  const res = await deviceGroupTree({})
   // eslint-disable-next-line array-callback-return
   res.data.map((item: any) => {
-    deviceGroupOptions.value.push(item.group);
-  });
-};
+    deviceGroupOptions.value.push(item.group)
+  })
+}
 
 // 设备列表
-const deviceOptions = ref([] as any);
+const deviceOptions = ref([] as any)
 const queryDevice = ref({
   group_id: null,
   device_name: null,
   bind_config: 0
-});
+})
 
 // 获取设备列表
 const getDevice = async (groupId: any, name: any) => {
-  queryDevice.value.group_id = groupId || null;
-  queryDevice.value.device_name = name || null;
-  const res = await deviceListAll(queryDevice.value);
-  deviceOptions.value = res.data;
-};
+  queryDevice.value.group_id = groupId || null
+  queryDevice.value.device_name = name || null
+  const res = await deviceListAll(queryDevice.value)
+  deviceOptions.value = res.data
+}
 
-const queryDeviceName = ref([] as any);
+const queryDeviceName = ref([] as any)
 const handleFocus = (ifIndex: any) => {
-  queryDeviceName.value[ifIndex].focus();
-};
+  queryDeviceName.value[ifIndex].focus()
+}
 
 // 设备配置列表
-const deviceConfigOption = ref([]);
+const deviceConfigOption = ref([])
 // 设备配置列表查询条件
 const queryDeviceConfig = ref({
   device_config_name: ''
-});
+})
 // 获取设备配置列表
 const getDeviceConfig = async (name: any) => {
-  queryDeviceConfig.value.device_config_name = name || '';
-  const res = await deviceConfigAll(queryDeviceConfig.value);
-  deviceConfigOption.value = res.data || [];
-};
+  queryDeviceConfig.value.device_config_name = name || ''
+  const res = await deviceConfigAll(queryDeviceConfig.value)
+  deviceConfigOption.value = res.data || []
+}
 
 // 选择动作目标
 const actionTargetChange = (instructItem: any) => {
-  instructItem.action_param_type = null;
-  instructItem.action_param = null;
-  instructItem.actionValue = null;
-  instructItem.actionParamOptionsData = [];
-  instructItem.actionParamTypeOptions = [];
-  instructItem.actionParamOptions = [];
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  actionParamShow(instructItem);
-};
+  instructItem.action_param_type = null
+  instructItem.action_param = null
+  instructItem.actionValue = null
+  instructItem.actionParamOptionsData = []
+  instructItem.actionParamTypeOptions = []
+  instructItem.actionParamOptions = []
+  actionParamShow(instructItem)
+}
 
 // 下拉获取的动作标识符
 const actionParamShow = async (instructItem: any) => {
-  let res = null as any;
+  let res = null as any
   if (instructItem.action_type === '10') {
-    res = await deviceMetricsMenu({ device_id: instructItem.action_target });
+    res = await deviceMetricsMenu({ device_id: instructItem.action_target })
   } else if (instructItem.action_type === '11') {
     res = await deviceConfigMetricsMenu({
       device_config_id: instructItem.action_target
-    });
+    })
   }
   // eslint-disable-next-line array-callback-return
   if (res.data) {
     // eslint-disable-next-line array-callback-return
     res.data.map((item: any) => {
-      item.value = item.data_source_type;
-      item.label = `${item.label ? `(${item.label})` : ''}${item.data_source_type}`;
+      item.value = item.data_source_type
+      item.label = `${item.label ? `(${item.label})` : ''}${item.data_source_type}`
 
       // eslint-disable-next-line array-callback-return
       item.options.map((subItem: any) => {
-        subItem.value = subItem.key;
-        subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`;
-      });
-    });
+        subItem.value = subItem.key
+        subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`
+      })
+    })
     // eslint-disable-next-line require-atomic-updates
-    instructItem.actionParamOptionsData = res.data;
+    instructItem.actionParamOptionsData = res.data
     // eslint-disable-next-line require-atomic-updates
     instructItem.actionParamTypeOptions = res.data.map((item: any) => {
       return {
         label: item.label,
         value: item.value
-      };
-    });
+      }
+    })
     if (instructItem.action_param_type) {
       instructItem.actionParamOptions =
         instructItem.actionParamOptionsData.find(item => item.data_source_type === instructItem.action_param_type)
-          ?.options || [];
+          ?.options || []
       if (
         instructItem.action_param_type === 'c_attribute' ||
         instructItem.action_param_type === 'c_telemetry' ||
         instructItem.action_param_type === 'c_command'
       ) {
-        instructItem.showSubSelect = false;
+        instructItem.showSubSelect = false
       } else {
-        instructItem.showSubSelect = true;
+        instructItem.showSubSelect = true
       }
     }
     if (instructItem.action_param && instructItem.actionParamOptions.length > 0) {
       instructItem.actionParamData =
-        instructItem.actionParamOptions.find(item => item.key === instructItem.action_param) || null;
+        instructItem.actionParamOptions.find(item => item.key === instructItem.action_param) || null
       if (instructItem.actionParamData?.data_type) {
-        instructItem.actionParamData.data_type = instructItem?.actionParamData?.data_type?.toLowerCase();
+        instructItem.actionParamData.data_type = instructItem?.actionParamData?.data_type?.toLowerCase()
       }
     }
   }
-};
+}
 const placeholderMap = {
   telemetry: '20',
   attributes: 'on-line',
@@ -276,34 +272,34 @@ const placeholderMap = {
   c_telemetry: '{"switch":1,"switch1":0}',
   c_attribute: '{"addr":1,"port":0}',
   c_command: '{"method":"switch1","params":{"false":0}}'
-};
+}
 // 选择设备属性类型
 const actionParamTypeChange = (instructItem: any, data: any) => {
-  instructItem.action_param = null;
-  instructItem.actionParamData = null;
+  instructItem.action_param = null
+  instructItem.actionParamData = null
   instructItem.actionParamOptions =
-    instructItem.actionParamOptionsData.find(item => item.data_source_type === data)?.options || [];
-  instructItem.placeholder = placeholderMap[data];
-  instructItem.actionValue = null;
+    instructItem.actionParamOptionsData.find(item => item.data_source_type === data)?.options || []
+  instructItem.placeholder = placeholderMap[data]
+  instructItem.actionValue = null
   if (
     instructItem.action_param_type === 'c_attribute' ||
     instructItem.action_param_type === 'c_telemetry' ||
     instructItem.action_param_type === 'c_command'
   ) {
-    instructItem.showSubSelect = false;
+    instructItem.showSubSelect = false
   } else {
-    instructItem.showSubSelect = true;
+    instructItem.showSubSelect = true
   }
-};
+}
 // 选择动作标识符
 const actionParamChange = (instructItem: any, data: any) => {
-  instructItem.actionValue = null;
-  instructItem.actionParamData = instructItem.actionParamOptions.find(item => item.key === data) || null;
+  instructItem.actionValue = null
+  instructItem.actionParamData = instructItem.actionParamOptions.find(item => item.key === data) || null
   if (instructItem.actionParamData?.data_type) {
-    instructItem.actionParamData.data_type = instructItem?.actionParamData?.data_type?.toLowerCase();
+    instructItem.actionParamData.data_type = instructItem?.actionParamData?.data_type?.toLowerCase()
   }
-};
-const message = useMessage();
+}
+const message = useMessage()
 // 动作值标识
 const actionValueChange = (instructItem: any) => {
   if (
@@ -313,21 +309,21 @@ const actionValueChange = (instructItem: any) => {
     instructItem.action_param_type === 'c_command'
   ) {
     try {
-      JSON.parse(instructItem.actionValue);
+      JSON.parse(instructItem.actionValue)
       if (typeof JSON.parse(instructItem.actionValue) === 'object') {
-        instructItem.inputFeedback = '';
-        instructItem.inputValidationStatus = undefined;
+        instructItem.inputFeedback = ''
+        instructItem.inputValidationStatus = undefined
       } else {
-        message.error($t('common.enterJson'));
-        instructItem.inputValidationStatus = 'error';
+        message.error($t('common.enterJson'))
+        instructItem.inputValidationStatus = 'error'
       }
     } catch (e) {
-      message.error($t('common.enterJson'));
+      message.error($t('common.enterJson'))
       // instructItem.inputFeedback=$t('common.enterJson')
-      instructItem.inputValidationStatus = 'error';
+      instructItem.inputValidationStatus = 'error'
     }
   }
-};
+}
 // // 选择动作标识符
 // const actionParamChange = (instructItem: any, pathValues: any) => {
 //   instructItem.action_param_type = pathValues[0].value;
@@ -337,37 +333,37 @@ const actionValueChange = (instructItem: any) => {
 // };
 
 // 场景列表
-const sceneList = ref([]);
+const sceneList = ref([])
 // 场景查询条件
 const queryScene = ref({
   page: 1,
   page_size: 10,
   name: ''
-});
+})
 // 获取场景列表
 const getSceneList = async (name: string) => {
-  queryScene.value.name = name || '';
-  loadingSelect.value = true;
-  const res = await sceneGet(queryScene.value);
-  sceneList.value = res.data.list;
-  loadingSelect.value = false;
-};
+  queryScene.value.name = name || ''
+  loadingSelect.value = true
+  const res = await sceneGet(queryScene.value)
+  sceneList.value = res.data.list
+  loadingSelect.value = false
+}
 
 // 告警列表
-const alarmList = ref([]);
+const alarmList = ref([])
 // 告警列表查询条件
 const queryAlarm = ref({
   page: 1,
   page_size: 10,
   name: ''
-});
+})
 const getAlarmList = async (name: string) => {
-  queryAlarm.value.name = name || '';
-  loadingSelect.value = true;
-  const res = await warningMessageList(queryAlarm.value);
-  loadingSelect.value = false;
-  alarmList.value = res.data.list;
-};
+  queryAlarm.value.name = name || ''
+  loadingSelect.value = true
+  const res = await warningMessageList(queryAlarm.value)
+  loadingSelect.value = false
+  alarmList.value = res.data.list
+}
 
 // 操作设备类型的数据Item
 const instructListItem = ref({
@@ -381,7 +377,7 @@ const instructListItem = ref({
   actionParamOptions: [], // 动作标识属性下拉列表数据选项
   actionParamOptionsData: [], // 动作标识菜单下拉列表数据选项
   actionParamTypeOptions: [] // 动作标识类型下拉列表
-});
+})
 
 // interface ActionInstructItem {
 //   action_target: string;
@@ -399,7 +395,7 @@ const actionItem = ref({
   action_type: null, // 动作类型后端
   action_target: null, // 动作目标id   设备id、设备配置id，场景id、告警id
   actionInstructList: []
-});
+})
 // interface ActionItem {
 //   actionType: string;
 //   action_type: string;
@@ -413,36 +409,34 @@ const actionItem = ref({
 // 新增一个动作组
 const addActionGroupItem = async () => {
   if (configForm.value.actions.length !== 0) {
-    await configFormRef.value?.validate();
+    await configFormRef.value?.validate()
   }
-  const actionItemData = JSON.parse(JSON.stringify(actionItem.value));
+  const actionItemData = JSON.parse(JSON.stringify(actionItem.value))
   // actionItemData.actionInstructList.push(JSON.parse(JSON.stringify(instructListItem.value)));
-  configForm.value.actions.push(actionItemData);
-};
+  configForm.value.actions.push(actionItemData)
+}
 // 删除一个动作组
 const deleteActionGroupItem = (actionGroupIndex: any) => {
-  configForm.value.actions.splice(actionGroupIndex, 1);
-};
+  configForm.value.actions.splice(actionGroupIndex, 1)
+}
 
 // 给某个动作组中增加指令
 const addIfGroupsSubItem = async (actionGroupIndex: any) => {
   // if (configForm.value.actions[actionGroupIndex].actionInstructList.length != 0) {
   //   await configFormRef.value?.validate();
   // }
-  configForm.value.actions[actionGroupIndex].actionInstructList.push(
-    JSON.parse(JSON.stringify(instructListItem.value))
-  );
-};
+  configForm.value.actions[actionGroupIndex].actionInstructList.push(JSON.parse(JSON.stringify(instructListItem.value)))
+}
 // 删除某个动作组中的某个指令
 const deleteIfGroupsSubItem = (actionGroupIndex: any, ifIndex: any) => {
-  configForm.value.actions[actionGroupIndex].actionInstructList.splice(ifIndex, 1);
-};
+  configForm.value.actions[actionGroupIndex].actionInstructList.splice(ifIndex, 1)
+}
 
-const tabStore = useTabStore();
+const tabStore = useTabStore()
 // 表单提交
 const submitData = async () => {
-  await configFormRef.value?.validate();
-  const actionsData = [] as any;
+  await configFormRef.value?.validate()
+  const actionsData = [] as any
   // eslint-disable-next-line array-callback-return
   configForm.value.actions.map((item: any) => {
     if (item.actionType === '1') {
@@ -455,29 +449,29 @@ const submitData = async () => {
           instructItem.action_param_type === 'c_attribute' ||
           instructItem.action_param_type === 'c_command'
         ) {
-          instructItem.action_value = instructItem.actionValue;
+          instructItem.action_value = instructItem.actionValue
         }
         // 如果是telemetry/attribute，那么 action_value示例格式：{"humidity":2}
         if (instructItem.action_param_type === 'telemetry' || instructItem.action_param_type === 'attributes') {
-          const action_value = {};
-          action_value[instructItem.action_param] = instructItem.actionValue;
-          instructItem.action_value = JSON.stringify(action_value);
+          const action_value = {}
+          action_value[instructItem.action_param] = instructItem.actionValue
+          instructItem.action_value = JSON.stringify(action_value)
         }
         // 如果是command/c_command，那么 action_value示例格式:	{"method":"ReSet","params":{"switch":1,"light":"close"}}
         if (instructItem.action_param_type === 'command') {
           const action_value = {
             method: instructItem.action_param,
             params: JSON.stringify(JSON.parse(instructItem.actionValue))
-          };
-          instructItem.action_value = JSON.stringify(action_value);
+          }
+          instructItem.action_value = JSON.stringify(action_value)
         }
-        actionsData.push(instructItem);
-      });
+        actionsData.push(instructItem)
+      })
     } else {
-      item.action_type = item.actionType;
-      actionsData.push(item);
+      item.action_type = item.actionType
+      actionsData.push(item)
     }
-  });
+  })
   dialog.warning({
     title: $t('common.tip'),
     content: $t('common.saveSceneInfo'),
@@ -485,91 +479,89 @@ const submitData = async () => {
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
       // configForm.value.actions = actionsData;
-      const configFormData = JSON.parse(JSON.stringify(configForm.value));
-      configFormData.actions = actionsData;
+      const configFormData = JSON.parse(JSON.stringify(configForm.value))
+      configFormData.actions = actionsData
       if (configId.value) {
-        const res = await sceneEdit(configFormData);
+        const res = await sceneEdit(configFormData)
         if (!res.error) {
-          await tabStore.removeTab(route.path);
-          router.replace({ path: '/automation/scene-manage' });
+          await tabStore.removeTab(route.path)
+          router.replace({ path: '/automation/scene-manage' })
         }
       } else {
-        const res = await sceneAdd(configFormData);
+        const res = await sceneAdd(configFormData)
         if (!res.error) {
-          await tabStore.removeTab(route.path);
-          router.replace({ path: '/automation/scene-manage' });
+          await tabStore.removeTab(route.path)
+          router.replace({ path: '/automation/scene-manage' })
         }
       }
     }
-  });
-};
+  })
+}
 
 const getSceneInfo = async () => {
-  const res = await sceneInfo(configId.value);
-  configForm.value = { ...configForm.value, ...res.data.info };
-  configForm.value.actions = res.data.actions;
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  dataEcho(configForm.value.actions);
-};
+  const res = await sceneInfo(configId.value)
+  configForm.value = { ...configForm.value, ...res.data.info }
+  configForm.value.actions = res.data.actions
+  dataEcho(configForm.value.actions)
+}
 
 // 处理页面回去回显
 const dataEcho = actionsData => {
-  const actionGroupsData = [] as any;
-  const actionInstructList = [] as any;
+  const actionGroupsData = [] as any
+  const actionInstructList = [] as any
   // eslint-disable-next-line array-callback-return
   actionsData.map((item: any) => {
     if (item.action_type === '10' || item.action_type === '11') {
-      item.actionParamOptions = [];
-      const actionValueObj = JSON.parse(item.action_value);
+      item.actionParamOptions = []
+      const actionValueObj = JSON.parse(item.action_value)
       if (
         item.action_param_type === 'c_telemetry' ||
         item.action_param_type === 'c_attribute' ||
         item.action_param_type === 'c_command'
       ) {
-        item.actionValue = item.action_value;
+        item.actionValue = item.action_value
       }
       // 如果是telemetry/attribute，那么 action_value示例格式：{"humidity":2}
       if (item.action_param_type === 'telemetry' || item.action_param_type === 'attributes') {
         // item.action_value = JSON.stringify(action_value);
-        item.actionValue = actionValueObj[item.action_param];
+        item.actionValue = actionValueObj[item.action_param]
       }
       // 如果是command/c_command，那么 action_value示例格式:	{"method":"ReSet","params":{"switch":1,"light":"close"}}
       if (item.action_param_type === 'command') {
-        item.actionValue = actionValueObj.params;
+        item.actionValue = actionValueObj.params
       }
-      item.actionParamOptions = [];
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
-      actionParamShow(item);
-      actionInstructList.push(item);
+      item.actionParamOptions = []
+      actionParamShow(item)
+      actionInstructList.push(item)
     } else {
-      item.actionType = item.action_type;
-      actionGroupsData.push(item);
+      item.actionType = item.action_type
+      actionGroupsData.push(item)
     }
-  });
+  })
   if (actionInstructList.length > 0) {
     const type1Data = {
       actionType: '1',
       actionInstructList
-    };
-    actionGroupsData.push(type1Data);
+    }
+    actionGroupsData.push(type1Data)
   }
-  configForm.value.actions = actionGroupsData;
-};
+  configForm.value.actions = actionGroupsData
+}
 
 onMounted(() => {
-  getGroup();
-  getDevice(null, null);
-  getAlarmList('');
-  getSceneList('');
-  getDeviceConfig('');
+  getGroup()
+  getDevice(null, null)
+  getAlarmList('')
+  getSceneList('')
+  getDeviceConfig('')
   if (configId.value) {
     // eslint-disable-next-line no-unused-expressions
-    typeof configId.value === 'string' ? (configForm.value.id = configId.value) : '';
-    getSceneInfo();
+    typeof configId.value === 'string' ? (configForm.value.id = configId.value) : ''
+    getSceneInfo()
   } else {
-    addActionGroupItem();
+    addActionGroupItem()
   }
-});
+})
 </script>
 
 <template>
@@ -711,15 +703,13 @@ onMounted(() => {
                         :path="`actions[${actionGroupIndex}].actionInstructList[${instructIndex}].action_param_type`"
                         :rule="configFormRules.action_param_type"
                         class="max-w-30 w-full"
-                 
                       >
-                      
                         <NSelect
                           v-model:value="instructItem.action_param_type"
                           :options="instructItem.actionParamTypeOptions"
-            
-                          @update:value="data => actionParamTypeChange(instructItem, data)"/>
-                          
+                          @update:value="data => actionParamTypeChange(instructItem, data)"
+                        />
+
                         <!--                        <NCascader-->
                         <!--                          v-model:value="instructItem.action_param_key"-->
                         <!--                          :placeholder="$t('common.select')"-->

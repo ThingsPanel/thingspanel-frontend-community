@@ -1,10 +1,10 @@
-import { defineConfig } from '@unocss/vite';
-import transformerDirectives from '@unocss/transformer-directives';
-import transformerVariantGroup from '@unocss/transformer-variant-group';
-import presetUno from '@unocss/preset-uno';
-import type { Theme } from '@unocss/preset-uno';
-import { presetSoybeanAdmin } from '@sa/uno-preset';
-import { themeVars } from './src/theme/vars';
+import { defineConfig } from '@unocss/vite'
+import transformerDirectives from '@unocss/transformer-directives'
+import transformerVariantGroup from '@unocss/transformer-variant-group'
+import presetUno from '@unocss/preset-uno'
+import type { Theme } from '@unocss/preset-uno'
+import { presetSoybeanAdmin } from '@sa/uno-preset'
+import { themeVars } from './src/theme/vars'
 const oldShortcuts = {
   'wh-full': 'w-full h-full',
   'flex-center': 'flex justify-center items-center',
@@ -40,9 +40,9 @@ const oldShortcuts = {
   'nowrap-hidden': 'whitespace-nowrap overflow-hidden',
   'ellipsis-text': 'nowrap-hidden text-ellipsis',
   'transition-base': 'transition-all duration-300 ease-in-out'
-};
+}
 
-const oldExclude = ['node_modules', 'dist', '.git', '.husky', '.vscode', 'public', 'build', 'mock', './stats.html'];
+const oldExclude = ['node_modules', 'dist', '.git', '.husky', '.vscode', 'public', 'build', 'mock', './stats.html']
 
 export default defineConfig<Theme>({
   content: {
@@ -66,4 +66,4 @@ export default defineConfig<Theme>({
   },
   transformers: [transformerDirectives(), transformerVariantGroup()],
   presets: [presetUno({ dark: 'class' }), presetSoybeanAdmin()]
-});
+})

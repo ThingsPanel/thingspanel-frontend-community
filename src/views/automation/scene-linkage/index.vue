@@ -1,5 +1,5 @@
 <script lang="tsx" setup>
-import DataList from '@/views/automation/scene-linkage/modules/dataList.vue';
+import DataList from '@/views/automation/scene-linkage/modules/dataList.vue'
 </script>
 
 <template>

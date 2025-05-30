@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { useAuthStore } from '@/store/modules/auth';
-import { $t } from '@/locales';
+import { useAuthStore } from '@/store/modules/auth'
+import { $t } from '@/locales'
 
-defineOptions({ name: 'DashboardWorkbenchHeader' });
+defineOptions({ name: 'DashboardWorkbenchHeader' })
 
-const auth = useAuthStore();
+const auth = useAuthStore()
 
 interface StatisticData {
-  id: number;
-  label: string;
-  value: string;
+  id: number
+  label: string
+  value: string
 }
 
 const statisticData: StatisticData[] = [
@@ -28,7 +28,7 @@ const statisticData: StatisticData[] = [
     label: $t('card.message'),
     value: '12'
   }
-];
+]
 </script>
 
 <template>

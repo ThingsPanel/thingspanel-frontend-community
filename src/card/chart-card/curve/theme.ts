@@ -8,7 +8,7 @@ export const colorGroups = [
   { name: 'Wisteria Whisper', line: 'rgb(138, 43, 226)', top: 'rgb(197, 157, 255)', bottom: 'rgb(159, 128, 255)' },
   { name: 'Apricot Cream', line: 'rgb(255, 165, 0)', top: 'rgb(255, 224, 157)', bottom: 'rgb(255, 204, 128)' },
   { name: 'Celestial Blue', line: 'rgb(65, 105, 225)', top: 'rgb(157, 224, 255)', bottom: 'rgb(128, 204, 255)' }
-];
+]
 
 export const colorGroups2 = [
   { name: 'Sapphire Skies', line: 'rgb(0, 0, 205)', top: 'rgb(195, 205, 243)', bottom: 'rgb(239, 239, 253)' },
@@ -20,8 +20,8 @@ export const colorGroups2 = [
   { name: 'Dusk Rose', line: 'rgb(220, 20, 60)', top: 'rgb(217, 136, 128)', bottom: 'rgb(239, 187, 204)' },
   { name: 'Canyon Echo', line: 'rgb(139, 69, 19)', top: 'rgb(193, 108, 61)', bottom: 'rgb(252, 204, 166)' },
   { name: 'Ocean Drift', line: 'rgb(0, 128, 128)', top: 'rgb(62, 133, 145)', bottom: 'rgb(181, 222, 213)' }
-];
+]
 
-const CurveTheme = { colorGroups, colorGroups2 };
+const CurveTheme = { colorGroups, colorGroups2 }
 
-export default CurveTheme;
+export default CurveTheme

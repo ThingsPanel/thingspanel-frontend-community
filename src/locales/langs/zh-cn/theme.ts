@@ -82,5 +82,5 @@ export default {
     right: '底部局右'
   },
   themeDrawerTitle: '主题配置',
-  pageFunTitle: '页面功能',
-};
+  pageFunTitle: '页面功能'
+}

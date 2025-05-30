@@ -1,6 +1,6 @@
-import type { ElegantRoute } from '@elegant-router/types';
-import type { ElegantConstRoute } from '@elegant-router/vue';
-import { getRouteName } from '@/router/elegant/transform';
+import type { ElegantRoute } from '@elegant-router/types'
+import type { ElegantConstRoute } from '@elegant-router/vue'
+import { getRouteName } from '@/router/elegant/transform'
 
 /**
  * 递归处理数据
@@ -10,44 +10,44 @@ import { getRouteName } from '@/router/elegant/transform';
  */
 function processTree(treeNode: Api.Route.MenuRoute): void {
   // 处理当前节点
-  treeNode.authority = treeNode.authority ? JSON.parse(treeNode.authority) : [];
+  treeNode.authority = treeNode.authority ? JSON.parse(treeNode.authority) : []
   // 递归处理子节点
   if (treeNode.children) {
     for (const childNode of treeNode.children) {
-      processTree(childNode);
+      processTree(childNode)
     }
   }
 }
 
 export function adapterOfFetchRouterList(data: Api.Route.Data): Api.Route.MenuRoute[] {
-  if (!data?.list) return [];
+  if (!data?.list) return []
   return data.list.map(item => {
-    processTree(item);
-    return item;
-  });
+    processTree(item)
+    return item
+  })
 }
 
-const LAYOUT_PREFIX = 'layout.';
-const VIEW_PREFIX = 'view.';
-const FIRST_LEVEL_ROUTE_COMPONENT_SPLIT = '$';
+const LAYOUT_PREFIX = 'layout.'
+const VIEW_PREFIX = 'view.'
+const FIRST_LEVEL_ROUTE_COMPONENT_SPLIT = '$'
 
 function transformLayoutAndPageToComponent(layout: string, page: any) {
-  const hasLayout = Boolean(layout);
-  const hasPage = Boolean(page);
+  const hasLayout = Boolean(layout)
+  const hasPage = Boolean(page)
 
   if (hasLayout && hasPage) {
-    return `${LAYOUT_PREFIX}${layout}${FIRST_LEVEL_ROUTE_COMPONENT_SPLIT}${VIEW_PREFIX}${page}`;
+    return `${LAYOUT_PREFIX}${layout}${FIRST_LEVEL_ROUTE_COMPONENT_SPLIT}${VIEW_PREFIX}${page}`
   }
 
   if (hasLayout) {
-    return `${LAYOUT_PREFIX}${layout}`;
+    return `${LAYOUT_PREFIX}${layout}`
   }
 
   if (hasPage) {
-    return `${VIEW_PREFIX}${page}`;
+    return `${VIEW_PREFIX}${page}`
   }
 
-  return '';
+  return ''
 }
 
 /** 递归处理数据 */
@@ -65,15 +65,15 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
     // if (item.route_path === 'layout.base' && item.children.length === 0) {
     //   item.route_path += '$home';
     // }
-    const homeRoutePath = getRouteName(item.param1);
-    let component = '';
+    const homeRoutePath = getRouteName(item.param1)
+    let component = ''
     if (item.parent_id === '0') {
-      component = transformLayoutAndPageToComponent('base', item.element_type === 1 ? '' : homeRoutePath);
+      component = transformLayoutAndPageToComponent('base', item.element_type === 1 ? '' : homeRoutePath)
     } else {
       component = transformLayoutAndPageToComponent(
         item.element_type === 1 ? 'base' : '',
         item.element_type === 1 ? '' : homeRoutePath
-      );
+      )
     }
     return {
       // id: item.id,
@@ -98,17 +98,17 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
         remark: item.remark || ''
       },
       children: item.children?.length ? replaceKeys(item.children) : []
-    } as unknown as ElegantRoute;
-  });
+    } as unknown as ElegantRoute
+  })
 }
 
 export function adapterOfFetchUserRouterList(data: ElegantConstRoute[]): ElegantConstRoute[] {
-  if (!data.length) return [];
+  if (!data.length) return []
   return replaceKeys(data).map((item: ElegantConstRoute): ElegantConstRoute => {
     if (!item.children || !item.children.length) {
-      if (!item.meta) return item;
-      item.meta.singleLayout = 'base';
+      if (!item.meta) return item
+      item.meta.singleLayout = 'base'
     }
-    return item;
-  });
+    return item
+  })
 }

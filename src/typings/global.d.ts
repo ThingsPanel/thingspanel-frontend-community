@@ -1,44 +1,45 @@
 interface Window {
   /** NProgress instance */
-  NProgress?: import('nprogress').NProgress;
+  NProgress?: import('nprogress').NProgress
   /** Loading bar instance */
-  $loadingBar?: import('naive-ui').LoadingBarProviderInst;
+  $loadingBar?: import('naive-ui').LoadingBarProviderInst
   /** Dialog instance */
-  $dialog?: import('naive-ui').DialogProviderInst;
+  $dialog?: import('naive-ui').DialogProviderInst
   /** Message instance */
-  $message?: import('naive-ui').MessageProviderInst;
+  $message?: import('naive-ui').MessageProviderInst
   /** Notification instance */
-  $notification?: import('naive-ui').NotificationProviderInst;
+  $notification?: import('naive-ui').NotificationProviderInst
 }
 
 interface ViewTransition {
-  ready: Promise<void>;
+  ready: Promise<void>
 }
 
 interface Document {
-  startViewTransition?: (callback: () => Promise<void> | void) => ViewTransition;
+  startViewTransition?: (callback: () => Promise<void> | void) => ViewTransition
 }
 type OptionTypes = {
-  label: string;
-  value: any;
-};
+  label: string
+  value: any
+}
 interface ImportMeta {
-  readonly env: Env.ImportMeta;
+  readonly env: Env.ImportMeta
 }
 
 declare namespace Common2 {
   /** 策略模式 [状态, 为true时执行的回调函数] */
-  type StrategyAction = [boolean, () => void];
+  type StrategyAction = [boolean, () => void]
 
   /** 选项数据 */
-  type OptionWithKey<K> = { value: K; label: string };
+  type OptionWithKey<K> = { value: K; label: string }
 }
 
 /** Build time of the project */
-declare const BUILD_TIME: string;
+declare const BUILD_TIME: string
 
+// eslint-disable-next-line no-redeclare
 declare interface Window {
-  NMessage: any;
+  NMessage: any
 }
 
-declare module 'moving-numbers-vue3';
+declare module 'moving-numbers-vue3'

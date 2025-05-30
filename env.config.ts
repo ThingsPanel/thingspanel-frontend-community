@@ -4,14 +4,14 @@
  * @param env The current env
  */
 export function createServiceConfig(env: Env.ImportMeta) {
-  const mockURL = 'https://mock.apifox.com/m1/4080832-0-default';
+  const mockURL = 'https://mock.apifox.com/m1/4080832-0-default'
   // const devURL = 'http://47.92.253.145:9999/api/v1';
   // const devURL = '  http://47.115.210.16:8080/api/v1';
-  const devURL = 'http://c.thingspanel.cn/api/v1';
+  const devURL = 'http://c.thingspanel.cn/api/v1'
   // const devURL = 'http://demo.thingspanel.cn/api/v1';
 
-  const testURL = '';
-  const prodURL = '';
+  const testURL = ''
+  const prodURL = ''
 
   const serviceConfigMap: App.Service.ServiceConfigMap = {
     dev: {
@@ -35,11 +35,11 @@ export function createServiceConfig(env: Env.ImportMeta) {
         mock: mockURL
       }
     }
-  };
+  }
 
-  const { VITE_SERVICE_ENV = 'dev' } = env;
+  const { VITE_SERVICE_ENV = 'dev' } = env
 
-  return serviceConfigMap[VITE_SERVICE_ENV];
+  return serviceConfigMap[VITE_SERVICE_ENV]
 }
 
 /**
@@ -49,8 +49,8 @@ export function createServiceConfig(env: Env.ImportMeta) {
  */
 export function createProxyPattern(key?: App.Service.OtherBaseURLKey) {
   if (!key) {
-    return '/proxy-default';
+    return '/proxy-default'
   }
 
-  return `/proxy-${key}`;
+  return `/proxy-${key}`
 }

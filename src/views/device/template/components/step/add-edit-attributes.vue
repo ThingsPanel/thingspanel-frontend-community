@@ -1,11 +1,11 @@
 <script setup lang="tsx">
-import { reactive, ref, watch } from 'vue';
-import { addAttributes, putAttributes } from '@/service/api/system-data';
-import { $t } from '@/locales';
-import { getAdditionalInfo } from '../../utils';
-import EnumInfo from './enum-info.vue';
+import { reactive, ref, watch } from 'vue'
+import { addAttributes, putAttributes } from '@/service/api/system-data'
+import { $t } from '@/locales'
+import { getAdditionalInfo } from '../../utils'
+import EnumInfo from './enum-info.vue'
 
-const emit = defineEmits(['update:addAndEditModalVisible', 'update:objItem', 'determine']);
+const emit = defineEmits(['update:addAndEditModalVisible', 'update:objItem', 'determine'])
 
 const props = defineProps({
   addAndEditModalVisible: {
@@ -20,26 +20,26 @@ const props = defineProps({
     type: Object,
     required: true
   }
-});
+})
 
 // 提交表单
-const formRef: any = ref(null);
-const deviceTemplateId = ref<string>(props.deviceTemplateId);
+const formRef: any = ref(null)
+const deviceTemplateId = ref<string>(props.deviceTemplateId)
 
-let addFrom: any = reactive({});
+let addFrom: any = reactive({})
 
 type Rule = {
-  required: boolean;
-  trigger: string[];
-  message: string;
-};
+  required: boolean
+  trigger: string[]
+  message: string
+}
 
 type Rules = {
-  data_name: Rule;
-  data_identifier: Rule;
-  read_write_flag: Rule;
-  data_type: Rule;
-};
+  data_name: Rule
+  data_identifier: Rule
+  read_write_flag: Rule
+  data_type: Rule
+}
 
 const fromRules: Rules = {
   data_name: {
@@ -62,9 +62,9 @@ const fromRules: Rules = {
     trigger: ['blur', 'input'],
     message: $t('generate.enter-read-write')
   }
-};
+}
 
-const objItem = reactive<any>(props.objItem);
+const objItem = reactive<any>(props.objItem)
 
 // 监听一下父组件传递过来的编辑数据
 watch(
@@ -75,7 +75,7 @@ watch(
         device_template_id: deviceTemplateId,
         ...newVal,
         additional_info: getAdditionalInfo(newVal.additional_info)
-      });
+      })
     } else {
       addFrom = reactive({
         device_template_id: deviceTemplateId,
@@ -85,73 +85,73 @@ watch(
         unit: '',
         description: '',
         additional_info: []
-      });
+      })
     }
   },
   { deep: true, immediate: true }
-);
+)
 
 const generalOptions: any = reactive(
   ['String', 'Number', 'Boolean', 'Enum'].map(v => ({
     label: v,
     value: v
   }))
-);
+)
 
 const readAndWriteOptions: any = reactive(
   ['R-只读', 'RW-读/写'].map(v => ({
     label: v,
     value: v
   }))
-);
+)
 
 // 确定按钮
 const submit: () => void = async () => {
-  await formRef.value?.validate();
-  const updateForm = { ...addFrom };
+  await formRef.value?.validate()
+  const updateForm = { ...addFrom }
   if (updateForm.data_type === 'Enum') {
-    updateForm.additional_info = JSON.stringify(updateForm.additional_info);
+    updateForm.additional_info = JSON.stringify(updateForm.additional_info)
   } else {
-    updateForm.additional_info = '[]';
+    updateForm.additional_info = '[]'
   }
   if (updateForm.read_write_flag === 'R-只读') {
-    updateForm.read_write_flag = 'R';
+    updateForm.read_write_flag = 'R'
   } else {
-    updateForm.read_write_flag = 'RW';
+    updateForm.read_write_flag = 'RW'
   }
   if (props.objItem.id) {
-    const response: any = await putAttributes(updateForm);
+    const response: any = await putAttributes(updateForm)
     if (response.data) {
-      emit('update:objItem', {});
-      emit('update:addAndEditModalVisible', false);
-      emit('determine');
-      emit('update:objItem', {});
-      emit('update:addAndEditModalVisible', false);
-      emit('determine');
-      window.$message?.success($t('common.editSuccess'));
+      emit('update:objItem', {})
+      emit('update:addAndEditModalVisible', false)
+      emit('determine')
+      emit('update:objItem', {})
+      emit('update:addAndEditModalVisible', false)
+      emit('determine')
+      window.$message?.success($t('common.editSuccess'))
     }
   } else {
-    const response: any = await addAttributes(updateForm);
+    const response: any = await addAttributes(updateForm)
     if (response.data) {
-      emit('update:addAndEditModalVisible', false);
-      emit('determine');
-      emit('update:objItem', {});
-      emit('update:addAndEditModalVisible', false);
-      emit('determine');
-      window.$message?.success('新增成功');
+      emit('update:addAndEditModalVisible', false)
+      emit('determine')
+      emit('update:objItem', {})
+      emit('update:addAndEditModalVisible', false)
+      emit('determine')
+      window.$message?.success('新增成功')
     }
   }
-};
+}
 
 // 取消按钮
 const clear: () => void = () => {
-  emit('update:objItem', {});
-  emit('update:addAndEditModalVisible', false);
-};
+  emit('update:objItem', {})
+  emit('update:addAndEditModalVisible', false)
+}
 
 const updateAdditionalInfo: (newVal) => void = newVal => {
-  addFrom.additional_info = newVal;
-};
+  addFrom.additional_info = newVal
+}
 </script>
 
 <template>

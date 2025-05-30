@@ -83,7 +83,12 @@ export default [
       // 关闭变量使用前定义检查
       '@typescript-eslint/no-use-before-define': 'off',
       // 未使用变量改为警告而非错误
-      '@typescript-eslint/no-unused-vars': 'warn'
+      '@typescript-eslint/no-unused-vars': 'warn',
+      // 允许使用 any 类型
+      '@typescript-eslint/no-explicit-any': 'off',
+      // 允许空接口声明
+      '@typescript-eslint/no-empty-interface': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off'
     }
   },
 
@@ -105,9 +110,11 @@ export default [
       'no-console': 'off',
       // 关闭未定义变量检查（由 TypeScript 处理）
       'no-undef': 'off',
+      // 未使用变量改为警告而非错误
+      'no-unused-vars': 'warn',
       // Prettier 格式化规则配置
       'prettier/prettier': [
-        'error',
+        'warn',
         {
           printWidth: 120, // 每行最大字符数
           tabWidth: 2, // 缩进空格数

@@ -1,28 +1,27 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { NButton, NCard, NFlex, NInput } from 'naive-ui';
-import { EyeOutline, Refresh } from '@vicons/ionicons5';
-import moment from 'moment/moment';
-import { Heart, HeartBroken } from '@vicons/fa';
-import { Edit } from '@vicons/carbon';
-import { $t } from '@/locales';
-import { deviceAlarmHistory, deviceAlarmHistoryPut } from '@/service/api';
-import { useRouterPush } from '@/hooks/common/router';
-import alarmDataList from '@/views/automation/scene-linkage/modules/dataList.vue';
+import { onMounted, ref } from 'vue'
+import { NButton, NCard, NFlex, NInput } from 'naive-ui'
+import { EyeOutline, Refresh } from '@vicons/ionicons5'
+import moment from 'moment/moment'
+import { Heart, HeartBroken } from '@vicons/fa'
+import { Edit } from '@vicons/carbon'
+import { $t } from '@/locales'
+import { deviceAlarmHistory, deviceAlarmHistoryPut } from '@/service/api'
+import { useRouterPush } from '@/hooks/common/router'
+import alarmDataList from '@/views/automation/scene-linkage/modules/dataList.vue'
 
-const { routerPushByKey } = useRouterPush();
+const { routerPushByKey } = useRouterPush()
 
 const props = defineProps<{
-  id: string;
-}>();
-const tabValue = ref(1);
+  id: string
+}>()
+const tabValue = ref(1)
 const choseTab = data => {
-  tabValue.value = data;
+  tabValue.value = data
   if (data === 1) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    refresh();
+    refresh()
   }
-};
+}
 const queryParams = ref({
   selected_time: ref<[number, number]>([moment().subtract(7, 'days').valueOf(), moment().valueOf()]),
   alarm_status: '',
@@ -31,7 +30,7 @@ const queryParams = ref({
   start_time: '',
   end_time: '',
   device_id: ''
-});
+})
 const alarmStatusOptions = ref([
   {
     label: $t('common.allStatus'),
@@ -53,7 +52,7 @@ const alarmStatusOptions = ref([
     label: $t('common.normal'),
     value: 'N'
   }
-]);
+])
 const refresh = () => {
   queryParams.value = {
     selected_time: [moment().subtract(7, 'days').valueOf(), moment().valueOf()],
@@ -63,99 +62,92 @@ const refresh = () => {
     start_time: '',
     end_time: '',
     device_id: ''
-  };
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  alarmHistory.value = [];
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  noMore.value = false;
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  getAlarmHistory();
-};
-const alarmHistory = ref([] as any);
-const alarmHistoryTotal = ref(0);
+  }
+  alarmHistory.value = []
+  noMore.value = false
+  getAlarmHistory()
+}
+const alarmHistory = ref([] as any)
+const alarmHistoryTotal = ref(0)
 
 const getAlarmHistory = async () => {
-  queryParams.value.device_id = props.id;
+  queryParams.value.device_id = props.id
   if (queryParams.value.selected_time && queryParams.value.selected_time.length > 0) {
-    queryParams.value.start_time = moment(queryParams.value.selected_time[0]).format('YYYY-MM-DDTHH:mm:ssZ');
-    queryParams.value.end_time = moment(queryParams.value.selected_time[1]).format('YYYY-MM-DDTHH:mm:ssZ');
+    queryParams.value.start_time = moment(queryParams.value.selected_time[0]).format('YYYY-MM-DDTHH:mm:ssZ')
+    queryParams.value.end_time = moment(queryParams.value.selected_time[1]).format('YYYY-MM-DDTHH:mm:ssZ')
   } else {
-    queryParams.value.start_time = '';
-    queryParams.value.end_time = '';
+    queryParams.value.start_time = ''
+    queryParams.value.end_time = ''
   }
-  const res = await deviceAlarmHistory(queryParams.value);
-  alarmHistory.value.push(...(res.data.list || []));
-  alarmHistoryTotal.value = res.data.total;
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  loading.value = false;
+  const res = await deviceAlarmHistory(queryParams.value)
+  alarmHistory.value.push(...(res.data.list || []))
+  alarmHistoryTotal.value = res.data.total
+  loading.value = false
   if (alarmHistory.value.length === alarmHistoryTotal.value) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    noMore.value = true;
+    noMore.value = true
   }
-};
+}
 const resetQuery = () => {
-  queryParams.value.page = 1;
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  alarmHistory.value = [];
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  noMore.value = false;
-  getAlarmHistory();
-};
-const showDialog = ref(false);
+  queryParams.value.page = 1
+  alarmHistory.value = []
+  noMore.value = false
+  getAlarmHistory()
+}
+const showDialog = ref(false)
 const closeModal = () => {
-  showDialog.value = false;
-};
-const infoData = ref({} as any);
+  showDialog.value = false
+}
+const infoData = ref({} as any)
 const getInfo = (data: any) => {
-  infoData.value = data;
-  showDialog.value = true;
-};
-const showModal = ref(false);
-const description = ref('');
+  infoData.value = data
+  showDialog.value = true
+}
+const showModal = ref(false)
+const description = ref('')
 const cancelCallback = () => {
-  description.value = '';
-  showModal.value = false;
-};
+  description.value = ''
+  showModal.value = false
+}
 const showDescModal = (item: any) => {
-  showModal.value = true;
-  infoData.value = item;
-  description.value = infoData.value.description;
-};
+  showModal.value = true
+  infoData.value = item
+  description.value = infoData.value.description
+}
 const submitCallback = async () => {
   if (description.value === '') {
-    window.$message?.error($t('common.enterAlarmDesc'));
-    return;
+    window.$message?.error($t('common.enterAlarmDesc'))
+    return
   }
   const putData = {
     id: infoData.value.id,
     description: description.value
-  };
-  await deviceAlarmHistoryPut(putData);
+  }
+  await deviceAlarmHistoryPut(putData)
   alarmHistory.value.map(item => {
     if (item.id === infoData.value.id) {
-      item.description = description.value;
+      item.description = description.value
     }
-  });
-  cancelCallback();
+  })
+  cancelCallback()
   // await getAlarmHistory();
-};
+}
 const alarmAdd = () => {
   routerPushByKey('automation_linkage-edit', {
     query: { device_id: props.id, backType: 'device' }
-  });
-};
-const loading = ref(false);
-const noMore = ref(false);
+  })
+}
+const loading = ref(false)
+const noMore = ref(false)
 const handleLoad = () => {
-  if (loading.value || noMore.value) return;
-  loading.value = true;
-  queryParams.value.page += 1;
-  getAlarmHistory();
-};
+  if (loading.value || noMore.value) return
+  loading.value = true
+  queryParams.value.page += 1
+  getAlarmHistory()
+}
 
 onMounted(() => {
-  getAlarmHistory();
-});
+  getAlarmHistory()
+})
 </script>
 
 <template>

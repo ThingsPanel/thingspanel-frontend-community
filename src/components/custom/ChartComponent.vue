@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { watch } from 'vue';
-import type { EChartsCoreOption } from 'echarts/core';
-import { useTpECharts } from '@/hooks/tp-chart/use-tp-echarts';
+import { watch } from 'vue'
+import type { EChartsCoreOption } from 'echarts/core'
+import { useTpECharts } from '@/hooks/tp-chart/use-tp-echarts'
 defineOptions({
   name: 'ChartComponent'
-});
+})
 // Props
 const props = defineProps<{
-  initialOptions: EChartsCoreOption;
-}>();
-const { domRef, updateOptions } = useTpECharts(() => props.initialOptions);
+  initialOptions: EChartsCoreOption
+}>()
+const { domRef, updateOptions } = useTpECharts(() => props.initialOptions)
 watch(
   () => props.initialOptions,
   newOptions => {
     if (newOptions) {
       updateOptions(currentOptions => {
         // 这里进行深拷贝以确保图表配置完全更新
-        return { ...currentOptions, ...newOptions };
-      });
+        return { ...currentOptions, ...newOptions }
+      })
     }
   },
   { deep: true, immediate: true }
-);
+)
 </script>
 
 <template>

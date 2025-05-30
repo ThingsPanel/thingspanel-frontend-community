@@ -1,43 +1,43 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { FormInst } from 'naive-ui';
-import { useMessage } from 'naive-ui';
-import { deviceAdd } from '@/service/api/device';
-import { $t } from '@/locales';
+import { ref } from 'vue'
+import type { FormInst } from 'naive-ui'
+import { useMessage } from 'naive-ui'
+import { deviceAdd } from '@/service/api/device'
+import { $t } from '@/locales'
 
 const props = defineProps<{
-  configOptions: any[];
-  nextCallback: () => void;
-  setIdCallback: (dId, cId, dobj) => void;
-}>();
-const formRef = ref<FormInst | null>(null);
-const message = useMessage();
+  configOptions: any[]
+  nextCallback: () => void
+  setIdCallback: (dId, cId, dobj) => void
+}>()
+const formRef = ref<FormInst | null>(null)
+const message = useMessage()
 const formValue = ref({
   name: '',
   label: [],
   device_config_id: ''
-});
+})
 const rules = {
   name: {
     required: true,
     message: $t('custom.devicePage.enterDeviceName'),
     trigger: 'blur'
   }
-};
+}
 
 function handleValidateClick(e: MouseEvent) {
-  e.preventDefault();
+  e.preventDefault()
   formRef.value?.validate(async errors => {
     if (!errors) {
-      const res = await deviceAdd({ ...formValue.value, label: formValue.value.label.join(','), access_way: 'A' });
-      const configId = formValue.value.device_config_id;
-      const deviceId = res.data.id;
-      props.setIdCallback(deviceId, configId, res.data.voucher);
-      props.nextCallback();
+      const res = await deviceAdd({ ...formValue.value, label: formValue.value.label.join(','), access_way: 'A' })
+      const configId = formValue.value.device_config_id
+      const deviceId = res.data.id
+      props.setIdCallback(deviceId, configId, res.data.voucher)
+      props.nextCallback()
     } else {
-      message.error($t('custom.devicePage.validationFailed'));
+      message.error($t('custom.devicePage.validationFailed'))
     }
-  });
+  })
 }
 </script>
 

@@ -1,27 +1,27 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { themeSchemaRecord } from '@/constants/app';
-import { useThemeStore } from '@/store/modules/theme';
-import { $t } from '@/locales';
-import SettingItem from '../components/setting-item.vue';
+import { computed } from 'vue'
+import { themeSchemaRecord } from '@/constants/app'
+import { useThemeStore } from '@/store/modules/theme'
+import { $t } from '@/locales'
+import SettingItem from '../components/setting-item.vue'
 
 defineOptions({
   name: 'DarkMode'
-});
+})
 
-const themeStore = useThemeStore();
+const themeStore = useThemeStore()
 
 const icons: Record<UnionKey.ThemeScheme, string> = {
   light: 'material-symbols:sunny',
   dark: 'material-symbols:nightlight-rounded',
   auto: 'material-symbols:hdr-auto'
-};
-
-function handleSegmentChange(value: string | number) {
-  themeStore.setThemeScheme(value as UnionKey.ThemeScheme);
 }
 
-const showSiderInverted = computed(() => !themeStore.darkMode && themeStore.layout.mode.includes('vertical'));
+function handleSegmentChange(value: string | number) {
+  themeStore.setThemeScheme(value as UnionKey.ThemeScheme)
+}
+
+const showSiderInverted = computed(() => !themeStore.darkMode && themeStore.layout.mode.includes('vertical'))
 </script>
 
 <template>

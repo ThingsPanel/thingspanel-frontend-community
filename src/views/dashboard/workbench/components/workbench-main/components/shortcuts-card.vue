@@ -1,16 +1,16 @@
 <script setup lang="ts">
-defineOptions({ name: 'DashboardWorkbenchMainShortcutsCard' });
+defineOptions({ name: 'DashboardWorkbenchMainShortcutsCard' })
 
 interface Props {
   /** 快捷操作名称 */
-  label: string;
+  label: string
   /** 图标 */
-  icon: string;
+  icon: string
   /** 图标颜色 */
-  iconColor: string;
+  iconColor: string
 }
 
-defineProps<Props>();
+defineProps<Props>()
 </script>
 
 <template>

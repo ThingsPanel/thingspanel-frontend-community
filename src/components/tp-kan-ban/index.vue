@@ -1,62 +1,62 @@
 <script setup lang="ts">
-import { nextTick, reactive, ref } from 'vue';
-import { NButton } from 'naive-ui';
-import { useFullscreen } from '@vueuse/core';
-import { useAppStore } from '@/store/modules/app';
-import { useLayouts } from '@/components/tp-kan-ban/hooks/useLayouts';
-import type { CardFormIns, CardView } from '@/components/tp-kan-ban/kan-ban';
-import { PutBoard } from '@/service/api';
-import { useResponsiveStore } from '@/components/tp-kan-ban/store';
-import { $t } from '@/locales';
+import { nextTick, reactive, ref } from 'vue'
+import { NButton } from 'naive-ui'
+import { useFullscreen } from '@vueuse/core'
+import { useAppStore } from '@/store/modules/app'
+import { useLayouts } from '@/components/tp-kan-ban/hooks/useLayouts'
+import type { CardFormIns, CardView } from '@/components/tp-kan-ban/kan-ban'
+import { PutBoard } from '@/service/api'
+import { useResponsiveStore } from '@/components/tp-kan-ban/store'
+import { $t } from '@/locales'
 
-const formRef = ref<CardFormIns>();
-const appStore = useAppStore();
-const fullUI = ref();
-const { isFullscreen, toggle } = useFullscreen(fullUI);
-const props = defineProps<{ panelId: string }>();
-const active = ref(false);
-const showModal = ref(false);
+const formRef = ref<CardFormIns>()
+const appStore = useAppStore()
+const fullUI = ref()
+const { isFullscreen, toggle } = useFullscreen(fullUI)
+const props = defineProps<{ panelId: string }>()
+const active = ref(false)
+const showModal = ref(false)
 const state = reactive<{ curCardData: null | CardView }>({
   curCardData: null
-});
-const activeType = ref<string>('plugins');
-const responsive = useResponsiveStore();
-const { layouts, addItem, updateLayout, panelDate, removeItem, updateLayouts } = useLayouts(props.panelId);
+})
+const activeType = ref<string>('plugins')
+const responsive = useResponsiveStore()
+const { layouts, addItem, updateLayout, panelDate, removeItem, updateLayouts } = useLayouts(props.panelId)
 const saveKanBan = async () => {
   if (!props.panelId) {
-    window.NMessage.destroyAll();
-    window.NMessage.error('无效的看板id');
+    window.NMessage.destroyAll()
+    window.NMessage.error('无效的看板id')
   } else {
-    const layoutJson = JSON.stringify(layouts.value);
+    const layoutJson = JSON.stringify(layouts.value)
 
     await PutBoard({
       id: props.panelId,
       config: layoutJson,
       name: panelDate.value?.name,
       home_flag: panelDate.value?.home_flag
-    });
+    })
   }
-};
+}
 
 function toggleModal(f) {
-  showModal.value = f;
+  showModal.value = f
 }
 
 function selectCard(item: CardView) {
-  toggleModal(true);
+  toggleModal(true)
   state.curCardData = {
     ...item
-  };
+  }
   nextTick(() => {
-    formRef.value?.setCard(state.curCardData as CardView);
-  });
+    formRef.value?.setCard(state.curCardData as CardView)
+  })
 }
 
 const changeCurCardData = (data: CardView) => {
-  const index = layouts.value.findIndex(i => i.data?.renderID === data?.data?.renderID);
-  if (index === -1) return;
-  updateLayout(data, index);
-};
+  const index = layouts.value.findIndex(i => i.data?.renderID === data?.data?.renderID)
+  if (index === -1) return
+  updateLayout(data, index)
+}
 </script>
 
 <template>

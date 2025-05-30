@@ -1,20 +1,20 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
-import type { ICardData } from '@/components/panel/card';
-import BarChart from '@/card/chart-card/bar/modules/bar-chart.vue';
-import { colorGroups } from './theme';
+import { ref } from 'vue'
+import type { ICardData } from '@/components/panel/card'
+import BarChart from '@/card/chart-card/bar/modules/bar-chart.vue'
+import { colorGroups } from './theme'
 
 const props = defineProps<{
-  card: ICardData;
-}>();
+  card: ICardData
+}>()
 
-const barChart = ref<InstanceType<typeof BarChart>>();
+const barChart = ref<InstanceType<typeof BarChart>>()
 
 defineExpose({
   updateData: (deviceId: string | undefined, metricsId: string | undefined, data: any) => {
-    barChart.value?.updateData(deviceId, metricsId, data);
+    barChart.value?.updateData(deviceId, metricsId, data)
   }
-});
+})
 </script>
 
 <template>

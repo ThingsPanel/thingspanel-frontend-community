@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { useSysSettingStore } from '@/store/modules/sys-setting';
-defineOptions({ name: 'SystemLogo' });
-const sysSettingStore = useSysSettingStore();
+import { useSysSettingStore } from '@/store/modules/sys-setting'
+defineOptions({ name: 'SystemLogo' })
+const sysSettingStore = useSysSettingStore()
 export interface Props {
-  width: string;
+  width: string
 }
 
 withDefaults(defineProps<Props>(), {
   width: '40'
-});
+})
 </script>
 
 <template>

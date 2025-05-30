@@ -1,12 +1,12 @@
 <script lang="ts" setup>
-import { reactive } from 'vue';
-import { $t } from '@/locales';
+import { reactive } from 'vue'
+import { $t } from '@/locales'
 
 interface AirItem {
-  id: string;
-  icons: string;
-  air: string;
-  text: string;
+  id: string
+  icons: string
+  air: string
+  text: string
 }
 
 const airList: AirItem[] = reactive([
@@ -46,7 +46,7 @@ const airList: AirItem[] = reactive([
     air: '14%',
     text: $t('dashboard_panel.cardName.nitrogenContent')
   }
-]);
+])
 </script>
 
 <template>

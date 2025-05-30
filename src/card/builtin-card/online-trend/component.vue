@@ -1,51 +1,51 @@
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from 'vue';
-import { use } from 'echarts/core';
-import { LineChart } from 'echarts/charts';
-import VChart from 'vue-echarts';
-import * as echarts from 'echarts';
-import { GridComponent, LegendComponent, ToolboxComponent, TooltipComponent } from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
-import type { ComposeOption } from 'echarts/core';
-import type { LineSeriesOption } from 'echarts/charts';
+import { computed, onMounted, reactive, ref } from 'vue'
+import { use } from 'echarts/core'
+import { LineChart } from 'echarts/charts'
+import VChart from 'vue-echarts'
+import * as echarts from 'echarts'
+import { GridComponent, LegendComponent, ToolboxComponent, TooltipComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+import type { ComposeOption } from 'echarts/core'
+import type { LineSeriesOption } from 'echarts/charts'
 import type {
   GridComponentOption,
   LegendComponentOption,
   ToolboxComponentOption,
   TooltipComponentOption
-} from 'echarts/components';
-import { getOnlineDeviceTrend } from '@/service/api/system-data';
-import { $t } from '@/locales';
-import onlineRateIcon from './online-rate.png';
-import wifiIcon from './wifi.png';
+} from 'echarts/components'
+import { getOnlineDeviceTrend } from '@/service/api/system-data'
+import { $t } from '@/locales'
+import onlineRateIcon from './online-rate.png'
+import wifiIcon from './wifi.png'
 
 // Register ECharts components
-use([TooltipComponent, LegendComponent, ToolboxComponent, GridComponent, LineChart, CanvasRenderer]);
+use([TooltipComponent, LegendComponent, ToolboxComponent, GridComponent, LineChart, CanvasRenderer])
 
 type EChartsOption = ComposeOption<
   TooltipComponentOption | LegendComponentOption | ToolboxComponentOption | GridComponentOption | LineSeriesOption
->;
+>
 
 const chartData = reactive({
   loading: false,
   online: [] as [number, number][],
   offline: [] as [number, number][]
-});
+})
 
 const chartOption = ref<EChartsOption>({
   tooltip: {
     trigger: 'axis',
     formatter(params: any) {
-      const date = new Date(params[0].value[0]);
-      const dateStr = date.toLocaleString();
-      let result = `${dateStr}<br/>`;
+      const date = new Date(params[0].value[0])
+      const dateStr = date.toLocaleString()
+      let result = `${dateStr}<br/>`
 
       params.forEach((param: any) => {
-        const marker = `<span style="display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:${param.color};"></span>`;
-        result += `${marker}${param.seriesName}: ${param.value[1]}<br/>`;
-      });
+        const marker = `<span style="display:inline-block;margin-right:4px;border-radius:10px;width:10px;height:10px;background-color:${param.color};"></span>`
+        result += `${marker}${param.seriesName}: ${param.value[1]}<br/>`
+      })
 
-      return result;
+      return result
     }
   },
   legend: {
@@ -70,8 +70,8 @@ const chartOption = ref<EChartsOption>({
     },
     axisLabel: {
       formatter(value: number) {
-        const date = new Date(value);
-        return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`;
+        const date = new Date(value)
+        return `${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`
       },
       color: '#333'
     }
@@ -126,57 +126,57 @@ const chartOption = ref<EChartsOption>({
       }
     }
   ]
-});
+})
 
 // Calculate the online rate percentage
 const onlineRate = computed(() => {
-  const latestDataPoint = chartData.online[chartData.online.length - 1];
-  const latestOfflinePoint = chartData.offline[chartData.offline.length - 1];
+  const latestDataPoint = chartData.online[chartData.online.length - 1]
+  const latestOfflinePoint = chartData.offline[chartData.offline.length - 1]
 
-  if (!latestDataPoint || !latestOfflinePoint) return 0;
+  if (!latestDataPoint || !latestOfflinePoint) return 0
 
-  const onlineCount = latestDataPoint[1];
-  const offlineCount = latestOfflinePoint[1];
-  const total = onlineCount + offlineCount;
+  const onlineCount = latestDataPoint[1]
+  const offlineCount = latestOfflinePoint[1]
+  const total = onlineCount + offlineCount
 
-  return total > 0 ? Math.round((onlineCount / total) * 100) : 0;
-});
+  return total > 0 ? Math.round((onlineCount / total) * 100) : 0
+})
 
 // Create a computed property for the online rate string
 const onlineRateText = computed(() => {
-  return `${$t('dashboard_panel.cardName.onlineRate')} ${onlineRate.value}%`;
-});
+  return `${$t('dashboard_panel.cardName.onlineRate')} ${onlineRate.value}%`
+})
 
 const fetchData = async () => {
-  chartData.loading = true;
+  chartData.loading = true
   try {
-    const response = await getOnlineDeviceTrend();
+    const response = await getOnlineDeviceTrend()
     if (response && response.data && response.data.points) {
       // Convert data to the format expected by ECharts
       chartData.online = response.data.points.map((point: any) => {
-        const timestamp = new Date(point.timestamp).getTime();
-        return [timestamp, point.device_online];
-      });
+        const timestamp = new Date(point.timestamp).getTime()
+        return [timestamp, point.device_online]
+      })
 
       chartData.offline = response.data.points.map((point: any) => {
-        const timestamp = new Date(point.timestamp).getTime();
-        return [timestamp, point.device_offline];
-      });
+        const timestamp = new Date(point.timestamp).getTime()
+        return [timestamp, point.device_offline]
+      })
 
       // Update chart series data
-      chartOption.value.series[0].data = chartData.online;
-      chartOption.value.series[1].data = chartData.offline;
+      chartOption.value.series[0].data = chartData.online
+      chartOption.value.series[1].data = chartData.offline
     }
   } catch (error) {
-    console.error('Failed to fetch device trend data:', error);
+    console.error('Failed to fetch device trend data:', error)
   } finally {
-    chartData.loading = false;
+    chartData.loading = false
   }
-};
+}
 
 onMounted(() => {
-  fetchData();
-});
+  fetchData()
+})
 </script>
 
 <template>

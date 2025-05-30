@@ -22,4 +22,4 @@ export default {
   deviceNumberNotAvailable: '设备编码不可用', // Placeholder from devicePage, seems related
   confirmDelete: '确认删除吗？' // Placeholder from common
   // delete: '删除' // Placeholder from common - Assuming this is handled elsewhere or redundant
-};
+}

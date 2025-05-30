@@ -1,3 +1,3 @@
-import SimpleScrollbar from './index.vue';
+import SimpleScrollbar from './index.vue'
 
-export default SimpleScrollbar;
+export default SimpleScrollbar

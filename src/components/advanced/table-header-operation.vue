@@ -1,40 +1,40 @@
 <script setup lang="ts">
-import type { FilteredColumn } from '@/hooks/common/table';
-import { $t } from '~/src/locales';
+import type { FilteredColumn } from '@/hooks/common/table'
+import { $t } from '~/src/locales'
 
 defineOptions({
   name: 'TableHeaderOperation'
-});
+})
 
 interface Props {
-  disabledDelete?: boolean;
-  loading?: boolean;
+  disabledDelete?: boolean
+  loading?: boolean
 }
 
-defineProps<Props>();
+defineProps<Props>()
 
 interface Emits {
-  (e: 'add'): void;
-  (e: 'delete'): void;
-  (e: 'refresh'): void;
+  (e: 'add'): void
+  (e: 'delete'): void
+  (e: 'refresh'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const columns = defineModel<FilteredColumn[]>('columns', {
   default: () => []
-});
+})
 
 function add() {
-  emit('add');
+  emit('add')
 }
 
 function batchDelete() {
-  emit('delete');
+  emit('delete')
 }
 
 function refresh() {
-  emit('refresh');
+  emit('refresh')
 }
 </script>
 

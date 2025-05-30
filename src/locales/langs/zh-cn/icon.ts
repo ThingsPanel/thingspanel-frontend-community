@@ -9,4 +9,4 @@ export default {
   expand: '展开菜单',
   pin: '固定',
   unpin: '取消固定'
-};
+}

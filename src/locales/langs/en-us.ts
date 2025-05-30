@@ -1,20 +1,20 @@
-import page from './en-us/page';
-import card from './en-us/card';
-import generate from './en-us/generate';
-import custom from './en-us/custom';
-import device_template from './en-us/device_template';
-import dashboard_panel from './en-us/dashboard_panel';
-import form from './en-us/form';
-import dropdown from './en-us/dropdown';
-import icon from './en-us/icon';
-import theme from './en-us/theme';
+import page from './en-us/page'
+import card from './en-us/card'
+import generate from './en-us/generate'
+import custom from './en-us/custom'
+import device_template from './en-us/device_template'
+import dashboard_panel from './en-us/dashboard_panel'
+import form from './en-us/form'
+import dropdown from './en-us/dropdown'
+import icon from './en-us/icon'
+import theme from './en-us/theme'
 
 const local: App.I18n.Schema = {
   default: '',
   title: 'ThingsPanel',
   system: {
     title: 'ThingsPanel',
-    description: 'Connect Everything, Smart Living',
+    description: 'Connect Everything, Smart Living'
   },
   common: {
     serviceConfi: 'Service Configuration',
@@ -432,6 +432,6 @@ const local: App.I18n.Schema = {
     allGroups: 'All Groups',
     subGroup: 'SubGroup'
   }
-};
+}
 
-export default local;
+export default local

@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { NCheckbox, NEmpty, NFlex, NInfiniteScroll, NPopover, NSelect, NSpin } from 'naive-ui';
-import { $t } from '@/locales';
+import { computed, ref, watch } from 'vue'
+import { NCheckbox, NEmpty, NFlex, NInfiniteScroll, NPopover, NSelect, NSpin } from 'naive-ui'
+import { $t } from '@/locales'
 
 // --- 类型定义 ---
 interface DeviceOption {
-  device_id: string;
-  device_name: string;
+  device_id: string
+  device_name: string
   // 可以根据需要添加其他属性
-  [key: string]: any; // 允许其他属性
+  [key: string]: any // 允许其他属性
 }
 
 // --- Props (Type-based) ---
 interface Props {
-  modelValue: string[] | null;
-  options: DeviceOption[];
-  loading?: boolean;
-  hasMore?: boolean;
-  placeholder?: string;
-  disabled?: boolean;
-  clearable?: boolean;
+  modelValue: string[] | null
+  options: DeviceOption[]
+  loading?: boolean
+  hasMore?: boolean
+  placeholder?: string
+  disabled?: boolean
+  clearable?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -29,43 +29,43 @@ const props = withDefaults(defineProps<Props>(), {
   placeholder: () => $t('common.selectPlaceholder') || '请选择',
   disabled: false,
   clearable: false
-});
+})
 
 // --- Emits (Type-based) ---
 interface Emits {
-  (e: 'update:modelValue', value: string[] | null): void;
-  (e: 'loadMore'): void;
-  (e: 'initialLoad'): void;
+  (e: 'update:modelValue', value: string[] | null): void
+  (e: 'loadMore'): void
+  (e: 'initialLoad'): void
 }
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 // --- 内部状态 ---
 /** 控制 Popover 是否显示 */
-const showPopover = ref(false);
+const showPopover = ref(false)
 /** 内部维护的选中 ID 列表，与 modelValue 同步 */
-const selectedDeviceIds = ref<string[]>([]);
+const selectedDeviceIds = ref<string[]>([])
 
 // --- 计算属性 ---
 /** 将选中的 ID 映射回完整的设备对象，用于 NSelect 的 render-tag */
 const selectedOptions = computed(() => {
   if (!selectedDeviceIds.value || selectedDeviceIds.value.length === 0) {
-    return [];
+    return []
   }
   // 优化：创建一个 ID 到选项的映射，避免每次都遍历 options
-  const optionsMap = new Map(props.options.map(opt => [opt.device_id, opt]));
+  const optionsMap = new Map(props.options.map(opt => [opt.device_id, opt]))
   // 注意：这里可能只包含当前 options 列表中的已选项，如果 modelValue 包含尚未加载的项，它们不会显示
   // 如果需要显示所有（包括未加载）的已选项标签，需要更复杂的逻辑，可能需要父组件传入已选对象
-  return selectedDeviceIds.value.map(id => optionsMap.get(id)).filter((opt): opt is DeviceOption => Boolean(opt)); // 过滤掉未找到的选项
-});
+  return selectedDeviceIds.value.map(id => optionsMap.get(id)).filter((opt): opt is DeviceOption => Boolean(opt)) // 过滤掉未找到的选项
+})
 
 // --- 方法 ---
 /** 处理无限滚动加载事件 */
 const handleLoadMore = () => {
   if (!props.loading && props.hasMore) {
     // console.log('Emitting loadMore'); // 调试日志
-    emit('loadMore');
+    emit('loadMore')
   }
-};
+}
 
 /**
  * 处理选项点击事件
@@ -73,17 +73,17 @@ const handleLoadMore = () => {
  * @param deviceId 被点击选项的设备 ID
  */
 const handleOptionClick = (deviceId: string) => {
-  const index = selectedDeviceIds.value.indexOf(deviceId);
+  const index = selectedDeviceIds.value.indexOf(deviceId)
   if (index > -1) {
     // 如果已选中，则取消选中
-    selectedDeviceIds.value.splice(index, 1);
+    selectedDeviceIds.value.splice(index, 1)
   } else {
     // 如果未选中，则添加选中
-    selectedDeviceIds.value.push(deviceId);
+    selectedDeviceIds.value.push(deviceId)
   }
   // 触发 v-model 更新
-  emit('update:modelValue', [...selectedDeviceIds.value]); // 确保发出新数组
-};
+  emit('update:modelValue', [...selectedDeviceIds.value]) // 确保发出新数组
+}
 
 /**
  * 当 Popover 显示状态改变时触发
@@ -91,13 +91,13 @@ const handleOptionClick = (deviceId: string) => {
  * @param show 是否显示
  */
 const handlePopoverUpdateShow = (show: boolean) => {
-  showPopover.value = show;
+  showPopover.value = show
   if (show && (!props.options || props.options.length === 0)) {
     // 当首次展开且没有选项时，触发初始加载
     // console.log('Popover opened, emitting initialLoad'); // 调试日志
-    emit('initialLoad');
+    emit('initialLoad')
   }
-};
+}
 
 /**
  * 检查某个选项是否被选中
@@ -105,8 +105,8 @@ const handlePopoverUpdateShow = (show: boolean) => {
  * @param deviceId 设备 ID
  */
 const isSelected = (deviceId: string): boolean => {
-  return selectedDeviceIds.value.includes(deviceId);
-};
+  return selectedDeviceIds.value.includes(deviceId)
+}
 
 // --- Watchers ---
 /** 监听外部 modelValue 的变化，同步到内部 selectedDeviceIds */
@@ -114,16 +114,16 @@ watch(
   () => props.modelValue,
   newVal => {
     if (newVal === null) {
-      selectedDeviceIds.value = [];
+      selectedDeviceIds.value = []
     } else if (Array.isArray(newVal)) {
       // 避免不必要的更新，比较数组内容
       if (JSON.stringify(newVal) !== JSON.stringify(selectedDeviceIds.value)) {
-        selectedDeviceIds.value = [...newVal];
+        selectedDeviceIds.value = [...newVal]
       }
     }
   },
   { immediate: true, deep: true } // 立即执行，深度监听（虽然通常不需要深度监听 ID 数组）
-);
+)
 </script>
 
 <template>

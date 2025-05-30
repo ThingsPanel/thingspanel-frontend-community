@@ -1,32 +1,32 @@
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue'
 // import axios from 'axios'
-import * as echarts from 'echarts';
-import { $t } from '@/locales';
+import * as echarts from 'echarts'
+import { $t } from '@/locales'
 // import type { ICardData } from '@/components/panel/card'
 // defineProps<{
 //   card: ICardData;
 // }>();
 interface Props {
   /** 渐变开始的颜色 */
-  startColor?: string;
+  startColor?: string
   /** 渐变结束的颜色 */
-  endColor?: string;
+  endColor?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   startColor: '#ff3680',
   endColor: '#cd4e9f'
-});
-const gradientStyle = computed(() => `linear-gradient(to bottom right, ${props.startColor}, ${props.endColor})`);
+})
+const gradientStyle = computed(() => `linear-gradient(to bottom right, ${props.startColor}, ${props.endColor})`)
 
-const equipment = ref(null);
+const equipment = ref(null)
 // 获取 echats 要渲染的dom
 
 onMounted(() => {
   if (equipment.value) {
     // const myecharts = echarts.init(box.value);
-    const myecharts = echarts.init(equipment.value);
+    const myecharts = echarts.init(equipment.value)
     const option = {
       title: {
         text: '3344',
@@ -66,14 +66,14 @@ onMounted(() => {
           }
         ]
       }
-    };
-    const dom = document.getElementById('equipment')!;
+    }
+    const dom = document.getElementById('equipment')!
     const ro = new ResizeObserver(_entries => {
-      myecharts.resize();
-    });
-    ro.observe(dom);
+      myecharts.resize()
+    })
+    ro.observe(dom)
     // 监听窗口大小变化
-    myecharts.setOption(option);
+    myecharts.setOption(option)
     // window.onresize = function () {
     //   // 使用刚指定的配置项和数据显示图表。
     //   myecharts.setOption(option);
@@ -89,8 +89,8 @@ onMounted(() => {
   }
   return {
     equipment
-  };
-});
+  }
+})
 </script>
 
 <template>

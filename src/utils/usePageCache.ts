@@ -1,9 +1,9 @@
 /** 用于恢复页面参数 */
-import { useRoute } from 'vue-router';
+import { useRoute } from 'vue-router'
 
-const queryCache = new Map<string, Record<string, any>>();
+const queryCache = new Map<string, Record<string, any>>()
 export const usePageCache = () => {
-  const route = useRoute();
+  const route = useRoute()
   return {
     cache: {
       ...queryCache.get(route.path)
@@ -12,7 +12,7 @@ export const usePageCache = () => {
       queryCache.set(route.path, {
         ...queryCache.get(route.path),
         ...data
-      });
+      })
     }
-  };
-};
+  }
+}

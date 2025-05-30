@@ -8,17 +8,17 @@ export async function handleServiceResult<T = any>(
     const fail: App.Service.FailedResult = {
       error,
       data: null
-    };
-    return fail;
+    }
+    return fail
   }
   const success: App.Service.SuccessResult<T> = {
     error: null,
     data
-  };
+  }
   return {
     ...success,
     msg
-  };
+  }
 }
 
 /** 请求结果的适配器：用于接收适配器函数和请求结果 */
@@ -26,26 +26,26 @@ export function adapter<T extends App.Service.ServiceAdapter>(
   adapterFun: T,
   ...args: App.Service.MultiRequestResult<Parameters<T>>
 ): App.Service.RequestResult<ReturnType<T>> {
-  let result: App.Service.RequestResult | undefined;
+  let result: App.Service.RequestResult | undefined
 
   const hasError = args.some(item => {
-    const flag = Boolean(item.error);
+    const flag = Boolean(item.error)
     if (flag) {
       result = {
         error: item.error,
         data: null
-      };
+      }
     }
-    return flag;
-  });
+    return flag
+  })
 
   if (!hasError) {
-    const adapterFunArgs = args.map(item => item.data);
+    const adapterFunArgs = args.map(item => item.data)
     result = {
       error: null,
       data: adapterFun(...adapterFunArgs)
-    };
+    }
   }
 
-  return result!;
+  return result!
 }

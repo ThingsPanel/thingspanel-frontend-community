@@ -1,50 +1,50 @@
 <script lang="ts" setup>
-import { onMounted, onUnmounted, reactive, ref, watch } from 'vue';
-import type { SelectOption } from 'naive-ui';
-import { useMessage } from 'naive-ui';
-import { debounce } from 'lodash';
-import { use } from 'echarts/core';
-import { LineChart } from 'echarts/charts';
-import { v4 as uuid4 } from 'uuid';
-import VChart from 'vue-echarts';
-import * as echarts from 'echarts';
-import { DiscOutline, FilterCircleOutline, RefreshCircleOutline, TimeOutline } from '@vicons/ionicons5';
-import { GridComponent, LegendComponent, ToolboxComponent, TooltipComponent } from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
-import type { ComposeOption } from 'echarts/core';
-import type { LineSeriesOption } from 'echarts/charts';
+import { onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import type { SelectOption } from 'naive-ui'
+import { useMessage } from 'naive-ui'
+import { debounce } from 'lodash'
+import { use } from 'echarts/core'
+import { LineChart } from 'echarts/charts'
+import { v4 as uuid4 } from 'uuid'
+import VChart from 'vue-echarts'
+import * as echarts from 'echarts'
+import { DiscOutline, FilterCircleOutline, RefreshCircleOutline, TimeOutline } from '@vicons/ionicons5'
+import { GridComponent, LegendComponent, ToolboxComponent, TooltipComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
+import type { ComposeOption } from 'echarts/core'
+import type { LineSeriesOption } from 'echarts/charts'
 import type {
   GridComponentOption,
   LegendComponentOption,
   ToolboxComponentOption,
   TooltipComponentOption
-} from 'echarts/components';
-import { addMonths } from 'date-fns';
-import { $t } from '@/locales';
-import type { ICardData } from '@/components/panel/card';
-import { telemetryDataCurrentKeys, telemetryDataHistoryList } from '@/service/api/device';
-import { createLogger } from '@/utils/logger';
-const logger = createLogger('Chart');
+} from 'echarts/components'
+import { addMonths } from 'date-fns'
+import { $t } from '@/locales'
+import type { ICardData } from '@/components/panel/card'
+import { telemetryDataCurrentKeys, telemetryDataHistoryList } from '@/service/api/device'
+import { createLogger } from '@/utils/logger'
+const logger = createLogger('Chart')
 type EChartsOption = ComposeOption<
   TooltipComponentOption | LegendComponentOption | ToolboxComponentOption | GridComponentOption | LineSeriesOption
->;
-use([TooltipComponent, LegendComponent, ToolboxComponent, GridComponent, LineChart, CanvasRenderer]);
-const chartContainer = ref<HTMLDivElement | null>(null);
-const chartRef = ref();
-const isAggregate = ref<boolean>(false);
-const isTimeSelect = ref<boolean>(false);
-const dateRange = ref<[number, number] | null>(null);
+>
+use([TooltipComponent, LegendComponent, ToolboxComponent, GridComponent, LineChart, CanvasRenderer])
+const chartContainer = ref<HTMLDivElement | null>(null)
+const chartRef = ref()
+const isAggregate = ref<boolean>(false)
+const isTimeSelect = ref<boolean>(false)
+const dateRange = ref<[number, number] | null>(null)
 
-const legendColor = ref('auto');
+const legendColor = ref('auto')
 
-const detail: any = ref(null);
+const detail: any = ref(null)
 
 const props = defineProps<{
-  card: ICardData;
-  colorGroup: { name: string; top: string; bottom: string; line: string }[];
-}>();
+  card: ICardData
+  colorGroup: { name: string; top: string; bottom: string; line: string }[]
+}>()
 
-const message = useMessage();
+const message = useMessage()
 const sampleData = [
   [1716986172333, 8],
   [1716986177338, 21],
@@ -88,9 +88,9 @@ const sampleData = [
   [1716986337557, 23],
   [1716986337893, 25],
   [1716986342565, 20]
-];
-const legendData = ref<any[]>([]);
-const name = ref('');
+]
+const legendData = ref<any[]>([])
+const name = ref('')
 
 const option = ref<EChartsOption>({
   tooltip: {
@@ -150,40 +150,40 @@ const option = ref<EChartsOption>({
     }
   },
   series: [] as any[]
-});
+})
 const updateLegendColor = () => {
   if (chartContainer.value) {
     // @ts-ignore // 或者使用 as any
-    const computedStyle = window.getComputedStyle(chartContainer.value as Element);
-    legendColor.value = computedStyle.color;
+    const computedStyle = window.getComputedStyle(chartContainer.value as Element)
+    legendColor.value = computedStyle.color
 
     // 使用 as any 来绕过 legend/axisLabel 的类型检查
-    const legendOption = option.value.legend as any;
+    const legendOption = option.value.legend as any
     if (legendOption && legendOption.textStyle) {
-      legendOption.textStyle.color = legendColor.value;
+      legendOption.textStyle.color = legendColor.value
     }
 
-    const xAxisOption = option.value.xAxis as any;
+    const xAxisOption = option.value.xAxis as any
     if (xAxisOption && xAxisOption.axisLabel) {
-      xAxisOption.axisLabel.color = legendColor.value;
+      xAxisOption.axisLabel.color = legendColor.value
     }
 
-    const yAxisOption = option.value.yAxis as any;
+    const yAxisOption = option.value.yAxis as any
     if (yAxisOption && yAxisOption.axisLabel) {
-      yAxisOption.axisLabel.color = legendColor.value;
+      yAxisOption.axisLabel.color = legendColor.value
     }
   }
-};
-const d_end_time = new Date().getTime();
+}
+const d_end_time = new Date().getTime()
 // 获取1小时前的时间
-const d_start_time = d_end_time - 3600000;
+const d_start_time = d_end_time - 3600000
 const params = reactive({
   start_time: d_start_time,
   end_time: d_end_time,
   aggregate_window: 'no_aggregate',
   aggregate_function: '',
   time_range: 'custom'
-});
+})
 const timeOptions: SelectOption[] = [
   { label: $t('common.custom'), value: 300000 },
   { label: $t('common.last_15m'), value: 900000, id: 'last_15m' },
@@ -211,8 +211,8 @@ const timeOptions: SelectOption[] = [
   { label: $t('common.lastMonth'), value: 2592000000 },
   { label: $t('common.thisYear'), value: 7776000000 },
   { label: $t('common.lastYear'), value: 31536000000 }
-];
-const timeOptionsValue = ref();
+]
+const timeOptionsValue = ref()
 const aggregateOptions: SelectOption[] = [
   { label: $t('common.notAggre'), value: 'no_aggregate', disabled: false },
   { label: $t('common.seconds30'), value: '30s', disabled: false },
@@ -227,27 +227,27 @@ const aggregateOptions: SelectOption[] = [
   { label: $t('common.days1'), value: '1d', disabled: false },
   { label: $t('common.days7'), value: '7d', disabled: false },
   { label: '1月', value: '1mo', disabled: false }
-];
-const aggregateOptionsValue = ref<string>('');
+]
+const aggregateOptionsValue = ref<string>('')
 const aggregateFunctionOptions: SelectOption[] = [
   { label: $t('common.average'), value: 'avg' },
   { label: $t('generate.max-value'), value: 'max' },
   { label: $t('common.sum'), value: 'sum' },
   { label: $t('common.diffValue'), value: 'diff' }
-];
-const aggregateFunctionValue = ref<string>('avg');
+]
+const aggregateFunctionValue = ref<string>('avg')
 
 const updateAggregate = (v: string) => {
-  aggregateOptionsValue.value = v;
-  params.aggregate_window = v;
+  aggregateOptionsValue.value = v
+  params.aggregate_window = v
   if (v !== 'no_aggregate') {
-    aggregateFunctionValue.value = 'avg';
-    params.aggregate_function = 'avg';
+    aggregateFunctionValue.value = 'avg'
+    params.aggregate_function = 'avg'
   } else {
-    aggregateFunctionValue.value = '';
-    params.aggregate_function = '';
+    aggregateFunctionValue.value = ''
+    params.aggregate_function = ''
   }
-};
+}
 const updateDisabledOptions = (timeFrame: string) => {
   const disableBeforeIndex: { [key: string]: number } = {
     最近3小时: 1, // 30秒
@@ -272,128 +272,128 @@ const updateDisabledOptions = (timeFrame: string) => {
     上个月: 7, // 1小时
     今年: 12, // 1月
     去年: 12 // 1月
-  };
+  }
 
   // 默认不禁用"不聚合"，根据时间范围禁用其余选项
   aggregateOptions.forEach((item, index, array) => {
     if (!disableBeforeIndex[timeFrame]) {
-      item.disabled = false;
-      aggregateOptionsValue.value = 'no_aggregate';
-      params.aggregate_window = aggregateOptionsValue.value;
-      return;
+      item.disabled = false
+      aggregateOptionsValue.value = 'no_aggregate'
+      params.aggregate_window = aggregateOptionsValue.value
+      return
     }
 
-    item.disabled = index < (disableBeforeIndex[timeFrame] || 0);
+    item.disabled = index < (disableBeforeIndex[timeFrame] || 0)
     if (index < (disableBeforeIndex[timeFrame] || 0)) {
-      aggregateOptionsValue.value = array[index + 1].value as string;
-      params.aggregate_window = aggregateOptionsValue.value;
+      aggregateOptionsValue.value = array[index + 1].value as string
+      params.aggregate_window = aggregateOptionsValue.value
     }
-  });
-};
+  })
+}
 
 const updateTime = (v: number, o: SelectOption) => {
-  let now = new Date();
-  let start_time: Date;
-  let end_time: Date = new Date();
-  isAggregate.value = true;
-  timeOptionsValue.value = v;
-  updateDisabledOptions(o.label as string);
+  let now = new Date()
+  let start_time: Date
+  let end_time: Date = new Date()
+  isAggregate.value = true
+  timeOptionsValue.value = v
+  updateDisabledOptions(o.label as string)
   switch (o.label) {
     case $t('common.custom'):
-      isTimeSelect.value = true;
-      isAggregate.value = false;
-      return;
+      isTimeSelect.value = true
+      isAggregate.value = false
+      return
     case $t('common.today'):
-      start_time = new Date(now.setHours(0, 0, 0, 0));
-      now = new Date(); // 重新获取当前时间，避免修改
-      end_time = new Date(now.setHours(23, 59, 59, 999));
-      break;
+      start_time = new Date(now.setHours(0, 0, 0, 0))
+      now = new Date() // 重新获取当前时间，避免修改
+      end_time = new Date(now.setHours(23, 59, 59, 999))
+      break
     case $t('common.yesterday'):
-      start_time = new Date();
-      start_time.setDate(now.getDate() - 1);
-      start_time.setHours(0, 0, 0, 0);
-      end_time = new Date(start_time);
-      end_time.setHours(23, 59, 59, 999);
-      break;
+      start_time = new Date()
+      start_time.setDate(now.getDate() - 1)
+      start_time.setHours(0, 0, 0, 0)
+      end_time = new Date(start_time)
+      end_time.setHours(23, 59, 59, 999)
+      break
     case $t('common.dayBeforeYesterday'):
-      start_time = new Date();
-      start_time.setDate(start_time.getDate() - 2); // 设置为两天前的日期
-      start_time.setHours(0, 0, 0, 0); // 那一天的开始
-      end_time = new Date(start_time);
-      end_time.setHours(23, 59, 59, 999); // 那一天的结束一天的结束
-      break;
+      start_time = new Date()
+      start_time.setDate(start_time.getDate() - 2) // 设置为两天前的日期
+      start_time.setHours(0, 0, 0, 0) // 那一天的开始
+      end_time = new Date(start_time)
+      end_time.setHours(23, 59, 59, 999) // 那一天的结束一天的结束
+      break
     case $t('common.thisWeek'):
       // eslint-disable-next-line no-case-declarations
-      const currentDayOfWeek = now.getDay(); // 当前是周几，周日为0
+      const currentDayOfWeek = now.getDay() // 当前是周几，周日为0
       // eslint-disable-next-line no-case-declarations
-      const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek; // 计算到周一需要回退的天数
-      start_time = new Date();
-      start_time.setDate(now.getDate() + distanceToMonday); // 设置为本周一
-      start_time.setHours(0, 0, 0, 0); // 本周一的开始
-      end_time = new Date(); // 本周的当前时间
-      break;
+      const distanceToMonday = currentDayOfWeek === 0 ? -6 : 1 - currentDayOfWeek // 计算到周一需要回退的天数
+      start_time = new Date()
+      start_time.setDate(now.getDate() + distanceToMonday) // 设置为本周一
+      start_time.setHours(0, 0, 0, 0) // 本周一的开始
+      end_time = new Date() // 本周的当前时间
+      break
     case $t('common.lastWeek'):
       // eslint-disable-next-line no-case-declarations
-      const daysToLastMonday = now.getDay() === 0 ? -6 : 1; // 如果今天是周日，则上周一是6天前
-      start_time = new Date();
-      start_time.setDate(now.getDate() - now.getDay() - daysToLastMonday);
-      start_time.setHours(0, 0, 0, 0);
-      end_time = new Date(start_time);
-      end_time.setDate(start_time.getDate() + 6);
-      end_time.setHours(23, 59, 59, 999);
-      break;
+      const daysToLastMonday = now.getDay() === 0 ? -6 : 1 // 如果今天是周日，则上周一是6天前
+      start_time = new Date()
+      start_time.setDate(now.getDate() - now.getDay() - daysToLastMonday)
+      start_time.setHours(0, 0, 0, 0)
+      end_time = new Date(start_time)
+      end_time.setDate(start_time.getDate() + 6)
+      end_time.setHours(23, 59, 59, 999)
+      break
     case $t('common.thisMonth'):
-      start_time = new Date(now.getFullYear(), now.getMonth(), 1);
-      end_time = now;
-      break;
+      start_time = new Date(now.getFullYear(), now.getMonth(), 1)
+      end_time = now
+      break
     case $t('common.lastMonth'):
-      start_time = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      end_time = new Date(now.getFullYear(), now.getMonth(), 0);
-      break;
+      start_time = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+      end_time = new Date(now.getFullYear(), now.getMonth(), 0)
+      break
     case $t('common.thisYear'):
-      start_time = new Date(now.getFullYear(), 0, 1);
-      end_time = now;
-      break;
+      start_time = new Date(now.getFullYear(), 0, 1)
+      end_time = now
+      break
     case $t('common.lastYear'):
-      start_time = new Date(now.getFullYear() - 1, 0, 1);
-      end_time = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
-      break;
+      start_time = new Date(now.getFullYear() - 1, 0, 1)
+      end_time = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999)
+      break
     default:
-      start_time = new Date(now.getTime() - v);
-      end_time = new Date();
+      start_time = new Date(now.getTime() - v)
+      end_time = new Date()
   }
-  isTimeSelect.value = false;
-  params.start_time = start_time.getTime();
-  params.end_time = end_time.getTime();
-};
+  isTimeSelect.value = false
+  params.start_time = start_time.getTime()
+  params.end_time = end_time.getTime()
+}
 
 const updateAggregateFunction = (v: string) => {
-  aggregateFunctionValue.value = v;
-  params.aggregate_function = v;
-};
+  aggregateFunctionValue.value = v
+  params.aggregate_function = v
+}
 
 const checkDateRange = value => {
-  const [start, end] = value;
+  const [start, end] = value
   if (start && end && addMonths(start, 1) < end) {
-    dateRange.value = null;
-    message.error($t('common.withinOneMonth'));
+    dateRange.value = null
+    message.error($t('common.withinOneMonth'))
   } else {
-    params.start_time = start;
-    params.end_time = end;
+    params.start_time = start
+    params.end_time = end
   }
-};
+}
 
 const reFresh = () => {
-  timeOptionsValue.value = '';
-  isAggregate.value = false;
-  const endtime = new Date().getTime();
-  const starttime = endtime - 3600000;
-  params.start_time = starttime;
-  params.end_time = endtime;
-  params.aggregate_window = 'no_aggregate';
-  params.aggregate_function = 'avg';
-  params.time_range = 'custom';
-};
+  timeOptionsValue.value = ''
+  isAggregate.value = false
+  const endtime = new Date().getTime()
+  const starttime = endtime - 3600000
+  params.start_time = starttime
+  params.end_time = endtime
+  params.aggregate_window = 'no_aggregate'
+  params.aggregate_function = 'avg'
+  params.time_range = 'custom'
+}
 
 // eslint-disable-next-line max-params
 const getTelemetryData = async (device_id, key, index, metricName) => {
@@ -423,180 +423,181 @@ const getTelemetryData = async (device_id, key, index, metricName) => {
     tooltip: {
       valueFormatter: value => value + (detail?.value?.data[0]?.unit || '')
     }
-  };
-  if (!device_id || !key) return sampleObj;
+  }
+  if (!device_id || !key) return sampleObj
 
   const aggregateFunction =
-    props.card?.dataSource?.deviceSource?.[index]?.aggregate_function || params.aggregate_function || 'avg';
+    props.card?.dataSource?.deviceSource?.[index]?.aggregate_function || params.aggregate_function || 'avg'
 
   const metricsParams = {
     device_id,
     key,
     ...params,
     aggregate_function: aggregateFunction
-  };
+  }
 
   try {
-    const { data } = await telemetryDataHistoryList(metricsParams);
-    const seriesData = data ? data.map(item => [item.x, item.y]) : sampleData;
+    const { data } = await telemetryDataHistoryList(metricsParams)
+    const seriesData = data ? data.map(item => [item.x, item.y]) : sampleData
 
-    sampleObj.data = seriesData;
+    sampleObj.data = seriesData
 
-    return sampleObj;
+    return sampleObj
   } catch (error) {
     // 如果发生错误，返回默认数据
-    return sampleObj;
+    return sampleObj
   }
-};
+}
 
 const setSeries = async dataSource => {
-  if (!dataSource) return;
+  if (!dataSource) return
 
-  const deviceSource = dataSource.deviceSource || [];
-  const deviceCount = dataSource.deviceCount || 1;
-  const newLegendData = []; // Create temporary array for new legend
+  const deviceSource = dataSource.deviceSource || []
+  const deviceCount = dataSource.deviceCount || 1
+  const newLegendData = [] // Create temporary array for new legend
 
-  const firstDevice = deviceSource[0] || {};
+  const firstDevice = deviceSource[0] || {}
   const querDetail = {
     device_id: firstDevice.deviceId || '',
     keys: firstDevice.metricsId || ''
-  };
+  }
 
   if (querDetail.device_id && querDetail.keys) {
-    detail.value = await telemetryDataCurrentKeys(querDetail);
+    detail.value = await telemetryDataCurrentKeys(querDetail)
   } else {
     // window.$message?.error("查询不到设备");
   }
 
   // 收集所有系列数据的Promise
   const seriesPromises = deviceSource.slice(0, deviceCount).map((item, index) => {
-    const metricName = item.metricsName || item.metricsId || '';
-    name.value = metricName;
+    const metricName = item.metricsName || item.metricsId || ''
+    name.value = metricName
     // legendData.value.push(metricName); // Don't push to the old ref here
-    newLegendData.push(metricName); // Build the new legend array
+    newLegendData.push(metricName) // Build the new legend array
 
     // 返回一个Promise，包含系列配置和数据
-    return getTelemetryData(item.deviceId, item.metricsId, index, metricName);
-  });
+    return getTelemetryData(item.deviceId, item.metricsId, index, metricName)
+  })
 
   // 等待所有系列数据获取完成
-  const seriesData = await Promise.all(seriesPromises);
+  const seriesData = await Promise.all(seriesPromises)
 
   // 一次性赋值给option.value.series 和 option.value.legend.data
-  if (option.value.legend) { // Ensure legend object exists
-    option.value.legend.data = newLegendData; // Assign new legend data directly
+  if (option.value.legend) {
+    // Ensure legend object exists
+    option.value.legend.data = newLegendData // Assign new legend data directly
   }
-  option.value.series = seriesData;
-  legendData.value = newLegendData; // Also update the standalone ref if used elsewhere
-};
+  option.value.series = seriesData
+  legendData.value = newLegendData // Also update the standalone ref if used elsewhere
+}
 
 defineExpose({
   updateData: (deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     if (params.aggregate_window !== 'no_aggregate') {
-      logger.info('Update data: Curve is aggregate, return directly');
-      return;
+      logger.info('Update data: Curve is aggregate, return directly')
+      return
     }
     const deviceIndex = props?.card?.dataSource?.deviceSource?.findIndex(
       item => item.deviceId === deviceId && item.metricsId === metricsId
-    );
+    )
     // const seriesData = JSON.parse(JSON.stringify(option.value.series[deviceIndex]))?.data;
     const seriesData =
-      option.value.series && option.value.series[deviceIndex || 0] ? option.value.series[deviceIndex || 0].data : [];
-    const value = metricsId && data && data[metricsId];
+      option.value.series && option.value.series[deviceIndex || 0] ? option.value.series[deviceIndex || 0].data : []
+    const value = metricsId && data && data[metricsId]
 
     if (value && data.systime) {
-      const timestamp = new Date(data.systime).getTime();
+      const timestamp = new Date(data.systime).getTime()
       if (seriesData.length === 0 || timestamp !== seriesData[seriesData.length - 1][0]) {
-        const len = seriesData?.push([timestamp, value]);
+        const len = seriesData?.push([timestamp, value])
         // 如果长度大于100且第一个数据和最后一个数据的间隔时间大于采样周期则删除最后一个元素
         if (len >= 100) {
-          seriesData.shift();
+          seriesData.shift()
         }
       }
     }
   }
-});
+})
 
 const throttledWatcher = debounce(() => {
-  setSeries(props?.card?.dataSource);
-}, 300);
+  setSeries(props?.card?.dataSource)
+}, 300)
 
 const initDateTimeRange = () => {
   if (props.card?.dataSource?.dataTimeRange) {
-    const timeOption = timeOptions.find(item => item.id === props.card?.dataSource?.dataTimeRange);
+    const timeOption = timeOptions.find(item => item.id === props.card?.dataSource?.dataTimeRange)
     if (timeOption) {
-      timeOptionsValue.value = timeOption.value;
-      updateTime(timeOption.value as number, timeOption);
+      timeOptionsValue.value = timeOption.value
+      updateTime(timeOption.value as number, timeOption)
       if (props.card?.dataSource?.dataAggregateRange) {
-        updateAggregate(props.card?.dataSource?.dataAggregateRange);
+        updateAggregate(props.card?.dataSource?.dataAggregateRange)
       }
       if (props.card?.dataSource?.deviceSource?.length === 1) {
-        updateAggregateFunction(props.card?.dataSource?.deviceSource[0]?.aggregate_function);
+        updateAggregateFunction(props.card?.dataSource?.deviceSource[0]?.aggregate_function)
       }
     }
   }
-};
+}
 
 watch(
   () => params,
   () => {
-    throttledWatcher();
+    throttledWatcher()
   },
   { deep: true }
-);
+)
 watch(
   () => props.card?.dataSource?.deviceSource,
   () => {
     // legendData.value = []; // Remove this line
-    setSeries(props?.card?.dataSource);
+    setSeries(props?.card?.dataSource)
   },
   { deep: true }
-);
+)
 watch(
   () => props.colorGroup,
   () => {
-    setSeries(props?.card?.dataSource);
+    setSeries(props?.card?.dataSource)
   },
   { deep: true }
-);
+)
 watch(
   () => props.card?.dataSource?.dataTimeRange,
   newDateTiemRange => {
     if (newDateTiemRange) {
-      initDateTimeRange();
+      initDateTimeRange()
     } else {
-      reFresh();
+      reFresh()
     }
   }
-);
+)
 watch(
   () => props.card?.dataSource?.dataAggregateRange,
   () => {
-    initDateTimeRange();
+    initDateTimeRange()
   }
-);
+)
 onMounted(() => {
-  initDateTimeRange();
-  setSeries(props?.card?.dataSource);
+  initDateTimeRange()
+  setSeries(props?.card?.dataSource)
 
-  updateLegendColor(); // 初始设置
+  updateLegendColor() // 初始设置
 
   const resizeObserver = new ResizeObserver(() => {
-    updateLegendColor();
-  });
+    updateLegendColor()
+  })
 
   if (chartContainer.value) {
     // @ts-ignore // 或者使用 as any
-    resizeObserver.observe(chartContainer.value as Element);
+    resizeObserver.observe(chartContainer.value as Element)
   }
 
   onUnmounted(() => {
-    resizeObserver.disconnect();
-  });
-});
+    resizeObserver.disconnect()
+  })
+})
 onUnmounted(() => {
   // clearInterval(intervalNum.value);
-});
+})
 </script>
 
 <template>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
-import { useRouterPush } from '@/hooks/common/router';
-import { $t } from '@/locales';
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useRouterPush } from '@/hooks/common/router'
+import { $t } from '@/locales'
 
-const route = useRoute();
-const { routerPushByKey } = useRouterPush();
+const route = useRoute()
+const { routerPushByKey } = useRouterPush()
 
-const routeQuery = computed(() => JSON.stringify(route.query));
+const routeQuery = computed(() => JSON.stringify(route.query))
 </script>
 
 <template>

@@ -1,62 +1,62 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
-import type { FormInst } from 'naive-ui';
-import { deepClone } from '@/utils/common/tool';
-import { addProtocolPlugin, editProtocolPlugin } from '@/service/api';
-import { createRequiredFormRule } from '@/utils/form/rule';
-import { $t } from '@/locales';
+import { computed, reactive, ref, watch } from 'vue'
+import type { FormInst } from 'naive-ui'
+import { deepClone } from '@/utils/common/tool'
+import { addProtocolPlugin, editProtocolPlugin } from '@/service/api'
+import { createRequiredFormRule } from '@/utils/form/rule'
+import { $t } from '@/locales'
 
 export interface Props {
   /** 弹窗可见性 */
-  visible: boolean;
+  visible: boolean
   /** 弹窗类型 add: 新增 edit: 编辑 */
-  type?: 'add' | 'edit';
+  type?: 'add' | 'edit'
   /** 编辑的表格行数据 */
-  editData?: ServiceManagement.Service | null;
+  editData?: ServiceManagement.Service | null
 }
 
-export type ModalType = NonNullable<Props['type']>;
+export type ModalType = NonNullable<Props['type']>
 
-defineOptions({ name: 'TableActionModal' });
+defineOptions({ name: 'TableActionModal' })
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'add',
   editData: null
-});
+})
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void;
-  (e: 'success'): void;
+  (e: 'update:visible', visible: boolean): void
+  (e: 'success'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const modalVisible = computed({
   get() {
-    return props.visible;
+    return props.visible
   },
   set(visible) {
-    emit('update:visible', visible);
+    emit('update:visible', visible)
   }
-});
+})
 const closeModal = () => {
-  modalVisible.value = false;
-};
+  modalVisible.value = false
+}
 
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
     add: $t('common.add'),
     edit: $t('common.edit')
-  };
-  return titles[props.type];
-});
+  }
+  return titles[props.type]
+})
 
-const formRef = ref<HTMLElement & FormInst>();
+const formRef = ref<HTMLElement & FormInst>()
 
 const deviceOptions = ref<any[]>([
   { label: $t('generate.direct-connected-device'), value: 1 },
   { label: $t('generate.gatewayDevice'), value: 2 }
-]);
+])
 
 type FormModel = Pick<
   ServiceManagement.Service,
@@ -70,10 +70,10 @@ type FormModel = Pick<
   | 'additional_info'
   | 'language_code'
 > & {
-  additional_info_list: any[];
-};
+  additional_info_list: any[]
+}
 
-const formModel = reactive<FormModel>(createDefaultFormModel());
+const formModel = reactive<FormModel>(createDefaultFormModel())
 
 const rules = {
   name: createRequiredFormRule($t('common.pleaseCheckValue')),
@@ -82,7 +82,7 @@ const rules = {
   access_address: createRequiredFormRule($t('common.pleaseCheckValue')),
   http_address: createRequiredFormRule($t('common.pleaseCheckValue')),
   sub_topic_prefix: createRequiredFormRule($t('common.pleaseCheckValue'))
-};
+}
 
 function createDefaultFormModel(): FormModel {
   return {
@@ -96,80 +96,80 @@ function createDefaultFormModel(): FormModel {
     language_code: 'zh',
     additional_info: '',
     additional_info_list: []
-  };
+  }
 }
 
 function handleUpdateFormModel(model: Partial<FormModel>) {
-  Object.assign(formModel, model);
-  const additional_info_list: any = [];
-  const additional_info = JSON.parse(formModel.additional_info || '{}');
+  Object.assign(formModel, model)
+  const additional_info_list: any = []
+  const additional_info = JSON.parse(formModel.additional_info || '{}')
   for (const key in additional_info) {
     if (Object.hasOwn(additional_info, key)) {
-      const value = additional_info[key];
-      additional_info_list.push({ key, value });
+      const value = additional_info[key]
+      additional_info_list.push({ key, value })
     }
   }
-  formModel.additional_info_list = additional_info_list;
+  formModel.additional_info_list = additional_info_list
 }
 
 function handleUpdateFormModelByModalType() {
   const handlers: Record<ModalType, () => void> = {
     add: () => {
-      const defaultFormModel = createDefaultFormModel();
-      handleUpdateFormModel(defaultFormModel);
+      const defaultFormModel = createDefaultFormModel()
+      handleUpdateFormModel(defaultFormModel)
     },
     edit: () => {
       if (props.editData) {
-        handleUpdateFormModel(props.editData);
+        handleUpdateFormModel(props.editData)
       }
     }
-  };
+  }
 
-  handlers[props.type]();
+  handlers[props.type]()
 }
 
 async function handleSubmit() {
-  await formRef.value?.validate();
-  const formData = deepClone(formModel);
-  formData.device_type = Number(formData.device_type);
+  await formRef.value?.validate()
+  const formData = deepClone(formModel)
+  formData.device_type = Number(formData.device_type)
 
-  const additional_info = {};
+  const additional_info = {}
   formData.additional_info_list.map((item: any) => {
     if (item.key && item.value) {
-      return (additional_info[item.key] = item.value);
+      return (additional_info[item.key] = item.value)
     }
-    return additional_info[item.key];
-  });
-  formData.additional_info = JSON.stringify(additional_info);
-  delete formData.additional_info_list;
-  let data: any;
+    return additional_info[item.key]
+  })
+  formData.additional_info = JSON.stringify(additional_info)
+  delete formData.additional_info_list
+  let data: any
   if (props.type === 'add') {
-    data = await addProtocolPlugin(formData);
+    data = await addProtocolPlugin(formData)
   } else if (props.type === 'edit') {
-    data = await editProtocolPlugin(formData);
+    data = await editProtocolPlugin(formData)
   }
   if (!data.error) {
     // window.$message?.success(data.msg);
-    emit('success');
+    emit('success')
   }
-  closeModal();
+  closeModal()
 }
 
 function handleAddAdditionalInfo() {
   formModel.additional_info_list.push({
     key: '',
     value: ''
-  });
+  })
 }
 
 watch(
   () => props.visible,
   newValue => {
     if (newValue) {
-      handleUpdateFormModelByModalType();
+      handleUpdateFormModelByModalType()
     }
   }
-);
+)
 </script>
 
 <template>

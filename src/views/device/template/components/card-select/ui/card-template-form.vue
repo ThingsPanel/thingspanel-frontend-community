@@ -1,17 +1,17 @@
 <script lang="tsx" setup>
-import type { Ref } from 'vue';
-import { inject, onMounted, onUpdated, reactive, ref, watch } from 'vue';
-import { $t } from '@/locales';
-import { usePanelStore } from '@/store/modules/panel';
-import type { ICardData, ICardDefine } from '@/components/panel/card';
-import { deviceModelSourceForPanel } from '@/service/api';
+import type { Ref } from 'vue'
+import { inject, onMounted, onUpdated, reactive, ref, watch } from 'vue'
+import { $t } from '@/locales'
+import { usePanelStore } from '@/store/modules/panel'
+import type { ICardData, ICardDefine } from '@/components/panel/card'
+import { deviceModelSourceForPanel } from '@/service/api'
 
-const copy = (obj: object) => JSON.parse(JSON.stringify(obj));
-const deviceTemplateId = inject<Ref<any>>('device_template_id');
+const copy = (obj: object) => JSON.parse(JSON.stringify(obj))
+const deviceTemplateId = inject<Ref<any>>('device_template_id')
 defineProps<{
-  mobile?: boolean;
-}>();
-const store = usePanelStore();
+  mobile?: boolean
+}>()
+const store = usePanelStore()
 const defData = {
   cardId: '',
   type: 'builtin',
@@ -23,114 +23,114 @@ const defData = {
     systemSource: [{}],
     deviceSource: [{}]
   } as any
-};
+}
 const state = reactive({
   tab: 'device',
   selectCard: null as null | ICardDefine,
   data: copy(defData)
-});
+})
 
 const emit = defineEmits<{
-  (e: 'update', data: ICardData): void;
-}>();
+  (e: 'update', data: ICardData): void
+}>()
 
 const findCard = (id: string) => {
-  const cIds = id.split('-');
-  const cId = `${cIds[0]}-${cIds[1]}`;
-  return store.$state.cardMap.get(cId) || null;
-};
+  const cIds = id.split('-')
+  const cId = `${cIds[0]}-${cIds[1]}`
+  return store.$state.cardMap.get(cId) || null
+}
 
 watch(
   () => state.data,
   data => {
-    emit('update', data as any);
+    emit('update', data as any)
   },
   { deep: true }
-);
+)
 
 defineExpose({
   setCard: (data?: ICardData) => {
-    state.selectCard = null;
-    state.data = copy(data || defData);
+    state.selectCard = null
+    state.data = copy(data || defData)
     setTimeout(() => {
-      state.selectCard = findCard(state.data.cardId);
-      if (state.data.type === 'chart') state.tab = 'dataSource';
-      else if (state.selectCard?.configForm) state.tab = 'config';
-      else state.tab = 'basic';
-    });
+      state.selectCard = findCard(state.data.cardId)
+      if (state.data.type === 'chart') state.tab = 'dataSource'
+      else if (state.selectCard?.configForm) state.tab = 'config'
+      else state.tab = 'basic'
+    })
   }
-});
+})
 
-const indicateOption = ref<any[]>();
+const indicateOption = ref<any[]>()
 
-const indicateValue = ref();
+const indicateValue = ref()
 const transformForTransfer = data => {
-  const transformed: any = [];
+  const transformed: any = []
   data.forEach(group => {
     group.options.forEach(option => {
       // 在label中添加data_source_type来模拟分组效果
-      const label = `${group.data_source_type} -- ${option.label}`;
+      const label = `${group.data_source_type} -- ${option.label}`
       transformed.push({
         label,
         value: `${group.data_source_type}~${option.label}~${option.key}`
         // 这里可以根据需要添加其他属性，比如 data_type
-      });
-    });
-  });
-  return transformed;
-};
+      })
+    })
+  })
+  return transformed
+}
 const getPanelList = async () => {
   const res = await deviceModelSourceForPanel({
     id: deviceTemplateId?.value || ''
-  });
-  indicateOption.value = transformForTransfer(res?.data || []);
-};
+  })
+  indicateOption.value = transformForTransfer(res?.data || [])
+}
 
 const changeIndicate = value => {
   // eslint-disable-next-line no-param-reassign
-  value = value.filter(item => item !== undefined);
+  value = value.filter(item => item !== undefined)
   if (value.length > state.data.dataSource.sourceNum) {
-    window.NMessage.error($t('common.maxSelect') + state.data.dataSource.sourceNum + $t('common.dataSources'));
+    window.NMessage.error($t('common.maxSelect') + state.data.dataSource.sourceNum + $t('common.dataSources'))
   }
   if (state.data.dataSource.sourceNum === 1) {
-    indicateValue.value = [value[value.length - 1]];
+    indicateValue.value = [value[value.length - 1]]
   } else {
-    indicateValue.value = value.slice(0, state.data.dataSource.sourceNum || 9);
+    indicateValue.value = value.slice(0, state.data.dataSource.sourceNum || 9)
   }
-  state.data.dataSource.deviceCount = indicateValue.value.length;
-  state.data.dataSource.deviceSource = [];
+  state.data.dataSource.deviceCount = indicateValue.value.length
+  state.data.dataSource.deviceSource = []
   // const cardId: any = state.data.cardId;
   indicateValue.value.forEach(item => {
-    const arr = item?.split('~') || [];
+    const arr = item?.split('~') || []
     if (arr.length === 3) {
       const obj = {
         metricsId: arr[2],
         metricsName: arr[1],
         metricsType: arr[0]
-      };
+      }
       // state.data.cardId = cardId + "-" + arr[2];
-      state.data.dataSource.deviceSource.push(obj);
+      state.data.dataSource.deviceSource.push(obj)
     }
-  });
-};
+  })
+}
 onUpdated(() => {
   if (state.data.type === 'chart') {
-    getPanelList();
+    getPanelList()
   }
-  indicateValue.value = [];
+  indicateValue.value = []
   state.data.dataSource.deviceSource.forEach(item => {
     if (item.metricsName && item.metricsType && item.metricsId) {
-      const value = `${item.metricsType}~${item.metricsName}~${item.metricsId}`;
-      indicateValue.value.push(value);
+      const value = `${item.metricsType}~${item.metricsName}~${item.metricsId}`
+      indicateValue.value.push(value)
     }
-  });
-});
+  })
+})
 
 onMounted(() => {
   if (state.data.type === 'chart') {
-    getPanelList();
+    getPanelList()
   }
-});
+})
 </script>
 
 <template>

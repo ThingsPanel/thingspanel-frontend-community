@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { PopoverPlacement } from 'naive-ui';
-import { createReusableTemplate } from '@vueuse/core';
+import { computed } from 'vue'
+import type { PopoverPlacement } from 'naive-ui'
+import { createReusableTemplate } from '@vueuse/core'
 
 defineOptions({
   name: 'ButtonIcon',
   inheritAttrs: false
-});
+})
 
 interface Props {
   /** Button class */
-  class?: string;
+  class?: string
   /** Iconify icon name */
-  icon?: string;
+  icon?: string
   /** Tooltip content */
-  tooltipContent?: string;
+  tooltipContent?: string
   /** Tooltip placement */
-  tooltipPlacement?: PopoverPlacement;
+  tooltipPlacement?: PopoverPlacement
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -24,27 +24,27 @@ const props = withDefaults(defineProps<Props>(), {
   icon: '',
   tooltipContent: '',
   tooltipPlacement: 'bottom'
-});
+})
 
 interface ButtonProps {
-  className: string;
+  className: string
 }
 
-const [DefineButton, Button] = createReusableTemplate<ButtonProps>();
+const [DefineButton, Button] = createReusableTemplate<ButtonProps>()
 
 const cls = computed(() => {
-  let clsStr = props.class;
+  let clsStr = props.class
 
   if (!clsStr.includes('h-')) {
-    clsStr += ' h-36px';
+    clsStr += ' h-36px'
   }
 
   if (!clsStr.includes('text-')) {
-    clsStr += ' text-icon';
+    clsStr += ' text-icon'
   }
 
-  return clsStr;
-});
+  return clsStr
+})
 </script>
 
 <template>

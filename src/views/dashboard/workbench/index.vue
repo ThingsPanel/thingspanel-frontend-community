@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { WorkbenchHeader, WorkbenchMain } from './components';
+import { WorkbenchHeader, WorkbenchMain } from './components'
 </script>
 
 <template>

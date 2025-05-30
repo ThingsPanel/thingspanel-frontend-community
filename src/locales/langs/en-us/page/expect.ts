@@ -14,4 +14,4 @@ export default {
   selectCommandTypePlease: 'Please select command type',
   command: 'Command',
   inputLabelPlease: 'Please enter label'
-};
+}

@@ -4,4 +4,4 @@ export default {
   closeLeft: 'Close Left',
   closeRight: 'Close Right',
   closeAll: 'Close All'
-};
+}

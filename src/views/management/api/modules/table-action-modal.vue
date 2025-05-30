@@ -1,112 +1,112 @@
 <script setup lang="ts">
 // import { defineComponent } from 'vue'
 // import { TreeSelectOption } from 'naive-ui'
-import { computed, reactive, ref, watch } from 'vue';
-import type { FormInst, FormItemRule } from 'naive-ui';
+import { computed, reactive, ref, watch } from 'vue'
+import type { FormInst, FormItemRule } from 'naive-ui'
 // import { genderOptions } from '@/constants'
-import { createRequiredFormRule } from '@/utils/form/rule';
-import { addKey, updateKey } from '@/service/api';
-import { $t } from '@/locales';
-import { useAuthStore } from '@/store/modules/auth';
-const authStore = useAuthStore();
+import { createRequiredFormRule } from '@/utils/form/rule'
+import { addKey, updateKey } from '@/service/api'
+import { $t } from '@/locales'
+import { useAuthStore } from '@/store/modules/auth'
+const authStore = useAuthStore()
 // dom树形结构数据
 export interface Props {
   /** 弹窗可见性 */
-  visible: boolean;
+  visible: boolean
   /** 弹窗类型 add: 新增 edit: 编辑 */
-  type?: 'add' | 'edit';
+  type?: 'add' | 'edit'
   /** 编辑的表格行数据 */
-  editData?: UserManagement.UserKey | null;
+  editData?: UserManagement.UserKey | null
 }
 
-export type ModalType = NonNullable<Props['type']>;
+export type ModalType = NonNullable<Props['type']>
 
-defineOptions({ name: 'TableActionModal' });
+defineOptions({ name: 'TableActionModal' })
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'add',
   editData: null
-});
+})
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void;
+  (e: 'update:visible', visible: boolean): void
 
   /** 点击协议 */
-  (e: 'success'): void;
+  (e: 'success'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const modalVisible = computed({
   get() {
-    return props.visible;
+    return props.visible
   },
   set(visible) {
-    emit('update:visible', visible);
+    emit('update:visible', visible)
   }
-});
+})
 const closeModal = () => {
-  modalVisible.value = false;
-};
+  modalVisible.value = false
+}
 
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
     add: $t('page.manage.api.addApiKey'),
     edit: $t('page.manage.api.editAPi')
-  };
-  return titles[props.type];
-});
+  }
+  return titles[props.type]
+})
 
-const formRef = ref<HTMLElement & FormInst>();
+const formRef = ref<HTMLElement & FormInst>()
 
-type FormModel = Pick<UserManagement.UserKey, 'name' | 'tenant_id'>;
+type FormModel = Pick<UserManagement.UserKey, 'name' | 'tenant_id'>
 
-const formModel = reactive<FormModel>(createDefaultFormModel());
+const formModel = reactive<FormModel>(createDefaultFormModel())
 
 const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
   name: createRequiredFormRule('请输入名称'),
   tenant_id: createRequiredFormRule('')
-};
+}
 
 function createDefaultFormModel(): FormModel {
   return {
     name: '',
     tenant_id: authStore.userInfo.tenant_id as string
-  };
+  }
 }
 
 function handleUpdateFormModel(model: Partial<FormModel>) {
-  Object.assign(formModel, model);
+  Object.assign(formModel, model)
 }
 
 function handleUpdateFormModelByModalType() {
   const handlers: Record<ModalType, () => void> = {
     add: () => {
-      const defaultFormModel = createDefaultFormModel();
-      handleUpdateFormModel(defaultFormModel);
+      const defaultFormModel = createDefaultFormModel()
+      handleUpdateFormModel(defaultFormModel)
     },
     edit: () => {
       if (props.editData) {
-        handleUpdateFormModel(props.editData);
+        handleUpdateFormModel(props.editData)
       }
     }
-  };
+  }
 
-  handlers[props.type]();
+  handlers[props.type]()
 }
 
 async function handleSubmit() {
-  await formRef.value?.validate();
+  await formRef.value?.validate()
 
-  closeModal();
-  let data: any;
+  closeModal()
+  let data: any
   if (props.type === 'add') {
-    data = await addKey(formModel);
+    data = await addKey(formModel)
   } else if (props.type === 'edit') {
-    data = await updateKey(formModel);
+    data = await updateKey(formModel)
   }
   if (!data.error) {
-    emit('success');
+    emit('success')
   }
 }
 
@@ -114,10 +114,10 @@ watch(
   () => props.visible,
   newValue => {
     if (newValue) {
-      handleUpdateFormModelByModalType();
+      handleUpdateFormModelByModalType()
     }
   }
-);
+)
 </script>
 
 <template>

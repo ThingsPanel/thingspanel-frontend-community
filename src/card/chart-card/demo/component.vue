@@ -1,100 +1,100 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import type { ICardData } from '@/components/panel/card';
-import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device';
-import { createLogger } from '@/utils/logger';
-import { icons as iconOptions } from './icons';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import type { ICardData } from '@/components/panel/card'
+import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device'
+import { createLogger } from '@/utils/logger'
+import { icons as iconOptions } from './icons'
 
 // 正式环境可根据api获取
-const detail = ref<string>('');
-const unit = ref<string>('');
+const detail = ref<string>('')
+const unit = ref<string>('')
 const props = defineProps<{
-  card: ICardData;
-}>();
-const fontSize = ref('14px');
-const logger = createLogger('Component');
-const myCard = ref<any | null>(null); // 创建一个ref来引用NCard
-let resizeObserver: ResizeObserver | null = null;
+  card: ICardData
+}>()
+const fontSize = ref('14px')
+const logger = createLogger('Component')
+const myCard = ref<any | null>(null) // 创建一个ref来引用NCard
+let resizeObserver: ResizeObserver | null = null
 
 defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     // Only update detail value when data[metricsId] is not undefined, null or ''
     if (!metricsId || data[metricsId] === undefined || data[metricsId] === null || data[metricsId] === '') {
-      logger.warn(`No data returned from websocket for ${metricsId}`);
-      return;
+      logger.warn(`No data returned from websocket for ${metricsId}`)
+      return
     }
-    detail.value = metricsId ? data[metricsId] : '';
+    detail.value = metricsId ? data[metricsId] : ''
   }
-});
+})
 
 const setSeries: (dataSource) => void = async dataSource => {
-  const arr: any = dataSource;
-  const metricsType = arr.deviceSource ? arr.deviceSource[0]?.metricsType : '';
-  const deviceId = dataSource?.deviceSource ? dataSource?.deviceSource[0]?.deviceId ?? '' : '';
-  const metricsId = arr.deviceSource ? arr.deviceSource[0]?.metricsId : '';
+  const arr: any = dataSource
+  const metricsType = arr.deviceSource ? arr.deviceSource[0]?.metricsType : ''
+  const deviceId = dataSource?.deviceSource ? (dataSource?.deviceSource[0]?.deviceId ?? '') : ''
+  const metricsId = arr.deviceSource ? arr.deviceSource[0]?.metricsId : ''
   if (metricsType === 'telemetry') {
     const querDetail = {
       device_id: deviceId,
       keys: metricsId
-    };
+    }
     if (querDetail.device_id && querDetail.keys) {
-      const detailValue = await telemetryDataCurrentKeys(querDetail);
+      const detailValue = await telemetryDataCurrentKeys(querDetail)
       if (detailValue?.data?.[0]?.unit) {
-        unit.value = detailValue?.data[0]?.unit;
+        unit.value = detailValue?.data[0]?.unit
       }
       if (detailValue?.data?.[0]?.value) {
-        detail.value = detailValue.data[0].value;
+        detail.value = detailValue.data[0].value
       }
     }
   } else if (metricsType === 'attributes') {
     if (deviceId && metricsId) {
-      const res = await getAttributeDataSet({ device_id: deviceId });
-      const attributeData = res.data.find(item => item.key === metricsId);
-      detail.value = attributeData?.value;
+      const res = await getAttributeDataSet({ device_id: deviceId })
+      const attributeData = res.data.find(item => item.key === metricsId)
+      detail.value = attributeData?.value
       if (attributeData?.unit) {
-        unit.value = attributeData?.unit;
+        unit.value = attributeData?.unit
       }
     }
   }
-};
+}
 
 const handleResize = entries => {
   for (const entry of entries) {
     // 根据卡片宽度动态调整字体大小，这里仅为示例逻辑，实际应用中需按需调整
-    let dFontSize = `${entry.contentRect.width / 20}px`; // 假设字体大小与宽度成反比，20为比例系数
+    let dFontSize = `${entry.contentRect.width / 20}px` // 假设字体大小与宽度成反比，20为比例系数
     if (entry.contentRect.width / entry.contentRect.height > 3) {
-      dFontSize = `${(entry.contentRect.width + (entry.contentRect.height * entry.contentRect.width) / entry.contentRect.height / 2) / 20 / (1 + entry.contentRect.width / entry.contentRect.height / 2)}px`;
+      dFontSize = `${(entry.contentRect.width + (entry.contentRect.height * entry.contentRect.width) / entry.contentRect.height / 2) / 20 / (1 + entry.contentRect.width / entry.contentRect.height / 2)}px`
     }
-    fontSize.value = dFontSize;
+    fontSize.value = dFontSize
   }
-};
+}
 
 watch(
   () => props.card?.dataSource?.deviceSource,
   () => {
-    detail.value = '';
-    unit.value = '';
-    setSeries(props.card?.dataSource);
+    detail.value = ''
+    unit.value = ''
+    setSeries(props.card?.dataSource)
   },
   { deep: true }
-);
+)
 
 onMounted(() => {
-  setSeries(props?.card?.dataSource);
+  setSeries(props?.card?.dataSource)
   // 确保DOM已经挂载后再初始化ResizeObserver
   if (myCard.value) {
-    resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(myCard.value);
+    resizeObserver = new ResizeObserver(handleResize)
+    resizeObserver.observe(myCard.value)
   }
-});
+})
 
 onBeforeUnmount(() => {
   // 组件卸载前清除观察器
   if (resizeObserver) {
-    resizeObserver.disconnect();
-    resizeObserver = null;
+    resizeObserver.disconnect()
+    resizeObserver = null
   }
-});
+})
 </script>
 
 <template>

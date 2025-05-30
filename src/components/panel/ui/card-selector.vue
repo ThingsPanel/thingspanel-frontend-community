@@ -1,59 +1,59 @@
 <script lang="ts" setup>
-import { computed, onMounted, onUpdated, reactive, ref } from 'vue';
+import { computed, onMounted, onUpdated, reactive, ref } from 'vue'
 // eslint-disable-next-line vue/prefer-import-from-vue
-import type { UnwrapRefSimple } from '@vue/reactivity';
-import type { ICardData, ICardDefine } from '@/components/panel/card';
-import { PanelCards } from '@/components/panel';
-import { deviceTemplateSelect } from '@/service/api';
-import { $t } from '@/locales';
-import barPoster from '@/card/chart-card/bar/poster.png';
-import curvePoster from '@/card/chart-card/curve/poster.png';
-import demoPoster from '@/card/chart-card/demo/poster.png';
-import digitIndicatorPoster from '@/card/chart-card/digit-indicator/poster.png';
-import digitSetterPoster from '@/card/chart-card/digit-setter/poster.png';
-import dispatchDataPoster from '@/card/chart-card/dispatch-data/poster.png';
-import instrumentPanelPoster from '@/card/chart-card/instrument-panel/poster.png';
-import stateDisplayPoster from '@/card/chart-card/state-display/poster.png';
-import switchPoster from '@/card/chart-card/switch/poster.png';
-import tablePoster from '@/card/chart-card/table/poster.png';
-import textInfoPoster from '@/card/chart-card/text-info/poster.png';
-import videoPlayerPoster from '@/card/chart-card/video-player/poster.png';
+import type { UnwrapRefSimple } from '@vue/reactivity'
+import type { ICardData, ICardDefine } from '@/components/panel/card'
+import { PanelCards } from '@/components/panel'
+import { deviceTemplateSelect } from '@/service/api'
+import { $t } from '@/locales'
+import barPoster from '@/card/chart-card/bar/poster.png'
+import curvePoster from '@/card/chart-card/curve/poster.png'
+import demoPoster from '@/card/chart-card/demo/poster.png'
+import digitIndicatorPoster from '@/card/chart-card/digit-indicator/poster.png'
+import digitSetterPoster from '@/card/chart-card/digit-setter/poster.png'
+import dispatchDataPoster from '@/card/chart-card/dispatch-data/poster.png'
+import instrumentPanelPoster from '@/card/chart-card/instrument-panel/poster.png'
+import stateDisplayPoster from '@/card/chart-card/state-display/poster.png'
+import switchPoster from '@/card/chart-card/switch/poster.png'
+import tablePoster from '@/card/chart-card/table/poster.png'
+import textInfoPoster from '@/card/chart-card/text-info/poster.png'
+import videoPlayerPoster from '@/card/chart-card/video-player/poster.png'
 
 const props = defineProps<{
-  class?: string | undefined;
-  data?: ICardData | null;
-}>();
-const tabValue = ref('builtin');
+  class?: string | undefined
+  data?: ICardData | null
+}>()
+const tabValue = ref('builtin')
 const tabList = [
   { tab: $t('card.systemTab'), type: 'builtin' },
   { tab: $t('card.deviceTab'), type: 'device' },
   { tab: $t('card.pluginTab'), type: 'plugin' },
   { tab: $t('card.chartTab'), type: 'chart' }
-];
+]
 
-const priorityCardIds = ref(['chart-demo', 'chart-digit']);
+const priorityCardIds = ref(['chart-demo', 'chart-digit'])
 const sortedPanelCards = computed(() => {
-  const result = {};
+  const result = {}
   Object.keys(PanelCards).forEach(key => {
     result[key] = [...PanelCards[key]].sort((a, b) => {
-      const indexA = priorityCardIds.value.indexOf(a.id);
-      const indexB = priorityCardIds.value.indexOf(b.id);
-      if (indexA === -1 && indexB === -1) return 0;
-      if (indexA === -1) return 1;
-      if (indexB === -1) return -1;
-      return indexA - indexB;
-    });
-  });
-  return result;
-});
+      const indexA = priorityCardIds.value.indexOf(a.id)
+      const indexB = priorityCardIds.value.indexOf(b.id)
+      if (indexA === -1 && indexB === -1) return 0
+      if (indexA === -1) return 1
+      if (indexB === -1) return -1
+      return indexA - indexB
+    })
+  })
+  return result
+})
 
 const state = reactive({
   curCardData: null as null | Record<string, any>
-});
+})
 // $emit是内置变量 不可以使用$emit 作为变量名
 const emit = defineEmits<{
-  (e: 'selectCard', value: any): void;
-}>();
+  (e: 'selectCard', value: any): void
+}>()
 
 const selectCard = item => {
   state.curCardData = {
@@ -67,43 +67,43 @@ const selectCard = item => {
       systemSource: [{}],
       deviceSource: [{}]
     }
-  };
-  emit('selectCard', JSON.parse(JSON.stringify(state.curCardData)));
-};
+  }
+  emit('selectCard', JSON.parse(JSON.stringify(state.curCardData)))
+}
 const getImagePath = item => {
   const cardType = item.data.cardId.match(
     /bar|curve|demo|digit|digitsetter|dispatch|humidity|instrument-panel|state|switch|table|temprature|text|videoplayer/
-  );
+  )
 
   if (!cardType) {
-    return demoPoster;
+    return demoPoster
   }
 
   if (cardType[0] === 'curve') {
-    return curvePoster;
+    return curvePoster
   } else if (cardType[0] === 'switch') {
-    return switchPoster;
+    return switchPoster
   } else if (cardType[0] === 'videoplayer') {
-    return videoPlayerPoster;
+    return videoPlayerPoster
   } else if (cardType[0] === 'bar') {
-    return barPoster;
+    return barPoster
   } else if (cardType[0] === 'digit') {
-    return digitIndicatorPoster;
+    return digitIndicatorPoster
   } else if (cardType[0] === 'digitsetter') {
-    return digitSetterPoster;
+    return digitSetterPoster
   } else if (cardType[0] === 'dispatch') {
-    return dispatchDataPoster;
+    return dispatchDataPoster
   } else if (cardType[0] === 'instrument-panel') {
-    return instrumentPanelPoster;
+    return instrumentPanelPoster
   } else if (cardType[0] === 'state') {
-    return stateDisplayPoster;
+    return stateDisplayPoster
   } else if (cardType[0] === 'table') {
-    return tablePoster;
+    return tablePoster
   } else if (cardType[0] === 'text') {
-    return textInfoPoster;
+    return textInfoPoster
   }
-  return demoPoster;
-};
+  return demoPoster
+}
 const selectFinalCard = (item: ICardDefine) => {
   state.curCardData = {
     cardId: item.id,
@@ -117,72 +117,72 @@ const selectFinalCard = (item: ICardDefine) => {
       systemSource: [{}],
       deviceSource: [{}]
     }
-  };
-  emit('selectCard', JSON.parse(JSON.stringify(state.curCardData)));
-};
+  }
+  emit('selectCard', JSON.parse(JSON.stringify(state.curCardData)))
+}
 
-const deviceOptions = ref<UnwrapRefSimple<any>[]>();
-const webChartConfig = ref<any>([]);
-const availableCardIds = ref<string[]>([]);
-const deviceSelectId = ref<string | null>(null);
+const deviceOptions = ref<UnwrapRefSimple<any>[]>()
+const webChartConfig = ref<any>([])
+const availableCardIds = ref<string[]>([])
+const deviceSelectId = ref<string | null>(null)
 
 const handleTabUpdate = (value: string) => {
   if (state.curCardData) {
-    state.curCardData.cardId = '';
+    state.curCardData.cardId = ''
   }
-  availableCardIds.value = [];
-  webChartConfig.value = [];
-  deviceSelectId.value = null;
-  tabValue.value = value;
-  console.log('[handleTabUpdate] deviceSelectId set to:', deviceSelectId.value);
-};
+  availableCardIds.value = []
+  webChartConfig.value = []
+  deviceSelectId.value = null
+  tabValue.value = value
+  console.log('[handleTabUpdate] deviceSelectId set to:', deviceSelectId.value)
+}
 
 const getDeviceOptions = async () => {
-  const { data, error } = await deviceTemplateSelect();
+  const { data, error } = await deviceTemplateSelect()
   if (!error && data) {
-    deviceOptions.value = [...data].reverse();
+    deviceOptions.value = [...data].reverse()
   } else {
-    deviceOptions.value = [];
+    deviceOptions.value = []
   }
-};
+}
 const collectData = (v, o) => {
   if (o?.web_chart_config) {
-    webChartConfig.value = JSON.parse(o.web_chart_config);
+    webChartConfig.value = JSON.parse(o.web_chart_config)
     availableCardIds.value = webChartConfig.value.map(item => {
       item.data.dataSource.deviceSource.forEach(item1 => {
-        item1.deviceId = v;
-      });
+        item1.deviceId = v
+      })
 
-      return item.data.cardId;
-    });
+      return item.data.cardId
+    })
   }
-};
+}
 
 onUpdated(() => {
   if (!(props?.data?.dataSource?.deviceSource && props?.data?.dataSource?.deviceSource?.length > 0)) {
-    availableCardIds.value = [];
+    availableCardIds.value = []
   }
-});
+})
 
 onMounted(() => {
-  const initialDeviceId = props?.data?.dataSource?.deviceSource?.[0]?.deviceId;
+  const initialDeviceId = props?.data?.dataSource?.deviceSource?.[0]?.deviceId
   if (initialDeviceId) {
-    deviceSelectId.value = initialDeviceId;
-    console.log('[onMounted] deviceSelectId set from props:', deviceSelectId.value);
+    deviceSelectId.value = initialDeviceId
+    console.log('[onMounted] deviceSelectId set from props:', deviceSelectId.value)
     collectData(
       deviceSelectId.value,
       deviceOptions.value?.find(item => item.device_id === deviceSelectId.value)
-    );
+    )
   } else {
-    console.log('[onMounted] No props.data, deviceSelectId remains:', deviceSelectId.value);
+    console.log('[onMounted] No props.data, deviceSelectId remains:', deviceSelectId.value)
   }
   if (!deviceSelectId.value) {
-    availableCardIds.value = [];
+    availableCardIds.value = []
   }
 
-  tabValue.value = props?.data?.type || 'builtin';
-  getDeviceOptions();
-});
+  tabValue.value = props?.data?.type || 'builtin'
+  getDeviceOptions()
+})
 </script>
 
 <template>
@@ -211,9 +211,9 @@ onMounted(() => {
                 @update:value="
                   (value, option) => {
                     if (state.curCardData) {
-                      state.curCardData.cardId = '';
+                      state.curCardData.cardId = ''
                     }
-                    collectData(value, option);
+                    collectData(value, option)
                   }
                 "
               ></NSelect>

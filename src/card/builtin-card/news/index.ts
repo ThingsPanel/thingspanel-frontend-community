@@ -1,7 +1,7 @@
-import { defineAsyncComponent } from 'vue';
-import type { ICardDefine } from '@/components/panel/card';
-import { $t } from '@/locales';
-import poster from './news.png';
+import { defineAsyncComponent } from 'vue'
+import type { ICardDefine } from '@/components/panel/card'
+import { $t } from '@/locales'
+import poster from './news.png'
 
 export default {
   id: 'news-num',
@@ -17,4 +17,4 @@ export default {
       minW: 2
     }
   }
-} as ICardDefine;
+} as ICardDefine

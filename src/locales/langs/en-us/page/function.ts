@@ -23,4 +23,4 @@ export default {
     routeParam: 'Route Parameter',
     backTab: 'Back to function_tab'
   }
-};
+}

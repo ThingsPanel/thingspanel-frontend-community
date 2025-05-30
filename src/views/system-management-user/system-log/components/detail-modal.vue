@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { defineExpose, ref } from 'vue';
-import moment from 'moment';
-import { $t } from '@/locales';
+import { defineExpose, ref } from 'vue'
+import moment from 'moment'
+import { $t } from '@/locales'
 
-const modalVisible = ref(false);
+const modalVisible = ref(false)
 const detailInfo = ref({
   id: '',
   email: '',
@@ -15,18 +15,18 @@ const detailInfo = ref({
   name: '',
   path: '',
   created_at: ''
-});
+})
 
 const show = info => {
-  modalVisible.value = true;
-  detailInfo.value = info;
-};
+  modalVisible.value = true
+  detailInfo.value = info
+}
 const closeModal = () => {
-  modalVisible.value = false;
-};
+  modalVisible.value = false
+}
 defineExpose({
   show
-});
+})
 </script>
 
 <template>

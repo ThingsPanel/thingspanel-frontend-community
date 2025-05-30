@@ -1,18 +1,18 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import { NButton } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import moment from 'moment';
-import { getNotificationHistoryList } from '@/service/api/notification';
-import { notificationOptions } from '@/constants/business';
-import { $t } from '@/locales';
-import { formatDateTime } from '@/utils/common/datetime';
-import { useLoading } from '~/packages/hooks';
+import { computed, getCurrentInstance, reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import { NButton } from 'naive-ui'
+import type { DataTableColumns, PaginationProps } from 'naive-ui'
+import moment from 'moment'
+import { getNotificationHistoryList } from '@/service/api/notification'
+import { notificationOptions } from '@/constants/business'
+import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
+import { useLoading } from '~/packages/hooks'
 
-const { loading, startLoading, endLoading } = useLoading(false);
+const { loading, startLoading, endLoading } = useLoading(false)
 
-const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()]);
+const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()])
 
 const queryParams = reactive({
   notification_type: '',
@@ -20,21 +20,21 @@ const queryParams = reactive({
   send_target: '',
   send_time_start: '',
   send_time_end: ''
-});
-const total = ref(0);
+})
+const total = ref(0)
 
-const tableData = ref<Api.Alarm.NotificationHistoryList[]>([]);
+const tableData = ref<Api.Alarm.NotificationHistoryList[]>([])
 
 function setTableData(data: Api.Alarm.NotificationHistoryList[] | []) {
-  tableData.value = data || [];
+  tableData.value = data || []
 }
 function pickerChange() {
   if (range.value && range.value.length > 0) {
-    queryParams.send_time_start = moment(range.value[0]).format('YYYY-MM-DDTHH:mm:ssZ');
-    queryParams.send_time_end = moment(range.value[1]).format('YYYY-MM-DDTHH:mm:ssZ');
+    queryParams.send_time_start = moment(range.value[0]).format('YYYY-MM-DDTHH:mm:ssZ')
+    queryParams.send_time_end = moment(range.value[1]).format('YYYY-MM-DDTHH:mm:ssZ')
   } else {
-    queryParams.send_time_start = '';
-    queryParams.send_time_end = '';
+    queryParams.send_time_start = ''
+    queryParams.send_time_end = ''
   }
 }
 
@@ -44,16 +44,16 @@ const pagination: PaginationProps = reactive({
   showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    pagination.page = page;
+    pagination.page = page
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
+    pagination.pageSize = pageSize
+    pagination.page = 1
   }
-});
+})
 
 const getTableData = async () => {
-  startLoading();
+  startLoading()
   const prams = {
     page: pagination.page || 1,
     page_size: pagination.pageSize || 10,
@@ -61,14 +61,14 @@ const getTableData = async () => {
     send_target: queryParams.send_target,
     send_time_start: queryParams.send_time_start,
     send_time_stop: queryParams.send_time_end
-  };
-  const res = await getNotificationHistoryList(prams);
-  if (res?.data) {
-    setTableData(res?.data.list || []);
-    total.value = res.data.total || 0;
   }
-  endLoading();
-};
+  const res = await getNotificationHistoryList(prams)
+  if (res?.data) {
+    setTableData(res?.data.list || [])
+    total.value = res.data.total || 0
+  }
+  endLoading()
+}
 
 const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   {
@@ -77,7 +77,7 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
     align: 'left',
     minWidth: '180px',
     render: (row: any) => {
-      return formatDateTime(row.send_time);
+      return formatDateTime(row.send_time)
     }
   },
   {
@@ -105,16 +105,16 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
     minWidth: '140px',
     align: 'left'
   }
-]) as Ref<DataTableColumns<DataService.Data>>;
+]) as Ref<DataTableColumns<DataService.Data>>
 
 function handleQuery() {
-  getTableData();
+  getTableData()
 }
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
-getTableData();
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
+getTableData()
 </script>
 
 <template>
@@ -141,7 +141,7 @@ getTableData();
             />
           </NFormItem>
           <NFormItem path="send_target">
-            <NInput  clearable v-model:value="queryParams.send_target" :placeholder="$t('generate.recipient')" />
+            <NInput v-model:value="queryParams.send_target" clearable :placeholder="$t('generate.recipient')" />
           </NFormItem>
           <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
         </NForm>

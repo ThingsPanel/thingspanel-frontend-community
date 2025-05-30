@@ -40,4 +40,4 @@ export default {
   sendTime: 'Send Time',
   lastUpdate: 'Last Update',
   message: 'Message'
-};
+}

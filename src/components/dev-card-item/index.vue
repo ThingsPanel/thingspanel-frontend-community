@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance } from 'vue'
-import { NCard,NEllipsis } from 'naive-ui'
+import { NCard, NEllipsis } from 'naive-ui'
 
 interface Props {
   /** 卡片主标题 */
@@ -48,19 +48,18 @@ const emit = defineEmits<{
 // 计算状态点颜色
 const statusColor = computed(() => {
   if (props.statusActive === undefined) return undefined
-  
+
   // 根据状态类型和激活状态返回对应颜色
   const colorMap = {
     success: props.statusActive ? '#52c41a' : '#d9d9d9',
-    warning: props.statusActive ? '#faad14' : '#d9d9d9', 
+    warning: props.statusActive ? '#faad14' : '#d9d9d9',
     error: props.statusActive ? '#ff4d4f' : '#d9d9d9',
     info: props.statusActive ? '#1890ff' : '#d9d9d9',
     default: props.statusActive ? '#52c41a' : '#d9d9d9'
   }
-  
+
   return colorMap[props.statusType]
 })
-
 
 // 检查是否有监听器的工具函数
 const hasListener = (eventName: string) => {
@@ -116,7 +115,6 @@ const handleSubtitleClick = (e: Event) => {
   }
 }
 
-
 const handleTopRightIconClick = (e: Event) => {
   // 只有在需要处理点击时才阻止冒泡
   if (shouldHandleTopRightIconClick.value) {
@@ -141,31 +139,23 @@ const handleTopRightIconClick = (e: Event) => {
         <!-- 左侧标题区域 -->
         <div class="title-section">
           <!-- 主标题行：标题文本 + 状态点 -->
-          <div 
-            class="title-row" 
-            :class="{ 'clickable': shouldHandleTitleClick }"
-            @click="handleTitleClick"
-          >
+          <div class="title-row" :class="{ clickable: shouldHandleTitleClick }" @click="handleTitleClick">
             <div class="title-content">
               <!-- 主标题，支持单行省略 -->
               <NEllipsis class="card-title" :tooltip="false">
                 {{ title }}
               </NEllipsis>
-              
+
               <!-- 状态点，紧跟标题显示 -->
-              <div
-                v-if="statusActive !== undefined"
-                class="status-dot"
-                :style="{ backgroundColor: statusColor }"
-              />
+              <div v-if="statusActive !== undefined" class="status-dot" :style="{ backgroundColor: statusColor }" />
             </div>
           </div>
-          
+
           <!-- 副标题行：图标 + 副标题文本 -->
-          <div 
-            v-if="subtitle || $slots['subtitle-icon']" 
+          <div
+            v-if="subtitle || $slots['subtitle-icon']"
             class="subtitle-row"
-            :class="{ 'clickable': shouldHandleSubtitleClick }"
+            :class="{ clickable: shouldHandleSubtitleClick }"
             @click="handleSubtitleClick"
           >
             <!-- 副标题图标插槽，顶部对齐 -->
@@ -174,60 +164,47 @@ const handleTopRightIconClick = (e: Event) => {
             </div>
             <!-- 副标题文本，支持两行省略 -->
             <div v-if="subtitle" class="subtitle-text-container">
-              <NEllipsis 
-                :line-clamp="2" 
-                class="subtitle-text"
-                :tooltip="false"
-              >
+              <NEllipsis :line-clamp="2" class="subtitle-text" :tooltip="false">
                 {{ subtitle }}
               </NEllipsis>
             </div>
           </div>
         </div>
-        
+
         <!-- 右上角图标区域 - 支持插槽自定义 -->
         <div class="indicator-section">
-          <div 
+          <div
             class="top-right-icon-container"
-            :class="{ 'clickable': shouldHandleTopRightIconClick }"
+            :class="{ clickable: shouldHandleTopRightIconClick }"
             @click="handleTopRightIconClick"
           >
             <!-- 右上角图标插槽 -->
-            <slot name="top-right-icon"> </slot>
+            <slot name="top-right-icon"></slot>
           </div>
         </div>
       </div>
-      
+
       <!-- 卡片内容区域：自定义内容插槽 - 这个区域会自动填充剩余空间 -->
       <div v-if="$slots.default" class="card-content">
         <slot />
       </div>
-      
+
       <!-- 卡片底部 - 固定在底部 -->
-      <div 
-        v-if="footerText || $slots['footer-icon'] || $slots.footer" 
-        class="card-footer"
-      >
+      <div v-if="footerText || $slots['footer-icon'] || $slots.footer" class="card-footer">
         <!-- 底部左侧：图标 + 自定义内容 -->
         <div class="footer-left">
           <div class="footer-icon-container">
             <!-- 如果没有提供footer-icon插槽，显示默认设备图标 -->
             <slot name="footer-icon">
               <!-- 默认设备图标 SVG -->
-              <svg 
-                width="18" 
-                height="18" 
-                viewBox="0 0 24 24" 
-                fill="#666"
-                class="default-device-icon"
-              >
-                <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="#666" class="default-device-icon">
+                <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
               </svg>
             </slot>
           </div>
           <slot name="footer" />
         </div>
-        
+
         <!-- 底部右侧：文本内容（可以是时间戳或其他文本） -->
         <div v-if="footerText" class="footer-right">
           <NEllipsis class="footer-text" :tooltip="false">
@@ -248,7 +225,6 @@ const handleTopRightIconClick = (e: Event) => {
   position: relative;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
- 
 }
 
 /* 悬停效果 - 调整为与用户提供的HTML示例一致 (无特定transform, box-shadow, border-color变化) */
@@ -322,7 +298,6 @@ const handleTopRightIconClick = (e: Event) => {
   line-height: 1.4;
   min-width: 0;
   transition: color 0.2s ease;
-
 }
 
 .status-dot {
@@ -388,7 +363,9 @@ const handleTopRightIconClick = (e: Event) => {
   width: 24px;
   height: 24px;
   border-radius: 6px;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background-color 0.2s ease;
 }
 
 /* 只有可点击的右上角图标才显示指针和悬停效果 */

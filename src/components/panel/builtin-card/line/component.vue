@@ -1,23 +1,23 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
-import type { NumberAnimationInst } from 'naive-ui';
-import * as echarts from 'echarts';
-import { tenant } from '@/service/api';
-import { $t } from '@/locales';
-const numberAnimationInstRef = ref<NumberAnimationInst | null>(null);
+import { ref } from 'vue'
+import type { NumberAnimationInst } from 'naive-ui'
+import * as echarts from 'echarts'
+import { tenant } from '@/service/api'
+import { $t } from '@/locales'
+const numberAnimationInstRef = ref<NumberAnimationInst | null>(null)
 
 // 获取 echats 要渲染的dom
-const equipment = ref(null);
+const equipment = ref(null)
 
 // 定义响应数据的引用类型
-const tenantNum = ref<number>(0);
-const user_added_yesterday = ref<number>(0);
-const user_added_month = ref<number>(0);
-let user_list_month: number[] = [];
+const tenantNum = ref<number>(0)
+const user_added_yesterday = ref<number>(0)
+const user_added_month = ref<number>(0)
+let user_list_month: number[] = []
 
 const init: () => void = () => {
   // const myecharts = echarts.init(box.value);
-  const myecharts = echarts.init(equipment.value, null, { renderer: 'svg' });
+  const myecharts = echarts.init(equipment.value, null, { renderer: 'svg' })
   const option = {
     title: {
       show: false
@@ -57,14 +57,14 @@ const init: () => void = () => {
         data: user_list_month
       }
     ]
-  };
-  const dom = document.getElementById('equipment')!;
+  }
+  const dom = document.getElementById('equipment')!
   const ro = new ResizeObserver(_entries => {
-    myecharts.resize();
-  });
-  ro.observe(dom);
+    myecharts.resize()
+  })
+  ro.observe(dom)
   // 监听窗口大小变化
-  myecharts.setOption(option);
+  myecharts.setOption(option)
   // window.onresize = function () {
   //   // 使用刚指定的配置项和数据显示图表。
   //   myecharts.setOption(option);
@@ -77,29 +77,29 @@ const init: () => void = () => {
   //   console.log(params.name) // 打印被点击的数据名称
   //   // 这里可以执行更多监听逻辑
   // })
-};
+}
 
 // 获取数据
 const getData: () => void = async () => {
   try {
-    const response: { data: any } = await tenant();
-    tenantNum.value = response.data.user_total;
-    user_added_yesterday.value = response.data.user_added_yesterday;
-    user_added_month.value = response.data.user_added_month;
+    const response: { data: any } = await tenant()
+    tenantNum.value = response.data.user_total
+    user_added_yesterday.value = response.data.user_added_yesterday
+    user_added_month.value = response.data.user_added_month
     user_list_month = response.data.user_list_month.map((item: any) => {
-      return item.num;
-    });
+      return item.num
+    })
     if (equipment.value) {
-      init();
+      init()
     }
   } catch (error) {
     // 错误处理逻辑
-    console.error('Error fetching data:', error);
+    console.error('Error fetching data:', error)
   }
-};
+}
 
 // 调用 getData 函数
-getData();
+getData()
 </script>
 
 <template>

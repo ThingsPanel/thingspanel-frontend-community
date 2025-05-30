@@ -2,7 +2,7 @@
 declare namespace StorageType {
   interface Session {
     /** The theme color */
-    themeColor: string;
+    themeColor: string
     // /**
     //  * the theme settings
     //  */
@@ -11,28 +11,28 @@ declare namespace StorageType {
 
   interface Local {
     /** The i18n language */
-    lang: App.I18n.LangType;
+    lang: App.I18n.LangType
     /** The token */
-    token: string;
+    token: string
     /** The refresh token */
-    refreshToken: string;
+    refreshToken: string
     /** The expires in time */
-    token_expires_in: string;
+    token_expires_in: string
     /** The user info */
-    userInfo: Api.Auth.UserInfo;
+    userInfo: Api.Auth.UserInfo
     /** The theme color */
-    themeColor: string;
+    themeColor: string
     /** The theme settings */
-    themeSettings: App.Theme.ThemeSetting;
+    themeSettings: App.Theme.ThemeSetting
     /**
      * The override theme flags
      *
      * The value is the build time of the project
      */
-    overrideThemeFlag: string;
+    overrideThemeFlag: string
     /** The global tabs */
-    globalTabs: App.Global.Tab[];
+    globalTabs: App.Global.Tab[]
     /** loading logo */
-    logoLoading: string;
+    logoLoading: string
   }
 }

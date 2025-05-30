@@ -709,7 +709,7 @@ import {
   WineOutline,
   Woman,
   WomanOutline
-} from '@vicons/ionicons5';
+} from '@vicons/ionicons5'
 
 export const icons = {
   Accessibility,
@@ -1422,4 +1422,4 @@ export const icons = {
   WineOutline,
   WomanOutline,
   Woman
-};
+}

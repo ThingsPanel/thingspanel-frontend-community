@@ -263,7 +263,7 @@ export default {
     title: 'Latest Reported Data',
     refreshing: 'Refreshing',
     startRefresh: 'Start Refresh',
-    noTelemetry: 'No telemetry data',
+    noTelemetry: 'No telemetry data'
   },
   operationGuideCard: {
     guideItems: {
@@ -334,7 +334,7 @@ export default {
   },
   tenantCount: {
     title: 'Tenant Count',
-    unit: '' 
+    unit: ''
   },
   tenantChart: {
     title: 'Monthly User Growth',
@@ -357,5 +357,5 @@ export default {
   templateKey: 'Template Key',
   templateSecret: 'Template Secret',
   templateNotConfigured: '-Not Configured-',
-  loadDeviceConfigFailed: 'Failed to load device configuration list',
-};
+  loadDeviceConfigFailed: 'Failed to load device configuration list'
+}

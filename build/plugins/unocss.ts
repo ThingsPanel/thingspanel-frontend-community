@@ -1,16 +1,16 @@
-import process from 'node:process';
-import path from 'node:path';
-import unocss from '@unocss/vite';
-import presetIcons from '@unocss/preset-icons';
-import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders';
+import process from 'node:process'
+import path from 'node:path'
+import unocss from '@unocss/vite'
+import presetIcons from '@unocss/preset-icons'
+import { FileSystemIconLoader } from '@iconify/utils/lib/loader/node-loaders'
 
 export function setupUnocss(viteEnv: Env.ImportMeta) {
-  const { VITE_ICON_PREFIX, VITE_ICON_LOCAL_PREFIX } = viteEnv;
+  const { VITE_ICON_PREFIX, VITE_ICON_LOCAL_PREFIX } = viteEnv
 
-  const localIconPath = path.join(process.cwd(), 'src/assets/svg-icon');
+  const localIconPath = path.join(process.cwd(), 'src/assets/svg-icon')
 
   /** The name of the local icon collection */
-  const collectionName = VITE_ICON_LOCAL_PREFIX.replace(`${VITE_ICON_PREFIX}-`, '');
+  const collectionName = VITE_ICON_LOCAL_PREFIX.replace(`${VITE_ICON_PREFIX}-`, '')
 
   return unocss({
     presets: [
@@ -28,5 +28,5 @@ export function setupUnocss(viteEnv: Env.ImportMeta) {
         warn: true
       })
     ]
-  });
+  })
 }

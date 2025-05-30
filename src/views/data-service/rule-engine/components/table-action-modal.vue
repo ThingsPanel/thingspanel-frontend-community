@@ -1,66 +1,66 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
-import type { Ref } from 'vue';
-import type { DataTableColumns, FormInst, FormItemRule, SelectOption } from 'naive-ui';
-import { dataServiceFlagOptions, dataServiceSignModeOptions } from '@/constants/business';
-import { createRequiredFormRule } from '@/utils/form/rule';
-import { $t } from '@/locales';
-import { createLogger } from '@/utils/logger';
-const logger = createLogger('TableAction');
+import { computed, reactive, ref, watch } from 'vue'
+import type { Ref } from 'vue'
+import type { DataTableColumns, FormInst, FormItemRule, SelectOption } from 'naive-ui'
+import { dataServiceFlagOptions, dataServiceSignModeOptions } from '@/constants/business'
+import { createRequiredFormRule } from '@/utils/form/rule'
+import { $t } from '@/locales'
+import { createLogger } from '@/utils/logger'
+const logger = createLogger('TableAction')
 export interface Props {
   /** 弹窗可见性 */
-  visible: boolean;
+  visible: boolean
   /** 弹窗类型 add: 新增 edit: 编辑 */
-  type?: 'add' | 'edit';
+  type?: 'add' | 'edit'
   /** 编辑的表格行数据 */
-  editData?: DataService.Data | null;
+  editData?: DataService.Data | null
 }
 
-export type ModalType = NonNullable<Props['type']>;
+export type ModalType = NonNullable<Props['type']>
 
-defineOptions({ name: 'TableActionModal' });
+defineOptions({ name: 'TableActionModal' })
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'add',
   editData: null
-});
+})
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void;
+  (e: 'update:visible', visible: boolean): void
 
-  (e: 'getTableData'): void;
+  (e: 'getTableData'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const modalVisible = computed({
   get() {
-    return props.visible;
+    return props.visible
   },
   set(visible) {
-    emit('update:visible', visible);
+    emit('update:visible', visible)
   }
-});
+})
 const closeModal = () => {
-  modalVisible.value = false;
-};
+  modalVisible.value = false
+}
 
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
     add: $t('generate.addRule'),
     edit: $t('generate.editRule')
-  };
-  return titles[props.type];
-});
+  }
+  return titles[props.type]
+})
 
-const formRef = ref<HTMLElement & FormInst>();
+const formRef = ref<HTMLElement & FormInst>()
 
 type FormModel = Pick<
   DataService.Data,
   'name' | 'signMode' | 'ip' | 'flag' | 'desc' | 'appKey' | 'dataInterval' | 'SQL' | 'status' | 'SQLWritingAid'
->;
+>
 
-const formModel = reactive<FormModel>(createDefaultFormModel());
+const formModel = reactive<FormModel>(createDefaultFormModel())
 
 const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
   name: createRequiredFormRule($t('generate.ruleName')),
@@ -73,7 +73,7 @@ const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
   SQL: createRequiredFormRule($t('generate.dataInterval')),
   status: createRequiredFormRule($t('generate.selectStatus')),
   SQLWritingAid: createRequiredFormRule($t('generate.selectStatus'))
-};
+}
 
 function createDefaultFormModel(): FormModel {
   return {
@@ -87,44 +87,44 @@ function createDefaultFormModel(): FormModel {
     SQL: null,
     status: null,
     SQLWritingAid: null
-  };
+  }
 }
 
 function handleUpdateFormModel(model: Partial<FormModel>) {
-  Object.assign(formModel, model);
+  Object.assign(formModel, model)
 }
 
 function handleUpdateFormModelByModalType() {
   const handlers: Record<ModalType, () => void> = {
     add: () => {
-      const defaultFormModel = createDefaultFormModel();
-      handleUpdateFormModel(defaultFormModel);
+      const defaultFormModel = createDefaultFormModel()
+      handleUpdateFormModel(defaultFormModel)
     },
     edit: () => {
       if (props.editData) {
-        handleUpdateFormModel(props.editData);
+        handleUpdateFormModel(props.editData)
       }
     }
-  };
+  }
 
-  handlers[props.type]();
+  handlers[props.type]()
 }
 
 async function handleSubmit() {
-  await formRef.value?.validate();
+  await formRef.value?.validate()
   const titles: Record<ModalType, string> = {
     add: $t('generate.add'),
     edit: $t('common.edit')
-  };
-  window.$message?.success(`${titles[props.type]}${$t('custom.devicePage.success')}!`);
-  emit('getTableData');
-  closeModal();
+  }
+  window.$message?.success(`${titles[props.type]}${$t('custom.devicePage.success')}!`)
+  emit('getTableData')
+  closeModal()
 }
 
 interface Columns {
-  name: string;
-  dataType: string;
-  annotation: string;
+  name: string
+  dataType: string
+  annotation: string
 }
 
 const columns: Ref<DataTableColumns<Columns>> = ref([
@@ -143,27 +143,27 @@ const columns: Ref<DataTableColumns<Columns>> = ref([
     title: $t('generate.annotation'),
     align: 'left'
   }
-]) as Ref<DataTableColumns<Columns>>;
+]) as Ref<DataTableColumns<Columns>>
 
-const tableData = ref<Columns[]>([]);
+const tableData = ref<Columns[]>([])
 
 function setTableData(data: Columns[]) {
-  tableData.value = data;
+  tableData.value = data
 }
 
 function handleChangeFlag(value: string, option: SelectOption) {
-  logger.info(value, option);
-  setTableData([{ name: 'ceshi', dataType: 'ceshi', annotation: 'ceshi' }]);
+  logger.info(value, option)
+  setTableData([{ name: 'ceshi', dataType: 'ceshi', annotation: 'ceshi' }])
 }
 
 watch(
   () => props.visible,
   newValue => {
     if (newValue) {
-      handleUpdateFormModelByModalType();
+      handleUpdateFormModelByModalType()
     }
   }
-);
+)
 </script>
 
 <template>

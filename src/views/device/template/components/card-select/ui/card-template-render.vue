@@ -1,29 +1,29 @@
 <script setup lang="ts">
-import type { ICardData, ICardView } from '@/components/panel/card';
-import './gird.css';
-import { $t } from '@/locales';
-import CardTemplateItem from './card-template-item.vue';
+import type { ICardData, ICardView } from '@/components/panel/card'
+import './gird.css'
+import { $t } from '@/locales'
+import CardTemplateItem from './card-template-item.vue'
 
 // This file is not used any more, but I keep it here for reference.
 // Standard card render component is used instead.
 
 const props = defineProps<{
-  layout: ICardView[];
-  isApp: boolean;
-}>();
+  layout: ICardView[]
+  isApp: boolean
+}>()
 
 const emit = defineEmits<{
-  (e: 'update:layout', layout: ICardView[] | any): void;
-  (e: 'edit', view: ICardView): void;
+  (e: 'update:layout', layout: ICardView[] | any): void
+  (e: 'edit', view: ICardView): void
   // (e: 'remove', view: ICardView): void;
-}>();
+}>()
 
 defineExpose({
   addCard: (data: ICardData) => {
-    const layout = props.layout;
-    const foundIndex = layout.findIndex(item => item?.data?.cardId === data.cardId);
+    const layout = props.layout
+    const foundIndex = layout.findIndex(item => item?.data?.cardId === data.cardId)
     if (foundIndex !== -1) {
-      layout[foundIndex].data = data;
+      layout[foundIndex].data = data
     } else {
       layout.push({
         x: 0,
@@ -32,18 +32,18 @@ defineExpose({
         h: 0,
         i: 0,
         data
-      });
+      })
     }
-    emit('update:layout', [...layout]);
+    emit('update:layout', [...layout])
   }
-});
+})
 
 const removeLayout = (i: any) => {
   emit(
     'update:layout',
     props.layout.filter(item => item.data?.cardId !== i)
-  );
-};
+  )
+}
 </script>
 
 <template>

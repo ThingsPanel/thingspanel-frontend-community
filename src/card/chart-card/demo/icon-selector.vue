@@ -1,31 +1,31 @@
 <script>
-import { ref } from 'vue';
+import { ref } from 'vue'
 // import { $t } from '@/locales';
-import { icons } from './icons';
+import { icons } from './icons'
 
 export default {
   emits: ['iconSelected'],
 
   setup(_props, { emit }) {
-    const selectedIcon = ref(null);
+    const selectedIcon = ref(null)
     // icons is a map of { key: component }
     const iconOptions = Object.keys(icons).map(key => ({
       name: key,
       component: icons[key]
-    }));
+    }))
 
     const selectIcon = option => {
-      selectedIcon.value = option.component;
-      emit('iconSelected', option.name);
-    };
+      selectedIcon.value = option.component
+      emit('iconSelected', option.name)
+    }
 
     return {
       selectedIcon, // 实际上这个在当前组件内部未使用，但保留以防扩展
       iconOptions,
       selectIcon
-    };
+    }
   }
-};
+}
 </script>
 
 <template>

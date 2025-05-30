@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue';
-import { type FormInst, NButton, useDialog } from 'naive-ui';
-import { PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5';
-import Codemirror from 'codemirror-editor-vue3';
-import 'codemirror/mode/javascript/javascript.js';
+import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue'
+import { type FormInst, NButton, useDialog } from 'naive-ui'
+import { PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5'
+import Codemirror from 'codemirror-editor-vue3'
+import 'codemirror/mode/javascript/javascript.js'
 import {
   dataScriptAdd,
   dataScriptDel,
@@ -11,24 +11,24 @@ import {
   dataScriptQuiz,
   getDataScriptList,
   setDeviceScriptEnable
-} from '@/service/api/device';
-import { $t } from '@/locales';
-import { createLogger } from '@/utils/logger';
-const logger = createLogger('DataHandle');
+} from '@/service/api/device'
+import { $t } from '@/locales'
+import { createLogger } from '@/utils/logger'
+const logger = createLogger('DataHandle')
 // const message = useMessage();
-const dialog = useDialog();
+const dialog = useDialog()
 
 interface Props {
-  configInfo?: object | any;
+  configInfo?: object | any
 }
 
 const props = withDefaults(defineProps<Props>(), {
   configInfo: null
-});
-const configFormRef = ref<HTMLElement & FormInst>();
+})
+const configFormRef = ref<HTMLElement & FormInst>()
 
-const modalTitle = ref($t('generate.add'));
-const configForm: any = ref({});
+const modalTitle = ref($t('generate.add'))
+const configForm: any = ref({})
 const scripTypeOpt = ref([
   {
     label: $t('custom.devicePage.reportPreprocessing'),
@@ -54,7 +54,7 @@ const scripTypeOpt = ref([
     label: $t('custom.devicePage.eventReportPreprocessing'),
     value: 'F'
   }
-]);
+])
 
 function defaultConfigForm() {
   return {
@@ -83,7 +83,7 @@ end`,
     remark: null,
     script_type: null,
     resolt_analog_input: ''
-  };
+  }
 }
 
 const configFormRules = ref({
@@ -107,105 +107,105 @@ const configFormRules = ref({
     message: $t('generate.select-processing-type'),
     trigger: 'change'
   }
-});
-const showModal = ref(false);
+})
+const showModal = ref(false)
 
 const openModal = (type: any, item: any) => {
-  modalTitle.value = type;
+  modalTitle.value = type
   // 先用默认值初始化表单
-  configForm.value = defaultConfigForm();
+  configForm.value = defaultConfigForm()
 
   if (modalTitle.value === $t('common.edit')) {
     // 编辑模式：加载选中项的数据
-    configForm.value = JSON.parse(JSON.stringify(item));
+    configForm.value = JSON.parse(JSON.stringify(item))
   } else {
     // 添加模式：检查筛选器是否有值
     if (queryData.value.script_type) {
       // 如果筛选器有值，则将该值预设给表单的 script_type 字段
-      configForm.value.script_type = queryData.value.script_type;
+      configForm.value.script_type = queryData.value.script_type
     }
   }
   // 先设置 showModal 为 true，让模态框和表单开始渲染
-  showModal.value = true;
+  showModal.value = true
 
   // 使用 nextTick 确保 VDOM 更新和组件挂载完成后执行
   nextTick(() => {
     // 清除可能由初始数据绑定触发的校验提示
-    configFormRef.value?.restoreValidation();
-  });
-};
+    configFormRef.value?.restoreValidation()
+  })
+}
 
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
 const bodyStyle = ref({
   width: getPlatform.value ? '90%' : '800px'
-});
+})
 const queryData: any = ref({
   device_config_id: '',
   script_type: '',
   page: 1,
   page_size: 10
-});
+})
 
 interface DataScriptItem {
-  id: string;
-  name: string;
-  content: string;
-  description: string;
-  device_config_id: string;
-  enable_flag: string;
-  script_type: string;
+  id: string
+  name: string
+  content: string
+  description: string
+  device_config_id: string
+  enable_flag: string
+  script_type: string
 }
-const dataScriptList = ref<Array<DataScriptItem>>([]);
-const dataScriptTotal = ref(0);
+const dataScriptList = ref<Array<DataScriptItem>>([])
+const dataScriptTotal = ref(0)
 const queryDataScriptList = async () => {
-  queryData.value.device_config_id = props.configInfo.id;
-  const res = await getDataScriptList(queryData.value);
-  dataScriptList.value = res.data.list;
-  dataScriptTotal.value = res.data.total;
-};
+  queryData.value.device_config_id = props.configInfo.id
+  const res = await getDataScriptList(queryData.value)
+  dataScriptList.value = res.data.list
+  dataScriptTotal.value = res.data.total
+}
 const findScriptType = (scriptType: any) => {
   if (scriptType) {
     return scripTypeOpt.value.find((data: any) => {
-      return scriptType === data.value;
-    })?.label;
+      return scriptType === data.value
+    })?.label
   }
-  return '';
-};
+  return ''
+}
 const searchDataScript = () => {
-  queryData.value.page = 1;
-  queryDataScriptList();
-};
+  queryData.value.page = 1
+  queryDataScriptList()
+}
 
 const handleChange = async (item: object) => {
-  await setDeviceScriptEnable(item);
-};
+  await setDeviceScriptEnable(item)
+}
 const handleClose = () => {
-  configFormRef.value?.restoreValidation();
-  showModal.value = false;
-};
+  configFormRef.value?.restoreValidation()
+  showModal.value = false
+}
 // 提交表单
 const handleSubmit = async () => {
-  await configFormRef?.value?.validate();
-  configForm.value.device_config_id = props.configInfo.id;
+  await configFormRef?.value?.validate()
+  configForm.value.device_config_id = props.configInfo.id
   if (!configForm.value.id) {
-    const res = await dataScriptAdd(configForm.value);
+    const res = await dataScriptAdd(configForm.value)
     if (!res.error) {
       // message.success('新增成功');
-      handleClose();
-      searchDataScript();
+      handleClose()
+      searchDataScript()
     }
   } else {
-    const res = await dataScriptEdit(configForm.value);
+    const res = await dataScriptEdit(configForm.value)
     if (!res.error) {
-      handleClose();
+      handleClose()
       // message.success('修改成功');
-      searchDataScript();
+      searchDataScript()
     }
   }
-};
+}
 const deleteData = async (item: any) => {
   dialog.warning({
     title: $t('common.tip'),
@@ -213,59 +213,59 @@ const deleteData = async (item: any) => {
     positiveText: $t('device_template.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
-      await dataScriptDel({ id: item.id });
+      await dataScriptDel({ id: item.id })
       // message.success($t('custom.grouping_details.operationSuccess'));
-      searchDataScript();
+      searchDataScript()
     }
-  });
-};
+  })
+}
 const doQuiz = async () => {
-  await configFormRef?.value?.validate();
+  await configFormRef?.value?.validate()
 
   dataScriptQuiz(configForm.value).then(({ data }: any) => {
-    configForm.value.resolt_analog_input = data ? JSON.stringify(data, null, 2) : ''; 
-  });
+    configForm.value.resolt_analog_input = data ? JSON.stringify(data, null, 2) : ''
+  })
   // const { data, error } = await dataScriptQuiz(configForm.value);
   // if (!error) {
   //   console.log(data);
   //   // configForm.value.resolt_analog_input = data.message || '';
   // }
-};
+}
 
-const cmRef = ref();
+const cmRef = ref()
 const cmOptions = {
   mode: 'text/javascript',
-  indentUnit:4,
+  indentUnit: 4,
   lineWrapping: true
-};
+}
 
 const onChange = (val, cm) => {
-  logger.info({ val, cm });
-};
+  logger.info({ val, cm })
+}
 
 const onInput = val => {
-  logger.info({ val });
-};
+  logger.info({ val })
+}
 
 const onReady = cm => {
-  const lastLine = cm.lineCount() - 1;
-  const lastCh = cm.getLine(lastLine).length;
-  cm.focus();
-  cm.setCursor({ line: lastLine, ch: lastCh });
-};
+  const lastLine = cm.lineCount() - 1
+  const lastCh = cm.getLine(lastLine).length
+  cm.focus()
+  cm.setCursor({ line: lastLine, ch: lastCh })
+}
 const setupEditor = () => {
   nextTick(() => {
     if (cmRef.value) {
-      cmRef.value.refresh(); // ensure the editor is correctly refreshed
+      cmRef.value.refresh() // ensure the editor is correctly refreshed
     }
-  });
-};
+  })
+}
 
-watch(queryData.value, () => queryDataScriptList(), { deep: true });
+watch(queryData.value, () => queryDataScriptList(), { deep: true })
 
 onMounted(() => {
-  queryDataScriptList();
-});
+  queryDataScriptList()
+})
 </script>
 
 <template>
@@ -374,11 +374,10 @@ onMounted(() => {
         <NSwitch v-model:value="configForm.enable_flag" checked-value="Y" unchecked-value="N" />
       </NFormItem>
       <NFormItem class="w-100%" :label="$t('generate.simulate-input')" path="last_analog_input">
-        <NInput v-model:value="configForm.last_analog_input" type="textarea"  :rows="2"/>
+        <NInput v-model:value="configForm.last_analog_input" type="textarea" :rows="2" />
       </NFormItem>
       <NFormItem class="w-100%" :label="$t('generate.debug-run-result')" path="resolt_analog_input">
-        <NInput v-model:value="configForm.resolt_analog_input"  :rows="5" :disabled="true" type="textarea" />
-      
+        <NInput v-model:value="configForm.resolt_analog_input" :rows="5" :disabled="true" type="textarea" />
       </NFormItem>
       <NFormItem>
         <NButton type="primary" @click="doQuiz">{{ $t('common.debug') }}</NButton>
@@ -437,10 +436,9 @@ onMounted(() => {
   -webkit-line-clamp: 2;
   overflow: hidden;
 }
-:deep( pre.CodeMirror-line ) {
+:deep(pre.CodeMirror-line) {
   /* 在这里设置你想要的内边距，例如 10px */
   margin: 0 12px;
   /* 你也可以分别设置 padding-top, padding-right, padding-bottom, padding-left */
 }
-
 </style>

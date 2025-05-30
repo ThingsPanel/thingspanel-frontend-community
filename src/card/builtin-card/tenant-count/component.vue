@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { createLogger } from '@/utils/logger';
-import { $t } from '@/locales';
-import { tenant } from '@/service/api/system-data';
-import { GradientBg } from './components';
+import { ref } from 'vue'
+import { createLogger } from '@/utils/logger'
+import { $t } from '@/locales'
+import { tenant } from '@/service/api/system-data'
+import { GradientBg } from './components'
 
+const logger = createLogger('TenantCountCard')
 
-const logger = createLogger('TenantCountCard');
-
-defineOptions({ name: 'TenantCountCard' });
+defineOptions({ name: 'TenantCountCard' })
 
 const cardData = ref<any>({
   id: 'tenant-count',
@@ -17,23 +16,22 @@ const cardData = ref<any>({
   unit: $t('card.tenantCount.unit', '个'),
   colors: ['#3b82f6', '#60a5fa'],
   icon: 'mdi:account-group'
-});
+})
 
 const getData = async () => {
   try {
-    const {data} = await tenant();
-    console.log('Tenant board data response:', data);
-  
+    const { data } = await tenant()
+    console.log('Tenant board data response:', data)
 
-    if (data &&  typeof data.user_total === 'number') {
-      cardData.value.value = data.user_total||0
+    if (data && typeof data.user_total === 'number') {
+      cardData.value.value = data.user_total || 0
     }
   } catch (error) {
-    cardData.value.value = 0;
+    cardData.value.value = 0
   }
-};
+}
 
-getData();
+getData()
 </script>
 
 <template>

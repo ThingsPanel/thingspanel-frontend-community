@@ -1,54 +1,54 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { $t } from '@/locales';
-import { useRouterPush } from '@/hooks/common/router';
-import { useFormRules, useNaiveForm } from '@/hooks/common/form';
-import { getImgCodeRule } from '@/utils/form/rule';
-import useSmsCode from '@/hooks/business/use-sms-code';
-import { useAuthStore } from '@/store/modules/auth';
+import { computed, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { $t } from '@/locales'
+import { useRouterPush } from '@/hooks/common/router'
+import { useFormRules, useNaiveForm } from '@/hooks/common/form'
+import { getImgCodeRule } from '@/utils/form/rule'
+import useSmsCode from '@/hooks/business/use-sms-code'
+import { useAuthStore } from '@/store/modules/auth'
 
 defineOptions({
   name: 'CodeLogin'
-});
+})
 
-const { locale } = useI18n();
-const auth = useAuthStore();
-const { toggleLoginModule } = useRouterPush();
-const { formRef, validate } = useNaiveForm();
+const { locale } = useI18n()
+const auth = useAuthStore()
+const { toggleLoginModule } = useRouterPush()
+const { formRef, validate } = useNaiveForm()
 
 interface FormModel {
-  phone: string;
-  code: string;
-  imgCode: string;
+  phone: string
+  code: string
+  imgCode: string
 }
 
 const model: FormModel = reactive({
   phone: '',
   code: '',
   imgCode: ''
-});
-const { label, isCounting, loading: smsLoading, getSmsCode } = useSmsCode();
+})
+const { label, isCounting, loading: smsLoading, getSmsCode } = useSmsCode()
 
-const imgCode = ref('');
+const imgCode = ref('')
 
 const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
-  const { formRules } = useFormRules();
+  const { formRules } = useFormRules()
 
   return {
     phone: formRules.phone,
     code: formRules.code,
     imgCode: getImgCodeRule(imgCode)
-  };
-});
+  }
+})
 
 function handleSmsCode() {
-  getSmsCode(model.phone);
+  getSmsCode(model.phone)
 }
 
 async function handleSubmit() {
-  await validate();
-  window.$message?.success($t('page.login.common.validateSuccess'));
+  await validate()
+  window.$message?.success($t('page.login.common.validateSuccess'))
 }
 </script>
 

@@ -1,31 +1,31 @@
 <script lang="ts" setup>
-import { inject, onMounted, ref } from 'vue';
-import { NColorPicker, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
-import type { IConfigCtx } from '@/components/panel/card';
-import { $t } from '@/locales';
-import IconSelector from '@/components/common/icon-selector.vue';
+import { inject, onMounted, ref } from 'vue'
+import { NColorPicker, NForm, NFormItem, NInput, NSelect } from 'naive-ui'
+import type { IConfigCtx } from '@/components/panel/card'
+import { $t } from '@/locales'
+import IconSelector from '@/components/common/icon-selector.vue'
 
-const ctx = inject<IConfigCtx>('config-ctx')!;
+const ctx = inject<IConfigCtx>('config-ctx')!
 
 const setIcon = (icon: string) => {
-  ctx.config.iconName = icon;
-};
+  ctx.config.iconName = icon
+}
 
 const dataTypeOptions = ref([
   { label: 'Attributes', value: 'attributes' },
   { label: 'Telemetry', value: 'telemetry' },
   { label: 'Command', value: 'command' }
-]);
+])
 
 onMounted(() => {
   // 设置配置项的默认值
-  if (!ctx.config.iconName) ctx.config.iconName = 'Play';
-  if (!ctx.config.buttonIconColor) ctx.config.buttonIconColor = '#FFFFFF';
-  if (!ctx.config.buttonColor) ctx.config.buttonColor = '#ff4d4f';
-  if (!ctx.config.buttonText) ctx.config.buttonText = $t('card.customData');
-  if (!ctx.config.valueToSend) ctx.config.valueToSend = '1';
-  if (!ctx.config.dataType) ctx.config.dataType = 'telemetry';
-});
+  if (!ctx.config.iconName) ctx.config.iconName = 'Play'
+  if (!ctx.config.buttonIconColor) ctx.config.buttonIconColor = '#FFFFFF'
+  if (!ctx.config.buttonColor) ctx.config.buttonColor = '#ff4d4f'
+  if (!ctx.config.buttonText) ctx.config.buttonText = $t('card.customData')
+  if (!ctx.config.valueToSend) ctx.config.valueToSend = '1'
+  if (!ctx.config.dataType) ctx.config.dataType = 'telemetry'
+})
 </script>
 
 <template>

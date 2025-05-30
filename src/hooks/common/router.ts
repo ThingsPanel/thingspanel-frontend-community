@@ -1,7 +1,7 @@
-import { useRouter } from 'vue-router';
-import type { RouteLocationRaw } from 'vue-router';
-import type { LastLevelRouteKey, RouteKey } from '@elegant-router/types';
-import { router as globalRouter } from '@/router';
+import { useRouter } from 'vue-router'
+import type { RouteLocationRaw } from 'vue-router'
+import type { LastLevelRouteKey, RouteKey } from '@elegant-router/types'
+import { router as globalRouter } from '@/router'
 // import { useAuthStore } from '@/store/modules/auth';
 
 /**
@@ -12,45 +12,45 @@ import { router as globalRouter } from '@/router';
  * @param inSetup Whether is in vue script setup
  */
 export function useRouterPush(inSetup = true) {
-  const router = inSetup ? useRouter() : globalRouter;
-  const route = globalRouter.currentRoute;
+  const router = inSetup ? useRouter() : globalRouter
+  const route = globalRouter.currentRoute
 
-  const routerPush = router.push;
+  const routerPush = router.push
 
-  const routerBack = router.back;
+  const routerBack = router.back
 
   interface RouterPushOptions {
-    query?: Record<string, string>;
-    params?: Record<string, string>;
+    query?: Record<string, string>
+    params?: Record<string, string>
   }
 
   // const authStore = useAuthStore();
 
   async function routerPushByKey(key: LastLevelRouteKey | RouteKey, options?: RouterPushOptions) {
-    const { query, params } = options || {};
+    const { query, params } = options || {}
 
     const routeLocation: RouteLocationRaw = {
       name: key
-    };
+    }
     if (query) {
-      routeLocation.query = query;
+      routeLocation.query = query
     }
 
     if (params) {
-      routeLocation.params = params;
+      routeLocation.params = params
     }
-    return routerPush(routeLocation);
+    return routerPush(routeLocation)
   }
 
   async function toHome() {
-    const home: LastLevelRouteKey = 'home';
+    const home: LastLevelRouteKey = 'home'
     // if (authStore.userInfo.authority === 'SYS_ADMIN') {
     //   home = 'home';
     // } else {
     //   home = 'device';
     // }
 
-    return routerPushByKey(home);
+    return routerPushByKey(home)
   }
 
   /**
@@ -60,27 +60,27 @@ export function useRouterPush(inSetup = true) {
    * @param redirectUrl The redirect url, if not specified, it will be the current route fullPath
    */
   async function toLogin(loginModule?: UnionKey.LoginModule, redirectUrl?: string) {
-    const module = loginModule || 'pwd-login';
+    const module = loginModule || 'pwd-login'
 
     const options: RouterPushOptions = {
       params: {
         module
       }
-    };
-    let redirect = '';
-    const is_remember_rath = localStorage.getItem('isRememberPath');
+    }
+    let redirect = ''
+    const is_remember_rath = localStorage.getItem('isRememberPath')
 
     if (is_remember_rath === '1') {
-      redirect = redirectUrl || route.value.fullPath;
+      redirect = redirectUrl || route.value.fullPath
     }
 
     if (redirect) {
       options.query = {
         redirect
-      };
+      }
     }
 
-    return routerPushByKey('login', options);
+    return routerPushByKey('login', options)
   }
 
   /**
@@ -89,19 +89,19 @@ export function useRouterPush(inSetup = true) {
    * @param module
    */
   async function toggleLoginModule(module: UnionKey.LoginModule) {
-    const query = route.value.query as Record<string, string>;
+    const query = route.value.query as Record<string, string>
 
-    return routerPushByKey('login', { query, params: { module } });
+    return routerPushByKey('login', { query, params: { module } })
   }
 
   /** Redirect from login */
   async function redirectFromLogin() {
-    const redirect = route.value.query?.redirect as string;
+    const redirect = route.value.query?.redirect as string
 
     if (redirect) {
-      routerPush(redirect);
+      routerPush(redirect)
     } else {
-      toHome();
+      toHome()
     }
   }
 
@@ -113,5 +113,5 @@ export function useRouterPush(inSetup = true) {
     toLogin,
     toggleLoginModule,
     redirectFromLogin
-  };
+  }
 }

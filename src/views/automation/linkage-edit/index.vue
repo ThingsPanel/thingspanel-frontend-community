@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import type { FormInst } from 'naive-ui';
-import { NButton, NCard, useDialog } from 'naive-ui';
-import moment from 'moment';
-import EditAction from '@/views/automation/linkage-edit/modules/edit-action.vue';
-import EditPremise from '@/views/automation/linkage-edit/modules/edit-premise.vue';
-import { sceneAutomationsAdd, sceneAutomationsEdit, sceneAutomationsInfo } from '@/service/api/automation';
+import { ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import type { FormInst } from 'naive-ui'
+import { NButton, NCard, useDialog } from 'naive-ui'
+import moment from 'moment'
+import EditAction from '@/views/automation/linkage-edit/modules/edit-action.vue'
+import EditPremise from '@/views/automation/linkage-edit/modules/edit-premise.vue'
+import { sceneAutomationsAdd, sceneAutomationsEdit, sceneAutomationsInfo } from '@/service/api/automation'
 // import { useRouterPush } from '@/hooks/common/router';
-import { $t } from '@/locales';
+import { $t } from '@/locales'
 // import {useRouteStore} from "@/store/modules/route";
-import { useTabStore } from '@/store/modules/tab';
+import { useTabStore } from '@/store/modules/tab'
 
 // const { routerBack } = useRouterPush();
-const dialog = useDialog();
-const route = useRoute();
-const router = useRouter();
-const backType = ref(route.query.backType || '');
+const dialog = useDialog()
+const route = useRoute()
+const router = useRouter()
+const backType = ref(route.query.backType || '')
 const configFormRules = ref({
   name: {
     required: true,
@@ -36,15 +36,15 @@ const configFormRules = ref({
     required: true,
     message: $t('generate.addExecutionAction')
   }
-});
-const configFormRef = ref<HTMLElement & FormInst>();
-const configForm = ref(defaultConfigForm());
+})
+const configFormRef = ref<HTMLElement & FormInst>()
+const configForm = ref(defaultConfigForm())
 
-const configId = ref(route.query.id || '');
+const configId = ref(route.query.id || '')
 const propsData = ref({
   device_id: route.query.device_id || '',
   device_config_id: route.query.device_config_id || ''
-});
+})
 
 function defaultConfigForm() {
   return {
@@ -54,45 +54,43 @@ function defaultConfigForm() {
     enabled: 'Y',
     trigger_condition_groups: [],
     actions: []
-  };
+  }
 }
-const tabStore = useTabStore();
-const editPremise = ref();
-const editAction = ref();
+const tabStore = useTabStore()
+const editPremise = ref()
+const editAction = ref()
 const submitData = async () => {
   // 处理条件的数据保存
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  configForm.value.trigger_condition_groups = handleIfData();
+  configForm.value.trigger_condition_groups = handleIfData()
   // 处理动作数据保存
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  configForm.value.actions = handleActionData();
+  configForm.value.actions = handleActionData()
 
   const isTimeRangeError = configForm.value.trigger_condition_groups.some((item: any) => {
     return item.every(subItem => {
-      return subItem.trigger_conditions_type === '22';
-    });
-  });
+      return subItem.trigger_conditions_type === '22'
+    })
+  })
   if (isTimeRangeError) {
-    window.$message?.error($t('generate.timeRangeWarning'));
-    return;
+    window.$message?.error($t('generate.timeRangeWarning'))
+    return
   }
 
   const isAlarmError =
     configForm.value.trigger_condition_groups.some((item: any) => {
       return item.some(subItem => {
-        return subItem.ifType === '2';
-      });
+        return subItem.ifType === '2'
+      })
     }) &&
     configForm.value.actions.some((item: any) => {
-      return item.actionType === '30';
-    });
+      return item.actionType === '30'
+    })
   if (isAlarmError) {
-    window.$message?.error($t('generate.timeTypeWarning'));
-    return;
+    window.$message?.error($t('generate.timeTypeWarning'))
+    return
   }
-  await configFormRef?.value?.validate();
-  await editPremise.value.premiseFormRefReturn()?.validate();
-  await editAction.value.actionFormRefReturn()?.validate();
+  await configFormRef?.value?.validate()
+  await editPremise.value.premiseFormRefReturn()?.validate()
+  await editAction.value.actionFormRefReturn()?.validate()
   dialog.warning({
     title: $t('common.tip'),
     content: $t('common.saveSceneInfo'),
@@ -100,66 +98,64 @@ const submitData = async () => {
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
       if (configId.value) {
-        const res = await sceneAutomationsEdit(configForm.value);
+        const res = await sceneAutomationsEdit(configForm.value)
         if (!res.error) {
-          await tabStore.removeTab(route.path);
+          await tabStore.removeTab(route.path)
           if (backType.value === 'device') {
-            router.replace({ path: '/device/details', query: { d_id: propsData.value.device_id } });
+            router.replace({ path: '/device/details', query: { d_id: propsData.value.device_id } })
           } else if (backType.value === 'config') {
-            router.replace({ path: '/device/config-detail', query: { id: propsData.value.device_config_id } });
+            router.replace({ path: '/device/config-detail', query: { id: propsData.value.device_config_id } })
           } else {
-            router.replace({ path: '/automation/scene-linkage' });
+            router.replace({ path: '/automation/scene-linkage' })
           }
         }
       } else {
-        const res = await sceneAutomationsAdd(configForm.value);
+        const res = await sceneAutomationsAdd(configForm.value)
         if (!res.error) {
-          await tabStore.removeTab(route.path);
+          await tabStore.removeTab(route.path)
           if (backType.value === 'device') {
-            router.replace({ path: '/device/details', query: { d_id: propsData.value.device_id } });
+            router.replace({ path: '/device/details', query: { d_id: propsData.value.device_id } })
           } else if (backType.value === 'config') {
-            router.replace({ path: '/device/config-detail', query: { id: propsData.value.device_config_id } });
+            router.replace({ path: '/device/config-detail', query: { id: propsData.value.device_config_id } })
           } else {
-            router.replace({ path: '/automation/scene-linkage' });
+            router.replace({ path: '/automation/scene-linkage' })
           }
         }
       }
     }
-  });
-};
+  })
+}
 
-const conditionsType = ref(null as any);
+const conditionsType = ref(null as any)
 const conditionChose = (data: any) => {
   if (data) {
-    conditionsType.value = data;
+    conditionsType.value = data
   }
-};
-const automationsInfo = ref(null as any);
-const conditionData = ref([] as any);
-const actionData = ref([] as any);
+}
+const automationsInfo = ref(null as any)
+const conditionData = ref([] as any)
+const actionData = ref([] as any)
 
 const getSceneAutomationsInfo = async () => {
-  const res = await sceneAutomationsInfo(configId.value);
+  const res = await sceneAutomationsInfo(configId.value)
   if (res.data) {
-    automationsInfo.value = res.data;
-    configForm.value = res.data;
+    automationsInfo.value = res.data
+    configForm.value = res.data
     // 条件数据回显
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    conditionData.value = echoIfData(automationsInfo.value.trigger_condition_groups);
-    console.log(conditionData.value,"conditionData.value")
+    conditionData.value = echoIfData(automationsInfo.value.trigger_condition_groups)
+    console.log(conditionData.value, 'conditionData.value')
     // 动作数据回显
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    actionData.value = echoActionData(automationsInfo.value.actions);
+    actionData.value = echoActionData(automationsInfo.value.actions)
   }
-};
+}
 
 // 提交时处理条件数据
 const handleIfData = () => {
   if (!editPremise.value) {
-    console.error('EditPremise component ref is not available yet.');
-    return []; // Return empty array if the ref is not ready
+    console.error('EditPremise component ref is not available yet.')
+    return [] // Return empty array if the ref is not ready
   }
-  const ifGroupsData = JSON.parse(JSON.stringify(editPremise.value.ifGroupsData()));
+  const ifGroupsData = JSON.parse(JSON.stringify(editPremise.value.ifGroupsData()))
   // eslint-disable-next-line array-callback-return
   ifGroupsData.map((ifGroupItem: any) => {
     // eslint-disable-next-line array-callback-return
@@ -167,55 +163,55 @@ const handleIfData = () => {
       // ifItem.expiration_time = moment().format();
       if (ifItem.trigger_conditions_type === '10' || ifItem.trigger_conditions_type === '11') {
         if (ifItem.trigger_operator === 'between') {
-          ifItem.trigger_value = `${ifItem.minValue}-${ifItem.maxValue}`;
+          ifItem.trigger_value = `${ifItem.minValue}-${ifItem.maxValue}`
         }
       }
       if (ifItem.trigger_conditions_type === '22') {
-        let trigger_value = '';
+        let trigger_value = ''
         // eslint-disable-next-line array-callback-return
         ifItem.weekChoseValue.map((item: any) => {
-          trigger_value += item;
-        });
-        trigger_value += `|${moment(ifItem.startTimeValue).format('HH:mm:ssZ')}`;
-        trigger_value += `|${moment(ifItem.endTimeValue).format('HH:mm:ssZ')}`;
-        ifItem.trigger_value = trigger_value;
+          trigger_value += item
+        })
+        trigger_value += `|${moment(ifItem.startTimeValue).format('HH:mm:ssZ')}`
+        trigger_value += `|${moment(ifItem.endTimeValue).format('HH:mm:ssZ')}`
+        ifItem.trigger_value = trigger_value
       }
       if (ifItem.trigger_conditions_type === '20') {
-        ifItem.execution_time = moment(ifItem.onceTimeValue).format();
+        ifItem.execution_time = moment(ifItem.onceTimeValue).format()
       }
       if (ifItem.trigger_conditions_type === '21') {
         if (ifItem.task_type === 'HOUR') {
-          ifItem.params = moment(ifItem.hourTimeValue).format('mm:00Z');
+          ifItem.params = moment(ifItem.hourTimeValue).format('mm:00Z')
         }
         if (ifItem.task_type === 'DAY') {
-          ifItem.params = moment(ifItem.dayTimeValue).format('HH:mm:00Z');
+          ifItem.params = moment(ifItem.dayTimeValue).format('HH:mm:00Z')
         }
         if (ifItem.task_type === 'WEEK') {
-          let params = '';
+          let params = ''
           // eslint-disable-next-line array-callback-return
           ifItem.weekChoseValue.map((item: any) => {
-            params += item;
-          });
-          ifItem.params = `${params}|${moment(ifItem.weekTimeValue).format('HH:mm:00Z')}`;
+            params += item
+          })
+          ifItem.params = `${params}|${moment(ifItem.weekTimeValue).format('HH:mm:00Z')}`
         }
         if (ifItem.task_type === 'MONTH') {
-          ifItem.params = `${ifItem.monthChoseValue}T${moment(ifItem.monthTimeValue).format(`HH:mm:00Z`)}`;
+          ifItem.params = `${ifItem.monthChoseValue}T${moment(ifItem.monthTimeValue).format(`HH:mm:00Z`)}`
         }
       }
-    });
-  });
-  return ifGroupsData;
-};
+    })
+  })
+  return ifGroupsData
+}
 
 // 提交时处理动作数据
 const handleActionData = () => {
   if (!editAction.value) {
-    console.error('EditAction component ref is not available yet.');
-    return []; // Return empty array if the ref is not ready
+    console.error('EditAction component ref is not available yet.')
+    return [] // Return empty array if the ref is not ready
   }
   // 处理动作的数据
-  const actionGroupsData = JSON.parse(JSON.stringify(editAction.value.actionGroupsReturn()));
-  const actionsData = [] as any;
+  const actionGroupsData = JSON.parse(JSON.stringify(editAction.value.actionGroupsReturn()))
+  const actionsData = [] as any
   // eslint-disable-next-line array-callback-return
   actionGroupsData.map((item: any) => {
     if (item.actionType === '1') {
@@ -228,31 +224,31 @@ const handleActionData = () => {
           instructItem.action_param_type === 'c_attribute' ||
           instructItem.action_param_type === 'c_command'
         ) {
-          instructItem.action_value = instructItem.actionValue;
+          instructItem.action_value = instructItem.actionValue
         }
         // 如果是telemetry/attribute，那么 action_value示例格式：{"humidity":2}
         if (instructItem.action_param_type === 'telemetry' || instructItem.action_param_type === 'attributes') {
-          const action_value = {};
-          action_value[instructItem.action_param] = instructItem.actionValue;
-          instructItem.action_value = JSON.stringify(action_value);
+          const action_value = {}
+          action_value[instructItem.action_param] = instructItem.actionValue
+          instructItem.action_value = JSON.stringify(action_value)
         }
         // 如果是command/c_command，那么 action_value示例格式:	{"method":"ReSet","params":{"switch":1,"light":"close"}}
         if (instructItem.action_param_type === 'command') {
           const action_value = {
             method: instructItem.action_param,
             params: instructItem.actionValue
-          };
-          instructItem.action_value = JSON.stringify(action_value);
+          }
+          instructItem.action_value = JSON.stringify(action_value)
         }
-        actionsData.push(instructItem);
-      });
+        actionsData.push(instructItem)
+      })
     } else {
-      item.action_type = item.actionType;
-      actionsData.push(item);
+      item.action_type = item.actionType
+      actionsData.push(item)
     }
-  });
-  return actionsData;
-};
+  })
+  return actionsData
+}
 
 // 回显时处理条件数据
 const echoIfData = (ifData: any) => {
@@ -261,99 +257,99 @@ const echoIfData = (ifData: any) => {
     // eslint-disable-next-line array-callback-return
     item.map((ifItem: any) => {
       if (ifItem.trigger_conditions_type === '10' || ifItem.trigger_conditions_type === '11') {
-        ifItem.ifType = '1';
+        ifItem.ifType = '1'
         if (ifItem.trigger_operator === 'between') {
-          ifItem.minValue = ifItem.trigger_value.split('-')[0];
-          ifItem.maxValue = ifItem.trigger_value.split('-')[1];
+          ifItem.minValue = ifItem.trigger_value.split('-')[0]
+          ifItem.maxValue = ifItem.trigger_value.split('-')[1]
         }
-        ifItem.trigger_param_key = `${ifItem.trigger_param_type}/${ifItem.trigger_param}`;
+        ifItem.trigger_param_key = `${ifItem.trigger_param_type}/${ifItem.trigger_param}`
       }
       if (ifItem.trigger_conditions_type === '22') {
-        ifItem.ifType = '2';
-        const weekChoseValue = ifItem.trigger_value.split('|')[0];
-        ifItem.weekChoseValue = weekChoseValue.split('');
-        const startTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${ifItem.trigger_value.split('|')[1]}`;
-        const endTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${ifItem.trigger_value.split('|')[2]}`;
-        ifItem.startTimeValue = moment(startTimeValue).valueOf();
-        ifItem.endTimeValue = moment(endTimeValue).valueOf();
+        ifItem.ifType = '2'
+        const weekChoseValue = ifItem.trigger_value.split('|')[0]
+        ifItem.weekChoseValue = weekChoseValue.split('')
+        const startTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${ifItem.trigger_value.split('|')[1]}`
+        const endTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${ifItem.trigger_value.split('|')[2]}`
+        ifItem.startTimeValue = moment(startTimeValue).valueOf()
+        ifItem.endTimeValue = moment(endTimeValue).valueOf()
       }
       if (ifItem.trigger_conditions_type === '20') {
-        ifItem.ifType = '2';
-        ifItem.onceTimeValue = moment(ifItem.execution_time).valueOf();
+        ifItem.ifType = '2'
+        ifItem.onceTimeValue = moment(ifItem.execution_time).valueOf()
       }
       if (ifItem.trigger_conditions_type === '21') {
-        ifItem.ifType = '2';
+        ifItem.ifType = '2'
         if (ifItem.task_type === 'HOUR') {
-          const hourTimeValue = `${String(moment().format('yyyy-MM-DD HH'))}:${ifItem.params}`;
-          ifItem.hourTimeValue = moment(hourTimeValue).valueOf();
+          const hourTimeValue = `${String(moment().format('yyyy-MM-DD HH'))}:${ifItem.params}`
+          ifItem.hourTimeValue = moment(hourTimeValue).valueOf()
         }
         if (ifItem.task_type === 'DAY') {
-          const dayTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${ifItem.params}`;
-          ifItem.dayTimeValue = moment(dayTimeValue).valueOf();
+          const dayTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${ifItem.params}`
+          ifItem.dayTimeValue = moment(dayTimeValue).valueOf()
         }
         if (ifItem.task_type === 'WEEK') {
-          const weekStr = ifItem.params.split('|')[0] || null;
-          const timStr = ifItem.params.split('|')[1] || null;
-          ifItem.weekChoseValue = weekStr.split('');
-          const weekTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${timStr}`;
-          ifItem.weekTimeValue = moment(weekTimeValue).valueOf();
+          const weekStr = ifItem.params.split('|')[0] || null
+          const timStr = ifItem.params.split('|')[1] || null
+          ifItem.weekChoseValue = weekStr.split('')
+          const weekTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${timStr}`
+          ifItem.weekTimeValue = moment(weekTimeValue).valueOf()
         }
         if (ifItem.task_type === 'MONTH') {
-          ifItem.monthChoseValue = ifItem.params.split('T')[0] || null;
-          const monthTimeStr = ifItem.params.split('T')[1] || null;
-          const monthTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${monthTimeStr}`;
-          ifItem.monthTimeValue = moment(monthTimeValue).valueOf();
+          ifItem.monthChoseValue = ifItem.params.split('T')[0] || null
+          const monthTimeStr = ifItem.params.split('T')[1] || null
+          const monthTimeValue = `${String(moment().format('yyyy-MM-DD'))} ${monthTimeStr}`
+          ifItem.monthTimeValue = moment(monthTimeValue).valueOf()
         }
       }
-    });
-  });
-  return ifData;
-};
+    })
+  })
+  return ifData
+}
 
 // 回显时处理条件数据
 const echoActionData = (actionsData: any) => {
-  const actionGroupsData = [] as any;
-  const actionInstructList = [] as any;
+  const actionGroupsData = [] as any
+  const actionInstructList = [] as any
   // eslint-disable-next-line array-callback-return
   actionsData.map((item: any) => {
     if (item.action_type === '10' || item.action_type === '11') {
-      item.actionParamOptions = [];
-      const actionValueObj = JSON.parse(item.action_value);
+      item.actionParamOptions = []
+      const actionValueObj = JSON.parse(item.action_value)
       if (
         item.action_param_type === 'c_telemetry' ||
         item.action_param_type === 'c_attribute' ||
         item.action_param_type === 'c_command'
       ) {
-        item.actionValue = item.action_value;
+        item.actionValue = item.action_value
       }
       // 如果是telemetry/attribute，那么 action_value示例格式：{"humidity":2}
       if (item.action_param_type === 'telemetry' || item.action_param_type === 'attributes') {
         // item.action_value = JSON.stringify(action_value);
-        item.actionValue = actionValueObj[item.action_param];
+        item.actionValue = actionValueObj[item.action_param]
       }
       // 如果是command/c_command，那么 action_value示例格式:	{"method":"ReSet","params":{"switch":1,"light":"close"}}
       if (item.action_param_type === 'command') {
-        item.actionValue = actionValueObj.params;
+        item.actionValue = actionValueObj.params
       }
-      actionInstructList.push(item);
+      actionInstructList.push(item)
     } else {
-      item.actionType = item.action_type;
-      actionGroupsData.push(item);
+      item.actionType = item.action_type
+      actionGroupsData.push(item)
     }
-  });
+  })
   if (actionInstructList.length > 0) {
     const type1Data = {
       actionType: '1',
       actionInstructList
-    };
-    actionGroupsData.push(type1Data);
+    }
+    actionGroupsData.push(type1Data)
   }
-  return actionGroupsData;
-};
+  return actionGroupsData
+}
 if (configId.value) {
   // eslint-disable-next-line no-unused-expressions
-  typeof configId.value === 'string' ? (configForm.value.id = configId.value) : '';
-  getSceneAutomationsInfo();
+  typeof configId.value === 'string' ? (configForm.value.id = configId.value) : ''
+  getSceneAutomationsInfo()
 }
 </script>
 

@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { $t } from '@/locales';
-import { useSysSettingStore } from '@/store/modules/sys-setting';
+import { $t } from '@/locales'
+import { useSysSettingStore } from '@/store/modules/sys-setting'
 
 defineOptions({
   name: 'GlobalLogo'
-});
-const sysSettingStore = useSysSettingStore();
+})
+const sysSettingStore = useSysSettingStore()
 
 interface Props {
   /** Whether to show the title */
-  showTitle?: boolean;
+  showTitle?: boolean
 }
 
 withDefaults(defineProps<Props>(), {
   showTitle: true
-});
+})
 </script>
 
 <template>

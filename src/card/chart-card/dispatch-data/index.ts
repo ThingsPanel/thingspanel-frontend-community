@@ -1,7 +1,7 @@
-import { defineAsyncComponent } from 'vue';
-import type { ICardDefine } from '@/components/panel/card';
-import { $t } from '@/locales';
-import poster from './poster.png';
+import { defineAsyncComponent } from 'vue'
+import type { ICardDefine } from '@/components/panel/card'
+import { $t } from '@/locales'
+import poster from './poster.png'
 
 export default {
   id: 'chart-dispatch',
@@ -23,4 +23,4 @@ export default {
       minH: 1
     }
   }
-} as ICardDefine;
+} as ICardDefine

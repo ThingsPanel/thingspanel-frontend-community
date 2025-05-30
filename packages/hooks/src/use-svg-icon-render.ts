@@ -1,5 +1,5 @@
-import { h } from 'vue';
-import type { Component } from 'vue';
+import { h } from 'vue'
+import type { Component } from 'vue'
 
 /**
  * Svg icon render hook
@@ -9,16 +9,16 @@ import type { Component } from 'vue';
 export default function useSvgIconRender(SvgIcon: Component) {
   interface IconConfig {
     /** Iconify icon name */
-    icon?: string;
+    icon?: string
     /** Local icon name */
-    localIcon?: string;
+    localIcon?: string
     /** Icon color */
-    color?: string;
+    color?: string
     /** Icon size */
-    fontSize?: number;
+    fontSize?: number
   }
 
-  type IconStyle = Partial<Pick<CSSStyleDeclaration, 'color' | 'fontSize'>>;
+  type IconStyle = Partial<Pick<CSSStyleDeclaration, 'color' | 'fontSize'>>
 
   /**
    * Svg icon VNode
@@ -26,25 +26,25 @@ export default function useSvgIconRender(SvgIcon: Component) {
    * @param config
    */
   const SvgIconVNode = (config: IconConfig) => {
-    const { color, fontSize, icon, localIcon } = config;
+    const { color, fontSize, icon, localIcon } = config
 
-    const style: IconStyle = {};
+    const style: IconStyle = {}
 
     if (color) {
-      style.color = color;
+      style.color = color
     }
     if (fontSize) {
-      style.fontSize = `${fontSize}px`;
+      style.fontSize = `${fontSize}px`
     }
 
     if (!icon && !localIcon) {
-      return undefined;
+      return undefined
     }
 
-    return () => h(SvgIcon, { icon, localIcon, style });
-  };
+    return () => h(SvgIcon, { icon, localIcon, style })
+  }
 
   return {
     SvgIconVNode
-  };
+  }
 }

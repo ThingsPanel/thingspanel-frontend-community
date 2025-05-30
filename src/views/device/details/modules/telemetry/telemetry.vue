@@ -1,12 +1,12 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
-import type { NumberAnimationInst } from 'naive-ui';
-import dayjs from 'dayjs';
-import { Activity } from '@vicons/tabler';
-import { DocumentOnePage24Regular } from '@vicons/fluent';
-import { useWebSocket } from '@vueuse/core';
-import { MovingNumbers } from 'moving-numbers-vue3';
-import moment from 'moment';
+import { computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import type { NumberAnimationInst } from 'naive-ui'
+import dayjs from 'dayjs'
+import { Activity } from '@vicons/tabler'
+import { DocumentOnePage24Regular } from '@vicons/fluent'
+import { useWebSocket } from '@vueuse/core'
+import { MovingNumbers } from 'moving-numbers-vue3'
+import moment from 'moment'
 import {
   expectMessageAdd,
   getSimulation,
@@ -15,67 +15,67 @@ import {
   telemetryDataCurrent,
   telemetryDataDel,
   telemetryDataPub
-} from '@/service/api';
-import { localStg } from '@/utils/storage';
-import { deviceDetail } from '@/service/api/device';
-import { $t } from '@/locales';
-import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool';
-import { deviceCustomControlList } from '@/service/api/system-data';
-import HistoryData from './modules/history-data.vue';
-import TimeSeriesData from './modules/time-series-data.vue';
-import { useLoading } from '~/packages/hooks';
+} from '@/service/api'
+import { localStg } from '@/utils/storage'
+import { deviceDetail } from '@/service/api/device'
+import { $t } from '@/locales'
+import { getWebsocketServerUrl, isJSON } from '@/utils/common/tool'
+import { deviceCustomControlList } from '@/service/api/system-data'
+import HistoryData from './modules/history-data.vue'
+import TimeSeriesData from './modules/time-series-data.vue'
+import { useLoading } from '~/packages/hooks'
 const props = defineProps<{
-  id: string;
-  deviceTemplateId: string;
-}>();
+  id: string
+  deviceTemplateId: string
+}>()
 
-let wsUrl = getWebsocketServerUrl();
-wsUrl += '/telemetry/datas/current/ws';
-const showDialog = ref(false);
-const showLogDialog = ref(false);
-const showHistory = ref(false);
-const telemetryId = ref();
-const telemetryKey = ref();
-const telemetryName = ref();
-const telemetryUnit = ref();
-const modelType = ref<string>('');
+let wsUrl = getWebsocketServerUrl()
+wsUrl += '/telemetry/datas/current/ws'
+const showDialog = ref(false)
+const showLogDialog = ref(false)
+const showHistory = ref(false)
+const telemetryId = ref()
+const telemetryKey = ref()
+const telemetryName = ref()
+const telemetryUnit = ref()
+const modelType = ref<string>('')
 
-const formValue = ref('');
+const formValue = ref('')
 const form = reactive({
   expected: false,
   time: null
-});
-const operationType = ref('');
-const sendResult = ref('');
-const tableData = ref([]);
+})
+const operationType = ref('')
+const sendResult = ref('')
+const tableData = ref([])
 
-const telemetryData = ref<DeviceManagement.telemetryData[]>([]);
-const initTelemetryData = ref<any>();
-const numberAnimationInstRef = ref<NumberAnimationInst[] | []>([]);
-const nowTime = ref<any>();
-const { loading, startLoading, endLoading } = useLoading();
-const total = ref(0);
-const showLog = ref(false);
-const device_order = ref('');
+const telemetryData = ref<DeviceManagement.telemetryData[]>([])
+const initTelemetryData = ref<any>()
+const numberAnimationInstRef = ref<NumberAnimationInst[] | []>([])
+const nowTime = ref<any>()
+const { loading, startLoading, endLoading } = useLoading()
+const total = ref(0)
+const showLog = ref(false)
+const device_order = ref('')
 const operationOptions = [
   { label: $t('custom.device_details.whole'), value: '' },
   { label: $t('custom.device_details.manualOperation'), value: '1' },
   { label: $t('custom.device_details.triggerOperation'), value: '2' }
   // 其他操作类型选项...
-];
+]
 const resultOptions = [
   { label: $t('custom.device_details.whole'), value: '' },
   { label: $t('custom.devicePage.success'), value: '1' },
   { label: $t('custom.devicePage.fail'), value: '2' }
   // 其他发送结果选项...
-];
-const cardHeight = ref(160); // 卡片的高度
-const cardMargin = ref(15); // 卡片的间距
-const log_page = ref(1);
-const showError = ref(false);
-const erroMessage = ref('');
+]
+const cardHeight = ref(160) // 卡片的高度
+const cardMargin = ref(15) // 卡片的间距
+const log_page = ref(1)
+const showError = ref(false)
+const erroMessage = ref('')
 
-const token = localStg.get('token');
+const token = localStg.get('token')
 
 const { status, send, close } = useWebSocket(wsUrl, {
   heartbeat: {
@@ -86,37 +86,39 @@ const { status, send, close } = useWebSocket(wsUrl, {
   // eslint-disable-next-line
   onMessage(ws: WebSocket, event: MessageEvent) {
     if (event.data && event.data !== 'pong') {
-      const info = JSON.parse(event.data);
+      const info = JSON.parse(event.data)
       const currTelemetryKey = telemetryData.value
         .map(item => {
-          return item.key === 'systime' ? false : item.key;
+          return item.key === 'systime' ? false : item.key
         })
-        .filter(item => Boolean(item));
+        .filter(item => Boolean(item))
       const newData = telemetryData.value.map(item => {
         return {
           ...item,
-          value: (info[item.key] === null || info[item.key] === undefined || info[item.key] === '') ? item.value : info[item.key],
+          value:
+            info[item.key] === null || info[item.key] === undefined || info[item.key] === ''
+              ? item.value
+              : info[item.key],
           ts: info[item.key] && info.systime ? info.systime : item.ts || ''
-        };
-      });
-      const newTelemetry: any[] = [];
+        }
+      })
+      const newTelemetry: any[] = []
       for (const key in info) {
-
         if (key !== 'systime' && !currTelemetryKey.includes(key)) {
-          const { key: _originKey, label: _label, ...rest } = initTelemetryData.value;
+          const { key: _originKey, label: _label, ...rest } = initTelemetryData.value
           newTelemetry.push({
             ...rest,
             key,
             value: info[key],
             ts: info.systime,
             unit: ''
-          });
+          })
         }
       }
-      telemetryData.value = [...newData, ...newTelemetry];
+      telemetryData.value = [...newData, ...newTelemetry]
     }
   }
-});
+})
 
 const columns = [
   {
@@ -148,177 +150,175 @@ const columns = [
     key: 'status',
     render: row => (row.status === '1' ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
   }
-];
+]
 const requestSimulationList = async () => {
   const { data, error } = await getSimulation({
     device_id: props.id
-  });
+  })
   if (!error) {
-    device_order.value = data;
+    device_order.value = data
   }
-};
+}
 
 const openDialog = () => {
-  showDialog.value = true;
-  formValue.value = '';
-  form.expected = false;
-  form.time = null;
-};
+  showDialog.value = true
+  formValue.value = ''
+  form.expected = false
+  form.time = null
+}
 const openUpLog = () => {
-  showError.value = false;
-  showLogDialog.value = true;
-  requestSimulationList();
-};
+  showError.value = false
+  showLogDialog.value = true
+  requestSimulationList()
+}
 
 const sendSimulationList = async () => {
   if (!device_order.value) {
-    window.$message?.error($t('custom.device_details.sendInputData'));
-    return;
+    window.$message?.error($t('custom.device_details.sendInputData'))
+    return
   }
   const { error } = await sendSimulation({
     command: device_order.value
-  });
+  })
   if (!error) {
-    showLogDialog.value = false;
-    showError.value = false;
+    showLogDialog.value = false
+    showError.value = false
   } else {
-    showError.value = true;
-    erroMessage.value = error?.response?.data?.message;
+    showError.value = true
+    erroMessage.value = error?.response?.data?.message
   }
-};
+}
 const fetchData = async () => {
-  startLoading();
-  // eslint-disable-next-line @typescript-eslint/no-shadow
+  startLoading()
   const { data, error } = await getTelemetryLogList({
     page: log_page.value,
     page_size: 5,
     device_id: props.id,
     operation_type: operationType.value,
     status: sendResult.value
-  });
+  })
   if (!error) {
-    tableData.value = data?.value || data.list;
-    total.value = Math.ceil(data.count / 5);
-    endLoading();
+    tableData.value = data?.value || data.list
+    total.value = Math.ceil(data.count / 5)
+    endLoading()
   }
-};
+}
 
 const fetchTelemetry = async () => {
-  // eslint-disable-next-line @typescript-eslint/no-shadow
-  const { data, error } = await telemetryDataCurrent(props.id);
+  const { data, error } = await telemetryDataCurrent(props.id)
   if (!error && data) {
-    telemetryData.value = data;
-    initTelemetryData.value = data[0] || {}; // 存储一份模板
-    initTelemetryData.value.device_id = props.id;
+    telemetryData.value = data
+    initTelemetryData.value = data[0] || {} // 存储一份模板
+    initTelemetryData.value.device_id = props.id
     const dataw = {
       // eslint-disable-next-line no-constant-binary-expression
       device_id: props.id,
       token
-    };
+    }
 
-    send(JSON.stringify(dataw));
+    send(JSON.stringify(dataw))
   }
-};
+}
 const setItemRef = el => {
   if (el) {
-    const index = el.$attrs['data-index'];
-    numberAnimationInstRef.value[index] = el;
+    const index = el.$attrs['data-index']
+    numberAnimationInstRef.value[index] = el
   }
-};
+}
 const getDeviceDetail = async () => {
-  const { data, error } = await deviceDetail(props.id);
+  const { data, error } = await deviceDetail(props.id)
   if (!error) {
     if (data.device_config !== undefined) {
       if (data.device_config.protocol_type === 'MQTT') {
-        showLog.value = true;
+        showLog.value = true
       } else {
-        showLog.value = false;
+        showLog.value = false
       }
     } else {
-      showLog.value = true;
+      showLog.value = true
     }
   }
-};
-getDeviceDetail();
+}
+getDeviceDetail()
 
 const options = ref([
   {
     label: $t('custom.device_details.deleteAttribute'),
     key: '1'
   }
-]);
+])
 
-const delparam: any = ref({});
+const delparam: any = ref({})
 
 const handleDeleteTable = async () => {
-  const { error }: any = await telemetryDataDel(delparam.value);
+  const { error }: any = await telemetryDataDel(delparam.value)
 
   if (!error) {
-    fetchTelemetry();
+    fetchTelemetry()
   }
-};
+}
 
 const handleSelect = (key, item) => {
   if (String(key) === '1') {
     delparam.value = {
       key: item.key,
       device_id: props.id
-    };
-    handleDeleteTable();
+    }
+    handleDeleteTable()
   }
-};
+}
 const copy = event => {
-  const input = event.target;
-  input.select();
-  document.execCommand('copy');
-  window.$message?.success($t('theme.configOperation.copySuccess'));
-};
+  const input = event.target
+  input.select()
+  document.execCommand('copy')
+  window.$message?.success($t('theme.configOperation.copySuccess'))
+}
 const handlePositiveClick = async () => {
   if (isJSON(formValue.value)) {
-    let res: any = {};
+    let res: any = {}
     if (form.expected) {
       // 新增期望消息
-      const expiry = new Date().getTime() + (form.time ? form.time * 60 * 60 * 1000 : 0);
+      const expiry = new Date().getTime() + (form.time ? form.time * 60 * 60 * 1000 : 0)
       res = await expectMessageAdd({
         device_id: props.id,
         payload: formValue.value,
         send_type: 'telemetry',
         expiry: moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ')
-      });
+      })
     } else {
       // 发送属性的逻辑...
       res = await telemetryDataPub({
         device_id: props.id,
         value: formValue.value
-      });
+      })
     }
     if (res && !res.error) {
-      showDialog.value = false;
-      fetchData();
-      fetchTelemetry();
+      showDialog.value = false
+      fetchData()
+      fetchTelemetry()
     }
   }
-};
+}
 
 const onTapTableTools = (i: any) => {
   if (typeof i.value === 'number') {
-    modelType.value = $t('custom.device_details.sequential');
-    telemetryKey.value = i.key;
-    telemetryName.value = i.label;
-    telemetryId.value = i.device_id;
-    telemetryUnit.value = i.unit;
-    showHistory.value = true;
+    modelType.value = $t('custom.device_details.sequential')
+    telemetryKey.value = i.key
+    telemetryName.value = i.label
+    telemetryId.value = i.device_id
+    telemetryUnit.value = i.unit
+    showHistory.value = true
   }
-};
+}
 
 const isColor = (i: any) => {
   if (typeof i.value !== 'number') {
-    return '#cccccc';
+    return '#cccccc'
   }
-  return '';
-};
+  return ''
+}
 
-const controlList = ref<any[]>([]);
+const controlList = ref<any[]>([])
 const getControlList = () => {
   if (props.deviceTemplateId) {
     const queryjson = {
@@ -326,57 +326,57 @@ const getControlList = () => {
       page: 1,
       page_size: 100,
       enable_status: 'enable'
-    };
+    }
     deviceCustomControlList(queryjson).then(({ data }) => {
-      controlList.value = data.list || [];
-    });
+      controlList.value = data.list || []
+    })
   }
-};
+}
 
 watch(
   () => props.deviceTemplateId,
   val => {
-    if (!val) return;
-    getControlList();
+    if (!val) return
+    getControlList()
   }
-);
+)
 onMounted(() => {
-  fetchData();
-  fetchTelemetry();
-  getControlList();
-});
+  fetchData()
+  fetchTelemetry()
+  getControlList()
+})
 
 onUnmounted(() => {
   if (status.value === 'OPEN') {
-    close();
+    close()
   }
-});
+})
 
 const onControlChange = async (row: any) => {
   await telemetryDataPub({
     device_id: props.id,
     value: row.content
-  });
-  fetchData();
-};
+  })
+  fetchData()
+}
 
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
 
 const validationJson = computed(() => {
   if (formValue.value && !isJSON(formValue.value)) {
-    return 'error';
+    return 'error'
   }
-  return undefined;
-});
+  return undefined
+})
 const inputFeedback = computed(() => {
   if (formValue.value && !isJSON(formValue.value)) {
-    return $t('generate.inputRightJson');
+    return $t('generate.inputRightJson')
   }
-  return '';
-});
+  return ''
+})
 </script>
 
 <template>
@@ -409,11 +409,11 @@ const inputFeedback = computed(() => {
             <div class="card-body">
               <n-tooltip v-if="isColor(i)" trigger="hover" placement="top">
                 <template #trigger>
-                  <span class="value-display-ellipsis" style="font-size: 24px;">
+                  <span class="value-display-ellipsis" style="font-size: 24px">
                     {{ i.value }}
                   </span>
                 </template>
-                <div style="max-width: 300px; word-break: break-all;">{{ i.value }}</div>
+                <div style="max-width: 300px; word-break: break-all">{{ i.value }}</div>
               </n-tooltip>
               <MovingNumbers
                 v-else
@@ -446,12 +446,12 @@ const inputFeedback = computed(() => {
                   size="24"
                   @click="
                     () => {
-                      modelType = $t('custom.device_details.history');
-                      telemetryKey = i.key;
-                      telemetryName = i.label;
-                      telemetryUnit = i.unit;
-                      telemetryId = i.device_id;
-                      showHistory = true;
+                      modelType = $t('custom.device_details.history')
+                      telemetryKey = i.key
+                      telemetryName = i.label
+                      telemetryUnit = i.unit
+                      telemetryId = i.device_id
+                      showHistory = true
                     }
                   "
                 >
@@ -504,8 +504,8 @@ const inputFeedback = computed(() => {
         :page-size="5"
         @update:page="
           page => {
-            log_page = page;
-            fetchData();
+            log_page = page
+            fetchData()
           }
         "
       />
@@ -594,7 +594,9 @@ const inputFeedback = computed(() => {
 
             <n-popconfirm @positive-click="handlePositiveClick">
               <template #trigger>
-                <n-button type="primary" :disabled="!formValue || validationJson === 'error'">{{ $t('generate.send') }}</n-button>
+                <n-button type="primary" :disabled="!formValue || validationJson === 'error'">
+                  {{ $t('generate.send') }}
+                </n-button>
               </template>
               确定发送指令吗
             </n-popconfirm>

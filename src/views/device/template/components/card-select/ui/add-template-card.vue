@@ -1,26 +1,26 @@
 <script lang="ts" setup>
-import { reactive, ref, watch } from 'vue';
-import { useMessage } from 'naive-ui';
-import type { ICardData, ICardDefine, ICardFormIns } from '@/components/panel/card';
-import { $t } from '@/locales';
-import { PanelCards } from '../index';
-import CardTemplateForm from './card-template-form.vue';
+import { reactive, ref, watch } from 'vue'
+import { useMessage } from 'naive-ui'
+import type { ICardData, ICardDefine, ICardFormIns } from '@/components/panel/card'
+import { $t } from '@/locales'
+import { PanelCards } from '../index'
+import CardTemplateForm from './card-template-form.vue'
 
 const props = defineProps<{
-  open: boolean;
-  data?: ICardData | null;
-}>();
-const formRef = ref<ICardFormIns>();
+  open: boolean
+  data?: ICardData | null
+}>()
+const formRef = ref<ICardFormIns>()
 const state = reactive({
   curCardData: null as null | Record<string, any>
-});
+})
 // $emit是内置变量 不可以使用$emit 作为变量名
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void;
-  (e: 'save', value: any): void;
-}>();
+  (e: 'update:open', value: boolean): void
+  (e: 'save', value: any): void
+}>()
 
-const copy = (data: object) => JSON.parse(JSON.stringify(data));
+const copy = (data: object) => JSON.parse(JSON.stringify(data))
 const selectCard = (item: ICardDefine) => {
   state.curCardData = {
     cardId: item.id,
@@ -33,25 +33,25 @@ const selectCard = (item: ICardDefine) => {
       systemSource: [{}],
       deviceSource: [{}]
     }
-  };
-  formRef.value?.setCard(state.curCardData as any);
-};
-const message = useMessage();
+  }
+  formRef.value?.setCard(state.curCardData as any)
+}
+const message = useMessage()
 
 const save = () => {
   if (!state?.curCardData?.cardId) {
-    message.destroyAll();
-    message.warning($t('common.selectCardFirst'));
-    return;
+    message.destroyAll()
+    message.warning($t('common.selectCardFirst'))
+    return
   }
 
-  emit('update:open', false);
-  const deviceSource = state.curCardData.dataSource.deviceSource[0];
-  const cardId = state.curCardData.cardId;
-  state.curCardData.cardId = `${cardId}-${deviceSource.metricsId}`;
-  console.log(state.curCardData);
-  emit('save', JSON.parse(JSON.stringify(state.curCardData)));
-};
+  emit('update:open', false)
+  const deviceSource = state.curCardData.dataSource.deviceSource[0]
+  const cardId = state.curCardData.cardId
+  state.curCardData.cardId = `${cardId}-${deviceSource.metricsId}`
+  console.log(state.curCardData)
+  emit('save', JSON.parse(JSON.stringify(state.curCardData)))
+}
 watch(props, pr => {
   if (pr.open) {
     if (pr.data) {
@@ -62,15 +62,15 @@ watch(props, pr => {
         config: copy(pr.data?.config || {}),
         basicSettings: copy(pr.data?.basicSettings || {}),
         dataSource: copy(pr.data?.dataSource || {})
-      };
+      }
     } else {
-      state.curCardData = null;
+      state.curCardData = null
     }
     setTimeout(() => {
-      formRef.value?.setCard(state.curCardData as any);
-    }, 30);
+      formRef.value?.setCard(state.curCardData as any)
+    }, 30)
   }
-});
+})
 </script>
 
 <template>

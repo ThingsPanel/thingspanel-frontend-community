@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
-import { useFormRules, useNaiveForm } from '@/hooks/common/form';
-import { fetchGetAllRoles } from '@/service/api';
-import { $t } from '@/locales';
-import { enableStatusOptions, userGenderOptions } from '@/constants/business';
+import { computed, reactive, ref, watch } from 'vue'
+import { useFormRules, useNaiveForm } from '@/hooks/common/form'
+import { fetchGetAllRoles } from '@/service/api'
+import { $t } from '@/locales'
+import { enableStatusOptions, userGenderOptions } from '@/constants/business'
 
 defineOptions({
   name: 'UserOperateDrawer'
-});
+})
 
 /**
  * the type of operation
@@ -15,44 +15,44 @@ defineOptions({
  * - add: add user
  * - edit: edit user
  */
-export type OperateType = 'add' | 'edit';
+export type OperateType = 'add' | 'edit'
 
 interface Props {
   /** the type of operation */
-  operateType: OperateType;
+  operateType: OperateType
   /** the edit row data */
-  rowData?: Api.SystemManage.User | null;
+  rowData?: Api.SystemManage.User | null
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 interface Emits {
-  (e: 'submitted'): void;
+  (e: 'submitted'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const visible = defineModel<boolean>('visible', {
   default: false
-});
+})
 
-const { formRef, validate, restoreValidation } = useNaiveForm();
-const { defaultRequiredRule } = useFormRules();
+const { formRef, validate, restoreValidation } = useNaiveForm()
+const { defaultRequiredRule } = useFormRules()
 
 const title = computed(() => {
   const titles: Record<OperateType, string> = {
     add: $t('page.manage.user.addUser'),
     edit: $t('page.manage.user.editUser')
-  };
-  return titles[props.operateType];
-});
+  }
+  return titles[props.operateType]
+})
 
 type Model = Pick<
   Api.SystemManage.User,
   'userName' | 'userGender' | 'nickName' | 'userPhone' | 'userEmail' | 'userRoles' | 'status'
->;
+>
 
-const model: Model = reactive(createDefaultModel());
+const model: Model = reactive(createDefaultModel())
 
 function createDefaultModel(): Model {
   return {
@@ -63,70 +63,70 @@ function createDefaultModel(): Model {
     userEmail: '',
     userRoles: [],
     status: null
-  };
+  }
 }
 
-type RuleKey = Extract<keyof Model, 'userName' | 'status'>;
+type RuleKey = Extract<keyof Model, 'userName' | 'status'>
 
 const rules: Record<RuleKey, App.Global.FormRule> = {
   userName: defaultRequiredRule,
   status: defaultRequiredRule
-};
+}
 
 /** the enabled role options */
-const roleOptions = ref<CommonType.Option<string>[]>([]);
+const roleOptions = ref<CommonType.Option<string>[]>([])
 
 async function getRoleOptions() {
-  const { error, data } = await fetchGetAllRoles({ page: 1, page_size: 10 });
+  const { error, data } = await fetchGetAllRoles({ page: 1, page_size: 10 })
 
   if (!error) {
     const options = data.map(item => ({
       label: item.roleName,
       value: item.roleCode
-    }));
+    }))
 
     // the mock data does not have the roleCode, so fill it
     // if the real requestTs, remove the following code
     const userRoleOptions = model.userRoles.map(item => ({
       label: item,
       value: item
-    }));
+    }))
     // end
 
-    roleOptions.value = [...userRoleOptions, ...options];
+    roleOptions.value = [...userRoleOptions, ...options]
   }
 }
 
 function handleUpdateModelWhenEdit() {
   if (props.operateType === 'add') {
-    Object.assign(model, createDefaultModel());
-    return;
+    Object.assign(model, createDefaultModel())
+    return
   }
 
   if (props.operateType === 'edit' && props.rowData) {
-    Object.assign(model, props.rowData);
+    Object.assign(model, props.rowData)
   }
 }
 
 function closeDrawer() {
-  visible.value = false;
+  visible.value = false
 }
 
 async function handleSubmit() {
-  await validate();
+  await validate()
   // requestTs
   // window.$message?.success($t('common.updateSuccess'));
-  closeDrawer();
-  emit('submitted');
+  closeDrawer()
+  emit('submitted')
 }
 
 watch(visible, () => {
   if (visible.value) {
-    handleUpdateModelWhenEdit();
-    restoreValidation();
-    getRoleOptions();
+    handleUpdateModelWhenEdit()
+    restoreValidation()
+    getRoleOptions()
   }
-});
+})
 </script>
 
 <template>

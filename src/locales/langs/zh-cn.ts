@@ -1,19 +1,19 @@
-import page from './zh-cn/page';
-import card from './zh-cn/card';
-import generate from './zh-cn/generate';
-import custom from './zh-cn/custom';
-import device_template from './zh-cn/device_template';
-import dashboard_panel from './zh-cn/dashboard_panel';
-import form from './zh-cn/form';
-import dropdown from './zh-cn/dropdown';
-import icon from './zh-cn/icon';
-import theme from './zh-cn/theme';
+import page from './zh-cn/page'
+import card from './zh-cn/card'
+import generate from './zh-cn/generate'
+import custom from './zh-cn/custom'
+import device_template from './zh-cn/device_template'
+import dashboard_panel from './zh-cn/dashboard_panel'
+import form from './zh-cn/form'
+import dropdown from './zh-cn/dropdown'
+import icon from './zh-cn/icon'
+import theme from './zh-cn/theme'
 const local: App.I18n.Schema = {
   default: '',
   title: 'ThingsPanel',
   system: {
     title: 'System Name: {name}',
-    description:'连接万物，智慧生活',
+    description: '连接万物，智慧生活'
   },
   common: {
     serviceConfi: '服务配置',
@@ -422,6 +422,6 @@ const local: App.I18n.Schema = {
   card,
   device_template,
   dashboard_panel
-};
+}
 
-export default local;
+export default local

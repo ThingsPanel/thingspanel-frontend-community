@@ -1,45 +1,45 @@
 <script setup lang="ts">
-import { defineEmits, onMounted, ref } from 'vue';
-import { KanBanCards } from '@/cards2.0';
-import { $t } from '@/locales';
+import { defineEmits, onMounted, ref } from 'vue'
+import { KanBanCards } from '@/cards2.0'
+import { $t } from '@/locales'
 
-defineOptions({ name: 'KanBanCardList' });
+defineOptions({ name: 'KanBanCardList' })
 
-const activeType = defineModel('activeType', { required: true });
-const cardList = ref<any[]>(KanBanCards.plugins);
+const activeType = defineModel('activeType', { required: true })
+const cardList = ref<any[]>(KanBanCards.plugins)
 const createCardList = (v: string) => {
   if (activeType.value) {
-    activeType.value = v;
+    activeType.value = v
   }
 
   if (v === 'device') {
-    cardList.value = KanBanCards.chart;
+    cardList.value = KanBanCards.chart
   } else {
-    cardList.value = KanBanCards[v];
+    cardList.value = KanBanCards[v]
   }
-};
+}
 
 const options = [
   { label: $t('generate.system'), value: 'system', checked: false },
   { label: $t('card.plugins'), value: 'plugins', checked: true },
   { label: $t('generate.device'), value: 'device', checked: false },
   { label: $t('common.chart'), value: 'chart', checked: false }
-];
+]
 
-const emits = defineEmits(['itemDropped']);
+const emits = defineEmits(['itemDropped'])
 
 function dragEnd(_event, item) {
-  emits('itemDropped', item);
+  emits('itemDropped', item)
 }
 
 function dragStart(event, item) {
-  event.dataTransfer.setData('application/json', JSON.stringify(item));
-  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('application/json', JSON.stringify(item))
+  event.dataTransfer.effectAllowed = 'move'
 }
 
 onMounted(() => {
-  createCardList(activeType.value as string);
-});
+  createCardList(activeType.value as string)
+})
 </script>
 
 <template>

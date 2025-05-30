@@ -10,4 +10,4 @@ export default {
       additionalInfo: 'Connection Parameters'
     }
   }
-};
+}

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { getTemplat } from '@/service/api/system-data';
-import { $t } from '@/locales';
+import { onMounted, ref } from 'vue'
+import { getTemplat } from '@/service/api/system-data'
+import { $t } from '@/locales'
 
 const props = defineProps({
   stepCurrent: { type: Number, required: true },
@@ -10,45 +10,45 @@ const props = defineProps({
     required: true
   },
   deviceTemplateId: { type: String, required: true }
-});
-const emit = defineEmits(['update:modalVisible', 'update:stepCurrent']);
-const code = ref<string>('');
+})
+const emit = defineEmits(['update:modalVisible', 'update:stepCurrent'])
+const code = ref<string>('')
 const getTemplate = async () => {
-  const { data, error } = await getTemplat(props.deviceTemplateId);
+  const { data, error } = await getTemplat(props.deviceTemplateId)
   if (!error) {
-    data.app_chart_config = JSON.parse(data.app_chart_config);
-    data.web_chart_config = JSON.parse(data.web_chart_config);
-    code.value = JSON.stringify(data, null, 2);
+    data.app_chart_config = JSON.parse(data.app_chart_config)
+    data.web_chart_config = JSON.parse(data.web_chart_config)
+    code.value = JSON.stringify(data, null, 2)
   }
-};
+}
 const back: () => void = async () => {
-  emit('update:stepCurrent', 4);
-};
+  emit('update:stepCurrent', 4)
+}
 const copyText = (): void => {
-  const textElement = document.getElementById('text-to-copy');
+  const textElement = document.getElementById('text-to-copy')
   if (textElement) {
-    const text: string | null = textElement.textContent;
+    const text: string | null = textElement.textContent
     if (window.isSecureContext && navigator.clipboard) {
       navigator.clipboard
         .writeText(typeof text === 'string' ? text : '')
         .then(() => {
-          window.NMessage.info($t('common.copiedClipboard'));
+          window.NMessage.info($t('common.copiedClipboard'))
         })
         .catch(err => {
-          window.NMessage.error(`${$t('common.copyingFailed')}:`, err);
-        });
+          window.NMessage.error(`${$t('common.copyingFailed')}:`, err)
+        })
     } else {
-      const range = document.createRange();
-      range.selectNodeContents(textElement!);
-      const selection = document.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-      document.execCommand('Copy');
-      window.$message?.success($t('theme.configOperation.copySuccess'));
+      const range = document.createRange()
+      range.selectNodeContents(textElement!)
+      const selection = document.getSelection()
+      selection?.removeAllRanges()
+      selection?.addRange(range)
+      document.execCommand('Copy')
+      window.$message?.success($t('theme.configOperation.copySuccess'))
     }
   }
-};
-onMounted(getTemplate);
+}
+onMounted(getTemplate)
 </script>
 
 <template>

@@ -1,6 +1,6 @@
-import { defineAsyncComponent } from 'vue';
-import poster from '@/components/panel/chart-card/demo/poster.png';
-import type { CardItem } from '@/cards2.0/card';
+import { defineAsyncComponent } from 'vue'
+import poster from '@/components/panel/chart-card/demo/poster.png'
+import type { CardItem } from '@/cards2.0/card'
 
 export default {
   cardItemBase: {
@@ -32,4 +32,4 @@ export default {
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
   configForm: defineAsyncComponent(() => import('./card-config.vue'))
-} as CardItem;
+} as CardItem

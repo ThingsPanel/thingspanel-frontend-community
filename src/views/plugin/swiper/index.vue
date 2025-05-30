@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import SwiperCore from 'swiper';
-import { Navigation, Pagination } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import type { SwiperOptions } from 'swiper/types';
-import { $t } from '@/locales';
+import SwiperCore from 'swiper'
+import { Navigation, Pagination } from 'swiper/modules'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import type { SwiperOptions } from 'swiper/types'
+import { $t } from '@/locales'
 
 type SwiperExampleOptions = Pick<
   SwiperOptions,
   'navigation' | 'pagination' | 'scrollbar' | 'slidesPerView' | 'slidesPerGroup' | 'spaceBetween' | 'direction' | 'loop'
->;
+>
 
 interface SwiperExample {
-  id: number;
-  label: string;
-  options: Partial<SwiperExampleOptions>;
+  id: number
+  label: string
+  options: Partial<SwiperExampleOptions>
 }
 
-SwiperCore.use([Navigation, Pagination]);
+SwiperCore.use([Navigation, Pagination])
 
 const swiperExample: SwiperExample[] = [
   { id: 0, label: 'Default', options: {} },
@@ -83,7 +83,7 @@ const swiperExample: SwiperExample[] = [
       loop: true
     }
   }
-];
+]
 </script>
 
 <template>

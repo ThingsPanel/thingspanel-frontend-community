@@ -1,22 +1,22 @@
 <script lang="ts" setup>
-import { computed } from 'vue';
-import { usePanelStore } from '@/store/modules/panel';
-import type { ICardData } from '@/components/panel/card';
+import { computed } from 'vue'
+import { usePanelStore } from '@/store/modules/panel'
+import type { ICardData } from '@/components/panel/card'
 
 // This file is not used anymore, but it's kept here for reference.
 
 const props = defineProps<{
-  view?: boolean;
-  data: ICardData;
-}>();
+  view?: boolean
+  data: ICardData
+}>()
 const cardId = computed(() => {
-  const arr = props.data?.cardId?.split('-') || [];
-  return `${arr[0]}-${arr[1]}`;
-});
-const store = usePanelStore();
+  const arr = props.data?.cardId?.split('-') || []
+  return `${arr[0]}-${arr[1]}`
+})
+const store = usePanelStore()
 const findCardComponent = (id: string) => {
-  return store.$state.cardMap.get(id)?.component || null;
-};
+  return store.$state.cardMap.get(id)?.component || null
+}
 </script>
 
 <template>

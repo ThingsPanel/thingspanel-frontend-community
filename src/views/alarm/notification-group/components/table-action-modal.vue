@@ -1,35 +1,35 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import type { FormInst, FormItemRule } from 'naive-ui';
-import { createRequiredFormRule } from '@/utils/form/rule';
-import { notificationOptions } from '@/constants/business';
-import { postNotificationGroup, putNotificationGroup } from '@/service/api/notification';
-import { $t } from '@/locales';
-import { handleSearch, initMemberData, memberTypeData, notificationTypeOptions } from '../utils';
-import MemberTypeData from './member-type-data.vue';
+import { computed, ref, watch } from 'vue'
+import type { FormInst, FormItemRule } from 'naive-ui'
+import { createRequiredFormRule } from '@/utils/form/rule'
+import { notificationOptions } from '@/constants/business'
+import { postNotificationGroup, putNotificationGroup } from '@/service/api/notification'
+import { $t } from '@/locales'
+import { handleSearch, initMemberData, memberTypeData, notificationTypeOptions } from '../utils'
+import MemberTypeData from './member-type-data.vue'
 
 export interface Props {
-  visible: boolean;
-  type?: 'add' | 'edit';
-  editData?: Api.Alarm.NotificationGroupList | null;
+  visible: boolean
+  type?: 'add' | 'edit'
+  editData?: Api.Alarm.NotificationGroupList | null
 }
 
-export type ModalType = NonNullable<Props['type']>;
+export type ModalType = NonNullable<Props['type']>
 
-defineOptions({ name: 'TableActionModal' });
+defineOptions({ name: 'TableActionModal' })
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'add',
   editData: null
-});
+})
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void;
+  (e: 'update:visible', visible: boolean): void
 
-  (e: 'getTableData'): void;
+  (e: 'getTableData'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 function createDefaultFormModel(): FormModel {
   return {
@@ -37,7 +37,7 @@ function createDefaultFormModel(): FormModel {
     description: '',
     notification_type: '',
     status: 'CLOSE'
-  };
+  }
 }
 
 const initNotificationConfig = {
@@ -48,84 +48,83 @@ const initNotificationConfig = {
   WEBHOOK: '',
   PayloadURL: '',
   Secret: ''
-};
+}
 
-const formModel = ref<FormModel>(createDefaultFormModel());
-const notificationConfig = ref<any>({ ...initNotificationConfig });
+const formModel = ref<FormModel>(createDefaultFormModel())
+const notificationConfig = ref<any>({ ...initNotificationConfig })
 const closeModal = () => {
-  memberTypeData.value = [{ ...initMemberData }];
-  formModel.value = createDefaultFormModel();
-  notificationConfig.value = { ...initNotificationConfig };
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  modalVisible.value = false;
-};
+  memberTypeData.value = [{ ...initMemberData }]
+  formModel.value = createDefaultFormModel()
+  notificationConfig.value = { ...initNotificationConfig }
+  modalVisible.value = false
+}
 const modalVisible = computed({
   get() {
     if (!props.visible) {
-      closeModal();
+      closeModal()
     }
-    return props.visible;
+    return props.visible
   },
   set(visible) {
-    emit('update:visible', visible);
+    emit('update:visible', visible)
   }
-});
+})
 
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
     add: $t('common.createNotificationGroup'),
     edit: $t('common.editNotificationGroup')
-  };
-  return titles[props.type];
-});
+  }
+  return titles[props.type]
+})
 
-const formRef = ref<HTMLElement & FormInst>();
+const formRef = ref<HTMLElement & FormInst>()
 
-type FormModel = Pick<DataService.Data, any>;
+type FormModel = Pick<DataService.Data, any>
 
 const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
   name: createRequiredFormRule($t('generate.ruleName')),
   description: createRequiredFormRule($t('common.notificationGroupDesc')),
   notification_type: createRequiredFormRule($t('common.chooseNotificationMethod'))
-};
+}
 
 function handleUpdateFormModel(model: Partial<FormModel>) {
-  Object.assign(formModel.value, model);
+  Object.assign(formModel.value, model)
 }
 
 function handleUpdateFormModelByModalType() {
   const handlers: Record<ModalType, () => void> = {
     add: () => {
-      const defaultFormModel = createDefaultFormModel();
-      handleUpdateFormModel(defaultFormModel);
+      const defaultFormModel = createDefaultFormModel()
+      handleUpdateFormModel(defaultFormModel)
     },
     edit: () => {
       if (props.editData) {
-        handleUpdateFormModel(props.editData);
-        const notification_config = JSON.parse(props.editData.notification_config);
-        const notification_type = props.editData.notification_type;
+        handleUpdateFormModel(props.editData)
+        const notification_config = JSON.parse(props.editData.notification_config)
+        const notification_type = props.editData.notification_type
         if (notification_type === 'MEMBER') {
-          notificationConfig.value.MEMBER = memberTypeData;
+          notificationConfig.value.MEMBER = memberTypeData
         } else if (['EMAIL', 'SME', 'VOICE'].includes(notification_type)) {
-          formModel.value.info = notification_config[notification_type];
+          formModel.value.info = notification_config[notification_type]
         } else if (notification_type === 'WEBHOOK') {
-          notificationConfig.value.PayloadURL = notification_config.PayloadURL;
-          notificationConfig.value.Secret = notification_config.Secret;
+          notificationConfig.value.PayloadURL = notification_config.PayloadURL
+          notificationConfig.value.Secret = notification_config.Secret
         }
-        notificationConfig.value[notification_type] = notification_config[notification_type];
+        notificationConfig.value[notification_type] = notification_config[notification_type]
       }
     }
-  };
+  }
 
-  handlers[props.type]();
+  handlers[props.type]()
 }
 
 async function handleSubmit() {
-  await formRef.value?.validate();
+  await formRef.value?.validate()
   if (formModel.value.notification_type === 'MEMBER') {
-    notificationConfig.value.MEMBER = memberTypeData;
+    notificationConfig.value.MEMBER = memberTypeData
   } else if (['EMAIL', 'SME', 'VOICE'].includes(formModel.value.notification_type)) {
-    notificationConfig.value[formModel.value.notification_type] = formModel.value.info;
+    notificationConfig.value[formModel.value.notification_type] = formModel.value.info
   }
 
   const params = {
@@ -134,11 +133,11 @@ async function handleSubmit() {
     notification_type: formModel.value.notification_type,
     notification_config: JSON.stringify(notificationConfig.value),
     status: formModel.value.status
-  };
+  }
   if (props.type === 'add') {
-    await postNotificationGroup(params);
+    await postNotificationGroup(params)
   } else {
-    await putNotificationGroup({ ...params, tenant_id: props.editData?.tenant_id || '' }, props.editData?.id || '');
+    await putNotificationGroup({ ...params, tenant_id: props.editData?.tenant_id || '' }, props.editData?.id || '')
   }
 
   // const titles: Record<ModalType, string> = {
@@ -146,24 +145,24 @@ async function handleSubmit() {
   //   edit: $t('common.edit')
   // };
   // window.$message?.success(`${titles[props.type]}成功!`);
-  emit('getTableData');
-  closeModal();
+  emit('getTableData')
+  closeModal()
 }
 
 watch(
   () => props.visible,
   newValue => {
     if (newValue) {
-      notificationTypeOptions.value = [];
-      handleSearch();
-      handleUpdateFormModelByModalType();
+      notificationTypeOptions.value = []
+      handleSearch()
+      handleUpdateFormModelByModalType()
     }
   }
-);
+)
 
 const handleAddMember = () => {
-  memberTypeData.value.push(initMemberData);
-};
+  memberTypeData.value.push(initMemberData)
+}
 </script>
 
 <template>

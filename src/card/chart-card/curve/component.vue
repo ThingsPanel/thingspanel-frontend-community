@@ -1,20 +1,20 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
-import type { ICardData } from '@/components/panel/card';
-import LineChart from '@/card/chart-card/curve/modules/line-chart.vue';
-import { colorGroups } from './theme';
+import { ref } from 'vue'
+import type { ICardData } from '@/components/panel/card'
+import LineChart from '@/card/chart-card/curve/modules/line-chart.vue'
+import { colorGroups } from './theme'
 
 const props = defineProps<{
-  card: ICardData;
-}>();
+  card: ICardData
+}>()
 
-const lineChart = ref<InstanceType<typeof LineChart>>();
+const lineChart = ref<InstanceType<typeof LineChart>>()
 
 defineExpose({
   updateData: (deviceId: string | undefined, metricsId: string | undefined, data: any) => {
-    lineChart.value?.updateData(deviceId, metricsId, data);
+    lineChart.value?.updateData(deviceId, metricsId, data)
   }
-});
+})
 </script>
 
 <template>

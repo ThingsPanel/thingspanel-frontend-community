@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { useAppStore } from '@/store/modules/app';
+import { useAppStore } from '@/store/modules/app'
 // import { useThemeStore } from '@/store/modules/theme';
-import { useRouteStore } from '@/store/modules/route';
+import { useRouteStore } from '@/store/modules/route'
 
 defineOptions({
   name: 'GlobalContent'
-});
+})
 
 interface Props {
   /** Show padding for content */
-  showPadding?: boolean;
+  showPadding?: boolean
 }
 
 withDefaults(defineProps<Props>(), {
   showPadding: true
-});
+})
 
-const appStore = useAppStore();
+const appStore = useAppStore()
 // const themeStore = useThemeStore();
-const routeStore = useRouteStore();
+const routeStore = useRouteStore()
 </script>
 
 <template>

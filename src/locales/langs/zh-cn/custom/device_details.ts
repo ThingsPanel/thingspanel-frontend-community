@@ -40,4 +40,4 @@ export default {
   sendTime: '发送时间',
   lastUpdate: '最后更新',
   message: '消息'
-};
+}

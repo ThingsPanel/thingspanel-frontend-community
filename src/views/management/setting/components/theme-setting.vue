@@ -1,35 +1,34 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
-import { useLoading } from '@sa/hooks';
-import { editThemeSetting, fetchThemeSetting } from '@/service/api/setting';
-import { deepClone } from '@/utils/common/tool';
-// eslint-disable-next-line import/order
+import { reactive } from 'vue'
+import { useLoading } from '@sa/hooks'
+import { editThemeSetting, fetchThemeSetting } from '@/service/api/setting'
+import { deepClone } from '@/utils/common/tool'
 // import { createServiceConfig } from '~/env.config';
 // const { otherBaseURL } = createServiceConfig(import.meta.env);
 // const url = ref(new URL(otherBaseURL.demo));
-import { useSysSettingStore } from '@/store/modules/sys-setting';
-import { $t } from '@/locales';
-import UploadImage from './upload-image.vue';
+import { useSysSettingStore } from '@/store/modules/sys-setting'
+import { $t } from '@/locales'
+import UploadImage from './upload-image.vue'
 
-const { loading, startLoading, endLoading } = useLoading(false);
+const { loading, startLoading, endLoading } = useLoading(false)
 
-const formModel = reactive<GeneralSetting.ThemeSetting>(createDefaultFormModel());
-const sysSettingStore = useSysSettingStore();
+const formModel = reactive<GeneralSetting.ThemeSetting>(createDefaultFormModel())
+const sysSettingStore = useSysSettingStore()
 
 function setTableData(data: GeneralSetting.ThemeSetting) {
-  Object.assign(formModel, data);
+  Object.assign(formModel, data)
 }
 
 async function getGeneralSetting() {
-  startLoading();
-  const { data } = await fetchThemeSetting();
+  startLoading()
+  const { data } = await fetchThemeSetting()
   if (data) {
-    const list: Api.GeneralSetting.ThemeSetting[] = data.list;
+    const list: Api.GeneralSetting.ThemeSetting[] = data.list
     if (list.length) {
-      setTableData(list[0]);
+      setTableData(list[0])
     }
   }
-  endLoading();
+  endLoading()
 }
 
 function createDefaultFormModel(): GeneralSetting.ThemeSetting {
@@ -40,27 +39,27 @@ function createDefaultFormModel(): GeneralSetting.ThemeSetting {
     logo_cache: '',
     logo_loading: '',
     home_background: ''
-  };
+  }
 }
 
 async function handleSubmit() {
-  startLoading();
-  const formData = deepClone(formModel);
-  const data: any = await editThemeSetting(formData);
+  startLoading()
+  const formData = deepClone(formModel)
+  const data: any = await editThemeSetting(formData)
   if (!data.error) {
-    window.$message?.success(data.msg);
+    window.$message?.success(data.msg)
     // 确保系统设置在应用启动时加载
-    await sysSettingStore.initSysSetting();
-    endLoading();
-    await getGeneralSetting();
+    await sysSettingStore.initSysSetting()
+    endLoading()
+    await getGeneralSetting()
   }
 }
 
 function init() {
-  getGeneralSetting();
+  getGeneralSetting()
 }
 
-init();
+init()
 </script>
 
 <template>

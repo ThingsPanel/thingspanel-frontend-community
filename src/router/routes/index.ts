@@ -1,7 +1,7 @@
-import type { CustomRoute, ElegantConstRoute, ElegantRoute } from '@elegant-router/types';
-import { generatedRoutes } from '../elegant/routes';
-import { layouts, views } from '../elegant/imports';
-import { transformElegantRoutesToVueRoutes } from '../elegant/transform';
+import type { CustomRoute, ElegantConstRoute, ElegantRoute } from '@elegant-router/types'
+import { generatedRoutes } from '../elegant/routes'
+import { layouts, views } from '../elegant/imports'
+import { transformElegantRoutesToVueRoutes } from '../elegant/transform'
 
 export const ROOT_ROUTE: CustomRoute = {
   name: 'root',
@@ -11,7 +11,7 @@ export const ROOT_ROUTE: CustomRoute = {
     title: 'root',
     constant: true
   }
-};
+}
 
 const customRoutes: CustomRoute[] = [
   ROOT_ROUTE,
@@ -67,28 +67,28 @@ const customRoutes: CustomRoute[] = [
       }
     ]
   }
-];
+]
 
 /** Create routes */
 export function createRoutes() {
-  const constantRoutes: ElegantRoute[] = [];
+  const constantRoutes: ElegantRoute[] = []
 
-  const authRoutes: ElegantRoute[] = [];
+  const authRoutes: ElegantRoute[] = []
 
-  [...customRoutes, ...generatedRoutes].forEach(item => {
+  ;[...customRoutes, ...generatedRoutes].forEach(item => {
     if (item.meta?.constant) {
-      constantRoutes.push(item);
+      constantRoutes.push(item)
     } else {
-      authRoutes.push(item);
+      authRoutes.push(item)
     }
-  });
+  })
 
-  const constantVueRoutes = transformElegantRoutesToVueRoutes(constantRoutes, layouts, views);
+  const constantVueRoutes = transformElegantRoutesToVueRoutes(constantRoutes, layouts, views)
 
   return {
     constantVueRoutes,
     authRoutes
-  };
+  }
 }
 
 /**
@@ -97,5 +97,5 @@ export function createRoutes() {
  * @param routes Elegant routes
  */
 export function getAuthVueRoutes(routes: ElegantConstRoute[]) {
-  return transformElegantRoutesToVueRoutes(routes, layouts, views);
+  return transformElegantRoutesToVueRoutes(routes, layouts, views)
 }

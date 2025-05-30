@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { NCard } from 'naive-ui';
-import VChart from 'vue-echarts';
-import { use } from 'echarts/core';
-import { CanvasRenderer } from 'echarts/renderers';
-import { GaugeChart } from 'echarts/charts';
-import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components';
-import type { ICardData } from '@/components/panel/card';
-import { telemetryDataCurrentKeys } from '@/service/api/device';
-import { $t } from '@/locales';
+import { defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { NCard } from 'naive-ui'
+import VChart from 'vue-echarts'
+import { use } from 'echarts/core'
+import { CanvasRenderer } from 'echarts/renderers'
+import { GaugeChart } from 'echarts/charts'
+import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components'
+import type { ICardData } from '@/components/panel/card'
+import { telemetryDataCurrentKeys } from '@/service/api/device'
+import { $t } from '@/locales'
 
 // 注册 ECharts 所需的组件和渲染器
-use([CanvasRenderer, GaugeChart, TitleComponent, TooltipComponent, LegendComponent]);
+use([CanvasRenderer, GaugeChart, TitleComponent, TooltipComponent, LegendComponent])
 
-const initDetailValue = 8;
-const valueColor = '#105ba8';
+const initDetailValue = 8
+const valueColor = '#105ba8'
 
-const props = defineProps<{ card: ICardData }>();
+const props = defineProps<{ card: ICardData }>()
 
-const cardRef = ref(NCard);
-const chartRef = ref<typeof VChart | null>(null);
+const cardRef = ref(NCard)
+const chartRef = ref<typeof VChart | null>(null)
 
-const detail = ref<number>(0);
-const unit = ref<string>('');
+const detail = ref<number>(0)
+const unit = ref<string>('')
 
 const chartOptions = ref({
   series: [
@@ -69,103 +69,103 @@ const chartOptions = ref({
       ]
     }
   ]
-});
+})
 
 const setSeries: (dataSource) => void = async dataSource => {
   const querDetail = {
-    device_id: dataSource?.deviceSource ? dataSource?.deviceSource?.[0]?.deviceId ?? '' : '',
+    device_id: dataSource?.deviceSource ? (dataSource?.deviceSource?.[0]?.deviceId ?? '') : '',
     keys: dataSource?.deviceSource ? dataSource?.deviceSource?.[0]?.metricsId : ''
-  };
+  }
   if (querDetail.device_id && querDetail.keys) {
-    const detailValue = await telemetryDataCurrentKeys(querDetail);
+    const detailValue = await telemetryDataCurrentKeys(querDetail)
     if (detailValue?.data[0]?.unit) {
-      unit.value = detailValue?.data[0]?.unit;
+      unit.value = detailValue?.data[0]?.unit
     }
     if (detailValue?.data[0]?.value) {
-      detail.value = detailValue.data[0].value;
+      detail.value = detailValue.data[0].value
     }
   }
-};
+}
 
 defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     if (metricsId && data && typeof data === 'object' && Object.prototype.hasOwnProperty.call(data, metricsId)) {
-      detail.value = data[metricsId];
+      detail.value = data[metricsId]
     }
   }
-});
+})
 
 const handleDataChange = () => {
-  const adjustedOptions = chartOptions.value;
-  const min = props?.card?.config?.min || 0;
-  const max = props?.card?.config?.max || 100;
-  adjustedOptions.series[0].min = min;
-  adjustedOptions.series[0].max = max;
-  const detailValue = !detail.value ? 0 : detail.value;
-  const unitValue = props?.card?.config?.unit || unit.value;
-  let ratio = 0.064;
+  const adjustedOptions = chartOptions.value
+  const min = props?.card?.config?.min || 0
+  const max = props?.card?.config?.max || 100
+  adjustedOptions.series[0].min = min
+  adjustedOptions.series[0].max = max
+  const detailValue = !detail.value ? 0 : detail.value
+  const unitValue = props?.card?.config?.unit || unit.value
+  let ratio = 0.064
   if (detailValue >= max) {
-    ratio = 1;
+    ratio = 1
   } else if (detailValue <= min) {
-    ratio = 0;
+    ratio = 0
   } else {
-    ratio = (detailValue - min) / (max - min);
+    ratio = (detailValue - min) / (max - min)
   }
-  const changeColorArr = [ratio * 0.8, valueColor];
-  adjustedOptions.series[0].axisLine.lineStyle.color[0] = changeColorArr;
-  adjustedOptions.series[0].data[0].value = detailValue || 0;
-  adjustedOptions.series[0].data[0].detail.formatter = value => `${value || 0} ${unitValue}`;
-};
+  const changeColorArr = [ratio * 0.8, valueColor]
+  adjustedOptions.series[0].axisLine.lineStyle.color[0] = changeColorArr
+  adjustedOptions.series[0].data[0].value = detailValue || 0
+  adjustedOptions.series[0].data[0].detail.formatter = value => `${value || 0} ${unitValue}`
+}
 
 const handleResize = () => {
-  const chartInstance = chartRef.value;
+  const chartInstance = chartRef.value
   if (chartInstance) {
-    chartInstance.resize();
+    chartInstance.resize()
 
-    const containerWidth = Math.min(chartRef.value?.$el.clientWidth, chartRef.value?.$el.clientHeight);
-    const adjustedOptions = chartOptions.value;
-    adjustedOptions.series[0].detail.fontSize = containerWidth / 10;
-    adjustedOptions.series[0].axisLabel.fontSize = containerWidth / 16;
-    adjustedOptions.series[0].data[0].detail.lineHeight = containerWidth / 10;
+    const containerWidth = Math.min(chartRef.value?.$el.clientWidth, chartRef.value?.$el.clientHeight)
+    const adjustedOptions = chartOptions.value
+    adjustedOptions.series[0].detail.fontSize = containerWidth / 10
+    adjustedOptions.series[0].axisLabel.fontSize = containerWidth / 16
+    adjustedOptions.series[0].data[0].detail.lineHeight = containerWidth / 10
   }
-};
+}
 
 watch(
   () => props.card.dataSource,
   () => setSeries(props.card.dataSource),
   { immediate: true, deep: true }
-);
+)
 watch(
   () => detail.value,
   () => {
-    handleDataChange();
+    handleDataChange()
   }
-);
+)
 watch(
   () => props?.card?.config,
   () => {
-    handleDataChange();
+    handleDataChange()
   },
   { deep: true }
-);
+)
 
 onMounted(() => {
-  setSeries(props.card.dataSource);
-  handleDataChange();
-  handleResize();
+  setSeries(props.card.dataSource)
+  handleDataChange()
+  handleResize()
 
   const resizeObserver = new ResizeObserver(() => {
-    handleResize();
-  });
+    handleResize()
+  })
 
   if (cardRef.value) {
-    resizeObserver.observe(cardRef.value);
+    resizeObserver.observe(cardRef.value)
   }
 
   onBeforeUnmount(() => {
-    resizeObserver.disconnect();
-  });
-});
+    resizeObserver.disconnect()
+  })
+})
 </script>
 
 <template>

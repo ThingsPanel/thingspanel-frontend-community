@@ -1,39 +1,39 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import type { PaginationProps } from 'naive-ui';
-import { getServiceList } from '@/service/api/device';
-const router = useRouter();
+import { reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import type { PaginationProps } from 'naive-ui'
+import { getServiceList } from '@/service/api/device'
+const router = useRouter()
 const pagination: PaginationProps = reactive({
   page: 1,
   pageSize: 20,
   pageCount: 1
-});
+})
 const queryParams = reactive({
   page_size: 12,
   service_type: 2
-});
-const deviceTemplateList = ref([] as any[]);
+})
+const deviceTemplateList = ref([] as any[])
 
 const getData = async () => {
   const res = await getServiceList({
     page: pagination.page as number,
     ...queryParams
-  });
+  })
   if (!res.error) {
-    deviceTemplateList.value = res.data.list;
+    deviceTemplateList.value = res.data.list
     // eslint-disable-next-line require-atomic-updates
-    pagination.pageCount = Math.ceil(res.data.total / 12);
+    pagination.pageCount = Math.ceil(res.data.total / 12)
   }
-};
+}
 
-getData();
+getData()
 
 const clickDevice = async row => {
   router.push(
     `/device/service-details?id=${row.id}&service_type=${row.service_type}&service_name=${row.name}&service_identifier=${row.service_identifier}`
-  );
-};
+  )
+}
 </script>
 
 <template>
@@ -57,8 +57,8 @@ const clickDevice = async row => {
           :page-count="pagination.pageCount"
           @update:page="
             page => {
-              pagination.page = page;
-              getData();
+              pagination.page = page
+              getData()
             }
           "
         />

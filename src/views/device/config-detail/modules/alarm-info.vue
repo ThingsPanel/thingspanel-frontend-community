@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { NButton, NFlex } from 'naive-ui';
-import { useRouterPush } from '@/hooks/common/router';
-import alarmDataList from '@/views/automation/scene-linkage/modules/dataList.vue';
-import { $t } from '@/locales';
+import { NButton, NFlex } from 'naive-ui'
+import { useRouterPush } from '@/hooks/common/router'
+import alarmDataList from '@/views/automation/scene-linkage/modules/dataList.vue'
+import { $t } from '@/locales'
 
-const { routerPushByKey } = useRouterPush();
+const { routerPushByKey } = useRouterPush()
 
 const props = defineProps<{
   // eslint-disable-next-line vue/prop-name-casing
-  config_id: string;
-}>();
+  config_id: string
+}>()
 const alarmAdd = () => {
   routerPushByKey('automation_linkage-edit', {
     query: { device_config_id: props.config_id, backType: 'config' }
-  });
-};
+  })
+}
 </script>
 
 <template>

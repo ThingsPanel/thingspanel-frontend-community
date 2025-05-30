@@ -36,4 +36,4 @@ export default {
     lenMin6: 'Input must be at least 6 characters',
     tip: 'Input must be at least 6 characters'
   }
-};
+}

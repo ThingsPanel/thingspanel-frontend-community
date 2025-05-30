@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import type { ICardData } from '@/components/panel/card';
-import { $t } from '@/locales';
+import type { ICardData } from '@/components/panel/card'
+import { $t } from '@/locales'
 
 defineProps<{
-  card: ICardData;
-}>();
+  card: ICardData
+}>()
 </script>
 
 <template>

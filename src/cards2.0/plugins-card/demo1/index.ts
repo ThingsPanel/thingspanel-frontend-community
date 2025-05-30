@@ -1,6 +1,6 @@
-import { defineAsyncComponent } from 'vue';
-import type { CardItem } from '@/cards2.0/card';
-import poster from './poster.png';
+import { defineAsyncComponent } from 'vue'
+import type { CardItem } from '@/cards2.0/card'
+import poster from './poster.png'
 
 export default {
   cardItemBase: {
@@ -23,4 +23,4 @@ export default {
   poster, // 示例图 尺寸193*120
   component: defineAsyncComponent(() => import('./index.vue')), // 卡片组件，一般就是 ./component.vue
   configForm: defineAsyncComponent(() => import('./card-congig-form.vue')) // 卡片配置文件，一般就是 card-config.vue
-} as CardItem;
+} as CardItem

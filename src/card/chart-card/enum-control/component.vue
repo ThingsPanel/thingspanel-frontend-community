@@ -1,16 +1,16 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
-import type { ICardData } from '@/components/panel/card';
-import { attributeDataPub, commandDataPub, telemetryDataPub } from '@/service/api/device';
-import { createLogger } from '@/utils/logger';
-import { $t } from '@/locales';
+import { ref, watch } from 'vue'
+import type { ICardData } from '@/components/panel/card'
+import { attributeDataPub, commandDataPub, telemetryDataPub } from '@/service/api/device'
+import { createLogger } from '@/utils/logger'
+import { $t } from '@/locales'
 
-const logger = createLogger('Control');
+const logger = createLogger('Control')
 // Props接收传入的ICardData对象
 const props = defineProps<{
-  card: ICardData;
-}>();
-const detail: any = ref('0');
+  card: ICardData
+}>()
+const detail: any = ref('0')
 
 // 从props.card.config中获取按钮配置信息
 const configOptions = ref<Array<{ label: string; value: string | number }>>([
@@ -18,7 +18,7 @@ const configOptions = ref<Array<{ label: string; value: string | number }>>([
   { label: $t('card.cooling'), value: 'cool' },
   { label: $t('card.ventilate'), value: 'fan' },
   { label: $t('card.automatic'), value: 'auto' }
-]);
+])
 
 watch(
   () => props.card.config.btOptions,
@@ -28,39 +28,39 @@ watch(
       { label: $t('card.cooling'), value: 'cool' },
       { label: $t('card.ventilate'), value: 'fan' },
       { label: $t('card.automatic'), value: 'auto' }
-    ];
+    ]
   },
   { immediate: true, deep: true }
-);
+)
 
 defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     // Only update detail value when data[metricsId] is not undefined, null or ''
     if (!metricsId || data[metricsId] === undefined || data[metricsId] === null || data[metricsId] === '') {
-      logger.warn(`No data returned from websocket for ${metricsId}`);
-      return;
+      logger.warn(`No data returned from websocket for ${metricsId}`)
+      return
     }
-    detail.value = metricsId ? `${data[metricsId]}` : '0';
+    detail.value = metricsId ? `${data[metricsId]}` : '0'
   }
-});
+})
 
 const toRealValue: (inputValue: string) => any = (inputValue: string) => {
-  const dataType = props?.card?.dataSource?.deviceSource?.[0]?.metricsDataType;
+  const dataType = props?.card?.dataSource?.deviceSource?.[0]?.metricsDataType
   if (dataType === 'number') {
-    return Number.parseFloat(inputValue);
+    return Number.parseFloat(inputValue)
   } else if (dataType === 'boolean') {
-    return Boolean(inputValue);
+    return Boolean(inputValue)
   }
-  return inputValue;
-};
+  return inputValue
+}
 
 // 处理点击按钮的逻辑
 const handleClick = async (value: string | number) => {
-  detail.value = value;
-  const deviceSource = props.card?.dataSource?.deviceSource?.[0];
-  const device_id = deviceSource?.deviceId ?? '';
-  const metricsId = deviceSource?.metricsId ?? '';
-  const metricsType = deviceSource?.metricsType ?? '';
+  detail.value = value
+  const deviceSource = props.card?.dataSource?.deviceSource?.[0]
+  const device_id = deviceSource?.deviceId ?? ''
+  const metricsId = deviceSource?.metricsId ?? ''
+  const metricsType = deviceSource?.metricsType ?? ''
 
   if (device_id && metricsId) {
     const payload = {
@@ -68,22 +68,22 @@ const handleClick = async (value: string | number) => {
       value: JSON.stringify({
         [metricsId]: toRealValue(value)
       })
-    };
+    }
 
     try {
       if (metricsType === 'attributes') {
-        await attributeDataPub(payload);
+        await attributeDataPub(payload)
       } else if (metricsType === 'telemetry') {
-        await telemetryDataPub(payload);
+        await telemetryDataPub(payload)
       } else if (metricsType === 'command') {
-        await commandDataPub(payload);
+        await commandDataPub(payload)
       }
-      window.$message?.success($t('card.dataSentSuccess'));
+      window.$message?.success($t('card.dataSentSuccess'))
     } catch (error) {
-      window.$message?.error($t('card.dataSentFail'));
+      window.$message?.error($t('card.dataSentFail'))
     }
   }
-};
+}
 </script>
 
 <template>

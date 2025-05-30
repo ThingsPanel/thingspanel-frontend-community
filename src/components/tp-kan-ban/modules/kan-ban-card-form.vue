@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue';
-import type { CardItem } from '@/cards2.0/card';
-import type { CardView } from '@/components/tp-kan-ban/kan-ban';
-import { useKanBanStore } from '@/cards2.0/store/kan-ban-store';
-import { createLogger } from '@/utils/logger';
-const logger = createLogger('KanBanCard');
-const { cardMap } = useKanBanStore();
-const copy = (obj: object) => JSON.parse(JSON.stringify(obj));
+import { reactive, watch } from 'vue'
+import type { CardItem } from '@/cards2.0/card'
+import type { CardView } from '@/components/tp-kan-ban/kan-ban'
+import { useKanBanStore } from '@/cards2.0/store/kan-ban-store'
+import { createLogger } from '@/utils/logger'
+const logger = createLogger('KanBanCard')
+const { cardMap } = useKanBanStore()
+const copy = (obj: object) => JSON.parse(JSON.stringify(obj))
 const defData: CardView = {
   x: 0,
   y: 0,
@@ -32,36 +32,36 @@ const defData: CardView = {
       cardUI: {}
     }
   }
-};
+}
 
 const state = reactive({
   selectCard: null as null | CardItem,
   cardView: copy(defData)
   // data: copy(defData)
-});
+})
 
 const emit = defineEmits<{
-  (e: 'update', data: CardView): void;
-}>();
+  (e: 'update', data: CardView): void
+}>()
 
 watch(
   () => state.cardView.data.config,
   value => {
-    logger.info(value);
-    emit('update', state.cardView as any);
+    logger.info(value)
+    emit('update', state.cardView as any)
   },
   { deep: true }
-);
+)
 
 defineExpose({
   setCard: (data?: CardView) => {
-    state.selectCard = null;
-    state.cardView = copy(data || defData);
+    state.selectCard = null
+    state.cardView = copy(data || defData)
     setTimeout(() => {
-      state.selectCard = cardMap.get(state.cardView.data.cardId) || null;
-    });
+      state.selectCard = cardMap.get(state.cardView.data.cardId) || null
+    })
   }
-});
+})
 </script>
 
 <template>

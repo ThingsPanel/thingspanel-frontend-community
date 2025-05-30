@@ -1,9 +1,9 @@
-import { defineAsyncComponent } from 'vue';
-import type { ICardDefine } from '@/components/panel/card';
-import { $t } from '@/locales';
+import { defineAsyncComponent } from 'vue'
+import type { ICardDefine } from '@/components/panel/card'
+import { $t } from '@/locales'
 // Assuming a disk-usage.png will be created or copied later
 // Comment out the poster import for now as the file doesn't exist
-import poster from './image.png'; 
+import poster from './image.png'
 
 export default {
   id: 'disk-usage',
@@ -19,4 +19,4 @@ export default {
       minW: 2
     }
   }
-} as ICardDefine; 
+} as ICardDefine

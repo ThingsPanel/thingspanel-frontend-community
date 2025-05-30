@@ -1,8 +1,8 @@
-import { defineAsyncComponent } from 'vue';
-import type { ICardDefine } from '@/components/panel/card';
-import { $t } from '@/locales';
-import poster from './image.png'; 
-import component from './component.vue';
+import { defineAsyncComponent } from 'vue'
+import type { ICardDefine } from '@/components/panel/card'
+import { $t } from '@/locales'
+import poster from './image.png'
+import component from './component.vue'
 export default {
   id: 'metrics-history',
   type: 'builtin',
@@ -18,4 +18,4 @@ export default {
       minH: 2
     }
   }
-} as ICardDefine;
+} as ICardDefine

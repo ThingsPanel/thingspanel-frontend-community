@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { useThemeStore } from '@/store/modules/theme';
-import { $t } from '@/locales';
-import SettingItem from '../components/setting-item.vue';
+import { useThemeStore } from '@/store/modules/theme'
+import { $t } from '@/locales'
+import SettingItem from '../components/setting-item.vue'
 
 defineOptions({
   name: 'ThemeColor'
-});
+})
 
-const themeStore = useThemeStore();
+const themeStore = useThemeStore()
 
 function handleUpdateColor(color: string, key: App.Theme.ThemeColorKey) {
-  themeStore.updateThemeColors(key, color);
+  themeStore.updateThemeColors(key, color)
 }
 
 const swatches: string[] = [
@@ -30,7 +30,7 @@ const swatches: string[] = [
   '#84cc16',
   '#22c55e',
   '#10b981'
-];
+]
 </script>
 
 <template>

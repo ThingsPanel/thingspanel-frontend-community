@@ -1,100 +1,100 @@
 <script setup lang="ts">
-import { defineProps, onMounted, reactive, ref, watchEffect } from 'vue';
-import type { FormInst, FormRules } from 'naive-ui';
-import { NButton, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
-import type { SelectMixedOption } from 'naive-ui/es/select/src/interface';
-import { getDeviceConnectInfo, updateDeviceVoucher } from '@/service/api/device';
-import { $t } from '@/locales';
+import { defineProps, onMounted, reactive, ref, watchEffect } from 'vue'
+import type { FormInst, FormRules } from 'naive-ui'
+import { NButton, NForm, NFormItem, NInput, NSelect } from 'naive-ui'
+import type { SelectMixedOption } from 'naive-ui/es/select/src/interface'
+import { getDeviceConnectInfo, updateDeviceVoucher } from '@/service/api/device'
+import { $t } from '@/locales'
 
-const formRef = ref<FormInst | null>(null);
+const formRef = ref<FormInst | null>(null)
 
-const formRules = ref<FormRules>({});
+const formRules = ref<FormRules>({})
 // 定义支持的表单元素类型
-type FormElementType = 'input' | 'table' | 'select';
+type FormElementType = 'input' | 'table' | 'select'
 
 // 定义选项接口，适用于 select 类型的表单元素
 interface Option {
-  label: string;
-  value: number | string;
+  label: string
+  value: number | string
 }
 
 // 定义验证规则接口
 interface Validate {
-  message?: string; // 验证失败时显示的错误消息
-  required?: boolean; // 指定字段是否必填
-  rules?: string; // 用于验证字段值的正则表达式规则
-  type?: 'number' | 'string' | 'array' | 'boolean' | 'object'; // 验证的类型
+  message?: string // 验证失败时显示的错误消息
+  required?: boolean // 指定字段是否必填
+  rules?: string // 用于验证字段值的正则表达式规则
+  type?: 'number' | 'string' | 'array' | 'boolean' | 'object' // 验证的类型
 }
 
 // 定义表单元素接口
 interface FormElement {
-  type: FormElementType; // 表单元素的类型
-  dataKey: string; // 用于唯一标识表单元素的键
-  label: string; // 显示为表单元素标签的文本
-  options?: Option[]; // 下拉选择的枚举选项，仅 select 类型时有效
-  placeholder?: string; // 提示文本，仅 input 类型时有效
-  validate?: Validate; // 包含表单验证规则的对象
-  array?: FormElement[]; // 仅 table 类型时有效，定义表格列的配置
+  type: FormElementType // 表单元素的类型
+  dataKey: string // 用于唯一标识表单元素的键
+  label: string // 显示为表单元素标签的文本
+  options?: Option[] // 下拉选择的枚举选项，仅 select 类型时有效
+  placeholder?: string // 提示文本，仅 input 类型时有效
+  validate?: Validate // 包含表单验证规则的对象
+  array?: FormElement[] // 仅 table 类型时有效，定义表格列的配置
 }
 
 const props = defineProps<{
-  formElements: FormElement[];
-  nextCallback: () => void;
-  device_id: string;
-  formData: object;
-  setIsSuccess: (flag: boolean) => void;
-}>();
+  formElements: FormElement[]
+  nextCallback: () => void
+  device_id: string
+  formData: object
+  setIsSuccess: (flag: boolean) => void
+}>()
 
 // eslint-disable-next-line vue/no-dupe-keys
-const formData = reactive({});
-const connectInfo = ref<object>({});
+const formData = reactive({})
+const connectInfo = ref<object>({})
 const feachConnectInfo = async () => {
-  const res = await getDeviceConnectInfo({ device_id: props.device_id });
-  connectInfo.value = res.data;
-};
+  const res = await getDeviceConnectInfo({ device_id: props.device_id })
+  connectInfo.value = res.data
+}
 
 onMounted(() => {
-  feachConnectInfo();
-});
+  feachConnectInfo()
+})
 watchEffect(() => {
   if (props.formElements && Array.isArray(props.formElements)) {
     props.formElements.forEach(element => {
       if (element.type === 'table' && Array.isArray(element.array)) {
         element.array.forEach(subElement => {
-          formRules.value[element.dataKey] = subElement.validate || {};
-          formData[subElement.dataKey] ??= props.formData[subElement.dataKey] || '';
-        });
+          formRules.value[element.dataKey] = subElement.validate || {}
+          formData[subElement.dataKey] ??= props.formData[subElement.dataKey] || ''
+        })
       } else {
-        formRules.value[element.dataKey] = element.validate || {};
-        formData[element.dataKey] ??= props.formData[element.dataKey] || '';
+        formRules.value[element.dataKey] = element.validate || {}
+        formData[element.dataKey] ??= props.formData[element.dataKey] || ''
       }
-    });
+    })
   }
-});
+})
 
 const handleSubmit = async () => {
   // eslint-disable-next-line consistent-return
-  await formRef.value?.validate();
+  await formRef.value?.validate()
 
   const res = await updateDeviceVoucher({
     device_id: props.device_id,
     voucher: JSON.stringify(formData) || '{}'
-  });
+  })
 
   if (!res.error) {
-    props.setIsSuccess(true);
-    props.nextCallback();
+    props.setIsSuccess(true)
+    props.nextCallback()
   } else {
-    props.setIsSuccess(false);
-    props.nextCallback();
+    props.setIsSuccess(false)
+    props.nextCallback()
   }
-};
+}
 const copy = event => {
-  const input = event.target;
-  input.select();
-  document.execCommand('copy');
-  window.$message?.success($t('theme.configOperation.copySuccess'));
-};
+  const input = event.target
+  input.select()
+  document.execCommand('copy')
+  window.$message?.success($t('theme.configOperation.copySuccess'))
+}
 </script>
 
 <template>

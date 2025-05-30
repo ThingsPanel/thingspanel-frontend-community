@@ -23,4 +23,4 @@ export default {
   confirm: '确定',
   messageId: '消息ID',
   sendContent: '发送内容'
-};
+}

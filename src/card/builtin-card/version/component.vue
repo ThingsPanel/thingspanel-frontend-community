@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="p-4 border rounded h-full flex flex-col justify-center items-center text-center"
-  >
+  <div class="p-4 border rounded h-full flex flex-col justify-center items-center text-center">
     <div
       class="p-6 rounded-lg border border-gray-300 dark:border-gray-700 shadow-md backdrop-blur-sm hover:shadow-lg transition-shadow duration-300 w-full bg-gradient-to-tr from-purple-100 via-blue-100 to-green-100 dark:from-gray-800 dark:to-slate-900"
     >
@@ -14,7 +12,7 @@
         <span class="text-3xl font-bold text-gray-900 dark:text-white mb-3 tracking-wider">1.1.7</span>
         <n-tag type="success" size="medium" round class="animate-pulse">
           <template #icon>
-            <Icon icon="carbon:checkmark-outline" class="text-lg"/>
+            <Icon icon="carbon:checkmark-outline" class="text-lg" />
           </template>
           {{ $t('card.versionInfo.latest') }}
         </n-tag>
@@ -24,14 +22,13 @@
 </template>
 
 <script setup lang="ts">
-import { $t } from '@/locales';
-import { Icon } from '@iconify/vue';
-import { NTag } from 'naive-ui';
+import { $t } from '@/locales'
+import { Icon } from '@iconify/vue'
+import { NTag } from 'naive-ui'
 
 defineOptions({
   name: 'VersionCard'
-});
-
+})
 </script>
 
 <style scoped>
@@ -42,7 +39,7 @@ defineOptions({
 
 @keyframes pulse {
   50% {
-    opacity: .7;
+    opacity: 0.7;
   }
 }
 </style>

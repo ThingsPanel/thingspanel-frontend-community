@@ -1,7 +1,7 @@
-import { useBoolean } from '@sa/hooks';
+import { useBoolean } from '@sa/hooks'
 export default function useLoadingEmpty(initLoading = false, initEmpty = false) {
-  const { bool: loading, setTrue: startLoading, setFalse: endLoading } = useBoolean(initLoading);
-  const { bool: empty, setBool: setEmpty } = useBoolean(initEmpty);
+  const { bool: loading, setTrue: startLoading, setFalse: endLoading } = useBoolean(initLoading)
+  const { bool: empty, setBool: setEmpty } = useBoolean(initEmpty)
 
   return {
     loading,
@@ -9,5 +9,5 @@ export default function useLoadingEmpty(initLoading = false, initEmpty = false) 
     endLoading,
     empty,
     setEmpty
-  };
+  }
 }

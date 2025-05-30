@@ -83,4 +83,4 @@ export default {
     pressure: '压力',
     chooseDevice: '选择设备'
   }
-};
+}

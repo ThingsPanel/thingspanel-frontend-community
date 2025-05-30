@@ -1,86 +1,86 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { NIcon } from 'naive-ui';
-import type { ICardData } from '@/components/panel/card';
-import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device';
-import { icons as iconOptions } from '@/components/common/icons';
-import { createLogger } from '@/utils/logger';
-import { $t } from '@/locales';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { NIcon } from 'naive-ui'
+import type { ICardData } from '@/components/panel/card'
+import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device'
+import { icons as iconOptions } from '@/components/common/icons'
+import { createLogger } from '@/utils/logger'
+import { $t } from '@/locales'
 
-const logger = createLogger('Indicator');
+const logger = createLogger('Indicator')
 const props = defineProps<{
-  card: ICardData;
-}>();
+  card: ICardData
+}>()
 
-const detail = ref<string>('');
-const unit = ref<string>(''); // Unit will be '%' for humidity
-const fontSize = ref('14px');
-const cardRef = ref(null);
-let resizeObserver: ResizeObserver | null = null;
+const detail = ref<string>('')
+const unit = ref<string>('') // Unit will be '%' for humidity
+const fontSize = ref('14px')
+const cardRef = ref(null)
+let resizeObserver: ResizeObserver | null = null
 
 const setSeries = async (dataSource: ICardData['dataSource']) => {
-  if (!dataSource?.deviceSource?.[0]) return;
+  if (!dataSource?.deviceSource?.[0]) return
 
-  const { metricsType, deviceId, metricsId } = dataSource.deviceSource[0];
+  const { metricsType, deviceId, metricsId } = dataSource.deviceSource[0]
 
   if (metricsType === 'telemetry' && deviceId && metricsId) {
     const detailValue = await telemetryDataCurrentKeys({
       device_id: deviceId,
       keys: metricsId
-    });
-    unit.value = detailValue?.data?.[0]?.unit ?? '%';
-    detail.value = detailValue?.data?.[0]?.value ?? '';
+    })
+    unit.value = detailValue?.data?.[0]?.unit ?? '%'
+    detail.value = detailValue?.data?.[0]?.value ?? ''
   } else if (metricsType === 'attributes' && deviceId && metricsId) {
-    const res = await getAttributeDataSet({ device_id: deviceId });
-    const attributeData = res.data.find(item => item.key === metricsId);
-    detail.value = attributeData?.value ?? '';
-    unit.value = attributeData?.unit ?? '%';
+    const res = await getAttributeDataSet({ device_id: deviceId })
+    const attributeData = res.data.find(item => item.key === metricsId)
+    detail.value = attributeData?.value ?? ''
+    unit.value = attributeData?.unit ?? '%'
   }
-};
+}
 
 const handleResize = (entries: ResizeObserverEntry[]) => {
   for (const entry of entries) {
-    const { width, height } = entry.contentRect;
-    const newFontSize = `${Math.min(width, height) / 10}px`;
-    fontSize.value = newFontSize;
+    const { width, height } = entry.contentRect
+    const newFontSize = `${Math.min(width, height) / 10}px`
+    fontSize.value = newFontSize
   }
-};
+}
 
 watch(
   () => props.card?.dataSource?.deviceSource,
   () => {
-    detail.value = '';
-    unit.value = '';
-    setSeries(props.card?.dataSource);
+    detail.value = ''
+    unit.value = ''
+    setSeries(props.card?.dataSource)
   },
   { deep: true }
-);
+)
 
 onMounted(() => {
-  setSeries(props.card?.dataSource);
+  setSeries(props.card?.dataSource)
   if (cardRef.value) {
-    resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(cardRef.value);
+    resizeObserver = new ResizeObserver(handleResize)
+    resizeObserver.observe(cardRef.value)
   }
-});
+})
 
 onBeforeUnmount(() => {
   if (resizeObserver) {
-    resizeObserver.disconnect();
-    resizeObserver = null;
+    resizeObserver.disconnect()
+    resizeObserver = null
   }
-});
+})
 
 defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     // Only update detail value when data[metricsId] is not undefined, null or ''
     if (!metricsId || data[metricsId] === undefined || data[metricsId] === null || data[metricsId] === '') {
-      logger.warn(`No data returned from websocket for ${metricsId}`);
-      return;
+      logger.warn(`No data returned from websocket for ${metricsId}`)
+      return
     }
-    detail.value = metricsId ? data[metricsId] : '';
+    detail.value = metricsId ? data[metricsId] : ''
   }
-});
+})
 </script>
 
 <template>

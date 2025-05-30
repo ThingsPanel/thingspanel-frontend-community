@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import WangEditor from 'wangeditor';
-import { $t } from '@/locales';
+import { onMounted, ref } from 'vue'
+import WangEditor from 'wangeditor'
+import { $t } from '@/locales'
 
-const editor = ref<WangEditor>();
-const domRef = ref<HTMLElement>();
+const editor = ref<WangEditor>()
+const domRef = ref<HTMLElement>()
 
 function renderWangEditor() {
-  editor.value = new WangEditor(domRef.value);
-  setEditorConfig();
-  editor.value.create();
+  editor.value = new WangEditor(domRef.value)
+  setEditorConfig()
+  editor.value.create()
 }
 
 function setEditorConfig() {
   if (editor.value?.config?.zIndex) {
-    editor.value.config.zIndex = 10;
+    editor.value.config.zIndex = 10
   }
 }
 
 onMounted(() => {
-  renderWangEditor();
-});
+  renderWangEditor()
+})
 </script>
 
 <template>

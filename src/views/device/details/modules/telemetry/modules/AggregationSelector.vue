@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { TimeOutline } from '@vicons/ionicons5';
-import { Circle24Regular, Target20Regular } from '@vicons/fluent';
-import { addYears, differenceInDays, differenceInHours, differenceInMonths } from 'date-fns';
-import { $t } from '@/locales';
+import { onMounted, ref } from 'vue'
+import { TimeOutline } from '@vicons/ionicons5'
+import { Circle24Regular, Target20Regular } from '@vicons/fluent'
+import { addYears, differenceInDays, differenceInHours, differenceInMonths } from 'date-fns'
+import { $t } from '@/locales'
 const emit = defineEmits<{
-  (event: 'update:value', value): void;
-}>();
+  (event: 'update:value', value): void
+}>()
 const props = defineProps<{
-  device_id: string;
-  thekey: string;
-}>();
+  device_id: string
+  thekey: string
+}>()
 
 interface AggregationData {
-  device_id: string;
-  key: string;
-  aggregate_window: string;
-  time_range: string;
-  start_time?: number;
-  end_time?: number;
-  aggregate_function?: string;
+  device_id: string
+  key: string
+  aggregate_window: string
+  time_range: string
+  start_time?: number
+  end_time?: number
+  aggregate_function?: string
 }
 
 const aggregation_data = ref<AggregationData>({
@@ -27,8 +27,8 @@ const aggregation_data = ref<AggregationData>({
   key: props.thekey,
   aggregate_window: 'no_aggregate',
   time_range: 'last_1h'
-});
-const dateRange = ref<[number, number] | null>(null);
+})
+const dateRange = ref<[number, number] | null>(null)
 const timeOptions = [
   { label: $t('common.custom'), value: 'custom' },
   { label: $t('common.last_5m'), value: 'last_5m' },
@@ -47,7 +47,7 @@ const timeOptions = [
   { label: $t('common.lastDays90'), value: 'last_90d' },
   { label: $t('common.halfYear'), value: 'last_6m' },
   { label: $t('common.lastYears1'), value: 'last_1y' }
-];
+]
 const timeWeighting = {
   custom: 0,
   last_5m: 0,
@@ -66,7 +66,7 @@ const timeWeighting = {
   last_90d: 10,
   last_6m: 11,
   last_1y: 12
-};
+}
 const aggregationIntervalOptions = [
   { label: $t('common.notAggre'), value: 'no_aggregate', disabled: false },
   { label: $t('common.seconds30'), value: '30s', disabled: false },
@@ -81,97 +81,97 @@ const aggregationIntervalOptions = [
   { label: $t('common.days1'), value: '1d', disabled: false },
   { label: $t('common.days7'), value: '7d', disabled: false },
   { label: $t('common.months1'), value: '1mo', disabled: false }
-];
+]
 const statisticsOptions = [
   { label: $t('common.average'), value: 'avg', disabled: false },
   { label: $t('generate.max-value'), value: 'max', disabled: false },
   { label: $t('generate.min-value'), value: 'min', disabled: false },
   { label: $t('generate.sum'), value: 'sum', disabled: false },
   { label: $t('generate.diff'), value: 'diff', disabled: false }
-];
+]
 
 const aggregationTtemToFalse = (weight: number) => {
   aggregationIntervalOptions.forEach((item, index) => {
     if (index < weight) {
-      item.disabled = true;
+      item.disabled = true
     } else {
-      item.disabled = false;
+      item.disabled = false
     }
     if (index < weight + 1) {
-      aggregation_data.value.aggregate_window = item.value;
+      aggregation_data.value.aggregate_window = item.value
       if (aggregation_data.value.aggregate_window !== 'no_aggregate' && !aggregation_data.value.aggregate_function) {
-        aggregation_data.value.aggregate_function = 'avg';
+        aggregation_data.value.aggregate_function = 'avg'
       }
       if (aggregation_data.value.aggregate_window === 'no_aggregate') {
-        aggregation_data.value.aggregate_function = undefined;
+        aggregation_data.value.aggregate_function = undefined
       }
     }
-  });
-};
+  })
+}
 
 function onChangeTime(v) {
   if (v !== 'custom') {
-    aggregation_data.value.start_time = undefined;
-    aggregation_data.value.end_time = undefined;
-    dateRange.value = null;
+    aggregation_data.value.start_time = undefined
+    aggregation_data.value.end_time = undefined
+    dateRange.value = null
   }
-  aggregationTtemToFalse(timeWeighting[v]);
-  if (v) emit('update:value', aggregation_data.value);
+  aggregationTtemToFalse(timeWeighting[v])
+  if (v) emit('update:value', aggregation_data.value)
 }
 
 function onChangeAggregation(v) {
   if (v !== 'no_aggregate' && !aggregation_data.value.aggregate_function) {
-    aggregation_data.value.aggregate_function = 'avg';
+    aggregation_data.value.aggregate_function = 'avg'
   }
   if (v === 'no_aggregate') {
-    aggregation_data.value.aggregate_function = undefined;
+    aggregation_data.value.aggregate_function = undefined
   }
-  emit('update:value', aggregation_data.value);
+  emit('update:value', aggregation_data.value)
 }
 
 function onChangeStatistics() {
-  emit('update:value', aggregation_data.value);
+  emit('update:value', aggregation_data.value)
 }
 
 function getWeightNumber(diffHours, diffDays, diffMonths) {
-  if (diffHours <= 1) return timeWeighting.last_1h; // 处理小于1小时的情况
-  if (diffHours <= 3) return timeWeighting.last_3h;
-  if (diffHours <= 6) return timeWeighting.last_6h;
-  if (diffHours <= 12) return timeWeighting.last_12h;
-  if (diffHours <= 24) return timeWeighting.last_24h;
-  if (diffDays <= 3) return timeWeighting.last_3d;
-  if (diffDays <= 7) return timeWeighting.last_7d;
-  if (diffDays <= 15) return timeWeighting.last_15d;
-  if (diffDays <= 30) return timeWeighting.last_30d;
-  if (diffDays <= 60) return timeWeighting.last_60d;
-  if (diffDays <= 90) return timeWeighting.last_90d;
-  if (diffMonths <= 6) return timeWeighting.last_6m;
-  if (diffMonths <= 12) return timeWeighting.last_1y;
+  if (diffHours <= 1) return timeWeighting.last_1h // 处理小于1小时的情况
+  if (diffHours <= 3) return timeWeighting.last_3h
+  if (diffHours <= 6) return timeWeighting.last_6h
+  if (diffHours <= 12) return timeWeighting.last_12h
+  if (diffHours <= 24) return timeWeighting.last_24h
+  if (diffDays <= 3) return timeWeighting.last_3d
+  if (diffDays <= 7) return timeWeighting.last_7d
+  if (diffDays <= 15) return timeWeighting.last_15d
+  if (diffDays <= 30) return timeWeighting.last_30d
+  if (diffDays <= 60) return timeWeighting.last_60d
+  if (diffDays <= 90) return timeWeighting.last_90d
+  if (diffMonths <= 6) return timeWeighting.last_6m
+  if (diffMonths <= 12) return timeWeighting.last_1y
 
-  return timeWeighting.last_1y; // 对于超过1年的情况，默认返回最后一个权重
+  return timeWeighting.last_1y // 对于超过1年的情况，默认返回最后一个权重
 }
 
 const checkDateRange = value => {
-  const [start, end] = value;
+  const [start, end] = value
   if (start && end && addYears(start, 1) < end) {
-    dateRange.value = null;
-    window.NMessage.error($t('common.withinOneYear'));
+    dateRange.value = null
+    window.NMessage.error($t('common.withinOneYear'))
   } else {
-    aggregation_data.value.start_time = start;
-    aggregation_data.value.end_time = end;
+    aggregation_data.value.start_time = start
+    aggregation_data.value.end_time = end
 
-    const diffHours = differenceInHours(end, start);
-    const diffDays = differenceInDays(end, start);
-    const diffMonths = differenceInMonths(end, start);
-    let weight = 0;
+    const diffHours = differenceInHours(end, start)
+    const diffDays = differenceInDays(end, start)
+    const diffMonths = differenceInMonths(end, start)
+    let weight = 0
 
-    weight = getWeightNumber(diffHours, diffDays, diffMonths);
-    aggregationTtemToFalse(weight);
+    weight = getWeightNumber(diffHours, diffDays, diffMonths)
+    aggregationTtemToFalse(weight)
   }
-};
+}
 onMounted(() => {
-  emit('update:value', aggregation_data.value);
-});
+  emit('update:value', aggregation_data.value)
+})
 </script>
 
 <template>

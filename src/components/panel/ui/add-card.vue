@@ -1,36 +1,36 @@
 <script lang="ts" setup>
-import { onMounted, onUpdated, reactive, ref, watch } from 'vue';
-import { useMessage } from 'naive-ui';
-import { InformationCircleSharp } from '@vicons/ionicons5';
+import { onMounted, onUpdated, reactive, ref, watch } from 'vue'
+import { useMessage } from 'naive-ui'
+import { InformationCircleSharp } from '@vicons/ionicons5'
 // eslint-disable-next-line vue/prefer-import-from-vue
-import type { UnwrapRefSimple } from '@vue/reactivity';
-import type { ICardData, ICardDefine, ICardFormIns } from '@/components/panel/card';
-import { PanelCards } from '@/components/panel';
-import { deviceTemplateSelect } from '@/service/api';
-import { $t } from '@/locales';
+import type { UnwrapRefSimple } from '@vue/reactivity'
+import type { ICardData, ICardDefine, ICardFormIns } from '@/components/panel/card'
+import { PanelCards } from '@/components/panel'
+import { deviceTemplateSelect } from '@/service/api'
+import { $t } from '@/locales'
 
 const props = defineProps<{
-  open: boolean;
-  data?: ICardData | null;
-}>();
-const formRef = ref<ICardFormIns>();
-const tabValue = ref('builtin');
+  open: boolean
+  data?: ICardData | null
+}>()
+const formRef = ref<ICardFormIns>()
+const tabValue = ref('builtin')
 const tabList = [
   { tab: '系统', type: 'builtin' },
   { tab: '设备', type: 'device' },
   { tab: '插件', type: 'plugin' },
   { tab: '图表', type: 'chart' }
-];
+]
 const state = reactive({
   curCardData: null as null | Record<string, any>
-});
+})
 // $emit是内置变量 不可以使用$emit 作为变量名
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void;
-  (e: 'save', value: any): void;
-}>();
+  (e: 'update:open', value: boolean): void
+  (e: 'save', value: any): void
+}>()
 
-const copy = (data: object) => JSON.parse(JSON.stringify(data));
+const copy = (data: object) => JSON.parse(JSON.stringify(data))
 const selectCard = item => {
   state.curCardData = {
     cardId: item.cardId,
@@ -43,18 +43,18 @@ const selectCard = item => {
       systemSource: [{}],
       deviceSource: [{}]
     }
-  };
-  formRef.value?.setCard(state.curCardData as any);
-};
+  }
+  formRef.value?.setCard(state.curCardData as any)
+}
 const getImagePath = item => {
-  const cardType = item.data.cardId.match(/curve|demo|switch/);
+  const cardType = item.data.cardId.match(/curve|demo|switch/)
 
   if (!cardType) {
-    return '/src/card/chart-card/default/poster.png';
+    return '/src/card/chart-card/default/poster.png'
   }
 
-  return `/src/card/chart-card/${cardType[0]}/poster.png`;
-};
+  return `/src/card/chart-card/${cardType[0]}/poster.png`
+}
 const selectFinalCard = (item: ICardDefine) => {
   state.curCardData = {
     cardId: item.id,
@@ -67,50 +67,50 @@ const selectFinalCard = (item: ICardDefine) => {
       systemSource: [{}],
       deviceSource: [{}]
     }
-  };
-  formRef.value?.setCard(state.curCardData as any);
-};
+  }
+  formRef.value?.setCard(state.curCardData as any)
+}
 
-const message = useMessage();
-const widths = ref(['flex-[44]', 'flex-[54]', 'flex-[2]']);
-const count = ref<number>(2);
+const message = useMessage()
+const widths = ref(['flex-[44]', 'flex-[54]', 'flex-[2]'])
+const count = ref<number>(2)
 const changeWidths = () => {
   if (count.value === 1) {
-    widths.value = ['flex-[2]', 'flex-[44]', 'flex-[54]'];
-    count.value = 2;
+    widths.value = ['flex-[2]', 'flex-[44]', 'flex-[54]']
+    count.value = 2
   } else {
-    widths.value = ['flex-[44]', 'flex-[54]', 'flex-[2]'];
-    count.value = 1;
+    widths.value = ['flex-[44]', 'flex-[54]', 'flex-[2]']
+    count.value = 1
   }
-};
+}
 
 const save = () => {
   if (!state?.curCardData?.cardId) {
-    message.destroyAll();
-    message.warning($t('common.selectCardFirst'));
-    return;
+    message.destroyAll()
+    message.warning($t('common.selectCardFirst'))
+    return
   }
-  count.value = 2;
-  changeWidths();
-  emit('update:open', false);
+  count.value = 2
+  changeWidths()
+  emit('update:open', false)
 
   if (state && state.curCardData && state.curCardData.dataSource && state.curCardData.dataSource.deviceSource) {
     state.curCardData.dataSource.deviceSource = state.curCardData.dataSource.deviceSource.filter(
       item => Object.keys(item).length > 0
-    );
+    )
     if (
       state.curCardData.dataSource.deviceCount >= 1 &&
       state.curCardData.dataSource.deviceSource.length > state.curCardData.dataSource.deviceCount
     ) {
-      state.curCardData.dataSource.deviceSource.splice(state.curCardData.dataSource.deviceCount);
+      state.curCardData.dataSource.deviceSource.splice(state.curCardData.dataSource.deviceCount)
     }
     if (state.curCardData.dataSource.deviceSource.length === 0) {
-      state.curCardData.dataSource.deviceSource = [{}];
+      state.curCardData.dataSource.deviceSource = [{}]
     }
   }
-  state.curCardData.type = tabValue.value;
-  emit('save', JSON.parse(JSON.stringify(state.curCardData)));
-};
+  state.curCardData.type = tabValue.value
+  emit('save', JSON.parse(JSON.stringify(state.curCardData)))
+}
 watch(props, pr => {
   if (pr.open) {
     if (pr.data) {
@@ -121,66 +121,66 @@ watch(props, pr => {
         config: copy(pr.data?.config || {}),
         basicSettings: copy(pr.data?.basicSettings || {}),
         dataSource: copy(pr.data?.dataSource || {})
-      };
+      }
     } else {
-      state.curCardData = null;
+      state.curCardData = null
     }
     setTimeout(() => {
-      formRef.value?.setCard(state.curCardData as any);
-    }, 30);
+      formRef.value?.setCard(state.curCardData as any)
+    }, 30)
   }
-});
-const deviceOptions = ref<UnwrapRefSimple<any>[]>();
-const webChartConfig = ref<any>([]);
-const availableCardIds = ref<string[]>([]);
-const deviceSelectId = ref<string>('');
+})
+const deviceOptions = ref<UnwrapRefSimple<any>[]>()
+const webChartConfig = ref<any>([])
+const availableCardIds = ref<string[]>([])
+const deviceSelectId = ref<string>('')
 
 const getDeviceOptions = async () => {
-  const { data, error } = await deviceTemplateSelect();
+  const { data, error } = await deviceTemplateSelect()
   if (!error) {
-    deviceOptions.value = data;
+    deviceOptions.value = data
   }
-};
+}
 const collectData = (v, o) => {
   if (o?.web_chart_config) {
-    webChartConfig.value = JSON.parse(o.web_chart_config);
+    webChartConfig.value = JSON.parse(o.web_chart_config)
     availableCardIds.value = webChartConfig.value.map(item => {
       item.data.dataSource.deviceSource.forEach(item1 => {
-        item1.deviceId = v;
-      });
+        item1.deviceId = v
+      })
 
-      return item.data.cardId;
-    });
+      return item.data.cardId
+    })
   }
-};
+}
 
 onUpdated(() => {
   if (props?.data?.dataSource?.deviceSource && props?.data?.dataSource?.deviceSource?.length > 0) {
-    deviceSelectId.value = props?.data?.dataSource?.deviceSource[0]?.deviceId || '';
+    deviceSelectId.value = props?.data?.dataSource?.deviceSource[0]?.deviceId || ''
     collectData(
       deviceSelectId.value,
       deviceOptions.value?.find(item => item.device_id === deviceSelectId.value)
-    );
+    )
   } else {
-    availableCardIds.value = [];
+    availableCardIds.value = []
   }
 
-  tabValue.value = props?.data?.type || 'builtin';
-});
+  tabValue.value = props?.data?.type || 'builtin'
+})
 
 onMounted(() => {
   if (props?.data?.dataSource?.deviceSource && props?.data?.dataSource?.deviceSource?.length > 0) {
-    deviceSelectId.value = props?.data?.dataSource?.deviceSource[0]?.deviceId || '';
+    deviceSelectId.value = props?.data?.dataSource?.deviceSource[0]?.deviceId || ''
     collectData(
       deviceSelectId.value,
       deviceOptions.value?.find(item => item.device_id === deviceSelectId.value)
-    );
+    )
   } else {
-    availableCardIds.value = [];
+    availableCardIds.value = []
   }
-  tabValue.value = props?.data?.type || 'builtin';
-  getDeviceOptions();
-});
+  tabValue.value = props?.data?.type || 'builtin'
+  getDeviceOptions()
+})
 </script>
 
 <template>
@@ -196,16 +196,16 @@ onMounted(() => {
     }"
     @close="
       () => {
-        count = 2;
-        changeWidths();
-        emit('update:open', false);
+        count = 2
+        changeWidths()
+        emit('update:open', false)
       }
     "
     @mask-click="
       () => {
-        count = 2;
-        changeWidths();
-        emit('update:open', false);
+        count = 2
+        changeWidths()
+        emit('update:open', false)
       }
     "
   >
@@ -219,8 +219,8 @@ onMounted(() => {
         "
         @mouseenter="
           () => {
-            count = 2;
-            changeWidths();
+            count = 2
+            changeWidths()
           }
         "
       >
@@ -233,12 +233,12 @@ onMounted(() => {
           @update:value="
             value => {
               if (state.curCardData) {
-                state.curCardData.cardId = '';
+                state.curCardData.cardId = ''
               }
-              availableCardIds = [];
-              webChartConfig = [];
-              deviceSelectId = '';
-              tabValue = value;
+              availableCardIds = []
+              webChartConfig = []
+              deviceSelectId = ''
+              tabValue = value
             }
           "
         >
@@ -253,9 +253,9 @@ onMounted(() => {
                 @update:value="
                   (value, option) => {
                     if (state.curCardData) {
-                      state.curCardData.cardId = '';
+                      state.curCardData.cardId = ''
                     }
-                    collectData(value, option);
+                    collectData(value, option)
                   }
                 "
               ></NSelect>
@@ -361,11 +361,11 @@ onMounted(() => {
         @mouseenter="
           () => {
             if (!state?.curCardData?.cardId) {
-              message.destroyAll();
-              return message.warning($t('common.selectCardFirst'));
+              message.destroyAll()
+              return message.warning($t('common.selectCardFirst'))
             }
-            count = 1;
-            changeWidths();
+            count = 1
+            changeWidths()
           }
         "
       >
@@ -387,9 +387,9 @@ onMounted(() => {
           class="mr-4"
           @click="
             () => {
-              count = 2;
-              changeWidths();
-              emit('update:open', false);
+              count = 2
+              changeWidths()
+              emit('update:open', false)
             }
           "
         >

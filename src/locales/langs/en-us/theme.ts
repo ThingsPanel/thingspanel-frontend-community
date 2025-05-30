@@ -82,6 +82,5 @@ export default {
     right: 'Right Footer'
   },
   themeDrawerTitle: 'Theme Configuration',
-  pageFunTitle: 'Page Function',
-
-};
+  pageFunTitle: 'Page Function'
+}

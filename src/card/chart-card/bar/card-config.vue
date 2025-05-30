@@ -1,45 +1,45 @@
 <script lang="ts" setup>
-import { inject, reactive, ref } from 'vue';
-import { NColorPicker, NSelect } from 'naive-ui';
-import type { IConfigCtx } from '@/components/panel/card';
-import { $t } from '@/locales';
-import CurveTheme from './theme';
+import { inject, reactive, ref } from 'vue'
+import { NColorPicker, NSelect } from 'naive-ui'
+import type { IConfigCtx } from '@/components/panel/card'
+import { $t } from '@/locales'
+import CurveTheme from './theme'
 
-const ctx = inject<IConfigCtx>('config-ctx')!;
+const ctx = inject<IConfigCtx>('config-ctx')!
 
-const originalColorGroups = reactive(CurveTheme);
+const originalColorGroups = reactive(CurveTheme)
 
-const colorGroups = ref(JSON.parse(JSON.stringify(originalColorGroups))); // Deep copy to preserve original data
+const colorGroups = ref(JSON.parse(JSON.stringify(originalColorGroups))) // Deep copy to preserve original data
 
 const themeOptions = [
   { label: $t('generate.color-theme1'), value: 'colorGroups' },
   { label: $t('generate.color-theme2'), value: 'colorGroups2' }
-];
+]
 
 const themeUpdate = () => {
-  const selectedTheme = ctx.config.selectedTheme;
+  const selectedTheme = ctx.config.selectedTheme
   ctx.config.colorGroups = {
     colorGroup: colorGroups.value[selectedTheme]
-  };
-};
+  }
+}
 const updateColor = (newColor, index, position) => {
   // This method updates the color and ensures reactivity
-  const selectedTheme = ctx.config.selectedTheme;
-  colorGroups.value[selectedTheme][index][position] = newColor;
+  const selectedTheme = ctx.config.selectedTheme
+  colorGroups.value[selectedTheme][index][position] = newColor
   ctx.config.colorGroups = {
     colorGroup: colorGroups.value[selectedTheme]
-  };
-};
+  }
+}
 const gradientStyle = group => {
-  return `background: linear-gradient(to right, ${group.top}, ${group.bottom});`;
-};
+  return `background: linear-gradient(to right, ${group.top}, ${group.bottom});`
+}
 const resetTheme = () => {
-  const selectedTheme = ctx.config.selectedTheme;
-  colorGroups.value = JSON.parse(JSON.stringify(originalColorGroups));
+  const selectedTheme = ctx.config.selectedTheme
+  colorGroups.value = JSON.parse(JSON.stringify(originalColorGroups))
   ctx.config.colorGroups = {
     colorGroup: colorGroups.value[selectedTheme.value]
-  };
-};
+  }
+}
 </script>
 
 <template>

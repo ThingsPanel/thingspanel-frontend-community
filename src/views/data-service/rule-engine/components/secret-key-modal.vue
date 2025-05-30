@@ -1,49 +1,49 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useClipboard } from '@vueuse/core';
-import { $t } from '@/locales';
+import { computed } from 'vue'
+import { useClipboard } from '@vueuse/core'
+import { $t } from '@/locales'
 
 export interface Props {
   /** 弹窗可见性 */
-  visible: boolean;
+  visible: boolean
   /** 编辑的表格行数据 */
-  secretKey?: string;
+  secretKey?: string
 }
 
-defineOptions({ name: 'SecretKeyModal' });
+defineOptions({ name: 'SecretKeyModal' })
 
 const props = withDefaults(defineProps<Props>(), {
   secretKey: ''
-});
+})
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void;
+  (e: 'update:visible', visible: boolean): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const modalVisible = computed({
   get() {
-    return props.visible;
+    return props.visible
   },
   set(visible) {
-    emit('update:visible', visible);
+    emit('update:visible', visible)
   }
-});
+})
 
-const { copy, isSupported } = useClipboard();
+const { copy, isSupported } = useClipboard()
 
 function handleCopy() {
   if (!isSupported) {
-    window.$message?.error(`${$t('common.browserNotSupport')}Clipboard API`);
-    return;
+    window.$message?.error(`${$t('common.browserNotSupport')}Clipboard API`)
+    return
   }
   if (!props.secretKey) {
-    window.$message?.error($t('common.contentToCopied'));
-    return;
+    window.$message?.error($t('common.contentToCopied'))
+    return
   }
-  copy(props.secretKey);
-  window.$message?.success(`：${props.secretKey}`);
+  copy(props.secretKey)
+  window.$message?.success(`：${props.secretKey}`)
 }
 </script>
 

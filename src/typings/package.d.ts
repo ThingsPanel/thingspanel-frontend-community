@@ -6,4 +6,4 @@ declare namespace BMap {
   class Point extends BMapGL.Point {}
 }
 
-declare const TMap: any;
+declare const TMap: any

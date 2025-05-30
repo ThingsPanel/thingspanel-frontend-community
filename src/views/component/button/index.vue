@@ -1,23 +1,23 @@
 <script setup lang="ts">
-import type { ButtonProps } from 'naive-ui';
-import { useLoading } from '@sa/hooks';
-import { $t } from '@/locales';
+import type { ButtonProps } from 'naive-ui'
+import { useLoading } from '@sa/hooks'
+import { $t } from '@/locales'
 
 interface ButtonDetail {
-  id: number;
-  props: ButtonProps & { href?: string; target?: string };
-  label?: string;
-  icon?: string;
+  // eslint-disable-next-line
+  props: ButtonProps & { href?: string; target?: string }
+  label?: string
+  icon?: string
 }
 
 interface ButtonExample {
-  id: number;
-  label: string;
-  buttons: ButtonDetail[];
-  desc?: string;
+  id: number
+  label: string
+  buttons: ButtonDetail[]
+  desc?: string
 }
 
-const { loading, startLoading, endLoading } = useLoading();
+const { loading, startLoading, endLoading } = useLoading()
 
 const buttonExample: ButtonExample[] = [
   {
@@ -534,7 +534,7 @@ const buttonExample: ButtonExample[] = [
     ],
     desc: '这两个颜色看起来像毒蘑菇。'
   }
-];
+]
 </script>
 
 <template>

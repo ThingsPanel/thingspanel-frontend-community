@@ -1,23 +1,23 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
-import type { FormInst } from 'naive-ui';
-import { $t } from '@/locales';
+import { ref, watch } from 'vue'
+import type { FormInst } from 'naive-ui'
+import { $t } from '@/locales'
 // import {useMessage} from 'naive-ui';
-import { deviceConfigAdd, deviceConfigEdit, deviceTemplate } from '@/service/api/device';
+import { deviceConfigAdd, deviceConfigEdit, deviceTemplate } from '@/service/api/device'
 
 // const message = useMessage();
 
 interface Props {
-  modalVisible?: boolean;
-  modalType?: string;
+  modalVisible?: boolean
+  modalType?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modalVisible: false,
   modalType: 'add'
-});
-const modalTitle = ref($t('generate.add'));
-const configForm = ref(defaultConfigForm());
+})
+const modalTitle = ref($t('generate.add'))
+const configForm = ref(defaultConfigForm())
 
 function defaultConfigForm() {
   return {
@@ -31,7 +31,7 @@ function defaultConfigForm() {
     protocol_type: null,
     remark: null,
     voucher_type: null
-  };
+  }
 }
 
 const configFormRules = ref({
@@ -50,67 +50,67 @@ const configFormRules = ref({
     message: $t('common.deviceConnectionMethod'),
     trigger: 'change'
   }
-});
-const deviceTemplateOptions = ref([]);
+})
+const deviceTemplateOptions = ref([])
 const getDeviceTemplate = () => {
   const paramsData = {
     page: 1,
     page_size: 100
-  };
+  }
   deviceTemplate(paramsData).then(res => {
-    deviceTemplateOptions.value = res.data.list;
-  });
-};
-
-interface Emits {
-  (e: 'modalClose'): void;
-
-  (e: 'submitted'): void;
+    deviceTemplateOptions.value = res.data.list
+  })
 }
 
-const emit = defineEmits<Emits>();
-const visible = ref(false);
+interface Emits {
+  (e: 'modalClose'): void
+
+  (e: 'submitted'): void
+}
+
+const emit = defineEmits<Emits>()
+const visible = ref(false)
 watch(
   () => props.modalVisible,
   newValue => {
-    visible.value = newValue;
+    visible.value = newValue
     if (props.modalType === 'add') {
-      modalTitle.value = $t('generate.add');
+      modalTitle.value = $t('generate.add')
     } else {
-      modalTitle.value = $t('common.edit');
+      modalTitle.value = $t('common.edit')
     }
-    getDeviceTemplate();
+    getDeviceTemplate()
   }
-);
+)
 const modalClose = () => {
-  emit('modalClose');
-};
+  emit('modalClose')
+}
 
-const deviceTemplateScroll = () => {};
-const configFormRef = ref<HTMLElement & FormInst>();
+const deviceTemplateScroll = () => {}
+const configFormRef = ref<HTMLElement & FormInst>()
 const handleClose = () => {
-  configFormRef.value?.restoreValidation();
-  configForm.value = defaultConfigForm();
-  visible.value = false;
-  modalClose();
-};
+  configFormRef.value?.restoreValidation()
+  configForm.value = defaultConfigForm()
+  visible.value = false
+  modalClose()
+}
 // 提交表单
 const handleSubmit = async () => {
-  await configFormRef?.value?.validate();
+  await configFormRef?.value?.validate()
   if (props.modalType === 'add') {
-    const res = await deviceConfigAdd(configForm.value);
+    const res = await deviceConfigAdd(configForm.value)
     if (!res.error) {
       // message.success('新增成功');
     }
   } else {
-    const res = await deviceConfigEdit(configForm.value);
+    const res = await deviceConfigEdit(configForm.value)
     if (!res.error) {
       // message.success('修改成功');
     }
   }
-  handleClose();
-  emit('submitted');
-};
+  handleClose()
+  emit('submitted')
+}
 </script>
 
 <template>

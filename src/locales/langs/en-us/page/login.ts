@@ -50,4 +50,4 @@ export default {
   bindWeChat: {
     title: 'Bind WeChat'
   }
-};
+}

@@ -1,7 +1,7 @@
 // @unocss-include
 
-import type { Preset } from '@unocss/core';
-import type { Theme } from '@unocss/preset-uno';
+import type { Preset } from '@unocss/core'
+import type { Theme } from '@unocss/preset-uno'
 
 export function presetSoybeanAdmin(): Preset<Theme> {
   const preset: Preset<Theme> = {
@@ -49,9 +49,9 @@ export function presetSoybeanAdmin(): Preset<Theme> {
         'ellipsis-text': 'nowrap-hidden text-ellipsis'
       }
     ]
-  };
+  }
 
-  return preset;
+  return preset
 }
 
-export default presetSoybeanAdmin;
+export default presetSoybeanAdmin

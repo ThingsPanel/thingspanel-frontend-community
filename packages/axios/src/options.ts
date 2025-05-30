@@ -1,8 +1,8 @@
-import type { CreateAxiosDefaults } from 'axios';
-import type { IAxiosRetryConfig } from 'axios-retry';
-import { stringify } from 'qs';
-import { isHttpSuccess } from './shared';
-import type { RequestOption } from './type';
+import type { CreateAxiosDefaults } from 'axios'
+import type { IAxiosRetryConfig } from 'axios-retry'
+import { stringify } from 'qs'
+import { isHttpSuccess } from './shared'
+import type { RequestOption } from './type'
 
 export function createDefaultOptions<ResponseData = any>(options?: Partial<RequestOption<ResponseData>>) {
   const opts: RequestOption<ResponseData> = {
@@ -11,25 +11,25 @@ export function createDefaultOptions<ResponseData = any>(options?: Partial<Reque
     onBackendFail: async () => {},
     transformBackendResponse: async response => response.data,
     onError: async () => {}
-  };
+  }
 
-  Object.assign(opts, options);
+  Object.assign(opts, options)
 
-  return opts;
+  return opts
 }
 
 export function createRetryOptions(config?: Partial<CreateAxiosDefaults>) {
   const retryConfig: IAxiosRetryConfig = {
     retries: 3
-  };
+  }
 
-  Object.assign(retryConfig, config);
+  Object.assign(retryConfig, config)
 
-  return retryConfig;
+  return retryConfig
 }
 
 export function createAxiosConfig(config?: Partial<CreateAxiosDefaults>) {
-  const TEN_SECONDS = 25 * 1000;
+  const TEN_SECONDS = 25 * 1000
 
   const axiosConfig: CreateAxiosDefaults = {
     timeout: TEN_SECONDS,
@@ -38,11 +38,11 @@ export function createAxiosConfig(config?: Partial<CreateAxiosDefaults>) {
     },
     validateStatus: isHttpSuccess,
     paramsSerializer: params => {
-      return stringify(params);
+      return stringify(params)
     }
-  };
+  }
 
-  Object.assign(axiosConfig, config);
+  Object.assign(axiosConfig, config)
 
-  return axiosConfig;
+  return axiosConfig
 }

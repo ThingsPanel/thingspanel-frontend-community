@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { AdminLayoutProps } from '../../types';
-import { LAYOUT_MAX_Z_INDEX, LAYOUT_SCROLL_EL_ID, createLayoutCssVars } from './shared';
-import style from './index.module.css';
+import { computed } from 'vue'
+import type { AdminLayoutProps } from '../../types'
+import { LAYOUT_MAX_Z_INDEX, LAYOUT_SCROLL_EL_ID, createLayoutCssVars } from './shared'
+import style from './index.module.css'
 
 defineOptions({
   name: 'AdminLayout'
-});
+})
 
 const props = withDefaults(defineProps<AdminLayoutProps>(), {
   mode: 'vertical',
@@ -26,89 +26,89 @@ const props = withDefaults(defineProps<AdminLayoutProps>(), {
   footerVisible: true,
   footerHeight: 48,
   rightFooter: false
-});
+})
 
 interface Emits {
   /** Update siderCollapse */
-  (e: 'update:siderCollapse', collapse: boolean): void;
+  (e: 'update:siderCollapse', collapse: boolean): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
-type SlotFn = (props?: Record<string, unknown>) => any;
+type SlotFn = (props?: Record<string, unknown>) => any
 
 type Slots = {
   /** Main */
-  default?: SlotFn;
+  default?: SlotFn
   /** Header */
-  header?: SlotFn;
+  header?: SlotFn
   /** Tab */
-  tab?: SlotFn;
+  tab?: SlotFn
   /** Sider */
-  sider?: SlotFn;
+  sider?: SlotFn
   /** Footer */
-  footer?: SlotFn;
-};
+  footer?: SlotFn
+}
 
-const slots = defineSlots<Slots>();
+const slots = defineSlots<Slots>()
 
-const cssVars = computed(() => createLayoutCssVars(props));
+const cssVars = computed(() => createLayoutCssVars(props))
 
 // config visible
-const showHeader = computed(() => Boolean(slots.header) && props.headerVisible);
-const showTab = computed(() => Boolean(slots.tab) && props.tabVisible);
-const showSider = computed(() => !props.isMobile && Boolean(slots.sider) && props.siderVisible);
-const showMobileSider = computed(() => props.isMobile && Boolean(slots.sider) && props.siderVisible);
-const showFooter = computed(() => Boolean(slots.footer) && props.footerVisible);
+const showHeader = computed(() => Boolean(slots.header) && props.headerVisible)
+const showTab = computed(() => Boolean(slots.tab) && props.tabVisible)
+const showSider = computed(() => !props.isMobile && Boolean(slots.sider) && props.siderVisible)
+const showMobileSider = computed(() => props.isMobile && Boolean(slots.sider) && props.siderVisible)
+const showFooter = computed(() => Boolean(slots.footer) && props.footerVisible)
 
 // scroll mode
-const isWrapperScroll = computed(() => props.scrollMode === 'wrapper');
-const isContentScroll = computed(() => props.scrollMode === 'content');
+const isWrapperScroll = computed(() => props.scrollMode === 'wrapper')
+const isContentScroll = computed(() => props.scrollMode === 'content')
 
 // layout direction
-const isVertical = computed(() => props.mode === 'vertical');
-const isHorizontal = computed(() => props.mode === 'horizontal');
+const isVertical = computed(() => props.mode === 'vertical')
+const isHorizontal = computed(() => props.mode === 'horizontal')
 
-const fixedHeaderAndTab = computed(() => props.fixedTop || (isHorizontal.value && isWrapperScroll.value));
+const fixedHeaderAndTab = computed(() => props.fixedTop || (isHorizontal.value && isWrapperScroll.value))
 
 // css
 const leftGapClass = computed(() => {
   if (!props.fullContent && showSider.value) {
-    return props.siderCollapse ? style['left-gap_collapsed'] : style['left-gap'];
+    return props.siderCollapse ? style['left-gap_collapsed'] : style['left-gap']
   }
 
-  return '';
-});
+  return ''
+})
 
-const headerLeftGapClass = computed(() => (isVertical.value ? leftGapClass.value : ''));
+const headerLeftGapClass = computed(() => (isVertical.value ? leftGapClass.value : ''))
 
 const footerLeftGapClass = computed(() => {
-  const condition1 = isVertical.value;
-  const condition2 = isHorizontal.value && isWrapperScroll.value && !props.fixedFooter;
-  const condition3 = Boolean(isHorizontal.value && props.rightFooter);
+  const condition1 = isVertical.value
+  const condition2 = isHorizontal.value && isWrapperScroll.value && !props.fixedFooter
+  const condition3 = Boolean(isHorizontal.value && props.rightFooter)
 
   if (condition1 || condition2 || condition3) {
-    return leftGapClass.value;
+    return leftGapClass.value
   }
 
-  return '';
-});
+  return ''
+})
 
 const siderPaddingClass = computed(() => {
-  let cls = '';
+  let cls = ''
 
   if (showHeader.value && !headerLeftGapClass.value) {
-    cls += style['sider-padding-top'];
+    cls += style['sider-padding-top']
   }
   if (showFooter.value && !footerLeftGapClass.value) {
-    cls += ` ${style['sider-padding-bottom']}`;
+    cls += ` ${style['sider-padding-bottom']}`
   }
 
-  return cls;
-});
+  return cls
+})
 
 function handleClickMask() {
-  emit('update:siderCollapse', true);
+  emit('update:siderCollapse', true)
 }
 </script>
 

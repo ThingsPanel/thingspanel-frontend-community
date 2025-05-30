@@ -201,4 +201,4 @@ export default {
   validation: {
     commandIdentifierRequired: '命令标识符不能为空'
   }
-};
+}

@@ -63,4 +63,4 @@ export const icons = [
   'icon-park-outline:rectangular-vertebra',
   'icon-park-outline:data-server',
   'mdi:apps-box'
-];
+]

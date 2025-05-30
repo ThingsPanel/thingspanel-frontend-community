@@ -1,31 +1,31 @@
 <script lang="tsx" setup>
-import { computed, getCurrentInstance, ref } from 'vue';
+import { computed, getCurrentInstance, ref } from 'vue'
 // import { useRouter } from 'vue-router';
-import { NButton, NCard, NFlex, NGrid, NGridItem, NPagination, useDialog } from 'naive-ui';
-import {  PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5';
-import { DocumentOnePage24Regular } from '@vicons/fluent';
-import moment from 'moment';
-import { useRouterPush } from '@/hooks/common/router';
+import { NButton, NCard, NFlex, NGrid, NGridItem, NPagination, useDialog } from 'naive-ui'
+import { PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5'
+import { DocumentOnePage24Regular } from '@vicons/fluent'
+import moment from 'moment'
+import { useRouterPush } from '@/hooks/common/router'
 import {
   sceneAutomationsDel,
   sceneAutomationsGet,
   sceneAutomationsLog,
   sceneAutomationsSwitch
-} from '@/service/api/automation';
-import { $t } from '@/locales';
-import { deviceAlarmList } from '@/service/api';
-const dialog = useDialog();
+} from '@/service/api/automation'
+import { $t } from '@/locales'
+import { deviceAlarmList } from '@/service/api'
+const dialog = useDialog()
 // const router = useRouter();
-const { routerPushByKey } = useRouterPush();
+const { routerPushByKey } = useRouterPush()
 
 interface Props {
+  // eslint-disable-next-line vue/prop-name-casing,prettier/prettier
+  device_id?: string
   // eslint-disable-next-line vue/prop-name-casing
-  device_id?: string;
-  // eslint-disable-next-line vue/prop-name-casing
-  device_config_id?: string;
-  isAlarm?: boolean;
+  device_config_id?: string
+  isAlarm?: boolean
   // eslint-disable-next-line vue/no-unused-properties
-  backType?: string;
+  backType?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -34,16 +34,16 @@ const props = withDefaults(defineProps<Props>(), {
   device_config_id: '',
   isAlarm: false,
   backType: 'automation'
-});
+})
 
-const sceneLinkageList = ref([] as any);
+const sceneLinkageList = ref([] as any)
 
 // 新建场景
 const linkAdd = () => {
   routerPushByKey('automation_linkage-edit', {
     query: { device_id: props.device_id, device_config_id: props.device_config_id, backType: props.backType }
-  });
-};
+  })
+}
 
 // 编辑场景
 const linkEdit = (item: any) => {
@@ -56,17 +56,16 @@ const linkEdit = (item: any) => {
       device_id: props.device_id,
       device_config_id: props.device_config_id
     }
-  });
-};
+  })
+}
 
 // 开启/关闭场景
 const linkActivation = async (item: any) => {
-  const res = await sceneAutomationsSwitch(item.id);
+  const res = await sceneAutomationsSwitch(item.id)
   if (!res.error) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    await getData();
+    await getData()
   }
-};
+}
 
 const queryData = ref({
   name: '',
@@ -74,31 +73,30 @@ const queryData = ref({
   page_size: 12,
   device_id: '',
   device_config_id: ''
-});
-const dataTotal = ref(0);
+})
+const dataTotal = ref(0)
 
 const getData = async () => {
-  queryData.value.device_id = props.device_id;
-  queryData.value.device_config_id = props.device_config_id;
-  let res: any = null;
+  queryData.value.device_id = props.device_id
+  queryData.value.device_config_id = props.device_config_id
+  let res: any = null
   if (props.isAlarm) {
-    res = await deviceAlarmList(queryData.value);
+    res = await deviceAlarmList(queryData.value)
   } else {
-    res = await sceneAutomationsGet(queryData.value);
+    res = await sceneAutomationsGet(queryData.value)
   }
   if (res && !res.error) {
-    sceneLinkageList.value = res.data.list || [];
-    dataTotal.value = res.data.total;
+    sceneLinkageList.value = res.data.list || []
+    dataTotal.value = res.data.total
   }
-};
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+}
 const handleQuery = async () => {
-  queryData.value.page = 1;
-  await getData();
-};
+  queryData.value.page = 1
+  await getData()
+}
 const bodyStyle = ref({
   width: '1000px'
-});
+})
 const execution_result_options = ref([
   {
     label: $t('custom.device_details.whole'),
@@ -112,8 +110,8 @@ const execution_result_options = ref([
     label: $t('generate.execution-failed'),
     value: 'F'
   }
-]);
-const showLog = ref(false);
+])
+const showLog = ref(false)
 const logQuery = ref({
   page: 1,
   page_size: 10,
@@ -122,30 +120,29 @@ const logQuery = ref({
   execution_start_time: '',
   execution_end_time: '',
   queryTime: ref<[number, number]>([moment().subtract(7, 'days').valueOf(), moment().valueOf()])
-});
-const logDataTotal = ref(0);
-const logData = ref([]);
+})
+const logDataTotal = ref(0)
+const logData = ref([])
 const queryLog = () => {
-  logQuery.value.page = 1;
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  getLogList();
-};
+  logQuery.value.page = 1
+  getLogList()
+}
 const getLogList = async () => {
   if (logQuery.value.queryTime) {
-    logQuery.value.execution_start_time = moment(logQuery.value.queryTime[0]).format();
-    logQuery.value.execution_end_time = moment(logQuery.value.queryTime[1]).format();
+    logQuery.value.execution_start_time = moment(logQuery.value.queryTime[0]).format()
+    logQuery.value.execution_end_time = moment(logQuery.value.queryTime[1]).format()
   }
-  const res = await sceneAutomationsLog(logQuery.value);
-  logData.value = res.data.list;
-  logDataTotal.value = res.data.total;
-};
+  const res = await sceneAutomationsLog(logQuery.value)
+  logData.value = res.data.list
+  logDataTotal.value = res.data.total
+}
 
 // 查看日志
 const openLog = (item: any) => {
-  logQuery.value.scene_automation_id = item.id;
-  getLogList();
-  showLog.value = true;
-};
+  logQuery.value.scene_automation_id = item.id
+  getLogList()
+  showLog.value = true
+}
 // 删除场景
 const deleteLink = async (item: any) => {
   dialog.warning({
@@ -154,13 +151,13 @@ const deleteLink = async (item: any) => {
     positiveText: $t('device_template.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
-      const res = await sceneAutomationsDel(item.id);
+      const res = await sceneAutomationsDel(item.id)
       if (!res.error) {
-        await getData();
+        await getData()
       }
     }
-  });
-};
+  })
+}
 const closeLog = () => {
   logQuery.value = {
     page: 1,
@@ -170,15 +167,15 @@ const closeLog = () => {
     execution_start_time: '',
     execution_end_time: '',
     queryTime: [moment().subtract(7, 'days').valueOf(), moment().valueOf()]
-  };
-  showLog.value = false;
-};
+  }
+  showLog.value = false
+}
 
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
-getData();
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
+getData()
 </script>
 
 <template>

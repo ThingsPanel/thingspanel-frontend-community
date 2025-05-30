@@ -23,4 +23,4 @@ export default {
     routeParam: '路由参数',
     backTab: '返回 function_tab'
   }
-};
+}

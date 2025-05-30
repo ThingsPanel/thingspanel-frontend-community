@@ -99,4 +99,4 @@ export default {
     enumDataValue: 'Enum Value',
     enumDescription: 'Enum Description'
   }
-};
+}

@@ -1,22 +1,22 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { useRoute } from 'vue-router';
-import { NButton } from 'naive-ui';
-import { deviceConfigInfo, deviceTemplateDetail } from '@/service/api/device';
-import SettingInfo from '@/views/device/config-detail/modules/setting-info.vue';
-import DataHandle from '@/views/device/config-detail/modules/data-handle.vue';
-import { useRouterPush } from '@/hooks/common/router';
-import { $t } from '@/locales';
-import AssociatedDevices from './modules/associated-devices.vue';
-import ExtendInfo from './modules/extend-info.vue';
-import AttributeInfo from './modules/attribute-info.vue';
-import ConnectionInfo from './modules/connection-info.vue';
-import AlarmInfo from './modules/alarm-info.vue';
-import Automate from './modules/automate.vue';
+import { ref } from 'vue'
+import { useRoute } from 'vue-router'
+import { NButton } from 'naive-ui'
+import { deviceConfigInfo, deviceTemplateDetail } from '@/service/api/device'
+import SettingInfo from '@/views/device/config-detail/modules/setting-info.vue'
+import DataHandle from '@/views/device/config-detail/modules/data-handle.vue'
+import { useRouterPush } from '@/hooks/common/router'
+import { $t } from '@/locales'
+import AssociatedDevices from './modules/associated-devices.vue'
+import ExtendInfo from './modules/extend-info.vue'
+import AttributeInfo from './modules/attribute-info.vue'
+import ConnectionInfo from './modules/connection-info.vue'
+import AlarmInfo from './modules/alarm-info.vue'
+import Automate from './modules/automate.vue'
 
-const { routerPushByKey } = useRouterPush();
-const route = useRoute();
-const configId = ref(route.query.id || '');
+const { routerPushByKey } = useRouterPush()
+const route = useRoute()
+const configId = ref(route.query.id || '')
 
 const configForm = ref({
   id: route.query.id || '',
@@ -31,37 +31,37 @@ const configForm = ref({
   protocol_type: null,
   remark: null,
   voucher_type: null
-});
+})
 const editConfig = () => {
-  routerPushByKey('device_config-edit', { query: { id: configId.value } });
-};
+  routerPushByKey('device_config-edit', { query: { id: configId.value } })
+}
 const getTemplateDetail = async (templateId: string) => {
-  const res = await deviceTemplateDetail({ id: templateId });
+  const res = await deviceTemplateDetail({ id: templateId })
   if (res.data) {
-    configForm.value.device_template_name = res.data.name;
+    configForm.value.device_template_name = res.data.name
   }
-};
+}
 const getConfig = async () => {
-  const res = await deviceConfigInfo({ id: configId.value });
-  configForm.value = res.data;
+  const res = await deviceConfigInfo({ id: configId.value })
+  configForm.value = res.data
   if (configForm.value.device_template_id) {
-    configForm.value.device_template_name = '';
-    getTemplateDetail(configForm.value.device_template_id);
+    configForm.value.device_template_name = ''
+    getTemplateDetail(configForm.value.device_template_id)
   }
-};
-const activeName = ref('关联设备');
+}
+const activeName = ref('关联设备')
 // configId.value = <string>route.query.id || ''
 if (configId.value) {
-  getConfig();
-  activeName.value = '关联设备';
+  getConfig()
+  activeName.value = '关联设备'
 }
 const clickConfig: () => void = () => {
   routerPushByKey('device_template', {
     query: {
       id: configForm.value.device_template_id
     }
-  });
-};
+  })
+}
 </script>
 
 <template>

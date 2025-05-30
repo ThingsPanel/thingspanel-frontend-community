@@ -1,5 +1,5 @@
-import { cloneLayout, compact, correctBounds } from './common';
-import type { Breakpoint, Breakpoints, Layout, ResponsiveLayout } from './types';
+import { cloneLayout, compact, correctBounds } from './common'
+import type { Breakpoint, Breakpoints, Layout, ResponsiveLayout } from './types'
 
 /**
  * Given a width, find the highest breakpoint that matches is valid for it (width > breakpoint).
@@ -9,13 +9,13 @@ import type { Breakpoint, Breakpoints, Layout, ResponsiveLayout } from './types'
  * @returns Highest breakpoint that is less than width.
  */
 export function getBreakpointFromWidth(breakpoints: Breakpoints, width: number): Breakpoint {
-  const sorted = sortBreakpoints(breakpoints);
-  let matching = sorted[0];
+  const sorted = sortBreakpoints(breakpoints)
+  let matching = sorted[0]
   for (let i = 1, len = sorted.length; i < len; i += 1) {
-    const breakpointName = sorted[i];
-    if (width > breakpoints[breakpointName]) matching = breakpointName;
+    const breakpointName = sorted[i]
+    if (width > breakpoints[breakpointName]) matching = breakpointName
   }
-  return matching;
+  return matching
 }
 
 /**
@@ -27,9 +27,9 @@ export function getBreakpointFromWidth(breakpoints: Breakpoints, width: number):
  */
 export function getColsFromBreakpoint(breakpoint: Breakpoint, cols: Breakpoints): number {
   if (!cols[breakpoint]) {
-    throw new Error(`ResponsiveGridLayout: \`cols\` entry for breakpoint ${breakpoint} is missing!`);
+    throw new Error(`ResponsiveGridLayout: \`cols\` entry for breakpoint ${breakpoint} is missing!`)
   }
-  return cols[breakpoint];
+  return cols[breakpoint]
 }
 
 /**
@@ -60,21 +60,21 @@ export function findOrGenerateResponsiveLayout(
   verticalCompact: boolean
 ): Layout {
   // If it already exists, just return it.
-  if (layouts[breakpoint]) return cloneLayout(layouts[breakpoint]);
+  if (layouts[breakpoint]) return cloneLayout(layouts[breakpoint])
   // Find or generate the next layout
-  let layout = orgLayout;
+  let layout = orgLayout
 
-  const breakpointsSorted = sortBreakpoints(breakpoints);
-  const breakpointsAbove = breakpointsSorted.slice(breakpointsSorted.indexOf(breakpoint));
+  const breakpointsSorted = sortBreakpoints(breakpoints)
+  const breakpointsAbove = breakpointsSorted.slice(breakpointsSorted.indexOf(breakpoint))
   for (let i = 0, len = breakpointsAbove.length; i < len; i += 1) {
-    const b = breakpointsAbove[i];
+    const b = breakpointsAbove[i]
     if (layouts[b]) {
-      layout = layouts[b];
-      break;
+      layout = layouts[b]
+      break
     }
   }
-  layout = cloneLayout(layout || []); // clone layout so we don't modify existing items
-  return compact(correctBounds(layout, { cols }), verticalCompact);
+  layout = cloneLayout(layout || []) // clone layout so we don't modify existing items
+  return compact(correctBounds(layout, { cols }), verticalCompact)
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars,max-params
@@ -103,8 +103,8 @@ export function generateResponsiveLayout(
     }
   } */
   // eslint-disable-next-line no-param-reassign
-  layout = cloneLayout(layout || []); // clone layout so we don't modify existing items
-  return compact(correctBounds(layout, { cols }), verticalCompact);
+  layout = cloneLayout(layout || []) // clone layout so we don't modify existing items
+  return compact(correctBounds(layout, { cols }), verticalCompact)
 }
 
 /**
@@ -114,6 +114,6 @@ export function generateResponsiveLayout(
  * @returns Sorted breakpoints.
  */
 export function sortBreakpoints(breakpoints: Breakpoints): Array<Breakpoint> {
-  const keys = Object.keys(breakpoints) as Array<Breakpoint>;
-  return keys.sort((a, b) => breakpoints[a] - breakpoints[b]);
+  const keys = Object.keys(breakpoints) as Array<Breakpoint>
+  return keys.sort((a, b) => breakpoints[a] - breakpoints[b])
 }

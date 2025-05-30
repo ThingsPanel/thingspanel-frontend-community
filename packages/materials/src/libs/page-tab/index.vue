@@ -1,31 +1,31 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { Component } from 'vue';
-import type { PageTabMode, PageTabProps } from '../../types';
-import { ACTIVE_COLOR, createTabCssVars } from './shared';
-import ChromeTab from './chrome-tab.vue';
-import ButtonTab from './button-tab.vue';
-import SvgClose from './svg-close.vue';
-import style from './index.module.css';
+import { computed } from 'vue'
+import type { Component } from 'vue'
+import type { PageTabMode, PageTabProps } from '../../types'
+import { ACTIVE_COLOR, createTabCssVars } from './shared'
+import ChromeTab from './chrome-tab.vue'
+import ButtonTab from './button-tab.vue'
+import SvgClose from './svg-close.vue'
+import style from './index.module.css'
 
 defineOptions({
   name: 'PageTab'
-});
+})
 
 const props = withDefaults(defineProps<PageTabProps>(), {
   mode: 'chrome',
   commonClass: 'transition-all-300',
   activeColor: ACTIVE_COLOR,
   closable: true
-});
+})
 
 interface Emits {
-  (e: 'close'): void;
+  (e: 'close'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
-type SlotFn = (props?: Record<string, unknown>) => any;
+type SlotFn = (props?: Record<string, unknown>) => any
 
 type Slots = {
   /**
@@ -33,25 +33,25 @@ type Slots = {
    *
    * The center content of the tab
    */
-  default?: SlotFn;
+  default?: SlotFn
   /**
    * Slot
    *
    * The left content of the tab
    */
-  prefix?: SlotFn;
+  prefix?: SlotFn
   /**
    * Slot
    *
    * The right content of the tab
    */
-  suffix?: SlotFn;
-};
+  suffix?: SlotFn
+}
 
-defineSlots<Slots>();
+defineSlots<Slots>()
 
 const activeTabComponent = computed(() => {
-  const { mode, chromeClass, buttonClass } = props;
+  const { mode, chromeClass, buttonClass } = props
 
   const tabComponentMap = {
     chrome: {
@@ -62,21 +62,21 @@ const activeTabComponent = computed(() => {
       component: ButtonTab,
       class: buttonClass
     }
-  } satisfies Record<PageTabMode, { component: Component; class?: string }>;
+  } satisfies Record<PageTabMode, { component: Component; class?: string }>
 
-  return tabComponentMap[mode];
-});
+  return tabComponentMap[mode]
+})
 
-const cssVars = computed(() => createTabCssVars(props.activeColor));
+const cssVars = computed(() => createTabCssVars(props.activeColor))
 
 const bindProps = computed(() => {
-  const { chromeClass: _chromeCls, buttonClass: _btnCls, ...rest } = props;
+  const { chromeClass: _chromeCls, buttonClass: _btnCls, ...rest } = props
 
-  return rest;
-});
+  return rest
+})
 
 function handleClose() {
-  emit('close');
+  emit('close')
 }
 </script>
 

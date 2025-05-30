@@ -24,4 +24,4 @@ export default {
     desc5: 'Soybean 刚才把工作台页面随便写了一些，凑合能看了！'
   },
   creativity: '创意'
-};
+}

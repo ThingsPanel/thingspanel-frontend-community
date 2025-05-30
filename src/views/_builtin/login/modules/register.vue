@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import { computed, reactive, ref, toRefs } from 'vue';
-import { $t } from '@/locales';
-import { useRouterPush } from '@/hooks/common/router';
-import { useFormRules, useNaiveForm } from '@/hooks/common/form';
-import useSmsCode from '@/hooks/business/use-sms-code';
-import { useAuthStore } from '@/store/modules/auth';
-import { getConfirmPwdRule } from '@/utils/form/rule';
-import { validPasswordByExp } from '@/utils/common/tool';
+import { computed, reactive, ref, toRefs } from 'vue'
+import { $t } from '@/locales'
+import { useRouterPush } from '@/hooks/common/router'
+import { useFormRules, useNaiveForm } from '@/hooks/common/form'
+import useSmsCode from '@/hooks/business/use-sms-code'
+import { useAuthStore } from '@/store/modules/auth'
+import { getConfirmPwdRule } from '@/utils/form/rule'
+import { validPasswordByExp } from '@/utils/common/tool'
 
 defineOptions({
   name: 'RegisterPage'
-});
+})
 
-const auth = useAuthStore();
-const { toggleLoginModule } = useRouterPush();
-const { formRef, validate } = useNaiveForm();
+const auth = useAuthStore()
+const { toggleLoginModule } = useRouterPush()
+const { formRef, validate } = useNaiveForm()
 
 interface FormModel {
-  phone: string;
-  code: string;
-  pwd: string;
-  confirmPwd: string;
+  phone: string
+  code: string
+  pwd: string
+  confirmPwd: string
 }
 
 const model: FormModel = reactive({
@@ -28,11 +28,11 @@ const model: FormModel = reactive({
   code: '',
   pwd: '',
   confirmPwd: ''
-});
-const { label, isCounting, loading: smsLoading, start } = useSmsCode();
+})
+const { label, isCounting, loading: smsLoading, start } = useSmsCode()
 
 const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
-  const { formRules } = useFormRules(); // inside computed to make locale reactive
+  const { formRules } = useFormRules() // inside computed to make locale reactive
 
   return {
     phone: formRules.phone,
@@ -41,31 +41,31 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
       {
         validator: (rule, value) => {
           if (value.length < 8 || value.length > 18) {
-            return Promise.reject(rule.message);
+            return Promise.reject(rule.message)
           }
           if (!validPasswordByExp(value)) {
-            return Promise.reject(rule.message);
+            return Promise.reject(rule.message)
           }
-          return Promise.resolve();
+          return Promise.resolve()
         },
         message: $t('form.pwd.tip'),
         trigger: ['input', 'blur']
       }
     ],
     confirmPwd: getConfirmPwdRule(toRefs(model).pwd)
-  };
-});
-const agreement = ref(false);
+  }
+})
+const agreement = ref(false)
 // function handleSmsCode() {
 //   getSmsCode(model.phone)
 // }
 
 function handleSmsCode() {
-  start();
+  start()
 }
 async function handleSubmit() {
-  await validate();
-  window.$message?.success($t('page.login.common.validateSuccess'));
+  await validate()
+  window.$message?.success($t('page.login.common.validateSuccess'))
 }
 </script>
 

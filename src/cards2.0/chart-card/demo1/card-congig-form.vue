@@ -1,32 +1,32 @@
 <script setup lang="ts">
-import { inject, onMounted } from 'vue';
-import CardBaseForm from '@/cards2.0/modules/card-base-form.vue';
-import CardDataSourceForm from '@/cards2.0/modules/card-data-source-form.vue';
-import type { CardData, IConfigCtx } from '@/components/tp-kan-ban/kan-ban';
-import { $t } from '@/locales';
+import { inject, onMounted } from 'vue'
+import CardBaseForm from '@/cards2.0/modules/card-base-form.vue'
+import CardDataSourceForm from '@/cards2.0/modules/card-data-source-form.vue'
+import type { CardData, IConfigCtx } from '@/components/tp-kan-ban/kan-ban'
+import { $t } from '@/locales'
 
 // 控制台打印多语言函数，用于调试
 
 // 定义组件接收的 props
 const props = defineProps<{
-  data: CardData; // props.data 是 CardData 类型
-}>();
+  data: CardData // props.data 是 CardData 类型
+}>()
 
 // 固定写法开始
 // 通过 inject 获取全局上下文对象，这里的 'kan-ban-config-ctx' 是在祖先组件中提供的
-const ctx = inject<IConfigCtx>('kan-ban-config-ctx')!;
+const ctx = inject<IConfigCtx>('kan-ban-config-ctx')!
 // ctx.config 会传递给看板编辑器
 // 定义修改看板配置的方法
 const changeCtxConfig = (key: string, data: any) => {
-  ctx.config[key] = { ...data };
-}; // 改变 ctx.config 的方法
+  ctx.config[key] = { ...data }
+} // 改变 ctx.config 的方法
 // 固定写法结束
 
 // 组件挂载时执行
 onMounted(() => {
   // 初始化看板配置为传入的 props.data.config
-  ctx.config = props.data.config;
-});
+  ctx.config = props.data.config
+})
 </script>
 
 <template>

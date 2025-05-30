@@ -1,43 +1,43 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { $t } from '@/locales';
-import { useFormRules, useNaiveForm } from '@/hooks/common/form';
-import { enableStatusOptions, userGenderOptions } from '@/constants/business';
-import { translateOptions } from '@/utils/common4';
+import { computed } from 'vue'
+import { $t } from '@/locales'
+import { useFormRules, useNaiveForm } from '@/hooks/common/form'
+import { enableStatusOptions, userGenderOptions } from '@/constants/business'
+import { translateOptions } from '@/utils/common4'
 defineOptions({
   name: 'UserSearch'
-});
+})
 
 interface Emits {
-  (e: 'reset'): void;
-  (e: 'search'): void;
+  (e: 'reset'): void
+  (e: 'search'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
-const { formRef, validate, restoreValidation } = useNaiveForm();
+const { formRef, validate, restoreValidation } = useNaiveForm()
 
-const model = defineModel<Api.SystemManage.UserSearchParams>('model', { required: true });
+const model = defineModel<Api.SystemManage.UserSearchParams>('model', { required: true })
 
-type RuleKey = Extract<keyof Api.SystemManage.UserSearchParams, 'userEmail' | 'userPhone'>;
+type RuleKey = Extract<keyof Api.SystemManage.UserSearchParams, 'userEmail' | 'userPhone'>
 
 const rules = computed<Record<RuleKey, App.Global.FormRule>>(() => {
-  const { patternRules } = useFormRules(); // inside computed to make locale reactive
+  const { patternRules } = useFormRules() // inside computed to make locale reactive
 
   return {
     userEmail: patternRules.email,
     userPhone: patternRules.phone
-  };
-});
+  }
+})
 
 async function reset() {
-  await restoreValidation();
-  emit('reset');
+  await restoreValidation()
+  emit('reset')
 }
 
 async function search() {
-  await validate();
-  emit('search');
+  await validate()
+  emit('search')
 }
 </script>
 

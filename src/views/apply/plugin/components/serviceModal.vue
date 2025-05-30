@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { putRegisterService, registerService } from '@/service/api/plugin';
-import { $t } from '@/locales';
-const isEdit = ref<any>(false);
-const emit = defineEmits(['getList']);
-const serviceModal = ref<any>(false);
-const formRef = ref<any>(null);
-const loading = ref<any>(false);
+import { ref } from 'vue'
+import { putRegisterService, registerService } from '@/service/api/plugin'
+import { $t } from '@/locales'
+const isEdit = ref<any>(false)
+const emit = defineEmits(['getList'])
+const serviceModal = ref<any>(false)
+const formRef = ref<any>(null)
+const loading = ref<any>(false)
 const defaultForm = {
   name: '',
   service_identifier: '',
@@ -15,8 +15,8 @@ const defaultForm = {
   description: '',
   service_config: '',
   remark: ''
-};
-const form = ref<any>({ ...defaultForm });
+}
+const form = ref<any>({ ...defaultForm })
 const rules = ref<any>({
   name: {
     required: true,
@@ -32,7 +32,7 @@ const rules = ref<any>({
     required: true,
     message: $t('card.selectServiceType')
   }
-});
+})
 const options = ref<any>([
   {
     label: $t('card.accessProtocol'),
@@ -42,33 +42,33 @@ const options = ref<any>([
     label: $t('card.accessService'),
     value: 2
   }
-]);
+])
 const openModal: (row: any) => void = row => {
   if (row) {
-    isEdit.value = true;
-    Object.assign(form.value, row);
+    isEdit.value = true
+    Object.assign(form.value, row)
   } else {
-    Object.assign(form.value, defaultForm);
+    Object.assign(form.value, defaultForm)
   }
-  serviceModal.value = true;
-};
+  serviceModal.value = true
+}
 const close: () => void = () => {
-  serviceModal.value = false;
-  Object.assign(form.value, defaultForm);
-};
+  serviceModal.value = false
+  Object.assign(form.value, defaultForm)
+}
 const submitSevice: () => void = async () => {
   formRef.value?.validate(async errors => {
-    if (errors) return;
-    loading.value = true;
-    const data: any = isEdit.value ? await putRegisterService(form.value) : await registerService(form.value);
+    if (errors) return
+    loading.value = true
+    const data: any = isEdit.value ? await putRegisterService(form.value) : await registerService(form.value)
     if (data.data) {
-      emit('getList');
-      close();
+      emit('getList')
+      close()
     }
-    loading.value = false;
-  });
-};
-defineExpose({ openModal });
+    loading.value = false
+  })
+}
+defineExpose({ openModal })
 </script>
 
 <template>

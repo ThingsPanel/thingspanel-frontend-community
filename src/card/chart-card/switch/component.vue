@@ -1,26 +1,26 @@
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
-import type { ICardData } from '@/components/panel/card';
-import { $t } from '@/locales';
-import { attributeDataPub, getAttributeDataSet, telemetryDataPub } from '@/service/api/device';
-import { createLogger } from '@/utils/logger';
-const logger = createLogger('Control');
-const active: any = ref(false);
-const detail: any = ref(0);
+import { ref, watch } from 'vue'
+import type { ICardData } from '@/components/panel/card'
+import { $t } from '@/locales'
+import { attributeDataPub, getAttributeDataSet, telemetryDataPub } from '@/service/api/device'
+import { createLogger } from '@/utils/logger'
+const logger = createLogger('Control')
+const active: any = ref(false)
+const detail: any = ref(0)
 const props = defineProps<{
-  card: ICardData;
-}>();
+  card: ICardData
+}>()
 
 defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     // Only update detail value when data[metricsId] is not undefined, null or ''
     if (!metricsId || data[metricsId] === undefined || data[metricsId] === null || data[metricsId] === '') {
-      logger.warn(`No data returned from websocket for ${metricsId}`);
-      return;
+      logger.warn(`No data returned from websocket for ${metricsId}`)
+      return
     }
-    detail.value = metricsId ? data[metricsId] : 0;
+    detail.value = metricsId ? data[metricsId] : 0
   }
-});
+})
 
 /**
  * Metrics data type can be string, number or boolean. If config.active0 is not empty, it will be used as the value when
@@ -30,60 +30,60 @@ defineExpose({
  * @param swtichState
  */
 const getSwitchValue: (swtichState: boolean) => any = (swtichState: boolean) => {
-  const config = props?.card?.config;
-  const dataType = props?.card?.dataSource?.deviceSource?.[0]?.metricsDataType;
+  const config = props?.card?.config
+  const dataType = props?.card?.dataSource?.deviceSource?.[0]?.metricsDataType
   if (dataType === 'string') {
     if (swtichState) {
-      return config?.active0 ? config.active0 : '1';
+      return config?.active0 ? config.active0 : '1'
     }
-    return config?.active1 ? config.active1 : '0';
+    return config?.active1 ? config.active1 : '0'
   } else if (dataType === 'number') {
     if (swtichState) {
-      return config?.active0 ? Number.parseFloat(config.active0) : 1;
+      return config?.active0 ? Number.parseFloat(config.active0) : 1
     }
-    return config?.active1 ? Number.parseFloat(config.active1) : 0;
+    return config?.active1 ? Number.parseFloat(config.active1) : 0
   } else if (dataType === 'boolean') {
     if (swtichState) {
-      return config?.active0 ? Boolean(config.active0) : true;
+      return config?.active0 ? Boolean(config.active0) : true
     }
-    return config?.active1 ? Boolean(config.active1) : true;
+    return config?.active1 ? Boolean(config.active1) : true
   }
-  return swtichState ? 1 : 0;
-};
+  return swtichState ? 1 : 0
+}
 
 const setSeries: (dataSource: any) => void = async dataSource => {
-  const arr = dataSource;
-  const metricsType = arr.deviceSource ? arr.deviceSource[0]?.metricsType : '';
-  const deviceId = arr.deviceSource ? arr.deviceSource[0]?.deviceId ?? '' : '';
-  const metricsId = arr.deviceSource ? arr.deviceSource[0]?.metricsId : '';
+  const arr = dataSource
+  const metricsType = arr.deviceSource ? arr.deviceSource[0]?.metricsType : ''
+  const deviceId = arr.deviceSource ? (arr.deviceSource[0]?.deviceId ?? '') : ''
+  const metricsId = arr.deviceSource ? arr.deviceSource[0]?.metricsId : ''
   if (metricsType === 'attributes') {
     if (deviceId && metricsId) {
-      const res = await getAttributeDataSet({ device_id: deviceId });
-      const attributeData = res.data.find(item => item.key === metricsId);
-      detail.value = attributeData?.value;
+      const res = await getAttributeDataSet({ device_id: deviceId })
+      const attributeData = res.data.find(item => item.key === metricsId)
+      detail.value = attributeData?.value
     }
   }
-};
+}
 
 const clickSwitch: () => void = async () => {
-  const arr: any = props?.card?.dataSource;
-  const device_id = arr.deviceSource[0]?.deviceId ?? '';
-  const metricsId = arr.deviceSource ? arr.deviceSource[0]?.metricsId : 'swtich';
-  const metricsType = arr.deviceSource ? arr.deviceSource[0]?.metricsType : '';
+  const arr: any = props?.card?.dataSource
+  const device_id = arr.deviceSource[0]?.deviceId ?? ''
+  const metricsId = arr.deviceSource ? arr.deviceSource[0]?.metricsId : 'swtich'
+  const metricsType = arr.deviceSource ? arr.deviceSource[0]?.metricsType : ''
   if (device_id && device_id !== '') {
     const obj = {
       device_id,
       value: JSON.stringify({
         [metricsId]: getSwitchValue(active.value) // key is metricsId
       })
-    };
+    }
     if (metricsType === 'attributes') {
-      await attributeDataPub(obj);
+      await attributeDataPub(obj)
     } else if (metricsType === 'telemetry') {
-      await telemetryDataPub(obj);
+      await telemetryDataPub(obj)
     }
   }
-};
+}
 
 /**
  * Calculate the switch state based on the metrics data. metrics data is in detail.value. If active0 is not empty, check
@@ -92,35 +92,35 @@ const clickSwitch: () => void = async () => {
  */
 const calculateState: () => void = () => {
   if (props?.card?.config?.active0) {
-    active.value = detail.value === getSwitchValue(true);
+    active.value = detail.value === getSwitchValue(true)
   } else {
-    active.value = detail.value !== getSwitchValue(false);
+    active.value = detail.value !== getSwitchValue(false)
   }
-};
+}
 
 watch(
   () => props.card?.dataSource?.deviceSource,
   () => {
-    setSeries(props?.card?.dataSource);
+    setSeries(props?.card?.dataSource)
   },
   { deep: true }
-);
+)
 
 watch(
   () => detail,
   () => {
-    calculateState();
+    calculateState()
   },
   { deep: true }
-);
+)
 
 watch(
   () => props.card?.config,
   () => {
-    calculateState();
+    calculateState()
   },
   { deep: true }
-);
+)
 </script>
 
 <template>

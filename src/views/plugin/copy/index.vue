@@ -1,22 +1,22 @@
 <script lang="ts" setup>
-import { ref } from 'vue';
-import { useClipboard } from '@vueuse/core';
-import { $t } from '@/locales';
+import { ref } from 'vue'
+import { useClipboard } from '@vueuse/core'
+import { $t } from '@/locales'
 
-const source = ref('');
-const { copy, isSupported } = useClipboard();
+const source = ref('')
+const { copy, isSupported } = useClipboard()
 
 function handleCopy() {
   if (!isSupported) {
-    window.$message?.error(`${$t('common.browserNotSupport')}Clipboard API`);
-    return;
+    window.$message?.error(`${$t('common.browserNotSupport')}Clipboard API`)
+    return
   }
   if (!source.value) {
-    window.$message?.error($t('common.contentToCopied'));
-    return;
+    window.$message?.error($t('common.contentToCopied'))
+    return
   }
-  copy(source.value);
-  window.$message?.success(`${$t('theme.configOperation.copySuccess')}：${source.value}`);
+  copy(source.value)
+  window.$message?.success(`${$t('theme.configOperation.copySuccess')}：${source.value}`)
 }
 </script>
 

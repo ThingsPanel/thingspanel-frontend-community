@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import DataSet from '@antv/data-set';
-import { Chart } from '@antv/g2';
-import { $t } from '@/locales';
+import { onMounted, ref } from 'vue'
+import DataSet from '@antv/data-set'
+import { Chart } from '@antv/g2'
+import { $t } from '@/locales'
 
-const pieRef = ref<HTMLElement>();
-const lineRef = ref<HTMLElement>();
-const barRef = ref<HTMLElement>();
-const scatterRef = ref<HTMLElement>();
-const areaRef = ref<HTMLElement>();
-const radarRef = ref<HTMLElement>();
+const pieRef = ref<HTMLElement>()
+const lineRef = ref<HTMLElement>()
+const barRef = ref<HTMLElement>()
+const scatterRef = ref<HTMLElement>()
+const areaRef = ref<HTMLElement>()
+const radarRef = ref<HTMLElement>()
 
 function renderPieChart() {
-  if (!pieRef.value) return;
+  if (!pieRef.value) return
 
   const data = [
     { item: 'rose 1', count: 40, percent: 0.4 },
@@ -23,28 +23,28 @@ function renderPieChart() {
     { item: 'rose 6', count: 17, percent: 0.17 },
     { item: 'rose 7', count: 13, percent: 0.13 },
     { item: 'rose 8', count: 9, percent: 0.09 }
-  ];
+  ]
 
   const chart = new Chart({
     container: pieRef.value,
     autoFit: true
-  });
+  })
 
-  chart.data(data);
+  chart.data(data)
 
   chart.coordinate('theta', {
     radius: 0.85
-  });
+  })
 
   chart.scale('percent', {
     formatter: (val: number) => `${val * 100}%`
-  });
+  })
   chart.tooltip({
     showTitle: false,
     showMarkers: false
-  });
-  chart.legend({ position: 'top' });
-  chart.axis(false); // 关闭坐标轴
+  })
+  chart.legend({ position: 'top' })
+  chart.axis(false) // 关闭坐标轴
   chart
     .interval()
     .adjust('stack')
@@ -63,28 +63,28 @@ function renderPieChart() {
       return {
         name: item,
         value: `${percent * 100}%`
-      };
+      }
     })
     .style({
       lineWidth: 1,
       stroke: '#fff'
-    });
-  chart.interaction('element-single-selected');
-  chart.render();
+    })
+  chart.interaction('element-single-selected')
+  chart.render()
 }
 
 function renderLineChart() {
   fetch('https://gw.alipayobjects.com/os/antvdemo/assets/data/terrorism.json')
     .then(res => res.json())
     .then(data => {
-      const ds = new DataSet();
-      if (!lineRef.value) return;
+      const ds = new DataSet()
+      if (!lineRef.value) return
 
       const chart = new Chart({
         container: lineRef.value,
         autoFit: true,
         syncViewPadding: true
-      });
+      })
 
       chart.scale({
         Deaths: {
@@ -95,24 +95,24 @@ function renderLineChart() {
           sync: true,
           nice: true
         }
-      });
+      })
 
-      const dv1 = ds.createView().source(data);
+      const dv1 = ds.createView().source(data)
       dv1.transform({
         type: 'map',
         callback: (row: any) => {
-          const currentRow = { ...row };
+          const currentRow = { ...row }
           if (typeof row.Deaths === 'string') {
-            currentRow.Deaths = row.Deaths.replace(',', '');
+            currentRow.Deaths = row.Deaths.replace(',', '')
           }
-          currentRow.Deaths = Number.parseInt(row.Deaths, 10);
-          currentRow.death = row.Deaths;
-          currentRow.year = row.Year;
-          return currentRow;
+          currentRow.Deaths = Number.parseInt(row.Deaths, 10)
+          currentRow.death = row.Deaths
+          currentRow.year = row.Year
+          return currentRow
         }
-      });
-      const view1 = chart.createView();
-      view1.data(dv1.rows);
+      })
+      const view1 = chart.createView()
+      view1.data(dv1.rows)
       view1.axis('Year', {
         subTickLine: {
           count: 3,
@@ -121,28 +121,28 @@ function renderLineChart() {
         tickLine: {
           length: 6
         }
-      });
+      })
       view1.axis('Deaths', {
         label: {
           formatter: text => {
-            return text.replace(/(\d)(?=(?:\d{3})+$)/g, '$1,');
+            return text.replace(/(\d)(?=(?:\d{3})+$)/g, '$1,')
           }
         }
-      });
-      view1.line().position('Year*Deaths');
+      })
+      view1.line().position('Year*Deaths')
 
-      const dv2 = ds.createView().source(dv1.rows);
+      const dv2 = ds.createView().source(dv1.rows)
       dv2.transform({
         type: 'regression',
         method: 'polynomial',
         fields: ['year', 'death'],
         bandwidth: 0.1,
         as: ['year', 'death']
-      });
+      })
 
-      const view2 = chart.createView();
-      view2.axis(false);
-      view2.data(dv2.rows);
+      const view2 = chart.createView()
+      view2.axis(false)
+      view2.data(dv2.rows)
       view2
         .line()
         .position('year*death')
@@ -150,7 +150,7 @@ function renderLineChart() {
           stroke: '#969696',
           lineDash: [3, 3]
         })
-        .tooltip(false);
+        .tooltip(false)
       view1.annotation().text({
         content: $t('custom.plugin.trendLine'),
         position: ['1970', 2500],
@@ -160,13 +160,13 @@ function renderLineChart() {
           fontWeight: 300
         },
         offsetY: -70
-      });
-      chart.render();
-    });
+      })
+      chart.render()
+    })
 }
 
 function renderBarChart() {
-  if (!barRef.value) return;
+  if (!barRef.value) return
 
   const data = [
     { type: $t('custom.plugin.unknown'), value: 654, percent: 0.02 },
@@ -176,31 +176,31 @@ function renderBarChart() {
     { type: $t('custom.plugin.between3039'), value: 6200, percent: 0.28 },
     { type: $t('custom.plugin.between4049'), value: 3300, percent: 0.14 },
     { type: $t('custom.plugin.over50'), value: 1500, percent: 0.06 }
-  ];
+  ]
 
   const chart = new Chart({
     container: barRef.value,
     autoFit: true,
     height: 500,
     padding: [50, 20, 50, 20]
-  });
-  chart.data(data);
+  })
+  chart.data(data)
   chart.scale('value', {
     alias: $t('custom.plugin.sale')
-  });
+  })
 
   chart.axis('type', {
     tickLine: {
       alignTick: false
     }
-  });
-  chart.axis('value', false);
+  })
+  chart.axis('value', false)
 
   chart.tooltip({
     showMarkers: false
-  });
-  chart.interval().position('type*value');
-  chart.interaction('element-active');
+  })
+  chart.interval().position('type*value')
+  chart.interaction('element-active')
 
   // 添加文本标注
   data.forEach(item => {
@@ -221,9 +221,9 @@ function renderBarChart() {
           textAlign: 'center'
         },
         offsetY: -12
-      });
-  });
-  chart.render();
+      })
+  })
+  chart.render()
 }
 
 function renderScatterChart() {
@@ -232,18 +232,18 @@ function renderScatterChart() {
     Americas: '#2FC25B',
     Europe: '#FACC14',
     Oceania: '#223273'
-  };
+  }
 
   fetch('https://gw.alipayobjects.com/os/antvdemo/assets/data/bubble.json')
     .then(res => res.json())
     .then(data => {
-      if (!scatterRef.value) return;
+      if (!scatterRef.value) return
       const chart = new Chart({
         container: scatterRef.value,
         autoFit: true,
         height: 500
-      });
-      chart.data(data);
+      })
+      chart.data(data)
       // 为各个字段设置别名
       chart.scale({
         LifeExpectancy: {
@@ -261,46 +261,46 @@ function renderScatterChart() {
         Country: {
           alias: $t('custom.plugin.countryRegion')
         }
-      });
+      })
       chart.axis('GDP', {
         label: {
           formatter(value) {
-            return `${(Number(value) / 1000).toFixed(0)}k`;
+            return `${(Number(value) / 1000).toFixed(0)}k`
           } // 格式化坐标轴的显示
         }
-      });
+      })
       chart.tooltip({
         showTitle: false,
         showMarkers: false
-      });
-      chart.legend('Population', false); // 该图表默认会生成多个图例，设置不展示 Population 和 Country 两个维度的图例
+      })
+      chart.legend('Population', false) // 该图表默认会生成多个图例，设置不展示 Population 和 Country 两个维度的图例
       chart
         .point()
         .position('GDP*LifeExpectancy')
         .size('Population', [4, 65])
         .color('continent', val => {
-          const key = val as keyof typeof colorMap;
-          return colorMap[key];
+          const key = val as keyof typeof colorMap
+          return colorMap[key]
         })
         .shape('circle')
         .tooltip('Country*Population*GDP*LifeExpectancy')
         .style('continent', val => {
-          const key = val as keyof typeof colorMap;
+          const key = val as keyof typeof colorMap
           return {
             lineWidth: 1,
             strokeOpacity: 1,
             fillOpacity: 0.3,
             opacity: 0.65,
             stroke: colorMap[key]
-          };
-        });
-      chart.interaction('element-active');
-      chart.render();
-    });
+          }
+        })
+      chart.interaction('element-active')
+      chart.render()
+    })
 }
 
 function renderAreaChart() {
-  if (!areaRef.value) return;
+  if (!areaRef.value) return
 
   const data = [
     { country: 'Asia', year: '1750', value: 502 },
@@ -331,37 +331,37 @@ function renderAreaChart() {
     { country: 'Oceania', year: '1950', value: 230 },
     { country: 'Oceania', year: '1999', value: 300 },
     { country: 'Oceania', year: '2050', value: 300 }
-  ];
+  ]
   const chart = new Chart({
     container: areaRef.value,
     autoFit: true,
     height: 500
-  });
+  })
 
-  chart.data(data);
+  chart.data(data)
   chart.scale('year', {
     type: 'linear',
     tickInterval: 50
-  });
+  })
   chart.scale('value', {
     nice: true
-  });
+  })
 
   chart.tooltip({
     showCrosshairs: true,
     shared: true
-  });
+  })
 
-  chart.area().adjust('stack').position('year*value').color('country');
-  chart.line().adjust('stack').position('year*value').color('country');
+  chart.area().adjust('stack').position('year*value').color('country')
+  chart.line().adjust('stack').position('year*value').color('country')
 
-  chart.interaction('element-highlight');
+  chart.interaction('element-highlight')
 
-  chart.render();
+  chart.render()
 }
 
 function renderRadarChart() {
-  if (!radarRef.value) return;
+  if (!radarRef.value) return
 
   const data = [
     { item: 'Design', a: 70, b: 30 },
@@ -374,29 +374,29 @@ function renderRadarChart() {
     { item: 'Support', a: 30, b: 40 },
     { item: 'Sales', a: 60, b: 40 },
     { item: 'UX', a: 50, b: 60 }
-  ];
-  const { DataView } = DataSet;
-  const dv = new DataView().source(data);
+  ]
+  const { DataView } = DataSet
+  const dv = new DataView().source(data)
   dv.transform({
     type: 'fold',
     fields: ['a', 'b'], // 展开字段集
     key: 'user', // key字段
     value: 'score' // value字段
-  });
+  })
 
   const chart = new Chart({
     container: radarRef.value,
     autoFit: true,
     height: 500
-  });
-  chart.data(dv.rows);
+  })
+  chart.data(dv.rows)
   chart.scale('score', {
     min: 0,
     max: 80
-  });
+  })
   chart.coordinate('polar', {
     radius: 0.8
-  });
+  })
   chart.tooltip({
     shared: true,
     showCrosshairs: true,
@@ -408,7 +408,7 @@ function renderRadarChart() {
         }
       }
     }
-  });
+  })
   chart.axis('item', {
     line: null,
     tickLine: null,
@@ -419,7 +419,7 @@ function renderRadarChart() {
         }
       }
     }
-  });
+  })
   chart.axis('score', {
     line: null,
     tickLine: null,
@@ -431,30 +431,30 @@ function renderRadarChart() {
         }
       }
     }
-  });
+  })
 
-  chart.line().position('item*score').color('user').size(2);
+  chart.line().position('item*score').color('user').size(2)
   chart.point().position('item*score').color('user').shape('circle').size(4).style({
     stroke: '#fff',
     lineWidth: 1,
     fillOpacity: 1
-  });
-  chart.area().position('item*score').color('user');
-  chart.render();
+  })
+  chart.area().position('item*score').color('user')
+  chart.render()
 }
 
 function init() {
-  renderPieChart();
-  renderLineChart();
-  renderBarChart();
-  renderScatterChart();
-  renderAreaChart();
-  renderRadarChart();
+  renderPieChart()
+  renderLineChart()
+  renderBarChart()
+  renderScatterChart()
+  renderAreaChart()
+  renderRadarChart()
 }
 
 onMounted(() => {
-  init();
-});
+  init()
+})
 </script>
 
 <template>

@@ -1,17 +1,17 @@
 <script lang="ts" setup>
-import { inject, onMounted } from 'vue';
-import { NForm, NFormItem, NInput, NInputNumber } from 'naive-ui';
-import type { IConfigCtx } from '@/components/panel/card';
-import { $t } from '@/locales';
+import { inject, onMounted } from 'vue'
+import { NForm, NFormItem, NInput, NInputNumber } from 'naive-ui'
+import type { IConfigCtx } from '@/components/panel/card'
+import { $t } from '@/locales'
 
-const ctx = inject<IConfigCtx>('config-ctx')!;
+const ctx = inject<IConfigCtx>('config-ctx')!
 
 onMounted(() => {
-  if (ctx.config.min === undefined) ctx.config.min = 0;
-  if (ctx.config.max === undefined) ctx.config.max = 100;
-  if (ctx.config.step === undefined) ctx.config.step = 0.1;
-  if (ctx.config.decimals === undefined) ctx.config.decimals = 1;
-});
+  if (ctx.config.min === undefined) ctx.config.min = 0
+  if (ctx.config.max === undefined) ctx.config.max = 100
+  if (ctx.config.step === undefined) ctx.config.step = 0.1
+  if (ctx.config.decimals === undefined) ctx.config.decimals = 1
+})
 </script>
 
 <template>

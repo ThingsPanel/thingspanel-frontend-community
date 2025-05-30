@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import sceneLinkage from '@/views/automation/scene-linkage/modules/dataList.vue';
+import sceneLinkage from '@/views/automation/scene-linkage/modules/dataList.vue'
 
 defineProps<{
-  id: string;
-}>();
+  id: string
+}>()
 </script>
 
 <template>

@@ -70,4 +70,4 @@ export default {
     instrumentPanel: '仪表盘',
     videoPlayer: '视频播放器'
   }
-};
+}

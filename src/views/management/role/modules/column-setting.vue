@@ -1,47 +1,47 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import type { DataTableColumn } from 'naive-ui';
-import VueDraggable from 'vuedraggable';
-import { $t } from '@/locales';
+import { ref, watch } from 'vue'
+import type { DataTableColumn } from 'naive-ui'
+import VueDraggable from 'vuedraggable'
+import { $t } from '@/locales'
 
-type Column = DataTableColumn<UserManagement.User>;
+type Column = DataTableColumn<UserManagement.User>
 
 interface Props {
-  columns: Column[];
+  columns: Column[]
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 interface Emits {
-  (e: 'update:columns', columns: Column[]): void;
+  (e: 'update:columns', columns: Column[]): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
-type List = Column & { checked?: boolean };
+type List = Column & { checked?: boolean }
 
-const list = ref(initList());
+const list = ref(initList())
 
 function initList(): List[] {
-  return props.columns.map(item => ({ ...item, checked: true }));
+  return props.columns.map(item => ({ ...item, checked: true }))
 }
 
 watch(
   list,
   newValue => {
-    const newColumns = newValue.filter(item => item.checked);
+    const newColumns = newValue.filter(item => item.checked)
 
     const columns: Column[] = newColumns.map(item => {
-      const column = { ...item };
-      delete column.checked;
+      const column = { ...item }
+      delete column.checked
 
-      return column;
-    }) as Column[];
+      return column
+    }) as Column[]
 
-    emit('update:columns', columns);
+    emit('update:columns', columns)
   },
   { deep: true }
-);
+)
 </script>
 
 <template>

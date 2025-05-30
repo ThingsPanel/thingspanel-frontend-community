@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import type { PageTabProps } from '../../types';
-import style from './index.module.css';
+import type { PageTabProps } from '../../types'
+import style from './index.module.css'
 
 defineOptions({
   name: 'ButtonTab'
-});
+})
 
-defineProps<PageTabProps>();
+defineProps<PageTabProps>()
 
-type SlotFn = (props?: Record<string, unknown>) => any;
+type SlotFn = (props?: Record<string, unknown>) => any
 
 type Slots = {
   /**
@@ -16,22 +16,22 @@ type Slots = {
    *
    * The center content of the tab
    */
-  default?: SlotFn;
+  default?: SlotFn
   /**
    * Slot
    *
    * The left content of the tab
    */
-  prefix?: SlotFn;
+  prefix?: SlotFn
   /**
    * Slot
    *
    * The right content of the tab
    */
-  suffix?: SlotFn;
-};
+  suffix?: SlotFn
+}
 
-defineSlots<Slots>();
+defineSlots<Slots>()
 </script>
 
 <template>

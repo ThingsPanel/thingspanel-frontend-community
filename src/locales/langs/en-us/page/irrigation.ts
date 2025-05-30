@@ -83,4 +83,4 @@ export default {
     pressure: 'Pressure',
     chooseDevice: 'Choose Device'
   }
-};
+}

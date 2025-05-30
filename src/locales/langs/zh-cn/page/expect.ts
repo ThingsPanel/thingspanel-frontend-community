@@ -14,4 +14,4 @@ export default {
   selectCommandTypePlease: '请选择指令类型',
   command: '命令',
   inputLabelPlease: '请输入标签'
-};
+}

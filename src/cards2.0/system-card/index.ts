@@ -1,3 +1,3 @@
-const systemCards = import.meta.glob('./*/index.ts', { eager: true });
+const systemCards = import.meta.glob('./*/index.ts', { eager: true })
 
-export default systemCards;
+export default systemCards

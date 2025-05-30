@@ -1,41 +1,41 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import type { VNode } from 'vue';
-import { useSvgIconRender } from '@sa/hooks';
-import { $t } from '@/locales';
-import { useTabStore } from '@/store/modules/tab';
-import SvgIcon from '@/components/custom/svg-icon.vue';
+import { computed } from 'vue'
+import type { VNode } from 'vue'
+import { useSvgIconRender } from '@sa/hooks'
+import { $t } from '@/locales'
+import { useTabStore } from '@/store/modules/tab'
+import SvgIcon from '@/components/custom/svg-icon.vue'
 
 defineOptions({
   name: 'ContextMenu'
-});
+})
 
 interface Props {
   /** ClientX */
-  x: number;
+  x: number
   /** ClientY */
-  y: number;
-  tabId: string;
-  excludeKeys?: App.Global.DropdownKey[];
-  disabledKeys?: App.Global.DropdownKey[];
+  y: number
+  tabId: string
+  excludeKeys?: App.Global.DropdownKey[]
+  disabledKeys?: App.Global.DropdownKey[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   excludeKeys: () => [],
   disabledKeys: () => []
-});
+})
 
-const visible = defineModel<boolean>('visible');
+const visible = defineModel<boolean>('visible')
 
-const { removeTab, clearTabs, clearLeftTabs, clearRightTabs } = useTabStore();
-const { SvgIconVNode } = useSvgIconRender(SvgIcon);
+const { removeTab, clearTabs, clearLeftTabs, clearRightTabs } = useTabStore()
+const { SvgIconVNode } = useSvgIconRender(SvgIcon)
 
 type DropdownOption = {
-  key: App.Global.DropdownKey;
-  label: string;
-  icon?: () => VNode;
-  disabled?: boolean;
-};
+  key: App.Global.DropdownKey
+  label: string
+  icon?: () => VNode
+  disabled?: boolean
+}
 
 const options = computed(() => {
   const opts: DropdownOption[] = [
@@ -64,47 +64,47 @@ const options = computed(() => {
       label: $t('dropdown.closeAll'),
       icon: SvgIconVNode({ icon: 'ant-design:line-outlined', fontSize: 18 })
     }
-  ];
-  const { excludeKeys, disabledKeys } = props;
+  ]
+  const { excludeKeys, disabledKeys } = props
 
-  const result = opts.filter(opt => !excludeKeys.includes(opt.key));
+  const result = opts.filter(opt => !excludeKeys.includes(opt.key))
 
   disabledKeys.forEach(key => {
-    const opt = result.find(item => item.key === key);
+    const opt = result.find(item => item.key === key)
 
     if (opt) {
-      opt.disabled = true;
+      opt.disabled = true
     }
-  });
+  })
 
-  return result;
-});
+  return result
+})
 
 function hideDropdown() {
-  visible.value = false;
+  visible.value = false
 }
 
 const dropdownAction: Record<App.Global.DropdownKey, () => void> = {
   closeCurrent() {
-    removeTab(props.tabId);
+    removeTab(props.tabId)
   },
   closeOther() {
-    clearTabs([props.tabId]);
+    clearTabs([props.tabId])
   },
   closeLeft() {
-    clearLeftTabs(props.tabId);
+    clearLeftTabs(props.tabId)
   },
   closeRight() {
-    clearRightTabs(props.tabId);
+    clearRightTabs(props.tabId)
   },
   closeAll() {
-    clearTabs();
+    clearTabs()
   }
-};
+}
 
 function handleDropdown(optionKey: App.Global.DropdownKey) {
-  dropdownAction[optionKey]?.();
-  hideDropdown();
+  dropdownAction[optionKey]?.()
+  hideDropdown()
 }
 </script>
 

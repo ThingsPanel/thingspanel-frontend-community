@@ -15,4 +15,4 @@ export default {
   gaodeMap: 'Gaode Map',
   tencentMap: 'Tencent Map',
   baiduMap: 'Baidu Map'
-};
+}

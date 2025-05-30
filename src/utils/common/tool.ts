@@ -1,11 +1,11 @@
-import JSEncrypt from 'jsencrypt';
-import { STATIC_BASE_URL } from '@/constants/common';
-import { $t } from '@/locales';
-import { createServiceConfig } from '~/env.config';
-import { rsaPublicKey } from '~/rsa.js';
+import JSEncrypt from 'jsencrypt'
+import { STATIC_BASE_URL } from '@/constants/common'
+import { $t } from '@/locales'
+import { createServiceConfig } from '~/env.config'
+import { rsaPublicKey } from '~/rsa.js'
 
 export function typeOf(obj: any): any {
-  const toString: any = Object.prototype.toString;
+  const toString: any = Object.prototype.toString
   const map: any = {
     '[object Boolean]': 'boolean',
     '[object Number]': 'number',
@@ -17,8 +17,8 @@ export function typeOf(obj: any): any {
     '[object Undefined]': 'undefined',
     '[object Null]': 'null',
     '[object Object]': 'object'
-  };
-  return map[toString.call(obj)];
+  }
+  return map[toString.call(obj)]
 }
 /**
  * get static source url
@@ -29,21 +29,21 @@ export function typeOf(obj: any): any {
  */
 export const getStaticUrl = (url: string, showError: boolean = true): string => {
   if (!url) {
-    if (showError) window.NMessage.error($t('card.resourceNotExist'));
-    return '';
+    if (showError) window.NMessage.error($t('card.resourceNotExist'))
+    return ''
   }
-  return url.replace('.', STATIC_BASE_URL);
-};
+  return url.replace('.', STATIC_BASE_URL)
+}
 
 export const getBaseServerUrl = (): string => {
-  const { baseURL } = createServiceConfig(import.meta.env);
-  return baseURL || `${window.location.origin}/api/v1`;
-};
+  const { baseURL } = createServiceConfig(import.meta.env)
+  return baseURL || `${window.location.origin}/api/v1`
+}
 
 export const getDemoServerUrl = (): string => {
-  const { otherBaseURL } = createServiceConfig(import.meta.env);
-  return otherBaseURL.demo ? otherBaseURL.demo : `${window.location.origin}/api/v1`;
-};
+  const { otherBaseURL } = createServiceConfig(import.meta.env)
+  return otherBaseURL.demo ? otherBaseURL.demo : `${window.location.origin}/api/v1`
+}
 
 /**
  * get web socket server url
@@ -51,108 +51,108 @@ export const getDemoServerUrl = (): string => {
  * @returns web socket server url
  */
 export const getWebsocketServerUrl = (): string => {
-  const demoUrl = getDemoServerUrl();
+  const demoUrl = getDemoServerUrl()
   if (window.location.protocol === 'https:') {
-    return demoUrl.replace(window.location.protocol, 'wss:');
+    return demoUrl.replace(window.location.protocol, 'wss:')
   }
-  return demoUrl.replace(window.location.protocol, 'ws:');
-};
+  return demoUrl.replace(window.location.protocol, 'ws:')
+}
 
 export function deepClone(data: any): any {
   // 获取传入拷贝函数的数据类型
-  const type = typeOf(data);
+  const type = typeOf(data)
   // 定义一个返回any类型的数据
-  let reData: any;
+  let reData: any
   // 递归遍历一个array类型数据，
   if (type === 'array') {
-    reData = [];
+    reData = []
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < data.length; i++) {
-      reData.push(deepClone(data[i]));
+      reData.push(deepClone(data[i]))
     }
   } else if (type === 'object') {
     // 递归遍历一个object类型数据
-    reData = {};
+    reData = {}
     // eslint-disable-next-line guard-for-in
     for (const i in data) {
-      reData[i] = deepClone(data[i]);
+      reData[i] = deepClone(data[i])
     }
   } else {
     // 返回基本数据类型
-    return data;
+    return data
   }
   // 将any类型的数据return出去，作为deepClone的结果
-  return reData;
+  return reData
 }
 
 export function generateUUID(): string {
-  let d = new Date().getTime();
-  const uuidFormat: string = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+  let d = new Date().getTime()
+  const uuidFormat: string = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
   return uuidFormat.replace(/[xy]/g, c => {
-    const r = (d + Math.random() * 16) % 16 || 0;
-    d = Math.floor(d / 16);
-    return (c === 'x' ? r : (r && 0x3) || 0x8).toString(16);
-  });
+    const r = (d + Math.random() * 16) % 16 || 0
+    d = Math.floor(d / 16)
+    return (c === 'x' ? r : (r && 0x3) || 0x8).toString(16)
+  })
 }
 
 export function getFileName(url: string): string {
-  const regex = /[^/]*$/;
-  const matches = url.match(regex);
-  return matches ? matches[0] : 'unknown.file';
+  const regex = /[^/]*$/
+  const matches = url.match(regex)
+  return matches ? matches[0] : 'unknown.file'
 }
 
 export function isJSON(str: string): boolean {
   if (typeof str === 'string') {
     try {
-      const obj = JSON.parse(str);
+      const obj = JSON.parse(str)
       if (typeof obj === 'object' && obj) {
-        return obj;
+        return obj
       }
-      return false;
+      return false
     } catch (error) {
-      return false;
+      return false
     }
   }
-  return false;
+  return false
 }
 
 // 校验密码强度
 export function validPassword(str: string): boolean {
   if (str.length < 8) {
-    return false;
+    return false
   }
   if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}/.test(str)) {
-    return false;
+    return false
   }
-  return true;
+  return true
 }
 
 function getRandomBytes(length) {
-  return window.crypto.getRandomValues(new Uint8Array(length));
+  return window.crypto.getRandomValues(new Uint8Array(length))
 }
 
 function randomBytesToHex(bytes) {
   return Array.from(bytes)
     .map(b => b.toString(16).padStart(2, '0'))
-    .join('');
+    .join('')
 }
 
 export function generateRandomHexString(length) {
-  const bytes = getRandomBytes(length);
-  const hexString = randomBytesToHex(bytes);
-  return hexString;
+  const bytes = getRandomBytes(length)
+  const hexString = randomBytesToHex(bytes)
+  return hexString
 }
 
 // RSA 公钥加密
 export function encryptDataByRsa(data): string {
-  const pubKey = rsaPublicKey;
-  const encrypt = new JSEncrypt();
-  encrypt.setPublicKey(pubKey);
+  const pubKey = rsaPublicKey
+  const encrypt = new JSEncrypt()
+  encrypt.setPublicKey(pubKey)
   // 使用公钥进行加密
   try {
-    return encrypt.encrypt(data) || '';
+    return encrypt.encrypt(data) || ''
   } catch (e) {
-    return '';
+    return ''
   }
 }
 
@@ -185,38 +185,38 @@ export function decryptDataByRsa(data): string {
   // XBkFA8ndBXMeOdpjXk//ydrzfy0v5bbVTGNg+qu27sSl5F0h29fX5WvyFssZafYB
   // jP7gB07O9kSkzCAh96hMLemrdxUtvpc7HwuRTDYBVsurPo+9dG7l
   // -----END RSA PRIVATE KEY-----`;
-  const priKey = '';
+  const priKey = ''
 
-  const encrypt = new JSEncrypt();
-  encrypt.setPublicKey(priKey);
+  const encrypt = new JSEncrypt()
+  encrypt.setPublicKey(priKey)
 
   // 使用公钥进行加密
-  return encrypt.decrypt(data) || '';
+  return encrypt.decrypt(data) || ''
 }
 
 export function validUsername(str) {
   if (!/^[a-zA-Z0-9_]+$/.test(str)) {
-    return false;
+    return false
   }
-  return true;
+  return true
 }
 
 export function validName(str) {
   if (!str || str?.length > 50) {
-    return false;
+    return false
   }
-  return true;
+  return true
 }
 
 export function validPasswordByExp(str) {
   if (!str || str.length < 6) {
-    return false;
+    return false
   }
 
   // 检查是否包含小写字母
   if (!/[a-z]/.test(str)) {
-    return false;
+    return false
   }
 
-  return true;
+  return true
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineExpose, getCurrentInstance, onMounted, reactive, ref } from 'vue';
+import { computed, defineExpose, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 import {
   type FormInst,
   type FormRules,
@@ -19,105 +19,105 @@ import {
   NPopover,
   NSelect,
   NSwitch
-} from 'naive-ui';
-import { useLoading } from '@sa/hooks';
-import { Refresh } from '@vicons/ionicons5';
-import type { FlatResponseFailData, FlatResponseSuccessData } from '@sa/axios';
-import moment from 'moment';
-import { commandDataById, commandDataPub, deviceCustomCommandsIdList } from '@/service/api';
-import { $t } from '@/locales';
-import { isJSON } from '@/utils/common/tool';
-import { createLogger } from '@/utils/logger';
-const logger = createLogger('Table');
+} from 'naive-ui'
+import { useLoading } from '@sa/hooks'
+import { Refresh } from '@vicons/ionicons5'
+import type { FlatResponseFailData, FlatResponseSuccessData } from '@sa/axios'
+import moment from 'moment'
+import { commandDataById, commandDataPub, deviceCustomCommandsIdList } from '@/service/api'
+import { $t } from '@/locales'
+import { isJSON } from '@/utils/common/tool'
+import { createLogger } from '@/utils/logger'
+const logger = createLogger('Table')
 const props = defineProps<{
-  id: string;
-  noRefresh?: boolean;
-  isCommand?: boolean;
-  buttonName?: string;
-  tableColumns: any[] | undefined;
-  expect?: boolean;
-  submitApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>;
-  expectApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>;
-  fetchDataApi: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>;
-}>();
-const tableData = ref<any[] | undefined>();
-const page_coune = ref(0);
-const the_page = ref(1);
-const showDialog = ref(false);
-const formRef = ref<FormInst | null>(null);
+  id: string
+  noRefresh?: boolean
+  isCommand?: boolean
+  buttonName?: string
+  tableColumns: any[] | undefined
+  expect?: boolean
+  submitApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
+  expectApi?: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
+  fetchDataApi: (params: any) => Promise<FlatResponseSuccessData | FlatResponseFailData>
+}>()
+const tableData = ref<any[] | undefined>()
+const page_coune = ref(0)
+const the_page = ref(1)
+const showDialog = ref(false)
+const formRef = ref<FormInst | null>(null)
 const formModel = reactive({
   commandValue: '',
   textValue: '',
   expected: false,
   time: null as number | null
-});
-const options = ref();
-const { loading, startLoading, endLoading } = useLoading();
+})
+const options = ref()
+const { loading, startLoading, endLoading } = useLoading()
 const paramsSelect = ref<any>([
   { label: 'true', value: true },
   { label: 'false', value: false }
-]);
-const paramsData = ref<any>([]);
-const isTextArea = ref<any>(true);
+])
+const paramsData = ref<any>([])
+const isTextArea = ref<any>(true)
 const rules = computed<FormRules>(() => {
-  const r: FormRules = {};
+  const r: FormRules = {}
   if (props.isCommand && isTextArea.value) {
     r.commandValue = {
       required: true,
       message: $t('page.manage.validation.commandIdentifierRequired'),
       trigger: ['input', 'blur']
-    };
+    }
   }
-  return r;
-});
+  return r
+})
 const fetchDataFunction = async () => {
-  startLoading();
+  startLoading()
 
   const { data, error } = await props.fetchDataApi({
     page: !props.noRefresh ? the_page.value : undefined,
     page_size: !props.noRefresh ? 4 : undefined,
     device_id: props.id
-  });
+  })
   if (!error) {
-    tableData.value = data?.value || data?.list || (Array.isArray(data) ? data : []) || [];
+    tableData.value = data?.value || data?.list || (Array.isArray(data) ? data : []) || []
     if (data?.count) {
-      page_coune.value = Math.ceil(data.count / 4);
+      page_coune.value = Math.ceil(data.count / 4)
     }
-    endLoading();
+    endLoading()
   }
-};
+}
 
 const openDialog = () => {
-  showDialog.value = true;
-};
+  showDialog.value = true
+}
 
 const closeDialog = () => {
-  showDialog.value = false;
-  formModel.textValue = '';
-  paramsData.value = [];
-  formModel.commandValue = '';
-  isTextArea.value = true;
-  formModel.expected = false;
-  formModel.time = null;
-  formRef.value?.restoreValidation();
-};
+  showDialog.value = false
+  formModel.textValue = ''
+  paramsData.value = []
+  formModel.commandValue = ''
+  isTextArea.value = true
+  formModel.expected = false
+  formModel.time = null
+  formRef.value?.restoreValidation()
+}
 
 const submit = async () => {
   try {
-    await formRef.value?.validate();
+    await formRef.value?.validate()
 
-    let parms;
-    const params: any = {};
+    let parms
+    const params: any = {}
     if (!isTextArea.value) {
       paramsData.value.forEach((item: any) => {
-        params[item.data_identifier] = item[item.data_identifier];
-      });
-      formModel.textValue = JSON.stringify(params);
+        params[item.data_identifier] = item[item.data_identifier]
+      })
+      formModel.textValue = JSON.stringify(params)
     }
 
     if (formModel.textValue && !isJSON(formModel.textValue)) {
-      window.$message?.error($t('generate.inputRightJson'));
-      return;
+      window.$message?.error($t('generate.inputRightJson'))
+      return
     }
 
     if (props.isCommand) {
@@ -125,126 +125,126 @@ const submit = async () => {
         device_id: props.id,
         value: formModel.textValue ? formModel.textValue : null,
         identify: formModel.commandValue
-      };
+      }
     } else {
-      parms = { device_id: props.id, value: formModel.textValue ? formModel.textValue : null };
+      parms = { device_id: props.id, value: formModel.textValue ? formModel.textValue : null }
     }
 
     if (formModel.expected) {
       if (props.expectApi) {
-        const expiry = formModel.time ? new Date().getTime() + formModel.time * 60 * 60 * 1000 : null;
+        const expiry = formModel.time ? new Date().getTime() + formModel.time * 60 * 60 * 1000 : null
         await props.expectApi({
           device_id: props.id,
           payload: formModel.textValue ? formModel.textValue : null,
           send_type: props.isCommand ? 'command' : 'attribute',
           expiry: expiry ? moment(expiry).format('YYYY-MM-DDTHH:mm:ssZ') : null,
           identify: props.isCommand ? formModel.commandValue : null
-        });
+        })
       }
     } else if (props.submitApi) {
-      await props.submitApi(parms);
+      await props.submitApi(parms)
     }
 
-    await fetchDataFunction();
-    closeDialog();
+    await fetchDataFunction()
+    closeDialog()
   } catch (errors) {
-    window.$message?.error($t('common.validateFail') || 'Validation failed, please check your input.');
-    logger.error('Form validation failed:', errors);
+    window.$message?.error($t('common.validateFail') || 'Validation failed, please check your input.')
+    logger.error('Form validation failed:', errors)
   }
-};
+}
 
 const onCommandChange = async (row: any) => {
   const parms = {
     device_id: props.id,
     value: row.instruct,
     identify: row.data_identifier
-  };
-  await commandDataPub(parms);
-  fetchDataFunction();
-};
+  }
+  await commandDataPub(parms)
+  fetchDataFunction()
+}
 
 const updatePage = (page: number) => {
-  the_page.value = page;
-  fetchDataFunction();
-};
+  the_page.value = page
+  fetchDataFunction()
+}
 const refresh = () => {
-  the_page.value = 1;
-  fetchDataFunction();
-};
+  the_page.value = 1
+  fetchDataFunction()
+}
 
-defineExpose({ refresh });
+defineExpose({ refresh })
 const getOptions = async show => {
   if (show) {
-    const res = await commandDataById(props.id);
+    const res = await commandDataById(props.id)
 
     if (res && Array.isArray(res.data)) {
-      options.value = res.data;
+      options.value = res.data
     } else {
-      options.value = [];
+      options.value = []
     }
   }
-};
+}
 
 const selectBtn: () => void = () => {
-  formModel.commandValue = '';
-  isTextArea.value = !isTextArea.value;
-};
+  formModel.commandValue = ''
+  isTextArea.value = !isTextArea.value
+}
 
 const selectVal: (arr: any, option: any) => void = (arr, option) => {
-  logger.info(arr);
-  formModel.commandValue = arr;
+  logger.info(arr)
+  formModel.commandValue = arr
   if (option && option.params) {
     try {
-      paramsData.value = JSON.parse(option.params);
+      paramsData.value = JSON.parse(option.params)
     } catch (e) {
-      logger.error('Failed to parse params for selected command:', e);
-      paramsData.value = [];
+      logger.error('Failed to parse params for selected command:', e)
+      paramsData.value = []
     }
   } else {
-    paramsData.value = [];
+    paramsData.value = []
   }
-};
+}
 
-const commandList = ref();
+const commandList = ref()
 
 const getListData = async () => {
-  const { data } = await deviceCustomCommandsIdList(props.id);
-  commandList.value = data;
-};
+  const { data } = await deviceCustomCommandsIdList(props.id)
+  commandList.value = data
+}
 onMounted(() => {
-  props.isCommand && getListData();
-  fetchDataFunction();
-});
+  props.isCommand && getListData()
+  fetchDataFunction()
+})
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
 const validationJson = computed(() => {
   if (formModel.textValue && !isJSON(formModel.textValue)) {
-    return 'error';
+    return 'error'
   }
-  return undefined;
-});
+  return undefined
+})
 const inputFeedback = computed(() => {
   if (formModel.textValue && !isJSON(formModel.textValue)) {
-    return $t('generate.inputRightJson');
+    return $t('generate.inputRightJson')
   }
-  return '';
-});
+  return ''
+})
 
 // 更新计算属性，移除 isTextArea 的判断，命令标识符在 isCommand 为 true 时总是需要
 const isSubmitDisabled = computed(() => {
   // 条件1：如果需要命令标识符，且该值为空，则禁用
   if (props.isCommand && !formModel.commandValue) {
-    return true;
+    return true
   }
   // 条件2：如果载荷文本框有内容但不是有效的 JSON，则禁用
   if (formModel.textValue && !isJSON(formModel.textValue)) {
-    return true;
+    return true
   }
   // 其他情况不禁用
-  return false;
-});
+  return false
+})
 </script>
 
 <template>
@@ -263,11 +263,14 @@ const isSubmitDisabled = computed(() => {
 
     <NGrid v-if="isCommand" x-gap="20" y-gap="20" cols="1 s:2 m:3 l:4" responsive="screen">
       <NGridItem v-for="item in commandList" :key="item.id">
-        
-          <NButton size="large" :disabled="item.enable_status === 'disable'" class="title w-160px p-24px cursor-pointer ellipsis-text text-16px font-600" @click="onCommandChange(item)">
-            {{ item.buttom_name }}
-          </NButton>
-        
+        <NButton
+          size="large"
+          :disabled="item.enable_status === 'disable'"
+          class="title w-160px p-24px cursor-pointer ellipsis-text text-16px font-600"
+          @click="onCommandChange(item)"
+        >
+          {{ item.buttom_name }}
+        </NButton>
       </NGridItem>
     </NGrid>
     <NDataTable class="mb-4 mt-4" :loading="loading" :columns="tableColumns" :data="tableData" />
@@ -360,7 +363,7 @@ const isSubmitDisabled = computed(() => {
                         return {
                           ...v,
                           label: v.desc
-                        };
+                        }
                       }) || []
                     "
                     :placeholder="$t('generate.please-select')"

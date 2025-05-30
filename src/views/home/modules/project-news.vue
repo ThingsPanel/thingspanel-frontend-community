@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { $t } from '@/locales';
+import { computed } from 'vue'
+import { $t } from '@/locales'
 
 defineOptions({
   name: 'ProjectNews'
-});
+})
 
 interface NewsItem {
-  id: number;
-  content: string;
-  time: string;
+  id: number
+  content: string
+  time: string
 }
 
 const newses = computed<NewsItem[]>(() => [
@@ -18,7 +18,7 @@ const newses = computed<NewsItem[]>(() => [
   { id: 3, content: $t('page.home.projectNews.desc3'), time: '2021-10-31 22:43:12' },
   { id: 4, content: $t('page.home.projectNews.desc4'), time: '2021-11-03 20:33:31' },
   { id: 5, content: $t('page.home.projectNews.desc5'), time: '2021-11-07 22:45:32' }
-]);
+])
 </script>
 
 <template>

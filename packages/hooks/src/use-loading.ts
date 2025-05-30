@@ -1,4 +1,4 @@
-import useBoolean from './use-boolean';
+import useBoolean from './use-boolean'
 
 /**
  * Loading
@@ -6,11 +6,11 @@ import useBoolean from './use-boolean';
  * @param initValue Init value
  */
 export default function useLoading(initValue = false) {
-  const { bool: loading, setTrue: startLoading, setFalse: endLoading } = useBoolean(initValue);
+  const { bool: loading, setTrue: startLoading, setFalse: endLoading } = useBoolean(initValue)
 
   return {
     loading,
     startLoading,
     endLoading
-  };
+  }
 }

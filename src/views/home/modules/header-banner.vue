@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { $t } from '@/locales';
-import { useAppStore } from '@/store/modules/app';
-import { useAuthStore } from '@/store/modules/auth';
+import { computed } from 'vue'
+import { $t } from '@/locales'
+import { useAppStore } from '@/store/modules/app'
+import { useAuthStore } from '@/store/modules/auth'
 
 defineOptions({
   name: 'HeaderBanner'
-});
+})
 
-const appStore = useAppStore();
-const authStore = useAuthStore();
+const appStore = useAppStore()
+const authStore = useAuthStore()
 
-const gap = computed(() => (appStore.isMobile ? 0 : 16));
+const gap = computed(() => (appStore.isMobile ? 0 : 16))
 
 interface StatisticData {
-  id: number;
-  label: string;
-  value: string;
+  id: number
+  label: string
+  value: string
 }
 
 const statisticData = computed<StatisticData[]>(() => [
@@ -35,7 +35,7 @@ const statisticData = computed<StatisticData[]>(() => [
     label: $t('page.home.message'),
     value: '12'
   }
-]);
+])
 </script>
 
 <template>

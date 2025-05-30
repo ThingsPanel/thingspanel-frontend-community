@@ -1,8 +1,8 @@
-import type { ChangelogOption } from '@soybeanjs/changelog';
+import type { ChangelogOption } from '@soybeanjs/changelog'
 
 export interface CliOption {
   /** The project root directory */
-  cwd: string;
+  cwd: string
   /**
    * Cleanup dirs
    *
@@ -13,21 +13,21 @@ export interface CliOption {
    * ["** /dist", "** /pnpm-lock.yaml", "** /node_modules", "!node_modules/**"]
    * ```
    */
-  cleanupDirs: string[];
+  cleanupDirs: string[]
   /** Git commit types */
-  gitCommitTypes: [string, string][];
+  gitCommitTypes: [string, string][]
   /** Git commit scopes */
-  gitCommitScopes: [string, string][];
+  gitCommitScopes: [string, string][]
   /**
    * Npm-check-updates command args
    *
    * @default ['--deep', '-u']
    */
-  ncuCommandArgs: string[];
+  ncuCommandArgs: string[]
   /**
    * Options of generate changelog
    *
    * @link https://github.com/soybeanjs/changelog
    */
-  changelogOptions: Partial<ChangelogOption>;
+  changelogOptions: Partial<ChangelogOption>
 }

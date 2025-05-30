@@ -96,4 +96,4 @@ export default {
   secretLength: 'Secret密钥长度应在8到128个字符之间',
   secretFormat: 'Secret密钥只能包含字母和数字',
   saveSuccess: '保存成功'
-};
+}

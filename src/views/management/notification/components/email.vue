@@ -1,32 +1,32 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { useMessage } from 'naive-ui';
-import type { FormInst, MessageReactive } from 'naive-ui';
-import { useBoolean, useLoading } from '@sa/hooks';
-import { editNotificationServices, fetchNotificationServicesEmail, sendTestEmail } from '@/service/api';
-import { deepClone } from '@/utils/common/tool';
-import { createRequiredFormRule } from '@/utils/form/rule';
-import { $t } from '~/src/locales';
+import { reactive, ref } from 'vue'
+import { useMessage } from 'naive-ui'
+import type { FormInst, MessageReactive } from 'naive-ui'
+import { useBoolean, useLoading } from '@sa/hooks'
+import { editNotificationServices, fetchNotificationServicesEmail, sendTestEmail } from '@/service/api'
+import { deepClone } from '@/utils/common/tool'
+import { createRequiredFormRule } from '@/utils/form/rule'
+import { $t } from '~/src/locales'
 
-const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: visible, setTrue: openModal, setFalse: closeModal } = useBoolean();
+const { loading, startLoading, endLoading } = useLoading(false)
+const { bool: visible, setTrue: openModal, setFalse: closeModal } = useBoolean()
 
-const formModel = reactive<NotificationServices.Email>(createDefaultFormModel());
+const formModel = reactive<NotificationServices.Email>(createDefaultFormModel())
 
 function setTableData(data: Api.NotificationServices.Email) {
-  Object.assign(formModel, data);
+  Object.assign(formModel, data)
   if (data.config !== 'null') {
-    formModel.email_config = JSON.parse(data.config);
+    formModel.email_config = JSON.parse(data.config)
   }
 }
 
 async function getNotificationServices() {
-  startLoading();
-  const { data } = await fetchNotificationServicesEmail();
+  startLoading()
+  const { data } = await fetchNotificationServicesEmail()
   if (data) {
-    setTableData(data);
+    setTableData(data)
   }
-  endLoading();
+  endLoading()
 }
 
 function createDefaultFormModel(): NotificationServices.Email {
@@ -37,7 +37,7 @@ function createDefaultFormModel(): NotificationServices.Email {
     notice_type: 'EMAIL',
     status: 'OPEN',
     remark: ''
-  };
+  }
 }
 
 const rules = {
@@ -47,65 +47,65 @@ const rules = {
   'email_config.from_password': createRequiredFormRule($t('common.pleaseCheckValue')),
   email: createRequiredFormRule($t('common.pleaseCheckValue')),
   body: createRequiredFormRule($t('common.pleaseCheckValue'))
-};
-const formRef = ref<HTMLElement & FormInst>();
+}
+const formRef = ref<HTMLElement & FormInst>()
 async function handleSubmit() {
-  await formRef.value?.validate();
-  startLoading();
-  const formData = deepClone(formModel);
-  delete formData.config;
-  const data: any = await editNotificationServices(formData);
+  await formRef.value?.validate()
+  startLoading()
+  const formData = deepClone(formModel)
+  delete formData.config
+  const data: any = await editNotificationServices(formData)
   if (!data.error) {
-    window.$message?.success('success');
-    endLoading();
-    await getNotificationServices();
+    window.$message?.success('success')
+    endLoading()
+    await getNotificationServices()
   }
 }
 
 type FormModel = {
-  body: string;
-  email: string;
-  header: string;
-};
+  body: string
+  email: string
+  header: string
+}
 
 const debugData = reactive<FormModel>({
   body: '',
   email: '',
   header: ''
-});
+})
 
 function handleOpenModal() {
   Object.assign(debugData, {
     body: '',
     email: '',
     header: ''
-  });
-  openModal();
+  })
+  openModal()
 }
 
-const message = useMessage();
-const debugFormRef = ref<HTMLElement & FormInst>();
+const message = useMessage()
+const debugFormRef = ref<HTMLElement & FormInst>()
 async function handleSend() {
-  await debugFormRef.value?.validate();
+  await debugFormRef.value?.validate()
   let messageReactive: MessageReactive | null = message.loading($t('common.modifySuccess'), {
     duration: 100000
-  });
-  const data: any = await sendTestEmail(debugData);
+  })
+  const data: any = await sendTestEmail(debugData)
   if (!data.error) {
-    window.$message?.success('success');
+    window.$message?.success('success')
   }
   if (messageReactive) {
-    messageReactive.destroy();
-    messageReactive = null;
+    messageReactive.destroy()
+    messageReactive = null
   }
-  closeModal();
+  closeModal()
 }
 
 function init() {
-  getNotificationServices();
+  getNotificationServices()
 }
 
-init();
+init()
 </script>
 
 <template>

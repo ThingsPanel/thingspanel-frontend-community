@@ -1,83 +1,83 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
-import { useRoute } from 'vue-router';
-import type { ICardView } from '@/components/panel/card';
-import type { ICardRender } from '@/utils/websocketUtil';
-import { $t, setLocale } from '@/locales';
-import { deviceDetail, deviceTemplateDetail } from '@/service/api/device';
-import { formatDateTime } from '@/utils/common/datetime';
-import { localStg } from '@/utils/storage';
-import { useWebsocketUtil } from '@/utils/websocketUtil';
-import TelemetryDataCards from './telemetryDataCards.vue';
+import { onMounted, onUnmounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import type { ICardView } from '@/components/panel/card'
+import type { ICardRender } from '@/utils/websocketUtil'
+import { $t, setLocale } from '@/locales'
+import { deviceDetail, deviceTemplateDetail } from '@/service/api/device'
+import { formatDateTime } from '@/utils/common/datetime'
+import { localStg } from '@/utils/storage'
+import { useWebsocketUtil } from '@/utils/websocketUtil'
+import TelemetryDataCards from './telemetryDataCards.vue'
 
-const { query } = useRoute();
-const { d_id, token, lang } = query;
-const deviceData: any = ref({});
+const { query } = useRoute()
+const { d_id, token, lang } = query
+const deviceData: any = ref({})
 
 if (token) {
-  localStg.set('token', token as string);
+  localStg.set('token', token as string)
 }
 
 if (lang) {
-  setLocale(lang as App.I18n.LangType);
+  setLocale(lang as App.I18n.LangType)
 }
 
-const device_color = ref('#ccc');
-const device_type = ref('');
-const icon_type = ref('');
-const device_number = ref('');
-const layout = ref<ICardView[]>([]);
-const showDefaultCards = ref(false);
-const showAppChart = ref(false);
-const cardHeight = ref(160); // 卡片的高度
-const cardMargin = ref(15); // 卡片的间距
+const device_color = ref('#ccc')
+const device_type = ref('')
+const icon_type = ref('')
+const device_number = ref('')
+const layout = ref<ICardView[]>([])
+const showDefaultCards = ref(false)
+const showAppChart = ref(false)
+const cardHeight = ref(160) // 卡片的高度
+const cardMargin = ref(15) // 卡片的间距
 
-const cr = ref<ICardRender>();
+const cr = ref<ICardRender>()
 
-const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr, token as string);
+const { updateComponentsData, closeAllSockets } = useWebsocketUtil(cr, token as string)
 
 const getDeviceDetail = async () => {
-  const { data, error } = await deviceDetail(d_id);
+  const { data, error } = await deviceDetail(d_id)
   if (!error) {
-    deviceData.value = data;
-    device_number.value = data.device_number;
+    deviceData.value = data
+    device_number.value = data.device_number
     if (data.is_online !== 0) {
-      device_color.value = 'rgb(2,153,52)';
-      icon_type.value = 'rgb(2,153,52)';
+      device_color.value = 'rgb(2,153,52)'
+      icon_type.value = 'rgb(2,153,52)'
     }
     if (data.device_config !== undefined) {
-      device_type.value = data.device_config.device_type;
+      device_type.value = data.device_config.device_type
     }
-    const res = await deviceTemplateDetail({ id: data.device_config.device_template_id });
+    const res = await deviceTemplateDetail({ id: data.device_config.device_template_id })
     if (res.data) {
       if (res.data.app_chart_config) {
-        const configJson = JSON.parse(res.data.app_chart_config);
+        const configJson = JSON.parse(res.data.app_chart_config)
         if (configJson.length > 0) {
           configJson.forEach(item => {
             item.data?.dataSource?.deviceSource?.forEach(device => {
-              device.deviceId = d_id;
-            });
-          });
-          layout.value = [...configJson];
-          showAppChart.value = true;
-          updateComponentsData(layout);
+              device.deviceId = d_id
+            })
+          })
+          layout.value = [...configJson]
+          showAppChart.value = true
+          updateComponentsData(layout)
         } else {
-          showDefaultCards.value = true;
+          showDefaultCards.value = true
         }
       } else {
-        showDefaultCards.value = true;
+        showDefaultCards.value = true
       }
     }
   }
-};
+}
 
 onMounted(() => {
-  getDeviceDetail();
-});
+  getDeviceDetail()
+})
 
 onUnmounted(() => {
-  closeAllSockets();
-});
+  closeAllSockets()
+})
 </script>
 
 <template>

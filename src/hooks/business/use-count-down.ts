@@ -1,5 +1,5 @@
-import { computed, onScopeDispose, ref } from 'vue';
-import { useBoolean } from '@sa/hooks';
+import { computed, onScopeDispose, ref } from 'vue'
+import { useBoolean } from '@sa/hooks'
 
 /**
  * 倒计时
@@ -8,14 +8,14 @@ import { useBoolean } from '@sa/hooks';
  */
 export default function useCountDown(second: number) {
   if (second <= 0 && second % 1 !== 0) {
-    throw new Error('倒计时的时间应该为一个正整数！');
+    throw new Error('倒计时的时间应该为一个正整数！')
   }
-  const { bool: isComplete, setTrue, setFalse } = useBoolean(false);
+  const { bool: isComplete, setTrue, setFalse } = useBoolean(false)
 
-  const counts = ref(0);
-  const isCounting = computed(() => Boolean(counts.value));
+  const counts = ref(0)
+  const isCounting = computed(() => Boolean(counts.value))
 
-  let intervalId: any;
+  let intervalId: any
 
   /**
    * 开始计时
@@ -24,25 +24,25 @@ export default function useCountDown(second: number) {
    */
   function start(updateSecond: number = second) {
     if (!counts.value) {
-      setFalse();
-      counts.value = updateSecond;
+      setFalse()
+      counts.value = updateSecond
       intervalId = setInterval(() => {
-        counts.value -= 1;
+        counts.value -= 1
         if (counts.value <= 0) {
-          clearInterval(intervalId);
-          setTrue();
+          clearInterval(intervalId)
+          setTrue()
         }
-      }, 1000);
+      }, 1000)
     }
   }
 
   /** 停止计时 */
   function stop() {
-    intervalId = clearInterval(intervalId);
-    counts.value = 0;
+    intervalId = clearInterval(intervalId)
+    counts.value = 0
   }
 
-  onScopeDispose(stop);
+  onScopeDispose(stop)
 
   return {
     counts,
@@ -50,5 +50,5 @@ export default function useCountDown(second: number) {
     start,
     stop,
     isComplete
-  };
+  }
 }

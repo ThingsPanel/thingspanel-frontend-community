@@ -17,7 +17,7 @@ export default {
     getCode: '获取验证码',
     emailRegistered: '邮箱已被注册',
     rememberPath: '在此浏览器上记住路径',
-    countingLabel: '{second}秒后重新获取',
+    countingLabel: '{second}秒后重新获取'
   },
   pwdLogin: {
     title: '密码登录',
@@ -50,4 +50,4 @@ export default {
   bindWeChat: {
     title: '绑定微信'
   }
-};
+}

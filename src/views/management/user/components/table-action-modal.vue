@@ -1,78 +1,78 @@
 <script setup lang="ts">
-import { computed, reactive, ref, toRefs, watch } from 'vue';
-import type { FormInst, FormItemRule } from 'naive-ui';
+import { computed, reactive, ref, toRefs, watch } from 'vue'
+import type { FormInst, FormItemRule } from 'naive-ui'
 // import { genderOptions } from '@/constants'
-import { addUser, editUser } from '@/service/api/auth';
-import { createRequiredFormRule, formRules, getConfirmPwdRule } from '@/utils/form/rule';
-import { userStatusOptions } from '@/constants/business';
-import { $t } from '@/locales';
+import { addUser, editUser } from '@/service/api/auth'
+import { createRequiredFormRule, formRules, getConfirmPwdRule } from '@/utils/form/rule'
+import { userStatusOptions } from '@/constants/business'
+import { $t } from '@/locales'
 
 export interface Props {
   /** 弹窗可见性 */
-  visible: boolean;
+  visible: boolean
   /** 弹窗类型 add: 新增 edit: 编辑 */
-  type?: 'add' | 'edit';
+  type?: 'add' | 'edit'
   /** 编辑的表格行数据 */
-  editData?: UserManagement.User | null;
+  editData?: UserManagement.User | null
 }
 
-export type ModalType = NonNullable<Props['type']>;
+export type ModalType = NonNullable<Props['type']>
 
-defineOptions({ name: 'TableActionModal' });
+defineOptions({ name: 'TableActionModal' })
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'add',
   editData: null
-});
+})
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void;
+  (e: 'update:visible', visible: boolean): void
 
   /** 点击协议 */
-  (e: 'success'): void;
+  (e: 'success'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const modalVisible = computed({
   get() {
-    return props.visible;
+    return props.visible
   },
   set(visible) {
-    emit('update:visible', visible);
+    emit('update:visible', visible)
   }
-});
+})
 
 const customUserStatusOptions = computed(() => {
   return userStatusOptions.map(item => {
-    const key = item.value === 'N' ? 'page.manage.user.status.normal' : 'page.manage.user.status.freeze';
+    const key = item.value === 'N' ? 'page.manage.user.status.normal' : 'page.manage.user.status.freeze'
     return {
       label: $t(key),
       value: item.value
-    };
-  });
-});
+    }
+  })
+})
 
 const closeModal = () => {
-  modalVisible.value = false;
-};
+  modalVisible.value = false
+}
 
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
     add: $t('common.add'),
     edit: $t('common.edit')
-  };
-  return titles[props.type];
-});
+  }
+  return titles[props.type]
+})
 
-const formRef = ref<HTMLElement & FormInst>();
+const formRef = ref<HTMLElement & FormInst>()
 
 type FormModel = Pick<UserManagement.User, 'email' | 'name' | 'phone_number' | 'gender' | 'remark' | 'status'> & {
-  password: string;
-  confirmPwd: string;
-};
+  password: string
+  confirmPwd: string
+}
 
-const formModel = reactive<FormModel>(createDefaultFormModel());
+const formModel = reactive<FormModel>(createDefaultFormModel())
 
 const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
   name: createRequiredFormRule($t('common.pleaseCheckValue')),
@@ -83,7 +83,7 @@ const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
   confirmPwd: getConfirmPwdRule(toRefs(formModel).password),
   status: getConfirmPwdRule(toRefs(formModel).password),
   remark: createRequiredFormRule($t('common.pleaseCheckValue'))
-};
+}
 
 function createDefaultFormModel(): FormModel {
   return {
@@ -95,52 +95,52 @@ function createDefaultFormModel(): FormModel {
     confirmPwd: '',
     remark: '',
     status: 'N'
-  };
+  }
 }
 
 function handleUpdateFormModel(model: Partial<FormModel>) {
-  Object.assign(formModel, model);
+  Object.assign(formModel, model)
 }
 
 function handleUpdateFormModelByModalType() {
   const handlers: Record<ModalType, () => void> = {
     add: () => {
-      const defaultFormModel = createDefaultFormModel();
-      handleUpdateFormModel(defaultFormModel);
+      const defaultFormModel = createDefaultFormModel()
+      handleUpdateFormModel(defaultFormModel)
     },
     edit: () => {
       if (props.editData) {
-        handleUpdateFormModel(props.editData);
+        handleUpdateFormModel(props.editData)
       }
     }
-  };
+  }
 
-  handlers[props.type]();
+  handlers[props.type]()
 }
 
 async function handleSubmit() {
-  await formRef.value?.validate();
-  let data: any;
+  await formRef.value?.validate()
+  let data: any
   if (props.type === 'add') {
-    data = await addUser(formModel);
+    data = await addUser(formModel)
   } else if (props.type === 'edit') {
-    data = await editUser(formModel);
+    data = await editUser(formModel)
   }
   if (!data.error) {
     // window.$message?.success(data.msg);
-    emit('success');
+    emit('success')
   }
-  closeModal();
+  closeModal()
 }
 
 watch(
   () => props.visible,
   newValue => {
     if (newValue) {
-      handleUpdateFormModelByModalType();
+      handleUpdateFormModelByModalType()
     }
   }
-);
+)
 </script>
 
 <template>

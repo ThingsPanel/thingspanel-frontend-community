@@ -1,82 +1,82 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { NButton, NFormItem, NSelect } from 'naive-ui';
+import { onMounted, ref } from 'vue'
+import { NButton, NFormItem, NSelect } from 'naive-ui'
 import {
   deviceConfigEdit,
   deviceConfigVoucherType,
   deviceProtocalServiceList,
   protocolPluginConfigForm
-} from '@/service/api/device';
+} from '@/service/api/device'
 // protocolPluginConfigInput
-import { $t } from '@/locales';
-import FormInput from './form.vue';
+import { $t } from '@/locales'
+import FormInput from './form.vue'
 
-type FormElementType = 'input' | 'table' | 'select';
+type FormElementType = 'input' | 'table' | 'select'
 
 interface Option {
-  label: string;
-  value: number | string;
+  label: string
+  value: number | string
 }
 
 interface Validate {
-  message: string; // 验证失败时显示的错误消息
-  required?: boolean; // 指定字段是否必填
-  rules?: string; // 用于验证字段值的正则表达式规则
-  type?: 'number' | 'string' | 'array' | 'boolean' | 'object'; // 验证的类型
+  message: string // 验证失败时显示的错误消息
+  required?: boolean // 指定字段是否必填
+  rules?: string // 用于验证字段值的正则表达式规则
+  type?: 'number' | 'string' | 'array' | 'boolean' | 'object' // 验证的类型
 }
 
 interface FormElement {
-  type: FormElementType; // 表单元素的类型
-  dataKey: string; // 用于唯一标识表单元素的键
-  label: string; // 显示为表单元素标签的文本
-  options?: Option[]; // 下拉选择的枚举选项，仅 select 类型时有效
-  placeholder?: string; // 提示文本，仅 input 类型时有效
-  validate?: Validate; // 包含表单验证规则的对象
-  array?: FormElement[]; // 仅 table 类型时有效，定义表格列的配置
+  type: FormElementType // 表单元素的类型
+  dataKey: string // 用于唯一标识表单元素的键
+  label: string // 显示为表单元素标签的文本
+  options?: Option[] // 下拉选择的枚举选项，仅 select 类型时有效
+  placeholder?: string // 提示文本，仅 input 类型时有效
+  validate?: Validate // 包含表单验证规则的对象
+  array?: FormElement[] // 仅 table 类型时有效，定义表格列的配置
 }
 
-const formElements = ref<FormElement[]>([]);
+const formElements = ref<FormElement[]>([])
 
 interface Emits {
-  (e: 'upDateConfig'): void;
+  (e: 'upDateConfig'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
-const typeOptions: any = ref([]);
-const active: any = ref(false);
+const typeOptions: any = ref([])
+const active: any = ref(false)
 
 interface Props {
-  configInfo?: object | any;
+  configInfo?: object | any
 }
 
 const props = withDefaults(defineProps<Props>(), {
   configInfo: null
-});
+})
 const extendForm = ref({
   protocol_type: null,
   voucher_type: null
-} as any);
-const extendFormRules = ref({});
-const protocol_config = ref({});
+} as any)
+const extendFormRules = ref({})
+const protocol_config = ref({})
 const handleSubmit = async () => {
-  const postData = props.configInfo;
-  postData.protocol_type = extendForm.value.protocol_type;
-  postData.voucher_type = extendForm.value.voucher_type;
-  postData.protocol_config = JSON.stringify(protocol_config.value);
+  const postData = props.configInfo
+  postData.protocol_type = extendForm.value.protocol_type
+  postData.voucher_type = extendForm.value.voucher_type
+  postData.protocol_config = JSON.stringify(protocol_config.value)
 
-  const res = await deviceConfigEdit(postData);
+  const res = await deviceConfigEdit(postData)
   if (!res.error) {
     // message.success('修改成功');
-    emit('upDateConfig');
+    emit('upDateConfig')
   }
-};
+}
 
 const getProtocolList = async (deviceCode: string) => {
   const queryData = {
     device_type: deviceCode
-  };
-  const res = await deviceProtocalServiceList(queryData);
+  }
+  const res = await deviceProtocalServiceList(queryData)
   typeOptions.value = [
     {
       type: 'group',
@@ -90,29 +90,29 @@ const getProtocolList = async (deviceCode: string) => {
       key: 'service',
       children: res.data.service || []
     }
-  ];
-};
+  ]
+}
 
-const connectOptions = ref([] as any);
+const connectOptions = ref([] as any)
 const getConfigForm = async data => {
   const res = await protocolPluginConfigForm({
     device_type: props.configInfo.device_type,
     protocol_type: data
-  });
-  formElements.value = res.data;
-};
+  })
+  formElements.value = res.data
+}
 const getVoucherType = async data => {
-  connectOptions.value = [];
+  connectOptions.value = []
   const res = await deviceConfigVoucherType({
     device_type: props.configInfo.device_type,
     protocol_type: data
-  });
+  })
   if (res.data) {
     connectOptions.value = Object.keys(res.data).map(key => {
-      return { label: key, value: res.data[key] };
-    });
+      return { label: key, value: res.data[key] }
+    })
   }
-};
+}
 
 // const openForm = () => {
 //   active.value = true;
@@ -127,14 +127,14 @@ const getVoucherType = async data => {
 
 onMounted(async () => {
   if (props.configInfo.protocol_config) {
-    protocol_config.value = JSON.parse(props.configInfo.protocol_config);
+    protocol_config.value = JSON.parse(props.configInfo.protocol_config)
   }
-  getProtocolList(props.configInfo.device_type);
-  extendForm.value = props.configInfo;
-  await getVoucherType(extendForm.value.protocol_type);
+  getProtocolList(props.configInfo.device_type)
+  extendForm.value = props.configInfo
+  await getVoucherType(extendForm.value.protocol_type)
 
-  await getConfigForm(extendForm.value.protocol_type);
-});
+  await getConfigForm(extendForm.value.protocol_type)
+})
 </script>
 
 <template>

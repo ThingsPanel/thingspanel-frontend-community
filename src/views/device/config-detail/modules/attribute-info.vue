@@ -1,48 +1,47 @@
 <script setup lang="tsx">
-import { onMounted, ref } from 'vue';
-import { NFlex } from 'naive-ui';
-import { deviceConfigEdit, deviceConfigInfo, deviceConfigMenu } from '@/service/api/device';
-import { useRouterPush } from '@/hooks/common/router';
-import { $t } from '@/locales';
+import { onMounted, ref } from 'vue'
+import { NFlex } from 'naive-ui'
+import { deviceConfigEdit, deviceConfigInfo, deviceConfigMenu } from '@/service/api/device'
+import { useRouterPush } from '@/hooks/common/router'
+import { $t } from '@/locales'
 // eslint-disable-next-line vue/valid-define-emits
-const emit = defineEmits();
-const { routerPushByKey } = useRouterPush();
+const emit = defineEmits()
+const { routerPushByKey } = useRouterPush()
 
 interface Props {
-  configInfo?: object | any;
+  configInfo?: object | any
 }
 
 const props = withDefaults(defineProps<Props>(), {
   configInfo: null
-});
+})
 
-const plugList = ref([{ name: $t('generate.unbind'), id: '' }]);
+const plugList = ref([{ name: $t('generate.unbind'), id: '' }])
 
-const selectValue = ref();
+const selectValue = ref()
 
 const getTableData = async name => {
-  const res = await deviceConfigMenu({ device_config_name: name });
-  plugList.value = plugList.value.concat(res.data);
-};
+  const res = await deviceConfigMenu({ device_config_name: name })
+  plugList.value = plugList.value.concat(res.data)
+}
 const searchPlug = v => {
-  getTableData(v);
-};
+  getTableData(v)
+}
 
 const choseTemp = async v => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  const res = await deviceConfigEdit({ device_template_id: v, id: props.configInfo.id });
+  const res = await deviceConfigEdit({ device_template_id: v, id: props.configInfo.id })
   if (!res.error) {
-    emit('upDateConfig');
+    emit('upDateConfig')
   }
-};
+}
 const toTemplate = () => {
-  routerPushByKey('device_template');
-};
+  routerPushByKey('device_template')
+}
 onMounted(async () => {
-  await getTableData('');
-  const res = await deviceConfigInfo({ id: props.configInfo.id });
-  selectValue.value = res.data.device_template_id;
-});
+  await getTableData('')
+  const res = await deviceConfigInfo({ id: props.configInfo.id })
+  selectValue.value = res.data.device_template_id
+})
 </script>
 
 <template>
@@ -60,7 +59,7 @@ onMounted(async () => {
         @update:value="choseTemp"
         @search="
           v => {
-            searchPlug(v);
+            searchPlug(v)
           }
         "
       />

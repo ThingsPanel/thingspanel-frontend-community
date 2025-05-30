@@ -1,25 +1,25 @@
 <script setup lang="ts">
-defineOptions({ name: 'DashboardWorkbenchMainTechnologyCard' });
+defineOptions({ name: 'DashboardWorkbenchMainTechnologyCard' })
 
 interface Props {
   /** 技术名称 */
-  name: string;
+  name: string
   /** 技术描述 */
-  description: string;
+  description: string
   /** 技术作者 */
-  author: string;
+  author: string
   /** 技术官网 */
-  site: string;
+  site: string
   /** 技术图标 */
-  icon: string;
+  icon: string
   /** 图标颜色 */
-  iconColor?: string;
+  iconColor?: string
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 function handleOpenSite() {
-  window.open(props.site, '_blank');
+  window.open(props.site, '_blank')
 }
 </script>
 

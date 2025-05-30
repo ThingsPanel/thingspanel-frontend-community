@@ -1,11 +1,11 @@
 <script setup lang="tsx">
-import { defineEmits, provide, ref } from 'vue';
-import { $t } from '@/locales';
-import { getTemplat, putTemplat } from '@/service/api';
-import type { ICardView } from '@/components/panel/card';
-import templatePanel from '../card-select/template-panel.vue';
+import { defineEmits, provide, ref } from 'vue'
+import { $t } from '@/locales'
+import { getTemplat, putTemplat } from '@/service/api'
+import type { ICardView } from '@/components/panel/card'
+import templatePanel from '../card-select/template-panel.vue'
 
-const emit = defineEmits(['update:stepCurrent', 'update:modalVisible']);
+const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
 
 const props = defineProps({
   // 当前的步骤
@@ -23,43 +23,43 @@ const props = defineProps({
     type: String,
     required: true
   }
-});
+})
 
-const web_chart_config = ref<ICardView[]>([]);
-provide('web_chart_config', web_chart_config);
+const web_chart_config = ref<ICardView[]>([])
+provide('web_chart_config', web_chart_config)
 
 // 取消
 const cancellation: () => void = () => {
-  emit('update:modalVisible');
-};
+  emit('update:modalVisible')
+}
 // 上一步
 const back: () => void = () => {
-  emit('update:stepCurrent', 2);
-};
+  emit('update:stepCurrent', 2)
+}
 // 下一步
 // eslint-disable-next-line consistent-return
 const next = async () => {
-  let flag = false;
-  let theIndex = 0;
+  let flag = false
+  let theIndex = 0
   web_chart_config?.value?.forEach((i, index) => {
     if (i?.data?.dataSource?.deviceSource && !i?.data?.dataSource?.deviceSource[0]?.metricsId) {
-      flag = true;
-      theIndex = index;
+      flag = true
+      theIndex = index
     }
-  });
+  })
 
   // if (web_chart_config.value.length < 1 || flag) {
   //   window.NMessage.error(
   //     flag ? `${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}` : $t('common.leastOneChart')
   //   );
   if (flag) {
-    window.NMessage.error(`${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}`);
+    window.NMessage.error(`${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}`)
   } else {
-    const res = await getTemplat(props.deviceTemplateId);
-    await putTemplat({ ...res.data, web_chart_config: JSON.stringify(web_chart_config.value) });
-    emit('update:stepCurrent', 4);
+    const res = await getTemplat(props.deviceTemplateId)
+    await putTemplat({ ...res.data, web_chart_config: JSON.stringify(web_chart_config.value) })
+    emit('update:stepCurrent', 4)
   }
-};
+}
 </script>
 
 <template>

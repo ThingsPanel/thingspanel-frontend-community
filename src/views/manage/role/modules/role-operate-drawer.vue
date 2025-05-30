@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, reactive, watch } from 'vue';
-import { useFormRules, useNaiveForm } from '@/hooks/common/form';
-import { $t } from '@/locales';
-import { enableStatusOptions } from '@/constants/business';
+import { computed, reactive, watch } from 'vue'
+import { useFormRules, useNaiveForm } from '@/hooks/common/form'
+import { $t } from '@/locales'
+import { enableStatusOptions } from '@/constants/business'
 
 defineOptions({
   name: 'RoleOperateDrawer'
-});
+})
 
 /**
  * the type of operation
@@ -14,41 +14,41 @@ defineOptions({
  * - add: add role
  * - edit: edit role
  */
-export type OperateType = 'add' | 'edit';
+export type OperateType = 'add' | 'edit'
 
 interface Props {
   /** the type of operation */
-  operateType: OperateType;
+  operateType: OperateType
   /** the edit row data */
-  rowData?: Api.SystemManage.Role | null;
+  rowData?: Api.SystemManage.Role | null
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
 interface Emits {
-  (e: 'submitted'): void;
+  (e: 'submitted'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const visible = defineModel<boolean>('visible', {
   default: false
-});
+})
 
-const { formRef, validate, restoreValidation } = useNaiveForm();
-const { defaultRequiredRule } = useFormRules();
+const { formRef, validate, restoreValidation } = useNaiveForm()
+const { defaultRequiredRule } = useFormRules()
 
 const title = computed(() => {
   const titles: Record<OperateType, string> = {
     add: $t('page.manage.role.addRole'),
     edit: $t('page.manage.role.editRole')
-  };
-  return titles[props.operateType];
-});
+  }
+  return titles[props.operateType]
+})
 
-type Model = Pick<Api.SystemManage.Role, 'roleName' | 'roleCode' | 'roleDesc' | 'status'>;
+type Model = Pick<Api.SystemManage.Role, 'roleName' | 'roleCode' | 'roleDesc' | 'status'>
 
-const model: Model = reactive(createDefaultModel());
+const model: Model = reactive(createDefaultModel())
 
 function createDefaultModel(): Model {
   return {
@@ -56,46 +56,46 @@ function createDefaultModel(): Model {
     roleCode: '',
     roleDesc: '',
     status: null
-  };
+  }
 }
 
-type RuleKey = Exclude<keyof Model, 'roleDesc'>;
+type RuleKey = Exclude<keyof Model, 'roleDesc'>
 
 const rules: Record<RuleKey, App.Global.FormRule> = {
   roleName: defaultRequiredRule,
   roleCode: defaultRequiredRule,
   status: defaultRequiredRule
-};
+}
 
 function handleUpdateModelWhenEdit() {
   if (props.operateType === 'add') {
-    Object.assign(model, createDefaultModel());
-    return;
+    Object.assign(model, createDefaultModel())
+    return
   }
 
   if (props.operateType === 'edit' && props.rowData) {
-    Object.assign(model, props.rowData);
+    Object.assign(model, props.rowData)
   }
 }
 
 function closeDrawer() {
-  visible.value = false;
+  visible.value = false
 }
 
 async function handleSubmit() {
-  await validate();
+  await validate()
   // requestTs
   // window.$message?.success($t('common.updateSuccess'));
-  closeDrawer();
-  emit('submitted');
+  closeDrawer()
+  emit('submitted')
 }
 
 watch(visible, () => {
   if (visible.value) {
-    handleUpdateModelWhenEdit();
-    restoreValidation();
+    handleUpdateModelWhenEdit()
+    restoreValidation()
   }
-});
+})
 </script>
 
 <template>

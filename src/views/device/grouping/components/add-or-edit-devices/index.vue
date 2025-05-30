@@ -1,55 +1,55 @@
 <script lang="ts" setup>
-import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
-import type { FormInst, FormRules } from 'naive-ui';
+import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue'
+import type { FormInst, FormRules } from 'naive-ui'
 // import {useMessage} from 'naive-ui';
-import { deviceGroup, deviceGroupTree, putDeviceGroup } from '@/service/api/device';
-import { $t } from '@/locales';
+import { deviceGroup, deviceGroupTree, putDeviceGroup } from '@/service/api/device'
+import { $t } from '@/locales'
 
 interface Group {
-  id: string;
-  parent_id: string;
-  tier: number;
-  name: string;
-  description: string | null;
-  created_at: string;
-  updated_at: string;
-  remark: string | null;
-  tenant_id: string;
+  id: string
+  parent_id: string
+  tier: number
+  name: string
+  description: string | null
+  created_at: string
+  updated_at: string
+  remark: string | null
+  tenant_id: string
 }
 
 interface TreeNode {
-  group: Group;
-  children?: TreeNode[] | undefined; // TreeNode类型的可选数组，用于描述子节点
+  group: Group
+  children?: TreeNode[] | undefined // TreeNode类型的可选数组，用于描述子节点
 }
 
-const showModal = ref<boolean>(false);
-defineExpose({ showModal });
+const showModal = ref<boolean>(false)
+defineExpose({ showModal })
 
 // Props received from parent component
 interface Props {
-  isPidNoEdit?: boolean;
-  isEdit?: boolean;
+  isPidNoEdit?: boolean
+  isEdit?: boolean
   editData?: {
-    id: string;
-    parent_id: string;
-    name: string;
-    description: string;
-  };
-  refreshData: () => void;
+    id: string
+    parent_id: string
+    name: string
+    description: string
+  }
+  refreshData: () => void
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 // const message = useMessage();
-const formRef = ref<HTMLElement & FormInst>();
+const formRef = ref<HTMLElement & FormInst>()
 const formItem = ref({
   id: '', // Used for identification in edit mode
   parent_id: '',
   name: '',
   description: ''
-});
+})
 
 // Tree select options
-const options = ref();
+const options = ref()
 
 // Form validation rules
 const rules: FormRules = {
@@ -63,12 +63,12 @@ const rules: FormRules = {
     trigger: ['blur', 'input'],
     message: $t('custom.groupPage.enterGroupName')
   }
-};
+}
 
 interface opNode {
-  id?: string;
-  name?: string;
-  children?: opNode[]; // TreeNode类型的可选数组，用于描述子节点
+  id?: string
+  name?: string
+  children?: opNode[] // TreeNode类型的可选数组，用于描述子节点
 }
 
 // Extract id and name for tree select options
@@ -77,16 +77,16 @@ const extractIdAndName = (data: TreeNode[]): opNode[] => {
     id: node.group.id,
     name: node.group.name,
     children: node.children ? extractIdAndName(node.children) : undefined
-  }));
-  return res;
-};
+  }))
+  return res
+}
 // Fetch options for tree select and handle edit mode data echo back
 const getOptions = async () => {
   if (props.editData) {
-    formItem.value = { ...props.editData };
+    formItem.value = { ...props.editData }
   }
 
-  const { data } = await deviceGroupTree({});
+  const { data } = await deviceGroupTree({})
   options.value = [
     {
       id: '0', // Root node for tree select
@@ -97,23 +97,23 @@ const getOptions = async () => {
         children: item.children ? extractIdAndName(item.children) : undefined
       }))
     }
-  ];
-};
+  ]
+}
 
 // Submit form data
 const handleSubmit = async () => {
-  await formRef?.value?.validate();
-  showModal.value = false;
+  await formRef?.value?.validate()
+  showModal.value = false
   if (props.isEdit) {
-    await putDeviceGroup(formItem.value);
+    await putDeviceGroup(formItem.value)
     // message.success($t('custom.groupPage.modificationSuccess'));
   } else {
-    await deviceGroup(formItem.value);
+    await deviceGroup(formItem.value)
     // message.success($t('custom.groupPage.additionSuccess'));
   }
 
-  await getOptions();
-  props.refreshData();
+  await getOptions()
+  props.refreshData()
 
   // eslint-disable-next-line require-atomic-updates
   if (formItem?.value) {
@@ -122,39 +122,39 @@ const handleSubmit = async () => {
       parent_id: '',
       name: '',
       description: ''
-    };
+    }
   }
 
   // Implement API call for form submission here
-};
+}
 
 // Close modal and reset form fields
 const handleClose = () => {
-  showModal.value = false;
+  showModal.value = false
   formItem.value = {
     id: '',
     parent_id: '',
     name: '',
     description: ''
-  };
-};
+  }
+}
 
-onMounted(getOptions);
+onMounted(getOptions)
 
 // Watch for editData changes to handle edit mode data echo back
 watch(
   () => props.editData,
   newVal => {
     if (props.isEdit && newVal) {
-      formItem.value = { ...newVal };
+      formItem.value = { ...newVal }
     }
   },
   { deep: true, immediate: true }
-);
+)
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
 // Expose showModal for parent component
 </script>
 

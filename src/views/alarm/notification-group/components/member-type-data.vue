@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import type { FormItemRule } from 'naive-ui';
-import { MemberNotificationOptions } from '@/constants/business';
-import { createRequiredFormRule } from '@/utils/form/rule';
-import { $t } from '@/locales';
+import { reactive, ref } from 'vue'
+import type { FormItemRule } from 'naive-ui'
+import { MemberNotificationOptions } from '@/constants/business'
+import { createRequiredFormRule } from '@/utils/form/rule'
+import { $t } from '@/locales'
 import {
   getCurrentName,
   handleDeleteMember,
@@ -11,50 +11,50 @@ import {
   handleSearch,
   handleUpdateMember,
   notificationTypeOptions
-} from '../utils';
+} from '../utils'
 
-const loading = ref(false);
-type FormModel = Pick<DataService.Data, any>;
+const loading = ref(false)
+type FormModel = Pick<DataService.Data, any>
 
-const formModel = reactive<FormModel>(createDefaultFormModel());
+const formModel = reactive<FormModel>(createDefaultFormModel())
 
 function createDefaultFormModel(): FormModel {
   return {
     name: '',
     signMode: null
-  };
+  }
 }
 
 const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
   name: createRequiredFormRule($t('generate.ruleName')),
   signMode: createRequiredFormRule($t('generate.signatureMethod')),
   ip: createRequiredFormRule($t('generate.IPwhitelist'))
-};
+}
 
 const props = withDefaults(
   defineProps<{
-    index: number;
-    selectedNotificationType: string[];
+    index: number
+    selectedNotificationType: string[]
   }>(),
   {
     index: 0,
     notificationType: []
   }
-);
-const selectedMember = ref(getCurrentName(props.index));
-const selectNotificationType = ref(props.selectedNotificationType);
+)
+const selectedMember = ref(getCurrentName(props.index))
+const selectNotificationType = ref(props.selectedNotificationType)
 
 const handleDelete = (index: number) => {
-  handleDeleteMember(index);
-};
+  handleDeleteMember(index)
+}
 
 const handleUpdate = () => {
-  handleUpdateMember(props.index, { name: selectedMember.value || '', notificationType: selectNotificationType.value });
-};
+  handleUpdateMember(props.index, { name: selectedMember.value || '', notificationType: selectNotificationType.value })
+}
 
 const handleChange = () => {
-  handleUpdate();
-};
+  handleUpdate()
+}
 </script>
 
 <template>

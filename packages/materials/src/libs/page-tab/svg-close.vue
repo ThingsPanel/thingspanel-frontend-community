@@ -1,16 +1,16 @@
 <script setup lang="ts">
 defineOptions({
   name: 'SvgClose'
-});
+})
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 interface Emits {
-  (e: 'click'): void;
+  (e: 'click'): void
 }
 
 function handleClick() {
-  emit('click');
+  emit('click')
 }
 </script>
 

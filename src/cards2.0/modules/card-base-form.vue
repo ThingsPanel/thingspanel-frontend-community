@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue';
-import { debounce } from 'lodash';
-import { $t } from '@/locales';
+import { reactive, watch } from 'vue'
+import { debounce } from 'lodash'
+import { $t } from '@/locales'
 
-defineOptions({ name: 'CardBaseForm' });
+defineOptions({ name: 'CardBaseForm' })
 const props = defineProps<{
-  changeCtxConfig: (key: string, data: any) => void;
-  defaultBasisData: Record<string, any>;
-}>();
+  changeCtxConfig: (key: string, data: any) => void
+  defaultBasisData: Record<string, any>
+}>()
 
-const basisData = reactive({ ...props.defaultBasisData });
+const basisData = reactive({ ...props.defaultBasisData })
 
 const throttledWatcher = debounce(() => {
-  props.changeCtxConfig('basis', basisData);
+  props.changeCtxConfig('basis', basisData)
   // 在这里处理你的业务逻辑
-}, 300);
+}, 300)
 
 watch(
   () => basisData,
   () => {
-    throttledWatcher();
+    throttledWatcher()
   },
   { deep: true }
-);
+)
 </script>
 
 <template>

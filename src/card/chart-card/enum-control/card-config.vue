@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-import { inject, onMounted } from 'vue';
-import { NButton, NForm, NIcon, NInput } from 'naive-ui';
-import { DeleteOutlined, PlusOutlined } from '@vicons/antd';
-import type { IConfigCtx } from '@/components/panel/card';
-import { $t } from '@/locales';
+import { inject, onMounted } from 'vue'
+import { NButton, NForm, NIcon, NInput } from 'naive-ui'
+import { DeleteOutlined, PlusOutlined } from '@vicons/antd'
+import type { IConfigCtx } from '@/components/panel/card'
+import { $t } from '@/locales'
 
-const ctx = inject<IConfigCtx>('config-ctx')!;
+const ctx = inject<IConfigCtx>('config-ctx')!
 
 // 配置默认按钮数据
 const addButtonConfig = () => {
@@ -15,14 +15,14 @@ const addButtonConfig = () => {
       label: `${$t('generate.button')}${ctx.config.btOptions.length + 1}`,
       value: $t('generate.fieldValue')
     }
-  ];
-};
+  ]
+}
 
 // 删除按钮
 const removeButtonConfig = (index: number) => {
-  ctx.config.btOptions.splice(index, 1);
-  ctx.config.btOptions = [...ctx.config.btOptions];
-};
+  ctx.config.btOptions.splice(index, 1)
+  ctx.config.btOptions = [...ctx.config.btOptions]
+}
 
 // 初始化默认的按钮配置
 onMounted(() => {
@@ -32,9 +32,9 @@ onMounted(() => {
       { label: $t('card.cooling'), value: 'cool' },
       { label: $t('card.ventilate'), value: 'fan' },
       { label: $t('card.automatic'), value: 'auto' }
-    ];
+    ]
   }
-});
+})
 </script>
 
 <template>

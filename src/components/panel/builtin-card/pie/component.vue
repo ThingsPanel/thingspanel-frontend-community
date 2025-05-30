@@ -1,48 +1,48 @@
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue';
-import type { NumberAnimationInst } from 'naive-ui';
-import * as echarts from 'echarts';
-import { totalNumber } from '@/service/api';
-import { $t } from '@/locales';
-import { createLogger } from '@/utils/logger';
-const logger = createLogger('TablePage');
-const numberAnimationInstRef = ref<NumberAnimationInst | null>(null);
+import { onMounted, ref } from 'vue'
+import type { NumberAnimationInst } from 'naive-ui'
+import * as echarts from 'echarts'
+import { totalNumber } from '@/service/api'
+import { $t } from '@/locales'
+import { createLogger } from '@/utils/logger'
+const logger = createLogger('TablePage')
+const numberAnimationInstRef = ref<NumberAnimationInst | null>(null)
 
 // 设备总数
-const deviceNum = ref(0);
+const deviceNum = ref(0)
 // 设备激活数
-const activeNum = ref(0);
+const activeNum = ref(0)
 // 未激活设备数
-const notActiveNum = ref(0);
+const notActiveNum = ref(0)
 // 设备激活率（百分比）
-const activeRateNum = ref(0);
+const activeRateNum = ref(0)
 
 // 获取数据
 const getData: () => void = async () => {
   try {
-    const response: { data: any } = await totalNumber();
+    const response: { data: any } = await totalNumber()
     if (response.data) {
-      deviceNum.value = response.data.device_total;
-      activeNum.value = response.data.device_on;
-      notActiveNum.value = deviceNum.value - activeNum.value;
+      deviceNum.value = response.data.device_total
+      activeNum.value = response.data.device_on
+      notActiveNum.value = deviceNum.value - activeNum.value
       // 计算激活率
-      const rate = activeNum.value === 0 || deviceNum.value === 0 ? 0 : (activeNum.value / deviceNum.value) * 100;
-      activeRateNum.value = Number(rate.toFixed(2)); // 转换为数字并保留四位小数
+      const rate = activeNum.value === 0 || deviceNum.value === 0 ? 0 : (activeNum.value / deviceNum.value) * 100
+      activeRateNum.value = Number(rate.toFixed(2)) // 转换为数字并保留四位小数
     } else {
-      logger.error('Data does not contain the required properties or they are not numbers.');
+      logger.error('Data does not contain the required properties or they are not numbers.')
     }
   } catch (error) {
     // 处理请求数据时的错误
-    logger.error({ 'Error fetching data:': error });
+    logger.error({ 'Error fetching data:': error })
   }
-};
+}
 // 调用 getData 函数
-getData();
+getData()
 
-const equipment = ref(null);
+const equipment = ref(null)
 
 const init: () => void = () => {
-  const myecharts = echarts.init(equipment.value, null, { renderer: 'svg' });
+  const myecharts = echarts.init(equipment.value, null, { renderer: 'svg' })
   const option = {
     title: {
       show: false,
@@ -94,14 +94,14 @@ const init: () => void = () => {
         }
       }
     ]
-  };
-  const dom = document.getElementById('equipment')!;
+  }
+  const dom = document.getElementById('equipment')!
   const ro = new ResizeObserver(_entries => {
-    myecharts.resize();
-  });
-  ro.observe(dom);
+    myecharts.resize()
+  })
+  ro.observe(dom)
   // 监听窗口大小变化
-  myecharts.setOption(option);
+  myecharts.setOption(option)
   // window.onresize = function () {
   //   // 使用刚指定的配置项和数据显示图表。
   //   myecharts.setOption(option);
@@ -114,17 +114,17 @@ const init: () => void = () => {
   //   console.log(params.name) // 打印被点击的数据名称
   //   // 这里可以执行更多监听逻辑
   // })
-};
+}
 // 获取 echats 要渲染的dom
 onMounted(() => {
   if (equipment.value) {
     // const myecharts = echarts.init(box.value);
-    init();
+    init()
   }
   return {
     equipment
-  };
-});
+  }
+})
 </script>
 
 <template>

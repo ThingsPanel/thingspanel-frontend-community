@@ -1,45 +1,45 @@
 <script lang="ts" setup>
-import { computed, ref } from 'vue';
-import { $t } from '@/locales';
+import { computed, ref } from 'vue'
+import { $t } from '@/locales'
 
-defineOptions({ name: 'IconSelect' });
+defineOptions({ name: 'IconSelect' })
 
 interface Props {
   /** 选中的图标 */
-  value: string;
+  value: string
   /** 图标列表 */
-  icons: string[];
+  icons: string[]
   /** 未选中图标 */
-  emptyIcon?: string;
+  emptyIcon?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   emptyIcon: 'mdi:apps'
-});
+})
 
 interface Emits {
-  (e: 'update:value', val: string): void;
+  (e: 'update:value', val: string): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const modelValue = computed({
   get() {
-    return props.value;
+    return props.value
   },
   set(val: string) {
-    emit('update:value', val);
+    emit('update:value', val)
   }
-});
+})
 
-const selectedIcon = computed(() => modelValue.value || props.emptyIcon);
+const selectedIcon = computed(() => modelValue.value || props.emptyIcon)
 
-const searchValue = ref('');
+const searchValue = ref('')
 
-const iconsList = computed(() => props.icons.filter(v => v.includes(searchValue.value)));
+const iconsList = computed(() => props.icons.filter(v => v.includes(searchValue.value)))
 
 function handleChange(iconItem: string) {
-  modelValue.value = iconItem;
+  modelValue.value = iconItem
 }
 </script>
 

@@ -101,7 +101,7 @@ import {
   WifiOff20Regular,
   ZoomIn20Regular,
   ZoomOut20Regular
-} from '@vicons/fluent';
+} from '@vicons/fluent'
 
 export const icons = {
   ClipboardCode20Regular,
@@ -206,4 +206,4 @@ export const icons = {
   WifiOff20Regular,
   ZoomIn20Regular,
   ZoomOut20Regular
-};
+}

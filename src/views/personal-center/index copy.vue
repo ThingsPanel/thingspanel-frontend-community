@@ -7,43 +7,43 @@
  * @LastEditTime: 2024-03-20 17:23:40
 -->
 <script setup lang="tsx">
-import { onMounted, ref, toRefs } from 'vue';
-import { NButton } from 'naive-ui';
-import type { FormItemRule, FormRules } from 'naive-ui';
-import { $t } from '@/locales';
-import { localStg } from '@/utils/storage';
-import { getConfirmPwdRule } from '@/utils/form/rule';
-import { useNaiveForm } from '@/hooks/common/form';
-import { changeInformation, fetchUserInfo, passwordModification } from '@/service/api/personal-center';
+import { onMounted, ref, toRefs } from 'vue'
+import { NButton } from 'naive-ui'
+import type { FormItemRule, FormRules } from 'naive-ui'
+import { $t } from '@/locales'
+import { localStg } from '@/utils/storage'
+import { getConfirmPwdRule } from '@/utils/form/rule'
+import { useNaiveForm } from '@/hooks/common/form'
+import { changeInformation, fetchUserInfo, passwordModification } from '@/service/api/personal-center'
 import {
   encryptDataByRsa,
   generateRandomHexString,
   getDemoServerUrl,
   validName,
   validPasswordByExp
-} from '@/utils/common/tool';
-import Camera from '@/assets/imgs/camera.png';
-import CameraBg from '@/assets/imgs/camera-bg.png';
+} from '@/utils/common/tool'
+import Camera from '@/assets/imgs/camera.png'
+import CameraBg from '@/assets/imgs/camera-bg.png'
 
-const url = ref(new URL(getDemoServerUrl()));
-const { formRef, validate } = useNaiveForm();
-const currentIndex = ref(0);
-const editType = ref(false);
-const header = ref(false);
-const headUrl = ref('');
+const url = ref(new URL(getDemoServerUrl()))
+const { formRef, validate } = useNaiveForm()
+const currentIndex = ref(0)
+const editType = ref(false)
+const header = ref(false)
+const headUrl = ref('')
 const userInfoData = ref({
   additional_info: '',
   name: '',
   email: '',
   phone_num: ''
-});
+})
 /** 初始from数据 */
 const formData = ref({
   name: '',
   old_password: '',
   password: '',
   passwords: ''
-});
+})
 
 const rules: FormRules = {
   email: {
@@ -61,16 +61,16 @@ const rules: FormRules = {
     trigger: ['blur', 'input'],
     message: $t('custom.groupPage.enterGroupName')
   }
-};
+}
 const passRules: FormRules = {
   name: [
     {
       required: true,
       validator(rule: FormItemRule, value: string) {
         if (rule && !validName(value)) {
-          return new Error($t('custom.personalCenter.nameFieldNotEmpty'));
+          return new Error($t('custom.personalCenter.nameFieldNotEmpty'))
         }
-        return true;
+        return true
       },
       trigger: ['input', 'blur']
     }
@@ -80,94 +80,94 @@ const passRules: FormRules = {
       required: true,
       validator(rule: FormItemRule, value: string) {
         if (value.length < 8 || value.length > 18) {
-          return Promise.reject(rule.message);
+          return Promise.reject(rule.message)
         }
         if (!validPasswordByExp(value)) {
-          return Promise.reject(rule.message);
+          return Promise.reject(rule.message)
         }
-        return Promise.resolve();
+        return Promise.resolve()
       },
       message: $t('form.pwd.tip'),
       trigger: ['input', 'blur']
     }
   ],
   passwords: getConfirmPwdRule(toRefs(formData.value).password)
-};
+}
 
 function editName() {
-  editType.value = true;
+  editType.value = true
   // openModal();
   // setModalType('amend');
 }
 
 /** 取消编辑模式 */
 function closeEdit() {
-  editType.value = false;
+  editType.value = false
 }
 
 function changeBtnType(btn: any) {
-  currentIndex.value = btn;
+  currentIndex.value = btn
 }
 /** 更新用户信息 */
 async function updataUserInfo() {
-  console.log('user', userInfoData.value);
+  console.log('user', userInfoData.value)
 
-  const { error } = await changeInformation(userInfoData.value);
+  const { error } = await changeInformation(userInfoData.value)
   if (!error) {
-    window.$message?.success($t('custom.grouping_details.operationSuccess'));
+    window.$message?.success($t('custom.grouping_details.operationSuccess'))
   }
 }
 /** 重置密码 */
 const resetPass = async () => {
-  formData.value.old_password = '';
-  formData.value.passwords = '';
-  formData.value.password = '';
-};
+  formData.value.old_password = ''
+  formData.value.passwords = ''
+  formData.value.password = ''
+}
 /** 修改密码 */
 const submitPass = async () => {
-  await validate();
-  const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')) : [];
-  let salt: any = null;
-  let password1 = formData.value.password;
+  await validate()
+  const data = localStorage.getItem('enableZcAndYzm') ? JSON.parse(localStorage.getItem('enableZcAndYzm')) : []
+  let salt: any = null
+  let password1 = formData.value.password
   if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
-    salt = generateRandomHexString(16);
-    password1 = encryptDataByRsa(password1 + salt);
+    salt = generateRandomHexString(16)
+    password1 = encryptDataByRsa(password1 + salt)
   }
   const param = {
     old_password: formData.value.old_password,
     password: password1,
     salt
-  };
-  const res = await passwordModification(param);
-  if (!res.error) {
-    window.$message?.success($t('custom.grouping_details.operationSuccess'));
   }
-};
+  const res = await passwordModification(param)
+  if (!res.error) {
+    window.$message?.success($t('custom.grouping_details.operationSuccess'))
+  }
+}
 
 async function handleFinish({ event }: { event?: ProgressEvent }) {
-  const response = JSON.parse((event?.target as XMLHttpRequest).response);
+  const response = JSON.parse((event?.target as XMLHttpRequest).response)
   // 字符串转成对象
-  const obj = JSON.parse(userInfoData.value.additional_info);
-  obj.user_icon = response.data.path;
-  const info = JSON.stringify(obj);
-  userInfoData.value.additional_info = info;
-  const { error } = await changeInformation(userInfoData.value);
+  const obj = JSON.parse(userInfoData.value.additional_info)
+  obj.user_icon = response.data.path
+  const info = JSON.stringify(obj)
+  userInfoData.value.additional_info = info
+  const { error } = await changeInformation(userInfoData.value)
   if (!error) {
-    headUrl.value = String(url.value.origin) + response.data.path.substring(1, obj.user_icon.length);
-    window.$message?.success($t('custom.grouping_details.operationSuccess'));
+    headUrl.value = String(url.value.origin) + response.data.path.substring(1, obj.user_icon.length)
+    window.$message?.success($t('custom.grouping_details.operationSuccess'))
   }
 }
 onMounted(async () => {
-  const { data } = await fetchUserInfo();
-  userInfoData.value = data;
+  const { data } = await fetchUserInfo()
+  userInfoData.value = data
   if (userInfoData.value.additional_info === '{}') {
-    header.value = false;
+    header.value = false
   } else {
-    header.value = true;
-    const obj = JSON.parse(userInfoData.value.additional_info);
-    headUrl.value = String(url.value.origin) + obj.user_icon.substring(1, obj.user_icon.length);
+    header.value = true
+    const obj = JSON.parse(userInfoData.value.additional_info)
+    headUrl.value = String(url.value.origin) + obj.user_icon.substring(1, obj.user_icon.length)
   }
-});
+})
 </script>
 
 <template>

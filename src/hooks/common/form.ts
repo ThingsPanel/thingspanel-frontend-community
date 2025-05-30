@@ -1,7 +1,7 @@
-import { ref } from 'vue';
-import type { FormInst } from 'naive-ui';
-import { REG_CODE_SIX, REG_DEFAULT, REG_EMAIL, REG_PHONE, REG_PWD } from '@/constants/reg';
-import { $t } from '@/locales';
+import { ref } from 'vue'
+import type { FormInst } from 'naive-ui'
+import { REG_CODE_SIX, REG_DEFAULT, REG_EMAIL, REG_PHONE, REG_PWD } from '@/constants/reg'
+import { $t } from '@/locales'
 
 export function useFormRules(paramObj?) {
   const patternRules = {
@@ -30,7 +30,7 @@ export function useFormRules(paramObj?) {
       message: $t('form.email.invalid'),
       trigger: 'change'
     }
-  } satisfies Record<string, App.Global.FormRule>;
+  } satisfies Record<string, App.Global.FormRule>
 
   const formRules = {
     userName: [createRequiredRule($t('form.userName.required')), patternRules.userName],
@@ -38,16 +38,16 @@ export function useFormRules(paramObj?) {
     pwd: [createRequiredRule($t('form.pwd.required')), paramObj && paramObj.pwd ? paramObj.pwd : patternRules.pwd],
     code: [createRequiredRule($t('form.code.required')), patternRules.code],
     email: [createRequiredRule($t('form.email.required')), patternRules.email]
-  } satisfies Record<string, App.Global.FormRule[]>;
+  } satisfies Record<string, App.Global.FormRule[]>
 
   /** the default required rule */
-  const defaultRequiredRule = createRequiredRule($t('form.required'));
+  const defaultRequiredRule = createRequiredRule($t('form.required'))
 
   function createRequiredRule(message: string): App.Global.FormRule {
     return {
       required: true,
       message
-    };
+    }
   }
 
   return {
@@ -55,23 +55,23 @@ export function useFormRules(paramObj?) {
     formRules,
     defaultRequiredRule,
     createRequiredRule
-  };
+  }
 }
 
 export function useNaiveForm() {
-  const formRef = ref<FormInst | null>(null);
+  const formRef = ref<FormInst | null>(null)
 
   async function validate() {
-    await formRef.value?.validate();
+    await formRef.value?.validate()
   }
 
   async function restoreValidation() {
-    formRef.value?.restoreValidation();
+    formRef.value?.restoreValidation()
   }
 
   return {
     formRef,
     validate,
     restoreValidation
-  };
+  }
 }

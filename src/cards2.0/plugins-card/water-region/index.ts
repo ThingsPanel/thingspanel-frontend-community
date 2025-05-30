@@ -1,6 +1,6 @@
-import { defineAsyncComponent } from 'vue';
-import type { CardItem } from '@/cards2.0/card';
-import poster from './water-region.png';
+import { defineAsyncComponent } from 'vue'
+import type { CardItem } from '@/cards2.0/card'
+import poster from './water-region.png'
 
 export default {
   cardItemBase: {
@@ -22,4 +22,4 @@ export default {
   component: defineAsyncComponent(() => import('./component.vue')),
   configForm: defineAsyncComponent(() => import('./card-congig-form.vue')),
   poster
-} as CardItem;
+} as CardItem

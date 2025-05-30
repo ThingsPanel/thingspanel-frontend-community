@@ -1,11 +1,11 @@
 <script setup lang="ts">
-defineOptions({ name: 'DarkModeContainer' });
+defineOptions({ name: 'DarkModeContainer' })
 
 interface Props {
-  inverted?: boolean;
+  inverted?: boolean
 }
 
-defineProps<Props>();
+defineProps<Props>()
 </script>
 
 <template>

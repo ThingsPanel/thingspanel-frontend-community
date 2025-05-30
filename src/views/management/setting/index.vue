@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { $t } from '@/locales';
-import ThemeSetting from './components/theme-setting.vue';
-import FunctionSetting from './components/function-setting.vue';
-import DataClearSetting from './components/data-clear-setting.vue';
+import { $t } from '@/locales'
+import ThemeSetting from './components/theme-setting.vue'
+import FunctionSetting from './components/function-setting.vue'
+import DataClearSetting from './components/data-clear-setting.vue'
 </script>
 
 <template>

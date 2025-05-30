@@ -1,30 +1,30 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, onBeforeUpdate } from 'vue';
-import { useRoute } from 'vue-router';
-import { NButton, NFlex, useMessage } from 'naive-ui';
-import type { FormInst } from 'naive-ui';
-import { IosAlert, IosRefresh } from '@vicons/ionicons4';
-import { repeat } from 'seemly';
-import { deviceGroupTree } from '@/service/api';
+import { onMounted, ref, watch, onBeforeUpdate } from 'vue'
+import { useRoute } from 'vue-router'
+import { NButton, NFlex, useMessage } from 'naive-ui'
+import type { FormInst } from 'naive-ui'
+import { IosAlert, IosRefresh } from '@vicons/ionicons4'
+import { repeat } from 'seemly'
+import { deviceGroupTree } from '@/service/api'
 import {
   configMetricsConditionMenu,
   deviceConfigAll,
   deviceListAll,
   deviceMetricsConditionMenu
-} from '@/service/api/automation';
-import { $t } from '@/locales';
+} from '@/service/api/automation'
+import { $t } from '@/locales'
 
 interface Emits {
-  (e: 'conditionChose', data: any): void;
+  (e: 'conditionChose', data: any): void
 }
 
-const route = useRoute();
-const emit = defineEmits<Emits>();
+const route = useRoute()
+const emit = defineEmits<Emits>()
 
-const premiseFormRef = ref<FormInst | null>(null);
+const premiseFormRef = ref<FormInst | null>(null)
 const premiseForm = ref({
   ifGroups: [] as any
-});
+})
 // 场景表单规则
 const premiseFormRules = ref({
   ifType: {
@@ -117,7 +117,7 @@ const premiseFormRules = ref({
     message: $t('common.select'),
     trigger: 'change'
   }
-});
+})
 
 /** if分组的数据类型 */
 // 选项一条件类型的下拉
@@ -142,21 +142,20 @@ const getIfTypeOptions = (ifGroup, ifIndex) => {
       label: $t('common.deviceConditions'),
       value: '1',
       disabled: ifGroup.some(item => {
-        return (item.trigger_conditions_type === '20' || item.trigger_conditions_type === '21') && ifIndex > 0;
+        return (item.trigger_conditions_type === '20' || item.trigger_conditions_type === '21') && ifIndex > 0
       })
     },
     {
       label: $t('common.timeConditions'),
       value: '2'
     }
-  ];
-};
+  ]
+}
 const ifTypeChange = (ifItem: any, data: any) => {
-  ifItem.trigger_conditions_type = null;
-  // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-use-before-define
-  ifItem = judgeItem.value;
-  ifItem.ifType = data;
-};
+  ifItem.trigger_conditions_type = null
+  ifItem = judgeItem.value
+  ifItem.ifType = data
+}
 
 // 设备条件类型下选项2使用的下拉
 const deviceConditionOptions = ref([
@@ -168,85 +167,85 @@ const deviceConditionOptions = ref([
     label: $t('common.singleClassDevice'),
     value: '11'
   }
-]);
-const deviceConfigDisabled = ref(false);
+])
+const deviceConfigDisabled = ref(false)
 const triggerConditionsTypeChange = (ifItem: any, data: any) => {
-  ifItem.trigger_source = null;
-  ifItem.trigger_param_type = null;
-  ifItem.trigger_param = null;
-  ifItem.trigger_param_key = null;
-  ifItem.trigger_operator = null;
-  ifItem.trigger_value = null;
-  ifItem.minValue = null;
-  ifItem.maxValue = null;
-  deviceConfigDisabled.value = false;
+  ifItem.trigger_source = null
+  ifItem.trigger_param_type = null
+  ifItem.trigger_param = null
+  ifItem.trigger_param_key = null
+  ifItem.trigger_operator = null
+  ifItem.trigger_value = null
+  ifItem.minValue = null
+  ifItem.maxValue = null
+  deviceConfigDisabled.value = false
 
   if (data === '11') {
-    deviceConfigDisabled.value = true;
+    deviceConfigDisabled.value = true
   }
-  emit('conditionChose', data);
-};
+  emit('conditionChose', data)
+}
 
 // 设备分组列表
-const deviceGroupOptions = ref([] as any);
+const deviceGroupOptions = ref([] as any)
 // 获取设备分组
 const getGroup = async () => {
-  deviceGroupOptions.value = [];
-  const res = await deviceGroupTree({});
+  deviceGroupOptions.value = []
+  const res = await deviceGroupTree({})
   // eslint-disable-next-line array-callback-return
   res.data.map((item: any) => {
-    deviceGroupOptions.value.push(item.group);
-  });
-};
+    deviceGroupOptions.value.push(item.group)
+  })
+}
 
 // 设备列表
-const deviceOptions = ref([] as any);
+const deviceOptions = ref([] as any)
 const queryDevice = ref({
   group_id: null as any,
   device_name: null as any,
   bind_config: 0
-});
-const btnloading = ref(false);
+})
+const btnloading = ref(false)
 
-const selectInstRef = ref({});
+const selectInstRef = ref({})
 const onKeydownEnter = e => {
   // selectInstRef.value = true;
-  e.preventDefault();
+  e.preventDefault()
 
-  return false;
-};
+  return false
+}
 const onDeviceKeydownEnter = (e: any, ifIndex: number) => {
-  selectInstRef.value[ifIndex] = true;
-  e.preventDefault();
-  return false;
-};
+  selectInstRef.value[ifIndex] = true
+  e.preventDefault()
+  return false
+}
 // 获取设备列表
 const getDevice = async (groupId: any, name: any) => {
-  queryDevice.value.group_id = groupId || null;
-  queryDevice.value.device_name = name || null;
-  btnloading.value = false;
-  deviceOptions.value = [];
-  const res = await deviceListAll(queryDevice.value);
-  btnloading.value = true;
-  deviceOptions.value = res.data || [];
+  queryDevice.value.group_id = groupId || null
+  queryDevice.value.device_name = name || null
+  btnloading.value = false
+  deviceOptions.value = []
+  const res = await deviceListAll(queryDevice.value)
+  btnloading.value = true
+  deviceOptions.value = res.data || []
   // if (!deviceOptions.value.length) {
   //   selectInstRef.value = false;
   // }
-};
+}
 // 选择设备
 const triggerSourceChange = (ifItem: any, ifIndex: number) => {
-  ifItem.trigger_param_type = null;
-  ifItem.trigger_param = null;
-  ifItem.trigger_param_key = null;
-  ifItem.trigger_operator = null;
-  ifItem.trigger_value = null;
-  ifItem.minValue = null;
-  ifItem.maxValue = null;
-  selectInstRef.value[ifIndex] = false;
+  ifItem.trigger_param_type = null
+  ifItem.trigger_param = null
+  ifItem.trigger_param_key = null
+  ifItem.trigger_operator = null
+  ifItem.trigger_value = null
+  ifItem.minValue = null
+  ifItem.maxValue = null
+  selectInstRef.value[ifIndex] = false
   // ifItem.action_param_type = null;
   // ifItem.action_param = null;
   // ifItem.action_value = null;
-};
+}
 
 // const testFocus = () => {
 //   setTimeout(() => {
@@ -254,79 +253,79 @@ const triggerSourceChange = (ifItem: any, ifIndex: number) => {
 //   }, 100);
 // };
 
-const queryDeviceName = ref<Record<number, any>>({});
+const queryDeviceName = ref<Record<number, any>>({})
 
 // 清理 refs 的函数
 onBeforeUpdate(() => {
-  queryDeviceName.value = {};
-});
+  queryDeviceName.value = {}
+})
 
 // 设置 ref 的函数
 const setQueryDeviceNameRef = (el: any, index: number) => {
   if (el) {
-    queryDeviceName.value[index] = el;
+    queryDeviceName.value[index] = el
   }
-};
+}
 
 const handleFocus = (ifIndex: any) => {
   if (queryDeviceName.value[ifIndex]) {
-    queryDeviceName.value[ifIndex].focus();
+    queryDeviceName.value[ifIndex].focus()
   } else {
-    console.warn(`Ref for queryDeviceName at index ${ifIndex} not found.`);
+    console.warn(`Ref for queryDeviceName at index ${ifIndex} not found.`)
   }
-};
+}
 
 // 设备配置列表
-const deviceConfigOption = ref([]);
+const deviceConfigOption = ref([])
 // 设备配置列表查询条件
 const queryDeviceConfig = ref({
   device_config_name: ''
-});
+})
 // 获取设备配置列表
 const getDeviceConfig = async (name: string) => {
-  queryDeviceConfig.value.device_config_name = name || '';
-  const res = await deviceConfigAll(queryDeviceConfig.value);
-  deviceConfigOption.value = res.data || [];
-};
+  queryDeviceConfig.value.device_config_name = name || ''
+  const res = await deviceConfigAll(queryDeviceConfig.value)
+  deviceConfigOption.value = res.data || []
+}
 
 // 新增：主动加载选项的函数
 const loadTriggerParamOptions = async (ifItem: any) => {
   // 避免重复加载，如果选项已存在则不重新加载
   if (ifItem.triggerParamOptions && ifItem.triggerParamOptions.length > 0) {
-    return;
+    return
   }
 
   if (ifItem.trigger_source && (ifItem.trigger_conditions_type === '10' || ifItem.trigger_conditions_type === '11')) {
-    ifItem.triggerParamOptions = []; // 初始化为空数组
-    let res = null as any;
+    ifItem.triggerParamOptions = [] // 初始化为空数组
+    let res = null as any
     try {
       if (ifItem.trigger_conditions_type === '10') {
         res = await deviceMetricsConditionMenu({
           device_id: ifItem.trigger_source
-        });
+        })
       } else if (ifItem.trigger_conditions_type === '11') {
         res = await configMetricsConditionMenu({
           device_config_id: ifItem.trigger_source
-        });
+        })
       }
 
       if (res && res.data) {
         // (Processing logic copied from actionParamShow)
         res.data.map((item: any) => {
-          item.value = item.data_source_type;
-          item.label = `${item.data_source_type}${item.label ? `(${item.label})` : ''}`;
+          item.value = item.data_source_type
+          item.label = `${item.data_source_type}${item.label ? `(${item.label})` : ''}`
           item.options.map((subItem: any) => {
-            subItem.value = `${item.value}/${subItem.key}`;
-            subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`;
-          });
-        });
-        ifItem.triggerParamOptions = res.data; // Assign processed data
+            subItem.value = `${item.value}/${subItem.key}`
+            subItem.label = `${subItem.key}${subItem.label ? `(${subItem.label})` : ''}`
+          })
+        })
+        ifItem.triggerParamOptions = res.data // Assign processed data
       } else {
-         ifItem.triggerParamOptions = []; // Ensure array on API failure
+        ifItem.triggerParamOptions = [] // Ensure array on API failure
       }
     } catch (error) {
-      console.error("Error loading trigger param options during echo:", error);
-      ifItem.triggerParamOptions = []; // Ensure array on error
+      console.error('Error loading trigger param options during echo:', error)
+      ifItem.triggerParamOptions = [] // Ensure array on error
     } finally {
       // Add statusData regardless of API outcome
       const statusData = {
@@ -349,20 +348,20 @@ const loadTriggerParamOptions = async (ifItem: any) => {
             key: 'All'
           }
         ]
-      };
+      }
       // Ensure statusData is not added multiple times if loaded elsewhere
       if (!ifItem.triggerParamOptions.some(opt => opt.value === 'status')) {
-         ifItem.triggerParamOptions.push(statusData);
+        ifItem.triggerParamOptions.push(statusData)
       }
     }
   }
-};
+}
 
 // 下拉获取的动作标识符
 const actionParamShow = async (ifItem: any, data: any) => {
   // 调用主动加载函数，它会处理重复加载的问题
   if (data === true) {
-     await loadTriggerParamOptions(ifItem);
+    await loadTriggerParamOptions(ifItem)
   }
   // 原有的 actionParamShow 逻辑可以简化或移除，因为 loadTriggerParamOptions 做了主要工作
   // 保留原始注释掉的逻辑以供参考，或者完全移除
@@ -417,27 +416,27 @@ const actionParamShow = async (ifItem: any, data: any) => {
   //   };
   //   ifItem.triggerParamOptions.push(statusData);
   // }
-};
-const message = useMessage();
+}
+const message = useMessage()
 
 // 动作值标识
 const actionValueChange = (ifItem: any) => {
   if (ifItem.trigger_param_type === 'event') {
     try {
-      JSON.parse(ifItem.trigger_value);
+      JSON.parse(ifItem.trigger_value)
       if (typeof JSON.parse(ifItem.trigger_value) === 'object') {
-        ifItem.inputFeedback = '';
-        ifItem.inputValidationStatus = undefined;
+        ifItem.inputFeedback = ''
+        ifItem.inputValidationStatus = undefined
       } else {
-        message.error($t('common.enterJson'));
-        ifItem.inputValidationStatus = 'error';
+        message.error($t('common.enterJson'))
+        ifItem.inputValidationStatus = 'error'
       }
     } catch (e) {
-      message.error($t('common.enterJson'));
-      ifItem.inputValidationStatus = 'error';
+      message.error($t('common.enterJson'))
+      ifItem.inputValidationStatus = 'error'
     }
   }
-};
+}
 
 // 时间条件类型下选项2使用的下拉
 const getTimeConditionOptions = ifGroup => {
@@ -457,8 +456,8 @@ const getTimeConditionOptions = ifGroup => {
       label: $t('common.timeFrame'),
       value: '22'
     }
-  ];
-};
+  ]
+}
 // const timeConditionOptions = ref([
 //   {
 //     label: $t('common.single'),
@@ -479,7 +478,7 @@ const serviceConditionOptions = ref([
     label: $t('common.weather'),
     value: 'weather'
   }
-]);
+])
 
 // const deviceOptions = ref([]);
 
@@ -501,7 +500,7 @@ const cycleOptions = ref([
     label: $t('common.monthly'),
     value: 'MONTH'
   }
-]);
+])
 
 // 时间条件下，范围时，使用的周期选项
 const weekOptions = ref([
@@ -533,7 +532,7 @@ const weekOptions = ref([
     label: $t('page.irrigation.time.week.sunday'),
     value: '7'
   }
-]);
+])
 // 天气条件选项
 const weatherOptions = ref([
   {
@@ -544,7 +543,7 @@ const weatherOptions = ref([
     label: $t('common.sunset'),
     value: 'sunset'
   }
-]);
+])
 
 // 操作符选项
 const determineOptions = ref([
@@ -580,7 +579,7 @@ const determineOptions = ref([
     label: $t('common.includeList'),
     value: 'in'
   }
-]);
+])
 // 过期时间选项
 const expirationTimeOptions = ref([
   {
@@ -603,13 +602,13 @@ const expirationTimeOptions = ref([
     label: $t('common.days1'),
     value: 1440
   }
-]);
+])
 
 // 月份范围选项
 const mouthRangeOptions = repeat(31, undefined).map((_, i) => ({
   label: String(i + 1),
   value: i + 1
-}));
+}))
 const judgeItem = ref({
   ifType: null, // 第一条件类型
   trigger_conditions_type: null, // 第二条件-后端
@@ -641,7 +640,7 @@ const judgeItem = ref({
   weatherValue: null, // 天气值
   deviceGroupId: null, // 设备分组id
   triggerParamOptions: [] // 动作标识菜单下拉列表数据选项
-});
+})
 // interface JudgeItem {
 //   ifType: string; // 第一条件类型
 //   trigger_conditions_type: string; // 第二条件--后端
@@ -676,56 +675,54 @@ const judgeItem = ref({
 
 // 给某个条件中增加条件
 const addIfGroupsSubItem = async (ifGroupIndex: any) => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  await premiseFormRef.value?.validate();
-  premiseForm.value.ifGroups[ifGroupIndex].push(JSON.parse(JSON.stringify(judgeItem.value)));
-};
+  await premiseFormRef.value?.validate()
+  premiseForm.value.ifGroups[ifGroupIndex].push(JSON.parse(JSON.stringify(judgeItem.value)))
+}
 // 删除某个条进组中的某个条件
 const deleteIfGroupsSubItem = (ifGroupIndex: any, ifIndex: any) => {
-  premiseForm.value.ifGroups[ifGroupIndex].splice(ifIndex, 1);
-};
+  premiseForm.value.ifGroups[ifGroupIndex].splice(ifIndex, 1)
+}
 // 删除某个条件组
 const deleteIfGroupsItem = (ifIndex: any) => {
-  premiseForm.value.ifGroups.splice(ifIndex, 1);
-};
+  premiseForm.value.ifGroups.splice(ifIndex, 1)
+}
 // 新增一个条件组
 const addIfGroupItem = (data: any) => {
   // await premiseFormRef.value?.validate();
-  const groupObj: any = [];
+  const groupObj: any = []
   if (!data) {
-    groupObj.push(JSON.parse(JSON.stringify(judgeItem.value)));
-    premiseForm.value.ifGroups.push(groupObj);
+    groupObj.push(JSON.parse(JSON.stringify(judgeItem.value)))
+    premiseForm.value.ifGroups.push(groupObj)
   } else {
-    groupObj.push(data);
-    premiseForm.value.ifGroups.push(groupObj);
+    groupObj.push(data)
+    premiseForm.value.ifGroups.push(groupObj)
   }
-};
+}
 
 const ifGroupsData = () => {
-  return premiseForm.value.ifGroups;
-};
+  return premiseForm.value.ifGroups
+}
 const premiseFormRefReturn = () => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  return premiseFormRef.value;
-};
+  return premiseFormRef.value
+}
 
 defineExpose({
   ifGroupsData,
   premiseFormRefReturn
-});
+})
 
 const triggerParamChange = (ifItem: any, data: any) => {
-  ifItem.trigger_param_type = data[0].value;
-  ifItem.trigger_param = data[1].key;
-};
+  ifItem.trigger_param_type = data[0].value
+  ifItem.trigger_param = data[1].key
+}
 
 interface Props {
   // eslint-disable-next-line vue/no-unused-properties
-  conditionData?: object | any;
+  conditionData?: object | any
   // eslint-disable-next-line vue/no-unused-properties,vue/prop-name-casing
-  device_id?: string | any;
+  device_id?: string | any
   // eslint-disable-next-line vue/no-unused-properties,vue/prop-name-casing
-  device_config_id?: string | any;
+  device_config_id?: string | any
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -733,57 +730,57 @@ const props = withDefaults(defineProps<Props>(), {
   conditionData: [],
   device_id: '',
   device_config_id: ''
-});
+})
 
 const onTapInput = (item: any, ifIndex: number) => {
   if (item.group_id || item.device_name) {
-    getDevice(item.group_id, item.device_name);
+    getDevice(item.group_id, item.device_name)
   } else {
-    selectInstRef.value[ifIndex] = true;
+    selectInstRef.value[ifIndex] = true
   }
-};
+}
 
 watch(
   () => props.conditionData,
-  (newValue) => {
+  newValue => {
     if (newValue && Array.isArray(newValue)) {
       // 使用深拷贝确保响应性
-      premiseForm.value.ifGroups = JSON.parse(JSON.stringify(newValue));
+      premiseForm.value.ifGroups = JSON.parse(JSON.stringify(newValue))
       // 遍历并主动加载选项
       premiseForm.value.ifGroups.forEach(ifGroup => {
         if (Array.isArray(ifGroup)) {
           ifGroup.forEach(ifItem => {
             // Call the function defined earlier to load options
-            loadTriggerParamOptions(ifItem);
-          });
+            loadTriggerParamOptions(ifItem)
+          })
         }
-      });
+      })
     }
   },
   { deep: true } // Options object
-);
-const configId = ref(route.query.id || null);
+)
+const configId = ref(route.query.id || null)
 onMounted(() => {
-  getGroup();
-  getDevice(null, null);
-  getDeviceConfig('');
+  getGroup()
+  getDevice(null, null)
+  getDeviceConfig('')
   if (!configId.value) {
-    const judgeItemData = JSON.parse(JSON.stringify(judgeItem.value));
+    const judgeItemData = JSON.parse(JSON.stringify(judgeItem.value))
     if (props.device_id) {
-      judgeItemData.ifType = '1';
-      judgeItemData.trigger_conditions_type = '10';
-      judgeItemData.trigger_source = props.device_id;
+      judgeItemData.ifType = '1'
+      judgeItemData.trigger_conditions_type = '10'
+      judgeItemData.trigger_source = props.device_id
       // eslint-disable-next-line array-callback-return
     } else if (props.device_config_id) {
-      judgeItemData.ifType = '1';
-      judgeItemData.trigger_conditions_type = '11';
-      judgeItemData.trigger_source = props.device_config_id;
-      deviceConfigDisabled.value = true;
+      judgeItemData.ifType = '1'
+      judgeItemData.trigger_conditions_type = '11'
+      judgeItemData.trigger_source = props.device_config_id
+      deviceConfigDisabled.value = true
     }
-    emit('conditionChose', judgeItemData.trigger_conditions_type);
-    addIfGroupItem(judgeItemData);
+    emit('conditionChose', judgeItemData.trigger_conditions_type)
+    addIfGroupItem(judgeItemData)
   }
-});
+})
 
 watch(
   premiseForm.value.ifGroups,
@@ -791,7 +788,7 @@ watch(
     // selectInstRef.value = false;
   },
   { deep: true }
-);
+)
 </script>
 
 <template>
@@ -858,12 +855,12 @@ watch(
                       :consistent-menu-width="false"
                       @click.prevent="
                         e => {
-                          onDeviceKeydownEnter(e, ifIndex);
+                          onDeviceKeydownEnter(e, ifIndex)
                         }
                       "
                       @keydown.enter="
                         e => {
-                          onDeviceKeydownEnter(e, ifIndex);
+                          onDeviceKeydownEnter(e, ifIndex)
                         }
                       "
                       @update:value="() => triggerSourceChange(ifItem, ifIndex)"
@@ -883,7 +880,7 @@ watch(
                             @update:value="data => getDevice(data, queryDevice.device_name)"
                           />
                           <NInput
-                            :ref="(el) => setQueryDeviceNameRef(el, ifIndex)"
+                            :ref="el => setQueryDeviceNameRef(el, ifIndex)"
                             v-model:value="queryDevice.device_name"
                             class="flex-1"
                             clearable
@@ -1112,13 +1109,13 @@ watch(
                       :placeholder="$t('generate.please-select')"
                       @update:value="
                         () => {
-                          ifItem.hourTimeValue = null;
-                          ifItem.expiration_time = null;
-                          ifItem.dayTimeValue = null;
-                          ifItem.weekTimeValue = null;
-                          ifItem.monthChoseValue = null;
-                          ifItem.weekChoseValue = null;
-                          ifItem.monthTimeValue = null;
+                          ifItem.hourTimeValue = null
+                          ifItem.expiration_time = null
+                          ifItem.dayTimeValue = null
+                          ifItem.weekTimeValue = null
+                          ifItem.monthChoseValue = null
+                          ifItem.weekChoseValue = null
+                          ifItem.monthTimeValue = null
                         }
                       "
                     />

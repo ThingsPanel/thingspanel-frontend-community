@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { createLogger } from '@/utils/logger';
-import { $t } from '@/locales';
-import { tenantNum } from '../../../service/api';
-import { GradientBg } from './components';
+import { ref } from 'vue'
+import { createLogger } from '@/utils/logger'
+import { $t } from '@/locales'
+import { tenantNum } from '../../../service/api'
+import { GradientBg } from './components'
 
-defineOptions({ name: 'NumCard' });
+defineOptions({ name: 'NumCard' })
 
-const logger = createLogger('News');
+const logger = createLogger('News')
 
 const cardData = ref<any>({
   id: 'trade',
@@ -16,25 +16,25 @@ const cardData = ref<any>({
   unit: $t('card.msgUnit'),
   colors: ['#fcbc25', '#f68057'],
   icon: 'fa-envelope'
-});
+})
 
 // 获取数据
 const getData: () => void = async () => {
   try {
-    const response: { data: any } = await tenantNum();
+    const response: { data: any } = await tenantNum()
     if (response.data) {
-      cardData.value.value = response.data?.msg ?? 0;
+      cardData.value.value = response.data?.msg ?? 0
     } else {
-      logger.error('Data does not contain the required properties or they are not numbers.');
+      logger.error('Data does not contain the required properties or they are not numbers.')
     }
   } catch (error) {
     // 处理请求数据时的错误
-    logger.error('Error fetching data:');
+    logger.error('Error fetching data:')
   }
-};
+}
 
 // 调用 getData 函数
-getData();
+getData()
 </script>
 
 <template>

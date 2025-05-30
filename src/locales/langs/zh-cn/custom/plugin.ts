@@ -15,4 +15,4 @@ export default {
   gaodeMap: '高德地图',
   tencentMap: '腾讯地图',
   baiduMap: '百度地图'
-};
+}

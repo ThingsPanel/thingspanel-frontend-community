@@ -1,6 +1,6 @@
-import type { RouteMeta } from 'vue-router';
-import ElegantVueRouter from '@elegant-router/vue/vite';
-import type { RouteKey } from '@elegant-router/types';
+import type { RouteMeta } from 'vue-router'
+import ElegantVueRouter from '@elegant-router/vue/vite'
+import type { RouteKey } from '@elegant-router/types'
 
 export function setupElegantRouter() {
   return ElegantVueRouter({
@@ -12,33 +12,33 @@ export function setupElegantRouter() {
       names: ['exception_403', 'exception_404', 'exception_500']
     },
     routePathTransformer(routeName, routePath) {
-      const key = routeName as RouteKey;
+      const key = routeName as RouteKey
 
       if (key === 'login') {
-        const modules: UnionKey.LoginModule[] = ['pwd-login', 'code-login', 'register', 'reset-pwd', 'bind-wechat'];
+        const modules: UnionKey.LoginModule[] = ['pwd-login', 'code-login', 'register', 'reset-pwd', 'bind-wechat']
 
-        const moduleReg = modules.join('|');
+        const moduleReg = modules.join('|')
 
-        return `/login/:module(${moduleReg})?`;
+        return `/login/:module(${moduleReg})?`
       }
 
-      return routePath;
+      return routePath
     },
     onRouteMetaGen(routeName) {
-      const key = routeName as RouteKey;
+      const key = routeName as RouteKey
 
-      const constantRoutes: RouteKey[] = ['login', '403', '404', '500'];
+      const constantRoutes: RouteKey[] = ['login', '403', '404', '500']
 
       const meta: Partial<RouteMeta> = {
         title: key,
         i18nKey: `route.${key}` as App.I18n.I18nKey
-      };
-
-      if (constantRoutes.includes(key)) {
-        meta.constant = true;
       }
 
-      return meta;
+      if (constantRoutes.includes(key)) {
+        meta.constant = true
+      }
+
+      return meta
     }
-  });
+  })
 }

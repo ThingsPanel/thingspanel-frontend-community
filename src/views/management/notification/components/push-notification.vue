@@ -1,60 +1,60 @@
 <script lang="ts" setup>
-import { reactive, ref } from 'vue';
-import type { FormInst } from 'naive-ui';
-import { useLoading } from '@sa/hooks';
-import { createRequiredFormRule } from '@/utils/form/rule';
-import { deepClone } from '@/utils/common/tool';
-import { editPushNotificationServices, fetchPushNotificationServices } from '@/service/api';
-import { $t } from '~/src/locales';
+import { reactive, ref } from 'vue'
+import type { FormInst } from 'naive-ui'
+import { useLoading } from '@sa/hooks'
+import { createRequiredFormRule } from '@/utils/form/rule'
+import { deepClone } from '@/utils/common/tool'
+import { editPushNotificationServices, fetchPushNotificationServices } from '@/service/api'
+import { $t } from '~/src/locales'
 
-const { loading, startLoading, endLoading } = useLoading(false);
+const { loading, startLoading, endLoading } = useLoading(false)
 
-const formModel = reactive<NotificationServices.PushNotification>(createDefaultFormModel());
+const formModel = reactive<NotificationServices.PushNotification>(createDefaultFormModel())
 
 function setTableData(data: Api.NotificationServices.PushNotification) {
-  Object.assign(formModel, data);
+  Object.assign(formModel, data)
   if (data.pushServer !== 'null') {
-    formModel.pushServer = JSON.parse(data.pushServer);
+    formModel.pushServer = JSON.parse(data.pushServer)
   }
 }
 
 async function getNotificationServices() {
-  startLoading();
-  const { data } = await fetchPushNotificationServices();
+  startLoading()
+  const { data } = await fetchPushNotificationServices()
   if (data) {
-    setTableData(data);
+    setTableData(data)
   }
-  endLoading();
+  endLoading()
 }
 
 function createDefaultFormModel(): NotificationServices.PushNotification {
   return {
     pushServer: ''
-  };
+  }
 }
 
 const rules = {
   pushServer: createRequiredFormRule($t('common.pleaseCheckValue'))
-};
-const formRef = ref<HTMLElement & FormInst>();
+}
+const formRef = ref<HTMLElement & FormInst>()
 async function handleSubmit() {
-  await formRef.value?.validate();
-  startLoading();
-  const formData = deepClone(formModel);
-  delete formData.config;
-  const data: any = await editPushNotificationServices(formData);
+  await formRef.value?.validate()
+  startLoading()
+  const formData = deepClone(formModel)
+  delete formData.config
+  const data: any = await editPushNotificationServices(formData)
   if (!data.error) {
-    window.$message?.success('success');
-    endLoading();
-    await getNotificationServices();
+    window.$message?.success('success')
+    endLoading()
+    await getNotificationServices()
   }
 }
 
 function init() {
-  getNotificationServices();
+  getNotificationServices()
 }
 
-init();
+init()
 </script>
 
 <template>

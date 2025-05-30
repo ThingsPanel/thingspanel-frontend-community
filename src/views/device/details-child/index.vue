@@ -1,29 +1,29 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { useLoading } from '@sa/hooks';
-import { useDeviceDataStore } from '@/store/modules/device';
-import Telemetry from '@/views/device/details/modules/telemetry/telemetry.vue';
-import Join from '@/views/device/details/modules/join.vue';
-import DeviceAnalysis from '@/views/device/details/modules/device-analysis.vue';
-import Message from '@/views/device/details/modules/message.vue';
-import Stats from '@/views/device/details/modules/stats.vue';
-import EventReport from '@/views/device/details/modules/event-report.vue';
-import CommandDelivery from '@/views/device/details/modules/command-delivery.vue';
-import Automate from '@/views/device/details/modules/automate.vue';
-import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue';
-import User from '@/views/device/details/modules/user.vue';
-import Settings from '@/views/device/details/modules/settings.vue';
-import { $t } from '@/locales';
-import { useAppStore } from '@/store/modules/app';
-import { deviceDetail, deviceUpdate } from '@/service/api/device';
-import { useRouterPush } from '@/hooks/common/router';
+import { onMounted, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useLoading } from '@sa/hooks'
+import { useDeviceDataStore } from '@/store/modules/device'
+import Telemetry from '@/views/device/details/modules/telemetry/telemetry.vue'
+import Join from '@/views/device/details/modules/join.vue'
+import DeviceAnalysis from '@/views/device/details/modules/device-analysis.vue'
+import Message from '@/views/device/details/modules/message.vue'
+import Stats from '@/views/device/details/modules/stats.vue'
+import EventReport from '@/views/device/details/modules/event-report.vue'
+import CommandDelivery from '@/views/device/details/modules/command-delivery.vue'
+import Automate from '@/views/device/details/modules/automate.vue'
+import GiveAnAlarm from '@/views/device/details/modules/give-an-alarm.vue'
+import User from '@/views/device/details/modules/user.vue'
+import Settings from '@/views/device/details/modules/settings.vue'
+import { $t } from '@/locales'
+import { useAppStore } from '@/store/modules/app'
+import { deviceDetail, deviceUpdate } from '@/service/api/device'
+import { useRouterPush } from '@/hooks/common/router'
 
-const { query } = useRoute();
-const appStore = useAppStore();
-const { d_id } = query;
-const { loading, startLoading, endLoading } = useLoading();
-const deviceDataStore = useDeviceDataStore();
+const { query } = useRoute()
+const appStore = useAppStore()
+const { d_id } = query
+const { loading, startLoading, endLoading } = useLoading()
+const deviceDataStore = useDeviceDataStore()
 let components = [
   { key: 'telemetry', name: () => $t('custom.device_details.telemetry'), component: Telemetry },
   { key: 'join', name: () => $t('custom.device_details.join'), component: Join },
@@ -36,15 +36,15 @@ let components = [
   { key: 'give-an-alarm', name: () => $t('custom.device_details.giveAnAlarm'), component: GiveAnAlarm },
   { key: 'user', name: () => $t('custom.device_details.user'), component: User },
   { key: 'settings', name: () => $t('custom.device_details.settings'), component: Settings }
-];
+]
 
-const tabValue = ref<any>('telemetry');
-const showDialog = ref(false);
-const labels = ref<string[]>([]);
-const device_color = ref('#ccc');
-const device_type = ref('');
-const icon_type = ref('');
-const device_number = ref('');
+const tabValue = ref<any>('telemetry')
+const showDialog = ref(false)
+const labels = ref<string[]>([])
+const device_color = ref('#ccc')
+const device_type = ref('')
+const icon_type = ref('')
+const device_number = ref('')
 
 const queryParams = reactive({
   label: '',
@@ -52,48 +52,48 @@ const queryParams = reactive({
   name: '',
   device_number: '',
   description: ''
-});
+})
 const changeTabs = v => {
-  startLoading();
+  startLoading()
 
-  tabValue.value = v;
+  tabValue.value = v
   setTimeout(() => {
-    endLoading();
-  }, 500);
-};
+    endLoading()
+  }, 500)
+}
 const editConfig = () => {
-  showDialog.value = true;
-};
+  showDialog.value = true
+}
 const close = async () => {
-  showDialog.value = false;
-  deviceDataStore.fetchData(d_id as string);
-};
+  showDialog.value = false
+  deviceDataStore.fetchData(d_id as string)
+}
 const save = async () => {
   if (!deviceDataStore?.deviceData?.name) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceName'));
-    return;
+    window.NMessage.error($t('custom.devicePage.enterDeviceName'))
+    return
   }
   if (!deviceDataStore?.deviceData?.device_number) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceNumber'));
-    return;
+    window.NMessage.error($t('custom.devicePage.enterDeviceNumber'))
+    return
   }
   if (deviceDataStore?.deviceData?.device_number.length > 100) {
-    window.NMessage.error($t('custom.devicePage.deviceNumberMax'));
-    return;
+    window.NMessage.error($t('custom.devicePage.deviceNumberMax'))
+    return
   }
-  device_number.value = deviceDataStore.deviceData.device_number;
-  queryParams.id = deviceDataStore?.deviceData?.id;
-  queryParams.name = deviceDataStore?.deviceData?.name;
-  queryParams.device_number = deviceDataStore?.deviceData?.device_number;
-  queryParams.label = labels.value.join(',');
-  queryParams.description = deviceDataStore?.deviceData?.description;
+  device_number.value = deviceDataStore.deviceData.device_number
+  queryParams.id = deviceDataStore?.deviceData?.id
+  queryParams.name = deviceDataStore?.deviceData?.name
+  queryParams.device_number = deviceDataStore?.deviceData?.device_number
+  queryParams.label = labels.value.join(',')
+  queryParams.description = deviceDataStore?.deviceData?.description
 
-  const { error } = await deviceUpdate(queryParams);
+  const { error } = await deviceUpdate(queryParams)
   if (!error) {
-    showDialog.value = false;
-    deviceDataStore.fetchData(d_id as string);
+    showDialog.value = false
+    deviceDataStore.fetchData(d_id as string)
   }
-};
+}
 const rules = {
   name: {
     required: true,
@@ -105,53 +105,53 @@ const rules = {
     message: $t('custom.devicePage.enterDeviceNumber'),
     trigger: 'blur'
   }
-};
+}
 const getDeviceDetail = async () => {
-  const { data, error } = await deviceDetail(d_id);
+  const { data, error } = await deviceDetail(d_id)
   if (!error) {
-    device_number.value = data.device_number;
+    device_number.value = data.device_number
     if (data.is_online !== 0) {
-      device_color.value = 'rgb(2,153,52)';
-      icon_type.value = 'rgb(2,153,52)';
+      device_color.value = 'rgb(2,153,52)'
+      icon_type.value = 'rgb(2,153,52)'
     }
     if (data.device_config !== undefined) {
-      device_type.value = data.device_config.device_type;
+      device_type.value = data.device_config.device_type
       if (device_type.value !== '2') {
-        components = components.filter(item => item.key !== 'device-analysis');
+        components = components.filter(item => item.key !== 'device-analysis')
       }
       if (device_type.value === '3') {
-        components = components.filter(item => item.key !== 'join');
+        components = components.filter(item => item.key !== 'join')
       }
     } else {
-      components = components.filter(item => item.key !== 'device-analysis');
+      components = components.filter(item => item.key !== 'device-analysis')
     }
   }
-};
+}
 
-const { routerPushByKey } = useRouterPush();
+const { routerPushByKey } = useRouterPush()
 const clickConfig = () => {
   routerPushByKey('device_config-detail', {
     query: {
       id: deviceDataStore?.deviceData?.device_config_id
     }
-  });
-};
+  })
+}
 onMounted(() => {
-  getDeviceDetail();
-  deviceDataStore.fetchData(d_id as string);
-});
+  getDeviceDetail()
+  deviceDataStore.fetchData(d_id as string)
+})
 watch(
   () => appStore.locale,
   () => {
-    let temporary: any;
+    let temporary: any
     // eslint-disable-next-line prefer-const
-    temporary = tabValue.value;
-    tabValue.value = '';
+    temporary = tabValue.value
+    tabValue.value = ''
     setTimeout(() => {
-      tabValue.value = temporary;
-    }, 50);
+      tabValue.value = temporary
+    }, 50)
   }
-);
+)
 </script>
 
 <template>

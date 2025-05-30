@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
-import type { CardData } from '@/components/tp-kan-ban/kan-ban';
-import { $t } from '@/locales';
+import { onMounted, ref, watch } from 'vue'
+import type { CardData } from '@/components/tp-kan-ban/kan-ban'
+import { $t } from '@/locales'
 const props = defineProps<{
-  view?: boolean;
-  card: CardData;
-}>();
+  view?: boolean
+  card: CardData
+}>()
 
-const cardData = ref<CardData>();
+const cardData = ref<CardData>()
 
 watch(
   () => props.card,
   () => {
-    cardData.value = props.card;
+    cardData.value = props.card
   },
   { deep: true }
-);
+)
 onMounted(() => {
-  cardData.value = props.card;
-});
+  cardData.value = props.card
+})
 </script>
 
 <template>

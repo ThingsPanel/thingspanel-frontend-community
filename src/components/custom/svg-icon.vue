@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, useAttrs } from 'vue';
-import { Icon } from '@iconify/vue';
+import { computed, useAttrs } from 'vue'
+import { Icon } from '@iconify/vue'
 
-defineOptions({ name: 'SvgIcon' });
+defineOptions({ name: 'SvgIcon' })
 
 /**
  * Props
@@ -12,32 +12,32 @@ defineOptions({ name: 'SvgIcon' });
  */
 interface Props {
   /** Iconify icon name */
-  icon?: string;
+  icon?: string
   /** Local svg icon name */
-  localIcon?: string;
+  localIcon?: string
 }
 
-const props = defineProps<Props>();
+const props = defineProps<Props>()
 
-const attrs = useAttrs();
+const attrs = useAttrs()
 
 const bindAttrs = computed<{ class: string; style: string }>(() => ({
   class: (attrs.class as string) || '',
   style: (attrs.style as string) || ''
-}));
+}))
 
 const symbolId = computed(() => {
-  const { VITE_ICON_LOCAL_PREFIX: prefix } = import.meta.env;
+  const { VITE_ICON_LOCAL_PREFIX: prefix } = import.meta.env
 
-  const defaultLocalIcon = 'no-icon';
+  const defaultLocalIcon = 'no-icon'
 
-  const icon = props.localIcon || defaultLocalIcon;
+  const icon = props.localIcon || defaultLocalIcon
 
-  return `#${prefix}-${icon}`;
-});
+  return `#${prefix}-${icon}`
+})
 
 /** If localIcon is passed, render localIcon first */
-const renderLocalIcon = computed(() => props.localIcon || !props.icon);
+const renderLocalIcon = computed(() => props.localIcon || !props.icon)
 </script>
 
 <template>

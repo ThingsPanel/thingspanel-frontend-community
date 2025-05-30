@@ -1,3 +1,3 @@
-import PageTab from './index.vue';
+import PageTab from './index.vue'
 
-export default PageTab;
+export default PageTab

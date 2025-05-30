@@ -1,66 +1,64 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { cloneDeep } from 'lodash-es';
-import { GridItem, GridLayout } from '@/components/drg-grid-layout';
-import type { CardData, CardView } from '@/components/tp-kan-ban/kan-ban';
-import { KANBANCOLNUM, KANBANROWHEIGHT } from '@/constants/common';
-import { $t } from '@/locales';
-import TpCardItem from '@/components/tp-kan-ban/modules/tp-card-item.vue';
+import { ref, watch } from 'vue'
+import { cloneDeep } from 'lodash-es'
+import { GridItem, GridLayout } from '@/components/drg-grid-layout'
+import type { CardData, CardView } from '@/components/tp-kan-ban/kan-ban'
+import { KANBANCOLNUM, KANBANROWHEIGHT } from '@/constants/common'
+import { $t } from '@/locales'
+import TpCardItem from '@/components/tp-kan-ban/modules/tp-card-item.vue'
 
-defineOptions({ name: 'KanBanRender' });
-const mouseAt = { x: -1, y: -1 };
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+defineOptions({ name: 'KanBanRender' })
+const mouseAt = { x: -1, y: -1 }
 const props = defineProps<{
-  isPreview: boolean;
-  responsive: boolean;
-  layout: CardView[];
-  addItem: (item: CardView) => void;
-  removeItem: (id: string) => void;
-  selectCard: (item: CardView) => void;
-  updateLayouts: (layout: CardView[]) => void;
-}>();
-const wrapper = ref<HTMLElement>();
-const gridLayout = ref<InstanceType<typeof GridLayout>>();
-const theLayout = ref<CardView[]>(cloneDeep(props.layout));
+  isPreview: boolean
+  responsive: boolean
+  layout: CardView[]
+  addItem: (item: CardView) => void
+  removeItem: (id: string) => void
+  selectCard: (item: CardView) => void
+  updateLayouts: (layout: CardView[]) => void
+}>()
+const wrapper = ref<HTMLElement>()
+const gridLayout = ref<InstanceType<typeof GridLayout>>()
+const theLayout = ref<CardView[]>(cloneDeep(props.layout))
 
 function onDrop(event) {
-  event.preventDefault();
-  // eslint-disable-next-line @typescript-eslint/no-shadow
+  event.preventDefault()
   // theLayout.value = theLayout.value.filter(item => item.i !== dropId);
-  const data = event.dataTransfer.getData('application/json');
-  const cardItem = JSON.parse(data);
+  const data = event.dataTransfer.getData('application/json')
+  const cardItem = JSON.parse(data)
 
   const minWh = {
     minW: 2,
     minH: 2
-  };
+  }
 
   if (cardItem.cardItemBase.minWH.minW !== -1) {
     if (typeof cardItem.cardItemBase.minWH.minW === 'number') {
-      minWh.minW = cardItem.cardItemBase.minWH.minW;
+      minWh.minW = cardItem.cardItemBase.minWH.minW
     } else {
-      const w = cardItem.cardItemBase.minWH.minW.replace('px', '');
-      minWh.minW = Math.ceil(Number(w) / (gridLayout?.value?.state?.width || 0 / KANBANCOLNUM));
+      const w = cardItem.cardItemBase.minWH.minW.replace('px', '')
+      minWh.minW = Math.ceil(Number(w) / (gridLayout?.value?.state?.width || 0 / KANBANCOLNUM))
     }
   }
   if (cardItem.cardItemBase.minWH.minH !== -1) {
     if (typeof cardItem.cardItemBase.minWH.minH === 'number') {
-      minWh.minH = cardItem.cardItemBase.minWH.minH;
+      minWh.minH = cardItem.cardItemBase.minWH.minH
     } else {
-      const h = cardItem.cardItemBase.minWH.minH.replace('px', '');
+      const h = cardItem.cardItemBase.minWH.minH.replace('px', '')
 
-      minWh.minH = Math.ceil(Number(h) / KANBANROWHEIGHT);
+      minWh.minH = Math.ceil(Number(h) / KANBANROWHEIGHT)
     }
   }
   if (props.responsive) {
-    minWh.minW = 2;
-    minWh.minH = 2;
+    minWh.minW = 2
+    minWh.minH = 2
   }
-  const rect = event.currentTarget.getBoundingClientRect();
-  mouseAt.x = event.clientX - rect.left; // 鼠标位置相对于 drop-area 元素的 X 坐标
-  mouseAt.y = event.clientY - rect.top; // 鼠标位置相对于 drop-area 元素的 Y 坐标
+  const rect = event.currentTarget.getBoundingClientRect()
+  mouseAt.x = event.clientX - rect.left // 鼠标位置相对于 drop-area 元素的 X 坐标
+  mouseAt.y = event.clientY - rect.top // 鼠标位置相对于 drop-area 元素的 Y 坐标
 
-  const itemId = cardItem?.cardItemBase?.renderID || `${theLayout.value.length.toString()}_${cardItem.cardItemBase.id}`;
+  const itemId = cardItem?.cardItemBase?.renderID || `${theLayout.value.length.toString()}_${cardItem.cardItemBase.id}`
   const item: CardView = {
     x: (theLayout.value.length * 2) % KANBANCOLNUM,
     y: theLayout.value.length + KANBANCOLNUM,
@@ -83,26 +81,26 @@ function onDrop(event) {
         cardUI: {}
       }
     }
-  };
-  props.addItem(item);
+  }
+  props.addItem(item)
 }
 
 // eslint-disable-next-line vue/no-dupe-keys
 function remove(id: string) {
-  props.removeItem(id);
+  props.removeItem(id)
 }
 
 const layoutUpdated = layout => {
-  props.updateLayouts(layout);
-};
+  props.updateLayouts(layout)
+}
 
 watch(
   () => props.layout,
   () => {
-    theLayout.value = props.layout;
+    theLayout.value = props.layout
   },
   { deep: true }
-);
+)
 </script>
 
 <template>

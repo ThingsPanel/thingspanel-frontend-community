@@ -12,19 +12,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { $t } from '@/locales';
-import { NDataTable, useMessage } from 'naive-ui';
-import { deviceConfig } from '@/service/api/device';
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { $t } from '@/locales'
+import { NDataTable, useMessage } from 'naive-ui'
+import { deviceConfig } from '@/service/api/device'
 
-const message = useMessage();
-const route = useRoute();
+const message = useMessage()
+const route = useRoute()
 
 const pageData = ref({
   loading: false,
   tableData: []
-});
+})
 
 const pagination = ref({
   page: 1,
@@ -33,18 +33,18 @@ const pagination = ref({
   pageSizes: [10, 20, 30, 40],
   showSizePicker: true,
   prefix({ itemCount }) {
-    return `${$t('common.total')}: ${itemCount}`;
+    return `${$t('common.total')}: ${itemCount}`
   },
-  onChange: (page) => {
-    pagination.value.page = page;
-    loadDeviceConfigs();
+  onChange: page => {
+    pagination.value.page = page
+    loadDeviceConfigs()
   },
-  onUpdatePageSize: (pageSize) => {
-    pagination.value.pageSize = pageSize;
-    pagination.value.page = 1;
-    loadDeviceConfigs();
+  onUpdatePageSize: pageSize => {
+    pagination.value.pageSize = pageSize
+    pagination.value.page = 1
+    loadDeviceConfigs()
   }
-});
+})
 
 const columns = ref([
   {
@@ -62,38 +62,38 @@ const columns = ref([
     key: 'template_secret',
     align: 'center' as const,
     render(row) {
-      return row.template_secret ? '******' : $t('card.templateNotConfigured');
+      return row.template_secret ? '******' : $t('card.templateNotConfigured')
     }
   }
-]);
+])
 
 const loadDeviceConfigs = async () => {
-  pageData.value.loading = true;
+  pageData.value.loading = true
   try {
     const { data } = await deviceConfig({
       page: pagination.value.page,
       page_size: pagination.value.pageSize,
       protocol_type: route.query.service_identifier
-    });
-    
+    })
+
     if (data && data.list) {
-      pageData.value.tableData = data.list;
-      pagination.value.itemCount = data.total;
+      pageData.value.tableData = data.list
+      pagination.value.itemCount = data.total
     } else {
-      pageData.value.tableData = [];
-      pagination.value.itemCount = 0;
+      pageData.value.tableData = []
+      pagination.value.itemCount = 0
     }
   } catch (error) {
-    console.error($t('card.loadDeviceConfigFailed'), error);
-    message.error($t('common.loadFailed'));
+    console.error($t('card.loadDeviceConfigFailed'), error)
+    message.error($t('common.loadFailed'))
   } finally {
-    pageData.value.loading = false;
+    pageData.value.loading = false
   }
-};
+}
 
 onMounted(() => {
-  loadDeviceConfigs();
-});
+  loadDeviceConfigs()
+})
 </script>
 
 <style scoped lang="scss">
@@ -101,4 +101,4 @@ onMounted(() => {
   padding: 20px;
   height: 100%;
 }
-</style> 
+</style>

@@ -1,18 +1,18 @@
 <script lang="ts" setup>
-import { reactive, ref } from 'vue';
-import { $t } from '@/locales';
+import { reactive, ref } from 'vue'
+import { $t } from '@/locales'
 
-const active: any = ref('0');
+const active: any = ref('0')
 const submit: (item: any) => void = item => {
-  active.value = item.id;
-};
+  active.value = item.id
+}
 
 interface WeatherItem {
-  id: string;
-  icons: string;
-  temperature: string;
-  humidity: string;
-  text: string;
+  id: string
+  icons: string
+  temperature: string
+  humidity: string
+  text: string
 }
 
 const weatherList: WeatherItem[] = reactive([
@@ -65,7 +65,7 @@ const weatherList: WeatherItem[] = reactive([
   //   text: $t('dashboard_panel.cardName.week.sun'),
   //   icons: 'cloudy'
   // }
-]);
+])
 </script>
 
 <template>

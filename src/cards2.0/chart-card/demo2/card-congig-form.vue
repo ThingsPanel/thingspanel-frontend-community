@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { inject, onMounted } from 'vue';
-import CardBaseForm from '@/cards2.0/modules/card-base-form.vue';
-import CardDataSourceForm from '@/cards2.0/modules/card-data-source-form.vue';
-import type { CardData, IConfigCtx } from '@/components/tp-kan-ban/kan-ban';
-import { $t } from '@/locales';
+import { inject, onMounted } from 'vue'
+import CardBaseForm from '@/cards2.0/modules/card-base-form.vue'
+import CardDataSourceForm from '@/cards2.0/modules/card-data-source-form.vue'
+import type { CardData, IConfigCtx } from '@/components/tp-kan-ban/kan-ban'
+import { $t } from '@/locales'
 
 const props = defineProps<{
-  data: CardData;
-}>();
+  data: CardData
+}>()
 
 // 固定写法开始
-const ctx = inject<IConfigCtx>('kan-ban-config-ctx')!;
+const ctx = inject<IConfigCtx>('kan-ban-config-ctx')!
 // ctx.config会传递给看板编辑
 const changeCtxConfig = (key: string, data: any) => {
-  ctx.config[key] = { ...data };
-}; // 改变ctx.config的方法
+  ctx.config[key] = { ...data }
+} // 改变ctx.config的方法
 // 固定写法结束
 onMounted(() => {
   // ctx.config = {...props.data.config}
-  ctx.config = props.data.config;
-});
+  ctx.config = props.data.config
+})
 </script>
 
 <template>

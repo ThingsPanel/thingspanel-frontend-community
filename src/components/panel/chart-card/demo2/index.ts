@@ -1,7 +1,7 @@
-import { defineAsyncComponent } from 'vue';
-import poster from '@/components/panel/chart-card/demo1/poster.png';
-import type { ICardDefine } from '@/components/panel/card';
-import { $t } from '@/locales';
+import { defineAsyncComponent } from 'vue'
+import poster from '@/components/panel/chart-card/demo1/poster.png'
+import type { ICardDefine } from '@/components/panel/card'
+import { $t } from '@/locales'
 
 export default {
   id: 'chart-demo2',
@@ -20,4 +20,4 @@ export default {
       name: '123'
     }
   }
-} as ICardDefine;
+} as ICardDefine

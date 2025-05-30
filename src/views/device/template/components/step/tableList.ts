@@ -1,7 +1,7 @@
-import type { Ref } from 'vue';
-import { ref } from 'vue';
-import type { DataTableColumns } from 'naive-ui';
-import { $t } from '@/locales';
+import type { Ref } from 'vue'
+import { ref } from 'vue'
+import type { DataTableColumns } from 'naive-ui'
+import { $t } from '@/locales'
 
 export const test: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
@@ -40,7 +40,7 @@ export const test: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
     title: $t('device_template.table_header.description'),
     align: 'center'
   }
-]);
+])
 
 export const attribute: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
@@ -79,7 +79,7 @@ export const attribute: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
     title: $t('device_template.table_header.description'),
     align: 'center'
   }
-]);
+])
 
 export const events: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
@@ -106,7 +106,7 @@ export const events: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
     title: $t('device_template.table_header.description'),
     align: 'center'
   }
-]);
+])
 
 export const command: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
@@ -133,4 +133,4 @@ export const command: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
     title: $t('device_template.table_header.description'),
     align: 'center'
   }
-]);
+])

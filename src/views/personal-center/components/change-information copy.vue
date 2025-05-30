@@ -7,58 +7,58 @@
  * @LastEditTime: 2024-03-20 17:13:33
 -->
 <script setup lang="ts">
-import { computed, ref, toRefs } from 'vue';
-import type { FormItemRule, FormRules } from 'naive-ui';
-import { useNaiveForm } from '@/hooks/common/form';
-import { getConfirmPwdRule } from '@/utils/form/rule';
-import { changeInformation, passwordModification } from '@/service/api/personal-center';
-import { $t } from '@/locales';
-import { encryptDataByRsa, generateRandomHexString, validName, validPasswordByExp } from '@/utils/common/tool';
+import { computed, ref, toRefs } from 'vue'
+import type { FormItemRule, FormRules } from 'naive-ui'
+import { useNaiveForm } from '@/hooks/common/form'
+import { getConfirmPwdRule } from '@/utils/form/rule'
+import { changeInformation, passwordModification } from '@/service/api/personal-center'
+import { $t } from '@/locales'
+import { encryptDataByRsa, generateRandomHexString, validName, validPasswordByExp } from '@/utils/common/tool'
 
 export interface Props {
   /** 弹窗可见性 */
-  visible: boolean;
-  type?: 'amend' | 'changePassword';
+  visible: boolean
+  type?: 'amend' | 'changePassword'
 }
 
-export type ModalType = NonNullable<Props['type']>;
+export type ModalType = NonNullable<Props['type']>
 
-defineOptions({ name: 'TableActionModal' });
+defineOptions({ name: 'TableActionModal' })
 const props = withDefaults(defineProps<Props>(), {
   type: 'amend',
   editData: null
-});
+})
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void;
+  (e: 'update:visible', visible: boolean): void
 
-  (e: 'modification', name?: string): void;
+  (e: 'modification', name?: string): void
 }
-const { formRef, validate } = useNaiveForm();
-const emit = defineEmits<Emits>();
+const { formRef, validate } = useNaiveForm()
+const emit = defineEmits<Emits>()
 
 const modalVisible = computed({
   get() {
-    return props.visible;
+    return props.visible
   },
   set(visible) {
-    emit('update:visible', visible);
+    emit('update:visible', visible)
   }
-});
+})
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
     amend: $t('custom.personalCenter.modifyBasicInfo'),
     changePassword: $t('custom.personalCenter.changePassword')
-  };
-  return titles[props.type];
-});
+  }
+  return titles[props.type]
+})
 const estimate = computed(() => {
   const titles: Record<ModalType, string> = {
     amend: 'amend',
     changePassword: 'changePassword'
-  };
-  return titles[props.type];
-});
+  }
+  return titles[props.type]
+})
 
 /** 初始from数据 */
 const formData = ref({
@@ -66,55 +66,55 @@ const formData = ref({
   old_password: '',
   password: '',
   passwords: ''
-});
+})
 /** 关闭弹框 */
 const closeModal = () => {
-  modalVisible.value = false;
-  formData.value.name = '';
-};
+  modalVisible.value = false
+  formData.value.name = ''
+}
 /**
  * 修改姓名
  *
  * @param name
  */
 const editName = async () => {
-  await validate();
-  const data = { name: formData.value.name };
-  const res = await changeInformation(data);
+  await validate()
+  const data = { name: formData.value.name }
+  const res = await changeInformation(data)
 
   if (!res.error) {
-    modalVisible.value = false;
-    emit('modification', formData.value.name);
+    modalVisible.value = false
+    emit('modification', formData.value.name)
   }
-};
+}
 /** passwordModification */
 const password = async () => {
-  await validate();
-  const enableZcAndYzmItem = localStorage.getItem('enableZcAndYzm');
-  const data = enableZcAndYzmItem ? JSON.parse(enableZcAndYzmItem) : [];
-  let salt: string | null = null;
-  let password1 = formData.value.password;
+  await validate()
+  const enableZcAndYzmItem = localStorage.getItem('enableZcAndYzm')
+  const data = enableZcAndYzmItem ? JSON.parse(enableZcAndYzmItem) : []
+  let salt: string | null = null
+  let password1 = formData.value.password
   if (data.find(v => v.name === 'frontend_res')?.enable_flag === 'enable') {
-    salt = generateRandomHexString(16);
-    password1 = encryptDataByRsa(password1 + salt);
+    salt = generateRandomHexString(16)
+    password1 = encryptDataByRsa(password1 + salt)
   }
   const param = {
     old_password: formData.value.old_password,
     password: password1,
     salt
-  };
-  const res = await passwordModification(param);
-  if (!res.error) {
-    modalVisible.value = false;
-    emit('modification');
   }
-};
+  const res = await passwordModification(param)
+  if (!res.error) {
+    modalVisible.value = false
+    emit('modification')
+  }
+}
 
 function submit() {
   if (estimate.value === 'amend') {
-    editName();
+    editName()
   } else {
-    password();
+    password()
   }
 }
 const rules: FormRules = {
@@ -123,9 +123,9 @@ const rules: FormRules = {
       required: true,
       validator(rule: FormItemRule, value: string) {
         if (rule && !validName(value)) {
-          return new Error($t('custom.personalCenter.nameFieldNotEmpty'));
+          return new Error($t('custom.personalCenter.nameFieldNotEmpty'))
         }
-        return true;
+        return true
       },
       trigger: ['input', 'blur']
     }
@@ -142,19 +142,19 @@ const rules: FormRules = {
       required: true,
       validator(rule: FormItemRule, value: string) {
         if (value.length < 8 || value.length > 18) {
-          return Promise.reject(rule.message);
+          return Promise.reject(rule.message)
         }
         if (!validPasswordByExp(value)) {
-          return Promise.reject(rule.message);
+          return Promise.reject(rule.message)
         }
-        return Promise.resolve();
+        return Promise.resolve()
       },
       message: $t('form.pwd.tip'),
       trigger: ['input', 'blur']
     }
   ],
   passwords: getConfirmPwdRule(toRefs(formData.value).password)
-};
+}
 </script>
 
 <template>

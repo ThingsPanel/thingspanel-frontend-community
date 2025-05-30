@@ -1,10 +1,10 @@
 <script lang="ts" setup>
-import { inject } from 'vue';
-import type { IConfigCtx } from '@/components/panel/card';
-import { $t } from '@/locales';
-import icons from './icon';
+import { inject } from 'vue'
+import type { IConfigCtx } from '@/components/panel/card'
+import { $t } from '@/locales'
+import icons from './icon'
 
-const ctx = inject<IConfigCtx>('config-ctx')!;
+const ctx = inject<IConfigCtx>('config-ctx')!
 </script>
 
 <template>

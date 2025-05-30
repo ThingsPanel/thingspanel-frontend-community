@@ -1,33 +1,33 @@
 <script setup lang="tsx">
-import { reactive, ref } from 'vue';
-import { editFunction, getFunction } from '@/service/api/setting';
+import { reactive, ref } from 'vue'
+import { editFunction, getFunction } from '@/service/api/setting'
 
 const queryParam = reactive({
   function_id: ''
-});
+})
 
 const changeFunc = async (item: object) => {
-  queryParam.function_id = item.id;
-  const res = await editFunction(queryParam);
+  queryParam.function_id = item.id
+  const res = await editFunction(queryParam)
   if (!res.error) {
-    getFunctionOption();
+    getFunctionOption()
   }
-};
-const funcOptions = ref([]);
+}
+const funcOptions = ref([])
 async function getFunctionOption() {
-  const { data } = await getFunction();
+  const { data } = await getFunction()
   if (data) {
-    localStorage.setItem('enableZcAndYzm', JSON.stringify(data));
+    localStorage.setItem('enableZcAndYzm', JSON.stringify(data))
     funcOptions.value = data.map(v => {
       return {
         ...v,
         value: v.enable_flag === 'enable'
-      };
-    });
+      }
+    })
   }
 }
 
-getFunctionOption();
+getFunctionOption()
 </script>
 
 <template>

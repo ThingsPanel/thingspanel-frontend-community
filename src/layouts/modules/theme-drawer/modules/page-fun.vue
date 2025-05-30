@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { computed } from 'vue';
-import { $t } from '@/locales';
-import { useThemeStore } from '@/store/modules/theme';
-import { themePageAnimationModeOptions, themeScrollModeOptions, themeTabModeOptions } from '@/constants/app';
-import { translateOptions } from '@/utils/common4';
-import SettingItem from '../components/setting-item.vue';
+import { computed } from 'vue'
+import { $t } from '@/locales'
+import { useThemeStore } from '@/store/modules/theme'
+import { themePageAnimationModeOptions, themeScrollModeOptions, themeTabModeOptions } from '@/constants/app'
+import { translateOptions } from '@/utils/common4'
+import SettingItem from '../components/setting-item.vue'
 
 defineOptions({
   name: 'PageFun'
-});
+})
 
-const themeStore = useThemeStore();
+const themeStore = useThemeStore()
 
-const layoutMode = computed(() => themeStore.layout.mode);
+const layoutMode = computed(() => themeStore.layout.mode)
 
-const isMixLayoutMode = computed(() => layoutMode.value.includes('mix'));
+const isMixLayoutMode = computed(() => layoutMode.value.includes('mix'))
 
-const isWrapperScrollMode = computed(() => themeStore.layout.scrollMode === 'wrapper');
+const isWrapperScrollMode = computed(() => themeStore.layout.scrollMode === 'wrapper')
 </script>
 
 <template>

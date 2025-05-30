@@ -1,71 +1,71 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import type { ICardData } from '@/components/panel/card';
-import { getAttributeDataSet } from '@/service/api/device';
-import { $t } from '@/locales';
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import type { ICardData } from '@/components/panel/card'
+import { getAttributeDataSet } from '@/service/api/device'
+import { $t } from '@/locales'
 
 const props = defineProps<{
-  card: ICardData;
-}>();
+  card: ICardData
+}>()
 
-const detail = ref<number | string>();
-const unit = ref<string>('');
-const fontSize = ref('14px');
-const cardRef = ref<HTMLElement | null>(null);
-let resizeObserver: ResizeObserver | null = null;
+const detail = ref<number | string>()
+const unit = ref<string>('')
+const fontSize = ref('14px')
+const cardRef = ref<HTMLElement | null>(null)
+let resizeObserver: ResizeObserver | null = null
 
 const setSeries = async (dataSource: ICardData['dataSource']) => {
-  if (!dataSource?.deviceSource?.[0]) return;
+  if (!dataSource?.deviceSource?.[0]) return
 
-  const { metricsType, deviceId, metricsId } = dataSource.deviceSource[0];
+  const { metricsType, deviceId, metricsId } = dataSource.deviceSource[0]
 
   if (metricsType === 'attributes' && deviceId && metricsId) {
-    const res = await getAttributeDataSet({ device_id: deviceId });
-    const attributeData = res.data.find(item => item.key === metricsId);
-    detail.value = attributeData?.value;
+    const res = await getAttributeDataSet({ device_id: deviceId })
+    const attributeData = res.data.find(item => item.key === metricsId)
+    detail.value = attributeData?.value
     if (attributeData?.unit) {
-      unit.value = attributeData.unit;
+      unit.value = attributeData.unit
     }
   }
-};
+}
 
 const handleResize = (entries: ResizeObserverEntry[]) => {
   for (const entry of entries) {
-    const { width, height } = entry.contentRect;
-    const newFontSize = `${Math.min(width, height) / 10}px`;
-    fontSize.value = newFontSize;
+    const { width, height } = entry.contentRect
+    const newFontSize = `${Math.min(width, height) / 10}px`
+    fontSize.value = newFontSize
   }
-};
+}
 
 watch(
   () => props.card?.dataSource?.deviceSource,
   () => {
-    setSeries(props.card?.dataSource);
+    setSeries(props.card?.dataSource)
   },
   { deep: true }
-);
+)
 
 onMounted(() => {
-  setSeries(props.card?.dataSource);
+  setSeries(props.card?.dataSource)
   if (cardRef.value) {
-    resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(cardRef.value);
+    resizeObserver = new ResizeObserver(handleResize)
+    resizeObserver.observe(cardRef.value)
   }
-});
+})
 
 onBeforeUnmount(() => {
   if (resizeObserver) {
-    resizeObserver.disconnect();
+    resizeObserver.disconnect()
   }
-});
+})
 
 defineExpose({
   updateData: (_deviceId: string | undefined, metricsId: string | undefined, data: any) => {
     if (metricsId && data[metricsId] !== undefined && data[metricsId] !== null && data[metricsId] !== '') {
-      detail.value = data[metricsId];
+      detail.value = data[metricsId]
     }
   }
-});
+})
 </script>
 
 <template>

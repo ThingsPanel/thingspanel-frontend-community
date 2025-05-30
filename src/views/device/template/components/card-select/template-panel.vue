@@ -1,91 +1,91 @@
 <script lang="tsx" setup>
-import type { Ref } from 'vue';
-import { inject, nextTick, onMounted, provide, reactive, ref, watch } from 'vue';
-import type { ICardData, ICardRender, ICardView } from '@/components/panel/card';
-import { getTemplat } from '@/service/api';
-import { $t } from '@/locales';
-import AddTemplateCard from './ui/add-template-card.vue';
+import type { Ref } from 'vue'
+import { inject, nextTick, onMounted, provide, reactive, ref, watch } from 'vue'
+import type { ICardData, ICardRender, ICardView } from '@/components/panel/card'
+import { getTemplat } from '@/service/api'
+import { $t } from '@/locales'
+import AddTemplateCard from './ui/add-template-card.vue'
 
-const props = defineProps<{ templateId: string; isApp: boolean }>();
+const props = defineProps<{ templateId: string; isApp: boolean }>()
 
-const device_template_id = ref<any>(props.templateId as any);
+const device_template_id = ref<any>(props.templateId as any)
 
-provide('device_template_id', device_template_id);
-const webChartConfig = inject<Ref<ICardView[]>>('web_chart_config');
-const layout = ref<ICardView[]>([]);
+provide('device_template_id', device_template_id)
+const webChartConfig = inject<Ref<ICardView[]>>('web_chart_config')
+const layout = ref<ICardView[]>([])
 const fetchBroad = async () => {
-  const { data, error } = await getTemplat(props.templateId);
+  const { data, error } = await getTemplat(props.templateId)
   if (!error && data) {
     if (props.isApp && data.app_chart_config) {
-      const configJson = JSON.parse(data.app_chart_config);
-      layout.value = [...configJson];
+      const configJson = JSON.parse(data.app_chart_config)
+      layout.value = [...configJson]
     } else if (data.web_chart_config) {
-      const configJson = JSON.parse(data.web_chart_config);
-      layout.value = [...configJson];
+      const configJson = JSON.parse(data.web_chart_config)
+      layout.value = [...configJson]
     }
   }
-};
+}
 
 const state = reactive({
   openAddPanel: false,
   cardData: null as null | ICardData
-});
+})
 
-const editView = ref<ICardView | null>();
-const cr = ref<ICardRender>();
+const editView = ref<ICardView | null>()
+const cr = ref<ICardRender>()
 
 const insertCard = (card: ICardData) => {
   if (editView.value && 'data' in editView.value) {
-    editView.value.data = card;
+    editView.value.data = card
 
     const lastUniqueById = layout.value
       .reduceRight((acc: ICardView[], cur: ICardView) => {
         if (
           !acc.some(item => {
-            if (!item.data) return false;
-            return item?.data?.cardId === cur?.data?.cardId;
+            if (!item.data) return false
+            return item?.data?.cardId === cur?.data?.cardId
           })
         ) {
-          acc.push(cur as ICardView); // 如果acc中没有当前cur的cardId，则添加cur到acc中
+          acc.push(cur as ICardView) // 如果acc中没有当前cur的cardId，则添加cur到acc中
         }
-        return acc;
+        return acc
       }, [])
-      .reverse();
-    layout.value = lastUniqueById;
+      .reverse()
+    layout.value = lastUniqueById
   } else {
-    cr.value?.addCard(card);
+    cr.value?.addCard(card)
   }
-  editView.value = null;
-  state.openAddPanel = false;
-};
+  editView.value = null
+  state.openAddPanel = false
+}
 
 const add = () => {
-  editView.value = null;
-  state.cardData = null;
-  state.openAddPanel = true;
-};
+  editView.value = null
+  state.cardData = null
+  state.openAddPanel = true
+}
 const edit = (view: ICardView) => {
-  editView.value = view;
-  state.cardData = view.data || null;
-  state.openAddPanel = true;
-};
+  editView.value = view
+  state.cardData = view.data || null
+  state.openAddPanel = true
+}
 
 const updateLayoutData = (data: ICardView[]) => {
   nextTick(() => {
-    layout.value = data;
-  });
-};
+    layout.value = data
+  })
+}
 
 watch(
   () => layout.value,
   () => {
     if (webChartConfig?.value) {
-      webChartConfig.value = layout.value as any;
+      webChartConfig.value = layout.value as any
     }
   }
-);
+)
 
-onMounted(fetchBroad);
+onMounted(fetchBroad)
 </script>
 
 <template>

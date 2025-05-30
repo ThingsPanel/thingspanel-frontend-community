@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { watch } from 'vue';
-import { $t } from '@/locales';
-import { useEcharts } from '@/hooks/chart/use-echarts';
-import type { ICardData } from '@/components/panel/card';
+import { watch } from 'vue'
+import { $t } from '@/locales'
+import { useEcharts } from '@/hooks/chart/use-echarts'
+import type { ICardData } from '@/components/panel/card'
 
 const props = defineProps<{
-  card: ICardData;
+  card: ICardData
   // mode: IConfigCtx['view'];
-}>();
+}>()
 
 defineOptions({
   name: 'LineChart'
-});
+})
 
 const { domRef, updateOptions } = useEcharts(() => ({
   tooltip: {
@@ -102,37 +102,37 @@ const { domRef, updateOptions } = useEcharts(() => ({
       data: []
     }
   ]
-}));
+}))
 
 async function mockData() {
   await new Promise(resolve => {
-    setTimeout(resolve, 1000);
-  });
+    setTimeout(resolve, 1000)
+  })
 
   updateOptions(opts => {
-    opts.xAxis.data = props.card.config?.times || [];
-    opts.series[0].data = [4623, 6145, 6268, 6411, 1890, 4251, 2978, 3880, 3606, 4311];
-    opts.series[1].data = [2208, 2016, 2916, 4512, 8281, 2008, 1963, 2367, 2956, 678];
-    opts.series[0].color = props.card.config?.color || '#8e9dff';
-    opts.series[0].areaStyle.color.colorStops[0].color = props.card.config?.color || '#8e9dff';
+    opts.xAxis.data = props.card.config?.times || []
+    opts.series[0].data = [4623, 6145, 6268, 6411, 1890, 4251, 2978, 3880, 3606, 4311]
+    opts.series[1].data = [2208, 2016, 2916, 4512, 8281, 2008, 1963, 2367, 2956, 678]
+    opts.series[0].color = props.card.config?.color || '#8e9dff'
+    opts.series[0].areaStyle.color.colorStops[0].color = props.card.config?.color || '#8e9dff'
 
-    return opts;
-  });
+    return opts
+  })
 }
 
 async function init() {
-  mockData();
+  mockData()
 }
 
 watch(
   () => props.card.config,
   () => {
-    init();
+    init()
   }
-);
+)
 
 // init
-init();
+init()
 </script>
 
 <template>

@@ -106,4 +106,4 @@ export const productLocaleEn: ProductLocal = {
     batchSelectDevice: 'Batch Select Devices',
     selectDevice: 'Select Device'
   }
-};
+}

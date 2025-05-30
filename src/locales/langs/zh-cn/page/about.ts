@@ -10,4 +10,4 @@ export default {
   },
   prdDep: '生产依赖',
   devDep: '开发依赖'
-};
+}

@@ -1,91 +1,91 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue';
+import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 // import {useRouter} from 'vue-router';
-import { NButton, NCard, NForm, NFormItem, NGrid, NGridItem, NInput, NModal, useMessage, NPopconfirm } from 'naive-ui';
-import type { LastLevelRouteKey } from '@elegant-router/types'; // 假设您已经定义好了这些API
-import { DelBoard, PostBoard, PutBoard, getBoardList } from '@/service/api/index';
-import { useRouterPush } from '@/hooks/common/router';
-import { $t } from '@/locales';
+import { NButton, NCard, NForm, NFormItem, NGrid, NGridItem, NInput, NModal, useMessage, NPopconfirm } from 'naive-ui'
+import type { LastLevelRouteKey } from '@elegant-router/types' // 假设您已经定义好了这些API
+import { DelBoard, PostBoard, PutBoard, getBoardList } from '@/service/api/index'
+import { useRouterPush } from '@/hooks/common/router'
+import { $t } from '@/locales'
 
-const { routerPushByKey } = useRouterPush();
-const message = useMessage();
-const nameSearch = ref('');
-const currentPage = ref(1);
-const pageSize = ref(12); // 或根据你的实际需求来设置
-const total = ref(0);
-const boards = ref<Panel.Board[]>([]);
-const showModal = ref<boolean>(false);
-const isEditMode = ref(false);
+const { routerPushByKey } = useRouterPush()
+const message = useMessage()
+const nameSearch = ref('')
+const currentPage = ref(1)
+const pageSize = ref(12) // 或根据你的实际需求来设置
+const total = ref(0)
+const boards = ref<Panel.Board[]>([])
+const showModal = ref<boolean>(false)
+const isEditMode = ref(false)
 // 初始化表单数据
 const formData = reactive({
   id: '',
   name: '',
   home_flag: 'N',
   description: ''
-});
+})
 
 // 设置表单数据
 const setFormData = data => {
-  Object.assign(formData, data);
-};
+  Object.assign(formData, data)
+}
 
 // 清除表单数据
 const clearFormData = () => {
-  setFormData({ id: '', name: '', home_flag: 'N', description: '' });
-  isEditMode.value = false;
-};
+  setFormData({ id: '', name: '', home_flag: 'N', description: '' })
+  isEditMode.value = false
+}
 
 const setupData = v => {
-  boards.value = v;
-};
+  boards.value = v
+}
 // 获取看板列表
 const fetchBoards = async () => {
-  const { data } = await getBoardList({ page: currentPage.value, page_size: pageSize.value, name: nameSearch.value });
+  const { data } = await getBoardList({ page: currentPage.value, page_size: pageSize.value, name: nameSearch.value })
   if (data && data.list) {
-    setupData(data.list as Panel.Board[]);
-    total.value = data.total;
+    setupData(data.list as Panel.Board[])
+    total.value = data.total
   }
-};
+}
 
 // 提交表单
 const submitForm = async () => {
   if (!formData.name) {
-    message.error($t('custom.home.kanbanNameNull'));
-    return;
+    message.error($t('custom.home.kanbanNameNull'))
+    return
   }
 
   if (isEditMode.value) {
-    await PutBoard(formData); // 编辑看板
+    await PutBoard(formData) // 编辑看板
   } else {
-    await PostBoard(formData); // 新建看板
+    await PostBoard(formData) // 新建看板
   }
 
-  showModal.value = false;
-  clearFormData();
-  await fetchBoards();
-};
+  showModal.value = false
+  clearFormData()
+  await fetchBoards()
+}
 
 const editBoard = board => {
-  setFormData({ ...board });
-  isEditMode.value = true;
-  showModal.value = true;
-};
+  setFormData({ ...board })
+  isEditMode.value = true
+  showModal.value = true
+}
 
 // 删除看板
 const deleteBoard = async (id: string) => {
-  await DelBoard(id); // 假设DelBoard接收看板的id
-  await fetchBoards(); // 刷新看板列表
-};
+  await DelBoard(id) // 假设DelBoard接收看板的id
+  await fetchBoards() // 刷新看板列表
+}
 
 // 页面跳转
 const goRouter = (name: LastLevelRouteKey, id: string) => {
-  routerPushByKey(name, { query: { id } });
-};
+  routerPushByKey(name, { query: { id } })
+}
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
-onMounted(fetchBoards);
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
+onMounted(fetchBoards)
 </script>
 
 <template>
@@ -104,8 +104,8 @@ onMounted(fetchBoards);
             :placeholder="$t('generate.search-by-name')"
             @clear="
               () => {
-                nameSearch = '';
-                fetchBoards();
+                nameSearch = ''
+                fetchBoards()
               }
             "
           />
@@ -214,8 +214,8 @@ onMounted(fetchBoards);
             <NButton
               type="default"
               @click="
-                showModal = false;
-                clearFormData();
+                showModal = false
+                clearFormData()
               "
             >
               {{ $t('generate.cancel') }}

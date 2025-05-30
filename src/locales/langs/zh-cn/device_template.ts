@@ -99,4 +99,4 @@ export default {
     enumDataValue: '枚举值',
     enumDescription: '枚举描述'
   }
-};
+}

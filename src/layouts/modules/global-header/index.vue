@@ -1,48 +1,48 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed } from 'vue'
 // import {useFullscreen} from '@vueuse/core';
-import { useAppStore } from '@/store/modules/app';
-import { useThemeStore } from '@/store/modules/theme';
-import { useRouteStore } from '@/store/modules/route';
-import HorizontalMenu from '../global-menu/base-menu.vue';
-import GlobalLogo from '../global-logo/index.vue';
-import GlobalBreadcrumb from '../global-breadcrumb/index.vue';
-import { useMixMenuContext } from '../../hooks/use-mix-menu';
-import ThemeButton from './components/theme-button.vue';
-import UserAvatar from './components/user-avatar.vue';
+import { useAppStore } from '@/store/modules/app'
+import { useThemeStore } from '@/store/modules/theme'
+import { useRouteStore } from '@/store/modules/route'
+import HorizontalMenu from '../global-menu/base-menu.vue'
+import GlobalLogo from '../global-logo/index.vue'
+import GlobalBreadcrumb from '../global-breadcrumb/index.vue'
+import { useMixMenuContext } from '../../hooks/use-mix-menu'
+import ThemeButton from './components/theme-button.vue'
+import UserAvatar from './components/user-avatar.vue'
 
 defineOptions({
   name: 'GlobalHeader'
-});
+})
 
 interface Props {
   /** Whether to show the logo */
-  showLogo?: App.Global.HeaderProps['showLogo'];
+  showLogo?: App.Global.HeaderProps['showLogo']
   /** Whether to show the menu toggler */
-  showMenuToggler?: App.Global.HeaderProps['showMenuToggler'];
+  showMenuToggler?: App.Global.HeaderProps['showMenuToggler']
   /** Whether to show the menu */
-  showMenu?: App.Global.HeaderProps['showMenu'];
+  showMenu?: App.Global.HeaderProps['showMenu']
 }
 
-defineProps<Props>();
+defineProps<Props>()
 
-const appStore = useAppStore();
-const themeStore = useThemeStore();
-const routeStore = useRouteStore();
+const appStore = useAppStore()
+const themeStore = useThemeStore()
+const routeStore = useRouteStore()
 // const {isFullscreen, toggle} = useFullscreen();
-const { menus } = useMixMenuContext();
+const { menus } = useMixMenuContext()
 
 const headerMenus = computed(() => {
   if (themeStore.layout.mode === 'horizontal') {
-    return routeStore.menus;
+    return routeStore.menus
   }
 
   if (themeStore.layout.mode === 'horizontal-mix') {
-    return menus.value;
+    return menus.value
   }
 
-  return [];
-});
+  return []
+})
 </script>
 
 <template>

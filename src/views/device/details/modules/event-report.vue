@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import dayjs from 'dayjs';
-import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue';
-import { getEventDataSet } from '@/service/api';
-import { $t } from '@/locales';
+import dayjs from 'dayjs'
+import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue'
+import { getEventDataSet } from '@/service/api'
+import { $t } from '@/locales'
 defineProps<{
-  id: string;
-}>();
+  id: string
+}>()
 
 const columns = [
   { title: $t('device_template.table_header.eventIdentifier'), minWidth: '140px', key: 'identify' },
@@ -18,7 +18,7 @@ const columns = [
   },
   { title: $t('device_template.table_header.eventContent'), minWidth: '140px', key: 'data' },
   { title: $t('generate.errorMessage'), minWidth: '140px', key: 'error_message' }
-];
+]
 </script>
 
 <template>

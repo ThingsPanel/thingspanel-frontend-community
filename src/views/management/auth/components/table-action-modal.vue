@@ -1,77 +1,77 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
-import type { FormInst } from 'naive-ui';
-import { routeSysFlagOptions, routeTypeOptions } from '@/constants/business';
-import { addElement, editElement, fetchElementList } from '@/service/api/route';
-import { deepClone } from '@/utils/common/tool';
-import { createRequiredFormRule } from '@/utils/form/rule';
-import { icons } from '@/plugins/icon/icons';
-import { $t } from '@/locales';
+import { computed, reactive, ref, watch } from 'vue'
+import type { FormInst } from 'naive-ui'
+import { routeSysFlagOptions, routeTypeOptions } from '@/constants/business'
+import { addElement, editElement, fetchElementList } from '@/service/api/route'
+import { deepClone } from '@/utils/common/tool'
+import { createRequiredFormRule } from '@/utils/form/rule'
+import { icons } from '@/plugins/icon/icons'
+import { $t } from '@/locales'
 
 export interface Props {
   /** 弹窗可见性 */
-  visible: boolean;
+  visible: boolean
   /** 弹窗类型 add: 新增 edit: 编辑 */
-  type?: 'add' | 'edit';
+  type?: 'add' | 'edit'
   /** 编辑的表格行数据 */
-  editData?: CustomRoute.Route | null;
-  tableList: CustomRoute.Route[];
+  editData?: CustomRoute.Route | null
+  tableList: CustomRoute.Route[]
 }
 
-export type ModalType = NonNullable<Props['type']>;
+export type ModalType = NonNullable<Props['type']>
 
-defineOptions({ name: 'TableActionModal' });
+defineOptions({ name: 'TableActionModal' })
 
-const common_cancel = $t('common.cancel');
-const common_confirm = $t('common.confirm');
+const common_cancel = $t('common.cancel')
+const common_confirm = $t('common.confirm')
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'add',
   editData: null
-});
+})
 
 interface Emits {
-  (e: 'update:visible', visible: boolean): void;
+  (e: 'update:visible', visible: boolean): void
 
-  (e: 'success'): void;
+  (e: 'success'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 const modalVisible = computed({
   get() {
-    return props.visible;
+    return props.visible
   },
   set(visible) {
-    emit('update:visible', visible);
+    emit('update:visible', visible)
   }
-});
+})
 const closeModal = () => {
-  modalVisible.value = false;
-};
+  modalVisible.value = false
+}
 
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
     add: $t('common.add'),
     edit: $t('common.edit')
-  };
-  return titles[props.type];
-});
+  }
+  return titles[props.type]
+})
 
-const parentOptions = ref<CustomRoute.Route[]>([]);
+const parentOptions = ref<CustomRoute.Route[]>([])
 
 async function getTableData() {
   const { data } = await fetchElementList({
     page: 1,
     page_size: 99
-  });
+  })
   if (data) {
-    const list: Api.Route.MenuRoute[] = data.list;
-    parentOptions.value = list;
+    const list: Api.Route.MenuRoute[] = data.list
+    parentOptions.value = list
   }
 }
 
-getTableData();
+getTableData()
 
 /* eslint-disable logical-assignment-operators */
 // const parentOptions = computed(() => {
@@ -81,7 +81,7 @@ getTableData();
 // });
 
 /* eslint-disable logical-assignment-operators */
-const formRef = ref<HTMLElement & FormInst>();
+const formRef = ref<HTMLElement & FormInst>()
 
 type FormModel = Pick<
   CustomRoute.Route,
@@ -97,15 +97,15 @@ type FormModel = Pick<
   | 'param3'
   | 'orders'
   | 'description'
->;
+>
 
-const formModel = reactive<FormModel>(createDefaultFormModel());
+const formModel = reactive<FormModel>(createDefaultFormModel())
 
 const rules = {
   description: createRequiredFormRule($t('common.pleaseCheckValue')),
   element_code: createRequiredFormRule($t('common.pleaseCheckValue')),
   authority: createRequiredFormRule($t('common.pleaseCheckValue'))
-};
+}
 
 function createDefaultFormModel(): FormModel {
   return {
@@ -121,55 +121,55 @@ function createDefaultFormModel(): FormModel {
     authority: [],
     route_path: '',
     remark: ''
-  };
+  }
 }
 
 function handleUpdateFormModel(model: Partial<FormModel>) {
-  Object.assign(formModel, model);
+  Object.assign(formModel, model)
 }
 
 function handleUpdateFormModelByModalType() {
   const handlers: Record<ModalType, () => void> = {
     add: () => {
-      const defaultFormModel = createDefaultFormModel();
-      handleUpdateFormModel(defaultFormModel);
+      const defaultFormModel = createDefaultFormModel()
+      handleUpdateFormModel(defaultFormModel)
     },
     edit: () => {
       if (props.editData) {
-        handleUpdateFormModel(props.editData);
+        handleUpdateFormModel(props.editData)
       }
     }
-  };
+  }
 
-  handlers[props.type]();
+  handlers[props.type]()
 }
 
 async function handleSubmit() {
-  await formRef.value?.validate();
-  const formData = deepClone(formModel);
-  formData.parent_id = formData.parent_id || '0';
-  formData.authority = JSON.stringify(formData.authority);
-  let data: any;
+  await formRef.value?.validate()
+  const formData = deepClone(formModel)
+  formData.parent_id = formData.parent_id || '0'
+  formData.authority = JSON.stringify(formData.authority)
+  let data: any
   if (props.type === 'add') {
-    data = await addElement(formData);
+    data = await addElement(formData)
   } else if (props.type === 'edit') {
-    data = await editElement(formData);
+    data = await editElement(formData)
   }
   if (!data.error) {
-    window.$message?.success(data.msg);
-    emit('success');
+    window.$message?.success(data.msg)
+    emit('success')
   }
-  closeModal();
+  closeModal()
 }
 
 watch(
   () => props.visible,
   newValue => {
     if (newValue) {
-      handleUpdateFormModelByModalType();
+      handleUpdateFormModelByModalType()
     }
   }
-);
+)
 </script>
 
 <template>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import dayjs from 'dayjs';
-import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue';
-import { commandDataPub, expectMessageAdd, getCommandDataSetLogs } from '@/service/api';
-import { $t } from '@/locales';
+import dayjs from 'dayjs'
+import DistributionAndTable from '@/views/device/details/modules/public/distribution-and-table.vue'
+import { commandDataPub, expectMessageAdd, getCommandDataSetLogs } from '@/service/api'
+import { $t } from '@/locales'
 defineProps<{
-  id: string;
-}>();
+  id: string
+}>()
 
 // 状态
 const formatStatus = (status: string) => {
@@ -14,10 +14,10 @@ const formatStatus = (status: string) => {
     '2': $t('generate.sendingFail'),
     '3': $t('generate.returnSuccess'),
     '4': $t('generate.returnFail')
-  };
+  }
 
-  return statusjson[status] || '';
-};
+  return statusjson[status] || ''
+}
 
 const columns = [
   {
@@ -50,7 +50,7 @@ const columns = [
     minWidth: '140px',
     render: row => row.error_message || '--'
   }
-];
+]
 </script>
 
 <template>

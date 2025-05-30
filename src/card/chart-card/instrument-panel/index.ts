@@ -1,6 +1,6 @@
-import { defineAsyncComponent } from 'vue';
-import type { ICardDefine } from '@/components/panel/card';
-import poster from './poster.png';
+import { defineAsyncComponent } from 'vue'
+import type { ICardDefine } from '@/components/panel/card'
+import poster from './poster.png'
 export default {
   id: 'instrument-panel',
   type: 'chart',
@@ -27,4 +27,4 @@ export default {
       minW: 2
     }
   }
-} as ICardDefine;
+} as ICardDefine

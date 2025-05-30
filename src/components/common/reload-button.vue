@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { $t } from '@/locales';
+import { $t } from '@/locales'
 
 defineOptions({
   name: 'ReloadButton'
-});
+})
 
 interface Props {
-  loading?: boolean;
+  loading?: boolean
 }
 
-defineProps<Props>();
+defineProps<Props>()
 </script>
 
 <template>

@@ -3,9 +3,9 @@ declare namespace CommonType {
   /** The strategic pattern */
   interface StrategicPattern {
     /** The condition */
-    condition: boolean | undefined;
+    condition: boolean | undefined
     /** If the condition is true, then call the action function */
-    callback: () => void;
+    callback: () => void
   }
 
   /**
@@ -14,12 +14,12 @@ declare namespace CommonType {
    * @property value: The option value
    * @property label: The option label
    */
-  type Option<K> = { value: K; label: string };
+  type Option<K> = { value: K; label: string }
 
-  type YesOrNo = 'Y' | 'N';
+  type YesOrNo = 'Y' | 'N'
 
   /** add null to all properties */
   type RecordNullable<T> = {
-    [K in keyof T]?: T[K] | null;
-  };
+    [K in keyof T]?: T[K] | null
+  }
 }
