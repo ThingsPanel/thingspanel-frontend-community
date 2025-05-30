@@ -1,81 +1,150 @@
-// 移除 defineConfig 导入
-// import { defineConfig } from '@soybeanjs/eslint-config';
+// 导入 ESLint 基础配置
+import js from '@eslint/js'
+// 导入 Vue 解析器，用于解析 .vue 文件
+import vueParser from 'vue-eslint-parser'
+// 导入 TypeScript 解析器，用于解析 TypeScript 代码
+import tsParser from '@typescript-eslint/parser'
+// 导入 Vue ESLint 插件，提供 Vue 相关的 lint 规则
+import vuePlugin from 'eslint-plugin-vue'
+// 导入 TypeScript ESLint 插件，提供 TypeScript 相关的 lint 规则
+import tsPlugin from '@typescript-eslint/eslint-plugin'
+// 导入 Prettier ESLint 插件，集成 Prettier 代码格式化
+import prettierPlugin from 'eslint-plugin-prettier/recommended'
 
-console.log('4324324');
-
-// 直接导出配置数组
+/**
+ * ESLint Flat Config 配置
+ *
+ * Flat Config 是 ESLint v9.0.0 开始的默认配置格式
+ * 相比于传统的 .eslintrc 配置，Flat Config 具有以下优势：
+ * 1. 更简洁的配置结构
+ * 2. 原生支持 ES 模块导入
+ * 3. 更好的类型支持
+ * 4. 扁平化的配置数组，每个配置对象都是独立的
+ */
 export default [
-  // 第一个配置对象 (原 defineConfig 的第一个参数，移除了 vue 和 unocss)
+  // 1. 忽略文件配置
+  // 指定 ESLint 应该忽略的文件和目录
   {
-    // vue: true, // 移除
-    // unocss: true, // 移除
-    overrides: [
-      {
-        files: ['./scripts/*.ts'],
-        rules: {
-          'no-unused-expressions': 'off'
-        }
-      },
-      {
-        files: ['*.vue'],
-        rules: {
-          'no-undef': 'off', // use tsc to check the ts code of the vue
-          'vue/no-setup-props-destructure': 'off', // wait to fix this rule
-          '@typescript-eslint/no-use-before-define': 'off', // 允许变量在使用前定义
-          '@typescript-eslint/no-unused-vars': 'warn', // 未使用的变量改为警告
-          'vue/no-undef-properties': 'warn', // 未定义的属性改为警告
-          'vue/multi-word-component-names': 'off', // 允许单字组件名
-          'vue/component-name-in-template-casing': 'off' // 允许任意大小写的组件名
-        }
-      },
-      // 覆盖soybean默认prettier
-      {
-        files: ['*.vue', '*.ts', '*.js'],
-        rules: {
-          'prettier/prettier': [
-            1,
-            {
-              printWidth: 120, // 一行最多 120 字符
-              tabWidth: 2, // 使用 2 个空格缩进
-              useTabs: false, // 不使用缩进符，而使用空格
-              semi: false, // 行尾需要有分号
-              singleQuote: true, // 使用单引号
-              quoteProps: 'as-needed', // 对象的 key 仅在必要时用引号
-              jsxSingleQuote: false, // Jsx 不使用单引号，而使用双引号
-              trailingComma: 'none', // 末尾需要有逗号
-              bracketSpacing: true, // 大括号内的首尾需要空格
-              bracketSameLine: false, // JSX 标签的反尖括号需要换行
-              arrowParens: 'avoid', // 箭头函数，只有一个参数的时候，也需要括号
-              rangeStart: 0, // 每个文件格式化的范围是文件的全部内容
-              rangeEnd: Number.POSITIVE_INFINITY,
-              requirePragma: false, // 不需要写文件开头的 @prettier
-              insertPragma: false, // 不需要自动在文件开头插入 @prettier
-              proseWrap: 'preserve', // 使用默认的折行标准
-              htmlWhitespaceSensitivity: 'ignore', // 根据显示样式决定 html 要不要折行
-              vueIndentScriptAndStyle: false, // Vue 文件中的 script 和 style 内不用缩进
-              endOfLine: 'lf', // 换行符使用 lf
-              embeddedLanguageFormatting: 'auto', // 格式化嵌入的内容
-              singleAttributePerLine: false // Html, vue, jsx 中每个属性占一行
-            }
-          ]
-        }
-      }
+    ignores: [
+      '**/dist/**', // 构建输出目录
+      '**/node_modules/**' // 依赖包目录
     ]
   },
-  // 第二个配置对象 (原 defineConfig 的第二个参数)
+
+  // 2. JavaScript 基础推荐配置
+  // 应用 ESLint 官方推荐的 JavaScript 规则
+  js.configs.recommended,
+
+  // 3. Vue 文件配置
+  // 专门针对 .vue 文件的 lint 配置
+  {
+    files: ['**/*.vue'], // 匹配所有 .vue 文件
+    languageOptions: {
+      parser: vueParser, // 使用 Vue 解析器解析 .vue 文件
+      parserOptions: {
+        parser: tsParser, // 在 <script> 标签中使用 TypeScript 解析器
+        ecmaVersion: 2021, // 支持 ES2021 语法
+        sourceType: 'module' // 使用 ES 模块
+      }
+    },
+    plugins: {
+      vue: vuePlugin // 注册 Vue 插件
+    },
+    rules: {
+      // 应用 Vue 3 推荐规则
+      ...vuePlugin.configs['vue3-recommended'].rules,
+      // 关闭 props 解构检查（Vue 3 Composition API 中常用）
+      'vue/no-setup-props-destructure': 'off',
+      // 警告未定义的属性使用
+      'vue/no-undef-properties': 'warn',
+      // 关闭组件名必须多单词的限制
+      'vue/multi-word-component-names': 'off',
+      // 关闭模板中组件名大小写检查
+      'vue/component-name-in-template-casing': 'off'
+    }
+  },
+
+  // 4. TypeScript 文件配置
+  // 专门针对 .ts 文件的 lint 配置
+  {
+    files: ['**/*.ts'], // 匹配所有 .ts 文件
+    languageOptions: {
+      parser: tsParser // 使用 TypeScript 解析器
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin // 注册 TypeScript 插件
+    },
+    rules: {
+      // 应用 TypeScript 推荐规则
+      ...tsPlugin.configs.recommended.rules,
+      // 关闭变量使用前定义检查
+      '@typescript-eslint/no-use-before-define': 'off',
+      // 未使用变量改为警告而非错误
+      '@typescript-eslint/no-unused-vars': 'warn'
+    }
+  },
+
+  // 5. Prettier 集成配置
+  // 集成 Prettier 代码格式化工具
+  prettierPlugin,
+
+  // 6. 全局自定义规则配置
+  // 应用于所有文件的通用规则设置
   {
     rules: {
+      // 关闭数组回调返回值检查
       'array-callback-return': 'off',
-      'import/order': 'off', // 关闭导入顺序检查
+      // 关闭导入顺序检查
+      'import/order': 'off',
+      // 关闭 Vue 属性简写偏好检查
       'vue/prefer-true-attribute-shorthand': 'off',
+      // 允许使用 console
       'no-console': 'off',
-      'vue/multi-word-component-names': 'off',
-      'vue/component-name-in-template-casing': 'off'
+      // 关闭未定义变量检查（由 TypeScript 处理）
+      'no-undef': 'off',
+      // Prettier 格式化规则配置
+      'prettier/prettier': [
+        'error',
+        {
+          printWidth: 120, // 每行最大字符数
+          tabWidth: 2, // 缩进空格数
+          useTabs: false, // 使用空格而非制表符
+          semi: false, // 不使用分号
+          singleQuote: true, // 使用单引号
+          quoteProps: 'as-needed', // 仅在需要时给对象属性加引号
+          jsxSingleQuote: false, // JSX 中使用双引号
+          trailingComma: 'none', // 不使用尾随逗号
+          bracketSpacing: true, // 对象字面量中括号前后加空格
+          bracketSameLine: false, // 多行元素的 > 放在新行
+          arrowParens: 'avoid', // 箭头函数单参数时不加括号
+          proseWrap: 'preserve', // 保持原有的换行
+          htmlWhitespaceSensitivity: 'ignore', // 忽略 HTML 空白敏感性
+          vueIndentScriptAndStyle: false, // Vue 文件中不缩进 <script> 和 <style>
+          endOfLine: 'lf', // 使用 LF 换行符
+          embeddedLanguageFormatting: 'auto', // 自动格式化嵌入的代码
+          singleAttributePerLine: false // 不强制单行单属性
+        }
+      ]
     },
+    // 模块解析设置
     settings: {
-      'import/core-modules': ['uno.css', '~icons/*', 'virtual:svg-icons-register']
+      // 指定核心模块，避免导入检查报错
+      'import/core-modules': [
+        'uno.css', // UnoCSS 样式
+        '~icons/*', // 图标模块
+        'virtual:svg-icons-register' // SVG 图标注册
+      ]
+    }
+  },
+
+  // 7. 脚本文件特殊配置
+  // 在 Flat Config 中，overrides 被替换为独立的配置对象
+  // 这个配置专门针对 scripts 目录下的 TypeScript 文件
+  {
+    files: ['./scripts/*.ts'], // 匹配 scripts 目录下的 .ts 文件
+    rules: {
+      // 允许未使用的表达式（脚本文件中常见）
+      'no-unused-expressions': 'off'
     }
   }
-];
-
-console.log('4324324');
+]

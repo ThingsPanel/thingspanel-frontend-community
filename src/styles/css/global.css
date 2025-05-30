@@ -11,3 +11,21 @@ body,
 html {
   overflow-x: hidden;
 }
+/* 移除自动填充样式 - Chrome/Safari/Edge */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: #495057 !important;
+  transition: background-color 5000s ease-in-out 0s; /* 防止背景色闪烁 */
+}
+
+/* 移除自动填充样式 - Firefox */
+input:-moz-autofill,
+input:-moz-autofill:hover,
+input:-moz-autofill:focus,
+input:-moz-autofill:active {
+  box-shadow: 0 0 0 1000px white inset !important;
+  text-fill-color: #495057 !important;
+}

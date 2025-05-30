@@ -1,44 +1,44 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
-import { NAutoComplete } from 'naive-ui';
-import { useI18n } from 'vue-i18n';
-import { $t } from '@/locales';
-import { loginModuleRecord } from '@/constants/app';
-import { useRouterPush } from '@/hooks/common/router';
-import { useNaiveForm } from '@/hooks/common/form';
-import { useAuthStore } from '@/store/modules/auth';
-import { getFunction } from '@/service/api/setting';
-import { createLogger } from '@/utils/logger';
+import { computed, onMounted, reactive, ref } from 'vue'
+import { NAutoComplete } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
+import { $t } from '@/locales'
+import { loginModuleRecord } from '@/constants/app'
+import { useRouterPush } from '@/hooks/common/router'
+import { useNaiveForm } from '@/hooks/common/form'
+import { useAuthStore } from '@/store/modules/auth'
+import { getFunction } from '@/service/api/setting'
+// import { createLogger } from '@/utils/logger'
 
-const logger = createLogger('PwdLogin');
+// const logger = createLogger('PwdLogin')
 
 defineOptions({
   name: 'PwdLogin'
-});
+})
 
-const { locale } = useI18n();
-const isRememberPath = ref(true);
-const rememberMe = ref(false);
-const authStore = useAuthStore();
-const { toggleLoginModule } = useRouterPush();
-const { formRef, validate } = useNaiveForm();
-const showYzm = ref(false);
-const showZc = ref(false);
+const { locale } = useI18n()
+const isRememberPath = ref(true)
+const rememberMe = ref(false)
+const authStore = useAuthStore()
+const { toggleLoginModule } = useRouterPush()
+const { formRef, validate } = useNaiveForm()
+const showYzm = ref(false)
+const showZc = ref(false)
 
 interface FormModel {
-  userName: string;
-  password: string;
+  userName: string
+  password: string
 }
 
 const model: FormModel = reactive({
   userName: '',
   password: ''
-});
+})
 
 const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
   // 定义邮箱和手机号的正则表达式
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^1[3-9]\d{9}$/; // 中国大陆手机号基本格式
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const phoneRegex = /^1[3-9]\d{9}$/ // 中国大陆手机号基本格式
 
   return {
     userName: [
@@ -51,9 +51,9 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
         validator: (_rule, value) => {
           // 仅在有值时校验格式
           if (value && !emailRegex.test(value) && !phoneRegex.test(value)) {
-            return Promise.reject(new Error($t('form.userName.invalidFormat'))); // 使用格式错误提示
+            return Promise.reject(new Error($t('form.userName.invalidFormat'))) // 使用格式错误提示
           }
-          return Promise.resolve(); // 值为空或格式正确时通过
+          return Promise.resolve() // 值为空或格式正确时通过
         },
         message: () => $t('form.userName.invalidFormat'), // 格式错误时的提示
         trigger: ['input', 'blur'] // input 时也校验格式，但不提示 required
@@ -66,35 +66,35 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
         trigger: ['input', 'blur']
       }
     ]
-  };
-});
+  }
+})
 
 // 常用邮箱后缀列表
-const commonDomains = ['qq.com', '163.com', 'gmail.com', 'outlook.com', 'sina.com', 'hotmail.com', 'yahoo.com'];
+const commonDomains = ['qq.com', '163.com', 'gmail.com', 'outlook.com', 'sina.com', 'hotmail.com', 'yahoo.com']
 
 // 计算邮箱自动补全选项
 const emailOptions = computed(() => {
-  const userName = model.userName;
+  const userName = model.userName
   if (!userName || !userName.includes('@')) {
-    return []; // 如果没有输入或不包含 @，则不提示
+    return [] // 如果没有输入或不包含 @，则不提示
   }
 
-  const parts = userName.split('@');
-  const username = parts[0];
-  const domainInput = parts[1] || ''; // @ 后面的部分
+  const parts = userName.split('@')
+  const username = parts[0]
+  const domainInput = parts[1] || '' // @ 后面的部分
 
   if (username === '') {
-    return []; // 如果 @ 前面为空，则不提示
+    return [] // 如果 @ 前面为空，则不提示
   }
 
   // 过滤常用域名，基于用户在 @ 后输入的内容
   const filteredDomains = commonDomains.filter(
     domain => domain.startsWith(domainInput) && domain !== domainInput // 只有当域名部分匹配且不等于完整域名时才提示
-  );
+  )
 
   // 生成完整的邮箱建议
-  return filteredDomains.map(domain => `${username}@${domain}`);
-});
+  return filteredDomains.map(domain => `${username}@${domain}`)
+})
 
 // const rememberPath = e => {
 //   logger.info(e);
@@ -105,82 +105,97 @@ const emailOptions = computed(() => {
 async function handleSubmit() {
   // 先判断密码长度
   if (model.password.length < 6) {
-    return; // 仍然阻止提交
+    return // 仍然阻止提交
   }
 
-  await validate();
-  await authStore.login(model.userName.trim(), model.password);
+  await validate()
+  await authStore.login(model.userName.trim(), model.password)
 
   if (rememberMe.value) {
-    localStorage.setItem('rememberMe', 'true');
-    localStorage.setItem('rememberedUserName', model.userName.trim());
-    localStorage.setItem('rememberedPassword', window.btoa(model.password));
+    localStorage.setItem('rememberMe', 'true')
+    localStorage.setItem('rememberedUserName', model.userName.trim())
+    localStorage.setItem('rememberedPassword', window.btoa(model.password))
   } else {
-    localStorage.removeItem('rememberMe');
-    localStorage.removeItem('rememberedUserName');
-    localStorage.removeItem('rememberedPassword');
+    localStorage.removeItem('rememberMe')
+    localStorage.removeItem('rememberedUserName')
+    localStorage.removeItem('rememberedPassword')
   }
 }
 
 async function getFunctionOption() {
-  const { data } = await getFunction();
+  const { data } = await getFunction()
   if (data) {
-    localStorage.setItem('enableZcAndYzm', JSON.stringify(data));
-    showZc.value = data.find(v => v.name === 'enable_reg')?.enable_flag === 'enable';
+    localStorage.setItem('enableZcAndYzm', JSON.stringify(data))
+    showZc.value = data.find(v => v.name === 'enable_reg')?.enable_flag === 'enable'
 
-    showYzm.value = data.find(v => v.name === 'use_captcha')?.enable_flag === 'enable';
+    showYzm.value = data.find(v => v.name === 'use_captcha')?.enable_flag === 'enable'
   }
 }
 
 function loadSavedCredentials() {
-  const savedRememberMe = localStorage.getItem('rememberMe');
+  const savedRememberMe = localStorage.getItem('rememberMe')
   if (savedRememberMe === 'true') {
-    rememberMe.value = true;
-    const savedUserName = localStorage.getItem('rememberedUserName');
-    const savedPassword = localStorage.getItem('rememberedPassword');
+    rememberMe.value = true
+    const savedUserName = localStorage.getItem('rememberedUserName')
+    const savedPassword = localStorage.getItem('rememberedPassword')
 
     if (savedUserName) {
-      model.userName = savedUserName;
+      model.userName = savedUserName
     }
 
     if (savedPassword) {
-      model.password = window.atob(savedPassword);
+      model.password = window.atob(savedPassword)
     }
   }
 }
 
 onMounted(() => {
-  const is_remember_rath = localStorage.getItem('isRememberPath');
+  const is_remember_rath = localStorage.getItem('isRememberPath')
   if (is_remember_rath === '0' || is_remember_rath === '1') {
-    isRememberPath.value = is_remember_rath === '1';
+    isRememberPath.value = is_remember_rath === '1'
   }
-  getFunctionOption();
-  loadSavedCredentials();
-});
+  getFunctionOption()
+  loadSavedCredentials()
+})
 </script>
 
 <template>
   <NForm ref="formRef" :key="locale" :model="model" :rules="rules" size="large" :show-label="false">
     <NFormItem path="userName">
       <NAutoComplete
-      
         v-model:value="model.userName"
         :options="emailOptions"
         :placeholder="$t('page.login.common.userNamePlaceholder')"
         clearable
         @keydown.enter="handleSubmit"
-      />
+      >
+        <template #prefix>
+          <svg class="w-18px h-18px ml--1" fill="#888" viewBox="0 0 24 24">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"
+            ></path>
+          </svg>
+        </template>
+      </NAutoComplete>
     </NFormItem>
     <NFormItem path="password">
       <NInput
-     
         v-model:value="model.password"
+        class="h-40px"
         type="password"
         show-password-on="click"
         :placeholder="$t('page.login.common.passwordPlaceholder')"
-      />
+      >
+        <template #prefix>
+          <svg class="w-18px h-18px ml--1" fill="#888" viewBox="0 0 24 24">
+            <path
+              d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"
+            ></path>
+          </svg>
+        </template>
+      </NInput>
     </NFormItem>
-    <NSpace vertical :size="24">
+    <NSpace vertical :size="18">
       <div class="flex-y-center justify-between">
         <NCheckbox v-model:checked="rememberMe">{{ $t('page.login.pwdLogin.rememberMe') }}</NCheckbox>
         <!--         <NButton quaternary @click="toggleLoginModule('reset-pwd')">-->
@@ -188,22 +203,37 @@ onMounted(() => {
           {{ $t('page.login.pwdLogin.forgetPassword') }}
         </NButton>
       </div>
-      <NButton type="primary" size="large" round block :loading="authStore.loginLoading" @click="handleSubmit">
-        {{ $t('common.confirm') }}
+      <NButton
+        style="border-radius: 8px"
+        type="primary"
+        size="large"
+        block
+        :loading="authStore.loginLoading"
+        @click="handleSubmit"
+      >
+        {{ $t('route.login') }}
       </NButton>
       <!-- <NCheckbox :checked="isRememberPath" @update:checked="rememberPath">
         {{ $t('page.login.common.rememberPath') }}
       </NCheckbox> -->
-      <n-divider title-placement="center" style="padding: 0px;margin: 0px;">
+      <n-divider title-placement="center" style="padding: 0px; margin: 0px">
         {{ $t('generate.or') }}
       </n-divider>
       <div class="flex-y-center justify-between gap-12px mt--4">
         <NButton v-if="showYzm" class="flex-1" block @click="toggleLoginModule('code-login')">
           {{ $t(loginModuleRecord['code-login']) }}
         </NButton>
-      
-        <NButton v-if="showZc" class="flex-1" block  type="primary" quaternary @click="toggleLoginModule('register-email')">
-          <span class="text-#999"> 还没有账号?</span> {{ $t(loginModuleRecord.register) }}
+
+        <NButton
+          v-if="showZc"
+          class="flex-1"
+          block
+          type="primary"
+          quaternary
+          @click="toggleLoginModule('register-email')"
+        >
+          <span class="text-#999">还没有账号?</span>
+          {{ $t(loginModuleRecord.register) }}
         </NButton>
       </div>
     </NSpace>
