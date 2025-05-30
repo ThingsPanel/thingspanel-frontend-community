@@ -9,6 +9,7 @@ interface Props {
   subtitle?: string
   /** 状态点是否激活，undefined时不显示状态点 */
   statusActive?: boolean
+  isStatus?:boolean
   /** 状态点类型，影响激活时的颜色 */
   statusType?: 'success' | 'warning' | 'error' | 'info' | 'default'
   /** 底部右侧显示的文本，可以是时间戳或其他文本 */
@@ -28,7 +29,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   statusType: 'default',
   bordered: true,
-  hoverable: true
+  hoverable: true,
+  isStatus:true,
 })
 
 // 定义组件事件
@@ -147,7 +149,8 @@ const handleTopRightIconClick = (e: Event) => {
               </NEllipsis>
 
               <!-- 状态点，紧跟标题显示 -->
-              <div v-if="statusActive !== undefined" class="status-dot" :style="{ backgroundColor: statusColor }" />
+
+              <div v-if="isStatus" class="status-dot" :style="{ backgroundColor: statusColor }" />
             </div>
           </div>
 

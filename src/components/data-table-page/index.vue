@@ -7,6 +7,7 @@ import { useLoading } from '@sa/hooks';
 import { $t } from '@/locales';
 import { formatDateTime } from '@/utils/common/datetime';
 import { createLogger } from '@/utils/logger';
+import { getDemoServerUrl } from '@/utils/common/tool';
 import AdvancedListLayout from '@/components/list-page/index.vue';
 import TencentMap from './modules/tencent-map.vue';
 import DevCardItem from '@/components/dev-card-item/index.vue';
@@ -111,6 +112,10 @@ const searchCriteria: any = ref(Object.fromEntries(searchConfigs.map(item => [it
 
 // 添加当前视图状态管理
 const currentViewType = ref('list'); // 默认为列表视图
+
+// 添加图片URL相关变量
+const demoUrl = getDemoServerUrl();
+const url = ref(demoUrl);
 
 // 获取数据的函数，结合搜索条件、分页等
 const getData = async () => {
@@ -415,6 +420,14 @@ const getDeviceIconUrl = (deviceType: string, deviceConfigName?: string): string
   return deviceTypeIconUrls[deviceType] || deviceTypeIconUrls.default;
 };
 
+// 获取配置图片URL的函数
+const getConfigImageUrl = (imagePath: string): string => {
+  logger.info('imagePath:', imagePath)
+  if (!imagePath) return defaultDeviceIconUrl
+  const relativePath = imagePath.replace(/^\.?\//, '')
+  return `${url.value.replace('api/v1', '') + relativePath}`
+};
+
 // 导入图标组件（修复图标显示问题）
 import { ListOutline, MapOutline, GridOutline as CardIcon } from '@vicons/ionicons5';
 
@@ -529,29 +542,29 @@ const handleWarningClick = (item: DeviceItem) => {
           <n-gi   v-for="item in dataList"
           :key="item.id"  >
           <DevCardItem
-            :title="item.name || 'N/A'" 
+            :title="item.name || 'N/A'"
             :status-active="item.is_online === 1"
             :subtitle="item.device_config_name || '--'"
             :footer-text="(item.ts ? formatDateTime(item.ts) : null) ?? '--'"
             :warn-status="item.warn_status"
             :device-id="item.id"
-            :device-config-id="item.device_config_id"
+
             @click-top-right-icon="handleWarningClick(item)"
           >
             <template #subtitle-icon>
-              <img 
-                :src="getDeviceIconUrl(item.device_type, item.device_config_name)" 
-                alt="device type icon" 
-                class="image-icon" 
+              <img
+                :src="getDeviceIconUrl(item.device_type, item.device_config_name)"
+                alt="device type icon"
+                class="image-icon"
               />
             </template>
-            
+
             <!-- 右上角铃铛图标插槽 -->
             <template #top-right-icon>
-              <svg 
-                width="20" 
-                height="20" 
-                viewBox="0 0 24 24" 
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
                 :fill="item.warn_status === 'Y' ? '#ff4d4f' : '#d9d9d9'"
                 class="bell-icon"
               >
@@ -559,13 +572,14 @@ const handleWarningClick = (item: DeviceItem) => {
                 <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
               </svg>
             </template>
-            
             <template #footer-icon>
-              <img 
-                :src="defaultDeviceIconUrl" 
-                alt="device type icon" 
-                class="image-icon" 
-              />
+              <div class="footer-icon-container">
+                <img
+                  :src="getConfigImageUrl(item.image_url)"
+                  alt="config image"
+                  class="config-image"
+                />
+              </div>
             </template>
           </DevCardItem>
         </n-gi>
@@ -590,13 +604,13 @@ const handleWarningClick = (item: DeviceItem) => {
 
     <!-- 地图视图 -->
     <template #map-view>
-     
+
       <n-spin :show="loading">
         <div class="h-495px">
           <TencentMap :devices="dataList" />
         </div>
       </n-spin>
- 
+
     </template>
 
     <!-- 底部分页 -->
@@ -636,5 +650,25 @@ const handleWarningClick = (item: DeviceItem) => {
 
 .bell-icon {
   transition: fill 0.3s ease;
+}
+
+// 底部图标容器 - 固定40x40正方形
+.footer-icon-container {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.config-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 </style>

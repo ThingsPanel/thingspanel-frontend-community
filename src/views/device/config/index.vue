@@ -152,6 +152,10 @@ onMounted(() => {
 import { ListOutline, GridOutline as CardIcon } from '@vicons/ionicons5'
 // eslint-disable-next-line no-unused-vars
 import defaultConfig from './modules/svg/default-config.svg?url'
+import { getDemoServerUrl } from '@/utils/common/tool'
+
+const demoUrl = getDemoServerUrl()
+const url: any = ref(demoUrl)
 
 // 导入设备类型图标
 import directDeviceIconUrl from '@/components/data-table-page/modules/svg/direct.svg?url'
@@ -170,6 +174,13 @@ const deviceTypeIconUrls = {
 // 获取设备图标URL的函数
 const getDeviceIconUrl = (deviceType: string): string => {
   return deviceTypeIconUrls[deviceType] || deviceTypeIconUrls.default
+}
+
+// 获取配置图片URL的函数
+const getConfigImageUrl = (imagePath: string): string => {
+  if (!imagePath) return defaultConfig
+  const relativePath = imagePath.replace(/^\.?\//, '')
+  return `${url.value.replace('api/v1', '') + relativePath}`
 }
 
 const availableViews = [
@@ -227,11 +238,18 @@ const availableViews = [
             :footer-text="`${item.device_count} ${$t('generate.individual')} ${$t('generate.device')}`"
             :subtitle="deviceTypeMap[item.device_type as keyof typeof deviceTypeMap]"
             :device-config-id="item.id"
-            :status-active="false"
+            :isStatus="false"
             @click-card="goToDetail(item.id)"
           >
             <template #subtitle-icon>
               <img :src="getDeviceIconUrl(item.device_type)" alt="device type icon" class="image-icon" />
+            </template>
+
+            <!-- 底部图标 - 左下角显示配置图片 -->
+            <template #footer-icon>
+              <div class="footer-icon-container">
+                <img :src="getConfigImageUrl(item.image_url)" alt="config image" class="config-image" />
+              </div>
             </template>
 
             <!-- 卡片内容区域可以显示更多信息 -->
@@ -318,6 +336,26 @@ const availableViews = [
   height: 20px;
   object-fit: contain;
   vertical-align: middle;
+}
+
+// 底部图标容器 - 固定40x40正方形
+.footer-icon-container {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.config-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 // 响应式设计
