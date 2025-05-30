@@ -44,7 +44,10 @@ export default [
       parserOptions: {
         parser: tsParser, // 在 <script> 标签中使用 TypeScript 解析器
         ecmaVersion: 2021, // 支持 ES2021 语法
-        sourceType: 'module' // 使用 ES 模块
+        sourceType: 'module', // 使用 ES 模块
+        ecmaFeatures: {
+          jsx: true // 支持 JSX 语法
+        }
       }
     },
     plugins: {
