@@ -205,14 +205,15 @@ const handleTopRightIconClick = (e: Event) => {
               </svg>
             </slot>
           </div>
-          <slot name="footer" />
+        
         </div>
-
+        <div class="footer-right"> <slot name="footer" /> </div>
         <!-- 底部右侧：文本内容（可以是时间戳或其他文本） -->
         <div v-if="footerText" class="footer-right">
           <NEllipsis class="footer-text" :tooltip="false">
             {{ footerText }}
           </NEllipsis>
+   
         </div>
       </div>
     </div>

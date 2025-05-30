@@ -43,37 +43,28 @@ const clickDevice = async row => {
 <template>
   <div>
     <n-card>
-      <NGrid x-gap="20" y-gap="20" cols="1 s:2 m:3 l:4" responsive="screen">
-        <NGridItem v-for="item in deviceTemplateList" :key="item.id">
+      <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
+        <n-gi v-for="item in deviceTemplateList" :key="item.id">
           <DevCardItem
              :isStatus="false"
             :title="item.name"
             :subtitle="item.description || '暂无描述'"
-            :footer-text="item.version || 'v1.0.0'"
+            :footer-text="item.version || '--'"
             @click-card="clickDevice(item)"
           >
             <!-- 左下角默认图标 -->
             <template #footer-icon>
               <div class="service-icon-container">
-                <svg width="20" height="20" viewBox="0 0 100 100" fill="none">
-                  <!-- Wi-Fi 信号 -->
-                  <path d="M30 25 Q50 10, 70 25" stroke="#666" stroke-width="2" fill="none"></path>
-                  <path d="M35 30 Q50 18, 65 30" stroke="#666" stroke-width="2" fill="none"></path>
-                  <circle cx="50" cy="35" r="2" fill="#666"></circle>
-
-                  <!-- 设备主体：带前面板 -->
-                  <rect x="25" y="45" width="50" height="35" rx="6" fill="#999"></rect>
-
-                  <!-- 前面板指示灯或端口 -->
-                  <circle cx="40" cy="62" r="3" fill="#fff"></circle>
-                  <circle cx="50" cy="62" r="3" fill="#fff"></circle>
-                  <circle cx="60" cy="62" r="3" fill="#fff"></circle>
+                <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
+                  <rect x="15" y="20" width="70" height="50" rx="3" fill="none" stroke="#333" stroke-width="3"></rect>
+              <line x1="25" y1="80" x2="75" y2="80" stroke="#333" stroke-width="3" stroke-linecap="round"></line>
+             
                 </svg>
               </div>
             </template>
           </DevCardItem>
-        </NGridItem>
-      </NGrid>
+        </n-gi>
+      </n-grid>
       <div class="pagination-box">
         <NPagination
           v-model:page="pagination.page"

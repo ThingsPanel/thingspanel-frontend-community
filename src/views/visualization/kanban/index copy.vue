@@ -2,7 +2,6 @@
 import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 // import {useRouter} from 'vue-router';
 import { NButton, NCard, NForm, NFormItem, NGrid, NGridItem, NInput, NModal, useMessage, NPopconfirm, NTooltip, NFlex, NPagination, NSelect } from 'naive-ui'
-import DevCardItem from '@/components/dev-card-item/index.vue'
 import type { LastLevelRouteKey } from '@elegant-router/types' // 假设您已经定义好了这些API
 import { DelBoard, PostBoard, PutBoard, getBoardList } from '@/service/api/index'
 import { useRouterPush } from '@/hooks/common/router'
@@ -115,60 +114,61 @@ onMounted(fetchBoards)
         </div>
       </div>
       <!-- 看板列表 -->
-      <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
-        <n-gi
+      <NGrid x-gap="24" y-gap="16" cols="1 s:2 m:3 l:4" responsive="screen">
+        <NGridItem
           v-for="board in boards"
           :key="board.id"
+          @click="goRouter('visualization_kanban-details', board.id as string)"
         >
-          <DevCardItem
-            :isStatus="false"
-            :title="board.name"
-            :subtitle="board.description || ''"
-            @click-card="goRouter('visualization_kanban-details', board.id as string)"
+          <NCard
+            hoverable
+            style="height: 160px"
+            content-style="display: flex; flex-direction: column; height: 100%; gap: 8px;"
           >
-            <template #top-right-icon>
+            <div class="flex justify-between">
+              <div class="text-16px font-600">
+                {{ board.name }}
+              </div>
               <div
                 v-if="board.home_flag === 'Y'"
-                class="h-24px w-24px border border-red-4 rounded-50 text-center text-12px text-red font-600 leading-24px"
+                class="mr--4 mt--2 h-24px w-24px border border-red-4 rounded-50 text-center text-12px text-red font-600"
               >
                 {{ $t('generate.first') }}
               </div>
-            </template>
-
-            <template #footer-icon>
-              
-              <div class="service-icon-container">
-                <svg width="32" height="32" viewBox="0 0 100 100" fill="none">
-                  <rect x="15" y="20" width="70" height="50" rx="3" fill="none" stroke="#333" stroke-width="3"></rect>
-              <line x1="25" y1="80" x2="75" y2="80" stroke="#333" stroke-width="3" stroke-linecap="round"></line>
-             
-                </svg>
-              </div>
-            </template>
-          
-
-            <template #footer>
-              <div class="flex gap-2">
-                <NButton strong circle secondary @click.stop="editBoard(board)">
-                  <template #icon>
-                    <icon-material-symbols:contract-edit-outline class="text-24px text-blue" />
-                  </template>
-                </NButton>
-                <NPopconfirm @positive-click="deleteBoard(board.id as string)">
-                  <template #trigger>
-                    <NButton strong secondary circle @click.stop>
-                      <template #icon>
-                        <icon-material-symbols:delete-outline class="text-24px text-red" />
-                      </template>
-                    </NButton>
-                  </template>
-                  {{ $t('common.confirmDelete') }}
-                </NPopconfirm>
-              </div>
-            </template>
-          </DevCardItem>
-        </n-gi>
-      </n-grid>
+            </div>
+            <!-- 使用NTooltip组件 -->
+            <NTooltip
+              trigger="hover"
+              :disabled="!board.description || !board.description.trim()"
+              placement="top-start"
+              :style="{ maxWidth: '200px' }"
+            >
+              <template #trigger>
+                <div class="description">{{ board.description }}</div>
+              </template>
+              {{ board.description }}
+            </NTooltip>
+            <div class="flex justify-end">
+              <NButton strong circle secondary @click.stop="editBoard(board)">
+                <template #icon>
+                  <icon-material-symbols:contract-edit-outline class="text-24px text-blue" />
+                </template>
+              </NButton>
+              <!-- 使用 Vue 模板语法的 NPopconfirm -->
+              <NPopconfirm @positive-click="deleteBoard(board.id as string)">
+                <template #trigger>
+                  <NButton strong secondary circle @click.stop>
+                    <template #icon>
+                      <icon-material-symbols:delete-outline class="text-24px text-red" />
+                    </template>
+                  </NButton>
+                </template>
+                {{ $t('common.confirmDelete') }}
+              </NPopconfirm>
+            </div>
+          </NCard>
+        </NGridItem>
+      </NGrid>
       <!-- 看板列表后面添加分页器 -->
       <div class="mt-4 h-60px w-full">
         <NFlex justify="end">
