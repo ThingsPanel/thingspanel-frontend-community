@@ -1,25 +1,28 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue';
-import { NButton, useDialog, useMessage } from 'naive-ui';
-import { useRoute } from 'vue-router';
-import ClipboardJS from 'clipboard';
-import { useTabStore } from '@/store/modules/tab';
-import { useRouterPush } from '@/hooks/common/router';
-import { deviceConfigDel, deviceConfigEdit } from '@/service/api/device';
-import { $t } from '@/locales';
+import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
+import { NButton, useDialog, useMessage } from 'naive-ui'
+import { useRoute } from 'vue-router'
+import ClipboardJS from 'clipboard'
+import { useTabStore } from '@/store/modules/tab'
+import { useRouterPush } from '@/hooks/common/router'
+import { deviceConfigDel, deviceConfigEdit } from '@/service/api/device'
+import { $t } from '@/locales'
+import type { UploadFileInfo } from 'naive-ui'
+import { localStg } from '@/utils/storage'
+import { getDemoServerUrl } from '@/utils/common/tool'
 
 interface Props {
-  configInfo?: object | any;
+  configInfo?: object | any
 }
-const emit = defineEmits(['change']);
+const emit = defineEmits(['change'])
 const props = withDefaults(defineProps<Props>(), {
   configInfo: null
-});
-const dialog = useDialog();
-const message = useMessage();
-const route = useRoute();
-const tabStore = useTabStore();
-const { routerPush } = useRouterPush();
+})
+const dialog = useDialog()
+const message = useMessage()
+const route = useRoute()
+const tabStore = useTabStore()
+const { routerPush } = useRouterPush()
 const deleteConfig = () => {
   dialog.warning({
     title: $t('common.tip'),
@@ -27,97 +30,131 @@ const deleteConfig = () => {
     positiveText: $t('device_template.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: async () => {
-      const res: any = await deviceConfigDel({ id: props.configInfo.id });
+      const res: any = await deviceConfigDel({ id: props.configInfo.id })
 
       if (!res || !res.error) {
-        message.success($t('custom.grouping_details.operationSuccess'));
-        await tabStore.removeTab(route.path);
-        await routerPush({ path: '/device/config' });
+        message.success($t('custom.grouping_details.operationSuccess'))
+        await tabStore.removeTab(route.path)
+        await routerPush({ path: '/device/config' })
       }
     }
-  });
-};
-const showModal = ref(false);
-const modalIndex = ref(1);
-console.log(props.configInfo);
-const auto_register = ref(props.configInfo?.auto_register===1 || false);
+  })
+}
+const showModal = ref(false)
+const modalIndex = ref(1)
+console.log(props.configInfo)
+const auto_register = ref(props.configInfo?.auto_register === 1 || false)
 const onlinejson = reactive({
   online_timeout: 0,
   heartbeat: 0
-});
-const onDialogVisble = () => {
-  showModal.value = !showModal.value;
-};
-const onOpenDialogModal = (val: number) => {
-  modalIndex.value = val;
-  onDialogVisble();
-  if (modalIndex.value !== 1) {
-    const { online_timeout, heartbeat }: any = JSON.parse(props.configInfo?.other_config || {});
-    onlinejson.online_timeout = online_timeout || 0;
-    onlinejson.heartbeat = heartbeat || 0;
+})
+
+// 图片上传相关
+const demoUrl = getDemoServerUrl()
+const url: any = ref(demoUrl)
+const imagePath: any = ref('')
+// eslint-disable-next-line no-unused-vars
+const customRequest = ({ file, event }: { file: UploadFileInfo; event?: ProgressEvent }) => {
+  if (!event || !event.target) return
+
+  const xhr = event.target as XMLHttpRequest
+  const response = JSON.parse(xhr.response)
+
+  // 保存图片路径
+  const relativePath = response.data.path.replace(/^\.\//, '')
+  imagePath.value = `${url.value.replace('api/v1', '') + relativePath}`
+
+  // 直接保存图片路径到服务器
+  saveImagePath(relativePath)
+}
+
+// 保存图片路径到服务器
+const saveImagePath = async (relativePath: string) => {
+  const { error }: any = await deviceConfigEdit({
+    id: props.configInfo.id,
+    image_url: relativePath
+  })
+
+  if (!error) {
+    message.success($t('custom.grouping_details.operationSuccess'))
+    emit('change')
   }
-};
+}
+
+const onDialogVisble = () => {
+  showModal.value = !showModal.value
+}
+const onOpenDialogModal = (val: number) => {
+  modalIndex.value = val
+  onDialogVisble()
+  if (modalIndex.value !== 1) {
+    const { online_timeout, heartbeat }: any = JSON.parse(props.configInfo?.other_config || {})
+    onlinejson.online_timeout = online_timeout || 0
+    onlinejson.heartbeat = heartbeat || 0
+  }
+}
 const copyOneTypeOneSecretDevicePassword = () => {
-  const textToCopy = props.configInfo?.template_secret || '';
-  console.log('要复制的内容 (clipboard.js - refined):', textToCopy);
+  const textToCopy = props.configInfo?.template_secret || ''
+  console.log('要复制的内容 (clipboard.js - refined):', textToCopy)
 
   if (!textToCopy) {
-    message.error($t('common.noContentToCopy'));
-    return;
+    message.error($t('common.noContentToCopy'))
+    return
   }
 
   // 1. 创建一个 textarea 作为临时元素
-  const textarea = document.createElement('textarea');
-  textarea.value = textToCopy;
+  const textarea = document.createElement('textarea')
+  textarea.value = textToCopy
   // 设置样式使其不可见且不影响布局
-  textarea.style.position = 'fixed';
-  textarea.style.top = '-9999px';
-  textarea.style.left = '-9999px';
+  textarea.style.position = 'fixed'
+  textarea.style.top = '-9999px'
+  textarea.style.left = '-9999px'
   // 确保元素是可编辑的（尽管readonly也可以，但默认状态通常更好）
-  // textarea.setAttribute('readonly', ''); 
-  document.body.appendChild(textarea);
+  // textarea.setAttribute('readonly', '');
+  document.body.appendChild(textarea)
 
   // 2. 使用 clipboard.js 实例，但目标是这个 textarea
   // 我们这里不直接将 clipboard 绑定到 textarea，而是利用其API来触发复制
   // clipboard.js 通常需要一个触发元素，我们仍然用一个假的按钮
-  const triggerElement = document.createElement('button');
-  document.body.appendChild(triggerElement); // 必须在DOM中才能绑定
+  const triggerElement = document.createElement('button')
+  document.body.appendChild(triggerElement) // 必须在DOM中才能绑定
 
   const clipboard = new ClipboardJS(triggerElement, {
     target: () => textarea, // 明确指定从 textarea 复制
     // text: () => textToCopy, // 如果用 target, text 选项会被忽略
     container: document.body
-  });
+  })
 
-  let success = false;
+  // eslint-disable-next-line no-unused-vars
+  let success = false
 
-  clipboard.on('success', (e) => {
-    success = true;
-    console.log('Clipboard.js success event. Copied text:', e.text);
-    message.success($t('custom.grouping_details.operationSuccess'));
-    e.clearSelection();
-    cleanup();
-  });
+  clipboard.on('success', e => {
+    success = true
+    console.log('Clipboard.js success event. Copied text:', e.text)
+    message.success($t('custom.grouping_details.operationSuccess'))
+    e.clearSelection()
+    cleanup()
+  })
 
-  clipboard.on('error', (e) => {
-    console.error('Clipboard.js error event:', e);
-    message.error($t('common.copyFailed'));
-    cleanup();
-  });
+  clipboard.on('error', e => {
+    console.error('Clipboard.js error event:', e)
+    message.error($t('common.copyFailed'))
+    cleanup()
+  })
 
   const cleanup = () => {
-    clipboard.destroy();
-    document.body.removeChild(textarea);
-    document.body.removeChild(triggerElement);
-  };
+    clipboard.destroy()
+    document.body.removeChild(textarea)
+    document.body.removeChild(triggerElement)
+  }
 
   // 3. 显式选择 textarea 中的文本
-  textarea.select();
-  textarea.setSelectionRange(0, textToCopy.length); // 兼容移动设备
-  textarea.focus(); // 尝试给予焦点
+  textarea.select()
+  textarea.setSelectionRange(0, textToCopy.length) // 兼容移动设备
+  textarea.focus() // 尝试给予焦点
 
   // 4. 触发复制
-  triggerElement.click();
+  triggerElement.click()
 
   // 5. 为防止某些情况下事件未立即触发或清理过早，可以加一个小的延时
   //    但这通常不应该是首选，如果 clipboard.js 工作正常，其事件应能处理。
@@ -127,9 +164,9 @@ const copyOneTypeOneSecretDevicePassword = () => {
   //     cleanup();
   //   }
   // }, 100); // 100ms 应该足够
-};
+}
 const onSubmit = async () => {
-  onDialogVisble();
+  onDialogVisble()
   if (modalIndex.value !== 1) {
     const { error }: any = await deviceConfigEdit({
       id: props.configInfo.id,
@@ -137,25 +174,27 @@ const onSubmit = async () => {
         online_timeout: onlinejson.online_timeout,
         heartbeat: onlinejson.heartbeat
       })
-    });
-    !error && emit('change');
+    })
+    !error && emit('change')
   } else {
     const { error }: any = await deviceConfigEdit({
       id: props.configInfo.id,
       auto_register: auto_register.value ? 1 : 0
-    });
-    message.success($t('custom.grouping_details.operationSuccess'));
+    })
+    message.success($t('custom.grouping_details.operationSuccess'))
     !error && emit('change')
   }
-};
+}
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
 onMounted(() => {
-  console.log(props.configInfo.auto_register,'auto_register');
-  auto_register.value = props.configInfo?.auto_register===1 || false;
-});
+  console.log(props.configInfo.auto_register, 'auto_register')
+  auto_register.value = props.configInfo?.auto_register === 1 || false
+  // 初始化图片路径
+  imagePath.value = props.configInfo?.image_url ? `${url.value.replace('api/v1', '') + props.configInfo.image_url}` : ''
+})
 </script>
 
 <template>
@@ -168,6 +207,31 @@ onMounted(() => {
     <div class="">
       <div class="m-b-10px">{{ $t('generate.onlineDeviceConfig') }}</div>
       <NButton class="" type="primary" @click="onOpenDialogModal(2)">{{ $t('generate.configuration') }}</NButton>
+    </div>
+    <div class="">
+      <div class="m-b-10px">{{ $t('generate.deviceConfigImage') }}</div>
+
+      <n-upload
+        :action="url + '/file/up'"
+        :headers="{ 'x-token': localStg.get('token') || '' }"
+        :data="{ type: 'image' }"
+        class="upload"
+        :show-file-list="false"
+        accept="image/png, image/jpeg, image/jpg, image/gif"
+        @finish="customRequest"
+      >
+        <n-upload-dragger class="upload-dragger">
+          <div class="upload-content">
+            <img v-if="imagePath && imagePath !== ''" :src="imagePath" class="slt" />
+            <template v-else>
+              <n-icon size="35" :depth="3">
+                <SvgIcon local-icon="picture" class="more" />
+              </n-icon>
+              <p class="upload-text">{{ $t('generate.deviceConfigImage') }}</p>
+            </template>
+          </div>
+        </n-upload-dragger>
+      </n-upload>
     </div>
     <div>
       <div class="m-b-10px color-error-500">{{ $t('generate.delete-device-configuration') }}</div>
@@ -218,4 +282,42 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style lang="scss" scoped>
+.upload {
+  width: 200px;
+  height: 150px;
+  position: relative;
+
+  .upload-dragger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 150px;
+    cursor: pointer;
+  }
+
+  .upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-text {
+    margin-top: 8px;
+    font-size: 14px;
+  }
+
+  .slt {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+  }
+}
+</style>

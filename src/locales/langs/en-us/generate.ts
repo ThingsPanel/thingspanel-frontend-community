@@ -277,6 +277,7 @@ export default {
   dynamic: 'Dynamic',
   'role-description': 'Role Description',
   'device-configuration-name': 'Device Configuration Name',
+  deviceConfigImage: 'Device Configuration Image',
   'repeat-new-password': 'Repeat New Password',
   recipient: 'Recipient',
   'confirm-delete-dashboard': 'Confirm delete dashboard?',
@@ -328,9 +329,9 @@ export default {
   'device-location': 'Device Location',
   'super-admin': 'Super Admin',
   tenant: 'Tenant',
-  'SYS_ADMIN':'Super Admin',
-  'TENANT_ADMIN':'Tenant Admin',
-  'TENANT_USER':'Tenant User',
+  SYS_ADMIN: 'Super Admin',
+  TENANT_ADMIN: 'Tenant Admin',
+  TENANT_USER: 'Tenant User',
   'account-type': 'Account Type',
   'vue3-doc-url': 'Vue3 Doc URL',
   'select-theme': 'Select Theme',
@@ -464,9 +465,12 @@ export default {
   baseInfo: 'Base Info',
   secureSet: 'Secure Set',
   deviceTypeHelp: {
-    direct: '● Applicability: Any device that can directly report telemetry data to the platform.\n● Features: Sends data directly to the platform without an intermediary layer.\n○ Includes all devices capable of independent communication (WiFi, 4G, Ethernet, etc.).\n○ Note: Some devices named "Gateway" that only report data directly without managing sub-devices should actually be treated as directly connected devices.',
-    gateway: '● Applicability: Devices that genuinely act as intermediaries to manage and connect other devices.\n● Features: Must have the capability to manage sub-devices.\n○ Platform Requirement: The gateway must be added to the platform before adding its sub-devices.\n○ Configuration: May require additional parameters for sub-device communication. Gateway parameters and sub-device communication parameters need configuration.',
-    subDevice: '● Applicability: Devices unable to communicate directly and must connect to the platform via a gateway.\n● Features: Lacks independent communication capabilities.\n○ Dependency: Relies on the gateway device for data transmission.\n○ Configuration: Requires configuration of sub-device address or other identifiers. The device template is primarily used for data parsing configuration, not communication functions.'
+    direct:
+      '● Applicability: Any device that can directly report telemetry data to the platform.\n● Features: Sends data directly to the platform without an intermediary layer.\n○ Includes all devices capable of independent communication (WiFi, 4G, Ethernet, etc.).\n○ Note: Some devices named "Gateway" that only report data directly without managing sub-devices should actually be treated as directly connected devices.',
+    gateway:
+      '● Applicability: Devices that genuinely act as intermediaries to manage and connect other devices.\n● Features: Must have the capability to manage sub-devices.\n○ Platform Requirement: The gateway must be added to the platform before adding its sub-devices.\n○ Configuration: May require additional parameters for sub-device communication. Gateway parameters and sub-device communication parameters need configuration.',
+    subDevice:
+      '● Applicability: Devices unable to communicate directly and must connect to the platform via a gateway.\n● Features: Lacks independent communication capabilities.\n○ Dependency: Relies on the gateway device for data transmission.\n○ Configuration: Requires configuration of sub-device address or other identifiers. The device template is primarily used for data parsing configuration, not communication functions.'
   },
   labels: 'Labels'
-};
+}

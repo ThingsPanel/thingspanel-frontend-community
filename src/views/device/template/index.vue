@@ -1,113 +1,114 @@
 <script setup lang="ts">
-import { reactive, ref, computed, h, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { 
-  NButton, 
-  NInput, 
-  NIcon, 
-  NPagination, 
-  NDataTable, 
-  NTag, 
-  NSpace, 
+import { reactive, ref, computed, h, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import {
+  NButton,
+  NInput,
+  NIcon,
+  NPagination,
+  NDataTable,
+  NTag,
+  NSpace,
   NEmpty,
   NGrid,
   NGi,
   NPopconfirm
-} from 'naive-ui';
-import { IosSearch } from '@vicons/ionicons4';
-import { ListOutline, GridOutline } from '@vicons/ionicons5';
-import { deleteDeviceTemplate, deviceTemplate } from '@/service/api/device-template-model';
-import { $t } from '@/locales';
-import AdvancedListLayout from '@/components/list-page/index.vue';
-import ItemCard from '@/components/dev-card-item/index.vue';
-import TemplateModal from './components/template-modal.vue';
-import { useBoolean, useLoading } from '~/packages/hooks/src';
-import defaultTemplate from './components/svg/default-template.svg?url';
-import { getDemoServerUrl } from '@/utils/common/tool';
+} from 'naive-ui'
+import { IosSearch } from '@vicons/ionicons4'
+import { ListOutline, GridOutline } from '@vicons/ionicons5'
+import { deleteDeviceTemplate, deviceTemplate } from '@/service/api/device-template-model'
+import { $t } from '@/locales'
+import AdvancedListLayout from '@/components/list-page/index.vue'
+import ItemCard from '@/components/dev-card-item/index.vue'
+import TemplateModal from './components/template-modal.vue'
+import { useBoolean, useLoading } from '~/packages/hooks/src'
+import defaultTemplate from './components/svg/default-template.svg?url'
+import { getDemoServerUrl } from '@/utils/common/tool'
 
-const route = useRoute();
-const { startLoading, endLoading, loading } = useLoading(false);
-const { bool: visible, setTrue: openModal, setFalse: closeModal } = useBoolean();
-const demoUrl = getDemoServerUrl();
-const url: any = ref(demoUrl);
+const route = useRoute()
+const { startLoading, endLoading, loading } = useLoading(false)
+// eslint-disable-next-line no-unused-vars
+const { bool: visible, setTrue: openModal, setFalse: closeModal } = useBoolean()
+const demoUrl = getDemoServerUrl()
+const url: any = ref(demoUrl)
 
 // 查询参数
 const queryParams = reactive({
   page: 1,
   page_size: 10,
   name: ''
-});
+})
 
 const getPath = (path: string) => {
-  if (!path) return '';
-  const relativePath = path.replace(/^\.\//, '');
-  return  `${url.value.replace('api/v1', '') + relativePath}`;
-};
+  if (!path) return ''
+  const relativePath = path.replace(/^\.\//, '')
+  return `${url.value.replace('api/v1', '') + relativePath}`
+}
 
 // 数据
-const deviceTemplateList = ref([] as any[]);
-const dataTotal = ref(0);
-const modalType = ref<'add' | 'edit'>('add');
-const templateId = ref<string>('');
+const deviceTemplateList = ref([] as any[])
+const dataTotal = ref(0)
+const modalType = ref<'add' | 'edit'>('add')
+const templateId = ref<string>('')
 
 // 获取数据
 const getData = async () => {
-  startLoading();
+  startLoading()
   try {
-    const res = await deviceTemplate({ page: queryParams.page, ...queryParams });
+    const res = await deviceTemplate({ page: queryParams.page, ...queryParams })
     if (!res.error) {
-      deviceTemplateList.value = res.data.list;
-      dataTotal.value = res.data.total;
+      deviceTemplateList.value = res.data.list
+      dataTotal.value = res.data.total
     }
   } catch (error) {
-    console.error('Failed to fetch device template data:', error);
-    window.$message?.error($t('common.fetchDataFailed'));
+    console.error('Failed to fetch device template data:', error)
+    window.$message?.error($t('common.fetchDataFailed'))
   } finally {
-    endLoading();
+    endLoading()
   }
-};
+}
 
 // 搜索处理
 const handleQuery = async () => {
-  queryParams.page = 1;
-  await getData();
-};
+  queryParams.page = 1
+  await getData()
+}
 
 // 重置搜索
 const handleReset = async () => {
-  queryParams.page = 1;
-  queryParams.name = '';
-  await getData();
-};
+  queryParams.page = 1
+  queryParams.name = ''
+  await getData()
+}
 
 // 新建模板
 const handleAddNew = () => {
-  modalType.value = 'add';
-  templateId.value = '';
-  openModal();
-};
+  modalType.value = 'add'
+  templateId.value = ''
+  openModal()
+}
 
 // 编辑模板
 const handleEdit = (id: string) => {
-  console.log('id', id);
-  modalType.value = 'edit';
-  templateId.value = id;
-  openModal();
-};
+  console.log('id', id)
+  modalType.value = 'edit'
+  templateId.value = id
+  openModal()
+}
 
 // 删除模板
 const handleRemove = async (id: string) => {
   try {
-    const { error } = await deleteDeviceTemplate(id);
+    const { error } = await deleteDeviceTemplate(id)
     if (!error) {
-      window.$message?.success($t('common.templateDeleted'));
-      await getData();
+      window.$message?.success($t('common.templateDeleted'))
+      await getData()
     }
   } catch (error) {
-    console.error('Failed to delete template:', error);
-    window.$message?.error($t('common.deleteFailed'));
+    console.error('Failed to delete template:', error)
+    window.$message?.error($t('common.deleteFailed'))
   }
-};
+}
 
 // 表格列定义
 const columns = computed(() => [
@@ -132,15 +133,23 @@ const columns = computed(() => [
     key: 'label',
     width: 200,
     render: (row: any) => {
-      if (!row.label) return '--';
-      const tags = row.label.split(',').filter(Boolean);
-      return h(NSpace, { size: 'small', wrap: true }, {
-        default: () => tags.slice(0, 2).map((tag: string) => 
-          h(NTag, { size: 'small', key: tag }, { default: () => tag.trim() })
-        ).concat(
-          tags.length > 2 ? [h(NTag, { size: 'small', type: 'info' }, { default: () => `+${tags.length - 2}` })] : []
-        )
-      });
+      if (!row.label) return '--'
+      const tags = row.label.split(',').filter(Boolean)
+      return h(
+        NSpace,
+        { size: 'small', wrap: true },
+        {
+          default: () =>
+            tags
+              .slice(0, 2)
+              .map((tag: string) => h(NTag, { size: 'small', key: tag }, { default: () => tag.trim() }))
+              .concat(
+                tags.length > 2
+                  ? [h(NTag, { size: 'small', type: 'info' }, { default: () => `+${tags.length - 2}` })]
+                  : []
+              )
+        }
+      )
     }
   },
   {
@@ -149,7 +158,7 @@ const columns = computed(() => [
     width: 160,
     sorter: true,
     render: (row: any) => {
-      return row.created_at ? new Date(row.created_at).toLocaleDateString() : '--';
+      return row.created_at ? new Date(row.created_at).toLocaleDateString() : '--'
     }
   },
   {
@@ -157,80 +166,100 @@ const columns = computed(() => [
     key: 'actions',
     width: 150,
     render: (row: any) => {
-      return h(NSpace, { size: 'small' }, {
-        default: () => [
-          h(NButton, {
-            size: 'small',
-            type: 'primary',
-            onClick: () => handleEdit(row.id)
-          }, { default: () => $t('common.edit') }),
-          h(NPopconfirm, {
-            onPositiveClick: () => handleRemove(row.id)
-          }, {
-            default: () => $t('common.confirmDelete'),
-            trigger: () => h(NButton, {
-              size: 'small',
-              type: 'error'
-            }, { default: () => $t('common.delete') })
-          })
-        ]
-      });
+      return h(
+        NSpace,
+        { size: 'small' },
+        {
+          default: () => [
+            h(
+              NButton,
+              {
+                size: 'small',
+                type: 'primary',
+                onClick: () => handleEdit(row.id)
+              },
+              { default: () => $t('common.edit') }
+            ),
+            h(
+              NPopconfirm,
+              {
+                onPositiveClick: () => handleRemove(row.id)
+              },
+              {
+                default: () => $t('common.confirmDelete'),
+                trigger: () =>
+                  h(
+                    NButton,
+                    {
+                      size: 'small',
+                      type: 'error'
+                    },
+                    { default: () => $t('common.delete') }
+                  )
+              }
+            )
+          ]
+        }
+      )
     }
   }
-]);
+])
 
 // 分页处理
 const handlePageChange = (page: number) => {
-  queryParams.page = page;
-  getData();
-};
+  queryParams.page = page
+  getData()
+}
 
 // 分页大小处理
 const handlePageSizeChange = (pageSize: number) => {
-  queryParams.page_size = pageSize;
-  queryParams.page = 1;
-  getData();
-};
+  queryParams.page_size = pageSize
+  queryParams.page = 1
+  getData()
+}
 
 // 刷新数据
 const handleRefresh = () => {
-  getData();
-};
+  getData()
+}
 
 // 可用视图配置
 const availableViews = [
   { key: 'card', icon: GridOutline, label: 'views.card' },
   { key: 'list', icon: ListOutline, label: 'views.list' }
-];
+]
 
 // 处理标签数组
 const getTagArray = (labelStr: string) => {
-  if (!labelStr) return [];
-  return labelStr.split(',').filter(Boolean).map(tag => tag.trim());
-};
+  if (!labelStr) return []
+  return labelStr
+    .split(',')
+    .filter(Boolean)
+    .map(tag => tag.trim())
+}
 
 // 获取显示的标签（最多显示3个）
 const getDisplayTags = (labelStr: string) => {
-  const tags = getTagArray(labelStr);
+  const tags = getTagArray(labelStr)
   return {
     displayTags: tags.slice(0, 3),
     hasMore: tags.length > 3,
     moreCount: tags.length - 3
-  };
-};
+  }
+}
 
 // 组件挂载时获取数据
 onMounted(() => {
-  getData();
-  
+  getData()
+
   // 处理URL参数中的编辑请求
-  const idParam = route.query?.id;
+  const idParam = route.query?.id
   if (typeof idParam === 'string' && idParam) {
     setTimeout(() => {
-      handleEdit(idParam);
-    }, 0);
+      handleEdit(idParam)
+    }, 0)
   }
-});
+})
 </script>
 
 <template>
@@ -245,9 +274,7 @@ onMounted(() => {
     <!-- 左侧操作按钮 -->
     <template #header-left>
       <div class="flex gap-2">
-        <NButton type="primary" @click="handleAddNew">
-          + {{ $t('generate.add-device-function-template') }}
-        </NButton>
+        <NButton type="primary" @click="handleAddNew">+ {{ $t('generate.add-device-function-template') }}</NButton>
       </div>
     </template>
 
@@ -259,9 +286,9 @@ onMounted(() => {
           :placeholder="$t('generate.enter-template-name')"
           type="text"
           clearable
+          style="width: 240px"
           @clear="handleReset"
           @keydown.enter="handleQuery"
-          style="width: 240px;"
         >
           <template #prefix>
             <NIcon>
@@ -278,24 +305,16 @@ onMounted(() => {
     <!-- 卡片视图 -->
     <template #card-view>
       <div v-if="deviceTemplateList.length === 0 && !loading" class="empty-state">
-        <NEmpty
-          size="huge"
-          :description="$t('common.nodata')"
-        />
+        <NEmpty size="huge" :description="$t('common.nodata')" />
       </div>
       <div v-else>
-        <NGrid 
-          cols="1 s:2 m:3 l:4 xl:5 2xl:6" 
-          x-gap="20" 
-          y-gap="20" 
-          responsive="screen"
-        >
+        <NGrid cols="1 s:2 m:3 l:4 xl:5 2xl:6" x-gap="20" y-gap="20" responsive="screen">
           <NGi v-for="item in deviceTemplateList" :key="item.id">
             <ItemCard
               :title="item.name"
-              :subtitle="item.description || '--' "
+              :subtitle="item.description || '--'"
               :status-active="false"
-              style="height: 200px;"
+              style="height: 200px"
               @click="handleEdit(item.id)"
             >
               <!-- 底部内容 - 标签靠右显示 -->
@@ -312,29 +331,20 @@ onMounted(() => {
                         >
                           {{ tag }}
                         </NTag>
-                        <NTag
-                          v-if="getDisplayTags(item.label).hasMore"
-                          size="small"
-                          type="info"
-                          class="more-tag"
-                        >
+                        <NTag v-if="getDisplayTags(item.label).hasMore" size="small" type="info" class="more-tag">
                           +{{ getDisplayTags(item.label).moreCount }}
                         </NTag>
                       </template>
                       <span v-else class="no-tags">--</span>
                     </div>
-log                  </div>
+                  </div>
                 </div>
               </template>
 
               <!-- 底部图标 - 固定40x40正方形 -->
               <template #footer-icon>
                 <div class="footer-icon-container">
-                  <img 
-                    :src="getPath(item.path) || defaultTemplate"
-                    alt="device type icon" 
-                    class="template-image" 
-                  />
+                  <img :src="getPath(item.path) || defaultTemplate" alt="device type icon" class="template-image" />
                 </div>
               </template>
             </ItemCard>
@@ -373,12 +383,7 @@ log                  </div>
   </AdvancedListLayout>
 
   <!-- 模板弹窗 -->
-  <TemplateModal 
-    v-model:visible="visible" 
-    :type="modalType" 
-    :template-id="templateId" 
-    :get-table-data="getData" 
-  />
+  <TemplateModal v-model:visible="visible" :type="modalType" :template-id="templateId" :get-table-data="getData" />
 </template>
 
 <style scoped lang="scss">
@@ -476,7 +481,7 @@ log                  </div>
 // 优化卡片在不同屏幕下的显示
 :deep(.n-card) {
   transition: all 0.3s ease;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
@@ -489,7 +494,7 @@ log                  </div>
   .more-tag {
     font-size: 11px;
   }
-  
+
   .no-tags {
     font-size: 12px;
   }
