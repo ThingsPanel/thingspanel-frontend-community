@@ -11,6 +11,7 @@ import AdvancedListLayout from '@/components/list-page/index.vue'
 import { GridOutline as CardIcon } from '@vicons/ionicons5'
 
 const { routerPushByKey } = useRouterPush()
+const loading = ref<boolean>(false)
 const message = useMessage()
 const nameSearch = ref('')
 const currentPage = ref(1)
@@ -43,11 +44,13 @@ const setupData = v => {
 }
 // 获取看板列表
 const fetchBoards = async () => {
+  loading.value = true
   const { data } = await getBoardList({ page: currentPage.value, page_size: pageSize.value, name: nameSearch.value })
   if (data && data.list) {
     setupData(data.list as Panel.Board[])
     total.value = data.total
   }
+  loading.value = false
 }
 
 // 提交表单
@@ -127,6 +130,7 @@ onMounted(fetchBoards)
 
     <!-- 卡片视图 -->
     <template #card-view>
+      <n-spin :show="loading">
       <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
         <n-gi
           v-for="board in boards"
@@ -182,6 +186,7 @@ onMounted(fetchBoards)
           </DevCardItem>
         </n-gi>
       </n-grid>
+    </n-spin>
     </template>
 
     <!-- 底部分页 -->

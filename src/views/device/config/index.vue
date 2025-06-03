@@ -228,6 +228,7 @@ const availableViews = [
 
     <!-- 卡片视图 -->
     <template #card-view>
+      <n-spin :show="loading">
       <div v-if="deviceConfigList.length === 0 && !loading" class="empty-state">
         <NEmpty size="huge" :description="$t('common.nodata')" class="min-h-60" />
       </div>
@@ -256,6 +257,7 @@ const availableViews = [
           </ItemCard>
         </n-gi>
       </n-grid>
+    </n-spin>
     </template>
 
     <!-- 表格视图 -->

@@ -304,6 +304,7 @@ onMounted(() => {
 
     <!-- 卡片视图 -->
     <template #card-view>
+      <n-spin :show="loading">
       <div v-if="deviceTemplateList.length === 0 && !loading" class="empty-state">
         <NEmpty size="huge" :description="$t('common.nodata')" />
       </div>
@@ -350,6 +351,7 @@ onMounted(() => {
           </NGi>
         </NGrid>
       </div>
+    </n-spin>
     </template>
 
     <!-- 列表视图 -->

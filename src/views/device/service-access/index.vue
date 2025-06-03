@@ -6,7 +6,7 @@ import { getServiceList } from '@/service/api/device'
 import DevCardItem from '@/components/dev-card-item/index.vue'
 import AdvancedListLayout from '@/components/list-page/index.vue'
 import { GridOutline as CardIcon } from '@vicons/ionicons5'
-
+const loading = ref(false)
 const router = useRouter()
 const pagination: PaginationProps = reactive({
   page: 1,
@@ -20,6 +20,7 @@ const queryParams = reactive({
 const deviceTemplateList = ref([] as any[])
 
 const getData = async () => {
+  loading.value = true
   const res = await getServiceList({
     page: pagination.page as number,
     ...queryParams
@@ -29,6 +30,7 @@ const getData = async () => {
     // eslint-disable-next-line require-atomic-updates
     pagination.pageCount = Math.ceil(res.data.total / 12)
   }
+  loading.value = false
 }
 
 getData()
@@ -56,6 +58,7 @@ const handleRefresh = () => {
 
       <!-- 卡片视图 -->
       <template #card-view>
+        <n-spin :show="loading">
         <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
           <n-gi v-for="item in deviceTemplateList" :key="item.id">
             <DevCardItem
@@ -77,6 +80,7 @@ const handleRefresh = () => {
             </DevCardItem>
           </n-gi>
         </n-grid>
+      </n-spin>
       </template>
 
       <!-- 底部分页 -->
