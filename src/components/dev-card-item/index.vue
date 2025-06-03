@@ -29,7 +29,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   statusType: 'default',
   bordered: true,
-  hoverable: true,
+  hoverable: false,
   isStatus:true,
 })
 
@@ -229,7 +229,6 @@ const handleTopRightIconClick = (e: Event) => {
   cursor: pointer;
   position: relative;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
 }
 

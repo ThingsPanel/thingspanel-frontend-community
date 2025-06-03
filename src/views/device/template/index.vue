@@ -479,14 +479,7 @@ onMounted(() => {
 }
 
 // 优化卡片在不同屏幕下的显示
-:deep(.n-card) {
-  transition: all 0.3s ease;
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
-  }
-}
 
 // 响应式优化
 @media (max-width: 640px) {
