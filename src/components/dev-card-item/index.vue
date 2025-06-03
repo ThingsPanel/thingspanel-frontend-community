@@ -205,7 +205,7 @@ const handleTopRightIconClick = (e: Event) => {
               </svg>
             </slot>
           </div>
-        
+
         </div>
         <div class="footer-right"> <slot name="footer" /> </div>
         <!-- 底部右侧：文本内容（可以是时间戳或其他文本） -->
@@ -213,7 +213,7 @@ const handleTopRightIconClick = (e: Event) => {
           <NEllipsis class="footer-text" :tooltip="false">
             {{ footerText }}
           </NEllipsis>
-   
+
         </div>
       </div>
     </div>
@@ -225,20 +225,17 @@ const handleTopRightIconClick = (e: Event) => {
   width: 100%;
   height: 180px;
   border-radius: 12px;
+  border: 1px solid #e1e5e9;
   cursor: pointer;
   position: relative;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
 }
 
 /* 悬停效果 - 调整为与用户提供的HTML示例一致 (无特定transform, box-shadow, border-color变化) */
 .item-card:hover {
-  /* transform: translateY(4px) translateX(4px); */ /* Removed for consistency */
-  /* box-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.12),
-    0 4px 10px rgba(0, 0, 0, 0.08); */ /* Removed for consistency */
-  /* border-color: rgba(24, 144, 255, 0.3); */ /* Removed for consistency */
-  /* 如果需要特定的悬停效果，应在此处明确定义 */
+  border-color: #646CFF;
 }
 
 /* 点击时的动画 - kept subtle, can be removed if not desired */

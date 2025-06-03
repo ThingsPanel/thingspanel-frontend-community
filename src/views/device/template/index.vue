@@ -314,7 +314,6 @@ onMounted(() => {
                :isStatus="false"
               :title="item.name"
               :subtitle="item.description || '--'"
-              style="height: 200px"
               @click="handleEdit(item.id)"
             >
               <!-- 底部内容 - 标签靠右显示 -->
@@ -439,8 +438,7 @@ onMounted(() => {
   justify-content: center;
   overflow: hidden;
   border-radius: 6px;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
+
 }
 
 .template-image {

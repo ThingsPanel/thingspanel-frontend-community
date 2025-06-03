@@ -3,7 +3,7 @@ import { onBeforeMount, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { DrawerPlacement, StepsProps } from 'naive-ui'
-import { NSpace, NTag } from 'naive-ui'
+import { NSpace, NTag,NButton } from 'naive-ui'
 import _ from 'lodash'
 import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
 import { localStg } from '@/utils/storage'
@@ -114,9 +114,11 @@ const columns_to_show: Ref<any> = ref([
     minWidth: '180px',
     label: () => $t('custom.devicePage.deviceName'),
     render: (row: any) => {
-      return <span>{row.name}</span>
+      return <NButton type="primary" text onClick={() => goDeviceDetails(row)}>{row.name}</NButton>
     }
   },
+  
+ 
   {
     key: 'is_online',
     minWidth: '100px',
@@ -131,7 +133,7 @@ const columns_to_show: Ref<any> = ref([
       }
       return (
         <NSpace>
-          <NTag type="warning">{$t('custom.devicePage.offline')}</NTag>
+          <NTag type="default"  style="color: #999;">{$t('custom.devicePage.offline')}</NTag>
         </NSpace>
       )
     }
@@ -157,6 +159,21 @@ const columns_to_show: Ref<any> = ref([
           </NTag>
         </NSpace>
       )
+    }
+  },
+  {
+    key: 'device_type',
+    minWidth: '100px',
+    label: () => $t('generate.device-type'),
+    render: row => {
+      if (row?.device_type === '1') {
+        return $t('custom.devicePage.directConnectedDevices')
+      } else if (row?.device_type === '2') {
+        return $t('custom.devicePage.gateway')
+      } else if (row?.device_type === '3') {
+        return $t('custom.devicePage.gatewaySubEquipment')
+      }
+      return '-'
     }
   },
   {

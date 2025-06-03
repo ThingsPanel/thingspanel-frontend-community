@@ -32,6 +32,7 @@ interface DeviceItem {
   device_status: number;
   warn_status: string; // 例如 'N' 表示正常, 'Y' 表示告警
   device_type: string;
+  image_url?: string;
   // 根据实际情况可以添加更多字段
   title?: string; // DevCardItem 可能用到的备用字段
   description?: string; // DevCardItem 可能用到的备用字段
@@ -177,49 +178,49 @@ const generatedColumns = computed(() => {
       };
     });
     // 添加操作列
-    columns.push({
-      title: $t('custom.groupPage.actions'),
-      key: 'actions',
-      width: 180,
-      render: row => (
-        <div
-          onClick={e => {
-            e.stopPropagation();
-          }}
-        >
-          <NSpace>
-            {tableActions.map(action => {
-              if (action.theKey === $t('custom.devicePage.delete') || action.theKey === '删除') {
-                return (
-                  <NPopconfirm
-                    onPositiveClick={async e => {
-                      e.stopPropagation();
-                      await action.callback(row);
-                      // 删除后只刷新数据，不重置搜索条件
-                      getData();
-                    }}
-                  >
-                    {{
-                      trigger: () => (
-                        <NButton type="error" size="small">
-                          {typeof action.label === 'function' ? action.label() : action.label || ''}
-                        </NButton>
-                      ),
-                      default: () => $t('common.confirmDelete')
-                    }}
-                  </NPopconfirm>
-                );
-              }
-              return (
-                <NButton type="primary" size="small" onClick={() => action.callback(row)}>
-                  {typeof action.label === 'function' ? action.label() : action.label || ''}
-                </NButton>
-              );
-            })}
-          </NSpace>
-        </div>
-      )
-    });
+    // columns.push({
+    //   title: $t('custom.groupPage.actions'),
+    //   key: 'actions',
+    //   width: 180,
+    //   render: row => (
+    //     <div
+    //       onClick={e => {
+    //         e.stopPropagation();
+    //       }}
+    //     >
+    //       <NSpace>
+    //         {tableActions.map(action => {
+    //           if (action.theKey === $t('custom.devicePage.delete') || action.theKey === '删除') {
+    //             return (
+    //               <NPopconfirm
+    //                 onPositiveClick={async e => {
+    //                   e.stopPropagation();
+    //                   await action.callback(row);
+    //                   // 删除后只刷新数据，不重置搜索条件
+    //                   getData();
+    //                 }}
+    //               >
+    //                 {{
+    //                   trigger: () => (
+    //                     <NButton type="error" size="small">
+    //                       {typeof action.label === 'function' ? action.label() : action.label || ''}
+    //                     </NButton>
+    //                   ),
+    //                   default: () => $t('common.confirmDelete')
+    //                 }}
+    //               </NPopconfirm>
+    //             );
+    //           }
+    //           return (
+    //             <NButton type="primary" size="small" onClick={() => action.callback(row)}>
+    //               {typeof action.label === 'function' ? action.label() : action.label || ''}
+    //             </NButton>
+    //           );
+    //         })}
+    //       </NSpace>
+    //     </div>
+    //   )
+    // });
   }
 
   return columns || [];
@@ -421,7 +422,7 @@ const getDeviceIconUrl = (deviceType: string, deviceConfigName?: string): string
 };
 
 // 获取配置图片URL的函数
-const getConfigImageUrl = (imagePath: string): string => {
+const getConfigImageUrl = (imagePath: string | undefined): string => {
   logger.info('imagePath:', imagePath)
   if (!imagePath) return defaultDeviceIconUrl
   const relativePath = imagePath.replace(/^\.?\//, '')
@@ -523,6 +524,16 @@ const handleWarningClick = (item: DeviceItem) => {
               @update:value="value => handleTreeSelectUpdate(value, config.key)"
             />
           </template>
+        </n-gi>
+        <n-gi>
+          <n-space>
+            <n-button type="primary" :size="formSize" @click="handleSearch">
+              {{ $t('generate.query') }}
+            </n-button>
+            <n-button type="default" :size="formSize" @click="handleReset">
+              {{ $t('generate.reset') }}
+            </n-button>
+          </n-space>
         </n-gi>
       </n-grid>
     </template>
