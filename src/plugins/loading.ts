@@ -20,19 +20,19 @@ export function setupLoading() {
   ]
 
   const logoWithClass = logoLoading
-    ? `<img src="${logoLoading}" style="max-width: 20%; height: auto">`
+    ? `<img src="${logoLoading}" style="max-width: 88px; height: auto">`
     : systemLogo.replace('<svg', `<svg class="size-128px text-primary"`)
 
   const dot = loadingClasses
     .map(item => {
-      return `<div class="absolute w-16px h-16px bg-primary rounded-8px animate-pulse ${item}"></div>`
+      return `<div class="absolute w-10px h-10px bg-primary rounded-8px animate-pulse ${item}"></div>`
     })
     .join('\n')
 
   const loading = `
 <div class="fixed-center flex-col" style="${primaryColor}">
   ${logoWithClass}
-  <div class="w-56px h-56px my-36px">
+  <div class="w-32px h-32px my-36px">
     <div class="relative h-full animate-spin">
       ${dot}
     </div>

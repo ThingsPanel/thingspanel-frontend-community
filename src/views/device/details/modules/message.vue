@@ -255,11 +255,11 @@ onMounted(getConfigInfo);
     </NCard>
 
     <NButton type="primary" @click="handleSave">{{ $t('common.save') }}</NButton>
-    <NModal v-model:show="isShow" class="flex-center" :class="getPlatform ? 'max-w-90%' : 'max-w-640px'">
+    <NModal v-model:show="isShow" class="flex-center" :class="getPlatform ? 'max-w-90%' : 'max-w-720px'">
       <NCard class="flex flex-1">
         <TencentMap
           v-show="isShow"
-          class="flex-1"
+          class="flex-1 h-440px w-680px"
           :longitude="longitude"
           :latitude="latitude"
           @position-selected="onPositionSelected"

@@ -505,7 +505,7 @@ onMounted(() => {
         </div>
       </div>
       <div class="aggregation-range flex flex-row pl-2">
-        <span class="pt-1">{{ $t('card.aggregationScope') }}}：</span>
+        <span class="pt-1">{{ $t('card.aggregationScope') }}：</span>
         <NSelect
           v-model:value="selectedOption.aggregate_window"
           :options="aggregationIntervalOptions"
