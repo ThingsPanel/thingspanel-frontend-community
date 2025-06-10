@@ -20,6 +20,7 @@ import expect from '@/locales/langs/zh-cn/page/expect'
 import irrigation from '@/locales/langs/zh-cn/page/irrigation'
 // 导入应用页面语言包
 import apply from '@/locales/langs/zh-cn/page/apply'
+import automation from '@/locales/langs/zh-cn/page/automation'
 
 export default {
   product: productLocaleZhCn,
@@ -31,5 +32,6 @@ export default {
   dataForward,
   expect,
   irrigation,
-  apply
+  apply,
+  automation
 }

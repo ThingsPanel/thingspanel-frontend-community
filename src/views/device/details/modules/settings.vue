@@ -5,6 +5,7 @@ import type { TransferRenderSourceList } from 'naive-ui';
 import { NTree } from 'naive-ui';
 import {
   deleteDeviceGroupRelation,
+  deleteDevice,
   deviceDetail,
   deviceGroupRelation,
   deviceGroupTree,
@@ -14,6 +15,8 @@ import {
   getDeviceGroupRelation
 } from '@/service/api';
 import { useDeviceDataStore } from '@/store/modules/device';
+import { useTabStore } from '@/store/modules/tab';
+import { getTabIdByRoute } from '@/store/modules/tab/shared';
 import { $t } from '@/locales';
 
 const props = defineProps<{
@@ -32,7 +35,10 @@ type Option = {
 };
 const options = ref<Option[]>();
 const sOptions = ref<any[]>([{ label: $t('generate.unbind'), value: '' }]);
-const { query } = useRoute();
+const route = useRoute();
+const { query } = route;
+const { removeTab } = useTabStore();
+const currentTabId = getTabIdByRoute(route);
 const deviceConfigList = async name => {
   const { data, error } = await getDeviceConfigList({
     page: 1,
@@ -172,6 +178,32 @@ const selectConfig = v => {
   initData();
   emit('change');
 };
+
+const handleDeleteDevice = () => {
+  // 二次确认删除
+  window.$dialog?.warning({
+    title: $t('common.delete'),
+    content: $t('common.confirmDelete'),
+    positiveText: $t('common.confirm'),
+    negativeText: $t('common.cancel'),
+    onPositiveClick: () => {
+      deleteD(props.id);
+    }
+  });
+};
+
+const deleteD = async (id: string) => {
+  try {
+    await deleteDevice({ id });
+    console.log(1);
+    window.$message?.success($t('common.deleteSuccess'));
+    // 关闭当前标签页
+    await removeTab(currentTabId);
+  } catch (error) {
+    window.$message?.error($t('common.deleteFailed'));
+    console.error('删除设备失败:', error);
+  }
+};
 </script>
 
 <template>
@@ -218,6 +250,16 @@ const selectConfig = v => {
     <div class="flex items-center">
       {{ $t('generate.device-firmware') }}
       <span class="ml-4">{{ deviceDataStore?.deviceData?.current_version || '--' }}</span>
+    </div>
+
+    <div class="flex items-center">
+      <n-button
+        type="error"
+        size="small"
+        @click="handleDeleteDevice"
+      >
+        {{ $t('common.delete') }}
+      </n-button>
     </div>
 
     <div class="flex-1">
