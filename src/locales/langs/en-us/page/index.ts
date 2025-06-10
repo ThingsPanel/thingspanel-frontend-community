@@ -18,6 +18,8 @@ import expect from '@/locales/langs/en-us/page/expect'
 import irrigation from '@/locales/langs/en-us/page/irrigation'
 // Import apply page locale
 import apply from '@/locales/langs/en-us/page/apply'
+// Import automation page locale
+import automation from '@/locales/langs/en-us/page/automation'
 
 export default {
   product: productLocaleEn,
@@ -29,5 +31,6 @@ export default {
   dataForward,
   expect,
   irrigation,
-  apply
+  apply,
+  automation
 }

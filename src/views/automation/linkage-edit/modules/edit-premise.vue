@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, onBeforeUpdate } from 'vue'
+import { onMounted, ref, watch, onBeforeUpdate, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { NButton, NFlex, useMessage } from 'naive-ui'
 import type { FormInst } from 'naive-ui'
@@ -13,6 +13,7 @@ import {
   deviceMetricsConditionMenu
 } from '@/service/api/automation'
 import { $t } from '@/locales'
+import { useI18n } from 'vue-i18n'
 
 interface Emits {
   (e: 'conditionChose', data: any): void
@@ -20,6 +21,7 @@ interface Emits {
 
 const route = useRoute()
 const emit = defineEmits<Emits>()
+const { locale } = useI18n()
 
 const premiseFormRef = ref<FormInst | null>(null)
 const premiseForm = ref({
@@ -158,7 +160,7 @@ const ifTypeChange = (ifItem: any, data: any) => {
 }
 
 // 设备条件类型下选项2使用的下拉
-const deviceConditionOptions = ref([
+const deviceConditionOptions = computed(() => [
   {
     label: $t('common.singleDevice'),
     value: '10'
@@ -328,30 +330,9 @@ const loadTriggerParamOptions = async (ifItem: any) => {
       ifItem.triggerParamOptions = [] // Ensure array on error
     } finally {
       // Add statusData regardless of API outcome
-      const statusData = {
-        value: 'status',
-        label: 'status(状态)',
-        options: [
-          {
-            value: 'status/On-line', // Value needs to match v-model format
-            label: 'On-line(上线)',
-            key: 'On-line' // Keep original key if needed elsewhere
-          },
-          {
-            value: 'status/Off-line',
-            label: 'Off-line(下线)',
-            key: 'Off-line'
-          },
-          {
-            value: 'status/All',
-            label: 'All(全部)',
-            key: 'All'
-          }
-        ]
-      }
       // Ensure statusData is not added multiple times if loaded elsewhere
       if (!ifItem.triggerParamOptions.some(opt => opt.value === 'status')) {
-        ifItem.triggerParamOptions.push(statusData)
+        ifItem.triggerParamOptions.push(statusData.value)
       }
     }
   }
@@ -417,6 +398,30 @@ const actionParamShow = async (ifItem: any, data: any) => {
   //   ifItem.triggerParamOptions.push(statusData);
   // }
 }
+
+// 创建全局的statusData计算属性
+const statusData = computed(() => ({
+  value: 'status',
+  label: $t('page.automation.linkage.premise.status.label'),
+  options: [
+    {
+      value: 'status/On-line',
+      label: $t('page.automation.linkage.premise.status.options.online'),
+      key: 'On-line'
+    },
+    {
+      value: 'status/Off-line',
+      label: $t('page.automation.linkage.premise.status.options.offline'),
+      key: 'Off-line'
+    },
+    {
+      value: 'status/All',
+      label: $t('page.automation.linkage.premise.status.options.all'),
+      key: 'All'
+    }
+  ]
+}))
+
 const message = useMessage()
 
 // 动作值标识
@@ -473,7 +478,7 @@ const getTimeConditionOptions = ifGroup => {
 //   }
 // ]);
 // 服务条件类型下选项2使用的下拉
-const serviceConditionOptions = ref([
+const serviceConditionOptions = computed(() => [
   {
     label: $t('common.weather'),
     value: 'weather'
@@ -483,7 +488,7 @@ const serviceConditionOptions = ref([
 // const deviceOptions = ref([]);
 
 // 时间条件下，重复时，使用的周期选项
-const cycleOptions = ref([
+const cycleOptions = computed(() => [
   {
     label: $t('common.everyHour'),
     value: 'HOUR'
@@ -503,7 +508,7 @@ const cycleOptions = ref([
 ])
 
 // 时间条件下，范围时，使用的周期选项
-const weekOptions = ref([
+const weekOptions = computed(() => [
   {
     label: $t('page.irrigation.time.week.monday'),
     value: '1'
@@ -534,7 +539,7 @@ const weekOptions = ref([
   }
 ])
 // 天气条件选项
-const weatherOptions = ref([
+const weatherOptions = computed(() => [
   {
     label: $t('common.sunrise'),
     value: 'sunrise'
@@ -546,7 +551,7 @@ const weatherOptions = ref([
 ])
 
 // 操作符选项
-const determineOptions = ref([
+const determineOptions = computed(() => [
   {
     label: $t('common.equal'),
     value: '='
@@ -581,7 +586,7 @@ const determineOptions = ref([
   }
 ])
 // 过期时间选项
-const expirationTimeOptions = ref([
+const expirationTimeOptions = computed(() => [
   {
     label: $t('common.minutes5'),
     value: 5
@@ -780,6 +785,23 @@ onMounted(() => {
     emit('conditionChose', judgeItemData.trigger_conditions_type)
     addIfGroupItem(judgeItemData)
   }
+})
+
+// 监听国际化语言变化，更新triggerParamOptions中的statusData
+watch(locale, () => {
+  // 遍历所有ifGroups中的ifItems，更新其triggerParamOptions中的statusData
+  premiseForm.value.ifGroups.forEach((ifGroup: any) => {
+    ifGroup.ifItems.forEach((ifItem: any) => {
+      if (ifItem.triggerParamOptions && Array.isArray(ifItem.triggerParamOptions)) {
+        // 找到并更新statusData项
+        const statusIndex = ifItem.triggerParamOptions.findIndex((opt: any) => opt.value === 'status')
+        if (statusIndex !== -1) {
+          // 用新的statusData替换旧的
+          ifItem.triggerParamOptions[statusIndex] = statusData.value
+        }
+      }
+    })
+  })
 })
 
 watch(

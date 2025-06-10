@@ -253,6 +253,7 @@ async function handleDeleteTable(rowId: string) {
 }
 
 function handleQuery() {
+  queryParams.page = 1;
   init();
 }
 

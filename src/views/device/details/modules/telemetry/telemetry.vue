@@ -548,7 +548,7 @@ const inputFeedback = computed(() => {
         </n-form>
       </n-card>
     </n-modal>
-    <n-modal v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-400px'">
+    <n-modal v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-40%'">
       <n-card :title="$t('generate.distributeControlToDevice')">
         <n-form label-placement="left">
           <div class="flex">
@@ -607,9 +607,9 @@ const inputFeedback = computed(() => {
     <n-modal
       v-model:show="showHistory"
       :title="$t('generate.telemetry-history-data')"
-      :class="getPlatform ? 'w-90%' : 'chart-table-dialog'"
+
     >
-      <NCard>
+      <NCard style="width: 80%">
         <HistoryData
           v-if="modelType === $t('custom.device_details.history')"
           :device-id="telemetryId"
