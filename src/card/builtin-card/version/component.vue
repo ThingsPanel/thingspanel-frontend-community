@@ -44,19 +44,28 @@ const version = ref('')
 const latestVersion = ref('')
 const isLatestVersion = ref(false)
 onMounted(async() => {
-  const res =await axios.get('https://api.github.com/repos/ThingsPanel/thingspanel-backend-community/tags')
-  if(res?.data?.[0]?.name){
-    latestVersion.value=res.data[0].name||'--'
+  // 尝试获取最新版本信息，失败时不影响后续逻辑
+  try {
+    const res = await axios.get('https://api.github.com/repos/ThingsPanel/thingspanel-backend-community/tags')
+    if(res?.data?.[0]?.name){
+      latestVersion.value = res.data[0].name || '--'
+    }
+  } catch (error) {
+    console.warn('获取最新版本信息失败:', error)
+    latestVersion.value = '--'
   }
+  
+  // 获取当前系统版本
   const ver = await getSysVersion()
   if(ver){
-    version.value=ver?.data?.version||'--'
+    version.value = ver?.data?.version || '--'
   }
-  if(latestVersion.value &&version.value&& latestVersion.value==version.value){
+  
+  // 比较版本信息
+  if(latestVersion.value && version.value && latestVersion.value === version.value){
     console.log('最新版本');
-    isLatestVersion.value=true
+    isLatestVersion.value = true
   }
-
 });
 defineOptions({
   name: 'VersionCard'
