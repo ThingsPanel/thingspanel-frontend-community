@@ -265,6 +265,15 @@ export const getSystemMetricsCurrent = async (params?: any): Promise<any> => {
   return data
 }
 
+/** 获取当前系统指标 */
+export const getSysVersion = async (params?: any): Promise<any> => {
+  // Assuming the endpoint returns a generic structure or the exact structure is unknown
+  const data = await request.get<any>('/sys_version', {
+    params
+  })
+  return data
+}
+
 /** 获取系统指标历史数据 */
 export const getSystemMetricsHistory = async (params?: any): Promise<any> => {
   console.log('Fetching system metrics history with params:', params)
