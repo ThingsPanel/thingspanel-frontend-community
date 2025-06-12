@@ -99,7 +99,7 @@
                   {{ device.device_name }}
                 </span>
                 <n-tag :type="device.is_online === 1 ? 'success' : 'default'" size="tiny" round class="flex-shrink-0">
-                  {{ device.is_online === 1 ? $t('card.online') : $t('card.offline') }}
+                  {{ device.is_online === 1 ? $t('custom.devicePage.online') : $t('custom.devicePage.offline') }}
                 </n-tag>
               </div>
               <!-- Last Push Time -->
