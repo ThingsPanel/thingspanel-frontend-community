@@ -36,6 +36,7 @@ const rules = ref<any>({
 })
 const openModal: (id: any, row?: any) => void = async (id, row) => {
   if (row) {
+    // 编辑模式：设置 isEdit 为 true 并填充表单数据
     isEdit.value = true
     Object.assign(form.value, row)
     const voucherData = JSON.parse(row.voucher)
@@ -44,6 +45,9 @@ const openModal: (id: any, row?: any) => void = async (id, row) => {
     if (voucherData.auth_type) {
       form.value.auth_type = voucherData.auth_type
     }
+  } else {
+    // 新增模式：重置 isEdit 为 false
+    isEdit.value = false
   }
   service_plugin_id.value = id
   form.value.service_plugin_id = id
@@ -60,9 +64,12 @@ const close: () => void = () => {
   form.value = { ...defaultForm }
   form.value.vouchers = {}
   currentStep.value = 1
+  // 重置编辑状态
+  isEdit.value = false
 }
 
 const submitSevice: () => void = async () => {
+
   formRef.value?.validate(async errors => {
     if (errors) return
 
