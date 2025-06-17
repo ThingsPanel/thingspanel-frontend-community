@@ -1,4 +1,4 @@
-import { locale } from 'dayjs'
+import dayjs from 'dayjs'
 import 'dayjs/locale/zh-cn'
 import 'dayjs/locale/en'
 import { localStg } from '@/utils/storage'
@@ -27,11 +27,11 @@ export function setDayjsLocale(lang: LangType = 'zh-CN'): void {
 
   if (dayjsLang) {
     // 设置 Day.js 全局语言环境
-    locale(dayjsLang)
+    dayjs.locale(dayjsLang)
     console.log(`📅 Day.js 语言环境已设置为: ${dayjsLang}`)
   } else {
     console.warn(`⚠️ 未找到语言 ${currentLang} 对应的 Day.js 语言包，使用默认中文`)
-    locale('zh-cn')
+    dayjs.locale('zh-cn')
   }
 }
 

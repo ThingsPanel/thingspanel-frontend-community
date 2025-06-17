@@ -19,11 +19,14 @@
     "confirm": "确认",
     "delete": "删除",
     "edit": "编辑",
-    "save": "保存"
+    "save": "保存",
+    "openDialog": "打开对话框"
   },
   "form": {
     "minLength": "最小长度为 {min} 个字符",
-    "maxLength": "最大长度为 {max} 个字符"
+    "maxLength": "最大长度为 {max} 个字符",
+    "selectDate": "选择日期",
+    "selectTime": "选择时间"
   },
   "menu": {
     "home": "首页",
@@ -40,5 +43,14 @@
     "feature2": "支持嵌套键值访问",
     "feature3": "支持参数插值",
     "feature4": "支持实时翻译测试"
+  },
+  "dialog": {
+    "title": "测试对话框",
+    "content": "这是一个测试对话框，用于验证 Naive UI 组件的国际化功能是否正常工作。"
+  },
+  "time": {
+    "current": "当前时间",
+    "relative": "相对时间",
+    "formatted": "格式化日期"
   }
 }

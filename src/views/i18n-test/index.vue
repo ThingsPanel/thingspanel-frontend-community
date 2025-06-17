@@ -140,6 +140,77 @@
       </div>
     </div>
 
+    <!-- Naive UI 组件测试 -->
+    <div class="test-section">
+      <h3>Naive UI 组件测试 / Naive UI Component Test</h3>
+      <div class="naive-test">
+        <n-config-provider :locale="naiveLocale" :date-locale="naiveDateLocale">
+          <div class="naive-components">
+            <n-button type="primary" @click="showModal = true">
+              {{ $t('button.openDialog') }}
+            </n-button>
+            
+            <n-date-picker 
+              v-model:value="selectedDate" 
+              type="date" 
+              :placeholder="$t('form.selectDate')"
+              style="margin-left: 12px;"
+            />
+            
+            <n-time-picker 
+              v-model:value="selectedTime" 
+              :placeholder="$t('form.selectTime')"
+              style="margin-left: 12px;"
+            />
+          </div>
+          
+          <n-modal v-model:show="showModal">
+            <n-card
+              style="width: 600px"
+              :title="$t('dialog.title')"
+              :bordered="false"
+              size="huge"
+              role="dialog"
+              aria-modal="true"
+            >
+              <p>{{ $t('dialog.content') }}</p>
+              <template #footer>
+                <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                  <n-button @click="showModal = false">
+                    {{ $t('button.cancel') }}
+                  </n-button>
+                  <n-button type="primary" @click="showModal = false">
+                    {{ $t('button.confirm') }}
+                  </n-button>
+                </div>
+              </template>
+            </n-card>
+          </n-modal>
+        </n-config-provider>
+      </div>
+    </div>
+
+    <!-- Day.js 时间格式化测试 -->
+    <div class="test-section">
+      <h3>Day.js 时间格式化测试 / Day.js Time Formatting Test</h3>
+      <div class="dayjs-test">
+        <div class="time-display">
+          <div class="time-item">
+            <label>{{ $t('time.current') }}:</label>
+            <span>{{ formatCurrentTime() }}</span>
+          </div>
+          <div class="time-item">
+            <label>{{ $t('time.relative') }}:</label>
+            <span>{{ getRelativeTime() }}</span>
+          </div>
+          <div class="time-item">
+            <label>{{ $t('time.formatted') }}:</label>
+            <span>{{ getFormattedDate() }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- 实时测试区域 -->
     <div class="test-section">
       <h3>实时测试 / Live Test</h3>
@@ -160,13 +231,23 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { $t, useI18n2, getCurrentLang } from '@/locales2'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import 'dayjs/locale/zh-cn'
+import 'dayjs/locale/en'
+
+// 启用Day.js相对时间插件
+dayjs.extend(relativeTime)
 
 // 使用国际化Hook
-const { setLang } = useI18n2()
+const { setLang, naiveLocale, naiveDateLocale } = useI18n2()
 
 // 响应式数据
 const testUserName = ref('张三 / John')
 const customKey = ref('home')
+const showModal = ref(false)
+const selectedDate = ref<number | null>(null)
+const selectedTime = ref<number | null>(null)
 
 // 计算属性
 const currentLang = computed(() => getCurrentLang())
@@ -174,6 +255,26 @@ const currentLang = computed(() => getCurrentLang())
 // 方法
 const switchLanguage = (lang: 'zh-CN' | 'en-US') => {
   setLang(lang)
+}
+
+// Day.js 时间格式化方法
+const formatCurrentTime = () => {
+  return dayjs().format('YYYY-MM-DD HH:mm:ss')
+}
+
+const getRelativeTime = () => {
+  // 确保使用当前语言环境
+  const currentLang = getCurrentLang()
+  const locale = currentLang === 'zh-CN' ? 'zh-cn' : 'en'
+  const pastTime = dayjs().locale(locale).subtract(2, 'hour')
+  return pastTime.fromNow()
+}
+
+const getFormattedDate = () => {
+  // 确保使用当前语言环境
+  const currentLang = getCurrentLang()
+  const locale = currentLang === 'zh-CN' ? 'zh-cn' : 'en'
+  return dayjs().locale(locale).format('dddd, MMMM D, YYYY')
 }
 </script>
 

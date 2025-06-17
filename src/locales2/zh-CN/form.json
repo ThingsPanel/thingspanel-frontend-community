@@ -1,0 +1,9 @@
+{
+  "minLength": "最小长度为 {min} 个字符",
+  "maxLength": "最大长度为 {max} 个字符",
+  "selectDate": "选择日期",
+  "selectTime": "选择时间",
+  "required": "此字段为必填项",
+  "email": "请输入有效的邮箱地址",
+  "phone": "请输入有效的手机号码"
+}

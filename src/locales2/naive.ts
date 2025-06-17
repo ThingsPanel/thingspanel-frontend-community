@@ -1,4 +1,4 @@
-import { dateEnUS, dateZhCN, enUS, zhCN } from 'naive-ui'
+import { zhCN, enUS, dateZhCN, dateEnUS } from 'naive-ui'
 import type { NDateLocale, NLocale } from 'naive-ui'
 import type { LangType } from './index'
 

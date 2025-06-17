@@ -19,11 +19,14 @@
     "confirm": "Confirm",
     "delete": "Delete",
     "edit": "Edit",
-    "save": "Save"
+    "save": "Save",
+    "openDialog": "Open Dialog"
   },
   "form": {
     "minLength": "Minimum length is {min} characters",
-    "maxLength": "Maximum length is {max} characters"
+    "maxLength": "Maximum length is {max} characters",
+    "selectDate": "Select Date",
+    "selectTime": "Select Time"
   },
   "menu": {
     "home": "Home",
@@ -40,5 +43,14 @@
     "feature2": "Nested key access support",
     "feature3": "Parameter interpolation support",
     "feature4": "Real-time translation testing support"
+  },
+  "dialog": {
+    "title": "Test Dialog",
+    "content": "This is a test dialog to verify that the internationalization functionality of Naive UI components is working properly."
+  },
+  "time": {
+    "current": "Current Time",
+    "relative": "Relative Time",
+    "formatted": "Formatted Date"
   }
 }

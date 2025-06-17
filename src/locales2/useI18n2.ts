@@ -1,6 +1,7 @@
 import { ref, computed } from 'vue'
 import type { App } from 'vue'
 import { localStg } from '@/utils/storage'
+import { getNaiveLocale, getNaiveDateLocale } from './naive'
 
 // 支持的语言类型
 type LangType = 'zh-CN' | 'en-US'
@@ -27,7 +28,7 @@ async function loadLocale(lang: LangType): Promise<Record<string, any>> {
     const locale: Record<string, any> = {}
 
     // 根据语言类型过滤文件
-    const langPrefix = `./\${lang}/`
+    const langPrefix = `./${lang}/`
 
     for (const [path, module] of Object.entries(modules)) {
       if (path.startsWith(langPrefix)) {
@@ -53,7 +54,7 @@ async function loadLocale(lang: LangType): Promise<Record<string, any>> {
     localeCache.set(lang, locale)
     return locale
   } catch (error) {
-    console.error(`Failed to load locale \${lang}:`, error)
+    console.error(`Failed to load locale ${lang}:`, error)
     return {}
   }
 }
@@ -114,7 +115,7 @@ async function setLang(lang: LangType) {
     currentLocale.value = await loadLocale(lang)
     localStg.set('lang', lang)
   } catch (error) {
-    console.error(`Failed to set language to \${lang}:`, error)
+    console.error(`Failed to set language to ${lang}:`, error)
   }
 }
 
@@ -139,7 +140,9 @@ export function useI18n2() {
     t,
     setLang,
     currentLang: computed(() => currentLang.value),
-    locale: computed(() => currentLocale.value)
+    locale: computed(() => currentLocale.value),
+    naiveLocale: computed(() => getNaiveLocale(currentLang.value)),
+    naiveDateLocale: computed(() => getNaiveDateLocale(currentLang.value))
   }
 }
 
@@ -153,6 +156,11 @@ export function setupI18n2(app: App) {
 
   // 初始化国际化系统
   initI18n()
+}
+
+// 获取当前语言
+export function getCurrentLang(): LangType {
+  return currentLang.value
 }
 
 // 全局翻译函数，用于兼容旧系统

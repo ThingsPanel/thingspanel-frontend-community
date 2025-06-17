@@ -1,0 +1,11 @@
+{
+  "title": "国际化测试页面",
+  "currentLang": "当前语言: {lang}",
+  "switchLang": "切换语言",
+  "greeting": "你好, {name}!",
+  "features": "功能特性",
+  "feature1": "支持多语言切换",
+  "feature2": "支持嵌套键值访问",
+  "feature3": "支持参数插值",
+  "feature4": "支持第三方库国际化"
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Internationalization Test Page",
+  "currentLang": "Current Language: {lang}",
+  "switchLang": "Switch Language",
+  "greeting": "Hello, {name}!",
+  "features": "Features",
+  "feature1": "Multi-language switching support",
+  "feature2": "Nested key access support",
+  "feature3": "Parameter interpolation support",
+  "feature4": "Third-party library internationalization support"
+}
