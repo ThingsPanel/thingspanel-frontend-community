@@ -69,6 +69,7 @@ declare module "@elegant-router/types" {
     "function_multi-tab": "/function/multi-tab";
     "function_tab": "/function/tab";
     "home": "/home";
+    "i18n-test": "/i18n-test";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
     "manage": "/manage";
     "manage_menu": "/manage/menu";
@@ -160,6 +161,7 @@ declare module "@elegant-router/types" {
     | "device-details-app"
     | "function"
     | "home"
+    | "i18n-test"
     | "login"
     | "manage"
     | "management"
@@ -227,6 +229,7 @@ declare module "@elegant-router/types" {
     | "function_multi-tab"
     | "function_tab"
     | "home"
+    | "i18n-test"
     | "manage_menu"
     | "manage_role"
     | "manage_user-detail"

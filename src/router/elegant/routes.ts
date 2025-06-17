@@ -480,6 +480,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     }
   },
   {
+    name: 'i18n-test',
+    path: '/i18n-test',
+    component: 'layout.base$view.i18n-test',
+    meta: {
+      title: 'i18n-test',
+      i18nKey: 'route.i18n-test'
+    }
+  },
+  {
     name: 'login',
     path: '/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?',
     component: 'layout.blank$view.login',
