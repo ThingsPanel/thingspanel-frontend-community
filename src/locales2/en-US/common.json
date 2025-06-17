@@ -1,6 +1,44 @@
 {
+  "submit": "Submit",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "delete": "Delete",
+  "edit": "Edit",
+  "save": "Save",
+  "home": "Home",
+  "about": "About",
+  "login": "Login",
+  "logout": "Logout",
+  "success": "Success",
+  "error": "Error",
+  "warning": "Warning",
+  "info": "Information",
   "button": {
-    "submit": "Submit"
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save"
   },
-  "home": "Home"
+  "form": {
+    "minLength": "Minimum length is {min} characters",
+    "maxLength": "Maximum length is {max} characters"
+  },
+  "menu": {
+    "home": "Home",
+    "about": "About",
+    "dashboard": "Dashboard"
+  },
+  "test": {
+    "title": "Internationalization Test Page",
+    "currentLang": "Current Language: {lang}",
+    "switchLang": "Language Switch",
+    "greeting": "Hello, {name}!",
+    "features": "Features",
+    "feature1": "Multi-language switching support",
+    "feature2": "Nested key access support",
+    "feature3": "Parameter interpolation support",
+    "feature4": "Real-time translation testing support"
+  }
 }

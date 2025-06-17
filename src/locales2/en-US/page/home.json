@@ -1,4 +1,4 @@
 {
   "title": "Home",
-  "greeting": "Good morning, {userName}, another energetic day!"
+  "greeting": "Welcome, {userName}!"
 }

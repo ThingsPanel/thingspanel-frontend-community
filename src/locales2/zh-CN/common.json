@@ -1,6 +1,44 @@
 {
+  "submit": "提交",
+  "cancel": "取消",
+  "confirm": "确认",
+  "delete": "删除",
+  "edit": "编辑",
+  "save": "保存",
+  "home": "首页",
+  "about": "关于",
+  "login": "登录",
+  "logout": "退出",
+  "success": "成功",
+  "error": "错误",
+  "warning": "警告",
+  "info": "信息",
   "button": {
-    "submit": "提交"
+    "submit": "提交",
+    "cancel": "取消",
+    "confirm": "确认",
+    "delete": "删除",
+    "edit": "编辑",
+    "save": "保存"
   },
-  "home": "首页"
+  "form": {
+    "minLength": "最小长度为 {min} 个字符",
+    "maxLength": "最大长度为 {max} 个字符"
+  },
+  "menu": {
+    "home": "首页",
+    "about": "关于",
+    "dashboard": "仪表板"
+  },
+  "test": {
+    "title": "国际化测试页面",
+    "currentLang": "当前语言: {lang}",
+    "switchLang": "语言切换",
+    "greeting": "你好, {name}!",
+    "features": "功能特性",
+    "feature1": "支持多语言切换",
+    "feature2": "支持嵌套键值访问",
+    "feature3": "支持参数插值",
+    "feature4": "支持实时翻译测试"
+  }
 }
