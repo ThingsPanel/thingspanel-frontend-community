@@ -10,14 +10,14 @@
     <div class="language-switcher">
       <h3>{{ $t('test.switchLang') }}</h3>
       <div class="button-group">
-        <button 
+        <button
           :class="{ active: currentLang === 'zh-CN' }"
           class="lang-btn"
           @click="switchLanguage('zh-CN')"
         >
           中文
         </button>
-        <button 
+        <button
           :class="{ active: currentLang === 'en-US' }"
           class="lang-btn"
           @click="switchLanguage('en-US')"
@@ -83,6 +83,10 @@
           <label>menu.dashboard:</label>
           <span>{{ $t('menu.dashboard') }}</span>
         </div>
+        <div class="test-item">
+        <span class="label">abc.bcd.efg:</span>
+        <span class="value">{{ $t('abc.bcd.efg') }}</span>
+      </div>
       </div>
     </div>
 
@@ -92,6 +96,12 @@
       <div class="interpolation-tests">
         <div class="test-item">
           <label>问候语 / Greeting:</label>
+
+  <p class="greeting">{{ $t('deep.level.one.title') }}</p>
+
+  <p class="greeting">{{ $t('custom.home.welcome') }}</p>
+
+  <p class="greeting">{{ $t('page.home.title') }}</p>
           <p class="greeting">{{ $t('page.home.greeting', { userName: testUserName }) }}</p>
         </div>
         <div class="test-item">
@@ -149,21 +159,21 @@
             <n-button type="primary" @click="showModal = true">
               {{ $t('button.openDialog') }}
             </n-button>
-            
-            <n-date-picker 
-              v-model:value="selectedDate" 
-              type="date" 
+
+            <n-date-picker
+              v-model:value="selectedDate"
+              type="date"
               :placeholder="$t('form.selectDate')"
               style="margin-left: 12px;"
             />
-            
-            <n-time-picker 
-              v-model:value="selectedTime" 
+
+            <n-time-picker
+              v-model:value="selectedTime"
               :placeholder="$t('form.selectTime')"
               style="margin-left: 12px;"
             />
           </div>
-          
+
           <n-modal v-model:show="showModal">
             <n-card
               style="width: 600px"
@@ -215,8 +225,8 @@
     <div class="test-section">
       <h3>实时测试 / Live Test</h3>
       <div class="live-test">
-        <input 
-          v-model="customKey" 
+        <input
+          v-model="customKey"
           placeholder="输入翻译键 / Enter translation key"
           class="test-input"
         />
@@ -506,16 +516,16 @@ const getFormattedDate = () => {
   .i18n-test-page {
     padding: 10px;
   }
-  
+
   .test-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .button-group {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .lang-btn {
     width: 200px;
   }

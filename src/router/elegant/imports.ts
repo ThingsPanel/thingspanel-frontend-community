@@ -69,7 +69,6 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   management_user: () => import("@/views/management/user/index.vue"),
   "multi-menu_first_child": () => import("@/views/multi-menu/first_child/index.vue"),
   "multi-menu_second_child_home": () => import("@/views/multi-menu/second_child_home/index.vue"),
-  "nested-i18n-test": () => import("@/views/nested-i18n-test/index.vue"),
   "personal-center": () => import("@/views/personal-center/index.vue"),
   plugin_charts_antv: () => import("@/views/plugin/charts/antv/index.vue"),
   plugin_charts_echarts: () => import("@/views/plugin/charts/echarts/index.vue"),

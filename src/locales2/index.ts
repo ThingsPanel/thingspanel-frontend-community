@@ -38,15 +38,18 @@ let initPromise: Promise<void> | null = null
 function getTranslationModules(lang: LangType) {
   // 使用 Vite 的 glob 导入功能自动扫描所有 JSON 文件
   // 这样添加新文件时无需修改任何代码
-  const modules = import.meta.glob('./*/**.json', { eager: false })
+  const modules = import.meta.glob('./**/*.json', { eager: false })
 
   const langModules: Record<string, () => Promise<any>> = {}
+
+  console.log(`[i18n DEBUG] All modules found by glob for ${lang}:`, Object.keys(modules))
 
   // 过滤出当前语言的文件
   Object.keys(modules).forEach(path => {
     if (path.startsWith(`./${lang}/`)) {
       // 移除语言前缀，得到相对路径
       const relativePath = path.replace(`./${lang}/`, '')
+      console.log(`[i18n DEBUG] Filtered module for ${lang}: ${path} -> ${relativePath}`)
       langModules[relativePath] = modules[path] as () => Promise<any>
     }
   })
@@ -93,9 +96,14 @@ async function loadLanguage(lang: LangType) {
     })
 
     const results = await Promise.all(loadPromises)
+    const loadedFileNames: string[] = [] // 新增：用于存储加载的文件名
 
     // 组织翻译数据结构
     results.forEach(result => {
+      if (result) {
+        loadedFileNames.push(result.relativePath)
+        console.log(`[i18n DEBUG] Processing loaded file for ${lang}: ${result.relativePath}`)
+      }
       if (!result) return
 
       const { relativePath, data } = result
@@ -103,20 +111,36 @@ async function loadLanguage(lang: LangType) {
       if (relativePath === 'common.json') {
         // common.json 的内容直接展开到根级别
         Object.assign(translations, data)
-      } else if (relativePath.startsWith('page/')) {
-        // 页面文件组织在 page 命名空间下
-        if (!translations.page) translations.page = {}
-        const fileName = relativePath.replace('page/', '').replace('.json', '')
-        translations.page[fileName] = data
-      } else if (relativePath.startsWith('custom/')) {
-        // 自定义模块文件组织在 custom 命名空间下
-        if (!translations.custom) translations.custom = {}
-        const fileName = relativePath.replace('custom/', '').replace('.json', '')
-        translations.custom[fileName] = data
+        console.log(`[i18n DEBUG] Merged common.json into root for ${lang}`)
       } else {
-        // 其他根级别文件以文件名作为键
-        const fileName = relativePath.replace('.json', '')
-        translations[fileName] = data
+        // 其他文件根据相对路径自动创建命名空间
+        // 例如 'page/home.json' -> translations.page.home = data
+        // 例如 'custom/dashboard/widget1.json' -> translations.custom.dashboard.widget1 = data
+        // 例如 'menu.json' -> translations.menu = data
+        const pathParts = relativePath.replace('.json', '').split('/')
+        let currentLevel = translations
+
+        pathParts.forEach((part, index) => {
+          if (index === pathParts.length - 1) {
+            // 如果当前部分已存在且为对象，并且新数据也为对象，则进行深合并
+            if (currentLevel[part] && typeof currentLevel[part] === 'object' && typeof data === 'object') {
+              // 简单的深合并，实际项目中可能需要更健壮的深合并库
+              // 这里为了简化，如果键冲突，新数据会覆盖旧数据中的同名键
+              // 如果需要更复杂的合并策略（例如数组合并），则需要更复杂的逻辑
+              Object.assign(currentLevel[part], data)
+              console.log(`[i18n DEBUG] Deep merged data into ${pathParts.slice(0, index + 1).join('.')} for ${lang}`)
+            } else {
+              currentLevel[part] = data
+              console.log(`[i18n DEBUG] Set data for ${pathParts.slice(0, index + 1).join('.')} for ${lang}`)
+            }
+          } else {
+            if (!currentLevel[part] || typeof currentLevel[part] !== 'object') {
+              currentLevel[part] = {}
+              console.log(`[i18n DEBUG] Created namespace ${pathParts.slice(0, index + 1).join('.')} for ${lang}`)
+            }
+            currentLevel = currentLevel[part]
+          }
+        })
       }
     })
 
@@ -126,7 +150,7 @@ async function loadLanguage(lang: LangType) {
     loadedLangs.add(lang)
     loadingLangs.delete(lang)
 
-    console.log(`✅ 成功加载 ${lang} 语言包，共 ${results.filter(r => r).length} 个文件`)
+    console.log(`✅ 成功加载 ${lang} 语言包，共 ${loadedFileNames.length} 个文件。文件名列表:`, loadedFileNames)
     return translations
   } catch (error) {
     console.error(`❌ 加载语言包失败: ${lang}`, error)

@@ -700,15 +700,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
-    name: 'nested-i18n-test',
-    path: '/nested-i18n-test',
-    component: 'layout.base$view.nested-i18n-test',
-    meta: {
-      title: 'nested-i18n-test',
-      i18nKey: 'route.nested-i18n-test'
-    }
-  },
-  {
     name: 'personal-center',
     path: '/personal-center',
     component: 'layout.base$view.personal-center',
