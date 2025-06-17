@@ -4,7 +4,6 @@ import { ref } from 'vue'
 import { createServiceDrop, getServiceAccessForm, putServiceDrop } from '@/service/api/plugin'
 import { $t } from '@/locales'
 import FormInput from './form.vue'
-import AutomaticModeStep from './AutomaticModeStep.vue'
 
 // const message = useMessage();
 const isEdit = ref<any>(false)
@@ -63,6 +62,8 @@ const submitSevice: () => void = async () => {
     if (errors) return
 
     // 无论是手动还是自动模式，都先调用接口创建/更新服务
+    // 在 vouchers 中添加 auth_type 字段
+    form.value.vouchers.auth_type = form.value.auth_type
     form.value.voucher = JSON.stringify(form.value.vouchers)
     const data: any = isEdit.value ? await putServiceDrop(form.value) : await createServiceDrop(form.value)
     serviceModals.value = false
