@@ -234,6 +234,7 @@ const routeMap: RouteMap = {
   "multi-menu_second": "/multi-menu/second",
   "multi-menu_second_child": "/multi-menu/second/child",
   "multi-menu_second_child_home": "/multi-menu/second/child/home",
+  "nested-i18n-test": "/nested-i18n-test",
   "personal-center": "/personal-center",
   "plugin": "/plugin",
   "plugin_charts": "/plugin/charts",

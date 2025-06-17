@@ -230,7 +230,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { $t, useI18n2, getCurrentLang } from '@/locales2'
+import { $t, useI18n2 } from '@/locales2'
+import { getCurrentLang } from '@/locales2/useI18n2'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
