@@ -38,7 +38,12 @@ const openModal: (id: any, row?: any) => void = async (id, row) => {
   if (row) {
     isEdit.value = true
     Object.assign(form.value, row)
-    Object.assign(form.value.vouchers, JSON.parse(row.voucher))
+    const voucherData = JSON.parse(row.voucher)
+    Object.assign(form.value.vouchers, voucherData)
+    // 从 voucher 解析的数据中回显 auth_type 到选择模式字段
+    if (voucherData.auth_type) {
+      form.value.auth_type = voucherData.auth_type
+    }
   }
   service_plugin_id.value = id
   form.value.service_plugin_id = id
