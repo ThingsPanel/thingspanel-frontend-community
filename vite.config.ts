@@ -44,8 +44,10 @@ export default defineConfig(configEnv => {
       port: 9725
     },
     build: {
+      chunkSizeWarningLimit: 4000, // 提高块大小警告阈值
+      sourcemap: false,
       reportCompressedSize: false,
-      sourcemap: viteEnv.VITE_SOURCE_MAP === 'Y',
+      // sourcemap: viteEnv.VITE_SOURCE_MAP === 'Y',
       commonjsOptions: {
         ignoreTryCatch: false
       }
