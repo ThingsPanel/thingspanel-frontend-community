@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -43,7 +43,7 @@ jobs:
           last_ssh: |
             echo "Starting deployment..."
             cd /home/thingspanel/nginx/www
-            rm -r /home/thingspanel/nginx/www/dist/assets
+            rm /home/thingspanel/nginx/www/dist/assets
             tar -xzf dist.tar.gz -C /home/thingspanel/nginx/www/dist
             rm dist.tar.gz
             nginx -t && nginx -s reload
