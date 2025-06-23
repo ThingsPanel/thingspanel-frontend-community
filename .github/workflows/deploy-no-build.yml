@@ -43,7 +43,7 @@ jobs:
       # 分阶段构建：第三阶段 - 生产构建（优化内存分配）
       - name: Build project
         run: |
-          NODE_OPTIONS='--max-old-space-size=4096 --max-semi-space-size=128' cross-env VITE_SERVICE_ENV=prod vite build
+          NODE_OPTIONS='--max-old-space-size=4096 --max-semi-space-size=128' pnpm exec cross-env VITE_SERVICE_ENV=prod vite build
 
       - name: Compress build output
         run: tar -czf dist.tar.gz -C dist .
