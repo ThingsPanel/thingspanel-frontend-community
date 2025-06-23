@@ -368,7 +368,7 @@ function handleDeviceTypeChange(newValue: string | number) {
           </NFormItem>
 
           <NFormItem
-            v-show="configForm.device_type === '2'"
+            v-show="configForm.device_type === '1' || configForm.device_type === '2'"
             class="w-[600px]"
             :label="$t('generate.authentication-type')"
             path="voucher_type"
