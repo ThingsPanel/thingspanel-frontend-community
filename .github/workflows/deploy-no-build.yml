@@ -1,4 +1,4 @@
-name: ssh deploy
+name: ssh deploy-no
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
@@ -29,17 +29,17 @@ jobs:
         run: |
           npm install -g pnpm@8.15.5
           pnpm i
-          
+
       # 分阶段构建：第二阶段 - 类型检查（限制内存使用）
       - name: Type check
         run: |
           NODE_OPTIONS='--max-old-space-size=3072' pnpm typecheck
-          
+
       # 清理缓存以释放内存
       - name: Clear cache
         run: |
           pnpm store prune
-          
+
       # 分阶段构建：第三阶段 - 生产构建（优化内存分配）
       - name: Build project
         run: |
