@@ -44,6 +44,8 @@ const emit = defineEmits<Emits>()
 const showPopover = ref(false)
 /** 内部维护的选中 ID 列表，与 modelValue 同步 */
 const selectedDeviceIds = ref<string[]>([])
+/** 搜索关键词 */
+const searchKeyword = ref('')
 
 // --- 计算属性 ---
 /** 将选中的 ID 映射回完整的设备对象，用于 NSelect 的 render-tag */
@@ -58,11 +60,23 @@ const selectedOptions = computed(() => {
   return selectedDeviceIds.value.map(id => optionsMap.get(id)).filter((opt): opt is DeviceOption => Boolean(opt)) // 过滤掉未找到的选项
 })
 
+/** 根据搜索关键词过滤后的选项列表 */
+const filteredOptions = computed(() => {
+  if (!searchKeyword.value.trim()) {
+    return props.options
+  }
+  const keyword = searchKeyword.value.toLowerCase().trim()
+  return props.options.filter(option =>
+    option.device_name.toLowerCase().includes(keyword) ||
+    option.device_id.toLowerCase().includes(keyword)
+  )
+})
+
 // --- 方法 ---
 /** 处理无限滚动加载事件 */
 const handleLoadMore = () => {
   if (!props.loading && props.hasMore) {
-    // console.log('Emitting loadMore'); // 调试日志
+    console.log('Emitting loadMore'); // 调试日志
     emit('loadMore')
   }
 }
@@ -97,6 +111,16 @@ const handlePopoverUpdateShow = (show: boolean) => {
     // console.log('Popover opened, emitting initialLoad'); // 调试日志
     emit('initialLoad')
   }
+}
+
+/**
+ * 处理搜索事件
+ *
+ * @param searchValue 搜索关键词
+ */
+const handleSearch = (searchValue: string) => {
+  // 更新搜索关键词，触发过滤
+  searchKeyword.value = searchValue
 }
 
 /**
@@ -148,10 +172,12 @@ watch(
           :disabled="props.disabled"
           :show-arrow="true"
           :show="false"
+          filterable
           clearable
           multiple
           class="select-input"
           @update:value="value => emit('update:modelValue', value)"
+          @search="handleSearch"
         />
       </div>
     </template>
@@ -159,9 +185,9 @@ watch(
     <!-- Popover 内容 -->
     <div class="device-select-popover-content">
       <NInfiniteScroll class="options-scroll-container" :distance="10" @load="handleLoadMore">
-        <div v-if="props.options && props.options.length > 0" class="options-list">
+        <div v-if="filteredOptions && filteredOptions.length > 0" class="options-list">
           <div
-            v-for="option in props.options"
+            v-for="option in filteredOptions"
             :key="option.device_id"
             class="device-option-item"
             :class="{ 'is-selected': isSelected(option.device_id) }"
@@ -171,7 +197,7 @@ watch(
             <span class="option-label">{{ option.device_name }}</span>
           </div>
         </div>
-        <NEmpty v-else-if="!props.loading" :description="$t('common.noData') || '暂无数据'" class="empty-placeholder" />
+        <NEmpty v-else-if="!props.loading" :description="searchKeyword ? '未找到匹配的设备' : ($t('common.noData') || '暂无数据')" class="empty-placeholder" />
 
         <!-- 加载中提示：放在 NInfiniteScroll 内容的末尾 -->
         <NFlex v-if="props.loading" justify="center" class="loading-indicator">
@@ -181,7 +207,7 @@ watch(
 
         <!-- 没有更多提示 -->
         <NFlex
-          v-if="!props.loading && !props.hasMore && props.options && props.options.length > 0"
+          v-if="!props.loading && !props.hasMore && filteredOptions && filteredOptions.length > 0"
           justify="center"
           class="no-more-indicator"
         >

@@ -83,10 +83,12 @@
           <label>menu.dashboard:</label>
           <span>{{ $t('menu.dashboard') }}</span>
         </div>
+
         <div class="test-item">
-        <span class="label">abc.bcd.efg:</span>
-        <span class="value">{{ $t('abc.bcd.efg') }}</span>
-      </div>
+          <span class="label">acb.bcd.efg:</span>
+          <span class="value">{{ $t('acb.bcd.efg') }}</span>
+        </div>
+
       </div>
     </div>
 
