@@ -1,9 +1,0 @@
-{
-  "minLength": "Minimum length is {min} characters",
-  "maxLength": "Maximum length is {max} characters",
-  "selectDate": "Select Date",
-  "selectTime": "Select Time",
-  "required": "This field is required",
-  "email": "Please enter a valid email address",
-  "phone": "Please enter a valid phone number"
-}
