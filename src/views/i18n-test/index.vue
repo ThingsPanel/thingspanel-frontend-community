@@ -242,8 +242,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { $t, useI18n2 } from '@/locales2'
-import { getCurrentLang } from '@/locales2/useI18n2'
+import { $t, useI18n, getCurrentLang } from '@/locales2'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import 'dayjs/locale/zh-cn'
@@ -253,7 +252,7 @@ import 'dayjs/locale/en'
 dayjs.extend(relativeTime)
 
 // 使用国际化Hook
-const { setLang, naiveLocale, naiveDateLocale } = useI18n2()
+const { setLocale, naiveLocale, naiveDateLocale } = useI18n()
 
 // 响应式数据
 const testUserName = ref('张三 / John')
@@ -267,7 +266,7 @@ const currentLang = computed(() => getCurrentLang())
 
 // 方法
 const switchLanguage = (lang: 'zh-CN' | 'en-US') => {
-  setLang(lang)
+  setLocale(lang)
 }
 
 // Day.js 时间格式化方法

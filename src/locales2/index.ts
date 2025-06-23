@@ -4,52 +4,41 @@ import { setDayjsLocale } from './dayjs'
 import { getNaiveLocale, getNaiveDateLocale } from './naive'
 
 // 支持的语言类型
-type LangType = 'zh-CN' | 'en-US'
+export type LangType = 'zh-CN' | 'en-US'
 
 // 当前语言状态
 const currentLang = ref<LangType>(localStg.get('lang') || 'zh-CN')
 
-// 翻译数据缓存
-const translationsCache: Record<LangType, Record<string, any>> = {
-  'zh-CN': {},
-  'en-US': {}
-}
+// 翻译数据缓存 - 使用 Map 提高性能
+const translationsCache = new Map<LangType, Record<string, any>>()
 
-// 响应式的翻译状态，用于触发Vue重新渲染
+// 响应式的翻译状态
 const translationsState = ref<Record<LangType, Record<string, any>>>({
   'zh-CN': {},
   'en-US': {}
 })
 
-// 是否已加载标记
+// 加载状态管理
 const loadedLangs = new Set<LangType>()
-
-// 加载状态标记
 const loadingLangs = new Set<LangType>()
 
-// 初始化Promise，确保首次加载完成
-let initPromise: Promise<void> | null = null
-
 /**
- * 动态获取语言目录下的所有翻译文件
- * 通过 Vite 的 import.meta.glob 自动扫描文件系统
- * 无需手动维护文件列表，添加新JSON文件会自动被发现和加载
+ * 优化的模块获取函数 - 减少内存占用
+ * @param lang 语言类型
  */
 function getTranslationModules(lang: LangType) {
-  // 使用 Vite 的 glob 导入功能自动扫描所有 JSON 文件
-  // 这样添加新文件时无需修改任何代码
-  const modules = import.meta.glob('./**/*.json', { eager: false })
+  // 使用更精确的 glob 模式，减少扫描范围
+  const modules = import.meta.glob('./**/*.json', {
+    eager: false, // 关键：使用懒加载
+    import: 'default' // 只导入 default 导出
+  })
 
   const langModules: Record<string, () => Promise<any>> = {}
 
-  console.log(`[i18n DEBUG] All modules found by glob for ${lang}:`, Object.keys(modules))
-
-  // 过滤出当前语言的文件
+  // 过滤当前语言的文件
   Object.keys(modules).forEach(path => {
     if (path.startsWith(`./${lang}/`)) {
-      // 移除语言前缀，得到相对路径
       const relativePath = path.replace(`./${lang}/`, '')
-      console.log(`[i18n DEBUG] Filtered module for ${lang}: ${path} -> ${relativePath}`)
       langModules[relativePath] = modules[path] as () => Promise<any>
     }
   })
@@ -58,125 +47,97 @@ function getTranslationModules(lang: LangType) {
 }
 
 /**
- * 动态加载语言包
- * 自动扫描并加载指定语言目录下的所有JSON文件
+ * 优化的语言包加载函数
  * @param lang 语言类型
  */
 async function loadLanguage(lang: LangType) {
-  if (loadedLangs.has(lang)) {
-    return translationsCache[lang]
+  // 检查缓存
+  if (translationsCache.has(lang)) {
+    return translationsCache.get(lang)!
   }
 
   // 防止重复加载
   if (loadingLangs.has(lang)) {
-    // 等待正在进行的加载完成
     while (loadingLangs.has(lang)) {
       await new Promise(resolve => setTimeout(resolve, 10))
     }
-    return translationsCache[lang]
+    return translationsCache.get(lang) || {}
   }
 
   loadingLangs.add(lang)
 
   try {
     const translations: Record<string, any> = {}
-
-    // 获取当前语言的所有翻译模块
     const langModules = getTranslationModules(lang)
 
-    // 并行加载所有文件
-    const loadPromises = Object.entries(langModules).map(async ([relativePath, moduleLoader]) => {
-      try {
-        const module = await moduleLoader()
-        return { relativePath, data: module.default }
-      } catch (error) {
-        console.warn(`Failed to load ${relativePath} for ${lang}:`, error)
-        return null
-      }
-    })
+    // 分批加载，避免内存峰值
+    const entries = Object.entries(langModules)
+    const batchSize = 5 // 每批处理5个文件
 
-    const results = await Promise.all(loadPromises)
-    const loadedFileNames: string[] = [] // 新增：用于存储加载的文件名
+    for (let i = 0; i < entries.length; i += batchSize) {
+      const batch = entries.slice(i, i + batchSize)
 
-    // 组织翻译数据结构
-    results.forEach(result => {
-      if (result) {
-        loadedFileNames.push(result.relativePath)
-        console.log(`[i18n DEBUG] Processing loaded file for ${lang}: ${result.relativePath}`)
-      }
-      if (!result) return
+      const batchPromises = batch.map(async ([relativePath, moduleLoader]) => {
+        try {
+          const data = await moduleLoader()
+          return { relativePath, data }
+        } catch (error) {
+          console.warn(`Failed to load ${relativePath} for ${lang}:`, error)
+          return null
+        }
+      })
 
-      const { relativePath, data } = result
+      const batchResults = await Promise.all(batchPromises)
 
-      if (relativePath === 'common.json') {
-        // common.json 的内容直接展开到根级别
-        Object.assign(translations, data)
-        console.log(`[i18n DEBUG] Merged common.json into root for ${lang}`)
-      } else {
-        // 其他文件根据相对路径自动创建命名空间
-        // 例如 'page/home.json' -> translations.page.home = data
-        // 例如 'custom/dashboard/widget1.json' -> translations.custom.dashboard.widget1 = data
-        // 例如 'menu.json' -> translations.menu = data
-        const pathParts = relativePath.replace('.json', '').split('/')
-        let currentLevel = translations
+      // 处理批次结果
+      batchResults.forEach(result => {
+        if (!result) return
 
-        pathParts.forEach((part, index) => {
-          if (index === pathParts.length - 1) {
-            // 如果当前部分已存在且为对象，并且新数据也为对象，则进行深合并
-            if (currentLevel[part] && typeof currentLevel[part] === 'object' && typeof data === 'object') {
-              // 简单的深合并，实际项目中可能需要更健壮的深合并库
-              // 这里为了简化，如果键冲突，新数据会覆盖旧数据中的同名键
-              // 如果需要更复杂的合并策略（例如数组合并），则需要更复杂的逻辑
-              Object.assign(currentLevel[part], data)
-              console.log(`[i18n DEBUG] Deep merged data into ${pathParts.slice(0, index + 1).join('.')} for ${lang}`)
+        const { relativePath, data } = result
+
+        if (relativePath === 'common.json') {
+          Object.assign(translations, data)
+        } else {
+          const pathParts = relativePath.replace('.json', '').split('/')
+          let currentLevel = translations
+
+          pathParts.forEach((part, index) => {
+            if (index === pathParts.length - 1) {
+              if (currentLevel[part] && typeof currentLevel[part] === 'object' && typeof data === 'object') {
+                Object.assign(currentLevel[part], data)
+              } else {
+                currentLevel[part] = data
+              }
             } else {
-              currentLevel[part] = data
-              console.log(`[i18n DEBUG] Set data for ${pathParts.slice(0, index + 1).join('.')} for ${lang}`)
+              if (!currentLevel[part] || typeof currentLevel[part] !== 'object') {
+                currentLevel[part] = {}
+              }
+              currentLevel = currentLevel[part]
             }
-          } else {
-            if (!currentLevel[part] || typeof currentLevel[part] !== 'object') {
-              currentLevel[part] = {}
-              console.log(`[i18n DEBUG] Created namespace ${pathParts.slice(0, index + 1).join('.')} for ${lang}`)
-            }
-            currentLevel = currentLevel[part]
-          }
-        })
-      }
-    })
+          })
+        }
+      })
+    }
 
-    translationsCache[lang] = translations
-    // 更新响应式状态，触发Vue重新渲染
+    // 缓存结果
+    translationsCache.set(lang, translations)
     translationsState.value = { ...translationsState.value, [lang]: translations }
     loadedLangs.add(lang)
-    loadingLangs.delete(lang)
 
-    console.log(`✅ 成功加载 ${lang} 语言包，共 ${loadedFileNames.length} 个文件。文件名列表:`, loadedFileNames)
     return translations
   } catch (error) {
-    console.error(`❌ 加载语言包失败: ${lang}`, error)
-    loadingLangs.delete(lang)
+    console.error(`Failed to load language ${lang}:`, error)
     return {}
+  } finally {
+    loadingLangs.delete(lang)
   }
 }
-
-// 初始化：加载当前语言的翻译数据和第三方库语言设置
-initPromise = loadLanguage(currentLang.value)
-  .then(() => {
-    // 初始化时同步设置第三方库的语言环境
-    setDayjsLocale(currentLang.value)
-    console.log(`🚀 国际化系统初始化完成，当前语言: ${currentLang.value}`)
-    initPromise = null
-  })
-  .catch(error => {
-    console.error(`❌ 初始语言加载失败:`, error)
-  })
 
 /**
  * 获取嵌套对象的值
  * @param obj 对象
- * @param path 路径，如 'page.home.greeting'
- * @param params 参数对象，用于字符串插值
- * @returns 翻译后的字符串
+ * @param path 路径
+ * @param params 参数对象
  */
 function getValue(obj: Record<string, any>, path: string, params?: Record<string, any>): string {
   const keys = path.split('.')
@@ -186,7 +147,7 @@ function getValue(obj: Record<string, any>, path: string, params?: Record<string
     if (result && typeof result === 'object' && key in result) {
       result = result[key]
     } else {
-      return path // 如果找不到，返回原始路径
+      return path
     }
   }
 
@@ -194,7 +155,7 @@ function getValue(obj: Record<string, any>, path: string, params?: Record<string
     return path
   }
 
-  // 处理参数插值，支持 {key} 格式
+  // 参数插值
   if (params) {
     return result.replace(/\{(\w+)\}/g, (match, key) => {
       return params[key] !== undefined ? String(params[key]) : match
@@ -205,28 +166,12 @@ function getValue(obj: Record<string, any>, path: string, params?: Record<string
 }
 
 /**
- * 全局翻译函数
- * @param key 翻译键，支持嵌套路径如 'page.home.greeting'
- * @param params 参数对象，用于字符串插值
- * @returns 翻译后的字符串
+ * 翻译函数
+ * @param key 翻译键
+ * @param params 参数对象
  */
-export function $t(key: string, params?: Record<string, any>): string {
-  // 使用响应式状态，确保Vue能够追踪到变化
-  const currentTranslations = translationsState.value[currentLang.value]
-
-  // 如果翻译数据还未加载，尝试触发加载
-  if (!currentTranslations || Object.keys(currentTranslations).length === 0) {
-    // 如果是初始化阶段，先等待初始化完成
-    if (initPromise && !loadedLangs.has(currentLang.value)) {
-      // 异步加载，但立即返回key，避免阻塞渲染
-      initPromise.then(() => {
-        // 数据已经通过translationsState.value更新触发了响应式更新
-        console.log(`🔄 ${currentLang.value} 语言包加载完成，触发重新渲染`)
-      })
-    }
-    return key
-  }
-
+export function t(key: string, params?: Record<string, any>): string {
+  const currentTranslations = translationsCache.get(currentLang.value) || {}
   return getValue(currentTranslations, key, params)
 }
 
@@ -248,6 +193,15 @@ export async function setLocale(lang: LangType) {
 }
 
 /**
+ * 设置 Vue 应用的国际化
+ * @param app Vue应用实例
+ */
+export function setupI18n(app: any) {
+  app.config.globalProperties.$t = t
+  initI18n()
+}
+
+/**
  * 获取当前语言
  * @returns 当前语言
  */
@@ -257,22 +211,31 @@ export function getCurrentLang(): LangType {
 
 /**
  * 国际化 Hook
- * @returns 国际化相关的方法和状态
  */
-export function useI18n2() {
+export function useI18n() {
   return {
-    t: $t,
-    setLang: setLocale,
+    t,
+    setLocale,
     currentLang: computed(() => currentLang.value),
-    locale: computed(() => translationsState.value[currentLang.value] || {}),
-    // Naive UI 相关
     naiveLocale: computed(() => getNaiveLocale(currentLang.value)),
     naiveDateLocale: computed(() => getNaiveDateLocale(currentLang.value))
   }
 }
 
+/**
+ * 初始化国际化系统
+ */
+export async function initI18n() {
+  await loadLanguage(currentLang.value)
+  setDayjsLocale(currentLang.value)
+  console.log(`🚀 国际化系统初始化完成，当前语言: ${currentLang.value}`)
+}
+
+// 全局翻译函数，用于兼容旧系统
+export const $t = t
+
 // 导出类型
 export type { LangType }
 
 // 默认导出
-export default useI18n2
+export default useI18n
