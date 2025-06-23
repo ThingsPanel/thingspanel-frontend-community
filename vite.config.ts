@@ -50,6 +50,21 @@ export default defineConfig(configEnv => {
       // sourcemap: viteEnv.VITE_SOURCE_MAP === 'Y',
       commonjsOptions: {
         ignoreTryCatch: false
+      },
+      // 内存优化配置
+      rollupOptions: {
+        // 限制并行处理数量以减少内存使用
+        maxParallelFileOps: 2,
+        output: {
+          // 手动分包以减少单个包的大小
+          manualChunks: {
+            // 将大型第三方库分离
+            'vendor-vue': ['vue', 'vue-router', 'pinia'],
+            'vendor-ui': ['naive-ui'],
+            'vendor-charts': ['@antv/g2', '@antv/data-set'],
+            'vendor-utils': ['dayjs', 'lodash-es']
+          }
+        }
       }
     },
     lintOnSave: false
