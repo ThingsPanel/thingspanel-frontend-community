@@ -233,7 +233,7 @@ onMounted(() => {
           @click="toggleLoginModule('register-email')"
         >
           <span class="text-#999">{{ $t('page.login.noAccountQuestion') }}</span>
-          {{ $t('page.login.{{ $t('page.login.文本') }}') }}
+          {{ $t('page.login.registerAccount') }}
         </NButton>
       </div>
     </NSpace>

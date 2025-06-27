@@ -43,7 +43,7 @@ function login(userName: string, password: string) {
 
 <template>
   <NSpace :vertical="true">
-    <NDivider class="text-14px text-#666 !mb-0">{{ $t('page.login.title.其他账号{{ $t('common.button.login') }}') }}</NDivider>
+    <NDivider class="text-14px text-#666 !mb-0">{{ $t('common.button.login') }}</NDivider>
     <NSpace justify="center">
       <NButton
         v-for="item in accounts"

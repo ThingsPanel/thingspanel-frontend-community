@@ -83,7 +83,7 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
           }
           return Promise.resolve()
         },
-        message: $t('page.login.密码为6-1'),
+        message: $t('page.login.form.passwordRule'),
         trigger: ['input', 'blur']
       }
     ]
@@ -170,7 +170,7 @@ setTimeout(() => {
           show-password-on="click"
           :placeholder="$t('page.login.form.enterPassword')"
         />
-        <div class="mt-1 text-xs text-gray-500">{{ $t('page.login.密码为6-1') }}</div>
+        <div class="mt-1 text-xs text-gray-500">{{ $t('page.login.form.passwordRule') }}</div>
       </div>
     </NFormItem>
 

@@ -48,7 +48,7 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
           }
           return Promise.resolve()
         },
-        message: $t('page.login.密码为6-1'),
+        message: $t('page.login.form.passwordRule'),
         trigger: ['input', 'blur']
       }
     ],
@@ -97,7 +97,7 @@ async function handleSubmit() {
         v-model:value="model.confirmPwd"
         type="password"
         show-password-on="click"
-        :placeholder="$t('page.login.请确认密码')"
+        :placeholder="$t('page.login.form.confirmPassword')"
       />
     </NFormItem>
 

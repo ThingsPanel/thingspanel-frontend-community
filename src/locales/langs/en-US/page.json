@@ -1,5 +1,35 @@
 {
   "home": {
     "title": "Home"
+  },
+  "login": {
+    "title": {
+      "pwdLogin": "Password Login",
+      "resetPwd": "Reset Password",
+      "codeLogin": "Verification Code Login"
+    },
+    "chinese": "Chinese",
+    "slogan": "Connect Everything, Smart Life",
+    "form": {
+      "enterUsername": "Please enter username",
+      "usernameFormatError": "Username format error",
+      "enterPassword": "Please enter password",
+      "enterPhone": "Please enter phone number",
+      "enterCaptcha": "Please enter captcha",
+      "enterCode": "Please enter verification code",
+      "enterEmailAddress": "Please enter email address",
+      "enterEmail": "Please enter email",
+      "confirmPassword": "Please confirm password",
+      "passwordRule": "Password must be 6-18 characters and contain letters and numbers"
+    },
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password",
+    "rememberPassword": "Remember password",
+    "label": "Label",
+    "otherLoginMethods": "Other login methods",
+    "dynamicText": "Dynamic text",
+    "or": "Or",
+    "noAccountQuestion": "Don't have an account?",
+    "registerAccount": "Register Account"
   }
 } 

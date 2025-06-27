@@ -77,10 +77,10 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
       {
         validator: (_rule, value) => {
           if (value.length < 6) {
-            return Promise.reject(new Error($t('page.login.密码为6-1')))
+            return Promise.reject(new Error($t('page.login.form.passwordRule')))
           }
           if (!/[a-z]/.test(value)) {
-            return Promise.reject(new Error($t('page.login.密码为6-1')))
+            return Promise.reject(new Error($t('page.login.form.passwordRule')))
           }
           return Promise.resolve()
         },
