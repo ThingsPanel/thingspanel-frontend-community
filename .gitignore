@@ -39,6 +39,9 @@ vite.config.ts.timestamp-*-*.mjs
 pnpm-lock.yaml
 src/typings/components.d.ts
 
+# Scripts directory (国际化工具脚本)
+scripts/
+
 
 
 
