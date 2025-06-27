@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import { inject, ref, watch, onMounted, computed } from 'vue'
-import { NDynamicInput, NInput, NColorPicker, NFormItem, NGrid, NFormItemGi } from 'naive-ui'
+import { NDynamicInput, NInput, NColorPicker, NGrid, NFormItemGi } from 'naive-ui'
 import type { IConfigCtx } from '@/components/panel/card'
 import { $t } from '@/locales'
 import { cloneDeep } from 'lodash'
 
 interface GuideItem {
-  title: string
-  description: string
-  link: string
+  title: string;
+  description: string;
+  link: string;
 }
 
 const ctx = inject<IConfigCtx>('config-ctx')!
@@ -66,28 +66,28 @@ const createDefaultGuideItem = (): GuideItem => {
 
 <template>
   <div>
-    <h4 class="mb-2 font-semibold">{{ "UI 设置" }}</h4>
+    <h4 class="mb-2 font-semibold">{{ $t('card.common.uiSettings') }}</h4>
     <NGrid :cols="5" :x-gap="12">
-      <NFormItemGi :label=$t('page.general.numberBackground') class="config-item">
+      <NFormItemGi :label="$t('card.common.numberBackground')" class="config-item">
         <NColorPicker v-model:value="configRef.serialBgColor" size="small" :show-alpha="false" />
       </NFormItemGi>
-      <NFormItemGi :label=$t('page.general.listItemBackground') class="config-item">
+      <NFormItemGi :label="$t('card.common.listItemBackground')" class="config-item">
         <NColorPicker v-model:value="configRef.itemBgColor" size="small" :show-alpha="false" />
       </NFormItemGi>
-      <NFormItemGi :label=$t('page.general.listItemFloat') class="config-item">
+      <NFormItemGi :label="$t('card.common.listItemFloat')" class="config-item">
         <NColorPicker v-model:value="configRef.itemHoverBgColor" size="small" :show-alpha="false" />
       </NFormItemGi>
-      <NFormItemGi :label=$t('page.general.titleColor') class="config-item">
+      <NFormItemGi :label="$t('card.common.titleColor')" class="config-item">
         <NColorPicker v-model:value="configRef.titleColor" size="small" :show-alpha="false" />
       </NFormItemGi>
-      <NFormItemGi :label=$t('page.general.descriptionColor') class="config-item">
+      <NFormItemGi :label="$t('card.common.descriptionColor')" class="config-item">
         <NColorPicker v-model:value="configRef.descriptionColor" size="small" :show-alpha="false" />
       </NFormItemGi>
     </NGrid>
 
     <hr class="my-4" />
 
-    <h4 class="mb-2 font-semibold">{{ $t('page.general.guideList') }}</h4>
+    <h4 class="mb-2 font-semibold">{{ $t('card.common.guideList') }}</h4>
     <NDynamicInput
       #default="{ value, index }"
       v-model:value="guideListRef"
@@ -96,19 +96,19 @@ const createDefaultGuideItem = (): GuideItem => {
     >
       <div class="flex items-center gap-2">
         <span class="font-semibold w-6 text-center">{{ index + 1 }}.</span>
-        <NInput v-model:value="value.title" class="flex-1" type="text" :placeholder=$t('page.general.title.title') size="small" />
+        <NInput v-model:value="value.title" class="flex-1" type="text" :placeholder="$t('card.common.title')" size="small" />
         <NInput
           v-model:value="value.description"
           class="flex-1"
           type="text"
-          :placeholder=$t('page.general.description')
+          :placeholder="$t('card.common.description')"
           size="small"
         />
         <NInput
           v-model:value="value.link"
           class="flex-1"
           type="text"
-          :placeholder=$t('page.general.enterLink')
+          :placeholder="$t('card.common.enterLink')"
           size="small"
         />
       </div>
@@ -120,11 +120,11 @@ const createDefaultGuideItem = (): GuideItem => {
 /* 调整 NFormItemGi 内的 label 和 picker 对齐 */
 .config-item :deep(.n-form-item-label) {
   padding: 0;
-  line-height: normal; /* 调整行{{ $t('page.general.high') }}避免过高 */
+  line-height: normal; /* 调整行高避免过高 */
   margin-bottom: 4px; /* label 和 picker 间加一点距离 */
   text-align: left; /* 确保左对齐 */
   /* 添加固定宽度和溢出处理 */
-  width: 80px; /* {{ $t('page.login.or') }}根据实际最长{{ $t('page.login.label') }}调整 max-width */
+  width: 80px; /* 根据实际最长标签调整 max-width */
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

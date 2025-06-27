@@ -25,7 +25,7 @@
           <template v-if="isLatestVersion" #icon>
             <Icon icon="carbon:checkmark-outline" class="text-lg" />
           </template>
-          {{ isLatestVersion?"{{ $t('page.general.alreadyLatest') }}":$t('page.general.latestVersion')+(latestVersion||'--') }}
+          {{ isLatestVersion ? $t('page.general.alreadyLatest') : $t('page.general.latestVersion') + (latestVersion || '--') }}
         </n-tag>
       </div>
     </div>

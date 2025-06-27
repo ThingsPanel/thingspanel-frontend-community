@@ -1,0 +1,57 @@
+{
+  "common": {
+    "operationGuide": "操作指引",
+    "uiSettings": "UI 设置",
+    "guideList": "指引列表",
+    "numberBackground": "序号背景",
+    "listItemBackground": "列表项背景",
+    "listItemFloat": "列表项浮动",
+    "titleColor": "标题颜色",
+    "descriptionColor": "描述颜色",
+    "title": "标题",
+    "description": "描述",
+    "enterLink": "请输入链接"
+  },
+  "operationGuide": {
+    "addDevice": {
+      "title": "添加设备",
+      "description": "将您的物联网设备添加到平台中，建立设备连接并管理"
+    },
+    "configureDevice": {
+      "title": "配置设备", 
+      "description": "为设备设置参数和属性，自定义数据收集规则"
+    },
+    "createDashboard": {
+      "title": "创建看板",
+      "description": "可视化设备数据，创建实时监控仪表盘"
+    },
+    "createTenant": {
+      "title": "创建租户",
+      "description": "创建新的租户账户，管理多租户系统"
+    },
+    "configureNotification": {
+      "title": "配置通知",
+      "description": "配置通知规则和告警设置"
+    },
+    "configurePlugin": {
+      "title": "配置插件", 
+      "description": "安装和配置系统插件功能"
+    }
+  },
+  "chart": {
+    "timeRange": {
+      "seconds30": "30秒",
+      "minutes1": "1分钟",
+      "minutes2": "2分钟",
+      "minutes5": "5分钟",
+      "minutes10": "10分钟",
+      "minutes30": "30分钟",
+      "hours1": "1小时",
+      "hours3": "3小时",
+      "hours6": "6小时",
+      "days1": "1天",
+      "days7": "7天",
+      "month1": "1月"
+    }
+  }
+} 

@@ -6,7 +6,7 @@ import type { ICardData } from '@/components/panel/card'
 import { $t } from '@/locales'
 
 const props = defineProps<{
-  card: ICardData
+  card: ICardData;
 }>()
 
 // --- Logic to determine user role and select guide list ---
@@ -72,7 +72,7 @@ const navigateTo = (link: string) => {
   <div class="guide-container h-full p-3 flex flex-col">
     <!-- 调整 padding 和 flex 布局 -->
     <!-- 使用 card.operationGuide 作为内部标题 -->
-    <h3 class="internal-title mb-3 font-semibold text-lg">{{ $t('page.general.operationGuide') }}</h3>
+    <h3 class="internal-title mb-3 font-semibold text-lg">{{ $t('card.common.operationGuide') }}</h3>
 
     <NList v-if="guideList.length > 0" hoverable clickable class="flex-1 overflow-auto bg-[#00000000]">
       <!-- 移除 bordered, 添加 flex-1 和 overflow -->
@@ -98,8 +98,8 @@ const navigateTo = (link: string) => {
 
           <template #header>
             <!-- Wrap title with NEllipsis, use $t with titleKey -->
-            <NEllipsis :line-clamp="1" :title="$t('page.general.title.title')">
-              {{ $t('page.general.title.title') }}
+            <NEllipsis :line-clamp="1" :title="item.titleKey ? $t(item.titleKey) : item.title">
+              {{ item.titleKey ? $t(item.titleKey) : item.title }}
             </NEllipsis>
           </template>
           <template #header-extra>
@@ -110,8 +110,8 @@ const navigateTo = (link: string) => {
           </template>
           <template #description>
             <!-- Wrap description with NEllipsis, use $t with descriptionKey -->
-            <NEllipsis :line-clamp="2" :title="$t('page.general.text')">
-              {{ $t('page.general.text') }}
+            <NEllipsis :line-clamp="2" :title="item.descriptionKey ? $t(item.descriptionKey) : item.description">
+              {{ item.descriptionKey ? $t(item.descriptionKey) : item.description }}
             </NEllipsis>
           </template>
         </NThing>

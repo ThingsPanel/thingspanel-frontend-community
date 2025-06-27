@@ -205,18 +205,18 @@ const timeOptions: SelectOption[] = [
 const timeOptionsValue = ref()
 const aggregateOptions: SelectOption[] = [
   { label: $t('page.general.noAggregate'), value: 'no_aggregate', disabled: false },
-  { label: $t('page.general.seconds30'), value: '30s', disabled: false },
-  { label: $t('page.general.minute1'), value: '1m', disabled: false },
-  { label: $t('page.general.minutes2'), value: '2m', disabled: false },
-  { label: $t('page.general.minutes5'), value: '5m', disabled: false },
-  { label: $t('page.general.minutes10'), value: '10m', disabled: false },
-  { label: $t('page.general.minutes30'), value: '30m', disabled: false },
-  { label: $t('page.general.hour1'), value: '1h', disabled: false },
-  { label: $t('page.general.hours3'), value: '3h', disabled: false },
-  { label: $t('page.general.hours6'), value: '6h', disabled: false },
-  { label: $t('page.general.day1'), value: '1d', disabled: false },
-  { label: $t('page.general.days7'), value: '7d', disabled: false },
-  { label: $t('page.general.month1'), value: '1mo', disabled: false }
+  { label: $t('card.chart.timeRange.seconds30'), value: '30s', disabled: false },
+  { label: $t('card.chart.timeRange.minutes1'), value: '1m', disabled: false },
+  { label: $t('card.chart.timeRange.minutes2'), value: '2m', disabled: false },
+  { label: $t('card.chart.timeRange.minutes5'), value: '5m', disabled: false },
+  { label: $t('card.chart.timeRange.minutes10'), value: '10m', disabled: false },
+  { label: $t('card.chart.timeRange.minutes30'), value: '30m', disabled: false },
+  { label: $t('card.chart.timeRange.hours1'), value: '1h', disabled: false },
+  { label: $t('card.chart.timeRange.hours3'), value: '3h', disabled: false },
+  { label: $t('card.chart.timeRange.hours6'), value: '6h', disabled: false },
+  { label: $t('card.chart.timeRange.days1'), value: '1d', disabled: false },
+  { label: $t('card.chart.timeRange.days7'), value: '7d', disabled: false },
+  { label: $t('card.chart.timeRange.month1'), value: '1mo', disabled: false }
 ]
 const aggregateOptionsValue = ref<string>('')
 const aggregateFunctionOptions: SelectOption[] = [

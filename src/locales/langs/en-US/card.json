@@ -1,0 +1,57 @@
+{
+  "common": {
+    "operationGuide": "Operation Guide",
+    "uiSettings": "UI Settings",
+    "guideList": "Guide List",
+    "numberBackground": "Number Background",
+    "listItemBackground": "List Item Background",
+    "listItemFloat": "List Item Hover",
+    "titleColor": "Title Color",
+    "descriptionColor": "Description Color",
+    "title": "Title",
+    "description": "Description",
+    "enterLink": "Enter Link"
+  },
+  "operationGuide": {
+    "addDevice": {
+      "title": "Add Device",
+      "description": "Add your IoT devices to the platform, establish device connections and manage them"
+    },
+    "configureDevice": {
+      "title": "Configure Device", 
+      "description": "Set parameters and properties for devices, customize data collection rules"
+    },
+    "createDashboard": {
+      "title": "Create Dashboard",
+      "description": "Visualize device data, create real-time monitoring dashboards"
+    },
+    "createTenant": {
+      "title": "Create Tenant",
+      "description": "Create new tenant accounts, manage multi-tenant system"
+    },
+    "configureNotification": {
+      "title": "Configure Notification",
+      "description": "Configure notification rules and alarm settings"
+    },
+    "configurePlugin": {
+      "title": "Configure Plugin", 
+      "description": "Install and configure system plugin features"
+    }
+  },
+  "chart": {
+    "timeRange": {
+      "seconds30": "30 seconds",
+      "minutes1": "1 minute",
+      "minutes2": "2 minutes",
+      "minutes5": "5 minutes",
+      "minutes10": "10 minutes",
+      "minutes30": "30 minutes",
+      "hours1": "1 hour",
+      "hours3": "3 hours",
+      "hours6": "6 hours",
+      "days1": "1 day",
+      "days7": "7 days",
+      "month1": "1 month"
+    }
+  }
+} 
