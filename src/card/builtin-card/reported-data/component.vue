@@ -1,6 +1,6 @@
 <template>
   <n-card
-    :title="最新上报数据"
+    :title="$t('page.general.latestReportData')"
     :bordered="false"
     size="small"
     class="reported-data-card shadow-sm transition duration-700 ease-in-out"
@@ -26,7 +26,7 @@
           </n-icon>
           <!-- Simplified refresh icon -->
         </template>
-        {{ isRefreshing ? "实时刷新中" : "开启实时刷新" }}
+        {{ isRefreshing ? $t('page.general.middle') : $t('page.general.enableRealTimeRefresh') }}
       </n-button>
     </template>
 
@@ -38,13 +38,13 @@
             <path fill="currentColor" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
           </svg>
         </n-icon>
-        {{ "最新上报数据" }}
+        {{ $t('page.general.latestReportData') }}
       </div>
     </template>
 
     <!-- Error Display -->
-    <n-alert v-if="error && !loading" type="error" :title="错误">
-      {{ error.message || "获取错误" }}
+    <n-alert v-if="error && !loading" type="error" :title="$t('common.status.error')">
+      {{ error.message || $t('common.status.error') }}
     </n-alert>
 
     <!-- Content Area: Use NSpin only for refresh updates -->
@@ -52,7 +52,7 @@
       <!-- No Data State -->
       <n-empty
         v-if="!loading && !error && (!devices || devices.length === 0)"
-        :description="暂无数据"
+        :description="$t('common.status.noData')"
         class="py-8"
       />
 
@@ -99,7 +99,7 @@
                   {{ device.device_name }}
                 </span>
                 <n-tag :type="device.is_online === 1 ? 'success' : 'default'" size="tiny" round class="flex-shrink-0">
-                  {{ device.is_online === 1 ? "在线" : "离线" }}
+                  {{ device.is_online === 1 ? $t('page.general.online') : $t('page.general.offline') }}
                 </n-tag>
               </div>
               <!-- Last Push Time -->
@@ -188,7 +188,7 @@
             </BottomUpInfiniteScroller>
             <!-- Show message if no telemetry data -->
             <div v-else class="text-xs text-center py-2" style="color: var(--n-text-color-disabled)">
-              {{ "无遥测数据" }}
+              {{ $t('page.general.noTelemetryData') }}
             </div>
           </div>
         </n-thing>
@@ -199,7 +199,7 @@
     <template #footer>
       <div class="text-center">
         <router-link to="/device/manage" class="text-blue-500 text-xs hover:underline">
-          {{ "查看全部数据" }} >
+          {{ $t('common.operation.view') }} >
         </router-link>
       </div>
     </template>
@@ -308,7 +308,7 @@ const fetchData = async (initialLoad = false) => {
   try {
     const response: ApiLatestTelemetryResponse = await getLatestTelemetryData()
     if (response.error) {
-      let errorMessage = "获取错误" // Default error message
+      let errorMessage = $t('common.status.error') // Default error message
       if (typeof response.error === 'string') errorMessage = response.error
       else if (typeof response.error === 'object' && response.error !== null && (response.error as any).message)
         errorMessage = (response.error as any).message
@@ -319,7 +319,7 @@ const fetchData = async (initialLoad = false) => {
       devices.value = Array.isArray(response.data) ? response.data : []
     }
   } catch (err) {
-    const catchErrorMessage = err instanceof Error ? err.message : "未知错误"
+    const catchErrorMessage = err instanceof Error ? err.message : $t('common.status.error')
     error.value = new Error(catchErrorMessage)
     devices.value = [] // Clear devices on catch error
   } finally {
@@ -385,7 +385,7 @@ const formatRelativeTime = (timeStr: string | null | undefined): string => {
   if (!time.isValid()) return '-'
   const now = dayjs().locale(currentLocale.value)
   // Use more specific relative time outputs or keep as is
-  if (now.diff(time, 'minute') < 1) return "刚刚" // Assuming you have i18n key
+  if (now.diff(time, 'minute') < 1) return $t('page.general.justNow') // Assuming you have i18n key
   return time.fromNow()
 }
 
@@ -402,7 +402,7 @@ const formatValue = (item: TelemetryItem | any): string => {
   if (item !== null && typeof item !== 'object') {
     if (typeof item === 'string') return item
     if (typeof item === 'number') return String(item)
-    if (typeof item === 'boolean') return item ? "是的" : "否"
+    if (typeof item === 'boolean') return item ? "page.general.yes" : $t('page.general.no')
     return String(item)
   }
 
@@ -413,9 +413,9 @@ const formatValue = (item: TelemetryItem | any): string => {
   let displayValue = ''
 
   if (typeof value === 'boolean') {
-    displayValue = value ? "是的" : "否"
+    displayValue = value ? "是的" : $t('page.general.no')
     if (key?.includes('switch')) {
-      displayValue = value ? "开" : "关"
+      displayValue = value ? "开" : $t('page.general.off')
     }
   } else if (typeof value === 'number') {
     // Keep precision formatting

@@ -8,7 +8,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: '告警统计', // Changed title (assuming translation key)
+  title: $t('page.general.alarmStats'), // Changed title (assuming translation key)
   preset: {
     iCardViewDefault: {
       w: 3,

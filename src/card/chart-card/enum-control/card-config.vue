@@ -28,10 +28,10 @@ const removeButtonConfig = (index: number) => {
 onMounted(() => {
   if (!ctx.config.btOptions) {
     ctx.config.btOptions = [
-      { label: "制热", value: 'heat' },
-      { label: "制冷", value: 'cool' },
-      { label: "通风", value: 'fan' },
-      { label: "自动", value: 'auto' }
+      { label: $t('page.general.heating'), value: 'heat' },
+      { label: $t('page.general.cooling'), value: 'cool' },
+      { label: $t('page.general.ventilation'), value: 'fan' },
+      { label: $t('page.general.auto'), value: 'auto' }
     ]
   }
 })
@@ -44,8 +44,8 @@ onMounted(() => {
       <div v-for="(button, index) in ctx.config.btOptions" :key="index" class="button-config">
         <div class="flex flex-row items-center gap-2">
           <span>{{ index + 1 }}</span>
-          <NInput v-model:value="button.label" :placeholder="请输入按钮名称" />
-          <NInput v-model:value="button.value" :placeholder="请输入按钮值" />
+          <NInput v-model:value="button.label" :placeholder="$t('page.general.enterButtonName')" />
+          <NInput v-model:value="button.value" :placeholder="$t('page.general.enterButtonValue')" />
           <NButton v-if="ctx.config.btOptions.length > 2" type="error" text @click="removeButtonConfig(index)">
             <NIcon size="20">
               <DeleteOutlined />
@@ -61,7 +61,7 @@ onMounted(() => {
         <NIcon size="20">
           <PlusOutlined />
         </NIcon>
-        {{ "添加按钮" }}
+        {{ $t('page.general.addButton') }}
       </NButton>
     </NForm>
   </div>

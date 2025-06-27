@@ -61,20 +61,20 @@ onUnmounted(() => {
 <template>
   <!-- Changed gradient colors to orange -->
   <GradientBg class="card-wrapper" start-color="#fb923c" end-color="#f97316">
-    <h3 class="text-16px">{{ "硬盘使用率" }}</h3>
+    <h3 class="text-16px">{{ $t('page.general.diskUsage') }}</h3>
     <!-- Changed title key -->
     <div class="flex justify-between items-center pt-30px">
       <SvgIcon icon="ant-design:hdd-outlined" class="text-32px" />
       <!-- Changed Icon -->
       <div class="flex flex-col items-end">
         <template v-if="loading">
-          <span class="text-30px text-white dark:text-dark">{{ "加载中..." }}</span>
+          <span class="text-30px text-white dark:text-dark">{{ $t('common.status.加载中...') }}</span>
         </template>
         <template v-else-if="value !== null">
           <CountTo :start-value="0" :end-value="value" :suffix="unit" class="text-30px text-white dark:text-dark" />
         </template>
         <template v-else>
-          <span class="text-20px text-white dark:text-dark">{{ "暂无数据" }}</span>
+          <span class="text-20px text-white dark:text-dark">{{ $t('common.status.noData') }}</span>
         </template>
       </div>
     </div>

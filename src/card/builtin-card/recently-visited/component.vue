@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 h-full bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
     <h3 class="text-base font-semibold mb-3 text-gray-800 dark:text-gray-100 flex-shrink-0">
-      {{ "最近访问" }}
+      {{ $t('page.general.recentVisit') }}
     </h3>
     <div class="flex-grow overflow-hidden">
       <ul class="space-y-1.5 overflow-y-auto h-full pr-1">
@@ -17,7 +17,7 @@
           <span class="ml-auto text-gray-400 dark:text-gray-500 text-xs">></span>
         </li>
         <li v-if="!visitedRoutes.length" class="text-sm text-gray-500 dark:text-gray-400 px-2 py-4 text-center">
-          {{ "暂无访问记录" }}
+          {{ $t('page.general.noVisitRecord') }}
         </li>
       </ul>
     </div>
@@ -53,7 +53,7 @@ const loadVisitedRoutes = () => {
       visitedRoutes.value = []
     }
   } catch (error) {
-    console.error('加载最近访问路由失败:', error)
+    console.error($t('page.general.recentVisit'), error)
     visitedRoutes.value = []
   }
 }
@@ -66,7 +66,7 @@ const navigateTo = (path: string, query?: LocationQuery) => {
 }
 
 onMounted(() => {
-  // 监听 storage 事件，以便在其他标签页更新时刷新列表
+  // 监听 storage 事件，以便在其他{{ $t('page.login.label') }}页更新时刷新列表
   window.addEventListener('storage', event => {
     if (event.key === RECENTLY_VISITED_ROUTES_KEY) {
       loadVisitedRoutes()

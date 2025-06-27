@@ -7,7 +7,7 @@
       <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-3">
         <div class="flex">
           <Icon icon="carbon:information-square-filled" class="mr-2 text-lg text-blue-600 dark:text-blue-400" />
-          <span>{{ "版本信息" }}</span>
+          <span>{{ $t('page.general.versionInfo') }}</span>
         </div>
 
         <div>
@@ -19,13 +19,13 @@
         </div>
       </div>
       <div class="flex flex-col items-center mt-4">
-        <span class="text-gray-700 dark:text-gray-300 mb-1">{{ "当前版本" }}</span>
+        <span class="text-gray-700 dark:text-gray-300 mb-1">{{ $t('page.general.currentVersion') }}</span>
         <span class="text-3xl font-bold text-gray-900 dark:text-white mb-3 tracking-wider">{{ version }}</span>
         <n-tag type="success" size="medium" round class="animate-pulse">
           <template v-if="isLatestVersion" #icon>
             <Icon icon="carbon:checkmark-outline" class="text-lg" />
           </template>
-          {{ isLatestVersion?"已是最新":'最新版本：'+(latestVersion||'--') }}
+          {{ isLatestVersion?"{{ $t('page.general.alreadyLatest') }}":$t('page.general.latestVersion')+(latestVersion||'--') }}
         </n-tag>
       </div>
     </div>
@@ -44,14 +44,14 @@ const version = ref('')
 const latestVersion = ref('')
 const isLatestVersion = ref(false)
 onMounted(async() => {
-  // 尝试获取最新版本信息，失败时不影响后续逻辑
+  // 尝试获取最新{{ $t('page.general.versionInfo') }}，失败时不影响后续逻辑
   try {
     const res = await axios.get('https://api.github.com/repos/ThingsPanel/thingspanel-backend-community/tags')
     if(res?.data?.[0]?.name){
       latestVersion.value = res.data[0].name || '--'
     }
   } catch (error) {
-    console.warn('获取最新版本信息失败:', error)
+    console.warn($t('page.general.getLatestVersionFailed'), error)
     latestVersion.value = '--'
   }
   

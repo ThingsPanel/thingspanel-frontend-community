@@ -2,10 +2,10 @@
   <div class="p-4 h-full bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
     <div class="flex justify-between items-center mb-3 flex-shrink-0">
       <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">
-        {{ "告警信息" }}
+        {{ $t('page.general.alarmInfo') }}
       </h3>
       <NButton text size="small" type="primary" @click="viewAllAlarms">
-        {{ "查看全部" }}
+        {{ $t('page.general.viewAll') }}
       </NButton>
     </div>
     <div class="flex-grow overflow-auto relative">
@@ -53,13 +53,13 @@ const getStatusInfo = (
 ): { label: string; type: 'default' | 'error' | 'warning' | 'info' | 'success' } => {
   switch (status) {
     case 'H':
-      return { label: "高", type: 'error' }
+      return { label: $t('page.general.high'), type: 'error' }
     case 'M':
-      return { label: "中", type: 'warning' }
+      return { label: $t('page.general.middle'), type: 'warning' }
     case 'L':
-      return { label: "低", type: 'info' }
+      return { label: $t('page.general.low'), type: 'info' }
     case 'N':
-      return { label: "正常", type: 'success' }
+      return { label: $t('page.general.normal'), type: 'success' }
     default:
       return { label: status, type: 'default' }
   }
@@ -68,7 +68,7 @@ const getStatusInfo = (
 const columns: DataTableColumns<AlarmData> = [
   {
     key: 'name',
-    title: "告警名称",
+    title: $t('page.general.alarmName'),
     width: 170,
     ellipsis: {
       tooltip: true
@@ -77,7 +77,7 @@ const columns: DataTableColumns<AlarmData> = [
 
   {
     key: 'alarm_status',
-    title: "告警状态",
+    title: $t('page.general.alarmStatus'),
     width: 90,
     render(row) {
       const statusInfo = getStatusInfo(row.alarm_status)
@@ -86,14 +86,14 @@ const columns: DataTableColumns<AlarmData> = [
   },
   {
     key: 'content',
-    title: "告警内容:",
+    title: $t('page.general.alarmContent'),
     ellipsis: {
       tooltip: true
     }
   },
   {
     key: 'create_at',
-    title: '告警时间',
+    title: $t('page.general.alarmTime'),
     width: 180,
     render(row) {
       return formatTime(row.create_at)

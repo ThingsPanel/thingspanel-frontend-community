@@ -25,9 +25,7 @@ import type { ICardData } from '@/components/panel/card'
 import { telemetryDataCurrentKeys, telemetryDataHistoryList } from '@/service/api/device'
 import { createLogger } from '@/utils/logger'
 const logger = createLogger('Chart')
-type EChartsOption = ComposeOption<
-  TooltipComponentOption | LegendComponentOption | ToolboxComponentOption | GridComponentOption | LineSeriesOption
->
+type EChartsOption = ComposeOption<TooltipComponentOption | LegendComponentOption | ToolboxComponentOption | GridComponentOption | LineSeriesOption>
 use([TooltipComponent, LegendComponent, ToolboxComponent, GridComponent, LineChart, CanvasRenderer])
 const chartContainer = ref<HTMLDivElement | null>(null)
 const chartRef = ref()
@@ -185,55 +183,55 @@ const params = reactive({
   time_range: 'custom'
 })
 const timeOptions: SelectOption[] = [
-  { label: "自定义", value: 300000 },
-  { label: "最近15分钟", value: 900000, id: 'last_15m' },
-  { label: "最近30分钟", value: 1800000, id: 'last_30m' },
-  { label: "最近1小时", value: 3600000, id: 'last_1h' },
-  { label: "最近3小时", value: 10800000, id: 'last_3h' },
-  { label: "最近6小时", value: 21600000, id: 'last_6h' },
-  { label: "最近12小时", value: 43200000, id: 'last_12h' },
-  { label: "最近24小时", value: 86400000, id: 'last_24h' },
-  { label: "最近3天", value: 259200000, id: 'last_3d' },
-  { label: "最近7天", value: 604800000, id: 'last_7d' },
-  { label: "最近15天", value: 1296000000, id: 'last_15d' },
-  { label: "最近30天", value: 2592000000, id: 'last_30d' },
-  { label: "最近60天", value: 5184000000, id: 'last_60d' },
-  { label: "最近90天", value: 7776000000, id: 'last_90d' },
-  { label: "最近半年", value: 15811200000 },
-  { label: "最近一年", value: 31536000000 },
-  { label: "今天", value: 28740000 },
-  { label: "昨天", value: 86400000 },
-  { label: "前天", value: 172800000 },
-  { label: "上周至今", value: 604800000 },
-  { label: "本周", value: 518400000 },
-  { label: "上周", value: 604800000 },
-  { label: "本月", value: 2592000000 },
-  { label: "上月", value: 2592000000 },
-  { label: "今年", value: 7776000000 },
-  { label: "去年", value: 31536000000 }
+  { label: $t('page.general.custom'), value: 300000 },
+  { label: $t('page.general.last15Minutes'), value: 900000, id: 'last_15m' },
+  { label: $t('page.general.last30Minutes'), value: 1800000, id: 'last_30m' },
+  { label: $t('page.general.last1Hour'), value: 3600000, id: 'last_1h' },
+  { label: $t('page.general.last3Hours'), value: 10800000, id: 'last_3h' },
+  { label: $t('page.general.last6Hours'), value: 21600000, id: 'last_6h' },
+  { label: $t('page.general.last12Hours'), value: 43200000, id: 'last_12h' },
+  { label: $t('page.general.last24Hours'), value: 86400000, id: 'last_24h' },
+  { label: $t('page.general.last3Days'), value: 259200000, id: 'last_3d' },
+  { label: $t('page.general.last7Days'), value: 604800000, id: 'last_7d' },
+  { label: $t('page.general.last15Days'), value: 1296000000, id: 'last_15d' },
+  { label: $t('page.general.last30Days'), value: 2592000000, id: 'last_30d' },
+  { label: $t('page.general.last60Days'), value: 5184000000, id: 'last_60d' },
+  { label: $t('page.general.last90Days'), value: 7776000000, id: 'last_90d' },
+  { label: $t('page.general.lastHalfYear'), value: 15811200000 },
+  { label: $t('page.general.lastYear'), value: 31536000000 },
+  { label: $t('page.general.today'), value: 28740000 },
+  { label: $t('page.general.yesterday'), value: 86400000 },
+  { label: $t('page.general.dayBeforeYesterday'), value: 172800000 },
+  { label: $t('page.general.lastWeek'), value: 604800000 },
+  { label: $t('page.general.thisWeek'), value: 518400000 },
+  { label: $t('page.general.lastWeek'), value: 604800000 },
+  { label: $t('page.general.thisMonth'), value: 2592000000 },
+  { label: $t('page.general.lastMonth'), value: 2592000000 },
+  { label: $t('page.general.thisYear'), value: 7776000000 },
+  { label: $t('page.general.lastYear'), value: 31536000000 }
 ]
 const timeOptionsValue = ref()
 const aggregateOptions: SelectOption[] = [
-  { label: "不聚合", value: 'no_aggregate', disabled: false },
-  { label: "30秒", value: '30s', disabled: false },
-  { label: "1分钟", value: '1m', disabled: false },
-  { label: "2分钟", value: '2m', disabled: false },
-  { label: "5分钟", value: '5m', disabled: false },
-  { label: "10分钟", value: '10m', disabled: false },
-  { label: "30分钟", value: '30m', disabled: false },
-  { label: "1小时", value: '1h', disabled: false },
-  { label: "3小时", value: '3h', disabled: false },
-  { label: "6小时", value: '6h', disabled: false },
-  { label: "1天", value: '1d', disabled: false },
-  { label: "7天", value: '7d', disabled: false },
-  { label: '1月', value: '1mo', disabled: false }
+  { label: $t('page.general.noAggregate'), value: 'no_aggregate', disabled: false },
+  { label: $t('page.general.seconds30'), value: '30s', disabled: false },
+  { label: $t('page.general.minute1'), value: '1m', disabled: false },
+  { label: $t('page.general.minutes2'), value: '2m', disabled: false },
+  { label: $t('page.general.minutes5'), value: '5m', disabled: false },
+  { label: $t('page.general.minutes10'), value: '10m', disabled: false },
+  { label: $t('page.general.minutes30'), value: '30m', disabled: false },
+  { label: $t('page.general.hour1'), value: '1h', disabled: false },
+  { label: $t('page.general.hours3'), value: '3h', disabled: false },
+  { label: $t('page.general.hours6'), value: '6h', disabled: false },
+  { label: $t('page.general.day1'), value: '1d', disabled: false },
+  { label: $t('page.general.days7'), value: '7d', disabled: false },
+  { label: $t('page.general.month1'), value: '1mo', disabled: false }
 ]
 const aggregateOptionsValue = ref<string>('')
 const aggregateFunctionOptions: SelectOption[] = [
-  { label: "平均值", value: 'avg' },
-  { label: "最大值", value: 'max' },
-  { label: "总和", value: 'sum' },
-  { label: "差值", value: 'diff' }
+  { label: $t('page.general.average'), value: 'avg' },
+  { label: $t('page.general.maximum'), value: 'max' },
+  { label: $t('page.general.sum'), value: 'sum' },
+  { label: $t('page.general.difference'), value: 'diff' }
 ]
 const aggregateFunctionValue = ref<string>('avg')
 
@@ -250,28 +248,28 @@ const updateAggregate = (v: string) => {
 }
 const updateDisabledOptions = (timeFrame: string) => {
   const disableBeforeIndex: { [key: string]: number } = {
-    最近3小时: 1, // 30秒
-    最近6小时: 2, // 1分钟
-    最近12小时: 3, // 2分钟
-    最近24小时: 4, // 5分钟
-    最近3天: 5, // 10分钟
-    最近7天: 6, // 30分钟
-    最近15天: 7, // 1小时
-    最近30天: 7, // 1小时
-    最近60天: 8, // 3小时
-    最近90天: 9, // 6小时
-    最近6个月: 9, // 6小时
-    最近1年: 12, // 1月
-    今天: 4, // 5分钟
-    昨天: 4, // 5分钟
-    前天: 4, // 5分钟
-    上周今日: 4, // 5分钟
-    本周: 6, // 30分钟
-    上周: 6, // 30分钟
-    本月: 7, // 1小时
-    上个月: 7, // 1小时
-    今年: 12, // 1月
-    去年: 12 // 1月
+    [$t('page.general.last3Hours')]: 1, // 30秒
+    [$t('page.general.last6Hours')]: 2, // 1分钟
+    [$t('page.general.last12Hours')]: 3, // 2分钟
+    [$t('page.general.last24Hours')]: 4, // 5分钟
+    [$t('page.general.last3Days')]: 5, // 10分钟
+    [$t('page.general.last7Days')]: 6, // 30分钟
+    [$t('page.general.last15Days')]: 7, // 1小时
+    [$t('page.general.last30Days')]: 7, // 1小时
+    [$t('page.general.last60Days')]: 8, // 3小时
+    [$t('page.general.last90Days')]: 9, // 6小时
+    [$t('page.general.lastHalfYear')]: 9, // 6小时
+    [$t('page.general.lastYear')]: 12, // 1月
+    [$t('page.general.today')]: 4, // 5分钟
+    [$t('page.general.yesterday')]: 4, // 5分钟
+    [$t('page.general.dayBeforeYesterday')]: 4, // 5分钟
+    [$t('page.general.lastWeek') + '今日']: 4, // 5分钟
+    [$t('page.general.thisWeek')]: 6, // 30分钟
+    [$t('page.general.lastWeek')]: 6, // 30分钟
+    [$t('page.general.thisMonth')]: 7, // 1小时
+    [$t('page.general.lastMonth')]: 7, // 1小时
+    [$t('page.general.thisYear')]: 12, // 1月
+    [$t('page.general.lastYear')]: 12 // 1月
   }
 
   // 默认不禁用"不聚合"，根据时间范围禁用其余选项
@@ -299,30 +297,30 @@ const updateTime = (v: number, o: SelectOption) => {
   timeOptionsValue.value = v
   updateDisabledOptions(o.label as string)
   switch (o.label) {
-    case "自定义":
+    case $t('page.general.custom'):
       isTimeSelect.value = true
       isAggregate.value = false
       return
-    case "今天":
+    case $t('page.general.today'):
       start_time = new Date(now.setHours(0, 0, 0, 0))
-      now = new Date() // 重新获取当前时间，避免修改
+      now = new Date() // 重新获取当前time，避免修改
       end_time = new Date(now.setHours(23, 59, 59, 999))
       break
-    case "昨天":
+    case $t('page.general.yesterday'):
       start_time = new Date()
       start_time.setDate(now.getDate() - 1)
       start_time.setHours(0, 0, 0, 0)
       end_time = new Date(start_time)
       end_time.setHours(23, 59, 59, 999)
       break
-    case "前天":
+    case $t('page.general.dayBeforeYesterday'):
       start_time = new Date()
       start_time.setDate(start_time.getDate() - 2) // 设置为两天前的日期
       start_time.setHours(0, 0, 0, 0) // 那一天的开始
       end_time = new Date(start_time)
       end_time.setHours(23, 59, 59, 999) // 那一天的结束一天的结束
       break
-    case "本周":
+    case $t('page.general.thisWeek'):
       // eslint-disable-next-line no-case-declarations
       const currentDayOfWeek = now.getDay() // 当前是周几，周日为0
       // eslint-disable-next-line no-case-declarations
@@ -332,7 +330,7 @@ const updateTime = (v: number, o: SelectOption) => {
       start_time.setHours(0, 0, 0, 0) // 本周一的开始
       end_time = new Date() // 本周的当前时间
       break
-    case "上周":
+    case $t('page.general.lastWeek'):
       // eslint-disable-next-line no-case-declarations
       const daysToLastMonday = now.getDay() === 0 ? -6 : 1 // 如果今天是周日，则上周一是6天前
       start_time = new Date()
@@ -342,19 +340,19 @@ const updateTime = (v: number, o: SelectOption) => {
       end_time.setDate(start_time.getDate() + 6)
       end_time.setHours(23, 59, 59, 999)
       break
-    case "本月":
+    case $t('page.general.thisMonth'):
       start_time = new Date(now.getFullYear(), now.getMonth(), 1)
       end_time = now
       break
-    case "上月":
+    case $t('page.general.lastMonth'):
       start_time = new Date(now.getFullYear(), now.getMonth() - 1, 1)
       end_time = new Date(now.getFullYear(), now.getMonth(), 0)
       break
-    case "今年":
+    case $t('page.general.thisYear'):
       start_time = new Date(now.getFullYear(), 0, 1)
       end_time = now
       break
-    case "去年":
+    case $t('page.general.lastYear'):
       start_time = new Date(now.getFullYear() - 1, 0, 1)
       end_time = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999)
       break
@@ -376,7 +374,7 @@ const checkDateRange = value => {
   const [start, end] = value
   if (start && end && addMonths(start, 1) < end) {
     dateRange.value = null
-    message.error("一个月内")
+    message.error($t('page.general.withinOneMonth'))
   } else {
     params.start_time = start
     params.end_time = end
@@ -454,7 +452,7 @@ const setSeries = async dataSource => {
 
   const deviceSource = dataSource.deviceSource || []
   const deviceCount = dataSource.deviceCount || 1
-  const newLegendData = [] // Create temporary array for new legend
+  const newLegendData: string[] = [] // Create temporary array for new legend
 
   const firstDevice = deviceSource[0] || {}
   const querDetail = {
@@ -465,7 +463,7 @@ const setSeries = async dataSource => {
   if (querDetail.device_id && querDetail.keys) {
     detail.value = await telemetryDataCurrentKeys(querDetail)
   } else {
-    // window.$message?.error("查询不到设备");
+    // window.$message?.error("查询不到page.general.设备");
   }
 
   // 收集所有系列数据的Promise
@@ -483,9 +481,9 @@ const setSeries = async dataSource => {
   const seriesData = await Promise.all(seriesPromises)
 
   // 一次性赋值给option.value.series 和 option.value.legend.data
-  if (option.value.legend) {
+  if (option.value.legend && typeof option.value.legend === 'object' && !Array.isArray(option.value.legend)) {
     // Ensure legend object exists
-    option.value.legend.data = newLegendData // Assign new legend data directly
+    ;(option.value.legend as any).data = newLegendData // Assign new legend data directly
   }
   option.value.series = seriesData
   legendData.value = newLegendData // Also update the standalone ref if used elsewhere
@@ -509,7 +507,7 @@ defineExpose({
       const timestamp = new Date(data.systime).getTime()
       if (seriesData.length === 0 || timestamp !== seriesData[seriesData.length - 1][0]) {
         const len = seriesData?.push([timestamp, value])
-        // 如果长度大于100且第一个数据和最后一个数据的间隔时间大于采样周期则删除最后一个元素
+        // 如果长度大于100且第一个数据和最后一个数据的间隔page.general.time大于采样周期则删除最后一个元素
         if (len >= 100) {
           seriesData.shift()
         }

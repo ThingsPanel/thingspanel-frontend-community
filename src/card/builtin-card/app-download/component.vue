@@ -1,6 +1,6 @@
 <template>
   <div class="p-4 border rounded flex flex-col items-center justify-center h-full">
-    <div class="text-lg font-semibold mb-4">{{ "下载移动端" }}</div>
+    <div class="text-lg font-semibold mb-4">{{ $t('page.general.downloadMobile') }}</div>
     <div class="flex items-center justify-center space-x-4 mb-4">
       <img :src="download_app" alt="QR Code" class="w-24 h-24" />
       <div class="flex flex-col space-y-2">
@@ -10,7 +10,7 @@
         <img :src="google_pla" alt="Google Play" class="h-10 cursor-pointer" />
       </div>
     </div>
-    <div>{{ "扫码或点击下载" }}</div>
+    <div>{{ $t('page.general.扫码或点击下载') }}</div>
   </div>
 </template>
 

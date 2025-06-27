@@ -7,7 +7,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: '下载移动端',
+  title: $t('page.general.downloadMobile'),
   preset: {
     dataSource: {
       origin: 'device',

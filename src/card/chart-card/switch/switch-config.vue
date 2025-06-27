@@ -8,13 +8,13 @@ const ctx = inject<IConfigCtx>('config-ctx')!
 
 <template>
   <div>
-    <div class="title">{{ "设置控制设备开启和关闭时的状态值" }}</div>
+    <div class="title">{{ $t('page.general.device') }}</div>
     <NForm :model="ctx.config">
-      <NFormItem :label="开启：">
-        <n-input v-model:value="ctx.config.active0" :placeholder="开启：" + '1'" />
+      <NFormItem :label="$t('page.general.turnOn')">
+        <n-input v-model:value="ctx.config.active0" :placeholder="$t('page.general.turnOn')" + '1'" />
       </NFormItem>
-      <NFormItem :label="关闭：">
-        <n-input v-model:value="ctx.config.active1" :placeholder="关闭：" + '0'" />
+      <NFormItem :label="$t('page.general.turnOff')">
+        <n-input v-model:value="ctx.config.active1" :placeholder="$t('page.general.turnOff')" + '0'" />
       </NFormItem>
     </NForm>
   </div>

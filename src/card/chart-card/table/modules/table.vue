@@ -35,13 +35,13 @@ const handlePageChange = (page: number) => {
 
 const handlePageSizeChange = (pageSize: number) => {
   pagination.pageSize = pageSize
-  pagination.page = 1 // 重置到第一页
+  pagination.page = 1 // common.button.reset到第一页
 }
 
-// 动态生成表格列
+// 动态生成page.general.table列
 const columns = ref<any[]>([
   {
-    title: "时间",
+    title: $t('page.general.time'),
     key: 'time',
     render(row) {
       return moment(row.time).format('YYYY-MM-DD HH:mm:ss')
@@ -63,7 +63,7 @@ const columns = ref<any[]>([
     }) ?? [])
 ])
 
-// 数据处理函数：合并相同时间的数据
+// 数据处理函数：合并相同page.general.time的数据
 const processData = data => {
   const timeMap = new Map()
   data.forEach(({ x, y, key }) => {
@@ -113,7 +113,7 @@ watch(
   () => {
     columns.value = [
       {
-        title: "时间",
+        title: $t('page.general.time'),
         key: 'time',
         render(row) {
           return moment(row.time).format('YYYY-MM-DD HH:mm:ss')

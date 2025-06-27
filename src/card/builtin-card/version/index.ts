@@ -7,7 +7,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: '版本信息',
+  title: $t('page.general.versionInfo'),
   preset: {
     config: {},
     iCardViewDefault: {

@@ -8,7 +8,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: '租户数量', // Changed title key
+  title: $t('page.general.tenantCount'), // Changed title key
   preset: {
     iCardViewDefault: {
       w: 3,

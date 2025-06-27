@@ -49,7 +49,7 @@ const chartOption = ref<EChartsOption>({
     }
   },
   legend: {
-    data: ["在线", "离线"],
+    data: [$t('page.general.online'), $t('page.general.offline')],
     left: 'center',
     top: 0
   },
@@ -94,7 +94,7 @@ const chartOption = ref<EChartsOption>({
   },
   series: [
     {
-      name: "在线",
+      name: $t('page.general.online'),
       type: 'line',
       smooth: true,
       symbol: 'none',
@@ -113,7 +113,7 @@ const chartOption = ref<EChartsOption>({
       }
     },
     {
-      name: "离线",
+      name: $t('page.general.offline'),
       type: 'line',
       smooth: true,
       symbol: 'none',
@@ -144,7 +144,7 @@ const onlineRate = computed(() => {
 
 // Create a computed property for the online rate string
 const onlineRateText = computed(() => {
-  return `${"在线率"} ${onlineRate.value}%`
+  return `${$t('common.status.onlineRate')} ${onlineRate.value}%`
 })
 
 const fetchData = async () => {
@@ -184,7 +184,7 @@ onMounted(() => {
     <div class="online-trend-header">
       <div class="title">
         <img :src="wifiIcon" alt="Online Rate" class="icon" />
-        <span>{{ "设备在线率（12小时）" }}</span>
+        <span>{{ $t('page.general.online') }}</span>
       </div>
       <div class="online-rate">
         <img :src="onlineRateIcon" alt="Online Rate" class="icon" />

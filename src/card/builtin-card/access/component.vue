@@ -14,7 +14,7 @@ const logger = createLogger('Access')
 
 const cardData = ref<any>({
   id: 'visit',
-  title: "设备总数",
+  title: $t('page.general.deviceTotal'),
   value: 0,
   unit: "个",
   colors: ['#ec4786', '#b955a4'],

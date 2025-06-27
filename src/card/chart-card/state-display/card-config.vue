@@ -26,24 +26,24 @@ onMounted(() => {
 <template>
   <div>
     <NForm :model="ctx.config">
-      <NFormItem :label="状态开图标">
+      <NFormItem :label="$t('page.general.statusOnIcon')">
         <IconSelector default-icon="BulbOutline" @icon-selected="setActiveIcon" />
       </NFormItem>
-      <NFormItem :label="状态开颜色">
+      <NFormItem :label="$t('page.general.statusOnColor')">
         <NColorPicker v-model:value="ctx.config.activeColor" :show-alpha="false" />
       </NFormItem>
-      <NFormItem :label="状态关图标">
+      <NFormItem :label="$t('page.general.statusOffIcon')">
         <IconSelector default-icon="Bulb" @icon-selected="setInactiveIcon" />
       </NFormItem>
-      <NFormItem :label="状态关颜色">
+      <NFormItem :label="$t('page.general.statusOffColor')">
         <NColorPicker v-model:value="ctx.config.inactiveColor" :show-alpha="false" />
       </NFormItem>
-      <div class="title">{{ "设置控制设备开启和关闭时的状态值" }}</div>
-      <NFormItem :label="开启：">
-        <NInput v-model:value="ctx.config.active0" :placeholder="开启：" + '1'" />
+      <div class="title">{{ $t('page.general.device') }}</div>
+      <NFormItem :label="$t('page.general.turnOn')">
+        <NInput v-model:value="ctx.config.active0" :placeholder="$t('page.general.turnOn')" + '1'" />
       </NFormItem>
-      <NFormItem :label="关闭：">
-        <NInput v-model:value="ctx.config.active1" :placeholder="关闭：" + '0'" />
+      <NFormItem :label="$t('page.general.turnOff')">
+        <NInput v-model:value="ctx.config.active1" :placeholder="$t('page.general.turnOff')" + '0'" />
       </NFormItem>
     </NForm>
   </div>

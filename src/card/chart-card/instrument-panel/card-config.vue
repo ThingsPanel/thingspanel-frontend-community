@@ -8,14 +8,14 @@ const ctx = inject<IConfigCtx>('config-ctx')!
 
 <template>
   <NForm :model="ctx.config">
-    <NFormItem :label="单位">
-      <NInput v-model:value="ctx.config.unit" :placeholder="请输入单位" />
+    <NFormItem :label="$t('page.general.unit')">
+      <NInput v-model:value="ctx.config.unit" :placeholder="$t('page.general.enterUnit')" />
     </NFormItem>
-    <NFormItem :label="最小值">
-      <NInputNumber v-model:value="ctx.config.min" :placeholder="输入最小值" />
+    <NFormItem :label="$t('page.general.minimum')">
+      <NInputNumber v-model:value="ctx.config.min" :placeholder="$t('page.general.inputMinimum')" />
     </NFormItem>
-    <NFormItem :label="最大值">
-      <NInputNumber v-model:value="ctx.config.max" :placeholder="请输入最大值" />
+    <NFormItem :label="$t('page.general.maximum')">
+      <NInputNumber v-model:value="ctx.config.max" :placeholder="$t('page.general.enterMaxValue')" />
     </NFormItem>
   </NForm>
 </template>

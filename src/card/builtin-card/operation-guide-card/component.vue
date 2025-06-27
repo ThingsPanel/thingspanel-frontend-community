@@ -62,7 +62,7 @@ const descriptionColor = computed(() => props.card?.config?.descriptionColor || 
 
 const navigateTo = (link: string) => {
   if (link && link !== '#') {
-    // window.open(link, '_blank'); // 在新标签页打开链接
+    // window.open(link, '_blank'); // 在新页面打开链接
     window.location.href = link // 在当前页面导航
   }
 }
@@ -72,7 +72,7 @@ const navigateTo = (link: string) => {
   <div class="guide-container h-full p-3 flex flex-col">
     <!-- 调整 padding 和 flex 布局 -->
     <!-- 使用 card.operationGuide 作为内部标题 -->
-    <h3 class="internal-title mb-3 font-semibold text-lg">{{ "操作指引" }}</h3>
+    <h3 class="internal-title mb-3 font-semibold text-lg">{{ $t('page.general.operationGuide') }}</h3>
 
     <NList v-if="guideList.length > 0" hoverable clickable class="flex-1 overflow-auto bg-[#00000000]">
       <!-- 移除 bordered, 添加 flex-1 和 overflow -->
@@ -98,34 +98,34 @@ const navigateTo = (link: string) => {
 
           <template #header>
             <!-- Wrap title with NEllipsis, use $t with titleKey -->
-            <NEllipsis :line-clamp="1" :title="标题">
-              {{ "标题" }}
+            <NEllipsis :line-clamp="1" :title="$t('page.general.title.title')">
+              {{ $t('page.general.title.title') }}
             </NEllipsis>
           </template>
           <template #header-extra>
             <NButton v-if="item.link" type="primary" text style="margin-bottom: 12px" @click="navigateTo(item.link)">
-              {{ "查看" }}
+              {{ $t('common.operation.view') }}
               <NIcon :component="ChevronForwardOutline" color="#2080f0" />
             </NButton>
           </template>
           <template #description>
             <!-- Wrap description with NEllipsis, use $t with descriptionKey -->
-            <NEllipsis :line-clamp="2" :title="文本">
-              {{ "文本" }}
+            <NEllipsis :line-clamp="2" :title="$t('page.general.text')">
+              {{ $t('page.general.text') }}
             </NEllipsis>
           </template>
         </NThing>
       </NListItem>
     </NList>
     <div v-else class="flex-1 flex items-center justify-center">
-      <NEmpty :description="暂无数据" />
+      <NEmpty :description="$t('common.status.noData')" />
     </div>
   </div>
 </template>
 
 <style scoped>
 .internal-title {
-  /* 可以根据需要添加标题样式 */
+  /* 可以根据需要添加样式 */
   color: var(--n-title-text-color); /* 使用 Naive UI 变量 */
 }
 /* 移除之前的样式，Naive UI 会处理大部分 */

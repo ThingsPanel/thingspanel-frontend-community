@@ -9,7 +9,7 @@ export default {
   component: defineAsyncComponent(() => import('./component.vue')),
   configForm: defineAsyncComponent(() => import('./card-config.vue')),
   poster,
-  title: '状态卡片',
+  title: $t('page.general.statusCard'),
   preset: {
     dataSource: {
       origin: 'device',

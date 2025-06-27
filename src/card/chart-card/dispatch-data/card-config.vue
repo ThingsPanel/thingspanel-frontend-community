@@ -22,7 +22,7 @@ onMounted(() => {
   if (!ctx.config.iconName) ctx.config.iconName = 'Play'
   if (!ctx.config.buttonIconColor) ctx.config.buttonIconColor = '#FFFFFF'
   if (!ctx.config.buttonColor) ctx.config.buttonColor = '#ff4d4f'
-  if (!ctx.config.buttonText) ctx.config.buttonText = "自定义数据下发"
+  if (!ctx.config.buttonText) ctx.config.buttonText = $t('page.general.custom')
   if (!ctx.config.valueToSend) ctx.config.valueToSend = '1'
   if (!ctx.config.dataType) ctx.config.dataType = 'telemetry'
 })
@@ -31,22 +31,22 @@ onMounted(() => {
 <template>
   <div>
     <NForm :model="ctx.config">
-      <NFormItem :label="按钮图标">
+      <NFormItem :label="$t('page.general.buttonIcon')">
         <IconSelector :default-icon="ctx.config.iconName || 'Fan'" @icon-selected="setIcon" />
       </NFormItem>
-      <NFormItem :label="按钮图标颜色">
+      <NFormItem :label="$t('page.general.buttonIconColor')">
         <NColorPicker v-model:value="ctx.config.buttonIconColor" :show-alpha="false" />
       </NFormItem>
-      <NFormItem :label="按钮背景色">
+      <NFormItem :label="$t('page.general.buttonBackgroundColor')">
         <NColorPicker v-model:value="ctx.config.buttonColor" :show-alpha="false" />
       </NFormItem>
-      <NFormItem :label="按钮下的文字">
+      <NFormItem :label="$t('page.general.buttonText')">
         <NInput v-model:value="ctx.config.buttonText" />
       </NFormItem>
-      <NFormItem :label="发送的数据">
+      <NFormItem :label="$t('page.general.sendData')">
         <NInput v-model:value="ctx.config.valueToSend" type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" />
       </NFormItem>
-      <NFormItem :label="数据类型">
+      <NFormItem :label="$t('page.general.dataType')">
         <NSelect v-model:value="ctx.config.dataType" :options="dataTypeOptions" />
       </NFormItem>
     </NForm>

@@ -4,11 +4,34 @@
   "button": {
     "back": "返回",
     "login": "登录",
-    "register": "注册"
+    "register": "注册",
+    "reset": "重置"
   },
   "status": {
     "registerSuccess": "注册成功",
     "codeSent": "验证码已发送",
-    "verifySuccess": "验证成功"
+    "verifySuccess": "验证成功",
+    "加载中": {
+      "": {
+        "": {
+          "": "加载中..."
+        }
+      }
+    },
+    "noData": "暂无数据",
+    "onlineDeviceCount": "在线设备数",
+    "offlineDeviceCount": "离线设备数",
+    "normal": "正常",
+    "online": "在线",
+    "onlineRate": "在线率",
+    "offline": "离线",
+    "error": "错误"
+  },
+  "operation": {
+    "viewAllData": "查看全部数据",
+    "viewAll": "查看全部",
+    "operationGuide": "操作指引",
+    "view": "查看",
+    "setDeviceControl": "设置控制设备开启和关闭时的状态值"
   }
 }

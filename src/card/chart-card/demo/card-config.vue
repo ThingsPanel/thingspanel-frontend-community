@@ -13,10 +13,10 @@ const setIcon = icon => {
 
 <template>
   <NForm :model="ctx.config">
-    <NFormItem :label="单位">
-      <NInput v-model:value="ctx.config.unit" :placeholder="请输入单位" />
+    <NFormItem :label="$t('page.general.unit')">
+      <NInput v-model:value="ctx.config.unit" :placeholder="$t('page.general.enterUnit')" />
     </NFormItem>
-    <NFormItem :label="颜色">
+    <NFormItem :label="$t('page.general.color')">
       <NColorPicker v-model:value="ctx.config.color" :show-alpha="false" />
     </NFormItem>
     <IconSelector @icon-selected="setIcon" />

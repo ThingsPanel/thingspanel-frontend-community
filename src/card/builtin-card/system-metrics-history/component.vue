@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 h-full bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
     <h3 class="text-base font-semibold mb-3 text-gray-800 dark:text-gray-100 flex-shrink-0">
-      {{ "系统指标历史" }}
+      {{ $t('page.general.systemMetricsHistory') }}
     </h3>
     <div class="flex-grow relative min-h-[200px]">
       <v-chart v-if="!loading" ref="chartRef" class="w-full h-full" :option="chartOption" autoresize />
@@ -9,7 +9,7 @@
         {{ errorMsg }}
       </div>
       <div v-if="!loading && !errorMsg && isEmpty" class="h-full flex items-center justify-center">
-        <NEmpty :description="暂无数据" />
+        <NEmpty :description="$t('common.status.noData')" />
       </div>
     </div>
   </div>

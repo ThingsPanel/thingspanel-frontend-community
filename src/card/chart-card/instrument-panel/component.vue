@@ -10,7 +10,7 @@ import type { ICardData } from '@/components/panel/card'
 import { telemetryDataCurrentKeys } from '@/service/api/device'
 import { $t } from '@/locales'
 
-// 注册 ECharts 所需的组件和渲染器
+// common.button.register ECharts 所需的组件和渲染器
 use([CanvasRenderer, GaugeChart, TitleComponent, TooltipComponent, LegendComponent])
 
 const initDetailValue = 8
@@ -34,7 +34,7 @@ const chartOptions = ref({
       max: 100, // 动态变化
       radius: '100%',
       center: ['50%', '80%'],
-      splitNumber: 1, // 只展示最大和最小值
+      splitNumber: 1, // 只展示最大和page.general.最小值
       axisLine: {
         lineStyle: {
           width: 30,
@@ -175,7 +175,7 @@ onMounted(() => {
     </div>
     <div class="data-info">
       <span class="title">
-        {{ card.dataSource?.deviceSource?.[0]?.metricsName || "仪表盘" }}
+        {{ card.dataSource?.deviceSource?.[0]?.metricsName || "page.general.仪表盘" }}
       </span>
     </div>
   </div>

@@ -8,7 +8,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: '消息总数',
+  title: $t('page.general.messageTotal'),
   preset: {
     iCardViewDefault: {
       w: 3,

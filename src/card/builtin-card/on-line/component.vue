@@ -13,7 +13,7 @@ const authStore = useAuthStore()
 
 const cardData = ref<any>({
   id: 'amount',
-  title: "在线设备数",
+  title: $t('page.general.onlineDeviceCount'),
   value: 0,
   unit: "个",
   colors: ['#865ec0', '#5144b4'],

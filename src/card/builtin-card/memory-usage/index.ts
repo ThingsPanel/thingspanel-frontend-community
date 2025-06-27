@@ -8,7 +8,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: '内存使用率', // Changed title key
+  title: $t('page.general.memoryUsage'), // Changed title key
   preset: {
     iCardViewDefault: {
       w: 3,

@@ -14,13 +14,13 @@ const cardRef = ref<HTMLElement | null>(null)
 const fontSize = ref('14px')
 const iconSize = ref('24px')
 let resizeObserver: ResizeObserver | null = null
-const deviceName = computed(() => props.card?.dataSource?.deviceSource?.[0]?.name || '设备1')
+const deviceName = computed(() => props.card?.dataSource?.deviceSource?.[0]?.name || $t('page.general.device'))
 
 const config = computed(() => props.card?.config || {})
 const buttonIcon = computed(() => (ionicons5 as any)[config.value.iconName || 'Play'])
 const buttonIconColor = computed(() => config.value.buttonIconColor || '#fff')
 const buttonColor = computed(() => config.value.buttonColor || '#ff4d4f')
-const buttonText = computed(() => config.value.buttonText || "自定义数据下发")
+const buttonText = computed(() => config.value.buttonText || "page.general.custom")
 
 const deviceId = computed(() => props.card?.dataSource?.deviceSource?.[0]?.deviceId)
 
@@ -42,9 +42,9 @@ const handleButtonClick = async () => {
     } else if (config.value.dataType === 'command') {
       await commandDataPub(obj)
     }
-    window.$message?.success("数据发送成功")
+    window.$message?.success($t('page.general.dataSendSuccess'))
   } catch (error) {
-    window.$message?.error("数据发送失败")
+    window.$message?.error($t('page.general.dataSendFailed'))
   }
 }
 
@@ -60,7 +60,7 @@ const handleResize = (entries: ResizeObserverEntry[]) => {
 onMounted(() => {
   if (cardRef.value) {
     resizeObserver = new ResizeObserver(handleResize)
-    resizeObserver.observe(cardRef.value)
+    resizeObserver.observe(cardRef.value as Element)
   }
 })
 

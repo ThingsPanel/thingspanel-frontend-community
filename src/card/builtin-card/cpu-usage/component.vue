@@ -66,13 +66,13 @@ onUnmounted(() => {
       <SvgIcon icon="fa-microchip" class="text-32px" />
       <div class="flex flex-col items-end">
         <template v-if="loading">
-          <span class="text-30px text-white dark:text-dark">{{ "加载中..." }}</span>
+          <span class="text-30px text-white dark:text-dark">{{ $t('common.status.加载中...') }}</span>
         </template>
         <template v-else-if="value !== null">
           <CountTo :start-value="0" :end-value="value" :suffix="unit" class="text-30px text-white dark:text-dark" />
         </template>
         <template v-else>
-          <span class="text-20px text-white dark:text-dark">{{ "暂无数据" }}</span>
+          <span class="text-20px text-white dark:text-dark">{{ $t('common.status.noData') }}</span>
         </template>
       </div>
     </div>

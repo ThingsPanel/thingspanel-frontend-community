@@ -11,7 +11,7 @@ defineOptions({ name: 'TenantCountCard' })
 
 const cardData = ref<any>({
   id: 'tenant-count',
-  title: "租户数量",
+  title: $t('page.general.tenantCount'),
   value: 0,
   unit: "个",
   colors: ['#3b82f6', '#60a5fa'],

@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 h-full bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
     <h3 class="text-base font-semibold mb-3 text-gray-800 dark:text-gray-100 flex-shrink-0">
-      {{ "月用户增长统计" }}
+      {{ $t('page.general.monthlyUserGrowth') }}
     </h3>
     <div class="flex-grow flex gap-4 min-h-[200px]">
       <!-- Left: Stats using wrapper div for color -->
@@ -9,21 +9,21 @@
         class="w-1/3 flex flex-col justify-around py-2 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 pr-4"
       >
         <div class="text-center">
-          <n-statistic :label="总用户数">
+          <n-statistic :label="$t('page.general.totalUsers')">
             <div :class="[themeStore.isDark ? 'text-blue-400' : 'text-blue-600']">
               <NNumberAnimation :from="0" :to="stats.user_total" />
             </div>
           </n-statistic>
         </div>
         <div class="text-center">
-          <n-statistic :label="本月新增">
+          <n-statistic :label="$t('page.general.thisMonthNew')">
             <div :class="[themeStore.isDark ? 'text-green-400' : 'text-green-600']">
               <NNumberAnimation :from="0" :to="stats.user_added_month" />
             </div>
           </n-statistic>
         </div>
         <div class="text-center">
-          <n-statistic :label="昨日新增">
+          <n-statistic :label="$t('page.general.yesterdayNew')">
             <div :class="[themeStore.isDark ? 'text-amber-400' : 'text-amber-600']">
               <NNumberAnimation :from="0" :to="stats.user_added_yesterday" />
             </div>
@@ -38,7 +38,7 @@
           {{ errorMsg }}
         </div>
         <div v-if="!loading && !errorMsg && isEmpty" class="h-full flex items-center justify-center">
-          <NEmpty :description="暂无数据" />
+          <NEmpty :description=$t('common.status.noData') />
         </div>
       </div>
     </div>

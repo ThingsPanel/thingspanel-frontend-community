@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { $t } from '@/locales'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import type { ICardData } from '@/components/panel/card'
 import { getAttributeDataSet, telemetryDataCurrentKeys } from '@/service/api/device'
@@ -60,7 +61,7 @@ const setSeries: (dataSource) => void = async dataSource => {
 
 const handleResize = entries => {
   for (const entry of entries) {
-    // 根据卡片宽度动态调整字体大小，这里仅为示例逻辑，实际应用中需按需调整
+    // 根据卡片宽度动态调整字体大小，这里仅为示例逻辑，实际应用page.general.中需按需调整
     let dFontSize = `${entry.contentRect.width / 20}px` // 假设字体大小与宽度成反比，20为比例系数
     if (entry.contentRect.width / entry.contentRect.height > 3) {
       dFontSize = `${(entry.contentRect.width + (entry.contentRect.height * entry.contentRect.width) / entry.contentRect.height / 2) / 20 / (1 + entry.contentRect.width / entry.contentRect.height / 2)}px`

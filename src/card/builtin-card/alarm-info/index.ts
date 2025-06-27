@@ -7,7 +7,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: '告警信息',
+  title: $t('page.general.alarmInfo'),
   preset: {
     dataSource: {
       origin: 'device',
