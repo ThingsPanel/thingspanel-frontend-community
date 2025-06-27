@@ -36,7 +36,7 @@ const icon = computed(() => {
 </script>
 
 <template>
-  <ButtonIcon :tooltip-content="collapsed ? "展开菜单" : "折叠菜单" tooltip-placement="bottom-start">
+  <ButtonIcon :tooltip-content="collapsed ? '展开菜单' : '折叠菜单'" tooltip-placement="bottom-start">
     <SvgIcon :icon="icon" />
   </ButtonIcon>
 </template>
