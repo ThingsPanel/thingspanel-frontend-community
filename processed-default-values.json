@@ -1,0 +1,80 @@
+[
+  {
+    "file": "src\\card\\builtin-card\\alarm-info\\component.vue",
+    "original": "{{ $t('card.alarmInfo.title', '告警信息') }}",
+    "key": "card.alarmInfo.title",
+    "defaultValue": "告警信息"
+  },
+  {
+    "file": "src\\card\\builtin-card\\alarm-info\\component.vue",
+    "original": "{{ $t('card.alarmInfo.viewAll', '查看全部') }}",
+    "key": "card.alarmInfo.viewAll",
+    "defaultValue": "查看全部"
+  },
+  {
+    "file": "src\\card\\builtin-card\\system-metrics-history\\component.vue",
+    "original": "= $t('card.cpuUsage', 'CPU')",
+    "key": "card.cpuUsage",
+    "defaultValue": "CPU"
+  },
+  {
+    "file": "src\\card\\builtin-card\\system-metrics-history\\component.vue",
+    "original": "= $t('card.memoryUsage', 'Memory')",
+    "key": "card.memoryUsage",
+    "defaultValue": "Memory"
+  },
+  {
+    "file": "src\\card\\builtin-card\\system-metrics-history\\component.vue",
+    "original": "= $t('card.diskUsage', 'Disk')",
+    "key": "card.diskUsage",
+    "defaultValue": "Disk"
+  },
+  {
+    "file": "src\\card\\builtin-card\\system-metrics-history\\component.vue",
+    "original": "= $t('common.loadFailure', 'Failed to load data')",
+    "key": "common.loadFailure",
+    "defaultValue": "Failed to load data"
+  },
+  {
+    "file": "src\\card\\builtin-card\\tenant-chart\\component.vue",
+    "original": ":label=\"$t('card.tenantChart.totalUsers', '总用户数')\"",
+    "key": "label",
+    "defaultValue": "card.tenantChart.totalUsers"
+  },
+  {
+    "file": "src\\card\\builtin-card\\tenant-chart\\component.vue",
+    "original": ":label=\"$t('card.tenantChart.addedMonth', '本月新增')\"",
+    "key": "label",
+    "defaultValue": "card.tenantChart.addedMonth"
+  },
+  {
+    "file": "src\\card\\builtin-card\\tenant-chart\\component.vue",
+    "original": ":label=\"$t('card.tenantChart.addedYesterday', '昨日新增')\"",
+    "key": "label",
+    "defaultValue": "card.tenantChart.addedYesterday"
+  },
+  {
+    "file": "src\\card\\builtin-card\\tenant-chart\\component.vue",
+    "original": "title: $t('common.saveAsImage', 'Save')",
+    "key": "title",
+    "defaultValue": "common.saveAsImage"
+  },
+  {
+    "file": "src\\card\\builtin-card\\tenant-chart\\component.vue",
+    "original": "= $t('card.tenantChart.seriesName', 'New Users')",
+    "key": "card.tenantChart.seriesName",
+    "defaultValue": "New Users"
+  },
+  {
+    "file": "src\\card\\builtin-card\\tenant-chart\\component.vue",
+    "original": "= $t('common.loadFailure', 'Failed to load data')",
+    "key": "common.loadFailure",
+    "defaultValue": "Failed to load data"
+  },
+  {
+    "file": "src\\card\\builtin-card\\tenant-count\\component.vue",
+    "original": "unit: $t('card.tenantCount.unit', '个')",
+    "key": "unit",
+    "defaultValue": "card.tenantCount.unit"
+  }
+]

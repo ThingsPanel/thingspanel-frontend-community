@@ -26,9 +26,9 @@ function createDefaultFormModel(): FormModel {
 }
 
 const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
-  name: createRequiredFormRule($t('generate.ruleName')),
-  signMode: createRequiredFormRule($t('generate.signatureMethod')),
-  ip: createRequiredFormRule($t('generate.IPwhitelist'))
+  name: createRequiredFormRule("请输入规则名称"),
+  signMode: createRequiredFormRule("请选择签名方式"),
+  ip: createRequiredFormRule("请输入IP白名单")
 }
 
 const props = withDefaults(
@@ -62,7 +62,7 @@ const handleChange = () => {
     <NFormItem path="name">
       <NSelect
         v-model:value="selectedMember"
-        :placeholder="$t('generate.select-user')"
+        :placeholder="选择用户"
         :options="notificationTypeOptions"
         clearable
         remote
@@ -86,7 +86,7 @@ const handleChange = () => {
         </NSpace>
       </NCheckboxGroup>
       <NButton type="error" size="small" style="margin-left: 12px" @click="() => handleDelete(index)">
-        {{ $t('common.delete') }}
+        {{ "删除" }}
       </NButton>
     </NFormItem>
   </NForm>

@@ -45,10 +45,10 @@ function handleClickPolicy() {
 
 <template>
   <div class="w-full text-14px">
-    <NCheckbox v-model:checked="checked">{{ $t('page.login.register.agreement') }}</NCheckbox>
+    <NCheckbox v-model:checked="checked">{{ "我已经仔细阅读并接受" }}</NCheckbox>
 
-    <NButton :text="true" type="primary" @click="handleClickProtocol">{{ $t('generate.user-agreement') }}</NButton>
-    <NButton :text="true" type="primary" @click="handleClickPolicy">{{ $t('generate.privacy-policy') }}</NButton>
+    <NButton :text="true" type="primary" @click="handleClickProtocol">{{ "《用户协议》" }}</NButton>
+    <NButton :text="true" type="primary" @click="handleClickPolicy">{{ "《隐私权政策》" }}</NButton>
   </div>
 </template>
 

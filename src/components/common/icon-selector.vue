@@ -45,11 +45,11 @@ onMounted(() => {
 <template>
   <div>
     <div class="icon-display">
-      <span>{{ $t('card.selectedIcon') }}：</span>
+      <span>{{ "选中图标" }}：</span>
       <NIcon v-if="selectedIcon" size="30" :component="selectedIcon" />
-      <span v-else>{{ $t('card.notSelected') }}</span>
+      <span v-else>{{ "未选择" }}</span>
       <NButton class="icon-picker-btn" @click="toggleExpand">
-        {{ isExpanded ? $t('card.collapse') : $t('card.expand') }}
+        {{ isExpanded ? "收起" : "展开" }}
         <template #icon>
           <NIcon>
             <component :is="isExpanded ? CaretUpOutline : CaretDownOutline" />

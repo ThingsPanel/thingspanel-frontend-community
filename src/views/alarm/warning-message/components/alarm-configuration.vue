@@ -41,7 +41,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   // },
   {
     key: 'alarm_time',
-    title: $t('common.alarm_time'),
+    title: "告警时间",
     align: 'left',
     minWidth: '170px',
     render(row: { id: string; name: string; description: string; created_at: string; [key: string]: any }) {
@@ -50,7 +50,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   },
   {
     key: 'name',
-    title: $t('generate.alarm-name'),
+    title: "告警名称",
     align: 'left',
     minWidth: '100px',
     ellipsis: {
@@ -59,17 +59,16 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   },
   {
     key: 'alarm_level',
-    title: $t('generate.alarm-status'),
+    title: "告警状态",
     align: 'left',
     minWidth: '120px',
     render(row: any) {
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       return alarmStatusOptions.value.find(data => data.value === row.alarm_status)?.label || '';
     }
   },
   {
     key: 'content',
-    title: $t('generate.alarm-content'),
+    title: "告警内容:",
     align: 'left',
     minWidth: '100px',
     ellipsis: {
@@ -78,7 +77,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   },
   {
     key: 'description',
-    title: $t('generate.alarm-description'),
+    title: "告警描述",
     align: 'left',
     minWidth: '80px',
     ellipsis: {
@@ -87,18 +86,18 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   },
   {
     key: 'actions',
-    title: $t('common.actions'),
+    title: "操作",
     width: '200px',
     align: 'left',
     render: row => {
       return (
         <div class="flex gap-20px">
           <NButton type="primary" size={'small'} onClick={() => getInfo(row)}>
-            {$t('custom.devicePage.details')}
+            {"详情"}
           </NButton>
-          {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
+    
           <NButton type="warning" size={'small'} onClick={() => maintenance(row)}>
-            {$t('common.maintenance')}
+            {"维护"}
           </NButton>
         </div>
       );
@@ -124,13 +123,13 @@ const pagination: PaginationProps = reactive({
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
     pagination.page = page;
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  
     getAlarmHistory();
   },
   onUpdatePageSize: (pageSize: number) => {
     pagination.pageSize = pageSize;
     pagination.page = 1;
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+   
     getAlarmHistory();
   }
 });
@@ -171,23 +170,23 @@ const getPlatform = computed(() => {
 
 const alarmStatusOptions = ref([
   {
-    label: $t('common.allStatus'),
+    label: "全部状态",
     value: ''
   },
   {
-    label: $t('common.highAlarm'),
+    label: "高",
     value: 'H'
   },
   {
-    label: $t('common.intermediateAlarm'),
+    label: "中",
     value: 'M'
   },
   {
-    label: $t('common.lowAlarm'),
+    label: "低",
     value: 'L'
   },
   {
-    label: $t('common.normal'),
+    label: "正常",
     value: 'N'
   }
 ]);
@@ -213,7 +212,7 @@ const cancelCallback = () => {
 };
 const submitCallback = async () => {
   if (description.value === '') {
-    window.$message?.error($t('common.enterAlarmDesc'));
+    window.$message?.error("请输入告警描述");
     return;
   }
   const putData = {
@@ -238,7 +237,7 @@ const submitCallback = async () => {
           @update:value="pickerChange"
         />
       </NFormItem>
-      <NFormItem :label="$t('generate.alarm-level')" path="status">
+      <NFormItem :label="告警级别" path="status">
         <NSelect
           v-model:value="queryData.alarm_status"
           :clearable="false"
@@ -258,39 +257,39 @@ const submitCallback = async () => {
       class="w-100% flex-1-hidden"
     />
     <!--    <div class="flex gap-20px">-->
-    <!--      <NButton @click="handleBatch">{{ $t('generate.batch-process') }}</NButton>-->
-    <!--      <NButton @click="handleIgnore">{{ $t('generate.batch-ignore') }}</NButton>-->
+    <!--      <NButton @click="handleBatch">{{ "批量处理" }}</NButton>-->
+    <!--      <NButton @click="handleIgnore">{{ "批量忽略" }}</NButton>-->
     <!--    </div>-->
-    <n-modal v-model:show="showDialog" :title="$t('generate.alarm-info')" class="max-w-[800px]">
+    <n-modal v-model:show="showDialog" :title="告警详情" class="max-w-[800px]">
       <NCard>
         <div>
-          <NH3>{{ $t('generate.alarm-info') }}</NH3>
+          <NH3>{{ "告警详情" }}</NH3>
         </div>
-        <n-form-item label-placement="left" :show-feedback="false" :label="$t('generate.alarmConfugName') + ':'">
+        <n-form-item label-placement="left" :show-feedback="false" :label="告警配置名称" + ':'">
           {{ infoData.name }}
         </n-form-item>
-        <n-form-item label-placement="left" :show-feedback="false" :label="$t('generate.sceneLinkageName') + ':'">
+        <n-form-item label-placement="left" :show-feedback="false" :label="关联场景联动名称" + ':'">
           {{ infoData['alarm_config_name'] }}
         </n-form-item>
-        <n-form-item label-placement="left" :show-feedback="false" :label="$t('common.alarm_time') + ':'">
+        <n-form-item label-placement="left" :show-feedback="false" :label="告警时间" + ':'">
           {{ moment(infoData['create_at']).format('YYYY-MM-DD HH:mm:ss') }}
         </n-form-item>
-        <n-form-item label-placement="left" :show-feedback="false" :label="$t('generate.alarm-status') + ':'">
+        <n-form-item label-placement="left" :show-feedback="false" :label="告警状态" + ':'">
           {{ alarmStatusOptions.find(data => data.value === infoData['alarm_status'])?.label || '' }}
         </n-form-item>
-        <n-form-item label-placement="left" :show-feedback="false" :label="$t('generate.alarmReason') + ':'">
+        <n-form-item label-placement="left" :show-feedback="false" :label="告警原因" + ':'">
           {{ infoData.content }}
         </n-form-item>
-        <n-form-item label-placement="left" :show-feedback="false" :label="$t('generate.alarm-description') + ':'">
+        <n-form-item label-placement="left" :show-feedback="false" :label="告警描述" + ':'">
           {{ infoData.description }}
         </n-form-item>
-        <n-form-item label-placement="top" :show-feedback="false" :label="$t('generate.alarmDevices') + ':'">
+        <n-form-item label-placement="top" :show-feedback="false" :label="告警设备列表" + ':'">
           <NTable size="small" :bordered="false" :single-line="false" class="mb-6">
             <thead>
               <tr>
-                <th>{{ $t('common.index') }}</th>
-                <th class="min-w-180px">{{ $t('generate.device-code') }}</th>
-                <th>{{ $t('custom.devicePage.deviceName') }}</th>
+                <th>{{ "序号" }}</th>
+                <th class="min-w-180px">{{ "设备编码" }}</th>
+                <th>{{ "设备名称" }}</th>
               </tr>
             </thead>
             <tbody>
@@ -303,18 +302,18 @@ const submitCallback = async () => {
           </NTable>
         </n-form-item>
         <NFlex justify="flex-end">
-          <NButton @click="closeModal">{{ $t('custom.devicePage.close') }}</NButton>
+          <NButton @click="closeModal">{{ "关闭" }}</NButton>
         </NFlex>
       </NCard>
     </n-modal>
     <n-modal v-model:show="showModal" class="max-w-[600px]">
       <NCard>
-        <n-form-item :show-feedback="false" :label="$t('generate.alarm-description')">
+        <n-form-item :show-feedback="false" :label="告警描述">
           <NInput v-model:value="description" type="textarea" />
         </n-form-item>
         <NFlex justify="flex-end" class="mt-4">
-          <NButton @click="cancelCallback">{{ $t('generate.cancel') }}</NButton>
-          <NButton @click="submitCallback">{{ $t('common.save') }}</NButton>
+          <NButton @click="cancelCallback">{{ "取消" }}</NButton>
+          <NButton @click="submitCallback">{{ "保存" }}</NButton>
         </NFlex>
       </NCard>
     </n-modal>

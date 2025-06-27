@@ -58,15 +58,15 @@ const total = ref(0)
 const showLog = ref(false)
 const device_order = ref('')
 const operationOptions = [
-  { label: $t('custom.device_details.whole'), value: '' },
-  { label: $t('custom.device_details.manualOperation'), value: '1' },
-  { label: $t('custom.device_details.triggerOperation'), value: '2' }
+  { label: "全部", value: '' },
+  { label: "手动操作", value: '1' },
+  { label: "触发操作", value: '2' }
   // 其他操作类型选项...
 ]
 const resultOptions = [
-  { label: $t('custom.device_details.whole'), value: '' },
-  { label: $t('custom.devicePage.success'), value: '1' },
-  { label: $t('custom.devicePage.fail'), value: '2' }
+  { label: "全部", value: '' },
+  { label: "成功", value: '1' },
+  { label: "失败", value: '2' }
   // 其他发送结果选项...
 ]
 const cardHeight = ref(160) // 卡片的高度
@@ -122,33 +122,33 @@ const { status, send, close } = useWebSocket(wsUrl, {
 
 const columns = [
   {
-    title: $t('custom.device_details.command'),
+    title: "指令",
     minWidth: '140px',
     key: 'data'
   },
   {
-    title: $t('custom.device_details.operationType'),
+    title: "操作类型",
     key: 'operation_type',
     minWidth: '140px',
-    render: row => (row.operation_type === '1' ? $t('custom.device_details.manualOperation') : $t('card.triggerAction'))
+    render: row => (row.operation_type === '1' ? "手动操作" : "触发操作")
   },
   {
-    title: $t('custom.device_details.operationUsers'),
+    title: "操作用户",
     minWidth: '140px',
     key: 'username',
-    render: row => (row.operation_type === '1' ? row.username : $t('generate.system'))
+    render: row => (row.operation_type === '1' ? row.username : "系统")
   },
   {
-    title: $t('custom.device_details.operationTime'),
+    title: "操作时间",
     key: 'created_at',
     minWidth: '140px',
     render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
   },
   {
-    title: $t('custom.device_details.sendResults'),
+    title: "发送结果",
     minWidth: '140px',
     key: 'status',
-    render: row => (row.status === '1' ? $t('custom.devicePage.success') : $t('custom.devicePage.fail'))
+    render: row => (row.status === '1' ? "成功" : "失败")
   }
 ]
 const requestSimulationList = async () => {
@@ -174,7 +174,7 @@ const openUpLog = () => {
 
 const sendSimulationList = async () => {
   if (!device_order.value) {
-    window.$message?.error($t('custom.device_details.sendInputData'))
+    window.$message?.error("请输入发送数据")
     return
   }
   const { error } = await sendSimulation({
@@ -243,7 +243,7 @@ getDeviceDetail()
 
 const options = ref([
   {
-    label: $t('custom.device_details.deleteAttribute'),
+    label: "删除属性",
     key: '1'
   }
 ])
@@ -271,7 +271,7 @@ const copy = event => {
   const input = event.target
   input.select()
   document.execCommand('copy')
-  window.$message?.success($t('theme.configOperation.copySuccess'))
+  window.$message?.success("复制成功")
 }
 const handlePositiveClick = async () => {
   if (isJSON(formValue.value)) {
@@ -302,7 +302,7 @@ const handlePositiveClick = async () => {
 
 const onTapTableTools = (i: any) => {
   if (typeof i.value === 'number') {
-    modelType.value = $t('custom.device_details.sequential')
+    modelType.value = "时序"
     telemetryKey.value = i.key
     telemetryName.value = i.label
     telemetryId.value = i.device_id
@@ -373,7 +373,7 @@ const validationJson = computed(() => {
 })
 const inputFeedback = computed(() => {
   if (formValue.value && !isJSON(formValue.value)) {
-    return $t('generate.inputRightJson')
+    return "输入的不是有效的JSON格式"
   }
   return ''
 })
@@ -383,10 +383,10 @@ const inputFeedback = computed(() => {
   <n-card class="w-full">
     <!-- 第一行 -->
     <NFlex justify="space-between">
-      <n-button type="primary" class="mb-4" @click="openDialog">{{ $t('generate.issue-control') }}</n-button>
+      <n-button type="primary" class="mb-4" @click="openDialog">{{ "下发控制" }}</n-button>
 
       <n-button v-if="showLog" type="primary" class="mb-4" @click="openUpLog">
-        {{ $t('generate.simulate-report-data') }}
+        {{ "模拟上报数据" }}
       </n-button>
     </NFlex>
 
@@ -444,9 +444,9 @@ const inputFeedback = computed(() => {
               <div class="h-24px w-120px flex items-center justify-end">
                 <NIcon
                   size="24"
-                  @click="
+                  历史"@click="
                     () => {
-                      modelType = $t('custom.device_details.history')
+                      modelType = "
                       telemetryKey = i.key
                       telemetryName = i.label
                       telemetryUnit = i.unit
@@ -510,18 +510,18 @@ const inputFeedback = computed(() => {
         "
       />
     </div>
-    <n-modal v-model:show="showLogDialog" :title="$t('generate.report-data')" :class="getPlatform ? 'w-90%' : 'w-40%'">
+    <n-modal v-model:show="showLogDialog" :title="上报数据" :class="getPlatform ? 'w-90%' : 'w-40%'">
       <n-card>
         <n-form>
           <div class="m-b-20px" :class="getPlatform ? ' flex-col ' : ' flex'">
-            <span class="flex-1">{{ $t('generate.mqtt') }}</span>
-            <span class="flex-1">{{ $t('generate.copy-commands-to-local') }}</span>
+            <span class="flex-1">{{ "模拟使用MQTT客户端上报数据" }}</span>
+            <span class="flex-1">{{ "可复制以上命令到本地电脑模拟上报数据" }}</span>
           </div>
           <div class="flex items-center gap-15px">
             <n-input v-model:value="device_order" type="textarea" class="flex-1" @click="copy" />
 
             <n-button type="primary" @click="sendSimulationList">
-              {{ $t('generate.send') }}
+              {{ "发送" }}
             </n-button>
           </div>
           <div v-if="showError" class="w-100% flex" style="border: 2px solid #eee; border-radius: 5px">
@@ -549,13 +549,13 @@ const inputFeedback = computed(() => {
       </n-card>
     </n-modal>
     <n-modal v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-40%'">
-      <n-card :title="$t('generate.distributeControlToDevice')">
+      <n-card :title="下发控制到设备">
         <n-form label-placement="left">
           <div class="flex">
             <n-form-item>
               <template #label>
                 <div class="flex-ai-c flex">
-                  {{ $t('generate.expectedMessage') }}
+                  {{ "期望消息" }}
                   <n-popover trigger="hover">
                     <template #trigger>
                       <svg
@@ -572,30 +572,30 @@ const inputFeedback = computed(() => {
                         </g>
                       </svg>
                     </template>
-                    <span>{{ $t('generate.expectedMessageTip') }}</span>
+                    <span>{{ "开启后，如果设备不在线，会缓存消息，等设备上线后再发送" }}</span>
                   </n-popover>
                 </div>
               </template>
 
               <n-switch v-model:value="form.expected" />
             </n-form-item>
-            <n-form-item v-if="form.expected" :label="$t('generate.expirationTime')" class="ml-20px">
+            <n-form-item v-if="form.expected" :label="过期时间" class="ml-20px">
               <div class="flex-ai-c flex">
                 <n-input-number v-model:value="form.time" :show-button="false" class="w-80px" />
-                <div class="fs-0">{{ $t('generate.hour') }}</div>
+                <div class="fs-0">{{ "小时" }}</div>
               </div>
             </n-form-item>
           </div>
-          <n-form-item label="" :validation-status="validationJson" :feedback="inputFeedback">
+          <n-form-item label=" :validation-status="validationJson" :feedback="inputFeedback">
             <n-input v-model:value="formValue" type="textarea" />
           </n-form-item>
           <n-space align="end">
-            <n-button @click="showDialog = false">{{ $t('generate.cancel') }}</n-button>
+            <n-button @click="showDialog = false">{{ "取消" }}</n-button>
 
             <n-popconfirm @positive-click="handlePositiveClick">
               <template #trigger>
                 <n-button type="primary" :disabled="!formValue || validationJson === 'error'">
-                  {{ $t('generate.send') }}
+                  {{ "发送" }}
                 </n-button>
               </template>
               确定发送指令吗
@@ -606,19 +606,19 @@ const inputFeedback = computed(() => {
     </n-modal>
     <n-modal
       v-model:show="showHistory"
-      :title="$t('generate.telemetry-history-data')"
+      :title="遥测历史数据"
 
     >
       <NCard style="width: 80%">
         <HistoryData
-          v-if="modelType === $t('custom.device_details.history')"
+          v-if="modelType === "历史"
           :device-id="telemetryId"
           :the-key="telemetryKey"
           :the-name="telemetryName"
           :the-unit="telemetryUnit"
         />
         <TimeSeriesData
-          v-if="modelType === $t('custom.device_details.sequential')"
+          v-if="modelType === "时序"
           :device-id="telemetryId"
           :the-key="telemetryKey"
           :the-name="telemetryName"

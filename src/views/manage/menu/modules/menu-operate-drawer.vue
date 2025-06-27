@@ -42,8 +42,8 @@ const { defaultRequiredRule } = useFormRules();
 
 const title = computed(() => {
   const titles: Record<OperateType, string> = {
-    add: $t('page.manage.menu.addMenu'),
-    edit: $t('page.manage.menu.editMenu')
+    add: "新增菜单",
+    edit: "编辑菜单"
   };
   return titles[props.operateType];
 });
@@ -105,7 +105,7 @@ function closeDrawer() {
 async function handleSubmit() {
   await validate();
   // requestTs
-  // window.$message?.success($t('common.updateSuccess'));
+  // window.$message?.success("更新成功");
   closeDrawer();
   emit('submitted');
 }
@@ -122,32 +122,32 @@ watch(visible, () => {
   <NDrawer v-model:show="visible" :title="title" display-directive="show" :width="360">
     <NDrawerContent :title="title" :native-scrollbar="false" closable>
       <NForm ref="formRef" :model="model" :rules="rules" label-placement="left" :label-width="80">
-        <NFormItem :label="$t('page.manage.menu.menuType')" path="menuType">
+        <NFormItem :label="菜单类型" path="menuType">
           <NRadioGroup v-model:value="model.menuType">
             <NRadio
               v-for="item in menuTypeOptions"
               :key="item.value"
               :value="item.value"
-              :label="$t(item.label as any)"
+              :label="标签"
             />
           </NRadioGroup>
         </NFormItem>
-        <NFormItem :label="$t('page.manage.menu.menuName')" path="menuName">
-          <NInput v-model:value="model.menuName" :placeholder="$t('page.manage.menu.form.menuName')" />
+        <NFormItem :label="菜单名称" path="menuName">
+          <NInput v-model:value="model.menuName" :placeholder="请输入菜单名称" />
         </NFormItem>
-        <NFormItem :label="$t('page.manage.menu.iconTypeTitle')" path="iconType">
+        <NFormItem :label="图标类型" path="iconType">
           <NRadioGroup v-model:value="model.iconType">
             <NRadio
               v-for="item in menuIconTypeOptions"
               :key="item.value"
               :value="item.value"
-              :label="$t(item.label as any)"
+              :label="标签"
             />
           </NRadioGroup>
         </NFormItem>
-        <NFormItem :label="$t('page.manage.menu.icon')" path="icon">
+        <NFormItem :label="图标" path="icon">
           <template v-if="model.iconType === '1'">
-            <NInput v-model:value="model.icon" :placeholder="$t('page.manage.menu.form.icon')" class="flex-1">
+            <NInput v-model:value="model.icon" :placeholder="图标" class="flex-1">
               <template #suffix>
                 <SvgIcon v-if="model.icon" :icon="model.icon" class="text-icon" />
               </template>
@@ -156,43 +156,43 @@ watch(visible, () => {
           <template v-if="model.iconType === '2'">
             <NSelect
               v-model:value="model.icon"
-              :placeholder="$t('page.manage.menu.form.localIcon')"
+              :placeholder="请选择本地图标"
               :options="localIconOptions"
             />
           </template>
         </NFormItem>
-        <NFormItem :label="$t('page.manage.menu.routeName')" path="routeName">
-          <NInput v-model:value="model.routeName" :placeholder="$t('page.manage.menu.form.routeName')" />
+        <NFormItem :label="路由名称" path="routeName">
+          <NInput v-model:value="model.routeName" :placeholder="请输入路由名称" />
         </NFormItem>
 
-        <NFormItem :label="$t('page.manage.menu.routePath')" path="routePath">
-          <NInput v-model:value="model.routePath" :placeholder="$t('page.manage.menu.form.routePath')" />
+        <NFormItem :label="路由路径" path="routePath">
+          <NInput v-model:value="model.routePath" :placeholder="请输入路由路径" />
         </NFormItem>
 
-        <NFormItem :label="$t('page.manage.menu.menuStatus')" path="status">
+        <NFormItem :label="菜单状态" path="status">
           <NRadioGroup v-model:value="model.status">
             <NRadio
               v-for="item in enableStatusOptions"
               :key="item.value"
               :value="item.value"
-              :label="$t(item.label as any)"
+              :label="标签"
             />
           </NRadioGroup>
         </NFormItem>
-        <NFormItem :label="$t('page.manage.menu.hideInMenu')" path="hideInMenu">
+        <NFormItem :label="隐藏菜单" path="hideInMenu">
           <NRadioGroup v-model:value="model.hideInMenu">
-            <NRadio value :label="$t('common.yesOrNo.yes')" />
-            <NRadio :value="false" :label="$t('common.yesOrNo.no')" />
+            <NRadio value :label="是" />
+            <NRadio :value="false" :label="否" />
           </NRadioGroup>
         </NFormItem>
-        <NFormItem :label="$t('page.manage.menu.order')" path="order">
-          <NInputNumber v-model:value="model.order" :placeholder="$t('page.manage.menu.form.order')" />
+        <NFormItem :label="排序" path="order">
+          <NInputNumber v-model:value="model.order" :placeholder="排序" />
         </NFormItem>
       </NForm>
       <template #footer>
         <NSpace :size="16">
-          <NButton @click="closeDrawer">{{ $t('common.cancel') }}</NButton>
-          <NButton type="primary" @click="handleSubmit">{{ $t('common.confirm') }}</NButton>
+          <NButton @click="closeDrawer">{{ "取消" }}</NButton>
+          <NButton type="primary" @click="handleSubmit">{{ "确认" }}</NButton>
         </NSpace>
       </template>
     </NDrawerContent>

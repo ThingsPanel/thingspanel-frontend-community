@@ -193,7 +193,7 @@ function useTableColumn<TableData extends BaseData, CustomColumnKey = never>(
       if (column.type === 'selection') {
         cols.push({
           key: SELECTION_KEY,
-          title: $t('common.check'),
+          title: '检查',
           checked: true
         })
       }

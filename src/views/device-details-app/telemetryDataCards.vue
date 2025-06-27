@@ -48,7 +48,7 @@ const isColor = (i: any) => {
 
 const onTapTableTools = (i: any) => {
   if (typeof i.value === 'number') {
-    modelType.value = $t('custom.device_details.sequential')
+    modelType.value = "时序"
     telemetryKey.value = i.key
     telemetryId.value = i.device_id
     showHistory.value = true
@@ -97,9 +97,9 @@ onMounted(() => {
           <div class="h-24px w-120px flex items-center justify-end">
             <NIcon
               size="24"
-              @click="
+              历史"@click="
                 () => {
-                  modelType = $t('custom.device_details.history')
+                  modelType = "
                   telemetryKey = i.key
                   telemetryId = i.device_id
                   showHistory = true
@@ -118,15 +118,15 @@ onMounted(() => {
       </n-card>
     </n-gi>
   </n-grid>
-  <n-modal v-model:show="showHistory" :title="$t('generate.telemetry-history-data')" class="w-90%">
+  <n-modal v-model:show="showHistory" :title="遥测历史数据" class="w-90%">
     <NCard>
       <HistoryData
-        v-if="modelType === $t('custom.device_details.history')"
+        v-if="modelType === "历史"
         :device-id="telemetryId"
         :the-key="telemetryKey"
       />
       <TimeSeriesData
-        v-if="modelType === $t('custom.device_details.sequential')"
+        v-if="modelType === "时序"
         :device-id="telemetryId"
         :the-key="telemetryKey"
       />

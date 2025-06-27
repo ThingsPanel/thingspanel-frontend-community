@@ -28,9 +28,9 @@ function printImage() {
 
 <template>
   <div class="h-full">
-    <NCard :title="$t('generate.print')" :bordered="false" class="rounded-8px shadow-sm">
-      <NButton type="primary" class="mr-10px" @click="printTable">{{ $t('generate.print-table') }}</NButton>
-      <NButton type="primary" @click="printImage">{{ $t('generate.printImage') }}</NButton>
+    <NCard :title="打印" :bordered="false" class="rounded-8px shadow-sm">
+      <NButton type="primary" class="mr-10px" @click="printTable">{{ "打印表格" }}</NButton>
+      <NButton type="primary" @click="printImage">{{ "打印图片" }}</NButton>
       <template #footer>
         <GithubLink label="printJS：" link="https://github.com/crabbly/Print.js" class="mt-10px" />
       </template>

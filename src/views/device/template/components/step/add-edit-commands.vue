@@ -50,17 +50,17 @@ const addParameterRules: any = reactive({
   data_name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.PleaseEnterTheParameterName')
+    message: "请输入参数名称"
   },
   data_identifier: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.PleaseEnterTheParameterIdentifier')
+    message: "请输入参数标识符"
   },
   param_type: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.PleaseSelectParameterType')
+    message: "请选择参数类型"
   }
 });
 
@@ -82,41 +82,41 @@ const del: (id: string) => void = async id => {
 const col: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
     key: 'data_name',
-    title: $t('device_template.table_header.parameterName'),
+    title: "参数名称",
     align: 'center'
   },
   {
     key: 'data_identifier',
-    title: $t('device_template.table_header.PleaseEnterTheParameterIdentifier'),
+    title: "请输入参数标识符",
     align: 'center'
   },
   {
     key: 'param_type',
-    title: $t('device_template.table_header.ParameterType'),
+    title: "参数类型",
     align: 'center'
   },
   {
     key: 'description',
-    title: $t('device_template.table_header.description'),
+    title: "描述",
     align: 'center'
   },
   {
     key: 'actions',
 
-    title: () => $t('common.actions'),
+    title: () => "操作",
     align: 'center',
     render: row => {
       return (
         <NSpace justify={'center'}>
           <NButton quaternary type="primary" size={'small'} onClick={() => edit(row)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm onPositiveClick={() => del(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton quaternary type="primary" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -177,12 +177,12 @@ const fromRules: Rules = {
   data_name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.pleaseEnterTheCommandName')
+    message: "请输入命令名称"
   },
   data_identifier: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.pleaseEnterTheCommandIdentifier')
+    message: "请输入命令标识符"
   }
 };
 
@@ -288,17 +288,17 @@ const parameterSubmit: () => void = async () => {
     require-mark-placement="right-hanging"
     class="addFrom"
   >
-    <n-form-item :label="$t('device_template.table_header.commandName')" path="data_name">
+    <n-form-item :label="命令名称" path="data_name">
       <n-grid :cols="2">
         <n-gi>
-          <n-input v-model:value.trim="addFrom.data_name" placeholder="" />
+          <n-input v-model:value.trim="addFrom.data_name" placeholder=" />
         </n-gi>
       </n-grid>
     </n-form-item>
-    <n-form-item :label="$t('device_template.table_header.commandIdentifier')" path="data_identifier">
+    <n-form-item :label="命令标识符" path="data_identifier">
       <n-grid :cols="2">
         <n-gi>
-          <n-input v-model:value.trim="addFrom.data_identifier" placeholder="" />
+          <n-input v-model:value.trim="addFrom.data_identifier" placeholder=" />
         </n-gi>
       </n-grid>
     </n-form-item>
@@ -307,26 +307,26 @@ const parameterSubmit: () => void = async () => {
         <template #icon>
           <SvgIcon local-icon="add" class="more" />
         </template>
-        {{ $t('device_template.table_header.addParameters') }}
+        {{ "添加参数" }}
       </NButton>
       <n-data-table :columns="col" :data="eventsData" class="m-b4 flex-1-hidden" />
     </div>
-    <n-form-item :label="$t('device_template.table_header.commandDescription')">
+    <n-form-item :label="命令描述">
       <n-input
         v-model:value.trim="addFrom.description"
-        :placeholder="$t('device_template.table_header.pleaseEnterACommandDescription')"
+        :placeholder="请输入命令描述"
         type="textarea"
       />
     </n-form-item>
   </n-form>
   <div class="box2">
-    <NButton class="m-r3" @click="clear">{{ $t('generate.cancel') }}</NButton>
-    <NButton type="primary" @click="submit">{{ $t('device_template.confirm') }}</NButton>
+    <NButton class="m-r3" @click="clear">{{ "取消" }}</NButton>
+    <NButton type="primary" @click="submit">{{ "确定" }}</NButton>
   </div>
   <NModal
     v-model:show="addParameter"
     preset="card"
-    :title="$t('device_template.table_header.addEditParameters')"
+    :title="新增/编辑参数"
     class="mw-600px w-50%"
     @after-leave="addParameterClone"
   >
@@ -339,72 +339,72 @@ const parameterSubmit: () => void = async () => {
       require-mark-placement="right-hanging"
       class="addFrom"
     >
-      <n-form-item :label="$t('device_template.table_header.parameterName')" path="data_name">
+      <n-form-item :label="参数名称" path="data_name">
         <n-input
           v-model:value.trim="addParameterFrom.data_name"
-          :placeholder="$t('device_template.table_header.PleaseEnterTheParameterName')"
+          :placeholder="请输入参数名称"
         />
       </n-form-item>
-      <n-form-item :label="$t('device_template.table_header.ParameterIdentifier')" path="data_identifier">
+      <n-form-item :label="参数标识符" path="data_identifier">
         <n-input
           v-model:value.trim="addParameterFrom.data_identifier"
-          :placeholder="$t('device_template.table_header.PleaseEnterTheParameterIdentifier')"
+          :placeholder="请输入参数标识符"
         />
       </n-form-item>
-      <n-form-item :label="$t('device_template.table_header.ParameterType')" path="param_type">
+      <n-form-item :label="参数类型" path="param_type">
         <div>
           <n-select
             v-model:value="addParameterFrom.param_type"
             :options="generalOptions"
-            :placeholder="$t('device_template.table_header.PleaseSelectParameterType')"
+            :placeholder="请选择参数类型"
             class="w-150px"
           />
           <template v-if="addParameterFrom.param_type === 'Enum'">
-            <div class="mtb-10px">{{ $t('device_template.setEnumItem') }}</div>
+            <div class="mtb-10px">{{ "设置枚举项" }}</div>
 
             <div class="flex">
               <div class="data-type-label">
-                {{ $t('device_template.table_header.dataType') }}
+                {{ "数据类型" }}
               </div>
               <n-select
                 v-model:value="addParameterFrom.data_type"
                 :options="generalOptions.filter(v => v.value !== 'Enum')"
-                :placeholder="$t('generate.please-select')"
+                :placeholder="请选择"
               />
             </div>
             <div class="enum-item-list">
               <div class="row th">
-                <div class="col">{{ $t('device_template.enumValue') }}</div>
-                <div class="col">{{ $t('device_template.enumDesc') }}</div>
+                <div class="col">{{ "枚举值" }}</div>
+                <div class="col">{{ "枚举描述" }}</div>
                 <div class="col"></div>
               </div>
               <div v-for="(item, index) in addParameterFrom.enum_config" :key="index" class="row tr">
                 <div class="col value">
-                  <n-input v-model:value.trim="item.value" :placeholder="$t('common.input')" />
+                  <n-input v-model:value.trim="item.value" :placeholder="输入" />
                 </div>
                 <div class="col desc">
-                  <n-input v-model:value.trim="item.desc" :placeholder="$t('common.input')" />
+                  <n-input v-model:value.trim="item.desc" :placeholder="输入" />
                 </div>
                 <div class="col">
-                  <NButton type="primary" @click="removeEnumItem(index)">{{ $t('common.remove') }}</NButton>
+                  <NButton type="primary" @click="removeEnumItem(index)">{{ "移除" }}</NButton>
                 </div>
               </div>
-              <NButton type="primary" @click="addEnumItem">{{ $t('device_template.addEnumItem') }}</NButton>
+              <NButton type="primary" @click="addEnumItem">{{ "添加枚举项" }}</NButton>
             </div>
           </template>
         </div>
       </n-form-item>
-      <n-form-item :label="$t('device_template.table_header.description')">
+      <n-form-item :label="描述">
         <n-input
           v-model:value.trim="addParameterFrom.description"
-          :placeholder="$t('device_template.table_header.PleaseEnterADescription')"
+          :placeholder="请输入描述"
           type="textarea"
         />
       </n-form-item>
     </n-form>
     <div class="box2">
-      <NButton class="m-r3" @click="addParameter = false">{{ $t('generate.cancel') }}</NButton>
-      <NButton type="primary" @click="parameterSubmit">{{ $t('device_template.confirm') }}</NButton>
+      <NButton class="m-r3" @click="addParameter = false">{{ "取消" }}</NButton>
+      <NButton type="primary" @click="parameterSubmit">{{ "确定" }}</NButton>
     </div>
   </NModal>
 </template>

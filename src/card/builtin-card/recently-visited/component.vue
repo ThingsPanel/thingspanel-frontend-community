@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 h-full bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
     <h3 class="text-base font-semibold mb-3 text-gray-800 dark:text-gray-100 flex-shrink-0">
-      {{ $t('card.recentlyVisited.title') }}
+      {{ "最近访问" }}
     </h3>
     <div class="flex-grow overflow-hidden">
       <ul class="space-y-1.5 overflow-y-auto h-full pr-1">
@@ -17,7 +17,7 @@
           <span class="ml-auto text-gray-400 dark:text-gray-500 text-xs">></span>
         </li>
         <li v-if="!visitedRoutes.length" class="text-sm text-gray-500 dark:text-gray-400 px-2 py-4 text-center">
-          {{ $t('card.recentlyVisited.noRecords') }}
+          {{ "暂无访问记录" }}
         </li>
       </ul>
     </div>

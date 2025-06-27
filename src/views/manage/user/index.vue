@@ -49,20 +49,20 @@ const { columns, filteredColumns, data, loading, pagination, getData, searchPara
     },
     {
       key: 'index',
-      title: $t('common.index'),
+      title: "序号",
       render: (_, index): string => getIndex(index),
       align: 'center',
       minWidth: '140px'
     },
     {
       key: 'userName',
-      title: $t('page.manage.user.userName'),
+      title: "姓名",
       align: 'center',
       minWidth: 100
     },
     {
       key: 'userGender',
-      title: $t('page.manage.user.userGender'),
+      title: "性别",
       align: 'center',
       minWidth: '140px',
       render: row => {
@@ -75,32 +75,32 @@ const { columns, filteredColumns, data, loading, pagination, getData, searchPara
           2: 'error'
         };
 
-        const label = $t(userGenderRecord[row.userGender]);
+        const label = "动态文本";
 
         return <NTag type={tagMap[row.userGender]}>{label}</NTag>;
       }
     },
     {
       key: 'nickName',
-      title: $t('page.manage.user.nickName'),
+      title: "昵称",
       align: 'center',
       minWidth: 100
     },
     {
       key: 'userPhone',
-      title: $t('page.manage.user.userPhone'),
+      title: "手机号",
       align: 'center',
       minWidth: '140px'
     },
     {
       key: 'userEmail',
-      title: $t('page.manage.user.userEmail'),
+      title: "邮箱",
       align: 'center',
       minWidth: 200
     },
     {
       key: 'status',
-      title: $t('page.manage.user.userStatus'),
+      title: "租户状态",
       align: 'center',
       minWidth: '140px',
       render: row => {
@@ -113,27 +113,27 @@ const { columns, filteredColumns, data, loading, pagination, getData, searchPara
           2: 'warning'
         };
 
-        const label = $t(enableStatusRecord[row.status]);
+        const label = "动态文本";
 
         return <NTag type={tagMap[row.status]}>{label}</NTag>;
       }
     },
     {
       key: 'operate',
-      title: $t('common.actions'),
+      title: "操作",
       align: 'center',
       minWidth: '140px',
       render: row => (
         <div class="flex-center gap-8px">
           <NButton type="primary" ghost size="small" onClick={() => handleEdit(row.id)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm onPositiveClick={() => handleDelete(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" ghost size="small">
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -155,7 +155,7 @@ const checkedRowKeys = ref<string[]>([]);
 
 async function handleBatchDelete() {
   // requestTs
-  // window.$message?.success($t('common.deleteSuccess'));
+  // window.$message?.success("删除成功");
 
   checkedRowKeys.value = [];
 
@@ -173,7 +173,7 @@ function handleEdit(id: number) {
 // eslint-disable-next-line
 async function handleDelete(id: number) {
   // requestTs
-  // window.$message?.success($t('common.deleteSuccess'));
+  // window.$message?.success("删除成功");
 
   getData();
 }
@@ -188,7 +188,7 @@ function getIndex(index: number) {
 <template>
   <div class="flex-vertical-stretch gap-16px overflow-hidden <sm:overflow-auto">
     <UserSearch v-model:model="searchParams" @reset="resetSearchParams" @search="getData" />
-    <NCard :title="$t('page.manage.user.title')" :bordered="false" size="small" class="sm:flex-1-hidden card-wrapper">
+    <NCard :title="用户列表" :bordered="false" size="small" class="sm:flex-1-hidden card-wrapper">
       <template #header-extra>
         <TableHeaderOperation
           v-model:columns="filteredColumns"

@@ -25,7 +25,7 @@ onMounted(() => {
 
 <template>
   <div class="h-full">
-    <NCard :title="$t('generate.richTextPlugin')" :bordered="false" class="rounded-8px shadow-sm">
+    <NCard :title="富文本插件" :bordered="false" class="rounded-8px shadow-sm">
       <div ref="domRef" class="bg-white dark:bg-dark"></div>
       <template #footer>
         <GithubLink link="https://github.com/wangeditor-team/wangEditor" />

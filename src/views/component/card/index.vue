@@ -4,39 +4,39 @@ import { $t } from '@/locales'
 
 <template>
   <div>
-    <NCard :title="$t('generate.card')" :bordered="false" class="h-full rounded-8px shadow-sm">
+    <NCard :title="卡片" :bordered="false" class="h-full rounded-8px shadow-sm">
       <NSpace :vertical="true">
-        <NCard :title="$t('generate.basic-usage')">
-          <p class="pb-16px">{{ $t('generate.basic-card') }}</p>
-          <NCard :title="$t('generate.card')">{{ $t('generate.card-content') }}</NCard>
+        <NCard :title="基本用法">
+          <p class="pb-16px">{{ "基础卡片" }}</p>
+          <NCard :title="卡片">{{ "卡片内容" }}</NCard>
         </NCard>
-        <NCard :title="$t('generate.size')">
+        <NCard :title="尺寸">
           <p class="pb-16px">
-            <span>{{ $t('card.cardHas') }}</span>
+            <span>{{ "卡片有" }}</span>
             small、medium、large、huge
-            <span>{{ $t('card.size') }}</span>
+            <span>{{ "尺寸" }}</span>
             。
           </p>
           <NSpace vertical>
-            <NCard :title="$t('generate.small-card')" size="small">{{ $t('generate.card-content') }}</NCard>
-            <NCard :title="$t('generate.medium-card')" size="medium">{{ $t('generate.card-content') }}</NCard>
-            <NCard :title="$t('generate.large-card')" size="large">{{ $t('generate.card-content') }}</NCard>
-            <NCard :title="$t('generate.extra-large-card')" size="huge">{{ $t('generate.card-content') }}</NCard>
+            <NCard :title="小卡片" size="small">{{ "卡片内容" }}</NCard>
+            <NCard :title="中卡片" size="medium">{{ "卡片内容" }}</NCard>
+            <NCard :title="大卡片" size="large">{{ "卡片内容" }}</NCard>
+            <NCard :title="超大卡片" size="huge">{{ "卡片内容" }}</NCard>
           </NSpace>
         </NCard>
-        <NCard :title="$t('generate.text-button')">
+        <NCard :title="文本按钮">
           <p class="pb-16px">
-            {{ $t('card.contentFooter') }}
+            {{ "content 和 footer 可以被 hard 或 soft 分段，action 可以被分段。分段分割线会在区域的上方出现。" }}
           </p>
           <NCard
-            :title="$t('generate.card-segment-example')"
+            :title="卡片分段示例"
             :segmented="{
               content: true,
               footer: 'soft'
             }"
           >
             <template #header-extra>#header-extra</template>
-            {{ $t('generate.card-content') }}
+            {{ "卡片内容" }}
             <template #footer>#footer</template>
             <template #action>#action</template>
           </NCard>

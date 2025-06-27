@@ -13,7 +13,7 @@ defineProps<Props>()
 </script>
 
 <template>
-  <ButtonIcon :tooltip-content="$t('icon.reload')">
+  <ButtonIcon :tooltip-content="刷新页面">
     <IconAntDesignReloadOutlined :class="{ 'animate-spin animate-duration-750': loading }" />
   </ButtonIcon>
 </template>

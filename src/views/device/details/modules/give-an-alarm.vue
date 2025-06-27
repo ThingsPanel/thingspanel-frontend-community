@@ -33,23 +33,23 @@ const queryParams = ref({
 })
 const alarmStatusOptions = ref([
   {
-    label: $t('common.allStatus'),
+    label: "全部状态",
     value: ''
   },
   {
-    label: $t('common.highAlarm'),
+    label: "高",
     value: 'H'
   },
   {
-    label: $t('common.intermediateAlarm'),
+    label: "中",
     value: 'M'
   },
   {
-    label: $t('common.lowAlarm'),
+    label: "低",
     value: 'L'
   },
   {
-    label: $t('common.normal'),
+    label: "正常",
     value: 'N'
   }
 ])
@@ -115,7 +115,7 @@ const showDescModal = (item: any) => {
 }
 const submitCallback = async () => {
   if (description.value === '') {
-    window.$message?.error($t('common.enterAlarmDesc'))
+    window.$message?.error("请输入告警描述")
     return
   }
   const putData = {
@@ -155,10 +155,10 @@ onMounted(() => {
     <NFlex justify="space-between" class="mb-4">
       <n-button-group>
         <NButton :type="tabValue === 1 ? 'primary' : 'default'" @click="choseTab(1)">
-          {{ $t('common.alarmHistory') }}
+          {{ "告警历史" }}
         </NButton>
         <NButton :type="tabValue === 2 ? 'primary' : 'default'" @click="choseTab(2)">
-          {{ $t('common.alarmRules') }}
+          {{ "告警规则" }}
         </NButton>
       </n-button-group>
       <NFlex v-if="tabValue === 1" class="w-70%" justify="flex-end">
@@ -181,11 +181,11 @@ onMounted(() => {
           <NIcon size="18">
             <Refresh />
           </NIcon>
-          {{ $t('generate.refresh') }}
+          {{ "刷新" }}
         </NButton>
       </NFlex>
       <NFlex v-if="tabValue === 2" justify="flex-end">
-        <NButton type="primary" @click="alarmAdd()">{{ $t('generate.addAlarmRule') }}</NButton>
+        <NButton type="primary" @click="alarmAdd()">{{ "新增告警规则" }}</NButton>
       </NFlex>
     </NFlex>
     <div v-if="tabValue === 1" class="history-list">
@@ -222,56 +222,56 @@ onMounted(() => {
                 <NIcon size="18">
                   <EyeOutline />
                 </NIcon>
-                {{ $t('custom.devicePage.details') }}
+                {{ "详情" }}
               </NButton>
               <NButton text class="ml-8" @click="showDescModal(item)">
                 <NIcon size="18">
                   <Edit />
                 </NIcon>
-                {{ $t('custom.devicePage.maintenance') }}
+                {{ "维护" }}
               </NButton>
             </div>
           </div>
         </div>
-        <div v-if="loading" class="text">{{ $t('card.loading') }}</div>
-        <div v-if="noMore" class="text">{{ $t('card.noMore') }}</div>
+        <div v-if="loading" class="text">{{ "加载中..." }}</div>
+        <div v-if="noMore" class="text">{{ "没有更多了" }}</div>
       </n-infinite-scroll>
       <n-empty
         v-if="alarmHistory.length === 0"
         size="huge"
-        :description="$t('common.nodata')"
+        :description="暂无数据"
         class="min-h-60 justify-center"
       ></n-empty>
-      <n-modal v-model:show="showDialog" :title="$t('generate.alarm-info')" class="max-w-[800px]">
+      <n-modal v-model:show="showDialog" :title="告警详情" class="max-w-[800px]">
         <NCard>
           <div>
-            <NH3>{{ $t('generate.alarm-info') }}</NH3>
+            <NH3>{{ "告警详情" }}</NH3>
           </div>
-          <n-form-item label-placement="left" :show-feedback="false" :label="`${$t('generate.alarmConfugName')}:`">
+          <n-form-item label-placement="left" :show-feedback="false" :label="`${"告警配置名称"}:`">
             {{ infoData.name }}
           </n-form-item>
-          <n-form-item label-placement="left" :show-feedback="false" :label="`${$t('generate.sceneLinkageName')}:`">
+          <n-form-item label-placement="left" :show-feedback="false" :label="`${"关联场景联动名称"}:`">
             {{ infoData['alarm_config_name'] }}
           </n-form-item>
-          <n-form-item label-placement="left" :show-feedback="false" :label="`${$t('common.alarm_time')}:`">
+          <n-form-item label-placement="left" :show-feedback="false" :label="`${"告警时间"}:`">
             {{ moment(infoData['create_at']).format('YYYY-MM-DD HH:mm:ss') }}
           </n-form-item>
-          <n-form-item label-placement="left" :show-feedback="false" :label="`${$t('generate.alarmStatus')}:`">
+          <n-form-item label-placement="left" :show-feedback="false" :label="`${"告警状态"}:`">
             {{ alarmStatusOptions.find(data => data.value === infoData['alarm_status'])?.label || '' }}
           </n-form-item>
-          <n-form-item label-placement="left" :show-feedback="false" :label="`${$t('generate.alarmReason')}:`">
+          <n-form-item label-placement="left" :show-feedback="false" :label="`${"告警原因"}:`">
             {{ infoData.content }}
           </n-form-item>
-          <n-form-item label-placement="left" :show-feedback="false" :label="`${$t('generate.alarm-description')}:`">
+          <n-form-item label-placement="left" :show-feedback="false" :label="`${"告警描述"}:`">
             {{ infoData.description }}
           </n-form-item>
-          <n-form-item label-placement="top" :show-feedback="false" :label="`${$t('generate.alarmDevices')}:`">
+          <n-form-item label-placement="top" :show-feedback="false" :label="`${"告警设备列表"}:`">
             <NTable size="small" :bordered="false" :single-line="false" class="mb-6">
               <thead>
                 <tr>
-                  <th>{{ $t('generate.order-number') }}</th>
-                  <th class="min-w-180px">{{ $t('generate.device-code') }}</th>
-                  <th>{{ $t('generate.device-name') }}</th>
+                  <th>{{ "序号" }}</th>
+                  <th class="min-w-180px">{{ "设备编码" }}</th>
+                  <th>{{ "设备名称" }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -284,18 +284,18 @@ onMounted(() => {
             </NTable>
           </n-form-item>
           <NFlex justify="flex-end">
-            <NButton @click="closeModal">{{ $t('custom.devicePage.close') }}</NButton>
+            <NButton @click="closeModal">{{ "关闭" }}</NButton>
           </NFlex>
         </NCard>
       </n-modal>
       <n-modal v-model:show="showModal" class="max-w-[600px]">
         <NCard>
-          <n-form-item :show-feedback="false" :label="$t('generate.alarm-description')">
+          <n-form-item :show-feedback="false" :label="告警描述">
             <NInput v-model:value="description" type="textarea" />
           </n-form-item>
           <NFlex justify="flex-end" class="mt-4">
-            <NButton @click="cancelCallback">{{ $t('generate.cancel') }}</NButton>
-            <NButton @click="submitCallback">{{ $t('common.save') }}</NButton>
+            <NButton @click="cancelCallback">{{ "取消" }}</NButton>
+            <NButton @click="submitCallback">{{ "保存" }}</NButton>
           </NFlex>
         </NCard>
       </n-modal>

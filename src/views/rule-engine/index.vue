@@ -35,19 +35,19 @@ async function getTableData() {
 const columns: Ref<DataTableColumns<RuleEngine.Rule>> = ref([
   {
     key: 'index',
-    title: $t('common.index'),
+    title: "序号",
     align: 'left',
     minWidth: '140px'
   },
   {
     key: 'name',
-    title: $t('generate.rule-name'),
+    title: "规则名称",
     minWidth: '140px',
     align: 'left'
   },
   {
     key: 'status',
-    title: $t('generate.rule-name'),
+    title: "规则名称",
     minWidth: '140px',
     align: 'left',
     render: row => {
@@ -63,27 +63,27 @@ const columns: Ref<DataTableColumns<RuleEngine.Rule>> = ref([
   },
   {
     key: 'actions',
-    title: $t('common.actions'),
+    title: "操作",
     align: 'left',
     width: '300px',
     render: row => {
       return (
         <NSpace justify={'center'}>
           <NButton size={'small'} ghost type="primary" onClick={() => handleActivate(row.id)}>
-            {$t('generate.startup')}
+            {"启动"}
           </NButton>
           <NButton size={'small'} type="warning" onClick={() => handlePause(row.id)}>
-            {$t('generate.suspend')}
+            {"暂停"}
           </NButton>
           <NButton size={'small'} type="primary" onClick={() => handleEditTable(row.id)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -129,7 +129,7 @@ function handleEditTable(rowId: string) {
 }
 
 function handleDeleteTable(rowId: string) {
-  window.$message?.info(`${$t('generate.clickDelete')}，rowId${$t('generate.by')}${rowId}`);
+  window.$message?.info(`${"点击了删除"}，rowId${"为"}${rowId}`);
 }
 
 const pagination: PaginationProps = reactive({
@@ -155,10 +155,10 @@ init();
 </script>
 
 <template>
-  <NCard :title="$t('generate.rule-engine')" :bordered="false" class="h-full rounded-8px shadow-sm">
+  <NCard :title="规则引擎" :bordered="false" class="h-full rounded-8px shadow-sm">
     <template #header-extra>
-      <NButton @click="handleAddTable">{{ $t('generate.create-access-rule') }}</NButton>
-      <NButton class="ml-10px">{{ $t('device_template.release') }}</NButton>
+      <NButton @click="handleAddTable">{{ "创建接入规则" }}</NButton>
+      <NButton class="ml-10px">{{ "发布" }}</NButton>
       <!--
  <n-button type="error">
           <icon-ic-round-delete class="mr-4px text-20px" />

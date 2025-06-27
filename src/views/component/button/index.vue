@@ -22,7 +22,7 @@ const { loading, startLoading, endLoading } = useLoading()
 const buttonExample: ButtonExample[] = [
   {
     id: 0,
-    label: $t('common.base'),
+    label: "基础",
     buttons: [
       {
         id: 0,
@@ -60,11 +60,11 @@ const buttonExample: ButtonExample[] = [
         label: 'Error'
       }
     ],
-    desc: $t('card.buttonTypeDesc')
+    desc: "按钮的 type 分别为 default、primary、info、success、warning 和 error。"
   },
   {
     id: 1,
-    label: $t('card.secondaryButton'),
+    label: "次要按钮",
     buttons: [
       {
         id: 0,
@@ -140,7 +140,7 @@ const buttonExample: ButtonExample[] = [
   },
   {
     id: 2,
-    label: $t('card.tertiaryButton'),
+    label: "次次要按钮",
     buttons: [
       {
         id: 0,
@@ -206,7 +206,7 @@ const buttonExample: ButtonExample[] = [
   },
   {
     id: 3,
-    label: $t('card.subsequentlyButton'),
+    label: "次次次要按钮",
     buttons: [
       {
         id: 0,
@@ -272,7 +272,7 @@ const buttonExample: ButtonExample[] = [
   },
   {
     id: 4,
-    label: $t('card.dashLineButton'),
+    label: "虚线按钮",
     buttons: [
       {
         id: 0,
@@ -313,45 +313,45 @@ const buttonExample: ButtonExample[] = [
   },
   {
     id: 5,
-    label: $t('card.size'),
+    label: "尺寸",
     buttons: [
       {
         id: 0,
         props: { size: 'tiny', strong: true },
-        label: $t('card.extremeSmall')
+        label: "小小"
       },
       {
         id: 1,
         props: { size: 'small', strong: true },
-        label: $t('card.small')
+        label: "小"
       },
       {
         id: 2,
         props: { size: 'medium', strong: true },
-        label: $t('card.large')
+        label: "不小"
       },
       {
         id: 3,
         props: { size: 'large', strong: true },
-        label: $t('card.extremeLarge')
+        label: "不不小"
       }
     ]
   },
   {
     id: 6,
-    label: $t('card.textButton'),
+    label: "文本按钮",
     buttons: [
       {
         id: 0,
         props: { text: true },
-        label: $t('card.carHeadSmoke'),
+        label: "那车头依然吐着烟",
         icon: 'mdi:train'
       }
     ]
   },
   {
     id: 7,
-    label: $t('card.customButton'),
+    label: "自定义标签按钮",
     buttons: [
       {
         id: 0,
@@ -365,25 +365,25 @@ const buttonExample: ButtonExample[] = [
         label: 'soybean-admin'
       }
     ],
-    desc: $t('card.renderButton')
+    desc: "你可以把按钮渲染成不同的标签，比如 a标签 。"
   },
   {
     id: 8,
-    label: $t('card.disabledButton'),
+    label: "按钮禁用",
     buttons: [
       {
         id: 0,
         props: {
           disabled: true
         },
-        label: $t('card.dontClick')
+        label: "不许点"
       }
     ],
-    desc: $t('card.buttonDisabled')
+    desc: "按钮可以被禁用"
   },
   {
     id: 9,
-    label: $t('card.iconButton'),
+    label: "图标按钮",
     buttons: [
       {
         id: 0,
@@ -391,7 +391,7 @@ const buttonExample: ButtonExample[] = [
           secondary: true,
           strong: true
         },
-        label: $t('card.rmbYuan'),
+        label: "+100元",
         icon: 'mdi:cash-100'
       },
       {
@@ -401,15 +401,15 @@ const buttonExample: ButtonExample[] = [
           secondary: true,
           strong: true
         },
-        label: $t('card.rmbYuan'),
+        label: "+100元",
         icon: 'mdi:cash-100'
       }
     ],
-    desc: $t('card.useIconButton')
+    desc: "在按钮上使用图标。"
   },
   {
     id: 10,
-    label: $t('card.differentShapeButton'),
+    label: "不同形状按钮",
     buttons: [
       {
         id: 0,
@@ -423,19 +423,19 @@ const buttonExample: ButtonExample[] = [
         props: {
           round: true
         },
-        label: $t('card.roundCorner')
+        label: "圆角"
       },
       {
         id: 2,
         props: {},
-        label: $t('card.square')
+        label: "方"
       }
     ],
-    desc: $t('card.buttonWithDifferentShape')
+    desc: "按钮拥有不同的形状。"
   },
   {
     id: 11,
-    label: $t('card.transparentBgButton'),
+    label: "透明背景按钮",
     buttons: [
       {
         id: 0,
@@ -473,11 +473,11 @@ const buttonExample: ButtonExample[] = [
         label: 'Error'
       }
     ],
-    desc: $t('card.ghostButton')
+    desc: "Ghost 按钮有透明的背景。"
   },
   {
     id: 12,
-    label: $t('card.customColor'),
+    label: "自定义颜色",
     buttons: [
       {
         id: 0,
@@ -539,7 +539,7 @@ const buttonExample: ButtonExample[] = [
 
 <template>
   <div>
-    <NCard :title="$t('page.manage.menu.button')" :bordered="false" class="h-full rounded-8px shadow-sm">
+    <NCard :title="按钮" :bordered="false" class="h-full rounded-8px shadow-sm">
       <NGrid cols="s:1 m:2" responsive="screen" :x-gap="16" :y-gap="16">
         <NGridItem v-for="item in buttonExample" :key="item.id">
           <NCard :title="item.label" class="min-h-180px">
@@ -560,13 +560,13 @@ const buttonExample: ButtonExample[] = [
           </NCard>
         </NGridItem>
         <NGridItem class="h-180px">
-          <NCard :title="$t('generate.loading')" class="h-full">
-            <p class="pb-16px">{{ $t('generate.loading-button') }}</p>
+          <NCard :title="加载中" class="h-full">
+            <p class="pb-16px">{{ "按钮有加载状态。" }}</p>
             <NSpace>
               <NButton :loading="loading" type="primary" @click="startLoading">
-                {{ $t('generate.start-loading') }}
+                {{ "开始加载" }}
               </NButton>
-              <NButton @click="endLoading">{{ $t('generate.cancel-loading') }}</NButton>
+              <NButton @click="endLoading">{{ "取消加载" }}</NButton>
             </NSpace>
           </NCard>
         </NGridItem>

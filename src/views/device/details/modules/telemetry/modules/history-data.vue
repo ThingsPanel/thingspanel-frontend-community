@@ -102,16 +102,16 @@ const dateRange = ref<[number, number] | null>([params.start_time, params.end_ti
 // 修复类型实例化过深的问题
 const columns = [
   {
-    title: $t('common.time'),
+    title: "时间",
     key: 'time',
     render: (row: HistoryData) => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
   },
   {
-    title: $t('device_template.table_header.dataIdentifier'),
+    title: "数据标识符",
     key: 'key'
   },
   {
-    title: $t('generate.fieldValue'),
+    title: "值",
     key: 'value',
     render: (row: HistoryData) => row.value.toString()
   }
@@ -122,7 +122,7 @@ const checkDateRange = value => {
 
   if (start && end && addMonths(start, 1) < end) {
     dateRange.value = null
-    message.error($t('common.withinOneMonth'))
+    message.error("一个月内")
   } else {
     // 直接使用用户选择的时间
     params.start_time = start
@@ -152,7 +152,7 @@ onMounted(getTelemetryHistoryData)
           :time-picker-props="[{ defaultValue: 0 }, { defaultValue: 86399 }]"
           @update:value="checkDateRange"
         />
-        <n-button class="ml-2" @click="refresh">{{ $t('generate.refresh') }}</n-button>
+        <n-button class="ml-2" @click="refresh">{{ "刷新" }}</n-button>
       </n-flex>
 
       <n-button
@@ -164,11 +164,11 @@ onMounted(getTelemetryHistoryData)
           }
         "
       >
-        {{ $t('generate.export') }}
+        {{ "导出" }}
       </n-button>
     </n-flex>
     <div class="mt-4">
-      <n-text v-if="!dateRange" depth="3">{{ $t('generate.hour-24') }}</n-text>
+      <n-text v-if="!dateRange" depth="3">{{ "！默认查询最近24小时的数据" }}</n-text>
       <n-data-table :loading="loading" :columns="columns" :data="tableData" />
       <div class="mt-4 flex justify-end">
         <n-pagination

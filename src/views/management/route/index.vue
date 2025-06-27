@@ -3,7 +3,7 @@ import { $t } from '@/locales'
 </script>
 
 <template>
-  <div>{{ $t('generate.route-management') }}</div>
+  <div>{{ "路由管理" }}</div>
 </template>
 
 <style scoped></style>

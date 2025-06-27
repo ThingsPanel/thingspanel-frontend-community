@@ -81,13 +81,13 @@ onMounted(getDevice) // Fetch device groups on component mount
     <NCard>
       <NFlex justify="start">
         <!-- Button to trigger modal for creating a new device group -->
-        <NButton type="primary" @click="showModal">{{ $t('custom.groupPage.createGroupButton') }}</NButton>
+        <NButton type="primary" @click="showModal">{{ "+创建分组" }}</NButton>
         <!-- Input for search functionality -->
         <NInput
           v-model:value="searchValue"
           :disabled="isRequestPending"
           autosize
-          :placeholder="$t('custom.groupPage.deviceGroupPlaceholder')"
+          :placeholder="请输入设备分组名称"
           class="min-w-240px"
           type="text"
           @input="handleInput"

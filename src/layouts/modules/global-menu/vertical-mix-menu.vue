@@ -58,7 +58,7 @@ function handleResetActiveMenu() {
         :style="{ width: showDrawer ? themeStore.sider.mixChildMenuWidth + 'px' : '0px' }"
       >
         <header class="flex-y-center justify-between" :style="{ height: themeStore.header.height + 'px' }">
-          <h2 class="pl-8px text-16px text-primary font-bold text-center">{{ $t('system.title') }}</h2>
+          <h2 class="pl-8px text-16px text-primary font-bold text-center">{{ "ThingsPanel" }}</h2>
           <PinToggler
             :pin="appStore.mixSiderFixed"
             :class="{ 'text-white:88 !hover:text-white': siderInverted }"

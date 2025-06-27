@@ -8,10 +8,10 @@ const ctx = inject<IConfigCtx>('config-ctx')!
 
 <template>
   <NForm :model="ctx.config">
-    <NFormItem path="username" :label="$t('generate.user')">
+    <NFormItem path="username" :label="用户">
       <NInput v-model:value="ctx.config.username" />
     </NFormItem>
-    <NFormItem path="age" :label="$t('generate.age')">
+    <NFormItem path="age" :label="年龄">
       <NInput v-model:value="ctx.config.age" @keydown.enter.prevent />
     </NFormItem>
   </NForm>

@@ -25,15 +25,15 @@ const tabStore = useTabStore()
 const { routerPush } = useRouterPush()
 const deleteConfig = () => {
   dialog.warning({
-    title: $t('common.tip'),
-    content: $t('common.deleteDeviceConfig'),
-    positiveText: $t('device_template.confirm'),
-    negativeText: $t('common.cancel'),
+    title: "提示",
+    content: "删除设备配置",
+    positiveText: "确定",
+    negativeText: "取消",
     onPositiveClick: async () => {
       const res: any = await deviceConfigDel({ id: props.configInfo.id })
 
       if (!res || !res.error) {
-        message.success($t('custom.grouping_details.operationSuccess'))
+        message.success("操作成功")
         await tabStore.removeTab(route.path)
         await routerPush({ path: '/device/config' })
       }
@@ -76,7 +76,7 @@ const saveImagePath = async (relativePath: string) => {
   })
 
   if (!error) {
-    message.success($t('custom.grouping_details.operationSuccess'))
+    message.success("操作成功")
     emit('change')
   }
 }
@@ -98,7 +98,7 @@ const copyOneTypeOneSecretDevicePassword = () => {
   console.log('要复制的内容 (clipboard.js - refined):', textToCopy)
 
   if (!textToCopy) {
-    message.error($t('common.noContentToCopy'))
+    message.error("没有内容可复制")
     return
   }
 
@@ -131,14 +131,14 @@ const copyOneTypeOneSecretDevicePassword = () => {
   clipboard.on('success', e => {
     success = true
     console.log('Clipboard.js success event. Copied text:', e.text)
-    message.success($t('custom.grouping_details.operationSuccess'))
+    message.success("操作成功")
     e.clearSelection()
     cleanup()
   })
 
   clipboard.on('error', e => {
     console.error('Clipboard.js error event:', e)
-    message.error($t('common.copyFailed'))
+    message.error("复制失败")
     cleanup()
   })
 
@@ -181,7 +181,7 @@ const onSubmit = async () => {
       id: props.configInfo.id,
       auto_register: auto_register.value ? 1 : 0
     })
-    message.success($t('custom.grouping_details.operationSuccess'))
+    message.success("操作成功")
     !error && emit('change')
   }
 }
@@ -199,17 +199,17 @@ onMounted(() => {
 
 <template>
   <div class="flex-col gap-30px p-10px">
-    <div class="">
-      <div class="m-b-10px">{{ $t('generate.auto-create-device') }}</div>
-      <div class="m-b-10px">{{ $t('generate.auto-create-device-via-one-type-one-secret') }}</div>
-      <NButton class="" type="primary" @click="onOpenDialogModal(1)">{{ $t('generate.configuration') }}</NButton>
+    <div class=">
+      <div class="m-b-10px">{{ "自动创建设备" }}</div>
+      <div class="m-b-10px">{{ "通过一型一密动态获取证书创建设备" }}</div>
+      <NButton class=" type="primary" @click="onOpenDialogModal(1)">{{ "配置" }}</NButton>
     </div>
-    <div class="">
-      <div class="m-b-10px">{{ $t('generate.onlineDeviceConfig') }}</div>
-      <NButton class="" type="primary" @click="onOpenDialogModal(2)">{{ $t('generate.configuration') }}</NButton>
+    <div class=">
+      <div class="m-b-10px">{{ "设备在线配置" }}</div>
+      <NButton class=" type="primary" @click="onOpenDialogModal(2)">{{ "配置" }}</NButton>
     </div>
-    <div class="">
-      <div class="m-b-10px">{{ $t('generate.deviceConfigImage') }}</div>
+    <div class=">
+      <div class="m-b-10px">{{ "设备配置图片" }}</div>
 
       <n-upload
         :action="url + '/file/up'"
@@ -227,56 +227,56 @@ onMounted(() => {
               <n-icon size="35" :depth="3">
                 <SvgIcon local-icon="picture" class="more" />
               </n-icon>
-              <p class="upload-text">{{ $t('generate.deviceConfigImage') }}</p>
+              <p class="upload-text">{{ "设备配置图片" }}</p>
             </template>
           </div>
         </n-upload-dragger>
       </n-upload>
     </div>
     <div>
-      <div class="m-b-10px color-error-500">{{ $t('generate.delete-device-configuration') }}</div>
-      <NButton type="error" @click="deleteConfig">{{ $t('common.delete') }}</NButton>
+      <div class="m-b-10px color-error-500">{{ "删除设备模板" }}</div>
+      <NButton type="error" @click="deleteConfig">{{ "删除" }}</NButton>
     </div>
 
     <n-modal
       v-model:show="showModal"
       preset="dialog"
       :class="getPlatform ? '90%' : 'w-400px'"
-      :title="modalIndex === 1 ? $t('generate.configure-auto-create-device') : $t('generate.onlineDeviceConfig')"
+      :title="modalIndex === 1 ? "配置自动创建设备" : "设备在线配置"
       :show-icon="false"
     >
       <template v-if="modalIndex === 1">
         <dl class="flex-col gap-20px">
-          <dd>{{ $t('generate.allow-device-auto-create') }}</dd>
+          <dd>{{ "允许设备自动创建" }}</dd>
           <dd>
             <n-switch v-model:value="auto_register" />
           </dd>
-          <dd>{{ $t('generate.copy-one-type-one-secret-device-password') }}</dd>
+          <dd>{{ "复制一型一密设备的密码" }}</dd>
           <dd>
-            <NButton type="primary" @click="copyOneTypeOneSecretDevicePassword">{{ $t('generate.copy') }}</NButton>
+            <NButton type="primary" @click="copyOneTypeOneSecretDevicePassword">{{ "复制" }}</NButton>
           </dd>
         </dl>
       </template>
       <template v-else>
         <dl class="m-b-20px flex-col">
-          <dt class="m-b-5px font-900">{{ $t('generate.timeoutMinutes') }}</dt>
+          <dt class="m-b-5px font-900">{{ "超时时间（分钟）" }}</dt>
           <dd class="m-b-10px">
-            {{ $t('generate.timeoutThreshold') }}
+            {{ ">0代表启用超时功能，用来判断设备是否异常在线。当设备在该时间内未上报遥测数据，平台会认为该设备已离线" }}
           </dd>
           <dd class="m-b-20px max-w-220px">
-            <n-input-number v-model:value="onlinejson.online_timeout" placeholder=""></n-input-number>
+            <n-input-number v-model:value="onlinejson.online_timeout" placeholder="></n-input-number>
           </dd>
-          <dt class="m-b-5px font-900">{{ $t('generate.heartbeatIntervalSeconds') }}</dt>
-          <dd class="m-b-10px">{{ $t('generate.heartbeatThreshold') }}</dd>
+          <dt class="m-b-5px font-900">{{ "心跳判断（秒）" }}</dt>
+          <dd class="m-b-10px">{{ ">0代表启用心跳判断，系统仅按照遥测数据的上报作为设备的心跳判断在线离线状态" }}</dd>
           <dd class="max-w-220px">
-            <n-input-number v-model:value="onlinejson.heartbeat" type="text" placeholder=""></n-input-number>
+            <n-input-number v-model:value="onlinejson.heartbeat" type="text" placeholder="></n-input-number>
           </dd>
         </dl>
       </template>
 
       <NFlex justify="end">
-        <NButton @click="onDialogVisble">{{ $t('generate.cancel') }}</NButton>
-        <NButton type="primary" @click="onSubmit">{{ $t('common.save') }}</NButton>
+        <NButton @click="onDialogVisble">{{ "取消" }}</NButton>
+        <NButton type="primary" @click="onSubmit">{{ "保存" }}</NButton>
       </NFlex>
     </n-modal>
   </div>

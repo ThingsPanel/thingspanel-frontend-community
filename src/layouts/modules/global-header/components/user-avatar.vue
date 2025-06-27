@@ -35,7 +35,7 @@ type DropdownOption =
 const options = computed(() => {
   const opts: DropdownOption[] = [
     {
-      label: $t('common.userCenter'),
+      label: "用户中心",
       key: 'user-center',
       icon: SvgIconVNode({ icon: 'ph:user-circle', fontSize: 18 })
     },
@@ -44,7 +44,7 @@ const options = computed(() => {
       key: 'divider'
     },
     {
-      label: $t('common.logout'),
+      label: "退出登录",
       key: 'logout',
       icon: SvgIconVNode({ icon: 'ph:sign-out', fontSize: 18 })
     }
@@ -55,10 +55,10 @@ const options = computed(() => {
 
 function logout() {
   window.$dialog?.info({
-    title: $t('common.tip'),
-    content: $t('common.logoutConfirm'),
-    positiveText: $t('common.confirm'),
-    negativeText: $t('common.cancel'),
+    title: "提示",
+    content: "确认退出登录",
+    positiveText: "确认",
+    negativeText: "取消",
     onPositiveClick: () => {
       authStore.requestLogout()
     }
@@ -78,7 +78,7 @@ function handleDropdown(key: DropdownKey) {
 
 <template>
   <NButton v-if="!authStore.isLogin" quaternary @click="loginOrRegister">
-    {{ $t('page.login.common.loginOrRegister') }}
+    {{ "登录 / 注册" }}
   </NButton>
   <NDropdown v-else placement="bottom" trigger="click" :options="options" @select="handleDropdown">
     <div>

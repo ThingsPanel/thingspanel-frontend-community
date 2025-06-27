@@ -62,7 +62,7 @@ const handleSwitchChange = async (row, value) => {
 const handleDeleteTable = async (rowId: string) => {
   await deleteNotificationGroup({ id: rowId });
 
-  window.$message?.info($t('generate.notificationGroup'));
+  window.$message?.info("已删除当前通知组");
   getTableData();
 };
 const editData = ref<Api.Alarm.NotificationGroupList | null>(null);
@@ -77,13 +77,13 @@ const handleEditTable = async (rowId: string) => {
 const columns = ref([
   {
     key: 'name',
-    title: $t('generate.notification-group-name'),
+    title: "通知组名称",
     minWidth: '140px',
     align: 'left'
   },
   {
     key: 'notification_type',
-    title: $t('generate.notification-type'),
+    title: "通知类型",
     align: 'left',
     minWidth: '140px',
     render: (row: any) => {
@@ -93,7 +93,7 @@ const columns = ref([
   },
   {
     key: 'status',
-    title: $t('generate.status'),
+    title: "状态",
     align: 'left',
     minWidth: '140px',
     render: (row: any) => {
@@ -102,21 +102,21 @@ const columns = ref([
   },
   {
     key: 'actions',
-    title: $t('common.actions'),
+    title: "操作",
     align: 'left',
     width: '200px',
     render: (row: any) => {
       return (
         <NSpace justify={'start'}>
           <NButton size={'small'} type="primary" onClick={() => handleEditTable(row.id)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -147,9 +147,9 @@ getTableData();
 
 <template>
   <div>
-    <NCard :title="$t('generate.notification-group')">
+    <NCard :title="通知组">
       <template #header-extra>
-        <NButton type="primary" @click="handleAddTable">+{{ $t('device_template.add') }}</NButton>
+        <NButton type="primary" @click="handleAddTable">+{{ "新增" }}</NButton>
       </template>
       <div class="h-full flex-col">
         <NDataTable :columns="columns" :data="tableData" :loading="loading" />

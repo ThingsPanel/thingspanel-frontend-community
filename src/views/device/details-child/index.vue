@@ -25,17 +25,17 @@ const { d_id } = query
 const { loading, startLoading, endLoading } = useLoading()
 const deviceDataStore = useDeviceDataStore()
 let components = [
-  { key: 'telemetry', name: () => $t('custom.device_details.telemetry'), component: Telemetry },
-  { key: 'join', name: () => $t('custom.device_details.join'), component: Join },
-  { key: 'device-analysis', name: () => $t('custom.device_details.deviceAnalysis'), component: DeviceAnalysis },
-  { key: 'message', name: () => $t('custom.device_details.AdditionalDetails'), component: Message },
-  { key: 'stats', name: () => $t('custom.device_details.attributes'), component: Stats },
-  { key: 'event-report', name: () => $t('custom.device_details.eventReport'), component: EventReport },
-  { key: 'command-delivery', name: () => $t('custom.device_details.commandDelivery'), component: CommandDelivery },
-  { key: 'automate', name: () => $t('custom.device_details.automate'), component: Automate },
-  { key: 'give-an-alarm', name: () => $t('custom.device_details.giveAnAlarm'), component: GiveAnAlarm },
-  { key: 'user', name: () => $t('custom.device_details.user'), component: User },
-  { key: 'settings', name: () => $t('custom.device_details.settings'), component: Settings }
+  { key: 'telemetry', name: () => "遥测", component: Telemetry },
+  { key: 'join', name: () => "连接", component: Join },
+  { key: 'device-analysis', name: () => "子设备", component: DeviceAnalysis },
+  { key: 'message', name: () => "信息", component: Message },
+  { key: 'stats', name: () => "属性", component: Stats },
+  { key: 'event-report', name: () => "事件(上报)", component: EventReport },
+  { key: 'command-delivery', name: () => "命令(下发)", component: CommandDelivery },
+  { key: 'automate', name: () => "自动化", component: Automate },
+  { key: 'give-an-alarm', name: () => "告警", component: GiveAnAlarm },
+  { key: 'user', name: () => "用户", component: User },
+  { key: 'settings', name: () => "设置", component: Settings }
 ]
 
 const tabValue = ref<any>('telemetry')
@@ -70,15 +70,15 @@ const close = async () => {
 }
 const save = async () => {
   if (!deviceDataStore?.deviceData?.name) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceName'))
+    window.NMessage.error("请输入设备名称")
     return
   }
   if (!deviceDataStore?.deviceData?.device_number) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceNumber'))
+    window.NMessage.error("请输入设备编码")
     return
   }
   if (deviceDataStore?.deviceData?.device_number.length > 100) {
-    window.NMessage.error($t('custom.devicePage.deviceNumberMax'))
+    window.NMessage.error("设备编码不能超过100位")
     return
   }
   device_number.value = deviceDataStore.deviceData.device_number
@@ -97,12 +97,12 @@ const save = async () => {
 const rules = {
   name: {
     required: true,
-    message: $t('custom.devicePage.enterDeviceName'),
+    message: "请输入设备名称",
     trigger: 'blur'
   },
   device_number: {
     required: true,
-    message: $t('custom.devicePage.enterDeviceNumber'),
+    message: "请输入设备编码",
     trigger: 'blur'
   }
 }
@@ -161,32 +161,32 @@ watch(
         <div style="display: flex; margin-top: -5px">
           <span style="margin-right: 20px">{{ deviceDataStore?.deviceData?.name || '--' }}</span>
           <NButton v-show="true" type="primary" style="margin-top: -5px" @click="editConfig">
-            {{ $t('common.edit') }}
+            {{ "编辑" }}
           </NButton>
         </div>
 
-        <n-modal v-model:show="showDialog" :title="$t('generate.issue-attribute')" class="w-[400px]">
+        <n-modal v-model:show="showDialog" :title="下发属性" class="w-[400px]">
           <n-card>
             <n-form :model="deviceDataStore.deviceData" :rules="rules">
               <div>
-                <NH3>{{ $t('generate.modify-device-info') }}</NH3>
+                <NH3>{{ "修改设备信息" }}</NH3>
               </div>
-              <n-form-item :label="$t('page.irrigation.group.deviceName')" path="name">
+              <n-form-item :label="设备名称" path="name">
                 <n-input v-model:value="deviceDataStore.deviceData.name" aria-required="true" />
               </n-form-item>
-              <n-form-item :label="$t('generate.device-number')" path="device_number">
+              <n-form-item :label="设备编号" path="device_number">
                 <n-input v-model:value="deviceDataStore.deviceData.device_number" />
               </n-form-item>
-              <n-form-item :label="$t('custom.devicePage.label')" path="label">
+              <n-form-item :label="标签" path="label">
                 <n-dynamic-tags v-model:value="labels" />
               </n-form-item>
-              <n-form-item :label="$t('generate.device-description')">
+              <n-form-item :label="设备描述">
                 <!-- <n-input v-model:value="queryParams.deviceDescribe" type="textarea"/> -->
                 <NInput v-model:value="deviceDataStore.deviceData.description" type="textarea" />
               </n-form-item>
               <n-space>
-                <n-button @click="close">{{ $t('generate.cancel') }}</n-button>
-                <n-button @click="save">{{ $t('common.save') }}</n-button>
+                <n-button @click="close">{{ "取消" }}</n-button>
+                <n-button @click="save">{{ "保存" }}</n-button>
               </n-space>
             </n-form>
           </n-card>
@@ -198,13 +198,13 @@ watch(
             <span style="color: #ccc">{{ device_number || '--' }}</span>
           </div>
           <div class="mr-4" style="color: #ccc">
-            <span class="mr-2">{{ $t('custom.device_details.deviceConfig') }}:</span>
+            <span class="mr-2">{{ "设备模板" }}:</span>
             <span style="color: blue; cursor: pointer" @click="clickConfig">
               {{ deviceDataStore?.deviceData?.device_config_name || '--' }}
             </span>
           </div>
           <div class="mr-4" style="display: flex">
-            <!-- <span class="mr-2">{{ $t('generate.status') }}:</span> -->
+            <!-- <span class="mr-2">{{ "状态" }}:</span> -->
             <SvgIcon
               local-icon="CellTowerRound"
               style="color: #ccc; margin-right: 5px"
@@ -214,8 +214,8 @@ watch(
             <span :style="{ color: device_color }">
               {{
                 deviceDataStore?.deviceData?.is_online === 1
-                  ? $t('custom.device_details.online')
-                  : $t('custom.device_details.offline')
+                  ? "在线"
+                  : "离线"
               }}
             </span>
           </div>
@@ -226,10 +226,10 @@ watch(
               class="text-20px text-primary"
               :stroke="icon_type"
             />
-            <!-- <span style="color: #ccc" class="mr-2">{{ $t('custom.device_details.alarm') }}:</span> -->
+            <!-- <span style="color: #ccc" class="mr-2">{{ "告警" }}:</span> -->
 
             <span style="color: #ccc">
-              {{ $t('custom.device_details.noAlarm') }}
+              {{ "无告警" }}
             </span>
           </div>
         </NFlex>

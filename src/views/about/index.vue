@@ -3,7 +3,7 @@ import { $t } from '@/locales'
 </script>
 
 <template>
-  <div>{{ $t('generate.randomText') }}</div>
+  <div>{{ "打撒都是" }}</div>
 </template>
 
 <style scoped></style>

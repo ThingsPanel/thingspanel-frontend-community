@@ -36,7 +36,7 @@ const selectedOption = ref({
 const { loading, startLoading, endLoading } = useLoading()
 const columns = [
   {
-    title: $t('common.time'),
+    title: "时间",
     key: 'x',
     render: row => dayjs(row.x).format('YYYY-MM-DD HH:mm:ss')
   },
@@ -100,13 +100,13 @@ const initialOptions = ref({
     feature: {
       myTool1: {
         show: true,
-        title: $t('common.switchLineChart'),
+        title: "切换折线图",
         icon: 'path://M-7.5 -1.036L-5.428 -1.036L-2.714 -7.4562L-0.5545 3.6333L2.2763 -2.1158L3.1518 1.6196L7.5 1.6196M-7.5 7.4562L7.5 7.4562',
         onclick: () => {
           if (initialOptions.value.series) {
             if (initialOptions.value.series[0].type === 'line') {
               window.NMessage.destroyAll()
-              window.NMessage.info($t('common.alreadyCurveChart'))
+              window.NMessage.info("已是曲线图")
               return
             }
             initialOptions.value.series[0].type = 'line'
@@ -115,13 +115,13 @@ const initialOptions = ref({
       },
       myTool2: {
         show: true,
-        title: $t('common.switchBarChart'),
+        title: "切换柱状图",
         icon: 'path://M-6.2277 -1.9018L-3.5491 -1.9018L-3.5491 4.8214L-6.2277 4.8214L-6.2277 -1.9018ZM-1.3527 -4.5536L1.3259 -4.5536L1.3259 4.8214L-1.3527 4.8214L-1.3527 -4.5536ZM3.5491 -7.5L6.2277 -7.5L6.2277 4.8214L3.5491 4.8214L3.5491 -7.5ZM-7.192 7.5L7.192 7.5\n',
         onclick: () => {
           if (initialOptions.value.series) {
             if (initialOptions.value.series[0].type === 'bar') {
               window.NMessage.destroyAll()
-              window.NMessage.info($t('common.alreadyToChart'))
+              window.NMessage.info("已转为图表")
               return
             }
             initialOptions.value.series[0].type = 'bar'
@@ -130,13 +130,13 @@ const initialOptions = ref({
       },
       myTool3: {
         show: true,
-        title: $t('common.alreadyToChart'),
+        title: "已转为图表",
         icon: 'path://M6 6V42H42 M20 24C22.2091 24 24 22.2091 24 20C24 17.7909 22.2091 16 20 16C17.7909 16 16 17.7909 16 20C16 22.2091 17.7909 24 20 24Z M37 16C39.7614 16 42 13.7614 42 11C42 8.23858 39.7614 6 37 6C34.2386 6 32 8.23858 32 11C32 13.7614 34.2386 16 37 16Z M15 36C16.6569 36 18 34.6569 18 33C18 31.3431 16.6569 30 15 30C13.3431 30 12 31.3431 12 33C12 34.6569 13.3431 36 15 36Z M33 32C34.6569 32 36 30.6569 36 29C36 27.3431 34.6569 26 33 26C31.3431 26 30 27.3431 30 29C30 30.6569 31.3431 32 33 32Z\n',
         onclick: () => {
           if (initialOptions.value.series) {
             if (initialOptions.value.series[0].type === 'scatter') {
               window.NMessage.destroyAll()
-              window.NMessage.info($t('common.alreadyScatterPlot'))
+              window.NMessage.info("已是散点图")
               return
             }
             initialOptions.value.series[0].type = 'scatter'
@@ -165,23 +165,23 @@ const initialOptions = ref({
 })
 
 const timeOptions = [
-  { label: $t('common.custom'), value: 'custom' },
-  { label: $t('common.last_5m'), value: 'last_5m' },
-  { label: $t('common.last_15m'), value: 'last_15m' },
-  { label: $t('common.last_30m'), value: 'last_30m' },
-  { label: $t('common.lastHours1'), value: 'last_1h' },
-  { label: $t('common.lastHours3'), value: 'last_3h' },
-  { label: $t('common.lastHours6'), value: 'last_6h' },
-  { label: $t('common.lastHours12'), value: 'last_12h' },
-  { label: $t('common.lastHours24'), value: 'last_24h' },
-  { label: $t('common.lastDays3'), value: 'last_3d' },
-  { label: $t('common.lastDays7'), value: 'last_7d' },
-  { label: $t('common.lastDays15'), value: 'last_15d' },
-  { label: $t('common.lastDays30'), value: 'last_30d' },
-  { label: $t('common.lastDays60'), value: 'last_60d' },
-  { label: $t('common.lastDays90'), value: 'last_90d' },
-  { label: $t('common.halfYear'), value: 'last_6m' },
-  { label: $t('common.lastYears1'), value: 'last_1y' }
+  { label: "自定义", value: 'custom' },
+  { label: "最近5分钟", value: 'last_5m' },
+  { label: "最近15分钟", value: 'last_15m' },
+  { label: "最近30分钟", value: 'last_30m' },
+  { label: "最近1小时", value: 'last_1h' },
+  { label: "最近3小时", value: 'last_3h' },
+  { label: "最近6小时", value: 'last_6h' },
+  { label: "最近12小时", value: 'last_12h' },
+  { label: "最近24小时", value: 'last_24h' },
+  { label: "最近3天", value: 'last_3d' },
+  { label: "最近7天", value: 'last_7d' },
+  { label: "最近15天", value: 'last_15d' },
+  { label: "最近30天", value: 'last_30d' },
+  { label: "最近60天", value: 'last_60d' },
+  { label: "最近90天", value: 'last_90d' },
+  { label: "半年", value: 'last_6m' },
+  { label: "最近1年", value: 'last_1y' }
 ]
 const timeWeighting = {
   custom: 0,
@@ -204,27 +204,27 @@ const timeWeighting = {
 }
 
 const aggregationIntervalOptions = [
-  { label: $t('common.notAggre'), value: 'no_aggregate', disabled: false },
-  { label: $t('common.seconds30'), value: '30s', disabled: false },
-  { label: $t('common.minute1'), value: '1m', disabled: false },
-  { label: $t('common.minute2'), value: '2m', disabled: false },
-  { label: $t('common.minutes5'), value: '5m', disabled: false },
-  { label: $t('common.minutes10'), value: '10m', disabled: false },
-  { label: $t('common.minutes30'), value: '30m', disabled: false },
-  { label: $t('common.hours1'), value: '1h', disabled: false },
-  { label: $t('common.hours3'), value: '3h', disabled: false },
-  { label: $t('common.hours6'), value: '6h', disabled: false },
-  { label: $t('common.days1'), value: '1d', disabled: false },
-  { label: $t('common.days7'), value: '7d', disabled: false },
-  { label: $t('common.months1'), value: '1mo', disabled: false }
+  { label: "不聚合", value: 'no_aggregate', disabled: false },
+  { label: "30秒", value: '30s', disabled: false },
+  { label: "1分钟", value: '1m', disabled: false },
+  { label: "2分钟", value: '2m', disabled: false },
+  { label: "5分钟", value: '5m', disabled: false },
+  { label: "10分钟", value: '10m', disabled: false },
+  { label: "30分钟", value: '30m', disabled: false },
+  { label: "1小时", value: '1h', disabled: false },
+  { label: "3小时", value: '3h', disabled: false },
+  { label: "6小时", value: '6h', disabled: false },
+  { label: "1天", value: '1d', disabled: false },
+  { label: "7天", value: '7d', disabled: false },
+  { label: "1个月", value: '1mo', disabled: false }
 ]
 
 const statisticsOptions = [
-  { label: $t('common.average'), value: 'avg' },
-  { label: $t('generate.max-value'), value: 'max' },
-  { label: $t('generate.min-value'), value: 'min' },
-  { label: $t('generate.sum'), value: 'sum' },
-  { label: $t('generate.diff'), value: 'diff' }
+  { label: "平均值", value: 'avg' },
+  { label: "最大值", value: 'max' },
+  { label: "最小值", value: 'min' },
+  { label: "总和", value: 'sum' },
+  { label: "最大最小差值", value: 'diff' }
 ]
 
 const aggregationTtemToFalse = (weight: number) => {
@@ -305,7 +305,7 @@ watch(
 
     if (v.time_range === 'custom' && (!v.start_time || !v.end_time)) {
       window.NMessage.destroyAll()
-      window.NMessage.info($t('common.rangeMustSelected'))
+      window.NMessage.info("必须选择范围")
       return
     }
     startLoading()
@@ -472,7 +472,7 @@ onMounted(() => {
     <div class="w-full flex flex-row flex-wrap">
       <div class="time-range flex flex-col items-center">
         <div class="w-full flex flex-row items-center">
-          <span>{{ $t('common.timeFrame') }}：</span>
+          <span>{{ "时间框架" }}：</span>
           <NSelect
             v-model:value="selectedOption.time_range"
             :options="timeOptions"
@@ -496,16 +496,16 @@ onMounted(() => {
           />
         </div>
         <div class="mt-2 w-full flex flex-row flex-wrap justify-between pl-72px">
-          <NButton @click="navigateTime('prevMonth')">{{ $t('card.lastOneMonth') }}</NButton>
-          <NButton @click="navigateTime('prevDay')">{{ $t('card.yesterday') }}</NButton>
-          <NButton @click="navigateTime('prevHour')">{{ $t('card.lastOneHour') }}</NButton>
-          <NButton @click="navigateTime('nextHour')">{{ $t('card.nextOneHour') }}</NButton>
-          <NButton @click="navigateTime('nextDay')">{{ $t('card.tomorrow') }}</NButton>
-          <NButton @click="navigateTime('nextMonth')">{{ $t('card.nextOneMonth') }}</NButton>
+          <NButton @click="navigateTime('prevMonth')">{{ "上一月" }}</NButton>
+          <NButton @click="navigateTime('prevDay')">{{ "前一天" }}</NButton>
+          <NButton @click="navigateTime('prevHour')">{{ "前一小时" }}</NButton>
+          <NButton @click="navigateTime('nextHour')">{{ "后一小时" }}</NButton>
+          <NButton @click="navigateTime('nextDay')">{{ "后一天" }}</NButton>
+          <NButton @click="navigateTime('nextMonth')">{{ "下一月" }}</NButton>
         </div>
       </div>
       <div class="aggregation-range flex flex-row pl-2">
-        <span class="pt-1">{{ $t('card.aggregationScope') }}：</span>
+        <span class="pt-1">{{ "聚合范围" }}：</span>
         <NSelect
           v-model:value="selectedOption.aggregate_window"
           :options="aggregationIntervalOptions"
@@ -514,7 +514,7 @@ onMounted(() => {
           @update:value="onAggregationChange"
         />
         <span v-if="selectedOption.aggregate_window !== 'no_aggregate'" class="pt-1">
-          {{ $t('card.aggregationMethod') }}：
+          {{ "聚合方法" }}：
         </span>
         <NSelect
           v-if="selectedOption.aggregate_window !== 'no_aggregate'"
@@ -524,7 +524,7 @@ onMounted(() => {
           class="select-item"
           @update:value="onStatisticsChange"
         />
-        <NButton class="ml-auto" @click="exportData()">{{ $t('card.exportData') }}</NButton>
+        <NButton class="ml-auto" @click="exportData()">{{ "导出数据" }}</NButton>
       </div>
     </div>
     <div class="container-table-chart">
@@ -543,9 +543,9 @@ onMounted(() => {
           <FullScreen v-if="!isFullscreen" :full="isFullscreen" @click="toggle" />
         </div>
         <div class="flex flex-row justify-between pl-4 pr-4 font-bold">
-          <span>{{ $t('card.average') }}：{{ avgValue !== undefined ? avgValue.toFixed(2) : '-' }}</span>
-          <span>{{ $t('card.maxValue') }}：{{ maxValue !== undefined ? maxValue : '-' }}</span>
-          <span>{{ $t('card.minValue') }}：{{ minValue !== undefined ? minValue : '-' }}</span>
+          <span>{{ "平均值" }}：{{ avgValue !== undefined ? avgValue.toFixed(2) : '-' }}</span>
+          <span>{{ "最大值" }}：{{ maxValue !== undefined ? maxValue : '-' }}</span>
+          <span>{{ "最小值" }}：{{ minValue !== undefined ? minValue : '-' }}</span>
         </div>
       </div>
     </div>

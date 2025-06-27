@@ -15,17 +15,17 @@ interface StatisticData {
 const statisticData: StatisticData[] = [
   {
     id: 0,
-    label: $t('card.projects'),
+    label: "项目数",
     value: '25'
   },
   {
     id: 1,
-    label: $t('card.todo'),
+    label: "待办",
     value: '4/16'
   },
   {
     id: 2,
-    label: $t('card.message'),
+    label: "消息",
     value: '12'
   }
 ]
@@ -38,12 +38,12 @@ const statisticData: StatisticData[] = [
         <IconLocalAvatar class="text-70px" />
         <div class="pl-12px">
           <h3 class="text-18px font-semibold">
-            <span>{{ $t('card.goodMorning') }}</span>
+            <span>{{ "早安" }}</span>
             ，{{ auth.userInfo.userName }},
-            <span>{{ $t('card.anotherEnergeticDay') }}</span>
+            <span>{{ "今天又是充满活力的一天" }}</span>
             ！
           </h3>
-          <p class="text-#999 leading-30px">{{ $t('generate.weather-forecast') }}</p>
+          <p class="text-#999 leading-30px">{{ "今日多云转晴，20℃ - 25℃！" }}</p>
         </div>
       </div>
       <NSpace :size="24" :wrap="false">

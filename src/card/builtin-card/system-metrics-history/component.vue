@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 h-full bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
     <h3 class="text-base font-semibold mb-3 text-gray-800 dark:text-gray-100 flex-shrink-0">
-      {{ $t('card.systemMetricsHistory.title') }}
+      {{ "系统指标历史" }}
     </h3>
     <div class="flex-grow relative min-h-[200px]">
       <v-chart v-if="!loading" ref="chartRef" class="w-full h-full" :option="chartOption" autoresize />
@@ -9,7 +9,7 @@
         {{ errorMsg }}
       </div>
       <div v-if="!loading && !errorMsg && isEmpty" class="h-full flex items-center justify-center">
-        <NEmpty :description="$t('card.noData')" />
+        <NEmpty :description="暂无数据" />
       </div>
     </div>
   </div>
@@ -99,9 +99,9 @@ const updateChartOption = (processedData: {
 }) => {
   const { timeAxis, timestamps, cpuData, memData, diskData } = processedData
 
-  const cpuLabel = $t('card.cpuUsage', 'CPU')
-  const memLabel = $t('card.memoryUsage', 'Memory')
-  const diskLabel = $t('card.diskUsage', 'Disk')
+  const cpuLabel = "CPU"
+  const memLabel = "Memory"
+  const diskLabel = "Disk"
 
   // --- 1. Refined Color Palette ---
   const colors = ['#5470c6', '#91cc75', '#fac858'] // Example: Blue, Green, Yellow/Orange (ECharts default can be okay too, or choose others)
@@ -264,7 +264,7 @@ const fetchData = async () => {
     }
   } catch (err: any) {
     console.error('Error processing system metrics history:', err)
-    errorMsg.value = $t('common.loadFailure', 'Failed to load data')
+    errorMsg.value = "Failed to load data"
   } finally {
     loading.value = false
   }

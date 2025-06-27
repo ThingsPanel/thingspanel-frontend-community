@@ -114,7 +114,7 @@ defineExpose({
         <component :is="getIcon(isActive ? activeIconName : inactiveIconName)" />
       </NIcon>
       <div class="metric-name">
-        {{ props.card?.dataSource?.deviceSource?.[0]?.metricsName || $t('generate.status') }}
+        {{ props.card?.dataSource?.deviceSource?.[0]?.metricsName || "状态" }}
       </div>
     </div>
   </div>

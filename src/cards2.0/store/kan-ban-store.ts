@@ -14,7 +14,7 @@ export const useKanBanStore = defineStore('kan-ban-store', () => {
     objectEntries(KanBanCards).forEach(([_key, cards]) => {
       for (const card of cards) {
         if (cardMap.value.has(card.cardItemBase.id)) {
-          message.warning($t('card.dupCardId', { id: card.cardItemBase.id }))
+          message.warning('重复的卡片ID: {id}')
         }
         cardMap.value.set(card.cardItemBase.id, markRaw(card))
       }

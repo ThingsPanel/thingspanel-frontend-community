@@ -185,55 +185,55 @@ const params = reactive({
   time_range: 'custom'
 })
 const timeOptions: SelectOption[] = [
-  { label: $t('common.custom'), value: 300000 },
-  { label: $t('common.last_15m'), value: 900000, id: 'last_15m' },
-  { label: $t('common.last_30m'), value: 1800000, id: 'last_30m' },
-  { label: $t('common.lastHours1'), value: 3600000, id: 'last_1h' },
-  { label: $t('common.lastHours3'), value: 10800000, id: 'last_3h' },
-  { label: $t('common.lastHours6'), value: 21600000, id: 'last_6h' },
-  { label: $t('common.lastHours12'), value: 43200000, id: 'last_12h' },
-  { label: $t('common.lastHours24'), value: 86400000, id: 'last_24h' },
-  { label: $t('common.lastDays3'), value: 259200000, id: 'last_3d' },
-  { label: $t('common.lastDays7'), value: 604800000, id: 'last_7d' },
-  { label: $t('common.lastDays15'), value: 1296000000, id: 'last_15d' },
-  { label: $t('common.lastDays30'), value: 2592000000, id: 'last_30d' },
-  { label: $t('common.lastDays60'), value: 5184000000, id: 'last_60d' },
-  { label: $t('common.lastDays90'), value: 7776000000, id: 'last_90d' },
-  { label: $t('common.lastSixMonth'), value: 15811200000 },
-  { label: $t('common.lastOneYear'), value: 31536000000 },
-  { label: $t('common.today'), value: 28740000 },
-  { label: $t('common.yesterday'), value: 86400000 },
-  { label: $t('common.dayBeforeYesterday'), value: 172800000 },
-  { label: $t('common.lastWeekToday'), value: 604800000 },
-  { label: $t('common.thisWeek'), value: 518400000 },
-  { label: $t('common.lastWeek'), value: 604800000 },
-  { label: $t('common.thisMonth'), value: 2592000000 },
-  { label: $t('common.lastMonth'), value: 2592000000 },
-  { label: $t('common.thisYear'), value: 7776000000 },
-  { label: $t('common.lastYear'), value: 31536000000 }
+  { label: "自定义", value: 300000 },
+  { label: "最近15分钟", value: 900000, id: 'last_15m' },
+  { label: "最近30分钟", value: 1800000, id: 'last_30m' },
+  { label: "最近1小时", value: 3600000, id: 'last_1h' },
+  { label: "最近3小时", value: 10800000, id: 'last_3h' },
+  { label: "最近6小时", value: 21600000, id: 'last_6h' },
+  { label: "最近12小时", value: 43200000, id: 'last_12h' },
+  { label: "最近24小时", value: 86400000, id: 'last_24h' },
+  { label: "最近3天", value: 259200000, id: 'last_3d' },
+  { label: "最近7天", value: 604800000, id: 'last_7d' },
+  { label: "最近15天", value: 1296000000, id: 'last_15d' },
+  { label: "最近30天", value: 2592000000, id: 'last_30d' },
+  { label: "最近60天", value: 5184000000, id: 'last_60d' },
+  { label: "最近90天", value: 7776000000, id: 'last_90d' },
+  { label: "最近半年", value: 15811200000 },
+  { label: "最近一年", value: 31536000000 },
+  { label: "今天", value: 28740000 },
+  { label: "昨天", value: 86400000 },
+  { label: "前天", value: 172800000 },
+  { label: "上周至今", value: 604800000 },
+  { label: "本周", value: 518400000 },
+  { label: "上周", value: 604800000 },
+  { label: "本月", value: 2592000000 },
+  { label: "上月", value: 2592000000 },
+  { label: "今年", value: 7776000000 },
+  { label: "去年", value: 31536000000 }
 ]
 const timeOptionsValue = ref()
 const aggregateOptions: SelectOption[] = [
-  { label: $t('common.notAggre'), value: 'no_aggregate', disabled: false },
-  { label: $t('common.seconds30'), value: '30s', disabled: false },
-  { label: $t('common.minute1'), value: '1m', disabled: false },
-  { label: $t('common.minute2'), value: '2m', disabled: false },
-  { label: $t('common.minutes5'), value: '5m', disabled: false },
-  { label: $t('common.minutes10'), value: '10m', disabled: false },
-  { label: $t('common.minutes30'), value: '30m', disabled: false },
-  { label: $t('common.hours1'), value: '1h', disabled: false },
-  { label: $t('common.hours3'), value: '3h', disabled: false },
-  { label: $t('common.hours6'), value: '6h', disabled: false },
-  { label: $t('common.days1'), value: '1d', disabled: false },
-  { label: $t('common.days7'), value: '7d', disabled: false },
+  { label: "不聚合", value: 'no_aggregate', disabled: false },
+  { label: "30秒", value: '30s', disabled: false },
+  { label: "1分钟", value: '1m', disabled: false },
+  { label: "2分钟", value: '2m', disabled: false },
+  { label: "5分钟", value: '5m', disabled: false },
+  { label: "10分钟", value: '10m', disabled: false },
+  { label: "30分钟", value: '30m', disabled: false },
+  { label: "1小时", value: '1h', disabled: false },
+  { label: "3小时", value: '3h', disabled: false },
+  { label: "6小时", value: '6h', disabled: false },
+  { label: "1天", value: '1d', disabled: false },
+  { label: "7天", value: '7d', disabled: false },
   { label: '1月', value: '1mo', disabled: false }
 ]
 const aggregateOptionsValue = ref<string>('')
 const aggregateFunctionOptions: SelectOption[] = [
-  { label: $t('common.average'), value: 'avg' },
-  { label: $t('generate.max-value'), value: 'max' },
-  { label: $t('common.sum'), value: 'sum' },
-  { label: $t('common.diffValue'), value: 'diff' }
+  { label: "平均值", value: 'avg' },
+  { label: "最大值", value: 'max' },
+  { label: "总和", value: 'sum' },
+  { label: "差值", value: 'diff' }
 ]
 const aggregateFunctionValue = ref<string>('avg')
 
@@ -299,30 +299,30 @@ const updateTime = (v: number, o: SelectOption) => {
   timeOptionsValue.value = v
   updateDisabledOptions(o.label as string)
   switch (o.label) {
-    case $t('common.custom'):
+    case "自定义":
       isTimeSelect.value = true
       isAggregate.value = false
       return
-    case $t('common.today'):
+    case "今天":
       start_time = new Date(now.setHours(0, 0, 0, 0))
       now = new Date() // 重新获取当前时间，避免修改
       end_time = new Date(now.setHours(23, 59, 59, 999))
       break
-    case $t('common.yesterday'):
+    case "昨天":
       start_time = new Date()
       start_time.setDate(now.getDate() - 1)
       start_time.setHours(0, 0, 0, 0)
       end_time = new Date(start_time)
       end_time.setHours(23, 59, 59, 999)
       break
-    case $t('common.dayBeforeYesterday'):
+    case "前天":
       start_time = new Date()
       start_time.setDate(start_time.getDate() - 2) // 设置为两天前的日期
       start_time.setHours(0, 0, 0, 0) // 那一天的开始
       end_time = new Date(start_time)
       end_time.setHours(23, 59, 59, 999) // 那一天的结束一天的结束
       break
-    case $t('common.thisWeek'):
+    case "本周":
       // eslint-disable-next-line no-case-declarations
       const currentDayOfWeek = now.getDay() // 当前是周几，周日为0
       // eslint-disable-next-line no-case-declarations
@@ -332,7 +332,7 @@ const updateTime = (v: number, o: SelectOption) => {
       start_time.setHours(0, 0, 0, 0) // 本周一的开始
       end_time = new Date() // 本周的当前时间
       break
-    case $t('common.lastWeek'):
+    case "上周":
       // eslint-disable-next-line no-case-declarations
       const daysToLastMonday = now.getDay() === 0 ? -6 : 1 // 如果今天是周日，则上周一是6天前
       start_time = new Date()
@@ -342,19 +342,19 @@ const updateTime = (v: number, o: SelectOption) => {
       end_time.setDate(start_time.getDate() + 6)
       end_time.setHours(23, 59, 59, 999)
       break
-    case $t('common.thisMonth'):
+    case "本月":
       start_time = new Date(now.getFullYear(), now.getMonth(), 1)
       end_time = now
       break
-    case $t('common.lastMonth'):
+    case "上月":
       start_time = new Date(now.getFullYear(), now.getMonth() - 1, 1)
       end_time = new Date(now.getFullYear(), now.getMonth(), 0)
       break
-    case $t('common.thisYear'):
+    case "今年":
       start_time = new Date(now.getFullYear(), 0, 1)
       end_time = now
       break
-    case $t('common.lastYear'):
+    case "去年":
       start_time = new Date(now.getFullYear() - 1, 0, 1)
       end_time = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999)
       break
@@ -376,7 +376,7 @@ const checkDateRange = value => {
   const [start, end] = value
   if (start && end && addMonths(start, 1) < end) {
     dateRange.value = null
-    message.error($t('common.withinOneMonth'))
+    message.error("一个月内")
   } else {
     params.start_time = start
     params.end_time = end

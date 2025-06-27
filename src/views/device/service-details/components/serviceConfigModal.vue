@@ -36,13 +36,11 @@ const queryInfo = ref<any>({
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
     queryInfo.value.page = page;
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     getLists();
   },
   onUpdatePageSize: (pageSize: number) => {
     queryInfo.value.page_size = pageSize;
     queryInfo.value.page = 1;
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     getLists();
   }
 });
@@ -77,17 +75,17 @@ const columns: any = ref([
     }
   },
   {
-    title: $t('generate.device-name'),
+    title: "设备名称",
     key: 'device_name',
     minWidth: '200px'
   },
   {
-    title: $t('generate.device-number'),
+    title: "设备编号",
     key: 'device_number',
     minWidth: '400px'
   },
   {
-    title: $t('card.deviceConfigTemplate'),
+    title: "设备模板",
     key: 'create_at',
     render: row => {
       return (
@@ -95,7 +93,7 @@ const columns: any = ref([
           v-model:value={row.device_config_id}
           label-field={'name'}
           value-field={'id'}
-          placeholder={$t('card.chooseDeviceType')}
+          placeholder={"请选择设备类型"}
           options={row.options}
         />
       );
@@ -105,7 +103,7 @@ const columns: any = ref([
 const submitSevice: () => void = async () => {
   // 0. Check service_access_id
   if (!device_config_id.value) {
-      window.$message?.error($t('card.serviceAccessIdNotSet') || '服务访问ID未设置，无法提交');
+      window.$message?.error("服务访问标识未设置，无法提交");
       return;
   }
 
@@ -113,7 +111,7 @@ const submitSevice: () => void = async () => {
   const selectedDeviceNumbers = checkedRowKeys.value.filter(key => key);
 
   if (!selectedDeviceNumbers || selectedDeviceNumbers.length === 0) {
-    window.$message?.warning($t('card.pleaseSelectDevice'));
+    window.$message?.warning("请选择设备");
     return;
   }
 
@@ -131,7 +129,7 @@ const submitSevice: () => void = async () => {
   });
 
   if (templateNotSetOnCurrentPage) {
-      window.$message?.error($t('card.checkedDeviceTemplateNotSet') || '当前页选中的设备中有未设置模板的，请检查。');
+      window.$message?.error("当前页选中部分设备未设置模板，请检查。");
       return;
   }
 
@@ -167,7 +165,7 @@ const submitSevice: () => void = async () => {
   try {
     const result: any = await batchAddServiceMenuList(params);
     if (result && result.data) {
-      window.$message?.success($t('common.operationSuccess'));
+      window.$message?.success("操作成功");
       serviceModal.value = false;
       emit('getList');
     } else {
@@ -190,7 +188,7 @@ const submitSevice: () => void = async () => {
         errorMessage = error.message;
     } else {
         // Fallback to template error if available, otherwise leave empty
-        errorMessage = $t('card.someDevicesNotSetTemplate'); // Use template error as primary fallback
+        errorMessage = "部分已选设备未设置模板或操作失败"; // Use template error as primary fallback
         if (!errorMessage) { // If even template error key doesn't exist, truly empty
              errorMessage = '';
         }
@@ -243,7 +241,7 @@ defineExpose({ openModal });
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModal" preset="dialog" :title="$t('card.configDevice')" class="device_model">
+  <n-modal v-model:show="serviceModal" preset="dialog" :title="配置设备" class="device_model">
     <!-- 自动模式的第二步 -->
     <AutomaticModeStep
       v-if="currentStep === 2"
@@ -265,8 +263,8 @@ defineExpose({ openModal });
         @update:checked-row-keys="handleCheck"
       />
       <div class="footer">
-        <NButton type="primary" class="btn" @click="submitSevice">{{ $t('common.confirm') }}</NButton>
-        <NButton @click="close">{{ $t('common.cancel') }}</NButton>
+        <NButton type="primary" class="btn" @click="submitSevice">{{ "确认" }}</NButton>
+        <NButton @click="close">{{ "取消" }}</NButton>
       </div>
     </template>
   </n-modal>

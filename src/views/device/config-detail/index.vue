@@ -68,48 +68,48 @@ const clickConfig: () => void = () => {
   <div class="h-full overflow-hidden">
     <NCard :title="configForm?.name || '--'">
       <template #header-extra>
-        <NButton type="primary" @click="editConfig">{{ $t('common.edit') }}</NButton>
+        <NButton type="primary" @click="editConfig">{{ "编辑" }}</NButton>
       </template>
       <div class="mb-4 flex">
-        {{ $t('generate.deviceAccessType') }}
-        <template v-if="configForm.device_type === '1'">{{ $t('generate.direct-connected-device') }}</template>
-        <template v-if="configForm.device_type === '2'">{{ $t('generate.gateway') }}</template>
-        <template v-if="configForm.device_type === '3'">{{ $t('generate.gateway-sub-device') }}</template>
+        {{ "设备接入类型：" }}
+        <template v-if="configForm.device_type === '1'">{{ "直连设备" }}</template>
+        <template v-if="configForm.device_type === '2'">{{ "网关" }}</template>
+        <template v-if="configForm.device_type === '3'">{{ "网关子设备" }}</template>
         <div class="ml-20">
-          {{ $t('route.device_template') }}：
+          {{ "设备模型" }}：
           <span style="color: blue; cursor: pointer" @click="clickConfig">
             {{
               configForm.device_template_name || configForm.device_template_name === ''
                 ? configForm.device_template_name
-                : $t('generate.unbound')
+                : "未绑定"
             }}
           </span>
         </div>
       </div>
 
       <n-tabs v-model:value="activeName" animated type="line">
-        <n-tab-pane :name="$t('common.associatedDevices')" :tab="$t('common.associatedDevices')">
+        <n-tab-pane :name="关联设备" :tab="关联设备">
           <AssociatedDevices :device-config-id="configId" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('common.propertiesAndFunctions')" :tab="$t('common.propertiesAndFunctions')">
+        <n-tab-pane :name="属性和功能" :tab="属性和功能">
           <AttributeInfo :config-info="configForm" @up-date-config="getConfig" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('common.protocolConfig')" :tab="$t('common.protocolConfig')">
+        <n-tab-pane :name="协议配置" :tab="协议配置">
           <ConnectionInfo :config-info="configForm" @up-date-config="getConfig" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('common.dataProces')" :tab="$t('common.dataProces')">
+        <n-tab-pane :name="数据处理" :tab="数据处理">
           <DataHandle :config-info="configForm" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('custom.device_details.automate')" :tab="$t('custom.device_details.automate')">
+        <n-tab-pane :name="自动化" :tab="自动化">
           <Automate :config_id="configId" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('route.alarm')" :tab="$t('route.alarm')">
+        <n-tab-pane :name="告警" :tab="告警">
           <AlarmInfo :config_id="configId" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('generate.extension-info')" :tab="$t('generate.extension-info')">
+        <n-tab-pane :name="扩展信息" :tab="扩展信息">
           <ExtendInfo :config-info="configForm" @up-date-config="getConfig" />
         </n-tab-pane>
-        <n-tab-pane :name="$t('common.devicesSetting')" :tab="$t('common.devicesSetting')">
+        <n-tab-pane :name="设备设置" :tab="设备设置">
           <SettingInfo :config-info="configForm" @change="getConfig" />
         </n-tab-pane>
       </n-tabs>

@@ -8,8 +8,8 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('card.tenantChart.title'),
-  description: $t('card.tenantChart.description'),
+  title: '月用户增长统计',
+  description: '按月显示新增用户数量',
   preset: {
     dataSource: {
       origin: 'device',

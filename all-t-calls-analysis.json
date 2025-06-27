@@ -1,0 +1,2639 @@
+{
+  "total": 483,
+  "commonKeys": [
+    "common.January",
+    "common.accompaniedIndicators",
+    "common.activateScene",
+    "common.activateSceneInfo",
+    "common.activationPrompt",
+    "common.addExtendedInfo",
+    "common.addFail",
+    "common.addSuccess",
+    "common.alarmHistory",
+    "common.alarmRules",
+    "common.alarm_level",
+    "common.alarm_time",
+    "common.allStatus",
+    "common.alreadyCurveChart",
+    "common.alreadyScatterPlot",
+    "common.alreadyToChart",
+    "common.as",
+    "common.associatedDevices",
+    "common.automatic",
+    "common.average",
+    "common.backToHome",
+    "common.base",
+    "common.batchDelete",
+    "common.between",
+    "common.browserNotSupport",
+    "common.changeTableColumns",
+    "common.chart",
+    "common.check",
+    "common.chooseNotificationMethod",
+    "common.columnSetting",
+    "common.complete",
+    "common.componentsAddedYet",
+    "common.contentToCopied",
+    "common.copiedClipboard",
+    "common.copyFailed",
+    "common.copyingFailed",
+    "common.createNotificationGroup",
+    "common.dataProces",
+    "common.dataSources",
+    "common.dayBeforeYesterday",
+    "common.days1",
+    "common.days7",
+    "common.debug",
+    "common.deleteDeviceConfig",
+    "common.deleteFail",
+    "common.deleteFailed",
+    "common.deleteProcessing",
+    "common.deletePrompt",
+    "common.deleteSceneInfo",
+    "common.description",
+    "common.deviceAccessType",
+    "common.deviceConditions",
+    "common.deviceConfigName",
+    "common.deviceConnectionMethod",
+    "common.devicesSetting",
+    "common.diffValue",
+    "common.editExtendedInfo",
+    "common.editFail",
+    "common.editNotificationGroup",
+    "common.editSuccess",
+    "common.enterAlarmDesc",
+    "common.enterAlarmLevel",
+    "common.enterAlarmName",
+    "common.enterJson",
+    "common.enterName",
+    "common.enterNumberTriggering",
+    "common.enterTriggeringDuration",
+    "common.equal",
+    "common.everyDay",
+    "common.everyHour",
+    "common.extensionInfoDeleted",
+    "common.fetchDataFailed",
+    "common.formatFile",
+    "common.greaterOrEqual",
+    "common.halfYear",
+    "common.hours1",
+    "common.hours3",
+    "common.hours6",
+    "common.includeList",
+    "common.index",
+    "common.input",
+    "common.lastDays15",
+    "common.lastDays30",
+    "common.lastDays60",
+    "common.lastDays90",
+    "common.lastOneYear",
+    "common.lastSixMonth",
+    "common.lastWeekToday",
+    "common.lastYear",
+    "common.lastYears1",
+    "common.last_5m",
+    "common.leastOneChart",
+    "common.lessOrEqual",
+    "common.loadFailed",
+    "common.logout",
+    "common.logoutConfirm",
+    "common.lookForward",
+    "common.maintenance",
+    "common.manual",
+    "common.maxSelect",
+    "common.minute1",
+    "common.minute2",
+    "common.minutes10",
+    "common.minutes30",
+    "common.minutes5",
+    "common.modifySuccess",
+    "common.monthly",
+    "common.months1",
+    "common.networkError",
+    "common.noContentToCopy",
+    "common.noData",
+    "common.noMoreData",
+    "common.nodata",
+    "common.notAggre",
+    "common.notificationGroupDesc",
+    "common.operateDevice",
+    "common.param",
+    "common.pass",
+    "common.pleaseCheckValue",
+    "common.pleaseUploadit",
+    "common.pluginConfig",
+    "common.propertiesAndFunctions",
+    "common.protocol",
+    "common.protocolConfig",
+    "common.rangeMustSelected",
+    "common.refresh",
+    "common.remark",
+    "common.remove",
+    "common.repeat",
+    "common.requestMethod",
+    "common.requestTime",
+    "common.saveSceneInfo",
+    "common.sceneLinkageInfo",
+    "common.seconds30",
+    "common.section",
+    "common.select",
+    "common.selectCardFirst",
+    "common.selectPlaceholder",
+    "common.selectionMode",
+    "common.send",
+    "common.service",
+    "common.serviceConfi",
+    "common.single",
+    "common.singleClassDevice",
+    "common.singleDevice",
+    "common.startFail",
+    "common.startSuccess",
+    "common.stopFail",
+    "common.stopSuccess",
+    "common.sum",
+    "common.sunrise",
+    "common.sunset",
+    "common.switchBarChart",
+    "common.switchLineChart",
+    "common.templateDeleted",
+    "common.test",
+    "common.thisYear",
+    "common.timeConditions",
+    "common.timeFrame",
+    "common.tip",
+    "common.triggerAlarm",
+    "common.under",
+    "common.unequal",
+    "common.userCenter",
+    "common.weather",
+    "common.weekly",
+    "common.withinOneMonth",
+    "common.withinOneYear"
+  ],
+  "formKeys": [
+    "form.oldPwd.required",
+    "form.userName.invalid"
+  ],
+  "pageKeys": [
+    "page.dataForward.saveFailed",
+    "page.home.greeting",
+    "page.login.common.countingLabel",
+    "page.login.common.emailInvalid",
+    "page.login.common.emailRequired",
+    "page.login.common.phoneInvalid",
+    "page.login.common.phoneRequired",
+    "page.login.common.welcomeBack"
+  ],
+  "generateKeys": [
+    "generate.${userInfoData.authority}",
+    "generate.InputMinValue",
+    "generate.addFailed",
+    "generate.decimals",
+    "generate.editFailed",
+    "generate.failedToLoadConfig",
+    "generate.failedToLoadDeviceTemplates",
+    "generate.failedToParseProtocolConfig",
+    "generate.step"
+  ],
+  "routeKeys": [
+    "route.${homeRouteName}",
+    "route.alarm",
+    "route.apply_in",
+    "route.apply_service",
+    "route.automation_scene-linkage",
+    "route.device_template",
+    "route.management_user"
+  ],
+  "otherKeys": [
+    "buttons.refresh",
+    "card.deviceData",
+    "card.dupCardId",
+    "card.fetchError",
+    "card.networkImageText",
+    "card.no",
+    "card.off",
+    "card.on",
+    "card.shadowColor",
+    "card.systemData",
+    "card.unknownError",
+    "custom.associatedDevices.selectDeviceFirst",
+    "kanban.add-cards"
+  ],
+  "allCalls": [
+    {
+      "file": "src\\card\\builtin-card\\alarm-info\\component.vue",
+      "key": "common.alarm_time",
+      "match": "$t('common.alarm_time')"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.fetchError",
+      "match": "$t('card.fetchError')"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.fetchError",
+      "match": "$t('card.fetchError')"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.unknownError",
+      "match": "$t('card.unknownError')"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.no",
+      "match": "$t('card.no')"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.no",
+      "match": "$t('card.no')"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.on",
+      "match": "$t('card.on')"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.off",
+      "match": "$t('card.off')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.lastDays15",
+      "match": "$t('common.lastDays15')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.lastDays30",
+      "match": "$t('common.lastDays30')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.lastDays60",
+      "match": "$t('common.lastDays60')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.lastDays90",
+      "match": "$t('common.lastDays90')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.lastSixMonth",
+      "match": "$t('common.lastSixMonth')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.lastOneYear",
+      "match": "$t('common.lastOneYear')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.dayBeforeYesterday",
+      "match": "$t('common.dayBeforeYesterday')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.lastWeekToday",
+      "match": "$t('common.lastWeekToday')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.thisYear",
+      "match": "$t('common.thisYear')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.lastYear",
+      "match": "$t('common.lastYear')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.notAggre",
+      "match": "$t('common.notAggre')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.seconds30",
+      "match": "$t('common.seconds30')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.minute1",
+      "match": "$t('common.minute1')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.minute2",
+      "match": "$t('common.minute2')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.minutes5",
+      "match": "$t('common.minutes5')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.minutes10",
+      "match": "$t('common.minutes10')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.minutes30",
+      "match": "$t('common.minutes30')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.hours1",
+      "match": "$t('common.hours1')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.hours3",
+      "match": "$t('common.hours3')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.hours6",
+      "match": "$t('common.hours6')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.days1",
+      "match": "$t('common.days1')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.days7",
+      "match": "$t('common.days7')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.average",
+      "match": "$t('common.average')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.sum",
+      "match": "$t('common.sum')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.diffValue",
+      "match": "$t('common.diffValue')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.dayBeforeYesterday",
+      "match": "$t('common.dayBeforeYesterday')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.thisYear",
+      "match": "$t('common.thisYear')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.lastYear",
+      "match": "$t('common.lastYear')"
+    },
+    {
+      "file": "src\\card\\chart-card\\bar\\modules\\bar-chart.vue",
+      "key": "common.withinOneMonth",
+      "match": "$t('common.withinOneMonth')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.lastDays15",
+      "match": "$t('common.lastDays15')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.lastDays30",
+      "match": "$t('common.lastDays30')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.lastDays60",
+      "match": "$t('common.lastDays60')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.lastDays90",
+      "match": "$t('common.lastDays90')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.lastSixMonth",
+      "match": "$t('common.lastSixMonth')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.lastOneYear",
+      "match": "$t('common.lastOneYear')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.dayBeforeYesterday",
+      "match": "$t('common.dayBeforeYesterday')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.lastWeekToday",
+      "match": "$t('common.lastWeekToday')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.thisYear",
+      "match": "$t('common.thisYear')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.lastYear",
+      "match": "$t('common.lastYear')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.notAggre",
+      "match": "$t('common.notAggre')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.seconds30",
+      "match": "$t('common.seconds30')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.minute1",
+      "match": "$t('common.minute1')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.minute2",
+      "match": "$t('common.minute2')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.minutes5",
+      "match": "$t('common.minutes5')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.minutes10",
+      "match": "$t('common.minutes10')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.minutes30",
+      "match": "$t('common.minutes30')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.hours1",
+      "match": "$t('common.hours1')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.hours3",
+      "match": "$t('common.hours3')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.hours6",
+      "match": "$t('common.hours6')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.days1",
+      "match": "$t('common.days1')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.days7",
+      "match": "$t('common.days7')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.January",
+      "match": "$t('common.January')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.average",
+      "match": "$t('common.average')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.sum",
+      "match": "$t('common.sum')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.diffValue",
+      "match": "$t('common.diffValue')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.dayBeforeYesterday",
+      "match": "$t('common.dayBeforeYesterday')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.thisYear",
+      "match": "$t('common.thisYear')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.lastYear",
+      "match": "$t('common.lastYear')"
+    },
+    {
+      "file": "src\\card\\chart-card\\curve\\modules\\line-chart.vue",
+      "key": "common.withinOneMonth",
+      "match": "$t('common.withinOneMonth')"
+    },
+    {
+      "file": "src\\card\\chart-card\\digit-setter\\card-config.vue",
+      "key": "generate.step",
+      "match": "$t('generate.step')"
+    },
+    {
+      "file": "src\\card\\chart-card\\digit-setter\\card-config.vue",
+      "key": "generate.step",
+      "match": "$t('generate.step')"
+    },
+    {
+      "file": "src\\card\\chart-card\\digit-setter\\card-config.vue",
+      "key": "generate.decimals",
+      "match": "$t('generate.decimals')"
+    },
+    {
+      "file": "src\\card\\chart-card\\digit-setter\\card-config.vue",
+      "key": "generate.decimals",
+      "match": "$t('generate.decimals')"
+    },
+    {
+      "file": "src\\card\\chart-card\\instrument-panel\\card-config.vue",
+      "key": "generate.InputMinValue",
+      "match": "$t('generate.InputMinValue')"
+    },
+    {
+      "file": "src\\cards2.0\\chart-card\\demo1\\index.vue",
+      "key": "card.systemData",
+      "match": "$t('card.systemData', { count: cardData?.config.source.systemCount || 0 })"
+    },
+    {
+      "file": "src\\cards2.0\\chart-card\\demo1\\index.vue",
+      "key": "card.deviceData",
+      "match": "$t('card.deviceData', { count: cardData?.config.source.deviceCount || 0 })"
+    },
+    {
+      "file": "src\\cards2.0\\chart-card\\demo2\\card-congig-form.vue",
+      "key": "card.shadowColor",
+      "match": "$t('card.shadowColor')"
+    },
+    {
+      "file": "src\\cards2.0\\plugins-card\\demo1\\index.vue",
+      "key": "card.networkImageText",
+      "match": "$t('card.networkImageText', { size: cardData?.config?.cardUI?.textsize || 12 })"
+    },
+    {
+      "file": "src\\cards2.0\\store\\kan-ban-store.ts",
+      "key": "card.dupCardId",
+      "match": "$t('card.dupCardId', { id: card.cardItemBase.id })"
+    },
+    {
+      "file": "src\\components\\advanced\\table-column-setting.vue",
+      "key": "common.columnSetting",
+      "match": "$t('common.columnSetting')"
+    },
+    {
+      "file": "src\\components\\advanced\\table-header-operation.vue",
+      "key": "common.batchDelete",
+      "match": "$t('common.batchDelete')"
+    },
+    {
+      "file": "src\\components\\advanced\\table-header-operation.vue",
+      "key": "common.refresh",
+      "match": "$t('common.refresh')"
+    },
+    {
+      "file": "src\\components\\common\\exception-base.vue",
+      "key": "common.tip",
+      "match": "$t('common.tip')"
+    },
+    {
+      "file": "src\\components\\common\\exception-base.vue",
+      "key": "common.logoutConfirm",
+      "match": "$t('common.logoutConfirm')"
+    },
+    {
+      "file": "src\\components\\common\\exception-base.vue",
+      "key": "common.logout",
+      "match": "$t('common.logout')"
+    },
+    {
+      "file": "src\\components\\common\\exception-base.vue",
+      "key": "common.backToHome",
+      "match": "$t('common.backToHome')"
+    },
+    {
+      "file": "src\\components\\custom\\look-forward.vue",
+      "key": "common.lookForward",
+      "match": "$t('common.lookForward')"
+    },
+    {
+      "file": "src\\components\\list-page\\index.vue",
+      "key": "buttons.refresh",
+      "match": "$t('buttons.refresh')"
+    },
+    {
+      "file": "src\\components\\panel\\builtin-card\\demo\\component.vue",
+      "key": "common.test",
+      "match": "$t('common.test')"
+    },
+    {
+      "file": "src\\components\\panel\\panel-manage.vue",
+      "key": "page.dataForward.saveFailed",
+      "match": "$t('page.dataForward.saveFailed')"
+    },
+    {
+      "file": "src\\components\\panel\\panel-manage.vue",
+      "key": "page.dataForward.saveFailed",
+      "match": "$t('page.dataForward.saveFailed')"
+    },
+    {
+      "file": "src\\components\\panel\\panel-manage.vue",
+      "key": "common.componentsAddedYet",
+      "match": "$t('common.componentsAddedYet')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\add-card.vue",
+      "key": "common.selectCardFirst",
+      "match": "$t('common.selectCardFirst')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\add-card.vue",
+      "key": "common.selectCardFirst",
+      "match": "$t('common.selectCardFirst')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.last_5m",
+      "match": "$t('common.last_5m')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.lastDays15",
+      "match": "$t('common.lastDays15')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.lastDays30",
+      "match": "$t('common.lastDays30')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.lastDays60",
+      "match": "$t('common.lastDays60')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.lastDays90",
+      "match": "$t('common.lastDays90')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.notAggre",
+      "match": "$t('common.notAggre')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.seconds30",
+      "match": "$t('common.seconds30')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.minute1",
+      "match": "$t('common.minute1')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.minute2",
+      "match": "$t('common.minute2')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.minutes5",
+      "match": "$t('common.minutes5')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.minutes10",
+      "match": "$t('common.minutes10')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.minutes30",
+      "match": "$t('common.minutes30')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.hours1",
+      "match": "$t('common.hours1')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.hours3",
+      "match": "$t('common.hours3')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.hours6",
+      "match": "$t('common.hours6')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.days1",
+      "match": "$t('common.days1')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.days7",
+      "match": "$t('common.days7')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.average",
+      "match": "$t('common.average')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.sum",
+      "match": "$t('common.sum')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.diffValue",
+      "match": "$t('common.diffValue')"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-form.vue",
+      "key": "common.enterName",
+      "match": "$t('common.enterName')"
+    },
+    {
+      "file": "src\\components\\tp-kan-ban\\index.vue",
+      "key": "common.complete",
+      "match": "$t('common.complete')"
+    },
+    {
+      "file": "src\\components\\tp-kan-ban\\modules\\kan-ban-card-list.vue",
+      "key": "common.chart",
+      "match": "$t('common.chart')"
+    },
+    {
+      "file": "src\\components\\tp-kan-ban\\modules\\kan-ban-header.vue",
+      "key": "kanban.add-cards",
+      "match": "$t('kanban.add-cards')"
+    },
+    {
+      "file": "src\\hooks\\business\\use-sms-code.ts",
+      "key": "page.login.common.phoneRequired",
+      "match": "$t('page.login.common.phoneRequired')"
+    },
+    {
+      "file": "src\\hooks\\business\\use-sms-code.ts",
+      "key": "page.login.common.phoneInvalid",
+      "match": "$t('page.login.common.phoneInvalid')"
+    },
+    {
+      "file": "src\\hooks\\business\\use-sms-code.ts",
+      "key": "page.login.common.emailInvalid",
+      "match": "$t('page.login.common.emailInvalid')"
+    },
+    {
+      "file": "src\\hooks\\business\\use-sms-code.ts",
+      "key": "page.login.common.emailRequired",
+      "match": "$t('page.login.common.emailRequired')"
+    },
+    {
+      "file": "src\\hooks\\business\\use-sms-code.ts",
+      "key": "page.login.common.countingLabel",
+      "match": "$t('page.login.common.countingLabel', { second })"
+    },
+    {
+      "file": "src\\hooks\\common\\form.ts",
+      "key": "form.userName.invalid",
+      "match": "$t('form.userName.invalid')"
+    },
+    {
+      "file": "src\\hooks\\common\\table.ts",
+      "key": "common.check",
+      "match": "$t('common.check')"
+    },
+    {
+      "file": "src\\layouts\\modules\\global-header\\components\\user-avatar.vue",
+      "key": "common.userCenter",
+      "match": "$t('common.userCenter')"
+    },
+    {
+      "file": "src\\layouts\\modules\\global-header\\components\\user-avatar.vue",
+      "key": "common.logout",
+      "match": "$t('common.logout')"
+    },
+    {
+      "file": "src\\layouts\\modules\\global-header\\components\\user-avatar.vue",
+      "key": "common.tip",
+      "match": "$t('common.tip')"
+    },
+    {
+      "file": "src\\layouts\\modules\\global-header\\components\\user-avatar.vue",
+      "key": "common.logoutConfirm",
+      "match": "$t('common.logoutConfirm')"
+    },
+    {
+      "file": "src\\store\\modules\\auth\\index.ts",
+      "key": "page.login.common.welcomeBack",
+      "match": "$t('page.login.common.welcomeBack', {\r\n              userName: info?.name\r\n            })"
+    },
+    {
+      "file": "src\\store\\modules\\panel\\index.ts",
+      "key": "card.dupCardId",
+      "match": "$t('card.dupCardId', { id: card.cardItemBase.id })"
+    },
+    {
+      "file": "src\\store\\modules\\tab\\shared.ts",
+      "key": "route.${homeRouteName}",
+      "match": "$t(`route.${homeRouteName}`)"
+    },
+    {
+      "file": "src\\views\\alarm\\notification-group\\components\\table-action-modal.vue",
+      "key": "common.createNotificationGroup",
+      "match": "$t('common.createNotificationGroup')"
+    },
+    {
+      "file": "src\\views\\alarm\\notification-group\\components\\table-action-modal.vue",
+      "key": "common.editNotificationGroup",
+      "match": "$t('common.editNotificationGroup')"
+    },
+    {
+      "file": "src\\views\\alarm\\notification-group\\components\\table-action-modal.vue",
+      "key": "common.notificationGroupDesc",
+      "match": "$t('common.notificationGroupDesc')"
+    },
+    {
+      "file": "src\\views\\alarm\\notification-group\\components\\table-action-modal.vue",
+      "key": "common.chooseNotificationMethod",
+      "match": "$t('common.chooseNotificationMethod')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\alarm-configuration.vue",
+      "key": "common.alarm_time",
+      "match": "$t('common.alarm_time')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\alarm-configuration.vue",
+      "key": "common.maintenance",
+      "match": "$t('common.maintenance')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\alarm-configuration.vue",
+      "key": "common.allStatus",
+      "match": "$t('common.allStatus')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\alarm-configuration.vue",
+      "key": "common.enterAlarmDesc",
+      "match": "$t('common.enterAlarmDesc')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\alarm-configuration.vue",
+      "key": "common.alarm_time",
+      "match": "$t('common.alarm_time')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\alarm-configuration.vue",
+      "key": "common.index",
+      "match": "$t('common.index')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\new-information.vue",
+      "key": "common.alarm_level",
+      "match": "$t('common.alarm_level')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\new-information.vue",
+      "key": "common.startSuccess",
+      "match": "$t('common.startSuccess')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\new-information.vue",
+      "key": "common.stopSuccess",
+      "match": "$t('common.stopSuccess')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\new-information.vue",
+      "key": "common.startFail",
+      "match": "$t('common.startFail')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\new-information.vue",
+      "key": "common.stopFail",
+      "match": "$t('common.stopFail')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\new-information.vue",
+      "key": "common.deleteFail",
+      "match": "$t('common.deleteFail')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\pop-up.vue",
+      "key": "common.enterAlarmName",
+      "match": "$t('common.enterAlarmName')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\pop-up.vue",
+      "key": "common.enterAlarmLevel",
+      "match": "$t('common.enterAlarmLevel')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\pop-up.vue",
+      "key": "common.enterNumberTriggering",
+      "match": "$t('common.enterNumberTriggering')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\pop-up.vue",
+      "key": "common.enterTriggeringDuration",
+      "match": "$t('common.enterTriggeringDuration')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\pop-up.vue",
+      "key": "common.addSuccess",
+      "match": "$t('common.addSuccess')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\pop-up.vue",
+      "key": "common.addFail",
+      "match": "$t('common.addFail')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\pop-up.vue",
+      "key": "common.editSuccess",
+      "match": "$t('common.editSuccess')"
+    },
+    {
+      "file": "src\\views\\alarm\\warning-message\\components\\pop-up.vue",
+      "key": "common.editFail",
+      "match": "$t('common.editFail')"
+    },
+    {
+      "file": "src\\views\\apply\\plugin\\components\\serviceConfigModal.vue",
+      "key": "common.pluginConfig",
+      "match": "$t('common.pluginConfig')"
+    },
+    {
+      "file": "src\\views\\apply\\plugin\\components\\serviceModal.vue",
+      "key": "common.serviceConfi",
+      "match": "$t('common.serviceConfi')"
+    },
+    {
+      "file": "src\\views\\apply\\plugin\\index.vue",
+      "key": "common.pluginConfig",
+      "match": "$t('common.pluginConfig')"
+    },
+    {
+      "file": "src\\views\\apply\\plugin\\index.vue",
+      "key": "route.apply_in",
+      "match": "$t('route.apply_in')"
+    },
+    {
+      "file": "src\\views\\apply\\service\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\apply\\service\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\apply\\service\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\apply\\service\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\apply\\service\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\apply\\service\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\apply\\service\\components\\table-action-modal.vue",
+      "key": "common.description",
+      "match": "$t('common.description')"
+    },
+    {
+      "file": "src\\views\\apply\\service\\index.vue",
+      "key": "common.description",
+      "match": "$t('common.description')"
+    },
+    {
+      "file": "src\\views\\apply\\service\\index.vue",
+      "key": "route.apply_service",
+      "match": "$t('route.apply_service')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\index.vue",
+      "key": "common.tip",
+      "match": "$t('common.tip')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\index.vue",
+      "key": "common.saveSceneInfo",
+      "match": "$t('common.saveSceneInfo')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\index.vue",
+      "key": "route.automation_scene-linkage",
+      "match": "$t('route.automation_scene-linkage')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.operateDevice",
+      "match": "$t('common.operateDevice')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.activateScene",
+      "match": "$t('common.activateScene')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.triggerAlarm",
+      "match": "$t('common.triggerAlarm')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.singleDevice",
+      "match": "$t('common.singleDevice')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.singleClassDevice",
+      "match": "$t('common.singleClassDevice')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.enterJson",
+      "match": "$t('common.enterJson')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.enterJson",
+      "match": "$t('common.enterJson')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.enterJson",
+      "match": "$t('common.enterJson')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.as",
+      "match": "$t('common.as')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.as",
+      "match": "$t('common.as')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.as",
+      "match": "$t('common.as')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-action.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.input",
+      "match": "$t('common.input')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.input",
+      "match": "$t('common.input')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.input",
+      "match": "$t('common.input')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.deviceConditions",
+      "match": "$t('common.deviceConditions')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.timeConditions",
+      "match": "$t('common.timeConditions')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.singleDevice",
+      "match": "$t('common.singleDevice')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.singleClassDevice",
+      "match": "$t('common.singleClassDevice')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.enterJson",
+      "match": "$t('common.enterJson')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.enterJson",
+      "match": "$t('common.enterJson')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.single",
+      "match": "$t('common.single')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.repeat",
+      "match": "$t('common.repeat')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.timeFrame",
+      "match": "$t('common.timeFrame')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.weather",
+      "match": "$t('common.weather')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.everyHour",
+      "match": "$t('common.everyHour')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.everyDay",
+      "match": "$t('common.everyDay')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.weekly",
+      "match": "$t('common.weekly')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.monthly",
+      "match": "$t('common.monthly')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.sunrise",
+      "match": "$t('common.sunrise')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.sunset",
+      "match": "$t('common.sunset')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.equal",
+      "match": "$t('common.equal')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.unequal",
+      "match": "$t('common.unequal')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.pass",
+      "match": "$t('common.pass')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.under",
+      "match": "$t('common.under')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.greaterOrEqual",
+      "match": "$t('common.greaterOrEqual')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.lessOrEqual",
+      "match": "$t('common.lessOrEqual')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.between",
+      "match": "$t('common.between')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.includeList",
+      "match": "$t('common.includeList')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.minutes5",
+      "match": "$t('common.minutes5')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.minutes10",
+      "match": "$t('common.minutes10')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.minutes30",
+      "match": "$t('common.minutes30')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.hours1",
+      "match": "$t('common.hours1')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.days1",
+      "match": "$t('common.days1')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.input",
+      "match": "$t('common.input')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.param",
+      "match": "$t('common.param')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.as",
+      "match": "$t('common.as')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\modules\\edit-premise.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.operateDevice",
+      "match": "$t('common.operateDevice')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.singleDevice",
+      "match": "$t('common.singleDevice')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.singleClassDevice",
+      "match": "$t('common.singleClassDevice')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.enterJson",
+      "match": "$t('common.enterJson')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.enterJson",
+      "match": "$t('common.enterJson')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.enterJson",
+      "match": "$t('common.enterJson')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.tip",
+      "match": "$t('common.tip')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.saveSceneInfo",
+      "match": "$t('common.saveSceneInfo')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.as",
+      "match": "$t('common.as')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.as",
+      "match": "$t('common.as')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.as",
+      "match": "$t('common.as')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-edit\\index.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-linkage\\modules\\dataList.vue",
+      "key": "common.deletePrompt",
+      "match": "$t('common.deletePrompt')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-linkage\\modules\\dataList.vue",
+      "key": "common.sceneLinkageInfo",
+      "match": "$t('common.sceneLinkageInfo')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-linkage\\modules\\dataList.vue",
+      "key": "common.nodata",
+      "match": "$t('common.nodata')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-linkage\\modules\\dataList.vue",
+      "key": "common.nodata",
+      "match": "$t('common.nodata')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-manage\\index.vue",
+      "key": "common.activationPrompt",
+      "match": "$t('common.activationPrompt')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-manage\\index.vue",
+      "key": "common.activateSceneInfo",
+      "match": "$t('common.activateSceneInfo')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-manage\\index.vue",
+      "key": "common.deletePrompt",
+      "match": "$t('common.deletePrompt')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-manage\\index.vue",
+      "key": "common.deleteSceneInfo",
+      "match": "$t('common.deleteSceneInfo')"
+    },
+    {
+      "file": "src\\views\\automation\\scene-manage\\index.vue",
+      "key": "common.nodata",
+      "match": "$t('common.nodata')"
+    },
+    {
+      "file": "src\\views\\component\\button\\index.vue",
+      "key": "common.base",
+      "match": "$t('common.base')"
+    },
+    {
+      "file": "src\\views\\data-service\\rule-engine\\components\\secret-key-modal.vue",
+      "key": "common.browserNotSupport",
+      "match": "$t('common.browserNotSupport')"
+    },
+    {
+      "file": "src\\views\\data-service\\rule-engine\\components\\secret-key-modal.vue",
+      "key": "common.contentToCopied",
+      "match": "$t('common.contentToCopied')"
+    },
+    {
+      "file": "src\\views\\data-service\\rule-engine\\index.vue",
+      "key": "common.index",
+      "match": "$t('common.index')"
+    },
+    {
+      "file": "src\\views\\device\\config\\index.vue",
+      "key": "common.nodata",
+      "match": "$t('common.nodata')"
+    },
+    {
+      "file": "src\\views\\device\\config\\modules\\config-modal.vue",
+      "key": "common.deviceConfigName",
+      "match": "$t('common.deviceConfigName')"
+    },
+    {
+      "file": "src\\views\\device\\config\\modules\\config-modal.vue",
+      "key": "common.deviceAccessType",
+      "match": "$t('common.deviceAccessType')"
+    },
+    {
+      "file": "src\\views\\device\\config\\modules\\config-modal.vue",
+      "key": "common.deviceConnectionMethod",
+      "match": "$t('common.deviceConnectionMethod')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "route.device_template",
+      "match": "$t('route.device_template')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "common.associatedDevices",
+      "match": "$t('common.associatedDevices')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "common.associatedDevices",
+      "match": "$t('common.associatedDevices')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "common.propertiesAndFunctions",
+      "match": "$t('common.propertiesAndFunctions')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "common.propertiesAndFunctions",
+      "match": "$t('common.propertiesAndFunctions')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "common.protocolConfig",
+      "match": "$t('common.protocolConfig')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "common.protocolConfig",
+      "match": "$t('common.protocolConfig')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "common.dataProces",
+      "match": "$t('common.dataProces')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "common.dataProces",
+      "match": "$t('common.dataProces')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "route.alarm",
+      "match": "$t('route.alarm')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "route.alarm",
+      "match": "$t('route.alarm')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "common.devicesSetting",
+      "match": "$t('common.devicesSetting')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "common.devicesSetting",
+      "match": "$t('common.devicesSetting')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\associated-devices.vue",
+      "key": "custom.associatedDevices.selectDeviceFirst",
+      "match": "$t('custom.associatedDevices.selectDeviceFirst')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\associated-devices.vue",
+      "key": "common.addSuccess",
+      "match": "$t('common.addSuccess')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\associated-devices.vue",
+      "key": "common.fetchDataFailed",
+      "match": "$t('common.fetchDataFailed')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\associated-devices.vue",
+      "key": "common.networkError",
+      "match": "$t('common.networkError')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\associated-devices.vue",
+      "key": "common.remove",
+      "match": "$t('common.remove')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\automate.vue",
+      "key": "common.nodata",
+      "match": "$t('common.nodata')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\connection-info.vue",
+      "key": "common.protocol",
+      "match": "$t('common.protocol')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\connection-info.vue",
+      "key": "common.service",
+      "match": "$t('common.service')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\data-handle.vue",
+      "key": "common.select",
+      "match": "$t('common.select')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\data-handle.vue",
+      "key": "common.tip",
+      "match": "$t('common.tip')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\data-handle.vue",
+      "key": "common.deleteProcessing",
+      "match": "$t('common.deleteProcessing')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\data-handle.vue",
+      "key": "common.nodata",
+      "match": "$t('common.nodata')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\data-handle.vue",
+      "key": "common.dataProces",
+      "match": "$t('common.dataProces')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\data-handle.vue",
+      "key": "common.debug",
+      "match": "$t('common.debug')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\DeviceSelectWithScroll.vue",
+      "key": "common.selectPlaceholder",
+      "match": "$t('common.selectPlaceholder')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\DeviceSelectWithScroll.vue",
+      "key": "common.noData",
+      "match": "$t('common.noData')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\DeviceSelectWithScroll.vue",
+      "key": "common.noMoreData",
+      "match": "$t('common.noMoreData')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\extend-info.vue",
+      "key": "common.enterName",
+      "match": "$t('common.enterName')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\extend-info.vue",
+      "key": "common.modifySuccess",
+      "match": "$t('common.modifySuccess')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\extend-info.vue",
+      "key": "common.extensionInfoDeleted",
+      "match": "$t('common.extensionInfoDeleted')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\extend-info.vue",
+      "key": "common.editExtendedInfo",
+      "match": "$t('common.editExtendedInfo')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\extend-info.vue",
+      "key": "common.addExtendedInfo",
+      "match": "$t('common.addExtendedInfo')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\setting-info.vue",
+      "key": "common.tip",
+      "match": "$t('common.tip')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\setting-info.vue",
+      "key": "common.deleteDeviceConfig",
+      "match": "$t('common.deleteDeviceConfig')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\setting-info.vue",
+      "key": "common.noContentToCopy",
+      "match": "$t('common.noContentToCopy')"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\setting-info.vue",
+      "key": "common.copyFailed",
+      "match": "$t('common.copyFailed')"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "common.deviceConfigName",
+      "match": "$t('common.deviceConfigName')"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "common.deviceAccessType",
+      "match": "$t('common.deviceAccessType')"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "common.deviceConnectionMethod",
+      "match": "$t('common.deviceConnectionMethod')"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.failedToLoadDeviceTemplates",
+      "match": "$t('generate.failedToLoadDeviceTemplates')"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.addFailed",
+      "match": "$t('generate.addFailed')"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.editFailed",
+      "match": "$t('generate.editFailed')"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.editFailed",
+      "match": "$t('generate.editFailed')"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.failedToParseProtocolConfig",
+      "match": "$t('generate.failedToParseProtocolConfig')"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.failedToLoadConfig",
+      "match": "$t('generate.failedToLoadConfig')"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "common.protocol",
+      "match": "$t('common.protocol')"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "common.service",
+      "match": "$t('common.service')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\give-an-alarm.vue",
+      "key": "common.allStatus",
+      "match": "$t('common.allStatus')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\give-an-alarm.vue",
+      "key": "common.enterAlarmDesc",
+      "match": "$t('common.enterAlarmDesc')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\give-an-alarm.vue",
+      "key": "common.alarmHistory",
+      "match": "$t('common.alarmHistory')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\give-an-alarm.vue",
+      "key": "common.alarmRules",
+      "match": "$t('common.alarmRules')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\give-an-alarm.vue",
+      "key": "common.nodata",
+      "match": "$t('common.nodata')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\give-an-alarm.vue",
+      "key": "common.alarm_time",
+      "match": "$t('common.alarm_time')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\message.vue",
+      "key": "common.modifySuccess",
+      "match": "$t('common.modifySuccess')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\message.vue",
+      "key": "common.modifySuccess",
+      "match": "$t('common.modifySuccess')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\message.vue",
+      "key": "common.extensionInfoDeleted",
+      "match": "$t('common.extensionInfoDeleted')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\message.vue",
+      "key": "common.editExtendedInfo",
+      "match": "$t('common.editExtendedInfo')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\message.vue",
+      "key": "common.addExtendedInfo",
+      "match": "$t('common.addExtendedInfo')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\settings.vue",
+      "key": "common.deleteFailed",
+      "match": "$t('common.deleteFailed')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.last_5m",
+      "match": "$t('common.last_5m')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.lastDays15",
+      "match": "$t('common.lastDays15')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.lastDays30",
+      "match": "$t('common.lastDays30')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.lastDays60",
+      "match": "$t('common.lastDays60')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.lastDays90",
+      "match": "$t('common.lastDays90')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.halfYear",
+      "match": "$t('common.halfYear')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.lastYears1",
+      "match": "$t('common.lastYears1')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.notAggre",
+      "match": "$t('common.notAggre')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.seconds30",
+      "match": "$t('common.seconds30')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.minute1",
+      "match": "$t('common.minute1')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.minute2",
+      "match": "$t('common.minute2')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.minutes5",
+      "match": "$t('common.minutes5')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.minutes10",
+      "match": "$t('common.minutes10')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.minutes30",
+      "match": "$t('common.minutes30')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.hours1",
+      "match": "$t('common.hours1')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.hours3",
+      "match": "$t('common.hours3')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.hours6",
+      "match": "$t('common.hours6')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.days1",
+      "match": "$t('common.days1')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.days7",
+      "match": "$t('common.days7')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.months1",
+      "match": "$t('common.months1')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.average",
+      "match": "$t('common.average')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\AggregationSelector.vue",
+      "key": "common.withinOneYear",
+      "match": "$t('common.withinOneYear')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\history-data.vue",
+      "key": "common.withinOneMonth",
+      "match": "$t('common.withinOneMonth')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.switchLineChart",
+      "match": "$t('common.switchLineChart')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.alreadyCurveChart",
+      "match": "$t('common.alreadyCurveChart')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.switchBarChart",
+      "match": "$t('common.switchBarChart')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.alreadyToChart",
+      "match": "$t('common.alreadyToChart')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.alreadyToChart",
+      "match": "$t('common.alreadyToChart')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.alreadyScatterPlot",
+      "match": "$t('common.alreadyScatterPlot')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.last_5m",
+      "match": "$t('common.last_5m')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.lastDays15",
+      "match": "$t('common.lastDays15')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.lastDays30",
+      "match": "$t('common.lastDays30')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.lastDays60",
+      "match": "$t('common.lastDays60')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.lastDays90",
+      "match": "$t('common.lastDays90')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.halfYear",
+      "match": "$t('common.halfYear')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.lastYears1",
+      "match": "$t('common.lastYears1')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.notAggre",
+      "match": "$t('common.notAggre')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.seconds30",
+      "match": "$t('common.seconds30')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.minute1",
+      "match": "$t('common.minute1')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.minute2",
+      "match": "$t('common.minute2')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.minutes5",
+      "match": "$t('common.minutes5')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.minutes10",
+      "match": "$t('common.minutes10')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.minutes30",
+      "match": "$t('common.minutes30')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.hours1",
+      "match": "$t('common.hours1')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.hours3",
+      "match": "$t('common.hours3')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.hours6",
+      "match": "$t('common.hours6')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.days1",
+      "match": "$t('common.days1')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.days7",
+      "match": "$t('common.days7')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.months1",
+      "match": "$t('common.months1')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.average",
+      "match": "$t('common.average')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.rangeMustSelected",
+      "match": "$t('common.rangeMustSelected')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\telemetry\\modules\\time-series-data.vue",
+      "key": "common.timeFrame",
+      "match": "$t('common.timeFrame')"
+    },
+    {
+      "file": "src\\views\\device\\details\\modules\\user.vue",
+      "key": "common.nodata",
+      "match": "$t('common.nodata')"
+    },
+    {
+      "file": "src\\views\\device\\manage\\index.vue",
+      "key": "common.protocol",
+      "match": "$t('common.protocol')"
+    },
+    {
+      "file": "src\\views\\device\\manage\\index.vue",
+      "key": "common.service",
+      "match": "$t('common.service')"
+    },
+    {
+      "file": "src\\views\\device\\service-details\\components\\AutomaticModeStep.vue",
+      "key": "common.loadFailed",
+      "match": "$t('common.loadFailed')"
+    },
+    {
+      "file": "src\\views\\device\\service-details\\components\\serviceModal.vue",
+      "key": "common.selectionMode",
+      "match": "$t('common.selectionMode')"
+    },
+    {
+      "file": "src\\views\\device\\service-details\\components\\serviceModal.vue",
+      "key": "common.manual",
+      "match": "$t('common.manual')"
+    },
+    {
+      "file": "src\\views\\device\\service-details\\components\\serviceModal.vue",
+      "key": "common.automatic",
+      "match": "$t('common.automatic')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\card-select\\template-panel.vue",
+      "key": "common.componentsAddedYet",
+      "match": "$t('common.componentsAddedYet')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\card-select\\ui\\add-template-card.vue",
+      "key": "common.selectCardFirst",
+      "match": "$t('common.selectCardFirst')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\card-select\\ui\\add-template-card.vue",
+      "key": "common.chart",
+      "match": "$t('common.chart')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\card-select\\ui\\card-template-form.vue",
+      "key": "common.maxSelect",
+      "match": "$t('common.maxSelect')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\card-select\\ui\\card-template-form.vue",
+      "key": "common.dataSources",
+      "match": "$t('common.dataSources')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\add-edit-attributes.vue",
+      "key": "common.editSuccess",
+      "match": "$t('common.editSuccess')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\add-edit-commands.vue",
+      "key": "common.input",
+      "match": "$t('common.input')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\add-edit-commands.vue",
+      "key": "common.input",
+      "match": "$t('common.input')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\add-edit-commands.vue",
+      "key": "common.remove",
+      "match": "$t('common.remove')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\app-chart-config.vue",
+      "key": "common.section",
+      "match": "$t('common.section')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\app-chart-config.vue",
+      "key": "common.accompaniedIndicators",
+      "match": "$t('common.accompaniedIndicators')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\app-chart-config.vue",
+      "key": "common.leastOneChart",
+      "match": "$t('common.leastOneChart')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\app-chart-config.vue",
+      "key": "common.section",
+      "match": "$t('common.section')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\app-chart-config.vue",
+      "key": "common.accompaniedIndicators",
+      "match": "$t('common.accompaniedIndicators')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\complete.vue",
+      "key": "common.copiedClipboard",
+      "match": "$t('common.copiedClipboard')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\complete.vue",
+      "key": "common.copyingFailed",
+      "match": "$t('common.copyingFailed')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\complete.vue",
+      "key": "common.complete",
+      "match": "$t('common.complete')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\custom-controls.vue",
+      "key": "common.description",
+      "match": "$t('common.description')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\custom-controls.vue",
+      "key": "common.description",
+      "match": "$t('common.description')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\model-definition.vue",
+      "key": "common.test",
+      "match": "$t('common.test')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\web-chart-config.vue",
+      "key": "common.section",
+      "match": "$t('common.section')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\web-chart-config.vue",
+      "key": "common.accompaniedIndicators",
+      "match": "$t('common.accompaniedIndicators')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\web-chart-config.vue",
+      "key": "common.leastOneChart",
+      "match": "$t('common.leastOneChart')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\web-chart-config.vue",
+      "key": "common.section",
+      "match": "$t('common.section')"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\step\\web-chart-config.vue",
+      "key": "common.accompaniedIndicators",
+      "match": "$t('common.accompaniedIndicators')"
+    },
+    {
+      "file": "src\\views\\device\\template\\index.vue",
+      "key": "common.fetchDataFailed",
+      "match": "$t('common.fetchDataFailed')"
+    },
+    {
+      "file": "src\\views\\device\\template\\index.vue",
+      "key": "common.templateDeleted",
+      "match": "$t('common.templateDeleted')"
+    },
+    {
+      "file": "src\\views\\device\\template\\index.vue",
+      "key": "common.deleteFailed",
+      "match": "$t('common.deleteFailed')"
+    },
+    {
+      "file": "src\\views\\device\\template\\index.vue",
+      "key": "route.device_template",
+      "match": "$t('route.device_template')"
+    },
+    {
+      "file": "src\\views\\device\\template\\index.vue",
+      "key": "common.nodata",
+      "match": "$t('common.nodata')"
+    },
+    {
+      "file": "src\\views\\home\\modules\\header-banner.vue",
+      "key": "page.home.greeting",
+      "match": "$t('page.home.greeting', { userName: authStore.userInfo.userName })"
+    },
+    {
+      "file": "src\\views\\manage\\role\\index.vue",
+      "key": "common.index",
+      "match": "$t('common.index')"
+    },
+    {
+      "file": "src\\views\\manage\\user\\index.vue",
+      "key": "common.index",
+      "match": "$t('common.index')"
+    },
+    {
+      "file": "src\\views\\management\\auth\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\auth\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\auth\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\auth\\components\\table-action-modal.vue",
+      "key": "common.description",
+      "match": "$t('common.description')"
+    },
+    {
+      "file": "src\\views\\management\\auth\\index.vue",
+      "key": "common.remark",
+      "match": "$t('common.remark')"
+    },
+    {
+      "file": "src\\views\\management\\notification\\components\\email.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\notification\\components\\email.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\notification\\components\\email.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\notification\\components\\email.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\notification\\components\\email.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\notification\\components\\email.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\notification\\components\\email.vue",
+      "key": "common.modifySuccess",
+      "match": "$t('common.modifySuccess')"
+    },
+    {
+      "file": "src\\views\\management\\notification\\components\\email.vue",
+      "key": "common.debug",
+      "match": "$t('common.debug')"
+    },
+    {
+      "file": "src\\views\\management\\notification\\components\\email.vue",
+      "key": "common.debug",
+      "match": "$t('common.debug')"
+    },
+    {
+      "file": "src\\views\\management\\notification\\components\\email.vue",
+      "key": "common.send",
+      "match": "$t('common.send')"
+    },
+    {
+      "file": "src\\views\\management\\notification\\components\\push-notification.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\role\\modules\\column-setting.vue",
+      "key": "common.changeTableColumns",
+      "match": "$t('common.changeTableColumns')"
+    },
+    {
+      "file": "src\\views\\management\\setting\\components\\data-clear-setting.vue",
+      "key": "common.remark",
+      "match": "$t('common.remark')"
+    },
+    {
+      "file": "src\\views\\management\\setting\\components\\data-clear-setting.vue",
+      "key": "common.remark",
+      "match": "$t('common.remark')"
+    },
+    {
+      "file": "src\\views\\management\\setting\\components\\upload-image.vue",
+      "key": "common.pleaseUploadit",
+      "match": "$t('common.pleaseUploadit')"
+    },
+    {
+      "file": "src\\views\\management\\setting\\components\\upload-image.vue",
+      "key": "common.formatFile",
+      "match": "$t('common.formatFile')"
+    },
+    {
+      "file": "src\\views\\management\\user\\components\\column-setting.vue",
+      "key": "common.changeTableColumns",
+      "match": "$t('common.changeTableColumns')"
+    },
+    {
+      "file": "src\\views\\management\\user\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\user\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\user\\components\\table-action-modal.vue",
+      "key": "common.pleaseCheckValue",
+      "match": "$t('common.pleaseCheckValue')"
+    },
+    {
+      "file": "src\\views\\management\\user\\components\\table-action-modal.vue",
+      "key": "common.remark",
+      "match": "$t('common.remark')"
+    },
+    {
+      "file": "src\\views\\management\\user\\index.vue",
+      "key": "common.remark",
+      "match": "$t('common.remark')"
+    },
+    {
+      "file": "src\\views\\management\\user\\index.vue",
+      "key": "route.management_user",
+      "match": "$t('route.management_user')"
+    },
+    {
+      "file": "src\\views\\management\\user\\index.vue",
+      "key": "common.nodata",
+      "match": "$t('common.nodata')"
+    },
+    {
+      "file": "src\\views\\personal-center\\components\\change-information copy.vue",
+      "key": "form.oldPwd.required",
+      "match": "$t('form.oldPwd.required')"
+    },
+    {
+      "file": "src\\views\\personal-center\\index.vue",
+      "key": "generate.${userInfoData.authority}",
+      "match": "$t(`generate.${userInfoData.authority}`)"
+    },
+    {
+      "file": "src\\views\\personal-center\\index.vue",
+      "key": "generate.${userInfoData.authority}",
+      "match": "$t(`generate.${userInfoData.authority}`)"
+    },
+    {
+      "file": "src\\views\\plugin\\copy\\index.vue",
+      "key": "common.browserNotSupport",
+      "match": "$t('common.browserNotSupport')"
+    },
+    {
+      "file": "src\\views\\plugin\\copy\\index.vue",
+      "key": "common.contentToCopied",
+      "match": "$t('common.contentToCopied')"
+    },
+    {
+      "file": "src\\views\\rule-engine\\index.vue",
+      "key": "common.index",
+      "match": "$t('common.index')"
+    },
+    {
+      "file": "src\\views\\system-management-user\\system-log\\index.vue",
+      "key": "common.requestMethod",
+      "match": "$t('common.requestMethod')"
+    },
+    {
+      "file": "src\\views\\system-management-user\\system-log\\index.vue",
+      "key": "common.requestTime",
+      "match": "$t('common.requestTime')"
+    }
+  ]
+}

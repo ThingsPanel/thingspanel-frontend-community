@@ -69,38 +69,38 @@ const handleSetAddress = async (id, subDeviceAddr) => {
 
 const columns: Ref<any> = ref([
   {
-    title: $t('custom.devicePage.deviceName'),
+    title: "设备名称",
     minWidth: '140px',
     key: 'name'
   },
   {
-    title: $t('custom.devicePage.subDeviceAddress'),
+    title: "子设备地址",
     minWidth: '140px',
     key: 'subDeviceAddr'
   },
   {
-    title: $t('common.actions'),
+    title: "操作",
     key: '',
     minWidth: '140px',
     render: row => {
       return (
         <NSpace>
           <NButton type="primary" size="small" onClick={() => handleLook(row.id)}>
-            {$t('generate.view')}
+            {"查看"}
           </NButton>
           <NButton type="success" size="small" onClick={() => handleSetAddress(row.id, row.subDeviceAddr)}>
-            {$t('generate.setSubDevices')}
+            {"设置子设备"}
           </NButton>
           <NPopconfirm
-            negative-text={$t('common.cancel')}
-            positive-text={$t('common.confirm')}
+            negative-text={"取消"}
+            positive-text={"确认"}
             onPositiveClick={() => deleteDevice(row.id)}
           >
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -113,7 +113,7 @@ const columns: Ref<any> = ref([
 
 const setDeviceAddress = async () => {
   if (!deviceSetName.value) {
-    window.$message?.error($t('generate.enter-sub-device-address'));
+    window.$message?.error("请输入子设备地址");
     return;
   }
   const res = await deviceUpdate({
@@ -131,7 +131,7 @@ const setDeviceAddress = async () => {
 
 const addChildDeviceSure = () => {
   if (selectChild.value.length === 0) {
-    window.$message?.error($t('generate.selectSubDevices'));
+    window.$message?.error("请选择子设备");
   } else {
     addChildDevice({
       id: props.id,
@@ -171,36 +171,36 @@ onMounted(() => {});
 
 <template>
   <n-card class="w-full">
-    <NButton type="primary" @click="addDevice">{{ $t('generate.add-sub-device') }}</NButton>
+    <NButton type="primary" @click="addDevice">{{ "添加子设备" }}</NButton>
     <n-modal
       v-model:show="showAddDialog"
-      :title="$t('generate.issue-attribute')"
+      :title="下发属性"
       style="height: 300px"
       class="w-[400px]"
     >
       <n-card>
         <n-form>
-          <n-form-item :label="$t('generate.add-sub-device')">
+          <n-form-item :label="添加子设备">
             <n-select v-model:value="selectChild" multiple :options="sOptions" @update:value="selectConfig">
-              <template #header>{{ $t('page.irrigation.group.deviceName') }}</template>
+              <template #header>{{ "设备名称" }}</template>
             </n-select>
           </n-form-item>
           <NSpace style="display: flex; justify-content: flex-end; margin-top: 140px">
-            <NButton @click="showAddDialog = false">{{ $t('generate.cancel') }}</NButton>
-            <NButton @click="addChildDeviceSure">{{ $t('page.login.common.confirm') }}</NButton>
+            <NButton @click="showAddDialog = false">{{ "取消" }}</NButton>
+            <NButton @click="addChildDeviceSure">{{ "确定" }}</NButton>
           </NSpace>
         </n-form>
       </n-card>
     </n-modal>
-    <n-modal v-model:show="showSetDialog" :title="$t('generate.issue-attribute')" class="w-[400px]">
+    <n-modal v-model:show="showSetDialog" :title="下发属性" class="w-[400px]">
       <n-card>
         <n-form>
-          <n-form-item :label="$t('generate.sub-device-address-setting')">
-            <n-input v-model:value="deviceSetName" type="text" :placeholder="$t('generate.enter-sub-device-address')" />
+          <n-form-item :label="子设备地址设置">
+            <n-input v-model:value="deviceSetName" type="text" :placeholder="请输入子设备地址" />
           </n-form-item>
           <NSpace style="display: flex; justify-content: flex-end">
-            <NButton @click="showSetDialog = false">{{ $t('generate.cancel') }}</NButton>
-            <NButton @click="setDeviceAddress">{{ $t('page.login.common.confirm') }}</NButton>
+            <NButton @click="showSetDialog = false">{{ "取消" }}</NButton>
+            <NButton @click="setDeviceAddress">{{ "确定" }}</NButton>
           </NSpace>
         </n-form>
       </n-card>

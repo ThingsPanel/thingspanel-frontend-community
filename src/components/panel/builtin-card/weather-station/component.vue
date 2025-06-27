@@ -27,33 +27,33 @@ const weatherList: WeatherItem[] = reactive([
     icons1: 'wind-speed',
     value1: '30',
     mark1: 'm/s',
-    text1: $t('dashboard_panel.cardName.windSpeed'),
+    text1: "风速",
     icons2: 'wind-direction',
     value2: '265',
     mark2: '°',
-    text2: $t('dashboard_panel.cardName.windDirection')
+    text2: "风向"
   },
   {
     id: '2',
     icons1: 'wind-temperature',
     value1: '26',
     mark1: '°',
-    text1: $t('dashboard_panel.cardName.temperature'),
+    text1: "土壤温度",
     icons2: 'wind-humidity',
     value2: '64',
     mark2: '%',
-    text2: $t('dashboard_panel.cardName.humidity')
+    text2: "湿度"
   },
   {
     id: '3',
     icons1: 'wind-pressure',
     value1: '456',
     mark1: 'm/s',
-    text1: $t('dashboard_panel.cardName.pressure'),
+    text1: "气压",
     icons2: 'wind-rainfall',
     value2: '220',
     mark2: 'mm',
-    text2: $t('dashboard_panel.cardName.rainfall')
+    text2: "雨量"
   }
 ])
 
@@ -133,7 +133,7 @@ const init: () => void = () => {
     },
     series: [
       {
-        name: $t('dashboard_panel.cardName.rainfall'),
+        name: "雨量",
         type: 'line',
         stack: 'Total',
         data: [
@@ -173,7 +173,7 @@ onMounted(() => {
 <template>
   <div>
     <header class="w-full flex flex-justify-between flex-items-center">
-      <div class="header-title font-500">{{ $t('dashboard_panel.cardName.weatherStation') }}</div>
+      <div class="header-title font-500">{{ "气象站" }}</div>
       <SvgIcon local-icon="signal" class="more" />
     </header>
     <div class="weather-card flex flex-justify-between flex-items-center">
@@ -207,7 +207,7 @@ onMounted(() => {
       </div>
     </div>
     <div class="line">
-      <div class="m-l3">{{ $t('dashboard_panel.cardName.historyData') }}</div>
+      <div class="m-l3">{{ "历史数据" }}</div>
       <div class="icons flex flex-items-center">
         <SvgIcon local-icon="line-icon1" />
         <SvgIcon local-icon="line-icon2" />

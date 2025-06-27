@@ -42,13 +42,13 @@ const props = defineProps({
 const deviceTemplateId = ref<string>(props.deviceTemplateId);
 const tabsCurrent: any = ref('telemetry');
 const addAndEditModalVisible = ref<boolean>(false);
-const addAndEditTitle = ref<string>($t('device_template.addAndEditTelemetry'));
+const addAndEditTitle = ref<string>("新增/编辑遥测");
 
 const comList: { id: string; components: any; title: string }[] = [
-  { id: 'telemetry', components: AddEditTest, title: $t('device_template.addAndEditTelemetry') },
-  { id: 'attributes', components: AddEditAttributes, title: $t('device_template.addAndEditAttributes') },
-  { id: 'events', components: AddEditEvents, title: $t('device_template.addAndEditEvents') },
-  { id: 'command', components: AddEditCommands, title: $t('device_template.addAndEditCommand') }
+  { id: 'telemetry', components: AddEditTest, title: "新增/编辑遥测" },
+  { id: 'attributes', components: AddEditAttributes, title: "新增/编辑属性" },
+  { id: 'events', components: AddEditEvents, title: "新增/编辑事件" },
+  { id: 'command', components: AddEditCommands, title: "新增/编辑命令" }
 ];
 const SwitchCom = computed<any>(() => {
   // eslint-disable-next-line array-callback-return,consistent-return
@@ -97,7 +97,6 @@ const pagination: PaginationProps = reactive({
   onChange: (page: number) => {
     pagination.page = page;
     queryParams.page = page;
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     getTableData();
   },
   onUpdatePageSize: (pageSize: number) => {
@@ -105,7 +104,6 @@ const pagination: PaginationProps = reactive({
     pagination.page = 1;
     queryParams.page = 1;
     queryParams.page_size = pageSize;
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     getTableData();
   }
 });
@@ -119,7 +117,6 @@ const edit: (row: any) => void = row => {
 
 // 新增或者编辑成功后的回调函数
 const determine: () => void = () => {
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   getTableData(tabsCurrent.value);
 };
 
@@ -134,7 +131,6 @@ const del: (id: string) => void = async id => {
   } else {
     await delCommands(id);
   }
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
   getTableData(tabsCurrent.value);
 };
 // 上一步
@@ -158,28 +154,28 @@ const columnsList: any = reactive([
       addAndEditModalVisible.value = true;
     },
     total: 0,
-    data: [{ data_name: $t('common.test') }],
+    data: [{ data_name: "测试" }],
     name: 'telemetry',
-    text: $t('device_template.telemetry'),
+    text: "遥测",
     col: [
       ...test.value,
       {
         key: 'actions',
         width: 350,
-        title: () => $t('common.actions'),
+        title: () => "操作",
         align: 'center',
         render: row => {
           return (
             <NSpace justify={'center'}>
               <NButton quaternary type="primary" size={'small'} onClick={() => edit(row)}>
-                {$t('common.edit')}
+                {"编辑"}
               </NButton>
               <NPopconfirm onPositiveClick={() => del(row.id)}>
                 {{
-                  default: () => $t('common.confirmDelete'),
+                  default: () => "确认删除",
                   trigger: () => (
                     <NButton quaternary type="primary" size={'small'}>
-                      {$t('common.delete')}
+                      {"删除"}
                     </NButton>
                   )
                 }}
@@ -197,26 +193,26 @@ const columnsList: any = reactive([
     total: 0,
     data: [],
     name: 'attributes',
-    text: $t('device_template.attributes'),
+    text: "属性",
     col: [
       ...attribute.value,
       {
         key: 'actions',
         width: 350,
-        title: () => $t('common.actions'),
+        title: () => "操作",
         align: 'center',
         render: row => {
           return (
             <NSpace justify={'center'}>
               <NButton quaternary type="primary" size={'small'} onClick={() => edit(row)}>
-                {$t('common.edit')}
+                {"编辑"}
               </NButton>
               <NPopconfirm onPositiveClick={() => del(row.id)}>
                 {{
-                  default: () => $t('common.confirmDelete'),
+                  default: () => "确认删除",
                   trigger: () => (
                     <NButton quaternary type="primary" size={'small'}>
-                      {$t('common.delete')}
+                      {"删除"}
                     </NButton>
                   )
                 }}
@@ -234,26 +230,26 @@ const columnsList: any = reactive([
     total: 0,
     data: [],
     name: 'events',
-    text: $t('device_template.events'),
+    text: "事件",
     col: [
       ...events.value,
       {
         key: 'actions',
         width: 350,
-        title: () => $t('common.actions'),
+        title: () => "操作",
         align: 'center',
         render: row => {
           return (
             <NSpace justify={'center'}>
               <NButton quaternary type="primary" size={'small'} onClick={() => edit(row)}>
-                {$t('common.edit')}
+                {"编辑"}
               </NButton>
               <NPopconfirm onPositiveClick={() => del(row.id)}>
                 {{
-                  default: () => $t('common.confirmDelete'),
+                  default: () => "确认删除",
                   trigger: () => (
                     <NButton quaternary type="primary" size={'small'}>
-                      {$t('common.delete')}
+                      {"删除"}
                     </NButton>
                   )
                 }}
@@ -271,28 +267,28 @@ const columnsList: any = reactive([
     total: 0,
     data: [],
     name: 'command',
-    text: $t('device_template.command'),
+    text: "命令",
     col: [
       ...command.value,
       {
         key: 'actions',
         width: 350,
-        title: () => $t('common.actions'),
+        title: () => "操作",
         align: 'center',
         render: row => {
           return (
             <NSpace justify={'center'}>
-              {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
+              
               <NButton quaternary type="primary" size={'small'} onClick={() => edit(row)}>
-                {$t('common.edit')}
+                {"编辑"}
               </NButton>
-              {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
+              
               <NPopconfirm onPositiveClick={() => del(row.id)}>
                 {{
-                  default: () => $t('common.confirmDelete'),
+                  default: () => "确认删除",
                   trigger: () => (
                     <NButton quaternary type="primary" size={'small'}>
-                      {$t('common.delete')}
+                      {"删除"}
                     </NButton>
                   )
                 }}
@@ -310,9 +306,9 @@ const updateAttributesData = (data: any) => {
   columnsList[1].total = Math.ceil(data?.total / 5);
   columnsList[1].data?.forEach((item: any) => {
     if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读') {
-      item.read_write_flag = $t('device_template.table_header.readOnly');
+      item.read_write_flag = "只读";
     } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写') {
-      item.read_write_flag = $t('device_template.table_header.readAndWrite');
+      item.read_write_flag = "读写";
     }
   });
 };
@@ -337,9 +333,9 @@ const updateTelemetryData = (data: any) => {
   columnsList[0].total = Math.ceil(data?.total / 5);
   columnsList[0].data.forEach((item: any) => {
     if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读') {
-      item.read_write_flag = $t('device_template.table_header.readOnly');
+      item.read_write_flag = "只读";
     } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写') {
-      item.read_write_flag = $t('device_template.table_header.readAndWrite');
+      item.read_write_flag = "读写";
     }
   });
 };
@@ -403,7 +399,7 @@ getTableData();
           <template #icon>
             <SvgIcon local-icon="add" class="more" />
           </template>
-          {{ $t('device_template.add') }}
+          {{ "新增" }}
         </NButton>
         <n-data-table :columns="item.col" :data="item.data" :loading="loading" class="m-t9 flex-1-hidden" />
 
@@ -425,9 +421,9 @@ getTableData();
     </n-tabs>
   </div>
   <div class="box1 m-t2">
-    <NButton type="primary" @click="next">{{ $t('device_template.nextStep') }}</NButton>
-    <NButton class="m-r3" ghost type="primary" @click="back">{{ $t('device_template.back') }}</NButton>
-    <NButton class="m-r3" @click="cancellation">{{ $t('generate.cancel') }}</NButton>
+    <NButton type="primary" @click="next">{{ "下一步" }}</NButton>
+    <NButton class="m-r3" ghost type="primary" @click="back">{{ "上一步" }}</NButton>
+    <NButton class="m-r3" @click="cancellation">{{ "取消" }}</NButton>
   </div>
   <NModal
     v-model:show="addAndEditModalVisible"

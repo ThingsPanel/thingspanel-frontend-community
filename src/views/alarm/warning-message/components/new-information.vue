@@ -101,25 +101,25 @@ async function list() {
       tableData.value = data.list;
       const operatorBtn: { btnName: string; type: string; color: string }[] = [
         {
-          btnName: $t('common.edit'),
+          btnName: "编辑",
           type: 'edit',
           color: 'info'
         },
         {
-          btnName: $t('page.manage.common.status.disable'),
+          btnName: "禁用",
           type: 'enable',
           color: 'warning'
         },
         {
-          btnName: $t('common.delete'),
+          btnName: "删除",
           type: 'delete',
           color: 'error'
         }
       ];
       const operatorBtns: { btnName: string; type: string; color: string }[] = [
-        { btnName: $t('common.edit'), type: 'edit', color: 'info' },
-        { btnName: $t('page.manage.common.status.enable'), type: 'enable', color: 'success' },
-        { btnName: $t('common.delete'), type: 'delete', color: 'error' }
+        { btnName: "编辑", type: 'edit', color: 'info' },
+        { btnName: "启用", type: 'enable', color: 'success' },
+        { btnName: "删除", type: 'delete', color: 'error' }
       ];
       // eslint-disable-next-line array-callback-return
       tableData.value.map(item => {
@@ -147,7 +147,7 @@ getTableData();
 const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   {
     key: 'name',
-    title: $t('generate.alarm-name'),
+    title: "告警名称",
     align: 'left',
     minWidth: '140px',
     ellipsis: {
@@ -156,7 +156,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   },
   {
     key: 'description',
-    title: $t('generate.alarm-description'),
+    title: "告警描述",
     align: 'left',
     minWidth: '180px',
     ellipsis: {
@@ -165,22 +165,22 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   },
   {
     key: 'alarm_level',
-    title: $t('common.alarm_level'),
+    title: "告警级别",
     align: 'left',
     minWidth: '100px',
     render(row) {
       if (row.alarm_level === 'H') {
-        return $t('common.high');
+        return "高";
       } else if (row.alarm_level === 'M') {
-        return $t('common.middle');
+        return "中";
       }
-      return $t('common.low');
+      return "低";
     }
   },
 
   {
     key: 'notification_group_name',
-    title: $t('generate.notification-group'),
+    title: "通知组",
     align: 'left',
     minWidth: '140px',
     ellipsis: {
@@ -189,21 +189,21 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
   },
   {
     key: 'enabled',
-    title: $t('generate.runstate'),
+    title: "运行状态",
     align: 'left',
     minWidth: '100px',
     render(row) {
       if (row.enabled === 'Y') {
-        return $t('page.manage.common.status.enable');
+        return "启用";
       }
-      return $t('page.manage.common.status.disable');
+      return "禁用";
     }
   },
 
   {
     key: 'actions',
     width: '200px',
-    title: $t('common.actions'),
+    title: "操作",
     align: 'left',
     render: (row: any) => {
       const operatorBtn = row.operatorBtn.map(item => {
@@ -211,7 +211,7 @@ const columns: Ref<DataTableColumns<ColumnsData>> = ref([
           return h(
             <NPopconfirm onPositiveClick={() => handleDeleteTable(row)}>
               {{
-                default: () => $t('common.confirmDelete'),
+                default: () => "确认删除",
                 trigger: () => (
                   <NButton type={item.color} size={'small'}>
                     {item.btnName}
@@ -246,11 +246,11 @@ function handleDeleteTable(rowId) {
 async function editInfos() {
   const { data } = await editInfo(params);
   if (data) {
-    params.enabled === 'Y' ? message.success($t('common.startSuccess')) : message.success($t('common.stopSuccess'));
+    params.enabled === 'Y' ? message.success("启动成功") : message.success("停止成功");
 
     list();
   } else {
-    params.enabled === 'Y' ? message.error($t('common.startFail')) : message.error($t('common.stopFail'));
+    params.enabled === 'Y' ? message.error("启动失败") : message.error("停止失败");
   }
 }
 
@@ -259,9 +259,9 @@ async function editInfos() {
 async function deleteInfo() {
   const { data } = await delInfo(deleteId.value);
   if (!data) {
-    message.success($t('common.deleteSuccess'));
+    message.success("删除成功");
   } else {
-    message.error($t('common.deleteFail'));
+    message.error("删除失败");
   }
   list();
 }
@@ -276,7 +276,7 @@ const getPlatform = computed(() => {
   <div class="p-y-12px">
     <NButton type="primary" @click="addWarningMessageBut">
       <IconIcRoundPlus class="mr-4px text-20px" />
-      {{ $t('generate.addAlarm') }}
+      {{ "新增告警" }}
     </NButton>
   </div>
   <div class="h-full flex-col">

@@ -1,10 +1,9 @@
 import { type DataTableColumns, NButton, NFlex, NPopconfirm } from 'naive-ui';
 import dayjs from 'dayjs';
-import { $t } from '@/locales';
 
 export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (rid: string) => void) => [
   {
-    title: () => $t('custom.groupPage.groupName'),
+    title: () => "组名",
     key: 'name',
     minWidth:'140px',
     ellipsis: {
@@ -14,7 +13,7 @@ export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (r
     }
   },
   {
-    title: () => $t('custom.groupPage.description'),
+    title: () => "描述",
     key: 'description',minWidth:'140px',
     ellipsis: {
       tooltip: {
@@ -23,14 +22,14 @@ export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (r
     }
   },
   {
-    title: () => $t('custom.groupPage.createdAt'),
+    title: () => "创建时间",
     key: 'created_at',minWidth:'180px',
     render(row: { id: string; name: string; description: string; created_at: string; [key: string]: any }) {
       return dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss');
     }
   },
   {
-    title: () => $t('custom.groupPage.actions'),
+    title: () => "操作",
     key: 'actions',width:'200px',
     render: (row: { id: string; name: string; description: string; created_at: string; [key: string]: any }) => {
       return (
@@ -47,7 +46,7 @@ export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (r
                 viewDetails(row.id);
               }}
             >
-              {$t('custom.groupPage.view')}
+              {"查看"}
             </NButton>
             <NPopconfirm
               onPositiveClick={e => {
@@ -56,10 +55,10 @@ export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (r
               }}
             >
               {{
-                default: () => $t('common.confirmDelete'),
+                default: () => "确定删除吗？",
                 trigger: () => (
                   <NButton type="error" size={'small'}>
-                    {$t('common.delete')}
+                    {"删除"}
                   </NButton>
                 )
               }}
@@ -76,17 +75,17 @@ export const createDeviceColumns = (): DataTableColumns<DeviceManagement.DeviceD
     type: 'selection', minWidth:'140px',
   },
   {
-    title: () => $t('custom.devicePage.deviceName'),
+    title: () => "设备名称",
     key: 'name', minWidth:'140px',
     render: row => row.name || '-'
   },
   {
-    title: () => $t('custom.devicePage.deviceNumber'),
+    title: () => "设备编号",
     key: 'device_number', minWidth:'140px',
     render: row => row.device_number || '-'
   },
   {
-    title: () => $t('custom.devicePage.deviceConfig'), minWidth:'140px',
+    title: () => "设备配置", minWidth:'140px',
     key: 'device_config_name'
   }
 ];
@@ -97,21 +96,21 @@ export const createNoSelectDeviceColumns = (
 ): DataTableColumns<DeviceManagement.DeviceData> => {
   return [
     {
-      title: () => $t('custom.devicePage.deviceName'),
+      title: () => "设备名称",
       key: 'name', minWidth:'140px',
       render: row => row.name || '-'
     },
     {
-      title: () => $t('custom.devicePage.deviceNumber'),
+      title: () => "设备编号",
       key: 'device_number', minWidth:'140px',
       render: row => row.device_number || '-'
     },
     {
-      title: () => $t('custom.devicePage.deviceConfig'), minWidth:'140px',
+      title: () => "设备配置", minWidth:'140px',
       key: 'device_config_name'
     },
     {
-      title: () => $t('custom.groupPage.actions'),
+      title: () => "操作",
       key: 'actions', minWidth:'140px',
       render: row => {
         return (
@@ -123,7 +122,7 @@ export const createNoSelectDeviceColumns = (
                 viewDevicsseDetails(row.id);
               }}
             >
-              {$t('custom.groupPage.view')}
+              {"查看"}
             </NButton>
             <NPopconfirm
               onPositiveClick={() => {
@@ -131,10 +130,10 @@ export const createNoSelectDeviceColumns = (
               }}
             >
               {{
-                default: () => $t('common.confirmDelete'),
+                default: () => "确定删除吗？",
                 trigger: () => (
                   <NButton type="error" size={'small'}>
-                    {$t('custom.groupPage.removeFromGroup')}
+                    {"从组中移除"}
                   </NButton>
                 )
               }}

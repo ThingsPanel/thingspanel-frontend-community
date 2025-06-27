@@ -41,7 +41,7 @@ const handlePageSizeChange = (pageSize: number) => {
 // 动态生成表格列
 const columns = ref<any[]>([
   {
-    title: $t('common.time'),
+    title: "时间",
     key: 'time',
     render(row) {
       return moment(row.time).format('YYYY-MM-DD HH:mm:ss')
@@ -113,7 +113,7 @@ watch(
   () => {
     columns.value = [
       {
-        title: $t('common.time'),
+        title: "时间",
         key: 'time',
         render(row) {
           return moment(row.time).format('YYYY-MM-DD HH:mm:ss')

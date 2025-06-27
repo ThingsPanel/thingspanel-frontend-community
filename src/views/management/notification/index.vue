@@ -10,13 +10,13 @@ import { $t } from '~/src/locales'
     <NCard :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="h-full flex-col">
         <NTabs type="line" animated>
-          <NTabPane name="1" :tab="$t('page.manage.notification.email.title')">
+          <NTabPane name="1" :tab="邮箱">
             <Email></Email>
           </NTabPane>
-          <NTabPane name="2" :tab="$t('page.manage.notification.shortMessage.title')">
+          <NTabPane name="2" :tab="短信">
             <ShortMessage></ShortMessage>
           </NTabPane>
-          <NTabPane name="3" :tab="$t('page.manage.notification.pushNotification.title')">
+          <NTabPane name="3" :tab="推送信息">
             <PushNotification></PushNotification>
           </NTabPane>
         </NTabs>

@@ -179,7 +179,7 @@ const generatedColumns = computed(() => {
     });
     // 添加操作列
     // columns.push({
-    //   title: $t('custom.groupPage.actions'),
+    //   title: "操作",
     //   key: 'actions',
     //   width: 180,
     //   render: row => (
@@ -190,7 +190,7 @@ const generatedColumns = computed(() => {
     //     >
     //       <NSpace>
     //         {tableActions.map(action => {
-    //           if (action.theKey === $t('custom.devicePage.delete') || action.theKey === '删除') {
+    //           if (action.theKey === "删除" || action.theKey === '删除') {
     //             return (
     //               <NPopconfirm
     //                 onPositiveClick={async e => {
@@ -206,7 +206,7 @@ const generatedColumns = computed(() => {
     //                       {typeof action.label === 'function' ? action.label() : action.label || ''}
     //                     </NButton>
     //                   ),
-    //                   default: () => $t('common.confirmDelete')
+    //                   default: () => "确认删除"
     //                 }}
     //               </NPopconfirm>
     //             );
@@ -474,7 +474,7 @@ const handleWarningClick = (item: DeviceItem) => {
             <NInput
               v-model:value="searchCriteria[config.key]"
               :size="formSize"
-              :placeholder="$t(config.label)"
+              :placeholder="标签"
               class="input-style"
               @update:value="handleInputChange"
             />
@@ -484,7 +484,7 @@ const handleWarningClick = (item: DeviceItem) => {
               v-model:value="searchCriteria[config.key]"
               :size="formSize"
               type="daterange"
-              :placeholder="$t(config.label)"
+              :placeholder="标签"
               class="input-style"
             />
           </template>
@@ -499,7 +499,7 @@ const handleWarningClick = (item: DeviceItem) => {
               :options="config.options"
               :render-label="config.renderLabel"
               :render-tag="config.renderTag"
-              :placeholder="$t(config.label)"
+              :placeholder="标签"
               class="input-style"
               @update:value="currentPage = 1"
             />
@@ -509,7 +509,7 @@ const handleWarningClick = (item: DeviceItem) => {
               v-model:value="searchCriteria[config.key]"
               :size="formSize"
               type="date"
-              :placeholder="$t(config.label)"
+              :placeholder="标签"
               class="input-style"
             />
           </template>
@@ -528,10 +528,10 @@ const handleWarningClick = (item: DeviceItem) => {
         <n-gi>
           <n-space>
             <n-button type="primary" :size="formSize" @click="handleSearch">
-              {{ $t('generate.query') }}
+              {{ "查询" }}
             </n-button>
             <n-button type="default" :size="formSize" @click="handleReset">
-              {{ $t('generate.reset') }}
+              {{ "重置" }}
             </n-button>
           </n-space>
         </n-gi>

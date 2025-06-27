@@ -1,0 +1,409 @@
+{
+  "summary": {
+    "processedFiles": 34,
+    "totalReplacements": 59,
+    "typeStats": {
+      "complex-dynamic": 40,
+      "static-with-params": 8,
+      "dynamic-array": 8,
+      "template-string": 3
+    }
+  },
+  "processedCalls": [
+    {
+      "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+      "original": "$t(item.titleKey)",
+      "replacement": "\"标题\"",
+      "type": "complex-dynamic",
+      "expression": "item.titleKey"
+    },
+    {
+      "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+      "original": "$t(item.titleKey)",
+      "replacement": "\"标题\"",
+      "type": "complex-dynamic",
+      "expression": "item.titleKey"
+    },
+    {
+      "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+      "original": "$t(item.descriptionKey)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "item.descriptionKey"
+    },
+    {
+      "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+      "original": "$t(item.descriptionKey)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "item.descriptionKey"
+    },
+    {
+      "file": "src\\cards2.0\\chart-card\\demo1\\index.vue",
+      "original": "$t('card.systemData', { count: cardData?.config.source.systemCount || 0 })",
+      "replacement": "\"系统数据\"",
+      "type": "static-with-params"
+    },
+    {
+      "file": "src\\cards2.0\\chart-card\\demo1\\index.vue",
+      "original": "$t('card.deviceData', { count: cardData?.config.source.deviceCount || 0 })",
+      "replacement": "\"设备数据\"",
+      "type": "static-with-params"
+    },
+    {
+      "file": "src\\cards2.0\\plugins-card\\demo1\\index.vue",
+      "original": "$t('card.networkImageText', { size: cardData?.config?.cardUI?.textsize || 12 })",
+      "replacement": "\"网络图片文本\"",
+      "type": "static-with-params"
+    },
+    {
+      "file": "src\\cards2.0\\store\\kan-ban-store.ts",
+      "original": "$t('card.dupCardId', { id: card.cardItemBase.id })",
+      "replacement": "\"重复的卡片ID: {id}\"",
+      "type": "static-with-params"
+    },
+    {
+      "file": "src\\components\\data-table-page\\index.vue",
+      "original": "$t(config.label)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "config.label"
+    },
+    {
+      "file": "src\\components\\data-table-page\\index.vue",
+      "original": "$t(config.label)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "config.label"
+    },
+    {
+      "file": "src\\components\\data-table-page\\index.vue",
+      "original": "$t(config.label)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "config.label"
+    },
+    {
+      "file": "src\\components\\data-table-page\\index.vue",
+      "original": "$t(config.label)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "config.label"
+    },
+    {
+      "file": "src\\components\\list-page\\index.vue",
+      "original": "$t(view.label)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "view.label"
+    },
+    {
+      "file": "src\\components\\list-page\\index.vue",
+      "original": "$t(props.addButtonI18nKey)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "props.addButtonI18nKey"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\add-card.vue",
+      "original": "$t(item.data.title)",
+      "replacement": "\"标题\"",
+      "type": "complex-dynamic",
+      "expression": "item.data.title"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\add-card.vue",
+      "original": "$t(item.title)",
+      "replacement": "\"标题\"",
+      "type": "complex-dynamic",
+      "expression": "item.title"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-selector.vue",
+      "original": "$t(item.data.title)",
+      "replacement": "\"标题\"",
+      "type": "complex-dynamic",
+      "expression": "item.data.title"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-selector.vue",
+      "original": "$t(item.title)",
+      "replacement": "\"标题\"",
+      "type": "complex-dynamic",
+      "expression": "item.title"
+    },
+    {
+      "file": "src\\hooks\\business\\use-sms-code.ts",
+      "original": "$t('page.login.common.countingLabel', { second })",
+      "replacement": "\"{second}秒后重新获取\"",
+      "type": "static-with-params"
+    },
+    {
+      "file": "src\\layouts\\modules\\global-menu\\base-menu.vue",
+      "original": "$t(op.remark)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "op.remark"
+    },
+    {
+      "file": "src\\layouts\\modules\\theme-drawer\\components\\layout-mode-card.vue",
+      "original": "$t(themeLayoutModeRecord[key])",
+      "replacement": "\"动态文本\"",
+      "type": "dynamic-array"
+    },
+    {
+      "file": "src\\router\\guard\\title.ts",
+      "original": "$t(i18nKey)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "i18nKey"
+    },
+    {
+      "file": "src\\store\\modules\\app\\index.ts",
+      "original": "$t(i18nKey)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "i18nKey"
+    },
+    {
+      "file": "src\\store\\modules\\auth\\index.ts",
+      "original": "$t('page.login.common.welcomeBack', {\r\n              userName: info?.name\r\n            })",
+      "replacement": "\"欢迎回来！\"",
+      "type": "static-with-params"
+    },
+    {
+      "file": "src\\store\\modules\\panel\\index.ts",
+      "original": "$t('card.dupCardId', { id: card.cardItemBase.id })",
+      "replacement": "\"重复的卡片ID: {id}\"",
+      "type": "static-with-params"
+    },
+    {
+      "file": "src\\store\\modules\\route\\shared.ts",
+      "original": "$t(i18nKey)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "i18nKey"
+    },
+    {
+      "file": "src\\store\\modules\\route\\shared.ts",
+      "original": "$t(i18nKey)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "i18nKey"
+    },
+    {
+      "file": "src\\store\\modules\\tab\\shared.ts",
+      "original": "$t(`route.${homeRouteName}`)",
+      "replacement": "\"路由标题\"",
+      "type": "template-string"
+    },
+    {
+      "file": "src\\store\\modules\\tab\\shared.ts",
+      "original": "$t(i18nKey)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "i18nKey"
+    },
+    {
+      "file": "src\\store\\modules\\tab\\shared.ts",
+      "original": "$t(i18nKey)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "i18nKey"
+    },
+    {
+      "file": "src\\utils\\common4.ts",
+      "original": "$t(option.label as App.I18n.I18nKey)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "option.label as App.I18n.I18nKey"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "original": "$t(modalTitle)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "modalTitle"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "original": "$t(dtype.labelKey)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "dtype.labelKey"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "original": "$t(dtype.helpKey)",
+      "replacement": "\"类型\"",
+      "type": "complex-dynamic",
+      "expression": "dtype.helpKey"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\card-select\\ui\\add-template-card.vue",
+      "original": "$t(item.title)",
+      "replacement": "\"标题\"",
+      "type": "complex-dynamic",
+      "expression": "item.title"
+    },
+    {
+      "file": "src\\views\\home\\modules\\header-banner.vue",
+      "original": "$t('page.home.greeting', { userName: authStore.userInfo.userName })",
+      "replacement": "\"欢迎回来，{userName}！\"",
+      "type": "static-with-params"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\index.vue",
+      "original": "$t(menuTypeRecord[row.menuType])",
+      "replacement": "\"动态文本\"",
+      "type": "dynamic-array"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\index.vue",
+      "original": "$t(enableStatusRecord[row.status])",
+      "replacement": "\"动态文本\"",
+      "type": "dynamic-array"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\index.vue",
+      "original": "$t(yesOrNoRecord[hide])",
+      "replacement": "\"动态文本\"",
+      "type": "dynamic-array"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\index.vue",
+      "original": "$t(i18nKey)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "i18nKey"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+      "original": "$t(item.label as any)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "item.label as any"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+      "original": "$t(item.label as any)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "item.label as any"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+      "original": "$t(item.label as any)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "item.label as any"
+    },
+    {
+      "file": "src\\views\\manage\\role\\index.vue",
+      "original": "$t(enableStatusRecord[row.status])",
+      "replacement": "\"动态文本\"",
+      "type": "dynamic-array"
+    },
+    {
+      "file": "src\\views\\manage\\role\\modules\\role-operate-drawer.vue",
+      "original": "$t(item.label as any)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "item.label as any"
+    },
+    {
+      "file": "src\\views\\manage\\user\\index.vue",
+      "original": "$t(userGenderRecord[row.userGender])",
+      "replacement": "\"动态文本\"",
+      "type": "dynamic-array"
+    },
+    {
+      "file": "src\\views\\manage\\user\\index.vue",
+      "original": "$t(enableStatusRecord[row.status])",
+      "replacement": "\"动态文本\"",
+      "type": "dynamic-array"
+    },
+    {
+      "file": "src\\views\\manage\\user\\modules\\user-operate-drawer.vue",
+      "original": "$t(item.label as any)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "item.label as any"
+    },
+    {
+      "file": "src\\views\\manage\\user\\modules\\user-operate-drawer.vue",
+      "original": "$t(item.label as any)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "item.label as any"
+    },
+    {
+      "file": "src\\views\\management\\auth\\index.vue",
+      "original": "$t(row.multilingual)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "row.multilingual"
+    },
+    {
+      "file": "src\\views\\management\\setting\\components\\data-clear-setting.vue",
+      "original": "$t(key)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "key"
+    },
+    {
+      "file": "src\\views\\management\\user\\components\\table-action-modal.vue",
+      "original": "$t(key)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "key"
+    },
+    {
+      "file": "src\\views\\management\\user\\index.vue",
+      "original": "$t(key)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "key"
+    },
+    {
+      "file": "src\\views\\management\\user\\index.vue",
+      "original": "$t(key)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "key"
+    },
+    {
+      "file": "src\\views\\personal-center\\index.vue",
+      "original": "$t(`generate.${userInfoData.authority}`)",
+      "replacement": "\"生成文本\"",
+      "type": "template-string"
+    },
+    {
+      "file": "src\\views\\personal-center\\index.vue",
+      "original": "$t(`generate.${userInfoData.authority}`)",
+      "replacement": "\"生成文本\"",
+      "type": "template-string"
+    },
+    {
+      "file": "src\\views\\_builtin\\login\\index.vue",
+      "original": "$t(activeModule.label as any)",
+      "replacement": "\"标签\"",
+      "type": "complex-dynamic",
+      "expression": "activeModule.label as any"
+    },
+    {
+      "file": "src\\views\\_builtin\\login\\modules\\pwd-login.vue",
+      "original": "$t(loginModuleRecord['code-login'])",
+      "replacement": "\"动态文本\"",
+      "type": "dynamic-array"
+    },
+    {
+      "file": "src\\views\\_builtin\\login\\modules\\pwd-login.vue",
+      "original": "$t(loginModuleRecord.register)",
+      "replacement": "\"文本\"",
+      "type": "complex-dynamic",
+      "expression": "loginModuleRecord.register"
+    }
+  ],
+  "skippedCalls": []
+}

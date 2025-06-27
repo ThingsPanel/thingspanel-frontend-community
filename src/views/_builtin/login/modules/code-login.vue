@@ -48,18 +48,18 @@ function handleSmsCode() {
 
 async function handleSubmit() {
   await validate()
-  window.$message?.success($t('page.login.common.validateSuccess'))
+  window.$message?.success("验证成功")
 }
 </script>
 
 <template>
   <NForm ref="formRef" :key="locale" :model="model" :rules="rules" size="large" :show-label="false">
     <NFormItem path="phone">
-      <NInput v-model:value="model.phone" :placeholder="$t('page.login.common.phonePlaceholder')" />
+      <NInput v-model:value="model.phone" :placeholder="请输入手机号" />
     </NFormItem>
     <NFormItem path="code">
       <div class="w-full flex-y-center">
-        <NInput v-model:value="model.code" :placeholder="$t('page.login.common.codePlaceholder')" />
+        <NInput v-model:value="model.code" :placeholder="请输入验证码" />
         <div class="w-18px"></div>
         <NButton size="large" :disabled="isCounting" :loading="smsLoading" @click="handleSmsCode">
           {{ label }}
@@ -67,17 +67,17 @@ async function handleSubmit() {
       </div>
     </NFormItem>
     <NFormItem path="imgCode">
-      <NInput v-model:value="model.imgCode" :placeholder="$t('page.login.codeLogin.imageCodePlaceholder')" />
+      <NInput v-model:value="model.imgCode" :placeholder="请输入图形验证码" />
       <div class="pl-8px">
         <ImageVerify v-model:code="imgCode" />
       </div>
     </NFormItem>
     <NSpace vertical :size="18" class="w-full">
       <NButton type="primary" size="large" round block :loading="auth.loginLoading" @click="handleSubmit">
-        {{ $t('common.confirm') }}
+        {{ "确认" }}
       </NButton>
       <NButton size="large" round block @click="toggleLoginModule('pwd-login')">
-        {{ $t('page.login.common.back') }}
+        {{ "返回" }}
       </NButton>
     </NSpace>
   </NForm>

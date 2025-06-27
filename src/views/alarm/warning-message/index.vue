@@ -14,12 +14,12 @@ import NewInformation from './components/new-information.vue'
 
 <template>
   <div class="table-box">
-    <NCard :title="$t('generate.alarm-center')">
+    <NCard :title="告警中心">
       <n-tabs type="line" size="large">
-        <n-tab-pane :name="$t('generate.alarmInfo')" :tag="$t('generate.alarmInfo')">
+        <n-tab-pane :name="告警信息" :tag="告警信息">
           <AlarmConfiguration />
         </n-tab-pane>
-        <n-tab-pane :name="$t('generate.alarmConfig')" :tag="$t('generate.alarmConfig')">
+        <n-tab-pane :name="告警配置" :tag="告警配置">
           <NewInformation />
         </n-tab-pane>
       </n-tabs>

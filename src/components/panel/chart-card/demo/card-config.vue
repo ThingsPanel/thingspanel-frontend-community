@@ -9,7 +9,7 @@ const ctx = inject<IConfigCtx>('config-ctx')!
 
 <template>
   <NForm :model="ctx.config">
-    <NFormItem :label="$t('card.selectIcon')">
+    <NFormItem :label="选择图标">
       <div class="flex space-x-3">
         <div
           v-for="item in icons"
@@ -23,7 +23,7 @@ const ctx = inject<IConfigCtx>('config-ctx')!
         </div>
       </div>
     </NFormItem>
-    <NFormItem :label="$t('generate.color')">
+    <NFormItem :label="颜色">
       <NColorPicker v-model:value="ctx.config.color" :show-alpha="false" />
     </NFormItem>
   </NForm>

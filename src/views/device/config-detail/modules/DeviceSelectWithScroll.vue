@@ -26,7 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
   modelValue: null,
   loading: false,
   hasMore: true,
-  placeholder: () => $t('common.selectPlaceholder') || '请选择',
+  placeholder: () => "请选择" ,
   disabled: false,
   clearable: false
 })
@@ -197,12 +197,12 @@ watch(
             <span class="option-label">{{ option.device_name }}</span>
           </div>
         </div>
-        <NEmpty v-else-if="!props.loading" :description="searchKeyword ? '未找到匹配的设备' : ($t('common.noData') || '暂无数据')" class="empty-placeholder" />
+        <NEmpty v-else-if="!props.loading" :description="searchKeyword ? '未找到匹配的设备' : ("暂无数据" || '暂无数据')" class="empty-placeholder" />
 
         <!-- 加载中提示：放在 NInfiniteScroll 内容的末尾 -->
         <NFlex v-if="props.loading" justify="center" class="loading-indicator">
           <NSpin size="small" />
-          <span class="loading-text">{{ $t('card.loading') }}</span>
+          <span class="loading-text">{{ "加载中..." }}</span>
         </NFlex>
 
         <!-- 没有更多提示 -->
@@ -211,7 +211,7 @@ watch(
           justify="center"
           class="no-more-indicator"
         >
-          {{ $t('common.noMoreData') || '没有更多了' }}
+          {{ "没有更多数据" || '没有更多了' }}
         </NFlex>
       </NInfiniteScroll>
     </div>

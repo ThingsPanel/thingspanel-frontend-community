@@ -21,48 +21,48 @@ function resetTabLabel() {
 <template>
   <NSpace vertical :size="16">
     <NCard
-      :title="$t('page.function.tab.tabOperate.title')"
+      :title="标签页操作"
       :bordered="false"
       size="small"
       segmented
       class="card-wrapper"
     >
-      <NDivider title-placement="left">{{ $t('page.function.tab.tabOperate.addTab') }}</NDivider>
-      <NButton @click="routerPushByKey('about')">{{ $t('page.function.tab.tabOperate.addTabDesc') }}</NButton>
-      <NDivider title-placement="left">{{ $t('page.function.tab.tabOperate.closeTab') }}</NDivider>
+      <NDivider title-placement="left">{{ "添加标签页" }}</NDivider>
+      <NButton @click="routerPushByKey('about')">{{ "跳转到关于页面" }}</NButton>
+      <NDivider title-placement="left">{{ "关闭标签页" }}</NDivider>
       <NSpace>
         <NButton @click="tabStore.removeActiveTab">
-          {{ $t('page.function.tab.tabOperate.closeCurrentTab') }}
+          {{ "关闭当前标签页" }}
         </NButton>
         <NButton @click="tabStore.removeTabByRouteName('about')">
-          {{ $t('page.function.tab.tabOperate.closeAboutTab') }}
+          {{ "关闭"关于"标签页" }}
         </NButton>
       </NSpace>
-      <NDivider title-placement="left">{{ $t('page.function.tab.tabOperate.addMultiTab') }}</NDivider>
+      <NDivider title-placement="left">{{ "添加多标签页" }}</NDivider>
       <NSpace>
         <NButton @click="routerPushByKey('function_multi-tab')">
-          {{ $t('page.function.tab.tabOperate.addMultiTabDesc1') }}
+          {{ "跳转到多标签页页面" }}
         </NButton>
         <NButton @click="routerPushByKey('function_multi-tab', { query: { a: '1' } })">
-          {{ $t('page.function.tab.tabOperate.addMultiTabDesc2') }}
+          {{ "跳转到多标签页页面(带有查询参数)" }}
         </NButton>
       </NSpace>
     </NCard>
     <NCard
-      :title="$t('page.function.tab.tabTitle.title')"
+      :title="标签页标题"
       :bordered="false"
       size="small"
       segmented
       class="card-wrapper"
     >
-      <NDivider title-placement="left">{{ $t('page.function.tab.tabTitle.changeTitle') }}</NDivider>
+      <NDivider title-placement="left">{{ "修改标题" }}</NDivider>
       <NInputGroup class="max-w-240px">
         <NInput v-model:value="tabLabel" />
-        <NButton type="primary" @click="changeTabLabel">{{ $t('page.function.tab.tabTitle.change') }}</NButton>
+        <NButton type="primary" @click="changeTabLabel">{{ "修改" }}</NButton>
       </NInputGroup>
-      <NDivider title-placement="left">{{ $t('page.function.tab.tabTitle.resetTitle') }}</NDivider>
+      <NDivider title-placement="left">{{ "重置标题" }}</NDivider>
       <NButton type="error" ghost class="w-80px" @click="resetTabLabel">
-        {{ $t('page.function.tab.tabTitle.reset') }}
+        {{ "重置" }}
       </NButton>
     </NCard>
   </NSpace>

@@ -88,11 +88,11 @@ const swiperExample: SwiperExample[] = [
 
 <template>
   <div>
-    <NCard :title="$t('generate.swiperPlugin')" :bordered="false" class="rounded-8px shadow-sm">
+    <NCard :title="Swiper插件" :bordered="false" class="rounded-8px shadow-sm">
       <NSpace :vertical="true">
         <GithubLink link="https://github.com/nolimits4web/swiper" />
-        <WebSiteLink :label="$t('generate.vue3-doc-url')" link="https://swiperjs.com/vue" />
-        <WebSiteLink :label="$t('generate.pluginDemoUrl')" link="https://swiperjs.com/demos" />
+        <WebSiteLink :label="vue3版文档地址：" link="https://swiperjs.com/vue" />
+        <WebSiteLink :label="插件demo地址：" link="https://swiperjs.com/demos" />
       </NSpace>
       <NSpace :vertical="true">
         <div v-for="item in swiperExample" :key="item.id">
@@ -100,7 +100,7 @@ const swiperExample: SwiperExample[] = [
           <Swiper v-bind="item.options">
             <SwiperSlide v-for="i in 5" :key="i">
               <div class="h-240px flex-center border-1px border-#999 text-18px font-bold">
-                <span>{{ $t('theme.page.mode.fade-slide') }}</span>
+                <span>{{ "滑动" }}</span>
                 {{ i }}
               </div>
             </SwiperSlide>

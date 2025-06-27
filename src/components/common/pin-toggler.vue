@@ -15,7 +15,7 @@ const icon = computed(() => (props.pin ? 'mdi-pin-off' : 'mdi-pin'))
 
 <template>
   <ButtonIcon
-    :tooltip-content="pin ? $t('icon.pin') : $t('icon.unpin')"
+    :tooltip-content="pin ? "固定" : "取消固定"
     tooltip-placement="bottom-start"
     trigger-parent
   >

@@ -7,37 +7,37 @@ export const test: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
     key: 'data_name',
     minWidth: '100px',
-    title: $t('device_template.table_header.dataName'),
+    title: '数据名称',
     align: 'center'
   },
   {
     key: 'data_identifier',
     minWidth: '100px',
-    title: $t('device_template.table_header.dataIdentifier'),
+    title: '数据标识符',
     align: 'center'
   },
   {
     key: 'read_write_flag',
     minWidth: '100px',
-    title: $t('device_template.table_header.readAndWriteSign'),
+    title: '读写标志',
     align: 'center'
   },
   {
     key: 'data_type',
     minWidth: '100px',
-    title: $t('device_template.table_header.dataType'),
+    title: '数据类型',
     align: 'center'
   },
   {
     key: 'unit',
     minWidth: '100px',
-    title: $t('device_template.table_header.unit'),
+    title: '单位',
     align: 'center'
   },
   {
     key: 'description',
     minWidth: '100px',
-    title: $t('device_template.table_header.description'),
+    title: '描述',
     align: 'center'
   }
 ])
@@ -46,37 +46,37 @@ export const attribute: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
     key: 'data_name',
     minWidth: '100px',
-    title: $t('device_template.table_header.attributeName'),
+    title: '属性名称',
     align: 'center'
   },
   {
     key: 'data_identifier',
     minWidth: '100px',
-    title: $t('device_template.table_header.attributeIdentifier'),
+    title: '属性标识符',
     align: 'center'
   },
   {
     key: 'read_write_flag',
     minWidth: '100px',
-    title: $t('device_template.table_header.readAndWriteSign'),
+    title: '读写标志',
     align: 'center'
   },
   {
     key: 'data_type',
     minWidth: '100px',
-    title: $t('device_template.table_header.dataType'),
+    title: '数据类型',
     align: 'center'
   },
   {
     key: 'unit',
     minWidth: '100px',
-    title: $t('device_template.table_header.unit'),
+    title: '单位',
     align: 'center'
   },
   {
     key: 'description',
     minWidth: '100px',
-    title: $t('device_template.table_header.description'),
+    title: '描述',
     align: 'center'
   }
 ])
@@ -85,25 +85,25 @@ export const events: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
     key: 'data_name',
     minWidth: '100px',
-    title: $t('device_template.table_header.eventName'),
+    title: '事件名称',
     align: 'center'
   },
   {
     key: 'data_identifier',
     minWidth: '100px',
-    title: $t('device_template.table_header.eventIdentifier'),
+    title: '事件标识符',
     align: 'center'
   },
   {
     key: 'params',
     minWidth: '100px',
-    title: $t('device_template.table_header.eventParameters'),
+    title: '事件参数',
     align: 'center'
   },
   {
     key: 'description',
     minWidth: '100px',
-    title: $t('device_template.table_header.description'),
+    title: '描述',
     align: 'center'
   }
 ])
@@ -112,25 +112,25 @@ export const command: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
     key: 'data_name',
     minWidth: '100px',
-    title: $t('device_template.table_header.commandName'),
+    title: '命令名称',
     align: 'center'
   },
   {
     key: 'data_identifier',
     minWidth: '100px',
-    title: $t('device_template.table_header.commandIdentifier'),
+    title: '命令标识符',
     align: 'center'
   },
   {
     key: 'params',
     minWidth: '100px',
-    title: $t('device_template.table_header.commandParameters'),
+    title: '命令参数',
     align: 'center'
   },
   {
     key: 'description',
     minWidth: '100px',
-    title: $t('device_template.table_header.description'),
+    title: '描述',
     align: 'center'
   }
 ])

@@ -46,31 +46,31 @@ const { columns, filteredColumns, data, loading, pagination, getData, searchPara
     },
     {
       key: 'index',
-      title: $t('common.index'),
+      title: "序号",
       render: (_, index): string => getIndex(index),
       width: 64,
       align: 'center'
     },
     {
       key: 'roleName',
-      title: $t('page.manage.role.roleName'),
+      title: "角色名称",
       align: 'center',
       minWidth: '140px'
     },
     {
       key: 'roleCode',
-      title: $t('page.manage.role.roleCode'),
+      title: "角色编码",
       align: 'center',
       minWidth: '140px'
     },
     {
       key: 'roleDesc',
-      title: $t('page.manage.role.roleDesc'),
+      title: "角色描述",
       minWidth: '140px'
     },
     {
       key: 'status',
-      title: $t('page.manage.role.roleStatus'),
+      title: "角色状态",
       align: 'center',
       minWidth: '140px',
       render: row => {
@@ -83,27 +83,27 @@ const { columns, filteredColumns, data, loading, pagination, getData, searchPara
           2: 'warning'
         };
 
-        const label = $t(enableStatusRecord[row.status]);
+        const label = "动态文本";
 
         return <NTag type={tagMap[row.status]}>{label}</NTag>;
       }
     },
     {
       key: 'operate',
-      title: $t('common.actions'),
+      title: "操作",
       align: 'center',
       minWidth: '180px',
       render: row => (
         <div class="flex-center gap-8px">
           <NButton type="primary" ghost size="small" onClick={() => handleEdit(row.id)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm onPositiveClick={() => handleDelete(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" ghost size="small">
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -125,7 +125,7 @@ const checkedRowKeys = ref<string[]>([]);
 
 async function handleBatchDelete() {
   // requestTs
-  // window.$message?.success($t('common.deleteSuccess'));
+  // window.$message?.success("删除成功");
 
   checkedRowKeys.value = [];
 
@@ -143,7 +143,7 @@ function handleEdit(id: number) {
 // eslint-disable-next-line
 async function handleDelete(id: number) {
   // requestTs
-  // window.$message?.success($t('common.deleteSuccess'));
+  // window.$message?.success("删除成功");
 
   getData();
 }
@@ -158,7 +158,7 @@ function getIndex(index: number) {
 <template>
   <div class="flex-vertical-stretch gap-16px overflow-hidden <sm:overflow-auto">
     <RoleSearch v-model:model="searchParams" @reset="resetSearchParams" @search="getData" />
-    <NCard :title="$t('page.manage.role.title')" :bordered="false" size="small" class="sm:flex-1-hidden card-wrapper">
+    <NCard :title="角色列表" :bordered="false" size="small" class="sm:flex-1-hidden card-wrapper">
       <template #header-extra>
         <TableHeaderOperation
           v-model:columns="filteredColumns"

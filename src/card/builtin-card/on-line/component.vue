@@ -13,9 +13,9 @@ const authStore = useAuthStore()
 
 const cardData = ref<any>({
   id: 'amount',
-  title: $t('card.onlineDev'),
+  title: "在线设备数",
   value: 0,
-  unit: $t('card.deviceUnit'),
+  unit: "个",
   colors: ['#865ec0', '#5144b4'],
   icon: 'fa-wifi'
 })

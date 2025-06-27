@@ -8,7 +8,7 @@ defineProps<{
 <template>
   <NCard>
     <div class="h-500px flex-center flex-col">
-      <n-empty :description="$t('common.nodata')"></n-empty>
+      <n-empty :description="暂无数据"></n-empty>
     </div>
   </NCard>
 </template>

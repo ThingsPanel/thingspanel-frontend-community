@@ -8,7 +8,7 @@ export default {
   type: 'chart',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('card.curve'),
+  title: '曲线',
   configForm: defineAsyncComponent(() => import('./card-config.vue')),
   preset: {
     dataSource: {

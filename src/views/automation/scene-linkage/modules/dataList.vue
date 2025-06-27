@@ -99,15 +99,15 @@ const bodyStyle = ref({
 })
 const execution_result_options = ref([
   {
-    label: $t('custom.device_details.whole'),
+    label: "全部",
     value: ''
   },
   {
-    label: $t('generate.execution-successful'),
+    label: "执行成功",
     value: 'S'
   },
   {
-    label: $t('generate.execution-failed'),
+    label: "执行失败",
     value: 'F'
   }
 ])
@@ -146,10 +146,10 @@ const openLog = (item: any) => {
 // 删除场景
 const deleteLink = async (item: any) => {
   dialog.warning({
-    title: $t('common.deletePrompt'),
-    content: $t('common.sceneLinkageInfo'),
-    positiveText: $t('device_template.confirm'),
-    negativeText: $t('common.cancel'),
+    title: "删除提示",
+    content: "场景联动信息",
+    positiveText: "确定",
+    negativeText: "取消",
     onPositiveClick: async () => {
       const res = await sceneAutomationsDel(item.id)
       if (!res.error) {
@@ -181,22 +181,22 @@ getData()
 <template>
   <NCard class="w-full">
     <NFlex v-if="!isAlarm" justify="space-between" class="mb-4">
-      <NButton type="primary" @click="linkAdd()">{{ $t('generate.+add-scene-linkage') }}</NButton>
+      <NButton type="primary" @click="linkAdd()">{{ "+新增场景联动" }}</NButton>
       <NFlex align="center" justify="flex-end" :wrap="false">
         <NInput
           v-model:value="queryData.name"
-          :placeholder="$t('generate.enter-scene-linkage-name')"
+          :placeholder="请输入场景联动名称"
           class="search-input"
           type="text"
           clearable
         ></NInput>
-        <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+        <NButton class="w-72px" type="primary" @click="handleQuery">{{ "搜索" }}</NButton>
       </NFlex>
     </NFlex>
     <n-empty
       v-if="sceneLinkageList.length === 0"
       size="huge"
-      :description="$t('common.nodata')"
+      :description="暂无数据"
       class="min-h-60 justify-center"
     ></n-empty>
     <NGrid v-else x-gap="20px" y-gap="20px" cols="1 s:2 m:3 l:4" responsive="screen">
@@ -229,7 +229,7 @@ getData()
                   </template>
                 </NButton>
               </template>
-              {{ $t('common.edit') }}
+              {{ "编辑" }}
             </NTooltip>
             <NTooltip trigger="hover">
               <template #trigger>
@@ -241,7 +241,7 @@ getData()
                   </template>
                 </NButton>
               </template>
-              {{ $t('page.irrigation.time.log.name') }}
+              {{ "日志" }}
             </NTooltip>
             <NTooltip trigger="hover">
               <template #trigger>
@@ -253,7 +253,7 @@ getData()
                   </template>
                 </NButton>
               </template>
-              {{ $t('common.delete') }}
+              {{ "删除" }}
             </NTooltip>
           </NFlex>
         </NCard>
@@ -272,7 +272,7 @@ getData()
     v-model:show="showLog"
     :style="bodyStyle"
     preset="card"
-    :title="$t('page.irrigation.time.log.name')"
+    :title="日志"
     size="huge"
     :bordered="false"
     :class="getPlatform ? 'max-w-90%' : 'w-600px'"
@@ -284,25 +284,25 @@ getData()
         v-model:value="logQuery.execution_result"
         :options="execution_result_options"
         class="max-w-40"
-        :placeholder="$t('generate.select-execution-status')"
+        :placeholder="请选择执行状态"
         @update:value="queryLog"
       ></n-select>
-      <NButton type="primary" @click="queryLog()">{{ $t('common.search') }}</NButton>
+      <NButton type="primary" @click="queryLog()">{{ "搜索" }}</NButton>
     </NFlex>
     <n-empty
       v-if="logDataTotal === 0"
       size="huge"
-      :description="$t('common.nodata')"
+      :description="暂无数据"
       class="min-h-60 justify-center"
     ></n-empty>
     <template v-else>
       <NTable size="small" :bordered="false" :single-line="false" class="mb-6">
         <thead>
           <tr>
-            <th>{{ $t('generate.order-number') }}</th>
-            <th class="min-w-180px">{{ $t('generate.execution-time') }}</th>
-            <th>{{ $t('generate.execution-description') }}</th>
-            <th class="min-w-120px">{{ $t('generate.execution-status') }}</th>
+            <th>{{ "序号" }}</th>
+            <th class="min-w-180px">{{ "执行时间" }}</th>
+            <th>{{ "执行说明" }}</th>
+            <th class="min-w-120px">{{ "执行状态" }}</th>
           </tr>
         </thead>
         <tbody>
@@ -311,8 +311,8 @@ getData()
             <td>{{ moment(sceneItem['executed_at']).format('yyyy-MM-DD HH:mm:ss') }}</td>
             <td>{{ sceneItem['detail'] }}</td>
             <td>
-              <span v-if="sceneItem['execution_result'] === 'S'">{{ $t('generate.execution-successful') }}</span>
-              <span v-if="sceneItem['execution_result'] === 'F'">{{ $t('generate.execution-failed') }}</span>
+              <span v-if="sceneItem['execution_result'] === 'S'">{{ "执行成功" }}</span>
+              <span v-if="sceneItem['execution_result'] === 'F'">{{ "执行失败" }}</span>
             </td>
           </tr>
         </tbody>

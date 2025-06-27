@@ -45,22 +45,22 @@ const fromRules: Rules = {
   data_name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.pleaseEnterADataName')
+    message: "请输入数据名称"
   },
   data_identifier: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.pleaseEnterTheDataIdentifier')
+    message: "请输入数据标识符"
   },
   data_type: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.pleaseEnterTheDataType')
+    message: "请输入数据类型"
   },
   read_write_flag: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('generate.enter-read-write')
+    message: "请输入读写标志"
   }
 }
 
@@ -156,49 +156,49 @@ const updateAdditionalInfo: (newVal) => void = newVal => {
     require-mark-placement="right-hanging"
     class="addFrom"
   >
-    <n-form-item :label="$t('device_template.table_header.dataName')" path="data_name">
+    <n-form-item :label="数据名称" path="data_name">
       <n-input
         v-model:value.trim="addFrom.data_name"
-        :placeholder="$t('device_template.table_header.pleaseEnterADataName')"
+        :placeholder="请输入数据名称"
       />
     </n-form-item>
-    <n-form-item :label="$t('device_template.table_header.dataIdentifier')" path="data_identifier">
+    <n-form-item :label="数据标识符" path="data_identifier">
       <n-input
         v-model:value.trim="addFrom.data_identifier"
-        :placeholder="$t('device_template.table_header.pleaseEnterTheDataIdentifier')"
+        :placeholder="请输入数据标识符"
       />
     </n-form-item>
-    <n-form-item :label="$t('device_template.table_header.dataType')" path="data_type">
+    <n-form-item :label="数据类型" path="data_type">
       <n-select
         v-model:value="addFrom.data_type"
         :options="generalOptions"
-        :placeholder="$t('device_template.table_header.pleaseEnterTheDataType')"
+        :placeholder="请输入数据类型"
       />
     </n-form-item>
     <template v-if="addFrom.data_type === 'Enum'">
       <EnumInfo :additional-info="addFrom.additional_info" @update-additional-info="updateAdditionalInfo" />
     </template>
-    <n-form-item :label="$t('device_template.table_header.readAndWriteSign')" path="read_write_flag">
+    <n-form-item :label="读写标志" path="read_write_flag">
       <n-select
         v-model:value="addFrom.read_write_flag"
         :options="readAndWriteOptions"
-        :placeholder="$t('generate.enterReadWriteFlag')"
+        :placeholder="请输入读写标志"
       />
     </n-form-item>
-    <n-form-item :label="$t('device_template.table_header.unit')">
-      <n-input v-model:value.trim="addFrom.unit" :placeholder="$t('device_template.table_header.pleaseEnterTheUnit')" />
+    <n-form-item :label="单位">
+      <n-input v-model:value.trim="addFrom.unit" :placeholder="请输入单位" />
     </n-form-item>
-    <n-form-item :label="$t('device_template.table_header.description')">
+    <n-form-item :label="描述">
       <n-input
         v-model:value.trim="addFrom.description"
-        :placeholder="$t('device_template.table_header.PleaseEnterADescription')"
+        :placeholder="请输入描述"
         type="textarea"
       />
     </n-form-item>
   </n-form>
   <div class="box1">
-    <n-button class="m-r3" @click="clear">{{ $t('generate.cancel') }}</n-button>
-    <n-button type="primary" @click="submit">{{ $t('device_template.confirm') }}</n-button>
+    <n-button class="m-r3" @click="clear">{{ "取消" }}</n-button>
+    <n-button type="primary" @click="submit">{{ "确定" }}</n-button>
   </div>
 </template>
 

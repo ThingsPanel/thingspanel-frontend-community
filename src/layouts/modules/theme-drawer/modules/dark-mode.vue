@@ -25,7 +25,7 @@ const showSiderInverted = computed(() => !themeStore.darkMode && themeStore.layo
 </script>
 
 <template>
-  <NDivider>{{ $t('theme.themeSchema.title') }}</NDivider>
+  <NDivider>{{ "主题模式" }}</NDivider>
   <div class="flex-vertical-stretch gap-16px">
     <div class="i-flex-center">
       <NTabs
@@ -42,7 +42,7 @@ const showSiderInverted = computed(() => !themeStore.darkMode && themeStore.layo
       </NTabs>
     </div>
     <Transition name="sider-inverted">
-      <SettingItem v-if="showSiderInverted" :label="$t('theme.sider.inverted')">
+      <SettingItem v-if="showSiderInverted" :label="深色侧边栏">
         <NSwitch v-model:value="themeStore.sider.inverted" />
       </SettingItem>
     </Transition>

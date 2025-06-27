@@ -6,7 +6,7 @@ import { $t } from '@/locales'
   <div class="device flex-col flex-justify-center flex-items-center">
     <div class="device-top h-full w-full flex flex-justify-between flex-items-center">
       <div class="left h-full flex-col">
-        <span>{{ $t('dashboard_panel.cardName.userNum') }}</span>
+        <span>{{ "用户总数" }}</span>
         <span>7</span>
       </div>
       <SvgIcon local-icon="user-num" class="device-icon" />
@@ -14,11 +14,11 @@ import { $t } from '@/locales'
     <div class="device-bottom m-t3 w-full flex flex-justify-between flex-content-start flex-items-center">
       <div class="device-bottom-state flex flex-items-center">
         <SvgIcon local-icon="day" class="device_bottom-icon" />
-        <span>{{ $t('dashboard_panel.cardName.userNum') }} 7</span>
+        <span>{{ "用户总数" }} 7</span>
       </div>
       <div class="device-bottom-state flex flex-items-center">
         <SvgIcon local-icon="month" class="device_bottom-icon" />
-        <span>{{ $t('dashboard_panel.cardName.thisMonth') }} 0</span>
+        <span>{{ "本月新增" }} 0</span>
       </div>
     </div>
   </div>

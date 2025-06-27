@@ -87,7 +87,7 @@ const changeWidths = () => {
 const save = () => {
   if (!state?.curCardData?.cardId) {
     message.destroyAll()
-    message.warning($t('common.selectCardFirst'))
+    message.warning("请先选择卡片")
     return
   }
   count.value = 2
@@ -187,7 +187,7 @@ onMounted(() => {
   <NModal
     :show="open"
     preset="dialog"
-    :title="$t('generate.configuration')"
+    :title="配置"
     size="huge"
     :style="{
       width: 'calc(100vw - 180px)',
@@ -246,7 +246,7 @@ onMounted(() => {
             <div v-if="item1.tab === '设备'">
               <NSelect
                 v-model:value="deviceSelectId"
-                :placeholder="$t('generate.select-device')"
+                :placeholder="请选择设备"
                 :options="deviceOptions"
                 value-field="device_id"
                 label-field="device_name"
@@ -275,7 +275,7 @@ onMounted(() => {
                       @click="selectCard(item.data)"
                     >
                       <div class="text-center font-medium leading-8 dark:bg-zinc-900">
-                        {{ $t(item.data.title) }}
+                        {{ "标题" }}
                       </div>
                       <div class="h-148px w-full">
                         <!--
@@ -285,7 +285,7 @@ onMounted(() => {
                               ? '../../../../card/chart-card/curve/poster.png'
                               : '../chart-card/demo/poster.png'
                           "
-                          alt=""
+                          alt="
                           style="width: 100%; height: 100%; object-fit: contain"
 -->
                         <!-- /> -->
@@ -321,10 +321,10 @@ onMounted(() => {
                       @click="selectFinalCard(item)"
                     >
                       <div class="text-center font-medium leading-8 dark:bg-zinc-900">
-                        {{ $t(item.title) }}
+                        {{ "标题" }}
                       </div>
                       <div class="h-148px w-full">
-                        <img :src="item.poster" alt="" style="width: 100%; height: 100%; object-fit: contain" />
+                        <img :src="item.poster" alt=" style="width: 100%; height: 100%; object-fit: contain" />
                       </div>
                     </div>
                   </n-gi>
@@ -334,12 +334,12 @@ onMounted(() => {
           </NTabPane>
         </NTabs>
         <n-float-button v-if="count === 2" position="absolute" :left="4" top="42%" width="20" shape="square">
-          <span class="text-12px text-primary-600">{{ $t('generate.expand-card') }}</span>
+          <span class="text-12px text-primary-600">{{ "移入展开卡片" }}</span>
         </n-float-button>
       </div>
       <div :class="'h-full flex-center justify-center border-r bg-[#f6f9f8] p-2 overflow-hidden ' + widths[1]">
         <div v-if="!state.curCardData?.cardId" class="mt-32">
-          <NEmpty :description="$t('card.selectCard')"></NEmpty>
+          <NEmpty :description="请选择要添加的卡片"></NEmpty>
         </div>
         <div
           v-if="state.curCardData?.cardId"
@@ -358,11 +358,11 @@ onMounted(() => {
             ? 'background-color: #f0f0f0;opacity:0.4;box-shadow: -10px 0 15px rgba(0, 0, 0, 0.3);transition: all 0.3s ease;'
             : ''
         "
-        @mouseenter="
+        请先选择卡片")@mouseenter="
           () => {
             if (!state?.curCardData?.cardId) {
               message.destroyAll()
-              return message.warning($t('common.selectCardFirst'))
+              return message.warning("
             }
             count = 1
             changeWidths()
@@ -377,7 +377,7 @@ onMounted(() => {
           />
         </div>
         <n-float-button v-if="count === 1" position="absolute" :right="0" top="42%" width="20" shape="square">
-          <span class="text-12px text-primary-600">{{ $t('generate.expand-configuration') }}</span>
+          <span class="text-12px text-primary-600">{{ "移入展开配置" }}</span>
         </n-float-button>
       </div>
     </div>
@@ -393,16 +393,16 @@ onMounted(() => {
             }
           "
         >
-          {{ $t('generate.cancel') }}
+          {{ "取消" }}
         </NButton>
-        <NButton class="mr-4" type="primary" @click="save">{{ $t('generate.confirm') }}</NButton>
+        <NButton class="mr-4" type="primary" @click="save">{{ "确认" }}</NButton>
       </div>
     </div>
     <div v-if="count === 1" class="absolute bottom-0 right-0 h-60px flex flex-center">
       <n-icon size="24">
         <InformationCircleSharp class="color-red" />
       </n-icon>
-      <span>{{ $t('generate.configuration-entry') }}</span>
+      <span>{{ "您可以移入右侧配置区进入配置，也可以确认后稍后配置" }}</span>
     </div>
   </NModal>
 </template>

@@ -77,14 +77,14 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
       {
         validator: (_rule, value) => {
           if (value.length < 6) {
-            return Promise.reject(new Error($t('form.pwd.tip')))
+            return Promise.reject(new Error("密码为6-18位字符，需包含字母、数字"))
           }
           if (!/[a-z]/.test(value)) {
-            return Promise.reject(new Error($t('form.pwd.tip')))
+            return Promise.reject(new Error("密码为6-18位字符，需包含字母、数字"))
           }
           return Promise.resolve()
         },
-        message: () => $t('form.pwd.tip'),
+        message: () => "密码为6-18位字符，需包含字母、数字",
         trigger: ['input', 'blur']
       }
     ]
@@ -99,7 +99,7 @@ function handleSmsCode() {
       const { error } = res
       if (!error) {
         start() // 开始计时
-        window.$message?.success($t('page.login.common.codeSent'))
+        window.$message?.success("验证码已发送")
       }
     })
     .catch(error => {
@@ -127,7 +127,7 @@ async function handleSubmit() {
 
     // 只在注册成功时显示消息并处理后续操作
     if (!resp.error) {
-      window.$message?.success($t('page.login.register.registerSuccess'))
+      window.$message?.success("注册成功")
 
       // 如果响应中有 token，直接使用它进行登录
       if (resp.data && resp.data.token) {
@@ -160,7 +160,7 @@ async function handleSubmit() {
       <NAutoComplete
         v-model:value="model.email"
         :options="emailOptions"
-        :placeholder="$t('page.login.register.emailPlaceholder')"
+        :placeholder="请输入邮箱地址"
         clearable
         autocomplete="off"
         @keydown.enter="handleSubmit"
@@ -168,7 +168,7 @@ async function handleSubmit() {
     </NFormItem>
     <NFormItem path="code">
       <div class="w-full flex-y-center">
-        <NInput v-model:value="model.code" :placeholder="$t('page.login.common.codePlaceholder')" autocomplete="off" />
+        <NInput v-model:value="model.code" :placeholder="请输入验证码" autocomplete="off" />
         <div class="w-18px"></div>
         <NButton
           size="large"
@@ -181,7 +181,7 @@ async function handleSubmit() {
       </div>
     </NFormItem>
     <NFormItem path="phone">
-      <NInput v-model:value="model.phone" :placeholder="$t('page.login.common.phonePlaceholder')" autocomplete="off" />
+      <NInput v-model:value="model.phone" :placeholder="请输入手机号" autocomplete="off" />
     </NFormItem>
 
     <NFormItem path="pwd">
@@ -189,7 +189,7 @@ async function handleSubmit() {
         v-model:value="model.pwd"
         type="password"
         show-password-on="click"
-        :placeholder="$t('page.login.common.passwordPlaceholder')"
+        :placeholder="请输入密码"
         autocomplete="new-password"
       />
     </NFormItem>
@@ -204,10 +204,10 @@ async function handleSubmit() {
         :disabled="!canSubmit"
         @click="handleButtonClick"
       >
-        {{ $t('common.confirm') }}
+        {{ "确认" }}
       </NButton>
       <NButton size="large" round block @click="toggleLoginModule('pwd-login')">
-        {{ $t('page.login.common.back') }}
+        {{ "返回" }}
       </NButton>
     </NSpace>
   </NForm>

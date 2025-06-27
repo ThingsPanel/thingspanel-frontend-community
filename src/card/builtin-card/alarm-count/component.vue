@@ -10,9 +10,9 @@ defineOptions({ name: 'AlarmCountCard' })
 
 const cardData = ref<any>({
   id: 'alarm-count',
-  title: $t('card.alarmCount'), // Assuming translation key exists
+  title: "告警统计", // Assuming translation key exists
   value: 0,
-  unit: $t('card.alarmUnit'), // Assuming translation key exists (e.g., '条')
+  unit: "个", // Assuming translation key exists (e.g., '条')
   colors: ['#f97316', '#ef4444'], // Example alarm colors
   icon: 'fa-bell' // Example alarm icon
 })

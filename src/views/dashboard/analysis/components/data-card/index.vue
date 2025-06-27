@@ -16,7 +16,7 @@ interface CardData {
 const cardData: CardData[] = [
   {
     id: 'visit',
-    title: $t('card.visitors'),
+    title: "访问量",
     value: 1000000,
     unit: '',
     colors: ['#ec4786', '#b955a4'],
@@ -24,7 +24,7 @@ const cardData: CardData[] = [
   },
   {
     id: 'amount',
-    title: $t('card.volumeTransaction'),
+    title: "成交额",
     value: 234567.89,
     unit: '$',
     colors: ['#865ec0', '#5144b4'],
@@ -32,7 +32,7 @@ const cardData: CardData[] = [
   },
   {
     id: 'download',
-    title: $t('card.downloads'),
+    title: "下载数",
     value: 666666,
     unit: '',
     colors: ['#56cdf3', '#719de3'],
@@ -40,7 +40,7 @@ const cardData: CardData[] = [
   },
   {
     id: 'trade',
-    title: $t('card.turnover'),
+    title: "成交数",
     value: 999999,
     unit: '',
     colors: ['#fcbc25', '#f68057'],

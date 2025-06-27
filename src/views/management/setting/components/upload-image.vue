@@ -67,7 +67,7 @@ async function beforeUpload(data: { file: UploadFileInfo }) {
     isImg = true
   }
   if (!isImg) {
-    window.$message?.error(`${$t('common.pleaseUploadit')}${props.fileType.join('/')}${$t('common.formatFile')}`)
+    window.$message?.error(`${"请上传"}${props.fileType.join('/')}${"格式文件"}`)
     return false
   }
   return true
@@ -81,7 +81,7 @@ function handleFinish({ file, event }: { file: UploadFileInfo; event?: ProgressE
 }
 
 function handleError({ event }: { event?: ProgressEvent }) {
-  window.$message?.error((event?.target as XMLHttpRequest).response || $t('custom.management.uploadFailed'))
+  window.$message?.error((event?.target as XMLHttpRequest).response || "文件上传失败，请重试")
 }
 
 function handleRemove() {

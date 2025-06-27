@@ -57,8 +57,8 @@ const modalVisible = computed({
 })
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
-    add: $t('device_template.templateInfo'),
-    edit: $t('device_template.editTemplateInfo')
+    add: "模板信息",
+    edit: "修改模板信息"
   }
   return titles[props.type]
 })
@@ -84,20 +84,20 @@ defineOptions({ name: 'TableActionModal' })
     "
   >
     <n-steps :current="stepCurrent" status="process">
-      <n-step :title="$t('device_template.templateInfo')" :description="$t('device_template.addDeviceInfo')" />
+      <n-step :title="模板信息" :description="添加设备的基本信息" />
       <n-step
-        :title="$t('device_template.modelDefinition')"
-        :description="$t('device_template.deviceParameterDescribe')"
+        :title="模型定义"
+        :description="根据系统提供的模型来配置参数以及设备类型"
       />
       <n-step
-        :title="$t('device_template.webChartConfiguration')"
-        :description="$t('device_template.bindTheCorrespondingChart')"
+        :title="Web图表配置"
+        :description="绑定相对应的图表"
       />
       <n-step
-        :title="$t('device_template.appChartConfiguration')"
-        :description="$t('device_template.editAppDetailsPage')"
+        :title="App图表配置"
+        :description="编辑该设备模型的App详情页"
       />
-      <n-step :title="$t('device_template.release')" :description="$t('device_template.releaseAppStore')" />
+      <n-step :title="发布" :description="发布到应用商店" />
     </n-steps>
 
     <component

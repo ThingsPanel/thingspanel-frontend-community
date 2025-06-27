@@ -16,12 +16,12 @@ const props = defineProps<{
 const configFormRules = ref({
   data_identifier: {
     required: true,
-    message: $t('device_template.table_header.commandIdentifier'),
+    message: "命令标识符",
     trigger: 'blur'
   },
   buttom_name: {
     required: true,
-    message: $t('generate.btnname'),
+    message: "按钮名称",
     trigger: 'blur'
   }
 });
@@ -97,53 +97,53 @@ const columns: any = [
   {
     key: 'buttom_name',
     minWidth: '100px',
-    title: $t('generate.btnname')
+    title: "按钮名称"
   },
 
   {
     key: 'data_identifier',
     minWidth: '100px',
-    title: $t('device_template.table_header.commandIdentifier')
+    title: "命令标识符"
   },
   {
     key: 'instruct',
     minWidth: '100px',
-    title: $t('generate.commandConetnt')
+    title: "命令内容"
   },
   {
     key: 'description',
     minWidth: '100px',
-    title: $t('device_template.table_header.commandDescription')
+    title: "命令描述"
   },
   {
     key: 'enable_status',
     minWidth: '100px',
-    title: $t('generate.status'),
+    title: "状态",
     render: row => {
       if (row?.enable_status === 'enable') {
-        return <NTag type="success">{$t('page.manage.common.status.enable')}</NTag>;
+        return <NTag type="success">{"启用"}</NTag>;
       }
-      return <NTag type="warning">{$t('page.manage.common.status.disable')}</NTag>;
+      return <NTag type="warning">{"禁用"}</NTag>;
     }
   },
   {
     key: 'actions',
     minWidth: '100px',
-    title: $t('page.product.list.operate'),
+    title: "操作",
     align: 'center',
     render: row => {
       return (
         <div class="flex gap-20px flex-justify-center">
           <NButton size={'small'} type="primary" onClick={() => handleEditTable(row)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
 
           <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -179,7 +179,7 @@ onMounted(() => {
   <div class="p-t-20px">
     <div class="m-b-20px flex flex-justify-end">
       <NButton class="justify-end" type="primary" @click="openCommandDialog">
-        {{ $t('generate.addCustomCommand') }}
+        {{ "新增自定义命令" }}
       </NButton>
     </div>
     <NDataTable :columns="columns" :data="commandjson.listData" class="flex-1-hidden" />
@@ -193,7 +193,7 @@ onMounted(() => {
     </div>
     <NModal
       v-model:show="commandjson.configForm"
-      :title="$t('generate.customCommand')"
+      :title="自定义命令"
       :class="getPlatform ? 'w-90%' : 'w-500px'"
       @after-enter="setupEditor"
     >
@@ -207,15 +207,15 @@ onMounted(() => {
           label-width="auto"
         >
           <div>
-            <NH3>{{ $t('generate.customCommand') }}</NH3>
+            <NH3>{{ "自定义命令" }}</NH3>
           </div>
-          <NFormItem :label="$t('generate.btnname')" path="buttom_name">
-            <NInput v-model:value="commandjson.formjson.buttom_name" :placeholder="$t('generate.or-enter-here')" />
+          <NFormItem :label="按钮名称" path="buttom_name">
+            <NInput v-model:value="commandjson.formjson.buttom_name" :placeholder="或在此输入" />
           </NFormItem>
-          <NFormItem :label="$t('device_template.table_header.commandIdentifier')" path="data_identifier">
-            <NInput v-model:value="commandjson.formjson.data_identifier" :placeholder="$t('generate.or-enter-here')" />
+          <NFormItem :label="命令标识符" path="data_identifier">
+            <NInput v-model:value="commandjson.formjson.data_identifier" :placeholder="或在此输入" />
           </NFormItem>
-          <NFormItem :label="$t('generate.commandConetnt')" path="instruct">
+          <NFormItem :label="命令内容" path="instruct">
             <Codemirror
               ref="cmRef"
               v-model:value="commandjson.formjson.instruct"
@@ -225,12 +225,12 @@ onMounted(() => {
               border
               @ready="onReady"
             ></Codemirror>
-            <!-- <NInput v-model:value="commandjson.formjson.instruct" :placeholder="$t('generate.or-enter-here')" /> -->
+            <!-- <NInput v-model:value="commandjson.formjson.instruct" :placeholder="或在此输入" /> -->
           </NFormItem>
-          <NFormItem :label="$t('device_template.table_header.commandDescription')" path="description">
+          <NFormItem :label="命令描述" path="description">
             <NInput v-model:value="commandjson.formjson.description" type="textarea" />
           </NFormItem>
-          <NFormItem :label="$t('generate.status')" path="enable_status">
+          <NFormItem :label="状态" path="enable_status">
             <n-switch
               v-model:value="commandjson.formjson.enable_status"
               checked-value="enable"
@@ -239,8 +239,8 @@ onMounted(() => {
           </NFormItem>
 
           <NFlex justify="end">
-            <NButton @click="openCommandDialog">{{ $t('generate.cancel') }}</NButton>
-            <NButton type="primary" @click="onCommandSubmit">{{ $t('custom.groupPage.confirm') }}</NButton>
+            <NButton @click="openCommandDialog">{{ "取消" }}</NButton>
+            <NButton type="primary" @click="onCommandSubmit">{{ "确定" }}</NButton>
           </NFlex>
         </NForm>
       </n-card>

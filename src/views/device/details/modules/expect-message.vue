@@ -12,14 +12,14 @@ const props = defineProps<{
 
 const tableData = ref([]);
 const statusOptions = ref([
-  { label: $t('page.expect.pending'), value: 'pending' },
-  { label: $t('page.expect.send'), value: 'sent' },
-  { label: $t('page.expect.expired'), value: 'expired' }
+  { label: "待发送", value: 'pending' },
+  { label: "已发送", value: 'sent' },
+  { label: "失效", value: 'expired' }
 ]);
 const typeOptions = ref([
-  { label: $t('custom.device_details.telemetry'), value: 'telemetry' },
-  { label: $t('custom.device_details.attributes'), value: 'attribute' },
-  { label: $t('page.expect.command'), value: 'command' }
+  { label: "遥测", value: 'telemetry' },
+  { label: "属性", value: 'attribute' },
+  { label: "命令", value: 'command' }
 ]);
 
 const query = reactive({
@@ -63,7 +63,7 @@ async function getTableData() {
 const handleDeleteTable = async id => {
   const { error } = await expectMessageDelete(id);
   if (!error) {
-    window.$message?.success($t('common.deleteSuccess'));
+    window.$message?.success("删除成功");
     getTableData();
   }
 };
@@ -71,7 +71,7 @@ const columns: Ref<any> = ref([
   {
     key: 'created_at',
     minWidth: '200px',
-    title: () => $t('page.expect.createTime'),
+    title: () => "创建时间",
     render: row => {
       return row.created_at ? moment(row.created_at).format('YYYY-MM-DD hh:mm:ss') : '';
     }
@@ -79,7 +79,7 @@ const columns: Ref<any> = ref([
   {
     key: 'send_type',
     minWidth: '100px',
-    title: () => $t('page.expect.commandType'),
+    title: () => "指令类型",
     render: row => {
       return typeOptions.value.find(v => v.value === row.send_type)?.label;
     }
@@ -87,17 +87,17 @@ const columns: Ref<any> = ref([
   {
     key: 'label',
     minWidth: '100px',
-    title: () => $t('page.expect.label')
+    title: () => "标签"
   },
   {
     key: 'payload',
     minWidth: '200px',
-    title: () => $t('page.expect.commandContent')
+    title: () => "指令内容"
   },
   {
     key: 'expiry_time',
     minWidth: '200px',
-    title: () => $t('page.expect.expireTime'),
+    title: () => "过期时间",
     render: row => {
       return row.expiry_time ? moment(row.expiry_time).format('YYYY-MM-DD hh:mm:ss') : '';
     }
@@ -105,7 +105,7 @@ const columns: Ref<any> = ref([
   {
     key: 'status',
     minWidth: '100px',
-    title: () => $t('page.expect.status'),
+    title: () => "状态",
     render: row => {
       return statusOptions.value.find(v => v.value === row.status)?.label;
     }
@@ -113,32 +113,32 @@ const columns: Ref<any> = ref([
   {
     key: 'message',
     minWidth: '140px',
-    title: () => $t('page.expect.statusInfo')
+    title: () => "状态信息"
   },
   {
     key: 'send_time',
     minWidth: '200px',
-    title: () => $t('page.expect.dealTime'),
+    title: () => "处理时间",
     render: row => {
       return row.send_time ? moment(row.send_time).format('YYYY-MM-DD hh:mm:ss') : '';
     }
   },
   {
-    title: $t('common.actions'),
+    title: "操作",
     key: 'created_at',
     minWidth: '100px',
     render: row => {
       return (
         <NPopconfirm
-          negative-text={$t('common.cancel')}
-          positive-text={$t('common.confirm')}
+          negative-text={"取消"}
+          positive-text={"确认"}
           onPositiveClick={() => handleDeleteTable(row.id)}
         >
           {{
-            default: () => $t('common.confirm'),
+            default: () => "确认",
             trigger: () => (
               <NButton type="error" size={'small'}>
-                {$t('common.delete')}
+                {"删除"}
               </NButton>
             )
           }}
@@ -171,7 +171,7 @@ const handleReset = () => {
           <NSelect
             v-model:value="query.status"
             :options="statusOptions"
-            :placeholder="$t('page.expect.send')"
+            :placeholder="已发送"
             class="input-style w-200px"
             clearable
             @update:value="handleSearch"
@@ -181,7 +181,7 @@ const handleReset = () => {
           <NSelect
             v-model:value="query.type"
             :options="typeOptions"
-            :placeholder="$t('page.expect.selectCommandTypePlease')"
+            :placeholder="请选择指令类型"
             class="input-style w-200px"
             clearable
             @update:value="handleSearch"
@@ -190,13 +190,13 @@ const handleReset = () => {
         <NFormItem>
           <NInput
             v-model:value="query.label"
-            :placeholder="$t('page.expect.inputLabelPlease')"
+            :placeholder="请输入标签"
             class="input-style w-200px"
             @input="handleSearch"
           />
         </NFormItem>
         <NFormItem>
-          <NButton class="ml-20px w-72px" type="primary" @click="handleReset">{{ $t('common.reset') }}</NButton>
+          <NButton class="ml-20px w-72px" type="primary" @click="handleReset">{{ "重置" }}</NButton>
         </NFormItem>
       </NForm>
     </div>

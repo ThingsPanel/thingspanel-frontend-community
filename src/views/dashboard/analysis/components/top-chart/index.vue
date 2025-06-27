@@ -12,16 +12,16 @@ defineOptions({ name: 'DashboardAnalysisTopCard' })
       <NCard :bordered="false" class="rounded-8px shadow-sm">
         <div class="h-360px w-full py-12px">
           <h3 class="text-16px font-bold">Dashboard</h3>
-          <p class="text-#aaa">{{ $t('card.lastMonthOverview') }}</p>
+          <p class="text-#aaa">{{ "上月概览" }}</p>
           <h3 class="pt-32px text-24px font-bold">
             <CountTo prefix="$" :start-value="0" :end-value="7754" />
           </h3>
-          <p class="text-#aaa">{{ $t('generate.earningsOfCurrentMonth') }}</p>
+          <p class="text-#aaa">{{ "本月收入" }}</p>
           <h3 class="pt-32px text-24px font-bold">
             <CountTo :start-value="0" :end-value="1234" />
           </h3>
-          <p class="text-#aaa">{{ $t('generate.salesOfCurrentMonth') }}</p>
-          <NButton class="mt-24px whitespace-pre-wrap" type="primary">{{ $t('generate.summaryOfLastMonth') }}</NButton>
+          <p class="text-#aaa">{{ "本月销售" }}</p>
+          <NButton class="mt-24px whitespace-pre-wrap" type="primary">{{ "上月总结" }}</NButton>
         </div>
       </NCard>
     </NGridItem>

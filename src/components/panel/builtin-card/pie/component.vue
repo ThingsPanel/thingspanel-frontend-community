@@ -82,8 +82,8 @@ const init: () => void = () => {
           borderWidth: 1 // 设置边框宽度
         },
         data: [
-          { value: 10000, name: $t('dashboard_panel.cardName.active') },
-          { value: 5005, name: $t('dashboard_panel.cardName.notActive') }
+          { value: 10000, name: "已激活" },
+          { value: 5005, name: "未激活" }
         ],
         emphasis: {
           itemStyle: {
@@ -130,20 +130,20 @@ onMounted(() => {
 <template>
   <div>
     <div class="header">
-      {{ $t('dashboard_panel.cardName.deviceNumPie') }}
+      {{ "设备总数（饼图）" }}
       <n-number-animation ref="numberAnimationInstRef" :to="deviceNum" />
     </div>
     <div class="content-data">
       <div>
-        <span>{{ $t('dashboard_panel.cardName.active') }}</span>
+        <span>{{ "已激活" }}</span>
         <n-number-animation ref="numberAnimationInstRef" :to="activeNum" />
       </div>
       <div>
-        <span>{{ $t('dashboard_panel.cardName.notActive') }}</span>
+        <span>{{ "未激活" }}</span>
         <n-number-animation ref="numberAnimationInstRef" :to="notActiveNum" />
       </div>
       <div>
-        <span>{{ $t('dashboard_panel.cardName.activationRate') }}</span>
+        <span>{{ "激活率" }}</span>
         <span>{{ activeRateNum }}%</span>
       </div>
     </div>

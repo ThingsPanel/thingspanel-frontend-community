@@ -90,7 +90,7 @@ const changeIndicate = value => {
   // eslint-disable-next-line no-param-reassign
   value = value.filter(item => item !== undefined)
   if (value.length > state.data.dataSource.sourceNum) {
-    window.NMessage.error($t('common.maxSelect') + state.data.dataSource.sourceNum + $t('common.dataSources'))
+    window.NMessage.error("最多选择" + state.data.dataSource.sourceNum + "数据源")
   }
   if (state.data.dataSource.sourceNum === 1) {
     indicateValue.value = [value[value.length - 1]]

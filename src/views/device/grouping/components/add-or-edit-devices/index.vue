@@ -56,12 +56,12 @@ const rules: FormRules = {
   parent_id: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('custom.groupPage.selectParentGroup')
+    message: "请选择父分组"
   },
   Name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('custom.groupPage.enterGroupName')
+    message: "请输入分组名称"
   }
 }
 
@@ -90,7 +90,7 @@ const getOptions = async () => {
   options.value = [
     {
       id: '0', // Root node for tree select
-      name: $t('custom.groupPage.group'),
+      name: "分组",
       children: data?.map(item => ({
         id: item.group.id,
         name: item.group.name,
@@ -106,10 +106,10 @@ const handleSubmit = async () => {
   showModal.value = false
   if (props.isEdit) {
     await putDeviceGroup(formItem.value)
-    // message.success($t('custom.groupPage.modificationSuccess'));
+    // message.success("修改成功");
   } else {
     await deviceGroup(formItem.value)
-    // message.success($t('custom.groupPage.additionSuccess'));
+    // message.success("新增成功");
   }
 
   await getOptions()
@@ -163,13 +163,13 @@ const getPlatform = computed(() => {
   <NModal v-model:show="showModal" @after-enter="getOptions">
     <NCard
       :bordered="false"
-      :title="!props.isEdit ? $t('custom.groupPage.addGroup') : $t('custom.groupPage.editGroup')"
+      :title="!props.isEdit ? "新增分组" : "编辑分组"
       size="huge"
       :class="getPlatform ? 'w-90%' : 'w-600px'"
     >
       <NForm ref="formRef" :model="formItem" :rules="rules" label-placement="left" label-width="auto">
         <!-- Parent group selection using tree select component -->
-        <NFormItem :rules="[rules.parent_id]" :label="$t('generate.parent-group')" path="parent_id">
+        <NFormItem :rules="[rules.parent_id]" :label="父分组" path="parent_id">
           <NTreeSelect
             v-model:value="formItem.parent_id"
             :disabled="props.isPidNoEdit"
@@ -180,17 +180,17 @@ const getPlatform = computed(() => {
           ></NTreeSelect>
         </NFormItem>
         <!-- Group name input field -->
-        <NFormItem :rules="[rules.name]" :label="$t('generate.group-name')" path="name">
+        <NFormItem :rules="[rules.name]" :label="分组名称" path="name">
           <NInput v-model:value="formItem.name" />
         </NFormItem>
         <!-- Description textarea for optional input -->
-        <NFormItem :label="$t('custom.groupPage.description')" path="description">
+        <NFormItem :label="描述" path="description">
           <NInput v-model:value="formItem.description" type="textarea" />
         </NFormItem>
         <!-- Form action buttons -->
         <div style="display: flex; justify-content: flex-end; gap: 8px">
-          <NButton @click="handleClose">{{ $t('custom.groupPage.cancel') }}</NButton>
-          <NButton type="primary" @click="handleSubmit">{{ $t('custom.groupPage.confirm') }}</NButton>
+          <NButton @click="handleClose">{{ "取消" }}</NButton>
+          <NButton type="primary" @click="handleSubmit">{{ "确定" }}</NButton>
         </div>
       </NForm>
     </NCard>

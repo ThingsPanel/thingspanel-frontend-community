@@ -60,7 +60,7 @@ const fromRules: Rules = {
   name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.enterTemplateName')
+    message: "请输入模板名称"
   }
 }
 
@@ -158,10 +158,10 @@ watchEffect(async () => {
       require-mark-placement="right-hanging"
       class="addFrom"
     >
-      <n-form-item :label="$t('device_template.templateName')" path="name">
-        <n-input v-model:value.trim="addFrom.name" :placeholder="$t('device_template.enterTemplateName')" />
+      <n-form-item :label="模板名称" path="name">
+        <n-input v-model:value.trim="addFrom.name" :placeholder="请输入模板名称" />
       </n-form-item>
-      <n-form-item :label="$t('device_template.templateTage')" class="tag-item">
+      <n-form-item :label="模板标签" class="tag-item">
         <n-tag
           v-for="(item, index) in addFrom.templateTage"
           :key="index"
@@ -173,7 +173,7 @@ watchEffect(async () => {
           {{ item }}
         </n-tag>
         <n-tag v-if="!tageFlag" size="small" class="tag addTage" @click="addTags">
-          {{ $t('device_template.addTage') }}
+          {{ "添加标签" }}
           <template #icon>
             <SvgIcon local-icon="add" class="more" />
           </template>
@@ -182,13 +182,13 @@ watchEffect(async () => {
           v-else
           v-model:value.trim="addTageText"
           class="tag-ipt"
-          :placeholder="$t('generate.enter-tag-name')"
+          :placeholder="请输入标签名称"
           autofocus
           @blur="tagBlur"
         />
       </n-form-item>
 
-      <n-form-item :label="$t('device_template.selectCover')">
+      <n-form-item :label="选择封面">
         <n-upload
           :action="url + '/file/up'"
           :headers="{ 'x-token': localStg.get('token') || '' }"
@@ -205,31 +205,31 @@ watchEffect(async () => {
                 <n-icon size="35" :depth="3">
                   <SvgIcon local-icon="picture" class="more" />
                 </n-icon>
-                <p class="upload-text">{{ $t('device_template.selectCover') }}</p>
+                <p class="upload-text">{{ "选择封面" }}</p>
               </template>
             </div>
           </n-upload-dragger>
         </n-upload>
       </n-form-item>
 
-      <n-form-item :label="$t('device_template.authorName')">
-        <n-input v-model:value.trim="addFrom.author" :placeholder="$t('device_template.enterAuthorName')" />
+      <n-form-item :label="作者名称">
+        <n-input v-model:value.trim="addFrom.author" :placeholder="请输入作者名称" />
       </n-form-item>
-      <n-form-item :label="$t('device_template.templateVersion')">
-        <n-input v-model:value.trim="addFrom.version" :placeholder="$t('device_template.entertemplateVersion')" />
+      <n-form-item :label="模板版本">
+        <n-input v-model:value.trim="addFrom.version" :placeholder="请输入模板版本" />
       </n-form-item>
-      <n-form-item :label="$t('device_template.illustrate')">
+      <n-form-item :label="说明">
         <n-input
           v-model:value.trim="addFrom.description"
           type="textarea"
-          :placeholder="$t('device_template.enterIllustrate')"
+          :placeholder="请输入说明"
         />
       </n-form-item>
     </n-form>
   </div>
   <div class="box1 m-t2">
-    <n-button type="primary" @click="next">{{ $t('device_template.nextStep') }}</n-button>
-    <n-button class="m-r3" @click="cancellation">{{ $t('generate.cancel') }}</n-button>
+    <n-button type="primary" @click="next">{{ "下一步" }}</n-button>
+    <n-button class="m-r3" @click="cancellation">{{ "取消" }}</n-button>
   </div>
 </template>
 

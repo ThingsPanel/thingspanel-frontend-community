@@ -1,0 +1,312 @@
+[
+  {
+    "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+    "line": 101,
+    "match": "$"
+  },
+  {
+    "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+    "line": 102,
+    "match": "$"
+  },
+  {
+    "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+    "line": 113,
+    "match": "$"
+  },
+  {
+    "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+    "line": 114,
+    "match": "$"
+  },
+  {
+    "file": "src\\cards2.0\\chart-card\\demo1\\index.vue",
+    "line": 39,
+    "match": "$"
+  },
+  {
+    "file": "src\\cards2.0\\chart-card\\demo1\\index.vue",
+    "line": 45,
+    "match": "$"
+  },
+  {
+    "file": "src\\cards2.0\\plugins-card\\demo1\\index.vue",
+    "line": 28,
+    "match": "$"
+  },
+  {
+    "file": "src\\cards2.0\\store\\kan-ban-store.ts",
+    "line": 17,
+    "match": "$"
+  },
+  {
+    "file": "src\\components\\data-table-page\\index.vue",
+    "line": 477,
+    "match": "$"
+  },
+  {
+    "file": "src\\components\\data-table-page\\index.vue",
+    "line": 487,
+    "match": "$"
+  },
+  {
+    "file": "src\\components\\data-table-page\\index.vue",
+    "line": 502,
+    "match": "$"
+  },
+  {
+    "file": "src\\components\\data-table-page\\index.vue",
+    "line": 512,
+    "match": "$"
+  },
+  {
+    "file": "src\\components\\list-page\\index.vue",
+    "line": 40,
+    "match": "$"
+  },
+  {
+    "file": "src\\components\\list-page\\index.vue",
+    "line": 193,
+    "match": "$"
+  },
+  {
+    "file": "src\\components\\panel\\ui\\add-card.vue",
+    "line": 278,
+    "match": "$"
+  },
+  {
+    "file": "src\\components\\panel\\ui\\add-card.vue",
+    "line": 324,
+    "match": "$"
+  },
+  {
+    "file": "src\\components\\panel\\ui\\card-selector.vue",
+    "line": 236,
+    "match": "$"
+  },
+  {
+    "file": "src\\components\\panel\\ui\\card-selector.vue",
+    "line": 256,
+    "match": "$"
+  },
+  {
+    "file": "src\\hooks\\business\\use-sms-code.ts",
+    "line": 12,
+    "match": "$"
+  },
+  {
+    "file": "src\\layouts\\modules\\global-menu\\base-menu.vue",
+    "line": 77,
+    "match": "$"
+  },
+  {
+    "file": "src\\layouts\\modules\\theme-drawer\\components\\layout-mode-card.vue",
+    "line": 88,
+    "match": "$"
+  },
+  {
+    "file": "src\\layouts\\modules\\theme-drawer\\modules\\theme-color.vue",
+    "line": 37,
+    "match": "$"
+  },
+  {
+    "file": "src\\layouts\\modules\\theme-drawer\\modules\\theme-color.vue",
+    "line": 39,
+    "match": "$"
+  },
+  {
+    "file": "src\\layouts\\modules\\theme-drawer\\modules\\theme-color.vue",
+    "line": 42,
+    "match": "$"
+  },
+  {
+    "file": "src\\router\\guard\\title.ts",
+    "line": 29,
+    "match": "$"
+  },
+  {
+    "file": "src\\store\\modules\\app\\index.ts",
+    "line": 72,
+    "match": "$"
+  },
+  {
+    "file": "src\\store\\modules\\auth\\index.ts",
+    "line": 127,
+    "match": "$"
+  },
+  {
+    "file": "src\\store\\modules\\panel\\index.ts",
+    "line": 16,
+    "match": "$"
+  },
+  {
+    "file": "src\\store\\modules\\route\\shared.ts",
+    "line": 108,
+    "match": "$"
+  },
+  {
+    "file": "src\\store\\modules\\route\\shared.ts",
+    "line": 136,
+    "match": "$"
+  },
+  {
+    "file": "src\\store\\modules\\tab\\shared.ts",
+    "line": 59,
+    "match": "$"
+  },
+  {
+    "file": "src\\store\\modules\\tab\\shared.ts",
+    "line": 107,
+    "match": "$"
+  },
+  {
+    "file": "src\\store\\modules\\tab\\shared.ts",
+    "line": 214,
+    "match": "$"
+  },
+  {
+    "file": "src\\utils\\common4.ts",
+    "line": 36,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\device\\config-edit\\index.vue",
+    "line": 317,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\device\\config-edit\\index.vue",
+    "line": 342,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\device\\config-edit\\index.vue",
+    "line": 352,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\device\\template\\components\\card-select\\ui\\add-template-card.vue",
+    "line": 103,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\home\\modules\\header-banner.vue",
+    "line": 51,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\menu\\index.vue",
+    "line": 58,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\menu\\index.vue",
+    "line": 71,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\menu\\index.vue",
+    "line": 120,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\menu\\index.vue",
+    "line": 138,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+    "line": 131,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+    "line": 144,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+    "line": 178,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\role\\index.vue",
+    "line": 86,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\role\\modules\\role-operate-drawer.vue",
+    "line": 117,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\user\\index.vue",
+    "line": 78,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\user\\index.vue",
+    "line": 116,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\user\\modules\\user-operate-drawer.vue",
+    "line": 145,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\manage\\user\\modules\\user-operate-drawer.vue",
+    "line": 164,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\management\\auth\\index.vue",
+    "line": 76,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\management\\setting\\components\\data-clear-setting.vue",
+    "line": 63,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\management\\user\\components\\table-action-modal.vue",
+    "line": 50,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\management\\user\\index.vue",
+    "line": 27,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\management\\user\\index.vue",
+    "line": 126,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\personal-center\\index.vue",
+    "line": 206,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\personal-center\\index.vue",
+    "line": 244,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\_builtin\\login\\index.vue",
+    "line": 190,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\_builtin\\login\\modules\\pwd-login.vue",
+    "line": 224,
+    "match": "$"
+  },
+  {
+    "file": "src\\views\\_builtin\\login\\modules\\pwd-login.vue",
+    "line": 236,
+    "match": "$"
+  }
+]

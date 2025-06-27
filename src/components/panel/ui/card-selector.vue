@@ -25,10 +25,10 @@ const props = defineProps<{
 }>()
 const tabValue = ref('builtin')
 const tabList = [
-  { tab: $t('card.systemTab'), type: 'builtin' },
-  { tab: $t('card.deviceTab'), type: 'device' },
-  { tab: $t('card.pluginTab'), type: 'plugin' },
-  { tab: $t('card.chartTab'), type: 'chart' }
+  { tab: "系统", type: 'builtin' },
+  { tab: "设备", type: 'device' },
+  { tab: "插件", type: 'plugin' },
+  { tab: "图表", type: 'chart' }
 ]
 
 const priorityCardIds = ref(['chart-demo', 'chart-digit'])
@@ -202,7 +202,7 @@ onMounted(() => {
             <div v-if="item1.tab === '设备'">
               <NSelect
                 v-model:value="deviceSelectId"
-                :placeholder="$t('generate.select-device')"
+                :placeholder="请选择设备"
                 :options="deviceOptions"
                 filterable
                 clearable
@@ -233,7 +233,7 @@ onMounted(() => {
                       @click="selectCard(item.data)"
                     >
                       <div class="text-center font-medium leading-8 dark:bg-zinc-900" style="background-color: #efefef">
-                        {{ item.data.dataSource?.deviceSource?.[0]?.metricsName || $t(item.data.title) }}
+                        {{ item.data.dataSource?.deviceSource?.[0]?.metricsName || "标题" }}
                       </div>
                       <div class="h-148px w-full flex items-center justify-center p-8px">
                         <img :src="getImagePath(item)" style="width: 90%; height: 100%; object-fit: contain" />
@@ -253,10 +253,10 @@ onMounted(() => {
                       @click="selectFinalCard(item)"
                     >
                       <div class="text-center font-medium leading-8 dark:bg-zinc-900" style="background-color: #efefef">
-                        {{ $t(item.title) }}
+                        {{ "标题" }}
                       </div>
                       <div class="h-148px w-full flex items-center justify-center p-8px">
-                        <img :src="item.poster" alt="" style="width: 90%; height: 100%; object-fit: contain" />
+                        <img :src="item.poster" alt=" style="width: 90%; height: 100%; object-fit: contain" />
                       </div>
                     </div>
                   </n-gi>

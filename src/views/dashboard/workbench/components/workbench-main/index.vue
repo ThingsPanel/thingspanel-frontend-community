@@ -18,7 +18,7 @@ const technology: Technology[] = [
   {
     id: 0,
     name: 'Vue',
-    description: $t('card.vueDesc'),
+    description: "一套用于构建用户界面的渐进式框架",
     author: '尤雨溪 - Evan You',
     site: 'https://v3.cn.vuejs.org/',
     icon: 'logos:vue'
@@ -26,7 +26,7 @@ const technology: Technology[] = [
   {
     id: 1,
     name: 'TypeScript',
-    description: $t('card.typeScriptDesc'),
+    description: "JavaScript类型的超集，它可以编译成纯JavaScript",
     author: '微软 - Microsoft',
     site: 'https://www.typescriptlang.org/',
     icon: 'logos:typescript-icon'
@@ -34,7 +34,7 @@ const technology: Technology[] = [
   {
     id: 2,
     name: 'Vite',
-    description: $t('card.viteDesc'),
+    description: "下一代前端开发与构建工具",
     author: '尤雨溪 - Evan You',
     site: 'https://vitejs.cn/',
     icon: 'logos:vitejs'
@@ -42,7 +42,7 @@ const technology: Technology[] = [
   {
     id: 3,
     name: 'NaiveUI',
-    description: $t('card.naviewUIDesc'),
+    description: "一个 Vue 3 组件库",
     author: '图森未来 - TuSimple',
     site: 'https://www.naiveui.com/zh-CN/os-theme',
     icon: 'logos:naiveui'
@@ -50,7 +50,7 @@ const technology: Technology[] = [
   {
     id: 4,
     name: 'UnoCSS',
-    description: $t('card.UnoCssDesc'),
+    description: "下一代实用优先的CSS框架",
     author: 'Anthony Fu',
     site: 'https://uno.antfu.me/?s=',
     icon: 'logos:unocss'
@@ -58,7 +58,7 @@ const technology: Technology[] = [
   {
     id: 5,
     name: 'Pinia',
-    description: $t('card.piniaDesc'),
+    description: "vue状态管理框架，支持vue2、vue3",
     author: 'Posva',
     site: 'https://pinia.esm.dev/',
     icon: 'noto:pineapple'
@@ -136,13 +136,13 @@ const shortcuts: Shortcuts[] = [
     <NGridItem span="0:24 640:24 1024:16">
       <NSpace :vertical="true" :size="16">
         <NCard
-          :title="$t('generate.project-main-tech-stack')"
+          :title="项目主要技术栈"
           :bordered="false"
           size="small"
           class="rounded-8px shadow-sm"
         >
           <template #header-extra>
-            <a class="text-primary" href="javascript:;">{{ $t('generate.more-tech-stack') }}</a>
+            <a class="text-primary" href="javascript:;">{{ "更多技术栈" }}</a>
           </template>
           <NGrid :item-responsive="true" responsive="screen" cols="m:2 l:3" :x-gap="8" :y-gap="8">
             <NGridItem v-for="item in technology" :key="item.id">
@@ -150,9 +150,9 @@ const shortcuts: Shortcuts[] = [
             </NGridItem>
           </NGrid>
         </NCard>
-        <NCard :title="$t('generate.dynamic')" :bordered="false" size="small" class="rounded-8px shadow-sm">
+        <NCard :title="动态" :bordered="false" size="small" class="rounded-8px shadow-sm">
           <template #header-extra>
-            <a class="text-primary" href="javascript:;">{{ $t('generate.more-dynamics') }}</a>
+            <a class="text-primary" href="javascript:;">{{ "更多动态" }}</a>
           </template>
           <NList>
             <NListItem v-for="item in activity" :key="item.id">
@@ -167,14 +167,14 @@ const shortcuts: Shortcuts[] = [
     </NGridItem>
     <NGridItem span="0:24 640:24 1024:8">
       <NSpace :vertical="true" :size="16">
-        <NCard :title="$t('generate.quick-operation')" :bordered="false" size="small" class="rounded-8px shadow-sm">
+        <NCard :title="快捷操作" :bordered="false" size="small" class="rounded-8px shadow-sm">
           <NGrid :item-responsive="true" responsive="screen" cols="m:2 l:3" :x-gap="8" :y-gap="8">
             <NGridItem v-for="item in shortcuts" :key="item.id">
               <ShortcutsCard v-bind="item" />
             </NGridItem>
           </NGrid>
         </NCard>
-        <NCard :title="$t('generate.creativity')" :bordered="false" size="small" class="rounded-8px shadow-sm">
+        <NCard :title="创意" :bordered="false" size="small" class="rounded-8px shadow-sm">
           <div class="h-380px flex-center">
             <IconLocalBanner class="text-400px text-primary sm:text-320px" />
           </div>

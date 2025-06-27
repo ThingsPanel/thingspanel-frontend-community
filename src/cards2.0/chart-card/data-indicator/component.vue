@@ -120,7 +120,7 @@ onUnmounted(() => {
           <div>
             <span class="value">{{ detail?.data && detail.data[0] ? detail.data[0]?.value : '-1' }}</span>
           </div>
-          <span class="unit">{{ detail?.data && detail.data[0] ? detail.data[0]?.unit : $t('card.noUnit') }}</span>
+          <span class="unit">{{ detail?.data && detail.data[0] ? detail.data[0]?.unit : "无" }}</span>
         </div>
       </NCard>
     </div>

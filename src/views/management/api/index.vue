@@ -49,14 +49,14 @@ const columns: Ref<DataTableColumns<UserManagement.UserKey>> = ref([
   {
     key: 'name',
     minWidth: '100px',
-    title: () => $t('page.manage.api.apiName'),
+    title: () => "名称",
     align: 'left'
   },
 
   {
     key: 'api_key',
     minWidth: '100px',
-    title: () => $t('page.manage.api.api_key'),
+    title: () => "key",
     align: 'left',
     render: (row: any) => {
       if (row.show === false) {
@@ -85,21 +85,21 @@ const columns: Ref<DataTableColumns<UserManagement.UserKey>> = ref([
   },
   {
     key: 'status',
-    title: () => $t('page.manage.api.apiStatus'),
+    title: () => "状态",
     minWidth: '140px',
     align: 'left',
     render: (row: any) => {
       if (row.status === 0) {
-        return <NTag type="error">{$t('page.manage.api.apiStatus1.freeze')}</NTag>;
+        return <NTag type="error">{"停用"}</NTag>;
       } else if (row.status === 1) {
-        return <NTag type="success">{$t('page.manage.api.apiStatus1.normal')}</NTag>;
+        return <NTag type="success">{"启用"}</NTag>;
       }
       return <sapn></sapn>;
     }
   },
   {
     key: 'created_at',
-    title: () => $t('page.manage.api.created_at'),
+    title: () => "创建时间",
     minWidth: '130px',
     align: 'left',
     render: row => {
@@ -108,21 +108,21 @@ const columns: Ref<DataTableColumns<UserManagement.UserKey>> = ref([
   },
   {
     key: 'actions',
-    title: () => $t('common.actions'),
+    title: () => "操作",
     align: 'left',
     width: '320px',
     render: (row: any) => {
       return (
         <NSpace justify={'start'}>
           <NButton type="primary" size={'small'} onClick={() => handleEditTable(row.id)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -161,28 +161,28 @@ function handleCloseEye(rowId: string) {
 }
 async function handleCopyKey(key: string) {
   let success = false;
-  let errorMessage = $t('theme.configOperation.copyFail') || '复制失败'; // 默认错误信息
+  let errorMessage = "复制失败" ; // 默认错误信息
 
   // 优先尝试现代 Clipboard API
   if (navigator.clipboard && navigator.clipboard.writeText) {
     try {
       await navigator.clipboard.writeText(key);
       success = true;
-      window.$message?.success($t('theme.configOperation.copySuccess') || '复制成功');
+      window.$message?.success("复制成功" );
       return; // 成功则直接返回
     } catch (err) {
       console.error('navigator.clipboard.writeText failed:', err);
       // 如果失败，检查是否因为非安全环境
       if (window.isSecureContext === false) {
         // 更新错误信息，明确指出 HTTPS 问题
-        errorMessage = $t('theme.configOperation.copyFailSecure') || '复制功能需要HTTPS或localhost环境';
+        errorMessage = "复制功能需要HTTPS或localhost环境" ;
       }
       // 不return，继续尝试后备方法
     }
   } else {
      // 如果 Clipboard API 不可用，检查是否因为非安全环境
      if (window.isSecureContext === false) {
-       errorMessage = $t('theme.configOperation.copyFailSecure') || '复制功能需要HTTPS或localhost环境';
+       errorMessage = "复制功能需要HTTPS或localhost环境" ;
        console.warn('Clipboard API not available, likely due to non-secure context.');
      } else {
        console.warn('Clipboard API not available.');
@@ -206,12 +206,12 @@ async function handleCopyKey(key: string) {
   try {
     success = document.execCommand('copy');
     if (success) {
-      window.$message?.success($t('theme.configOperation.copySuccess') || '复制成功');
+      window.$message?.success("复制成功" );
     } else {
        console.error("document.execCommand('copy') returned false.");
        // 如果 execCommand 也失败了，并且已知是非安全环境，可以给出更具体的提示
        if (window.isSecureContext === false) {
-           errorMessage = $t('theme.configOperation.copyFailSecureFallback') || '复制失败，请尝试在HTTPS环境下操作或手动复制。';
+           errorMessage = "复制失败，请尝试在HTTPS环境下操作或手动复制。" ;
        }
        window.$message?.error(errorMessage);
     }
@@ -219,7 +219,7 @@ async function handleCopyKey(key: string) {
     console.error("Error during document.execCommand('copy'):", err);
     // 异常情况，同样提示
     if (window.isSecureContext === false) {
-        errorMessage = $t('theme.configOperation.copyFailSecureFallback') || '复制失败，请尝试在HTTPS环境下操作或手动复制。';
+        errorMessage = "复制失败，请尝试在HTTPS环境下操作或手动复制。" ;
     }
     window.$message?.error(errorMessage);
   } finally {
@@ -248,7 +248,7 @@ async function handleSwitchChange(rowId: string) {
 async function handleDeleteTable(rowId: string) {
   const data = await apiKeyDel(rowId);
   if (!data.error) {
-    window.$message?.success($t('common.deleteSuccess'));
+    window.$message?.success("删除成功");
     getTableData();
   }
 }
@@ -290,7 +290,7 @@ init();
         <NSpace>
           <NButton type="primary" @click="handleAddTable">
             <icon-ic-round-plus class="mr-4px text-20px" />
-            {{ $t('page.manage.api.addApiKey') }}
+            {{ "创建API key" }}
           </NButton>
         </NSpace>
         <NDataTable

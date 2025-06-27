@@ -27,10 +27,10 @@ watch(
 
 <template>
   <n-form :model="basisData" label-placement="left" :label-width="70">
-    <n-form-item :label="$t('card.title')" path="title">
-      <n-input v-model:value="basisData.title" :disabled="!basisData.showTitle" :placeholder="$t('card.title')" />
+    <n-form-item :label="标题" path="title">
+      <n-input v-model:value="basisData.title" :disabled="!basisData.showTitle" :placeholder="标题" />
     </n-form-item>
-    <n-form-item :label="$t('card.isShow')" path="showTitle">
+    <n-form-item :label="是否显示" path="showTitle">
       <n-switch v-model:value="basisData.showTitle" />
     </n-form-item>
   </n-form>

@@ -128,7 +128,7 @@ watch(
     <div>
       <!-- {{  props?.card?.dataSource?.deviceSource[0] }} -->
       <n-switch v-model:value="active" @change="clickSwitch" />
-      <div class="switch">{{ card.dataSource?.deviceSource?.[0]?.metricsName || $t('generate.switch') }}</div>
+      <div class="switch">{{ card.dataSource?.deviceSource?.[0]?.metricsName || "开关" }}</div>
     </div>
   </div>
 </template>

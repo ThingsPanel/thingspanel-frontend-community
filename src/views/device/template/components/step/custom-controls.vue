@@ -17,7 +17,7 @@ const props = defineProps<{
 const configFormRules = ref({
   name: {
     required: true,
-    message: $t('generate.btnname'),
+    message: "按钮名称",
     trigger: 'blur'
   }
 });
@@ -92,47 +92,47 @@ const columns: any = [
   {
     key: 'name',
     minWidth: '100px',
-    title: $t('generate.btnname')
+    title: "按钮名称"
   },
   {
     key: 'content',
     minWidth: '100px',
-    title: $t('generate.commandContent')
+    title: "指令内容"
   },
   {
     key: 'enable_status',
     minWidth: '100px',
-    title: $t('generate.enableStatus'),
+    title: "启用状态",
     render: row => {
       if (row?.enable_status === 'enable') {
-        return <NTag type="success">{$t('page.manage.common.status.enable')}</NTag>;
+        return <NTag type="success">{"启用"}</NTag>;
       }
-      return <NTag type="warning">{$t('page.manage.common.status.disable')}</NTag>;
+      return <NTag type="warning">{"禁用"}</NTag>;
     }
   },
   {
     key: 'description',
     minWidth: '100px',
-    title: $t('common.description')
+    title: "描述"
   },
   {
     key: 'actions',
     minWidth: '100px',
-    title: $t('page.product.list.operate'),
+    title: "操作",
     align: 'center',
     render: row => {
       return (
         <div class="flex gap-20px flex-justify-center">
           <NButton size={'small'} type="primary" onClick={() => handleEditTable(row)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
 
           <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -170,7 +170,7 @@ const validationJson = computed(() => {
 });
 const inputFeedback = computed(() => {
   if (commandjson?.formjson?.content && !isJSON(commandjson.formjson.content)) {
-    return $t('generate.inputRightJson');
+    return "输入的不是有效的JSON格式";
   }
   return '';
 });
@@ -179,9 +179,9 @@ const inputFeedback = computed(() => {
 <template>
   <div class="p-t-20px">
     <div class="flex-align-end m-b-20px flex flex-justify-between">
-      <div>{{ $t('generate.customControl') }}</div>
+      <div>{{ "自定义控制" }}</div>
       <NButton class="justify-end" type="primary" @click="openCommandDialog">
-        {{ $t('generate.addCustomCommand') }}
+        {{ "新增自定义命令" }}
       </NButton>
     </div>
     <NDataTable :columns="columns" :data="commandjson.listData" class="flex-1-hidden" />
@@ -195,7 +195,7 @@ const inputFeedback = computed(() => {
     </div>
     <NModal
       v-model:show="commandjson.configForm"
-      :title="$t('generate.customCommand')"
+      :title="自定义命令"
       :class="getPlatform ? 'w-90%' : 'w-500px'"
       @after-enter="setupEditor"
     >
@@ -209,14 +209,14 @@ const inputFeedback = computed(() => {
           label-width="auto"
         >
           <div>
-            <NH3>{{ $t('generate.customCommand') }}</NH3>
+            <NH3>{{ "自定义命令" }}</NH3>
           </div>
-          <NFormItem :label="$t('generate.btnname')" path="name">
-            <NInput v-model:value="commandjson.formjson.name" :placeholder="$t('generate.or-enter-here')" />
+          <NFormItem :label="按钮名称" path="name">
+            <NInput v-model:value="commandjson.formjson.name" :placeholder="或在此输入" />
           </NFormItem>
 
           <NFormItem
-            :label="$t('generate.commandContent')"
+            :label="指令内容"
             path="content"
             :validation-status="validationJson"
             :feedback="inputFeedback"
@@ -230,22 +230,22 @@ const inputFeedback = computed(() => {
               border
               @ready="onReady"
             ></Codemirror>
-            <!-- <NInput v-model:value="commandjson.formjson.content" :placeholder="$t('generate.or-enter-here')" /> -->
+            <!-- <NInput v-model:value="commandjson.formjson.content" :placeholder="或在此输入" /> -->
           </NFormItem>
-          <NFormItem :label="$t('generate.enableStatus')" path="enable_status">
+          <NFormItem :label="启用状态" path="enable_status">
             <n-switch
               v-model:value="commandjson.formjson.enable_status"
               checked-value="enable"
               unchecked-value="disable"
             />
           </NFormItem>
-          <NFormItem :label="$t('common.description')" path="description">
+          <NFormItem :label="描述" path="description">
             <NInput v-model:value="commandjson.formjson.description" type="textarea" />
           </NFormItem>
 
           <NFlex justify="end">
-            <NButton @click="openCommandDialog">{{ $t('generate.cancel') }}</NButton>
-            <NButton type="primary" @click="onCommandSubmit">{{ $t('custom.groupPage.confirm') }}</NButton>
+            <NButton @click="openCommandDialog">{{ "取消" }}</NButton>
+            <NButton type="primary" @click="onCommandSubmit">{{ "确定" }}</NButton>
           </NFlex>
         </NForm>
       </n-card>

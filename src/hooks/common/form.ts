@@ -7,41 +7,41 @@ export function useFormRules(paramObj?) {
   const patternRules = {
     userName: {
       pattern: REG_DEFAULT,
-      message: $t('form.userName.invalid'),
+      message: '用户名格式不正确',
       trigger: 'change'
     },
     phone: {
       pattern: REG_PHONE,
-      message: $t('form.phone.invalid'),
+      message: '手机号格式不正确',
       trigger: 'change'
     },
     pwd: {
       pattern: REG_PWD,
-      message: $t('form.pwd.invalid'),
+      message: '密码格式不正确',
       trigger: 'change'
     },
     code: {
       pattern: REG_CODE_SIX,
-      message: $t('form.code.invalid'),
+      message: '验证码格式不正确',
       trigger: 'change'
     },
     email: {
       pattern: REG_EMAIL,
-      message: $t('form.email.invalid'),
+      message: '邮箱格式不正确',
       trigger: 'change'
     }
   } satisfies Record<string, App.Global.FormRule>
 
   const formRules = {
-    userName: [createRequiredRule($t('form.userName.required')), patternRules.userName],
-    phone: [createRequiredRule($t('form.phone.required')), patternRules.phone],
-    pwd: [createRequiredRule($t('form.pwd.required')), paramObj && paramObj.pwd ? paramObj.pwd : patternRules.pwd],
-    code: [createRequiredRule($t('form.code.required')), patternRules.code],
-    email: [createRequiredRule($t('form.email.required')), patternRules.email]
+    userName: [createRequiredRule('请输入用户名'), patternRules.userName],
+    phone: [createRequiredRule('请输入手机号'), patternRules.phone],
+    pwd: [createRequiredRule('请输入密码'), paramObj && paramObj.pwd ? paramObj.pwd : patternRules.pwd],
+    code: [createRequiredRule('请输入验证码'), patternRules.code],
+    email: [createRequiredRule('请输入邮箱'), patternRules.email]
   } satisfies Record<string, App.Global.FormRule[]>
 
   /** the default required rule */
-  const defaultRequiredRule = createRequiredRule($t('form.required'))
+  const defaultRequiredRule = createRequiredRule('不能为空')
 
   function createRequiredRule(message: string): App.Global.FormRule {
     return {

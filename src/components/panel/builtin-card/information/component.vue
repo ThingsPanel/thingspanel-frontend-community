@@ -95,7 +95,7 @@ onMounted(() => {
 
 <template>
   <div class="rounded-8px p-16px text-white" :style="{ backgroundImage: gradientStyle }">
-    <div>{{ $t('generate.message-total') }}</div>
+    <div>{{ "消息总数" }}</div>
     <div id="equipment" ref="equipment" class="h-full w-full"></div>
   </div>
 </template>

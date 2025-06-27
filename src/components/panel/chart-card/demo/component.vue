@@ -17,8 +17,8 @@ defineProps<{
   <div class="h-full flex items-center">
     <component :is="iconMap.get(card.config?.icon || 'm1')" class="text-lg" :style="{ color: card.config?.color }" />
     <span v-if="card.dataSource?.origin === 'system'" class="ml-2">
-      {{ $t('card.dataName') }}：{{ card.dataSource.systemSource?.[0]?.name }}
+      {{ "数据名" }}：{{ card.dataSource.systemSource?.[0]?.name }}
     </span>
-    <span class="ml-2">{{ $t('generate.fieldValue') }} ：{{ value }}</span>
+    <span class="ml-2">{{ "值" }} ：{{ value }}</span>
   </div>
 </template>

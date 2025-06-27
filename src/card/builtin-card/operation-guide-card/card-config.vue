@@ -66,28 +66,28 @@ const createDefaultGuideItem = (): GuideItem => {
 
 <template>
   <div>
-    <h4 class="mb-2 font-semibold">{{ $t('card.uiSettings') }}</h4>
+    <h4 class="mb-2 font-semibold">{{ "UI 设置" }}</h4>
     <NGrid :cols="5" :x-gap="12">
-      <NFormItemGi :label="$t('card.serialBgColor')" class="config-item">
+      <NFormItemGi :label="序号背景" class="config-item">
         <NColorPicker v-model:value="configRef.serialBgColor" size="small" :show-alpha="false" />
       </NFormItemGi>
-      <NFormItemGi :label="$t('card.itemBgColor')" class="config-item">
+      <NFormItemGi :label="列表项背景" class="config-item">
         <NColorPicker v-model:value="configRef.itemBgColor" size="small" :show-alpha="false" />
       </NFormItemGi>
-      <NFormItemGi :label="$t('card.itemHoverBgColor')" class="config-item">
+      <NFormItemGi :label="列表项浮动" class="config-item">
         <NColorPicker v-model:value="configRef.itemHoverBgColor" size="small" :show-alpha="false" />
       </NFormItemGi>
-      <NFormItemGi :label="$t('card.titleColor')" class="config-item">
+      <NFormItemGi :label="标题颜色" class="config-item">
         <NColorPicker v-model:value="configRef.titleColor" size="small" :show-alpha="false" />
       </NFormItemGi>
-      <NFormItemGi :label="$t('card.descriptionColor')" class="config-item">
+      <NFormItemGi :label="描述颜色" class="config-item">
         <NColorPicker v-model:value="configRef.descriptionColor" size="small" :show-alpha="false" />
       </NFormItemGi>
     </NGrid>
 
     <hr class="my-4" />
 
-    <h4 class="mb-2 font-semibold">{{ $t('card.guideList') }}</h4>
+    <h4 class="mb-2 font-semibold">{{ "向导列表" }}</h4>
     <NDynamicInput
       #default="{ value, index }"
       v-model:value="guideListRef"
@@ -96,19 +96,19 @@ const createDefaultGuideItem = (): GuideItem => {
     >
       <div class="flex items-center gap-2">
         <span class="font-semibold w-6 text-center">{{ index + 1 }}.</span>
-        <NInput v-model:value="value.title" class="flex-1" type="text" :placeholder="$t('card.title')" size="small" />
+        <NInput v-model:value="value.title" class="flex-1" type="text" :placeholder="标题" size="small" />
         <NInput
           v-model:value="value.description"
           class="flex-1"
           type="text"
-          :placeholder="$t('card.description')"
+          :placeholder="描述"
           size="small"
         />
         <NInput
           v-model:value="value.link"
           class="flex-1"
           type="text"
-          :placeholder="$t('card.pleaseEnterLink')"
+          :placeholder="请输入链接"
           size="small"
         />
       </div>

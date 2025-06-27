@@ -40,7 +40,7 @@ const icon = computed(() => icons[props.themeSchema])
 const tooltipContent = computed(() => {
   if (!props.showTooltip) return ''
 
-  return $t('icon.themeSchema')
+  return "主题模式"
 })
 </script>
 

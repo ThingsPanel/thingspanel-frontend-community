@@ -8,8 +8,8 @@ import useCountDown from './use-count-down'
 export default function useSmsCode() {
   const { loading, startLoading, endLoading } = useLoading()
   const { counts, start, isCounting } = useCountDown(60)
-  const initLabel = computed(() => $t('page.login.common.getCode'))
-  const countingLabel = (second: number) => $t('page.login.common.countingLabel', { second })
+  const initLabel = computed(() => '获取验证码')
+  const countingLabel = (second: number) => '{second}秒后重新获取'
   const label = computed(() => {
     let text = initLabel.value
     if (loading.value) {
@@ -25,10 +25,10 @@ export default function useSmsCode() {
   function isPhoneValid(phone: string) {
     let valid = true
     if (phone.trim() === '') {
-      window.$message?.error($t('page.login.common.phoneRequired'))
+      window.$message?.error('手机号码不能为空！')
       valid = false
     } else if (!REG_PHONE.test(phone)) {
-      window.$message?.error($t('page.login.common.phoneInvalid'))
+      window.$message?.error('手机号码格式错误！')
       valid = false
     }
     return valid
@@ -39,9 +39,9 @@ export default function useSmsCode() {
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/
     const valid = emailRegex.test(email)
     if (!valid) {
-      window.$message?.error($t('page.login.common.emailInvalid'))
+      window.$message?.error('邮箱格式错误！')
     } else if (email.trim() === '') {
-      window.$message?.error($t('page.login.common.emailRequired'))
+      window.$message?.error('邮箱不能为空！')
     }
     return valid
   }
@@ -61,14 +61,14 @@ export default function useSmsCode() {
       console.log('data', data, error)
       if (!error && data) {
         start() // 只有在发送成功时才启动倒计时
-        window.$message?.success($t('page.login.common.codeSent'))
+        window.$message?.success('验证码已发送')
       } else {
         // 接口返回错误时不显示成功提示
-        window.$message?.error($t('page.login.common.codeError'))
+        window.$message?.error('验证码发送失败')
       }
     } catch (err) {
       // 接口调用失败时不显示成功提示
-      window.$message?.error($t('page.login.common.codeError'))
+      window.$message?.error('验证码发送失败')
     } finally {
       endLoading()
     }
@@ -90,7 +90,7 @@ export default function useSmsCode() {
       if (!error && data) {
         // Success case
         start() // Start countdown on success
-        window.$message?.success($t('page.login.common.codeSent'))
+        window.$message?.success('验证码已发送')
       } else if (error) {
         // Error case: Try to access potential custom properties on the error object
         const errorCode = (error as any)?.code // Safely access potential code
@@ -98,18 +98,18 @@ export default function useSmsCode() {
 
         if (errorCode === 200008) {
           // Specific error code for email registered
-          window.$message?.error(errorMessage || $t('page.login.common.emailRegistered'))
+          window.$message?.error(errorMessage || '邮箱已被注册')
         } else {
           // Other errors reported by the API
-          window.$message?.error(errorMessage || $t('page.login.common.codeError'))
+          window.$message?.error(errorMessage || '验证码发送失败')
         }
       } else {
         // Fallback for unexpected scenarios (e.g., no error, no data)
-        window.$message?.error($t('page.login.common.codeError'))
+        window.$message?.error('验证码发送失败')
       }
     } catch (err) {
       // Catch exceptions during the API call itself (e.g., network error)
-      window.$message?.error($t('page.login.common.codeError'))
+      window.$message?.error('验证码发送失败')
     } finally {
       endLoading()
     }

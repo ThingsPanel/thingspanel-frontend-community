@@ -27,31 +27,31 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const configFormRef = ref<HTMLElement & FormInst>()
 
-const modalTitle = ref($t('generate.add'))
+const modalTitle = ref("添加")
 const configForm: any = ref({})
 const scripTypeOpt = ref([
   {
-    label: $t('custom.devicePage.reportPreprocessing'),
+    label: "遥测上报预处理",
     value: 'A'
   },
   {
-    label: $t('custom.devicePage.transmissionPreprocessing'),
+    label: "遥测下发预处理",
     value: 'B'
   },
   {
-    label: $t('custom.devicePage.attributeReporting'),
+    label: "属性上报预处理",
     value: 'C'
   },
   {
-    label: $t('custom.devicePage.attributeDistribution'),
+    label: "属性下发预处理",
     value: 'D'
   },
   {
-    label: $t('custom.devicePage.commandDeliveryPreprocessing'),
+    label: "命令下发预处理",
     value: 'E'
   },
   {
-    label: $t('custom.devicePage.eventReportPreprocessing'),
+    label: "事件上报预处理",
     value: 'F'
   }
 ])
@@ -89,22 +89,22 @@ end`,
 const configFormRules = ref({
   name: {
     required: true,
-    message: $t('generate.enter-title'),
+    message: "请输入标题",
     trigger: 'blur'
   },
   content: {
     required: true,
-    message: $t('generate.parse-script'),
+    message: "解析脚本",
     trigger: 'blur'
   },
   enable_flag: {
     required: true,
-    message: $t('common.select'),
+    message: "选择",
     trigger: 'change'
   },
   script_type: {
     required: true,
-    message: $t('generate.select-processing-type'),
+    message: "请选择处理类型",
     trigger: 'change'
   }
 })
@@ -115,7 +115,7 @@ const openModal = (type: any, item: any) => {
   // 先用默认值初始化表单
   configForm.value = defaultConfigForm()
 
-  if (modalTitle.value === $t('common.edit')) {
+  if (modalTitle.value === "编辑") {
     // 编辑模式：加载选中项的数据
     configForm.value = JSON.parse(JSON.stringify(item))
   } else {
@@ -208,13 +208,13 @@ const handleSubmit = async () => {
 }
 const deleteData = async (item: any) => {
   dialog.warning({
-    title: $t('common.tip'),
-    content: $t('common.deleteProcessing'),
-    positiveText: $t('device_template.confirm'),
-    negativeText: $t('common.cancel'),
+    title: "提示",
+    content: "删除处理中",
+    positiveText: "确定",
+    negativeText: "取消",
     onPositiveClick: async () => {
       await dataScriptDel({ id: item.id })
-      // message.success($t('custom.grouping_details.operationSuccess'));
+      // message.success("操作成功");
       searchDataScript()
     }
   })
@@ -271,11 +271,11 @@ onMounted(() => {
 <template>
   <div class="m-b-20px flex items-center gap-20px">
     <n-select v-model:value="queryData.script_type" :options="scripTypeOpt" class="max-w-40" clearable />
-    <NButton type="primary" @click="openModal($t('common.add'), null)">
-      {{ $t('generate.add-data-processing') }}
+    <NButton type="primary" 新增",@click="openModal(" null)">
+      {{ "新增数据处理" }}
     </NButton>
   </div>
-  <n-empty v-if="dataScriptList.length === 0" size="huge" :description="$t('common.nodata')"></n-empty>
+  <n-empty v-if="dataScriptList.length === 0" size="huge" :description="暂无数据"></n-empty>
   <NGrid v-else x-gap="20" y-gap="20" cols="1 s:2 m:3 l:4" responsive="screen">
     <NGridItem v-for="item in dataScriptList" :key="item.id">
       <NCard hoverable style="height: 180px">
@@ -295,7 +295,7 @@ onMounted(() => {
           <div class="item-desc">{{ findScriptType(item.script_type) }}</div>
         </div>
         <NFlex justify="end">
-          <NButton tertiary circle type="info" @click="openModal($t('common.edit'), item)">
+          <NButton tertiary circle type="info" 编辑",@click="openModal(" item)">
             <template #icon>
               <n-icon>
                 <editIcon />
@@ -318,7 +318,7 @@ onMounted(() => {
     v-model:show="showModal"
     preset="dialog"
     :width="800"
-    :title="modalTitle + $t('common.dataProces')"
+    :title="modalTitle + "数据处理"
     :show-icon="false"
     :style="bodyStyle"
     :closable="false"
@@ -333,25 +333,25 @@ onMounted(() => {
       label-placement="left"
       label-width="auto"
     >
-      <NFormItem :class="getPlatform ? 'w-100%' : 'w-50%'" :label="$t('page.manage.menu.form.title')" path="name">
-        <NInput v-model:value="configForm.name" :placeholder="$t('generate.enter-title')" />
+      <NFormItem :class="getPlatform ? 'w-100%' : 'w-50%'" :label="标题" path="name">
+        <NInput v-model:value="configForm.name" :placeholder="请输入标题" />
       </NFormItem>
-      <NFormItem :class="getPlatform ? 'w-100%' : 'w-50%'" :label="$t('generate.processing-type')" path="script_type">
+      <NFormItem :class="getPlatform ? 'w-100%' : 'w-50%'" :label="处理类型" path="script_type">
         <NSelect
           v-model:value="configForm.script_type"
           :options="scripTypeOpt"
-          :placeholder="$t('generate.select-processing-type')"
+          :placeholder="请选择处理类型"
         ></NSelect>
       </NFormItem>
-      <NFormItem class="w-100%" :label="$t('device_template.table_header.description')" path="description">
+      <NFormItem class="w-100%" :label="描述" path="description">
         <NInput
           v-model:value="configForm.description"
           type="textarea"
           :rows="2"
-          :placeholder="$t('generate.enter-description')"
+          :placeholder="请输入描述"
         />
       </NFormItem>
-      <NFormItem class="w-100%" :label="$t('generate.parse-script')" :rules="configFormRules" path="content">
+      <NFormItem class="w-100%" :label="解析脚本" :rules="configFormRules" path="content">
         <Codemirror
           ref="cmRef"
           v-model:value="configForm.content"
@@ -368,24 +368,24 @@ onMounted(() => {
       <NFormItem
         v-if="0"
         class="w-100%"
-        :label="$t('page.manage.setting.dataClearSetting.form.enabled')"
+        :label="是否启用"
         path="enable_flag"
       >
         <NSwitch v-model:value="configForm.enable_flag" checked-value="Y" unchecked-value="N" />
       </NFormItem>
-      <NFormItem class="w-100%" :label="$t('generate.simulate-input')" path="last_analog_input">
+      <NFormItem class="w-100%" :label="模拟输入" path="last_analog_input">
         <NInput v-model:value="configForm.last_analog_input" type="textarea" :rows="2" />
       </NFormItem>
-      <NFormItem class="w-100%" :label="$t('generate.debug-run-result')" path="resolt_analog_input">
+      <NFormItem class="w-100%" :label="调试运行结果" path="resolt_analog_input">
         <NInput v-model:value="configForm.resolt_analog_input" :rows="5" :disabled="true" type="textarea" />
       </NFormItem>
       <NFormItem>
-        <NButton type="primary" @click="doQuiz">{{ $t('common.debug') }}</NButton>
+        <NButton type="primary" @click="doQuiz">{{ "调试" }}</NButton>
       </NFormItem>
     </NForm>
     <NFlex justify="end">
-      <NButton @click="handleClose">{{ $t('generate.cancel') }}</NButton>
-      <NButton type="primary" @click="handleSubmit">{{ $t('common.save') }}</NButton>
+      <NButton @click="handleClose">{{ "取消" }}</NButton>
+      <NButton type="primary" @click="handleSubmit">{{ "保存" }}</NButton>
     </NFlex>
   </n-modal>
 </template>

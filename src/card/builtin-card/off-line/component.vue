@@ -14,9 +14,9 @@ const authStore = useAuthStore()
 
 const cardData = ref<any>({
   id: 'download',
-  title: $t('card.offlineDev'),
+  title: "离线设备数",
   value: 0,
-  unit: $t('card.deviceUnit'),
+  unit: "个",
   colors: ['#56cdf3', '#719de3'],
   icon: 'fa-ban'
 })

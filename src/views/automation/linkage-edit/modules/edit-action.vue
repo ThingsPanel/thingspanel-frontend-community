@@ -96,32 +96,32 @@ defineExpose({
 const configFormRules = ref({
   actionType: {
     required: true,
-    message: $t('common.select'),
+    message: "选择",
     trigger: 'change'
   },
   action_type: {
     required: true,
-    message: $t('common.select'),
+    message: "选择",
     trigger: 'change'
   },
   action_target: {
     required: true,
-    message: $t('common.select'),
+    message: "选择",
     trigger: 'change'
   },
   action_param_type: {
     required: true,
-    message: $t('common.select'),
+    message: "选择",
     trigger: 'change'
   },
   action_param: {
     required: true,
-    message: $t('common.select'),
+    message: "选择",
     trigger: 'change'
   },
   actionValue: {
     required: true,
-    message: $t('common.select')
+    message: "选择"
   }
 })
 // 下拉选择器加载状态
@@ -130,22 +130,19 @@ const loadingSelect = ref(false)
 // 动作选项
 const actionOptions = ref([
   {
-    label: $t('common.operateDevice'),
+    label: "操作设备",
     value: '1',
     disabled: false
   },
   {
-    label: $t('common.activateScene'),
+    label: "激活场景",
     value: '20'
   },
   {
-    label: $t('common.triggerAlarm'),
+    label: "触发告警",
     value: '30'
   }
-  // {
-  //   label: $t('common.triggerService'),
-  //   value: '40'
-  // }
+
 ])
 
 // 动作选择action值改变时
@@ -184,11 +181,11 @@ const actionChange = (actionGroupItem: any, actionGroupIndex: any, data: any) =>
 // 设备类型选项
 const actionTypeOptions = ref([
   {
-    label: $t('common.singleDevice'),
+    label: "单个设备",
     value: '10'
   },
   {
-    label: $t('common.singleClassDevice'),
+    label: "单类设备",
     value: '11'
   }
 ])
@@ -370,12 +367,12 @@ const actionValueChange = (instructItem: any) => {
         instructItem.inputFeedback = ''
         instructItem.inputValidationStatus = undefined
       } else {
-        message.error($t('common.enterJson'))
+        message.error("请输入JSON")
         instructItem.inputValidationStatus = 'error'
       }
     } catch (e) {
-      message.error($t('common.enterJson'))
-      // instructItem.inputFeedback=$t('common.enterJson')
+      message.error("请输入JSON")
+      // instructItem.inputFeedback="请输入JSON"
       instructItem.inputValidationStatus = 'error'
     }
   }
@@ -568,7 +565,7 @@ onMounted(() => {
                         >
                           <template #header>
                             <NFlex align="center" class="w-500px">
-                              {{ $t('generate.group') }}
+                              {{ "分组" }}
                               <n-select
                                 v-model:value="queryDevice.group_id"
                                 :options="deviceGroupOptions"
@@ -589,7 +586,7 @@ onMounted(() => {
                                 type="primary"
                                 @click.stop="getDevice(queryDevice.group_id, queryDevice.device_name)"
                               >
-                                {{ $t('common.search') }}
+                                {{ "搜索" }}
                               </NButton>
                             </NFlex>
                           </template>
@@ -610,7 +607,7 @@ onMounted(() => {
                           label-field="name"
                           value-field="id"
                           class="max-w-40"
-                          :placeholder="$t('common.select')"
+                          :placeholder="选择"
                           remote
                           filterable
                           @search="getDeviceConfig"
@@ -659,7 +656,7 @@ onMounted(() => {
                           <NInput
                             v-if="instructItem.actionParamData.data_type === 'string'"
                             v-model:value="instructItem.actionValue"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder || '--'"
+                            :placeholder="如" + '：' + instructItem.placeholder || '--'"
                             class="w-full"
                             @blur="actionValueChange(instructItem)"
                           />
@@ -667,7 +664,7 @@ onMounted(() => {
                             v-if="instructItem.actionParamData && instructItem.actionParamData.data_type === 'number'"
                             v-model:value="instructItem.actionValue"
                             class="w-full"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder || '--'"
+                            :placeholder="如" + '：' + instructItem.placeholder || '--'"
                             :show-button="false"
                           />
                           <n-radio-group
@@ -694,7 +691,7 @@ onMounted(() => {
                         >
                           <NInput
                             v-model:value="instructItem.actionValue"
-                            :placeholder="$t('common.as') + '：' + instructItem.placeholder || '--'"
+                            :placeholder="如" + '：' + instructItem.placeholder || '--'"
                             class="w-full"
                             @blur="actionValueChange(instructItem)"
                           />
@@ -707,7 +704,7 @@ onMounted(() => {
                       class="absolute right-5"
                       @click="addIfGroupsSubItem(actionGroupIndex)"
                     >
-                      {{ $t('generate.add-operation') }}
+                      {{ "新增一个操作" }}
                     </NButton>
                     <NButton
                       v-if="instructIndex !== 0"
@@ -715,7 +712,7 @@ onMounted(() => {
                       class="absolute right-5"
                       @click="deleteIfGroupsSubItem(actionGroupIndex, instructIndex)"
                     >
-                      {{ $t('generate.delete-operation') }}
+                      {{ "删除一个操作" }}
                     </NButton>
                   </NFlex>
                 </NCard>
@@ -725,7 +722,7 @@ onMounted(() => {
                 <NFlex class="ml-6" align="center">
                   <NFormItem
                     label-width="60"
-                    :label="$t('generate.activate')"
+                    :label="激活"
                     :path="`actionGroups[${actionGroupIndex}].action_target`"
                     :rule="configFormRules.action_target"
                   >
@@ -734,7 +731,7 @@ onMounted(() => {
                       :options="sceneList"
                       label-field="name"
                       value-field="id"
-                      :placeholder="$t('common.select')"
+                      :placeholder="选择"
                       class="max-w-60"
                       :loading="loadingSelect"
                       filterable
@@ -749,7 +746,7 @@ onMounted(() => {
                 <NFlex class="ml-6">
                   <NFormItem
                     label-width="60"
-                    :label="$t('generate.trigger')"
+                    :label="触发"
                     :path="`actionGroups[${actionGroupIndex}].action_target`"
                     :rule="configFormRules.action_target"
                   >
@@ -759,7 +756,7 @@ onMounted(() => {
                       label-field="name"
                       value-field="id"
                       class="max-w-60"
-                      :placeholder="$t('common.select')"
+                      :placeholder="选择"
                       filterable
                       remote
                       :loading="loadingSelect"
@@ -767,18 +764,18 @@ onMounted(() => {
                     />
                   </NFormItem>
                   <NButton class="w-20" dashed type="info" @click="popUpVisible = true">
-                    {{ $t('generate.create-alarm') }}
+                    {{ "创建告警" }}
                   </NButton>
                 </NFlex>
               </template>
               <NButton v-if="actionGroupIndex > 0" type="error" @click="deleteActionGroupItem(actionGroupIndex)">
-                {{ $t('generate.delete-execution-action') }}
+                {{ "删除执行动作" }}
               </NButton>
             </NFlex>
           </NFormItem>
         </NFlex>
         <NButton type="primary" class="w-30" @click="addActionGroupItem()">
-          {{ $t('generate.add-execution-action') }}
+          {{ "新增执行动作" }}
         </NButton>
       </NFlex>
     </NForm>

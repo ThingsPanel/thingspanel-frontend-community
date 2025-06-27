@@ -1,0 +1,785 @@
+{
+  "total": 89,
+  "staticKeys": [
+    "buttons.refresh",
+    "card.deviceData",
+    "card.dupCardId",
+    "card.fetchError",
+    "card.networkImageText",
+    "card.no",
+    "card.off",
+    "card.on",
+    "card.shadowColor",
+    "card.systemData",
+    "card.unknownError",
+    "config.label",
+    "custom.associatedDevices.selectDeviceFirst",
+    "dtype.helpKey",
+    "dtype.labelKey",
+    "generate.InputMinValue",
+    "generate.addFailed",
+    "generate.decimals",
+    "generate.editFailed",
+    "generate.failedToLoadConfig",
+    "generate.failedToLoadDeviceTemplates",
+    "generate.failedToParseProtocolConfig",
+    "generate.step",
+    "i18nKey",
+    "item.data.title",
+    "item.descriptionKey",
+    "item.title",
+    "item.titleKey",
+    "kanban.add-cards",
+    "key",
+    "loginModuleRecord.register",
+    "modalTitle",
+    "op.remark",
+    "page.home.greeting",
+    "page.login.common.countingLabel",
+    "page.login.common.welcomeBack",
+    "props.addButtonI18nKey",
+    "route.alarm",
+    "route.apply_in",
+    "route.apply_service",
+    "route.automation_scene-linkage",
+    "route.device_template",
+    "route.management_user",
+    "row.multilingual",
+    "view.label"
+  ],
+  "dynamicCalls": [
+    {
+      "file": "src\\layouts\\modules\\theme-drawer\\components\\layout-mode-card.vue",
+      "expression": "themeLayoutModeRecord[key]",
+      "match": "$t(themeLayoutModeRecord[key])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\store\\modules\\tab\\shared.ts",
+      "expression": "route.${homeRouteName}",
+      "match": "$t(`route.${homeRouteName}`)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\utils\\common4.ts",
+      "expression": "option.label as App.I18n.I18nKey",
+      "match": "$t(option.label as App.I18n.I18nKey)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\index.vue",
+      "expression": "menuTypeRecord[row.menuType]",
+      "match": "$t(menuTypeRecord[row.menuType])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\index.vue",
+      "expression": "enableStatusRecord[row.status]",
+      "match": "$t(enableStatusRecord[row.status])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\index.vue",
+      "expression": "yesOrNoRecord[hide]",
+      "match": "$t(yesOrNoRecord[hide])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+      "expression": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+      "expression": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+      "expression": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\role\\index.vue",
+      "expression": "enableStatusRecord[row.status]",
+      "match": "$t(enableStatusRecord[row.status])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\role\\modules\\role-operate-drawer.vue",
+      "expression": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\user\\index.vue",
+      "expression": "userGenderRecord[row.userGender]",
+      "match": "$t(userGenderRecord[row.userGender])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\user\\index.vue",
+      "expression": "enableStatusRecord[row.status]",
+      "match": "$t(enableStatusRecord[row.status])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\user\\modules\\user-operate-drawer.vue",
+      "expression": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\user\\modules\\user-operate-drawer.vue",
+      "expression": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\personal-center\\index.vue",
+      "expression": "generate.${userInfoData.authority}",
+      "match": "$t(`generate.${userInfoData.authority}`)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\personal-center\\index.vue",
+      "expression": "generate.${userInfoData.authority}",
+      "match": "$t(`generate.${userInfoData.authority}`)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\_builtin\\login\\index.vue",
+      "expression": "activeModule.label as any",
+      "match": "$t(activeModule.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\_builtin\\login\\modules\\pwd-login.vue",
+      "expression": "loginModuleRecord['code-login']",
+      "match": "$t(loginModuleRecord['code-login'])",
+      "type": "dynamic"
+    }
+  ],
+  "prefixStats": {
+    "item": [
+      "item.titleKey",
+      "item.descriptionKey",
+      "item.data.title",
+      "item.title"
+    ],
+    "card": [
+      "card.fetchError",
+      "card.unknownError",
+      "card.no",
+      "card.on",
+      "card.off",
+      "card.systemData",
+      "card.deviceData",
+      "card.shadowColor",
+      "card.networkImageText",
+      "card.dupCardId"
+    ],
+    "generate": [
+      "generate.step",
+      "generate.decimals",
+      "generate.InputMinValue",
+      "generate.failedToLoadDeviceTemplates",
+      "generate.addFailed",
+      "generate.editFailed",
+      "generate.failedToParseProtocolConfig",
+      "generate.failedToLoadConfig"
+    ],
+    "config": [
+      "config.label"
+    ],
+    "buttons": [
+      "buttons.refresh"
+    ],
+    "view": [
+      "view.label"
+    ],
+    "props": [
+      "props.addButtonI18nKey"
+    ],
+    "kanban": [
+      "kanban.add-cards"
+    ],
+    "page": [
+      "page.login.common.countingLabel",
+      "page.login.common.welcomeBack",
+      "page.home.greeting"
+    ],
+    "op": [
+      "op.remark"
+    ],
+    "i18nKey": [
+      "i18nKey"
+    ],
+    "route": [
+      "route.apply_in",
+      "route.apply_service",
+      "route.automation_scene-linkage",
+      "route.device_template",
+      "route.alarm",
+      "route.management_user"
+    ],
+    "custom": [
+      "custom.associatedDevices.selectDeviceFirst"
+    ],
+    "modalTitle": [
+      "modalTitle"
+    ],
+    "dtype": [
+      "dtype.labelKey",
+      "dtype.helpKey"
+    ],
+    "row": [
+      "row.multilingual"
+    ],
+    "key": [
+      "key"
+    ],
+    "loginModuleRecord": [
+      "loginModuleRecord.register"
+    ]
+  },
+  "allCalls": [
+    {
+      "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+      "key": "item.titleKey",
+      "match": "$t(item.titleKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+      "key": "item.titleKey",
+      "match": "$t(item.titleKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+      "key": "item.descriptionKey",
+      "match": "$t(item.descriptionKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\builtin-card\\operation-guide-card\\component.vue",
+      "key": "item.descriptionKey",
+      "match": "$t(item.descriptionKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.fetchError",
+      "match": "$t('card.fetchError')",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.fetchError",
+      "match": "$t('card.fetchError')",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.unknownError",
+      "match": "$t('card.unknownError')",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.no",
+      "match": "$t('card.no')",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.no",
+      "match": "$t('card.no')",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.on",
+      "match": "$t('card.on')",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\builtin-card\\reported-data\\component.vue",
+      "key": "card.off",
+      "match": "$t('card.off')",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\chart-card\\digit-setter\\card-config.vue",
+      "key": "generate.step",
+      "match": "$t('generate.step')",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\chart-card\\digit-setter\\card-config.vue",
+      "key": "generate.step",
+      "match": "$t('generate.step')",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\chart-card\\digit-setter\\card-config.vue",
+      "key": "generate.decimals",
+      "match": "$t('generate.decimals')",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\chart-card\\digit-setter\\card-config.vue",
+      "key": "generate.decimals",
+      "match": "$t('generate.decimals')",
+      "type": "static"
+    },
+    {
+      "file": "src\\card\\chart-card\\instrument-panel\\card-config.vue",
+      "key": "generate.InputMinValue",
+      "match": "$t('generate.InputMinValue')",
+      "type": "static"
+    },
+    {
+      "file": "src\\cards2.0\\chart-card\\demo1\\index.vue",
+      "key": "card.systemData",
+      "match": "$t('card.systemData', { count: cardData?.config.source.systemCount || 0 })",
+      "type": "static"
+    },
+    {
+      "file": "src\\cards2.0\\chart-card\\demo1\\index.vue",
+      "key": "card.deviceData",
+      "match": "$t('card.deviceData', { count: cardData?.config.source.deviceCount || 0 })",
+      "type": "static"
+    },
+    {
+      "file": "src\\cards2.0\\chart-card\\demo2\\card-congig-form.vue",
+      "key": "card.shadowColor",
+      "match": "$t('card.shadowColor')",
+      "type": "static"
+    },
+    {
+      "file": "src\\cards2.0\\plugins-card\\demo1\\index.vue",
+      "key": "card.networkImageText",
+      "match": "$t('card.networkImageText', { size: cardData?.config?.cardUI?.textsize || 12 })",
+      "type": "static"
+    },
+    {
+      "file": "src\\cards2.0\\store\\kan-ban-store.ts",
+      "key": "card.dupCardId",
+      "match": "$t('card.dupCardId', { id: card.cardItemBase.id })",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\data-table-page\\index.vue",
+      "key": "config.label",
+      "match": "$t(config.label)",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\data-table-page\\index.vue",
+      "key": "config.label",
+      "match": "$t(config.label)",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\data-table-page\\index.vue",
+      "key": "config.label",
+      "match": "$t(config.label)",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\data-table-page\\index.vue",
+      "key": "config.label",
+      "match": "$t(config.label)",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\list-page\\index.vue",
+      "key": "buttons.refresh",
+      "match": "$t('buttons.refresh')",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\list-page\\index.vue",
+      "key": "view.label",
+      "match": "$t(view.label)",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\list-page\\index.vue",
+      "key": "props.addButtonI18nKey",
+      "match": "$t(props.addButtonI18nKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\add-card.vue",
+      "key": "item.data.title",
+      "match": "$t(item.data.title)",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\add-card.vue",
+      "key": "item.title",
+      "match": "$t(item.title)",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-selector.vue",
+      "key": "item.data.title",
+      "match": "$t(item.data.title)",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\panel\\ui\\card-selector.vue",
+      "key": "item.title",
+      "match": "$t(item.title)",
+      "type": "static"
+    },
+    {
+      "file": "src\\components\\tp-kan-ban\\modules\\kan-ban-header.vue",
+      "key": "kanban.add-cards",
+      "match": "$t('kanban.add-cards')",
+      "type": "static"
+    },
+    {
+      "file": "src\\hooks\\business\\use-sms-code.ts",
+      "key": "page.login.common.countingLabel",
+      "match": "$t('page.login.common.countingLabel', { second })",
+      "type": "static"
+    },
+    {
+      "file": "src\\layouts\\modules\\global-menu\\base-menu.vue",
+      "key": "op.remark",
+      "match": "$t(op.remark)",
+      "type": "static"
+    },
+    {
+      "file": "src\\layouts\\modules\\theme-drawer\\components\\layout-mode-card.vue",
+      "key": "themeLayoutModeRecord[key]",
+      "match": "$t(themeLayoutModeRecord[key])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\router\\guard\\title.ts",
+      "key": "i18nKey",
+      "match": "$t(i18nKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\store\\modules\\app\\index.ts",
+      "key": "i18nKey",
+      "match": "$t(i18nKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\store\\modules\\auth\\index.ts",
+      "key": "page.login.common.welcomeBack",
+      "match": "$t('page.login.common.welcomeBack', {\r\n              userName: info?.name\r\n            })",
+      "type": "static"
+    },
+    {
+      "file": "src\\store\\modules\\panel\\index.ts",
+      "key": "card.dupCardId",
+      "match": "$t('card.dupCardId', { id: card.cardItemBase.id })",
+      "type": "static"
+    },
+    {
+      "file": "src\\store\\modules\\route\\shared.ts",
+      "key": "i18nKey",
+      "match": "$t(i18nKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\store\\modules\\route\\shared.ts",
+      "key": "i18nKey",
+      "match": "$t(i18nKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\store\\modules\\tab\\shared.ts",
+      "key": "route.${homeRouteName}",
+      "match": "$t(`route.${homeRouteName}`)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\store\\modules\\tab\\shared.ts",
+      "key": "i18nKey",
+      "match": "$t(i18nKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\store\\modules\\tab\\shared.ts",
+      "key": "i18nKey",
+      "match": "$t(i18nKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\utils\\common4.ts",
+      "key": "option.label as App.I18n.I18nKey",
+      "match": "$t(option.label as App.I18n.I18nKey)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\apply\\plugin\\index.vue",
+      "key": "route.apply_in",
+      "match": "$t('route.apply_in')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\apply\\service\\index.vue",
+      "key": "route.apply_service",
+      "match": "$t('route.apply_service')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\automation\\linkage-edit\\index.vue",
+      "key": "route.automation_scene-linkage",
+      "match": "$t('route.automation_scene-linkage')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "route.device_template",
+      "match": "$t('route.device_template')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "route.alarm",
+      "match": "$t('route.alarm')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\index.vue",
+      "key": "route.alarm",
+      "match": "$t('route.alarm')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-detail\\modules\\associated-devices.vue",
+      "key": "custom.associatedDevices.selectDeviceFirst",
+      "match": "$t('custom.associatedDevices.selectDeviceFirst')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.failedToLoadDeviceTemplates",
+      "match": "$t('generate.failedToLoadDeviceTemplates')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.addFailed",
+      "match": "$t('generate.addFailed')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.editFailed",
+      "match": "$t('generate.editFailed')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.editFailed",
+      "match": "$t('generate.editFailed')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.failedToParseProtocolConfig",
+      "match": "$t('generate.failedToParseProtocolConfig')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "generate.failedToLoadConfig",
+      "match": "$t('generate.failedToLoadConfig')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "modalTitle",
+      "match": "$t(modalTitle)",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "dtype.labelKey",
+      "match": "$t(dtype.labelKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\config-edit\\index.vue",
+      "key": "dtype.helpKey",
+      "match": "$t(dtype.helpKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\template\\components\\card-select\\ui\\add-template-card.vue",
+      "key": "item.title",
+      "match": "$t(item.title)",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\device\\template\\index.vue",
+      "key": "route.device_template",
+      "match": "$t('route.device_template')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\home\\modules\\header-banner.vue",
+      "key": "page.home.greeting",
+      "match": "$t('page.home.greeting', { userName: authStore.userInfo.userName })",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\index.vue",
+      "key": "menuTypeRecord[row.menuType]",
+      "match": "$t(menuTypeRecord[row.menuType])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\index.vue",
+      "key": "i18nKey",
+      "match": "$t(i18nKey)",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\index.vue",
+      "key": "enableStatusRecord[row.status]",
+      "match": "$t(enableStatusRecord[row.status])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\index.vue",
+      "key": "yesOrNoRecord[hide]",
+      "match": "$t(yesOrNoRecord[hide])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+      "key": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+      "key": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\menu\\modules\\menu-operate-drawer.vue",
+      "key": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\role\\index.vue",
+      "key": "enableStatusRecord[row.status]",
+      "match": "$t(enableStatusRecord[row.status])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\role\\modules\\role-operate-drawer.vue",
+      "key": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\user\\index.vue",
+      "key": "userGenderRecord[row.userGender]",
+      "match": "$t(userGenderRecord[row.userGender])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\user\\index.vue",
+      "key": "enableStatusRecord[row.status]",
+      "match": "$t(enableStatusRecord[row.status])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\user\\modules\\user-operate-drawer.vue",
+      "key": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\manage\\user\\modules\\user-operate-drawer.vue",
+      "key": "item.label as any",
+      "match": "$t(item.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\management\\auth\\index.vue",
+      "key": "row.multilingual",
+      "match": "$t(row.multilingual)",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\management\\setting\\components\\data-clear-setting.vue",
+      "key": "key",
+      "match": "$t(key)",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\management\\user\\components\\table-action-modal.vue",
+      "key": "key",
+      "match": "$t(key)",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\management\\user\\index.vue",
+      "key": "route.management_user",
+      "match": "$t('route.management_user')",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\management\\user\\index.vue",
+      "key": "key",
+      "match": "$t(key)",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\management\\user\\index.vue",
+      "key": "key",
+      "match": "$t(key)",
+      "type": "static"
+    },
+    {
+      "file": "src\\views\\personal-center\\index.vue",
+      "key": "generate.${userInfoData.authority}",
+      "match": "$t(`generate.${userInfoData.authority}`)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\personal-center\\index.vue",
+      "key": "generate.${userInfoData.authority}",
+      "match": "$t(`generate.${userInfoData.authority}`)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\_builtin\\login\\index.vue",
+      "key": "activeModule.label as any",
+      "match": "$t(activeModule.label as any)",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\_builtin\\login\\modules\\pwd-login.vue",
+      "key": "loginModuleRecord['code-login']",
+      "match": "$t(loginModuleRecord['code-login'])",
+      "type": "dynamic"
+    },
+    {
+      "file": "src\\views\\_builtin\\login\\modules\\pwd-login.vue",
+      "key": "loginModuleRecord.register",
+      "match": "$t(loginModuleRecord.register)",
+      "type": "static"
+    }
+  ]
+}

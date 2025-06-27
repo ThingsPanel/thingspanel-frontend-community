@@ -7,7 +7,7 @@
       <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-3">
         <div class="flex">
           <Icon icon="carbon:information-square-filled" class="mr-2 text-lg text-blue-600 dark:text-blue-400" />
-          <span>{{ $t('card.versionInfo.title') }}</span>
+          <span>{{ "版本信息" }}</span>
         </div>
 
         <div>
@@ -19,13 +19,13 @@
         </div>
       </div>
       <div class="flex flex-col items-center mt-4">
-        <span class="text-gray-700 dark:text-gray-300 mb-1">{{ $t('card.versionInfo.currentVersion') }}</span>
+        <span class="text-gray-700 dark:text-gray-300 mb-1">{{ "当前版本" }}</span>
         <span class="text-3xl font-bold text-gray-900 dark:text-white mb-3 tracking-wider">{{ version }}</span>
         <n-tag type="success" size="medium" round class="animate-pulse">
           <template v-if="isLatestVersion" #icon>
             <Icon icon="carbon:checkmark-outline" class="text-lg" />
           </template>
-          {{ isLatestVersion?$t('card.versionInfo.latest'):'最新版本：'+(latestVersion||'--') }}
+          {{ isLatestVersion?"已是最新":'最新版本：'+(latestVersion||'--') }}
         </n-tag>
       </div>
     </div>

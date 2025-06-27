@@ -73,7 +73,7 @@ const getTableData = async () => {
 const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   {
     key: 'send_time',
-    title: $t('custom.device_details.sendTime'),
+    title: "发送时间",
     align: 'left',
     minWidth: '180px',
     render: (row: any) => {
@@ -83,25 +83,25 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   {
     key: 'send_content',
     minWidth: '180px',
-    title: $t('custom.device_details.titleOrContent'),
+    title: "发送标题和内容",
     align: 'left'
   },
   {
     key: 'send_target',
     minWidth: '100px',
-    title: $t('generate.recipient'),
+    title: "接收人",
     align: 'left',
     width: '200'
   },
   {
     key: 'send_result',
-    title: $t('custom.device_details.sendResults'),
+    title: "发送结果",
     minWidth: '140px',
     align: 'left'
   },
   {
     key: 'notification_type',
-    title: $t('generate.notification-type'),
+    title: "通知类型",
     minWidth: '140px',
     align: 'left'
   }
@@ -119,14 +119,14 @@ getTableData()
 
 <template>
   <div>
-    <NCard :title="$t('generate.notification-record')">
+    <NCard :title="通知记录">
       <div class="h-full flex-col">
         <NForm label-placement="left" :inline="!getPlatform" :model="queryParams">
-          <NFormItem path="name" :label="$t('generate.notification-type')">
+          <NFormItem path="name" :label="通知类型">
             <n-select
               v-model:value="queryParams.notification_type"
               :options="notificationOptions"
-              :placeholder="$t('generate.notification-type')"
+              :placeholder="通知类型"
               class="input-style min-w-160px"
               clearable
             />
@@ -141,9 +141,9 @@ getTableData()
             />
           </NFormItem>
           <NFormItem path="send_target">
-            <NInput v-model:value="queryParams.send_target" clearable :placeholder="$t('generate.recipient')" />
+            <NInput v-model:value="queryParams.send_target" clearable :placeholder="接收人" />
           </NFormItem>
-          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+          <NButton class="w-72px" type="primary" @click="handleQuery">{{ "搜索" }}</NButton>
         </NForm>
         <NDataTable :columns="columns" :data="tableData" :loading="loading" class="flex-1-hidden" />
         <div class="pagination-box">

@@ -51,8 +51,8 @@ const closeModal = () => {
 
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
-    add: $t('page.manage.api.addApiKey'),
-    edit: $t('page.manage.api.editAPi')
+    add: "创建API key",
+    edit: "编辑"
   }
   return titles[props.type]
 })
@@ -123,12 +123,12 @@ watch(
 <template>
   <n-modal v-model:show="modalVisible" preset="card" :title="title">
     <n-form ref="formRef" label-placement="left" :label-width="80" :model="formModel" :rules="rules">
-      <n-form-item :label="$t('page.manage.api.apiName')" path="name">
-        <n-input v-model:value="formModel.name" :placeholder="$t('page.manage.api.form.apiName')" />
+      <n-form-item :label="名称" path="name">
+        <n-input v-model:value="formModel.name" :placeholder="请输入API key的名称" />
       </n-form-item>
       <n-space class="w-full pt-16px" :size="24" justify="end">
-        <n-button class="w-72px" @click="closeModal">{{ $t('generate.cancel') }}</n-button>
-        <n-button class="w-72px" type="primary" @click="handleSubmit">{{ $t('page.login.common.confirm') }}</n-button>
+        <n-button class="w-72px" @click="closeModal">{{ "取消" }}</n-button>
+        <n-button class="w-72px" type="primary" @click="handleSubmit">{{ "确定" }}</n-button>
       </n-space>
     </n-form>
   </n-modal>

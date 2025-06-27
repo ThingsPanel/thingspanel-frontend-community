@@ -32,79 +32,79 @@ const { loading, startLoading, endLoading } = useLoading()
 let components = [
   {
     key: 'telemetry',
-    name: () => $t('custom.device_details.telemetry'),
+    name: () => "遥测",
     component: Telemetry,
     refreshKey: 0
   },
   {
     key: 'chart',
-    name: () => $t('custom.device_details.chart'),
+    name: () => "图表",
     component: TelemetryChart,
     refreshKey: 0
   },
   {
     key: 'join',
-    name: () => $t('custom.device_details.join'),
+    name: () => "连接",
     component: Join,
     refreshKey: 0
   },
   {
     key: 'device-analysis',
-    name: () => $t('custom.device_details.deviceAnalysis'),
+    name: () => "子设备",
     component: DeviceAnalysis,
     refreshKey: 0
   },
   {
     key: 'message',
-    name: () => $t('custom.device_details.AdditionalDetails'),
+    name: () => "信息",
     component: Message,
     refreshKey: 0
   },
   {
     key: 'stats',
-    name: () => $t('custom.device_details.attributes'),
+    name: () => "属性",
     component: Stats,
     refreshKey: 0
   },
   {
     key: 'event-report',
-    name: () => $t('custom.device_details.eventReport'),
+    name: () => "事件(上报)",
     component: EventReport,
     refreshKey: 0
   },
   {
     key: 'command-delivery',
-    name: () => $t('custom.device_details.commandDelivery'),
+    name: () => "命令(下发)",
     component: CommandDelivery,
     refreshKey: 0
   },
   {
     key: 'expect-message',
-    name: () => $t('custom.device_details.expectMessage'),
+    name: () => "期望消息",
     component: ExpectMessage,
     refreshKey: 0
   },
   {
     key: 'automate',
-    name: () => $t('custom.device_details.automate'),
+    name: () => "自动化",
     component: Automate,
     refreshKey: 0
   },
   {
     key: 'give-an-alarm',
-    name: () => $t('custom.device_details.giveAnAlarm'),
+    name: () => "告警",
     component: GiveAnAlarm,
     refreshKey: 0
   },
   {
     key: 'user',
-    name: () => $t('custom.device_details.user'),
+    name: () => "用户",
     component: User,
     refreshKey: 0
   },
   {
     key: 'settings',
-    name: () => $t('custom.device_details.settings'),
+    name: () => "设置",
     component: Settings,
     refreshKey: 0
   }
@@ -161,12 +161,12 @@ const editConfig = () => {
 const rules = {
   name: {
     required: true,
-    message: $t('custom.devicePage.enterDeviceName'),
+    message: "请输入设备名称",
     trigger: 'blur'
   },
   device_number: {
     required: true,
-    message: $t('custom.devicePage.enterDeviceNumber'),
+    message: "请输入设备编码",
     trigger: 'blur'
   }
 }
@@ -258,15 +258,15 @@ watch(
 
 const save = async () => {
   if (!deviceData.value?.name) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceName'))
+    window.NMessage.error("请输入设备名称")
     return
   }
   if (!deviceData.value?.device_number) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceNumber'))
+    window.NMessage.error("请输入设备编码")
     return
   }
   if (deviceData.value?.device_number.length > 100) {
-    window.NMessage.error($t('custom.devicePage.deviceNumberMax'))
+    window.NMessage.error("设备编码不能超过100位")
     return
   }
   device_number.value = deviceData.value.device_number
@@ -307,36 +307,36 @@ const getPlatform = computed(() => {
         <div style="display: flex; margin-top: -5px">
           <span style="margin-right: 20px">{{ name || '--' }}</span>
           <NButton v-show="true" type="primary" style="margin-top: -5px" @click="editConfig">
-            {{ $t('common.edit') }}
+            {{ "编辑" }}
           </NButton>
         </div>
 
         <n-modal
           v-model:show="showDialog"
-          :title="$t('generate.issue-attribute')"
+          :title="下发属性"
           :class="getPlatform ? 'w-90%' : 'w-400px'"
         >
           <n-card>
             <n-form :model="deviceData" :rules="rules">
               <div>
-                <NH3>{{ $t('generate.modify-device-info') }}</NH3>
+                <NH3>{{ "修改设备信息" }}</NH3>
               </div>
-              <n-form-item :label="$t('page.irrigation.group.deviceName')" path="name">
+              <n-form-item :label="设备名称" path="name">
                 <n-input v-model:value="deviceData.name" aria-required="true" />
               </n-form-item>
-              <n-form-item :label="$t('generate.device-code')" path="device_number">
+              <n-form-item :label="设备编码" path="device_number">
                 <n-input v-model:value="deviceData.device_number" />
               </n-form-item>
-              <n-form-item :label="$t('custom.devicePage.label')" path="label">
+              <n-form-item :label="标签" path="label">
                 <n-dynamic-tags v-model:value="labels" />
               </n-form-item>
-              <n-form-item :label="$t('generate.device-description')">
+              <n-form-item :label="设备描述">
                 <!-- <n-input v-model:value="queryParams.deviceDescribe" type="textarea"/> -->
                 <NInput v-model:value="deviceData.description" type="textarea" />
               </n-form-item>
               <n-space>
-                <n-button @click="closeModal">{{ $t('generate.cancel') }}</n-button>
-                <n-button @click="save">{{ $t('common.save') }}</n-button>
+                <n-button @click="closeModal">{{ "取消" }}</n-button>
+                <n-button @click="save">{{ "保存" }}</n-button>
               </n-space>
             </n-form>
           </n-card>
@@ -348,20 +348,20 @@ const getPlatform = computed(() => {
             <span style="color: #ccc">{{ d_id || '--' }}</span>
           </div>
           <div class="mr-4" style="color: #ccc">
-            <span class="mr-2">{{ $t('custom.devicePage.configTemplate') }} :</span>
+            <span class="mr-2">{{ "配置模版" }} :</span>
             <span v-if="deviceData?.device_config_name" style="color: blue; cursor: pointer" @click="clickConfig">
               {{ deviceData?.device_config_name }}
             </span>
             <span v-else>--</span>
           </div>
           <div v-if="device_type === '3'" class="mr-4" style="color: #ccc">
-            <span class="mr-2">{{ $t('generate.gateway') }}:</span>
+            <span class="mr-2">{{ "网关" }}:</span>
             <span style="color: blue; cursor: pointer" @click="clickGateway">
               {{ deviceData?.gateway_device_name || '--' }}
             </span>
           </div>
           <div class="mr-4" style="display: flex">
-            <!-- <span class="mr-2">{{ $t('generate.status') }}:</span> -->
+            <!-- <span class="mr-2">{{ "状态" }}:</span> -->
             <SvgIcon
               local-icon="CellTowerRound"
               style="color: #ccc; margin-right: 5px"
@@ -373,7 +373,7 @@ const getPlatform = computed(() => {
                 color: device_is_online === 1 ? 'rgb(2,153,52)' : '#ccc'
               }"
             >
-              {{ device_is_online === 1 ? $t('custom.device_details.online') : $t('custom.device_details.offline') }}
+              {{ device_is_online === 1 ? "在线" : "离线" }}
             </span>
           </div>
           <div class="mr-4" style="display: flex">
@@ -384,7 +384,7 @@ const getPlatform = computed(() => {
                 class="text-20px text-primary"
                 :stroke="icon_type"
               />
-              <span style="color: #ee0808">{{ $t('custom.device_details.alarm') }}</span>
+              <span style="color: #ee0808">{{ "告警" }}</span>
             </template>
             <template v-if="alarmStatus === false">
               <SvgIcon
@@ -393,7 +393,7 @@ const getPlatform = computed(() => {
                 class="text-20px text-primary"
                 :stroke="icon_type"
               />
-              <span style="color: #ccc">{{ $t('custom.device_details.noAlarm') }}</span>
+              <span style="color: #ccc">{{ "无告警" }}</span>
             </template>
           </div>
         </NFlex>

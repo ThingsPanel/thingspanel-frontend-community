@@ -50,7 +50,7 @@ const onDel: (rowIndex: number) => void = rowIndex => {
 const columns: any = [
   {
     key: 'value_type',
-    title: $t('device_template.table_header.enumDataType'),
+    title: "枚举数据类型",
     align: 'center',
     className: 'enum-header',
     width: 125,
@@ -66,7 +66,7 @@ const columns: any = [
   },
   {
     key: 'value',
-    title: $t('device_template.table_header.enumDataValue'),
+    title: "枚举值",
     align: 'center',
     className: 'enum-header',
     width: 120,
@@ -82,7 +82,7 @@ const columns: any = [
   },
   {
     key: 'description',
-    title: $t('device_template.table_header.enumDescription'),
+    title: "枚举描述",
     align: 'center',
     className: 'enum-header',
     render: (rowData, rowIndex) => {
@@ -98,7 +98,7 @@ const columns: any = [
       return (
         <NSpace justify={'center'}>
           <NButton quaternary type="primary" size="small" class="p-l0 p-r0" onClick={() => onDel(rowIndex)}>
-            {$t('common.delete')}
+            {"删除"}
           </NButton>
         </NSpace>
       );
@@ -108,13 +108,13 @@ const columns: any = [
 </script>
 
 <template>
-  <div>{{ $t('device_template.table_header.setEnum') }}</div>
+  <div>{{ "设置枚举项" }}</div>
   <n-data-table :columns="columns" :data="props.additionalInfo" class="enum-table m-b2 m-t2" />
   <NButton class="add-button" @click="onAdd">
     <template #icon>
       <SvgIcon local-icon="add" />
     </template>
-    {{ $t('device_template.table_header.addEnum') }}
+    {{ "添加枚举项" }}
   </NButton>
 </template>
 

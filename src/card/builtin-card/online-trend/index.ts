@@ -8,7 +8,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('card.onlineTrend'),
+  title: '设备在线趋势',
   preset: {
     iCardViewDefault: {
       w: 4,

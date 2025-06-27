@@ -37,7 +37,7 @@ export function setupLoading() {
       ${dot}
     </div>
   </div>
-  <h2 class="text-28px text-center font-500 text-#646464">${$t('system.title')}</h2>
+  <h2 class="text-28px text-center font-500 text-#646464">${'ThingsPanel'}</h2>
 </div>`
 
   const app = document.getElementById('app')

@@ -46,13 +46,13 @@ async function getTableData() {
 const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   {
     key: 'index',
-    title: $t('common.index'),
+    title: "序号",
     align: 'center',
     width: '120px'
   },
   {
     key: 'name',
-    title: $t('page.manage.menu.form.name'),
+    title: "名称",
     align: 'left'
   },
   {
@@ -62,7 +62,7 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   },
   {
     key: 'signMode',
-    title: $t('generate.signature-method'),
+    title: "签名方式",
     align: 'left',
     render: row => {
       if (row.signMode) {
@@ -73,12 +73,12 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   },
   {
     key: 'ip',
-    title: $t('generate.ip2'),
+    title: "IP白名单",
     align: 'left'
   },
   {
     key: 'flag',
-    title: $t('generate.api-support-flag'),
+    title: "接口支持标志",
     align: 'left',
     render: row => {
       if (row.flag) {
@@ -89,12 +89,12 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   },
   {
     key: 'desc',
-    title: $t('custom.groupPage.description'),
+    title: "描述",
     align: 'left'
   },
   {
     key: 'createTime',
-    title: $t('common.creationTime'),
+    title: "创建时间",
     align: 'left',
     render: row => {
       return formatDateTime(row.createTime);
@@ -102,7 +102,7 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   },
   {
     key: 'status',
-    title: $t('generate.status'),
+    title: "状态",
     align: 'left',
     render: row => {
       if (row.status) {
@@ -117,24 +117,24 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   },
   {
     key: 'actions',
-    title: $t('common.actions'),
+    title: "操作",
     align: 'center',
     width: '300px',
     render: row => {
       return (
         <NSpace justify={'center'}>
           <NButton size={'small'} type="primary" onClick={() => handleViewKey(row.id)}>
-            {$t('generate.view-key')}
+            {"查看密钥"}
           </NButton>
           <NButton size={'small'} type="primary" onClick={() => handleEditTable(row.id)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -172,7 +172,7 @@ function handleEditTable(rowId: string) {
 }
 
 function handleDeleteTable(rowId: string) {
-  window.$message?.info(`${$t('generate.clickDelete')}，rowId为${rowId}`);
+  window.$message?.info(`${"点击了删除"}，rowId为${rowId}`);
 }
 
 const pagination: PaginationProps = reactive({
@@ -211,20 +211,20 @@ init();
 
 <template>
   <div>
-    <NCard :title="$t('generate.rule-engine')" :bordered="false" class="h-full rounded-8px shadow-sm">
+    <NCard :title="规则引擎" :bordered="false" class="h-full rounded-8px shadow-sm">
       <template #header-extra>
-        <NButton type="primary" @click="handleAddTable">{{ $t('device_template.add') }}</NButton>
+        <NButton type="primary" @click="handleAddTable">{{ "新增" }}</NButton>
       </template>
       <div class="h-full flex-col">
         <NForm ref="queryFormRef" inline label-placement="left" :model="queryParams">
-          <NFormItem :label="$t('generate.rule-name')" path="name">
+          <NFormItem :label="规则名称" path="name">
             <NInput v-model:value="queryParams.name" />
           </NFormItem>
-          <NFormItem :label="$t('generate.signature-method')" path="status">
+          <NFormItem :label="签名方式" path="status">
             <NSelect v-model:value="queryParams.status" clearable class="w-200px" :options="dataServiceStatusOptions" />
           </NFormItem>
           <NFormItem>
-            <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+            <NButton class="w-72px" type="primary" @click="handleQuery">{{ "搜索" }}</NButton>
           </NFormItem>
         </NForm>
         <NDataTable

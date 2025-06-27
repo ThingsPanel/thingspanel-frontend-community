@@ -6,7 +6,7 @@ import { $t } from '@/locales'
   <div class="device flex-col flex-justify-center flex-items-center">
     <div class="device-top h-full w-full flex flex-justify-between flex-items-center">
       <div class="left h-full flex-col">
-        <span>{{ $t('dashboard_panel.cardName.bugNum') }}</span>
+        <span>{{ "告警总数" }}</span>
         <span>0</span>
       </div>
       <SvgIcon local-icon="bug" class="device-icon" />
@@ -14,7 +14,7 @@ import { $t } from '@/locales'
     <div class="device-bottom m-t3 w-full flex flex-justify-between flex-content-start flex-items-center">
       <div class="device-bottom-state flex flex-items-center">
         <SvgIcon local-icon="bug-min" class="device_bottom-icon" />
-        <span>{{ $t('dashboard_panel.cardName.bugNum') }} 0</span>
+        <span>{{ "告警总数" }} 0</span>
       </div>
     </div>
   </div>

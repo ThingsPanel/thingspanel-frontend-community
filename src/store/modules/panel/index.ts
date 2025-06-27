@@ -13,7 +13,7 @@ export const usePanelStore = defineStore('panel-store', {
     objectEntries(PanelCards).forEach(item => {
       for (const card of item[1]) {
         if (cardMap.get(card.id)) {
-          message.warning($t('card.dupCardId', { id: card.cardItemBase.id }))
+          message.warning('重复的卡片ID: {id}')
         }
         cardMap.set(card.id, markRaw(card))
       }

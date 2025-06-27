@@ -12,8 +12,8 @@ const originalColorGroups = reactive(CurveTheme)
 const colorGroups = ref(JSON.parse(JSON.stringify(originalColorGroups))) // Deep copy to preserve original data
 
 const themeOptions = [
-  { label: $t('generate.color-theme1'), value: 'colorGroups' },
-  { label: $t('generate.color-theme2'), value: 'colorGroups2' }
+  { label: "配色主题1", value: 'colorGroups' },
+  { label: "配色主题2", value: 'colorGroups2' }
 ]
 
 const themeUpdate = () => {
@@ -49,20 +49,20 @@ const resetTheme = () => {
   <div>
     <!-- Curve Width Configuration -->
     <n-flex align="center" class="mb-2">
-      <div>{{ $t('generate.curveWidth') }}:</div>
+      <div>{{ "曲线宽度" }}:</div>
       <NInputNumber v-model:value="ctx.config.curveWidth" :min="1" :max="10" :step="1" class="flex-1" />
     </n-flex>
 
     <n-flex align="center" class="mb-2">
-      <div>{{ $t('generate.color-theme') }}</div>
+      <div>{{ "配色主题：" }}</div>
       <NSelect
         v-model:value="ctx.config.selectedTheme"
         class="flex-1"
         :options="themeOptions"
-        :placeholder="$t('generate.select-theme')"
+        :placeholder="请选择主题"
         @update:value="themeUpdate"
       />
-      <div @click="resetTheme">{{ $t('common.reset') }}</div>
+      <div @click="resetTheme">{{ "重置" }}</div>
     </n-flex>
     <div v-if="ctx.config.selectedTheme" class="color-groups">
       <n-grid x-gap="6" y-gap="6" :cols="1">
@@ -108,7 +108,7 @@ const resetTheme = () => {
             </NColorPicker>
           </div>
         </n-gi>
-        <n-gi class="text-12px text-#999">{{ $t('generate.max-9') }}</n-gi>
+        <n-gi class="text-12px text-#999">{{ "建议：有几条数据改几条（按序号），最多9条" }}</n-gi>
       </n-grid>
     </div>
   </div>

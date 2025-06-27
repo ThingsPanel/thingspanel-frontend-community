@@ -10,13 +10,13 @@ import DataClearSetting from './components/data-clear-setting.vue'
     <NCard :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="h-full flex-col">
         <NTabs type="line" animated>
-          <NTabPane name="1" :tab="$t('page.manage.setting.themeSetting.title')">
+          <NTabPane name="1" :tab="主题设置">
             <ThemeSetting></ThemeSetting>
           </NTabPane>
-          <NTabPane name="2" :tab="$t('page.manage.setting.dataClearSetting.title')">
+          <NTabPane name="2" :tab="数据清理设置">
             <DataClearSetting></DataClearSetting>
           </NTabPane>
-          <NTabPane name="3" :tab="$t('custom.management.configSetting')">
+          <NTabPane name="3" :tab="功能设置">
             <FunctionSetting></FunctionSetting>
           </NTabPane>
         </NTabs>

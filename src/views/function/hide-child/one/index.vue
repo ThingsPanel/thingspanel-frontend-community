@@ -3,7 +3,7 @@ import { $t } from '@/locales'
 </script>
 
 <template>
-  <div>{{ $t('generate.firstElement') }}</div>
+  <div>{{ "一" }}</div>
 </template>
 
 <style scoped></style>

@@ -43,7 +43,7 @@ function login(userName: string, password: string) {
 
 <template>
   <NSpace :vertical="true">
-    <NDivider class="text-14px text-#666 !mb-0">{{ $t('page.login.pwdLogin.otherAccountLogin') }}</NDivider>
+    <NDivider class="text-14px text-#666 !mb-0">{{ "其他账号登录" }}</NDivider>
     <NSpace justify="center">
       <NButton
         v-for="item in accounts"

@@ -92,7 +92,7 @@ onUnmounted(() => {
           :stroke="icon_type"
         />
         <span class="text-sm text-blue-500 font-medium">
-          {{ deviceData?.is_online === 1 ? $t('custom.device_details.online') : $t('custom.device_details.offline') }}
+          {{ deviceData?.is_online === 1 ? "在线" : "离线" }}
         </span>
         <template v-if="deviceData?.alarmStatus === true">
           <SvgIcon
@@ -101,13 +101,13 @@ onUnmounted(() => {
             class="text-20px text-primary"
             :stroke="icon_type"
           />
-          <span style="color: #ee0808">{{ $t('custom.device_details.alarm') }}</span>
+          <span style="color: #ee0808">{{ "告警" }}</span>
         </template>
       </div>
     </div>
 
     <div class="mb-6 text-sm text-gray-500">
-      {{ $t('custom.device_details.lastUpdate') }}: {{ formatDateTime(deviceData?.ts) || '--' }}
+      {{ "最后更新" }}: {{ formatDateTime(deviceData?.ts) || '--' }}
     </div>
 
     <n-divider title-placement="left"></n-divider>

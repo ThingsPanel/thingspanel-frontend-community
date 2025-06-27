@@ -152,7 +152,7 @@ function renderLineChart() {
         })
         .tooltip(false)
       view1.annotation().text({
-        content: $t('custom.plugin.trendLine'),
+        content: "趋势线",
         position: ['1970', 2500],
         style: {
           fill: '#8c8c8c',
@@ -169,13 +169,13 @@ function renderBarChart() {
   if (!barRef.value) return
 
   const data = [
-    { type: $t('custom.plugin.unknown'), value: 654, percent: 0.02 },
-    { type: $t('custom.plugin.under17'), value: 654, percent: 0.02 },
-    { type: $t('custom.plugin.between1824'), value: 4400, percent: 0.2 },
-    { type: $t('custom.plugin.between2529'), value: 5300, percent: 0.24 },
-    { type: $t('custom.plugin.between3039'), value: 6200, percent: 0.28 },
-    { type: $t('custom.plugin.between4049'), value: 3300, percent: 0.14 },
-    { type: $t('custom.plugin.over50'), value: 1500, percent: 0.06 }
+    { type: "未知", value: 654, percent: 0.02 },
+    { type: "17 岁以下", value: 654, percent: 0.02 },
+    { type: "18-24 岁", value: 4400, percent: 0.2 },
+    { type: "25-29 岁", value: 5300, percent: 0.24 },
+    { type: "30-39 岁", value: 6200, percent: 0.28 },
+    { type: "40-49 岁", value: 3300, percent: 0.14 },
+    { type: "50 岁以上", value: 1500, percent: 0.06 }
   ]
 
   const chart = new Chart({
@@ -186,7 +186,7 @@ function renderBarChart() {
   })
   chart.data(data)
   chart.scale('value', {
-    alias: $t('custom.plugin.sale')
+    alias: "销售额(万)"
   })
 
   chart.axis('type', {
@@ -247,19 +247,19 @@ function renderScatterChart() {
       // 为各个字段设置别名
       chart.scale({
         LifeExpectancy: {
-          alias: $t('custom.plugin.lifeExpectancy'),
+          alias: "人均寿命（年）",
           nice: true
         },
         Population: {
           type: 'pow',
-          alias: $t('custom.plugin.population')
+          alias: "人口总数"
         },
         GDP: {
-          alias: $t('custom.plugin.gdp'),
+          alias: "人均国内生产总值($)",
           nice: true
         },
         Country: {
-          alias: $t('custom.plugin.countryRegion')
+          alias: "国家/地区"
         }
       })
       chart.axis('GDP', {

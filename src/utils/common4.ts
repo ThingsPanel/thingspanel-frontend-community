@@ -33,7 +33,7 @@ export function transformRecordToOption<T extends Record<string, string>>(record
 export function translateOptions(options: CommonType.Option<string>[]) {
   return options.map(option => ({
     ...option,
-    label: $t(option.label as App.I18n.I18nKey)
+    label: '标签'
   }))
 }
 

@@ -49,17 +49,17 @@ const rules: FormRules = {
   email: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('custom.groupPage.selectParentGroup')
+    message: "请选择父分组"
   },
   name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('custom.groupPage.enterGroupName')
+    message: "请输入分组名称"
   },
   phone: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('custom.groupPage.enterGroupName')
+    message: "请输入分组名称"
   }
 }
 const passRules: FormRules = {
@@ -68,7 +68,7 @@ const passRules: FormRules = {
       required: true,
       validator(rule: FormItemRule, value: string) {
         if (rule && !validName(value)) {
-          return new Error($t('custom.personalCenter.nameFieldNotEmpty'))
+          return new Error("姓名不能为空且小于50个字符!")
         }
         return true
       },
@@ -87,7 +87,7 @@ const passRules: FormRules = {
         }
         return Promise.resolve()
       },
-      message: $t('form.pwd.tip'),
+      message: "密码为6-18位字符，需包含字母、数字",
       trigger: ['input', 'blur']
     }
   ],
@@ -114,7 +114,7 @@ async function updataUserInfo() {
 
   const { error } = await changeInformation(userInfoData.value)
   if (!error) {
-    window.$message?.success($t('custom.grouping_details.operationSuccess'))
+    window.$message?.success("操作成功")
   }
 }
 /** 重置密码 */
@@ -140,7 +140,7 @@ const submitPass = async () => {
   }
   const res = await passwordModification(param)
   if (!res.error) {
-    window.$message?.success($t('custom.grouping_details.operationSuccess'))
+    window.$message?.success("操作成功")
   }
 }
 
@@ -154,7 +154,7 @@ async function handleFinish({ event }: { event?: ProgressEvent }) {
   const { error } = await changeInformation(userInfoData.value)
   if (!error) {
     headUrl.value = String(url.value.origin) + response.data.path.substring(1, obj.user_icon.length)
-    window.$message?.success($t('custom.grouping_details.operationSuccess'))
+    window.$message?.success("操作成功")
   }
 }
 onMounted(async () => {
@@ -185,7 +185,7 @@ onMounted(async () => {
         }"
         @finish="handleFinish"
       >
-        <div style="">
+        <div style=">
           <SvgIcon v-if="!header" local-icon="avatar" style="width: 80px; height: 80px" />
           <n-avatar v-else style="width: 80px; height: 80px" round size="small" :src="headUrl" />
           <div style="display: flex; width: 30px; height: 30px; margin-left: 50px; margin-top: -25px; z-index: 999">
@@ -199,7 +199,7 @@ onMounted(async () => {
       </n-upload>
 
       <div style="display: flex; flex-direction: column; margin-left: 20px">
-        <span style="font-size: 28px">{{ $t('generate.personal-space') }}</span>
+        <span style="font-size: 28px">{{ "个人空间" }}</span>
         <span style="margin-top: 10px">{{ userInfoData.name }}</span>
       </div>
     </div>
@@ -214,7 +214,7 @@ onMounted(async () => {
             class="mt-5"
             @click="changeBtnType(0)"
           >
-            {{ $t('generate.baseInfo') }}
+            {{ "基础信息" }}
           </NButton>
 
           <NButton
@@ -224,7 +224,7 @@ onMounted(async () => {
             class="mt-5"
             @click="changeBtnType(1)"
           >
-            {{ $t('generate.secureSet') }}
+            {{ "安全设置" }}
           </NButton>
 
           <SvgIcon
@@ -240,21 +240,21 @@ onMounted(async () => {
             <NCard class="i-flex-vertical" :bordered="false">
               <NSpace vertical>
                 <NForm v-if="currentIndex === 0 && !editType" label-placement="left" :style="{ maxWidth: '640px' }">
-                  <NFormItem :label="$t('generate.last-name')" path="inputValue">
+                  <NFormItem :label=" 姓 名" path="inputValue">
                     <span>{{ userInfoData.name }}</span>
                   </NFormItem>
-                  <NFormItem :label="$t('generate.account-type')" path="inputValue">
+                  <NFormItem :label="账户类型" path="inputValue">
                     <span v-if="userInfoData.authority === 'SYS_ADMIN'">
-                      {{ $t('generate.super-admin') }}
+                      {{ "超管" }}
                     </span>
                     <span v-if="userInfoData.authority === 'TENANT_ADMIN'">
-                      {{ $t('generate.tenant') }}
+                      {{ "租户" }}
                     </span>
                   </NFormItem>
-                  <NFormItem :label="$t('generate.email-address')" path="inputValue">
+                  <NFormItem :label="电子邮箱" path="inputValue">
                     <span>{{ userInfoData.email }}</span>
                   </NFormItem>
-                  <NFormItem :label="$t('generate.phoneNumber')" path="inputValue">
+                  <NFormItem :label="手机号码" path="inputValue">
                     <span>{{ userInfoData.phone_num }}</span>
                   </NFormItem>
                 </NForm>
@@ -265,28 +265,28 @@ onMounted(async () => {
                   :rules="rules"
                   :style="{ maxWidth: '440px' }"
                 >
-                  <NFormItem :label="$t('generate.last-name')" path="name" label-width="100">
+                  <NFormItem :label=" 姓 名" path="name" label-width="100">
                     <NInput
                       v-model:value="userInfoData.name"
-                      :placeholder="$t('page.login.common.codePlaceholder')"
+                      :placeholder="请输入验证码"
                       round
                     />
                   </NFormItem>
-                  <NFormItem :label="$t('generate.phoneNumber')" path="phone_num" label-width="100">
+                  <NFormItem :label="手机号码" path="phone_num" label-width="100">
                     <NInput
                       v-model:value="userInfoData.phone_num"
-                      :placeholder="$t('page.login.common.codePlaceholder')"
+                      :placeholder="请输入验证码"
                       round
                     />
                   </NFormItem>
-                  <NFormItem :label="$t('generate.email-address')" path="email" label-width="100">
+                  <NFormItem :label="电子邮箱" path="email" label-width="100">
                     <NInput
                       v-model:value="userInfoData.email"
-                      :placeholder="$t('page.login.common.codePlaceholder')"
+                      :placeholder="请输入验证码"
                       round
                     />
                   </NFormItem>
-                  <NFormItem path="">
+                  <NFormItem path=">
                     <NButton
                       style="width: 100px; margin-right: 50px"
                       type="default"
@@ -294,10 +294,10 @@ onMounted(async () => {
                       round
                       @click="closeEdit"
                     >
-                      {{ $t('common.cancel') }}
+                      {{ "取消" }}
                     </NButton>
                     <NButton style="width: 100px" type="primary" size="large" round @click="updataUserInfo">
-                      {{ $t('common.confirm') }}
+                      {{ "确认" }}
                     </NButton>
                   </NFormItem>
                 </NForm>
@@ -315,7 +315,7 @@ onMounted(async () => {
                       label-width="100"
                       type="password"
                       show-password-on="mousedown"
-                      :label="$t('generate.old-password')"
+                      :label=" 原 密 码 "
                       path="old_password"
                     >
                       <NInput v-model:value="formData.old_password" type="password" show-password-on="click" round />
@@ -323,7 +323,7 @@ onMounted(async () => {
                     <NFormItemGridItem
                       label-width="100"
                       :span="24"
-                      :label="$t('generate.new-password')"
+                      :label=" 新 密 码 "
                       path="password"
                     >
                       <NInput v-model:value="formData.password" type="password" show-password-on="click" round />
@@ -331,15 +331,15 @@ onMounted(async () => {
                     <NFormItemGridItem
                       :span="24"
                       label-width="100"
-                      :label="$t('generate.repeat-new-password')"
+                      :label="重复新密码"
                       path="passwords"
                     >
                       <NInput v-model:value="formData.passwords" type="password" show-password-on="click" round />
                     </NFormItemGridItem>
                   </NGrid>
                   <NSpace class="w-full pt-16px" :size="24" justify="end">
-                    <NButton class="w-72px" round @click="resetPass">{{ $t('generate.reset') }}</NButton>
-                    <NButton class="w-72px" type="primary" round @click="submitPass">{{ $t('common.save') }}</NButton>
+                    <NButton class="w-72px" round @click="resetPass">{{ "重置" }}</NButton>
+                    <NButton class="w-72px" type="primary" round @click="submitPass">{{ "保存" }}</NButton>
                   </NSpace>
                 </NForm>
               </NSpace>
@@ -350,7 +350,7 @@ onMounted(async () => {
               <SvgIcon class="editor mt-8 cursor-pointer lg:text-[18px]" local-icon="PencilAlt" @click="editName()" />
             </n-gi>
             <n-gi>
-              <NButton class="mt-5" @click="changePassword">{{ $t('generate.change-password') }}</NButton>
+              <NButton class="mt-5" @click="changePassword">{{ "修改密码" }}</NButton>
             </n-gi>
 -->
         </n-grid>

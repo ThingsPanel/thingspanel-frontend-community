@@ -57,13 +57,13 @@ const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
   {
     key: 'name',
     minWidth: '140px',
-    title: () => $t('page.apply.service.form.serviceName'),
+    title: () => "服务名称",
     align: 'left'
   },
   {
     key: 'device_type',
     minWidth: '140px',
-    title: () => $t('page.apply.service.form.deviceType'),
+    title: () => "设备类型",
     align: 'left',
     render: row => {
       if (row.device_type) {
@@ -75,36 +75,36 @@ const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
   {
     key: 'protocol_type',
     minWidth: '140px',
-    title: () => $t('page.apply.service.form.protocolType'),
+    title: () => "协议类型",
     align: 'left'
   },
   {
     key: 'access_address',
     minWidth: '140px',
-    title: () => $t('page.apply.service.form.accessAddress'),
+    title: () => "接入地址",
     align: 'left'
   },
   {
     key: 'http_address',
     minWidth: '140px',
-    title: () => $t('page.apply.service.form.httpAddress'),
+    title: () => "HTTP服务地址",
     align: 'left'
   },
   {
     key: 'sub_topic_prefix',
     minWidth: '140px',
-    title: () => $t('page.apply.service.form.subTopicPrefix'),
+    title: () => "插件订阅主题前缀",
     align: 'left'
   },
   {
     key: 'description',
     minWidth: '140px',
-    title: () => $t('common.description'),
+    title: () => "描述",
     align: 'left'
   },
   {
     key: 'actions',
-    title: () => $t('common.actions'),
+    title: () => "操作",
     align: 'center',
     minWidth: '140px',
     render: row => {
@@ -112,19 +112,19 @@ const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
         <NSpace justify={'center'}>
           {
             <NButton size={'small'} type="primary" onClick={() => handleEditTable(row.id)}>
-              {$t('common.edit')}
+              {"编辑"}
             </NButton>
           }
           <NPopconfirm
-            negative-text={$t('common.cancel')}
-            positive-text={$t('common.confirm')}
+            negative-text={"取消"}
+            positive-text={"确认"}
             onPositiveClick={() => handleDeleteTable(row.id)}
           >
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -164,7 +164,7 @@ function handleEditTable(rowId: string) {
 async function handleDeleteTable(rowId: string) {
   const data = await delProtocolPlugin(rowId);
   if (!data.error) {
-    // window.$message?.success($t('common.deleteSuccess'));
+    // window.$message?.success("删除成功");
     await getTableData();
   }
 }
@@ -179,10 +179,10 @@ init();
 
 <template>
   <div>
-    <NCard :title="$t('route.apply_service')" :bordered="false" class="h-full rounded-8px shadow-sm">
+    <NCard :title="协议插件管理" :bordered="false" class="h-full rounded-8px shadow-sm">
       <template #header-extra>
         <NButton type="primary" @click="handleAddTable">
-          {{ $t('common.add') }}
+          {{ "新增" }}
         </NButton>
       </template>
       <div class="h-full flex-col">

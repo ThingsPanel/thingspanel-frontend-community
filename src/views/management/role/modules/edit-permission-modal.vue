@@ -63,7 +63,7 @@ const closeModal = () => {
 }
 
 const title = computed(() => {
-  return `${$t('page.manage.role.editPermission')} - ${props.editData?.name}`
+  return `${"编辑权限"} - ${props.editData?.name}`
 })
 
 const formRef = ref<HTMLElement & FormInst>()
@@ -130,8 +130,8 @@ async function handleSubmit() {
         />
       </div>
       <n-space class="w-full pt-16px" :size="24" justify="end">
-        <n-button class="w-72px" @click="closeModal">{{ $t('generate.cancel') }}</n-button>
-        <n-button class="w-72px" type="primary" @click="handleSubmit">{{ $t('page.login.common.confirm') }}</n-button>
+        <n-button class="w-72px" @click="closeModal">{{ "取消" }}</n-button>
+        <n-button class="w-72px" type="primary" @click="handleSubmit">{{ "确定" }}</n-button>
       </n-space>
     </n-form>
   </n-modal>

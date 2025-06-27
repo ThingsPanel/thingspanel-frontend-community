@@ -32,21 +32,21 @@ onMounted(() => {
     pane-style="padding-left: 4px; padding-right: 4px; box-sizing: border-box;"
   >
     <!-- 固定模式基础配置，迭代时才需要修改下面的组件-->
-    <n-tab-pane name="basic" :tab="$t('card.basicConfig')">
+    <n-tab-pane name="basic" :tab="基础配置">
       <CardBaseForm :default-basis-data="props.data.config.basis" :change-ctx-config="changeCtxConfig" />
     </n-tab-pane>
     <!--固定模式数据源配置，迭代时才需要修改下面的组件-->
-    <n-tab-pane name="source" :tab="$t('card.dataSource')">
+    <n-tab-pane name="source" :tab="数据源">
       <CardDataSourceForm
         :max-source-number="props.data.sourceNumber || 9"
         :default-source-data="props.data.config.source"
         :change-ctx-config="changeCtxConfig"
       />
     </n-tab-pane>
-    <n-tab-pane name="card-config" :tab="$t('card.cardConfig')">
+    <n-tab-pane name="card-config" :tab="卡片配置">
       <!-- 你需要编写配置的地方-->
       <NForm :model="ctx.config.cardUI">
-        <NFormItem :label="$t('card.shadowColor')">
+        <NFormItem :label="阴影颜色">
           <n-color-picker v-model:value="ctx.config.cardUI.shadowColor" />
         </NFormItem>
       </NForm>

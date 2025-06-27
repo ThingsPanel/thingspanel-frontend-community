@@ -21,25 +21,25 @@ const rules = ref<any>({
   name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('card.enterServiceName')
+    message: "请输入服务名称"
   },
   service_identifier: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('card.enterServiceIdentifier')
+    message: "请输入服务标识符"
   },
   service_type: {
     required: true,
-    message: $t('card.selectServiceType')
+    message: "请选择服务类别"
   }
 })
 const options = ref<any>([
   {
-    label: $t('card.accessProtocol'),
+    label: "接入协议",
     value: 1
   },
   {
-    label: $t('card.accessService'),
+    label: "接入服务",
     value: 2
   }
 ])
@@ -72,7 +72,7 @@ defineExpose({ openModal })
 </script>
 
 <template>
-  <n-modal v-model:show="serviceModal" preset="dialog" :title="$t('common.serviceConfi')">
+  <n-modal v-model:show="serviceModal" preset="dialog" :title="服务配置">
     <n-space vertical>
       <n-spin :show="loading">
         <n-form
@@ -85,27 +85,27 @@ defineExpose({ openModal })
           :disabled="loading"
           @after-leave="close"
         >
-          <n-form-item :label="$t('card.serviceName')" path="name">
-            <n-input v-model:value="form.name" :placeholder="$t('card.enterServiceName')" />
+          <n-form-item :label="服务名称" path="name">
+            <n-input v-model:value="form.name" :placeholder="请输入服务名称" />
           </n-form-item>
-          <n-form-item :label="$t('card.serviceIdentifier')" path="service_identifier">
-            <n-input v-model:value="form.service_identifier" :placeholder="$t('card.enterServiceIdentifier')" />
+          <n-form-item :label="服务标识符" path="service_identifier">
+            <n-input v-model:value="form.service_identifier" :placeholder="请输入服务标识符" />
           </n-form-item>
-          <n-form-item :label="$t('card.type')" path="service_type">
-            <n-space vertical class="selectType" :placeholder="$t('card.selectServiceType')">
+          <n-form-item :label="类别" path="service_type">
+            <n-space vertical class="selectType" :placeholder="请选择服务类别">
               <n-select v-model:value="form.service_type" :options="options" :disabled="isEdit" />
             </n-space>
           </n-form-item>
-          <n-form-item :label="$t('card.version')" path="version">
-            <n-input v-model:value="form.version" :placeholder="$t('card.enterVersion')" />
+          <n-form-item :label="版本" path="version">
+            <n-input v-model:value="form.version" :placeholder="请输入版本" />
           </n-form-item>
-          <n-form-item :label="$t('card.description')" path="description">
-            <n-input v-model:value="form.description" :placeholder="$t('card.enterDescription')" type="textarea" />
+          <n-form-item :label="描述" path="description">
+            <n-input v-model:value="form.description" :placeholder="请输入描述" type="textarea" />
           </n-form-item>
         </n-form>
         <div class="footer">
-          <NButton type="primary" class="btn" @click="submitSevice">{{ $t('common.confirm') }}</NButton>
-          <NButton @click="close">{{ $t('common.cancel') }}</NButton>
+          <NButton type="primary" class="btn" @click="submitSevice">{{ "确认" }}</NButton>
+          <NButton @click="close">{{ "取消" }}</NButton>
         </div>
       </n-spin>
     </n-space>

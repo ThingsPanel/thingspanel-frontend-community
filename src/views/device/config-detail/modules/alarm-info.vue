@@ -20,7 +20,7 @@ const alarmAdd = () => {
 <template>
   <div class="alarm-list">
     <NFlex justify="flex-end" class="mb-4">
-      <NButton type="primary" @click="alarmAdd()">{{ $t('generate.addAlarmRule') }}</NButton>
+      <NButton type="primary" @click="alarmAdd()">{{ "新增告警规则" }}</NButton>
     </NFlex>
     <alarmDataList :is-alarm="true" :device_config_id="props.config_id" back-type="config"></alarmDataList>
   </div>

@@ -22,23 +22,23 @@ let infoWindow: any = null;
 
 const renderInfoWindow = (evt: any, _res: any) => {
   const statusText = {
-    1: $t('custom.devicePage.online'),
-    0: $t('custom.devicePage.offline')
+    1: "在线",
+    0: "离线"
   } as const;
 
   return (
     <NCard
       header-style="padding:10px"
-      title={`${$t('custom.devicePage.deviceName')}：${evt.geometry.data.name}`}
+      title={`${"设备名称"}：${evt.geometry.data.name}`}
       class="min-h-130px min-w-200px"
     >
       <div>
-        {$t('custom.devicePage.lastPushTime')}：
+        {"上报时间"}：
         {evt.geometry.data.ts ? dayjs(evt.geometry.data.ts).format('YYYY-MM-DD HH:mm:ss') : '-'}
       </div>
       <div v-html={evt.geometry.dom}></div>
       <div>
-        {$t('generate.status')}：{statusText[evt.geometry.data.is_online]}
+        {"状态"}：{statusText[evt.geometry.data.is_online]}
       </div>
     </NCard>
   );

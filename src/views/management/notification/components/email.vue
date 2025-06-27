@@ -41,12 +41,12 @@ function createDefaultFormModel(): NotificationServices.Email {
 }
 
 const rules = {
-  'email_config.host': createRequiredFormRule($t('common.pleaseCheckValue')),
-  'email_config.port': createRequiredFormRule($t('common.pleaseCheckValue')),
-  'email_config.from_email': createRequiredFormRule($t('common.pleaseCheckValue')),
-  'email_config.from_password': createRequiredFormRule($t('common.pleaseCheckValue')),
-  email: createRequiredFormRule($t('common.pleaseCheckValue')),
-  body: createRequiredFormRule($t('common.pleaseCheckValue'))
+  'email_config.host': createRequiredFormRule("请检查数值"),
+  'email_config.port': createRequiredFormRule("请检查数值"),
+  'email_config.from_email': createRequiredFormRule("请检查数值"),
+  'email_config.from_password': createRequiredFormRule("请检查数值"),
+  email: createRequiredFormRule("请检查数值"),
+  body: createRequiredFormRule("请检查数值")
 }
 const formRef = ref<HTMLElement & FormInst>()
 async function handleSubmit() {
@@ -87,7 +87,7 @@ const message = useMessage()
 const debugFormRef = ref<HTMLElement & FormInst>()
 async function handleSend() {
   await debugFormRef.value?.validate()
-  let messageReactive: MessageReactive | null = message.loading($t('common.modifySuccess'), {
+  let messageReactive: MessageReactive | null = message.loading("修改成功", {
     duration: 100000
   })
   const data: any = await sendTestEmail(debugData)
@@ -114,7 +114,7 @@ init()
       <NGrid :cols="24">
         <NFormItemGridItem
           :span="6"
-          :label="$t('page.manage.notification.email.form.sendMailServer')"
+          :label="发送邮件服务器"
           path="email_config.host"
         >
           <NInput v-model:value="formModel.email_config.host" />
@@ -123,7 +123,7 @@ init()
       <NGrid :cols="24">
         <NFormItemGridItem
           :span="6"
-          :label="$t('page.manage.notification.email.form.sendPort')"
+          :label="发送端口"
           path="email_config.port"
         >
           <NInputNumber v-model:value="formModel.email_config.port" />
@@ -132,7 +132,7 @@ init()
       <NGrid :cols="24">
         <NFormItemGridItem
           :span="6"
-          :label="$t('page.manage.notification.email.form.senderMail')"
+          :label="发送人邮件"
           path="email_config.from_email"
         >
           <NInput v-model:value="formModel.email_config.from_email" />
@@ -141,19 +141,19 @@ init()
       <NGrid :cols="24">
         <NFormItemGridItem
           :span="6"
-          :label="$t('page.manage.notification.email.form.authorizationCodeOrPassword')"
+          :label="授权码/密码"
           path="email_config.from_password"
         >
           <NInput v-model:value="formModel.email_config.from_password" />
         </NFormItemGridItem>
       </NGrid>
       <NGrid :cols="24">
-        <NFormItemGridItem :span="6" :label="$t('page.manage.notification.email.form.ssl')" path="email_config.ssl">
+        <NFormItemGridItem :span="6" :label="开启SSL" path="email_config.ssl">
           <n-checkbox v-model:checked="formModel.email_config.ssl"></n-checkbox>
         </NFormItemGridItem>
       </NGrid>
       <NGrid :cols="24">
-        <NFormItemGridItem :span="6" :label="$t('page.manage.notification.enableDisableService')" path="status">
+        <NFormItemGridItem :span="6" :label="开启/关闭服务" path="status">
           <n-switch v-model:value="formModel.status" checked-value="OPEN" unchecked-value="CLOSE" />
         </NFormItemGridItem>
       </NGrid>
@@ -161,10 +161,10 @@ init()
         <NFormItemGridItem :span="24" class="mt-20px">
           <div class="w-120px"></div>
           <NButton class="w-72px" @click="handleOpenModal">
-            {{ $t('common.debug') }}
+            {{ "调试" }}
           </NButton>
           <NButton class="ml-20px w-72px" type="primary" @click="handleSubmit">
-            {{ $t('common.save') }}
+            {{ "保存" }}
           </NButton>
         </NFormItemGridItem>
       </NGrid>
@@ -172,18 +172,18 @@ init()
     </NForm>
   </NSpin>
 
-  <NModal v-model:show="visible" preset="card" :title="$t('common.debug')" class="w-500px">
+  <NModal v-model:show="visible" preset="card" :title="调试" class="w-500px">
     <NForm ref="debugFormRef" label-placement="left" :label-width="120" :model="debugData" :rules="rules">
       <NGrid :cols="24" :x-gap="18">
-        <NFormItemGridItem :span="24" :label="$t('page.manage.notification.email.form.inbox')" path="email">
-          <NInput v-model:value="debugData.email" placeholder="" />
+        <NFormItemGridItem :span="24" :label="收件箱" path="email">
+          <NInput v-model:value="debugData.email" placeholder=" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="$t('page.manage.notification.email.form.message')" path="body">
-          <NInput v-model:value="debugData.body" placeholder="" />
+        <NFormItemGridItem :span="24" :label="消息内容" path="body">
+          <NInput v-model:value="debugData.body" placeholder=" />
         </NFormItemGridItem>
       </NGrid>
       <NSpace class="w-full pt-16px" :size="24" justify="center">
-        <NButton class="w-72px" type="primary" @click="handleSend">{{ $t('common.send') }}</NButton>
+        <NButton class="w-72px" type="primary" @click="handleSend">{{ "发送" }}</NButton>
       </NSpace>
     </NForm>
   </NModal>

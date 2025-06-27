@@ -64,7 +64,7 @@ const rules = computed<FormRules>(() => {
   if (props.isCommand && isTextArea.value) {
     r.commandValue = {
       required: true,
-      message: $t('page.manage.validation.commandIdentifierRequired'),
+      message: "命令标识符不能为空",
       trigger: ['input', 'blur']
     }
   }
@@ -116,7 +116,7 @@ const submit = async () => {
     }
 
     if (formModel.textValue && !isJSON(formModel.textValue)) {
-      window.$message?.error($t('generate.inputRightJson'))
+      window.$message?.error("请输入正确的JSON格式")
       return
     }
 
@@ -148,7 +148,7 @@ const submit = async () => {
     await fetchDataFunction()
     closeDialog()
   } catch (errors) {
-    window.$message?.error($t('common.validateFail') || 'Validation failed, please check your input.')
+    window.$message?.error("验证失败")
     logger.error('Form validation failed:', errors)
   }
 }
@@ -227,7 +227,7 @@ const validationJson = computed(() => {
 })
 const inputFeedback = computed(() => {
   if (formModel.textValue && !isJSON(formModel.textValue)) {
-    return $t('generate.inputRightJson')
+    return "请输入正确的JSON格式"
   }
   return ''
 })
@@ -248,7 +248,7 @@ const isSubmitDisabled = computed(() => {
 </script>
 
 <template>
-  <div class="">
+  <div class=">
     <div class="m-b-20px flex items-center">
       <NButton v-if="buttonName" type="primary" @click="openDialog">{{ buttonName }}</NButton>
       <div class="flex flex-1 flex-justify-end">
@@ -256,7 +256,7 @@ const isSubmitDisabled = computed(() => {
           <NIcon size="18">
             <Refresh />
           </NIcon>
-          {{ $t('generate.refresh') }}
+          {{ "刷新" }}
         </NButton>
       </div>
     </div>
@@ -284,13 +284,13 @@ const isSubmitDisabled = computed(() => {
       />
     </div>
     <NModal v-if="submitApi" v-model:show="showDialog" :class="getPlatform ? 'w-90%' : 'w-400px'">
-      <n-card :title="isCommand ? $t('generate.issueCommand') : $t('generate.issue-attribute')">
+      <n-card :title="isCommand ? "下发命令" : "下发属性">
         <NForm ref="formRef" :model="formModel" :rules="rules" :label-placement="formModel.expected ? 'left' : 'top'">
           <div v-if="expect" class="flex">
             <NFormItem>
               <template #label>
                 <div class="flex-ai-c flex">
-                  {{ $t('generate.expectedMessage') }}
+                  {{ "期望消息" }}
                   <n-popover trigger="hover">
                     <template #trigger>
                       <svg
@@ -307,25 +307,25 @@ const isSubmitDisabled = computed(() => {
                         </g>
                       </svg>
                     </template>
-                    <span>{{ $t('generate.expectedMessageTip') }}</span>
+                    <span>{{ "开启后，如果设备不在线，会缓存消息，等设备上线后再发送" }}</span>
                   </n-popover>
                 </div>
               </template>
 
               <n-switch v-model:value="formModel.expected" />
             </NFormItem>
-            <NFormItem v-if="formModel.expected" :label="$t('generate.expirationTime')" class="ml-20px">
+            <NFormItem v-if="formModel.expected" :label="过期时间" class="ml-20px">
               <div class="flex-ai-c flex">
                 <n-input-number v-model:value="formModel.time" :show-button="false" class="w-80px" />
-                <div class="fs-0">{{ $t('generate.hour') }}</div>
+                <div class="fs-0">{{ "小时" }}</div>
               </div>
             </NFormItem>
           </div>
-          <NFormItem v-if="isCommand" path="commandValue" :label="$t('generate.command-identifier')" required>
+          <NFormItem v-if="isCommand" path="commandValue" :label="命令标识符" required>
             <NInput
               v-if="isTextArea"
               v-model:value="formModel.commandValue"
-              :placeholder="$t('generate.or-enter-here')"
+              :placeholder="或在此输入"
             />
             <NSelect
               v-else
@@ -337,14 +337,14 @@ const isSubmitDisabled = computed(() => {
               @update:value="selectVal"
             />
             <NButton type="primary" class="selectBtn" @click="selectBtn">
-              {{ isTextArea ? $t('card.selectFromExisting') : $t('card.manualInput') }}
+              {{ isTextArea ? "从已有标识符里选择" : "手动输入" }}
             </NButton>
           </NFormItem>
-          <NFormItem v-if="isTextArea" label="" :validation-status="validationJson" :feedback="inputFeedback">
+          <NFormItem v-if="isTextArea" label=" :validation-status="validationJson" :feedback="inputFeedback">
             <NInput v-model:value="formModel.textValue" type="textarea" />
           </NFormItem>
           <div v-else>
-            <div v-if="formModel.commandValue !== ''" class="title">{{ $t('common.param') }}</div>
+            <div v-if="formModel.commandValue !== ''" class="title">{{ "参数" }}</div>
             <div v-for="item in paramsData" :key="item.id" class="form_box">
               <div class="form_table">
                 <NFormItem :label="item.data_name" label-placement="left" label-width="80px" label-align="left">
@@ -366,7 +366,7 @@ const isSubmitDisabled = computed(() => {
                         }
                       }) || []
                     "
-                    :placeholder="$t('generate.please-select')"
+                    :placeholder="请选择"
                   />
                   <div class="description">{{ item.description }}</div>
                 </NFormItem>
@@ -374,9 +374,9 @@ const isSubmitDisabled = computed(() => {
             </div>
           </div>
           <NFlex justify="end">
-            <NButton @click="closeDialog">{{ $t('generate.cancel') }}</NButton>
+            <NButton @click="closeDialog">{{ "取消" }}</NButton>
             <NButton type="primary" :disabled="isSubmitDisabled" @click="submit">
-              {{ $t('page.irrigation.distribute') }}
+              {{ "分配" }}
             </NButton>
           </NFlex>
         </NForm>

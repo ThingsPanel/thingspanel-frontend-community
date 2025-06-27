@@ -20,21 +20,21 @@ const backType = ref(route.query.backType || '')
 const configFormRules = ref({
   name: {
     required: true,
-    message: $t('generate.enter-scene-linkage-name'),
+    message: "请输入场景联动名称",
     trigger: 'blur'
   },
   description: {
     required: false,
-    message: $t('generate.sceneLinkDesc'),
+    message: "请输入场景联动描述",
     trigger: 'blur'
   },
   trigger_condition_groups: {
     required: true,
-    message: $t('generate.addExecutionConditions')
+    message: "请添加执行条件"
   },
   actions: {
     required: true,
-    message: $t('generate.addExecutionAction')
+    message: "请添加执行动作"
   }
 })
 const configFormRef = ref<HTMLElement & FormInst>()
@@ -71,7 +71,7 @@ const submitData = async () => {
     })
   })
   if (isTimeRangeError) {
-    window.$message?.error($t('generate.timeRangeWarning'))
+    window.$message?.error("单个条件组内不能只有时间范围的条件")
     return
   }
 
@@ -85,17 +85,17 @@ const submitData = async () => {
       return item.actionType === '30'
     })
   if (isAlarmError) {
-    window.$message?.error($t('generate.timeTypeWarning'))
+    window.$message?.error("时间类型的条件无法触发告警")
     return
   }
   await configFormRef?.value?.validate()
   await editPremise.value.premiseFormRefReturn()?.validate()
   await editAction.value.actionFormRefReturn()?.validate()
   dialog.warning({
-    title: $t('common.tip'),
-    content: $t('common.saveSceneInfo'),
-    positiveText: $t('device_template.confirm'),
-    negativeText: $t('common.cancel'),
+    title: "提示",
+    content: "保存场景信息",
+    positiveText: "确定",
+    negativeText: "取消",
     onPositiveClick: async () => {
       if (configId.value) {
         const res = await sceneAutomationsEdit(configForm.value)
@@ -357,7 +357,7 @@ if (configId.value) {
   <div class="linkage-edit">
     <NCard
       :bordered="false"
-      :title="(configId ? $t('common.edit') : $t('common.add')) + $t('route.automation_scene-linkage')"
+      :title="(configId ? "编辑" : "新增") + "场景联动"
     >
       <NForm
         ref="configFormRef"
@@ -368,19 +368,19 @@ if (configId.value) {
         size="small"
       >
         <NFlex>
-          <NFormItem :label="$t('generate.labelName')" path="name" class="w-150">
-            <NInput v-model:value="configForm.name" :placeholder="$t('generate.enter-scene-linkage-name')" />
+          <NFormItem :label="名称:" path="name" class="w-150">
+            <NInput v-model:value="configForm.name" :placeholder="请输入场景联动名称" />
           </NFormItem>
-          <NFormItem :label="$t('generate.description')" path="description" class="w-150">
+          <NFormItem :label="描述:" path="description" class="w-150">
             <NInput
               v-model:value="configForm.description"
               type="textarea"
-              :placeholder="$t('generate.enter-description')"
+              :placeholder="请输入描述"
               rows="1"
             />
           </NFormItem>
         </NFlex>
-        <NFormItem :label="$t('generate.if')" class="w-100%" path="trigger_condition_groups" :show-feedback="false">
+        <NFormItem :label="如果:" class="w-100%" path="trigger_condition_groups" :show-feedback="false">
           <EditPremise
             ref="editPremise"
             :device_id="propsData.device_id"
@@ -390,13 +390,13 @@ if (configId.value) {
           />
         </NFormItem>
         <n-divider dashed class="divider-class" />
-        <NFormItem :label="$t('generate.then')" class="w-100%" path="actions" :show-feedback="false">
+        <NFormItem :label="那么:" class="w-100%" path="actions" :show-feedback="false">
           <EditAction ref="editAction" :conditions-type="conditionsType" :action-data="actionData" />
         </NFormItem>
       </NForm>
       <n-divider class="divider-class" />
       <NFlex justify="center">
-        <NButton type="primary" @click="submitData">{{ $t('generate.save-scene-linkage') }}</NButton>
+        <NButton type="primary" @click="submitData">{{ "保存场景联动" }}</NButton>
       </NFlex>
     </NCard>
   </div>

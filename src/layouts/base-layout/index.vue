@@ -112,7 +112,7 @@ onMounted(() => {
         const data = event.data ? JSON.parse(event.data) : {}
         if (data.is_online) {
           window.$notification?.success({
-            title: `${data.device_name}${$t('card.deviceConnected')}`,
+            title: `${data.device_name}${"设备已连接"}`,
 
             duration: 5000,
 
@@ -131,13 +131,13 @@ onMounted(() => {
                   }
                 },
                 {
-                  default: () => $t('card.toDeviceDetailPage')
+                  default: () => "点击进入设备详情页面"
                 }
               )
           })
         } else {
           window.$notification?.info({
-            title: `${data.device_name}${$t('card.deviceDisconnected')}`,
+            title: `${data.device_name}${"设备断开连接"}`,
 
             duration: 5000,
             action: () =>
@@ -155,7 +155,7 @@ onMounted(() => {
                   }
                 },
                 {
-                  default: () => $t('card.toDeviceDetailPage')
+                  default: () => "点击进入设备详情页面"
                 }
               )
           })

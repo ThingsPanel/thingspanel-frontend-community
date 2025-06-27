@@ -16,7 +16,7 @@ const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), m
 // POST PUT DELETE
 const requestMethodOptions = reactive([
   {
-    label: $t('custom.management.all'),
+    label: "全部",
     value: ''
   },
   {
@@ -84,7 +84,7 @@ const handleDetail = item => {
 const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   {
     key: 'created_at',
-    title: $t('common.time'),
+    title: "时间",
     minWidth: '140px',
     align: 'left',
     render: (row: any) => {
@@ -99,26 +99,26 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   },
   {
     key: 'path',
-    title: $t('common.requestPath'),
+    title: "请求路径",
     minWidth: '140px',
     align: 'left'
   },
   {
     key: 'name',
     minWidth: '140px',
-    title: $t('common.requestMethod'),
+    title: "请求方法",
     align: 'left'
   },
   {
     key: 'latency',
-    title: $t('common.requestTime'),
+    title: "请求时间",
     minWidth: '140px',
     align: 'left',
     render: row => `${row.latency}ms`
   },
   {
     key: 'username',
-    title: $t('generate.username'),
+    title: "用户名",
     minWidth: '140px',
     align: 'left'
   },
@@ -130,7 +130,7 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
     render: row => {
       return (
         <NButton type="primary" size={'small'} onClick={() => handleDetail(row)}>
-          {$t('generate.details')}
+          {"详情"}
         </NButton>
       );
     }
@@ -193,10 +193,10 @@ getTableData();
 
 <template>
   <div>
-    <NCard :title="$t('generate.system-log')">
+    <NCard :title="系统日志">
       <NForm class="mb-20px align-end" :inline="!getPlatform" label-placement="left" :model="queryParams">
         <view class="flex flex-wrap">
-          <NFormItem class="w-200px" :label="$t('generate.username')" path="name">
+          <NFormItem class="w-200px" :label="用户名" path="name">
             <NInput v-model:value="queryParams.username" />
           </NFormItem>
           <NFormItem path="selected_time">
@@ -208,15 +208,15 @@ getTableData();
               @update:value="pickerChange"
             />
           </NFormItem>
-          <NFormItem :label="$t('generate.requestMethod')" path="method">
+          <NFormItem :label="请求方法" path="method">
             <NSelect v-model:value="queryParams.method" class="w-200px" :options="requestMethodOptions"></NSelect>
           </NFormItem>
-          <NFormItem :label="$t('generate.ipAddress')" path="ip">
+          <NFormItem :label="ip地址" path="ip">
             <NInput v-model:value="queryParams.ip" />
           </NFormItem>
 
-          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('generate.search') }}</NButton>
-          <NButton class="ml-15px w-72px" type="primary" @click="handleReset">{{ $t('generate.reset') }}</NButton>
+          <NButton class="w-72px" type="primary" @click="handleQuery">{{ "搜索" }}</NButton>
+          <NButton class="ml-15px w-72px" type="primary" @click="handleReset">{{ "重置" }}</NButton>
         </view>
       </NForm>
       <NDataTable :columns="columns" :data="tableData" :loading="loading" class="flex-1-hidden" />

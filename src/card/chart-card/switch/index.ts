@@ -9,7 +9,7 @@ export default {
   component: defineAsyncComponent(() => import('./component.vue')),
   configForm: defineAsyncComponent(() => import('./switch-config.vue')),
   poster,
-  title: $t('card.deviceStateController'),
+  title: '设备开关控制',
   preset: {
     dataSource: {
       origin: 'device',

@@ -22,17 +22,17 @@ interface StatisticData {
 const statisticData = computed<StatisticData[]>(() => [
   {
     id: 0,
-    label: $t('page.home.projectCount'),
+    label: "项目数",
     value: '25'
   },
   {
     id: 1,
-    label: $t('page.home.todo'),
+    label: "待办",
     value: '4/16'
   },
   {
     id: 2,
-    label: $t('page.home.message'),
+    label: "消息",
     value: '12'
   }
 ])
@@ -48,9 +48,9 @@ const statisticData = computed<StatisticData[]>(() => [
           </div>
           <div class="pl-12px">
             <h3 class="text-18px font-semibold">
-              {{ $t('page.home.greeting', { userName: authStore.userInfo.userName }) }}
+              {{ "欢迎回来，{userName}！" }}
             </h3>
-            <p class="text-#999 leading-30px">{{ $t('page.home.weatherDesc') }}</p>
+            <p class="text-#999 leading-30px">{{ "今日多云转晴，20℃ - 25℃!" }}</p>
           </div>
         </div>
       </NGi>

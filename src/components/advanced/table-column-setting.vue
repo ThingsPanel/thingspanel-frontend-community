@@ -19,7 +19,7 @@ const columns = defineModel<FilteredColumn[]>('columns', {
         <template #icon>
           <IconAntDesignSettingOutlined class="text-icon" />
         </template>
-        {{ $t('common.columnSetting') }}
+        {{ "列设置" }}
       </NButton>
     </template>
     <VueDraggable v-model="columns">

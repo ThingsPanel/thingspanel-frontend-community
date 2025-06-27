@@ -48,7 +48,7 @@ const columns: Ref<DataTableColumns<GeneralSetting.DataClearSetting>> = ref([
   },
   {
     key: 'data_type',
-    title: () => $t('page.manage.setting.dataClearSetting.form.cleanupType'),
+    title: () => "清理类型",
     align: 'left',
     render: row => {
       if (row.data_type) {
@@ -60,19 +60,19 @@ const columns: Ref<DataTableColumns<GeneralSetting.DataClearSetting>> = ref([
           row.data_type === '1'
             ? 'page.manage.setting.dataClearSetting.type.equipmentData'
             : 'page.manage.setting.dataClearSetting.type.operationLog';
-        return <NTag type={tagTypes[row.data_type]}>{$t(key)}</NTag>;
+        return <NTag type={tagTypes[row.data_type]}>{"文本"}</NTag>;
       }
       return <span></span>;
     }
   },
   {
     key: 'retention_days',
-    title: () => $t('page.manage.setting.dataClearSetting.form.retentionDays'),
+    title: () => "保留天数",
     align: 'left'
   },
   {
     key: 'last_cleanup_time',
-    title: () => $t('page.manage.setting.dataClearSetting.form.lastCleanupTime'),
+    title: () => "上次清理时间",
     align: 'left',
     render: row => {
       return <span>{dayjs(row.last_cleanup_time).format('YYYY-MM-DD HH:mm:ss')}</span>;
@@ -80,7 +80,7 @@ const columns: Ref<DataTableColumns<GeneralSetting.DataClearSetting>> = ref([
   },
   {
     key: 'last_cleanup_data_time',
-    title: () => $t('page.manage.setting.dataClearSetting.form.lastCleanupDataTime'),
+    title: () => "上次清理数据时间节点",
     align: 'left',
     render: row => {
       return <span>{dayjs(row.last_cleanup_data_time).format('YYYY-MM-DD HH:mm:ss')}</span>;
@@ -88,19 +88,19 @@ const columns: Ref<DataTableColumns<GeneralSetting.DataClearSetting>> = ref([
   },
   {
     key: 'remark',
-    title: () => $t('common.remark'),
+    title: () => "备注",
     align: 'left'
   },
   {
     key: 'actions',
-    title: () => $t('common.actions'),
+    title: () => "操作",
     align: 'center',
     width: '100px',
     render: row => {
       return (
         <NSpace justify={'center'}>
           <NButton size={'small'} type="primary" onClick={() => handleEditTable(row)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
         </NSpace>
       );
@@ -153,25 +153,25 @@ init();
   <div class="h-full flex-col">
     <NDataTable :columns="columns" :data="tableData" :loading="loading" flex-height min-height="150px" />
 
-    <NModal v-model:show="visible" preset="card" :title="$t('common.edit')" class="w-700px">
+    <NModal v-model:show="visible" preset="card" :title="编辑" class="w-700px">
       <NForm ref="formRef" label-placement="left" :label-width="120" :model="editData">
         <NGrid :cols="24" :x-gap="18">
-          <NFormItemGridItem :span="24" :label="$t('page.manage.setting.dataClearSetting.form.retentionDays')">
+          <NFormItemGridItem :span="24" :label="保留天数">
             <NInputNumber v-model:value="editData.retention_days" class="flex-1" />
           </NFormItemGridItem>
-          <NFormItemGridItem :span="24" :label="$t('page.manage.setting.dataClearSetting.form.enabled')" path="enabled">
+          <NFormItemGridItem :span="24" :label="是否启用" path="enabled">
             <NRadioGroup v-model:value="editData.enabled">
               <NRadio v-for="item in dataClearSettingEnabledTypeOptions" :key="item.value" :value="item.value">
                 {{ item.label }}
               </NRadio>
             </NRadioGroup>
           </NFormItemGridItem>
-          <NFormItemGridItem :span="24" :label="$t('common.remark')">
-            <NInput v-model:value="editData.remark" type="textarea" placeholder="" />
+          <NFormItemGridItem :span="24" :label="备注">
+            <NInput v-model:value="editData.remark" type="textarea" placeholder=" />
           </NFormItemGridItem>
         </NGrid>
         <NSpace class="w-full pt-16px" :size="24" justify="center">
-          <NButton class="w-72px" type="primary" @click="handleSubmit">{{ $t('common.edit') }}</NButton>
+          <NButton class="w-72px" type="primary" @click="handleSubmit">{{ "编辑" }}</NButton>
         </NSpace>
       </NForm>
     </NModal>

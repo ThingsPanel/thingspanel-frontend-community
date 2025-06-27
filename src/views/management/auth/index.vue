@@ -68,12 +68,12 @@ const rowKey = (row: CustomRoute.Route) => {
 const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
   {
     key: 'description',
-    title: () => $t('page.manage.menu.title'),
+    title: () => "菜单管理",
     align: 'left',
     minWidth: '140px',
     render: row => {
       if (row.multilingual && row.multilingual !== 'default') {
-        return <span>{$t(row.multilingual)}</span>;
+        return <span>{"文本"}</span>;
       }
       return <span>{row.description}</span>;
     }
@@ -81,7 +81,7 @@ const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
 
   {
     key: 'param2',
-    title: () => $t('page.manage.menu.icon'),
+    title: () => "图标",
     align: 'left',
     minWidth: '140px',
     render: row => {
@@ -94,25 +94,25 @@ const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
   {
     key: 'element_code',
     minWidth: '140px',
-    title: () => $t('page.manage.menu.menuName'),
+    title: () => "菜单名称",
     align: 'left'
   },
   {
     key: 'param1',
     minWidth: '140px',
-    title: () => $t('page.manage.menu.routeName'),
+    title: () => "路由名称",
     align: 'left'
   },
   // {
   //   key: 'param3',
   //   minWidth: '140px',
-  //   title: () => $t('page.manage.menu.componentType'),
+  //   title: () => "组件类型",
   //   align: 'left'
   // },
   {
     key: 'element_type',
     minWidth: '140px',
-    title: () => $t('page.manage.menu.menuType'),
+    title: () => "菜单类型",
     align: 'left',
     render: row => {
       if (row.element_type) {
@@ -131,7 +131,7 @@ const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
   {
     key: 'authority',
     minWidth: '140px',
-    title: () => $t('page.manage.menu.authority'),
+    title: () => "权限",
     align: 'left',
     render: row => {
       if (row.authority && row.authority.length) {
@@ -154,30 +154,30 @@ const columns: Ref<DataTableColumns<CustomRoute.Route>> = ref([
   {
     key: 'remark',
     minWidth: '140px',
-    title: () => $t('common.remark'),
+    title: () => "备注",
     align: 'left'
   },
   {
     key: 'actions',
-    title: () => $t('common.actions'),
+    title: () => "操作",
     align: 'left',
     minWidth: '140px',
     render: row => {
       return (
         <NSpace>
           <NButton type="primary" size={'small'} onClick={() => handleEditTable(row)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm
-            negative-text={$t('common.cancel')}
-            positive-text={$t('common.confirm')}
+            negative-text={"取消"}
+            positive-text={"确认"}
             onPositiveClick={() => handleDeleteTable(row.id)}
           >
             {{
-              default: () => $t('common.confirm'),
+              default: () => "确认",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -210,7 +210,7 @@ function handleEditTable(row: any) {
 async function handleDeleteTable(rowId: string) {
   const data = await delElement(rowId);
   if (!data.error) {
-    window.$message?.success($t('common.deleteSuccess'));
+    window.$message?.success("删除成功");
     await getTableData();
   }
 }
@@ -225,11 +225,11 @@ init();
 
 <template>
   <div>
-    <NCard :title="$t('page.manage.menu.title')" :bordered="false" class="h-full rounded-8px shadow-sm">
+    <NCard :title="菜单管理" :bordered="false" class="h-full rounded-8px shadow-sm">
       <template #header-extra>
         <NButton type="primary" @click="handleAddTable">
           <IconIcRoundPlus class="mr-4px text-20px" />
-          {{ $t('common.add') }}
+          {{ "新增" }}
         </NButton>
       </template>
       <div class="h-full flex-col">

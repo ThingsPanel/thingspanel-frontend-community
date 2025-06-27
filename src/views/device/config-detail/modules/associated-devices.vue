@@ -76,14 +76,14 @@ const handleSubmit = async () => {
   await associatedFormRef?.value?.validate()
 
   if (!associatedForm.value.device_ids || associatedForm.value.device_ids.length === 0) {
-    message.warning($t('custom.associatedDevices.selectDeviceFirst'))
+    message.warning("请先选择设备")
     return
   }
 
   associatedForm.value.device_config_id = props.deviceConfigId
   const { error } = await deviceConfigBatch(associatedForm.value)
   if (!error) {
-    message.success($t('common.addSuccess') || 'Added successfully')
+    message.success("添加成功" )
     handleClose()
   }
 }
@@ -133,11 +133,11 @@ const getDeviceOptions = async (isInitialLoad = false) => {
       // eslint-disable-next-line require-atomic-updates
       hasMoreDevices.value = false
       if (error) {
-        message.error($t('common.fetchDataFailed'))
+        message.error("获取数据失败")
       }
     }
   } catch (apiError) {
-    message.error($t('common.networkError'))
+    message.error("网络错误")
     // eslint-disable-next-line require-atomic-updates
     hasMoreDevices.value = false
   } finally {
@@ -162,7 +162,7 @@ const getDeviceList = async () => {
   const { data, error } = await deviceList(queryData.value)
   if (!error && data?.list) {
     data.list.forEach(sitem => {
-      sitem.activate_flag = sitem.is_online === 0 ? $t('custom.devicePage.offline') : $t('custom.devicePage.online')
+      sitem.activate_flag = sitem.is_online === 0 ? "离线" : "在线"
     })
     configDevice.value = data.list || []
     configDeviceTotal.value = data.total || 0
@@ -178,7 +178,7 @@ const handleDelete = async row => {
     device_config_id: ''
   })
   if (!error) {
-    message.success($t('card.removeSuccess') || 'Removed successfully')
+    message.success("移除成功")
     getDeviceList()
   }
 }
@@ -187,22 +187,22 @@ const columnsData: Ref<DataTableColumns<any>> = ref([
   {
     key: 'name',
     minWidth: '140px',
-    title: $t('custom.devicePage.deviceName')
+    title: "设备名称"
   },
   {
     key: 'device_number',
     minWidth: '140px',
-    title: $t('page.irrigation.group.deviceCode')
+    title: "设备编码"
   },
   {
     key: 'activate_flag',
     minWidth: '140px',
-    title: $t('custom.devicePage.onlineStatus')
+    title: "在线状态"
   },
   {
     key: 'ts',
     minWidth: '140px',
-    title: $t('custom.devicePage.pushTime'),
+    title: "推送时间",
     render: row => {
       if (row.ts) {
         return moment(row.ts).format('YYYY-MM-DD HH:mm:ss')
@@ -212,7 +212,7 @@ const columnsData: Ref<DataTableColumns<any>> = ref([
   },
   {
     key: 'actions',
-    title: () => $t('common.actions'),
+    title: () => "操作",
     align: 'center',
     width: '250px',
     render: row => {
@@ -222,7 +222,7 @@ const columnsData: Ref<DataTableColumns<any>> = ref([
           onPositiveClick: () => handleDelete(row)
         },
         {
-          default: () => $t('common.confirmDelete'),
+          default: () => "确认删除",
           trigger: () => {
             return h(
               NButton,
@@ -233,7 +233,7 @@ const columnsData: Ref<DataTableColumns<any>> = ref([
                   e.stopPropagation()
                 }
               },
-              { default: () => $t('common.remove') }
+              { default: () => "移除" }
             )
           }
         }
@@ -266,7 +266,7 @@ onMounted(async () => {
 
 <template>
   <div class="associated-box">
-    <NButton type="primary" @click="addDevice()">{{ $t('generate.+add-device') }}</NButton>
+    <NButton type="primary" @click="addDevice()">{{ "+添加设备" }}</NButton>
     <n-data-table
       :columns="columnsData"
       :data="configDevice"
@@ -287,7 +287,7 @@ onMounted(async () => {
     <NModal
       v-model:show="visible"
       :mask-closable="false"
-      :title="$t('generate.add-device')"
+      :title="添加设备"
       :class="getPlatform ? 'w-90%' : 'w-600px'"
       preset="card"
       @after-leave="modalClose"
@@ -299,25 +299,25 @@ onMounted(async () => {
         label-placement="left"
         label-width="auto"
       >
-        <NFormItem :label="$t('page.irrigation.rotation.chooseDevice')" path="device_ids">
+        <NFormItem :label="选择设备" path="device_ids">
           <DeviceSelectWithScroll
             v-model:modelValue="associatedForm.device_ids"
             :options="deviceOptions"
             :loading="loadingMore"
             :has-more="hasMoreDevices"
-            :placeholder="$t('page.irrigation.rotation.chooseDevice') || '请选择设备'"
+            :placeholder="选择设备" || '请选择设备'"
             @load-more="handleLoadMoreDevices"
             @initial-load="handleInitialLoadDevices"
           />
         </NFormItem>
         <NFlex justify="flex-end">
-          <NButton @click="handleClose">{{ $t('generate.cancel') }}</NButton>
+          <NButton @click="handleClose">{{ "取消" }}</NButton>
           <NButton
             type="primary"
             :disabled="!associatedForm.device_ids || associatedForm.device_ids.length === 0"
             @click="handleSubmit"
           >
-            {{ $t('generate.add') }}
+            {{ "添加" }}
           </NButton>
         </NFlex>
       </NForm>

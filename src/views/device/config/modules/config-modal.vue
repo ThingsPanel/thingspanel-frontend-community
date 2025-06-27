@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
   modalVisible: false,
   modalType: 'add'
 })
-const modalTitle = ref($t('generate.add'))
+const modalTitle = ref("添加")
 const configForm = ref(defaultConfigForm())
 
 function defaultConfigForm() {
@@ -37,17 +37,17 @@ function defaultConfigForm() {
 const configFormRules = ref({
   name: {
     required: true,
-    message: $t('common.deviceConfigName'),
+    message: "设备配置名称",
     trigger: 'blur'
   },
   device_type: {
     required: true,
-    message: $t('common.deviceAccessType'),
+    message: "设备接入类型",
     trigger: 'change'
   },
   device_conn_type: {
     required: true,
-    message: $t('common.deviceConnectionMethod'),
+    message: "设备连接方式",
     trigger: 'change'
   }
 })
@@ -75,9 +75,9 @@ watch(
   newValue => {
     visible.value = newValue
     if (props.modalType === 'add') {
-      modalTitle.value = $t('generate.add')
+      modalTitle.value = "添加"
     } else {
-      modalTitle.value = $t('common.edit')
+      modalTitle.value = "编辑"
     }
     getDeviceTemplate()
   }
@@ -115,12 +115,12 @@ const handleSubmit = async () => {
 
 <template>
   <div class="overflow-hidden">
-    <NCard :title="`${modalTitle}${$t('custom.devicePage.deviceConfig')}`">
+    <NCard :title="`${modalTitle}${"设备模板"}`">
       <NForm ref="configFormRef" :model="configForm" :rules="configFormRules" label-placement="left" label-width="auto">
-        <NFormItem :label="$t('generate.device-configuration-name')" path="name">
-          <NInput v-model:value="configForm.name" :placeholder="$t('generate.enter-device-name')" />
+        <NFormItem :label="设备模板名称" path="name">
+          <NInput v-model:value="configForm.name" :placeholder="请输入设备名称" />
         </NFormItem>
-        <NFormItem :label="$t('generate.select-device-function-template')" path="device_template_id">
+        <NFormItem :label="选择设备模型" path="device_template_id">
           <NSelect
             v-model:value="configForm.device_template_id"
             :options="deviceTemplateOptions"
@@ -129,26 +129,26 @@ const handleSubmit = async () => {
             @scroll="deviceTemplateScroll"
           ></NSelect>
         </NFormItem>
-        <NFormItem :label="$t('generate.device-access-type')" path="device_type">
+        <NFormItem :label="设备接入类型" path="device_type">
           <n-radio-group v-model:value="configForm.device_type" name="device_type">
             <n-space>
-              <n-radio value="1">{{ $t('generate.direct-connected-device') }}</n-radio>
-              <n-radio value="2">{{ $t('generate.gateway') }}</n-radio>
-              <n-radio value="3">{{ $t('generate.gateway-sub-device') }}</n-radio>
+              <n-radio value="1">{{ "直连设备" }}</n-radio>
+              <n-radio value="2">{{ "网关" }}</n-radio>
+              <n-radio value="3">{{ "网关子设备" }}</n-radio>
             </n-space>
           </n-radio-group>
         </NFormItem>
-        <NFormItem :label="$t('generate.device-connection-method')" path="device_conn_type">
+        <NFormItem :label="设备连接方式" path="device_conn_type">
           <n-radio-group v-model:value="configForm.device_conn_type" name="device_conn_type">
             <n-space>
-              <n-radio value="A">{{ $t('generate.device-connect-platform') }}</n-radio>
-              <n-radio value="B">{{ $t('generate.platform-connect-device') }}</n-radio>
+              <n-radio value="A">{{ "设备连接平台" }}</n-radio>
+              <n-radio value="B">{{ "平台连接设备" }}</n-radio>
             </n-space>
           </n-radio-group>
         </NFormItem>
         <NFlex>
-          <NButton @click="handleClose">{{ $t('generate.cancel') }}</NButton>
-          <NButton type="primary" @click="handleSubmit">{{ $t('page.login.common.confirm') }}</NButton>
+          <NButton @click="handleClose">{{ "取消" }}</NButton>
+          <NButton type="primary" @click="handleSubmit">{{ "确定" }}</NButton>
         </NFlex>
       </NForm>
     </NCard>

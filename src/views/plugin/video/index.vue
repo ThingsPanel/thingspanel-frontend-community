@@ -33,8 +33,8 @@ onUnmounted(() => {
 
 <template>
   <div class="h-full">
-    <NCard :title="$t('generate.videoPlayerPlugin')" :bordered="false" class="h-full rounded-8px shadow-sm">
-      <div ref="domRef" class=""></div>
+    <NCard :title="视频播放器插件" :bordered="false" class="h-full rounded-8px shadow-sm">
+      <div ref="domRef" class="></div>
     </NCard>
   </div>
 </template>

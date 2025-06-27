@@ -80,13 +80,13 @@ const getProtocolList = async (deviceCode: string) => {
   typeOptions.value = [
     {
       type: 'group',
-      name: $t('common.protocol'),
+      name: "协议",
       key: 'protocol',
       children: res.data.protocol || []
     },
     {
       type: 'group',
-      name: $t('common.service'),
+      name: "服务",
       key: 'service',
       children: res.data.service || []
     }
@@ -140,22 +140,22 @@ onMounted(async () => {
 <template>
   <div class="connection-box">
     <div class="connection-title">
-      {{ $t('generate.through-protocol-access') }}
+      {{ "通过协议接入" }}
     </div>
     <n-scrollbar class="h-[400px] overflow-y-scroll">
       <NForm :model="extendForm" :rules="extendFormRules" label-placement="left" label-width="auto">
-        <NFormItem :label="$t('generate.choose-protocol-or-Service')" path="protocol_type" class="w-300">
+        <NFormItem :label="选择协议/服务" path="protocol_type" class="w-300">
           <!-- <NSelect
             v-model:value="extendForm.protocol_type"
             :options="typeOptions"
-            :placeholder="$t('generate.select-protocol-service')"
+            :placeholder="请选择选择协议/服务"
             label-field="name"
             value-field="service_identifier"
             @change="choseProtocolType"
           ></NSelect> -->
           <NSelect
             v-model:value="extendForm.protocol_type"
-            :placeholder="$t('generate.select-protocol-service')"
+            :placeholder="请选择选择协议/服务"
             label-field="name"
             :disabled="true"
             value-field="service_identifier"
@@ -163,7 +163,7 @@ onMounted(async () => {
         </NFormItem>
         <NFormItem
           v-show="configInfo.device_type !== '3'"
-          :label="$t('generate.authentication-type')"
+          :label="认证类型"
           path="voucher_type"
           class="w-300"
         >
@@ -171,27 +171,27 @@ onMounted(async () => {
             v-if="props.configInfo.device_type !== 1"
             v-model:value="extendForm.voucher_type"
             :options="connectOptions"
-            :placeholder="$t('generate.select-authentication-type')"
+            :placeholder="请选择认证类型"
           ></NSelect> -->
           <NInput
             v-if="props.configInfo.device_type !== 1"
             v-model:value="extendForm.voucher_type"
             :disabled="true"
-            :placeholder="$t('generate.select-authentication-type')"
+            :placeholder="请选择认证类型"
           />
         </NFormItem>
         <NFormItem>
-          <!-- <NButton type="primary" @click="openForm">{{ $t('generate.data-parsing') }}</NButton> -->
+          <!-- <NButton type="primary" @click="openForm">{{ "数据解析" }}</NButton> -->
           <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements" :edit="true"></FormInput>
         </NFormItem>
         <NFormItem>
-          <NButton type="primary" @click="handleSubmit">{{ $t('common.save') }}</NButton>
+          <NButton type="primary" @click="handleSubmit">{{ "保存" }}</NButton>
         </NFormItem>
         <NFlex justify="flex-end"></NFlex>
       </NForm>
     </n-scrollbar>
     <n-drawer v-model:show="active" height="90%" placement="bottom">
-      <n-drawer-content :title="$t('generate.form-configuration')">
+      <n-drawer-content :title="表单配置">
         <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements"></FormInput>
       </n-drawer-content>
     </n-drawer>

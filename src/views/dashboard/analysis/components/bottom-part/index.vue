@@ -22,26 +22,26 @@ interface TableData {
 }
 
 const timelines: TimelineData[] = [
-  { type: 'default', title: $t('card.ah'), content: '', time: '2021-10-10 20:46' },
+  { type: 'default', title: "啊", content: '', time: '2021-10-10 20:46' },
   {
     type: 'success',
-    title: $t('custom.devicePage.success'),
+    title: "成功",
     content: '哪里成功',
     time: '2021-10-10 20:46'
   },
   {
     type: 'error',
-    title: $t('card.error'),
-    content: $t('card.whereSuccess'),
+    title: "错误",
+    content: "哪里成功",
     time: '2021-10-10 20:46'
   },
   {
     type: 'warning',
-    title: $t('card.warning'),
-    content: $t('card.whereWarning'),
+    title: "警告",
+    content: "哪里警告",
     time: '2021-10-10 20:46'
   },
-  { type: 'info', title: $t('card.info'), content: $t('card.yes'), time: '2021-10-10 20:46' }
+  { type: 'info', title: "信息", content: "是的", time: '2021-10-10 20:46' }
 ]
 
 const columns = [
@@ -136,14 +136,14 @@ const tableData: TableData[] = [
 <template>
   <NGrid :x-gap="16" :y-gap="16" :item-responsive="true">
     <NGridItem span="0:24 640:24 1024:8">
-      <NCard :title="$t('generate.timeline')" :bordered="false" class="h-full rounded-8px shadow-sm">
+      <NCard :title="时间线" :bordered="false" class="h-full rounded-8px shadow-sm">
         <NTimeline>
           <NTimelineItem v-for="item in timelines" :key="item.type" v-bind="item" />
         </NTimeline>
       </NCard>
     </NGridItem>
     <NGridItem span="0:24 640:24 1024:16">
-      <NCard :title="$t('generate.table')" :bordered="false" class="h-full rounded-8px shadow-sm">
+      <NCard :title="表格" :bordered="false" class="h-full rounded-8px shadow-sm">
         <NDataTable size="small" :columns="columns" :data="tableData" />
       </NCard>
     </NGridItem>

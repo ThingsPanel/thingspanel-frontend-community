@@ -62,7 +62,7 @@ const getData = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch device template data:', error)
-    window.$message?.error($t('common.fetchDataFailed'))
+    window.$message?.error("获取数据失败")
   } finally {
     endLoading()
   }
@@ -101,19 +101,19 @@ const handleRemove = async (id: string) => {
   try {
     const { error } = await deleteDeviceTemplate(id)
     if (!error) {
-      window.$message?.success($t('common.templateDeleted'))
+      window.$message?.success("模板已删除")
       await getData()
     }
   } catch (error) {
     console.error('Failed to delete template:', error)
-    window.$message?.error($t('common.deleteFailed'))
+    window.$message?.error("删除失败")
   }
 }
 
 // 表格列定义
 const columns = computed(() => [
   {
-    title: $t('route.device_template'),
+    title: "设备模型",
     key: 'name',
     ellipsis: {
       tooltip: true
@@ -121,7 +121,7 @@ const columns = computed(() => [
     sorter: true
   },
   {
-    title: $t('generate.description'),
+    title: "描述:",
     key: 'description',
     ellipsis: {
       tooltip: true
@@ -129,7 +129,7 @@ const columns = computed(() => [
     render: (row: any) => row.description || '--'
   },
   {
-    title: $t('generate.labels'),
+    title: "标签",
     key: 'label',
     width: 200,
     render: (row: any) => {
@@ -153,7 +153,7 @@ const columns = computed(() => [
     }
   },
   {
-    title: $t('common.creationTime'),
+    title: "创建时间",
     key: 'created_at',
     width: 160,
     sorter: true,
@@ -162,7 +162,7 @@ const columns = computed(() => [
     }
   },
   {
-    title: $t('common.actions'),
+    title: "操作",
     key: 'actions',
     width: 150,
     render: (row: any) => {
@@ -178,7 +178,7 @@ const columns = computed(() => [
                 type: 'primary',
                 onClick: () => handleEdit(row.id)
               },
-              { default: () => $t('common.edit') }
+              { default: () => "编辑" }
             ),
             h(
               NPopconfirm,
@@ -186,7 +186,7 @@ const columns = computed(() => [
                 onPositiveClick: () => handleRemove(row.id)
               },
               {
-                default: () => $t('common.confirmDelete'),
+                default: () => "确认删除",
                 trigger: () =>
                   h(
                     NButton,
@@ -194,7 +194,7 @@ const columns = computed(() => [
                       size: 'small',
                       type: 'error'
                     },
-                    { default: () => $t('common.delete') }
+                    { default: () => "删除" }
                   )
               }
             )
@@ -274,7 +274,7 @@ onMounted(() => {
     <!-- 左侧操作按钮 -->
     <template #header-left>
       <div class="flex gap-2">
-        <NButton type="primary" @click="handleAddNew">+ {{ $t('generate.add-device-function-template') }}</NButton>
+        <NButton type="primary" @click="handleAddNew">+ {{ "添加设备模型" }}</NButton>
       </div>
     </template>
 
@@ -283,7 +283,7 @@ onMounted(() => {
       <div class="flex gap-4 items-center">
         <NInput
           v-model:value="queryParams.name"
-          :placeholder="$t('generate.enter-template-name')"
+          :placeholder="请输入模板名称"
           type="text"
           clearable
           style="width: 240px"
@@ -297,7 +297,7 @@ onMounted(() => {
           </template>
         </NInput>
         <NButton type="primary" @click="handleQuery">
-          {{ $t('common.search') }}
+          {{ "搜索" }}
         </NButton>
       </div>
     </template>
@@ -306,7 +306,7 @@ onMounted(() => {
     <template #card-view>
       <n-spin :show="loading">
       <div v-if="deviceTemplateList.length === 0 && !loading" class="empty-state">
-        <NEmpty size="huge" :description="$t('common.nodata')" />
+        <NEmpty size="huge" :description="暂无数据" />
       </div>
       <div v-else>
         <NGrid cols="1 s:2 m:3 l:4 xl:5 2xl:6" x-gap="20" y-gap="20" responsive="screen">

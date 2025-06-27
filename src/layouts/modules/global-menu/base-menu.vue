@@ -74,7 +74,7 @@ const renderMenuLabel = op => {
       NTooltip,
       { trigger: 'hover' },
       {
-        default: $t(op.remark),
+        default: "文本",
         trigger: op.label
       }
     )

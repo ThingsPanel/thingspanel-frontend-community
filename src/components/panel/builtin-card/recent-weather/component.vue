@@ -20,49 +20,49 @@ const weatherList: WeatherItem[] = reactive([
     id: '0',
     temperature: '26°',
     humidity: '54%',
-    text: $t('dashboard_panel.cardName.week.mon'),
+    text: "周一",
     icons: 'sunlight'
   },
   {
     id: '1',
     temperature: '24°',
     humidity: '43%',
-    text: $t('dashboard_panel.cardName.week.tue'),
+    text: "周二",
     icons: 'cloudy'
   },
   {
     id: '2',
     temperature: '26°',
     humidity: '65%',
-    text: $t('dashboard_panel.cardName.week.wed'),
+    text: "周三",
     icons: 'rain'
   },
   {
     id: '3',
     temperature: '26°',
     humidity: '72%',
-    text: $t('dashboard_panel.cardName.week.thur'),
+    text: "周四",
     icons: 'snow'
   },
   {
     id: '4',
     temperature: '25°',
     humidity: '58%',
-    text: $t('dashboard_panel.cardName.week.fri'),
+    text: "周五",
     icons: 'yin'
   }
   // {
   //   id: '5',
   //   temperature: '24°',
   //   humidity: '64%',
-  //   text: $t('dashboard_panel.cardName.week.sat'),
+  //   text: "周六",
   //   icons: 'sunlight'
   // },
   // {
   //   id: '6',
   //   temperature: '24°',
   //   humidity: '64%',
-  //   text: $t('dashboard_panel.cardName.week.sun'),
+  //   text: "周日",
   //   icons: 'cloudy'
   // }
 ])
@@ -71,7 +71,7 @@ const weatherList: WeatherItem[] = reactive([
 <template>
   <div class="flex flex-col-center">
     <header class="w-full flex flex-justify-between flex-items-center">
-      <div class="header-title font-500">{{ $t('dashboard_panel.cardName.sevenDayWeather') }}</div>
+      <div class="header-title font-500">{{ "最近五天气概况" }}</div>
     </header>
     <div class="weather h-full w-full flex flex-justify-between flex-items-center">
       <div

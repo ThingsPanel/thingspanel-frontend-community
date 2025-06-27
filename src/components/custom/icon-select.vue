@@ -46,14 +46,14 @@ function handleChange(iconItem: string) {
 <template>
   <NPopover placement="bottom-end" trigger="click">
     <template #trigger>
-      <NInput v-model:value="modelValue" readonly :placeholder="$t('generate.click-to-select-icon')">
+      <NInput v-model:value="modelValue" readonly :placeholder="点击选择图标">
         <template #suffix>
           <SvgIcon :icon="selectedIcon" class="p-5px text-30px" />
         </template>
       </NInput>
     </template>
     <template #header>
-      <NInput v-model:value="searchValue" :placeholder="$t('generate.search-icon')"></NInput>
+      <NInput v-model:value="searchValue" :placeholder="搜索图标"></NInput>
     </template>
     <div v-if="iconsList.length > 0" class="grid grid-cols-9 h-auto overflow-auto">
       <span v-for="iconItem in iconsList" :key="iconItem" @click="handleChange(iconItem)">
@@ -64,7 +64,7 @@ function handleChange(iconItem: string) {
         />
       </span>
     </div>
-    <NEmpty v-else class="w-306px" :description="$t('card.cannotFound')" />
+    <NEmpty v-else class="w-306px" :description="你什么也找不到" />
   </NPopover>
 </template>
 

@@ -6,7 +6,7 @@ import { $t } from '@/locales'
   <div class="device flex-col flex-justify-center flex-items-center">
     <div class="device-top h-full w-full flex flex-justify-between flex-items-center">
       <div class="left h-full flex-col">
-        <span>{{ $t('dashboard_panel.cardName.deviceNum') }}</span>
+        <span>{{ "设备总数" }}</span>
         <span>7</span>
       </div>
       <SvgIcon local-icon="device" class="device-icon" />
@@ -14,15 +14,15 @@ import { $t } from '@/locales'
     <div class="device-bottom m-t3 w-full flex flex-justify-between flex-content-start flex-items-center">
       <div class="device-bottom-state flex flex-items-center">
         <SvgIcon local-icon="on-line" class="device_bottom-icon" />
-        <span>{{ $t('dashboard_panel.cardName.onLine') }} 7</span>
+        <span>{{ "在线" }} 7</span>
       </div>
       <div class="device-bottom-state flex flex-items-center">
         <SvgIcon local-icon="offline" class="device_bottom-icon" />
-        <span>{{ $t('dashboard_panel.cardName.offline') }} 0</span>
+        <span>{{ "离线" }} 0</span>
       </div>
       <div class="device-bottom-state flex flex-items-center">
         <SvgIcon local-icon="online-rate1" class="device_bottom-icon" />
-        <span>{{ $t('dashboard_panel.cardName.onlineRate') }} 100%</span>
+        <span>{{ "在线率" }} 100%</span>
         <SvgIcon local-icon="online-rate2" class="device_bottom-icon" />
       </div>
     </div>

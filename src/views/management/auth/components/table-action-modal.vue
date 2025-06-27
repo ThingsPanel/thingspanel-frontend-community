@@ -22,8 +22,8 @@ export type ModalType = NonNullable<Props['type']>
 
 defineOptions({ name: 'TableActionModal' })
 
-const common_cancel = $t('common.cancel')
-const common_confirm = $t('common.confirm')
+const common_cancel = "取消"
+const common_confirm = "确认"
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'add',
@@ -52,8 +52,8 @@ const closeModal = () => {
 
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
-    add: $t('common.add'),
-    edit: $t('common.edit')
+    add: "新增",
+    edit: "编辑"
   }
   return titles[props.type]
 })
@@ -102,9 +102,9 @@ type FormModel = Pick<
 const formModel = reactive<FormModel>(createDefaultFormModel())
 
 const rules = {
-  description: createRequiredFormRule($t('common.pleaseCheckValue')),
-  element_code: createRequiredFormRule($t('common.pleaseCheckValue')),
-  authority: createRequiredFormRule($t('common.pleaseCheckValue'))
+  description: createRequiredFormRule("请检查数值"),
+  element_code: createRequiredFormRule("请检查数值"),
+  authority: createRequiredFormRule("请检查数值")
 }
 
 function createDefaultFormModel(): FormModel {
@@ -176,7 +176,7 @@ watch(
   <NModal v-model:show="modalVisible" preset="card" :title="title" class="w-800px">
     <NForm ref="formRef" label-placement="left" :label-width="120" :model="formModel" :rules="rules">
       <NGrid :cols="24" :x-gap="18">
-        <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.parent')" path="parent_id">
+        <NFormItemGridItem :span="12" :label="父级菜单" path="parent_id">
           <NTreeSelect
             v-model:value="formModel.parent_id"
             :options="parentOptions"
@@ -186,37 +186,37 @@ watch(
           />
         </NFormItemGridItem>
 
-        <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.title')" path="description">
+        <NFormItemGridItem :span="12" :label="标题" path="description">
           <NInput v-model:value="formModel.description" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.multilingual')" path="multilingual">
+        <NFormItemGridItem :span="12" :label="标题（多语言）" path="multilingual">
           <NInput v-model:value="formModel.multilingual" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.name')" path="element_code">
+        <NFormItemGridItem :span="12" :label="名称" path="element_code">
           <NInput v-model:value="formModel.element_code" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.path')" path="param1">
+        <NFormItemGridItem :span="12" :label="访问路径" path="param1">
           <NInput v-model:value="formModel.param1" />
         </NFormItemGridItem>
         <!--
-        <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.route_path')">
+        <NFormItemGridItem :span="12" :label="组件路径">
           <NInput v-model:value="formModel.route_path" />
         </NFormItemGridItem>
         -->
-        <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.icon')" path="param2">
+        <NFormItemGridItem :span="12" :label="图标" path="param2">
           <IconSelect v-model:value="formModel.param2" :icons="icons" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.order')" path="orders">
+        <NFormItemGridItem :span="12" :label="排序" path="orders">
           <NInputNumber v-model:value="formModel.orders" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.type')" path="element_type">
+        <NFormItemGridItem :span="12" :label="类型" path="element_type">
           <NRadioGroup v-model:value="formModel.element_type">
             <NRadio v-for="item in routeTypeOptions" :key="item.value" :value="Number(item.value)">
               {{ item.label }}
             </NRadio>
           </NRadioGroup>
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="$t('page.manage.menu.form.authority')" path="authority">
+        <NFormItemGridItem :span="12" :label="权限" path="authority">
           <NCheckboxGroup v-model:value="formModel.authority">
             <NSpace item-style="display: flex;">
               <NCheckbox v-for="item in routeSysFlagOptions" :key="item.value" :value="item.value" :label="item.label">
@@ -225,10 +225,10 @@ watch(
             </NSpace>
           </NCheckboxGroup>
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="$t('page.manage.menu.hideInMenu')" path="param3">
+        <NFormItemGridItem :span="12" :label="隐藏菜单" path="param3">
           <n-switch v-model:value="formModel.param3" checked-value="1" unchecked-value="0" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="$t('common.description')">
+        <NFormItemGridItem :span="24" :label="描述">
           <NInput v-model:value="formModel.remark" type="textarea" />
         </NFormItemGridItem>
       </NGrid>

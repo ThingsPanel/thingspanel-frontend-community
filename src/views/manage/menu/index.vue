@@ -41,12 +41,12 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
     {
       key: 'id',
       minWidth: '140px',
-      title: $t('page.manage.menu.id'),
+      title: "ID",
       align: 'center'
     },
     {
       key: 'menuType',
-      title: $t('page.manage.menu.menuType'),
+      title: "菜单类型",
       align: 'center',
       minWidth: '140px',
       render: row => {
@@ -55,27 +55,27 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
           2: 'primary'
         };
 
-        const label = $t(menuTypeRecord[row.menuType]);
+        const label = "动态文本";
 
         return <NTag type={tagMap[row.menuType]}>{label}</NTag>;
       }
     },
     {
       key: 'menuName',
-      title: $t('page.manage.menu.menuName'),
+      title: "菜单名称",
       align: 'center',
       minWidth: '140px',
       render: row => {
         const { i18nKey, menuName } = row;
 
-        const label = i18nKey ? $t(i18nKey) : menuName;
+        const label = i18nKey ? "文本" : menuName;
 
         return <span>{label}</span>;
       }
     },
     {
       key: 'icon',
-      title: $t('page.manage.menu.icon'),
+      title: "图标",
       align: 'center',
       minWidth: '140px',
       render: row => {
@@ -92,19 +92,19 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
     },
     {
       key: 'routeName',
-      title: $t('page.manage.menu.routeName'),
+      title: "路由名称",
       align: 'center',
       minWidth: '140px'
     },
     {
       key: 'routePath',
-      title: $t('page.manage.menu.routePath'),
+      title: "路由路径",
       align: 'center',
       minWidth: 120
     },
     {
       key: 'status',
-      title: $t('page.manage.menu.menuStatus'),
+      title: "菜单状态",
       align: 'center',
       minWidth: '140px',
       render: row => {
@@ -117,14 +117,14 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
           2: 'warning'
         };
 
-        const label = $t(enableStatusRecord[row.status]);
+        const label = "动态文本";
 
         return <NTag type={tagMap[row.status]}>{label}</NTag>;
       }
     },
     {
       key: 'hideInMenu',
-      title: $t('page.manage.menu.hideInMenu'),
+      title: "隐藏菜单",
       align: 'center',
       minWidth: '140px',
       render: row => {
@@ -135,44 +135,44 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
           N: 'default'
         };
 
-        const label = $t(yesOrNoRecord[hide]);
+        const label = "动态文本";
 
         return <NTag type={tagMap[hide]}>{label}</NTag>;
       }
     },
     {
       key: 'parentId',
-      title: $t('page.manage.menu.parentId'),
+      title: "父级菜单ID",
       minWidth: '140px',
       align: 'center'
     },
     {
       key: 'order',
-      title: $t('page.manage.menu.order'),
+      title: "排序",
       align: 'center',
       minWidth: '140px'
     },
     {
       key: 'operate',
-      title: $t('common.actions'),
+      title: "操作",
       align: 'center',
       minWidth: '140px',
       render: row => (
         <div class="flex-center justify-end gap-8px">
           {row.menuType === '1' && (
             <NButton type="primary" ghost size="small" onClick={() => handleAddChildMenu(row.id)}>
-              {$t('page.manage.menu.addChildMenu')}
+              {"新增子菜单"}
             </NButton>
           )}
           <NButton type="primary" ghost size="small" onClick={() => handleEdit(row.id)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm onPositiveClick={() => handleDelete(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" ghost size="small">
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -194,7 +194,7 @@ const checkedRowKeys = ref<string[]>([]);
 
 async function handleBatchDelete() {
   // requestTs
-  // window.$message?.success($t('common.deleteSuccess'));
+  // window.$message?.success("删除成功");
 
   checkedRowKeys.value = [];
 
@@ -217,7 +217,7 @@ function handleEdit(id: number) {
 // eslint-disable-next-line
 async function handleDelete(id: number) {
   // requestTs
-  // window.$message?.success($t('common.deleteSuccess'));
+  // window.$message?.success("删除成功");
 
   getData();
 }
@@ -225,7 +225,7 @@ async function handleDelete(id: number) {
 
 <template>
   <div ref="wrapperRef" class="flex-vertical-stretch gap-16px overflow-hidden <sm:overflow-auto">
-    <NCard :title="$t('page.manage.menu.title')" :bordered="false" size="small" class="sm:flex-1-hidden card-wrapper">
+    <NCard :title="菜单管理" :bordered="false" size="small" class="sm:flex-1-hidden card-wrapper">
       <template #header-extra>
         <TableHeaderOperation
           v-model:columns="filteredColumns"

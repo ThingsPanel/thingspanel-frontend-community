@@ -17,29 +17,29 @@ defineProps<{
 const attributeRef = ref();
 const columns0 = [
   {
-    title: $t('device_template.table_header.attributeIdentifier'),
+    title: "属性标识符",
     minWidth: '140px',
     key: 'key'
   },
   {
-    title: $t('device_template.table_header.attributeName'),
+    title: "属性名称",
     minWidth: '140px',
     key: 'data_name'
   },
   {
-    title: $t('device_template.table_header.attributeValue'),
+    title: "属性",
     minWidth: '140px',
     key: 'value',
     render: row => `${row.value}${row.unit !== null ? row.unit : ''}`
   },
   {
-    title: $t('device_template.table_header.updateTime'),
+    title: "更新时间",
     minWidth: '140px',
     key: 'ts',
     render: row => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
   },
   {
-    title: $t('common.actions'),
+    title: "操作",
     key: 'created_at',
     minWidth: '140px',
     render: row => (
@@ -52,10 +52,10 @@ const columns0 = [
         {{
           trigger: () => (
             <NButton text size="small">
-              {$t('common.delete')}
+              {"删除"}
             </NButton>
           ),
-          default: () => $t('common.confirmDelete')
+          default: () => "确认删除"
         }}
       </NPopconfirm>
     )
@@ -66,9 +66,9 @@ const columns0 = [
 const formatOperationType = status => {
   switch (status) {
     case '1':
-      return $t('custom.device_details.manualOperation');
+      return "手动操作";
     case '2':
-      return $t('custom.device_details.automaticTriggering');
+      return "自动触发";
     default:
       return '';
   }
@@ -78,48 +78,48 @@ const formatOperationType = status => {
 const formatStatus = status => {
   switch (status) {
     case '1':
-      return $t('generate.sendingSuccess');
+      return "发送成功";
     case '2':
-      return $t('generate.sendingFail');
+      return "发送失败";
     case '3':
-      return $t('generate.returnSuccess');
+      return "返回成功";
     case '4':
-      return $t('generate.returnFail');
+      return "返回失败";
     default:
       return '';
   }
 };
 const columns = [
   {
-    title: $t('custom.device_details.attributeDistributionTime'),
+    title: "属性下发时间",
     minWidth: '140px',
     key: 'created_at',
     render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
   },
   {
-    title: $t('custom.device_details.messageId'),
+    title: "消息ID",
     minWidth: '140px',
     key: 'message_id'
   },
   {
-    title: $t('custom.device_details.sendContent'),
+    title: "发送内容",
     minWidth: '140px',
     key: 'data'
   },
   {
-    title: $t('custom.device_details.operationType'),
+    title: "操作类型",
     minWidth: '140px',
     key: 'operation_type',
     render: row => formatOperationType(row.status)
   },
   {
-    title: $t('generate.status'),
+    title: "状态",
     minWidth: '140px',
     key: 'status',
     render: row => formatStatus(row.status)
   },
   {
-    title: $t('generate.errorMessage'),
+    title: "错误信息",
     minWidth: '140px',
     key: 'error_message'
   }
@@ -140,7 +140,7 @@ const columns = [
   <div>
     <DistributionAndTable
       :id="id as string"
-      :button-name="$t('generate.issue-attribute')"
+      :button-name="下发属性"
       :table-columns="columns"
       :fetch-data-api="getAttributeDataSetLogs"
       :submit-api="attributeDataPub"

@@ -39,7 +39,7 @@ onUnmounted(() => {
 
 <template>
   <div class="h-full">
-    <NCard :title="$t('generate.markdown-plugin')" :bordered="false" class="rounded-8px shadow-sm">
+    <NCard :title="markdown插件" :bordered="false" class="rounded-8px shadow-sm">
       <div ref="domRef"></div>
       <template #footer>
         <GithubLink link="https://github.com/Vanessa219/vditor" />

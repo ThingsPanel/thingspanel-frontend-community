@@ -14,15 +14,15 @@ const pageData = ref<any>({
   tableData: [],
   options: [
     {
-      label: $t('generate.all'),
+      label: "全部",
       value: ''
     },
     {
-      label: $t('card.accessProtocol'),
+      label: "接入协议",
       value: 1
     },
     {
-      label: $t('card.accessService'),
+      label: "接入服务",
       value: 2
     }
   ]
@@ -38,13 +38,11 @@ const queryInfo = ref<any>({
   itemCount: 0,
   onChange: (page: number) => {
     queryInfo.value.page = page;
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     getList();
   },
   onUpdatePageSize: (pageSize: number) => {
     queryInfo.value.page_size = pageSize;
     queryInfo.value.page = 1;
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     getList();
   }
 });
@@ -67,32 +65,32 @@ const config: (row: any) => void = async row => {
 };
 const columns: any = ref([
   {
-    title: $t('card.pluginName'),
+    title: "插件名称",
     key: 'name',
     minWidth: '200px'
   },
   {
-    title: $t('card.type'),
+    title: "类别",
     key: 'service_type',
     minWidth: '140px',
     align: 'center',
     render: row => {
       if (row.service_type) {
-        return <span>{row.service_type === 1 ? $t('card.accessProtocol') : $t('card.accessService')}</span>;
+        return <span>{row.service_type === 1 ? "接入协议" : "接入服务"}</span>;
       }
       return <span></span>;
     }
   },
   {
-    title: $t('card.description'),
+    title: "描述",
     key: 'description'
   },
   {
-    title: $t('card.version'),
+    title: "版本",
     key: 'version'
   },
   {
-    title: $t('generate.status'),
+    title: "状态",
     key: 'service_heartbeat',
     minWidth: '140px',
     align: 'center',
@@ -100,7 +98,7 @@ const columns: any = ref([
       if (row.service_heartbeat) {
         return (
           <NTag type={row.service_heartbeat === 1 ? 'success' : 'error'}>
-            {row.service_heartbeat === 1 ? $t('card.running') : $t('card.stopped')}
+            {row.service_heartbeat === 1 ? "运行中" : "已停止"}
           </NTag>
         );
       }
@@ -109,7 +107,7 @@ const columns: any = ref([
   },
   {
     key: 'actions',
-    title: () => $t('common.actions'),
+    title: () => "操作",
     align: 'left',
     minWidth: '220px',
     render: row => {
@@ -117,24 +115,24 @@ const columns: any = ref([
         <NSpace justify={'start'}>
           {
             <NButton size={'small'} type="primary" onClick={() => edit(row)}>
-              {$t('common.edit')}
+              {"编辑"}
             </NButton>
           }
           {
             <NButton size={'small'} type="primary" onClick={() => config(row)}>
-              {$t('common.pluginConfig')}
+              {"插件配置"}
             </NButton>
           }
           <NPopconfirm
-            negative-text={$t('common.cancel')}
-            positive-text={$t('common.confirm')}
+            negative-text={"取消"}
+            positive-text={"确认"}
             onPositiveClick={() => del(row.id)}
           >
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -162,15 +160,15 @@ getList();
 
 <template>
   <div>
-    <NCard :title="$t('route.apply_in')" :bordered="false" class="h-full rounded-8px shadow-sm">
+    <NCard :title="插件管理" :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="header">
         <n-select
           v-model:value="queryInfo.service_type"
           class="selectType"
-          :placeholder="$t('card.selectSong')"
+          :placeholder="选择歌曲"
           :options="pageData.options"
         />
-        <NButton type="primary" @click="addData">{{ $t('card.addNewPlugin') }}</NButton>
+        <NButton type="primary" @click="addData">{{ "添加新插件" }}</NButton>
       </div>
       <div class="h">
         <NDataTable

@@ -105,7 +105,7 @@ const handleSubmit = async () => {
     device_id: props.id,
     voucher: JSON.stringify(formData)
   })
-  window.$message?.success($t('common.updateSuccess'))
+  window.$message?.success("更新成功")
 }
 const copy = async param => {
   const element = document.getElementById(param.toString())
@@ -115,7 +115,7 @@ const copy = async param => {
   selection?.removeAllRanges()
   selection?.addRange(range)
   document.execCommand('Copy')
-  window.$message?.success($t('theme.configOperation.copySuccess'))
+  window.$message?.success("复制成功")
 }
 const toServiceClick = () => {
   if (deviceDataStore?.deviceData?.access_way === 'B') {
@@ -129,14 +129,14 @@ const toServiceClick = () => {
 <template>
   <div>
     <n-descriptions label-placement="left" :column="1" class="mt-6">
-      <n-descriptions-item :label="$t('generate.access-method-service')">
+      <n-descriptions-item :label="接入方式/服务">
         <div :class="deviceDataStore?.deviceData?.access_way === 'B' ? 'blue-text' : ''" @click="toServiceClick">
           {{ deviceDataStore?.deviceData?.device_config?.protocol_type || '--' }}
         </div>
       </n-descriptions-item>
     </n-descriptions>
 
-    <NCard v-if="deviceDataStore?.deviceData?.access_way !== 'B'" :title="$t('generate.credential')" class="mb-6 mt-6">
+    <NCard v-if="deviceDataStore?.deviceData?.access_way !== 'B'" :title="凭证" class="mb-6 mt-6">
       <NForm ref="formRef" :rules="formRules" :model="formData">
         <template v-for="element in formElements" :key="element.dataKey">
           <div v-if="element.type === 'input'" class="form-item">
@@ -173,7 +173,7 @@ const toServiceClick = () => {
       </NForm>
     </NCard>
     <n-scrollbar v-if="deviceDataStore?.deviceData?.access_way !== 'B'" class="h-400px">
-      <NCard :title="$t('custom.devicePage.connectInfo')">
+      <NCard :title="连接信息">
         <NDescriptions :column="1">
           <NDescriptionsItem v-for="(value, key, index) in connectInfo" :key="key" :index="index" :label="key">
             <span :id="index.toString()" class="font-600" @click="copy(index)">{{ value }}</span>
@@ -182,7 +182,7 @@ const toServiceClick = () => {
       </NCard>
     </n-scrollbar>
     <div v-if="deviceDataStore?.deviceData?.access_way !== 'B'" class="mt-4 w-full flex-center">
-      <NButton type="primary" @click="handleSubmit">{{ $t('common.save') }}</NButton>
+      <NButton type="primary" @click="handleSubmit">{{ "保存" }}</NButton>
     </div>
   </div>
 </template>

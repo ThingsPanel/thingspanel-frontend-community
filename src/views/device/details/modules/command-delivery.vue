@@ -10,10 +10,10 @@ defineProps<{
 // 状态
 const formatStatus = (status: string) => {
   const statusjson = {
-    '1': $t('generate.sendingSuccess'),
-    '2': $t('generate.sendingFail'),
-    '3': $t('generate.returnSuccess'),
-    '4': $t('generate.returnFail')
+    '1': "发送成功",
+    '2': "发送失败",
+    '3': "返回成功",
+    '4': "返回失败"
   }
 
   return statusjson[status] || ''
@@ -21,32 +21,32 @@ const formatStatus = (status: string) => {
 
 const columns = [
   {
-    title: $t('device_template.table_header.commandIdentifier'),
+    title: "命令标识符",
     minWidth: '140px',
     key: 'identify'
   },
   {
-    title: $t('device_template.table_header.commandName'),
+    title: "命令名称",
     minWidth: '140px',
     key: 'identify_name',
     render: row => row.identify_name || '--'
   },
 
   {
-    title: $t('generate.commandIssuanceTime'),
+    title: "命令下发时间",
     minWidth: '140px',
     key: 'created_at',
     render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
   },
   {
-    title: $t('generate.status'),
+    title: "状态",
     minWidth: '140px',
     key: 'status',
     render: row => formatStatus(row.status)
   },
-  { title: $t('generate.commandConetnt'), minWidth: '140px', key: 'data' },
+  { title: "命令内容", minWidth: '140px', key: 'data' },
   {
-    title: $t('generate.errorMessage'),
+    title: "错误信息",
     minWidth: '140px',
     render: row => row.error_message || '--'
   }
@@ -57,7 +57,7 @@ const columns = [
   <div>
     <DistributionAndTable
       :id="id as string"
-      :button-name="$t('generate.issueCommand')"
+      :button-name="下发命令"
       :is-command="true"
       :table-columns="columns"
       :fetch-data-api="getCommandDataSetLogs"

@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 h-full bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
     <h3 class="text-base font-semibold mb-3 text-gray-800 dark:text-gray-100 flex-shrink-0">
-      {{ $t('card.tenantChart.title') }}
+      {{ "月用户增长统计" }}
     </h3>
     <div class="flex-grow flex gap-4 min-h-[200px]">
       <!-- Left: Stats using wrapper div for color -->
@@ -9,21 +9,21 @@
         class="w-1/3 flex flex-col justify-around py-2 flex-shrink-0 border-r border-gray-200 dark:border-gray-700 pr-4"
       >
         <div class="text-center">
-          <n-statistic :label="$t('card.tenantChart.totalUsers', '总用户数')">
+          <n-statistic :label="总用户数">
             <div :class="[themeStore.isDark ? 'text-blue-400' : 'text-blue-600']">
               <NNumberAnimation :from="0" :to="stats.user_total" />
             </div>
           </n-statistic>
         </div>
         <div class="text-center">
-          <n-statistic :label="$t('card.tenantChart.addedMonth', '本月新增')">
+          <n-statistic :label="本月新增">
             <div :class="[themeStore.isDark ? 'text-green-400' : 'text-green-600']">
               <NNumberAnimation :from="0" :to="stats.user_added_month" />
             </div>
           </n-statistic>
         </div>
         <div class="text-center">
-          <n-statistic :label="$t('card.tenantChart.addedYesterday', '昨日新增')">
+          <n-statistic :label="昨日新增">
             <div :class="[themeStore.isDark ? 'text-amber-400' : 'text-amber-600']">
               <NNumberAnimation :from="0" :to="stats.user_added_yesterday" />
             </div>
@@ -38,7 +38,7 @@
           {{ errorMsg }}
         </div>
         <div v-if="!loading && !errorMsg && isEmpty" class="h-full flex items-center justify-center">
-          <NEmpty :description="$t('card.noData')" />
+          <NEmpty :description="暂无数据" />
         </div>
       </div>
     </div>
@@ -117,7 +117,7 @@ const processData = (
 
 const updateChartOption = (processedData: { monthLabels: string[]; userCounts: number[] }) => {
   const { monthLabels, userCounts } = processedData
-  const seriesName = $t('card.tenantChart.seriesName', 'New Users')
+  const seriesName = "New Users"
 
   // --- More Vibrant Bar Color ---
   const barColor = themeStore.isDark ? '#36a2eb' : '#4bc0c0' // Example: Bright Blue / Teal
@@ -152,7 +152,7 @@ const updateChartOption = (processedData: { monthLabels: string[]; userCounts: n
       feature: {
         saveAsImage: {
           show: true,
-          title: $t('common.saveAsImage', 'Save'),
+          title: "Save",
           iconStyle: {
             borderColor: themeStore.isDark ? '#777' : '#aaa' // Subtle icon border
           }
@@ -228,7 +228,7 @@ const fetchData = async () => {
     }
   } catch (err: any) {
     console.error('Error fetching or processing tenant data:', err)
-    errorMsg.value = $t('common.loadFailure', 'Failed to load data')
+    errorMsg.value = "Failed to load data"
     stats.value = { user_total: 0, user_added_yesterday: 0, user_added_month: 0 } // Reset stats on error
   } finally {
     loading.value = false

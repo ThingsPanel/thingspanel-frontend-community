@@ -71,7 +71,7 @@ const removeLayout = (i: any) => {
                   <SvgIcon icon="material-symbols:delete-outline" class="text-base" />
                 </NIcon>
               </template>
-              <span>{{ $t('generate.confirm-delete-dashboard') }}</span>
+              <span>{{ "确认删除看板。" }}</span>
             </NPopconfirm>
             <CardTemplateItem :data="item.data!" />
           </div>

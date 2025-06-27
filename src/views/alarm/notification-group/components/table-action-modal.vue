@@ -72,8 +72,8 @@ const modalVisible = computed({
 
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
-    add: $t('common.createNotificationGroup'),
-    edit: $t('common.editNotificationGroup')
+    add: "创建通知组",
+    edit: "编辑通知组"
   }
   return titles[props.type]
 })
@@ -83,9 +83,9 @@ const formRef = ref<HTMLElement & FormInst>()
 type FormModel = Pick<DataService.Data, any>
 
 const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
-  name: createRequiredFormRule($t('generate.ruleName')),
-  description: createRequiredFormRule($t('common.notificationGroupDesc')),
-  notification_type: createRequiredFormRule($t('common.chooseNotificationMethod'))
+  name: createRequiredFormRule("请输入规则名称"),
+  description: createRequiredFormRule("通知组描述"),
+  notification_type: createRequiredFormRule("选择通知方式")
 }
 
 function handleUpdateFormModel(model: Partial<FormModel>) {
@@ -141,8 +141,8 @@ async function handleSubmit() {
   }
 
   // const titles: Record<ModalType, string> = {
-  //   add: $t('generate.add'),
-  //   edit: $t('common.edit')
+  //   add: "添加",
+  //   edit: "编辑"
   // };
   // window.$message?.success(`${titles[props.type]}成功!`);
   emit('getTableData')
@@ -168,23 +168,23 @@ const handleAddMember = () => {
 <template>
   <NModal v-model:show="modalVisible" preset="card" :title="title" @on-after-leave="closeModal">
     <NForm ref="formRef" label-placement="left" :label-width="120" :model="formModel" :rules="rules">
-      <NFormItem path="name" :label="$t('generate.notification-group-name')">
+      <NFormItem path="name" :label="通知组名称">
         <NInput v-model:value="formModel.name" />
       </NFormItem>
-      <NFormItem path="description" :label="$t('generate.notification-group-description')">
+      <NFormItem path="description" :label="通知组描述">
         <NInput v-model:value="formModel.description" type="textarea" />
       </NFormItem>
-      <NFormItem path="notification_type" :label="$t('generate.notification-method')">
+      <NFormItem path="notification_type" :label="通知方式">
         <NSelect v-model:value="formModel.notification_type" :options="notificationOptions" class="w-full" />
       </NFormItem>
 
       <div style="margin-left: 120px">
         <template v-if="formModel.notification_type === 'MEMBER'">
-          <NFormItem path="age" label="">
+          <NFormItem path="age" label=">
             <div class="flex">
-              <div>{{ $t('generate.set-member-notification-method') }}</div>
+              <div>{{ "设置成员通知方式" }}</div>
               <NButton type="primary" size="small" style="margin-left: 24px" @click="handleAddMember">
-                {{ $t('device_template.add') }}
+                {{ "新增" }}
               </NButton>
             </div>
           </NFormItem>
@@ -195,31 +195,31 @@ const handleAddMember = () => {
         </template>
 
         <template v-if="['EMAIL', 'SME', 'VOICE'].includes(formModel.notification_type)">
-          <div>{{ $t('generate.set-email-phone') }}</div>
-          <NFormItem path="age" label="">
+          <div>{{ "设置收件邮箱/接收手机号" }}</div>
+          <NFormItem path="age" label=">
             <NInput
               v-model:value="formModel.info"
               type="textarea"
-              :placeholder="$t('generate.multiple-email-phone-using-comma')"
+              :placeholder="多个邮箱/手机号使用英文逗号隔开"
             />
           </NFormItem>
         </template>
 
         <template v-if="formModel.notification_type === 'WEBHOOK'">
-          <div>{{ $t('generate.payload-url') }}</div>
-          <NFormItem path="age" label="">
+          <div>{{ "Payload URL*" }}</div>
+          <NFormItem path="age" label=">
             <NInput v-model:value="notificationConfig.PayloadURL" />
           </NFormItem>
-          <div>{{ $t('generate.secret') }}</div>
+          <div>{{ "Secret" }}</div>
           <NInput v-model:value="notificationConfig.Secret" />
           <div style="font-size: 12px; color: #8f8e94; margin-top: 8px">
-            <div>{{ $t('generate.sha256hmac') }}</div>
+            <div>{{ "签名：使用 SHA-256 哈希函数和 HMAC 生成" }}</div>
             <div>
-              <span>{{ $t('generate.requestHeader') }}</span>
+              <span>{{ "请求头" }}</span>
               ：X-Signature-256
             </div>
             <div>
-              <span>{{ $t('generate.format') }}</span>
+              <span>{{ "格式" }}</span>
               ："sha256="+signature
             </div>
           </div>
@@ -227,8 +227,8 @@ const handleAddMember = () => {
       </div>
 
       <NSpace class="w-full pt-16px" :size="24" justify="end">
-        <NButton class="w-72px" @click="closeModal">{{ $t('generate.cancel') }}</NButton>
-        <NButton class="w-72px" type="primary" @click="handleSubmit">{{ $t('common.save') }}</NButton>
+        <NButton class="w-72px" @click="closeModal">{{ "取消" }}</NButton>
+        <NButton class="w-72px" type="primary" @click="handleSubmit">{{ "保存" }}</NButton>
       </NSpace>
     </NForm>
   </NModal>

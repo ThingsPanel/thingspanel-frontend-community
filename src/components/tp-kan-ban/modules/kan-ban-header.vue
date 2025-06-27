@@ -15,9 +15,9 @@ defineProps<{ saveKanBan: () => Promise<void>; isFullscreen: boolean; toggle: ()
       <n-space>
         <NButton @click="router.go(-1)">
           <SvgIcon icon="ep:back" class="mr-0.5 text-lg" />
-          {{ $t('page.login.common.back') }}
+          {{ "返回" }}
         </NButton>
-        <NButton @mouseover="active = true">+{{ $t('kanban.add-cards') }}</NButton>
+        <NButton @mouseover="active = true">+{{ "添加卡片" }}</NButton>
       </n-space>
     </div>
     <div class="flex flex-1 items-center justify-center">
@@ -27,8 +27,8 @@ defineProps<{ saveKanBan: () => Promise<void>; isFullscreen: boolean; toggle: ()
     </div>
     <div class="flex items-center justify-end">
       <n-space align="center">
-        <n-checkbox v-model:checked="responsive">{{ $t('card.responsive') }}</n-checkbox>
-        <NButton @click="saveKanBan">{{ $t('common.save') }}</NButton>
+        <n-checkbox v-model:checked="responsive">{{ "响应式" }}</n-checkbox>
+        <NButton @click="saveKanBan">{{ "保存" }}</NButton>
         <FullScreen
           :full="isFullscreen"
           @click="

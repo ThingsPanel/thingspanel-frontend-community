@@ -98,7 +98,7 @@ defineExpose({
       </div>
       <div class="metric-name-container">
         <span class="metric-name" :title="card?.dataSource?.deviceSource?.[0]?.metricsName">
-          {{ card?.dataSource?.deviceSource?.[0]?.metricsName || $t('card.humidity') }}
+          {{ card?.dataSource?.deviceSource?.[0]?.metricsName || "湿度" }}
         </span>
       </div>
     </div>

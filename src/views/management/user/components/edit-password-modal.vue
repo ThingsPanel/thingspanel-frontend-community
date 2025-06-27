@@ -94,22 +94,22 @@ watch(
 </script>
 
 <template>
-  <NModal v-model:show="modalVisible" preset="card" :title="$t('page.login.resetPwd.title')" class="w-700px">
+  <NModal v-model:show="modalVisible" preset="card" :title="重置密码" class="w-700px">
     <NForm ref="formRef" label-placement="left" :label-width="80" :model="formModel" :rules="rules">
       <NGrid :cols="24" :x-gap="18">
-        <NFormItemGridItem :span="24" :label="$t('page.manage.user.userName')" path="email">
+        <NFormItemGridItem :span="24" :label="姓名" path="email">
           <NInput v-model:value="formModel.email" readonly />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="$t('page.manage.user.password')" path="password">
+        <NFormItemGridItem :span="24" :label="密码" path="password">
           <NInput v-model:value="formModel.password" type="password" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="$t('page.manage.user.confirmPwd')" path="confirmPwd">
+        <NFormItemGridItem :span="24" :label="确认密码" path="confirmPwd">
           <NInput v-model:value="formModel.confirmPwd" type="password" />
         </NFormItemGridItem>
       </NGrid>
       <NSpace class="w-full pt-16px" :size="24" justify="end">
-        <NButton class="w-72px" @click="closeModal">{{ $t('common.cancel') }}</NButton>
-        <NButton class="w-72px" type="primary" @click="handleSubmit">{{ $t('common.confirm') }}</NButton>
+        <NButton class="w-72px" @click="closeModal">{{ "取消" }}</NButton>
+        <NButton class="w-72px" type="primary" @click="handleSubmit">{{ "确认" }}</NButton>
       </NSpace>
     </NForm>
   </NModal>

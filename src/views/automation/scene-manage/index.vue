@@ -28,25 +28,9 @@ const sceneEdit = (item: any) => {
 
 // 激活场景
 const sceneActivation = async (item: any) => {
-  // dialog.warning({
-  //   title: $t('common.activationPrompt'),
-  //   content: $t('common.activateSceneInfo'),
-  //   positiveText: $t('device_template.confirm'),
-  //   negativeText: $t('common.cancel'),
-  //   onPositiveClick: async () => {
-  //     const res = await sceneActive(item.id);
-  //     if (!res.error) {
-  //       // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  //       await getData();
-  //       // message.success($t('custom.grouping_details.operationSuccess'));
-  //      return false;
-  //     }
-  //     return false;
-  //   }
-  // });
+
   const res = await sceneActive(item.id);
   if (!res.error) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     await getData();
   }
 };
@@ -94,15 +78,15 @@ const openLog = (item: any) => {
 // 删除场景
 const deleteScene = async (item: any) => {
   dialog.warning({
-    title: $t('common.deletePrompt'),
-    content: $t('common.deleteSceneInfo'),
-    positiveText: $t('device_template.confirm'),
-    negativeText: $t('common.cancel'),
+    title: "删除提示",
+    content: "删除场景信息",
+    positiveText: "确定",
+    negativeText: "取消",
     onPositiveClick: async () => {
       const res = await sceneDel(item.id);
       if (!res.error) {
         await getData();
-        message.success($t('custom.grouping_details.operationSuccess'));
+        message.success("操作成功");
       }
     }
   });
@@ -114,19 +98,19 @@ const bodyStyle = ref({
 const columns: Ref<any> = ref([
   {
     key: 'name',
-    title: $t('generate.scene-name'),
+    title: "场景名称",
     minWidth: '100px',
     align: 'left'
   },
   {
     key: 'description',
-    title: $t('generate.scene-description'),
+    title: "场景描述",
     minWidth: '100px',
     align: 'left'
   },
   {
     key: 'created_at',
-    title: $t('common.creationTime'),
+    title: "创建时间",
     align: 'left',
     minWidth: '100px',
     render: (row: any) => {
@@ -135,7 +119,7 @@ const columns: Ref<any> = ref([
   },
   {
     key: 'updated_at',
-    title: $t('generate.modification-time'),
+    title: "修改时间",
     align: 'left',
     minWidth: '100px',
     render: (row: any) => {
@@ -144,27 +128,27 @@ const columns: Ref<any> = ref([
   },
   {
     key: 'actions',
-    title: $t('common.actions'),
+    title: "操作",
     align: 'left',
     width: '300px',
     render: row => {
       return (
         <NSpace justify={'start'}>
           <NButton size={'small'} type="success" onClick={() => sceneActivation(row)}>
-            {$t('generate.activate')}
+            {"激活"}
           </NButton>
           <NButton size={'small'} type="primary" onClick={() => sceneEdit(row)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NButton size={'small'} type="tertiary" onClick={() => openLog(row)}>
-            {$t('page.irrigation.time.log.name')}
+            {"日志"}
           </NButton>
           <NPopconfirm onPositiveClick={() => deleteScene(row)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -177,22 +161,22 @@ const columns: Ref<any> = ref([
 
 const execution_result_options = ref([
   {
-    label: $t('custom.device_details.whole'),
+    label: "全部",
     value: ''
   },
   {
-    label: $t('generate.execution-successful'),
+    label: "执行成功",
     value: 'S'
   },
   {
-    label: $t('generate.execution-failed'),
+    label: "执行失败",
     value: 'F'
   }
 ]);
 
 const queryLog = () => {
   logQuery.value.page = 1;
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+ 
   getLogList();
 };
 
@@ -214,11 +198,11 @@ getData();
   <div class="h-full w-full">
     <NCard>
       <NFlex justify="space-between" class="mb-4">
-        <NButton type="primary" @click="sceneAdd()">{{ $t('generate.+add-scene') }}</NButton>
+        <NButton type="primary" @click="sceneAdd()">{{ "+新增场景" }}</NButton>
         <NFlex align="center" justify="flex-end" :wrap="false">
           <NInput
             v-model:value="queryData.name"
-            :placeholder="$t('generate.enterSceneName')"
+            :placeholder="请输入场景名称"
             class="search-input"
             type="text"
             clearable
@@ -229,7 +213,7 @@ getData();
               </NIcon>
             </template>
           </NInput>
-          <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+          <NButton class="w-72px" type="primary" @click="handleQuery">{{ "搜索" }}</NButton>
         </NFlex>
       </NFlex>
       <n-data-table :columns="columns" :data="tableData" class="mt-4" />
@@ -246,7 +230,7 @@ getData();
       v-model:show="showLog"
       :style="bodyStyle"
       preset="card"
-      :title="$t('page.irrigation.time.log.name')"
+      :title="日志"
       size="huge"
       :bordered="false"
       @close="logClose()"
@@ -257,25 +241,25 @@ getData();
           v-model:value="logQuery.execution_result"
           :options="execution_result_options"
           class="max-w-40"
-          :placeholder="$t('generate.select-execution-status')"
+          :placeholder="请选择执行状态"
           @update:value="queryLog"
         ></n-select>
-        <NButton type="primary" @click="queryLog()">{{ $t('common.search') }}</NButton>
+        <NButton type="primary" @click="queryLog()">{{ "搜索" }}</NButton>
       </NFlex>
       <n-empty
         v-if="logDataTotal === 0"
         size="huge"
-        :description="$t('common.nodata')"
+        :description="暂无数据"
         class="min-h-60 justify-center"
       ></n-empty>
       <template v-else>
         <NTable size="small" :bordered="false" :single-line="false" class="mb-6">
           <thead>
             <tr>
-              <th>{{ $t('generate.order-number') }}</th>
-              <th class="w-180px">{{ $t('generate.execution-time') }}</th>
-              <th>{{ $t('generate.execution-description') }}</th>
-              <th class="w-120px">{{ $t('generate.execution-status') }}</th>
+              <th>{{ "序号" }}</th>
+              <th class="w-180px">{{ "执行时间" }}</th>
+              <th>{{ "执行说明" }}</th>
+              <th class="w-120px">{{ "执行状态" }}</th>
             </tr>
           </thead>
           <tbody>
@@ -284,8 +268,8 @@ getData();
               <td>{{ moment(sceneItem['executed_at']).format('yyyy-MM-DD HH:mm:ss') }}</td>
               <td>{{ sceneItem['detail'] }}</td>
               <td>
-                <span v-if="sceneItem['execution_result'] === 'S'">{{ $t('generate.execution-successful') }}</span>
-                <span v-if="sceneItem['execution_result'] === 'F'">{{ $t('generate.execution-failed') }}</span>
+                <span v-if="sceneItem['execution_result'] === 'S'">{{ "执行成功" }}</span>
+                <span v-if="sceneItem['execution_result'] === 'F'">{{ "执行失败" }}</span>
               </td>
             </tr>
           </tbody>

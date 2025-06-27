@@ -49,7 +49,7 @@ watch(
     <template #trigger>
       <NButton size="small" type="primary">
         <IconAntDesignSettingOutlined class="mr-4px text-16px" />
-        {{ $t('common.changeTableColumns') }}
+        {{ "更改表格列" }}
       </NButton>
     </template>
     <div class="w-180px">

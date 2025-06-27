@@ -85,7 +85,7 @@ function handleChangeMode(mode: UnionKey.ThemeLayoutMode) {
             <slot :name="key"></slot>
           </div>
         </template>
-        {{ $t(themeLayoutModeRecord[key]) }}
+        {{ "动态文本" }}
       </NTooltip>
     </div>
   </div>

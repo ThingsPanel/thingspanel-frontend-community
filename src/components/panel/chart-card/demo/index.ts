@@ -8,7 +8,7 @@ export default {
   type: 'chart',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('card.digitalIndicator'),
+  title: '数字指示器',
   configForm: defineAsyncComponent(() => import('./card-config.vue')),
   preset: {
     dataSource: {

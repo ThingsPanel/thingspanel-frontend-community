@@ -53,15 +53,15 @@ const activeModule = computed(() => {
 const moduleTitle = computed(() => {
   switch (props.module) {
     case 'pwd-login':
-      return $t('page.login.pwdLogin.title')
+      return "密码登录"
     case 'register-email':
-      return $t('page.login.register.title')
+      return "注册"
     case 'reset-pwd':
-      return $t('page.login.resetPwd.title')
+      return "重置密码"
     case 'code-login':
-      return $t('page.login.codeLogin.title')
+      return "验证码登录"
     default:
-      return $t('page.login.pwdLogin.title')
+      return "密码登录"
   }
 })
 
@@ -173,11 +173,11 @@ watch(moduleTitle, newTitle => {
               textAlign: 'center'
             }"
           >
-            {{ $t('system.title') }}
+            {{ "ThingsPanel" }}
           </n-ellipsis>
         </div>
         <p class="text-xs opacity-60" :style="{ color: themeStore.darkMode ? '#9ca3af' : '#6b7280' }">
-          {{ $t('system.description') }}
+          {{ "连接万物，智慧生活" }}
         </p>
       </div>
 
@@ -187,7 +187,7 @@ watch(moduleTitle, newTitle => {
           class="text-lg font-medium text-center"
           :style="{ color: themeStore.darkMode ? '#f9fafb' : '#1f2937' }"
         >
-          {{ $t(activeModule.label as any) }}
+          {{ "标签" }}
         </h2> -->
 
         <div class="transition-all duration-300">

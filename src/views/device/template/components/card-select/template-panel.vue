@@ -93,12 +93,12 @@ onMounted(fetchBroad)
     <NSpace align="center">
       <NButton @click="add">
         <SvgIcon icon="material-symbols:add" class="mr-0.5 text-lg" />
-        {{ $t('generate.add-chart') }}
+        {{ "添加图表" }}
       </NButton>
     </NSpace>
     <div class="mb-2 mt-2 h-2px bg-[#f6f9f8]" />
     <div v-if="!layout.length" class="mt-20 text-center text-gray-500 dark:text-gray-400">
-      <NEmpty :description="$t('common.componentsAddedYet')"></NEmpty>
+      <NEmpty :description="尚未添加组件"></NEmpty>
     </div>
     <div :class="props.isApp ? 'screena overflow-auto h-[600px]' : 'window-screen'">
       <div :class="props.isApp ? 'm-auto w-480px smartphone overflow-auto' : 'w-full relative'">

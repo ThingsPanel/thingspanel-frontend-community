@@ -3,7 +3,7 @@ import { $t } from '@/locales'
 </script>
 
 <template>
-  <div>{{ $t('generate.secondElement') }}</div>
+  <div>{{ "二" }}</div>
 </template>
 
 <style scoped></style>

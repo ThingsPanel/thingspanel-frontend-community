@@ -44,7 +44,7 @@ function refresh() {
       <template #icon>
         <IconIcRoundPlus class="text-icon" />
       </template>
-      {{ $t('common.add') }}
+      {{ "新增" }}
     </NButton>
     <NPopconfirm @positive-click="batchDelete">
       <template #trigger>
@@ -52,16 +52,16 @@ function refresh() {
           <template #icon>
             <IconIcRoundDelete class="text-icon" />
           </template>
-          {{ $t('common.batchDelete') }}
+          {{ "批量删除" }}
         </NButton>
       </template>
-      {{ $t('common.confirmDelete') }}
+      {{ "确认删除" }}
     </NPopconfirm>
     <NButton size="small" @click="refresh">
       <template #icon>
         <IconMdiRefresh class="text-icon" :class="{ 'animate-spin': loading }" />
       </template>
-      {{ $t('common.refresh') }}
+      {{ "刷新" }}
     </NButton>
     <TableColumnSetting v-model:columns="columns" />
   </NSpace>

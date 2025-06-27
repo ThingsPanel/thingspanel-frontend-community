@@ -27,42 +27,42 @@ const defData = {
   } as any
 };
 const dataTimeRangeOptions = [
-  { label: $t('common.last_5m'), value: 'last_5m' },
-  { label: $t('common.last_15m'), value: 'last_15m' },
-  { label: $t('common.last_30m'), value: 'last_30m' },
-  { label: $t('common.lastHours1'), value: 'last_1h' },
-  { label: $t('common.lastHours3'), value: 'last_3h' },
-  { label: $t('common.lastHours6'), value: 'last_6h' },
-  { label: $t('common.lastHours12'), value: 'last_12h' },
-  { label: $t('common.lastHours24'), value: 'last_24h' },
-  { label: $t('common.lastDays3'), value: 'last_3d' },
-  { label: $t('common.lastDays7'), value: 'last_7d' },
-  { label: $t('common.lastDays15'), value: 'last_15d' },
-  { label: $t('common.lastDays30'), value: 'last_30d' },
-  { label: $t('common.lastDays60'), value: 'last_60d' },
-  { label: $t('common.lastDays90'), value: 'last_90d' }
+  { label: "最近5分钟", value: 'last_5m' },
+  { label: "最近15分钟", value: 'last_15m' },
+  { label: "最近30分钟", value: 'last_30m' },
+  { label: "最近1小时", value: 'last_1h' },
+  { label: "最近3小时", value: 'last_3h' },
+  { label: "最近6小时", value: 'last_6h' },
+  { label: "最近12小时", value: 'last_12h' },
+  { label: "最近24小时", value: 'last_24h' },
+  { label: "最近3天", value: 'last_3d' },
+  { label: "最近7天", value: 'last_7d' },
+  { label: "最近15天", value: 'last_15d' },
+  { label: "最近30天", value: 'last_30d' },
+  { label: "最近60天", value: 'last_60d' },
+  { label: "最近90天", value: 'last_90d' }
 ];
 
 const dataAggregateRangeOptions = [
-  { label: $t('common.notAggre'), value: 'no_aggregate', disabled: false },
-  { label: $t('common.seconds30'), value: '30s', disabled: false },
-  { label: $t('common.minute1'), value: '1m', disabled: false },
-  { label: $t('common.minute2'), value: '2m', disabled: false },
-  { label: $t('common.minutes5'), value: '5m', disabled: false },
-  { label: $t('common.minutes10'), value: '10m', disabled: false },
-  { label: $t('common.minutes30'), value: '30m', disabled: false },
-  { label: $t('common.hours1'), value: '1h', disabled: false },
-  { label: $t('common.hours3'), value: '3h', disabled: false },
-  { label: $t('common.hours6'), value: '6h', disabled: false },
-  { label: $t('common.days1'), value: '1d', disabled: false },
-  { label: $t('common.days7'), value: '7d', disabled: false },
+  { label: "不聚合", value: 'no_aggregate', disabled: false },
+  { label: "30秒", value: '30s', disabled: false },
+  { label: "1分钟", value: '1m', disabled: false },
+  { label: "2分钟", value: '2m', disabled: false },
+  { label: "5分钟", value: '5m', disabled: false },
+  { label: "10分钟", value: '10m', disabled: false },
+  { label: "30分钟", value: '30m', disabled: false },
+  { label: "1小时", value: '1h', disabled: false },
+  { label: "3小时", value: '3h', disabled: false },
+  { label: "6小时", value: '6h', disabled: false },
+  { label: "1天", value: '1d', disabled: false },
+  { label: "7天", value: '7d', disabled: false },
   { label: '1月', value: '1mo', disabled: false }
 ];
 const aggregateFunctionOptions: SelectOption[] = [
-  { label: $t('common.average'), value: 'avg' },
-  { label: $t('generate.max-value'), value: 'max' },
-  { label: $t('common.sum'), value: 'sum' },
-  { label: $t('common.diffValue'), value: 'diff' }
+  { label: "平均值", value: 'avg' },
+  { label: "最大值", value: 'max' },
+  { label: "总和", value: 'sum' },
+  { label: "差值", value: 'diff' }
 ];
 const state = reactive({
   tab: 'device',
@@ -267,7 +267,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
 <template>
   <div>
     <NTabs v-if="state.selectCard" v-model:value="state.tab" type="line" animated>
-      <NTabPane v-if="state.selectCard.type === 'chart'" name="dataSource" :tab="$t('card.dataSource')">
+      <NTabPane v-if="state.selectCard.type === 'chart'" name="dataSource" :tab="数据源">
         <div :class="`${mobile ? '' : 'h-[calc(100vh_-_150px)] '} overflow-y-auto py-5`">
           <NForm>
             <NSelect
@@ -275,7 +275,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
               v-model:value="state.data.dataSource.dataTimeRange"
               clearable
               :options="dataTimeRangeOptions || []"
-              :placeholder="$t('card.selectDataTimeFrame')"
+              :placeholder="请选择数据时间范围"
               @update:value="updateTime"
             />
             <NSelect
@@ -284,7 +284,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
               clearable
               filterable
               :options="dataAggregateRangeOptions || []"
-              :placeholder="$t('card.selectDataAggregationRange')"
+              :placeholder="请选择数据聚合范围"
             />
             <div v-if="state.data.dataSource?.origin === 'device' || state.data.dataSource?.origin === 'system'">
               <n-input-number
@@ -296,7 +296,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                 class="m-b-2 w-360px"
               >
                 <template #prefix>
-                  <span class="text-#999">{{ $t('generate.device-num-count') }}</span>
+                  <span class="text-#999">{{ "设备数据个数" }}</span>
                 </template>
               </n-input-number>
 
@@ -311,7 +311,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                   clearable
                   :disabled="props?.deviceWebChartConfig?.length !== 0"
                   class="w-135px"
-                  :placeholder="$t('generate.select-device')"
+                  :placeholder="请选择设备"
                   :consistent-menu-width="false"
                   :options="deviceOption || []"
                   label-field="name"
@@ -319,7 +319,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                   filterable
                   @update:value="(value, option) => deviceSelectChange(value, option, item)"
                 >
-                  <template #header>{{ $t('generate.device') }}</template>
+                  <template #header>{{ "设备" }}</template>
                 </NSelect>
 
                 <NSelect
@@ -327,7 +327,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                   v-model:value="item.metricsId"
                   clearable
                   filterable
-                  :placeholder="$t('card.selectIndicator')"
+                  :placeholder="请选择指标"
                   :disabled="props?.deviceWebChartConfig?.length !== 0"
                   class="w-140px"
                   :consistent-menu-width="false"
@@ -340,7 +340,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                   v-if="i <= deviceCount - 1"
                   v-model:value="item.metricsName"
                   class="metrics-name-input"
-                  :placeholder="$t('common.enterName')"
+                  :placeholder="请输入名称"
                 />
                 <NSelect
                   v-if="i <= deviceCount - 1 && state.data.dataSource.isSupportAggregate"
@@ -348,7 +348,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
                   clearable
                   filterable
                   :options="aggregateFunctionOptions || []"
-                  :placeholder="$t('card.selectDataAggregationMethod')"
+                  :placeholder="请选择数据聚合方式"
                   :disabled="isNoAggregate"
                 />
               </div>
@@ -356,7 +356,7 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
           </NForm>
         </div>
       </NTabPane>
-      <NTabPane v-if="!!state.selectCard?.configForm" name="config" :tab="$t('card.componentSettings')">
+      <NTabPane v-if="!!state.selectCard?.configForm" name="config" :tab="组件配置">
         <div :class="`${mobile ? '' : 'overflow-y-auto'} py-5`">
           <div class="max-w-[600px]">
             <ConfigCtx v-model:config="state.data.config" mode="insert">
@@ -366,13 +366,13 @@ const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange ==
           </div>
         </div>
       </NTabPane>
-      <NTabPane name="basic" :tab="$t('card.basicSettings')">
+      <NTabPane name="basic" :tab="基本设置">
         <NForm>
-          <NFormItem :label="$t('page.manage.menu.form.title')">
+          <NFormItem :label="标题">
             <div class="flex items-center">
               <div class="w-36">
                 <NCheckbox v-model:checked="state.data.basicSettings.showTitle">
-                  {{ $t('generate.display-title') }}
+                  {{ "显示标题" }}
                 </NCheckbox>
               </div>
               <NInput

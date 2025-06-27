@@ -104,7 +104,7 @@ const onCreate = () => {
                   <span v-if="subElement?.validate?.required" class="text-[#FF3838]">*</span>
 
                   {{ subElement.label }}
-                  <span>{{ subElement?.validate?.required ? $t('card.required') : $t('card.notRequired') }}</span>
+                  <span>{{ subElement?.validate?.required ? "(必填)" : "(非必填)" }}</span>
                 </n-ellipsis>
                 <div class="mr-20px min-w-[68px] w-[68px]"></div>
               </div>

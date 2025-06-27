@@ -8,7 +8,7 @@ export default {
   type: 'chart',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('card.testDemo'),
+  title: '纯测试用的demo',
   configForm: defineAsyncComponent(() => import('./card-config.vue')),
   preset: {
     dataSource: {

@@ -63,22 +63,22 @@ const goToDetail = (id: string) => {
 
 // 设备类型映射
 const deviceTypeMap = {
-  '1': $t('generate.direct-connected-device'),
-  '2': $t('generate.gateway'),
-  '3': $t('generate.gateway-sub-device')
+  '1': "直连设备",
+  '2': "网关",
+  '3': "网关子设备"
 }
 
 // 表格列定义
 const columns = computed(() => [
   {
-    title: $t('device_template.templateName'),
+    title: "模板名称",
     key: 'name',
     ellipsis: {
       tooltip: true
     }
   },
   {
-    title: $t('generate.device-type'),
+    title: "设备类型",
     key: 'device_type',
     render: (row: any) => {
       const typeText = deviceTypeMap[row.device_type as keyof typeof deviceTypeMap] || row.device_type
@@ -87,12 +87,12 @@ const columns = computed(() => [
     }
   },
   {
-    title: $t('generate.device-count'),
+    title: "设备个数",
     key: 'device_count',
-    render: (row: any) => `${row.device_count} ${$t('generate.individual')}`
+    render: (row: any) => `${row.device_count} ${"个"}`
   },
   {
-    title: $t('common.actions'),
+    title: "操作",
     key: 'actions',
     width: 120,
     render: (row: any) => {
@@ -107,7 +107,7 @@ const columns = computed(() => [
                 size: 'small',
                 onClick: () => handleEdit(row.id)
               },
-              { default: () => $t('common.edit') }
+              { default: () => "编辑" }
             )
           ]
         }
@@ -201,7 +201,7 @@ const availableViews = [
   >
     <template #header-left>
       <div class="flex gap-2">
-        <n-button type="primary" @click="handleAddNew">{{ $t('generate.createDeviceConfig') }}</n-button>
+        <n-button type="primary" @click="handleAddNew">{{ "+创建设备模板" }}</n-button>
       </div>
     </template>
     <!-- 搜索表单内容 -->
@@ -209,7 +209,7 @@ const availableViews = [
       <div class="flex gap-4">
         <NInput
           v-model:value="queryData.name"
-          :placeholder="$t('generate.enter-config-name')"
+          :placeholder="请输入配置名称"
           type="text"
           clearable
           style="width: 210px"
@@ -222,7 +222,7 @@ const availableViews = [
             </NIcon>
           </template>
         </NInput>
-        <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
+        <NButton class="w-72px" type="primary" @click="handleQuery">{{ "搜索" }}</NButton>
       </div>
     </template>
 
@@ -230,13 +230,13 @@ const availableViews = [
     <template #card-view>
       <n-spin :show="loading">
       <div v-if="deviceConfigList.length === 0 && !loading" class="empty-state">
-        <NEmpty size="huge" :description="$t('common.nodata')" class="min-h-60" />
+        <NEmpty size="huge" :description="暂无数据" class="min-h-60" />
       </div>
       <n-grid cols="1 s:2 m:3 l:4 xl:5 2xl:8" x-gap="18" y-gap="18" responsive="screen">
         <n-gi v-for="item in deviceConfigList" :key="item.id">
           <ItemCard
             :title="item.name"
-            :footer-text="`${item.device_count} ${$t('generate.individual')} ${$t('generate.device')}`"
+            :footer-text="`${item.device_count} ${"个"} ${"设备"}`"
             :subtitle="deviceTypeMap[item.device_type as keyof typeof deviceTypeMap]"
             :device-config-id="item.id"
             :isStatus="false"

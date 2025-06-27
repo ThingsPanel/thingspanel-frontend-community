@@ -91,17 +91,17 @@ const formElements = ref<FormElement[]>([])
 const configFormRules = ref<FormRules>({
   name: {
     required: true,
-    message: $t('common.deviceConfigName'),
+    message: "设备配置名称",
     trigger: 'blur'
   },
   device_type: {
     required: true,
-    message: $t('common.deviceAccessType'),
+    message: "设备接入类型",
     trigger: 'change'
   },
   device_conn_type: {
     required: true,
-    message: $t('common.deviceConnectionMethod'),
+    message: "设备连接方式",
     trigger: 'change'
   }
 })
@@ -111,7 +111,7 @@ const queryTemplate = ref({
   page_size: 20,
   total: 0
 })
-const deviceTemplateOptions = ref([{ name: () => $t('generate.unbind'), id: '' }])
+const deviceTemplateOptions = ref([{ name: () => "不绑定", id: '' }])
 
 const getDeviceTemplate = () => {
   deviceTemplate(queryTemplate.value)
@@ -121,7 +121,7 @@ const getDeviceTemplate = () => {
     })
     .catch(error => {
       console.error('Failed to get device templates:', error)
-      message.error($t('generate.failedToLoadDeviceTemplates'))
+      message.error("加载设备模板失败")
     })
 }
 
@@ -160,19 +160,19 @@ const handleSubmit = async () => {
     if (!res.error) {
       handleClose()
     } else {
-      message.error((res as any)?.message || $t('generate.addFailed'))
+      message.error((res as any)?.message || "添加失败")
     }
   } else {
     // 编辑模式
     // 确保 postData 中包含正确的 id (来自 configForm.value)
     const res = await deviceConfigEdit(postData).catch((error: AxiosError) => {
-      message.error((error && 'message' in error && error.message) || $t('generate.editFailed'))
+      message.error((error && 'message' in error && error.message) || "编辑失败")
       return { error: true }
     })
     if (!res.error) {
       handleClose()
     } else {
-      message.error((res as any)?.message || $t('generate.editFailed'))
+      message.error((res as any)?.message || "编辑失败")
     }
   }
 }
@@ -192,12 +192,12 @@ const getConfig = async () => {
       }
     } catch (e) {
       console.error('Failed to parse protocol_config:', e)
-      message.error($t('generate.failedToParseProtocolConfig'))
+      message.error("解析协议配置失败")
       protocol_config.value = {}
     }
   } catch (error) {
     console.error('Failed to get device config info:', error)
-    message.error($t('generate.failedToLoadConfig'))
+    message.error("加载配置失败")
   }
 }
 
@@ -217,7 +217,7 @@ const getProtocolList = async (deviceCode: string | number) => {
     typeOptions.value = [
       {
         type: 'group',
-        label: $t('common.protocol'), // naive-ui group 使用 label
+        label: "协议", // naive-ui group 使用 label
         key: 'protocol',
         children: (res.data.protocol || []).map((p: any) => ({
           label: p.name,
@@ -226,7 +226,7 @@ const getProtocolList = async (deviceCode: string | number) => {
       },
       {
         type: 'group',
-        label: $t('common.service'), // naive-ui group 使用 label
+        label: "服务", // naive-ui group 使用 label
         key: 'service',
         children: (res.data.service || []).map((s: any) => ({
           label: s.name,
@@ -314,13 +314,13 @@ function handleDeviceTypeChange(newValue: string | number) {
 
 <template>
   <div class="overflow-y-auto">
-    <NCard :title="`${$t(modalTitle)}${$t('custom.devicePage.deviceConfig')}`">
+    <NCard :title="`${"文本"}${"设备模板"}`">
       <NForm ref="configFormRef" :model="configForm" :rules="configFormRules" label-placement="left" label-width="auto">
         <!-- 第一个文件中的原表单项 -->
-        <NFormItem :label="$t('generate.device-configuration-name')" path="name" class="w-[600px]">
-          <NInput v-model:value="configForm.name" :placeholder="$t('generate.enter-device-name')" />
+        <NFormItem :label="设备模板名称" path="name" class="w-[600px]">
+          <NInput v-model:value="configForm.name" :placeholder="请输入设备名称" />
         </NFormItem>
-        <NFormItem class="w-[600px]" :label="$t('generate.select-device-function-template')" path="device_template_id">
+        <NFormItem class="w-[600px]" :label="选择设备模型" path="device_template_id">
           <NSelect
             v-model:value="configForm.device_template_id"
             :options="deviceTemplateOptions"
@@ -330,7 +330,7 @@ function handleDeviceTypeChange(newValue: string | number) {
             @scroll="deviceTemplateScroll"
           ></NSelect>
         </NFormItem>
-        <NFormItem :label="$t('generate.device-access-type')" path="device_type">
+        <NFormItem :label="设备接入类型" path="device_type">
           <n-radio-group
             v-model:value="configForm.device_type"
             name="device_type"
@@ -339,7 +339,7 @@ function handleDeviceTypeChange(newValue: string | number) {
             <n-space>
               <!-- 使用 v-for 循环渲染 -->
               <div v-for="dtype in deviceTypes" :key="dtype.value" class="flex">
-                <n-radio :value="dtype.value" :disabled="isEdit">{{ $t(dtype.labelKey) }}</n-radio>
+                <n-radio :value="dtype.value" :disabled="isEdit">{{ "标签" }}</n-radio>
                 <NTooltip
                   trigger="hover"
                   :content-style="{ whiteSpace: 'pre-wrap', textAlign: 'left', maxWidth: '400px' }"
@@ -349,7 +349,7 @@ function handleDeviceTypeChange(newValue: string | number) {
                       <HelpCircle class="text-6" />
                     </NIcon>
                   </template>
-                  {{ $t(dtype.helpKey) }}
+                  {{ "类型" }}
                 </NTooltip>
               </div>
             </n-space>
@@ -358,11 +358,11 @@ function handleDeviceTypeChange(newValue: string | number) {
 
         <!-- 第二个文件中的新增表单项 -->
         <template v-if="configForm.device_type">
-          <NFormItem class="w-[600px]" :label="$t('generate.choose-protocol-or-Service')" path="protocol_type">
+          <NFormItem class="w-[600px]" :label="选择协议/服务" path="protocol_type">
             <NSelect
               v-model:value="configForm.protocol_type"
               :options="typeOptions"
-              :placeholder="$t('generate.select-protocol-service')"
+              :placeholder="请选择选择协议/服务"
               @update:value="choseProtocolType"
             ></NSelect>
           </NFormItem>
@@ -370,13 +370,13 @@ function handleDeviceTypeChange(newValue: string | number) {
           <NFormItem
             v-show="configForm.device_type === '1' || configForm.device_type === '2'"
             class="w-[600px]"
-            :label="$t('generate.authentication-type')"
+            :label="认证类型"
             path="voucher_type"
           >
             <NSelect
               v-model:value="configForm.voucher_type"
               :options="connectOptions"
-              :placeholder="$t('generate.select-authentication-type')"
+              :placeholder="请选择认证类型"
             ></NSelect>
           </NFormItem>
         </template>
@@ -384,7 +384,7 @@ function handleDeviceTypeChange(newValue: string | number) {
           <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements"></FormInput>
         </NFormItem>
         <NFlex justify="flex-start">
-          <NButton type="primary" @click="handleSubmit">{{ $t('page.login.common.confirm') }}</NButton>
+          <NButton type="primary" @click="handleSubmit">{{ "确定" }}</NButton>
         </NFlex>
       </NForm>
     </NCard>

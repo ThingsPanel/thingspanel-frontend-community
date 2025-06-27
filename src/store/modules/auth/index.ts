@@ -67,7 +67,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
         const tipFunc = async str => {
           // dialog.warning({
           //   content: str,
-          //   positiveText: $t('common.confirm'),
+          //   positiveText: "确认",
           //   onPositiveClick: () => {
           //     routerPush({
           //       path: '/personal-center',
@@ -76,7 +76,7 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
           //       }
           //     })
           //   },
-          //   negativeText: $t('common.cancel'),
+          //   negativeText: "取消",
           //   onNegativeClick: async () => {
           //     await routeStore.initAuthRoute()
           //     await redirectFromLogin()
@@ -87,9 +87,9 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
         }
 
         if (!validPassword(password)) {
-          tipFunc($t('card.pwdRuleReset'))
+          tipFunc('为了您的账户安全，密码应至少8位且包含字母、数字及符号，请重新设置密码。')
         } else if (!info.password_last_updated || cha > 90) {
-          tipFunc($t('card.resetPwd'))
+          tipFunc('为了您的账户安全，请重新设置密码。')
         } else {
           await routeStore.initAuthRoute()
           await redirectFromLogin()
@@ -123,10 +123,8 @@ export const useAuthStore = defineStore(SetupStoreId.Auth, () => {
         await redirectFromLogin()
         if (routeStore.isInitAuthRoute) {
           window.$notification?.success({
-            title: $t('page.login.common.loginSuccess'),
-            content: $t('page.login.common.welcomeBack', {
-              userName: info?.name
-            }),
+            title: '登录成功',
+            content: '欢迎回来！',
             duration: 4500
           })
         }

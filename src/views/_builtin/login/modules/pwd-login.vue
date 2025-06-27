@@ -44,25 +44,25 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
     userName: [
       {
         required: true,
-        message: () => $t('form.userName.required'),
+        message: () => "请输入用户名",
         trigger: ['blur'] // required 规则在 blur 时触发
       },
       {
         validator: (_rule, value) => {
           // 仅在有值时校验格式
           if (value && !emailRegex.test(value) && !phoneRegex.test(value)) {
-            return Promise.reject(new Error($t('form.userName.invalidFormat'))) // 使用格式错误提示
+            return Promise.reject(new Error("用户名格式错误")) // 使用格式错误提示
           }
           return Promise.resolve() // 值为空或格式正确时通过
         },
-        message: () => $t('form.userName.invalidFormat'), // 格式错误时的提示
+        message: () => "用户名格式错误", // 格式错误时的提示
         trigger: ['input', 'blur'] // input 时也校验格式，但不提示 required
       }
     ],
     password: [
       {
         required: true,
-        message: () => $t('form.pwd.required'),
+        message: () => "请输入密码",
         trigger: ['input', 'blur']
       }
     ]
@@ -165,7 +165,7 @@ onMounted(() => {
       <NAutoComplete
         v-model:value="model.userName"
         :options="emailOptions"
-        :placeholder="$t('page.login.common.userNamePlaceholder')"
+        :placeholder="请输入用户名"
         clearable
         @keydown.enter="handleSubmit"
       >
@@ -184,7 +184,7 @@ onMounted(() => {
         class="h-40px"
         type="password"
         show-password-on="click"
-        :placeholder="$t('page.login.common.passwordPlaceholder')"
+        :placeholder="请输入密码"
       >
         <template #prefix>
           <svg class="w-18px h-18px ml--1" fill="#888" viewBox="0 0 24 24">
@@ -197,10 +197,10 @@ onMounted(() => {
     </NFormItem>
     <NSpace vertical :size="18">
       <div class="flex-y-center justify-between">
-        <NCheckbox v-model:checked="rememberMe">{{ $t('page.login.pwdLogin.rememberMe') }}</NCheckbox>
+        <NCheckbox v-model:checked="rememberMe">{{ "记住我" }}</NCheckbox>
         <!--         <NButton quaternary @click="toggleLoginModule('reset-pwd')">-->
         <NButton quaternary @click="toggleLoginModule('reset-pwd')">
-          {{ $t('page.login.pwdLogin.forgetPassword') }}
+          {{ "忘记密码" }}
         </NButton>
       </div>
       <NButton
@@ -211,17 +211,17 @@ onMounted(() => {
         :loading="authStore.loginLoading"
         @click="handleSubmit"
       >
-        {{ $t('route.login') }}
+        {{ "登录" }}
       </NButton>
       <!-- <NCheckbox :checked="isRememberPath" @update:checked="rememberPath">
-        {{ $t('page.login.common.rememberPath') }}
+        {{ "记住密码" }}
       </NCheckbox> -->
       <n-divider title-placement="center" style="padding: 0px; margin: 0px">
-        {{ $t('generate.or') }}
+        {{ "或" }}
       </n-divider>
       <div class="flex-y-center justify-between gap-12px mt--4">
         <NButton v-if="showYzm" class="flex-1" block @click="toggleLoginModule('code-login')">
-          {{ $t(loginModuleRecord['code-login']) }}
+          {{ "动态文本" }}
         </NButton>
 
         <NButton
@@ -233,7 +233,7 @@ onMounted(() => {
           @click="toggleLoginModule('register-email')"
         >
           <span class="text-#999">还没有账号?</span>
-          {{ $t(loginModuleRecord.register) }}
+          {{ "文本" }}
         </NButton>
       </div>
     </NSpace>

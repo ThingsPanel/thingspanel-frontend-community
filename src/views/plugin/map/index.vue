@@ -10,16 +10,16 @@ interface Map {
 }
 
 const maps: Map[] = [
-  { id: 'gaode', label: $t('custom.plugin.gaodeMap'), component: GaodeMap },
-  { id: 'tencent', label: $t('custom.plugin.tencentMap'), component: TencentMap },
-  { id: 'baidu', label: $t('custom.plugin.baiduMap'), component: BaiduMap }
+  { id: 'gaode', label: "高德地图", component: GaodeMap },
+  { id: 'tencent', label: "腾讯地图", component: TencentMap },
+  { id: 'baidu', label: "百度地图", component: BaiduMap }
 ]
 </script>
 
 <template>
   <div class="h-full">
     <NCard
-      :title="$t('generate.map-plugin')"
+      :title="地图插件"
       :bordered="false"
       class="h-full rounded-8px shadow-sm"
       content-style="overflow:hidden"

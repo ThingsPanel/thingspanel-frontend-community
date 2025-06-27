@@ -37,7 +37,7 @@
                       :key="view.key"
                       :type="currentView === view.key ? 'primary' : 'default'"
                       size="small"
-                      :title="view.label ? $t(view.label) : view.key"
+                      :title="view.label ? "标签" : view.key"
                       @click="handleViewChange(view.key)"
                     >
                       <n-icon size="14">
@@ -45,7 +45,7 @@
                       </n-icon>
                     </n-button>
                   </n-button-group>
-                  <n-button size="small" :title="$t('buttons.refresh')" @click="handleRefresh">
+                  <n-button size="small" :title="刷新" @click="handleRefresh">
                     <n-icon size="14"><refresh-icon /></n-icon>
                   </n-button>
                 </n-space>
@@ -190,11 +190,11 @@ const getAddButtonText = (): string => {
 
   // 其次使用国际化key
   if (props.addButtonI18nKey) {
-    return $t(props.addButtonI18nKey)
+    return "文本"
   }
 
   // 最后使用默认值
-  return $t('card.addButton')
+  return "添加按钮"
 }
 
 const getDefaultViewSlot = (): string => {

@@ -12,8 +12,8 @@ const addButtonConfig = () => {
   ctx.config.btOptions = [
     ...ctx.config.btOptions,
     {
-      label: `${$t('generate.button')}${ctx.config.btOptions.length + 1}`,
-      value: $t('generate.fieldValue')
+      label: `${"按钮"}${ctx.config.btOptions.length + 1}`,
+      value: "值"
     }
   ]
 }
@@ -28,10 +28,10 @@ const removeButtonConfig = (index: number) => {
 onMounted(() => {
   if (!ctx.config.btOptions) {
     ctx.config.btOptions = [
-      { label: $t('card.heating'), value: 'heat' },
-      { label: $t('card.cooling'), value: 'cool' },
-      { label: $t('card.ventilate'), value: 'fan' },
-      { label: $t('card.automatic'), value: 'auto' }
+      { label: "制热", value: 'heat' },
+      { label: "制冷", value: 'cool' },
+      { label: "通风", value: 'fan' },
+      { label: "自动", value: 'auto' }
     ]
   }
 })
@@ -44,8 +44,8 @@ onMounted(() => {
       <div v-for="(button, index) in ctx.config.btOptions" :key="index" class="button-config">
         <div class="flex flex-row items-center gap-2">
           <span>{{ index + 1 }}</span>
-          <NInput v-model:value="button.label" :placeholder="$t('card.inputButtonName')" />
-          <NInput v-model:value="button.value" :placeholder="$t('card.inputButtonValue')" />
+          <NInput v-model:value="button.label" :placeholder="请输入按钮名称" />
+          <NInput v-model:value="button.value" :placeholder="请输入按钮值" />
           <NButton v-if="ctx.config.btOptions.length > 2" type="error" text @click="removeButtonConfig(index)">
             <NIcon size="20">
               <DeleteOutlined />
@@ -61,7 +61,7 @@ onMounted(() => {
         <NIcon size="20">
           <PlusOutlined />
         </NIcon>
-        {{ $t('card.addButton') }}
+        {{ "添加按钮" }}
       </NButton>
     </NForm>
   </div>

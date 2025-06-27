@@ -16,7 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
   configInfo: null
 })
 
-const plugList = ref([{ name: $t('generate.unbind'), id: '' }])
+const plugList = ref([{ name: "不绑定", id: '' }])
 
 const selectValue = ref()
 
@@ -47,7 +47,7 @@ onMounted(async () => {
 <template>
   <div class="attribute-box">
     <NFlex align="center">
-      <div>{{ $t('generate.bind-device-function-template') }}</div>
+      <div>{{ "绑定设备模型" }}</div>
       <NSelect
         v-model:value="selectValue"
         class="w-300px"
@@ -63,7 +63,7 @@ onMounted(async () => {
           }
         "
       />
-      <div class="to-create" @click="toTemplate">{{ $t('generate.not-found-create') }}</div>
+      <div class="to-create" @click="toTemplate">{{ "没有找到？去创建" }}</div>
     </NFlex>
   </div>
 </template>

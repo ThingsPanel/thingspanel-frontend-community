@@ -52,18 +52,18 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   {
     key: 'name',
     minWidth: '100px',
-    title: $t('page.manage.role.roleName'),
+    title: "角色名称",
     align: 'left'
   },
   {
     key: 'description',
     minWidth: '100px',
-    title: $t('page.manage.role.roleDesc'),
+    title: "角色描述",
     align: 'left'
   },
   {
     key: 'created_at',
-    title: $t('page.product.update-ota.createTime'),
+    title: "创建日期",
     minWidth: '100px',
     align: 'left',
     render: row => {
@@ -72,7 +72,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   },
   {
     key: 'updated_at',
-    title: $t('page.product.update-ota.updateDate'),
+    title: "修改日期",
     minWidth: '130px',
     align: 'left',
     render: row => {
@@ -81,27 +81,27 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   },
   {
     key: 'actions',
-    title: $t('common.actions'),
+    title: "操作",
     align: 'left',
     width: '320px',
     render: row => {
       return (
         <NSpace justify={'left'}>
           <NButton type="primary" size={'small'} onClick={() => handleEditTable(row.id)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm onPositiveClick={() => handleDeleteTable(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
           </NPopconfirm>
           <NButton type="primary" size={'small'} onClick={() => handleEditPermission(row.id)}>
-            {$t('page.manage.role.editPermission')}
+            {"编辑权限"}
           </NButton>
         </NSpace>
       );
@@ -154,7 +154,7 @@ function handleEditPermission(rowId: string) {
 async function handleDeleteTable(rowId: string) {
   const data = await delrles(rowId);
   if (!data.error) {
-    window.$message?.success($t('common.deleteSuccess'));
+    window.$message?.success("删除成功");
     getTableData();
   }
 }
@@ -210,7 +210,7 @@ init();
         <NSpace>
           <NButton type="primary" @click="handleAddTable">
             <icon-ic-round-plus class="mr-4px text-20px" />
-            {{ $t('page.manage.role.addRole') }}
+            {{ "新增角色" }}
           </NButton>
         </NSpace>
 

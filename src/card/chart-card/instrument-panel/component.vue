@@ -175,7 +175,7 @@ onMounted(() => {
     </div>
     <div class="data-info">
       <span class="title">
-        {{ card.dataSource?.deviceSource?.[0]?.metricsName || $t('dashboard_panel.cardName.instrumentPanel') }}
+        {{ card.dataSource?.deviceSource?.[0]?.metricsName || "仪表盘" }}
       </span>
     </div>
   </div>

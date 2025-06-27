@@ -13,20 +13,20 @@ export function createDocumentTitleGuard(router: Router) {
       const path = to.path.split('/').pop()?.toLowerCase()
       switch (path) {
         case 'register-email':
-          routeTitle = $t('page.login.register.title')
+          routeTitle = '注册'
           break
         case 'reset-pwd':
-          routeTitle = $t('page.login.resetPwd.title')
+          routeTitle = '重置密码'
           break
         case 'code-login':
-          routeTitle = $t('page.login.codeLogin.title')
+          routeTitle = '验证码登录'
           break
         default:
-          routeTitle = $t('page.login.pwdLogin.title')
+          routeTitle = '密码登录'
       }
     } else {
       // 其他路由的处理
-      routeTitle = i18nKey ? $t(i18nKey) : title
+      routeTitle = i18nKey ? '文本' : title
     }
 
     // 组合完整标题：应用标题 - 路由标题

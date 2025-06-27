@@ -41,7 +41,7 @@ const message = useMessage()
 const save = () => {
   if (!state?.curCardData?.cardId) {
     message.destroyAll()
-    message.warning($t('common.selectCardFirst'))
+    message.warning("请先选择卡片")
     return
   }
 
@@ -77,7 +77,7 @@ watch(props, pr => {
   <NModal
     :show="open"
     preset="dialog"
-    :title="$t('generate.configuration')"
+    :title="配置"
     size="huge"
     :style="{
       width: 'calc(100vw - 180px)',
@@ -90,7 +90,7 @@ watch(props, pr => {
     <div class="h-[calc(100vh_-_170px)] w-full flex">
       <div v-if="!props.data" class="relative h-full flex flex-col flex-[44] overflow-hidden p-4">
         <NTabs type="line" default-value="chart" animated class="h-full">
-          <NTabPane class="h-full" name="chart" value="chart" :tab="$t('common.chart')">
+          <NTabPane class="h-full" name="chart" value="chart" :tab="图表">
             <n-scrollbar style="height: 100%; padding: 4px">
               <n-grid :x-gap="10" :y-gap="10" cols="1 240:1 480:2 720:3">
                 <n-gi v-for="item in PanelCards.chart" :key="item.id" class="min-w-240px">
@@ -100,10 +100,10 @@ watch(props, pr => {
                     @click="selectCard(item)"
                   >
                     <div class="text-center font-medium leading-8 dark:bg-zinc-900">
-                      {{ $t(item.title) }}
+                      {{ "标题" }}
                     </div>
                     <div class="h-148px w-full">
-                      <img :src="item.poster" alt="" style="width: 100%; height: 100%; object-fit: contain" />
+                      <img :src="item.poster" alt=" style="width: 100%; height: 100%; object-fit: contain" />
                     </div>
                   </div>
                 </n-gi>
@@ -120,8 +120,8 @@ watch(props, pr => {
     </div>
     <div class="h-60px flex flex-center border-t">
       <div>
-        <NButton class="mr-4" @click="emit('update:open', false)">{{ $t('generate.cancel') }}</NButton>
-        <NButton class="mr-4" type="primary" @click="save">{{ $t('generate.confirm') }}</NButton>
+        <NButton class="mr-4" @click="emit('update:open', false)">{{ "取消" }}</NButton>
+        <NButton class="mr-4" type="primary" @click="save">{{ "确认" }}</NButton>
       </div>
     </div>
   </NModal>

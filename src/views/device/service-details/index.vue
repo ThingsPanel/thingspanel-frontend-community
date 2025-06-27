@@ -56,12 +56,12 @@ const config: (row: any) => void = async row => {
 };
 const columns: any = ref([
   {
-    title: $t('card.accessPointName'),
+    title: "接入点名称",
     key: 'name',
     minWidth: '200px'
   },
   {
-    title: $t('common.creationTime'),
+    title: "创建时间",
     key: 'create_at',
     minWidth: '200px',
     render: row => {
@@ -73,7 +73,7 @@ const columns: any = ref([
   },
   {
     key: 'actions',
-    title: () => $t('common.actions'),
+    title: () => "操作",
     align: 'left',
     width: '420px',
     ellipsis: {
@@ -86,24 +86,24 @@ const columns: any = ref([
         <NSpace justify={'left'}>
           {
             <NButton size={'small'} type="primary" onClick={() => see(row)}>
-              {$t('card.viewDevice')}
+              {"查看设备"}
             </NButton>
           }
           {
             <NButton size={'small'} type="primary" onClick={() => config(row)}>
-              {$t('card.modifyConfig')}
+              {"修改配置"}
             </NButton>
           }
           <NPopconfirm
-            negative-text={$t('common.cancel')}
-            positive-text={$t('common.confirm')}
+            negative-text={"取消"}
+            positive-text={"确认"}
             onPositiveClick={() => del(row.id)}
           >
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -150,7 +150,7 @@ getList();
   <div>
     <NCard :bordered="false" class="h-full rounded-8px shadow-sm" :title="route.query.service_name || '--'">
       <div class="header">
-        <NButton type="primary" @click="addData">{{ $t('card.newAccess') }}</NButton>
+        <NButton type="primary" @click="addData">{{ "新增接入" }}</NButton>
       </div>
       <div class="h">
         <NDataTable

@@ -93,7 +93,7 @@ const copy = event => {
   const input = event.target
   input.select()
   document.execCommand('copy')
-  window.$message?.success($t('theme.configOperation.copySuccess'))
+  window.$message?.success("复制成功")
 }
 </script>
 
@@ -138,7 +138,7 @@ const copy = event => {
         </div>
       </template>
 
-      <NCard style="margin-top: -15px" :title="$t('custom.devicePage.connectInfo')">
+      <NCard style="margin-top: -15px" :title="连接信息">
         <NDescriptions :column="1">
           <NDescriptionsItem v-for="(value, key) in connectInfo" :key="key" :label="key">
             <span class="font-600">{{ value }}</span>
@@ -147,7 +147,7 @@ const copy = event => {
       </NCard>
     </n-scrollbar>
     <div class="mt-4 w-full flex-center">
-      <NButton type="primary" @click="handleSubmit">{{ $t('custom.devicePage.saveAndNext') }}</NButton>
+      <NButton type="primary" @click="handleSubmit">{{ "保存并下一步" }}</NButton>
     </div>
   </NForm>
 </template>

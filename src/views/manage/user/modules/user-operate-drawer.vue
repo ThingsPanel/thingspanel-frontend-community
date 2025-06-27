@@ -41,8 +41,8 @@ const { defaultRequiredRule } = useFormRules()
 
 const title = computed(() => {
   const titles: Record<OperateType, string> = {
-    add: $t('page.manage.user.addUser'),
-    edit: $t('page.manage.user.editUser')
+    add: "新增用户",
+    edit: "编辑用户"
   }
   return titles[props.operateType]
 })
@@ -115,7 +115,7 @@ function closeDrawer() {
 async function handleSubmit() {
   await validate()
   // requestTs
-  // window.$message?.success($t('common.updateSuccess'));
+  // window.$message?.success("更新成功");
   closeDrawer()
   emit('submitted')
 }
@@ -133,51 +133,51 @@ watch(visible, () => {
   <NDrawer v-model:show="visible" :title="title" display-directive="show" :width="360">
     <NDrawerContent :title="title" :native-scrollbar="false" closable>
       <NForm ref="formRef" :model="model" :rules="rules">
-        <NFormItem :label="$t('page.manage.user.userName')" path="userName">
-          <NInput v-model:value="model.userName" :placeholder="$t('page.manage.user.form.userName')" />
+        <NFormItem :label="姓名" path="userName">
+          <NInput v-model:value="model.userName" :placeholder="请输入姓名" />
         </NFormItem>
-        <NFormItem :label="$t('page.manage.user.userGender')" path="userGender">
+        <NFormItem :label="性别" path="userGender">
           <NRadioGroup v-model:value="model.userGender">
             <NRadio
               v-for="item in userGenderOptions"
               :key="item.value"
               :value="item.value"
-              :label="$t(item.label as any)"
+              :label="标签"
             />
           </NRadioGroup>
         </NFormItem>
-        <NFormItem :label="$t('page.manage.user.nickName')" path="nickName">
-          <NInput v-model:value="model.nickName" :placeholder="$t('page.manage.user.form.nickName')" />
+        <NFormItem :label="昵称" path="nickName">
+          <NInput v-model:value="model.nickName" :placeholder="请输入昵称" />
         </NFormItem>
-        <NFormItem :label="$t('page.manage.user.userPhone')" path="userPhone">
-          <NInput v-model:value="model.userPhone" :placeholder="$t('page.manage.user.form.userPhone')" />
+        <NFormItem :label="手机号" path="userPhone">
+          <NInput v-model:value="model.userPhone" :placeholder="请输入手机号" />
         </NFormItem>
-        <NFormItem :label="$t('page.manage.user.userEmail')" path="email">
-          <NInput v-model:value="model.userEmail" :placeholder="$t('page.manage.user.form.userEmail')" />
+        <NFormItem :label="邮箱" path="email">
+          <NInput v-model:value="model.userEmail" :placeholder="请输入邮箱" />
         </NFormItem>
-        <NFormItem :label="$t('page.manage.user.userStatus')" path="status">
+        <NFormItem :label="租户状态" path="status">
           <NRadioGroup v-model:value="model.status">
             <NRadio
               v-for="item in enableStatusOptions"
               :key="item.value"
               :value="item.value"
-              :label="$t(item.label as any)"
+              :label="标签"
             />
           </NRadioGroup>
         </NFormItem>
-        <NFormItem :label="$t('page.manage.user.userRole')" path="roles">
+        <NFormItem :label="租户角色" path="roles">
           <NSelect
             v-model:value="model.userRoles"
             multiple
             :options="roleOptions"
-            :placeholder="$t('page.manage.user.form.userRole')"
+            :placeholder="请选择租户角色"
           />
         </NFormItem>
       </NForm>
       <template #footer>
         <NSpace :size="16">
-          <NButton @click="closeDrawer">{{ $t('common.cancel') }}</NButton>
-          <NButton type="primary" @click="handleSubmit">{{ $t('common.confirm') }}</NButton>
+          <NButton @click="closeDrawer">{{ "取消" }}</NButton>
+          <NButton type="primary" @click="handleSubmit">{{ "确认" }}</NButton>
         </NSpace>
       </template>
     </NDrawerContent>

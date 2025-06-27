@@ -98,7 +98,7 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
 
 <template>
   <div v-if="isError" class="h-full w-full flex-center">
-    <n-result status="418" :title="$t('custom.home.title')" :description="$t('custom.home.description')">
+    <n-result status="418" :title="首页未配置或配置异常" :description="一切尽在不言中">
       <template #footer>
         <n-button
           type="primary"
@@ -116,7 +116,7 @@ const breakpointChanged = (_newBreakpoint: any, newLayout: any) => {
             :active="active"
             @finish="active = false"
           />
-          {{ active ? '' : $t('custom.home.refresh') }}
+          {{ active ? '' : "刷新" }}
         </n-button>
       </template>
     </n-result>

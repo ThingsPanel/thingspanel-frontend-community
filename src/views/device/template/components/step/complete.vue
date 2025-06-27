@@ -32,10 +32,10 @@ const copyText = (): void => {
       navigator.clipboard
         .writeText(typeof text === 'string' ? text : '')
         .then(() => {
-          window.NMessage.info($t('common.copiedClipboard'))
+          window.NMessage.info("已复制到剪贴板")
         })
         .catch(err => {
-          window.NMessage.error(`${$t('common.copyingFailed')}:`, err)
+          window.NMessage.error(`${"复制失败"}:`, err)
         })
     } else {
       const range = document.createRange()
@@ -44,7 +44,7 @@ const copyText = (): void => {
       selection?.removeAllRanges()
       selection?.addRange(range)
       document.execCommand('Copy')
-      window.$message?.success($t('theme.configOperation.copySuccess'))
+      window.$message?.success("复制成功")
     }
   }
 }
@@ -60,12 +60,12 @@ onMounted(getTemplate)
       <template #footer>
         <div class="flex justify-between border-t pt-3">
           <div>
-            <n-button type="primary" class="mr-4" @click="copyText">{{ $t('generate.copy-json') }}</n-button>
+            <n-button type="primary" class="mr-4" @click="copyText">{{ "复制json" }}</n-button>
           </div>
           <div>
-            <n-button class="mr-4" @click="back">{{ $t('generate.previous-step') }}</n-button>
+            <n-button class="mr-4" @click="back">{{ "上一步" }}</n-button>
             <n-button type="primary" @click="emit('update:modalVisible', false)">
-              {{ $t('common.complete') }}
+              {{ "完成" }}
             </n-button>
           </div>
         </div>

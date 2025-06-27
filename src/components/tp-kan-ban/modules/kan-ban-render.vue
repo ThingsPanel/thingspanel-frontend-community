@@ -107,7 +107,7 @@ watch(
   <n-card class="h-full w-full" content-class="h-full w-full custom-scroll" content-style="padding:0;margin:0">
     <div ref="wrapper" key="layoutKey" class="h-full w-full" @dragover.prevent @drop="onDrop">
       <div v-if="!theLayout.length" class="h-full flex items-center justify-center">
-        <NEmpty :description="$t('card.noWidgetDragToCard')"></NEmpty>
+        <NEmpty :description="暂未添加组件,移入添加按钮，然后拖入卡片吧"></NEmpty>
       </div>
 
       <GridLayout
@@ -158,7 +158,7 @@ watch(
                   <SvgIcon icon="material-symbols:delete-outline" class="text-base" />
                 </NIcon>
               </template>
-              <span>{{ $t('generate.confirm-delete-dashboard') }}</span>
+              <span>{{ "确认删除看板。" }}</span>
             </NPopconfirm>
             <TpCardItem :data="item.data as CardData" :view="isPreview" />
           </div>

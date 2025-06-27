@@ -125,7 +125,7 @@ defineExpose({
       </div>
       <NSlider v-model:value="detail" :min="min" :max="max" :step="step" @update:value="updateValue" />
       <div class="metric-name">
-        {{ props.card?.dataSource?.deviceSource?.[0]?.metricsName || $t('generate.device') + '1' }}
+        {{ props.card?.dataSource?.deviceSource?.[0]?.metricsName || "设备" + '1' }}
       </div>
     </div>
   </div>

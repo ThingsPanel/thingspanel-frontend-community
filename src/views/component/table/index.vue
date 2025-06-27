@@ -43,7 +43,7 @@ const columns: DataTableColumn<DataSource>[] = [
               handleEdit(row.name);
             }}
           >
-            $t('common.edit')
+            "编辑"
           </NButton>
           <NPopconfirm
             onPositiveClick={() => {
@@ -51,8 +51,8 @@ const columns: DataTableColumn<DataSource>[] = [
             }}
           >
             {{
-              default: () => $t('common.confirmDelete'),
-              trigger: () => <NButton size={'small'}>$t('common.delete')</NButton>
+              default: () => "确认删除",
+              trigger: () => <NButton size={'small'}>"删除"</NButton>
             }}
           </NPopconfirm>
         </NSpace>
@@ -70,7 +70,7 @@ function createDataSource(): DataSource[] {
       return {
         name: `Name${index}`,
         age: getRandomInteger(30, 20),
-        address: $t('card.china')
+        address: "中国"
       };
     });
 }
@@ -108,11 +108,11 @@ onMounted(() => {
 
 <template>
   <div class="h-full overflow-hidden">
-    <NCard :title="$t('generate.table')">
+    <NCard :title="表格">
       <NSpace :vertical="true">
         <NSpace>
-          <NButton @click="getDataSource">{{ $t('generate.has-data') }}</NButton>
-          <NButton @click="getEmptyDataSource">{{ $t('generate.no-data') }}</NButton>
+          <NButton @click="getDataSource">{{ "有数据" }}</NButton>
+          <NButton @click="getEmptyDataSource">{{ "空数据" }}</NButton>
         </NSpace>
         <LoadingEmptyWrapper class="h-480px" :loading="loading" :empty="empty">
           <NDataTable :columns="columns" :data="dataSource" :flex-height="true" class="h-480px" />

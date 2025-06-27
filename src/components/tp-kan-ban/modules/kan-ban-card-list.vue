@@ -20,10 +20,10 @@ const createCardList = (v: string) => {
 }
 
 const options = [
-  { label: $t('generate.system'), value: 'system', checked: false },
-  { label: $t('card.plugins'), value: 'plugins', checked: true },
-  { label: $t('generate.device'), value: 'device', checked: false },
-  { label: $t('common.chart'), value: 'chart', checked: false }
+  { label: "系统", value: 'system', checked: false },
+  { label: "插件", value: 'plugins', checked: true },
+  { label: "设备", value: 'device', checked: false },
+  { label: "图表", value: 'chart', checked: false }
 ]
 
 const emits = defineEmits(['itemDropped'])
@@ -55,7 +55,7 @@ onMounted(() => {
 
   <n-grid :x-gap="10" :y-gap="10" :cols="1">
     <n-gi v-if="!cardList?.length">
-      <n-empty :description="$t('card.categoryNoCards')" />
+      <n-empty :description="该类别下无卡片" />
     </n-gi>
     <n-gi
       v-for="item in cardList"
@@ -69,7 +69,7 @@ onMounted(() => {
           {{ item?.cardItemBase?.cardName }}
         </div>
         <div class="h-100px w-full">
-          <img :src="item.poster" alt="" style="width: 100%; height: 100%; object-fit: contain" />
+          <img :src="item.poster" alt=" style="width: 100%; height: 100%; object-fit: contain" />
         </div>
       </div>
     </n-gi>

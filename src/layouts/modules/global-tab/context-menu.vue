@@ -41,27 +41,27 @@ const options = computed(() => {
   const opts: DropdownOption[] = [
     {
       key: 'closeCurrent',
-      label: $t('dropdown.closeCurrent'),
+      label: "关闭",
       icon: SvgIconVNode({ icon: 'ant-design:close-outlined', fontSize: 18 })
     },
     {
       key: 'closeOther',
-      label: $t('dropdown.closeOther'),
+      label: "关闭其它",
       icon: SvgIconVNode({ icon: 'ant-design:column-width-outlined', fontSize: 18 })
     },
     {
       key: 'closeLeft',
-      label: $t('dropdown.closeLeft'),
+      label: "关闭左侧",
       icon: SvgIconVNode({ icon: 'mdi:format-horizontal-align-left', fontSize: 18 })
     },
     {
       key: 'closeRight',
-      label: $t('dropdown.closeRight'),
+      label: "关闭右侧",
       icon: SvgIconVNode({ icon: 'mdi:format-horizontal-align-right', fontSize: 18 })
     },
     {
       key: 'closeAll',
-      label: $t('dropdown.closeAll'),
+      label: "关闭所有",
       icon: SvgIconVNode({ icon: 'ant-design:line-outlined', fontSize: 18 })
     }
   ]

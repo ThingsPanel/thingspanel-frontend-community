@@ -25,7 +25,7 @@ onMounted(() => {
 <template>
   <div class="h-full w-full flex-col items-center justify-center">
     <div :style="`font-size:${cardData?.config?.cardUI?.textsize || 12}px`">
-      {{ $t('card.networkImageText', { size: cardData?.config?.cardUI?.textsize || 12 }) }}
+      {{ "网络图片文本" }}
     </div>
     <div>
       <n-image :width="100" :height="100" :src="cardData?.config?.cardUI?.src" class="h-full w-full" />

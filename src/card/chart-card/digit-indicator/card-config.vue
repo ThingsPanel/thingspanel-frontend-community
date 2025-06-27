@@ -13,10 +13,10 @@ const setIcon = icon => {
 
 <template>
   <NForm :model="ctx.config">
-    <NFormItem :label="$t('device_template.table_header.unit')">
-      <NInput v-model:value="ctx.config.unit" :placeholder="$t('device_template.table_header.pleaseEnterTheUnit')" />
+    <NFormItem :label="单位">
+      <NInput v-model:value="ctx.config.unit" :placeholder="请输入单位" />
     </NFormItem>
-    <NFormItem :label="$t('generate.color')">
+    <NFormItem :label="颜色">
       <NColorPicker v-model:value="ctx.config.color" :show-alpha="false" />
     </NFormItem>
     <IconSelector default-icon="Water" @icon-selected="setIcon" />

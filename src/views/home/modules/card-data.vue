@@ -22,7 +22,7 @@ interface CardData {
 const cardData = computed<CardData[]>(() => [
   {
     key: 'visitCount',
-    title: $t('page.home.visitCount'),
+    title: "访问量",
     value: 9725,
     unit: '',
     color: {
@@ -33,7 +33,7 @@ const cardData = computed<CardData[]>(() => [
   },
   {
     key: 'turnover',
-    title: $t('page.home.turnover'),
+    title: "成交额",
     value: 1026,
     unit: '$',
     color: {
@@ -44,7 +44,7 @@ const cardData = computed<CardData[]>(() => [
   },
   {
     key: 'downloadCount',
-    title: $t('page.home.downloadCount'),
+    title: "下载量",
     value: 970925,
     unit: '',
     color: {
@@ -55,7 +55,7 @@ const cardData = computed<CardData[]>(() => [
   },
   {
     key: 'dealCount',
-    title: $t('page.home.dealCount'),
+    title: "成交量",
     value: 9527,
     unit: '',
     color: {

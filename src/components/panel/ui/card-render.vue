@@ -168,7 +168,7 @@ onUpdated(() => {})
                 <SvgIcon icon="material-symbols:delete-outline" class="text-base" />
               </NIcon>
             </template>
-            <span>{{ $t('generate.confirm-delete-dashboard') }}</span>
+            <span>{{ "确认删除看板。" }}</span>
           </NPopconfirm>
           <CardItem
             :ref="el => (cardRefs[`card-${item.i}`] = el)"

@@ -3,5 +3,5 @@ import { $t } from '@/locales'
 </script>
 
 <template>
-  <div>{{ $t('generate.migrate-dashboard-to-visualization') }}</div>
+  <div>{{ "看板迁移至可视化" }}</div>
 </template>

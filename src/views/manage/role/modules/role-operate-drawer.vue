@@ -40,8 +40,8 @@ const { defaultRequiredRule } = useFormRules()
 
 const title = computed(() => {
   const titles: Record<OperateType, string> = {
-    add: $t('page.manage.role.addRole'),
-    edit: $t('page.manage.role.editRole')
+    add: "新增角色",
+    edit: "编辑角色"
   }
   return titles[props.operateType]
 })
@@ -85,7 +85,7 @@ function closeDrawer() {
 async function handleSubmit() {
   await validate()
   // requestTs
-  // window.$message?.success($t('common.updateSuccess'));
+  // window.$message?.success("更新成功");
   closeDrawer()
   emit('submitted')
 }
@@ -102,30 +102,30 @@ watch(visible, () => {
   <NDrawer v-model:show="visible" :title="title" display-directive="show" :width="360">
     <NDrawerContent :title="title" :native-scrollbar="false" closable>
       <NForm ref="formRef" :model="model" :rules="rules">
-        <NFormItem :label="$t('page.manage.role.roleName')" path="roleName">
-          <NInput v-model:value="model.roleName" :placeholder="$t('page.manage.role.form.roleName')" />
+        <NFormItem :label="角色名称" path="roleName">
+          <NInput v-model:value="model.roleName" :placeholder="请输入角色名称" />
         </NFormItem>
-        <NFormItem :label="$t('page.manage.role.roleCode')" path="roleCode">
-          <NInput v-model:value="model.roleCode" :placeholder="$t('page.manage.role.form.roleCode')" />
+        <NFormItem :label="角色编码" path="roleCode">
+          <NInput v-model:value="model.roleCode" :placeholder="请输入角色编码" />
         </NFormItem>
-        <NFormItem :label="$t('page.manage.role.roleStatus')" path="status">
+        <NFormItem :label="角色状态" path="status">
           <NRadioGroup v-model:value="model.status">
             <NRadio
               v-for="item in enableStatusOptions"
               :key="item.value"
               :value="item.value"
-              :label="$t(item.label as any)"
+              :label="标签"
             />
           </NRadioGroup>
         </NFormItem>
-        <NFormItem :label="$t('page.manage.role.roleDesc')" path="roleDesc">
-          <NInput v-model:value="model.roleDesc" :placeholder="$t('page.manage.role.form.roleDesc')" />
+        <NFormItem :label="角色描述" path="roleDesc">
+          <NInput v-model:value="model.roleDesc" :placeholder="请输入角色描述" />
         </NFormItem>
       </NForm>
       <template #footer>
         <NSpace :size="16">
-          <NButton @click="closeDrawer">{{ $t('common.cancel') }}</NButton>
-          <NButton type="primary" @click="handleSubmit">{{ $t('common.confirm') }}</NButton>
+          <NButton @click="closeDrawer">{{ "取消" }}</NButton>
+          <NButton type="primary" @click="handleSubmit">{{ "确认" }}</NButton>
         </NSpace>
       </template>
     </NDrawerContent>

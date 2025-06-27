@@ -39,11 +39,11 @@ const init: () => void = () => {
       type: 'category',
       boundaryGap: false,
       data: [
-        $t('dashboard_panel.cardName.date.february'),
-        $t('dashboard_panel.cardName.date.march'),
-        $t('dashboard_panel.cardName.date.april'),
-        $t('dashboard_panel.cardName.date.may'),
-        $t('dashboard_panel.cardName.date.june')
+        "2月",
+        "3月",
+        "4月",
+        "5月",
+        "6月"
       ]
     },
     yAxis: {
@@ -51,7 +51,7 @@ const init: () => void = () => {
     },
     series: [
       {
-        name: $t('dashboard_panel.cardName.tenant'),
+        name: "租户",
         type: 'line',
         stack: 'Total',
         data: user_list_month
@@ -105,16 +105,16 @@ getData()
 <template>
   <div>
     <div class="header">
-      {{ $t('dashboard_panel.cardName.tenantNumLine') }}
+      {{ "租户总数（折线图）" }}
       <n-number-animation ref="numberAnimationInstRef" :to="tenantNum" />
     </div>
     <div class="content-data">
       <div class="content-data-item">
-        <span>{{ $t('dashboard_panel.cardName.yesterdayAdd') }}</span>
+        <span>{{ "昨日新增" }}</span>
         <n-number-animation ref="numberAnimationInstRef" :to="user_added_yesterday" />
       </div>
       <div class="content-data-item">
-        <span>{{ $t('dashboard_panel.cardName.lastMonthAdd') }}</span>
+        <span>{{ "上月新增" }}</span>
         <n-number-animation ref="numberAnimationInstRef" :to="user_added_month" />
       </div>
     </div>

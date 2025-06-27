@@ -34,10 +34,10 @@ const authStore = useAuthStore()
 
 function logout() {
   window.$dialog?.info({
-    title: $t('common.tip'),
-    content: $t('common.logoutConfirm'),
-    positiveText: $t('common.confirm'),
-    negativeText: $t('common.cancel'),
+    title: "提示",
+    content: "确认退出登录",
+    positiveText: "确认",
+    negativeText: "取消",
     onPositiveClick: () => {
       authStore.resetStore()
       toLogin()
@@ -50,13 +50,13 @@ function logout() {
   <div class="min-h-520px wh-full flex-vertical-center gap-24px overflow-hidden">
     <ButtonIcon class="position-absolute position-right-2xl position-top-2xl" @click="logout">
       <SvgIcon icon="ph:sign-out" class="text-icon-medium" />
-      <span class="text-14px font-medium">{{ $t('common.logout') }}</span>
+      <span class="text-14px font-medium">{{ "退出登录" }}</span>
     </ButtonIcon>
     <div class="flex text-400px text-primary">
       <SvgIcon :local-icon="icon" />
     </div>
     <RouterLink to="/">
-      <NButton type="primary">{{ $t('common.backToHome') }}</NButton>
+      <NButton type="primary">{{ "返回首页" }}</NButton>
     </RouterLink>
   </div>
 </template>

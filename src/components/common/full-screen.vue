@@ -13,7 +13,7 @@ defineProps<Props>()
 </script>
 
 <template>
-  <ButtonIcon :key="String(full)" :tooltip-content="full ? $t('icon.fullscreenExit') : $t('icon.fullscreen')">
+  <ButtonIcon :key="String(full)" :tooltip-content="full ? "退出全屏" : "全屏">
     <IconGridiconsFullscreenExit v-if="full" />
     <IconGridiconsFullscreen v-else />
   </ButtonIcon>

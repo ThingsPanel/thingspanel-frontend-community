@@ -10,7 +10,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster, // Also comment out the usage
-  title: $t('card.diskUsage'),
+  title: '硬盘使用率',
   preset: {
     iCardViewDefault: {
       w: 3,

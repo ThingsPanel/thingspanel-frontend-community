@@ -47,8 +47,8 @@ const closeModal = () => {
 
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
-    add: $t('generate.addRule'),
-    edit: $t('generate.editRule')
+    add: "添加规则",
+    edit: "编辑规则"
   }
   return titles[props.type]
 })
@@ -63,16 +63,16 @@ type FormModel = Pick<
 const formModel = reactive<FormModel>(createDefaultFormModel())
 
 const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
-  name: createRequiredFormRule($t('generate.ruleName')),
-  signMode: createRequiredFormRule($t('generate.signatureMethod')),
-  ip: createRequiredFormRule($t('generate.IPwhitelist')),
-  flag: createRequiredFormRule($t('generate.supportFlag')),
-  desc: createRequiredFormRule($t('device_template.table_header.PleaseEnterADescription')),
-  appKey: createRequiredFormRule($t('generate.supportFlag')),
-  dataInterval: createRequiredFormRule($t('generate.dataInterval')),
-  SQL: createRequiredFormRule($t('generate.dataInterval')),
-  status: createRequiredFormRule($t('generate.selectStatus')),
-  SQLWritingAid: createRequiredFormRule($t('generate.selectStatus'))
+  name: createRequiredFormRule("请输入规则名称"),
+  signMode: createRequiredFormRule("请选择签名方式"),
+  ip: createRequiredFormRule("请输入IP白名单"),
+  flag: createRequiredFormRule("请选择接口支持标志"),
+  desc: createRequiredFormRule("请输入描述"),
+  appKey: createRequiredFormRule("请选择接口支持标志"),
+  dataInterval: createRequiredFormRule("请输入推送数据间隔"),
+  SQL: createRequiredFormRule("请输入推送数据间隔"),
+  status: createRequiredFormRule("请选择状态"),
+  SQLWritingAid: createRequiredFormRule("请选择状态")
 }
 
 function createDefaultFormModel(): FormModel {
@@ -113,10 +113,10 @@ function handleUpdateFormModelByModalType() {
 async function handleSubmit() {
   await formRef.value?.validate()
   const titles: Record<ModalType, string> = {
-    add: $t('generate.add'),
-    edit: $t('common.edit')
+    add: "添加",
+    edit: "编辑"
   }
-  window.$message?.success(`${titles[props.type]}${$t('custom.devicePage.success')}!`)
+  window.$message?.success(`${titles[props.type]}${"成功"}!`)
   emit('getTableData')
   closeModal()
 }
@@ -130,17 +130,17 @@ interface Columns {
 const columns: Ref<DataTableColumns<Columns>> = ref([
   {
     key: 'name',
-    title: $t('generate.fieldName'),
+    title: "字段名",
     align: 'left'
   },
   {
     key: 'dataType',
-    title: $t('device_template.table_header.dataType'),
+    title: "数据类型",
     align: 'left'
   },
   {
     key: 'annotation',
-    title: $t('generate.annotation'),
+    title: "注释",
     align: 'left'
   }
 ]) as Ref<DataTableColumns<Columns>>
@@ -170,22 +170,22 @@ watch(
   <NModal v-model:show="modalVisible" preset="card" :title="title" class="w-700px">
     <NForm ref="formRef" label-placement="left" :label-width="120" :model="formModel" :rules="rules">
       <NGrid :cols="24" :x-gap="18">
-        <NFormItemGridItem :span="24" :label="$t('generate.rule-name')" path="name">
+        <NFormItemGridItem :span="24" :label="规则名称" path="name">
           <NInput v-model:value="formModel.name" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="$t('generate.signature-method')" path="signMode">
+        <NFormItemGridItem :span="24" :label="签名方式" path="signMode">
           <NSelect v-model:value="formModel.signMode" :options="dataServiceSignModeOptions" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="$t('generate.ip2')">
-          <NInput v-model:value="formModel.ip" type="textarea" :placeholder="$t('generate.ip')" />
+        <NFormItemGridItem :span="24" :label="IP白名单">
+          <NInput v-model:value="formModel.ip" type="textarea" :placeholder="多个ip用竖线分割" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="$t('generate.api-support-flag')" path="flag">
+        <NFormItemGridItem :span="24" :label="接口支持标志" path="flag">
           <NSelect v-model:value="formModel.flag" :options="dataServiceFlagOptions" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="$t('device_template.table_header.description')">
+        <NFormItemGridItem :span="24" :label="描述">
           <NInput v-model:value="formModel.desc" type="textarea" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="$t('generate.sql2')">
+        <NFormItemGridItem :span="24" :label="SQL编写辅助">
           <div class="flex-1">
             <NSelect
               v-model:value="formModel.SQLWritingAid"
@@ -200,8 +200,8 @@ watch(
         </NFormItemGridItem>
       </NGrid>
       <NSpace class="w-full pt-16px" :size="24" justify="end">
-        <NButton class="w-72px" @click="closeModal">{{ $t('generate.cancel') }}</NButton>
-        <NButton class="w-72px" type="primary" @click="handleSubmit">{{ $t('page.login.common.confirm') }}</NButton>
+        <NButton class="w-72px" @click="closeModal">{{ "取消" }}</NButton>
+        <NButton class="w-72px" type="primary" @click="handleSubmit">{{ "确定" }}</NButton>
       </NSpace>
     </NForm>
   </NModal>

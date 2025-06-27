@@ -34,7 +34,7 @@ type Option = {
   children?: Option[];
 };
 const options = ref<Option[]>();
-const sOptions = ref<any[]>([{ label: $t('generate.unbind'), value: '' }]);
+const sOptions = ref<any[]>([{ label: "不绑定", value: '' }]);
 const route = useRoute();
 const { query } = route;
 const { removeTab } = useTabStore();
@@ -182,10 +182,10 @@ const selectConfig = v => {
 const handleDeleteDevice = () => {
   // 二次确认删除
   window.$dialog?.warning({
-    title: $t('common.delete'),
-    content: $t('common.confirmDelete'),
-    positiveText: $t('common.confirm'),
-    negativeText: $t('common.cancel'),
+    title: "删除",
+    content: "确认删除",
+    positiveText: "确认",
+    negativeText: "取消",
     onPositiveClick: () => {
       deleteD(props.id);
     }
@@ -196,11 +196,11 @@ const deleteD = async (id: string) => {
   try {
     await deleteDevice({ id });
     console.log(1);
-    window.$message?.success($t('common.deleteSuccess'));
+    window.$message?.success("删除成功");
     // 关闭当前标签页
     await removeTab(currentTabId);
   } catch (error) {
-    window.$message?.error($t('common.deleteFailed'));
+    window.$message?.error("删除失败");
     console.error('删除设备失败:', error);
   }
 };
@@ -209,7 +209,7 @@ const deleteD = async (id: string) => {
 <template>
   <div class="flex-col gap-16px p-t-10px">
     <div class="flex items-center">
-      <div>{{ $t('card.configTemplate') }}：</div>
+      <div>{{ "配置模版" }}：</div>
       <NSelect
         v-model:value="selectedValues"
         filterable
@@ -220,13 +220,13 @@ const deleteD = async (id: string) => {
       />
     </div>
     <div class="flex items-center gap-13px">
-      <span>{{ $t('generate.deviceCode') }}</span>
+      <span>{{ "设备编码:" }}</span>
       <span>{{ device_coding }}</span>
     </div>
 
     <div class="flex-col gap-10px">
       <div class="flex items-center">
-        <span class="m-r-5px">{{ $t('generate.manualOnlineStatusEdit') }}</span>
+        <span class="m-r-5px">{{ "手动修改在线状态" }}</span>
         <n-popover trigger="hover" placement="right">
           <template #trigger>
             <span class="h-17px w-20px">
@@ -239,16 +239,16 @@ const deleteD = async (id: string) => {
               </svg>
             </span>
           </template>
-          <span>{{ $t('generate.heartbeatFunctionInfo') }}</span>
+          <span>{{ "当设备模板里启用心跳判断功能，手动修改无效；当前设备模板启用超时时间，在超时的情况下手动修改无效。" }}</span>
         </n-popover>
       </div>
       <div class="flex items-center gap-10px">
         <n-switch v-model:value="is_online" checked-value="1" unchecked-value="0" @update:value="handleUpdateValue" />
-        <span>{{ is_online === '1' ? $t('custom.device_details.online') : $t('custom.device_details.offline') }}</span>
+        <span>{{ is_online === '1' ? "在线" : "离线" }}</span>
       </div>
     </div>
     <div class="flex items-center">
-      {{ $t('generate.device-firmware') }}
+      {{ "设备固件:" }}
       <span class="ml-4">{{ deviceDataStore?.deviceData?.current_version || '--' }}</span>
     </div>
 
@@ -258,12 +258,12 @@ const deleteD = async (id: string) => {
         size="small"
         @click="handleDeleteDevice"
       >
-        {{ $t('common.delete') }}
+        {{ "删除" }}
       </n-button>
     </div>
 
     <div class="flex-1">
-      <div class="mb-4">{{ $t('generate.device-group') }}</div>
+      <div class="mb-4">{{ "设备分组" }}</div>
       <n-transfer
         v-model:value="valueRef"
         :options="options"

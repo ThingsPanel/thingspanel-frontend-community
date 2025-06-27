@@ -42,33 +42,33 @@ async function search() {
 </script>
 
 <template>
-  <NCard :title="$t('common.search')" :bordered="false" size="small" class="card-wrapper">
+  <NCard :title="搜索" :bordered="false" size="small" class="card-wrapper">
     <NForm ref="formRef" :model="model" :rules="rules" label-placement="left">
       <NGrid responsive="screen" item-responsive>
-        <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userName')" path="userName" class="pr-24px">
-          <NInput v-model:value="model.userName" :placeholder="$t('page.manage.user.form.userName')" />
+        <NFormItemGi span="24 s:12 m:6" :label="姓名" path="userName" class="pr-24px">
+          <NInput v-model:value="model.userName" :placeholder="请输入姓名" />
         </NFormItemGi>
-        <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userGender')" path="userGender" class="pr-24px">
+        <NFormItemGi span="24 s:12 m:6" :label="性别" path="userGender" class="pr-24px">
           <NSelect
             v-model:value="model.userGender"
-            :placeholder="$t('page.manage.user.form.userGender')"
+            :placeholder="请选择性别"
             :options="translateOptions(userGenderOptions)"
             clearable
           />
         </NFormItemGi>
-        <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.nickName')" path="nickName" class="pr-24px">
-          <NInput v-model:value="model.nickName" :placeholder="$t('page.manage.user.form.nickName')" />
+        <NFormItemGi span="24 s:12 m:6" :label="昵称" path="nickName" class="pr-24px">
+          <NInput v-model:value="model.nickName" :placeholder="请输入昵称" />
         </NFormItemGi>
-        <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userPhone')" path="userPhone" class="pr-24px">
-          <NInput v-model:value="model.userPhone" :placeholder="$t('page.manage.user.form.userPhone')" />
+        <NFormItemGi span="24 s:12 m:6" :label="手机号" path="userPhone" class="pr-24px">
+          <NInput v-model:value="model.userPhone" :placeholder="请输入手机号" />
         </NFormItemGi>
-        <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userEmail')" path="userEmail" class="pr-24px">
-          <NInput v-model:value="model.userEmail" :placeholder="$t('page.manage.user.form.userEmail')" />
+        <NFormItemGi span="24 s:12 m:6" :label="邮箱" path="userEmail" class="pr-24px">
+          <NInput v-model:value="model.userEmail" :placeholder="请输入邮箱" />
         </NFormItemGi>
-        <NFormItemGi span="24 s:12 m:6" :label="$t('page.manage.user.userStatus')" path="userStatus" class="pr-24px">
+        <NFormItemGi span="24 s:12 m:6" :label="租户状态" path="userStatus" class="pr-24px">
           <NSelect
             v-model:value="model.status"
-            :placeholder="$t('page.manage.user.form.userStatus')"
+            :placeholder="请选择租户状态"
             :options="translateOptions(enableStatusOptions)"
             clearable
           />
@@ -79,13 +79,13 @@ async function search() {
               <template #icon>
                 <IconIcRoundRefresh class="text-icon" />
               </template>
-              {{ $t('common.reset') }}
+              {{ "重置" }}
             </NButton>
             <NButton type="primary" ghost @click="search">
               <template #icon>
                 <IconIcRoundSearch class="text-icon" />
               </template>
-              {{ $t('common.search') }}
+              {{ "搜索" }}
             </NButton>
           </NSpace>
         </NFormItemGi>

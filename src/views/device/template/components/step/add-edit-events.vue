@@ -47,17 +47,17 @@ const addParameterRules: any = reactive({
   data_name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.PleaseEnterTheParameterName')
+    message: "请输入参数名称"
   },
   data_identifier: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.PleaseEnterTheParameterIdentifier')
+    message: "请输入参数标识符"
   },
   read_write_flag: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.PleaseSelectParameterType')
+    message: "请选择参数类型"
   }
 });
 
@@ -79,41 +79,41 @@ const del: (id: string) => void = async id => {
 const col: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
   {
     key: 'data_name',
-    title: $t('device_template.table_header.parameterName'),
+    title: "参数名称",
     align: 'center'
   },
   {
     key: 'data_identifier',
-    title: $t('device_template.table_header.PleaseEnterTheParameterIdentifier'),
+    title: "请输入参数标识符",
     align: 'center'
   },
   {
     key: 'read_write_flag',
-    title: $t('device_template.table_header.ParameterType'),
+    title: "参数类型",
     align: 'center'
   },
   {
     key: 'description',
-    title: $t('device_template.table_header.description'),
+    title: "描述",
     align: 'center'
   },
   {
     key: 'actions',
     width: 350,
-    title: () => $t('common.actions'),
+    title: () => "操作",
     align: 'center',
     render: row => {
       return (
         <NSpace justify={'center'}>
           <NButton quaternary type="primary" size={'small'} onClick={() => edit(row)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm onPositiveClick={() => del(row.id)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton quaternary type="primary" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -174,12 +174,12 @@ const fromRules: Rules = {
   data_name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.PleaseEventName')
+    message: "请输入事件名称"
   },
   data_identifier: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('device_template.table_header.PleaseEeventIdentifier')
+    message: "请输入事件标识符"
   }
 };
 
@@ -254,17 +254,17 @@ const parameterSubmit: () => void = async () => {
     require-mark-placement="right-hanging"
     class="addFrom"
   >
-    <n-form-item :label="$t('device_template.table_header.eventName')" path="data_name">
+    <n-form-item :label="事件名称" path="data_name">
       <n-grid :cols="2">
         <n-gi>
           <n-input
             v-model:value.trim="addFrom.data_name"
-            :placeholder="$t('device_template.table_header.singleControlTaskl')"
+            :placeholder="单次控制任务"
           />
         </n-gi>
       </n-grid>
     </n-form-item>
-    <n-form-item :label="$t('device_template.table_header.eventIdentifier')" path="data_identifier">
+    <n-form-item :label="事件标识符" path="data_identifier">
       <n-grid :cols="2">
         <n-gi>
           <n-input v-model:value.trim="addFrom.data_identifier" placeholder="oneControl" />
@@ -276,26 +276,26 @@ const parameterSubmit: () => void = async () => {
         <template #icon>
           <SvgIcon local-icon="add" class="more" />
         </template>
-        {{ $t('device_template.table_header.addParameters') }}
+        {{ "添加参数" }}
       </NButton>
       <n-data-table :columns="col" :data="eventsData" class="m-b4 flex-1-hidden" />
     </div>
-    <n-form-item :label="$t('device_template.table_header.eventDescription')">
+    <n-form-item :label="事件描述">
       <n-input
         v-model:value.trim="addFrom.description"
-        :placeholder="$t('device_template.table_header.PleaseEventDescription')"
+        :placeholder="请输入事件描述"
         type="textarea"
       />
     </n-form-item>
   </n-form>
   <div class="box2">
-    <NButton class="m-r3" @click="clear">{{ $t('generate.cancel') }}</NButton>
-    <NButton type="primary" @click="submit">{{ $t('device_template.confirm') }}</NButton>
+    <NButton class="m-r3" @click="clear">{{ "取消" }}</NButton>
+    <NButton type="primary" @click="submit">{{ "确定" }}</NButton>
   </div>
   <NModal
     v-model:show="addParameter"
     preset="card"
-    :title="$t('device_template.table_header.addEditParameters')"
+    :title="新增/编辑参数"
     class="w-30%"
     @after-leave="addParameterClone"
   >
@@ -308,36 +308,36 @@ const parameterSubmit: () => void = async () => {
       require-mark-placement="right-hanging"
       class="addFrom"
     >
-      <n-form-item :label="$t('device_template.table_header.parameterName')" path="data_name">
+      <n-form-item :label="参数名称" path="data_name">
         <n-input
           v-model:value.trim="addParameterFrom.data_name"
-          :placeholder="$t('device_template.table_header.PleaseEnterTheParameterName')"
+          :placeholder="请输入参数名称"
         />
       </n-form-item>
-      <n-form-item :label="$t('device_template.table_header.ParameterIdentifier')" path="data_identifier">
+      <n-form-item :label="参数标识符" path="data_identifier">
         <n-input
           v-model:value.trim="addParameterFrom.data_identifier"
-          :placeholder="$t('device_template.table_header.PleaseEnterTheParameterIdentifier')"
+          :placeholder="请输入参数标识符"
         />
       </n-form-item>
-      <n-form-item :label="$t('device_template.table_header.ParameterType')" path="read_write_flag">
+      <n-form-item :label="参数类型" path="read_write_flag">
         <n-select
           v-model:value="addParameterFrom.read_write_flag"
           :options="generalOptions"
-          :placeholder="$t('device_template.table_header.PleaseSelectParameterType')"
+          :placeholder="请选择参数类型"
         />
       </n-form-item>
-      <n-form-item :label="$t('device_template.table_header.commandDescription')">
+      <n-form-item :label="命令描述">
         <n-input
           v-model:value.trim="addParameterFrom.description"
-          :placeholder="$t('device_template.table_header.PleaseEnterADescription')"
+          :placeholder="请输入描述"
           type="textarea"
         />
       </n-form-item>
     </n-form>
     <div class="box2">
-      <NButton class="m-r3" @click="addParameter = false">{{ $t('generate.cancel') }}</NButton>
-      <NButton type="primary" @click="parameterSubmit">{{ $t('device_template.confirm') }}</NButton>
+      <NButton class="m-r3" @click="addParameter = false">{{ "取消" }}</NButton>
+      <NButton type="primary" @click="parameterSubmit">{{ "确定" }}</NButton>
     </div>
   </NModal>
 </template>

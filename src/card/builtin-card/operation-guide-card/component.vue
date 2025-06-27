@@ -72,7 +72,7 @@ const navigateTo = (link: string) => {
   <div class="guide-container h-full p-3 flex flex-col">
     <!-- 调整 padding 和 flex 布局 -->
     <!-- 使用 card.operationGuide 作为内部标题 -->
-    <h3 class="internal-title mb-3 font-semibold text-lg">{{ $t('card.operationGuide') }}</h3>
+    <h3 class="internal-title mb-3 font-semibold text-lg">{{ "操作指引" }}</h3>
 
     <NList v-if="guideList.length > 0" hoverable clickable class="flex-1 overflow-auto bg-[#00000000]">
       <!-- 移除 bordered, 添加 flex-1 和 overflow -->
@@ -98,27 +98,27 @@ const navigateTo = (link: string) => {
 
           <template #header>
             <!-- Wrap title with NEllipsis, use $t with titleKey -->
-            <NEllipsis :line-clamp="1" :title="$t(item.titleKey)">
-              {{ $t(item.titleKey) }}
+            <NEllipsis :line-clamp="1" :title="标题">
+              {{ "标题" }}
             </NEllipsis>
           </template>
           <template #header-extra>
             <NButton v-if="item.link" type="primary" text style="margin-bottom: 12px" @click="navigateTo(item.link)">
-              {{ $t('card.view') }}
+              {{ "查看" }}
               <NIcon :component="ChevronForwardOutline" color="#2080f0" />
             </NButton>
           </template>
           <template #description>
             <!-- Wrap description with NEllipsis, use $t with descriptionKey -->
-            <NEllipsis :line-clamp="2" :title="$t(item.descriptionKey)">
-              {{ $t(item.descriptionKey) }}
+            <NEllipsis :line-clamp="2" :title="文本">
+              {{ "文本" }}
             </NEllipsis>
           </template>
         </NThing>
       </NListItem>
     </NList>
     <div v-else class="flex-1 flex items-center justify-center">
-      <NEmpty :description="$t('card.noData')" />
+      <NEmpty :description="暂无数据" />
     </div>
   </div>
 </template>

@@ -16,22 +16,22 @@ onMounted(() => {
 
 <template>
   <NForm :model="ctx.config">
-    <NFormItem :label="$t('device_template.table_header.unit')">
-      <NInput v-model:value="ctx.config.unit" :placeholder="$t('device_template.table_header.pleaseEnterTheUnit')" />
+    <NFormItem :label="单位">
+      <NInput v-model:value="ctx.config.unit" :placeholder="请输入单位" />
     </NFormItem>
-    <NFormItem :label="$t('generate.min-value')">
-      <NInputNumber v-model:value="ctx.config.min" :placeholder="$t('generate.min-value')" />
+    <NFormItem :label="最小值">
+      <NInputNumber v-model:value="ctx.config.min" :placeholder="最小值" />
     </NFormItem>
-    <NFormItem :label="$t('generate.max-value')">
-      <NInputNumber v-model:value="ctx.config.max" :placeholder="$t('generate.max-value')" />
+    <NFormItem :label="最大值">
+      <NInputNumber v-model:value="ctx.config.max" :placeholder="最大值" />
     </NFormItem>
-    <NFormItem :label="$t('generate.step')">
-      <NInputNumber v-model:value="ctx.config.step" :placeholder="$t('generate.step')" :step="0.1" />
+    <NFormItem :label="步长">
+      <NInputNumber v-model:value="ctx.config.step" :placeholder="步长" :step="0.1" />
     </NFormItem>
-    <NFormItem :label="$t('generate.decimals')">
+    <NFormItem :label="小数位数">
       <NInputNumber
         v-model:value="ctx.config.decimals"
-        :placeholder="$t('generate.decimals')"
+        :placeholder="小数位数"
         :precision="0"
         :min="0"
         :max="10"

@@ -1,6 +1,5 @@
 <script setup lang="tsx">
 import { defineEmits, provide, ref } from 'vue'
-import { $t } from '@/locales'
 import { getTemplat, putTemplat } from '@/service/api'
 import type { ICardView } from '@/components/panel/card'
 import templatePanel from '../card-select/template-panel.vue'
@@ -48,12 +47,8 @@ const next = async () => {
     }
   })
 
-  // if (web_chart_config.value.length < 1 || flag) {
-  //   window.NMessage.error(
-  //     flag ? `${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}` : $t('common.leastOneChart')
-  //   );
   if (flag) {
-    window.NMessage.error(`${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}`)
+    window.NMessage.error(`第${theIndex + 1}个卡片缺少指标配置`)
   } else {
     const res = await getTemplat(props.deviceTemplateId)
     await putTemplat({ ...res.data, web_chart_config: JSON.stringify(web_chart_config.value) })
@@ -66,9 +61,9 @@ const next = async () => {
   <div>
     <templatePanel :template-id="props.deviceTemplateId" :is-app="false" />
     <div class="box1 m-t2">
-      <NButton type="primary" @click="next">{{ $t('device_template.nextStep') }}</NButton>
-      <NButton class="m-r3" ghost type="primary" @click="back">{{ $t('device_template.back') }}</NButton>
-      <NButton class="m-r3" @click="cancellation">{{ $t('generate.cancel') }}</NButton>
+      <NButton type="primary" @click="next">{{ "下一步" }}</NButton>
+      <NButton class="m-r3" ghost type="primary" @click="back">{{ "上一步" }}</NButton>
+      <NButton class="m-r3" @click="cancellation">{{ "取消" }}</NButton>
     </div>
   </div>
 </template>

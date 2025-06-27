@@ -8,7 +8,7 @@ export default {
   type: 'chart',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('generate.table'),
+  title: '表格',
   configForm: defineAsyncComponent(() => import('./card-config.vue')),
   preset: {
     dataSource: {

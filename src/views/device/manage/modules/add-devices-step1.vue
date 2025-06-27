@@ -20,7 +20,7 @@ const formValue = ref({
 const rules = {
   name: {
     required: true,
-    message: $t('custom.devicePage.enterDeviceName'),
+    message: "请输入设备名称",
     trigger: 'blur'
   }
 }
@@ -35,7 +35,7 @@ function handleValidateClick(e: MouseEvent) {
       props.setIdCallback(deviceId, configId, res.data.voucher)
       props.nextCallback()
     } else {
-      message.error($t('custom.devicePage.validationFailed'))
+      message.error("验证失败")
     }
   })
 }
@@ -45,16 +45,16 @@ function handleValidateClick(e: MouseEvent) {
   <div>
     <n-card :bordered="false">
       <n-form ref="formRef" :label-width="80" :model="formValue" :rules="rules" size="small">
-        <n-form-item :label="$t('custom.devicePage.deviceName')" path="name">
-          <n-input v-model:value="formValue.name" :placeholder="$t('custom.devicePage.inputDeviceName')" />
+        <n-form-item :label="设备名称" path="name">
+          <n-input v-model:value="formValue.name" :placeholder="输入设备名称" />
         </n-form-item>
-        <n-form-item :label="$t('custom.devicePage.label')" path="label">
+        <n-form-item :label="标签" path="label">
           <n-dynamic-tags v-model:value="formValue.label" />
         </n-form-item>
-        <n-form-item :label="$t('custom.devicePage.deviceConfig')" path="device_config_id">
+        <n-form-item :label="设备模板" path="device_config_id">
           <n-select
             v-model:value="formValue.device_config_id"
-            :placeholder="$t('custom.devicePage.selectDeviceConfig')"
+            :placeholder="选择设备模板"
             label-field="name"
             value-field="id"
             :options="configOptions"
@@ -62,7 +62,7 @@ function handleValidateClick(e: MouseEvent) {
         </n-form-item>
         <n-form-item>
           <n-button type="primary" attr-type="button" @click="handleValidateClick">
-            {{ $t('device_template.nextStep') }}
+            {{ "下一步" }}
           </n-button>
         </n-form-item>
       </n-form>

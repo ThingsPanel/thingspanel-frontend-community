@@ -8,16 +8,16 @@ defineProps<{
 }>()
 
 const columns = [
-  { title: $t('device_template.table_header.eventIdentifier'), minWidth: '140px', key: 'identify' },
-  { title: $t('device_template.table_header.eventName'), minWidth: '140px', key: 'data_name' },
+  { title: "事件标识符", minWidth: '140px', key: 'identify' },
+  { title: "事件名称", minWidth: '140px', key: 'data_name' },
   {
-    title: $t('device_template.table_header.eventReportingTime'),
+    title: "事件上报时间",
     minWidth: '140px',
     key: 'ts',
     render: row => dayjs(row.ts).format('YYYY-MM-DD HH:mm:ss')
   },
-  { title: $t('device_template.table_header.eventContent'), minWidth: '140px', key: 'data' },
-  { title: $t('generate.errorMessage'), minWidth: '140px', key: 'error_message' }
+  { title: "事件内容", minWidth: '140px', key: 'data' },
+  { title: "错误信息", minWidth: '140px', key: 'error_message' }
 ]
 </script>
 

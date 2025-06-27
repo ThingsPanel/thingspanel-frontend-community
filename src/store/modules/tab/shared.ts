@@ -56,7 +56,7 @@ export function getTabByRoute(route: App.Global.TabRoute) {
   // Get icon and localIcon from getRouteIcons function
   const { icon, localIcon } = getRouteIcons(route)
 
-  const label = i18nKey ? $t(i18nKey) : title
+  const label = i18nKey ? '文本' : title
 
   const tab: App.Global.Tab = {
     id: getTabIdByRoute(route),
@@ -104,7 +104,7 @@ export function getRouteIcons(route: App.Global.TabRoute) {
 export function getDefaultHomeTab(router: Router) {
   const homeRouteName = import.meta.env.VITE_ROUTE_HOME
   const homeRoutePath = getRoutePath(homeRouteName)
-  const i18nLabel = $t(`route.${homeRouteName}`)
+  const i18nLabel = '路由标题'
 
   let homeTab: App.Global.Tab = {
     id: getRoutePath(homeRouteName),
@@ -211,7 +211,7 @@ export function updateTabByI18nKey(tab: App.Global.Tab) {
 
   return {
     ...tab,
-    label: i18nKey ? $t(i18nKey) : label
+    label: i18nKey ? '文本' : label
   }
 }
 

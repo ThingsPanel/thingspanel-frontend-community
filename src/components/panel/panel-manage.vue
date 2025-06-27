@@ -114,9 +114,9 @@ const toEditMode = () => {
 const quitEditMode = () => {
   if (JSON.stringify(layout.value) !== JSON.stringify(preLayout.value) || preTheme.value !== theme.value) {
     dialog.warning({
-      title: $t('card.quitWithoutSave'),
-      positiveText: $t('device_template.confirm'),
-      negativeText: $t('common.cancel'),
+      title: "您尚未保存，确定退出编辑？",
+      positiveText: "确定",
+      negativeText: "取消",
       onPositiveClick: () => {
         isEditing.value = false
         layout.value = preLayout.value
@@ -198,13 +198,13 @@ const savePanel = async () => {
     if (!error) {
       preLayout.value = layout.value
       preTheme.value = theme.value
-      message.success($t('page.dataForward.saveSuccess'))
+      message.success("保存成功")
     } else {
-      message.error($t('page.dataForward.saveFailed') || '保存失败')
+      message.error("保存失败")
       logger.error('Failed to save panel:', error)
     }
   } catch (err) {
-    message.error($t('page.dataForward.saveFailed') || '保存失败')
+    message.error("保存失败")
     logger.error('Error saving panel:', err)
   } finally {
     isSaving.value = false
@@ -240,16 +240,16 @@ onUnmounted(() => {
         <!--
         <<NButton @click="router.go(-1)">
           <SvgIcon icon="ep:back" class="mr-0.5 text-lg" />
-          {{ $t('page.login.common.back') }}
+          {{ "返回" }}
         </NButton>
 -->
         <NSpace align="center">
           <span class="text-14px font-medium line-height-normal">
-            {{ $t('card.dashboard') }}：{{ panelDate?.name }}
+            {{ "看板" }}：{{ panelDate?.name }}
           </span>
           <NButton v-show="isEditing" @mouseover="showCardList">
             <SvgIcon icon="material-symbols:add" class="mr-0.5 text-lg" />
-            {{ $t('generate.add-component') }}
+            {{ "添加组件" }}
           </NButton>
         </NSpace>
       </div>
@@ -260,38 +260,22 @@ onUnmounted(() => {
         <NDivider vertical />
         <NButton v-if="!isEditing" @click="toEditMode">
           <SvgIcon icon="material-symbols:edit" class="mr-0.5 text-lg" />
-          {{ $t('generate.edit') }}
+          {{ "编辑" }}
         </NButton>
         <NSelect
           v-if="isEditing"
           v-model:value="theme"
           :consistent-menu-width="false"
           :options="[
-            { label: $t('card.minimalistWhiteTheme'), value: NO_THEME },
-            { label: $t('card.techBlueTheme'), value: 'theme-tech-blue' },
-            { label: $t('card.applePurpleTheme'), value: 'theme-royal-purple' },
-            { label: $t('card.msStyleTheme'), value: 'theme-microsoft-style' },
-            { label: $t('card.blackTheme'), value: 'theme-cool-black' }
-            /*{ label: $t('清新浅绿主题'), value: 'theme-light-mode-light-green' },
-            { label: $t('静谧浅蓝主题'), value: 'theme-light-mode-light-blue' },
-            { label: $t('温暖浅橙主题'), value: 'theme-light-mode-light-orange' },
-            { label: $t('活力浅红主题'), value: 'theme-light-mode-light-red' },
-            { label: $t('暗调清新绿主题'), value: 'theme-dark-mode-light-green' },
-            { label: $t('暗调静谧蓝主题'), value: 'theme-dark-mode-light-blue' },
-            { label: $t('暗调温暖橙主题'), value: 'theme-dark-mode-light-orange' },
-            { label: $t('暗调活力红主题'), value: 'theme-dark-mode-light-red' },
-            { label: $t('深邃暗绿主题'), value: 'theme-dark-mode-dark-green' },
-            { label: $t('宁静暗蓝主题'), value: 'theme-dark-mode-dark-blue' },
-            { label: $t('炽热暗橙主题'), value: 'theme-dark-mode-dark-orange' },
-            { label: $t('热烈暗红主题'), value: 'theme-dark-mode-dark-red' },
-            { label: $t('明净深绿主题'), value: 'theme-light-mode-dark-green' },
-            { label: $t('明净深蓝主题'), value: 'theme-light-mode-dark-blue' },
-            { label: $t('明净炽橙主题'), value: 'theme-light-mode-dark-orange' },
-            { label: $t('明净烈红主题'), value: 'theme-light-mode-dark-red' }*/
+            { label: "极简白主题", value: NO_THEME },
+            { label: "科技蓝主题", value: 'theme-tech-blue' },
+            { label: "苹果紫主题", value: 'theme-royal-purple' },
+            { label: "微软风主题", value: 'theme-microsoft-style' },
+            { label: "酷炫黑主题", value: 'theme-cool-black' }
           ]"
         ></NSelect>
-        <NButton v-if="isEditing" @click="quitEditMode">{{ $t('card.quitEdit') }}</NButton>
-        <NButton v-show="isEditing" :loading="isSaving" @click="savePanel">{{ $t('common.save') }}</NButton>
+        <NButton v-if="isEditing" @click="quitEditMode">{{ "退出编辑" }}</NButton>
+        <NButton v-show="isEditing" :loading="isSaving" @click="savePanel">{{ "保存" }}</NButton>
         <FullScreen
           :full="isFullscreen"
           @click="
@@ -310,7 +294,7 @@ onUnmounted(() => {
         :show-mask="false"
         style="box-shadow: 0 8px 16px 0 rgba(156, 107, 255, 0.4)"
       >
-        <n-drawer-content :title="$t('card.cardList')" class="shadow-sm" closable>
+        <n-drawer-content :title="卡片列表" class="shadow-sm" closable>
           <CardSelector v-if="showingCardList" class="h-full w-full overflow-auto" @select-card="insertCard" />
         </n-drawer-content>
       </n-drawer>
@@ -320,7 +304,7 @@ onUnmounted(() => {
           v-if="!layout.length"
           class="h-full flex items-center justify-center text-center text-gray-500 dark:text-gray-400"
         >
-          <NEmpty :description="$t('common.componentsAddedYet')"></NEmpty>
+          <NEmpty :description="尚未添加组件"></NEmpty>
         </div>
         <CardRender
           v-if="dataFetched"
@@ -344,7 +328,7 @@ onUnmounted(() => {
         :show-mask="false"
         style="box-shadow: 0 8px 16px 0 rgba(156, 107, 255, 0.4)"
       >
-        <n-drawer-content :title="$t('card.cardConfig')" class="shadow-sm" closable>
+        <n-drawer-content :title="卡片配置" class="shadow-sm" closable>
           <CardForm
             ref="formRef"
             class="h-full w-full overflow-auto"

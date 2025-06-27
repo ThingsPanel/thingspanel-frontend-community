@@ -22,38 +22,38 @@ onMounted(() => {
 </script>
 
 <template>
-  <n-descriptions label-placement="top" :column="1" :title="$t('card.configDisplay')" bordered size="small">
-    <n-descriptions-item :label="$t('card.basicConfig')">
+  <n-descriptions label-placement="top" :column="1" :title="配置展示" bordered size="small">
+    <n-descriptions-item :label="基础配置">
       <n-space justify="space-between">
-        <div>{{ $t('card.title') }}：{{ cardData?.config.basis.title }}</div>
+        <div>{{ "标题" }}：{{ cardData?.config.basis.title }}</div>
         <div>
-          {{ $t('card.isShow') }}：{{
-            cardData?.config.basis.showTitle ? $t('common.yesOrNo.yes') : $t('common.yesOrNo.no')
+          {{ "是否显示" }}：{{
+            cardData?.config.basis.showTitle ? "是" : "否"
           }}
         </div>
       </n-space>
     </n-descriptions-item>
-    <n-descriptions-item :label="$t('card.dataSource')">
+    <n-descriptions-item :label="数据源">
       <n-space justify="space-between">
         <div>
-          <div>{{ $t('card.systemData', { count: cardData?.config.source.systemCount || 0 }) }}：</div>
+          <div>{{ "系统数据" }}：</div>
           <div>
             <span v-for="(item, index) in cardData?.config.source.systemSource" :key="index">{{ item }} |</span>
           </div>
         </div>
         <div>
-          <div>{{ $t('card.deviceData', { count: cardData?.config.source.deviceCount || 0 }) }}：</div>
+          <div>{{ "设备数据" }}：</div>
           <div>
             <div v-for="(item, index) in cardData?.config.source.deviceSource" :key="index">
-              {{ $t('card.deviceId') }}：{{ item.deviceId }} | {{ $t('card.metricsId') }}：{{ item.metricsId }} |
-              {{ $t('card.dataName') }}：{{ item.metricsName }}
+              {{ "设备id" }}：{{ item.deviceId }} | {{ "指标id" }}：{{ item.metricsId }} |
+              {{ "数据名" }}：{{ item.metricsName }}
             </div>
           </div>
         </div>
       </n-space>
     </n-descriptions-item>
-    <n-descriptions-item :label="$t('card.uiConfigFontSize')">
-      {{ cardData?.config.cardUI.textNUmber ? cardData?.config.cardUI.textNUmber + 'px' : $t('card.notConfigured') }}
+    <n-descriptions-item :label="UI配置-字体大小">
+      {{ cardData?.config.cardUI.textNUmber ? cardData?.config.cardUI.textNUmber + 'px' : "未配置" }}
     </n-descriptions-item>
   </n-descriptions>
 </template>

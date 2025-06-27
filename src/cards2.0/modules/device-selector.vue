@@ -164,12 +164,12 @@ if (props.deviceSource && props.deviceSource.length > 0) {
 
 <template>
   <NForm ref="formRef" label-placement="left" label-align="right" require-mark-placement="right-hanging" size="small">
-    <NFormItem :label="$t('card.deviceQuantity')">
+    <NFormItem :label="设备数量">
       <NInputNumber v-model:value="sourceCount" :max="maxSourceNumber" :min="1" @update:value="adjustDeviceCount" />
     </NFormItem>
     <n-grid :cols="3" x-gap="18">
       <template v-for="(selection, index) in currentBatchDevices" :key="index">
-        <NFormItemGi :label="$t('card.device')">
+        <NFormItemGi :label="设备">
           <NSelect
             v-if="index <= sourceCount - 1"
             v-model:value="selection.deviceId"
@@ -179,10 +179,10 @@ if (props.deviceSource && props.deviceSource.length > 0) {
             value-field="id"
             @update:value="value => deviceSelectChange(value, selection)"
           >
-            <template #header>{{ $t('generate.device') }}</template>
+            <template #header>{{ "设备" }}</template>
           </NSelect>
         </NFormItemGi>
-        <NFormItemGi :label="$t('card.metric')">
+        <NFormItemGi :label="指标">
           <NSelect
             v-if="index <= sourceCount - 1"
             v-model:value="selection.metricsId"
@@ -193,15 +193,15 @@ if (props.deviceSource && props.deviceSource.length > 0) {
             @update:show="show => updateDropdownShow(show, selection)"
           ></NSelect>
         </NFormItemGi>
-        <NFormItemGi :label="$t('card.dataName')">
+        <NFormItemGi :label="数据名">
           <NInput v-if="index <= sourceCount - 1" v-model:value="selection.metricsName" style="max-width: 140px" />
         </NFormItemGi>
       </template>
     </n-grid>
     <NSpace v-if="totalPages > 1" justify="space-between">
-      <NButton :disabled="currentPage === 1" @click="previousPage">{{ $t('card.previousPage') }}</NButton>
+      <NButton :disabled="currentPage === 1" @click="previousPage">{{ "上一页" }}</NButton>
       <NButton :disabled="!isCurrentPageComplete() || currentPage === totalPages" @click="nextPage">
-        {{ $t('card.nextPage') }}
+        {{ "下一页" }}
       </NButton>
     </NSpace>
   </NForm>

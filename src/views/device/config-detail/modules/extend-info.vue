@@ -40,12 +40,12 @@ function defaultExtendForm() {
 const extendFormRules = ref({
   name: {
     required: true,
-    message: $t('common.enterName'),
+    message: "请输入名称",
     trigger: 'blur'
   },
   type: {
     required: true,
-    message: $t('generate.select-type'),
+    message: "请选择类型",
     trigger: 'change'
   }
 });
@@ -81,7 +81,7 @@ const handleSave = async () => {
   postData.additional_info = JSON.stringify(extendInfoList.value);
   const res = await deviceConfigEdit(postData);
   if (!res.error) {
-    message.success($t('common.modifySuccess'));
+    message.success("修改成功");
     emit('upDateConfig');
   }
   handleClose();
@@ -126,7 +126,7 @@ const handleDeleteTable = async row => {
     extendInfoList.value.splice(index, 1);
     handleSave();
   }
-  window.$message?.info($t('common.extensionInfoDeleted'));
+  window.$message?.info("扩展信息已删除");
 };
 const handleEditTable = async row => {
   editIndex.value = (extendInfoList.value || []).findIndex(item => {
@@ -146,32 +146,32 @@ const handleEditTable = async row => {
 const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
   {
     key: 'name',
-    title: $t('page.manage.menu.form.name'),
+    title: "名称",
     minWidth: '140px',
     align: 'left'
   },
   {
     key: 'type',
     minWidth: '140px',
-    title: $t('page.manage.menu.form.type'),
+    title: "类型",
     align: 'left'
   },
   {
     key: 'default_value',
-    title: $t('generate.default-value'),
+    title: "默认值",
     minWidth: '140px',
     align: 'left'
   },
   {
     key: 'desc',
-    title: $t('custom.groupPage.description'),
+    title: "描述",
     minWidth: '140px',
     align: 'left'
   },
   {
     key: 'enable',
     minWidth: '140px',
-    title: $t('page.manage.common.status.enable'),
+    title: "启用",
     align: 'left',
     render: (row: any) => {
       return <NSwitch value={Boolean(row.enable)} onChange={() => handleSwitchChange(row)} />;
@@ -180,20 +180,20 @@ const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
   {
     key: 'operate',
     minWidth: '140px',
-    title: $t('common.actions'),
+    title: "操作",
     align: 'left',
     render: (row: any) => {
       return (
         <NSpace>
           <NButton size={'small'} type="primary" onClick={() => handleEditTable(row)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm onPositiveClick={() => handleDeleteTable(row)}>
             {{
-              default: () => $t('common.confirmDelete'),
+              default: () => "确认删除",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -218,7 +218,7 @@ onMounted(() => {
 
 <template>
   <div class="extend-box">
-    <NButton type="primary" @click="addDevice()">{{ $t('generate.add-extension-info') }}</NButton>
+    <NButton type="primary" @click="addDevice()">{{ "+添加扩展信息" }}</NButton>
     <NDataTable :columns="columns" :data="extendInfoList" size="small" class="m-tb-10" />
     <!--    <div class="pagination-box">-->
     <!--      &lt;!&ndash; Data table to display device groups &ndash;&gt;-->
@@ -228,31 +228,31 @@ onMounted(() => {
     <NModal
       v-model:show="visible"
       :mask-closable="false"
-      :title="isEdit ? $t('common.editExtendedInfo') : $t('common.addExtendedInfo')"
+      :title="isEdit ? "编辑扩展信息" : "添加扩展信息"
       :class="getPlatform ? 'w-90%' : 'w-400px'"
       preset="card"
       @after-leave="modalClose"
     >
       <NForm ref="extendFormRef" :model="extendForm" :rules="extendFormRules" label-placement="left" label-width="auto">
-        <NFormItem :label="$t('page.manage.menu.form.name')" path="name">
-          <NInput v-model:value="extendForm.name" :placeholder="$t('generate.enter-device-name')" />
+        <NFormItem :label="名称" path="name">
+          <NInput v-model:value="extendForm.name" :placeholder="请输入设备名称" />
         </NFormItem>
-        <NFormItem :label="$t('generate.type')" path="type">
+        <NFormItem :label="类型" path="type">
           <NSelect
             v-model:value="extendForm.type"
             :options="typeOptions"
-            :placeholder="$t('generate.select-type')"
+            :placeholder="请选择类型"
           ></NSelect>
         </NFormItem>
-        <NFormItem :label="$t('generate.default-value')" path="default_value">
-          <NInput v-model:value="extendForm.default_value" :placeholder="$t('generate.enter-default-value')" />
+        <NFormItem :label="默认值" path="default_value">
+          <NInput v-model:value="extendForm.default_value" :placeholder="请输入默认值" />
         </NFormItem>
-        <NFormItem :label="$t('device_template.table_header.description')" path="device_ids">
-          <NInput v-model:value="extendForm.desc" :placeholder="$t('generate.enter-description')" type="textarea" />
+        <NFormItem :label="描述" path="device_ids">
+          <NInput v-model:value="extendForm.desc" :placeholder="请输入描述" type="textarea" />
         </NFormItem>
         <NFlex justify="flex-end">
-          <NButton @click="handleClose">{{ $t('generate.cancel') }}</NButton>
-          <NButton type="primary" @click="handleSubmit">{{ $t('page.login.common.confirm') }}</NButton>
+          <NButton @click="handleClose">{{ "取消" }}</NButton>
+          <NButton type="primary" @click="handleSubmit">{{ "确定" }}</NButton>
         </NFlex>
       </NForm>
     </NModal>

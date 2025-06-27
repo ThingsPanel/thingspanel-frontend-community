@@ -34,7 +34,7 @@ function createDefaultFormModel(): NotificationServices.PushNotification {
 }
 
 const rules = {
-  pushServer: createRequiredFormRule($t('common.pleaseCheckValue'))
+  pushServer: createRequiredFormRule("请检查数值")
 }
 const formRef = ref<HTMLElement & FormInst>()
 async function handleSubmit() {
@@ -63,7 +63,7 @@ init()
       <NGrid :cols="24">
         <NFormItemGridItem
           :span="14"
-          :label="$t('page.manage.notification.pushNotification.pushServer')"
+          :label="推送服务器"
           path="pushNotification.pushServer"
         >
           <NInput v-model:value="formModel.pushServer" />
@@ -73,7 +73,7 @@ init()
         <NFormItemGridItem :span="24" class="mt-20px">
           <div class="w-120px"></div>
           <NButton class="ml-20px w-72px" type="primary" @click="handleSubmit">
-            {{ $t('common.save') }}
+            {{ "保存" }}
           </NButton>
         </NFormItemGridItem>
       </NGrid>

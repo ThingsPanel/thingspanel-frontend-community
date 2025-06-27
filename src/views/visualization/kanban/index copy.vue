@@ -50,7 +50,7 @@ const fetchBoards = async () => {
 // 提交表单
 const submitForm = async () => {
   if (!formData.name) {
-    message.error($t('custom.home.kanbanNameNull'))
+    message.error("看板名称不能为空")
     return
   }
 
@@ -94,14 +94,14 @@ onMounted(fetchBoards)
       <div class="m-b-20px flex flex-wrap items-center gap-15px">
         <!-- 新建按钮 -->
         <div class="flex-1">
-          <NButton type="primary" @click="showModal = true">+{{ $t('dashboard_panel.addKanBan') }}</NButton>
+          <NButton type="primary" @click="showModal = true">+{{ "添加看板" }}</NButton>
         </div>
         <!-- 搜索部分 -->
         <div class="flex items-center gap-20px">
           <NInput
             v-model:value="nameSearch"
             clearable
-            :placeholder="$t('generate.search-by-name')"
+            :placeholder="按名称搜索"
             @clear="
               () => {
                 nameSearch = ''
@@ -110,7 +110,7 @@ onMounted(fetchBoards)
             "
           />
 
-          <NButton type="primary" @click="fetchBoards">{{ $t('common.search') }}</NButton>
+          <NButton type="primary" @click="fetchBoards">{{ "搜索" }}</NButton>
         </div>
       </div>
       <!-- 看板列表 -->
@@ -133,7 +133,7 @@ onMounted(fetchBoards)
                 v-if="board.home_flag === 'Y'"
                 class="mr--4 mt--2 h-24px w-24px border border-red-4 rounded-50 text-center text-12px text-red font-600"
               >
-                {{ $t('generate.first') }}
+                {{ "首页" }}
               </div>
             </div>
             <!-- 使用NTooltip组件 -->
@@ -163,7 +163,7 @@ onMounted(fetchBoards)
                     </template>
                   </NButton>
                 </template>
-                {{ $t('common.confirmDelete') }}
+                {{ "确认删除" }}
               </NPopconfirm>
             </div>
           </NCard>
@@ -184,28 +184,28 @@ onMounted(fetchBoards)
     <!-- 新建和编辑看板的模态框 -->
     <NModal
       v-model:show="showModal"
-      :title="isEditMode ? $t('dashboard_panel.editKanban') : $t('dashboard_panel.addKanBan')"
+      :title="isEditMode ? "编辑看板" : "添加看板"
       :class="getPlatform ? 'w-90%' : 'w-500px'"
     >
       <NCard bordered>
         <NForm :model="formData" class="flex-1">
-          <NFormItem :label="$t('generate.dashboard-name')" path="name">
-            <NInput v-model:value="formData.name" :placeholder="$t('generate.enter-dashboard-name')" />
+          <NFormItem :label="看板名称" path="name">
+            <NInput v-model:value="formData.name" :placeholder="请输入看板名称" />
           </NFormItem>
-          <NFormItem :label="$t('generate.is-homepage')">
+          <NFormItem :label="是否首页">
             <NSelect
               v-model:value="formData.home_flag"
               :options="[
-                { label: $t('common.yesOrNo.yes'), value: 'Y' },
-                { label: $t('common.yesOrNo.no'), value: 'N' }
+                { label: "是", value: 'Y' },
+                { label: "否", value: 'N' }
               ]"
             />
           </NFormItem>
-          <NFormItem :label="$t('device_template.table_header.description')">
+          <NFormItem :label="描述">
             <NInput
               v-model:value="formData.description"
               type="textarea"
-              :placeholder="$t('generate.enter-description')"
+              :placeholder="请输入描述"
             />
           </NFormItem>
         </NForm>
@@ -218,16 +218,16 @@ onMounted(fetchBoards)
                 clearFormData();
               "
             >
-              {{ $t('generate.cancel') }}
+              {{ "取消" }}
             </NButton>
             <n-popconfirm v-if="formData.home_flag === 'Y'" @positive-click="submitForm">
               <template #trigger>
-                <NButton type="primary">{{ $t('common.save') }}</NButton>
+                <NButton type="primary">{{ "保存" }}</NButton>
               </template>
-              {{ $t('custom.visualization.onlyOneHomepage') }}
+              {{ "只能有一个首页" }}
             </n-popconfirm>
             <NButton v-if="formData.home_flag === 'N'" type="primary" @click="submitForm">
-              {{ $t('common.save') }}
+              {{ "保存" }}
             </NButton>
           </div>
         </template>

@@ -1,0 +1,4 @@
+[
+  "route.${homeRouteName}",
+  "generate.${userInfoData.authority}"
+]

@@ -50,10 +50,10 @@ const next = async () => {
 
   // if (web_chart_config.value.length < 1 || flag) {
   //   window.NMessage.error(
-  //     flag ? `${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}` : $t('common.leastOneChart')
+  //     flag ? `${"部分"}${theIndex + 1}${"伴随指标"}` : "至少一个图表"
   //   );
   if (flag) {
-    window.NMessage.error(`${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}`)
+    window.NMessage.error(`${"部分"}${theIndex + 1}${"伴随指标"}`)
   } else {
     const res = await getTemplat(props.deviceTemplateId)
     await putTemplat({ ...res.data, app_chart_config: JSON.stringify(web_chart_config.value) })
@@ -66,9 +66,9 @@ const next = async () => {
   <div>
     <templatePanel :template-id="props.deviceTemplateId" :is-app="true" />
     <div class="box1 m-t2">
-      <NButton type="primary" @click="next">{{ $t('device_template.nextStep') }}</NButton>
-      <NButton class="m-r3" type="primary" ghost @click="back">{{ $t('device_template.back') }}</NButton>
-      <NButton class="m-r3" @click="cancellation">{{ $t('generate.cancel') }}</NButton>
+      <NButton type="primary" @click="next">{{ "下一步" }}</NButton>
+      <NButton class="m-r3" type="primary" ghost @click="back">{{ "上一步" }}</NButton>
+      <NButton class="m-r3" @click="cancellation">{{ "取消" }}</NButton>
     </div>
   </div>
 </template>

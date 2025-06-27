@@ -33,7 +33,7 @@ const pagination = ref({
   pageSizes: [10, 20, 30, 40],
   showSizePicker: true,
   prefix({ itemCount }) {
-    return `${$t('common.total')}: ${itemCount}`
+    return `${"总计"}: ${itemCount}`
   },
   onChange: page => {
     pagination.value.page = page
@@ -48,21 +48,21 @@ const pagination = ref({
 
 const columns = ref([
   {
-    title: $t('card.deviceTemplate'),
+    title: "设备模板",
     key: 'name',
     align: 'center' as const
   },
   {
-    title: $t('card.templateKey'),
+    title: "模板Key",
     key: 'id',
     align: 'center' as const
   },
   {
-    title: $t('card.templateSecret'),
+    title: "模板Secret",
     key: 'template_secret',
     align: 'center' as const,
     render(row) {
-      return row.template_secret ? '******' : $t('card.templateNotConfigured')
+      return row.template_secret ? '******' : "-未设置-"
     }
   }
 ])
@@ -84,8 +84,8 @@ const loadDeviceConfigs = async () => {
       pagination.value.itemCount = 0
     }
   } catch (error) {
-    console.error($t('card.loadDeviceConfigFailed'), error)
-    message.error($t('common.loadFailed'))
+    console.error("加载设备配置列表失败", error)
+    message.error("加载失败")
   } finally {
     pageData.value.loading = false
   }

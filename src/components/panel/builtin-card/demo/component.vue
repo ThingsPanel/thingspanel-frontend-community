@@ -9,7 +9,7 @@ defineProps<{
 
 <template>
   <div>
-    {{ $t('common.test') }} ：{{ card.type }} {{ $t('generate.username') }} ：{{ card.config?.username }}。
-    {{ $t('generate.age') }}：{{ card.config?.age }}
+    {{ "测试" }} ：{{ card.type }} {{ "用户名" }} ：{{ card.config?.username }}。
+    {{ "年龄" }}：{{ card.config?.age }}
   </div>
 </template>

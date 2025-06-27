@@ -68,19 +68,19 @@ init()
       <NGrid :cols="24" :x-gap="18">
         <NFormItemGridItem
           :span="24"
-          :label="$t('page.manage.setting.themeSetting.form.systemTitle')"
+          :label="系统标题"
           path="system_name"
         >
           <NInput v-model:value="formModel.system_name" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="$t('page.manage.setting.themeSetting.form.homeAndBackendLogo')">
+        <NFormItemGridItem :span="24" :label="首页和后台 logo">
           <UploadImage
             v-model="formModel.logo_background"
             accept="image/png, image/jpeg, image/jpg"
             :file-type="['jpg', 'png', 'jpeg']"
           ></UploadImage>
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="$t('page.manage.setting.themeSetting.form.loadingPageLogo')">
+        <NFormItemGridItem :span="24" :label="加载页面 logo">
           <UploadImage
             v-model="formModel.logo_loading"
             accept="image/png, image/jpeg, image/jpg"
@@ -88,12 +88,12 @@ init()
           ></UploadImage>
         </NFormItemGridItem>
         <!--
- <NFormItemGridItem :span="24" :label="$t('page.manage.setting.themeSetting.form.websiteLogo')">
+ <NFormItemGridItem :span="24" :label="站标 logo">
           <UploadImage v-model="formModel.logo_cache" accept="image/png, image/jpeg, image/jpg"
             :file-type="['jpg', 'png', 'jpeg']"></UploadImage>
         </NFormItemGridItem>
 -->
-        <NFormItemGridItem :span="24" :label="$t('page.manage.setting.themeSetting.form.background')">
+        <NFormItemGridItem :span="24" :label="背景图片">
           <UploadImage
             v-model="formModel.home_background"
             accept="image/png, image/jpeg, image/jpg"
@@ -107,42 +107,42 @@ init()
           <NSpace class="text-center">
             <div>
               <div>
-                {{ $t('page.manage.setting.themeSetting.form.homeAndBackendLogo') }}
+                {{ "首页和后台 logo" }}
               </div>
               <NImage width="140" class="mt-20px h-140px" object-fit="contain"
                 :src="url.origin + formModel.logo_background?.slice(1)" />
               <UploadImage v-model:value="formModel.logo_background" accept="image/png, image/jpeg, image/jpg"
-                class="mt-10px" :text="$t('page.manage.setting.themeSetting.changeLogo')"
+                class="mt-10px" :text="更换 logo"
                 :file-type="['jpg', 'png', 'jpeg']"></UploadImage>
             </div>
             <div class="ml-20px">
               <div>
-                {{ $t('page.manage.setting.themeSetting.form.loadingPageLogo') }}
+                {{ "加载页面 logo" }}
               </div>
               <NImage width="140" class="mt-20px h-140px" object-fit="contain"
                 :src="url.origin + formModel.logo_loading?.slice(1)" />
               <UploadImage v-model:value="formModel.logo_loading" accept="image/png, image/jpeg, image/jpg, image/gif"
-                class="mt-10px" :text="$t('page.manage.setting.themeSetting.changeLogo')"
+                class="mt-10px" :text="更换 logo"
                 :file-type="['jpg', 'png', 'jpeg', 'gif']"></UploadImage>
             </div>
             <div class="ml-20px">
               <div>
-                {{ $t('page.manage.setting.themeSetting.form.websiteLogo') }}
+                {{ "站标 logo" }}
               </div>
               <NImage width="140" class="mt-20px h-140px" object-fit="contain"
                 :src="url.origin + formModel.logo_cache?.slice(1)" />
               <UploadImage v-model:value="formModel.logo_cache" accept="image/png, image/jpeg, image/jpg"
-                class="mt-10px" :text="$t('page.manage.setting.themeSetting.changeLogo')"
+                class="mt-10px" :text="更换 logo"
                 :file-type="['jpg', 'png', 'jpeg']"></UploadImage>
             </div>
             <div class="ml-20px">
               <div>
-                {{ $t('page.manage.setting.themeSetting.form.background') }}
+                {{ "背景图片" }}
               </div>
               <NImage width="140" class="mt-20px h-140px" object-fit="contain"
                 :src="url.origin + formModel.home_background?.slice(1)" />
               <UploadImage v-model:value="formModel.home_background" accept="image/png, image/jpeg, image/jpg"
-                class="mt-10px" :text="$t('page.manage.setting.themeSetting.changeLogo')"
+                class="mt-10px" :text="更换 logo"
                 :file-type="['jpg', 'png', 'jpeg']"></UploadImage>
             </div>
           </NSpace>
@@ -151,7 +151,7 @@ init()
         <NFormItemGridItem :span="24" class="mt-30px">
           <div class="w-120px"></div>
           <NButton class="w-72px" type="primary" @click="handleSubmit">
-            {{ $t('common.save') }}
+            {{ "保存" }}
           </NButton>
         </NFormItemGridItem>
       </NGrid>

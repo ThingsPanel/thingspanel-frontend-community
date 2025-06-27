@@ -47,8 +47,8 @@ const modalVisible = computed({
 })
 const title = computed(() => {
   const titles: Record<ModalType, string> = {
-    amend: $t('custom.personalCenter.modifyBasicInfo'),
-    changePassword: $t('custom.personalCenter.changePassword')
+    amend: "基本信息修改",
+    changePassword: "密码修改"
   }
   return titles[props.type]
 })
@@ -122,7 +122,7 @@ const rules: FormRules = {
       required: true,
       validator(rule: FormItemRule, value: string) {
         if (rule && !validName(value)) {
-          return new Error($t('custom.personalCenter.nameFieldNotEmpty'))
+          return new Error("姓名不能为空且小于50个字符!")
         }
         return true
       },
@@ -141,7 +141,7 @@ const rules: FormRules = {
         }
         return Promise.resolve()
       },
-      message: $t('form.pwd.tip'),
+      message: "密码为6-18位字符，需包含字母、数字",
       trigger: ['input', 'blur']
     }
   ],
@@ -153,7 +153,7 @@ const rules: FormRules = {
   <NModal v-model:show="modalVisible" preset="card" :title="title" class="w-500px">
     <NForm ref="formRef" label-placement="left" :model="formData" :rules="rules">
       <NGrid :cols="2" :x-gap="18">
-        <NFormItemGridItem v-if="estimate === 'amend'" :span="24" :label="$t('page.manage.user.userName')" path="name">
+        <NFormItemGridItem v-if="estimate === 'amend'" :span="24" :label="姓名" path="name">
           <NInput v-model:value="formData.name" />
         </NFormItemGridItem>
         <NFormItemGridItem
@@ -162,7 +162,7 @@ const rules: FormRules = {
           label-width="100"
           type="password"
           show-password-on="mousedown"
-          :label="$t('generate.old-password')"
+          :label=" 原 密 码 "
           path="old_password"
         >
           <NInput v-model:value="formData.old_password" type="password" show-password-on="click" />
@@ -171,7 +171,7 @@ const rules: FormRules = {
           v-if="estimate === 'changePassword'"
           label-width="100"
           :span="24"
-          :label="$t('generate.new-password')"
+          :label=" 新 密 码 "
           path="password"
         >
           <NInput v-model:value="formData.password" type="password" show-password-on="click" />
@@ -180,15 +180,15 @@ const rules: FormRules = {
           v-if="estimate === 'changePassword'"
           :span="24"
           label-width="100"
-          :label="$t('generate.repeat-new-password')"
+          :label="重复新密码"
           path="passwords"
         >
           <NInput v-model:value="formData.passwords" type="password" show-password-on="click" />
         </NFormItemGridItem>
       </NGrid>
       <NSpace class="w-full pt-16px" :size="24" justify="end">
-        <NButton class="w-72px" @click="closeModal">{{ $t('generate.cancel') }}</NButton>
-        <NButton class="w-72px" type="primary" @click="submit">{{ $t('common.save') }}</NButton>
+        <NButton class="w-72px" @click="closeModal">{{ "取消" }}</NButton>
+        <NButton class="w-72px" type="primary" @click="submit">{{ "保存" }}</NButton>
       </NSpace>
     </NForm>
   </NModal>

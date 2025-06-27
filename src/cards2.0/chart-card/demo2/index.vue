@@ -11,10 +11,10 @@ const props = defineProps<{
 const cardData = ref<CardData>()
 const initialOptions = ref({
   title: {
-    text: $t('card.pie_chart_title'),
+    text: "饼图示例",
     left: 'center',
     top: 0,
-    subtext: $t('card.pie_chart_subtitle'),
+    subtext: "选择设备数据看看，大小随机，你也可以根据设备数据区接口取",
     textStyle: {
       color: '#ff0606'
     }
@@ -28,7 +28,7 @@ const initialOptions = ref({
   },
   series: [
     {
-      name: $t('card.access_from'),
+      name: "访问来源",
       type: 'pie',
       radius: ['40%', '70%'],
       avoidLabelOverlap: false,
@@ -54,7 +54,7 @@ const initialOptions = ref({
       data: [
         {
           value: 1048,
-          name: $t('card.search_engine')
+          name: "搜索引擎"
         }
       ]
     }
@@ -64,7 +64,7 @@ const initialOptions = ref({
 watch(
   () => cardData?.value?.config,
   v => {
-    initialOptions.value.series[0].data = [{ value: 104, name: $t('card.fixed_value') }]
+    initialOptions.value.series[0].data = [{ value: 104, name: "固定值" }]
     initialOptions.value.series[0].itemStyle.shadowColor = v?.cardUI?.shadowColor
     v?.source?.deviceSource?.forEach(item => {
       initialOptions.value.series[0].data.push({

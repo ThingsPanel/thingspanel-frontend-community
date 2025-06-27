@@ -24,7 +24,7 @@ const customUserStatusOptions = computed(() => {
   return userStatusOptions.map(item => {
     const key = item.value === 'N' ? 'page.manage.user.status.normal' : 'page.manage.user.status.freeze';
     return {
-      label: $t(key),
+      label: "文本",
       value: item.value
     };
   });
@@ -89,32 +89,32 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   {
     key: 'email',
     minWidth: '140px',
-    title: () => $t('page.manage.user.userEmail'),
+    title: () => "邮箱",
     align: 'left'
   },
   {
     key: 'name',
     minWidth: '140px',
-    title: () => $t('page.manage.user.userName'),
+    title: () => "姓名",
     align: 'left'
   },
   {
     key: 'phone_number',
     minWidth: '140px',
-    title: () => $t('page.manage.user.userPhone'),
+    title: () => "手机号",
     align: 'left'
   },
   {
     key: 'created_at',
     minWidth: '140px',
-    title: () => $t('common.creationTime'),
+    title: () => "创建时间",
     align: 'left',
     render: row => dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
   },
   {
     key: 'status',
     minWidth: '140px',
-    title: () => $t('page.manage.user.userStatus'),
+    title: () => "租户状态",
     align: 'left',
     render: row => {
       if (row.status) {
@@ -123,7 +123,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
           F: 'error'
         };
         const key = row.status === 'N' ? 'page.manage.user.status.normal' : 'page.manage.user.status.freeze';
-        return <NTag type={tagTypes[row.status]}>{$t(key)}</NTag>;
+        return <NTag type={tagTypes[row.status]}>{"文本"}</NTag>;
       }
       return <span></span>;
     }
@@ -131,7 +131,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   {
     key: 'lastVisitTime',
     minWidth: '140px',
-    title: () => $t('custom.management.lastAccessTime'),
+    title: () => "上次访问时间",
     align: 'left',
     render: row => dayjs(row.lastVisitTime || row.created_at).format('YYYY-MM-DD HH:mm:ss')
   },
@@ -154,47 +154,47 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
   {
     key: 'remark',
     minWidth: '140px',
-    title: () => $t('common.remark'),
+    title: () => "备注",
     align: 'left'
   },
   {
     key: 'actions',
     width: '300px',
-    title: () => $t('common.actions'),
+    title: () => "操作",
     align: 'left',
     render: row => {
       return (
         <NSpace justify={'start'}>
           <NPopconfirm
-            negative-text={$t('common.cancel')}
-            positive-text={$t('common.confirm')}
+            negative-text={"取消"}
+            positive-text={"确认"}
             onPositiveClick={() => handleEnter(row.id)}
           >
             {{
-              default: () => $t('common.confirm'),
+              default: () => "确认",
               trigger: () => (
                 <NButton type="warning" size={'small'}>
-                  {$t('page.manage.user.enter')}
+                  {"进入"}
                 </NButton>
               )
             }}
           </NPopconfirm>
           <NButton type="warning" size={'small'} onClick={() => handleEditPwd(row.id)}>
-            {$t('page.login.resetPwd.title')}
+            {"重置密码"}
           </NButton>
           <NButton type="primary" size={'small'} onClick={() => handleEditTable(row.id)}>
-            {$t('common.edit')}
+            {"编辑"}
           </NButton>
           <NPopconfirm
-            negative-text={$t('common.cancel')}
-            positive-text={$t('common.confirm')}
+            negative-text={"取消"}
+            positive-text={"确认"}
             onPositiveClick={() => handleDeleteTable(row.id)}
           >
             {{
-              default: () => $t('common.confirm'),
+              default: () => "确认",
               trigger: () => (
                 <NButton type="error" size={'small'}>
-                  {$t('common.delete')}
+                  {"删除"}
                 </NButton>
               )
             }}
@@ -247,7 +247,7 @@ function handleEditTable(rowId: string) {
 async function handleDeleteTable(rowId: string) {
   const data = await delUser(rowId);
   if (!data.error) {
-    window.$message?.success($t('common.deleteSuccess'));
+    window.$message?.success("删除成功");
     getTableData();
   }
 }
@@ -277,28 +277,28 @@ init();
 
 <template>
   <div>
-    <NCard :title="$t('route.management_user')" :bordered="false" class="h-full rounded-8px shadow-sm">
+    <NCard :title="租户管理" :bordered="false" class="h-full rounded-8px shadow-sm">
       <div class="h-full flex-col">
         <NForm inline label-placement="left" :model="queryParams">
-          <NFormItem :label="$t('page.manage.user.userEmail')" path="email">
+          <NFormItem :label="邮箱" path="email">
             <NInput v-model:value="queryParams.email" />
           </NFormItem>
-          <NFormItem :label="$t('page.manage.user.userName')" path="name">
+          <NFormItem :label="姓名" path="name">
             <NInput v-model:value="queryParams.name" />
           </NFormItem>
-          <NFormItem :label="$t('page.manage.user.userStatus')" path="status">
+          <NFormItem :label="租户状态" path="status">
             <NSelect v-model:value="queryParams.status" clearable class="w-200px" :options="customUserStatusOptions" />
           </NFormItem>
           <NFormItem>
-            <NButton class="w-72px" type="primary" @click="handleQuery">{{ $t('common.search') }}</NButton>
-            <NButton class="ml-20px w-72px" type="primary" @click="handleReset">{{ $t('common.reset') }}</NButton>
+            <NButton class="w-72px" type="primary" @click="handleQuery">{{ "搜索" }}</NButton>
+            <NButton class="ml-20px w-72px" type="primary" @click="handleReset">{{ "重置" }}</NButton>
           </NFormItem>
         </NForm>
         <NSpace class="pb-12px" justify="space-between">
           <NSpace>
             <NButton type="primary" @click="handleAddTable">
               <IconIcRoundPlus class="mr-4px text-20px" />
-              {{ $t('common.add') }}
+              {{ "新增" }}
             </NButton>
             <!--
  <n-button type="error">
@@ -334,7 +334,7 @@ init();
           class="flex-1-hidden"
         />
         <div v-if="showEmpty" class="h-500px flex-center flex-col">
-          <n-empty :description="$t('common.nodata')"></n-empty>
+          <n-empty :description="暂无数据"></n-empty>
         </div>
         <TableActionModal v-model:visible="visible" :type="modalType" :edit-data="editData" @success="getTableData" />
         <EditPasswordModal

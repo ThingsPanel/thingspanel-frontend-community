@@ -3,7 +3,7 @@ import { $t } from '@/locales'
 </script>
 
 <template>
-  <div>{{ $t('generate.preview') }}</div>
+  <div>{{ "预览" }}</div>
 </template>
 
 <style scoped></style>

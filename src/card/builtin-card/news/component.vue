@@ -11,9 +11,9 @@ const logger = createLogger('News')
 
 const cardData = ref<any>({
   id: 'trade',
-  title: $t('card.msgTotal'),
+  title: "消息总数",
   value: 0,
-  unit: $t('card.msgUnit'),
+  unit: "条",
   colors: ['#fcbc25', '#f68057'],
   icon: 'fa-envelope'
 })

@@ -30,23 +30,23 @@ const aggregation_data = ref<AggregationData>({
 })
 const dateRange = ref<[number, number] | null>(null)
 const timeOptions = [
-  { label: $t('common.custom'), value: 'custom' },
-  { label: $t('common.last_5m'), value: 'last_5m' },
-  { label: $t('common.last_15m'), value: 'last_15m' },
-  { label: $t('common.last_30m'), value: 'last_30m' },
-  { label: $t('common.lastHours1'), value: 'last_1h' },
-  { label: $t('common.lastHours3'), value: 'last_3h' },
-  { label: $t('common.lastHours6'), value: 'last_6h' },
-  { label: $t('common.lastHours12'), value: 'last_12h' },
-  { label: $t('common.lastHours24'), value: 'last_24h' },
-  { label: $t('common.lastDays3'), value: 'last_3d' },
-  { label: $t('common.lastDays7'), value: 'last_7d' },
-  { label: $t('common.lastDays15'), value: 'last_15d' },
-  { label: $t('common.lastDays30'), value: 'last_30d' },
-  { label: $t('common.lastDays60'), value: 'last_60d' },
-  { label: $t('common.lastDays90'), value: 'last_90d' },
-  { label: $t('common.halfYear'), value: 'last_6m' },
-  { label: $t('common.lastYears1'), value: 'last_1y' }
+  { label: "自定义", value: 'custom' },
+  { label: "最近5分钟", value: 'last_5m' },
+  { label: "最近15分钟", value: 'last_15m' },
+  { label: "最近30分钟", value: 'last_30m' },
+  { label: "最近1小时", value: 'last_1h' },
+  { label: "最近3小时", value: 'last_3h' },
+  { label: "最近6小时", value: 'last_6h' },
+  { label: "最近12小时", value: 'last_12h' },
+  { label: "最近24小时", value: 'last_24h' },
+  { label: "最近3天", value: 'last_3d' },
+  { label: "最近7天", value: 'last_7d' },
+  { label: "最近15天", value: 'last_15d' },
+  { label: "最近30天", value: 'last_30d' },
+  { label: "最近60天", value: 'last_60d' },
+  { label: "最近90天", value: 'last_90d' },
+  { label: "半年", value: 'last_6m' },
+  { label: "最近1年", value: 'last_1y' }
 ]
 const timeWeighting = {
   custom: 0,
@@ -68,26 +68,26 @@ const timeWeighting = {
   last_1y: 12
 }
 const aggregationIntervalOptions = [
-  { label: $t('common.notAggre'), value: 'no_aggregate', disabled: false },
-  { label: $t('common.seconds30'), value: '30s', disabled: false },
-  { label: $t('common.minute1'), value: '1m', disabled: false },
-  { label: $t('common.minute2'), value: '2m', disabled: false },
-  { label: $t('common.minutes5'), value: '5m', disabled: false },
-  { label: $t('common.minutes10'), value: '10m', disabled: false },
-  { label: $t('common.minutes30'), value: '30m', disabled: false },
-  { label: $t('common.hours1'), value: '1h', disabled: false },
-  { label: $t('common.hours3'), value: '3h', disabled: false },
-  { label: $t('common.hours6'), value: '6h', disabled: false },
-  { label: $t('common.days1'), value: '1d', disabled: false },
-  { label: $t('common.days7'), value: '7d', disabled: false },
-  { label: $t('common.months1'), value: '1mo', disabled: false }
+  { label: "不聚合", value: 'no_aggregate', disabled: false },
+  { label: "30秒", value: '30s', disabled: false },
+  { label: "1分钟", value: '1m', disabled: false },
+  { label: "2分钟", value: '2m', disabled: false },
+  { label: "5分钟", value: '5m', disabled: false },
+  { label: "10分钟", value: '10m', disabled: false },
+  { label: "30分钟", value: '30m', disabled: false },
+  { label: "1小时", value: '1h', disabled: false },
+  { label: "3小时", value: '3h', disabled: false },
+  { label: "6小时", value: '6h', disabled: false },
+  { label: "1天", value: '1d', disabled: false },
+  { label: "7天", value: '7d', disabled: false },
+  { label: "1个月", value: '1mo', disabled: false }
 ]
 const statisticsOptions = [
-  { label: $t('common.average'), value: 'avg', disabled: false },
-  { label: $t('generate.max-value'), value: 'max', disabled: false },
-  { label: $t('generate.min-value'), value: 'min', disabled: false },
-  { label: $t('generate.sum'), value: 'sum', disabled: false },
-  { label: $t('generate.diff'), value: 'diff', disabled: false }
+  { label: "平均值", value: 'avg', disabled: false },
+  { label: "最大值", value: 'max', disabled: false },
+  { label: "最小值", value: 'min', disabled: false },
+  { label: "总和", value: 'sum', disabled: false },
+  { label: "最大最小差值", value: 'diff', disabled: false }
 ]
 
 const aggregationTtemToFalse = (weight: number) => {
@@ -155,7 +155,7 @@ const checkDateRange = value => {
   const [start, end] = value
   if (start && end && addYears(start, 1) < end) {
     dateRange.value = null
-    window.NMessage.error($t('common.withinOneYear'))
+    window.NMessage.error("一年内")
   } else {
     aggregation_data.value.start_time = start
     aggregation_data.value.end_time = end
