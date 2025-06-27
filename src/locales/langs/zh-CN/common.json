@@ -1,4 +1,14 @@
 {
   "confirm": "确认",
-  "cancel": "取消"
-} 
+  "cancel": "取消",
+  "button": {
+    "back": "返回",
+    "login": "登录",
+    "register": "注册"
+  },
+  "status": {
+    "registerSuccess": "注册成功",
+    "codeSent": "验证码已发送",
+    "verifySuccess": "验证成功"
+  }
+}

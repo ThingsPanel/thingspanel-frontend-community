@@ -83,7 +83,7 @@ const rules = computed<Record<keyof FormModel, App.Global.FormRule[]>>(() => {
           }
           return Promise.resolve()
         },
-        message: "密码为6-18位字符，需包含字母、数字",
+        message: $t('page.login.密码为6-1'),
         trigger: ['input', 'blur']
       }
     ]
@@ -96,11 +96,11 @@ async function handleSmsCode() {
       const { error } = await fetchEmailCodeByEmail(model.email)
       if (!error) {
         start()
-        window.$message?.success("验证码已发送")
+        window.$message?.success($t('common.status.codeSent'))
       }
     }
   } else {
-    window.$message?.error("请输入邮箱")
+    window.$message?.error($t('page.login.form.enterEmail'))
   }
 }
 
@@ -116,7 +116,7 @@ async function handleSubmit() {
     })
 
     if (!error) {
-      window.$message?.success("验证成功")
+      window.$message?.success($t('common.status.verifySuccess'))
       toggleLoginModule('pwd-login')
     }
   } catch (error) {
@@ -135,7 +135,7 @@ setTimeout(() => {
       <NAutoComplete
         v-model:value="model.email"
         :options="emailOptions"
-        :placeholder="请输入邮箱地址"
+        :placeholder="$t('page.login.form.enterEmailAddress')"
         clearable
         autocomplete="off"
         @keydown.enter="handleSubmit"
@@ -146,7 +146,7 @@ setTimeout(() => {
         <NInput
           v-model:value="model.verify_code"
           :readonly="readOnly"
-          :placeholder="请输入验证码"
+          :placeholder="$t('page.login.form.enterCode')"
           autocomplete="off"
         />
         <div class="w-18px"></div>
@@ -168,9 +168,9 @@ setTimeout(() => {
           type="password"
           autocomplete="new-password"
           show-password-on="click"
-          :placeholder="请输入密码"
+          :placeholder="$t('page.login.form.enterPassword')"
         />
-        <div class="mt-1 text-xs text-gray-500">{{ "密码为6-18位字符，需包含字母、数字" }}</div>
+        <div class="mt-1 text-xs text-gray-500">{{ $t('page.login.密码为6-1') }}</div>
       </div>
     </NFormItem>
 
@@ -184,10 +184,10 @@ setTimeout(() => {
         :disabled="!canSubmit"
         @click="handleSubmit"
       >
-        {{ "确认" }}
+        {{ $t('common.confirm') }}
       </NButton>
       <NButton size="large" round block @click="toggleLoginModule('pwd-login')">
-        {{ "返回" }}
+        {{ $t('common.button.back') }}
       </NButton>
     </NSpace>
   </NForm>

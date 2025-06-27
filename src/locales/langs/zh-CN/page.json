@@ -1,5 +1,35 @@
 {
   "home": {
     "title": "首页"
+  },
+  "login": {
+    "title": {
+      "pwdLogin": "密码登录",
+      "resetPwd": "重置密码",
+      "codeLogin": "验证码登录"
+    },
+    "chinese": "中文",
+    "slogan": "连接万物，智慧生活",
+    "form": {
+      "enterUsername": "请输入用户名",
+      "usernameFormatError": "用户名格式错误",
+      "enterPassword": "请输入密码",
+      "enterPhone": "请输入手机号",
+      "enterCaptcha": "请输入图形验证码",
+      "enterCode": "请输入验证码",
+      "enterEmailAddress": "请输入邮箱地址",
+      "enterEmail": "请输入邮箱",
+      "confirmPassword": "请确认密码",
+      "passwordRule": "密码为6-18位字符，需包含字母、数字"
+    },
+    "rememberMe": "记住我",
+    "forgotPassword": "忘记密码",
+    "rememberPassword": "记住密码",
+    "label": "标签",
+    "otherLoginMethods": "其他登录方式",
+    "dynamicText": "动态文本",
+    "or": "或",
+    "noAccountQuestion": "还没有账号?",
+    "文本": "文本"
   }
-} 
+}
