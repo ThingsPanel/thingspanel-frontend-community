@@ -7,7 +7,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('page.general.downloadMobile'),
+  title: $t('card.builtin.appDownload'),
   preset: {
     dataSource: {
       origin: 'device',

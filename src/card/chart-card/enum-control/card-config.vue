@@ -28,10 +28,10 @@ const removeButtonConfig = (index: number) => {
 onMounted(() => {
   if (!ctx.config.btOptions) {
     ctx.config.btOptions = [
-      { label: $t('page.general.heating'), value: 'heat' },
-      { label: $t('page.general.cooling'), value: 'cool' },
-      { label: $t('page.general.ventilation'), value: 'fan' },
-      { label: $t('page.general.auto'), value: 'auto' }
+      { label: $t('card.general.heating'), value: 'heat' },
+{ label: $t('card.general.cooling'), value: 'cool' },
+{ label: $t('card.general.ventilation'), value: 'fan' },
+{ label: $t('card.general.auto'), value: 'auto' }
     ]
   }
 })
@@ -44,8 +44,8 @@ onMounted(() => {
       <div v-for="(button, index) in ctx.config.btOptions" :key="index" class="button-config">
         <div class="flex flex-row items-center gap-2">
           <span>{{ index + 1 }}</span>
-          <NInput v-model:value="button.label" :placeholder="$t('page.general.enterButtonName')" />
-          <NInput v-model:value="button.value" :placeholder="$t('page.general.enterButtonValue')" />
+          <NInput v-model:value="button.label" :placeholder="$t('card.general.enterButtonName')" />
+          <NInput v-model:value="button.value" :placeholder="$t('card.general.enterButtonValue')" />
           <NButton v-if="ctx.config.btOptions.length > 2" type="error" text @click="removeButtonConfig(index)">
             <NIcon size="20">
               <DeleteOutlined />
@@ -61,7 +61,7 @@ onMounted(() => {
         <NIcon size="20">
           <PlusOutlined />
         </NIcon>
-        {{ $t('page.general.addButton') }}
+        {{ $t('card.general.addButton') }}
       </NButton>
     </NForm>
   </div>

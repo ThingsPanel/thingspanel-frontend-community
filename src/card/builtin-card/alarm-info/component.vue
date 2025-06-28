@@ -2,10 +2,10 @@
   <div class="p-4 h-full bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
     <div class="flex justify-between items-center mb-3 flex-shrink-0">
       <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">
-        {{ $t('page.general.alarmInfo') }}
+        {{ $t('card.builtin.alarmInfo') }}
       </h3>
       <NButton text size="small" type="primary" @click="viewAllAlarms">
-        {{ $t('page.general.viewAll') }}
+        {{ $t('card.builtin.viewAll') }}
       </NButton>
     </div>
     <div class="flex-grow overflow-auto relative">
@@ -53,13 +53,13 @@ const getStatusInfo = (
 ): { label: string; type: 'default' | 'error' | 'warning' | 'info' | 'success' } => {
   switch (status) {
     case 'H':
-      return { label: $t('page.general.high'), type: 'error' }
+      return { label: $t('card.builtin.high'), type: 'error' }
     case 'M':
-      return { label: $t('page.general.middle'), type: 'warning' }
+      return { label: $t('card.builtin.middle'), type: 'warning' }
     case 'L':
-      return { label: $t('page.general.low'), type: 'info' }
+      return { label: $t('card.builtin.low'), type: 'info' }
     case 'N':
-      return { label: $t('page.general.normal'), type: 'success' }
+      return { label: $t('card.builtin.normal'), type: 'success' }
     default:
       return { label: status, type: 'default' }
   }
@@ -68,7 +68,7 @@ const getStatusInfo = (
 const columns: DataTableColumns<AlarmData> = [
   {
     key: 'name',
-    title: $t('page.general.alarmName'),
+    title: $t('card.builtin.alarmName'),
     width: 170,
     ellipsis: {
       tooltip: true
@@ -77,7 +77,7 @@ const columns: DataTableColumns<AlarmData> = [
 
   {
     key: 'alarm_status',
-    title: $t('page.general.alarmStatus'),
+    title: $t('card.builtin.alarmStatus'),
     width: 90,
     render(row) {
       const statusInfo = getStatusInfo(row.alarm_status)
@@ -86,14 +86,14 @@ const columns: DataTableColumns<AlarmData> = [
   },
   {
     key: 'content',
-    title: $t('page.general.alarmContent'),
+    title: $t('card.builtin.alarmContent'),
     ellipsis: {
       tooltip: true
     }
   },
   {
     key: 'create_at',
-    title: $t('page.general.alarmTime'),
+    title: $t('card.builtin.alarmTime'),
     width: 180,
     render(row) {
       return formatTime(row.create_at)

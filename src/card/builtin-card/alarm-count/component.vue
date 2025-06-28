@@ -10,7 +10,7 @@ defineOptions({ name: 'AlarmCountCard' })
 
 const cardData = ref<any>({
   id: 'alarm-count',
-  title: $t('page.general.alarmStats'), // Assuming translation key exists
+  title: $t('card.builtin.alarmStats'), // Assuming translation key exists
   value: 0,
   unit: "个", // Assuming translation key exists (e.g., '条')
   colors: ['#f97316', '#ef4444'], // Example alarm colors

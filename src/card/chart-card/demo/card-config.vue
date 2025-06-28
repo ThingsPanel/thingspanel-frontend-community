@@ -13,10 +13,10 @@ const setIcon = icon => {
 
 <template>
   <NForm :model="ctx.config">
-    <NFormItem :label="$t('page.general.unit')">
-      <NInput v-model:value="ctx.config.unit" :placeholder="$t('page.general.enterUnit')" />
+    <NFormItem :label="$t('card.general.unit')">
+      <NInput v-model:value="ctx.config.unit" :placeholder="$t('card.general.enterUnit')" />
     </NFormItem>
-    <NFormItem :label="$t('page.general.color')">
+    <NFormItem :label="$t('card.general.color')">
       <NColorPicker v-model:value="ctx.config.color" :show-alpha="false" />
     </NFormItem>
     <IconSelector @icon-selected="setIcon" />

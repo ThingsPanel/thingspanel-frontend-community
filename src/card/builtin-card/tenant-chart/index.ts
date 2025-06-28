@@ -8,8 +8,8 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('page.general.monthlyUserGrowth'),
-  description: $t('page.general.monthlyNewUserDisplay'),
+  title: $t('card.builtin.monthlyUserGrowth'),
+  description: $t('card.builtin.monthlyNewUserDisplay'),
   preset: {
     dataSource: {
       origin: 'device',

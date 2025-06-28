@@ -8,7 +8,7 @@ export default {
   type: 'builtin',
   component,
   poster,
-  title: $t('page.general.systemMetricsHistory'),
+  title: $t('card.builtin.systemMetricsHistory'),
   preset: {
     config: {},
     iCardViewDefault: {

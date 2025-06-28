@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 h-full bg-white dark:bg-gray-800 rounded-lg shadow-md flex flex-col">
     <h3 class="text-base font-semibold mb-3 text-gray-800 dark:text-gray-100 flex-shrink-0">
-      {{ $t('page.general.systemMetricsHistory') }}
+      {{ $t('card.builtin.systemMetricsHistory') }}
     </h3>
     <div class="flex-grow relative min-h-[200px]">
       <v-chart v-if="!loading" ref="chartRef" class="w-full h-full" :option="chartOption" autoresize />

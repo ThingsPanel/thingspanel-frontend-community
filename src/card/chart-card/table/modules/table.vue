@@ -41,7 +41,7 @@ const handlePageSizeChange = (pageSize: number) => {
 // 动态生成page.general.table列
 const columns = ref<any[]>([
   {
-    title: $t('page.general.time'),
+    title: $t('card.general.time'),
     key: 'time',
     render(row) {
       return moment(row.time).format('YYYY-MM-DD HH:mm:ss')
@@ -113,7 +113,7 @@ watch(
   () => {
     columns.value = [
       {
-        title: $t('page.general.time'),
+        title: $t('card.general.time'),
         key: 'time',
         render(row) {
           return moment(row.time).format('YYYY-MM-DD HH:mm:ss')

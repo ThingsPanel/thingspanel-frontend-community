@@ -16,22 +16,22 @@ onMounted(() => {
 
 <template>
   <NForm :model="ctx.config">
-    <NFormItem :label="$t('page.general.unit')">
-      <NInput v-model:value="ctx.config.unit" :placeholder="$t('page.general.enterUnit')" />
+    <NFormItem :label="$t('card.general.unit')">
+      <NInput v-model:value="ctx.config.unit" :placeholder="$t('card.general.enterUnit')" />
     </NFormItem>
-    <NFormItem :label="$t('page.general.minimum')">
-      <NInputNumber v-model:value="ctx.config.min" :placeholder="$t('page.general.minimum')" />
+    <NFormItem :label="$t('card.general.minimum')">
+      <NInputNumber v-model:value="ctx.config.min" :placeholder="$t('card.general.minimum')" />
     </NFormItem>
-    <NFormItem :label="$t('page.general.maximum')">
-      <NInputNumber v-model:value="ctx.config.max" :placeholder="$t('page.general.maximum')" />
+    <NFormItem :label="$t('card.general.maximum')">
+      <NInputNumber v-model:value="ctx.config.max" :placeholder="$t('card.general.maximum')" />
     </NFormItem>
-    <NFormItem :label="$t('page.general.step')">
-      <NInputNumber v-model:value="ctx.config.step" :placeholder="$t('page.general.step')" :step="0.1" />
+    <NFormItem :label="$t('card.general.step')">
+      <NInputNumber v-model:value="ctx.config.step" :placeholder="$t('card.general.step')" :step="0.1" />
     </NFormItem>
-    <NFormItem :label="$t('page.general.decimalPlaces')">
+    <NFormItem :label="$t('card.general.decimalPlaces')">
       <NInputNumber
-        v-model:value="ctx.config.decimals"
-        :placeholder="$t('page.general.decimalPlaces')"
+        v-model:value="ctx.config.precision"
+        :placeholder="$t('card.general.decimalPlaces')"
         :precision="0"
         :min="0"
         :max="10"

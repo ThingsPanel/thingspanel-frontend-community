@@ -14,7 +14,7 @@ const cardRef = ref<HTMLElement | null>(null)
 const fontSize = ref('14px')
 const iconSize = ref('24px')
 let resizeObserver: ResizeObserver | null = null
-const deviceName = computed(() => props.card?.dataSource?.deviceSource?.[0]?.name || $t('page.general.device'))
+const deviceName = computed(() => props.card?.dataSource?.deviceSource?.[0]?.name || $t('card.general.device'))
 
 const config = computed(() => props.card?.config || {})
 const buttonIcon = computed(() => (ionicons5 as any)[config.value.iconName || 'Play'])
@@ -42,9 +42,9 @@ const handleButtonClick = async () => {
     } else if (config.value.dataType === 'command') {
       await commandDataPub(obj)
     }
-    window.$message?.success($t('page.general.dataSendSuccess'))
+    window.$message?.success($t('card.general.dataSendSuccess'))
   } catch (error) {
-    window.$message?.error($t('page.general.dataSendFailed'))
+    window.$message?.error($t('card.general.dataSendFailed'))
   }
 }
 

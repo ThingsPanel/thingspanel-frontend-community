@@ -14,20 +14,20 @@ const detail: any = ref('0')
 
 // 从props.card.configpage.general.中获取按钮配置信息
 const configOptions = ref<Array<{ label: string; value: string | number }>>([
-  { label: $t('page.general.heating'), value: 'heat' },
-  { label: $t('page.general.cooling'), value: 'cool' },
-  { label: $t('page.general.ventilation'), value: 'fan' },
-  { label: $t('page.general.auto'), value: 'auto' }
+  { label: $t('card.general.heating'), value: 'heat' },
+{ label: $t('card.general.cooling'), value: 'cool' },
+{ label: $t('card.general.ventilation'), value: 'fan' },
+{ label: $t('card.general.auto'), value: 'auto' }
 ])
 
 watch(
   () => props.card.config.btOptions,
   () => {
     configOptions.value = props.card?.config?.btOptions || [
-      { label: $t('page.general.heating'), value: 'heat' },
-      { label: $t('page.general.cooling'), value: 'cool' },
-      { label: $t('page.general.ventilation'), value: 'fan' },
-      { label: $t('page.general.auto'), value: 'auto' }
+      { label: $t('card.general.heating'), value: 'heat' },
+{ label: $t('card.general.cooling'), value: 'cool' },
+{ label: $t('card.general.ventilation'), value: 'fan' },
+{ label: $t('card.general.auto'), value: 'auto' }
     ]
   },
   { immediate: true, deep: true }
@@ -78,9 +78,9 @@ const handleClick = async (value: string | number) => {
       } else if (metricsType === 'command') {
         await commandDataPub(payload)
       }
-      window.$message?.success($t('page.general.dataSendSuccess'))
+      window.$message?.success($t('card.general.dataSendSuccess'))
     } catch (error) {
-      window.$message?.error($t('page.general.dataSendFailed'))
+      window.$message?.error($t('card.general.dataSendFailed'))
     }
   }
 }
@@ -136,7 +136,7 @@ const handleClick = async (value: string | number) => {
       font-size: 14px;
 
       &.active {
-        background-color: #6f42c1; /* 选{{ $t('page.general.middle') }}状态背景色 */
+        background-color: #6f42c1; /* 选中状态背景色 */
         color: white;
       }
 

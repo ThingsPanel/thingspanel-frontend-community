@@ -61,12 +61,12 @@ onUnmounted(() => {
 <template>
   <GradientBg class="card-wrapper" start-color="#4ade80" end-color="#22c55e">
     <!-- Example Green Gradient -->
-    <h3 class="text-16px">{{ "CPU 使用率" }}</h3>
+    <h3 class="text-16px">{{ $t('card.builtin.cpuUsage') }}</h3>
     <div class="flex justify-between items-center pt-30px">
       <SvgIcon icon="fa-microchip" class="text-32px" />
       <div class="flex flex-col items-end">
         <template v-if="loading">
-          <span class="text-30px text-white dark:text-dark">{{ $t('common.status.加载中...') }}</span>
+          <span class="text-30px text-white dark:text-dark">{{ $t('common.status.loading') }}</span>
         </template>
         <template v-else-if="value !== null">
           <CountTo :start-value="0" :end-value="value" :suffix="unit" class="text-30px text-white dark:text-dark" />

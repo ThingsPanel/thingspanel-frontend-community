@@ -26,24 +26,24 @@ onMounted(() => {
 <template>
   <div>
     <NForm :model="ctx.config">
-      <NFormItem :label="$t('page.general.statusOnIcon')">
+      <NFormItem :label="$t('card.general.statusOnIcon')">
         <IconSelector default-icon="BulbOutline" @icon-selected="setActiveIcon" />
       </NFormItem>
-      <NFormItem :label="$t('page.general.statusOnColor')">
+      <NFormItem :label="$t('card.general.statusOnColor')">
         <NColorPicker v-model:value="ctx.config.activeColor" :show-alpha="false" />
       </NFormItem>
-      <NFormItem :label="$t('page.general.statusOffIcon')">
+      <NFormItem :label="$t('card.general.statusOffIcon')">
         <IconSelector default-icon="Bulb" @icon-selected="setInactiveIcon" />
       </NFormItem>
-      <NFormItem :label="$t('page.general.statusOffColor')">
+      <NFormItem :label="$t('card.general.statusOffColor')">
         <NColorPicker v-model:value="ctx.config.inactiveColor" :show-alpha="false" />
       </NFormItem>
-      <div class="title">{{ $t('page.general.device') }}</div>
-      <NFormItem :label="$t('page.general.turnOn')">
-        <NInput v-model:value="ctx.config.active0" :placeholder="$t('page.general.turnOn')" + '1'" />
+      <div class="title">{{ $t('card.general.device') }}</div>
+      <NFormItem :label="$t('card.general.turnOn')">
+        <NInput v-model:value="ctx.config.active0" :placeholder="$t('card.general.turnOn') + '1'" />
       </NFormItem>
-      <NFormItem :label="$t('page.general.turnOff')">
-        <NInput v-model:value="ctx.config.active1" :placeholder="$t('page.general.turnOff')" + '0'" />
+      <NFormItem :label="$t('card.general.turnOff')">
+        <NInput v-model:value="ctx.config.active1" :placeholder="$t('card.general.turnOff') + '0'" />
       </NFormItem>
     </NForm>
   </div>

@@ -8,13 +8,13 @@ const ctx = inject<IConfigCtx>('config-ctx')!
 
 <template>
   <div>
-    <div class="title">{{ $t('page.general.device') }}</div>
-    <NForm :model="ctx.config">
-      <NFormItem :label="$t('page.general.turnOn')">
-        <n-input v-model:value="ctx.config.active0" :placeholder="$t('page.general.turnOn')" + '1'" />
-      </NFormItem>
-      <NFormItem :label="$t('page.general.turnOff')">
-        <n-input v-model:value="ctx.config.active1" :placeholder="$t('page.general.turnOff')" + '0'" />
+    <div class="title">{{ $t('card.general.device') }}</div>
+  <NForm>
+    <NFormItem :label="$t('card.general.turnOn')">
+      <n-input v-model:value="ctx.config.active0" :placeholder="$t('card.general.turnOn') + '1'" />
+    </NFormItem>
+    <NFormItem :label="$t('card.general.turnOff')">
+      <n-input v-model:value="ctx.config.active1" :placeholder="$t('card.general.turnOff') + '0'" />
       </NFormItem>
     </NForm>
   </div>

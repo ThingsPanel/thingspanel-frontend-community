@@ -9,7 +9,7 @@ export default {
   component: defineAsyncComponent(() => import('./component.vue')),
   configForm: defineAsyncComponent(() => import('./card-config.vue')),
   poster,
-  title: $t('page.general.textInfo'),
+  title: $t('card.chart.textInfo'),
   preset: {
     dataSource: {
       origin: 'device',

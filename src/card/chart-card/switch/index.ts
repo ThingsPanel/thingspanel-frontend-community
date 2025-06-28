@@ -9,7 +9,7 @@ export default {
   component: defineAsyncComponent(() => import('./component.vue')),
   configForm: defineAsyncComponent(() => import('./switch-config.vue')),
   poster,
-  title: $t('page.general.deviceSwitchControl'),
+  title: $t('card.chart.deviceSwitchControl'),
   preset: {
     dataSource: {
       origin: 'device',

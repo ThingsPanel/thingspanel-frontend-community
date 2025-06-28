@@ -22,7 +22,7 @@ onMounted(() => {
   if (!ctx.config.iconName) ctx.config.iconName = 'Play'
   if (!ctx.config.buttonIconColor) ctx.config.buttonIconColor = '#FFFFFF'
   if (!ctx.config.buttonColor) ctx.config.buttonColor = '#ff4d4f'
-  if (!ctx.config.buttonText) ctx.config.buttonText = $t('page.general.custom')
+  if (!ctx.config.buttonText) ctx.config.buttonText = $t('card.general.custom')
   if (!ctx.config.valueToSend) ctx.config.valueToSend = '1'
   if (!ctx.config.dataType) ctx.config.dataType = 'telemetry'
 })
@@ -31,22 +31,22 @@ onMounted(() => {
 <template>
   <div>
     <NForm :model="ctx.config">
-      <NFormItem :label="$t('page.general.buttonIcon')">
+      <NFormItem :label="$t('card.general.buttonIcon')">
         <IconSelector :default-icon="ctx.config.iconName || 'Fan'" @icon-selected="setIcon" />
       </NFormItem>
-      <NFormItem :label="$t('page.general.buttonIconColor')">
+      <NFormItem :label="$t('card.general.buttonIconColor')">
         <NColorPicker v-model:value="ctx.config.buttonIconColor" :show-alpha="false" />
       </NFormItem>
-      <NFormItem :label="$t('page.general.buttonBackgroundColor')">
+      <NFormItem :label="$t('card.general.buttonBackgroundColor')">
         <NColorPicker v-model:value="ctx.config.buttonColor" :show-alpha="false" />
       </NFormItem>
-      <NFormItem :label="$t('page.general.buttonText')">
+      <NFormItem :label="$t('card.general.buttonText')">
         <NInput v-model:value="ctx.config.buttonText" />
       </NFormItem>
-      <NFormItem :label="$t('page.general.sendData')">
+      <NFormItem :label="$t('card.general.sendData')">
         <NInput v-model:value="ctx.config.valueToSend" type="textarea" :autosize="{ minRows: 3, maxRows: 5 }" />
       </NFormItem>
-      <NFormItem :label="$t('page.general.dataType')">
+      <NFormItem :label="$t('card.general.dataType')">
         <NSelect v-model:value="ctx.config.dataType" :options="dataTypeOptions" />
       </NFormItem>
     </NForm>

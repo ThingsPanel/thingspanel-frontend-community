@@ -63,14 +63,14 @@ onUnmounted(() => {
   <!-- Use GradientBg as the root element, apply necessary styles -->
   <GradientBg class="card-wrapper" start-color="#56cdf3" end-color="#719de3">
     <!-- Use memoryUsage key for title -->
-    <h3 class="text-16px">{{ $t('page.general.memoryUsage') }}</h3>
+    <h3 class="text-16px">{{ $t('card.builtin.memoryUsage') }}</h3>
     <!-- Adjust padding-top and add items-center for alignment -->
     <div class="flex justify-between items-center pt-30px">
       <!-- Change Icon if desired (e.g., memory related icon) -->
       <SvgIcon icon="ant-design:alert-outlined" class="text-32px" />
       <div class="flex flex-col items-end">
         <template v-if="loading">
-          <span class="text-30px text-white dark:text-dark">{{ $t('common.status.加载中...') }}</span>
+          <span class="text-30px text-white dark:text-dark">{{ $t('common.status.loading') }}</span>
         </template>
         <template v-else-if="value !== null">
           <CountTo :start-value="0" :end-value="value" :suffix="unit" class="text-30px text-white dark:text-dark" />
@@ -79,7 +79,7 @@ onUnmounted(() => {
           <span class="text-20px text-white dark:text-dark">{{ $t('common.status.noData') }}</span>
         </template>
         <!-- Optional: Add a subtitle or link -->
-        <!-- <p class="text-12px text-gray-400">{{ $t('page.general.viewAllData') }}</p> -->
+        <!-- <p class="text-12px text-gray-400">{{ $t('card.builtin.viewAllData') }}</p> -->
       </div>
     </div>
   </GradientBg>

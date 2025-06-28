@@ -1,6 +1,6 @@
 <template>
   <n-card
-    :title="$t('page.general.latestReportData')"
+    :title="$t('card.builtin.latestReportData')"
     :bordered="false"
     size="small"
     class="reported-data-card shadow-sm transition duration-700 ease-in-out"
@@ -26,7 +26,7 @@
           </n-icon>
           <!-- Simplified refresh icon -->
         </template>
-        {{ isRefreshing ? $t('page.general.middle') : $t('page.general.enableRealTimeRefresh') }}
+        {{ isRefreshing ? $t('card.builtin.refreshing') : $t('card.builtin.enableRealTimeRefresh') }}
       </n-button>
     </template>
 
@@ -38,7 +38,7 @@
             <path fill="currentColor" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
           </svg>
         </n-icon>
-        {{ $t('page.general.latestReportData') }}
+        {{ $t('card.builtin.latestReportData') }}
       </div>
     </template>
 
@@ -99,7 +99,7 @@
                   {{ device.device_name }}
                 </span>
                 <n-tag :type="device.is_online === 1 ? 'success' : 'default'" size="tiny" round class="flex-shrink-0">
-                  {{ device.is_online === 1 ? $t('page.general.online') : $t('page.general.offline') }}
+                  {{ device.is_online === 1 ? $t('card.builtin.online') : $t('card.builtin.offline') }}
                 </n-tag>
               </div>
               <!-- Last Push Time -->
@@ -188,7 +188,7 @@
             </BottomUpInfiniteScroller>
             <!-- Show message if no telemetry data -->
             <div v-else class="text-xs text-center py-2" style="color: var(--n-text-color-disabled)">
-              {{ $t('page.general.noTelemetryData') }}
+              {{ $t('card.builtin.noTelemetryData') }}
             </div>
           </div>
         </n-thing>
@@ -385,7 +385,7 @@ const formatRelativeTime = (timeStr: string | null | undefined): string => {
   if (!time.isValid()) return '-'
   const now = dayjs().locale(currentLocale.value)
   // Use more specific relative time outputs or keep as is
-  if (now.diff(time, 'minute') < 1) return $t('page.general.justNow') // Assuming you have i18n key
+  if (now.diff(time, 'minute') < 1) return $t('card.builtin.justNow') // Assuming you have i18n key
   return time.fromNow()
 }
 
@@ -402,7 +402,7 @@ const formatValue = (item: TelemetryItem | any): string => {
   if (item !== null && typeof item !== 'object') {
     if (typeof item === 'string') return item
     if (typeof item === 'number') return String(item)
-    if (typeof item === 'boolean') return item ? "page.general.yes" : $t('page.general.no')
+    if (typeof item === 'boolean') return item ? $t('card.builtin.yes') : $t('card.builtin.no')
     return String(item)
   }
 
@@ -413,9 +413,9 @@ const formatValue = (item: TelemetryItem | any): string => {
   let displayValue = ''
 
   if (typeof value === 'boolean') {
-    displayValue = value ? "是的" : $t('page.general.no')
+    displayValue = value ? $t('card.builtin.yes') : $t('card.builtin.no')
     if (key?.includes('switch')) {
-      displayValue = value ? "开" : $t('page.general.off')
+      displayValue = value ? $t('card.builtin.on') : $t('card.builtin.off')
     }
   } else if (typeof value === 'number') {
     // Keep precision formatting

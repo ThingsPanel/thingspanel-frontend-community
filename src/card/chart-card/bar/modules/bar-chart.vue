@@ -183,36 +183,36 @@ const params = reactive({
   time_range: 'custom'
 })
 const timeOptions: SelectOption[] = [
-  { label: $t('page.general.custom'), value: 300000 },
-  { label: $t('page.general.last15Minutes'), value: 900000, id: 'last_15m' },
-  { label: $t('page.general.last30Minutes'), value: 1800000, id: 'last_30m' },
-  { label: $t('page.general.last1Hour'), value: 3600000, id: 'last_1h' },
-  { label: $t('page.general.last3Hours'), value: 10800000, id: 'last_3h' },
-  { label: $t('page.general.last6Hours'), value: 21600000, id: 'last_6h' },
-  { label: $t('page.general.last12Hours'), value: 43200000, id: 'last_12h' },
-  { label: $t('page.general.last24Hours'), value: 86400000, id: 'last_24h' },
-  { label: $t('page.general.last3Days'), value: 259200000, id: 'last_3d' },
-  { label: $t('page.general.last7Days'), value: 604800000, id: 'last_7d' },
-  { label: $t('page.general.last15Days'), value: 1296000000, id: 'last_15d' },
-  { label: $t('page.general.last30Days'), value: 2592000000, id: 'last_30d' },
-  { label: $t('page.general.last60Days'), value: 5184000000, id: 'last_60d' },
-  { label: $t('page.general.last90Days'), value: 7776000000, id: 'last_90d' },
-  { label: $t('page.general.lastHalfYear'), value: 15811200000 },
-  { label: $t('page.general.lastYear'), value: 31536000000 },
-  { label: $t('page.general.today'), value: 28740000 },
-  { label: $t('page.general.yesterday'), value: 86400000 },
-  { label: $t('page.general.dayBeforeYesterday'), value: 172800000 },
-  { label: $t('page.general.lastWeek'), value: 604800000 },
-  { label: $t('page.general.thisWeek'), value: 518400000 },
-  { label: $t('page.general.lastWeek'), value: 604800000 },
-  { label: $t('page.general.thisMonth'), value: 2592000000 },
-  { label: $t('page.general.lastMonth'), value: 2592000000 },
-  { label: $t('page.general.thisYear'), value: 7776000000 },
-  { label: $t('page.general.lastYear'), value: 31536000000 }
+  { label: $t('card.general.custom'), value: 300000 },
+    { label: $t('card.general.last15Minutes'), value: 900000, id: 'last_15m' },
+    { label: $t('card.general.last30Minutes'), value: 1800000, id: 'last_30m' },
+    { label: $t('card.general.last1Hour'), value: 3600000, id: 'last_1h' },
+    { label: $t('card.general.last3Hours'), value: 10800000, id: 'last_3h' },
+    { label: $t('card.general.last6Hours'), value: 21600000, id: 'last_6h' },
+    { label: $t('card.general.last12Hours'), value: 43200000, id: 'last_12h' },
+    { label: $t('card.general.last24Hours'), value: 86400000, id: 'last_24h' },
+    { label: $t('card.general.last3Days'), value: 259200000, id: 'last_3d' },
+    { label: $t('card.general.last7Days'), value: 604800000, id: 'last_7d' },
+    { label: $t('card.general.last15Days'), value: 1296000000, id: 'last_15d' },
+    { label: $t('card.general.last30Days'), value: 2592000000, id: 'last_30d' },
+    { label: $t('card.general.last60Days'), value: 5184000000, id: 'last_60d' },
+    { label: $t('card.general.last90Days'), value: 7776000000, id: 'last_90d' },
+    { label: $t('card.general.lastHalfYear'), value: 15811200000 },
+    { label: $t('card.general.lastYear'), value: 31536000000 },
+    { label: $t('card.general.today'), value: 28740000 },
+    { label: $t('card.general.yesterday'), value: 86400000 },
+    { label: $t('card.general.dayBeforeYesterday'), value: 172800000 },
+    { label: $t('card.general.lastWeek'), value: 604800000 },
+    { label: $t('card.general.thisWeek'), value: 518400000 },
+    { label: $t('card.general.lastWeek'), value: 604800000 },
+    { label: $t('card.general.thisMonth'), value: 2592000000 },
+    { label: $t('card.general.lastMonth'), value: 2592000000 },
+    { label: $t('card.general.thisYear'), value: 7776000000 },
+    { label: $t('card.general.lastYear'), value: 31536000000 }
 ]
 const timeOptionsValue = ref()
 const aggregateOptions: SelectOption[] = [
-  { label: $t('page.general.noAggregate'), value: 'no_aggregate', disabled: false },
+  { label: $t('card.general.noAggregate'), value: 'no_aggregate', disabled: false },
   { label: $t('card.chart.timeRange.seconds30'), value: '30s', disabled: false },
   { label: $t('card.chart.timeRange.minutes1'), value: '1m', disabled: false },
   { label: $t('card.chart.timeRange.minutes2'), value: '2m', disabled: false },
@@ -228,10 +228,10 @@ const aggregateOptions: SelectOption[] = [
 ]
 const aggregateOptionsValue = ref<string>('')
 const aggregateFunctionOptions: SelectOption[] = [
-  { label: $t('page.general.average'), value: 'avg' },
-  { label: $t('page.general.maximum'), value: 'max' },
-  { label: $t('page.general.sum'), value: 'sum' },
-  { label: $t('page.general.difference'), value: 'diff' }
+  { label: $t('card.general.average'), value: 'avg' },
+  { label: $t('card.general.maximum'), value: 'max' },
+  { label: $t('card.general.sum'), value: 'sum' },
+  { label: $t('card.general.difference'), value: 'diff' }
 ]
 const aggregateFunctionValue = ref<string>('avg')
 
@@ -248,28 +248,28 @@ const updateAggregate = (v: string) => {
 }
 const updateDisabledOptions = (timeFrame: string) => {
   const disableBeforeIndex: { [key: string]: number } = {
-    [$t('page.general.last3Hours')]: 1, // 30秒
-    [$t('page.general.last6Hours')]: 2, // 1分钟
-    [$t('page.general.last12Hours')]: 3, // 2分钟
-    [$t('page.general.last24Hours')]: 4, // 5分钟
-    [$t('page.general.last3Days')]: 5, // 10分钟
-    [$t('page.general.last7Days')]: 6, // 30分钟
-    [$t('page.general.last15Days')]: 7, // 1小时
-    [$t('page.general.last30Days')]: 7, // 1小时
-    [$t('page.general.last60Days')]: 8, // 3小时
-    [$t('page.general.last90Days')]: 9, // 6小时
-    [$t('page.general.lastHalfYear')]: 9, // 6小时
-    [$t('page.general.lastYear')]: 12, // 1月
-    [$t('page.general.today')]: 4, // 5分钟
-    [$t('page.general.yesterday')]: 4, // 5分钟
-    [$t('page.general.dayBeforeYesterday')]: 4, // 5分钟
-    [$t('page.general.lastWeek') + '今日']: 4, // 5分钟
-    [$t('page.general.thisWeek')]: 6, // 30分钟
-    [$t('page.general.lastWeek')]: 6, // 30分钟
-    [$t('page.general.thisMonth')]: 7, // 1小时
-    [$t('page.general.lastMonth')]: 7, // 1小时
-    [$t('page.general.thisYear')]: 12, // 1月
-    [$t('page.general.lastYear')]: 12 // 1月
+    [$t('card.general.last3Hours')]: 1, // 30秒
+  [$t('card.general.last6Hours')]: 2, // 1分钟
+  [$t('card.general.last12Hours')]: 3, // 2分钟
+  [$t('card.general.last24Hours')]: 4, // 5分钟
+  [$t('card.general.last3Days')]: 5, // 10分钟
+  [$t('card.general.last7Days')]: 6, // 30分钟
+  [$t('card.general.last15Days')]: 7, // 1小时
+  [$t('card.general.last30Days')]: 7, // 1小时
+  [$t('card.general.last60Days')]: 8, // 3小时
+  [$t('card.general.last90Days')]: 9, // 6小时
+  [$t('card.general.lastHalfYear')]: 9, // 6小时
+  [$t('card.general.lastYear')]: 12, // 1月
+  [$t('card.general.today')]: 4, // 5分钟
+  [$t('card.general.yesterday')]: 4, // 5分钟
+  [$t('card.general.dayBeforeYesterday')]: 4, // 5分钟
+  [$t('card.general.lastWeek') + '今日']: 4, // 5分钟
+  [$t('card.general.thisWeek')]: 6, // 30分钟
+  [$t('card.general.lastWeek')]: 6, // 30分钟
+  [$t('card.general.thisMonth')]: 7, // 1小时
+  [$t('card.general.lastMonth')]: 7, // 1小时
+  [$t('card.general.thisYear')]: 12, // 1月
+  [$t('card.general.lastYear')]: 12 // 1月
   }
 
   // 默认不禁用"不聚合"，根据时间范围禁用其余选项
@@ -297,30 +297,30 @@ const updateTime = (v: number, o: SelectOption) => {
   timeOptionsValue.value = v
   updateDisabledOptions(o.label as string)
   switch (o.label) {
-    case $t('page.general.custom'):
+    case $t('card.general.custom'):
       isTimeSelect.value = true
       isAggregate.value = false
       return
-    case $t('page.general.today'):
+    case $t('card.general.today'):
       start_time = new Date(now.setHours(0, 0, 0, 0))
       now = new Date() // 重新获取当前time，避免修改
       end_time = new Date(now.setHours(23, 59, 59, 999))
       break
-    case $t('page.general.yesterday'):
+    case $t('card.general.yesterday'):
       start_time = new Date()
       start_time.setDate(now.getDate() - 1)
       start_time.setHours(0, 0, 0, 0)
       end_time = new Date(start_time)
       end_time.setHours(23, 59, 59, 999)
       break
-    case $t('page.general.dayBeforeYesterday'):
+    case $t('card.general.dayBeforeYesterday'):
       start_time = new Date()
       start_time.setDate(start_time.getDate() - 2) // 设置为两天前的日期
       start_time.setHours(0, 0, 0, 0) // 那一天的开始
       end_time = new Date(start_time)
       end_time.setHours(23, 59, 59, 999) // 那一天的结束一天的结束
       break
-    case $t('page.general.thisWeek'):
+    case $t('card.general.thisWeek'):
       // eslint-disable-next-line no-case-declarations
       const currentDayOfWeek = now.getDay() // 当前是周几，周日为0
       // eslint-disable-next-line no-case-declarations
@@ -330,7 +330,7 @@ const updateTime = (v: number, o: SelectOption) => {
       start_time.setHours(0, 0, 0, 0) // 本周一的开始
       end_time = new Date() // 本周的当前时间
       break
-    case $t('page.general.lastWeek'):
+    case $t('card.general.lastWeek'):
       // eslint-disable-next-line no-case-declarations
       const daysToLastMonday = now.getDay() === 0 ? -6 : 1 // 如果今天是周日，则上周一是6天前
       start_time = new Date()
@@ -340,19 +340,19 @@ const updateTime = (v: number, o: SelectOption) => {
       end_time.setDate(start_time.getDate() + 6)
       end_time.setHours(23, 59, 59, 999)
       break
-    case $t('page.general.thisMonth'):
+    case $t('card.general.thisMonth'):
       start_time = new Date(now.getFullYear(), now.getMonth(), 1)
       end_time = now
       break
-    case $t('page.general.lastMonth'):
+    case $t('card.general.lastMonth'):
       start_time = new Date(now.getFullYear(), now.getMonth() - 1, 1)
       end_time = new Date(now.getFullYear(), now.getMonth(), 0)
       break
-    case $t('page.general.thisYear'):
+    case $t('card.general.thisYear'):
       start_time = new Date(now.getFullYear(), 0, 1)
       end_time = now
       break
-    case $t('page.general.lastYear'):
+    case $t('card.general.lastYear'):
       start_time = new Date(now.getFullYear() - 1, 0, 1)
       end_time = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999)
       break
@@ -374,7 +374,7 @@ const checkDateRange = value => {
   const [start, end] = value
   if (start && end && addMonths(start, 1) < end) {
     dateRange.value = null
-    message.error($t('page.general.withinOneMonth'))
+    message.error($t('card.general.withinOneMonth'))
   } else {
     params.start_time = start
     params.end_time = end

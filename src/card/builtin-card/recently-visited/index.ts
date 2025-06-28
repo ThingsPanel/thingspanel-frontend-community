@@ -8,8 +8,8 @@ export default {
   type: 'builtin', // 添加 type
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('page.general.recentVisit'), // 使用 $t
-  description: $t('page.general.showRecentVisit'), // 使用 $t
+  title: $t('card.builtin.recentlyVisited'), // 使用 $t
+  description: $t('card.builtin.showRecentVisit'), // 使用 $t
   preset: {
     iCardViewDefault: {
       w: 3,

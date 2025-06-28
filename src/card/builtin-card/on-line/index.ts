@@ -8,7 +8,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('page.general.onlineDeviceCount'),
+  title: $t('card.builtin.onLine'),
   preset: {
     iCardViewDefault: {
       w: 3,

@@ -10,7 +10,7 @@ export default {
   type: 'builtin',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster, // Also comment out the usage if the file doesn't exist
-  title: $t('page.general.CPU使用率'),
+  title: $t('card.builtin.cpuUsage'),
   preset: {
     iCardViewDefault: {
       w: 3,

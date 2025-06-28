@@ -49,7 +49,7 @@ const chartOption = ref<EChartsOption>({
     }
   },
   legend: {
-    data: [$t('page.general.online'), $t('page.general.offline')],
+            data: [$t('card.builtin.online'), $t('card.builtin.offline')],
     left: 'center',
     top: 0
   },
@@ -94,7 +94,7 @@ const chartOption = ref<EChartsOption>({
   },
   series: [
     {
-      name: $t('page.general.online'),
+                name: $t('card.builtin.online'),
       type: 'line',
       smooth: true,
       symbol: 'none',
@@ -113,7 +113,7 @@ const chartOption = ref<EChartsOption>({
       }
     },
     {
-      name: $t('page.general.offline'),
+                name: $t('card.builtin.offline'),
       type: 'line',
       smooth: true,
       symbol: 'none',
@@ -184,7 +184,7 @@ onMounted(() => {
     <div class="online-trend-header">
       <div class="title">
         <img :src="wifiIcon" alt="Online Rate" class="icon" />
-        <span>{{ $t('page.general.online') }}</span>
+        <span>{{ $t('card.builtin.online') }}</span>
       </div>
       <div class="online-rate">
         <img :src="onlineRateIcon" alt="Online Rate" class="icon" />

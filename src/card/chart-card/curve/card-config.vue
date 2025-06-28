@@ -12,8 +12,8 @@ const originalColorGroups = reactive(CurveTheme)
 const colorGroups = ref(JSON.parse(JSON.stringify(originalColorGroups))) // Deep copy to preserve original data
 
 const themeOptions = [
-  { label: $t('page.general.colorTheme1'), value: 'colorGroups' },
-  { label: $t('page.general.colorTheme2'), value: 'colorGroups2' }
+  { label: $t('card.general.colorTheme1'), value: 'colorGroups' },
+{ label: $t('card.general.colorTheme2'), value: 'colorGroups2' }
 ]
 
 const themeUpdate = () => {
@@ -49,20 +49,20 @@ const resetTheme = () => {
   <div>
     <!-- Curve Width Configuration -->
     <n-flex align="center" class="mb-2">
-      <div>{{ $t('page.general.curve') }}:</div>
+      <div>{{ $t('card.general.curve') }}:</div>
       <NInputNumber v-model:value="ctx.config.curveWidth" :min="1" :max="10" :step="1" class="flex-1" />
     </n-flex>
 
     <n-flex align="center" class="mb-2">
-      <div>{{ $t('page.general.colorTheme') }}</div>
+      <div>{{ $t('card.general.colorTheme') }}</div>
       <NSelect
         v-model:value="ctx.config.selectedTheme"
         class="flex-1"
         :options="themeOptions"
-        :placeholder="$t('page.general.selectTheme')"
+        :placeholder="$t('card.general.selectTheme')"
         @update:value="themeUpdate"
       />
-      <div @click="resetTheme">{{ $t('common.button.reset') }}</div>
+      <div @click="resetTheme">{{ $t('card.general.reset') }}</div>
     </n-flex>
     <div v-if="ctx.config.selectedTheme" class="color-groups">
       <n-grid x-gap="6" y-gap="6" :cols="1">
@@ -108,7 +108,7 @@ const resetTheme = () => {
             </NColorPicker>
           </div>
         </n-gi>
-        <n-gi class="text-12px text-#999">{{ $t('page.general.dataConfigTip') }}</n-gi>
+        <n-gi class="text-12px text-#999">{{ $t('card.general.dataConfigTip') }}</n-gi>
       </n-grid>
     </div>
   </div>

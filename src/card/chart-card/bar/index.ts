@@ -8,7 +8,7 @@ export default {
   type: 'chart',
   component: defineAsyncComponent(() => import('./component.vue')),
   poster,
-  title: $t('page.general.barChart'),
+  title: $t('card.chart.barChart'),
   configForm: defineAsyncComponent(() => import('./card-config.vue')),
   preset: {
     dataSource: {

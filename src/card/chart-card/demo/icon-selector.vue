@@ -30,7 +30,7 @@ export default {
 
 <template>
   <div>
-    <span style="vertical-align: middle; line-height: 30px">{{ $t('page.general.middle') }}:</span>
+    <span style="vertical-align: middle; line-height: 30px">{{ $t('card.general.middle') }}:</span>
     <NIcon size="30" :component="selectedIcon" style="vertical-align: middle" />
     <div class="icon-picker-dialog">
       <div class="icon-grid">
