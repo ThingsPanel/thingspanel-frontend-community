@@ -117,8 +117,8 @@ const columns_to_show: Ref<any> = ref([
       return <NButton type="primary" text onClick={() => goDeviceDetails(row)}>{row.name}</NButton>
     }
   },
-  
- 
+
+
   {
     key: 'is_online',
     minWidth: '100px',
@@ -212,7 +212,7 @@ const actions = []
 const searchConfigs = ref<SearchConfig[]>([
   {
     key: 'group_id',
-    label: 'custom.devicePage.selectGroup',
+    label: $t('custom.devicePage.selectGroup'),
     type: 'tree-select',
     multiple: false,
     initValue: query.group_id,
@@ -221,7 +221,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'device_config_id',
-    label: 'custom.devicePage.unlimitedDeviceConfig',
+    label: $t('custom.devicePage.unlimitedDeviceConfig'),
     type: 'select',
     options: [],
     initValue: query.device_config_id,
@@ -231,7 +231,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'is_online',
-    label: 'custom.devicePage.unlimitedOnlineStatus',
+    label: $t('custom.devicePage.unlimitedOnlineStatus'),
     type: 'select',
     initValue: query.is_online,
     options: [
@@ -242,7 +242,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'warn_status',
-    label: 'custom.devicePage.unlimitedAlarmStatus',
+    label: $t('custom.devicePage.unlimitedAlarmStatus'),
     type: 'select',
     initValue: query.warn_status,
     options: [
@@ -253,7 +253,7 @@ const searchConfigs = ref<SearchConfig[]>([
   },
   {
     key: 'device_type',
-    label: 'custom.devicePage.unlimitedAccessType',
+    label: $t('custom.devicePage.unlimitedAccessType'),
     initValue: query.device_type,
     type: 'select',
     options: [
@@ -275,13 +275,13 @@ const searchConfigs = ref<SearchConfig[]>([
   {
     key: 'search',
     initValue: query.search,
-    label: 'custom.devicePage.deviceNameOrNumber',
+    label: $t('custom.devicePage.deviceNameOrNumber'),
     type: 'input'
   },
   {
     key: 'label',
     initValue: query.label,
-    label: 'custom.devicePage.label',
+    label: $t('custom.devicePage.label'),
     type: 'input'
   }
 ])
