@@ -63,6 +63,10 @@ declare namespace Env {
      * @link https://docs.iconify.design/api/providers.html
      */
     readonly VITE_ICONIFY_URL?: string
+    /** Auto login username for development environment */
+    readonly VITE_AUTO_LOGIN_USERNAME?: string
+    /** Auto login password for development environment */
+    readonly VITE_AUTO_LOGIN_PASSWORD?: string
     readonly globEager: <T = any>(globPattern: string) => Record<string, T>
   }
 }

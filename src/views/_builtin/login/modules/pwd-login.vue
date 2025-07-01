@@ -149,6 +149,37 @@ function loadSavedCredentials() {
   }
 }
 
+// 从环境变量加载自动登录凭据
+async function loadAutoLoginCredentials() {
+  const { VITE_AUTO_LOGIN_USERNAME, VITE_AUTO_LOGIN_PASSWORD } = import.meta.env
+  
+  // 检查路由参数中是否包含 auto=true
+  const urlParams = new URLSearchParams(window.location.search)
+  const autoLogin = urlParams.get('auto') === 'true'
+  
+  // 只在开发环境、配置了账号密码且路由参数包含auto=true时才自动登录
+  if (import.meta.env.MODE === 'development' && VITE_AUTO_LOGIN_USERNAME && VITE_AUTO_LOGIN_PASSWORD && autoLogin) {
+    console.log('检测到环境变量中的自动登录配置和路由参数auto=true，正在自动登录...')
+    
+    // 设置表单数据
+    model.userName = VITE_AUTO_LOGIN_USERNAME
+    model.password = VITE_AUTO_LOGIN_PASSWORD
+    
+    // 延迟一下确保组件完全挂载
+    setTimeout(async () => {
+      try {
+        await authStore.login(model.userName.trim(), model.password)
+        console.log('自动登录成功')
+      } catch (error) {
+        console.error('自动登录失败:', error)
+        window.$message?.error('自动登录失败，请手动输入账号密码')
+      }
+    }, 500)
+  } else if (import.meta.env.MODE === 'development' && VITE_AUTO_LOGIN_USERNAME && VITE_AUTO_LOGIN_PASSWORD && !autoLogin) {
+    console.log('检测到自动登录配置，但URL中未包含auto=true参数。如需自动登录，请访问: ' + window.location.origin + window.location.pathname + '?auto=true')
+  }
+}
+
 onMounted(() => {
   const is_remember_rath = localStorage.getItem('isRememberPath')
   if (is_remember_rath === '0' || is_remember_rath === '1') {
@@ -156,6 +187,7 @@ onMounted(() => {
   }
   getFunctionOption()
   loadSavedCredentials()
+  loadAutoLoginCredentials()
 })
 </script>
 
