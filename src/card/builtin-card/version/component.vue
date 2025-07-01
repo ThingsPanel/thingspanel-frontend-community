@@ -25,7 +25,7 @@
           <template v-if="isLatestVersion" #icon>
             <Icon icon="carbon:checkmark-outline" class="text-lg" />
           </template>
-          {{ isLatestVersion?$t('card.versionInfo.latest'):'最新版本：'+(latestVersion||'--') }}
+          {{ isLatestVersion?$t('card.versionInfo.latest'):$t('card.versionInfo.latestVersion')+(latestVersion||'--') }}
         </n-tag>
       </div>
     </div>

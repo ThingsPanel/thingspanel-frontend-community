@@ -330,5 +330,6 @@
   "card.version": "Version",
   "card.versionInfo.currentVersion": "Current version",
   "card.versionInfo.latest": "It's latest",
+  "card.versionInfo.latestVersion": "Latest version: ",
   "card.versionInfo.title": "Version information"
 }

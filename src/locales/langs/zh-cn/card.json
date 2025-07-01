@@ -323,6 +323,7 @@
   "card.versionInfo.title": "版本信息",
   "card.versionInfo.currentVersion": "当前版本",
   "card.versionInfo.latest": "已是最新",
+  "card.versionInfo.latestVersion": "最新版本：",
   "card.deviceTemplate": "设备模板",
   "card.templateKey": "模板Key",
   "card.templateSecret": "模板Secret",

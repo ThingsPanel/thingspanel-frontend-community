@@ -13,7 +13,7 @@
         >
           <SvgIcon v-if="route.icon" :icon="route.icon" class="w-5 h-5 mr-3 text-blue-500 flex-shrink-0" />
           <span v-else class="w-5 h-5 mr-3 flex-shrink-0"></span>
-          <span class="text-sm text-gray-700 dark:text-gray-300 truncate mr-2">{{ route.title }}</span>
+          <span class="text-sm text-gray-700 dark:text-gray-300 truncate mr-2">{{ getRouteDisplayTitle(route) }}</span>
           <span class="ml-auto text-gray-400 dark:text-gray-500 text-xs">></span>
         </li>
         <li v-if="!visitedRoutes.length" class="text-sm text-gray-500 dark:text-gray-400 px-2 py-4 text-center">
@@ -53,7 +53,6 @@ const loadVisitedRoutes = () => {
       visitedRoutes.value = []
     }
   } catch (error) {
-    console.error('加载最近访问路由失败:', error)
     visitedRoutes.value = []
   }
 }
@@ -63,6 +62,21 @@ loadVisitedRoutes()
 
 const navigateTo = (path: string, query?: LocationQuery) => {
   router.push({ path, query })
+}
+
+// 获取路由显示标题，优先使用国际化翻译
+const getRouteDisplayTitle = (route: VisitedRoute): string => {
+  // 如果有i18nKey，则使用国际化翻译
+  if (route.i18nKey) {
+    try {
+      return $t(route.i18nKey as App.I18n.I18nKey)
+    } catch {
+      // 如果翻译失败，fallback到原始title
+      return route.title
+    }
+  }
+  // 否则使用原始title作为fallback
+  return route.title
 }
 
 onMounted(() => {
