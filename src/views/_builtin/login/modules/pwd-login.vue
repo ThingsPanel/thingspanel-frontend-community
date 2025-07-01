@@ -151,15 +151,10 @@ function loadSavedCredentials() {
 
 // 从环境变量加载自动登录凭据
 async function loadAutoLoginCredentials() {
-  const { VITE_AUTO_LOGIN_USERNAME, VITE_AUTO_LOGIN_PASSWORD } = import.meta.env
-  
   // 添加详细的调试信息
   console.log('=== 自动登录调试信息 ===')
-  console.log('当前环境模式:', import.meta.env.MODE)
   console.log('当前URL:', window.location.href)
   console.log('查询参数字符串:', window.location.search)
-  console.log('配置的用户名:', VITE_AUTO_LOGIN_USERNAME ? '已配置' : '未配置')
-  console.log('配置的密码:', VITE_AUTO_LOGIN_PASSWORD ? '已配置' : '未配置')
   
   // 检查路由参数
   const urlParams = new URLSearchParams(window.location.search)
@@ -170,23 +165,16 @@ async function loadAutoLoginCredentials() {
   console.log('auto参数值:', urlParams.get('auto'))
   console.log('URL中的用户名:', urlUsername ? '已提供' : '未提供')
   console.log('URL中的密码:', urlPassword ? '已提供' : '未提供')
+  console.log('是否满足自动登录条件:', autoLogin && urlUsername && urlPassword)
   
-  // 确定最终使用的账号密码（URL参数优先级高于环境变量）
-  const finalUsername = urlUsername || VITE_AUTO_LOGIN_USERNAME
-  const finalPassword = urlPassword || VITE_AUTO_LOGIN_PASSWORD
-  
-  console.log('最终使用的用户名:', finalUsername ? '已确定' : '未确定')
-  console.log('最终使用的密码:', finalPassword ? '已确定' : '未确定')
-  console.log('是否满足自动登录条件:', autoLogin && finalUsername && finalPassword)
-  
-  // 只在开发环境、有账号密码且路由参数包含auto=true时才自动登录
-  if (import.meta.env.MODE === 'development' && autoLogin && finalUsername && finalPassword) {
+  // 只要URL参数中有账号密码且auto=true就允许自动登录
+  if (autoLogin && urlUsername && urlPassword) {
     console.log('✅ 所有条件满足，开始自动登录...')
-    console.log('使用账号:', finalUsername)
+    console.log('使用账号:', urlUsername)
     
     // 设置表单数据
-    model.userName = finalUsername
-    model.password = finalPassword
+    model.userName = urlUsername
+    model.password = urlPassword
     
     // 延迟一下确保组件完全挂载
     setTimeout(async () => {
@@ -200,25 +188,18 @@ async function loadAutoLoginCredentials() {
     }, 500)
   } else {
     console.log('❌ 自动登录条件不满足:')
-    if (import.meta.env.MODE !== 'development') {
-      console.log('  - 当前不是开发环境')
-    }
     if (!autoLogin) {
       console.log('  - URL中未包含 auto=true 参数')
     }
-    if (!finalUsername) {
-      console.log('  - 没有可用的用户名（环境变量或URL参数）')
+    if (!urlUsername) {
+      console.log('  - URL中未提供用户名参数')
     }
-    if (!finalPassword) {
-      console.log('  - 没有可用的密码（环境变量或URL参数）')
+    if (!urlPassword) {
+      console.log('  - URL中未提供密码参数')
     }
     
-    if (import.meta.env.MODE === 'development') {
-      console.log('📝 使用方式:')
-      console.log('  方式1 (环境变量): 在.env.development中配置VITE_AUTO_LOGIN_USERNAME和VITE_AUTO_LOGIN_PASSWORD，然后访问: ?auto=true')
-      console.log('  方式2 (URL参数): 直接在URL中传递账号密码: ?auto=true&username=test@example.com&password=123456')
-      console.log('  当前URL示例: ' + window.location.origin + window.location.pathname + '?auto=true&username=test@example.com&password=123456')
-    }
+    console.log('📝 使用方式: 在URL中传递账号密码: ?auto=true&username=test@example.com&password=123456')
+    console.log('  当前URL示例: ' + window.location.origin + window.location.pathname + '?auto=true&username=test@example.com&password=123456')
   }
   console.log('=== 调试信息结束 ===')
 }
