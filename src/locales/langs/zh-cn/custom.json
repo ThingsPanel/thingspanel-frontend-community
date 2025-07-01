@@ -5,6 +5,7 @@
   "custom.devicePage.online": "在线",
   "custom.devicePage.offline": "离线",
   "custom.devicePage.deviceName": "设备名称",
+  "custom.devicePage.deviceNameOrNumber": "设备名称或编号",
   "custom.devicePage.lastPushTime": "最后推送时间",
   "custom.devicePage.onlineStatus": "在线状态",
   "custom.devicePage.details": "详情",

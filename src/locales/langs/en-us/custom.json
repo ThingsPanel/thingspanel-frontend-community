@@ -5,6 +5,7 @@
   "custom.devicePage.online": "Online",
   "custom.devicePage.offline": "Offline",
   "custom.devicePage.deviceName": "Device Name",
+  "custom.devicePage.deviceNameOrNumber": "Device Name or Number",
   "custom.devicePage.lastPushTime": "Last Push Time",
   "custom.devicePage.onlineStatus": "Online Status",
   "custom.devicePage.details": "Details",
