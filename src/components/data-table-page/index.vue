@@ -177,50 +177,6 @@ const generatedColumns = computed(() => {
         }
       };
     });
-    // 添加操作列
-    // columns.push({
-    //   title: $t('custom.groupPage.actions'),
-    //   key: 'actions',
-    //   width: 180,
-    //   render: row => (
-    //     <div
-    //       onClick={e => {
-    //         e.stopPropagation();
-    //       }}
-    //     >
-    //       <NSpace>
-    //         {tableActions.map(action => {
-    //           if (action.theKey === $t('custom.devicePage.delete') || action.theKey === '删除') {
-    //             return (
-    //               <NPopconfirm
-    //                 onPositiveClick={async e => {
-    //                   e.stopPropagation();
-    //                   await action.callback(row);
-    //                   // 删除后只刷新数据，不重置搜索条件
-    //                   getData();
-    //                 }}
-    //               >
-    //                 {{
-    //                   trigger: () => (
-    //                     <NButton type="error" size="small">
-    //                       {typeof action.label === 'function' ? action.label() : action.label || ''}
-    //                     </NButton>
-    //                   ),
-    //                   default: () => $t('common.confirmDelete')
-    //                 }}
-    //               </NPopconfirm>
-    //             );
-    //           }
-    //           return (
-    //             <NButton type="primary" size="small" onClick={() => action.callback(row)}>
-    //               {typeof action.label === 'function' ? action.label() : action.label || ''}
-    //             </NButton>
-    //           );
-    //         })}
-    //       </NSpace>
-    //     </div>
-    //   )
-    // });
   }
 
   return columns || [];
