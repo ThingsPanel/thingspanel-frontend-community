@@ -1,5 +1,5 @@
 {
-  "default": "",
+  "default": "默认",
   "title": "ThingsPanel",
   "system.title": "System Name: {name}",
   "system.description": "连接万物，智慧生活",
@@ -2153,7 +2153,7 @@
   "grouping_details.subGroup": "子组",
   "route.device_access": "服务访问",
   "route.walarm_arning-message": "警告消息",
-  "custom.visualization.onlyOneHomepage": "",
+  "custom.visualization.onlyOneHomepage": "仅允许一个首页",
   "custom.device_details.chart": "图表",
   "page.function.multiTab.routeParam": "路由参数",
   "page.function.multiTab.backTab": "返回标签页",

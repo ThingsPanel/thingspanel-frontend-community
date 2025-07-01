@@ -1,5 +1,5 @@
 {
-  "default": "",
+  "default": "default",
   "title": "ThingsPanel",
   "system.title": "ThingsPanel",
   "system.description": "Connect Everything, Smart Living",
@@ -2189,6 +2189,7 @@
   "custom.home.title": "Failed to Load Home Configuration",
   "custom.home.description": "Please try refreshing the page to reload the configuration",
   "custom.home.refresh": "Refresh",
+  "custom.visualization.onlyOneHomepage": "Only one homepage is allowed",
   "custom.management.uploadFailed": "Upload failed",
   "custom.management.configSetting": "Configuration Settings",
   "custom.management.lastAccessTime": "Last Access Time",
