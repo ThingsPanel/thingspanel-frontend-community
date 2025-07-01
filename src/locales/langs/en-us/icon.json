@@ -1,0 +1,12 @@
+{
+  "icon.themeConfig": "Theme Config",
+  "icon.themeSchema": "Theme Mode",
+  "icon.lang": "Switch Language",
+  "icon.fullscreen": "Fullscreen",
+  "icon.fullscreenExit": "Exit Fullscreen",
+  "icon.reload": "Reload Page",
+  "icon.collapse": "Collapse Menu",
+  "icon.expand": "Expand Menu",
+  "icon.pin": "Pin",
+  "icon.unpin": "Unpin"
+}

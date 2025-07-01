@@ -1,0 +1,12 @@
+{
+  "icon.themeConfig": "主题配置",
+  "icon.themeSchema": "主题模式",
+  "icon.lang": "切换语言",
+  "icon.fullscreen": "全屏",
+  "icon.fullscreenExit": "退出全屏",
+  "icon.reload": "刷新页面",
+  "icon.collapse": "折叠菜单",
+  "icon.expand": "展开菜单",
+  "icon.pin": "固定",
+  "icon.unpin": "取消固定"
+}
