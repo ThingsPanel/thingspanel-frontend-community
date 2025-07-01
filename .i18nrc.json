@@ -1,4 +1,7 @@
 {
+  "languageTagSystem": "legacy",
+  "pathMatcher": "src/locales/langs/{locale}/*.json",
+  "fileStructure": "file",
   "keyPattern": {
     "type": "nested",
     "separator": ".",

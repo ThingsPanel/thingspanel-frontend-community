@@ -38,6 +38,7 @@
   "custom.devicePage.byProtocol": "By Protocol",
   "custom.devicePage.byService": "By Service",
   "custom.devicePage.group": "Group",
+  "custom.devicePage.selectGroup": "Select Group",
   "custom.devicePage.unlimitedOnlineStatus": "Unlimited Online Status",
   "custom.devicePage.unlimitedAlarmStatus": "Unlimited Alarm Status",
   "custom.devicePage.alarm": "Alarm",

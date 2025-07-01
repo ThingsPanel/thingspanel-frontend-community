@@ -38,6 +38,7 @@
   "custom.devicePage.byProtocol": "协议接入",
   "custom.devicePage.byService": "服务接入",
   "custom.devicePage.group": "分组",
+  "custom.devicePage.selectGroup": "选择分组",
   "custom.devicePage.unlimitedOnlineStatus": "不限在线状态",
   "custom.devicePage.unlimitedAlarmStatus": "不限报警状态",
   "custom.devicePage.alarm": "报警",
