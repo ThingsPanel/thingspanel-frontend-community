@@ -42,3 +42,8 @@ src/typings/components.d.ts
 
 
 
+项目介绍.txt
+.env.development
+split-for-development.cjs
+scripts/re.ps1
+.env.development

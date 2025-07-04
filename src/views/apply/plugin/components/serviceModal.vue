@@ -48,13 +48,14 @@ const openModal: (row: any) => void = row => {
     isEdit.value = true
     Object.assign(form.value, row)
   } else {
-    Object.assign(form.value, defaultForm)
+    isEdit.value = false
+    form.value = { ...defaultForm }
   }
   serviceModal.value = true
 }
 const close: () => void = () => {
   serviceModal.value = false
-  Object.assign(form.value, defaultForm)
+  form.value = { ...defaultForm }
 }
 const submitSevice: () => void = async () => {
   formRef.value?.validate(async errors => {
