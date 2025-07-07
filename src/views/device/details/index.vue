@@ -50,7 +50,7 @@ let components = [
   },
   {
     key: 'device-analysis',
-    name: () => $t('custom.device_details.deviceAnalysis'),
+    name: () => $t('custom.device_details.subdevice'),
     component: DeviceAnalysis,
     refreshKey: 0
   },

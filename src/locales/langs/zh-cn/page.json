@@ -117,6 +117,7 @@
   "page.login.common.getCode": "获取验证码",
   "page.login.common.emailRegistered": "邮箱已被注册",
   "page.login.common.rememberPath": "在此浏览器上记住路径",
+  "page.login.common.noAccount": "还没有账号?",
   "page.login.common.countingLabel": "{second}秒后重新获取",
   "page.login.common.phoneRequired": "手机号不能为空！",
   "page.login.common.phoneInvalid": "手机号格式错误！",

@@ -96,7 +96,7 @@
   "route.alarm_notification-group": "通知组",
   "route.alarm_notification-record": "通知记录",
   "route.alarm_warning-message": "告警信息",
-  "route.management_notification": "通知服务配置",
+  "route.management_notification": "通知配置",
   "route.irrigation": "灌溉计划",
   "route.irrigation_time": "定时灌溉",
   "route.irrigation_group": "群灌计划",

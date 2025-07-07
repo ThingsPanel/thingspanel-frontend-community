@@ -1,4 +1,5 @@
 {
-  "system.title": "ThingsPanel",
+"system.title": "System Name: {name}",
+  "system.screen": "Visualization large screen",
   "system.description": "Connect Everything, Smart Living"
 }

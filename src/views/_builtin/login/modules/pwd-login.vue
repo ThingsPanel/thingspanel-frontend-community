@@ -288,7 +288,7 @@ onMounted(() => {
           quaternary
           @click="toggleLoginModule('register-email')"
         >
-          <span class="text-#999">还没有账号?</span>
+          {{ $t('page.login.common.noAccount') }}
           {{ $t(loginModuleRecord.register) }}
         </NButton>
       </div>

@@ -1,11 +1,13 @@
 import type { Router } from 'vue-router'
 import { useTitle } from '@vueuse/core'
 import { $t } from '@/locales'
+import { useSysSettingStore } from '@/store/modules/sys-setting'
 
 export function createDocumentTitleGuard(router: Router) {
   router.afterEach(to => {
+    const sysSettingStore = useSysSettingStore()
     const { i18nKey, title } = to.meta
-    const appTitle = import.meta.env.VITE_APP_TITLE
+    const appTitle = sysSettingStore.system_name === '' ? $t('title') : sysSettingStore.system_name
     let routeTitle = ''
 
     // 处理登录页面的子路由
@@ -30,7 +32,7 @@ export function createDocumentTitleGuard(router: Router) {
     }
 
     // 组合完整标题：应用标题 - 路由标题
-    const documentTitle = routeTitle ? `${appTitle} - ${routeTitle}` : appTitle
+    const documentTitle = routeTitle ? `${routeTitle}-${appTitle}` : appTitle
 
     useTitle(documentTitle)
   })

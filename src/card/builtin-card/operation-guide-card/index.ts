@@ -47,11 +47,13 @@ export default {
         },
         {
           titleKey: 'card.operationGuideAdmin.guideItems.configureNotification.title',
-          descriptionKey: 'card.operationGuideAdmin.guideItems.configureNotification.description'
+          descriptionKey: 'card.operationGuideAdmin.guideItems.configureNotification.description',
+          link: '/management/notification'
         },
         {
           titleKey: 'card.operationGuideAdmin.guideItems.configurePlugin.title',
-          descriptionKey: 'card.operationGuideAdmin.guideItems.configurePlugin.description'
+          descriptionKey: 'card.operationGuideAdmin.guideItems.configurePlugin.description',
+          link: 'apply/plugin'
         }
       ]
     },

@@ -1,7 +1,7 @@
 <template>
   <div class="p-4 border rounded h-full flex flex-col justify-center items-center text-center">
     <div
-      class="p-6 rounded-lg border border-gray-300 dark:border-gray-700 shadow-md backdrop-blur-sm hover:shadow-lg transition-shadow duration-300 w-full bg-gradient-to-tr from-purple-100 via-blue-100 to-green-100 dark:from-gray-800 dark:to-slate-900"
+      class="p-6  backdrop-blur-sm hover:shadow-lg transition-shadow duration-300 w-full  dark:from-gray-800 dark:to-slate-900"
     >
 
       <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-3">
@@ -54,13 +54,13 @@ onMounted(async() => {
     console.warn('获取最新版本信息失败:', error)
     latestVersion.value = '--'
   }
-  
+
   // 获取当前系统版本
   const ver = await getSysVersion()
   if(ver){
     version.value = ver?.data?.version || '--'
   }
-  
+
   // 比较版本信息
   if(latestVersion.value && version.value && latestVersion.value === version.value){
     console.log('最新版本');

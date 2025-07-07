@@ -117,6 +117,7 @@
   "page.login.common.getCode": "Get Code",
   "page.login.common.emailRegistered": "Email is already registered",
   "page.login.common.rememberPath": "Remember path on this browser",
+  "page.login.common.noAccount": "Don't have an account?",
   "page.login.common.countingLabel": "Resend in {second}s",
   "page.login.common.phoneRequired": "Phone number is required",
   "page.login.common.phoneInvalid": "Invalid phone number format",
