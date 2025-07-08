@@ -13,8 +13,12 @@ import {
   setDeviceScriptEnable
 } from '@/service/api/device'
 import { $t } from '@/locales'
+import { useI18n } from 'vue-i18n'
 import { createLogger } from '@/utils/logger'
 const logger = createLogger('DataHandle')
+
+// 获取国际化函数
+const { t } = useI18n()
 // const message = useMessage();
 const dialog = useDialog()
 
@@ -222,14 +226,62 @@ const deleteData = async (item: any) => {
 const doQuiz = async () => {
   await configFormRef?.value?.validate()
 
-  dataScriptQuiz(configForm.value).then(({ data }: any) => {
-    configForm.value.resolt_analog_input = data ? JSON.stringify(data, null, 2) : ''
-  })
-  // const { data, error } = await dataScriptQuiz(configForm.value);
-  // if (!error) {
-  //   console.log(data);
-  //   // configForm.value.resolt_analog_input = data.message || '';
-  // }
+  try {
+    const response = await dataScriptQuiz(configForm.value)
+    
+    // 添加详细调试信息
+    console.log('调试响应完整对象:', response)
+    console.log('response的所有属性:', Object.keys(response))
+    
+    // 检查是否是错误响应结构 {data: null, error: {...}}
+    if (response.error && response.data === null) {
+      console.log('检测到错误响应结构:', response.error)
+      // 处理网络错误或后端错误
+        const errorInfo = response.error
+        const errorMessage = errorInfo.message || t('page.dataForward.requestFailed')
+        configForm.value.resolt_analog_input = `${t('page.dataForward.debugFailed')}\n${t('page.dataForward.errorType')}: ${errorInfo.name || 'Unknown'}\n${t('page.dataForward.errorCode')}: ${errorInfo.code || 'N/A'}\n${t('page.dataForward.errorMessage')}: ${errorMessage}`
+      return
+    }
+    
+    // 检查响应结构，可能是嵌套的
+    let actualResponse = response
+    
+    // 如果response.data存在且包含code属性，说明真正的响应在response.data中
+    if (response.data && typeof response.data === 'object' && 'code' in response.data) {
+      actualResponse = response.data
+      console.log('检测到嵌套响应结构，使用response.data作为实际响应')
+    }
+    
+    console.log('实际响应对象:', actualResponse)
+    console.log('actualResponse.code类型:', typeof actualResponse.code, '值:', actualResponse.code)
+    console.log('actualResponse.data类型:', typeof actualResponse.data, '值:', actualResponse.data)
+    console.log('actualResponse.message:', actualResponse.message)
+    
+    // 根据返回的code值决定显示内容
+    // 使用宽松比较，因为code可能是字符串"200"
+    if (actualResponse.code == 200 || actualResponse.code === '200') {
+      // code为200时显示data的值
+      if (typeof actualResponse.data === 'string') {
+          // 如果data是字符串，直接显示（包括"null"字符串）
+          configForm.value.resolt_analog_input = actualResponse.data === 'null' ? t('page.dataForward.debugSuccessWithNull') : actualResponse.data
+        } else if (actualResponse.data === null || actualResponse.data === undefined) {
+          // 如果data是null或undefined
+          configForm.value.resolt_analog_input = t('page.dataForward.debugSuccessWithNull')
+      } else {
+        // 如果data是对象，转换为JSON字符串
+        configForm.value.resolt_analog_input = JSON.stringify(actualResponse.data, null, 2)
+      }
+    } else {
+      // code不为200时显示错误信息
+        // 优先显示message，如果message为空则显示默认错误信息
+        const errorMessage = actualResponse.message || t('page.dataForward.noErrorMessage')
+        configForm.value.resolt_analog_input = `${t('page.dataForward.debugFailed')}\ncode: ${actualResponse.code}\nmessage: ${errorMessage}`
+    }
+  } catch (error) {
+      // 处理请求异常
+      console.error('调试请求异常:', error)
+      configForm.value.resolt_analog_input = t('page.dataForward.debugRequestFailed') + ': ' + (error.message || t('page.dataForward.unknownError'))
+    }
 }
 
 const cmRef = ref()
