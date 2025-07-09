@@ -89,7 +89,6 @@
     "vue-echarts": "^7.0.3",
     "vue-i18n": "11.1.5",
     "vue-router": "4.2.5",
-    "vue3-drr-grid-layout": "^1.9.7",
     "vue3-grid-layout": "^1.0.0",
     "vuedraggable": "4.1.0",
     "wangeditor": "4.7.15",
