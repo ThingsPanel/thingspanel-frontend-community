@@ -11,11 +11,11 @@ declare module 'vue' {
     AppProvider: typeof import('./../components/common/app-provider.vue')['default']
     BetterScroll: typeof import('./../components/custom/better-scroll.vue')['default']
     ButtonIcon: typeof import('./../components/custom/button-icon.vue')['default']
-    CardConfig: typeof import('./../components/panel/builtin-card/bug-num/card-config.vue')['default']
+
     CardForm: typeof import('./../components/panel/ui/card-form.vue')['default']
     CardItem: typeof import('./../components/panel/ui/card-item.vue')['default']
     CardRender: typeof import('./../components/panel/ui/card-render.vue')['default']
-    Component: typeof import('./../components/panel/builtin-card/bug-num/component.vue')['default']
+
     ConfigCtx: typeof import('./../components/panel/ui/config-ctx.vue')['default']
     Content: typeof import('./../components/content/index.vue')['default']
     CountTo: typeof import('./../components/custom/count-to.vue')['default']
