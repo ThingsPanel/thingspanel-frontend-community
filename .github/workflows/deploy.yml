@@ -26,104 +26,31 @@ jobs:
 
       - name: Install dependencies and build
         run: |
-          echo "Starting installation of pnpm..."
           npm install -g pnpm@8.15.5
-          echo "pnpm installed. Starting dependency installation..."
           pnpm i
-          echo "Dependencies installed. Starting build..."
           pnpm run build:4096
-          echo "Build completed."
 
-      - name: Verify build output
-        run: |
-          echo "Verifying build output..."
-          if [ ! -d "dist" ]; then
-            echo "ERROR: dist directory not found!"
-            exit 1
-          fi
-          echo "✓ dist directory exists"
-          
-          if [ ! -f "dist/index.html" ]; then
-            echo "ERROR: dist/index.html not found!"
-            exit 1
-          fi
-          echo "✓ dist/index.html exists"
-          
-          echo "Listing dist directory contents:"
-          ls -la dist/
-          
-          echo "Build verification completed successfully."
+      - name: Compress build output
+        run: tar -czf dist.tar.gz -C dist .
 
-      - name: Clean up target directory
-        uses: appleboy/ssh-action@master
+      - name: Deploy via SCP
+        uses: cross-the-world/ssh-scp-ssh-pipelines@latest
         with:
           host: ${{ secrets.C_HOST }}
-          username: ${{ secrets.C_USER }}
-          password: ${{ secrets.C_PASS }}
-          script: |
+          user: ${{ secrets.C_USER }}
+          pass: ${{ secrets.C_PASS }}
+          scp: './dist.tar.gz => /home/thingspanel/nginx/www'
+          last_ssh: |
+            echo "Starting deployment..."
             cd /home/thingspanel/nginx/www
-            # Clean up old application files
-            rm -rf assets index.html favicon.svg *.js *.css *.map
-            echo "Target directory cleaned."
-
-      - name: Install SSH Pass
-        run: sudo apt-get install sshpass -y
-
-      - name: Copy dist files to server
-        env:
-          HOST: ${{ secrets.C_HOST }}
-          USER: ${{ secrets.C_USER }}
-          PASS: ${{ secrets.C_PASS }}
-        run: |
-          echo "Starting file copy to server..."
-          sshpass -p $PASS scp -o StrictHostKeyChecking=no -r dist/* $USER@$HOST:/home/thingspanel/nginx/www/
-          echo "File copy completed."
-
-      - name: Verify server files and set permissions
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.C_HOST }}
-          username: ${{ secrets.C_USER }}
-          password: ${{ secrets.C_PASS }}
-          script: |
-            echo "Starting deployment verification..."
-            cd /home/thingspanel/nginx/www
-            
-            # Verify critical files exist
-            if [ ! -f index.html ]; then
-              echo "ERROR: index.html not found on server!"
-              echo "Current directory contents:"
-              ls -la
-              exit 1
-            fi
-            echo "✓ index.html exists on server"
-            
-            # Check for assets directory
-            if [ ! -d assets ]; then
-              echo "WARNING: assets directory not found!"
-            else
-              echo "✓ assets directory exists"
-            fi
-            
-            echo "Listing all files in target directory:"
-            ls -la
-            
-            # Set correct ownership and permissions for Nginx
-            echo "Setting file permissions..."
-            chown -R www-data:www-data .
-            chmod -R 644 .
-            chmod 755 .
-            
-            # Ensure index.html is readable
-            chmod 644 index.html
-            echo "✓ File permissions set correctly"
-            
-            # Verify index.html content
-            echo "Verifying index.html content (first 200 characters):"
-            head -c 200 index.html
-            echo ""
-            
-            # Test nginx configuration and reload the service
-            echo "Testing nginx configuration..."
+            # Create dist directory if it doesn't exist
+            mkdir -p dist
+            # Clean up old files in dist directory
+            rm -rf dist/*
+            # Extract new files to dist directory
+            tar -xzf dist.tar.gz -C dist
+            # Remove the tar file
+            rm dist.tar.gz
+            # Test nginx and reload
             nginx -t && nginx -s reload
-            echo "✓ Deployment completed successfully."
+            echo "Deployment completed successfully."
