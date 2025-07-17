@@ -26,21 +26,36 @@ jobs:
 
       - name: Install dependencies and build
         run: |
+          echo "Starting installation of pnpm..."
           npm install -g pnpm@8.15.5
+          echo "pnpm installed. Starting dependency installation..."
           pnpm i
+          echo "Dependencies installed. Starting build..."
           pnpm run build:4096
+          echo "Build completed."
 
       - name: Compress build output
         run: tar -czf dist.tar.gz -C dist .
 
-      - name: Copy file to server
-        uses: appleboy/scp-action@master
+      - name: Clean up target directory
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.C_HOST }}
           username: ${{ secrets.C_USER }}
           password: ${{ secrets.C_PASS }}
-          source: "dist.tar.gz"
-          target: "/home/thingspanel/nginx/www/"
+          script: |
+            cd /home/thingspanel/nginx/www
+            rm -f dist.tar.gz
+
+      - name: Install SSH Pass
+        run: sudo apt-get install sshpass -y
+
+      - name: Copy file to server
+        env:
+          HOST: ${{ secrets.C_HOST }}
+          USER: ${{ secrets.C_USER }}
+          PASS: ${{ secrets.C_PASS }}
+        run: sshpass -p $PASS scp -o StrictHostKeyChecking=no dist.tar.gz $USER@$HOST:/home/thingspanel/nginx/www/
 
       - name: Deploy to server
         uses: appleboy/ssh-action@master
