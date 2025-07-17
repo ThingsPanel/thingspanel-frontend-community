@@ -37,7 +37,7 @@
     "release": "sa release",
     "start": "cross-env VITE_SERVICE_ENV=dev vite",
     "tsx": "tsx",
-    "typecheck": "cross-env NODE_OPTIONS=--max-old-space-size=4096 vue-tsc --noEmit --skipLibCheck",
+    "typecheck": "set NODE_OPTIONS=--max-old-space-size=4096 vue-tsc --noEmit --skipLibCheck",
     "update-pkg": "sa update-pkg"
   },
   "dependencies": {
