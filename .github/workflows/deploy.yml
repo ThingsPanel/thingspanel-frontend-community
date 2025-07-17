@@ -28,7 +28,7 @@ jobs:
         run: |
           npm install -g pnpm@8.15.5
           pnpm i
-          pnpm build:4096
+          pnpm build
 
       - name: Compress build output
         run: tar -czf dist.tar.gz -C dist .
@@ -48,6 +48,9 @@ jobs:
             rm -rf assets index.html favicon.svg
             # Extract the archive directly into the web root
             tar -xzf dist.tar.gz
+            # Set the correct permissions for the files
+            chown -R www-data:www-data /home/thingspanel/nginx/www
+            chmod -R 755 /home/thingspanel/nginx/www
             # Remove the archive file after extraction
             rm dist.tar.gz
             # Test nginx configuration and reload the service
