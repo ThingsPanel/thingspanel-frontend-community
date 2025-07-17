@@ -33,17 +33,18 @@ jobs:
       - name: Compress build output
         run: tar -czf dist.tar.gz -C dist .
 
-      - name: Deploy via SCP
-        uses: cross-the-world/ssh-scp-ssh-pipelines@latest
+      - name: Deploy to server
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.C_HOST }}
-          user: ${{ secrets.C_USER }}
-          pass: ${{ secrets.C_PASS }}
-          scp: './dist.tar.gz => /home/thingspanel/nginx/www'
-          last_ssh: |
+          username: ${{ secrets.C_USER }}
+          password: ${{ secrets.C_PASS }}
+          source: "dist.tar.gz"
+          target: "/home/thingspanel/nginx/www"
+          script: |
             echo "Starting deployment..."
             cd /home/thingspanel/nginx/www
-            rm /home/thingspanel/nginx/www/dist/assets
+            rm -rf /home/thingspanel/nginx/www/dist/assets
             tar -xzf dist.tar.gz -C /home/thingspanel/nginx/www/dist
             rm dist.tar.gz
             nginx -t && nginx -s reload
