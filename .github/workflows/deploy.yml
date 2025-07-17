@@ -44,8 +44,8 @@ jobs:
           script: |
             echo "Starting deployment..."
             cd /home/thingspanel/nginx/www
-            rm -rf /home/thingspanel/nginx/www/dist/assets
-            tar -xzf dist.tar.gz -C /home/thingspanel/nginx/www/dist
+            rm -rf dist
+            tar -xzf dist.tar.gz
             rm dist.tar.gz
             nginx -t && nginx -s reload
             echo "Deployment completed successfully."
