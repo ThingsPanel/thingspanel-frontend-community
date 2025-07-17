@@ -33,24 +33,42 @@ jobs:
       - name: Compress build output
         run: tar -czf dist.tar.gz -C dist .
 
-      - name: Deploy via SCP
-        uses: cross-the-world/ssh-scp-ssh-pipelines@latest
+      - name: Clean target directory
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.C_HOST }}
-          user: ${{ secrets.C_USER }}
-          pass: ${{ secrets.C_PASS }}
-          scp: './dist.tar.gz => /home/thingspanel/nginx/www'
-          last_ssh: |
-            echo "Starting deployment..."
+          username: ${{ secrets.C_USER }}
+          password: ${{ secrets.C_PASS }}
+          script: |
+            echo "Cleaning target directory..."
             cd /home/thingspanel/nginx/www
+            # Remove old dist.tar.gz if exists (file or directory)
+            rm -rf dist.tar.gz
             # Create dist directory if it doesn't exist
             mkdir -p dist
             # Clean up old files in dist directory
             rm -rf dist/*
+
+      - name: Install SSH Pass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Copy files to server
+        run: |
+          sshpass -p "${{ secrets.C_PASS }}" scp -o StrictHostKeyChecking=no dist.tar.gz ${{ secrets.C_USER }}@${{ secrets.C_HOST }}:/home/thingspanel/nginx/www/
+
+      - name: Deploy on server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.C_HOST }}
+          username: ${{ secrets.C_USER }}
+          password: ${{ secrets.C_PASS }}
+          script: |
+            echo "Starting deployment..."
+            cd /home/thingspanel/nginx/www
             # Extract new files to dist directory
             tar -xzf dist.tar.gz -C dist
             # Remove the tar file
-            rm dist.tar.gz
+            rm -f dist.tar.gz
             # Test nginx and reload
             nginx -t && nginx -s reload
             echo "Deployment completed successfully."
