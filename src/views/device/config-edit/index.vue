@@ -294,6 +294,7 @@ onMounted(async () => {
 
 // 新增：处理设备类型变更的函数
 function handleDeviceTypeChange(newValue: string | number) {
+  configFormRef.value?.restoreValidation()
   // 在 script 块中访问，类型检查通常更可靠
   if (!configForm.value) {
     // 可以保留检查以防万一
@@ -303,6 +304,7 @@ function handleDeviceTypeChange(newValue: string | number) {
   protocol_config.value = {}
   configForm.value.voucher_type = null
   configForm.value.protocol_type = null
+  formElements.value = []
   getProtocolList(newValue)
 }
 
@@ -368,6 +370,7 @@ function handleDeviceTypeChange(newValue: string | number) {
           </NFormItem>
 
           <NFormItem
+            v-if="connectOptions.length > 0"
             v-show="configForm.device_type === '1' || configForm.device_type === '2'"
             class="w-[600px]"
             :label="$t('generate.authentication-type')"
