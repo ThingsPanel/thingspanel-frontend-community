@@ -28,7 +28,7 @@ jobs:
         run: |
           npm install -g pnpm@8.15.5
           pnpm i
-          pnpm build
+          pnpm run build:4096
 
       - name: Compress build output
         run: tar -czf dist.tar.gz -C dist .
