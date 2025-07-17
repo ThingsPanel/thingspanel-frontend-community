@@ -45,7 +45,8 @@ jobs:
           password: ${{ secrets.C_PASS }}
           script: |
             cd /home/thingspanel/nginx/www
-            rm -f dist.tar.gz
+            # Remove dist.tar.gz whether it's a file or directory
+            rm -rf dist.tar.gz
 
       - name: Install SSH Pass
         run: sudo apt-get install sshpass -y
