@@ -44,9 +44,12 @@ jobs:
           script: |
             echo "Starting deployment..."
             cd /home/thingspanel/nginx/www
-            rm -rf dist
-            mkdir dist
-            tar -xzf dist.tar.gz -C dist
+            # Clean up old application files before deploying new ones
+            rm -rf assets index.html favicon.svg
+            # Extract the archive directly into the web root
+            tar -xzf dist.tar.gz
+            # Remove the archive file after extraction
             rm dist.tar.gz
+            # Test nginx configuration and reload the service
             nginx -t && nginx -s reload
             echo "Deployment completed successfully."
