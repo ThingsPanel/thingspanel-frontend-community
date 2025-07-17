@@ -380,7 +380,7 @@ function handleDeviceTypeChange(newValue: string | number) {
             ></NSelect>
           </NFormItem>
         </template>
-        <NFormItem v-if="configForm.device_type === '3'">
+      <NFormItem v-if="configForm.device_type && formElements.length > 0">
           <FormInput v-model:protocol-config="protocol_config" :form-elements="formElements"></FormInput>
         </NFormItem>
         <NFlex justify="flex-start">
