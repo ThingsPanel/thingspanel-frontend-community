@@ -40,7 +40,7 @@ jobs:
           username: ${{ secrets.C_USER }}
           password: ${{ secrets.C_PASS }}
           source: "dist.tar.gz"
-          target: "/home/thingspanel/nginx/www/dist.tar.gz"
+          target: "/home/thingspanel/nginx/www/"
 
       - name: Deploy to server
         uses: appleboy/ssh-action@master
@@ -53,6 +53,8 @@ jobs:
             cd /home/thingspanel/nginx/www
             echo "Listing files in target directory:"
             ls -la
+            # Remove dist.tar.gz if it is a directory
+            if [ -d dist.tar.gz ]; then rm -rf dist.tar.gz; fi
             # Clean up old application files before deploying new ones
             rm -rf assets index.html favicon.svg
             # Extract the archive directly into the web root
