@@ -48,11 +48,11 @@ jobs:
             rm -rf assets index.html favicon.svg
             # Extract the archive directly into the web root
             tar -xzf dist.tar.gz
-            # Set the correct permissions for the files
-            chown -R www-data:www-data /home/thingspanel/nginx/www
-            chmod -R 755 /home/thingspanel/nginx/www
+            # Set correct ownership and permissions for Nginx
+            chown -R root:root .
+            chmod -R 755 .
             # Remove the archive file after extraction
-            rm dist.tar.gz
+            rm -f dist.tar.gz
             # Test nginx configuration and reload the service
             nginx -t && nginx -s reload
             echo "Deployment completed successfully."
