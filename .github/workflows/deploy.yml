@@ -33,17 +33,26 @@ jobs:
       - name: Compress build output
         run: tar -czf dist.tar.gz -C dist .
 
+      - name: Copy file to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.C_HOST }}
+          username: ${{ secrets.C_USER }}
+          password: ${{ secrets.C_PASS }}
+          source: "dist.tar.gz"
+          target: "/home/thingspanel/nginx/www/dist.tar.gz"
+
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.C_HOST }}
           username: ${{ secrets.C_USER }}
           password: ${{ secrets.C_PASS }}
-          source: "dist.tar.gz"
-          target: "/home/thingspanel/nginx/www"
           script: |
             echo "Starting deployment..."
             cd /home/thingspanel/nginx/www
+            echo "Listing files in target directory:"
+            ls -la
             # Clean up old application files before deploying new ones
             rm -rf assets index.html favicon.svg
             # Extract the archive directly into the web root
