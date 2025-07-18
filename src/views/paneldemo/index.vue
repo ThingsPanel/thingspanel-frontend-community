@@ -1,7 +1,7 @@
 <template>
-  <PanelDemo />
+  <PanelV2Demo />
 </template>
 
 <script lang="ts" setup>
-import PanelDemo from './PanelDemo.vue';
+import PanelV2Demo from '@/components/panelv2/demo/PanelV2Demo.vue';
 </script>

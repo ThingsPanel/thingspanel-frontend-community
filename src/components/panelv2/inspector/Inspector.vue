@@ -8,6 +8,8 @@
         <component
           :is="resolveInspectorComponent(configItem.inspector)"
           :modelValue="configItem.value"
+          :label="configItem.label || key"
+          :description="configItem.description"
           v-bind="configItem"
           @update:modelValue="panelStore.updateConfigValue({ configKey: key, newValue: $event, cardId: selectedItem?.id || undefined })"
         />
@@ -50,9 +52,11 @@ const resolveInspectorComponent = (inspectorName: string) => {
 .inspector {
   width: 300px;
   background-color: #ffffff;
-  border-left: 1px solid #e8e8e8;
   padding: 16px;
   overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .inspector-content h4 {

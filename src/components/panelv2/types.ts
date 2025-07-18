@@ -3,11 +3,13 @@
 // --- 基础配置单元 ---
 /**
  * @description 定义一个配置项，包含其值和对应的配置器组件标识。
- * 这是实现“配置驱动”的基础。
+ * 这是实现"配置驱动"的基础。
  */
 export interface ConfigItem<T> {
   value: T // 配置的实际值
   inspector: string // 指向 InspectorRegistry 的 key，告诉UI应渲染哪个配置器组件
+  label?: string // 配置项的显示标签
+  description?: string // 配置项的描述信息
 }
 
 // --- 卡片数据结构 ---

@@ -1,20 +1,18 @@
 <template>
-  <div style="height: 100vh; width: 100vw;">
-    <PanelV2
-      :initialState="initialState"
-      :toolbarActions="toolbarActions"
-      :draggableItems="draggableItems"
-      :inspectorRegistry="inspectorRegistry"
-    >
-      <!-- 这是新架构的核心：渲染逻辑由用户在插槽中定义 -->
-      <template #card="{ cardData }">
-        <component
-          :is="cardRenderRegistry[cardData.type]"
-          :config="cardData.config"
-        />
-      </template>
-    </PanelV2>
-  </div>
+  <PanelV2
+    :initialState="initialState"
+    :toolbarActions="toolbarActions"
+    :draggableItems="draggableItems"
+    :inspectorRegistry="inspectorRegistry"
+  >
+    <!-- 这是新架构的核心：渲染逻辑由用户在插槽中定义 -->
+    <template #card="{ cardData }">
+      <component
+        :is="cardRenderRegistry[cardData.type]"
+        :config="cardData.config"
+      />
+    </template>
+  </PanelV2>
 </template>
 
 <script lang="ts" setup>
@@ -103,8 +101,16 @@ const draggableItems: DraggableItem[] = [
 /* 引入 Font Awesome 或其他图标库 */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 
-body {
+/* 确保全局样式不影响布局 */
+html, body {
   margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+#app {
+  height: 100%;
 }
 </style>

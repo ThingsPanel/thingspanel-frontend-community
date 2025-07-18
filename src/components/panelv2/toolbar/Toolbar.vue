@@ -7,8 +7,9 @@
       :title="action.tooltip"
       @click="$emit('execute', action.action)"
     >
-      <!-- 在这里可以使用图标库，例如 Font Awesome -->
-      <i :class="action.icon"></i>
+      <!-- 支持 emoji 图标和 CSS 类图标 -->
+      <span v-if="action.icon && !action.icon.includes(' ')" class="icon-emoji">{{ action.icon }}</span>
+      <i v-else :class="action.icon"></i>
     </button>
   </div>
 </template>
@@ -46,5 +47,11 @@ defineEmits(['execute']);
 .toolbar-button:hover {
   background-color: #f0f0f0;
   color: #000;
+}
+
+.icon-emoji {
+  font-size: 16px;
+  line-height: 1;
+  display: inline-block;
 }
 </style>

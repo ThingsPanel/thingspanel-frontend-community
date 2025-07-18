@@ -1,11 +1,17 @@
 <template>
-  <div class="canvas-wrapper" @dragover.prevent @drop="onDrop">
+  <div 
+    class="canvas-wrapper" 
+    :style="{ backgroundColor: canvasBackgroundColor }"
+    @dragover.prevent 
+    @drop="onDrop" 
+    @click="onCanvasClick"
+  >
     <div ref="gridstackContainer" class="grid-stack"></div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch, nextTick, useSlots, h, render } from 'vue';
+import { ref, onMounted, watch, nextTick, useSlots, h, render, computed } from 'vue';
 import 'gridstack/dist/gridstack.min.css';
 import { GridStack } from 'gridstack';
 import type { GridStackElement, GridStackNode } from 'gridstack';
@@ -17,6 +23,12 @@ const gridstackContainer = ref<GridStackElement>();
 let grid: GridStack | null = null;
 
 const slots = useSlots();
+
+// --- 计算属性：画布背景颜色 ---
+const canvasBackgroundColor = computed(() => {
+  const bgConfig = panelStore.config.backgroundColor;
+  return bgConfig?.value || '#f5f5f5';
+});
 
 // --- Gridstack 初始化 ---
 onMounted(() => {
@@ -55,6 +67,12 @@ const loadCards = (cards: PanelCard[]) => {
   cards.forEach(card => {
     const cardEl = document.createElement('div');
     cardEl.setAttribute('data-card-id', card.id);
+    
+    // 添加点击事件处理卡片选择
+    cardEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      panelStore.selectItem(card.id);
+    });
 
     // 使用插槽进行渲染
     if (slots.card) {
@@ -96,6 +114,14 @@ const onDrop = (event: DragEvent) => {
   panelStore.addCard(item, { x: gridX, y: gridY });
 };
 
+// --- 画布点击处理（取消选择） ---
+const onCanvasClick = (event: MouseEvent) => {
+  // 只有点击空白区域时才取消选择
+  if (event.target === event.currentTarget || (event.target as Element).classList.contains('grid-stack')) {
+    panelStore.selectItem(null); // 选择看板本身
+  }
+};
+
 </script>
 
 <style>
@@ -116,6 +142,8 @@ const onDrop = (event: DragEvent) => {
   flex: 1;
   overflow: auto;
   padding: 16px;
-  background-color: #f0f2f5;
+  position: relative;
+  background-color: #f5f5f5;
+  min-height: 0; /* 关键：允许flex子项收缩 */
 }
 </style>

@@ -32,8 +32,10 @@ const onDragStart = (event: DragEvent, item: DraggableItem) => {
   width: 200px;
   padding: 16px;
   background-color: #ffffff;
-  border-right: 1px solid #e8e8e8;
   overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .draggable-item {
