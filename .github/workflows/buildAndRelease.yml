@@ -1,0 +1,81 @@
+name: Build and Release
+
+# 触发条件
+on:
+  # push:
+  #   branches: [ "main" ]  # 当推送到main分支时自动触发
+  release:
+    types: [published]
+  workflow_dispatch:       # 支持手动触发
+    inputs:
+      tag:
+        description: 'Tag name'  # 发布标签名称
+        required: true
+        default: 'latest'        # 默认标签为latest
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.11
+
+      - name: Cache pnpm modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-
+
+      - name: Install dependencies and build
+        run: |
+          npm install -g pnpm@8.15.5
+          pnpm i
+          pnpm run build:4096
+
+      - name: Create zip archive
+        run: |
+          cd dist
+          zip -r ../thingspanel-frontend-${{ github.event.release.tag_name || github.event.inputs.tag }}.zip .
+          cd ..
+
+      - name: Create tar.gz archive  
+        run: tar -czf thingspanel-frontend-${{ github.event.release.tag_name || github.event.inputs.tag }}.tar.gz -C dist .
+
+      - name: Upload zip to release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./thingspanel-frontend-${{ github.event.release.tag_name }}.zip
+          asset_name: thingspanel-frontend-${{ github.event.release.tag_name }}.zip
+          asset_content_type: application/zip
+
+      - name: Upload tar.gz to release
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./thingspanel-frontend-${{ github.event.release.tag_name }}.tar.gz
+          asset_name: thingspanel-frontend-${{ github.event.release.tag_name }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: Upload artifacts for manual trigger
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts-${{ github.event.inputs.tag }}
+          path: |
+            thingspanel-frontend-${{ github.event.inputs.tag }}.zip
+            thingspanel-frontend-${{ github.event.inputs.tag }}.tar.gz
