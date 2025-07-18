@@ -1,22 +1,13 @@
 <template>
   <div class="config-item">
     <label>看板背景色</label>
-    <input type="color" :value="modelValue" @input="onInput" />
+    <input v-model="model" type="color" />
   </div>
 </template>
 
 <script lang="ts" setup>
 // 这是一个通用的颜色选择器配置器
-defineProps<{ 
-  modelValue: string;
-}>();
-
-const emit = defineEmits(['update:modelValue']);
-
-const onInput = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  emit('update:modelValue', target.value);
-};
+const model = defineModel<string>();
 </script>
 
 <style scoped>

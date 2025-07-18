@@ -90,6 +90,7 @@ declare module "@elegant-router/types" {
     "multi-menu_second": "/multi-menu/second";
     "multi-menu_second_child": "/multi-menu/second/child";
     "multi-menu_second_child_home": "/multi-menu/second/child/home";
+    "paneldemo": "/paneldemo";
     "personal-center": "/personal-center";
     "plugin": "/plugin";
     "plugin_charts": "/plugin/charts";
@@ -166,6 +167,7 @@ declare module "@elegant-router/types" {
     | "manage"
     | "management"
     | "multi-menu"
+    | "paneldemo"
     | "personal-center"
     | "plugin"
     | "rule-engine"
@@ -243,6 +245,7 @@ declare module "@elegant-router/types" {
     | "management_user"
     | "multi-menu_first_child"
     | "multi-menu_second_child_home"
+    | "paneldemo"
     | "personal-center"
     | "plugin_charts_antv"
     | "plugin_charts_echarts"

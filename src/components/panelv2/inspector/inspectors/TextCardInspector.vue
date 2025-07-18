@@ -1,23 +1,17 @@
 <template>
   <div class="config-item">
     <label>{{ label }}</label>
-    <input type="text" :value="modelValue" @input="onInput" />
+    <input v-model="model" type="text" />
   </div>
 </template>
 
 <script lang="ts" setup>
 // 这是一个通用的文本输入配置器
-defineProps<{ 
-  modelValue: string;
+const model = defineModel<string>();
+
+defineProps<{
   label: string; // 从外部传入标签，使其更通用
 }>();
-
-const emit = defineEmits(['update:modelValue']);
-
-const onInput = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  emit('update:modelValue', target.value);
-};
 </script>
 
 <style scoped>

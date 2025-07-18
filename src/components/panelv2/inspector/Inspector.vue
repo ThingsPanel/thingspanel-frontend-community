@@ -5,10 +5,11 @@
       
       <!-- 遍历选中项的配置 -->
       <div v-for="(configItem, key) in selectedItem.config" :key="key">
-        <component 
-          :is="resolveInspectorComponent(configItem.inspector)" 
+        <component
+          :is="resolveInspectorComponent(configItem.inspector)"
           :modelValue="configItem.value"
-          @update:modelValue="onUpdate(key, $event)"
+          v-bind="configItem"
+          @update:modelValue="panelStore.updateConfigValue({ configKey: key, newValue: $event, cardId: selectedItem?.id || undefined })"
         />
       </div>
 
@@ -41,13 +42,7 @@ const resolveInspectorComponent = (inspectorName: string) => {
   return props.registry?.[inspectorName] || null;
 };
 
-const onUpdate = (configKey: string, newValue: any) => {
-  panelStore.updateConfigValue({
-    configKey,
-    newValue,
-    cardId: selectedItem.value?.id || undefined,
-  });
-};
+
 
 </script>
 

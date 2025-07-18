@@ -66,6 +66,7 @@
     "echarts": "^5.5.1",
     "event-source-polyfill": "^1.0.31",
     "form-data": "4.0.0",
+    "gridstack": "^12.2.2",
     "interactjs": "^1.10.26",
     "jsencrypt": "^3.3.2",
     "lodash-es": "4.17.21",

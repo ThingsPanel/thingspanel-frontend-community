@@ -700,6 +700,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'paneldemo',
+    path: '/paneldemo',
+    component: 'layout.base$view.paneldemo',
+    meta: {
+      title: 'paneldemo',
+      i18nKey: 'route.paneldemo'
+    }
+  },
+  {
     name: 'personal-center',
     path: '/personal-center',
     component: 'layout.base$view.personal-center',

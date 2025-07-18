@@ -83,6 +83,9 @@ importers:
       form-data:
         specifier: 4.0.0
         version: 4.0.0
+      gridstack:
+        specifier: ^12.2.2
+        version: 12.2.2
       interactjs:
         specifier: ^1.10.26
         version: 1.10.27
@@ -4189,6 +4192,9 @@ packages:
 
   graphlib@2.1.8:
     resolution: {integrity: sha512-jcLLfkpoVGmH7/InMC/1hIvOPSUh38oJtGhvrOFGzioE1DZ+0YW16RgmOJhHiuWTvGiJQ9Z1Ik43JvkRPRvE+A==}
+
+  gridstack@12.2.2:
+    resolution: {integrity: sha512-eK9XAbBWQp+QniqL6ipvofWSrCelm46j5USag73LNq8tOWSL2DeeGBWU9mTibLI6i66n0r7xYS+1/g2qqTqKcw==}
 
   gzip-size@6.0.0:
     resolution: {integrity: sha512-ax7ZYomf6jqPTQ4+XCpUGyXKHk5WweS+e05MBO4/y3WJ5RkmPXNKvX+bx1behVILVwr6JSQvZAku021CHPXG3Q==}
@@ -11502,6 +11508,8 @@ snapshots:
   graphlib@2.1.8:
     dependencies:
       lodash: 4.17.21
+
+  gridstack@12.2.2: {}
 
   gzip-size@6.0.0:
     dependencies:
