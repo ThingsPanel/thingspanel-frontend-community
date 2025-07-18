@@ -30,12 +30,19 @@ const canvasBackgroundColor = computed(() => {
   return bgConfig?.value || '#f5f5f5';
 });
 
+// --- 计算属性：网格列数 ---
+const gridColumns = computed(() => {
+  const gridConfig = panelStore.config.gridSize;
+  return gridConfig?.value || 12;
+});
+
 // --- Gridstack 初始化 ---
 onMounted(() => {
   grid = GridStack.init({
     float: true,
     cellHeight: '70px',
     minRow: 1,
+    column: gridColumns.value,
   });
 
   loadCards(panelStore.cards);
@@ -59,6 +66,13 @@ watch(() => panelStore.cards, (newCards, oldCards) => {
     loadCards(newCards);
   }
 }, { deep: true });
+
+// --- 监听网格列数变化 ---
+watch(() => gridColumns.value, (newColumns) => {
+  if (grid) {
+    grid.column(newColumns);
+  }
+});
 
 // --- 核心渲染逻辑 ---
 const loadCards = (cards: PanelCard[]) => {
@@ -106,7 +120,7 @@ const onDrop = (event: DragEvent) => {
   const rect = gridstackContainer.value!.getBoundingClientRect();
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
-  const cellWidth = rect.width / 12; // 假设12列
+  const cellWidth = rect.width / gridColumns.value; // 使用动态列数
   const cellHeight = 70; // 与 Gridstack 配置匹配
   const gridX = Math.floor(x / cellWidth);
   const gridY = Math.floor(y / cellHeight);
@@ -131,11 +145,20 @@ const onCanvasClick = (event: MouseEvent) => {
   border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   overflow: hidden; /* 确保内容不会溢出 */
+  display: flex;
+  flex-direction: column;
 }
 
 .card-content-wrapper {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-content-wrapper > * {
+  flex: 1;
+  min-height: 0;
 }
 
 .canvas-wrapper {
