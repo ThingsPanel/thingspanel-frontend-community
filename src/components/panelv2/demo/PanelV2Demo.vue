@@ -32,7 +32,7 @@
       </PanelV2>
     </div>
     
-    <!-- 状态显示区域 - 可折叠 -->
+    <!-- 调试面板 -->
     <div class="debug-panel">
       <div class="debug-toggle" @click="isDebugVisible = !isDebugVisible">
         <span>{{ isDebugVisible ? '🔽' : '🔼' }} 调试信息 ({{ panelStore.cards.length }} 卡片)</span>
@@ -524,6 +524,7 @@ panelStore.config = {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 /* 演示卡片样式 */
@@ -589,6 +590,10 @@ panelStore.config = {
   padding: 12px;
   flex: 1;
   overflow-y: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .card-body p {
