@@ -58,7 +58,7 @@ const handleAddNew = () => {
 
 // 页面跳转
 const goToDetail = (id: string) => {
-  router.replace({ path: '/device/config-detail', query: { id } })
+  router.push({ path: '/device/config-detail', query: { id } })
 }
 
 // 设备类型映射
@@ -240,7 +240,7 @@ const availableViews = [
             :subtitle="deviceTypeMap[item.device_type as keyof typeof deviceTypeMap]"
             :device-config-id="item.id"
             :isStatus="false"
-            @click-card="goToDetail(item.id)"
+            @click-card="handleEdit(item.id)"
           >
             <template #subtitle-icon>
               <img :src="getDeviceIconUrl(item.device_type)" alt="device type icon" class="image-icon" />

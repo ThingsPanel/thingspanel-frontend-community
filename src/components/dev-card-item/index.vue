@@ -89,26 +89,23 @@ const handleCardClick = () => {
   emit('click-card')
 }
 
-const handleTitleClick = (e: Event) => {
+const handleTitleClick = () => {
   // 只有在需要处理点击时才阻止冒泡
   if (shouldHandleTitleClick.value) {
-    e.stopPropagation()
     emit('click-title')
   }
 }
 
-const handleSubtitleClick = (e: Event) => {
+const handleSubtitleClick = () => {
   // 只有在需要处理点击时才阻止冒泡
   if (shouldHandleSubtitleClick.value) {
-    e.stopPropagation()
     emit('click-subtitle')
   }
 }
 
-const handleTopRightIconClick = (e: Event) => {
+const handleTopRightIconClick = () => {
   // 只有在需要处理点击时才阻止冒泡
   if (shouldHandleTopRightIconClick.value) {
-    e.stopPropagation()
     emit('click-top-right-icon')
   }
 }
