@@ -75,6 +75,17 @@ const columns = computed(() => [
     key: 'name',
     ellipsis: {
       tooltip: true
+    },
+    render: (row: any) => {
+      return h(
+        NButton,
+        {
+          text: true,
+          type: 'primary',
+          onClick: () => goToDetail(row.id)
+        },
+        { default: () => row.name }
+      )
     }
   },
   {
@@ -194,6 +205,8 @@ const availableViews = [
     :available-views="availableViews"
     :showQueryButton="false"
     :showResetButton="false"
+    :use-view-memory="true"
+    memory-key="device-config-view"
     @add-new="handleAddNew"
     @query="handleQuery"
     @reset="handleReset"
@@ -240,7 +253,7 @@ const availableViews = [
             :subtitle="deviceTypeMap[item.device_type as keyof typeof deviceTypeMap]"
             :device-config-id="item.id"
             :isStatus="false"
-            @click-card="handleEdit(item.id)"
+            @click-card="goToDetail(item.id)"
           >
             <template #subtitle-icon>
               <img :src="getDeviceIconUrl(item.device_type)" alt="device type icon" class="image-icon" />

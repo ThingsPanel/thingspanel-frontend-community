@@ -83,7 +83,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, useSlots, onMounted, onUnmounted } from 'vue'
+import { ref, computed, useSlots, onMounted, onUnmounted, onActivated } from 'vue'
+import { useStorage } from '@vueuse/core'
 import { NCard, NButton, NButtonGroup, NIcon, NSpace, NScrollbar } from 'naive-ui'
 import { $t } from '@/locales'
 import {
@@ -115,6 +116,8 @@ interface Props {
   showResetButton?: boolean
   showAddButton?: boolean
   mobileBreakpoint?: number // 移动端断点，默认768px
+  useViewMemory?: boolean // 是否启用视图记忆功能
+  memoryKey?: string // 视图记忆的唯一键
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -129,7 +132,9 @@ const props = withDefaults(defineProps<Props>(), {
   showQueryButton: true,
   showResetButton: true,
   showAddButton: true,
-  mobileBreakpoint: 768
+  mobileBreakpoint: 768,
+  useViewMemory: false,
+  memoryKey: 'advanced-list-view'
 })
 
 // Emits 定义
@@ -145,7 +150,8 @@ const emit = defineEmits<{
 const slots = useSlots()
 
 // 响应式数据
-const currentView = ref<string>('')
+const storageView = props.useViewMemory ? useStorage(props.memoryKey, '') : ref('')
+const currentView = ref('')
 const windowWidth = ref<number>(window.innerWidth)
 
 // 监听窗口大小变化
@@ -203,18 +209,31 @@ const getDefaultViewSlot = (): string => {
 }
 
 const initializeView = () => {
-  // 如果指定了初始视图且对应插槽存在，使用初始视图
-  if (props.initialView && hasSlot(`${props.initialView}-view`)) {
-    currentView.value = props.initialView
-    return
+  const available = getAvailableViewsWithSlots()
+  let initial = ''
+
+  // 优先从 memory storage 中获取
+  if (props.useViewMemory && storageView.value && available.some(v => v.key === storageView.value)) {
+    initial = storageView.value
+  } 
+  // 其次使用 initialView prop
+  else if (props.initialView && available.some(v => v.key === props.initialView)) {
+    initial = props.initialView
+  } 
+  // 最后使用第一个可用的视图
+  else if (available.length > 0) {
+    initial = available[0].key
+  } 
+  // 默认值
+  else {
+    initial = 'list'
   }
 
-  // 否则找到第一个有对应插槽的视图
-  const availableSlots = getAvailableViewsWithSlots()
-  if (availableSlots.length > 0) {
-    currentView.value = availableSlots[0].key
-  } else {
-    currentView.value = 'list' // 默认值
+  currentView.value = initial
+
+  // 如果启用了记忆功能但 storage 为空，则用初始值填充
+  if (props.useViewMemory && !storageView.value) {
+    storageView.value = initial
   }
 }
 
@@ -236,6 +255,9 @@ const handleAddNew = () => {
 const handleViewChange = (viewType: string) => {
   if (currentView.value !== viewType && hasSlot(`${viewType}-view`)) {
     currentView.value = viewType
+    if (props.useViewMemory) {
+      storageView.value = viewType
+    }
     emit('view-change', { viewType })
   }
 }
@@ -248,6 +270,10 @@ const handleRefresh = () => {
 onMounted(() => {
   initializeView()
   window.addEventListener('resize', handleResize)
+})
+
+onActivated(() => {
+  initializeView()
 })
 
 onUnmounted(() => {

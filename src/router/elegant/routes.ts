@@ -281,7 +281,8 @@ export const generatedRoutes: GeneratedRoute[] = [
         component: 'view.device_config',
         meta: {
           title: 'device_config',
-          i18nKey: 'route.device_config'
+          i18nKey: 'route.device_config',
+          keepAlive: true
         }
       },
       {
