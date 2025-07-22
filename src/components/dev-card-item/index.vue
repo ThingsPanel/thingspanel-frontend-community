@@ -86,10 +86,6 @@ const shouldHandleTopRightIconClick = computed(() => {
 
 // 点击事件处理函数
 const handleCardClick = () => {
-  // 跳转到设备详情页
-  if (props.deviceId) {
-    window.location.href = `/device/details?d_id=${props.deviceId}`
-  }
   emit('click-card')
 }
 
@@ -97,10 +93,6 @@ const handleTitleClick = (e: Event) => {
   // 只有在需要处理点击时才阻止冒泡
   if (shouldHandleTitleClick.value) {
     e.stopPropagation()
-    // 跳转到设备详情页
-    if (props.deviceId) {
-      window.location.href = `/device/details?d_id=${props.deviceId}`
-    }
     emit('click-title')
   }
 }
@@ -109,10 +101,6 @@ const handleSubtitleClick = (e: Event) => {
   // 只有在需要处理点击时才阻止冒泡
   if (shouldHandleSubtitleClick.value) {
     e.stopPropagation()
-    // 跳转到设备配置详情页
-    if (props.deviceConfigId) {
-      window.location.href = `/device/config-detail?id=${props.deviceConfigId}`
-    }
     emit('click-subtitle')
   }
 }

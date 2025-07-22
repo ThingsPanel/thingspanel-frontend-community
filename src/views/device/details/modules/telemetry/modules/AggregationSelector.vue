@@ -3,7 +3,8 @@ import { onMounted, ref } from 'vue'
 import { TimeOutline } from '@vicons/ionicons5'
 import { Circle24Regular, Target20Regular } from '@vicons/fluent'
 import { addYears, differenceInDays, differenceInHours, differenceInMonths } from 'date-fns'
-import { $t } from '@/locales'
+import { $t } from '@/locales';
+import { message } from '@/utils/common/discrete';
 const emit = defineEmits<{
   (event: 'update:value', value): void
 }>()
@@ -155,7 +156,7 @@ const checkDateRange = value => {
   const [start, end] = value
   if (start && end && addYears(start, 1) < end) {
     dateRange.value = null
-    window.NMessage.error($t('common.withinOneYear'))
+    message.error($t('common.withinOneYear'))
   } else {
     aggregation_data.value.start_time = start
     aggregation_data.value.end_time = end
@@ -222,4 +223,4 @@ onMounted(() => {
   </NFlex>
 </template>
 
-<style scoped></style>
+<style scoped></style>

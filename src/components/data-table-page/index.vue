@@ -1,6 +1,7 @@
 <script lang="tsx" setup>
 import type { VueElement } from 'vue';
 import { computed, defineProps, getCurrentInstance, ref, watch, watchEffect } from 'vue';
+import { useRouter } from 'vue-router';
 import { NButton, NDataTable, NDatePicker, NInput, NPopconfirm, NSelect, NSpace, NPagination, NSpin } from 'naive-ui';
 import type { TreeSelectOption } from 'naive-ui';
 import { useLoading } from '@sa/hooks';
@@ -395,16 +396,17 @@ const availableViews = [
   { key: 'map', icon: MapOutline, label: 'views.map' }
 ];
 const formSize = ref(undefined);
+const router = useRouter();
 // 处理告警铃铛图标点击事件
 const handleWarningClick = (item: DeviceItem) => {
   // 根据设备信息跳转到相应的告警页面
   // 可以传递设备ID等参数
   if (item.warn_status === 'Y') {
     // 有告警时跳转到具体设备的告警详情
-    window.location.href = `/alarm/warning-message?device_id=${item.id}`
+    router.push(`/alarm/warning-message?device_id=${item.id}`);
   } else {
     // 无告警时可能跳转到告警管理页面
-    window.location.href = '/alarm/warning-message'
+    router.push('/alarm/warning-message');
   }
 }
 </script>
@@ -515,7 +517,7 @@ const handleWarningClick = (item: DeviceItem) => {
             :footer-text="(item.ts ? formatDateTime(item.ts) : null) ?? '--'"
             :warn-status="item.warn_status"
             :device-id="item.id"
-
+            @click-card="() => props.rowClick && props.rowClick(item)"
             @click-top-right-icon="handleWarningClick(item)"
           >
             <template #subtitle-icon>

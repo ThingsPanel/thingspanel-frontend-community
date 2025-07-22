@@ -23,6 +23,7 @@ import { localStg } from '@/utils/storage'
 import { useRouterPush } from '@/hooks/common/router'
 import { getWebsocketServerUrl } from '@/utils/common/tool'
 import { createLogger } from '@/utils/logger'
+import { message } from '@/utils/common/discrete'
 const logger = createLogger('Detail')
 const route = useRoute()
 const { query } = useRoute()
@@ -258,15 +259,15 @@ watch(
 
 const save = async () => {
   if (!deviceData.value?.name) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceName'))
+    message.error($t('custom.devicePage.enterDeviceName'))
     return
   }
   if (!deviceData.value?.device_number) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceNumber'))
+    message.error($t('custom.devicePage.enterDeviceNumber'))
     return
   }
   if (deviceData.value?.device_number.length > 100) {
-    window.NMessage.error($t('custom.devicePage.deviceNumberMax'))
+    message.error($t('custom.devicePage.deviceNumberMax'))
     return
   }
   device_number.value = deviceData.value.device_number
