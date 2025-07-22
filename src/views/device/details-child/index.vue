@@ -18,6 +18,7 @@ import { $t } from '@/locales'
 import { useAppStore } from '@/store/modules/app'
 import { deviceDetail, deviceUpdate } from '@/service/api/device'
 import { useRouterPush } from '@/hooks/common/router'
+import { message } from '@/utils/common/discrete'
 
 const { query } = useRoute()
 const appStore = useAppStore()
@@ -70,15 +71,15 @@ const close = async () => {
 }
 const save = async () => {
   if (!deviceDataStore?.deviceData?.name) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceName'))
+    message.error($t('custom.devicePage.enterDeviceName'))
     return
   }
   if (!deviceDataStore?.deviceData?.device_number) {
-    window.NMessage.error($t('custom.devicePage.enterDeviceNumber'))
+    message.error($t('custom.devicePage.enterDeviceNumber'))
     return
   }
   if (deviceDataStore?.deviceData?.device_number.length > 100) {
-    window.NMessage.error($t('custom.devicePage.deviceNumberMax'))
+    message.error($t('custom.devicePage.deviceNumberMax'))
     return
   }
   device_number.value = deviceDataStore.deviceData.device_number

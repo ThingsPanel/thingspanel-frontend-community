@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { getTemplat } from '@/service/api/system-data'
-import { $t } from '@/locales'
+import { $t } from '@/locales';
+import { message } from '@/utils/common/discrete';
 
 const props = defineProps({
   stepCurrent: { type: Number, required: true },
@@ -32,10 +33,10 @@ const copyText = (): void => {
       navigator.clipboard
         .writeText(typeof text === 'string' ? text : '')
         .then(() => {
-          window.NMessage.info($t('common.copiedClipboard'))
+          message.info($t('common.copiedClipboard'))
         })
         .catch(err => {
-          window.NMessage.error(`${$t('common.copyingFailed')}:`, err)
+          message.error(`${$t('common.copyingFailed')}:`, err)
         })
     } else {
       const range = document.createRange()

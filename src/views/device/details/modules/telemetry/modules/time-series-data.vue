@@ -4,7 +4,8 @@ import { NDatePicker, NSelect, NSpace } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import dayjs from 'dayjs'
 import { telemetryDataHistoryList } from '@/service/api/device'
-import { $t } from '@/locales'
+import { $t } from '@/locales';
+import { message } from '@/utils/common/discrete';
 import ChartComponent from './ChartComponent.vue'
 import { useLoading } from '~/packages/hooks'
 
@@ -105,8 +106,8 @@ const initialOptions = ref({
         onclick: () => {
           if (initialOptions.value.series) {
             if (initialOptions.value.series[0].type === 'line') {
-              window.NMessage.destroyAll()
-              window.NMessage.info($t('common.alreadyCurveChart'))
+              message.destroyAll()
+              message.info($t('common.alreadyCurveChart'))
               return
             }
             initialOptions.value.series[0].type = 'line'
@@ -121,7 +122,7 @@ const initialOptions = ref({
           if (initialOptions.value.series) {
             if (initialOptions.value.series[0].type === 'bar') {
               window.NMessage.destroyAll()
-              window.NMessage.info($t('common.alreadyToChart'))
+              message.info($t('common.alreadyToChart'))
               return
             }
             initialOptions.value.series[0].type = 'bar'
@@ -136,7 +137,7 @@ const initialOptions = ref({
           if (initialOptions.value.series) {
             if (initialOptions.value.series[0].type === 'scatter') {
               window.NMessage.destroyAll()
-              window.NMessage.info($t('common.alreadyScatterPlot'))
+              message.info($t('common.alreadyScatterPlot'))
               return
             }
             initialOptions.value.series[0].type = 'scatter'
@@ -305,7 +306,7 @@ watch(
 
     if (v.time_range === 'custom' && (!v.start_time || !v.end_time)) {
       window.NMessage.destroyAll()
-      window.NMessage.info($t('common.rangeMustSelected'))
+      message.info($t('common.rangeMustSelected'))
       return
     }
     startLoading()

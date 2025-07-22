@@ -2,6 +2,7 @@
 import type { Ref } from 'vue'
 import { inject, onMounted, onUpdated, reactive, ref, watch } from 'vue'
 import { $t } from '@/locales'
+import { message } from '@/utils/common/discrete'
 import { usePanelStore } from '@/store/modules/panel'
 import type { ICardData, ICardDefine } from '@/components/panel/card'
 import { deviceModelSourceForPanel } from '@/service/api'
@@ -90,7 +91,7 @@ const changeIndicate = value => {
   // eslint-disable-next-line no-param-reassign
   value = value.filter(item => item !== undefined)
   if (value.length > state.data.dataSource.sourceNum) {
-    window.NMessage.error($t('common.maxSelect') + state.data.dataSource.sourceNum + $t('common.dataSources'))
+    message.error($t('common.maxSelect') + state.data.dataSource.sourceNum + $t('common.dataSources'))
   }
   if (state.data.dataSource.sourceNum === 1) {
     indicateValue.value = [value[value.length - 1]]

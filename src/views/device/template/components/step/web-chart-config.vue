@@ -1,6 +1,7 @@
 <script setup lang="tsx">
 import { defineEmits, provide, ref } from 'vue'
-import { $t } from '@/locales'
+import { $t } from '@/locales';
+import { message } from '@/utils/common/discrete';
 import { getTemplat, putTemplat } from '@/service/api'
 import type { ICardView } from '@/components/panel/card'
 import templatePanel from '../card-select/template-panel.vue'
@@ -53,7 +54,7 @@ const next = async () => {
   //     flag ? `${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}` : $t('common.leastOneChart')
   //   );
   if (flag) {
-    window.NMessage.error(`${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}`)
+    message.error(`${$t('common.section')}${theIndex + 1}${$t('common.accompaniedIndicators')}`)
   } else {
     const res = await getTemplat(props.deviceTemplateId)
     await putTemplat({ ...res.data, web_chart_config: JSON.stringify(web_chart_config.value) })
