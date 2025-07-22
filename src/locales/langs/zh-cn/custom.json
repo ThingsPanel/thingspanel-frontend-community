@@ -112,7 +112,7 @@
   "custom.device_details.history": "历史数据",
   "custom.device_details.automate": "自动化",
   "custom.device_details.whole": "全部",
-  "custom.device_details.telemetry": "遥测数据",
+  "custom.device_details.telemetry": "遥测",
   "custom.device_details.join": "连接",
   "custom.device_details.subdevice": "子设备",
   "custom.device_details.AdditionalDetails": "信息",
