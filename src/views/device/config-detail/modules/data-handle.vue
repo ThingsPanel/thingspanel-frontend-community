@@ -2,8 +2,7 @@
 import { computed, getCurrentInstance, nextTick, onMounted, ref, watch } from 'vue'
 import { type FormInst, NButton, useDialog } from 'naive-ui'
 import { PencilOutline as editIcon, TrashOutline as trashIcon } from '@vicons/ionicons5'
-import Codemirror from 'codemirror-editor-vue3'
-import 'codemirror/mode/javascript/javascript.js'
+import MonacoEditor from 'monaco-editor-vue3';
 import {
   dataScriptAdd,
   dataScriptDel,
@@ -63,21 +62,21 @@ const scripTypeOpt = ref([
 function defaultConfigForm() {
   return {
     id: null,
-    content: `function encodeInp(msg,topic)
--- 说明：该函数为编码函数，将输入的消息编码为平台可识别的消息格式或者设备可识别的消息格式，请根据实际需求编写编码逻辑
--- 入参：输入的msg，可以是任意数据类型的字符串。
--- 出参：返回值为编码后的消息,需要是json字符串形式
--- 注意：string与jsonObj互转需导入json库：local json = require("json")
--- 例，string转jsonObj：local jsonData = json.decode(msgString)
--- 例，jsonObj转string：local jsonStr = json.encode(jsonTable)
-local json = require("json")
-local jsonData = json.decode(msg)
--- 例 if jsonData.temp then
--- 例 jsonData.temp = jsonData.temp * 10
--- 例 end
-local newJsonString = json.encode(jsonData)
-return newJsonString
-end`,
+    content: `function encodeInp(msg,topic) 
+ -- 说明：该函数为编码函数，将输入的消息编码为平台可识别的消息格式或者设备可识别的消息格式，请根据实际需求编写编码逻辑 
+ -- 入参：输入的msg，可以是任意数据类型的字符串。 
+ -- 出参：返回值为编码后的消息,需要是json字符串形式 
+ -- 注意：string与jsonObj互转需导入json库：local json = require("json") 
+ -- 例，string转jsonObj：local jsonData = json.decode(msgString) 
+ -- 例，jsonObj转string：local jsonStr = json.encode(jsonTable) 
+ local json = require("json") 
+ local jsonData = json.decode(msg) 
+ -- 例 if jsonData.temp then 
+ -- 例 jsonData.temp = jsonData.temp * 10 
+ -- 例 end 
+ local newJsonString = json.encode(jsonData) 
+ return newJsonString 
+ end`,
     description: null,
     device_config_id: null,
     enable_flag: 'Y',
@@ -89,6 +88,81 @@ end`,
     resolt_analog_input: ''
   }
 }
+
+// Monaco Editor 配置
+const editorOptions = ref({
+  automaticLayout: true,
+  theme: 'vs',
+  language: 'lua',
+  fontSize: 14,
+  lineHeight: 20,
+  fontFamily: 'Consolas, "Courier New", monospace',
+  wordWrap: 'on',
+  lineNumbers: 'on',
+  glyphMargin: true,
+  folding: true,
+  lineDecorationsWidth: 10,
+  lineNumbersMinChars: 3,
+  minimap: {
+    enabled: true,
+    side: 'right',
+    size: 'proportional',
+    showSlider: 'mouseover'
+  },
+  scrollBeyondLastLine: false,
+  readOnly: false,
+  cursorStyle: 'line',
+  cursorBlinking: 'blink',
+  renderWhitespace: 'selection',
+  renderControlCharacters: false,
+  fontLigatures: true,
+  suggestOnTriggerCharacters: true,
+  acceptSuggestionOnEnter: 'on',
+  tabCompletion: 'on',
+  wordBasedSuggestions: true,
+  parameterHints: {
+    enabled: true
+  },
+  quickSuggestions: {
+    other: true,
+    comments: false,
+    strings: false
+  },
+  bracketPairColorization: {
+    enabled: true
+  },
+  guides: {
+    bracketPairs: true,
+    indentation: true
+  },
+  formatOnPaste: true,
+  formatOnType: true
+});
+
+// 编辑器实例引用
+const editorRef = ref(null);
+
+// 编辑器工具栏功能
+const formatCode = () => {
+  if (editorRef.value) {
+    editorRef.value.getAction('editor.action.formatDocument').run();
+  }
+};
+
+const toggleMinimap = () => {
+  editorOptions.value.minimap.enabled = !editorOptions.value.minimap.enabled;
+};
+
+const toggleWordWrap = () => {
+  editorOptions.value.wordWrap = editorOptions.value.wordWrap === 'on' ? 'off' : 'on';
+};
+
+const changeFontSize = (delta: number) => {
+  const newSize = editorOptions.value.fontSize + delta;
+  if (newSize >= 10 && newSize <= 24) {
+    editorOptions.value.fontSize = newSize;
+  }
+};
 
 const configFormRules = ref({
   name: {
@@ -284,34 +358,6 @@ const doQuiz = async () => {
     }
 }
 
-const cmRef = ref()
-const cmOptions = {
-  mode: 'text/javascript',
-  indentUnit: 4,
-  lineWrapping: true
-}
-
-const onChange = (val, cm) => {
-  logger.info({ val, cm })
-}
-
-const onInput = val => {
-  logger.info({ val })
-}
-
-const onReady = cm => {
-  const lastLine = cm.lineCount() - 1
-  const lastCh = cm.getLine(lastLine).length
-  cm.focus()
-  cm.setCursor({ line: lastLine, ch: lastCh })
-}
-const setupEditor = () => {
-  nextTick(() => {
-    if (cmRef.value) {
-      cmRef.value.refresh() // ensure the editor is correctly refreshed
-    }
-  })
-}
 
 watch(queryData.value, () => queryDataScriptList(), { deep: true })
 
@@ -374,7 +420,6 @@ onMounted(() => {
     :show-icon="false"
     :style="bodyStyle"
     :closable="false"
-    @after-enter="setupEditor"
   >
     <NForm
       ref="configFormRef"
@@ -404,18 +449,55 @@ onMounted(() => {
         />
       </NFormItem>
       <NFormItem class="w-100%" :label="$t('generate.parse-script')" :rules="configFormRules" path="content">
-        <Codemirror
-          ref="cmRef"
-          v-model:value="configForm.content"
-          :options="cmOptions"
-          height="260"
-          keepcursorinend
-          border
-          @change="onChange"
-          @input="onInput"
-          @ready="onReady"
-        ></Codemirror>
-        <!--        <NInput v-model:value="configForm.content" type="textarea" placeholder="请输入解析脚本" />-->
+        <div class="editor-container">
+          <!-- 编辑器工具栏 -->
+          <div class="editor-toolbar">
+            <div class="toolbar-left">
+              <NButton size="small" tertiary @click="formatCode">
+                <template #icon>
+                  <n-icon><svg viewBox="0 0 24 24"><path fill="currentColor" d="M9.5 15.5L4.5 10.5L9.5 5.5L8.09 4.09L1.5 10.68L8.09 17.27L9.5 15.5ZM14.5 8.5L19.5 13.5L14.5 18.5L15.91 19.91L22.5 13.32L15.91 6.73L14.5 8.5Z"/></svg></n-icon>
+                </template>
+                格式化
+              </NButton>
+              <NButton size="small" tertiary @click="toggleWordWrap">
+                <template #icon>
+                  <n-icon><svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 19h6v-2H4v2zM20 5H4v2h16V5zm-3 6H4v2h13.25c1.1 0 2 .9 2 2s-.9 2-2 2H15v-2l-3 3l3 3v-2h2.25c2.3 0 4.25-2.05 4.25-4.5S19.55 11 17.25 11z"/></svg></n-icon>
+                </template>
+                自动换行
+              </NButton>
+              <NButton size="small" tertiary @click="toggleMinimap">
+                <template #icon>
+                  <n-icon><svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h2v2H7V7zm0 4h2v2H7v-2zm0 4h2v2H7v-2zm4-8h6v2h-6V7zm0 4h6v2h-6v-2zm0 4h6v2h-6v-2z"/></svg></n-icon>
+                </template>
+                小地图
+              </NButton>
+            </div>
+            <div class="toolbar-right">
+              <NButton size="small" tertiary @click="changeFontSize(-1)">
+                <template #icon>
+                  <n-icon><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 13H5v-2h14v2z"/></svg></n-icon>
+                </template>
+              </NButton>
+              <span class="font-size-display">{{ editorOptions.fontSize }}px</span>
+              <NButton size="small" tertiary @click="changeFontSize(1)">
+                <template #icon>
+                  <n-icon><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></n-icon>
+                </template>
+              </NButton>
+            </div>
+          </div>
+          <!-- Monaco Editor -->
+          <div class="editor-wrapper">
+            <MonacoEditor
+              ref="editorRef"
+              v-model:value="configForm.content"
+              :options="editorOptions"
+              height="300"
+              language="lua"
+              class="custom-monaco-editor"
+            />
+          </div>
+        </div>
       </NFormItem>
       <NFormItem
         v-if="0"
@@ -453,7 +535,6 @@ onMounted(() => {
 
   .alarm-item {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    //margin: 0 10px;
     padding: 18px;
     flex: 0 0 23%;
     margin-right: calc(30% / 3);
@@ -488,9 +569,79 @@ onMounted(() => {
   -webkit-line-clamp: 2;
   overflow: hidden;
 }
-:deep(pre.CodeMirror-line) {
-  /* 在这里设置你想要的内边距，例如 10px */
-  margin: 0 12px;
-  /* 你也可以分别设置 padding-top, padding-right, padding-bottom, padding-left */
+
+/* 编辑器容器样式 */
+.editor-container {
+  width: 100%;
+  border: 1px solid #e0e0e6;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.editor-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e6;
+  min-height: 40px;
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.font-size-display {
+  font-size: 12px;
+  color: #666;
+  min-width: 35px;
+  text-align: center;
+}
+
+.editor-wrapper {
+  position: relative;
+  background: #fff;
+  width: 100%;
+}
+
+.custom-monaco-editor {
+  border: none !important;
+  width: 100% !important;
+}
+
+/* 编辑器工具栏按钮样式优化 */
+.editor-toolbar .n-button {
+  height: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.editor-toolbar .n-button .n-icon {
+  font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .editor-toolbar {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px;
+  }
+  
+  .toolbar-left,
+  .toolbar-right {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>

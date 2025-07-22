@@ -95,6 +95,9 @@ importers:
       moment:
         specifier: ^2.30.1
         version: 2.30.1
+      monaco-editor-vue3:
+        specifier: ^0.1.10
+        version: 0.1.10(typescript@5.3.3)
       moving-numbers-vue3:
         specifier: ^1.1.3
         version: 1.1.6
@@ -152,9 +155,6 @@ importers:
       vue-router:
         specifier: 4.2.5
         version: 4.2.5(vue@3.4.19(typescript@5.3.3))
-      vue3-drr-grid-layout:
-        specifier: ^1.9.7
-        version: 1.9.7(@interactjs/core@1.10.27(@interactjs/utils@1.10.27))(@interactjs/utils@1.10.27)(typescript@5.3.3)(vue@3.4.19(typescript@5.3.3))
       vue3-grid-layout:
         specifier: ^1.0.0
         version: 1.0.0(@interactjs/core@1.10.27(@interactjs/utils@1.10.27))(@interactjs/utils@1.10.27)(typescript@5.3.3)
@@ -1883,9 +1883,6 @@ packages:
 
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
-
-  '@types/element-resize-detector@1.1.6':
-    resolution: {integrity: sha512-hj0o+gfpKB3XFdMwPBxyMxKkpUpjxI2CctMeaC7gelAsnRfqluiynlM5BOCxv27HnndVWh+utrXlqo1PLyW2Sg==}
 
   '@types/estree@0.0.39':
     resolution: {integrity: sha512-EYNwp3bU+98cpU4lAWYYL7Zz+2gryWH1qbdDTidVd6hkiR6weksdbMadyXKXNPEkQFhXM+hVO9ZygomHXp+AIw==}
@@ -5028,6 +5025,12 @@ packages:
   moment@2.30.1:
     resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
+  monaco-editor-vue3@0.1.10:
+    resolution: {integrity: sha512-C1jhyx+KHQyW1AbjuA8DhIZSqkVquV7MnuWXG9jESd0e+CkzEFzuk1RvNqlN2eJ2fRkvF32yEPHYfvz9quOhHQ==}
+
+  monaco-editor@0.33.0:
+    resolution: {integrity: sha512-VcRWPSLIUEgQJQIE0pVT8FcGBIgFoxz7jtqctE+IiCxWugD0DwgyQBcZBhdSrdMC84eumoqMZsGl2GTreOzwqw==}
+
   moving-numbers-vue3@1.1.6:
     resolution: {integrity: sha512-zC/H2gBCP9pch+keT84mXlTFUgxXCTURSnoI2ELmioaMkvIhGBBzs2MZTud6IGdHJsShaYWNFOQxMhDUpCRmDA==}
 
@@ -6634,6 +6637,11 @@ packages:
       mockjs: '>=1.1.0'
       vite: '>=2.0.0'
 
+  vite-plugin-monaco-editor@1.1.0:
+    resolution: {integrity: sha512-IvtUqZotrRoVqwT0PBBDIZPNraya3BxN/bfcNfnxZ5rkJiGcNtO5eAOWWSgT7zullIAEqQwxMU83yL9J5k7gww==}
+    peerDependencies:
+      monaco-editor: '>=0.33.0'
+
   vite-plugin-progress@0.0.7:
     resolution: {integrity: sha512-zyvKdcc/X+6hnw3J1HVV1TKrlFKC4Rh8GnDnWG/2qhRXjqytTcM++xZ+SAPnoDsSyWl8O93ymK0wZRgHAoglEQ==}
     engines: {node: '>=14', pnpm: '>=7.0.0'}
@@ -6779,12 +6787,6 @@ packages:
     hasBin: true
     peerDependencies:
       typescript: '*'
-
-  vue3-drr-grid-layout@1.9.7:
-    resolution: {integrity: sha512-+eq1FijnYl6Nj/HIWRGb42HUfnsdktaaobtPgUwbopbV52QffwAz/saYNM1Ap8KKmFJM74mw6U494msNfLsgcQ==}
-    deprecated: further active development will be implemented in https://www.npmjs.com/package/@noction/vue-draggable-grid
-    peerDependencies:
-      vue: ^3.2.0
 
   vue3-grid-layout@1.0.0:
     resolution: {integrity: sha512-rFiHnlBFxkY9ojh0YB+cSKCE9A9/mhdbgaPARWD7r2yHPWxV9tHDPbMAN+uycsIDF7ikBpNgeQ9PfeiGaXHUWw==}
@@ -8625,8 +8627,6 @@ snapshots:
   '@types/debug@4.1.12':
     dependencies:
       '@types/ms': 2.1.0
-
-  '@types/element-resize-detector@1.1.6': {}
 
   '@types/estree@0.0.39': {}
 
@@ -12268,6 +12268,16 @@ snapshots:
 
   moment@2.30.1: {}
 
+  monaco-editor-vue3@0.1.10(typescript@5.3.3):
+    dependencies:
+      monaco-editor: 0.33.0
+      vite-plugin-monaco-editor: 1.1.0(monaco-editor@0.33.0)
+      vue: 3.4.19(typescript@5.3.3)
+    transitivePeerDependencies:
+      - typescript
+
+  monaco-editor@0.33.0: {}
+
   moving-numbers-vue3@1.1.6: {}
 
   mpd-parser@1.3.1:
@@ -14135,6 +14145,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  vite-plugin-monaco-editor@1.1.0(monaco-editor@0.33.0):
+    dependencies:
+      monaco-editor: 0.33.0
+
   vite-plugin-progress@0.0.7(vite@5.1.4(@types/node@20.11.24)(sass@1.71.1)(terser@5.39.0)):
     dependencies:
       picocolors: 1.1.1
@@ -14281,22 +14295,6 @@ snapshots:
       '@vue/language-core': 2.0.3(typescript@5.3.3)
       semver: 7.7.1
       typescript: 5.3.3
-
-  vue3-drr-grid-layout@1.9.7(@interactjs/core@1.10.27(@interactjs/utils@1.10.27))(@interactjs/utils@1.10.27)(typescript@5.3.3)(vue@3.4.19(typescript@5.3.3)):
-    dependencies:
-      '@interactjs/actions': 1.10.27(@interactjs/core@1.10.27(@interactjs/utils@1.10.27))(@interactjs/utils@1.10.27)
-      '@interactjs/auto-start': 1.10.27(@interactjs/core@1.10.27(@interactjs/utils@1.10.27))(@interactjs/utils@1.10.27)
-      '@interactjs/dev-tools': 1.10.27(@interactjs/modifiers@1.10.27(@interactjs/core@1.10.27(@interactjs/utils@1.10.27))(@interactjs/utils@1.10.27))(@interactjs/utils@1.10.27)(typescript@5.3.3)
-      '@interactjs/interactjs': 1.10.27(typescript@5.3.3)
-      '@interactjs/modifiers': 1.10.27(@interactjs/core@1.10.27(@interactjs/utils@1.10.27))(@interactjs/utils@1.10.27)
-      '@types/element-resize-detector': 1.1.6
-      element-resize-detector: 1.2.4
-      mitt: 3.0.1
-      vue: 3.4.19(typescript@5.3.3)
-    transitivePeerDependencies:
-      - '@interactjs/core'
-      - '@interactjs/utils'
-      - typescript
 
   vue3-grid-layout@1.0.0(@interactjs/core@1.10.27(@interactjs/utils@1.10.27))(@interactjs/utils@1.10.27)(typescript@5.3.3):
     dependencies:
