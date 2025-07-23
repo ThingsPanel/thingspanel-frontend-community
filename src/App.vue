@@ -44,9 +44,6 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <NMessageProvider>
-    <Content />
-  </NMessageProvider>
   <NConfigProvider
     :hljs="hljs"
     :theme="naiveDarkTheme"
@@ -55,8 +52,11 @@ onBeforeUnmount(() => {
     :date-locale="naiveDateLocale"
     class="h-full"
   >
-    <AppProvider>
-      <RouterView class="bg-layout" />
-    </AppProvider>
+    <NMessageProvider>
+      <Content />
+      <AppProvider>
+        <RouterView class="bg-layout" />
+      </AppProvider>
+    </NMessageProvider>
   </NConfigProvider>
 </template>

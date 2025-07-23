@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { NMessageProvider } from 'naive-ui';
 import { computed, h, onMounted } from 'vue'
 import { NButton } from 'naive-ui'
 import { AdminLayout, LAYOUT_SCROLL_EL_ID } from '@sa/materials'
@@ -131,7 +132,7 @@ onMounted(() => {
                   }
                 },
                 {
-                  default: () => $t('card.toDeviceDetailPage')
+                  default: () => $t('common.toDeviceDetailPage')
                 }
               )
           })
@@ -155,7 +156,7 @@ onMounted(() => {
                   }
                 },
                 {
-                  default: () => $t('card.toDeviceDetailPage')
+                  default: () => $t('common.toDeviceDetailPage')
                 }
               )
           })
@@ -181,7 +182,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <AdminLayout
+  <NMessageProvider>
+    <AdminLayout
     v-model:sider-collapse="appStore.siderCollapse"
     :mode="layoutMode"
     :scroll-el-id="LAYOUT_SCROLL_EL_ID"
@@ -215,6 +217,7 @@ onMounted(() => {
       <GlobalFooter />
     </template>
   </AdminLayout>
+  </NMessageProvider>
 </template>
 
 <style lang="scss">

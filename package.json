@@ -72,7 +72,7 @@
     "lodash-es": "4.17.21",
     "moment": "^2.30.1",
     "moving-numbers-vue3": "^1.1.3",
-    "naive-ui": "2.38.2",
+    "naive-ui": "2.42.0",
     "nanoid": "^5.0.6",
     "nprogress": "0.2.0",
     "pinia": "2.1.7",

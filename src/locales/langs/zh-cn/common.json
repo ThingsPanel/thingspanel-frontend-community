@@ -198,6 +198,7 @@
   "common.complete": "完成",
   "common.actions": "操作",
   "common.input": "请输入",
+  "common.toDeviceDetailPage": "点击进入设备详情页面",
   "common.select": "请选择",
   "common.selectOrInput": "选择或输入",
   "common.remark": "备注",
