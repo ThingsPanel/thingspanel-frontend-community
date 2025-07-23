@@ -1,42 +1,49 @@
 // src/components/panelv2/types.ts
 
-// --- 基础配置单元 ---
+// 导入新的配置类型系统
+export * from './types/config'
+
+// --- 兼容老版本的配置单元（逐步迁移） ---
 /**
  * @description 定义一个配置项，包含其值和对应的配置器组件标识。
- * 这是实现"配置驱动"的基础。
+ * @deprecated 逐步迁移到新的ConfigItem
  */
-export interface ConfigItem<T> {
-  value: T // 配置的实际值
-  inspector: string // 指向 InspectorRegistry 的 key，告诉UI应渲染哪个配置器组件
-  label?: string // 配置项的显示标签
-  description?: string // 配置项的描述信息
+export interface LegacyConfigItem<T> {
+  value: T
+  inspector: string
+  label?: string
+  description?: string
 }
 
 // --- 卡片数据结构 ---
 /**
- * @description 代表一个卡片实例。它现在主要由“布局”和“配置”组成。
+ * @description 代表一个卡片实例，支持分层配置
  */
 export interface PanelCard {
   id: string // 唯一实例ID
-  type: string // 卡片类型标识，用于在用户实现层决定渲染哪个内容组件
-  layout: { x: number; y: number; w: number; h: number } // 布局信息
-  // 卡片的具体配置，每个字段都是一个独立的、可配置的单元
+  type: string // 卡片类型标识
+
+  // 新的分层配置结构
   config: {
-    [key: string]: ConfigItem<any>
+    base: NodeBaseConfig // 基础配置（位置、状态、外观）
+    interaction: NodeInteractionConfig // 交互配置
+    content: NodeContentConfig // 内容配置（由渲染器定义）
   }
+
+  // 布局信息（从config.base.layout同步）
+  layout: NodeLayout
 }
 
 // --- 看板状态 ---
 /**
- * @description 整个看板的状态树
+ * @description 整个看板的状态树，支持分层配置
  */
 export interface PanelState {
   cards: PanelCard[]
   selectedItemId?: string | null
-  // 看板自身的全局配置
-  config: {
-    [key: string]: ConfigItem<any>
-  }
+
+  // 看板全局配置
+  config: PanelConfig
 }
 
 // --- 其他辅助类型 ---
@@ -45,11 +52,21 @@ export interface PanelState {
  * @description 代表左侧侧边栏中可拖拽的组件项。
  */
 export interface DraggableItem {
-  type: string // 组件类型，必须与某个已注册的卡片组件类型对应
-  label: string // 在侧边栏中显示的名称
-  icon?: string // (可选) 显示的图标
+  type: string // 组件类型
+  label: string // 显示名称
+  icon?: string // 图标
+  category?: string // 分类
+
   // 拖拽生成卡片时的默认数据
-  defaultData: Omit<PanelCard, 'id' | 'layout'>
+  defaultData: {
+    type: string
+    config: {
+      base: Partial<NodeBaseConfig>
+      interaction: Partial<NodeInteractionConfig>
+      content: NodeContentConfig
+    }
+    layout: NodeLayout
+  }
 }
 
 /**

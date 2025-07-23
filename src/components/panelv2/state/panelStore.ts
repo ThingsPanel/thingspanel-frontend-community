@@ -70,18 +70,31 @@ export const usePanelStore = defineStore('panelV2', {
 
   actions: {
     /**
-     * @description 添加一个新卡片
+     * @description 添加卡片 - 支持从拖拽项添加或直接添加卡片数据
      */
-    addCard(item: DraggableItem, position: { x: number; y: number }) {
-      const newCard: PanelCard = {
-        ...item.defaultData,
-        id: nanoid(),
-        layout: {
-          ...position,
-          w: item.defaultData.layout?.w || 4,
-          h: item.defaultData.layout?.h || 2
+    addCard(itemOrCard: DraggableItem | PanelCard | any, position?: { x: number; y: number }) {
+      let newCard: PanelCard
+
+      // 如果提供了位置参数，说明是从拖拽项添加
+      if (position && itemOrCard.defaultData) {
+        const item = itemOrCard as DraggableItem
+        newCard = {
+          ...item.defaultData,
+          id: nanoid(),
+          layout: {
+            ...position,
+            w: item.defaultData.layout?.w || 4,
+            h: item.defaultData.layout?.h || 2
+          }
+        }
+      } else {
+        // 直接添加卡片数据
+        newCard = { ...itemOrCard }
+        if (!newCard.id) {
+          newCard.id = nanoid()
         }
       }
+
       this.cards.push(newCard)
       this.selectedItemId = newCard.id
       // 自动保存到本地存储
@@ -170,6 +183,17 @@ export const usePanelStore = defineStore('panelV2', {
       }
       console.log('本地存储中没有找到保存的状态')
       return false
+    },
+
+    /**
+     * @description 清空所有卡片
+     */
+    clearCards() {
+      this.cards = []
+      this.selectedItemId = null
+      // 自动保存到本地存储
+      this.saveToStorage()
+      console.log('已清空所有卡片')
     },
 
     /**

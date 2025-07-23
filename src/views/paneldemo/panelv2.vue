@@ -1,11 +1,11 @@
 <template>
   <div class="panelv2-demo-page">
-    <PanelV2Demo />
+    <ComprehensiveDemo />
   </div>
 </template>
 
 <script lang="ts" setup>
-import PanelV2Demo from '@/components/panelv2/demo/PanelV2Demo.vue';
+import ComprehensiveDemo from '@/components/panelv2/demo/ComprehensiveDemo.vue';
 </script>
 
 <style scoped>

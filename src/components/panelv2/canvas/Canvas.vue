@@ -5,24 +5,38 @@
     @dragover.prevent 
     @drop="onDrop" 
     @click="onCanvasClick"
+    @contextmenu="onCanvasContextMenu"
   >
     <div ref="gridstackContainer" class="grid-stack"></div>
+    
+    <!-- 上下文菜单 -->
+    <ContextMenu
+      :visible="contextMenu.visible"
+      :x="contextMenu.x"
+      :y="contextMenu.y"
+      :items="contextMenu.items"
+      @update:visible="updateContextMenuVisibility"
+      @item-click="handleContextMenuClick"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, watch, nextTick, useSlots, h, render, computed } from 'vue';
+import { ref, onMounted, watch, useSlots, h, render, computed } from 'vue';
 import 'gridstack/dist/gridstack.min.css';
 import { GridStack } from 'gridstack';
-import type { GridStackElement, GridStackNode } from 'gridstack';
+import type { GridStackElement } from 'gridstack';
 import { usePanelStore } from '../state/panelStore';
 import type { PanelCard, DraggableItem } from '../types';
+import ContextMenu from '../common/ContextMenu.vue';
+import { useContextMenu } from '../composables/useContextMenu';
 
 const panelStore = usePanelStore();
 const gridstackContainer = ref<GridStackElement>();
 let grid: GridStack | null = null;
 
 const slots = useSlots();
+const { contextMenu, showContextMenu, updateContextMenuVisibility } = useContextMenu();
 
 // --- 计算属性：画布背景颜色 ---
 const canvasBackgroundColor = computed(() => {
@@ -39,10 +53,22 @@ const gridColumns = computed(() => {
 // --- Gridstack 初始化 ---
 onMounted(() => {
   grid = GridStack.init({
-    float: true,
-    cellHeight: '70px',
-    minRow: 1,
     column: gridColumns.value,
+    cellHeight: 70,
+    minRow: 1,
+    maxRow: 0, // 0表示无限制，允许内容超出视口
+    float: true,
+    animate: true,
+    resizable: {
+      handles: 'e, se, s, sw, w'
+    },
+    draggable: {
+      handle: '.grid-stack-item-content',
+      scroll: true, // 允许拖拽时滚动
+      appendTo: 'parent'
+    },
+    margin: 5,
+    removable: false
   });
 
   loadCards(panelStore.cards);
@@ -59,7 +85,7 @@ onMounted(() => {
 });
 
 // --- 监听 Pinia 中卡片数据的变化 ---
-watch(() => panelStore.cards, (newCards, oldCards) => {
+watch(() => panelStore.cards, (newCards) => {
   // 这是一个简化的同步逻辑，实际应用中可能需要更复杂的 diffing
   if (grid) {
     grid.removeAll();
@@ -86,6 +112,11 @@ const loadCards = (cards: PanelCard[]) => {
     cardEl.addEventListener('click', (e) => {
       e.stopPropagation();
       panelStore.selectItem(card.id);
+    });
+
+    // 添加右键菜单
+    cardEl.addEventListener('contextmenu', (e) => {
+      onCardContextMenu(e as MouseEvent, card);
     });
 
     // 使用插槽进行渲染
@@ -136,6 +167,146 @@ const onCanvasClick = (event: MouseEvent) => {
   }
 };
 
+// --- 画布右键菜单 ---
+const onCanvasContextMenu = (event: MouseEvent) => {
+  // 只有点击空白区域时才显示画布菜单
+  if (event.target === event.currentTarget || (event.target as Element).classList.contains('grid-stack')) {
+    const menuItems = [
+      {
+        label: '粘贴',
+        icon: 'fa fa-paste',
+        shortcut: 'Ctrl+V',
+        disabled: !hasClipboardContent(),
+        action: () => pasteFromClipboard()
+      },
+      { type: 'divider' as const },
+      {
+        label: '清空画布',
+        icon: 'fa fa-trash',
+        action: () => clearCanvas()
+      },
+      {
+        label: '网格设置',
+        icon: 'fa fa-th',
+        action: () => showGridSettings()
+      }
+    ];
+    
+    showContextMenu(event, menuItems);
+  }
+};
+
+// --- 卡片右键菜单 ---
+const onCardContextMenu = (event: MouseEvent, card: PanelCard) => {
+  event.stopPropagation();
+  
+  const menuItems = [
+    {
+      label: '复制',
+      icon: 'fa fa-copy',
+      shortcut: 'Ctrl+C',
+      action: () => copyCard(card)
+    },
+    {
+      label: '剪切',
+      icon: 'fa fa-cut',
+      shortcut: 'Ctrl+X',
+      action: () => cutCard(card)
+    },
+    {
+      label: '复制样式',
+      icon: 'fa fa-paint-brush',
+      action: () => copyCardStyle(card)
+    },
+    { type: 'divider' as const },
+    {
+      label: '置顶',
+      icon: 'fa fa-arrow-up',
+      action: () => bringToFront(card)
+    },
+    {
+      label: '置底',
+      icon: 'fa fa-arrow-down',
+      action: () => sendToBack(card)
+    },
+    { type: 'divider' as const },
+    {
+      label: '删除',
+      icon: 'fa fa-trash',
+      shortcut: 'Delete',
+      action: () => deleteCard(card)
+    }
+  ];
+  
+  showContextMenu(event, menuItems);
+};
+
+// --- 上下文菜单处理函数 ---
+const handleContextMenuClick = () => {
+  // 已在 action 中处理
+};
+
+// --- 剪贴板和操作功能 ---
+let clipboardContent: PanelCard | null = null;
+
+const hasClipboardContent = () => !!clipboardContent;
+
+const copyCard = (card: PanelCard) => {
+  clipboardContent = JSON.parse(JSON.stringify(card));
+  console.log('卡片已复制到剪贴板');
+};
+
+const cutCard = (card: PanelCard) => {
+  copyCard(card);
+  deleteCard(card);
+};
+
+const pasteFromClipboard = () => {
+  if (clipboardContent) {
+    // 在鼠标位置附近粘贴
+    const newCard = {
+      ...clipboardContent,
+      id: Date.now().toString(), // 生成新ID
+      layout: {
+        ...clipboardContent.layout,
+        x: clipboardContent.layout.x + 1,
+        y: clipboardContent.layout.y + 1
+      }
+    };
+    panelStore.cards.push(newCard);
+  }
+};
+
+const copyCardStyle = (card: PanelCard) => {
+  // 实现样式复制逻辑
+  console.log('复制卡片样式:', card.config);
+};
+
+const deleteCard = (card: PanelCard) => {
+  panelStore.deleteCard(card.id);
+};
+
+const bringToFront = (card: PanelCard) => {
+  // 实现置顶逻辑
+  console.log('置顶卡片:', card.id);
+};
+
+const sendToBack = (card: PanelCard) => {
+  // 实现置底逻辑
+  console.log('置底卡片:', card.id);
+};
+
+const clearCanvas = () => {
+  if (confirm('确定要清空整个画布吗？此操作不可撤销。')) {
+    panelStore.cards.length = 0;
+  }
+};
+
+const showGridSettings = () => {
+  // 实现网格设置逻辑
+  console.log('显示网格设置');
+};
+
 </script>
 
 <style>
@@ -163,10 +334,15 @@ const onCanvasClick = (event: MouseEvent) => {
 
 .canvas-wrapper {
   flex: 1;
-  overflow: auto;
-  padding: 16px;
   position: relative;
   background-color: #f5f5f5;
-  min-height: 0; /* 关键：允许flex子项收缩 */
+  overflow: auto; /* 允许滚动 */
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.grid-stack {
+  width: 100%;
+  min-height: 100%; /* 最小高度为容器高度，内容可以更高 */
 }
 </style>
