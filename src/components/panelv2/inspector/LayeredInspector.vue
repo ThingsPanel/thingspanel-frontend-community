@@ -1,6 +1,6 @@
 <template>
   <div class="layered-inspector">
-    <div v-if="selectedItem" class="inspector-content">
+    <div class="inspector-content">
       <!-- 配置标签切换 -->
       <div class="config-tabs">
         <button 
@@ -22,7 +22,7 @@
         <div class="config-group">
           <h5>布局设置</h5>
           <ConfigControl
-            v-model="panelConfig.layout.gridColumns"
+            :modelValue="panelConfig?.layout?.gridColumns || 12"
             type="number-input"
             label="网格列数"
             :min="6"
@@ -30,7 +30,7 @@
             @update:modelValue="updatePanelConfig('layout.gridColumns', $event)"
           />
           <ConfigControl
-            v-model="panelConfig.layout.cellHeight"
+            :modelValue="panelConfig?.layout?.cellHeight || 70"
             type="number-input"
             label="单元格高度"
             :min="40"
@@ -38,7 +38,7 @@
             @update:modelValue="updatePanelConfig('layout.cellHeight', $event)"
           />
           <ConfigControl
-            v-model="panelConfig.layout.margin"
+            :modelValue="panelConfig?.layout?.margin || 5"
             type="number-input"
             label="卡片间距"
             :min="0"
@@ -51,7 +51,7 @@
         <div class="config-group">
           <h5>外观设置</h5>
           <ConfigControl
-            v-model="panelConfig.appearance.backgroundColor"
+            :modelValue="panelConfig?.appearance?.backgroundColor || '#f5f5f5'"
             type="color-picker"
             label="背景色"
             @update:modelValue="updatePanelConfig('appearance.backgroundColor', $event)"
@@ -62,13 +62,13 @@
         <div class="config-group">
           <h5>交互设置</h5>
           <ConfigControl
-            v-model="panelConfig.interaction.allowDrag"
+            :modelValue="panelConfig?.interaction?.allowDrag !== false"
             type="switch"
             label="允许拖拽"
             @update:modelValue="updatePanelConfig('interaction.allowDrag', $event)"
           />
           <ConfigControl
-            v-model="panelConfig.interaction.allowResize"
+            :modelValue="panelConfig?.interaction?.allowResize !== false"
             type="switch"
             label="允许调整大小"
             @update:modelValue="updatePanelConfig('interaction.allowResize', $event)"
@@ -85,29 +85,29 @@
           <h5>布局设置</h5>
           <div class="layout-grid">
             <ConfigControl
-              v-model="selectedNode.config.base.layout.x"
+              :modelValue="selectedNode?.config?.base?.layout?.x || 0"
               type="number-input"
               label="X位置"
               :min="0"
               readonly
             />
             <ConfigControl
-              v-model="selectedNode.config.base.layout.y"
+              :modelValue="selectedNode?.config?.base?.layout?.y || 0"
               type="number-input"
               label="Y位置"
               :min="0"
               readonly
             />
             <ConfigControl
-              v-model="selectedNode.config.base.layout.w"
+              :modelValue="selectedNode?.config?.base?.layout?.w || 4"
               type="number-input"
               label="宽度"
               :min="1"
-              :max="panelConfig.layout.gridColumns"
+              :max="panelConfig?.layout?.gridColumns || 12"
               @update:modelValue="updateNodeConfig('base.layout.w', $event)"
             />
             <ConfigControl
-              v-model="selectedNode.config.base.layout.h"
+              :modelValue="selectedNode?.config?.base?.layout?.h || 2"
               type="number-input"
               label="高度"
               :min="1"
@@ -121,13 +121,13 @@
         <div class="config-group">
           <h5>状态设置</h5>
           <ConfigControl
-            v-model="selectedNode.config.base.state.locked"
+            :modelValue="selectedNode?.config?.base?.state?.locked || false"
             type="switch"
             label="锁定位置"
             @update:modelValue="updateNodeConfig('base.state.locked', $event)"
           />
           <ConfigControl
-            v-model="selectedNode.config.base.state.hidden"
+            :modelValue="selectedNode?.config?.base?.state?.hidden || false"
             type="switch"
             label="隐藏节点"
             @update:modelValue="updateNodeConfig('base.state.hidden', $event)"
@@ -138,13 +138,13 @@
         <div class="config-group">
           <h5>外观设置</h5>
           <ConfigControl
-            v-model="selectedNode.config.base.appearance.border?.color"
+            :modelValue="selectedNode.config.base.appearance.border?.color || '#e8e8e8'"
             type="color-picker"
             label="边框颜色"
             @update:modelValue="updateNodeAppearance('border.color', $event)"
           />
           <ConfigControl
-            v-model="selectedNode.config.base.appearance.border?.width"
+            :modelValue="selectedNode.config.base.appearance.border?.width || 1"
             type="number-input"
             label="边框宽度"
             :min="0"
@@ -162,7 +162,7 @@
         <div class="config-group">
           <h5>点击行为</h5>
           <ConfigControl
-            v-model="selectedNode.config.interaction.onClick?.type"
+            :modelValue="selectedNode.config.interaction.onClick?.type || 'none'"
             type="select"
             label="点击类型"
             :options="[
@@ -175,7 +175,7 @@
           />
           <ConfigControl
             v-if="selectedNode.config.interaction.onClick?.type === 'navigate'"
-            v-model="selectedNode.config.interaction.onClick.target"
+            :modelValue="selectedNode.config.interaction.onClick?.target || ''"
             type="text-input"
             label="跳转地址"
             @update:modelValue="updateNodeInteraction('onClick.target', $event)"
@@ -186,13 +186,13 @@
         <div class="config-group">
           <h5>悬停行为</h5>
           <ConfigControl
-            v-model="selectedNode.config.interaction.onHover?.tooltip"
+            :modelValue="selectedNode.config.interaction.onHover?.tooltip || ''"
             type="text-input"
             label="提示内容"
             @update:modelValue="updateNodeInteraction('onHover.tooltip', $event)"
           />
           <ConfigControl
-            v-model="selectedNode.config.interaction.onHover?.highlight"
+            :modelValue="selectedNode.config.interaction.onHover?.highlight || false"
             type="switch"
             label="悬停高亮"
             @update:modelValue="updateNodeInteraction('onHover.highlight', $event)"
@@ -220,23 +220,30 @@
         </div>
       </div>
     </div>
-    
-    <div v-else class="placeholder">
-      <p>请选择一个节点或看板进行配置</p>
-    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { usePanelStore } from '../state/panelStore';
 import ConfigControl from './components/ConfigControl.vue';
 import type { PanelConfig, ConfigItem } from '../types';
 
 const panelStore = usePanelStore();
 
-// 当前激活的配置标签
-const activeTab = ref('content');
+// 当前激活的配置标签 - 根据选择状态自动设置
+const activeTab = ref('panel');
+
+// 监听选择状态变化，自动切换标签
+watch(() => panelStore.selectedItemId, (newId) => {
+  if (newId) {
+    // 选择了节点，切换到内容标签
+    activeTab.value = 'content';
+  } else {
+    // 没有选择，切换到看板标签
+    activeTab.value = 'panel';
+  }
+}, { immediate: true });
 
 // 配置标签定义
 const configTabs = [
@@ -254,7 +261,6 @@ const selectedNode = computed(() =>
   panelStore.cards.find(card => card.id === panelStore.selectedItemId) : 
   null
 );
-
 const panelConfig = computed(() => panelStore.config as PanelConfig);
 
 // 根据配置项获取控件类型
@@ -291,61 +297,30 @@ const updatePanelConfig = (path: string, value: any) => {
 const updateNodeConfig = (path: string, value: any) => {
   if (!selectedNode.value) return;
   
-  const keys = path.split('.');
-  let target = selectedNode.value.config as any;
-  
-  for (let i = 0; i < keys.length - 1; i++) {
-    if (!target[keys[i]]) {
-      target[keys[i]] = {};
-    }
-    target = target[keys[i]];
+  // 确定配置类型
+  let configType: 'base' | 'interaction' | 'content';
+  if (path.startsWith('base.')) {
+    configType = 'base';
+    path = path.substring(5); // 移除 'base.' 前缀
+  } else if (path.startsWith('interaction.')) {
+    configType = 'interaction';
+    path = path.substring(12); // 移除 'interaction.' 前缀
+  } else {
+    configType = 'content';
   }
   
-  target[keys[keys.length - 1]] = value;
-  
-  // 同步布局信息
-  if (path.startsWith('base.layout')) {
-    const layoutKey = keys[keys.length - 1];
-    selectedNode.value.layout[layoutKey] = value;
-  }
-  
-  panelStore.saveToStorage();
+  // 调用store的方法
+  panelStore.updateNodeConfig(selectedNode.value.id, configType, path, value);
 };
 
-// 更新节点外观
+// 更新节点外观（使用统一的配置更新）
 const updateNodeAppearance = (path: string, value: any) => {
-  if (!selectedNode.value) return;
-  
-  const keys = path.split('.');
-  let target = selectedNode.value.config.base.appearance as any;
-  
-  for (let i = 0; i < keys.length - 1; i++) {
-    if (!target[keys[i]]) {
-      target[keys[i]] = {};
-    }
-    target = target[keys[i]];
-  }
-  
-  target[keys[keys.length - 1]] = value;
-  panelStore.saveToStorage();
+  updateNodeConfig(`base.appearance.${path}`, value);
 };
 
-// 更新节点交互
+// 更新节点交互（使用统一的配置更新）
 const updateNodeInteraction = (path: string, value: any) => {
-  if (!selectedNode.value) return;
-  
-  const keys = path.split('.');
-  let target = selectedNode.value.config.interaction as any;
-  
-  for (let i = 0; i < keys.length - 1; i++) {
-    if (!target[keys[i]]) {
-      target[keys[i]] = {};
-    }
-    target = target[keys[i]];
-  }
-  
-  target[keys[keys.length - 1]] = value;
-  panelStore.saveToStorage();
+  updateNodeConfig(`interaction.${path}`, value);
 };
 
 // 更新节点内容

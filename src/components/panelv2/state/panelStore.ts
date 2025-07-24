@@ -1,7 +1,16 @@
 // src/components/panelv2/state/panelStore.ts
 import { defineStore } from 'pinia'
 import { nanoid } from 'nanoid'
-import type { PanelState, PanelCard, DraggableItem, ConfigItem } from '../types'
+import type {
+  PanelState,
+  PanelCard,
+  DraggableItem,
+  LegacyConfigItem,
+  PanelConfig,
+  NodeBaseConfig,
+  NodeInteractionConfig,
+  NodeContentConfig
+} from '../types'
 
 // 本地存储的 key
 const STORAGE_KEY = 'panelv2_state'
@@ -41,6 +50,82 @@ function saveStateToStorage(state: PanelState) {
   }
 }
 
+// 默认看板配置
+const getDefaultPanelConfig = (): PanelConfig => ({
+  layout: {
+    gridColumns: 12,
+    cellHeight: 70,
+    margin: 5,
+    padding: 16
+  },
+  appearance: {
+    backgroundColor: '#f5f5f5',
+    theme: 'light'
+  },
+  data: {
+    globalDataSource: '{}',
+    sharedVariables: '{}',
+    apiConfig: {
+      timeout: 5000,
+      refreshInterval: 30000
+    },
+    realTimeConfig: {
+      enabled: false
+    }
+  },
+  interaction: {
+    allowDrag: true,
+    allowResize: true,
+    allowEdit: true,
+    allowDelete: true,
+    globalClickBehavior: {
+      type: 'blur',
+      clearSelection: true
+    }
+  },
+  meta: {
+    title: '新建看板',
+    version: '1.0.0',
+    createTime: new Date().toISOString(),
+    updateTime: new Date().toISOString()
+  }
+})
+
+// 默认节点基础配置
+const getDefaultNodeBaseConfig = (layout: any): NodeBaseConfig => ({
+  layout: {
+    x: layout.x || 0,
+    y: layout.y || 0,
+    w: layout.w || 4,
+    h: layout.h || 2,
+    ...layout
+  },
+  state: {
+    locked: false,
+    hidden: false,
+    disabled: false
+  },
+  appearance: {
+    border: {
+      width: 1,
+      style: 'solid',
+      color: '#e8e8e8',
+      radius: 4
+    },
+    opacity: 1
+  }
+})
+
+// 默认节点交互配置
+const getDefaultNodeInteractionConfig = (): NodeInteractionConfig => ({
+  onClick: {
+    type: 'none'
+  },
+  onHover: {
+    highlight: false
+  }
+})
+
 export const usePanelStore = defineStore('panelV2', {
   state: (): PanelState => {
     // 尝试从本地存储加载状态
@@ -48,7 +133,7 @@ export const usePanelStore = defineStore('panelV2', {
     return {
       cards: savedState?.cards || [],
       selectedItemId: savedState?.selectedItemId || null,
-      config: savedState?.config || {}
+      config: savedState?.config || getDefaultPanelConfig()
     }
   },
 
@@ -78,26 +163,42 @@ export const usePanelStore = defineStore('panelV2', {
       // 如果提供了位置参数，说明是从拖拽项添加
       if (position && itemOrCard.defaultData) {
         const item = itemOrCard as DraggableItem
+        const layout = {
+          x: position.x,
+          y: position.y,
+          w: item.defaultData.layout?.w || 4,
+          h: item.defaultData.layout?.h || 2
+        }
+
         newCard = {
-          ...item.defaultData,
           id: nanoid(),
-          layout: {
-            ...position,
-            w: item.defaultData.layout?.w || 4,
-            h: item.defaultData.layout?.h || 2
-          }
+          type: item.defaultData.type,
+          config: {
+            base: { ...getDefaultNodeBaseConfig(layout), ...item.defaultData.config.base },
+            interaction: { ...getDefaultNodeInteractionConfig(), ...item.defaultData.config.interaction },
+            content: { ...item.defaultData.config.content }
+          },
+          layout
         }
       } else {
-        // 直接添加卡片数据
+        // 直接添加卡片数据（向后兼容）
         newCard = { ...itemOrCard }
         if (!newCard.id) {
           newCard.id = nanoid()
+        }
+
+        // 确保有完整的配置结构
+        if (!newCard.config?.base) {
+          newCard.config = {
+            base: getDefaultNodeBaseConfig(newCard.layout),
+            interaction: getDefaultNodeInteractionConfig(),
+            content: newCard.config || {}
+          }
         }
       }
 
       this.cards.push(newCard)
       this.selectedItemId = newCard.id
-      // 自动保存到本地存储
       this.saveToStorage()
     },
 
@@ -108,32 +209,77 @@ export const usePanelStore = defineStore('panelV2', {
       const card = this.cards.find(c => c.id === id)
       if (card) {
         card.layout = newLayout
-        // 自动保存到本地存储
+        // 同步更新基础配置中的布局
+        card.config.base.layout = { ...card.config.base.layout, ...newLayout }
         this.saveToStorage()
       }
     },
 
     /**
-     * @description 更新一个配置项的值（通用 Action）
-     * @param configKey - 要更新的配置的 key
-     * @param newValue - 新的值
-     * @param cardId - (可选) 如果是更新卡片配置，则提供卡片ID
+     * @description 更新配置项的值（兼容老版本）
+     * @deprecated 建议使用新的分层配置更新方法
      */
     updateConfigValue({ configKey, newValue, cardId }: { configKey: string; newValue: any; cardId?: string }) {
-      let targetConfig: { [key: string]: ConfigItem<any> } | undefined
-
       if (cardId) {
         const card = this.cards.find(c => c.id === cardId)
-        if (card) targetConfig = card.config
+        if (card && card.config.content && card.config.content[configKey]) {
+          card.config.content[configKey].value = newValue
+          this.saveToStorage()
+        }
       } else {
-        targetConfig = this.config
-      }
-
-      if (targetConfig && targetConfig[configKey]) {
-        targetConfig[configKey].value = newValue
-        // 自动保存到本地存储
+        // 看板配置更新（需要适配新结构）
+        const keys = configKey.split('.')
+        let target = this.config as any
+        for (let i = 0; i < keys.length - 1; i++) {
+          if (!target[keys[i]]) target[keys[i]] = {}
+          target = target[keys[i]]
+        }
+        target[keys[keys.length - 1]] = newValue
         this.saveToStorage()
       }
+    },
+
+    /**
+     * @description 更新看板配置
+     */
+    updatePanelConfig(path: string, value: any) {
+      const keys = path.split('.')
+      let target = this.config as any
+
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!target[keys[i]]) target[keys[i]] = {}
+        target = target[keys[i]]
+      }
+
+      target[keys[keys.length - 1]] = value
+      this.config.meta.updateTime = new Date().toISOString()
+      this.saveToStorage()
+    },
+
+    /**
+     * @description 更新节点配置
+     */
+    updateNodeConfig(cardId: string, configType: 'base' | 'interaction' | 'content', path: string, value: any) {
+      const card = this.cards.find(c => c.id === cardId)
+      if (!card) return
+
+      const keys = path.split('.')
+      let target = card.config[configType] as any
+
+      for (let i = 0; i < keys.length - 1; i++) {
+        if (!target[keys[i]]) target[keys[i]] = {}
+        target = target[keys[i]]
+      }
+
+      target[keys[keys.length - 1]] = value
+
+      // 如果更新的是基础配置中的布局，同步到layout字段
+      if (configType === 'base' && path.startsWith('layout.')) {
+        const layoutKey = keys[keys.length - 1]
+        card.layout[layoutKey] = value
+      }
+
+      this.saveToStorage()
     },
 
     /**

@@ -16,12 +16,33 @@ export interface PanelConfig {
     theme?: string // 主题标识
   }
 
+  // 数据配置（重要：全局数据源，可传递给所有卡片）
+  data: {
+    globalDataSource: string // 全局数据源配置（JSON字符串）
+    sharedVariables: string // 共享变量（JSON字符串）
+    apiConfig?: {
+      baseUrl?: string // API基础URL
+      headers?: Record<string, string> // 请求头
+      timeout?: number // 超时时间
+      refreshInterval?: number // 刷新间隔
+    }
+    realTimeConfig?: {
+      enabled: boolean // 是否启用实时数据
+      websocketUrl?: string // WebSocket连接地址
+      eventTypes?: string[] // 监听的事件类型
+    }
+  }
+
   // 交互配置
   interaction: {
     allowDrag: boolean // 允许拖拽
     allowResize: boolean // 允许调整大小
     allowEdit: boolean // 允许编辑
     allowDelete: boolean // 允许删除
+    globalClickBehavior?: {
+      type: 'none' | 'blur' | 'select'
+      clearSelection?: boolean
+    }
   }
 
   // 元信息

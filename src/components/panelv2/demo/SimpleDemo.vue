@@ -34,7 +34,6 @@
       <PanelV2
         ref="panelRef"
         :draggableItems="simpleDraggableItems"
-        :inspectorRegistry="simpleInspectorRegistry"
         :enablePluginSystem="false"
       >
         <template #card="{ cardData }">
@@ -65,95 +64,67 @@ import type { DraggableItem } from '../types'
 const panelRef = ref<InstanceType<typeof PanelV2>>()
 const fileInput = ref<HTMLInputElement>()
 
-// 重新设计：让卡片渲染器定义自己的配置结构
-const getCardConfigSchema = (type: string) => {
-  const schemas = {
+// 使用新的分层配置架构
+const createNodeContentConfig = (type: string) => {
+  const contentConfigs = {
     'text-card': {
-      title: { 
-        type: 'text', 
-        label: '标题', 
-        default: '文本标题',
+      title: {
+        value: '文本标题',
+        type: 'text',
+        label: '标题',
         required: true
       },
-      content: { 
-        type: 'textarea', 
-        label: '内容', 
-        default: '这是一个文本卡片的内容示例',
+      content: {
+        value: '这是一个文本卡片的内容示例',
+        type: 'textarea',
+        label: '内容',
         rows: 3
       },
-      backgroundColor: { 
-        type: 'color', 
-        label: '背景色', 
-        default: '#ffffff'
+      backgroundColor: {
+        value: '#ffffff',
+        type: 'color',
+        label: '背景色'
       },
-      textColor: { 
-        type: 'color', 
-        label: '文字颜色', 
-        default: '#333333'
+      textColor: {
+        value: '#333333',
+        type: 'color',
+        label: '文字颜色'
       },
-      fontSize: { 
-        type: 'number', 
-        label: '字体大小', 
-        default: 14,
+      fontSize: {
+        value: 14,
+        type: 'number',
+        label: '字体大小',
         min: 12,
         max: 24
       }
     },
     'info-card': {
-      title: { 
-        type: 'text', 
-        label: '标题', 
-        default: '信息标题' 
+      title: {
+        value: '信息标题',
+        type: 'text',
+        label: '标题'
       },
-      value: { 
-        type: 'text', 
-        label: '数值', 
-        default: '100' 
+      value: {
+        value: '100',
+        type: 'text',
+        label: '数值'
       },
-      unit: { 
-        type: 'text', 
-        label: '单位', 
-        default: '个' 
+      unit: {
+        value: '个',
+        type: 'text',
+        label: '单位'
       },
-      color: { 
-        type: 'color', 
-        label: '主题色', 
-        default: '#1890ff' 
+      color: {
+        value: '#1890ff',
+        type: 'color',
+        label: '主题色'
       }
     }
   }
-  return schemas[type] || {}
+  return contentConfigs[type] || {}
 }
 
-// 根据配置结构生成默认配置
-const createDefaultConfig = (type: string) => {
-  const schema = getCardConfigSchema(type)
-  const config = {}
-  Object.entries(schema).forEach(([key, def]) => {
-    config[key] = {
-      value: def.default,
-      inspector: getInspectorType(def.type),
-      label: def.label,
-      ...def
-    }
-  })
-  return config
-}
-
-// 映射配置类型到Inspector控件
-const getInspectorType = (configType: string) => {
-  const mapping = {
-    'text': 'text-input',
-    'textarea': 'textarea',
-    'color': 'color-picker',
-    'number': 'number-input',
-    'select': 'select',
-    'switch': 'switch'
-  }
-  return mapping[configType] || 'text-input'
-}
-
-// 简化的可拖拽项
+// 简化的可拖拽项（使用新的分层配置）
 const simpleDraggableItems: DraggableItem[] = [
   {
     type: 'text-card',
@@ -161,7 +132,11 @@ const simpleDraggableItems: DraggableItem[] = [
     icon: 'fa fa-font',
     defaultData: {
       type: 'text-card',
-      config: createDefaultConfig('text-card'),
+      config: {
+        base: {}, // 将由store填充默认值
+        interaction: {}, // 将由store填充默认值
+        content: createNodeContentConfig('text-card')
+      },
       layout: { x: 0, y: 0, w: 4, h: 2 }
     }
   },
@@ -171,7 +146,11 @@ const simpleDraggableItems: DraggableItem[] = [
     icon: 'fa fa-info-circle',
     defaultData: {
       type: 'info-card',
-      config: createDefaultConfig('info-card'),
+      config: {
+        base: {},
+        interaction: {},
+        content: createNodeContentConfig('info-card')
+      },
       layout: { x: 0, y: 0, w: 3, h: 2 }
     }
   }

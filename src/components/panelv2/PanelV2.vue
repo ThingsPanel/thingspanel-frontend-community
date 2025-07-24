@@ -24,7 +24,7 @@
       
       <!-- 右侧检查器区域 -->
       <div class="inspector-container" :class="{ 'collapsed': !isInspectorOpen }">
-        <Inspector v-show="isInspectorOpen" :registry="inspectorRegistry" />
+        <RedesignedInspector v-show="isInspectorOpen" />
         <button class="toggle-btn right-toggle" @click="toggleInspector">
           <i :class="isInspectorOpen ? 'fa fa-chevron-right' : 'fa fa-chevron-left'"></i>
         </button>
@@ -38,7 +38,7 @@ import { onMounted, ref, computed } from 'vue';
 import Toolbar from './toolbar/Toolbar.vue';
 import Sidebar from './sidebar/Sidebar.vue';
 import Canvas from './canvas/Canvas.vue';
-import Inspector from './inspector/Inspector.vue';
+import RedesignedInspector from './inspector/RedesignedInspector.vue';
 import { usePanelStore } from './state/panelStore';
 import type { PanelState, ToolbarAction, DraggableItem, ComponentRegistry } from './types';
 import { PluginManager, providePluginManager, ModuleLoader, JsonLoader } from './plugins';
