@@ -938,16 +938,39 @@ export class PanelNodeRegistryEngine implements NodeRegistryEngine {
 export function createNodeRegistryEngine(): PanelNodeRegistryEngine {
   const engine = new PanelNodeRegistryEngine()
 
-  // 注册默认组件
-  engine.manager.registerComponent({
+  // 注册默认分类
+  engine.categories.createCategory({
+    id: 'basic',
+    name: '基础组件',
+    order: 1,
+    display: {
+      collapsible: true,
+      defaultExpanded: true,
+      showCount: true
+    },
+    meta: {
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      version: '1.0.0'
+    }
+  })
+
+  // 创建基础组件定义（简化版本，用于左侧面板显示）
+  const textCardDef: ComponentDefinition = {
     type: 'text-card',
     name: '文本卡片',
     category: 'basic',
-    meta: {
-      icon: 'fas fa-font',
-      title: '文本卡片',
-      description: '用于显示文本内容的基础卡片',
-      keywords: ['text', 'card', '文本', '卡片']
+    component: null as any, // 占位符
+    configSchema: {
+      base: { type: 'object', properties: {} },
+      interaction: { type: 'object', properties: {} },
+      content: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', title: '标题' },
+          content: { type: 'string', title: '内容' }
+        }
+      }
     },
     defaults: {
       config: {
@@ -958,19 +981,36 @@ export function createNodeRegistryEngine(): PanelNodeRegistryEngine {
           content: '请输入内容...'
         }
       },
-      layout: { w: 4, h: 3, x: 0, y: 0 }
+      layout: { w: 4, h: 3 },
+      style: {}
+    },
+    meta: {
+      title: '文本卡片',
+      description: '用于显示文本内容的基础卡片',
+      icon: 'fas fa-font',
+      version: '1.0.0',
+      keywords: ['text', 'card', '文本', '卡片']
+    },
+    responsive: {
+      autoResize: true
     }
-  })
+  }
 
-  engine.manager.registerComponent({
+  const imageCardDef: ComponentDefinition = {
     type: 'image-card',
     name: '图片卡片',
     category: 'basic',
-    meta: {
-      icon: 'fas fa-image',
-      title: '图片卡片',
-      description: '用于显示图片内容的卡片',
-      keywords: ['image', 'card', '图片', '卡片']
+    component: null as any, // 占位符
+    configSchema: {
+      base: { type: 'object', properties: {} },
+      interaction: { type: 'object', properties: {} },
+      content: {
+        type: 'object',
+        properties: {
+          src: { type: 'string', title: '图片地址' },
+          alt: { type: 'string', title: '替代文本' }
+        }
+      }
     },
     defaults: {
       config: {
@@ -981,20 +1021,27 @@ export function createNodeRegistryEngine(): PanelNodeRegistryEngine {
           alt: '图片'
         }
       },
-      layout: { w: 4, h: 4, x: 0, y: 0 }
-    }
-  })
-
-  // 注册默认分类
-  engine.categories.registerCategory({
-    id: 'basic',
-    name: '基础组件',
-    order: 1,
+      layout: { w: 4, h: 4 },
+      style: {}
+    },
     meta: {
-      icon: 'fas fa-cube',
-      description: '基础的面板组件'
+      title: '图片卡片',
+      description: '用于显示图片内容的卡片',
+      icon: 'fas fa-image',
+      version: '1.0.0',
+      keywords: ['image', 'card', '图片', '卡片']
+    },
+    responsive: {
+      autoResize: true
     }
-  })
+  }
+
+  // 直接添加到注册表
+  engine.registry.components.set('text-card', textCardDef)
+  engine.registry.components.set('image-card', imageCardDef)
+
+  // 重建搜索索引
+  engine.search.buildSearchIndex()
 
   return engine
 }

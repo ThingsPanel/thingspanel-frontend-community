@@ -40,14 +40,12 @@ const { contextMenu, showContextMenu, updateContextMenuVisibility } = useContext
 
 // --- 计算属性：画布背景颜色 ---
 const canvasBackgroundColor = computed(() => {
-  const bgConfig = panelStore.config.backgroundColor;
-  return bgConfig?.value || '#f5f5f5';
+  return panelStore.config.appearance?.backgroundColor || '#f5f5f5';
 });
 
 // --- 计算属性：网格列数 ---
 const gridColumns = computed(() => {
-  const gridConfig = panelStore.config.gridSize;
-  return gridConfig?.value || 12;
+  return panelStore.config.layout?.gridColumns || 12;
 });
 
 // --- Gridstack 初始化 ---
