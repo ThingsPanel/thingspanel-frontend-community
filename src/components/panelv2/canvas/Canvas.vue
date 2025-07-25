@@ -52,7 +52,7 @@ const gridColumns = computed(() => {
 onMounted(() => {
   grid = GridStack.init({
     column: gridColumns.value,
-    cellHeight: 70,
+    cellHeight: panelStore.config.layout?.cellHeight || 70,
     minRow: 1,
     maxRow: 0, // 0表示无限制，允许内容超出视口
     float: true,
@@ -65,7 +65,7 @@ onMounted(() => {
       scroll: true, // 允许拖拽时滚动
       appendTo: 'parent'
     },
-    margin: 5,
+    margin: panelStore.config.layout?.margin || 5,
     removable: false
   });
 
@@ -95,6 +95,20 @@ watch(() => panelStore.cards, (newCards) => {
 watch(() => gridColumns.value, (newColumns) => {
   if (grid) {
     grid.column(newColumns);
+  }
+});
+
+// --- 监听单元格高度变化 ---
+watch(() => panelStore.config.layout?.cellHeight, (newCellHeight) => {
+  if (grid && newCellHeight) {
+    grid.cellHeight(newCellHeight);
+  }
+});
+
+// --- 监听间距变化 ---
+watch(() => panelStore.config.layout?.margin, (newMargin) => {
+  if (grid && typeof newMargin === 'number') {
+    grid.margin(newMargin);
   }
 });
 
@@ -150,7 +164,7 @@ const onDrop = (event: DragEvent) => {
   const x = event.clientX - rect.left;
   const y = event.clientY - rect.top;
   const cellWidth = rect.width / gridColumns.value; // 使用动态列数
-  const cellHeight = 70; // 与 Gridstack 配置匹配
+  const cellHeight = panelStore.config.layout?.cellHeight || 70; // 使用动态单元格高度
   const gridX = Math.floor(x / cellWidth);
   const gridY = Math.floor(y / cellHeight);
 
