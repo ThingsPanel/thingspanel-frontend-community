@@ -58,19 +58,15 @@ const panelRef = ref<InstanceType<typeof PanelV2>>()
 const getCardComponent = (type: string) => {
   const componentMap: Record<string, any> = {
     'text-card': TextCard,
-    'image-card': TextCard, // 暂时用TextCard代替
+    'image-card': ImageCard,
   }
   return componentMap[type]
 }
 
-// 更新卡片配置
+// 更新卡片配置 - 现在通过Inspector的updateNodeContent来处理
 const updateCardConfig = (cardId: string, newConfig: any) => {
-  const panelStore = panelRef.value?.panelStore
-  if (panelStore) {
-    // 使用panelStore的更新方法
-    panelStore.updateNodeConfig(cardId, 'content', 'title', newConfig.title?.value)
-    panelStore.updateNodeConfig(cardId, 'content', 'content', newConfig.content?.value)
-  }
+  // 这个函数现在主要用于调试，实际的更新通过Inspector进行
+  console.log('卡片配置更新事件:', cardId, newConfig)
 }
 
 // 添加示例数据
@@ -87,8 +83,16 @@ const addSampleData = () => {
             base: {},
             interaction: {},
             content: {
-              title: '欢迎使用 PanelV2',
-              content: '这是一个整合了两层架构的演示'
+              title: {
+                type: 'text',
+                label: '标题',
+                value: '欢迎使用 PanelV2'
+              },
+              content: {
+                type: 'textarea',
+                label: '内容',
+                value: '这是一个整合了两层架构的演示'
+              }
             }
           },
           layout: { w: 6, h: 3 }
@@ -102,8 +106,16 @@ const addSampleData = () => {
             base: {},
             interaction: {},
             content: {
-              title: '架构特点',
-              content: '✓ 成熟组件保留\n✓ 两层架构整合\n✓ 事件系统统一'
+              title: {
+                type: 'text',
+                label: '标题', 
+                value: '架构特点'
+              },
+              content: {
+                type: 'textarea',
+                label: '内容',
+                value: '✓ 成熟组件保留\n✓ 两层架构整合\n✓ 事件系统统一'
+              }
             }
           },
           layout: { w: 6, h: 4 }

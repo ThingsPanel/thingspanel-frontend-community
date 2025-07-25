@@ -977,8 +977,16 @@ export function createNodeRegistryEngine(): PanelNodeRegistryEngine {
         base: {},
         interaction: {},
         content: {
-          title: '新建文本卡片',
-          content: '请输入内容...'
+          title: {
+            type: 'text',
+            label: '标题',
+            value: '新建文本卡片'
+          },
+          content: {
+            type: 'textarea',
+            label: '内容',
+            value: '请输入内容...'
+          }
         }
       },
       layout: { w: 4, h: 3 },
@@ -1017,8 +1025,16 @@ export function createNodeRegistryEngine(): PanelNodeRegistryEngine {
         base: {},
         interaction: {},
         content: {
-          src: '',
-          alt: '图片'
+          src: {
+            type: 'text',
+            label: '图片地址',
+            value: ''
+          },
+          alt: {
+            type: 'text',
+            label: '替代文本',
+            value: '图片'
+          }
         }
       },
       layout: { w: 4, h: 4 },

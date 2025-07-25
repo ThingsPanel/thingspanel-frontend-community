@@ -131,13 +131,19 @@ const loadCards = (cards: PanelCard[]) => {
       onCardContextMenu(e as MouseEvent, card);
     });
 
+    // 创建GridStack要求的内容结构
+    const contentEl = document.createElement('div');
+    contentEl.className = 'grid-stack-item-content';
+    
     // 使用插槽进行渲染
     if (slots.card) {
       const vnode = h('div', { class: 'card-content-wrapper' }, slots.card({ cardData: card }));
       const app = document.createElement('div');
       render(vnode, app);
-      cardEl.appendChild(app);
+      contentEl.appendChild(app);
     }
+    
+    cardEl.appendChild(contentEl);
 
     grid.makeWidget(cardEl, {
       x: card.layout.x,

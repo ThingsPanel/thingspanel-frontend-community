@@ -2,9 +2,9 @@
   <div class="image-card">
     <div class="image-container">
       <img
-        v-if="config.content?.src"
-        :src="config.content.src"
-        :alt="config.content?.alt || '图片'"
+        v-if="config.content?.src?.value || config.content?.src"
+        :src="config.content?.src?.value || config.content?.src"
+        :alt="config.content?.alt?.value || config.content?.alt || '图片'"
         class="image"
       />
       <div v-else class="placeholder">

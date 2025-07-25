@@ -1,7 +1,7 @@
 <template>
   <div class="text-card">
-    <h5 class="title">{{ config.content?.title || '默认标题' }}</h5>
-    <p class="content">{{ config.content?.content || '默认内容' }}</p>
+    <h5 class="title">{{ config.content?.title?.value || config.content?.title || '默认标题' }}</h5>
+    <p class="content">{{ config.content?.content?.value || config.content?.content || '默认内容' }}</p>
   </div>
 </template>
 
