@@ -12,6 +12,24 @@ import type {
   NodeContentConfig
 } from '../types'
 
+// 事件总线类型定义
+interface EventBus {
+  emit(event: string, payload: any): void
+  on(event: string, handler: (payload: any) => void): void
+  off(event: string, handler: (...args: any[]) => void): void
+}
+
+// 全局事件总线（可以被PureDataPipeline或其他系统使用）
+let globalEventBus: EventBus | null = null
+
+export function setGlobalEventBus(eventBus: EventBus) {
+  globalEventBus = eventBus
+}
+
+export function getGlobalEventBus() {
+  return globalEventBus
+}
+
 // 本地存储的 key
 const STORAGE_KEY = 'panelv2_state'
 
@@ -200,6 +218,11 @@ export const usePanelStore = defineStore('panelV2', {
       this.cards.push(newCard)
       this.selectedItemId = newCard.id
       this.saveToStorage()
+
+      // 发射事件到全局事件总线
+      if (globalEventBus) {
+        globalEventBus.emit('node-added', { node: newCard })
+      }
     },
 
     /**
@@ -212,6 +235,11 @@ export const usePanelStore = defineStore('panelV2', {
         // 同步更新基础配置中的布局
         card.config.base.layout = { ...card.config.base.layout, ...newLayout }
         this.saveToStorage()
+
+        // 发射事件到全局事件总线
+        if (globalEventBus) {
+          globalEventBus.emit('node-updated', { id, node: card })
+        }
       }
     },
 
@@ -286,19 +314,35 @@ export const usePanelStore = defineStore('panelV2', {
      * @description 设置当前选中的项
      */
     selectItem(id: string | null) {
+      const previousId = this.selectedItemId
       this.selectedItemId = id
+
+      // 发射选择变化事件
+      if (globalEventBus && previousId !== id) {
+        globalEventBus.emit('selection-changed', {
+          previousId,
+          currentId: id,
+          selectedNodes: id ? [this.cards.find(c => c.id === id)].filter(Boolean) : []
+        })
+      }
     },
 
     /**
      * @description 删除一个卡片
      */
     deleteCard(id: string) {
+      const cardToDelete = this.cards.find(c => c.id === id)
       this.cards = this.cards.filter(card => card.id !== id)
       if (this.selectedItemId === id) {
         this.selectedItemId = null
       }
       // 自动保存到本地存储
       this.saveToStorage()
+
+      // 发射事件到全局事件总线
+      if (globalEventBus && cardToDelete) {
+        globalEventBus.emit('node-removed', { id, node: cardToDelete })
+      }
     },
 
     /**
