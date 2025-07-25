@@ -50,6 +50,7 @@
 import { ref } from 'vue'
 import PanelV2 from '../PanelV2.vue'
 import TextCard from '../cards/TextCard.vue'
+import ImageCard from '../cards/ImageCard.vue'
 
 // 引用
 const panelRef = ref<InstanceType<typeof PanelV2>>()
@@ -120,11 +121,38 @@ const addSampleData = () => {
           },
           layout: { w: 6, h: 4 }
         }
+      },
+      {
+        type: 'image-card',
+        defaultData: {
+          type: 'image-card',
+          config: {
+            base: {},
+            interaction: {},
+            content: {
+              src: {
+                type: 'text',
+                label: '图片地址',
+                value: 'https://picsum.photos/400/300'
+              },
+              alt: {
+                type: 'text',
+                label: '替代文本',
+                value: '示例图片'
+              }
+            }
+          },
+          layout: { w: 4, h: 3 }
+        }
       }
     ]
 
     sampleCards.forEach((card, index) => {
-      panelStore.addCard(card, { x: index * 6, y: 0 })
+      const layout = card.defaultData.layout
+      panelStore.addCard(card, { 
+        x: index === 0 ? 0 : index === 1 ? 6 : 0, 
+        y: index === 0 ? 0 : index === 1 ? 0 : 4 
+      })
     })
   }
 }

@@ -333,21 +333,35 @@ const showGridSettings = () => {
   border: 1px solid #ddd;
   border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  overflow: hidden; /* 确保内容不会溢出 */
-  display: flex;
-  flex-direction: column;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  box-sizing: border-box;
 }
 
 .card-content-wrapper {
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
 }
 
 .card-content-wrapper > * {
-  flex: 1;
-  min-height: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* 确保GridStack网格项有正确的尺寸 */
+.grid-stack-item {
+  position: absolute !important;
+}
+
+.grid-stack-item.grid-stack-item-content {
+  position: relative !important;
 }
 
 .canvas-wrapper {

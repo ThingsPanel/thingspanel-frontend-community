@@ -41,16 +41,6 @@ import Canvas from './canvas/Canvas.vue';
 import RedesignedInspector from './inspector/RedesignedInspector.vue';
 import { usePanelStore, setGlobalEventBus } from './state/panelStore';
 import type { PanelState, ToolbarAction, DraggableItem, ComponentRegistry } from './types';
-import { PluginManager, providePluginManager, ModuleLoader, JsonLoader } from './plugins';
-import type { Plugin } from './plugins';
-import { useKeyboard } from './composables/useKeyboard';
-import { useHistory } from './composables/useHistory';
-
-// 引入核心架构层
-import { createLayoutManager } from './core/PureLayoutManager';
-import { createLifecycleManager, LIFECYCLE_PHASES } from './core/LifecycleManager';
-import { createThemeEngine } from './engines/ThemeEngine';
-import { createToolEngine } from './engines/ToolEngine';
 import { createNodeRegistryEngine } from './engines/NodeRegistryEngine';
 
 // --- 组件 Props ---
@@ -59,18 +49,12 @@ const props = defineProps<{
   toolbarActions?: ToolbarAction[];
   draggableItems?: DraggableItem[];
   inspectorRegistry?: ComponentRegistry<any>;
-  plugins?: Plugin[]; // 预装插件
-  enablePluginSystem?: boolean; // 是否启用插件系统
 }>();
 
 // --- 状态管理 ---
 const panelStore = usePanelStore();
 
-// --- 核心架构层管理器 ---
-const layoutManager = createLayoutManager();
-const lifecycleManager = createLifecycleManager();
-const themeEngine = createThemeEngine();
-const toolEngine = createToolEngine();
+// --- 节点注册引擎 ---
 const nodeRegistryEngine = createNodeRegistryEngine();
 
 // 创建一个简单的事件总线来连接panelStore和架构层
@@ -105,53 +89,12 @@ const eventBus = {
 // 设置全局事件总线，让panelStore可以发射事件
 setGlobalEventBus(eventBus);
 
-// --- 历史记录管理 ---
-const { recordHistory, undo, redo } = useHistory();
-
-// --- 快捷键管理 ---
-const { registerShortcuts } = useKeyboard();
-
-// --- 插件管理器 ---
-const pluginManager = new PluginManager({
-  autoActivate: true,
-  allowDuplicates: false,
-  logLevel: 'info'
-});
-
-// 添加加载器
-pluginManager.addLoader(new ModuleLoader());
-pluginManager.addLoader(new JsonLoader());
-
-// 提供核心管理器给子组件
-provide('layoutManager', layoutManager);
-provide('lifecycleManager', lifecycleManager);
-provide('themeEngine', themeEngine);
-provide('toolEngine', toolEngine);
+// 提供节点注册引擎给子组件
 provide('nodeRegistryEngine', nodeRegistryEngine);
 
-// 提供插件管理器给子组件
-if (props.enablePluginSystem !== false) {
-  providePluginManager(pluginManager);
-}
-
-// --- 计算属性 - 合并插件提供的数据 ---
+// --- 计算属性 ---
 const toolbarActions = computed(() => {
-  const baseActions = props.toolbarActions || [];
-  
-  // 从工具引擎获取工具栏工具
-  const engineActions = toolEngine.getToolbarTools().map(tool => ({
-    id: tool.id,
-    icon: tool.icon,
-    tooltip: tool.shortcut ? `${tool.name} (${formatShortcut(tool.shortcut)})` : tool.name,
-    action: () => toolEngine.executor.execute(tool.id, getCurrentEditorContext())
-  }));
-  
-  if (props.enablePluginSystem === false) {
-    return [...engineActions, ...baseActions];
-  }
-  
-  const pluginActions = pluginManager.getToolbarActions();
-  return [...engineActions, ...baseActions, ...pluginActions];
+  return props.toolbarActions || [];
 });
 
 const draggableItems = computed(() => {
@@ -174,167 +117,22 @@ const draggableItems = computed(() => {
     }
   }));
   
-  if (props.enablePluginSystem === false) {
-    return [...baseItems, ...engineItems];
-  }
-  
-  const pluginItems = pluginManager.getDraggableItems();
-  return [...baseItems, ...engineItems, ...pluginItems];
+  return [...baseItems, ...engineItems];
 });
 
 const inspectorRegistry = computed(() => {
-  const baseRegistry = props.inspectorRegistry || {};
-  if (props.enablePluginSystem === false) return baseRegistry;
-  
-  const pluginRegistry = pluginManager.getInspectorRegistry();
-  return { ...baseRegistry, ...pluginRegistry };
+  return props.inspectorRegistry || {};
 });
 
-// --- 辅助函数 ---
-const formatShortcut = (shortcut: any) => {
-  if (!shortcut) return ''
-  const parts = []
-  if (shortcut.modifiers?.includes('ctrl')) parts.push('Ctrl')
-  if (shortcut.modifiers?.includes('alt')) parts.push('Alt')
-  if (shortcut.modifiers?.includes('shift')) parts.push('Shift')
-  if (shortcut.modifiers?.includes('meta')) parts.push('Cmd')
-  parts.push(shortcut.key.toUpperCase())
-  return parts.join(' + ')
-}
-
-const getCurrentEditorContext = () => ({
-  dataEngine: {
-    save: () => panelStore.saveToStorage(),
-    reload: () => panelStore.loadFromStorage(),
-    undo: () => handleUndo(),
-    redo: () => handleRedo(),
-    canUndo: () => !!undo(),
-    canRedo: () => !!redo(),
-    isDirty: () => true // 简化实现
-  },
-  renderEngine: {
-    removeNodes: (nodeIds: string[]) => {
-      nodeIds.forEach(id => panelStore.deleteCard(id));
-    },
-    zoomIn: () => console.log('放大视图'),
-    zoomOut: () => console.log('缩小视图'),
-    zoomToFit: () => console.log('适应画布')
-  },
-  selectedNodes: panelStore.selectedItemId ? [panelStore.selectedItem].filter(Boolean) : [],
-  clipboard: {
-    copy: (nodes: any[]) => console.log('复制节点', nodes),
-    paste: () => console.log('粘贴节点'),
-    hasContent: () => false
-  }
-});
-
-// --- 历史记录和快捷键处理 ---
-const handleUndo = () => {
-  const action = undo();
-  if (action) {
-    panelStore.setPanelState(action.beforeState);
-    console.log('撤销操作:', action.description || action.type);
-  }
-};
-
-const handleRedo = () => {
-  const action = redo();
-  if (action && action.afterState) {
-    panelStore.setPanelState(action.afterState);
-    console.log('重做操作:', action.description || action.type);
-  }
-};
-
-// 记录状态变化
-const recordStateChange = (type: string, beforeState: PanelState, afterState?: PanelState, description?: string) => {
-  recordHistory(type, beforeState, afterState || panelStore.$state, description);
-};
 
 // --- 生命周期 ---
 onMounted(async () => {
-  // 触发架构层生命周期
-  await lifecycleManager.trigger(LIFECYCLE_PHASES.EDITOR.BEFORE_MOUNT, {
-    panel: panelStore.$state
-  });
-
   if (props.initialState) {
     panelStore.setPanelState(props.initialState as PanelState);
   }
 
-  // 初始化工具引擎
-  toolEngine.setContextProvider(getCurrentEditorContext);
-  toolEngine.shortcuts.startListening();
-
-  // 初始化主题引擎
-  themeEngine.adapter.listenToExternalTheme((theme) => {
-    console.log('主题已更新:', theme.name, theme.type);
-    // 可以在这里更新面板的主题相关配置
-  });
-
-  // 注册一些示例组件到节点注册引擎
+  // 注册内置组件到节点注册引擎
   await initializeBuiltInComponents();
-
-  // 设置事件监听，连接panelStore事件与生命周期管理器
-  eventBus.on('node-added', (payload) => {
-    lifecycleManager.trigger(LIFECYCLE_PHASES.NODE.ADDED, {
-      node: payload.node,
-      panel: panelStore.$state
-    });
-  });
-
-  eventBus.on('node-updated', (payload) => {
-    lifecycleManager.trigger(LIFECYCLE_PHASES.NODE.UPDATED, {
-      nodeId: payload.id,
-      node: payload.node,
-      panel: panelStore.$state
-    });
-  });
-
-  eventBus.on('node-removed', (payload) => {
-    lifecycleManager.trigger(LIFECYCLE_PHASES.NODE.REMOVED, {
-      nodeId: payload.id,
-      node: payload.node,
-      panel: panelStore.$state
-    });
-  });
-
-  eventBus.on('selection-changed', (payload) => {
-    lifecycleManager.trigger(LIFECYCLE_PHASES.NODE.SELECTED, {
-      previousId: payload.previousId,
-      currentId: payload.currentId,
-      selectedNodes: payload.selectedNodes,
-      panel: panelStore.$state
-    });
-  });
-
-  // 注册快捷键（保留原有逻辑，但可能会被工具引擎的快捷键覆盖）
-  registerShortcuts([
-    {
-      key: 'a',
-      ctrl: true,
-      action: () => {
-        console.log('全选');
-        // 实现全选逻辑
-      },
-      description: '全选'
-    }
-  ]);
-
-  // 安装预装插件
-  if (props.plugins && props.enablePluginSystem !== false) {
-    for (const plugin of props.plugins) {
-      try {
-        await pluginManager.install(plugin);
-      } catch (error) {
-        console.error(`Failed to install plugin ${plugin.meta.name}:`, error);
-      }
-    }
-  }
-
-  // 触发挂载完成生命周期
-  await lifecycleManager.trigger(LIFECYCLE_PHASES.EDITOR.MOUNTED, {
-    panel: panelStore.$state
-  });
 });
 
 // --- 事件处理 ---
@@ -428,24 +226,15 @@ const initializeBuiltInComponents = async () => {
   }
 };
 
-// 暴露所有管理器给父组件
+// 暴露核心组件给父组件
 defineExpose({
-  // 原有管理器
-  pluginManager,
   panelStore,
-  // 新的架构层管理器
-  layoutManager,
-  lifecycleManager,
-  themeEngine,
-  toolEngine,
   nodeRegistryEngine,
   // 调试方法
   getDebugInfo: () => ({
-    layout: layoutManager.getLayoutState(),
-    lifecycle: lifecycleManager.getDebugInfo(),
-    tools: toolEngine.getAllTools().length,
     components: nodeRegistryEngine.manager.getAllComponents().length,
-    plugins: pluginManager ? Array.from((pluginManager as any).plugins.keys()) : []
+    cards: panelStore.cards.length,
+    selectedItem: panelStore.selectedItemId
   })
 });
 
