@@ -1,140 +1,159 @@
 <template>
   <div class="redesigned-inspector">
-    <!-- 看板配置（无选择时显示） -->
-    <div v-if="!hasSelection" class="panel-config">
+    <!-- 渲染器配置（无选择时显示） -->
+    <div v-if="!hasSelection" class="renderer-config">
       <div class="config-header">
         <h3>
-          <i class="fa fa-dashboard"></i>
-          看板配置
+          <i class="fa fa-cogs"></i>
+          {{ currentEngineConfig.name || '渲染器' }} 配置
         </h3>
+        <small>当前渲染器: {{ currentEngineConfig.id || 'none' }}</small>
       </div>
       
-      <!-- 布局配置 -->
-      <div class="config-section">
-        <h4>布局设置</h4>
+      <!-- GridStack渲染器配置 -->
+      <div v-if="currentEngineConfig.id === 'gridstack'" class="config-section">
+        <h4>网格布局设置</h4>
         <div class="config-items">
           <div class="config-item">
             <label>网格列数</label>
             <input 
-              :value="panelConfig.layout?.gridColumns || 12"
+              :value="currentEngineConfig.config?.columns || 12"
               type="number"
               min="6" 
               max="24" 
               class="number-input"
-              @input="updatePanelConfig('layout.gridColumns', Number($event.target.value))"
+              @input="updateEngineConfig('columns', Number($event.target.value))"
             />
-            <span class="current-value">当前值: {{ panelConfig.layout?.gridColumns || 12 }}</span>
-          </div>
-          
-          <div class="config-item">
-            <label>单元格高度</label>
-            <input 
-              :value="panelConfig.layout?.cellHeight || 70"
-              type="number"
-              min="40" 
-              max="120" 
-              class="number-input"
-              @input="updatePanelConfig('layout.cellHeight', Number($event.target.value))"
-            />
-            <span class="current-value">当前值: {{ panelConfig.layout?.cellHeight || 70 }}px</span>
+            <span class="current-value">当前: {{ currentEngineConfig.config?.columns || 12 }} 列</span>
           </div>
           
           <div class="config-item">
             <label>卡片间距</label>
             <input 
-              :value="panelConfig.layout?.margin || 5"
+              :value="currentEngineConfig.config?.margin || 10"
               type="number"
               min="0" 
-              max="20" 
+              max="30" 
               class="number-input"
-              @input="updatePanelConfig('layout.margin', Number($event.target.value))"
+              @input="updateEngineConfig('margin', Number($event.target.value))"
             />
-            <span class="current-value">当前值: {{ panelConfig.layout?.margin || 5 }}px</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 外观配置 -->
-      <div class="config-section">
-        <h4>外观设置</h4>
-        <div class="config-items">
-          <div class="config-item">
-            <label>背景色</label>
-            <div class="color-input-group">
-              <input 
-                :value="panelConfig.appearance?.backgroundColor || '#f5f5f5'"
-                type="color"
-                class="color-input"
-                @input="updatePanelConfig('appearance.backgroundColor', $event.target.value)"
-              />
-              <input 
-                :value="panelConfig.appearance?.backgroundColor || '#f5f5f5'"
-                type="text"
-                class="text-input"
-                @input="updatePanelConfig('appearance.backgroundColor', $event.target.value)"
-              />
-            </div>
-            <span class="current-value">当前值: {{ panelConfig.appearance?.backgroundColor || '#f5f5f5' }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 数据配置 -->
-      <div class="config-section">
-        <h4>数据设置</h4>
-        <div class="config-items">
-          <div class="config-item">
-            <label>全局数据源</label>
-            <textarea 
-              :value="panelConfig.data?.globalDataSource || '{}'"
-              rows="4"
-              placeholder='{"apiUrl": "https://api.example.com", "refreshInterval": 5000}'
-              class="textarea-input"
-              @input="updatePanelConfig('data.globalDataSource', $event.target.value)"
-            ></textarea>
-            <span class="current-value">全局数据将传递给所有卡片</span>
-          </div>
-          
-          <div class="config-item">
-            <label>共享变量</label>
-            <textarea 
-              :value="panelConfig.data?.sharedVariables || '{}'"
-              rows="3"
-              placeholder='{"theme": "dark", "language": "zh-CN"}'
-              class="textarea-input"
-              @input="updatePanelConfig('data.sharedVariables', $event.target.value)"
-            ></textarea>
-            <span class="current-value">可在所有卡片中引用的变量</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 交互配置 -->
-      <div class="config-section">
-        <h4>交互设置</h4>
-        <div class="config-items">
-          <div class="config-item">
-            <label>
-              <input 
-                :checked="panelConfig.interaction?.allowDrag !== false"
-                type="checkbox"
-                @change="updatePanelConfig('interaction.allowDrag', $event.target.checked)"
-              />
-              允许拖拽
-            </label>
-            <span class="current-value">状态: {{ panelConfig.interaction?.allowDrag !== false ? '启用' : '禁用' }}</span>
+            <span class="current-value">当前: {{ currentEngineConfig.config?.margin || 10 }}px</span>
           </div>
           
           <div class="config-item">
             <label>
               <input 
-                :checked="panelConfig.interaction?.allowResize !== false"
+                :checked="currentEngineConfig.config?.animate !== false"
                 type="checkbox"
-                @change="updatePanelConfig('interaction.allowResize', $event.target.checked)"
+                @change="updateEngineConfig('animate', $event.target.checked)"
               />
-              允许调整大小
+              启用动画
             </label>
-            <span class="current-value">状态: {{ panelConfig.interaction?.allowResize !== false ? '启用' : '禁用' }}</span>
+            <span class="current-value">{{ currentEngineConfig.config?.animate !== false ? '开启' : '关闭' }}</span>
+          </div>
+          
+          <div class="config-item">
+            <label>
+              <input 
+                :checked="currentEngineConfig.config?.float === true"
+                type="checkbox"
+                @change="updateEngineConfig('float', $event.target.checked)"
+              />
+              浮动布局
+            </label>
+            <span class="current-value">{{ currentEngineConfig.config?.float ? '启用' : '禁用' }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Canvas渲染器配置 -->
+      <div v-if="currentEngineConfig.id === 'canvas'" class="config-section">
+        <h4>画布设置</h4>
+        <div class="config-items">
+          <div class="config-item">
+            <label>画布宽度</label>
+            <input 
+              :value="currentEngineConfig.config?.width || 1200"
+              type="number"
+              min="800" 
+              max="2000" 
+              class="number-input"
+              @input="updateEngineConfig('width', Number($event.target.value))"
+            />
+            <span class="current-value">当前: {{ currentEngineConfig.config?.width || 1200 }}px</span>
+          </div>
+          
+          <div class="config-item">
+            <label>画布高度</label>
+            <input 
+              :value="currentEngineConfig.config?.height || 800"
+              type="number"
+              min="600" 
+              max="1200" 
+              class="number-input"
+              @input="updateEngineConfig('height', Number($event.target.value))"
+            />
+            <span class="current-value">当前: {{ currentEngineConfig.config?.height || 800 }}px</span>
+          </div>
+          
+          <div class="config-item">
+            <label>缩放比例</label>
+            <input 
+              :value="currentEngineConfig.config?.zoom || 1"
+              type="range"
+              min="0.5"
+              max="2"
+              step="0.1"
+              @input="updateEngineConfig('zoom', Number($event.target.value))"
+            />
+            <span class="current-value">当前: {{ Math.round((currentEngineConfig.config?.zoom || 1) * 100) }}%</span>
+          </div>
+          
+          <div class="config-item">
+            <label>背景颜色</label>
+            <input 
+              :value="currentEngineConfig.config?.backgroundColor || '#fafafa'"
+              type="color"
+              @input="updateEngineConfig('backgroundColor', $event.target.value)"
+            />
+            <span class="current-value">{{ currentEngineConfig.config?.backgroundColor || '#fafafa' }}</span>
+          </div>
+          
+          <div class="config-item">
+            <label>
+              <input 
+                :checked="currentEngineConfig.config?.gridVisible !== false"
+                type="checkbox"
+                @change="updateEngineConfig('gridVisible', $event.target.checked)"
+              />
+              显示网格
+            </label>
+            <span class="current-value">{{ currentEngineConfig.config?.gridVisible !== false ? '显示' : '隐藏' }}</span>
+          </div>
+          
+          <div class="config-item">
+            <label>网格大小</label>
+            <input 
+              :value="currentEngineConfig.config?.gridSize || 20"
+              type="number"
+              min="10" 
+              max="50" 
+              class="number-input"
+              @input="updateEngineConfig('gridSize', Number($event.target.value))"
+            />
+            <span class="current-value">{{ currentEngineConfig.config?.gridSize || 20 }}px</span>
+          </div>
+          
+          <div class="config-item">
+            <label>
+              <input 
+                :checked="currentEngineConfig.config?.snapToGrid === true"
+                type="checkbox"
+                @change="updateEngineConfig('snapToGrid', $event.target.checked)"
+              />
+              网格对齐
+            </label>
+            <span class="current-value">{{ currentEngineConfig.config?.snapToGrid ? '启用' : '禁用' }}</span>
           </div>
         </div>
       </div>
@@ -150,232 +169,51 @@
         </h3>
       </div>
 
-      <!-- 节点配置标签 -->
-      <div class="node-tabs">
-        <button 
-          v-for="tab in nodeTabs" 
-          :key="tab.key"
-          :class="['tab-btn', { active: activeNodeTab === tab.key }]"
-          @click="activeNodeTab = tab.key"
-        >
-          <i :class="tab.icon"></i>
-          {{ tab.label }}
-        </button>
-      </div>
-
-      <!-- 基础配置 -->
-      <div v-if="activeNodeTab === 'basic'" class="config-section">
-        <h4>基础配置</h4>
-        <div class="config-items">
-          <div class="config-grid">
-            <div class="config-item">
-              <label>X位置</label>
-              <input 
-                :value="selectedNode?.layout?.x || 0"
-                type="number" 
-                readonly
-                class="number-input readonly"
-              />
-              <span class="current-value">网格位置: {{ selectedNode?.layout?.x || 0 }}</span>
-            </div>
-            
-            <div class="config-item">
-              <label>Y位置</label>
-              <input 
-                :value="selectedNode?.layout?.y || 0"
-                type="number" 
-                readonly
-                class="number-input readonly"
-              />
-              <span class="current-value">网格位置: {{ selectedNode?.layout?.y || 0 }}</span>
-            </div>
-            
-            <div class="config-item">
-              <label>宽度</label>
-              <input 
-                :value="selectedNode?.layout?.w || 4"
-                type="number"
-                min="1" 
-                :max="panelConfig.layout?.gridColumns || 12" 
-                class="number-input"
-                @input="updateNodeConfig('layout.w', Number($event.target.value))"
-              />
-              <span class="current-value">占用列数: {{ selectedNode?.layout?.w || 4 }}</span>
-            </div>
-            
-            <div class="config-item">
-              <label>高度</label>
-              <input 
-                :value="selectedNode?.layout?.h || 2"
-                type="number"
-                min="1" 
-                max="20" 
-                class="number-input"
-                @input="updateNodeConfig('layout.h', Number($event.target.value))"
-              />
-              <span class="current-value">占用行数: {{ selectedNode?.layout?.h || 2 }}</span>
-            </div>
-          </div>
-          
-          <div class="config-item">
-            <label>
-              <input 
-                :checked="selectedNode?.config?.base?.state?.locked || false"
-                type="checkbox"
-                @change="updateNodeConfig('base.state.locked', $event.target.checked)"
-              />
-              锁定位置
-            </label>
-            <span class="current-value">状态: {{ selectedNode?.config?.base?.state?.locked ? '锁定' : '可移动' }}</span>
-          </div>
-          
-          <div class="config-item">
-            <label>
-              <input 
-                :checked="selectedNode?.config?.base?.state?.hidden || false"
-                type="checkbox"
-                @change="updateNodeConfig('base.state.hidden', $event.target.checked)"
-              />
-              隐藏节点
-            </label>
-            <span class="current-value">状态: {{ selectedNode?.config?.base?.state?.hidden ? '隐藏' : '显示' }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- UI配置 -->
-      <div v-if="activeNodeTab === 'ui'" class="config-section">
-        <h4>UI外观</h4>
+      <div class="config-section">
+        <h4>节点数据</h4>
         <div class="config-items">
           <div class="config-item">
-            <label>边框颜色</label>
-            <div class="color-input-group">
-              <input 
-                :value="selectedNode?.config?.base?.appearance?.border?.color || '#e8e8e8'"
-                type="color"
-                class="color-input"
-                @input="updateNodeConfig('base.appearance.border.color', $event.target.value)"
-              />
-              <input 
-                :value="selectedNode?.config?.base?.appearance?.border?.color || '#e8e8e8'"
-                type="text"
-                class="text-input"
-                @input="updateNodeConfig('base.appearance.border.color', $event.target.value)"
-              />
-            </div>
-            <span class="current-value">当前值: {{ selectedNode?.config?.base?.appearance?.border?.color || '#e8e8e8' }}</span>
-          </div>
-          
-          <div class="config-item">
-            <label>边框宽度</label>
+            <label>节点ID</label>
             <input 
-              :value="selectedNode?.config?.base?.appearance?.border?.width || 1"
-              type="number"
-              min="0" 
-              max="10" 
-              class="number-input"
-              @input="updateNodeConfig('base.appearance.border.width', Number($event.target.value))"
-            />
-            <span class="current-value">当前值: {{ selectedNode?.config?.base?.appearance?.border?.width || 1 }}px</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 交互配置 -->
-      <div v-if="activeNodeTab === 'interaction'" class="config-section">
-        <h4>交互行为</h4>
-        <div class="config-items">
-          <div class="config-item">
-            <label>点击行为</label>
-            <select 
-              :value="selectedNode?.config?.interaction?.onClick?.type || 'none'"
-              class="select-input"
-              @change="updateNodeConfig('interaction.onClick.type', $event.target.value)"
-            >
-              <option value="none">无动作</option>
-              <option value="navigate">页面跳转</option>
-              <option value="popup">弹窗</option>
-              <option value="action">自定义动作</option>
-            </select>
-            <span class="current-value">当前值: {{ selectedNode?.config?.interaction?.onClick?.type || 'none' }}</span>
-          </div>
-          
-          <div v-if="selectedNode?.config?.interaction?.onClick?.type === 'navigate'" class="config-item">
-            <label>跳转地址</label>
-            <input 
-              :value="selectedNode?.config?.interaction?.onClick?.target || ''"
+              :value="selectedNode?.id || ''"
               type="text"
-              placeholder="https://example.com"
-              class="text-input"
-              @input="updateNodeConfig('interaction.onClick.target', $event.target.value)"
+              readonly
+              class="text-input readonly"
             />
-            <span class="current-value">目标: {{ selectedNode?.config?.interaction?.onClick?.target || '未设置' }}</span>
+            <span class="current-value">唯一标识符</span>
           </div>
-        </div>
-      </div>
-
-      <!-- 内容配置 -->
-      <div v-if="activeNodeTab === 'content'" class="config-section">
-        <h4>内容配置</h4>
-        <div class="config-items">
-          <div v-for="(configItem, key) in selectedNode?.config?.content" :key="key" class="config-item">
-            <label>{{ configItem.label || key }}</label>
-            
-            <!-- 文本输入 -->
+          
+          <div class="config-item">
+            <label>节点类型</label>
             <input 
-              v-if="configItem.type === 'text'"
-              :value="configItem.value"
+              :value="selectedNode?.type || ''"
               type="text"
-              class="text-input"
-              @input="updateNodeContent(key, $event.target.value)"
+              readonly
+              class="text-input readonly"
             />
-            
-            <!-- 颜色选择 -->
-            <div v-else-if="configItem.type === 'color'" class="color-input-group">
-              <input 
-                :value="configItem.value"
-                type="color"
-                class="color-input"
-                @input="updateNodeContent(key, $event.target.value)"
-              />
-              <input 
-                :value="configItem.value"
-                type="text"
-                class="text-input"
-                @input="updateNodeContent(key, $event.target.value)"
-              />
-            </div>
-            
-            <!-- 数字输入 -->
-            <input 
-              v-else-if="configItem.type === 'number'"
-              :value="configItem.value"
-              type="number"
-              :min="configItem.min"
-              :max="configItem.max"
-              class="number-input"
-              @input="updateNodeContent(key, Number($event.target.value))"
-            />
-            
-            <!-- 多行文本 -->
+            <span class="current-value">组件类型</span>
+          </div>
+          
+          <div class="config-item">
+            <label>数据内容</label>
             <textarea 
-              v-else-if="configItem.type === 'textarea'"
-              :value="configItem.value"
-              :rows="configItem.rows || 3"
-              class="textarea-input"
-              @input="updateNodeContent(key, $event.target.value)"
+              :value="JSON.stringify(selectedNode?.data || {}, null, 2)"
+              rows="6"
+              readonly
+              class="textarea-input readonly"
             ></textarea>
-            
-            <!-- 默认文本 -->
-            <input 
-              v-else
-              :value="configItem.value"
-              type="text"
-              class="text-input"
-              @input="updateNodeContent(key, $event.target.value)"
-            />
-            
-            <span class="current-value">当前值: {{ configItem.value }}</span>
+            <span class="current-value">节点携带的数据</span>
+          </div>
+
+          <div class="config-item">
+            <label>布局信息</label>
+            <textarea 
+              :value="JSON.stringify(selectedNode?.layout || {}, null, 2)"
+              rows="3"
+              readonly
+              class="textarea-input readonly"
+            ></textarea>
+            <span class="current-value">位置和尺寸信息</span>
           </div>
         </div>
       </div>
@@ -384,85 +222,34 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch } from 'vue';
-import { usePanelStore } from '../state/panelStore';
-import type { PanelConfig } from '../types';
+import { computed } from 'vue'
+import { NodeData } from '../engines/RenderEngine'
 
-const panelStore = usePanelStore();
+interface Props {
+  selectedNode?: NodeData | null
+  currentEngineConfig?: {
+    id: string
+    name: string
+    config: any
+  }
+}
 
-// 当前选择的节点配置标签
-const activeNodeTab = ref('basic');
+const props = withDefaults(defineProps<Props>(), {
+  selectedNode: null,
+  currentEngineConfig: () => ({ id: '', name: '', config: {} })
+})
 
-// 节点配置标签定义
-const nodeTabs = [
-  { key: 'basic', label: '基础', icon: 'fa fa-cog' },
-  { key: 'ui', label: 'UI', icon: 'fa fa-paint-brush' },
-  { key: 'interaction', label: '交互', icon: 'fa fa-mouse-pointer' },
-  { key: 'content', label: '内容', icon: 'fa fa-edit' }
-];
+const emit = defineEmits<{
+  updateEngineConfig: [key: string, value: any]
+}>()
 
 // 计算属性
-const hasSelection = computed(() => !!panelStore.selectedItemId);
-const selectedNode = computed(() => 
-  panelStore.selectedItemId ? 
-  panelStore.cards.find(card => card.id === panelStore.selectedItemId) : 
-  null
-);
-const panelConfig = computed(() => panelStore.config as PanelConfig);
+const hasSelection = computed(() => !!props.selectedNode)
 
-// 监听选择变化，自动切换到基础标签
-watch(hasSelection, (newVal) => {
-  if (newVal) {
-    activeNodeTab.value = 'basic';
-  }
-});
-
-// 更新看板配置
-const updatePanelConfig = (path: string, value: any) => {
-  console.log('更新看板配置:', path, '=', value);
-  panelStore.updatePanelConfig(path, value);
-};
-
-// 更新节点配置
-const updateNodeConfig = (path: string, value: any) => {
-  if (!selectedNode.value) return;
-  
-  console.log('更新节点配置:', selectedNode.value.id, path, '=', value);
-  
-  // 处理布局配置的特殊情况
-  if (path.startsWith('layout.')) {
-    const layoutKey = path.replace('layout.', '');
-    const newLayout = { ...selectedNode.value.layout, [layoutKey]: value };
-    panelStore.updateCardLayout(selectedNode.value.id, newLayout);
-    return;
-  }
-  
-  // 其他配置
-  let configType: 'base' | 'interaction' | 'content';
-  if (path.startsWith('base.')) {
-    configType = 'base';
-    path = path.substring(5);
-  } else if (path.startsWith('interaction.')) {
-    configType = 'interaction';
-    path = path.substring(12);
-  } else {
-    configType = 'content';
-  }
-  
-  panelStore.updateNodeConfig(selectedNode.value.id, configType, path, value);
-};
-
-// 更新节点内容
-const updateNodeContent = (key: string, value: any) => {
-  if (!selectedNode.value) return;
-  
-  console.log('更新节点内容:', selectedNode.value.id, key, '=', value);
-  
-  if (selectedNode.value.config.content && selectedNode.value.config.content[key]) {
-    selectedNode.value.config.content[key].value = value;
-    panelStore.saveToStorage();
-  }
-};
+// 更新渲染器配置
+const updateEngineConfig = (key: string, value: any) => {
+  emit('updateEngineConfig', key, value)
+}
 </script>
 
 <style scoped>
@@ -480,7 +267,7 @@ const updateNodeContent = (key: string, value: any) => {
 }
 
 .config-header h3 {
-  margin: 0;
+  margin: 0 0 4px 0;
   font-size: 16px;
   font-weight: 600;
   color: #333;
@@ -492,37 +279,7 @@ const updateNodeContent = (key: string, value: any) => {
 .config-header small {
   color: #666;
   font-weight: normal;
-}
-
-.node-tabs {
-  display: flex;
-  border-bottom: 1px solid #e8e8e8;
-  background-color: #f9f9f9;
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 12px 8px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: #666;
   font-size: 12px;
-  transition: all 0.3s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.tab-btn:hover {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-.tab-btn.active {
-  background-color: #1890ff;
-  color: white;
 }
 
 .config-section {
@@ -542,12 +299,6 @@ const updateNodeContent = (key: string, value: any) => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-.config-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
 }
 
 .config-item {
@@ -581,6 +332,7 @@ const updateNodeContent = (key: string, value: any) => {
   border-radius: 4px;
   font-size: 13px;
   transition: border-color 0.3s;
+  font-family: monospace;
 }
 
 .number-input:focus, .text-input:focus, .select-input:focus, .textarea-input:focus {
@@ -590,25 +342,20 @@ const updateNodeContent = (key: string, value: any) => {
 
 .readonly {
   background-color: #f5f5f5;
-  color: #999;
+  color: #666;
+  cursor: not-allowed;
 }
 
-.color-input-group {
-  display: flex;
-  gap: 6px;
-  align-items: center;
+input[type="range"] {
+  width: 100%;
 }
 
-.color-input {
+input[type="color"] {
   width: 40px;
   height: 32px;
   padding: 2px;
   border: 1px solid #d9d9d9;
   border-radius: 4px;
   cursor: pointer;
-}
-
-.color-input-group .text-input {
-  flex: 1;
 }
 </style>
