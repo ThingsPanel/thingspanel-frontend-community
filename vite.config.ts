@@ -38,7 +38,11 @@ export default defineConfig(configEnv => {
       proxy: createViteProxy(viteEnv),
       fs: {
         cachedChecks: false
-      }
+      },
+      watch: {
+      // 开启轮询模式
+      usePolling: true,
+    }
     },
     preview: {
       port: 9725

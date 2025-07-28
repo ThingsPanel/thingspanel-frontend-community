@@ -81,6 +81,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   plugin_print: () => import("@/views/plugin/print/index.vue"),
   plugin_swiper: () => import("@/views/plugin/swiper/index.vue"),
   plugin_video: () => import("@/views/plugin/video/index.vue"),
+  "pure-infrastructure-demo": () => import("@/views/pure-infrastructure-demo/index.vue"),
   "rule-engine": () => import("@/views/rule-engine/index.vue"),
   "system-management-user_system-log": () => import("@/views/system-management-user/system-log/index.vue"),
   "user-center": () => import("@/views/user-center/index.vue"),

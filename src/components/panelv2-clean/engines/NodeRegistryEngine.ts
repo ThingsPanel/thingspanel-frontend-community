@@ -331,8 +331,8 @@ export class NodeRegistryEngine implements INodeRegistryEngine {
           return (
             component.name.toLowerCase().includes(keyword) ||
             component.type.toLowerCase().includes(keyword) ||
-            component.meta.description?.toLowerCase().includes(keyword) ||
-            component.meta.keywords?.some(kw => kw.toLowerCase().includes(keyword))
+            component.meta?.description?.toLowerCase().includes(keyword) ||
+            component.meta?.keywords?.some(kw => kw.toLowerCase().includes(keyword))
           )
         })
         .slice(0, query.options.maxResults || 50)
@@ -359,7 +359,7 @@ export class NodeRegistryEngine implements INodeRegistryEngine {
       const type = component.type
 
       // 关键词索引
-      const keywords = [component.name, component.type, ...(component.meta.keywords || [])]
+      const keywords = [component.name, component.type, ...(component.meta?.keywords || [])]
       keywords.forEach(keyword => {
         const key = keyword.toLowerCase()
         if (!this.searchIndex.keywords.has(key)) {
@@ -511,7 +511,7 @@ export class NodeRegistryEngine implements INodeRegistryEngine {
           id: component.type,
           name: component.name,
           type: 'component',
-          icon: component.meta.icon,
+          icon: component.meta?.icon,
           componentDef: component
         }
         categoryNode.children!.push(componentNode)

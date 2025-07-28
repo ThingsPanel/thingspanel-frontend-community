@@ -70,7 +70,7 @@ export class ToolEngine implements IToolEngine {
         console.log('ToolEngine: 开始保存操作')
 
         // 记录操作到生命周期
-        await globalLifecycleManager.executePhase(LifecyclePhase.PANEL_SAVE, {
+        await globalLifecycleManager.trigger('PANEL_SAVE', {
           targetId: 'panel',
           operation: 'save',
           payload: { timestamp: Date.now() }

@@ -2,16 +2,25 @@
   "permissions": {
     "allow": [
       "Bash(rm:*)",
-      "Bash(npm run build:*)",
+      "Bash(pnpm run build:*)",
       "Bash(npx vue-tsc:*)",
-      "Bash(npm run dev:*)",
+      "Bash(pnpm run dev:*)",
       "Bash(pnpm install:*)",
       "Bash(npm.exe run dev)",
       "Bash(pnpm.exe dev:*)",
       "Bash(/mnt/c/Windows/System32/cmd.exe /c \"pnpm dev\")",
       "Bash(mkdir:*)",
-      "Bash(npm run type-check:*)",
-      "Bash(npm run typecheck:*)"
+      "Bash(pnpm run type-check:*)",
+      "Bash(pnpm run typecheck:*)",
+      "Bash(grep:*)",
+      "Bash(node:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(npm run lint:*)",
+      "Bash(timeout 30s npm run dev:*)",
+      "Bash(timeout 10s npm run dev:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }

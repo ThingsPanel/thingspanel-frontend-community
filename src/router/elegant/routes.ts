@@ -839,6 +839,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'pure-infrastructure-demo',
+    path: '/pure-infrastructure-demo',
+    component: 'layout.base$view.pure-infrastructure-demo',
+    meta: {
+      title: 'Pure Infrastructure Demo',
+      i18nKey: 'route.pure-infrastructure-demo'
+    }
+  },
+  {
     name: 'rule-engine',
     path: '/rule-engine',
     component: 'layout.base$view.rule-engine',
