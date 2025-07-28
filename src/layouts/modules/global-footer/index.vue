@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useSysSettingStore } from '@/store/modules/sys-setting'
 defineOptions({
   name: 'GlobalFooter'
 })
