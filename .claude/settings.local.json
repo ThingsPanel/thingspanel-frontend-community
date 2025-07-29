@@ -20,7 +20,11 @@
       "Bash(timeout 10s npm run dev:*)",
       "Bash(find:*)",
       "Bash(ls:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(sed:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

@@ -1,186 +1,155 @@
-# CLAUDE.md
+# CLAUDE_CN.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+本文件为 Claude Code (claude.ai/code) 在此代码仓库中工作时提供指导。
 
-## Project Overview
+## 项目概述
 
-ThingsPanel is a lightweight, componentized open-source IoT application support platform built with Vue 3, TypeScript, and Naive UI. The project focuses on reducing development efforts and accelerating IoT project construction through reusable plugins and components.
+ThingsPanel 是一个基于 Vue 3、TypeScript 和 Naive UI 构建的轻量级、组件化开源物联网应用支撑平台。该项目专注于通过可重用的插件和组件来减少开发工作量并加速物联网项目建设。
 
-## Core Commands
+## 核心命令
 
-### Development
-- `pnpm dev` or `npm run dev` - Start development server on port 5002
-- `pnpm dev:test` - Start development server with test environment
-- `pnpm dev:prod` - Start development server with production environment
+### 开发
+- `pnpm dev` 或 `npm run dev` - 在端口 5002 启动开发服务器
+- `pnpm dev:test` - 启动测试环境开发服务器
+- `pnpm dev:prod` - 启动生产环境开发服务器
 
-### Build and Deployment
-- `pnpm build` - Production build with typecheck (requires 4GB RAM)
-- `pnpm build:4096` - Production build with 8GB RAM allocation
-- `pnpm build:test` - Test environment build
-- `pnpm typecheck` - Run TypeScript type checking (4GB RAM limit)
+### 构建和部署
+- `pnpm build` - 生产环境构建并进行类型检查（需要 4GB 内存）
+- `pnpm build:4096` - 生产环境构建并分配 8GB 内存
+- `pnpm build:test` - 测试环境构建
+- `pnpm typecheck` - 运行 TypeScript 类型检查（4GB 内存限制）
 
-### Code Quality
-- `pnpm lint` - Run ESLint with auto-fix
-- `pnpm format` - Run Prettier code formatting
-- Pre-commit hooks automatically run `pnpm typecheck && pnpm lint-staged`
+### 代码质量
+- `pnpm lint` - 运行 ESLint 并自动修复
+- `pnpm format` - 运行 Prettier 代码格式化
+- 预提交钩子自动运行 `pnpm typecheck && pnpm lint-staged`
 
-### Package Management
-- Uses **pnpm** as package manager with workspace configuration
-- `pnpm install` - Install dependencies
-- Workspaces include internal packages: `@sa/axios`, `@sa/hooks`, `@sa/materials`, `@sa/utils`, etc.
+### 包管理
+- 使用 **pnpm** 作为包管理器，配置工作区
+- `pnpm install` - 安装依赖
+- 工作区包含内部包：`@sa/axios`、`@sa/hooks`、`@sa/materials`、`@sa/utils` 等
 
-## Architecture Overview
+## 架构概述
 
-### Monorepo Structure
-The project uses pnpm workspaces with internal packages in `packages/`:
-- `@sa/axios` - HTTP client wrapper
-- `@sa/color-palette` - Color system
-- `@sa/hooks` - Shared Vue composables
-- `@sa/materials` - UI component library
-- `@sa/utils` - Utility functions
+### Monorepo 结构
+项目使用 pnpm 工作区，内部包位于 `packages/`：
+- `@sa/axios` - HTTP 客户端包装器
+- `@sa/color-palette` - 颜色系统
+- `@sa/hooks` - 共享 Vue 组合式函数
+- `@sa/materials` - UI 组件库
+- `@sa/utils` - 工具函数
 
-### Core Frontend Architecture
+### 核心前端架构
 
-#### Technology Stack
-- **Framework**: Vue 3 with Composition API (`<script setup>` syntax)
-- **Language**: TypeScript with strict mode
-- **State Management**: Pinia stores
-- **Routing**: Vue Router 4 with `@elegant-router/vue` file-based routing
-- **UI Library**: Naive UI as primary component library
-- **Styling**: UnoCSS utility-first CSS with `@unocss/preset-uno`
-- **Icons**: Iconify via UnoCSS preset (`i-...` classes) and `@vicons/*` components
-- **Build Tool**: Vite with custom plugins
-- **Internationalization**: Vue I18n with English and Chinese support
+#### 技术栈
+- **框架**：Vue 3 与组合式 API（`<script setup>` 语法）
+- **语言**：TypeScript 严格模式
+- **状态管理**：Pinia 存储
+- **路由**：Vue Router 4 与 `@elegant-router/vue` 基于文件的路由
+- **UI 库**：Naive UI 作为主要组件库
+- **样式**：UnoCSS 实用优先 CSS 与 `@unocss/preset-uno`
+- **图标**：通过 UnoCSS 预设的 Iconify（`i-...` 类）和 `@vicons/*` 组件
+- **构建工具**：Vite 与自定义插件
+- **国际化**：Vue I18n 支持英文和中文
 
-#### Key Directory Structure
+#### 关键目录结构
 ```
 src/
-├── views/           # Page components (file-based routing)
-├── components/      # Shared components
-│   ├── panelv2-clean/  # New clean panel architecture
-│   ├── panelv2/        # Legacy panel system
-│   └── panel/          # Original panel implementation
-├── layouts/         # Layout components
-├── store/modules/   # Pinia store modules
-├── service/api/     # API service functions
-├── hooks/           # Vue composables
-├── card/            # Dashboard card components
-│   ├── builtin-card/   # Built-in system cards
-│   └── chart-card/     # Chart visualization cards
-├── utils/           # Utility functions
-├── typings/         # TypeScript type definitions
-└── locales/         # i18n translation files
+├── views/           # 页面组件（基于文件的路由）
+├── components/      # 共享组件
+│   └── panel/          # 原始面板实现
+├── layouts/         # 布局组件
+├── store/modules/   # Pinia 存储模块
+├── service/api/     # API 服务函数
+├── hooks/           # Vue 组合式函数
+├── card/            # 仪表板卡片组件
+│   ├── builtin-card/   # 内置系统卡片
+│   └── chart-card/     # 图表可视化卡片
+├── utils/           # 工具函数
+├── typings/         # TypeScript 类型定义
+└── locales/         # i18n 翻译文件
 ```
 
-### Panel System Architecture
+## 开发指南
 
-The project has evolved through multiple panel system architectures:
+### 代码风格和约定
+- **Vue 3**：专门使用组合式 API 与 `<script setup>` 语法
+- **TypeScript**：启用严格模式，避免 `any` 类型，对仅类型导入使用 `import type`
+- **命名**：组件使用 PascalCase，组合式函数/服务使用 camelCase
+- **UI 组件**：使用 Naive UI 组件，按需导入
+- **样式**：优先使用 UnoCSS 实用类而非自定义 CSS
+- **状态**：使用 Pinia 存储管理全局状态，在 `src/store/modules/` 中定义
+- **API**：在 `src/service/api/` 中定义 API 函数，严格类型化请求/响应
+- **国际化**：始终使用 `$t()` 或 `useI18n()` 处理面向用户的文本
 
-#### 1. PanelV2-Clean (Latest Architecture)
-- **Location**: `src/components/panelv2-clean/`
-- **Design**: Revolutionary two-layer architecture
-  - **Layer 1**: Pure Infrastructure Layer (UI layout management)
-  - **Layer 2**: Professional Engine Layer (specialized engines)
-- **Key Components**:
-  - `PureLayoutManager.vue` - Pure UI layout manager
-  - `PureDataPipeline.ts` - Data transmission pipeline
-  - `engines/` - Various specialized engines (Node, Render, Config, Tool, etc.)
-  - `renderers/` - Rendering engine implementations
-
-#### 2. PanelV2 (Previous Architecture)
-- **Location**: `src/components/panelv2/`
-- **Features**: Canvas-based panel editor with inspector and sidebar
-- **Components**: Canvas, Inspector, Sidebar, Toolbar
-
-#### 3. Legacy Panel System
-- **Location**: `src/components/panel/`
-- **Purpose**: Original panel management system
-
-### Card System
-- **Built-in Cards**: System metrics, device status, alarms (`src/card/builtin-card/`)
-- **Chart Cards**: Visualization components (`src/card/chart-card/`)
-- **Configuration**: Each card has `card-config.vue` for settings and `component.vue` for rendering
-
-## Development Guidelines
-
-### Code Style and Conventions
-- **Vue 3**: Use Composition API with `<script setup>` syntax exclusively
-- **TypeScript**: Strict mode enabled, avoid `any` type, use `import type` for type-only imports
-- **Naming**: PascalCase for components, camelCase for composables/services
-- **UI Components**: Use Naive UI components, import as needed
-- **Styling**: Prefer UnoCSS utility classes over custom CSS
-- **State**: Use Pinia stores for global state, define in `src/store/modules/`
-- **API**: Define API functions in `src/service/api/`, strictly type requests/responses
-- **Internationalization**: Always use `$t()` or `useI18n()` for user-facing text
-
-### Import Conventions
+### 导入约定
 ```typescript
-// Type-only imports
+// 仅类型导入
 import type { MyType } from './types'
 
-// Workspace packages
+// 工作区包
 import { useRequest } from '@sa/hooks'
 import { request } from '@sa/axios'
 
-// Path aliases
+// 路径别名
 import Component from '@/components/Component.vue'
 import { helper } from '@/utils/helper'
 ```
 
-### Component Structure
+### 组件结构
 ```vue
 <script setup lang="ts">
-// Type definitions first
+// 首先定义类型
 interface Props {
   data: MyData[]
 }
 
-// Props and emits
+// Props 和 emits
 const props = defineProps<Props>()
 const emit = defineEmits<{
   update: [value: string]
 }>()
 
-// Composables and reactive state
+// 组合式函数和响应式状态
 const { loading, data } = useRequest(apiCall)
 const state = reactive({ ... })
 
-// Computed and watch
+// 计算属性和监听器
 const computed = computed(() => ...)
 </script>
 
 <template>
-  <!-- Use Naive UI components and UnoCSS classes -->
+  <!-- 使用 Naive UI 组件和 UnoCSS 类 -->
   <n-card class="p-4 mb-4">
     <n-button @click="handleClick">{{ $t('common.confirm') }}</n-button>
   </n-card>
 </template>
 ```
 
-### State Management Patterns
+### 状态管理模式
 ```typescript
-// Store definition in src/store/modules/
+// 在 src/store/modules/ 中定义存储
 export const useMyStore = defineStore('my-store', () => {
   const state = reactive({
     data: [] as MyData[]
   })
-  
+
   const getters = computed(() => state.data.length)
-  
+
   const actions = {
     async fetchData() {
       const response = await myApi()
       state.data = response.data
     }
   }
-  
+
   return { state, getters, ...actions }
 })
 ```
 
-### API Service Patterns
+### API 服务模式
 ```typescript
-// In src/service/api/
+// 在 src/service/api/ 中
 import { request } from '@sa/axios'
 
 export interface MyApiRequest {
@@ -196,71 +165,71 @@ export function fetchMyData(params: MyApiRequest): Promise<MyApiResponse> {
 }
 ```
 
-## Routing System
+## 路由系统
 
-Uses `@elegant-router/vue` with file-based routing:
-- Page components in `src/views/` automatically generate routes
-- Route metadata can be defined in component comments
-- Lazy loading for all route components: `component: () => import('@/views/MyPage.vue')`
+使用 `@elegant-router/vue` 与基于文件的路由：
+- `src/views/` 中的页面组件自动生成路由
+- 路由元数据可以在组件注释中定义
+- 所有路由组件的懒加载：`component: () => import('@/views/MyPage.vue')`
 
-## Build Configuration
+## 构建配置
 
-### Memory Optimization
-- Build process requires significant memory (4-8GB)
-- Manual chunk splitting for large dependencies
-- Parallel file operations limited to 2 for memory efficiency
+### 内存优化
+- 构建过程需要大量内存（4-8GB）
+- 大型依赖的手动代码分割
+- 并行文件操作限制为 2 以提高内存效率
 
-### Environment Variables
-- `VITE_SERVICE_ENV` - Environment (dev/test/prod)
-- Development server runs on port 5002
-- Preview server runs on port 9725
+### 环境变量
+- `VITE_SERVICE_ENV` - 环境（dev/test/prod）
+- 开发服务器运行在端口 5002
+- 预览服务器运行在端口 9725
 
-## Testing and Quality Assurance
+## 测试和质量保证
 
-### Pre-commit Hooks
-- TypeScript type checking (`pnpm typecheck`)
-- ESLint with auto-fix on staged files
-- Commit message validation
+### 预提交钩子
+- TypeScript 类型检查（`pnpm typecheck`）
+- 对暂存文件运行 ESLint 并自动修复
+- 提交消息验证
 
-### ESLint Configuration
-- Flat Config format (ESLint v9+)
-- Vue 3 recommended rules
-- TypeScript recommended rules
-- Prettier integration
-- Custom rules for project-specific needs
+### ESLint 配置
+- 扁平配置格式（ESLint v9+）
+- Vue 3 推荐规则
+- TypeScript 推荐规则
+- Prettier 集成
+- 项目特定需求的自定义规则
 
-## IoT Domain-Specific Features
+## 物联网领域特定功能
 
-### Device Management
-- Device configuration templates with protocol plugins
-- Device grouping and batch operations
-- Real-time telemetry data visualization
-- Device location mapping (Baidu, Gaode, Tencent maps)
+### 设备管理
+- 带有协议插件的设备配置模板
+- 设备分组和批量操作
+- 实时遥测数据可视化
+- 设备位置映射（百度、高德、腾讯地图）
 
-### Dashboard and Visualization
-- Card-based dashboard system
-- Real-time data charts (ECharts, AntV G2)
-- Large screen visualization support
-- Mobile-responsive design
+### 仪表板和可视化
+- 基于卡片的仪表板系统
+- 实时数据图表（ECharts、AntV G2）
+- 大屏可视化支持
+- 移动响应式设计
 
-### Automation and Rules
-- Scene linkage and automation rules
-- Alarm notification system
-- Rule engine for data processing
-- WebSocket for real-time updates
+### 自动化和规则
+- 场景联动和自动化规则
+- 告警通知系统
+- 数据处理规则引擎
+- WebSocket 实时更新
 
-## Performance Considerations
+## 性能考虑
 
-- Virtual scrolling for large device lists
-- Lazy loading for route components
-- Memory-efficient build process
-- Responsive design with UnoCSS utilities
-- Chart virtualization for large datasets
+- 大型设备列表的虚拟滚动
+- 路由组件的懒加载
+- 内存高效的构建过程
+- 使用 UnoCSS 实用类的响应式设计
+- 大型数据集的图表虚拟化
 
-## Debugging and Development Tips
+## 调试和开发技巧
 
-- Use Vue DevTools for component inspection
-- Vite HMR for fast development feedback
-- TypeScript strict mode catches errors early
-- ESLint provides real-time code quality feedback
-- Use `console.log` (allowed in ESLint config) for debugging
+- 使用 Vue DevTools 进行组件检查
+- Vite HMR 提供快速开发反馈
+- TypeScript 严格模式及早捕获错误
+- ESLint 提供实时代码质量反馈
+- 使用 `console.log`（ESLint 配置中允许）进行调试
