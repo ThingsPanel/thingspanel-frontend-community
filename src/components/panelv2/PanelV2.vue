@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import PanelLayout from './layout/PanelLayout.vue'
+import Renderer1 from './renderers/renderer1/index.vue'
+import Renderer2 from './renderers/renderer2/index.vue'
 
 // Props definition
 interface Props {
@@ -48,14 +50,10 @@ const switchRenderer = () => {
 
       <!-- 中间渲染器区域 -->
       <template #main>
-        <div class="h-full w-full flex items-center justify-center">
+        <div class="h-full w-full">
           <!-- 动态渲染不同的渲染器 -->
-          <div v-if="currentRenderer === 'renderer1'" class="text-2xl text-blue-600">
-            渲染器1
-          </div>
-          <div v-else class="text-2xl text-green-600">
-            渲染器2
-          </div>
+          <Renderer1 v-if="currentRenderer === 'renderer1'" />
+          <Renderer2 v-else />
         </div>
       </template>
 
