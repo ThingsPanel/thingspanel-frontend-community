@@ -24,7 +24,8 @@
       "Bash(npm run typecheck:*)",
       "Bash(pnpm typecheck:*)",
       "Bash(sed:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
