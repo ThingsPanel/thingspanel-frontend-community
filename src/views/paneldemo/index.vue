@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import PanelV2 from '@/components/panelv2/PanelV2.vue'
-import { NMessage } from 'naive-ui'
+import { useMessage } from 'naive-ui'
 import type { CanvasState } from '@/components/panelv2/types'
 
 // Panel references
 const panelRef = ref()
+
+// 初始化消息组件
+const message = useMessage()
 
 // Event handlers
 const handleModeChange = (mode: 'edit' | 'preview') => {
@@ -14,17 +17,17 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
 
 const handleSave = (data: CanvasState) => {
   console.log('Panel saved:', data)
-  NMessage.success('面板保存成功！')
+  message.success('面板保存成功！')
 }
 
 const handleLoaded = (data: CanvasState) => {
   console.log('Panel loaded:', data)
-  NMessage.info('面板加载完成')
+  message.info('面板加载完成')
 }
 
 const handleError = (error: Error) => {
   console.error('Panel error:', error)
-  NMessage.error(`面板操作失败: ${error.message}`)
+  message.error(`面板操作失败: ${error.message}`)
 }</script>
 
 <template>

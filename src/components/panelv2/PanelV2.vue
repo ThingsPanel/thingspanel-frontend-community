@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import PanelLayout from './layout/PanelLayout.vue'
-import Renderer1 from './renderers/renderer1/index.vue'
-import Renderer2 from './renderers/renderer2/index.vue'
+import GridStackRenderer from './renderers/gridstack/index.vue'
+import CanvasRenderer from './renderers/canvas/index.vue'
 
 // Props definition
 interface Props {
@@ -15,11 +15,11 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // 当前使用的渲染器类型
-const currentRenderer = ref<'renderer1' | 'renderer2'>('renderer1')
+const currentRenderer = ref<'gridstack' | 'canvas'>('gridstack')
 
 // 切换渲染器
 const switchRenderer = () => {
-  currentRenderer.value = currentRenderer.value === 'renderer1' ? 'renderer2' : 'renderer1'
+  currentRenderer.value = currentRenderer.value === 'gridstack' ? 'canvas' : 'gridstack'
 }
 </script>
 
@@ -36,7 +36,7 @@ const switchRenderer = () => {
             @click="switchRenderer"
             class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            切换到{{ currentRenderer === 'renderer1' ? '渲染器2' : '渲染器1' }}
+            切换到{{ currentRenderer === 'gridstack' ? 'Canvas渲染器' : 'GridStack渲染器' }}
           </button>
         </div>
       </template>
@@ -52,8 +52,18 @@ const switchRenderer = () => {
       <template #main>
         <div class="h-full w-full">
           <!-- 动态渲染不同的渲染器 -->
-          <Renderer1 v-if="currentRenderer === 'renderer1'" />
-          <Renderer2 v-else />
+          <GridStackRenderer 
+            v-if="currentRenderer === 'gridstack'" 
+            :mode="mode"
+            :items="[]"
+            :selected-ids="[]"
+          />
+          <CanvasRenderer 
+            v-else 
+            :mode="mode"
+            :items="[]"
+            :selected-ids="[]"
+          />
         </div>
       </template>
 
