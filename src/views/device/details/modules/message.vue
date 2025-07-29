@@ -5,7 +5,7 @@ import { useRoute } from 'vue-router';
 import type { FormInst } from 'naive-ui';
 import { NButton, NPopconfirm, NSpace, NSwitch, useMessage, NInputNumber, NTooltip, NIcon } from 'naive-ui';
 import { deviceConfigInfo, deviceDetail, deviceLocation } from '@/service/api';
-import { deviceConfigEdit } from '@/service/api/device';
+// 移除deviceConfigEdit导入，不再调用设备配置接口
 import { $t } from '@/locales';
 import TencentMap from './public/tencent-map.vue'; // 路径根据实际位置调整
 
@@ -31,10 +31,7 @@ interface ExtensionInfo {
   enable: boolean;
   options?: Array<{ label: string; value: string }>; // 枚举类型的选项
 }
-const postData = reactive({
-  additional_info: '',
-  id: ''
-});
+// postData变量已移除，不再需要调用设备配置接口
 const { query } = useRoute();
 const message = useMessage();
 const modalClose = () => {};
@@ -49,18 +46,7 @@ const handleSave = async () => {
       await extensionFormRef.value.validate();
     }
     
-    // 保存位置信息
-    postData.longitude = longitude.value;
-    postData.latitude = latitude.value;
-    
-    // 保存扩展信息到设备配置
-    const saveResult = await handleAdditionSave();
-    if (!saveResult) {
-      message.error('扩展信息保存失败');
-      return;
-    }
-    
-    // 保存设备位置信息
+    // 只调用设备位置接口，将扩展信息一并保存
     const res = await deviceLocation({
       id: props.id,
       location: `${longitude.value},${latitude.value}`,
@@ -74,41 +60,11 @@ const handleSave = async () => {
     message.error('保存失败，请检查表单数据');
   }
 };
-const handleAdditionSave = async () => {
-  postData.id = props.deviceConfigId;
-  // 过滤掉空值，只保存有实际值的字段
-  const filteredData = additionInfo.value.map(item => ({
-    name: item.name,
-    type: item.type,
-    default_value: item.default_value,
-    value: item.value || item.default_value, // 如果没有值就使用默认值
-    desc: item.desc,
-    enable: item.enable,
-    options: item.options
-  }));
-  postData.additional_info = JSON.stringify(filteredData);
-  const res = await deviceConfigEdit(postData);
-  if (!res.error) {
-    return true;
-  }
-  return false;
-};
 // 移除单独的扩展信息保存函数，统一使用底部保存按钮
+// 不再调用设备配置接口，只通过设备位置接口保存扩展信息
 
-const handleSwitchChange = async row => {
-  const index = (additionInfo.value || []).findIndex(item => {
-    return (
-      item.name === row.name &&
-      item.type === row.type &&
-      item.default_value === row.default_value &&
-      item.desc === row.desc
-    );
-  });
-  if (index >= 0) {
-    additionInfo.value[index].enable = !additionInfo.value[index].enable;
-    handleAdditionSave();
-  }
-};
+// handleSwitchChange函数已移除，因为开关功能已被移除
+// 扩展信息的启用/禁用状态通过过滤逻辑处理
 // 根据类型渲染表单控件
 const renderFormControl = (item: ExtensionInfo, index: number) => {
   const { type, options, default_value } = item;
