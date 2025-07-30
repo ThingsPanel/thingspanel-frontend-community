@@ -258,9 +258,8 @@ export function getComponentsByType(type: ComponentLibraryItem['type']): Compone
 /** 搜索组件库 */
 export function searchComponents(keyword: string): ComponentLibraryItem[] {
   const lowerKeyword = keyword.toLowerCase()
-  return mockComponentLibrary.filter(comp => 
-    comp.name.toLowerCase().includes(lowerKeyword) ||
-    comp.description?.toLowerCase().includes(lowerKeyword)
+  return mockComponentLibrary.filter(
+    comp => comp.name.toLowerCase().includes(lowerKeyword) || comp.description?.toLowerCase().includes(lowerKeyword)
   )
 }
 
@@ -268,11 +267,11 @@ export function searchComponents(keyword: string): ComponentLibraryItem[] {
 export function generateTestCanvasItems(count: number = 3): CanvasItem[] {
   const items: CanvasItem[] = []
   const availableTypes = mockComponentLibrary.map(comp => comp.id)
-  
+
   for (let i = 0; i < count; i++) {
     const randomType = availableTypes[Math.floor(Math.random() * availableTypes.length)]
     items.push(generateRandomCanvasItem(randomType))
   }
-  
+
   return items
 }

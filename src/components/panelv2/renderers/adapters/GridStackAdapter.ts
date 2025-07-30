@@ -2,13 +2,13 @@
 // GridStack data adapter - External data format conversion
 
 import type { BaseItem } from '../base/types'
-import type { GridStackItem, GridPosition } from './types'
+import type { GridStackItem, GridPosition } from '../gridstack/types'
 
 /** 外部看板配置数据结构 */
 export interface ExternalPanelData {
   id: string
   name: string
-  config: string  // JSON字符串
+  config: string // JSON字符串
   tenant_id: string
   created_at: string
   updated_at: string
@@ -81,16 +81,29 @@ export class GridStackAdapter {
    */
   static parsePanelData(externalData: ExternalPanelData): ExternalGridItem[] {
     try {
+      // 检查externalData是否存在
+      if (!externalData) {
+        console.warn('External data is null or undefined')
+        return []
+      }
+
+      // 检查config字段是否存在且不为空
+      if (!externalData.config || externalData.config === 'undefined' || externalData.config === 'null') {
+        console.warn('Panel config is empty, null, or undefined:', externalData.config)
+        return []
+      }
+
       const configData = JSON.parse(externalData.config)
-      
+
       if (!Array.isArray(configData)) {
         console.warn('Panel config is not an array:', configData)
         return []
       }
-      
+
       return configData as ExternalGridItem[]
     } catch (error) {
       console.error('Failed to parse panel config:', error)
+      console.error('Config value was:', externalData?.config)
       return []
     }
   }
@@ -102,12 +115,12 @@ export class GridStackAdapter {
    * @returns 内部GridStackItem
    */
   static convertToGridStackItem(
-    externalItem: ExternalGridItem, 
+    externalItem: ExternalGridItem,
     panelInfo?: Pick<ExternalPanelData, 'id' | 'name'>
   ): GridStackItem {
     // 生成内部唯一ID
     const internalId = `${panelInfo?.id || 'panel'}_${externalItem.i}`
-    
+
     // 转换网格位置
     const gridPosition: GridPosition = {
       x: externalItem.x,
@@ -115,22 +128,22 @@ export class GridStackAdapter {
       w: externalItem.w,
       h: externalItem.h
     }
-    
+
     // 计算像素位置和尺寸（基于标准网格配置）
-    const cellWidth = 100  // 假设每个网格单元100px宽
-    const cellHeight = 60  // 假设每个网格单元60px高
-    const margin = 10      // 网格间距
-    
+    const cellWidth = 100 // 假设每个网格单元100px宽
+    const cellHeight = 60 // 假设每个网格单元60px高
+    const margin = 10 // 网格间距
+
     const pixelPosition = {
       x: externalItem.x * (cellWidth + margin),
       y: externalItem.y * (cellHeight + margin)
     }
-    
+
     const pixelSize = {
       width: externalItem.w * cellWidth + (externalItem.w - 1) * margin,
       height: externalItem.h * cellHeight + (externalItem.h - 1) * margin
     }
-    
+
     // 构造内部配置数据
     const internalConfig = {
       // 保留原始卡片配置
@@ -143,7 +156,7 @@ export class GridStackAdapter {
       // 添加原始数据引用（用于调试和回溯）
       _originalData: externalItem
     }
-    
+
     const gridStackItem: GridStackItem = {
       id: internalId,
       type: externalItem.data.cardId,
@@ -151,25 +164,28 @@ export class GridStackAdapter {
       size: pixelSize,
       config: internalConfig,
       title: externalItem.data.title,
-      
+
       // GridStack特有属性
       gridPosition,
       minGridSize: {
         w: externalItem.minW || externalItem.data.layout.minW || 2,
         h: externalItem.minH || externalItem.data.layout.minH || 2
       },
-      maxGridSize: externalItem.maxW || externalItem.maxH ? {
-        w: externalItem.maxW || 12,
-        h: externalItem.maxH || 12
-      } : undefined,
-      
+      maxGridSize:
+        externalItem.maxW || externalItem.maxH
+          ? {
+              w: externalItem.maxW || 12,
+              h: externalItem.maxH || 12
+            }
+          : undefined,
+
       // 行为控制
       resizable: !externalItem.static,
       draggable: !externalItem.static,
       static: externalItem.static || false,
       locked: externalItem.static || false
     }
-    
+
     return gridStackItem
   }
 
@@ -180,11 +196,55 @@ export class GridStackAdapter {
    */
   static convertPanelToGridStackItems(externalData: ExternalPanelData): GridStackItem[] {
     const externalItems = this.parsePanelData(externalData)
-    const panelInfo = { id: externalData.id, name: externalData.name }
-    
-    return externalItems.map(item => 
-      this.convertToGridStackItem(item, panelInfo)
-    )
+
+    return externalItems.map(item => {
+      // 直接使用数据中的坐标，不进行复杂转换
+      const gridStackItem: GridStackItem = {
+        id: String(item.i), // 使用原始ID
+        type: item.data.cardId,
+        title: item.data.title,
+        config: item.data.config,
+
+        // 直接使用数据中的网格位置
+        gridPosition: {
+          x: item.x,
+          y: item.y,
+          w: item.w,
+          h: item.h
+        },
+
+        // 设置最小最大尺寸
+        minGridSize: {
+          w: item.minW || item.data.layout.minW || 1,
+          h: item.minH || item.data.layout.minH || 1
+        },
+        maxGridSize:
+          item.maxW || item.maxH
+            ? {
+                w: item.maxW || 12,
+                h: item.maxH || 12
+              }
+            : undefined,
+
+        // 计算像素位置（仅用于兼容性）
+        position: {
+          x: item.x * 70, // cellHeight(60) + margin(10)
+          y: item.y * 70
+        },
+        size: {
+          width: item.w * 70,
+          height: item.h * 70
+        },
+
+        // 交互设置
+        resizable: !item.static,
+        draggable: !item.static,
+        static: item.static || false,
+        locked: item.static || false
+      }
+
+      return gridStackItem
+    })
   }
 
   /**
@@ -195,7 +255,7 @@ export class GridStackAdapter {
   static convertFromGridStackItem(gridStackItem: GridStackItem): ExternalGridItem {
     // 从config中提取原始数据
     const originalData = gridStackItem.config._originalData as ExternalGridItem
-    
+
     // 构造外部格式
     const externalItem: ExternalGridItem = {
       x: gridStackItem.gridPosition.x,
@@ -209,7 +269,7 @@ export class GridStackAdapter {
       i: originalData?.i || gridStackItem.id,
       moved: true, // 如果被转换说明可能被修改过
       static: gridStackItem.static,
-      
+
       data: {
         cardId: gridStackItem.config.cardId || gridStackItem.type,
         type: gridStackItem.config.cardType || 'builtin',
@@ -217,8 +277,8 @@ export class GridStackAdapter {
         config: {
           // 过滤掉内部元数据
           ...Object.fromEntries(
-            Object.entries(gridStackItem.config).filter(([key]) => 
-              !key.startsWith('_') && !['cardId', 'cardType', 'dataSource', 'basicSettings'].includes(key)
+            Object.entries(gridStackItem.config).filter(
+              ([key]) => !key.startsWith('_') && !['cardId', 'cardType', 'dataSource', 'basicSettings'].includes(key)
             )
           )
         },
@@ -238,7 +298,7 @@ export class GridStackAdapter {
         }
       }
     }
-    
+
     return externalItem
   }
 
@@ -249,11 +309,11 @@ export class GridStackAdapter {
    * @returns 外部面板数据
    */
   static convertToExternalPanelData(
-    items: GridStackItem[], 
+    items: GridStackItem[],
     panelInfo: Partial<ExternalPanelData>
   ): Partial<ExternalPanelData> {
     const externalItems = items.map(item => this.convertFromGridStackItem(item))
-    
+
     return {
       ...panelInfo,
       config: JSON.stringify(externalItems)
@@ -267,12 +327,12 @@ export class GridStackAdapter {
    */
   static validateExternalData(data: any): { isValid: boolean; errors: string[] } {
     const errors: string[] = []
-    
+
     if (!data || typeof data !== 'object') {
       errors.push('Data must be an object')
       return { isValid: false, errors }
     }
-    
+
     // 验证必需字段
     const requiredFields = ['id', 'name', 'config']
     for (const field of requiredFields) {
@@ -280,7 +340,7 @@ export class GridStackAdapter {
         errors.push(`Missing required field: ${field}`)
       }
     }
-    
+
     // 验证config字段
     if (data.config) {
       try {
@@ -292,7 +352,7 @@ export class GridStackAdapter {
         errors.push('Config must be valid JSON')
       }
     }
-    
+
     return {
       isValid: errors.length === 0,
       errors
@@ -301,35 +361,46 @@ export class GridStackAdapter {
 
   /**
    * 数据统计信息
-   * @param externalData 外部面板数据  
+   * @param externalData 外部面板数据
    * @returns 统计信息
    */
   static getDataStatistics(externalData: ExternalPanelData) {
     const items = this.parsePanelData(externalData)
-    
+
+    // 初始化统计信息
     const statistics = {
       totalItems: items.length,
       cardTypes: {} as Record<string, number>,
       dataSourceTypes: {} as Record<string, number>,
       gridBounds: {
-        minX: Math.min(...items.map(item => item.x)),
-        maxX: Math.max(...items.map(item => item.x + item.w - 1)),
-        minY: Math.min(...items.map(item => item.y)),
-        maxY: Math.max(...items.map(item => item.y + item.h - 1))
+        minX: 0,
+        maxX: 0,
+        minY: 0,
+        maxY: 0
       },
       staticItems: items.filter(item => item.static).length,
       movedItems: items.filter(item => item.moved).length
     }
-    
+
+    // 只有当有项目时才计算网格边界
+    if (items.length > 0) {
+      statistics.gridBounds = {
+        minX: Math.min(...items.map(item => item.x)),
+        maxX: Math.max(...items.map(item => item.x + item.w - 1)),
+        minY: Math.min(...items.map(item => item.y)),
+        maxY: Math.max(...items.map(item => item.y + item.h - 1))
+      }
+    }
+
     // 统计卡片类型
     items.forEach(item => {
       const cardId = item.data.cardId
       statistics.cardTypes[cardId] = (statistics.cardTypes[cardId] || 0) + 1
-      
+
       const dataOrigin = item.data.dataSource.origin
       statistics.dataSourceTypes[dataOrigin] = (statistics.dataSourceTypes[dataOrigin] || 0) + 1
     })
-    
+
     return statistics
   }
 }

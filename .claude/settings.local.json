@@ -25,7 +25,12 @@
       "Bash(pnpm typecheck:*)",
       "Bash(sed:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npm run dev:*)",
+      "WebFetch(domain:gridstackjs.com)",
+      "Bash(pnpm lint:*)",
+      "Bash(npx eslint:*)",
+      "Bash(curl:*)"
     ],
     "deny": []
   }

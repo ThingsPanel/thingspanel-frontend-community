@@ -146,27 +146,27 @@ export interface CanvasEventData {
   /** 画布双击事件 */
   'canvas-dblclick': (position: Position, event: MouseEvent) => void
   /** 视口变更事件 */
-  'viewport-change': (viewport: { x: number, y: number, zoom: number }) => void
+  'viewport-change': (viewport: { x: number; y: number; zoom: number }) => void
   /** 缩放变更事件 */
   'zoom-change': (zoom: number) => void
   /** 选择框变更事件 */
-  'selection-box-change': (box: { start: Position, end: Position } | null) => void
+  'selection-box-change': (box: { start: Position; end: Position } | null) => void
 }
 
 /** Canvas工具函数类型 */
 export interface CanvasUtils {
   /** 屏幕坐标转画布坐标 */
-  screenToCanvas: (screenPoint: Position, viewport: { x: number, y: number, zoom: number }) => Position
+  screenToCanvas: (screenPoint: Position, viewport: { x: number; y: number; zoom: number }) => Position
   /** 画布坐标转屏幕坐标 */
-  canvasToScreen: (canvasPoint: Position, viewport: { x: number, y: number, zoom: number }) => Position
+  canvasToScreen: (canvasPoint: Position, viewport: { x: number; y: number; zoom: number }) => Position
   /** 网格吸附 */
   snapToGrid: (position: Position, gridSize: number) => Position
   /** 约束位置到边界 */
-  constrainPosition: (position: Position, size: Size, bounds: { width: number, height: number }) => Position
+  constrainPosition: (position: Position, size: Size, bounds: { width: number; height: number }) => Position
   /** 碰撞检测 */
   checkCollision: (item1: CanvasItem, item2: CanvasItem) => boolean
   /** 计算选择框内的项目 */
-  getItemsInSelection: (items: CanvasItem[], selectionBox: { start: Position, end: Position }) => CanvasItem[]
+  getItemsInSelection: (items: CanvasItem[], selectionBox: { start: Position; end: Position }) => CanvasItem[]
   /** 生成唯一层级 */
   generateZIndex: (items: CanvasItem[]) => number
 }

@@ -1,29 +1,65 @@
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import type { CanvasItem, CanvasConfig, CanvasRendererProps } from './types'
-import type { BaseRendererProps, RendererEvents } from '../base/interfaces'
+// Canvas渲染器视图组件 - 纯粹的渲染器，不包含工具栏等UI
+// Canvas renderer view component - Pure renderer without toolbars or other UI
 
-// Props definition
-interface Props extends Omit<BaseRendererProps, 'items'> {
-  /** Canvas项目列表 */
-  items?: CanvasItem[]
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { CanvasRenderer } from './CanvasRenderer'
+import { CanvasAdapter, type ExternalPanelData } from '../adapters/CanvasAdapter'
+import type { CanvasItem, CanvasConfig } from './types'
+import type { BaseItem, RenderMode } from '../base/types'
+
+// Props定义 - 只包含渲染必需的属性
+interface Props {
+  /** 项目数据 */
+  items?: BaseItem[]
+  /** 外部数据 */
+  externalData?: ExternalPanelData
+  /** 渲染模式 */
+  mode?: RenderMode
+  /** 选中的项目ID */
+  selectedIds?: string[]
   /** Canvas配置 */
-  canvasConfig?: Partial<CanvasConfig>
+  config?: Partial<CanvasConfig>
+  /** 是否可编辑 */
+  editable?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   items: () => [],
   selectedIds: () => [],
-  editable: true,
-  showGrid: true,
-  canvasConfig: () => ({})
+  mode: 'edit',
+  config: () => ({}),
+  editable: true
 })
 
-// Events
-const emit = defineEmits<RendererEvents>()
+// Events - 只包含渲染器核心事件
+interface Events {
+  'item-select': [ids: string[]]
+  'item-update': [id: string, updates: any]
+  'item-add': [item: BaseItem]
+  'item-remove': [id: string]
+  'ready': [renderer: CanvasRenderer]
+  'error': [error: string]
+}
 
-// Default Canvas configuration
-const defaultCanvasConfig: CanvasConfig = {
+const emit = defineEmits<Events>()
+
+// 响应式状态
+const containerRef = ref<HTMLElement>()
+const rendererInstance = ref<CanvasRenderer>()
+const isReady = ref(false)
+const error = ref<string>()
+
+// 计算属性
+const canvasItems = computed(() => {
+  if (props.externalData) {
+    // 转换外部数据 - 使用静态方法
+    return CanvasAdapter.convertPanelToCanvasItems(props.externalData)
+  }
+  return props.items || []
+})
+
+const rendererConfig = computed((): CanvasConfig => ({
   width: 1200,
   height: 800,
   zoom: 1,
@@ -33,271 +69,227 @@ const defaultCanvasConfig: CanvasConfig = {
   grid: {
     enabled: true,
     size: 20,
-    snap: true,
+    snap: props.editable,
     color: '#e5e7eb',
     opacity: 0.5,
     visible: true
   },
-  selectionBox: true,
-  multiSelect: true,
+  selectionBox: props.editable,
+  multiSelect: props.editable,
   drag: {
-    enabled: true,
+    enabled: props.editable,
     threshold: 5,
     containment: true
   },
   resize: {
-    enabled: true,
+    enabled: props.editable,
     handleSize: 8,
     aspectRatio: false
+  },
+  ...props.config
+}))
+
+// 方法
+const initializeRenderer = async () => {
+  if (!containerRef.value) {
+    console.warn('Container not ready')
+    return
+  }
+
+  try {
+    error.value = undefined
+    
+    // 创建渲染器实例
+    rendererInstance.value = new CanvasRenderer(containerRef.value, rendererConfig.value)
+    
+    // 设置事件监听
+    setupEventListeners()
+    
+    // 初始化
+    rendererInstance.value.init()
+    
+    // 加载数据
+    if (canvasItems.value.length > 0) {
+      canvasItems.value.forEach(item => {
+        rendererInstance.value?.addItem(item)
+      })
+    }
+    
+    isReady.value = true
+    emit('ready', rendererInstance.value)
+    
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+    error.value = errorMessage
+    emit('error', errorMessage)
+    console.error('Failed to initialize Canvas renderer:', err)
   }
 }
 
-// Reactive state
-const canvasContainer = ref<HTMLElement>()
-const canvasConfig = reactive<CanvasConfig>({ 
-  ...defaultCanvasConfig, 
-  ...props.canvasConfig 
-})
-
-// Computed properties
-const isEditMode = computed(() => props.mode === 'edit')
-const canvasItems = computed(() => props.items || [])
-
-// Canvas state
-const canvasState = reactive({
-  initialized: false,
-  viewport: {
-    x: 0,
-    y: 0,
-    zoom: canvasConfig.zoom
-  }
-})
-
-// Methods
-const initializeCanvas = () => {
-  console.log('Canvas renderer initializing...')
-  console.log('Config:', canvasConfig)
-  console.log('Items:', canvasItems.value)
-  canvasState.initialized = true
-}
-
-const destroyCanvas = () => {
-  console.log('Canvas renderer destroying...')
-  canvasState.initialized = false
-}
-
-const handleItemSelect = (item: CanvasItem) => {
-  emit('item-select', [item.id])
-}
-
-const handleItemUpdate = (item: CanvasItem) => {
-  emit('item-update', item.id, {
-    position: item.position,
-    size: item.size
+const setupEventListeners = () => {
+  if (!rendererInstance.value) return
+  
+  rendererInstance.value.on('item-select', (ids: string[]) => {
+    emit('item-select', ids)
+  })
+  
+  rendererInstance.value.on('item-update', (id: string, updates: any) => {
+    emit('item-update', id, updates)
+  })
+  
+  rendererInstance.value.on('item-add', (item: BaseItem) => {
+    emit('item-add', item)
+  })
+  
+  rendererInstance.value.on('item-remove', (id: string) => {
+    emit('item-remove', id)
   })
 }
 
-const handleItemRemove = (item: CanvasItem) => {
-  emit('item-remove', item.id)
+const destroyRenderer = () => {
+  if (rendererInstance.value) {
+    rendererInstance.value.destroy()
+    rendererInstance.value = undefined
+  }
+  isReady.value = false
 }
 
-const handleZoomChange = (delta: number) => {
-  const newZoom = Math.max(
-    canvasConfig.minZoom || 0.1,
-    Math.min(canvasConfig.maxZoom || 5, canvasState.viewport.zoom + delta)
-  )
-  canvasState.viewport.zoom = newZoom
-}
+// 暴露方法给父组件
+defineExpose({
+  renderer: rendererInstance,
+  isReady,
+  refresh: () => rendererInstance.value?.refresh(),
+  addItem: (item: BaseItem) => rendererInstance.value?.addItem(item),
+  removeItem: (id: string) => rendererInstance.value?.removeItem(id),
+  updateItem: (id: string, updates: any) => rendererInstance.value?.updateItem(id, updates),
+  selectItems: (ids: string[]) => rendererInstance.value?.selectItems(ids),
+  clearSelection: () => rendererInstance.value?.clearSelection(),
+  setMode: (mode: RenderMode) => rendererInstance.value?.setMode(mode)
+})
 
-// Lifecycle
-onMounted(() => {
-  initializeCanvas()
+// 生命周期
+onMounted(async () => {
+  await nextTick()
+  initializeRenderer()
 })
 
 onUnmounted(() => {
-  destroyCanvas()
+  destroyRenderer()
 })
+
+// 监听器
+watch(() => props.items, () => {
+  if (isReady.value && rendererInstance.value) {
+    // 重新加载项目
+    rendererInstance.value.clearAll()
+    canvasItems.value.forEach(item => {
+      rendererInstance.value?.addItem(item)
+    })
+  }
+}, { deep: true })
+
+watch(() => props.mode, (newMode) => {
+  if (rendererInstance.value && newMode) {
+    rendererInstance.value.setMode(newMode)
+  }
+})
+
+watch(() => props.selectedIds, (newIds) => {
+  if (rendererInstance.value && newIds) {
+    rendererInstance.value.selectItems(newIds)
+  }
+}, { deep: true })
+
+watch(() => props.config, () => {
+  // 配置变化时重新初始化
+  destroyRenderer()
+  nextTick(() => {
+    initializeRenderer()
+  })
+}, { deep: true })
 </script>
 
 <template>
-  <div class="canvas-renderer h-full w-full" ref="canvasContainer">
-    <!-- Header info -->
-    <div class="renderer-header p-4 bg-green-50 dark:bg-green-900/20 border-b">
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="text-lg font-semibold text-green-600 dark:text-green-400">
-            Canvas 渲染器
-          </h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">
-            自由画布系统 - {{ canvasConfig.width }} × {{ canvasConfig.height }}px
-          </p>
-        </div>
-        <div class="text-sm text-gray-500">
-          <span>模式: {{ mode }}</span>
-          <span class="ml-4">项目: {{ canvasItems.length }}</span>
-          <span class="ml-4">选中: {{ selectedIds.length }}</span>
-          <span class="ml-4">缩放: {{ Math.round(canvasState.viewport.zoom * 100) }}%</span>
-        </div>
+  <div class="canvas-renderer-view w-full h-full relative">
+    <!-- 错误提示 -->
+    <div 
+      v-if="error" 
+      class="absolute inset-0 flex items-center justify-center bg-red-50 dark:bg-red-900/10 z-10"
+    >
+      <div class="text-center p-6">
+        <div class="text-red-500 text-4xl mb-2">⚠️</div>
+        <h3 class="text-lg font-medium text-red-900 dark:text-red-100 mb-2">
+          渲染器错误
+        </h3>
+        <p class="text-sm text-red-700 dark:text-red-300">
+          {{ error }}
+        </p>
+      </div>
+    </div>
+    
+    <!-- 加载中 -->
+    <div 
+      v-else-if="!isReady" 
+      class="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900/10"
+    >
+      <div class="text-center">
+        <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+        <p class="text-sm text-gray-600 dark:text-gray-400">初始化Canvas渲染器...</p>
       </div>
     </div>
 
-    <!-- Canvas controls -->
-    <div class="canvas-controls p-2 bg-gray-50 dark:bg-gray-800 border-b flex items-center space-x-4">
-      <div class="flex items-center space-x-2">
-        <button
-          @click="handleZoomChange(-0.1)"
-          class="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-          title="缩小"
-        >
-          <SvgIcon icon="material-symbols:zoom-out" class="w-3 h-3" />
-        </button>
-        <span class="text-xs text-gray-600 min-w-12 text-center">
-          {{ Math.round(canvasState.viewport.zoom * 100) }}%
-        </span>
-        <button
-          @click="handleZoomChange(0.1)"
-          class="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded"
-          title="放大"
-        >
-          <SvgIcon icon="material-symbols:zoom-in" class="w-3 h-3" />
-        </button>
-      </div>
-      
-      <div class="h-4 w-px bg-gray-300"></div>
-      
-      <div class="flex items-center space-x-2">
-        <label class="flex items-center text-xs">
-          <input
-            v-model="canvasConfig.grid.visible"
-            type="checkbox"
-            class="mr-1"
-          />
-          显示网格
-        </label>
-        <label class="flex items-center text-xs">
-          <input
-            v-model="canvasConfig.grid.snap"
-            type="checkbox"
-            class="mr-1"
-          />
-          网格吸附
-        </label>
-      </div>
-    </div>
-
-    <!-- Canvas content -->
-    <div class="canvas-content flex-1 p-4">
-      <!-- Canvas configuration display -->
-      <div class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">画布配置</h4>
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
-          <div>尺寸: {{ canvasConfig.width }} × {{ canvasConfig.height }}</div>
-          <div>网格: {{ canvasConfig.grid.size }}px</div>
-          <div>缩放: {{ canvasState.viewport.zoom.toFixed(2) }}x</div>
-          <div>吸附: {{ canvasConfig.grid.snap ? '启用' : '禁用' }}</div>
-          <div>多选: {{ canvasConfig.multiSelect ? '启用' : '禁用' }}</div>
-        </div>
-      </div>
-
-      <!-- Items display -->
-      <div class="space-y-2">
-        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">
-          画布项目 ({{ canvasItems.length }})
-        </h4>
-        
-        <div v-if="canvasItems.length === 0" class="text-center py-8">
-          <div class="text-gray-400 dark:text-gray-500">
-            <SvgIcon icon="material-symbols:artboard" class="w-12 h-12 mx-auto mb-2" />
-            <p>暂无画布项目</p>
-          </div>
-        </div>
-
-        <div v-else class="space-y-2">
-          <div
-            v-for="item in canvasItems"
-            :key="item.id"
-            class="item-card p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg transition-all"
-            :class="{
-              'ring-2 ring-green-500': selectedIds.includes(item.id),
-              'cursor-pointer hover:shadow-md': isEditMode,
-              'opacity-50': !item.visible
-            }"
-            @click="isEditMode ? handleItemSelect(item) : null"
-          >
-            <div class="flex items-center justify-between">
-              <div>
-                <div class="font-medium text-gray-900 dark:text-white flex items-center space-x-2">
-                  <span>{{ item.title || item.type }}</span>
-                  <span v-if="item.locked" class="text-xs text-orange-500">🔒</span>
-                  <span v-if="!item.visible" class="text-xs text-gray-400">👁️‍🗨️</span>
-                </div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
-                  ID: {{ item.id }}
-                </div>
-              </div>
-              <div class="text-xs text-gray-500 space-y-1">
-                <div>位置: ({{ Math.round(item.position.x) }}, {{ Math.round(item.position.y) }})</div>
-                <div>尺寸: {{ item.size.width }} × {{ item.size.height }}</div>
-                <div>层级: {{ item.zIndex }}</div>
-                <div v-if="item.position.rotation">旋转: {{ item.position.rotation }}°</div>
-              </div>
-            </div>
-            
-            <!-- Item actions -->
-            <div v-if="isEditMode" class="mt-2 flex space-x-2">
-              <button
-                @click.stop="handleItemUpdate(item)"
-                class="px-2 py-1 text-xs bg-green-100 text-green-600 rounded hover:bg-green-200"
-              >
-                更新
-              </button>
-              <button
-                @click.stop="handleItemRemove(item)"
-                class="px-2 py-1 text-xs bg-red-100 text-red-600 rounded hover:bg-red-200"
-              >
-                删除
-              </button>
-            </div>
-          </div>
+    <!-- 空状态 -->
+    <div 
+      v-else-if="isReady && canvasItems.length === 0" 
+      class="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900/10"
+    >
+      <div class="text-center p-8 max-w-md">
+        <div class="text-gray-400 text-6xl mb-4">🎨</div>
+        <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+          空白画布
+        </h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+          画布渲染器已准备就绪，但还没有添加任何组件。您可以开始在画布上放置组件来创建您的自定义布局。
+        </p>
+        <div class="text-xs text-gray-500 dark:text-gray-500">
+          {{ props.externalData ? '外部数据为空或格式不正确' : '没有提供项目数据' }}
         </div>
       </div>
     </div>
-
-    <!-- Status footer -->
-    <div class="renderer-footer p-2 bg-gray-50 dark:bg-gray-800 border-t text-xs text-gray-500">
-      <div class="flex justify-between">
-        <span>状态: {{ canvasState.initialized ? '已初始化' : '未初始化' }}</span>
-        <span>视口: {{ canvasState.viewport.x }}, {{ canvasState.viewport.y }}</span>
-      </div>
+    
+    <!-- Canvas容器 -->
+    <div 
+      ref="containerRef" 
+      class="canvas-container w-full h-full"
+      :class="{
+        'pointer-events-none': mode === 'preview',
+        'cursor-default': !editable,
+        'opacity-0': !isReady || canvasItems.length === 0
+      }"
+    >
+      <!-- Canvas元素将由渲染器动态创建 -->
     </div>
   </div>
 </template>
 
 <style scoped>
-.canvas-renderer {
-  display: flex;
-  flex-direction: column;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+.canvas-renderer-view {
+  min-height: 400px;
+  background: #f8f9fa;
 }
 
-.canvas-content {
-  overflow-y: auto;
+.canvas-container {
+  overflow: hidden;
+  position: relative;
 }
 
-.item-card {
-  transition: all 0.2s ease;
+/* 预览模式样式 */
+.canvas-renderer-view[data-mode="preview"] .canvas-container {
+  cursor: default;
 }
 
-.item-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.canvas-controls button {
-  transition: all 0.15s ease;
-}
-
-.canvas-controls button:hover {
-  transform: scale(1.05);
+/* 深色模式 */
+.dark .canvas-renderer-view {
+  background: #1f2937;
 }
 </style>

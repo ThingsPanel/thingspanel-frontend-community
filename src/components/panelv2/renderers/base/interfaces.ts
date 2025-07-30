@@ -25,14 +25,14 @@ export interface BaseRenderer {
   version: string
   /** 渲染器描述 */
   description: string
-  
+
   /** 初始化渲染器 */
   init(): void
   /** 销毁渲染器 */
   destroy(): void
   /** 刷新渲染 */
   refresh(): void
-  
+
   /** 添加项目 */
   addItem(item: BaseItem): void
   /** 更新项目 */
@@ -41,14 +41,49 @@ export interface BaseRenderer {
   removeItem(id: string): void
   /** 获取项目 */
   getItem(id: string): BaseItem | undefined
-  
+  /** 获取所有项目 */
+  getAllItems?(): BaseItem[]
+
   /** 选择项目 */
   selectItems(ids: string[]): void
   /** 清空选择 */
   clearSelection(): void
-  
+  /** 获取选中的项目 */
+  getSelectedItems?(): BaseItem[]
+
   /** 设置模式 */
   setMode(mode: RenderMode): void
+  /** 获取当前模式 */
+  getMode?(): RenderMode
+
+  /** 历史操作 */
+  undo?(): boolean
+  redo?(): boolean
+  canUndo?(): boolean
+  canRedo?(): boolean
+
+  /** 导入导出 */
+  exportData?(): any
+  importData?(data: any): void
+  clearAll?(): void
+
+  /** 配置管理 */
+  getConfig?(): any
+  updateConfig?(config: any): void
+  getConfigForm?(): any
+
+  /** 工具管理 */
+  getTools?(): any[]
+  executeAction?(actionId: string, ...args: any[]): any
+
+  /** 事件管理 */
+  on?<K extends keyof RendererEvents>(event: K, callback: RendererEvents[K]): void
+
+  /** 状态查询 */
+  isInitialized?(): boolean
+  getItemCount?(): number
+  getSelectedCount?(): number
+  getHistorySize?(): number
 }
 
 /** 渲染器工厂接口 */
