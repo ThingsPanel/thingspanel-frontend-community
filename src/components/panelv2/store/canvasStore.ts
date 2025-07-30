@@ -4,7 +4,11 @@
  */
 
 import { defineStore } from 'pinia'
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, readonly } from 'vue'
+import { 
+  DEFAULT_CANVAS_CONFIG,
+  DEFAULT_VIEWPORT
+} from '../types/core'
 import type { 
   CanvasState, 
   BaseCanvasItem, 
@@ -14,9 +18,7 @@ import type {
   CanvasConfig,
   DragState,
   ClipboardData,
-  HistoryState,
-  DEFAULT_CANVAS_CONFIG,
-  DEFAULT_VIEWPORT
+  HistoryState
 } from '../types/core'
 
 export const useCanvasStore = defineStore('panelv2-canvas', () => {
