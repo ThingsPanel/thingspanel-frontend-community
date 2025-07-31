@@ -136,7 +136,7 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
 
 const handleRendererChange = (rendererId: string) => {
   console.log('Renderer changed to:', rendererId)
-  message.info(`切换到${rendererId === 'grid' ? '网格' : '画布'}渲染器`)
+  message.info(`切换到${rendererId === 'kanban' ? '看板' : '可视化大屏'}渲染器`)
 }
 
 const handleDataChange = (items: BaseCanvasItem[]) => {
@@ -224,7 +224,7 @@ onMounted(() => {
           theme: 'default'
         }"
         mode="edit"
-        renderer-type="grid"
+        renderer-type="kanban"
         :readonly="false"
         @mode-change="handleModeChange"
         @renderer-change="handleRendererChange"

@@ -1,6 +1,6 @@
 <!--
-  Canvas Renderer Component
-  自由画布渲染器，支持精确像素定位和高级交互
+  Visualization Renderer Component
+  可视化大屏渲染器，支持精确像素定位和高级交互
 -->
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
@@ -10,10 +10,10 @@ import type {
   RendererCapabilities,
   RendererState,
   RendererEvents
-} from '../types/renderer'
-import type { BaseCanvasItem, Viewport, Position, Size } from '../types/core'
-import { useCanvasStore } from '../store/canvasStore'
-import eventBus from '../core/EventBus'
+} from '../../types/renderer'
+import type { BaseCanvasItem, Viewport, Position, Size } from '../../types/core'
+import { useCanvasStore } from '../../store/canvasStore'
+import eventBus from '../../core/EventBus'
 
 // Props
 interface Props {
@@ -121,9 +121,9 @@ const canvasStyle = computed(() => ({
 }))
 
 // Renderer implementation class
-class CanvasRendererImpl implements BaseRenderer {
-  readonly id = 'canvas'
-  readonly name = 'Canvas Renderer'
+class VisualizationRendererImpl implements BaseRenderer {
+  readonly id = 'visualization'
+  readonly name = 'Visualization Renderer'
   readonly version = '1.0.0'
   readonly capabilities = capabilities
   
@@ -369,7 +369,7 @@ class CanvasRendererImpl implements BaseRenderer {
 }
 
 // Create renderer instance
-const rendererInstance = new CanvasRendererImpl()
+const rendererInstance = new VisualizationRendererImpl()
 
 // Watch for external data changes
 watch(() => props.items, (newItems) => {
@@ -541,236 +541,152 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div
-    ref="containerRef"
-    class="canvas-renderer"
-    @click="handleCanvasClick"
-    @wheel="handleWheel"
-  >
-    <div
-      ref="canvasRef"
-      class="canvas-content"
-      :style="canvasStyle"
-    >
-      <div
-        v-for="item in items"
-        :key="item.id"
-        class="canvas-item"
-        :class="{
-          'canvas-item-selected': selectedItems.includes(item.id),
-          'canvas-item-dragging': dragState?.draggedItems.includes(item.id),
-          'canvas-item-locked': item.locked
-        }"
-        :style="getItemStyle(item)"
-        @click="(event: MouseEvent) => handleItemClick(event, item)"
-        @mousedown="(event: MouseEvent) => handleMouseDown(event, item)"
-      >
-        <div class="canvas-item-content">
-          <!-- 这里渲染实际的卡片内容 -->
-          <slot :item="item" :canvas-item="item">
-            <div class="default-card-content">
-              <div class="card-header">
-                <h4>{{ item.cardData.title || `Item ${item.id}` }}</h4>
-              </div>
-              <div class="card-body">
-                <p>Card ID: {{ item.cardData.cardId || 'Unknown' }}</p>
-                <p>Position: {{ Math.round(item.position.x) }}, {{ Math.round(item.position.y) }}</p>
-                <p>Size: {{ item.size.width }} × {{ item.size.height }}</p>
-                <p>Z-Index: {{ item.zIndex }}</p>
-              </div>
-            </div>
-          </slot>
+  <div class="visualization-renderer-placeholder">
+    <div class="coming-soon-content">
+      <div class="coming-soon-icon">
+        <div class="icon-large">📊</div>
+      </div>
+      <h2 class="coming-soon-title">可视化大屏</h2>
+      <p class="coming-soon-description">
+        全新的可视化大屏功能正在开发中，敬请期待！
+      </p>
+      <div class="features-preview">
+        <div class="feature-item">
+          <span class="feature-icon">🎨</span>
+          <span>自由画布布局</span>
         </div>
-        
-        <!-- 选择指示器 -->
-        <div v-if="selectedItems.includes(item.id)" class="selection-indicators">
-          <div class="selection-border"></div>
-          <div class="resize-handles">
-            <div class="resize-handle resize-handle-nw"></div>
-            <div class="resize-handle resize-handle-ne"></div>
-            <div class="resize-handle resize-handle-sw"></div>
-            <div class="resize-handle resize-handle-se"></div>
-          </div>
+        <div class="feature-item">
+          <span class="feature-icon">📐</span>
+          <span>精确像素定位</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔍</span>
+          <span>画布缩放平移</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🎯</span>
+          <span>高级交互功能</span>
         </div>
       </div>
-    </div>
-    
-    <!-- 缩放指示器 -->
-    <div class="zoom-indicator">
-      {{ Math.round(viewport.zoom * 100) }}%
+      <div class="coming-soon-footer">
+        <span class="version-info">即将在下个版本发布</span>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.canvas-renderer {
+.visualization-renderer-placeholder {
   width: 100%;
-  height: 100%;
-  overflow: auto;
-  position: relative;
-  background-color: #fafafa;
-}
-
-.canvas-content {
-  position: relative;
-  cursor: crosshair;
-}
-
-.canvas-item {
-  border-radius: 8px;
-  overflow: hidden;
-  user-select: none;
-}
-
-.canvas-item-content {
-  width: 100%;
-  height: 100%;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  position: relative;
-  transition: box-shadow 0.2s ease;
-}
-
-.canvas-item-selected .canvas-item-content {
-  box-shadow: 0 4px 16px rgba(24, 144, 255, 0.2);
-}
-
-.canvas-item-dragging .canvas-item-content {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
-
-.canvas-item-locked {
-  cursor: not-allowed !important;
-}
-
-.canvas-item-locked .canvas-item-content {
-  opacity: 0.7;
-  border: 2px dashed #d9d9d9;
-}
-
-.default-card-content {
-  padding: 16px;
   height: 100%;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 400px;
 }
 
-.card-header {
-  margin-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 8px;
+.coming-soon-content {
+  text-align: center;
+  padding: 48px 32px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  max-width: 480px;
+  margin: 0 auto;
 }
 
-.card-header h4 {
-  margin: 0;
+.coming-soon-icon {
+  margin-bottom: 24px;
+}
+
+.icon-large {
+  font-size: 64px;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.coming-soon-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 16px 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.coming-soon-description {
   font-size: 16px;
-  font-weight: 600;
-  color: #262626;
+  color: #666;
+  margin: 0 0 32px 0;
+  line-height: 1.6;
 }
 
-.card-body {
-  flex: 1;
-  font-size: 14px;
-  color: #595959;
+.features-preview {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
-.card-body p {
-  margin: 4px 0;
-}
-
-.selection-indicators {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-}
-
-.selection-border {
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  border: 2px solid #1890ff;
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #f8f9fa;
   border-radius: 8px;
+  font-size: 14px;
+  color: #555;
+  transition: all 0.2s ease;
 }
 
-.resize-handles {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+.feature-item:hover {
+  background: #e9ecef;
+  transform: translateY(-1px);
 }
 
-.resize-handle {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: #1890ff;
-  border: 2px solid white;
-  border-radius: 50%;
-  pointer-events: auto;
-  cursor: pointer;
+.feature-icon {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.resize-handle-nw {
-  top: -4px;
-  left: -4px;
-  cursor: nw-resize;
+.coming-soon-footer {
+  padding-top: 24px;
+  border-top: 1px solid #eee;
 }
 
-.resize-handle-ne {
-  top: -4px;
-  right: -4px;
-  cursor: ne-resize;
-}
-
-.resize-handle-sw {
-  bottom: -4px;
-  left: -4px;
-  cursor: sw-resize;
-}
-
-.resize-handle-se {
-  bottom: -4px;
-  right: -4px;
-  cursor: se-resize;
-}
-
-.zoom-indicator {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
-  background: rgba(0, 0, 0, 0.6);
+.version-info {
+  display: inline-block;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
+  border-radius: 20px;
+  font-size: 14px;
   font-weight: 500;
-  pointer-events: none;
 }
 
-/* 滚动条样式 */
-.canvas-renderer::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.canvas-renderer::-webkit-scrollbar-track {
-  background: #f0f0f0;
-}
-
-.canvas-renderer::-webkit-scrollbar-thumb {
-  background: #d9d9d9;
-  border-radius: 4px;
-}
-
-.canvas-renderer::-webkit-scrollbar-thumb:hover {
-  background: #bfbfbf;
+@media (max-width: 640px) {
+  .coming-soon-content {
+    padding: 32px 24px;
+    margin: 16px;
+  }
+  
+  .coming-soon-title {
+    font-size: 24px;
+  }
+  
+  .features-preview {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

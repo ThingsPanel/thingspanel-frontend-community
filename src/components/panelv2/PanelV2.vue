@@ -4,16 +4,20 @@
 -->
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, provide } from 'vue'
-import { NButton, NSelect, NSpace, NSwitch, NIcon, NTooltip } from 'naive-ui'
 import PanelLayout from './layout/PanelLayout.vue'
-import GridRenderer from './renderers/GridRenderer.vue'
-import CanvasRenderer from './renderers/CanvasRenderer.vue'
+import KanbanRenderer from './renderers/kanban/KanbanRenderer.vue'
+import VisualizationRenderer from './renderers/visualization/VisualizationRenderer.vue'
+import GridProRenderer from './renderers/gridpro/GridProRenderer.vue'
+import { MainToolbar, type KanbanToolbarConfig, type VisualizationToolbarConfig } from './toolbar'
+import ComponentPanel from './components/ComponentPanel.vue'
 import { useCanvasStore } from './store/canvasStore'
 import { RendererManager } from './core/RendererManager'
 import { RendererFactory } from './core/RendererFactory'
-import { GridRenderer as GridRendererClass } from './renderers/GridRendererFactory'  
+import { KanbanRenderer as KanbanRendererClass } from './renderers/kanban/KanbanRendererFactory'
+import { GridProRendererImpl } from './renderers/gridpro/GridProRendererFactory'  
 import { LegacyPanelAdapter } from './adapters/LegacyAdapter'
 import eventBus from './core/EventBus'
+import { GridOutline, DesktopOutline, WarningOutline, HelpOutline, AppsOutline } from '@vicons/ionicons5'
 import type { BaseCanvasItem, PanelConfig } from './types/core'
 import type { LegacyCardView } from './types/adapters'
 import type { RendererInfo } from './types/renderer'
@@ -34,7 +38,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   mode: 'edit',
-  rendererType: 'grid',
+  rendererType: 'kanban',
   readonly: false
 })
 
@@ -60,6 +64,40 @@ const rightCollapsed = ref(false)
 const loading = ref(false)
 const error = ref<Error | null>(null)
 
+// 工具栏配置状态
+const kanbanConfig = ref<Partial<KanbanToolbarConfig>>({
+  columns: 12,
+  rowHeight: 60,
+  margin: [10, 10],
+  showGrid: true,
+  enableSnap: true,
+  compactType: 'vertical'
+})
+
+const visualizationConfig = ref<Partial<VisualizationToolbarConfig>>({
+  zoom: 100,
+  gridSize: 20,
+  showRuler: true,
+  showGuides: true,
+  snapToGrid: true
+})
+
+const gridProConfig = ref({
+  columns: 12,
+  rowHeight: 60,
+  gap: 12,
+  margin: [16, 16] as [number, number],
+  layoutMode: 'relaxed' as const,
+  enableDrag: true,
+  enableResize: true,
+  enableTransitions: true,
+  animationSpeed: 'normal' as const,
+  virtualization: false,
+  preventCollision: true,
+  showGrid: false,
+  debug: false
+})
+
 // 渲染器管理
 const rendererFactory = new RendererFactory()
 const rendererManager = new RendererManager(eventBus, rendererFactory)
@@ -69,13 +107,15 @@ const rendererContainer = ref<HTMLElement>()
 const legacyAdapter = new LegacyPanelAdapter()
 
 // 注册内置渲染器
-rendererFactory.register('grid', GridRendererClass)
+rendererFactory.register('kanban', KanbanRendererClass)
+rendererFactory.register('gridpro', GridProRendererImpl)
 // rendererFactory.register('canvas', CanvasRendererClass) // 需要创建CanvasRendererClass
 
 // 可用渲染器列表
 const availableRenderers = computed(() => [
-  { value: 'grid', label: '网格布局', icon: 'i-carbon-grid' },
-  { value: 'canvas', label: '自由画布', icon: 'i-carbon-canvas' }
+  { value: 'kanban', label: '看板', icon: 'grid' },
+  { value: 'gridpro', label: 'GridPro', icon: 'apps' },
+  { value: 'visualization', label: '可视化大屏', icon: 'desktop' }
 ])
 
 // 当前渲染器信息
@@ -83,12 +123,6 @@ const currentRendererInfo = computed(() =>
   availableRenderers.value.find(r => r.value === currentRenderer.value)
 )
 
-// 模式切换
-const toggleMode = () => {
-  currentMode.value = currentMode.value === 'edit' ? 'preview' : 'edit'
-  emit('mode-change', currentMode.value)
-  eventBus.emit('panel:mode-change', { mode: currentMode.value })
-}
 
 // 渲染器切换
 const switchRenderer = async (rendererId: string) => {
@@ -96,15 +130,31 @@ const switchRenderer = async (rendererId: string) => {
   
   try {
     loading.value = true
-    await rendererManager.switchRenderer(rendererId)
-    currentRenderer.value = rendererId
-    emit('renderer-change', rendererId)
     
-    // 发射全局事件
-    eventBus.emit('toolbar:renderer-switch', { rendererId })
+    // 检查渲染器是否已注册
+    if (rendererId === 'visualization') {
+      // 可视化大屏暂未实现，只切换UI状态
+      currentRenderer.value = rendererId
+      emit('renderer-change', rendererId)
+      console.log('Switched to visualization renderer (placeholder mode)')
+    } else if (rendererId === 'kanban' || rendererId === 'gridpro') {
+      // 对于已注册的渲染器，正常切换
+      await rendererManager.switchRenderer(rendererId)
+      currentRenderer.value = rendererId
+      emit('renderer-change', rendererId)
+      
+      // 发射全局事件（仅对已注册的渲染器）
+      eventBus.emit('toolbar:renderer-switch', { rendererId })
+    } else {
+      // 其他渲染器的默认处理
+      currentRenderer.value = rendererId
+      emit('renderer-change', rendererId)
+      console.log(`Switched to ${rendererId} renderer`)
+    }
   } catch (err) {
     error.value = err as Error
     emit('error', err as Error)
+    console.error('Failed to switch renderer:', err)
   } finally {
     loading.value = false
   }
@@ -167,37 +217,70 @@ const resetPanel = () => {
   eventBus.emit('panel:reset', {})
 }
 
-// 工具栏操作
-const handleToolbarAction = (action: string) => {
-  switch (action) {
-    case 'save':
-      savePanelConfig()
-      break
-    case 'reset':
-      resetPanel()
-      break
-    case 'undo':
-      canvasStore.undo()
-      break
-    case 'redo':
-      canvasStore.redo()
-      break
-    case 'fitContent':
-      eventBus.emit('viewport:fit-content', {})
-      break
-    case 'zoomIn':
-      canvasStore.zoomIn()
-      break
-    case 'zoomOut':
-      canvasStore.zoomOut()
-      break
-    case 'resetZoom':
-      canvasStore.resetZoom()
-      break
-    default:
-      eventBus.emit('toolbar:action', { action })
-  }
+// 工具栏事件处理
+const handleModeChange = (mode: 'edit' | 'preview') => {
+  currentMode.value = mode
+  emit('mode-change', mode)
+  eventBus.emit('panel:mode-change', { mode })
 }
+
+const handleSave = () => {
+  savePanelConfig()
+}
+
+const handleUndo = () => {
+  canvasStore.undo()
+}
+
+const handleRedo = () => {
+  canvasStore.redo()
+}
+
+const handleReset = () => {
+  resetPanel()
+}
+
+// 看板配置变更处理
+const handleKanbanConfigChange = (config: Partial<KanbanToolbarConfig>) => {
+  console.log('PanelV2: Kanban config change received:', config)
+  kanbanConfig.value = { ...kanbanConfig.value, ...config }
+  console.log('PanelV2: Updated kanbanConfig:', kanbanConfig.value)
+  // 将配置应用到看板渲染器
+  eventBus.emit('kanban:config-change', config)
+  console.log('PanelV2: Emitted kanban:config-change event')
+}
+
+// 可视化配置变更处理
+const handleVisualizationConfigChange = (config: Partial<VisualizationToolbarConfig>) => {
+  visualizationConfig.value = { ...visualizationConfig.value, ...config }
+  // 将配置应用到可视化渲染器
+  eventBus.emit('visualization:config-change', config)
+}
+
+// 可视化工具栏操作
+const handleZoomIn = () => {
+  canvasStore.zoomIn()
+  visualizationConfig.value.zoom = canvasStore.viewport.zoom * 100
+}
+
+const handleZoomOut = () => {
+  canvasStore.zoomOut()
+  visualizationConfig.value.zoom = canvasStore.viewport.zoom * 100
+}
+
+const handleResetZoom = () => {
+  canvasStore.resetZoom()
+  visualizationConfig.value.zoom = 100
+}
+
+const handleFitContent = () => {
+  eventBus.emit('viewport:fit-content', {})
+}
+
+const handleCenterView = () => {
+  eventBus.emit('viewport:center', {})
+}
+
 
 // 监听数据变化
 watch(() => props.panelData, (newData) => {
@@ -244,192 +327,39 @@ provide('rendererManager', rendererManager)
       @update:left-collapsed="leftCollapsed = $event"
       @update:right-collapsed="rightCollapsed = $event"
     >
-      <!-- 工具栏插槽 -->
+      <!-- 新的分层工具栏 -->
       <template #toolbar="{ isEditMode }">
-        <div class="flex items-center gap-3">
-          <!-- 左侧工具 -->
-          <div class="flex items-center gap-2">
-            <!-- 模式切换 -->
-            <NTooltip>
-              <template #trigger>
-                <NSwitch
-                  v-model:value="currentMode"
-                  :disabled="readonly"
-                  true-value="edit"
-                  false-value="preview"
-                  @update:value="toggleMode"
-                >
-                  <template #checked>编辑</template>
-                  <template #unchecked>预览</template>
-                </NSwitch>
-              </template>
-              切换编辑/预览模式
-            </NTooltip>
-
-            <!-- 渲染器选择 -->
-            <NSelect
-              v-model:value="currentRenderer"
-              :options="availableRenderers"
-              :disabled="readonly || !isEditMode"
-              style="width: 120px"
-              @update:value="switchRenderer"
-            />
-          </div>
-
-          <!-- 中间工具 -->
-          <div class="flex items-center gap-1">
-            <NTooltip>
-              <template #trigger>
-                <NButton
-                  size="small"
-                  :disabled="!canvasStore.canUndo || readonly"
-                  @click="handleToolbarAction('undo')"
-                >
-                  <NIcon name="i-carbon-undo" />
-                </NButton>
-              </template>
-              撤销 (Ctrl+Z)
-            </NTooltip>
-
-            <NTooltip>
-              <template #trigger>
-                <NButton
-                  size="small"
-                  :disabled="!canvasStore.canRedo || readonly"
-                  @click="handleToolbarAction('redo')"
-                >
-                  <NIcon name="i-carbon-redo" />
-                </NButton>
-              </template>
-              重做 (Ctrl+Y)
-            </NTooltip>
-
-            <div class="w-px h-4 bg-gray-300 mx-1"></div>
-
-            <NTooltip>
-              <template #trigger>
-                <NButton
-                  size="small"
-                  @click="handleToolbarAction('fitContent')"
-                >
-                  <NIcon name="i-carbon-fit-to-screen" />
-                </NButton>
-              </template>
-              适应内容
-            </NTooltip>
-
-            <NTooltip>
-              <template #trigger>
-                <NButton
-                  size="small"
-                  @click="handleToolbarAction('zoomIn')"
-                >
-                  <NIcon name="i-carbon-zoom-in" />
-                </NButton>
-              </template>
-              放大 (Ctrl++)
-            </NTooltip>
-
-            <NTooltip>
-              <template #trigger>
-                <NButton
-                  size="small"
-                  @click="handleToolbarAction('zoomOut')"
-                >
-                  <NIcon name="i-carbon-zoom-out" />
-                </NButton>
-              </template>
-              缩小 (Ctrl+-)
-            </NTooltip>
-
-            <NTooltip>
-              <template #trigger>
-                <NButton
-                  size="small"
-                  @click="handleToolbarAction('resetZoom')"
-                >
-                  <NIcon name="i-carbon-zoom-reset" />
-                </NButton>
-              </template>
-              重置缩放 (Ctrl+0)
-            </NTooltip>
-          </div>
-
-          <!-- 右侧工具 -->
-          <div class="flex items-center gap-2 ml-auto">
-            <NButton
-              size="small"
-              :disabled="readonly"
-              @click="handleToolbarAction('save')"
-            >
-              <NIcon name="i-carbon-save" class="mr-1" />
-              保存
-            </NButton>
-
-            <NButton
-              size="small"
-              :disabled="readonly"
-              @click="handleToolbarAction('reset')"
-            >
-              <NIcon name="i-carbon-reset" class="mr-1" />
-              重置
-            </NButton>
-
-            <!-- 侧边栏切换 -->
-            <NTooltip>
-              <template #trigger>
-                <NButton
-                  size="small"
-                  :type="leftCollapsed ? 'default' : 'primary'"
-                  @click="leftCollapsed = !leftCollapsed"
-                >
-                  <NIcon name="i-carbon-side-panel-open" />
-                </NButton>
-              </template>
-              {{ leftCollapsed ? '显示' : '隐藏' }}组件库
-            </NTooltip>
-
-            <NTooltip>
-              <template #trigger>
-                <NButton
-                  size="small"
-                  :type="rightCollapsed ? 'default' : 'primary'"
-                  @click="rightCollapsed = !rightCollapsed"
-                >
-                  <NIcon name="i-carbon-side-panel-close" />
-                </NButton>
-              </template>
-              {{ rightCollapsed ? '显示' : '隐藏' }}属性面板
-            </NTooltip>
-          </div>
-        </div>
+        <MainToolbar
+          :mode="currentMode"
+          :current-renderer="currentRenderer"
+          :available-renderers="availableRenderers"
+          :kanban-config="kanbanConfig"
+          :visualization-config="visualizationConfig"
+          :readonly="readonly"
+          @mode-change="handleModeChange"
+          @renderer-change="switchRenderer"
+          @save="handleSave"
+          @undo="handleUndo"
+          @redo="handleRedo"
+          @reset="handleReset"
+          @kanban-config-change="handleKanbanConfigChange"
+          @visualization-config-change="handleVisualizationConfigChange"
+          @zoom-in="handleZoomIn"
+          @zoom-out="handleZoomOut"
+          @reset-zoom="handleResetZoom"
+          @fit-content="handleFitContent"
+          @center-view="handleCenterView"
+        />
       </template>
 
       <!-- 左侧组件库插槽 -->
       <template #left="{ isEditMode }">
-        <div class="component-library h-full flex flex-col">
-          <div class="p-4 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-800">组件库</h3>
-            <p class="text-sm text-gray-600 mt-1">拖拽组件到画布中</p>
-          </div>
-          
-          <div class="flex-1 p-4 space-y-4">
-            <!-- 这里可以放置组件库内容 -->
-            <div class="grid grid-cols-2 gap-2">
-              <div class="component-item p-3 bg-blue-50 border border-blue-200 rounded cursor-pointer hover:bg-blue-100">
-                <div class="text-sm font-medium">图表卡片</div>
-              </div>
-              <div class="component-item p-3 bg-green-50 border border-green-200 rounded cursor-pointer hover:bg-green-100">
-                <div class="text-sm font-medium">数据卡片</div>
-              </div>
-              <div class="component-item p-3 bg-purple-50 border border-purple-200 rounded cursor-pointer hover:bg-purple-100">
-                <div class="text-sm font-medium">表格卡片</div>
-              </div>
-              <div class="component-item p-3 bg-orange-50 border border-orange-200 rounded cursor-pointer hover:bg-orange-100">
-                <div class="text-sm font-medium">文本卡片</div>
-              </div>
-            </div>
-          </div>
+        <ComponentPanel
+          v-if="isEditMode"
+          :current-renderer="currentRenderer"
+        />
+        <div v-else class="flex items-center justify-center h-full text-gray-500">
+          预览模式下不显示组件库
         </div>
       </template>
 
@@ -453,7 +383,9 @@ provide('rendererManager', rendererManager)
             class="absolute inset-0 bg-red-50 flex items-center justify-center"
           >
             <div class="text-center p-6">
-              <NIcon name="i-carbon-warning" class="text-4xl text-red-500 mb-2" />
+              <NIcon class="text-4xl text-red-500 mb-2">
+                <WarningOutline />
+              </NIcon>
               <div class="text-lg font-medium text-red-700 mb-2">渲染器错误</div>
               <div class="text-sm text-red-600">{{ error.message }}</div>
               <NButton
@@ -474,24 +406,44 @@ provide('rendererManager', rendererManager)
             class="renderer-container h-full w-full"
           >
             <!-- 根据当前渲染器类型显示不同的渲染器组件 -->
-            <GridRenderer
-              v-if="currentRenderer === 'grid'"
-              :items="canvasStore.items"
-              :config="canvasStore.config"
-              :readonly="readonly || currentMode === 'preview'"
-            />
-            
-            <CanvasRenderer
-              v-else-if="currentRenderer === 'canvas'" 
+            <KanbanRenderer
+              v-if="currentRenderer === 'kanban'"
               :items="canvasStore.items"
               :config="canvasStore.config"
               :readonly="readonly || currentMode === 'preview'"
             />
 
+            <!-- GridPro 渲染器 -->
+            <GridProRenderer
+              v-else-if="currentRenderer === 'gridpro'"
+              :items="canvasStore.items"
+              :config="gridProConfig"
+              :readonly="readonly || currentMode === 'preview'"
+              @update:items="canvasStore.setItems"
+              @update:config="gridProConfig = $event"
+              @item-added="canvasStore.addItem"
+              @item-updated="canvasStore.updateItem"
+              @item-removed="canvasStore.removeItem"
+            />
+            
+            <!-- 可视化大屏渲染器（敬请期待） -->
+            <div v-else-if="currentRenderer === 'visualization'" class="flex items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-100">
+              <div class="text-center p-8">
+                <div class="text-6xl mb-4">🚧</div>
+                <div class="text-2xl font-bold text-gray-700 mb-2">敬请期待</div>
+                <div class="text-gray-500 mb-4">可视化大屏渲染器正在开发中...</div>
+                <div class="text-sm text-gray-400">
+                  请使用看板模式体验拖拽功能
+                </div>
+              </div>
+            </div>
+
             <!-- 默认渲染器或未知渲染器 -->
             <div v-else class="flex items-center justify-center h-full">
               <div class="text-center">
-                <NIcon name="i-carbon-unknown" class="text-4xl text-gray-400 mb-2" />
+                <NIcon class="text-4xl text-gray-400 mb-2">
+                  <HelpOutline />
+                </NIcon>
                 <div class="text-lg text-gray-500">未知的渲染器类型: {{ currentRenderer }}</div>
               </div>
             </div>
@@ -534,7 +486,9 @@ provide('rendererManager', rendererManager)
             
             <!-- 未选中状态 -->
             <div v-else class="text-center text-gray-500">
-              <NIcon name="i-carbon-select-window" class="text-2xl mb-2" />
+              <NIcon class="text-2xl mb-2">
+                <AppsOutline />
+              </NIcon>
               <div>请选择一个或多个组件</div>
             </div>
           </div>

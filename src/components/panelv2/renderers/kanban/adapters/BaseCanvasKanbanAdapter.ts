@@ -1,12 +1,12 @@
 /**
- * Base Canvas Grid Adapter
- * BaseCanvasItem与vue3-grid-layout格式之间的数据适配器
+ * Base Canvas Kanban Adapter
+ * BaseCanvasItem与vue3-grid-layout格式之间的数据适配器（看板布局）
  */
 
-import type { BaseCanvasItem } from '../../types/core'
-import type { GridLayoutItem } from '../../types/adapters'
+import type { BaseCanvasItem } from '../../../types/core'
+import type { GridLayoutItem } from '../../../types/adapters'
 
-export class BaseCanvasGridAdapter {
+export class BaseCanvasKanbanAdapter {
   private readonly GRID_UNIT_SIZE = 100  // 像素到网格单位的转换比例
   private readonly GRID_COLS = 12        // 网格列数
   
@@ -173,7 +173,7 @@ export class BaseCanvasGridAdapter {
    */
   private convertToGridItem(item: BaseCanvasItem, index: number): GridLayoutItem {
     // 从渲染器数据中获取网格信息，如果没有则计算
-    const gridData = item.rendererData.grid
+    const gridData = item.rendererData?.grid
     
     const gridItem: GridLayoutItem = {
       i: item.id,
@@ -278,4 +278,4 @@ export class BaseCanvasGridAdapter {
   }
 }
 
-export default BaseCanvasGridAdapter
+export default BaseCanvasKanbanAdapter

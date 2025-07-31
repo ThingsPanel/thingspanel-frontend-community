@@ -1,6 +1,6 @@
 <!--
-  Grid Renderer Component
-  基于vue3-grid-layout的网格渲染器实现
+  Kanban Renderer Component
+  基于vue3-grid-layout的看板渲染器实现
 -->
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
@@ -11,12 +11,15 @@ import type {
   RendererCapabilities,
   RendererState,
   RendererEvents
-} from '../types/renderer'
-import type { BaseCanvasItem, Viewport } from '../types/core'
-import type { GridLayoutItem } from '../types/adapters'
-import { BaseCanvasGridAdapter } from './adapters/BaseCanvasGridAdapter'
-import { useCanvasStore } from '../store/canvasStore'
-import eventBus from '../core/EventBus'
+} from '../../types/renderer'
+import type { BaseCanvasItem, Viewport } from '../../types/core'
+import type { GridLayoutItem } from '../../types/adapters'
+import { BaseCanvasKanbanAdapter } from './adapters/BaseCanvasKanbanAdapter'
+import { useCanvasStore } from '../../store/canvasStore'
+import eventBus from '../../core/EventBus'
+import { dragDropService, type DragData, type DropZone } from '../../core/DragDropService'
+import { generateId } from '../../utils/id'
+import CardRenderer from '../CardRenderer.vue'
 
 // Props
 interface Props {
@@ -50,7 +53,7 @@ const canvasStore = useCanvasStore()
 
 // Refs
 const containerRef = ref<HTMLElement>()
-const gridAdapter = new BaseCanvasGridAdapter()
+const kanbanAdapter = new BaseCanvasKanbanAdapter()
 
 // Reactive state
 const layout = ref<GridLayoutItem[]>([])
@@ -58,20 +61,32 @@ const isDragging = ref(false)
 const isResizing = ref(false)
 const selectedItems = ref<string[]>([])
 
-// Renderer configuration
-const rendererConfig = computed(() => ({
+// 动态配置状态
+const dynamicConfig = ref({
   colNum: 12,
   rowHeight: 100,
+  margin: [10, 10] as [number, number],
+  showGrid: true,
+  enableSnap: true,
+  compactType: 'vertical' as 'vertical' | 'horizontal' | null
+})
+
+// Renderer configuration
+const rendererConfig = computed(() => ({
+  colNum: dynamicConfig.value.colNum,
+  rowHeight: dynamicConfig.value.rowHeight,
   isDraggable: !props.readonly && (props.config.enableDrag ?? true),
   isResizable: !props.readonly && (props.config.enableResize ?? true),
   isMirrored: false,
   autoSize: true,
   verticalCompact: true,
-  margin: [10, 10],
+  preventCollision: false,  // 允许自动重排防止重叠
+  compactType: dynamicConfig.value.compactType,  // 动态紧凑模式
+  margin: dynamicConfig.value.margin,
   useCssTransforms: true,
   responsive: false,
   breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
-  cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
+  cols: { lg: dynamicConfig.value.colNum, md: Math.min(10, dynamicConfig.value.colNum), sm: Math.min(6, dynamicConfig.value.colNum), xs: Math.min(4, dynamicConfig.value.colNum), xxs: Math.min(2, dynamicConfig.value.colNum) },
   ...props.config
 }))
 
@@ -98,16 +113,16 @@ const state = computed<RendererState>(() => ({
   initialized: !!containerRef.value,
   readonly: props.readonly,
   selectedIds: selectedItems.value,
-  viewport: { zoom: 1, offsetX: 0, offsetY: 0 }, // Grid renderer doesn't support viewport
+  viewport: { zoom: 1, offsetX: 0, offsetY: 0 }, // Kanban renderer doesn't support viewport
   draggedIds: isDragging.value ? selectedItems.value : [],
   loading: false,
   error: null
 }))
 
 // Renderer implementation class
-class GridRendererImpl implements BaseRenderer {
-  readonly id = 'grid'
-  readonly name = 'Grid Renderer'
+class KanbanRendererImpl implements BaseRenderer {
+  readonly id = 'kanban'
+  readonly name = 'Kanban Renderer'
   readonly version = '1.0.0'
   readonly capabilities = capabilities
   
@@ -130,15 +145,15 @@ class GridRendererImpl implements BaseRenderer {
   }
 
   setData(items: BaseCanvasItem[]): void {
-    layout.value = gridAdapter.toGridFormat(items)
+    layout.value = kanbanAdapter.toGridFormat(items)
   }
 
   getData(): BaseCanvasItem[] {
-    return gridAdapter.fromGridFormat(layout.value, props.items)
+    return kanbanAdapter.fromGridFormat(layout.value, props.items)
   }
 
   addItem(item: BaseCanvasItem): void {
-    const gridItem = gridAdapter.toGridFormat([item])[0]
+    const gridItem = kanbanAdapter.toGridFormat([item])[0]
     layout.value.push(gridItem)
     emit('item-add', item)
   }
@@ -156,7 +171,7 @@ class GridRendererImpl implements BaseRenderer {
       const currentItem = props.items.find(item => item.id === id)
       if (currentItem) {
         const updatedItem = { ...currentItem, ...updates }
-        const gridItem = gridAdapter.toGridFormat([updatedItem])[0]
+        const gridItem = kanbanAdapter.toGridFormat([updatedItem])[0]
         layout.value[index] = gridItem
         emit('item-update', id, updates)
       }
@@ -177,8 +192,8 @@ class GridRendererImpl implements BaseRenderer {
   }
 
   setViewport(viewport: Viewport): void {
-    // Grid renderer doesn't support viewport operations
-    console.warn('Grid renderer does not support viewport operations')
+    // Kanban renderer doesn't support viewport operations
+    console.warn('Kanban renderer does not support viewport operations')
   }
 
   getViewport(): Viewport {
@@ -274,17 +289,17 @@ class GridRendererImpl implements BaseRenderer {
 }
 
 // Create renderer instance
-const rendererInstance = new GridRendererImpl()
+const rendererInstance = new KanbanRendererImpl()
 
 // Watch for external data changes
 watch(() => props.items, (newItems) => {
-  layout.value = gridAdapter.toGridFormat(newItems)
+  layout.value = kanbanAdapter.toGridFormat(newItems)
 }, { deep: true, immediate: true })
 
 // Grid layout event handlers
 const handleLayoutChange = (newLayout: GridLayoutItem[]) => {
   layout.value = newLayout
-  const updatedItems = gridAdapter.fromGridFormat(newLayout, props.items)
+  const updatedItems = kanbanAdapter.fromGridFormat(newLayout, props.items)
   emit('layout-change', updatedItems)
   
   // Update store
@@ -362,6 +377,227 @@ const handleContainerClick = (event: MouseEvent) => {
   }
 }
 
+// Drop zone handling
+let dropZoneId: string | null = null
+
+const setupDropZone = () => {
+  if (!containerRef.value || props.readonly) return
+  
+  dropZoneId = `kanban-${generateId()}`
+  const dropZone: DropZone = {
+    id: dropZoneId,
+    accepts: ['card', 'component'],
+    element: containerRef.value,
+    onDrop: handleDrop,
+    onDragOver: handleDragOver,
+    onDragEnter: handleDragEnter,
+    onDragLeave: handleDragLeave
+  }
+  
+  dragDropService.registerDropZone(dropZone)
+}
+
+const cleanupDropZone = () => {
+  if (dropZoneId) {
+    dragDropService.unregisterDropZone(dropZoneId)
+    dropZoneId = null
+  }
+}
+
+const handleDrop = (data: DragData, position: { x: number, y: number }) => {
+  if (data.type === 'card' && data.cardConfig) {
+    // 计算首选网格位置
+    const preferredPosition = calculateGridPosition(position)
+    const itemSize = {
+      w: data.cardConfig.preset?.w || 4,
+      h: data.cardConfig.preset?.h || 3
+    }
+    
+    // 寻找可用位置（防止重叠）
+    const finalPosition = findFreePosition(preferredPosition, itemSize)
+    
+    console.log('拖拽位置计算:', {
+      drop: position,
+      preferred: preferredPosition, 
+      final: finalPosition,
+      size: itemSize
+    })
+    
+    // 创建新的canvas item
+    const newItem: BaseCanvasItem = {
+      id: generateId(),
+      type: 'component',
+      cardData: {
+        cardId: data.cardId!,
+        title: data.cardName || 'New Card',
+        config: data.cardConfig.config || {},
+        dataConfig: {},
+        styleConfig: {}
+      },
+      position: {
+        x: finalPosition.x * rendererConfig.value.rowHeight,
+        y: finalPosition.y * rendererConfig.value.rowHeight
+      },
+      size: {
+        width: itemSize.w * rendererConfig.value.rowHeight,
+        height: itemSize.h * rendererConfig.value.rowHeight
+      },
+      constraints: {
+        minWidth: (data.cardConfig.preset?.minW || 2) * rendererConfig.value.rowHeight,
+        minHeight: (data.cardConfig.preset?.minH || 2) * rendererConfig.value.rowHeight,
+        maxWidth: data.cardConfig.preset?.maxW ? data.cardConfig.preset.maxW * rendererConfig.value.rowHeight : undefined,
+        maxHeight: data.cardConfig.preset?.maxH ? data.cardConfig.preset.maxH * rendererConfig.value.rowHeight : undefined
+      },
+      zIndex: 1,
+      locked: false,
+      visible: true,
+      // 添加渲染器数据
+      rendererData: {
+        grid: {
+          x: finalPosition.x,
+          y: finalPosition.y,
+          w: itemSize.w,
+          h: itemSize.h
+        }
+      },
+      metadata: {
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        version: '1.0.0',
+        ...data.metadata
+      }
+    }
+    
+    // 添加到画布
+    rendererInstance.addItem(newItem)
+    canvasStore.addItem(newItem)
+    
+    console.log('添加新卡片:', newItem)
+  }
+}
+
+const handleDragOver = (data: DragData, position: { x: number, y: number }): boolean => {
+  // 只允许卡片类型的拖拽
+  return data.type === 'card'
+}
+
+const handleDragEnter = (data: DragData) => {
+  if (containerRef.value) {
+    containerRef.value.classList.add('drag-over-active')
+  }
+}
+
+const handleDragLeave = (data: DragData) => {
+  if (containerRef.value) {
+    containerRef.value.classList.remove('drag-over-active')
+  }
+}
+
+// 计算网格位置（带碰撞检测）
+const calculateGridPosition = (dropPosition: { x: number, y: number }) => {
+  const config = rendererConfig.value
+  const containerWidth = containerRef.value?.clientWidth || 1200
+  const colWidth = containerWidth / config.colNum
+  
+  const gridX = Math.floor(dropPosition.x / colWidth)
+  const gridY = Math.floor(dropPosition.y / (config.rowHeight + config.margin[1]))
+  
+  return {
+    x: Math.max(0, Math.min(gridX, config.colNum - 1)),
+    y: Math.max(0, gridY)
+  }
+}
+
+// 寻找空闲位置（防止重叠）
+const findFreePosition = (preferredPosition: { x: number, y: number }, itemSize: { w: number, h: number }) => {
+  const config = rendererConfig.value
+  const maxCols = config.colNum
+  
+  // 检查指定位置是否可用
+  const isPositionFree = (x: number, y: number, w: number, h: number) => {
+    // 检查是否超出边界
+    if (x + w > maxCols || x < 0 || y < 0) return false
+    
+    // 检查是否与现有元素重叠
+    return !layout.value.some(item => {
+      return !(
+        x >= item.x + item.w || // 在右侧
+        x + w <= item.x ||      // 在左侧
+        y >= item.y + item.h || // 在下方
+        y + h <= item.y        // 在上方
+      )
+    })
+  }
+  
+  const { x: prefX, y: prefY } = preferredPosition
+  const { w, h } = itemSize
+  
+  // 首先检查首选位置
+  if (isPositionFree(prefX, prefY, w, h)) {
+    return { x: prefX, y: prefY }
+  }
+  
+  // 如果首选位置不可用，从首选位置开始向下找
+  for (let y = prefY; y < prefY + 20; y++) { // 最多向下找20行
+    for (let x = 0; x <= maxCols - w; x++) {
+      if (isPositionFree(x, y, w, h)) {
+        return { x, y }
+      }
+    }
+  }
+  
+  // 如果还找不到，就放在最底部
+  const maxY = Math.max(0, ...layout.value.map(item => item.y + item.h))
+  return { x: 0, y: maxY }
+}
+
+// 配置变更处理
+const handleConfigChange = (newConfig: any) => {
+  console.log('KanbanRenderer: Received config change:', newConfig)
+  
+  // 更新动态配置
+  if (newConfig.columns !== undefined) {
+    dynamicConfig.value.colNum = newConfig.columns
+    console.log('Updated colNum to:', newConfig.columns)
+  }
+  if (newConfig.rowHeight !== undefined) {
+    dynamicConfig.value.rowHeight = newConfig.rowHeight
+    console.log('Updated rowHeight to:', newConfig.rowHeight)
+  }
+  if (newConfig.margin !== undefined) {
+    dynamicConfig.value.margin = newConfig.margin
+    console.log('Updated margin to:', newConfig.margin)
+  }
+  if (newConfig.compactType !== undefined) {
+    dynamicConfig.value.compactType = newConfig.compactType
+    console.log('Updated compactType to:', newConfig.compactType)
+  }
+  if (newConfig.showGrid !== undefined) {
+    dynamicConfig.value.showGrid = newConfig.showGrid
+    console.log('Updated showGrid to:', newConfig.showGrid)
+    // 显示/隐藏网格的实现
+    updateGridDisplay(newConfig.showGrid)
+  }
+  if (newConfig.enableSnap !== undefined) {
+    dynamicConfig.value.enableSnap = newConfig.enableSnap
+    console.log('Updated enableSnap to:', newConfig.enableSnap)
+  }
+  
+  console.log('KanbanRenderer: Final config:', dynamicConfig.value)
+  console.log('KanbanRenderer: Computed rendererConfig:', rendererConfig.value)
+}
+
+// 更新网格显示
+const updateGridDisplay = (showGrid: boolean) => {
+  if (containerRef.value) {
+    if (showGrid) {
+      containerRef.value.classList.add('show-grid')
+    } else {
+      containerRef.value.classList.remove('show-grid')
+    }
+  }
+}
+
 // Expose renderer instance
 defineExpose({
   renderer: rendererInstance
@@ -370,21 +606,33 @@ defineExpose({
 onMounted(() => {
   if (containerRef.value) {
     rendererInstance.initialize(containerRef.value, props.config)
+    setupDropZone()
+    
+    // 初始化网格显示状态
+    updateGridDisplay(dynamicConfig.value.showGrid)
   }
+  
+  // 监听配置变更事件
+  eventBus.on('kanban:config-change', handleConfigChange)
 })
 
 onUnmounted(() => {
   rendererInstance.destroy()
+  cleanupDropZone()
+  
+  // 清理事件监听
+  eventBus.off('kanban:config-change', handleConfigChange)
 })
 </script>
 
 <template>
   <div
     ref="containerRef"
-    class="grid-renderer"
+    class="kanban-renderer"
     @click="handleContainerClick"
   >
     <GridLayout
+      :key="`grid-${dynamicConfig.colNum}-${dynamicConfig.rowHeight}-${dynamicConfig.margin.join('-')}`"
       v-model:layout="layout"
       :col-num="rendererConfig.colNum"
       :row-height="rendererConfig.rowHeight"
@@ -393,6 +641,8 @@ onUnmounted(() => {
       :is-mirrored="rendererConfig.isMirrored"
       :auto-size="rendererConfig.autoSize"
       :vertical-compact="rendererConfig.verticalCompact"
+      :prevent-collision="rendererConfig.preventCollision"
+      :compact-type="rendererConfig.compactType"
       :margin="rendererConfig.margin"
       :use-css-transforms="rendererConfig.useCssTransforms"
       :responsive="rendererConfig.responsive"
@@ -428,19 +678,25 @@ onUnmounted(() => {
         @click="(event: MouseEvent) => handleItemClick(event, item.i)"
       >
         <div class="grid-item-content">
-          <!-- 这里渲染实际的卡片内容 -->
-          <slot :item="item" :canvas-item="props.items.find(canvasItem => canvasItem.id === item.i)">
-            <div class="default-card-content">
-              <div class="card-header">
-                <h4>{{ props.items.find(canvasItem => canvasItem.id === item.i)?.cardData.title || `Item ${item.i}` }}</h4>
-              </div>
-              <div class="card-body">
-                <p>Card ID: {{ props.items.find(canvasItem => canvasItem.id === item.i)?.cardData.cardId || 'Unknown' }}</p>
-                <p>Position: {{ item.x }}, {{ item.y }}</p>
-                <p>Size: {{ item.w }} × {{ item.h }}</p>
-              </div>
+          <!-- 使用CardRenderer渲染实际的卡片组件 -->
+          <CardRenderer
+            v-if="props.items.find(canvasItem => canvasItem.id === item.i)"
+            :item="props.items.find(canvasItem => canvasItem.id === item.i)!"
+            :readonly="props.readonly"
+            class="h-full w-full"
+          />
+          
+          <!-- 占位符（当找不到对应的canvas item时） -->
+          <div v-else class="default-card-content">
+            <div class="card-header">
+              <h4>Item {{ item.i }}</h4>
             </div>
-          </slot>
+            <div class="card-body">
+              <p>Position: {{ item.x }}, {{ item.y }}</p>
+              <p>Size: {{ item.w }} × {{ item.h }}</p>
+              <p class="text-red-500 text-xs">Canvas item not found</p>
+            </div>
+          </div>
         </div>
       </GridItem>
     </GridLayout>
@@ -448,11 +704,27 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.grid-renderer {
+.kanban-renderer {
   width: 100%;
   height: 100%;
   position: relative;
   background-color: var(--canvas-bg-color, #f5f5f5);
+  transition: background-color 0.2s ease;
+}
+
+/* 拖拽状态样式 */
+.kanban-renderer.can-drop {
+  background-color: rgba(24, 144, 255, 0.05);
+}
+
+.kanban-renderer.drag-over {
+  background-color: rgba(24, 144, 255, 0.1) !important;
+  box-shadow: inset 0 0 0 2px rgba(24, 144, 255, 0.3);
+}
+
+.kanban-renderer.drag-over-active {
+  background-color: rgba(24, 144, 255, 0.08) !important;
+  box-shadow: inset 0 0 0 1px rgba(24, 144, 255, 0.2);
 }
 
 .grid-item-content {
@@ -559,5 +831,18 @@ onUnmounted(() => {
 
 :deep(.vue-resizable-handle:hover) {
   background-color: rgba(24, 144, 255, 0.1);
+}
+
+/* 网格显示样式 */
+.kanban-renderer.show-grid {
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  background-size: calc(100% / var(--grid-cols, 12)) var(--grid-row-height, 110px);
+}
+
+.kanban-renderer {
+  --grid-cols: v-bind('dynamicConfig.colNum');
+  --grid-row-height: v-bind('(dynamicConfig.rowHeight + dynamicConfig.margin[1]) + "px"');
 }
 </style>

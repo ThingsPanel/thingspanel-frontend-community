@@ -1,22 +1,22 @@
 /**
- * Grid Renderer Factory
- * 网格渲染器工厂，创建和配置GridRenderer实例
+ * Kanban Renderer Factory
+ * 看板渲染器工厂，创建和配置KanbanRenderer实例
  */
 
 import { defineAsyncComponent, type Component } from 'vue'
-import type { BaseRenderer, RendererConfig } from '../types/renderer'
-import type { BaseCanvasItem } from '../types/core'
+import type { BaseRenderer, RendererConfig } from '../../types/renderer'
+import type { BaseCanvasItem } from '../../types/core'
 
-// GridRenderer组件的异步加载
-const GridRendererComponent = defineAsyncComponent(() => import('./GridRenderer.vue'))
+// KanbanRenderer组件的异步加载
+const KanbanRendererComponent = defineAsyncComponent(() => import('./KanbanRenderer.vue'))
 
 /**
- * 网格渲染器包装类
+ * 看板渲染器包装类
  * 将Vue组件包装为BaseRenderer接口
  */
-export class GridRenderer implements BaseRenderer {
-  readonly id = 'grid'
-  readonly name = 'Grid Renderer'
+export class KanbanRenderer implements BaseRenderer {
+  readonly id = 'kanban'
+  readonly name = 'Kanban Renderer'
   readonly version = '1.0.0'
   readonly capabilities = {
     supportsDrag: true,
@@ -58,10 +58,10 @@ export class GridRenderer implements BaseRenderer {
     this.container = container
     this.config = { ...config }
     
-    // 创建Vue应用实例来渲染GridRenderer组件
+    // 创建Vue应用实例来渲染KanbanRenderer组件
     const { createApp } = await import('vue')
     
-    const app = createApp(GridRendererComponent, {
+    const app = createApp(KanbanRendererComponent, {
       config: this.config,
       items: this.items,
       readonly: this.config.readonly || false,
@@ -113,7 +113,7 @@ export class GridRenderer implements BaseRenderer {
   }
 
   resize(width: number, height: number): void {
-    // Grid layout handles resizing automatically
+    // Kanban layout handles resizing automatically
     if (this.container) {
       this.container.style.width = `${width}px`
       this.container.style.height = `${height}px`
@@ -163,7 +163,7 @@ export class GridRenderer implements BaseRenderer {
   }
 
   setViewport(viewport: any): void {
-    console.warn('Grid renderer does not support viewport operations')
+    console.warn('Kanban renderer does not support viewport operations')
   }
 
   getViewport() {
@@ -171,11 +171,11 @@ export class GridRenderer implements BaseRenderer {
   }
 
   fitToContent(): void {
-    // Auto-handled by grid layout
+    // Auto-handled by kanban layout
   }
 
   centerView(): void {
-    // Not applicable for grid layout
+    // Not applicable for kanban layout
   }
 
   enableEdit(): void {
@@ -267,17 +267,17 @@ export class GridRenderer implements BaseRenderer {
 }
 
 /**
- * 网格渲染器工厂函数
+ * 看板渲染器工厂函数
  */
-export function createGridRenderer(): GridRenderer {
-  return new GridRenderer()
+export function createKanbanRenderer(): KanbanRenderer {
+  return new KanbanRenderer()
 }
 
 /**
- * 获取网格渲染器组件
+ * 获取看板渲染器组件
  */
-export function getGridRendererComponent(): Component {
-  return GridRendererComponent
+export function getKanbanRendererComponent(): Component {
+  return KanbanRendererComponent
 }
 
-export default GridRenderer
+export default KanbanRenderer
