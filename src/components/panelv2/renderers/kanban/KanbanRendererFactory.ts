@@ -37,7 +37,7 @@ export class KanbanRenderer implements BaseRenderer {
 
   private component: Component | null = null
   private container: HTMLElement | null = null
-  private config: RendererConfig = {}
+  config: RendererConfig = {}
   private items: BaseCanvasItem[] = []
   private eventHandlers: Map<string, Function[]> = new Map()
   private isInitialized = false

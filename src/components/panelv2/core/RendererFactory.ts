@@ -65,33 +65,51 @@ export class RendererFactory implements IRendererFactory {
    * 获取可用渲染器列表
    */
   getAvailable(): RendererInfo[] {
-    const renderers: RendererInfo[] = []
+    console.log(`[RendererFactory] getAvailable called, registry size: ${this.registry.size}`)
+    console.log(`[RendererFactory] registered renderer IDs:`, Array.from(this.registry.keys()))
     
+    const availableRenderers: RendererInfo[] = []
+    
+    // 直接从注册表生成渲染器信息，避免循环依赖
     this.registry.forEach((RendererClass, id) => {
       try {
-        // 创建临时实例获取信息
-        const tempRenderer = new RendererClass()
-        renderers.push({
-          id: tempRenderer.id,
-          name: tempRenderer.name,
-          version: tempRenderer.version,
+        // 尝试从渲染器类的静态属性获取信息
+        const info: RendererInfo = {
+          id,
+          name: this.getRendererName(id),
+          version: '1.0.0',
           description: this.getRendererDescription(id),
           icon: this.getRendererIcon(id),
           author: this.getRendererAuthor(id),
-          capabilities: tempRenderer.capabilities
-        })
+          capabilities: {
+            supportsDragDrop: true,
+            supportsResize: true,
+            supportsEdit: true,
+            supportsExport: false
+          }
+        }
+        availableRenderers.push(info)
       } catch (error) {
-        console.error(`Failed to get info for renderer ${id}:`, error)
+        console.warn(`[RendererFactory] Failed to generate info for renderer ${id}:`, error)
       }
     })
     
-    return renderers
+    console.log(`[RendererFactory] generated available renderers:`, availableRenderers)
+    
+    return availableRenderers
   }
 
   /**
    * 检查渲染器是否存在
    */
   hasRenderer(id: string): boolean {
+    return this.registry.has(id)
+  }
+
+  /**
+   * 检查渲染器是否已注册（别名方法）
+   */
+  isRegistered(id: string): boolean {
     return this.registry.has(id)
   }
 
@@ -159,6 +177,18 @@ export class RendererFactory implements IRendererFactory {
     if (!renderer.capabilities || typeof renderer.capabilities !== 'object') {
       throw new Error(`Renderer ${id} has invalid capabilities declaration`)
     }
+  }
+
+  /**
+   * 获取渲染器名称
+   */
+  private getRendererName(id: string): string {
+    const names: Record<string, string> = {
+      'kanban': '看板',
+      'visualization': '可视化',
+      'gridstack': '网格布局'
+    }
+    return names[id] || id
   }
 
   /**

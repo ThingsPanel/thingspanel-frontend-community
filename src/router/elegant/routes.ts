@@ -469,6 +469,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'gridstack-test',
+    path: '/gridstack-test',
+    component: 'layout.base$view.gridstack-test',
+    meta: {
+      title: 'gridstack-test',
+      i18nKey: 'route.gridstack-test'
+    }
+  },
+  {
     name: 'home',
     path: '/home',
     component: 'layout.base$view.home',

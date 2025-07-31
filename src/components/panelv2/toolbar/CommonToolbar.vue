@@ -3,7 +3,7 @@
   包含所有渲染器都需要的通用工具
 -->
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { NButton, NSelect, NSwitch, NIcon, NTooltip, useThemeVars } from 'naive-ui'
 import { 
   ArrowUndoOutline, 
@@ -41,6 +41,18 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 const canvasStore = useCanvasStore()
+
+// 调试：监听availableRenderers变化
+console.log('[CommonToolbar] 初始化时接收到的availableRenderers:', props.availableRenderers)
+console.log('[CommonToolbar] 当前渲染器:', props.currentRenderer)
+
+// 监听availableRenderers变化
+watch(() => props.availableRenderers, (newValue, oldValue) => {
+  console.log('[CommonToolbar] availableRenderers变化:')
+  console.log('  旧值:', oldValue)
+  console.log('  新值:', newValue)
+  console.log('  新值长度:', newValue?.length || 0)
+}, { immediate: true, deep: true })
 
 // 主题颜色 - 使用Naive UI主题系统
 const themeVars = useThemeVars()

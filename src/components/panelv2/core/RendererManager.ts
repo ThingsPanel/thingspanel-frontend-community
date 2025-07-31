@@ -1,6 +1,11 @@
 /**
  * Renderer Manager Implementation
  * 渲染器管理器实现，负责渲染器的生命周期管理和切换
+ * 
+ * 新增功能：
+ * - 自动注册渲染器
+ * - 动态加载渲染器模块
+ * - 渲染器热重载
  */
 
 import type { 
@@ -13,6 +18,8 @@ import type {
 import type { BaseCanvasItem } from '../types/core'
 import type { EventBus } from '../types/events'
 import { RendererFactory } from './RendererFactory'
+import { rendererAutoRegistry, type RendererAutoRegistry } from './RendererAutoRegistry'
+import { renderersConfig } from '../renderers/renderers.config'
 
 export class RendererManager implements IRendererManager {
   private currentRenderer: BaseRenderer | null = null
@@ -20,11 +27,120 @@ export class RendererManager implements IRendererManager {
   private eventBus: EventBus
   private container: HTMLElement | null = null
   private isInitialized = false
+  private autoRegistry: RendererAutoRegistry
+  private autoRegisterEnabled: boolean
 
-  constructor(eventBus: EventBus, factory?: RendererFactory) {
+  constructor(eventBus: EventBus, factory?: RendererFactory, autoRegister = true) {
+    console.log('RendererManager: Constructor called with autoRegister =', autoRegister)
     this.eventBus = eventBus
     this.factory = factory || new RendererFactory()
+    this.autoRegistry = rendererAutoRegistry
+    this.autoRegisterEnabled = autoRegister
+    
+    // 设置自动注册器的工厂
+    this.autoRegistry.setFactory(this.factory)
+    
     this.setupEventListeners()
+    
+    // 移除构造函数中的自动初始化，统一在initialize方法中处理
+    console.log('RendererManager: Constructor completed, auto register will be handled in initialize()')
+  }
+
+  /**
+   * 初始化自动注册系统
+   */
+  private async initializeAutoRegistry(): Promise<void> {
+    try {
+      console.log('[RendererManager] 正在初始化渲染器自动注册系统...')
+      console.log('[RendererManager] 当前工厂状态:', {
+        count: this.factory.getCount(),
+        registeredIds: this.factory.getRegisteredIds()
+      })
+      
+      // 添加内置渲染器配置
+      console.log('[RendererManager] 添加渲染器配置:', renderersConfig.map(c => c.id))
+      this.autoRegistry.addRenderers(renderersConfig)
+      
+      // 注册所有启用的渲染器
+      console.log('[RendererManager] 开始注册所有启用的渲染器...')
+      const result = await this.autoRegistry.registerAll()
+      
+      console.log(`[RendererManager] 渲染器自动注册完成: 成功 ${result.success.length} 个，失败 ${result.failed.length} 个`)
+      console.log('[RendererManager] 成功注册的渲染器:', result.success)
+      console.log('[RendererManager] 注册后工厂状态:', {
+        count: this.factory.getCount(),
+        registeredIds: this.factory.getRegisteredIds()
+      })
+      
+      if (result.failed.length > 0) {
+        console.warn('[RendererManager] 以下渲染器注册失败:', result.failed)
+      }
+      
+      // 发射注册完成事件
+      this.eventBus.emit('renderer-manager:auto-register-complete', result)
+    } catch (error) {
+      console.error('[RendererManager] 渲染器自动注册失败:', error)
+      this.eventBus.emit('renderer-manager:auto-register-failed', { error })
+    }
+  }
+
+  /**
+   * 手动注册渲染器
+   */
+  async registerRenderer(id: string): Promise<boolean> {
+    if (!this.autoRegisterEnabled) {
+      console.warn('自动注册已禁用，无法手动注册渲染器')
+      return false
+    }
+    
+    try {
+      const success = await this.autoRegistry.registerRenderer(id)
+      if (success) {
+        this.eventBus.emit('renderer-manager:renderer-registered', { id })
+      }
+      return success
+    } catch (error) {
+      console.error(`手动注册渲染器 ${id} 失败:`, error)
+      return false
+    }
+  }
+
+  /**
+   * 重新加载渲染器
+   */
+  async reloadRenderer(id: string): Promise<boolean> {
+    if (!this.autoRegisterEnabled) {
+      console.warn('自动注册已禁用，无法重新加载渲染器')
+      return false
+    }
+    
+    try {
+      // 注销现有渲染器
+      this.factory.unregister(id)
+      
+      // 重新注册
+      const success = await this.autoRegistry.registerRenderer(id)
+      
+      if (success) {
+        console.log(`渲染器 ${id} 重新加载成功`)
+        this.eventBus.emit('renderer-manager:renderer-reloaded', { id })
+      }
+      
+      return success
+    } catch (error) {
+      console.error(`重新加载渲染器 ${id} 失败:`, error)
+      return false
+    }
+  }
+
+  /**
+   * 获取已加载的渲染器信息
+   */
+  getLoadedRenderers(): RendererInfo[] {
+    if (!this.autoRegisterEnabled) {
+      return []
+    }
+    return this.autoRegistry.getLoadedRendererInfos()
   }
 
   /**
@@ -119,7 +235,10 @@ export class RendererManager implements IRendererManager {
    * 获取可用渲染器列表
    */
   getAvailableRenderers(): RendererInfo[] {
-    return this.factory.getAvailable()
+    console.log(`[RendererManager] getAvailableRenderers called`)
+    const available = this.factory.getAvailable()
+    console.log(`[RendererManager] available renderers:`, available)
+    return available
   }
 
   /**
@@ -152,6 +271,12 @@ export class RendererManager implements IRendererManager {
     }
 
     this.container = container
+    
+    // 如果启用了自动注册，则初始化自动注册系统
+    if (this.autoRegisterEnabled) {
+      await this.initializeAutoRegistry()
+    }
+    
     this.isInitialized = true
     
     console.log('RendererManager initialized successfully')

@@ -21,6 +21,10 @@ export interface RendererCapabilities {
   supportsContextMenu: boolean             // 支持右键菜单
   supportsUndo: boolean                    // 支持撤销
   supportsClipboard: boolean               // 支持剪贴板操作
+  supportsDataBinding: boolean             // 支持数据绑定
+  supportsThemes: boolean                  // 支持主题
+  supportsExport: boolean                  // 支持导出
+  supportsImport: boolean                  // 支持导入
 }
 
 // 渲染器事件接口

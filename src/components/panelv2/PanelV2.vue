@@ -10,14 +10,12 @@ import { useThemeStore } from '@/store/modules/theme'
 import PanelLayout from './layout/PanelLayout.vue'
 import KanbanRenderer from './renderers/kanban/KanbanRenderer.vue'
 import VisualizationRenderer from './renderers/visualization/VisualizationRenderer.vue'
-import GridProRenderer from './renderers/gridpro/GridProRenderer.vue'
+import GridstackRenderer from './renderers/gridstack/GridstackRenderer.vue'
 import { MainToolbar, type KanbanToolbarConfig, type VisualizationToolbarConfig } from './toolbar'
 import ComponentPanel from './components/ComponentPanel.vue'
 import { useCanvasStore } from './store/canvasStore'
 import { RendererManager } from './core/RendererManager'
 import { RendererFactory } from './core/RendererFactory'
-import { KanbanRenderer as KanbanRendererClass } from './renderers/kanban/KanbanRendererFactory'
-import { GridProRendererImpl } from './renderers/gridpro/GridProRendererFactory'  
 import { LegacyPanelAdapter } from './adapters/LegacyAdapter'
 import eventBus from './core/EventBus'
 import { PostBoard, PutBoard } from '@/service/api/panel'
@@ -103,41 +101,44 @@ const visualizationConfig = ref<Partial<VisualizationToolbarConfig>>({
   snapToGrid: true
 })
 
-const gridProConfig = ref({
-  columns: 12,
-  rowHeight: 60,
-  gap: 12,
-  margin: [16, 16] as [number, number],
-  layoutMode: 'relaxed' as const,
-  enableDrag: true,
-  enableResize: true,
-  enableTransitions: true,
-  animationSpeed: 'normal' as const,
-  virtualization: false,
-  preventCollision: true,
-  showGrid: false,
-  debug: false
-})
+// 移除了 gridProConfig 相关代码
 
-// 渲染器管理
+// 渲染器管理（使用自动注册系统）
 const rendererFactory = new RendererFactory()
-const rendererManager = new RendererManager(eventBus, rendererFactory)
+const rendererManager = new RendererManager(eventBus, rendererFactory, true) // 启用自动注册
 const rendererContainer = ref<HTMLElement>()
+
+
 
 // 数据适配器
 const legacyAdapter = new LegacyPanelAdapter()
 
-// 注册内置渲染器
-rendererFactory.register('kanban', KanbanRendererClass)
-rendererFactory.register('gridpro', GridProRendererImpl)
-// rendererFactory.register('canvas', CanvasRendererClass) // 需要创建CanvasRendererClass
+// 渲染器注册状态
+const renderersReady = ref(false)
 
-// 可用渲染器列表
-const availableRenderers = computed(() => [
-  { value: 'kanban', label: '看板', icon: 'grid' },
-  { value: 'gridpro', label: 'GridPro', icon: 'apps' },
-  { value: 'visualization', label: '可视化大屏', icon: 'desktop' }
-])
+// 可用渲染器列表（从渲染器管理器动态获取）
+const availableRenderers = computed(() => {
+  console.log('PanelV2: Computing availableRenderers, renderersReady:', renderersReady.value)
+  
+  // 只有在渲染器注册完成后才获取列表
+  if (!renderersReady.value) {
+    console.log('PanelV2: Renderers not ready yet, returning empty list')
+    return []
+  }
+  
+  const rendererInfos = rendererManager.getAvailableRenderers()
+  console.log('PanelV2: Available renderer infos from manager:', rendererInfos)
+  console.log('PanelV2: Renderer factory count:', rendererFactory.getCount())
+  console.log('PanelV2: Renderer factory registered IDs:', rendererFactory.getRegisteredIds())
+  
+  const mapped = rendererInfos.map(info => ({
+    value: info.id,
+    label: info.name,
+    icon: info.icon || 'apps'
+  }))
+  console.log('PanelV2: Mapped available renderers:', mapped)
+  return mapped
+})
 
 // 当前渲染器信息
 const currentRendererInfo = computed(() => 
@@ -171,13 +172,21 @@ const switchRenderer = async (rendererId: string) => {
       currentRenderer.value = rendererId
       emit('renderer-change', rendererId)
       console.log('Switched to visualization renderer (placeholder mode)')
-    } else if (rendererId === 'kanban' || rendererId === 'gridpro') {
+    } else if (rendererId === 'kanban') {
       // 对于已注册的渲染器，正常切换
       await rendererManager.switchRenderer(rendererId)
       currentRenderer.value = rendererId
       emit('renderer-change', rendererId)
       
       // 发射全局事件（仅对已注册的渲染器）
+      eventBus.emit('toolbar:renderer-switch', { rendererId })
+    } else if (rendererId === 'gridstack') {
+      // Gridstack渲染器处理
+      currentRenderer.value = rendererId
+      emit('renderer-change', rendererId)
+      console.log('Switched to gridstack renderer')
+      
+      // 发射全局事件
       eventBus.emit('toolbar:renderer-switch', { rendererId })
     } else {
       // 其他渲染器的默认处理
@@ -251,7 +260,7 @@ const savePanelConfig = async () => {
       rendererType: currentRenderer.value,
       kanbanConfig: kanbanConfig.value,
       visualizationConfig: visualizationConfig.value,
-      gridProConfig: gridProConfig.value
+  
     })
     
     // 准备API参数
@@ -377,11 +386,41 @@ watch(() => canvasStore.items, (newItems) => {
 // 生命周期
 onMounted(async () => {
   try {
+    console.log('PanelV2: onMounted - Starting initialization')
+    
+    // 监听渲染器注册完成事件
+    eventBus.on('renderer-manager:auto-register-complete', (result) => {
+      console.log('PanelV2: Renderer auto-register complete:', result)
+      renderersReady.value = true
+      console.log('PanelV2: Renderers ready, available renderers:', availableRenderers.value)
+    })
+    
     if (rendererContainer.value) {
+      console.log('PanelV2: Initializing renderer manager')
+      console.log('PanelV2: Initial factory count:', rendererFactory.getCount())
+      console.log('PanelV2: Initial factory registered IDs:', rendererFactory.getRegisteredIds())
+      
       await rendererManager.initialize(rendererContainer.value)
+      console.log('PanelV2: Renderer manager initialized')
+      console.log('PanelV2: After init factory count:', rendererFactory.getCount())
+      console.log('PanelV2: After init factory registered IDs:', rendererFactory.getRegisteredIds())
+      
+      // 等待一段时间确保渲染器注册完成
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      // 如果渲染器还没有准备好，手动设置为true
+      if (!renderersReady.value) {
+        console.log('PanelV2: Manually setting renderers ready')
+        console.log('PanelV2: Before manual ready - factory count:', rendererFactory.getCount())
+        renderersReady.value = true
+      }
+      
+      console.log('PanelV2: Available renderers after ready:', availableRenderers.value)
       await switchRenderer(currentRenderer.value)
+      console.log('PanelV2: Switched to renderer:', currentRenderer.value)
     }
   } catch (err) {
+    console.error('PanelV2: Initialization error:', err)
     error.value = err as Error
     emit('error', err as Error)
   }
@@ -493,19 +532,14 @@ provide('rendererManager', rendererManager)
               :readonly="readonly || currentMode === 'preview'"
             />
 
-            <!-- GridPro 渲染器 -->
-            <GridProRenderer
-              v-else-if="currentRenderer === 'gridpro'"
+            <!-- Gridstack渲染器 -->
+            <GridstackRenderer
+              v-else-if="currentRenderer === 'gridstack'"
               :items="canvasStore.items"
-              :config="gridProConfig"
+              :config="canvasStore.config"
               :readonly="readonly || currentMode === 'preview'"
-              @update:items="canvasStore.setItems"
-              @update:config="gridProConfig = $event"
-              @item-added="canvasStore.addItem"
-              @item-updated="canvasStore.updateItem"
-              @item-removed="canvasStore.removeItem"
             />
-            
+
             <!-- 可视化大屏渲染器（敬请期待） -->
             <div v-else-if="currentRenderer === 'visualization'" class="flex items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-100">
               <div class="text-center p-8">

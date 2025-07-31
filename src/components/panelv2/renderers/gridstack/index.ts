@@ -1,6 +1,6 @@
 /**
- * Visualization Renderer Module
- * 可视化大屏渲染器模块统一导出
+ * Gridstack Renderer Module
+ * 网格布局渲染器模块统一导出
  * 
  * 自动注册约定：
  * - 导出 RendererClass: 渲染器类
@@ -8,47 +8,47 @@
  * - 可选导出 enabled: 是否启用
  */
 
-import { VisualizationRenderer } from './VisualizationRendererFactory'
+import { GridstackRenderer } from './GridstackRendererFactory'
 import type { RendererInfo } from '../../types/renderer'
 import type { RendererModule } from '../../core/RendererAutoRegistry'
 
 // 传统导出（保持向后兼容）
-export { default as VisualizationRendererComponent } from './VisualizationRenderer.vue'
-export { default as VisualizationRenderer, createVisualizationRenderer, getVisualizationRendererComponent } from './VisualizationRendererFactory'
+export { default as GridstackRenderer, createGridstackRenderer, getGridstackRendererComponent } from './GridstackRendererFactory'
+export { default as GridstackRendererComponent } from './GridstackRenderer.vue'
 
 // 类型导出
 export type { BaseRenderer, RendererConfig } from '../../types/renderer'
 export type { BaseCanvasItem } from '../../types/core'
 
 // 自动注册所需的导出
-export const RendererClass = VisualizationRenderer
+export const RendererClass = GridstackRenderer
 
 export const RendererInfo: RendererInfo = {
-  id: 'visualization',
-  name: '可视化大屏',
+  id: 'gridstack',
+  name: 'Gridstack 网格布局',
   version: '1.0.0',
-  description: '可视化大屏渲染器，支持复杂的数据可视化和交互效果',
-  icon: 'desktop',
+  description: '基于 gridstack.js 的响应式网格布局渲染器，支持拖拽和调整大小',
+  icon: 'grid',
   author: 'ThingsPanel Team',
   capabilities: {
     supportsDrag: true,
     supportsResize: true,
-    supportsRotate: true,
-    supportsGrouping: true,
-    supportsLayers: true,
+    supportsRotate: false,
+    supportsGrouping: false,
+    supportsLayers: false,
     supportsSnapping: true,
-    supportsPrecisePositioning: true,
-    supportsCustomCoordinates: true,
-    supportsZoom: true,
-    supportsMultiSelect: true,
+    supportsPrecisePositioning: false,
+    supportsCustomCoordinates: false,
+    supportsZoom: false,
+    supportsMultiSelect: false,
     supportsKeyboardShortcuts: true,
     supportsContextMenu: true,
-    supportsUndo: true,
-    supportsClipboard: true,
+    supportsUndo: false,
+    supportsClipboard: false,
     supportsDataBinding: true,
-    supportsThemes: true,
-    supportsExport: true,
-    supportsImport: true
+    supportsThemes: false,
+    supportsExport: false,
+    supportsImport: false
   }
 }
 

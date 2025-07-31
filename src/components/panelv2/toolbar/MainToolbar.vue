@@ -7,7 +7,7 @@ import { computed, ref } from 'vue'
 import { NModal, useThemeVars } from 'naive-ui'
 import CommonToolbar from './CommonToolbar.vue'
 import { KanbanToolbar } from '../renderers/kanban'
-import { GridProToolbar } from '../renderers/gridpro'
+
 import VisualizationToolbar from './VisualizationToolbar.vue'
 
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
   currentRenderer: string
   availableRenderers: Array<{ value: string; label: string; icon: string }>
   kanbanConfig?: Record<string, any>
-  gridproConfig?: Record<string, any>
+
   visualizationConfig?: Record<string, any>
   readonly?: boolean
   isSaving?: boolean
@@ -29,7 +29,7 @@ interface Emits {
   (e: 'redo'): void
   (e: 'reset'): void
   (e: 'kanban-config-change', config: Record<string, any>): void
-  (e: 'gridpro-config-change', config: Record<string, any>): void
+
   (e: 'visualization-config-change', config: Record<string, any>): void
   // 可视化工具栏事件
   (e: 'zoom-in'): void
@@ -42,7 +42,7 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   readonly: false,
   kanbanConfig: () => ({}),
-  gridproConfig: () => ({}),
+
   visualizationConfig: () => ({}),
   isSaving: false
 })
@@ -69,7 +69,6 @@ const toolbarColors = computed(() => ({
 
 // 判断当前渲染器类型
 const isKanbanRenderer = computed(() => props.currentRenderer === 'kanban')
-const isGridProRenderer = computed(() => props.currentRenderer === 'gridpro')
 const isVisualizationRenderer = computed(() => props.currentRenderer === 'visualization')
 
 // 事件转发
@@ -85,10 +84,7 @@ const handleKanbanConfigChange = (config: Record<string, any>) => {
   emit('kanban-config-change', config)
 }
 
-// GridPro配置变更
-const handleGridProConfigChange = (config: Record<string, any>) => {
-  emit('gridpro-config-change', config)
-}
+
 
 // 可视化配置变更
 const handleVisualizationConfigChange = (config: Record<string, any>) => {
@@ -111,8 +107,6 @@ const handleToggleRendererConfig = () => {
 const getConfigTitle = () => {
   if (isKanbanRenderer.value) {
     return '看板配置'
-  } else if (isGridProRenderer.value) {
-    return 'GridPro配置'
   } else if (isVisualizationRenderer.value) {
     return '可视化配置'
   }
@@ -166,13 +160,7 @@ const getConfigTitle = () => {
           @config-change="handleKanbanConfigChange"
         />
 
-        <!-- GridPro配置面板 -->
-        <GridProToolbar
-          v-else-if="isGridProRenderer"
-          :config="gridproConfig"
-          :readonly="readonly"
-          @config-update="handleGridProConfigChange"
-        />
+
 
         <!-- 可视化配置面板 -->
         <VisualizationToolbar

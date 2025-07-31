@@ -68,6 +68,7 @@ declare module "@elegant-router/types" {
     "function_hide-child_two": "/function/hide-child/two";
     "function_multi-tab": "/function/multi-tab";
     "function_tab": "/function/tab";
+    "gridstack-test": "/gridstack-test";
     "home": "/home";
     "i18n-test": "/i18n-test";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
@@ -161,6 +162,7 @@ declare module "@elegant-router/types" {
     | "device"
     | "device-details-app"
     | "function"
+    | "gridstack-test"
     | "home"
     | "i18n-test"
     | "login"
@@ -230,6 +232,7 @@ declare module "@elegant-router/types" {
     | "function_hide-child_two"
     | "function_multi-tab"
     | "function_tab"
+    | "gridstack-test"
     | "home"
     | "i18n-test"
     | "manage_menu"
