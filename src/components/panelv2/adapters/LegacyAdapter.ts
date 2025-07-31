@@ -23,6 +23,61 @@ export class LegacyPanelAdapter implements DataAdapter<LegacyCardView[], BaseCan
   private readonly DEFAULT_Z_INDEX = 0
   private readonly VERSION = '2.0.0'
 
+  /**
+   * 解析面板数据配置
+   * @param panelData 面板数据对象
+   * @returns 解析后的网格项目数组
+   */
+  parsePanelData(panelData: any): LegacyCardView[] {
+    try {
+      if (!panelData) {
+        console.warn('LegacyPanelAdapter: Panel data is null or undefined')
+        return []
+      }
+
+      // 如果直接是数组，返回数组
+      if (Array.isArray(panelData)) {
+        return panelData as LegacyCardView[]
+      }
+
+      // 如果有config字段且是字符串，解析JSON
+      if (panelData.config && typeof panelData.config === 'string') {
+        const config = JSON.parse(panelData.config)
+        
+        // 如果config直接是数组，返回数组
+        if (Array.isArray(config)) {
+          return config as LegacyCardView[]
+        }
+        
+        // 如果config有layout属性，返回layout
+        if (config.layout && Array.isArray(config.layout)) {
+          return config.layout as LegacyCardView[]
+        }
+      }
+
+      // 如果有config字段且是对象
+      if (panelData.config && typeof panelData.config === 'object') {
+        const config = panelData.config
+        
+        // 如果config直接是数组，返回数组
+        if (Array.isArray(config)) {
+          return config as LegacyCardView[]
+        }
+        
+        // 如果config有layout属性，返回layout
+        if (config.layout && Array.isArray(config.layout)) {
+          return config.layout as LegacyCardView[]
+        }
+      }
+      
+      console.warn('LegacyPanelAdapter: 无法解析面板配置，期望数组或包含layout的对象')
+      return []
+    } catch (error) {
+      console.error('LegacyPanelAdapter: 解析面板配置失败', error)
+      return []
+    }
+  }
+
   getInfo(): AdapterInfo {
     return {
       id: 'legacy-panel-adapter',
@@ -324,5 +379,46 @@ export class LegacyPanelAdapter implements DataAdapter<LegacyCardView[], BaseCan
         type: item.data?.type || 'builtin'
       }
     }))
+  }
+
+  /**
+   * 获取数据统计信息
+   * @param panelData 面板数据
+   * @returns 统计信息
+   */
+  getDataStatistics(panelData: any) {
+    const items = this.parsePanelData(panelData)
+
+    const statistics = {
+      totalItems: items.length,
+      staticItems: items.filter(item => item.static).length,
+      dynamicItems: items.filter(item => !item.static).length,
+      cardTypes: {} as Record<string, number>,
+      dataSourceTypes: {} as Record<string, number>,
+      gridBounds: {
+        maxX: 0,
+        maxY: 0,
+        maxW: 0,
+        maxH: 0
+      }
+    }
+
+    items.forEach(item => {
+      // 统计卡片类型
+      const cardType = item.data?.type || 'unknown'
+      statistics.cardTypes[cardType] = (statistics.cardTypes[cardType] || 0) + 1
+
+      // 统计数据源类型
+      const dataSourceType = item.data?.dataSource?.origin || 'unknown'
+      statistics.dataSourceTypes[dataSourceType] = (statistics.dataSourceTypes[dataSourceType] || 0) + 1
+
+      // 计算网格边界
+      statistics.gridBounds.maxX = Math.max(statistics.gridBounds.maxX, item.x + item.w)
+      statistics.gridBounds.maxY = Math.max(statistics.gridBounds.maxY, item.y + item.h)
+      statistics.gridBounds.maxW = Math.max(statistics.gridBounds.maxW, item.w)
+      statistics.gridBounds.maxH = Math.max(statistics.gridBounds.maxH, item.h)
+    })
+
+    return statistics
   }
 }

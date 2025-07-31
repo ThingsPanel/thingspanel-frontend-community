@@ -30,7 +30,12 @@
       "WebFetch(domain:gridstackjs.com)",
       "Bash(pnpm lint:*)",
       "Bash(npx eslint:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(timeout 30s pnpm dev)",
+      "WebFetch(domain:github.com)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm list:*)"
     ],
     "deny": []
   }
