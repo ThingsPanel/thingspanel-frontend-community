@@ -4,7 +4,7 @@
 -->
 <script setup lang="ts">
 import { computed } from 'vue'
-import { NButton, NSelect, NSwitch, NIcon, NTooltip } from 'naive-ui'
+import { NButton, NSelect, NSwitch, NIcon, NTooltip, useThemeVars } from 'naive-ui'
 import { 
   ArrowUndoOutline, 
   ArrowRedoOutline, 
@@ -13,7 +13,6 @@ import {
   SettingsOutline 
 } from '@vicons/ionicons5'
 import { useCanvasStore } from '../store/canvasStore'
-import { useThemeStore } from '@/store/modules/theme'
 
 interface Props {
   mode: 'edit' | 'preview'
@@ -42,13 +41,13 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 const canvasStore = useCanvasStore()
-const themeStore = useThemeStore()
 
-// 主题颜色
+// 主题颜色 - 使用Naive UI主题系统
+const themeVars = useThemeVars()
 const themeColors = computed(() => ({
-  '--toolbar-bg': themeStore.darkMode ? '#1f2937' : '#f8fafc',
-  '--toolbar-border': themeStore.darkMode ? 'rgba(75, 85, 99, 0.6)' : 'rgba(229, 231, 235, 1)',
-  '--divider-color': themeStore.darkMode ? 'rgba(75, 85, 99, 0.6)' : 'rgba(229, 231, 235, 1)'
+  '--toolbar-bg': themeVars.value.bodyColor,
+  '--toolbar-border': themeVars.value.dividerColor,
+  '--divider-color': themeVars.value.dividerColor
 }))
 
 // 计算属性

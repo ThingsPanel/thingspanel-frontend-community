@@ -38,7 +38,9 @@
     "start": "cross-env VITE_SERVICE_ENV=dev vite",
     "tsx": "tsx",
     "typecheck": "set NODE_OPTIONS=--max-old-space-size=4096 vue-tsc --noEmit --skipLibCheck",
-    "update-pkg": "sa update-pkg"
+    "update-pkg": "sa update-pkg",
+    "quality-check": "node scripts/dev-quality-check.js",
+    "pre-commit-check": "npm run quality-check"
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",

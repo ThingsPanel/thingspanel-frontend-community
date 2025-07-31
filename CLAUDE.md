@@ -233,3 +233,93 @@ export function fetchMyData(params: MyApiRequest): Promise<MyApiResponse> {
 - TypeScript 严格模式及早捕获错误
 - ESLint 提供实时代码质量反馈
 - 使用 `console.log`（ESLint 配置中允许）进行调试
+
+# PanelV2 多渲染器架构特定规范
+
+## 🚨 强制性开发规范
+
+### 📋 开发前必读检查清单
+**每次开发任务开始前，必须完成 [DEVELOPMENT_CHECKLIST.md](./DEVELOPMENT_CHECKLIST.md) 中的所有检查项。**
+
+### 🏗️ 架构约束 (严格执行)
+
+#### 工具栏分离原则
+- **禁止在渲染器组件中实现工具栏** - 渲染器只负责渲染逻辑
+- **使用独立工具栏组件** - 工具栏功能由 `MainToolbar` 及其子工具栏实现
+- **工具栏动态切换** - 根据当前渲染器类型动态显示对应工具栏
+
+#### 主题系统集成 (强制)
+- **必须使用 `useThemeStore`** - 所有组件必须支持主题切换  
+- **禁止硬编码颜色** - 使用 CSS 变量和主题系统
+- **主题变量命名规范** - 遵循 `--component-property-state` 格式
+
+#### 渲染器开发规范
+```
+渲染器目录结构（强制）：
+├── components/           # 内部组件（不包含工具栏）
+├── composables/         # 业务逻辑 composables  
+├── types/              # TypeScript 类型定义
+├── utils/              # 工具函数
+├── adapters/           # 数据适配器
+└── [RendererName]Renderer.vue  # 主组件（纯渲染）
+```
+
+#### 图标使用规范
+- **强制使用 @vicons/ionicons5** - 统一图标库
+- **图标命名约定** - 必须使用 `Outline` 后缀 (如 `ArrowBackOutline`)
+- **禁止使用不存在的图标** - 常见错误: `AlignHorizontalCenter` 不存在
+
+### 🚨 质量保证机制
+
+#### 代码提交前检查 (强制)
+```bash
+# 必须全部通过才允许提交
+pnpm lint      # ESLint 检查无错误
+pnpm typecheck # TypeScript 类型检查无错误
+pnpm build     # 构建成功
+```
+
+#### 常见违规示例与修复
+```css
+/* ❌ 错误 - CSS 语法错误 */
+.container { justify-between; }
+
+/* ✅ 正确 */
+.container { 
+  display: flex;
+  justify-content: space-between; 
+}
+```
+
+```vue
+<!-- ❌ 错误 - 渲染器中包含工具栏 -->
+<template>
+  <div class="renderer">
+    <div class="toolbar">...</div> <!-- 违规 -->
+    <div class="content">...</div>
+  </div>
+</template>
+
+<!-- ✅ 正确 - 纯渲染器 -->
+<template>
+  <div class="renderer">
+    <div class="content">...</div>
+  </div>
+</template>
+```
+
+### 🎯 开发流程约束
+
+1. **开发前** - 完成 DEVELOPMENT_CHECKLIST.md 前置检查
+2. **开发中** - 每次修改后运行 lint 和 typecheck  
+3. **提交前** - 完成完整的质量检查清单
+4. **代码审查** - 确保架构合规性和代码质量
+
+### 📚 相关文档
+- [DEVELOPMENT_CHECKLIST.md](./DEVELOPMENT_CHECKLIST.md) - 开发检查清单（必读）
+- [渲染器开发规范](./src/components/panelv2/docs/RENDERER_DEVELOPMENT_GUIDE.md)
+- [主题系统指南](./src/components/panelv2/theme/README.md)
+
+---
+
+**🚨 CRITICAL: 每次开发任务必须严格遵循上述 PanelV2 架构规范，违规代码不得提交。**

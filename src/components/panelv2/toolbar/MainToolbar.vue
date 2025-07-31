@@ -4,10 +4,10 @@
 -->
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { NModal, NCard } from 'naive-ui'
-import { useThemeStore } from '@/store/modules/theme'
+import { NModal, useThemeVars } from 'naive-ui'
 import CommonToolbar from './CommonToolbar.vue'
 import { KanbanToolbar } from '../renderers/kanban'
+import { GridProToolbar } from '../renderers/gridpro'
 import VisualizationToolbar from './VisualizationToolbar.vue'
 
 interface Props {
@@ -15,6 +15,7 @@ interface Props {
   currentRenderer: string
   availableRenderers: Array<{ value: string; label: string; icon: string }>
   kanbanConfig?: Record<string, any>
+  gridproConfig?: Record<string, any>
   visualizationConfig?: Record<string, any>
   readonly?: boolean
   isSaving?: boolean
@@ -28,6 +29,7 @@ interface Emits {
   (e: 'redo'): void
   (e: 'reset'): void
   (e: 'kanban-config-change', config: Record<string, any>): void
+  (e: 'gridpro-config-change', config: Record<string, any>): void
   (e: 'visualization-config-change', config: Record<string, any>): void
   // 可视化工具栏事件
   (e: 'zoom-in'): void
@@ -40,6 +42,7 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   readonly: false,
   kanbanConfig: () => ({}),
+  gridproConfig: () => ({}),
   visualizationConfig: () => ({}),
   isSaving: false
 })
@@ -49,24 +52,24 @@ const emit = defineEmits<Emits>()
 // 配置面板显示状态
 const showConfigPanel = ref(false)
 
-// 主题支持
-const themeStore = useThemeStore()
+// 主题支持 - 使用Naive UI主题系统
+const themeVars = useThemeVars()
 const toolbarColors = computed(() => ({
-  '--toolbar-bg': themeStore.darkMode ? '#1f2937' : '#f8fafc',
-  '--toolbar-border': themeStore.darkMode ? 'rgba(75, 85, 99, 0.6)' : 'rgba(229, 231, 235, 1)',
-  '--toolbar-shadow': themeStore.darkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
-  '--modal-bg': themeStore.darkMode ? 'rgba(31, 41, 55, 0.85)' : 'rgba(248, 250, 252, 0.85)',
-  '--modal-header-bg': themeStore.darkMode ? 'rgba(55, 65, 81, 0.7)' : 'rgba(248, 250, 252, 0.7)',
-  '--modal-content-bg': themeStore.darkMode ? 'rgba(31, 41, 55, 0.6)' : 'rgba(248, 250, 252, 0.6)',
-  '--modal-border': themeStore.darkMode ? 'rgba(75, 85, 99, 0.3)' : 'rgba(226, 232, 240, 0.3)',
-  '--modal-header-border': themeStore.darkMode ? 'rgba(75, 85, 99, 0.5)' : 'rgba(226, 232, 240, 0.5)'
+  '--toolbar-bg': themeVars.value.bodyColor,
+  '--toolbar-border': themeVars.value.dividerColor,
+  '--toolbar-shadow': themeVars.value.boxShadow2,
+  '--modal-bg': themeVars.value.modalColor,
+  '--modal-header-bg': themeVars.value.cardColor,
+  '--modal-content-bg': themeVars.value.bodyColor,
+  '--modal-border': themeVars.value.borderColor,
+  '--modal-header-border': themeVars.value.dividerColor
 }))
 
-// 判断是否显示编辑模式
-const isEditMode = computed(() => props.mode === 'edit')
+// 注意：isEditMode在模板中通过CommonToolbar间接使用
 
 // 判断当前渲染器类型
 const isKanbanRenderer = computed(() => props.currentRenderer === 'kanban')
+const isGridProRenderer = computed(() => props.currentRenderer === 'gridpro')
 const isVisualizationRenderer = computed(() => props.currentRenderer === 'visualization')
 
 // 事件转发
@@ -80,6 +83,11 @@ const handleReset = () => emit('reset')
 // 看板配置变更
 const handleKanbanConfigChange = (config: Record<string, any>) => {
   emit('kanban-config-change', config)
+}
+
+// GridPro配置变更
+const handleGridProConfigChange = (config: Record<string, any>) => {
+  emit('gridpro-config-change', config)
 }
 
 // 可视化配置变更
@@ -103,6 +111,8 @@ const handleToggleRendererConfig = () => {
 const getConfigTitle = () => {
   if (isKanbanRenderer.value) {
     return '看板配置'
+  } else if (isGridProRenderer.value) {
+    return 'GridPro配置'
   } else if (isVisualizationRenderer.value) {
     return '可视化配置'
   }
@@ -114,7 +124,6 @@ const getConfigTitle = () => {
   <div
     class="main-toolbar h-12 flex items-center relative"
     :style="toolbarColors"
-    :class="{ 'dark-theme': themeStore.darkMode }"
   >
     <!-- 公共工具栏 -->
     <CommonToolbar
@@ -155,6 +164,14 @@ const getConfigTitle = () => {
           :config="kanbanConfig"
           :readonly="readonly"
           @config-change="handleKanbanConfigChange"
+        />
+
+        <!-- GridPro配置面板 -->
+        <GridProToolbar
+          v-else-if="isGridProRenderer"
+          :config="gridproConfig"
+          :readonly="readonly"
+          @config-update="handleGridProConfigChange"
         />
 
         <!-- 可视化配置面板 -->
@@ -230,22 +247,7 @@ const getConfigTitle = () => {
   -webkit-backdrop-filter: blur(8px) !important;
 }
 
-/* 深色主题下的弹窗样式 */
-.dark-theme .renderer-config-modal :deep(.n-card) {
-  background-color: rgba(31, 41, 55, 0.85) !important;
-  border: 1px solid rgba(75, 85, 99, 0.3) !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
-}
-
-.dark-theme .renderer-config-modal :deep(.n-card-header) {
-  background-color: rgba(55, 65, 81, 0.7) !important;
-  border-bottom: 1px solid rgba(75, 85, 99, 0.5) !important;
-  color: #f9fafb !important;
-}
-
-.dark-theme .renderer-config-modal :deep(.n-card-content) {
-  background-color: rgba(31, 41, 55, 0.6) !important;
-}
+/* Naive UI 自动处理深色主题，移除手动样式覆盖 */
 
 .config-content {
   padding: 0;

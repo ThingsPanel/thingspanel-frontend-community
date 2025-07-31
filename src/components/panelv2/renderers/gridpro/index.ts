@@ -3,16 +3,19 @@
  * 导出所有 GridPro 相关的组件、类型和工具
  */
 
+// 内部导入
+import { GridProRendererFactory } from './GridProRendererFactory'
+
 // 主要组件
 export { default as GridProRenderer } from './GridProRenderer.vue'
+export { default as GridProToolbar } from './GridProToolbar.vue'
 export { default as GridProContainer } from './components/GridProContainer.vue'
 export { default as GridProItem } from './components/GridProItem.vue'
 
 // 工厂和适配器
 export { 
   GridProRendererFactory,
-  GridProRendererImpl,
-  gridProRendererFactory
+  GridProRendererImpl
 } from './GridProRendererFactory'
 export { GridProAdapter } from './adapters/GridProAdapter'
 
@@ -71,6 +74,14 @@ export {
   RESPONSIVE_BREAKPOINTS
 } from './types/gridpro'
 
+// 性能相关导出
+export {
+  PERFORMANCE_PRESETS,
+  detectOptimalPreset,
+  applyPerformancePreset,
+  createAdaptivePerformanceConfig
+} from './performance'
+
 // 常量
 export const GRIDPRO_VERSION = '1.0.0'
 export const GRIDPRO_NAME = 'GridPro Renderer'
@@ -109,7 +120,7 @@ export const GRIDPRO_INFO = {
  * 快速创建 GridPro 渲染器实例
  */
 export function createGridProRenderer(config?: Partial<GridProConfig>) {
-  return gridProRendererFactory.create({
+  return factory.create({
     type: 'gridpro',
     gridpro: config
   })
@@ -129,7 +140,7 @@ export function getGridProPreset(presetName: keyof typeof GRIDPRO_PRESETS) {
  * 检查 GridPro 渲染器兼容性
  */
 export function checkGridProCompatibility() {
-  return gridProRendererFactory.checkCompatibility()
+  return factory.checkCompatibility()
 }
 
 /**
@@ -148,5 +159,6 @@ export function validateGridProConfig(config: Partial<GridProConfig>): boolean {
   return renderer.validateConfig(config)
 }
 
-// 默认导出工厂实例
-export default gridProRendererFactory
+// 创建并导出工厂实例
+const factory = new GridProRendererFactory()
+export default factory

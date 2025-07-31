@@ -301,6 +301,26 @@ export const DEFAULT_GRIDPRO_CONFIG: GridProConfig = {
   maxRows: 50
 }
 
+// 响应式断点配置
+export const RESPONSIVE_BREAKPOINTS = {
+  xs: 480,   // 手机
+  sm: 640,   // 大屏手机
+  md: 768,   // 平板
+  lg: 1024,  // 小屏桌面
+  xl: 1280,  // 桌面
+  '2xl': 1536 // 大屏桌面
+} as const
+
+// 响应式布局配置
+export interface ResponsiveGridProConfig {
+  xs?: Partial<GridProConfig>
+  sm?: Partial<GridProConfig>
+  md?: Partial<GridProConfig>
+  lg?: Partial<GridProConfig>
+  xl?: Partial<GridProConfig>
+  '2xl'?: Partial<GridProConfig>
+}
+
 /**
  * 创建默认 GridPro 配置
  * 支持部分配置覆盖

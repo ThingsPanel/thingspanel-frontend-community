@@ -4,7 +4,7 @@
  */
 
 import type { App } from 'vue'
-import type { BaseRenderer, RendererFactory, RendererConfig } from '../../types/core'
+import type { BaseRenderer, RendererFactory, RendererConfig } from '../../types/renderer'
 import type { GridProConfig } from './types/gridpro'
 import { createDefaultGridProConfig } from './types/gridpro'
 import GridProRenderer from './GridProRenderer.vue'
