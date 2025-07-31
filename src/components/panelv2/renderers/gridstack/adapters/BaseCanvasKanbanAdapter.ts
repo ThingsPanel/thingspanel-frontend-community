@@ -7,9 +7,9 @@ import type { BaseCanvasItem } from '../../../types/core'
 import type { GridLayoutItem } from '../../../types/adapters'
 
 export class BaseCanvasKanbanAdapter {
-  private readonly GRID_UNIT_SIZE = 100  // 像素到网格单位的转换比例
-  private readonly GRID_COLS = 12        // 网格列数
-  
+  private readonly GRID_UNIT_SIZE = 100 // 像素到网格单位的转换比例
+  private readonly GRID_COLS = 12 // 网格列数
+
   /**
    * 将BaseCanvasItem转换为GridLayoutItem格式
    */
@@ -78,9 +78,12 @@ export class BaseCanvasKanbanAdapter {
   /**
    * 计算新项目在网格中的位置
    */
-  calculateNewItemPosition(existingItems: GridLayoutItem[], newItemSize: { w: number, h: number }): { x: number, y: number } {
+  calculateNewItemPosition(
+    existingItems: GridLayoutItem[],
+    newItemSize: { w: number; h: number }
+  ): { x: number; y: number } {
     const { w, h } = newItemSize
-    
+
     // 按行扫描寻找空位
     for (let y = 0; y < 100; y++) {
       for (let x = 0; x <= this.GRID_COLS - w; x++) {
@@ -89,7 +92,7 @@ export class BaseCanvasKanbanAdapter {
         }
       }
     }
-    
+
     // 如果没有找到合适位置，放在最后
     const maxY = Math.max(0, ...existingItems.map(item => item.y + item.h))
     return { x: 0, y: maxY }
@@ -98,14 +101,20 @@ export class BaseCanvasKanbanAdapter {
   /**
    * 检查指定位置是否可用
    */
-  isPositionAvailable(existingItems: GridLayoutItem[], testItem: { x: number, y: number, w: number, h: number }): boolean {
+  isPositionAvailable(
+    existingItems: GridLayoutItem[],
+    testItem: { x: number; y: number; w: number; h: number }
+  ): boolean {
     return !existingItems.some(item => this.itemsOverlap(item, testItem))
   }
 
   /**
    * 检查两个网格项目是否重叠
    */
-  itemsOverlap(item1: { x: number, y: number, w: number, h: number }, item2: { x: number, y: number, w: number, h: number }): boolean {
+  itemsOverlap(
+    item1: { x: number; y: number; w: number; h: number },
+    item2: { x: number; y: number; w: number; h: number }
+  ): boolean {
     return !(
       item1.x + item1.w <= item2.x ||
       item2.x + item2.w <= item1.x ||
@@ -124,7 +133,7 @@ export class BaseCanvasKanbanAdapter {
     })
 
     const compacted: GridLayoutItem[] = []
-    
+
     sortedItems.forEach(item => {
       if (item.static) {
         compacted.push({ ...item })
@@ -174,7 +183,7 @@ export class BaseCanvasKanbanAdapter {
   private convertToGridItem(item: BaseCanvasItem, index: number): GridLayoutItem {
     // 从渲染器数据中获取网格信息，如果没有则计算
     const gridData = item.rendererData?.grid
-    
+
     const gridItem: GridLayoutItem = {
       i: item.id,
       x: gridData?.x ?? this.pixelToGrid(item.position.x),
@@ -206,9 +215,13 @@ export class BaseCanvasKanbanAdapter {
   /**
    * 单个项目转换：GridLayoutItem -> BaseCanvasItem
    */
-  private convertFromGridItem(gridItem: GridLayoutItem, originalItem?: BaseCanvasItem, index: number = 0): BaseCanvasItem {
+  private convertFromGridItem(
+    gridItem: GridLayoutItem,
+    originalItem?: BaseCanvasItem,
+    index: number = 0
+  ): BaseCanvasItem {
     const now = Date.now()
-    
+
     // 如果有原始项目，基于它创建，否则创建新的
     const baseItem: BaseCanvasItem = originalItem || {
       id: gridItem.i,

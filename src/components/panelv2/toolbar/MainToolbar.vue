@@ -7,7 +7,7 @@ import { computed, ref } from 'vue'
 import { NModal, useThemeVars } from 'naive-ui'
 import CommonToolbar from './CommonToolbar.vue'
 import { KanbanToolbar } from '../renderers/kanban'
-
+import { GridstackToolbar } from '../renderers/gridstack'
 import VisualizationToolbar from './VisualizationToolbar.vue'
 
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
   currentRenderer: string
   availableRenderers: Array<{ value: string; label: string; icon: string }>
   kanbanConfig?: Record<string, any>
-
+  gridstackConfig?: Record<string, any>
   visualizationConfig?: Record<string, any>
   readonly?: boolean
   isSaving?: boolean
@@ -29,7 +29,7 @@ interface Emits {
   (e: 'redo'): void
   (e: 'reset'): void
   (e: 'kanban-config-change', config: Record<string, any>): void
-
+  (e: 'gridstack-config-change', config: Record<string, any>): void
   (e: 'visualization-config-change', config: Record<string, any>): void
   // 可视化工具栏事件
   (e: 'zoom-in'): void
@@ -42,7 +42,7 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   readonly: false,
   kanbanConfig: () => ({}),
-
+  gridstackConfig: () => ({}),
   visualizationConfig: () => ({}),
   isSaving: false
 })
@@ -69,6 +69,7 @@ const toolbarColors = computed(() => ({
 
 // 判断当前渲染器类型
 const isKanbanRenderer = computed(() => props.currentRenderer === 'kanban')
+const isGridstackRenderer = computed(() => props.currentRenderer === 'gridstack')
 const isVisualizationRenderer = computed(() => props.currentRenderer === 'visualization')
 
 // 事件转发
@@ -82,6 +83,11 @@ const handleReset = () => emit('reset')
 // 看板配置变更
 const handleKanbanConfigChange = (config: Record<string, any>) => {
   emit('kanban-config-change', config)
+}
+
+// Gridstack配置变更
+const handleGridstackConfigChange = (config: Record<string, any>) => {
+  emit('gridstack-config-change', config)
 }
 
 
@@ -107,6 +113,8 @@ const handleToggleRendererConfig = () => {
 const getConfigTitle = () => {
   if (isKanbanRenderer.value) {
     return '看板配置'
+  } else if (isGridstackRenderer.value) {
+    return 'Gridstack配置'
   } else if (isVisualizationRenderer.value) {
     return '可视化配置'
   }
@@ -160,7 +168,13 @@ const getConfigTitle = () => {
           @config-change="handleKanbanConfigChange"
         />
 
-
+        <!-- Gridstack配置面板 -->
+        <GridstackToolbar
+          v-else-if="isGridstackRenderer"
+          :config="gridstackConfig"
+          :readonly="readonly"
+          @config-change="handleGridstackConfigChange"
+        />
 
         <!-- 可视化配置面板 -->
         <VisualizationToolbar

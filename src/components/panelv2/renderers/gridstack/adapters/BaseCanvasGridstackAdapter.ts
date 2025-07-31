@@ -76,7 +76,7 @@ export class BaseCanvasGridstackAdapter {
   private itemToGridstack(item: BaseCanvasItem): GridstackItem {
     // 从 rendererData 中获取网格信息，如果没有则使用默认值
     const gridData = item.rendererData?.gridstack || {}
-    
+
     // 计算网格位置和尺寸
     const gridItem: GridstackItem = {
       id: item.id,
@@ -134,11 +134,11 @@ export class BaseCanvasGridstackAdapter {
       zIndex: originalItem?.zIndex || 1,
       locked: gridItem.locked || false,
       visible: originalItem?.visible ?? true,
-      
+
       // 保留原始数据
       data: originalItem?.data || {},
       cardData: originalItem?.cardData,
-      
+
       // 更新渲染器数据
       rendererData: {
         ...originalItem?.rendererData,
@@ -155,7 +155,7 @@ export class BaseCanvasGridstackAdapter {
           noResize: gridItem.noResize
         }
       },
-      
+
       // 保留元数据
       metadata: {
         ...originalItem?.metadata,
@@ -184,7 +184,7 @@ export class BaseCanvasGridstackAdapter {
   private generateItemContent(item: BaseCanvasItem): string {
     const title = item.data?.title || item.cardData?.title || item.type || 'Grid Item'
     const content = item.data?.content || item.cardData?.config?.content || `Item ${item.id}`
-    
+
     return `
       <div class="gridstack-item-wrapper">
         <div class="gridstack-item-header">
@@ -378,7 +378,7 @@ export class BaseCanvasGridstackAdapter {
   isGridItemsOverlapping(item1: GridstackItem, item2: GridstackItem): boolean {
     const bounds1 = this.getGridItemBounds(item1)
     const bounds2 = this.getGridItemBounds(item2)
-    
+
     return !(
       bounds1.right <= bounds2.left ||
       bounds1.left >= bounds2.right ||
@@ -396,13 +396,14 @@ export class BaseCanvasGridstackAdapter {
    * @returns 可用位置 { x, y }
    */
   findAvailablePosition(
-    existingItems: GridstackItem[], 
-    width: number = 2, 
-    height: number = 2, 
+    existingItems: GridstackItem[],
+    width: number = 2,
+    height: number = 2,
     maxColumns: number = 12
-  ): { x: number, y: number } {
+  ): { x: number; y: number } {
     // 从第一行开始查找
-    for (let y = 0; y < 100; y++) { // 最多查找100行
+    for (let y = 0; y < 100; y++) {
+      // 最多查找100行
       for (let x = 0; x <= maxColumns - width; x++) {
         const testItem: GridstackItem = {
           id: 'test',
@@ -411,18 +412,16 @@ export class BaseCanvasGridstackAdapter {
           w: width,
           h: height
         }
-        
+
         // 检查是否与现有项重叠
-        const hasOverlap = existingItems.some(item => 
-          this.isGridItemsOverlapping(testItem, item)
-        )
-        
+        const hasOverlap = existingItems.some(item => this.isGridItemsOverlapping(testItem, item))
+
         if (!hasOverlap) {
           return { x, y }
         }
       }
     }
-    
+
     // 如果找不到位置，返回最底部
     const maxY = Math.max(0, ...existingItems.map(item => item.y + item.h))
     return { x: 0, y: maxY }

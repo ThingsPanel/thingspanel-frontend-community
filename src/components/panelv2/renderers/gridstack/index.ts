@@ -1,7 +1,7 @@
 /**
  * Gridstack Renderer Module
  * 网格布局渲染器模块统一导出
- * 
+ *
  * 自动注册约定：
  * - 导出 RendererClass: 渲染器类
  * - 导出 RendererInfo: 渲染器信息
@@ -13,8 +13,13 @@ import type { RendererInfo } from '../../types/renderer'
 import type { RendererModule } from '../../core/RendererAutoRegistry'
 
 // 传统导出（保持向后兼容）
-export { default as GridstackRenderer, createGridstackRenderer, getGridstackRendererComponent } from './GridstackRendererFactory'
+export {
+  default as GridstackRenderer,
+  createGridstackRenderer,
+  getGridstackRendererComponent
+} from './GridstackRendererFactory'
 export { default as GridstackRendererComponent } from './GridstackRenderer.vue'
+export { default as GridstackToolbar } from './GridstackToolbar.vue'
 
 // 类型导出
 export type { BaseRenderer, RendererConfig } from '../../types/renderer'
@@ -23,7 +28,7 @@ export type { BaseCanvasItem } from '../../types/core'
 // 自动注册所需的导出
 export const RendererClass = GridstackRenderer
 
-export const RendererInfo: RendererInfo = {
+export const GridstackRendererInfo: RendererInfo = {
   id: 'gridstack',
   name: 'Gridstack 网格布局',
   version: '1.0.0',
@@ -54,10 +59,13 @@ export const RendererInfo: RendererInfo = {
 
 export const enabled = true
 
+// 兼容导出
+export const RendererInfo = GridstackRendererInfo
+
 // 默认导出（符合 RendererModule 接口）
 const rendererModule: RendererModule = {
   RendererClass,
-  RendererInfo,
+  RendererInfo: GridstackRendererInfo,
   enabled
 }
 

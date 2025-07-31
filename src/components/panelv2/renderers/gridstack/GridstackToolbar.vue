@@ -8,8 +8,8 @@
     <div class="toolbar-section">
       <button 
         class="toolbar-btn primary"
-        @click="handleAddItem"
         title="添加新组件"
+        @click="handleAddItem"
       >
         <i class="icon-plus"></i>
         <span>添加组件</span>
@@ -17,8 +17,8 @@
       
       <button 
         class="toolbar-btn"
-        @click="handleClearAll"
         title="清空所有组件"
+        @click="handleClearAll"
       >
         <i class="icon-clear"></i>
         <span>清空</span>
@@ -29,8 +29,8 @@
     <div class="toolbar-section">
       <button 
         class="toolbar-btn"
-        @click="handleSaveLayout"
         title="保存当前布局"
+        @click="handleSaveLayout"
       >
         <i class="icon-save"></i>
         <span>保存布局</span>
@@ -38,8 +38,8 @@
       
       <button 
         class="toolbar-btn"
-        @click="handleLoadLayout"
         title="加载布局"
+        @click="handleLoadLayout"
       >
         <i class="icon-load"></i>
         <span>加载布局</span>
@@ -52,8 +52,8 @@
         <label>列数:</label>
         <select 
           v-model="gridColumns" 
-          @change="handleColumnsChange"
           class="config-select"
+          @change="handleColumnsChange"
         >
           <option value="6">6列</option>
           <option value="8">8列</option>
@@ -68,8 +68,8 @@
         <label>间距:</label>
         <select 
           v-model="gridMargin" 
-          @change="handleMarginChange"
           class="config-select"
+          @change="handleMarginChange"
         >
           <option value="5">5px</option>
           <option value="10">10px</option>
@@ -84,8 +84,8 @@
       <div class="toggle-group">
         <label class="toggle-label">
           <input 
-            type="checkbox" 
-            v-model="showGrid"
+            v-model="showGrid" 
+            type="checkbox"
             @change="handleShowGridChange"
           >
           <span class="toggle-text">显示网格</span>
@@ -93,8 +93,8 @@
         
         <label class="toggle-label">
           <input 
-            type="checkbox" 
-            v-model="enableAnimation"
+            v-model="enableAnimation" 
+            type="checkbox"
             @change="handleAnimationChange"
           >
           <span class="toggle-text">动画效果</span>

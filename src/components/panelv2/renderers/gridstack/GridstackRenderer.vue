@@ -20,17 +20,6 @@
       <!-- 网格项将通过 GridStack API 动态添加 -->
     </div>
     
-    <!-- 工具栏 -->
-    <GridstackToolbar 
-      v-if="!readonly && showToolbar"
-      :renderer="rendererInstance"
-      :item-count="internalItems.length"
-      @add-item="handleAddItem"
-      @clear-all="handleClearAll"
-      @save-layout="handleSaveLayout"
-      @load-layout="handleLoadLayout"
-      @config-change="handleConfigChange"
-    />
     
     <!-- 拖拽提示 -->
     <div 
@@ -51,32 +40,23 @@ import { GridStack } from 'gridstack'
 import 'gridstack/dist/gridstack.min.css'
 import { useThemeStore } from '@/store/modules/theme'
 import type { 
-  BaseRenderer, 
-  RendererConfig, 
-  RendererCapabilities,
-  RendererState,
-  RendererEvents
+  RendererConfig
 } from '../../types/renderer'
-import type { BaseCanvasItem, Viewport } from '../../types/core'
-import { useCanvasStore } from '../../store/canvasStore'
-import eventBus from '../../core/EventBus'
+import type { BaseCanvasItem } from '../../types/core'
 import { dragDropService, type DragData, type DropZone } from '../../core/DragDropService'
 import { generateId } from '../../utils/id'
-import GridstackToolbar from './GridstackToolbar.vue'
 
 // Props
 interface Props {
   config?: RendererConfig
   items?: BaseCanvasItem[]
   readonly?: boolean
-  showToolbar?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   config: () => ({}),
   items: () => ([]),
-  readonly: false,
-  showToolbar: true
+  readonly: false
 })
 
 // Emits
@@ -88,7 +68,6 @@ interface Emits {
   (e: 'item-update', id: string, updates: Partial<BaseCanvasItem>): void
   (e: 'layout-change', items: BaseCanvasItem[]): void
   (e: 'item-select', ids: string[]): void
-  (e: 'viewport-change', viewport: Viewport): void
 }
 
 const emit = defineEmits<Emits>()
@@ -97,16 +76,15 @@ const emit = defineEmits<Emits>()
 const containerRef = ref<HTMLElement>()
 const gridRef = ref<HTMLElement>()
 const gridstack = ref<GridStack | null>(null)
-const rendererInstance = ref<BaseRenderer | null>(null)
 
 // Store
 const themeStore = useThemeStore()
-const canvasStore = useCanvasStore()
 
 // State
 const isDragging = ref(false)
 const selectedItems = ref<string[]>([])
 const internalItems = ref<BaseCanvasItem[]>([...props.items])
+const dropZoneId = ref<string | null>(null)
 
 // Computed
 const isDarkTheme = computed(() => themeStore.darkMode)
@@ -133,7 +111,9 @@ const gridOptions = computed(() => ({
   animate: true,
   float: false,
   disableResize: props.readonly,
-  disableDrag: props.readonly
+  disableDrag: props.readonly,
+  // GridStack v11 兼容性
+  children: []
 }))
 
 // Methods
@@ -175,7 +155,7 @@ const setupEventListeners = () => {
   if (!gridstack.value) return
   
   // 拖拽事件
-  gridstack.value.on('dragstart', (event, element) => {
+  gridstack.value.on('dragstart', (_event, element) => {
     const id = element.getAttribute('gs-id') || element.id
     isDragging.value = true
     emit('item-select', [id])
@@ -199,7 +179,7 @@ const setupEventListeners = () => {
   })
   
   // 布局变化事件
-  gridstack.value.on('change', (event, items) => {
+  gridstack.value.on('change', (_event, _items) => {
     emit('layout-change', internalItems.value)
   })
   
@@ -219,10 +199,12 @@ const setupDragDrop = () => {
   if (!gridRef.value || !gridstack.value) return
   
   // 注册为拖拽目标
+  const dropZoneIdValue = `gridstack-${Date.now()}`
   const dropZone: DropZone = {
+    id: dropZoneIdValue,
     element: gridRef.value,
     accepts: ['card', 'widget', 'component'],
-    onDragEnter: (data) => {
+    onDragEnter: (_data) => {
       isDragging.value = true
     },
     onDragLeave: () => {
@@ -234,6 +216,7 @@ const setupDragDrop = () => {
     }
   }
   
+  dropZoneId.value = dropZoneIdValue
   dragDropService.registerDropZone(dropZone)
 }
 
@@ -241,22 +224,37 @@ const setupDragDrop = () => {
  * 处理外部拖拽
  */
 const handleExternalDrop = (data: DragData, position: { x: number, y: number }) => {
+  const cellSize = gridOptions.value.cellHeight as number || 60
+  
+  // 计算网格位置
+  const gridX = Math.floor(position.x / (cellSize + (gridOptions.value.margin || 10)))
+  const gridY = Math.floor(position.y / (cellSize + (gridOptions.value.margin || 10)))
+  
   const newItem: BaseCanvasItem = {
     id: generateId(),
     type: data.type || 'widget',
     position: {
-      x: Math.floor(position.x / (gridOptions.value.cellHeight as number || 60)),
-      y: Math.floor(position.y / (gridOptions.value.cellHeight as number || 60))
+      x: gridX,
+      y: gridY
     },
     size: {
       width: 2,
       height: 2
     },
     data: {
-      title: data.title || '新组件',
-      content: data.content || '拖拽的组件内容',
-      ...data.payload
-    }
+      title: data.cardName || data.cardId || '新组件',
+      content: data.metadata?.description || '拖拽的组件内容',
+      cardId: data.cardId,
+      cardType: data.cardType,
+      cardConfig: data.cardConfig,
+      ...data.metadata
+    },
+    cardData: data.cardConfig ? {
+      id: data.cardId || generateId(),
+      type: data.cardType || 'default',
+      title: data.cardName || '未命名组件',
+      config: data.cardConfig
+    } : undefined
   }
   
   addItem(newItem)
@@ -321,8 +319,8 @@ const addGridItem = (item: BaseCanvasItem) => {
   // 绑定事件
   bindItemEvents(widget, item)
   
-  // 添加到网格 - 使用makeWidget方法兼容GridStack v11
-  const gridOptions = {
+  // GridStack v11 兼容的网格项添加方式
+  const gridItemOptions = {
     x: item.position?.x || 0,
     y: item.position?.y || 0,
     w: item.size?.width || 2,
@@ -330,9 +328,16 @@ const addGridItem = (item: BaseCanvasItem) => {
     id: item.id
   }
   
-  // 使用makeWidget方法替代直接传递HTMLElement
-  const gridWidget = gridstack.value.makeWidget(widget)
-  gridstack.value.addWidget(gridWidget, gridOptions)
+  // 设置网格项属性到DOM元素
+  widget.setAttribute('gs-x', String(gridItemOptions.x))
+  widget.setAttribute('gs-y', String(gridItemOptions.y))
+  widget.setAttribute('gs-w', String(gridItemOptions.w))
+  widget.setAttribute('gs-h', String(gridItemOptions.h))
+  widget.setAttribute('gs-id', gridItemOptions.id)
+  
+  // 使用GridStack v11的API
+  gridstack.value.makeWidget(widget)
+  gridstack.value.addWidget(widget)
 }
 
 /**
@@ -368,7 +373,7 @@ const bindItemEvents = (element: HTMLElement, item: BaseCanvasItem) => {
 /**
  * 从元素更新项目数据
  */
-const updateItemFromElement = (id: string, element: HTMLElement) => {
+const updateItemFromElement = (id: string, _element: HTMLElement) => {
   const item = internalItems.value.find(item => item.id === id)
   if (!item) return
   
@@ -378,8 +383,6 @@ const updateItemFromElement = (id: string, element: HTMLElement) => {
   )
   
   if (node) {
-    const rect = node.getBoundingClientRect()
-    const containerRect = gridRef.value?.getBoundingClientRect()
     
     const updates: Partial<BaseCanvasItem> = {
       position: {
@@ -431,9 +434,16 @@ const updateItem = (id: string, updates: Partial<BaseCanvasItem>) => {
   if (itemIndex !== -1) {
     internalItems.value[itemIndex] = { ...internalItems.value[itemIndex], ...updates }
     
-    // 更新网格中的元素
+    // 更新网格中的元素 - GridStack v11兼容
     const element = gridRef.value?.querySelector(`[gs-id="${id}"]`) as HTMLElement
     if (element && gridstack.value && updates.position) {
+      // 更新DOM属性
+      element.setAttribute('gs-x', String(updates.position.x))
+      element.setAttribute('gs-y', String(updates.position.y))
+      if (updates.size?.width) element.setAttribute('gs-w', String(updates.size.width))
+      if (updates.size?.height) element.setAttribute('gs-h', String(updates.size.height))
+      
+      // 通知GridStack更新
       gridstack.value.update(element, {
         x: updates.position.x,
         y: updates.position.y,
@@ -457,41 +467,6 @@ const clearItems = () => {
   emit('layout-change', [])
 }
 
-/**
- * 事件处理
- */
-const handleAddItem = () => {
-  const newItem: BaseCanvasItem = {
-    id: generateId(),
-    type: 'widget',
-    position: { x: 0, y: 0 },
-    size: { width: 2, height: 2 },
-    data: {
-      title: '新组件',
-      content: '这是一个新添加的组件'
-    }
-  }
-  
-  addItem(newItem)
-}
-
-const handleClearAll = () => {
-  if (gridstack.value) {
-    gridstack.value.removeAll(false)
-  }
-  internalItems.value = []
-  emit('layout-change', [])
-}
-
-const handleSaveLayout = () => {
-  // 保存布局逻辑
-  console.log('保存布局:', internalItems.value)
-}
-
-const handleLoadLayout = () => {
-  // 加载布局逻辑
-  console.log('加载布局')
-}
 
 const handleEditItem = (id: string) => {
   console.log('编辑项目:', id)
@@ -507,20 +482,6 @@ const handleSelectItem = (id: string) => {
   emit('item-select', [id])
 }
 
-const handleConfigChange = (config: any) => {
-  console.log('Config change:', config)
-  if (gridstack.value) {
-    if (config.columns) {
-      gridstack.value.column(config.columns)
-    }
-    if (config.margin !== undefined) {
-      gridstack.value.margin(config.margin)
-    }
-    if (config.animate !== undefined) {
-      gridstack.value.setAnimation(config.animate)
-    }
-  }
-}
 
 // Watchers
 watch(() => props.items, (newItems) => {
@@ -549,8 +510,8 @@ onUnmounted(() => {
   }
   
   // 清理拖拽服务
-  if (gridRef.value) {
-    dragDropService.unregisterDropZone(gridRef.value)
+  if (dropZoneId.value) {
+    dragDropService.unregisterDropZone(dropZoneId.value)
   }
 })
 
@@ -572,6 +533,16 @@ defineExpose({
   width: 100%;
   height: 100%;
   overflow: auto;
+  
+  /* CSS变量定义 */
+  --bg-color: #ffffff;
+  --bg-color-dark: #1a1a1a;
+  --border-color: #e1e5e9;
+  --border-color-dark: #404040;
+  --text-color: #495057;
+  --text-color-dark: #ffffff;
+  --header-bg: #f8f9fa;
+  --header-bg-dark: #3a3a3a;
 }
 
 .grid-stack {
@@ -588,30 +559,33 @@ defineExpose({
 
 /* 网格项样式 */
 :deep(.grid-stack-item) {
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease;
+  transition: all 0.2s ease;
+  background: transparent;
 }
 
 :deep(.grid-stack-item:hover) {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
 :deep(.grid-stack-item-content) {
-  background: white;
-  border: 1px solid #e1e5e9;
-  border-radius: 6px;
+  background: var(--bg-color, white);
+  border: 1px solid var(--border-color, #e1e5e9);
+  border-radius: 8px;
   height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: all 0.2s ease;
 }
 
 :deep(.dark-theme .grid-stack-item-content) {
-  background: #2d2d2d;
-  border-color: #404040;
-  color: #ffffff;
+  background: var(--bg-color-dark, #2d2d2d);
+  border-color: var(--border-color-dark, #404040);
+  color: var(--text-color-dark, #ffffff);
 }
 
 /* 项目头部 */
@@ -620,15 +594,16 @@ defineExpose({
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: #f8f9fa;
-  border-bottom: 1px solid #e1e5e9;
+  background: var(--header-bg, #f8f9fa);
+  border-bottom: 1px solid var(--border-color, #e1e5e9);
   font-size: 14px;
   font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 :deep(.dark-theme .item-header) {
-  background: #3a3a3a;
-  border-bottom-color: #404040;
+  background: var(--header-bg-dark, #3a3a3a);
+  border-bottom-color: var(--border-color-dark, #404040);
 }
 
 :deep(.item-title) {
@@ -687,14 +662,20 @@ defineExpose({
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 123, 255, 0.1);
-  border: 2px dashed #007bff;
-  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px dashed #3b82f6;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   pointer-events: none;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
 }
 
 .drag-hint {
