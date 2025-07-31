@@ -6,6 +6,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { NInput, NTree, NCard, NImage, NEmpty, NSpin, NIcon, NTooltip, NTag, NBadge, NCollapse, NCollapseItem } from 'naive-ui'
 import type { TreeOption } from 'naive-ui'
+import { useThemeStore } from '@/store/modules/theme'
 import { cardRegistry, CardCategory, initializeCardSystem } from '../cards'
 import type { CardDefinition } from '../cards'
 import { dragDropService, type DragData } from '../core/DragDropService'
@@ -22,6 +23,7 @@ import {
 } from '@vicons/ionicons5'
 
 // 组件状态
+const themeStore = useThemeStore()
 const loading = ref(true)
 const searchKeyword = ref('')
 const selectedCategory = ref<CardCategory | null>(null)
@@ -91,6 +93,19 @@ const categoryConfig = {
 
 // 统计信息
 const stats = computed(() => cardRegistry.getStats())
+
+// 主题颜色计算属性
+const themeColors = computed(() => {
+  const isDark = themeStore.darkMode
+  return {
+    '--component-bg': isDark ? '#2a2a2a' : '#ffffff',
+    '--component-border': isDark ? '#404040' : '#e0e0e0',
+    '--component-hover': isDark ? '#3a3a3a' : '#f5f5f5',
+    '--text-primary': isDark ? '#ffffff' : '#333333',
+    '--text-secondary': isDark ? '#cccccc' : '#666666',
+    '--search-bg': isDark ? '#1f1f1f' : '#fafafa'
+  }
+})
 
 // 生命周期
 onMounted(async () => {
@@ -173,11 +188,11 @@ const getCategoryLabel = (category: CardCategory) => {
 </script>
 
 <template>
-  <div class="component-panel h-full flex flex-col bg-gray-50">
+  <div class="component-panel h-full flex flex-col" :style="themeColors">
     <!-- 顶部搜索和统计 -->
-    <div class="panel-header p-4 bg-white border-b border-gray-200">
+    <div class="panel-header p-4" style="background-color: var(--component-bg); border-bottom: 1px solid var(--component-border);">
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-semibold text-gray-800">组件库</h3>
+        <h3 class="text-lg font-semibold" style="color: var(--text-primary);">组件库</h3>
         <NBadge :value="stats.total" :max="99">
           <NIcon size="20" class="text-gray-500">
             <CubeOutline />
@@ -341,14 +356,20 @@ const getCategoryLabel = (category: CardCategory) => {
 .component-panel {
   width: 100%;
   height: 100%;
+  background-color: var(--search-bg);
+  transition: background-color 0.3s ease;
 }
 
 .card-item {
   position: relative;
+  background-color: var(--component-bg);
+  border: 1px solid var(--component-border);
+  transition: all 0.2s ease;
 }
 
 .card-item:hover {
   transform: translateY(-1px);
+  background-color: var(--component-hover);
 }
 
 .line-clamp-2 {

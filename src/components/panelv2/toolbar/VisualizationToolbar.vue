@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { NButton, NIcon, NTooltip, NSlider, NSpace, NInputNumber } from 'naive-ui'
+import { useThemeStore } from '@/store/modules/theme'
 import { 
   ExpandOutline,
   ContractOutline, 
@@ -60,6 +61,12 @@ const currentConfig = computed(() => ({
   ...props.config
 }))
 
+// 主题支持
+const themeStore = useThemeStore()
+const borderColor = computed(() => 
+  themeStore.isDark ? 'rgba(75, 85, 99, 0.6)' : 'rgba(229, 231, 235, 1)'
+)
+
 // 缩放级别选项
 const zoomLevels = [25, 50, 75, 100, 125, 150, 200, 300, 400]
 
@@ -81,7 +88,10 @@ const setZoomLevel = (level: number) => {
 </script>
 
 <template>
-  <div class="visualization-toolbar flex items-center gap-2">
+  <div 
+    class="visualization-toolbar flex items-center gap-2"
+    :style="{ '--border-color': borderColor }"
+  >
     <!-- 视图控制 -->
     <div class="flex items-center gap-1">
       <!-- 适应内容 -->
@@ -114,7 +124,7 @@ const setZoomLevel = (level: number) => {
         居中视图
       </NTooltip>
 
-      <div class="w-px h-4 bg-gray-300 mx-1"></div>
+      <div class="w-px h-4 mx-1" style="background-color: var(--border-color);"></div>
     </div>
 
     <!-- 缩放控制 -->
@@ -181,7 +191,7 @@ const setZoomLevel = (level: number) => {
         重置缩放 (Ctrl+0)
       </NTooltip>
 
-      <div class="w-px h-4 bg-gray-300 mx-1"></div>
+      <div class="w-px h-4 mx-1" style="background-color: var(--border-color);"></div>
     </div>
 
     <!-- 辅助工具 -->
@@ -243,7 +253,8 @@ const setZoomLevel = (level: number) => {
 <style scoped>
 .visualization-toolbar {
   padding: 0 8px;
-  border-left: 1px solid #e5e7eb;
+  border-left: 1px solid var(--border-color);
+  transition: border-color 0.3s ease;
 }
 
 .zoom-control {

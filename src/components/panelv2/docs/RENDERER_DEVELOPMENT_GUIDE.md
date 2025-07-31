@@ -9,9 +9,9 @@
 ### 多渲染器架构核心理念
 
 PanelV2采用多渲染器架构，允许不同的渲染器处理不同的可视化需求：
-- **KanbanRenderer**: 基于网格的看板布局
-- **VisualizationRenderer**: 自由画布大屏可视化
-- **GridProRenderer**: 高性能自研网格渲染器
+- **KanbanRenderer**: 基于网格的看板布局（已完成）
+- **GridProRenderer**: 高性能自研网格渲染器（开发中）
+- **VisualizationRenderer**: 自由画布大屏可视化（规划中）
 
 ### 核心组件关系
 
@@ -21,12 +21,14 @@ PanelV2采用多渲染器架构，允许不同的渲染器处理不同的可视�
 │  ┌─────────────────┬─────────────────┬─────────────┐ │
 │  │  ComponentPanel │   Main Canvas   │ PropertyPanel│ │
 │  │     (左侧)       │     (中间)      │    (右侧)     │ │
+│  │   组件拖拽源     │   渲染器容器     │   卡片属性配置 │ │
 │  └─────────────────┴─────────────────┴─────────────┘ │
 │  ┌─────────────────────────────────────────────────┐ │
-│  │               MainToolbar                        │ │
+│  │               MainToolbar (动态切换)             │ │
 │  │  ┌──────────┬──────────┬──────────────────────┐ │ │
 │  │  │ Common   │ Kanban   │ Visualization        │ │ │
 │  │  │ Toolbar  │ Toolbar  │ Toolbar              │ │ │
+│  │  │(基础功能) │(折叠式)   │(折叠式)               │ │ │
 │  │  └──────────┴──────────┴──────────────────────┘ │ │
 │  └─────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────┘
@@ -38,9 +40,31 @@ PanelV2采用多渲染器架构，允许不同的渲染器处理不同的可视�
 │  │  ┌──────────┬──────────┬──────────────────────┐ │ │
 │  │  │ Kanban   │GridPro   │ Visualization        │ │ │
 │  │  │Renderer  │Renderer  │ Renderer             │ │ │
+│  │  │(完整实现) │(开发中)   │(占位符)               │ │ │
 │  │  └──────────┴──────────┴──────────────────────┘ │ │
 │  └─────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────┘
+```
+
+### MainToolbar 动态切换机制
+
+MainToolbar 采用智能的动态切换设计，根据当前渲染器类型自动显示对应的工具栏：
+
+**设计理念：**
+- **基础功能优先**：CommonToolbar 包含所有渲染器共享的基础功能
+- **专用工具折叠**：渲染器专用工具采用折叠式设计，节省空间
+- **配置职责分离**：右侧属性面板专注卡片配置，工具栏专注渲染器配置
+
+**切换逻辑：**
+```typescript
+// 在 MainToolbar.vue 中的动态渲染逻辑
+const isKanbanRenderer = computed(() => currentRenderer === 'kanban')
+const isVisualizationRenderer = computed(() => currentRenderer === 'visualization')
+
+// 根据渲染器类型动态显示工具栏
+<CommonToolbar />  <!-- 始终显示 -->
+<KanbanToolbar v-if="isKanbanRenderer" />  <!-- 看板专用 -->
+<VisualizationToolbar v-else-if="isVisualizationRenderer" />  <!-- 可视化专用 -->
 ```
 
 ## BaseRenderer接口详解
@@ -422,62 +446,180 @@ const performanceBenchmark = async () => {
 }
 ```
 
-## 部署注册流程
+## 渲染器开发完整流程
 
-### 1. 创建渲染器工厂
+### 1. 创建渲染器基础结构
+
+按照标准目录结构创建渲染器模块：
+
+```
+renderers/
+└── your-renderer/
+    ├── YourRenderer.vue          # 主渲染器组件
+    ├── YourRendererFactory.ts    # 工厂类实现
+    ├── adapters/                 # 数据适配器
+    │   └── YourAdapter.ts
+    ├── composables/              # 组合式函数
+    │   ├── useYourDrag.ts
+    │   └── useYourLayout.ts
+    └── index.ts                  # 模块导出
+```
+
+### 2. 实现渲染器组件
 
 ```typescript
-// GridProRendererFactory.ts
-import type { BaseRenderer, RendererInfo } from '../../types/renderer'
-import GridProRenderer from './GridProRenderer.vue'
+// YourRenderer.vue
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import type { BaseRenderer, RendererConfig } from '../../types/renderer'
+import type { BaseCanvasItem } from '../../types/core'
 
-export class GridProRendererClass implements BaseRenderer {
-  readonly id = 'gridpro'
-  readonly name = 'GridPro Renderer'
+// 实现BaseRenderer接口的渲染器类
+class YourRendererImpl implements BaseRenderer {
+  readonly id = 'your-renderer'
+  readonly name = 'Your Renderer'
   readonly version = '1.0.0'
   readonly capabilities = {
     supportsDrag: true,
     supportsResize: true,
-    supportsRotate: false,
-    // ... 其他能力
+    // ... 其他能力声明
   }
   
-  // 实现BaseRenderer接口的所有方法
-}
-
-export const GridProRendererInfo: RendererInfo = {
-  id: 'gridpro',
-  name: 'GridPro Renderer',
-  version: '1.0.0',
-  description: '高性能自研网格渲染器',
-  icon: 'grid-outline',
-  author: 'ThingsPanel Team',
-  capabilities: {
-    // ... 能力声明
+  // 实现所有BaseRenderer接口方法
+  async initialize(container: HTMLElement, config: RendererConfig): Promise<void> {
+    // 初始化逻辑
   }
+  
+  // ... 其他方法实现
 }
+
+// 创建渲染器实例
+const rendererInstance = new YourRendererImpl()
+
+// 暴露给父组件
+defineExpose({
+  renderer: rendererInstance
+})
+</script>
+
+<template>
+  <div class="your-renderer">
+    <!-- 渲染器UI实现 -->
+  </div>
+</template>
 ```
 
-### 2. 注册到渲染器工厂
+### 3. 创建专用工具栏（推荐折叠式设计）
+
+参考 KanbanToolbar 的折叠式设计，创建专用工具栏：
 
 ```typescript
-// 在PanelV2.vue中注册
-import { GridProRendererClass } from './renderers/gridpro/GridProRendererFactory'
+// toolbar/YourToolbar.vue
+<script setup lang="ts">
+import { ref } from 'vue'
+import { NPopover, NButton, NIcon, NTooltip } from 'naive-ui'
 
-// 注册渲染器
-rendererFactory.register('gridpro', GridProRendererClass)
+interface YourToolbarConfig {
+  // 定义工具栏配置项
+  option1: string
+  option2: number
+}
+
+const showConfigPanel = ref(false)  // 控制折叠面板显示
+
+const updateConfig = (key: keyof YourToolbarConfig, value: any) => {
+  emit('config-change', { [key]: value })
+}
+</script>
+
+<template>
+  <div class="your-toolbar flex items-center gap-2">
+    <!-- 主要配置弹出框（折叠式设计） -->
+    <NPopover
+      v-model:show="showConfigPanel"
+      trigger="click"
+      placement="bottom-start"
+    >
+      <template #trigger>
+        <NTooltip>
+          <template #trigger>
+            <NButton size="small">
+              <NIcon><ConfigIcon /></NIcon>
+            </NButton>
+          </template>
+          渲染器配置
+        </NTooltip>
+      </template>
+      
+      <div class="config-panel p-4 w-80">
+        <!-- 详细配置选项 -->
+      </div>
+    </NPopover>
+    
+    <!-- 快捷操作按钮 -->
+    <NTooltip>
+      <template #trigger>
+        <NButton size="small" @click="quickAction">
+          <NIcon><ActionIcon /></NIcon>
+        </NButton>
+      </template>
+      快捷操作
+    </NTooltip>
+  </div>
+</template>
+
+<style scoped>
+.your-toolbar {
+  padding: 0 8px;
+  border-left: 1px solid #e5e7eb;
+}
+
+.config-panel {
+  min-width: 280px;
+}
+</style>
 ```
 
-### 3. 更新工具栏支持
+### 4. 注册到系统
 
 ```typescript
-// 在toolbar/index.ts中添加配置类型
-export interface GridProToolbarConfig {
-  layoutMode: 'compact' | 'relaxed' | 'free'
-  animationSpeed: 'slow' | 'normal' | 'fast'
-  virtualization: boolean
-  performanceMode: 'quality' | 'performance'
+// 1. 在 PanelV2.vue 中注册渲染器
+import { YourRendererClass } from './renderers/your-renderer/YourRendererFactory'
+
+rendererFactory.register('your-renderer', YourRendererClass)
+
+// 2. 更新可用渲染器列表
+const availableRenderers = computed(() => [
+  { value: 'kanban', label: '看板', icon: 'grid' },
+  { value: 'your-renderer', label: '你的渲染器', icon: 'your-icon' },
+  // ...
+])
+
+// 3. 在 MainToolbar.vue 中添加工具栏支持
+const isYourRenderer = computed(() => currentRenderer === 'your-renderer')
+
+// 模板中添加
+<YourToolbar
+  v-else-if="isYourRenderer"
+  :config="yourConfig"
+  :readonly="readonly"
+  @config-change="handleYourConfigChange"
+/>
+```
+
+### 5. 工具栏配置类型定义
+
+```typescript
+// toolbar/index.ts 中添加配置类型
+export interface YourToolbarConfig {
+  option1: string
+  option2: number
+  enableFeature: boolean
+  // ... 其他配置项
 }
+
+// 导出工具栏组件
+export { default as YourToolbar } from './YourToolbar.vue'
 ```
 
 ## 开发工作流
@@ -513,20 +655,118 @@ pnpm test
 - 编写详细的JSDoc注释
 - 保持测试覆盖率在90%以上
 
+## Kanban 渲染器最佳实践案例
+
+### 折叠式工具栏设计理念
+
+Kanban 渲染器的工具栏设计是一个优秀的参考案例，体现了以下设计理念：
+
+**1. 空间效率优化**
+- 主要配置项收纳在弹出面板中，节省工具栏空间
+- 常用操作提供快捷按钮，提高操作效率
+- 通过图标和提示文字提供清晰的功能指示
+
+**2. 配置职责分离**
+```typescript
+// 工具栏专注渲染器配置
+interface KanbanToolbarConfig {
+  columns: number        // 网格列数
+  rowHeight: number      // 行高
+  margin: [number, number]  // 间距
+  showGrid: boolean      // 显示网格
+  enableSnap: boolean    // 自动对齐
+  compactType: 'vertical' | 'horizontal' | null  // 紧凑模式
+}
+
+// 右侧属性面板专注卡片配置
+interface CardConfig {
+  title: string          // 卡片标题
+  dataConfig: object     // 数据配置
+  styleConfig: object    // 样式配置
+  // ... 卡片特有属性
+}
+```
+
+**3. 用户体验优化**
+- 弹出面板提供详细配置选项
+- 快捷按钮支持一键切换常用功能
+- 实时预览配置变更效果
+
+### 数据适配器模式
+
+Kanban 渲染器使用 `BaseCanvasKanbanAdapter` 实现数据格式转换：
+
+```typescript
+// 统一的数据转换接口
+class BaseCanvasKanbanAdapter {
+  // BaseCanvasItem -> GridLayoutItem
+  toGridFormat(items: BaseCanvasItem[]): GridLayoutItem[]
+  
+  // GridLayoutItem -> BaseCanvasItem
+  fromGridFormat(gridItems: GridLayoutItem[], originalItems: BaseCanvasItem[]): BaseCanvasItem[]
+  
+  // 位置计算和碰撞检测
+  calculateNewItemPosition(existingItems: GridLayoutItem[], newItemSize: { w: number, h: number })
+  isPositionAvailable(existingItems: GridLayoutItem[], testItem: Rectangle)
+}
+```
+
+### 事件系统集成
+
+Kanban 渲染器展示了完整的事件处理机制：
+
+```typescript
+// 1. 内部事件处理
+const handleLayoutChange = (newLayout: GridLayoutItem[]) => {
+  layout.value = newLayout
+  const updatedItems = kanbanAdapter.fromGridFormat(newLayout, props.items)
+  emit('layout-change', updatedItems)
+  canvasStore.setItems(updatedItems)
+}
+
+// 2. 全局事件总线
+eventBus.on('kanban:config-change', handleConfigChange)
+
+// 3. 拖拽服务集成
+dragDropService.registerDropZone({
+  id: dropZoneId,
+  accepts: ['card', 'component'],
+  element: containerRef.value,
+  onDrop: handleDrop
+})
+```
+
 ## 常见问题解答
 
 ### Q: 如何处理大量组件的性能问题？
-A: 使用虚拟化技术，配合Intersection Observer API只渲染可视区域的组件。
+A: 使用虚拟化技术，配合Intersection Observer API只渲染可视区域的组件。参考 GridPro 渲染器的虚拟化实现。
 
 ### Q: 如何确保跨浏览器兼容性？
-A: 使用现代Web API时检查浏览器支持，提供降级方案。
+A: 使用现代Web API时检查浏览器支持，提供降级方案。推荐使用 @vueuse/core 提供的兼容性工具。
 
 ### Q: 如何调试渲染器性能问题？
-A: 使用浏览器开发者工具的Performance面板，配合自定义性能标记。
+A: 使用浏览器开发者工具的Performance面板，配合自定义性能标记。GridPro 渲染器提供了性能监控面板。
 
 ### Q: 如何处理触摸设备的交互？
-A: 使用Pointer Events API统一处理所有输入类型，避免分别处理鼠标和触摸事件。
+A: 使用Pointer Events API统一处理所有输入类型，避免分别处理鼠标和触摸事件。参考 useGridProGesture 的实现。
+
+### Q: 工具栏配置和卡片配置如何分工？
+A: **工具栏专注渲染器级别的配置**（如网格设置、布局模式），**右侧属性面板专注单个卡片的配置**（如数据源、样式）。这样职责清晰，用户体验更好。
+
+### Q: 如何实现折叠式工具栏？
+A: 参考 KanbanToolbar 的设计：
+1. 使用 NPopover 组件创建弹出配置面板
+2. 主要配置项放在弹出面板中
+3. 常用操作提供快捷按钮
+4. 通过图标和提示文字提供清晰指示
 
 ---
 
 本文档将持续更新，欢迎贡献改进建议和最佳实践案例。
+
+## 参考实现
+
+- **完整实现**: `src/components/panelv2/renderers/kanban/` - Kanban 渲染器
+- **开发中**: `src/components/panelv2/renderers/gridpro/` - GridPro 渲染器
+- **工具栏设计**: `src/components/panelv2/toolbar/KanbanToolbar.vue` - 折叠式工具栏
+- **数据适配**: `src/components/panelv2/renderers/kanban/adapters/BaseCanvasKanbanAdapter.ts`

@@ -4,6 +4,7 @@
 -->
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
+import { useThemeStore } from '@/store/modules/theme'
 import type { 
   BaseRenderer, 
   RendererConfig, 
@@ -44,6 +45,14 @@ const emit = defineEmits<Emits>()
 
 // Store
 const canvasStore = useCanvasStore()
+
+// 主题支持
+const themeStore = useThemeStore()
+const visualColors = computed(() => ({
+  primaryText: themeStore.isDark ? '#e5e7eb' : '#1a1a1a',
+  secondaryText: themeStore.isDark ? '#9ca3af' : '#666',
+  tertiaryText: themeStore.isDark ? '#6b7280' : '#555'
+}))
 
 // Refs
 const containerRef = ref<HTMLElement>()
@@ -541,7 +550,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="visualization-renderer-placeholder">
+  <div 
+    class="visualization-renderer-placeholder"
+    :style="{
+      '--primary-text': visualColors.primaryText,
+      '--secondary-text': visualColors.secondaryText,
+      '--tertiary-text': visualColors.tertiaryText
+    }"
+  >
     <div class="coming-soon-content">
       <div class="coming-soon-icon">
         <div class="icon-large">📊</div>
@@ -609,19 +625,21 @@ onUnmounted(() => {
 .coming-soon-title {
   font-size: 32px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--primary-text);
   margin: 0 0 16px 0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  transition: color 0.3s ease;
 }
 
 .coming-soon-description {
   font-size: 16px;
-  color: #666;
+  color: var(--secondary-text);
   margin: 0 0 32px 0;
   line-height: 1.6;
+  transition: color 0.3s ease;
 }
 
 .features-preview {
@@ -639,8 +657,8 @@ onUnmounted(() => {
   background: #f8f9fa;
   border-radius: 8px;
   font-size: 14px;
-  color: #555;
-  transition: all 0.2s ease;
+  color: var(--tertiary-text);
+  transition: all 0.2s ease, color 0.3s ease;
 }
 
 .feature-item:hover {

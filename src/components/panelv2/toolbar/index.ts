@@ -5,18 +5,10 @@
 
 export { default as MainToolbar } from './MainToolbar.vue'
 export { default as CommonToolbar } from './CommonToolbar.vue'
-export { default as KanbanToolbar } from './KanbanToolbar.vue'
 export { default as VisualizationToolbar } from './VisualizationToolbar.vue'
 
-// 工具栏配置类型
-export interface KanbanToolbarConfig {
-  columns: number
-  rowHeight: number
-  margin: [number, number]
-  showGrid: boolean
-  enableSnap: boolean
-  compactType: 'vertical' | 'horizontal' | null
-}
+// 重新导出看板工具栏
+export { KanbanToolbar, type KanbanToolbarConfig } from '../renderers/kanban'
 
 export interface VisualizationToolbarConfig {
   zoom: number
@@ -30,10 +22,10 @@ export interface VisualizationToolbarConfig {
 export interface ToolbarEvents {
   'mode-change': (mode: 'edit' | 'preview') => void
   'renderer-change': (rendererId: string) => void
-  'save': () => void
-  'undo': () => void
-  'redo': () => void
-  'reset': () => void
+  save: () => void
+  undo: () => void
+  redo: () => void
+  reset: () => void
   'kanban-config-change': (config: Partial<KanbanToolbarConfig>) => void
   'visualization-config-change': (config: Partial<VisualizationToolbarConfig>) => void
   'zoom-in': () => void

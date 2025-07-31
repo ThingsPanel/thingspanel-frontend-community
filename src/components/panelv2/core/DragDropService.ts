@@ -3,6 +3,21 @@
  * 统一处理拖拽功能，支持从组件面板拖拽卡片到各种渲染器
  */
 
+// 主题感知的颜色获取函数
+function getThemeColors() {
+  // 检查当前是否为深色主题
+  const isDark =
+    document.documentElement.classList.contains('dark') ||
+    document.body.classList.contains('dark') ||
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+
+  return {
+    borderColor: isDark ? '#3b82f6' : '#1890ff',
+    textColor: isDark ? '#3b82f6' : '#1890ff',
+    shadowColor: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(24, 144, 255, 0.3)'
+  }
+}
+
 export interface DragData {
   type: 'card' | 'component' | 'item'
   source: 'component-panel' | 'canvas' | 'external'
@@ -18,8 +33,8 @@ export interface DropZone {
   id: string
   accepts: string[]
   element: HTMLElement
-  onDrop: (data: DragData, position: { x: number, y: number }) => void
-  onDragOver?: (data: DragData, position: { x: number, y: number }) => boolean
+  onDrop: (data: DragData, position: { x: number; y: number }) => void
+  onDragOver?: (data: DragData, position: { x: number; y: number }) => boolean
   onDragEnter?: (data: DragData) => void
   onDragLeave?: (data: DragData) => void
 }
@@ -65,7 +80,7 @@ export class DragDropService {
   private setupDropZoneListeners(dropZone: DropZone) {
     const element = dropZone.element
 
-    element.addEventListener('dragenter', (e) => {
+    element.addEventListener('dragenter', e => {
       e.preventDefault()
       if (this.currentDrag && this.canAcceptDrag(dropZone, this.currentDrag)) {
         element.classList.add('drag-over')
@@ -73,7 +88,7 @@ export class DragDropService {
       }
     })
 
-    element.addEventListener('dragleave', (e) => {
+    element.addEventListener('dragleave', e => {
       e.preventDefault()
       // 只有当鼠标真正离开dropZone时才触发dragleave
       if (!element.contains(e.relatedTarget as Node)) {
@@ -84,7 +99,7 @@ export class DragDropService {
       }
     })
 
-    element.addEventListener('dragover', (e) => {
+    element.addEventListener('dragover', e => {
       e.preventDefault()
       if (this.currentDrag && this.canAcceptDrag(dropZone, this.currentDrag)) {
         const rect = element.getBoundingClientRect()
@@ -92,7 +107,7 @@ export class DragDropService {
           x: e.clientX - rect.left,
           y: e.clientY - rect.top
         }
-        
+
         const canDrop = dropZone.onDragOver?.(this.currentDrag, position) ?? true
         if (canDrop) {
           e.dataTransfer!.dropEffect = 'copy'
@@ -102,17 +117,17 @@ export class DragDropService {
       }
     })
 
-    element.addEventListener('drop', (e) => {
+    element.addEventListener('drop', e => {
       e.preventDefault()
       element.classList.remove('drag-over')
-      
+
       if (this.currentDrag && this.canAcceptDrag(dropZone, this.currentDrag)) {
         const rect = element.getBoundingClientRect()
         const position = {
           x: e.clientX - rect.left,
           y: e.clientY - rect.top
         }
-        
+
         dropZone.onDrop(this.currentDrag, position)
       }
     })
@@ -131,7 +146,7 @@ export class DragDropService {
   // 开始拖拽
   startDrag(data: DragData, event: DragEvent) {
     this.currentDrag = data
-    
+
     // 设置拖拽数据
     if (event.dataTransfer) {
       event.dataTransfer.setData('application/json', JSON.stringify(data))
@@ -151,6 +166,7 @@ export class DragDropService {
 
   private createDragPreview(data: DragData, event: DragEvent) {
     if (data.preview && event.dataTransfer) {
+      const colors = getThemeColors()
       const preview = document.createElement('div')
       preview.className = 'drag-preview'
       preview.style.cssText = `
@@ -158,23 +174,24 @@ export class DragDropService {
         top: -1000px;
         left: -1000px;
         background: white;
-        border: 2px solid #1890ff;
+        border: 2px solid ${colors.borderColor};
         border-radius: 8px;
         padding: 8px 12px;
         font-size: 14px;
-        color: #1890ff;
-        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+        color: ${colors.textColor};
+        box-shadow: 0 4px 12px ${colors.shadowColor};
         pointer-events: none;
         z-index: 9999;
+        transition: all 0.3s ease;
       `
       preview.textContent = data.cardName || data.cardId || 'Component'
-      
+
       document.body.appendChild(preview)
       this.dragPreview = preview
-      
+
       // 设置拖拽预览图像
       event.dataTransfer.setDragImage(preview, 60, 20)
-      
+
       // 延迟移除预览元素
       setTimeout(() => {
         if (this.dragPreview) {
@@ -202,7 +219,7 @@ export class DragDropService {
   private handleGlobalDragEnd(e: DragEvent) {
     // 清理拖拽状态
     this.currentDrag = null
-    
+
     // 移除所有投放区域的样式
     this.dropZones.forEach(dropZone => {
       dropZone.element.classList.remove('can-drop', 'drag-over')

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
+import { useThemeStore } from '@/store/modules/theme'
 
 interface Props {
   mode?: 'edit' | 'preview'
@@ -23,7 +24,20 @@ const emit = defineEmits<{
 }>()
 
 const slots = useSlots()
+const themeStore = useThemeStore()
 const isEditMode = computed(() => props.mode === 'edit')
+
+// 主题颜色计算属性
+const themeColors = computed(() => {
+  const isDark = themeStore.darkMode
+  return {
+    '--panel-bg': isDark ? '#1f1f1f' : '#f8fafc',
+    '--panel-border': isDark ? '#404040' : '#e0e0e0',
+    '--panel-shadow': isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
+    '--toolbar-bg': isDark ? '#1f2937' : '#f8fafc',
+    '--sidebar-bg': isDark ? '#252525' : '#fafafa'
+  }
+})
 
 // 插槽存在性检查
 const hasToolbar = computed(() => !!slots.toolbar)
@@ -56,36 +70,37 @@ defineExpose({
 </script>
 
 <template>
-  <div class="panel-layout h-full w-full flex flex-col bg-gray-50 dark:bg-gray-900">
+  <div class="panel-layout h-full w-full flex flex-col" :style="themeColors">
     <!-- 工具栏区域 - 仅当编辑模式且有插槽内容时显示 -->
     <div
       v-if="showToolbar"
-      class="toolbar-area flex-shrink-0 h-12 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 flex items-center justify-between transition-all duration-300"
+      class="toolbar-area flex-shrink-0 h-12 px-4 flex items-center justify-between transition-all duration-300"
+      style="background-color: var(--toolbar-bg); border-bottom: 1px solid var(--panel-border);"
     >
       <slot name="toolbar" :mode="props.mode" :isEditMode="isEditMode" />
     </div>
 
     <!-- 主内容区域 -->
-    <div class="main-content flex-1 flex overflow-hidden">
+    <div class="main-content flex-1 flex overflow-hidden" style="background-color: var(--panel-bg);">
       <!-- 左侧区域 - 仅当编辑模式、有插槽内容且未收起时显示 -->
       <div
         v-if="showLeft"
-        class="left-area flex-shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-auto transition-all duration-300"
-        :style="{ width: `${leftWidth}px` }"
+        class="left-area flex-shrink-0 overflow-auto transition-all duration-300"
+        :style="{ width: `${leftWidth}px`, backgroundColor: 'var(--sidebar-bg)', borderRight: '1px solid var(--panel-border)' }"
       >
         <slot name="left" :mode="props.mode" :isEditMode="isEditMode" />
       </div>
 
       <!-- 中央看板区域 - 始终显示 -->
-      <div class="main-area flex-1 bg-gray-100 dark:bg-gray-800 overflow-auto transition-all duration-300">
+      <div class="main-area flex-1 overflow-auto transition-all duration-300" style="background-color: var(--panel-bg);">
         <slot name="main" :mode="props.mode" :isEditMode="isEditMode" />
       </div>
 
       <!-- 右侧区域 - 仅当编辑模式、有插槽内容且未收起时显示 -->
       <div
         v-if="showRight"
-        class="right-area flex-shrink-0 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 overflow-auto transition-all duration-300"
-        :style="{ width: `${rightWidth}px` }"
+        class="right-area flex-shrink-0 overflow-auto transition-all duration-300"
+        :style="{ width: `${rightWidth}px`, backgroundColor: 'var(--sidebar-bg)', borderLeft: '1px solid var(--panel-border)' }"
       >
         <slot name="right" :mode="props.mode" :isEditMode="isEditMode" />
       </div>

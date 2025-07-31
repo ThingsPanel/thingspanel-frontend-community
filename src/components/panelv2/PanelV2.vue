@@ -4,6 +4,9 @@
 -->
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick, provide } from 'vue'
+import { useMessage } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
+import { useThemeStore } from '@/store/modules/theme'
 import PanelLayout from './layout/PanelLayout.vue'
 import KanbanRenderer from './renderers/kanban/KanbanRenderer.vue'
 import VisualizationRenderer from './renderers/visualization/VisualizationRenderer.vue'
@@ -17,6 +20,7 @@ import { KanbanRenderer as KanbanRendererClass } from './renderers/kanban/Kanban
 import { GridProRendererImpl } from './renderers/gridpro/GridProRendererFactory'  
 import { LegacyPanelAdapter } from './adapters/LegacyAdapter'
 import eventBus from './core/EventBus'
+import { PostBoard, PutBoard } from '@/service/api/panel'
 import { GridOutline, DesktopOutline, WarningOutline, HelpOutline, AppsOutline } from '@vicons/ionicons5'
 import type { BaseCanvasItem, PanelConfig } from './types/core'
 import type { LegacyCardView } from './types/adapters'
@@ -24,6 +28,8 @@ import type { RendererInfo } from './types/renderer'
 
 // Props
 interface Props {
+  // 面板ID
+  panelId?: string
   // 面板数据
   panelData?: any
   // 初始模式
@@ -34,6 +40,10 @@ interface Props {
   config?: Partial<PanelConfig>
   // 只读模式
   readonly?: boolean
+  // 面板名称
+  panelName?: string
+  // 是否为首页面板
+  homeFlag?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -55,6 +65,14 @@ const emit = defineEmits<Emits>()
 
 // Store
 const canvasStore = useCanvasStore()
+const themeStore = useThemeStore()
+
+// 工具函数
+const message = useMessage()
+const { t } = useI18n()
+
+// 保存状态
+const isSaving = ref(false)
 
 // 响应式状态
 const currentMode = ref<'edit' | 'preview'>(props.mode)
@@ -71,7 +89,10 @@ const kanbanConfig = ref<Partial<KanbanToolbarConfig>>({
   margin: [10, 10],
   showGrid: true,
   enableSnap: true,
-  compactType: 'vertical'
+  compactType: 'vertical',
+  preventCollision: false,
+  enableDrag: true,
+  enableResize: true
 })
 
 const visualizationConfig = ref<Partial<VisualizationToolbarConfig>>({
@@ -122,6 +143,19 @@ const availableRenderers = computed(() => [
 const currentRendererInfo = computed(() => 
   availableRenderers.value.find(r => r.value === currentRenderer.value)
 )
+
+// 主题颜色计算属性
+const themeColors = computed(() => {
+  const isDark = themeStore.darkMode
+  return {
+    '--canvas-bg-color': isDark ? '#1a1a1a' : '#f5f5f5',
+    '--primary-text': isDark ? '#ffffff' : '#333333',
+    '--secondary-text': isDark ? '#cccccc' : '#666666',
+    '--border-color': isDark ? '#404040' : '#e0e0e0',
+    '--hover-bg': isDark ? '#2a2a2a' : '#f0f0f0',
+    '--section-bg': isDark ? '#2a2a2a' : '#f8f9fa'
+  }
+})
 
 
 // 渲染器切换
@@ -192,23 +226,68 @@ const processLegacyData = (data: any): BaseCanvasItem[] => {
 }
 
 // 保存面板配置
-const savePanelConfig = () => {
-  const config: PanelConfig = {
-    panelId: props.config?.panelId || 'default',
-    title: props.config?.title || 'New Panel',
-    theme: props.config?.theme || 'default',
-    canvasState: canvasStore.canvasState,
-    rendererType: currentRenderer.value,
-    version: '2.0.0',
-    metadata: {
-      createdAt: props.config?.metadata?.createdAt || Date.now(),
-      updatedAt: Date.now(),
-      author: props.config?.metadata?.author
-    }
-  }
+const savePanelConfig = async () => {
+  if (isSaving.value) return
   
-  emit('save', config)
-  eventBus.emit('panel:save', { data: config })
+  isSaving.value = true
+  try {
+    const config: PanelConfig = {
+      panelId: props.panelId || props.config?.panelId || 'default',
+      title: props.panelName || props.config?.title || 'New Panel',
+      theme: props.config?.theme || 'default',
+      canvasState: canvasStore.canvasState,
+      rendererType: currentRenderer.value,
+      version: '2.0.0',
+      metadata: {
+        createdAt: props.config?.metadata?.createdAt || Date.now(),
+        updatedAt: Date.now(),
+        author: props.config?.metadata?.author
+      }
+    }
+    
+    // 序列化配置数据
+    const configStr = JSON.stringify({
+      canvasState: canvasStore.canvasState,
+      rendererType: currentRenderer.value,
+      kanbanConfig: kanbanConfig.value,
+      visualizationConfig: visualizationConfig.value,
+      gridProConfig: gridProConfig.value
+    })
+    
+    // 准备API参数
+    const apiParams = {
+      name: props.panelName || config.title,
+      config: configStr,
+      home_flag: props.homeFlag || 'N'
+    }
+    
+    // 根据是否有ID决定新增还是修改
+    let result
+    if (props.panelId) {
+      // 修改
+      result = await PutBoard({
+        id: props.panelId,
+        ...apiParams
+      })
+    } else {
+      // 新增
+      result = await PostBoard(apiParams)
+    }
+    
+    if (!result.error) {
+      message.success(t('page.dataForward.saveSuccess') || '保存成功')
+      emit('save', config)
+      eventBus.emit('panel:save', { data: config })
+    } else {
+      message.error(t('page.dataForward.saveFailed') || '保存失败')
+      console.error('Failed to save panel:', result.error)
+    }
+  } catch (err) {
+    message.error(t('page.dataForward.saveFailed') || '保存失败')
+    console.error('Error saving panel:', err)
+  } finally {
+    isSaving.value = false
+  }
 }
 
 // 重置面板
@@ -319,7 +398,7 @@ provide('rendererManager', rendererManager)
 </script>
 
 <template>
-  <div class="panelv2-container h-full w-full">
+  <div class="panelv2-container h-full w-full" :style="themeColors">
     <PanelLayout
       :mode="currentMode"
       :left-collapsed="leftCollapsed"
@@ -336,6 +415,7 @@ provide('rendererManager', rendererManager)
           :kanban-config="kanbanConfig"
           :visualization-config="visualizationConfig"
           :readonly="readonly"
+          :is-saving="isSaving"
           @mode-change="handleModeChange"
           @renderer-change="switchRenderer"
           @save="handleSave"
@@ -358,7 +438,7 @@ provide('rendererManager', rendererManager)
           v-if="isEditMode"
           :current-renderer="currentRenderer"
         />
-        <div v-else class="flex items-center justify-center h-full text-gray-500">
+        <div v-else class="flex items-center justify-center h-full" style="color: var(--secondary-text);">
           预览模式下不显示组件库
         </div>
       </template>
@@ -373,7 +453,7 @@ provide('rendererManager', rendererManager)
           >
             <div class="text-center">
               <div class="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
-              <div class="text-sm text-gray-600">切换渲染器中...</div>
+              <div class="text-sm" style="color: var(--secondary-text);">切换渲染器中...</div>
             </div>
           </div>
 
@@ -430,9 +510,9 @@ provide('rendererManager', rendererManager)
             <div v-else-if="currentRenderer === 'visualization'" class="flex items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-100">
               <div class="text-center p-8">
                 <div class="text-6xl mb-4">🚧</div>
-                <div class="text-2xl font-bold text-gray-700 mb-2">敬请期待</div>
-                <div class="text-gray-500 mb-4">可视化大屏渲染器正在开发中...</div>
-                <div class="text-sm text-gray-400">
+                <div class="text-2xl font-bold mb-2" style="color: var(--primary-text);">敬请期待</div>
+                <div class="mb-4" style="color: var(--secondary-text);">可视化大屏渲染器正在开发中...</div>
+                <div class="text-sm" style="color: var(--secondary-text);">
                   请使用看板模式体验拖拽功能
                 </div>
               </div>
@@ -441,10 +521,10 @@ provide('rendererManager', rendererManager)
             <!-- 默认渲染器或未知渲染器 -->
             <div v-else class="flex items-center justify-center h-full">
               <div class="text-center">
-                <NIcon class="text-4xl text-gray-400 mb-2">
+                <NIcon class="text-4xl mb-2" style="color: var(--secondary-text);">
                   <HelpOutline />
                 </NIcon>
-                <div class="text-lg text-gray-500">未知的渲染器类型: {{ currentRenderer }}</div>
+                <div class="text-lg" style="color: var(--secondary-text);">未知的渲染器类型: {{ currentRenderer }}</div>
               </div>
             </div>
           </div>
@@ -454,15 +534,15 @@ provide('rendererManager', rendererManager)
       <!-- 右侧属性面板插槽 -->
       <template #right="{ isEditMode }">
         <div class="property-panel h-full flex flex-col">
-          <div class="p-4 border-b border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-800">属性面板</h3>
-            <p class="text-sm text-gray-600 mt-1">配置选中组件的属性</p>
+          <div class="p-4 border-b" style="border-color: var(--border-color);">
+            <h3 class="text-lg font-semibold" style="color: var(--primary-text);">属性面板</h3>
+            <p class="text-sm mt-1" style="color: var(--secondary-text);">配置选中组件的属性</p>
           </div>
           
           <div class="flex-1 p-4">
             <!-- 选中项目信息 -->
             <div v-if="canvasStore.hasSelection" class="space-y-4">
-              <div class="text-sm font-medium text-gray-700">
+              <div class="text-sm font-medium" style="color: var(--primary-text);">
                 已选中 {{ canvasStore.selectedItems.length }} 个组件
               </div>
               
@@ -471,13 +551,13 @@ provide('rendererManager', rendererManager)
                 <div
                   v-for="item in canvasStore.selectedItems"
                   :key="item.id"
-                  class="p-3 bg-gray-50 rounded"
+                  class="p-3 rounded" style="background-color: var(--section-bg);"
                 >
                   <div class="font-medium text-sm">{{ item.cardData.title || item.id }}</div>
-                  <div class="text-xs text-gray-500 mt-1">
+                  <div class="text-xs mt-1" style="color: var(--secondary-text);">
                     位置: {{ Math.round(item.position.x) }}, {{ Math.round(item.position.y) }}
                   </div>
-                  <div class="text-xs text-gray-500">
+                  <div class="text-xs" style="color: var(--secondary-text);">
                     尺寸: {{ item.size.width }} × {{ item.size.height }}
                   </div>
                 </div>
@@ -485,7 +565,7 @@ provide('rendererManager', rendererManager)
             </div>
             
             <!-- 未选中状态 -->
-            <div v-else class="text-center text-gray-500">
+            <div v-else class="text-center" style="color: var(--secondary-text);">
               <NIcon class="text-2xl mb-2">
                 <AppsOutline />
               </NIcon>
@@ -499,12 +579,9 @@ provide('rendererManager', rendererManager)
 </template>
 
 <style scoped>
-.panelv2-container {
-  --canvas-bg-color: #f5f5f5;
-}
-
 .renderer-container {
   background-color: var(--canvas-bg-color);
+  transition: background-color 0.3s ease;
 }
 
 .component-item {
@@ -513,6 +590,7 @@ provide('rendererManager', rendererManager)
 
 .component-item:hover {
   transform: translateY(-1px);
+  background-color: var(--hover-bg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 

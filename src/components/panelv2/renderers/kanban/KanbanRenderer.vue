@@ -5,6 +5,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { GridLayout, GridItem } from 'vue3-grid-layout'
+import { useThemeStore } from '@/store/modules/theme'
 import type { 
   BaseRenderer, 
   RendererConfig, 
@@ -50,6 +51,22 @@ const emit = defineEmits<Emits>()
 
 // Store
 const canvasStore = useCanvasStore()
+
+// 主题支持
+const themeStore = useThemeStore()
+const kanbanColors = computed(() => ({
+  // 拖拽相关颜色
+  dragHighlight: themeStore.isDark ? 'rgba(59, 130, 246, 0.05)' : 'rgba(24, 144, 255, 0.05)',
+  dragActive: themeStore.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(24, 144, 255, 0.1)',
+  dragHover: themeStore.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(24, 144, 255, 0.08)',
+  
+  // 边框颜色
+  borderActive: themeStore.isDark ? '#3b82f6' : '#1890ff',
+  
+  // 文字颜色
+  primaryText: themeStore.isDark ? '#e5e7eb' : '#262626',
+  secondaryText: themeStore.isDark ? '#9ca3af' : '#595959'
+}))
 
 // Refs
 const containerRef = ref<HTMLElement>()
@@ -629,6 +646,14 @@ onUnmounted(() => {
   <div
     ref="containerRef"
     class="kanban-renderer"
+    :style="{
+      '--drag-highlight': kanbanColors.dragHighlight,
+      '--drag-active': kanbanColors.dragActive,
+      '--drag-hover': kanbanColors.dragHover,
+      '--border-active': kanbanColors.borderActive,
+      '--primary-text': kanbanColors.primaryText,
+      '--secondary-text': kanbanColors.secondaryText
+    }"
     @click="handleContainerClick"
   >
     <GridLayout
@@ -714,17 +739,20 @@ onUnmounted(() => {
 
 /* 拖拽状态样式 */
 .kanban-renderer.can-drop {
-  background-color: rgba(24, 144, 255, 0.05);
+  background-color: var(--drag-highlight);
+  transition: background-color 0.3s ease;
 }
 
 .kanban-renderer.drag-over {
-  background-color: rgba(24, 144, 255, 0.1) !important;
-  box-shadow: inset 0 0 0 2px rgba(24, 144, 255, 0.3);
+  background-color: var(--drag-active) !important;
+  box-shadow: inset 0 0 0 2px var(--border-active);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .kanban-renderer.drag-over-active {
-  background-color: rgba(24, 144, 255, 0.08) !important;
-  box-shadow: inset 0 0 0 1px rgba(24, 144, 255, 0.2);
+  background-color: var(--drag-hover) !important;
+  box-shadow: inset 0 0 0 1px var(--border-active);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .grid-item-content {
@@ -739,8 +767,9 @@ onUnmounted(() => {
 }
 
 .grid-item-selected .grid-item-content {
-  box-shadow: 0 0 0 2px #1890ff;
-  border-color: #1890ff;
+  box-shadow: 0 0 0 2px var(--border-active);
+  border-color: var(--border-active);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .grid-item-dragging .grid-item-content {
@@ -769,13 +798,15 @@ onUnmounted(() => {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
-  color: #262626;
+  color: var(--primary-text);
+  transition: color 0.3s ease;
 }
 
 .card-body {
   flex: 1;
   font-size: 14px;
-  color: #595959;
+  color: var(--secondary-text);
+  transition: color 0.3s ease;
 }
 
 .card-body p {
@@ -807,7 +838,7 @@ onUnmounted(() => {
 }
 
 :deep(.vue-grid-item.vue-grid-placeholder) {
-  background: #1890ff;
+  background: var(--border-active);
   opacity: 0.2;
   transition-duration: 100ms;
   z-index: 2;
@@ -830,7 +861,8 @@ onUnmounted(() => {
 }
 
 :deep(.vue-resizable-handle:hover) {
-  background-color: rgba(24, 144, 255, 0.1);
+  background-color: var(--drag-active);
+  transition: background-color 0.3s ease;
 }
 
 /* 网格显示样式 */
