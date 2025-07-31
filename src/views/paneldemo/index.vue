@@ -142,6 +142,7 @@ const handleRendererChange = (rendererId: string) => {
 const handleDataChange = (items: BaseCanvasItem[]) => {
   console.log('Panel data changed:', items)
   // 可以在这里保存数据到后端
+  // 注意：为避免无限更新循环，不应在此处将 items 数据直接赋值回 panelData prop。
 }
 
 const handleSave = (config: PanelConfig) => {

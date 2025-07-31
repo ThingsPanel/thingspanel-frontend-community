@@ -211,14 +211,14 @@ const savePanel = async () => {
   }
 }
 
-watch(
-  () => layout,
-  newLayout => {
-    logger.info(newLayout)
-    throttledWatcher()
-  },
-  { deep: true }
-)
+// watch(
+//   () => layout,
+//   newLayout => {
+//     logger.info(newLayout)
+//     throttledWatcher()
+//   },
+//   { deep: true }
+// )
 
 onMounted(() => {
   fetchBroad()
