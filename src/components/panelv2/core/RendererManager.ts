@@ -1,14 +1,14 @@
 /**
  * Renderer Manager Implementation
  * 渲染器管理器实现，负责渲染器的生命周期管理和切换
- * 
+ *
  * 新增功能：
  * - 自动注册渲染器
  * - 动态加载渲染器模块
  * - 渲染器热重载
  */
 
-import type { 
+import type {
   RendererManager as IRendererManager,
   BaseRenderer,
   RendererInfo,
@@ -36,12 +36,12 @@ export class RendererManager implements IRendererManager {
     this.factory = factory || new RendererFactory()
     this.autoRegistry = rendererAutoRegistry
     this.autoRegisterEnabled = autoRegister
-    
+
     // 设置自动注册器的工厂
     this.autoRegistry.setFactory(this.factory)
-    
+
     this.setupEventListeners()
-    
+
     // 移除构造函数中的自动初始化，统一在initialize方法中处理
     console.log('RendererManager: Constructor completed, auto register will be handled in initialize()')
   }
@@ -56,26 +56,31 @@ export class RendererManager implements IRendererManager {
         count: this.factory.getCount(),
         registeredIds: this.factory.getRegisteredIds()
       })
-      
+
       // 添加内置渲染器配置
-      console.log('[RendererManager] 添加渲染器配置:', renderersConfig.map(c => c.id))
+      console.log(
+        '[RendererManager] 添加渲染器配置:',
+        renderersConfig.map(c => c.id)
+      )
       this.autoRegistry.addRenderers(renderersConfig)
-      
+
       // 注册所有启用的渲染器
       console.log('[RendererManager] 开始注册所有启用的渲染器...')
       const result = await this.autoRegistry.registerAll()
-      
-      console.log(`[RendererManager] 渲染器自动注册完成: 成功 ${result.success.length} 个，失败 ${result.failed.length} 个`)
+
+      console.log(
+        `[RendererManager] 渲染器自动注册完成: 成功 ${result.success.length} 个，失败 ${result.failed.length} 个`
+      )
       console.log('[RendererManager] 成功注册的渲染器:', result.success)
       console.log('[RendererManager] 注册后工厂状态:', {
         count: this.factory.getCount(),
         registeredIds: this.factory.getRegisteredIds()
       })
-      
+
       if (result.failed.length > 0) {
         console.warn('[RendererManager] 以下渲染器注册失败:', result.failed)
       }
-      
+
       // 发射注册完成事件
       this.eventBus.emit('renderer-manager:auto-register-complete', result)
     } catch (error) {
@@ -92,7 +97,7 @@ export class RendererManager implements IRendererManager {
       console.warn('自动注册已禁用，无法手动注册渲染器')
       return false
     }
-    
+
     try {
       const success = await this.autoRegistry.registerRenderer(id)
       if (success) {
@@ -113,19 +118,19 @@ export class RendererManager implements IRendererManager {
       console.warn('自动注册已禁用，无法重新加载渲染器')
       return false
     }
-    
+
     try {
       // 注销现有渲染器
       this.factory.unregister(id)
-      
+
       // 重新注册
       const success = await this.autoRegistry.registerRenderer(id)
-      
+
       if (success) {
         console.log(`渲染器 ${id} 重新加载成功`)
         this.eventBus.emit('renderer-manager:renderer-reloaded', { id })
       }
-      
+
       return success
     } catch (error) {
       console.error(`重新加载渲染器 ${id} 失败:`, error)
@@ -161,7 +166,7 @@ export class RendererManager implements IRendererManager {
 
     this.currentRenderer = renderer
     this.setupRendererEventForwarding(renderer)
-    
+
     // 发射渲染器切换事件
     this.eventBus.emit('renderer:ready', { rendererId: renderer.id })
   }
@@ -172,54 +177,53 @@ export class RendererManager implements IRendererManager {
   async switchRenderer(id: string, config?: RendererConfig): Promise<void> {
     try {
       console.log(`Switching to renderer: ${id}`)
-      
+
       // 保存当前数据
       const currentData = this.currentRenderer?.getData() || []
       const fromId = this.currentRenderer?.id || 'none'
-      
+
       // 销毁当前渲染器
       if (this.currentRenderer) {
         await this.destroyCurrentRenderer()
       }
-      
+
       // 创建新渲染器
       const newRenderer = this.factory.create(id, config)
-      
+
       // 初始化新渲染器
       if (this.container) {
         await newRenderer.initialize(this.container, config || {})
       }
-      
+
       // 设置为当前渲染器
       this.setCurrentRenderer(newRenderer)
-      
+
       // 恢复数据到新渲染器
       if (currentData.length > 0) {
         newRenderer.setData(currentData)
       }
-      
+
       // 渲染
       newRenderer.render()
-      
+
       // 发射切换完成事件
       this.eventBus.emit('renderer:switch', {
         fromId,
         toId: id,
         config
       })
-      
+
       console.log(`Successfully switched to renderer: ${id}`)
-      
     } catch (error) {
       const errorMsg = `Failed to switch to renderer ${id}: ${error}`
       console.error(errorMsg)
-      
+
       // 发射错误事件
       this.eventBus.emit('renderer:error', {
         rendererId: id,
         error: error as Error
       })
-      
+
       throw new Error(errorMsg)
     }
   }
@@ -271,14 +275,14 @@ export class RendererManager implements IRendererManager {
     }
 
     this.container = container
-    
+
     // 如果启用了自动注册，则初始化自动注册系统
     if (this.autoRegisterEnabled) {
       await this.initializeAutoRegistry()
     }
-    
+
     this.isInitialized = true
-    
+
     console.log('RendererManager initialized successfully')
   }
 
@@ -294,11 +298,11 @@ export class RendererManager implements IRendererManager {
     if (this.currentRenderer) {
       await this.destroyCurrentRenderer()
     }
-    
+
     // 清理资源
     this.container = null
     this.isInitialized = false
-    
+
     console.log('RendererManager destroyed successfully')
   }
 
@@ -377,7 +381,7 @@ export class RendererManager implements IRendererManager {
   updateCurrentConfig(config: Partial<RendererConfig>): void {
     if (this.currentRenderer) {
       this.currentRenderer.updateConfig(config)
-      
+
       // 发射配置更新事件
       this.eventBus.emit('renderer:config-update', {
         rendererId: this.currentRenderer.id,
@@ -395,7 +399,7 @@ export class RendererManager implements IRendererManager {
     if (!this.currentRenderer) {
       return false
     }
-    
+
     return this.currentRenderer.capabilities[capability] || false
   }
 
@@ -410,12 +414,11 @@ export class RendererManager implements IRendererManager {
     try {
       // 清理事件监听器
       this.cleanupRendererEventForwarding(this.currentRenderer)
-      
+
       // 销毁渲染器
       await this.currentRenderer.destroy()
-      
+
       console.log(`Renderer ${this.currentRenderer.id} destroyed successfully`)
-      
     } catch (error) {
       console.error(`Error destroying renderer ${this.currentRenderer.id}:`, error)
     } finally {
@@ -429,7 +432,7 @@ export class RendererManager implements IRendererManager {
   private setupRendererEventForwarding(renderer: BaseRenderer): void {
     // 转发渲染器事件到全局事件总线
     const eventMappings: Array<{
-      rendererEvent: keyof RendererEvents,
+      rendererEvent: keyof RendererEvents
       globalEvent: string
     }> = [
       { rendererEvent: 'item:add', globalEvent: 'canvas:item-add' },
@@ -472,12 +475,12 @@ export class RendererManager implements IRendererManager {
       if (config && this.currentRenderer) {
         // 过滤出渲染器相关的配置
         const rendererConfig: Partial<RendererConfig> = {}
-        
+
         if ('showGrid' in config) rendererConfig.showGrid = config.showGrid
         if ('gridSize' in config) rendererConfig.gridSize = config.gridSize
         if ('snapToGrid' in config) rendererConfig.snapToGrid = config.snapToGrid
         if ('backgroundColor' in config) rendererConfig.backgroundColor = config.backgroundColor
-        
+
         this.updateCurrentConfig(rendererConfig)
       }
     })

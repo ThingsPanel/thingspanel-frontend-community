@@ -7,8 +7,8 @@
     <div class="toolbar-section">
       <button 
         class="toolbar-btn"
-        @click="$emit('add-item')"
         :disabled="readonly"
+        @click="$emit('add-item')"
       >
         <i class="icon-plus" />
         添加组件
@@ -16,8 +16,8 @@
       
       <button 
         class="toolbar-btn"
-        @click="$emit('clear-all')"
         :disabled="readonly"
+        @click="$emit('clear-all')"
       >
         <i class="icon-trash" />
         清空

@@ -44,11 +44,4 @@ export type {
 } from './adapters'
 
 // Event types
-export type {
-  EventMap,
-  EventHandler,
-  EventBus,
-  EventMiddleware,
-  EventLog,
-  EventStats
-} from './events'
+export type { EventMap, EventHandler, EventBus, EventMiddleware, EventLog, EventStats } from './events'

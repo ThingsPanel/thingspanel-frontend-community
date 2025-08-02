@@ -469,15 +469,6 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
-    name: 'gridstack-test',
-    path: '/gridstack-test',
-    component: 'layout.base$view.gridstack-test',
-    meta: {
-      title: 'gridstack-test',
-      i18nKey: 'route.gridstack-test'
-    }
-  },
-  {
     name: 'home',
     path: '/home',
     component: 'layout.base$view.home',
@@ -486,15 +477,6 @@ export const generatedRoutes: GeneratedRoute[] = [
       i18nKey: 'route.home',
       icon: 'mdi:monitor-dashboard',
       order: 1
-    }
-  },
-  {
-    name: 'i18n-test',
-    path: '/i18n-test',
-    component: 'layout.base$view.i18n-test',
-    meta: {
-      title: 'i18n-test',
-      i18nKey: 'route.i18n-test'
     }
   },
   {
@@ -877,6 +859,37 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'test-draggable-grid',
+    path: '/test-draggable-grid',
+    component: 'layout.base',
+    meta: {
+      title: 'test-draggable-grid',
+      i18nKey: 'route.test-draggable-grid',
+      icon: 'material-symbols:grid-view',
+      order: 9
+    },
+    children: [
+      {
+        name: 'test-draggable-grid_index',
+        path: '/test-draggable-grid/index',
+        component: 'view.test-draggable-grid_index',
+        meta: {
+          title: 'test-draggable-grid_index',
+          i18nKey: 'route.test-draggable-grid_index'
+        }
+      },
+      {
+        name: 'test-draggable-grid_optimized',
+        path: '/test-draggable-grid/optimized',
+        component: 'view.test-draggable-grid_optimized',
+        meta: {
+          title: 'test-draggable-grid_optimized',
+          i18nKey: 'route.test-draggable-grid_optimized'
+        }
+      }
+    ]
+  },
+  {
     name: 'user-center',
     path: '/user-center',
     component: 'layout.base$view.user-center',
@@ -921,7 +934,25 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'visualization_panel-preview',
           i18nKey: 'route.visualization_panel-preview'
         }
+      },
+      {
+        name: 'visualization_visual-editor-demo',
+        path: '/visualization/visual-editor-demo',
+        component: 'view.visualization_visual-editor-demo',
+        meta: {
+          title: 'visualization_visual-editor-demo',
+          i18nKey: 'route.visualization_visual-editor-demo'
+        }
+      },
+      {
+        name: 'visualization_visual-editor-details',
+        path: '/visualization/visual-editor-details',
+        component: 'view.visualization_visual-editor-details',
+        meta: {
+          title: 'visualization_visual-editor-details',
+          i18nKey: 'route.visualization_visual-editor-details'
+        }
       }
     ]
   }
-];
+]

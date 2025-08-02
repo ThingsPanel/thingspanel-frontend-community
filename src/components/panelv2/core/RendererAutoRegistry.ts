@@ -1,7 +1,7 @@
 /**
  * Renderer Auto Registry
  * 渲染器自动注册系统，通过约定自动发现和注册渲染器
- * 
+ *
  * 约定：
  * 1. 每个渲染器目录必须包含 index.ts 文件
  * 2. index.ts 必须导出 RendererClass 和 RendererInfo
@@ -118,14 +118,14 @@ export class RendererAutoRegistry {
       console.log(`[RendererAutoRegistry] 正在加载渲染器: ${id}`)
       const module = await config.module()
       console.log(`[RendererAutoRegistry] 渲染器 ${id} 模块加载完成，开始验证...`)
-      
+
       // 验证模块
       this.validateModule(module, id)
       console.log(`[RendererAutoRegistry] 渲染器 ${id} 模块验证通过`)
-      
+
       // 缓存模块
       this.loadedModules.set(id, module)
-      
+
       console.log(`[RendererAutoRegistry] 渲染器 ${id} 加载成功`)
       return module
     } catch (error) {
@@ -161,7 +161,7 @@ export class RendererAutoRegistry {
   /**
    * 注册所有启用的渲染器
    */
-  async registerAll(): Promise<{ success: string[], failed: string[] }> {
+  async registerAll(): Promise<{ success: string[]; failed: string[] }> {
     if (!this.factory) {
       throw new Error('渲染器工厂未设置')
     }
@@ -171,7 +171,10 @@ export class RendererAutoRegistry {
     const failed: string[] = []
 
     console.log(`[RendererAutoRegistry] 开始注册 ${enabledConfigs.length} 个渲染器`)
-    console.log(`[RendererAutoRegistry] 启用的渲染器配置:`, enabledConfigs.map(c => c.id))
+    console.log(
+      `[RendererAutoRegistry] 启用的渲染器配置:`,
+      enabledConfigs.map(c => c.id)
+    )
 
     // 并行加载所有渲染器
     const results = await Promise.allSettled(

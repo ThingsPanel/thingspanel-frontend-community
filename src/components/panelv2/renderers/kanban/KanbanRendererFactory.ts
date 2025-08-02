@@ -39,7 +39,7 @@ export class KanbanRenderer implements BaseRenderer {
   private container: HTMLElement | null = null
   config: RendererConfig = {}
   private items: BaseCanvasItem[] = []
-  private eventHandlers: Map<string, Function[]> = new Map()
+  private eventHandlers: Map<string, ((...args: any[]) => any)[]> = new Map()
   private isInitialized = false
 
   get state() {
@@ -57,10 +57,10 @@ export class KanbanRenderer implements BaseRenderer {
   async initialize(container: HTMLElement, config: RendererConfig): Promise<void> {
     this.container = container
     this.config = { ...config }
-    
+
     // 创建Vue应用实例来渲染KanbanRenderer组件
     const { createApp } = await import('vue')
-    
+
     const app = createApp(KanbanRendererComponent, {
       config: this.config,
       items: this.items,
@@ -102,12 +102,12 @@ export class KanbanRenderer implements BaseRenderer {
     if (this.component && this.container) {
       // 卸载Vue应用
       if ('unmount' in this.component) {
-        (this.component as any).unmount()
+        ;(this.component as any).unmount()
       }
       this.component = null
       this.container = null
     }
-    
+
     this.isInitialized = false
     this.eventHandlers.clear()
   }
@@ -162,7 +162,7 @@ export class KanbanRenderer implements BaseRenderer {
     this.emit('layout:change', [])
   }
 
-  setViewport(viewport: any): void {
+  setViewport(_viewport: any): void {
     console.warn('Kanban renderer does not support viewport operations')
   }
 
@@ -204,22 +204,22 @@ export class KanbanRenderer implements BaseRenderer {
   }
 
   on<K extends keyof import('../types/renderer').RendererEvents>(
-    event: K, 
+    event: K,
     handler: import('../types/renderer').RendererEvents[K]
   ): void {
     if (!this.eventHandlers.has(event as string)) {
       this.eventHandlers.set(event as string, [])
     }
-    this.eventHandlers.get(event as string)!.push(handler as Function)
+    this.eventHandlers.get(event as string)!.push(handler as (...args: any[]) => any)
   }
 
   off<K extends keyof import('../types/renderer').RendererEvents>(
-    event: K, 
+    event: K,
     handler: import('../types/renderer').RendererEvents[K]
   ): void {
     const handlers = this.eventHandlers.get(event as string)
     if (handlers) {
-      const index = handlers.indexOf(handler as Function)
+      const index = handlers.indexOf(handler as (...args: any[]) => any)
       if (index > -1) {
         handlers.splice(index, 1)
       }
@@ -227,14 +227,14 @@ export class KanbanRenderer implements BaseRenderer {
   }
 
   emit<K extends keyof import('../types/renderer').RendererEvents>(
-    event: K, 
-    ...args: Parameters<import('../types/renderer').RendererEvents[K]>
+    event: K,
+    ..._args: Parameters<import('../types/renderer').RendererEvents[K]>
   ): void {
     const handlers = this.eventHandlers.get(event as string)
     if (handlers) {
       handlers.forEach(handler => {
         try {
-          handler(...args)
+          handler(..._args)
         } catch (error) {
           console.error(`Error in event handler for ${String(event)}:`, error)
         }
@@ -250,13 +250,13 @@ export class KanbanRenderer implements BaseRenderer {
     return { ...this.config }
   }
 
-  hitTest(position: { x: number, y: number }): string | null {
+  hitTest(_position: { x: number; y: number }): string | null {
     // 简单的碰撞检测实现
     // 实际实现需要与Vue组件交互
     return null
   }
 
-  getBounds(id: string): { position: { x: number, y: number }, size: { width: number, height: number } } | null {
+  getBounds(_id: string): { position: { x: number; y: number }; size: { width: number; height: number } } | null {
     // 需要从Vue组件获取实际边界
     return null
   }

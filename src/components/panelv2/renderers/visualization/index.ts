@@ -1,7 +1,7 @@
 /**
  * Visualization Renderer Module
  * 可视化大屏渲染器模块统一导出
- * 
+ *
  * 自动注册约定：
  * - 导出 RendererClass: 渲染器类
  * - 导出 RendererInfo: 渲染器信息
@@ -14,7 +14,11 @@ import type { RendererModule } from '../../core/RendererAutoRegistry'
 
 // 传统导出（保持向后兼容）
 export { default as VisualizationRendererComponent } from './VisualizationRenderer.vue'
-export { default as VisualizationRenderer, createVisualizationRenderer, getVisualizationRendererComponent } from './VisualizationRendererFactory'
+export {
+  default as VisualizationRenderer,
+  createVisualizationRenderer,
+  getVisualizationRendererComponent
+} from './VisualizationRendererFactory'
 
 // 类型导出
 export type { BaseRenderer, RendererConfig } from '../../types/renderer'
@@ -23,7 +27,7 @@ export type { BaseCanvasItem } from '../../types/core'
 // 自动注册所需的导出
 export const RendererClass = VisualizationRenderer
 
-export const RendererInfo: RendererInfo = {
+const rendererInfo: RendererInfo = {
   id: 'visualization',
   name: '可视化大屏',
   version: '1.0.0',
@@ -54,10 +58,12 @@ export const RendererInfo: RendererInfo = {
 
 export const enabled = true
 
+export { rendererInfo as RendererInfo }
+
 // 默认导出（符合 RendererModule 接口）
 const rendererModule: RendererModule = {
   RendererClass,
-  RendererInfo,
+  RendererInfo: rendererInfo,
   enabled
 }
 

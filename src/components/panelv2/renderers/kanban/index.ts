@@ -1,7 +1,7 @@
 /**
  * Kanban Renderer Module
  * 看板渲染器模块统一导出
- * 
+ *
  * 自动注册约定：
  * - 导出 RendererClass: 渲染器类
  * - 导出 RendererInfo: 渲染器信息
@@ -25,7 +25,7 @@ export type { KanbanToolbarConfig } from './KanbanToolbar.vue'
 // 自动注册所需的导出
 export const RendererClass = KanbanRenderer
 
-export const RendererInfo: RendererInfo = {
+const rendererInfo: RendererInfo = {
   id: 'kanban',
   name: '看板',
   version: '1.0.0',
@@ -44,10 +44,12 @@ export const RendererInfo: RendererInfo = {
 
 export const enabled = true
 
+export { rendererInfo as RendererInfo }
+
 // 默认导出（符合 RendererModule 接口）
 const rendererModule: RendererModule = {
   RendererClass,
-  RendererInfo,
+  RendererInfo: rendererInfo,
   enabled
 }
 

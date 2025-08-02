@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import PanelV2 from '@/components/panelv2/PanelV2.vue'
+import { PanelEditor } from '@/components/visual-editor'
 import { useMessage, NCard, NButton, NSpace, NSpin, NAlert } from 'naive-ui'
 import { getBoard } from '@/service/api/panel'
-import type { BaseCanvasItem, PanelConfig } from '@/components/panelv2/types/core'
+import type { EditorMode } from '@/components/visual-editor'
 
 // 路由和组件引用
 const route = useRoute()
@@ -129,33 +129,36 @@ const retryLoad = () => {
 }
 
 // Event handlers
-const handleModeChange = (mode: 'edit' | 'preview') => {
+const handleModeChange = (mode: EditorMode) => {
   console.log('Mode changed to:', mode)
   message.info(`切换到${mode === 'edit' ? '编辑' : '预览'}模式`)
 }
 
-const handleRendererChange = (rendererId: string) => {
-  console.log('Renderer changed to:', rendererId)
-  message.info(`切换到${rendererId === 'kanban' ? '看板' : '可视化大屏'}渲染器`)
-}
-
-const handleDataChange = (items: BaseCanvasItem[]) => {
-  console.log('Panel data changed:', items)
+const handleDataChange = (data: any) => {
+  console.log('Panel data changed:', data)
   // 可以在这里保存数据到后端
-  // 注意：为避免无限更新循环，不应在此处将 items 数据直接赋值回 panelData prop。
 }
 
-const handleSave = (config: PanelConfig) => {
-  console.log('Panel config saved:', config)
+const handleSave = (data: any) => {
+  console.log('Panel config saved:', data)
   message.success('面板配置保存成功！')
   
   // 模拟保存到后端
-  // await savePanelConfig(config)
+  // await savePanelConfig(data)
 }
 
-const handleError = (error: Error) => {
-  console.error('Panel error:', error)
-  message.error(`面板操作失败: ${error.message}`)
+const handleExport = (data: any) => {
+  console.log('Panel exported:', data)
+  message.success('面板导出成功！')
+  
+  // 实现导出逻辑
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `panel-${panelId.value}-${Date.now()}.json`
+  a.click()
+  URL.revokeObjectURL(url)
 }
 
 // 生命周期
@@ -207,7 +210,7 @@ onMounted(() => {
         <div class="flex">
           <div class="ml-3">
             <p class="text-sm text-yellow-700">
-              <strong>演示模式:</strong> 当前使用模拟数据。访问 
+              <strong>演示模式:</strong> 当前使用模拟数据，展示 PanelEditor 可视化编辑器功能。访问 
               <code class="bg-yellow-100 px-1 rounded">/paneldemo?id=your-panel-id</code> 
               可加载真实面板数据。
             </p>
@@ -215,23 +218,22 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- PanelV2 组件 -->
-      <PanelV2
+      <!-- PanelEditor 组件 -->
+      <PanelEditor
         ref="panelRef"
-        :panel-data="panelData"
         :config="{
           panelId: panelData.id || 'demo-panel-001',
-          title: panelData.name || 'PanelV2 演示面板',
-          theme: 'default'
+          title: panelData.name || 'PanelEditor 演示面板',
+          theme: 'default',
+          data: panelData
         }"
-        mode="edit"
-        renderer-type="kanban"
-        :readonly="false"
+        initial-mode="edit"
+        :show-left-panel="true"
+        :show-right-panel="true"
         @mode-change="handleModeChange"
-        @renderer-change="handleRendererChange"
-        @data-change="handleDataChange"
+        @change="handleDataChange"
         @save="handleSave"
-        @error="handleError"
+        @export="handleExport"
       />
     </div>
 

@@ -68,9 +68,7 @@ declare module "@elegant-router/types" {
     "function_hide-child_two": "/function/hide-child/two";
     "function_multi-tab": "/function/multi-tab";
     "function_tab": "/function/tab";
-    "gridstack-test": "/gridstack-test";
     "home": "/home";
-    "i18n-test": "/i18n-test";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
     "manage": "/manage";
     "manage_menu": "/manage/menu";
@@ -109,11 +107,14 @@ declare module "@elegant-router/types" {
     "rule-engine": "/rule-engine";
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
+    "test-draggable-grid": "/test-draggable-grid";
     "user-center": "/user-center";
     "visualization": "/visualization";
     "visualization_kanban": "/visualization/kanban";
     "visualization_kanban-details": "/visualization/kanban-details";
     "visualization_panel-preview": "/visualization/panel-preview";
+    "visualization_visual-editor-demo": "/visualization/visual-editor-demo";
+    "visualization_visual-editor-details": "/visualization/visual-editor-details";
   };
 
   /**
@@ -162,9 +163,7 @@ declare module "@elegant-router/types" {
     | "device"
     | "device-details-app"
     | "function"
-    | "gridstack-test"
     | "home"
-    | "i18n-test"
     | "login"
     | "manage"
     | "management"
@@ -174,6 +173,7 @@ declare module "@elegant-router/types" {
     | "plugin"
     | "rule-engine"
     | "system-management-user"
+    | "test-draggable-grid"
     | "user-center"
     | "visualization"
   >;
@@ -232,9 +232,7 @@ declare module "@elegant-router/types" {
     | "function_hide-child_two"
     | "function_multi-tab"
     | "function_tab"
-    | "gridstack-test"
     | "home"
-    | "i18n-test"
     | "manage_menu"
     | "manage_role"
     | "manage_user-detail"
@@ -262,10 +260,13 @@ declare module "@elegant-router/types" {
     | "plugin_video"
     | "rule-engine"
     | "system-management-user_system-log"
+    | "test-draggable-grid"
     | "user-center"
     | "visualization_kanban-details"
     | "visualization_kanban"
     | "visualization_panel-preview"
+    | "visualization_visual-editor-demo"
+    | "visualization_visual-editor-details"
   >;
 
   /**

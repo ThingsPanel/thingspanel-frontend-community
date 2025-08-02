@@ -1,0 +1,13 @@
+/**
+ * Visual Editor - 对外API入口
+ * 按照架构设计的黑盒模块
+ */
+
+// 主组件导出
+export { default as PanelEditor } from './PanelEditor.vue'
+
+// Hook导出
+export { useEditor, createEditor } from './hooks/useEditor'
+
+// 类型导出
+export type { EditorConfig, RendererType, KanbanConfig, DashboardConfig, GraphData, WidgetType } from './types'

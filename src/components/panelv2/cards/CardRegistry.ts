@@ -7,42 +7,44 @@ import type { Component } from 'vue'
 
 // 卡片分类枚举
 export enum CardCategory {
-  BUILTIN = 'builtin',      // 内置卡片
-  CHART = 'chart',          // 图表卡片
-  SYSTEM = 'system',        // 系统监控
-  DATA = 'data',            // 数据展示
-  CONTROL = 'control',      // 控制组件
-  CUSTOM = 'custom'         // 自定义组件
+  BUILTIN = 'builtin', // 内置卡片
+  CHART = 'chart', // 图表卡片
+  SYSTEM = 'system', // 系统监控
+  DATA = 'data', // 数据展示
+  CONTROL = 'control', // 控制组件
+  CUSTOM = 'custom' // 自定义组件
 }
 
 // 统一的卡片定义接口
 export interface CardDefinition {
-  id: string                    // 卡片唯一标识
-  name: string                  // 卡片名称
-  title: string                 // 显示标题
-  description?: string          // 卡片描述
-  category: CardCategory        // 卡片分类
-  type: 'builtin' | 'chart' | 'custom'  // 卡片类型
-  component: Component          // Vue组件
-  poster?: string               // 预览图
-  icon?: string                 // 图标
-  tags?: string[]               // 标签
-  preset: {                     // 预设配置
-    w: number                   // 默认宽度（网格单位）
-    h: number                   // 默认高度（网格单位）
-    minW?: number               // 最小宽度
-    minH?: number               // 最小高度
-    maxW?: number               // 最大宽度
-    maxH?: number               // 最大高度
+  id: string // 卡片唯一标识
+  name: string // 卡片名称
+  title: string // 显示标题
+  description?: string // 卡片描述
+  category: CardCategory // 卡片分类
+  type: 'builtin' | 'chart' | 'custom' // 卡片类型
+  component: Component // Vue组件
+  poster?: string // 预览图
+  icon?: string // 图标
+  tags?: string[] // 标签
+  preset: {
+    // 预设配置
+    w: number // 默认宽度（网格单位）
+    h: number // 默认高度（网格单位）
+    minW?: number // 最小宽度
+    minH?: number // 最小高度
+    maxW?: number // 最大宽度
+    maxH?: number // 最大高度
   }
-  config?: Record<string, any>  // 默认配置
-  dataSource?: {                // 数据源配置
-    required: boolean           // 是否需要数据源
-    types: string[]             // 支持的数据源类型
+  config?: Record<string, any> // 默认配置
+  dataSource?: {
+    // 数据源配置
+    required: boolean // 是否需要数据源
+    types: string[] // 支持的数据源类型
   }
-  version?: string              // 版本号
-  author?: string               // 作者
-  deprecated?: boolean          // 是否已废弃
+  version?: string // 版本号
+  author?: string // 作者
+  deprecated?: boolean // 是否已废弃
 }
 
 // 卡片搜索选项
@@ -89,7 +91,7 @@ export class CardRegistry {
 
     this.cards.delete(id)
     this.removeFromCategory(card)
-    
+
     console.log(`Card unregistered: ${id}`)
     return true
   }
@@ -138,19 +140,18 @@ export class CardRegistry {
 
     // 按标签过滤
     if (options.tags && options.tags.length > 0) {
-      results = results.filter(card => 
-        card.tags && options.tags!.some(tag => card.tags!.includes(tag))
-      )
+      results = results.filter(card => card.tags && options.tags!.some(tag => card.tags!.includes(tag)))
     }
 
     // 关键词搜索
     if (options.keyword) {
       const keyword = options.keyword.toLowerCase()
-      results = results.filter(card =>
-        card.name.toLowerCase().includes(keyword) ||
-        card.title.toLowerCase().includes(keyword) ||
-        card.description?.toLowerCase().includes(keyword) ||
-        card.tags?.some(tag => tag.toLowerCase().includes(keyword))
+      results = results.filter(
+        card =>
+          card.name.toLowerCase().includes(keyword) ||
+          card.title.toLowerCase().includes(keyword) ||
+          card.description?.toLowerCase().includes(keyword) ||
+          card.tags?.some(tag => tag.toLowerCase().includes(keyword))
       )
     }
 
@@ -169,11 +170,11 @@ export class CardRegistry {
    */
   getCategoryStats(): Record<CardCategory, number> {
     const stats = {} as Record<CardCategory, number>
-    
+
     for (const category of Object.values(CardCategory)) {
       stats[category] = this.getByCategory(category).length
     }
-    
+
     return stats
   }
 
@@ -226,11 +227,11 @@ export class CardRegistry {
    */
   private updateCategory(card: CardDefinition): void {
     this.removeFromCategory(card)
-    
+
     if (!this.categories.has(card.category)) {
       this.categories.set(card.category, [])
     }
-    
+
     this.categories.get(card.category)!.push(card)
   }
 

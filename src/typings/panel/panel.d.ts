@@ -2,7 +2,7 @@ declare namespace Panel {
   interface Board {
     id?: string
     name?: string
-    config?: null
+    config?: string | null
     tenant_id?: string
     created_at?: string
     updated_at?: string

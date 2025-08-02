@@ -3,23 +3,11 @@
  * 现有面板数据格式适配器，用于兼容旧版本数据
  */
 
-import type { 
-  DataAdapter, 
-  AdapterInfo, 
-  LegacyCardView, 
-  ConversionResult,
-  MigrationConfig
-} from '../types/adapters'
-import type { 
-  BaseCanvasItem, 
-  ValidationResult, 
-  ValidationError,
-  ValidationWarning,
-  CardData
-} from '../types/core'
+import type { DataAdapter, AdapterInfo, LegacyCardView, ConversionResult, MigrationConfig } from '../types/adapters'
+import type { BaseCanvasItem, ValidationResult, ValidationError, ValidationWarning, CardData } from '../types/core'
 
 export class LegacyPanelAdapter implements DataAdapter<LegacyCardView[], BaseCanvasItem[]> {
-  private readonly GRID_UNIT_SIZE = 100  // 网格单位转像素比例
+  private readonly GRID_UNIT_SIZE = 100 // 网格单位转像素比例
   private readonly DEFAULT_Z_INDEX = 0
   private readonly VERSION = '2.0.0'
 
@@ -43,12 +31,12 @@ export class LegacyPanelAdapter implements DataAdapter<LegacyCardView[], BaseCan
       // 如果有config字段且是字符串，解析JSON
       if (panelData.config && typeof panelData.config === 'string') {
         const config = JSON.parse(panelData.config)
-        
+
         // 如果config直接是数组，返回数组
         if (Array.isArray(config)) {
           return config as LegacyCardView[]
         }
-        
+
         // 如果config有layout属性，返回layout
         if (config.layout && Array.isArray(config.layout)) {
           return config.layout as LegacyCardView[]
@@ -58,18 +46,18 @@ export class LegacyPanelAdapter implements DataAdapter<LegacyCardView[], BaseCan
       // 如果有config字段且是对象
       if (panelData.config && typeof panelData.config === 'object') {
         const config = panelData.config
-        
+
         // 如果config直接是数组，返回数组
         if (Array.isArray(config)) {
           return config as LegacyCardView[]
         }
-        
+
         // 如果config有layout属性，返回layout
         if (config.layout && Array.isArray(config.layout)) {
           return config.layout as LegacyCardView[]
         }
       }
-      
+
       console.warn('LegacyPanelAdapter: 无法解析面板配置，期望数组或包含layout的对象')
       return []
     } catch (error) {
@@ -128,7 +116,7 @@ export class LegacyPanelAdapter implements DataAdapter<LegacyCardView[], BaseCan
 
     data.forEach((item, index) => {
       const itemPath = `items[${index}]`
-      
+
       // 验证必要字段
       if (typeof item.x !== 'number') {
         errors.push({
@@ -236,7 +224,7 @@ export class LegacyPanelAdapter implements DataAdapter<LegacyCardView[], BaseCan
 
     try {
       const validationResult = this.validate(legacyData)
-      
+
       if (!validationResult.valid) {
         result.errors.push(...validationResult.errors.map(e => e.message))
         return result
@@ -250,7 +238,6 @@ export class LegacyPanelAdapter implements DataAdapter<LegacyCardView[], BaseCan
       result.data = converted
       result.statistics.converted = converted.length
       result.success = true
-
     } catch (error) {
       result.errors.push(error instanceof Error ? error.message : 'Unknown conversion error')
       result.statistics.failed = legacyData.length
@@ -280,7 +267,7 @@ export class LegacyPanelAdapter implements DataAdapter<LegacyCardView[], BaseCan
     // 转换约束条件
     const constraints = {
       minWidth: legacyItem.minW ? legacyItem.minW * this.GRID_UNIT_SIZE : undefined,
-      minHeight: legacyItem.minH ? legacyItem.minH * this.GRID_UNIT_SIZE : undefined,
+      minHeight: legacyItem.minH ? legacyItem.minH * this.GRID_UNIT_SIZE : undefined
     }
 
     // 转换卡片数据
@@ -368,7 +355,7 @@ export class LegacyPanelAdapter implements DataAdapter<LegacyCardView[], BaseCan
   }
 
   /**
-   * 版本迁移：1.1.0 -> 1.2.0  
+   * 版本迁移：1.1.0 -> 1.2.0
    */
   private migrateFrom1_1_0To1_2_0(data: any[]): LegacyCardView[] {
     return data.map(item => ({

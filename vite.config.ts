@@ -40,9 +40,9 @@ export default defineConfig(configEnv => {
         cachedChecks: false
       },
       watch: {
-      // 开启轮询模式
-      usePolling: true,
-    }
+        // 开启轮询模式
+        usePolling: true
+      }
     },
     preview: {
       port: 9725

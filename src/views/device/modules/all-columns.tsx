@@ -1,12 +1,12 @@
-import { type DataTableColumns, NButton, NFlex, NPopconfirm } from 'naive-ui';
-import dayjs from 'dayjs';
-import { $t } from '@/locales';
+import { type DataTableColumns, NButton, NFlex, NPopconfirm } from 'naive-ui'
+import dayjs from 'dayjs'
+import { $t } from '@/locales'
 
 export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (rid: string) => void) => [
   {
     title: () => $t('custom.groupPage.groupName'),
     key: 'name',
-    minWidth:'140px',
+    minWidth: '140px',
     ellipsis: {
       tooltip: {
         width: 320
@@ -15,7 +15,8 @@ export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (r
   },
   {
     title: () => $t('custom.groupPage.description'),
-    key: 'description',minWidth:'140px',
+    key: 'description',
+    minWidth: '140px',
     ellipsis: {
       tooltip: {
         width: 320
@@ -24,35 +25,37 @@ export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (r
   },
   {
     title: () => $t('custom.groupPage.createdAt'),
-    key: 'created_at',minWidth:'180px',
+    key: 'created_at',
+    minWidth: '180px',
     render(row: { id: string; name: string; description: string; created_at: string; [key: string]: any }) {
-      return dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss');
+      return dayjs(row.created_at).format('YYYY-MM-DD HH:mm:ss')
     }
   },
   {
     title: () => $t('custom.groupPage.actions'),
-    key: 'actions',width:'200px',
+    key: 'actions',
+    width: '200px',
     render: (row: { id: string; name: string; description: string; created_at: string; [key: string]: any }) => {
       return (
         <div
           onClick={e => {
-            e.stopPropagation();
+            e.stopPropagation()
           }}
         >
           <NFlex justify={'start'}>
-            <NButton              
+            <NButton
               type="primary"
               size={'small'}
               onClick={() => {
-                viewDetails(row.id);
+                viewDetails(row.id)
               }}
             >
               {$t('custom.groupPage.view')}
             </NButton>
             <NPopconfirm
               onPositiveClick={e => {
-                e.stopPropagation();
-                deleteItem(row.id);
+                e.stopPropagation()
+                deleteItem(row.id)
               }}
             >
               {{
@@ -66,30 +69,34 @@ export const group_columns = (viewDetails: (rid: string) => void, deleteItem: (r
             </NPopconfirm>
           </NFlex>
         </div>
-      );
+      )
     }
   }
-];
+]
 
 export const createDeviceColumns = (): DataTableColumns<DeviceManagement.DeviceData> => [
   {
-    type: 'selection', minWidth:'140px',
+    type: 'selection',
+    minWidth: '140px'
   },
   {
     title: () => $t('custom.devicePage.deviceName'),
-    key: 'name', minWidth:'140px',
+    key: 'name',
+    minWidth: '140px',
     render: row => row.name || '-'
   },
   {
     title: () => $t('custom.devicePage.deviceNumber'),
-    key: 'device_number', minWidth:'140px',
+    key: 'device_number',
+    minWidth: '140px',
     render: row => row.device_number || '-'
   },
   {
-    title: () => $t('custom.devicePage.deviceConfig'), minWidth:'140px',
+    title: () => $t('custom.devicePage.deviceConfig'),
+    minWidth: '140px',
     key: 'device_config_name'
   }
-];
+]
 
 export const createNoSelectDeviceColumns = (
   viewDevicsseDetails: (rid: string) => void,
@@ -98,36 +105,40 @@ export const createNoSelectDeviceColumns = (
   return [
     {
       title: () => $t('custom.devicePage.deviceName'),
-      key: 'name', minWidth:'140px',
+      key: 'name',
+      minWidth: '140px',
       render: row => row.name || '-'
     },
     {
       title: () => $t('custom.devicePage.deviceNumber'),
-      key: 'device_number', minWidth:'140px',
+      key: 'device_number',
+      minWidth: '140px',
       render: row => row.device_number || '-'
     },
     {
-      title: () => $t('custom.devicePage.deviceConfig'), minWidth:'140px',
+      title: () => $t('custom.devicePage.deviceConfig'),
+      minWidth: '140px',
       key: 'device_config_name'
     },
     {
       title: () => $t('custom.groupPage.actions'),
-      key: 'actions', minWidth:'140px',
+      key: 'actions',
+      minWidth: '140px',
       render: row => {
         return (
           <NFlex justify={'start'}>
-            <NButton            
+            <NButton
               type="primary"
               size={'small'}
               onClick={() => {
-                viewDevicsseDetails(row.id);
+                viewDevicsseDetails(row.id)
               }}
             >
               {$t('custom.groupPage.view')}
             </NButton>
             <NPopconfirm
               onPositiveClick={() => {
-                deleteDeviceItem(row.id);
+                deleteDeviceItem(row.id)
               }}
             >
               {{
@@ -140,8 +151,8 @@ export const createNoSelectDeviceColumns = (
               }}
             </NPopconfirm>
           </NFlex>
-        );
+        )
       }
     }
-  ];
-};
+  ]
+}

@@ -5,15 +5,12 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed, reactive, readonly } from 'vue'
-import { 
-  DEFAULT_CANVAS_CONFIG,
-  DEFAULT_VIEWPORT
-} from '../types/core'
-import type { 
-  CanvasState, 
-  BaseCanvasItem, 
-  Position, 
-  Size, 
+import { DEFAULT_CANVAS_CONFIG, DEFAULT_VIEWPORT } from '../types/core'
+import type {
+  CanvasState,
+  BaseCanvasItem,
+  Position,
+  Size,
   Viewport,
   CanvasConfig,
   DragState,
@@ -26,43 +23,41 @@ export const useCanvasStore = defineStore('panelv2-canvas', () => {
   const items = ref<BaseCanvasItem[]>([])
   const selectedIds = ref<string[]>([])
   const mode = ref<'edit' | 'preview'>('edit')
-  
+
   // 视口状态
   const viewport = ref<Viewport>({ ...DEFAULT_VIEWPORT })
-  
+
   // 画布配置
   const config = ref<CanvasConfig>({ ...DEFAULT_CANVAS_CONFIG })
-  
+
   // 交互状态
   const dragState = ref<DragState | null>(null)
   const clipboard = ref<ClipboardData | null>(null)
-  
+
   // 历史记录
   const history = reactive<HistoryState>({
     past: [],
     future: [],
     maxSize: 50
   })
-  
+
   // UI状态
   const sidebarCollapsed = reactive({
     left: false,
     right: false
   })
-  
+
   // 计算属性
-  const selectedItems = computed(() => 
-    items.value.filter(item => selectedIds.value.includes(item.id))
-  )
-  
+  const selectedItems = computed(() => items.value.filter(item => selectedIds.value.includes(item.id)))
+
   const hasSelection = computed(() => selectedIds.value.length > 0)
-  
+
   const canUndo = computed(() => history.past.length > 0)
-  
+
   const canRedo = computed(() => history.future.length > 0)
-  
+
   const isEditMode = computed(() => mode.value === 'edit')
-  
+
   const canvasState = computed<CanvasState>(() => ({
     items: items.value,
     selectedIds: selectedIds.value,
@@ -78,12 +73,12 @@ export const useCanvasStore = defineStore('panelv2-canvas', () => {
   // 操作历史记录
   const saveToHistory = () => {
     history.past.push([...items.value])
-    
+
     // 限制历史记录大小
     if (history.past.length > history.maxSize) {
       history.past.shift()
     }
-    
+
     // 清空重做历史
     history.future.length = 0
   }
@@ -128,7 +123,7 @@ export const useCanvasStore = defineStore('panelv2-canvas', () => {
     }
   }
 
-  const updateItems = (updates: Array<{ id: string, updates: Partial<BaseCanvasItem> }>) => {
+  const updateItems = (updates: Array<{ id: string; updates: Partial<BaseCanvasItem> }>) => {
     saveToHistory()
     updates.forEach(({ id, updates: itemUpdates }) => {
       const itemIndex = items.value.findIndex(item => item.id === id)
@@ -234,7 +229,7 @@ export const useCanvasStore = defineStore('panelv2-canvas', () => {
 
     const current = [...items.value]
     const previous = history.past.pop()!
-    
+
     history.future.push(current)
     items.value = previous
     clearSelection()
@@ -245,7 +240,7 @@ export const useCanvasStore = defineStore('panelv2-canvas', () => {
 
     const current = [...items.value]
     const next = history.future.pop()!
-    
+
     history.past.push(current)
     items.value = next
     clearSelection()
@@ -336,9 +331,9 @@ export const useCanvasStore = defineStore('panelv2-canvas', () => {
 
   // 工具函数
   const getItem = (id: string) => items.value.find(item => item.id === id)
-  
+
   const getItemIndex = (id: string) => items.value.findIndex(item => item.id === id)
-  
+
   const hasItem = (id: string) => items.value.some(item => item.id === id)
 
   return {
@@ -351,7 +346,7 @@ export const useCanvasStore = defineStore('panelv2-canvas', () => {
     dragState: readonly(dragState),
     clipboard: readonly(clipboard),
     sidebarCollapsed: readonly(sidebarCollapsed),
-    
+
     // 计算属性
     selectedItems,
     hasSelection,
@@ -359,7 +354,7 @@ export const useCanvasStore = defineStore('panelv2-canvas', () => {
     canRedo,
     isEditMode,
     canvasState,
-    
+
     // 操作方法
     addItem,
     addItems,
@@ -370,35 +365,35 @@ export const useCanvasStore = defineStore('panelv2-canvas', () => {
     moveItem,
     resizeItem,
     setItemZIndex,
-    
+
     selectItems,
     selectAll,
     clearSelection,
     toggleSelection,
-    
+
     copyItems,
     cutItems,
     pasteItems,
-    
+
     undo,
     redo,
-    
+
     setViewport,
     zoomIn,
     zoomOut,
     resetZoom,
-    
+
     updateConfig,
     setMode,
     setDragState,
-    
+
     toggleLeftSidebar,
     toggleRightSidebar,
-    
+
     setItems,
     setState,
     reset,
-    
+
     getItem,
     getItemIndex,
     hasItem

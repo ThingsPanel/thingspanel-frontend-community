@@ -3,11 +3,11 @@
  * 事件总线实现，提供组件间标准化通信
  */
 
-import type { 
-  EventBus, 
+import type {
+  EventBus,
   AdvancedEventBus,
-  EventMap, 
-  EventHandler, 
+  EventMap,
+  EventHandler,
   EventHandlerMap,
   EventMiddleware,
   EventLog,
@@ -43,7 +43,7 @@ export class PanelEventBus implements AdvancedEventBus {
    * 一次性事件订阅
    */
   once<K extends keyof EventMap>(event: K, handler: EventHandler<K>): void {
-    const onceHandler: EventHandler<K> = (data) => {
+    const onceHandler: EventHandler<K> = data => {
       handler(data)
       this.off(event, onceHandler)
     }
@@ -68,16 +68,16 @@ export class PanelEventBus implements AdvancedEventBus {
    */
   emit<K extends keyof EventMap>(event: K, data: EventMap[K]): void {
     const startTime = performance.now()
-    
+
     try {
       // 执行前置中间件
       this.executeBeforeMiddlewares(event, data)
-      
+
       // 记录日志
       if (this.loggingEnabled) {
         this.addLog(event, data)
       }
-      
+
       // 执行事件处理器
       const handlers = this.handlers[event] || []
       handlers.forEach(handler => {
@@ -87,7 +87,7 @@ export class PanelEventBus implements AdvancedEventBus {
           this.handleError(error as Error, event, data)
         }
       })
-      
+
       // 执行通配符处理器
       this.anyHandlers.forEach(handler => {
         try {
@@ -96,13 +96,12 @@ export class PanelEventBus implements AdvancedEventBus {
           this.handleError(error as Error, event, data)
         }
       })
-      
+
       // 执行后置中间件
       this.executeAfterMiddlewares(event, data)
-      
+
       // 更新统计信息
       this.updateStats(event, performance.now() - startTime)
-      
     } catch (error) {
       this.handleError(error as Error, event, data)
     }
@@ -225,7 +224,7 @@ export class PanelEventBus implements AdvancedEventBus {
   /**
    * 批量发射事件
    */
-  emitBatch<K extends keyof EventMap>(events: Array<{ event: K, data: EventMap[K] }>): void {
+  emitBatch<K extends keyof EventMap>(events: Array<{ event: K; data: EventMap[K] }>): void {
     events.forEach(({ event, data }) => {
       this.emit(event, data)
     })
@@ -244,31 +243,31 @@ export class PanelEventBus implements AdvancedEventBus {
    * 防抖发射事件
    */
   private debounceTimers: Map<string, NodeJS.Timeout> = new Map()
-  
+
   emitDebounce<K extends keyof EventMap>(event: K, data: EventMap[K], delay: number): void {
     const key = `${String(event)}_debounce`
-    
+
     if (this.debounceTimers.has(key)) {
       clearTimeout(this.debounceTimers.get(key)!)
     }
-    
+
     const timer = setTimeout(() => {
       this.emit(event, data)
       this.debounceTimers.delete(key)
     }, delay)
-    
+
     this.debounceTimers.set(key, timer)
   }
 
   /**
    * 节流发射事件
    */
-  private throttleTimers: Map<string, { timer: NodeJS.Timeout, pending: boolean }> = new Map()
-  
+  private throttleTimers: Map<string, { timer: NodeJS.Timeout; pending: boolean }> = new Map()
+
   emitThrottle<K extends keyof EventMap>(event: K, data: EventMap[K], interval: number): void {
     const key = `${String(event)}_throttle`
     const throttleData = this.throttleTimers.get(key)
-    
+
     if (!throttleData) {
       // 首次调用，立即执行
       this.emit(event, data)
@@ -323,7 +322,7 @@ export class PanelEventBus implements AdvancedEventBus {
    */
   private handleError(error: Error, event: keyof EventMap, data: any): void {
     this.stats.errors++
-    
+
     // 执行错误中间件
     this.middlewares.forEach(middleware => {
       if (middleware.error) {
@@ -334,7 +333,7 @@ export class PanelEventBus implements AdvancedEventBus {
         }
       }
     })
-    
+
     // 发射错误事件
     if (event !== 'error:occurred') {
       this.emit('error:occurred', { error, context: String(event) })
@@ -360,9 +359,9 @@ export class PanelEventBus implements AdvancedEventBus {
       data,
       source: 'EventBus'
     }
-    
+
     this.logs.push(log)
-    
+
     // 限制日志数量
     if (this.logs.length > this.maxLogs) {
       this.logs.shift()
@@ -374,12 +373,12 @@ export class PanelEventBus implements AdvancedEventBus {
    */
   private updateStats<K extends keyof EventMap>(event: K, handleTime: number): void {
     this.stats.totalEvents++
-    
+
     if (!this.stats.eventCounts[event]) {
       this.stats.eventCounts[event] = 0
     }
     this.stats.eventCounts[event]++
-    
+
     // 计算平均处理时间
     const currentAvg = this.stats.averageHandleTime[event] || 0
     const count = this.stats.eventCounts[event]
@@ -418,9 +417,7 @@ class NamespacedEventBus implements EventBus {
 
   clear(): void {
     // 清除此命名空间的所有处理器
-    const eventsToClear = this.parent.eventNames().filter(event => 
-      String(event).startsWith(`${this.namespace}:`)
-    )
+    const eventsToClear = this.parent.eventNames().filter(event => String(event).startsWith(`${this.namespace}:`))
     eventsToClear.forEach(event => {
       delete this.parent.handlers[event]
     })
@@ -432,7 +429,8 @@ class NamespacedEventBus implements EventBus {
   }
 
   eventNames(): (keyof EventMap)[] {
-    return this.parent.eventNames()
+    return this.parent
+      .eventNames()
       .filter(event => String(event).startsWith(`${this.namespace}:`))
       .map(event => String(event).replace(`${this.namespace}:`, '') as keyof EventMap)
   }

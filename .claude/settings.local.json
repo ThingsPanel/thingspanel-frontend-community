@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "allow": [
       "Bash(rm:*)",
@@ -37,7 +38,10 @@
       "Bash(pnpm add:*)",
       "Bash(pnpm list:*)",
       "Bash(pnpm exec eslint:*)",
-      "Bash(pnpm exec vue-tsc:*)"
+      "Bash(pnpm exec vue-tsc:*)",
+      "Bash(timeout 60s pnpm build:test)",
+      "Bash(cp:*)",
+      "WebFetch(domain:dsmorse.github.io)"
     ],
     "deny": []
   }

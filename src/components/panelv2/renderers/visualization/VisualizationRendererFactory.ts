@@ -14,7 +14,7 @@ export class VisualizationRenderer implements BaseRenderer {
   readonly id = 'visualization'
   readonly name = '可视化大屏'
   readonly version = '1.0.0'
-  
+
   readonly capabilities: RendererCapabilities = {
     supportsDrag: true,
     supportsResize: true,
@@ -51,7 +51,7 @@ export class VisualizationRenderer implements BaseRenderer {
 
     this.config = config || {}
     this.isInitialized = true
-    
+
     console.log('VisualizationRenderer initialized')
     eventBus.emit('renderer:initialized', { rendererId: this.id })
   }
@@ -67,7 +67,7 @@ export class VisualizationRenderer implements BaseRenderer {
     this.items = []
     this.config = {}
     this.isInitialized = false
-    
+
     console.log('VisualizationRenderer destroyed')
     eventBus.emit('renderer:destroyed', { rendererId: this.id })
   }

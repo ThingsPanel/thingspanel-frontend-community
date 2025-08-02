@@ -9,7 +9,6 @@ import { cardRegistry, CardCategory } from './CardRegistry'
 import type { ICardDefine } from '@/components/panel/card'
 import { PanelCards } from '@/components/panel'
 
-
 // 卡片适配器：将ICardDefine转换为CardDefinition
 export class CardAdapter {
   /**
@@ -18,7 +17,7 @@ export class CardAdapter {
   static adaptCard(card: ICardDefine): CardDefinition {
     // 根据卡片ID推断分类
     const category = this.inferCategory(card.id, card.type)
-    
+
     return {
       id: card.id,
       name: card.title,
@@ -48,19 +47,37 @@ export class CardAdapter {
    */
   private static inferCategory(id: string, type: string): CardCategory {
     // 图表类卡片
-    if (type === 'chart' || id.includes('chart') || id.includes('bar') || id.includes('curve') || id.includes('instrument')) {
+    if (
+      type === 'chart' ||
+      id.includes('chart') ||
+      id.includes('bar') ||
+      id.includes('curve') ||
+      id.includes('instrument')
+    ) {
       return CardCategory.CHART
     }
 
     // 系统监控类
-    if (id.includes('cpu') || id.includes('memory') || id.includes('disk') || 
-        id.includes('online') || id.includes('offline') || id.includes('system')) {
+    if (
+      id.includes('cpu') ||
+      id.includes('memory') ||
+      id.includes('disk') ||
+      id.includes('online') ||
+      id.includes('offline') ||
+      id.includes('system')
+    ) {
       return CardCategory.SYSTEM
     }
 
     // 数据展示类
-    if (id.includes('table') || id.includes('info') || id.includes('data') || 
-        id.includes('count') || id.includes('digit') || id.includes('text')) {
+    if (
+      id.includes('table') ||
+      id.includes('info') ||
+      id.includes('data') ||
+      id.includes('count') ||
+      id.includes('digit') ||
+      id.includes('text')
+    ) {
       return CardCategory.DATA
     }
 
@@ -120,15 +137,10 @@ export class CardScanner {
    * 扫描并注册所有卡片
    */
   static async scanAllCards(): Promise<void> {
-    await Promise.all([
-      this.scanBuiltinCards(),
-      this.scanChartCards()
-    ])
+    await Promise.all([this.scanBuiltinCards(), this.scanChartCards()])
 
     console.log('All cards scanned and registered:', cardRegistry.getStats())
   }
-
-
 
   /**
    * 重新扫描（强制刷新）

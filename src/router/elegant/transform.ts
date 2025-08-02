@@ -4,8 +4,8 @@
 // Read more: https://github.com/soybeanjs/elegant-router
 
 import type { RouteRecordRaw, RouteComponent } from 'vue-router';
-import type { ElegantConstRoute } from '@elegant-router/vue';
-import type { RouteMap, RouteKey, RoutePath } from '@elegant-router/types';
+import type { ElegantConstRoute } from '@elegant-router/vue'
+import type { RouteMap, RouteKey, RoutePath } from '@elegant-router/types'
 
 /**
  * transform elegant const routes to vue routes
@@ -18,7 +18,7 @@ export function transformElegantRoutesToVueRoutes(
   layouts: Record<string, RouteComponent | (() => Promise<RouteComponent>)>,
   views: Record<string, RouteComponent | (() => Promise<RouteComponent>)>
 ) {
-  return routes.flatMap(route => transformElegantRouteToVueRoute(route, layouts, views));
+  return routes.flatMap(route => transformElegantRouteToVueRoute(route, layouts, views))
 }
 
 /**
@@ -32,72 +32,72 @@ function transformElegantRouteToVueRoute(
   layouts: Record<string, RouteComponent | (() => Promise<RouteComponent>)>,
   views: Record<string, RouteComponent | (() => Promise<RouteComponent>)>
 ) {
-  const LAYOUT_PREFIX = 'layout.';
-  const VIEW_PREFIX = 'view.';
-  const ROUTE_DEGREE_SPLITTER = '_';
-  const FIRST_LEVEL_ROUTE_COMPONENT_SPLIT = '$';
+  const LAYOUT_PREFIX = 'layout.'
+  const VIEW_PREFIX = 'view.'
+  const ROUTE_DEGREE_SPLITTER = '_'
+  const FIRST_LEVEL_ROUTE_COMPONENT_SPLIT = '$'
 
   function isLayout(component: string) {
-    return component.startsWith(LAYOUT_PREFIX);
+    return component.startsWith(LAYOUT_PREFIX)
   }
 
   function getLayoutName(component: string) {
-    const layout = component.replace(LAYOUT_PREFIX, '');
+    const layout = component.replace(LAYOUT_PREFIX, '')
 
-    if(!layouts[layout]) {
-      throw new Error(`Layout component "${layout}" not found`);
+    if (!layouts[layout]) {
+      throw new Error(`Layout component "${layout}" not found`)
     }
 
-    return layout;
+    return layout
   }
 
   function isView(component: string) {
-    return component.startsWith(VIEW_PREFIX);
+    return component.startsWith(VIEW_PREFIX)
   }
 
   function getViewName(component: string) {
-    const view = component.replace(VIEW_PREFIX, '');
+    const view = component.replace(VIEW_PREFIX, '')
 
-    if(!views[view]) {
-      throw new Error(`View component "${view}" not found`);
+    if (!views[view]) {
+      throw new Error(`View component "${view}" not found`)
     }
 
-    return view;
+    return view
   }
 
   function isFirstLevelRoute(item: ElegantConstRoute) {
-    return !item.name.includes(ROUTE_DEGREE_SPLITTER);
+    return !item.name.includes(ROUTE_DEGREE_SPLITTER)
   }
 
   function isSingleLevelRoute(item: ElegantConstRoute) {
-    return isFirstLevelRoute(item) && !item.children?.length;
+    return isFirstLevelRoute(item) && !item.children?.length
   }
 
   function getSingleLevelRouteComponent(component: string) {
-    const [layout, view] = component.split(FIRST_LEVEL_ROUTE_COMPONENT_SPLIT);
+    const [layout, view] = component.split(FIRST_LEVEL_ROUTE_COMPONENT_SPLIT)
 
     return {
       layout: getLayoutName(layout),
       view: getViewName(view)
-    };
+    }
   }
 
-  const vueRoutes: RouteRecordRaw[] = [];
+  const vueRoutes: RouteRecordRaw[] = []
 
   // add props: true to route
   if (route.path.includes(':') && !route.props) {
-    route.props = true;
+    route.props = true
   }
 
-  const { name, path, component, children, ...rest } = route;
+  const { name, path, component, children, ...rest } = route
 
-  const vueRoute = { name, path, ...rest } as RouteRecordRaw;
+  const vueRoute = { name, path, ...rest } as RouteRecordRaw
 
   try {
     if (component) {
       if (isSingleLevelRoute(route)) {
-        const { layout, view } = getSingleLevelRouteComponent(component);
-  
+        const { layout, view } = getSingleLevelRouteComponent(component)
+
         const singleLevelRoute: RouteRecordRaw = {
           path,
           component: layouts[layout],
@@ -109,163 +109,162 @@ function transformElegantRouteToVueRoute(
               ...rest
             } as RouteRecordRaw
           ]
-        };
-  
-        return [singleLevelRoute];
+        }
+
+        return [singleLevelRoute]
       }
-  
+
       if (isLayout(component)) {
-        const layoutName = getLayoutName(component);
-  
-        vueRoute.component = layouts[layoutName];
+        const layoutName = getLayoutName(component)
+
+        vueRoute.component = layouts[layoutName]
       }
-  
+
       if (isView(component)) {
-        const viewName = getViewName(component);
-  
-        vueRoute.component = views[viewName];
+        const viewName = getViewName(component)
+
+        vueRoute.component = views[viewName]
       }
-  
     }
   } catch (error: any) {
-    console.error(`Error transforming route "${route.name}": ${error.toString()}`);
-    return [];
+    console.error(`Error transforming route "${route.name}": ${error.toString()}`)
+    return []
   }
 
-  
   // add redirect to child
   if (children?.length && !vueRoute.redirect) {
     vueRoute.redirect = {
       name: children[0].name
-    };
-  }
-  
-  if (children?.length) {
-    const childRoutes = children.flatMap(child => transformElegantRouteToVueRoute(child, layouts, views));
-
-    if(isFirstLevelRoute(route)) {
-      vueRoute.children = childRoutes;
-    } else {
-      vueRoutes.push(...childRoutes);
     }
   }
 
-  vueRoutes.unshift(vueRoute);
+  if (children?.length) {
+    const childRoutes = children.flatMap(child => transformElegantRouteToVueRoute(child, layouts, views))
 
-  return vueRoutes;
+    if (isFirstLevelRoute(route)) {
+      vueRoute.children = childRoutes
+    } else {
+      vueRoutes.push(...childRoutes)
+    }
+  }
+
+  vueRoutes.unshift(vueRoute)
+
+  return vueRoutes
 }
 
 /**
  * map of route name and route path
  */
 const routeMap: RouteMap = {
-  "root": "/",
-  "not-found": "/:pathMatch(.*)*",
-  "exception": "/exception",
-  "exception_403": "/exception/403",
-  "exception_404": "/exception/404",
-  "exception_500": "/exception/500",
-  "403": "/403",
-  "404": "/404",
-  "500": "/500",
-  "about": "/about",
-  "alarm": "/alarm",
-  "alarm_notification-group": "/alarm/notification-group",
-  "alarm_notification-record": "/alarm/notification-record",
-  "alarm_warning-message": "/alarm/warning-message",
-  "apply": "/apply",
-  "apply_plugin": "/apply/plugin",
-  "apply_service": "/apply/service",
-  "automation": "/automation",
-  "automation_linkage-edit": "/automation/linkage-edit",
-  "automation_scene-edit": "/automation/scene-edit",
-  "automation_scene-linkage": "/automation/scene-linkage",
-  "automation_scene-manage": "/automation/scene-manage",
-  "component": "/component",
-  "component_button": "/component/button",
-  "component_card": "/component/card",
-  "component_table": "/component/table",
-  "dashboard": "/dashboard",
-  "dashboard_analysis": "/dashboard/analysis",
-  "dashboard_mobile-panel": "/dashboard/mobile-panel",
-  "dashboard_panel": "/dashboard/panel",
-  "dashboard_workbench": "/dashboard/workbench",
-  "data-service": "/data-service",
-  "data-service_rule-engine": "/data-service/rule-engine",
-  "device": "/device",
-  "device_config": "/device/config",
-  "device_config-detail": "/device/config-detail",
-  "device_config-edit": "/device/config-edit",
-  "device_details": "/device/details",
-  "device_details-child": "/device/details-child",
-  "device_grouping": "/device/grouping",
-  "device_grouping-details": "/device/grouping-details",
-  "device_manage": "/device/manage",
-  "device_service-access": "/device/service-access",
-  "device_service-details": "/device/service-details",
-  "device_template": "/device/template",
-  "device-details-app": "/device-details-app",
-  "function": "/function",
-  "function_hide-child": "/function/hide-child",
-  "function_hide-child_one": "/function/hide-child/one",
-  "function_hide-child_three": "/function/hide-child/three",
-  "function_hide-child_two": "/function/hide-child/two",
-  "function_multi-tab": "/function/multi-tab",
-  "function_tab": "/function/tab",
-  "gridstack-test": "/gridstack-test",
-  "home": "/home",
-  "i18n-test": "/i18n-test",
-  "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?",
-  "manage": "/manage",
-  "manage_menu": "/manage/menu",
-  "manage_role": "/manage/role",
-  "manage_user": "/manage/user",
-  "manage_user-detail": "/manage/user-detail/:id",
-  "management": "/management",
-  "management_api": "/management/api",
-  "management_auth": "/management/auth",
-  "management_notification": "/management/notification",
-  "management_role": "/management/role",
-  "management_route": "/management/route",
-  "management_setting": "/management/setting",
-  "management_user": "/management/user",
-  "multi-menu": "/multi-menu",
-  "multi-menu_first": "/multi-menu/first",
-  "multi-menu_first_child": "/multi-menu/first/child",
-  "multi-menu_second": "/multi-menu/second",
-  "multi-menu_second_child": "/multi-menu/second/child",
-  "multi-menu_second_child_home": "/multi-menu/second/child/home",
-  "paneldemo": "/paneldemo",
-  "personal-center": "/personal-center",
-  "plugin": "/plugin",
-  "plugin_charts": "/plugin/charts",
-  "plugin_charts_antv": "/plugin/charts/antv",
-  "plugin_charts_echarts": "/plugin/charts/echarts",
-  "plugin_copy": "/plugin/copy",
-  "plugin_editor": "/plugin/editor",
-  "plugin_editor_markdown": "/plugin/editor/markdown",
-  "plugin_editor_quill": "/plugin/editor/quill",
-  "plugin_icon": "/plugin/icon",
-  "plugin_map": "/plugin/map",
-  "plugin_print": "/plugin/print",
-  "plugin_swiper": "/plugin/swiper",
-  "plugin_video": "/plugin/video",
-  "rule-engine": "/rule-engine",
-  "system-management-user": "/system-management-user",
-  "system-management-user_system-log": "/system-management-user/system-log",
-  "user-center": "/user-center",
-  "visualization": "/visualization",
-  "visualization_kanban": "/visualization/kanban",
-  "visualization_kanban-details": "/visualization/kanban-details",
-  "visualization_panel-preview": "/visualization/panel-preview"
-};
+  root: '/',
+  'not-found': '/:pathMatch(.*)*',
+  exception: '/exception',
+  exception_403: '/exception/403',
+  exception_404: '/exception/404',
+  exception_500: '/exception/500',
+  '403': '/403',
+  '404': '/404',
+  '500': '/500',
+  about: '/about',
+  alarm: '/alarm',
+  'alarm_notification-group': '/alarm/notification-group',
+  'alarm_notification-record': '/alarm/notification-record',
+  'alarm_warning-message': '/alarm/warning-message',
+  apply: '/apply',
+  apply_plugin: '/apply/plugin',
+  apply_service: '/apply/service',
+  automation: '/automation',
+  'automation_linkage-edit': '/automation/linkage-edit',
+  'automation_scene-edit': '/automation/scene-edit',
+  'automation_scene-linkage': '/automation/scene-linkage',
+  'automation_scene-manage': '/automation/scene-manage',
+  component: '/component',
+  component_button: '/component/button',
+  component_card: '/component/card',
+  component_table: '/component/table',
+  dashboard: '/dashboard',
+  dashboard_analysis: '/dashboard/analysis',
+  'dashboard_mobile-panel': '/dashboard/mobile-panel',
+  dashboard_panel: '/dashboard/panel',
+  dashboard_workbench: '/dashboard/workbench',
+  'data-service': '/data-service',
+  'data-service_rule-engine': '/data-service/rule-engine',
+  device: '/device',
+  device_config: '/device/config',
+  'device_config-detail': '/device/config-detail',
+  'device_config-edit': '/device/config-edit',
+  device_details: '/device/details',
+  'device_details-child': '/device/details-child',
+  device_grouping: '/device/grouping',
+  'device_grouping-details': '/device/grouping-details',
+  device_manage: '/device/manage',
+  'device_service-access': '/device/service-access',
+  'device_service-details': '/device/service-details',
+  device_template: '/device/template',
+  'device-details-app': '/device-details-app',
+  function: '/function',
+  'function_hide-child': '/function/hide-child',
+  'function_hide-child_one': '/function/hide-child/one',
+  'function_hide-child_three': '/function/hide-child/three',
+  'function_hide-child_two': '/function/hide-child/two',
+  'function_multi-tab': '/function/multi-tab',
+  function_tab: '/function/tab',
+  home: '/home',
+  login: '/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?',
+  manage: '/manage',
+  manage_menu: '/manage/menu',
+  manage_role: '/manage/role',
+  manage_user: '/manage/user',
+  'manage_user-detail': '/manage/user-detail/:id',
+  management: '/management',
+  management_api: '/management/api',
+  management_auth: '/management/auth',
+  management_notification: '/management/notification',
+  management_role: '/management/role',
+  management_route: '/management/route',
+  management_setting: '/management/setting',
+  management_user: '/management/user',
+  'multi-menu': '/multi-menu',
+  'multi-menu_first': '/multi-menu/first',
+  'multi-menu_first_child': '/multi-menu/first/child',
+  'multi-menu_second': '/multi-menu/second',
+  'multi-menu_second_child': '/multi-menu/second/child',
+  'multi-menu_second_child_home': '/multi-menu/second/child/home',
+  paneldemo: '/paneldemo',
+  'personal-center': '/personal-center',
+  plugin: '/plugin',
+  plugin_charts: '/plugin/charts',
+  plugin_charts_antv: '/plugin/charts/antv',
+  plugin_charts_echarts: '/plugin/charts/echarts',
+  plugin_copy: '/plugin/copy',
+  plugin_editor: '/plugin/editor',
+  plugin_editor_markdown: '/plugin/editor/markdown',
+  plugin_editor_quill: '/plugin/editor/quill',
+  plugin_icon: '/plugin/icon',
+  plugin_map: '/plugin/map',
+  plugin_print: '/plugin/print',
+  plugin_swiper: '/plugin/swiper',
+  plugin_video: '/plugin/video',
+  'rule-engine': '/rule-engine',
+  'system-management-user': '/system-management-user',
+  'system-management-user_system-log': '/system-management-user/system-log',
+  'test-draggable-grid': '/test-draggable-grid',
+  'user-center': '/user-center',
+  visualization: '/visualization',
+  visualization_kanban: '/visualization/kanban',
+  'visualization_kanban-details': '/visualization/kanban-details',
+  'visualization_panel-preview': '/visualization/panel-preview',
+  'visualization_visual-editor-demo': '/visualization/visual-editor-demo',
+  'visualization_visual-editor-details': '/visualization/visual-editor-details'
+}
 
 /**
  * get route path by route name
  * @param name route name
  */
 export function getRoutePath<T extends RouteKey>(name: T) {
-  return routeMap[name];
+  return routeMap[name]
 }
 
 /**
@@ -273,9 +272,9 @@ export function getRoutePath<T extends RouteKey>(name: T) {
  * @param path route path
  */
 export function getRouteName(path: RoutePath) {
-  const routeEntries = Object.entries(routeMap) as [RouteKey, RoutePath][];
+  const routeEntries = Object.entries(routeMap) as [RouteKey, RoutePath][]
 
-  const routeName: RouteKey | null = routeEntries.find(([, routePath]) => routePath === path)?.[0] || null;
+  const routeName: RouteKey | null = routeEntries.find(([, routePath]) => routePath === path)?.[0] || null
 
-  return routeName;
+  return routeName
 }

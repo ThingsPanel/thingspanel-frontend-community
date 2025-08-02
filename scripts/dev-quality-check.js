@@ -53,15 +53,15 @@ function logInfo(message) {
 function runCommand(command, description) {
   try {
     logInfo(`执行: ${description}`)
-    const result = execSync(command, { 
-      encoding: 'utf8', 
+    const result = execSync(command, {
+      encoding: 'utf8',
       stdio: 'pipe',
       timeout: 120000 // 2分钟超时
     })
     return { success: true, output: result }
   } catch (error) {
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: error.message,
       output: error.stdout || error.stderr || ''
     }
@@ -86,32 +86,35 @@ function checkFileExists(filePath, description) {
  */
 function checkPanelV2Compliance() {
   logSection('PanelV2 架构合规性检查')
-  
+
   const issues = []
-  
+
   // 检查渲染器是否包含工具栏
   const rendererDir = path.join(process.cwd(), 'src/components/panelv2/renderers')
   if (fs.existsSync(rendererDir)) {
     const renderers = fs.readdirSync(rendererDir)
-    
+
     renderers.forEach(renderer => {
       const rendererPath = path.join(rendererDir, renderer)
       if (fs.statSync(rendererPath).isDirectory()) {
-        const mainRenderer = path.join(rendererPath, `${renderer.charAt(0).toUpperCase() + renderer.slice(1)}Renderer.vue`)
-        
+        const mainRenderer = path.join(
+          rendererPath,
+          `${renderer.charAt(0).toUpperCase() + renderer.slice(1)}Renderer.vue`
+        )
+
         if (fs.existsSync(mainRenderer)) {
           const content = fs.readFileSync(mainRenderer, 'utf8')
-          
+
           // 检查是否包含工具栏相关代码
           if (content.includes('toolbar') && content.includes('<div') && content.includes('toolbar')) {
             issues.push(`${renderer} 渲染器可能包含内置工具栏，违反分离原则`)
           }
-          
+
           // 检查是否使用主题系统
           if (!content.includes('useThemeStore') && content.includes('<style')) {
             issues.push(`${renderer} 渲染器未集成主题系统`)
           }
-          
+
           // 检查图标使用是否正确
           const iconImports = content.match(/import.*from.*@vicons\/ionicons5/g)
           if (iconImports) {
@@ -125,7 +128,7 @@ function checkPanelV2Compliance() {
       }
     })
   }
-  
+
   if (issues.length === 0) {
     logSuccess('PanelV2 架构合规性检查通过')
     return true
@@ -140,22 +143,22 @@ function checkPanelV2Compliance() {
  */
 function checkRequiredFiles() {
   logSection('必要文件检查')
-  
+
   const requiredFiles = [
     { path: 'DEVELOPMENT_CHECKLIST.md', desc: '开发检查清单' },
     { path: 'CLAUDE.md', desc: 'Claude 指导文档' },
     { path: 'src/components/panelv2/docs/RENDERER_DEVELOPMENT_GUIDE.md', desc: '渲染器开发指南' },
     { path: 'package.json', desc: 'Package 配置文件' }
   ]
-  
+
   let allExist = true
-  
+
   requiredFiles.forEach(file => {
     if (!checkFileExists(file.path, file.desc)) {
       allExist = false
     }
   })
-  
+
   return allExist
 }
 
@@ -164,7 +167,7 @@ function checkRequiredFiles() {
  */
 function checkCodeQuality() {
   logSection('代码质量检查')
-  
+
   const checks = [
     {
       command: 'pnpm lint --max-warnings 0',
@@ -177,12 +180,12 @@ function checkCodeQuality() {
       required: true
     }
   ]
-  
+
   let allPassed = true
-  
+
   checks.forEach(check => {
     const result = runCommand(check.command, check.description)
-    
+
     if (result.success) {
       logSuccess(`${check.description} 通过`)
     } else {
@@ -195,7 +198,7 @@ function checkCodeQuality() {
       }
     }
   })
-  
+
   return allPassed
 }
 
@@ -204,16 +207,16 @@ function checkCodeQuality() {
  */
 function checkCSSIssues() {
   logSection('CSS 语法检查')
-  
+
   const vueFiles = []
-  
+
   function findVueFiles(dir) {
     const items = fs.readdirSync(dir)
-    
+
     items.forEach(item => {
       const fullPath = path.join(dir, item)
       const stat = fs.statSync(fullPath)
-      
+
       if (stat.isDirectory() && !item.startsWith('.') && item !== 'node_modules') {
         findVueFiles(fullPath)
       } else if (item.endsWith('.vue')) {
@@ -221,38 +224,41 @@ function checkCSSIssues() {
       }
     })
   }
-  
+
   try {
     findVueFiles(path.join(process.cwd(), 'src'))
   } catch (error) {
     logWarning('无法扫描 Vue 文件')
     return true
   }
-  
+
   let issues = []
-  
+
   vueFiles.forEach(file => {
     try {
       const content = fs.readFileSync(file, 'utf8')
-      
+
       // 检查常见的 CSS 语法错误
       const cssIssues = [
-        { pattern: /justify-between;/, fix: 'justify-content: space-between;', desc: 'justify-between 应该是 justify-content: space-between' },
+        {
+          pattern: /justify-between;/,
+          fix: 'justify-content: space-between;',
+          desc: 'justify-between 应该是 justify-content: space-between'
+        },
         { pattern: /align-center;/, fix: 'align-items: center;', desc: 'align-center 应该是 align-items: center' },
         { pattern: /#[0-9a-fA-F]{3,6}/, fix: 'CSS 变量', desc: '发现硬编码颜色，应使用主题变量' }
       ]
-      
+
       cssIssues.forEach(issue => {
         if (issue.pattern.test(content)) {
           issues.push(`${file}: ${issue.desc}`)
         }
       })
-      
     } catch (error) {
       // 忽略无法读取的文件
     }
   })
-  
+
   if (issues.length === 0) {
     logSuccess('CSS 语法检查通过')
     return true
@@ -267,15 +273,15 @@ function checkCSSIssues() {
  */
 function generateQualityReport(results) {
   logSection('质量检查报告')
-  
+
   const passed = results.filter(r => r.passed).length
   const total = results.length
   const percentage = Math.round((passed / total) * 100)
-  
+
   log(`\n检查项目: ${total}`)
   log(`通过项目: ${passed}`)
   log(`通过率: ${percentage}%`)
-  
+
   if (percentage >= 90) {
     logSuccess('代码质量优秀 (A级)')
   } else if (percentage >= 80) {
@@ -285,7 +291,7 @@ function generateQualityReport(results) {
   } else {
     logError('代码质量较差 (D级)，必须修复')
   }
-  
+
   return percentage >= 70
 }
 
@@ -295,21 +301,21 @@ function generateQualityReport(results) {
 function main() {
   log(`${colors.bold}${colors.magenta}🚀 ThingsPanel 开发质量检查工具`, 'magenta')
   log(`${colors.magenta}确保代码提交前符合项目质量标准\n`, 'magenta')
-  
+
   const results = []
-  
+
   // 执行各项检查
   results.push({ name: '必要文件检查', passed: checkRequiredFiles() })
   results.push({ name: 'PanelV2架构合规性', passed: checkPanelV2Compliance() })
   results.push({ name: '代码质量检查', passed: checkCodeQuality() })
   results.push({ name: 'CSS语法检查', passed: checkCSSIssues() })
-  
+
   // 生成报告
   const overallPassed = generateQualityReport(results)
-  
+
   // 输出建议
   logSection('改进建议')
-  
+
   if (overallPassed) {
     logSuccess('恭喜！代码质量符合提交标准')
     log('\n📋 提交前请确认：')
@@ -325,7 +331,7 @@ function main() {
     log('3. 确保所有组件集成主题系统')
     log('4. 移除渲染器中的工具栏实现')
   }
-  
+
   process.exit(overallPassed ? 0 : 1)
 }
 
