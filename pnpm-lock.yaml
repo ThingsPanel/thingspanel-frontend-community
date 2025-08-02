@@ -89,6 +89,9 @@ importers:
       form-data:
         specifier: 4.0.0
         version: 4.0.0
+      grid-layout-plus:
+        specifier: ^1.1.0
+        version: 1.1.0(vue@3.5.17(typescript@5.8.3))
       gridstack:
         specifier: ^12.2.2
         version: 12.2.2
@@ -164,6 +167,9 @@ importers:
       vue-router:
         specifier: ^4.3.2
         version: 4.5.1(vue@3.5.17(typescript@5.8.3))
+      vue3-count-to:
+        specifier: ^1.1.2
+        version: 1.1.2(vue@3.5.17(typescript@5.8.3))
       vue3-grid-layout:
         specifier: ^1.0.0
         version: 1.0.0(@interactjs/core@1.10.27(@interactjs/utils@1.10.27))(@interactjs/utils@1.10.27)(typescript@5.8.3)
@@ -4428,6 +4434,11 @@ packages:
   graphlib@2.1.8:
     resolution: {integrity: sha512-jcLLfkpoVGmH7/InMC/1hIvOPSUh38oJtGhvrOFGzioE1DZ+0YW16RgmOJhHiuWTvGiJQ9Z1Ik43JvkRPRvE+A==}
 
+  grid-layout-plus@1.1.0:
+    resolution: {integrity: sha512-Q5uj0U5nx6xfHg8G1CDRJAEg+/40RVJl5jjRImcRwC78BxoJrEkTneT1pyxYMlbZ8fpGPT6QdHJQkD4+W6gt5A==}
+    peerDependencies:
+      vue: ^3.0.0
+
   gridstack@12.2.2:
     resolution: {integrity: sha512-eK9XAbBWQp+QniqL6ipvofWSrCelm46j5USag73LNq8tOWSL2DeeGBWU9mTibLI6i66n0r7xYS+1/g2qqTqKcw==}
 
@@ -7223,6 +7234,9 @@ packages:
   vscode-uri@3.1.0:
     resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
 
+  vue-count-to@1.0.13:
+    resolution: {integrity: sha512-6R4OVBVNtQTlcbXu6SJ8ENR35M2/CdWt3Jmv57jOUM+1ojiFmjVGvZPH8DfHpMDSA+ITs+EW5V6qthADxeyYOQ==}
+
   vue-demi@0.13.11:
     resolution: {integrity: sha512-IR8HoEEGM65YY3ZJYAjMlKygDQn25D5ajNFNoKh9RSDMQtlzCxtfQjdQgv9jjK+m3377SsJXY8ysq8kLCZL25A==}
     engines: {node: '>=12'}
@@ -7305,6 +7319,11 @@ packages:
     hasBin: true
     peerDependencies:
       typescript: '>=5.0.0'
+
+  vue3-count-to@1.1.2:
+    resolution: {integrity: sha512-C5AvlcGfyM4XvFqPDkni94rqGd5K/+RB+B4xv/1NQx3RrdC+GvXPFzeXW5hWL/jh8ehWLm4LITyK0eMKf4iJbg==}
+    peerDependencies:
+      vue: '>= 3 < 4'
 
   vue3-grid-layout@1.0.0:
     resolution: {integrity: sha512-rFiHnlBFxkY9ojh0YB+cSKCE9A9/mhdbgaPARWD7r2yHPWxV9tHDPbMAN+uycsIDF7ikBpNgeQ9PfeiGaXHUWw==}
@@ -12222,6 +12241,13 @@ snapshots:
     dependencies:
       lodash: 4.17.21
 
+  grid-layout-plus@1.1.0(vue@3.5.17(typescript@5.8.3)):
+    dependencies:
+      '@vexip-ui/hooks': 2.8.0(vue@3.5.17(typescript@5.8.3))
+      '@vexip-ui/utils': 2.16.1
+      interactjs: 1.10.27
+      vue: 3.5.17(typescript@5.8.3)
+
   gridstack@12.2.2: {}
 
   gzip-size@6.0.0:
@@ -15383,6 +15409,8 @@ snapshots:
 
   vscode-uri@3.1.0: {}
 
+  vue-count-to@1.0.13: {}
+
   vue-demi@0.13.11(vue@3.5.17(typescript@5.8.3)):
     dependencies:
       vue: 3.5.17(typescript@5.8.3)
@@ -15449,6 +15477,12 @@ snapshots:
       '@volar/typescript': 2.4.15
       '@vue/language-core': 2.2.12(typescript@5.8.3)
       typescript: 5.8.3
+
+  vue3-count-to@1.1.2(vue@3.5.17(typescript@5.8.3)):
+    dependencies:
+      core-js: 3.41.0
+      vue: 3.5.17(typescript@5.8.3)
+      vue-count-to: 1.0.13
 
   vue3-grid-layout@1.0.0(@interactjs/core@1.10.27(@interactjs/utils@1.10.27))(@interactjs/utils@1.10.27)(typescript@5.8.3):
     dependencies:

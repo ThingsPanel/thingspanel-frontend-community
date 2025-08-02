@@ -11,6 +11,9 @@ export function setupElegantRouter() {
     customRoutes: {
       names: ['exception_403', 'exception_404', 'exception_500']
     },
+    layoutOptions: {
+      'src/views/_builtin': 'blank'
+    },
     routePathTransformer(routeName, routePath) {
       const key = routeName as RouteKey
 

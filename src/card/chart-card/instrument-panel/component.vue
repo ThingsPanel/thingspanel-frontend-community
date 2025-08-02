@@ -2,16 +2,16 @@
 import { defineProps, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { NCard } from 'naive-ui'
 import VChart from 'vue-echarts'
-import { use } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { GaugeChart } from 'echarts/charts'
-import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components'
+// import { use } from 'echarts/core'
+// import { CanvasRenderer } from 'echarts/renderers'
+// import { GaugeChart } from 'echarts/charts'
+// import { LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components'
 import type { ICardData } from '@/components/panel/card'
 import { telemetryDataCurrentKeys } from '@/service/api/device'
 import { $t } from '@/locales'
 
-// 注册 ECharts 所需的组件和渲染器
-use([CanvasRenderer, GaugeChart, TitleComponent, TooltipComponent, LegendComponent])
+// 注册 ECharts 所需的组件和渲染器 - 已移至 echarts-manager 统一管理
+// use([CanvasRenderer, GaugeChart, TitleComponent, TooltipComponent, LegendComponent])
 
 const initDetailValue = 8
 const valueColor = '#105ba8'

@@ -116,50 +116,114 @@ export class Card2API {
    * 注册内置组件
    */
   private async registerBuiltinComponents() {
+    const registeredComponents = []
+
     try {
-      // 注册图表组件
-      const { default: barChartDefinition } = await import('./components/chart/bar/index')
-      componentRegistry.register(barChartDefinition)
+      // 安全注册图表组件
+      try {
+        const { default: barChartDefinition } = await import('./components/chart/bar/index')
+        componentRegistry.register(barChartDefinition)
+        registeredComponents.push('bar-chart')
+      } catch (error) {
+        console.warn('柱状图组件注册失败:', error.message)
+      }
 
-      const { default: curveChartDefinition } = await import('./components/chart/curve/index')
-      componentRegistry.register(curveChartDefinition)
+      try {
+        const { default: curveChartDefinition } = await import('./components/chart/curve/index')
+        componentRegistry.register(curveChartDefinition)
+        registeredComponents.push('curve-chart')
+      } catch (error) {
+        console.warn('曲线图组件注册失败:', error.message)
+      }
 
-      const { default: gaugeDefinition } = await import('./components/chart/gauge/index')
-      componentRegistry.register(gaugeDefinition)
+      // 暂时跳过gauge组件，因为它使用旧的定义格式
+      try {
+        const { default: gaugeDefinition } = await import('./components/chart/gauge/index')
+        // TODO: 修复gauge组件的meta结构
+        console.warn('仪表盘组件暂时跳过注册，需要修复meta结构')
+      } catch (error) {
+        console.warn('仪表盘组件注册失败:', error.message)
+      }
 
-      const { default: tableDefinition } = await import('./components/chart/table/index')
-      componentRegistry.register(tableDefinition)
+      try {
+        const { default: tableDefinition } = await import('./components/chart/table/index')
+        componentRegistry.register(tableDefinition)
+        registeredComponents.push('table')
+      } catch (error) {
+        console.warn('表格组件注册失败:', error.message)
+      }
 
-      // 注册控制组件
-      const { default: digitSetterDefinition } = await import('./components/control/digit-setter/index')
-      componentRegistry.register(digitSetterDefinition)
+      // 安全注册控制组件
+      try {
+        const { default: digitSetterDefinition } = await import('./components/control/digit-setter/index')
+        componentRegistry.register(digitSetterDefinition)
+        registeredComponents.push('digit-setter')
+      } catch (error) {
+        console.warn('数字设置器组件注册失败:', error.message)
+      }
 
-      const { default: dispatchDataDefinition } = await import('./components/control/dispatch-data/index')
-      componentRegistry.register(dispatchDataDefinition)
+      try {
+        const { default: dispatchDataDefinition } = await import('./components/control/dispatch-data/index')
+        componentRegistry.register(dispatchDataDefinition)
+        registeredComponents.push('dispatch-data')
+      } catch (error) {
+        console.warn('数据分发组件注册失败:', error.message)
+      }
 
-      const { default: enumControlDefinition } = await import('./components/control/enum-control/index')
-      componentRegistry.register(enumControlDefinition)
+      try {
+        const { default: enumControlDefinition } = await import('./components/control/enum-control/index')
+        componentRegistry.register(enumControlDefinition)
+        registeredComponents.push('enum-control')
+      } catch (error) {
+        console.warn('枚举控制组件注册失败:', error.message)
+      }
 
-      const { default: switchDefinition } = await import('./components/control/switch/index')
-      componentRegistry.register(switchDefinition)
+      try {
+        const { default: switchDefinition } = await import('./components/control/switch/index')
+        componentRegistry.register(switchDefinition)
+        registeredComponents.push('switch')
+      } catch (error) {
+        console.warn('开关组件注册失败:', error.message)
+      }
 
-      // 注册显示组件
-      const { default: digitIndicatorDefinition } = await import('./components/display/digit-indicator/index')
-      componentRegistry.register(digitIndicatorDefinition)
+      // 安全注册显示组件
+      try {
+        const { default: digitIndicatorDefinition } = await import('./components/display/digit-indicator/index')
+        componentRegistry.register(digitIndicatorDefinition)
+        registeredComponents.push('digit-indicator')
+      } catch (error) {
+        console.warn('数字指示器组件注册失败:', error.message)
+      }
 
-      const { default: stateDisplayDefinition } = await import('./components/display/state-display/index')
-      componentRegistry.register(stateDisplayDefinition)
+      try {
+        const { default: stateDisplayDefinition } = await import('./components/display/state-display/index')
+        componentRegistry.register(stateDisplayDefinition)
+        registeredComponents.push('state-display')
+      } catch (error) {
+        console.warn('状态显示组件注册失败:', error.message)
+      }
 
-      const { default: textInfoDefinition } = await import('./components/display/text-info/index')
-      componentRegistry.register(textInfoDefinition)
+      try {
+        const { default: textInfoDefinition } = await import('./components/display/text-info/index')
+        componentRegistry.register(textInfoDefinition)
+        registeredComponents.push('text-info')
+      } catch (error) {
+        console.warn('文本信息组件注册失败:', error.message)
+      }
 
-      // 注册媒体组件
-      const { default: videoPlayerDefinition } = await import('./components/media/video-player/index')
-      componentRegistry.register(videoPlayerDefinition)
+      // 安全注册媒体组件
+      try {
+        const { default: videoPlayerDefinition } = await import('./components/media/video-player/index')
+        componentRegistry.register(videoPlayerDefinition)
+        registeredComponents.push('video-player')
+      } catch (error) {
+        console.warn('视频播放器组件注册失败:', error.message)
+      }
 
-      console.log('内置组件注册完成，共注册了 11 个组件')
+      console.log(`内置组件注册完成，成功注册了 ${registeredComponents.length} 个组件:`, registeredComponents)
     } catch (error) {
-      console.error('内置组件注册失败:', error)
+      console.error('内置组件注册过程中发生严重错误:', error)
+      throw error
     }
   }
 

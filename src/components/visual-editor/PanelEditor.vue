@@ -1,16 +1,28 @@
 <script setup lang="ts">
-import { nextTick, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useDialog, useMessage } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import { useAppStore } from '@/store/modules/app'
+import FullScreen from '@/components/common/full-screen.vue'
 import { $t } from '@/locales'
 import { getBoard, PutBoard } from '@/service/api'
 import EditorLayout from './components/Layout/EditorLayout.vue'
+import { VisualEditorToolbar } from './components/toolbar'
 import WidgetLibrary from './components/WidgetLibrary/WidgetLibrary.vue'
-import PropertyPanel from './components/PropertyPanel/PropertyPanel.vue'
+import { initializeSettings, SettingsPanel } from './settings'
 import { CanvasRenderer, GridstackRenderer } from './renderers'
-import { createEditor } from './hooks/useEditor'
-import type { RendererType } from './types'
+import { createEditor, useCard2Integration } from './hooks'
+import type { RendererType, VisualEditorWidget, GraphData } from './types'
+
+// 初始化 Card 2.1 集成
+useCard2Integration({
+  autoInit: true,
+  devMode: import.meta.env.DEV, // 开发模式下开启 devMode
+})
+
+
+// 初始化设置面板
+initializeSettings()
 
 const dialog = useDialog()
 const message = useMessage()
@@ -21,20 +33,35 @@ const props = defineProps<{ panelId: string }>()
 // 状态管理
 const panelData = ref<Panel.Board>()
 const fullui = ref()
-const isEditing = ref(false)
+const isEditing = ref(false) // 默认预览模式
 const isSaving = ref(false)
 const dataFetched = ref(false)
+const hasChanges = ref(false)
+const isUnmounted = ref(false)
 
 // 编辑器状态
 const editorConfig = ref<any>({})
 const preEditorConfig = ref<any>({})
-const currentRenderer = ref<RendererType>('canvas')
+const currentRenderer = ref<RendererType>('gridstack')
+
+// 布局状态 - 初始状态：预览模式，左侧收起
+const leftCollapsed = ref(true)  // 默认收起组件库
+const rightCollapsed = ref(true)  // 初始隐藏属性面板，选中节点时显示
+const selectedNodeId = ref<string>('')
+const showWidgetTitles = ref(true) // 总开关，默认显示标题
 
 // 全屏功能
 const { isFullscreen, toggle } = useFullscreen(fullui)
 
 // 创建编辑器上下文
 const { stateManager, addWidget, selectNode, updateNode } = createEditor()
+
+const selectedWidget = computed<VisualEditorWidget | null>(() => {
+  if (!selectedNodeId.value) return null
+  // Correctly find the node from the state manager's nodes array
+  return stateManager.canvasState.value.nodes.find(node => node.id === selectedNodeId.value) || null
+})
+
 
 // 状态管理辅助方法
 const setState = (config: any) => {
@@ -46,7 +73,7 @@ const setState = (config: any) => {
   // 加载节点
   if (config.nodes && Array.isArray(config.nodes)) {
     config.nodes.forEach((node: any) => {
-      stateManager.addNode(node)
+      stateManager.addNode(node as GraphData)
     })
   }
   
@@ -70,6 +97,11 @@ const getState = () => {
 const fetchBoard = async () => {
   try {
     const { data } = await getBoard(props.panelId)
+    // 检查组件是否已经卸载
+    if (isUnmounted.value) {
+      console.log('组件已卸载，取消数据处理')
+      return
+    }
     if (data) {
       panelData.value = data
       console.log('📊 获取面板数据成功:', data)
@@ -89,27 +121,37 @@ const fetchBoard = async () => {
         preEditorConfig.value = JSON.parse(JSON.stringify(editorConfig.value))
         setState(editorConfig.value)
       }
-      dataFetched.value = true
-      message.success('面板数据加载成功')
+      if (!isUnmounted.value) {
+        dataFetched.value = true
+        message.success('面板数据加载成功')
+      }
     } else {
       console.warn('⚠️ 未获取到面板数据')
-      message.warning('未获取到面板数据，使用默认配置')
+      if (!isUnmounted.value) {
+        message.warning('未获取到面板数据，使用默认配置')
+      }
       
       // 即使没有数据也要初始化默认配置
       editorConfig.value = getDefaultConfig()
       preEditorConfig.value = JSON.parse(JSON.stringify(editorConfig.value))
       setState(editorConfig.value)
-      dataFetched.value = true
+      if (!isUnmounted.value) {
+        dataFetched.value = true
+      }
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取面板数据失败:', error)
-    message.warning('获取面板数据失败，使用默认配置')
+    if (!isUnmounted.value) {
+      message.warning('获取面板数据失败，使用默认配置')
+    }
     
     // 出错时也要初始化默认配置，让编辑器能正常工作
     editorConfig.value = getDefaultConfig()
     preEditorConfig.value = JSON.parse(JSON.stringify(editorConfig.value))
     setState(editorConfig.value)
-    dataFetched.value = true
+    if (!isUnmounted.value) {
+      dataFetched.value = true
+    }
   }
 }
 
@@ -128,7 +170,7 @@ const parseConfig = (configString: string) => {
       legacyComponents: Array.isArray(config) ? config : [],
       visualEditor: getDefaultConfig()
     }
-  } catch (error) {
+  } catch (error: any) {
     console.warn('配置解析失败:', error)
     return {
       legacyComponents: [],
@@ -149,77 +191,173 @@ const getDefaultConfig = () => ({
   viewport: {}
 })
 
-// 进入编辑模式
-const toEditMode = () => {
-  isEditing.value = true
-}
-
-// 退出编辑模式
-const quitEditMode = () => {
-  const currentState = getState()
-  if (JSON.stringify(currentState) !== JSON.stringify(preEditorConfig.value)) {
-    dialog.warning({
-      title: $t('card.quitWithoutSave'),
-      positiveText: $t('device_template.confirm'),
-      negativeText: $t('common.cancel'),
-      onPositiveClick: () => {
-        isEditing.value = false
-        editorConfig.value = preEditorConfig.value
-        setState(preEditorConfig.value)
-      }
-    })
-  } else {
-    isEditing.value = false
-  }
-}
-
-// 添加组件
-const handleAddWidget = (widgetType: string) => {
-  addWidget(widgetType)
-}
-
-// 切换渲染器
-const switchRenderer = (renderer: RendererType) => {
-  console.log('🔄 切换渲染器:', renderer)
-  
-  // 添加安全检查
-  if (!stateManager || !stateManager.canvasState) {
-    console.error('❌ StateManager 或 canvasState 未初始化')
-    currentRenderer.value = renderer
-    return
-  }
-  
-  const currentNodes = stateManager.canvasState.value.nodes
-  console.log('📊 当前节点数量:', currentNodes?.length || 0)
-  console.log('📋 节点详情:', currentNodes)
-  
-  currentRenderer.value = renderer
-  
-  // 确保所有现有节点都支持新的渲染器
-  if (currentNodes && currentNodes.length > 0) {
-    currentNodes.forEach((node: any) => {
-      if (!node.renderer || !node.renderer.includes(renderer)) {
-        console.log(`📝 更新节点 ${node.id} 支持渲染器 ${renderer}`)
-        updateNode(node.id, {
-          renderer: [...(node.renderer || []), renderer]
-        })
-      }
-    })
-  }
-}
-
 // 渲染器选项
 const rendererOptions = [
-  { label: 'Canvas 画布', value: 'canvas' as RendererType },
-  { label: 'GridStack 网格', value: 'gridstack' as RendererType }
+  { label: '大屏', value: 'canvas' as RendererType },
+  { label: '看板', value: 'gridstack' as RendererType }
 ]
 
-// 清空所有节点
-const clearAllNodes = () => {
-  console.log('🧹 清空所有节点')
+// 工具栏事件处理
+const handleModeChange = (mode: 'edit' | 'preview') => {
+  if (mode === 'edit') {
+    isEditing.value = true
+    // 进入编辑模式时展开组件库
+    leftCollapsed.value = false
+    // 如果有选中的节点，展开属性面板
+    if (selectedNodeId.value) {
+      rightCollapsed.value = false
+    }
+  } else {
+    const currentState = getState()
+    if (JSON.stringify(currentState) !== JSON.stringify(preEditorConfig.value)) {
+      dialog.warning({
+        title: $t('card.quitWithoutSave'),
+        positiveText: $t('device_template.confirm'),
+        negativeText: $t('common.cancel'),
+        onPositiveClick: () => {
+          isEditing.value = false
+          // 退出编辑模式时锁定两边面板
+          leftCollapsed.value = true
+          rightCollapsed.value = true
+          // 清空选中状态
+          selectedNodeId.value = ''
+          editorConfig.value = preEditorConfig.value
+          setState(preEditorConfig.value)
+        }
+      })
+    } else {
+      isEditing.value = false
+      // 退出编辑模式时锁定两边面板
+      leftCollapsed.value = true
+      rightCollapsed.value = true
+      // 清空选中状态
+      selectedNodeId.value = ''
+    }
+  }
+}
+
+const handleRendererChange = (renderer: RendererType) => {
+  currentRenderer.value = renderer
+  hasChanges.value = true
+}
+
+const handleAddWidget = async (widgetType: string) => {
+  try {
+    await addWidget(widgetType)
+    hasChanges.value = true
+    message.success(`成功添加 ${widgetType} 组件`)
+  } catch (error: any) {
+    console.error(`❌ 添加组件失败 [${widgetType}]:`, error)
+    message.error(`添加 ${widgetType} 组件失败: ${error.message || '未知错误'}`)
+  }
+}
+
+const handleClearAll = () => {
   stateManager.reset()
+  hasChanges.value = true
   message.success('已清空所有节点')
 }
+
+// 导入导出处理
+const handleImportConfig = (config: Record<string, any>) => {
+  try {
+    console.log('导入配置:', config)
+    
+    // 验证配置格式
+    if (config && typeof config === 'object') {
+      // 如果是新格式配置
+      if (config.visualEditor) {
+        editorConfig.value = config.visualEditor
+        setState(config.visualEditor)
+      } 
+      // 如果是直接的编辑器配置
+      else if (config.nodes || config.canvasConfig) {
+        editorConfig.value = config
+        setState(config)
+      }
+      // 否则当作旧格式处理
+      else {
+        const newConfig = getDefaultConfig()
+        editorConfig.value = newConfig
+        setState(newConfig)
+      }
+      
+      hasChanges.value = true
+      message.success('配置导入成功')
+    } else {
+      throw new Error('无效的配置格式')
+    }
+  } catch (error: any) {
+    console.error('导入配置失败:', error)
+    message.error('导入配置失败: ' + (error.message || '未知错误'))
+  }
+}
+
+const handleExportConfig = () => {
+  try {
+    const currentState = getState()
+    const exportConfig = {
+      visualEditor: {
+        ...currentState,
+        metadata: {
+          version: '1.0.0',
+          exportedAt: Date.now(),
+          editorType: 'visual-editor'
+        }
+      }
+    }
+    
+    // 创建下载链接
+    const blob = new Blob([JSON.stringify(exportConfig, null, 2)], {
+      type: 'application/json'
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `panel-config-${Date.now()}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+    
+    message.success('配置导出成功')
+  } catch (error: any) {
+    console.error('导出配置失败:', error)
+    message.error('导出配置失败: ' + (error.message || '未知错误'))
+  }
+}
+
+// 视图控制事件
+const handleToggleWidgetTitles = (value: boolean) => {
+  showWidgetTitles.value = value
+}
+
+const handleZoomIn = () => {
+  // TODO: 实现缩放功能
+  console.log('放大视图')
+}
+
+const handleZoomOut = () => {
+  // TODO: 实现缩放功能
+  console.log('缩小视图')
+}
+
+const handleResetZoom = () => {
+  // TODO: 实现重置缩放功能
+  console.log('重置缩放')
+}
+
+const handleUndo = () => {
+  // TODO: 实现撤销功能
+  console.log('撤销操作')
+}
+
+const handleRedo = () => {
+  // TODO: 实现重做功能
+  console.log('重做操作')
+}
+
+// 注意：面板控制现在由编辑模式自动管理，不再需要手动切换
 
 // 渲染器事件处理
 const handleRendererReady = () => {
@@ -232,11 +370,23 @@ const handleRendererError = (error: Error) => {
 }
 
 const handleNodeSelect = (nodeId: string) => {
-  console.log('🎯 节点被选中:', nodeId)
+  selectedNodeId.value = nodeId
+  selectNode(nodeId)
+  // 选中节点时，如果在编辑模式，自动展开属性面板
+  if (isEditing.value && nodeId) {
+    rightCollapsed.value = false
+  }
 }
 
-// 保存面板 - 学习 savePanel 的写法
-const savePanel = async () => {
+const handleCanvasClick = () => {
+  selectedNodeId.value = ''
+  selectNode('')
+  // 取消选中时可以选择性隐藏属性面板（或保持展开）
+  // rightCollapsed.value = true
+}
+
+// 保存面板
+const handleSave = async () => {
   isSaving.value = true
   try {
     const currentState = getState()
@@ -246,7 +396,7 @@ const savePanel = async () => {
     if (panelData.value?.config) {
       try {
         existingConfig = parseConfig(panelData.value.config)
-      } catch (error) {
+      } catch (error: any) {
         console.warn('解析现有配置失败:', error)
       }
     }
@@ -273,11 +423,12 @@ const savePanel = async () => {
 
     if (!error) {
       preEditorConfig.value = JSON.parse(JSON.stringify(currentState))
+      hasChanges.value = false
       message.success($t('page.dataForward.saveSuccess'))
     } else {
       message.error($t('page.dataForward.saveFailed') || '保存失败')
     }
-  } catch (err) {
+  } catch (err: any) {
     message.error($t('page.dataForward.saveFailed') || '保存失败')
     console.error('保存失败:', err)
   } finally {
@@ -289,11 +440,17 @@ const savePanel = async () => {
 onMounted(() => {
   fetchBoard()
 })
+
+// 组件卸载时的清理工作
+onUnmounted(() => {
+  isUnmounted.value = true
+  console.log('PanelEditor 组件已卸载')
+})
 </script>
 
 <template>
   <div class="w-full px-5 py-5">
-    <!-- 工具栏 -->
+    <!-- 页面标题栏 -->
     <div
       v-show="!appStore.fullContent"
       class="flex items-center justify-between border-b border-gray-200 px-10px pb-3 dark:border-gray-200/10"
@@ -306,42 +463,6 @@ onMounted(() => {
         </NSpace>
       </div>
       <NSpace align="center">
-        <NDivider vertical />
-        
-        <!-- 渲染器切换 -->
-        <template v-if="isEditing">
-          <span class="text-12px text-gray-500">渲染器:</span>
-          <NSelect
-            v-model:value="currentRenderer"
-            :options="rendererOptions"
-            size="small"
-            style="width: 120px"
-            @update:value="switchRenderer"
-          />
-          
-          <!-- 清空按钮 -->
-          <NPopconfirm
-            positive-text="确认清空"
-            negative-text="取消"
-            @positive-click="clearAllNodes"
-          >
-            <template #trigger>
-              <NButton size="small" type="error" secondary>
-                🧹 清空
-              </NButton>
-            </template>
-            <span>确定要清空所有节点吗？此操作不可撤销。</span>
-          </NPopconfirm>
-          
-          <NDivider vertical />
-        </template>
-        
-        <NButton v-if="!isEditing" @click="toEditMode">
-          <SvgIcon icon="material-symbols:edit" class="mr-0.5 text-lg" />
-          {{ $t('generate.edit') }}
-        </NButton>
-        <NButton v-if="isEditing" @click="quitEditMode">{{ $t('card.quitEdit') }}</NButton>
-        <NButton v-show="isEditing" :loading="isSaving" @click="savePanel">{{ $t('common.save') }}</NButton>
         <FullScreen
           :full="isFullscreen"
           @click="toggle"
@@ -360,46 +481,81 @@ onMounted(() => {
       </div>
 
       <div v-else class="panel-editor w-full h-full">
-        <EditorLayout v-if="isEditing">
+        <!-- 使用新的架构：EditorLayout + VisualEditorToolbar -->
+        <EditorLayout 
+          v-model:left-collapsed="leftCollapsed"
+          v-model:right-collapsed="rightCollapsed"
+          :mode="isEditing ? 'edit' : 'preview'"
+        >
+          <!-- 工具栏插槽 -->
+          <template #toolbar>
+            <VisualEditorToolbar
+              v-if="dataFetched && !isUnmounted"
+              :key="`toolbar-${currentRenderer}-${isEditing ? 'edit' : 'preview'}`"
+              :mode="isEditing ? 'edit' : 'preview'"
+              :current-renderer="currentRenderer"
+              :available-renderers="rendererOptions"
+              :is-saving="isSaving"
+              :has-changes="hasChanges"
+              @mode-change="handleModeChange"
+              @renderer-change="handleRendererChange"
+              @save="handleSave"
+              @import="handleImportConfig"
+              @export="handleExportConfig"
+              @import-config="handleImportConfig"
+              @export-config="handleExportConfig"
+              @undo="handleUndo"
+              @redo="handleRedo"
+              @clear-all="handleClearAll"
+              @zoom-in="handleZoomIn"
+              @zoom-out="handleZoomOut"
+              @reset-zoom="handleResetZoom"
+            />
+          </template>
+
+          <!-- 左侧组件库 -->
           <template #left>
             <WidgetLibrary @add-widget="handleAddWidget" />
           </template>
+
+          <!-- 中央画布 -->
           <template #main>
-            <!-- 动态渲染器切换 - 统一渲染器架构 -->
-            <CanvasRenderer 
-              v-if="currentRenderer === 'canvas'" 
-              :readonly="!isEditing"
-              @ready="handleRendererReady"
-              @error="handleRendererError"
-              @node-select="handleNodeSelect"
-            />
-            <GridstackRenderer 
-              v-else-if="currentRenderer === 'gridstack'" 
-              :readonly="!isEditing"
-              @ready="handleRendererReady"
-              @error="handleRendererError" 
-              @node-select="handleNodeSelect"
-            />
+            <div class="canvas-container" @click="handleCanvasClick">
+              <!-- 动态渲染器 -->
+              <CanvasRenderer 
+                v-if="currentRenderer === 'canvas' && dataFetched && !isUnmounted" 
+                key="canvas-renderer"
+                :readonly="!isEditing"
+                :show-widget-titles="showWidgetTitles"
+                class="renderer-container"
+                @ready="handleRendererReady"
+                @error="handleRendererError"
+                @node-select="handleNodeSelect"
+                @canvas-click="handleCanvasClick"
+              />
+              <GridstackRenderer 
+                v-else-if="currentRenderer === 'gridstack' && dataFetched && !isUnmounted" 
+                key="gridstack-renderer"
+                :readonly="!isEditing"
+                :show-widget-titles="showWidgetTitles"
+                class="renderer-container"
+                @ready="handleRendererReady" 
+                @error="handleRendererError"
+                @node-select="handleNodeSelect"
+                @canvas-click="handleCanvasClick"
+              />
+            </div>
           </template>
+
+          <!-- 右侧属性面板 -->
           <template #right>
-            <PropertyPanel />
+            <SettingsPanel 
+              :selected-widget="selectedWidget"
+              :show-widget-titles="showWidgetTitles"
+              @toggle-widget-titles="handleToggleWidgetTitles"
+            />
           </template>
         </EditorLayout>
-        
-        <!-- 预览模式 -->
-        <div v-else class="preview-mode w-full h-full">
-          <div class="preview-content">
-            <h3>预览模式</h3>
-            <p>面板名称: {{ panelData?.name }}</p>
-            <p>面板ID: {{ panelData?.id }}</p>
-            <p>节点数量: {{ editorConfig.nodes?.length || 0 }}</p>
-            <p>画布尺寸: {{ editorConfig.canvasConfig?.width || 0 }} x {{ editorConfig.canvasConfig?.height || 0 }}</p>
-            <details>
-              <summary>配置详情</summary>
-              <pre>{{ JSON.stringify(editorConfig, null, 2) }}</pre>
-            </details>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -414,39 +570,24 @@ onMounted(() => {
   height: calc(100% - 30px);
 }
 
-.preview-mode {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--n-body-color);
-  padding: 20px;
-}
-
-.preview-content {
-  background: var(--n-card-color);
-  padding: 20px;
-  border-radius: 8px;
-  border: 1px solid var(--n-border-color);
-  max-width: 600px;
+/* 画布容器 */
+.canvas-container {
+  position: relative;
   width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--n-body-color);
 }
 
-.preview-content h3 {
-  margin: 0 0 16px 0;
-  color: var(--n-text-color);
+.renderer-container {
+  width: 100%;
+  height: 100%;
 }
 
-.preview-content p {
-  margin: 8px 0;
-  color: var(--n-text-color-2);
-}
-
-.preview-content pre {
-  background: var(--n-code-color);
-  padding: 12px;
-  border-radius: 4px;
-  font-size: 12px;
-  overflow: auto;
-  max-height: 300px;
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .panel-editor {
+    min-height: 400px;
+  }
 }
 </style>

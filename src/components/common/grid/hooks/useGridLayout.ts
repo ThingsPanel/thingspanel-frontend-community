@@ -39,11 +39,20 @@ export function useGridLayout(
   config: Partial<GridConfig> = {},
   containerElement?: Ref<HTMLElement | undefined>
 ): UseGridLayoutReturn {
-  // 合并默认配置
+  // 合并默认配置，监听配置变化
   const gridConfig = reactive<GridConfig>({
     ...DEFAULT_GRID_CONFIG,
     ...config
   })
+
+  // 监听外部配置变化
+  watch(
+    () => config,
+    newConfig => {
+      Object.assign(gridConfig, { ...DEFAULT_GRID_CONFIG, ...newConfig })
+    },
+    { deep: true, immediate: true }
+  )
 
   // 容器宽度
   const containerWidth = ref(1200)

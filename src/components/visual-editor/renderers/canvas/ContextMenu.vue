@@ -13,16 +13,19 @@
 <script setup lang="ts">
 import { computed, h } from 'vue'
 import { NIcon } from 'naive-ui'
-import { CopyOutline, TrashOutline, LayersOutline, LockClosedOutline } from '@vicons/ionicons5'
+import { CopyOutline, TrashOutline } from '@vicons/ionicons5'
+import type { VisualEditorWidget } from '../../types'
 
 interface Props {
   show: boolean
   x: number
   y: number
-  selectedIds: string[]
+  selectedWidgets?: VisualEditorWidget[]
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  selectedWidgets: () => []
+})
 
 const emit = defineEmits<{
   select: [action: string]
@@ -30,8 +33,8 @@ const emit = defineEmits<{
 }>()
 
 const menuOptions = computed(() => {
-  const hasSelection = props.selectedIds.length > 0
-  const multipleSelection = props.selectedIds.length > 1
+  const selection = props.selectedWidgets || []
+  const hasSelection = selection.length > 0
 
   return [
     {
@@ -45,23 +48,8 @@ const menuOptions = computed(() => {
       key: 'delete',
       icon: () => h(NIcon, null, { default: () => h(TrashOutline) }),
       disabled: !hasSelection
-    },
-    {
-      type: 'divider',
-      key: 'divider1'
-    },
-    {
-      label: multipleSelection ? '成组' : '图层',
-      key: 'layer',
-      icon: () => h(NIcon, null, { default: () => h(LayersOutline) }),
-      disabled: !hasSelection
-    },
-    {
-      label: '锁定',
-      key: 'lock',
-      icon: () => h(NIcon, null, { default: () => h(LockClosedOutline) }),
-      disabled: !hasSelection
     }
+    // "图层" 和 "锁定" 已移除
   ]
 })
 

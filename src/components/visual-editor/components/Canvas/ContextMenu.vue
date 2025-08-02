@@ -19,10 +19,12 @@ interface Props {
   show: boolean
   x: number
   y: number
-  selectedIds: string[]
+  selectedIds?: string[]
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  selectedIds: () => []
+})
 
 const emit = defineEmits<{
   select: [action: string]
@@ -30,8 +32,9 @@ const emit = defineEmits<{
 }>()
 
 const menuOptions = computed(() => {
-  const hasSelection = props.selectedIds.length > 0
-  const multipleSelection = props.selectedIds.length > 1
+  const selectedIds = props.selectedIds || []
+  const hasSelection = selectedIds.length > 0
+  const multipleSelection = selectedIds.length > 1
 
   return [
     {

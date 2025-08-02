@@ -1,58 +1,20 @@
 /**
- * Widget Components - 组件库入口
- * 导出所有可用的编辑器组件
+ * @file widgets/index.ts
+ * @description
+ * 这是所有组件注册的统一入口。
+ * 当编辑器启动时，会调用这里的 `registerAllWidgets` 函数，
+ * 以确保所有定义的组件都被加载到组件注册中心。
  */
 
-// 组件导出
-export { default as TextWidget } from './TextWidget.vue'
-export { default as ImageWidget } from './ImageWidget.vue'
-
-// 组件注册表
-import type { WidgetMeta, WidgetType } from '../types'
-
-export const WIDGET_REGISTRY: Record<WidgetType, WidgetMeta> = {
-  text: {
-    type: 'text',
-    name: '文本',
-    icon: 'i-mdi-format-text',
-    defaultSize: {
-      width: 200,
-      height: 40
-    },
-    constraints: {
-      minWidth: 50,
-      minHeight: 20,
-      maxWidth: 800,
-      maxHeight: 200
-    }
-  },
-  image: {
-    type: 'image',
-    name: '图片',
-    icon: 'i-mdi-image',
-    defaultSize: {
-      width: 200,
-      height: 150
-    },
-    constraints: {
-      minWidth: 50,
-      minHeight: 50,
-      maxWidth: 800,
-      maxHeight: 600
-    }
-  }
-}
+// 所有的传统组件注册都已被移除，以便为 Card 2.1 让路。
+// 如果需要添加非 Card 2.1 的传统组件，可以取消下面的注释并创建相应的注册文件。
+// import { registerBaseWidgets } from './base-widgets'
 
 /**
- * 获取组件元信息
+ * 注册所有在编辑器中可用的组件。
+ * 这个函数应该在应用程序的入口处（例如 main.ts 或编辑器初始化时）被调用一次。
  */
-export const getWidgetMeta = (type: WidgetType): WidgetMeta | null => {
-  return WIDGET_REGISTRY[type] || null
-}
-
-/**
- * 获取所有可用组件类型
- */
-export const getAvailableWidgets = (): WidgetMeta[] => {
-  return Object.values(WIDGET_REGISTRY)
+export function registerAllWidgets() {
+  // registerBaseWidgets() // 已移除基础组件注册
+  console.log('🎨 [WidgetRegistry] 所有传统组件注册已禁用，等待 Card 2.1 接入。')
 }

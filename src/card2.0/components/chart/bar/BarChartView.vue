@@ -61,6 +61,7 @@
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import type { ECharts, EChartsOption } from 'echarts'
+import { createEChartsInstance } from '@/utils/echarts/echarts-manager'
 
 // Props
 interface Props {
@@ -260,7 +261,7 @@ const initChart = async () => {
     }
     
     // 创建新图表
-    chart.value = echarts.init(chartElement.value, isDarkTheme.value ? 'dark' : 'light')
+    chart.value = createEChartsInstance(chartElement.value, isDarkTheme.value ? 'dark' : 'light')
     
     // 设置配置
     chart.value.setOption(chartOption.value, true)

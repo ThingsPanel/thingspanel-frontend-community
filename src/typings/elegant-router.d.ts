@@ -60,7 +60,6 @@ declare module "@elegant-router/types" {
     "device_service-access": "/device/service-access";
     "device_service-details": "/device/service-details";
     "device_template": "/device/template";
-    "device-details-app": "/device-details-app";
     "function": "/function";
     "function_hide-child": "/function/hide-child";
     "function_hide-child_one": "/function/hide-child/one";
@@ -68,6 +67,7 @@ declare module "@elegant-router/types" {
     "function_hide-child_two": "/function/hide-child/two";
     "function_multi-tab": "/function/multi-tab";
     "function_tab": "/function/tab";
+    "gridstack-test": "/gridstack-test";
     "home": "/home";
     "login": "/login/:module(pwd-login|code-login|register|reset-pwd|bind-wechat)?";
     "manage": "/manage";
@@ -89,7 +89,6 @@ declare module "@elegant-router/types" {
     "multi-menu_second": "/multi-menu/second";
     "multi-menu_second_child": "/multi-menu/second/child";
     "multi-menu_second_child_home": "/multi-menu/second/child/home";
-    "paneldemo": "/paneldemo";
     "personal-center": "/personal-center";
     "plugin": "/plugin";
     "plugin_charts": "/plugin/charts";
@@ -107,13 +106,11 @@ declare module "@elegant-router/types" {
     "rule-engine": "/rule-engine";
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
-    "test-draggable-grid": "/test-draggable-grid";
     "user-center": "/user-center";
     "visualization": "/visualization";
     "visualization_kanban": "/visualization/kanban";
     "visualization_kanban-details": "/visualization/kanban-details";
     "visualization_panel-preview": "/visualization/panel-preview";
-    "visualization_visual-editor-demo": "/visualization/visual-editor-demo";
     "visualization_visual-editor-details": "/visualization/visual-editor-details";
   };
 
@@ -161,19 +158,17 @@ declare module "@elegant-router/types" {
     | "dashboard"
     | "data-service"
     | "device"
-    | "device-details-app"
     | "function"
+    | "gridstack-test"
     | "home"
     | "login"
     | "manage"
     | "management"
     | "multi-menu"
-    | "paneldemo"
     | "personal-center"
     | "plugin"
     | "rule-engine"
     | "system-management-user"
-    | "test-draggable-grid"
     | "user-center"
     | "visualization"
   >;
@@ -215,7 +210,6 @@ declare module "@elegant-router/types" {
     | "dashboard_panel"
     | "dashboard_workbench"
     | "data-service_rule-engine"
-    | "device-details-app"
     | "device_config-detail"
     | "device_config-edit"
     | "device_config"
@@ -232,6 +226,7 @@ declare module "@elegant-router/types" {
     | "function_hide-child_two"
     | "function_multi-tab"
     | "function_tab"
+    | "gridstack-test"
     | "home"
     | "manage_menu"
     | "manage_role"
@@ -246,7 +241,6 @@ declare module "@elegant-router/types" {
     | "management_user"
     | "multi-menu_first_child"
     | "multi-menu_second_child_home"
-    | "paneldemo"
     | "personal-center"
     | "plugin_charts_antv"
     | "plugin_charts_echarts"
@@ -260,12 +254,10 @@ declare module "@elegant-router/types" {
     | "plugin_video"
     | "rule-engine"
     | "system-management-user_system-log"
-    | "test-draggable-grid"
     | "user-center"
     | "visualization_kanban-details"
     | "visualization_kanban"
     | "visualization_panel-preview"
-    | "visualization_visual-editor-demo"
     | "visualization_visual-editor-details"
   >;
 

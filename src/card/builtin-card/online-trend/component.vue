@@ -1,11 +1,11 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { use } from 'echarts/core'
-import { LineChart } from 'echarts/charts'
+// import { use } from 'echarts/core'
+// import { LineChart } from 'echarts/charts'
 import VChart from 'vue-echarts'
 import * as echarts from 'echarts'
-import { GridComponent, LegendComponent, ToolboxComponent, TooltipComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
+// import { GridComponent, LegendComponent, ToolboxComponent, TooltipComponent } from 'echarts/components'
+// import { CanvasRenderer } from 'echarts/renderers'
 import type { ComposeOption } from 'echarts/core'
 import type { LineSeriesOption } from 'echarts/charts'
 import type {
@@ -19,8 +19,8 @@ import { $t } from '@/locales'
 import onlineRateIcon from './online-rate.png'
 import wifiIcon from './wifi.png'
 
-// Register ECharts components
-use([TooltipComponent, LegendComponent, ToolboxComponent, GridComponent, LineChart, CanvasRenderer])
+// Register ECharts components - 已移至 echarts-manager 统一管理
+// use([TooltipComponent, LegendComponent, ToolboxComponent, GridComponent, LineChart, CanvasRenderer])
 
 type EChartsOption = ComposeOption<
   TooltipComponentOption | LegendComponentOption | ToolboxComponentOption | GridComponentOption | LineSeriesOption

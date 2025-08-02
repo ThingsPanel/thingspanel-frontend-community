@@ -28,6 +28,7 @@
 import { ref, onMounted, onUnmounted, watch, computed, nextTick } from 'vue'
 import { NDatePicker, NSelect } from 'naive-ui'
 import * as echarts from 'echarts'
+import { createEChartsInstance } from '@/utils/echarts/echarts-manager'
 import { getTelemetryData } from '@/service/api/device'
 import type { ECharts } from 'echarts'
 import type { LineChartConfig, TimeRange, AggregationFunction } from '../types'
@@ -271,7 +272,7 @@ function setSeries() {
 function initChart() {
   if (!chartRef.value) return
 
-  chartInstance.value = echarts.init(chartRef.value)
+  chartInstance.value = createEChartsInstance(chartRef.value)
   
   // 监听窗口大小变化
   window.addEventListener('resize', handleResize)

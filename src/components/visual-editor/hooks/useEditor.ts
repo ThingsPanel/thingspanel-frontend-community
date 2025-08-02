@@ -1,68 +1,152 @@
 /**
- * 编辑器主Hook
+ * @file useEditor.ts
+ * @description
+ * 编辑器核心 Hook，提供状态管理、组件操作等核心功能。
+ * 使用了统一的 WidgetRegistry 来管理所有组件。
  */
 
 import { inject, provide } from 'vue'
 import { StateManager } from '../core/state-manager'
-import type { GraphData, RendererType } from '../types'
+import { widgetRegistry } from '../core/widget-registry'
+import { registerAllWidgets } from '../widgets'
+import { useCard2Integration } from './useCard2Integration'
+import type { GraphData, WidgetType } from '../types'
+import type { IComponentDefinition } from '@/card2.1/core'
+
+// 重新导出类型
+export type { StateManager } from '../core/state-manager'
+
+// 拖拽数据接口
+export interface WidgetDragData {
+  type: string
+  name: string
+  icon?: string
+}
+
+// 在模块加载时执行一次组件注册
+registerAllWidgets()
 
 const EDITOR_KEY = Symbol('editor')
 
 export interface EditorContext {
   stateManager: StateManager
-  addWidget: (type: string) => void
+  // --- Actions ---
+  addWidget: (type: string, position?: { x: number; y: number }) => Promise<void>
   selectNode: (id: string) => void
   updateNode: (id: string, updates: Partial<GraphData>) => void
+  removeNode: (id: string) => void
+  addNode: (...nodes: GraphData[]) => void
+  // --- Getters ---
+  getNodeById: (id: string) => GraphData | undefined
+  // --- Card 2.1 Integration ---
+  card2Integration: ReturnType<typeof useCard2Integration>
+  isCard2Component: (type: string) => boolean
+  createCard2Widget: (type: string, position?: { x: number; y: number }) => Promise<void>
 }
 
 export function createEditor() {
   const stateManager = new StateManager()
+  const card2Integration = useCard2Integration()
 
-  const addWidget = (type: string, position?: { x: number; y: number }) => {
+  const getNodeById = (id: string) => {
+    return stateManager.canvasState.value.nodes.find(node => node.id === id)
+  }
+
+  const addWidget = async (type: string, _position?: { x: number; y: number }) => {
+    if (card2Integration.isCard2Component(type)) {
+      await createCard2Widget(type)
+      return
+    }
+
+    const widgetDef = widgetRegistry.getWidget(type)
+    if (!widgetDef) {
+      console.error(`[Editor] 组件类型 "${type}" 未注册。`)
+      throw new Error(`组件类型 "${type}" 未注册。`)
+    }
+
+    const { w: newItemW, h: newItemH } = widgetDef.defaultLayout.gridstack
+    const colNum = 12
+
+    const { x, y } = findNextAvailablePosition(stateManager.canvasState.value.nodes, newItemW, newItemH, colNum)
+
     const node: GraphData = {
       id: `${type}_${Date.now()}`,
-      type,
-      x: position?.x || 100,
-      y: position?.y || 100,
-      width: 200, // Canvas默认像素宽度
-      height: 100, // Canvas默认像素高度
-      properties: getDefaultProperties(type),
+      type: widgetDef.type,
+      x,
+      y,
+      width: widgetDef.defaultLayout.canvas.width,
+      height: widgetDef.defaultLayout.canvas.height,
+      properties: { ...widgetDef.defaultProperties },
       renderer: ['canvas', 'gridstack'],
-
-      // 不同渲染器的布局数据
       layout: {
-        canvas: {
-          width: 200,
-          height: 100
-        },
-        gridstack: {
-          w: 2, // 网格宽度单位
-          h: 2 // 网格高度单位
-        }
+        canvas: { ...widgetDef.defaultLayout.canvas, x, y },
+        gridstack: { ...widgetDef.defaultLayout.gridstack, w: newItemW, h: newItemH, x, y }
       },
-
       metadata: {
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        version: '1.0.0'
+        version: widgetDef.version,
+        ...widgetDef.metadata
       }
     }
     stateManager.addNode(node)
   }
 
-  const selectNode = (id: string) => {
-    stateManager.selectNodes([id])
+  const createCard2Widget = async (type: string) => {
+    const definition = card2Integration.getComponentDefinition(type)
+    if (!definition) {
+      throw new Error(`Card 2.1 组件 "${type}" 不存在。`)
+    }
+
+    const newItemW = 4,
+      newItemH = 4
+    const colNum = 12
+
+    const { x, y } = findNextAvailablePosition(stateManager.canvasState.value.nodes, newItemW, newItemH, colNum)
+
+    const node: GraphData = {
+      id: `${definition.id}_${Date.now()}`,
+      type: definition.id as WidgetType,
+      x,
+      y,
+      width: 300,
+      height: 200,
+      label: definition.meta.title || definition.id,
+      showLabel: true,
+      properties: { ...definition.properties },
+      renderer: ['canvas', 'gridstack'],
+      layout: {
+        canvas: { width: 300, height: 200, x, y },
+        gridstack: { w: newItemW, h: newItemH, x, y }
+      },
+      metadata: {
+        isCard2Component: true,
+        card2ComponentId: definition.id,
+        card2Definition: definition as IComponentDefinition,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        version: definition.meta.version || '1.0.0'
+      }
+    }
+    stateManager.addNode(node)
   }
 
-  const updateNode = (id: string, updates: Partial<GraphData>) => {
-    stateManager.updateNode(id, updates)
-  }
+  const selectNode = (id: string) => stateManager.selectNodes([id])
+  const updateNode = (id: string, updates: Partial<GraphData>) => stateManager.updateNode(id, updates)
+  const removeNode = (id: string) => stateManager.removeNode(id)
+  const addNode = (...nodes: GraphData[]) => stateManager.addNode(...nodes)
 
   const context: EditorContext = {
     stateManager,
     addWidget,
     selectNode,
-    updateNode
+    updateNode,
+    removeNode,
+    addNode,
+    getNodeById,
+    card2Integration,
+    isCard2Component: card2Integration.isCard2Component,
+    createCard2Widget
   }
 
   provide(EDITOR_KEY, context)
@@ -72,68 +156,57 @@ export function createEditor() {
 export function useEditor(): EditorContext {
   const context = inject<EditorContext>(EDITOR_KEY)
   if (!context) {
-    throw new Error('useEditor must be used within createEditor context')
+    throw new Error('useEditor 必须在 createEditor 上下文中使用')
   }
   return context
 }
 
-function getDefaultProperties(type: string) {
-  switch (type) {
-    case 'text':
-      return {
-        content: '文本内容',
-        fontSize: 14,
-        color: '#333333',
-        textAlign: 'left'
-      }
-    case 'image':
-      return {
-        src: '',
-        alt: '图片',
-        objectFit: 'cover'
-      }
-    case 'bar-chart':
-    case 'line-chart':
-    case 'pie-chart':
-      return {
-        title: '图表标题',
-        data: [
-          { name: '数据1', value: 120 },
-          { name: '数据2', value: 200 },
-          { name: '数据3', value: 150 },
-          { name: '数据4', value: 80 }
-        ],
-        color: '#18a058'
-      }
-    case 'digit-indicator':
-      return {
-        value: 888,
-        label: '数据指示器',
-        unit: '',
-        color: '#18a058',
-        backgroundColor: '#f0f0f0',
-        fontSize: 24
-      }
-    case 'chart-digit-indicator':
-      return {
-        title: '数据指示器',
-        deviceId: '',
-        metricsId: '',
-        metricsType: 'telemetry',
-        icon: 'uil:analytics',
-        color: '#18a058',
-        backgroundColor: '#f0f0f0'
-      }
-    case 'chart-bar':
-      return {
-        title: '数据柱状图',
-        deviceIds: [],
-        metricsIds: [],
-        colors: ['#18a058', '#2080f0', '#f0a020', '#d03050'],
-        showLegend: true,
-        showGrid: true
-      }
-    default:
-      return {}
+function findNextAvailablePosition(
+  nodes: GraphData[],
+  newItemW: number,
+  newItemH: number,
+  colNum: number
+): { x: number; y: number } {
+  const grid: boolean[][] = []
+  const maxRows =
+    nodes.length > 0
+      ? Math.max(...nodes.map(n => (n.layout?.gridstack?.y ?? 0) + (n.layout?.gridstack?.h ?? 0))) + newItemH
+      : newItemH
+
+  for (let i = 0; i < maxRows; i++) {
+    grid[i] = new Array(colNum).fill(false)
   }
+
+  nodes.forEach(node => {
+    const { x, y, w, h } = node.layout?.gridstack || { x: 0, y: 0, w: 0, h: 0 }
+    for (let r = y; r < y + h; r++) {
+      for (let c = x; c < x + w; c++) {
+        if (r < maxRows && c < colNum) {
+          grid[r][c] = true
+        }
+      }
+    }
+  })
+
+  for (let r = 0; r < maxRows; r++) {
+    for (let c = 0; c <= colNum - newItemW; c++) {
+      let isVacant = true
+      for (let i = 0; i < newItemH; i++) {
+        for (let j = 0; j < newItemW; j++) {
+          if (r + i >= maxRows || grid[r + i][c + j]) {
+            isVacant = false
+            break
+          }
+        }
+        if (!isVacant) break
+      }
+      if (isVacant) {
+        return { x: c, y: r }
+      }
+    }
+  }
+
+  const y =
+    nodes.length > 0 ? Math.max(...nodes.map(n => (n.layout?.gridstack?.y ?? 0) + (n.layout?.gridstack?.h ?? 0))) : 0
+  return { x: 0, y }
 }

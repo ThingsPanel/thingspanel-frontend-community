@@ -7,6 +7,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, nextTick } from 'vue'
 import * as echarts from 'echarts'
+import { createEChartsInstance } from '@/utils/echarts/echarts-manager'
 
 interface Props {
   title?: string
@@ -31,7 +32,7 @@ let chartInstance: echarts.ECharts | null = null
 const initChart = () => {
   if (!chartRef.value) return
   
-  chartInstance = echarts.init(chartRef.value)
+      chartInstance = createEChartsInstance(chartRef.value)
   updateChart()
 }
 

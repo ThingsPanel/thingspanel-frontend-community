@@ -5,6 +5,7 @@ import { setupDayjs, setupIconifyOffline, setupLoading, setupNProgress } from '.
 import { setupStore } from './store'
 import { router, setupRouter } from './router'
 import { i18n, setupI18n } from './locales'
+import { initEChartsComponents } from '@/utils/echarts/echarts-manager'
 import App from './App.vue'
 // 定义 localStorage 的 key
 const RECENTLY_VISITED_ROUTES_KEY = 'RECENTLY_VISITED_ROUTES'
@@ -39,6 +40,10 @@ async function setupApp() {
   setupNProgress()
   setupIconifyOffline()
   setupDayjs()
+
+  // 初始化 ECharts 组件，确保全局只注册一次
+  initEChartsComponents()
+
   await setupRouter(app)
 
   // 添加路由后置守卫

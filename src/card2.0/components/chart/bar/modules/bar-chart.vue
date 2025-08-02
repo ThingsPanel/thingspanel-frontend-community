@@ -79,7 +79,7 @@ import { cloneDeep } from 'lodash-es'
 import { v4 as uuidv4 } from 'uuid'
 import { format, subHours, subDays, subMonths } from 'date-fns'
 import { $t } from '@/locales'
-import { createLogger } from '@/utils'
+import { createLogger } from '@/utils/logger'
 import { telemetryDataCurrentKeys, telemetryDataHistoryList } from '@/api/device'
 import type { CardInstance } from '../../../../core/types'
 
