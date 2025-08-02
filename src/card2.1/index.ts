@@ -5,60 +5,31 @@
 import { componentRegistry } from './core'
 import type { IComponentDefinition } from './core'
 
-// --- Display Components ---
-import version from './components/display/version'
-import access from './components/display/access'
-import alarmCount from './components/display/alarm-count'
-import alarmInfo from './components/display/alarm-info'
-import appDownload from './components/display/app-download'
-import cpuUsage from './components/display/cpu-usage'
-import diskUsage from './components/display/disk-usage'
-import memoryUsage from './components/display/memory-usage'
-import information from './components/display/information'
-import news from './components/display/news'
-import offLine from './components/display/off-line'
-import onLine from './components/display/on-line'
-import operationGuideCard from './components/display/operation-guide-card'
-import recentlyVisited from './components/display/recently-visited'
-import reportedData from './components/display/reported-data'
-import tenantCount from './components/display/tenant-count'
+// 使用 Vite 的 import.meta.glob 动态、同步地导入所有组件定义
+// eager: true -> 同步导入，确保在后续代码执行前所有模块已加载
+// import: 'default' -> 只导入每个模块的 default export
+const modules = import.meta.glob('./components/*/*/index.ts', { eager: true, import: 'default' })
 
-// --- Chart Components ---
-import onlineTrend from './components/chart/online-trend'
-import systemMetricsHistory from './components/chart/system-metrics-history'
-import tenantChart from './components/chart/tenant-chart'
+console.log('[Card2.1] Discovered component modules:', modules)
 
-const componentsToRegister: IComponentDefinition[] = [
-  // Display
-  version,
-  access,
-  alarmCount,
-  alarmInfo,
-  appDownload,
-  cpuUsage,
-  diskUsage,
-  memoryUsage,
-  information,
-  news,
-  offLine,
-  onLine,
-  operationGuideCard,
-  recentlyVisited,
-  reportedData,
-  tenantCount,
-  // Chart
-  onlineTrend,
-  systemMetricsHistory,
-  tenantChart
-]
+// 过滤掉任何可能未定义或无效的模块
+const componentsToRegister = Object.values(modules).filter(Boolean) as IComponentDefinition[]
+
+console.log(`[Card2.1] Found ${componentsToRegister.length} valid component definitions to register.`)
 
 componentsToRegister.forEach(componentDef => {
-  componentRegistry.register(componentDef.id, componentDef)
+  // 添加健壮性检查，确保组件定义和 ID 都存在
+  if (componentDef && componentDef.id) {
+    componentRegistry.register(componentDef.id, componentDef)
+  } else {
+    console.error(
+      '[Card2.1] ❌ Found an invalid or incomplete component definition, skipping registration:',
+      componentDef
+    )
+  }
 })
 
-console.log(
-  '✅ All Card 2.1 components registered:',
-  componentRegistry.getAll().map(c => c.id)
-)
+const registeredIds = componentRegistry.getAll().map(c => c.id)
+console.log(`[Card2.1] ✅ All Card 2.1 components registered. Total: ${registeredIds.length}. IDs:`, registeredIds)
 
 export default componentRegistry

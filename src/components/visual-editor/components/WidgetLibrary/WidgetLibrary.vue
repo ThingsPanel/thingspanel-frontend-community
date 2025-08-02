@@ -138,11 +138,20 @@ const handleAddWidget = (type: string) => {
   emit('add-widget', type)
 }
 
-const handleDragStart = (widget: WidgetDefinition, event: DragEvent) => {
+const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
   if (event.dataTransfer) {
-    // 传递一个包含 type 属性的 JSON 对象字符串
-    const dragData = JSON.stringify({ type: widget.type });
-    event.dataTransfer.setData('text/plain', dragData);
+    const isCard2 = widget.source === 'card2'
+    const type = isCard2 ? widget.id : widget.type
+    
+    const dragData = {
+      type,
+      source: widget.source || 'legacy'
+    };
+
+    console.log('Dragging widget:', widget);
+    console.log('Drag data being set:', dragData);
+
+    event.dataTransfer.setData('application/json', JSON.stringify(dragData));
     event.dataTransfer.effectAllowed = 'copy';
   }
 }

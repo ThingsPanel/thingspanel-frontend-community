@@ -52,12 +52,18 @@ export function createEditor() {
     return stateManager.canvasState.value.nodes.find(node => node.id === id)
   }
 
-  const addWidget = async (type: string, _position?: { x: number; y: number }) => {
-    if (card2Integration.isCard2Component(type)) {
-      await createCard2Widget(type)
+  const addWidget = async (
+    type: string,
+    position?: { x: number; y: number },
+    source: 'card2' | 'legacy' = 'legacy'
+  ) => {
+    // 明确使用 source 来判断
+    if (source === 'card2') {
+      await createCard2Widget(type, position)
       return
     }
 
+    // --- Legacy Widget Logic ---
     const widgetDef = widgetRegistry.getWidget(type)
     if (!widgetDef) {
       console.error(`[Editor] 组件类型 "${type}" 未注册。`)
@@ -69,18 +75,20 @@ export function createEditor() {
 
     const { x, y } = findNextAvailablePosition(stateManager.canvasState.value.nodes, newItemW, newItemH, colNum)
 
+    const finalPos = position || { x, y }
+
     const node: GraphData = {
       id: `${type}_${Date.now()}`,
       type: widgetDef.type,
-      x,
-      y,
+      x: finalPos.x,
+      y: finalPos.y,
       width: widgetDef.defaultLayout.canvas.width,
       height: widgetDef.defaultLayout.canvas.height,
       properties: { ...widgetDef.defaultProperties },
       renderer: ['canvas', 'gridstack'],
       layout: {
-        canvas: { ...widgetDef.defaultLayout.canvas, x, y },
-        gridstack: { ...widgetDef.defaultLayout.gridstack, w: newItemW, h: newItemH, x, y }
+        canvas: { ...widgetDef.defaultLayout.canvas, ...finalPos },
+        gridstack: { ...widgetDef.defaultLayout.gridstack, w: newItemW, h: newItemH, ...finalPos }
       },
       metadata: {
         createdAt: Date.now(),
@@ -92,7 +100,7 @@ export function createEditor() {
     stateManager.addNode(node)
   }
 
-  const createCard2Widget = async (type: string) => {
+  const createCard2Widget = async (type: string, position?: { x: number; y: number }) => {
     const definition = card2Integration.getComponentDefinition(type)
     if (!definition) {
       throw new Error(`Card 2.1 组件 "${type}" 不存在。`)
@@ -102,13 +110,19 @@ export function createEditor() {
       newItemH = 4
     const colNum = 12
 
-    const { x, y } = findNextAvailablePosition(stateManager.canvasState.value.nodes, newItemW, newItemH, colNum)
+    const { x: calculatedX, y: calculatedY } = findNextAvailablePosition(
+      stateManager.canvasState.value.nodes,
+      newItemW,
+      newItemH,
+      colNum
+    )
+    const finalPos = position || { x: calculatedX, y: calculatedY }
 
     const node: GraphData = {
       id: `${definition.id}_${Date.now()}`,
       type: definition.id as WidgetType,
-      x,
-      y,
+      x: finalPos.x,
+      y: finalPos.y,
       width: 300,
       height: 200,
       label: definition.meta.title || definition.id,
@@ -116,11 +130,12 @@ export function createEditor() {
       properties: { ...definition.properties },
       renderer: ['canvas', 'gridstack'],
       layout: {
-        canvas: { width: 300, height: 200, x, y },
-        gridstack: { w: newItemW, h: newItemH, x, y }
+        canvas: { width: 300, height: 200, ...finalPos },
+        gridstack: { w: newItemW, h: newItemH, ...finalPos }
       },
       metadata: {
         isCard2Component: true,
+        source: 'card2', // 明确 source
         card2ComponentId: definition.id,
         card2Definition: definition as IComponentDefinition,
         createdAt: Date.now(),

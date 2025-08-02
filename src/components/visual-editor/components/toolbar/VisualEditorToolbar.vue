@@ -19,6 +19,8 @@ interface Props {
   readonly?: boolean
   isSaving?: boolean
   hasChanges?: boolean
+  showLeftDrawer?: boolean
+  showRightDrawer?: boolean
 }
 
 interface Emits {
@@ -44,6 +46,8 @@ interface Emits {
   (e: 'preview-mode'): void
   // 面板配置
   (e: 'open-config'): void
+  (e: 'toggle-left-drawer'): void
+  (e: 'toggle-right-drawer'): void
   // 配置变更
   (e: 'canvas-config-change', config: Record<string, any>): void
   (e: 'gridstack-config-change', config: Record<string, any>): void
@@ -55,7 +59,9 @@ const props = withDefaults(defineProps<Props>(), {
   gridstackConfig: () => ({}),
   visualizationConfig: () => ({}),
   isSaving: false,
-  hasChanges: false
+  hasChanges: false,
+  showLeftDrawer: false,
+  showRightDrawer: false
 })
 
 const emit = defineEmits<Emits>()
@@ -140,7 +146,9 @@ const handleResetZoom = () => emit('reset-zoom')
 const handleFitContent = () => emit('fit-content')
 const handleCenterView = () => emit('center-view')
 
-// 面板控制现在由编辑模式自动管理
+// 抽屉控制事件
+const handleToggleLeftDrawer = () => emit('toggle-left-drawer')
+const handleToggleRightDrawer = () => emit('toggle-right-drawer')
 
 // 切换配置面板显示状态
 const handleToggleRendererConfig = () => {
@@ -202,21 +210,22 @@ const getConfigTitle = () => {
     class="visual-editor-toolbar h-12 flex items-center relative"
     :style="toolbarColors"
   >
-    <!-- 左侧：编辑切换 -->
+    <!-- 左侧：添加组件 -->
     <div class="toolbar-left flex items-center gap-2">
-      <NButton
-        size="small"
-        :type="mode === 'edit' ? 'primary' : 'default'"
-        @click="handleModeChange(mode === 'edit' ? 'preview' : 'edit')"
-      >
-        <template #icon>
-          <SvgIcon :icon="mode === 'edit' ? 'material-symbols:visibility-outline' : 'material-symbols:edit-outline'" />
-        </template>
-        {{ mode === 'edit' ? '预览' : '编辑' }}
-      </NButton>
-
-      <!-- 渲染器选择 - 仅编辑模式显示 -->
+      <!-- 添加组件按钮 - 仅编辑模式显示 -->
       <template v-if="mode === 'edit'">
+        <NButton
+          size="small"
+          :type="showLeftDrawer ? 'primary' : 'default'"
+          @click="handleToggleLeftDrawer"
+        >
+          <template #icon>
+            <SvgIcon icon="material-symbols:widgets-outline" />
+          </template>
+          添加组件
+        </NButton>
+
+        <!-- 渲染器选择 -->
         <NDivider vertical />
         <span class="text-12px text-gray-500">渲染器:</span>
         <NSelect
@@ -234,6 +243,7 @@ const getConfigTitle = () => {
       <NSpace align="center" :size="4">
         <!-- 编辑模式下的功能 -->
         <template v-if="mode === 'edit'">
+
           <!-- 文档操作组 -->
           <div class="btn-group">
             <NTooltip trigger="hover">
@@ -389,6 +399,19 @@ const getConfigTitle = () => {
             </template>
           </NButton>
         </template>
+
+        <!-- 编辑/预览切换按钮 - 始终显示在最右侧 -->
+        <NDivider vertical />
+        <NButton
+          size="small"
+          :type="mode === 'edit' ? 'primary' : 'default'"
+          @click="handleModeChange(mode === 'edit' ? 'preview' : 'edit')"
+        >
+          <template #icon>
+            <SvgIcon :icon="mode === 'edit' ? 'material-symbols:visibility-outline' : 'material-symbols:edit-outline'" />
+          </template>
+          {{ mode === 'edit' ? '预览' : '编辑' }}
+        </NButton>
       </NSpace>
     </div>
 

@@ -74,13 +74,36 @@ const handleDrop = (event: DragEvent) => {
   event.preventDefault()
   if (isReadonly.value) return;
 
-  const widgetType = event.dataTransfer?.getData('text/plain')
+  const jsonData = event.dataTransfer?.getData('application/json');
+  if (jsonData && containerRef.value) {
+    try {
+      const data = JSON.parse(jsonData);
+      const { type, source } = data;
+
+      if (!type) {
+        throw new Error('Dropped data is missing "type" property.');
+      }
+
+      const rect = containerRef.value.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      // 调用 addWidget 添加新组件，并传入 source
+      addWidget(type, { x, y }, source).catch(handleError);
+
+    } catch (e) {
+      handleError(new Error('Failed to parse dropped data.'));
+    }
+    return;
+  }
+
+  // Fallback for plain text data
+  const widgetType = event.dataTransfer?.getData('text/plain');
   if (widgetType && containerRef.value) {
     const rect = containerRef.value.getBoundingClientRect()
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
     
-    // 调用 addWidget 添加新组件
     addWidget(widgetType, { x, y }).catch(handleError)
   }
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
-import { useDialog, useMessage } from 'naive-ui'
+import { useDialog, useMessage, NDrawer, NDrawerContent } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import { useAppStore } from '@/store/modules/app'
 import FullScreen from '@/components/common/full-screen.vue'
@@ -44,9 +44,13 @@ const editorConfig = ref<any>({})
 const preEditorConfig = ref<any>({})
 const currentRenderer = ref<RendererType>('gridstack')
 
-// 布局状态 - 初始状态：预览模式，左侧收起
-const leftCollapsed = ref(true)  // 默认收起组件库
-const rightCollapsed = ref(true)  // 初始隐藏属性面板，选中节点时显示
+// 抽屉状态 - 初始状态：预览模式，抽屉关闭
+const showLeftDrawer = ref(false)  // 左侧组件库抽屉
+const showRightDrawer = ref(false)  // 右侧属性面板抽屉
+
+// 拖拽状态管理
+const isDragging = ref(false)
+const draggedComponent = ref<string | null>(null)
 const selectedNodeId = ref<string>('')
 const showWidgetTitles = ref(true) // 总开关，默认显示标题
 
@@ -201,11 +205,11 @@ const rendererOptions = [
 const handleModeChange = (mode: 'edit' | 'preview') => {
   if (mode === 'edit') {
     isEditing.value = true
-    // 进入编辑模式时展开组件库
-    leftCollapsed.value = false
-    // 如果有选中的节点，展开属性面板
+    // 进入编辑模式时自动打开组件库抽屉
+    showLeftDrawer.value = true
+    // 如果有选中的节点，打开属性面板抽屉
     if (selectedNodeId.value) {
-      rightCollapsed.value = false
+      showRightDrawer.value = true
     }
   } else {
     const currentState = getState()
@@ -216,9 +220,9 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
         negativeText: $t('common.cancel'),
         onPositiveClick: () => {
           isEditing.value = false
-          // 退出编辑模式时锁定两边面板
-          leftCollapsed.value = true
-          rightCollapsed.value = true
+          // 退出编辑模式时关闭所有抽屉
+          showLeftDrawer.value = false
+          showRightDrawer.value = false
           // 清空选中状态
           selectedNodeId.value = ''
           editorConfig.value = preEditorConfig.value
@@ -227,13 +231,35 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
       })
     } else {
       isEditing.value = false
-      // 退出编辑模式时锁定两边面板
-      leftCollapsed.value = true
-      rightCollapsed.value = true
+      // 退出编辑模式时关闭所有抽屉
+      showLeftDrawer.value = false
+      showRightDrawer.value = false
       // 清空选中状态
       selectedNodeId.value = ''
     }
   }
+}
+
+// 抽屉控制事件处理
+const handleToggleLeftDrawer = () => {
+  showLeftDrawer.value = !showLeftDrawer.value
+}
+
+const handleToggleRightDrawer = () => {
+  showRightDrawer.value = !showRightDrawer.value
+}
+
+// 拖拽事件处理
+const handleDragStart = (componentType: string) => {
+  console.log('🎯 开始拖拽组件:', componentType)
+  isDragging.value = true
+  draggedComponent.value = componentType
+}
+
+const handleDragEnd = () => {
+  console.log('🎯 结束拖拽')
+  isDragging.value = false
+  draggedComponent.value = null
 }
 
 const handleRendererChange = (renderer: RendererType) => {
@@ -372,9 +398,9 @@ const handleRendererError = (error: Error) => {
 const handleNodeSelect = (nodeId: string) => {
   selectedNodeId.value = nodeId
   selectNode(nodeId)
-  // 选中节点时，如果在编辑模式，自动展开属性面板
+  // 选中节点时，如果在编辑模式，自动打开属性抽屉
   if (isEditing.value && nodeId) {
-    rightCollapsed.value = false
+    showRightDrawer.value = true
   }
 }
 
@@ -480,82 +506,108 @@ onUnmounted(() => {
         </n-spin>
       </div>
 
-      <div v-else class="panel-editor w-full h-full">
-        <!-- 使用新的架构：EditorLayout + VisualEditorToolbar -->
-        <EditorLayout 
-          v-model:left-collapsed="leftCollapsed"
-          v-model:right-collapsed="rightCollapsed"
-          :mode="isEditing ? 'edit' : 'preview'"
-        >
-          <!-- 工具栏插槽 -->
-          <template #toolbar>
-            <VisualEditorToolbar
-              v-if="dataFetched && !isUnmounted"
-              :key="`toolbar-${currentRenderer}-${isEditing ? 'edit' : 'preview'}`"
-              :mode="isEditing ? 'edit' : 'preview'"
-              :current-renderer="currentRenderer"
-              :available-renderers="rendererOptions"
-              :is-saving="isSaving"
-              :has-changes="hasChanges"
-              @mode-change="handleModeChange"
-              @renderer-change="handleRendererChange"
-              @save="handleSave"
-              @import="handleImportConfig"
-              @export="handleExportConfig"
-              @import-config="handleImportConfig"
-              @export-config="handleExportConfig"
-              @undo="handleUndo"
-              @redo="handleRedo"
-              @clear-all="handleClearAll"
-              @zoom-in="handleZoomIn"
-              @zoom-out="handleZoomOut"
-              @reset-zoom="handleResetZoom"
-            />
-          </template>
+      <div v-else class="panel-editor w-full h-full flex flex-col">
+        <!-- 工具栏 -->
+        <div class="toolbar-container flex-shrink-0">
+          <VisualEditorToolbar
+            v-if="dataFetched && !isUnmounted"
+            :key="`toolbar-${currentRenderer}-${isEditing ? 'edit' : 'preview'}`"
+            :mode="isEditing ? 'edit' : 'preview'"
+            :current-renderer="currentRenderer"
+            :available-renderers="rendererOptions"
+            :is-saving="isSaving"
+            :has-changes="hasChanges"
+            :show-left-drawer="showLeftDrawer"
+            :show-right-drawer="showRightDrawer"
+            @mode-change="handleModeChange"
+            @renderer-change="handleRendererChange"
+            @save="handleSave"
+            @import="handleImportConfig"
+            @export="handleExportConfig"
+            @import-config="handleImportConfig"
+            @export-config="handleExportConfig"
+            @undo="handleUndo"
+            @redo="handleRedo"
+            @clear-all="handleClearAll"
+            @zoom-in="handleZoomIn"
+            @zoom-out="handleZoomOut"
+            @reset-zoom="handleResetZoom"
+            @toggle-left-drawer="handleToggleLeftDrawer"
+            @toggle-right-drawer="handleToggleRightDrawer"
+          />
+        </div>
 
-          <!-- 左侧组件库 -->
-          <template #left>
-            <WidgetLibrary @add-widget="handleAddWidget" />
-          </template>
-
+        <!-- 主内容区域 -->
+        <div class="main-container flex-1 relative overflow-hidden" :class="{ dragging: isDragging }">
           <!-- 中央画布 -->
-          <template #main>
-            <div class="canvas-container" @click="handleCanvasClick">
-              <!-- 动态渲染器 -->
-              <CanvasRenderer 
-                v-if="currentRenderer === 'canvas' && dataFetched && !isUnmounted" 
-                key="canvas-renderer"
-                :readonly="!isEditing"
-                :show-widget-titles="showWidgetTitles"
-                class="renderer-container"
-                @ready="handleRendererReady"
-                @error="handleRendererError"
-                @node-select="handleNodeSelect"
-                @canvas-click="handleCanvasClick"
-              />
-              <GridstackRenderer 
-                v-else-if="currentRenderer === 'gridstack' && dataFetched && !isUnmounted" 
-                key="gridstack-renderer"
-                :readonly="!isEditing"
-                :show-widget-titles="showWidgetTitles"
-                class="renderer-container"
-                @ready="handleRendererReady" 
-                @error="handleRendererError"
-                @node-select="handleNodeSelect"
-                @canvas-click="handleCanvasClick"
-              />
-            </div>
-          </template>
-
-          <!-- 右侧属性面板 -->
-          <template #right>
-            <SettingsPanel 
-              :selected-widget="selectedWidget"
+          <div class="canvas-container h-full w-full" @click="handleCanvasClick">
+            <!-- 动态渲染器 -->
+            <CanvasRenderer 
+              v-if="currentRenderer === 'canvas' && dataFetched && !isUnmounted" 
+              key="canvas-renderer"
+              :readonly="!isEditing"
               :show-widget-titles="showWidgetTitles"
-              @toggle-widget-titles="handleToggleWidgetTitles"
+              class="renderer-container"
+              @ready="handleRendererReady"
+              @error="handleRendererError"
+              @node-select="handleNodeSelect"
+              @canvas-click="handleCanvasClick"
             />
-          </template>
-        </EditorLayout>
+            <GridstackRenderer 
+              v-else-if="currentRenderer === 'gridstack' && dataFetched && !isUnmounted" 
+              key="gridstack-renderer"
+              :readonly="!isEditing"
+              :show-widget-titles="showWidgetTitles"
+              class="renderer-container"
+              @ready="handleRendererReady" 
+              @error="handleRendererError"
+              @node-select="handleNodeSelect"
+              @canvas-click="handleCanvasClick"
+            />
+          </div>
+
+          <!-- 左侧组件库抽屉 -->
+          <NDrawer
+            v-model:show="showLeftDrawer"
+            :width="320"
+            placement="left"
+            :show-mask="true"
+            :mask-closable="true"
+            :closable="true"
+            :auto-focus="false"
+            :z-index="1000"
+            :trap-focus="false"
+          >
+            <NDrawerContent title="组件库" :native-scrollbar="false">
+              <WidgetLibrary 
+                @add-widget="handleAddWidget"
+                @drag-start="handleDragStart"
+                @drag-end="handleDragEnd"
+              />
+            </NDrawerContent>
+          </NDrawer>
+
+          <!-- 右侧属性面板抽屉 -->
+          <NDrawer
+            v-model:show="showRightDrawer"
+            :width="360"
+            placement="right"
+            :show-mask="true"
+            :mask-closable="true"
+            :closable="true"
+            :auto-focus="false"
+            :z-index="1000"
+            :trap-focus="false"
+          >
+            <NDrawerContent title="属性设置" :native-scrollbar="false">
+              <SettingsPanel 
+                :selected-widget="selectedWidget"
+                :show-widget-titles="showWidgetTitles"
+                @toggle-widget-titles="handleToggleWidgetTitles"
+              />
+            </NDrawerContent>
+          </NDrawer>
+        </div>
       </div>
     </div>
   </div>
@@ -582,6 +634,39 @@ onUnmounted(() => {
 .renderer-container {
   width: 100%;
   height: 100%;
+}
+
+/* 拖拽状态样式 */
+.main-container.dragging .n-drawer {
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+.main-container.dragging .n-drawer-mask {
+  pointer-events: none;
+}
+
+/* 确保拖拽元素在最顶层 */
+.dragging-element {
+  position: fixed;
+  z-index: 9999 !important;
+  pointer-events: none;
+}
+
+/* 抽屉内容优化 */
+:deep(.n-drawer-content) {
+  height: 100%;
+}
+
+:deep(.n-drawer-content .n-drawer-content__content) {
+  padding: 0;
+  height: 100%;
+}
+
+/* 工具栏容器 */
+.toolbar-container {
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #fff;
 }
 
 /* 响应式设计 */
