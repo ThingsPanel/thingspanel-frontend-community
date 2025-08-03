@@ -1,15 +1,15 @@
 <template>
   <div class="widget-library">
-    <n-card title="组件库" size="small" :bordered="false">
+    <n-card :title="$t('visualEditor.componentLibrary')" size="small" :bordered="false">
       <!-- 加载状态 -->
       <div v-if="isLoading" class="loading-state">
         <n-spin size="small" />
-        <p class="loading-text">正在加载组件...</p>
+        <p class="loading-text">{{ $t('visualEditor.loadingComponents') }}</p>
       </div>
 
       <!-- 错误状态 -->
       <div v-else-if="error" class="error-state">
-        <n-alert type="error" :title="'组件加载失败'">
+        <n-alert type="error" :title="$t('visualEditor.componentLoadFailed')">
           {{ error }}
         </n-alert>
       </div>
@@ -24,16 +24,16 @@
         >
           <n-space vertical size="small">
             <n-button 
-              v-for="widget in category.children" 
-              :key="widget.type"
-              block 
-              size="small"
-              type="tertiary"
-              draggable="true"
-              :title="widget.description"
-              @click="handleAddWidget(widget.type)"
-              @dragstart="handleDragStart(widget, $event)"
-            >
+  v-for="widget in category.children" 
+  :key="widget.type"
+  block 
+  size="small"
+  type="tertiary"
+  draggable="true"
+  :title="widget.description"
+  @click="handleAddWidget(widget)"
+  @dragstart="handleDragStart(widget, $event)"
+>
               <template #icon>
                 <n-icon>
                   <component :is="widget.icon" v-if="typeof widget.icon !== 'string' && widget.icon" />
@@ -57,6 +57,7 @@ import { computed } from 'vue'
 import { widgetRegistry, type WidgetTreeNode, type WidgetDefinition } from '../../core/widget-registry'
 import { useCard2Integration } from '../../hooks'
 import SvgIcon from '@/components/custom/svg-icon.vue'
+import { $t } from '@/locales'
 
 // --- Card 2.1 Integration ---
 const card2Integration = useCard2Integration()
@@ -127,15 +128,18 @@ const defaultExpanded = computed(() => {
 
 // --- Emits and Event Handlers ---
 const emit = defineEmits<{
-  'add-widget': [type: string]
+  'add-widget': [payload: { type: string; source: 'card2' | 'legacy' }]
 }>()
 
-const handleAddWidget = (type: string) => {
+const handleAddWidget = (widget: any) => {
+  const isCard2 = widget.source === 'card2'
+  const type = isCard2 ? widget.id : widget.type
+  
   if (!type) {
-    console.error("❌ handleAddWidget called with undefined type.");
+    console.error("❌ handleAddWidget called with undefined type.", widget);
     return;
   }
-  emit('add-widget', type)
+  emit('add-widget', { type, source: widget.source || 'legacy' })
 }
 
 const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {

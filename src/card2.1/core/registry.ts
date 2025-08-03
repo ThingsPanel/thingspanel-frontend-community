@@ -10,11 +10,11 @@ class ComponentRegistry {
    * 注册一个新组件
    * @param definition 组件定义
    */
-  public register(definition: IComponentDefinition) {
-    if (this.components.has(definition.id)) {
-      console.warn(`组件 "${definition.id}" 已被注册，将覆盖现有组件。`)
+  public register(id: string, definition: IComponentDefinition) {
+    if (this.components.has(id)) {
+      console.warn(`组件 "${id}" 已被注册，将覆盖现有组件。`)
     }
-    this.components.set(definition.id, definition)
+    this.components.set(id, definition)
   }
 
   /**

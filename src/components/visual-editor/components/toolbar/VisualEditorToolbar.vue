@@ -195,13 +195,13 @@ const handleExport = () => {
 // 获取配置面板标题
 const getConfigTitle = () => {
   if (isCanvasRenderer.value) {
-    return '画布配置'
+    return $t('visualEditor.canvasConfig')
   } else if (isGridstackRenderer.value) {
-    return '网格配置'
+    return $t('visualEditor.gridConfig')
   } else if (isVisualizationRenderer.value) {
-    return '可视化配置'
+    return $t('visualEditor.visualizationConfig')
   }
-  return '渲染器配置'
+  return $t('visualEditor.rendererConfig')
 }
 </script>
 
@@ -222,12 +222,12 @@ const getConfigTitle = () => {
           <template #icon>
             <SvgIcon icon="material-symbols:widgets-outline" />
           </template>
-          添加组件
+          {{ $t('visualEditor.addComponent') }}
         </NButton>
 
         <!-- 渲染器选择 -->
         <NDivider vertical />
-        <span class="text-12px text-gray-500">渲染器:</span>
+        <span class="text-12px text-gray-500">{{ $t('visualEditor.renderer') }}:</span>
         <NSelect
           :value="currentRenderer"
           :options="availableRenderers"
@@ -260,7 +260,7 @@ const getConfigTitle = () => {
                   </template>
                 </NButton>
               </template>
-              <span>保存 (Ctrl+S)</span>
+              <span>{{ $t('visualEditor.shortcuts.save') }}</span>
             </NTooltip>
 
             <NButton
@@ -300,7 +300,7 @@ const getConfigTitle = () => {
                   </template>
                 </NButton>
               </template>
-              <span>撤销 (Ctrl+Z)</span>
+              <span>{{ $t('visualEditor.shortcuts.undo') }}</span>
             </NTooltip>
 
             <NTooltip trigger="hover">
@@ -316,12 +316,12 @@ const getConfigTitle = () => {
                   </template>
                 </NButton>
               </template>
-              <span>重做 (Ctrl+Y)</span>
+              <span>{{ $t('visualEditor.shortcuts.redo') }}</span>
             </NTooltip>
 
             <NPopconfirm
-              positive-text="确认"
-              negative-text="取消"
+              :positive-text="$t('visualEditor.confirm')"
+              :negative-text="$t('visualEditor.cancel')"
               @positive-click="handleClearAll"
             >
               <template #trigger>
@@ -336,7 +336,7 @@ const getConfigTitle = () => {
                   </template>
                 </NButton>
               </template>
-              <span>确定要清空所有内容吗？</span>
+              <span>{{ $t('visualEditor.clearAllConfirm') }}</span>
             </NPopconfirm>
           </div>
 
@@ -354,7 +354,7 @@ const getConfigTitle = () => {
                   </template>
                 </NButton>
               </template>
-              <span>缩小</span>
+              <span>{{ $t('visualEditor.zoomOut') }}</span>
             </NTooltip>
 
             <NTooltip trigger="hover">
@@ -369,7 +369,7 @@ const getConfigTitle = () => {
                   </template>
                 </NButton>
               </template>
-              <span>重置</span>
+              <span>{{ $t('visualEditor.reset') }}</span>
             </NTooltip>
 
             <NTooltip trigger="hover">
@@ -384,7 +384,7 @@ const getConfigTitle = () => {
                   </template>
                 </NButton>
               </template>
-              <span>放大</span>
+              <span>{{ $t('visualEditor.zoomIn') }}</span>
             </NTooltip>
           </div>
 
@@ -410,7 +410,7 @@ const getConfigTitle = () => {
           <template #icon>
             <SvgIcon :icon="mode === 'edit' ? 'material-symbols:visibility-outline' : 'material-symbols:edit-outline'" />
           </template>
-          {{ mode === 'edit' ? '预览' : '编辑' }}
+          {{ mode === 'edit' ? $t('visualEditor.preview') : $t('visualEditor.edit') }}
         </NButton>
       </NSpace>
     </div>
@@ -434,7 +434,7 @@ const getConfigTitle = () => {
         <!-- Canvas 渲染器配置 -->
         <div v-if="isCanvasRenderer" class="canvas-config">
           <NForm label-placement="left" label-width="100">
-            <NFormItem label="画布宽度">
+            <NFormItem :label="$t('visualEditor.canvasWidth')">
               <NInputNumber
                 v-model:value="canvasConfig.width"
                 :min="800"
@@ -445,7 +445,7 @@ const getConfigTitle = () => {
               />
             </NFormItem>
             
-            <NFormItem label="画布高度">
+            <NFormItem :label="$t('visualEditor.canvasHeight')">
               <NInputNumber
                 v-model:value="canvasConfig.height"
                 :min="600"
@@ -456,21 +456,21 @@ const getConfigTitle = () => {
               />
             </NFormItem>
             
-            <NFormItem label="显示网格">
+            <NFormItem :label="$t('visualEditor.showGrid')">
               <NSwitch
                 v-model:value="canvasConfig.showGrid"
                 @update:value="handleCanvasConfigChange({ ...canvasConfig, showGrid: $event })"
               />
             </NFormItem>
             
-            <NFormItem label="背景颜色">
+            <NFormItem :label="$t('visualEditor.backgroundColor')">
               <NColorPicker
                 v-model:value="canvasConfig.backgroundColor"
                 @update:value="handleCanvasConfigChange({ ...canvasConfig, backgroundColor: $event })"
               />
             </NFormItem>
             
-            <NFormItem label="网格大小">
+            <NFormItem :label="$t('visualEditor.gridSize')">
               <NInputNumber
                 v-model:value="canvasConfig.gridSize"
                 :min="10"
@@ -486,7 +486,7 @@ const getConfigTitle = () => {
         <!-- Gridstack 渲染器配置 -->
         <div v-else-if="isGridstackRenderer" class="gridstack-config">
           <NForm label-placement="left" label-width="100">
-            <NFormItem label="列数">
+            <NFormItem :label="$t('visualEditor.columns')">
               <NInputNumber
                 v-model:value="gridstackConfig.columns"
                 :min="6"
@@ -497,7 +497,7 @@ const getConfigTitle = () => {
               />
             </NFormItem>
             
-            <NFormItem label="行高">
+            <NFormItem :label="$t('visualEditor.rowHeight')">
               <NInputNumber
                 v-model:value="gridstackConfig.cellHeight"
                 :min="40"
@@ -508,7 +508,7 @@ const getConfigTitle = () => {
               />
             </NFormItem>
             
-            <NFormItem label="间距">
+            <NFormItem :label="$t('visualEditor.margin')">
               <NInputNumber
                 v-model:value="gridstackConfig.margin"
                 :min="0"
@@ -519,21 +519,21 @@ const getConfigTitle = () => {
               />
             </NFormItem>
             
-            <NFormItem label="可拖拽">
+            <NFormItem :label="$t('visualEditor.draggable')">
               <NSwitch
                 v-model:value="gridstackConfig.draggable"
                 @update:value="handleGridstackConfigChange({ ...gridstackConfig, draggable: $event })"
               />
             </NFormItem>
             
-            <NFormItem label="可调整大小">
+            <NFormItem :label="$t('visualEditor.resizable')">
               <NSwitch
                 v-model:value="gridstackConfig.resizable"
                 @update:value="handleGridstackConfigChange({ ...gridstackConfig, resizable: $event })"
               />
             </NFormItem>
             
-            <NFormItem label="静态网格">
+            <NFormItem :label="$t('visualEditor.staticGrid')">
               <NSwitch
                 v-model:value="gridstackConfig.staticGrid"
                 @update:value="handleGridstackConfigChange({ ...gridstackConfig, staticGrid: $event })"
@@ -545,27 +545,27 @@ const getConfigTitle = () => {
         <!-- 可视化渲染器配置 -->
         <div v-else-if="isVisualizationRenderer" class="visualization-config">
           <NForm label-placement="left" label-width="100">
-            <NFormItem label="主题">
+            <NFormItem :label="$t('visualEditor.theme')">
               <NSelect
                 v-model:value="visualizationConfig.theme"
                 :options="[
-                  { label: '默认主题', value: 'default' },
-                  { label: '暗色主题', value: 'dark' },
-                  { label: '明亮主题', value: 'light' }
+                  { label: $t('visualEditor.defaultTheme'), value: 'default' },
+                  { label: $t('visualEditor.darkTheme'), value: 'dark' },
+                  { label: $t('visualEditor.lightTheme'), value: 'light' }
                 ]"
                 placeholder="选择主题"
                 @update:value="handleVisualizationConfigChange({ ...visualizationConfig, theme: $event })"
               />
             </NFormItem>
             
-            <NFormItem label="动画效果">
+            <NFormItem :label="$t('visualEditor.animation')">
               <NSwitch
                 v-model:value="visualizationConfig.animation"
                 @update:value="handleVisualizationConfigChange({ ...visualizationConfig, animation: $event })"
               />
             </NFormItem>
             
-            <NFormItem label="响应式">
+            <NFormItem :label="$t('visualEditor.responsive')">
               <NSwitch
                 v-model:value="visualizationConfig.responsive"
                 @update:value="handleVisualizationConfigChange({ ...visualizationConfig, responsive: $event })"

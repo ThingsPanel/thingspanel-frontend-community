@@ -9,6 +9,7 @@
   >
     <div 
       class="canvas" 
+      :class="{ 'show-grid': canvasConfig.showGrid }"
       @click="handleCanvasClick" 
       @contextmenu.prevent="handleCanvasContextMenu"
     >
@@ -17,8 +18,9 @@
         :key="node.id"
         class="canvas-node"
         :class="{ 
-          selected: selectedIds.includes(node.id),
-          readonly: readonly,
+          selected: selectedIds.includes(node.id) && !isPreviewMode.value,
+          readonly: readonly || isPreviewMode.value,
+          'preview-mode': isPreviewMode.value,
         }"
         :style="getNodeStyle(node)"
         @click.stop="handleNodeClick(node.id, $event)"
@@ -47,7 +49,7 @@
           />
           
           <div 
-            v-if="selectedIds.includes(node.id) && !readonly" 
+            v-if="selectedIds.includes(node.id) && !readonly && !isPreviewMode.value" 
             class="resize-handles"
           >
             <div 
@@ -77,6 +79,7 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { nanoid } from 'nanoid'
 import { useEditor } from '../../hooks/useEditor'
+import { globalPreviewMode } from '../../hooks/usePreviewMode'
 import BaseRendererComponent from '../base/BaseRendererComponent.vue'
 import TextWidget from '../../widgets/custom/TextWidget/TextWidget.vue'
 import ImageWidget from '../../widgets/custom/ImageWidget/ImageWidget.vue'
@@ -99,9 +102,17 @@ const props = withDefaults(defineProps<Props>(), {
 })
 interface Emits { (e: 'ready'): void; (e: 'error', error: Error): void; (e: 'node-select', id: string): void; (e: 'canvas-click', event?: MouseEvent): void }
 const emit = defineEmits<Emits>()
-const canvasConfig = computed(() => ({ ...props.config }))
+// 根据预览模式动态调整画布配置
+const canvasConfig = computed(() => ({
+  ...props.config,
+  showGrid: isPreviewMode.value ? false : (props.config?.showGrid ?? true),
+  snapToGrid: isPreviewMode.value ? false : (props.config?.snapToGrid ?? true)
+}))
 
 const { stateManager, selectNode, updateNode, addNode, removeNode } = useEditor()
+
+// 全局预览模式
+const { isPreviewMode, rendererConfig } = globalPreviewMode
 
 const nodes = computed(() => stateManager.canvasState.value.nodes)
 const selectedIds = computed(() => stateManager.canvasState.value.selectedIds)
@@ -130,8 +141,16 @@ const contextMenu = ref({ show: false, x: 0, y: 0 })
 const resizeHandles = [{ position: 'nw' }, { position: 'n' }, { position: 'ne' }, { position: 'w' }, { position: 'e' }, { position: 'sw' }, { position: 's' }, { position: 'se' }]
 const getWidgetComponent = (type: string) => widgetComponents[type as keyof typeof widgetComponents]
 const getNodeStyle = (node: GraphData) => ({ position: 'absolute' as const, left: `${node.x}px`, top: `${node.y}px`, width: `${node.width}px`, height: `${node.height}px` })
-const handleCanvasClick = () => stateManager.clearSelection()
+const handleCanvasClick = () => {
+  if (!isPreviewMode.value) {
+    stateManager.clearSelection()
+  }
+}
+
 const handleNodeClick = (id: string, event?: MouseEvent) => {
+  // 预览模式下禁用节点选择
+  if (isPreviewMode.value) return
+  
   if (event?.ctrlKey || event?.metaKey) {
     const newSelected = selectedIds.value.includes(id) ? selectedIds.value.filter(nodeId => nodeId !== id) : [...selectedIds.value, id]
     stateManager.selectNodes(newSelected)
@@ -142,6 +161,9 @@ const handleNodeClick = (id: string, event?: MouseEvent) => {
 }
 
 const handleNodeMouseDown = (nodeId: string, event: MouseEvent) => {
+  // 预览模式下禁用拖拽
+  if (isPreviewMode.value) return
+  
   event.preventDefault()
   isDragging.value = true
   dragNodeId.value = nodeId
@@ -152,6 +174,9 @@ const handleNodeMouseDown = (nodeId: string, event: MouseEvent) => {
 }
 
 const handleResizeStart = (nodeId: string, direction: string, event: MouseEvent) => {
+  // 预览模式下禁用调整大小
+  if (isPreviewMode.value) return
+  
   event.preventDefault()
   isResizing.value = true
   resizeNodeId.value = nodeId
@@ -211,8 +236,15 @@ onUnmounted(() => {
   document.removeEventListener('mouseup', handleMouseUp)
 })
 
-const handleCanvasContextMenu = (event: MouseEvent) => { contextMenu.value = { show: true, x: event.clientX, y: event.clientY } }
+const handleCanvasContextMenu = (event: MouseEvent) => { 
+  // 预览模式下禁用右键菜单
+  if (isPreviewMode.value) return
+  contextMenu.value = { show: true, x: event.clientX, y: event.clientY } 
+}
 const handleNodeContextMenu = (nodeId: string, event: MouseEvent) => {
+  // 预览模式下禁用右键菜单
+  if (isPreviewMode.value) return
+  
   if (!selectedIds.value.includes(nodeId)) selectNode(nodeId)
   contextMenu.value = { show: true, x: event.clientX, y: event.clientY }
 }
@@ -265,4 +297,18 @@ const handleTitleUpdate = (nodeId: string, newTitle: string) => {
 .resize-handle-sw { bottom: 0; left: 0; cursor: sw-resize; transform: translate(-50%, 50%); }
 .resize-handle-s { bottom: 0; left: 50%; cursor: s-resize; transform: translate(-50%, 50%); }
 .resize-handle-se { bottom: 0; right: 0; cursor: se-resize; transform: translate(50%, 50%); }
+
+/* 预览模式样式 */
+.canvas-node.preview-mode {
+  cursor: default !important;
+}
+
+.canvas-node.preview-mode:hover {
+  border-color: transparent !important;
+}
+
+/* 动态网格样式 */
+.canvas:not(.show-grid) {
+  background-image: none !important;
+}
 </style>

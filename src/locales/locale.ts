@@ -16,6 +16,7 @@ import cardJson from './langs/zh-cn/card.json'
 import device_templateJson from './langs/zh-cn/device_template.json'
 import dashboard_panelJson from './langs/zh-cn/dashboard_panel.json'
 import grouping_detailsJson from './langs/zh-cn/grouping_details.json'
+import visualEditorJson from './langs/zh-cn/visual-editor.json'
 
 import basicEnJson from './langs/en-us/basic.json'
 import othersEnJson from './langs/en-us/others.json'
@@ -35,6 +36,7 @@ import cardEnJson from './langs/en-us/card.json'
 import device_templateEnJson from './langs/en-us/device_template.json'
 import dashboard_panelEnJson from './langs/en-us/dashboard_panel.json'
 import grouping_detailsEnJson from './langs/en-us/grouping_details.json'
+import visualEditorEnJson from './langs/en-us/visual-editor.json'
 
 const zhCNJson = {
   ...basicJson,
@@ -54,7 +56,8 @@ const zhCNJson = {
   ...cardJson,
   ...device_templateJson,
   ...dashboard_panelJson,
-  ...grouping_detailsJson
+  ...grouping_detailsJson,
+  ...visualEditorJson
 }
 
 const enUSJson = {
@@ -75,12 +78,13 @@ const enUSJson = {
   ...cardEnJson,
   ...device_templateEnJson,
   ...dashboard_panelEnJson,
-  ...grouping_detailsEnJson
+  ...grouping_detailsEnJson,
+  ...visualEditorEnJson
 }
 
-const locales: Record<App.I18n.LangType, App.I18n.Schema> = {
-  'zh-CN': zhCNJson as unknown as App.I18n.Schema,
-  'en-US': enUSJson as unknown as App.I18n.Schema
+const locales: Record<I18n.LangType, I18n.Schema> = {
+  'zh-CN': zhCNJson as unknown as I18n.Schema,
+  'en-US': enUSJson as unknown as I18n.Schema
 }
 
 export default locales

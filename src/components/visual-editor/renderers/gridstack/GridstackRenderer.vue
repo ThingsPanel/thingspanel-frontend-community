@@ -10,8 +10,9 @@
       <GridLayoutPlusWrapper
         v-if="stateManager.canvasState.value"
         :graph-data="stateManager.canvasState.value"
-        :readonly="readonly"
+        :readonly="readonly || isPreviewMode"
         :show-widget-titles="showWidgetTitles"
+        :static-grid="isPreviewMode"
         @node-select="onNodeSelect"
       />
     </div>
@@ -20,6 +21,7 @@
 
 <script setup lang="ts">
 import { useEditor } from '../../hooks/useEditor'
+import { globalPreviewMode } from '../../hooks/usePreviewMode'
 import BaseRendererComponent from '../base/BaseRendererComponent.vue'
 import GridLayoutPlusWrapper from './GridLayoutPlusWrapper.vue'
 
@@ -31,6 +33,9 @@ const props = defineProps<{
 const emit = defineEmits(['ready', 'error', 'node-select', 'canvas-click'])
 
 const { stateManager, selectNode } = useEditor()
+
+// 全局预览模式
+const { isPreviewMode } = globalPreviewMode
 
 // --- Event Handlers to emit upwards to PanelEditor ---
 

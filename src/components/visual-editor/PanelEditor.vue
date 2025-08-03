@@ -12,6 +12,7 @@ import WidgetLibrary from './components/WidgetLibrary/WidgetLibrary.vue'
 import { initializeSettings, SettingsPanel } from './settings'
 import { CanvasRenderer, GridstackRenderer } from './renderers'
 import { createEditor, useCard2Integration } from './hooks'
+import { globalPreviewMode } from './hooks/usePreviewMode'
 import type { RendererType, VisualEditorWidget, GraphData } from './types'
 
 // 初始化 Card 2.1 集成
@@ -59,6 +60,9 @@ const { isFullscreen, toggle } = useFullscreen(fullui)
 
 // 创建编辑器上下文
 const { stateManager, addWidget, selectNode, updateNode } = createEditor()
+
+// 全局预览模式管理
+const { isPreviewMode, setPreviewMode, togglePreviewMode, rendererConfig } = globalPreviewMode
 
 const selectedWidget = computed<VisualEditorWidget | null>(() => {
   if (!selectedNodeId.value) return null
@@ -127,12 +131,12 @@ const fetchBoard = async () => {
       }
       if (!isUnmounted.value) {
         dataFetched.value = true
-        message.success('面板数据加载成功')
+        message.success($t('visualEditor.success'))
       }
     } else {
       console.warn('⚠️ 未获取到面板数据')
       if (!isUnmounted.value) {
-        message.warning('未获取到面板数据，使用默认配置')
+        message.warning($t('visualEditor.warning'))
       }
       
       // 即使没有数据也要初始化默认配置
@@ -146,7 +150,7 @@ const fetchBoard = async () => {
   } catch (error: any) {
     console.error('获取面板数据失败:', error)
     if (!isUnmounted.value) {
-      message.warning('获取面板数据失败，使用默认配置')
+      message.warning($t('visualEditor.warning'))
     }
     
     // 出错时也要初始化默认配置，让编辑器能正常工作
@@ -196,15 +200,16 @@ const getDefaultConfig = () => ({
 })
 
 // 渲染器选项
-const rendererOptions = [
-  { label: '大屏', value: 'canvas' as RendererType },
-  { label: '看板', value: 'gridstack' as RendererType }
-]
+const rendererOptions = computed(() => [
+  { label: $t('visualEditor.canvas'), value: 'canvas' as RendererType },
+  { label: $t('visualEditor.gridstack'), value: 'gridstack' as RendererType }
+])
 
 // 工具栏事件处理
 const handleModeChange = (mode: 'edit' | 'preview') => {
   if (mode === 'edit') {
     isEditing.value = true
+    setPreviewMode(false) // 同步全局预览模式
     // 进入编辑模式时自动打开组件库抽屉
     showLeftDrawer.value = true
     // 如果有选中的节点，打开属性面板抽屉
@@ -220,6 +225,7 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
         negativeText: $t('common.cancel'),
         onPositiveClick: () => {
           isEditing.value = false
+          setPreviewMode(true) // 同步全局预览模式
           // 退出编辑模式时关闭所有抽屉
           showLeftDrawer.value = false
           showRightDrawer.value = false
@@ -231,6 +237,7 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
       })
     } else {
       isEditing.value = false
+      setPreviewMode(true) // 同步全局预览模式
       // 退出编辑模式时关闭所有抽屉
       showLeftDrawer.value = false
       showRightDrawer.value = false
@@ -247,6 +254,15 @@ const handleToggleLeftDrawer = () => {
 
 const handleToggleRightDrawer = () => {
   showRightDrawer.value = !showRightDrawer.value
+}
+
+// 组件库请求打开抽屉（悬停触发）
+const handleRequestDrawerOpen = () => {
+  // 只有在编辑模式下才响应悬停触发
+  if (isEditing.value && !showLeftDrawer.value) {
+    showLeftDrawer.value = true
+    console.log($t('visualEditor.hoverTriggerDrawer'))
+  }
 }
 
 // 拖拽事件处理
@@ -267,21 +283,25 @@ const handleRendererChange = (renderer: RendererType) => {
   hasChanges.value = true
 }
 
-const handleAddWidget = async (widgetType: string) => {
+const handleAddWidget = async (widget: { type: string, source?: 'card2' | 'legacy' }) => {
   try {
-    await addWidget(widgetType)
+    const widgetType = typeof widget === 'string' ? widget : widget.type;
+    const source = typeof widget === 'object' ? widget.source : 'legacy';
+    
+    await addWidget(widgetType, undefined, source)
     hasChanges.value = true
-    message.success(`成功添加 ${widgetType} 组件`)
+    message.success($t('visualEditor.addWidgetSuccess', { type: widgetType }))
   } catch (error: any) {
+    const widgetType = typeof widget === 'string' ? widget : widget.type;
     console.error(`❌ 添加组件失败 [${widgetType}]:`, error)
-    message.error(`添加 ${widgetType} 组件失败: ${error.message || '未知错误'}`)
+    message.error($t('visualEditor.addWidgetFailed', { type: widgetType, error: error.message || '未知错误' }))
   }
 }
 
 const handleClearAll = () => {
   stateManager.reset()
   hasChanges.value = true
-  message.success('已清空所有节点')
+  message.success($t('visualEditor.clearAllSuccess'))
 }
 
 // 导入导出处理
@@ -309,13 +329,13 @@ const handleImportConfig = (config: Record<string, any>) => {
       }
       
       hasChanges.value = true
-      message.success('配置导入成功')
+      message.success($t('visualEditor.configImportSuccess'))
     } else {
       throw new Error('无效的配置格式')
     }
   } catch (error: any) {
     console.error('导入配置失败:', error)
-    message.error('导入配置失败: ' + (error.message || '未知错误'))
+    message.error($t('visualEditor.configImportFailed', { error: error.message || '未知错误' }))
   }
 }
 
@@ -346,10 +366,10 @@ const handleExportConfig = () => {
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
     
-    message.success('配置导出成功')
+    message.success($t('visualEditor.configExportSuccess'))
   } catch (error: any) {
     console.error('导出配置失败:', error)
-    message.error('导出配置失败: ' + (error.message || '未知错误'))
+    message.error($t('visualEditor.configExportFailed', { error: error.message || '未知错误' }))
   }
 }
 
@@ -392,7 +412,7 @@ const handleRendererReady = () => {
 
 const handleRendererError = (error: Error) => {
   console.error('❌ 渲染器错误:', error)
-  message.error('渲染器加载失败: ' + error.message)
+  message.error($t('visualEditor.rendererLoadFailed', { error: error.message }))
 }
 
 const handleNodeSelect = (nodeId: string) => {
@@ -501,7 +521,7 @@ onUnmounted(() => {
       <div v-if="!dataFetched" class="h-full flex items-center justify-center w-full">
         <n-spin size="large">
           <template #description>
-            正在加载编辑器...
+            {{ $t('visualEditor.loading') }}
           </template>
         </n-spin>
       </div>
@@ -578,11 +598,12 @@ onUnmounted(() => {
             :z-index="1000"
             :trap-focus="false"
           >
-            <NDrawerContent title="组件库" :native-scrollbar="false">
+            <NDrawerContent :title="$t('visualEditor.componentLibrary')" :native-scrollbar="false">
               <WidgetLibrary 
                 @add-widget="handleAddWidget"
                 @drag-start="handleDragStart"
                 @drag-end="handleDragEnd"
+                @request-drawer-open="handleRequestDrawerOpen"
               />
             </NDrawerContent>
           </NDrawer>
@@ -599,7 +620,7 @@ onUnmounted(() => {
             :z-index="1000"
             :trap-focus="false"
           >
-            <NDrawerContent title="属性设置" :native-scrollbar="false">
+            <NDrawerContent :title="$t('visualEditor.propertySettings')" :native-scrollbar="false">
               <SettingsPanel 
                 :selected-widget="selectedWidget"
                 :show-widget-titles="showWidgetTitles"

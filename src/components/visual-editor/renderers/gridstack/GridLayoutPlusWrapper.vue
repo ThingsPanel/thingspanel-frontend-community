@@ -55,7 +55,11 @@ import type { VisualEditorWidget } from '@/components/visual-editor/types'
 import Card2Wrapper from '../canvas/Card2Wrapper.vue'
 import ContextMenu from '../canvas/ContextMenu.vue'
 
-const props = defineProps<{ graphData: GraphData; readonly?: boolean }>()
+const props = defineProps<{ 
+  graphData: GraphData; 
+  readonly?: boolean;
+  staticGrid?: boolean;
+}>()
 const emit = defineEmits(['node-select'])
 
 const router = useRouter()
@@ -83,8 +87,8 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => ({
   colNum: 12,
   rowHeight: 80,
   margin: [10, 10],
-  isDraggable: !isReadOnly.value,
-  isResizable: !isReadOnly.value,
+  isDraggable: !isReadOnly.value && !props.staticGrid,
+  isResizable: !isReadOnly.value && !props.staticGrid,
   responsive: false,
   preventCollision: true,
   verticalCompact: true,
@@ -139,7 +143,7 @@ const handleInteraction = (widget: VisualEditorWidget) => {
 }
 
 const handleContextMenu = (event: MouseEvent, nodeId: string) => {
-  if (isReadOnly.value) return
+  if (isReadOnly.value || props.staticGrid) return
   event.preventDefault()
   
   const node = getNodeById(nodeId)
