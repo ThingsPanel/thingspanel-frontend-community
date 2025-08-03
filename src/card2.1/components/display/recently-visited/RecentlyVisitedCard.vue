@@ -26,7 +26,7 @@
 import { useRouter } from 'vue-router'
 import { $t } from '@/locales'
 import { useData } from './useData'
-import { SvgIcon } from '@/components/common'
+import SvgIcon from '@/components/custom/svg-icon.vue'
 
 defineProps<{
   title: string

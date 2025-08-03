@@ -7,15 +7,14 @@ const ReportedDataCard = defineAsyncComponent(() => import('./ReportedDataCard.v
 
 const definition: IComponentDefinition = {
   id: 'reported-data',
-  is: ReportedDataCard,
-  name: $t('card.reportedData.title'),
-  icon: 'mdi:chart-bar',
-  category: 'display',
   component: ReportedDataCard,
   meta: {
+    name: 'reported-data',
     title: $t('card.reportedData.title'),
     description: 'Displays the latest telemetry data from devices with real-time updates.',
-    poster
+    category: 'display',
+    icon: 'mdi:chart-bar',
+    version: '1.0.0'
   },
   properties: {
     title: {
@@ -23,9 +22,7 @@ const definition: IComponentDefinition = {
       label: $t('common.title'),
       default: $t('card.reportedData.title')
     }
-  },
-  events: {},
-  slots: {}
+  }
 }
 
 export default definition

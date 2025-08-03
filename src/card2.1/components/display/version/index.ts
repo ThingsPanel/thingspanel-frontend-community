@@ -4,14 +4,14 @@ import { $t } from '@/locales'
 
 const definition: IComponentDefinition = {
   id: 'version-info',
-  is: defineAsyncComponent(() => import('./VersionCard.vue')),
-  name: '版本信息',
-  category: 'display',
   component: defineAsyncComponent(() => import('./VersionCard.vue')),
   meta: {
+    name: 'version-info',
     title: $t('card.versionInfo.title'),
     description: '显示当前系统版本和最新版本信息',
+    category: 'display',
     icon: 'carbon:information-square-filled',
+    version: '1.0.0',
     tags: ['system', 'info', 'version']
   },
   properties: {
@@ -40,9 +40,7 @@ const definition: IComponentDefinition = {
       label: 'GitHub URL',
       default: 'https://github.com/ThingsPanel/thingspanel-frontend-community'
     }
-  },
-  events: {},
-  slots: {}
+  }
 }
 
 export default definition

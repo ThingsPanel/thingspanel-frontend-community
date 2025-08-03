@@ -6,6 +6,7 @@ import View from './view.vue'
 export default {
   id: 'button', // 使用 id 作为唯一标识
   meta: {
+    name: 'button',
     title: '按钮', // 使用 title 作为显示名称
     category: 'control',
     icon: 'button-icon', // 替换为真实图标

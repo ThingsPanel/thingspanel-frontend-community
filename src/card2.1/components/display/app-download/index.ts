@@ -7,15 +7,14 @@ const AppDownloadCard = defineAsyncComponent(() => import('./AppDownloadCard.vue
 
 const definition: IComponentDefinition = {
   id: 'app-download',
-  is: AppDownloadCard,
-  name: $t('card.appDownload.title'),
-  icon: 'material-symbols:download-for-offline-outline',
-  category: 'display',
   component: AppDownloadCard,
   meta: {
+    name: 'app-download',
     title: $t('card.appDownload.title'),
     description: $t('card.appDownload.description'),
-    poster
+    category: 'display',
+    icon: 'material-symbols:download-for-offline-outline',
+    version: '1.0.0'
   },
   properties: {
     title: {
@@ -43,9 +42,7 @@ const definition: IComponentDefinition = {
       label: 'Scan Text',
       default: $t('card.appDownload.scanOrClick')
     }
-  },
-  events: {},
-  slots: {}
+  }
 }
 
 export default definition

@@ -15,8 +15,8 @@
 
 <script setup lang="ts">
 import { NSpin } from 'naive-ui'
-import { CountTo } from '@/components/custom/count-to'
-import { SvgIcon } from '@/components/common'
+import CountTo from '@/components/custom/count-to.vue'
+import SvgIcon from '@/components/custom/svg-icon.vue'
 import { GradientBg } from './components'
 import { useData } from './useData'
 

@@ -7,15 +7,14 @@ const OnlineTrendCard = defineAsyncComponent(() => import('./OnlineTrendCard.vue
 
 const definition: IComponentDefinition = {
   id: 'online-trend',
-  is: OnlineTrendCard,
-  name: $t('card.onlineTrend'),
-  icon: 'mdi:chart-line',
-  category: 'chart',
   component: OnlineTrendCard,
   meta: {
+    name: 'online-trend',
     title: $t('card.onlineTrend'),
     description: 'Displays the trend of online and offline devices.',
-    poster
+    category: 'chart',
+    icon: 'mdi:chart-line',
+    version: '1.0.0'
   },
   properties: {
     title: {
@@ -23,9 +22,7 @@ const definition: IComponentDefinition = {
       label: $t('common.title'),
       default: $t('card.onlineTrend')
     }
-  },
-  events: {},
-  slots: {}
+  }
 }
 
 export default definition
