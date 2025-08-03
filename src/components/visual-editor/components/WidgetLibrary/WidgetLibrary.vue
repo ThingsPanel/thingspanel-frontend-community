@@ -85,9 +85,12 @@ const card2WidgetTree = computed<WidgetTreeNode[]>(() => {
       categories[categoryName] = { name: categoryName, children: [] }
     }
     
-    // `widget` 对象 (Card2Widget) 已经包含了模板所需的所有显示属性，
-    // 我们可以直接将其推入，并进行类型断言。
-    categories[categoryName].children.push(widget as unknown as WidgetDefinition)
+    // 为 Card 2.1 组件添加 source 标识并转换为 WidgetDefinition
+    const card2Widget = {
+      ...widget,
+      source: 'card2' as const
+    }
+    categories[categoryName].children.push(card2Widget as unknown as WidgetDefinition)
   })
   
   return Object.values(categories)
@@ -133,7 +136,8 @@ const emit = defineEmits<{
 
 const handleAddWidget = (widget: any) => {
   const isCard2 = widget.source === 'card2'
-  const type = isCard2 ? widget.id : widget.type
+  // Card 2.1 组件和传统组件都使用 type 字段
+  const type = widget.type
   
   if (!type) {
     console.error("❌ handleAddWidget called with undefined type.", widget);
@@ -145,7 +149,8 @@ const handleAddWidget = (widget: any) => {
 const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
   if (event.dataTransfer) {
     const isCard2 = widget.source === 'card2'
-    const type = isCard2 ? widget.id : widget.type
+    // Card 2.1 组件和传统组件都使用 type 字段
+    const type = widget.type
     
     const dragData = {
       type,
