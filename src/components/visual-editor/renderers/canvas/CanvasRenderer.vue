@@ -8,8 +8,11 @@
     @canvas-click="onCanvasClick"
   >
     <div 
-      class="canvas" 
-      :class="{ 'show-grid': canvasConfig.showGrid }"
+      class="canvas grid-background-base" 
+      :class="{ 
+        'show-grid': canvasConfig.showGrid,
+        'preview-mode': isPreviewMode.value
+      }"
       @click="handleCanvasClick" 
       @contextmenu.prevent="handleCanvasContextMenu"
     >
@@ -280,7 +283,7 @@ const handleTitleUpdate = (nodeId: string, newTitle: string) => {
 </script>
 
 <style scoped>
-.canvas { position: relative; width: 100%; height: 100%; min-height: 600px; background-color: var(--n-color-embedded); background-image: linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px); background-size: 20px 20px; user-select: none; }
+.canvas { position: relative; width: 100%; height: 100%; min-height: 600px; user-select: none; }
 .canvas-node { display: flex; flex-direction: column; border: 2px solid transparent; transition: border-color 0.2s ease; cursor: move; position: relative; }
 .widget-body { flex: 1; position: relative; overflow: hidden; }
 .canvas-node:hover:not(.readonly) { border-color: rgba(24, 160, 88, 0.3); }
@@ -307,8 +310,4 @@ const handleTitleUpdate = (nodeId: string, newTitle: string) => {
   border-color: transparent !important;
 }
 
-/* 动态网格样式 */
-.canvas:not(.show-grid) {
-  background-image: none !important;
-}
 </style>

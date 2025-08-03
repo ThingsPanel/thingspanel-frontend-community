@@ -4,11 +4,11 @@
 -->
 <template>
   <div 
-    class="grid-layout-plus-wrapper"
+    class="grid-layout-plus-wrapper grid-background-base"
     :class="{
       'readonly': readonly,
       'dark-theme': isDarkTheme,
-      'show-grid': showGrid
+      'show-grid': showGrid && !readonly
     }"
   >
     <GridLayout
@@ -422,26 +422,6 @@ defineExpose({
   position: relative;
   width: 100%;
   height: 100%;
-  background: var(--bg-color, #f8f9fa);
-  transition: background-color 0.3s ease;
-}
-
-.dark-theme {
-  background: var(--bg-color-dark, #1a1a1a);
-}
-
-.show-grid {
-  background-image: 
-    linear-gradient(to right, #ddd 1px, transparent 1px),
-    linear-gradient(to bottom, #ddd 1px, transparent 1px);
-  background-size: 20px 20px;
-  background-position: -1px -1px;
-}
-
-.dark-theme.show-grid {
-  background-image: 
-    linear-gradient(to right, #333 1px, transparent 1px),
-    linear-gradient(to bottom, #333 1px, transparent 1px);
 }
 
 /* 网格项内容 */

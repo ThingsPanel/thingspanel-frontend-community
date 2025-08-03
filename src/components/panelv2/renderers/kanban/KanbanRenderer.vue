@@ -645,7 +645,10 @@ onUnmounted(() => {
 <template>
   <div
     ref="containerRef"
-    class="kanban-renderer"
+    class="kanban-renderer grid-background-base"
+    :class="{
+      'show-grid': dynamicConfig.showGrid && !readonly
+    }"
     :style="{
       '--drag-highlight': kanbanColors.dragHighlight,
       '--drag-active': kanbanColors.dragActive,
@@ -733,8 +736,6 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   position: relative;
-  background-color: var(--canvas-bg-color, #f5f5f5);
-  transition: background-color 0.2s ease;
 }
 
 /* 拖拽状态样式 */
@@ -865,13 +866,6 @@ onUnmounted(() => {
   transition: background-color 0.3s ease;
 }
 
-/* 网格显示样式 */
-.kanban-renderer.show-grid {
-  background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-  background-size: calc(100% / var(--grid-cols, 12)) var(--grid-row-height, 110px);
-}
 
 .kanban-renderer {
   --grid-cols: v-bind('dynamicConfig.colNum');
