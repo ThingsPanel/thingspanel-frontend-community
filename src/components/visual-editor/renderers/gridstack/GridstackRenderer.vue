@@ -14,6 +14,7 @@
         :show-widget-titles="showWidgetTitles"
         :static-grid="isPreviewMode"
         @node-select="onNodeSelect"
+        @request-settings="onRequestSettings"
       />
     </div>
   </BaseRendererComponent>
@@ -30,7 +31,7 @@ const props = defineProps<{
   showWidgetTitles?: boolean
 }>()
 
-const emit = defineEmits(['ready', 'error', 'node-select', 'canvas-click'])
+const emit = defineEmits(['ready', 'error', 'node-select', 'canvas-click', 'request-settings'])
 
 const { stateManager, selectNode } = useEditor()
 
@@ -50,6 +51,11 @@ const onRendererError = (error: Error) => {
 const onNodeSelect = (nodeId: string) => {
   emit('node-select', nodeId)
 }
+
+const onRequestSettings = (nodeId: string) => {
+  emit('request-settings', nodeId)
+}
+
 
 const onCanvasClick = () => {
   selectNode('') // use the hook's method to clear selection

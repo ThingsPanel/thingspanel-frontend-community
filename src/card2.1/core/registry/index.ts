@@ -1,7 +1,7 @@
 /**
  * @file 卡片组件注册表
  */
-import type { IComponentDefinition } from './types'
+import type { IComponentDefinition } from '../types'
 
 class ComponentRegistry {
   private components: Map<string, IComponentDefinition> = new Map()

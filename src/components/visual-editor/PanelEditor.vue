@@ -6,19 +6,16 @@ import { useAppStore } from '@/store/modules/app'
 import FullScreen from '@/components/common/full-screen.vue'
 import { $t } from '@/locales'
 import { getBoard, PutBoard } from '@/service/api'
-import EditorLayout from './components/Layout/EditorLayout.vue'
 import { VisualEditorToolbar } from './components/toolbar'
 import WidgetLibrary from './components/WidgetLibrary/WidgetLibrary.vue'
 import { initializeSettings, SettingsPanel } from './settings'
 import { CanvasRenderer, GridstackRenderer } from './renderers'
 import { createEditor, useCard2Integration } from './hooks'
-import { globalPreviewMode } from './hooks/usePreviewMode'
 import type { RendererType, VisualEditorWidget, GraphData } from './types'
 
 // 初始化 Card 2.1 集成
 useCard2Integration({
   autoInit: true,
-  devMode: import.meta.env.DEV, // 开发模式下开启 devMode
 })
 
 
@@ -59,15 +56,16 @@ const showWidgetTitles = ref(true) // 总开关，默认显示标题
 const { isFullscreen, toggle } = useFullscreen(fullui)
 
 // 创建编辑器上下文
-const { stateManager, addWidget, selectNode, updateNode } = createEditor()
-
-// 全局预览模式管理
-const { isPreviewMode, setPreviewMode, togglePreviewMode, rendererConfig } = globalPreviewMode
+const { stateManager, addWidget, selectNode } = createEditor()
+const setPreviewMode = (val: boolean) => {}
 
 const selectedWidget = computed<VisualEditorWidget | null>(() => {
   if (!selectedNodeId.value) return null
-  // Correctly find the node from the state manager's nodes array
-  return stateManager.canvasState.value.nodes.find(node => node.id === selectedNodeId.value) || null
+  const node = stateManager.canvasState.value.nodes.find(node => node.id === selectedNodeId.value)
+  if (node) {
+    return node as VisualEditorWidget
+  }
+  return null
 })
 
 
@@ -210,12 +208,6 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
   if (mode === 'edit') {
     isEditing.value = true
     setPreviewMode(false) // 同步全局预览模式
-    // 进入编辑模式时自动打开组件库抽屉
-    showLeftDrawer.value = true
-    // 如果有选中的节点，打开属性面板抽屉
-    if (selectedNodeId.value) {
-      showRightDrawer.value = true
-    }
   } else {
     const currentState = getState()
     if (JSON.stringify(currentState) !== JSON.stringify(preEditorConfig.value)) {
@@ -256,14 +248,7 @@ const handleToggleRightDrawer = () => {
   showRightDrawer.value = !showRightDrawer.value
 }
 
-// 组件库请求打开抽屉（悬停触发）
-const handleRequestDrawerOpen = () => {
-  // 只有在编辑模式下才响应悬停触发
-  if (isEditing.value && !showLeftDrawer.value) {
-    showLeftDrawer.value = true
-    console.log($t('visualEditor.hoverTriggerDrawer'))
-  }
-}
+
 
 // 拖拽事件处理
 const handleDragStart = (componentType: string) => {
@@ -283,16 +268,15 @@ const handleRendererChange = (renderer: RendererType) => {
   hasChanges.value = true
 }
 
-const handleAddWidget = async (widget: { type: string, source?: 'card2' | 'legacy' }) => {
+const handleAddWidget = async (widget: { type: string }) => {
   try {
-    const widgetType = typeof widget === 'string' ? widget : widget.type;
-    const source = typeof widget === 'object' ? widget.source : 'legacy';
+    const widgetType = widget.type;
     
-    await addWidget(widgetType, undefined, source)
+    await addWidget(widgetType)
     hasChanges.value = true
     message.success($t('visualEditor.addWidgetSuccess', { type: widgetType }))
   } catch (error: any) {
-    const widgetType = typeof widget === 'string' ? widget : widget.type;
+    const widgetType = widget.type;
     console.error(`❌ 添加组件失败 [${widgetType}]:`, error)
     message.error($t('visualEditor.addWidgetFailed', { type: widgetType, error: error.message || '未知错误' }))
   }
@@ -418,8 +402,12 @@ const handleRendererError = (error: Error) => {
 const handleNodeSelect = (nodeId: string) => {
   selectedNodeId.value = nodeId
   selectNode(nodeId)
-  // 选中节点时，如果在编辑模式，自动打开属性抽屉
-  if (isEditing.value && nodeId) {
+}
+
+const handleRequestSettings = (nodeId: string) => {
+  if (nodeId) {
+    selectedNodeId.value = nodeId
+    selectNode(nodeId)
     showRightDrawer.value = true
   }
 }
@@ -572,6 +560,7 @@ onUnmounted(() => {
               @error="handleRendererError"
               @node-select="handleNodeSelect"
               @canvas-click="handleCanvasClick"
+              @request-settings="handleRequestSettings"
             />
             <GridstackRenderer 
               v-else-if="currentRenderer === 'gridstack' && dataFetched && !isUnmounted" 
@@ -583,6 +572,7 @@ onUnmounted(() => {
               @error="handleRendererError"
               @node-select="handleNodeSelect"
               @canvas-click="handleCanvasClick"
+              @request-settings="handleRequestSettings"
             />
           </div>
 
@@ -603,7 +593,6 @@ onUnmounted(() => {
                 @add-widget="handleAddWidget"
                 @drag-start="handleDragStart"
                 @drag-end="handleDragEnd"
-                @request-drawer-open="handleRequestDrawerOpen"
               />
             </NDrawerContent>
           </NDrawer>

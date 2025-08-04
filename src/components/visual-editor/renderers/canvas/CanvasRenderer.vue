@@ -103,7 +103,13 @@ const props = withDefaults(defineProps<Props>(), {
   config: () => ({ showGrid: true, backgroundColor: '#f5f5f5', width: 1200, height: 800, snapToGrid: true, gridSize: 10 }),
   showWidgetTitles: false
 })
-interface Emits { (e: 'ready'): void; (e: 'error', error: Error): void; (e: 'node-select', id: string): void; (e: 'canvas-click', event?: MouseEvent): void }
+interface Emits { 
+  (e: 'ready'): void; 
+  (e: 'error', error: Error): void; 
+  (e: 'node-select', id: string): void; 
+  (e: 'canvas-click', event?: MouseEvent): void;
+  (e: 'request-settings', id: string): void;
+}
 const emit = defineEmits<Emits>()
 // 根据预览模式动态调整画布配置
 const canvasConfig = computed(() => ({
@@ -267,6 +273,11 @@ const handleContextMenuAction = (action: string) => {
       }
       case 'delete':
         removeNode(node.id)
+        break
+      case 'settings':
+        if (selectedNodes.value.length === 1) {
+          emit('request-settings', selectedNodes.value[0].id)
+        }
         break
     }
   })

@@ -32,7 +32,6 @@
   draggable="true"
   :title="widget.description"
   @click="handleAddWidget(widget)"
-  @dragstart="handleDragStart(widget, $event)"
 >
               <template #icon>
                 <n-icon>
@@ -131,7 +130,9 @@ const defaultExpanded = computed(() => {
 
 // --- Emits and Event Handlers ---
 const emit = defineEmits<{
-  'add-widget': [payload: { type: string; source: 'card2' | 'legacy' }]
+  'add-widget': [payload: { type: string; source: 'card2' | 'legacy' }];
+  'drag-start': [widget: any, event: DragEvent];
+  'drag-end': [];
 }>()
 
 const handleAddWidget = (widget: any) => {
@@ -146,24 +147,7 @@ const handleAddWidget = (widget: any) => {
   emit('add-widget', { type, source: widget.source || 'legacy' })
 }
 
-const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
-  if (event.dataTransfer) {
-    const isCard2 = widget.source === 'card2'
-    // Card 2.1 组件和传统组件都使用 type 字段
-    const type = widget.type
-    
-    const dragData = {
-      type,
-      source: widget.source || 'legacy'
-    };
 
-    console.log('Dragging widget:', widget);
-    console.log('Drag data being set:', dragData);
-
-    event.dataTransfer.setData('application/json', JSON.stringify(dragData));
-    event.dataTransfer.effectAllowed = 'copy';
-  }
-}
 </script>
 
 <style scoped>

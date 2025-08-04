@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { computed, h } from 'vue'
 import { NIcon } from 'naive-ui'
-import { CopyOutline, TrashOutline } from '@vicons/ionicons5'
+import { CopyOutline, TrashOutline, SettingsOutline } from '@vicons/ionicons5'
 import type { VisualEditorWidget } from '../../types'
 
 interface Props {
@@ -35,8 +35,19 @@ const emit = defineEmits<{
 const menuOptions = computed(() => {
   const selection = props.selectedWidgets || []
   const hasSelection = selection.length > 0
+  const isSingleSelection = selection.length === 1
 
   return [
+    {
+      label: '属性',
+      key: 'settings',
+      icon: () => h(NIcon, null, { default: () => h(SettingsOutline) }),
+      disabled: !isSingleSelection
+    },
+    {
+      type: 'divider',
+      key: 'd1'
+    },
     {
       label: '复制',
       key: 'copy',
@@ -49,7 +60,6 @@ const menuOptions = computed(() => {
       icon: () => h(NIcon, null, { default: () => h(TrashOutline) }),
       disabled: !hasSelection
     }
-    // "图层" 和 "锁定" 已移除
   ]
 })
 

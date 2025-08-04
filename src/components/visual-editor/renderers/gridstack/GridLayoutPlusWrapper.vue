@@ -60,7 +60,7 @@ const props = defineProps<{
   readonly?: boolean;
   staticGrid?: boolean;
 }>()
-const emit = defineEmits(['node-select'])
+const emit = defineEmits(['node-select', 'request-settings'])
 
 const router = useRouter()
 const { 
@@ -176,6 +176,9 @@ const handleContextMenuSelect = (action: string) => {
     }
     case 'delete':
       removeNode(widget.id)
+      break
+    case 'settings':
+      emit('request-settings', widget.id)
       break
   }
   closeContextMenu()
