@@ -1,35 +1,48 @@
 /**
- * Card2.1 主入口
- * 简洁明了的 API
+ * @file Card 2.1 系统入口
+ * 动态导入并注册所有卡片组件
  */
+import { componentRegistry } from './core'
+import type { IComponentDefinition } from './core'
+import { configRegistry } from '@/components/visual-editor/settings/ConfigRegistry'
 
-// 导入核心功能
-import { cardRegistry, registerCard } from './core/registry'
+// --- 静态导入所有组件分类 ---
+// 使用静态路径可以避免 Vite 在某些情况下的 glob 缓存问题
+const buttons = import.meta.glob('./components/button/*/index.ts', { eager: true, import: 'default' })
+const charts = import.meta.glob('./components/chart/*/index.ts', { eager: true, import: 'default' })
+const controls = import.meta.glob('./components/control/*/index.ts', { eager: true, import: 'default' })
+const displays = import.meta.glob('./components/display/*/index.ts', { eager: true, import: 'default' })
+const medias = import.meta.glob('./components/media/*/index.ts', { eager: true, import: 'default' })
 
-// 导出核心类型
-export type { CardComponent, CardConfig, ConfigContext, CardLayout, CardRegistry } from './core/types'
+// 合并所有模块
+const modules = { ...buttons, ...charts, ...controls, ...displays, ...medias }
 
-// 导出注册表
-export { cardRegistry, registerCard, getCard, getAllCards } from './core/registry'
+console.log('[Card2.1] Discovered component modules:', modules)
 
-// 导出工具组件
-export { default as ConfigProvider } from './utils/ConfigProvider.vue'
+// 过滤掉任何可能未定义或无效的模块
+const componentsToRegister = Object.values(modules).filter(Boolean) as IComponentDefinition[]
 
-// 导出内置组件
-export { textComponent } from './components/text'
+console.log(`[Card2.1] Found ${componentsToRegister.length} valid component definitions to register.`)
 
-// 版本信息
-export const version = '2.1.0'
+componentsToRegister.forEach(componentDef => {
+  // 添加健壮性检查，确保组件定义和 ID 都存在
+  if (componentDef && componentDef.id) {
+    componentRegistry.register(componentDef.id, componentDef)
 
-// 简单的初始化函数
-export async function initCard21() {
-  // 自动注册内置组件
-  const { textComponent: textComp } = await import('./components/text')
-  registerCard(textComp)
+    // 如果组件有自定义配置组件，注册到配置注册表
+    if (componentDef.configComponent) {
+      configRegistry.register(componentDef.id, componentDef.configComponent)
+      console.log(`🔧 [Card2.1] 注册配置组件: ${componentDef.id}`)
+    }
+  } else {
+    console.error(
+      '[Card2.1] ❌ Found an invalid or incomplete component definition, skipping registration:',
+      componentDef
+    )
+  }
+})
 
-  console.log(`🎯 Card2.1 v${version} 初始化完成`)
-  console.log(`📦 已注册 ${cardRegistry.getAll().length} 个组件`)
-}
+const registeredIds = componentRegistry.getAll().map(c => c.id)
+console.log(`[Card2.1] ✅ All Card 2.1 components registered. Total: ${registeredIds.length}. IDs:`, registeredIds)
 
-// 默认导出注册表（向后兼容）
-export default cardRegistry
+export default componentRegistry

@@ -134,6 +134,7 @@ class WidgetRegistry {
     const categoryMap = new Map<string, WidgetDefinition[]>()
     const categoryNameMap: Record<string, string> = {
       base: '基础组件',
+      card21: '🎯 Card 2.1 组件',
       chart: '📊 Card 2.0 图表',
       control: '🎛️ Card 2.0 控制',
       display: '📱 Card 2.0 显示',

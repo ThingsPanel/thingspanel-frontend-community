@@ -9,21 +9,8 @@
       </n-input>
     </div>
 
-    <!-- 加载状态 -->
-    <div v-if="isLoading" class="loading-state">
-      <n-spin size="small" />
-      <p class="loading-text">{{ $t('visualEditor.loadingComponents') }}</p>
-    </div>
-
-    <!-- 错误状态 -->
-    <div v-else-if="error" class="error-state">
-      <n-alert type="error" :title="$t('visualEditor.componentLoadFailed')">
-        {{ error }}
-      </n-alert>
-    </div>
-    
     <!-- 两级分类 Tabs -->
-    <n-tabs v-else type="line" animated class="widget-tabs">
+    <n-tabs type="line" animated class="widget-tabs">
       <n-tab-pane
         v-for="topCategory in filteredWidgetTree"
         :key="topCategory.name"
@@ -67,7 +54,6 @@
 import { ref, computed } from 'vue'
 import { SearchOutline } from '@vicons/ionicons5'
 import { widgetRegistry, type WidgetTreeNode, type WidgetDefinition } from '../../core/widget-registry'
-import { useCard2Integration } from '../../hooks'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
 
@@ -78,48 +64,12 @@ const emit = defineEmits<{
   'drag-start': [widget: any, event: DragEvent];
 }>()
 
-// --- Card 2.1 Integration ---
-const card2Integration = useCard2Integration()
-const isLoading = card2Integration.isLoading
-const error = card2Integration.error
-const card2CategoryMap: Record<string, string> = {
-  'chart': '📊 图表',
-  'control': '🎛️ 控制',
-  'display': '📱 显示',
-  'media': '🎥 媒体',
-  'other': '🔧 其他'
-}
-const card2WidgetTree = computed<WidgetTreeNode[]>(() => {
-  const categories: { [key: string]: WidgetTreeNode } = {}
-  card2Integration.availableComponents.value.forEach(widget => {
-    const categoryKey = widget.category || 'other'
-    const categoryName = card2CategoryMap[categoryKey] || card2CategoryMap.other
-    if (!categories[categoryName]) {
-      categories[categoryName] = { name: categoryName, children: [] }
-    }
-    const card2Widget = { ...widget, source: 'card2' as const }
-    categories[categoryName].children.push(card2Widget as unknown as WidgetDefinition)
-  })
-  return Object.values(categories)
-})
-
 // --- Legacy Widget Integration ---
 const legacyWidgetTree = computed<WidgetTreeNode[]>(() => widgetRegistry.getWidgetTree())
 
 // --- Combined & Re-grouped Logic ---
 const combinedWidgetTree = computed<WidgetTreeNode[]>(() => {
-  const allCategories: { [key: string]: WidgetTreeNode } = {}
-  legacyWidgetTree.value.forEach(category => {
-    allCategories[category.name] = { name: category.name, children: [...category.children] }
-  })
-  card2WidgetTree.value.forEach(category => {
-    if (allCategories[category.name]) {
-      allCategories[category.name].children.push(...category.children)
-    } else {
-      allCategories[category.name] = category
-    }
-  })
-  return Object.values(allCategories)
+  return legacyWidgetTree.value
 })
 
 interface SubCategory {

@@ -127,7 +127,13 @@ export function createEditor() {
 
     // 如果在传统注册表中没有找到，检查是否是 Card2.1 组件
     if (!widgetDef) {
-      const card2Definition = card2Integration.getComponentDefinition(type)
+      // 检查是否是 card21- 前缀的类型
+      let card2Type = type
+      if (type.startsWith('card21-')) {
+        card2Type = type.replace('card21-', '')
+      }
+
+      const card2Definition = card2Integration.getComponentDefinition(card2Type)
       if (card2Definition) {
         isCard2Component = true
         // 将 Card2.1 组件定义转换为 WidgetDefinition 格式
