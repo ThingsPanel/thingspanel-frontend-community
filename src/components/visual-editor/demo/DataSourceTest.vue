@@ -1,46 +1,38 @@
 <template>
   <div class="data-source-test">
     <h2>数据源测试页面</h2>
-    
+
     <div class="test-section">
       <h3>JSON 数据源测试</h3>
-      
+
       <div class="config-panel">
         <h4>配置 JSON 数据源</h4>
         <n-form label-placement="left" label-width="auto" size="small">
           <n-form-item label="JSON 数据">
-            <n-input 
-              v-model:value="jsonConfig" 
+            <n-input
+              v-model:value="jsonConfig"
               type="textarea"
               placeholder='{"data": {"value": 45, "value2": 87, "key": "shuju"}}'
               :rows="4"
             />
           </n-form-item>
           <n-form-item label="刷新间隔">
-            <n-input-number 
-              v-model:value="refreshInterval" 
-              :min="0"
-              :max="10000"
-              placeholder="0表示不自动刷新"
-            />
+            <n-input-number v-model:value="refreshInterval" :min="0" :max="10000" placeholder="0表示不自动刷新" />
             <template #suffix>
-              <span style="margin-left: 8px; color: #999;">毫秒</span>
+              <span style="margin-left: 8px; color: #999">毫秒</span>
             </template>
           </n-form-item>
           <n-button type="primary" @click="updateDataSource">更新数据源</n-button>
         </n-form>
       </div>
-      
+
       <div class="component-preview">
         <h4>组件预览</h4>
         <div class="component-container">
-          <DigitIndicatorCard 
-            :properties="componentProperties"
-            :metadata="{ dataSource: currentDataSource }"
-          />
+          <DigitIndicatorCard :properties="componentProperties" :metadata="{ dataSource: currentDataSource }" />
         </div>
       </div>
-      
+
       <div class="data-preview">
         <h4>数据源值预览</h4>
         <pre>{{ JSON.stringify(dataSourceValue, null, 2) }}</pre>
@@ -73,12 +65,12 @@ const currentDataSource = ref({
   enabled: true,
   name: '测试数据源',
   description: '测试用的静态数据源',
-  data: { 
-    data: { 
-      value: 45, 
-      value2: 87, 
-      key: 'shuju' 
-    } 
+  data: {
+    data: {
+      value: 45,
+      value2: 87,
+      key: 'shuju'
+    }
   },
   dataPath: 'data.value', // 默认路径
   refreshInterval: 0
@@ -93,7 +85,7 @@ const updateDataSource = () => {
       data: parsedData,
       refreshInterval: refreshInterval.value
     }
-    
+
     // 重新订阅数据源
     subscribeDataSource()
   } catch (error) {
@@ -109,9 +101,9 @@ const subscribeDataSource = () => {
   if (unsubscribe) {
     unsubscribe()
   }
-  
+
   // 订阅新的数据源
-  unsubscribe = dataSourceManager.subscribe(currentDataSource.value, (value) => {
+  unsubscribe = dataSourceManager.subscribe(currentDataSource.value, value => {
     dataSourceValue.value = value
     console.log('🔧 DataSourceTest - 收到数据源更新:', value)
   })
@@ -172,4 +164,4 @@ onBeforeUnmount(() => {
   font-size: 12px;
   color: #666;
 }
-</style> 
+</style>

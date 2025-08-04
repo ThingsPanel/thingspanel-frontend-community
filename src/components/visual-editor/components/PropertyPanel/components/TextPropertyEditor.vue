@@ -1,25 +1,16 @@
 <template>
   <n-form size="small" label-placement="left" label-width="60">
     <n-form-item label="内容">
-      <n-input 
-        :value="properties.content"
-        @update:value="updateProperty('content', $event)"
-      />
+      <n-input :value="properties.content" @update:value="updateProperty('content', $event)" />
     </n-form-item>
     <n-form-item label="字号">
-      <n-input-number 
-        :value="properties.fontSize"
-        @update:value="updateProperty('fontSize', $event)"
-      />
+      <n-input-number :value="properties.fontSize" @update:value="updateProperty('fontSize', $event)" />
     </n-form-item>
     <n-form-item label="颜色">
-      <n-input 
-        :value="properties.color"
-        @update:value="updateProperty('color', $event)"
-      />
+      <n-input :value="properties.color" @update:value="updateProperty('color', $event)" />
     </n-form-item>
     <n-form-item label="对齐">
-      <n-select 
+      <n-select
         :value="properties.textAlign"
         :options="alignOptions"
         @update:value="updateProperty('textAlign', $event)"

@@ -4,19 +4,19 @@
       <n-tab-pane name="simple" tab="简单测试">
         <SimpleTest />
       </n-tab-pane>
-      
+
       <n-tab-pane name="dataSource" tab="数据源测试">
         <DataSourceTest />
       </n-tab-pane>
-      
+
       <n-tab-pane name="deviceDataSource" tab="设备数据源测试">
         <DeviceDataSourceTest />
       </n-tab-pane>
-      
+
       <n-tab-pane name="httpDataSource" tab="HTTP数据源测试">
         <HttpDataSourceTest />
       </n-tab-pane>
-      
+
       <n-tab-pane name="multiDataSource" tab="多数据源测试">
         <MultiDataSourceTest />
       </n-tab-pane>
@@ -37,4 +37,4 @@ import MultiDataSourceTest from '@/components/visual-editor/demo/MultiDataSource
 .test-page {
   padding: 20px;
 }
-</style> 
+</style>

@@ -16,7 +16,7 @@
       <template #option="{ node, option }">
         <div class="flex items-center gap-2">
           <!-- 主题颜色预览 -->
-          <div 
+          <div
             class="w-4 h-4 rounded-full border border-gray-300"
             :style="{ backgroundColor: option.primaryColor }"
           ></div>
@@ -24,7 +24,7 @@
         </div>
       </template>
     </NSelect>
-    
+
     <!-- 主题预览面板 -->
     <div v-if="showPreview" class="theme-preview mt-4 p-4 border rounded-lg">
       <h4 class="text-sm font-medium mb-3">主题预览</h4>
@@ -32,7 +32,7 @@
         <!-- 工具栏预览 -->
         <div class="preview-item">
           <div class="text-xs text-gray-600 mb-1">工具栏</div>
-          <div 
+          <div
             class="h-8 rounded border flex items-center px-2 text-xs"
             :style="{
               backgroundColor: currentTheme?.colors.toolbar,
@@ -43,11 +43,11 @@
             工具栏样式
           </div>
         </div>
-        
+
         <!-- 面板预览 -->
         <div class="preview-item">
           <div class="text-xs text-gray-600 mb-1">面板</div>
-          <div 
+          <div
             class="h-8 rounded border flex items-center px-2 text-xs"
             :style="{
               backgroundColor: currentTheme?.colors.panel,
@@ -58,11 +58,11 @@
             面板样式
           </div>
         </div>
-        
+
         <!-- 按钮预览 -->
         <div class="preview-item">
           <div class="text-xs text-gray-600 mb-1">主要按钮</div>
-          <div 
+          <div
             class="h-8 rounded flex items-center px-3 text-xs font-medium"
             :style="{
               backgroundColor: currentTheme?.colors.primary,
@@ -72,11 +72,11 @@
             按钮样式
           </div>
         </div>
-        
+
         <!-- 次要按钮预览 -->
         <div class="preview-item">
           <div class="text-xs text-gray-600 mb-1">次要按钮</div>
-          <div 
+          <div
             class="h-8 rounded border flex items-center px-3 text-xs"
             :style="{
               backgroundColor: currentTheme?.colors.surface,
@@ -89,18 +89,12 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 自定义主题按钮 -->
     <div class="mt-3">
-      <NButton 
-        size="small" 
-        type="tertiary" 
-        @click="showCustomThemeDialog = true"
-      >
-        自定义主题
-      </NButton>
+      <NButton size="small" type="tertiary" @click="showCustomThemeDialog = true">自定义主题</NButton>
     </div>
-    
+
     <!-- 自定义主题对话框 -->
     <NModal v-model:show="showCustomThemeDialog" preset="dialog">
       <template #header>
@@ -111,60 +105,36 @@
           <!-- 主题名称 -->
           <div class="col-span-2">
             <label class="block text-sm font-medium mb-1">主题名称</label>
-            <NInput 
-              v-model:value="customTheme.displayName" 
-              placeholder="输入主题名称"
-              size="small"
-            />
+            <NInput v-model:value="customTheme.displayName" placeholder="输入主题名称" size="small" />
           </div>
-          
+
           <!-- 颜色配置 -->
           <div>
             <label class="block text-sm font-medium mb-1">主色调</label>
-            <input 
-              v-model="customTheme.colors.primary" 
-              type="color" 
-              class="w-full h-8 rounded border"
-            />
+            <input v-model="customTheme.colors.primary" type="color" class="w-full h-8 rounded border" />
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium mb-1">次要色</label>
-            <input 
-              v-model="customTheme.colors.secondary" 
-              type="color" 
-              class="w-full h-8 rounded border"
-            />
+            <input v-model="customTheme.colors.secondary" type="color" class="w-full h-8 rounded border" />
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium mb-1">背景色</label>
-            <input 
-              v-model="customTheme.colors.background" 
-              type="color" 
-              class="w-full h-8 rounded border"
-            />
+            <input v-model="customTheme.colors.background" type="color" class="w-full h-8 rounded border" />
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium mb-1">表面色</label>
-            <input 
-              v-model="customTheme.colors.surface" 
-              type="color" 
-              class="w-full h-8 rounded border"
-            />
+            <input v-model="customTheme.colors.surface" type="color" class="w-full h-8 rounded border" />
           </div>
         </div>
       </div>
-      
+
       <template #action>
         <div class="flex gap-2">
-          <NButton size="small" @click="showCustomThemeDialog = false">
-            取消
-          </NButton>
-          <NButton size="small" type="primary" @click="saveCustomTheme">
-            保存主题
-          </NButton>
+          <NButton size="small" @click="showCustomThemeDialog = false">取消</NButton>
+          <NButton size="small" type="primary" @click="saveCustomTheme">保存主题</NButton>
         </div>
       </template>
     </NModal>
@@ -174,13 +144,13 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { NSelect, NButton, NModal, NInput } from 'naive-ui'
-import { 
-  themes, 
-  getAvailableThemes, 
-  getThemeByName, 
-  applyTheme, 
+import {
+  themes,
+  getAvailableThemes,
+  getThemeByName,
+  applyTheme,
   registerTheme,
-  type CustomTheme 
+  type CustomTheme
 } from './ThemeExtension'
 
 interface Props {
@@ -256,10 +226,10 @@ const handleThemeChange = (themeName: string) => {
   if (theme) {
     // 应用主题
     applyTheme(themeName)
-    
+
     // 触发事件
     emit('theme-change', themeName, theme)
-    
+
     // 保存到本地存储
     localStorage.setItem('selected-theme', themeName)
   }
@@ -271,10 +241,10 @@ const saveCustomTheme = () => {
     alert('请输入主题名称')
     return
   }
-  
+
   // 生成主题名称（基于显示名称）
   const themeName = `custom-${Date.now()}`
-  
+
   // 创建完整的主题对象
   const newTheme: CustomTheme = {
     name: themeName,
@@ -282,17 +252,17 @@ const saveCustomTheme = () => {
     colors: { ...customTheme.value.colors! },
     shadows: { ...customTheme.value.shadows! }
   }
-  
+
   // 注册主题
   registerTheme(newTheme)
-  
+
   // 应用新主题
   currentThemeName.value = themeName
   handleThemeChange(themeName)
-  
+
   // 关闭对话框
   showCustomThemeDialog.value = false
-  
+
   // 保存自定义主题到本地存储
   const customThemes = JSON.parse(localStorage.getItem('custom-themes') || '[]')
   customThemes.push(newTheme)
@@ -325,11 +295,15 @@ loadCustomThemes()
 restoreSelectedTheme()
 
 // 监听主题变更，自动应用
-watch(currentThemeName, (newTheme) => {
-  if (newTheme) {
-    handleThemeChange(newTheme)
-  }
-}, { immediate: true })
+watch(
+  currentThemeName,
+  newTheme => {
+    if (newTheme) {
+      handleThemeChange(newTheme)
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

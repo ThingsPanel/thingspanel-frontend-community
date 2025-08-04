@@ -108,8 +108,6 @@ const rendererFactory = new RendererFactory()
 const rendererManager = new RendererManager(eventBus, rendererFactory, true) // 启用自动注册
 const rendererContainer = ref<HTMLElement>()
 
-
-
 // 数据适配器
 const legacyAdapter = new LegacyPanelAdapter()
 
@@ -119,18 +117,18 @@ const renderersReady = ref(false)
 // 可用渲染器列表（从渲染器管理器动态获取）
 const availableRenderers = computed(() => {
   console.log('PanelV2: Computing availableRenderers, renderersReady:', renderersReady.value)
-  
+
   // 只有在渲染器注册完成后才获取列表
   if (!renderersReady.value) {
     console.log('PanelV2: Renderers not ready yet, returning empty list')
     return []
   }
-  
+
   const rendererInfos = rendererManager.getAvailableRenderers()
   console.log('PanelV2: Available renderer infos from manager:', rendererInfos)
   console.log('PanelV2: Renderer factory count:', rendererFactory.getCount())
   console.log('PanelV2: Renderer factory registered IDs:', rendererFactory.getRegisteredIds())
-  
+
   const mapped = rendererInfos.map(info => ({
     value: info.id,
     label: info.name,
@@ -141,9 +139,7 @@ const availableRenderers = computed(() => {
 })
 
 // 当前渲染器信息
-const currentRendererInfo = computed(() => 
-  availableRenderers.value.find(r => r.value === currentRenderer.value)
-)
+const currentRendererInfo = computed(() => availableRenderers.value.find(r => r.value === currentRenderer.value))
 
 // 主题颜色计算属性
 const themeColors = computed(() => {
@@ -158,14 +154,13 @@ const themeColors = computed(() => {
   }
 })
 
-
 // 渲染器切换
 const switchRenderer = async (rendererId: string) => {
   if (rendererId === currentRenderer.value) return
-  
+
   try {
     loading.value = true
-    
+
     // 检查渲染器是否已注册
     if (rendererId === 'visualization') {
       // 可视化大屏暂未实现，只切换UI状态
@@ -177,7 +172,7 @@ const switchRenderer = async (rendererId: string) => {
       await rendererManager.switchRenderer(rendererId)
       currentRenderer.value = rendererId
       emit('renderer-change', rendererId)
-      
+
       // 发射全局事件（仅对已注册的渲染器）
       eventBus.emit('toolbar:renderer-switch', { rendererId })
     } else if (rendererId === 'gridstack') {
@@ -185,7 +180,7 @@ const switchRenderer = async (rendererId: string) => {
       currentRenderer.value = rendererId
       emit('renderer-change', rendererId)
       console.log('Switched to gridstack renderer')
-      
+
       // 发射全局事件
       eventBus.emit('toolbar:renderer-switch', { rendererId })
     } else {
@@ -206,14 +201,12 @@ const switchRenderer = async (rendererId: string) => {
 // 数据处理
 const processLegacyData = (data: any): BaseCanvasItem[] => {
   if (!data) return []
-  
+
   try {
     // 如果是现有的面板数据格式
     if (data.config && typeof data.config === 'string') {
-      const conversionResult = legacyAdapter.convertBatch(
-        legacyAdapter.parsePanelData(data)
-      )
-      
+      const conversionResult = legacyAdapter.convertBatch(legacyAdapter.parsePanelData(data))
+
       if (conversionResult.success) {
         return conversionResult.data
       } else {
@@ -221,12 +214,12 @@ const processLegacyData = (data: any): BaseCanvasItem[] => {
         return []
       }
     }
-    
+
     // 如果直接是BaseCanvasItem数组
     if (Array.isArray(data)) {
       return data as BaseCanvasItem[]
     }
-    
+
     return []
   } catch (err) {
     console.error('Error processing panel data:', err)
@@ -237,7 +230,7 @@ const processLegacyData = (data: any): BaseCanvasItem[] => {
 // 保存面板配置
 const savePanelConfig = async () => {
   if (isSaving.value) return
-  
+
   isSaving.value = true
   try {
     const config: PanelConfig = {
@@ -253,23 +246,22 @@ const savePanelConfig = async () => {
         author: props.config?.metadata?.author
       }
     }
-    
+
     // 序列化配置数据
     const configStr = JSON.stringify({
       canvasState: canvasStore.canvasState,
       rendererType: currentRenderer.value,
       kanbanConfig: kanbanConfig.value,
-      visualizationConfig: visualizationConfig.value,
-  
+      visualizationConfig: visualizationConfig.value
     })
-    
+
     // 准备API参数
     const apiParams = {
       name: props.panelName || config.title,
       config: configStr,
       home_flag: props.homeFlag || 'N'
     }
-    
+
     // 根据是否有ID决定新增还是修改
     let result
     if (props.panelId) {
@@ -282,7 +274,7 @@ const savePanelConfig = async () => {
       // 新增
       result = await PostBoard(apiParams)
     }
-    
+
     if (!result.error) {
       message.success(t('page.dataForward.saveSuccess') || '保存成功')
       emit('save', config)
@@ -369,52 +361,59 @@ const handleCenterView = () => {
   eventBus.emit('viewport:center', {})
 }
 
-
 // 监听数据变化
-watch(() => props.panelData, (newData) => {
-  if (newData) {
-    const processedData = processLegacyData(newData)
-    canvasStore.setItems(processedData)
-  }
-}, { immediate: true, deep: true })
+watch(
+  () => props.panelData,
+  newData => {
+    if (newData) {
+      const processedData = processLegacyData(newData)
+      canvasStore.setItems(processedData)
+    }
+  },
+  { immediate: true, deep: true }
+)
 
 // 监听store数据变化，向外发射
-watch(() => canvasStore.items, (newItems) => {
-  emit('data-change', newItems)
-}, { deep: true })
+watch(
+  () => canvasStore.items,
+  newItems => {
+    emit('data-change', newItems)
+  },
+  { deep: true }
+)
 
 // 生命周期
 onMounted(async () => {
   try {
     console.log('PanelV2: onMounted - Starting initialization')
-    
+
     // 监听渲染器注册完成事件
-    eventBus.on('renderer-manager:auto-register-complete', (result) => {
+    eventBus.on('renderer-manager:auto-register-complete', result => {
       console.log('PanelV2: Renderer auto-register complete:', result)
       renderersReady.value = true
       console.log('PanelV2: Renderers ready, available renderers:', availableRenderers.value)
     })
-    
+
     if (rendererContainer.value) {
       console.log('PanelV2: Initializing renderer manager')
       console.log('PanelV2: Initial factory count:', rendererFactory.getCount())
       console.log('PanelV2: Initial factory registered IDs:', rendererFactory.getRegisteredIds())
-      
+
       await rendererManager.initialize(rendererContainer.value)
       console.log('PanelV2: Renderer manager initialized')
       console.log('PanelV2: After init factory count:', rendererFactory.getCount())
       console.log('PanelV2: After init factory registered IDs:', rendererFactory.getRegisteredIds())
-      
+
       // 等待一段时间确保渲染器注册完成
       await new Promise(resolve => setTimeout(resolve, 200))
-      
+
       // 如果渲染器还没有准备好，手动设置为true
       if (!renderersReady.value) {
         console.log('PanelV2: Manually setting renderers ready')
         console.log('PanelV2: Before manual ready - factory count:', rendererFactory.getCount())
         renderersReady.value = true
       }
-      
+
       console.log('PanelV2: Available renderers after ready:', availableRenderers.value)
       await switchRenderer(currentRenderer.value)
       console.log('PanelV2: Switched to renderer:', currentRenderer.value)
@@ -473,11 +472,8 @@ provide('rendererManager', rendererManager)
 
       <!-- 左侧组件库插槽 -->
       <template #left="{ isEditMode }">
-        <ComponentPanel
-          v-if="isEditMode"
-          :current-renderer="currentRenderer"
-        />
-        <div v-else class="flex items-center justify-center h-full" style="color: var(--secondary-text);">
+        <ComponentPanel v-if="isEditMode" :current-renderer="currentRenderer" />
+        <div v-else class="flex items-center justify-center h-full" style="color: var(--secondary-text)">
           预览模式下不显示组件库
         </div>
       </template>
@@ -486,44 +482,29 @@ provide('rendererManager', rendererManager)
       <template #main="{ isEditMode }">
         <div class="canvas-container h-full w-full relative">
           <!-- 加载状态 -->
-          <div
-            v-if="loading"
-            class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50"
-          >
+          <div v-if="loading" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-50">
             <div class="text-center">
-              <div class="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"></div>
-              <div class="text-sm" style="color: var(--secondary-text);">切换渲染器中...</div>
+              <div
+                class="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2"
+              ></div>
+              <div class="text-sm" style="color: var(--secondary-text)">切换渲染器中...</div>
             </div>
           </div>
 
           <!-- 错误状态 -->
-          <div
-            v-else-if="error"
-            class="absolute inset-0 bg-red-50 flex items-center justify-center"
-          >
+          <div v-else-if="error" class="absolute inset-0 bg-red-50 flex items-center justify-center">
             <div class="text-center p-6">
               <NIcon class="text-4xl text-red-500 mb-2">
                 <WarningOutline />
               </NIcon>
               <div class="text-lg font-medium text-red-700 mb-2">渲染器错误</div>
               <div class="text-sm text-red-600">{{ error.message }}</div>
-              <NButton
-                type="primary"
-                size="small"
-                class="mt-4"
-                @click="error = null"
-              >
-                重试
-              </NButton>
+              <NButton type="primary" size="small" class="mt-4" @click="error = null">重试</NButton>
             </div>
           </div>
 
           <!-- 渲染器容器 -->
-          <div
-            v-else
-            ref="rendererContainer"
-            class="renderer-container h-full w-full"
-          >
+          <div v-else ref="rendererContainer" class="renderer-container h-full w-full">
             <!-- 根据当前渲染器类型显示不同的渲染器组件 -->
             <KanbanRenderer
               v-if="currentRenderer === 'kanban'"
@@ -541,24 +522,25 @@ provide('rendererManager', rendererManager)
             />
 
             <!-- 可视化大屏渲染器（敬请期待） -->
-            <div v-else-if="currentRenderer === 'visualization'" class="flex items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-100">
+            <div
+              v-else-if="currentRenderer === 'visualization'"
+              class="flex items-center justify-center h-full bg-gradient-to-br from-blue-50 to-indigo-100"
+            >
               <div class="text-center p-8">
                 <div class="text-6xl mb-4">🚧</div>
-                <div class="text-2xl font-bold mb-2" style="color: var(--primary-text);">敬请期待</div>
-                <div class="mb-4" style="color: var(--secondary-text);">可视化大屏渲染器正在开发中...</div>
-                <div class="text-sm" style="color: var(--secondary-text);">
-                  请使用看板模式体验拖拽功能
-                </div>
+                <div class="text-2xl font-bold mb-2" style="color: var(--primary-text)">敬请期待</div>
+                <div class="mb-4" style="color: var(--secondary-text)">可视化大屏渲染器正在开发中...</div>
+                <div class="text-sm" style="color: var(--secondary-text)">请使用看板模式体验拖拽功能</div>
               </div>
             </div>
 
             <!-- 默认渲染器或未知渲染器 -->
             <div v-else class="flex items-center justify-center h-full">
               <div class="text-center">
-                <NIcon class="text-4xl mb-2" style="color: var(--secondary-text);">
+                <NIcon class="text-4xl mb-2" style="color: var(--secondary-text)">
                   <HelpOutline />
                 </NIcon>
-                <div class="text-lg" style="color: var(--secondary-text);">未知的渲染器类型: {{ currentRenderer }}</div>
+                <div class="text-lg" style="color: var(--secondary-text)">未知的渲染器类型: {{ currentRenderer }}</div>
               </div>
             </div>
           </div>
@@ -568,38 +550,39 @@ provide('rendererManager', rendererManager)
       <!-- 右侧属性面板插槽 -->
       <template #right="{ isEditMode }">
         <div class="property-panel h-full flex flex-col">
-          <div class="p-4 border-b" style="border-color: var(--border-color);">
-            <h3 class="text-lg font-semibold" style="color: var(--primary-text);">属性面板</h3>
-            <p class="text-sm mt-1" style="color: var(--secondary-text);">配置选中组件的属性</p>
+          <div class="p-4 border-b" style="border-color: var(--border-color)">
+            <h3 class="text-lg font-semibold" style="color: var(--primary-text)">属性面板</h3>
+            <p class="text-sm mt-1" style="color: var(--secondary-text)">配置选中组件的属性</p>
           </div>
-          
+
           <div class="flex-1 p-4">
             <!-- 选中项目信息 -->
             <div v-if="canvasStore.hasSelection" class="space-y-4">
-              <div class="text-sm font-medium" style="color: var(--primary-text);">
+              <div class="text-sm font-medium" style="color: var(--primary-text)">
                 已选中 {{ canvasStore.selectedItems.length }} 个组件
               </div>
-              
+
               <!-- 这里可以放置属性配置表单 -->
               <div class="space-y-3">
                 <div
                   v-for="item in canvasStore.selectedItems"
                   :key="item.id"
-                  class="p-3 rounded" style="background-color: var(--section-bg);"
+                  class="p-3 rounded"
+                  style="background-color: var(--section-bg)"
                 >
                   <div class="font-medium text-sm">{{ item.cardData.title || item.id }}</div>
-                  <div class="text-xs mt-1" style="color: var(--secondary-text);">
+                  <div class="text-xs mt-1" style="color: var(--secondary-text)">
                     位置: {{ Math.round(item.position.x) }}, {{ Math.round(item.position.y) }}
                   </div>
-                  <div class="text-xs" style="color: var(--secondary-text);">
+                  <div class="text-xs" style="color: var(--secondary-text)">
                     尺寸: {{ item.size.width }} × {{ item.size.height }}
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <!-- 未选中状态 -->
-            <div v-else class="text-center" style="color: var(--secondary-text);">
+            <div v-else class="text-center" style="color: var(--secondary-text)">
               <NIcon class="text-2xl mb-2">
                 <AppsOutline />
               </NIcon>

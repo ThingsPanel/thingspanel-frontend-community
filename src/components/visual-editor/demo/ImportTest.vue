@@ -1,7 +1,7 @@
 <template>
   <div class="import-test">
     <h2>🔍 导入测试</h2>
-    
+
     <div class="test-section">
       <h3>Card 2.1 组件导入测试</h3>
       <button @click="testImport">测试导入</button>
@@ -38,23 +38,23 @@ const testProperties = {
 const testImport = async () => {
   try {
     console.log('🔍 开始测试 Card 2.1 组件导入...')
-    
+
     // 测试导入 Card 2.1 注册表
     const componentRegistry = await import('@/card2.1')
     console.log('✅ Card 2.1 注册表导入成功:', componentRegistry)
-    
+
     // 测试导入组件定义
     const digitIndicator = await import('@/card2.1/components/digit-indicator')
     console.log('✅ 数字指示器组件导入成功:', digitIndicator)
-    
+
     // 测试导入具体组件
     const DigitIndicatorCard = await import('@/card2.1/components/digit-indicator/DigitIndicatorCard.vue')
     console.log('✅ DigitIndicatorCard 组件导入成功:', DigitIndicatorCard)
-    
+
     // 测试导入配置组件
     const DigitIndicatorConfig = await import('@/card2.1/components/digit-indicator/DigitIndicatorConfig.vue')
     console.log('✅ DigitIndicatorConfig 组件导入成功:', DigitIndicatorConfig)
-    
+
     importResult.value = {
       success: true,
       componentRegistry: !!componentRegistry,
@@ -62,7 +62,6 @@ const testImport = async () => {
       DigitIndicatorCard: !!DigitIndicatorCard,
       DigitIndicatorConfig: !!DigitIndicatorConfig
     }
-    
   } catch (error) {
     console.error('❌ 导入测试失败:', error)
     importResult.value = {
@@ -75,13 +74,12 @@ const testImport = async () => {
 const testRender = async () => {
   try {
     console.log('🔍 开始测试组件渲染...')
-    
+
     const DigitIndicatorCard = await import('@/card2.1/components/digit-indicator/DigitIndicatorCard.vue')
     testComponent.value = DigitIndicatorCard.default
     showComponent.value = true
-    
+
     console.log('✅ 组件渲染测试成功')
-    
   } catch (error) {
     console.error('❌ 组件渲染测试失败:', error)
   }
@@ -133,4 +131,4 @@ pre {
   align-items: center;
   justify-content: center;
 }
-</style> 
+</style>

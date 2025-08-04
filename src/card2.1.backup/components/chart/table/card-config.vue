@@ -28,18 +28,18 @@ onMounted(() => {
       <n-form-item :label="$t('common.showHeader')">
         <n-switch v-model:value="ctx.config.showHeader" />
       </n-form-item>
-      
+
       <n-form-item :label="$t('common.bordered')">
         <n-switch v-model:value="ctx.config.bordered" />
       </n-form-item>
-      
+
       <n-form-item :label="$t('common.striped')">
         <n-switch v-model:value="ctx.config.striped" />
       </n-form-item>
-      
+
       <n-form-item :label="$t('common.size')">
-        <n-select 
-          v-model:value="ctx.config.size" 
+        <n-select
+          v-model:value="ctx.config.size"
           :options="[
             { label: $t('common.small'), value: 'small' },
             { label: $t('common.medium'), value: 'medium' },

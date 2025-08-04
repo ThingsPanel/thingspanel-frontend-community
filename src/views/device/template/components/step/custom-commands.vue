@@ -1,18 +1,18 @@
 <script setup lang="tsx">
-import { computed, defineProps, getCurrentInstance, nextTick, onMounted, reactive, ref } from 'vue';
-import { NButton, NDataTable, NForm, NFormItem, NInput, NModal, NPagination, NPopconfirm, NTag } from 'naive-ui';
-import Codemirror from 'codemirror-editor-vue3';
-import { $t } from '@/locales';
+import { computed, defineProps, getCurrentInstance, nextTick, onMounted, reactive, ref } from 'vue'
+import { NButton, NDataTable, NForm, NFormItem, NInput, NModal, NPagination, NPopconfirm, NTag } from 'naive-ui'
+import Codemirror from 'codemirror-editor-vue3'
+import { $t } from '@/locales'
 import {
   deviceCustomCommandsAdd,
   deviceCustomCommandsDel,
   deviceCustomCommandsList,
   deviceCustomCommandsPut
-} from '@/service/api/system-data';
+} from '@/service/api/system-data'
 
 const props = defineProps<{
-  id: string;
-}>();
+  id: string
+}>()
 const configFormRules = ref({
   data_identifier: {
     required: true,
@@ -24,7 +24,7 @@ const configFormRules = ref({
     message: $t('generate.btnname'),
     trigger: 'blur'
   }
-});
+})
 
 const commandjson: any = reactive({
   configForm: false,
@@ -41,33 +41,33 @@ const commandjson: any = reactive({
     instruct: '',
     enable_status: 'disable'
   }
-});
+})
 const getCommandList = (page: number = 1) => {
-  const queryjson = { ...commandjson.queryjson, page, device_template_id: props.id };
+  const queryjson = { ...commandjson.queryjson, page, device_template_id: props.id }
   deviceCustomCommandsList(queryjson).then(({ data }) => {
-    commandjson.listData = data.list || [];
-    commandjson.total = data.total;
-  });
-};
-const cmRef = ref();
+    commandjson.listData = data.list || []
+    commandjson.total = data.total
+  })
+}
+const cmRef = ref()
 const cmOptions = {
   mode: 'text/javascript',
   lineNumbers: false
-};
+}
 
 const onReady = cm => {
-  const lastLine = cm.lineCount() - 1;
-  const lastCh = cm.getLine(lastLine).length;
-  cm.focus();
-  cm.setCursor({ line: lastLine, ch: lastCh });
-};
+  const lastLine = cm.lineCount() - 1
+  const lastCh = cm.getLine(lastLine).length
+  cm.focus()
+  cm.setCursor({ line: lastLine, ch: lastCh })
+}
 const setupEditor = () => {
   nextTick(() => {
     if (cmRef.value) {
-      cmRef.value.refresh(); // ensure the editor is correctly refreshed
+      cmRef.value.refresh() // ensure the editor is correctly refreshed
     }
-  });
-};
+  })
+}
 const openCommandDialog = () => {
   commandjson.formjson = {
     buttom_name: '',
@@ -75,24 +75,24 @@ const openCommandDialog = () => {
     description: '',
     instruct: '',
     enable_status: 'disable'
-  };
-  commandjson.configForm = !commandjson.configForm;
-};
+  }
+  commandjson.configForm = !commandjson.configForm
+}
 const handleDeleteTable = async id => {
-  const { error } = await deviceCustomCommandsDel(id);
+  const { error } = await deviceCustomCommandsDel(id)
 
   if (!error) {
-    getCommandList();
+    getCommandList()
   }
-};
+}
 const handleEditTable = (row: any) => {
-  openCommandDialog();
-  commandjson.formjson = row;
-};
+  openCommandDialog()
+  commandjson.formjson = row
+}
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
 const columns: any = [
   {
     key: 'buttom_name',
@@ -121,9 +121,9 @@ const columns: any = [
     title: $t('generate.status'),
     render: row => {
       if (row?.enable_status === 'enable') {
-        return <NTag type="success">{$t('page.manage.common.status.enable')}</NTag>;
+        return <NTag type="success">{$t('page.manage.common.status.enable')}</NTag>
       }
-      return <NTag type="warning">{$t('page.manage.common.status.disable')}</NTag>;
+      return <NTag type="warning">{$t('page.manage.common.status.disable')}</NTag>
     }
   },
   {
@@ -149,30 +149,30 @@ const columns: any = [
             }}
           </NPopconfirm>
         </div>
-      );
+      )
     }
   }
-];
-const configFormRef = ref();
+]
+const configFormRef = ref()
 const onCommandSubmit = async e => {
-  const params = { ...commandjson.formjson, device_template_id: props.id };
-  e.preventDefault();
+  const params = { ...commandjson.formjson, device_template_id: props.id }
+  e.preventDefault()
   configFormRef.value?.validate(async errors => {
     if (!errors) {
       const { error } = commandjson.formjson?.id
         ? await deviceCustomCommandsPut(params)
-        : await deviceCustomCommandsAdd(params);
+        : await deviceCustomCommandsAdd(params)
       if (!error) {
-        openCommandDialog();
-        getCommandList();
+        openCommandDialog()
+        getCommandList()
       }
     }
-  });
-};
+  })
+}
 
 onMounted(() => {
-  getCommandList();
-});
+  getCommandList()
+})
 </script>
 
 <template>

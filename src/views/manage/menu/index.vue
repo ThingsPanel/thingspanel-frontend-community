@@ -1,20 +1,20 @@
 <script setup lang="tsx">
-import { ref } from 'vue';
-import { NButton, NPopconfirm, NTag } from 'naive-ui';
-import { useBoolean } from '@sa/hooks';
-import { fetchGetMenuList } from '@/service/api';
-import { useAppStore } from '@/store/modules/app';
-import { useTable } from '@/hooks/common/table';
-import { $t } from '@/locales';
-import { yesOrNoRecord } from '@/constants/common';
-import { enableStatusRecord, menuTypeRecord } from '@/constants/business';
-import SvgIcon from '@/components/custom/svg-icon.vue';
-import MenuOperateDrawer, { type OperateType } from './modules/menu-operate-drawer.vue';
+import { ref } from 'vue'
+import { NButton, NPopconfirm, NTag } from 'naive-ui'
+import { useBoolean } from '@sa/hooks'
+import { fetchGetMenuList } from '@/service/api'
+import { useAppStore } from '@/store/modules/app'
+import { useTable } from '@/hooks/common/table'
+import { $t } from '@/locales'
+import { yesOrNoRecord } from '@/constants/common'
+import { enableStatusRecord, menuTypeRecord } from '@/constants/business'
+import SvgIcon from '@/components/custom/svg-icon.vue'
+import MenuOperateDrawer, { type OperateType } from './modules/menu-operate-drawer.vue'
 
-const appStore = useAppStore();
-const { bool: drawerVisible, setTrue: openDrawer } = useBoolean();
+const appStore = useAppStore()
+const { bool: drawerVisible, setTrue: openDrawer } = useBoolean()
 
-const wrapperRef = ref<HTMLElement | null>(null);
+const wrapperRef = ref<HTMLElement | null>(null)
 
 const { columns, filteredColumns, data, loading, pagination, getData } = useTable<
   Api.SystemManage.Menu,
@@ -23,14 +23,14 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
 >({
   apiFn: fetchGetMenuList,
   transformer: res => {
-    const menus = res.data || [];
+    const menus = res.data || []
 
     return {
       data: menus,
       pageNum: 1,
       pageSize: 10,
       total: menus.length
-    };
+    }
   },
   columns: () => [
     {
@@ -53,11 +53,11 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
         const tagMap: Record<Api.Common.EnableStatus, NaiveUI.ThemeColor> = {
           1: 'default',
           2: 'primary'
-        };
+        }
 
-        const label = $t(menuTypeRecord[row.menuType]);
+        const label = $t(menuTypeRecord[row.menuType])
 
-        return <NTag type={tagMap[row.menuType]}>{label}</NTag>;
+        return <NTag type={tagMap[row.menuType]}>{label}</NTag>
       }
     },
     {
@@ -66,11 +66,11 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
       align: 'center',
       minWidth: '140px',
       render: row => {
-        const { i18nKey, menuName } = row;
+        const { i18nKey, menuName } = row
 
-        const label = i18nKey ? $t(i18nKey) : menuName;
+        const label = i18nKey ? $t(i18nKey) : menuName
 
-        return <span>{label}</span>;
+        return <span>{label}</span>
       }
     },
     {
@@ -79,15 +79,15 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
       align: 'center',
       minWidth: '140px',
       render: row => {
-        const icon = row.iconType === '1' ? row.icon : undefined;
+        const icon = row.iconType === '1' ? row.icon : undefined
 
-        const localIcon = row.iconType === '2' ? row.icon : undefined;
+        const localIcon = row.iconType === '2' ? row.icon : undefined
 
         return (
           <div class="flex-center">
             <SvgIcon icon={icon} localIcon={localIcon} class="text-icon" />
           </div>
-        );
+        )
       }
     },
     {
@@ -109,17 +109,17 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
       minWidth: '140px',
       render: row => {
         if (row.status === null) {
-          return null;
+          return null
         }
 
         const tagMap: Record<Api.Common.EnableStatus, NaiveUI.ThemeColor> = {
           1: 'success',
           2: 'warning'
-        };
+        }
 
-        const label = $t(enableStatusRecord[row.status]);
+        const label = $t(enableStatusRecord[row.status])
 
-        return <NTag type={tagMap[row.status]}>{label}</NTag>;
+        return <NTag type={tagMap[row.status]}>{label}</NTag>
       }
     },
     {
@@ -128,16 +128,16 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
       align: 'center',
       minWidth: '140px',
       render: row => {
-        const hide: CommonType.YesOrNo = row.hideInMenu ? 'Y' : 'N';
+        const hide: CommonType.YesOrNo = row.hideInMenu ? 'Y' : 'N'
 
         const tagMap: Record<CommonType.YesOrNo, NaiveUI.ThemeColor> = {
           Y: 'error',
           N: 'default'
-        };
+        }
 
-        const label = $t(yesOrNoRecord[hide]);
+        const label = $t(yesOrNoRecord[hide])
 
-        return <NTag type={tagMap[hide]}>{label}</NTag>;
+        return <NTag type={tagMap[hide]}>{label}</NTag>
       }
     },
     {
@@ -181,45 +181,45 @@ const { columns, filteredColumns, data, loading, pagination, getData } = useTabl
       )
     }
   ]
-});
+})
 
-const operateType = ref<OperateType>('add');
+const operateType = ref<OperateType>('add')
 
 function handleAdd() {
-  operateType.value = 'add';
-  openDrawer();
+  operateType.value = 'add'
+  openDrawer()
 }
 
-const checkedRowKeys = ref<string[]>([]);
+const checkedRowKeys = ref<string[]>([])
 
 async function handleBatchDelete() {
   // requestTs
   // window.$message?.success($t('common.deleteSuccess'));
 
-  checkedRowKeys.value = [];
+  checkedRowKeys.value = []
 
-  getData();
+  getData()
 }
 // eslint-disable-next-line
 function handleAddChildMenu(id: number) {
-  operateType.value = 'add';
-  openDrawer();
+  operateType.value = 'add'
+  openDrawer()
 }
 
 /** the editing row data */
-const editingData = ref<Api.SystemManage.Menu | null>(null);
+const editingData = ref<Api.SystemManage.Menu | null>(null)
 
 function handleEdit(id: number) {
-  operateType.value = 'edit';
-  editingData.value = data.value.find(item => item.id === id) || null;
-  openDrawer();
+  operateType.value = 'edit'
+  editingData.value = data.value.find(item => item.id === id) || null
+  openDrawer()
 }
 // eslint-disable-next-line
 async function handleDelete(id: number) {
   // requestTs
   // window.$message?.success($t('common.deleteSuccess'));
 
-  getData();
+  getData()
 }
 </script>
 

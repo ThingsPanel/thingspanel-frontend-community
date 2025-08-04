@@ -1,39 +1,39 @@
 <script setup lang="tsx">
-import { computed, reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { useBoolean, useLoading } from '@sa/hooks';
-import dayjs from 'dayjs';
-import { userStatusOptions } from '@/constants/business';
-import { delUser, fetchUserList } from '@/service/api/auth';
-import { useAuthStore } from '@/store/modules/auth';
-import { $t } from '@/locales';
-import TableActionModal from './components/table-action-modal.vue';
-import EditPasswordModal from './components/edit-password-modal.vue';
-import type { ModalType } from './components/table-action-modal.vue';
+import { computed, reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui'
+import type { DataTableColumns, PaginationProps } from 'naive-ui'
+import { useBoolean, useLoading } from '@sa/hooks'
+import dayjs from 'dayjs'
+import { userStatusOptions } from '@/constants/business'
+import { delUser, fetchUserList } from '@/service/api/auth'
+import { useAuthStore } from '@/store/modules/auth'
+import { $t } from '@/locales'
+import TableActionModal from './components/table-action-modal.vue'
+import EditPasswordModal from './components/edit-password-modal.vue'
+import type { ModalType } from './components/table-action-modal.vue'
 // import ColumnSetting from './components/column-setting.vue'
 
-const authStore = useAuthStore();
-const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: visible, setTrue: openModal } = useBoolean();
-const { bool: editPwdVisible, setTrue: openEditPwdModal } = useBoolean();
-const showEmpty = ref(false);
+const authStore = useAuthStore()
+const { loading, startLoading, endLoading } = useLoading(false)
+const { bool: visible, setTrue: openModal } = useBoolean()
+const { bool: editPwdVisible, setTrue: openEditPwdModal } = useBoolean()
+const showEmpty = ref(false)
 
 const customUserStatusOptions = computed(() => {
   return userStatusOptions.map(item => {
-    const key = item.value === 'N' ? 'page.manage.user.status.normal' : 'page.manage.user.status.freeze';
+    const key = item.value === 'N' ? 'page.manage.user.status.normal' : 'page.manage.user.status.freeze'
     return {
       label: $t(key),
       value: item.value
-    };
-  });
-});
+    }
+  })
+})
 
 type QueryFormModel = Pick<UserManagement.User, 'email' | 'name' | 'status'> & {
-  page: number;
-  page_size: number;
-};
+  page: number
+  page_size: number
+}
 
 const queryParams = reactive<QueryFormModel>({
   email: null,
@@ -41,7 +41,7 @@ const queryParams = reactive<QueryFormModel>({
   status: null,
   page: 1,
   page_size: 10
-});
+})
 
 const pagination: PaginationProps = reactive({
   page: 1,
@@ -50,38 +50,38 @@ const pagination: PaginationProps = reactive({
   itemCount: 0,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    pagination.page = page;
-    queryParams.page = page;
-    getTableData();
+    pagination.page = page
+    queryParams.page = page
+    getTableData()
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
-    queryParams.page = 1;
-    queryParams.page_size = pageSize;
-    getTableData();
+    pagination.pageSize = pageSize
+    pagination.page = 1
+    queryParams.page = 1
+    queryParams.page_size = pageSize
+    getTableData()
   }
-});
+})
 
-const tableData = ref<UserManagement.User[]>([]);
+const tableData = ref<UserManagement.User[]>([])
 
 function setTableData(data: UserManagement.User[]) {
   if (data === null) {
-    showEmpty.value = true;
+    showEmpty.value = true
   } else {
-    showEmpty.value = false;
-    tableData.value = data;
+    showEmpty.value = false
+    tableData.value = data
   }
 }
 
 async function getTableData() {
-  startLoading();
-  const { data } = await fetchUserList(queryParams);
+  startLoading()
+  const { data } = await fetchUserList(queryParams)
   if (data) {
-    const list: UserManagement.User[] = data.list;
-    pagination.itemCount = data.total;
-    setTableData(list);
-    endLoading();
+    const list: UserManagement.User[] = data.list
+    pagination.itemCount = data.total
+    setTableData(list)
+    endLoading()
   }
 }
 
@@ -121,11 +121,11 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
         const tagTypes: Record<UserManagement.UserStatusKey, NaiveUI.ThemeColor> = {
           N: 'success',
           F: 'error'
-        };
-        const key = row.status === 'N' ? 'page.manage.user.status.normal' : 'page.manage.user.status.freeze';
-        return <NTag type={tagTypes[row.status]}>{$t(key)}</NTag>;
+        }
+        const key = row.status === 'N' ? 'page.manage.user.status.normal' : 'page.manage.user.status.freeze'
+        return <NTag type={tagTypes[row.status]}>{$t(key)}</NTag>
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -200,61 +200,61 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-]) as Ref<DataTableColumns<UserManagement.User>>;
+]) as Ref<DataTableColumns<UserManagement.User>>
 
-const modalType = ref<ModalType>('add');
+const modalType = ref<ModalType>('add')
 
 function setModalType(type: ModalType) {
-  modalType.value = type;
+  modalType.value = type
 }
 
-const editData = ref<UserManagement.User | null>(null);
+const editData = ref<UserManagement.User | null>(null)
 
 function setEditData(data: UserManagement.User | null) {
-  editData.value = data;
+  editData.value = data
 }
 
 function handleAddTable() {
-  openModal();
-  setModalType('add');
+  openModal()
+  setModalType('add')
 }
 
 /** 切换用户 */
 async function handleEnter(rowId: string) {
-  await authStore.enter(rowId);
+  await authStore.enter(rowId)
 }
 
 function handleEditPwd(rowId: string) {
-  const findItem = tableData.value.find(item => item.id === rowId);
+  const findItem = tableData.value.find(item => item.id === rowId)
   if (findItem) {
-    setEditData(findItem);
+    setEditData(findItem)
   }
-  openEditPwdModal();
+  openEditPwdModal()
 }
 
 function handleEditTable(rowId: string) {
-  const findItem = tableData.value.find(item => item.id === rowId);
+  const findItem = tableData.value.find(item => item.id === rowId)
   if (findItem) {
-    setEditData(findItem);
+    setEditData(findItem)
   }
-  setModalType('edit');
-  openModal();
+  setModalType('edit')
+  openModal()
 }
 
 async function handleDeleteTable(rowId: string) {
-  const data = await delUser(rowId);
+  const data = await delUser(rowId)
   if (!data.error) {
-    window.$message?.success($t('common.deleteSuccess'));
-    getTableData();
+    window.$message?.success($t('common.deleteSuccess'))
+    getTableData()
   }
 }
 
 function handleQuery() {
-  queryParams.page = 1;
-  init();
+  queryParams.page = 1
+  init()
 }
 
 function handleReset() {
@@ -263,16 +263,16 @@ function handleReset() {
     name: null,
     status: null,
     page: 1
-  });
-  handleQuery();
+  })
+  handleQuery()
 }
 
 function init() {
-  getTableData();
+  getTableData()
 }
 
 // 初始化
-init();
+init()
 </script>
 
 <template>

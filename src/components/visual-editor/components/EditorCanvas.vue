@@ -1,56 +1,41 @@
 <template>
   <div class="editor-canvas" @click="handleCanvasClick">
     <!-- 画布网格背景 -->
-    <div 
-      v-if="canvasStore.config.showGrid" 
-      class="canvas-grid"
-      :style="gridStyle"
-    />
-    
+    <div v-if="canvasStore.config.showGrid" class="canvas-grid" :style="gridStyle" />
+
     <!-- 渲染所有编辑器组件 -->
-    <div 
+    <div
       v-for="item in editorItems"
       :key="item.id"
       class="canvas-item"
-      :class="{ 
+      :class="{
         selected: selectedIds.includes(item.id),
-        locked: item.locked 
+        locked: item.locked
       }"
       :style="getItemStyle(item)"
       @click.stop="handleItemClick(item.id, $event)"
       @mousedown="handleItemMouseDown(item.id, $event)"
     >
       <!-- 组件渲染 -->
-      <component 
-        :is="getWidgetComponent(item)"
-        v-bind="item.cardData.config"
-        class="widget-content"
-      />
-      
+      <component :is="getWidgetComponent(item)" v-bind="item.cardData.config" class="widget-content" />
+
       <!-- 选中状态指示器 -->
-      <div 
-        v-if="selectedIds.includes(item.id)" 
-        class="selection-indicator"
-      >
+      <div v-if="selectedIds.includes(item.id)" class="selection-indicator">
         <!-- 选中边框 -->
         <div class="selection-border" />
-        
+
         <!-- 尺寸调整手柄 -->
-        <div 
-          v-for="handle in resizeHandles" 
+        <div
+          v-for="handle in resizeHandles"
           :key="handle"
           :class="`resize-handle resize-handle-${handle}`"
           @mousedown.stop="handleResizeStart(item.id, handle, $event)"
         />
       </div>
     </div>
-    
+
     <!-- 多选框 -->
-    <div 
-      v-if="selectionBox" 
-      class="selection-box"
-      :style="selectionBoxStyle"
-    />
+    <div v-if="selectionBox" class="selection-box" :style="selectionBoxStyle" />
   </div>
 </template>
 
@@ -92,9 +77,7 @@ const dragState = ref<{
 } | null>(null)
 
 // 计算属性
-const editorItems = computed(() => 
-  canvasStore.items.filter(isEditorItem)
-)
+const editorItems = computed(() => canvasStore.items.filter(isEditorItem))
 
 const gridStyle = computed(() => {
   const gridSize = canvasStore.config.gridSize || 10
@@ -109,13 +92,13 @@ const gridStyle = computed(() => {
 
 const selectionBoxStyle = computed(() => {
   if (!selectionBox.value) return {}
-  
+
   const { startX, startY, currentX, currentY } = selectionBox.value
   const left = Math.min(startX, currentX)
   const top = Math.min(startY, currentY)
   const width = Math.abs(currentX - startX)
   const height = Math.abs(currentY - startY)
-  
+
   return {
     left: left + 'px',
     top: top + 'px',
@@ -159,15 +142,15 @@ const handleItemClick = (id: string, event: MouseEvent) => {
 
 const handleItemMouseDown = (id: string, event: MouseEvent) => {
   if (event.button !== 0) return // 只处理左键
-  
+
   const item = canvasStore.getItem(id)
   if (!item || item.locked) return
-  
+
   // 如果点击的项目未被选中，先选中它
   if (!selectedIds.value.includes(id)) {
     canvasStore.selectItems([id])
   }
-  
+
   // 开始拖拽
   dragState.value = {
     isDragging: false,
@@ -175,7 +158,7 @@ const handleItemMouseDown = (id: string, event: MouseEvent) => {
     startY: event.clientY,
     startItemPosition: { ...item.position }
   }
-  
+
   // 监听鼠标移动和释放
   document.addEventListener('mousemove', handleMouseMove)
   document.addEventListener('mouseup', handleMouseUp)
@@ -183,32 +166,34 @@ const handleItemMouseDown = (id: string, event: MouseEvent) => {
 
 const handleMouseMove = (event: MouseEvent) => {
   if (!dragState.value) return
-  
+
   const deltaX = event.clientX - dragState.value.startX
   const deltaY = event.clientY - dragState.value.startY
-  
+
   // 如果移动距离足够大，开始拖拽
   if (!dragState.value.isDragging && (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3)) {
     dragState.value.isDragging = true
   }
-  
+
   if (dragState.value.isDragging) {
     // 更新所有选中项目的位置
-    const updates = selectedIds.value.map(id => {
-      const item = canvasStore.getItem(id)
-      if (!item) return null
-      
-      const newX = dragState.value!.startItemPosition.x + deltaX
-      const newY = dragState.value!.startItemPosition.y + deltaY
-      
-      return {
-        id,
-        updates: {
-          position: { x: Math.max(0, newX), y: Math.max(0, newY) }
+    const updates = selectedIds.value
+      .map(id => {
+        const item = canvasStore.getItem(id)
+        if (!item) return null
+
+        const newX = dragState.value!.startItemPosition.x + deltaX
+        const newY = dragState.value!.startItemPosition.y + deltaY
+
+        return {
+          id,
+          updates: {
+            position: { x: Math.max(0, newX), y: Math.max(0, newY) }
+          }
         }
-      }
-    }).filter(Boolean)
-    
+      })
+      .filter(Boolean)
+
     if (updates.length > 0) {
       canvasStore.updateItems(updates as any)
     }
@@ -301,14 +286,50 @@ const handleResizeStart = (id: string, handle: string, event: MouseEvent) => {
   cursor: pointer;
 }
 
-.resize-handle-nw { top: -4px; left: -4px; cursor: nw-resize; }
-.resize-handle-n { top: -4px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
-.resize-handle-ne { top: -4px; right: -4px; cursor: ne-resize; }
-.resize-handle-e { top: 50%; right: -4px; transform: translateY(-50%); cursor: e-resize; }
-.resize-handle-se { bottom: -4px; right: -4px; cursor: se-resize; }
-.resize-handle-s { bottom: -4px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
-.resize-handle-sw { bottom: -4px; left: -4px; cursor: sw-resize; }
-.resize-handle-w { top: 50%; left: -4px; transform: translateY(-50%); cursor: w-resize; }
+.resize-handle-nw {
+  top: -4px;
+  left: -4px;
+  cursor: nw-resize;
+}
+.resize-handle-n {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: n-resize;
+}
+.resize-handle-ne {
+  top: -4px;
+  right: -4px;
+  cursor: ne-resize;
+}
+.resize-handle-e {
+  top: 50%;
+  right: -4px;
+  transform: translateY(-50%);
+  cursor: e-resize;
+}
+.resize-handle-se {
+  bottom: -4px;
+  right: -4px;
+  cursor: se-resize;
+}
+.resize-handle-s {
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: s-resize;
+}
+.resize-handle-sw {
+  bottom: -4px;
+  left: -4px;
+  cursor: sw-resize;
+}
+.resize-handle-w {
+  top: 50%;
+  left: -4px;
+  transform: translateY(-50%);
+  cursor: w-resize;
+}
 
 .selection-box {
   position: absolute;

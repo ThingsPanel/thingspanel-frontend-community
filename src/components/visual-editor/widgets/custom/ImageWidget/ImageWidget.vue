@@ -1,6 +1,6 @@
 <template>
   <div class="image-widget">
-    <n-image 
+    <n-image
       v-if="src"
       :src="src"
       :alt="alt"
@@ -8,10 +8,7 @@
       :style="{ width: '100%', height: '100%' }"
       :preview-disabled="true"
     />
-    <div 
-      v-else 
-      class="image-placeholder"
-    >
+    <div v-else class="image-placeholder">
       <n-icon size="24">
         <div class="i-mdi-image" />
       </n-icon>

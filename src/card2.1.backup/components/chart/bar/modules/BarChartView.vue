@@ -4,68 +4,73 @@
     <div v-if="config.title" class="chart-title">
       {{ config.title }}
     </div>
-    
+
     <!-- 加载状态 -->
     <div v-if="loading" class="chart-loading">
       <div class="loading-spinner"></div>
       <span>加载中...</span>
     </div>
-    
+
     <!-- 错误状态 -->
     <div v-else-if="error" class="chart-error">
       <div class="error-icon">⚠️</div>
       <div class="error-message">{{ error.message }}</div>
       <button class="retry-button" @click="handleRetry">重试</button>
     </div>
-    
+
     <!-- 无数据状态 -->
     <div v-else-if="!chartData || chartData.length === 0" class="chart-empty">
       <div class="empty-icon">📊</div>
       <div class="empty-message">暂无数据</div>
     </div>
-    
+
     <!-- 图表内容 -->
     <div v-else ref="chartContainer" class="chart-content">
       <!-- 这里使用简化的SVG实现，实际项目中可以集成ECharts等图表库 -->
-      <svg 
-        :width="chartWidth" 
-        :height="chartHeight" 
+      <svg
+        :width="chartWidth"
+        :height="chartHeight"
         class="bar-chart-svg"
         @mousemove="handleMouseMove"
         @mouseleave="handleMouseLeave"
       >
         <!-- 背景网格 -->
         <g v-if="config.chart.showGrid !== false" class="grid">
-          <line 
-            v-for="i in gridLines" 
+          <line
+            v-for="i in gridLines"
             :key="`grid-${i}`"
             :x1="chartPadding.left"
-            :y1="chartPadding.top + (chartHeight - chartPadding.top - chartPadding.bottom) * i / gridLines"
+            :y1="chartPadding.top + ((chartHeight - chartPadding.top - chartPadding.bottom) * i) / gridLines"
             :x2="chartWidth - chartPadding.right"
-            :y2="chartPadding.top + (chartHeight - chartPadding.top - chartPadding.bottom) * i / gridLines"
+            :y2="chartPadding.top + ((chartHeight - chartPadding.top - chartPadding.bottom) * i) / gridLines"
             stroke="#f0f0f0"
             stroke-width="1"
           />
         </g>
-        
+
         <!-- Y轴标签 -->
         <g class="y-axis">
-          <text 
-            v-for="(label, i) in yAxisLabels" 
+          <text
+            v-for="(label, i) in yAxisLabels"
             :key="`y-label-${i}`"
             :x="chartPadding.left - 10"
-            :y="chartPadding.top + (chartHeight - chartPadding.top - chartPadding.bottom) * (yAxisLabels.length - 1 - i) / (yAxisLabels.length - 1) + 5"
+            :y="
+              chartPadding.top +
+              ((chartHeight - chartPadding.top - chartPadding.bottom) * (yAxisLabels.length - 1 - i)) /
+                (yAxisLabels.length - 1) +
+              5
+            "
             text-anchor="end"
             class="axis-label"
           >
             {{ formatValue(label) }}
           </text>
         </g>
-        
+
         <!-- 柱状图 -->
         <g class="bars">
-          <rect 
-            v-for="(item, index) in chartData" 
+          <rect
+            v-for="(item, index) in chartData"
             :key="`bar-${index}`"
             :x="getBarX(index)"
             :y="getBarY(item.value)"
@@ -78,7 +83,7 @@
             @click="handleBarClick(item)"
           >
             <!-- 动画效果 -->
-            <animate 
+            <animate
               v-if="config.chart.animation"
               attributeName="height"
               :from="0"
@@ -86,7 +91,7 @@
               dur="0.8s"
               begin="0s"
             />
-            <animate 
+            <animate
               v-if="config.chart.animation"
               attributeName="y"
               :from="chartHeight - chartPadding.bottom"
@@ -96,11 +101,11 @@
             />
           </rect>
         </g>
-        
+
         <!-- X轴标签 -->
         <g class="x-axis">
-          <text 
-            v-for="(item, index) in chartData" 
+          <text
+            v-for="(item, index) in chartData"
             :key="`x-label-${index}`"
             :x="getBarX(index) + barWidth / 2"
             :y="chartHeight - chartPadding.bottom + 20"
@@ -110,11 +115,11 @@
             {{ truncateText(item.name, 8) }}
           </text>
         </g>
-        
+
         <!-- 数值标签 -->
         <g v-if="config.chart.showValues !== false" class="value-labels">
-          <text 
-            v-for="(item, index) in chartData" 
+          <text
+            v-for="(item, index) in chartData"
             :key="`value-${index}`"
             :x="getBarX(index) + barWidth / 2"
             :y="getBarY(item.value) - 5"
@@ -125,35 +130,22 @@
           </text>
         </g>
       </svg>
-      
+
       <!-- 工具提示 -->
-      <div 
-        v-if="tooltip.visible" 
-        class="chart-tooltip"
-        :style="tooltipStyle"
-      >
+      <div v-if="tooltip.visible" class="chart-tooltip" :style="tooltipStyle">
         <div class="tooltip-title">{{ tooltip.data?.name }}</div>
         <div class="tooltip-value">
           值: {{ formatValue(tooltip.data?.value) }}
           <span v-if="tooltip.data?.unit">{{ tooltip.data.unit }}</span>
         </div>
-        <div v-if="tooltip.data?.count" class="tooltip-count">
-          数量: {{ tooltip.data.count }}
-        </div>
+        <div v-if="tooltip.data?.count" class="tooltip-count">数量: {{ tooltip.data.count }}</div>
       </div>
     </div>
-    
+
     <!-- 图例 -->
     <div v-if="config.chart.showLegend !== false && chartData.length > 0" class="chart-legend">
-      <div 
-        v-for="(item, index) in chartData.slice(0, 5)" 
-        :key="`legend-${index}`"
-        class="legend-item"
-      >
-        <span 
-          class="legend-color"
-          :style="{ backgroundColor: getBarColor(index) }"
-        ></span>
+      <div v-for="(item, index) in chartData.slice(0, 5)" :key="`legend-${index}`" class="legend-item">
+        <span class="legend-color" :style="{ backgroundColor: getBarColor(index) }"></span>
         <span class="legend-text">{{ item.name }}</span>
       </div>
     </div>
@@ -234,13 +226,13 @@ const valueRange = computed(() => maxValue.value - minValue.value)
 const barWidth = computed(() => {
   const availableWidth = chartWidth.value - chartPadding.left - chartPadding.right
   const barCount = chartData.value.length
-  return barCount > 0 ? Math.max(availableWidth / barCount * 0.8, 10) : 0
+  return barCount > 0 ? Math.max((availableWidth / barCount) * 0.8, 10) : 0
 })
 
 const yAxisLabels = computed(() => {
   const labels = []
   for (let i = 0; i <= gridLines; i++) {
-    const value = minValue.value + (valueRange.value * i / gridLines)
+    const value = minValue.value + (valueRange.value * i) / gridLines
     labels.push(value)
   }
   return labels
@@ -345,7 +337,7 @@ onMounted(() => {
   nextTick(() => {
     updateChartSize()
   })
-  
+
   window.addEventListener('resize', updateChartSize)
 })
 
@@ -354,14 +346,22 @@ onUnmounted(() => {
 })
 
 // 监听配置变化
-watch(() => props.config, (newConfig) => {
-  console.log('[BarChartView] 配置已更新', newConfig)
-}, { deep: true })
+watch(
+  () => props.config,
+  newConfig => {
+    console.log('[BarChartView] 配置已更新', newConfig)
+  },
+  { deep: true }
+)
 
 // 监听数据变化
-watch(() => props.data, (newData) => {
-  console.log('[BarChartView] 数据已更新', newData)
-}, { deep: true })
+watch(
+  () => props.data,
+  newData => {
+    console.log('[BarChartView] 数据已更新', newData)
+  },
+  { deep: true }
+)
 
 // 暴露方法给父组件
 defineExpose({
@@ -444,8 +444,12 @@ defineExpose({
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .chart-error {
@@ -587,19 +591,19 @@ defineExpose({
     font-size: 14px;
     padding: 12px 16px 0;
   }
-  
+
   .axis-label {
     font-size: 10px;
   }
-  
+
   .value-label {
     font-size: 9px;
   }
-  
+
   .chart-legend {
     padding: 8px 16px;
   }
-  
+
   .legend-item {
     font-size: 11px;
   }

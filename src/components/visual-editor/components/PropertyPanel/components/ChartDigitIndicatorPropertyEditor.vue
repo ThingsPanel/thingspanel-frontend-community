@@ -1,50 +1,37 @@
 <template>
   <n-form size="small" label-placement="left" label-width="70">
     <n-form-item label="标题">
-      <n-input 
-        :value="properties.title"
-        @update:value="updateProperty('title', $event)"
-      />
+      <n-input :value="properties.title" @update:value="updateProperty('title', $event)" />
     </n-form-item>
     <n-form-item label="设备ID">
-      <n-input 
+      <n-input
         :value="properties.deviceId"
         placeholder="请输入设备ID"
         @update:value="updateProperty('deviceId', $event)"
       />
     </n-form-item>
     <n-form-item label="指标ID">
-      <n-input 
+      <n-input
         :value="properties.metricsId"
         placeholder="请输入指标ID"
         @update:value="updateProperty('metricsId', $event)"
       />
     </n-form-item>
     <n-form-item label="指标类型">
-      <n-select 
+      <n-select
         :value="properties.metricsType"
         :options="metricsTypeOptions"
         @update:value="updateProperty('metricsType', $event)"
       />
     </n-form-item>
     <n-form-item label="图标">
-      <n-input 
-        :value="properties.icon"
-        placeholder="图标名称"
-        @update:value="updateProperty('icon', $event)"
-      />
+      <n-input :value="properties.icon" placeholder="图标名称" @update:value="updateProperty('icon', $event)" />
     </n-form-item>
     <n-form-item label="颜色">
-      <n-color-picker 
-        :value="properties.color"
-        @update:value="updateProperty('color', $event)"
-      />
+      <n-color-picker :value="properties.color" @update:value="updateProperty('color', $event)" />
     </n-form-item>
     <n-form-item label="背景颜色">
-      <n-color-picker 
-        :value="properties.backgroundColor"
-        @update:value="updateProperty('backgroundColor', $event)"
-      />
+      <n-color-picker :value="properties.backgroundColor" @update:value="updateProperty('backgroundColor', $event)" />
     </n-form-item>
   </n-form>
 </template>

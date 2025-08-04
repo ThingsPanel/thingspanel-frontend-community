@@ -18,15 +18,11 @@
         :tab="topCategory.name"
       >
         <div class="tab-content">
-          <div
-            v-for="subCategory in topCategory.subCategories"
-            :key="subCategory.name"
-            class="widget-subcategory"
-          >
+          <div v-for="subCategory in topCategory.subCategories" :key="subCategory.name" class="widget-subcategory">
             <h4 class="subcategory-title">{{ subCategory.name }}</h4>
             <div class="category-grid">
-              <div 
-                v-for="widget in subCategory.children" 
+              <div
+                v-for="widget in subCategory.children"
                 :key="widget.type"
                 class="widget-card"
                 draggable="true"
@@ -60,8 +56,8 @@ import { $t } from '@/locales'
 // --- State and Emits ---
 const searchTerm = ref('')
 const emit = defineEmits<{
-  'add-widget': [payload: { type: string; source: 'card2' | 'legacy' }];
-  'drag-start': [widget: any, event: DragEvent];
+  'add-widget': [payload: { type: string; source: 'card2' | 'legacy' }]
+  'drag-start': [widget: any, event: DragEvent]
 }>()
 
 // --- Legacy Widget Integration ---
@@ -73,45 +69,45 @@ const combinedWidgetTree = computed<WidgetTreeNode[]>(() => {
 })
 
 interface SubCategory {
-  name: string;
-  children: WidgetDefinition[];
+  name: string
+  children: WidgetDefinition[]
 }
 
 interface TopCategory {
-  name: string;
-  subCategories: SubCategory[];
+  name: string
+  subCategories: SubCategory[]
 }
 
 const twoLevelWidgetTree = computed(() => {
   const topCategoriesData: {
-    'Card 2.1': { [subCategoryName: string]: WidgetDefinition[] },
-    '曲线': { [subCategoryName: string]: WidgetDefinition[] },
-    '系统': { [subCategoryName: string]: WidgetDefinition[] }
+    'Card 2.1': { [subCategoryName: string]: WidgetDefinition[] }
+    曲线: { [subCategoryName: string]: WidgetDefinition[] }
+    系统: { [subCategoryName: string]: WidgetDefinition[] }
   } = {
     'Card 2.1': {},
-    '曲线': {},
-    '系统': {}
-  };
+    曲线: {},
+    系统: {}
+  }
 
   combinedWidgetTree.value.forEach(subCategory => {
     subCategory.children.forEach(widget => {
       // 1. Determine Top-Level Category
-      let topLevelName = '系统';
+      let topLevelName = '系统'
       if (widget.category === 'chart') {
-        topLevelName = '曲线';
+        topLevelName = '曲线'
       } else if (widget.category === 'card21') {
-        topLevelName = 'Card 2.1';
+        topLevelName = 'Card 2.1'
       }
-      
+
       // 2. Determine Second-Level Category
-      const subLevelName = subCategory.name || '其他';
+      const subLevelName = subCategory.name || '其他'
 
       if (!topCategoriesData[topLevelName][subLevelName]) {
-        topCategoriesData[topLevelName][subLevelName] = [];
+        topCategoriesData[topLevelName][subLevelName] = []
       }
-      topCategoriesData[topLevelName][subLevelName].push(widget);
-    });
-  });
+      topCategoriesData[topLevelName][subLevelName].push(widget)
+    })
+  })
 
   // 3. Convert map to final array structure for rendering
   const result: TopCategory[] = [
@@ -127,44 +123,45 @@ const twoLevelWidgetTree = computed(() => {
       name: '系统',
       subCategories: Object.entries(topCategoriesData['系统']).map(([name, children]) => ({ name, children }))
     }
-  ];
-  
-  return result.filter(topCat => topCat.subCategories.length > 0 && topCat.subCategories.some(subCat => subCat.children.length > 0));
-});
+  ]
 
+  return result.filter(
+    topCat => topCat.subCategories.length > 0 && topCat.subCategories.some(subCat => subCat.children.length > 0)
+  )
+})
 
 const filteredWidgetTree = computed(() => {
   if (!searchTerm.value) {
-    return twoLevelWidgetTree.value;
+    return twoLevelWidgetTree.value
   }
-  
-  const lowerCaseSearch = searchTerm.value.toLowerCase();
-  const filteredTopCategories: TopCategory[] = [];
+
+  const lowerCaseSearch = searchTerm.value.toLowerCase()
+  const filteredTopCategories: TopCategory[] = []
 
   twoLevelWidgetTree.value.forEach(topCategory => {
-    const filteredSubCategories: SubCategory[] = [];
+    const filteredSubCategories: SubCategory[] = []
     topCategory.subCategories.forEach(subCategory => {
-      const filteredChildren = subCategory.children.filter(widget => 
-        widget.name.toLowerCase().includes(lowerCaseSearch) || 
-        widget.type.toLowerCase().includes(lowerCaseSearch)
-      );
+      const filteredChildren = subCategory.children.filter(
+        widget =>
+          widget.name.toLowerCase().includes(lowerCaseSearch) || widget.type.toLowerCase().includes(lowerCaseSearch)
+      )
       if (filteredChildren.length > 0) {
-        filteredSubCategories.push({ name: subCategory.name, children: filteredChildren });
+        filteredSubCategories.push({ name: subCategory.name, children: filteredChildren })
       }
-    });
+    })
 
     if (filteredSubCategories.length > 0) {
-      filteredTopCategories.push({ name: topCategory.name, subCategories: filteredSubCategories });
+      filteredTopCategories.push({ name: topCategory.name, subCategories: filteredSubCategories })
     }
-  });
+  })
 
-  return filteredTopCategories;
-});
+  return filteredTopCategories
+})
 
 // --- Event Handlers ---
 const handleAddWidget = (widget: any) => {
   if (!widget.type) {
-    console.error("❌ handleAddWidget called with undefined type.", widget)
+    console.error('❌ handleAddWidget called with undefined type.', widget)
     return
   }
   emit('add-widget', { type: widget.type, source: widget.source || 'legacy' })
@@ -208,7 +205,8 @@ const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
   padding: 12px;
 }
 
-.loading-state, .error-state {
+.loading-state,
+.error-state {
   padding: 20px;
   text-align: center;
 }

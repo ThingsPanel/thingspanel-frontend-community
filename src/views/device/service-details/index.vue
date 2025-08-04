@@ -1,23 +1,23 @@
 <!-- eslint-disable require-atomic-updates -->
 <script setup lang="tsx">
-import { ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { NButton, NPopconfirm, NSpace } from 'naive-ui';
-import dayjs from 'dayjs';
-import { delServiceAccess, getServiceAccess } from '@/service/api/plugin.ts';
-import { $t } from '@/locales';
-import serviceModal from './components/serviceModal.vue';
-import serviceConfigModal from './components/serviceConfigModal.vue';
+import { ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { NButton, NPopconfirm, NSpace } from 'naive-ui'
+import dayjs from 'dayjs'
+import { delServiceAccess, getServiceAccess } from '@/service/api/plugin.ts'
+import { $t } from '@/locales'
+import serviceModal from './components/serviceModal.vue'
+import serviceConfigModal from './components/serviceConfigModal.vue'
 
-const route: any = useRoute();
-const router: any = useRouter();
-const serviceModalRef = ref<any>(null);
-const serviceConfigModalRef = ref<any>(null);
-const service_plugin_id = ref<any>(route.query.id);
+const route: any = useRoute()
+const router: any = useRouter()
+const serviceModalRef = ref<any>(null)
+const serviceConfigModalRef = ref<any>(null)
+const service_plugin_id = ref<any>(route.query.id)
 const pageData = ref<any>({
   loading: false,
   tableData: []
-});
+})
 
 const queryInfo = ref<any>({
   service_plugin_id: service_plugin_id.value,
@@ -26,34 +26,34 @@ const queryInfo = ref<any>({
   total: 0,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    queryInfo.value.page = page;
-    getList();
+    queryInfo.value.page = page
+    getList()
   },
   onUpdatePageSize: (pageSize: number) => {
-    queryInfo.value.page_size = pageSize;
-    queryInfo.value.page = 1;
-    getList();
+    queryInfo.value.page_size = pageSize
+    queryInfo.value.page = 1
+    getList()
   }
-});
+})
 
 const getList: () => void = async () => {
-  const { data }: { data: any } = await getServiceAccess(queryInfo.value);
-  pageData.value.tableData = data.list;
-  queryInfo.value.itemCount = data.total;
-};
+  const { data }: { data: any } = await getServiceAccess(queryInfo.value)
+  pageData.value.tableData = data.list
+  queryInfo.value.itemCount = data.total
+}
 
 const see: (row: any) => void = row => {
   router.push(
     `/device/manage?service_identifier=${route.query.service_identifier}&device_name=${row.name}&service_access_id=${row.id}`
-  );
-};
+  )
+}
 const del: (row: any) => void = async row => {
-  await delServiceAccess(row);
-  getList();
-};
+  await delServiceAccess(row)
+  getList()
+}
 const config: (row: any) => void = async row => {
-  serviceModalRef.value.openModal(service_plugin_id.value, row);
-};
+  serviceModalRef.value.openModal(service_plugin_id.value, row)
+}
 const columns: any = ref([
   {
     title: $t('card.accessPointName'),
@@ -66,9 +66,9 @@ const columns: any = ref([
     minWidth: '200px',
     render: row => {
       if (row.create_at) {
-        return <span>{dayjs(row.create_at).format('YYYY-MM-DD HH:mm:ss')}</span>;
+        return <span>{dayjs(row.create_at).format('YYYY-MM-DD HH:mm:ss')}</span>
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -109,14 +109,14 @@ const columns: any = ref([
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-]);
+])
 
 const addData: () => void = () => {
-  serviceModalRef.value.openModal(service_plugin_id.value);
-};
+  serviceModalRef.value.openModal(service_plugin_id.value)
+}
 
 const isEdit: (val: any, row: any, edit: any) => void = (val, row, edit) => {
   if (edit) {
@@ -124,26 +124,26 @@ const isEdit: (val: any, row: any, edit: any) => void = (val, row, edit) => {
       const adaptedRow = {
         ...row,
         mode: 'automatic'
-      };
-      serviceConfigModalRef.value.openModal(val, adaptedRow, edit);
+      }
+      serviceConfigModalRef.value.openModal(val, adaptedRow, edit)
     } else {
-      serviceConfigModalRef.value.openModal(val, row, edit);
+      serviceConfigModalRef.value.openModal(val, row, edit)
     }
-    getList();
+    getList()
   } else {
-    serviceConfigModalRef.value.openModal(val, row);
-    getList();
+    serviceConfigModalRef.value.openModal(val, row)
+    getList()
   }
-};
+}
 watch(
   () => queryInfo.value.service_type,
   () => {
-    getList();
+    getList()
   },
   { deep: true }
-);
+)
 
-getList();
+getList()
 </script>
 
 <template>

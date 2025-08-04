@@ -1,32 +1,36 @@
 <template>
   <div class="multi-data-source-test">
     <h2>多数据源测试</h2>
-    
+
     <div class="test-section">
       <h3>测试场景</h3>
       <p>这个测试演示了多数据源功能：</p>
       <ul>
-        <li><strong>数据源1</strong>：提供传感器数据（温度和湿度）</li>
-        <li><strong>数据源2</strong>：提供设备状态</li>
-        <li><strong>组件</strong>：从不同数据源获取数据并显示</li>
+        <li>
+          <strong>数据源1</strong>
+          ：提供传感器数据（温度和湿度）
+        </li>
+        <li>
+          <strong>数据源2</strong>
+          ：提供设备状态
+        </li>
+        <li>
+          <strong>组件</strong>
+          ：从不同数据源获取数据并显示
+        </li>
       </ul>
     </div>
-    
+
     <div class="test-section">
       <h3>数据源配置</h3>
-      
+
       <!-- 数据源1配置 -->
       <n-card title="数据源1 - 传感器数据" class="data-source-card">
         <n-form :model="dataSource1" label-placement="left" label-width="120px">
           <n-form-item label="JSON数据">
-            <n-input
-              v-model:value="dataSource1Json"
-              type="textarea"
-              :rows="4"
-              placeholder="输入传感器数据JSON"
-            />
+            <n-input v-model:value="dataSource1Json" type="textarea" :rows="4" placeholder="输入传感器数据JSON" />
           </n-form-item>
-          
+
           <n-form-item label="数据路径映射">
             <div class="mapping-item">
               <span class="mapping-label">路径:</span>
@@ -43,19 +47,14 @@
           </n-form-item>
         </n-form>
       </n-card>
-      
+
       <!-- 数据源2配置 -->
       <n-card title="数据源2 - 设备状态" class="data-source-card">
         <n-form :model="dataSource2" label-placement="left" label-width="120px">
           <n-form-item label="JSON数据">
-            <n-input
-              v-model:value="dataSource2Json"
-              type="textarea"
-              :rows="3"
-              placeholder="输入设备状态JSON"
-            />
+            <n-input v-model:value="dataSource2Json" type="textarea" :rows="3" placeholder="输入设备状态JSON" />
           </n-form-item>
-          
+
           <n-form-item label="数据路径映射">
             <div class="mapping-item">
               <span class="mapping-label">路径:</span>
@@ -66,22 +65,17 @@
           </n-form-item>
         </n-form>
       </n-card>
-      
-      <n-button type="primary" @click="updateDataSources">
-        更新数据源
-      </n-button>
+
+      <n-button type="primary" @click="updateDataSources">更新数据源</n-button>
     </div>
-    
+
     <div class="test-section">
       <h3>组件显示</h3>
       <div class="component-container">
-        <MultiDataTestCard
-          :properties="componentProperties"
-          :metadata="{ dataSource: combinedDataSource }"
-        />
+        <MultiDataTestCard :properties="componentProperties" :metadata="{ dataSource: combinedDataSource }" />
       </div>
     </div>
-    
+
     <div class="test-section">
       <h3>调试信息</h3>
       <n-card>
@@ -113,9 +107,7 @@ const dataSource1Json = ref(`{
   "timestamp": "2024-01-01T12:00:00Z"
 }`)
 
-const dataSource1Mappings = ref([
-  { key: 'sensors', target: 'sensorData', description: '传感器数据' }
-])
+const dataSource1Mappings = ref([{ key: 'sensors', target: 'sensorData', description: '传感器数据' }])
 
 const dataSource1 = computed(() => {
   try {
@@ -149,9 +141,7 @@ const dataSource2Json = ref(`{
   }
 }`)
 
-const dataSource2Mappings = ref([
-  { key: 'device.status', target: 'deviceStatus', description: '设备状态' }
-])
+const dataSource2Mappings = ref([{ key: 'device.status', target: 'deviceStatus', description: '设备状态' }])
 
 const dataSource2 = computed(() => {
   try {
@@ -189,10 +179,7 @@ const combinedDataSource = computed(() => {
       ...dataSource1.value.data,
       ...dataSource2.value.data
     },
-    dataPaths: [
-      ...dataSource1.value.dataPaths,
-      ...dataSource2.value.dataPaths
-    ],
+    dataPaths: [...dataSource1.value.dataPaths, ...dataSource2.value.dataPaths],
     refreshInterval: 0
   }
 })
@@ -280,4 +267,4 @@ pre {
   overflow: auto;
   white-space: pre-wrap;
 }
-</style> 
+</style>

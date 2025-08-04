@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { inject, onMounted } from 'vue'  
+import { inject, onMounted } from 'vue'
 import type { IConfigCtx } from '@/card2.1/core/types/legacy'
 import { $t } from '@/locales'
 
@@ -23,26 +23,21 @@ onMounted(() => {
   <div class="text-info-config">
     <n-form :model="ctx.config" label-placement="left">
       <n-form-item :label="$t('common.content')">
-        <n-input 
-          v-model:value="ctx.config.content" 
+        <n-input
+          v-model:value="ctx.config.content"
           type="textarea"
-          :placeholder="$t('common.pleaseEnterContent')" 
+          :placeholder="$t('common.pleaseEnterContent')"
           :autosize="{ minRows: 3, maxRows: 6 }"
         />
       </n-form-item>
-      
+
       <n-form-item :label="$t('common.fontSize')">
-        <n-input-number 
-          v-model:value="ctx.config.fontSize" 
-          :min="12" 
-          :max="48"
-          :placeholder="$t('common.fontSize')"
-        />
+        <n-input-number v-model:value="ctx.config.fontSize" :min="12" :max="48" :placeholder="$t('common.fontSize')" />
       </n-form-item>
-      
+
       <n-form-item :label="$t('common.textAlign')">
-        <n-select 
-          v-model:value="ctx.config.textAlign" 
+        <n-select
+          v-model:value="ctx.config.textAlign"
           :options="[
             { label: $t('common.left'), value: 'left' },
             { label: $t('common.center'), value: 'center' },

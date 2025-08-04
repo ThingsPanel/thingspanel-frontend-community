@@ -5,14 +5,13 @@
   <div class="echarts-fix-test">
     <n-card title="ECharts 重复注册修复测试">
       <n-space vertical size="large">
-        
         <!-- 状态检查 -->
         <n-card title="系统状态" size="small">
           <n-space vertical size="small">
             <n-tag :type="echartsManager.isRegistered() ? 'success' : 'error'">
               ECharts 组件注册状态: {{ echartsManager.isRegistered() ? '已注册' : '未注册' }}
             </n-tag>
-            
+
             <n-tag v-if="testStatus.message" :type="testStatus.status">
               {{ testStatus.message }}
             </n-tag>
@@ -22,21 +21,13 @@
         <!-- 测试按钮 -->
         <n-card title="功能测试" size="small">
           <n-space>
-            <n-button type="primary" @click="testTraditionalChart">
-              测试传统图表
-            </n-button>
-            
-            <n-button type="primary" @click="testCard2Chart">
-              测试 Card 2.0 图表
-            </n-button>
-            
-            <n-button type="primary" @click="testMultipleCharts">
-              测试多图表并发
-            </n-button>
-            
-            <n-button type="error" secondary @click="clearAllTests">
-              清空测试
-            </n-button>
+            <n-button type="primary" @click="testTraditionalChart">测试传统图表</n-button>
+
+            <n-button type="primary" @click="testCard2Chart">测试 Card 2.0 图表</n-button>
+
+            <n-button type="primary" @click="testMultipleCharts">测试多图表并发</n-button>
+
+            <n-button type="error" secondary @click="clearAllTests">清空测试</n-button>
           </n-space>
         </n-card>
 
@@ -45,7 +36,7 @@
           <div
             v-for="chart in testCharts"
             :key="chart.id"
-            :ref="el => chartRefs[chart.id] = el"
+            :ref="el => (chartRefs[chart.id] = el)"
             class="test-chart-item"
           >
             <n-tag :type="chart.status === 'success' ? 'success' : 'error'" size="small">
@@ -62,7 +53,6 @@
             </div>
           </n-space>
         </n-card>
-
       </n-space>
     </n-card>
   </div>
@@ -77,7 +67,7 @@ const message = useMessage()
 const echartsManager = useEChartsInstance()
 
 // 测试状态
-const testStatus = ref<{ status: 'info' | 'success' | 'error' | 'warning', message: string }>({
+const testStatus = ref<{ status: 'info' | 'success' | 'error' | 'warning'; message: string }>({
   status: 'info',
   message: ''
 })
@@ -86,15 +76,17 @@ const testStatus = ref<{ status: 'info' | 'success' | 'error' | 'warning', messa
 const chartRefs = reactive<Record<string, HTMLElement>>({})
 
 // 测试图表列表
-const testCharts = ref<Array<{
-  id: string
-  title: string
-  status: 'pending' | 'success' | 'error'
-  instance?: any
-}>>([])
+const testCharts = ref<
+  Array<{
+    id: string
+    title: string
+    status: 'pending' | 'success' | 'error'
+    instance?: any
+  }>
+>([])
 
 // 错误日志
-const errorLogs = ref<Array<{ time: string, message: string }>>([])
+const errorLogs = ref<Array<{ time: string; message: string }>>([])
 
 // 添加错误日志
 const addErrorLog = (message: string) => {
@@ -118,7 +110,7 @@ const handleGlobalError = (event: ErrorEvent) => {
 // 测试传统图表
 const testTraditionalChart = async () => {
   const chartId = `traditional-${Date.now()}`
-  
+
   try {
     testCharts.value.push({
       id: chartId,
@@ -142,16 +134,18 @@ const testTraditionalChart = async () => {
 
     // 创建图表实例
     const chartInstance = echartsManager.createInstance(container)
-    
+
     // 设置配置
     chartInstance.setOption({
       title: { text: '传统测试图表' },
       xAxis: { data: ['A', 'B', 'C'] },
       yAxis: {},
-      series: [{
-        type: 'bar',
-        data: [10, 20, 30]
-      }]
+      series: [
+        {
+          type: 'bar',
+          data: [10, 20, 30]
+        }
+      ]
     })
 
     // 更新状态
@@ -165,7 +159,6 @@ const testTraditionalChart = async () => {
       status: 'success',
       message: '传统图表创建成功'
     }
-
   } catch (error) {
     addErrorLog(`传统图表测试失败: ${error}`)
     const chart = testCharts.value.find(c => c.id === chartId)
@@ -182,7 +175,7 @@ const testTraditionalChart = async () => {
 // 测试 Card 2.0 图表
 const testCard2Chart = async () => {
   const chartId = `card2-${Date.now()}`
-  
+
   try {
     testCharts.value.push({
       id: chartId,
@@ -206,17 +199,19 @@ const testCard2Chart = async () => {
 
     // 创建图表实例
     const chartInstance = echartsManager.createInstance(container, 'light')
-    
+
     // 设置配置
     chartInstance.setOption({
       title: { text: 'Card 2.0 测试图表' },
       xAxis: { data: ['X', 'Y', 'Z'] },
       yAxis: {},
-      series: [{
-        type: 'line',
-        data: [15, 25, 35],
-        smooth: true
-      }]
+      series: [
+        {
+          type: 'line',
+          data: [15, 25, 35],
+          smooth: true
+        }
+      ]
     })
 
     // 更新状态
@@ -230,7 +225,6 @@ const testCard2Chart = async () => {
       status: 'success',
       message: 'Card 2.0 图表创建成功'
     }
-
   } catch (error) {
     addErrorLog(`Card 2.0 图表测试失败: ${error}`)
     const chart = testCharts.value.find(c => c.id === chartId)
@@ -253,7 +247,7 @@ const testMultipleCharts = async () => {
     }
 
     const promises = []
-    
+
     // 并发创建多个图表
     for (let i = 0; i < 5; i++) {
       promises.push(createTestChart(`multi-${i}-${Date.now()}`, `并发图表 ${i + 1}`))
@@ -265,7 +259,6 @@ const testMultipleCharts = async () => {
       status: 'success',
       message: '多图表并发测试成功'
     }
-
   } catch (error) {
     addErrorLog(`多图表并发测试失败: ${error}`)
     testStatus.value = {
@@ -300,16 +293,18 @@ const createTestChart = async (chartId: string, title: string) => {
 
   // 创建图表实例
   const chartInstance = echartsManager.createInstance(container)
-  
+
   // 设置配置
   chartInstance.setOption({
     title: { text: title, textStyle: { fontSize: 12 } },
     xAxis: { data: ['1', '2', '3'] },
     yAxis: {},
-    series: [{
-      type: 'bar',
-      data: [Math.random() * 100, Math.random() * 100, Math.random() * 100]
-    }]
+    series: [
+      {
+        type: 'bar',
+        data: [Math.random() * 100, Math.random() * 100, Math.random() * 100]
+      }
+    ]
   })
 
   // 更新状态
@@ -336,7 +331,7 @@ const clearAllTests = () => {
   testCharts.value = []
   errorLogs.value = []
   testStatus.value = { status: 'info', message: '' }
-  
+
   // 清空容器
   Object.values(chartRefs).forEach(container => {
     if (container) {
@@ -349,10 +344,10 @@ const clearAllTests = () => {
 
 onMounted(() => {
   console.log('🧪 ECharts 修复测试页面已加载')
-  
+
   // 监听全局错误
   window.addEventListener('error', handleGlobalError)
-  
+
   testStatus.value = {
     status: 'success',
     message: 'ECharts 管理器初始化完成'

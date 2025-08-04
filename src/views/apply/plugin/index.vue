@@ -1,13 +1,13 @@
 <!-- eslint-disable require-atomic-updates -->
 <script setup lang="tsx">
-import { ref, watch } from 'vue';
-import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
-import { delRegisterService, getServices } from '@/service/api/plugin';
-import { $t } from '@/locales';
-import serviceConfigModal from './components/serviceConfigModal.vue';
-import serviceModal from './components/serviceModal.vue';
-const serviceModalRef = ref<any>(null);
-const serviceConfigModalRef = ref<any>(null);
+import { ref, watch } from 'vue'
+import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui'
+import { delRegisterService, getServices } from '@/service/api/plugin'
+import { $t } from '@/locales'
+import serviceConfigModal from './components/serviceConfigModal.vue'
+import serviceModal from './components/serviceModal.vue'
+const serviceModalRef = ref<any>(null)
+const serviceConfigModalRef = ref<any>(null)
 
 const pageData = ref<any>({
   loading: false,
@@ -26,7 +26,7 @@ const pageData = ref<any>({
       value: 2
     }
   ]
-});
+})
 
 const queryInfo = ref<any>({
   page: 1,
@@ -37,34 +37,34 @@ const queryInfo = ref<any>({
   pageSizes: [10, 15, 20, 25, 30],
   itemCount: 0,
   onChange: (page: number) => {
-    queryInfo.value.page = page;
+    queryInfo.value.page = page
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getList();
+    getList()
   },
   onUpdatePageSize: (pageSize: number) => {
-    queryInfo.value.page_size = pageSize;
-    queryInfo.value.page = 1;
+    queryInfo.value.page_size = pageSize
+    queryInfo.value.page = 1
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getList();
+    getList()
   }
-});
+})
 
 const getList: () => void = async () => {
-  const { data }: { data: any } = await getServices(queryInfo.value);
-  pageData.value.tableData = data.list;
-  queryInfo.value.itemCount = data.total;
-};
+  const { data }: { data: any } = await getServices(queryInfo.value)
+  pageData.value.tableData = data.list
+  queryInfo.value.itemCount = data.total
+}
 
 const edit: (row: any) => void = row => {
-  serviceModalRef.value.openModal(row);
-};
+  serviceModalRef.value.openModal(row)
+}
 const del: (row: any) => void = async row => {
-  await delRegisterService(row);
-  getList();
-};
+  await delRegisterService(row)
+  getList()
+}
 const config: (row: any) => void = async row => {
-  serviceConfigModalRef.value.openModal(row);
-};
+  serviceConfigModalRef.value.openModal(row)
+}
 const columns: any = ref([
   {
     title: $t('card.pluginName'),
@@ -78,9 +78,9 @@ const columns: any = ref([
     align: 'center',
     render: row => {
       if (row.service_type) {
-        return <span>{row.service_type === 1 ? $t('card.accessProtocol') : $t('card.accessService')}</span>;
+        return <span>{row.service_type === 1 ? $t('card.accessProtocol') : $t('card.accessService')}</span>
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -102,9 +102,9 @@ const columns: any = ref([
           <NTag type={row.service_heartbeat === 1 ? 'success' : 'error'}>
             {row.service_heartbeat === 1 ? $t('card.running') : $t('card.stopped')}
           </NTag>
-        );
+        )
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -140,24 +140,24 @@ const columns: any = ref([
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-]);
+])
 
 const addData: () => void = () => {
-  serviceModalRef.value.openModal();
-};
+  serviceModalRef.value.openModal()
+}
 
 watch(
   () => queryInfo.value.service_type,
   () => {
-    getList();
+    getList()
   },
   { deep: true }
-);
+)
 
-getList();
+getList()
 </script>
 
 <template>

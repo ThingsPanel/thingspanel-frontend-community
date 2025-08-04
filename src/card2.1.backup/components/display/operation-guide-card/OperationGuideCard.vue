@@ -2,12 +2,7 @@
   <div class="guide-container">
     <h3 class="internal-title">{{ title }}</h3>
     <NList v-if="displayList.length > 0" hoverable clickable class="list-wrapper">
-      <NListItem
-        v-for="(item, index) in displayList"
-        :key="index"
-        class="list-item"
-        @click="navigateTo(item.link)"
-      >
+      <NListItem v-for="(item, index) in displayList" :key="index" class="list-item" @click="navigateTo(item.link)">
         <NThing>
           <template #avatar>
             <NAvatar circle :color="serialBgColor">

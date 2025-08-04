@@ -1,8 +1,8 @@
 <template>
   <n-form label-placement="left" label-width="auto" size="small">
-    <n-form-item 
-      v-for="(propDef, key) in properties" 
-      :key="key" 
+    <n-form-item
+      v-for="(propDef, key) in properties"
+      :key="key"
       :label="propDef.label || String(key)"
       :rule="getValidationRule(propDef)"
     >
@@ -77,32 +77,30 @@
       />
 
       <!-- 不支持的类型 -->
-      <n-text v-else depth="3">
-        不支持的属性类型: {{ propDef.type }}
-      </n-text>
+      <n-text v-else depth="3">不支持的属性类型: {{ propDef.type }}</n-text>
     </n-form-item>
   </n-form>
 
   <!-- 图标选择器模态框 -->
-  <n-modal v-model:show="showIconSelector" preset="card" title="选择图标" style="width: 600px;">
+  <n-modal v-model:show="showIconSelector" preset="card" title="选择图标" style="width: 600px">
     <IconSelector @icon-selected="handleIconSelect" />
   </n-modal>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue'
-import { 
-  NForm, 
-  NFormItem, 
-  NInput, 
-  NInputNumber, 
-  NSwitch, 
-  NColorPicker, 
-  NSelect, 
-  NButton, 
-  NIcon, 
-  NText, 
-  NModal 
+import {
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NSwitch,
+  NColorPicker,
+  NSelect,
+  NButton,
+  NIcon,
+  NText,
+  NModal
 } from 'naive-ui'
 import { cloneDeep } from 'lodash-es'
 import type { IPropertyDefinition } from '@/card2.1/core/types'
@@ -129,7 +127,7 @@ const initFormData = () => {
   Object.keys(props.properties).forEach(key => {
     const propDef = props.properties[key]
     const value = props.modelValue[key] ?? propDef.default
-    
+
     if (propDef.type === 'object' || propDef.type === 'array') {
       formData[key] = value
       jsonStringData[key] = JSON.stringify(value, null, 2)
@@ -184,14 +182,14 @@ const handleIconSelect = (iconName: string) => {
 // 获取验证规则
 const getValidationRule = (propDef: IPropertyDefinition) => {
   const rules: any[] = []
-  
+
   if (propDef.required) {
     rules.push({
       required: true,
       message: `${propDef.label} 是必填项`
     })
   }
-  
+
   if (propDef.validator) {
     rules.push({
       validator: (_rule: any, value: any) => {
@@ -200,7 +198,7 @@ const getValidationRule = (propDef: IPropertyDefinition) => {
       }
     })
   }
-  
+
   return rules.length > 0 ? rules : undefined
 }
 </script>

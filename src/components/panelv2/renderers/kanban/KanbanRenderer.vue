@@ -6,9 +6,9 @@
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { GridLayout, GridItem } from 'vue3-grid-layout'
 import { useThemeStore } from '@/store/modules/theme'
-import type { 
-  BaseRenderer, 
-  RendererConfig, 
+import type {
+  BaseRenderer,
+  RendererConfig,
   RendererCapabilities,
   RendererState,
   RendererEvents
@@ -31,7 +31,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   config: () => ({}),
-  items: () => ([]),
+  items: () => [],
   readonly: false
 })
 
@@ -59,10 +59,10 @@ const kanbanColors = computed(() => ({
   dragHighlight: themeStore.isDark ? 'rgba(59, 130, 246, 0.05)' : 'rgba(24, 144, 255, 0.05)',
   dragActive: themeStore.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(24, 144, 255, 0.1)',
   dragHover: themeStore.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(24, 144, 255, 0.08)',
-  
+
   // 边框颜色
   borderActive: themeStore.isDark ? '#3b82f6' : '#1890ff',
-  
+
   // 文字颜色
   primaryText: themeStore.isDark ? '#e5e7eb' : '#262626',
   secondaryText: themeStore.isDark ? '#9ca3af' : '#595959'
@@ -97,13 +97,19 @@ const rendererConfig = computed(() => ({
   isMirrored: false,
   autoSize: true,
   verticalCompact: true,
-  preventCollision: false,  // 允许自动重排防止重叠
-  compactType: dynamicConfig.value.compactType,  // 动态紧凑模式
+  preventCollision: false, // 允许自动重排防止重叠
+  compactType: dynamicConfig.value.compactType, // 动态紧凑模式
   margin: dynamicConfig.value.margin,
   useCssTransforms: true,
   responsive: false,
   breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
-  cols: { lg: dynamicConfig.value.colNum, md: Math.min(10, dynamicConfig.value.colNum), sm: Math.min(6, dynamicConfig.value.colNum), xs: Math.min(4, dynamicConfig.value.colNum), xxs: Math.min(2, dynamicConfig.value.colNum) },
+  cols: {
+    lg: dynamicConfig.value.colNum,
+    md: Math.min(10, dynamicConfig.value.colNum),
+    sm: Math.min(6, dynamicConfig.value.colNum),
+    xs: Math.min(4, dynamicConfig.value.colNum),
+    xxs: Math.min(2, dynamicConfig.value.colNum)
+  },
   ...props.config
 }))
 
@@ -142,9 +148,13 @@ class KanbanRendererImpl implements BaseRenderer {
   readonly name = 'Kanban Renderer'
   readonly version = '1.0.0'
   readonly capabilities = capabilities
-  
-  get state() { return state.value }
-  get config() { return rendererConfig.value }
+
+  get state() {
+    return state.value
+  }
+  get config() {
+    return rendererConfig.value
+  }
 
   async initialize(container: HTMLElement, config: RendererConfig): Promise<void> {
     containerRef.value = container
@@ -271,23 +281,22 @@ class KanbanRendererImpl implements BaseRenderer {
     return rendererConfig.value
   }
 
-  hitTest(position: { x: number, y: number }): string | null {
+  hitTest(position: { x: number; y: number }): string | null {
     // 简单的碰撞检测实现
     const gridX = Math.floor(position.x / (rendererConfig.value.rowHeight + rendererConfig.value.margin[0]))
     const gridY = Math.floor(position.y / (rendererConfig.value.rowHeight + rendererConfig.value.margin[1]))
-    
-    const hitItem = layout.value.find(item => 
-      gridX >= item.x && gridX < item.x + item.w &&
-      gridY >= item.y && gridY < item.y + item.h
+
+    const hitItem = layout.value.find(
+      item => gridX >= item.x && gridX < item.x + item.w && gridY >= item.y && gridY < item.y + item.h
     )
-    
+
     return hitItem?.i || null
   }
 
-  getBounds(id: string): { position: { x: number, y: number }, size: { width: number, height: number } } | null {
+  getBounds(id: string): { position: { x: number; y: number }; size: { width: number; height: number } } | null {
     const item = layout.value.find(item => item.i === id)
     if (!item) return null
-    
+
     return {
       position: {
         x: item.x * (rendererConfig.value.rowHeight + rendererConfig.value.margin[0]),
@@ -309,23 +318,27 @@ class KanbanRendererImpl implements BaseRenderer {
 const rendererInstance = new KanbanRendererImpl()
 
 // Watch for external data changes
-watch(() => props.items, (newItems) => {
-  layout.value = kanbanAdapter.toGridFormat(newItems)
-}, { deep: true, immediate: true })
+watch(
+  () => props.items,
+  newItems => {
+    layout.value = kanbanAdapter.toGridFormat(newItems)
+  },
+  { deep: true, immediate: true }
+)
 
 // Grid layout event handlers
 const handleLayoutChange = (newLayout: GridLayoutItem[]) => {
   layout.value = newLayout
   const updatedItems = kanbanAdapter.fromGridFormat(newLayout, props.items)
   emit('layout-change', updatedItems)
-  
+
   // Update store
   canvasStore.setItems(updatedItems)
 }
 
 const handleItemResize = (i: string, h: number, w: number, hPx: number, wPx: number) => {
   isResizing.value = true
-  
+
   // Find and update the item
   const itemIndex = layout.value.findIndex(item => item.i === i)
   if (itemIndex !== -1) {
@@ -339,7 +352,7 @@ const handleItemResize = (i: string, h: number, w: number, hPx: number, wPx: num
 
 const handleItemMove = (i: string, newX: number, newY: number) => {
   isDragging.value = true
-  
+
   // Find and update the item
   const itemIndex = layout.value.findIndex(item => item.i === i)
   if (itemIndex !== -1) {
@@ -361,14 +374,19 @@ const handleItemMoved = (i: string, newX: number, newY: number) => {
   handleLayoutChange(layout.value)
 }
 
-const handleContainerResized = (containerNewWidth: number, containerNewHeight: number, colNum: number, rowHeight: number) => {
+const handleContainerResized = (
+  containerNewWidth: number,
+  containerNewHeight: number,
+  colNum: number,
+  rowHeight: number
+) => {
   // Handle container resize if needed
 }
 
 // Item click handler
 const handleItemClick = (event: MouseEvent, itemId: string) => {
   event.stopPropagation()
-  
+
   if (event.ctrlKey || event.metaKey) {
     // Multi-select
     if (selectedItems.value.includes(itemId)) {
@@ -380,7 +398,7 @@ const handleItemClick = (event: MouseEvent, itemId: string) => {
     // Single select
     selectedItems.value = [itemId]
   }
-  
+
   emit('item-select', selectedItems.value)
   canvasStore.selectItems(selectedItems.value)
 }
@@ -399,7 +417,7 @@ let dropZoneId: string | null = null
 
 const setupDropZone = () => {
   if (!containerRef.value || props.readonly) return
-  
+
   dropZoneId = `kanban-${generateId()}`
   const dropZone: DropZone = {
     id: dropZoneId,
@@ -410,7 +428,7 @@ const setupDropZone = () => {
     onDragEnter: handleDragEnter,
     onDragLeave: handleDragLeave
   }
-  
+
   dragDropService.registerDropZone(dropZone)
 }
 
@@ -421,7 +439,7 @@ const cleanupDropZone = () => {
   }
 }
 
-const handleDrop = (data: DragData, position: { x: number, y: number }) => {
+const handleDrop = (data: DragData, position: { x: number; y: number }) => {
   if (data.type === 'card' && data.cardConfig) {
     // 计算首选网格位置
     const preferredPosition = calculateGridPosition(position)
@@ -429,17 +447,17 @@ const handleDrop = (data: DragData, position: { x: number, y: number }) => {
       w: data.cardConfig.preset?.w || 4,
       h: data.cardConfig.preset?.h || 3
     }
-    
+
     // 寻找可用位置（防止重叠）
     const finalPosition = findFreePosition(preferredPosition, itemSize)
-    
+
     console.log('拖拽位置计算:', {
       drop: position,
-      preferred: preferredPosition, 
+      preferred: preferredPosition,
       final: finalPosition,
       size: itemSize
     })
-    
+
     // 创建新的canvas item
     const newItem: BaseCanvasItem = {
       id: generateId(),
@@ -462,8 +480,12 @@ const handleDrop = (data: DragData, position: { x: number, y: number }) => {
       constraints: {
         minWidth: (data.cardConfig.preset?.minW || 2) * rendererConfig.value.rowHeight,
         minHeight: (data.cardConfig.preset?.minH || 2) * rendererConfig.value.rowHeight,
-        maxWidth: data.cardConfig.preset?.maxW ? data.cardConfig.preset.maxW * rendererConfig.value.rowHeight : undefined,
-        maxHeight: data.cardConfig.preset?.maxH ? data.cardConfig.preset.maxH * rendererConfig.value.rowHeight : undefined
+        maxWidth: data.cardConfig.preset?.maxW
+          ? data.cardConfig.preset.maxW * rendererConfig.value.rowHeight
+          : undefined,
+        maxHeight: data.cardConfig.preset?.maxH
+          ? data.cardConfig.preset.maxH * rendererConfig.value.rowHeight
+          : undefined
       },
       zIndex: 1,
       locked: false,
@@ -484,16 +506,16 @@ const handleDrop = (data: DragData, position: { x: number, y: number }) => {
         ...data.metadata
       }
     }
-    
+
     // 添加到画布
     rendererInstance.addItem(newItem)
     canvasStore.addItem(newItem)
-    
+
     console.log('添加新卡片:', newItem)
   }
 }
 
-const handleDragOver = (data: DragData, position: { x: number, y: number }): boolean => {
+const handleDragOver = (data: DragData, position: { x: number; y: number }): boolean => {
   // 只允许卡片类型的拖拽
   return data.type === 'card'
 }
@@ -511,14 +533,14 @@ const handleDragLeave = (data: DragData) => {
 }
 
 // 计算网格位置（带碰撞检测）
-const calculateGridPosition = (dropPosition: { x: number, y: number }) => {
+const calculateGridPosition = (dropPosition: { x: number; y: number }) => {
   const config = rendererConfig.value
   const containerWidth = containerRef.value?.clientWidth || 1200
   const colWidth = containerWidth / config.colNum
-  
+
   const gridX = Math.floor(dropPosition.x / colWidth)
   const gridY = Math.floor(dropPosition.y / (config.rowHeight + config.margin[1]))
-  
+
   return {
     x: Math.max(0, Math.min(gridX, config.colNum - 1)),
     y: Math.max(0, gridY)
@@ -526,43 +548,44 @@ const calculateGridPosition = (dropPosition: { x: number, y: number }) => {
 }
 
 // 寻找空闲位置（防止重叠）
-const findFreePosition = (preferredPosition: { x: number, y: number }, itemSize: { w: number, h: number }) => {
+const findFreePosition = (preferredPosition: { x: number; y: number }, itemSize: { w: number; h: number }) => {
   const config = rendererConfig.value
   const maxCols = config.colNum
-  
+
   // 检查指定位置是否可用
   const isPositionFree = (x: number, y: number, w: number, h: number) => {
     // 检查是否超出边界
     if (x + w > maxCols || x < 0 || y < 0) return false
-    
+
     // 检查是否与现有元素重叠
     return !layout.value.some(item => {
       return !(
         x >= item.x + item.w || // 在右侧
-        x + w <= item.x ||      // 在左侧
+        x + w <= item.x || // 在左侧
         y >= item.y + item.h || // 在下方
-        y + h <= item.y        // 在上方
+        y + h <= item.y // 在上方
       )
     })
   }
-  
+
   const { x: prefX, y: prefY } = preferredPosition
   const { w, h } = itemSize
-  
+
   // 首先检查首选位置
   if (isPositionFree(prefX, prefY, w, h)) {
     return { x: prefX, y: prefY }
   }
-  
+
   // 如果首选位置不可用，从首选位置开始向下找
-  for (let y = prefY; y < prefY + 20; y++) { // 最多向下找20行
+  for (let y = prefY; y < prefY + 20; y++) {
+    // 最多向下找20行
     for (let x = 0; x <= maxCols - w; x++) {
       if (isPositionFree(x, y, w, h)) {
         return { x, y }
       }
     }
   }
-  
+
   // 如果还找不到，就放在最底部
   const maxY = Math.max(0, ...layout.value.map(item => item.y + item.h))
   return { x: 0, y: maxY }
@@ -571,7 +594,7 @@ const findFreePosition = (preferredPosition: { x: number, y: number }, itemSize:
 // 配置变更处理
 const handleConfigChange = (newConfig: any) => {
   console.log('KanbanRenderer: Received config change:', newConfig)
-  
+
   // 更新动态配置
   if (newConfig.columns !== undefined) {
     dynamicConfig.value.colNum = newConfig.columns
@@ -599,7 +622,7 @@ const handleConfigChange = (newConfig: any) => {
     dynamicConfig.value.enableSnap = newConfig.enableSnap
     console.log('Updated enableSnap to:', newConfig.enableSnap)
   }
-  
+
   console.log('KanbanRenderer: Final config:', dynamicConfig.value)
   console.log('KanbanRenderer: Computed rendererConfig:', rendererConfig.value)
 }
@@ -624,11 +647,11 @@ onMounted(() => {
   if (containerRef.value) {
     rendererInstance.initialize(containerRef.value, props.config)
     setupDropZone()
-    
+
     // 初始化网格显示状态
     updateGridDisplay(dynamicConfig.value.showGrid)
   }
-  
+
   // 监听配置变更事件
   eventBus.on('kanban:config-change', handleConfigChange)
 })
@@ -636,7 +659,7 @@ onMounted(() => {
 onUnmounted(() => {
   rendererInstance.destroy()
   cleanupDropZone()
-  
+
   // 清理事件监听
   eventBus.off('kanban:config-change', handleConfigChange)
 })
@@ -713,7 +736,7 @@ onUnmounted(() => {
             :readonly="props.readonly"
             class="h-full w-full"
           />
-          
+
           <!-- 占位符（当找不到对应的canvas item时） -->
           <div v-else class="default-card-content">
             <div class="card-header">
@@ -747,13 +770,17 @@ onUnmounted(() => {
 .kanban-renderer.drag-over {
   background-color: var(--drag-active) !important;
   box-shadow: inset 0 0 0 2px var(--border-active);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .kanban-renderer.drag-over-active {
   background-color: var(--drag-hover) !important;
   box-shadow: inset 0 0 0 1px var(--border-active);
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .grid-item-content {
@@ -770,7 +797,9 @@ onUnmounted(() => {
 .grid-item-selected .grid-item-content {
   box-shadow: 0 0 0 2px var(--border-active);
   border-color: var(--border-active);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  transition:
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .grid-item-dragging .grid-item-content {
@@ -865,7 +894,6 @@ onUnmounted(() => {
   background-color: var(--drag-active);
   transition: background-color 0.3s ease;
 }
-
 
 .kanban-renderer {
   --grid-cols: v-bind('dynamicConfig.colNum');

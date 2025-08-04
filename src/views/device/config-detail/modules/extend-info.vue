@@ -1,31 +1,31 @@
 <script setup lang="tsx">
-import type { Ref } from 'vue';
-import { computed, getCurrentInstance, onMounted, ref } from 'vue';
-import type { DataTableColumns, FormInst } from 'naive-ui';
-import { NButton, NPopconfirm, NSpace, NSwitch, useMessage } from 'naive-ui';
-import { deviceConfigEdit } from '@/service/api/device';
-import { $t } from '@/locales';
+import type { Ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, ref } from 'vue'
+import type { DataTableColumns, FormInst } from 'naive-ui'
+import { NButton, NPopconfirm, NSpace, NSwitch, useMessage } from 'naive-ui'
+import { deviceConfigEdit } from '@/service/api/device'
+import { $t } from '@/locales'
 
-const visible = ref(false);
-const isEdit = ref(false);
-const editIndex = ref(-1);
-const extendFormRef = ref<HTMLElement & FormInst>();
-const extendForm = ref(defaultExtendForm());
-const message = useMessage();
+const visible = ref(false)
+const isEdit = ref(false)
+const editIndex = ref(-1)
+const extendFormRef = ref<HTMLElement & FormInst>()
+const extendForm = ref(defaultExtendForm())
+const message = useMessage()
 
 interface Emits {
-  (e: 'upDateConfig'): void;
+  (e: 'upDateConfig'): void
 }
 
-const emit = defineEmits<Emits>();
+const emit = defineEmits<Emits>()
 
 interface Props {
-  configInfo?: object | any;
+  configInfo?: object | any
 }
 
 const props = withDefaults(defineProps<Props>(), {
   configInfo: null
-});
+})
 
 function defaultExtendForm() {
   return {
@@ -34,7 +34,7 @@ function defaultExtendForm() {
     default_value: null,
     desc: null,
     enable: false
-  };
+  }
 }
 
 const extendFormRules = ref({
@@ -48,8 +48,8 @@ const extendFormRules = ref({
     message: $t('generate.select-type'),
     trigger: 'change'
   }
-});
-const extendInfoList = ref([] as any[]);
+})
+const extendInfoList = ref([] as any[])
 const typeOptions = ref([
   {
     label: 'String',
@@ -63,40 +63,40 @@ const typeOptions = ref([
     label: 'Boolean',
     value: 'Boolean'
   }
-]);
+])
 const addDevice = () => {
-  visible.value = true;
-};
-const modalClose = () => {};
+  visible.value = true
+}
+const modalClose = () => {}
 const handleClose = () => {
-  extendFormRef.value?.restoreValidation();
-  extendForm.value = defaultExtendForm();
-  visible.value = false;
-  isEdit.value = false;
-  editIndex.value = -1;
-};
+  extendFormRef.value?.restoreValidation()
+  extendForm.value = defaultExtendForm()
+  visible.value = false
+  isEdit.value = false
+  editIndex.value = -1
+}
 
 const handleSave = async () => {
-  const postData = props.configInfo;
-  postData.additional_info = JSON.stringify(extendInfoList.value);
-  const res = await deviceConfigEdit(postData);
+  const postData = props.configInfo
+  postData.additional_info = JSON.stringify(extendInfoList.value)
+  const res = await deviceConfigEdit(postData)
   if (!res.error) {
-    message.success($t('common.modifySuccess'));
-    emit('upDateConfig');
+    message.success($t('common.modifySuccess'))
+    emit('upDateConfig')
   }
-  handleClose();
-};
+  handleClose()
+}
 
 const handleSubmit = async () => {
-  await extendFormRef?.value?.validate();
+  await extendFormRef?.value?.validate()
   if (editIndex.value >= 0) {
-    extendInfoList.value[editIndex.value] = extendForm.value;
+    extendInfoList.value[editIndex.value] = extendForm.value
   } else {
-    extendForm.value.enable = false;
-    extendInfoList.value.push(extendForm.value);
+    extendForm.value.enable = false
+    extendInfoList.value.push(extendForm.value)
   }
-  handleSave();
-};
+  handleSave()
+}
 
 const handleSwitchChange = async row => {
   const index = (extendInfoList.value || []).findIndex(item => {
@@ -105,13 +105,13 @@ const handleSwitchChange = async row => {
       item.type === row.type &&
       item.default_value === row.default_value &&
       item.desc === row.desc
-    );
-  });
+    )
+  })
   if (index >= 0) {
-    extendInfoList.value[index].enable = !extendInfoList.value[index].enable;
-    handleSave();
+    extendInfoList.value[index].enable = !extendInfoList.value[index].enable
+    handleSave()
   }
-};
+}
 
 const handleDeleteTable = async row => {
   const index = (extendInfoList.value || []).findIndex(item => {
@@ -120,14 +120,14 @@ const handleDeleteTable = async row => {
       item.type === row.type &&
       item.default_value === row.default_value &&
       item.desc === row.desc
-    );
-  });
+    )
+  })
   if (index >= 0) {
-    extendInfoList.value.splice(index, 1);
-    handleSave();
+    extendInfoList.value.splice(index, 1)
+    handleSave()
   }
-  window.$message?.info($t('common.extensionInfoDeleted'));
-};
+  window.$message?.info($t('common.extensionInfoDeleted'))
+}
 const handleEditTable = async row => {
   editIndex.value = (extendInfoList.value || []).findIndex(item => {
     return (
@@ -135,13 +135,13 @@ const handleEditTable = async row => {
       item.type === row.type &&
       item.default_value === row.default_value &&
       item.desc === row.desc
-    );
-  });
+    )
+  })
 
-  extendForm.value = row;
-  isEdit.value = true;
-  visible.value = true;
-};
+  extendForm.value = row
+  isEdit.value = true
+  visible.value = true
+}
 
 const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
   {
@@ -174,7 +174,7 @@ const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
     title: $t('page.manage.common.status.enable'),
     align: 'left',
     render: (row: any) => {
-      return <NSwitch value={Boolean(row.enable)} onChange={() => handleSwitchChange(row)} />;
+      return <NSwitch value={Boolean(row.enable)} onChange={() => handleSwitchChange(row)} />
     }
   },
   {
@@ -199,21 +199,21 @@ const columns: Ref<DataTableColumns<ServiceManagement.Service>> = ref([
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-]);
+])
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
 onMounted(() => {
   if (!props.configInfo.additional_info || props.configInfo.additional_info === '{}') {
-    extendInfoList.value = [];
+    extendInfoList.value = []
   } else {
-    extendInfoList.value = JSON.parse(props.configInfo.additional_info);
+    extendInfoList.value = JSON.parse(props.configInfo.additional_info)
   }
-});
+})
 </script>
 
 <template>

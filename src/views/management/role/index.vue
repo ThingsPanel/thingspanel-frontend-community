@@ -1,28 +1,28 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import { NButton, NPopconfirm, NSpace } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import { computed, getCurrentInstance, reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import { NButton, NPopconfirm, NSpace } from 'naive-ui'
+import type { DataTableColumns, PaginationProps } from 'naive-ui'
 // import { userStatusLabels, userStatusOptions } from '@/constants'
-import { useBoolean, useLoading } from '@sa/hooks';
-import { delrles, rlesList } from '@/service/api';
-import { $t } from '@/locales';
-import { formatDateTime } from '@/utils/common/datetime';
-import TableActionModal from './modules/table-action-modal.vue';
-import EditPermissionModal from './modules/edit-permission-modal.vue';
-import EditPasswordModal from './modules/edit-password-modal.vue';
-import type { ModalType } from './modules/table-action-modal.vue';
+import { useBoolean, useLoading } from '@sa/hooks'
+import { delrles, rlesList } from '@/service/api'
+import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
+import TableActionModal from './modules/table-action-modal.vue'
+import EditPermissionModal from './modules/edit-permission-modal.vue'
+import EditPasswordModal from './modules/edit-password-modal.vue'
+import type { ModalType } from './modules/table-action-modal.vue'
 // import ColumnSetting from './components/column-setting.vue'
 
-const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: visible, setTrue: openModal } = useBoolean();
-const { bool: editPwdVisible } = useBoolean();
-const { bool: editPermissionVisible, setTrue: openEditPermissionModal } = useBoolean();
+const { loading, startLoading, endLoading } = useLoading(false)
+const { bool: visible, setTrue: openModal } = useBoolean()
+const { bool: editPwdVisible } = useBoolean()
+const { bool: editPermissionVisible, setTrue: openEditPermissionModal } = useBoolean()
 
 type QueryFormModel = Pick<UserManagement.User, 'email' | 'name' | 'status'> & {
-  page: number;
-  page_size: number;
-};
+  page: number
+  page_size: number
+}
 
 const queryParams = reactive<QueryFormModel>({
   email: null,
@@ -30,21 +30,21 @@ const queryParams = reactive<QueryFormModel>({
   status: null,
   page: 1,
   page_size: 10
-});
+})
 
-const tableData = ref<UserManagement.User[]>([]);
+const tableData = ref<UserManagement.User[]>([])
 
 function setTableData(data: UserManagement.User[]) {
-  tableData.value = data;
+  tableData.value = data
 }
 
 async function getTableData() {
-  startLoading();
-  const { data } = await rlesList(queryParams);
+  startLoading()
+  const { data } = await rlesList(queryParams)
   if (data) {
-    const list: UserManagement.User[] = data.list;
-    setTableData(list);
-    endLoading();
+    const list: UserManagement.User[] = data.list
+    setTableData(list)
+    endLoading()
   }
 }
 
@@ -67,7 +67,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
     minWidth: '100px',
     align: 'left',
     render: row => {
-      return formatDateTime(row.created_at);
+      return formatDateTime(row.created_at)
     }
   },
   {
@@ -76,7 +76,7 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
     minWidth: '130px',
     align: 'left',
     render: row => {
-      return formatDateTime(row.updated_at);
+      return formatDateTime(row.updated_at)
     }
   },
   {
@@ -104,26 +104,26 @@ const columns: Ref<DataTableColumns<UserManagement.User>> = ref([
             {$t('page.manage.role.editPermission')}
           </NButton>
         </NSpace>
-      );
+      )
     }
   }
-]) as Ref<DataTableColumns<UserManagement.User>>;
+]) as Ref<DataTableColumns<UserManagement.User>>
 
-const modalType = ref<ModalType>('add');
+const modalType = ref<ModalType>('add')
 
 function setModalType(type: ModalType) {
-  modalType.value = type;
+  modalType.value = type
 }
 
-const editData = ref<UserManagement.User | null>(null);
+const editData = ref<UserManagement.User | null>(null)
 
 function setEditData(data: UserManagement.User | null) {
-  editData.value = data;
+  editData.value = data
 }
 
 function handleAddTable() {
-  openModal();
-  setModalType('add');
+  openModal()
+  setModalType('add')
 }
 
 // function handleEditPwd(rowId: string) {
@@ -135,27 +135,27 @@ function handleAddTable() {
 // }
 
 function handleEditTable(rowId: string) {
-  const findItem = tableData.value.find(item => item.id === rowId);
+  const findItem = tableData.value.find(item => item.id === rowId)
   if (findItem) {
-    setEditData(findItem);
+    setEditData(findItem)
   }
-  setModalType('edit');
-  openModal();
+  setModalType('edit')
+  openModal()
 }
 
 function handleEditPermission(rowId: string) {
-  const findItem = tableData.value.find(item => item.id === rowId);
+  const findItem = tableData.value.find(item => item.id === rowId)
   if (findItem) {
-    setEditData(findItem);
+    setEditData(findItem)
   }
-  openEditPermissionModal();
+  openEditPermissionModal()
 }
 
 async function handleDeleteTable(rowId: string) {
-  const data = await delrles(rowId);
+  const data = await delrles(rowId)
   if (!data.error) {
-    window.$message?.success($t('common.deleteSuccess'));
-    getTableData();
+    window.$message?.success($t('common.deleteSuccess'))
+    getTableData()
   }
 }
 
@@ -165,18 +165,18 @@ const pagination: PaginationProps = reactive({
   showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    pagination.page = page;
-    queryParams.page = page;
-    getTableData();
+    pagination.page = page
+    queryParams.page = page
+    getTableData()
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
-    queryParams.page = 1;
-    queryParams.page_size = pageSize;
-    getTableData();
+    pagination.pageSize = pageSize
+    pagination.page = 1
+    queryParams.page = 1
+    queryParams.page_size = pageSize
+    getTableData()
   }
-});
+})
 
 // function handleQuery() {
 //   init();
@@ -193,14 +193,14 @@ const pagination: PaginationProps = reactive({
 // }
 
 function init() {
-  getTableData();
+  getTableData()
 }
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
 // 初始化
-init();
+init()
 </script>
 
 <template>

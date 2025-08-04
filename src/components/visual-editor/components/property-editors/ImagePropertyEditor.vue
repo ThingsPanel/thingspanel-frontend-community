@@ -3,41 +3,29 @@
     <n-form size="small" label-placement="left" label-width="60">
       <!-- 图片链接 -->
       <n-form-item label="链接">
-        <n-input 
-          :value="config.src"
-          placeholder="请输入图片URL"
-          @update:value="updateConfig('src', $event)"
-        />
+        <n-input :value="config.src" placeholder="请输入图片URL" @update:value="updateConfig('src', $event)" />
       </n-form-item>
-      
+
       <!-- 替代文本 -->
       <n-form-item label="Alt">
-        <n-input 
-          :value="config.alt"
-          placeholder="图片描述文本"
-          @update:value="updateConfig('alt', $event)"
-        />
+        <n-input :value="config.alt" placeholder="图片描述文本" @update:value="updateConfig('alt', $event)" />
       </n-form-item>
-      
+
       <!-- 适应方式 -->
       <n-form-item label="适应">
-        <n-select 
+        <n-select
           :value="config.objectFit"
           size="small"
           :options="objectFitOptions"
           @update:value="updateConfig('objectFit', $event)"
         />
       </n-form-item>
-      
+
       <!-- 预设图片快速选择 -->
       <n-form-item label="预设">
         <n-grid :cols="3" :x-gap="4" :y-gap="4">
           <n-gi v-for="preset in presets" :key="preset.src">
-            <div 
-              class="preset-image"
-              :class="{ active: config.src === preset.src }"
-              @click="selectPreset(preset)"
-            >
+            <div class="preset-image" :class="{ active: config.src === preset.src }" @click="selectPreset(preset)">
               <img :src="preset.src" :alt="preset.alt" />
               <div class="preset-overlay">
                 <n-icon size="16" color="white">
@@ -109,7 +97,7 @@ const updateConfig = (key: keyof ImageWidgetConfig, value: any) => {
 }
 
 // 选择预设图片
-const selectPreset = (preset: typeof presets[0]) => {
+const selectPreset = (preset: (typeof presets)[0]) => {
   emit('update', {
     src: preset.src,
     alt: preset.alt

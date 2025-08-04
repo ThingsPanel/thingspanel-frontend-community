@@ -4,12 +4,7 @@
       <h3 class="title">{{ title }}</h3>
       <div class="body">
         <SvgIcon :icon="icon" class="icon" />
-        <CountTo
-          :prefix="unit"
-          :start-value="0"
-          :end-value="data.deviceTotal"
-          class="count-to"
-        />
+        <CountTo :prefix="unit" :start-value="0" :end-value="data.deviceTotal" class="count-to" />
       </div>
     </div>
   </GradientBg>

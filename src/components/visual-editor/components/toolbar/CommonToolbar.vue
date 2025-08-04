@@ -39,8 +39,8 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 // 计算属性
-const saveButtonType = computed(() => props.hasChanges ? 'primary' : 'default')
-const saveButtonText = computed(() => props.isSaving ? '保存中...' : $t('common.save'))
+const saveButtonType = computed(() => (props.hasChanges ? 'primary' : 'default'))
+const saveButtonText = computed(() => (props.isSaving ? '保存中...' : $t('common.save')))
 
 // 事件处理
 const handleSave = () => emit('save')
@@ -81,12 +81,7 @@ const handleCenterView = () => emit('center-view')
       <!-- 撤销/重做 -->
       <NTooltip trigger="hover">
         <template #trigger>
-          <NButton
-            size="small"
-            type="tertiary"
-            :disabled="readonly || !canUndo"
-            @click="handleUndo"
-          >
+          <NButton size="small" type="tertiary" :disabled="readonly || !canUndo" @click="handleUndo">
             <template #icon>
               <SvgIcon icon="material-symbols:undo" />
             </template>
@@ -97,12 +92,7 @@ const handleCenterView = () => emit('center-view')
 
       <NTooltip trigger="hover">
         <template #trigger>
-          <NButton
-            size="small"
-            type="tertiary"
-            :disabled="readonly || !canRedo"
-            @click="handleRedo"
-          >
+          <NButton size="small" type="tertiary" :disabled="readonly || !canRedo" @click="handleRedo">
             <template #icon>
               <SvgIcon icon="material-symbols:redo" />
             </template>
@@ -116,11 +106,7 @@ const handleCenterView = () => emit('center-view')
       <!-- 视图控制 -->
       <NTooltip trigger="hover">
         <template #trigger>
-          <NButton
-            size="small"
-            type="tertiary"
-            @click="handleZoomOut"
-          >
+          <NButton size="small" type="tertiary" @click="handleZoomOut">
             <template #icon>
               <SvgIcon icon="material-symbols:zoom-out" />
             </template>
@@ -131,11 +117,7 @@ const handleCenterView = () => emit('center-view')
 
       <NTooltip trigger="hover">
         <template #trigger>
-          <NButton
-            size="small"
-            type="tertiary"
-            @click="handleResetZoom"
-          >
+          <NButton size="small" type="tertiary" @click="handleResetZoom">
             <template #icon>
               <SvgIcon icon="material-symbols:fit-screen" />
             </template>
@@ -146,11 +128,7 @@ const handleCenterView = () => emit('center-view')
 
       <NTooltip trigger="hover">
         <template #trigger>
-          <NButton
-            size="small"
-            type="tertiary"
-            @click="handleZoomIn"
-          >
+          <NButton size="small" type="tertiary" @click="handleZoomIn">
             <template #icon>
               <SvgIcon icon="material-symbols:zoom-in" />
             </template>
@@ -164,11 +142,7 @@ const handleCenterView = () => emit('center-view')
       <!-- 画布控制 -->
       <NTooltip trigger="hover">
         <template #trigger>
-          <NButton
-            size="small"
-            type="tertiary"
-            @click="handleFitContent"
-          >
+          <NButton size="small" type="tertiary" @click="handleFitContent">
             <template #icon>
               <SvgIcon icon="material-symbols:fit-width" />
             </template>
@@ -179,11 +153,7 @@ const handleCenterView = () => emit('center-view')
 
       <NTooltip trigger="hover">
         <template #trigger>
-          <NButton
-            size="small"
-            type="tertiary"
-            @click="handleCenterView"
-          >
+          <NButton size="small" type="tertiary" @click="handleCenterView">
             <template #icon>
               <SvgIcon icon="material-symbols:center-focus-strong" />
             </template>
@@ -197,13 +167,7 @@ const handleCenterView = () => emit('center-view')
       <!-- 重置 -->
       <NTooltip trigger="hover">
         <template #trigger>
-          <NButton
-            size="small"
-            type="warning"
-            secondary
-            :disabled="readonly"
-            @click="handleReset"
-          >
+          <NButton size="small" type="warning" secondary :disabled="readonly" @click="handleReset">
             <template #icon>
               <SvgIcon icon="material-symbols:refresh" />
             </template>

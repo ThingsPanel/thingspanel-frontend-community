@@ -66,9 +66,8 @@ const filteredOptions = computed(() => {
     return props.options
   }
   const keyword = searchKeyword.value.toLowerCase().trim()
-  return props.options.filter(option =>
-    option.device_name.toLowerCase().includes(keyword) ||
-    option.device_id.toLowerCase().includes(keyword)
+  return props.options.filter(
+    option => option.device_name.toLowerCase().includes(keyword) || option.device_id.toLowerCase().includes(keyword)
   )
 })
 
@@ -76,7 +75,7 @@ const filteredOptions = computed(() => {
 /** 处理无限滚动加载事件 */
 const handleLoadMore = () => {
   if (!props.loading && props.hasMore) {
-    console.log('Emitting loadMore'); // 调试日志
+    console.log('Emitting loadMore') // 调试日志
     emit('loadMore')
   }
 }
@@ -197,7 +196,11 @@ watch(
             <span class="option-label">{{ option.device_name }}</span>
           </div>
         </div>
-        <NEmpty v-else-if="!props.loading" :description="searchKeyword ? '未找到匹配的设备' : ($t('common.noData') || '暂无数据')" class="empty-placeholder" />
+        <NEmpty
+          v-else-if="!props.loading"
+          :description="searchKeyword ? '未找到匹配的设备' : $t('common.noData') || '暂无数据'"
+          class="empty-placeholder"
+        />
 
         <!-- 加载中提示：放在 NInfiniteScroll 内容的末尾 -->
         <NFlex v-if="props.loading" justify="center" class="loading-indicator">

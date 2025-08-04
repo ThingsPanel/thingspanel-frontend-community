@@ -1,18 +1,18 @@
 <script setup lang="tsx">
-import { onMounted, ref } from 'vue';
-import { NButton, NPopconfirm, NSpace } from 'naive-ui';
-import type { DataTableColumn } from 'naive-ui';
-import useLoadingEmpty from '@/hooks/common/use-loading-empty';
-import { getRandomInteger } from '@/utils/common/number';
-import { $t } from '@/locales';
+import { onMounted, ref } from 'vue'
+import { NButton, NPopconfirm, NSpace } from 'naive-ui'
+import type { DataTableColumn } from 'naive-ui'
+import useLoadingEmpty from '@/hooks/common/use-loading-empty'
+import { getRandomInteger } from '@/utils/common/number'
+import { $t } from '@/locales'
 
 interface DataSource {
-  name: string;
-  age: number;
-  address: string;
+  name: string
+  age: number
+  address: string
 }
 
-const { loading, startLoading, endLoading, empty, setEmpty } = useLoadingEmpty();
+const { loading, startLoading, endLoading, empty, setEmpty } = useLoadingEmpty()
 
 const columns: DataTableColumn<DataSource>[] = [
   {
@@ -40,14 +40,14 @@ const columns: DataTableColumn<DataSource>[] = [
           <NButton
             size={'small'}
             onClick={() => {
-              handleEdit(row.name);
+              handleEdit(row.name)
             }}
           >
             $t('common.edit')
           </NButton>
           <NPopconfirm
             onPositiveClick={() => {
-              handleDelete(row.name);
+              handleDelete(row.name)
             }}
           >
             {{
@@ -56,12 +56,12 @@ const columns: DataTableColumn<DataSource>[] = [
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-];
+]
 
-const dataSource = ref<DataSource[]>([]);
+const dataSource = ref<DataSource[]>([])
 
 function createDataSource(): DataSource[] {
   return Array(100)
@@ -71,26 +71,26 @@ function createDataSource(): DataSource[] {
         name: `Name${index}`,
         age: getRandomInteger(30, 20),
         address: $t('card.china')
-      };
-    });
+      }
+    })
 }
 
 function getDataSource() {
-  startLoading();
+  startLoading()
   setTimeout(() => {
-    dataSource.value = createDataSource();
-    endLoading();
-    setEmpty(!dataSource.value.length);
-  }, 1000);
+    dataSource.value = createDataSource()
+    endLoading()
+    setEmpty(!dataSource.value.length)
+  }, 1000)
 }
 
 function getEmptyDataSource() {
-  startLoading();
+  startLoading()
   setTimeout(() => {
-    dataSource.value = [];
-    endLoading();
-    setEmpty(!dataSource.value.length);
-  }, 1000);
+    dataSource.value = []
+    endLoading()
+    setEmpty(!dataSource.value.length)
+  }, 1000)
 }
 
 function handleEdit(_name: string) {
@@ -102,8 +102,8 @@ function handleDelete(_name: string) {
 }
 
 onMounted(() => {
-  getDataSource();
-});
+  getDataSource()
+})
 </script>
 
 <template>

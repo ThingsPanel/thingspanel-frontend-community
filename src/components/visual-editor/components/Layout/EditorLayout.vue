@@ -4,24 +4,28 @@
     <div
       v-if="showToolbar"
       class="toolbar-area flex-shrink-0 h-12 px-4 flex items-center justify-between transition-all duration-300"
-      style="background-color: var(--toolbar-bg); border-bottom: 1px solid var(--panel-border);"
+      style="background-color: var(--toolbar-bg); border-bottom: 1px solid var(--panel-border)"
     >
       <slot name="toolbar" :mode="props.mode" :isEditMode="isEditMode" />
     </div>
 
     <!-- 主内容区域 -->
-    <div class="main-content flex-1 flex overflow-hidden" style="background-color: var(--panel-bg);">
+    <div class="main-content flex-1 flex overflow-hidden" style="background-color: var(--panel-bg)">
       <!-- 左侧区域 - 仅当编辑模式、有插槽内容且未收起时显示 -->
       <div
         v-if="showLeft"
         class="left-area flex-shrink-0 overflow-auto transition-all duration-300"
-        :style="{ width: `${leftWidth}px`, backgroundColor: 'var(--sidebar-bg)', borderRight: '1px solid var(--panel-border)' }"
+        :style="{
+          width: `${leftWidth}px`,
+          backgroundColor: 'var(--sidebar-bg)',
+          borderRight: '1px solid var(--panel-border)'
+        }"
       >
         <slot name="left" :mode="props.mode" :isEditMode="isEditMode" />
       </div>
 
       <!-- 中央编辑区域 - 始终显示 -->
-      <div class="main-area flex-1 overflow-auto transition-all duration-300" style="background-color: var(--panel-bg);">
+      <div class="main-area flex-1 overflow-auto transition-all duration-300" style="background-color: var(--panel-bg)">
         <slot name="main" :mode="props.mode" :isEditMode="isEditMode" />
       </div>
 
@@ -29,7 +33,11 @@
       <div
         v-if="showRight"
         class="right-area flex-shrink-0 overflow-auto transition-all duration-300"
-        :style="{ width: `${rightWidth}px`, backgroundColor: 'var(--sidebar-bg)', borderLeft: '1px solid var(--panel-border)' }"
+        :style="{
+          width: `${rightWidth}px`,
+          backgroundColor: 'var(--sidebar-bg)',
+          borderLeft: '1px solid var(--panel-border)'
+        }"
       >
         <slot name="right" :mode="props.mode" :isEditMode="isEditMode" />
       </div>

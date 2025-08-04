@@ -1,8 +1,8 @@
 <script setup lang="tsx">
-import { onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import type { TransferRenderSourceList } from 'naive-ui';
-import { NTree } from 'naive-ui';
+import { onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import type { TransferRenderSourceList } from 'naive-ui'
+import { NTree } from 'naive-ui'
 import {
   deleteDeviceGroupRelation,
   deleteDevice,
@@ -13,45 +13,45 @@ import {
   deviceUpdateConfig,
   getDeviceConfigList,
   getDeviceGroupRelation
-} from '@/service/api';
-import { useDeviceDataStore } from '@/store/modules/device';
-import { useTabStore } from '@/store/modules/tab';
-import { getTabIdByRoute } from '@/store/modules/tab/shared';
-import { $t } from '@/locales';
+} from '@/service/api'
+import { useDeviceDataStore } from '@/store/modules/device'
+import { useTabStore } from '@/store/modules/tab'
+import { getTabIdByRoute } from '@/store/modules/tab/shared'
+import { $t } from '@/locales'
 
 const props = defineProps<{
-  id: string;
-  online: string;
-}>();
-const valueRef = ref<Array<string | number>>([]);
-const device_coding = ref<string>('');
-const emit = defineEmits(['change']);
-const is_online = ref<string>('');
-const treeData = ref();
+  id: string
+  online: string
+}>()
+const valueRef = ref<Array<string | number>>([])
+const device_coding = ref<string>('')
+const emit = defineEmits(['change'])
+const is_online = ref<string>('')
+const treeData = ref()
 type Option = {
-  label: string;
-  value: string;
-  children?: Option[];
-};
-const options = ref<Option[]>();
-const sOptions = ref<any[]>([{ label: $t('generate.unbind'), value: '' }]);
-const route = useRoute();
-const { query } = route;
-const { removeTab } = useTabStore();
-const currentTabId = getTabIdByRoute(route);
+  label: string
+  value: string
+  children?: Option[]
+}
+const options = ref<Option[]>()
+const sOptions = ref<any[]>([{ label: $t('generate.unbind'), value: '' }])
+const route = useRoute()
+const { query } = route
+const { removeTab } = useTabStore()
+const currentTabId = getTabIdByRoute(route)
 const deviceConfigList = async name => {
   const { data, error } = await getDeviceConfigList({
     page: 1,
     page_size: 99,
     name
-  });
+  })
   if (!error && data) {
     const tempSOptions = data?.list?.map(item => {
-      return { label: item.name, value: item.id };
-    });
-    sOptions.value = sOptions.value.concat(tempSOptions);
+      return { label: item.name, value: item.id }
+    })
+    sOptions.value = sOptions.value.concat(tempSOptions)
   }
-};
+}
 
 function transformDataToOptions(data) {
   // 定义转换函数
@@ -61,57 +61,57 @@ function transformDataToOptions(data) {
       label: item.group.name,
       value: item.group.id,
       children: undefined
-    };
+    }
 
     // 如果存在子项，则递归转换
     if (item.children && item.children.length > 0) {
-      option.children = item.children.map(transform);
+      option.children = item.children.map(transform)
     }
 
-    return option;
-  };
+    return option
+  }
 
   // 对输入的数据应用转换函数
-  return data.map(transform);
+  return data.map(transform)
 }
 
 const getTreeData = async () => {
-  const { data, error } = await deviceGroupTree({});
+  const { data, error } = await deviceGroupTree({})
   if (!error && data) {
-    treeData.value = transformDataToOptions(data);
-    options.value = flattenTree(treeData.value);
+    treeData.value = transformDataToOptions(data)
+    options.value = flattenTree(treeData.value)
   }
-};
+}
 const getTreeRelationData = async () => {
-  const { data, error } = await getDeviceGroupRelation({ device_id: props.id });
+  const { data, error } = await getDeviceGroupRelation({ device_id: props.id })
   if (!error && data) {
-    valueRef.value = data?.map(item => item.group_id);
+    valueRef.value = data?.map(item => item.group_id)
   }
-};
-const deviceDataStore = useDeviceDataStore();
-const selectedValues = ref('');
+}
+const deviceDataStore = useDeviceDataStore()
+const selectedValues = ref('')
 
 function flattenTree(list: undefined | Option[]): Option[] {
-  const result: Option[] = [];
+  const result: Option[] = []
 
   function flatten(_list: Option[] = []) {
     _list.forEach(item => {
-      result.push(item);
-      flatten(item.children);
-    });
+      result.push(item)
+      flatten(item.children)
+    })
   }
 
-  flatten(list);
-  return result;
+  flatten(list)
+  return result
 }
 
 const handleUpdateValue = async () => {
   const { error }: any = await deviceLocation({
     id: props.id,
     is_online: Number(is_online.value)
-  });
-  !error && emit('change');
-};
+  })
+  !error && emit('change')
+}
 const renderSourceList: TransferRenderSourceList = ({ pattern }) => {
   return (
     <NTree
@@ -125,59 +125,59 @@ const renderSourceList: TransferRenderSourceList = ({ pattern }) => {
       blockLine
       selectable={false}
       onUpdateCheckedKeys={(keys, _option, meta) => {
-        valueRef.value = keys;
+        valueRef.value = keys
         if (meta.node) {
           if (meta.action === 'check') {
             deviceGroupRelation({
               group_id: meta.node.value,
               device_id_list: [props.id]
-            });
+            })
           } else {
             deleteDeviceGroupRelation({
               group_id: meta.node.value,
               device_id: props.id
-            });
+            })
           }
         }
         //
       }}
       pattern={pattern}
     />
-  );
-};
+  )
+}
 watch(
   () => valueRef.value,
   (value, oldValue) => {
     if (oldValue.length > value.length) {
-      const difference = oldValue.filter(x => !value.includes(x));
+      const difference = oldValue.filter(x => !value.includes(x))
       difference.forEach(item => {
-        deleteDeviceGroupRelation({ group_id: item, device_id: props.id });
-      });
+        deleteDeviceGroupRelation({ group_id: item, device_id: props.id })
+      })
     }
   }
-);
+)
 
 const initData = async () => {
-  const result = await deviceDetail(query.d_id as string);
-  device_coding.value = result?.data?.device_number;
-  selectedValues.value = result?.data?.device_config_id || '';
-  getTreeData();
-  getTreeRelationData();
-};
+  const result = await deviceDetail(query.d_id as string)
+  device_coding.value = result?.data?.device_number
+  selectedValues.value = result?.data?.device_config_id || ''
+  getTreeData()
+  getTreeRelationData()
+}
 
 onMounted(() => {
-  is_online.value = String(props.online);
-  initData();
-  deviceConfigList('');
-});
+  is_online.value = String(props.online)
+  initData()
+  deviceConfigList('')
+})
 
 const selectConfig = v => {
-  selectedValues.value = v;
-  deviceUpdateConfig({ device_id: props.id, device_config_id: v });
-  deviceDataStore.fetchData(props.id);
-  initData();
-  emit('change');
-};
+  selectedValues.value = v
+  deviceUpdateConfig({ device_id: props.id, device_config_id: v })
+  deviceDataStore.fetchData(props.id)
+  initData()
+  emit('change')
+}
 
 const handleDeleteDevice = () => {
   // 二次确认删除
@@ -187,23 +187,23 @@ const handleDeleteDevice = () => {
     positiveText: $t('common.confirm'),
     negativeText: $t('common.cancel'),
     onPositiveClick: () => {
-      deleteD(props.id);
+      deleteD(props.id)
     }
-  });
-};
+  })
+}
 
 const deleteD = async (id: string) => {
   try {
-    await deleteDevice({ id });
-    console.log(1);
-    window.$message?.success($t('common.deleteSuccess'));
+    await deleteDevice({ id })
+    console.log(1)
+    window.$message?.success($t('common.deleteSuccess'))
     // 关闭当前标签页
-    await removeTab(currentTabId);
+    await removeTab(currentTabId)
   } catch (error) {
-    window.$message?.error($t('common.deleteFailed'));
-    console.error('删除设备失败:', error);
+    window.$message?.error($t('common.deleteFailed'))
+    console.error('删除设备失败:', error)
   }
-};
+}
 </script>
 
 <template>
@@ -253,11 +253,7 @@ const deleteD = async (id: string) => {
     </div>
 
     <div class="flex items-center">
-      <n-button
-        type="error"
-        size="small"
-        @click="handleDeleteDevice"
-      >
+      <n-button type="error" size="small" @click="handleDeleteDevice">
         {{ $t('common.delete') }}
       </n-button>
     </div>

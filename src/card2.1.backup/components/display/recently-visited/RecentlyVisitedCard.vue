@@ -106,7 +106,14 @@ const navigateTo = (path: string, query?: Record<string, any>) => {
   padding: 16px 0;
 }
 /* Custom scrollbar */
-.list::-webkit-scrollbar { width: 4px; }
-.list::-webkit-scrollbar-thumb { background-color: #ccc; border-radius: 4px; }
-.list::-webkit-scrollbar-track { background-color: transparent; }
+.list::-webkit-scrollbar {
+  width: 4px;
+}
+.list::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+.list::-webkit-scrollbar-track {
+  background-color: transparent;
+}
 </style>

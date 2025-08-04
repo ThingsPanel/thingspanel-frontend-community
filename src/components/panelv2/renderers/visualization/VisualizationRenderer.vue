@@ -5,9 +5,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { useThemeStore } from '@/store/modules/theme'
-import type { 
-  BaseRenderer, 
-  RendererConfig, 
+import type {
+  BaseRenderer,
+  RendererConfig,
   RendererCapabilities,
   RendererState,
   RendererEvents
@@ -25,7 +25,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   config: () => ({}),
-  items: () => ([]),
+  items: () => [],
   readonly: false
 })
 
@@ -121,10 +121,10 @@ const canvasStyle = computed(() => ({
   transform: `scale(${viewport.value.zoom}) translate(${viewport.value.offsetX}px, ${viewport.value.offsetY}px)`,
   transformOrigin: '0 0',
   position: 'relative' as const,
-  backgroundImage: rendererConfig.value.showGrid 
+  backgroundImage: rendererConfig.value.showGrid
     ? `linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px)`
     : 'none',
-  backgroundSize: rendererConfig.value.showGrid 
+  backgroundSize: rendererConfig.value.showGrid
     ? `${rendererConfig.value.gridSize}px ${rendererConfig.value.gridSize}px`
     : 'auto'
 }))
@@ -135,9 +135,13 @@ class VisualizationRendererImpl implements BaseRenderer {
   readonly name = 'Visualization Renderer'
   readonly version = '1.0.0'
   readonly capabilities = capabilities
-  
-  get state() { return state.value }
-  get config() { return rendererConfig.value }
+
+  get state() {
+    return state.value
+  }
+  get config() {
+    return rendererConfig.value
+  }
 
   async initialize(container: HTMLElement, config: RendererConfig): Promise<void> {
     containerRef.value = container
@@ -230,20 +234,20 @@ class VisualizationRendererImpl implements BaseRenderer {
       offsetX: (containerWidth - bounds.width * scale) / 2 - bounds.minX * scale,
       offsetY: (containerHeight - bounds.height * scale) / 2 - bounds.minY * scale
     }
-    
+
     emit('viewport-change', viewport.value)
   }
 
   centerView(): void {
     const containerWidth = containerRef.value?.clientWidth || 800
     const containerHeight = containerRef.value?.clientHeight || 600
-    
+
     viewport.value = {
       zoom: 1,
       offsetX: (containerWidth - rendererConfig.value.width) / 2,
       offsetY: (containerHeight - rendererConfig.value.height) / 2
     }
-    
+
     emit('viewport-change', viewport.value)
   }
 
@@ -295,23 +299,23 @@ class VisualizationRendererImpl implements BaseRenderer {
 
   hitTest(position: Position): string | null {
     const adjustedPos = this.screenToCanvas(position)
-    
+
     // 从上到下检测（高zIndex优先）
     const sortedItems = [...items.value].sort((a, b) => b.zIndex - a.zIndex)
-    
+
     for (const item of sortedItems) {
       if (this.isPointInItem(adjustedPos, item)) {
         return item.id
       }
     }
-    
+
     return null
   }
 
-  getBounds(id: string): { position: Position, size: Size } | null {
+  getBounds(id: string): { position: Position; size: Size } | null {
     const item = items.value.find(item => item.id === id)
     if (!item) return null
-    
+
     return {
       position: { ...item.position },
       size: { ...item.size }
@@ -329,7 +333,10 @@ class VisualizationRendererImpl implements BaseRenderer {
       return { minX: 0, minY: 0, maxX: 800, maxY: 600, width: 800, height: 600 }
     }
 
-    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity
 
     items.value.forEach(item => {
       minX = Math.min(minX, item.position.x)
@@ -339,7 +346,10 @@ class VisualizationRendererImpl implements BaseRenderer {
     })
 
     return {
-      minX, minY, maxX, maxY,
+      minX,
+      minY,
+      maxX,
+      maxY,
       width: maxX - minX,
       height: maxY - minY
     }
@@ -360,15 +370,17 @@ class VisualizationRendererImpl implements BaseRenderer {
   }
 
   private isPointInItem(point: Position, item: BaseCanvasItem): boolean {
-    return point.x >= item.position.x && 
-           point.x <= item.position.x + item.size.width &&
-           point.y >= item.position.y && 
-           point.y <= item.position.y + item.size.height
+    return (
+      point.x >= item.position.x &&
+      point.x <= item.position.x + item.size.width &&
+      point.y >= item.position.y &&
+      point.y <= item.position.y + item.size.height
+    )
   }
 
   private snapToGrid(position: Position): Position {
     if (!rendererConfig.value.snapToGrid) return position
-    
+
     const gridSize = rendererConfig.value.gridSize
     return {
       x: Math.round(position.x / gridSize) * gridSize,
@@ -381,14 +393,18 @@ class VisualizationRendererImpl implements BaseRenderer {
 const rendererInstance = new VisualizationRendererImpl()
 
 // Watch for external data changes
-watch(() => props.items, (newItems) => {
-  items.value = [...newItems]
-}, { deep: true, immediate: true })
+watch(
+  () => props.items,
+  newItems => {
+    items.value = [...newItems]
+  },
+  { deep: true, immediate: true }
+)
 
 // Event handlers
 const handleItemClick = (event: MouseEvent, item: BaseCanvasItem) => {
   event.stopPropagation()
-  
+
   if (event.ctrlKey || event.metaKey) {
     // Multi-select
     if (selectedItems.value.includes(item.id)) {
@@ -400,7 +416,7 @@ const handleItemClick = (event: MouseEvent, item: BaseCanvasItem) => {
     // Single select
     selectedItems.value = [item.id]
   }
-  
+
   emit('item-select', selectedItems.value)
   canvasStore.selectItems(selectedItems.value)
 }
@@ -415,26 +431,24 @@ const handleCanvasClick = (event: MouseEvent) => {
 
 const handleMouseDown = (event: MouseEvent, item: BaseCanvasItem) => {
   if (!rendererConfig.value.enableDrag || props.readonly) return
-  
+
   event.preventDefault()
-  
+
   const rect = containerRef.value!.getBoundingClientRect()
   const startPos = {
     x: event.clientX - rect.left,
     y: event.clientY - rect.top
   }
-  
-  const draggedIds = selectedItems.value.includes(item.id) 
-    ? selectedItems.value 
-    : [item.id]
-  
+
+  const draggedIds = selectedItems.value.includes(item.id) ? selectedItems.value : [item.id]
+
   dragState.value = {
     isDragging: true,
     draggedItems: draggedIds,
     startPosition: startPos,
     currentPosition: startPos
   }
-  
+
   // Add global mouse event listeners
   document.addEventListener('mousemove', handleMouseMove)
   document.addEventListener('mouseup', handleMouseUp)
@@ -442,16 +456,16 @@ const handleMouseDown = (event: MouseEvent, item: BaseCanvasItem) => {
 
 const handleMouseMove = (event: MouseEvent) => {
   if (!dragState.value) return
-  
+
   const rect = containerRef.value!.getBoundingClientRect()
   const currentPos = {
     x: event.clientX - rect.left,
     y: event.clientY - rect.top
   }
-  
+
   const deltaX = (currentPos.x - dragState.value.startPosition.x) / viewport.value.zoom
   const deltaY = (currentPos.y - dragState.value.startPosition.y) / viewport.value.zoom
-  
+
   // Update positions of dragged items
   dragState.value.draggedItems.forEach(itemId => {
     const item = items.value.find(i => i.id === itemId)
@@ -460,11 +474,11 @@ const handleMouseMove = (event: MouseEvent) => {
         x: item.position.x + deltaX,
         y: item.position.y + deltaY
       }
-      
+
       if (rendererConfig.value.snapToGrid) {
         newPosition = rendererInstance.snapToGrid(newPosition)
       }
-      
+
       // Update item position
       const index = items.value.findIndex(i => i.id === itemId)
       if (index !== -1) {
@@ -475,17 +489,17 @@ const handleMouseMove = (event: MouseEvent) => {
       }
     }
   })
-  
+
   dragState.value.currentPosition = currentPos
 }
 
 const handleMouseUp = (event: MouseEvent) => {
   if (!dragState.value) return
-  
+
   // Emit layout change
   emit('layout-change', items.value)
   canvasStore.setItems(items.value)
-  
+
   // Clean up
   dragState.value = null
   document.removeEventListener('mousemove', handleMouseMove)
@@ -495,25 +509,25 @@ const handleMouseUp = (event: MouseEvent) => {
 // Zoom handlers
 const handleWheel = (event: WheelEvent) => {
   if (!event.ctrlKey && !event.metaKey) return
-  
+
   event.preventDefault()
-  
+
   const delta = event.deltaY > 0 ? 0.9 : 1.1
   const newZoom = Math.max(0.1, Math.min(5, viewport.value.zoom * delta))
-  
+
   // Zoom towards mouse position
   const rect = containerRef.value!.getBoundingClientRect()
   const mouseX = event.clientX - rect.left
   const mouseY = event.clientY - rect.top
-  
+
   const zoomRatio = newZoom / viewport.value.zoom
-  
+
   viewport.value = {
     zoom: newZoom,
     offsetX: mouseX - (mouseX - viewport.value.offsetX) * zoomRatio,
     offsetY: mouseY - (mouseY - viewport.value.offsetY) * zoomRatio
   }
-  
+
   emit('viewport-change', viewport.value)
 }
 
@@ -550,7 +564,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div 
+  <div
     class="visualization-renderer-placeholder"
     :style="{
       '--primary-text': visualColors.primaryText,
@@ -563,9 +577,7 @@ onUnmounted(() => {
         <div class="icon-large">📊</div>
       </div>
       <h2 class="coming-soon-title">可视化大屏</h2>
-      <p class="coming-soon-description">
-        全新的可视化大屏功能正在开发中，敬请期待！
-      </p>
+      <p class="coming-soon-description">全新的可视化大屏功能正在开发中，敬请期待！</p>
       <div class="features-preview">
         <div class="feature-item">
           <span class="feature-icon">🎨</span>
@@ -658,7 +670,9 @@ onUnmounted(() => {
   border-radius: 8px;
   font-size: 14px;
   color: var(--tertiary-text);
-  transition: all 0.2s ease, color 0.3s ease;
+  transition:
+    all 0.2s ease,
+    color 0.3s ease;
 }
 
 .feature-item:hover {
@@ -698,11 +712,11 @@ onUnmounted(() => {
     padding: 32px 24px;
     margin: 16px;
   }
-  
+
   .coming-soon-title {
     font-size: 24px;
   }
-  
+
   .features-preview {
     grid-template-columns: 1fr;
   }

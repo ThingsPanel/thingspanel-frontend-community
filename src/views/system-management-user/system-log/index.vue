@@ -1,18 +1,18 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import { NButton, NSelect } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import moment from 'moment';
-import { getSystemLogList } from '@/service/api/system-management-user';
-import { $t } from '@/locales';
-import { formatDateTime } from '@/utils/common/datetime';
-import DetailModal from './components/detail-modal.vue';
-import { useLoading } from '~/packages/hooks';
+import { computed, getCurrentInstance, reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import { NButton, NSelect } from 'naive-ui'
+import type { DataTableColumns, PaginationProps } from 'naive-ui'
+import moment from 'moment'
+import { getSystemLogList } from '@/service/api/system-management-user'
+import { $t } from '@/locales'
+import { formatDateTime } from '@/utils/common/datetime'
+import DetailModal from './components/detail-modal.vue'
+import { useLoading } from '~/packages/hooks'
 
-const { loading, startLoading, endLoading } = useLoading(false);
+const { loading, startLoading, endLoading } = useLoading(false)
 
-const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()]);
+const range = ref<[number, number]>([moment().subtract(1, 'months').valueOf(), moment().valueOf()])
 // POST PUT DELETE
 const requestMethodOptions = reactive([
   {
@@ -31,7 +31,7 @@ const requestMethodOptions = reactive([
     label: 'DELETE',
     value: 'DELETE'
   }
-]);
+])
 const queryParams = reactive({
   username: '',
   selected_time: null,
@@ -39,13 +39,13 @@ const queryParams = reactive({
   end_time: '',
   method: '',
   ip: ''
-});
-const total = ref(0);
+})
+const total = ref(0)
 
-const tableData = ref<Api.SystemManage.SystemLogList[]>([]);
+const tableData = ref<Api.SystemManage.SystemLogList[]>([])
 
 function setTableData(data: Api.SystemManage.SystemLogList[] | []) {
-  tableData.value = data || [];
+  tableData.value = data || []
 }
 
 const pagination: PaginationProps = reactive({
@@ -54,33 +54,32 @@ const pagination: PaginationProps = reactive({
   showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    pagination.page = page;
+    pagination.page = page
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
+    pagination.pageSize = pageSize
+    pagination.page = 1
   }
-});
+})
 
 const getTableData = async () => {
-  startLoading();
+  startLoading()
   const prams = {
     page: pagination.page || 1,
     page_size: pagination.pageSize || 10,
     ...queryParams
-  };
-  const res = await getSystemLogList(prams);
-  if (res?.data) {
-    setTableData(res?.data.list || []);
-    total.value = res.data.total || 0;
   }
-  endLoading();
-};
-const detailModalRef = ref<any>(null);
+  const res = await getSystemLogList(prams)
+  if (res?.data) {
+    setTableData(res?.data.list || [])
+    total.value = res.data.total || 0
+  }
+  endLoading()
+}
+const detailModalRef = ref<any>(null)
 const handleDetail = item => {
-
-  detailModalRef.value && detailModalRef.value.show && detailModalRef.value.show(item);
-};
+  detailModalRef.value && detailModalRef.value.show && detailModalRef.value.show(item)
+}
 const columns: Ref<DataTableColumns<DataService.Data>> = ref([
   {
     key: 'created_at',
@@ -88,7 +87,7 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
     minWidth: '140px',
     align: 'left',
     render: (row: any) => {
-      return formatDateTime(row.created_at);
+      return formatDateTime(row.created_at)
     }
   },
   {
@@ -132,63 +131,67 @@ const columns: Ref<DataTableColumns<DataService.Data>> = ref([
         <NButton type="primary" size={'small'} onClick={() => handleDetail(row)}>
           {$t('generate.details')}
         </NButton>
-      );
+      )
     }
   }
-]) as Ref<DataTableColumns<DataService.Data>>;
+]) as Ref<DataTableColumns<DataService.Data>>
 
 function handleQuery() {
-  getTableData();
+  getTableData()
 }
 function handleReset() {
-  queryParams.start_time = '';
-  queryParams.end_time = '';
-  queryParams.ip = '';
-  queryParams.method = '';
-  queryParams.username = '';
-  queryParams.selected_time = null;
-  range.value = [moment().subtract(1, 'months').valueOf(), moment().valueOf()];
-  pagination.page = 1;
-  handleQuery();
+  queryParams.start_time = ''
+  queryParams.end_time = ''
+  queryParams.ip = ''
+  queryParams.method = ''
+  queryParams.username = ''
+  queryParams.selected_time = null
+  range.value = [moment().subtract(1, 'months').valueOf(), moment().valueOf()]
+  pagination.page = 1
+  handleQuery()
 }
 function pickerChange(value: [number, number] | null) {
   if (value && value.length === 2) {
-    const startDate = moment(value[0]);
-    const endDateMoment = moment(value[1]);
+    const startDate = moment(value[0])
+    const endDateMoment = moment(value[1])
     // console.log('Original end timestamp:', value[1], 'Moment object:', endDateMoment.toISOString());
 
     // 检查用户是否可能只选了日期（时间部分为 00:00:00）
     // 如果是，则将结束时间调整到 23:59:59.999
     // 如果用户明确选择了时间，则尊重用户的选择
-    let adjustedEndDateMoment;
-    if (endDateMoment.hour() === 0 && endDateMoment.minute() === 0 && endDateMoment.second() === 0 && endDateMoment.millisecond() === 0) {
-      adjustedEndDateMoment = endDateMoment.endOf('day'); 
+    let adjustedEndDateMoment
+    if (
+      endDateMoment.hour() === 0 &&
+      endDateMoment.minute() === 0 &&
+      endDateMoment.second() === 0 &&
+      endDateMoment.millisecond() === 0
+    ) {
+      adjustedEndDateMoment = endDateMoment.endOf('day')
       // console.log('Adjusted end moment object (end of day):', adjustedEndDateMoment.toISOString());
     } else {
-      adjustedEndDateMoment = endDateMoment; // 用户选择了具体时间，保持不变
+      adjustedEndDateMoment = endDateMoment // 用户选择了具体时间，保持不变
       // console.log('End moment object (user selected time):', adjustedEndDateMoment.toISOString());
     }
 
-    queryParams.start_time = startDate.format('YYYY-MM-DDTHH:mm:ssZ');
-    queryParams.end_time = adjustedEndDateMoment.format('YYYY-MM-DDTHH:mm:ssZ');
+    queryParams.start_time = startDate.format('YYYY-MM-DDTHH:mm:ssZ')
+    queryParams.end_time = adjustedEndDateMoment.format('YYYY-MM-DDTHH:mm:ssZ')
     // console.log('Assigned queryParams.end_time:', queryParams.end_time);
 
     // 尝试更新 range ref 本身以改变输入框显示
     // 注意：这可能会触发组件更新，需要测试
     // @ts-ignore // 忽略类型检查，因为我们在可变元组中修改元素
-    range.value[1] = adjustedEndDateMoment.valueOf(); 
-
+    range.value[1] = adjustedEndDateMoment.valueOf()
   } else {
-    queryParams.start_time = '';
-    queryParams.end_time = '';
+    queryParams.start_time = ''
+    queryParams.end_time = ''
     // console.log('Date range cleared');
   }
 }
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
-getTableData();
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
+getTableData()
 </script>
 
 <template>

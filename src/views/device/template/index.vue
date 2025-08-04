@@ -305,53 +305,53 @@ onMounted(() => {
     <!-- 卡片视图 -->
     <template #card-view>
       <n-spin :show="loading">
-      <div v-if="deviceTemplateList.length === 0 && !loading" class="empty-state">
-        <NEmpty size="huge" :description="$t('common.nodata')" />
-      </div>
-      <div v-else>
-        <NGrid cols="1 s:2 m:3 l:4 xl:5 2xl:6" x-gap="20" y-gap="20" responsive="screen">
-          <NGi v-for="item in deviceTemplateList" :key="item.id">
-            <ItemCard
-               :isStatus="false"
-              :title="item.name"
-              :subtitle="item.description || '--'"
-              @click="handleEdit(item.id)"
-            >
-              <!-- 底部内容 - 标签靠右显示 -->
-              <template #footer>
-                <div class="card-footer-content">
-                  <div class="tags-section">
-                    <div class="tags-container">
-                      <template v-if="item.label">
-                        <NTag
-                          v-for="tag in getDisplayTags(item.label).displayTags"
-                          :key="tag"
-                          size="small"
-                          class="tag-item"
-                        >
-                          {{ tag }}
-                        </NTag>
-                        <NTag v-if="getDisplayTags(item.label).hasMore" size="small" type="info" class="more-tag">
-                          +{{ getDisplayTags(item.label).moreCount }}
-                        </NTag>
-                      </template>
-                      <span v-else class="no-tags">--</span>
+        <div v-if="deviceTemplateList.length === 0 && !loading" class="empty-state">
+          <NEmpty size="huge" :description="$t('common.nodata')" />
+        </div>
+        <div v-else>
+          <NGrid cols="1 s:2 m:3 l:4 xl:5 2xl:6" x-gap="20" y-gap="20" responsive="screen">
+            <NGi v-for="item in deviceTemplateList" :key="item.id">
+              <ItemCard
+                :isStatus="false"
+                :title="item.name"
+                :subtitle="item.description || '--'"
+                @click="handleEdit(item.id)"
+              >
+                <!-- 底部内容 - 标签靠右显示 -->
+                <template #footer>
+                  <div class="card-footer-content">
+                    <div class="tags-section">
+                      <div class="tags-container">
+                        <template v-if="item.label">
+                          <NTag
+                            v-for="tag in getDisplayTags(item.label).displayTags"
+                            :key="tag"
+                            size="small"
+                            class="tag-item"
+                          >
+                            {{ tag }}
+                          </NTag>
+                          <NTag v-if="getDisplayTags(item.label).hasMore" size="small" type="info" class="more-tag">
+                            +{{ getDisplayTags(item.label).moreCount }}
+                          </NTag>
+                        </template>
+                        <span v-else class="no-tags">--</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </template>
+                </template>
 
-              <!-- 底部图标 - 固定40x40正方形 -->
-              <template #footer-icon>
-                <div class="footer-icon-container">
-                  <img :src="getPath(item.path) || defaultTemplate" alt="device type icon" class="template-image" />
-                </div>
-              </template>
-            </ItemCard>
-          </NGi>
-        </NGrid>
-      </div>
-    </n-spin>
+                <!-- 底部图标 - 固定40x40正方形 -->
+                <template #footer-icon>
+                  <div class="footer-icon-container">
+                    <img :src="getPath(item.path) || defaultTemplate" alt="device type icon" class="template-image" />
+                  </div>
+                </template>
+              </ItemCard>
+            </NGi>
+          </NGrid>
+        </div>
+      </n-spin>
     </template>
 
     <!-- 列表视图 -->
@@ -440,7 +440,6 @@ onMounted(() => {
   justify-content: center;
   overflow: hidden;
   border-radius: 6px;
-
 }
 
 .template-image {
@@ -479,7 +478,6 @@ onMounted(() => {
 }
 
 // 优化卡片在不同屏幕下的显示
-
 
 // 响应式优化
 @media (max-width: 640px) {

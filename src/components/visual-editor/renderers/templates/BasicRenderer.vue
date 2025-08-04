@@ -11,23 +11,23 @@
     @node-select="onNodeSelect"
     @canvas-click="onCanvasClick"
   >
-    <div 
+    <div
       class="basic-renderer grid-background-base"
-      :class="{ 
+      :class="{
         'show-grid': config.showGrid && !readonly,
         'preview-mode': isPreviewMode.value,
-        'readonly': readonly
+        readonly: readonly
       }"
       @click="handleCanvasClick"
     >
       <!-- 渲染所有节点 -->
-      <div 
+      <div
         v-for="node in nodes"
         :key="node.id"
         class="renderer-node"
-        :class="{ 
-          'selected': selectedIds.includes(node.id) && !isPreviewMode.value,
-          'readonly': readonly || isPreviewMode.value
+        :class="{
+          selected: selectedIds.includes(node.id) && !isPreviewMode.value,
+          readonly: readonly || isPreviewMode.value
         }"
         :style="getNodeStyle(node)"
         @click.stop="handleNodeClick(node.id)"
@@ -36,7 +36,7 @@
         <div v-if="showWidgetTitles && !readonly" class="node-title">
           {{ node.label || node.type }}
         </div>
-        
+
         <!-- 节点内容 -->
         <div class="node-content">
           <Card2Wrapper
@@ -47,11 +47,7 @@
             :node-id="node.id"
             @error="handleComponentError"
           />
-          <component 
-            :is="getWidgetComponent(node.type)"
-            v-else
-            v-bind="node.properties"
-          />
+          <component :is="getWidgetComponent(node.type)" v-else v-bind="node.properties" />
         </div>
       </div>
     </div>
@@ -78,7 +74,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   readonly: false,
-  config: () => ({ 
+  config: () => ({
     showGrid: true,
     backgroundColor: '#f5f5f5'
   }),
@@ -238,7 +234,7 @@ const getWidgetComponent = (type: string) => {
   .basic-renderer {
     min-height: 400px;
   }
-  
+
   .node-title {
     font-size: 11px;
     padding: 2px 6px;

@@ -1,7 +1,7 @@
 <template>
   <div class="data-mapping-config">
     <n-divider title-placement="left">数据映射</n-divider>
-    
+
     <div v-if="dataPaths && dataPaths.length > 0" class="mapping-list">
       <div v-for="(mapping, index) in dataPaths" :key="index" class="mapping-item">
         <div class="mapping-row">
@@ -16,13 +16,13 @@
         </div>
       </div>
     </div>
-    
+
     <div class="mapping-actions">
       <n-button size="small" @click="generateDefaultMappings">自动映射</n-button>
     </div>
-    
+
     <n-divider title-placement="left">预览</n-divider>
-    
+
     <n-tabs type="line" size="small">
       <n-tab-pane name="raw" tab="原始">
         <pre class="json-preview">{{ formattedJson }}</pre>
@@ -57,7 +57,7 @@ const props = defineProps<Props>()
 // 可用的数据路径选项
 const availablePathOptions = computed(() => {
   if (!props.jsonData) return []
-  
+
   const paths = dataPathResolver.getAvailablePaths(props.jsonData)
   return paths.map(path => ({
     label: path,
@@ -77,7 +77,7 @@ const formattedJson = computed(() => {
 // 解析数据预览
 const resolvedData = computed(() => {
   const results: Array<{ path: string; value: any }> = []
-  
+
   props.dataPaths?.forEach(mapping => {
     try {
       const value = dataPathResolver.resolve(props.jsonData, mapping.key)
@@ -92,7 +92,7 @@ const resolvedData = computed(() => {
       })
     }
   })
-  
+
   return results
 })
 
@@ -104,23 +104,23 @@ const updateMapping = () => {
 // 生成默认映射
 const generateDefaultMappings = () => {
   if (!props.jsonData || Object.keys(props.jsonData).length === 0) return
-  
+
   const availablePaths = dataPathResolver.getAvailablePaths(props.jsonData)
-  
+
   const newMappings = props.dataPaths.map(mapping => {
     const targetKey = mapping.target
     const exactMatch = availablePaths.find(path => {
       const pathKey = path.split('.').pop() || path
       return pathKey === targetKey
     })
-    
+
     if (exactMatch) {
       return { ...mapping, key: exactMatch }
     }
-    
+
     return mapping
   })
-  
+
   props.onUpdateMapping(newMappings)
 }
 </script>
@@ -200,4 +200,4 @@ const generateDefaultMappings = () => {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-</style> 
+</style>

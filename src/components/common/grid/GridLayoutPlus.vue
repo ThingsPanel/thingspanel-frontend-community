@@ -3,10 +3,10 @@
   基于 grid-layout-plus 的企业级网格布局组件
 -->
 <template>
-  <div 
+  <div
     class="grid-layout-plus-wrapper grid-background-base"
     :class="{
-      'readonly': readonly,
+      readonly: readonly,
       'dark-theme': isDarkTheme,
       'show-grid': showGrid && !readonly
     }"
@@ -53,8 +53,8 @@
         :min-h="item.minH"
         :max-w="item.maxW"
         :max-h="item.maxH"
-        :is-draggable="!readonly && (item.isDraggable !== false) && !item.static"
-        :is-resizable="!readonly && (item.isResizable !== false) && !item.static"
+        :is-draggable="!readonly && item.isDraggable !== false && !item.static"
+        :is-resizable="!readonly && item.isResizable !== false && !item.static"
         :static="item.static"
         :drag-ignore-from="item.dragIgnoreFrom"
         :drag-allow-from="item.dragAllowFrom"
@@ -66,14 +66,16 @@
         @resized="(i, newH, newW, newHPx, newWPx) => handleItemResized(i, newH, newW, newHPx, newWPx)"
         @move="(i, newX, newY) => handleItemMove(i, newX, newY)"
         @moved="(i, newX, newY) => handleItemMoved(i, newX, newY)"
-        @container-resized="(i, newH, newW, newHPx, newWPx) => handleItemContainerResized(i, newH, newW, newHPx, newWPx)"
+        @container-resized="
+          (i, newH, newW, newHPx, newWPx) => handleItemContainerResized(i, newH, newW, newHPx, newWPx)
+        "
       >
         <!-- 渲染自定义组件 -->
         <div class="grid-item-content" :class="item.className" :style="item.style">
           <div v-if="!readonly && showTitle" class="grid-item-header">
             <span class="grid-item-title">{{ getItemTitle(item) }}</span>
           </div>
-          
+
           <div class="grid-item-body">
             <slot :item="item">
               <!-- Default content if no slot is provided -->
@@ -86,12 +88,12 @@
         </div>
       </GridItem>
     </GridLayout>
-    
+
     <!-- 添加新项目的拖拽区域 -->
-    <div 
+    <div
       v-if="!readonly && showDropZone"
       class="drop-zone"
-      :class="{ 'dragging': isDragging }"
+      :class="{ dragging: isDragging }"
       @dragenter="handleDragEnter"
       @dragover="handleDragOver"
       @dragleave="handleDragLeave"
@@ -113,9 +115,9 @@ import { GridLayout, GridItem } from 'grid-layout-plus'
 import { NIcon } from 'naive-ui'
 import { CreateOutline, TrashOutline, AddOutline } from '@vicons/ionicons5'
 import { useThemeStore } from '@/store/modules/theme'
-import type { 
-  GridLayoutPlusConfig, 
-  GridLayoutPlusItem, 
+import type {
+  GridLayoutPlusConfig,
+  GridLayoutPlusItem,
   GridLayoutPlusEmits,
   GridLayoutPlusProps
 } from './gridLayoutPlusTypes'
@@ -168,14 +170,14 @@ const config = computed<GridLayoutPlusConfig>(() => {
     staticGrid: false,
     ...props.config
   }
-  
+
   // 调试日志
   console.log('🔧 GridLayoutPlus - 配置计算:', {
     propsConfig: props.config,
     finalConfig: baseConfig,
     readonly: props.readonly
   })
-  
+
   return baseConfig
 })
 
@@ -240,33 +242,15 @@ const handleBreakpointChanged = (newBreakpoint: string, newLayout: GridLayoutPlu
   emit('breakpoint-changed', newBreakpoint, newLayout)
 }
 
-const handleContainerResized = (
-  i: string, 
-  newH: number, 
-  newW: number, 
-  newHPx: number, 
-  newWPx: number
-) => {
+const handleContainerResized = (i: string, newH: number, newW: number, newHPx: number, newWPx: number) => {
   emit('container-resized', i, newH, newW, newHPx, newWPx)
 }
 
-const handleItemResize = (
-  i: string, 
-  newH: number, 
-  newW: number, 
-  newHPx: number, 
-  newWPx: number
-) => {
+const handleItemResize = (i: string, newH: number, newW: number, newHPx: number, newWPx: number) => {
   emit('item-resize', i, newH, newW, newHPx, newWPx)
 }
 
-const handleItemResized = (
-  i: string, 
-  newH: number, 
-  newW: number, 
-  newHPx: number, 
-  newWPx: number
-) => {
+const handleItemResized = (i: string, newH: number, newW: number, newHPx: number, newWPx: number) => {
   emit('item-resized', i, newH, newW, newHPx, newWPx)
 }
 
@@ -278,13 +262,7 @@ const handleItemMoved = (i: string, newX: number, newY: number) => {
   emit('item-moved', i, newX, newY)
 }
 
-const handleItemContainerResized = (
-  i: string, 
-  newH: number, 
-  newW: number, 
-  newHPx: number, 
-  newWPx: number
-) => {
+const handleItemContainerResized = (i: string, newH: number, newW: number, newHPx: number, newWPx: number) => {
   emit('item-container-resized', i, newH, newW, newHPx, newWPx)
 }
 
@@ -311,7 +289,7 @@ const handleDrop = (e: DragEvent) => {
   e.preventDefault()
   isDragging.value = false
   dragCounter.value = 0
-  
+
   const componentType = e.dataTransfer?.getData('text/plain')
   if (componentType) {
     addItem(componentType)
@@ -329,15 +307,15 @@ const addItem = (type: string, options?: Partial<GridLayoutPlusItem>) => {
     type,
     ...options
   }
-  
+
   // 寻找合适的位置
   const position = findAvailablePosition(newItem.w, newItem.h)
   newItem.x = position.x
   newItem.y = position.y
-  
+
   internalLayout.value.push(newItem)
   emit('item-add', newItem)
-  
+
   return newItem
 }
 
@@ -380,15 +358,15 @@ const generateId = (): string => {
   return `item-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 }
 
-const findAvailablePosition = (w: number, h: number): { x: number, y: number } => {
+const findAvailablePosition = (w: number, h: number): { x: number; y: number } => {
   const colNum = config.value.colNum
   const layout = internalLayout.value
-  
+
   // 简单的位置查找算法
   for (let y = 0; y < 100; y++) {
     for (let x = 0; x <= colNum - w; x++) {
       const proposed = { x, y, w, h }
-      
+
       // 检查是否与现有项目冲突
       const hasCollision = layout.some(item => {
         return !(
@@ -398,24 +376,28 @@ const findAvailablePosition = (w: number, h: number): { x: number, y: number } =
           proposed.y >= item.y + item.h
         )
       })
-      
+
       if (!hasCollision) {
         return { x, y }
       }
     }
   }
-  
+
   return { x: 0, y: 0 }
 }
 
 // Watchers
-watch(() => props.layout, (newLayout) => {
-  // 避免重复更新：只有当外部layout与内部layout不同时才更新
-  const hasChanged = JSON.stringify(internalLayout.value) !== JSON.stringify(newLayout)
-  if (hasChanged) {
-    internalLayout.value = [...newLayout]
-  }
-}, { deep: true })
+watch(
+  () => props.layout,
+  newLayout => {
+    // 避免重复更新：只有当外部layout与内部layout不同时才更新
+    const hasChanged = JSON.stringify(internalLayout.value) !== JSON.stringify(newLayout)
+    if (hasChanged) {
+      internalLayout.value = [...newLayout]
+    }
+  },
+  { deep: true }
+)
 
 // 暴露方法
 defineExpose({
@@ -611,11 +593,11 @@ defineExpose({
     padding: 6px 8px;
     font-size: 12px;
   }
-  
+
   .grid-item-body {
     padding: 8px;
   }
-  
+
   .action-btn {
     width: 20px;
     height: 20px;

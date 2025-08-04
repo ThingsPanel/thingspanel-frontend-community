@@ -42,7 +42,8 @@
       "Bash(timeout 60s pnpm build:test)",
       "Bash(cp:*)",
       "WebFetch(domain:dsmorse.github.io)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(git stash pop:*)"
     ],
     "deny": []
   }

@@ -13,21 +13,13 @@
 
       <!-- URL -->
       <n-form-item label="请求地址">
-        <n-input
-          v-model:value="config.url"
-          placeholder="请输入完整的 URL"
-          @update:value="updateConfig"
-        />
+        <n-input v-model:value="config.url" placeholder="请输入完整的 URL" @update:value="updateConfig" />
       </n-form-item>
 
       <!-- 请求头 -->
       <n-form-item label="请求头">
         <div class="headers-container">
-          <div
-            v-for="(header, index) in config.headers"
-            :key="index"
-            class="header-item"
-          >
+          <div v-for="(header, index) in config.headers" :key="index" class="header-item">
             <n-input
               v-model:value="header.key"
               placeholder="Header 名称"
@@ -40,17 +32,9 @@
               style="width: 40%"
               @update:value="updateConfig"
             />
-            <n-button
-              size="small"
-              style="width: 15%"
-              @click="removeHeader(index)"
-            >
-              删除
-            </n-button>
+            <n-button size="small" style="width: 15%" @click="removeHeader(index)">删除</n-button>
           </div>
-          <n-button size="small" @click="addHeader">
-            添加请求头
-          </n-button>
+          <n-button size="small" @click="addHeader">添加请求头</n-button>
         </div>
       </n-form-item>
 
@@ -78,13 +62,7 @@
 
       <!-- 测试按钮 -->
       <n-form-item>
-        <n-button
-          type="primary"
-          :loading="isTesting"
-          @click="testRequest"
-        >
-          测试请求
-        </n-button>
+        <n-button type="primary" :loading="isTesting" @click="testRequest">测试请求</n-button>
       </n-form-item>
     </n-form>
 
@@ -231,13 +209,13 @@ const testRequest = async () => {
 
     // 发起请求
     const response = await fetch(config.value.url, options)
-    
+
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}: ${response.statusText}`)
     }
 
     const data = await response.json()
-    
+
     testResult.value = {
       success: true,
       message: `请求成功 (${response.status})`,
@@ -249,13 +227,12 @@ const testRequest = async () => {
       method: config.value.method,
       data
     })
-
   } catch (error) {
     testResult.value = {
       success: false,
       message: error instanceof Error ? error.message : '请求失败'
     }
-    
+
     console.error('🔧 HttpDataSourceConfig - 测试请求失败:', error)
   } finally {
     isTesting.value = false
@@ -263,9 +240,13 @@ const testRequest = async () => {
 }
 
 // 监听配置变化
-watch(() => props.modelValue, (newValue) => {
-  config.value = { ...config.value, ...newValue }
-}, { deep: true })
+watch(
+  () => props.modelValue,
+  newValue => {
+    config.value = { ...config.value, ...newValue }
+  },
+  { deep: true }
+)
 </script>
 
 <style scoped>
@@ -312,4 +293,4 @@ watch(() => props.modelValue, (newValue) => {
   border-radius: 4px;
   background-color: #f9f9f9;
 }
-</style> 
+</style>

@@ -38,7 +38,7 @@ const allData = [
   { id: 9, value: 90, label: 'Sep' },
   { id: 10, value: 100, label: 'Oct' },
   { id: 11, value: 88, label: 'Nov' },
-  { id: 12, value: 92, label: 'Dec' },
+  { id: 12, value: 92, label: 'Dec' }
 ]
 
 const bars = computed(() => {
@@ -89,10 +89,10 @@ const bars = computed(() => {
   justify-content: center;
 }
 .bar-label {
-    position: absolute;
-    bottom: -20px;
-    font-size: 10px;
-    color: #666;
-    white-space: nowrap;
+  position: absolute;
+  bottom: -20px;
+  font-size: 10px;
+  color: #666;
+  white-space: nowrap;
 }
 </style>

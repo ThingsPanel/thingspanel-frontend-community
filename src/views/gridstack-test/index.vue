@@ -31,46 +31,26 @@
         <n-grid cols="4" x-gap="12">
           <n-grid-item>
             <n-form-item label="列数">
-              <n-input-number 
-                v-model:value="gridConfig.colNum" 
-                :min="6" 
-                :max="24" 
-                @update:value="updateConfig"
-              />
+              <n-input-number v-model:value="gridConfig.colNum" :min="6" :max="24" @update:value="updateConfig" />
             </n-form-item>
           </n-grid-item>
           <n-grid-item>
             <n-form-item label="行高(px)">
-              <n-input-number 
-                v-model:value="gridConfig.rowHeight" 
-                :min="50" 
-                :max="200" 
-                @update:value="updateConfig"
-              />
+              <n-input-number v-model:value="gridConfig.rowHeight" :min="50" :max="200" @update:value="updateConfig" />
             </n-form-item>
           </n-grid-item>
           <n-grid-item>
             <n-form-item label="水平间距">
-              <n-input-number 
-                v-model:value="marginX" 
-                :min="0" 
-                :max="50" 
-                @update:value="updateMargin"
-              />
+              <n-input-number v-model:value="marginX" :min="0" :max="50" @update:value="updateMargin" />
             </n-form-item>
           </n-grid-item>
           <n-grid-item>
             <n-form-item label="垂直间距">
-              <n-input-number 
-                v-model:value="marginY" 
-                :min="0" 
-                :max="50" 
-                @update:value="updateMargin"
-              />
+              <n-input-number v-model:value="marginY" :min="0" :max="50" @update:value="updateMargin" />
             </n-form-item>
           </n-grid-item>
         </n-grid>
-        
+
         <n-space class="mt-3">
           <n-switch v-model:value="globalDraggable" @update:value="updateGlobalDraggable">
             <template #checked>全局可拖拽</template>
@@ -98,15 +78,9 @@
           <n-tag type="info">项目: {{ layout.length }}</n-tag>
           <n-tag type="success">列数: {{ gridConfig.colNum }}</n-tag>
           <n-tag type="warning">行高: {{ gridConfig.rowHeight }}px</n-tag>
-          <n-tag :type="globalDraggable ? 'success' : 'error'">
-            全局拖拽: {{ globalDraggable ? '开启' : '关闭' }}
-          </n-tag>
-          <n-tag :type="globalResizable ? 'success' : 'error'">
-            全局调整: {{ globalResizable ? '开启' : '关闭' }}
-          </n-tag>
-          <n-tag type="info">
-            锁定项目: {{ layout.filter(item => item.static).length }}
-          </n-tag>
+          <n-tag :type="globalDraggable ? 'success' : 'error'">全局拖拽: {{ globalDraggable ? '开启' : '关闭' }}</n-tag>
+          <n-tag :type="globalResizable ? 'success' : 'error'">全局调整: {{ globalResizable ? '开启' : '关闭' }}</n-tag>
+          <n-tag type="info">锁定项目: {{ layout.filter(item => item.static).length }}</n-tag>
         </n-space>
       </n-card>
     </div>
@@ -124,21 +98,15 @@
         @item-edit="handleItemEdit"
       >
         <template #default="{ item }">
-          <div class="test-item-content" :class="{ 'locked': item.static }">
+          <div class="test-item-content" :class="{ locked: item.static }">
             <div class="item-header">
               <span class="item-title">{{ item.title }}</span>
               <span class="item-type">{{ item.type }}</span>
               <span v-if="item.static" class="lock-status">🔒</span>
             </div>
             <div class="item-body">
-              <component
-                :is="resolveComponent(item)"
-                v-if="resolveComponent(item)"
-                :item="item"
-              />
-              <div v-else class="default-preview">
-                📦 默认内容
-              </div>
+              <component :is="resolveComponent(item)" v-if="resolveComponent(item)" :item="item" />
+              <div v-else class="default-preview">📦 默认内容</div>
             </div>
           </div>
         </template>
@@ -177,23 +145,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, shallowRef, type Component } from 'vue'
-import { 
-  NButton, 
-  NSpace, 
-  NCard, 
-  NTag, 
-  NSwitch,
-  NGrid,
-  NGridItem,
-  NFormItem,
-  NInputNumber,
-  useMessage
-} from 'naive-ui'
-import { 
-  GridLayoutPlus,
-  type GridLayoutPlusItem,
-  type GridLayoutPlusConfig
-} from '@/components/common/grid'
+import { NButton, NSpace, NCard, NTag, NSwitch, NGrid, NGridItem, NFormItem, NInputNumber, useMessage } from 'naive-ui'
+import { GridLayoutPlus, type GridLayoutPlusItem, type GridLayoutPlusConfig } from '@/components/common/grid'
 
 import ResponsiveChart from './components/ResponsiveChart.vue'
 import ResponsiveText from './components/ResponsiveText.vue'
@@ -205,7 +158,7 @@ const message = useMessage()
 const componentMap: Record<string, Component> = {
   ResponsiveChart,
   ResponsiveText,
-  ResponsiveImage,
+  ResponsiveImage
 }
 
 // 组件解析函数
@@ -289,7 +242,7 @@ const gridConfig = reactive<GridLayoutPlusConfig>({
   isMirrored: false,
   restoreOnDrag: false,
   useCssTransforms: true,
-  useStyleCursor: true,
+  useStyleCursor: true
 })
 
 // 边距的独立控制
@@ -304,14 +257,14 @@ const globalResizable = ref(true)
 const testItemComponents = [
   { type: 'chart', component: 'ResponsiveChart' },
   { type: 'text', component: 'ResponsiveText' },
-  { type: 'image', component: 'ResponsiveImage' },
+  { type: 'image', component: 'ResponsiveImage' }
 ]
 
 // 方法
 const addTestItem = () => {
   const randomComp = testItemComponents[Math.floor(Math.random() * testItemComponents.length)]
   const id = `test-${Date.now()}`
-  
+
   const newItem: GridLayoutPlusItem = {
     i: id,
     x: 0,
@@ -325,7 +278,7 @@ const addTestItem = () => {
     isResizable: globalResizable.value,
     static: false
   }
-  
+
   layout.value = [...layout.value, newItem]
   message.success(`添加了项目: ${newItem.title}`)
 }
@@ -333,7 +286,7 @@ const addTestItem = () => {
 const addLockedItem = () => {
   const randomComp = testItemComponents[Math.floor(Math.random() * testItemComponents.length)]
   const id = `locked-${Date.now()}`
-  
+
   const newItem: GridLayoutPlusItem = {
     i: id,
     x: Math.floor(Math.random() * (gridConfig.colNum - 2)),
@@ -347,7 +300,7 @@ const addLockedItem = () => {
     isResizable: false,
     static: true
   }
-  
+
   layout.value = [...layout.value, newItem]
   message.warning(`添加了锁定项目: ${newItem.title}`)
 }
@@ -586,15 +539,15 @@ const handleItemEdit = (item: GridLayoutPlusItem) => {
   .grid-layout-plus-test-page {
     padding: 10px;
   }
-  
+
   .grid-container {
     height: 400px;
   }
-  
+
   .info-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .test-item-content {
     font-size: 10px;
   }
@@ -606,31 +559,31 @@ const handleItemEdit = (item: GridLayoutPlusItem) => {
     background: #1a1a1a;
     color: white;
   }
-  
+
   .test-controls {
     background: #2d2d2d;
   }
-  
+
   .grid-container {
     background: #2d2d2d;
     border-color: #404040;
   }
-  
+
   .test-item-content {
     background: #2d2d2d;
     border-color: #404040;
     color: white;
   }
-  
+
   .item-header {
     background: #3a3a3a;
     border-bottom-color: #404040;
   }
-  
+
   .item-title {
     color: white;
   }
-  
+
   .item-type {
     background: #404040;
     color: #ccc;

@@ -54,28 +54,20 @@
                 <Menu />
               </n-icon>
             </div>
-            
+
             <div class="item-main-content">
               <div class="item-title">{{ item.title || item.type }}</div>
               <div class="item-info">
                 <div>位置: {{ item.x }}, {{ item.y }}</div>
                 <div>大小: {{ item.w }} × {{ item.h }}</div>
               </div>
-              
+
               <!-- 根据类型渲染不同内容 -->
               <div class="item-body">
-                <div v-if="item.type === 'chart'" class="chart-placeholder">
-                  📊 图表组件
-                </div>
-                <div v-else-if="item.type === 'text'" class="text-placeholder">
-                  📝 文本组件
-                </div>
-                <div v-else-if="item.type === 'image'" class="image-placeholder">
-                  🖼️ 图片组件
-                </div>
-                <div v-else class="default-placeholder">
-                  📦 {{ item.type || '默认组件' }}
-                </div>
+                <div v-if="item.type === 'chart'" class="chart-placeholder">📊 图表组件</div>
+                <div v-else-if="item.type === 'text'" class="text-placeholder">📝 文本组件</div>
+                <div v-else-if="item.type === 'image'" class="image-placeholder">🖼️ 图片组件</div>
+                <div v-else class="default-placeholder">📦 {{ item.type || '默认组件' }}</div>
               </div>
             </div>
           </div>
@@ -90,22 +82,16 @@
             <n-button :disabled="!canUndo" @click="undo">撤销</n-button>
             <n-button :disabled="!canRedo" @click="redo">重做</n-button>
           </n-space>
-          
+
           <n-space>
             <n-button @click="selectAll">全选</n-button>
             <n-button @click="clearSelection">清除选择</n-button>
-            <n-button :disabled="!hasSelectedItems" type="error" @click="deleteSelected">
-              删除选中
-            </n-button>
+            <n-button :disabled="!hasSelectedItems" type="error" @click="deleteSelected">删除选中</n-button>
           </n-space>
-          
+
           <n-space>
             <n-button @click="exportLayout">导出布局</n-button>
-            <n-upload
-              :show-file-list="false"
-              accept=".json"
-              @before-upload="importLayout"
-            >
+            <n-upload :show-file-list="false" accept=".json" @before-upload="importLayout">
               <n-button>导入布局</n-button>
             </n-upload>
           </n-space>
@@ -117,21 +103,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { 
-  NButton, 
-  NSpace, 
-  NCard, 
-  NStatistic, 
-  NIcon, 
-  NUpload,
-  useMessage
-} from 'naive-ui'
+import { NButton, NSpace, NCard, NStatistic, NIcon, NUpload, useMessage } from 'naive-ui'
 import { Menu } from '@vicons/ionicons5'
-import { 
-  GridLayoutPlus, 
+import {
+  GridLayoutPlus,
   useGridLayoutPlus,
   type GridLayoutPlusItem,
-  type GridLayoutPlusConfig 
+  type GridLayoutPlusConfig
 } from '../gridLayoutPlusIndex'
 
 const message = useMessage()
@@ -202,7 +180,7 @@ const {
   config: gridConfig,
   enableHistory: true,
   autoSave: true,
-  onSave: (layout) => {
+  onSave: layout => {
     console.log('自动保存布局:', layout)
   }
 })
@@ -222,7 +200,7 @@ const addRandomItem = () => {
     w: Math.floor(Math.random() * 3) + 2,
     h: Math.floor(Math.random() * 2) + 1
   })
-  
+
   if (result.success) {
     message.success('项目添加成功')
   } else {
@@ -277,12 +255,12 @@ const exportLayout = () => {
 const importLayout = (options: any) => {
   const file = options.file.file
   const reader = new FileReader()
-  
-  reader.onload = (e) => {
+
+  reader.onload = e => {
     try {
       const layoutData = e.target?.result as string
       const result = importLayoutFromHook(layoutData)
-      
+
       if (result.success) {
         message.success('布局导入成功')
       } else {
@@ -292,7 +270,7 @@ const importLayout = (options: any) => {
       message.error('布局导入失败')
     }
   }
-  
+
   reader.readAsText(file)
   return false // 阻止默认上传
 }
@@ -453,15 +431,15 @@ const handleBreakpointChange = (breakpoint: string) => {
     gap: 10px;
     align-items: flex-start;
   }
-  
+
   .example-content {
     height: 400px;
   }
-  
+
   .custom-item-content {
     font-size: 12px;
   }
-  
+
   .item-main-content {
     padding: 8px;
   }

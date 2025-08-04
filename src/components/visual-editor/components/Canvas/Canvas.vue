@@ -1,12 +1,12 @@
 <template>
-  <div 
-    class="canvas" 
-    @click="handleCanvasClick" 
-    @drop="handleDrop" 
+  <div
+    class="canvas"
+    @click="handleCanvasClick"
+    @drop="handleDrop"
     @dragover.prevent
     @contextmenu.prevent="handleCanvasContextMenu"
   >
-    <div 
+    <div
       v-for="node in nodes"
       :key="node.id"
       class="canvas-node"
@@ -16,15 +16,12 @@
       @mousedown="handleNodeMouseDown(node.id, $event)"
       @contextmenu.stop.prevent="handleNodeContextMenu(node.id, $event)"
     >
-      <component 
-        :is="getWidgetComponent(node.type)"
-        v-bind="node.properties"
-      />
-      
+      <component :is="getWidgetComponent(node.type)" v-bind="node.properties" />
+
       <!-- 选中时显示调整大小的控制点 -->
       <div v-if="selectedIds.includes(node.id)" class="resize-handles">
-        <div 
-          v-for="handle in resizeHandles" 
+        <div
+          v-for="handle in resizeHandles"
           :key="handle.position"
           :class="`resize-handle resize-handle-${handle.position}`"
           @mousedown.stop="handleResizeStart(node.id, handle.position, $event)"
@@ -66,7 +63,7 @@ const widgetComponents = {
   image: ImageWidget,
   'bar-chart': BarChartWidget,
   'line-chart': BarChartWidget, // 暂时复用柱状图
-  'pie-chart': BarChartWidget,  // 暂时复用柱状图  
+  'pie-chart': BarChartWidget, // 暂时复用柱状图
   'digit-indicator': DigitIndicatorWidget,
   // 真实的chart-card组件
   'chart-digit-indicator': DigitIndicatorChartWidget,
@@ -98,9 +95,14 @@ const contextMenu = ref({
 
 // 调整大小的控制点
 const resizeHandles = [
-  { position: 'nw' }, { position: 'n' }, { position: 'ne' },
-  { position: 'w' },                     { position: 'e' },
-  { position: 'sw' }, { position: 's' }, { position: 'se' }
+  { position: 'nw' },
+  { position: 'n' },
+  { position: 'ne' },
+  { position: 'w' },
+  { position: 'e' },
+  { position: 'sw' },
+  { position: 's' },
+  { position: 'se' }
 ]
 
 const getWidgetComponent = (type: string) => {
@@ -112,7 +114,7 @@ const getNodeStyle = (node: GraphData) => ({
   left: node.x + 'px',
   top: node.y + 'px',
   width: node.width + 'px',
-  height: node.height + 'px',
+  height: node.height + 'px'
 })
 
 const handleCanvasClick = () => {
@@ -146,10 +148,10 @@ const handleNodeMouseDown = (nodeId: string, event: MouseEvent) => {
     x: event.clientX,
     y: event.clientY
   }
-  
+
   // 选中节点
   selectNode(nodeId)
-  
+
   document.addEventListener('mousemove', handleMouseMove)
   document.addEventListener('mouseup', handleMouseUp)
 }
@@ -164,24 +166,24 @@ const handleResizeStart = (nodeId: string, direction: string, event: MouseEvent)
     x: event.clientX,
     y: event.clientY
   }
-  
+
   document.addEventListener('mousemove', handleMouseMove)
   document.addEventListener('mouseup', handleMouseUp)
 }
 
 const handleMouseMove = (event: MouseEvent) => {
   if (!isDragging.value && !isResizing.value) return
-  
+
   const deltaX = event.clientX - dragStartPos.value.x
   const deltaY = event.clientY - dragStartPos.value.y
-  
+
   if (isDragging.value && dragNodeId.value) {
     // 拖拽移动
     const node = nodes.value.find(n => n.id === dragNodeId.value)
     if (node) {
       const newX = Math.max(0, node.x + deltaX)
       const newY = Math.max(0, node.y + deltaY)
-      
+
       updateNode(dragNodeId.value, {
         x: snapToGrid(newX),
         y: snapToGrid(newY)
@@ -193,7 +195,7 @@ const handleMouseMove = (event: MouseEvent) => {
     const node = nodes.value.find(n => n.id === resizeNodeId.value)
     if (node) {
       const updates: Partial<GraphData> = {}
-      
+
       // 根据调整方向计算新的位置和大小
       if (resizeDirection.value.includes('n')) {
         const newY = Math.max(0, node.y + deltaY)
@@ -215,7 +217,7 @@ const handleMouseMove = (event: MouseEvent) => {
         const newWidth = Math.max(20, node.width + deltaX)
         updates.width = snapToGrid(newWidth)
       }
-      
+
       updateNode(resizeNodeId.value, updates)
       dragStartPos.value = { x: event.clientX, y: event.clientY }
     }
@@ -228,7 +230,7 @@ const handleMouseUp = () => {
   dragNodeId.value = null
   resizeNodeId.value = null
   resizeDirection.value = ''
-  
+
   document.removeEventListener('mousemove', handleMouseMove)
   document.removeEventListener('mouseup', handleMouseUp)
 }
@@ -241,7 +243,7 @@ const handleDrop = (event: DragEvent) => {
     const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
-    
+
     // 创建新组件
     addWidget(widgetType, { x, y })
   }
@@ -250,7 +252,7 @@ const handleDrop = (event: DragEvent) => {
 // 清理事件监听
 onMounted(() => {
   // 防止页面滚动时的事件冲突
-  document.addEventListener('selectstart', (e) => {
+  document.addEventListener('selectstart', e => {
     if (isDragging.value || isResizing.value) {
       e.preventDefault()
     }
@@ -276,7 +278,7 @@ const handleNodeContextMenu = (nodeId: string, event: MouseEvent) => {
   if (!selectedIds.value.includes(nodeId)) {
     selectNode(nodeId)
   }
-  
+
   contextMenu.value = {
     show: true,
     x: event.clientX,
@@ -293,17 +295,17 @@ const handleContextMenuAction = (action: string) => {
     case 'copy':
       // TODO: 实现复制功能
       console.log('复制选中的组件')
-      break      
+      break
     case 'delete':
       // 删除选中的组件
       selectedIds.value.forEach(id => {
         stateManager.removeNode(id)
       })
-      break      
+      break
     case 'layer':
       // TODO: 实现图层管理
       console.log('图层管理')
-      break      
+      break
     case 'lock':
       // TODO: 实现锁定功能
       console.log('锁定组件')
@@ -318,9 +320,9 @@ const handleContextMenuAction = (action: string) => {
   width: 100%;
   height: 100%;
   min-height: 600px;
-  background: 
-    linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px);
+  background:
+    linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
   user-select: none;
 }

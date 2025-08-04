@@ -1,7 +1,22 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue'
 // import {useRouter} from 'vue-router';
-import { NButton, NCard, NForm, NFormItem, NGrid, NGridItem, NInput, NModal, useMessage, NPopconfirm, NTooltip, NFlex, NPagination, NSelect } from 'naive-ui'
+import {
+  NButton,
+  NCard,
+  NForm,
+  NFormItem,
+  NGrid,
+  NGridItem,
+  NInput,
+  NModal,
+  useMessage,
+  NPopconfirm,
+  NTooltip,
+  NFlex,
+  NPagination,
+  NSelect
+} from 'naive-ui'
 import type { LastLevelRouteKey } from '@elegant-router/types' // 假设您已经定义好了这些API
 import { DelBoard, PostBoard, PutBoard, getBoardList } from '@/service/api/index'
 import { useRouterPush } from '@/hooks/common/router'
@@ -214,8 +229,8 @@ onMounted(fetchBoards)
             <NButton
               type="default"
               @click="
-                showModal = false;
-                clearFormData();
+                showModal = false
+                clearFormData()
               "
             >
               {{ $t('generate.cancel') }}

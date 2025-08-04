@@ -12,9 +12,10 @@ import { useElementSize } from '@vueuse/core'
 const containerRef = ref(null)
 const { width, height } = useElementSize(containerRef)
 
-const shortText = "Short text."
-const mediumText = "This is a medium length text that appears when there is a bit more space."
-const longText = "This is the full, long text that is displayed only when the component has a large amount of space available for it to render completely. It contains much more detail."
+const shortText = 'Short text.'
+const mediumText = 'This is a medium length text that appears when there is a bit more space.'
+const longText =
+  'This is the full, long text that is displayed only when the component has a large amount of space available for it to render completely. It contains much more detail.'
 
 const displayedText = computed(() => {
   const area = width.value * height.value

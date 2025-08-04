@@ -1,8 +1,5 @@
 <template>
-  <div 
-    class="text-widget"
-    :style="textStyle"
-  >
+  <div class="text-widget" :style="textStyle">
     {{ content }}
   </div>
 </template>

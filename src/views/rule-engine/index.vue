@@ -1,34 +1,34 @@
 <script setup lang="tsx">
-import { reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
-import { useBoolean, useLoading } from '@sa/hooks';
-import { ruleEngineStatusLabels } from '@/constants/business';
-import { fetchRuleEngineList } from '@/service/api_demo/management';
-import { $t } from '@/locales';
-import { createLogger } from '@/utils/logger';
-import type { ModalType } from './components/table-action-modal.vue';
-import TableActionModal from './components/table-action-modal.vue';
-const logger = createLogger('Engie');
+import { reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import { NButton, NPopconfirm, NSpace, NTag } from 'naive-ui'
+import type { DataTableColumns, PaginationProps } from 'naive-ui'
+import { useBoolean, useLoading } from '@sa/hooks'
+import { ruleEngineStatusLabels } from '@/constants/business'
+import { fetchRuleEngineList } from '@/service/api_demo/management'
+import { $t } from '@/locales'
+import { createLogger } from '@/utils/logger'
+import type { ModalType } from './components/table-action-modal.vue'
+import TableActionModal from './components/table-action-modal.vue'
+const logger = createLogger('Engie')
 
-const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: visible, setTrue: openModal } = useBoolean();
+const { loading, startLoading, endLoading } = useLoading(false)
+const { bool: visible, setTrue: openModal } = useBoolean()
 
-const tableData = ref<RuleEngine.Rule[]>([]);
+const tableData = ref<RuleEngine.Rule[]>([])
 
 function setTableData(data: RuleEngine.Rule[]) {
-  tableData.value = data;
+  tableData.value = data
 }
 
 async function getTableData() {
-  startLoading();
-  const { data } = (await fetchRuleEngineList()) as any;
+  startLoading()
+  const { data } = (await fetchRuleEngineList()) as any
   if (data) {
     setTimeout(() => {
-      setTableData(data);
-      endLoading();
-    }, 1000);
+      setTableData(data)
+      endLoading()
+    }, 1000)
   }
 }
 
@@ -55,10 +55,10 @@ const columns: Ref<DataTableColumns<RuleEngine.Rule>> = ref([
         const tagTypes: Record<RuleEngine.StatusKey, NaiveUI.ThemeColor> = {
           '1': 'success',
           '2': 'warning'
-        };
-        return <NTag type={tagTypes[row.status]}>{ruleEngineStatusLabels[row.status]}</NTag>;
+        }
+        return <NTag type={tagTypes[row.status]}>{ruleEngineStatusLabels[row.status]}</NTag>
       }
-      return <span></span>;
+      return <span></span>
     }
   },
   {
@@ -89,47 +89,47 @@ const columns: Ref<DataTableColumns<RuleEngine.Rule>> = ref([
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-]) as Ref<DataTableColumns<RuleEngine.Rule>>;
+]) as Ref<DataTableColumns<RuleEngine.Rule>>
 
-const modalType = ref<ModalType>('add');
+const modalType = ref<ModalType>('add')
 
 function setModalType(type: ModalType) {
-  modalType.value = type;
+  modalType.value = type
 }
 
-const editData = ref<RuleEngine.Rule | null>(null);
+const editData = ref<RuleEngine.Rule | null>(null)
 
 function setEditData(data: RuleEngine.Rule | null) {
-  editData.value = data;
+  editData.value = data
 }
 
 function handleAddTable() {
-  openModal();
-  setModalType('add');
+  openModal()
+  setModalType('add')
 }
 
 function handleActivate(rowId: string) {
-  logger.info(rowId);
+  logger.info(rowId)
 }
 
 function handlePause(rowId: string) {
-  logger.info(rowId);
+  logger.info(rowId)
 }
 
 function handleEditTable(rowId: string) {
-  const findItem = tableData.value.find(item => item.id === rowId);
+  const findItem = tableData.value.find(item => item.id === rowId)
   if (findItem) {
-    setEditData(findItem);
+    setEditData(findItem)
   }
-  setModalType('edit');
-  openModal();
+  setModalType('edit')
+  openModal()
 }
 
 function handleDeleteTable(rowId: string) {
-  window.$message?.info(`${$t('generate.clickDelete')}，rowId${$t('generate.by')}${rowId}`);
+  window.$message?.info(`${$t('generate.clickDelete')}，rowId${$t('generate.by')}${rowId}`)
 }
 
 const pagination: PaginationProps = reactive({
@@ -138,20 +138,20 @@ const pagination: PaginationProps = reactive({
   showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    pagination.page = page;
+    pagination.page = page
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
+    pagination.pageSize = pageSize
+    pagination.page = 1
   }
-});
+})
 
 function init() {
-  getTableData();
+  getTableData()
 }
 
 // 初始化
-init();
+init()
 </script>
 
 <template>

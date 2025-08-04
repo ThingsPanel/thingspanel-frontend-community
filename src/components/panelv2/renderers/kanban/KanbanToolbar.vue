@@ -5,12 +5,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { NButton, NInputNumber, NSelect, NSwitch, NIcon, NTooltip, NSpace, NDivider, NCard } from 'naive-ui'
-import { 
-  GridOutline, 
-  ResizeOutline, 
-  MagnetOutline,
-  OptionsOutline
-} from '@vicons/ionicons5'
+import { GridOutline, ResizeOutline, MagnetOutline, OptionsOutline } from '@vicons/ionicons5'
 import { useThemeStore } from '@/store/modules/theme'
 
 // 看板工具栏配置类型
@@ -61,12 +56,12 @@ const themeColors = computed(() => ({
   panelBg: themeStore.isDark ? 'rgba(24, 24, 28, 0.7)' : 'rgba(255, 255, 255, 0.7)',
   sectionBg: themeStore.isDark ? 'rgba(32, 32, 36, 0.8)' : 'rgba(248, 249, 250, 0.8)',
   headerBg: themeStore.isDark ? 'rgba(28, 28, 32, 0.8)' : 'rgba(250, 250, 250, 0.8)',
-  
+
   // 文字颜色
   primaryText: themeStore.isDark ? '#e5e7eb' : '#495057',
   secondaryText: themeStore.isDark ? '#9ca3af' : '#6b7280',
   labelText: themeStore.isDark ? '#d1d5db' : '#374151',
-  
+
   // 边框颜色
   border: themeStore.isDark ? 'rgba(55, 65, 81, 0.4)' : 'rgba(226, 232, 240, 0.4)',
   sectionBorder: themeStore.isDark ? 'rgba(75, 85, 99, 0.6)' : 'rgba(233, 236, 239, 0.6)',
@@ -128,7 +123,7 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
       compactType: null
     }
   }
-  
+
   const preset_config = presets[preset]
   Object.keys(preset_config).forEach(key => {
     updateConfig(key as keyof KanbanToolbarConfig, preset_config[key as keyof typeof preset_config])
@@ -137,7 +132,7 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
 </script>
 
 <template>
-  <div 
+  <div
     class="kanban-config-panel"
     :style="{
       '--panel-bg': themeColors.panelBg,
@@ -155,29 +150,11 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
     <div class="panel-content space-y-4">
       <!-- 快速预设 -->
       <div class="preset-section">
-        <div class="text-xs font-medium mb-2" style="color: var(--primary-text);">快速预设</div>
+        <div class="text-xs font-medium mb-2" style="color: var(--primary-text)">快速预设</div>
         <NSpace size="small">
-          <NButton
-            size="tiny"
-            :disabled="readonly"
-            @click="applyPreset('tight')"
-          >
-            紧凑
-          </NButton>
-          <NButton
-            size="tiny"
-            :disabled="readonly"
-            @click="applyPreset('normal')"
-          >
-            标准
-          </NButton>
-          <NButton
-            size="tiny"
-            :disabled="readonly"
-            @click="applyPreset('loose')"
-          >
-            宽松
-          </NButton>
+          <NButton size="tiny" :disabled="readonly" @click="applyPreset('tight')">紧凑</NButton>
+          <NButton size="tiny" :disabled="readonly" @click="applyPreset('normal')">标准</NButton>
+          <NButton size="tiny" :disabled="readonly" @click="applyPreset('loose')">宽松</NButton>
         </NSpace>
       </div>
 
@@ -185,11 +162,11 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
 
       <!-- 网格配置 -->
       <div class="grid-section">
-        <div class="text-xs font-medium mb-2" style="color: var(--primary-text);">网格设置</div>
-        
+        <div class="text-xs font-medium mb-2" style="color: var(--primary-text)">网格设置</div>
+
         <!-- 列数 -->
         <div class="config-item">
-          <span class="text-sm" style="color: var(--secondary-text);">列数:</span>
+          <span class="text-sm" style="color: var(--secondary-text)">列数:</span>
           <NInputNumber
             v-model:value="localConfig.columns"
             size="small"
@@ -197,13 +174,13 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
             :max="48"
             :disabled="readonly"
             style="width: 100px"
-            @update:value="(val) => updateConfig('columns', val)"
+            @update:value="val => updateConfig('columns', val)"
           />
         </div>
-        
+
         <!-- 行高 -->
         <div class="config-item">
-          <span class="text-sm" style="color: var(--secondary-text);">行高:</span>
+          <span class="text-sm" style="color: var(--secondary-text)">行高:</span>
           <NInputNumber
             v-model:value="localConfig.rowHeight"
             size="small"
@@ -211,16 +188,16 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
             :max="200"
             :disabled="readonly"
             style="width: 100px"
-            @update:value="(val) => updateConfig('rowHeight', val)"
+            @update:value="val => updateConfig('rowHeight', val)"
           />
         </div>
-        
+
         <!-- 边距 -->
-        <div class="config-item" style="grid-column: 1 / -1;">
+        <div class="config-item" style="grid-column: 1 / -1">
           <div class="flex items-center gap-4">
-            <span class="text-sm" style="color: var(--secondary-text);">边距:</span>
+            <span class="text-sm" style="color: var(--secondary-text)">边距:</span>
             <div class="flex gap-2 items-center">
-              <span class="text-xs" style="color: var(--secondary-text);">X:</span>
+              <span class="text-xs" style="color: var(--secondary-text)">X:</span>
               <NInputNumber
                 :value="localConfig.margin[0]"
                 size="small"
@@ -228,9 +205,9 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
                 :max="50"
                 :disabled="readonly"
                 style="width: 80px"
-                @update:value="(val) => updateMargin(0, val || 0)"
+                @update:value="val => updateMargin(0, val || 0)"
               />
-              <span class="text-xs" style="color: var(--secondary-text);">Y:</span>
+              <span class="text-xs" style="color: var(--secondary-text)">Y:</span>
               <NInputNumber
                 :value="localConfig.margin[1]"
                 size="small"
@@ -238,7 +215,7 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
                 :max="50"
                 :disabled="readonly"
                 style="width: 80px"
-                @update:value="(val) => updateMargin(1, val || 0)"
+                @update:value="val => updateMargin(1, val || 0)"
               />
             </div>
           </div>
@@ -249,29 +226,29 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
 
       <!-- 布局行为 -->
       <div class="layout-section">
-        <div class="text-xs font-medium mb-2" style="color: var(--primary-text);">布局行为</div>
-        
+        <div class="text-xs font-medium mb-2" style="color: var(--primary-text)">布局行为</div>
+
         <!-- 紧凑类型 -->
         <div class="config-item flex items-center justify-between mb-2">
-          <span class="text-xs" style="color: var(--secondary-text);">紧凑:</span>
+          <span class="text-xs" style="color: var(--secondary-text)">紧凑:</span>
           <NSelect
             v-model:value="localConfig.compactType"
             size="tiny"
             :options="compactTypeOptions"
             :disabled="readonly"
             style="width: 120px"
-            @update:value="(val) => updateConfig('compactType', val)"
+            @update:value="val => updateConfig('compactType', val)"
           />
         </div>
-        
+
         <!-- 防碰撞 -->
         <div class="config-item flex items-center justify-between mb-2">
-          <span class="text-xs" style="color: var(--secondary-text);">防碰撞:</span>
+          <span class="text-xs" style="color: var(--secondary-text)">防碰撞:</span>
           <NSwitch
             v-model:value="localConfig.preventCollision"
             size="small"
             :disabled="readonly"
-            @update:value="(val) => updateConfig('preventCollision', val)"
+            @update:value="val => updateConfig('preventCollision', val)"
           />
         </div>
       </div>
@@ -280,49 +257,49 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
 
       <!-- 交互功能 -->
       <div class="interaction-section">
-        <div class="text-xs font-medium mb-2" style="color: var(--primary-text);">交互功能</div>
-        
+        <div class="text-xs font-medium mb-2" style="color: var(--primary-text)">交互功能</div>
+
         <!-- 显示网格 -->
         <div class="config-item flex items-center justify-between mb-2">
-          <span class="text-xs" style="color: var(--secondary-text);">显示网格:</span>
+          <span class="text-xs" style="color: var(--secondary-text)">显示网格:</span>
           <NSwitch
             v-model:value="localConfig.showGrid"
             size="small"
             :disabled="readonly"
-            @update:value="(val) => updateConfig('showGrid', val)"
+            @update:value="val => updateConfig('showGrid', val)"
           />
         </div>
-        
+
         <!-- 启用吸附 -->
         <div class="config-item flex items-center justify-between mb-2">
-          <span class="text-xs" style="color: var(--secondary-text);">启用吸附:</span>
+          <span class="text-xs" style="color: var(--secondary-text)">启用吸附:</span>
           <NSwitch
             v-model:value="localConfig.enableSnap"
             size="small"
             :disabled="readonly"
-            @update:value="(val) => updateConfig('enableSnap', val)"
+            @update:value="val => updateConfig('enableSnap', val)"
           />
         </div>
-        
+
         <!-- 启用拖拽 -->
         <div class="config-item flex items-center justify-between mb-2">
-          <span class="text-xs" style="color: var(--secondary-text);">启用拖拽:</span>
+          <span class="text-xs" style="color: var(--secondary-text)">启用拖拽:</span>
           <NSwitch
             v-model:value="localConfig.enableDrag"
             size="small"
             :disabled="readonly"
-            @update:value="(val) => updateConfig('enableDrag', val)"
+            @update:value="val => updateConfig('enableDrag', val)"
           />
         </div>
-        
+
         <!-- 启用调整大小 -->
         <div class="config-item flex items-center justify-between mb-2">
-          <span class="text-xs" style="color: var(--secondary-text);">调整大小:</span>
+          <span class="text-xs" style="color: var(--secondary-text)">调整大小:</span>
           <NSwitch
             v-model:value="localConfig.enableResize"
             size="small"
             :disabled="readonly"
-            @update:value="(val) => updateConfig('enableResize', val)"
+            @update:value="val => updateConfig('enableResize', val)"
           />
         </div>
       </div>
@@ -340,7 +317,9 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
   border: 1px solid var(--border) !important;
   border-radius: 8px;
   padding: 16px;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .panel-header {
@@ -370,7 +349,9 @@ const applyPreset = (preset: 'tight' | 'normal' | 'loose') => {
   margin-bottom: 16px;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 /* 区域标题样式 - 支持主题切换 */

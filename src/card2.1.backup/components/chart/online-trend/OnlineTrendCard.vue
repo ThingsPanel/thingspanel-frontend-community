@@ -50,14 +50,14 @@ const chartOption = ref({
   legend: {
     data: [$t('card.onlineDev'), $t('card.offlineDev')],
     left: 'center',
-    top: 0,
+    top: 0
   },
   grid: {
     left: '3%',
     right: '4%',
     bottom: '3%',
     top: '50px',
-    containLabel: true,
+    containLabel: true
   },
   xAxis: {
     type: 'time',
@@ -119,7 +119,8 @@ watch([onlineData, offlineData], ([newOnline, newOffline]) => {
   align-items: center;
   margin-bottom: 16px;
 }
-.title, .online-rate {
+.title,
+.online-rate {
   display: flex;
   align-items: center;
   font-size: 16px;

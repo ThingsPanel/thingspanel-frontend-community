@@ -3,29 +3,21 @@
   基于 gridstack.js 的网格布局渲染器实现
 -->
 <template>
-  <div 
-    ref="containerRef" 
+  <div
+    ref="containerRef"
     class="gridstack-renderer"
     :class="{
-      'readonly': readonly,
+      readonly: readonly,
       'dark-theme': isDarkTheme
     }"
   >
     <!-- GridStack 容器将在这里动态创建 -->
-    <div 
-      ref="gridRef" 
-      class="grid-stack"
-      :style="gridStyles"
-    >
+    <div ref="gridRef" class="grid-stack" :style="gridStyles">
       <!-- 网格项将通过 GridStack API 动态添加 -->
     </div>
-    
-    
+
     <!-- 拖拽提示 -->
-    <div 
-      v-if="isDragging" 
-      class="drag-overlay"
-    >
+    <div v-if="isDragging" class="drag-overlay">
       <div class="drag-hint">
         <i class="icon-move" />
         <span>拖拽到网格中释放</span>
@@ -39,9 +31,7 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { GridStack } from 'gridstack'
 import 'gridstack/dist/gridstack.min.css'
 import { useThemeStore } from '@/store/modules/theme'
-import type { 
-  RendererConfig
-} from '../../types/renderer'
+import type { RendererConfig } from '../../types/renderer'
 import type { BaseCanvasItem } from '../../types/core'
 import { dragDropService, type DragData, type DropZone } from '../../core/DragDropService'
 import { generateId } from '../../utils/id'
@@ -55,7 +45,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   config: () => ({}),
-  items: () => ([]),
+  items: () => [],
   readonly: false
 })
 
@@ -128,20 +118,19 @@ const initializeGridStack = async () => {
 
     // 初始化 GridStack 实例
     gridstack.value = GridStack.init(gridOptions.value, gridRef.value)
-    
+
     // 设置事件监听
     setupEventListeners()
-    
+
     // 加载初始数据
     if (internalItems.value.length > 0) {
       loadItems(internalItems.value)
     }
-    
+
     // 设置拖拽支持
     setupDragDrop()
-    
+
     emit('ready')
-    
   } catch (error) {
     console.error('GridStack initialization failed:', error)
     emit('error', error as Error)
@@ -153,36 +142,36 @@ const initializeGridStack = async () => {
  */
 const setupEventListeners = () => {
   if (!gridstack.value) return
-  
+
   // 拖拽事件
   gridstack.value.on('dragstart', (_event, element) => {
     const id = element.getAttribute('gs-id') || element.id
     isDragging.value = true
     emit('item-select', [id])
   })
-  
+
   gridstack.value.on('dragstop', (event, element) => {
     const id = element.getAttribute('gs-id') || element.id
     isDragging.value = false
     updateItemFromElement(id, element)
   })
-  
+
   // 调整大小事件
   gridstack.value.on('resizestart', (event, element) => {
     const id = element.getAttribute('gs-id') || element.id
     emit('item-select', [id])
   })
-  
+
   gridstack.value.on('resizestop', (event, element) => {
     const id = element.getAttribute('gs-id') || element.id
     updateItemFromElement(id, element)
   })
-  
+
   // 布局变化事件
   gridstack.value.on('change', (_event, _items) => {
     emit('layout-change', internalItems.value)
   })
-  
+
   // 项目移除事件
   gridstack.value.on('removed', (event, items) => {
     const removedIds = items.map(item => item.id || item.el?.getAttribute('gs-id')).filter(Boolean)
@@ -197,14 +186,14 @@ const setupEventListeners = () => {
  */
 const setupDragDrop = () => {
   if (!gridRef.value || !gridstack.value) return
-  
+
   // 注册为拖拽目标
   const dropZoneIdValue = `gridstack-${Date.now()}`
   const dropZone: DropZone = {
     id: dropZoneIdValue,
     element: gridRef.value,
     accepts: ['card', 'widget', 'component'],
-    onDragEnter: (_data) => {
+    onDragEnter: _data => {
       isDragging.value = true
     },
     onDragLeave: () => {
@@ -215,7 +204,7 @@ const setupDragDrop = () => {
       handleExternalDrop(data, position)
     }
   }
-  
+
   dropZoneId.value = dropZoneIdValue
   dragDropService.registerDropZone(dropZone)
 }
@@ -223,13 +212,13 @@ const setupDragDrop = () => {
 /**
  * 处理外部拖拽
  */
-const handleExternalDrop = (data: DragData, position: { x: number, y: number }) => {
-  const cellSize = gridOptions.value.cellHeight as number || 60
-  
+const handleExternalDrop = (data: DragData, position: { x: number; y: number }) => {
+  const cellSize = (gridOptions.value.cellHeight as number) || 60
+
   // 计算网格位置
   const gridX = Math.floor(position.x / (cellSize + (gridOptions.value.margin || 10)))
   const gridY = Math.floor(position.y / (cellSize + (gridOptions.value.margin || 10)))
-  
+
   const newItem: BaseCanvasItem = {
     id: generateId(),
     type: data.type || 'widget',
@@ -249,14 +238,16 @@ const handleExternalDrop = (data: DragData, position: { x: number, y: number }) 
       cardConfig: data.cardConfig,
       ...data.metadata
     },
-    cardData: data.cardConfig ? {
-      id: data.cardId || generateId(),
-      type: data.cardType || 'default',
-      title: data.cardName || '未命名组件',
-      config: data.cardConfig
-    } : undefined
+    cardData: data.cardConfig
+      ? {
+          id: data.cardId || generateId(),
+          type: data.cardType || 'default',
+          title: data.cardName || '未命名组件',
+          config: data.cardConfig
+        }
+      : undefined
   }
-  
+
   addItem(newItem)
 }
 
@@ -265,10 +256,10 @@ const handleExternalDrop = (data: DragData, position: { x: number, y: number }) 
  */
 const loadItems = (items: BaseCanvasItem[]) => {
   if (!gridstack.value) return
-  
+
   // 清空现有项目
   gridstack.value.removeAll(false)
-  
+
   // 添加新项目
   items.forEach(item => {
     addGridItem(item)
@@ -280,16 +271,16 @@ const loadItems = (items: BaseCanvasItem[]) => {
  */
 const addGridItem = (item: BaseCanvasItem) => {
   if (!gridstack.value) return
-  
+
   // 创建网格项元素
   const widget = document.createElement('div')
   widget.className = 'grid-stack-item'
   widget.setAttribute('gs-id', item.id)
-  
+
   // 创建内容容器
   const content = document.createElement('div')
   content.className = 'grid-stack-item-content'
-  
+
   // 添加标题栏
   const header = document.createElement('div')
   header.className = 'item-header'
@@ -304,21 +295,21 @@ const addGridItem = (item: BaseCanvasItem) => {
       </button>
     </div>
   `
-  
+
   // 添加内容区域
   const body = document.createElement('div')
   body.className = 'item-body'
   body.innerHTML = `
     <div class="item-content">${item.data?.content || `Item ${item.id}`}</div>
   `
-  
+
   content.appendChild(header)
   content.appendChild(body)
   widget.appendChild(content)
-  
+
   // 绑定事件
   bindItemEvents(widget, item)
-  
+
   // GridStack v11 兼容的网格项添加方式
   const gridItemOptions = {
     x: item.position?.x || 0,
@@ -327,14 +318,14 @@ const addGridItem = (item: BaseCanvasItem) => {
     h: item.size?.height || 2,
     id: item.id
   }
-  
+
   // 设置网格项属性到DOM元素
   widget.setAttribute('gs-x', String(gridItemOptions.x))
   widget.setAttribute('gs-y', String(gridItemOptions.y))
   widget.setAttribute('gs-w', String(gridItemOptions.w))
   widget.setAttribute('gs-h', String(gridItemOptions.h))
   widget.setAttribute('gs-id', gridItemOptions.id)
-  
+
   // 使用GridStack v11的API
   gridstack.value.makeWidget(widget)
   gridstack.value.addWidget(widget)
@@ -347,23 +338,23 @@ const bindItemEvents = (element: HTMLElement, item: BaseCanvasItem) => {
   // 编辑按钮
   const editBtn = element.querySelector('.btn-edit')
   if (editBtn) {
-    editBtn.addEventListener('click', (e) => {
+    editBtn.addEventListener('click', e => {
       e.stopPropagation()
       handleEditItem(item.id)
     })
   }
-  
+
   // 删除按钮
   const deleteBtn = element.querySelector('.btn-delete')
   if (deleteBtn) {
-    deleteBtn.addEventListener('click', (e) => {
+    deleteBtn.addEventListener('click', e => {
       e.stopPropagation()
       handleDeleteItem(item.id)
     })
   }
-  
+
   // 点击选择
-  element.addEventListener('click', (e) => {
+  element.addEventListener('click', e => {
     if (!e.defaultPrevented) {
       handleSelectItem(item.id)
     }
@@ -376,14 +367,11 @@ const bindItemEvents = (element: HTMLElement, item: BaseCanvasItem) => {
 const updateItemFromElement = (id: string, _element: HTMLElement) => {
   const item = internalItems.value.find(item => item.id === id)
   if (!item) return
-  
+
   // 获取网格位置信息
-  const node = gridstack.value?.getGridItems().find(el => 
-    (el.getAttribute('gs-id') || el.id) === id
-  )
-  
+  const node = gridstack.value?.getGridItems().find(el => (el.getAttribute('gs-id') || el.id) === id)
+
   if (node) {
-    
     const updates: Partial<BaseCanvasItem> = {
       position: {
         x: parseInt(node.getAttribute('gs-x') || '0'),
@@ -394,7 +382,7 @@ const updateItemFromElement = (id: string, _element: HTMLElement) => {
         height: parseInt(node.getAttribute('gs-h') || '2')
       }
     }
-    
+
     // 更新内部数据
     const index = internalItems.value.findIndex(item => item.id === id)
     if (index !== -1) {
@@ -421,7 +409,7 @@ const removeItem = (id: string) => {
   if (element && gridstack.value) {
     gridstack.value.removeWidget(element as HTMLElement, false)
   }
-  
+
   internalItems.value = internalItems.value.filter(item => item.id !== id)
   emit('item-remove', [id])
 }
@@ -433,7 +421,7 @@ const updateItem = (id: string, updates: Partial<BaseCanvasItem>) => {
   const itemIndex = internalItems.value.findIndex(item => item.id === id)
   if (itemIndex !== -1) {
     internalItems.value[itemIndex] = { ...internalItems.value[itemIndex], ...updates }
-    
+
     // 更新网格中的元素 - GridStack v11兼容
     const element = gridRef.value?.querySelector(`[gs-id="${id}"]`) as HTMLElement
     if (element && gridstack.value && updates.position) {
@@ -442,7 +430,7 @@ const updateItem = (id: string, updates: Partial<BaseCanvasItem>) => {
       element.setAttribute('gs-y', String(updates.position.y))
       if (updates.size?.width) element.setAttribute('gs-w', String(updates.size.width))
       if (updates.size?.height) element.setAttribute('gs-h', String(updates.size.height))
-      
+
       // 通知GridStack更新
       gridstack.value.update(element, {
         x: updates.position.x,
@@ -451,7 +439,7 @@ const updateItem = (id: string, updates: Partial<BaseCanvasItem>) => {
         h: updates.size?.height
       })
     }
-    
+
     emit('item-update', internalItems.value[itemIndex])
   }
 }
@@ -467,7 +455,6 @@ const clearItems = () => {
   emit('layout-change', [])
 }
 
-
 const handleEditItem = (id: string) => {
   console.log('编辑项目:', id)
   // 实现编辑逻辑
@@ -482,21 +469,28 @@ const handleSelectItem = (id: string) => {
   emit('item-select', [id])
 }
 
-
 // Watchers
-watch(() => props.items, (newItems) => {
-  internalItems.value = [...newItems]
-  if (gridstack.value) {
-    loadItems(newItems)
-  }
-}, { deep: true })
+watch(
+  () => props.items,
+  newItems => {
+    internalItems.value = [...newItems]
+    if (gridstack.value) {
+      loadItems(newItems)
+    }
+  },
+  { deep: true }
+)
 
-watch(() => props.config, (newConfig) => {
-  if (gridstack.value && newConfig) {
-    // 更新网格配置
-    gridstack.value.column(newConfig.columns || 12)
-  }
-}, { deep: true })
+watch(
+  () => props.config,
+  newConfig => {
+    if (gridstack.value && newConfig) {
+      // 更新网格配置
+      gridstack.value.column(newConfig.columns || 12)
+    }
+  },
+  { deep: true }
+)
 
 // Lifecycle
 onMounted(async () => {
@@ -508,7 +502,7 @@ onUnmounted(() => {
   if (gridstack.value) {
     gridstack.value.destroy(false)
   }
-  
+
   // 清理拖拽服务
   if (dropZoneId.value) {
     dragDropService.unregisterDropZone(dropZoneId.value)
@@ -533,7 +527,7 @@ defineExpose({
   width: 100%;
   height: 100%;
   overflow: auto;
-  
+
   /* CSS变量定义 */
   --bg-color: #ffffff;
   --bg-color-dark: #1a1a1a;
@@ -674,8 +668,13 @@ defineExpose({
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
 }
 
 .drag-hint {
@@ -697,7 +696,13 @@ defineExpose({
 }
 
 /* 图标样式 */
-.icon-move::before { content: '↔'; }
-.icon-edit::before { content: '✏'; }
-.icon-delete::before { content: '🗑'; }
+.icon-move::before {
+  content: '↔';
+}
+.icon-edit::before {
+  content: '✏';
+}
+.icon-delete::before {
+  content: '🗑';
+}
 </style>

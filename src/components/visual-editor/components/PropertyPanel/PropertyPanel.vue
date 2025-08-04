@@ -4,42 +4,30 @@
       <n-card title="基础属性" size="small" :bordered="false">
         <n-form size="small" label-placement="left" label-width="50">
           <n-form-item label="X">
-            <n-input-number 
-              :value="selectedNode.x" 
-              @update:value="updateNodePosition('x', $event)"
-            />
+            <n-input-number :value="selectedNode.x" @update:value="updateNodePosition('x', $event)" />
           </n-form-item>
           <n-form-item label="Y">
-            <n-input-number 
-              :value="selectedNode.y" 
-              @update:value="updateNodePosition('y', $event)"
-            />
+            <n-input-number :value="selectedNode.y" @update:value="updateNodePosition('y', $event)" />
           </n-form-item>
           <n-form-item label="宽度">
-            <n-input-number 
-              :value="selectedNode.width" 
-              @update:value="updateNodeSize('width', $event)"
-            />
+            <n-input-number :value="selectedNode.width" @update:value="updateNodeSize('width', $event)" />
           </n-form-item>
           <n-form-item label="高度">
-            <n-input-number 
-              :value="selectedNode.height" 
-              @update:value="updateNodeSize('height', $event)"
-            />
+            <n-input-number :value="selectedNode.height" @update:value="updateNodeSize('height', $event)" />
           </n-form-item>
         </n-form>
       </n-card>
 
       <!-- 组件特定属性 -->
       <n-card title="组件属性" size="small" :bordered="false" class="mt-2">
-        <component 
+        <component
           :is="getPropertyEditor(selectedNode.type)"
           :properties="selectedNode.properties"
           @update="updateNodeProperties"
         />
       </n-card>
     </template>
-    
+
     <n-empty v-else description="请选择一个组件" />
   </div>
 </template>
@@ -88,7 +76,7 @@ const updateNodeSize = (dimension: 'width' | 'height', value: number | null) => 
 
 const updateNodeProperties = (properties: Record<string, any>) => {
   if (!selectedNode.value) return
-  updateNode(selectedNode.value.id, { 
+  updateNode(selectedNode.value.id, {
     properties: { ...selectedNode.value.properties, ...properties }
   })
 }

@@ -26,7 +26,7 @@ const emit = defineEmits<Emits>()
 
 const config = computed({
   get: () => props.modelValue || {},
-  set: (value) => emit('update:modelValue', value)
+  set: value => emit('update:modelValue', value)
 })
 
 const updateConfig = (key: string, value: any) => {
@@ -44,32 +44,24 @@ const setIcon = (icon: string) => {
 <template>
   <NForm :model="config">
     <NFormItem :label="$t('common.title')">
-      <NInput 
-        :value="config.title" 
+      <NInput
+        :value="config.title"
         :placeholder="$t('card.humidity')"
-        @update:value="(val) => updateConfig('title', val)" 
+        @update:value="val => updateConfig('title', val)"
       />
     </NFormItem>
     <NFormItem :label="$t('device_template.table_header.unit')">
-      <NInput 
-        :value="config.unit" 
-        :placeholder="$t('device_template.table_header.pleaseEnterTheUnit')" 
-        @update:value="(val) => updateConfig('unit', val)"
+      <NInput
+        :value="config.unit"
+        :placeholder="$t('device_template.table_header.pleaseEnterTheUnit')"
+        @update:value="val => updateConfig('unit', val)"
       />
     </NFormItem>
     <NFormItem :label="$t('generate.color')">
-      <NColorPicker 
-        :value="config.color" 
-        :show-alpha="false" 
-        @update:value="(val) => updateConfig('color', val)"
-      />
+      <NColorPicker :value="config.color" :show-alpha="false" @update:value="val => updateConfig('color', val)" />
     </NFormItem>
     <NFormItem label="值">
-      <NInput 
-        :value="String(config.value || '')" 
-        placeholder="45"
-        @update:value="(val) => updateConfig('value', val)"
-      />
+      <NInput :value="String(config.value || '')" placeholder="45" @update:value="val => updateConfig('value', val)" />
     </NFormItem>
     <IconSelector default-icon="Water" @icon-selected="setIcon" />
   </NForm>

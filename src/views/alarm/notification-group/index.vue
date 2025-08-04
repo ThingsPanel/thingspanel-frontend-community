@@ -1,27 +1,27 @@
 <script setup lang="tsx">
-import { computed, getCurrentInstance, reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import { NButton, NPopconfirm, NSpace, NSwitch } from 'naive-ui';
-import type { DataTableColumns, PaginationProps } from 'naive-ui';
+import { computed, getCurrentInstance, reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import { NButton, NPopconfirm, NSpace, NSwitch } from 'naive-ui'
+import type { DataTableColumns, PaginationProps } from 'naive-ui'
 import {
   deleteNotificationGroup,
   getNotificationGroupDetail,
   getNotificationGroupList,
   putNotificationGroup
-} from '@/service/api/notification';
-import { notificationOptions } from '@/constants/business';
-import { $t } from '@/locales';
-import type { ModalType } from './components/table-action-modal.vue';
-import TableActionModal from './components/table-action-modal.vue';
-import { useBoolean, useLoading } from '~/packages/hooks';
+} from '@/service/api/notification'
+import { notificationOptions } from '@/constants/business'
+import { $t } from '@/locales'
+import type { ModalType } from './components/table-action-modal.vue'
+import TableActionModal from './components/table-action-modal.vue'
+import { useBoolean, useLoading } from '~/packages/hooks'
 
-const { loading, startLoading, endLoading } = useLoading(false);
-const { bool: visible, setTrue: openModal } = useBoolean();
-const tableData = ref<Api.Alarm.NotificationGroupList[]>([]);
-const total = ref(0);
+const { loading, startLoading, endLoading } = useLoading(false)
+const { bool: visible, setTrue: openModal } = useBoolean()
+const tableData = ref<Api.Alarm.NotificationGroupList[]>([])
+const total = ref(0)
 
 function setTableData(data: Api.Alarm.NotificationGroupList[]) {
-  tableData.value = data;
+  tableData.value = data
 }
 
 const pagination: PaginationProps = reactive({
@@ -30,50 +30,50 @@ const pagination: PaginationProps = reactive({
   showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    pagination.page = page;
+    pagination.page = page
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
+    pagination.pageSize = pageSize
+    pagination.page = 1
   }
-});
+})
 
 const getTableData = async () => {
-  startLoading();
+  startLoading()
   const prams = {
     page: pagination.page || 1,
     page_size: pagination.pageSize || 10
-  };
-  const res = await getNotificationGroupList(prams);
-  if (res?.data) {
-    setTableData(res?.data.list || []);
-    total.value = res.data.total || 0;
   }
-  endLoading();
-};
+  const res = await getNotificationGroupList(prams)
+  if (res?.data) {
+    setTableData(res?.data.list || [])
+    total.value = res.data.total || 0
+  }
+  endLoading()
+}
 
 const handleSwitchChange = async (row, value) => {
-  row.status = value ? 'OPEN' : 'CLOSE';
-  const id = row?.id || '';
-  delete row.id;
-  await putNotificationGroup(row, id);
-  getTableData();
-};
+  row.status = value ? 'OPEN' : 'CLOSE'
+  const id = row?.id || ''
+  delete row.id
+  await putNotificationGroup(row, id)
+  getTableData()
+}
 const handleDeleteTable = async (rowId: string) => {
-  await deleteNotificationGroup({ id: rowId });
+  await deleteNotificationGroup({ id: rowId })
 
-  window.$message?.info($t('generate.notificationGroup'));
-  getTableData();
-};
-const editData = ref<Api.Alarm.NotificationGroupList | null>(null);
+  window.$message?.info($t('generate.notificationGroup'))
+  getTableData()
+}
+const editData = ref<Api.Alarm.NotificationGroupList | null>(null)
 const handleEditTable = async (rowId: string) => {
-  const res = await getNotificationGroupDetail({ id: rowId });
+  const res = await getNotificationGroupDetail({ id: rowId })
   if (res?.data) {
-    editData.value = res.data;
-    setModalType('edit');
-    openModal();
+    editData.value = res.data
+    setModalType('edit')
+    openModal()
   }
-};
+}
 const columns = ref([
   {
     key: 'name',
@@ -87,8 +87,8 @@ const columns = ref([
     align: 'left',
     minWidth: '140px',
     render: (row: any) => {
-      const notificationType = notificationOptions.find(option => option.value === row.notification_type)?.label || '';
-      return notificationType;
+      const notificationType = notificationOptions.find(option => option.value === row.notification_type)?.label || ''
+      return notificationType
     }
   },
   {
@@ -97,7 +97,7 @@ const columns = ref([
     align: 'left',
     minWidth: '140px',
     render: (row: any) => {
-      return <NSwitch value={row.status === 'OPEN'} onChange={value => handleSwitchChange(row, value)} />;
+      return <NSwitch value={row.status === 'OPEN'} onChange={value => handleSwitchChange(row, value)} />
     }
   },
   {
@@ -122,27 +122,27 @@ const columns = ref([
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-]) as Ref<DataTableColumns<DataService.Data>>;
+]) as Ref<DataTableColumns<DataService.Data>>
 
-const modalType = ref<ModalType>('add');
+const modalType = ref<ModalType>('add')
 
 function setModalType(type: ModalType) {
-  modalType.value = type;
+  modalType.value = type
 }
 
 function handleAddTable() {
-  openModal();
-  setModalType('add');
+  openModal()
+  setModalType('add')
 }
 
 const getPlatform = computed(() => {
-  const { proxy }: any = getCurrentInstance();
-  return proxy.getPlatform();
-});
-getTableData();
+  const { proxy }: any = getCurrentInstance()
+  return proxy.getPlatform()
+})
+getTableData()
 </script>
 
 <template>

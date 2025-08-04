@@ -1,19 +1,19 @@
 <script lang="tsx" setup>
-import { computed, reactive, ref, watch } from 'vue';
-import type { SelectOption } from 'naive-ui';
-import { usePanelStore } from '@/store/modules/panel';
-import ConfigCtx from '@/components/panel/ui/config-ctx.vue';
-import type { ICardData, ICardDefine } from '@/components/panel/card';
-import { deviceListForPanel, deviceMetricsList } from '@/service/api';
-import { $t } from '@/locales';
+import { computed, reactive, ref, watch } from 'vue'
+import type { SelectOption } from 'naive-ui'
+import { usePanelStore } from '@/store/modules/panel'
+import ConfigCtx from '@/components/panel/ui/config-ctx.vue'
+import type { ICardData, ICardDefine } from '@/components/panel/card'
+import { deviceListForPanel, deviceMetricsList } from '@/service/api'
+import { $t } from '@/locales'
 
-const copy = (obj: object) => JSON.parse(JSON.stringify(obj));
+const copy = (obj: object) => JSON.parse(JSON.stringify(obj))
 
 const props = defineProps<{
-  mobile?: boolean;
-  deviceWebChartConfig: any;
-}>();
-const store = usePanelStore();
+  mobile?: boolean
+  deviceWebChartConfig: any
+}>()
+const store = usePanelStore()
 const defData = {
   cardId: '',
   type: 'builtin',
@@ -25,7 +25,7 @@ const defData = {
     systemSource: [{}],
     deviceSource: [{}]
   } as any
-};
+}
 const dataTimeRangeOptions = [
   { label: $t('common.last_5m'), value: 'last_5m' },
   { label: $t('common.last_15m'), value: 'last_15m' },
@@ -41,7 +41,7 @@ const dataTimeRangeOptions = [
   { label: $t('common.lastDays30'), value: 'last_30d' },
   { label: $t('common.lastDays60'), value: 'last_60d' },
   { label: $t('common.lastDays90'), value: 'last_90d' }
-];
+]
 
 const dataAggregateRangeOptions = [
   { label: $t('common.notAggre'), value: 'no_aggregate', disabled: false },
@@ -57,23 +57,23 @@ const dataAggregateRangeOptions = [
   { label: $t('common.days1'), value: '1d', disabled: false },
   { label: $t('common.days7'), value: '7d', disabled: false },
   { label: '1月', value: '1mo', disabled: false }
-];
+]
 const aggregateFunctionOptions: SelectOption[] = [
   { label: $t('common.average'), value: 'avg' },
   { label: $t('generate.max-value'), value: 'max' },
   { label: $t('common.sum'), value: 'sum' },
   { label: $t('common.diffValue'), value: 'diff' }
-];
+]
 const state = reactive({
   tab: 'device',
   selectCard: null as null | ICardDefine,
   data: copy(defData)
-});
+})
 const findCard = (id: string) => {
-  const cIds = id.split('-');
-  const cId = `${cIds[0]}-${cIds[1]}`;
-  return store.$state.cardMap.get(cId) || null;
-};
+  const cIds = id.split('-')
+  const cId = `${cIds[0]}-${cIds[1]}`
+  return store.$state.cardMap.get(cId) || null
+}
 const updateDisabledOptions = (timeFrame: string) => {
   const disableBeforeIndex: { [key: string]: number } = {
     最近3小时: 1, // 30秒
@@ -98,99 +98,99 @@ const updateDisabledOptions = (timeFrame: string) => {
     上个月: 7, // 1小时
     今年: 12, // 1月
     去年: 12 // 1月
-  };
+  }
 
   // 默认不禁用"不聚合"，根据时间范围禁用其余选项
   dataAggregateRangeOptions.forEach((item, index, array) => {
     if (!disableBeforeIndex[timeFrame]) {
-      item.disabled = false;
-      state.data.dataSource.dataAggregateRange = 'no_aggregate';
-      return;
+      item.disabled = false
+      state.data.dataSource.dataAggregateRange = 'no_aggregate'
+      return
     }
 
-    item.disabled = index < (disableBeforeIndex[timeFrame] || 0);
+    item.disabled = index < (disableBeforeIndex[timeFrame] || 0)
     if (index < (disableBeforeIndex[timeFrame] || 0)) {
-      state.data.dataSource.dataAggregateRange = array[index + 1].value as string;
+      state.data.dataSource.dataAggregateRange = array[index + 1].value as string
     }
-  });
-};
+  })
+}
 const updateTime = (_v: number, o: SelectOption) => {
-  updateDisabledOptions(o.label as string);
-};
+  updateDisabledOptions(o.label as string)
+}
 
 const emit = defineEmits<{
-  (e: 'update', data: ICardData): void;
-}>();
+  (e: 'update', data: ICardData): void
+}>()
 
 watch(
   () => state.data,
   data => {
-    emit('update', data as any);
+    emit('update', data as any)
   },
   { deep: true }
-);
+)
 
 // deviceList;
 // deviceMetricsList;
-const deviceOption = ref<SelectOption[]>([]);
-const deviceCount = ref();
+const deviceOption = ref<SelectOption[]>([])
+const deviceCount = ref()
 const getDeviceList = async () => {
-  const res = await deviceListForPanel({});
-  deviceOption.value = res.data || [];
-};
+  const res = await deviceListForPanel({})
+  deviceOption.value = res.data || []
+}
 
 defineExpose({
   setCard: (data?: ICardData) => {
-    state.selectCard = null;
-    state.data = copy(data || defData);
+    state.selectCard = null
+    state.data = copy(data || defData)
     // clear metricsOptions when change card, metricsOptions will be fetched when open
     state.data.dataSource.deviceSource.forEach(item => {
-      item.metricsOptions = [];
-      item.metricsOptionsFetched = false;
-    });
+      item.metricsOptions = []
+      item.metricsOptionsFetched = false
+    })
     setTimeout(() => {
-      state.selectCard = findCard(state.data.cardId);
-      if (state.data.type === 'chart') state.tab = 'dataSource';
-      else if (state.selectCard?.configForm) state.tab = 'config';
-      else state.tab = 'basic';
-    });
+      state.selectCard = findCard(state.data.cardId)
+      if (state.data.type === 'chart') state.tab = 'dataSource'
+      else if (state.selectCard?.configForm) state.tab = 'config'
+      else state.tab = 'basic'
+    })
 
-    deviceCount.value = state?.data?.dataSource?.deviceSource?.length || 1;
+    deviceCount.value = state?.data?.dataSource?.deviceSource?.length || 1
 
     if (state.data.type === 'chart') {
-      getDeviceList();
+      getDeviceList()
     }
   }
-});
+})
 
 const deviceCountUpdate = v => {
-  state.data.dataSource.deviceCount = v;
+  state.data.dataSource.deviceCount = v
   if (state.data.dataSource.deviceSource.length < v) {
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i <= v - state.data.dataSource.deviceSource.length + 1; i++) {
-      state.data.dataSource.deviceSource.push({});
+      state.data.dataSource.deviceSource.push({})
     }
   } else if (state.data.dataSource.deviceSource.length > v) {
-    state.data.dataSource.deviceSource.splice(v, state.data.dataSource.deviceSource.length - v);
+    state.data.dataSource.deviceSource.splice(v, state.data.dataSource.deviceSource.length - v)
   }
-};
+}
 const updateDropdownShow = async (show: boolean, item) => {
-  const reactiveItem = reactive(item);
+  const reactiveItem = reactive(item)
   if (show && reactiveItem.deviceId && !reactiveItem.metricsOptionsFetched) {
-    const res = await deviceMetricsList(reactiveItem.deviceId);
-    reactiveItem.metricsOptions = res?.data || [];
-    reactiveItem.metricsOptionsFetched = true;
+    const res = await deviceMetricsList(reactiveItem.deviceId)
+    reactiveItem.metricsOptions = res?.data || []
+    reactiveItem.metricsOptionsFetched = true
   }
-  reactiveItem.metricsShow = show;
-};
+  reactiveItem.metricsShow = show
+}
 
 const deviceSelectChange = async (_v, option, item) => {
-  item.metricsOptions = [];
-  item.metricsOptionsFetched = false;
-  item.metricsId = '';
-  item.metricsName = '';
-  item.name = option.name;
-};
+  item.metricsOptions = []
+  item.metricsOptionsFetched = false
+  item.metricsId = ''
+  item.metricsName = ''
+  item.name = option.name
+}
 
 const metricsOptionRender = (info, item) => {
   return (
@@ -202,11 +202,11 @@ const metricsOptionRender = (info, item) => {
             class="m-b-2px"
             v-if="it.label"
             onClick={() => {
-              item.metricsId = it.key;
-              item.metricsName = it.label || '';
-              item.metricsType = info?.option?.data_source_type;
-              item.metricsDataType = it.data_type;
-              updateDropdownShow(false, item);
+              item.metricsId = it.key
+              item.metricsName = it.label || ''
+              item.metricsType = info?.option?.data_source_type
+              item.metricsDataType = it.data_type
+              updateDropdownShow(false, item)
             }}
           >
             {it.label ? (
@@ -224,11 +224,11 @@ const metricsOptionRender = (info, item) => {
               </div>
             )}
           </div>
-        );
+        )
       })}
     </div>
-  );
-};
+  )
+}
 
 // onUpdated(() => {
 //   deviceCount.value = state?.data?.dataSource?.deviceSource?.length || 1;
@@ -252,16 +252,16 @@ watch(
     if (props?.deviceWebChartConfig?.length > 0) {
       state.data.dataSource.deviceSource = props?.deviceWebChartConfig?.filter(
         item => item.data.cardId === cardId
-      )[0]?.data?.dataSource?.deviceSource;
+      )[0]?.data?.dataSource?.deviceSource
     }
   }
-);
+)
 
 watch(deviceCount, v => {
-  deviceCountUpdate(v);
-});
+  deviceCountUpdate(v)
+})
 
-const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange === 'no_aggregate');
+const isNoAggregate = computed(() => state.data.dataSource.dataAggregateRange === 'no_aggregate')
 </script>
 
 <template>

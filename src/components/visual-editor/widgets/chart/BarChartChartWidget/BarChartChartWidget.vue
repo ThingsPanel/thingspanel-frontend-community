@@ -1,9 +1,6 @@
 <template>
   <div class="bar-chart-chart-widget">
-    <component 
-      :is="BarChartComponent" 
-      :card="cardData" 
-    />
+    <component :is="BarChartComponent" :card="cardData" />
   </div>
 </template>
 
@@ -30,7 +27,7 @@ const props = withDefaults(defineProps<Props>(), {
   showGrid: true
 })
 
-// 将props适配为ICardData格式  
+// 将props适配为ICardData格式
 const cardData = computed<ICardData>(() => ({
   id: 'widget-' + Date.now().toString(),
   basicSettings: {
@@ -38,31 +35,36 @@ const cardData = computed<ICardData>(() => ({
     showTitle: true,
     titleColor: '#333',
     showBorder: false,
-    borderColor: '#e0e0e0', 
+    borderColor: '#e0e0e0',
     borderWidth: 1,
     borderRadius: 4,
     backgroundColor: '#ffffff',
     backgroundImage: '',
     opacity: 1
   },
-  dataSource: props.deviceIds.length > 0 && props.metricsIds.length > 0 ? {
-    deviceSource: props.deviceIds.map((deviceId, index) => ({
-      deviceId,
-      metricsId: props.metricsIds[index] || props.metricsIds[0],
-      metricsType: 'telemetry' as const,
-      aggregateWindow: '1h',
-      name: `数据${index + 1}`
-    }))
-  } : {
-    // 默认演示数据
-    deviceSource: [{
-      deviceId: 'demo-device',
-      metricsId: 'demo-metric', 
-      metricsType: 'telemetry' as const,
-      aggregateWindow: '1h',
-      name: '演示数据'
-    }]
-  },
+  dataSource:
+    props.deviceIds.length > 0 && props.metricsIds.length > 0
+      ? {
+          deviceSource: props.deviceIds.map((deviceId, index) => ({
+            deviceId,
+            metricsId: props.metricsIds[index] || props.metricsIds[0],
+            metricsType: 'telemetry' as const,
+            aggregateWindow: '1h',
+            name: `数据${index + 1}`
+          }))
+        }
+      : {
+          // 默认演示数据
+          deviceSource: [
+            {
+              deviceId: 'demo-device',
+              metricsId: 'demo-metric',
+              metricsType: 'telemetry' as const,
+              aggregateWindow: '1h',
+              name: '演示数据'
+            }
+          ]
+        },
   config: {
     colorGroups: {
       colorGroup: props.colors
@@ -78,7 +80,7 @@ const cardData = computed<ICardData>(() => ({
     legendPosition: 'bottom'
   },
   w: 8,
-  h: 6, 
+  h: 6,
   x: 0,
   y: 0,
   i: 'widget-' + Date.now().toString(),

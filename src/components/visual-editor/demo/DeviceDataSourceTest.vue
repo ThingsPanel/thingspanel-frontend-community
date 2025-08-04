@@ -1,7 +1,7 @@
 <template>
   <div class="device-data-source-test">
     <h2>设备数据源测试</h2>
-    
+
     <n-card title="设备数据源配置" class="config-card">
       <n-form :model="dataSource" label-placement="left" label-width="auto">
         <!-- 启用开关 -->
@@ -11,19 +11,12 @@
 
         <!-- 数据源类型 -->
         <n-form-item label="数据源类型">
-          <n-select
-            v-model:value="dataSource.type"
-            :options="dataSourceTypeOptions"
-            placeholder="选择数据源类型"
-          />
+          <n-select v-model:value="dataSource.type" :options="dataSourceTypeOptions" placeholder="选择数据源类型" />
         </n-form-item>
 
         <!-- 数据源名称 -->
         <n-form-item label="数据源名称">
-          <n-input
-            v-model:value="dataSource.name"
-            placeholder="请输入数据源名称"
-          />
+          <n-input v-model:value="dataSource.name" placeholder="请输入数据源名称" />
         </n-form-item>
 
         <!-- 设备数据源配置 -->
@@ -40,11 +33,7 @@
           </n-form-item>
 
           <n-form-item label="数据类型">
-            <n-select
-              v-model:value="dataSource.metricsType"
-              :options="metricsTypeOptions"
-              placeholder="选择数据类型"
-            />
+            <n-select v-model:value="dataSource.metricsType" :options="metricsTypeOptions" placeholder="选择数据类型" />
           </n-form-item>
 
           <n-form-item label="指标">
@@ -62,10 +51,7 @@
           </n-form-item>
 
           <n-form-item label="指标名称">
-            <n-input
-              v-model:value="dataSource.metricsName"
-              placeholder="指标显示名称"
-            />
+            <n-input v-model:value="dataSource.metricsName" placeholder="指标显示名称" />
           </n-form-item>
 
           <n-form-item label="聚合函数">
@@ -77,11 +63,7 @@
           </n-form-item>
 
           <n-form-item label="时间范围">
-            <n-select
-              v-model:value="dataSource.timeRange"
-              :options="timeRangeOptions"
-              placeholder="选择时间范围"
-            />
+            <n-select v-model:value="dataSource.timeRange" :options="timeRangeOptions" placeholder="选择时间范围" />
           </n-form-item>
 
           <n-form-item label="刷新间隔 (秒)">
@@ -115,7 +97,7 @@
         :title="testResult.success ? '测试成功' : '测试失败'"
         :description="testResult.message"
       />
-      
+
       <div v-if="testResult.data" class="response-data">
         <h4>响应数据:</h4>
         <pre>{{ JSON.stringify(testResult.data, null, 2) }}</pre>
@@ -125,10 +107,7 @@
     <!-- 组件预览 -->
     <n-card title="组件预览" class="preview-card">
       <div class="component-preview">
-        <DigitIndicatorCard
-          :properties="componentProps"
-          :metadata="{ dataSource: dataSource }"
-        />
+        <DigitIndicatorCard :properties="componentProps" :metadata="{ dataSource: dataSource }" />
       </div>
     </n-card>
   </div>
@@ -243,7 +222,7 @@ const getDeviceList = async () => {
 // 获取指标列表
 const getMetricsList = async (deviceId: string) => {
   if (!deviceId) return
-  
+
   isLoadingMetrics.value = true
   try {
     const res = await deviceMetricsList(deviceId)
@@ -264,7 +243,7 @@ const onDeviceChange = async (deviceId: string) => {
   dataSource.value.metricsName = ''
   dataSource.value.metricsOptions = []
   dataSource.value.metricsOptionsFetched = false
-  
+
   if (deviceId) {
     await getMetricsList(deviceId)
   }
@@ -273,7 +252,7 @@ const onDeviceChange = async (deviceId: string) => {
 // 指标下拉框显示/隐藏
 const onMetricsDropdownShow = async (show: boolean) => {
   dataSource.value.metricsShow = show
-  
+
   if (show && dataSource.value.deviceId && !dataSource.value.metricsOptionsFetched) {
     await getMetricsList(dataSource.value.deviceId)
     dataSource.value.metricsOptionsFetched = true
@@ -283,12 +262,12 @@ const onMetricsDropdownShow = async (show: boolean) => {
 // 指标选择变化
 const onMetricsChange = (metricsId: string) => {
   dataSource.value.metricsId = metricsId
-  
+
   // 根据选择的指标更新指标名称
-  const selectedMetric = metricsOptions.value.find((option: any) => 
+  const selectedMetric = metricsOptions.value.find((option: any) =>
     option.options?.some((opt: any) => opt.key === metricsId)
   )
-  
+
   if (selectedMetric) {
     const metric = selectedMetric.options.find((opt: any) => opt.key === metricsId)
     if (metric) {
@@ -308,28 +287,34 @@ const metricsOptionRender = (info: any) => {
     ]),
     ...(info?.option?.options?.map((it: any) => {
       if (!it.label) return null
-      
-      return h('div', {
-        class: 'm-b-2px',
-        onClick: () => {
-          dataSource.value.metricsId = it.key
-          dataSource.value.metricsName = it.label || ''
-          dataSource.value.metricsType = info?.option?.data_source_type
-          dataSource.value.metricsDataType = it.data_type
-          dataSource.value.metricsShow = false
-        }
-      }, [
-        it.label ? h('div', { class: 'flex items-center gap-5px' }, [
-          h('div', { class: 'flex flex-1 items-center gap-5px' }, [
-            h('span', it.label),
-            h('span', { class: 'color-#cccc' }, `(${it.key})`)
-          ]),
-          h('span', { class: 'text-#999' }, it.data_type)
-        ]) : h('div', { class: 'flex items-center gap-5px' }, [
-          h('span', { class: 'flex-1' }, it.key),
-          h('span', { class: 'text-#999' }, it.data_type)
-        ])
-      ])
+
+      return h(
+        'div',
+        {
+          class: 'm-b-2px',
+          onClick: () => {
+            dataSource.value.metricsId = it.key
+            dataSource.value.metricsName = it.label || ''
+            dataSource.value.metricsType = info?.option?.data_source_type
+            dataSource.value.metricsDataType = it.data_type
+            dataSource.value.metricsShow = false
+          }
+        },
+        [
+          it.label
+            ? h('div', { class: 'flex items-center gap-5px' }, [
+                h('div', { class: 'flex flex-1 items-center gap-5px' }, [
+                  h('span', it.label),
+                  h('span', { class: 'color-#cccc' }, `(${it.key})`)
+                ]),
+                h('span', { class: 'text-#999' }, it.data_type)
+              ])
+            : h('div', { class: 'flex items-center gap-5px' }, [
+                h('span', { class: 'flex-1' }, it.key),
+                h('span', { class: 'text-#999' }, it.data_type)
+              ])
+        ]
+      )
     }) || [])
   ])
 }
@@ -350,7 +335,7 @@ const testDataSource = async () => {
   try {
     // 使用数据源管理器测试
     const value = await dataSourceManager.getValue(dataSource.value)
-    
+
     testResult.value = {
       success: true,
       message: '设备数据源测试成功',
@@ -362,13 +347,12 @@ const testDataSource = async () => {
       rawData: value.rawData,
       metadata: value.metadata
     })
-
   } catch (error) {
     testResult.value = {
       success: false,
       message: error instanceof Error ? error.message : '测试失败'
     }
-    
+
     console.error('🔧 DeviceDataSourceTest - 测试失败:', error)
   } finally {
     isTesting.value = false
@@ -413,4 +397,4 @@ getDeviceList()
   background-color: #fafafa;
   border-radius: 8px;
 }
-</style> 
+</style>

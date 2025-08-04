@@ -1,7 +1,7 @@
 <template>
   <div class="debug-panel">
     <h2>🔍 调试面板</h2>
-    
+
     <div class="debug-section">
       <h3>Card 2.1 注册表状态</h3>
       <button @click="checkCard21Registry">检查 Card 2.1 注册表</button>
@@ -90,15 +90,15 @@ const checkCard2Integration = () => {
 
 const forceReinitialize = async () => {
   console.log('🔄 强制重新初始化...')
-  
+
   // 清理注册表
   widgetRegistry.clear()
   console.log('✅ 清理了 Widget Registry')
-  
+
   // 重新初始化 Card 2.1 集成
   await card2Integration.initialize()
   console.log('✅ 重新初始化了 Card 2.1 集成')
-  
+
   // 检查状态
   checkCard21Registry()
   checkWidgetRegistry()
@@ -141,4 +141,4 @@ pre {
   overflow-x: auto;
   font-size: 12px;
 }
-</style> 
+</style>

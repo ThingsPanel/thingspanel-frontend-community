@@ -18,9 +18,8 @@ import './settings/data-sources'
 
 // 初始化 Card 2.1 集成
 useCard2Integration({
-  autoInit: true,
+  autoInit: true
 })
-
 
 // 初始化设置面板
 initializeSettings()
@@ -46,8 +45,8 @@ const preEditorConfig = ref<any>({})
 const currentRenderer = ref<RendererType>('gridstack')
 
 // 抽屉状态 - 初始状态：预览模式，抽屉关闭
-const showLeftDrawer = ref(false)  // 左侧组件库抽屉
-const showRightDrawer = ref(false)  // 右侧属性面板抽屉
+const showLeftDrawer = ref(false) // 左侧组件库抽屉
+const showRightDrawer = ref(false) // 右侧属性面板抽屉
 
 // 拖拽状态管理
 const isDragging = ref(false)
@@ -72,26 +71,25 @@ const selectedWidget = computed<VisualEditorWidget | null>(() => {
   return null
 })
 
-
 // 状态管理辅助方法
 const setState = (config: any) => {
   console.log('🔄 设置编辑器状态:', config)
-  
+
   // 重置状态
   stateManager.reset()
-  
+
   // 加载节点
   if (config.nodes && Array.isArray(config.nodes)) {
     config.nodes.forEach((node: any) => {
       stateManager.addNode(node as GraphData)
     })
   }
-  
+
   // 加载视口设置
   if (config.viewport) {
     stateManager.updateViewport(config.viewport)
   }
-  
+
   // 恢复渲染器类型和编辑器状态
   if (config.currentRenderer) {
     currentRenderer.value = config.currentRenderer
@@ -105,7 +103,7 @@ const setState = (config: any) => {
   if (config.showRightDrawer !== undefined) {
     showRightDrawer.value = config.showRightDrawer
   }
-  
+
   // 恢复编辑状态（可选，通常不保存编辑状态）
   if (config.isEditing !== undefined) {
     isEditing.value = config.isEditing
@@ -157,13 +155,13 @@ const fetchBoard = async () => {
     if (data) {
       panelData.value = data
       console.log('📊 获取面板数据成功:', data)
-      
+
       if (data.config) {
         console.log('📝 解析现有配置:', data.config)
         const config = parseConfig(data.config)
         editorConfig.value = config.visualEditor || getDefaultConfig()
         preEditorConfig.value = JSON.parse(JSON.stringify(editorConfig.value))
-        
+
         // 恢复渲染器类型和编辑器状态
         if (editorConfig.value.currentRenderer) {
           currentRenderer.value = editorConfig.value.currentRenderer
@@ -177,7 +175,7 @@ const fetchBoard = async () => {
         if (editorConfig.value.showRightDrawer !== undefined) {
           showRightDrawer.value = editorConfig.value.showRightDrawer
         }
-        
+
         // 加载到编辑器
         setState(editorConfig.value)
         console.log('🎯 加载编辑器配置:', editorConfig.value)
@@ -196,7 +194,7 @@ const fetchBoard = async () => {
       if (!isUnmounted.value) {
         message.warning($t('visualEditor.warning'))
       }
-      
+
       // 即使没有数据也要初始化默认配置
       editorConfig.value = getDefaultConfig()
       preEditorConfig.value = JSON.parse(JSON.stringify(editorConfig.value))
@@ -210,7 +208,7 @@ const fetchBoard = async () => {
     if (!isUnmounted.value) {
       message.warning($t('visualEditor.warning'))
     }
-    
+
     // 出错时也要初始化默认配置，让编辑器能正常工作
     editorConfig.value = getDefaultConfig()
     preEditorConfig.value = JSON.parse(JSON.stringify(editorConfig.value))
@@ -225,14 +223,14 @@ const fetchBoard = async () => {
 const parseConfig = (configString: string) => {
   try {
     const config = JSON.parse(configString)
-    
+
     // 检查是否为新格式
     if (typeof config === 'object' && config.visualEditor) {
       // 验证配置格式
       const validatedConfig = validateConfig(config)
       return validatedConfig
     }
-    
+
     // 兼容旧格式
     return {
       legacyComponents: Array.isArray(config) ? config : [],
@@ -250,16 +248,16 @@ const parseConfig = (configString: string) => {
 // 验证配置格式
 const validateConfig = (config: any) => {
   const defaultConfig = getDefaultConfig()
-  
+
   // 确保 visualEditor 存在
   if (!config.visualEditor) {
     config.visualEditor = defaultConfig
     return config
   }
-  
+
   // 验证并补充缺失的配置项
   const visualEditor = config.visualEditor
-  
+
   // 确保基本配置项存在
   if (!visualEditor.nodes) visualEditor.nodes = defaultConfig.nodes
   if (!visualEditor.canvasConfig) visualEditor.canvasConfig = defaultConfig.canvasConfig
@@ -269,29 +267,29 @@ const validateConfig = (config: any) => {
   if (!visualEditor.showWidgetTitles) visualEditor.showWidgetTitles = defaultConfig.showWidgetTitles
   if (!visualEditor.showLeftDrawer) visualEditor.showLeftDrawer = defaultConfig.showLeftDrawer
   if (!visualEditor.showRightDrawer) visualEditor.showRightDrawer = defaultConfig.showRightDrawer
-  
+
   // 确保 legacyComponents 存在
   if (!config.legacyComponents) {
     config.legacyComponents = []
   }
-  
+
   // 执行配置迁移
   const migratedConfig = migrateConfig(config)
-  
+
   return migratedConfig
 }
 
 // 配置迁移函数
 const migrateConfig = (config: any) => {
   const visualEditor = config.visualEditor
-  
+
   // 检查版本并执行迁移
   const version = visualEditor.metadata?.version || '0.0.0'
-  
+
   // 从 v0.x 迁移到 v1.0
   if (version.startsWith('0.')) {
     console.log('🔄 执行配置迁移: v0.x -> v1.0')
-    
+
     // 添加缺失的配置项
     if (!visualEditor.currentRenderer) {
       visualEditor.currentRenderer = 'gridstack'
@@ -305,7 +303,7 @@ const migrateConfig = (config: any) => {
     if (!visualEditor.showRightDrawer) {
       visualEditor.showRightDrawer = false
     }
-    
+
     // 更新版本信息
     if (!visualEditor.metadata) {
       visualEditor.metadata = {}
@@ -313,7 +311,7 @@ const migrateConfig = (config: any) => {
     visualEditor.metadata.version = '1.0.0'
     visualEditor.metadata.migratedAt = Date.now()
   }
-  
+
   return config
 }
 
@@ -406,8 +404,6 @@ const handleToggleRightDrawer = () => {
   hasChanges.value = true
 }
 
-
-
 // 拖拽事件处理
 const handleDragStart = (componentType: string) => {
   console.log('🎯 开始拖拽组件:', componentType)
@@ -429,13 +425,13 @@ const handleRendererChange = (renderer: RendererType) => {
 
 const handleAddWidget = async (widget: { type: string }) => {
   try {
-    const widgetType = widget.type;
-    
+    const widgetType = widget.type
+
     await addWidget(widgetType)
     hasChanges.value = true
     message.success($t('visualEditor.addWidgetSuccess', { type: widgetType }))
   } catch (error: any) {
-    const widgetType = widget.type;
+    const widgetType = widget.type
     console.error(`❌ 添加组件失败 [${widgetType}]:`, error)
     message.error($t('visualEditor.addWidgetFailed', { type: widgetType, error: error.message || '未知错误' }))
   }
@@ -451,14 +447,14 @@ const handleClearAll = () => {
 const handleImportConfig = (config: Record<string, any>) => {
   try {
     console.log('导入配置:', config)
-    
+
     // 验证配置格式
     if (config && typeof config === 'object') {
       // 如果是新格式配置
       if (config.visualEditor) {
         editorConfig.value = config.visualEditor
         setState(config.visualEditor)
-      } 
+      }
       // 如果是直接的编辑器配置
       else if (config.nodes || config.canvasConfig) {
         editorConfig.value = config
@@ -470,7 +466,7 @@ const handleImportConfig = (config: Record<string, any>) => {
         editorConfig.value = newConfig
         setState(newConfig)
       }
-      
+
       hasChanges.value = true
       message.success($t('visualEditor.configImportSuccess'))
     } else {
@@ -510,7 +506,7 @@ const handleExportConfig = () => {
         }
       }
     }
-    
+
     // 创建下载链接
     const blob = new Blob([JSON.stringify(exportConfig, null, 2)], {
       type: 'application/json'
@@ -523,7 +519,7 @@ const handleExportConfig = () => {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
-    
+
     message.success($t('visualEditor.configExportSuccess'))
   } catch (error: any) {
     console.error('导出配置失败:', error)
@@ -541,38 +537,38 @@ const handleGridConfigChange = (newGridConfig: any) => {
   console.log('🔧 PanelEditor - 网格配置变更:', {
     oldConfig: editorConfig.value.gridConfig,
     newConfig: newGridConfig
-  });
-  
+  })
+
   editorConfig.value.gridConfig = { ...editorConfig.value.gridConfig, ...newGridConfig }
   hasChanges.value = true
-  
-  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.gridConfig);
-  console.log('🔧 PanelEditor - 当前完整配置:', editorConfig.value);
+
+  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.gridConfig)
+  console.log('🔧 PanelEditor - 当前完整配置:', editorConfig.value)
 }
 
 const handleGridstackConfigChange = (newGridConfig: any) => {
   console.log('🔧 PanelEditor - 工具栏网格配置变更:', {
     oldConfig: editorConfig.value.gridConfig,
     newConfig: newGridConfig
-  });
-  
+  })
+
   editorConfig.value.gridConfig = { ...editorConfig.value.gridConfig, ...newGridConfig }
   hasChanges.value = true
-  
-  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.gridConfig);
-  console.log('🔧 PanelEditor - 当前完整配置:', editorConfig.value);
+
+  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.gridConfig)
+  console.log('🔧 PanelEditor - 当前完整配置:', editorConfig.value)
 }
 
 const handleCanvasConfigChange = (newCanvasConfig: any) => {
   console.log('🔧 PanelEditor - 画布配置变更:', {
     oldConfig: editorConfig.value.canvasConfig,
     newConfig: newCanvasConfig
-  });
-  
+  })
+
   editorConfig.value.canvasConfig = { ...editorConfig.value.canvasConfig, ...newCanvasConfig }
   hasChanges.value = true
-  
-  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.canvasConfig);
+
+  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.canvasConfig)
 }
 
 const handleZoomIn = () => {
@@ -639,7 +635,7 @@ const handleSave = async () => {
   isSaving.value = true
   try {
     const currentState = getState()
-    
+
     // 解析现有配置
     let existingConfig: any = {}
     if (panelData.value?.config) {
@@ -762,10 +758,7 @@ onUnmounted(() => {
         </NSpace>
       </div>
       <NSpace align="center">
-        <FullScreen
-          :full="isFullscreen"
-          @click="toggle"
-        />
+        <FullScreen :full="isFullscreen" @click="toggle" />
       </NSpace>
     </div>
 
@@ -819,8 +812,8 @@ onUnmounted(() => {
           <!-- 中央画布 -->
           <div class="canvas-container h-full w-full" @click="handleCanvasClick">
             <!-- 动态渲染器 -->
-            <CanvasRenderer 
-              v-if="currentRenderer === 'canvas' && dataFetched && !isUnmounted" 
+            <CanvasRenderer
+              v-if="currentRenderer === 'canvas' && dataFetched && !isUnmounted"
               key="canvas-renderer"
               :readonly="!isEditing"
               :show-widget-titles="showWidgetTitles"
@@ -831,14 +824,14 @@ onUnmounted(() => {
               @canvas-click="handleCanvasClick"
               @request-settings="handleRequestSettings"
             />
-            <GridstackRenderer 
-              v-else-if="currentRenderer === 'gridstack' && dataFetched && !isUnmounted" 
+            <GridstackRenderer
+              v-else-if="currentRenderer === 'gridstack' && dataFetched && !isUnmounted"
               key="gridstack-renderer"
               :readonly="!isEditing"
               :show-widget-titles="showWidgetTitles"
               :grid-config="editorConfig.gridConfig"
               class="renderer-container"
-              @ready="handleRendererReady" 
+              @ready="handleRendererReady"
               @error="handleRendererError"
               @node-select="handleNodeSelect"
               @canvas-click="handleCanvasClick"
@@ -859,11 +852,7 @@ onUnmounted(() => {
             :trap-focus="false"
           >
             <NDrawerContent :title="$t('visualEditor.componentLibrary')" :native-scrollbar="false">
-              <WidgetLibrary 
-                @add-widget="handleAddWidget"
-                @drag-start="handleDragStart"
-                @drag-end="handleDragEnd"
-              />
+              <WidgetLibrary @add-widget="handleAddWidget" @drag-start="handleDragStart" @drag-end="handleDragEnd" />
             </NDrawerContent>
           </NDrawer>
 
@@ -880,7 +869,7 @@ onUnmounted(() => {
             :trap-focus="false"
           >
             <NDrawerContent :title="$t('visualEditor.propertySettings')" :native-scrollbar="false">
-              <SettingsPanel 
+              <SettingsPanel
                 :selected-widget="selectedWidget"
                 :show-widget-titles="showWidgetTitles"
                 :grid-config="editorConfig.gridConfig"

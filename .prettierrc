@@ -15,6 +15,5 @@
   "vueIndentScriptAndStyle": false,
   "endOfLine": "lf",
   "embeddedLanguageFormatting": "auto",
-  "singleAttributePerLine": false,
-  "parser": "typescript"
+  "singleAttributePerLine": false
 }

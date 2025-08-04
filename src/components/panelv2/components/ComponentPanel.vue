@@ -4,15 +4,28 @@
 -->
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { NInput, NTree, NCard, NImage, NEmpty, NSpin, NIcon, NTooltip, NTag, NBadge, NCollapse, NCollapseItem } from 'naive-ui'
+import {
+  NInput,
+  NTree,
+  NCard,
+  NImage,
+  NEmpty,
+  NSpin,
+  NIcon,
+  NTooltip,
+  NTag,
+  NBadge,
+  NCollapse,
+  NCollapseItem
+} from 'naive-ui'
 import type { TreeOption } from 'naive-ui'
 import { useThemeStore } from '@/store/modules/theme'
 import { cardRegistry, CardCategory, initializeCardSystem } from '../cards'
 import type { CardDefinition } from '../cards'
 import { dragDropService, type DragData } from '../core/DragDropService'
-import { 
+import {
   CubeOutline,
-  BarChartOutline, 
+  BarChartOutline,
   ServerOutline,
   GridOutline,
   SettingsOutline,
@@ -32,9 +45,7 @@ const expandedKeys = ref<string[]>([])
 // 搜索结果
 const searchResults = computed(() => {
   if (!searchKeyword.value) {
-    return selectedCategory.value 
-      ? cardRegistry.getByCategory(selectedCategory.value)
-      : cardRegistry.getAll()
+    return selectedCategory.value ? cardRegistry.getByCategory(selectedCategory.value) : cardRegistry.getAll()
   }
 
   return cardRegistry.search({
@@ -46,7 +57,7 @@ const searchResults = computed(() => {
 // 按分类组织的卡片数据
 const categorizedCards = computed(() => {
   const categories = new Map<CardCategory, CardDefinition[]>()
-  
+
   searchResults.value.forEach(card => {
     if (!categories.has(card.category)) {
       categories.set(card.category, [])
@@ -59,33 +70,33 @@ const categorizedCards = computed(() => {
 
 // 分类显示配置
 const categoryConfig = {
-  [CardCategory.BUILTIN]: { 
-    label: '内置组件', 
+  [CardCategory.BUILTIN]: {
+    label: '内置组件',
     icon: CubeOutline,
     color: '#18a058'
   },
-  [CardCategory.CHART]: { 
-    label: '图表组件', 
+  [CardCategory.CHART]: {
+    label: '图表组件',
     icon: BarChartOutline,
     color: '#2080f0'
   },
-  [CardCategory.SYSTEM]: { 
-    label: '系统监控', 
+  [CardCategory.SYSTEM]: {
+    label: '系统监控',
     icon: ServerOutline,
     color: '#f0a020'
   },
-  [CardCategory.DATA]: { 
-    label: '数据展示', 
+  [CardCategory.DATA]: {
+    label: '数据展示',
     icon: GridOutline,
     color: '#722ed1'
   },
-  [CardCategory.CONTROL]: { 
-    label: '控制组件', 
+  [CardCategory.CONTROL]: {
+    label: '控制组件',
     icon: SettingsOutline,
     color: '#eb2f96'
   },
-  [CardCategory.CUSTOM]: { 
-    label: '自定义组件', 
+  [CardCategory.CUSTOM]: {
+    label: '自定义组件',
     icon: CodeOutline,
     color: '#13c2c2'
   }
@@ -111,7 +122,7 @@ const themeColors = computed(() => {
 onMounted(async () => {
   try {
     await initializeCardSystem()
-    
+
     // 默认展开所有分类
     expandedKeys.value = Object.values(CardCategory)
   } catch (error) {
@@ -140,7 +151,7 @@ const emit = defineEmits<Emits>()
 // 拖拽事件处理
 const handleDragStart = (event: DragEvent, card: CardDefinition) => {
   if (!event.dataTransfer) return
-  
+
   // 创建拖拽数据
   const dragData: DragData = {
     type: 'card',
@@ -163,10 +174,10 @@ const handleDragStart = (event: DragEvent, card: CardDefinition) => {
       deprecated: card.deprecated
     }
   }
-  
+
   // 使用DragDropService处理拖拽
   dragDropService.startDrag(dragData, event)
-  
+
   // 发出事件通知父组件
   emit('card-drag', dragData)
 }
@@ -190,23 +201,21 @@ const getCategoryLabel = (category: CardCategory) => {
 <template>
   <div class="component-panel h-full flex flex-col" :style="themeColors">
     <!-- 顶部搜索和统计 -->
-    <div class="panel-header p-4" style="background-color: var(--component-bg); border-bottom: 1px solid var(--component-border);">
+    <div
+      class="panel-header p-4"
+      style="background-color: var(--component-bg); border-bottom: 1px solid var(--component-border)"
+    >
       <div class="flex items-center justify-between mb-3">
-        <h3 class="text-lg font-semibold" style="color: var(--text-primary);">组件库</h3>
+        <h3 class="text-lg font-semibold" style="color: var(--text-primary)">组件库</h3>
         <NBadge :value="stats.total" :max="99">
           <NIcon size="20" class="text-gray-500">
             <CubeOutline />
           </NIcon>
         </NBadge>
       </div>
-      
+
       <!-- 搜索框 -->
-      <NInput
-        v-model:value="searchKeyword"
-        placeholder="搜索组件..."
-        clearable
-        size="small"
-      >
+      <NInput v-model:value="searchKeyword" placeholder="搜索组件..." clearable size="small">
         <template #prefix>
           <NIcon>
             <SearchOutline />
@@ -218,9 +227,7 @@ const getCategoryLabel = (category: CardCategory) => {
     <!-- 加载状态 -->
     <div v-if="loading" class="flex-1 flex items-center justify-center">
       <NSpin size="large">
-        <template #description>
-          加载组件库...
-        </template>
+        <template #description>加载组件库...</template>
       </NSpin>
     </div>
 
@@ -240,17 +247,10 @@ const getCategoryLabel = (category: CardCategory) => {
       <!-- 按分类显示组件 -->
       <div v-else class="p-4">
         <NCollapse v-model:expanded-names="expandedKeys" accordion>
-          <NCollapseItem
-            v-for="[category, cards] in categorizedCards"
-            :key="category"
-            :name="category"
-          >
+          <NCollapseItem v-for="[category, cards] in categorizedCards" :key="category" :name="category">
             <template #header>
               <div class="flex items-center gap-2">
-                <NIcon 
-                  size="16" 
-                  :style="{ color: getCategoryColor(category) }"
-                >
+                <NIcon size="16" :style="{ color: getCategoryColor(category) }">
                   <component :is="getCategoryIcon(category)" />
                 </NIcon>
                 <span class="font-medium">{{ getCategoryLabel(category) }}</span>
@@ -267,11 +267,7 @@ const getCategoryLabel = (category: CardCategory) => {
                 draggable="true"
                 @dragstart="handleDragStart($event, card)"
               >
-                <NCard
-                  size="small"
-                  hoverable
-                  class="cursor-move transition-all duration-200 group-hover:shadow-md"
-                >
+                <NCard size="small" hoverable class="cursor-move transition-all duration-200 group-hover:shadow-md">
                   <div class="flex items-start gap-3">
                     <!-- 预览图 -->
                     <div class="flex-shrink-0 w-12 h-12 bg-gray-100 rounded overflow-hidden">
@@ -297,20 +293,13 @@ const getCategoryLabel = (category: CardCategory) => {
                           <div class="font-medium text-sm text-gray-900 truncate">
                             {{ card.name }}
                           </div>
-                          <div
-                            v-if="card.description"
-                            class="text-xs text-gray-500 mt-1 line-clamp-2"
-                          >
+                          <div v-if="card.description" class="text-xs text-gray-500 mt-1 line-clamp-2">
                             {{ card.description }}
                           </div>
                         </div>
-                        
+
                         <!-- 大小标签 -->
-                        <NTag
-                          size="tiny"
-                          :bordered="false"
-                          class="ml-2 flex-shrink-0"
-                        >
+                        <NTag size="tiny" :bordered="false" class="ml-2 flex-shrink-0">
                           {{ card.preset.w }}×{{ card.preset.h }}
                         </NTag>
                       </div>
@@ -326,10 +315,7 @@ const getCategoryLabel = (category: CardCategory) => {
                         >
                           {{ tag }}
                         </NTag>
-                        <span
-                          v-if="card.tags.length > 2"
-                          class="text-xs text-gray-400"
-                        >
+                        <span v-if="card.tags.length > 2" class="text-xs text-gray-400">
                           +{{ card.tags.length - 2 }}
                         </span>
                       </div>
@@ -345,9 +331,7 @@ const getCategoryLabel = (category: CardCategory) => {
 
     <!-- 底部提示 -->
     <div class="panel-footer p-3 bg-white border-t border-gray-200">
-      <div class="text-xs text-gray-500 text-center">
-        拖拽组件到画布中添加
-      </div>
+      <div class="text-xs text-gray-500 text-center">拖拽组件到画布中添加</div>
     </div>
   </div>
 </template>
@@ -385,11 +369,11 @@ const getCategoryLabel = (category: CardCategory) => {
   transform: scale(0.98);
 }
 
-.card-item[draggable="true"]:hover {
+.card-item[draggable='true']:hover {
   cursor: move;
 }
 
-.card-item[draggable="true"]:active {
+.card-item[draggable='true']:active {
   cursor: grabbing;
   opacity: 0.6;
 }

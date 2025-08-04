@@ -32,10 +32,35 @@ const { loading, value } = useData()
 </script>
 
 <style scoped>
-.card-wrapper { width: 100%; height: 100%; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; }
-.title { font-size: 16px; margin: 0; }
-.content { flex-grow: 1; display: flex; justify-content: space-between; align-items: flex-end; padding-top: 12px; }
-.icon { font-size: 32px; }
-.data-display { display: flex; flex-direction: column; align-items: flex-end; }
-.value-text { font-size: 30px; color: #fff; }
+.card-wrapper {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+.title {
+  font-size: 16px;
+  margin: 0;
+}
+.content {
+  flex-grow: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding-top: 12px;
+}
+.icon {
+  font-size: 32px;
+}
+.data-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.value-text {
+  font-size: 30px;
+  color: #fff;
+}
 </style>

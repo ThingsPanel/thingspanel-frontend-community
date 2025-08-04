@@ -2,8 +2,8 @@
   <div class="data-source-selector">
     <div v-if="componentDataSources.length > 0">
       <n-collapse :default-expanded-names="expandedNames">
-        <n-collapse-item 
-          v-for="componentDataSource in componentDataSources" 
+        <n-collapse-item
+          v-for="componentDataSource in componentDataSources"
           :key="componentDataSource.name"
           :name="componentDataSource.name"
           :title="componentDataSource.name"
@@ -13,7 +13,7 @@
               {{ componentDataSource.required ? '必需' : '可选' }}
             </n-tag>
           </template>
-          
+
           <div class="data-source-content">
             <n-form-item label="类型" label-width="50px" size="small">
               <n-select
@@ -24,7 +24,7 @@
                 @update:value="updateDataSourceConfig(componentDataSource.name)"
               />
             </n-form-item>
-            
+
             <div v-if="dataSourceConfigs[componentDataSource.name].type" class="config-component">
               <component
                 :is="getDataSourceConfigComponent(dataSourceConfigs[componentDataSource.name].type)"
@@ -71,10 +71,15 @@ const dataSourceTypeOptions = [
 ]
 
 // 每个组件数据源的配置
-const dataSourceConfigs = ref<Record<string, {
-  type: DataSourceType
-  config: any
-}>>({})
+const dataSourceConfigs = ref<
+  Record<
+    string,
+    {
+      type: DataSourceType
+      config: any
+    }
+  >
+>({})
 
 // 初始化配置
 const initializeConfigs = () => {
@@ -85,11 +90,13 @@ const initializeConfigs = () => {
         key: '', // 由具体的数据源配置组件设置
         target: key, // 使用mappingKeys中的键
         description: `映射到${key}`
-      })) || [{
-        key: '',
-        target: ds.name, // 如果没有mappingKeys，使用数据源名称
-        description: `映射到${ds.name}`
-      }]
+      })) || [
+        {
+          key: '',
+          target: ds.name, // 如果没有mappingKeys，使用数据源名称
+          description: `映射到${ds.name}`
+        }
+      ]
 
       dataSourceConfigs.value[ds.name] = {
         type: DataSourceType.STATIC, // 默认使用静态数据源
@@ -112,15 +119,15 @@ const getDataSourceConfigComponent = (type: DataSourceType) => {
 const updateDataSourceConfig = (dataSourceName: string) => {
   const config = dataSourceConfigs.value[dataSourceName]
   const componentDataSource = props.componentDataSources.find(ds => ds.name === dataSourceName)
-  
+
   if (!componentDataSource) return
-  
+
   console.log('🔧 DataSourceSelector - 更新数据源配置:', {
     dataSourceName,
     config,
     componentDataSource
   })
-  
+
   // 构建数据源配置
   const dataSource: DataSource = {
     type: config.type as DataSourceType,
@@ -129,25 +136,33 @@ const updateDataSourceConfig = (dataSourceName: string) => {
     description: `为${dataSourceName}提供数据`,
     ...config.config // 包含dataPaths和其他配置
   }
-  
+
   console.log('🔧 DataSourceSelector - 构建的数据源:', dataSource)
   emit('update:modelValue', dataSource)
 }
 
 // 监听组件数据源变化，初始化配置
-watch(() => props.componentDataSources, (newDataSources) => {
-  if (newDataSources && newDataSources.length > 0) {
-    initializeConfigs()
-  }
-}, { immediate: true })
+watch(
+  () => props.componentDataSources,
+  newDataSources => {
+    if (newDataSources && newDataSources.length > 0) {
+      initializeConfigs()
+    }
+  },
+  { immediate: true }
+)
 
 // 监听外部数据源变化
-watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
-    // 从外部数据源更新内部配置
-    console.log('🔧 DataSourceSelector - 外部数据源更新:', newValue)
-  }
-}, { deep: true })
+watch(
+  () => props.modelValue,
+  newValue => {
+    if (newValue) {
+      // 从外部数据源更新内部配置
+      console.log('🔧 DataSourceSelector - 外部数据源更新:', newValue)
+    }
+  },
+  { deep: true }
+)
 
 onMounted(() => {
   initializeConfigs()
@@ -180,4 +195,4 @@ onMounted(() => {
 :deep(.n-collapse-item__header-extra) {
   margin-left: 8px;
 }
-</style> 
+</style>

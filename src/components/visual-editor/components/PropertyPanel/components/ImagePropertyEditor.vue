@@ -1,20 +1,13 @@
 <template>
   <n-form size="small" label-placement="left" label-width="60">
     <n-form-item label="链接">
-      <n-input 
-        :value="properties.src"
-        placeholder="请输入图片URL"
-        @update:value="updateProperty('src', $event)"
-      />
+      <n-input :value="properties.src" placeholder="请输入图片URL" @update:value="updateProperty('src', $event)" />
     </n-form-item>
     <n-form-item label="Alt">
-      <n-input 
-        :value="properties.alt"
-        @update:value="updateProperty('alt', $event)"
-      />
+      <n-input :value="properties.alt" @update:value="updateProperty('alt', $event)" />
     </n-form-item>
     <n-form-item label="适应">
-      <n-select 
+      <n-select
         :value="properties.objectFit"
         :options="fitOptions"
         @update:value="updateProperty('objectFit', $event)"

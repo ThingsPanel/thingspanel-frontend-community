@@ -1,12 +1,6 @@
 <template>
   <div class="curve-chart-container">
-    <VChart
-      ref="chartRef"
-      :option="option"
-      :theme="theme"
-      autoresize
-      class="chart"
-    />
+    <VChart ref="chartRef" :option="option" :theme="theme" autoresize class="chart" />
   </div>
 </template>
 
@@ -14,22 +8,20 @@
 import { ref, computed, defineExpose } from 'vue'
 import { use } from 'echarts/core'
 import { LineChart } from 'echarts/charts'
-import { GridComponent, LegendComponent, ToolboxComponent, TooltipComponent, DataZoomComponent } from 'echarts/components'
+import {
+  GridComponent,
+  LegendComponent,
+  ToolboxComponent,
+  TooltipComponent,
+  DataZoomComponent
+} from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import VChart from 'vue-echarts'
 import { useCurveData } from './useData'
 import { colorGroups } from './components/theme'
 
 // 注册 ECharts 组件
-use([
-  TooltipComponent,
-  LegendComponent,
-  ToolboxComponent,
-  GridComponent,
-  DataZoomComponent,
-  LineChart,
-  CanvasRenderer
-])
+use([TooltipComponent, LegendComponent, ToolboxComponent, GridComponent, DataZoomComponent, LineChart, CanvasRenderer])
 
 interface Props {
   properties?: Record<string, any>
@@ -54,12 +46,7 @@ const currentColorGroup = computed(() => {
 })
 
 // 使用数据钩子
-const {
-  option,
-  updateData,
-  setSeries,
-  initializeData
-} = useCurveData(props, currentColorGroup.value)
+const { option, updateData, setSeries, initializeData } = useCurveData(props, currentColorGroup.value)
 
 // 暴露方法
 defineExpose({

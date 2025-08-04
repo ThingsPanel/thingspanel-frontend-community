@@ -1,21 +1,21 @@
 <script setup lang="tsx">
-import type { Ref } from 'vue';
-import { reactive, ref, watch } from 'vue';
-import type { DataTableColumns } from 'naive-ui';
-import { NButton, NPopconfirm, NSpace } from 'naive-ui';
-import { $t } from '@/locales';
-import { addEvents, putEvents } from '@/service/api/system-data';
+import type { Ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
+import type { DataTableColumns } from 'naive-ui'
+import { NButton, NPopconfirm, NSpace } from 'naive-ui'
+import { $t } from '@/locales'
+import { addEvents, putEvents } from '@/service/api/system-data'
 
-const emit = defineEmits(['update:addAndEditModalVisible', 'update:objItem', 'determine']);
+const emit = defineEmits(['update:addAndEditModalVisible', 'update:objItem', 'determine'])
 
-const addParameter: Ref<boolean> = ref(false);
-let eventsData: any = reactive([]);
+const addParameter: Ref<boolean> = ref(false)
+let eventsData: any = reactive([])
 const generalOptions: any = reactive(
   ['String', 'Number', 'Boolean'].map(v => ({
     label: v,
     value: v
   }))
-);
+)
 
 const props = defineProps({
   addAndEditModalVisible: {
@@ -30,10 +30,10 @@ const props = defineProps({
     type: Object,
     required: true
   }
-});
+})
 
-const deviceTemplateId = ref<string>(props.deviceTemplateId);
-const objItem = reactive<any>(props.objItem);
+const deviceTemplateId = ref<string>(props.deviceTemplateId)
+const objItem = reactive<any>(props.objItem)
 
 // 添加参数配置
 let addParameterFrom: any = reactive({
@@ -41,7 +41,7 @@ let addParameterFrom: any = reactive({
   data_identifier: '',
   read_write_flag: 'string',
   description: ''
-});
+})
 
 const addParameterRules: any = reactive({
   data_name: {
@@ -59,21 +59,21 @@ const addParameterRules: any = reactive({
     trigger: ['blur', 'input'],
     message: $t('device_template.table_header.PleaseSelectParameterType')
   }
-});
+})
 
 // 编辑
-const addFlag: Ref<boolean> = ref(true);
+const addFlag: Ref<boolean> = ref(true)
 const edit: (row: any) => void = row => {
-  addParameter.value = true;
-  addFlag.value = false;
-  addParameterFrom = reactive({ ...row });
-};
+  addParameter.value = true
+  addFlag.value = false
+  addParameterFrom = reactive({ ...row })
+}
 
 // 删除
 const del: (id: string) => void = async id => {
-  const index: number = eventsData.findIndex(item => item.id === id);
-  eventsData.splice(index, 1);
-};
+  const index: number = eventsData.findIndex(item => item.id === id)
+  eventsData.splice(index, 1)
+}
 
 // 表格配置
 const col: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
@@ -119,14 +119,14 @@ const col: Ref<DataTableColumns<AddDeviceModel.Device>> = ref([
             }}
           </NPopconfirm>
         </NSpace>
-      );
+      )
     }
   }
-]);
+])
 
 // 提交表单
-const formRef: any = ref(null);
-const formRefs: any = ref(null);
+const formRef: any = ref(null)
+const formRefs: any = ref(null)
 
 let addFrom: any = reactive({
   device_template_id: deviceTemplateId,
@@ -134,7 +134,7 @@ let addFrom: any = reactive({
   data_identifier: '',
   description: '',
   params: ''
-});
+})
 
 // 监听一下父组件传递过来的编辑数据
 watch(
@@ -144,8 +144,8 @@ watch(
       addFrom = reactive({
         device_template_id: deviceTemplateId,
         ...newVal
-      });
-      eventsData = reactive(JSON.parse(newVal.paramsOrigin));
+      })
+      eventsData = reactive(JSON.parse(newVal.paramsOrigin))
     } else {
       addFrom = reactive({
         device_template_id: deviceTemplateId,
@@ -153,22 +153,22 @@ watch(
         data_identifier: '',
         description: '',
         params: ''
-      });
+      })
     }
   },
   { deep: true, immediate: true }
-);
+)
 
 type Rule = {
-  required: boolean;
-  trigger: string[];
-  message: string;
-};
+  required: boolean
+  trigger: string[]
+  message: string
+}
 
 type Rules = {
-  data_name: Rule;
-  data_identifier: Rule;
-};
+  data_name: Rule
+  data_identifier: Rule
+}
 
 const fromRules: Rules = {
   data_name: {
@@ -181,67 +181,67 @@ const fromRules: Rules = {
     trigger: ['blur', 'input'],
     message: $t('device_template.table_header.PleaseEeventIdentifier')
   }
-};
+}
 
 const addParams: () => void = () => {
-  addParameter.value = true;
-};
+  addParameter.value = true
+}
 
 // 确定按钮
 const submit: () => void = async () => {
-  await formRef.value?.validate();
-  addFrom.params = JSON.stringify(eventsData);
+  await formRef.value?.validate()
+  addFrom.params = JSON.stringify(eventsData)
   if (props.objItem.id) {
-    const response: any = await putEvents(addFrom);
+    const response: any = await putEvents(addFrom)
     if (response.data) {
-      emit('update:objItem', {});
-      emit('update:addAndEditModalVisible', false);
-      emit('determine');
+      emit('update:objItem', {})
+      emit('update:addAndEditModalVisible', false)
+      emit('determine')
     }
   } else {
-    const response: any = await addEvents(addFrom);
+    const response: any = await addEvents(addFrom)
     if (response.data) {
-      emit('update:objItem', {});
-      emit('update:addAndEditModalVisible', false);
-      emit('determine');
+      emit('update:objItem', {})
+      emit('update:addAndEditModalVisible', false)
+      emit('determine')
     }
   }
-};
+}
 
 // 取消按钮
 const clear: () => void = () => {
-  emit('update:objItem', {});
-  emit('update:addAndEditModalVisible', false);
-};
+  emit('update:objItem', {})
+  emit('update:addAndEditModalVisible', false)
+}
 
 const addParameterClone: () => void = () => {
-  addFlag.value = true;
+  addFlag.value = true
   addParameterFrom = reactive({
     data_name: '',
     data_identifier: '',
     read_write_flag: 'string',
     description: ''
-  });
-};
+  })
+}
 
 // 新增确定参数的按钮
 const parameterSubmit: () => void = async () => {
-  await formRefs.value?.validate();
+  await formRefs.value?.validate()
   if (addFlag.value) {
-    eventsData.push({ ...addParameterFrom, id: Math.random() });
+    eventsData.push({ ...addParameterFrom, id: Math.random() })
     addParameterFrom = reactive({
       data_name: '',
       data_identifier: '',
       read_write_flag: 'string',
       description: ''
-    });
+    })
   } else {
-    const index: number = eventsData.findIndex(item => item.id === addParameterFrom.id);
-    eventsData[index] = reactive(addParameterFrom);
+    const index: number = eventsData.findIndex(item => item.id === addParameterFrom.id)
+    eventsData[index] = reactive(addParameterFrom)
   }
-  addParameter.value = false;
-  addFlag.value = true;
-};
+  addParameter.value = false
+  addFlag.value = true
+}
 </script>
 
 <template>

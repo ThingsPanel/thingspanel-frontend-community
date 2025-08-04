@@ -2,18 +2,13 @@
   <div class="component-library">
     <n-card title="组件库" size="small" :bordered="false">
       <n-space vertical size="small">
-        <div 
-          v-for="widget in availableWidgets" 
+        <div
+          v-for="widget in availableWidgets"
           :key="widget.type"
           class="widget-item"
           @click="handleAddWidget(widget.type)"
         >
-          <n-button 
-            block 
-            size="small"
-            type="tertiary"
-            :focusable="false"
-          >
+          <n-button block size="small" type="tertiary" :focusable="false">
             <template #icon>
               <n-icon>
                 <div :class="widget.icon || 'i-mdi-widgets'" />
@@ -24,12 +19,10 @@
         </div>
       </n-space>
     </n-card>
-    
+
     <!-- 使用提示 -->
     <n-card title="使用说明" size="small" :bordered="false" class="mt-4">
-      <n-text depth="3" :style="{ fontSize: '12px' }">
-        点击组件添加到画布
-      </n-text>
+      <n-text depth="3" :style="{ fontSize: '12px' }">点击组件添加到画布</n-text>
     </n-card>
   </div>
 </template>

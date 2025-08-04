@@ -1,7 +1,5 @@
 <template>
   <div ref="gridWrapperEl" class="grid-layout-plus-wrapper-editor">
-
-
     <GridLayoutPlus
       v-model:layout="layout"
       :config="gridConfig"
@@ -31,16 +29,16 @@
             />
             <div v-else class="placeholder">
               组件: {{ item.type }}
-              <br>
+              <br />
               <small>isCard2Component: {{ isCard2Component(item.type) }}</small>
-              <br>
+              <br />
               <small>metadata.isCard2Component: {{ item.raw.metadata?.isCard2Component }}</small>
             </div>
           </div>
         </div>
       </template>
     </GridLayoutPlus>
-    
+
     <ContextMenu
       :show="contextMenu.show"
       :x="contextMenu.x"
@@ -62,34 +60,27 @@ import type { VisualEditorWidget, GraphData } from '@/components/visual-editor/t
 import Card2Wrapper from '../canvas/Card2Wrapper.vue'
 import ContextMenu from '../canvas/ContextMenu.vue'
 
-const props = defineProps<{ 
-  graphData: GraphData; 
-  readonly?: boolean;
-  staticGrid?: boolean;
-  gridConfig?: Partial<GridLayoutPlusConfig>;
+const props = defineProps<{
+  graphData: GraphData
+  readonly?: boolean
+  staticGrid?: boolean
+  gridConfig?: Partial<GridLayoutPlusConfig>
 }>()
 const emit = defineEmits(['node-select', 'request-settings'])
 
 const router = useRouter()
-const { 
-  selectNode, 
-  isCard2Component, 
-  getNodeById, 
-  updateNode,
-  addNode,
-  removeNode
-} = useEditor()
+const { selectNode, isCard2Component, getNodeById, updateNode, addNode, removeNode } = useEditor()
 
 const gridWrapperEl = ref<HTMLElement | null>(null)
 const layout = shallowRef<ExtendedGridLayoutPlusItem[]>([])
 const isReadOnly = computed(() => props.readonly)
 
 const contextMenu = ref<{
-  show: boolean;
-  x: number;
-  y: number;
-  selectedWidgets: VisualEditorWidget[];
-}>({ show: false, x: 0, y: 0, selectedWidgets: [] });
+  show: boolean
+  x: number
+  y: number
+  selectedWidgets: VisualEditorWidget[]
+}>({ show: false, x: 0, y: 0, selectedWidgets: [] })
 
 const gridConfig = computed<GridLayoutPlusConfig>(() => {
   const config = {
@@ -110,7 +101,7 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => {
     restoreOnDrag: false,
     ...props.gridConfig
   }
-  
+
   // 确保开关配置正确应用
   if (props.gridConfig) {
     if (props.gridConfig.isDraggable !== undefined) {
@@ -124,7 +115,7 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => {
       config.isResizable = !isReadOnly.value && !props.gridConfig.staticGrid && config.isResizable
     }
   }
-  
+
   // 调试日志
   console.log('🔧 GridLayoutPlusWrapper - 当前配置:', {
     propsGridConfig: props.gridConfig,
@@ -132,12 +123,12 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => {
     isReadOnly: isReadOnly.value,
     staticGrid: props.staticGrid
   })
-  
+
   return config
 })
 
 interface ExtendedGridLayoutPlusItem extends GridLayoutPlusItem {
-  raw: VisualEditorWidget;
+  raw: VisualEditorWidget
 }
 
 const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[] => {
@@ -151,31 +142,39 @@ const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[
     isDraggable: !isReadOnly.value && !props.staticGrid && (props.gridConfig?.isDraggable ?? true),
     isResizable: !isReadOnly.value && !props.staticGrid && (props.gridConfig?.isResizable ?? true),
     type: node.type,
-    raw: node,
+    raw: node
   }))
 }
 
-watch(() => props.graphData.nodes, (newNodes) => {
-  layout.value = nodesToLayout(newNodes || [])
-}, { immediate: true, deep: true })
+watch(
+  () => props.graphData.nodes,
+  newNodes => {
+    layout.value = nodesToLayout(newNodes || [])
+  },
+  { immediate: true, deep: true }
+)
 
 // 监听配置变更
-watch(() => props.gridConfig, (newConfig) => {
-  console.log('🔧 GridLayoutPlusWrapper - 配置变更:', {
-    newConfig,
-    isReadOnly: isReadOnly.value,
-    staticGrid: props.staticGrid
-  })
-  // 重新计算布局以应用新配置
-  layout.value = nodesToLayout(props.graphData.nodes || [])
-}, { deep: true })
+watch(
+  () => props.gridConfig,
+  newConfig => {
+    console.log('🔧 GridLayoutPlusWrapper - 配置变更:', {
+      newConfig,
+      isReadOnly: isReadOnly.value,
+      staticGrid: props.staticGrid
+    })
+    // 重新计算布局以应用新配置
+    layout.value = nodesToLayout(props.graphData.nodes || [])
+  },
+  { deep: true }
+)
 
 const onLayoutChange = (newLayout: ExtendedGridLayoutPlusItem[]) => {
   // 更新所有节点的布局信息
   newLayout.forEach(item => {
     updateNodeLayout(item)
   })
-};
+}
 
 const updateNodeLayout = (item: ExtendedGridLayoutPlusItem) => {
   const node = getNodeById(item.i)
@@ -209,14 +208,15 @@ const handleNodeSelect = (nodeId: string) => {
 }
 
 const handleInteraction = (widget: VisualEditorWidget) => {
-  if (props.readonly) { // 只在预览模式下触发交互
-    const { onClick } = widget.interaction || {};
-    if (!onClick) return;
+  if (props.readonly) {
+    // 只在预览模式下触发交互
+    const { onClick } = widget.interaction || {}
+    if (!onClick) return
 
     if (onClick.type === 'link' && onClick.payload?.url) {
-      window.open(onClick.payload.url, onClick.payload.newTab ? '_blank' : '_self');
+      window.open(onClick.payload.url, onClick.payload.newTab ? '_blank' : '_self')
     } else if (onClick.type === 'internal_route' && onClick.payload?.route) {
-      router.push(onClick.payload.route);
+      router.push(onClick.payload.route)
     }
   }
 }
@@ -224,7 +224,7 @@ const handleInteraction = (widget: VisualEditorWidget) => {
 const handleContextMenu = (event: MouseEvent, nodeId: string) => {
   if (isReadOnly.value || props.staticGrid) return
   event.preventDefault()
-  
+
   const node = getNodeById(nodeId)
   if (!node) return
 
@@ -234,7 +234,7 @@ const handleContextMenu = (event: MouseEvent, nodeId: string) => {
       show: true,
       x: event.clientX,
       y: event.clientY,
-      selectedWidgets: [node],
+      selectedWidgets: [node]
     }
   })
 }
@@ -248,7 +248,7 @@ const handleContextMenuSelect = (action: string) => {
       const newNode = JSON.parse(JSON.stringify(widget))
       newNode.id = `${newNode.type}_${nanoid()}`
       if (newNode.layout?.gridstack) {
-        newNode.layout.gridstack.y += 1 
+        newNode.layout.gridstack.y += 1
       }
       addNode(newNode)
       break
@@ -263,18 +263,22 @@ const handleContextMenuSelect = (action: string) => {
   closeContextMenu()
 }
 
-const closeContextMenu = () => { contextMenu.value.show = false }
-
+const closeContextMenu = () => {
+  contextMenu.value.show = false
+}
 </script>
 
 <style scoped>
-.grid-layout-plus-wrapper-editor { width: 100%; height: 100%; }
-.editor-widget-container { 
-  width: 100%; 
-  height: 100%; 
-  box-sizing: border-box; 
-  overflow: hidden; 
-  cursor: pointer; 
+.grid-layout-plus-wrapper-editor {
+  width: 100%;
+  height: 100%;
+}
+.editor-widget-container {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  cursor: pointer;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -297,13 +301,13 @@ const closeContextMenu = () => { contextMenu.value.show = false }
   position: relative;
   overflow: hidden;
 }
-.placeholder { 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  height: 100%; 
-  color: #999; 
-  background-color: #f0f0f0; 
-  border-radius: 4px; 
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #999;
+  background-color: #f0f0f0;
+  border-radius: 4px;
 }
 </style>

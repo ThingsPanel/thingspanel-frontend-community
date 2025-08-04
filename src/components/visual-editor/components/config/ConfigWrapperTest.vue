@@ -47,9 +47,7 @@ const testComponentDefinition: IComponentDefinition = {
 }
 
 // 模拟 Card 2.1 switch 配置组件
-const TestSwitchConfig = defineAsyncComponent(
-  () => import('@/card2.1/components/control/switch/switch-config.vue')
-)
+const TestSwitchConfig = defineAsyncComponent(() => import('@/card2.1/components/control/switch/switch-config.vue'))
 
 // ====== 测试状态 ======
 
@@ -66,13 +64,13 @@ const configHistory = ref<Array<{ timestamp: number; config: any }>>([])
 function onConfigChange(newConfig: Record<string, any>) {
   logger.info('配置变更:', newConfig)
   message.info('配置已更新')
-  
+
   // 记录配置历史
   configHistory.value.push({
     timestamp: Date.now(),
     config: { ...newConfig }
   })
-  
+
   // 限制历史记录数量
   if (configHistory.value.length > 10) {
     configHistory.value.shift()
@@ -182,9 +180,7 @@ const configStr = computed(() => JSON.stringify(currentConfig.value, null, 2))
               </div>
               <pre class="mt-1 text-gray-600 dark:text-gray-400">{{ JSON.stringify(item.config, null, 2) }}</pre>
             </div>
-            <div v-if="configHistory.length === 0" class="text-gray-500 text-center py-4">
-              暂无历史记录
-            </div>
+            <div v-if="configHistory.length === 0" class="text-gray-500 text-center py-4">暂无历史记录</div>
           </div>
         </n-card>
 

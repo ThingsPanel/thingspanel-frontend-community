@@ -71,10 +71,10 @@ const loadCardComponent = async () => {
   try {
     loading.value = true
     error.value = null
-    
+
     // 获取卡片组件
     cardComponent.value = cardDefine.value.component
-    
+
     console.log('加载卡片组件:', {
       cardId: props.item.cardData.cardId,
       cardDefine: cardDefine.value,
@@ -89,9 +89,13 @@ const loadCardComponent = async () => {
 }
 
 // 监听卡片ID变化
-watch(() => props.item.cardData.cardId, () => {
-  loadCardComponent()
-}, { immediate: true })
+watch(
+  () => props.item.cardData.cardId,
+  () => {
+    loadCardComponent()
+  },
+  { immediate: true }
+)
 
 // 生命周期
 onMounted(() => {
@@ -109,7 +113,7 @@ onUnmounted(() => {
     <div v-if="loading" class="flex items-center justify-center h-full">
       <NSpin size="small" />
     </div>
-    
+
     <!-- 错误状态 -->
     <div v-else-if="error" class="p-2 h-full">
       <NAlert type="error" size="small" :show-icon="false">
@@ -119,28 +123,19 @@ onUnmounted(() => {
         <div class="text-xs">{{ error }}</div>
       </NAlert>
     </div>
-    
+
     <!-- 渲染实际卡片组件 -->
     <div v-else-if="cardComponent && cardDefine" class="h-full w-full">
-      <component 
-        :is="cardComponent"
-        :data="cardViewData"
-        :readonly="readonly"
-        class="h-full w-full"
-      />
+      <component :is="cardComponent" :data="cardViewData" :readonly="readonly" class="h-full w-full" />
     </div>
-    
+
     <!-- 占位符 -->
     <div v-else class="default-card-fallback p-3 h-full">
       <div class="text-sm font-medium text-gray-700">
         {{ item.cardData.title || '未知卡片' }}
       </div>
-      <div class="text-xs text-gray-500 mt-1">
-        卡片ID: {{ item.cardData.cardId }}
-      </div>
-      <div class="text-xs text-gray-400 mt-2">
-        卡片组件未找到或加载失败
-      </div>
+      <div class="text-xs text-gray-500 mt-1">卡片ID: {{ item.cardData.cardId }}</div>
+      <div class="text-xs text-gray-400 mt-2">卡片组件未找到或加载失败</div>
     </div>
   </div>
 </template>

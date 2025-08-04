@@ -31,14 +31,14 @@ let chartInstance: echarts.ECharts | null = null
 
 const initChart = () => {
   if (!chartRef.value) return
-  
-      chartInstance = createEChartsInstance(chartRef.value)
+
+  chartInstance = createEChartsInstance(chartRef.value)
   updateChart()
 }
 
 const updateChart = () => {
   if (!chartInstance) return
-  
+
   const option = {
     title: {
       text: props.title,
@@ -67,15 +67,17 @@ const updateChart = () => {
         fontSize: 10
       }
     },
-    series: [{
-      type: 'bar',
-      data: props.data.map(item => item.value),
-      itemStyle: {
-        color: props.color
+    series: [
+      {
+        type: 'bar',
+        data: props.data.map(item => item.value),
+        itemStyle: {
+          color: props.color
+        }
       }
-    }]
+    ]
   }
-  
+
   chartInstance.setOption(option)
 }
 
@@ -85,17 +87,21 @@ const resizeChart = () => {
   }
 }
 
-watch(() => [props.title, props.data, props.color], () => {
-  updateChart()
-}, { deep: true })
+watch(
+  () => [props.title, props.data, props.color],
+  () => {
+    updateChart()
+  },
+  { deep: true }
+)
 
 onMounted(() => {
   nextTick(() => {
     initChart()
-    
+
     // 监听窗口大小变化
     window.addEventListener('resize', resizeChart)
-    
+
     // 使用 ResizeObserver 监听容器大小变化
     if (chartRef.value) {
       const resizeObserver = new ResizeObserver(() => {

@@ -1,7 +1,7 @@
 <template>
   <div class="http-data-source-test">
     <h2>HTTP 数据源测试</h2>
-    
+
     <n-card title="HTTP 数据源配置" class="config-card">
       <n-form :model="dataSource" label-placement="left" label-width="auto">
         <!-- 启用开关 -->
@@ -11,76 +11,37 @@
 
         <!-- 数据源类型 -->
         <n-form-item label="数据源类型">
-          <n-select
-            v-model:value="dataSource.type"
-            :options="dataSourceTypeOptions"
-            placeholder="选择数据源类型"
-          />
+          <n-select v-model:value="dataSource.type" :options="dataSourceTypeOptions" placeholder="选择数据源类型" />
         </n-form-item>
 
         <!-- 数据源名称 -->
         <n-form-item label="数据源名称">
-          <n-input
-            v-model:value="dataSource.name"
-            placeholder="请输入数据源名称"
-          />
+          <n-input v-model:value="dataSource.name" placeholder="请输入数据源名称" />
         </n-form-item>
 
         <!-- HTTP 配置 -->
         <template v-if="dataSource.type === 'http'">
           <n-form-item label="请求方法">
-            <n-select
-              v-model:value="dataSource.method"
-              :options="methodOptions"
-              placeholder="选择请求方法"
-            />
+            <n-select v-model:value="dataSource.method" :options="methodOptions" placeholder="选择请求方法" />
           </n-form-item>
 
           <n-form-item label="请求地址">
-            <n-input
-              v-model:value="dataSource.url"
-              placeholder="请输入完整的 URL"
-            />
+            <n-input v-model:value="dataSource.url" placeholder="请输入完整的 URL" />
           </n-form-item>
 
           <n-form-item label="请求头">
             <div class="headers-container">
-              <div
-                v-for="(header, index) in dataSource.headers"
-                :key="index"
-                class="header-item"
-              >
-                <n-input
-                  v-model:value="header.key"
-                  placeholder="Header 名称"
-                  style="width: 40%"
-                />
-                <n-input
-                  v-model:value="header.value"
-                  placeholder="Header 值"
-                  style="width: 40%"
-                />
-                <n-button
-                  size="small"
-                  style="width: 15%"
-                  @click="removeHeader(index)"
-                >
-                  删除
-                </n-button>
+              <div v-for="(header, index) in dataSource.headers" :key="index" class="header-item">
+                <n-input v-model:value="header.key" placeholder="Header 名称" style="width: 40%" />
+                <n-input v-model:value="header.value" placeholder="Header 值" style="width: 40%" />
+                <n-button size="small" style="width: 15%" @click="removeHeader(index)">删除</n-button>
               </div>
-              <n-button size="small" @click="addHeader">
-                添加请求头
-              </n-button>
+              <n-button size="small" @click="addHeader">添加请求头</n-button>
             </div>
           </n-form-item>
 
           <n-form-item v-if="dataSource.method === 'POST'" label="请求体">
-            <n-input
-              v-model:value="dataSource.body"
-              type="textarea"
-              placeholder="请输入 JSON 格式的请求体"
-              :rows="4"
-            />
+            <n-input v-model:value="dataSource.body" type="textarea" placeholder="请输入 JSON 格式的请求体" :rows="4" />
           </n-form-item>
 
           <n-form-item label="刷新间隔 (秒)">
@@ -105,13 +66,7 @@
 
         <!-- 测试按钮 -->
         <n-form-item>
-          <n-button
-            type="primary"
-            :loading="isTesting"
-            @click="testDataSource"
-          >
-            测试数据源
-          </n-button>
+          <n-button type="primary" :loading="isTesting" @click="testDataSource">测试数据源</n-button>
         </n-form-item>
       </n-form>
     </n-card>
@@ -123,7 +78,7 @@
         :title="testResult.success ? '测试成功' : '测试失败'"
         :description="testResult.message"
       />
-      
+
       <div v-if="testResult.data" class="response-data">
         <h4>响应数据:</h4>
         <pre>{{ JSON.stringify(testResult.data, null, 2) }}</pre>
@@ -133,10 +88,7 @@
     <!-- 组件预览 -->
     <n-card title="组件预览" class="preview-card">
       <div class="component-preview">
-        <DigitIndicatorCard
-          :properties="componentProps"
-          :metadata="{ dataSource: dataSource }"
-        />
+        <DigitIndicatorCard :properties="componentProps" :metadata="{ dataSource: dataSource }" />
       </div>
     </n-card>
   </div>
@@ -200,7 +152,7 @@ const methodOptions = [
 // 可用路径
 const availablePaths = computed(() => {
   if (!testResult.value?.data) return []
-  
+
   const paths = dataPathResolver.getAvailablePaths(testResult.value.data)
   return paths.map(path => ({
     label: path || '根数据',
@@ -234,7 +186,7 @@ const testDataSource = async () => {
   try {
     // 使用数据源管理器测试
     const value = await dataSourceManager.getValue(dataSource.value)
-    
+
     testResult.value = {
       success: true,
       message: '数据源测试成功',
@@ -246,13 +198,12 @@ const testDataSource = async () => {
       rawData: value.rawData,
       metadata: value.metadata
     })
-
   } catch (error) {
     testResult.value = {
       success: false,
       message: error instanceof Error ? error.message : '测试失败'
     }
-    
+
     console.error('🔧 HttpDataSourceTest - 测试失败:', error)
   } finally {
     isTesting.value = false
@@ -260,15 +211,18 @@ const testDataSource = async () => {
 }
 
 // 监听数据路径变化
-watch(() => dataSource.value.dataPath, (newPath) => {
-  if (testResult.value?.data) {
-    const resolvedValue = dataPathResolver.resolve(testResult.value.data, newPath)
-    console.log('🔧 HttpDataSourceTest - 数据路径变化:', {
-      path: newPath,
-      resolvedValue
-    })
+watch(
+  () => dataSource.value.dataPath,
+  newPath => {
+    if (testResult.value?.data) {
+      const resolvedValue = dataPathResolver.resolve(testResult.value.data, newPath)
+      console.log('🔧 HttpDataSourceTest - 数据路径变化:', {
+        path: newPath,
+        resolvedValue
+      })
+    }
   }
-})
+)
 </script>
 
 <style scoped>
@@ -317,4 +271,4 @@ watch(() => dataSource.value.dataPath, (newPath) => {
   background-color: #fafafa;
   border-radius: 8px;
 }
-</style> 
+</style>

@@ -40,15 +40,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 // 使用数据钩子
-const {
-  detail,
-  unit,
-  fontSize,
-  cardRef,
-  updateData,
-  setSeries,
-  initializeData
-} = useDigitIndicatorData(props)
+const { detail, unit, fontSize, cardRef, updateData, setSeries, initializeData } = useDigitIndicatorData(props)
 
 // 计算属性
 const iconColor = computed(() => props.properties?.color || 'blue')

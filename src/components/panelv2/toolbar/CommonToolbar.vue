@@ -5,13 +5,7 @@
 <script setup lang="ts">
 import { computed, watch } from 'vue'
 import { NButton, NSelect, NSwitch, NIcon, NTooltip, useThemeVars } from 'naive-ui'
-import { 
-  ArrowUndoOutline, 
-  ArrowRedoOutline, 
-  SaveOutline, 
-  RefreshOutline,
-  SettingsOutline 
-} from '@vicons/ionicons5'
+import { ArrowUndoOutline, ArrowRedoOutline, SaveOutline, RefreshOutline, SettingsOutline } from '@vicons/ionicons5'
 import { useCanvasStore } from '../store/canvasStore'
 
 interface Props {
@@ -47,12 +41,16 @@ console.log('[CommonToolbar] 初始化时接收到的availableRenderers:', props
 console.log('[CommonToolbar] 当前渲染器:', props.currentRenderer)
 
 // 监听availableRenderers变化
-watch(() => props.availableRenderers, (newValue, oldValue) => {
-  console.log('[CommonToolbar] availableRenderers变化:')
-  console.log('  旧值:', oldValue)
-  console.log('  新值:', newValue)
-  console.log('  新值长度:', newValue?.length || 0)
-}, { immediate: true, deep: true })
+watch(
+  () => props.availableRenderers,
+  (newValue, oldValue) => {
+    console.log('[CommonToolbar] availableRenderers变化:')
+    console.log('  旧值:', oldValue)
+    console.log('  新值:', newValue)
+    console.log('  新值长度:', newValue?.length || 0)
+  },
+  { immediate: true, deep: true }
+)
 
 // 主题颜色 - 使用Naive UI主题系统
 const themeVars = useThemeVars()
@@ -89,12 +87,7 @@ const handleToggleRendererConfig = () => emit('toggle-renderer-config')
       <!-- 模式切换 -->
       <NTooltip>
         <template #trigger>
-          <NSwitch
-            v-model:value="currentModeValue"
-            :disabled="readonly"
-            true-value="edit"
-            false-value="preview"
-          >
+          <NSwitch v-model:value="currentModeValue" :disabled="readonly" true-value="edit" false-value="preview">
             <template #checked>编辑</template>
             <template #unchecked>预览</template>
           </NSwitch>
@@ -113,15 +106,11 @@ const handleToggleRendererConfig = () => emit('toggle-renderer-config')
     </div>
 
     <!-- 中间：操作工具 -->
-    <div class="flex items-center gap-1 ">
+    <div class="flex items-center gap-1">
       <!-- 撤销 -->
       <NTooltip>
         <template #trigger>
-          <NButton
-            size="small"
-            :disabled="!canvasStore.canUndo || readonly"
-            @click="handleUndo"
-          >
+          <NButton size="small" :disabled="!canvasStore.canUndo || readonly" @click="handleUndo">
             <NIcon>
               <ArrowUndoOutline />
             </NIcon>
@@ -133,11 +122,7 @@ const handleToggleRendererConfig = () => emit('toggle-renderer-config')
       <!-- 重做 -->
       <NTooltip>
         <template #trigger>
-          <NButton
-            size="small"
-            :disabled="!canvasStore.canRedo || readonly"
-            @click="handleRedo"
-          >
+          <NButton size="small" :disabled="!canvasStore.canRedo || readonly" @click="handleRedo">
             <NIcon>
               <ArrowRedoOutline />
             </NIcon>
@@ -146,18 +131,12 @@ const handleToggleRendererConfig = () => emit('toggle-renderer-config')
         重做 (Ctrl+Y)
       </NTooltip>
 
-      <div class="w-px h-4 mx-1" style="background-color: var(--divider-color);"></div>
+      <div class="w-px h-4 mx-1" style="background-color: var(--divider-color)"></div>
 
       <!-- 保存 -->
       <NTooltip>
         <template #trigger>
-          <NButton
-            size="small"
-            type="primary"
-            :disabled="readonly || isSaving"
-            :loading="isSaving"
-            @click="handleSave"
-          >
+          <NButton size="small" type="primary" :disabled="readonly || isSaving" :loading="isSaving" @click="handleSave">
             <NIcon v-if="!isSaving">
               <SaveOutline />
             </NIcon>
@@ -169,11 +148,7 @@ const handleToggleRendererConfig = () => emit('toggle-renderer-config')
       <!-- 重置 -->
       <NTooltip>
         <template #trigger>
-          <NButton
-            size="small"
-            :disabled="readonly"
-            @click="handleReset"
-          >
+          <NButton size="small" :disabled="readonly" @click="handleReset">
             <NIcon>
               <RefreshOutline />
             </NIcon>
@@ -182,7 +157,7 @@ const handleToggleRendererConfig = () => emit('toggle-renderer-config')
         重置面板
       </NTooltip>
 
-      <div class="w-px h-4 mx-1" style="background-color: var(--divider-color);"></div>
+      <div class="w-px h-4 mx-1" style="background-color: var(--divider-color)"></div>
 
       <!-- 渲染器配置 -->
       <NTooltip>
@@ -210,6 +185,8 @@ const handleToggleRendererConfig = () => emit('toggle-renderer-config')
   padding: 0 12px;
   background-color: var(--toolbar-bg);
   border-bottom: 1px solid var(--toolbar-border);
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 </style>

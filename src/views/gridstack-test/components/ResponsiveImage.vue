@@ -21,8 +21,10 @@ const containerRef = ref(null)
 const { width, height } = useElementSize(containerRef)
 
 // Use item id to get a consistent image per item
-const imageId = computed(() => (parseInt(props.item.i.replace(/[^0-9]/g, '')) % 1000) || 1)
-const imageUrl = computed(() => `https://picsum.photos/id/${imageId.value}/${Math.round(width.value) || 200}/${Math.round(height.value) || 200}`)
+const imageId = computed(() => parseInt(props.item.i.replace(/[^0-9]/g, '')) % 1000 || 1)
+const imageUrl = computed(
+  () => `https://picsum.photos/id/${imageId.value}/${Math.round(width.value) || 200}/${Math.round(height.value) || 200}`
+)
 
 const showDetails = computed(() => {
   return width.value > 150 && height.value > 150
@@ -46,7 +48,7 @@ img {
   transition: transform 0.3s ease;
 }
 .responsive-image:hover img {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 .image-details {
   position: absolute;

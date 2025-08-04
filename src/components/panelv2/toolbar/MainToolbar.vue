@@ -90,8 +90,6 @@ const handleGridstackConfigChange = (config: Record<string, any>) => {
   emit('gridstack-config-change', config)
 }
 
-
-
 // 可视化配置变更
 const handleVisualizationConfigChange = (config: Record<string, any>) => {
   emit('visualization-config-change', config)
@@ -123,10 +121,7 @@ const getConfigTitle = () => {
 </script>
 
 <template>
-  <div
-    class="main-toolbar h-12 flex items-center relative"
-    :style="toolbarColors"
-  >
+  <div class="main-toolbar h-12 flex items-center relative" :style="toolbarColors">
     <!-- 公共工具栏 -->
     <CommonToolbar
       :mode="mode"
@@ -204,7 +199,10 @@ const getConfigTitle = () => {
   box-shadow: 0 1px 3px var(--toolbar-shadow);
   position: relative;
   z-index: 10;
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 /* 模态弹窗样式 - 增强半透明效果 */

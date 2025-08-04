@@ -61,7 +61,6 @@ const onRequestSettings = (nodeId: string) => {
   emit('request-settings', nodeId)
 }
 
-
 const onCanvasClick = () => {
   selectNode('') // use the hook's method to clear selection
   emit('canvas-click')

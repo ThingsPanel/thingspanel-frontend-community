@@ -1,26 +1,26 @@
 <script setup lang="tsx">
-import { reactive, ref } from 'vue';
-import type { Ref } from 'vue';
-import type { PaginationProps } from 'naive-ui';
-import { NButton, NPopconfirm } from 'naive-ui';
-import moment from 'moment';
-import { expectMessageDelete, expectMessageList } from '@/service/api';
-import { $t } from '@/locales';
+import { reactive, ref } from 'vue'
+import type { Ref } from 'vue'
+import type { PaginationProps } from 'naive-ui'
+import { NButton, NPopconfirm } from 'naive-ui'
+import moment from 'moment'
+import { expectMessageDelete, expectMessageList } from '@/service/api'
+import { $t } from '@/locales'
 const props = defineProps<{
-  id: string;
-}>();
+  id: string
+}>()
 
-const tableData = ref([]);
+const tableData = ref([])
 const statusOptions = ref([
   { label: $t('page.expect.pending'), value: 'pending' },
   { label: $t('page.expect.send'), value: 'sent' },
   { label: $t('page.expect.expired'), value: 'expired' }
-]);
+])
 const typeOptions = ref([
   { label: $t('custom.device_details.telemetry'), value: 'telemetry' },
   { label: $t('custom.device_details.attributes'), value: 'attribute' },
   { label: $t('page.expect.command'), value: 'command' }
-]);
+])
 
 const query = reactive({
   status: 'pending',
@@ -28,7 +28,7 @@ const query = reactive({
   label: null,
   page: 1,
   page_size: 10
-});
+})
 const pagination: PaginationProps = reactive({
   page: 1,
   pageSize: 10,
@@ -36,44 +36,44 @@ const pagination: PaginationProps = reactive({
   pageSizes: [10, 15, 20, 25, 30],
   itemCount: 0,
   onChange: (page: number) => {
-    pagination.page = page;
-    query.page = page;
-    getTableData();
+    pagination.page = page
+    query.page = page
+    getTableData()
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
-    query.page_size = pageSize;
-    getTableData();
+    pagination.pageSize = pageSize
+    pagination.page = 1
+    query.page_size = pageSize
+    getTableData()
   }
-});
+})
 async function getTableData() {
   const { data, error } = await expectMessageList({
     device_id: props.id,
     send_type: query.type,
     ...query
-  });
+  })
   if (!error) {
-    const list: any = data.list || [];
-    tableData.value = list;
-    pagination.itemCount = data.total || 0;
+    const list: any = data.list || []
+    tableData.value = list
+    pagination.itemCount = data.total || 0
   }
 }
 
 const handleDeleteTable = async id => {
-  const { error } = await expectMessageDelete(id);
+  const { error } = await expectMessageDelete(id)
   if (!error) {
-    window.$message?.success($t('common.deleteSuccess'));
-    getTableData();
+    window.$message?.success($t('common.deleteSuccess'))
+    getTableData()
   }
-};
+}
 const columns: Ref<any> = ref([
   {
     key: 'created_at',
     minWidth: '200px',
     title: () => $t('page.expect.createTime'),
     render: row => {
-      return row.created_at ? moment(row.created_at).format('YYYY-MM-DD hh:mm:ss') : '';
+      return row.created_at ? moment(row.created_at).format('YYYY-MM-DD hh:mm:ss') : ''
     }
   },
   {
@@ -81,7 +81,7 @@ const columns: Ref<any> = ref([
     minWidth: '100px',
     title: () => $t('page.expect.commandType'),
     render: row => {
-      return typeOptions.value.find(v => v.value === row.send_type)?.label;
+      return typeOptions.value.find(v => v.value === row.send_type)?.label
     }
   },
   {
@@ -99,7 +99,7 @@ const columns: Ref<any> = ref([
     minWidth: '200px',
     title: () => $t('page.expect.expireTime'),
     render: row => {
-      return row.expiry_time ? moment(row.expiry_time).format('YYYY-MM-DD hh:mm:ss') : '';
+      return row.expiry_time ? moment(row.expiry_time).format('YYYY-MM-DD hh:mm:ss') : ''
     }
   },
   {
@@ -107,7 +107,7 @@ const columns: Ref<any> = ref([
     minWidth: '100px',
     title: () => $t('page.expect.status'),
     render: row => {
-      return statusOptions.value.find(v => v.value === row.status)?.label;
+      return statusOptions.value.find(v => v.value === row.status)?.label
     }
   },
   {
@@ -120,7 +120,7 @@ const columns: Ref<any> = ref([
     minWidth: '200px',
     title: () => $t('page.expect.dealTime'),
     render: row => {
-      return row.send_time ? moment(row.send_time).format('YYYY-MM-DD hh:mm:ss') : '';
+      return row.send_time ? moment(row.send_time).format('YYYY-MM-DD hh:mm:ss') : ''
     }
   },
   {
@@ -143,24 +143,24 @@ const columns: Ref<any> = ref([
             )
           }}
         </NPopconfirm>
-      );
+      )
     }
   }
-]) as Ref<any>;
+]) as Ref<any>
 
 const handleSearch = () => {
-  pagination.page = 1;
-  getTableData();
-};
-handleSearch();
+  pagination.page = 1
+  getTableData()
+}
+handleSearch()
 const handleReset = () => {
-  query.status = 'pending';
-  query.type = null;
-  query.label = null;
-  query.page = 1;
-  query.page_size = 10;
-  handleSearch();
-};
+  query.status = 'pending'
+  query.type = null
+  query.label = null
+  query.page = 1
+  query.page_size = 10
+  handleSearch()
+}
 </script>
 
 <template>

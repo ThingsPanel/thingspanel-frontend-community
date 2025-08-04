@@ -11,25 +11,25 @@
     @node-select="onNodeSelect"
     @canvas-click="onCanvasClick"
   >
-    <div 
+    <div
       class="custom-grid-renderer grid-background-base"
-      :class="{ 
+      :class="{
         'show-grid': config.showGrid && !readonly,
         'preview-mode': isPreviewMode.value,
-        'readonly': readonly
+        readonly: readonly
       }"
       :style="getGridStyle()"
       @click="handleCanvasClick"
     >
       <!-- 网格项 -->
-      <div 
+      <div
         v-for="gridItem in gridItems"
         :key="gridItem.node?.id || `empty-${gridItem.row}-${gridItem.col}`"
         class="grid-cell"
-        :class="{ 
-          'occupied': !!gridItem.node,
-          'selected': gridItem.node && selectedIds.includes(gridItem.node.id) && !isPreviewMode.value,
-          'readonly': readonly || isPreviewMode.value
+        :class="{
+          occupied: !!gridItem.node,
+          selected: gridItem.node && selectedIds.includes(gridItem.node.id) && !isPreviewMode.value,
+          readonly: readonly || isPreviewMode.value
         }"
         :style="getGridCellStyle(gridItem)"
         @click.stop="handleGridCellClick(gridItem)"
@@ -40,7 +40,7 @@
           <div v-if="showWidgetTitles && !readonly" class="node-title">
             {{ gridItem.node.label || gridItem.node.type }}
           </div>
-          
+
           <!-- 节点内容 -->
           <div class="node-content">
             <Card2Wrapper
@@ -51,14 +51,10 @@
               :node-id="gridItem.node.id"
               @error="handleComponentError"
             />
-            <component 
-              :is="getWidgetComponent(gridItem.node.type)"
-              v-else
-              v-bind="gridItem.node.properties"
-            />
+            <component :is="getWidgetComponent(gridItem.node.type)" v-else v-bind="gridItem.node.properties" />
           </div>
         </template>
-        
+
         <!-- 空单元格 -->
         <div v-else-if="!readonly" class="empty-cell">
           <div class="empty-placeholder">
@@ -98,7 +94,7 @@ interface GridItem {
   row: number
   col: number
   node?: any
-  span?: { rowSpan: number, colSpan: number }
+  span?: { rowSpan: number; colSpan: number }
 }
 
 // 组件 Props
@@ -110,7 +106,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   readonly: false,
-  config: () => ({ 
+  config: () => ({
     showGrid: true,
     rows: 6,
     columns: 4,
@@ -145,7 +141,7 @@ const selectedIds = computed(() => stateManager.canvasState.value.selectedIds)
 const gridItems = computed<GridItem[]>(() => {
   const config = props.config!
   const items: GridItem[] = []
-  
+
   // 创建网格矩阵
   for (let row = 0; row < config.rows!; row++) {
     for (let col = 0; col < config.columns!; col++) {
@@ -154,7 +150,7 @@ const gridItems = computed<GridItem[]>(() => {
         const gridPos = n.metadata?.gridPosition
         return gridPos && gridPos.row === row && gridPos.col === col
       })
-      
+
       items.push({
         row,
         col,
@@ -163,7 +159,7 @@ const gridItems = computed<GridItem[]>(() => {
       })
     }
   }
-  
+
   return items
 })
 
@@ -194,7 +190,7 @@ const handleCanvasClick = () => {
 
 const handleGridCellClick = (gridItem: GridItem) => {
   if (isPreviewMode.value) return
-  
+
   if (gridItem.node) {
     // 选择现有节点
     if (!props.readonly) {
@@ -375,16 +371,16 @@ const getWidgetComponent = (type: string) => {
   .custom-grid-renderer {
     min-height: 400px;
   }
-  
+
   .grid-cell {
     min-height: 100px;
   }
-  
+
   .node-title {
     font-size: 11px;
     padding: 4px 8px;
   }
-  
+
   .empty-placeholder {
     font-size: 11px;
   }

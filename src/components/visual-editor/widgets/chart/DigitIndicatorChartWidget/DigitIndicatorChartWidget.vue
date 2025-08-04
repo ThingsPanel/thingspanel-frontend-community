@@ -1,9 +1,6 @@
 <template>
   <div class="digit-indicator-chart-widget">
-    <component 
-      :is="DigitIndicatorComponent" 
-      :card="cardData" 
-    />
+    <component :is="DigitIndicatorComponent" :card="cardData" />
   </div>
 </template>
 
@@ -47,15 +44,20 @@ const cardData = computed<ICardData>(() => ({
     backgroundImage: '',
     opacity: 1
   },
-  dataSource: props.deviceId && props.metricsId ? {
-    deviceSource: [{
-      deviceId: props.deviceId,
-      metricsId: props.metricsId,
-      metricsType: props.metricsType,
-      aggregateWindow: '1m',
-      name: props.title
-    }]
-  } : undefined,
+  dataSource:
+    props.deviceId && props.metricsId
+      ? {
+          deviceSource: [
+            {
+              deviceId: props.deviceId,
+              metricsId: props.metricsId,
+              metricsType: props.metricsType,
+              aggregateWindow: '1m',
+              name: props.title
+            }
+          ]
+        }
+      : undefined,
   config: {
     icon: props.icon,
     color: props.color,

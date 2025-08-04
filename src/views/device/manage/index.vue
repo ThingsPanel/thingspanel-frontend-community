@@ -3,7 +3,7 @@ import { onBeforeMount, ref, watch } from 'vue'
 import type { Ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { DrawerPlacement, StepsProps } from 'naive-ui'
-import { NSpace, NTag,NButton } from 'naive-ui'
+import { NSpace, NTag, NButton } from 'naive-ui'
 import _ from 'lodash'
 import type { TreeSelectOption } from 'naive-ui/es/tree-select/src/interface'
 import { localStg } from '@/utils/storage'
@@ -114,10 +114,13 @@ const columns_to_show: Ref<any> = ref([
     minWidth: '180px',
     label: () => $t('custom.devicePage.deviceName'),
     render: (row: any) => {
-      return <NButton type="primary" text onClick={() => goDeviceDetails(row)}>{row.name}</NButton>
+      return (
+        <NButton type="primary" text onClick={() => goDeviceDetails(row)}>
+          {row.name}
+        </NButton>
+      )
     }
   },
-
 
   {
     key: 'is_online',
@@ -133,7 +136,9 @@ const columns_to_show: Ref<any> = ref([
       }
       return (
         <NSpace>
-          <NTag type="default"  style="color: #999;">{$t('custom.devicePage.offline')}</NTag>
+          <NTag type="default" style="color: #999;">
+            {$t('custom.devicePage.offline')}
+          </NTag>
         </NSpace>
       )
     }

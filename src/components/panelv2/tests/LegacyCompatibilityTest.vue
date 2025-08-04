@@ -15,8 +15,13 @@ const testLegacyData = {
   name: 'Test Panel',
   config: JSON.stringify([
     {
-      x: 0, y: 0, w: 4, h: 3, i: 1,
-      minW: 2, minH: 2,
+      x: 0,
+      y: 0,
+      w: 4,
+      h: 3,
+      i: 1,
+      minW: 2,
+      minH: 2,
       data: {
         cardId: 'chart-card-001',
         type: 'chart',
@@ -28,16 +33,19 @@ const testLegacyData = {
           origin: 'device',
           isSupportTimeRange: true,
           dataTimeRange: '7d',
-          deviceSource: [
-            { device_id: 'device_001', metricsType: 'temperature', aggregateWindow: '1h' }
-          ],
+          deviceSource: [{ device_id: 'device_001', metricsType: 'temperature', aggregateWindow: '1h' }],
           systemSource: []
         }
       }
     },
     {
-      x: 4, y: 0, w: 4, h: 2, i: 2,
-      minW: 2, minH: 1,
+      x: 4,
+      y: 0,
+      w: 4,
+      h: 2,
+      i: 2,
+      minW: 2,
+      minH: 1,
       data: {
         cardId: 'data-card-001',
         type: 'builtin',
@@ -53,14 +61,19 @@ const testLegacyData = {
       }
     },
     {
-      x: 8, y: 0, w: 4, h: 4, i: 3,
-      minW: 3, minH: 3,
+      x: 8,
+      y: 0,
+      w: 4,
+      h: 4,
+      i: 3,
+      minW: 3,
+      minH: 3,
       static: true,
       data: {
         cardId: 'table-card-001',
         type: 'custom',
         title: '设备列表',
-        config: { 
+        config: {
           columns: ['name', 'status', 'temperature'],
           pagination: true,
           pageSize: 10
@@ -69,9 +82,7 @@ const testLegacyData = {
         basicSettings: { showTitle: true, bordered: true },
         dataSource: {
           origin: 'device',
-          deviceSource: [
-            { device_id: 'all', metricsType: 'status' }
-          ],
+          deviceSource: [{ device_id: 'all', metricsType: 'status' }],
           systemSource: []
         }
       }
@@ -115,10 +126,14 @@ const originalDataColumns = [
   { title: 'ID', key: 'i', width: 60 },
   { title: '位置', key: 'position', render: (row: LegacyCardView) => `${row.x}, ${row.y}` },
   { title: '尺寸', key: 'size', render: (row: LegacyCardView) => `${row.w} × ${row.h}` },
-  { title: '最小尺寸', key: 'minSize', render: (row: LegacyCardView) => row.minW || row.minH ? `${row.minW || '-'} × ${row.minH || '-'}` : '-' },
+  {
+    title: '最小尺寸',
+    key: 'minSize',
+    render: (row: LegacyCardView) => (row.minW || row.minH ? `${row.minW || '-'} × ${row.minH || '-'}` : '-')
+  },
   { title: '卡片类型', key: 'cardType', render: (row: LegacyCardView) => row.data?.type || 'unknown' },
   { title: '标题', key: 'title', render: (row: LegacyCardView) => row.data?.title || '-' },
-  { title: '静态', key: 'static', render: (row: LegacyCardView) => row.static ? '是' : '否' }
+  { title: '静态', key: 'static', render: (row: LegacyCardView) => (row.static ? '是' : '否') }
 ]
 
 const convertedDataColumns = [
@@ -127,8 +142,8 @@ const convertedDataColumns = [
   { title: '位置 (像素)', key: 'position', render: (row: BaseCanvasItem) => `${row.position.x}, ${row.position.y}` },
   { title: '尺寸 (像素)', key: 'size', render: (row: BaseCanvasItem) => `${row.size.width} × ${row.size.height}` },
   { title: '层级', key: 'zIndex' },
-  { title: '可见', key: 'visible', render: (row: BaseCanvasItem) => row.visible ? '是' : '否' },
-  { title: '锁定', key: 'locked', render: (row: BaseCanvasItem) => row.locked ? '是' : '否' },
+  { title: '可见', key: 'visible', render: (row: BaseCanvasItem) => (row.visible ? '是' : '否') },
+  { title: '锁定', key: 'locked', render: (row: BaseCanvasItem) => (row.locked ? '是' : '否') },
   { title: '卡片ID', key: 'cardId', render: (row: BaseCanvasItem) => row.cardData.cardId || '-' }
 ]
 
@@ -150,13 +165,11 @@ const runMigrationTest = () => {
   console.log('Running migration test...')
   try {
     // 测试版本迁移
-    const mockOldData = [
-      { x: 0, y: 0, w: 2, h: 2, i: 1, data: { cardId: 'test', config: {} } }
-    ]
-    
+    const mockOldData = [{ x: 0, y: 0, w: 2, h: 2, i: 1, data: { cardId: 'test', config: {} } }]
+
     // 模拟从1.0.0到1.1.0的迁移
     const migrated = adapter.migrate(mockOldData, '1.0.0', '1.1.0')
-    
+
     testResults.value.migration = {
       success: true,
       original: mockOldData,
@@ -220,39 +233,31 @@ onMounted(() => {
           <template #header>
             <div class="flex items-center gap-2">
               <span>数据验证结果</span>
-              <NTag 
-                v-if="testResults.validation"
-                :type="validationStatus === 'success' ? 'success' : 'error'"
-              >
+              <NTag v-if="testResults.validation" :type="validationStatus === 'success' ? 'success' : 'error'">
                 {{ validationStatus === 'success' ? '通过' : '失败' }}
               </NTag>
             </div>
           </template>
-          
+
           <div v-if="testResults.validation" class="space-y-4">
             <div>
-              <strong>验证状态:</strong> 
+              <strong>验证状态:</strong>
               {{ testResults.validation.valid ? '✅ 数据格式有效' : '❌ 数据格式无效' }}
             </div>
-            
+
             <div v-if="testResults.validation.errors.length > 0">
               <strong>错误信息:</strong>
-              <NAlert 
-                v-for="(error, index) in testResults.validation.errors" 
-                :key="index"
-                type="error" 
-                class="mt-2"
-              >
+              <NAlert v-for="(error, index) in testResults.validation.errors" :key="index" type="error" class="mt-2">
                 {{ error.path }}: {{ error.message }} ({{ error.code }})
               </NAlert>
             </div>
-            
+
             <div v-if="testResults.validation.warnings.length > 0">
               <strong>警告信息:</strong>
-              <NAlert 
-                v-for="(warning, index) in testResults.validation.warnings" 
+              <NAlert
+                v-for="(warning, index) in testResults.validation.warnings"
                 :key="index"
-                type="warning" 
+                type="warning"
                 class="mt-2"
               >
                 {{ warning.path }}: {{ warning.message }} ({{ warning.code }})
@@ -268,15 +273,12 @@ onMounted(() => {
           <template #header>
             <div class="flex items-center gap-2">
               <span>格式转换结果</span>
-              <NTag 
-                v-if="testResults.conversion"
-                :type="conversionStatus === 'success' ? 'success' : 'error'"
-              >
+              <NTag v-if="testResults.conversion" :type="conversionStatus === 'success' ? 'success' : 'error'">
                 {{ conversionStatus === 'success' ? '成功' : '失败' }}
               </NTag>
             </div>
           </template>
-          
+
           <div v-if="testResults.conversion" class="space-y-6">
             <!-- 转换统计 -->
             <div class="grid grid-cols-4 gap-4">
@@ -301,8 +303,8 @@ onMounted(() => {
             <!-- 原始数据 -->
             <div>
               <h3 class="text-lg font-semibold mb-3">原始数据 (Legacy Format)</h3>
-              <NTable 
-                :columns="originalDataColumns" 
+              <NTable
+                :columns="originalDataColumns"
                 :data="adapter.parsePanelData(testLegacyData)"
                 size="small"
                 :scroll-x="800"
@@ -312,8 +314,8 @@ onMounted(() => {
             <!-- 转换后数据 -->
             <div>
               <h3 class="text-lg font-semibold mb-3">转换后数据 (BaseCanvasItem Format)</h3>
-              <NTable 
-                :columns="convertedDataColumns" 
+              <NTable
+                :columns="convertedDataColumns"
                 :data="testResults.conversion.data"
                 size="small"
                 :scroll-x="1000"
@@ -323,12 +325,7 @@ onMounted(() => {
             <!-- 错误信息 -->
             <div v-if="testResults.conversion.errors.length > 0">
               <h3 class="text-lg font-semibold mb-3">转换错误</h3>
-              <NAlert 
-                v-for="(error, index) in testResults.conversion.errors" 
-                :key="index"
-                type="error" 
-                class="mb-2"
-              >
+              <NAlert v-for="(error, index) in testResults.conversion.errors" :key="index" type="error" class="mb-2">
                 {{ error }}
               </NAlert>
             </div>
@@ -336,10 +333,10 @@ onMounted(() => {
             <!-- 警告信息 -->
             <div v-if="testResults.conversion.warnings.length > 0">
               <h3 class="text-lg font-semibold mb-3">转换警告</h3>
-              <NAlert 
-                v-for="(warning, index) in testResults.conversion.warnings" 
+              <NAlert
+                v-for="(warning, index) in testResults.conversion.warnings"
                 :key="index"
-                type="warning" 
+                type="warning"
                 class="mb-2"
               >
                 {{ warning }}
@@ -355,38 +352,35 @@ onMounted(() => {
           <template #header>
             <div class="flex items-center gap-2">
               <span>版本迁移测试</span>
-              <NTag 
-                v-if="testResults.migration"
-                :type="testResults.migration.success ? 'success' : 'error'"
-              >
+              <NTag v-if="testResults.migration" :type="testResults.migration.success ? 'success' : 'error'">
                 {{ testResults.migration.success ? '成功' : '失败' }}
               </NTag>
             </div>
           </template>
-          
+
           <div v-if="testResults.migration" class="space-y-4">
             <div>
-              <strong>迁移路径:</strong> 1.0.0 → 1.1.0
+              <strong>迁移路径:</strong>
+              1.0.0 → 1.1.0
             </div>
-            
+
             <div>
               <h4 class="font-semibold mb-2">原始数据:</h4>
-              <pre class="bg-gray-100 p-3 rounded text-sm overflow-x-auto">{{ JSON.stringify(testResults.migration.original, null, 2) }}</pre>
+              <pre class="bg-gray-100 p-3 rounded text-sm overflow-x-auto">{{
+                JSON.stringify(testResults.migration.original, null, 2)
+              }}</pre>
             </div>
-            
+
             <div>
               <h4 class="font-semibold mb-2">迁移后数据:</h4>
-              <pre class="bg-gray-100 p-3 rounded text-sm overflow-x-auto">{{ JSON.stringify(testResults.migration.migrated, null, 2) }}</pre>
+              <pre class="bg-gray-100 p-3 rounded text-sm overflow-x-auto">{{
+                JSON.stringify(testResults.migration.migrated, null, 2)
+              }}</pre>
             </div>
-            
+
             <div v-if="testResults.migration.errors.length > 0">
               <h4 class="font-semibold mb-2">迁移错误:</h4>
-              <NAlert 
-                v-for="(error, index) in testResults.migration.errors" 
-                :key="index"
-                type="error" 
-                class="mb-2"
-              >
+              <NAlert v-for="(error, index) in testResults.migration.errors" :key="index" type="error" class="mb-2">
                 {{ error }}
               </NAlert>
             </div>
@@ -400,7 +394,7 @@ onMounted(() => {
           <template #header>
             <span>数据统计分析</span>
           </template>
-          
+
           <div v-if="testResults.statistics" class="space-y-6">
             <!-- 基础统计 -->
             <div class="grid grid-cols-3 gap-4">
@@ -422,8 +416,8 @@ onMounted(() => {
             <div>
               <h4 class="font-semibold mb-3">卡片类型分布</h4>
               <div class="space-y-2">
-                <div 
-                  v-for="(count, type) in testResults.statistics.cardTypes" 
+                <div
+                  v-for="(count, type) in testResults.statistics.cardTypes"
                   :key="type"
                   class="flex justify-between items-center p-2 bg-gray-50 rounded"
                 >
@@ -437,8 +431,8 @@ onMounted(() => {
             <div>
               <h4 class="font-semibold mb-3">数据源类型分布</h4>
               <div class="space-y-2">
-                <div 
-                  v-for="(count, type) in testResults.statistics.dataSourceTypes" 
+                <div
+                  v-for="(count, type) in testResults.statistics.dataSourceTypes"
                   :key="type"
                   class="flex justify-between items-center p-2 bg-gray-50 rounded"
                 >

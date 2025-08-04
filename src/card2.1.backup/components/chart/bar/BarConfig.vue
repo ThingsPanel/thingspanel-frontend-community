@@ -11,13 +11,10 @@
       />
       <n-button text @click="resetTheme">{{ $t('common.reset') }}</n-button>
     </n-flex>
-    
+
     <div v-if="localConfig.selectedTheme" class="color-groups">
       <n-grid x-gap="6" y-gap="6" :cols="2">
-        <n-gi
-          v-for="(group, index) in colorGroups[localConfig.selectedTheme]"
-          :key="group.name"
-        >
+        <n-gi v-for="(group, index) in colorGroups[localConfig.selectedTheme]" :key="group.name">
           <div class="color-group">
             <div>{{ index + 1 }}.</div>
             <!-- Top Color Picker -->
@@ -81,9 +78,13 @@ const themeOptions = [
 ]
 
 // 监听 props.config 变化
-watch(() => props.config, (newConfig) => {
-  Object.assign(localConfig, newConfig)
-}, { deep: true, immediate: true })
+watch(
+  () => props.config,
+  newConfig => {
+    Object.assign(localConfig, newConfig)
+  },
+  { deep: true, immediate: true }
+)
 
 // 处理主题更新
 const handleThemeUpdate = () => {

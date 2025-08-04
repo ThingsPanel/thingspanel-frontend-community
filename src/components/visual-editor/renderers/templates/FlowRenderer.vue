@@ -11,27 +11,24 @@
     @node-select="onNodeSelect"
     @canvas-click="onCanvasClick"
   >
-    <div 
+    <div
       class="flow-renderer grid-background-base"
-      :class="{ 
+      :class="{
         'show-grid': config.showGrid && !readonly,
         'preview-mode': isPreviewMode.value,
-        'readonly': readonly
+        readonly: readonly
       }"
       @click="handleCanvasClick"
     >
       <!-- 流式布局容器 -->
-      <div 
-        class="flow-container"
-        :style="getContainerStyle()"
-      >
-        <div 
+      <div class="flow-container" :style="getContainerStyle()">
+        <div
           v-for="(node, index) in layoutNodes"
           :key="node.id"
           class="flow-item"
-          :class="{ 
-            'selected': selectedIds.includes(node.id) && !isPreviewMode.value,
-            'readonly': readonly || isPreviewMode.value
+          :class="{
+            selected: selectedIds.includes(node.id) && !isPreviewMode.value,
+            readonly: readonly || isPreviewMode.value
           }"
           :style="getFlowItemStyle(node, index)"
           @click.stop="handleNodeClick(node.id)"
@@ -40,7 +37,7 @@
           <div v-if="showWidgetTitles && !readonly" class="node-title">
             {{ node.label || node.type }}
           </div>
-          
+
           <!-- 节点内容 -->
           <div class="node-content">
             <Card2Wrapper
@@ -51,11 +48,7 @@
               :node-id="node.id"
               @error="handleComponentError"
             />
-            <component 
-              :is="getWidgetComponent(node.type)"
-              v-else
-              v-bind="node.properties"
-            />
+            <component :is="getWidgetComponent(node.type)" v-else v-bind="node.properties" />
           </div>
         </div>
       </div>
@@ -92,7 +85,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   readonly: false,
-  config: () => ({ 
+  config: () => ({
     showGrid: true,
     direction: 'row',
     wrap: true,
@@ -193,15 +186,11 @@ const getFlowItemStyle = (node: any, index: number) => {
 
   // 设置项目尺寸
   if (config.itemWidth !== 'auto') {
-    style.width = typeof config.itemWidth === 'number' 
-      ? `${config.itemWidth}px` 
-      : config.itemWidth
+    style.width = typeof config.itemWidth === 'number' ? `${config.itemWidth}px` : config.itemWidth
   }
-  
+
   if (config.itemHeight !== 'auto') {
-    style.height = typeof config.itemHeight === 'number'
-      ? `${config.itemHeight}px`
-      : config.itemHeight
+    style.height = typeof config.itemHeight === 'number' ? `${config.itemHeight}px` : config.itemHeight
   }
 
   // 如果节点有自定义尺寸，优先使用
@@ -306,16 +295,16 @@ const getWidgetComponent = (type: string) => {
   .flow-renderer {
     min-height: 400px;
   }
-  
+
   .flow-container {
     padding: 10px !important;
     gap: 10px !important;
   }
-  
+
   .flow-item {
     min-width: 280px;
   }
-  
+
   .node-title {
     font-size: 12px;
     padding: 6px 10px;

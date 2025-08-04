@@ -1,30 +1,30 @@
 <script setup lang="tsx">
-import { createApp, onMounted, ref, watch, watchEffect } from 'vue';
-import { NCard } from 'naive-ui';
-import { useScriptTag } from '@vueuse/core';
-import dayjs from 'dayjs';
-import { TENCENT_MAP_SDK_URL } from '@/constants/map-sdk';
-import { $t } from '@/locales';
-import { telemetryLatestApi } from '@/service/api/system-data';
-import { createLogger } from '@/utils/logger';
+import { createApp, onMounted, ref, watch, watchEffect } from 'vue'
+import { NCard } from 'naive-ui'
+import { useScriptTag } from '@vueuse/core'
+import dayjs from 'dayjs'
+import { TENCENT_MAP_SDK_URL } from '@/constants/map-sdk'
+import { $t } from '@/locales'
+import { telemetryLatestApi } from '@/service/api/system-data'
+import { createLogger } from '@/utils/logger'
 
-const logger = createLogger('GaodeMap');
-defineOptions({ name: 'TencentMap' });
+const logger = createLogger('GaodeMap')
+defineOptions({ name: 'TencentMap' })
 
-const props = defineProps<{ devices: any[] }>();
+const props = defineProps<{ devices: any[] }>()
 
-const { load } = useScriptTag(TENCENT_MAP_SDK_URL);
+const { load } = useScriptTag(TENCENT_MAP_SDK_URL)
 
-const domRef = ref<HTMLDivElement | null>(null);
-let map: any = null;
-let multiMarker: any = null;
-let infoWindow: any = null;
+const domRef = ref<HTMLDivElement | null>(null)
+let map: any = null
+let multiMarker: any = null
+let infoWindow: any = null
 
 const renderInfoWindow = (evt: any, _res: any) => {
   const statusText = {
     1: $t('custom.devicePage.online'),
     0: $t('custom.devicePage.offline')
-  } as const;
+  } as const
 
   return (
     <NCard
@@ -41,22 +41,22 @@ const renderInfoWindow = (evt: any, _res: any) => {
         {$t('generate.status')}：{statusText[evt.geometry.data.is_online]}
       </div>
     </NCard>
-  );
-};
+  )
+}
 
 const showMarker = (markerArr, bounds) => {
   // 如果没有标记点，直接使用默认中心点
   if (!markerArr || markerArr.length === 0) {
-    const defaultCenter = new TMap.LatLng(39.98412, 116.307484);
-    bounds.extend(defaultCenter);
-    map.setCenter(defaultCenter);
-    map.setZoom(11);
-    return;
+    const defaultCenter = new TMap.LatLng(39.98412, 116.307484)
+    bounds.extend(defaultCenter)
+    map.setCenter(defaultCenter)
+    map.setZoom(11)
+    return
   }
 
   // 过滤掉无效的标记点
   const validMarkers = markerArr.filter(marker => {
-    const position = marker?.position;
+    const position = marker?.position
     return (
       position &&
       typeof position.lat === 'number' &&
@@ -65,33 +65,33 @@ const showMarker = (markerArr, bounds) => {
       !Number.isNaN(position.lng) &&
       position.lat !== 0 &&
       position.lng !== 0
-    );
-  });
+    )
+  })
 
   if (validMarkers.length === 0) {
     // 如果没有有效的标记点，使用默认中心点
-    const defaultCenter = new TMap.LatLng(39.98412, 116.307484);
-    bounds.extend(defaultCenter);
-    map.setCenter(defaultCenter);
-    map.setZoom(11);
+    const defaultCenter = new TMap.LatLng(39.98412, 116.307484)
+    bounds.extend(defaultCenter)
+    map.setCenter(defaultCenter)
+    map.setZoom(11)
   } else {
     // 判断标注点是否在范围内
     validMarkers.forEach(item => {
       if (bounds.isEmpty() || !bounds.contains(item.position)) {
-        bounds.extend(item.position);
+        bounds.extend(item.position)
       }
-    });
+    })
     // 设置地图可视范围
     map.fitBounds(bounds, {
       padding: 100 // 自适应边距
-    });
+    })
   }
-};
-let ignoreMapClick = false;
+}
+let ignoreMapClick = false
 
 async function renderMap() {
-  await load(true);
-  if (!domRef.value) return;
+  await load(true)
+  if (!domRef.value) return
 
   // 初始化地图
   if (!map) {
@@ -101,31 +101,31 @@ async function renderMap() {
       maxZoom: 13,
       minZoom: 3,
       viewMode: '3D'
-    });
+    })
     map.on('click', async () => {
       if (ignoreMapClick) {
-        ignoreMapClick = false;
-        return;
+        ignoreMapClick = false
+        return
       }
       if (infoWindow) {
-        infoWindow.close();
+        infoWindow.close()
       }
-    });
+    })
   }
 
   // 清理旧的标记
   if (multiMarker) {
-    multiMarker.setMap(null);
+    multiMarker.setMap(null)
   }
 
   // 处理设备数据
-  const markers: any = [];
+  const markers: any = []
   if (props.devices && props.devices.length > 0) {
     props.devices.forEach(device => {
       if (device?.location) {
-        const locations = device.location.split(',');
-        const latitude = Number(locations[1] || 0);
-        const longitude = Number(locations[0] || 0);
+        const locations = device.location.split(',')
+        const latitude = Number(locations[1] || 0)
+        const longitude = Number(locations[0] || 0)
 
         // 验证经纬度是否有效
         if (!Number.isNaN(latitude) && !Number.isNaN(longitude) && latitude !== 0 && longitude !== 0) {
@@ -133,10 +133,10 @@ async function renderMap() {
             position: new TMap.LatLng(latitude, longitude),
             id: device.id,
             data: device
-          });
+          })
         }
       }
-    });
+    })
   }
 
   // 只有在有有效标记点时才创建 MultiMarker
@@ -152,30 +152,30 @@ async function renderMap() {
         })
       },
       geometries: markers
-    });
+    })
 
     // 添加点击事件
     multiMarker.on('click', (evt: any) => {
-      if (!evt?.geometry?.data?.id) return;
+      if (!evt?.geometry?.data?.id) return
 
       telemetryLatestApi(evt.geometry.data.id).then((res: any) => {
-        if (!res?.data) return;
+        if (!res?.data) return
 
-        const arr = res.data.filter((item: any) => item.label || item.key);
-        let dom = ``;
+        const arr = res.data.filter((item: any) => item.label || item.key)
+        let dom = ``
         arr.filter(item => {
           if (item.label) {
-            dom = `${dom}<div class='item_label'>${item?.label ?? ''}(${item?.key ?? ''})：<span class='card_val'>${item?.value ?? ''} </span> ${item?.unit ?? ''}</div>`;
+            dom = `${dom}<div class='item_label'>${item?.label ?? ''}(${item?.key ?? ''})：<span class='card_val'>${item?.value ?? ''} </span> ${item?.unit ?? ''}</div>`
           } else if (item.key) {
-            dom = `${dom}<div class='item_label'>${item?.key ?? ''}：<span class='card_val'>${item?.value ?? ''} </span> ${item?.unit ?? ''}</div>`;
+            dom = `${dom}<div class='item_label'>${item?.key ?? ''}：<span class='card_val'>${item?.value ?? ''} </span> ${item?.unit ?? ''}</div>`
           }
-        });
-        evt.geometry.dom = dom;
+        })
+        evt.geometry.dom = dom
 
-        ignoreMapClick = true;
+        ignoreMapClick = true
         setTimeout(() => {
-          ignoreMapClick = false;
-        }, 10);
+          ignoreMapClick = false
+        }, 10)
 
         // 创建信息窗口
         if (!infoWindow) {
@@ -184,46 +184,46 @@ async function renderMap() {
             position: new TMap.LatLng(39.984104, 116.307503),
             offset: { x: 0, y: -32 },
             enableCustom: true
-          });
+          })
         }
 
         // 创建并显示信息窗口内容
         const app = createApp({
           setup() {
-            return () => renderInfoWindow(evt, res);
+            return () => renderInfoWindow(evt, res)
           }
-        });
+        })
 
-        const html = app.mount(document.createElement('div')).$el.outerHTML;
-        infoWindow.open();
-        infoWindow.setPosition(evt.geometry.position);
-        infoWindow.setContent(html);
-        evt.originalEvent.stopPropagation();
-      });
-    });
+        const html = app.mount(document.createElement('div')).$el.outerHTML
+        infoWindow.open()
+        infoWindow.setPosition(evt.geometry.position)
+        infoWindow.setContent(html)
+        evt.originalEvent.stopPropagation()
+      })
+    })
   }
 
-  const bounds = new TMap.LatLngBounds();
-  showMarker(markers, bounds);
+  const bounds = new TMap.LatLngBounds()
+  showMarker(markers, bounds)
 }
 
 onMounted(() => {
-  renderMap();
-});
+  renderMap()
+})
 
 watch(
   () => props.devices,
   newValue => {
-    logger.info(newValue);
-    renderMap();
-    infoWindow.close();
+    logger.info(newValue)
+    renderMap()
+    infoWindow.close()
   },
   { deep: true }
-);
+)
 
 watchEffect(() => {
-  renderMap();
-});
+  renderMap()
+})
 </script>
 
 <template>

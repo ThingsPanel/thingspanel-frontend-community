@@ -5,56 +5,36 @@
 <template>
   <div class="visualization-toolbar">
     <div class="toolbar-section">
-      <button 
-        class="toolbar-btn"
-        :disabled="readonly"
-        @click="$emit('add-item')"
-      >
+      <button class="toolbar-btn" :disabled="readonly" @click="$emit('add-item')">
         <i class="icon-plus" />
         添加组件
       </button>
-      
-      <button 
-        class="toolbar-btn"
-        :disabled="readonly"
-        @click="$emit('clear-all')"
-      >
+
+      <button class="toolbar-btn" :disabled="readonly" @click="$emit('clear-all')">
         <i class="icon-trash" />
         清空
       </button>
     </div>
-    
+
     <div class="toolbar-section">
-      <button 
-        class="toolbar-btn"
-        @click="$emit('save-layout')"
-      >
+      <button class="toolbar-btn" @click="$emit('save-layout')">
         <i class="icon-save" />
         保存布局
       </button>
-      
-      <button 
-        class="toolbar-btn"
-        @click="$emit('load-layout')"
-      >
+
+      <button class="toolbar-btn" @click="$emit('load-layout')">
         <i class="icon-upload" />
         加载布局
       </button>
     </div>
-    
+
     <div class="toolbar-section">
-      <button 
-        class="toolbar-btn"
-        @click="$emit('toggle-grid')"
-      >
+      <button class="toolbar-btn" @click="$emit('toggle-grid')">
         <i class="icon-grid" />
         网格
       </button>
-      
-      <button 
-        class="toolbar-btn"
-        @click="$emit('fit-content')"
-      >
+
+      <button class="toolbar-btn" @click="$emit('fit-content')">
         <i class="icon-fit" />
         适应内容
       </button>

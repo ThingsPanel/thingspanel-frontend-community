@@ -6,9 +6,9 @@
 import { computed } from 'vue'
 import { NButton, NIcon, NTooltip, NSlider, NSpace, NInputNumber } from 'naive-ui'
 import { useThemeStore } from '@/store/modules/theme'
-import { 
+import {
   ExpandOutline,
-  ContractOutline, 
+  ContractOutline,
   RemoveOutline,
   AddOutline,
   RefreshOutline,
@@ -63,9 +63,7 @@ const currentConfig = computed(() => ({
 
 // 主题支持
 const themeStore = useThemeStore()
-const borderColor = computed(() => 
-  themeStore.isDark ? 'rgba(75, 85, 99, 0.6)' : 'rgba(229, 231, 235, 1)'
-)
+const borderColor = computed(() => (themeStore.isDark ? 'rgba(75, 85, 99, 0.6)' : 'rgba(229, 231, 235, 1)'))
 
 // 缩放级别选项
 const zoomLevels = [25, 50, 75, 100, 125, 150, 200, 300, 400]
@@ -88,19 +86,13 @@ const setZoomLevel = (level: number) => {
 </script>
 
 <template>
-  <div 
-    class="visualization-toolbar flex items-center gap-2"
-    :style="{ '--border-color': borderColor }"
-  >
+  <div class="visualization-toolbar flex items-center gap-2" :style="{ '--border-color': borderColor }">
     <!-- 视图控制 -->
     <div class="flex items-center gap-1">
       <!-- 适应内容 -->
       <NTooltip>
         <template #trigger>
-          <NButton
-            size="small"
-            @click="handleFitContent"
-          >
+          <NButton size="small" @click="handleFitContent">
             <NIcon>
               <ExpandOutline />
             </NIcon>
@@ -112,10 +104,7 @@ const setZoomLevel = (level: number) => {
       <!-- 居中视图 -->
       <NTooltip>
         <template #trigger>
-          <NButton
-            size="small"
-            @click="handleCenterView"
-          >
+          <NButton size="small" @click="handleCenterView">
             <NIcon>
               <ContractOutline />
             </NIcon>
@@ -124,7 +113,7 @@ const setZoomLevel = (level: number) => {
         居中视图
       </NTooltip>
 
-      <div class="w-px h-4 mx-1" style="background-color: var(--border-color);"></div>
+      <div class="w-px h-4 mx-1" style="background-color: var(--border-color)"></div>
     </div>
 
     <!-- 缩放控制 -->
@@ -132,11 +121,7 @@ const setZoomLevel = (level: number) => {
       <!-- 缩小 -->
       <NTooltip>
         <template #trigger>
-          <NButton
-            size="small"
-            :disabled="currentConfig.zoom <= 25"
-            @click="handleZoomOut"
-          >
+          <NButton size="small" :disabled="currentConfig.zoom <= 25" @click="handleZoomOut">
             <NIcon>
               <RemoveOutline />
             </NIcon>
@@ -163,11 +148,7 @@ const setZoomLevel = (level: number) => {
       <!-- 放大 -->
       <NTooltip>
         <template #trigger>
-          <NButton
-            size="small"
-            :disabled="currentConfig.zoom >= 400"
-            @click="handleZoomIn"
-          >
+          <NButton size="small" :disabled="currentConfig.zoom >= 400" @click="handleZoomIn">
             <NIcon>
               <AddOutline />
             </NIcon>
@@ -179,10 +160,7 @@ const setZoomLevel = (level: number) => {
       <!-- 重置缩放 -->
       <NTooltip>
         <template #trigger>
-          <NButton
-            size="small"
-            @click="handleResetZoom"
-          >
+          <NButton size="small" @click="handleResetZoom">
             <NIcon>
               <RefreshOutline />
             </NIcon>
@@ -191,7 +169,7 @@ const setZoomLevel = (level: number) => {
         重置缩放 (Ctrl+0)
       </NTooltip>
 
-      <div class="w-px h-4 mx-1" style="background-color: var(--border-color);"></div>
+      <div class="w-px h-4 mx-1" style="background-color: var(--border-color)"></div>
     </div>
 
     <!-- 辅助工具 -->

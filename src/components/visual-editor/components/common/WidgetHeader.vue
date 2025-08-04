@@ -14,41 +14,44 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue';
-import { NInput } from 'naive-ui';
+import { ref, watch, nextTick } from 'vue'
+import { NInput } from 'naive-ui'
 
 const props = defineProps<{
-  title: string;
-  readonly?: boolean;
-}>();
+  title: string
+  readonly?: boolean
+}>()
 
-const emit = defineEmits(['update:title']);
+const emit = defineEmits(['update:title'])
 
-const isEditing = ref(false);
-const editableTitle = ref(props.title);
-const inputRef = ref<InstanceType<typeof NInput> | null>(null);
+const isEditing = ref(false)
+const editableTitle = ref(props.title)
+const inputRef = ref<InstanceType<typeof NInput> | null>(null)
 
-watch(() => props.title, (newTitle) => {
-  editableTitle.value = newTitle;
-});
+watch(
+  () => props.title,
+  newTitle => {
+    editableTitle.value = newTitle
+  }
+)
 
 const activateEditMode = () => {
-  if (props.readonly) return;
-  isEditing.value = true;
+  if (props.readonly) return
+  isEditing.value = true
   nextTick(() => {
-    inputRef.value?.focus();
-  });
-};
+    inputRef.value?.focus()
+  })
+}
 
 const saveTitle = () => {
-  if (!isEditing.value) return;
-  
+  if (!isEditing.value) return
+
   // Only emit if the title has actually changed
   if (editableTitle.value !== props.title) {
-    emit('update:title', editableTitle.value);
+    emit('update:title', editableTitle.value)
   }
-  isEditing.value = false;
-};
+  isEditing.value = false
+}
 </script>
 
 <style scoped>

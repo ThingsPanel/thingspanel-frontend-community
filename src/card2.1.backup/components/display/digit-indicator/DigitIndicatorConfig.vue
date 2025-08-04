@@ -2,28 +2,20 @@
   <div class="digit-indicator-config">
     <n-form label-placement="left" label-width="auto" size="small">
       <n-form-item :label="$t('device_template.table_header.unit')">
-        <n-input 
-          v-model:value="localConfig.unit" 
+        <n-input
+          v-model:value="localConfig.unit"
           :placeholder="$t('device_template.table_header.pleaseEnterTheUnit')"
           @update:value="emitUpdate"
         />
       </n-form-item>
-      
+
       <n-form-item :label="$t('generate.color')">
-        <n-color-picker 
-          v-model:value="localConfig.color" 
-          :show-alpha="false"
-          @update:value="emitUpdate"
-        />
+        <n-color-picker v-model:value="localConfig.color" :show-alpha="false" @update:value="emitUpdate" />
       </n-form-item>
-      
+
       <n-form-item label="图标">
         <div class="icon-selector">
-          <n-input
-            v-model:value="localConfig.iconName"
-            placeholder="选择图标"
-            readonly
-          >
+          <n-input v-model:value="localConfig.iconName" placeholder="选择图标" readonly>
             <template #suffix>
               <n-button text @click="showIconSelector = true">
                 <n-icon><component :is="getIconComponent(localConfig.iconName)" /></n-icon>
@@ -35,7 +27,7 @@
     </n-form>
 
     <!-- 图标选择器模态框 -->
-    <n-modal v-model:show="showIconSelector" preset="card" title="选择图标" style="width: 600px;">
+    <n-modal v-model:show="showIconSelector" preset="card" title="选择图标" style="width: 600px">
       <IconSelector default-icon="Water" @icon-selected="handleIconSelect" />
     </n-modal>
   </div>
@@ -72,9 +64,13 @@ const localConfig = reactive({
 const showIconSelector = ref(false)
 
 // 监听 props.config 变化
-watch(() => props.config, (newConfig) => {
-  Object.assign(localConfig, newConfig)
-}, { deep: true, immediate: true })
+watch(
+  () => props.config,
+  newConfig => {
+    Object.assign(localConfig, newConfig)
+  },
+  { deep: true, immediate: true }
+)
 
 // 获取图标组件
 const getIconComponent = (iconName: string) => {

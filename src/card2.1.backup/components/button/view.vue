@@ -5,8 +5,8 @@
 
 <script setup lang="ts">
 defineProps<{
-  buttonText: string;
-}>();
+  buttonText: string
+}>()
 
 // 这里可以添加点击事件的逻辑, 但交互逻辑主要由渲染器处理
 </script>

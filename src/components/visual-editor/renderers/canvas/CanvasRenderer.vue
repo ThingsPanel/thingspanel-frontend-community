@@ -7,23 +7,23 @@
     @node-select="onNodeSelect"
     @canvas-click="onCanvasClick"
   >
-    <div 
-      class="canvas grid-background-base" 
-      :class="{ 
+    <div
+      class="canvas grid-background-base"
+      :class="{
         'show-grid': canvasConfig.showGrid,
         'preview-mode': isPreviewMode.value
       }"
-      @click="handleCanvasClick" 
+      @click="handleCanvasClick"
       @contextmenu.prevent="handleCanvasContextMenu"
     >
-      <div 
+      <div
         v-for="node in nodes"
         :key="node.id"
         class="canvas-node"
-        :class="{ 
+        :class="{
           selected: selectedIds.includes(node.id) && !isPreviewMode.value,
           readonly: readonly || isPreviewMode.value,
-          'preview-mode': isPreviewMode.value,
+          'preview-mode': isPreviewMode.value
         }"
         :style="getNodeStyle(node)"
         @click.stop="handleNodeClick(node.id, $event)"
@@ -45,18 +45,11 @@
             :node-id="node.id"
             @error="handleCard2Error"
           />
-          <component 
-            :is="getWidgetComponent(node.type)"
-            v-else
-            v-bind="node.properties"
-          />
-          
-          <div 
-            v-if="selectedIds.includes(node.id) && !readonly && !isPreviewMode.value" 
-            class="resize-handles"
-          >
-            <div 
-              v-for="handle in resizeHandles" 
+          <component :is="getWidgetComponent(node.type)" v-else v-bind="node.properties" />
+
+          <div v-if="selectedIds.includes(node.id) && !readonly && !isPreviewMode.value" class="resize-handles">
+            <div
+              v-for="handle in resizeHandles"
               :key="handle.position"
               :class="`resize-handle resize-handle-${handle.position}`"
               @mousedown.stop="handleResizeStart(node.id, handle.position, $event)"
@@ -92,23 +85,37 @@ import WidgetHeader from '../../components/common/WidgetHeader.vue'
 import type { GraphData } from '../../types'
 
 // Props, Emits, Configs
-interface CanvasConfig { showGrid?: boolean; backgroundColor?: string; width?: number; height?: number; snapToGrid?: boolean; gridSize?: number }
-interface Props { 
-  readonly?: boolean; 
-  config?: CanvasConfig;
-  showWidgetTitles?: boolean;
+interface CanvasConfig {
+  showGrid?: boolean
+  backgroundColor?: string
+  width?: number
+  height?: number
+  snapToGrid?: boolean
+  gridSize?: number
 }
-const props = withDefaults(defineProps<Props>(), { 
-  readonly: false, 
-  config: () => ({ showGrid: true, backgroundColor: '#f5f5f5', width: 1200, height: 800, snapToGrid: true, gridSize: 10 }),
+interface Props {
+  readonly?: boolean
+  config?: CanvasConfig
+  showWidgetTitles?: boolean
+}
+const props = withDefaults(defineProps<Props>(), {
+  readonly: false,
+  config: () => ({
+    showGrid: true,
+    backgroundColor: '#f5f5f5',
+    width: 1200,
+    height: 800,
+    snapToGrid: true,
+    gridSize: 10
+  }),
   showWidgetTitles: false
 })
-interface Emits { 
-  (e: 'ready'): void; 
-  (e: 'error', error: Error): void; 
-  (e: 'node-select', id: string): void; 
-  (e: 'canvas-click', event?: MouseEvent): void;
-  (e: 'request-settings', id: string): void;
+interface Emits {
+  (e: 'ready'): void
+  (e: 'error', error: Error): void
+  (e: 'node-select', id: string): void
+  (e: 'canvas-click', event?: MouseEvent): void
+  (e: 'request-settings', id: string): void
 }
 const emit = defineEmits<Emits>()
 // 根据预览模式动态调整画布配置
@@ -147,9 +154,24 @@ const snapToGrid = (value: number) => {
 }
 
 const contextMenu = ref({ show: false, x: 0, y: 0 })
-const resizeHandles = [{ position: 'nw' }, { position: 'n' }, { position: 'ne' }, { position: 'w' }, { position: 'e' }, { position: 'sw' }, { position: 's' }, { position: 'se' }]
+const resizeHandles = [
+  { position: 'nw' },
+  { position: 'n' },
+  { position: 'ne' },
+  { position: 'w' },
+  { position: 'e' },
+  { position: 'sw' },
+  { position: 's' },
+  { position: 'se' }
+]
 const getWidgetComponent = (type: string) => widgetComponents[type as keyof typeof widgetComponents]
-const getNodeStyle = (node: GraphData) => ({ position: 'absolute' as const, left: `${node.x}px`, top: `${node.y}px`, width: `${node.width}px`, height: `${node.height}px` })
+const getNodeStyle = (node: GraphData) => ({
+  position: 'absolute' as const,
+  left: `${node.x}px`,
+  top: `${node.y}px`,
+  width: `${node.width}px`,
+  height: `${node.height}px`
+})
 const handleCanvasClick = () => {
   if (!isPreviewMode.value) {
     stateManager.clearSelection()
@@ -159,9 +181,11 @@ const handleCanvasClick = () => {
 const handleNodeClick = (id: string, event?: MouseEvent) => {
   // 预览模式下禁用节点选择
   if (isPreviewMode.value) return
-  
+
   if (event?.ctrlKey || event?.metaKey) {
-    const newSelected = selectedIds.value.includes(id) ? selectedIds.value.filter(nodeId => nodeId !== id) : [...selectedIds.value, id]
+    const newSelected = selectedIds.value.includes(id)
+      ? selectedIds.value.filter(nodeId => nodeId !== id)
+      : [...selectedIds.value, id]
     stateManager.selectNodes(newSelected)
   } else {
     selectNode(id)
@@ -172,7 +196,7 @@ const handleNodeClick = (id: string, event?: MouseEvent) => {
 const handleNodeMouseDown = (nodeId: string, event: MouseEvent) => {
   // 预览模式下禁用拖拽
   if (isPreviewMode.value) return
-  
+
   event.preventDefault()
   isDragging.value = true
   dragNodeId.value = nodeId
@@ -185,7 +209,7 @@ const handleNodeMouseDown = (nodeId: string, event: MouseEvent) => {
 const handleResizeStart = (nodeId: string, direction: string, event: MouseEvent) => {
   // 预览模式下禁用调整大小
   if (isPreviewMode.value) return
-  
+
   event.preventDefault()
   isResizing.value = true
   resizeNodeId.value = nodeId
@@ -199,7 +223,7 @@ const handleMouseMove = (event: MouseEvent) => {
   if (!isDragging.value && !isResizing.value) return
   const deltaX = event.clientX - dragStartPos.value.x
   const deltaY = event.clientY - dragStartPos.value.y
-  
+
   if (isDragging.value && dragNodeId.value) {
     const node = nodes.value.find(n => n.id === dragNodeId.value)
     if (node) {
@@ -237,7 +261,9 @@ const handleMouseUp = () => {
 }
 
 onMounted(() => {
-  document.addEventListener('selectstart', e => { if (isDragging.value || isResizing.value) e.preventDefault() })
+  document.addEventListener('selectstart', e => {
+    if (isDragging.value || isResizing.value) e.preventDefault()
+  })
   emit('ready')
 })
 onUnmounted(() => {
@@ -245,19 +271,21 @@ onUnmounted(() => {
   document.removeEventListener('mouseup', handleMouseUp)
 })
 
-const handleCanvasContextMenu = (event: MouseEvent) => { 
+const handleCanvasContextMenu = (event: MouseEvent) => {
   // 预览模式下禁用右键菜单
   if (isPreviewMode.value) return
-  contextMenu.value = { show: true, x: event.clientX, y: event.clientY } 
+  contextMenu.value = { show: true, x: event.clientX, y: event.clientY }
 }
 const handleNodeContextMenu = (nodeId: string, event: MouseEvent) => {
   // 预览模式下禁用右键菜单
   if (isPreviewMode.value) return
-  
+
   if (!selectedIds.value.includes(nodeId)) selectNode(nodeId)
   contextMenu.value = { show: true, x: event.clientX, y: event.clientY }
 }
-const closeContextMenu = () => { contextMenu.value.show = false }
+const closeContextMenu = () => {
+  contextMenu.value.show = false
+}
 
 const handleContextMenuAction = (action: string) => {
   const newNodes: GraphData[] = []
@@ -286,31 +314,116 @@ const handleContextMenuAction = (action: string) => {
   }
 }
 
-const handleCard2Error = (error: Error) => { console.error('Card 2.1 Component Error:', error); emit('error', error) }
+const handleCard2Error = (error: Error) => {
+  console.error('Card 2.1 Component Error:', error)
+  emit('error', error)
+}
 
 const handleTitleUpdate = (nodeId: string, newTitle: string) => {
-  updateNode(nodeId, { label: newTitle });
+  updateNode(nodeId, { label: newTitle })
 }
 </script>
 
 <style scoped>
-.canvas { position: relative; width: 100%; height: 100%; min-height: 600px; user-select: none; }
-.canvas-node { display: flex; flex-direction: column; border: 2px solid transparent; transition: border-color 0.2s ease; cursor: move; position: relative; }
-.widget-body { flex: 1; position: relative; overflow: hidden; }
-.canvas-node:hover:not(.readonly) { border-color: rgba(24, 160, 88, 0.3); }
-.canvas-node.selected { border-color: var(--n-primary-color); z-index: 1; }
-.canvas-node.readonly { cursor: default; }
-.canvas-node.readonly:hover { border-color: transparent; }
-.resize-handles { position: absolute; top: -4px; left: -4px; right: -4px; bottom: -4px; pointer-events: none; }
-.resize-handle { position: absolute; width: 8px; height: 8px; background: var(--n-primary-color); border: 1px solid #fff; border-radius: 50%; pointer-events: all; z-index: 10; }
-.resize-handle-nw { top: 0; left: 0; cursor: nw-resize; transform: translate(-50%, -50%); }
-.resize-handle-n { top: 0; left: 50%; cursor: n-resize; transform: translate(-50%, -50%); }
-.resize-handle-ne { top: 0; right: 0; cursor: ne-resize; transform: translate(50%, -50%); }
-.resize-handle-w { top: 50%; left: 0; cursor: w-resize; transform: translate(-50%, -50%); }
-.resize-handle-e { top: 50%; right: 0; cursor: e-resize; transform: translate(50%, -50%); }
-.resize-handle-sw { bottom: 0; left: 0; cursor: sw-resize; transform: translate(-50%, 50%); }
-.resize-handle-s { bottom: 0; left: 50%; cursor: s-resize; transform: translate(-50%, 50%); }
-.resize-handle-se { bottom: 0; right: 0; cursor: se-resize; transform: translate(50%, 50%); }
+.canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  user-select: none;
+}
+.canvas-node {
+  display: flex;
+  flex-direction: column;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease;
+  cursor: move;
+  position: relative;
+}
+.widget-body {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+.canvas-node:hover:not(.readonly) {
+  border-color: rgba(24, 160, 88, 0.3);
+}
+.canvas-node.selected {
+  border-color: var(--n-primary-color);
+  z-index: 1;
+}
+.canvas-node.readonly {
+  cursor: default;
+}
+.canvas-node.readonly:hover {
+  border-color: transparent;
+}
+.resize-handles {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  pointer-events: none;
+}
+.resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--n-primary-color);
+  border: 1px solid #fff;
+  border-radius: 50%;
+  pointer-events: all;
+  z-index: 10;
+}
+.resize-handle-nw {
+  top: 0;
+  left: 0;
+  cursor: nw-resize;
+  transform: translate(-50%, -50%);
+}
+.resize-handle-n {
+  top: 0;
+  left: 50%;
+  cursor: n-resize;
+  transform: translate(-50%, -50%);
+}
+.resize-handle-ne {
+  top: 0;
+  right: 0;
+  cursor: ne-resize;
+  transform: translate(50%, -50%);
+}
+.resize-handle-w {
+  top: 50%;
+  left: 0;
+  cursor: w-resize;
+  transform: translate(-50%, -50%);
+}
+.resize-handle-e {
+  top: 50%;
+  right: 0;
+  cursor: e-resize;
+  transform: translate(50%, -50%);
+}
+.resize-handle-sw {
+  bottom: 0;
+  left: 0;
+  cursor: sw-resize;
+  transform: translate(-50%, 50%);
+}
+.resize-handle-s {
+  bottom: 0;
+  left: 50%;
+  cursor: s-resize;
+  transform: translate(-50%, 50%);
+}
+.resize-handle-se {
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+  transform: translate(50%, 50%);
+}
 
 /* 预览模式样式 */
 .canvas-node.preview-mode {
@@ -320,5 +433,4 @@ const handleTitleUpdate = (nodeId: string, newTitle: string) => {
 .canvas-node.preview-mode:hover {
   border-color: transparent !important;
 }
-
 </style>

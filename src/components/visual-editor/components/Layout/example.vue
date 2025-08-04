@@ -1,7 +1,7 @@
 <template>
   <div class="example-container">
     <h1>EditorLayout 组件示例</h1>
-    
+
     <!-- 基础示例 -->
     <NCard title="基础示例" class="mb-4">
       <div class="example-wrapper">
@@ -26,14 +26,17 @@
               </NSpace>
             </div>
           </template>
-          
+
           <template #main>
             <div class="canvas-area">
               <div class="canvas-placeholder">
                 <NIcon size="48" :color="themeStore.darkMode ? '#ffffff40' : '#00000040'">
                   <svg viewBox="0 0 24 24">
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM5 19V5h14v14H5z" fill="currentColor"/>
-                    <path d="M13.96 12.17l-2.83-2.83-3.5 4.67h10.48l-2.82-3.76z" fill="currentColor"/>
+                    <path
+                      d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM5 19V5h14v14H5z"
+                      fill="currentColor"
+                    />
+                    <path d="M13.96 12.17l-2.83-2.83-3.5 4.67h10.48l-2.82-3.76z" fill="currentColor" />
                   </svg>
                 </NIcon>
                 <p>画布区域</p>
@@ -41,7 +44,7 @@
               </div>
             </div>
           </template>
-          
+
           <template #right>
             <div class="panel-content">
               <h3>属性配置</h3>
@@ -74,38 +77,12 @@
     <!-- 控制面板 -->
     <NCard title="控制面板" class="mb-4">
       <NSpace>
-        <NButton 
-          type="primary" 
-          @click="basicEditorRef?.toggleLeftDrawer()"
-        >
-          切换左侧面板
-        </NButton>
-        <NButton 
-          type="primary" 
-          @click="basicEditorRef?.toggleRightDrawer()"
-        >
-          切换右侧面板
-        </NButton>
-        <NButton 
-          @click="basicEditorRef?.openLeftDrawer()"
-        >
-          打开左侧
-        </NButton>
-        <NButton 
-          @click="basicEditorRef?.closeLeftDrawer()"
-        >
-          关闭左侧
-        </NButton>
-        <NButton 
-          @click="basicEditorRef?.openRightDrawer()"
-        >
-          打开右侧
-        </NButton>
-        <NButton 
-          @click="basicEditorRef?.closeRightDrawer()"
-        >
-          关闭右侧
-        </NButton>
+        <NButton type="primary" @click="basicEditorRef?.toggleLeftDrawer()">切换左侧面板</NButton>
+        <NButton type="primary" @click="basicEditorRef?.toggleRightDrawer()">切换右侧面板</NButton>
+        <NButton @click="basicEditorRef?.openLeftDrawer()">打开左侧</NButton>
+        <NButton @click="basicEditorRef?.closeLeftDrawer()">关闭左侧</NButton>
+        <NButton @click="basicEditorRef?.openRightDrawer()">打开右侧</NButton>
+        <NButton @click="basicEditorRef?.closeRightDrawer()">关闭右侧</NButton>
       </NSpace>
     </NCard>
 
@@ -140,7 +117,7 @@
                       <div class="icon-item">
                         <NIcon size="24">
                           <svg viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" fill="currentColor"/>
+                            <circle cx="12" cy="12" r="10" fill="currentColor" />
                           </svg>
                         </NIcon>
                       </div>
@@ -150,13 +127,13 @@
               </NTabs>
             </div>
           </template>
-          
+
           <template #main>
             <div class="custom-canvas">
               <!-- 自定义工具栏 -->
               <div class="custom-toolbar">
                 <NButtonGroup>
-                  <NButton 
+                  <NButton
                     :type="customEditorRef?.leftDrawerVisible ? 'primary' : 'default'"
                     @click="customEditorRef?.toggleLeftDrawer()"
                   >
@@ -169,34 +146,40 @@
                     </template>
                     资源
                   </NButton>
-                  <NButton 
+                  <NButton
                     :type="customEditorRef?.rightDrawerVisible ? 'primary' : 'default'"
                     @click="customEditorRef?.toggleRightDrawer()"
                   >
                     <template #icon>
                       <NIcon>
                         <svg viewBox="0 0 24 24">
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
+                          <path
+                            d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                            fill="currentColor"
+                          />
                         </svg>
                       </NIcon>
                     </template>
                     设置
                   </NButton>
                 </NButtonGroup>
-                
+
                 <NSpace>
                   <NButton>保存</NButton>
                   <NButton>预览</NButton>
                   <NButton>发布</NButton>
                 </NSpace>
               </div>
-              
+
               <!-- 画布内容 -->
               <div class="canvas-content">
                 <div class="canvas-placeholder">
                   <NIcon size="64" :color="themeStore.darkMode ? '#ffffff30' : '#00000030'">
                     <svg viewBox="0 0 24 24">
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/>
+                      <path
+                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+                        fill="currentColor"
+                      />
                     </svg>
                   </NIcon>
                   <h3>自定义画布区域</h3>
@@ -205,7 +188,7 @@
               </div>
             </div>
           </template>
-          
+
           <template #right>
             <div class="panel-content">
               <h3>页面设置</h3>
@@ -214,17 +197,10 @@
                   <NInput v-model:value="pageSettings.title" />
                 </NFormItem>
                 <NFormItem label="页面描述">
-                  <NInput 
-                    v-model:value="pageSettings.description" 
-                    type="textarea" 
-                    :rows="3"
-                  />
+                  <NInput v-model:value="pageSettings.description" type="textarea" :rows="3" />
                 </NFormItem>
                 <NFormItem label="页面主题">
-                  <NSelect 
-                    v-model:value="pageSettings.theme" 
-                    :options="themeOptions"
-                  />
+                  <NSelect v-model:value="pageSettings.theme" :options="themeOptions" />
                 </NFormItem>
                 <NFormItem label="启用动画">
                   <NSwitch v-model:value="pageSettings.animations" />
@@ -259,10 +235,7 @@
         </NDescriptionsItem>
         <NDescriptionsItem label="主题色">
           <div class="flex items-center space-x-2">
-            <div 
-              class="w-4 h-4 rounded"
-              :style="{ backgroundColor: themeStore.themeColors.primary }"
-            ></div>
+            <div class="w-4 h-4 rounded" :style="{ backgroundColor: themeStore.themeColors.primary }"></div>
             <span>{{ themeStore.themeColors.primary }}</span>
           </div>
         </NDescriptionsItem>
@@ -274,9 +247,25 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import {
-  NCard, NSpace, NButton, NButtonGroup, NIcon, NForm, NFormItem, 
-  NInput, NInputNumber, NColorPicker, NSwitch, NTabs, NTabPane,
-  NGrid, NGi, NSelect, NDescriptions, NDescriptionsItem, NTag
+  NCard,
+  NSpace,
+  NButton,
+  NButtonGroup,
+  NIcon,
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NColorPicker,
+  NSwitch,
+  NTabs,
+  NTabPane,
+  NGrid,
+  NGi,
+  NSelect,
+  NDescriptions,
+  NDescriptionsItem,
+  NTag
 } from 'naive-ui'
 import { useThemeStore } from '@/store/modules/theme'
 import EditorLayout from './EditorLayout.vue'
@@ -361,24 +350,17 @@ function onRightDrawerChange(visible: boolean) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(45deg, 
-    var(--n-body-color) 25%, 
-    transparent 25%
-  ), 
-  linear-gradient(-45deg, 
-    var(--n-body-color) 25%, 
-    transparent 25%
-  ), 
-  linear-gradient(45deg, 
-    transparent 75%, 
-    var(--n-body-color) 75%
-  ), 
-  linear-gradient(-45deg, 
-    transparent 75%, 
-    var(--n-body-color) 75%
-  );
+  background:
+    linear-gradient(45deg, var(--n-body-color) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--n-body-color) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--n-body-color) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--n-body-color) 75%);
   background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0px;
 }
 
 .canvas-placeholder {
@@ -453,8 +435,9 @@ function onRightDrawerChange(visible: boolean) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(circle at 25% 25%, var(--n-primary-color-suppl) 0%, transparent 50%),
-              radial-gradient(circle at 75% 75%, var(--n-info-color-suppl) 0%, transparent 50%);
+  background:
+    radial-gradient(circle at 25% 25%, var(--n-primary-color-suppl) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, var(--n-info-color-suppl) 0%, transparent 50%);
 }
 
 .canvas-content .canvas-placeholder {
@@ -478,11 +461,11 @@ function onRightDrawerChange(visible: boolean) {
   .example-container {
     padding: 16px;
   }
-  
+
   .example-wrapper {
     height: 500px;
   }
-  
+
   .custom-toolbar {
     flex-direction: column;
     gap: 12px;

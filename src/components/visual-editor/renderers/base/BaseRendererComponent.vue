@@ -26,7 +26,7 @@ interface BaseRendererEmits {
 // Props 定义
 const props = withDefaults(defineProps<BaseRendererProps>(), {
   readonly: false,
-  config: () => ({} as TConfig)
+  config: () => ({}) as TConfig
 })
 
 // Emits 定义
@@ -72,42 +72,40 @@ const handleError = (error: Error) => {
 // 3. 实现统一的 handleDrop 逻辑
 const handleDrop = (event: DragEvent) => {
   event.preventDefault()
-  if (isReadonly.value) return;
+  if (isReadonly.value) return
 
-  const jsonData = event.dataTransfer?.getData('application/json');
+  const jsonData = event.dataTransfer?.getData('application/json')
   if (jsonData && containerRef.value) {
     try {
-      const data = JSON.parse(jsonData);
-      const { type, source } = data;
+      const data = JSON.parse(jsonData)
+      const { type, source } = data
 
       if (!type) {
-        throw new Error('Dropped data is missing "type" property.');
+        throw new Error('Dropped data is missing "type" property.')
       }
 
-      const rect = containerRef.value.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+      const rect = containerRef.value.getBoundingClientRect()
+      const x = event.clientX - rect.left
+      const y = event.clientY - rect.top
 
       // 调用 addWidget 添加新组件，并传入 source
-      addWidget(type, { x, y }, source).catch(handleError);
-
+      addWidget(type, { x, y }, source).catch(handleError)
     } catch (e) {
-      handleError(new Error('Failed to parse dropped data.'));
+      handleError(new Error('Failed to parse dropped data.'))
     }
-    return;
+    return
   }
 
   // Fallback for plain text data
-  const widgetType = event.dataTransfer?.getData('text/plain');
+  const widgetType = event.dataTransfer?.getData('text/plain')
   if (widgetType && containerRef.value) {
     const rect = containerRef.value.getBoundingClientRect()
     const x = event.clientX - rect.left
     const y = event.clientY - rect.top
-    
+
     addWidget(widgetType, { x, y }).catch(handleError)
   }
 }
-
 
 // 初始化方法
 const initialize = async () => {
@@ -115,13 +113,13 @@ const initialize = async () => {
 
   try {
     setState('initializing')
-    
+
     if (!containerRef.value) {
       throw new Error('Renderer container not found')
     }
 
     await onRendererInit()
-    
+
     setState('ready')
     isInitialized.value = true
     emit('ready')
@@ -202,14 +200,11 @@ watch(
 )
 
 // 监听主题变化
-watch(
-  isDark,
-  async () => {
-    if (isReady.value) {
-      await onThemeChange(isDark.value)
-    }
+watch(isDark, async () => {
+  if (isReady.value) {
+    await onThemeChange(isDark.value)
   }
-)
+})
 
 // 主题变化钩子
 const onThemeChange = async (isDark: boolean): Promise<void> => {}
@@ -251,18 +246,16 @@ defineExpose({
       'renderer-dark': isDark
     }"
     @click="handleCanvasClick"
-    @drop="handleDrop" 
+    @drop="handleDrop"
     @dragover.prevent
   >
     <!-- 加载状态 -->
     <div v-if="rendererState === 'initializing'" class="renderer-loading">
       <n-spin size="large">
-        <template #description>
-          初始化渲染器...
-        </template>
+        <template #description>初始化渲染器...</template>
       </n-spin>
     </div>
-    
+
     <!-- 错误状态 -->
     <div v-else-if="hasError" class="renderer-error-state">
       <n-result status="error" title="渲染器错误" :description="rendererError?.message">
@@ -271,10 +264,10 @@ defineExpose({
         </template>
       </n-result>
     </div>
-    
+
     <!-- 渲染器内容插槽 -->
     <slot v-else-if="isReady" />
-    
+
     <!-- 默认状态 -->
     <div v-else class="renderer-idle">
       <n-empty description="渲染器未准备就绪" />
@@ -332,7 +325,7 @@ defineExpose({
   .base-renderer {
     min-height: 300px;
   }
-  
+
   .renderer-loading,
   .renderer-error-state,
   .renderer-idle {

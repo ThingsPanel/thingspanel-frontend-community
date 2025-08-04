@@ -1,9 +1,9 @@
 <script setup lang="tsx">
-import { computed, reactive, ref } from 'vue';
-import type { PaginationProps } from 'naive-ui';
-import { NButton, NPopconfirm, NSpace } from 'naive-ui';
-import { useLoading } from '@sa/hooks';
-import { $t } from '@/locales';
+import { computed, reactive, ref } from 'vue'
+import type { PaginationProps } from 'naive-ui'
+import { NButton, NPopconfirm, NSpace } from 'naive-ui'
+import { useLoading } from '@sa/hooks'
+import { $t } from '@/locales'
 import {
   attributesApi,
   commandsApi,
@@ -13,16 +13,16 @@ import {
   delTelemetry,
   eventsApi,
   telemetryApi
-} from '@/service/api/system-data';
-import { attribute, command, events, test } from './tableList';
-import AddEditTest from './add-edit-test.vue';
-import AddEditAttributes from './add-edit-attributes.vue';
-import AddEditEvents from './add-edit-events.vue';
-import AddEditCommands from './add-edit-commands.vue';
-import CustomCommands from './custom-commands.vue';
-import CustomControls from './custom-controls.vue';
-const emit = defineEmits(['update:stepCurrent', 'update:modalVisible']);
-const { loading, startLoading, endLoading } = useLoading(false);
+} from '@/service/api/system-data'
+import { attribute, command, events, test } from './tableList'
+import AddEditTest from './add-edit-test.vue'
+import AddEditAttributes from './add-edit-attributes.vue'
+import AddEditEvents from './add-edit-events.vue'
+import AddEditCommands from './add-edit-commands.vue'
+import CustomCommands from './custom-commands.vue'
+import CustomControls from './custom-controls.vue'
+const emit = defineEmits(['update:stepCurrent', 'update:modalVisible'])
+const { loading, startLoading, endLoading } = useLoading(false)
 
 const props = defineProps({
   stepCurrent: {
@@ -37,29 +37,29 @@ const props = defineProps({
     type: String,
     required: true
   }
-});
+})
 
-const deviceTemplateId = ref<string>(props.deviceTemplateId);
-const tabsCurrent: any = ref('telemetry');
-const addAndEditModalVisible = ref<boolean>(false);
-const addAndEditTitle = ref<string>($t('device_template.addAndEditTelemetry'));
+const deviceTemplateId = ref<string>(props.deviceTemplateId)
+const tabsCurrent: any = ref('telemetry')
+const addAndEditModalVisible = ref<boolean>(false)
+const addAndEditTitle = ref<string>($t('device_template.addAndEditTelemetry'))
 
 const comList: { id: string; components: any; title: string }[] = [
   { id: 'telemetry', components: AddEditTest, title: $t('device_template.addAndEditTelemetry') },
   { id: 'attributes', components: AddEditAttributes, title: $t('device_template.addAndEditAttributes') },
   { id: 'events', components: AddEditEvents, title: $t('device_template.addAndEditEvents') },
   { id: 'command', components: AddEditCommands, title: $t('device_template.addAndEditCommand') }
-];
+]
 const SwitchCom = computed<any>(() => {
   // eslint-disable-next-line array-callback-return,consistent-return
   return comList.find(item => {
     if (item.id === tabsCurrent.value) {
-      const objItem: any = item;
-      addAndEditTitle.value = objItem.title;
-      return objItem;
+      const objItem: any = item
+      addAndEditTitle.value = objItem.title
+      return objItem
     }
-  })?.components;
-});
+  })?.components
+})
 
 const queryParams: any = reactive([
   {
@@ -82,11 +82,11 @@ const queryParams: any = reactive([
     page_size: 5,
     device_template_id: props.deviceTemplateId
   }
-]);
+])
 
 const checkedTabs: (value: string | number) => void = value => {
-  tabsCurrent.value = value;
-};
+  tabsCurrent.value = value
+}
 
 // 分页参数
 const pagination: PaginationProps = reactive({
@@ -95,67 +95,67 @@ const pagination: PaginationProps = reactive({
   showSizePicker: true,
   pageSizes: [10, 15, 20, 25, 30],
   onChange: (page: number) => {
-    pagination.page = page;
-    queryParams.page = page;
+    pagination.page = page
+    queryParams.page = page
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getTableData();
+    getTableData()
   },
   onUpdatePageSize: (pageSize: number) => {
-    pagination.pageSize = pageSize;
-    pagination.page = 1;
-    queryParams.page = 1;
-    queryParams.page_size = pageSize;
+    pagination.pageSize = pageSize
+    pagination.page = 1
+    queryParams.page = 1
+    queryParams.page_size = pageSize
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    getTableData();
+    getTableData()
   }
-});
+})
 
 // 编辑
-let objItem = reactive<any>({});
+let objItem = reactive<any>({})
 const edit: (row: any) => void = row => {
-  addAndEditModalVisible.value = true;
-  objItem = row;
-};
+  addAndEditModalVisible.value = true
+  objItem = row
+}
 
 // 新增或者编辑成功后的回调函数
 const determine: () => void = () => {
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  getTableData(tabsCurrent.value);
-};
+  getTableData(tabsCurrent.value)
+}
 
 // 删除
 const del: (id: string) => void = async id => {
   if (tabsCurrent.value === 'telemetry') {
-    await delTelemetry(id);
+    await delTelemetry(id)
   } else if (tabsCurrent.value === 'attributes') {
-    await delAttributes(id);
+    await delAttributes(id)
   } else if (tabsCurrent.value === 'events') {
-    await delEvents(id);
+    await delEvents(id)
   } else {
-    await delCommands(id);
+    await delCommands(id)
   }
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  getTableData(tabsCurrent.value);
-};
+  getTableData(tabsCurrent.value)
+}
 // 上一步
 const next: () => void = async () => {
-  emit('update:stepCurrent', 3);
-};
+  emit('update:stepCurrent', 3)
+}
 // 下一步
 const back: () => void = async () => {
-  emit('update:stepCurrent', 1);
-};
+  emit('update:stepCurrent', 1)
+}
 // 取消
 const cancellation: () => void = () => {
-  emit('update:modalVisible', false);
-};
+  emit('update:modalVisible', false)
+}
 const cloneaddAndEditVisible: () => void = () => {
-  objItem = {};
-};
+  objItem = {}
+}
 const columnsList: any = reactive([
   {
     addBtn: () => {
-      addAndEditModalVisible.value = true;
+      addAndEditModalVisible.value = true
     },
     total: 0,
     data: [{ data_name: $t('common.test') }],
@@ -185,14 +185,14 @@ const columnsList: any = reactive([
                 }}
               </NPopconfirm>
             </NSpace>
-          );
+          )
         }
       }
     ]
   },
   {
     addBtn: () => {
-      addAndEditModalVisible.value = true;
+      addAndEditModalVisible.value = true
     },
     total: 0,
     data: [],
@@ -222,14 +222,14 @@ const columnsList: any = reactive([
                 }}
               </NPopconfirm>
             </NSpace>
-          );
+          )
         }
       }
     ]
   },
   {
     addBtn: () => {
-      addAndEditModalVisible.value = true;
+      addAndEditModalVisible.value = true
     },
     total: 0,
     data: [],
@@ -259,14 +259,14 @@ const columnsList: any = reactive([
                 }}
               </NPopconfirm>
             </NSpace>
-          );
+          )
         }
       }
     ]
   },
   {
     addBtn: () => {
-      addAndEditModalVisible.value = true;
+      addAndEditModalVisible.value = true
     },
     total: 0,
     data: [],
@@ -298,78 +298,78 @@ const columnsList: any = reactive([
                 }}
               </NPopconfirm>
             </NSpace>
-          );
+          )
         }
       }
     ]
   }
-]);
+])
 
 const updateAttributesData = (data: any) => {
-  columnsList[1].data = data?.list ?? [];
-  columnsList[1].total = Math.ceil(data?.total / 5);
+  columnsList[1].data = data?.list ?? []
+  columnsList[1].total = Math.ceil(data?.total / 5)
   columnsList[1].data?.forEach((item: any) => {
     if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读') {
-      item.read_write_flag = $t('device_template.table_header.readOnly');
+      item.read_write_flag = $t('device_template.table_header.readOnly')
     } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写') {
-      item.read_write_flag = $t('device_template.table_header.readAndWrite');
+      item.read_write_flag = $t('device_template.table_header.readAndWrite')
     }
-  });
-};
+  })
+}
 
 const handleParamsOfEventsAndcommands = data => {
   if (!data || !Array.isArray(data)) {
-    return data;
+    return data
   }
   return data.map(item => {
-    const paramsArr = JSON.parse(item.params) || [];
+    const paramsArr = JSON.parse(item.params) || []
     return {
       ...item,
       paramsOrigin: item.params,
       params: paramsArr.map(param => param.data_name).join(', ')
-    };
-  });
-};
+    }
+  })
+}
 
 // Helper functions to update data
 const updateTelemetryData = (data: any) => {
-  columnsList[0].data = data?.list ?? [];
-  columnsList[0].total = Math.ceil(data?.total / 5);
+  columnsList[0].data = data?.list ?? []
+  columnsList[0].total = Math.ceil(data?.total / 5)
   columnsList[0].data.forEach((item: any) => {
     if (item.read_write_flag === 'R' || item.read_write_flag === 'R-只读') {
-      item.read_write_flag = $t('device_template.table_header.readOnly');
+      item.read_write_flag = $t('device_template.table_header.readOnly')
     } else if (item.read_write_flag === 'RW' || item.read_write_flag === 'RW-读/写') {
-      item.read_write_flag = $t('device_template.table_header.readAndWrite');
+      item.read_write_flag = $t('device_template.table_header.readAndWrite')
     }
-  });
-};
+  })
+}
 
 const updateEventsData = (data: any) => {
-  columnsList[2].data = handleParamsOfEventsAndcommands(data?.list ?? []);
-  columnsList[2].total = Math.ceil(data?.total / 5);
-};
+  columnsList[2].data = handleParamsOfEventsAndcommands(data?.list ?? [])
+  columnsList[2].total = Math.ceil(data?.total / 5)
+}
 
 const updateCommandsData = (data: any) => {
-  columnsList[3].data = handleParamsOfEventsAndcommands(data?.list ?? []);
-  columnsList[3].total = Math.ceil(data?.total / 5);
-};
+  columnsList[3].data = handleParamsOfEventsAndcommands(data?.list ?? [])
+  columnsList[3].total = Math.ceil(data?.total / 5)
+}
 const getTableData: (value?: string) => Promise<void> = async value => {
-  startLoading();
+  startLoading()
   try {
     if (value) {
       // Handle single tab data loading
       if (value === 'telemetry') {
-        const { data: data0 }: any = await telemetryApi(queryParams[0]);
-        updateTelemetryData(data0);
+        const { data: data0 }: any = await telemetryApi(queryParams[0])
+        updateTelemetryData(data0)
       } else if (value === 'attributes') {
-        const { data: data1 }: any = await attributesApi(queryParams[1]);
-        updateAttributesData(data1);
+        const { data: data1 }: any = await attributesApi(queryParams[1])
+        updateAttributesData(data1)
       } else if (value === 'events') {
-        const { data: data2 }: any = await eventsApi(queryParams[2]);
-        updateEventsData(data2);
+        const { data: data2 }: any = await eventsApi(queryParams[2])
+        updateEventsData(data2)
       } else {
-        const { data: data3 }: any = await commandsApi(queryParams[3]);
-        updateCommandsData(data3);
+        const { data: data3 }: any = await commandsApi(queryParams[3])
+        updateCommandsData(data3)
       }
     } else {
       // Load all tabs data concurrently
@@ -378,21 +378,21 @@ const getTableData: (value?: string) => Promise<void> = async value => {
         attributesApi(queryParams[1]),
         eventsApi(queryParams[2]),
         commandsApi(queryParams[3])
-      ]);
+      ])
 
-      updateTelemetryData(telemetryRes.data);
-      updateAttributesData(attributesRes.data);
-      updateEventsData(eventsRes.data);
-      updateCommandsData(commandsRes.data);
+      updateTelemetryData(telemetryRes.data)
+      updateAttributesData(attributesRes.data)
+      updateEventsData(eventsRes.data)
+      updateCommandsData(commandsRes.data)
     }
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching data:', error)
   } finally {
-    endLoading();
+    endLoading()
   }
-};
+}
 
-getTableData();
+getTableData()
 </script>
 
 <template>
@@ -413,8 +413,8 @@ getTableData();
             :page-size="5"
             @update:page="
               page => {
-                queryParams[index].page = page;
-                getTableData(item.name);
+                queryParams[index].page = page
+                getTableData(item.name)
               }
             "
           />

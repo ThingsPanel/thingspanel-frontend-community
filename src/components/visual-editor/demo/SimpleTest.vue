@@ -1,7 +1,7 @@
 <template>
   <div class="simple-test">
     <h2>🔍 简单测试</h2>
-    
+
     <div class="test-section">
       <h3>Card 2.1 组件注册测试</h3>
       <button @click="testCard21Registration">测试 Card 2.1 注册</button>
@@ -25,7 +25,7 @@
         <pre>{{ JSON.stringify(configResult, null, 2) }}</pre>
       </div>
     </div>
-    
+
     <div class="test-section">
       <h3>强制重新加载</h3>
       <button @click="forceReload">强制重新加载</button>
@@ -35,11 +35,7 @@
       <h3>组件渲染测试</h3>
       <button @click="testComponentRender">测试组件渲染</button>
       <div v-if="showTestComponent" class="component-test-container">
-        <component 
-          :is="testComponent" 
-          :properties="testProperties"
-          :metadata="{ test: true }"
-        />
+        <component :is="testComponent" :properties="testProperties" :metadata="{ test: true }" />
       </div>
     </div>
 
@@ -47,10 +43,7 @@
       <h3>配置组件测试</h3>
       <button @click="testConfigComponentRender">测试配置组件</button>
       <div v-if="showTestConfig" class="config-test-container">
-        <component 
-          :is="testConfigComponent" 
-          v-model:modelValue="testConfigValue"
-        />
+        <component :is="testConfigComponent" v-model:modelValue="testConfigValue" />
         <div class="config-preview">
           <h4>配置值预览：</h4>
           <pre>{{ JSON.stringify(testConfigValue, null, 2) }}</pre>
@@ -131,28 +124,29 @@ const testConfigValue = ref({
 const testCard21Registration = async () => {
   try {
     console.log('🔍 开始测试 Card 2.1 注册...')
-    
+
     // 测试组件注册表
     const allComponents = componentRegistry.getAll()
     console.log('Card 2.1 注册表中的组件:', allComponents)
-    
+
     // 测试特定组件 - 使用新的 type 属性
     const digitIndicator = allComponents.find(c => c.type === 'digit-indicator')
     console.log('数字指示器组件:', digitIndicator)
-    
+
     testResult.value = {
       success: true,
       totalComponents: allComponents.length,
       componentIds: allComponents.map(c => c.type), // 使用 type 而不是 id
-      digitIndicator: digitIndicator ? {
-        type: digitIndicator.type,
-        name: digitIndicator.name,
-        hasComponent: !!digitIndicator.component,
-        hasConfigComponent: !!digitIndicator.configComponent,
-        properties: digitIndicator.properties
-      } : null
+      digitIndicator: digitIndicator
+        ? {
+            type: digitIndicator.type,
+            name: digitIndicator.name,
+            hasComponent: !!digitIndicator.component,
+            hasConfigComponent: !!digitIndicator.configComponent,
+            properties: digitIndicator.properties
+          }
+        : null
     }
-    
   } catch (error: any) {
     console.error('❌ Card 2.1 注册测试失败:', error)
     testResult.value = {
@@ -165,17 +159,17 @@ const testCard21Registration = async () => {
 const testWidgetRegistry = async () => {
   try {
     console.log('🔍 开始测试 Widget Registry...')
-    
+
     // 直接导入 widgetRegistry，避免 useEditor 依赖
     const { widgetRegistry } = await import('../core/widget-registry')
-    
+
     const allWidgets = widgetRegistry.getAllWidgets()
     console.log('Widget Registry 中的组件:', allWidgets)
-    
+
     // 测试 Card 2.1 组件
     const card2Widgets = allWidgets.filter((w: any) => w.metadata?.isCard2Component)
     console.log('Card 2.1 组件:', card2Widgets)
-    
+
     widgetResult.value = {
       success: true,
       totalWidgets: allWidgets.length,
@@ -183,7 +177,6 @@ const testWidgetRegistry = async () => {
       widgetTypes: allWidgets.map((w: any) => w.type),
       card2Types: card2Widgets.map((w: any) => w.type)
     }
-    
   } catch (error: any) {
     console.error('❌ Widget Registry 测试失败:', error)
     widgetResult.value = {
@@ -196,31 +189,33 @@ const testWidgetRegistry = async () => {
 const testConfigRegistry = async () => {
   try {
     console.log('🔍 开始测试 Config Registry...')
-    
+
     const allConfigs = configRegistry.getAll()
     console.log('Config Registry 中的配置:', allConfigs)
-    
+
     // 测试特定配置
     const digitConfig = configRegistry.get('chart-digit')
     console.log('数字指示器配置组件:', digitConfig)
-    
+
     // 添加更详细的调试信息
     console.log('🔍 检查 Card 2.1 组件定义...')
     const allComponents = componentRegistry.getAll()
     const digitIndicator = allComponents.find(c => c.type === 'digit-indicator')
     console.log('数字指示器组件定义:', digitIndicator)
     console.log('是否有配置组件:', !!digitIndicator?.configComponent)
-    
+
     configResult.value = {
       success: true,
       totalConfigs: allConfigs.length,
       configIds: allConfigs.map(c => c.componentId),
-      digitConfig: digitConfig ? {
-        hasConfig: true,
-        configType: typeof digitConfig
-      } : {
-        hasConfig: false
-      },
+      digitConfig: digitConfig
+        ? {
+            hasConfig: true,
+            configType: typeof digitConfig
+          }
+        : {
+            hasConfig: false
+          },
       // 添加调试信息
       debug: {
         digitIndicatorExists: !!digitIndicator,
@@ -228,7 +223,6 @@ const testConfigRegistry = async () => {
         configComponentType: typeof digitIndicator?.configComponent
       }
     }
-    
   } catch (error: any) {
     console.error('❌ Config Registry 测试失败:', error)
     configResult.value = {
@@ -241,21 +235,20 @@ const testConfigRegistry = async () => {
 const forceReload = async () => {
   try {
     console.log('🔍 强制重新加载...')
-    
+
     // 清空注册表
     configRegistry.clear()
-    
+
     // 重新导入 Card 2.1
     const card21Module = await import('@/card2.1')
     console.log('重新导入 Card 2.1:', card21Module)
-    
+
     // 重新测试
     await testCard21Registration()
     await testWidgetRegistry()
     await testConfigRegistry()
-    
+
     console.log('✅ 强制重新加载完成')
-    
   } catch (error: any) {
     console.error('❌ 强制重新加载失败:', error)
   }
@@ -264,11 +257,11 @@ const forceReload = async () => {
 const testComponentRender = async () => {
   try {
     console.log('🔍 开始测试组件渲染...')
-    
+
     // 获取组件定义
     const allComponents = componentRegistry.getAll()
     const digitIndicator = allComponents.find(c => c.type === 'digit-indicator')
-    
+
     if (digitIndicator && digitIndicator.component) {
       testComponent.value = digitIndicator.component
       showTestComponent.value = true
@@ -276,7 +269,6 @@ const testComponentRender = async () => {
     } else {
       throw new Error('找不到数字指示器组件')
     }
-    
   } catch (error: any) {
     console.error('❌ 组件渲染测试失败:', error)
   }
@@ -285,16 +277,16 @@ const testComponentRender = async () => {
 const testConfigComponentRender = async () => {
   try {
     console.log('🔧 SimpleTest - 开始测试配置组件渲染')
-    
+
     // 获取数字指示器组件定义
     const allComponents = componentRegistry.getAll()
     const digitIndicator = allComponents.find(c => c.type === 'digit-indicator')
     if (!digitIndicator) {
       throw new Error('找不到数字指示器组件定义')
     }
-    
+
     console.log('🔧 SimpleTest - 数字指示器组件定义:', digitIndicator)
-    
+
     // 获取配置组件
     let configComponent = configRegistry.get('digit-indicator')
     if (!configComponent) {
@@ -302,14 +294,14 @@ const testConfigComponentRender = async () => {
       configComponent = digitIndicator.configComponent
       console.log('🔧 SimpleTest - 从组件定义获取配置组件:', configComponent)
     }
-    
+
     if (!configComponent) {
       throw new Error('找不到数字指示器配置组件')
     }
-    
+
     testConfigComponent.value = configComponent
     showTestConfig.value = true
-    
+
     configResult.value = {
       success: true,
       digitConfig: configComponent,
@@ -318,7 +310,7 @@ const testConfigComponentRender = async () => {
         fromDefinition: !!digitIndicator.configComponent
       }
     }
-    
+
     console.log('✅ SimpleTest - 配置组件渲染测试成功')
   } catch (error: any) {
     console.error('❌ SimpleTest - 配置组件渲染测试失败:', error)
@@ -333,11 +325,11 @@ const testConfigComponentRender = async () => {
 const testDataSource = async () => {
   try {
     console.log('🔧 SimpleTest - 开始测试数据源')
-    
+
     // 导入数据源管理器
     const { dataSourceManager } = await import('../core/data-source-manager')
     const { DataSourceType } = await import('../types/data-source')
-    
+
     // 创建测试数据源
     const testDataSource: any = {
       type: DataSourceType.STATIC,
@@ -351,9 +343,9 @@ const testDataSource = async () => {
       },
       refreshInterval: 0
     }
-    
+
     // 订阅数据源
-    const unsubscribe = dataSourceManager.subscribe(testDataSource, (value) => {
+    const unsubscribe = dataSourceManager.subscribe(testDataSource, value => {
       console.log('🔧 SimpleTest - 收到数据源更新:', value)
       dataSourceResult.value = {
         success: true,
@@ -362,13 +354,13 @@ const testDataSource = async () => {
         timestamp: new Date().toISOString()
       }
     })
-    
+
     // 5秒后取消订阅
     setTimeout(() => {
       unsubscribe()
       console.log('🔧 SimpleTest - 数据源测试完成，已取消订阅')
     }, 5000)
-    
+
     console.log('✅ SimpleTest - 数据源测试开始')
   } catch (error: any) {
     console.error('❌ SimpleTest - 数据源测试失败:', error)
@@ -441,4 +433,4 @@ pre {
   border: 1px solid #eee;
   border-radius: 4px;
 }
-</style> 
+</style>

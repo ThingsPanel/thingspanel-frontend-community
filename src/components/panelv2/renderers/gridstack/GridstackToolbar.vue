@@ -6,55 +6,35 @@
   <div class="gridstack-toolbar" :class="{ 'dark-theme': isDarkTheme }">
     <!-- 主要操作按钮 -->
     <div class="toolbar-section">
-      <button 
-        class="toolbar-btn primary"
-        title="添加新组件"
-        @click="handleAddItem"
-      >
+      <button class="toolbar-btn primary" title="添加新组件" @click="handleAddItem">
         <i class="icon-plus"></i>
         <span>添加组件</span>
       </button>
-      
-      <button 
-        class="toolbar-btn"
-        title="清空所有组件"
-        @click="handleClearAll"
-      >
+
+      <button class="toolbar-btn" title="清空所有组件" @click="handleClearAll">
         <i class="icon-clear"></i>
         <span>清空</span>
       </button>
     </div>
-    
+
     <!-- 布局操作 -->
     <div class="toolbar-section">
-      <button 
-        class="toolbar-btn"
-        title="保存当前布局"
-        @click="handleSaveLayout"
-      >
+      <button class="toolbar-btn" title="保存当前布局" @click="handleSaveLayout">
         <i class="icon-save"></i>
         <span>保存布局</span>
       </button>
-      
-      <button 
-        class="toolbar-btn"
-        title="加载布局"
-        @click="handleLoadLayout"
-      >
+
+      <button class="toolbar-btn" title="加载布局" @click="handleLoadLayout">
         <i class="icon-load"></i>
         <span>加载布局</span>
       </button>
     </div>
-    
+
     <!-- 网格配置 -->
     <div class="toolbar-section">
       <div class="config-group">
         <label>列数:</label>
-        <select 
-          v-model="gridColumns" 
-          class="config-select"
-          @change="handleColumnsChange"
-        >
+        <select v-model="gridColumns" class="config-select" @change="handleColumnsChange">
           <option value="6">6列</option>
           <option value="8">8列</option>
           <option value="10">10列</option>
@@ -63,14 +43,10 @@
           <option value="24">24列</option>
         </select>
       </div>
-      
+
       <div class="config-group">
         <label>间距:</label>
-        <select 
-          v-model="gridMargin" 
-          class="config-select"
-          @change="handleMarginChange"
-        >
+        <select v-model="gridMargin" class="config-select" @change="handleMarginChange">
           <option value="5">5px</option>
           <option value="10">10px</option>
           <option value="15">15px</option>
@@ -78,37 +54,29 @@
         </select>
       </div>
     </div>
-    
+
     <!-- 视图选项 -->
     <div class="toolbar-section">
       <div class="toggle-group">
         <label class="toggle-label">
-          <input 
-            v-model="showGrid" 
-            type="checkbox"
-            @change="handleShowGridChange"
-          >
+          <input v-model="showGrid" type="checkbox" @change="handleShowGridChange" />
           <span class="toggle-text">显示网格</span>
         </label>
-        
+
         <label class="toggle-label">
-          <input 
-            v-model="enableAnimation" 
-            type="checkbox"
-            @change="handleAnimationChange"
-          >
+          <input v-model="enableAnimation" type="checkbox" @change="handleAnimationChange" />
           <span class="toggle-text">动画效果</span>
         </label>
       </div>
     </div>
-    
+
     <!-- 状态信息 -->
     <div class="toolbar-section status-section">
       <div class="status-info">
         <span class="status-label">组件数量:</span>
         <span class="status-value">{{ itemCount }}</span>
       </div>
-      
+
       <div class="status-info">
         <span class="status-label">网格:</span>
         <span class="status-value">{{ gridColumns }}列</span>
@@ -200,18 +168,22 @@ const handleAnimationChange = () => {
 }
 
 // Watch for renderer changes
-watch(() => props.renderer, (newRenderer) => {
-  if (newRenderer) {
-    // 从渲染器获取当前配置
-    const config = newRenderer.getConfig()
-    if (config) {
-      gridColumns.value = config.columns || 12
-      gridMargin.value = config.margin || 10
-      showGrid.value = config.showGrid || false
-      enableAnimation.value = config.animate !== false
+watch(
+  () => props.renderer,
+  newRenderer => {
+    if (newRenderer) {
+      // 从渲染器获取当前配置
+      const config = newRenderer.getConfig()
+      if (config) {
+        gridColumns.value = config.columns || 12
+        gridMargin.value = config.margin || 10
+        showGrid.value = config.showGrid || false
+        enableAnimation.value = config.animate !== false
+      }
     }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>
@@ -350,7 +322,7 @@ watch(() => props.renderer, (newRenderer) => {
   color: #b0b0b0;
 }
 
-.toggle-label input[type="checkbox"] {
+.toggle-label input[type='checkbox'] {
   margin: 0;
   cursor: pointer;
 }
@@ -390,10 +362,18 @@ watch(() => props.renderer, (newRenderer) => {
 }
 
 /* 图标样式 */
-.icon-plus::before { content: '+'; }
-.icon-clear::before { content: '🗑'; }
-.icon-save::before { content: '💾'; }
-.icon-load::before { content: '📁'; }
+.icon-plus::before {
+  content: '+';
+}
+.icon-clear::before {
+  content: '🗑';
+}
+.icon-save::before {
+  content: '💾';
+}
+.icon-load::before {
+  content: '📁';
+}
 
 /* 响应式设计 */
 @media (max-width: 768px) {
@@ -402,18 +382,18 @@ watch(() => props.renderer, (newRenderer) => {
     align-items: stretch;
     gap: 8px;
   }
-  
+
   .toolbar-section {
     border-right: none;
     border-bottom: 1px solid #e1e5e9;
     padding-bottom: 8px;
   }
-  
+
   .toolbar-section:last-child {
     border-bottom: none;
     padding-bottom: 0;
   }
-  
+
   .status-section {
     margin-left: 0;
     justify-content: space-between;

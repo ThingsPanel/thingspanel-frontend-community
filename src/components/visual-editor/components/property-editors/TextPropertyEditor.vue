@@ -3,7 +3,7 @@
     <n-form size="small" label-placement="left" label-width="60">
       <!-- 文本内容 -->
       <n-form-item label="内容">
-        <n-input 
+        <n-input
           :value="config.content"
           type="textarea"
           :rows="3"
@@ -11,10 +11,10 @@
           @update:value="updateConfig('content', $event)"
         />
       </n-form-item>
-      
+
       <!-- 字体大小 -->
       <n-form-item label="字号">
-        <n-input-number 
+        <n-input-number
           :value="config.fontSize"
           :min="8"
           :max="72"
@@ -22,17 +22,17 @@
           @update:value="updateConfig('fontSize', $event)"
         />
       </n-form-item>
-      
+
       <!-- 文本颜色 -->
       <n-form-item label="颜色">
         <div class="color-input-group">
-          <n-color-picker 
+          <n-color-picker
             :value="normalizeColor(config.color)"
             :show-alpha="false"
             size="small"
             @update:value="updateConfig('color', $event)"
           />
-          <n-input 
+          <n-input
             :value="config.color"
             size="small"
             placeholder="CSS颜色值"
@@ -40,20 +40,20 @@
           />
         </div>
       </n-form-item>
-      
+
       <!-- 对齐方式 -->
       <n-form-item label="对齐">
-        <n-select 
+        <n-select
           :value="config.textAlign"
           size="small"
           :options="alignOptions"
           @update:value="updateConfig('textAlign', $event)"
         />
       </n-form-item>
-      
+
       <!-- 字体粗细 -->
       <n-form-item label="粗细">
-        <n-select 
+        <n-select
           :value="config.fontWeight"
           size="small"
           :options="weightOptions"

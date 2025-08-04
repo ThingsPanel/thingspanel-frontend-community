@@ -1,6 +1,6 @@
 <template>
   <div class="image-widget">
-    <n-image 
+    <n-image
       v-if="src"
       :src="src"
       :alt="alt"
@@ -9,14 +9,13 @@
       :preview-disabled="true"
       @error="handleError"
     />
-    <div 
-      v-else 
-      class="image-placeholder"
-      :style="placeholderStyle"
-    >
+    <div v-else class="image-placeholder" :style="placeholderStyle">
       <n-icon size="24" :color="placeholderColor">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path fill="currentColor" d="M5 21q-.825 0-1.413-.588T3 19V5q0-.825.588-1.413T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.588 1.413T19 21H5zm1-4h12l-3.75-5l-3 4L9 13l-3 4z"/>
+          <path
+            fill="currentColor"
+            d="M5 21q-.825 0-1.413-.588T3 19V5q0-.825.588-1.413T5 3h14q.825 0 1.413.588T21 5v14q0 .825-.588 1.413T19 21H5zm1-4h12l-3.75-5l-3 4L9 13l-3 4z"
+          />
         </svg>
       </n-icon>
       <span class="placeholder-text">{{ alt || '图片' }}</span>

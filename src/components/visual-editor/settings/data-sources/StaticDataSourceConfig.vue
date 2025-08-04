@@ -3,20 +3,16 @@
     <n-form :model="config" label-placement="top" size="small">
       <n-form-item label="JSON数据">
         <div class="json-editor-container">
-          <CodemirrorEditor
-            v-model="jsonString"
-            :options="editorOptions"
-            @update:modelValue="updateJsonData"
-          />
+          <CodemirrorEditor v-model="jsonString" :options="editorOptions" @update:modelValue="updateJsonData" />
           <div class="json-actions">
             <n-button size="tiny" @click="loadExampleData">示例</n-button>
             <n-button size="tiny" @click="formatJson">格式化</n-button>
           </div>
         </div>
       </n-form-item>
-      
+
       <n-divider title-placement="left">数据映射</n-divider>
-      
+
       <div v-if="config.dataPaths && config.dataPaths.length > 0" class="mapping-list">
         <div v-for="(mapping, index) in config.dataPaths" :key="index" class="mapping-item">
           <div class="mapping-row">
@@ -31,9 +27,9 @@
           </div>
         </div>
       </div>
-      
+
       <n-divider title-placement="left">预览</n-divider>
-      
+
       <n-tabs type="line" size="small">
         <n-tab-pane name="raw" tab="原始">
           <pre class="json-preview">{{ formattedJson }}</pre>
@@ -54,7 +50,20 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { NForm, NFormItem, NInput, NInputNumber, NButton, NDivider, NCard, NTabs, NTabPane, NEmpty, NSpace, NIcon } from 'naive-ui'
+import {
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NButton,
+  NDivider,
+  NCard,
+  NTabs,
+  NTabPane,
+  NEmpty,
+  NSpace,
+  NIcon
+} from 'naive-ui'
 import CodemirrorEditor from 'codemirror-editor-vue3'
 import type { StaticDataSource } from '../../types/data-source'
 import { dataPathResolver } from '../../utils/data-path-resolver'
@@ -103,7 +112,7 @@ const editorOptions = {
 // 可用的数据路径选项
 const availablePathOptions = computed(() => {
   if (!config.value.data) return []
-  
+
   const paths = dataPathResolver.getAvailablePaths(config.value.data)
   return paths.map(path => ({
     label: path,
@@ -123,7 +132,7 @@ const formattedJson = computed(() => {
 // 解析数据预览
 const resolvedData = computed(() => {
   const results: Array<{ path: string; value: any }> = []
-  
+
   config.value.dataPaths?.forEach(mapping => {
     try {
       const value = dataPathResolver.resolve(config.value.data, mapping.key)
@@ -138,7 +147,7 @@ const resolvedData = computed(() => {
       })
     }
   })
-  
+
   return results
 })
 
@@ -160,30 +169,30 @@ const updateJsonData = (value: string) => {
 // 加载示例数据
 const loadExampleData = () => {
   const exampleJson = {
-    "sensors": {
-      "temperature": 25.5,
-      "humidity": 65.2,
-      "pressure": 1013.25
+    sensors: {
+      temperature: 25.5,
+      humidity: 65.2,
+      pressure: 1013.25
     },
-    "device": {
-      "status": "运行中",
-      "mode": "自动"
+    device: {
+      status: '运行中',
+      mode: '自动'
     },
-    "timestamp": "2024-01-01T12:00:00Z"
+    timestamp: '2024-01-01T12:00:00Z'
   }
-  
+
   // 直接设置JSON字符串
   jsonString.value = JSON.stringify(exampleJson, null, 2)
-  
+
   // 更新配置
   config.value.data = exampleJson
-  
+
   // 自动生成映射
   generateDefaultMappings()
-  
+
   // 更新配置
   updateConfig()
-  
+
   console.log('🔧 StaticDataSourceConfig - 示例数据已加载:', exampleJson)
 }
 
@@ -201,47 +210,47 @@ const formatJson = () => {
 // 生成默认的数据路径映射 - 基于组件定义的mappingKeys
 const generateDefaultMappings = () => {
   if (!config.value.data || Object.keys(config.value.data).length === 0) return
-  
+
   console.log('🔧 StaticDataSourceConfig - 开始生成映射:', {
     data: config.value.data,
     dataPaths: config.value.dataPaths
   })
-  
+
   // 获取可用的数据路径
   const availablePaths = dataPathResolver.getAvailablePaths(config.value.data)
   console.log('🔧 StaticDataSourceConfig - 可用路径:', availablePaths)
-  
+
   // 为每个映射生成映射，优先匹配同名路径
   config.value.dataPaths = config.value.dataPaths.map(mapping => {
     const targetKey = mapping.target
     console.log('🔧 StaticDataSourceConfig - 处理映射:', { targetKey, currentKey: mapping.key })
-    
+
     // 1. 优先选择与target完全同名的JSON路径
     const exactMatch = availablePaths.find(path => {
       const pathKey = path.split('.').pop() || path
       return pathKey === targetKey
     })
-    
+
     if (exactMatch) {
       console.log('🔧 StaticDataSourceConfig - 找到精确匹配:', exactMatch)
       return { ...mapping, key: exactMatch }
     }
-    
+
     // 2. 如果没有精确匹配，查找包含targetKey的路径
     const partialMatch = availablePaths.find(path => {
       return path.includes(targetKey)
     })
-    
+
     if (partialMatch) {
       console.log('🔧 StaticDataSourceConfig - 找到部分匹配:', partialMatch)
       return { ...mapping, key: partialMatch }
     }
-    
+
     // 3. 如果都没有找到，保持原来的key或设为空
     console.log('🔧 StaticDataSourceConfig - 未找到匹配，保持原值')
     return mapping
   })
-  
+
   console.log('🔧 StaticDataSourceConfig - 最终映射:', config.value.dataPaths)
   updateConfig()
 }
@@ -257,50 +266,54 @@ const updateConfig = () => {
 }
 
 // 监听外部变化
-watch(() => props.modelValue, (newValue) => {
-  config.value = { ...config.value, ...newValue }
-  jsonString.value = JSON.stringify(config.value.data, null, 2)
-  
-  // 如果外部传入了dataPaths，使用外部的映射
-  if (newValue?.dataPaths && newValue.dataPaths.length > 0) {
-    config.value.dataPaths = newValue.dataPaths
-  }
-  
-  // 如果有数据，自动生成映射
-  if (config.value.data && Object.keys(config.value.data).length > 0) {
-    generateDefaultMappings()
-  }
-}, { deep: true })
+watch(
+  () => props.modelValue,
+  newValue => {
+    config.value = { ...config.value, ...newValue }
+    jsonString.value = JSON.stringify(config.value.data, null, 2)
+
+    // 如果外部传入了dataPaths，使用外部的映射
+    if (newValue?.dataPaths && newValue.dataPaths.length > 0) {
+      config.value.dataPaths = newValue.dataPaths
+    }
+
+    // 如果有数据，自动生成映射
+    if (config.value.data && Object.keys(config.value.data).length > 0) {
+      generateDefaultMappings()
+    }
+  },
+  { deep: true }
+)
 
 onMounted(() => {
   // 如果没有数据，提供默认示例
   if (!config.value.data || Object.keys(config.value.data).length === 0) {
     const defaultJson = {
-      "sensors": {
-        "temperature": 25.5,
-        "humidity": 65.2,
-        "pressure": 1013.25
+      sensors: {
+        temperature: 25.5,
+        humidity: 65.2,
+        pressure: 1013.25
       },
-      "device": {
-        "status": "运行中",
-        "mode": "自动"
+      device: {
+        status: '运行中',
+        mode: '自动'
       },
-      "timestamp": "2024-01-01T12:00:00Z"
+      timestamp: '2024-01-01T12:00:00Z'
     }
-    
+
     config.value.data = defaultJson
     jsonString.value = JSON.stringify(defaultJson, null, 2)
-    
+
     // 自动生成映射
     generateDefaultMappings()
-    
+
     updateConfig()
   } else {
     jsonString.value = JSON.stringify(config.value.data, null, 2)
     // 如果有数据，也自动生成映射
     generateDefaultMappings()
   }
-  
+
   // 确保示例数据始终显示
   if (!jsonString.value) {
     loadExampleData()

@@ -4,7 +4,21 @@
 -->
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { NModal, useThemeVars, NSpace, NButton, NSelect, NDivider, NPopconfirm, NTooltip, NForm, NFormItem, NInputNumber, NSwitch, NColorPicker } from 'naive-ui'
+import {
+  NModal,
+  useThemeVars,
+  NSpace,
+  NButton,
+  NSelect,
+  NDivider,
+  NPopconfirm,
+  NTooltip,
+  NForm,
+  NFormItem,
+  NInputNumber,
+  NSwitch,
+  NColorPicker
+} from 'naive-ui'
 import CommonToolbar from './CommonToolbar.vue'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
@@ -165,11 +179,11 @@ const handleImport = () => {
     input.type = 'file'
     input.accept = '.json'
     input.style.display = 'none'
-    input.addEventListener('change', (e) => {
+    input.addEventListener('change', e => {
       const file = (e.target as HTMLInputElement).files?.[0]
       if (file) {
         const reader = new FileReader()
-        reader.onload = (event) => {
+        reader.onload = event => {
           try {
             const config = JSON.parse(event.target?.result as string)
             console.log('导入配置:', config)
@@ -206,19 +220,12 @@ const getConfigTitle = () => {
 </script>
 
 <template>
-  <div
-    class="visual-editor-toolbar h-12 flex items-center relative"
-    :style="toolbarColors"
-  >
+  <div class="visual-editor-toolbar h-12 flex items-center relative" :style="toolbarColors">
     <!-- 左侧：添加组件 -->
     <div class="toolbar-left flex items-center gap-2">
       <!-- 添加组件按钮 - 仅编辑模式显示 -->
       <template v-if="mode === 'edit'">
-        <NButton
-          size="small"
-          :type="showLeftDrawer ? 'primary' : 'default'"
-          @click="handleToggleLeftDrawer"
-        >
+        <NButton size="small" :type="showLeftDrawer ? 'primary' : 'default'" @click="handleToggleLeftDrawer">
           <template #icon>
             <SvgIcon icon="material-symbols:widgets-outline" />
           </template>
@@ -243,7 +250,6 @@ const getConfigTitle = () => {
       <NSpace align="center" :size="4">
         <!-- 编辑模式下的功能 -->
         <template v-if="mode === 'edit'">
-
           <!-- 文档操作组 -->
           <div class="btn-group">
             <NTooltip trigger="hover">
@@ -263,22 +269,13 @@ const getConfigTitle = () => {
               <span>{{ $t('visualEditor.shortcuts.save') }}</span>
             </NTooltip>
 
-            <NButton
-              size="small"
-              type="tertiary"
-              :disabled="readonly"
-              @click="handleImport"
-            >
+            <NButton size="small" type="tertiary" :disabled="readonly" @click="handleImport">
               <template #icon>
                 <SvgIcon icon="material-symbols:upload" />
               </template>
             </NButton>
 
-            <NButton
-              size="small"
-              type="tertiary"
-              @click="handleExport"
-            >
+            <NButton size="small" type="tertiary" @click="handleExport">
               <template #icon>
                 <SvgIcon icon="material-symbols:download" />
               </template>
@@ -289,12 +286,7 @@ const getConfigTitle = () => {
           <div class="btn-group">
             <NTooltip trigger="hover">
               <template #trigger>
-                <NButton
-                  size="small"
-                  type="tertiary"
-                  :disabled="readonly"
-                  @click="handleUndo"
-                >
+                <NButton size="small" type="tertiary" :disabled="readonly" @click="handleUndo">
                   <template #icon>
                     <SvgIcon icon="material-symbols:undo" />
                   </template>
@@ -305,12 +297,7 @@ const getConfigTitle = () => {
 
             <NTooltip trigger="hover">
               <template #trigger>
-                <NButton
-                  size="small"
-                  type="tertiary"
-                  :disabled="readonly"
-                  @click="handleRedo"
-                >
+                <NButton size="small" type="tertiary" :disabled="readonly" @click="handleRedo">
                   <template #icon>
                     <SvgIcon icon="material-symbols:redo" />
                   </template>
@@ -325,12 +312,7 @@ const getConfigTitle = () => {
               @positive-click="handleClearAll"
             >
               <template #trigger>
-                <NButton 
-                  size="small" 
-                  type="error" 
-                  secondary
-                  :disabled="readonly"
-                >
+                <NButton size="small" type="error" secondary :disabled="readonly">
                   <template #icon>
                     <SvgIcon icon="material-symbols:delete-outline" />
                   </template>
@@ -344,11 +326,7 @@ const getConfigTitle = () => {
           <div v-if="isCanvasRenderer" class="btn-group">
             <NTooltip trigger="hover">
               <template #trigger>
-                <NButton
-                  size="small"
-                  type="tertiary"
-                  @click="handleZoomOut"
-                >
+                <NButton size="small" type="tertiary" @click="handleZoomOut">
                   <template #icon>
                     <SvgIcon icon="material-symbols:zoom-out" />
                   </template>
@@ -359,11 +337,7 @@ const getConfigTitle = () => {
 
             <NTooltip trigger="hover">
               <template #trigger>
-                <NButton
-                  size="small"
-                  type="tertiary"
-                  @click="handleResetZoom"
-                >
+                <NButton size="small" type="tertiary" @click="handleResetZoom">
                   <template #icon>
                     <SvgIcon icon="material-symbols:refresh" />
                   </template>
@@ -374,11 +348,7 @@ const getConfigTitle = () => {
 
             <NTooltip trigger="hover">
               <template #trigger>
-                <NButton
-                  size="small"
-                  type="tertiary"
-                  @click="handleZoomIn"
-                >
+                <NButton size="small" type="tertiary" @click="handleZoomIn">
                   <template #icon>
                     <SvgIcon icon="material-symbols:zoom-in" />
                   </template>
@@ -389,11 +359,7 @@ const getConfigTitle = () => {
           </div>
 
           <!-- 配置按钮 -->
-          <NButton
-            size="small"
-            type="tertiary"
-            @click="handleToggleRendererConfig"
-          >
+          <NButton size="small" type="tertiary" @click="handleToggleRendererConfig">
             <template #icon>
               <SvgIcon icon="material-symbols:settings-outline" />
             </template>
@@ -408,7 +374,9 @@ const getConfigTitle = () => {
           @click="handleModeChange(mode === 'edit' ? 'preview' : 'edit')"
         >
           <template #icon>
-            <SvgIcon :icon="mode === 'edit' ? 'material-symbols:visibility-outline' : 'material-symbols:edit-outline'" />
+            <SvgIcon
+              :icon="mode === 'edit' ? 'material-symbols:visibility-outline' : 'material-symbols:edit-outline'"
+            />
           </template>
           {{ mode === 'edit' ? $t('visualEditor.preview') : $t('visualEditor.edit') }}
         </NButton>
@@ -444,7 +412,7 @@ const getConfigTitle = () => {
                 @update:value="handleCanvasConfigChange({ ...canvasConfig, width: $event })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.canvasHeight')">
               <NInputNumber
                 v-model:value="canvasConfig.height"
@@ -455,21 +423,21 @@ const getConfigTitle = () => {
                 @update:value="handleCanvasConfigChange({ ...canvasConfig, height: $event })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.showGrid')">
               <NSwitch
                 v-model:value="canvasConfig.showGrid"
                 @update:value="handleCanvasConfigChange({ ...canvasConfig, showGrid: $event })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.backgroundColor')">
               <NColorPicker
                 v-model:value="canvasConfig.backgroundColor"
                 @update:value="handleCanvasConfigChange({ ...canvasConfig, backgroundColor: $event })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.gridSize')">
               <NInputNumber
                 v-model:value="canvasConfig.gridSize"
@@ -482,7 +450,7 @@ const getConfigTitle = () => {
             </NFormItem>
           </NForm>
         </div>
-        
+
         <!-- Gridstack 渲染器配置 -->
         <div v-else-if="isGridstackRenderer" class="gridstack-config">
           <NForm label-placement="left" label-width="100">
@@ -496,7 +464,7 @@ const getConfigTitle = () => {
                 @update:value="handleGridstackConfigChange({ ...gridstackConfig, colNum: $event })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.rowHeight')">
               <NInputNumber
                 v-model:value="gridstackConfig.rowHeight"
@@ -507,7 +475,7 @@ const getConfigTitle = () => {
                 @update:value="handleGridstackConfigChange({ ...gridstackConfig, rowHeight: $event })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.margin')">
               <NInputNumber
                 v-model:value="gridstackConfig.margin[0]"
@@ -518,21 +486,21 @@ const getConfigTitle = () => {
                 @update:value="handleGridstackConfigChange({ ...gridstackConfig, margin: [$event, $event] })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.draggable')">
               <NSwitch
                 v-model:value="gridstackConfig.isDraggable"
                 @update:value="handleGridstackConfigChange({ ...gridstackConfig, isDraggable: $event })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.resizable')">
               <NSwitch
                 v-model:value="gridstackConfig.isResizable"
                 @update:value="handleGridstackConfigChange({ ...gridstackConfig, isResizable: $event })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.staticGrid')">
               <NSwitch
                 v-model:value="gridstackConfig.staticGrid"
@@ -541,7 +509,7 @@ const getConfigTitle = () => {
             </NFormItem>
           </NForm>
         </div>
-        
+
         <!-- 可视化渲染器配置 -->
         <div v-else-if="isVisualizationRenderer" class="visualization-config">
           <NForm label-placement="left" label-width="100">
@@ -557,14 +525,14 @@ const getConfigTitle = () => {
                 @update:value="handleVisualizationConfigChange({ ...visualizationConfig, theme: $event })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.animation')">
               <NSwitch
                 v-model:value="visualizationConfig.animation"
                 @update:value="handleVisualizationConfigChange({ ...visualizationConfig, animation: $event })"
               />
             </NFormItem>
-            
+
             <NFormItem :label="$t('visualEditor.responsive')">
               <NSwitch
                 v-model:value="visualizationConfig.responsive"
@@ -590,7 +558,10 @@ const getConfigTitle = () => {
   box-shadow: 0 1px 3px var(--toolbar-shadow);
   position: relative;
   z-index: 10;
-  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
   padding: 0 16px;
 }
 
@@ -694,17 +665,17 @@ const getConfigTitle = () => {
     height: auto;
     min-height: 48px;
   }
-  
+
   /* 小屏幕：只显示图标 */
   .toolbar-left span {
     display: none;
   }
-  
+
   .btn-group {
     gap: 1px;
     padding: 1px;
   }
-  
+
   .renderer-config-modal {
     margin: 8px;
     width: calc(100vw - 16px) !important;
@@ -713,7 +684,7 @@ const getConfigTitle = () => {
   .config-content {
     max-height: 50vh;
   }
-  
+
   /* 如果空间太小，隐藏Canvas特有的控制 */
   .btn-group:has(+ .btn-group) {
     display: none;
@@ -725,8 +696,8 @@ const getConfigTitle = () => {
   .toolbar-right .n-space {
     gap: 2px !important;
   }
-  
-  .btn-group:nth-child(n+3) {
+
+  .btn-group:nth-child(n + 3) {
     display: none;
   }
 }
