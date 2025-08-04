@@ -15,7 +15,7 @@ const props = withDefaults(defineProps<Props>(), {
   leftCollapsed: false,
   rightCollapsed: false,
   leftWidth: 280,
-  rightWidth: 320
+  rightWidth: 400 // 增加右侧面板默认宽度，更适合属性面板
 })
 
 const emit = defineEmits<{
@@ -35,7 +35,8 @@ const themeColors = computed(() => {
     '--panel-border': isDark ? '#404040' : '#e0e0e0',
     '--panel-shadow': isDark ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)',
     '--toolbar-bg': isDark ? '#1f2937' : '#f8fafc',
-    '--sidebar-bg': isDark ? '#252525' : '#fafafa'
+    '--sidebar-bg': isDark ? '#252525' : '#fafafa',
+    '--left-sidebar-bg': isDark ? 'rgba(37, 37, 37, 0.8)' : 'rgba(250, 250, 250, 0.8)' // 左侧面板半透明背景
   }
 })
 
@@ -85,12 +86,8 @@ defineExpose({
       <!-- 左侧区域 - 仅当编辑模式、有插槽内容且未收起时显示 -->
       <div
         v-if="showLeft"
-        class="left-area flex-shrink-0 overflow-auto transition-all duration-300"
-        :style="{
-          width: `${leftWidth}px`,
-          backgroundColor: 'var(--sidebar-bg)',
-          borderRight: '1px solid var(--panel-border)'
-        }"
+        class="left-area flex-shrink-0 overflow-auto transition-all duration-300 backdrop-blur-sm"
+        :style="{ width: `${leftWidth}px`, backgroundColor: 'var(--left-sidebar-bg)', borderRight: '1px solid var(--panel-border)' }"
       >
         <slot name="left" :mode="props.mode" :isEditMode="isEditMode" />
       </div>
@@ -103,12 +100,8 @@ defineExpose({
       <!-- 右侧区域 - 仅当编辑模式、有插槽内容且未收起时显示 -->
       <div
         v-if="showRight"
-        class="right-area flex-shrink-0 overflow-auto transition-all duration-300"
-        :style="{
-          width: `${rightWidth}px`,
-          backgroundColor: 'var(--sidebar-bg)',
-          borderLeft: '1px solid var(--panel-border)'
-        }"
+        class="right-area flex-shrink-0 overflow-auto transition-all duration-300 shadow-lg"
+        :style="{ width: `${rightWidth}px`, backgroundColor: 'var(--sidebar-bg)', borderLeft: '1px solid var(--panel-border)' }"
       >
         <slot name="right" :mode="props.mode" :isEditMode="isEditMode" />
       </div>
@@ -133,6 +126,19 @@ defineExpose({
   /* 防止子元素溢出 */
   min-width: 0;
   min-height: 0;
+}
+
+/* 左侧面板特殊样式 - 半透明效果，不影响拖拽 */
+.left-area {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+/* 右侧面板抽屉式样式 */
+.right-area {
+  z-index: 20;
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
 }
 
 /* 自定义滚动条样式 */

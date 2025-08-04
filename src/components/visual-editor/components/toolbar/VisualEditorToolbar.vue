@@ -129,7 +129,10 @@ const visualizationConfig = computed(() => ({
 }))
 
 // 编辑状态控制
-const handleModeChange = (mode: 'edit' | 'preview') => emit('mode-change', mode)
+const handleModeChange = (mode: 'edit' | 'preview') => {
+  console.log('🎛️ 工具栏模式切换:', { currentMode: props.mode, newMode: mode })
+  emit('mode-change', mode)
+}
 const handleRendererChange = (rendererId: string) => emit('renderer-change', rendererId)
 
 // 文档操作
@@ -379,6 +382,8 @@ const getConfigTitle = () => {
             />
           </template>
           {{ mode === 'edit' ? $t('visualEditor.preview') : $t('visualEditor.edit') }}
+          <!-- 调试信息 -->
+          <span style="font-size: 10px; margin-left: 4px;">({{ mode }})</span>
         </NButton>
       </NSpace>
     </div>

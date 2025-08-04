@@ -1,28 +1,29 @@
 import { defineAsyncComponent } from 'vue'
 import type { ComponentDefinition } from '../../core/types'
 import type { ComponentDataSourceDefinition } from '../../../components/visual-editor/types/data-source'
+import { MultiDataTestIcon } from './icon'
 
 // 异步加载组件
 const MultiDataTestCard = defineAsyncComponent(() => import('./MultiDataTestCard.vue'))
 const MultiDataTestConfig = defineAsyncComponent(() => import('./MultiDataTestConfig.vue'))
 
-// 组件数据源定义 - 支持多个数据源
+// 组件数据源定义 - 两个数据源
 const dataSourceDefinitions: ComponentDataSourceDefinition[] = [
   {
-    name: 'sensorData', // 第一个数据源：传感器数据
+    name: 'environmentData',
     type: 'object',
     required: true,
-    description: '传感器数据（包含温度和湿度）',
-    defaultValue: { temperature: 0, humidity: 0 }, // 组件的默认值
-    mappingKeys: ['temperature', 'humidity'] // 需要映射的键
+    description: '环境数据源，包含温度和湿度',
+    defaultValue: { temperature: 0, humidity: 0 },
+    mappingKeys: ['temperature', 'humidity']
   },
   {
-    name: 'deviceStatus', // 第二个数据源：设备状态
+    name: 'deviceStatus',
     type: 'string',
     required: false,
-    description: '设备运行状态',
-    defaultValue: '正常', // 组件的默认值
-    mappingKeys: ['deviceStatus'] // 需要映射的键
+    description: '设备状态数据源',
+    defaultValue: '正常',
+    mappingKeys: ['status']
   }
 ]
 
@@ -32,7 +33,7 @@ const multiDataTestDefinition: ComponentDefinition = {
   name: '多数据测试',
   description: '测试多数据源支持的组件，支持从不同数据源获取数据',
   category: 'card21',
-  icon: '📊',
+  icon: MultiDataTestIcon,
   component: MultiDataTestCard,
   configComponent: MultiDataTestConfig,
   dataSourceDefinitions, // 添加数据源定义

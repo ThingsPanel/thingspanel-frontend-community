@@ -48,6 +48,20 @@ export interface DeviceDataSource extends BaseDataSource {
   metricsOptions?: any[]
   metricsOptionsFetched?: boolean
   metricsShow?: boolean
+  // 新增字段
+  dataMode?: 'latest' | 'history' // 数据模式：最新数据/历史数据
+  pollingType?: 'timer' | 'websocket' | 'mqtt' // 轮询方式
+  websocketUrl?: string // WebSocket URL
+  mqttConfig?: {
+    broker: string
+    topic: string
+    username?: string
+    password?: string
+  }
+  // 数据请求相关
+  isDataLoading?: boolean
+  lastFetchTime?: number
+  errorMessage?: string
 }
 
 // HTTP 数据源
@@ -89,6 +103,7 @@ export interface DataSourceValue {
   quality?: 'good' | 'bad' | 'uncertain'
   metadata?: Record<string, any>
   rawData?: any // 原始数据，用于调试
+  error?: string // 错误信息
 }
 
 // 数据源更新回调

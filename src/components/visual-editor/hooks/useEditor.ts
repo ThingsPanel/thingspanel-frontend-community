@@ -241,7 +241,7 @@ export function createEditor() {
       width: widgetDef.defaultLayout.canvas.width,
       height: widgetDef.defaultLayout.canvas.height,
       label: widgetDef.name,
-      showLabel: true,
+      showLabel: false,
       properties: defaultProperties, // 使用修复后的属性值
       renderer: ['canvas', 'gridstack'],
       layout: {

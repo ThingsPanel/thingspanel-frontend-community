@@ -10,7 +10,7 @@ import { VisualEditorToolbar } from './components/toolbar'
 import WidgetLibrary from './components/WidgetLibrary/WidgetLibrary.vue'
 import { initializeSettings, SettingsPanel } from './settings'
 import { CanvasRenderer, GridstackRenderer } from './renderers'
-import { createEditor, useCard2Integration } from './hooks'
+import { createEditor, useCard2Integration, usePreviewMode } from './hooks'
 import type { RendererType, VisualEditorWidget, GraphData } from './types'
 
 // 导入数据源注册
@@ -58,9 +58,9 @@ const showWidgetTitles = ref(true) // 总开关，默认显示标题
 const { isFullscreen, toggle } = useFullscreen(fullui)
 
 // 创建编辑器上下文
-const editorContext: EditorContext = createEditor()
+const editorContext = createEditor()
 const { stateManager, addWidget, selectNode } = editorContext
-const setPreviewMode = (val: boolean) => {}
+const { setPreviewMode, isPreviewMode } = usePreviewMode()
 
 const selectedWidget = computed<VisualEditorWidget | null>(() => {
   if (!selectedNodeId.value) return null
@@ -106,7 +106,14 @@ const setState = (config: any) => {
 
   // 恢复编辑状态（可选，通常不保存编辑状态）
   if (config.isEditing !== undefined) {
+    console.log('🔄 setState - 设置编辑状态:', { 
+      oldIsEditing: isEditing.value, 
+      newIsEditing: config.isEditing,
+      willSetPreviewMode: !config.isEditing 
+    })
     isEditing.value = config.isEditing
+    // 同步全局预览模式状态
+    setPreviewMode(!config.isEditing)
   }
   if (config.selectedNodeId !== undefined) {
     selectedNodeId.value = config.selectedNodeId
@@ -353,18 +360,24 @@ const rendererOptions = computed(() => [
 
 // 工具栏事件处理
 const handleModeChange = (mode: 'edit' | 'preview') => {
+  console.log('🔄 模式切换请求:', { from: isPreviewMode ? 'preview' : 'edit', to: mode })
+  
   if (mode === 'edit') {
+    console.log('📝 切换到编辑模式')
     isEditing.value = true
     setPreviewMode(false) // 同步全局预览模式
   } else {
+    console.log('👁️ 切换到预览模式')
     const currentState = getState()
     if (JSON.stringify(currentState) !== JSON.stringify(preEditorConfig.value)) {
+      console.log('⚠️ 有未保存的更改，显示确认对话框')
       dialog.warning({
         title: $t('card.quitWithoutSave'),
         positiveText: $t('device_template.confirm'),
         negativeText: $t('common.cancel'),
         onPositiveClick: () => {
           // 用户确认退出，重置配置
+          console.log('✅ 用户确认退出，重置配置')
           isEditing.value = false
           setPreviewMode(true) // 同步全局预览模式
           // 退出编辑模式时关闭所有抽屉
@@ -372,16 +385,20 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
           showRightDrawer.value = false
           // 清空选中状态
           selectedNodeId.value = ''
-          editorConfig.value = preEditorConfig.value
-          setState(preEditorConfig.value)
+          // 重要：确保editorConfig中的isEditing为false，避免状态冲突
+          editorConfig.value = { ...preEditorConfig.value, isEditing: false }
+          // 重要：在调用setState之前，确保preEditorConfig中的isEditing为false
+          const resetConfig = { ...preEditorConfig.value, isEditing: false }
+          setState(resetConfig)
         },
         onNegativeClick: () => {
           // 用户取消退出，保持当前状态，不做任何操作
-          console.log('用户取消退出编辑模式，保持当前配置')
+          console.log('❌ 用户取消退出编辑模式，保持当前配置')
         }
       })
     } else {
       // 没有未保存的更改，直接退出编辑模式
+      console.log('✅ 没有未保存的更改，直接退出编辑模式')
       isEditing.value = false
       setPreviewMode(true) // 同步全局预览模式
       // 退出编辑模式时关闭所有抽屉
@@ -391,6 +408,8 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
       selectedNodeId.value = ''
     }
   }
+  
+  console.log('🎯 模式切换完成:', { isEditing: isEditing.value, isPreviewMode: isPreviewMode, mode })
 }
 
 // 抽屉控制事件处理
@@ -596,8 +615,6 @@ const handleRedo = () => {
   console.log('重做操作')
 }
 
-// 注意：面板控制现在由编辑模式自动管理，不再需要手动切换
-
 // 渲染器事件处理
 const handleRendererReady = () => {
   console.log('✅ 渲染器已准备就绪')
@@ -671,13 +688,14 @@ const handleSave = async () => {
             version: '1.0.0',
             features: ['drag', 'resize', 'grid', 'canvas']
           },
-          // 配置统计信息（先不包含 configSize）
+          // 配置统计信息
           stats: {
             totalNodes: currentState.nodes.length,
             card2Nodes: currentState.nodes.filter((node: any) => node.metadata?.isCard2Component).length,
             legacyNodes: currentState.nodes.filter((node: any) => !node.metadata?.isCard2Component).length,
             hasGridConfig: !!currentState.gridConfig,
-            hasCanvasConfig: !!currentState.canvasConfig
+            hasCanvasConfig: !!currentState.canvasConfig,
+            configSize: 0 // 初始值，稍后会被更新
           }
         }
       }
@@ -733,6 +751,8 @@ watch(
 
 // 学习 PanelManage 的 onMounted 写法
 onMounted(() => {
+  // 初始化时同步预览模式状态
+  setPreviewMode(!isEditing.value)
   fetchBoard()
 })
 
@@ -777,8 +797,8 @@ onUnmounted(() => {
         <div class="toolbar-container flex-shrink-0">
           <VisualEditorToolbar
             v-if="dataFetched && !isUnmounted"
-            :key="`toolbar-${currentRenderer}-${isEditing ? 'edit' : 'preview'}`"
-            :mode="isEditing ? 'edit' : 'preview'"
+            :key="`toolbar-${currentRenderer}-${isPreviewMode ? 'preview' : 'edit'}`"
+            :mode="isPreviewMode ? 'preview' : 'edit'"
             :current-renderer="currentRenderer"
             :available-renderers="rendererOptions"
             :is-saving="isSaving"
@@ -815,7 +835,7 @@ onUnmounted(() => {
             <CanvasRenderer
               v-if="currentRenderer === 'canvas' && dataFetched && !isUnmounted"
               key="canvas-renderer"
-              :readonly="!isEditing"
+              :readonly="isPreviewMode"
               :show-widget-titles="showWidgetTitles"
               class="renderer-container"
               @ready="handleRendererReady"
@@ -827,7 +847,7 @@ onUnmounted(() => {
             <GridstackRenderer
               v-else-if="currentRenderer === 'gridstack' && dataFetched && !isUnmounted"
               key="gridstack-renderer"
-              :readonly="!isEditing"
+              :readonly="isPreviewMode"
               :show-widget-titles="showWidgetTitles"
               :grid-config="editorConfig.gridConfig"
               class="renderer-container"
@@ -844,7 +864,7 @@ onUnmounted(() => {
             v-model:show="showLeftDrawer"
             :width="320"
             placement="left"
-            :show-mask="true"
+            :show-mask="false"
             :mask-closable="true"
             :closable="true"
             :auto-focus="false"
@@ -859,7 +879,7 @@ onUnmounted(() => {
           <!-- 右侧属性面板抽屉 -->
           <NDrawer
             v-model:show="showRightDrawer"
-            :width="360"
+            :width="450"
             placement="right"
             :show-mask="true"
             :mask-closable="true"
@@ -932,6 +952,33 @@ onUnmounted(() => {
 :deep(.n-drawer-content .n-drawer-content__content) {
   padding: 0;
   height: 100%;
+}
+
+/* 左侧抽屉特殊样式 - 半透明效果，不影响拖拽 */
+:deep(.n-drawer--left) {
+  background-color: rgba(250, 250, 250, 0.9) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+:deep(.n-drawer--left .n-drawer-content) {
+  background-color: rgba(250, 250, 250, 0.9) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* 暗色主题下的左侧抽屉 */
+:deep(.dark .n-drawer--left) {
+  background-color: rgba(37, 37, 37, 0.9) !important;
+}
+
+:deep(.dark .n-drawer--left .n-drawer-content) {
+  background-color: rgba(37, 37, 37, 0.9) !important;
+}
+
+/* 右侧抽屉增强阴影效果 */
+:deep(.n-drawer--right) {
+  box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
 }
 
 /* 工具栏容器 */

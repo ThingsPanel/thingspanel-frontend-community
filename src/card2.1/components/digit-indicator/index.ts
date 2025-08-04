@@ -1,36 +1,21 @@
 import { defineAsyncComponent } from 'vue'
 import type { ComponentDefinition } from '../../core/types'
 import type { ComponentDataSourceDefinition } from '../../../components/visual-editor/types/data-source'
+import { DigitIndicatorIcon } from './icon'
 
 // 异步加载组件
 const DigitIndicatorCard = defineAsyncComponent(() => import('./DigitIndicatorCard.vue'))
 const DigitIndicatorConfig = defineAsyncComponent(() => import('./DigitIndicatorConfig.vue'))
 
-// 组件数据源定义
+// 组件数据源定义 - 一个数据源的三个key
 const dataSourceDefinitions: ComponentDataSourceDefinition[] = [
   {
-    name: 'value',
-    type: 'number',
+    name: 'mainData',
+    type: 'object',
     required: true,
-    description: '显示的主要数值',
-    defaultValue: 0,
-    mappingKeys: ['value']
-  },
-  {
-    name: 'unit',
-    type: 'string',
-    required: false,
-    description: '数值单位',
-    defaultValue: '',
-    mappingKeys: ['unit']
-  },
-  {
-    name: 'title',
-    type: 'string',
-    required: false,
-    description: '显示标题',
-    defaultValue: '数值',
-    mappingKeys: ['title']
+    description: '主要数据源，包含value、unit、title三个属性',
+    defaultValue: { value: 0, unit: '', title: '数值' },
+    mappingKeys: ['value', 'unit', 'title']
   }
 ]
 
@@ -40,7 +25,7 @@ const digitIndicatorDefinition: ComponentDefinition = {
   name: '数字指示器',
   description: '显示数值的指示器组件',
   category: 'card21',
-  icon: '📊',
+  icon: DigitIndicatorIcon,
   component: DigitIndicatorCard,
   configComponent: DigitIndicatorConfig,
   dataSourceDefinitions, // 添加数据源定义

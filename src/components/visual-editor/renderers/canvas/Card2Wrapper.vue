@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, shallowRef, onBeforeUnmount, type Component } from 'vue'
 import { useEditor } from '../../hooks'
-import { dataSourceManager } from '../../core/data-source-manager'
+import { universalDataSourceManager } from '../../core/universal-data-source-manager'
 import type { DataSourceValue } from '../../types/data-source'
 
 interface Props {
@@ -45,35 +45,94 @@ const hasError = ref(false)
 const errorMessage = ref('')
 const componentToRender = shallowRef<Component | null>(null)
 const dataSourceValue = ref<DataSourceValue | null>(null)
-let unsubscribeDataSource: (() => void) | null = null
+let currentSubscriberId: (() => void) | null = null
 
 // 处理数据源订阅
 const handleDataSource = (dataSource: any) => {
+  console.log('🔍 Card2Wrapper - 处理数据源变化:', {
+    newDataSource: dataSource,
+    currentSubscriberId
+  })
+  
   // 取消之前的订阅
-  if (unsubscribeDataSource) {
-    unsubscribeDataSource()
-    unsubscribeDataSource = null
+  if (currentSubscriberId) {
+    currentSubscriberId() // 调用取消订阅函数
+    currentSubscriberId = null
+    console.log('🔍 Card2Wrapper - 已取消之前的数据源订阅')
   }
 
   // 重置数据源值
   dataSourceValue.value = null
-
-  // 如果有新的数据源，订阅它
-  if (dataSource && dataSource.enabled) {
-    console.log('🔧 Card2Wrapper - 订阅数据源:', {
+  
+  // 如果有新的数据源且配置完整，订阅它
+  if (dataSource && isDataSourceValid(dataSource)) {
+    console.log('🔍 Card2Wrapper - 开始订阅数据源:', {
       type: dataSource.type,
-      dataPaths: dataSource.dataPaths,
-      name: dataSource.name
+      name: dataSource.name,
+      dataPaths: dataSource.dataPaths
     })
-
-    unsubscribeDataSource = dataSourceManager.subscribe(dataSource, value => {
-      console.log('🔧 Card2Wrapper - 收到数据源更新:', {
+    
+    currentSubscriberId = universalDataSourceManager.subscribe(dataSource, (value) => {
+      console.log('🔍 Card2Wrapper - 收到数据源更新:', {
         values: value.values,
-        dataPaths: value.metadata?.dataPaths,
-        originalData: value.metadata?.originalData
+        rawData: value.rawData,
+        dataPaths: value.metadata?.dataPaths
       })
       dataSourceValue.value = value
     })
+    
+    console.log('🔍 Card2Wrapper - 数据源订阅成功')
+  } else {
+    console.log('🔍 Card2Wrapper - 数据源配置无效或未启用，跳过订阅')
+  }
+}
+
+// 检查数据源配置是否有效
+const isDataSourceValid = (dataSource: any): boolean => {
+  if (!dataSource) return false
+  
+  console.log('🔍 Card2Wrapper - 验证数据源配置:', {
+    type: dataSource.type,
+    enabled: dataSource.enabled,
+    name: dataSource.name,
+    dataPaths: dataSource.dataPaths
+  })
+  
+  // 检查基本配置
+  if (!dataSource.type || !dataSource.enabled) {
+    console.log('🔍 Card2Wrapper - 数据源未启用或缺少类型，跳过订阅:', dataSource)
+    return false
+  }
+  
+  // 根据数据源类型进行不同的验证
+  switch (dataSource.type) {
+    case 'static':
+      // 静态数据源只需要有数据即可
+      return dataSource.data !== undefined
+      
+    case 'device':
+      // 设备数据源需要更详细的配置
+      if (!dataSource.deviceId || !dataSource.metricsType || !dataSource.metricsId) {
+        console.log('🔍 Card2Wrapper - 设备数据源配置不完整:', {
+          deviceId: dataSource.deviceId,
+          metricsType: dataSource.metricsType,
+          metricsId: dataSource.metricsId
+        })
+        return false
+      }
+      return true
+      
+    case 'http':
+      // HTTP数据源需要URL
+      return !!dataSource.url
+      
+    case 'websocket':
+      // WebSocket数据源需要URL
+      return !!dataSource.url
+      
+    default:
+      console.log('🔍 Card2Wrapper - 未知的数据源类型:', dataSource.type)
+      return false
   }
 }
 
@@ -88,9 +147,9 @@ watch(
 
 // 组件卸载时清理
 onBeforeUnmount(() => {
-  if (unsubscribeDataSource) {
-    unsubscribeDataSource()
-    unsubscribeDataSource = null
+  if (currentSubscriberId) {
+    currentSubscriberId() // 调用取消订阅函数
+    currentSubscriberId = null
   }
 })
 

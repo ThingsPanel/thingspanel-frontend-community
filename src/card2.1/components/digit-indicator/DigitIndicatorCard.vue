@@ -3,7 +3,7 @@ import { onBeforeUnmount, onMounted, ref, computed, watch } from 'vue'
 import { NIcon } from 'naive-ui'
 import { icons as iconOptions } from '@/components/common/icons'
 import { $t } from '@/locales'
-import { dataSourceManager } from '@/components/visual-editor/core/data-source-manager'
+import { universalDataSourceManager } from '@/components/visual-editor/core/universal-data-source-manager'
 import type { DataSource, DataSourceValue } from '@/components/visual-editor/types/data-source'
 
 interface Props {
@@ -36,6 +36,10 @@ let unsubscribeDataSource: (() => void) | null = null
 const displayValue = computed(() => {
   // 优先使用数据源的值
   if (dataSourceValue.value?.values) {
+    console.log('🔧 DigitIndicatorCard - 显示值计算:', {
+      mappedValues: dataSourceValue.value.values,
+      value: dataSourceValue.value.values.value
+    })
     return dataSourceValue.value.values.value || 0
   }
 
@@ -95,8 +99,7 @@ const handleDataSource = (dataSource: DataSource | undefined) => {
       dataPaths: dataSource.dataPaths,
       name: dataSource.name
     })
-
-    unsubscribeDataSource = dataSourceManager.subscribe(dataSource, value => {
+    unsubscribeDataSource = universalDataSourceManager.subscribe(dataSource, (value) => {
       console.log('🔧 DigitIndicatorCard - 收到数据源更新:', {
         values: value.values,
         dataPaths: value.metadata?.dataPaths,

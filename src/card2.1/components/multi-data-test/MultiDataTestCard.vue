@@ -26,14 +26,10 @@
         <details>
           <summary>调试信息</summary>
           <div class="debug-content">
-            <div>
-              <strong>数据源1:</strong>
-              {{ dataSource1Info }}
-            </div>
-            <div>
-              <strong>数据源2:</strong>
-              {{ dataSource2Info }}
-            </div>
+            <div><strong>数据源值:</strong> {{ JSON.stringify($props.dataSourceValue?.values || {}, null, 2) }}</div>
+            <div><strong>数据路径:</strong> {{ JSON.stringify($props.dataSourceValue?.metadata?.dataPaths || [], null, 2) }}</div>
+            <div><strong>原始数据:</strong> {{ JSON.stringify($props.dataSourceValue?.rawData || {}, null, 2) }}</div>
+            <div><strong>数据源配置:</strong> {{ JSON.stringify($props.metadata?.dataSource?.dataPaths || [], null, 2) }}</div>
           </div>
         </details>
       </div>
@@ -43,52 +39,66 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { DataSourceValue } from '../../../components/visual-editor/types/data-source'
+import type { DataSource, DataSourceValue } from '@/components/visual-editor/types/data-source'
 
 interface Props {
-  title?: string
-  color?: string
-  fontSize?: number
-  dataSourceValue?: DataSourceValue
+  properties?: {
+    title?: string
+    color?: string
+    fontSize?: number
+  }
+  metadata?: {
+    dataSource?: DataSource
+  }
+  dataSourceValue?: DataSourceValue | null
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: '多数据测试',
-  color: '#1890ff',
-  fontSize: 16
+  properties: () => ({}),
+  dataSourceValue: null
 })
 
 // 显示属性
-const displayTitle = computed(() => props.title)
-const displayColor = computed(() => props.color)
-const displayFontSize = computed(() => props.fontSize)
+const displayTitle = computed(() => props.properties?.title || '多数据测试')
+const displayColor = computed(() => props.properties?.color || '#1890ff')
+const displayFontSize = computed(() => props.properties?.fontSize || 16)
 
 // 从数据源提取数据
 const displayTemperature = computed(() => {
-  // 根据新的映射逻辑，temperature直接映射到values.temperature
-  return props.dataSourceValue?.values?.temperature || 0
+  // 使用来自 Card2Wrapper 的数据源值
+  if (props.dataSourceValue?.values) {
+    console.log('🔧 MultiDataTestCard - 温度数据:', {
+      temperature: props.dataSourceValue.values.temperature,
+      allValues: props.dataSourceValue.values
+    })
+    return props.dataSourceValue.values.temperature || 0
+  }
+  return 0
 })
 
 const displayHumidity = computed(() => {
-  // 根据新的映射逻辑，humidity直接映射到values.humidity
-  return props.dataSourceValue?.values?.humidity || 0
+  // 使用来自 Card2Wrapper 的数据源值
+  if (props.dataSourceValue?.values) {
+    console.log('🔧 MultiDataTestCard - 湿度数据:', {
+      humidity: props.dataSourceValue.values.humidity,
+      allValues: props.dataSourceValue.values
+    })
+    return props.dataSourceValue.values.humidity || 0
+  }
+  return 0
 })
 
 const displayStatus = computed(() => {
-  // 根据新的映射逻辑，deviceStatus直接映射到values.deviceStatus
-  return props.dataSourceValue?.values?.deviceStatus || '未知'
-})
-
-// 调试信息
-const dataSource1Info = computed(() => {
-  const temperature = props.dataSourceValue?.values?.temperature
-  const humidity = props.dataSourceValue?.values?.humidity
-  return temperature !== undefined || humidity !== undefined ? JSON.stringify({ temperature, humidity }) : '无数据'
-})
-
-const dataSource2Info = computed(() => {
-  const deviceStatus = props.dataSourceValue?.values?.deviceStatus
-  return deviceStatus ? JSON.stringify(deviceStatus) : '无数据'
+  // 使用来自 Card2Wrapper 的数据源值
+  if (props.dataSourceValue?.values) {
+    console.log('🔧 MultiDataTestCard - 状态数据:', {
+      status: props.dataSourceValue.values.status,
+      deviceStatus: props.dataSourceValue.values.deviceStatus,
+      allValues: props.dataSourceValue.values
+    })
+    return props.dataSourceValue.values.status || props.dataSourceValue.values.deviceStatus || '未知'
+  }
+  return '未知'
 })
 </script>
 
@@ -105,45 +115,43 @@ const dataSource2Info = computed(() => {
   font-size: 1.2em;
 }
 
-.data-section {
-  margin-bottom: 16px;
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .data-section h4 {
   margin: 0 0 8px 0;
-  font-size: 0.9em;
+  font-size: 1em;
   color: #666;
 }
 
 .data-item {
-  margin-bottom: 4px;
-  padding: 4px 8px;
-  background: #f5f5f5;
-  border-radius: 4px;
+  padding: 4px 0;
+  font-size: 0.9em;
 }
 
 .debug-info {
   margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #eee;
+  padding: 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+  font-size: 0.8em;
 }
 
 .debug-info summary {
   cursor: pointer;
-  color: #666;
-  font-size: 0.8em;
+  font-weight: bold;
 }
 
 .debug-content {
   margin-top: 8px;
   padding: 8px;
-  background: #f8f9fa;
+  background: #fff;
   border-radius: 4px;
-  font-size: 0.8em;
   font-family: monospace;
-}
-
-.debug-content div {
-  margin-bottom: 4px;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 </style>

@@ -66,8 +66,8 @@ class DataPathResolverImpl implements DataPathResolver {
     // 添加根路径
     paths.push('')
 
-    // 递归获取所有路径
-    this.collectPaths(data, '', paths)
+    // 递归获取所有路径，限制最大数量
+    this.collectPaths(data, '', paths, 0, 100) // 限制最多100个路径
 
     return paths
   }
@@ -131,34 +131,44 @@ class DataPathResolverImpl implements DataPathResolver {
    * @param currentPath 当前路径
    * @param paths 路径集合
    */
-  private collectPaths(data: any, currentPath: string, paths: string[]): void {
+  private collectPaths(data: any, currentPath: string, paths: string[], currentCount: number, maxCount: number): void {
     if (data === null || data === undefined) {
       return
     }
 
+    if (currentCount >= maxCount) {
+      return
+    }
+
     if (Array.isArray(data)) {
-      // 数组
-      data.forEach((item, index) => {
+      // 数组 - 限制最多处理前10个元素
+      const maxArrayItems = Math.min(data.length, 10)
+      for (let index = 0; index < maxArrayItems; index++) {
+        const item = data[index]
         const newPath = currentPath ? `${currentPath}[${index}]` : `[${index}]`
         paths.push(newPath)
 
         // 递归处理数组元素
         if (typeof item === 'object' && item !== null) {
-          this.collectPaths(item, newPath, paths)
+          this.collectPaths(item, newPath, paths, currentCount + 1, maxCount)
         }
-      })
+      }
     } else if (typeof data === 'object') {
-      // 对象
-      Object.keys(data).forEach(key => {
+      // 对象 - 限制最多处理前20个属性
+      const keys = Object.keys(data)
+      const maxObjectKeys = Math.min(keys.length, 20)
+      
+      for (let i = 0; i < maxObjectKeys; i++) {
+        const key = keys[i]
         const newPath = currentPath ? `${currentPath}.${key}` : key
         paths.push(newPath)
 
         // 递归处理对象属性
         const value = data[key]
         if (typeof value === 'object' && value !== null) {
-          this.collectPaths(value, newPath, paths)
+          this.collectPaths(value, newPath, paths, currentCount + 1, maxCount)
         }
-      })
+      }
     }
   }
 

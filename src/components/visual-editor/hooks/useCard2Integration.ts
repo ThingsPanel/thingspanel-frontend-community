@@ -71,16 +71,28 @@ export function useCard2Integration(options: Card2IntegrationOptions = {}) {
       const i18nKey = COMPONENT_I18N_KEYS[definition.type]
       const displayName = i18nKey ? $t(i18nKey as any) : definition.name
 
-      return {
+      const widget = {
         type: definition.type as WidgetType,
         name: displayName,
         description: definition.description || '',
         icon: definition.icon,
         category: definition.category,
         version: '2.1.0',
-        isCard2Component: true,
+        source: 'card2' as const,
+        isCard2Component: true as const,
         definition
       }
+
+      // 调试图标信息
+      console.log(`🎨 组件 ${definition.type} 图标信息:`, {
+        type: definition.type,
+        icon: definition.icon,
+        iconType: typeof definition.icon,
+        hasIcon: !!definition.icon,
+        iconName: typeof definition.icon === 'object' ? definition.icon?.name : 'string'
+      })
+
+      return widget
     })
   })
 

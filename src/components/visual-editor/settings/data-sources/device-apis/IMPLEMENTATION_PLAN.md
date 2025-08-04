@@ -21,6 +21,7 @@
    - 导出了所有类型和工具函数
    - 定义了API选项和默认配置
 
+<<<<<<< Updated upstream
 5. **基础组件** ✅
    - **设备选择器组件** (`components/DeviceSelector.vue`) ✅
      - 复用现有的设备列表请求
@@ -67,6 +68,19 @@
 ### 第一阶段：基础组件 (优先级：高) ✅
 
 #### 1. 设备选择器组件 (`components/DeviceSelector.vue`) ✅
+=======
+### 🔄 进行中
+- 基础组件开发
+
+### ⏳ 待完成
+- 所有具体组件的实现
+
+## 🎯 详细实现计划
+
+### 第一阶段：基础组件 (优先级：高)
+
+#### 1. 设备选择器组件 (`components/DeviceSelector.vue`)
+>>>>>>> Stashed changes
 **功能**：
 - 复用现有的设备列表请求 (`deviceListForPanel`)
 - 提供设备搜索和选择功能
@@ -78,7 +92,11 @@
 - 显示设备名称和状态
 - 自动加载设备列表
 
+<<<<<<< Updated upstream
 #### 2. 基础表单组件 (`components/BaseApiForm.vue`) ✅
+=======
+#### 2. 基础表单组件 (`components/BaseApiForm.vue`)
+>>>>>>> Stashed changes
 **功能**：
 - 提供统一的表单布局
 - 处理通用的错误显示
@@ -93,6 +111,7 @@
 
 ### 第二阶段：HTTP请求表单 (优先级：高)
 
+<<<<<<< Updated upstream
 #### 3. 遥测数据表单 (`components/TelemetryApiForm.vue`) ✅
 **支持的API**：
 - `telemetryDataCurrentKeys` - 当前值 ✅
@@ -107,6 +126,22 @@
 - 日志：指标键 (key，可选) ✅
 
 #### 4. 属性数据表单 (`components/AttributesApiForm.vue`) ⏳
+=======
+#### 3. 遥测数据表单 (`components/TelemetryApiForm.vue`)
+**支持的API**：
+- `telemetryDataCurrentKeys` - 当前值
+- `telemetryDataHistoryList` - 历史值
+- `telemetryDataPub` - 发布数据
+- `getTelemetryLogList` - 日志
+
+**表单字段**：
+- 当前值：指标键 (keys)
+- 历史值：指标键 (key)、时间范围、聚合函数
+- 发布：指标键 (key)、数据值 (value)
+- 日志：指标键 (key，可选)
+
+#### 4. 属性数据表单 (`components/AttributesApiForm.vue`)
+>>>>>>> Stashed changes
 **支持的API**：
 - `getAttributeDataSet` - 数据集
 - `getAttributeDatasKey` - 指定键值
@@ -119,7 +154,11 @@
 - 发布：属性键 (key)、属性值 (value)
 - 日志：无参数
 
+<<<<<<< Updated upstream
 #### 5. 设备信息表单 (`components/DeviceInfoApiForm.vue`) ⏳
+=======
+#### 5. 设备信息表单 (`components/DeviceInfoApiForm.vue`)
+>>>>>>> Stashed changes
 **支持的API**：
 - `deviceDetail` - 设备详情
 - `getDeviceConnectInfo` - 连接信息
@@ -131,14 +170,22 @@
 
 ### 第三阶段：其他HTTP请求表单 (优先级：中)
 
+<<<<<<< Updated upstream
 #### 6. 事件数据表单 (`components/EventApiForm.vue`) ⏳
+=======
+#### 6. 事件数据表单 (`components/EventApiForm.vue`)
+>>>>>>> Stashed changes
 **支持的API**：
 - `getEventDataSet` - 事件数据集
 
 **表单字段**：
 - 无参数
 
+<<<<<<< Updated upstream
 #### 7. 命令数据表单 (`components/CommandApiForm.vue`) ⏳
+=======
+#### 7. 命令数据表单 (`components/CommandApiForm.vue`)
+>>>>>>> Stashed changes
 **支持的API**：
 - `commandDataPub` - 发布命令
 - `getCommandDataSetLogs` - 命令日志
@@ -149,7 +196,11 @@
 - 日志：无参数
 - 自定义命令：无参数
 
+<<<<<<< Updated upstream
 #### 8. 模拟数据表单 (`components/SimulationApiForm.vue`) ⏳
+=======
+#### 8. 模拟数据表单 (`components/SimulationApiForm.vue`)
+>>>>>>> Stashed changes
 **支持的API**：
 - `getSimulation` - 获取模拟数据
 - `sendSimulation` - 发送模拟数据
@@ -158,6 +209,7 @@
 - 获取：无参数
 - 发送：数据键 (key)、数据值 (value)
 
+<<<<<<< Updated upstream
 ### 第四阶段：轮询配置 (优先级：高) ✅
 
 #### 9. 轮询配置组件 (`components/PollingConfig.vue`) ✅
@@ -176,6 +228,26 @@
 ### 第五阶段：WebSocket配置 (优先级：低)
 
 #### 10. WebSocket配置组件 (`components/WebSocketConfig.vue`) ⏳
+=======
+### 第四阶段：轮询配置 (优先级：高)
+
+#### 9. 轮询配置组件 (`components/PollingConfig.vue`)
+**功能**：
+- 是否启用轮询
+- 轮询间隔设置
+- 轮询状态显示
+- 手动启动/停止轮询
+
+**实现要点**：
+- 使用 `n-switch` 控制启用状态
+- 使用 `n-select` 选择轮询间隔
+- 显示轮询状态和最后更新时间
+- 提供启动/停止按钮
+
+### 第五阶段：WebSocket配置 (优先级：低)
+
+#### 10. WebSocket配置组件 (`components/WebSocketConfig.vue`)
+>>>>>>> Stashed changes
 **功能**：
 - WebSocket URL配置
 - 连接状态管理
@@ -189,7 +261,11 @@
 
 ### 第六阶段：整合和优化 (优先级：中)
 
+<<<<<<< Updated upstream
 #### 11. 主配置组件 (`components/DeviceApiConfig.vue`) ⏳
+=======
+#### 11. 主配置组件 (`components/DeviceApiConfig.vue`)
+>>>>>>> Stashed changes
 **功能**：
 - 整合所有API表单
 - 提供统一的配置界面
@@ -200,6 +276,7 @@
 - 统一的配置保存和加载
 - 集成数据映射功能
 
+<<<<<<< Updated upstream
 #### 12. 示例和文档 (`components/DeviceApiExample.vue`) ✅
 **功能**：
 - 使用示例 ✅
@@ -307,3 +384,87 @@
 3. 事件数据表单
 4. 命令数据表单
 5. 模拟数据表单 
+=======
+#### 12. 示例组件 (`components/DeviceApiExample.vue`)
+**功能**：
+- 使用示例
+- 配置说明
+- 演示各种API的使用
+
+## 🔧 技术实现细节
+
+### 1. 组件通信
+- 使用 `v-model` 进行双向绑定
+- 使用 `emit` 向上传递事件
+- 使用 `props` 接收配置
+
+### 2. 状态管理
+- 每个组件维护自己的加载状态
+- 统一的错误状态管理
+- 配置状态持久化
+
+### 3. 错误处理
+- 网络错误处理
+- 参数验证错误
+- 友好的错误提示
+
+### 4. 数据预览
+- JSON格式显示
+- 语法高亮
+- 可折叠显示
+- 复制功能
+
+## 📝 开发注意事项
+
+### 1. 细心和耐心
+- 每个API的参数都要仔细验证
+- 确保参数类型和格式正确
+- 测试各种边界情况
+
+### 2. 用户体验
+- 表单要简洁明了
+- 操作要流畅
+- 提供清晰的提示信息
+
+### 3. 代码质量
+- 提取公共组件和函数
+- 保持代码结构清晰
+- 添加适当的注释
+
+### 4. 性能优化
+- 避免不必要的请求
+- 合理使用缓存
+- 优化组件渲染
+
+## 🚀 开发顺序建议
+
+1. **第一步**：创建设备选择器和基础表单组件
+2. **第二步**：实现遥测数据表单（最常用）
+3. **第三步**：实现属性数据和设备信息表单
+4. **第四步**：实现轮询配置
+5. **第五步**：实现其他表单
+6. **第六步**：整合和优化
+
+## 📊 进度跟踪
+
+- [ ] 设备选择器组件
+- [ ] 基础表单组件
+- [ ] 遥测数据表单
+- [ ] 属性数据表单
+- [ ] 设备信息表单
+- [ ] 事件数据表单
+- [ ] 命令数据表单
+- [ ] 模拟数据表单
+- [ ] 轮询配置组件
+- [ ] WebSocket配置组件（预留）
+- [ ] 主配置组件
+- [ ] 示例组件
+
+## 🎯 成功标准
+
+1. **功能完整**：所有API类型都有对应的表单
+2. **用户体验好**：操作流畅，提示清晰
+3. **代码质量高**：结构清晰，易于维护
+4. **错误处理完善**：各种异常情况都有处理
+5. **文档完整**：有详细的使用说明和示例 
+>>>>>>> Stashed changes

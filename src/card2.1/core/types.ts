@@ -11,18 +11,15 @@ export interface ComponentDefinition {
   name: string
   description: string
   category: string
-  icon: string
+  icon: string // 改为string类型，直接使用SVG字符串
   component: Component
   configComponent?: Component
   dataSourceDefinitions?: ComponentDataSourceDefinition[]
-  properties?: Record<
-    string,
-    {
-      type: string
-      default: any
-      description: string
-    }
-  >
+  properties?: Record<string, {
+    type: string
+    default: any
+    description: string
+  }>
 }
 
 export interface IComponentRegistry {
