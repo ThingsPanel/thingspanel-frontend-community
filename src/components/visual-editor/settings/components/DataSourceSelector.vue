@@ -1,33 +1,31 @@
 <template>
   <div class="data-source-selector">
-    <!-- 只有当组件定义了数据源时才显示 -->
     <div v-if="componentDataSources.length > 0">
-      <n-divider title-placement="left">数据源配置</n-divider>
-      
-      <!-- 为每个组件数据源显示配置 -->
-      <div v-for="componentDataSource in componentDataSources" :key="componentDataSource.name" class="data-source-item">
-        <n-card :title="componentDataSource.name" size="small">
+      <n-collapse :default-expanded-names="expandedNames">
+        <n-collapse-item 
+          v-for="componentDataSource in componentDataSources" 
+          :key="componentDataSource.name"
+          :name="componentDataSource.name"
+          :title="componentDataSource.name"
+        >
           <template #header-extra>
-            <n-tag :type="componentDataSource.required ? 'error' : 'default'" size="small">
+            <n-tag :type="componentDataSource.required ? 'error' : 'default'" size="tiny">
               {{ componentDataSource.required ? '必需' : '可选' }}
             </n-tag>
           </template>
           
           <div class="data-source-content">
-            <p class="description">{{ componentDataSource.description }}</p>
-            
-            <!-- 数据源类型选择 -->
-            <n-form-item label="数据源类型">
+            <n-form-item label="类型" label-width="50px" size="small">
               <n-select
                 v-model:value="dataSourceConfigs[componentDataSource.name].type"
                 :options="dataSourceTypeOptions"
-                placeholder="选择数据源类型"
+                placeholder="选择类型"
+                size="small"
                 @update:value="updateDataSourceConfig(componentDataSource.name)"
               />
             </n-form-item>
             
-            <!-- 根据类型显示对应的配置组件 -->
-            <div v-if="dataSourceConfigs[componentDataSource.name].type && dataSourceConfigs[componentDataSource.name].type !== 'none'">
+            <div v-if="dataSourceConfigs[componentDataSource.name].type" class="config-component">
               <component
                 :is="getDataSourceConfigComponent(dataSourceConfigs[componentDataSource.name].type)"
                 v-model="dataSourceConfigs[componentDataSource.name].config"
@@ -35,17 +33,18 @@
               />
             </div>
           </div>
-        </n-card>
-      </div>
+        </n-collapse-item>
+      </n-collapse>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
-import { NDivider, NCard, NTag, NFormItem, NSelect } from 'naive-ui'
+import { NCollapse, NCollapseItem, NTag, NFormItem, NSelect } from 'naive-ui'
 import { dataSourceRegistry } from '../../core/data-source-registry'
-import type { DataSourceType, DataSource, ComponentDataSourceDefinition } from '../../types/data-source'
+import type { DataSource, ComponentDataSourceDefinition } from '../../types/data-source'
+import { DataSourceType } from '../../types/data-source'
 
 interface Props {
   modelValue: DataSource | null
@@ -59,9 +58,13 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+// 默认展开的数据源名称
+const expandedNames = computed(() => {
+  return props.componentDataSources.map(ds => ds.name)
+})
+
 // 数据源类型选项
 const dataSourceTypeOptions = [
-  { label: '不使用数据源', value: 'none' },
   { label: '静态数据', value: 'static' },
   { label: '设备数据', value: 'device' },
   { label: 'HTTP API', value: 'http' }
@@ -69,7 +72,7 @@ const dataSourceTypeOptions = [
 
 // 每个组件数据源的配置
 const dataSourceConfigs = ref<Record<string, {
-  type: DataSourceType | 'none'
+  type: DataSourceType
   config: any
 }>>({})
 
@@ -77,9 +80,23 @@ const dataSourceConfigs = ref<Record<string, {
 const initializeConfigs = () => {
   props.componentDataSources.forEach(ds => {
     if (!dataSourceConfigs.value[ds.name]) {
+      // 根据mappingKeys生成数据路径映射
+      const dataPaths = ds.mappingKeys?.map(key => ({
+        key: '', // 由具体的数据源配置组件设置
+        target: key, // 使用mappingKeys中的键
+        description: `映射到${key}`
+      })) || [{
+        key: '',
+        target: ds.name, // 如果没有mappingKeys，使用数据源名称
+        description: `映射到${ds.name}`
+      }]
+
       dataSourceConfigs.value[ds.name] = {
-        type: 'none',
-        config: null
+        type: DataSourceType.STATIC, // 默认使用静态数据源
+        config: {
+          data: {},
+          dataPaths
+        }
       }
     }
   })
@@ -94,37 +111,35 @@ const getDataSourceConfigComponent = (type: DataSourceType) => {
 // 更新数据源配置
 const updateDataSourceConfig = (dataSourceName: string) => {
   const config = dataSourceConfigs.value[dataSourceName]
+  const componentDataSource = props.componentDataSources.find(ds => ds.name === dataSourceName)
   
-  if (config.type === 'none') {
-    // 如果所有数据源都是 none，则设置为 null
-    const allNone = Object.values(dataSourceConfigs.value).every(c => c.type === 'none')
-    if (allNone) {
-      emit('update:modelValue', null)
-      return
-    }
-  }
+  if (!componentDataSource) return
+  
+  console.log('🔧 DataSourceSelector - 更新数据源配置:', {
+    dataSourceName,
+    config,
+    componentDataSource
+  })
   
   // 构建数据源配置
   const dataSource: DataSource = {
     type: config.type as DataSourceType,
     enabled: true,
-    name: `${dataSourceName}数据源`,
+    name: dataSourceName, // 使用组件定义的name
     description: `为${dataSourceName}提供数据`,
-    dataPaths: [{
-      key: '', // 这里需要根据实际数据源来设置
-      target: dataSourceName,
-      description: `映射到${dataSourceName}`
-    }],
-    ...config.config
+    ...config.config // 包含dataPaths和其他配置
   }
   
+  console.log('🔧 DataSourceSelector - 构建的数据源:', dataSource)
   emit('update:modelValue', dataSource)
 }
 
-// 监听组件数据源定义变化
-watch(() => props.componentDataSources, () => {
-  initializeConfigs()
-}, { immediate: true, deep: true })
+// 监听组件数据源变化，初始化配置
+watch(() => props.componentDataSources, (newDataSources) => {
+  if (newDataSources && newDataSources.length > 0) {
+    initializeConfigs()
+  }
+}, { immediate: true })
 
 // 监听外部数据源变化
 watch(() => props.modelValue, (newValue) => {
@@ -141,20 +156,28 @@ onMounted(() => {
 
 <style scoped>
 .data-source-selector {
-  padding: 16px;
-}
-
-.data-source-item {
-  margin-bottom: 16px;
+  padding: 4px;
 }
 
 .data-source-content {
-  padding: 8px 0;
+  padding: 4px 0;
 }
 
-.description {
-  color: #666;
-  font-size: 12px;
-  margin-bottom: 12px;
+.config-component {
+  margin-top: 8px;
+}
+
+:deep(.n-collapse-item__header) {
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+:deep(.n-collapse-item__content) {
+  padding: 8px 12px;
+}
+
+:deep(.n-collapse-item__header-extra) {
+  margin-left: 8px;
 }
 </style> 

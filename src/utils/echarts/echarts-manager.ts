@@ -59,86 +59,116 @@ import { CanvasRenderer, SVGRenderer } from 'echarts/renderers'
 // 全局标识，确保只注册一次
 let isEChartsRegistered = false
 
+// 基础必需组件 - 首次加载时注册
+const BASIC_COMPONENTS = [
+  // 最常用的图表类型
+  BarChart,
+  LineChart,
+  PieChart,
+
+  // 基础组件
+  TitleComponent,
+  LegendComponent,
+  TooltipComponent,
+  GridComponent,
+  DatasetComponent,
+  TransformComponent,
+
+  // 基础功能
+  LabelLayout,
+  UniversalTransition,
+
+  // 渲染器
+  CanvasRenderer
+]
+
+// 扩展组件映射表 - 按需加载
+const EXTENDED_COMPONENTS_MAP: Record<string, any[]> = {
+  scatter: [ScatterChart],
+  gauge: [GaugeChart, PolarComponent],
+  radar: [RadarChart, RadarComponent],
+  pictorial: [PictorialBarChart],
+  funnel: [FunnelChart],
+  sankey: [SankeyChart],
+  tree: [TreeChart],
+  treemap: [TreemapChart],
+  graph: [GraphChart],
+  boxplot: [BoxplotChart],
+  candlestick: [CandlestickChart],
+  effectScatter: [EffectScatterChart],
+  heatmap: [HeatmapChart],
+  lines: [LinesChart],
+  map: [MapChart, GeoComponent],
+  parallel: [ParallelChart, ParallelComponent, SingleAxisComponent],
+  sunburst: [SunburstChart],
+  themeRiver: [ThemeRiverChart],
+  toolbox: [ToolboxComponent],
+  dataZoom: [DataZoomComponent],
+  visualMap: [VisualMapComponent],
+  timeline: [TimelineComponent],
+  calendar: [CalendarComponent],
+  graphic: [GraphicComponent],
+  markLine: [MarkLineComponent],
+  markPoint: [MarkPointComponent],
+  markArea: [MarkAreaComponent],
+  brush: [BrushComponent],
+  axisPointer: [AxisPointerComponent],
+  svg: [SVGRenderer]
+}
+
+// 已注册的扩展组件
+const registeredExtensions = new Set<string>()
+
 /**
- * 初始化 ECharts 组件注册
- * 全局只注册一次，避免重复注册错误
+ * 初始化 ECharts 基础组件注册
+ * 只注册最常用的组件，减少初始内存占用
  */
 export function initEChartsComponents() {
   if (isEChartsRegistered) {
-    console.log('🎯 ECharts 组件已注册，跳过重复注册')
+    console.log('🎯 ECharts 基础组件已注册，跳过重复注册')
     return
   }
 
   try {
-    console.log('🚀 开始注册 ECharts 组件...')
+    console.log('🚀 开始注册 ECharts 基础组件...')
 
-    echarts.use([
-      // 图表类型
-      BarChart,
-      LineChart,
-      PieChart,
-      ScatterChart,
-      PictorialBarChart,
-      RadarChart,
-      GaugeChart,
-      FunnelChart,
-      SankeyChart,
-      TreeChart,
-      TreemapChart,
-      GraphChart,
-      BoxplotChart,
-      CandlestickChart,
-      EffectScatterChart,
-      HeatmapChart,
-      LinesChart,
-      MapChart,
-      ParallelChart,
-      SunburstChart,
-      ThemeRiverChart,
-
-      // 组件
-      TitleComponent,
-      LegendComponent,
-      TooltipComponent,
-      GridComponent,
-      DatasetComponent,
-      TransformComponent,
-      ToolboxComponent,
-      DataZoomComponent,
-      VisualMapComponent,
-      TimelineComponent,
-      CalendarComponent,
-      GraphicComponent,
-      PolarComponent,
-      RadarComponent,
-      GeoComponent,
-      SingleAxisComponent,
-      ParallelComponent,
-      MarkLineComponent,
-      MarkPointComponent,
-      MarkAreaComponent,
-      BrushComponent,
-      AxisPointerComponent,
-
-      // 功能
-      LabelLayout,
-      UniversalTransition,
-
-      // 渲染器
-      CanvasRenderer,
-      SVGRenderer
-    ])
+    echarts.use(BASIC_COMPONENTS)
 
     isEChartsRegistered = true
-    console.log('✅ ECharts 组件注册完成')
+    console.log('✅ ECharts 基础组件注册完成 (按需加载模式)')
   } catch (error) {
     // 捕获重复注册错误，但不影响程序执行
     if (error instanceof Error && error.message.includes('exists')) {
       console.warn('⚠️ 检测到 ECharts 组件重复注册，已跳过:', error.message)
       isEChartsRegistered = true
     } else {
-      console.error('❌ ECharts 组件注册失败:', error)
+      console.error('❌ ECharts 基础组件注册失败:', error)
       throw error
+    }
+  }
+}
+
+/**
+ * 按需注册扩展组件
+ * @param componentTypes 需要注册的组件类型数组
+ */
+export function registerEChartsExtensions(componentTypes: string[]) {
+  const newComponents: any[] = []
+
+  componentTypes.forEach(type => {
+    if (!registeredExtensions.has(type) && EXTENDED_COMPONENTS_MAP[type]) {
+      newComponents.push(...EXTENDED_COMPONENTS_MAP[type])
+      registeredExtensions.add(type)
+      console.log(`🔧 注册 ECharts 扩展组件: ${type}`)
+    }
+  })
+
+  if (newComponents.length > 0) {
+    try {
+      echarts.use(newComponents)
+      console.log(`✅ ECharts 扩展组件注册完成: ${componentTypes.join(', ')}`)
+    } catch (error) {
+      console.warn('⚠️ ECharts 扩展组件注册警告:', error)
     }
   }
 }
@@ -192,11 +222,11 @@ export function resetEChartsRegistration() {
   console.log('🔄 ECharts 注册状态已重置')
 }
 
-// 自动初始化（在模块加载时）
-if (typeof window !== 'undefined') {
-  // 在浏览器环境中自动初始化
-  initEChartsComponents()
-}
+// 移除自动初始化，改为延迟加载
+// 注释掉自动初始化以减少启动时的内存占用
+// if (typeof window !== 'undefined') {
+//   initEChartsComponents()
+// }
 
 export default {
   initEChartsComponents,

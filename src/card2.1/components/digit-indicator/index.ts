@@ -13,21 +13,24 @@ const dataSourceDefinitions: ComponentDataSourceDefinition[] = [
     type: 'number',
     required: true,
     description: '显示的主要数值',
-    defaultValue: 0
+    defaultValue: 0,
+    mappingKeys: ['value']
   },
   {
     name: 'unit',
     type: 'string',
     required: false,
     description: '数值单位',
-    defaultValue: ''
+    defaultValue: '',
+    mappingKeys: ['unit']
   },
   {
     name: 'title',
     type: 'string',
     required: false,
     description: '显示标题',
-    defaultValue: '数值'
+    defaultValue: '数值',
+    mappingKeys: ['title']
   }
 ]
 

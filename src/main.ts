@@ -16,34 +16,61 @@ const excludedPaths = ['/login/*', '/404', '/home', '/visualization/kanban-detai
 
 async function setupApp() {
   const app = createApp(App)
+
+  // 1. 关键同步初始化 - 应用启动必需
   setupStore(app)
   setupI18n(app)
-  const sysSettingStore = useSysSettingStore()
-  // 确保系统设置在应用启动时加载
-  await sysSettingStore.initSysSetting()
-  // 监听 system_name 的变化，并根据变化动态更新国际化消息
-  watch(
-    () => sysSettingStore.system_name,
-    newSystemName => {
-      const locales = i18n.global.availableLocales
-      locales.forEach(locale => {
-        i18n.global.mergeLocaleMessage(locale, {
-          system: {
-            title: newSystemName
-          }
-        })
-      })
-    },
-    { immediate: true }
-  )
   setupLoading()
   setupNProgress()
-  setupIconifyOffline()
-  setupDayjs()
 
-  // 初始化 ECharts 组件，确保全局只注册一次
-  initEChartsComponents()
+  // 2. 系统设置延迟加载 - 避免阻塞应用启动
+  const sysSettingStore = useSysSettingStore()
 
+  // 使用 Promise 但不等待，让系统设置并行加载
+  sysSettingStore
+    .initSysSetting()
+    .then(() => {
+      // 监听 system_name 的变化，并根据变化动态更新国际化消息
+      watch(
+        () => sysSettingStore.system_name,
+        newSystemName => {
+          const locales = i18n.global.availableLocales
+          locales.forEach(locale => {
+            i18n.global.mergeLocaleMessage(locale, {
+              system: {
+                title: newSystemName
+              }
+            })
+          })
+        },
+        { immediate: true }
+      )
+    })
+    .catch(error => {
+      console.warn('系统设置加载失败，将使用默认配置:', error)
+    })
+
+  // 3. 非关键初始化 - 使用 requestIdleCallback 延迟执行
+  if (typeof requestIdleCallback !== 'undefined') {
+    requestIdleCallback(
+      () => {
+        setupIconifyOffline()
+        setupDayjs()
+        // ECharts 延迟初始化，减少启动内存占用
+        initEChartsComponents()
+      },
+      { timeout: 2000 }
+    )
+  } else {
+    // 兼容性回退
+    setTimeout(() => {
+      setupIconifyOffline()
+      setupDayjs()
+      initEChartsComponents()
+    }, 100)
+  }
+
+  // 4. 路由初始化 - 应用启动必需
   await setupRouter(app)
 
   // 添加路由后置守卫

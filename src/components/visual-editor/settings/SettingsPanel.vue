@@ -4,7 +4,7 @@
     <div v-if="!selectedWidget">
       <h3 class="panel-title">全局设置</h3>
       
-      <n-form label-placement="left" label-width="auto" size="small">
+      <n-form label-placement="left" label-width="auto" size="small" class="compact-form">
         <n-form-item label="显示组件标题">
           <n-switch 
             :value="showWidgetTitles" 
@@ -18,7 +18,7 @@
     <div v-if="!selectedWidget && gridConfig">
       <h3 class="panel-title">网格配置</h3>
       
-      <n-form label-placement="left" label-width="auto" size="small">
+      <n-form label-placement="left" label-width="auto" size="small" class="compact-form">
         <n-form-item label="列数">
           <n-input-number 
             v-model:value="gridConfig.colNum" 
@@ -73,7 +73,7 @@
     <div v-else-if="selectedWidget">
       <h3 class="panel-title">{{ widgetName }} 属性配置</h3>
 
-      <n-tabs type="line" animated>
+      <n-tabs type="line" animated size="small">
         <!-- 数据源配置 -->
         <n-tab-pane name="dataSource" tab="数据源">
           <DataSourceSelector
@@ -85,7 +85,7 @@
 
         <!-- 基础配置标签页 -->
         <n-tab-pane name="base" tab="基础">
-          <n-form label-placement="left" label-width="auto" size="small">
+          <n-form label-placement="left" label-width="auto" size="small" class="compact-form">
             <n-form-item label="显示标题">
               <n-switch v-model:value="editableProps.showLabel" @update:value="updateNode" />
             </n-form-item>
@@ -117,7 +117,7 @@
           </div>
           
           <!-- 传统的简单属性表单（向后兼容） -->
-          <n-form v-else label-placement="left" label-width="auto" size="small">
+          <n-form v-else label-placement="left" label-width="auto" size="small" class="compact-form">
             <n-form-item v-for="(propDef, key) in selectedWidget.properties" :key="key" :label="String(key)">
               <n-input
                 v-if="typeof propDef === 'string'"
@@ -141,7 +141,7 @@
 
         <!-- 交互配置标签页 -->
         <n-tab-pane name="interaction" tab="交互">
-          <n-form label-placement="left" label-width="auto" size="small">
+          <n-form label-placement="left" label-width="auto" size="small" class="compact-form">
             <n-form-item label="点击事件">
               <n-select
                 v-model:value="editableProps.interaction.onClick.type"
@@ -312,25 +312,37 @@ const gridConfig = computed(() => props.gridConfig || {});
 
 <style scoped>
 .settings-panel {
-  padding: 16px;
+  padding: 8px;
   height: 100%;
   overflow-y: auto;
 }
 .panel-title {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 .section-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
 }
 .placeholder {
   text-align: center;
-  padding-top: 40px;
+  padding-top: 20px;
 }
 .placeholder-text {
-  margin-top: 12px;
+  margin-top: 8px;
   color: #999;
+  font-size: 12px;
+}
+.compact-form .n-form-item {
+  margin-bottom: 8px;
+}
+
+.compact-form .n-form-item-label {
+  padding-bottom: 4px;
+}
+
+.compact-form .n-form-item-blank {
+  padding-bottom: 4px;
 }
 </style>

@@ -13,14 +13,16 @@ const dataSourceDefinitions: ComponentDataSourceDefinition[] = [
     type: 'object',
     required: true,
     description: '传感器数据（包含温度和湿度）',
-    defaultValue: { temperature: 0, humidity: 0 }
+    defaultValue: { temperature: 0, humidity: 0 }, // 组件的默认值
+    mappingKeys: ['temperature', 'humidity'] // 需要映射的键
   },
   {
     name: 'deviceStatus', // 第二个数据源：设备状态
     type: 'string',
     required: false,
     description: '设备运行状态',
-    defaultValue: '正常'
+    defaultValue: '正常', // 组件的默认值
+    mappingKeys: ['deviceStatus'] // 需要映射的键
   }
 ]
 

@@ -1,8 +1,7 @@
 <template>
   <div class="device-data-source-config">
-    <n-form :model="config" label-placement="left" label-width="auto">
-      <!-- 数据源名称 -->
-      <n-form-item label="数据源名称">
+    <n-form :model="config" label-placement="left" label-width="80px" size="small">
+      <n-form-item label="名称">
         <n-input 
           v-model:value="config.name" 
           placeholder="设备数据源"
@@ -10,16 +9,14 @@
         />
       </n-form-item>
       
-      <!-- 描述 -->
       <n-form-item label="描述">
         <n-input 
           v-model:value="config.description" 
-          placeholder="数据源描述"
+          placeholder="描述"
           @update:value="updateConfig"
         />
       </n-form-item>
       
-      <!-- 设备选择 -->
       <n-form-item label="设备">
         <n-select
           v-model:value="config.deviceId"
@@ -31,17 +28,15 @@
         />
       </n-form-item>
       
-      <!-- 数据类型 -->
       <n-form-item label="数据类型">
         <n-select
           v-model:value="config.metricsType"
           :options="metricsTypeOptions"
-          placeholder="选择数据类型"
+          placeholder="选择类型"
           @update:value="updateConfig"
         />
       </n-form-item>
       
-      <!-- 指标选择 -->
       <n-form-item label="指标">
         <n-select
           v-model:value="config.metricsId"
@@ -56,69 +51,62 @@
         />
       </n-form-item>
       
-      <!-- 指标名称 -->
       <n-form-item label="指标名称">
         <n-input 
           v-model:value="config.metricsName" 
-          placeholder="指标显示名称"
+          placeholder="显示名称"
           @update:value="updateConfig"
         />
       </n-form-item>
       
-      <!-- 聚合函数 -->
       <n-form-item label="聚合函数">
         <n-select
           v-model:value="config.aggregateFunction"
           :options="aggregateOptions"
-          placeholder="选择聚合函数"
+          placeholder="选择函数"
           @update:value="updateConfig"
         />
       </n-form-item>
       
-      <!-- 时间范围 -->
       <n-form-item label="时间范围">
         <n-select
           v-model:value="config.timeRange"
           :options="timeRangeOptions"
-          placeholder="选择时间范围"
+          placeholder="选择范围"
           @update:value="updateConfig"
         />
       </n-form-item>
 
-      <!-- 刷新间隔 -->
-      <n-form-item label="刷新间隔 (秒)">
+      <n-form-item label="刷新间隔">
         <n-input-number
           v-model:value="config.refreshInterval"
           :min="0"
           :max="3600"
-          placeholder="0 表示不自动刷新"
+          placeholder="0=不刷新"
           @update:value="updateConfig"
         />
       </n-form-item>
 
-      <!-- 测试按钮 -->
       <n-form-item>
         <n-button
           type="primary"
+          size="small"
           :loading="isTesting"
           :disabled="!config.deviceId || !config.metricsId"
           @click="testDataSource"
         >
-          测试数据源
+          测试
         </n-button>
       </n-form-item>
     </n-form>
 
-    <!-- 测试结果 -->
     <div v-if="testResult" class="test-result">
-      <h4>测试结果:</h4>
       <n-alert
         :type="testResult.success ? 'success' : 'error'"
-        :title="testResult.success ? '测试成功' : '测试失败'"
-        :description="testResult.message"
+        :title="testResult.message"
+        size="small"
       />
       <div v-if="testResult.data" class="response-data">
-        <h5>响应数据:</h5>
         <pre>{{ JSON.stringify(testResult.data, null, 2) }}</pre>
       </div>
     </div>
@@ -127,7 +115,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, reactive, h } from 'vue'
-import { NForm, NFormItem, NInput, NSelect, NInputNumber, NButton, NAlert } from 'naive-ui'
+import { NForm, NFormItem, NInput, NSelect, NInputNumber, NButton, NAlert, NCard, NSpace } from 'naive-ui'
 import type { DeviceDataSource } from '../../types/data-source'
 import { deviceListForPanel, deviceMetricsList } from '@/service/api'
 
@@ -369,26 +357,25 @@ getDeviceList()
 
 <style scoped>
 .device-data-source-config {
-  padding: 16px;
+  padding: 8px;
 }
 
 .test-result {
-  margin-top: 16px;
-  padding: 16px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  background-color: #fafafa;
+  margin-top: 8px;
 }
 
 .response-data {
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .response-data pre {
   background-color: #f5f5f5;
   padding: 8px;
   border-radius: 4px;
-  font-size: 12px;
-  overflow-x: auto;
+  font-family: monospace;
+  font-size: 11px;
+  max-height: 120px;
+  overflow: auto;
+  white-space: pre-wrap;
 }
 </style> 

@@ -1,283 +1,143 @@
 <template>
-  <div ref="cardRef" class="multi-data-test-container">
-    <div class="card-content" :style="{ fontSize: displayFontSize + 'px' }">
-      <div class="title-container">
-        <span class="title" :style="{ color: displayColor }">
-          {{ displayTitle }}
-        </span>
-      </div>
-      
-      <div class="data-container">
+  <div class="multi-data-test-card" :style="{ fontSize: displayFontSize + 'px', color: displayColor }">
+    <div class="card-header">
+      <h3>{{ displayTitle }}</h3>
+    </div>
+    
+    <div class="card-content">
+      <div class="data-section">
+        <h4>传感器数据:</h4>
         <div class="data-item">
-          <span class="label">温度:</span>
-          <span class="value" :style="{ color: displayColor }">
-            {{ displayTemperature }}°C
-          </span>
+          <span>温度: {{ displayTemperature }}°C</span>
         </div>
-        
         <div class="data-item">
-          <span class="label">湿度:</span>
-          <span class="value" :style="{ color: displayColor }">
-            {{ displayHumidity }}%
-          </span>
-        </div>
-        
-        <div class="data-item">
-          <span class="label">状态:</span>
-          <span class="value" :style="{ color: displayColor }">
-            {{ displayStatus }}
-          </span>
+          <span>湿度: {{ displayHumidity }}%</span>
         </div>
       </div>
       
-      <div class="data-source-info">
-        <div class="info-item">
-          <span class="info-label">数据源1:</span>
-          <span class="info-value">{{ dataSource1Info }}</span>
-        </div>
-        <div class="info-item">
-          <span class="info-label">数据源2:</span>
-          <span class="info-value">{{ dataSource2Info }}</span>
+      <div class="data-section">
+        <h4>设备状态:</h4>
+        <div class="data-item">
+          <span>{{ displayStatus }}</span>
         </div>
       </div>
       
-      <div class="timestamp-container">
-        <span class="timestamp">
-          更新时间: {{ displayTimestamp }}
-        </span>
+      <div class="debug-info">
+        <details>
+          <summary>调试信息</summary>
+          <div class="debug-content">
+            <div><strong>数据源1:</strong> {{ dataSource1Info }}</div>
+            <div><strong>数据源2:</strong> {{ dataSource2Info }}</div>
+          </div>
+        </details>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, computed, watch } from 'vue'
-import { dataSourceManager } from '@/components/visual-editor/core/data-source-manager'
-import type { DataSource, DataSourceValue } from '@/components/visual-editor/types/data-source'
+import { computed } from 'vue'
+import type { DataSourceValue } from '../../../components/visual-editor/types/data-source'
 
 interface Props {
-  properties?: {
-    title?: string
-    color?: string
-    fontSize?: number
-  }
-  metadata?: {
-    dataSource?: DataSource
-  }
+  title?: string
+  color?: string
+  fontSize?: number
+  dataSourceValue?: DataSourceValue
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  properties: () => ({})
+  title: '多数据测试',
+  color: '#1890ff',
+  fontSize: 16
 })
 
-const cardRef = ref<HTMLElement | null>(null)
+// 显示属性
+const displayTitle = computed(() => props.title)
+const displayColor = computed(() => props.color)
+const displayFontSize = computed(() => props.fontSize)
 
-// 数据源相关状态
-const dataSourceValue = ref<DataSourceValue | null>(null)
-let unsubscribeDataSource: (() => void) | null = null
-
-// 计算显示值
-const displayTitle = computed(() => {
-  return props.properties?.title || '多数据测试'
-})
-
+// 从数据源提取数据
 const displayTemperature = computed(() => {
-  // 从 sensorData 中获取温度
-  if (dataSourceValue.value?.values?.sensorData) {
-    const sensorData = dataSourceValue.value.values.sensorData
-    if (typeof sensorData === 'object' && sensorData !== null) {
-      return sensorData.temperature || 0
-    }
-  }
-  return 25
+  // 根据新的映射逻辑，temperature直接映射到values.temperature
+  return props.dataSourceValue?.values?.temperature || 0
 })
 
 const displayHumidity = computed(() => {
-  // 从 sensorData 中获取湿度
-  if (dataSourceValue.value?.values?.sensorData) {
-    const sensorData = dataSourceValue.value.values.sensorData
-    if (typeof sensorData === 'object' && sensorData !== null) {
-      return sensorData.humidity || 0
-    }
-  }
-  return 60
+  // 根据新的映射逻辑，humidity直接映射到values.humidity
+  return props.dataSourceValue?.values?.humidity || 0
 })
 
 const displayStatus = computed(() => {
-  // 从 deviceStatus 中获取状态
-  if (dataSourceValue.value?.values?.deviceStatus) {
-    return dataSourceValue.value.values.deviceStatus
-  }
-  return '正常'
+  // 根据新的映射逻辑，deviceStatus直接映射到values.deviceStatus
+  return props.dataSourceValue?.values?.deviceStatus || '未知'
 })
 
-const displayTimestamp = computed(() => {
-  if (dataSourceValue.value?.timestamp) {
-    return new Date(dataSourceValue.value.timestamp).toLocaleTimeString()
-  }
-  return new Date().toLocaleTimeString()
-})
-
-const displayColor = computed(() => {
-  return props.properties?.color ?? '#1890ff'
-})
-
-const displayFontSize = computed(() => {
-  return props.properties?.fontSize ?? 16
-})
-
-// 数据源信息显示
+// 调试信息
 const dataSource1Info = computed(() => {
-  if (dataSourceValue.value?.metadata?.dataPaths) {
-    const sensorDataPath = dataSourceValue.value.metadata.dataPaths.find(p => p.target === 'sensorData')
-    return sensorDataPath ? `路径: ${sensorDataPath.key}` : '未配置'
-  }
-  return '未配置'
+  const temperature = props.dataSourceValue?.values?.temperature
+  const humidity = props.dataSourceValue?.values?.humidity
+  return (temperature !== undefined || humidity !== undefined) ? JSON.stringify({ temperature, humidity }) : '无数据'
 })
 
 const dataSource2Info = computed(() => {
-  if (dataSourceValue.value?.metadata?.dataPaths) {
-    const statusDataPath = dataSourceValue.value.metadata.dataPaths.find(p => p.target === 'deviceStatus')
-    return statusDataPath ? `路径: ${statusDataPath.key}` : '未配置'
-  }
-  return '未配置'
-})
-
-// 处理数据源
-const handleDataSource = (dataSource: DataSource | undefined) => {
-  // 取消之前的订阅
-  if (unsubscribeDataSource) {
-    unsubscribeDataSource()
-    unsubscribeDataSource = null
-  }
-  
-  // 重置数据源值
-  dataSourceValue.value = null
-  
-  // 如果有新的数据源，订阅它
-  if (dataSource && dataSource.enabled) {
-    console.log('🔧 MultiDataTestCard - 订阅数据源:', {
-      type: dataSource.type,
-      dataPaths: dataSource.dataPaths,
-      name: dataSource.name
-    })
-    
-    unsubscribeDataSource = dataSourceManager.subscribe(dataSource, (value) => {
-      console.log('🔧 MultiDataTestCard - 收到数据源更新:', {
-        values: value.values,
-        dataPaths: value.metadata?.dataPaths,
-        originalData: value.metadata?.originalData
-      })
-      dataSourceValue.value = value
-    })
-  }
-}
-
-// 监听数据源变化
-watch(() => props.metadata?.dataSource, (newDataSource) => {
-  handleDataSource(newDataSource)
-}, { immediate: true, deep: true })
-
-// 组件卸载时清理
-onBeforeUnmount(() => {
-  if (unsubscribeDataSource) {
-    unsubscribeDataSource()
-    unsubscribeDataSource = null
-  }
+  const deviceStatus = props.dataSourceValue?.values?.deviceStatus
+  return deviceStatus ? JSON.stringify(deviceStatus) : '无数据'
 })
 </script>
 
 <style scoped>
-.multi-data-test-container {
-  width: 100%;
-  height: 100%;
+.multi-data-test-card {
   padding: 16px;
-  box-sizing: border-box;
-}
-
-.card-content {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
   border-radius: 8px;
-  padding: 16px;
+  background: #fff;
 }
 
-.title-container {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.title {
+.card-header h3 {
+  margin: 0 0 12px 0;
   font-size: 1.2em;
-  font-weight: bold;
 }
 
-.data-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 12px;
-  width: 100%;
+.data-section {
   margin-bottom: 16px;
+}
+
+.data-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.9em;
+  color: #666;
 }
 
 .data-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: white;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.label {
-  font-weight: 500;
-  color: #666;
-}
-
-.value {
-  font-weight: bold;
-}
-
-.data-source-info {
-  width: 100%;
-  margin-bottom: 16px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 8px;
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 4px;
   margin-bottom: 4px;
+  padding: 4px 8px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.debug-info {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+}
+
+.debug-info summary {
+  cursor: pointer;
+  color: #666;
   font-size: 0.8em;
 }
 
-.info-label {
-  color: #666;
-  font-weight: 500;
-}
-
-.info-value {
-  color: #333;
+.debug-content {
+  margin-top: 8px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  font-size: 0.8em;
   font-family: monospace;
 }
 
-.timestamp-container {
-  text-align: center;
-  margin-top: 16px;
-}
-
-.timestamp {
-  font-size: 0.8em;
-  color: #999;
+.debug-content div {
+  margin-bottom: 4px;
 }
 </style> 

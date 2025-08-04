@@ -1,17 +1,18 @@
 <template>
   <div class="multi-data-test-config">
-    <n-form :model="config" label-placement="left" label-width="auto">
+    <n-form label-placement="left" label-width="80px" size="small">
       <n-form-item label="标题">
         <n-input
           v-model:value="config.title"
-          placeholder="请输入标题"
+          placeholder="显示标题"
           @update:value="updateConfig"
         />
       </n-form-item>
       
       <n-form-item label="颜色">
-        <n-color-picker
+        <n-input
           v-model:value="config.color"
+          placeholder="显示颜色"
           @update:value="updateConfig"
         />
       </n-form-item>
@@ -20,7 +21,7 @@
         <n-input-number
           v-model:value="config.fontSize"
           :min="12"
-          :max="48"
+          :max="32"
           placeholder="字体大小"
           @update:value="updateConfig"
         />
@@ -31,7 +32,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { NForm, NFormItem, NInput, NColorPicker, NInputNumber } from 'naive-ui'
+import { NForm, NFormItem, NInput, NInputNumber } from 'naive-ui'
 
 interface Props {
   modelValue: {
@@ -42,17 +43,16 @@ interface Props {
 }
 
 interface Emits {
-  'update:modelValue': [value: any]
+  'update:modelValue': [value: Props['modelValue']]
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const config = ref({
-  title: '多数据测试',
-  color: '#1890ff',
-  fontSize: 16,
-  ...props.modelValue
+  title: props.modelValue?.title || '多数据测试',
+  color: props.modelValue?.color || '#1890ff',
+  fontSize: props.modelValue?.fontSize || 16
 })
 
 const updateConfig = () => {
@@ -66,6 +66,6 @@ watch(() => props.modelValue, (newValue) => {
 
 <style scoped>
 .multi-data-test-config {
-  padding: 16px;
+  padding: 8px;
 }
 </style> 

@@ -74,11 +74,12 @@ export type DataSource = StaticDataSource | DeviceDataSource | HttpDataSource | 
 
 // 组件数据源定义
 export interface ComponentDataSourceDefinition {
-  name: string // 数据源名称，如 "temperature"
-  type: 'number' | 'string' | 'boolean' | 'object' | 'array' // 数据类型
+  name: string // 数据源名称
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array' // 数据类型
   required: boolean // 是否必需
-  description?: string // 描述
-  defaultValue?: any // 默认值
+  description: string // 描述
+  defaultValue: any // 默认值
+  mappingKeys?: string[] // 需要映射的键（基于defaultValue结构）
 }
 
 // 数据源值接口 - 支持多值

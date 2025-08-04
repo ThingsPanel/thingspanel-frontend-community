@@ -13,13 +13,16 @@
       v-else-if="componentToRender"
       :properties="config"
       :metadata="{ card2Data: data, dataSource: dataSource }"
+      :dataSourceValue="dataSourceValue"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, shallowRef, type Component } from 'vue'
+import { ref, onMounted, watch, shallowRef, onBeforeUnmount, type Component } from 'vue'
 import { useEditor } from '../../hooks'
+import { dataSourceManager } from '../../core/data-source-manager'
+import type { DataSourceValue } from '../../types/data-source'
 
 interface Props {
   componentType: string
@@ -41,6 +44,51 @@ console.log('🔍 Card2Wrapper - card2Integration:', card2Integration)
 const hasError = ref(false)
 const errorMessage = ref('')
 const componentToRender = shallowRef<Component | null>(null)
+const dataSourceValue = ref<DataSourceValue | null>(null)
+let unsubscribeDataSource: (() => void) | null = null
+
+// 处理数据源订阅
+const handleDataSource = (dataSource: any) => {
+  // 取消之前的订阅
+  if (unsubscribeDataSource) {
+    unsubscribeDataSource()
+    unsubscribeDataSource = null
+  }
+  
+  // 重置数据源值
+  dataSourceValue.value = null
+  
+  // 如果有新的数据源，订阅它
+  if (dataSource && dataSource.enabled) {
+    console.log('🔧 Card2Wrapper - 订阅数据源:', {
+      type: dataSource.type,
+      dataPaths: dataSource.dataPaths,
+      name: dataSource.name
+    })
+    
+    unsubscribeDataSource = dataSourceManager.subscribe(dataSource, (value) => {
+      console.log('🔧 Card2Wrapper - 收到数据源更新:', {
+        values: value.values,
+        dataPaths: value.metadata?.dataPaths,
+        originalData: value.metadata?.originalData
+      })
+      dataSourceValue.value = value
+    })
+  }
+}
+
+// 监听数据源变化
+watch(() => props.dataSource, (newDataSource) => {
+  handleDataSource(newDataSource)
+}, { immediate: true, deep: true })
+
+// 组件卸载时清理
+onBeforeUnmount(() => {
+  if (unsubscribeDataSource) {
+    unsubscribeDataSource()
+    unsubscribeDataSource = null
+  }
+})
 
 const loadComponent = async () => {
   try {
