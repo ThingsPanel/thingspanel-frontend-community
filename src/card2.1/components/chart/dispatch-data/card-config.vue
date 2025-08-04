@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { inject, onMounted, ref } from 'vue'
 import { NColorPicker, NForm, NFormItem, NInput, NSelect } from 'naive-ui'
-import type { IConfigCtx } from '@/components/panel/card'
+import type { IConfigCtx } from '@/card2.1/core/types/legacy'
 import { $t } from '@/locales'
 import IconSelector from '@/components/common/icon-selector.vue'
 

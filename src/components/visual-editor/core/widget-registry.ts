@@ -142,10 +142,11 @@ class WidgetRegistry {
     }
 
     for (const widget of this.widgets.values()) {
-      if (!categoryMap.has(widget.category)) {
-        categoryMap.set(widget.category, [])
+      const category = widget.category || 'other'
+      if (!categoryMap.has(category)) {
+        categoryMap.set(category, [])
       }
-      categoryMap.get(widget.category)!.push(widget)
+      categoryMap.get(category)!.push(widget)
     }
 
     const tree: WidgetTreeNode[] = []

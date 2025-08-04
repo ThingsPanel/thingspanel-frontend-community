@@ -6,10 +6,16 @@ import { componentRegistry } from './core'
 import type { IComponentDefinition } from './core'
 import { configRegistry } from '@/components/visual-editor/settings/ConfigRegistry'
 
-// 使用 Vite 的 import.meta.glob 动态、同步地导入所有组件定义
-// eager: true -> 同步导入，确保在后续代码执行前所有模块已加载
-// import: 'default' -> 只导入每个模块的 default export
-const modules = import.meta.glob('./components/*/*/index.ts', { eager: true, import: 'default' })
+// --- 静态导入所有组件分类 ---
+// 使用静态路径可以避免 Vite 在某些情况下的 glob 缓存问题
+const buttons = import.meta.glob('./components/button/*/index.ts', { eager: true, import: 'default' })
+const charts = import.meta.glob('./components/chart/*/index.ts', { eager: true, import: 'default' })
+const controls = import.meta.glob('./components/control/*/index.ts', { eager: true, import: 'default' })
+const displays = import.meta.glob('./components/display/*/index.ts', { eager: true, import: 'default' })
+const medias = import.meta.glob('./components/media/*/index.ts', { eager: true, import: 'default' })
+
+// 合并所有模块
+const modules = { ...buttons, ...charts, ...controls, ...displays, ...medias }
 
 console.log('[Card2.1] Discovered component modules:', modules)
 

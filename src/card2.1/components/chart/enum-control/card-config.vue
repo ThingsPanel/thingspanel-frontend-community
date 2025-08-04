@@ -2,7 +2,7 @@
 import { inject, onMounted } from 'vue'
 import { NButton, NForm, NIcon, NInput } from 'naive-ui'
 import { DeleteOutlined, PlusOutlined } from '@vicons/antd'
-import type { IConfigCtx } from '@/components/panel/card'
+import type { IConfigCtx } from '@/card2.1/core/types/legacy'
 import { $t } from '@/locales'
 
 const ctx = inject<IConfigCtx>('config-ctx')!

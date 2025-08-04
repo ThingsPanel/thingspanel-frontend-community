@@ -22,31 +22,40 @@
       </n-alert>
     </div>
     
-    <!-- Tabs 组件列表 -->
+    <!-- 两级分类 Tabs -->
     <n-tabs v-else type="line" animated class="widget-tabs">
       <n-tab-pane
-        v-for="category in filteredWidgetTree"
-        :key="category.name"
-        :name="category.name"
-        :tab="category.name"
+        v-for="topCategory in filteredWidgetTree"
+        :key="topCategory.name"
+        :name="topCategory.name"
+        :tab="topCategory.name"
       >
-        <div class="category-grid">
-          <div 
-            v-for="widget in category.children" 
-            :key="widget.type"
-            class="widget-card"
-            draggable="true"
-            :title="widget.description"
-            @click="handleAddWidget(widget)"
-            @dragstart="handleDragStart(widget, $event)"
+        <div class="tab-content">
+          <div
+            v-for="subCategory in topCategory.subCategories"
+            :key="subCategory.name"
+            class="widget-subcategory"
           >
-            <div class="widget-icon">
-              <n-icon size="20">
-                <component :is="widget.icon" v-if="typeof widget.icon !== 'string' && widget.icon" />
-                <SvgIcon v-else-if="typeof widget.icon === 'string'" :icon="widget.icon" />
-              </n-icon>
+            <h4 class="subcategory-title">{{ subCategory.name }}</h4>
+            <div class="category-grid">
+              <div 
+                v-for="widget in subCategory.children" 
+                :key="widget.type"
+                class="widget-card"
+                draggable="true"
+                :title="widget.description"
+                @click="handleAddWidget(widget)"
+                @dragstart="handleDragStart(widget, $event)"
+              >
+                <div class="widget-icon">
+                  <n-icon size="20">
+                    <component :is="widget.icon" v-if="typeof widget.icon !== 'string' && widget.icon" />
+                    <SvgIcon v-else-if="typeof widget.icon === 'string'" :icon="widget.icon" />
+                  </n-icon>
+                </div>
+                <div class="widget-name">{{ widget.name }}</div>
+              </div>
             </div>
-            <div class="widget-name">{{ widget.name }}</div>
           </div>
         </div>
       </n-tab-pane>
@@ -56,7 +65,6 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { NIcon, NInput, NSpin, NAlert, NTabs, NTabPane } from 'naive-ui'
 import { SearchOutline } from '@vicons/ionicons5'
 import { widgetRegistry, type WidgetTreeNode, type WidgetDefinition } from '../../core/widget-registry'
 import { useCard2Integration } from '../../hooks'
@@ -98,7 +106,7 @@ const card2WidgetTree = computed<WidgetTreeNode[]>(() => {
 // --- Legacy Widget Integration ---
 const legacyWidgetTree = computed<WidgetTreeNode[]>(() => widgetRegistry.getWidgetTree())
 
-// --- Combined & Filtered Logic ---
+// --- Combined & Re-grouped Logic ---
 const combinedWidgetTree = computed<WidgetTreeNode[]>(() => {
   const allCategories: { [key: string]: WidgetTreeNode } = {}
   legacyWidgetTree.value.forEach(category => {
@@ -114,23 +122,83 @@ const combinedWidgetTree = computed<WidgetTreeNode[]>(() => {
   return Object.values(allCategories)
 })
 
-const filteredWidgetTree = computed<WidgetTreeNode[]>(() => {
-  if (!searchTerm.value) {
-    return combinedWidgetTree.value
-  }
-  const lowerCaseSearch = searchTerm.value.toLowerCase()
-  const filtered: WidgetTreeNode[] = []
-  combinedWidgetTree.value.forEach(category => {
-    const filteredChildren = category.children.filter(widget => 
-      widget.name.toLowerCase().includes(lowerCaseSearch) || 
-      widget.type.toLowerCase().includes(lowerCaseSearch)
-    )
-    if (filteredChildren.length > 0) {
-      filtered.push({ name: category.name, children: filteredChildren })
+interface SubCategory {
+  name: string;
+  children: WidgetDefinition[];
+}
+
+interface TopCategory {
+  name: string;
+  subCategories: SubCategory[];
+}
+
+const twoLevelWidgetTree = computed(() => {
+  const topCategoriesData: {
+    '曲线': { [subCategoryName: string]: WidgetDefinition[] },
+    '系统': { [subCategoryName: string]: WidgetDefinition[] }
+  } = {
+    '曲线': {},
+    '系统': {}
+  };
+
+  combinedWidgetTree.value.forEach(subCategory => {
+    subCategory.children.forEach(widget => {
+      // 1. Determine Top-Level Category
+      const topLevelName = widget.category === 'chart' ? '曲线' : '系统';
+      
+      // 2. Determine Second-Level Category
+      const subLevelName = subCategory.name || '其他';
+
+      if (!topCategoriesData[topLevelName][subLevelName]) {
+        topCategoriesData[topLevelName][subLevelName] = [];
+      }
+      topCategoriesData[topLevelName][subLevelName].push(widget);
+    });
+  });
+
+  // 3. Convert map to final array structure for rendering
+  const result: TopCategory[] = [
+    {
+      name: '曲线',
+      subCategories: Object.entries(topCategoriesData['曲线']).map(([name, children]) => ({ name, children }))
+    },
+    {
+      name: '系统',
+      subCategories: Object.entries(topCategoriesData['系统']).map(([name, children]) => ({ name, children }))
     }
-  })
-  return filtered
-})
+  ];
+  
+  return result.filter(topCat => topCat.subCategories.length > 0 && topCat.subCategories.some(subCat => subCat.children.length > 0));
+});
+
+
+const filteredWidgetTree = computed(() => {
+  if (!searchTerm.value) {
+    return twoLevelWidgetTree.value;
+  }
+  
+  const lowerCaseSearch = searchTerm.value.toLowerCase();
+  const filteredTopCategories: TopCategory[] = [];
+
+  twoLevelWidgetTree.value.forEach(topCategory => {
+    const filteredSubCategories: SubCategory[] = [];
+    topCategory.subCategories.forEach(subCategory => {
+      const filteredChildren = subCategory.children.filter(widget => 
+        widget.name.toLowerCase().includes(lowerCaseSearch) || 
+        widget.type.toLowerCase().includes(lowerCaseSearch)
+      );
+      if (filteredChildren.length > 0) {
+        filteredSubCategories.push({ name: subCategory.name, children: filteredChildren });
+      }
+    });
+
+    if (filteredSubCategories.length > 0) {
+      filteredTopCategories.push({ name: topCategory.name, subCategories: filteredSubCategories });
+    }
+  });
+
+  return filteredTopCategories;
+});
 
 // --- Event Handlers ---
 const handleAddWidget = (widget: any) => {
@@ -172,6 +240,10 @@ const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
 :deep(.n-tabs-pane) {
   flex-grow: 1;
   overflow-y: auto;
+  padding: 0;
+}
+
+.tab-content {
   padding: 12px;
 }
 
@@ -184,9 +256,19 @@ const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
   color: var(--n-text-color-3);
 }
 
+.widget-subcategory {
+  margin-bottom: 16px;
+}
+
+.subcategory-title {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: var(--n-text-color-2);
+}
+
 .category-grid {
   display: grid;
-  /* 确保每行至少3个，调整minmax的最小值 */
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: 12px;
 }
@@ -227,7 +309,6 @@ const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
   font-weight: 500;
   color: var(--n-text-color-2);
   line-height: 1.3;
-  /* 多行文本省略 */
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;

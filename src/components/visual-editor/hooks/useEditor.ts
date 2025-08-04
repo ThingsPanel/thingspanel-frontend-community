@@ -5,9 +5,9 @@
  * 使用了统一的 WidgetRegistry 来管理所有组件。
  */
 
-import { inject, provide } from 'vue'
+import { inject, provide, watchEffect } from 'vue'
 import { StateManager } from '../core/state-manager'
-import { widgetRegistry } from '../core/widget-registry'
+import { widgetRegistry, type WidgetDefinition } from '../core/widget-registry'
 import { registerAllWidgets } from '../widgets'
 import { useCard2Integration } from './useCard2Integration'
 import type { GraphData, WidgetType } from '../types'
@@ -26,45 +26,115 @@ export interface WidgetDragData {
 // 在模块加载时执行一次组件注册
 registerAllWidgets()
 
-const EDITOR_KEY = Symbol('editor')
+/**
+ * 将 Card2.1 组件定义转换为 WidgetDefinition 格式
+ */
+function convertCard2ToWidgetDefinition(card2Definition: IComponentDefinition): WidgetDefinition {
+  const meta = card2Definition.meta || {}
 
-export interface EditorContext {
-  stateManager: StateManager
-  // --- Actions ---
-  addWidget: (type: string, position?: { x: number; y: number }) => Promise<void>
-  selectNode: (id: string) => void
-  updateNode: (id: string, updates: Partial<GraphData>) => void
-  removeNode: (id: string) => void
-  addNode: (...nodes: GraphData[]) => void
-  // --- Getters ---
-  getNodeById: (id: string) => GraphData | undefined
-  // --- Card 2.1 Integration ---
-  card2Integration: ReturnType<typeof useCard2Integration>
-  isCard2Component: (type: string) => boolean
-  createCard2Widget: (type: string, position?: { x: number; y: number }) => Promise<void>
+  // 获取默认尺寸
+  const defaultSize = card2Definition.defaultSize || { width: 4, height: 3 }
+  const canvasWidth = defaultSize.width * 120 // 每个网格单元约120px
+  const canvasHeight = defaultSize.height * 80 // 每个网格单元约80px
+
+  // 从 properties 中提取默认属性
+  const defaultProperties: Record<string, any> = {}
+  if (card2Definition.properties) {
+    for (const [key, prop] of Object.entries(card2Definition.properties)) {
+      if (typeof prop === 'object' && prop !== null && 'default' in prop) {
+        defaultProperties[key] = prop.default
+      }
+    }
+  }
+
+  return {
+    type: card2Definition.id,
+    name: meta.title || meta.name || card2Definition.id,
+    description: meta.description || '',
+    icon: meta.icon || 'mdi:cube-outline',
+    category: meta.category || 'other',
+    version: meta.version || '1.0.0',
+    defaultProperties,
+    defaultLayout: {
+      canvas: {
+        width: canvasWidth,
+        height: canvasHeight
+      },
+      gridstack: {
+        w: defaultSize.width,
+        h: defaultSize.height
+      }
+    },
+    metadata: {
+      isCard2Component: true,
+      originalDefinition: card2Definition
+    }
+  }
 }
+
+// --- Editor Singleton ---
+let editorInstance: EditorContext | null = null
 
 export function createEditor() {
   const stateManager = new StateManager()
   const card2Integration = useCard2Integration()
 
+  // ... (initialization Promise and watchEffect logic remains the same)
+  let resolveInitialization: () => void
+  const initialization = new Promise<void>(resolve => {
+    resolveInitialization = resolve
+  })
+
+  const stopWatch = watchEffect(() => {
+    if (!card2Integration.isLoading.value && card2Integration.availableComponents.value.length > 0) {
+      card2Integration.availableComponents.value.forEach(componentDef => {
+        if (!widgetRegistry.getWidget(componentDef.id)) {
+          widgetRegistry.register({
+            type: componentDef.id,
+            name: componentDef.meta?.title || componentDef.id,
+            description: componentDef.meta?.description || '',
+            version: componentDef.meta?.version || '1.0.0',
+            icon: componentDef.meta?.icon,
+            source: 'card2',
+            defaultLayout: {
+              canvas: { width: 300, height: 200 },
+              gridstack: { w: 4, h: 4 }
+            },
+            defaultProperties: componentDef.properties || {},
+            metadata: {
+              isCard2Component: true,
+              card2ComponentId: componentDef.id,
+              card2Definition: componentDef as IComponentDefinition
+            }
+          })
+        }
+      })
+      resolveInitialization()
+      stopWatch()
+    }
+  })
+
   const getNodeById = (id: string) => {
     return stateManager.canvasState.value.nodes.find(node => node.id === id)
   }
 
-  const addWidget = async (
-    type: string,
-    position?: { x: number; y: number },
-    source: 'card2' | 'legacy' = 'legacy'
-  ) => {
-    // 明确使用 source 来判断
-    if (source === 'card2') {
-      await createCard2Widget(type, position)
-      return
+  const addWidget = async (type: string, position?: { x: number; y: number }) => {
+    await initialization
+
+    // 首先尝试从 widgetRegistry 获取传统组件定义
+    let widgetDef = widgetRegistry.getWidget(type)
+    let isCard2Component = false
+
+    // 如果在传统注册表中没有找到，检查是否是 Card2.1 组件
+    if (!widgetDef) {
+      const card2Definition = card2Integration.getComponentDefinition(type)
+      if (card2Definition) {
+        isCard2Component = true
+        // 将 Card2.1 组件定义转换为 WidgetDefinition 格式
+        widgetDef = convertCard2ToWidgetDefinition(card2Definition)
+      }
     }
 
-    // --- Legacy Widget Logic ---
-    const widgetDef = widgetRegistry.getWidget(type)
     if (!widgetDef) {
       console.error(`[Editor] 组件类型 "${type}" 未注册。`)
       throw new Error(`组件类型 "${type}" 未注册。`)
@@ -74,7 +144,6 @@ export function createEditor() {
     const colNum = 12
 
     const { x, y } = findNextAvailablePosition(stateManager.canvasState.value.nodes, newItemW, newItemH, colNum)
-
     const finalPos = position || { x, y }
 
     const node: GraphData = {
@@ -84,6 +153,8 @@ export function createEditor() {
       y: finalPos.y,
       width: widgetDef.defaultLayout.canvas.width,
       height: widgetDef.defaultLayout.canvas.height,
+      label: widgetDef.name,
+      showLabel: true,
       properties: { ...widgetDef.defaultProperties },
       renderer: ['canvas', 'gridstack'],
       layout: {
@@ -94,53 +165,8 @@ export function createEditor() {
         createdAt: Date.now(),
         updatedAt: Date.now(),
         version: widgetDef.version,
+        isCard2Component, // 标记是否为 Card2.1 组件
         ...widgetDef.metadata
-      }
-    }
-    stateManager.addNode(node)
-  }
-
-  const createCard2Widget = async (type: string, position?: { x: number; y: number }) => {
-    const definition = card2Integration.getComponentDefinition(type)
-    if (!definition) {
-      throw new Error(`Card 2.1 组件 "${type}" 不存在。`)
-    }
-
-    const newItemW = 4,
-      newItemH = 4
-    const colNum = 12
-
-    const { x: calculatedX, y: calculatedY } = findNextAvailablePosition(
-      stateManager.canvasState.value.nodes,
-      newItemW,
-      newItemH,
-      colNum
-    )
-    const finalPos = position || { x: calculatedX, y: calculatedY }
-
-    const node: GraphData = {
-      id: `${definition.id}_${Date.now()}`,
-      type: definition.id as WidgetType,
-      x: finalPos.x,
-      y: finalPos.y,
-      width: 300,
-      height: 200,
-      label: definition.meta.title || definition.id,
-      showLabel: true,
-      properties: { ...definition.properties },
-      renderer: ['canvas', 'gridstack'],
-      layout: {
-        canvas: { width: 300, height: 200, ...finalPos },
-        gridstack: { w: newItemW, h: newItemH, ...finalPos }
-      },
-      metadata: {
-        isCard2Component: true,
-        source: 'card2', // 明确 source
-        card2ComponentId: definition.id,
-        card2Definition: definition as IComponentDefinition,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        version: definition.meta.version || '1.0.0'
       }
     }
     stateManager.addNode(node)
@@ -151,7 +177,7 @@ export function createEditor() {
   const removeNode = (id: string) => stateManager.removeNode(id)
   const addNode = (...nodes: GraphData[]) => stateManager.addNode(...nodes)
 
-  const context: EditorContext = {
+  editorInstance = {
     stateManager,
     addWidget,
     selectNode,
@@ -160,20 +186,17 @@ export function createEditor() {
     addNode,
     getNodeById,
     card2Integration,
-    isCard2Component: card2Integration.isCard2Component,
-    createCard2Widget
+    isCard2Component: card2Integration.isCard2Component
   }
 
-  provide(EDITOR_KEY, context)
-  return context
+  return editorInstance
 }
 
 export function useEditor(): EditorContext {
-  const context = inject<EditorContext>(EDITOR_KEY)
-  if (!context) {
-    throw new Error('useEditor 必须在 createEditor 上下文中使用')
+  if (!editorInstance) {
+    throw new Error('useEditor 必须在 createEditor 调用之后使用')
   }
-  return context
+  return editorInstance
 }
 
 function findNextAvailablePosition(

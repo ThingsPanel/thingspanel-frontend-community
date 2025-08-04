@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { inject, onMounted } from 'vue'
 import { NForm, NFormItem, NInput, NInputNumber } from 'naive-ui'
-import type { IConfigCtx } from '@/components/panel/card'
+import type { IConfigCtx } from '@/card2.1/core/types/legacy'
 import { $t } from '@/locales'
 
 const ctx = inject<IConfigCtx>('config-ctx')!

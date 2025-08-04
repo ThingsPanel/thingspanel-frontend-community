@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { inject } from 'vue'
-import type { IConfigCtx } from '@/components/panel/card'
+import type { IConfigCtx } from '@/card2.1/core/types/legacy'
 import { $t } from '@/locales'
 import IconSelector from './icon-selector.vue'
 
