@@ -13,7 +13,7 @@ import { useCard2Integration } from './useCard2Integration'
 import { configRegistry } from '../settings/ConfigRegistry'
 import '../settings/data-sources' // 注册数据源
 import type { GraphData, WidgetType } from '../types'
-import type { IComponentDefinition } from '@/card2.1/core'
+import type { ComponentDefinition } from '@/card2.1/core/types'
 
 // 重新导出类型
 export type { StateManager } from '../core/state-manager'
@@ -44,11 +44,9 @@ export interface EditorContext {
 /**
  * 将 Card2.1 组件定义转换为 WidgetDefinition 格式
  */
-function convertCard2ToWidgetDefinition(card2Definition: IComponentDefinition): WidgetDefinition {
-  const meta = card2Definition.meta || {}
-
+function convertCard2ToWidgetDefinition(card2Definition: ComponentDefinition): WidgetDefinition {
   // 获取默认尺寸
-  const defaultSize = card2Definition.defaultSize || { width: 4, height: 3 }
+  const defaultSize = { width: 4, height: 3 }
   const canvasWidth = defaultSize.width * 120 // 每个网格单元约120px
   const canvasHeight = defaultSize.height * 80 // 每个网格单元约80px
 
@@ -65,12 +63,12 @@ function convertCard2ToWidgetDefinition(card2Definition: IComponentDefinition): 
   }
 
   return {
-    type: card2Definition.id,
-    name: meta.title || meta.name || card2Definition.id,
-    description: meta.description || '',
-    icon: meta.icon || 'mdi:cube-outline',
-    category: meta.category || 'other',
-    version: meta.version || '1.0.0',
+    type: card2Definition.type,
+    name: card2Definition.name,
+    description: card2Definition.description || '',
+    icon: card2Definition.icon || 'mdi:cube-outline',
+    category: card2Definition.category || 'other',
+    version: '2.1.0',
     defaultProperties,
     defaultLayout: {
       canvas: {
@@ -102,7 +100,9 @@ export function createEditor() {
     resolveInitialization = resolve
   })
 
-  const stopWatch = watchEffect(() => {
+  let stopWatch: (() => void) | null = null
+
+  stopWatch = watchEffect(() => {
     if (!card2Integration.isLoading.value && card2Integration.availableComponents.value.length > 0) {
       // 清理注册表，只保留Card2.1组件
       const allWidgets = widgetRegistry.getAllWidgets()
@@ -121,6 +121,18 @@ export function createEditor() {
         if (!widgetRegistry.getWidget(componentDef.type)) {
           console.log(`🔍 useEditor - 注册组件到 Widget Registry: ${componentDef.type}`)
 
+          // 从 properties 中提取默认属性值
+          const defaultProperties: Record<string, any> = {}
+          if (componentDef.definition.properties) {
+            for (const [key, prop] of Object.entries(componentDef.definition.properties)) {
+              if (typeof prop === 'object' && prop !== null && 'default' in prop) {
+                defaultProperties[key] = (prop as any).default
+              } else {
+                defaultProperties[key] = prop
+              }
+            }
+          }
+
           const widgetDef = {
             type: componentDef.type,
             name: componentDef.name,
@@ -133,7 +145,7 @@ export function createEditor() {
               canvas: { width: 300, height: 200 },
               gridstack: { w: 4, h: 4 }
             },
-            defaultProperties: componentDef.definition.properties || {},
+            defaultProperties,
             metadata: {
               isCard2Component: true,
               card2ComponentId: componentDef.type,
@@ -163,7 +175,9 @@ export function createEditor() {
         }
       })
       resolveInitialization()
-      stopWatch()
+      if (stopWatch) {
+        stopWatch()
+      }
     }
   })
 

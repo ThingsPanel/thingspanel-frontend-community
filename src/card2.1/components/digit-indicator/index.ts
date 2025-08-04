@@ -1,57 +1,68 @@
 import { defineAsyncComponent } from 'vue'
-import type { IComponentDefinition } from '@/card2.1/core'
-import { $t } from '@/locales'
+import type { ComponentDefinition } from '../../core/types'
+import type { ComponentDataSourceDefinition } from '../../../components/visual-editor/types/data-source'
 
+// 异步加载组件
 const DigitIndicatorCard = defineAsyncComponent(() => import('./DigitIndicatorCard.vue'))
 const DigitIndicatorConfig = defineAsyncComponent(() => import('./DigitIndicatorConfig.vue'))
 
-const definition: IComponentDefinition = {
-  id: 'chart-digit',
-  component: DigitIndicatorCard,
-  meta: {
-    name: 'chart-digit',
-    title: $t('card.digitalIndicator'),
-    description: '显示数字指示器，支持自定义单位、颜色和图标',
-    category: 'card21',
-    icon: 'mdi:numeric',
-    version: '2.1.0'
+// 组件数据源定义
+const dataSourceDefinitions: ComponentDataSourceDefinition[] = [
+  {
+    name: 'value',
+    type: 'number',
+    required: true,
+    description: '显示的主要数值',
+    defaultValue: 0
   },
+  {
+    name: 'unit',
+    type: 'string',
+    required: false,
+    description: '数值单位',
+    defaultValue: ''
+  },
+  {
+    name: 'title',
+    type: 'string',
+    required: false,
+    description: '显示标题',
+    defaultValue: '数值'
+  }
+]
+
+// 组件定义
+const digitIndicatorDefinition: ComponentDefinition = {
+  type: 'digit-indicator',
+  name: '数字指示器',
+  description: '显示数值的指示器组件',
+  category: 'card21',
+  icon: '📊',
+  component: DigitIndicatorCard,
+  configComponent: DigitIndicatorConfig,
+  dataSourceDefinitions, // 添加数据源定义
   properties: {
     title: {
       type: 'string',
-      label: $t('common.title'),
-      default: $t('card.digitalIndicator')
+      default: '数值',
+      description: '显示标题'
     },
     unit: {
       type: 'string',
-      label: $t('device_template.table_header.unit'),
-      default: '%'
+      default: '',
+      description: '数值单位'
     },
     color: {
       type: 'string',
-      label: $t('generate.color'),
-      default: 'blue'
+      default: '#1890ff',
+      description: '显示颜色'
     },
-    iconName: {
-      type: 'string',
-      label: '图标',
-      default: 'Water'
-    },
-    value: {
-      type: 'string',
-      label: '值',
-      default: '45'
+    fontSize: {
+      type: 'number',
+      default: 24,
+      description: '字体大小'
     }
-  },
-  configComponent: DigitIndicatorConfig,
-  defaultSize: {
-    width: 2,
-    height: 2
-  },
-  minSize: {
-    width: 1,
-    height: 1
   }
 }
 
-export default definition
+export default digitIndicatorDefinition

@@ -11,13 +11,20 @@ export enum DataSourceType {
   WEBSOCKET = 'websocket' // WebSocket
 }
 
+// 数据路径映射配置
+export interface DataPathMapping {
+  key: string // 数据源中的路径，如 "data.temperature"
+  target: string // 映射到组件的数据源名称，如 "temperature"
+  description?: string // 描述
+}
+
 // 基础数据源接口
 export interface BaseDataSource {
   type: DataSourceType
   enabled: boolean
   name: string
   description?: string
-  dataPath?: string // 数据路径，如 "data.value" 或 "data[0].value"
+  dataPaths: DataPathMapping[] // 支持多个数据路径映射
 }
 
 // 静态数据源配置
@@ -34,8 +41,13 @@ export interface DeviceDataSource extends BaseDataSource {
   metricsId?: string
   metricsType?: 'telemetry' | 'attributes' | 'event' | 'command'
   metricsName?: string
+  metricsDataType?: string
   aggregateFunction?: string
   timeRange?: string
+  refreshInterval?: number
+  metricsOptions?: any[]
+  metricsOptionsFetched?: boolean
+  metricsShow?: boolean
 }
 
 // HTTP 数据源
@@ -54,34 +66,25 @@ export interface WebSocketDataSource extends BaseDataSource {
   url: string
   protocols?: string | string[]
   messageFormat: 'json' | 'text'
+  refreshInterval?: number
 }
 
 // 联合类型
 export type DataSource = StaticDataSource | DeviceDataSource | HttpDataSource | WebSocketDataSource
 
-// 数据源配置组件接口
-export interface DataSourceConfigComponent {
-  type: DataSourceType
-  name: string
-  description: string
-  icon: string
-  component: any // Vue组件
-  defaultConfig: Partial<DataSource>
+// 组件数据源定义
+export interface ComponentDataSourceDefinition {
+  name: string // 数据源名称，如 "temperature"
+  type: 'number' | 'string' | 'boolean' | 'object' | 'array' // 数据类型
+  required: boolean // 是否必需
+  description?: string // 描述
+  defaultValue?: any // 默认值
 }
 
-// 数据源注册表
-export interface DataSourceRegistry {
-  register(type: DataSourceType, config: DataSourceConfigComponent): void
-  get(type: DataSourceType): DataSourceConfigComponent | undefined
-  getAll(): DataSourceConfigComponent[]
-  has(type: DataSourceType): boolean
-}
-
-// 数据源值接口 - 统一的数据格式
+// 数据源值接口 - 支持多值
 export interface DataSourceValue {
-  value: any // 可以是任何类型：string, number, object, array
+  values: Record<string, any> // 多个值，key为组件数据源名称
   timestamp: number
-  unit?: string
   quality?: 'good' | 'bad' | 'uncertain'
   metadata?: Record<string, any>
   rawData?: any // 原始数据，用于调试
@@ -102,4 +105,22 @@ export interface DataSourceManager {
 export interface DataPathResolver {
   resolve(data: any, path?: string): any
   getAvailablePaths(data: any): string[]
+}
+
+// 数据源配置组件接口
+export interface DataSourceConfigComponent {
+  type: DataSourceType
+  name: string
+  description: string
+  icon: string
+  component: any // Vue组件
+  defaultConfig: Partial<DataSource>
+}
+
+// 数据源注册表
+export interface DataSourceRegistry {
+  register(type: DataSourceType, config: DataSourceConfigComponent): void
+  get(type: DataSourceType): DataSourceConfigComponent | undefined
+  getAll(): DataSourceConfigComponent[]
+  has(type: DataSourceType): boolean
 }

@@ -74,8 +74,17 @@
       <h3 class="panel-title">{{ widgetName }} 属性配置</h3>
 
       <n-tabs type="line" animated>
+        <!-- 数据源配置 -->
+        <n-tab-pane name="dataSource" tab="数据源">
+          <DataSourceSelector
+            v-model="editableProps.dataSource"
+            :component-data-sources="componentDataSourceDefinitions"
+            @update:modelValue="handleDataSourceUpdate"
+          />
+        </n-tab-pane>
+
         <!-- 基础配置标签页 -->
-        <n-tab-pane name="base" tab="基础配置">
+        <n-tab-pane name="base" tab="基础">
           <n-form label-placement="left" label-width="auto" size="small">
             <n-form-item label="显示标题">
               <n-switch v-model:value="editableProps.showLabel" @update:value="updateNode" />
@@ -87,7 +96,7 @@
         </n-tab-pane>
 
         <!-- 组件属性标签页 -->
-        <n-tab-pane v-if="hasProperties || hasCustomConfig" name="props" tab="组件属性">
+        <n-tab-pane v-if="hasProperties || hasCustomConfig" name="props" tab="属性">
           <!-- 自定义配置组件 -->
           <div v-if="hasCustomConfig && customConfigComponent">
             <component 
@@ -131,7 +140,7 @@
         </n-tab-pane>
 
         <!-- 交互配置标签页 -->
-        <n-tab-pane name="interaction" tab="交互配置">
+        <n-tab-pane name="interaction" tab="交互">
           <n-form label-placement="left" label-width="auto" size="small">
             <n-form-item label="点击事件">
               <n-select
@@ -150,14 +159,6 @@
                <n-input v-model:value="editableProps.interaction.onClick.payload.route" @update:value="updateNode" />
             </n-form-item>
           </n-form>
-        </n-tab-pane>
-        
-        <!-- 数据源配置标签页 -->
-        <n-tab-pane name="datasource" tab="数据源">
-          <DataSourceSelector 
-            v-model="editableProps.dataSource"
-            @update:modelValue="updateNode"
-          />
         </n-tab-pane>
 
       </n-tabs>
@@ -258,6 +259,18 @@ const componentProperties = computed(() => {
   const definition = props.selectedWidget?.metadata?.card2Definition;
   return definition?.properties || {};
 });
+
+// 获取组件数据源定义
+const componentDataSourceDefinitions = computed(() => {
+  const definition = props.selectedWidget?.metadata?.card2Definition;
+  return definition?.dataSourceDefinitions || [];
+});
+
+// 处理数据源更新
+const handleDataSourceUpdate = (dataSource: any) => {
+  editableProps.value.dataSource = dataSource;
+  updateNode();
+};
 
 const updateNode = () => {
   if (props.selectedWidget) {

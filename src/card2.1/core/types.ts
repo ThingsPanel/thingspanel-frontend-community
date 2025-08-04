@@ -4,10 +4,39 @@
  */
 
 import type { Component } from 'vue'
+import type { ComponentDataSourceDefinition } from '@/components/visual-editor/types/data-source'
 
-export interface IComponentDefinition {
-  id: string
+export interface ComponentDefinition {
+  type: string
+  name: string
+  description: string
+  category: string
+  icon: string
   component: Component
+  configComponent?: Component
+  dataSourceDefinitions?: ComponentDataSourceDefinition[]
+  properties?: Record<
+    string,
+    {
+      type: string
+      default: any
+      description: string
+    }
+  >
+}
+
+export interface IComponentRegistry {
+  register(id: string, definition: ComponentDefinition): void
+  get(id: string): ComponentDefinition | undefined
+  getAll(): ComponentDefinition[]
+  has(id: string): boolean
+}
+
+export type IConfigComponent = Component
+
+// 保持向后兼容
+export interface IComponentDefinition extends ComponentDefinition {
+  id: string
   meta: {
     name: string
     title: string
@@ -17,8 +46,6 @@ export interface IComponentDefinition {
     version: string
     poster?: string
   }
-  properties?: Record<string, any>
-  configComponent?: Component
   defaultSize: {
     width: number
     height: number
@@ -28,12 +55,3 @@ export interface IComponentDefinition {
     height: number
   }
 }
-
-export interface IComponentRegistry {
-  register(id: string, definition: IComponentDefinition): void
-  get(id: string): IComponentDefinition | undefined
-  getAll(): IComponentDefinition[]
-  has(id: string): boolean
-}
-
-export type IConfigComponent = Component

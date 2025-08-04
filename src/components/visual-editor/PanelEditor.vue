@@ -13,6 +13,9 @@ import { CanvasRenderer, GridstackRenderer } from './renderers'
 import { createEditor, useCard2Integration } from './hooks'
 import type { RendererType, VisualEditorWidget, GraphData } from './types'
 
+// 导入数据源注册
+import './settings/data-sources'
+
 // 初始化 Card 2.1 集成
 useCard2Integration({
   autoInit: true,

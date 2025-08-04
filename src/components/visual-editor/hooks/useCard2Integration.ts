@@ -5,7 +5,7 @@
 
 import { ref, computed, onMounted, shallowRef } from 'vue'
 import componentRegistry from '@/card2.1'
-import type { IComponentDefinition } from '@/card2.1/core'
+import type { ComponentDefinition } from '@/card2.1/core/types'
 import type { WidgetType, WidgetMeta } from '../types'
 import { $t } from '@/locales'
 
@@ -35,16 +35,20 @@ const COMPONENT_I18N_KEYS: Record<string, string> = {
   'tenant-chart': 'card.tenantChart.title',
   'chart-bar': 'card.barChart',
   'chart-curve': 'card.curve',
-  'chart-digit': 'card.digitalIndicator'
+  'chart-digit': 'card.digitalIndicator',
+
+  // Card 2.1 组件
+  'digit-indicator': 'card.digitalIndicator',
+  'multi-data-test': '多数据测试'
 }
 
 export interface Card2IntegrationOptions {
   autoInit?: boolean
-  componentFilter?: (definition: IComponentDefinition) => boolean
+  componentFilter?: (definition: ComponentDefinition) => boolean
 }
 
 export interface Card2Widget extends WidgetMeta {
-  definition: IComponentDefinition
+  definition: ComponentDefinition
   isCard2Component: true
 }
 
@@ -52,7 +56,7 @@ export interface Card2Widget extends WidgetMeta {
 const isInitialized = shallowRef(false)
 const isLoading = shallowRef(false)
 const error = shallowRef<string | null>(null)
-const registeredDefinitions = shallowRef<IComponentDefinition[]>([])
+const registeredDefinitions = shallowRef<ComponentDefinition[]>([])
 
 /**
  * Card 2.1 集成 Hook (单例模式)
@@ -63,19 +67,17 @@ export function useCard2Integration(options: Card2IntegrationOptions = {}) {
   // 将 availableComponents 改为响应式计算属性，以支持国际化切换
   const availableComponents = computed(() => {
     return registeredDefinitions.value.map(definition => {
-      const meta = definition.meta || {}
-
       // 优先使用动态国际化翻译，回退到静态标题
-      const i18nKey = COMPONENT_I18N_KEYS[definition.id]
-      const displayName = i18nKey ? $t(i18nKey as any) : meta.title || meta.name || definition.id
+      const i18nKey = COMPONENT_I18N_KEYS[definition.type]
+      const displayName = i18nKey ? $t(i18nKey as any) : definition.name
 
       return {
-        type: definition.id as WidgetType,
+        type: definition.type as WidgetType,
         name: displayName,
-        description: meta.description || '',
-        icon: meta.icon,
-        category: meta.category,
-        version: meta.version,
+        description: definition.description || '',
+        icon: definition.icon,
+        category: definition.category,
+        version: '2.1.0',
         isCard2Component: true,
         definition
       }
@@ -110,7 +112,7 @@ export function useCard2Integration(options: Card2IntegrationOptions = {}) {
       const allComponents = componentRegistry.getAll()
       console.log(
         'Card 2.1 注册表中的组件:',
-        allComponents.map(c => ({ id: c.id, title: c.meta?.title }))
+        allComponents.map(c => ({ type: c.type, name: c.name }))
       )
 
       const definitions = allComponents.filter(componentFilter)
@@ -118,18 +120,19 @@ export function useCard2Integration(options: Card2IntegrationOptions = {}) {
       console.log(`✅ 加载了 ${definitions.length} 个 Card 2.1 组件。`)
       console.log(
         '加载的组件详情:',
-        definitions.map(d => ({ id: d.id, title: d.meta?.title, category: d.meta?.category }))
+        definitions.map(d => ({ type: d.type, name: d.name, category: d.category }))
       )
 
       // 检查每个组件的详细信息
       definitions.forEach(def => {
-        console.log(`🔍 组件 ${def.id} 详细信息:`, {
-          id: def.id,
-          title: def.meta?.title,
-          category: def.meta?.category,
+        console.log(`🔍 组件 ${def.type} 详细信息:`, {
+          type: def.type,
+          name: def.name,
+          category: def.category,
           hasComponent: !!def.component,
           hasConfigComponent: !!def.configComponent,
-          properties: def.properties
+          properties: def.properties,
+          dataSourceDefinitions: def.dataSourceDefinitions
         })
       })
     } catch (err) {
@@ -142,7 +145,7 @@ export function useCard2Integration(options: Card2IntegrationOptions = {}) {
     return availableComponents.value.some(widget => widget.type === type)
   }
 
-  const getComponentDefinition = (type: string): IComponentDefinition | undefined => {
+  const getComponentDefinition = (type: string): ComponentDefinition | undefined => {
     const widget = availableComponents.value.find(w => w.type === type)
     return widget?.definition
   }

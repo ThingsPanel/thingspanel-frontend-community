@@ -98,24 +98,35 @@ class DataSourceManagerImpl implements DataSourceManager {
         rawData = null
     }
 
-    // 使用数据路径解析器解析数据
-    const resolvedValue = dataPathResolver.resolve(rawData, dataSource.dataPath)
+    // 处理多Key映射
+    const values: Record<string, any> = {}
+
+    if (dataSource.dataPaths && dataSource.dataPaths.length > 0) {
+      // 使用配置的数据路径映射
+      dataSource.dataPaths.forEach(mapping => {
+        const resolvedValue = dataPathResolver.resolve(rawData, mapping.key)
+        values[mapping.target] = resolvedValue
+      })
+    } else {
+      // 兼容旧版本，使用单个值
+      const resolvedValue = dataPathResolver.resolve(rawData, '')
+      values['value'] = resolvedValue
+    }
 
     const value: DataSourceValue = {
-      value: resolvedValue,
+      values,
       timestamp: Date.now(),
-      unit,
-      quality: resolvedValue !== undefined ? 'good' : 'bad',
+      quality: Object.values(values).some(v => v !== undefined) ? 'good' : 'bad',
       metadata: {
         source: dataSource.type,
-        dataPath: dataSource.dataPath,
+        dataPaths: dataSource.dataPaths,
         originalData: rawData
       },
       rawData
     }
 
     // 缓存值（使用包含数据路径的键）
-    const cacheKey = `${key}_${dataSource.dataPath || ''}`
+    const cacheKey = `${key}_${JSON.stringify(dataSource.dataPaths || [])}`
     this.values.set(cacheKey, value)
 
     return value
@@ -124,18 +135,30 @@ class DataSourceManagerImpl implements DataSourceManager {
   // 更新数据源值
   updateValue(dataSource: DataSource, value: any): void {
     const key = this.getSubscriptionKey(dataSource)
-    const cacheKey = `${key}_${dataSource.dataPath || ''}`
+    const cacheKey = `${key}_${JSON.stringify(dataSource.dataPaths || [])}`
 
-    // 使用数据路径解析器解析数据
-    const resolvedValue = dataPathResolver.resolve(value, dataSource.dataPath)
+    // 处理多Key映射
+    const values: Record<string, any> = {}
+
+    if (dataSource.dataPaths && dataSource.dataPaths.length > 0) {
+      // 使用配置的数据路径映射
+      dataSource.dataPaths.forEach(mapping => {
+        const resolvedValue = dataPathResolver.resolve(value, mapping.key)
+        values[mapping.target] = resolvedValue
+      })
+    } else {
+      // 兼容旧版本，使用单个值
+      const resolvedValue = dataPathResolver.resolve(value, '')
+      values['value'] = resolvedValue
+    }
 
     const dataSourceValue: DataSourceValue = {
-      value: resolvedValue,
+      values,
       timestamp: Date.now(),
       quality: 'good',
       metadata: {
         source: dataSource.type,
-        dataPath: dataSource.dataPath,
+        dataPaths: dataSource.dataPaths,
         originalData: value
       },
       rawData: value
@@ -165,12 +188,50 @@ class DataSourceManagerImpl implements DataSourceManager {
 
   // 获取设备数据源值
   private async getDeviceValue(dataSource: DeviceDataSource): Promise<any> {
-    // 这里应该调用实际的设备API
-    // 暂时返回模拟数据
-    return {
-      value: Math.random() * 100,
-      unit: '%',
-      timestamp: Date.now()
+    try {
+      if (!dataSource.deviceId || !dataSource.metricsId) {
+        throw new Error('设备ID和指标ID不能为空')
+      }
+
+      // 这里应该调用实际的设备数据API
+      // 根据 dataSource 的配置构建请求参数
+      const params = {
+        deviceId: dataSource.deviceId,
+        metricsId: dataSource.metricsId,
+        metricsType: dataSource.metricsType || 'telemetry',
+        aggregateFunction: dataSource.aggregateFunction || 'avg',
+        timeRange: dataSource.timeRange || 'last_1h'
+      }
+
+      console.log('🔧 [DataSourceManager] 请求设备数据:', params)
+
+      // 暂时返回模拟数据，实际应该调用API
+      // const response = await fetch(`/api/device/data`, {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(params)
+      // })
+      // const data = await response.json()
+
+      // 模拟设备数据
+      const mockData = {
+        value: Math.random() * 100,
+        timestamp: Date.now(),
+        unit: '%',
+        deviceId: dataSource.deviceId,
+        metricsId: dataSource.metricsId,
+        metricsName: dataSource.metricsName,
+        metricsType: dataSource.metricsType,
+        aggregateFunction: dataSource.aggregateFunction,
+        timeRange: dataSource.timeRange
+      }
+
+      console.log('🔧 [DataSourceManager] 设备数据获取成功:', mockData)
+
+      return mockData
+    } catch (error) {
+      console.error('🔧 [DataSourceManager] 设备数据获取失败:', error)
+      throw error
     }
   }
 

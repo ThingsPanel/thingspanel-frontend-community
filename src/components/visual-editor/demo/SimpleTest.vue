@@ -136,16 +136,17 @@ const testCard21Registration = async () => {
     const allComponents = componentRegistry.getAll()
     console.log('Card 2.1 注册表中的组件:', allComponents)
     
-    // 测试特定组件
-    const digitIndicator = allComponents.find(c => c.id === 'chart-digit')
+    // 测试特定组件 - 使用新的 type 属性
+    const digitIndicator = allComponents.find(c => c.type === 'digit-indicator')
     console.log('数字指示器组件:', digitIndicator)
     
     testResult.value = {
       success: true,
       totalComponents: allComponents.length,
-      componentIds: allComponents.map(c => c.id),
+      componentIds: allComponents.map(c => c.type), // 使用 type 而不是 id
       digitIndicator: digitIndicator ? {
-        id: digitIndicator.id,
+        type: digitIndicator.type,
+        name: digitIndicator.name,
         hasComponent: !!digitIndicator.component,
         hasConfigComponent: !!digitIndicator.configComponent,
         properties: digitIndicator.properties
@@ -206,7 +207,7 @@ const testConfigRegistry = async () => {
     // 添加更详细的调试信息
     console.log('🔍 检查 Card 2.1 组件定义...')
     const allComponents = componentRegistry.getAll()
-    const digitIndicator = allComponents.find(c => c.id === 'chart-digit')
+    const digitIndicator = allComponents.find(c => c.type === 'digit-indicator')
     console.log('数字指示器组件定义:', digitIndicator)
     console.log('是否有配置组件:', !!digitIndicator?.configComponent)
     
@@ -266,7 +267,7 @@ const testComponentRender = async () => {
     
     // 获取组件定义
     const allComponents = componentRegistry.getAll()
-    const digitIndicator = allComponents.find(c => c.id === 'chart-digit')
+    const digitIndicator = allComponents.find(c => c.type === 'digit-indicator')
     
     if (digitIndicator && digitIndicator.component) {
       testComponent.value = digitIndicator.component
@@ -287,7 +288,7 @@ const testConfigComponentRender = async () => {
     
     // 获取数字指示器组件定义
     const allComponents = componentRegistry.getAll()
-    const digitIndicator = allComponents.find(c => c.id === 'chart-digit')
+    const digitIndicator = allComponents.find(c => c.type === 'digit-indicator')
     if (!digitIndicator) {
       throw new Error('找不到数字指示器组件定义')
     }
@@ -295,7 +296,7 @@ const testConfigComponentRender = async () => {
     console.log('🔧 SimpleTest - 数字指示器组件定义:', digitIndicator)
     
     // 获取配置组件
-    let configComponent = configRegistry.get('chart-digit')
+    let configComponent = configRegistry.get('digit-indicator')
     if (!configComponent) {
       // 如果从注册表获取失败，尝试直接从组件定义获取
       configComponent = digitIndicator.configComponent
@@ -313,7 +314,7 @@ const testConfigComponentRender = async () => {
       success: true,
       digitConfig: configComponent,
       debug: {
-        fromRegistry: !!configRegistry.get('chart-digit'),
+        fromRegistry: !!configRegistry.get('digit-indicator'),
         fromDefinition: !!digitIndicator.configComponent
       }
     }

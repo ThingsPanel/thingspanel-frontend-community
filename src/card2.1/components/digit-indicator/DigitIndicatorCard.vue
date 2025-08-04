@@ -13,6 +13,7 @@ interface Props {
     iconName?: string
     title?: string
     value?: string | number
+    fontSize?: number
   }
   metadata?: {
     dataSource?: DataSource
@@ -31,51 +32,49 @@ let resizeObserver: ResizeObserver | null = null
 const dataSourceValue = ref<DataSourceValue | null>(null)
 let unsubscribeDataSource: (() => void) | null = null
 
-// 计算属性：优先使用数据源的值，回退到属性值
+// 计算显示值
 const displayValue = computed(() => {
-  if (dataSourceValue.value?.value !== undefined && dataSourceValue.value?.value !== null) {
-    // 数据源值可以是任何类型，组件内部决定如何使用
-    const value = dataSourceValue.value.value
-    
-    // 如果是对象或数组，转换为字符串显示
-    if (typeof value === 'object') {
-      return JSON.stringify(value)
-    }
-    
-    return value
+  // 优先使用数据源的值
+  if (dataSourceValue.value?.values) {
+    return dataSourceValue.value.values.value || 0
   }
-  return props.properties?.value ?? '45'
+  
+  // 回退到属性配置
+  return props.properties?.value || 0
 })
 
+// 计算显示单位
 const displayUnit = computed(() => {
-  // 优先使用数据源的单位
-  if (dataSourceValue.value?.unit) {
-    return dataSourceValue.value.unit
+  // 优先使用数据源的值
+  if (dataSourceValue.value?.values) {
+    return dataSourceValue.value.values.unit || ''
   }
   
-  // 如果是 JSON 数据源，尝试从 metadata 中获取单位
-  if (dataSourceValue.value?.metadata?.originalData?.unit) {
-    return dataSourceValue.value.metadata.originalData.unit
+  // 回退到属性配置
+  return props.properties?.unit || ''
+})
+
+// 计算显示标题
+const displayTitle = computed(() => {
+  // 优先使用数据源的值
+  if (dataSourceValue.value?.values) {
+    return dataSourceValue.value.values.title || ''
   }
   
-  return props.properties?.unit ?? '%'
+  // 回退到属性配置
+  return props.properties?.title || '数值'
 })
 
 const displayColor = computed(() => {
-  return props.properties?.color ?? 'blue'
+  return props.properties?.color ?? '#1890ff'
+})
+
+const displayFontSize = computed(() => {
+  return props.properties?.fontSize ?? 24
 })
 
 const displayIcon = computed(() => {
   return props.properties?.iconName ?? 'Water'
-})
-
-const displayTitle = computed(() => {
-  // 如果是 JSON 数据源，尝试从 metadata 中获取标题
-  if (dataSourceValue.value?.metadata?.originalData?.title) {
-    return dataSourceValue.value.metadata.originalData.title
-  }
-  
-  return props.properties?.title ?? $t('card.humidity')
 })
 
 // 处理数据源
@@ -93,14 +92,14 @@ const handleDataSource = (dataSource: DataSource | undefined) => {
   if (dataSource && dataSource.enabled) {
     console.log('🔧 DigitIndicatorCard - 订阅数据源:', {
       type: dataSource.type,
-      dataPath: dataSource.dataPath,
+      dataPaths: dataSource.dataPaths,
       name: dataSource.name
     })
     
     unsubscribeDataSource = dataSourceManager.subscribe(dataSource, (value) => {
       console.log('🔧 DigitIndicatorCard - 收到数据源更新:', {
-        value: value.value,
-        dataPath: value.metadata?.dataPath,
+        values: value.values,
+        dataPaths: value.metadata?.dataPaths,
         originalData: value.metadata?.originalData
       })
       dataSourceValue.value = value
@@ -143,7 +142,7 @@ onBeforeUnmount(() => {
 <template>
   <div ref="cardRef" class="card-container">
     
-    <div class="card-content" :style="{ fontSize: fontSize }">
+    <div class="card-content" :style="{ fontSize: displayFontSize + 'px' }">
       <div class="icon-container">
         <NIcon class="iconclass" :color="displayColor">
           <component :is="iconOptions[displayIcon]" />
