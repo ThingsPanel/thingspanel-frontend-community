@@ -41,7 +41,8 @@
       "Bash(pnpm exec vue-tsc:*)",
       "Bash(timeout 60s pnpm build:test)",
       "Bash(cp:*)",
-      "WebFetch(domain:dsmorse.github.io)"
+      "WebFetch(domain:dsmorse.github.io)",
+      "Bash(tree:*)"
     ],
     "deny": []
   }

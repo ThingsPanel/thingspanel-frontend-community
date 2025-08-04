@@ -21,28 +21,49 @@
         </n-collapse-item>
 
         <!-- 组件属性 -->
-        <n-collapse-item v-if="hasProperties" name="props">
+        <n-collapse-item v-if="hasProperties || hasCustomConfig" name="props">
           <template #header>
             <h4 class="section-title">组件属性</h4>
           </template>
-          <n-form label-placement="left" label-width="auto" size="small">
-            <n-form-item v-for="(propDef, key) in selectedWidget.metadata?.card2Definition?.properties" :key="key" :label="propDef.label || String(key)">
+          
+          <!-- 自定义配置组件 -->
+          <div v-if="hasCustomConfig && customConfigComponent">
+            <component 
+              :is="customConfigComponent.component" 
+              v-model:config="editableProps.properties"
+              :widget="selectedWidget"
+              @update:config="updateNode"
+            />
+          </div>
+          
+          <!-- 增强的属性表单 -->
+          <div v-else-if="hasEnhancedProperties">
+            <EnhancedPropertyForm
+              v-model="editableProps.properties"
+              :properties="componentProperties"
+              @update:modelValue="updateNode"
+            />
+          </div>
+          
+          <!-- 传统的简单属性表单（向后兼容） -->
+          <n-form v-else label-placement="left" label-width="auto" size="small">
+            <n-form-item v-for="(propDef, key) in selectedWidget.properties" :key="key" :label="String(key)">
               <n-input
-                v-if="propDef.type === 'string'"
+                v-if="typeof propDef === 'string'"
                 v-model:value="editableProps.properties[key]"
                 @update:value="updateNode"
               />
               <n-input-number
-                v-else-if="propDef.type === 'number'"
+                v-else-if="typeof propDef === 'number'"
                 v-model:value="editableProps.properties[key]"
                 @update:value="updateNode"
               />
               <n-switch
-                v-else-if="propDef.type === 'boolean'"
+                v-else-if="typeof propDef === 'boolean'"
                 v-model:value="editableProps.properties[key]"
                 @update:value="updateNode"
               />
-              <n-text v-else depth="3">不支持的属性类型: {{ propDef.type }}</n-text>
+              <n-text v-else depth="3">不支持的属性类型</n-text>
             </n-form-item>
           </n-form>
         </n-collapse-item>
@@ -96,6 +117,8 @@ import { NForm, NFormItem, NInput, NInputNumber, NSwitch, NText, NCollapse, NCol
 import { useEditor } from '../hooks';
 import type { VisualEditorWidget } from '../types';
 import { cloneDeep } from 'lodash-es';
+import { configRegistry } from './ConfigRegistry';
+import EnhancedPropertyForm from './components/EnhancedPropertyForm.vue';
 
 const props = defineProps<{
   selectedWidget: VisualEditorWidget | null;
@@ -132,6 +155,32 @@ const widgetName = computed(() => {
 
 const hasProperties = computed(() => {
   return props.selectedWidget && props.selectedWidget.properties && Object.keys(props.selectedWidget.properties).length > 0;
+});
+
+// 检查是否有自定义配置组件
+const hasCustomConfig = computed(() => {
+  if (!props.selectedWidget) return false;
+  const componentType = props.selectedWidget.type;
+  return configRegistry.has(componentType);
+});
+
+// 获取自定义配置组件
+const customConfigComponent = computed(() => {
+  if (!props.selectedWidget) return null;
+  const componentType = props.selectedWidget.type;
+  return configRegistry.get(componentType);
+});
+
+// 检查是否有增强的属性定义
+const hasEnhancedProperties = computed(() => {
+  const definition = props.selectedWidget?.metadata?.card2Definition;
+  return definition && definition.properties && Object.keys(definition.properties).length > 0;
+});
+
+// 获取组件属性定义
+const componentProperties = computed(() => {
+  const definition = props.selectedWidget?.metadata?.card2Definition;
+  return definition?.properties || {};
 });
 
 const updateNode = () => {

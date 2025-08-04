@@ -7,6 +7,36 @@ import { ref, computed, onMounted, shallowRef } from 'vue'
 import componentRegistry from '@/card2.1'
 import type { IComponentDefinition } from '@/card2.1/core'
 import type { WidgetType, WidgetMeta } from '../types'
+import { $t } from '@/locales'
+
+// 组件ID到国际化键的映射
+const COMPONENT_I18N_KEYS: Record<string, string> = {
+  // Display 类组件 (从 builtin-card 迁移)
+  'version-info': 'card.version',
+  'access-num': 'card.deviceTotal',
+  'alarm-count': 'card.alarmCount',
+  'alarm-info': 'card.alarmInfo',
+  'app-download': 'card.appDownload',
+  'cpu-usage': 'card.cpuUsage',
+  'disk-usage': 'card.diskUsage',
+  'memory-usage': 'card.memoryUsage',
+  information: 'card.information',
+  news: 'card.news',
+  'off-line': 'card.offlineDeviceCount',
+  'on-line': 'card.onlineDeviceCount',
+  'operation-guide-card': 'card.operationGuide',
+  'recently-visited': 'card.recentlyVisited.title',
+  'reported-data': 'card.reportedData.title',
+  'tenant-count': 'card.tenantCount.title',
+
+  // Chart 类组件 (从 builtin-card 和 chart-card 迁移)
+  'online-trend': 'card.onlineTrend',
+  'system-metrics-history': 'card.systemMetricsHistory.title',
+  'tenant-chart': 'card.tenantChart.title',
+  'chart-bar': 'card.barChart',
+  'chart-curve': 'card.curve',
+  'chart-digit': 'card.digitalIndicator'
+}
 
 export interface Card2IntegrationOptions {
   autoInit?: boolean
@@ -22,13 +52,35 @@ export interface Card2Widget extends WidgetMeta {
 const isInitialized = shallowRef(false)
 const isLoading = shallowRef(false)
 const error = shallowRef<string | null>(null)
-const availableComponents = shallowRef<Card2Widget[]>([])
+const registeredDefinitions = shallowRef<IComponentDefinition[]>([])
 
 /**
  * Card 2.1 集成 Hook (单例模式)
  */
 export function useCard2Integration(options: Card2IntegrationOptions = {}) {
   const { autoInit = true, componentFilter = () => true } = options
+
+  // 将 availableComponents 改为响应式计算属性，以支持国际化切换
+  const availableComponents = computed(() => {
+    return registeredDefinitions.value.map(definition => {
+      const meta = definition.meta || {}
+
+      // 优先使用动态国际化翻译，回退到静态标题
+      const i18nKey = COMPONENT_I18N_KEYS[definition.id]
+      const displayName = i18nKey ? $t(i18nKey as any) : meta.title || meta.name || definition.id
+
+      return {
+        type: definition.id as WidgetType,
+        name: displayName,
+        description: meta.description || '',
+        icon: meta.icon,
+        category: meta.category,
+        version: meta.version,
+        isCard2Component: true,
+        definition
+      }
+    })
+  })
 
   const initialize = async () => {
     if (isInitialized.value) return
@@ -54,25 +106,11 @@ export function useCard2Integration(options: Card2IntegrationOptions = {}) {
   const loadAvailableComponents = async () => {
     try {
       const definitions = componentRegistry.getAll().filter(componentFilter)
-
-      availableComponents.value = definitions.map(definition => {
-        const meta = definition.meta || {} // 容错处理
-        return {
-          type: definition.id as WidgetType,
-          name: meta.title || meta.name || definition.id, // 提供多重后备
-          description: meta.description || '', // 提供空字符串后备
-          icon: meta.icon, // icon 可以为 undefined
-          category: meta.category,
-          version: meta.version,
-          isCard2Component: true,
-          definition
-        }
-      })
-
-      console.log(`✅ 加载了 ${availableComponents.value.length} 个 Card 2.1 组件。`)
+      registeredDefinitions.value = definitions
+      console.log(`✅ 加载了 ${definitions.length} 个 Card 2.1 组件。`)
     } catch (err) {
       console.error('❌ 加载 Card 2.1 组件失败:', err)
-      availableComponents.value = []
+      registeredDefinitions.value = []
     }
   }
 
@@ -109,10 +147,10 @@ export function useCard2Integration(options: Card2IntegrationOptions = {}) {
     isInitialized: computed(() => isInitialized.value),
     isLoading: computed(() => isLoading.value),
     error: computed(() => error.value),
-    availableComponents: computed(() => availableComponents.value),
+    availableComponents, // 现在是计算属性，会响应语言变化
     getComponentsByCategory,
     initialize,
     isCard2Component,
-    getComponentDefinition // <--- 确保导出这个函数
+    getComponentDefinition
   }
 }

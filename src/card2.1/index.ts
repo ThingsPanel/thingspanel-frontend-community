@@ -4,6 +4,7 @@
  */
 import { componentRegistry } from './core'
 import type { IComponentDefinition } from './core'
+import { configRegistry } from '@/components/visual-editor/settings/ConfigRegistry'
 
 // 使用 Vite 的 import.meta.glob 动态、同步地导入所有组件定义
 // eager: true -> 同步导入，确保在后续代码执行前所有模块已加载
@@ -21,6 +22,12 @@ componentsToRegister.forEach(componentDef => {
   // 添加健壮性检查，确保组件定义和 ID 都存在
   if (componentDef && componentDef.id) {
     componentRegistry.register(componentDef.id, componentDef)
+
+    // 如果组件有自定义配置组件，注册到配置注册表
+    if (componentDef.configComponent) {
+      configRegistry.register(componentDef.id, componentDef.configComponent)
+      console.log(`🔧 [Card2.1] 注册配置组件: ${componentDef.id}`)
+    }
   } else {
     console.error(
       '[Card2.1] ❌ Found an invalid or incomplete component definition, skipping registration:',
