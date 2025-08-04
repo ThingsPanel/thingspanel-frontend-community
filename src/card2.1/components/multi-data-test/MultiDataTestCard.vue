@@ -26,10 +26,22 @@
         <details>
           <summary>调试信息</summary>
           <div class="debug-content">
-            <div><strong>数据源值:</strong> {{ JSON.stringify($props.dataSourceValue?.values || {}, null, 2) }}</div>
-            <div><strong>数据路径:</strong> {{ JSON.stringify($props.dataSourceValue?.metadata?.dataPaths || [], null, 2) }}</div>
-            <div><strong>原始数据:</strong> {{ JSON.stringify($props.dataSourceValue?.rawData || {}, null, 2) }}</div>
-            <div><strong>数据源配置:</strong> {{ JSON.stringify($props.metadata?.dataSource?.dataPaths || [], null, 2) }}</div>
+            <div>
+              <strong>数据源值:</strong>
+              {{ JSON.stringify($props.dataSourceValue?.values || {}, null, 2) }}
+            </div>
+            <div>
+              <strong>数据路径:</strong>
+              {{ JSON.stringify($props.dataSourceValue?.metadata?.dataPaths || [], null, 2) }}
+            </div>
+            <div>
+              <strong>原始数据:</strong>
+              {{ JSON.stringify($props.dataSourceValue?.rawData || {}, null, 2) }}
+            </div>
+            <div>
+              <strong>数据源配置:</strong>
+              {{ JSON.stringify($props.metadata?.dataSource?.dataPaths || [], null, 2) }}
+            </div>
           </div>
         </details>
       </div>

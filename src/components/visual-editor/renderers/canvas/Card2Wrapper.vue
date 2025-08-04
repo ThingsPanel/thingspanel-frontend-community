@@ -53,7 +53,7 @@ const handleDataSource = (dataSource: any) => {
     newDataSource: dataSource,
     currentSubscriberId
   })
-  
+
   // 取消之前的订阅
   if (currentSubscriberId) {
     currentSubscriberId() // 调用取消订阅函数
@@ -63,7 +63,7 @@ const handleDataSource = (dataSource: any) => {
 
   // 重置数据源值
   dataSourceValue.value = null
-  
+
   // 如果有新的数据源且配置完整，订阅它
   if (dataSource && isDataSourceValid(dataSource)) {
     console.log('🔍 Card2Wrapper - 开始订阅数据源:', {
@@ -71,8 +71,8 @@ const handleDataSource = (dataSource: any) => {
       name: dataSource.name,
       dataPaths: dataSource.dataPaths
     })
-    
-    currentSubscriberId = universalDataSourceManager.subscribe(dataSource, (value) => {
+
+    currentSubscriberId = universalDataSourceManager.subscribe(dataSource, value => {
       console.log('🔍 Card2Wrapper - 收到数据源更新:', {
         values: value.values,
         rawData: value.rawData,
@@ -80,7 +80,7 @@ const handleDataSource = (dataSource: any) => {
       })
       dataSourceValue.value = value
     })
-    
+
     console.log('🔍 Card2Wrapper - 数据源订阅成功')
   } else {
     console.log('🔍 Card2Wrapper - 数据源配置无效或未启用，跳过订阅')
@@ -90,26 +90,26 @@ const handleDataSource = (dataSource: any) => {
 // 检查数据源配置是否有效
 const isDataSourceValid = (dataSource: any): boolean => {
   if (!dataSource) return false
-  
+
   console.log('🔍 Card2Wrapper - 验证数据源配置:', {
     type: dataSource.type,
     enabled: dataSource.enabled,
     name: dataSource.name,
     dataPaths: dataSource.dataPaths
   })
-  
+
   // 检查基本配置
   if (!dataSource.type || !dataSource.enabled) {
     console.log('🔍 Card2Wrapper - 数据源未启用或缺少类型，跳过订阅:', dataSource)
     return false
   }
-  
+
   // 根据数据源类型进行不同的验证
   switch (dataSource.type) {
     case 'static':
       // 静态数据源只需要有数据即可
       return dataSource.data !== undefined
-      
+
     case 'device':
       // 设备数据源需要更详细的配置
       if (!dataSource.deviceId || !dataSource.metricsType || !dataSource.metricsId) {
@@ -121,15 +121,15 @@ const isDataSourceValid = (dataSource: any): boolean => {
         return false
       }
       return true
-      
+
     case 'http':
       // HTTP数据源需要URL
       return !!dataSource.url
-      
+
     case 'websocket':
       // WebSocket数据源需要URL
       return !!dataSource.url
-      
+
     default:
       console.log('🔍 Card2Wrapper - 未知的数据源类型:', dataSource.type)
       return false
