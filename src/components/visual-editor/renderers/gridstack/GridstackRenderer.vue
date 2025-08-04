@@ -13,6 +13,7 @@
         :readonly="readonly || isPreviewMode"
         :show-widget-titles="showWidgetTitles"
         :static-grid="isPreviewMode"
+        :grid-config="gridConfig"
         @node-select="onNodeSelect"
         @request-settings="onRequestSettings"
       />
@@ -29,6 +30,7 @@ import GridLayoutPlusWrapper from './GridLayoutPlusWrapper.vue'
 const props = defineProps<{
   readonly?: boolean
   showWidgetTitles?: boolean
+  gridConfig?: any
 }>()
 
 const emit = defineEmits(['ready', 'error', 'node-select', 'canvas-click', 'request-settings'])

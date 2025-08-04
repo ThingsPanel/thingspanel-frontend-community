@@ -8,14 +8,10 @@ import { configRegistry } from '@/components/visual-editor/settings/ConfigRegist
 
 // --- 静态导入所有组件分类 ---
 // 使用静态路径可以避免 Vite 在某些情况下的 glob 缓存问题
-const buttons = import.meta.glob('./components/button/*/index.ts', { eager: true, import: 'default' })
-const charts = import.meta.glob('./components/chart/*/index.ts', { eager: true, import: 'default' })
-const controls = import.meta.glob('./components/control/*/index.ts', { eager: true, import: 'default' })
-const displays = import.meta.glob('./components/display/*/index.ts', { eager: true, import: 'default' })
-const medias = import.meta.glob('./components/media/*/index.ts', { eager: true, import: 'default' })
+const digitIndicators = import.meta.glob('./components/digit-indicator/index.ts', { eager: true, import: 'default' })
 
 // 合并所有模块
-const modules = { ...buttons, ...charts, ...controls, ...displays, ...medias }
+const modules = { ...digitIndicators }
 
 console.log('[Card2.1] Discovered component modules:', modules)
 

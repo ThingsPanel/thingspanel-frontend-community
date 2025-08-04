@@ -3,7 +3,7 @@
  * 用于管理 Card 2.1 组件的自定义配置面板
  */
 
-import type { IConfigComponent } from '@/card2.1/core/types'
+import type { IConfigComponent } from '@/card2.1/core'
 
 interface ConfigComponentRegistration {
   componentId: string

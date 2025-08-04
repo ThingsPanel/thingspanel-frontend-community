@@ -6,7 +6,7 @@
 import { defineAsyncComponent, type Component } from 'vue'
 import { configRegistry } from '../settings/ConfigRegistry'
 import componentRegistry from '@/card2.1'
-import type { IComponentDefinition, IConfigComponent } from '@/card2.1/core/types'
+import type { IComponentDefinition, IConfigComponent } from '@/card2.1/core'
 import { createLogger } from '@/utils/logger'
 
 const logger = createLogger('ConfigDiscovery')
@@ -17,7 +17,8 @@ const logger = createLogger('ConfigDiscovery')
 const CARD21_CONFIG_PATTERNS = [
   './src/card2.1/components/*/*/card-config.vue',
   './src/card2.1/components/*/*/config.vue',
-  './src/card2.1/components/*/*/*-config.vue'
+  './src/card2.1/components/*/*/*-config.vue',
+  './src/card2.1/components/*/*/*Config.vue'
 ]
 
 // 原始 Panel 配置组件路径
@@ -105,7 +106,8 @@ export class ConfigDiscovery {
       const configModules = import.meta.glob([
         '/src/card2.1/components/*/*/card-config.vue',
         '/src/card2.1/components/*/*/config.vue',
-        '/src/card2.1/components/*/*/*-config.vue'
+        '/src/card2.1/components/*/*/*-config.vue',
+        '/src/card2.1/components/*/*/*Config.vue'
       ])
 
       for (const [filePath, moduleLoader] of Object.entries(configModules)) {
@@ -238,10 +240,14 @@ export class ConfigDiscovery {
       let componentId: string | null = null
 
       if (type === 'card21') {
-        // Card 2.1: /src/card2.1/components/chart/bar/card-config.vue -> chart-bar
-        const match = filePath.match(/\/card2\.1\/components\/([^/]+)\/([^/]+)\//)
+        // Card 2.1: /src/card2.1/components/digit-indicator/DigitIndicatorConfig.vue -> chart-digit
+        const match = filePath.match(/\/card2\.1\/components\/([^/]+)\//)
         if (match) {
-          componentId = `${match[1]}-${match[2]}`
+          // 映射路径到组件ID
+          const pathToIdMap: Record<string, string> = {
+            'digit-indicator': 'chart-digit'
+          }
+          componentId = pathToIdMap[match[1]] || match[1]
         }
       } else if (type === 'legacy') {
         // Legacy: /src/card/chart-card/bar/card-config.vue -> chart-bar
@@ -284,16 +290,7 @@ export class ConfigDiscovery {
           const componentExists = componentRegistry.has(configMeta.componentId)
 
           if (componentExists || configMeta.type === 'visual-editor') {
-            const configComponent: IConfigComponent = {
-              component: configMeta.component,
-              replaceDefault: false,
-              metadata: {
-                type: configMeta.type,
-                filePath: configMeta.filePath,
-                priority: configMeta.priority,
-                discoveredAt: new Date().toISOString()
-              }
-            }
+            const configComponent: IConfigComponent = configMeta.component
 
             // 注册到配置注册表
             configRegistry.register(configMeta.componentId, configComponent)
@@ -359,16 +356,7 @@ export class ConfigDiscovery {
 
     // 立即注册
     if (meta.componentId) {
-      const configComponent: IConfigComponent = {
-        component: meta.component,
-        replaceDefault: false,
-        metadata: {
-          type: meta.type,
-          filePath: meta.filePath,
-          priority: meta.priority,
-          discoveredAt: new Date().toISOString()
-        }
-      }
+      const configComponent: IConfigComponent = meta.component
 
       configRegistry.register(meta.componentId, configComponent)
       logger.info(`动态添加配置组件: ${meta.componentId}`)

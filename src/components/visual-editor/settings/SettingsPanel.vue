@@ -1,7 +1,57 @@
 <template>
   <div class="settings-panel">
+    <!-- GRID CONFIG SETTINGS -->
+    <div v-if="!selectedWidget && gridConfig">
+      <h3 class="panel-title">网格配置</h3>
+      
+      <n-form label-placement="left" label-width="auto" size="small">
+        <n-form-item label="列数">
+          <n-input-number 
+            v-model:value="gridConfig.colNum" 
+            :min="1" 
+            :max="48"
+            @update:value="handleGridConfigChange"
+          />
+        </n-form-item>
+        <n-form-item label="行高">
+          <n-input-number 
+            v-model:value="gridConfig.rowHeight" 
+            :min="20" 
+            :max="200"
+            @update:value="handleGridConfigChange"
+          />
+        </n-form-item>
+        <n-form-item label="间距">
+          <n-input-number 
+            v-model:value="gridConfig.margin[0]" 
+            :min="0" 
+            :max="50"
+            @update:value="handleGridConfigChange"
+          />
+        </n-form-item>
+        <n-form-item label="可拖拽">
+          <n-switch 
+            v-model:value="gridConfig.isDraggable" 
+            @update:value="handleGridConfigChange"
+          />
+        </n-form-item>
+        <n-form-item label="可调整大小">
+          <n-switch 
+            v-model:value="gridConfig.isResizable" 
+            @update:value="handleGridConfigChange"
+          />
+        </n-form-item>
+        <n-form-item label="静态网格">
+          <n-switch 
+            v-model:value="gridConfig.staticGrid" 
+            @update:value="handleGridConfigChange"
+          />
+        </n-form-item>
+      </n-form>
+    </div>
+
     <!-- WIDGET SETTINGS -->
-    <div v-if="selectedWidget">
+    <div v-else-if="selectedWidget">
       <h3 class="panel-title">{{ widgetName }} 属性配置</h3>
 
       <n-collapse :default-expanded-names="['base', 'props']">
@@ -122,6 +172,8 @@ import EnhancedPropertyForm from './components/EnhancedPropertyForm.vue';
 
 const props = defineProps<{
   selectedWidget: VisualEditorWidget | null;
+  gridConfig?: any;
+  onGridConfigChange?: (config: any) => void;
 }>();
 
 const { stateManager } = useEditor();
@@ -191,6 +243,12 @@ const updateNode = () => {
       properties: editableProps.value.properties,
       interaction: editableProps.value.interaction,
     });
+  }
+};
+
+const handleGridConfigChange = () => {
+  if (props.onGridConfigChange && props.gridConfig) {
+    props.onGridConfigChange({ ...props.gridConfig });
   }
 };
 

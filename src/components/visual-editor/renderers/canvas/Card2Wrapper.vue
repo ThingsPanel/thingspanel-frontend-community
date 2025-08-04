@@ -7,19 +7,19 @@
       </n-alert>
     </div>
 
-    <!-- Card2.1 组件渲染 -->
-    <ConfigProvider
+    <!-- 动态组件渲染 -->
+    <component
+      :is="componentToRender"
       v-else-if="componentToRender"
-      :config="config || {}"
-    >
-      <component :is="componentToRender" />
-    </ConfigProvider>
+      :properties="config"
+      :metadata="{ card2Data: data }"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, watch, shallowRef, type Component } from 'vue'
-import ConfigProvider from '@/card2.1/utils/ConfigProvider.vue'
+import { useEditor } from '../../hooks/useEditor'
 
 interface Props {
   componentType: string
@@ -29,6 +29,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const { card2Integration } = useEditor()
 
 // State
 const hasError = ref(false)
@@ -40,26 +42,19 @@ const loadComponent = async () => {
     hasError.value = false
     errorMessage.value = ''
     
-    // 处理 card21- 前缀
-    let componentType = props.componentType
-    if (componentType.startsWith('card21-')) {
-      componentType = componentType.replace('card21-', '')
-    }
+    // 使用新的函数名获取组件定义
+    const definition = card2Integration.getComponentDefinition(props.componentType)
     
-    // 从 Card2.1 注册表获取组件
-    const { getCard21MainComponent } = await import('@/card2.1/integrations/visual-editor')
-    const card21Component = getCard21MainComponent(componentType)
-    
-    if (card21Component) {
-      componentToRender.value = card21Component
-      console.log(`✅ 成功加载Card2.1组件: ${componentType}`)
-      return
+    if (!definition || !definition.component) {
+      throw new Error(`组件 [${props.componentType}] 的定义或组件实现不存在。`)
     }
 
-    throw new Error(`Card2.1 组件 [${componentType}] 不存在。`)
+    // definition.component 是一个异步组件 (defineAsyncComponent)
+    // 我们可以直接使用它
+    componentToRender.value = definition.component
 
   } catch (error: any) {
-    console.error(`❌ Card2.1 组件加载失败 [${props.componentType}]:`, error)
+    console.error(`❌ Card 2.1 组件加载失败 [${props.componentType}]:`, error)
     hasError.value = true
     errorMessage.value = error.message || '未知错误'
     componentToRender.value = null

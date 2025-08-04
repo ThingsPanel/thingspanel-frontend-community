@@ -11,6 +11,12 @@ export default class Logger {
       console.info(`[INFO][${this.moduleName}]`, ...args)
     }
   }
+
+  debug(...args: any[]) {
+    if (this.isDev) {
+      console.debug(`[DEBUG][${this.moduleName}]`, ...args)
+    }
+  }
   warn(...args: any[]) {
     if (this.isDev) {
       console.info(`[WARN][${this.moduleName}]`, ...args)

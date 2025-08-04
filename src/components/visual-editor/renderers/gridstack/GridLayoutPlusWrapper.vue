@@ -5,8 +5,8 @@
       :config="gridConfig"
       :readonly="isReadOnly"
       @layout-change="onLayoutChange"
-      @item-resize-stop="onResizeStop"
-      @item-drag-stop="onDragStop"
+      @item-resized="onResizeStop"
+      @item-moved="onDragStop"
     >
       <template #default="{ item }">
         <div
@@ -51,7 +51,7 @@ import { useRouter } from 'vue-router'
 import { nanoid } from 'nanoid'
 import { GridLayoutPlus, type GridLayoutPlusItem, type GridLayoutPlusConfig } from '@/components/common/grid'
 import { useEditor } from '@/components/visual-editor/hooks/useEditor'
-import type { VisualEditorWidget } from '@/components/visual-editor/types'
+import type { VisualEditorWidget, GraphData } from '@/components/visual-editor/types'
 import Card2Wrapper from '../canvas/Card2Wrapper.vue'
 import ContextMenu from '../canvas/ContextMenu.vue'
 
@@ -59,6 +59,7 @@ const props = defineProps<{
   graphData: GraphData; 
   readonly?: boolean;
   staticGrid?: boolean;
+  gridConfig?: Partial<GridLayoutPlusConfig>;
 }>()
 const emit = defineEmits(['node-select', 'request-settings'])
 
@@ -73,7 +74,7 @@ const {
 } = useEditor()
 
 const gridWrapperEl = ref<HTMLElement | null>(null)
-const layout = shallowRef<GridLayoutPlusItem[]>([])
+const layout = shallowRef<ExtendedGridLayoutPlusItem[]>([])
 const isReadOnly = computed(() => props.readonly)
 
 const contextMenu = ref<{
@@ -92,9 +93,21 @@ const gridConfig = computed<GridLayoutPlusConfig>(() => ({
   responsive: false,
   preventCollision: true,
   verticalCompact: true,
+  isMirrored: false,
+  autoSize: true,
+  useCssTransforms: true,
+  breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
+  cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
+  useStyleCursor: true,
+  restoreOnDrag: false,
+  ...props.gridConfig
 }))
 
-const nodesToLayout = (nodes: VisualEditorWidget[]): GridLayoutPlusItem[] => {
+interface ExtendedGridLayoutPlusItem extends GridLayoutPlusItem {
+  raw: VisualEditorWidget;
+}
+
+const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[] => {
   return nodes.map(node => ({
     i: node.id,
     x: node.layout?.gridstack?.x ?? 0,
@@ -111,9 +124,14 @@ watch(() => props.graphData.nodes, (newNodes) => {
   layout.value = nodesToLayout(newNodes || [])
 }, { immediate: true, deep: true })
 
-const onLayoutChange = () => {};
+const onLayoutChange = (newLayout: ExtendedGridLayoutPlusItem[]) => {
+  // 更新所有节点的布局信息
+  newLayout.forEach(item => {
+    updateNodeLayout(item)
+  })
+};
 
-const updateNodeLayout = (item: GridLayoutPlusItem) => {
+const updateNodeLayout = (item: ExtendedGridLayoutPlusItem) => {
   const node = getNodeById(item.i)
   if (node) {
     updateNode(node.id, {
@@ -122,8 +140,23 @@ const updateNodeLayout = (item: GridLayoutPlusItem) => {
   }
 }
 
-const onDragStop = (item: GridLayoutPlusItem) => updateNodeLayout(item)
-const onResizeStop = (item: GridLayoutPlusItem) => updateNodeLayout(item)
+const onDragStop = (itemId: string, newX: number, newY: number) => {
+  const item = layout.value.find(item => item.i === itemId)
+  if (item) {
+    item.x = newX
+    item.y = newY
+    updateNodeLayout(item)
+  }
+}
+
+const onResizeStop = (itemId: string, newH: number, newW: number, newHPx: number, newWPx: number) => {
+  const item = layout.value.find(item => item.i === itemId)
+  if (item) {
+    item.h = newH
+    item.w = newW
+    updateNodeLayout(item)
+  }
+}
 const handleNodeSelect = (nodeId: string) => {
   selectNode(nodeId)
   emit('node-select', nodeId)

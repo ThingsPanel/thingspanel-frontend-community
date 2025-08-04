@@ -194,6 +194,14 @@ const getDefaultConfig = () => ({
     showGrid: true,
     backgroundColor: '#f5f5f5'
   },
+  gridConfig: {
+    colNum: 24,
+    rowHeight: 80,
+    margin: [10, 10],
+    isDraggable: true,
+    isResizable: true,
+    staticGrid: false
+  },
   viewport: {}
 })
 
@@ -567,6 +575,7 @@ onUnmounted(() => {
               key="gridstack-renderer"
               :readonly="!isEditing"
               :show-widget-titles="showWidgetTitles"
+              :grid-config="editorConfig.gridConfig"
               class="renderer-container"
               @ready="handleRendererReady" 
               @error="handleRendererError"
@@ -613,7 +622,9 @@ onUnmounted(() => {
               <SettingsPanel 
                 :selected-widget="selectedWidget"
                 :show-widget-titles="showWidgetTitles"
+                :grid-config="editorConfig.gridConfig"
                 @toggle-widget-titles="handleToggleWidgetTitles"
+                @grid-config-change="handleGridConfigChange"
               />
             </NDrawerContent>
           </NDrawer>
