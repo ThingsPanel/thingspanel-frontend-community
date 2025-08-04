@@ -38,7 +38,7 @@ const displayValue = computed(() => {
   if (dataSourceValue.value?.values) {
     return dataSourceValue.value.values.value || 0
   }
-  
+
   // 回退到属性配置
   return props.properties?.value || 0
 })
@@ -49,7 +49,7 @@ const displayUnit = computed(() => {
   if (dataSourceValue.value?.values) {
     return dataSourceValue.value.values.unit || ''
   }
-  
+
   // 回退到属性配置
   return props.properties?.unit || ''
 })
@@ -60,7 +60,7 @@ const displayTitle = computed(() => {
   if (dataSourceValue.value?.values) {
     return dataSourceValue.value.values.title || ''
   }
-  
+
   // 回退到属性配置
   return props.properties?.title || '数值'
 })
@@ -84,10 +84,10 @@ const handleDataSource = (dataSource: DataSource | undefined) => {
     unsubscribeDataSource()
     unsubscribeDataSource = null
   }
-  
+
   // 重置数据源值
   dataSourceValue.value = null
-  
+
   // 如果有新的数据源，订阅它
   if (dataSource && dataSource.enabled) {
     console.log('🔧 DigitIndicatorCard - 订阅数据源:', {
@@ -95,8 +95,8 @@ const handleDataSource = (dataSource: DataSource | undefined) => {
       dataPaths: dataSource.dataPaths,
       name: dataSource.name
     })
-    
-    unsubscribeDataSource = dataSourceManager.subscribe(dataSource, (value) => {
+
+    unsubscribeDataSource = dataSourceManager.subscribe(dataSource, value => {
       console.log('🔧 DigitIndicatorCard - 收到数据源更新:', {
         values: value.values,
         dataPaths: value.metadata?.dataPaths,
@@ -131,7 +131,7 @@ onBeforeUnmount(() => {
     resizeObserver.disconnect()
     resizeObserver = null
   }
-  
+
   if (unsubscribeDataSource) {
     unsubscribeDataSource()
     unsubscribeDataSource = null
@@ -141,7 +141,6 @@ onBeforeUnmount(() => {
 
 <template>
   <div ref="cardRef" class="card-container">
-    
     <div class="card-content" :style="{ fontSize: displayFontSize + 'px' }">
       <div class="icon-container">
         <NIcon class="iconclass" :color="displayColor">
@@ -149,9 +148,7 @@ onBeforeUnmount(() => {
         </NIcon>
       </div>
       <div class="value-container">
-        <span class="value" :title="displayValue + displayUnit">
-          {{ displayValue }} {{ displayUnit }}
-        </span>
+        <span class="value" :title="displayValue + displayUnit">{{ displayValue }} {{ displayUnit }}</span>
       </div>
       <div class="metric-name-container">
         <span class="metric-name" :title="displayTitle">

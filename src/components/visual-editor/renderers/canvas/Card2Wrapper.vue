@@ -54,10 +54,10 @@ const handleDataSource = (dataSource: any) => {
     unsubscribeDataSource()
     unsubscribeDataSource = null
   }
-  
+
   // 重置数据源值
   dataSourceValue.value = null
-  
+
   // 如果有新的数据源，订阅它
   if (dataSource && dataSource.enabled) {
     console.log('🔧 Card2Wrapper - 订阅数据源:', {
@@ -65,8 +65,8 @@ const handleDataSource = (dataSource: any) => {
       dataPaths: dataSource.dataPaths,
       name: dataSource.name
     })
-    
-    unsubscribeDataSource = dataSourceManager.subscribe(dataSource, (value) => {
+
+    unsubscribeDataSource = dataSourceManager.subscribe(dataSource, value => {
       console.log('🔧 Card2Wrapper - 收到数据源更新:', {
         values: value.values,
         dataPaths: value.metadata?.dataPaths,
@@ -78,9 +78,13 @@ const handleDataSource = (dataSource: any) => {
 }
 
 // 监听数据源变化
-watch(() => props.dataSource, (newDataSource) => {
-  handleDataSource(newDataSource)
-}, { immediate: true, deep: true })
+watch(
+  () => props.dataSource,
+  newDataSource => {
+    handleDataSource(newDataSource)
+  },
+  { immediate: true, deep: true }
+)
 
 // 组件卸载时清理
 onBeforeUnmount(() => {
@@ -94,28 +98,28 @@ const loadComponent = async () => {
   try {
     hasError.value = false
     errorMessage.value = ''
-    
+
     console.log(`🔍 Card2Wrapper - 加载组件: ${props.componentType}`)
     console.log(`🔍 Card2Wrapper - card2Integration:`, card2Integration)
-    
+
     // 尝试多种组件类型格式
     let definition = card2Integration.getComponentDefinition(props.componentType)
-    
+
     // 如果直接类型找不到，尝试去掉前缀
     if (!definition && props.componentType.startsWith('card21-')) {
       const cleanType = props.componentType.replace('card21-', '')
       console.log(`🔍 Card2Wrapper - 尝试清理类型: ${cleanType}`)
       definition = card2Integration.getComponentDefinition(cleanType)
     }
-    
+
     // 如果还是找不到，尝试从 metadata 中获取
     if (!definition) {
       console.log(`🔍 Card2Wrapper - 尝试从 metadata 获取组件定义`)
       // 这里可以添加从 metadata 获取的逻辑
     }
-    
+
     console.log(`🔍 Card2Wrapper - 组件定义:`, definition)
-    
+
     if (!definition || !definition.component) {
       throw new Error(`组件 [${props.componentType}] 的定义或组件实现不存在。`)
     }
@@ -124,7 +128,6 @@ const loadComponent = async () => {
     // 我们可以直接使用它
     componentToRender.value = definition.component
     console.log(`✅ Card2Wrapper - 组件加载成功: ${props.componentType}`)
-
   } catch (error: any) {
     console.error(`❌ Card 2.1 组件加载失败 [${props.componentType}]:`, error)
     hasError.value = true

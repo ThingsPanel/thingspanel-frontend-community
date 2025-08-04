@@ -3,7 +3,7 @@
     <div class="card-header">
       <h3>{{ displayTitle }}</h3>
     </div>
-    
+
     <div class="card-content">
       <div class="data-section">
         <h4>传感器数据:</h4>
@@ -14,20 +14,26 @@
           <span>湿度: {{ displayHumidity }}%</span>
         </div>
       </div>
-      
+
       <div class="data-section">
         <h4>设备状态:</h4>
         <div class="data-item">
           <span>{{ displayStatus }}</span>
         </div>
       </div>
-      
+
       <div class="debug-info">
         <details>
           <summary>调试信息</summary>
           <div class="debug-content">
-            <div><strong>数据源1:</strong> {{ dataSource1Info }}</div>
-            <div><strong>数据源2:</strong> {{ dataSource2Info }}</div>
+            <div>
+              <strong>数据源1:</strong>
+              {{ dataSource1Info }}
+            </div>
+            <div>
+              <strong>数据源2:</strong>
+              {{ dataSource2Info }}
+            </div>
           </div>
         </details>
       </div>
@@ -77,7 +83,7 @@ const displayStatus = computed(() => {
 const dataSource1Info = computed(() => {
   const temperature = props.dataSourceValue?.values?.temperature
   const humidity = props.dataSourceValue?.values?.humidity
-  return (temperature !== undefined || humidity !== undefined) ? JSON.stringify({ temperature, humidity }) : '无数据'
+  return temperature !== undefined || humidity !== undefined ? JSON.stringify({ temperature, humidity }) : '无数据'
 })
 
 const dataSource2Info = computed(() => {
@@ -140,4 +146,4 @@ const dataSource2Info = computed(() => {
 .debug-content div {
   margin-bottom: 4px;
 }
-</style> 
+</style>
