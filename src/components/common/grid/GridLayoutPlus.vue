@@ -15,8 +15,8 @@
       v-model:layout="internalLayout"
       :col-num="config.colNum"
       :row-height="config.rowHeight"
-      :is-draggable="!readonly && config.isDraggable"
-      :is-resizable="!readonly && config.isResizable"
+      :is-draggable="!readonly && config.isDraggable && !config.staticGrid"
+      :is-resizable="!readonly && config.isResizable && !config.staticGrid"
       :is-mirrored="config.isMirrored"
       :auto-size="config.autoSize"
       :vertical-compact="config.verticalCompact"
@@ -53,8 +53,8 @@
         :min-h="item.minH"
         :max-w="item.maxW"
         :max-h="item.maxH"
-        :is-draggable="!readonly && item.isDraggable !== false && !item.static"
-        :is-resizable="!readonly && item.isResizable !== false && !item.static"
+        :is-draggable="!readonly && (item.isDraggable !== false) && !item.static"
+        :is-resizable="!readonly && (item.isResizable !== false) && !item.static"
         :static="item.static"
         :drag-ignore-from="item.dragIgnoreFrom"
         :drag-allow-from="item.dragAllowFrom"
@@ -148,24 +148,36 @@ const dragCounter = ref(0)
 // Computed
 const isDarkTheme = computed(() => themeStore.darkMode)
 
-const config = computed<GridLayoutPlusConfig>(() => ({
-  colNum: 12,
-  rowHeight: 100,
-  isDraggable: true,
-  isResizable: true,
-  isMirrored: false,
-  autoSize: true,
-  verticalCompact: true,
-  margin: [10, 10],
-  useCssTransforms: true,
-  responsive: false,
-  breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
-  cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
-  preventCollision: false,
-  useStyleCursor: true,
-  restoreOnDrag: false,
-  ...props.config
-}))
+const config = computed<GridLayoutPlusConfig>(() => {
+  const baseConfig = {
+    colNum: 12,
+    rowHeight: 100,
+    isDraggable: true,
+    isResizable: true,
+    isMirrored: false,
+    autoSize: true,
+    verticalCompact: true,
+    margin: [10, 10],
+    useCssTransforms: true,
+    responsive: false,
+    breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
+    cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
+    preventCollision: false,
+    useStyleCursor: true,
+    restoreOnDrag: false,
+    staticGrid: false,
+    ...props.config
+  }
+  
+  // 调试日志
+  console.log('🔧 GridLayoutPlus - 配置计算:', {
+    propsConfig: props.config,
+    finalConfig: baseConfig,
+    readonly: props.readonly
+  })
+  
+  return baseConfig
+})
 
 // Methods
 const getItemTitle = (item: GridLayoutPlusItem): string => {

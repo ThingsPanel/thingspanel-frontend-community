@@ -126,6 +126,22 @@ class WidgetRegistry {
   }
 
   /**
+   * 注销指定类型的组件。
+   * @param type - 组件的唯一标识符。
+   * @returns 如果组件存在并被成功注销则返回 true，否则返回 false。
+   */
+  public unregister(type: string): boolean {
+    return this.widgets.delete(type)
+  }
+
+  /**
+   * 清除所有已注册的组件。
+   */
+  public clear(): void {
+    this.widgets.clear()
+  }
+
+  /**
    * 将所有组件按分类组织成树形结构。
    * 这是为了方便在组件库 UI 中展示。
    * @returns 返回一个按分类组织的组件树。
@@ -135,11 +151,11 @@ class WidgetRegistry {
     const categoryNameMap: Record<string, string> = {
       base: '基础组件',
       card21: '🎯 Card 2.1 组件',
-      chart: '📊 Card 2.0 图表',
-      control: '🎛️ Card 2.0 控制',
-      display: '📱 Card 2.0 显示',
-      media: '🎥 Card 2.0 媒体',
-      other: '🔧 Card 2.0 其他'
+      chart: '📊 图表组件',
+      control: '🎛️ 控制组件',
+      display: '📱 显示组件',
+      media: '🎥 媒体组件',
+      other: '🔧 其他组件'
     }
 
     for (const widget of this.widgets.values()) {

@@ -1,5 +1,7 @@
 <template>
   <div ref="gridWrapperEl" class="grid-layout-plus-wrapper-editor">
+
+
     <GridLayoutPlus
       v-model:layout="layout"
       :config="gridConfig"
@@ -20,14 +22,19 @@
           </div>
           <div class="widget-content" @click="handleInteraction(item.raw)">
             <Card2Wrapper
-              v-if="isCard2Component(item.type)"
+              v-if="isCard2Component(item.type) || item.raw.metadata?.isCard2Component"
               :component-type="item.type"
               :config="item.raw.properties"
               :data="item.raw.metadata?.card2Data"
+              :data-source="item.raw.dataSource"
               :node-id="item.raw.id"
             />
             <div v-else class="placeholder">
               组件: {{ item.type }}
+              <br>
+              <small>isCard2Component: {{ isCard2Component(item.type) }}</small>
+              <br>
+              <small>metadata.isCard2Component: {{ item.raw.metadata?.isCard2Component }}</small>
             </div>
           </div>
         </div>
@@ -84,24 +91,50 @@ const contextMenu = ref<{
   selectedWidgets: VisualEditorWidget[];
 }>({ show: false, x: 0, y: 0, selectedWidgets: [] });
 
-const gridConfig = computed<GridLayoutPlusConfig>(() => ({
-  colNum: 12,
-  rowHeight: 80,
-  margin: [10, 10],
-  isDraggable: !isReadOnly.value && !props.staticGrid,
-  isResizable: !isReadOnly.value && !props.staticGrid,
-  responsive: false,
-  preventCollision: true,
-  verticalCompact: true,
-  isMirrored: false,
-  autoSize: true,
-  useCssTransforms: true,
-  breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
-  cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
-  useStyleCursor: true,
-  restoreOnDrag: false,
-  ...props.gridConfig
-}))
+const gridConfig = computed<GridLayoutPlusConfig>(() => {
+  const config = {
+    colNum: 12,
+    rowHeight: 80,
+    margin: [10, 10] as [number, number],
+    isDraggable: !isReadOnly.value && !props.staticGrid,
+    isResizable: !isReadOnly.value && !props.staticGrid,
+    responsive: false,
+    preventCollision: false, // 改为 false，允许碰撞和替换
+    verticalCompact: true,
+    isMirrored: false,
+    autoSize: true,
+    useCssTransforms: true,
+    breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
+    cols: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
+    useStyleCursor: true,
+    restoreOnDrag: false,
+    ...props.gridConfig
+  }
+  
+  // 确保开关配置正确应用
+  if (props.gridConfig) {
+    if (props.gridConfig.isDraggable !== undefined) {
+      config.isDraggable = !isReadOnly.value && !props.staticGrid && props.gridConfig.isDraggable
+    }
+    if (props.gridConfig.isResizable !== undefined) {
+      config.isResizable = !isReadOnly.value && !props.staticGrid && props.gridConfig.isResizable
+    }
+    if (props.gridConfig.staticGrid !== undefined) {
+      config.isDraggable = !isReadOnly.value && !props.gridConfig.staticGrid && config.isDraggable
+      config.isResizable = !isReadOnly.value && !props.gridConfig.staticGrid && config.isResizable
+    }
+  }
+  
+  // 调试日志
+  console.log('🔧 GridLayoutPlusWrapper - 当前配置:', {
+    propsGridConfig: props.gridConfig,
+    finalConfig: config,
+    isReadOnly: isReadOnly.value,
+    staticGrid: props.staticGrid
+  })
+  
+  return config
+})
 
 interface ExtendedGridLayoutPlusItem extends GridLayoutPlusItem {
   raw: VisualEditorWidget;
@@ -114,7 +147,9 @@ const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[
     y: node.layout?.gridstack?.y ?? 0,
     w: node.layout?.gridstack?.w ?? 4,
     h: node.layout?.gridstack?.h ?? 2,
-    static: false,
+    static: props.staticGrid || (props.gridConfig?.staticGrid ?? false),
+    isDraggable: !isReadOnly.value && !props.staticGrid && (props.gridConfig?.isDraggable ?? true),
+    isResizable: !isReadOnly.value && !props.staticGrid && (props.gridConfig?.isResizable ?? true),
     type: node.type,
     raw: node,
   }))
@@ -123,6 +158,17 @@ const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[
 watch(() => props.graphData.nodes, (newNodes) => {
   layout.value = nodesToLayout(newNodes || [])
 }, { immediate: true, deep: true })
+
+// 监听配置变更
+watch(() => props.gridConfig, (newConfig) => {
+  console.log('🔧 GridLayoutPlusWrapper - 配置变更:', {
+    newConfig,
+    isReadOnly: isReadOnly.value,
+    staticGrid: props.staticGrid
+  })
+  // 重新计算布局以应用新配置
+  layout.value = nodesToLayout(props.graphData.nodes || [])
+}, { deep: true })
 
 const onLayoutChange = (newLayout: ExtendedGridLayoutPlusItem[]) => {
   // 更新所有节点的布局信息

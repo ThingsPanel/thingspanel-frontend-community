@@ -153,6 +153,8 @@ export interface GridLayoutPlusConfig {
   useStyleCursor: boolean
   /** 拖拽时是否恢复 */
   restoreOnDrag: boolean
+  /** 是否为静态网格 */
+  staticGrid?: boolean
 }
 
 // 默认配置

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useDialog, useMessage, NDrawer, NDrawerContent } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import { useAppStore } from '@/store/modules/app'
@@ -56,7 +56,8 @@ const showWidgetTitles = ref(true) // 总开关，默认显示标题
 const { isFullscreen, toggle } = useFullscreen(fullui)
 
 // 创建编辑器上下文
-const { stateManager, addWidget, selectNode } = createEditor()
+const editorContext: EditorContext = createEditor()
+const { stateManager, addWidget, selectNode } = editorContext
 const setPreviewMode = (val: boolean) => {}
 
 const selectedWidget = computed<VisualEditorWidget | null>(() => {
@@ -87,6 +88,34 @@ const setState = (config: any) => {
   if (config.viewport) {
     stateManager.updateViewport(config.viewport)
   }
+  
+  // 恢复渲染器类型和编辑器状态
+  if (config.currentRenderer) {
+    currentRenderer.value = config.currentRenderer
+  }
+  if (config.showWidgetTitles !== undefined) {
+    showWidgetTitles.value = config.showWidgetTitles
+  }
+  if (config.showLeftDrawer !== undefined) {
+    showLeftDrawer.value = config.showLeftDrawer
+  }
+  if (config.showRightDrawer !== undefined) {
+    showRightDrawer.value = config.showRightDrawer
+  }
+  
+  // 恢复编辑状态（可选，通常不保存编辑状态）
+  if (config.isEditing !== undefined) {
+    isEditing.value = config.isEditing
+  }
+  if (config.selectedNodeId !== undefined) {
+    selectedNodeId.value = config.selectedNodeId
+  }
+  if (config.isDragging !== undefined) {
+    isDragging.value = config.isDragging
+  }
+  if (config.draggedComponent !== undefined) {
+    draggedComponent.value = config.draggedComponent
+  }
 }
 
 const getState = () => {
@@ -94,8 +123,22 @@ const getState = () => {
   return {
     nodes: canvasState.nodes,
     canvasConfig: editorConfig.value.canvasConfig || {},
+    gridConfig: editorConfig.value.gridConfig || {},
     viewport: canvasState.viewport,
-    mode: canvasState.mode
+    mode: canvasState.mode,
+    // 渲染器类型和编辑器状态
+    currentRenderer: currentRenderer.value,
+    showWidgetTitles: showWidgetTitles.value,
+    // 抽屉状态（用于恢复编辑状态）
+    showLeftDrawer: showLeftDrawer.value,
+    showRightDrawer: showRightDrawer.value,
+    // 新增：编辑模式状态
+    isEditing: isEditing.value,
+    // 新增：选中的节点ID
+    selectedNodeId: selectedNodeId.value,
+    // 新增：拖拽状态（可选）
+    isDragging: isDragging.value,
+    draggedComponent: draggedComponent.value
   }
 }
 
@@ -117,6 +160,20 @@ const fetchBoard = async () => {
         const config = parseConfig(data.config)
         editorConfig.value = config.visualEditor || getDefaultConfig()
         preEditorConfig.value = JSON.parse(JSON.stringify(editorConfig.value))
+        
+        // 恢复渲染器类型和编辑器状态
+        if (editorConfig.value.currentRenderer) {
+          currentRenderer.value = editorConfig.value.currentRenderer
+        }
+        if (editorConfig.value.showWidgetTitles !== undefined) {
+          showWidgetTitles.value = editorConfig.value.showWidgetTitles
+        }
+        if (editorConfig.value.showLeftDrawer !== undefined) {
+          showLeftDrawer.value = editorConfig.value.showLeftDrawer
+        }
+        if (editorConfig.value.showRightDrawer !== undefined) {
+          showRightDrawer.value = editorConfig.value.showRightDrawer
+        }
         
         // 加载到编辑器
         setState(editorConfig.value)
@@ -168,7 +225,9 @@ const parseConfig = (configString: string) => {
     
     // 检查是否为新格式
     if (typeof config === 'object' && config.visualEditor) {
-      return config
+      // 验证配置格式
+      const validatedConfig = validateConfig(config)
+      return validatedConfig
     }
     
     // 兼容旧格式
@@ -183,6 +242,76 @@ const parseConfig = (configString: string) => {
       visualEditor: getDefaultConfig()
     }
   }
+}
+
+// 验证配置格式
+const validateConfig = (config: any) => {
+  const defaultConfig = getDefaultConfig()
+  
+  // 确保 visualEditor 存在
+  if (!config.visualEditor) {
+    config.visualEditor = defaultConfig
+    return config
+  }
+  
+  // 验证并补充缺失的配置项
+  const visualEditor = config.visualEditor
+  
+  // 确保基本配置项存在
+  if (!visualEditor.nodes) visualEditor.nodes = defaultConfig.nodes
+  if (!visualEditor.canvasConfig) visualEditor.canvasConfig = defaultConfig.canvasConfig
+  if (!visualEditor.gridConfig) visualEditor.gridConfig = defaultConfig.gridConfig
+  if (!visualEditor.viewport) visualEditor.viewport = defaultConfig.viewport
+  if (!visualEditor.currentRenderer) visualEditor.currentRenderer = defaultConfig.currentRenderer
+  if (!visualEditor.showWidgetTitles) visualEditor.showWidgetTitles = defaultConfig.showWidgetTitles
+  if (!visualEditor.showLeftDrawer) visualEditor.showLeftDrawer = defaultConfig.showLeftDrawer
+  if (!visualEditor.showRightDrawer) visualEditor.showRightDrawer = defaultConfig.showRightDrawer
+  
+  // 确保 legacyComponents 存在
+  if (!config.legacyComponents) {
+    config.legacyComponents = []
+  }
+  
+  // 执行配置迁移
+  const migratedConfig = migrateConfig(config)
+  
+  return migratedConfig
+}
+
+// 配置迁移函数
+const migrateConfig = (config: any) => {
+  const visualEditor = config.visualEditor
+  
+  // 检查版本并执行迁移
+  const version = visualEditor.metadata?.version || '0.0.0'
+  
+  // 从 v0.x 迁移到 v1.0
+  if (version.startsWith('0.')) {
+    console.log('🔄 执行配置迁移: v0.x -> v1.0')
+    
+    // 添加缺失的配置项
+    if (!visualEditor.currentRenderer) {
+      visualEditor.currentRenderer = 'gridstack'
+    }
+    if (!visualEditor.showWidgetTitles) {
+      visualEditor.showWidgetTitles = true
+    }
+    if (!visualEditor.showLeftDrawer) {
+      visualEditor.showLeftDrawer = false
+    }
+    if (!visualEditor.showRightDrawer) {
+      visualEditor.showRightDrawer = false
+    }
+    
+    // 更新版本信息
+    if (!visualEditor.metadata) {
+      visualEditor.metadata = {}
+    }
+    visualEditor.metadata.version = '1.0.0'
+    visualEditor.metadata.migratedAt = Date.now()
+  }
+  
+  return config
 }
 
 // 默认配置
@@ -202,7 +331,17 @@ const getDefaultConfig = () => ({
     isResizable: true,
     staticGrid: false
   },
-  viewport: {}
+  viewport: {},
+  // 默认渲染器类型和编辑器状态
+  currentRenderer: 'gridstack' as RendererType,
+  showWidgetTitles: true,
+  showLeftDrawer: false,
+  showRightDrawer: false,
+  // 新增：默认编辑状态
+  isEditing: false,
+  selectedNodeId: '',
+  isDragging: false,
+  draggedComponent: null
 })
 
 // 渲染器选项
@@ -224,6 +363,7 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
         positiveText: $t('device_template.confirm'),
         negativeText: $t('common.cancel'),
         onPositiveClick: () => {
+          // 用户确认退出，重置配置
           isEditing.value = false
           setPreviewMode(true) // 同步全局预览模式
           // 退出编辑模式时关闭所有抽屉
@@ -233,9 +373,14 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
           selectedNodeId.value = ''
           editorConfig.value = preEditorConfig.value
           setState(preEditorConfig.value)
+        },
+        onNegativeClick: () => {
+          // 用户取消退出，保持当前状态，不做任何操作
+          console.log('用户取消退出编辑模式，保持当前配置')
         }
       })
     } else {
+      // 没有未保存的更改，直接退出编辑模式
       isEditing.value = false
       setPreviewMode(true) // 同步全局预览模式
       // 退出编辑模式时关闭所有抽屉
@@ -250,10 +395,12 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
 // 抽屉控制事件处理
 const handleToggleLeftDrawer = () => {
   showLeftDrawer.value = !showLeftDrawer.value
+  hasChanges.value = true
 }
 
 const handleToggleRightDrawer = () => {
   showRightDrawer.value = !showRightDrawer.value
+  hasChanges.value = true
 }
 
 
@@ -272,6 +419,7 @@ const handleDragEnd = () => {
 }
 
 const handleRendererChange = (renderer: RendererType) => {
+  console.log('🔄 渲染器变更:', { old: currentRenderer.value, new: renderer })
   currentRenderer.value = renderer
   hasChanges.value = true
 }
@@ -340,7 +488,22 @@ const handleExportConfig = () => {
         metadata: {
           version: '1.0.0',
           exportedAt: Date.now(),
-          editorType: 'visual-editor'
+          editorType: 'visual-editor',
+          // 导出时的面板信息
+          panelInfo: {
+            id: props.panelId,
+            name: panelData.value?.name || '',
+            homeFlag: panelData.value?.home_flag || false,
+            exportedAt: Date.now()
+          },
+          // 导出时的编辑器状态
+          exportInfo: {
+            totalNodes: currentState.nodes.length,
+            rendererType: currentState.currentRenderer,
+            hasGridConfig: !!currentState.gridConfig,
+            hasCanvasConfig: !!currentState.canvasConfig,
+            showWidgetTitles: currentState.showWidgetTitles
+          }
         }
       }
     }
@@ -352,7 +515,7 @@ const handleExportConfig = () => {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `panel-config-${Date.now()}.json`
+    a.download = `panel-config-${panelData.value?.name || 'unnamed'}-${Date.now()}.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -368,6 +531,45 @@ const handleExportConfig = () => {
 // 视图控制事件
 const handleToggleWidgetTitles = (value: boolean) => {
   showWidgetTitles.value = value
+  hasChanges.value = true
+}
+
+const handleGridConfigChange = (newGridConfig: any) => {
+  console.log('🔧 PanelEditor - 网格配置变更:', {
+    oldConfig: editorConfig.value.gridConfig,
+    newConfig: newGridConfig
+  });
+  
+  editorConfig.value.gridConfig = { ...editorConfig.value.gridConfig, ...newGridConfig }
+  hasChanges.value = true
+  
+  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.gridConfig);
+  console.log('🔧 PanelEditor - 当前完整配置:', editorConfig.value);
+}
+
+const handleGridstackConfigChange = (newGridConfig: any) => {
+  console.log('🔧 PanelEditor - 工具栏网格配置变更:', {
+    oldConfig: editorConfig.value.gridConfig,
+    newConfig: newGridConfig
+  });
+  
+  editorConfig.value.gridConfig = { ...editorConfig.value.gridConfig, ...newGridConfig }
+  hasChanges.value = true
+  
+  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.gridConfig);
+  console.log('🔧 PanelEditor - 当前完整配置:', editorConfig.value);
+}
+
+const handleCanvasConfigChange = (newCanvasConfig: any) => {
+  console.log('🔧 PanelEditor - 画布配置变更:', {
+    oldConfig: editorConfig.value.canvasConfig,
+    newConfig: newCanvasConfig
+  });
+  
+  editorConfig.value.canvasConfig = { ...editorConfig.value.canvasConfig, ...newCanvasConfig }
+  hasChanges.value = true
+  
+  console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.canvasConfig);
 }
 
 const handleZoomIn = () => {
@@ -410,6 +612,8 @@ const handleRendererError = (error: Error) => {
 const handleNodeSelect = (nodeId: string) => {
   selectedNodeId.value = nodeId
   selectNode(nodeId)
+  // 节点选择通常不触发保存，但可以标记为有变化
+  // hasChanges.value = true
 }
 
 const handleRequestSettings = (nodeId: string) => {
@@ -443,22 +647,52 @@ const handleSave = async () => {
       }
     }
 
-    // 构建新配置
-    const newConfig = {
+    // 先构建基础配置（不包含 configSize）
+    const baseConfig = {
       legacyComponents: existingConfig.legacyComponents || [],
       visualEditor: {
         ...currentState,
         metadata: {
           version: '1.0.0',
           updatedAt: Date.now(),
-          editorType: 'visual-editor'
+          editorType: 'visual-editor',
+          // 面板基本信息
+          panelInfo: {
+            id: props.panelId,
+            name: panelData.value?.name || '',
+            homeFlag: panelData.value?.home_flag || false,
+            createdAt: panelData.value?.created_at || Date.now(),
+            updatedAt: Date.now()
+          },
+          // 编辑器版本信息
+          editorVersion: '1.0.0',
+          // 渲染器信息
+          rendererInfo: {
+            type: currentRenderer.value,
+            version: '1.0.0',
+            features: ['drag', 'resize', 'grid', 'canvas']
+          },
+          // 配置统计信息（先不包含 configSize）
+          stats: {
+            totalNodes: currentState.nodes.length,
+            card2Nodes: currentState.nodes.filter((node: any) => node.metadata?.isCard2Component).length,
+            legacyNodes: currentState.nodes.filter((node: any) => !node.metadata?.isCard2Component).length,
+            hasGridConfig: !!currentState.gridConfig,
+            hasCanvasConfig: !!currentState.canvasConfig
+          }
         }
       }
     }
 
+    // 现在可以安全地计算配置大小
+    const configSize = JSON.stringify(baseConfig).length
+    baseConfig.visualEditor.metadata.stats.configSize = configSize
+
+    console.log('💾 保存配置统计:', baseConfig.visualEditor.metadata.stats)
+
     const { error } = await PutBoard({
       id: props.panelId,
-      config: JSON.stringify(newConfig),
+      config: JSON.stringify(baseConfig),
       name: panelData.value?.name,
       home_flag: panelData.value?.home_flag
     })
@@ -477,6 +711,26 @@ const handleSave = async () => {
     isSaving.value = false
   }
 }
+
+// 监听状态变化，自动设置 hasChanges
+watch(
+  [
+    () => currentRenderer.value,
+    () => showWidgetTitles.value,
+    () => showLeftDrawer.value,
+    () => showRightDrawer.value,
+    () => editorConfig.value.gridConfig,
+    () => editorConfig.value.canvasConfig,
+    () => stateManager.canvasState.value.nodes
+  ],
+  () => {
+    // 只有在数据加载完成后才监听变化
+    if (dataFetched.value && !isUnmounted.value) {
+      hasChanges.value = true
+    }
+  },
+  { deep: true }
+)
 
 // 学习 PanelManage 的 onMounted 写法
 onMounted(() => {
@@ -535,6 +789,8 @@ onUnmounted(() => {
             :has-changes="hasChanges"
             :show-left-drawer="showLeftDrawer"
             :show-right-drawer="showRightDrawer"
+            :gridstack-config="editorConfig.gridConfig"
+            :canvas-config="editorConfig.canvasConfig"
             @mode-change="handleModeChange"
             @renderer-change="handleRendererChange"
             @save="handleSave"
@@ -550,6 +806,8 @@ onUnmounted(() => {
             @reset-zoom="handleResetZoom"
             @toggle-left-drawer="handleToggleLeftDrawer"
             @toggle-right-drawer="handleToggleRightDrawer"
+            @gridstack-config-change="handleGridstackConfigChange"
+            @canvas-config-change="handleCanvasConfigChange"
           />
         </div>
 

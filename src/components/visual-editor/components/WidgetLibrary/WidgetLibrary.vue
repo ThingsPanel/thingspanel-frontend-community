@@ -84,9 +84,11 @@ interface TopCategory {
 
 const twoLevelWidgetTree = computed(() => {
   const topCategoriesData: {
+    'Card 2.1': { [subCategoryName: string]: WidgetDefinition[] },
     '曲线': { [subCategoryName: string]: WidgetDefinition[] },
     '系统': { [subCategoryName: string]: WidgetDefinition[] }
   } = {
+    'Card 2.1': {},
     '曲线': {},
     '系统': {}
   };
@@ -94,7 +96,12 @@ const twoLevelWidgetTree = computed(() => {
   combinedWidgetTree.value.forEach(subCategory => {
     subCategory.children.forEach(widget => {
       // 1. Determine Top-Level Category
-      const topLevelName = widget.category === 'chart' ? '曲线' : '系统';
+      let topLevelName = '系统';
+      if (widget.category === 'chart') {
+        topLevelName = '曲线';
+      } else if (widget.category === 'card21') {
+        topLevelName = 'Card 2.1';
+      }
       
       // 2. Determine Second-Level Category
       const subLevelName = subCategory.name || '其他';
@@ -108,6 +115,10 @@ const twoLevelWidgetTree = computed(() => {
 
   // 3. Convert map to final array structure for rendering
   const result: TopCategory[] = [
+    {
+      name: 'Card 2.1',
+      subCategories: Object.entries(topCategoriesData['Card 2.1']).map(([name, children]) => ({ name, children }))
+    },
     {
       name: '曲线',
       subCategories: Object.entries(topCategoriesData['曲线']).map(([name, children]) => ({ name, children }))

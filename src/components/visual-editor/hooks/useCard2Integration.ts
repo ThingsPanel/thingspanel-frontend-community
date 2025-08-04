@@ -105,9 +105,33 @@ export function useCard2Integration(options: Card2IntegrationOptions = {}) {
 
   const loadAvailableComponents = async () => {
     try {
-      const definitions = componentRegistry.getAll().filter(componentFilter)
+      // 确保 Card 2.1 组件已经被注册
+      console.log('🔍 检查 Card 2.1 注册表状态...')
+      const allComponents = componentRegistry.getAll()
+      console.log(
+        'Card 2.1 注册表中的组件:',
+        allComponents.map(c => ({ id: c.id, title: c.meta?.title }))
+      )
+
+      const definitions = allComponents.filter(componentFilter)
       registeredDefinitions.value = definitions
       console.log(`✅ 加载了 ${definitions.length} 个 Card 2.1 组件。`)
+      console.log(
+        '加载的组件详情:',
+        definitions.map(d => ({ id: d.id, title: d.meta?.title, category: d.meta?.category }))
+      )
+
+      // 检查每个组件的详细信息
+      definitions.forEach(def => {
+        console.log(`🔍 组件 ${def.id} 详细信息:`, {
+          id: def.id,
+          title: def.meta?.title,
+          category: def.meta?.category,
+          hasComponent: !!def.component,
+          hasConfigComponent: !!def.configComponent,
+          properties: def.properties
+        })
+      })
     } catch (err) {
       console.error('❌ 加载 Card 2.1 组件失败:', err)
       registeredDefinitions.value = []

@@ -106,6 +106,7 @@ declare module "@elegant-router/types" {
     "rule-engine": "/rule-engine";
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
+    "test": "/test";
     "user-center": "/user-center";
     "visualization": "/visualization";
     "visualization_kanban": "/visualization/kanban";
@@ -169,6 +170,7 @@ declare module "@elegant-router/types" {
     | "plugin"
     | "rule-engine"
     | "system-management-user"
+    | "test"
     | "user-center"
     | "visualization"
   >;
@@ -254,6 +256,7 @@ declare module "@elegant-router/types" {
     | "plugin_video"
     | "rule-engine"
     | "system-management-user_system-log"
+    | "test"
     | "user-center"
     | "visualization_kanban-details"
     | "visualization_kanban"

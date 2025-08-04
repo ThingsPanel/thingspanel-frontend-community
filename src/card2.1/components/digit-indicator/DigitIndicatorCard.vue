@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, computed } from 'vue'
+import { onBeforeUnmount, onMounted, ref, computed, watch } from 'vue'
 import { NIcon } from 'naive-ui'
 import { icons as iconOptions } from '@/components/common/icons'
 import { $t } from '@/locales'
+import { dataSourceManager } from '@/components/visual-editor/core/data-source-manager'
+import type { DataSource, DataSourceValue } from '@/components/visual-editor/types/data-source'
 
 interface Props {
   properties?: {
@@ -12,23 +14,50 @@ interface Props {
     title?: string
     value?: string | number
   }
-  metadata?: any
+  metadata?: {
+    dataSource?: DataSource
+  }
 }
 
 const props = withDefaults(defineProps<Props>(), {
   properties: () => ({})
 })
 
-const cardRef = ref(null)
+const cardRef = ref<HTMLElement | null>(null)
 const fontSize = ref('14px')
 let resizeObserver: ResizeObserver | null = null
 
-// 计算属性
+// 数据源相关状态
+const dataSourceValue = ref<DataSourceValue | null>(null)
+let unsubscribeDataSource: (() => void) | null = null
+
+// 计算属性：优先使用数据源的值，回退到属性值
 const displayValue = computed(() => {
+  if (dataSourceValue.value?.value !== undefined && dataSourceValue.value?.value !== null) {
+    // 数据源值可以是任何类型，组件内部决定如何使用
+    const value = dataSourceValue.value.value
+    
+    // 如果是对象或数组，转换为字符串显示
+    if (typeof value === 'object') {
+      return JSON.stringify(value)
+    }
+    
+    return value
+  }
   return props.properties?.value ?? '45'
 })
 
 const displayUnit = computed(() => {
+  // 优先使用数据源的单位
+  if (dataSourceValue.value?.unit) {
+    return dataSourceValue.value.unit
+  }
+  
+  // 如果是 JSON 数据源，尝试从 metadata 中获取单位
+  if (dataSourceValue.value?.metadata?.originalData?.unit) {
+    return dataSourceValue.value.metadata.originalData.unit
+  }
+  
   return props.properties?.unit ?? '%'
 })
 
@@ -41,8 +70,46 @@ const displayIcon = computed(() => {
 })
 
 const displayTitle = computed(() => {
+  // 如果是 JSON 数据源，尝试从 metadata 中获取标题
+  if (dataSourceValue.value?.metadata?.originalData?.title) {
+    return dataSourceValue.value.metadata.originalData.title
+  }
+  
   return props.properties?.title ?? $t('card.humidity')
 })
+
+// 处理数据源
+const handleDataSource = (dataSource: DataSource | undefined) => {
+  // 取消之前的订阅
+  if (unsubscribeDataSource) {
+    unsubscribeDataSource()
+    unsubscribeDataSource = null
+  }
+  
+  // 重置数据源值
+  dataSourceValue.value = null
+  
+  // 如果有新的数据源，订阅它
+  if (dataSource && dataSource.enabled) {
+    console.log('🔧 DigitIndicatorCard - 订阅数据源:', {
+      type: dataSource.type,
+      dataPath: dataSource.dataPath,
+      name: dataSource.name
+    })
+    
+    unsubscribeDataSource = dataSourceManager.subscribe(dataSource, (value) => {
+      console.log('🔧 DigitIndicatorCard - 收到数据源更新:', {
+        value: value.value,
+        dataPath: value.metadata?.dataPath,
+        originalData: value.metadata?.originalData
+      })
+      dataSourceValue.value = value
+    })
+  }
+}
+
+// 监听数据源变化
+watch(() => props.metadata?.dataSource, handleDataSource, { immediate: true, deep: true })
 
 const handleResize = (entries: ResizeObserverEntry[]) => {
   for (const entry of entries) {
@@ -65,11 +132,17 @@ onBeforeUnmount(() => {
     resizeObserver.disconnect()
     resizeObserver = null
   }
+  
+  if (unsubscribeDataSource) {
+    unsubscribeDataSource()
+    unsubscribeDataSource = null
+  }
 })
 </script>
 
 <template>
   <div ref="cardRef" class="card-container">
+    
     <div class="card-content" :style="{ fontSize: fontSize }">
       <div class="icon-container">
         <NIcon class="iconclass" :color="displayColor">

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
+import { NForm, NFormItem, NInput, NColorPicker } from 'naive-ui'
 import { $t } from '@/locales'
 import IconSelector from '@/components/common/icon-selector.vue'
 
@@ -65,7 +66,7 @@ const setIcon = (icon: string) => {
     </NFormItem>
     <NFormItem label="值">
       <NInput 
-        :value="config.value" 
+        :value="String(config.value || '')" 
         placeholder="45"
         @update:value="(val) => updateConfig('value', val)"
       />

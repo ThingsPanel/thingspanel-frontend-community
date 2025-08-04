@@ -81,6 +81,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   plugin_video: () => import("@/views/plugin/video/index.vue"),
   "rule-engine": () => import("@/views/rule-engine/index.vue"),
   "system-management-user_system-log": () => import("@/views/system-management-user/system-log/index.vue"),
+  test: () => import("@/views/test/index.vue"),
   "user-center": () => import("@/views/user-center/index.vue"),
   "visualization_kanban-details": () => import("@/views/visualization/kanban-details/index.vue"),
   visualization_kanban: () => import("@/views/visualization/kanban/index.vue"),

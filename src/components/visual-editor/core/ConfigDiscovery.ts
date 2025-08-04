@@ -293,9 +293,12 @@ export class ConfigDiscovery {
             const configComponent: IConfigComponent = configMeta.component
 
             // 注册到配置注册表
-            configRegistry.register(configMeta.componentId, configComponent)
-
-            logger.debug(`注册配置组件: ${configMeta.componentId} (${configMeta.type})`)
+            if (!configRegistry.has(configMeta.componentId)) {
+              configRegistry.register(configMeta.componentId, configComponent)
+              logger.debug(`注册配置组件: ${configMeta.componentId} (${configMeta.type})`)
+            } else {
+              logger.debug(`配置组件已存在，跳过注册: ${configMeta.componentId} (${configMeta.type})`)
+            }
           } else {
             logger.warn(`组件 ${configMeta.componentId} 不存在，跳过配置注册`)
           }
@@ -358,8 +361,12 @@ export class ConfigDiscovery {
     if (meta.componentId) {
       const configComponent: IConfigComponent = meta.component
 
-      configRegistry.register(meta.componentId, configComponent)
-      logger.info(`动态添加配置组件: ${meta.componentId}`)
+      if (!configRegistry.has(meta.componentId)) {
+        configRegistry.register(meta.componentId, configComponent)
+        logger.info(`动态添加配置组件: ${meta.componentId}`)
+      } else {
+        logger.info(`配置组件已存在，跳过动态添加: ${meta.componentId}`)
+      }
     }
   }
 

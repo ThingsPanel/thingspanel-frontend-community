@@ -98,11 +98,11 @@ const canvasConfig = computed(() => ({
 }))
 
 const gridstackConfig = computed(() => ({
-  columns: 12,
-  cellHeight: 80,
-  margin: 10,
-  draggable: true,
-  resizable: true,
+  colNum: 12,
+  rowHeight: 80,
+  margin: [10, 10],
+  isDraggable: true,
+  isResizable: true,
   staticGrid: false,
   ...props.gridstackConfig
 }))
@@ -488,48 +488,48 @@ const getConfigTitle = () => {
           <NForm label-placement="left" label-width="100">
             <NFormItem :label="$t('visualEditor.columns')">
               <NInputNumber
-                v-model:value="gridstackConfig.columns"
+                v-model:value="gridstackConfig.colNum"
                 :min="6"
                 :max="24"
                 :step="1"
                 placeholder="网格列数"
-                @update:value="handleGridstackConfigChange({ ...gridstackConfig, columns: $event })"
+                @update:value="handleGridstackConfigChange({ ...gridstackConfig, colNum: $event })"
               />
             </NFormItem>
             
             <NFormItem :label="$t('visualEditor.rowHeight')">
               <NInputNumber
-                v-model:value="gridstackConfig.cellHeight"
+                v-model:value="gridstackConfig.rowHeight"
                 :min="40"
                 :max="200"
                 :step="10"
                 placeholder="单元格高度"
-                @update:value="handleGridstackConfigChange({ ...gridstackConfig, cellHeight: $event })"
+                @update:value="handleGridstackConfigChange({ ...gridstackConfig, rowHeight: $event })"
               />
             </NFormItem>
             
             <NFormItem :label="$t('visualEditor.margin')">
               <NInputNumber
-                v-model:value="gridstackConfig.margin"
+                v-model:value="gridstackConfig.margin[0]"
                 :min="0"
                 :max="30"
                 :step="2"
                 placeholder="组件间距"
-                @update:value="handleGridstackConfigChange({ ...gridstackConfig, margin: $event })"
+                @update:value="handleGridstackConfigChange({ ...gridstackConfig, margin: [$event, $event] })"
               />
             </NFormItem>
             
             <NFormItem :label="$t('visualEditor.draggable')">
               <NSwitch
-                v-model:value="gridstackConfig.draggable"
-                @update:value="handleGridstackConfigChange({ ...gridstackConfig, draggable: $event })"
+                v-model:value="gridstackConfig.isDraggable"
+                @update:value="handleGridstackConfigChange({ ...gridstackConfig, isDraggable: $event })"
               />
             </NFormItem>
             
             <NFormItem :label="$t('visualEditor.resizable')">
               <NSwitch
-                v-model:value="gridstackConfig.resizable"
-                @update:value="handleGridstackConfigChange({ ...gridstackConfig, resizable: $event })"
+                v-model:value="gridstackConfig.isResizable"
+                @update:value="handleGridstackConfigChange({ ...gridstackConfig, isResizable: $event })"
               />
             </NFormItem>
             

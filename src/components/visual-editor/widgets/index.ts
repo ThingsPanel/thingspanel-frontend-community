@@ -11,11 +11,17 @@ import { registerBaseWidgets } from './base-widgets'
 /**
  * 注册所有在编辑器中可用的组件。
  * 这个函数应该在应用程序的入口处（例如 main.ts 或编辑器初始化时）被调用一次。
+ * @param includeBaseWidgets 是否包含基础组件，默认为false
  */
-export function registerAllWidgets() {
+export function registerAllWidgets(includeBaseWidgets: boolean = false) {
   console.log('🚀 开始注册传统组件...')
 
-  registerBaseWidgets()
+  if (includeBaseWidgets) {
+    registerBaseWidgets()
+    console.log('✅ 基础组件注册完成')
+  } else {
+    console.log('⏭️ 跳过基础组件注册')
+  }
 
   console.log('✅ 传统组件注册完成')
 }

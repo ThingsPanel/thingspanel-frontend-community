@@ -12,7 +12,7 @@ const definition: IComponentDefinition = {
     name: 'chart-digit',
     title: $t('card.digitalIndicator'),
     description: '显示数字指示器，支持自定义单位、颜色和图标',
-    category: 'display',
+    category: 'card21',
     icon: 'mdi:numeric',
     version: '2.1.0'
   },

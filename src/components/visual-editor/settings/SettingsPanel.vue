@@ -1,5 +1,19 @@
 <template>
   <div class="settings-panel">
+    <!-- GLOBAL SETTINGS -->
+    <div v-if="!selectedWidget">
+      <h3 class="panel-title">全局设置</h3>
+      
+      <n-form label-placement="left" label-width="auto" size="small">
+        <n-form-item label="显示组件标题">
+          <n-switch 
+            :value="showWidgetTitles" 
+            @update:value="onToggleWidgetTitles"
+          />
+        </n-form-item>
+      </n-form>
+    </div>
+
     <!-- GRID CONFIG SETTINGS -->
     <div v-if="!selectedWidget && gridConfig">
       <h3 class="panel-title">网格配置</h3>
@@ -26,7 +40,12 @@
             v-model:value="gridConfig.margin[0]" 
             :min="0" 
             :max="50"
-            @update:value="handleGridConfigChange"
+            @update:value="(value) => { 
+              if (props.gridConfig) {
+                props.gridConfig.margin = [value, value];
+                handleGridConfigChange();
+              }
+            }"
           />
         </n-form-item>
         <n-form-item label="可拖拽">
@@ -54,12 +73,9 @@
     <div v-else-if="selectedWidget">
       <h3 class="panel-title">{{ widgetName }} 属性配置</h3>
 
-      <n-collapse :default-expanded-names="['base', 'props']">
-        <!-- 基础配置 -->
-        <n-collapse-item name="base">
-          <template #header>
-            <h4 class="section-title">基础配置</h4>
-          </template>
+      <n-tabs type="line" animated>
+        <!-- 基础配置标签页 -->
+        <n-tab-pane name="base" tab="基础配置">
           <n-form label-placement="left" label-width="auto" size="small">
             <n-form-item label="显示标题">
               <n-switch v-model:value="editableProps.showLabel" @update:value="updateNode" />
@@ -68,21 +84,17 @@
               <n-input v-model:value="editableProps.label" @update:value="updateNode" />
             </n-form-item>
           </n-form>
-        </n-collapse-item>
+        </n-tab-pane>
 
-        <!-- 组件属性 -->
-        <n-collapse-item v-if="hasProperties || hasCustomConfig" name="props">
-          <template #header>
-            <h4 class="section-title">组件属性</h4>
-          </template>
-          
+        <!-- 组件属性标签页 -->
+        <n-tab-pane v-if="hasProperties || hasCustomConfig" name="props" tab="组件属性">
           <!-- 自定义配置组件 -->
           <div v-if="hasCustomConfig && customConfigComponent">
             <component 
-              :is="customConfigComponent.component" 
-              v-model:config="editableProps.properties"
+              :is="customConfigComponent" 
+              v-model:modelValue="editableProps.properties"
               :widget="selectedWidget"
-              @update:config="updateNode"
+              @update:modelValue="updateNode"
             />
           </div>
           
@@ -116,13 +128,10 @@
               <n-text v-else depth="3">不支持的属性类型</n-text>
             </n-form-item>
           </n-form>
-        </n-collapse-item>
+        </n-tab-pane>
 
-        <!-- 交互配置 -->
-        <n-collapse-item name="interaction">
-           <template #header>
-            <h4 class="section-title">交互配置</h4>
-          </template>
+        <!-- 交互配置标签页 -->
+        <n-tab-pane name="interaction" tab="交互配置">
           <n-form label-placement="left" label-width="auto" size="small">
             <n-form-item label="点击事件">
               <n-select
@@ -141,17 +150,17 @@
                <n-input v-model:value="editableProps.interaction.onClick.payload.route" @update:value="updateNode" />
             </n-form-item>
           </n-form>
-        </n-collapse-item>
+        </n-tab-pane>
         
-        <!-- 数据源配置 -->
-        <n-collapse-item name="datasource">
-           <template #header>
-            <h4 class="section-title">数据源</h4>
-          </template>
-          <p>数据源配置区域（待实现）</p>
-        </n-collapse-item>
+        <!-- 数据源配置标签页 -->
+        <n-tab-pane name="datasource" tab="数据源">
+          <DataSourceSelector 
+            v-model="editableProps.dataSource"
+            @update:modelValue="updateNode"
+          />
+        </n-tab-pane>
 
-      </n-collapse>
+      </n-tabs>
     </div>
     <!-- CANVAS SETTINGS -->
     <div v-else class="placeholder">
@@ -163,17 +172,20 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { NForm, NFormItem, NInput, NInputNumber, NSwitch, NText, NCollapse, NCollapseItem, NSelect } from 'naive-ui';
+import { NForm, NFormItem, NInput, NInputNumber, NSwitch, NText, NTabs, NTabPane, NSelect } from 'naive-ui';
 import { useEditor } from '../hooks';
 import type { VisualEditorWidget } from '../types';
 import { cloneDeep } from 'lodash-es';
 import { configRegistry } from './ConfigRegistry';
 import EnhancedPropertyForm from './components/EnhancedPropertyForm.vue';
+import DataSourceSelector from './components/DataSourceSelector.vue';
 
 const props = defineProps<{
   selectedWidget: VisualEditorWidget | null;
   gridConfig?: any;
   onGridConfigChange?: (config: any) => void;
+  showWidgetTitles?: boolean;
+  onToggleWidgetTitles?: (value: boolean) => void;
 }>();
 
 const { stateManager } = useEditor();
@@ -194,7 +206,8 @@ watch(() => props.selectedWidget, (widget) => {
       properties: widget.properties || {},
       interaction: widget.interaction || {
         onClick: { type: 'none', payload: {} }
-      }
+      },
+      dataSource: widget.dataSource || null,
     });
   } else {
     editableProps.value = {};
@@ -213,14 +226,25 @@ const hasProperties = computed(() => {
 const hasCustomConfig = computed(() => {
   if (!props.selectedWidget) return false;
   const componentType = props.selectedWidget.type;
-  return configRegistry.has(componentType);
+  const hasConfig = configRegistry.has(componentType);
+  console.log(`🔧 SettingsPanel - 检查配置组件: ${componentType}, 结果: ${hasConfig}`);
+  
+  // 添加调试信息
+  if (props.selectedWidget.metadata?.isCard2Component) {
+    console.log(`🔧 SettingsPanel - 这是一个 Card2.1 组件: ${componentType}`);
+    console.log(`🔧 SettingsPanel - 组件 metadata:`, props.selectedWidget.metadata);
+  }
+  
+  return hasConfig;
 });
 
 // 获取自定义配置组件
 const customConfigComponent = computed(() => {
   if (!props.selectedWidget) return null;
   const componentType = props.selectedWidget.type;
-  return configRegistry.get(componentType);
+  const configComponent = configRegistry.get(componentType);
+  console.log(`🔧 SettingsPanel - 获取配置组件: ${componentType}`, configComponent);
+  return configComponent;
 });
 
 // 检查是否有增强的属性定义
@@ -237,20 +261,39 @@ const componentProperties = computed(() => {
 
 const updateNode = () => {
   if (props.selectedWidget) {
+    console.log('🔧 SettingsPanel - 更新节点:', {
+      id: props.selectedWidget.id,
+      dataSource: editableProps.value.dataSource
+    })
+    
     stateManager.updateNode(props.selectedWidget.id, {
-      label: editableProps.value.label,
-      showLabel: editableProps.value.showLabel,
       properties: editableProps.value.properties,
       interaction: editableProps.value.interaction,
-    });
+      dataSource: editableProps.value.dataSource,
+    } as any);
   }
 };
 
 const handleGridConfigChange = () => {
   if (props.onGridConfigChange && props.gridConfig) {
-    props.onGridConfigChange({ ...props.gridConfig });
+    // 确保 margin 是数组格式
+    const updatedConfig = { 
+      ...props.gridConfig,
+      margin: Array.isArray(props.gridConfig.margin) ? props.gridConfig.margin : [props.gridConfig.margin, props.gridConfig.margin]
+    };
+    
+    // 调试日志
+    console.log('🔧 SettingsPanel - 配置变更:', {
+      originalConfig: props.gridConfig,
+      updatedConfig: updatedConfig
+    });
+    
+    props.onGridConfigChange(updatedConfig);
   }
 };
+
+// 创建响应式的网格配置
+const gridConfig = computed(() => props.gridConfig || {});
 
 </script>
 

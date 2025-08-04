@@ -809,6 +809,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'test',
+    path: '/test',
+    component: 'layout.base$view.test',
+    meta: {
+      title: 'test',
+      i18nKey: 'route.test'
+    }
+  },
+  {
     name: 'user-center',
     path: '/user-center',
     component: 'layout.base$view.user-center',
