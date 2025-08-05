@@ -3,7 +3,7 @@
     <n-form :model="config" label-placement="top" size="small">
       <n-form-item label="JSON数据">
         <div class="json-editor-container">
-          <CodemirrorEditor v-model="jsonString" :options="editorOptions" @update:modelValue="updateJsonData" />
+          <CodemirrorEditor v-model:value="jsonString" :options="editorOptions" @update:modelValue="updateJsonData" />
           <div class="json-actions">
             <n-button size="tiny" @click="loadExampleData">示例</n-button>
             <n-button size="tiny" @click="formatJson">格式化</n-button>
@@ -11,22 +11,8 @@
         </div>
       </n-form-item>
 
-      <n-divider title-placement="left">数据映射</n-divider>
-
-      <div v-if="config.dataPaths && config.dataPaths.length > 0" class="mapping-list">
-        <div v-for="(mapping, index) in config.dataPaths" :key="index" class="mapping-item">
-          <div class="mapping-row">
-            <span class="mapping-label">{{ mapping.target }}</span>
-            <n-select
-              v-model:value="mapping.key"
-              :options="availablePathOptions"
-              placeholder="选择JSON路径"
-              size="small"
-              @update:value="updateConfig"
-            />
-          </div>
-        </div>
-      </div>
+      <!-- 使用通用的数据映射组件 -->
+      <DataMappingConfig :data="config.data" :mappings="config.dataPaths || []" @update:mappings="updateDataPaths" />
 
       <n-divider title-placement="left">预览</n-divider>
 
@@ -49,23 +35,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import {
-  NForm,
-  NFormItem,
-  NInput,
-  NInputNumber,
-  NButton,
-  NDivider,
-  NCard,
-  NTabs,
-  NTabPane,
-  NEmpty,
-  NSpace,
-  NIcon
-} from 'naive-ui'
+import { ref, computed, watch, onMounted, nextTick, onUnmounted } from 'vue'
+import { NForm, NFormItem, NButton, NDivider, NTabs, NTabPane, NEmpty } from 'naive-ui'
 import CodemirrorEditor from 'codemirror-editor-vue3'
-import type { StaticDataSource } from '../../types/data-source'
+import DataMappingConfig from './DataMappingConfig.vue'
+import type { StaticDataSource, DataPathMapping } from '../../types/data-source'
 import { dataPathResolver } from '../../utils/data-path-resolver'
 import { DataSourceType } from '../../types/data-source'
 
@@ -109,16 +83,11 @@ const editorOptions = {
   }
 }
 
-// 可用的数据路径选项
-const availablePathOptions = computed(() => {
-  if (!config.value.data) return []
-
-  const paths = dataPathResolver.getAvailablePaths(config.value.data)
-  return paths.map(path => ({
-    label: path,
-    value: path
-  }))
-})
+// 更新数据路径映射
+const updateDataPaths = (mappings: DataPathMapping[]) => {
+  config.value.dataPaths = mappings
+  updateConfig()
+}
 
 // 格式化JSON显示
 const formattedJson = computed(() => {
@@ -156,8 +125,6 @@ const updateJsonData = (value: string) => {
   jsonString.value = value
   try {
     config.value.data = JSON.parse(value)
-    // 自动生成数据路径映射
-    generateDefaultMappings()
     updateConfig()
     jsonError.value = '' // 清除错误提示
   } catch (error) {
@@ -186,11 +153,6 @@ const loadExampleData = () => {
 
   // 更新配置
   config.value.data = exampleJson
-
-  // 自动生成映射
-  generateDefaultMappings()
-
-  // 更新配置
   updateConfig()
 
   console.log('🔧 StaticDataSourceConfig - 示例数据已加载:', exampleJson)
@@ -207,80 +169,40 @@ const formatJson = () => {
   }
 }
 
-// 生成默认的数据路径映射 - 基于组件定义的mappingKeys
-const generateDefaultMappings = () => {
-  if (!config.value.data || Object.keys(config.value.data).length === 0) return
-
-  console.log('🔧 StaticDataSourceConfig - 开始生成映射:', {
-    data: config.value.data,
-    dataPaths: config.value.dataPaths
-  })
-
-  // 获取可用的数据路径
-  const availablePaths = dataPathResolver.getAvailablePaths(config.value.data)
-  console.log('🔧 StaticDataSourceConfig - 可用路径:', availablePaths)
-
-  // 为每个映射生成映射，优先匹配同名路径
-  config.value.dataPaths = config.value.dataPaths.map(mapping => {
-    const targetKey = mapping.target
-    console.log('🔧 StaticDataSourceConfig - 处理映射:', { targetKey, currentKey: mapping.key })
-
-    // 1. 优先选择与target完全同名的JSON路径
-    const exactMatch = availablePaths.find(path => {
-      const pathKey = path.split('.').pop() || path
-      return pathKey === targetKey
-    })
-
-    if (exactMatch) {
-      console.log('🔧 StaticDataSourceConfig - 找到精确匹配:', exactMatch)
-      return { ...mapping, key: exactMatch }
-    }
-
-    // 2. 如果没有精确匹配，查找包含targetKey的路径
-    const partialMatch = availablePaths.find(path => {
-      return path.includes(targetKey)
-    })
-
-    if (partialMatch) {
-      console.log('🔧 StaticDataSourceConfig - 找到部分匹配:', partialMatch)
-      return { ...mapping, key: partialMatch }
-    }
-
-    // 3. 如果都没有找到，保持原来的key或设为空
-    console.log('🔧 StaticDataSourceConfig - 未找到匹配，保持原值')
-    return mapping
-  })
-
-  console.log('🔧 StaticDataSourceConfig - 最终映射:', config.value.dataPaths)
-  updateConfig()
-}
-
-// 删除添加和删除映射的方法，因为映射数量由组件定义决定
-// const addDataPath = () => { ... }
-// const removeDataPath = () => { ... }
-
-// 更新配置
+// 防抖更新配置
+let updateConfigTimer: NodeJS.Timeout | null = null
 const updateConfig = () => {
-  emit('update:modelValue', { ...config.value })
-  console.log('🔧 StaticDataSourceConfig - 配置更新:', config.value)
+  // 清除之前的定时器
+  if (updateConfigTimer) {
+    clearTimeout(updateConfigTimer)
+  }
+
+  // 设置新的定时器，防抖100ms
+  updateConfigTimer = setTimeout(() => {
+    emit('update:modelValue', { ...config.value })
+    console.log('🔧 StaticDataSourceConfig - 配置更新:', config.value)
+  }, 100)
 }
 
 // 监听外部变化
 watch(
   () => props.modelValue,
-  newValue => {
-    config.value = { ...config.value, ...newValue }
-    jsonString.value = JSON.stringify(config.value.data, null, 2)
-
-    // 如果外部传入了dataPaths，使用外部的映射
-    if (newValue?.dataPaths && newValue.dataPaths.length > 0) {
-      config.value.dataPaths = newValue.dataPaths
+  (newValue, oldValue) => {
+    // 防止递归更新：只有当值真正不同时才更新
+    if (JSON.stringify(newValue) === JSON.stringify(oldValue)) {
+      return
     }
 
-    // 如果有数据，自动生成映射
-    if (config.value.data && Object.keys(config.value.data).length > 0) {
-      generateDefaultMappings()
-    }
+    // 使用nextTick来避免同步更新导致的递归
+    nextTick(() => {
+      config.value = { ...config.value, ...newValue }
+      jsonString.value = JSON.stringify(config.value.data, null, 2)
+
+      // 如果外部传入了dataPaths，使用外部的映射
+      if (newValue?.dataPaths && newValue.dataPaths.length > 0) {
+        config.value.dataPaths = newValue.dataPaths
+      }
+    })
   },
   { deep: true }
 )
@@ -303,20 +225,20 @@ onMounted(() => {
 
     config.value.data = defaultJson
     jsonString.value = JSON.stringify(defaultJson, null, 2)
-
-    // 自动生成映射
-    generateDefaultMappings()
-
     updateConfig()
   } else {
     jsonString.value = JSON.stringify(config.value.data, null, 2)
-    // 如果有数据，也自动生成映射
-    generateDefaultMappings()
   }
 
   // 确保示例数据始终显示
   if (!jsonString.value) {
     loadExampleData()
+  }
+})
+
+onUnmounted(() => {
+  if (updateConfigTimer) {
+    clearTimeout(updateConfigTimer)
   }
 })
 </script>
@@ -367,32 +289,6 @@ onMounted(() => {
   height: 24px;
   background-color: rgba(255, 255, 255, 0.9);
   border: 1px solid #d9d9d9;
-}
-
-.mapping-list {
-  margin-bottom: 8px;
-}
-
-.mapping-item {
-  margin-bottom: 8px;
-}
-
-.mapping-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.mapping-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: #333;
-  min-width: 60px;
-  text-align: right;
-}
-
-.mapping-row .n-select {
-  flex: 1;
 }
 
 .json-preview {

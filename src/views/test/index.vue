@@ -13,6 +13,10 @@
         <DeviceDataSourceTest />
       </n-tab-pane>
 
+      <n-tab-pane name="deviceApiConfig" tab="🎉 新设备API配置系统">
+        <DeviceApiTest />
+      </n-tab-pane>
+
       <n-tab-pane name="httpDataSource" tab="HTTP数据源测试">
         <HttpDataSourceTest />
       </n-tab-pane>
@@ -29,6 +33,7 @@ import { NTabs, NTabPane } from 'naive-ui'
 import SimpleTest from '@/components/visual-editor/demo/SimpleTest.vue'
 import DataSourceTest from '@/components/visual-editor/demo/DataSourceTest.vue'
 import DeviceDataSourceTest from '@/components/visual-editor/demo/DeviceDataSourceTest.vue'
+import DeviceApiTest from './DeviceApiTest.vue'
 import HttpDataSourceTest from '@/components/visual-editor/demo/HttpDataSourceTest.vue'
 import MultiDataSourceTest from '@/components/visual-editor/demo/MultiDataSourceTest.vue'
 </script>

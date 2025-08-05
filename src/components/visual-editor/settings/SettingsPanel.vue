@@ -156,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onUnmounted } from 'vue'
 import { NForm, NFormItem, NInput, NInputNumber, NSwitch, NText, NTabs, NTabPane, NSelect } from 'naive-ui'
 import { useEditor } from '../hooks'
 import type { VisualEditorWidget } from '../types'
@@ -185,7 +185,12 @@ const interactionTypeOptions = [
 
 watch(
   () => props.selectedWidget,
-  widget => {
+  (widget, oldWidget) => {
+    // 防止递归更新：只有当widget真正不同时才更新
+    if (widget?.id === oldWidget?.id && JSON.stringify(widget) === JSON.stringify(oldWidget)) {
+      return
+    }
+
     if (widget) {
       editableProps.value = cloneDeep({
         label: widget.label,
@@ -262,19 +267,29 @@ const handleDataSourceUpdate = (dataSource: any) => {
   updateNode()
 }
 
+// 防抖更新节点
+let updateNodeTimer: NodeJS.Timeout | null = null
 const updateNode = () => {
-  if (props.selectedWidget) {
-    console.log('🔧 SettingsPanel - 更新节点:', {
-      id: props.selectedWidget.id,
-      dataSource: editableProps.value.dataSource
-    })
-
-    stateManager.updateNode(props.selectedWidget.id, {
-      properties: editableProps.value.properties,
-      interaction: editableProps.value.interaction,
-      dataSource: editableProps.value.dataSource
-    } as any)
+  // 清除之前的定时器
+  if (updateNodeTimer) {
+    clearTimeout(updateNodeTimer)
   }
+
+  // 设置新的定时器，防抖200ms
+  updateNodeTimer = setTimeout(() => {
+    if (props.selectedWidget) {
+      console.log('🔧 SettingsPanel - 更新节点:', {
+        id: props.selectedWidget.id,
+        dataSource: editableProps.value.dataSource
+      })
+
+      stateManager.updateNode(props.selectedWidget.id, {
+        properties: editableProps.value.properties,
+        interaction: editableProps.value.interaction,
+        dataSource: editableProps.value.dataSource
+      } as any)
+    }
+  }, 200)
 }
 
 const handleGridConfigChange = () => {
@@ -299,6 +314,12 @@ const handleGridConfigChange = () => {
 
 // 创建响应式的网格配置
 const gridConfig = computed(() => props.gridConfig || {})
+
+onUnmounted(() => {
+  if (updateNodeTimer) {
+    clearTimeout(updateNodeTimer)
+  }
+})
 </script>
 
 <style scoped>

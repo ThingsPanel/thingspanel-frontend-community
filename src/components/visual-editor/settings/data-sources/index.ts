@@ -8,6 +8,20 @@ import StaticDataSourceConfig from './StaticDataSourceConfig.vue'
 import DeviceDataSourceConfig from './DeviceDataSourceConfig.vue'
 import HttpDataSourceConfig from './HttpDataSourceConfig.vue'
 
+// 导出原有的数据源配置组件
+export { default as DeviceDataSourceConfig } from './DeviceDataSourceConfig.vue'
+export { default as DeviceDataSourceExample } from './DeviceDataSourceExample.vue'
+
+// 导出新的设备API配置系统
+export { default as DeviceDataSourceConfigNew } from './DeviceDataSourceConfigNew.vue'
+export { default as DeviceDataSourceExampleNew } from './DeviceDataSourceExampleNew.vue'
+
+// 导出设备API配置系统的所有组件
+export * from './device-apis/index'
+
+// 导出数据映射配置组件
+export { default as DataMappingConfig } from './DataMappingConfig.vue'
+
 // 注册数据源配置组件
 dataSourceRegistry.register(DataSourceType.STATIC, {
   type: DataSourceType.STATIC,

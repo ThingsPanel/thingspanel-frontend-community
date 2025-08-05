@@ -40,14 +40,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { NCollapse, NCollapseItem, NTag, NFormItem, NSelect } from 'naive-ui'
 import { dataSourceRegistry } from '../../core/data-source-registry'
 import type { DataSource, ComponentDataSourceDefinition } from '../../types/data-source'
 import { DataSourceType } from '../../types/data-source'
 
 interface Props {
-  modelValue: DataSource | null
+  modelValue: DataSource | null | Record<string, DataSource>
   componentDataSources: ComponentDataSourceDefinition[]
 }
 
@@ -115,30 +115,39 @@ const getDataSourceConfigComponent = (type: DataSourceType) => {
   return configComponent?.component
 }
 
-// 更新数据源配置
+// 防抖更新数据源配置
+let updateConfigTimer: NodeJS.Timeout | null = null
 const updateDataSourceConfig = (dataSourceName: string) => {
-  const config = dataSourceConfigs.value[dataSourceName]
-  const componentDataSource = props.componentDataSources.find(ds => ds.name === dataSourceName)
-
-  if (!componentDataSource) return
-
-  console.log('🔧 DataSourceSelector - 更新数据源配置:', {
-    dataSourceName,
-    config,
-    componentDataSource
-  })
-
-  // 构建数据源配置
-  const dataSource: DataSource = {
-    type: config.type as DataSourceType,
-    enabled: true,
-    name: dataSourceName, // 使用组件定义的name
-    description: `为${dataSourceName}提供数据`,
-    ...config.config // 包含dataPaths和其他配置
+  // 清除之前的定时器
+  if (updateConfigTimer) {
+    clearTimeout(updateConfigTimer)
   }
 
-  console.log('🔧 DataSourceSelector - 构建的数据源:', dataSource)
-  emit('update:modelValue', dataSource)
+  // 设置新的定时器，防抖150ms
+  updateConfigTimer = setTimeout(() => {
+    const config = dataSourceConfigs.value[dataSourceName]
+    const componentDataSource = props.componentDataSources.find(ds => ds.name === dataSourceName)
+
+    if (!componentDataSource) return
+
+    console.log('🔧 DataSourceSelector - 更新数据源配置:', {
+      dataSourceName,
+      config,
+      componentDataSource
+    })
+
+    // 构建数据源配置
+    const dataSource: DataSource = {
+      type: config.type as DataSourceType,
+      enabled: true,
+      name: dataSourceName, // 使用组件定义的name
+      description: `为${dataSourceName}提供数据`,
+      ...config.config // 包含dataPaths和其他配置
+    }
+
+    console.log('🔧 DataSourceSelector - 构建的数据源:', dataSource)
+    emit('update:modelValue', dataSource)
+  }, 150)
 }
 
 // 监听组件数据源变化，初始化配置
@@ -155,10 +164,57 @@ watch(
 // 监听外部数据源变化
 watch(
   () => props.modelValue,
-  newValue => {
+  (newValue, oldValue) => {
+    // 防止递归更新：只有当值真正不同时才更新
+    if (JSON.stringify(newValue) === JSON.stringify(oldValue)) {
+      return
+    }
+
     if (newValue) {
       // 从外部数据源更新内部配置
       console.log('🔧 DataSourceSelector - 外部数据源更新:', newValue)
+
+      // 处理单个数据源的情况
+      if (typeof newValue === 'object' && 'type' in newValue && 'name' in newValue) {
+        const dataSourceName = newValue.name
+        if (dataSourceName && dataSourceConfigs.value[dataSourceName]) {
+          dataSourceConfigs.value[dataSourceName] = {
+            type: newValue.type,
+            config: {
+              ...newValue,
+              // 确保包含所有必要字段
+              data: newValue.data || {},
+              dataPaths: newValue.dataPaths || []
+            }
+          }
+          console.log('🔧 DataSourceSelector - 单个数据源配置已回显:', {
+            dataSourceName,
+            config: dataSourceConfigs.value[dataSourceName]
+          })
+        }
+      }
+      // 处理多个数据源的情况（Record<string, DataSource>）
+      else if (typeof newValue === 'object' && !('type' in newValue)) {
+        Object.entries(newValue).forEach(([dataSourceName, dataSourceConfig]) => {
+          if (dataSourceConfigs.value[dataSourceName] && dataSourceConfig) {
+            dataSourceConfigs.value[dataSourceName] = {
+              type: dataSourceConfig.type,
+              config: {
+                ...dataSourceConfig,
+                data: dataSourceConfig.data || {},
+                dataPaths: dataSourceConfig.dataPaths || []
+              }
+            }
+            console.log('🔧 DataSourceSelector - 多数据源配置已回显:', {
+              dataSourceName,
+              config: dataSourceConfigs.value[dataSourceName]
+            })
+          }
+        })
+      }
+    } else {
+      // 如果外部数据源为null，重置内部配置
+      initializeConfigs()
     }
   },
   { deep: true }
@@ -166,6 +222,12 @@ watch(
 
 onMounted(() => {
   initializeConfigs()
+})
+
+onUnmounted(() => {
+  if (updateConfigTimer) {
+    clearTimeout(updateConfigTimer)
+  }
 })
 </script>
 

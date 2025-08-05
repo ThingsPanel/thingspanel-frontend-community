@@ -71,6 +71,31 @@ const selectedWidget = computed<VisualEditorWidget | null>(() => {
   return null
 })
 
+// 监听选中组件变化，添加防抖
+let selectedWidgetTimer: NodeJS.Timeout | null = null
+watch(
+  () => selectedWidget.value,
+  (newWidget, oldWidget) => {
+    // 清除之前的定时器
+    if (selectedWidgetTimer) {
+      clearTimeout(selectedWidgetTimer)
+    }
+
+    // 设置新的定时器，防抖100ms
+    selectedWidgetTimer = setTimeout(() => {
+      // 只有当组件真正不同时才更新selectedNodeId
+      if (newWidget?.id !== oldWidget?.id) {
+        selectedNodeId.value = newWidget?.id || ''
+        console.log('🔧 PanelEditor - 选中组件变化:', {
+          oldId: oldWidget?.id,
+          newId: newWidget?.id
+        })
+      }
+    }, 100)
+  },
+  { deep: true }
+)
+
 // 状态管理辅助方法
 const setState = (config: any) => {
   console.log('🔄 设置编辑器状态:', config)
@@ -106,10 +131,10 @@ const setState = (config: any) => {
 
   // 恢复编辑状态（可选，通常不保存编辑状态）
   if (config.isEditing !== undefined) {
-    console.log('🔄 setState - 设置编辑状态:', { 
-      oldIsEditing: isEditing.value, 
+    console.log('🔄 setState - 设置编辑状态:', {
+      oldIsEditing: isEditing.value,
       newIsEditing: config.isEditing,
-      willSetPreviewMode: !config.isEditing 
+      willSetPreviewMode: !config.isEditing
     })
     isEditing.value = config.isEditing
     // 同步全局预览模式状态
@@ -361,7 +386,7 @@ const rendererOptions = computed(() => [
 // 工具栏事件处理
 const handleModeChange = (mode: 'edit' | 'preview') => {
   console.log('🔄 模式切换请求:', { from: isPreviewMode ? 'preview' : 'edit', to: mode })
-  
+
   if (mode === 'edit') {
     console.log('📝 切换到编辑模式')
     isEditing.value = true
@@ -408,7 +433,7 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
       selectedNodeId.value = ''
     }
   }
-  
+
   console.log('🎯 模式切换完成:', { isEditing: isEditing.value, isPreviewMode: isPreviewMode, mode })
 }
 
@@ -759,7 +784,10 @@ onMounted(() => {
 // 组件卸载时的清理工作
 onUnmounted(() => {
   isUnmounted.value = true
-  console.log('PanelEditor 组件已卸载')
+  // 清理定时器
+  if (selectedWidgetTimer) {
+    clearTimeout(selectedWidgetTimer)
+  }
 })
 </script>
 
