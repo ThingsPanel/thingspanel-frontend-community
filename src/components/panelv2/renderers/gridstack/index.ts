@@ -60,7 +60,7 @@ export const GridstackRendererInfo: RendererInfo = {
 export const enabled = true
 
 // 兼容导出
-export const RendererInfo = GridstackRendererInfo
+export { GridstackRendererInfo as RendererInfo }
 
 // 默认导出（符合 RendererModule 接口）
 const rendererModule: RendererModule = {
