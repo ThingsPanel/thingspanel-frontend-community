@@ -103,23 +103,37 @@ export function createEditor() {
   let stopWatch: (() => void) | null = null
 
   stopWatch = watchEffect(() => {
-    if (!card2Integration.isLoading.value && card2Integration.availableComponents.value.length > 0) {
+    // console.log('🔍 [useEditor] watchEffect 触发:', {
+    //   isLoading: card2Integration.isLoading.value,
+    //   availableComponentsLength: card2Integration.availableComponents.value.length,
+    //   availableComponents: card2Integration.availableComponents.value
+    // })
+
+    // 修改条件：只要不在加载中就可以继续
+    if (!card2Integration.isLoading.value) {
+      // console.log('✅ [useEditor] 条件满足，开始处理组件注册')
+
       // 清理注册表，只保留Card2.1组件
       const allWidgets = widgetRegistry.getAllWidgets()
+      // console.log('🔍 [useEditor] 清理前的组件:', allWidgets.map(w => ({ type: w.type, isCard2: !!w.metadata?.isCard2Component })))
+
       allWidgets.forEach(widget => {
         if (!widget.metadata?.isCard2Component) {
           // 移除非Card2.1组件
+          // console.log(`🗑️ [useEditor] 移除非Card2.1组件: ${widget.type}`)
           widgetRegistry.unregister(widget.type)
         }
       })
 
-      console.log('🔍 useEditor - 开始注册 Card 2.1 组件到 Widget Registry')
+      // console.log('🔍 [useEditor] 清理后的组件:', widgetRegistry.getAllWidgets().map(w => ({ type: w.type, isCard2: !!w.metadata?.isCard2Component })))
+
+      // console.log('🔍 useEditor - 开始注册 Card 2.1 组件到 Widget Registry')
       card2Integration.availableComponents.value.forEach(componentDef => {
-        console.log(`🔍 useEditor - 处理组件: ${componentDef.type}`)
-        console.log(`🔍 useEditor - 组件详情:`, componentDef)
+        // console.log(`🔍 useEditor - 处理组件: ${componentDef.type}`)
+        // console.log(`🔍 useEditor - 组件详情:`, componentDef)
 
         if (!widgetRegistry.getWidget(componentDef.type)) {
-          console.log(`🔍 useEditor - 注册组件到 Widget Registry: ${componentDef.type}`)
+          // console.log(`🔍 useEditor - 注册组件到 Widget Registry: ${componentDef.type}`)
 
           // 从 properties 中提取默认属性值
           const defaultProperties: Record<string, any> = {}
@@ -153,25 +167,25 @@ export function createEditor() {
             }
           }
 
-          console.log(`🔍 useEditor - Widget 定义:`, widgetDef)
+          // console.log(`🔍 useEditor - Widget 定义:`, widgetDef)
           widgetRegistry.register(widgetDef)
-          console.log(`✅ useEditor - 组件注册成功: ${componentDef.type}`)
+          // console.log(`✅ useEditor - 组件注册成功: ${componentDef.type}`)
 
           // 注册配置组件到 configRegistry
           if (componentDef.definition.configComponent) {
-            console.log(`🔍 useEditor - 检查配置组件是否已注册: ${componentDef.type}`)
+            // console.log(`🔍 useEditor - 检查配置组件是否已注册: ${componentDef.type}`)
             if (!configRegistry.has(componentDef.type)) {
-              console.log(`🔍 useEditor - 注册配置组件: ${componentDef.type}`)
+              // console.log(`🔍 useEditor - 注册配置组件: ${componentDef.type}`)
               configRegistry.register(componentDef.type, componentDef.definition.configComponent)
-              console.log(`✅ useEditor - 配置组件注册成功: ${componentDef.type}`)
+              // console.log(`✅ useEditor - 配置组件注册成功: ${componentDef.type}`)
             } else {
-              console.log(`🔍 useEditor - 配置组件已存在，跳过注册: ${componentDef.type}`)
+              // console.log(`🔍 useEditor - 配置组件已存在，跳过注册: ${componentDef.type}`)
             }
           } else {
-            console.log(`🔍 useEditor - 组件 ${componentDef.type} 没有配置组件`)
+            // console.log(`🔍 useEditor - 组件 ${componentDef.type} 没有配置组件`)
           }
         } else {
-          console.log(`🔍 useEditor - 组件已存在，跳过注册: ${componentDef.type}`)
+          // console.log(`🔍 useEditor - 组件已存在，跳过注册: ${componentDef.type}`)
         }
       })
       resolveInitialization()
@@ -186,30 +200,74 @@ export function createEditor() {
   }
 
   const addWidget = async (type: string, position?: { x: number; y: number }) => {
+    // console.log('🎯 [Editor] addWidget 被调用:', { type, position })
+
+    // 添加调试信息
+    // console.log('🔍 [Editor] 当前状态:', {
+    //   card2IntegrationIsLoading: card2Integration.isLoading.value,
+    //   card2IntegrationAvailableComponents: card2Integration.availableComponents.value,
+    //   card2IntegrationAvailableComponentsLength: card2Integration.availableComponents.value.length,
+    //   widgetRegistrySize: widgetRegistry.getAllWidgets().length,
+    //   widgetRegistryWidgets: widgetRegistry.getAllWidgets().map(w => w.type)
+    // })
+
+    // 强制触发 availableWidgets 计算
+    // console.log('🔍 [Editor] 强制触发 availableWidgets 计算:', card2Integration.availableComponents.value)
+
+    // console.log('⏳ [Editor] 等待初始化...')
+
+    // 如果初始化 Promise 还没有被解析，手动触发
+    if (card2Integration.isLoading.value) {
+      // console.log('🔄 [Editor] 手动触发 Card 2.1 集成初始化')
+      await card2Integration.initialize()
+    }
+
     await initialization
+    // console.log('✅ [Editor] 初始化完成')
 
     // 首先尝试从 widgetRegistry 获取传统组件定义
     let widgetDef = widgetRegistry.getWidget(type)
     let isCard2Component = false
 
+    // console.log('🔍 [Editor] 从 widgetRegistry 查找组件:', {
+    //   type,
+    //   found: !!widgetDef,
+    //   widgetDef: widgetDef,
+    //   widgetDefComponent: widgetDef?.component,
+    //   widgetDefMetadata: widgetDef?.metadata,
+    //   allWidgets: widgetRegistry.getAllWidgets().map(w => ({
+    //     type: w.type,
+    //     name: w.name,
+    //     hasComponent: !!w.component,
+    //     hasMetadata: !!w.metadata
+    //   }))
+    // })
+
     // 如果在传统注册表中没有找到，检查是否是 Card2.1 组件
     if (!widgetDef) {
+      // console.log('🔍 [Editor] 在传统注册表中未找到，尝试 Card 2.1 组件')
+
       // 检查是否是 card21- 前缀的类型
       let card2Type = type
       if (type.startsWith('card21-')) {
         card2Type = type.replace('card21-', '')
+        // console.log('🔍 [Editor] 移除 card21- 前缀:', { original: type, new: card2Type })
       }
 
       const card2Definition = card2Integration.getComponentDefinition(card2Type)
+      // console.log('🔍 [Editor] 从 Card 2.1 集成获取组件定义:', { card2Type, found: !!card2Definition })
+
       if (card2Definition) {
         isCard2Component = true
         // 将 Card2.1 组件定义转换为 WidgetDefinition 格式
         widgetDef = convertCard2ToWidgetDefinition(card2Definition)
+        // console.log('✅ [Editor] Card 2.1 组件转换成功:', { type: widgetDef.type, name: widgetDef.name })
       }
     }
 
     if (!widgetDef) {
-      console.error(`[Editor] 组件类型 "${type}" 未注册。`)
+      console.error(`❌ [Editor] 组件类型 "${type}" 未注册。`)
+      // console.log('🔍 [Editor] 当前注册表中的所有组件:', widgetRegistry.getAllWidgets().map(w => w.type))
       throw new Error(`组件类型 "${type}" 未注册。`)
     }
 
@@ -257,7 +315,17 @@ export function createEditor() {
       },
       dataSource: null // 初始化数据源为空
     }
+
+    // console.log('📝 [Editor] 准备添加节点:', {
+    //   id: node.id,
+    //   type: node.type,
+    //   position: { x: node.x, y: node.y },
+    //   size: { width: node.width, height: node.height },
+    //   isCard2Component: node.metadata.isCard2Component
+    // })
+
     stateManager.addNode(node)
+    // console.log('✅ [Editor] 节点添加成功')
   }
 
   const selectNode = (id: string) => stateManager.selectNodes([id])

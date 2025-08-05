@@ -106,12 +106,15 @@ class WidgetRegistry {
    * @param newWidgets - 一个或多个 WidgetDefinition 对象。
    */
   public register(...newWidgets: WidgetDefinition[]): void {
+    console.log(`📝 [WidgetRegistry] 开始注册 ${newWidgets.length} 个组件`)
     for (const widget of newWidgets) {
       if (this.widgets.has(widget.type)) {
         console.warn(`[WidgetRegistry] 组件 "${widget.type}" 已被注册，将进行覆盖。`)
       }
       this.widgets.set(widget.type, widget)
+      console.log(`✅ [WidgetRegistry] 注册组件: ${widget.type} (${widget.name}) - 分类: ${widget.category}`)
     }
+    console.log(`📊 [WidgetRegistry] 当前注册表中共有 ${this.widgets.size} 个组件`)
   }
 
   /**
@@ -161,8 +164,13 @@ class WidgetRegistry {
       control: '控制组件',
       display: '显示组件',
       media: '媒体组件',
-      other: '其他组件'
+      other: '其他组件',
+      system: '系统组件',
+      系统: '系统组件',
+      曲线: '图表组件'
     }
+
+    console.log(`🌳 [WidgetRegistry] 开始构建组件树，当前注册表中有 ${this.widgets.size} 个组件`)
 
     for (const widget of this.widgets.values()) {
       const category = widget.category || 'other'
@@ -170,6 +178,7 @@ class WidgetRegistry {
         categoryMap.set(category, [])
       }
       categoryMap.get(category)!.push(widget)
+      console.log(`📋 [WidgetRegistry] 组件 ${widget.type} 分配到分类: ${category}`)
     }
 
     const tree: WidgetTreeNode[] = []
@@ -178,8 +187,12 @@ class WidgetRegistry {
         name: categoryNameMap[category] || category.charAt(0).toUpperCase() + category.slice(1),
         children: widgets
       })
+      console.log(
+        `📁 [WidgetRegistry] 创建分类节点: ${category} (${categoryNameMap[category] || category}) - 包含 ${widgets.length} 个组件`
+      )
     }
 
+    console.log(`🌳 [WidgetRegistry] 组件树构建完成，共 ${tree.length} 个分类`)
     return tree
   }
 }

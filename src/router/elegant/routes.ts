@@ -811,11 +811,31 @@ export const generatedRoutes: GeneratedRoute[] = [
   {
     name: 'test',
     path: '/test',
-    component: 'layout.base$view.test',
+    component: 'layout.base',
     meta: {
       title: 'test',
       i18nKey: 'route.test'
-    }
+    },
+    children: [
+      {
+        name: 'test_data-binding-system-integration',
+        path: '/test/data-binding-system-integration',
+        component: 'view.test_data-binding-system-integration',
+        meta: {
+          title: 'test_data-binding-system-integration',
+          i18nKey: 'route.test_data-binding-system-integration'
+        }
+      },
+      {
+        name: 'test_data-source-system',
+        path: '/test/data-source-system',
+        component: 'view.test_data-source-system',
+        meta: {
+          title: 'test_data-source-system',
+          i18nKey: 'route.test_data-source-system'
+        }
+      }
+    ]
   },
   {
     name: 'user-center',

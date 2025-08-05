@@ -9,8 +9,24 @@
       </n-input>
     </div>
 
+    <!-- 加载状态 -->
+    <div v-if="!isInitialized && !initializationError" class="loading-state">
+      <n-spin size="large" />
+      <div class="loading-text">正在加载组件库...</div>
+    </div>
+
+    <!-- 错误状态 -->
+    <div v-else-if="initializationError" class="error-state">
+      <n-icon size="48" color="#ff4d4f">
+        <component :is="AlertCircleOutline" />
+      </n-icon>
+      <div class="error-text">组件库加载失败</div>
+      <div class="error-detail">{{ initializationError }}</div>
+      <n-button type="primary" size="small" @click="initializeWidgets">重试</n-button>
+    </div>
+
     <!-- 两级分类 Tabs -->
-    <n-tabs type="line" animated class="widget-tabs">
+    <n-tabs v-else type="line" animated class="widget-tabs">
       <n-tab-pane
         v-for="topCategory in filteredWidgetTree"
         :key="topCategory.name"
@@ -55,9 +71,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { SearchOutline } from '@vicons/ionicons5'
+import { ref, computed, onMounted } from 'vue'
+import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
 import { widgetRegistry, type WidgetTreeNode, type WidgetDefinition } from '../../core/widget-registry'
+import { card2Integration } from '../../core/card2-integration'
+import { registerAllWidgets } from '../../widgets'
+import { debugCard2System } from '@/card2.1/debug'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
 
@@ -68,12 +87,62 @@ const emit = defineEmits<{
   'drag-start': [widget: any, event: DragEvent]
 }>()
 
+// --- Widget Initialization ---
+const isInitialized = ref(false)
+const initializationError = ref<string | null>(null)
+
+const initializeWidgets = async () => {
+  try {
+    // console.log('🚀 [WidgetLibrary] 开始初始化组件...')
+
+    // 不注册基础组件，只注册Card2.1组件
+    // registerAllWidgets(true)
+    // console.log('✅ [WidgetLibrary] 跳过基础组件注册')
+
+    // 调试 Card 2.1 系统
+    await debugCard2System()
+    // console.log('✅ [WidgetLibrary] Card 2.1 调试完成')
+
+    // 初始化 Card 2.1 集成
+    await card2Integration.initialize()
+    // console.log('✅ [WidgetLibrary] Card 2.1 集成完成')
+
+    isInitialized.value = true
+    // console.log('🎉 [WidgetLibrary] 所有组件初始化完成')
+  } catch (error) {
+    console.error('❌ [WidgetLibrary] 组件初始化失败:', error)
+    initializationError.value = error instanceof Error ? error.message : '初始化失败'
+  }
+}
+
+// 在组件挂载时初始化所有组件
+onMounted(() => {
+  initializeWidgets()
+})
+
 // --- Legacy Widget Integration ---
-const legacyWidgetTree = computed<WidgetTreeNode[]>(() => widgetRegistry.getWidgetTree())
+const legacyWidgetTree = computed<WidgetTreeNode[]>(() => {
+  if (!isInitialized.value) {
+    // console.log('⏳ [WidgetLibrary] 等待组件初始化完成...')
+    return []
+  }
+  return widgetRegistry.getWidgetTree()
+})
 
 // --- Combined & Re-grouped Logic ---
 const combinedWidgetTree = computed<WidgetTreeNode[]>(() => {
-  return legacyWidgetTree.value
+  if (!isInitialized.value) {
+    return []
+  }
+
+  const tree = legacyWidgetTree.value
+  // console.log('🌳 [WidgetLibrary] 当前组件树:', tree)
+  // console.log('📊 [WidgetLibrary] 组件统计:', {
+  //   总分类数: tree.length,
+  //   总组件数: tree.reduce((total, category) => total + category.children.length, 0),
+  //   各分类组件数: tree.map(cat => ({ name: cat.name, count: cat.children.length }))
+  // })
+  return tree
 })
 
 interface SubCategory {
@@ -87,45 +156,31 @@ interface TopCategory {
 }
 
 const twoLevelWidgetTree = computed(() => {
-  const topCategoriesData: {
-    系统: { [subCategoryName: string]: WidgetDefinition[] }
-    曲线: { [subCategoryName: string]: WidgetDefinition[] }
-  } = {
-    系统: {},
-    曲线: {}
-  }
+  // 动态构建顶级分类数据
+  const topCategoriesData: Record<string, { [subCategoryName: string]: WidgetDefinition[] }> = {}
 
   combinedWidgetTree.value.forEach(subCategory => {
     subCategory.children.forEach(widget => {
-      // 1. Determine Top-Level Category - 优先使用Card 2.1组件的mainCategory
-      let topLevelName = '系统'
-      if (widget.metadata?.isCard2Component && widget.metadata?.card2Definition?.mainCategory) {
-        topLevelName = widget.metadata.card2Definition.mainCategory
-      } else if (widget.category === 'chart') {
-        topLevelName = '曲线'
+      // 只处理Card2.1组件
+      if (!widget.metadata?.isCard2Component) {
+        return
       }
 
-      // 2. Determine Second-Level Category - 优先使用Card 2.1组件的subCategory
-      let subLevelName = '其他'
+      // 1. Determine Top-Level Category - 使用Card 2.1组件的mainCategory
+      let topLevelName = '系统组件'
+      if (widget.metadata?.card2Definition?.mainCategory) {
+        topLevelName = widget.metadata.card2Definition.mainCategory
+      }
 
-      if (widget.metadata?.isCard2Component && widget.metadata?.card2Definition?.subCategory) {
+      // 2. Determine Second-Level Category - 使用Card 2.1组件的subCategory
+      let subLevelName = '其他'
+      if (widget.metadata?.card2Definition?.subCategory) {
         subLevelName = widget.metadata.card2Definition.subCategory
-      } else if (widget.category === 'card21') {
-        subLevelName = 'Card 2.1 组件'
-      } else if (widget.category === 'chart') {
-        if (subCategory.name.includes('builtin')) {
-          subLevelName = '内置图表'
-        } else if (subCategory.name.includes('chart')) {
-          subLevelName = '图表组件'
-        } else {
-          subLevelName = subCategory.name || '其他图表'
-        }
-      } else {
-        if (subCategory.name.includes('builtin')) {
-          subLevelName = '内置组件'
-        } else {
-          subLevelName = subCategory.name || '其他组件'
-        }
+      }
+
+      // 初始化顶级分类
+      if (!topCategoriesData[topLevelName]) {
+        topCategoriesData[topLevelName] = {}
       }
 
       if (!topCategoriesData[topLevelName][subLevelName]) {
@@ -136,16 +191,19 @@ const twoLevelWidgetTree = computed(() => {
   })
 
   // 3. Convert map to final array structure for rendering
-  const result: TopCategory[] = [
-    {
-      name: '系统',
-      subCategories: Object.entries(topCategoriesData['系统']).map(([name, children]) => ({ name, children }))
-    },
-    {
-      name: '曲线',
-      subCategories: Object.entries(topCategoriesData['曲线']).map(([name, children]) => ({ name, children }))
-    }
-  ]
+  const result: TopCategory[] = Object.entries(topCategoriesData).map(([topLevelName, subCategories]) => ({
+    name: topLevelName,
+    subCategories: Object.entries(subCategories).map(([name, children]) => ({ name, children }))
+  }))
+
+  // console.log('🌳 [WidgetLibrary] twoLevelWidgetTree 构建结果:', {
+  //   顶级分类数: result.length,
+  //   各分类详情: result.map(cat => ({
+  //     name: cat.name,
+  //     subCategories: cat.subCategories.length,
+  //     totalWidgets: cat.subCategories.reduce((sum, sub) => sum + sub.children.length, 0)
+  //   }))
+  // })
 
   return result.filter(
     topCat => topCat.subCategories.length > 0 && topCat.subCategories.some(subCat => subCat.children.length > 0)
@@ -153,47 +211,77 @@ const twoLevelWidgetTree = computed(() => {
 })
 
 const filteredWidgetTree = computed(() => {
-  if (!searchTerm.value) {
-    return twoLevelWidgetTree.value
-  }
+  const result = !searchTerm.value
+    ? twoLevelWidgetTree.value
+    : (() => {
+        const lowerCaseSearch = searchTerm.value.toLowerCase()
+        const filteredTopCategories: TopCategory[] = []
 
-  const lowerCaseSearch = searchTerm.value.toLowerCase()
-  const filteredTopCategories: TopCategory[] = []
+        twoLevelWidgetTree.value.forEach(topCategory => {
+          const filteredSubCategories: SubCategory[] = []
+          topCategory.subCategories.forEach(subCategory => {
+            const filteredChildren = subCategory.children.filter(
+              widget =>
+                widget.name.toLowerCase().includes(lowerCaseSearch) ||
+                widget.type.toLowerCase().includes(lowerCaseSearch)
+            )
+            if (filteredChildren.length > 0) {
+              filteredSubCategories.push({ name: subCategory.name, children: filteredChildren })
+            }
+          })
 
-  twoLevelWidgetTree.value.forEach(topCategory => {
-    const filteredSubCategories: SubCategory[] = []
-    topCategory.subCategories.forEach(subCategory => {
-      const filteredChildren = subCategory.children.filter(
-        widget =>
-          widget.name.toLowerCase().includes(lowerCaseSearch) || widget.type.toLowerCase().includes(lowerCaseSearch)
-      )
-      if (filteredChildren.length > 0) {
-        filteredSubCategories.push({ name: subCategory.name, children: filteredChildren })
-      }
-    })
+          if (filteredSubCategories.length > 0) {
+            filteredTopCategories.push({ name: topCategory.name, subCategories: filteredSubCategories })
+          }
+        })
 
-    if (filteredSubCategories.length > 0) {
-      filteredTopCategories.push({ name: topCategory.name, subCategories: filteredSubCategories })
-    }
-  })
+        return filteredTopCategories
+      })()
 
-  return filteredTopCategories
+  // console.log('🔍 [WidgetLibrary] filteredWidgetTree 结果:', {
+  //   搜索词: searchTerm.value,
+  //   结果分类数: result.length,
+  //   各分类详情: result.map(cat => ({
+  //     name: cat.name,
+  //     subCategories: cat.subCategories.length,
+  //     totalWidgets: cat.subCategories.reduce((sum, sub) => sum + sub.children.length, 0)
+  //   }))
+  // })
+
+  return result
 })
 
 // --- Event Handlers ---
 const handleAddWidget = (widget: any) => {
+  // console.log('🎯 [WidgetLibrary] handleAddWidget 被调用:', {
+  //   widget,
+  //   type: widget.type,
+  //   source: widget.source,
+  //   hasType: !!widget.type
+  // })
+
   if (!widget.type) {
     console.error('❌ handleAddWidget called with undefined type.', widget)
     return
   }
-  emit('add-widget', { type: widget.type, source: widget.source || 'legacy' })
+
+  const payload = { type: widget.type, source: widget.source || 'legacy' }
+  // console.log('📤 [WidgetLibrary] 发送 add-widget 事件:', payload)
+  emit('add-widget', payload)
 }
 
 const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
+  // console.log('🎯 [WidgetLibrary] handleDragStart 被调用:', {
+  //   widget,
+  //   type: widget.type,
+  //   source: widget.source
+  // })
+
   if (event.dataTransfer) {
     const dragData = { type: widget.type, source: widget.source || 'legacy' }
     event.dataTransfer.setData('application/json', JSON.stringify(dragData))
     event.dataTransfer.effectAllowed = 'copy'
+    // console.log('📤 [WidgetLibrary] 设置拖拽数据:', dragData)
   }
 }
 </script>
@@ -231,10 +319,31 @@ const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
 .error-state {
   padding: 20px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
+
 .loading-text {
   margin-top: 8px;
   color: var(--n-text-color-3);
+}
+
+.error-text {
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--n-text-color-1);
+}
+
+.error-detail {
+  margin-top: 8px;
+  color: var(--n-text-color-3);
+  font-size: 12px;
+  max-width: 300px;
+  word-break: break-word;
 }
 
 .widget-subcategory {

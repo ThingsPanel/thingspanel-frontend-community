@@ -3,7 +3,7 @@
  * 提供与 Visual Editor 的桥接功能
  */
 
-import { computed, ref } from 'vue'
+import { computed, ref, readonly, onMounted } from 'vue'
 import { initializeCard2System, getComponentRegistry } from '../index'
 import { useComponentTree } from './useComponentTree'
 import type { ComponentDefinition } from '../core/types'
@@ -68,6 +68,13 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
   const isInitialized = ref(false)
   const initializationError = ref<string | null>(null)
 
+  // 自动初始化
+  if (autoInit) {
+    onMounted(() => {
+      initialize()
+    })
+  }
+
   /**
    * 初始化集成
    */
@@ -90,9 +97,27 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
    * 将 Card 2.1 组件转换为 Visual Editor Widget
    */
   const availableWidgets = computed(() => {
-    if (!isInitialized.value) return []
+    console.log('🔍 [VisualEditorIntegration] availableWidgets 计算:', {
+      isInitialized: isInitialized.value,
+      componentTreeFilteredComponents: componentTree.filteredComponents,
+      componentTreeFilteredComponentsIsArray: Array.isArray(componentTree.filteredComponents),
+      componentTreeFilteredComponentsLength: Array.isArray(componentTree.filteredComponents)
+        ? componentTree.filteredComponents.length
+        : 'N/A'
+    })
 
-    return componentTree.filteredComponents.map(definition => {
+    if (!isInitialized.value) {
+      console.log('❌ [VisualEditorIntegration] 未初始化，返回空数组')
+      return []
+    }
+
+    const components = componentTree.filteredComponents
+    if (!Array.isArray(components)) {
+      console.log('❌ [VisualEditorIntegration] filteredComponents 不是数组，返回空数组')
+      return []
+    }
+
+    return components.map(definition => {
       // 获取显示名称（支持国际化）
       let displayName = definition.name
       if (enableI18n) {
@@ -127,14 +152,34 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
    * 检查是否为 Card 2.1 组件
    */
   const isCard2Component = (type: string): boolean => {
-    return componentTree.filteredComponents.some(comp => comp.type === type)
+    const components = componentTree.filteredComponents.value
+    return Array.isArray(components) && components.some(comp => comp.type === type)
   }
 
   /**
    * 获取组件定义
    */
   const getComponentDefinition = (type: string): ComponentDefinition | undefined => {
-    return componentTree.filteredComponents.find(comp => comp.type === type)
+    console.log('🔍 [VisualEditorIntegration] getComponentDefinition 被调用:', {
+      type,
+      isInitialized: isInitialized.value,
+      componentTreeFilteredComponents: componentTree.filteredComponents.value,
+      componentTreeFilteredComponentsIsArray: Array.isArray(componentTree.filteredComponents.value),
+      componentTreeFilteredComponentsLength: Array.isArray(componentTree.filteredComponents.value)
+        ? componentTree.filteredComponents.value.length
+        : 'N/A'
+    })
+
+    const components = componentTree.filteredComponents.value
+    const result = Array.isArray(components) ? components.find(comp => comp.type === type) : undefined
+
+    console.log('🔍 [VisualEditorIntegration] getComponentDefinition 结果:', {
+      type,
+      found: !!result,
+      result: result
+    })
+
+    return result
   }
 
   /**
@@ -142,6 +187,8 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
    */
   const getWidgetsByCategory = (mainCategory?: string, subCategory?: string) => {
     const components = componentTree.getComponentsByCategory(mainCategory, subCategory)
+    if (!Array.isArray(components)) return []
+
     return components.map(definition => {
       const i18nKey = COMPONENT_I18N_KEYS[definition.type]
       const displayName = enableI18n && i18nKey ? $t(i18nKey as any) : definition.name
@@ -172,25 +219,42 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
    * 获取组件统计信息
    */
   const getStats = computed(() => {
-    const components = componentTree.filteredComponents
+    const components = componentTree.filteredComponents.value
     const stats = {
-      total: components.length,
+      total: Array.isArray(components) ? components.length : 0,
       byCategory: {} as Record<string, number>,
       bySubCategory: {} as Record<string, number>
     }
 
-    components.forEach(comp => {
-      // 统计主分类
-      const mainCat = comp.mainCategory || '未分类'
-      stats.byCategory[mainCat] = (stats.byCategory[mainCat] || 0) + 1
+    if (Array.isArray(components)) {
+      components.forEach(comp => {
+        // 统计主分类
+        const mainCat = comp.mainCategory || '未分类'
+        stats.byCategory[mainCat] = (stats.byCategory[mainCat] || 0) + 1
 
-      // 统计子分类
-      const subCat = comp.subCategory || '未分类'
-      stats.bySubCategory[subCat] = (stats.bySubCategory[subCat] || 0) + 1
-    })
+        // 统计子分类
+        const subCat = comp.subCategory || '未分类'
+        stats.bySubCategory[subCat] = (stats.bySubCategory[subCat] || 0) + 1
+      })
+    }
 
     return stats
   })
+
+  /**
+   * 获取集成状态
+   */
+  const getStatus = () => {
+    return {
+      isInitialized: isInitialized.value,
+      isLoading: componentTree.isLoading.value,
+      error: componentTree.error.value,
+      componentCount: Array.isArray(componentTree.filteredComponents.value)
+        ? componentTree.filteredComponents.value.length
+        : 0,
+      componentTree: componentTree.componentTree.value
+    }
+  }
 
   return {
     // 状态
@@ -212,6 +276,7 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
     getWidgetsByCategory,
     searchWidgets,
     getStats,
+    getStatus,
 
     // 筛选控制
     searchQuery: componentTree.searchQuery,

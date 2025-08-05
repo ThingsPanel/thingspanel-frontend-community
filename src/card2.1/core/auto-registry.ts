@@ -140,6 +140,13 @@ export class AutoRegistry {
   getComponentTree(): ComponentTree {
     const components = this.registry.getAll()
 
+    console.log('🔍 [AutoRegistry] getComponentTree() 被调用:', {
+      componentsCount: components.length,
+      componentTypes: components.map(c => c.type),
+      categoryTreeLength: this.categoryTree.length,
+      categoryTree: this.categoryTree
+    })
+
     return {
       categories: this.categoryTree,
       components,

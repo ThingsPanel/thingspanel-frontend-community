@@ -4,7 +4,7 @@
  */
 
 import type { Component } from 'vue'
-import type { ComponentDataSourceDefinition } from '@/components/visual-editor/types/data-source'
+import type { ComponentDataSourceDefinition } from '../../components/visual-editor/types/data-source'
 
 export interface ComponentDefinition {
   type: string
@@ -16,6 +16,16 @@ export interface ComponentDefinition {
   icon: string // 改为string类型，直接使用SVG字符串
   component: Component
   configComponent?: Component
+  config?: Record<string, any> // 组件配置
+  tags?: string[] // 组件标签
+  version?: string // 组件版本
+  author?: string // 组件作者
+  examples?: Array<{
+    name: string
+    description: string
+    config: Record<string, any>
+  }> // 示例配置
+  documentation?: Record<string, any> // 文档信息
   dataSourceDefinitions?: ComponentDataSourceDefinition[]
   properties?: Record<
     string,

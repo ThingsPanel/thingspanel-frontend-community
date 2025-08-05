@@ -285,7 +285,7 @@ class UniversalDataSourceManagerImpl {
 
     try {
       switch (dataSource.metricsType) {
-        case 'telemetry':
+        case 'telemetry': {
           const response = await telemetryDataCurrentKeys({
             device_id: dataSource.deviceId,
             keys: dataSource.metricsId
@@ -296,8 +296,8 @@ class UniversalDataSourceManagerImpl {
             quality: 'good',
             unit: response?.data?.[0]?.unit
           }
-
-        case 'attributes':
+        }
+        case 'attributes': {
           const attrResponse = await getAttributeDataSet({ device_id: dataSource.deviceId })
           const attributeData = attrResponse?.data?.find((item: any) => item.key === dataSource.metricsId)
           return {
@@ -306,6 +306,7 @@ class UniversalDataSourceManagerImpl {
             quality: 'good',
             unit: attributeData?.unit
           }
+        }
 
         default:
           throw new Error(`不支持的设备数据类型: ${dataSource.metricsType}`)
@@ -334,21 +335,18 @@ class UniversalDataSourceManagerImpl {
             device_id: dataSource.parameters.device_id,
             keys: dataSource.parameters.keys
           })
-          return {
-            value: telemetryResponse?.data?.[0]?.value,
-            timestamp: new Date().toISOString(),
-            quality: 'good',
-            unit: telemetryResponse?.data?.[0]?.unit,
-            title: telemetryResponse?.data?.[0]?.name || dataSource.parameters.keys
-          }
+          // 返回原始API响应，让DataPathResolver处理数组
+          console.log('🔧 [UniversalDataSourceManager] telemetryDataCurrentKeys原始响应:', telemetryResponse)
+          return telemetryResponse
         }
 
         case 'getAttributeDataSet': {
           const attrSetResponse = await getAttributeDataSet({
             device_id: dataSource.parameters.device_id
           })
-          // 返回所有属性数据，由组件自行筛选
-          return attrSetResponse?.data || []
+          // 返回原始API响应，让DataPathResolver处理数组
+          console.log('🔧 [UniversalDataSourceManager] getAttributeDataSet原始响应:', attrSetResponse)
+          return attrSetResponse
         }
 
         case 'getAttributeDatasKey': {
@@ -356,13 +354,9 @@ class UniversalDataSourceManagerImpl {
             device_id: dataSource.parameters.device_id,
             key: dataSource.parameters.key
           })
-          return {
-            value: attrKeyResponse?.data?.value,
-            timestamp: new Date().toISOString(),
-            quality: 'good',
-            unit: attrKeyResponse?.data?.unit,
-            title: attrKeyResponse?.data?.name || dataSource.parameters.key
-          }
+          // 返回原始API响应，让DataPathResolver处理数组
+          console.log('🔧 [UniversalDataSourceManager] getAttributeDatasKey原始响应:', attrKeyResponse)
+          return attrKeyResponse
         }
 
         case 'telemetryDataHistoryList': {
@@ -373,7 +367,9 @@ class UniversalDataSourceManagerImpl {
             aggregate_function: dataSource.parameters.aggregate_function,
             aggregate_window: dataSource.parameters.aggregate_window
           })
-          return historyResponse?.data || []
+          // 返回原始API响应，让DataPathResolver处理数组
+          console.log('🔧 [UniversalDataSourceManager] telemetryDataHistoryList原始响应:', historyResponse)
+          return historyResponse
         }
 
         default:

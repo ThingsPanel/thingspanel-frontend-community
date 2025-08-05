@@ -22,7 +22,7 @@ export class ComponentLoader {
   private exclude: string[]
 
   constructor(options: ComponentLoaderOptions = {}) {
-    this.basePath = options.basePath || './components'
+    this.basePath = options.basePath || '../components'
     this.pattern = options.pattern || '**/index.ts'
     this.exclude = options.exclude || ['node_modules', '.git', 'dist']
   }
@@ -33,8 +33,10 @@ export class ComponentLoader {
    */
   async loadComponents(): Promise<Record<string, ComponentModule>> {
     try {
-      // 使用 Vite 的动态导入功能
-      const modules = import.meta.glob('./components/*/index.ts', {
+      // 使用 Vite 的动态导入功能 - 只能使用字面量
+      console.log('🔍 [ComponentLoader] 使用模式: ../components/*/index.ts')
+
+      const modules = import.meta.glob('../components/*/index.ts', {
         eager: true,
         import: 'default'
       })
@@ -51,6 +53,8 @@ export class ComponentLoader {
       }
 
       console.log(`📦 [ComponentLoader] 加载了 ${Object.keys(componentModules).length} 个组件模块`)
+      console.log('🔍 [ComponentLoader] 找到的模块路径:', Object.keys(modules))
+      console.log('📋 [ComponentLoader] 组件模块详情:', componentModules)
       return componentModules
     } catch (error) {
       console.error('❌ [ComponentLoader] 加载组件失败:', error)
@@ -62,8 +66,8 @@ export class ComponentLoader {
    * 从路径中提取组件ID
    */
   private extractComponentId(path: string): string | null {
-    // 匹配 ./components/component-name/index.ts 格式
-    const match = path.match(/\.\/components\/([^/]+)\/index\.ts$/)
+    // 匹配 ../components/component-name/index.ts 格式
+    const match = path.match(/\.\.\/components\/([^/]+)\/index\.ts$/)
     return match ? match[1] : null
   }
 

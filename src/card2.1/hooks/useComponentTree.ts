@@ -3,8 +3,13 @@
  * 提供组件分类、筛选和树形结构生成功能
  */
 
-import { ref, computed, onMounted, shallowRef } from 'vue'
-import { initializeCard2System, getComponentTree, getComponentsByCategory, getCategories } from '../index'
+import { ref, computed, onMounted, shallowRef, readonly } from 'vue'
+import {
+  initializeCard2System,
+  getComponentTree,
+  getComponentsByCategory as getComponentsByCategoryFromIndex,
+  getCategories
+} from '../index'
 import type { ComponentDefinition } from '../core/types'
 import type { ComponentTree, ComponentCategory } from '../core/auto-registry'
 
@@ -139,7 +144,7 @@ export function useComponentTree(options: ComponentTreeOptions = {}) {
    * 按分类获取组件
    */
   const getComponentsByCategory = (mainCategory?: string, subCategory?: string) => {
-    return getComponentsByCategory(mainCategory, subCategory)
+    return getComponentsByCategoryFromIndex(mainCategory, subCategory)
   }
 
   /**

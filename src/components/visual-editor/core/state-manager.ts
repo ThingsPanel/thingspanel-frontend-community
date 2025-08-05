@@ -32,8 +32,20 @@ export class StateManager {
 
   // 节点操作
   addNode(node: GraphData) {
+    // console.log('🎯 [StateManager] addNode 被调用:', {
+    //   id: node.id,
+    //   type: node.type,
+    //   currentNodesCount: this.state.nodes.length
+    // })
+
     this.state.nodes.push(node)
+    // console.log('✅ [StateManager] 节点已添加到状态:', {
+    //   newNodesCount: this.state.nodes.length,
+    //   allNodes: this.state.nodes.map(n => ({ id: n.id, type: n.type }))
+    // })
+
     this.selectNodes([node.id])
+    // console.log('✅ [StateManager] 节点已选中')
   }
 
   removeNode(id: string) {

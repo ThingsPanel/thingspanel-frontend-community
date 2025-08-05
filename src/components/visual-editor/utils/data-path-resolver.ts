@@ -168,7 +168,96 @@ class DataPathResolverImpl implements DataPathResolver {
       return partialMatch
     }
 
-    // 如果没有找到匹配，返回空字符串
+    // 对于常见字段的智能建议
+    return this.getSmartSuggestion(data, targetField, paths)
+  }
+
+  /**
+   * 获取智能路径建议
+   * @param data 原始数据
+   * @param targetField 目标字段
+   * @param paths 可用路径
+   * @returns 建议的路径
+   */
+  private getSmartSuggestion(data: any, targetField: string, paths: string[]): string {
+    const lowerTarget = targetField.toLowerCase()
+
+    // 常见映射规则
+    const commonMappings: Record<string, string[]> = {
+      value: ['data[0].value', 'data.value', 'value', 'data[0]'],
+      name: ['data[0].name', 'data.name', 'name', 'data[0].key'],
+      title: ['data[0].title', 'data.title', 'title', 'data[0].name'],
+      unit: ['data[0].unit', 'data.unit', 'unit'],
+      timestamp: ['data[0].timestamp', 'data.timestamp', 'timestamp', 'data[0].time'],
+      time: ['data[0].time', 'data.time', 'time', 'data[0].timestamp']
+    }
+
+    const suggestions = commonMappings[lowerTarget] || []
+
+    // 找到第一个存在的路径
+    for (const suggestion of suggestions) {
+      if (this.isValidPath(data, suggestion)) {
+        return suggestion
+      }
+    }
+
+    // 如果没有找到匹配，尝试自动检测数组结构
+    return this.autoDetectArrayPath(data, targetField)
+  }
+
+  /**
+   * 自动检测数组路径
+   * @param data 原始数据
+   * @param targetField 目标字段
+   * @returns 检测到的路径
+   */
+  private autoDetectArrayPath(data: any, targetField: string): string {
+    // 检查是否有 data 字段且为数组
+    if (data?.data && Array.isArray(data.data) && data.data.length > 0) {
+      const firstItem = data.data[0]
+      if (typeof firstItem === 'object' && firstItem !== null) {
+        // 检查第一个元素是否有目标字段
+        const lowerTarget = targetField.toLowerCase()
+        const keys = Object.keys(firstItem)
+
+        // 寻找匹配的键
+        const matchingKey = keys.find(
+          key => key.toLowerCase() === lowerTarget || key.toLowerCase().includes(lowerTarget)
+        )
+
+        if (matchingKey) {
+          return `data[0].${matchingKey}`
+        }
+
+        // 如果没有找到匹配的键，但第一个元素只有一个值，可能就是目标值
+        if (keys.length === 1) {
+          return `data[0].${keys[0]}`
+        }
+      } else {
+        // 如果数组元素是基本类型，直接返回数组索引
+        return 'data[0]'
+      }
+    }
+
+    // 检查根级别是否为数组
+    if (Array.isArray(data) && data.length > 0) {
+      const firstItem = data[0]
+      if (typeof firstItem === 'object' && firstItem !== null) {
+        const lowerTarget = targetField.toLowerCase()
+        const keys = Object.keys(firstItem)
+
+        const matchingKey = keys.find(
+          key => key.toLowerCase() === lowerTarget || key.toLowerCase().includes(lowerTarget)
+        )
+
+        if (matchingKey) {
+          return `[0].${matchingKey}`
+        }
+      } else {
+        return '[0]'
+      }
+    }
+
     return ''
   }
 

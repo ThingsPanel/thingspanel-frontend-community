@@ -22,6 +22,7 @@
 import { ref, onMounted, watch, shallowRef, onBeforeUnmount, type Component } from 'vue'
 import { useEditor } from '../../hooks'
 import { universalDataSourceManager } from '../../core/universal-data-source-manager'
+import { widgetRegistry } from '../../core/widget-registry'
 import type { DataSourceValue } from '../../types/data-source'
 
 interface Props {
@@ -37,8 +38,8 @@ const props = defineProps<Props>()
 const editor = useEditor()
 const card2Integration = editor.card2Integration
 
-console.log('🔍 Card2Wrapper - useEditor 结果:', editor)
-console.log('🔍 Card2Wrapper - card2Integration:', card2Integration)
+// console.log('🔍 Card2Wrapper - useEditor 结果:', editor)
+// console.log('🔍 Card2Wrapper - card2Integration:', card2Integration)
 
 // State
 const hasError = ref(false)
@@ -49,16 +50,16 @@ let currentSubscriberId: (() => void) | null = null
 
 // 处理数据源订阅
 const handleDataSource = (dataSource: any) => {
-  console.log('🔍 Card2Wrapper - 处理数据源变化:', {
-    newDataSource: dataSource,
-    currentSubscriberId
-  })
+  // console.log('🔍 Card2Wrapper - 处理数据源变化:', {
+  //   newDataSource: dataSource,
+  //   currentSubscriberId
+  // })
 
   // 取消之前的订阅
   if (currentSubscriberId) {
     currentSubscriberId() // 调用取消订阅函数
     currentSubscriberId = null
-    console.log('🔍 Card2Wrapper - 已取消之前的数据源订阅')
+    // console.log('🔍 Card2Wrapper - 已取消之前的数据源订阅')
   }
 
   // 重置数据源值
@@ -66,24 +67,24 @@ const handleDataSource = (dataSource: any) => {
 
   // 如果有新的数据源且配置完整，订阅它
   if (dataSource && isDataSourceValid(dataSource)) {
-    console.log('🔍 Card2Wrapper - 开始订阅数据源:', {
-      type: dataSource.type,
-      name: dataSource.name,
-      dataPaths: dataSource.dataPaths
-    })
+    // console.log('🔍 Card2Wrapper - 开始订阅数据源:', {
+    //   type: dataSource.type,
+    //   name: dataSource.name,
+    //   dataPaths: dataSource.dataPaths
+    // })
 
     currentSubscriberId = universalDataSourceManager.subscribe(dataSource, value => {
-      console.log('🔍 Card2Wrapper - 收到数据源更新:', {
-        values: value.values,
-        rawData: value.rawData,
-        dataPaths: value.metadata?.dataPaths
-      })
+      // console.log('🔍 Card2Wrapper - 收到数据源更新:', {
+      //   values: value.values,
+      //   rawData: value.rawData,
+      //   dataPaths: value.metadata?.dataPaths
+      // })
       dataSourceValue.value = value
     })
 
-    console.log('🔍 Card2Wrapper - 数据源订阅成功')
+    // console.log('🔍 Card2Wrapper - 数据源订阅成功')
   } else {
-    console.log('🔍 Card2Wrapper - 数据源配置无效或未启用，跳过订阅')
+    // console.log('🔍 Card2Wrapper - 数据源配置无效或未启用，跳过订阅')
   }
 }
 
@@ -91,16 +92,16 @@ const handleDataSource = (dataSource: any) => {
 const isDataSourceValid = (dataSource: any): boolean => {
   if (!dataSource) return false
 
-  console.log('🔍 Card2Wrapper - 验证数据源配置:', {
-    type: dataSource.type,
-    enabled: dataSource.enabled,
-    name: dataSource.name,
-    dataPaths: dataSource.dataPaths
-  })
+  // console.log('🔍 Card2Wrapper - 验证数据源配置:', {
+  //   type: dataSource.type,
+  //   enabled: dataSource.enabled,
+  //   name: dataSource.name,
+  //   dataPaths: dataSource.dataPaths
+  // })
 
   // 检查基本配置
   if (!dataSource.type || !dataSource.enabled) {
-    console.log('🔍 Card2Wrapper - 数据源未启用或缺少类型，跳过订阅:', dataSource)
+    // console.log('🔍 Card2Wrapper - 数据源未启用或缺少类型，跳过订阅:', dataSource)
     return false
   }
 
@@ -113,11 +114,11 @@ const isDataSourceValid = (dataSource: any): boolean => {
     case 'device':
       // 设备数据源需要更详细的配置
       if (!dataSource.deviceId || !dataSource.metricsType || !dataSource.metricsId) {
-        console.log('🔍 Card2Wrapper - 设备数据源配置不完整:', {
-          deviceId: dataSource.deviceId,
-          metricsType: dataSource.metricsType,
-          metricsId: dataSource.metricsId
-        })
+        // console.log('🔍 Card2Wrapper - 设备数据源配置不完整:', {
+        //   deviceId: dataSource.deviceId,
+        //   metricsType: dataSource.metricsType,
+        //   metricsId: dataSource.metricsId
+        // })
         return false
       }
       return true
@@ -131,7 +132,7 @@ const isDataSourceValid = (dataSource: any): boolean => {
       return !!dataSource.url
 
     default:
-      console.log('🔍 Card2Wrapper - 未知的数据源类型:', dataSource.type)
+      // console.log('🔍 Card2Wrapper - 未知的数据源类型:', dataSource.type)
       return false
   }
 }
@@ -158,26 +159,40 @@ const loadComponent = async () => {
     hasError.value = false
     errorMessage.value = ''
 
-    console.log(`🔍 Card2Wrapper - 加载组件: ${props.componentType}`)
-    console.log(`🔍 Card2Wrapper - card2Integration:`, card2Integration)
+    // console.log(`🔍 Card2Wrapper - 加载组件: ${props.componentType}`)
+    // console.log(`🔍 Card2Wrapper - card2Integration:`, card2Integration)
 
-    // 尝试多种组件类型格式
-    let definition = card2Integration.getComponentDefinition(props.componentType)
+    // 首先尝试从 widgetRegistry 获取组件定义
+    // console.log(`🔍 Card2Wrapper - widgetRegistry:`, widgetRegistry)
+
+    let widgetDef = widgetRegistry.getWidget(props.componentType)
+    // console.log(`🔍 Card2Wrapper - 从 widgetRegistry 获取:`, widgetDef)
+
+    // 如果从 widgetRegistry 找到了，尝试从 metadata 中获取 Card2.1 定义
+    let definition = null
+    if (widgetDef && widgetDef.metadata && widgetDef.metadata.card2Definition) {
+      definition = widgetDef.metadata.card2Definition
+      // console.log(`🔍 Card2Wrapper - 从 metadata.card2Definition 获取:`, definition)
+    } else if (widgetDef && widgetDef.metadata && widgetDef.metadata.isCard2Component) {
+      // 如果没有 card2Definition，但有 isCard2Component 标记，说明这是一个Card2.1组件
+      // console.log(`🔍 Card2Wrapper - 发现Card2.1组件但没有card2Definition，尝试从card2Integration获取`)
+      definition = card2Integration.getComponentDefinition(props.componentType)
+    }
+
+    // 如果还是找不到，尝试从 card2Integration 获取
+    if (!definition) {
+      // console.log(`🔍 Card2Wrapper - 尝试从 card2Integration 获取组件定义`)
+      definition = card2Integration.getComponentDefinition(props.componentType)
+    }
 
     // 如果直接类型找不到，尝试去掉前缀
     if (!definition && props.componentType.startsWith('card21-')) {
       const cleanType = props.componentType.replace('card21-', '')
-      console.log(`🔍 Card2Wrapper - 尝试清理类型: ${cleanType}`)
+      // console.log(`🔍 Card2Wrapper - 尝试清理类型: ${cleanType}`)
       definition = card2Integration.getComponentDefinition(cleanType)
     }
 
-    // 如果还是找不到，尝试从 metadata 中获取
-    if (!definition) {
-      console.log(`🔍 Card2Wrapper - 尝试从 metadata 获取组件定义`)
-      // 这里可以添加从 metadata 获取的逻辑
-    }
-
-    console.log(`🔍 Card2Wrapper - 组件定义:`, definition)
+    // console.log(`🔍 Card2Wrapper - 最终组件定义:`, definition)
 
     if (!definition || !definition.component) {
       throw new Error(`组件 [${props.componentType}] 的定义或组件实现不存在。`)
@@ -186,7 +201,7 @@ const loadComponent = async () => {
     // definition.component 是一个异步组件 (defineAsyncComponent)
     // 我们可以直接使用它
     componentToRender.value = definition.component
-    console.log(`✅ Card2Wrapper - 组件加载成功: ${props.componentType}`)
+    // console.log(`✅ Card2Wrapper - 组件加载成功: ${props.componentType}`)
   } catch (error: any) {
     console.error(`❌ Card 2.1 组件加载失败 [${props.componentType}]:`, error)
     hasError.value = true
