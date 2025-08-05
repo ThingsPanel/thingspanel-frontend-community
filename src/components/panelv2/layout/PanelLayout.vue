@@ -87,7 +87,11 @@ defineExpose({
       <div
         v-if="showLeft"
         class="left-area flex-shrink-0 overflow-auto transition-all duration-300 backdrop-blur-sm"
-        :style="{ width: `${leftWidth}px`, backgroundColor: 'var(--left-sidebar-bg)', borderRight: '1px solid var(--panel-border)' }"
+        :style="{
+          width: `${leftWidth}px`,
+          backgroundColor: 'var(--left-sidebar-bg)',
+          borderRight: '1px solid var(--panel-border)'
+        }"
       >
         <slot name="left" :mode="props.mode" :isEditMode="isEditMode" />
       </div>
@@ -101,7 +105,11 @@ defineExpose({
       <div
         v-if="showRight"
         class="right-area flex-shrink-0 overflow-auto transition-all duration-300 shadow-lg"
-        :style="{ width: `${rightWidth}px`, backgroundColor: 'var(--sidebar-bg)', borderLeft: '1px solid var(--panel-border)' }"
+        :style="{
+          width: `${rightWidth}px`,
+          backgroundColor: 'var(--sidebar-bg)',
+          borderLeft: '1px solid var(--panel-border)'
+        }"
       >
         <slot name="right" :mode="props.mode" :isEditMode="isEditMode" />
       </div>

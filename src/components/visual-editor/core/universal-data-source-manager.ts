@@ -17,7 +17,14 @@ import { DataSourceType } from '../types/data-source'
 import { dataPathResolver } from '../utils/data-path-resolver'
 
 // 设备数据API (从原有的data-source-manager导入)
-import { telemetryDataCurrentKeys, telemetryDataHistoryList, getAttributeDataSet } from '@/service/api/device'
+import {
+  telemetryDataCurrentKeys,
+  telemetryDataHistoryList,
+  getAttributeDataSet,
+  getAttributeDatasKey
+} from '@/service/api/device'
+// 导入组件API配置系统
+import { getComponentApiConfig, selectApiForComponent } from './component-api-config'
 
 class UniversalDataSourceManagerImpl {
   private subscriptions = new Map<string, Set<DataSourceUpdateCallback>>()
@@ -47,18 +54,20 @@ class UniversalDataSourceManagerImpl {
     this.subscriptions.get(key)!.add(callback)
 
     // 立即获取一次数据
-    this.getValue(dataSource).then(value => {
-      callback(value)
-    }).catch(error => {
-      console.error('立即获取数据失败:', error)
-      // 发送错误状态的数据
-      callback({
-        values: {},
-        timestamp: Date.now(),
-        quality: 'bad',
-        error: error.message
+    this.getValue(dataSource)
+      .then(value => {
+        callback(value)
       })
-    })
+      .catch(error => {
+        console.error('立即获取数据失败:', error)
+        // 发送错误状态的数据
+        callback({
+          values: {},
+          timestamp: Date.now(),
+          quality: 'bad',
+          error: error.message
+        })
+      })
 
     // 如果有刷新间隔，启动定时器
     if (dataSource.refreshInterval && dataSource.refreshInterval > 0) {
@@ -92,7 +101,7 @@ class UniversalDataSourceManagerImpl {
   // 获取数据源值
   async getValue(dataSource: DataSource): Promise<DataSourceValue> {
     const key = this.getSubscriptionKey(dataSource)
-    
+
     console.log('🔧 [UniversalDataSourceManager] 获取数据源值:', {
       type: dataSource.type,
       key,
@@ -126,23 +135,44 @@ class UniversalDataSourceManagerImpl {
 
     // 处理多Key映射
     const values: Record<string, any> = {}
-    
+
+    // 获取数组处理配置
+    const defaultArrayMode = dataSource.dataMapping?.defaultArrayMode ?? 'auto'
+    const defaultArrayIndex = dataSource.dataMapping?.defaultArrayIndex ?? 0
+    const enableAutoDetection = dataSource.dataMapping?.enableAutoDetection ?? true
+
     if (dataSource.dataPaths && dataSource.dataPaths.length > 0) {
       // 使用配置的数据路径映射
       dataSource.dataPaths.forEach(mapping => {
-        const resolvedValue = dataPathResolver.resolve(rawData, mapping.key)
+        // 使用映射中配置的数组处理模式，如果没有则使用默认值
+        const arrayMode = mapping.arrayMode ?? defaultArrayMode
+        const arrayIndex = mapping.arrayIndex ?? defaultArrayIndex
+
+        const resolvedValue = dataPathResolver.resolve(rawData, mapping.key, {
+          arrayMode,
+          defaultArrayIndex: arrayIndex,
+          enableAutoDetection
+        })
         values[mapping.target] = resolvedValue
-        
+
         console.log('🔧 [UniversalDataSourceManager] 映射数据:', {
           key: mapping.key,
           target: mapping.target,
           resolvedValue,
+          isArray: mapping.isArray,
+          arrayMode,
+          arrayIndex,
+          enableAutoDetection,
           rawData
         })
       })
     } else {
       // 兼容旧版本，使用单个值
-      const resolvedValue = dataPathResolver.resolve(rawData, '')
+      const resolvedValue = dataPathResolver.resolve(rawData, '', {
+        arrayMode: defaultArrayMode,
+        defaultArrayIndex,
+        enableAutoDetection
+      })
       values['value'] = resolvedValue
     }
 
@@ -157,34 +187,49 @@ class UniversalDataSourceManagerImpl {
       },
       rawData
     }
-    
+
     console.log('🔧 [UniversalDataSourceManager] 最终数据源值:', dataSourceValue)
-    
+
     // 更新缓存
     this.values.set(key, dataSourceValue)
-    
+
     return dataSourceValue
   }
 
   // 更新数据源值并通知订阅者
   updateValue(dataSource: DataSource, value: any): void {
     const key = this.getSubscriptionKey(dataSource)
-    
+
     // 处理多Key映射
     const values: Record<string, any> = {}
-    
+
+    // 获取数组处理配置
+    const defaultArrayMode = dataSource.dataMapping?.defaultArrayMode ?? 'auto'
+    const defaultArrayIndex = dataSource.dataMapping?.defaultArrayIndex ?? 0
+    const enableAutoDetection = dataSource.dataMapping?.enableAutoDetection ?? true
+
     if (dataSource.dataPaths && dataSource.dataPaths.length > 0) {
       // 使用配置的数据路径映射
       dataSource.dataPaths.forEach(mapping => {
-        const resolvedValue = dataPathResolver.resolve(value, mapping.key)
+        const arrayMode = mapping.arrayMode ?? defaultArrayMode
+        const arrayIndex = mapping.arrayIndex ?? defaultArrayIndex
+        const resolvedValue = dataPathResolver.resolve(value, mapping.key, {
+          arrayMode,
+          defaultArrayIndex: arrayIndex,
+          enableAutoDetection
+        })
         values[mapping.target] = resolvedValue
       })
     } else {
       // 兼容旧版本，使用单个值
-      const resolvedValue = dataPathResolver.resolve(value, '')
+      const resolvedValue = dataPathResolver.resolve(value, '', {
+        arrayMode: defaultArrayMode,
+        defaultArrayIndex,
+        enableAutoDetection
+      })
       values['value'] = resolvedValue
     }
-    
+
     const dataSourceValue: DataSourceValue = {
       values,
       timestamp: Date.now(),
@@ -196,10 +241,10 @@ class UniversalDataSourceManagerImpl {
       },
       rawData: value
     }
-    
+
     // 更新缓存
     this.values.set(key, dataSourceValue)
-    
+
     // 通知订阅者
     const callbacks = this.subscriptions.get(key)
     if (callbacks) {
@@ -222,11 +267,17 @@ class UniversalDataSourceManagerImpl {
 
   // 获取设备数据源值
   private async getDeviceValue(dataSource: DeviceDataSource): Promise<any> {
+    // 检查是否是新的API配置格式
+    if ('apiType' in dataSource && dataSource.apiType && dataSource.parameters) {
+      return this.getDeviceValueNew(dataSource as any)
+    }
+
+    // 兼容旧格式
     if (!dataSource.deviceId || !dataSource.metricsType || !dataSource.metricsId) {
       throw new Error('设备数据源配置不完整')
     }
 
-    console.log('🔧 [UniversalDataSourceManager] 获取设备数据源:', {
+    console.log('🔧 [UniversalDataSourceManager] 获取设备数据源 (旧格式):', {
       deviceId: dataSource.deviceId,
       metricsType: dataSource.metricsType,
       metricsId: dataSource.metricsId
@@ -245,7 +296,7 @@ class UniversalDataSourceManagerImpl {
             quality: 'good',
             unit: response?.data?.[0]?.unit
           }
-          
+
         case 'attributes':
           const attrResponse = await getAttributeDataSet({ device_id: dataSource.deviceId })
           const attributeData = attrResponse?.data?.find((item: any) => item.key === dataSource.metricsId)
@@ -255,12 +306,81 @@ class UniversalDataSourceManagerImpl {
             quality: 'good',
             unit: attributeData?.unit
           }
-          
+
         default:
           throw new Error(`不支持的设备数据类型: ${dataSource.metricsType}`)
       }
     } catch (error) {
       console.error('获取设备数据失败:', error)
+      throw error
+    }
+  }
+
+  // 获取设备数据源值（新API配置格式）
+  private async getDeviceValueNew(dataSource: DeviceDataSourceNew): Promise<any> {
+    if (!dataSource.apiType || !dataSource.parameters) {
+      throw new Error('新格式设备数据源配置不完整')
+    }
+
+    console.log('🔧 [UniversalDataSourceManager] 获取设备数据源 (新格式):', {
+      apiType: dataSource.apiType,
+      parameters: dataSource.parameters
+    })
+
+    try {
+      switch (dataSource.apiType) {
+        case 'telemetryDataCurrentKeys': {
+          const telemetryResponse = await telemetryDataCurrentKeys({
+            device_id: dataSource.parameters.device_id,
+            keys: dataSource.parameters.keys
+          })
+          return {
+            value: telemetryResponse?.data?.[0]?.value,
+            timestamp: new Date().toISOString(),
+            quality: 'good',
+            unit: telemetryResponse?.data?.[0]?.unit,
+            title: telemetryResponse?.data?.[0]?.name || dataSource.parameters.keys
+          }
+        }
+
+        case 'getAttributeDataSet': {
+          const attrSetResponse = await getAttributeDataSet({
+            device_id: dataSource.parameters.device_id
+          })
+          // 返回所有属性数据，由组件自行筛选
+          return attrSetResponse?.data || []
+        }
+
+        case 'getAttributeDatasKey': {
+          const attrKeyResponse = await getAttributeDatasKey({
+            device_id: dataSource.parameters.device_id,
+            key: dataSource.parameters.key
+          })
+          return {
+            value: attrKeyResponse?.data?.value,
+            timestamp: new Date().toISOString(),
+            quality: 'good',
+            unit: attrKeyResponse?.data?.unit,
+            title: attrKeyResponse?.data?.name || dataSource.parameters.key
+          }
+        }
+
+        case 'telemetryDataHistoryList': {
+          const historyResponse = await telemetryDataHistoryList({
+            device_id: dataSource.parameters.device_id,
+            key: dataSource.parameters.key,
+            time_range: dataSource.parameters.time_range,
+            aggregate_function: dataSource.parameters.aggregate_function,
+            aggregate_window: dataSource.parameters.aggregate_window
+          })
+          return historyResponse?.data || []
+        }
+
+        default:
+          throw new Error(`不支持的API类型: ${dataSource.apiType}`)
+      }
+    } catch (error) {
+      console.error('🔧 [UniversalDataSourceManager] 获取设备数据失败:', error)
       throw error
     }
   }

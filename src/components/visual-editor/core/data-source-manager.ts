@@ -46,10 +46,10 @@ class PollingManager {
   // 启动定时器轮询
   startTimerPolling(dataSource: DeviceDataSource, callback: (_data: any) => void): void {
     const key = this.getDataSourceKey(dataSource)
-    
+
     // 清除现有定时器
     this.stopPolling(dataSource)
-    
+
     const interval = dataSource.refreshInterval || 5000
     const timer = setInterval(async () => {
       try {
@@ -59,23 +59,23 @@ class PollingManager {
         console.error('定时器轮询失败:', error)
       }
     }, interval)
-    
+
     this.timers.set(key, timer)
   }
 
   // 启动WebSocket连接
   startWebSocketPolling(dataSource: DeviceDataSource, callback: (data: any) => void): void {
     const key = this.getDataSourceKey(dataSource)
-    
+
     // 清除现有连接
     this.stopPolling(dataSource)
-    
+
     if (!dataSource.websocketUrl) {
       throw new Error('WebSocket URL未配置')
     }
-    
+
     const ws = new WebSocket(dataSource.websocketUrl)
-    
+
     ws.onopen = () => {
       console.log('WebSocket连接已建立')
       // 发送订阅消息
@@ -87,8 +87,8 @@ class PollingManager {
       }
       ws.send(JSON.stringify(subscribeMessage))
     }
-    
-    ws.onmessage = (event) => {
+
+    ws.onmessage = event => {
       try {
         const data = JSON.parse(event.data)
         callback(data)
@@ -96,33 +96,33 @@ class PollingManager {
         console.error('WebSocket数据解析失败:', error)
       }
     }
-    
-    ws.onerror = (error) => {
+
+    ws.onerror = error => {
       console.error('WebSocket连接错误:', error)
     }
-    
+
     ws.onclose = () => {
       console.log('WebSocket连接已关闭')
     }
-    
+
     this.websockets.set(key, ws)
   }
 
   // 启动MQTT连接
   startMqttPolling(dataSource: DeviceDataSource, callback: (data: any) => void): void {
     const key = this.getDataSourceKey(dataSource)
-    
+
     // 清除现有连接
     this.stopPolling(dataSource)
-    
+
     if (!dataSource.mqttConfig?.broker || !dataSource.mqttConfig?.topic) {
       throw new Error('MQTT配置不完整')
     }
-    
+
     // 这里需要集成MQTT客户端库，如mqtt.js
     // 暂时使用模拟实现
     console.log('MQTT连接功能待实现')
-    
+
     // 模拟MQTT连接
     const mockMqttConnection = {
       subscribe: (topic: string) => {
@@ -146,7 +146,7 @@ class PollingManager {
         console.log('MQTT连接已断开')
       }
     }
-    
+
     mockMqttConnection.subscribe(dataSource.mqttConfig.topic)
     this.mqttConnections.set(key, mockMqttConnection)
   }
@@ -154,21 +154,21 @@ class PollingManager {
   // 停止轮询
   stopPolling(dataSource: DeviceDataSource): void {
     const key = this.getDataSourceKey(dataSource)
-    
+
     // 停止定时器
     const timer = this.timers.get(key)
     if (timer) {
       clearInterval(timer)
       this.timers.delete(key)
     }
-    
+
     // 关闭WebSocket连接
     const ws = this.websockets.get(key)
     if (ws) {
       ws.close()
       this.websockets.delete(key)
     }
-    
+
     // 断开MQTT连接
     const mqtt = this.mqttConnections.get(key)
     if (mqtt) {
@@ -186,10 +186,10 @@ class PollingManager {
   dispose(): void {
     this.timers.forEach(timer => clearInterval(timer))
     this.timers.clear()
-    
+
     this.websockets.forEach(ws => ws.close())
     this.websockets.clear()
-    
+
     this.mqttConnections.forEach(mqtt => mqtt.disconnect())
     this.mqttConnections.clear()
   }
@@ -207,17 +207,17 @@ export class DataSourceManager {
   // 订阅数据源
   subscribe(dataSource: DeviceDataSource, callback: (value: DataSourceValue) => void): string {
     const subscriberId = this.generateSubscriberId()
-    
+
     const subscriber: DataSourceSubscriber = {
       id: subscriberId,
       callback,
       dataSource
     }
-    
+
     this.subscribers.set(subscriberId, subscriber)
-    
+
     // 启动轮询
-    this.startPolling(dataSource, (data) => {
+    this.startPolling(dataSource, data => {
       const dataSourceValue: DataSourceValue = {
         values: this.transformData(data, dataSource),
         timestamp: Date.now(),
@@ -226,7 +226,7 @@ export class DataSourceManager {
       }
       callback(dataSourceValue)
     })
-    
+
     return subscriberId
   }
 
@@ -267,9 +267,9 @@ export class DataSourceManager {
       console.warn('数据源配置不完整，跳过轮询:', dataSource)
       return
     }
-    
+
     const pollingType = dataSource.pollingType || 'timer'
-    
+
     switch (pollingType) {
       case 'timer':
         this.pollingManager.startTimerPolling(dataSource, callback)
@@ -288,16 +288,20 @@ export class DataSourceManager {
   // 验证数据源配置
   private isDataSourceValid(dataSource: DeviceDataSource): boolean {
     if (!dataSource) return false
-    
+
     // 检查必需字段
     if (!dataSource.deviceId || !dataSource.metricsType || !dataSource.metricsId) {
-      console.warn('数据源缺少必需字段:', { deviceId: dataSource.deviceId, metricsType: dataSource.metricsType, metricsId: dataSource.metricsId })
+      console.warn('数据源缺少必需字段:', {
+        deviceId: dataSource.deviceId,
+        metricsType: dataSource.metricsType,
+        metricsId: dataSource.metricsId
+      })
       return false
     }
-    
+
     // 检查轮询方式配置
     const pollingType = dataSource.pollingType || 'timer'
-    
+
     switch (pollingType) {
       case 'timer':
         // 检查轮询间隔
@@ -306,7 +310,7 @@ export class DataSourceManager {
           return false
         }
         break
-        
+
       case 'websocket':
         // 检查WebSocket URL
         if (!dataSource.websocketUrl) {
@@ -314,7 +318,7 @@ export class DataSourceManager {
           return false
         }
         break
-        
+
       case 'mqtt':
         // 检查MQTT配置
         if (!dataSource.mqttConfig?.broker || !dataSource.mqttConfig?.topic) {
@@ -322,18 +326,18 @@ export class DataSourceManager {
           return false
         }
         break
-        
+
       default:
         console.warn(`不支持的轮询方式: ${pollingType}`)
         return false
     }
-    
+
     // 检查历史数据模式限制
     if (dataSource.dataMode === 'history' && pollingType !== 'timer') {
       console.warn('历史数据模式只支持定时器轮询')
       return false
     }
-    
+
     return true
   }
 
@@ -347,7 +351,7 @@ export class DataSourceManager {
       timeRange: dataSource.timeRange,
       aggregateFunction: dataSource.aggregateFunction
     }
-    
+
     return this.realFetchDeviceData(request)
   }
 
@@ -385,7 +389,7 @@ export class DataSourceManager {
             }
           }
           break
-          
+
         case 'attributes': {
           // 获取属性数据
           const response = await getAttributeDataSet({ device_id: request.deviceId })
@@ -397,7 +401,7 @@ export class DataSourceManager {
             unit: attributeData?.unit
           }
         }
-          
+
         case 'event': {
           // 事件数据暂时使用模拟数据
           return {
@@ -407,7 +411,7 @@ export class DataSourceManager {
             timestamp: new Date().toISOString()
           }
         }
-          
+
         case 'command': {
           // 命令数据暂时使用模拟数据
           return {
@@ -416,7 +420,7 @@ export class DataSourceManager {
             timestamp: new Date().toISOString()
           }
         }
-          
+
         default:
           throw new Error('不支持的数据类型')
       }
@@ -430,7 +434,7 @@ export class DataSourceManager {
   private async mockFetchDeviceData(request: DataRequest): Promise<any> {
     // 模拟网络延迟
     await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 200))
-    
+
     const mockData = {
       telemetry: {
         latest: {
@@ -469,10 +473,10 @@ export class DataSourceManager {
         }
       }
     }
-    
+
     const dataType = request.metricsType as keyof typeof mockData
     const dataMode = request.dataMode as 'latest' | 'history'
-    
+
     return mockData[dataType]?.[dataMode] || null
   }
 
@@ -480,17 +484,17 @@ export class DataSourceManager {
   private transformData(data: any, dataSource: DeviceDataSource): Record<string, any> {
     // 根据数据路径映射转换数据
     const result: Record<string, any> = {}
-    
+
     console.log('🔧 DataSourceManager - 开始转换数据:', {
       originalData: data,
       dataPaths: dataSource.dataPaths
     })
-    
+
     if (dataSource.dataPaths && dataSource.dataPaths.length > 0) {
       dataSource.dataPaths.forEach(mapping => {
         const value = this.getNestedValue(data, mapping.key)
         result[mapping.target] = value
-        
+
         console.log('🔧 DataSourceManager - 映射字段:', {
           key: mapping.key,
           target: mapping.target,
@@ -501,10 +505,10 @@ export class DataSourceManager {
       // 如果没有映射配置，使用默认映射
       result.value = data.value || data
       result.timestamp = data.timestamp
-      
+
       console.log('🔧 DataSourceManager - 使用默认映射:', result)
     }
-    
+
     console.log('🔧 DataSourceManager - 转换结果:', result)
     return result
   }
@@ -513,12 +517,12 @@ export class DataSourceManager {
   private getNestedValue(obj: any, path: string): any {
     const keys = path.split('.')
     let current = obj
-    
+
     for (const key of keys) {
       if (current === null || current === undefined) {
         return undefined
       }
-      
+
       // 处理数组索引
       if (key.includes('[') && key.includes(']')) {
         const arrayKey = key.substring(0, key.indexOf('['))
@@ -531,7 +535,7 @@ export class DataSourceManager {
         current = current[key]
       }
     }
-    
+
     return current
   }
 

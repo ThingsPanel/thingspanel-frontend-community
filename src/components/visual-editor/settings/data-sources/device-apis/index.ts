@@ -1,29 +1,11 @@
-// 导出类型定义
-export * from './types/api-types'
-
-// 导出工具函数
-export * from './utils/api-helpers'
-
-// 导出基础组件
-export { default as DeviceSelector } from './components/DeviceSelector.vue'
-export { default as BaseApiForm } from './components/BaseApiForm.vue'
-export { default as PollingConfig } from './components/PollingConfig.vue'
-
-// 导出API表单组件
-export { default as TelemetryApiForm } from './components/TelemetryApiForm.vue'
-export { default as AttributesApiForm } from './components/AttributesApiForm.vue'
-export { default as EventApiForm } from './components/EventApiForm.vue'
-export { default as CommandApiForm } from './components/CommandApiForm.vue'
-export { default as DeviceInfoApiForm } from './components/DeviceInfoApiForm.vue'
-export { default as SimulationApiForm } from './components/SimulationApiForm.vue'
-
 // 导出主配置组件
 export { default as DeviceApiConfig } from './components/DeviceApiConfig.vue'
 export { default as DeviceApiExample } from './components/DeviceApiExample.vue'
 export { default as DeviceApiDemo } from './components/DeviceApiDemo.vue'
 
-// 导出待创建的组件（注释）
-// export { default as WebSocketConfig } from './components/WebSocketConfig.vue'
+// 导出新的设备数据源配置组件
+export { default as DeviceDataSourceConfigNew } from '../DeviceDataSourceConfigNew.vue'
+export { default as DeviceDataSourceExampleNew } from '../DeviceDataSourceExampleNew.vue'
 
 // API类型选项（用于下拉选择）
 export const API_TYPE_OPTIONS = [

@@ -6,4 +6,4 @@ export const AccessIcon = `<svg width="20" height="20" viewBox="0 0 20 20" fill=
 </svg>`
 
 // 调试信息
-console.log('🎨 AccessIcon 已导出:', AccessIcon) 
+console.log('🎨 AccessIcon 已导出:', AccessIcon)

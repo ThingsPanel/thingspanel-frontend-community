@@ -37,6 +37,12 @@ export interface WidgetDefinition {
   category: string
 
   /**
+   * 组件所属的子分类，用于在组件库中进行更细粒度的分组。
+   * 例如: 'system', 'chart', 'control'。
+   */
+  subCategory?: string
+
+  /**
    * 组件的版本号，遵循语义化版本规范。
    */
   version: string
@@ -150,12 +156,12 @@ class WidgetRegistry {
     const categoryMap = new Map<string, WidgetDefinition[]>()
     const categoryNameMap: Record<string, string> = {
       base: '基础组件',
-      card21: '🎯 Card 2.1 组件',
-      chart: '📊 图表组件',
-      control: '🎛️ 控制组件',
-      display: '📱 显示组件',
-      media: '🎥 媒体组件',
-      other: '🔧 其他组件'
+      card21: 'Card 2.1 组件',
+      chart: '图表组件',
+      control: '控制组件',
+      display: '显示组件',
+      media: '媒体组件',
+      other: '其他组件'
     }
 
     for (const widget of this.widgets.values()) {
@@ -169,7 +175,7 @@ class WidgetRegistry {
     const tree: WidgetTreeNode[] = []
     for (const [category, widgets] of categoryMap.entries()) {
       tree.push({
-        name: categoryNameMap[category] || `📦 ${category.charAt(0).toUpperCase() + category.slice(1)}`,
+        name: categoryNameMap[category] || category.charAt(0).toUpperCase() + category.slice(1),
         children: widgets
       })
     }

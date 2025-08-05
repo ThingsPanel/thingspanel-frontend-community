@@ -5,4 +5,4 @@ export const DigitIndicatorIcon = `<svg width="20" height="20" viewBox="0 0 20 2
 </svg>`
 
 // 调试信息
-console.log('🎨 DigitIndicatorIcon 已导出:', DigitIndicatorIcon) 
+console.log('🎨 DigitIndicatorIcon 已导出:', DigitIndicatorIcon)

@@ -43,7 +43,8 @@
       "Bash(cp:*)",
       "WebFetch(domain:dsmorse.github.io)",
       "Bash(tree:*)",
-      "Bash(git stash pop:*)"
+      "Bash(git stash pop:*)",
+      "WebFetch(domain:www.naiveui.com)"
     ],
     "deny": []
   }

@@ -130,7 +130,8 @@ import {
   getTelemetryLogList
 } from '@/service/api/device'
 import { formatApiResponse } from '../utils/api-helpers'
-import type { ApiType, PollingConfig as PollingConfigType } from '../types/api-types'
+import { ApiType } from '../types/api-types'
+import type { PollingConfig as PollingConfigType } from '../types/api-types'
 
 interface Props {
   modelValue?: Record<string, any>
@@ -291,12 +292,13 @@ const callApi = async (data: Record<string, any>) => {
         value: params.value
       })
 
-    case ApiType.TELEMETRY_LOGS:
+    case ApiType.TELEMETRY_LOGS: {
       const logParams: any = { device_id: deviceId }
       if (params.key) {
         logParams.key = params.key
       }
       return await getTelemetryLogList(logParams)
+    }
 
     default:
       throw new Error('不支持的API类型')

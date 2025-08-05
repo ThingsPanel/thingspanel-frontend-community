@@ -13,9 +13,20 @@ export enum DataSourceType {
 
 // 数据路径映射配置
 export interface DataPathMapping {
-  key: string // 数据源中的路径，如 "data.temperature"
+  key: string // 数据源中的路径，如 "data.temperature" 或 "data[0].temperature"
   target: string // 映射到组件的数据源名称，如 "temperature"
   description?: string // 描述
+  isArray?: boolean // 标记此映射是否指向数组数据
+  arrayIndex?: number // 数组索引，默认为0
+  arrayMode?: 'auto' | 'manual' | 'none' // 数组处理模式：auto=自动检测, manual=手动指定, none=不处理
+}
+
+// 数据映射配置
+export interface DataMappingConfig {
+  mappings: DataPathMapping[]
+  defaultArrayMode?: 'auto' | 'manual' | 'none' // 默认数组处理模式
+  defaultArrayIndex?: number // 默认数组索引，默认为0
+  enableAutoDetection?: boolean // 是否启用自动检测，默认为true
 }
 
 // 基础数据源接口
@@ -25,6 +36,7 @@ export interface BaseDataSource {
   name: string
   description?: string
   dataPaths: DataPathMapping[] // 支持多个数据路径映射
+  dataMapping?: DataMappingConfig // 数据映射配置，包含数组模式等高级配置
 }
 
 // 静态数据源配置
@@ -34,7 +46,23 @@ export interface StaticDataSource extends BaseDataSource {
   refreshInterval?: number // 刷新间隔（毫秒），0表示不自动刷新
 }
 
-// 设备数据源配置
+// 轮询配置
+export interface PollingConfig {
+  enabled: boolean
+  mode?: 'websocket' | 'timer' | 'manual' // 数据获取模式
+  interval: number // 间隔时间(毫秒)
+  status: 'stopped' | 'running' | 'paused'
+}
+
+// 基于API接口的设备数据源配置（新设计）
+export interface DeviceDataSourceNew extends BaseDataSource {
+  type: DataSourceType.DEVICE
+  apiType: string // API接口类型，如 'telemetryDataCurrentKeys', 'telemetryDataHistoryList' 等
+  parameters: Record<string, any> // API参数，根据apiType动态变化
+  polling: PollingConfig // 轮询配置
+}
+
+// 兼容的设备数据源配置（保留旧版本兼容性）
 export interface DeviceDataSource extends BaseDataSource {
   type: DataSourceType.DEVICE
   deviceId?: string
@@ -52,6 +80,7 @@ export interface DeviceDataSource extends BaseDataSource {
   dataMode?: 'latest' | 'history' // 数据模式：最新数据/历史数据
   pollingType?: 'timer' | 'websocket' | 'mqtt' // 轮询方式
   websocketUrl?: string // WebSocket URL
+  websocketTopic?: string // WebSocket 订阅主题
   mqttConfig?: {
     broker: string
     topic: string
@@ -62,6 +91,10 @@ export interface DeviceDataSource extends BaseDataSource {
   isDataLoading?: boolean
   lastFetchTime?: number
   errorMessage?: string
+  // 新API配置兼容字段
+  apiType?: string
+  parameters?: Record<string, any>
+  polling?: PollingConfig
 }
 
 // HTTP 数据源
@@ -84,7 +117,12 @@ export interface WebSocketDataSource extends BaseDataSource {
 }
 
 // 联合类型
-export type DataSource = StaticDataSource | DeviceDataSource | HttpDataSource | WebSocketDataSource
+export type DataSource =
+  | StaticDataSource
+  | DeviceDataSource
+  | DeviceDataSourceNew
+  | HttpDataSource
+  | WebSocketDataSource
 
 // 组件数据源定义
 export interface ComponentDataSourceDefinition {
@@ -119,8 +157,26 @@ export interface DataSourceManager {
 
 // 数据路径解析工具
 export interface DataPathResolver {
-  resolve(data: any, path?: string): any
+  resolve(
+    data: any,
+    path?: string,
+    options?: {
+      arrayMode?: 'auto' | 'manual' | 'none'
+      defaultArrayIndex?: number
+      enableAutoDetection?: boolean
+    }
+  ): any
   getAvailablePaths(data: any): string[]
+  detectDataType(
+    data: any,
+    path?: string
+  ): {
+    isArray: boolean
+    arrayLength?: number
+    type: string
+    sampleValue?: any
+  }
+  suggestPath(data: any, targetField: string): string
 }
 
 // 数据源配置组件接口

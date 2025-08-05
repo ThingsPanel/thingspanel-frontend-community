@@ -17,11 +17,12 @@ Card 2.1 是一个全新的卡片组件系统，采用模块化设计，提供�
 
 ### 1. 严格遵循 Card 2.1 架构规范
 
-- 使用 `ComponentDefinition` 接口定义组件
+- 使用 `ComponentDefinition` 接口定义组件，icon字段为string类型存储SVG字符串
 - 实现 `ComponentRegistry` 注册机制
-- 采用 `ComponentDataSourceDefinition` 定义数据源
-- 分离渲染组件和配置组件
-- **生成统一的SVG图标**: 20x20px，圆角4px，彩色背景，白色前景，使用SVG字符串格式
+- **条件性采用** `ComponentDataSourceDefinition` 定义数据源（仅当原组件有数据源配置时）
+- **条件性分离**渲染组件和配置组件（仅当原组件有configForm时）
+- **生成统一的SVG图标**: 20x20px，圆角4px，彩色背景，白色前景图标，导出为SVG字符串
+- **设置分类**: 根据组件功能设置`mainCategory`和`subCategory`属性，系统组件使用`mainCategory: '系统'`，图表组件使用`mainCategory: '曲线'`
 
 ### 2. 保持功能完整性
 
@@ -36,7 +37,8 @@ Card 2.1 是一个全新的卡片组件系统，采用模块化设计，提供�
 - 遵循 Vue 3 Composition API 最佳实践
 - 提供清晰的代码注释
 - 实现错误处理和加载状态
-- **图标设计要求**: 简洁、语义化、在小尺寸下清晰可辨
+- **SVG图标设计要求**: 简洁、语义化、彩色背景配白色前景、小尺寸清晰可辨
+- **独立图标文件**: 在icon.ts中导出SVG字符串，在index.ts中引入
 
 ## 迁移流程
 
@@ -51,25 +53,29 @@ Card 2.1 是一个全新的卡片组件系统，采用模块化设计，提供�
 2. **数据源配置分析**
    - **检查原始组件的 `index.ts` 文件**：
      - 查看 `ICardDefine` 中是否有 `preset.dataSource` 配置
-     - 如果有 `preset.dataSource`，说明组件需要数据源配置
-     - 如果没有 `preset.dataSource`，说明组件不需要数据源配置
-   - **数据源类型判断**：
-     - `origin: 'system'` - 系统数据源
-     - `origin: 'device'` - 设备数据源
-     - `isSupportTimeRange` - 是否支持时间范围
-     - `isSupportAggregate` - 是否支持聚合
-   - **设备数据源配置**：
-     - `deviceSource` 数组包含设备指标配置
+     - **重要**：即使有 `preset.dataSource`，也要检查组件内部是否实际使用数据源配置
+     - 如果组件内部直接调用API（如 `alarmHistory()`），则**不需要**数据源配置
+     - 如果组件使用 `props.card?.dataSource` 获取数据，则需要数据源配置
+   - **数据源类型判断**（仅当组件实际使用数据源时）：
+     - `origin: 'system'` - 系统数据源，通常为单一数据源
+     - `origin: 'device'` - 设备数据源，可能为多数据源
+     - `isSupportTimeRange` - 支持时间范围查询
+     - `isSupportAggregate` - 支持数据聚合
+   - **设备数据源配置**（仅当origin为device时）：
+     - `deviceSource` 数组定义设备指标配置
      - `sourceNum` 指定数据源数量限制
+     - 每个数据源对应一个ComponentDataSourceDefinition
 
 3. **配置表单分析**
    - **检查原始组件的 `index.ts` 文件**：
      - 查看 `ICardDefine` 中是否有 `configForm` 属性
-     - 如果有 `configForm`，说明组件有配置表单
-     - 如果没有 `configForm`，说明组件没有配置表单
-   - **配置表单文件**：
-     - 通常命名为 `card-config.vue`
-     - 包含组件的自定义配置选项
+     - 如果有 `configForm`，说明组件有配置表单，需要创建配置组件
+     - 如果没有 `configForm`，说明组件没有配置表单，不创建配置组件
+   - **配置表单文件**（仅当有configForm时）：
+     - 原文件通常命名为 `card-config.vue`
+     - 新系统命名为 `[ComponentName]Config.vue`
+     - 包含组件的自定义配置选项和样式设置
+     - **重要**：如果组件需要设备选择，应在配置表单中添加设备选择器
 
 4. **耦合分析**
    - 检查组件与 panel 系统的耦合点
@@ -91,8 +97,8 @@ Card 2.1 是一个全新的卡片组件系统，采用模块化设计，提供�
 
 2. **数据流设计**
    - **数据源配置**：
-     - 如果原始组件有数据源配置，则设计 `ComponentDataSourceDefinition[]`
-     - 如果原始组件没有数据源配置，则保持原有的数据获取逻辑
+     - 如果原始组件实际使用数据源配置（通过 `props.card?.dataSource`），则设计 `ComponentDataSourceDefinition[]`
+     - 如果原始组件直接调用API（如 `alarmHistory()`），则**不创建**数据源配置，保持原有的数据获取逻辑
    - 规划数据映射关系
    - 确定配置项的类型
    - 设计错误处理机制
@@ -115,17 +121,24 @@ Card 2.1 是一个全新的卡片组件系统，采用模块化设计，提供�
    // 根据组件功能选择颜色和设计图标
    export const YourComponentIcon = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
      <rect width="20" height="20" rx="4" fill="#颜色代码"/>
-     <!-- 图标内容：简单几何图形、线条、文字等 -->
+     <!-- 图标内容：简单几何图形、线条、文字等，使用白色 -->
    </svg>`
+   
+   // 可选：添加调试信息
+   console.log('🎨 YourComponentIcon 已导出:', YourComponentIcon)
    ```
 
-    **颜色方案**：
+    **颜色方案**（基于现有组件）：
     - 🔵 蓝色 (#4F46E5): 数据访问、设备管理类组件
-    - 🟢 绿色 (#10B981): 数字显示、指标类组件
-    - 🟡 橙色 (#F59E0B): 多数据、测试类组件
+    - 🟢 绿色 (#10B981): 数字显示、指标类组件（如digit-indicator）
+    - 🟡 橙色 (#F59E0B): 多数据、测试类组件（如multi-data-test）
     - 🔴 红色 (#EF4444): 告警、错误类组件
     - 🟣 紫色 (#8B5CF6): 高级功能、配置类组件
     - ⚫ 灰色 (#6B7280): 基础组件、工具类组件
+    
+    **图标设计参考**：
+    - digit-indicator: 绿色背景+白色数字"123"
+    - multi-data-test: 橙色背景+白色连接的三个圆点
 
 3. **实现渲染组件**
    - 使用 Vue 3 Composition API
@@ -147,22 +160,43 @@ Card 2.1 是一个全新的卡片组件系统，采用模块化设计，提供�
    // src/card2.1/components/your-component/index.ts
    import { defineAsyncComponent } from 'vue'
    import type { ComponentDefinition } from '../../core/types'
+   import type { ComponentDataSourceDefinition } from '../../../components/visual-editor/types/data-source'
    import { YourComponentIcon } from './icon'
    
+   // 异步加载组件
    const YourComponentCard = defineAsyncComponent(() => import('./YourComponentCard.vue'))
-   const YourComponentConfig = defineAsyncComponent(() => import('./YourComponentConfig.vue'))
+   const YourComponentConfig = defineAsyncComponent(() => import('./YourComponentConfig.vue')) // 仅当有configForm时
    
+   // 数据源定义（仅当组件实际使用数据源时）
+   const dataSourceDefinitions: ComponentDataSourceDefinition[] = [
+     {
+       name: 'mainData',
+       type: 'object',
+       required: true,
+       description: '主要数据源描述',
+       defaultValue: { /* 默认值 */ },
+       mappingKeys: ['key1', 'key2']
+     }
+   ]
+   
+   // 组件定义
    const yourComponentDefinition: ComponentDefinition = {
      type: 'your-component',
      name: '组件名称',
      description: '组件描述',
-     category: 'card21',
+     category: 'card21', // 根据组件功能设置分类：'card21'为系统组件，'chart'为图表组件
+     mainCategory: '系统', // 主分类：系统、曲线
+     subCategory: '系统组件', // 子分类：系统组件、图表组件等
      icon: YourComponentIcon, // 从独立的icon.ts文件导入SVG字符串
      component: YourComponentCard,
      configComponent: YourComponentConfig, // 仅当原始组件有 configForm 时
-     dataSourceDefinitions: [...], // 仅当原始组件有 preset.dataSource 时
-     properties: {...}
+     dataSourceDefinitions, // 仅当组件实际使用数据源时
+     properties: {
+       // 组件属性定义（仅当需要时）
+     }
    }
+   
+   export default yourComponentDefinition
    ```
 
 6. **注册组件**
@@ -219,6 +253,7 @@ interface ComponentDefinition {
   name: string
   description: string
   category: string
+  subCategory?: string // 子分类，用于更细粒度的分组
   icon: string // SVG字符串格式
   component: Component
   configComponent?: Component
@@ -253,8 +288,8 @@ interface ComponentDefinition {
 
 - [ ] 组件功能完整性验证
 - [ ] **数据源配置检查**：
-  - [ ] 如果原始组件有 `preset.dataSource`，则验证数据源定义完整性
-  - [ ] 如果原始组件没有 `preset.dataSource`，则验证原有数据获取逻辑保持
+  - [ ] 如果原始组件实际使用数据源配置（通过 `props.card?.dataSource`），则验证数据源定义完整性
+  - [ ] 如果原始组件直接调用API，则验证不创建数据源配置，保持原有数据获取逻辑
 - [ ] **配置表单检查**：
   - [ ] 如果原始组件有 `configForm`，则验证配置表单功能
   - [ ] 如果原始组件没有 `configForm`，则确认没有硬凑配置组件
@@ -264,6 +299,11 @@ interface ComponentDefinition {
   - [ ] 图标设计简洁，在小尺寸下清晰可辨
   - [ ] 图标语义化，能反映组件功能
   - [ ] 图标在Visual Editor中正确显示
+- [ ] **分类设置检查**：
+  - [ ] 根据组件功能正确设置mainCategory和subCategory属性
+  - [ ] 系统相关组件设置为mainCategory: '系统'，subCategory: '系统组件'
+  - [ ] 图表相关组件设置为mainCategory: '曲线'，subCategory: '图表组件'
+  - [ ] 在WidgetLibrary中正确显示分类分组
 - [ ] 样式和布局保持
 - [ ] 交互行为一致性
 - [ ] 错误处理机制

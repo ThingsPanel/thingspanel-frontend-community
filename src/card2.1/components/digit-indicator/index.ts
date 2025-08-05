@@ -24,7 +24,7 @@ const digitIndicatorDefinition: ComponentDefinition = {
   type: 'digit-indicator',
   name: '数字指示器',
   description: '显示数值的指示器组件',
-  category: 'card21',
+  category: 'chart', // 改为chart分类，这样会显示在曲线标签页
   icon: DigitIndicatorIcon,
   component: DigitIndicatorCard,
   configComponent: DigitIndicatorConfig,

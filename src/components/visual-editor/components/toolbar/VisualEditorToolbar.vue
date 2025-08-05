@@ -383,7 +383,7 @@ const getConfigTitle = () => {
           </template>
           {{ mode === 'edit' ? $t('visualEditor.preview') : $t('visualEditor.edit') }}
           <!-- 调试信息 -->
-          <span style="font-size: 10px; margin-left: 4px;">({{ mode }})</span>
+          <span style="font-size: 10px; margin-left: 4px">({{ mode }})</span>
         </NButton>
       </NSpace>
     </div>

@@ -8,4 +8,4 @@ export const MultiDataTestIcon = `<svg width="20" height="20" viewBox="0 0 20 20
 </svg>`
 
 // 调试信息
-console.log('🎨 MultiDataTestIcon 已导出:', MultiDataTestIcon) 
+console.log('🎨 MultiDataTestIcon 已导出:', MultiDataTestIcon)

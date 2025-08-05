@@ -5,37 +5,63 @@
         <!-- 使用说明 -->
         <n-alert type="info" title="使用说明">
           <template #default>
-            <p>1. <strong>设备选择</strong>：组件会自动加载设备列表，选择设备后会自动获取该设备的指标列表</p>
-            <p>2. <strong>数据类型</strong>：选择遥测数据、属性数据、事件数据或命令数据</p>
-            <p>3. <strong>数据模式</strong>：只有遥测数据支持历史数据模式，其他类型只能使用最新数据</p>
-            <p>4. <strong>轮询方式</strong>：选择定时器、WebSocket或MQTT轮询方式，历史数据只支持定时器轮询</p>
-            <p>5. <strong>API接口选择</strong>：选择具体的API接口类型，包括遥测数据、属性数据、事件数据、命令数据、设备信息、模拟数据等各类接口</p>
-            <p>6. <strong>数据获取</strong>：点击"手动获取数据"按钮，根据选择的API接口类型调用相应的后端接口</p>
-            <p>7. <strong>数据映射</strong>：配置数据路径映射，将原始数据映射到组件属性</p>
+            <p>
+              1.
+              <strong>设备选择</strong>
+              ：组件会自动加载设备列表，选择设备后会自动获取该设备的指标列表
+            </p>
+            <p>
+              2.
+              <strong>数据类型</strong>
+              ：选择遥测数据、属性数据、事件数据或命令数据
+            </p>
+            <p>
+              3.
+              <strong>数据模式</strong>
+              ：只有遥测数据支持历史数据模式，其他类型只能使用最新数据
+            </p>
+            <p>
+              4.
+              <strong>轮询方式</strong>
+              ：选择定时器、WebSocket或MQTT轮询方式，历史数据只支持定时器轮询
+            </p>
+            <p>
+              5.
+              <strong>API接口选择</strong>
+              ：选择具体的API接口类型，包括遥测数据、属性数据、事件数据、命令数据、设备信息、模拟数据等各类接口
+            </p>
+            <p>
+              6.
+              <strong>数据获取</strong>
+              ：点击"手动获取数据"按钮，根据选择的API接口类型调用相应的后端接口
+            </p>
+            <p>
+              7.
+              <strong>数据映射</strong>
+              ：配置数据路径映射，将原始数据映射到组件属性
+            </p>
           </template>
         </n-alert>
-        
+
         <!-- 数据源配置 -->
-        <DeviceDataSourceConfig
-          v-model="dataSource"
-          @update:modelValue="onDataSourceChange"
-        />
-        
+        <DeviceDataSourceConfig v-model="dataSource" @update:modelValue="onDataSourceChange" />
+
         <!-- 配置预览 -->
         <n-divider title-placement="left">配置预览</n-divider>
         <n-card size="small">
           <pre>{{ JSON.stringify(dataSource, null, 2) }}</pre>
         </n-card>
-        
+
         <!-- 数据预览 -->
         <n-divider title-placement="left">数据预览</n-divider>
         <n-card size="small">
           <div v-if="dataValue">
             <div class="data-item">
-              <strong>时间戳:</strong> {{ new Date(dataValue.timestamp).toLocaleString() }}
+              <strong>时间戳:</strong>
+              {{ new Date(dataValue.timestamp).toLocaleString() }}
             </div>
             <div class="data-item">
-              <strong>数据质量:</strong> 
+              <strong>数据质量:</strong>
               <n-tag :type="dataValue.quality === 'good' ? 'success' : 'error'">
                 {{ dataValue.quality }}
               </n-tag>
@@ -47,7 +73,7 @@
           </div>
           <n-empty v-else description="暂无数据" size="small" />
         </n-card>
-        
+
         <!-- 操作按钮 -->
         <n-space>
           <n-button
@@ -58,17 +84,8 @@
           >
             启动数据源
           </n-button>
-          <n-button
-            type="error"
-            @click="stopDataSource"
-          >
-            停止数据源
-          </n-button>
-          <n-button
-            @click="resetDataSource"
-          >
-            重置配置
-          </n-button>
+          <n-button type="error" @click="stopDataSource">停止数据源</n-button>
+          <n-button @click="resetDataSource">重置配置</n-button>
         </n-space>
       </n-space>
     </n-card>
@@ -117,28 +134,25 @@ const startDataSource = async () => {
     console.warn('请先配置设备和指标')
     return
   }
-  
+
   isLoading.value = true
-  
+
   try {
     // 停止现有数据源
     if (subscriberId.value) {
       dataSourceManager.unsubscribe(subscriberId.value)
     }
-    
+
     // 启动新数据源
-    subscriberId.value = dataSourceManager.subscribe(
-      dataSource.value,
-      (value: DataSourceValue) => {
-        dataValue.value = value
-        console.log('收到数据更新:', value)
-      }
-    )
-    
+    subscriberId.value = dataSourceManager.subscribe(dataSource.value, (value: DataSourceValue) => {
+      dataValue.value = value
+      console.log('收到数据更新:', value)
+    })
+
     // 立即获取一次数据
     const initialValue = await dataSourceManager.getValue(dataSource.value)
     dataValue.value = initialValue
-    
+
     console.log('数据源已启动:', subscriberId.value)
   } catch (error) {
     console.error('启动数据源失败:', error)
@@ -210,4 +224,4 @@ onUnmounted(() => {
   max-height: 200px;
   overflow-y: auto;
 }
-</style> 
+</style>

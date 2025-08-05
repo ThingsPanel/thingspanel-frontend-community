@@ -46,7 +46,8 @@ import DeviceSelector from './DeviceSelector.vue'
 import PollingConfig from './PollingConfig.vue'
 import { getEventDataSet } from '@/service/api/device'
 import { formatApiResponse } from '../utils/api-helpers'
-import type { ApiType, PollingConfig as PollingConfigType } from '../types/api-types'
+import { ApiType } from '../types/api-types'
+import type { PollingConfig as PollingConfigType } from '../types/api-types'
 
 interface Props {
   modelValue?: Record<string, any>

@@ -94,7 +94,7 @@
       <template v-if="savedConfig">
         <n-divider title-placement="left">
           <n-space align="center">
-            <n-icon><CheckmarkCircleIcon /></n-icon>
+            <n-icon><CheckmarkCircle /></n-icon>
             <span>配置结果</span>
           </n-space>
         </n-divider>
@@ -151,7 +151,7 @@
       <template v-if="testResult">
         <n-divider title-placement="left">
           <n-space align="center">
-            <n-icon><TestTubeIcon /></n-icon>
+            <n-icon><Beaker /></n-icon>
             <span>测试结果</span>
           </n-space>
         </n-divider>
@@ -186,7 +186,7 @@ import {
   NTable,
   NIcon
 } from 'naive-ui'
-import { CheckmarkCircleIcon, TestTubeIcon } from '@vicons/ionicons5'
+import { CheckmarkCircle, Beaker } from '@vicons/ionicons5'
 import DeviceApiConfig from './DeviceApiConfig.vue'
 import { API_TYPE_OPTIONS } from '../index'
 

@@ -92,6 +92,12 @@ const deleteBoard = async (id: string) => {
   await fetchBoards() // 刷新看板列表
 }
 
+// 取消操作
+const handleCancel = () => {
+  showModal.value = false
+  clearFormData()
+}
+
 // 页面跳转
 const goRouter = (name: LastLevelRouteKey, id: string) => {
   routerPushByKey(name, { query: { id } })
@@ -226,13 +232,7 @@ onMounted(fetchBoards)
         </NForm>
         <template #footer>
           <div class="flex justify-end gap-2">
-            <NButton
-              type="default"
-              @click="
-                showModal = false
-                clearFormData()
-              "
-            >
+            <NButton type="default" @click="handleCancel">
               {{ $t('generate.cancel') }}
             </NButton>
             <n-popconfirm v-if="formData.home_flag === 'Y'" @positive-click="submitForm">

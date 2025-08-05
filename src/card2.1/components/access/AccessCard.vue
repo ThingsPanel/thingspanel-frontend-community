@@ -1,10 +1,6 @@
 <template>
   <div class="access-card">
-    <GradientBg 
-      class="access" 
-      :start-color="cardData.colors[0]" 
-      :end-color="cardData.colors[1]"
-    >
+    <GradientBg class="access" :start-color="cardData.colors[0]" :end-color="cardData.colors[1]">
       <h3 class="text-16px">{{ cardData.title }}</h3>
       <div class="icon-items flex justify-between pt-30px">
         <SvgIcon :icon="cardData.icon" class="text-32px" />
@@ -56,7 +52,7 @@ const getDataFromConfig = () => {
   if (props.data?.device_total !== undefined) {
     cardData.value.value = props.data.device_total
   }
-  
+
   // 从配置中获取自定义设置
   if (props.config?.title) {
     cardData.value.title = props.config.title
@@ -80,7 +76,7 @@ const getData: () => void = async () => {
       cardData.value.value = props.data.device_total
       return
     }
-    
+
     // 否则使用原有的 API 逻辑
     const response: { data: any } =
       authStore?.$state.userInfo.authority === 'TENANT_ADMIN' ? await sumData() : await totalNumber()
@@ -119,4 +115,4 @@ onMounted(() => {
 .icon-items {
   align-items: center;
 }
-</style> 
+</style>

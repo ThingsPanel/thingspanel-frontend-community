@@ -6,12 +6,10 @@
           <n-button size="small" @click="showInstructions = !showInstructions">
             {{ showInstructions ? '隐藏说明' : '显示说明' }}
           </n-button>
-          <n-button size="small" @click="resetAll">
-            重置所有
-          </n-button>
+          <n-button size="small" @click="resetAll">重置所有</n-button>
         </n-space>
       </template>
-      
+
       <!-- 使用说明 -->
       <template v-if="showInstructions">
         <n-alert type="info" class="instructions">
@@ -20,37 +18,49 @@
           </template>
           <template #default>
             <div class="instruction-content">
-              <p><strong>1. 设备选择</strong>：选择要操作的设备，支持搜索和过滤</p>
-              <p><strong>2. API类型</strong>：选择要使用的API类型，不同类型有不同的参数</p>
-              <p><strong>3. 参数配置</strong>：根据API类型填写相应的参数</p>
-              <p><strong>4. 轮询配置</strong>：可选择启用轮询，自动定时获取数据</p>
-              <p><strong>5. 数据预览</strong>：查看API返回的数据格式和内容</p>
+              <p>
+                <strong>1. 设备选择</strong>
+                ：选择要操作的设备，支持搜索和过滤
+              </p>
+              <p>
+                <strong>2. API类型</strong>
+                ：选择要使用的API类型，不同类型有不同的参数
+              </p>
+              <p>
+                <strong>3. 参数配置</strong>
+                ：根据API类型填写相应的参数
+              </p>
+              <p>
+                <strong>4. 轮询配置</strong>
+                ：可选择启用轮询，自动定时获取数据
+              </p>
+              <p>
+                <strong>5. 数据预览</strong>
+                ：查看API返回的数据格式和内容
+              </p>
             </div>
           </template>
         </n-alert>
       </template>
-      
+
       <!-- 遥测数据表单示例 -->
       <n-divider title-placement="left">
         <n-space align="center">
-          <n-icon><DataIcon /></n-icon>
+          <n-icon><Analytics /></n-icon>
           <span>遥测数据API</span>
         </n-space>
       </n-divider>
-      
-      <TelemetryApiForm
-        v-model="telemetryConfig"
-        @update:modelValue="onTelemetryConfigChange"
-      />
-      
+
+      <TelemetryApiForm v-model="telemetryConfig" @update:modelValue="onTelemetryConfigChange" />
+
       <!-- 配置信息显示 -->
       <n-divider title-placement="left">
         <n-space align="center">
-          <n-icon><SettingsIcon /></n-icon>
+          <n-icon><Settings /></n-icon>
           <span>当前配置</span>
         </n-space>
       </n-divider>
-      
+
       <n-card size="small" title="配置信息">
         <n-descriptions :column="2" bordered>
           <n-descriptions-item label="设备ID">
@@ -69,20 +79,18 @@
           </n-descriptions-item>
         </n-descriptions>
       </n-card>
-      
+
       <!-- 代码示例 -->
       <n-divider title-placement="left">
         <n-space align="center">
-          <n-icon><CodeIcon /></n-icon>
+          <n-icon><Code /></n-icon>
           <span>代码示例</span>
         </n-space>
       </n-divider>
-      
+
       <n-card size="small" title="配置代码">
         <template #header-extra>
-          <n-button size="tiny" text @click="copyConfigCode">
-            复制代码
-          </n-button>
+          <n-button size="tiny" text @click="copyConfigCode">复制代码</n-button>
         </template>
         <div class="code-block">
           <pre>{{ configCode }}</pre>
@@ -94,22 +102,8 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { 
-  NCard, 
-  NDivider, 
-  NSpace, 
-  NButton, 
-  NAlert, 
-  NDescriptions, 
-  NDescriptionsItem, 
-  NTag,
-  NIcon 
-} from 'naive-ui'
-import { 
-  DataIcon, 
-  SettingsIcon, 
-  CodeIcon 
-} from '@vicons/ionicons5'
+import { NCard, NDivider, NSpace, NButton, NAlert, NDescriptions, NDescriptionsItem, NTag, NIcon } from 'naive-ui'
+import { Analytics, Settings, Code } from '@vicons/ionicons5'
 import TelemetryApiForm from './TelemetryApiForm.vue'
 import { API_TYPE_OPTIONS } from '../index'
 
@@ -237,4 +231,4 @@ const getApiTypeLabel = (apiType: string) => {
   color: #333;
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
 }
-</style> 
+</style>

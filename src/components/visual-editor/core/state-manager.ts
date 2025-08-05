@@ -82,3 +82,5 @@ export class StateManager {
     this.state.mode = 'edit'
   }
 }
+
+export const stateManager = new StateManager()

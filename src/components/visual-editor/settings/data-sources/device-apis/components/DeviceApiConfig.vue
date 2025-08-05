@@ -108,7 +108,8 @@ import SimulationApiForm from './SimulationApiForm.vue'
 import PollingConfig from './PollingConfig.vue'
 import DataMappingConfig from '../../DataMappingConfig.vue'
 import { API_TYPE_OPTIONS } from '../index'
-import type { ApiType } from '../types/api-types'
+import { formatApiResponse } from '../utils/api-helpers'
+import { ApiType } from '../types/api-types'
 
 interface Props {
   modelValue?: any

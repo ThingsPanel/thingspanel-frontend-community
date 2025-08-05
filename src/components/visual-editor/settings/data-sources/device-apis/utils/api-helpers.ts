@@ -313,25 +313,25 @@ export function getApiFormConfig(apiType: ApiType): FormConfig {
 // 验证参数
 export function validateParameters(apiType: ApiType, parameters: Record<string, any>): string | null {
   const config = getApiFormConfig(apiType)
-  
+
   for (const param of config.parameters) {
     if (param.required && (!parameters[param.name] || parameters[param.name] === '')) {
       return `${param.label}是必需的`
     }
-    
+
     if (param.validation && parameters[param.name]) {
       const error = param.validation(parameters[param.name])
       if (error) return error
     }
   }
-  
+
   return null
 }
 
 // 格式化API响应
 export function formatApiResponse(data: any, apiType: ApiType): any {
   const timestamp = new Date().toISOString()
-  
+
   switch (apiType) {
     case ApiType.TELEMETRY_CURRENT:
       return {
@@ -340,7 +340,7 @@ export function formatApiResponse(data: any, apiType: ApiType): any {
         timestamp,
         quality: 'good'
       }
-      
+
     case ApiType.TELEMETRY_HISTORY:
       return {
         values: data?.data || [],
@@ -348,7 +348,7 @@ export function formatApiResponse(data: any, apiType: ApiType): any {
         timestamp,
         quality: 'good'
       }
-      
+
     case ApiType.TELEMETRY_PUB:
     case ApiType.ATTRIBUTES_PUB:
     case ApiType.COMMAND_PUB:
@@ -359,62 +359,62 @@ export function formatApiResponse(data: any, apiType: ApiType): any {
         data: data,
         timestamp
       }
-      
+
     case ApiType.ATTRIBUTES_DATASET:
       return {
         attributes: data?.data || [],
         timestamp
       }
-      
+
     case ApiType.ATTRIBUTES_KEY:
       return {
         value: data?.data?.value,
         timestamp,
         quality: 'good'
       }
-      
+
     case ApiType.EVENT_DATASET:
       return {
         events: data?.data || [],
         timestamp
       }
-      
+
     case ApiType.COMMAND_CUSTOM:
       return {
         commands: data?.data || [],
         timestamp
       }
-      
+
     case ApiType.DEVICE_DETAIL:
       return {
         device: data?.data,
         timestamp
       }
-      
+
     case ApiType.DEVICE_CONNECT:
       return {
         connectInfo: data?.data,
         timestamp
       }
-      
+
     case ApiType.DEVICE_ALARM_STATUS:
       return {
         alarmStatus: data?.data,
         timestamp
       }
-      
+
     case ApiType.DEVICE_ALARM_HISTORY:
       return {
         alarmHistory: data?.data,
         timestamp
       }
-      
+
     case ApiType.SIMULATION_GET:
       return {
         simulation: data?.data,
         timestamp
       }
-      
+
     default:
       return {
         data: data,
@@ -431,4 +431,4 @@ export function getApiTypeLabel(apiType: ApiType): string {
 // 获取API类型描述
 export function getApiTypeDescription(apiType: ApiType): string {
   return getApiFormConfig(apiType).description
-} 
+}

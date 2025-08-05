@@ -11,15 +11,20 @@ export interface ComponentDefinition {
   name: string
   description: string
   category: string
+  subCategory?: string // 子分类，用于更细粒度的分组
+  mainCategory?: string // 主分类：系统、曲线
   icon: string // 改为string类型，直接使用SVG字符串
   component: Component
   configComponent?: Component
   dataSourceDefinitions?: ComponentDataSourceDefinition[]
-  properties?: Record<string, {
-    type: string
-    default: any
-    description: string
-  }>
+  properties?: Record<
+    string,
+    {
+      type: string
+      default: any
+      description: string
+    }
+  >
 }
 
 export interface IComponentRegistry {

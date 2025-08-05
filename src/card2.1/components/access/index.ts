@@ -46,4 +46,4 @@ console.log('🔧 accessDefinition 图标信息:', {
   hasIcon: !!accessDefinition.icon
 })
 
-export default accessDefinition 
+export default accessDefinition

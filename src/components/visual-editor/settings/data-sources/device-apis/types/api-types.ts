@@ -5,27 +5,27 @@ export enum ApiType {
   TELEMETRY_HISTORY = 'telemetry_history',
   TELEMETRY_PUB = 'telemetry_pub',
   TELEMETRY_LOGS = 'telemetry_logs',
-  
+
   // 属性数据
   ATTRIBUTES_DATASET = 'attributes_dataset',
   ATTRIBUTES_KEY = 'attributes_key',
   ATTRIBUTES_PUB = 'attributes_pub',
   ATTRIBUTES_LOGS = 'attributes_logs',
-  
+
   // 事件数据
   EVENT_DATASET = 'event_dataset',
-  
+
   // 命令数据
   COMMAND_PUB = 'command_pub',
   COMMAND_LOGS = 'command_logs',
   COMMAND_CUSTOM = 'command_custom',
-  
+
   // 设备信息
   DEVICE_DETAIL = 'device_detail',
   DEVICE_CONNECT = 'device_connect',
   DEVICE_ALARM_STATUS = 'device_alarm_status',
   DEVICE_ALARM_HISTORY = 'device_alarm_history',
-  
+
   // 模拟数据
   SIMULATION_GET = 'simulation_get',
   SIMULATION_SEND = 'simulation_send'
@@ -128,4 +128,4 @@ export interface WebSocketConfig {
   status: 'disconnected' | 'connecting' | 'connected' | 'error'
   lastMessage?: any
   errorMessage?: string
-} 
+}

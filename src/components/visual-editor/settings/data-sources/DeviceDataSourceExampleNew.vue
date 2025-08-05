@@ -66,7 +66,7 @@
       <template v-if="savedConfig">
         <n-divider title-placement="left">
           <n-space align="center">
-            <n-icon><CheckmarkCircleIcon /></n-icon>
+            <n-icon><CheckmarkCircle /></n-icon>
             <span>配置结果</span>
           </n-space>
         </n-divider>
@@ -98,7 +98,7 @@
       <!-- 兼容性说明 -->
       <n-divider title-placement="left">
         <n-space align="center">
-          <n-icon><InformationCircleIcon /></n-icon>
+          <n-icon><InformationCircle /></n-icon>
           <span>兼容性说明</span>
         </n-space>
       </n-divider>
@@ -123,7 +123,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { NCard, NDivider, NSpace, NButton, NAlert, NDescriptions, NDescriptionsItem, NTag, NIcon } from 'naive-ui'
-import { CheckmarkCircleIcon, InformationCircleIcon } from '@vicons/ionicons5'
+import { CheckmarkCircle, InformationCircle } from '@vicons/ionicons5'
 import DeviceApiDemo from './device-apis/components/DeviceApiDemo.vue'
 import { API_TYPE_OPTIONS } from './device-apis/index'
 

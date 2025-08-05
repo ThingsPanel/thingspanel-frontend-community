@@ -237,6 +237,7 @@
   "card.deviceQuantity": "设备数量",
   "card.device": "设备",
   "card.metric": "指标",
+  "card.deviceAndMetrics": "设备和指标",
   "card.previousPage": "上一页",
   "card.nextPage": "下一页",
   "card.networkImageText": "一张网络图片（这字的大小是{size}px）",

@@ -32,7 +32,7 @@ const multiDataTestDefinition: ComponentDefinition = {
   type: 'multi-data-test',
   name: '多数据测试',
   description: '测试多数据源支持的组件，支持从不同数据源获取数据',
-  category: 'card21',
+  category: 'chart', // 改为chart分类，这样会显示在曲线标签页
   icon: MultiDataTestIcon,
   component: MultiDataTestCard,
   configComponent: MultiDataTestConfig,

@@ -5,14 +5,14 @@
 import { dataSourceRegistry } from '../../core/data-source-registry'
 import { DataSourceType } from '../../types/data-source'
 import StaticDataSourceConfig from './StaticDataSourceConfig.vue'
-import DeviceDataSourceConfig from './DeviceDataSourceConfig.vue'
+import DeviceDataSourceConfigNew from './DeviceDataSourceConfigNew.vue'
 import HttpDataSourceConfig from './HttpDataSourceConfig.vue'
 
 // 导出原有的数据源配置组件
 export { default as DeviceDataSourceConfig } from './DeviceDataSourceConfig.vue'
 export { default as DeviceDataSourceExample } from './DeviceDataSourceExample.vue'
 
-// 导出新的设备API配置系统
+// 导出新的设备数据源配置组件
 export { default as DeviceDataSourceConfigNew } from './DeviceDataSourceConfigNew.vue'
 export { default as DeviceDataSourceExampleNew } from './DeviceDataSourceExampleNew.vue'
 
@@ -35,7 +35,7 @@ dataSourceRegistry.register(DataSourceType.STATIC, {
     name: '静态数据源',
     description: 'JSON格式的静态数据',
     data: {},
-    dataPath: '',
+    dataPaths: [],
     refreshInterval: 0
   }
 })
@@ -45,17 +45,27 @@ dataSourceRegistry.register(DataSourceType.DEVICE, {
   name: '设备数据',
   description: '从设备获取实时数据',
   icon: '📱',
-  component: DeviceDataSourceConfig,
+  component: DeviceDataSourceConfigNew,
   defaultConfig: {
     type: DataSourceType.DEVICE,
     enabled: true,
     name: '设备数据源',
     description: '从设备获取实时数据',
     deviceId: '',
+    deviceName: '',
+    dataType: 'telemetry',
     metricsId: '',
-    metricsType: 'telemetry',
     metricsName: '',
-    dataPath: ''
+    metricsDataType: '',
+    timeMode: 'current',
+    timeRange: 'last_1h',
+    aggregateFunction: 'avg',
+    polling: {
+      enabled: false,
+      interval: 5000,
+      status: 'stopped'
+    },
+    dataPaths: []
   }
 })
 
@@ -73,7 +83,7 @@ dataSourceRegistry.register(DataSourceType.HTTP, {
     method: 'GET',
     url: '',
     headers: [],
-    dataPath: '',
+    dataPaths: [],
     refreshInterval: 5000
   }
 })

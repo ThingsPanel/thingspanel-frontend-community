@@ -1,6 +1,7 @@
 /**
  * 数据路径解析工具
  * 支持解析复杂的数据结构，如 "data.value" 或 "data[0].value"
+ * 支持自动检测数组类型和手动路径配置
  */
 
 import type { DataPathResolver } from '../types/data-source'
@@ -10,9 +11,18 @@ class DataPathResolverImpl implements DataPathResolver {
    * 解析数据路径
    * @param data 原始数据
    * @param path 数据路径，如 "data.value" 或 "data[0].value"
+   * @param options 解析选项
    * @returns 解析后的值
    */
-  resolve(data: any, path?: string): any {
+  resolve(
+    data: any,
+    path?: string,
+    options?: {
+      arrayMode?: 'auto' | 'manual' | 'none'
+      defaultArrayIndex?: number
+      enableAutoDetection?: boolean
+    }
+  ): any {
     if (!path || path === '') {
       return data
     }
@@ -44,6 +54,31 @@ class DataPathResolverImpl implements DataPathResolver {
         }
       }
 
+      // 根据数组处理模式处理结果
+      const arrayMode = options?.arrayMode || 'auto'
+      const enableAutoDetection = options?.enableAutoDetection ?? true
+
+      if (Array.isArray(result) && result.length > 0) {
+        switch (arrayMode) {
+          case 'auto':
+            // 自动检测模式：如果启用了自动检测，使用默认索引
+            if (enableAutoDetection) {
+              const index = options?.defaultArrayIndex ?? 0
+              result = result[index]
+            }
+            break
+          case 'manual': {
+            // 手动模式：使用指定的索引
+            const index = options?.defaultArrayIndex ?? 0
+            result = result[index]
+            break
+          }
+          case 'none':
+            // 不处理模式：保持数组原样
+            break
+        }
+      }
+
       return result
     } catch (error) {
       console.warn('数据路径解析失败:', error)
@@ -70,6 +105,71 @@ class DataPathResolverImpl implements DataPathResolver {
     this.collectPaths(data, '', paths, 0, 100) // 限制最多100个路径
 
     return paths
+  }
+
+  /**
+   * 检测数据类型并返回类型信息
+   * @param data 数据
+   * @param path 路径
+   * @returns 类型信息
+   */
+  detectDataType(
+    data: any,
+    path?: string
+  ): {
+    isArray: boolean
+    arrayLength?: number
+    type: string
+    sampleValue?: any
+  } {
+    const resolvedData = this.resolve(data, path)
+
+    if (Array.isArray(resolvedData)) {
+      return {
+        isArray: true,
+        arrayLength: resolvedData.length,
+        type: 'array',
+        sampleValue: resolvedData.length > 0 ? resolvedData[0] : undefined
+      }
+    } else {
+      return {
+        isArray: false,
+        type: typeof resolvedData,
+        sampleValue: resolvedData
+      }
+    }
+  }
+
+  /**
+   * 智能建议数据路径
+   * @param data 原始数据
+   * @param targetField 目标字段名
+   * @returns 建议的路径
+   */
+  suggestPath(data: any, targetField: string): string {
+    const paths = this.getAvailablePaths(data)
+
+    // 优先查找完全匹配的字段名
+    const exactMatch = paths.find(path => {
+      const fieldName = path.split('.').pop() || path.split('[').pop()?.replace(']', '') || path
+      return fieldName.toLowerCase() === targetField.toLowerCase()
+    })
+
+    if (exactMatch) {
+      return exactMatch
+    }
+
+    // 查找包含目标字段名的路径
+    const partialMatch = paths.find(path => {
+      return path.toLowerCase().includes(targetField.toLowerCase())
+    })
+
+    if (partialMatch) {
+      return partialMatch
+    }
+
+    // 如果没有找到匹配，返回空字符串
+    return ''
   }
 
   /**
@@ -157,7 +257,7 @@ class DataPathResolverImpl implements DataPathResolver {
       // 对象 - 限制最多处理前20个属性
       const keys = Object.keys(data)
       const maxObjectKeys = Math.min(keys.length, 20)
-      
+
       for (let i = 0; i < maxObjectKeys; i++) {
         const key = keys[i]
         const newPath = currentPath ? `${currentPath}.${key}` : key

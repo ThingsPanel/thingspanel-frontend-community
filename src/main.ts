@@ -158,7 +158,7 @@ async function setupApp() {
         icon: to.meta.icon,
         query: to.query // 保存 query 参数
       }
-      
+
       recentRoutes.unshift(newRoute)
 
       // 限制列表长度

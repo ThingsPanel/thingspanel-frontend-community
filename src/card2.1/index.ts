@@ -1,30 +1,126 @@
 /**
  * @file Card 2.1 系统入口
- * 动态导入并注册所有卡片组件
- * 
+ * 使用自动注册系统，支持目录扫描和动态加载
+ *
  * 📚 开发文档：
  * - README.md - 完整开发指南
  * - AI_MIGRATION_PROMPT.md - AI迁移提示词
  * - AI_PROMPT_TEMPLATE.md - 简化提示词模板
  * - MIGRATION_TODO.md - 迁移进度跟踪
  */
+
 import { componentRegistry } from './core/registry'
-import digitIndicatorDefinition from './components/digit-indicator'
-import multiDataTestDefinition from './components/multi-data-test'
-import accessDefinition from './components/access'
+import { AutoRegistry } from './core/auto-registry'
+import { ComponentLoader } from './core/component-loader'
 
-// 注册组件
-componentRegistry.register('digit-indicator', digitIndicatorDefinition)
-componentRegistry.register('multi-data-test', multiDataTestDefinition)
-componentRegistry.register('access', accessDefinition)
+// 创建自动注册系统
+const autoRegistry = new AutoRegistry(componentRegistry)
+const componentLoader = new ComponentLoader()
 
-console.log('🔧 [Card2.1] 组件注册完成:', {
-  digitIndicator: '✅',
-  multiDataTest: '✅',
-  access: '✅'
-})
+// 初始化状态
+let isInitialized = false
+let initializationPromise: Promise<void> | null = null
 
-console.log('📚 [Card2.1] 开发文档已就绪，请查看 README.md 了解详细开发指南')
+/**
+ * 初始化 Card 2.1 系统
+ * 自动扫描并注册所有组件
+ */
+export async function initializeCard2System() {
+  if (isInitialized) {
+    console.log('🔄 [Card2.1] 系统已初始化，跳过重复初始化')
+    return
+  }
 
+  if (initializationPromise) {
+    console.log('🔄 [Card2.1] 系统正在初始化中，等待完成...')
+    return initializationPromise
+  }
+
+  initializationPromise = (async () => {
+    try {
+      console.log('🚀 [Card2.1] 开始初始化系统...')
+
+      // 1. 加载组件模块
+      const componentModules = await componentLoader.loadComponents()
+
+      // 2. 获取组件统计信息
+      const stats = componentLoader.getComponentStats(componentModules)
+      console.log('📊 [Card2.1] 组件统计:', stats)
+
+      // 3. 自动注册组件
+      const registeredComponents = await autoRegistry.autoRegister(componentModules)
+
+      // 4. 获取组件树形结构
+      const componentTree = autoRegistry.getComponentTree()
+
+      console.log('🎉 [Card2.1] 系统初始化完成!', {
+        注册组件数: registeredComponents.length,
+        分类数: componentTree.categories.length,
+        总组件数: componentTree.totalCount
+      })
+
+      isInitialized = true
+    } catch (error) {
+      console.error('❌ [Card2.1] 系统初始化失败:', error)
+      throw error
+    } finally {
+      initializationPromise = null
+    }
+  })()
+
+  return initializationPromise
+}
+
+/**
+ * 获取组件注册表
+ */
+export function getComponentRegistry() {
+  if (!isInitialized) {
+    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
+  }
+  return componentRegistry
+}
+
+/**
+ * 获取组件树形结构
+ */
+export function getComponentTree() {
+  if (!isInitialized) {
+    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
+    return { categories: [], components: [], totalCount: 0 }
+  }
+  return autoRegistry.getComponentTree()
+}
+
+/**
+ * 按分类获取组件
+ */
+export function getComponentsByCategory(mainCategory?: string, subCategory?: string) {
+  if (!isInitialized) {
+    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
+    return []
+  }
+  return autoRegistry.getComponentsByCategory(mainCategory, subCategory)
+}
+
+/**
+ * 获取所有分类
+ */
+export function getCategories() {
+  if (!isInitialized) {
+    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
+    return []
+  }
+  return autoRegistry.getCategories()
+}
+
+// 导出核心模块
 export { componentRegistry }
+export { AutoRegistry, ComponentLoader }
+export type { ComponentTree, ComponentCategory } from './core/auto-registry'
+
+// 导出 Hooks
+export * from './hooks'
+
+// 默认导出注册表（保持向后兼容）
 export default componentRegistry

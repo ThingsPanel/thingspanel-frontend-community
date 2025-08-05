@@ -45,7 +45,7 @@
       <template v-if="showNewSystem">
         <n-divider title-placement="left">
           <n-space align="center">
-            <n-icon><SparklesIcon /></n-icon>
+            <n-icon><Sparkles /></n-icon>
             <span>新的设备API配置系统</span>
           </n-space>
         </n-divider>
@@ -57,7 +57,7 @@
       <template v-else>
         <n-divider title-placement="left">
           <n-space align="center">
-            <n-icon><SettingsIcon /></n-icon>
+            <n-icon><Settings /></n-icon>
             <span>原有的设备数据源配置</span>
           </n-space>
         </n-divider>
@@ -68,7 +68,7 @@
       <!-- 使用说明 -->
       <n-divider title-placement="left">
         <n-space align="center">
-          <n-icon><HelpCircleIcon /></n-icon>
+          <n-icon><HelpCircle /></n-icon>
           <span>使用说明</span>
         </n-space>
       </n-divider>
@@ -117,7 +117,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { NCard, NDivider, NSpace, NButton, NAlert, NIcon } from 'naive-ui'
-import { SparklesIcon, SettingsIcon, HelpCircleIcon } from '@vicons/ionicons5'
+import { Sparkles, Settings, HelpCircle } from '@vicons/ionicons5'
 import DeviceDataSourceExample from '@/components/visual-editor/settings/data-sources/DeviceDataSourceExample.vue'
 import DeviceDataSourceExampleNew from '@/components/visual-editor/settings/data-sources/DeviceDataSourceExampleNew.vue'
 

@@ -74,11 +74,17 @@
       </n-form-item>
 
       <!-- 第六步：轮询配置 -->
-      <n-form-item label="轮询方式">
+      <n-form-item label="数据获取方式">
+        <!-- 调试信息 -->
+        <div style="margin-bottom: 8px; padding: 4px; background: #f0f0f0; border-radius: 4px; font-size: 12px">
+          <div>当前选择: {{ config.pollingType }}</div>
+          <div>可用选项: {{ pollingTypeOptions.map(opt => opt.label).join(', ') }}</div>
+        </div>
+
         <n-select
           v-model:value="config.pollingType"
           :options="pollingTypeOptions"
-          placeholder="选择轮询方式"
+          placeholder="选择数据获取方式"
           @update:value="onPollingTypeChange"
         />
       </n-form-item>
@@ -97,9 +103,45 @@
       </template>
 
       <template v-if="config.pollingType === 'websocket'">
-        <n-form-item label="WebSocket URL">
-          <n-input v-model:value="config.websocketUrl" placeholder="输入WebSocket URL" @update:value="updateConfig" />
+        <n-alert type="info" size="small" style="margin-bottom: 12px">
+          <template #default>
+            <p>
+              <strong>WebSocket 模式</strong>
+              ：系统将自动建立 WebSocket 连接获取实时数据
+            </p>
+            <p>无需手动配置 URL，系统会自动连接到设备数据服务</p>
+          </template>
+        </n-alert>
+
+        <n-form-item label="连接状态">
+          <n-space align="center">
+            <n-tag :type="websocketStatus.type" size="small">
+              {{ websocketStatus.text }}
+            </n-tag>
+            <n-button
+              size="small"
+              :type="websocketStatus.type === 'success' ? 'error' : 'primary'"
+              @click="toggleWebSocketConnection"
+            >
+              {{ websocketStatus.type === 'success' ? '断开连接' : '建立连接' }}
+            </n-button>
+          </n-space>
         </n-form-item>
+
+        <!-- 实时数据预览 -->
+        <template v-if="websocketStatus.type === 'success' && realtimeData">
+          <n-form-item label="实时数据">
+            <n-card size="small" class="realtime-data">
+              <n-space vertical>
+                <div class="data-header">
+                  <n-text strong>最新数据 ({{ formatTime(realtimeData.timestamp) }})</n-text>
+                  <n-button size="small" @click="clearRealtimeData">清空</n-button>
+                </div>
+                <pre class="data-content">{{ JSON.stringify(realtimeData.data, null, 2) }}</pre>
+              </n-space>
+            </n-card>
+          </n-form-item>
+        </template>
       </template>
 
       <template v-if="config.pollingType === 'mqtt'">
@@ -159,8 +201,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, h } from 'vue'
-import { NForm, NFormItem, NInput, NSelect, NInputNumber, NCard, NAlert, NButton } from 'naive-ui'
+import { ref, computed, watch, onMounted, onUnmounted, h } from 'vue'
+import { NForm, NFormItem, NInput, NSelect, NInputNumber, NCard, NAlert, NButton, NSpace, NTag, NText } from 'naive-ui'
 import DataMappingConfig from './DataMappingConfig.vue'
 import { deviceListForPanel, deviceMetricsList } from '@/service/api'
 import {
@@ -204,7 +246,7 @@ const config = ref<DeviceDataSource>({
   deviceId: props.modelValue?.deviceId || '',
   metricsType: props.modelValue?.metricsType || 'telemetry',
   dataMode: props.modelValue?.dataMode || 'latest',
-  pollingType: props.modelValue?.pollingType || 'timer',
+  pollingType: props.modelValue?.pollingType || 'websocket',
   timeRange: props.modelValue?.timeRange || '1h',
   aggregateFunction: props.modelValue?.aggregateFunction || 'avg',
   dataPaths: props.modelValue?.dataPaths || [],
@@ -214,6 +256,12 @@ const config = ref<DeviceDataSource>({
     topic: '',
     username: '',
     password: ''
+  },
+  dataMapping: props.modelValue?.dataMapping || {
+    mappings: [],
+    defaultArrayMode: 'auto',
+    defaultArrayIndex: 0,
+    enableAutoDetection: true
   },
   metricsShow: false,
   metricsOptions: [],
@@ -226,6 +274,10 @@ const isLoadingMetrics = ref(false)
 const isLoadingData = ref(false)
 const sampleData = ref<any>(null)
 const selectedApiType = ref<string>('telemetry_current')
+
+// WebSocket 相关
+const websocketStatus = ref<{ type: 'info' | 'success' | 'error'; text: string }>({ type: 'info', text: '未连接' })
+const realtimeData = ref<any>(null)
 
 // 计算属性
 const refreshIntervalSeconds = computed({
@@ -249,10 +301,10 @@ const canFetchData = computed(() => {
     return false
   }
 
-  // WebSocket需要配置URL
-  if (config.value.pollingType === 'websocket' && !config.value.websocketUrl) {
-    return false
-  }
+  // WebSocket 模式不需要手动配置 URL，系统会自动连接
+  // if (config.value.pollingType === 'websocket' && !config.value.websocketUrl) {
+  //   return false
+  // }
 
   // MQTT需要配置broker和topic
   if (config.value.pollingType === 'mqtt' && (!config.value.mqttConfig?.broker || !config.value.mqttConfig?.topic)) {
@@ -298,8 +350,8 @@ const aggregateFunctionOptions = [
 ]
 
 const pollingTypeOptions = [
+  { label: 'WebSocket (推荐)', value: 'websocket' },
   { label: '定时器', value: 'timer' },
-  { label: 'WebSocket', value: 'websocket' },
   { label: 'MQTT', value: 'mqtt' }
 ]
 
@@ -789,6 +841,213 @@ watch(
 onMounted(() => {
   getDeviceList()
 })
+
+// WebSocket 连接管理
+const ws = ref<WebSocket | null>(null)
+
+const formatTime = (timestamp: string) => {
+  return new Date(timestamp).toLocaleTimeString()
+}
+
+const clearRealtimeData = () => {
+  realtimeData.value = null
+}
+
+const toggleWebSocketConnection = () => {
+  if (websocketStatus.value.type === 'info') {
+    connectWebSocket()
+  } else {
+    disconnectWebSocket()
+  }
+}
+
+const connectWebSocket = () => {
+  if (ws.value) {
+    websocketStatus.value.text = '已连接'
+    websocketStatus.value.type = 'success'
+    return
+  }
+
+  // 使用默认的 WebSocket URL 或从配置中获取
+  const wsUrl = config.value.websocketUrl || 'ws://localhost:8080/ws'
+
+  websocketStatus.value.text = '连接中...'
+  websocketStatus.value.type = 'info'
+
+  ws.value = new WebSocket(wsUrl)
+
+  ws.value.onopen = () => {
+    websocketStatus.value.text = '已连接'
+    websocketStatus.value.type = 'success'
+    console.log('WebSocket 连接成功')
+  }
+
+  ws.value.onerror = error => {
+    websocketStatus.value.text = '连接失败'
+    websocketStatus.value.type = 'error'
+    console.error('WebSocket 连接失败:', error)
+  }
+
+  ws.value.onmessage = event => {
+    try {
+      const message = JSON.parse(event.data)
+      if (message.type === 'realtime_data') {
+        realtimeData.value = message
+      }
+    } catch (e) {
+      console.error('WebSocket 消息解析失败:', e)
+    }
+  }
+
+  ws.value.onclose = () => {
+    websocketStatus.value.text = '已断开'
+    websocketStatus.value.type = 'info'
+    ws.value = null
+    console.log('WebSocket 连接已关闭')
+  }
+}
+
+const disconnectWebSocket = () => {
+  if (ws.value) {
+    ws.value.close()
+    websocketStatus.value.text = '已断开'
+    websocketStatus.value.type = 'info'
+    ws.value = null
+    console.log('WebSocket 连接已断开')
+  }
+}
+
+// 实时数据获取
+const getRealtimeData = async () => {
+  if (!config.value.deviceId || !config.value.metricsId) {
+    return
+  }
+
+  if (!ws.value || ws.value.readyState !== WebSocket.OPEN) {
+    console.warn('WebSocket 未连接，无法获取实时数据')
+    return
+  }
+
+  const message = {
+    type: 'get_realtime_data',
+    device_id: config.value.deviceId,
+    key: config.value.metricsId
+  }
+
+  ws.value.send(JSON.stringify(message))
+}
+
+// 实时数据订阅
+const subscribeRealtimeData = async () => {
+  if (!config.value.deviceId || !config.value.metricsId) {
+    return
+  }
+
+  if (!ws.value || ws.value.readyState !== WebSocket.OPEN) {
+    console.warn('WebSocket 未连接，无法订阅实时数据')
+    return
+  }
+
+  const message = {
+    type: 'subscribe_realtime_data',
+    device_id: config.value.deviceId,
+    key: config.value.metricsId,
+    topic: config.value.websocketTopic || `/device/${config.value.deviceId}/telemetry`
+  }
+
+  ws.value.send(JSON.stringify(message))
+}
+
+// 实时数据取消订阅
+const unsubscribeRealtimeData = async () => {
+  if (!ws.value || ws.value.readyState !== WebSocket.OPEN) {
+    return
+  }
+
+  const message = {
+    type: 'unsubscribe_realtime_data',
+    device_id: config.value.deviceId,
+    key: config.value.metricsId
+  }
+
+  ws.value.send(JSON.stringify(message))
+}
+
+// 轮询实时数据
+const pollRealtimeData = () => {
+  if (config.value.pollingType === 'websocket') {
+    subscribeRealtimeData()
+  } else {
+    getRealtimeData()
+  }
+}
+
+// 轮询配置
+const pollingConfig = computed(() => {
+  if (config.value.pollingType === 'websocket') {
+    return {
+      type: 'websocket',
+      interval: config.value.refreshInterval || 5000,
+      topic: config.value.websocketTopic || `/device/${config.value.deviceId}/telemetry`
+    }
+  } else {
+    return {
+      type: 'timer',
+      interval: config.value.refreshInterval || 5000,
+      timeRange: config.value.timeRange || '1h',
+      aggregateFunction: config.value.aggregateFunction || 'avg'
+    }
+  }
+})
+
+// 轮询启动
+const startPolling = () => {
+  if (config.value.pollingType === 'websocket') {
+    subscribeRealtimeData()
+  } else {
+    getRealtimeData()
+  }
+
+  const interval = pollingConfig.value.interval
+  if (interval > 0) {
+    const timer = setInterval(() => {
+      if (config.value.pollingType === 'websocket') {
+        subscribeRealtimeData()
+      } else {
+        getRealtimeData()
+      }
+    }, interval)
+    return timer
+  }
+  return null
+}
+
+// 轮询停止
+const stopPolling = (timer: any) => {
+  if (timer) {
+    clearInterval(timer)
+  }
+}
+
+// 轮询管理
+watch(
+  pollingConfig,
+  (newVal, oldVal) => {
+    if (newVal.interval !== oldVal.interval) {
+      stopPolling(pollingTimer.value)
+      pollingTimer.value = startPolling()
+    }
+  },
+  { deep: true }
+)
+
+const pollingTimer = ref<any>(null)
+
+// 组件卸载时清理
+onUnmounted(() => {
+  stopPolling(pollingTimer.value)
+  disconnectWebSocket()
+})
 </script>
 
 <style scoped>
@@ -815,6 +1074,24 @@ onMounted(() => {
 }
 
 .data-preview pre {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.realtime-data {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.realtime-data .data-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.realtime-data .data-content {
   margin: 0;
   font-size: 12px;
   line-height: 1.4;

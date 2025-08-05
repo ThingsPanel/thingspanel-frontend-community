@@ -31,10 +31,18 @@
                 @dragstart="handleDragStart(widget, $event)"
               >
                 <div class="widget-icon">
-                  <n-icon size="20">
-                    <component :is="widget.icon" v-if="typeof widget.icon !== 'string' && widget.icon" />
-                    <SvgIcon v-else-if="typeof widget.icon === 'string'" :icon="widget.icon" />
+                  <n-icon v-if="typeof widget.icon !== 'string' && widget.icon" size="20">
+                    <component :is="widget.icon" />
                   </n-icon>
+                  <SvgIcon
+                    v-else-if="typeof widget.icon === 'string' && !widget.icon.startsWith('<svg')"
+                    :icon="widget.icon"
+                  />
+                  <div
+                    v-else-if="typeof widget.icon === 'string' && widget.icon.startsWith('<svg')"
+                    class="svg-icon-inline"
+                    v-html="widget.icon"
+                  ></div>
                 </div>
                 <div class="widget-name">{{ widget.name }}</div>
               </div>
@@ -80,27 +88,45 @@ interface TopCategory {
 
 const twoLevelWidgetTree = computed(() => {
   const topCategoriesData: {
-    'Card 2.1': { [subCategoryName: string]: WidgetDefinition[] }
-    曲线: { [subCategoryName: string]: WidgetDefinition[] }
     系统: { [subCategoryName: string]: WidgetDefinition[] }
+    曲线: { [subCategoryName: string]: WidgetDefinition[] }
   } = {
-    'Card 2.1': {},
-    曲线: {},
-    系统: {}
+    系统: {},
+    曲线: {}
   }
 
   combinedWidgetTree.value.forEach(subCategory => {
     subCategory.children.forEach(widget => {
-      // 1. Determine Top-Level Category
+      // 1. Determine Top-Level Category - 优先使用Card 2.1组件的mainCategory
       let topLevelName = '系统'
-      if (widget.category === 'chart') {
+      if (widget.metadata?.isCard2Component && widget.metadata?.card2Definition?.mainCategory) {
+        topLevelName = widget.metadata.card2Definition.mainCategory
+      } else if (widget.category === 'chart') {
         topLevelName = '曲线'
-      } else if (widget.category === 'card21') {
-        topLevelName = 'Card 2.1'
       }
 
-      // 2. Determine Second-Level Category
-      const subLevelName = subCategory.name || '其他'
+      // 2. Determine Second-Level Category - 优先使用Card 2.1组件的subCategory
+      let subLevelName = '其他'
+
+      if (widget.metadata?.isCard2Component && widget.metadata?.card2Definition?.subCategory) {
+        subLevelName = widget.metadata.card2Definition.subCategory
+      } else if (widget.category === 'card21') {
+        subLevelName = 'Card 2.1 组件'
+      } else if (widget.category === 'chart') {
+        if (subCategory.name.includes('builtin')) {
+          subLevelName = '内置图表'
+        } else if (subCategory.name.includes('chart')) {
+          subLevelName = '图表组件'
+        } else {
+          subLevelName = subCategory.name || '其他图表'
+        }
+      } else {
+        if (subCategory.name.includes('builtin')) {
+          subLevelName = '内置组件'
+        } else {
+          subLevelName = subCategory.name || '其他组件'
+        }
+      }
 
       if (!topCategoriesData[topLevelName][subLevelName]) {
         topCategoriesData[topLevelName][subLevelName] = []
@@ -112,16 +138,12 @@ const twoLevelWidgetTree = computed(() => {
   // 3. Convert map to final array structure for rendering
   const result: TopCategory[] = [
     {
-      name: 'Card 2.1',
-      subCategories: Object.entries(topCategoriesData['Card 2.1']).map(([name, children]) => ({ name, children }))
+      name: '系统',
+      subCategories: Object.entries(topCategoriesData['系统']).map(([name, children]) => ({ name, children }))
     },
     {
       name: '曲线',
       subCategories: Object.entries(topCategoriesData['曲线']).map(([name, children]) => ({ name, children }))
-    },
-    {
-      name: '系统',
-      subCategories: Object.entries(topCategoriesData['系统']).map(([name, children]) => ({ name, children }))
     }
   ]
 
@@ -220,15 +242,29 @@ const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
 }
 
 .subcategory-title {
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 10px;
-  color: var(--n-text-color-2);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--n-text-color-1);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--n-border-color);
+  position: relative;
+}
+
+.subcategory-title::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 30px;
+  height: 2px;
+  background: var(--n-primary-color);
+  border-radius: 1px;
 }
 
 .category-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 }
 
@@ -238,19 +274,38 @@ const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 8px;
-  border: 1px solid var(--n-border-color);
-  border-radius: 6px;
+  padding: 12px 8px;
+  border: 2px solid var(--n-border-color);
+  border-radius: 8px;
   cursor: grab;
   transition: all 0.2s ease-in-out;
   background-color: var(--n-card-color);
-  height: 80px;
+  height: 90px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.widget-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--n-primary-color), var(--n-primary-color-hover));
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .widget-card:hover {
-  border-color: var(--n-primary-color-hover);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: var(--n-primary-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   transform: translateY(-2px);
+}
+
+.widget-card:hover::before {
+  opacity: 1;
 }
 
 .widget-card:active {
@@ -259,20 +314,39 @@ const handleDragStart = (widget: WidgetDefinition | any, event: DragEvent) => {
 }
 
 .widget-icon {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   color: var(--n-primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
 }
 
 .widget-name {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   color: var(--n-text-color-2);
-  line-height: 1.3;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-all;
+  max-width: 100%;
+}
+
+.svg-icon-inline {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.svg-icon-inline svg {
+  width: 20px;
+  height: 20px;
 }
 </style>
