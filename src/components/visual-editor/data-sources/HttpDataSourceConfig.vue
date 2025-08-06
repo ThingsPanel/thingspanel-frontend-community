@@ -97,7 +97,7 @@
 import { ref, computed, watch } from 'vue'
 import { NForm, NFormItem, NInput, NSelect, NInputNumber, NButton, NAlert } from 'naive-ui'
 import type { HttpDataSource } from '../../types/data-source'
-import { dataPathResolver } from '../../utils/data-path-resolver'
+import { dataPathResolver } from '../utils/data-path-resolver'
 
 interface Props {
   modelValue: HttpDataSource

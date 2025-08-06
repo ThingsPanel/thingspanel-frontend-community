@@ -130,12 +130,12 @@ interface Emits {
 const emit = defineEmits<Emits>()
 
 // 使用编辑器钩子
-const { stateManager, selectNode, isCard2Component, addNode } = useEditor()
+const { stateManager, widgetStore, selectNode, isCard2Component, addNode } = useEditor()
 const { isPreviewMode } = globalPreviewMode
 
 // 计算属性
-const nodes = computed(() => stateManager.canvasState.value.nodes)
-const selectedIds = computed(() => stateManager.canvasState.value.selectedIds)
+const nodes = computed(() => stateManager.nodes)
+const selectedIds = computed(() => widgetStore.selectedIds)
 
 // 网格布局计算
 const gridItems = computed<GridItem[]>(() => {

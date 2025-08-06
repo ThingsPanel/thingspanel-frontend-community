@@ -73,12 +73,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
-import { widgetRegistry, type WidgetTreeNode, type WidgetDefinition } from '../../core/widget-registry'
-import { card2Integration } from '../../core/card2-integration'
+import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
+import type { WidgetDefinition, WidgetTreeNode } from '../../types/widget'
 import { registerAllWidgets } from '../../widgets'
 import { debugCard2System } from '@/card2.1/debug'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
+
+const card2Integration = useCard2Integration({ autoInit: true })
 
 // --- State and Emits ---
 const searchTerm = ref('')
@@ -88,62 +90,40 @@ const emit = defineEmits<{
 }>()
 
 // --- Widget Initialization ---
-const isInitialized = ref(false)
-const initializationError = ref<string | null>(null)
+// 直接使用 card2Integration 的初始化状态，而不是单独维护
+const isInitialized = computed(() => card2Integration.isInitialized.value)
+const initializationError = computed(() => card2Integration.error.value)
 
 const initializeWidgets = async () => {
   try {
-    // console.log('🚀 [WidgetLibrary] 开始初始化组件...')
-
-    // 不注册基础组件，只注册Card2.1组件
-    // registerAllWidgets(true)
-    // console.log('✅ [WidgetLibrary] 跳过基础组件注册')
-
-    // 调试 Card 2.1 系统
     await debugCard2System()
-    // console.log('✅ [WidgetLibrary] Card 2.1 调试完成')
-
-    // 初始化 Card 2.1 集成
     await card2Integration.initialize()
-    // console.log('✅ [WidgetLibrary] Card 2.1 集成完成')
-
-    isInitialized.value = true
-    // console.log('🎉 [WidgetLibrary] 所有组件初始化完成')
   } catch (error) {
     console.error('❌ [WidgetLibrary] 组件初始化失败:', error)
-    initializationError.value = error instanceof Error ? error.message : '初始化失败'
   }
 }
 
-// 在组件挂载时初始化所有组件
+// 组件挂载时的初始化检查
 onMounted(() => {
-  initializeWidgets()
+  // 系统会自动初始化，无需额外操作
 })
 
-// --- Legacy Widget Integration ---
-const legacyWidgetTree = computed<WidgetTreeNode[]>(() => {
-  if (!isInitialized.value) {
-    // console.log('⏳ [WidgetLibrary] 等待组件初始化完成...')
+// --- Widget Data ---
+const allWidgets = computed(() => {
+  if (!isInitialized.value) return []
+
+  // ✅ 修复：正确访问 ComputedRef 的 .value 属性
+  const widgets = card2Integration.availableWidgets.value
+  if (!Array.isArray(widgets)) {
+    console.warn('⚠️ [WidgetLibrary] availableWidgets.value 不是数组，返回空数组:', widgets)
     return []
   }
-  return widgetRegistry.getWidgetTree()
+
+  return widgets
 })
 
 // --- Combined & Re-grouped Logic ---
-const combinedWidgetTree = computed<WidgetTreeNode[]>(() => {
-  if (!isInitialized.value) {
-    return []
-  }
-
-  const tree = legacyWidgetTree.value
-  // console.log('🌳 [WidgetLibrary] 当前组件树:', tree)
-  // console.log('📊 [WidgetLibrary] 组件统计:', {
-  //   总分类数: tree.length,
-  //   总组件数: tree.reduce((total, category) => total + category.children.length, 0),
-  //   各分类组件数: tree.map(cat => ({ name: cat.name, count: cat.children.length }))
-  // })
-  return tree
-})
+// combinedWidgetTree is no longer needed as we process a flat list directly in twoLevelWidgetTree
 
 interface SubCategory {
   name: string
@@ -159,35 +139,18 @@ const twoLevelWidgetTree = computed(() => {
   // 动态构建顶级分类数据
   const topCategoriesData: Record<string, { [subCategoryName: string]: WidgetDefinition[] }> = {}
 
-  combinedWidgetTree.value.forEach(subCategory => {
-    subCategory.children.forEach(widget => {
-      // 只处理Card2.1组件
-      if (!widget.metadata?.isCard2Component) {
-        return
-      }
+  allWidgets.value.forEach(widget => {
+    const topLevelName = widget.definition?.mainCategory || '系统组件'
+    const subLevelName = widget.definition?.subCategory || '其他'
 
-      // 1. Determine Top-Level Category - 使用Card 2.1组件的mainCategory
-      let topLevelName = '系统组件'
-      if (widget.metadata?.card2Definition?.mainCategory) {
-        topLevelName = widget.metadata.card2Definition.mainCategory
-      }
+    if (!topCategoriesData[topLevelName]) {
+      topCategoriesData[topLevelName] = {}
+    }
 
-      // 2. Determine Second-Level Category - 使用Card 2.1组件的subCategory
-      let subLevelName = '其他'
-      if (widget.metadata?.card2Definition?.subCategory) {
-        subLevelName = widget.metadata.card2Definition.subCategory
-      }
-
-      // 初始化顶级分类
-      if (!topCategoriesData[topLevelName]) {
-        topCategoriesData[topLevelName] = {}
-      }
-
-      if (!topCategoriesData[topLevelName][subLevelName]) {
-        topCategoriesData[topLevelName][subLevelName] = []
-      }
-      topCategoriesData[topLevelName][subLevelName].push(widget)
-    })
+    if (!topCategoriesData[topLevelName][subLevelName]) {
+      topCategoriesData[topLevelName][subLevelName] = []
+    }
+    topCategoriesData[topLevelName][subLevelName].push(widget)
   })
 
   // 3. Convert map to final array structure for rendering
@@ -195,15 +158,6 @@ const twoLevelWidgetTree = computed(() => {
     name: topLevelName,
     subCategories: Object.entries(subCategories).map(([name, children]) => ({ name, children }))
   }))
-
-  // console.log('🌳 [WidgetLibrary] twoLevelWidgetTree 构建结果:', {
-  //   顶级分类数: result.length,
-  //   各分类详情: result.map(cat => ({
-  //     name: cat.name,
-  //     subCategories: cat.subCategories.length,
-  //     totalWidgets: cat.subCategories.reduce((sum, sub) => sum + sub.children.length, 0)
-  //   }))
-  // })
 
   return result.filter(
     topCat => topCat.subCategories.length > 0 && topCat.subCategories.some(subCat => subCat.children.length > 0)
@@ -237,16 +191,6 @@ const filteredWidgetTree = computed(() => {
 
         return filteredTopCategories
       })()
-
-  // console.log('🔍 [WidgetLibrary] filteredWidgetTree 结果:', {
-  //   搜索词: searchTerm.value,
-  //   结果分类数: result.length,
-  //   各分类详情: result.map(cat => ({
-  //     name: cat.name,
-  //     subCategories: cat.subCategories.length,
-  //     totalWidgets: cat.subCategories.reduce((sum, sub) => sum + sub.children.length, 0)
-  //   }))
-  // })
 
   return result
 })

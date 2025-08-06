@@ -39,9 +39,9 @@ import { ref, computed, watch, onMounted, nextTick, onUnmounted } from 'vue'
 import { NForm, NFormItem, NButton, NDivider, NTabs, NTabPane, NEmpty } from 'naive-ui'
 import CodemirrorEditor from 'codemirror-editor-vue3'
 import DataMappingConfig from './DataMappingConfig.vue'
-import type { StaticDataSource, DataPathMapping } from '../../types/data-source'
-import { dataPathResolver } from '../../utils/data-path-resolver'
-import { DataSourceType } from '../../types/data-source'
+import type { StaticDataSource, DataPathMapping } from '@/components/visual-editor/types/data-source'
+import { dataPathResolver } from '@/components/visual-editor/utils/data-path-resolver'
+import { DataSourceType } from '@/components/visual-editor/types/data-source'
 
 interface Props {
   modelValue: StaticDataSource

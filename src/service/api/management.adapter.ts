@@ -75,15 +75,15 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
         item.element_type === 1 ? '' : homeRoutePath
       )
     }
-    return {
+    const route: Partial<ElegantRoute> = {
       // id: item.id,
       // parentId: item.parent_id,
       name: item.element_code.trim().replace(/\s/g, '_'),
       // elementType: item.element_type,
       path: item.param1 && item.param1[0] === '/' ? item.param1 : (`/${item.param1}` as string),
       // component: item.route_path.trim().replace(/\s/g, '_'),
-      component,
       // remark: item.remark,
+      ...(component && { component }),
       meta: {
         title: item.description,
         i18nKey: item.multilingual,
@@ -98,7 +98,8 @@ function replaceKeys(data: ElegantConstRoute[]): ElegantRoute[] {
         remark: item.remark || ''
       },
       children: item.children?.length ? replaceKeys(item.children) : []
-    } as unknown as ElegantRoute
+    }
+    return route as unknown as ElegantRoute
   })
 }
 

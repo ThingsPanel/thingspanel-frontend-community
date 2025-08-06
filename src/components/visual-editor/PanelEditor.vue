@@ -10,15 +10,18 @@ import { VisualEditorToolbar } from './components/toolbar'
 import WidgetLibrary from './components/WidgetLibrary/WidgetLibrary.vue'
 import { initializeSettings, SettingsPanel } from './settings'
 import { CanvasRenderer, GridstackRenderer } from './renderers'
-import { createEditor, useCard2Integration, usePreviewMode } from './hooks'
+import { createEditor, usePreviewMode } from './hooks'
 import type { RendererType, VisualEditorWidget, GraphData } from './types'
 
 // 导入数据源注册
-import './settings/data-sources'
+import './data-sources'
+
+import { useVisualEditorIntegration } from '@/card2.1/hooks/useVisualEditorIntegration'
 
 // 初始化 Card 2.1 集成
-useCard2Integration({
-  autoInit: true
+useVisualEditorIntegration({
+  autoInit: true,
+  enableI18n: true
 })
 
 // 初始化设置面板
@@ -64,7 +67,7 @@ const { setPreviewMode, isPreviewMode } = usePreviewMode()
 
 const selectedWidget = computed<VisualEditorWidget | null>(() => {
   if (!selectedNodeId.value) return null
-  const node = stateManager.canvasState.value.nodes.find(node => node.id === selectedNodeId.value)
+  const node = stateManager.nodes.find(node => node.id === selectedNodeId.value)
   if (node) {
     return node as VisualEditorWidget
   }
@@ -152,13 +155,12 @@ const setState = (config: any) => {
 }
 
 const getState = () => {
-  const canvasState = stateManager.canvasState.value
   return {
-    nodes: canvasState.nodes,
+    nodes: stateManager.nodes,
     canvasConfig: editorConfig.value.canvasConfig || {},
     gridConfig: editorConfig.value.gridConfig || {},
-    viewport: canvasState.viewport,
-    mode: canvasState.mode,
+    viewport: stateManager.viewport,
+    mode: stateManager.mode,
     // 渲染器类型和编辑器状态
     currentRenderer: currentRenderer.value,
     showWidgetTitles: showWidgetTitles.value,
@@ -391,6 +393,12 @@ const handleModeChange = (mode: 'edit' | 'preview') => {
     console.log('📝 切换到编辑模式')
     isEditing.value = true
     setPreviewMode(false) // 同步全局预览模式
+
+    // 🎯 改进用户体验：进入编辑模式时自动打开左侧组件库抽屉
+    if (!showLeftDrawer.value) {
+      console.log('🔧 自动打开左侧组件库抽屉')
+      showLeftDrawer.value = true
+    }
   } else {
     console.log('👁️ 切换到预览模式')
     const currentState = getState()
@@ -763,7 +771,7 @@ watch(
     () => showRightDrawer.value,
     () => editorConfig.value.gridConfig,
     () => editorConfig.value.canvasConfig,
-    () => stateManager.canvasState.value.nodes
+    () => stateManager.nodes
   ],
   () => {
     // 只有在数据加载完成后才监听变化

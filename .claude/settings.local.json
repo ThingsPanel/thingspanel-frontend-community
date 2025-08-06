@@ -44,7 +44,8 @@
       "WebFetch(domain:dsmorse.github.io)",
       "Bash(tree:*)",
       "Bash(git stash pop:*)",
-      "WebFetch(domain:www.naiveui.com)"
+      "WebFetch(domain:www.naiveui.com)",
+      "Bash(timeout:*)"
     ],
     "deny": []
   }

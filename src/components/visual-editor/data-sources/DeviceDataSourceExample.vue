@@ -96,9 +96,9 @@
 import { ref, onUnmounted } from 'vue'
 import { NCard, NSpace, NDivider, NButton, NTag, NEmpty, NAlert } from 'naive-ui'
 import DeviceDataSourceConfig from './DeviceDataSourceConfig.vue'
-import { dataSourceManager } from '../../core'
-import type { DeviceDataSource, DataSourceValue } from '../../types/data-source'
-import { DataSourceType } from '../../types/data-source'
+import { dataSourceManager } from '@/components/visual-editor/core'
+import type { DeviceDataSource, DataSourceValue } from '@/components/visual-editor/types/data-source'
+import { DataSourceType } from '@/components/visual-editor/types/data-source'
 
 // 响应式数据
 const dataSource = ref<DeviceDataSource>({

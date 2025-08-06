@@ -118,8 +118,8 @@
 import { ref, computed } from 'vue'
 import { NCard, NSpace, NDivider, NFormItem, NSelect, NButton, NAlert, NEmpty, NInput, NTag, NText } from 'naive-ui'
 import DataMappingConfig from './DataMappingConfig.vue'
-import { dataPathResolver } from '../../utils/data-path-resolver'
-import type { DataPathMapping } from '../../types/data-source'
+import { dataPathResolver } from '@/components/visual-editor/utils/data-path-resolver'
+import type { DataPathMapping } from '@/components/visual-editor/types/data-source'
 
 // 响应式数据
 const selectedDataType = ref('nested_array')

@@ -4,8 +4,8 @@ export { default as DeviceApiExample } from './components/DeviceApiExample.vue'
 export { default as DeviceApiDemo } from './components/DeviceApiDemo.vue'
 
 // 导出新的设备数据源配置组件
-export { default as DeviceDataSourceConfigNew } from '../DeviceDataSourceConfigNew.vue'
-export { default as DeviceDataSourceExampleNew } from '../DeviceDataSourceExampleNew.vue'
+export { default as DeviceDataSourceConfigNew } from '@/components/visual-editor/data-sources/DeviceDataSourceConfigNew.vue'
+export { default as DeviceDataSourceExampleNew } from '@/components/visual-editor/data-sources/DeviceDataSourceExampleNew.vue'
 
 // API类型选项（用于下拉选择）
 export const API_TYPE_OPTIONS = [

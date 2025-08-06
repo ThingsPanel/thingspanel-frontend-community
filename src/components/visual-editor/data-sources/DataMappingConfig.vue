@@ -168,7 +168,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { NSelect, NButton, NAlert, NDivider, NText, NTag, NInput, NInputNumber, NSwitch, NSpace } from 'naive-ui'
 import type { DataPathMapping } from '../../types/data-source'
-import { dataPathResolver } from '../../utils/data-path-resolver'
+import { dataPathResolver } from '../utils/data-path-resolver'
 
 interface Props {
   data: any // 数据源数据

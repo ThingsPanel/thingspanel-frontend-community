@@ -8,8 +8,8 @@
   >
     <div class="gridstack-renderer" @click="onCanvasClick">
       <GridLayoutPlusWrapper
-        v-if="stateManager.canvasState.value"
-        :graph-data="stateManager.canvasState.value"
+        v-if="stateManager.nodes"
+        :graph-data="stateManager.nodes"
         :readonly="readonly || isPreviewMode"
         :show-widget-titles="showWidgetTitles"
         :static-grid="isPreviewMode"

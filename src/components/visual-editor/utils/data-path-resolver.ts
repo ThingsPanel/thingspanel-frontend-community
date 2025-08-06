@@ -4,7 +4,7 @@
  * 支持自动检测数组类型和手动路径配置
  */
 
-import type { DataPathResolver } from '../types/data-source'
+import type { DataPathResolver } from '@/components/visual-editor/types/data-source'
 
 class DataPathResolverImpl implements DataPathResolver {
   /**

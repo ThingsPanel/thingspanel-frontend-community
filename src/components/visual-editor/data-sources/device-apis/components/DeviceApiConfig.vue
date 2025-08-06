@@ -106,10 +106,10 @@ import CommandApiForm from './CommandApiForm.vue'
 import DeviceInfoApiForm from './DeviceInfoApiForm.vue'
 import SimulationApiForm from './SimulationApiForm.vue'
 import PollingConfig from './PollingConfig.vue'
-import DataMappingConfig from '../../DataMappingConfig.vue'
-import { API_TYPE_OPTIONS } from '../index'
-import { formatApiResponse } from '../utils/api-helpers'
-import { ApiType } from '../types/api-types'
+import DataMappingConfig from '@/components/visual-editor/data-sources/DataMappingConfig.vue'
+import { API_TYPE_OPTIONS } from '@/components/visual-editor/data-sources/device-apis/index'
+import { formatApiResponse } from '@/components/visual-editor/data-sources/device-apis/utils/api-helpers'
+import { ApiType } from '@/components/visual-editor/data-sources/device-apis/types/api-types'
 
 interface Props {
   modelValue?: any

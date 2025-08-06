@@ -7,7 +7,7 @@ import { computed, ref, readonly, onMounted } from 'vue'
 import { initializeCard2System, getComponentRegistry } from '../index'
 import { useComponentTree } from './useComponentTree'
 import type { ComponentDefinition } from '../core/types'
-import type { WidgetType, WidgetMeta } from '@/components/visual-editor/types'
+import type { WidgetType, WidgetDefinition } from '@/components/visual-editor/types'
 import { $t } from '@/locales'
 
 export interface VisualEditorIntegrationOptions {
@@ -16,7 +16,7 @@ export interface VisualEditorIntegrationOptions {
   enableI18n?: boolean
 }
 
-export interface Card2Widget extends WidgetMeta {
+export interface Card2Widget extends WidgetDefinition {
   definition: ComponentDefinition
   isCard2Component: true
 }
@@ -99,10 +99,10 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
   const availableWidgets = computed(() => {
     console.log('🔍 [VisualEditorIntegration] availableWidgets 计算:', {
       isInitialized: isInitialized.value,
-      componentTreeFilteredComponents: componentTree.filteredComponents,
-      componentTreeFilteredComponentsIsArray: Array.isArray(componentTree.filteredComponents),
-      componentTreeFilteredComponentsLength: Array.isArray(componentTree.filteredComponents)
-        ? componentTree.filteredComponents.length
+      componentTreeFilteredComponents: componentTree.filteredComponents.value,
+      componentTreeFilteredComponentsIsArray: Array.isArray(componentTree.filteredComponents.value),
+      componentTreeFilteredComponentsLength: Array.isArray(componentTree.filteredComponents.value)
+        ? componentTree.filteredComponents.value.length
         : 'N/A'
     })
 
@@ -111,9 +111,9 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
       return []
     }
 
-    const components = componentTree.filteredComponents
+    const components = componentTree.filteredComponents.value
     if (!Array.isArray(components)) {
-      console.log('❌ [VisualEditorIntegration] filteredComponents 不是数组，返回空数组')
+      console.log('❌ [VisualEditorIntegration] filteredComponents 不是数组，返回空数组，当前值:', components)
       return []
     }
 
@@ -141,7 +141,30 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
         version: '2.1.0',
         source: 'card2' as const,
         isCard2Component: true as const,
-        definition
+        definition,
+
+        // ✅ 添加 Visual Editor 所需的布局配置
+        defaultLayout: {
+          canvas: {
+            width: definition.config?.style?.width || 300,
+            height: definition.config?.style?.height || 200
+          },
+          gridstack: {
+            w: Math.ceil((definition.config?.style?.width || 300) / 150), // 网格单元宽度
+            h: Math.ceil((definition.config?.style?.height || 200) / 150) // 网格单元高度
+          }
+        },
+
+        // ✅ 添加默认属性配置
+        defaultProperties: definition.config || {},
+
+        // ✅ 添加元数据
+        metadata: {
+          isCard2Component: true,
+          card2ComponentId: definition.type,
+          card2Definition: definition,
+          card2Data: null // 将在数据绑定时填充
+        }
       }
 
       return widget
@@ -157,25 +180,23 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
   }
 
   /**
-   * 获取组件定义
+   * 获取组件定义 - 返回转换后的 WidgetDefinition
    */
-  const getComponentDefinition = (type: string): ComponentDefinition | undefined => {
+  const getComponentDefinition = (type: string): Card2Widget | undefined => {
     console.log('🔍 [VisualEditorIntegration] getComponentDefinition 被调用:', {
       type,
       isInitialized: isInitialized.value,
-      componentTreeFilteredComponents: componentTree.filteredComponents.value,
-      componentTreeFilteredComponentsIsArray: Array.isArray(componentTree.filteredComponents.value),
-      componentTreeFilteredComponentsLength: Array.isArray(componentTree.filteredComponents.value)
-        ? componentTree.filteredComponents.value.length
-        : 'N/A'
+      availableWidgetsCount: availableWidgets.value?.length || 0
     })
 
-    const components = componentTree.filteredComponents.value
-    const result = Array.isArray(components) ? components.find(comp => comp.type === type) : undefined
+    // ✅ 修复：从转换后的 availableWidgets 中查找，而不是原始的 componentTree
+    const result = availableWidgets.value.find(widget => widget.type === type)
 
     console.log('🔍 [VisualEditorIntegration] getComponentDefinition 结果:', {
       type,
       found: !!result,
+      hasDefaultLayout: !!result?.defaultLayout,
+      hasCanvas: !!result?.defaultLayout?.canvas,
       result: result
     })
 

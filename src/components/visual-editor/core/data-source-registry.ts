@@ -2,7 +2,11 @@
  * 数据源注册表
  */
 
-import type { DataSourceType, DataSourceConfigComponent, DataSourceRegistry } from '../types/data-source'
+import type {
+  DataSourceType,
+  DataSourceConfigComponent,
+  DataSourceRegistry
+} from '@/components/visual-editor/types/data-source'
 
 class DataSourceRegistryImpl implements DataSourceRegistry {
   private registry = new Map<DataSourceType, DataSourceConfigComponent>()

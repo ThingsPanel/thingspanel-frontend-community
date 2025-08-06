@@ -1,6 +1,6 @@
 // 导出数据源管理器
-export { DataSourceManager } from './data-source-manager'
-export { dataSourceManager } from './data-source-manager'
+export { DataSourceManager } from './universal-data-source-manager'
+export { dataSourceManager } from './universal-data-source-manager'
 
 // 导出配置发现器
 export { ConfigDiscovery } from './ConfigDiscovery'
@@ -9,8 +9,11 @@ export { ConfigDiscovery } from './ConfigDiscovery'
 export { dataSourceRegistry } from './data-source-registry'
 
 // 导出组件注册表
-export { widgetRegistry } from './widget-registry'
+import { useWidgetStore } from '../store/widget'
+
+export const widgetRegistry = useWidgetStore()
 
 // 导出状态管理器
-export { StateManager } from './state-manager'
-export { stateManager } from './state-manager'
+import { useEditorStore } from '../store/editor'
+
+export const stateManager = useEditorStore()

@@ -2,8 +2,8 @@
  * 数据源注册
  */
 
-import { dataSourceRegistry } from '../../core/data-source-registry'
-import { DataSourceType } from '../../types/data-source'
+import { dataSourceRegistry } from '@/components/visual-editor/core/data-source-registry'
+import { DataSourceType } from '@/components/visual-editor/types/data-source'
 import StaticDataSourceConfig from './StaticDataSourceConfig.vue'
 import DeviceDataSourceConfigNew from './DeviceDataSourceConfigNew.vue'
 import HttpDataSourceConfig from './HttpDataSourceConfig.vue'

@@ -83,9 +83,9 @@ import {
   attributeDataPub,
   getAttributeDataSetLogs
 } from '@/service/api/device'
-import { formatApiResponse } from '../utils/api-helpers'
-import { ApiType } from '../types/api-types'
-import type { PollingConfig as PollingConfigType } from '../types/api-types'
+import { formatApiResponse } from '@/components/visual-editor/data-sources/device-apis/utils/api-helpers'
+import { ApiType } from '@/components/visual-editor/data-sources/device-apis/types/api-types'
+import type { PollingConfig as PollingConfigType } from '@/components/visual-editor/data-sources/device-apis/types/api-types'
 
 interface Props {
   modelValue?: Record<string, any>

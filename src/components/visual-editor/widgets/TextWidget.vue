@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { TextWidgetConfig } from '../types'
+import type { TextWidgetConfig } from '@/components/visual-editor/types'
 
 interface Props extends TextWidgetConfig {
   content?: string

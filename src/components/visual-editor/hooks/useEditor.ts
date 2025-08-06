@@ -6,17 +6,13 @@
  */
 
 import { inject, provide, watchEffect } from 'vue'
-import { StateManager } from '../core/state-manager'
-import { widgetRegistry, type WidgetDefinition } from '../core/widget-registry'
-import { registerAllWidgets } from '../widgets'
-import { useCard2Integration } from './useCard2Integration'
+import { useEditorStore } from '../store/editor'
+import { useWidgetStore, type WidgetDefinition } from '../store/widget'
+import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import { configRegistry } from '../settings/ConfigRegistry'
-import '../settings/data-sources' // 注册数据源
+import '../data-sources' // 注册数据源
 import type { GraphData, WidgetType } from '../types'
 import type { ComponentDefinition } from '@/card2.1/core/types'
-
-// 重新导出类型
-export type { StateManager } from '../core/state-manager'
 
 // 拖拽数据接口
 export interface WidgetDragData {
@@ -27,7 +23,9 @@ export interface WidgetDragData {
 
 // 编辑器上下文接口
 export interface EditorContext {
-  stateManager: StateManager
+  editorStore: ReturnType<typeof useEditorStore>
+  widgetStore: ReturnType<typeof useWidgetStore>
+  stateManager: ReturnType<typeof useEditorStore> // stateManager 别名，指向 editorStore
   addWidget: (type: string, position?: { x: number; y: number }) => Promise<void>
   selectNode: (id: string) => void
   updateNode: (id: string, updates: Partial<GraphData>) => void
@@ -91,8 +89,9 @@ function convertCard2ToWidgetDefinition(card2Definition: ComponentDefinition): W
 let editorInstance: EditorContext | null = null
 
 export function createEditor() {
-  const stateManager = new StateManager()
-  const card2Integration = useCard2Integration()
+  const editorStore = useEditorStore()
+  const widgetStore = useWidgetStore()
+  const card2Integration = useCard2Integration({ autoInit: true })
 
   // ... (initialization Promise and watchEffect logic remains the same)
   let resolveInitialization: () => void
@@ -105,8 +104,8 @@ export function createEditor() {
   stopWatch = watchEffect(() => {
     // console.log('🔍 [useEditor] watchEffect 触发:', {
     //   isLoading: card2Integration.isLoading.value,
-    //   availableComponentsLength: card2Integration.availableComponents.value.length,
-    //   availableComponents: card2Integration.availableComponents.value
+    //   availableComponentsLength: card2Integration.availableComponents?.value?.length || 0,
+    //   availableComponents: card2Integration.availableComponents?.value || []
     // })
 
     // 修改条件：只要不在加载中就可以继续
@@ -114,25 +113,28 @@ export function createEditor() {
       // console.log('✅ [useEditor] 条件满足，开始处理组件注册')
 
       // 清理注册表，只保留Card2.1组件
-      const allWidgets = widgetRegistry.getAllWidgets()
+      const allWidgets = widgetStore.getAllWidgets()
       // console.log('🔍 [useEditor] 清理前的组件:', allWidgets.map(w => ({ type: w.type, isCard2: !!w.metadata?.isCard2Component })))
 
       allWidgets.forEach(widget => {
         if (!widget.metadata?.isCard2Component) {
           // 移除非Card2.1组件
           // console.log(`🗑️ [useEditor] 移除非Card2.1组件: ${widget.type}`)
-          widgetRegistry.unregister(widget.type)
+          widgetStore.unregister(widget.type)
         }
       })
 
       // console.log('🔍 [useEditor] 清理后的组件:', widgetRegistry.getAllWidgets().map(w => ({ type: w.type, isCard2: !!w.metadata?.isCard2Component })))
 
       // console.log('🔍 useEditor - 开始注册 Card 2.1 组件到 Widget Registry')
-      card2Integration.availableComponents.value.forEach(componentDef => {
+
+      // 安全检查：确保 availableComponents 存在且有 value 属性
+      const availableComponents = card2Integration.availableComponents?.value || []
+      availableComponents.forEach(componentDef => {
         // console.log(`🔍 useEditor - 处理组件: ${componentDef.type}`)
         // console.log(`🔍 useEditor - 组件详情:`, componentDef)
 
-        if (!widgetRegistry.getWidget(componentDef.type)) {
+        if (!widgetStore.getWidget(componentDef.type)) {
           // console.log(`🔍 useEditor - 注册组件到 Widget Registry: ${componentDef.type}`)
 
           // 从 properties 中提取默认属性值
@@ -168,7 +170,7 @@ export function createEditor() {
           }
 
           // console.log(`🔍 useEditor - Widget 定义:`, widgetDef)
-          widgetRegistry.register(widgetDef)
+          widgetStore.register(widgetDef)
           // console.log(`✅ useEditor - 组件注册成功: ${componentDef.type}`)
 
           // 注册配置组件到 configRegistry
@@ -196,7 +198,7 @@ export function createEditor() {
   })
 
   const getNodeById = (id: string) => {
-    return stateManager.canvasState.value.nodes.find(node => node.id === id)
+    return editorStore.nodes.find(node => node.id === id)
   }
 
   const addWidget = async (type: string, position?: { x: number; y: number }) => {
@@ -225,17 +227,17 @@ export function createEditor() {
     await initialization
     // console.log('✅ [Editor] 初始化完成')
 
-    // 首先尝试从 widgetRegistry 获取传统组件定义
-    let widgetDef = widgetRegistry.getWidget(type)
+    // 首先尝试从 widgetStore 获取传统组件定义
+    let widgetDef = widgetStore.getWidget(type)
     let isCard2Component = false
 
-    // console.log('🔍 [Editor] 从 widgetRegistry 查找组件:', {
+    // console.log('🔍 [Editor] 从 widgetStore 查找组件:', {
     //   type,
     //   found: !!widgetDef,
     //   widgetDef: widgetDef,
     //   widgetDefComponent: widgetDef?.component,
     //   widgetDefMetadata: widgetDef?.metadata,
-    //   allWidgets: widgetRegistry.getAllWidgets().map(w => ({
+    //   allWidgets: widgetStore.getAllWidgets().map(w => ({
     //     type: w.type,
     //     name: w.name,
     //     hasComponent: !!w.component,
@@ -259,22 +261,22 @@ export function createEditor() {
 
       if (card2Definition) {
         isCard2Component = true
-        // 将 Card2.1 组件定义转换为 WidgetDefinition 格式
-        widgetDef = convertCard2ToWidgetDefinition(card2Definition)
-        // console.log('✅ [Editor] Card 2.1 组件转换成功:', { type: widgetDef.type, name: widgetDef.name })
+        // ✅ 修复：getComponentDefinition 现在已经返回转换后的 WidgetDefinition
+        widgetDef = card2Definition as WidgetDefinition
+        // console.log('✅ [Editor] Card 2.1 组件获取成功:', { type: widgetDef.type, name: widgetDef.name, hasDefaultLayout: !!widgetDef.defaultLayout })
       }
     }
 
     if (!widgetDef) {
       console.error(`❌ [Editor] 组件类型 "${type}" 未注册。`)
-      // console.log('🔍 [Editor] 当前注册表中的所有组件:', widgetRegistry.getAllWidgets().map(w => w.type))
+      // console.log('🔍 [Editor] 当前注册表中的所有组件:', widgetStore.getAllWidgets().map(w => w.type))
       throw new Error(`组件类型 "${type}" 未注册。`)
     }
 
     const { w: newItemW, h: newItemH } = widgetDef.defaultLayout.gridstack
     const colNum = 12
 
-    const { x, y } = findNextAvailablePosition(stateManager.canvasState.value.nodes, newItemW, newItemH, colNum)
+    const { x, y } = findNextAvailablePosition(editorStore.nodes, newItemW, newItemH, colNum)
     const finalPos = position || { x, y }
 
     // 修复：正确提取属性值而不是属性定义
@@ -324,17 +326,19 @@ export function createEditor() {
     //   isCard2Component: node.metadata.isCard2Component
     // })
 
-    stateManager.addNode(node)
+    editorStore.addNode(node)
     // console.log('✅ [Editor] 节点添加成功')
   }
 
-  const selectNode = (id: string) => stateManager.selectNodes([id])
-  const updateNode = (id: string, updates: Partial<GraphData>) => stateManager.updateNode(id, updates)
-  const removeNode = (id: string) => stateManager.removeNode(id)
-  const addNode = (...nodes: GraphData[]) => stateManager.addNode(...nodes)
+  const selectNode = (id: string) => widgetStore.selectNodes([id])
+  const updateNode = (id: string, updates: Partial<GraphData>) => editorStore.updateNode(id, updates)
+  const removeNode = (id: string) => editorStore.removeNode(id)
+  const addNode = (...nodes: GraphData[]) => editorStore.addNode(...nodes)
 
   editorInstance = {
-    stateManager,
+    editorStore,
+    widgetStore,
+    stateManager: editorStore, // 添加 stateManager 别名，指向 editorStore
     addWidget,
     selectNode,
     updateNode,

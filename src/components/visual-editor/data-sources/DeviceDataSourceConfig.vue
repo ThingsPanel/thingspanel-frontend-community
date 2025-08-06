@@ -225,8 +225,8 @@ import {
   getTelemetryLogList,
   getAttributeDataSetLogs
 } from '@/service/api/device'
-import type { DeviceDataSource } from '../../types/data-source'
-import { DataSourceType } from '../../types/data-source'
+import type { DeviceDataSource } from '../types/data-source'
+import { DataSourceType } from '../types/data-source'
 
 interface Props {
   modelValue: DeviceDataSource

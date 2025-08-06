@@ -86,7 +86,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { NCard, NFormItem, NSwitch, NSelect, NInputNumber, NDivider, NTag, NButton, NSpace } from 'naive-ui'
-import type { PollingConfig } from '../types/api-types'
+import type { PollingConfig } from '@/components/visual-editor/data-sources/device-apis/types/api-types'
 
 interface Props {
   modelValue: PollingConfig

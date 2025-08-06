@@ -78,7 +78,7 @@ import DataMappingConfig from './DataMappingConfig.vue'
 import PollingConfig from './components/PollingConfig.vue'
 import type { DeviceDataSource, DeviceDataSourceNew } from '../../types/data-source'
 // 导入组件API配置系统
-import { getComponentApiConfig, selectApiForComponent } from '../../core/component-api-config'
+import { getComponentApiConfig, selectApiForComponent } from '@/components/visual-editor/core/component-api-config'
 
 interface Props {
   modelValue?: DeviceDataSource | DeviceDataSourceNew

@@ -125,13 +125,13 @@ const canvasConfig = computed(() => ({
   snapToGrid: isPreviewMode.value ? false : (props.config?.snapToGrid ?? true)
 }))
 
-const { stateManager, selectNode, updateNode, addNode, removeNode } = useEditor()
+const { stateManager, widgetStore, selectNode, updateNode, addNode, removeNode } = useEditor()
 
 // 全局预览模式
 const { isPreviewMode, rendererConfig } = globalPreviewMode
 
-const nodes = computed(() => stateManager.canvasState.value.nodes)
-const selectedIds = computed(() => stateManager.canvasState.value.selectedIds)
+const nodes = computed(() => stateManager.nodes)
+const selectedIds = computed(() => widgetStore.selectedIds)
 const selectedNodes = computed(() => nodes.value.filter(n => selectedIds.value.includes(n.id)))
 
 const onRendererReady = () => emit('ready')

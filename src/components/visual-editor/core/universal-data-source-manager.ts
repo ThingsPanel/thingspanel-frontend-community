@@ -12,9 +12,9 @@ import type {
   HttpDataSource,
   WebSocketDataSource,
   DataPathMapping
-} from '../types/data-source'
-import { DataSourceType } from '../types/data-source'
-import { dataPathResolver } from '../utils/data-path-resolver'
+} from '@/components/visual-editor/types/data-source'
+import { DataSourceType } from '@/components/visual-editor/types/data-source'
+import { dataPathResolver } from '@/components/visual-editor/utils/data-path-resolver'
 
 // 设备数据API (从原有的data-source-manager导入)
 import {
@@ -26,7 +26,7 @@ import {
 // 导入组件API配置系统
 import { getComponentApiConfig, selectApiForComponent } from './component-api-config'
 
-class UniversalDataSourceManagerImpl {
+export class DataSourceManager {
   private subscriptions = new Map<string, Set<DataSourceUpdateCallback>>()
   private values = new Map<string, DataSourceValue>()
   private intervals = new Map<string, NodeJS.Timeout>()
@@ -491,6 +491,7 @@ class UniversalDataSourceManagerImpl {
   }
 }
 
-// 创建单例实例
-export const universalDataSourceManager = new UniversalDataSourceManagerImpl()
+// 实例化并导出
+export const universalDataSourceManager = new DataSourceManager()
+export { universalDataSourceManager as dataSourceManager }
 export default universalDataSourceManager

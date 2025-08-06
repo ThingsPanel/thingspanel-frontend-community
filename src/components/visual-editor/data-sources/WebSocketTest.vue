@@ -29,7 +29,7 @@
 import { ref } from 'vue'
 import { NCard, NSpace, NDivider, NAlert } from 'naive-ui'
 import DeviceDataSourceConfig from './DeviceDataSourceConfig.vue'
-import type { DeviceDataSource } from '../../types/data-source'
+import type { DeviceDataSource } from '@/components/visual-editor/types/data-source'
 
 // 测试配置
 const testConfig = ref<DeviceDataSource>({
