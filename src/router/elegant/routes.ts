@@ -834,6 +834,15 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'test_data-source-system',
           i18nKey: 'route.test_data-source-system'
         }
+      },
+      {
+        name: 'test_editor-integration',
+        path: '/test/editor-integration',
+        component: 'view.test_editor-integration',
+        meta: {
+          title: 'test_editor-integration',
+          i18nKey: 'route.test_editor-integration'
+        }
       }
     ]
   },

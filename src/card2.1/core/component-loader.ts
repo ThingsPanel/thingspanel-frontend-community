@@ -33,27 +33,31 @@ export class ComponentLoader {
    */
   async loadComponents(): Promise<Record<string, ComponentModule>> {
     try {
-      // 使用 Vite 的动态导入功能 - 只能使用字面量
-      console.log('🔍 [ComponentLoader] 使用模式: ../components/*/index.ts')
+      // 使用 Vite 的动态导入功能 - 支持多种扫描模式
+      console.log('🔍 [ComponentLoader] 开始扫描组件...')
 
-      const modules = import.meta.glob('../components/*/index.ts', {
-        eager: true,
-        import: 'default'
-      })
+      // 使用 Vite 的动态导入功能 - 支持递归扫描
+      const allModules = import.meta.glob('../components/**/index.{ts,js}', { eager: true })
+
+      console.log(`🔍 [ComponentLoader] 总共找到 ${Object.keys(allModules).length} 个模块`)
 
       const componentModules: Record<string, ComponentModule> = {}
 
-      for (const [path, module] of Object.entries(modules)) {
+      for (const [path, module] of Object.entries(allModules)) {
         // 从路径中提取组件ID
         const componentId = this.extractComponentId(path)
 
         if (componentId && this.shouldIncludeComponent(componentId)) {
-          componentModules[componentId] = module as ComponentModule
+          // 获取默认导出或整个模块
+          const definition = module.default || module
+          if (definition && definition.type) {
+            componentModules[componentId] = { default: definition }
+          }
         }
       }
 
-      console.log(`📦 [ComponentLoader] 加载了 ${Object.keys(componentModules).length} 个组件模块`)
-      console.log('🔍 [ComponentLoader] 找到的模块路径:', Object.keys(modules))
+      console.log(`📦 [ComponentLoader] 最终加载了 ${Object.keys(componentModules).length} 个组件模块`)
+      console.log('🔍 [ComponentLoader] 所有找到的模块路径:', Object.keys(allModules))
       console.log('📋 [ComponentLoader] 组件模块详情:', componentModules)
       return componentModules
     } catch (error) {
@@ -66,8 +70,8 @@ export class ComponentLoader {
    * 从路径中提取组件ID
    */
   private extractComponentId(path: string): string | null {
-    // 匹配 ../components/component-name/index.ts 格式
-    const match = path.match(/\.\.\/components\/([^/]+)\/index\.ts$/)
+    // 匹配更灵活的路径格式，始终取 `index.ts` 或 `index.js` 的父目录名作为组件ID
+    const match = path.match(/\.\.\/components\/(?:.*\/)?([^/]+)\/index\.(ts|js)$/)
     return match ? match[1] : null
   }
 

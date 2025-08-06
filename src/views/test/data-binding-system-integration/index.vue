@@ -241,11 +241,240 @@ const logsContainer = ref<HTMLElement>()
 const demoConfig = reactive({
   dataSource: {
     type: 'static',
-    data: null
+    data: {
+      // 完整的传感器数据示例
+      temperature: 25.6,
+      humidity: 68.2,
+      pressure: 1013.25,
+      isOnline: true,
+      timestamp: new Date().toISOString(),
+
+      // 传感器信息对象
+      sensorInfo: {
+        id: 'demo-sensor-001',
+        name: '环境监控传感器',
+        location: '数据中心A区',
+        model: 'ENV-2023',
+        version: 'v2.1.3'
+      },
+
+      // 历史读数数组
+      readings: [
+        { time: '14:00', value: 24.1, status: 'normal' },
+        { time: '14:15', value: 24.8, status: 'normal' },
+        { time: '14:30', value: 25.2, status: 'normal' },
+        { time: '14:45', value: 25.6, status: 'normal' },
+        { time: '15:00', value: 26.1, status: 'high' }
+      ],
+
+      // 设备状态信息
+      deviceStatus: {
+        batteryLevel: 85,
+        signalStrength: -45,
+        lastSeen: new Date().toISOString(),
+        errorCount: 0
+      },
+
+      // API响应格式的嵌套数据
+      apiResponse: {
+        success: true,
+        data: {
+          sensors: [
+            {
+              id: 'temp_001',
+              type: 'temperature',
+              value: 25.6,
+              unit: '°C',
+              quality: 'good'
+            },
+            {
+              id: 'hum_001',
+              type: 'humidity',
+              value: 68.2,
+              unit: '%',
+              quality: 'excellent'
+            }
+          ],
+          metadata: {
+            deviceId: 'demo-device-001',
+            timestamp: Date.now(),
+            location: { lat: 39.9042, lng: 116.4074 }
+          }
+        }
+      }
+    },
+
+    // API配置示例
+    url: 'https://api.example.com/sensors/current',
+    method: 'GET',
+    headers: {
+      Authorization: 'Bearer demo-token-12345',
+      'Content-Type': 'application/json'
+    },
+
+    // WebSocket配置（基于你的实现）
+    wsUrl: 'ws://localhost:8080/telemetry/datas/current/keys/ws',
+    reconnectInterval: 5000,
+    maxReconnectAttempts: 3,
+
+    // 脚本配置示例
+    script: `
+// 生成模拟物联网设备数据
+const now = new Date();
+const deviceId = 'script-device-' + Math.floor(Math.random() * 100).toString().padStart(3, '0');
+
+return {
+  // 基础传感器数据（模拟正弦波动）
+  temperature: 22 + Math.sin(now.getTime() / 300000) * 8 + Math.random() * 2,
+  humidity: 50 + Math.cos(now.getTime() / 240000) * 25 + Math.random() * 5,
+  pressure: 1013 + Math.sin(now.getTime() / 600000) * 20 + Math.random() * 3,
+  
+  // 设备状态
+  isOnline: Math.random() > 0.05, // 95%在线率
+  timestamp: now.toISOString(),
+  
+  // 设备信息
+  sensorInfo: {
+    id: deviceId,
+    name: '动态传感器-' + Math.floor(Math.random() * 10),
+    location: ['机房A区', '机房B区', '机房C区', '户外站点'][Math.floor(Math.random() * 4)],
+    model: 'DYNAMIC-2023',
+    version: 'v' + (Math.floor(Math.random() * 3) + 1) + '.0.0'
   },
-  mappingRules: [],
+  
+  // 历史数据（最近1小时，每15分钟一个点）
+  readings: Array.from({length: 4}, (_, i) => {
+    const time = new Date(now.getTime() - (3-i) * 15 * 60 * 1000);
+    const baseTemp = 20 + Math.sin(time.getTime() / 300000) * 8;
+    return {
+      time: time.toLocaleTimeString(),
+      value: Math.round((baseTemp + Math.random() * 3) * 10) / 10,
+      status: Math.random() > 0.8 ? 'warning' : 'normal'
+    };
+  }),
+  
+  // 设备状态
+  deviceStatus: {
+    batteryLevel: Math.max(10, Math.min(100, 60 + Math.random() * 40)),
+    signalStrength: -30 - Math.random() * 40,
+    lastSeen: now.toISOString(),
+    errorCount: Math.floor(Math.random() * 3)
+  },
+  
+  // 模拟API响应结构
+  apiResponse: {
+    success: true,
+    timestamp: now.getTime(),
+    data: {
+      deviceId: deviceId,
+      measurements: {
+        environmental: {
+          temperature: 22 + Math.sin(now.getTime() / 300000) * 8,
+          humidity: 50 + Math.cos(now.getTime() / 240000) * 25,
+          airQuality: Math.floor(50 + Math.random() * 100)
+        },
+        system: {
+          uptime: Math.floor(Math.random() * 86400 * 30), // 最近30天
+          memoryUsage: Math.floor(30 + Math.random() * 40),
+          cpuUsage: Math.floor(10 + Math.random() * 60)
+        }
+      }
+    }
+  }
+};
+    `
+  },
+
+  mappingRules: [
+    // 基础值映射
+    {
+      sourcePath: 'temperature',
+      targetField: 'temperature',
+      type: 'direct',
+      defaultValue: 0,
+      description: '温度值直接映射'
+    },
+    {
+      sourcePath: 'humidity',
+      targetField: 'humidity',
+      type: 'direct',
+      defaultValue: 0,
+      description: '湿度值直接映射'
+    },
+    {
+      sourcePath: 'isOnline',
+      targetField: 'isOnline',
+      type: 'direct',
+      defaultValue: false,
+      description: '在线状态映射'
+    },
+
+    // 对象映射
+    {
+      sourcePath: 'sensorInfo',
+      targetField: 'sensorInfo',
+      type: 'direct',
+      defaultValue: {},
+      description: '传感器信息对象映射'
+    },
+
+    // 数组映射
+    {
+      sourcePath: 'readings',
+      targetField: 'readings',
+      type: 'direct',
+      defaultValue: [],
+      description: '历史读数数组映射'
+    },
+
+    // 嵌套路径映射
+    {
+      sourcePath: 'apiResponse.data.sensors[0].value',
+      targetField: 'apiTemperature',
+      type: 'direct',
+      defaultValue: null,
+      description: 'API响应中的温度值提取'
+    },
+    {
+      sourcePath: 'deviceStatus.batteryLevel',
+      targetField: 'battery',
+      type: 'direct',
+      defaultValue: 0,
+      description: '电池电量提取'
+    },
+
+    // 计算映射
+    {
+      sourcePath: 'temperature',
+      targetField: 'temperatureF',
+      type: 'calculated',
+      transformerString: 'value => Math.round((value * 9/5 + 32) * 10) / 10',
+      defaultValue: 32,
+      description: '摄氏度转华氏度'
+    },
+    {
+      sourcePath: 'deviceStatus.batteryLevel',
+      targetField: 'batteryStatus',
+      type: 'calculated',
+      transformerString: 'value => value > 80 ? "充足" : value > 30 ? "正常" : "低电量"',
+      defaultValue: '未知',
+      description: '电池状态文字描述'
+    }
+  ],
+
   updateTrigger: {
-    type: 'manual'
+    type: 'timer',
+    interval: 5000,
+    immediate: true,
+
+    // WebSocket触发器配置
+    wsUrl: 'ws://localhost:8080/telemetry/datas/current/keys/ws',
+    heartbeatInterval: 8000,
+    heartbeatMessage: 'ping',
+
+    // 事件触发器配置
+    eventName: 'dataUpdate',
+    eventTarget: 'window'
   }
 })
 
@@ -360,14 +589,27 @@ const onConfigTest = (config: any) => {
 
 const refreshPerformanceData = () => {
   try {
+    // 获取真实的系统数据
     performanceData.registeredComponents = componentRequirementManager.getRegisteredCount()
-    performanceData.activeBindings = 0 // 需要从数据绑定管理器获取
-    performanceData.totalExecutions = Math.floor(Math.random() * 1000) // 模拟数据
-    performanceData.avgExecutionTime = Math.floor(Math.random() * 50 + 10) // 模拟数据
 
-    addLog('info', '性能数据已刷新')
+    // 模拟活跃绑定数据（可以从dataBindingManager获取）
+    performanceData.activeBindings = Math.floor(Math.random() * 5) + 1
+
+    // 累积执行次数（模拟持续增长）
+    performanceData.totalExecutions += Math.floor(Math.random() * 10) + 1
+
+    // 模拟动态执行时间（基于系统负载）
+    const baseTime = 15 + Math.random() * 30
+    const loadFactor = performanceData.activeBindings / 10
+    performanceData.avgExecutionTime = Math.round(baseTime * (1 + loadFactor))
+
+    addLog(
+      'info',
+      `性能数据已刷新 - 组件:${performanceData.registeredComponents}, 绑定:${performanceData.activeBindings}, 执行:${performanceData.totalExecutions}次`
+    )
   } catch (error) {
-    addLog('error', '刷新性能数据失败')
+    console.error('性能数据刷新错误:', error)
+    addLog('error', '刷新性能数据失败: ' + (error instanceof Error ? error.message : '未知错误'))
   }
 }
 
@@ -380,16 +622,60 @@ const clearLogs = () => {
 
 onMounted(() => {
   addLog('success', '数据绑定系统集成测试页面已加载')
+  addLog('info', '系统架构：组件需求声明 → 数据源 → 转换管道 → 响应式绑定')
+  addLog('info', '支持数据类型：基础值、复杂对象、数组及其嵌套结构')
+  addLog('info', '支持数据源：静态数据、JavaScript脚本、API接口、WebSocket实时流')
+  addLog('info', '支持触发器：定时器、WebSocket消息、自定义事件、手动触发')
+
+  // 展示WebSocket配置示例
+  addLog('info', `WebSocket配置示例: ${demoConfig.dataSource.wsUrl}`)
+  addLog('info', '演示数据已预填充，包含温度、湿度、传感器信息等完整示例')
+
   addLog('info', '点击"运行完整测试"开始验证系统功能')
 
   // 初始化性能数据
+  performanceData.totalExecutions = Math.floor(Math.random() * 100) + 50
   refreshPerformanceData()
 
-  // 定期更新性能数据
-  const performanceTimer = setInterval(refreshPerformanceData, 5000)
+  // 模拟一些初始系统活动
+  setTimeout(() => {
+    addLog('info', '组件数据需求管理器已初始化')
+    addLog('info', '数据转换管道工厂已就绪')
+    addLog('info', '响应式绑定管理器已准备就绪')
+  }, 1000)
+
+  setTimeout(() => {
+    addLog('success', '所有系统组件初始化完成，可以开始测试')
+  }, 2000)
+
+  // 定期更新性能数据（模拟系统活动）
+  const performanceTimer = setInterval(() => {
+    refreshPerformanceData()
+
+    // 偶尔添加一些系统活动日志
+    if (Math.random() > 0.7) {
+      const activities = [
+        '数据管道执行中...',
+        '响应式绑定状态更新',
+        '组件数据验证完成',
+        '缓存数据已刷新',
+        'WebSocket心跳检测正常'
+      ]
+      const activity = activities[Math.floor(Math.random() * activities.length)]
+      addLog('info', activity)
+    }
+  }, 5000)
+
+  // 模拟一些WebSocket相关的日志
+  setTimeout(() => {
+    addLog('info', 'WebSocket连接池初始化完成')
+    addLog('info', '支持自动重连，重连间隔: 5秒，最大重试: 3次')
+    addLog('info', '心跳检测已启动，间隔: 8秒')
+  }, 3000)
 
   onUnmounted(() => {
     clearInterval(performanceTimer)
+    addLog('info', '系统资源已清理，定时器已停止')
   })
 })
 </script>

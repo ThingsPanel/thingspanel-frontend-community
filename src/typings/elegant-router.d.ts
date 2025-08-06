@@ -109,6 +109,7 @@ declare module "@elegant-router/types" {
     "test": "/test";
     "test_data-binding-system-integration": "/test/data-binding-system-integration";
     "test_data-source-system": "/test/data-source-system";
+    "test_editor-integration": "/test/editor-integration";
     "user-center": "/user-center";
     "visualization": "/visualization";
     "visualization_kanban": "/visualization/kanban";
@@ -260,6 +261,7 @@ declare module "@elegant-router/types" {
     | "system-management-user_system-log"
     | "test_data-binding-system-integration"
     | "test_data-source-system"
+    | "test_editor-integration"
     | "test"
     | "user-center"
     | "visualization_kanban-details"

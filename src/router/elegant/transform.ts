@@ -253,6 +253,7 @@ const routeMap: RouteMap = {
   "test": "/test",
   "test_data-binding-system-integration": "/test/data-binding-system-integration",
   "test_data-source-system": "/test/data-source-system",
+  "test_editor-integration": "/test/editor-integration",
   "user-center": "/user-center",
   "visualization": "/visualization",
   "visualization_kanban": "/visualization/kanban",

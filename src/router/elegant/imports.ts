@@ -83,6 +83,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "system-management-user_system-log": () => import("@/views/system-management-user/system-log/index.vue"),
   "test_data-binding-system-integration": () => import("@/views/test/data-binding-system-integration/index.vue"),
   "test_data-source-system": () => import("@/views/test/data-source-system/index.vue"),
+  "test_editor-integration": () => import("@/views/test/editor-integration/index.vue"),
   test: () => import("@/views/test/index.vue"),
   "user-center": () => import("@/views/user-center/index.vue"),
   "visualization_kanban-details": () => import("@/views/visualization/kanban-details/index.vue"),
