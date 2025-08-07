@@ -16,47 +16,24 @@
       @click="handleCanvasClick"
       @contextmenu.prevent="handleCanvasContextMenu"
     >
-      <div
+      <NodeWrapper
         v-for="node in nodes"
         :key="node.id"
+        :node="node"
+        :node-id="node.id"
+        :readonly="readonly || isPreviewMode.value"
+        :is-selected="selectedIds.includes(node.id) && !isPreviewMode.value"
+        :show-resize-handles="selectedIds.includes(node.id) && !readonly && !isPreviewMode.value"
+        :get-widget-component="getWidgetComponent"
         class="canvas-node"
-        :class="{
-          selected: selectedIds.includes(node.id) && !isPreviewMode.value,
-          readonly: readonly || isPreviewMode.value,
-          'preview-mode': isPreviewMode.value
-        }"
         :style="getNodeStyle(node)"
-        @click.stop="handleNodeClick(node.id, $event)"
-        @mousedown="handleNodeMouseDown(node.id, $event)"
-        @contextmenu.stop.prevent="handleNodeContextMenu(node.id, $event)"
-      >
-        <WidgetHeader
-          v-if="showWidgetTitles"
-          :title="node.label || node.type"
-          :readonly="readonly"
-          @update:title="newTitle => handleTitleUpdate(node.id, newTitle)"
-        />
-        <div class="widget-body">
-          <Card2Wrapper
-            v-if="node.metadata?.isCard2Component"
-            :component-type="node.type"
-            :config="node.properties"
-            :data="node.metadata?.card2Data"
-            :node-id="node.id"
-            @error="handleCard2Error"
-          />
-          <component :is="getWidgetComponent(node.type)" v-else v-bind="node.properties" />
-
-          <div v-if="selectedIds.includes(node.id) && !readonly && !isPreviewMode.value" class="resize-handles">
-            <div
-              v-for="handle in resizeHandles"
-              :key="handle.position"
-              :class="`resize-handle resize-handle-${handle.position}`"
-              @mousedown.stop="handleResizeStart(node.id, handle.position, $event)"
-            />
-          </div>
-        </div>
-      </div>
+        @node-click="handleNodeClick"
+        @node-mousedown="handleNodeMouseDown"
+        @node-contextmenu="handleNodeContextMenu"
+        @resize-start="handleResizeStart"
+        @title-update="handleTitleUpdate"
+        @component-error="handleCard2Error"
+      />
 
       <ContextMenu
         v-if="!readonly"
@@ -77,11 +54,10 @@ import { nanoid } from 'nanoid'
 import { useEditor } from '../../hooks/useEditor'
 import { globalPreviewMode } from '../../hooks/usePreviewMode'
 import BaseRendererComponent from '../base/BaseRendererComponent.vue'
+import NodeWrapper from '../base/NodeWrapper.vue'
 import TextWidget from '../../widgets/custom/TextWidget/TextWidget.vue'
 import ImageWidget from '../../widgets/custom/ImageWidget/ImageWidget.vue'
 import ContextMenu from './ContextMenu.vue'
-import Card2Wrapper from './Card2Wrapper.vue'
-import WidgetHeader from '../../components/common/WidgetHeader.vue'
 import type { GraphData } from '../../types'
 
 // Props, Emits, Configs
@@ -154,16 +130,7 @@ const snapToGrid = (value: number) => {
 }
 
 const contextMenu = ref({ show: false, x: 0, y: 0 })
-const resizeHandles = [
-  { position: 'nw' },
-  { position: 'n' },
-  { position: 'ne' },
-  { position: 'w' },
-  { position: 'e' },
-  { position: 'sw' },
-  { position: 's' },
-  { position: 'se' }
-]
+
 const getWidgetComponent = (type: string) => widgetComponents[type as keyof typeof widgetComponents]
 const getNodeStyle = (node: GraphData) => ({
   position: 'absolute' as const,
@@ -319,8 +286,13 @@ const handleCard2Error = (error: Error) => {
   emit('error', error)
 }
 
+/**
+ * 处理标题更新
+ * 当NodeWrapper中的标题被编辑时调用
+ */
 const handleTitleUpdate = (nodeId: string, newTitle: string) => {
-  updateNode(nodeId, { label: newTitle })
+  console.log(`[CanvasRenderer] 标题更新: ${nodeId} -> "${newTitle}"`)
+  // NodeWrapper已经处理了配置更新，这里只需要记录日志
 }
 </script>
 
@@ -332,105 +304,18 @@ const handleTitleUpdate = (nodeId: string, newTitle: string) => {
   min-height: 600px;
   user-select: none;
 }
+
 .canvas-node {
-  display: flex;
-  flex-direction: column;
-  border: 2px solid transparent;
-  transition: border-color 0.2s ease;
+  /* NodeWrapper现在处理所有节点样式，这里只保留位置相关 */
   cursor: move;
-  position: relative;
 }
-.widget-body {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-}
-.canvas-node:hover:not(.readonly) {
-  border-color: rgba(24, 160, 88, 0.3);
-}
-.canvas-node.selected {
-  border-color: var(--n-primary-color);
-  z-index: 1;
-}
+
 .canvas-node.readonly {
   cursor: default;
-}
-.canvas-node.readonly:hover {
-  border-color: transparent;
-}
-.resize-handles {
-  position: absolute;
-  top: -4px;
-  left: -4px;
-  right: -4px;
-  bottom: -4px;
-  pointer-events: none;
-}
-.resize-handle {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: var(--n-primary-color);
-  border: 1px solid #fff;
-  border-radius: 50%;
-  pointer-events: all;
-  z-index: 10;
-}
-.resize-handle-nw {
-  top: 0;
-  left: 0;
-  cursor: nw-resize;
-  transform: translate(-50%, -50%);
-}
-.resize-handle-n {
-  top: 0;
-  left: 50%;
-  cursor: n-resize;
-  transform: translate(-50%, -50%);
-}
-.resize-handle-ne {
-  top: 0;
-  right: 0;
-  cursor: ne-resize;
-  transform: translate(50%, -50%);
-}
-.resize-handle-w {
-  top: 50%;
-  left: 0;
-  cursor: w-resize;
-  transform: translate(-50%, -50%);
-}
-.resize-handle-e {
-  top: 50%;
-  right: 0;
-  cursor: e-resize;
-  transform: translate(50%, -50%);
-}
-.resize-handle-sw {
-  bottom: 0;
-  left: 0;
-  cursor: sw-resize;
-  transform: translate(-50%, 50%);
-}
-.resize-handle-s {
-  bottom: 0;
-  left: 50%;
-  cursor: s-resize;
-  transform: translate(-50%, 50%);
-}
-.resize-handle-se {
-  bottom: 0;
-  right: 0;
-  cursor: se-resize;
-  transform: translate(50%, 50%);
 }
 
 /* 预览模式样式 */
 .canvas-node.preview-mode {
   cursor: default !important;
-}
-
-.canvas-node.preview-mode:hover {
-  border-color: transparent !important;
 }
 </style>

@@ -53,6 +53,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "function_hide-child_two": () => import("@/views/function/hide-child/two/index.vue"),
   "function_multi-tab": () => import("@/views/function/multi-tab/index.vue"),
   function_tab: () => import("@/views/function/tab/index.vue"),
+  "gridplus-test": () => import("@/views/gridplus-test/index.vue"),
   "gridstack-test": () => import("@/views/gridstack-test/index.vue"),
   home: () => import("@/views/home/index.vue"),
   manage_menu: () => import("@/views/manage/menu/index.vue"),

@@ -45,7 +45,8 @@
       "Bash(tree:*)",
       "Bash(git stash pop:*)",
       "WebFetch(domain:www.naiveui.com)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(pnmp lint:*)"
     ],
     "deny": []
   }

@@ -182,6 +182,15 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
   /**
    * 获取组件定义 - 返回转换后的 WidgetDefinition
    */
+  /**
+   * 获取组件实例
+   */
+  const getComponent = (type: string) => {
+    const registry = getComponentRegistry()
+    const componentDef = registry.get(type)
+    return componentDef ? componentDef.component : null
+  }
+
   const getComponentDefinition = (type: string): Card2Widget | undefined => {
     console.log('🔍 [VisualEditorIntegration] getComponentDefinition 被调用:', {
       type,
@@ -294,6 +303,7 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
     initialize,
     isCard2Component,
     getComponentDefinition,
+    getComponent,
     getWidgetsByCategory,
     searchWidgets,
     getStats,

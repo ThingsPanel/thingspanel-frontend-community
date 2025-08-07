@@ -8,7 +8,8 @@ import { $t } from '@/locales'
 import { getBoard, PutBoard } from '@/service/api'
 import { VisualEditorToolbar } from './components/toolbar'
 import WidgetLibrary from './components/WidgetLibrary/WidgetLibrary.vue'
-import { initializeSettings, SettingsPanel } from './settings'
+import { initializeSettings } from './settings'
+import ConfigurationPanel from './configuration/ConfigurationPanel.vue'
 import { CanvasRenderer, GridstackRenderer } from './renderers'
 import { createEditor, usePreviewMode } from './hooks'
 import type { RendererType, VisualEditorWidget, GraphData } from './types'
@@ -925,7 +926,7 @@ onUnmounted(() => {
             :trap-focus="false"
           >
             <NDrawerContent :title="$t('visualEditor.propertySettings')" :native-scrollbar="false">
-              <SettingsPanel
+              <ConfigurationPanel
                 :selected-widget="selectedWidget"
                 :show-widget-titles="showWidgetTitles"
                 :grid-config="editorConfig.gridConfig"

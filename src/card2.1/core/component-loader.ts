@@ -44,15 +44,23 @@ export class ComponentLoader {
       const componentModules: Record<string, ComponentModule> = {}
 
       for (const [path, module] of Object.entries(allModules)) {
+        console.log(`[ComponentLoader] Processing path: ${path}`)
         // 从路径中提取组件ID
         const componentId = this.extractComponentId(path)
+        console.log(`[ComponentLoader] Extracted componentId: ${componentId}`)
 
         if (componentId && this.shouldIncludeComponent(componentId)) {
+          console.log(`[ComponentLoader] Including component: ${componentId}`)
           // 获取默认导出或整个模块
           const definition = module.default || module
           if (definition && definition.type) {
+            console.log(`[ComponentLoader] Valid definition found for ${componentId}:`, definition)
             componentModules[componentId] = { default: definition }
+          } else {
+            console.warn(`[ComponentLoader] Invalid or missing definition for ${componentId} in path: ${path}`, module)
           }
+        } else {
+          console.log(`[ComponentLoader] Skipping component: ${componentId} (path: ${path})`)
         }
       }
 

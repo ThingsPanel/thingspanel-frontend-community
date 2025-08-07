@@ -19,35 +19,14 @@ export const useEditorStore = defineStore('editor', {
     mode: 'design'
   }),
   actions: {
-    addNode(widget: WidgetDefinition, position?: { x: number; y: number }) {
-      const newNode: GraphData = {
-        id: generateId(widget.type),
-        type: widget.type,
-        x: position?.x || 0,
-        y: position?.y || 0,
-        width: widget.defaultLayout.canvas.width,
-        height: widget.defaultLayout.canvas.height,
-        label: widget.name,
-        showLabel: false,
-        properties: { ...widget.defaultProperties },
-        renderer: ['canvas', 'gridstack'],
-        layout: {
-          canvas: { ...widget.defaultLayout.canvas, ...(position || { x: 0, y: 0 }) },
-          gridstack: { ...widget.defaultLayout.gridstack, ...(position || { x: 0, y: 0 }) }
-        },
-        metadata: {
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-          version: widget.version,
-          ...widget.metadata
-        },
-        dataSource: null
-      }
-      this.nodes.push(newNode)
+    addNode(...nodes: GraphData[]) {
+      this.nodes.push(...nodes)
 
-      // 添加节点后，自动选中
-      const widgetStore = useWidgetStore()
-      widgetStore.selectNodes([newNode.id])
+      // 添加节点后，自动选中最后一个节点
+      if (nodes.length > 0) {
+        const widgetStore = useWidgetStore()
+        widgetStore.selectNodes([nodes[nodes.length - 1].id])
+      }
     },
     removeNode(id: string) {
       this.nodes = this.nodes.filter(node => node.id !== id)

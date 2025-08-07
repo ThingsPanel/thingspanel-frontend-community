@@ -130,6 +130,10 @@ export function createEditor() {
 
       // 安全检查：确保 availableComponents 存在且有 value 属性
       const availableComponents = card2Integration.availableComponents?.value || []
+      console.log(
+        '[useEditor] All available Card2.1 components:',
+        availableComponents.map(c => c.type)
+      )
       availableComponents.forEach(componentDef => {
         // console.log(`🔍 useEditor - 处理组件: ${componentDef.type}`)
         // console.log(`🔍 useEditor - 组件详情:`, componentDef)
@@ -171,6 +175,7 @@ export function createEditor() {
 
           // console.log(`🔍 useEditor - Widget 定义:`, widgetDef)
           widgetStore.register(widgetDef)
+          console.log(`[useEditor] Successfully registered widget: ${widgetDef.type}`, widgetDef)
           // console.log(`✅ useEditor - 组件注册成功: ${componentDef.type}`)
 
           // 注册配置组件到 configRegistry

@@ -9,33 +9,19 @@
       @item-moved="onDragStop"
     >
       <template #default="{ item }">
-        <div
-          class="editor-widget-container"
-          @mousedown.stop
-          @click.stop="handleNodeSelect(item.i)"
-          @contextmenu.prevent="e => handleContextMenu(e, item.i)"
-        >
-          <div v-if="item.raw.showLabel" class="widget-title-bar">
-            {{ item.raw.label }}
-          </div>
-          <div class="widget-content" @click="handleInteraction(item.raw)">
-            <Card2Wrapper
-              v-if="isCard2Component(item.type) || item.raw.metadata?.isCard2Component"
-              :component-type="item.type"
-              :config="item.raw.properties"
-              :data="item.raw.metadata?.card2Data"
-              :data-source="item.raw.dataSource"
-              :node-id="item.raw.id"
-            />
-            <div v-else class="placeholder">
-              组件: {{ item.type }}
-              <br />
-              <small>isCard2Component: {{ isCard2Component(item.type) }}</small>
-              <br />
-              <small>metadata.isCard2Component: {{ item.raw.metadata?.isCard2Component }}</small>
-            </div>
-          </div>
-        </div>
+        <NodeWrapper
+          :node="item.raw"
+          :node-id="item.raw.id"
+          :readonly="isReadOnly"
+          :is-selected="false"
+          :show-resize-handles="false"
+          :get-widget-component="() => null"
+          class="grid-node-wrapper"
+          @node-click="() => handleNodeSelect(item.i)"
+          @node-contextmenu="(nodeId, event) => handleContextMenu(event, nodeId)"
+          @title-update="handleTitleUpdate"
+          @component-error="error => console.error('Grid Component Error:', error)"
+        />
       </template>
     </GridLayoutPlus>
 
@@ -56,9 +42,9 @@ import { useRouter } from 'vue-router'
 import { nanoid } from 'nanoid'
 import { GridLayoutPlus, type GridLayoutPlusItem, type GridLayoutPlusConfig } from '@/components/common/grid'
 import { useEditor } from '@/components/visual-editor/hooks/useEditor'
-import type { VisualEditorWidget, GraphData } from '@/components/visual-editor/types'
-import Card2Wrapper from '../canvas/Card2Wrapper.vue'
+import NodeWrapper from '../base/NodeWrapper.vue'
 import ContextMenu from '../canvas/ContextMenu.vue'
+import type { VisualEditorWidget, GraphData } from '@/components/visual-editor/types'
 
 const props = defineProps<{
   graphData: GraphData
@@ -149,6 +135,14 @@ const nodesToLayout = (nodes: VisualEditorWidget[]): ExtendedGridLayoutPlusItem[
 watch(
   () => props.graphData.nodes,
   newNodes => {
+    console.log('[GridLayoutPlusWrapper] Graph data updated:', newNodes)
+    if (newNodes) {
+      newNodes.forEach(node => {
+        console.log(
+          `[GridLayoutPlusWrapper] Node ${node.id} (${node.type}): isCard2Component=${isCard2Component(node.type)}`
+        )
+      })
+    }
     layout.value = nodesToLayout(newNodes || [])
   },
   { immediate: true, deep: true }
@@ -266,6 +260,15 @@ const handleContextMenuSelect = (action: string) => {
 const closeContextMenu = () => {
   contextMenu.value.show = false
 }
+
+/**
+ * 处理标题更新
+ * 当NodeWrapper中的标题被编辑时调用
+ */
+const handleTitleUpdate = (nodeId: string, newTitle: string) => {
+  console.log(`[GridLayoutPlusWrapper] 标题更新: ${nodeId} -> "${newTitle}"`)
+  // NodeWrapper已经处理了配置更新，这里只需要记录日志
+}
 </script>
 
 <style scoped>
@@ -273,41 +276,10 @@ const closeContextMenu = () => {
   width: 100%;
   height: 100%;
 }
-.editor-widget-container {
+
+.grid-node-wrapper {
+  /* NodeWrapper现在处理所有节点样式 */
   width: 100%;
   height: 100%;
-  box-sizing: border-box;
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-}
-.widget-title-bar {
-  flex-shrink: 0;
-  padding: 4px 8px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #e0e0e0;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.widget-content {
-  flex-grow: 1;
-  position: relative;
-  overflow: hidden;
-}
-.placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #999;
-  background-color: #f0f0f0;
-  border-radius: 4px;
 }
 </style>

@@ -629,6 +629,60 @@ interface WidgetDefinition {
 }
 ```
 
+### 问题7: "组件渲染时获取组件实例复杂化"
+
+**症状**：
+- Card2Wrapper.vue 中有40多行复杂的组件获取逻辑
+- 各种条件判断、前缀处理、fallback机制
+- 代码维护困难，容易出错
+
+**错误的实现方式**：
+```typescript
+// ❌ 过度复杂化的组件获取逻辑
+const widgetDef = widgetStore.getWidget(props.componentType)
+let definition = null
+if (widgetDef && widgetDef.metadata && widgetDef.metadata.card2Definition) {
+  definition = widgetDef.metadata.card2Definition
+} else if (widgetDef && widgetDef.metadata && widgetDef.metadata.isCard2Component) {
+  definition = card2Integration.getComponentDefinition(props.componentType)
+}
+// ...更多复杂判断
+if (!definition && props.componentType.startsWith('card21-')) {
+  const cleanType = props.componentType.replace('card21-', '')
+  definition = card2Integration.getComponentDefinition(cleanType)
+}
+componentToRender.value = definition.component
+```
+
+**正确的解决方案**：
+```typescript
+// ✅ 简洁直接的组件获取
+const component = card2Integration.getComponent(props.componentType)
+if (!component) {
+  throw new Error(`组件 [${props.componentType}] 的组件实现不存在。`)
+}
+componentToRender.value = component
+```
+
+**关键洞察**：
+- **直接获取组件实例**：通过 `getComponent()` 方法直接获取Vue组件
+- **避免中间转换**：不需要通过定义对象再提取组件
+- **统一接口**：一个方法解决所有组件获取需求
+- **减少复杂度**：从40多行复杂逻辑简化到3行核心代码
+
+**架构改进**：
+在 `useVisualEditorIntegration.ts` 中添加 `getComponent` 方法：
+```typescript
+/**
+ * 获取组件实例
+ */
+const getComponent = (type: string) => {
+  const registry = getComponentRegistry()
+  const componentDef = registry.get(type)
+  return componentDef ? componentDef.component : null
+}
+```
+
 **完整修复方案**：
 
 1. **结构转换修复**（在 availableWidgets 计算属性中）：
@@ -684,6 +738,48 @@ const getComponentDefinition = (type: string): Card2Widget | undefined => {
   hasCanvas: true          // ✅ 应为 true
 }
 ```
+
+### 问题8: "Store接口设计不一致导致组件添加失败"
+
+**症状**：
+- `useEditor.ts` 中调用 `editorStore.addNode(node)` 失败
+- EditorStore 期望的参数类型与实际调用不匹配
+
+**原因分析**：
+```typescript
+// ❌ 旧的 EditorStore.addNode 设计
+addNode(widget: WidgetDefinition, position?: { x: number; y: number }) {
+  // 在Store内部构建GraphData节点
+  const newNode: GraphData = { /* 构建逻辑 */ }
+  this.nodes.push(newNode)
+}
+
+// ❌ 调用方式不匹配
+editorStore.addNode(node)  // node 是 GraphData 类型
+```
+
+**最佳实践修复**：
+```typescript
+// ✅ 改进后的 EditorStore.addNode 设计
+addNode(...nodes: GraphData[]) {
+  this.nodes.push(...nodes)
+  
+  // 添加节点后，自动选中最后一个节点
+  if (nodes.length > 0) {
+    const widgetStore = useWidgetStore()
+    widgetStore.selectNodes([nodes[nodes.length - 1].id])
+  }
+}
+
+// ✅ 调用方式
+editorStore.addNode(node)  // 直接传入构建好的 GraphData
+```
+
+**设计原则**：
+- **职责分离**：useEditor 负责构建 GraphData，EditorStore 只负责存储
+- **接口灵活**：支持单个或批量添加节点
+- **自动选中**：添加节点后自动选中最后一个节点
+- **类型安全**：避免参数类型不匹配的错误
 
 ### 性能调试技巧
 
