@@ -1,7 +1,7 @@
 <template>
-  <div class="simple-data-source-form">
+  <div class="simple-data-source-selector">
     <div class="config-header">
-      <h4>数据源测试配置</h4>
+      <span>数据源测试配置</span>
     </div>
 
     <!-- JSON数据录入 -->
@@ -76,10 +76,10 @@
       </div>
     </div>
 
-    <!-- 当前输出数据 -->
-    <div class="output-section">
-      <div class="section-title">当前输出给组件的数据</div>
-      <pre class="output-preview">{{ JSON.stringify(currentOutputData, null, 2) }}</pre>
+    <!-- 原始JSON预览 -->
+    <div class="raw-json-section">
+      <div class="section-title">原始JSON</div>
+      <pre class="json-preview">{{ formattedJson }}</pre>
     </div>
   </div>
 </template>
@@ -90,15 +90,11 @@ import { NInput, NButton, useMessage } from 'naive-ui'
 
 interface Props {
   modelValue?: any
-  widget?: any
-  readonly?: boolean
-  showAdvanced?: boolean
+  componentDataSources?: any[]
 }
 
 interface Emits {
   'update:modelValue': [value: any]
-  validate: [isValid: boolean]
-  'toggle-advanced': []
 }
 
 const props = defineProps<Props>()
@@ -116,8 +112,14 @@ const mappingConfig = ref({
 // 解析后的JSON对象
 const parsedJson = ref<any>({})
 
-// 当前输出给组件的数据
-const currentOutputData = ref<any>({ key1: null, key2: null, key3: null })
+// 格式化显示的JSON
+const formattedJson = computed(() => {
+  try {
+    return JSON.stringify(parsedJson.value, null, 2)
+  } catch {
+    return '无效的JSON数据'
+  }
+})
 
 // 解析路径值
 const resolveValue = (key: 'key1' | 'key2' | 'key3') => {
@@ -162,7 +164,7 @@ const handleMappingChange = () => {
   updateOutput()
 }
 
-// 更新输出数据到组件
+// 更新输出数据
 const updateOutput = () => {
   if (!parsedJson.value) return
 
@@ -172,40 +174,8 @@ const updateOutput = () => {
     key3: getValueByPath(parsedJson.value, mappingConfig.value.key3)
   }
 
-  currentOutputData.value = result
-
-  // 🎯 关键：正确更新组件数据到card2Data
-  if (props.widget) {
-    // 确保metadata对象存在
-    if (!props.widget.metadata) {
-      props.widget.metadata = {}
-    }
-
-    // 更新card2Data（这是组件真正接收数据的路径）
-    props.widget.metadata.card2Data = result
-
-    console.log('🔧 DataSourceConfigForm - 组件数据已更新到card2Data:', result)
-    console.log('🔧 DataSourceConfigForm - 当前widget.metadata:', props.widget.metadata)
-  }
-
-  // 🎯 关键：构建ConfigurationManager期望的数据源格式
-  const dataSourceConfig = {
-    type: 'static' as const, // ConfigurationManager验证需要的类型
-    config: {
-      data: parsedJson.value,
-      mappings: mappingConfig.value,
-      output: result
-    },
-    refreshInterval: 0, // 静态数据不需要刷新
-    enableCache: false, // 静态数据不需要缓存
-    cacheTimeout: 0,
-    retryAttempts: 0
-  }
-
-  console.log('🔧 DataSourceConfigForm - 发送数据源配置:', dataSourceConfig)
-
-  emit('update:modelValue', dataSourceConfig)
-  emit('validate', true)
+  emit('update:modelValue', result)
+  console.log('🔧 SimpleDataSourceSelector - 输出数据:', result)
 }
 
 // 加载示例数据
@@ -298,7 +268,7 @@ const randomizeData = () => {
     jsonInput.value = JSON.stringify(randomizedData, null, 2)
     parsedJson.value = randomizedData
     updateOutput()
-    message.success('数据已随机更新，组件应该看到新数据')
+    message.success('数据已随机更新')
   } catch (error) {
     message.error('随机更新失败')
   }
@@ -317,49 +287,19 @@ const formatJson = () => {
   }
 }
 
-// 监听widget变化
-watch(
-  () => props.widget,
-  newWidget => {
-    console.log('🔧 DataSourceConfigForm - 选中组件变化:', newWidget)
-  },
-  { deep: true }
-)
-
 // 初始化
 onMounted(() => {
-  console.log('🔧 DataSourceConfigForm - 组件挂载，当前选中widget:', props.widget)
-
-  // 先发送一个符合验证规范的初始配置，防止验证报错
-  const initialConfig = {
-    type: 'static' as const,
-    config: {
-      data: {},
-      mappings: mappingConfig.value,
-      output: { key1: null, key2: null, key3: null }
-    },
-    refreshInterval: 0,
-    enableCache: false,
-    cacheTimeout: 0,
-    retryAttempts: 0
-  }
-
-  console.log('🔧 DataSourceConfigForm - 发送初始配置:', initialConfig)
-  emit('update:modelValue', initialConfig)
-  emit('validate', true)
-
-  // 然后加载示例数据
   loadExampleData()
 })
 </script>
 
 <style scoped>
-.simple-data-source-form {
+.simple-data-source-selector {
   padding: 16px;
   max-width: 100%;
 }
 
-.config-header h4 {
+.config-header {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-color);
@@ -452,20 +392,19 @@ onMounted(() => {
   border: 1px solid var(--border-color);
 }
 
-.output-section {
+.raw-json-section {
   margin-bottom: 20px;
 }
 
-.output-preview {
-  background: #f0f9ff;
-  border: 1px solid #0ea5e9;
+.json-preview {
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 12px;
   font-size: 11px;
   font-family: 'Courier New', monospace;
-  max-height: 150px;
+  max-height: 200px;
   overflow-y: auto;
   white-space: pre-wrap;
-  color: #0c4a6e;
 }
 </style>

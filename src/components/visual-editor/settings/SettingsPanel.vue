@@ -61,11 +61,10 @@
       <n-tabs type="line" animated size="small">
         <!-- 数据源配置 -->
         <n-tab-pane name="dataSource" tab="数据源">
-          <DataSourceSelector
-            v-model="editableProps.dataSource"
-            :component-data-sources="componentDataSourceDefinitions"
-            @update:modelValue="handleDataSourceUpdate"
-          />
+          <div style="padding: 20px; text-align: center; color: red">
+            <h3>数据源表单已删除</h3>
+            <p>原来的组件已被删除，现在会报错</p>
+          </div>
         </n-tab-pane>
 
         <!-- 基础配置标签页 -->
@@ -163,7 +162,7 @@ import type { VisualEditorWidget } from '../types'
 import { cloneDeep } from 'lodash-es'
 import { configRegistry } from './ConfigRegistry'
 import EnhancedPropertyForm from './components/EnhancedPropertyForm.vue'
-import DataSourceSelector from './components/DataSourceSelector.vue'
+// import SimpleDataSourceSelector from './components/SimpleDataSourceSelector.vue' // 已删除
 
 const props = defineProps<{
   selectedWidget: VisualEditorWidget | null

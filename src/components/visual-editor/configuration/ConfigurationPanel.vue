@@ -326,31 +326,6 @@ let configChangeCleanup: (() => void) | null = null
 // 防循环标记
 let isUpdatingFromManager = false
 
-// 监听选中组件变化
-watch(
-  () => props.selectedWidget,
-  async (newWidget, oldWidget) => {
-    if (newWidget?.id === oldWidget?.id) return
-
-    // 清理旧的监听器
-    if (configChangeCleanup) {
-      configChangeCleanup()
-      configChangeCleanup = null
-    }
-
-    if (newWidget) {
-      await loadWidgetConfiguration(newWidget.id)
-
-      // 监听配置变化
-      configChangeCleanup = configurationManager.onConfigurationChange(newWidget.id, handleConfigurationChange)
-    } else {
-      // 清空配置
-      resetLocalConfiguration()
-    }
-  },
-  { immediate: true }
-)
-
 // 监听配置变化并同步到ConfigurationManager
 watch(
   [baseConfig, componentConfig, dataSourceConfig, interactionConfig],
@@ -380,6 +355,11 @@ onUnmounted(() => {
  * 加载组件配置
  */
 const loadWidgetConfiguration = async (widgetId: string) => {
+  console.log('ConfigurationPanel - 加载组件配置:', widgetId)
+
+  // 设置防循环标记
+  isUpdatingFromManager = true
+
   try {
     let config = configurationManager.getConfiguration(widgetId)
 
@@ -387,6 +367,7 @@ const loadWidgetConfiguration = async (widgetId: string) => {
       // 初始化默认配置
       configurationManager.initializeConfiguration(widgetId)
       config = configurationManager.getConfiguration(widgetId)
+      console.log('ConfigurationPanel - 已初始化默认配置')
     }
 
     if (config) {
@@ -394,10 +375,16 @@ const loadWidgetConfiguration = async (widgetId: string) => {
       componentConfig.value = { ...config.component }
       dataSourceConfig.value = config.dataSource ? { ...config.dataSource } : null
       interactionConfig.value = { ...config.interaction }
+      console.log('ConfigurationPanel - 配置加载完成:', config)
     }
   } catch (error) {
     console.error('加载组件配置失败:', error)
     message.error('配置加载失败')
+  } finally {
+    // 重置防循环标记
+    setTimeout(() => {
+      isUpdatingFromManager = false
+    }, 0)
   }
 }
 
@@ -405,11 +392,25 @@ const loadWidgetConfiguration = async (widgetId: string) => {
  * 处理来自ConfigurationManager的配置变化
  */
 const handleConfigurationChange = (config: WidgetConfiguration) => {
-  // 更新本地配置状态
-  baseConfig.value = { ...config.base }
-  componentConfig.value = { ...config.component }
-  dataSourceConfig.value = config.dataSource ? { ...config.dataSource } : null
-  interactionConfig.value = { ...config.interaction }
+  console.log('ConfigurationPanel - 接收到配置变化:', config)
+
+  // 设置防循环标记
+  isUpdatingFromManager = true
+
+  try {
+    // 更新本地配置状态
+    baseConfig.value = { ...config.base }
+    componentConfig.value = { ...config.component }
+    dataSourceConfig.value = config.dataSource ? { ...config.dataSource } : null
+    interactionConfig.value = { ...config.interaction }
+
+    console.log('ConfigurationPanel - 本地配置已更新')
+  } finally {
+    // 重置防循环标记
+    setTimeout(() => {
+      isUpdatingFromManager = false
+    }, 0)
+  }
 }
 
 /**
@@ -605,6 +606,31 @@ const applyPreset = (presetName: string) => {
     message.error('预设应用失败')
   }
 }
+
+// 监听选中组件变化 - 在所有函数定义后执行
+watch(
+  () => props.selectedWidget,
+  async (newWidget, oldWidget) => {
+    if (newWidget?.id === oldWidget?.id) return
+
+    // 清理旧的监听器
+    if (configChangeCleanup) {
+      configChangeCleanup()
+      configChangeCleanup = null
+    }
+
+    if (newWidget) {
+      await loadWidgetConfiguration(newWidget.id)
+
+      // 监听配置变化
+      configChangeCleanup = configurationManager.onConfigurationChange(newWidget.id, handleConfigurationChange)
+    } else {
+      // 清空配置
+      resetLocalConfiguration()
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

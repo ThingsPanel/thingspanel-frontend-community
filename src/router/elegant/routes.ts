@@ -441,21 +441,12 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
-    name: 'gridplus-test',
-    path: '/gridplus-test',
-    component: 'layout.base$view.gridplus-test',
+    name: 'grid-pluss-test',
+    path: '/grid-pluss-test',
+    component: 'layout.base$view.grid-pluss-test',
     meta: {
-      title: 'gridplus-test',
-      i18nKey: 'route.gridplus-test'
-    }
-  },
-  {
-    name: 'gridstack-test',
-    path: '/gridstack-test',
-    component: 'layout.base$view.gridstack-test',
-    meta: {
-      title: 'gridstack-test',
-      i18nKey: 'route.gridstack-test'
+      title: 'grid-pluss-test',
+      i18nKey: 'route.grid-pluss-test'
     }
   },
   {
@@ -827,39 +818,12 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
-        name: 'test_data-binding-system-integration',
-        path: '/test/data-binding-system-integration',
-        component: 'view.test_data-binding-system-integration',
+        name: 'test_datasource-integration',
+        path: '/test/datasource-integration',
+        component: 'view.test_datasource-integration',
         meta: {
-          title: 'test_data-binding-system-integration',
-          i18nKey: 'route.test_data-binding-system-integration'
-        }
-      },
-      {
-        name: 'test_data-source-system',
-        path: '/test/data-source-system',
-        component: 'view.test_data-source-system',
-        meta: {
-          title: 'test_data-source-system',
-          i18nKey: 'route.test_data-source-system'
-        }
-      },
-      {
-        name: 'test_editor-integration',
-        path: '/test/editor-integration',
-        component: 'view.test_editor-integration',
-        meta: {
-          title: 'test_editor-integration',
-          i18nKey: 'route.test_editor-integration'
-        }
-      },
-      {
-        name: 'test_real-time-monitor-demo',
-        path: '/test/real-time-monitor-demo',
-        component: 'view.test_real-time-monitor-demo',
-        meta: {
-          title: 'test_real-time-monitor-demo',
-          i18nKey: 'route.test_real-time-monitor-demo'
+          title: 'test_datasource-integration',
+          i18nKey: 'route.test_datasource-integration'
         }
       }
     ]

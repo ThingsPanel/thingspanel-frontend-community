@@ -359,6 +359,18 @@ const formData = reactive<InteractionConfiguration>({
   ...props.modelValue
 })
 
+// 监听外部配置变化
+watch(
+  () => props.modelValue,
+  newValue => {
+    if (newValue && JSON.stringify(newValue) !== JSON.stringify(formData)) {
+      Object.assign(formData, newValue)
+      console.log('InteractionConfigForm - 外部配置已更新:', newValue)
+    }
+  },
+  { deep: true }
+)
+
 // 交互类型选项
 const interactionTypeOptions = [
   { label: '无', value: 'none' },

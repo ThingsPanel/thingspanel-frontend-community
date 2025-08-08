@@ -102,6 +102,18 @@ const emit = defineEmits<Emits>()
 
 const { updateNode } = useEditor()
 
+// 调试：监听node.metadata变化
+watch(
+  () => props.node.metadata,
+  newMetadata => {
+    if (props.node.type === 'datasource-test') {
+      console.log('🔧 [NodeWrapper] metadata变化:', newMetadata)
+      console.log('🔧 [NodeWrapper] card2Data:', newMetadata?.card2Data)
+    }
+  },
+  { deep: true, immediate: true }
+)
+
 // 模板引用
 const nodeElement = ref<HTMLElement>()
 const titleInputRef = ref<InstanceType<typeof NInput>>()

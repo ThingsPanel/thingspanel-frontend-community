@@ -1,336 +1,426 @@
-# GridPlus 高性能网格组件
+# GridPlus 组件 - 基于 GridStack.js 的现代化网格布局组件
 
-GridPlus 是一个专为高性能场景设计的 Vue3 网格布局组件，相比现有的 GridLayoutPlus 提供了显著的性能提升和更丰富的功能。
+GridPlus 是一个基于 GridStack.js 的 Vue 3 网格布局组件，提供强大的拖拽、调整大小、响应式布局等功能。
 
-## 🚀 核心优势
+## ✨ 特性
 
-### 性能提升
-- **6倍性能提升**：使用 CSS3 transform 替代 position 定位
-- **虚拟滚动**：只渲染可见区域，支持万级数据
-- **智能懒加载**：渐进式内容加载，提升感知性能
-- **GPU加速**：启用硬件加速，流畅的动画体验
+### 🚀 核心功能
+- **基于 GridStack.js**: 使用成熟的 GridStack.js 库，稳定可靠
+- **现代化设计**: 简洁美观的卡片设计，支持深色/浅色主题
+- **高性能**: GridStack.js 原生性能优化，流畅的拖拽体验
+- **类型安全**: 完整的 TypeScript 类型支持
+- **响应式**: 支持响应式布局和断点配置
+- **自动布局**: 智能自动布局和紧凑算法
 
-### 功能完整
-- **完全兼容**：继承 GridLayoutPlus 所有 Props 和 Events
-- **响应式设计**：支持多断点自适应
-- **主题系统**：完整的明暗主题支持
-- **开发工具**：实时性能监控和调试面板
+### 🎯 交互功能
+- **拖拽排序**: 支持拖拽重新排序，流畅的拖拽体验
+- **调整大小**: 支持多方向调整大小，8个方向的手柄
+- **网格对齐**: 智能网格对齐，精确定位
+- **紧凑布局**: 自动紧凑布局算法
+- **碰撞检测**: 实时碰撞检测和预防
+- **锁定项目**: 支持锁定特定项目
 
-## 📦 安装使用
+### 🎨 界面特性
+- **网格线显示**: 可选的网格线显示
+- **拖拽预览**: 拖拽时的预览效果
+- **调整手柄**: 八个方向的调整大小手柄
+- **状态反馈**: 丰富的视觉状态反馈
+- **主题系统**: 支持深色/浅色主题切换
 
-### 基础使用
+## 🚀 快速开始
+
+### 安装和使用
 
 ```vue
 <template>
-  <GridPlusContainer
-    v-model:layout="layout"
-    :config="config"
+  <GridPlus
+    v-model:items="items"
+    :show-grid="true"
     :readonly="false"
-  >
-    <template #default="{ item }">
-      <div class="grid-item">
-        <h3>{{ item.title }}</h3>
-        <p>{{ item.content }}</p>
-      </div>
-    </template>
-  </GridPlusContainer>
+    :config="gridConfig"
+    @layout-change="handleLayoutChange"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { GridPlusContainer, type GridPlusItem } from '@/components/common/gridplus'
+import { GridPlus } from '@/components/common/gridplus'
+import type { GridItem } from '@/components/common/gridplus'
 
-const layout = ref<GridPlusItem[]>([
-  { i: '1', x: 0, y: 0, w: 2, h: 2, title: '项目1' },
-  { i: '2', x: 2, y: 0, w: 2, h: 2, title: '项目2' },
-  { i: '3', x: 4, y: 0, w: 2, h: 2, title: '项目3' }
+const items = ref<GridItem[]>([
+  {
+    id: 'card-1',
+    x: 0,
+    y: 0,
+    w: 4,
+    h: 3,
+    title: '卡片 1',
+    component: YourComponent
+  }
 ])
 
-const config = {
-  colNum: 12,
-  rowHeight: 100,
-  margin: [10, 10],
-  isDraggable: true,
-  isResizable: true
+const gridConfig = {
+  column: 12,
+  cellHeight: 100,
+  margin: '10px',
+  responsive: true,
+  auto: true,
+  animate: true
+}
+
+const handleLayoutChange = (newItems: GridItem[]) => {
+  console.log('布局变化:', newItems)
 }
 </script>
 ```
 
-### 启用高级功能
+## 📖 API 文档
+
+### Props
+
+| 属性 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| items | `GridItem[]` | `[]` | 布局数据 |
+| readonly | `boolean` | `false` | 是否只读 |
+| showGrid | `boolean` | `false` | 是否显示网格线 |
+| showTitle | `boolean` | `true` | 是否显示标题栏 |
+| config | `Partial<GridConfig>` | `{}` | 网格配置 |
+| containerStyle | `Record<string, string \| number>` | `{}` | 容器样式 |
+| containerClass | `string` | `''` | 容器类名 |
+| theme | `'light' \| 'dark' \| 'auto'` | `'auto'` | 主题 |
+
+### Events
+
+| 事件名 | 参数 | 说明 |
+|--------|------|------|
+| layout-change | `(items: GridItem[])` | 布局变化时触发 |
+| update:items | `(items: GridItem[])` | 布局更新时触发 |
+| item-add | `(item: GridItem)` | 添加项目时触发 |
+| item-delete | `(itemId: string)` | 删除项目时触发 |
+| item-update | `(itemId: string, updates: Partial<GridItem>)` | 更新项目时触发 |
+| drag-start | `(itemId: string)` | 拖拽开始时触发 |
+| drag-end | `(itemId: string)` | 拖拽结束时触发 |
+| resize-start | `(itemId: string)` | 调整大小开始时触发 |
+| resize-end | `(itemId: string)` | 调整大小结束时触发 |
+
+### 配置选项
+
+```typescript
+interface GridConfig extends GridStackOptions {
+  column: number              // 列数，默认 12
+  cellHeight: number         // 行高，默认 100
+  margin: string             // 边距，默认 '10px'
+  float: boolean            // 是否浮动，默认 false
+  animate: boolean          // 是否启用动画，默认 true
+  auto: boolean             // 是否自动布局，默认 true
+  disableDrag: boolean      // 是否禁用拖拽，默认 false
+  disableResize: boolean    // 是否禁用调整大小，默认 false
+  enable: boolean           // 是否启用，默认 true
+  minRow: number           // 最小行数，默认 1
+  removable: boolean       // 是否可删除，默认 false
+  rtl: boolean            // 是否从右到左，默认 false
+  showGridLines: boolean   // 是否显示网格线，默认 false
+  showTitle: boolean       // 是否显示标题栏，默认 true
+  showItemInfo: boolean    // 是否显示项目信息，默认 false
+  theme: 'light' | 'dark' | 'auto' // 主题，默认 'auto'
+}
+```
+
+### 网格项配置
+
+```typescript
+interface GridItem {
+  id: string                   // 唯一标识符
+  x: number                    // X轴位置
+  y: number                    // Y轴位置
+  w: number                    // 宽度
+  h: number                    // 高度
+  autoPosition?: boolean       // 是否自动定位
+  minW?: number               // 最小宽度
+  maxW?: number               // 最大宽度
+  minH?: number               // 最小高度
+  maxH?: number               // 最大高度
+  locked?: boolean            // 是否锁定
+  noResize?: boolean          // 是否不可调整大小
+  noMove?: boolean            // 是否不可移动
+  resizeHandles?: string      // 调整大小手柄
+  static?: boolean            // 是否为静态项目
+  title?: string              // 标题
+  component?: Component       // Vue组件
+  props?: Record<string, any> // 组件属性
+  data?: Record<string, any>  // 组件数据
+  style?: Record<string, string | number> // 自定义样式
+  className?: string          // 自定义类名
+  metadata?: Record<string, any> // 元数据
+  render?: (item: GridItem) => VNode // 自定义渲染函数
+  headerRender?: (item: GridItem) => VNode // 自定义头部渲染
+  footerRender?: (item: GridItem) => VNode // 自定义底部渲染
+}
+```
+
+## 🎯 使用示例
+
+### 基本用法
 
 ```vue
 <template>
-  <GridPlusContainer
-    v-model:layout="layout"
-    :config="config"
-    :enable-virtual-scroll="true"
-    :enable-lazy-load="true"
-    :enable-performance-monitoring="true"
-    :skeleton-config="skeletonConfig"
-    @performance-metrics="handlePerformanceUpdate"
-    @virtual-scroll-change="handleVirtualScrollChange"
-  >
-    <template #default="{ item }">
-      <!-- 自定义项目内容 -->
-    </template>
-  </GridPlusContainer>
+  <div class="grid-demo">
+    <GridPlus
+      v-model:items="items"
+      :show-grid="showGrid"
+      :readonly="readonly"
+      :config="gridConfig"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
-const config = {
-  // 基础配置
-  colNum: 12,
-  rowHeight: 100,
-  
-  // 虚拟滚动配置
-  enableVirtualScroll: true,
-  virtualScrollBuffer: 3,
-  estimatedItemHeight: 200,
-  
-  // 懒加载配置
-  enableLazyLoad: true,
-  lazyLoadThreshold: 100,
-  lazyLoadRootMargin: '50px',
-  
-  // 性能配置
-  enablePerformanceMonitoring: true,
-  batchRenderSize: 50
+import { ref } from 'vue'
+import { GridPlus } from '@/components/common/gridplus'
+
+const showGrid = ref(true)
+const readonly = ref(false)
+
+const gridConfig = {
+  column: 12,
+  cellHeight: 100,
+  margin: '10px',
+  responsive: true,
+  auto: true,
+  animate: true
 }
 
-const skeletonConfig = {
-  enabled: true,
-  animation: 'wave',
-  colors: {
-    base: '#f0f0f0',
-    highlight: '#f5f5f5'
+const items = ref([
+  {
+    id: 'card-1',
+    x: 0,
+    y: 0,
+    w: 4,
+    h: 3,
+    title: '卡片 1',
+    component: {
+      template: '<div>卡片内容</div>'
+    }
   }
+])
+</script>
+```
+
+### 带控制面板的完整示例
+
+```vue
+<template>
+  <div class="grid-demo">
+    <div class="controls">
+      <n-switch v-model:value="showGrid">显示网格线</n-switch>
+      <n-switch v-model:value="readonly">只读模式</n-switch>
+      <n-button @click="addCard">添加卡片</n-button>
+      <n-button @click="compact">紧凑布局</n-button>
+    </div>
+    
+    <GridPlus
+      ref="gridPlusRef"
+      v-model:items="items"
+      :show-grid="showGrid"
+      :readonly="readonly"
+      :config="gridConfig"
+      @layout-change="handleLayoutChange"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { GridPlus } from '@/components/common/gridplus'
+
+const showGrid = ref(true)
+const readonly = ref(false)
+const items = ref([])
+const gridPlusRef = ref()
+
+const gridConfig = {
+  column: 12,
+  cellHeight: 100,
+  margin: '10px',
+  responsive: true,
+  auto: true,
+  animate: true
 }
 
-const handlePerformanceUpdate = (metrics) => {
-  console.log('性能指标:', metrics)
+const addCard = () => {
+  const newItem = {
+    id: `card-${Date.now()}`,
+    x: Math.floor(Math.random() * 8),
+    y: Math.floor(Math.random() * 5),
+    w: 2 + Math.floor(Math.random() * 3),
+    h: 2 + Math.floor(Math.random() * 3),
+    title: `卡片 ${items.value.length + 1}`,
+    component: {
+      template: '<div>新卡片内容</div>'
+    }
+  }
+  items.value.push(newItem)
+}
+
+const compact = () => {
+  gridPlusRef.value?.compact()
+}
+
+const handleLayoutChange = (newItems) => {
+  console.log('布局变化:', newItems)
 }
 </script>
 ```
 
-## 🔧 API 参考
+## 🎨 主题定制
 
-### GridPlusContainer Props
+GridPlus 支持 CSS 变量主题定制：
 
-#### 基础属性 (继承自 GridLayoutPlus)
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `layout` | `GridPlusItem[]` | `[]` | 布局数据 |
-| `readonly` | `boolean` | `false` | 是否只读 |
-| `showGrid` | `boolean` | `true` | 是否显示网格线 |
-| `config` | `GridPlusConfig` | `{}` | 网格配置 |
+```css
+:root {
+  --grid-plus-bg-color: #f8f9fa;
+  --grid-plus-item-bg-color: #fff;
+  --grid-plus-item-border-color: #e1e5e9;
+  --grid-plus-item-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --grid-plus-item-hover-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --grid-plus-item-active-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  --grid-plus-item-header-bg-color: #f8f9fa;
+  --grid-plus-item-title-color: #495057;
+  --grid-plus-text-color: #495057;
+  --grid-plus-secondary-text-color: #6c757d;
+}
 
-#### 高级功能
-| 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
-| `enableVirtualScroll` | `boolean` | `false` | 启用虚拟滚动 |
-| `enableLazyLoad` | `boolean` | `false` | 启用懒加载 |
-| `enablePerformanceMonitoring` | `boolean` | `false` | 启用性能监控 |
-| `skeletonConfig` | `SkeletonConfig` | - | 骨架屏配置 |
-| `performanceConfig` | `PerformanceConfig` | - | 性能配置 |
-
-### GridPlusConfig 配置
-
-```typescript
-interface GridPlusConfig {
-  // 基础网格配置
-  colNum: number              // 列数
-  rowHeight: number           // 行高
-  margin: [number, number]    // 边距 [x, y]
-  isDraggable: boolean        // 是否可拖拽
-  isResizable: boolean        // 是否可调整大小
-  
-  // 虚拟滚动配置
-  enableVirtualScroll: boolean      // 启用虚拟滚动
-  virtualScrollBuffer: number       // 缓冲区大小
-  estimatedItemHeight: number       // 预估项目高度
-  
-  // 懒加载配置
-  enableLazyLoad: boolean          // 启用懒加载
-  lazyLoadThreshold: number        // 加载阈值
-  lazyLoadRootMargin: string       // 根边距
-  
-  // 性能配置
-  enablePerformanceMonitoring: boolean  // 性能监控
-  batchRenderSize: number              // 批量渲染大小
-  debounceDelay: number                // 防抖延迟
-  throttleDelay: number                // 节流延迟
+/* 深色主题 */
+[data-theme="dark"] {
+  --grid-plus-bg-color: #1a1a1a;
+  --grid-plus-item-bg-color: #2d2d2d;
+  --grid-plus-item-border-color: #404040;
+  --grid-plus-item-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --grid-plus-item-hover-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --grid-plus-item-active-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --grid-plus-item-header-bg-color: #333;
+  --grid-plus-item-title-color: #fff;
+  --grid-plus-text-color: #fff;
+  --grid-plus-secondary-text-color: #b0b0b0;
 }
 ```
 
-### Events 事件
+## 🔧 组件方法
 
-#### 继承事件 (来自 GridLayoutPlus)
-- `layout-change` - 布局变化
-- `item-add` - 项目添加
-- `item-delete` - 项目删除
-- `item-update` - 项目更新
-
-#### 新增事件
-- `performance-metrics` - 性能指标更新
-- `performance-warning` - 性能警告
-- `virtual-scroll-change` - 虚拟滚动变化
-- `lazy-load-state-change` - 懒加载状态变化
-- `item-enter-viewport` - 项目进入视口
-- `item-leave-viewport` - 项目离开视口
-
-### 方法 API
+GridPlus 组件暴露了以下方法：
 
 ```typescript
-// 通过 ref 访问组件方法
-const gridRef = ref()
+// 添加项目
+addItem(item: GridItem): void
 
-// 基础操作
-gridRef.value.addItem(type, options)     // 添加项目
-gridRef.value.removeItem(itemId)         // 删除项目
-gridRef.value.updateItem(itemId, updates) // 更新项目
-gridRef.value.clearLayout()              // 清空布局
+// 删除项目
+removeItem(itemId: string): void
 
-// 虚拟滚动
-gridRef.value.scrollToIndex(index)       // 滚动到指定索引
-gridRef.value.scrollToItem(itemId)       // 滚动到指定项目
-gridRef.value.refreshVirtualScroll()     // 刷新虚拟滚动
+// 更新项目
+updateItem(itemId: string, updates: Partial<GridItem>): void
 
-// 懒加载
-gridRef.value.loadItem(itemId)           // 手动加载项目
-gridRef.value.preloadItem(itemId)        // 预加载项目
-gridRef.value.getItemState(itemId)       // 获取项目状态
+// 获取当前项目
+getItems(): GridItem[]
 
-// 工具方法
-gridRef.value.validateLayout()           // 验证布局
-gridRef.value.adjustToContainer(size)    // 调整容器大小
+// 紧凑布局
+compact(): void
+
+// 启用拖拽和调整大小
+enable(): void
+
+// 禁用拖拽和调整大小
+disable(): void
 ```
 
-## 📊 性能对比
+## 🚀 性能特性
 
-| 特性 | GridLayoutPlus | GridPlus | 提升 |
-|------|----------------|----------|------|
-| 渲染性能 | position 定位 | CSS3 transform | **6倍** |
-| 大数据支持 | 100+ 项目卡顿 | 1000+ 项目流畅 | **10倍** |
-| 内存使用 | 线性增长 | 常量级别 | **60-80%** |
-| 加载体验 | 一次性渲染 | 渐进式加载 | **显著提升** |
+- **GridStack.js 原生性能**: 基于成熟的 GridStack.js 库
+- **流畅拖拽**: 原生拖拽实现，60fps 流畅体验
+- **智能布局**: 自动布局算法，优化空间利用
+- **响应式**: 支持响应式布局和断点配置
+- **内存优化**: GridStack.js 内置内存管理
 
 ## 🔄 迁移指南
 
-### 从 GridLayoutPlus 迁移
+从原有的 grid 组件迁移到 GridPlus：
 
-GridPlus 完全兼容 GridLayoutPlus 的 API，可以无缝迁移：
+1. **导入路径更改**：
+   ```typescript
+   // 旧的
+   import GridLayout from '@/components/common/grid'
+   
+   // 新的
+   import { GridPlus } from '@/components/common/gridplus'
+   ```
 
-```vue
-<!-- 原有代码 -->
-<GridLayoutPlus :layout="layout" :config="config" />
+2. **组件名称更改**：
+   ```vue
+   <!-- 旧的 -->
+   <GridLayoutPlus />
+   
+   <!-- 新的 -->
+   <GridPlus />
+   ```
 
-<!-- 直接替换 -->
-<GridPlusContainer :layout="layout" :config="config" />
-```
+3. **Props 名称更改**：
+   ```vue
+   <!-- 旧的 -->
+   :layout="layout"
+   
+   <!-- 新的 -->
+   :items="items"
+   ```
 
-### 启用高级功能
+4. **配置名称更改**：
+   ```typescript
+   // 旧的
+   const config = {
+     colNum: 12,
+     rowHeight: 100,
+     margin: [10, 10]
+   }
+   
+   // 新的
+   const config = {
+     column: 12,
+     cellHeight: 100,
+     margin: '10px'
+   }
+   ```
 
-```vue
-<!-- 渐进式升级 -->
-<GridPlusContainer 
-  :layout="layout" 
-  :config="config"
-  :enable-virtual-scroll="true"    <!-- 大数据场景 -->
-  :enable-lazy-load="true"         <!-- 图片/异步内容 -->
-  :enable-performance-monitoring="true" <!-- 开发调试 -->
-/>
-```
-
-## 🛠️ 开发与调试
-
-### 性能监控面板
-
-在开发模式下启用性能监控：
-
-```javascript
-const config = {
-  enablePerformanceMonitoring: true  // 开启性能监控
-}
-```
-
-监控面板显示：
-- 实时 FPS
-- 内存使用量
-- 渲染时间
-- DOM 节点数量
-- 可见项目统计
-
-### 调试模式
-
-```vue
-<GridPlusItem 
-  :item="item"
-  :show-debug-info="true"  <!-- 显示调试信息 -->
-/>
-```
-
-显示信息包括：
-- 项目 ID 和位置
-- 尺寸信息
-- 懒加载状态
-- 虚拟滚动索引
-
-## 📁 项目结构
+## 📁 文件结构
 
 ```
 src/components/common/gridplus/
-├── GridPlusContainer.vue           # 主容器组件
-├── components/
-│   ├── GridPlusItem.vue           # 网格项组件
-│   ├── VirtualScrollManager.vue   # 虚拟滚动管理器
-│   ├── LazyLoadManager.vue        # 懒加载管理器
-│   └── SkeletonLoader.vue         # 骨架屏组件
-├── composables/
-│   ├── useGridPlusCore.ts         # 核心功能
-│   ├── useVirtualScroll.ts        # 虚拟滚动
-│   └── useLazyLoad.ts             # 懒加载
-├── types/
-│   ├── gridplus-types.ts          # 核心类型
-│   ├── virtual-scroll-types.ts    # 虚拟滚动类型
-│   └── lazy-load-types.ts         # 懒加载类型
-├── utils/
-│   ├── grid-calculator.ts         # 网格计算
-│   ├── performance-utils.ts       # 性能工具
-│   └── intersection-observer-utils.ts # 观察器工具
-└── index.ts                       # 统一导出
+├── GridPlus.vue              # 主组件
+├── index.ts                  # 导出文件
+├── README.md                 # 文档
+└── types/
+    └── index.ts             # 类型定义
 ```
 
-## 🧪 测试页面
+## 🔧 兼容性
 
-项目包含完整的测试页面，访问路径：
-
-- 开发模式：`http://localhost:5002/gridplus-test`
-- 测试功能：
-  - 不同数据规模测试（50-5000 项目）
-  - 功能模式切换（常规/虚拟滚动/懒加载/完整功能）
-  - 实时性能监控
-  - 性能对比分析
-  - 交互式配置面板
-
-## 🤝 贡献指南
-
-1. **开发环境**：确保使用 Node.js 16+ 和 pnpm
-2. **代码规范**：遵循项目 ESLint 和 TypeScript 配置
-3. **性能测试**：新功能需要通过性能测试
-4. **文档更新**：更新相应的 API 文档和示例
+- Vue 3.0+
+- GridStack.js 9.0+
+- 现代浏览器（支持 Pointer Events）
+- TypeScript 4.0+
 
 ## 📝 更新日志
 
-### v1.0.0
-- 🎉 首次发布
-- ⚡ CSS3 transform 高性能渲染
-- 🔄 虚拟滚动支持
-- 💤 智能懒加载
-- 🎨 骨架屏加载状态
-- 📊 实时性能监控
-- 🔧 完整的 TypeScript 支持
-- 🎯 100% GridLayoutPlus API 兼容
+### v2.0.0 - GridStack.js 版本
+- ✅ **基于 GridStack.js**: 使用成熟的 GridStack.js 库
+- ✅ **原生性能**: GridStack.js 原生拖拽和调整大小
+- ✅ **完整功能**: 支持所有 GridStack.js 功能
+- ✅ **类型安全**: 完整的 TypeScript 类型支持
+- ✅ **响应式**: 支持响应式布局和断点配置
+- ✅ **主题系统**: 支持深色/浅色主题切换
+- ✅ **组件方法**: 丰富的组件方法 API
 
----
+## 🤝 贡献
 
-**GridPlus** - 让大数据网格布局不再是性能瓶颈 🚀
+欢迎提交 Issue 和 Pull Request 来改进 GridPlus 组件。
+
+## �� 许可证
+
+MIT License

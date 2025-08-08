@@ -164,6 +164,9 @@ export class ConfigurationManager implements IConfigurationManager {
 
     this.configurations.set(widgetId, initialConfig)
     console.log(`[ConfigurationManager] 配置已初始化: ${widgetId}`)
+
+    // 触发监听器，通知配置已初始化
+    this.notifyListeners(widgetId, initialConfig)
   }
 
   /**
@@ -370,8 +373,6 @@ export class ConfigurationManager implements IConfigurationManager {
 
     console.log(`[ConfigurationManager] 批量更新完成，共 ${updates.length} 项配置`)
   }
-
-
 
   // 私有方法
 

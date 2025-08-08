@@ -12,6 +12,7 @@
       :is="componentToRender"
       v-else-if="componentToRender"
       v-bind="config"
+      :data="data"
       :metadata="{ card2Data: data, dataSource: dataSource }"
       :dataSourceValue="dataSourceValue"
     />
@@ -145,7 +146,17 @@ const loadComponent = async () => {
 // 监听组件类型变化，例如在编辑器中切换组件类型
 watch(() => props.componentType, loadComponent, { immediate: true })
 
+// 监听data变化，用于调试
+watch(
+  () => props.data,
+  newData => {
+    console.log('🔧 [Card2Wrapper] 接收到新的data prop:', newData)
+  },
+  { deep: true, immediate: true }
+)
+
 onMounted(() => {
+  console.log('🔧 [Card2Wrapper] 组件挂载，当前props:', props)
   if (!componentToRender.value) {
     loadComponent()
   }

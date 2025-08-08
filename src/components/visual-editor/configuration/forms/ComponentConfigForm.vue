@@ -219,6 +219,23 @@ const formData = reactive<ComponentConfiguration>({
   validation: { ...props.modelValue.validation }
 })
 
+// 监听外部配置变化
+watch(
+  () => props.modelValue,
+  newValue => {
+    if (newValue && JSON.stringify(newValue) !== JSON.stringify(formData)) {
+      Object.assign(formData, {
+        properties: { ...newValue.properties },
+        styles: { ...newValue.styles },
+        behavior: { ...newValue.behavior },
+        validation: { ...newValue.validation }
+      })
+      console.log('ComponentConfigForm - 外部配置已更新:', newValue)
+    }
+  },
+  { deep: true }
+)
+
 // 组件信息
 const componentName = computed(() => {
   if (!props.widget) return ''

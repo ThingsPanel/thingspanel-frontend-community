@@ -224,6 +224,18 @@ const formData = reactive<BaseConfiguration>({
   ...props.modelValue
 })
 
+// 监听外部配置变化
+watch(
+  () => props.modelValue,
+  newValue => {
+    if (newValue && JSON.stringify(newValue) !== JSON.stringify(formData)) {
+      Object.assign(formData, newValue)
+      console.log('BaseConfigForm - 外部配置已更新:', newValue)
+    }
+  },
+  { deep: true }
+)
+
 // 表单验证规则
 const formRules: FormRules = {
   title: {

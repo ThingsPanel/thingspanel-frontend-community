@@ -3,6 +3,13 @@
  * 定义标准化的配置数据结构和接口
  */
 
+import type {
+  DataSourceConfig,
+  EnhancedDataSourceConfiguration,
+  DataMappingConfig,
+  ValidationResult as DataSourceValidationResult
+} from '../core/data-source-types'
+
 export interface BaseConfiguration {
   /** 是否显示标题 */
   showTitle: boolean
@@ -30,6 +37,9 @@ export interface BaseConfiguration {
   }
 }
 
+/**
+ * 增强版数据源配置（兼容原有格式）
+ */
 export interface DataSourceConfiguration {
   /** 数据源类型 */
   type: 'static' | 'api' | 'websocket' | 'script' | 'device' | null
@@ -43,9 +53,90 @@ export interface DataSourceConfiguration {
   cacheTimeout?: number
   /** 错误重试次数 */
   retryAttempts?: number
-  /** 数据映射配置 */
+  /** 数据映射配置（兼容格式） */
   dataMapping?: {
     [key: string]: string | ((data: any) => any)
+  }
+}
+
+/**
+ * 新版数据源配置（基于统一类型系统）
+ */
+export interface EnhancedDataSourceConfig extends EnhancedDataSourceConfiguration {
+  /** 配置ID */
+  id?: string
+  /** 配置名称 */
+  name?: string
+  /** 配置描述 */
+  description?: string
+  /** 创建时间 */
+  createdAt?: number
+  /** 更新时间 */
+  updatedAt?: number
+  /** 是否为默认配置 */
+  isDefault?: boolean
+}
+
+/**
+ * 数据源配置验证规则
+ */
+export interface DataSourceValidationConfig {
+  /** 是否启用验证 */
+  enabled: boolean
+  /** 必填字段验证 */
+  required?: string[]
+  /** 自定义验证规则 */
+  customRules?: Array<{
+    field: string
+    validator: (value: any) => boolean | string
+    message: string
+  }>
+  /** 数据格式验证 */
+  dataFormat?: {
+    /** JSON Schema */
+    schema?: any
+    /** 严格模式 */
+    strict?: boolean
+  }
+}
+
+/**
+ * 数据源连接测试配置
+ */
+export interface DataSourceTestConfig {
+  /** 测试超时时间(毫秒) */
+  timeout?: number
+  /** 测试重试次数 */
+  retries?: number
+  /** 测试参数 */
+  testParams?: Record<string, any>
+  /** 期望的响应格式 */
+  expectedFormat?: 'json' | 'xml' | 'text' | 'any'
+}
+
+/**
+ * 数据源配置元数据
+ */
+export interface DataSourceConfigMetadata {
+  /** 配置版本 */
+  version: string
+  /** 兼容性信息 */
+  compatibility: {
+    visualEditor: string
+    card2: string
+  }
+  /** 性能指标 */
+  performance?: {
+    lastRequestTime?: number
+    averageResponseTime?: number
+    errorRate?: number
+  }
+  /** 使用统计 */
+  usage?: {
+    totalRequests: number
+    successfulRequests: number
+    failedRequests: number
+    lastUsed: number
   }
 }
 

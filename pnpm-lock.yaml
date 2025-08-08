@@ -93,10 +93,10 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(vue@3.5.17(typescript@5.8.3))
       gridstack:
-        specifier: ^12.2.2
-        version: 12.2.2
+        specifier: ^9.5.1
+        version: 9.5.1
       interactjs:
-        specifier: ^1.10.26
+        specifier: ^1.10.27
         version: 1.10.27
       jsencrypt:
         specifier: ^3.3.2
@@ -4439,8 +4439,8 @@ packages:
     peerDependencies:
       vue: ^3.0.0
 
-  gridstack@12.2.2:
-    resolution: {integrity: sha512-eK9XAbBWQp+QniqL6ipvofWSrCelm46j5USag73LNq8tOWSL2DeeGBWU9mTibLI6i66n0r7xYS+1/g2qqTqKcw==}
+  gridstack@9.5.1:
+    resolution: {integrity: sha512-ZzBXY8J2dTPwVOP14d6vHhrXZMWh4qCgb+FJ1COSOrI02OtiPJtDgEQbz1rDlVR/tFU5WQP67w1RYz0eF0FkuA==}
 
   gzip-size@6.0.0:
     resolution: {integrity: sha512-ax7ZYomf6jqPTQ4+XCpUGyXKHk5WweS+e05MBO4/y3WJ5RkmPXNKvX+bx1behVILVwr6JSQvZAku021CHPXG3Q==}
@@ -12248,7 +12248,7 @@ snapshots:
       interactjs: 1.10.27
       vue: 3.5.17(typescript@5.8.3)
 
-  gridstack@12.2.2: {}
+  gridstack@9.5.1: {}
 
   gzip-size@6.0.0:
     dependencies:

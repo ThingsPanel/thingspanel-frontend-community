@@ -1,6 +1,7 @@
 /**
- * 通用数据源管理器
+ * 通用数据源管理器（增强版）
  * 支持多种数据源类型：静态、设备、HTTP、WebSocket
+ * 集成配置验证、错误处理、性能监控等功能
  */
 
 import type {
@@ -15,6 +16,15 @@ import type {
 } from '@/components/visual-editor/types/data-source'
 import { DataSourceType } from '@/components/visual-editor/types/data-source'
 import { dataPathResolver } from '@/components/visual-editor/utils/data-path-resolver'
+import { dataSourceValidator } from './data-source-validator'
+import type {
+  IDataSourceManager,
+  DataSourceConfig,
+  DataSourceStatus,
+  DataSourceError,
+  DataSourceErrorType,
+  ValidationResult
+} from './data-source-types'
 
 // 设备数据API (从原有的data-source-manager导入)
 import {
@@ -26,14 +36,376 @@ import {
 // 导入组件API配置系统
 import { getComponentApiConfig, selectApiForComponent } from './component-api-config'
 
-export class DataSourceManager {
+/**
+ * 数据源性能指标
+ */
+interface DataSourceMetrics {
+  totalRequests: number
+  successfulRequests: number
+  failedRequests: number
+  averageResponseTime: number
+  lastRequestTime: number
+  errorRate: number
+}
+
+/**
+ * 数据源实例状态
+ */
+interface DataSourceInstanceState {
+  status: DataSourceStatus
+  lastError?: DataSourceError
+  metrics: DataSourceMetrics
+  createdAt: number
+  lastUpdated: number
+}
+
+export class DataSourceManager implements IDataSourceManager {
   private subscriptions = new Map<string, Set<DataSourceUpdateCallback>>()
   private values = new Map<string, DataSourceValue>()
   private intervals = new Map<string, NodeJS.Timeout>()
 
+  // 增强功能：数据源实例管理
+  private dataSourceInstances = new Map<string, DataSourceConfig>()
+  private dataSourceStates = new Map<string, DataSourceInstanceState>()
+
+  // 性能监控
+  private globalMetrics = {
+    totalDataSources: 0,
+    activeSubscriptions: 0,
+    totalRequests: 0,
+    totalErrors: 0
+  }
+
   // 生成订阅键
   private getSubscriptionKey(dataSource: DataSource): string {
     return `${dataSource.type}_${dataSource.name}_${JSON.stringify(dataSource.dataPaths || [])}`
+  }
+
+  /**
+   * 创建数据源实例（IDataSourceManager接口实现）
+   */
+  createDataSource(id: string, config: DataSourceConfig): any {
+    console.log('🏗️ [EnhancedDataSourceManager] 创建数据源实例:', id, config.type)
+
+    // 验证配置
+    const validation = dataSourceValidator.validateConfig(config)
+    if (!validation.valid) {
+      const error = this.createDataSourceError(
+        'CONFIG_ERROR',
+        `数据源配置验证失败: ${validation.errors.join(', ')}`,
+        'CONFIG_VALIDATION_FAILED',
+        { validation },
+        false
+      )
+      throw error
+    }
+
+    // 记录警告
+    if (validation.warnings.length > 0) {
+      console.warn('⚠️ [EnhancedDataSourceManager] 配置验证警告:', validation.warnings)
+    }
+
+    // 存储配置和状态
+    this.dataSourceInstances.set(id, config)
+    this.dataSourceStates.set(id, {
+      status: 'idle' as DataSourceStatus,
+      metrics: {
+        totalRequests: 0,
+        successfulRequests: 0,
+        failedRequests: 0,
+        averageResponseTime: 0,
+        lastRequestTime: 0,
+        errorRate: 0
+      },
+      createdAt: Date.now(),
+      lastUpdated: Date.now()
+    })
+
+    this.globalMetrics.totalDataSources++
+
+    console.log('✅ [EnhancedDataSourceManager] 数据源实例创建成功:', id)
+
+    // 返回模拟的数据源实例
+    return {
+      id,
+      config,
+      status: 'idle',
+      lastUpdated: Date.now(),
+      start: () => this.startDataSource(id),
+      stop: () => this.stopDataSource(id),
+      fetchData: () => this.fetchDataSourceData(id),
+      validateConfig: () => validation.valid,
+      testConnection: () => this.testDataSourceConfig(config)
+    }
+  }
+
+  /**
+   * 获取数据源实例
+   */
+  getDataSource(id: string): any {
+    const config = this.dataSourceInstances.get(id)
+    const state = this.dataSourceStates.get(id)
+
+    if (!config || !state) {
+      return null
+    }
+
+    return {
+      id,
+      config,
+      status: state.status,
+      lastUpdated: state.lastUpdated,
+      error: state.lastError,
+      metrics: state.metrics,
+      start: () => this.startDataSource(id),
+      stop: () => this.stopDataSource(id),
+      fetchData: () => this.fetchDataSourceData(id),
+      validateConfig: () => dataSourceValidator.validateConfig(config).valid,
+      testConnection: () => this.testDataSourceConfig(config)
+    }
+  }
+
+  /**
+   * 移除数据源实例
+   */
+  removeDataSource(id: string): boolean {
+    console.log('🗑️ [EnhancedDataSourceManager] 移除数据源实例:', id)
+
+    // 停止数据源
+    this.stopDataSource(id)
+
+    // 清理实例和状态
+    const removed = this.dataSourceInstances.delete(id) && this.dataSourceStates.delete(id)
+
+    if (removed) {
+      this.globalMetrics.totalDataSources--
+      console.log('✅ [EnhancedDataSourceManager] 数据源实例已移除:', id)
+    }
+
+    return removed
+  }
+
+  /**
+   * 测试数据源配置
+   */
+  async testDataSourceConfig(config: DataSourceConfig): Promise<boolean> {
+    console.log('🧪 [EnhancedDataSourceManager] 测试数据源配置:', config.type)
+
+    try {
+      const validation = await dataSourceValidator.validateConnection(config)
+
+      if (!validation.valid) {
+        console.error('❌ [EnhancedDataSourceManager] 数据源连接测试失败:', validation.errors)
+        return false
+      }
+
+      if (validation.warnings.length > 0) {
+        console.warn('⚠️ [EnhancedDataSourceManager] 连接测试警告:', validation.warnings)
+      }
+
+      console.log('✅ [EnhancedDataSourceManager] 数据源连接测试成功')
+      return true
+    } catch (error) {
+      console.error('❌ [EnhancedDataSourceManager] 数据源连接测试异常:', error)
+      return false
+    }
+  }
+
+  /**
+   * 启动数据源
+   */
+  private async startDataSource(id: string): Promise<void> {
+    const state = this.dataSourceStates.get(id)
+    if (!state) {
+      throw new Error(`数据源实例不存在: ${id}`)
+    }
+
+    console.log('▶️ [EnhancedDataSourceManager] 启动数据源:', id)
+
+    state.status = 'connecting' as DataSourceStatus
+    state.lastUpdated = Date.now()
+
+    try {
+      // 这里可以添加实际的启动逻辑
+      await new Promise(resolve => setTimeout(resolve, 100)) // 模拟启动延迟
+
+      state.status = 'connected' as DataSourceStatus
+      state.lastUpdated = Date.now()
+
+      console.log('✅ [EnhancedDataSourceManager] 数据源启动成功:', id)
+    } catch (error) {
+      state.status = 'error' as DataSourceStatus
+      state.lastError = this.createDataSourceError(
+        'CONNECTION_ERROR',
+        `数据源启动失败: ${error instanceof Error ? error.message : '未知错误'}`,
+        'START_FAILED',
+        { error },
+        true
+      )
+      state.lastUpdated = Date.now()
+
+      console.error('❌ [EnhancedDataSourceManager] 数据源启动失败:', error)
+      throw state.lastError
+    }
+  }
+
+  /**
+   * 停止数据源
+   */
+  private async stopDataSource(id: string): Promise<void> {
+    const state = this.dataSourceStates.get(id)
+    if (!state) return
+
+    console.log('⏹️ [EnhancedDataSourceManager] 停止数据源:', id)
+
+    state.status = 'disconnected' as DataSourceStatus
+    state.lastUpdated = Date.now()
+
+    // 清理相关的订阅和定时器
+    // 这里可以添加清理逻辑
+
+    console.log('✅ [EnhancedDataSourceManager] 数据源已停止:', id)
+  }
+
+  /**
+   * 获取数据源数据
+   */
+  private async fetchDataSourceData(id: string): Promise<any> {
+    const config = this.dataSourceInstances.get(id)
+    const state = this.dataSourceStates.get(id)
+
+    if (!config || !state) {
+      throw new Error(`数据源实例不存在: ${id}`)
+    }
+
+    console.log('📡 [EnhancedDataSourceManager] 获取数据源数据:', id)
+
+    const startTime = Date.now()
+    state.metrics.totalRequests++
+    this.globalMetrics.totalRequests++
+
+    try {
+      // 转换为旧格式并使用现有的获取逻辑
+      const legacyDataSource = this.convertConfigToLegacyFormat(config)
+      const data = await this.getValue(legacyDataSource)
+
+      // 更新性能指标
+      const responseTime = Date.now() - startTime
+      state.metrics.successfulRequests++
+      state.metrics.lastRequestTime = responseTime
+      state.metrics.averageResponseTime =
+        (state.metrics.averageResponseTime * (state.metrics.successfulRequests - 1) + responseTime) /
+        state.metrics.successfulRequests
+      state.metrics.errorRate = state.metrics.failedRequests / state.metrics.totalRequests
+      state.lastUpdated = Date.now()
+
+      console.log('✅ [EnhancedDataSourceManager] 数据获取成功:', id, `${responseTime}ms`)
+      return data
+    } catch (error) {
+      // 更新错误指标
+      state.metrics.failedRequests++
+      state.metrics.errorRate = state.metrics.failedRequests / state.metrics.totalRequests
+      state.lastError = this.createDataSourceError(
+        'DATA_ERROR',
+        `数据获取失败: ${error instanceof Error ? error.message : '未知错误'}`,
+        'DATA_FETCH_FAILED',
+        { error },
+        true
+      )
+      state.lastUpdated = Date.now()
+      this.globalMetrics.totalErrors++
+
+      console.error('❌ [EnhancedDataSourceManager] 数据获取失败:', id, error)
+      throw state.lastError
+    }
+  }
+
+  /**
+   * 转换新配置格式为旧格式（兼容性）
+   */
+  private convertConfigToLegacyFormat(config: DataSourceConfig): DataSource {
+    // 基础转换逻辑
+    const baseSource: any = {
+      type: config.type,
+      name: config.name,
+      description: config.description,
+      enabled: config.enabled ?? true
+    }
+
+    // 根据类型进行特定转换
+    switch (config.type) {
+      case 'static':
+        return {
+          ...baseSource,
+          data: (config as any).data,
+          format: (config as any).format
+        }
+      case 'api':
+      case 'http':
+        return {
+          ...baseSource,
+          url: (config as any).url,
+          method: (config as any).method,
+          headers: (config as any).headers
+            ? Object.entries((config as any).headers).map(([key, value]) => ({ key, value: String(value) }))
+            : [],
+          body: (config as any).body
+        }
+      case 'websocket':
+        return {
+          ...baseSource,
+          url: (config as any).url,
+          protocols: (config as any).protocols
+        }
+      case 'device':
+        return {
+          ...baseSource,
+          deviceId: (config as any).deviceId,
+          apiType: (config as any).apiType,
+          parameters: (config as any).parameters,
+          metricsType: (config as any).metricsType,
+          metricsId: (config as any).metricsId
+        }
+      default:
+        return baseSource
+    }
+  }
+
+  /**
+   * 创建数据源错误
+   */
+  private createDataSourceError(
+    type: DataSourceErrorType,
+    message: string,
+    code?: string,
+    details?: any,
+    retryable: boolean = false
+  ): DataSourceError {
+    const error = new Error(message) as DataSourceError
+    error.type = type
+    error.code = code
+    error.details = details
+    error.retryable = retryable
+    return error
+  }
+
+  /**
+   * 获取全局指标
+   */
+  getGlobalMetrics() {
+    return {
+      ...this.globalMetrics,
+      activeSubscriptions: this.subscriptions.size,
+      dataSourceInstances: this.dataSourceInstances.size
+    }
+  }
+
+  /**
+   * 获取数据源指标
+   */
+  getDataSourceMetrics(id: string) {
+    const state = this.dataSourceStates.get(id)
+    return state ? { ...state.metrics } : null
   }
 
   // 订阅数据源

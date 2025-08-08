@@ -7,6 +7,7 @@
           <div class="json-actions">
             <n-button size="tiny" @click="loadExampleData">示例</n-button>
             <n-button size="tiny" @click="formatJson">格式化</n-button>
+            <n-button size="tiny" type="primary" @click="randomizeData">随机更新</n-button>
           </div>
         </div>
       </n-form-item>
@@ -137,15 +138,40 @@ const updateJsonData = (value: string) => {
 const loadExampleData = () => {
   const exampleJson = {
     sensors: {
-      temperature: 25.5,
-      humidity: 65.2,
-      pressure: 1013.25
+      temperature: {
+        current: 25.5,
+        unit: '°C',
+        status: 'normal'
+      },
+      humidity: {
+        current: 60,
+        unit: '%',
+        status: 'normal'
+      },
+      pressure: {
+        current: 1013.25,
+        unit: 'hPa',
+        status: 'normal'
+      }
     },
     device: {
-      status: '运行中',
-      mode: '自动'
+      id: 'sensor_001',
+      name: '环境监测传感器',
+      status: 'online',
+      lastUpdate: new Date().toISOString(),
+      location: {
+        building: 'A',
+        floor: 2,
+        room: '201'
+      }
     },
-    timestamp: '2024-01-01T12:00:00Z'
+    statistics: {
+      uptime: 86400,
+      dataPoints: 1440,
+      errors: 0,
+      warnings: 2
+    },
+    timestamp: new Date().toISOString()
   }
 
   // 直接设置JSON字符串
@@ -155,7 +181,58 @@ const loadExampleData = () => {
   config.value.data = exampleJson
   updateConfig()
 
-  console.log('🔧 StaticDataSourceConfig - 示例数据已加载:', exampleJson)
+  console.log('🔧 StaticDataSourceConfig - 复杂JSON示例数据已加载:', exampleJson)
+}
+
+// 随机更新数据
+const randomizeData = () => {
+  try {
+    const currentData = JSON.parse(jsonString.value)
+
+    // 随机更新各种数值
+    const updateRandomValues = (obj: any): any => {
+      if (typeof obj === 'object' && obj !== null && !Array.isArray(obj)) {
+        const newObj = { ...obj }
+        for (const [key, value] of Object.entries(obj)) {
+          if (typeof value === 'number') {
+            // 随机变化±20%
+            newObj[key] = Math.round((value + (Math.random() - 0.5) * value * 0.4) * 100) / 100
+          } else if (typeof value === 'string') {
+            // 特定字符串的随机更新
+            if (key === 'status') {
+              const statuses = ['online', 'offline', 'maintenance', 'warning']
+              newObj[key] = statuses[Math.floor(Math.random() * statuses.length)]
+            } else if (key === 'lastUpdate' || key === 'timestamp') {
+              newObj[key] = new Date().toISOString()
+            }
+          } else if (typeof value === 'object') {
+            newObj[key] = updateRandomValues(value)
+          }
+        }
+        return newObj
+      }
+      return obj
+    }
+
+    const randomizedData = updateRandomValues(currentData)
+
+    // 更新时间戳
+    if (randomizedData.timestamp) {
+      randomizedData.timestamp = new Date().toISOString()
+    }
+    if (randomizedData.device?.lastUpdate) {
+      randomizedData.device.lastUpdate = new Date().toISOString()
+    }
+
+    // 更新JSON字符串和配置
+    jsonString.value = JSON.stringify(randomizedData, null, 2)
+    config.value.data = randomizedData
+    updateConfig()
+
+    console.log('🔧 StaticDataSourceConfig - 数据已随机更新:', randomizedData)
+  } catch (error) {
+    console.warn('随机更新失败，JSON格式可能有误:', error)
+  }
 }
 
 // 格式化JSON
