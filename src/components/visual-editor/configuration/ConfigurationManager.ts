@@ -371,28 +371,7 @@ export class ConfigurationManager implements IConfigurationManager {
     console.log(`[ConfigurationManager] 批量更新完成，共 ${updates.length} 项配置`)
   }
 
-  /**
-   * 监听配置变化
-   */
-  onConfigurationChange(widgetId: string, callback: (config: WidgetConfiguration) => void): () => void {
-    if (!this.listeners.has(widgetId)) {
-      this.listeners.set(widgetId, new Set())
-    }
 
-    const listeners = this.listeners.get(widgetId)!
-    listeners.add(callback)
-
-    console.log(`[ConfigurationManager] 添加配置监听器: ${widgetId}`)
-
-    // 返回取消监听的函数
-    return () => {
-      listeners.delete(callback)
-      if (listeners.size === 0) {
-        this.listeners.delete(widgetId)
-      }
-      console.log(`[ConfigurationManager] 移除配置监听器: ${widgetId}`)
-    }
-  }
 
   // 私有方法
 
@@ -422,7 +401,7 @@ export class ConfigurationManager implements IConfigurationManager {
 
     const cloned = {} as T
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         cloned[key] = this.deepClone(obj[key])
       }
     }
@@ -436,7 +415,7 @@ export class ConfigurationManager implements IConfigurationManager {
     const result = this.deepClone(target)
 
     for (const key in source) {
-      if (source.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
         const sourceValue = source[key]
         const targetValue = result[key]
 
