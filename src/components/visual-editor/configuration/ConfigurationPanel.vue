@@ -84,7 +84,19 @@
 
         <!-- 数据源配置标签页 -->
         <n-tab-pane name="dataSource" :tab="$t('config.tabs.dataSource')">
+          <!-- 增强版数据源表单（支持数组和对象） -->
+          <EnhancedDataSourceConfigForm
+            v-if="shouldUseEnhancedDataSourceForm"
+            v-model="dataSourceConfig"
+            :widget="selectedWidget"
+            :readonly="readonly"
+            :show-advanced="showAdvanced"
+            @validate="handleValidation"
+            @toggle-advanced="toggleAdvancedMode"
+          />
+          <!-- 原有的简单数据源表单（向后兼容） -->
           <DataSourceConfigForm
+            v-else
             v-model="dataSourceConfig"
             :widget="selectedWidget"
             :readonly="readonly"
@@ -203,6 +215,7 @@ import { Settings as SettingsIcon } from '@vicons/ionicons5'
 import BaseConfigForm from './forms/BaseConfigForm.vue'
 import ComponentConfigForm from './forms/ComponentConfigForm.vue'
 import DataSourceConfigForm from './forms/DataSourceConfigForm.vue'
+import EnhancedDataSourceConfigForm from './forms/EnhancedDataSourceConfigForm.vue'
 import InteractionConfigForm from './forms/InteractionConfigForm.vue'
 
 // 导入配置管理器和类型
@@ -289,6 +302,27 @@ const widgetDisplayName = computed(() => {
 
 const importExportTitle = computed(() => {
   return importExportMode.value === 'export' ? '导出配置' : '导入配置'
+})
+
+// 判断是否使用增强版数据源表单
+const shouldUseEnhancedDataSourceForm = computed(() => {
+  if (!props.selectedWidget) return false
+  
+  // 支持数组数据的组件类型列表
+  const arrayDataComponents = [
+    'array-chart-test', // 新的数组图表测试组件
+    // 可以在这里添加更多支持数组数据的组件
+  ]
+  
+  // 通用组件也可以使用增强版表单
+  const enhancedComponents = [
+    'array-chart-test',
+    // 未来的其他增强组件
+  ]
+  
+  const widgetType = props.selectedWidget.type
+  
+  return arrayDataComponents.includes(widgetType) || enhancedComponents.includes(widgetType)
 })
 
 // 配置操作选项
