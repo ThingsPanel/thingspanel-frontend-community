@@ -852,6 +852,15 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'test_editor-integration',
           i18nKey: 'route.test_editor-integration'
         }
+      },
+      {
+        name: 'test_real-time-monitor-demo',
+        path: '/test/real-time-monitor-demo',
+        component: 'view.test_real-time-monitor-demo',
+        meta: {
+          title: 'test_real-time-monitor-demo',
+          i18nKey: 'route.test_real-time-monitor-demo'
+        }
       }
     ]
   },

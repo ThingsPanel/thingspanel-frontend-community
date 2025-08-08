@@ -683,6 +683,13 @@ const handleCanvasClick = () => {
 
 // 保存面板
 const handleSave = async () => {
+  // 检查是否为Canvas渲染器，如果是则显示开发中提示
+  if (currentRenderer.value === 'canvas') {
+    message.warning('Canvas渲染器功能正在开发中，暂不支持保存')
+    console.warn('Canvas功能尚未完成，无法保存')
+    return
+  }
+
   isSaving.value = true
   try {
     const currentState = getState()

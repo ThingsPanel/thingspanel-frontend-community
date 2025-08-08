@@ -72,3 +72,34 @@ const handleClickOutside = () => {
   emit('close')
 }
 </script>
+
+<style scoped>
+/* 禁用状态样式 */
+.context-menu-disabled {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.disabled-overlay {
+  position: absolute;
+  top: v-bind('y + "px"');
+  left: v-bind('x + "px"');
+  pointer-events: auto;
+  min-width: 200px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e0e0e0;
+  padding: 8px;
+}
+
+/* 原有样式（已注释） */
+/*
+无原有样式
+*/
+</style>

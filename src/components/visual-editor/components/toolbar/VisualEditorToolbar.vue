@@ -261,7 +261,7 @@ const getConfigTitle = () => {
                   size="small"
                   :type="hasChanges ? 'primary' : 'default'"
                   :loading="isSaving"
-                  :disabled="readonly"
+                  :disabled="readonly || isCanvasRenderer"
                   @click="handleSave"
                 >
                   <template #icon>
@@ -269,7 +269,8 @@ const getConfigTitle = () => {
                   </template>
                 </NButton>
               </template>
-              <span>{{ $t('visualEditor.shortcuts.save') }}</span>
+              <span v-if="isCanvasRenderer">Canvas功能开发中，暂不支持保存</span>
+              <span v-else>{{ $t('visualEditor.shortcuts.save') }}</span>
             </NTooltip>
 
             <NButton size="small" type="tertiary" :disabled="readonly" @click="handleImport">

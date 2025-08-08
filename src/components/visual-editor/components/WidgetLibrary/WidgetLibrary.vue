@@ -76,7 +76,7 @@ import { SearchOutline, AlertCircleOutline } from '@vicons/ionicons5'
 import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import type { WidgetDefinition, WidgetTreeNode } from '../../types/widget'
 import { registerAllWidgets } from '../../widgets'
-import { debugCard2System } from '@/card2.1/debug'
+import { testPermissionSystem } from '@/card2.1/debug'
 import SvgIcon from '@/components/custom/svg-icon.vue'
 import { $t } from '@/locales'
 
@@ -96,7 +96,7 @@ const initializationError = computed(() => card2Integration.error.value)
 
 const initializeWidgets = async () => {
   try {
-    await debugCard2System()
+    await testPermissionSystem()
     await card2Integration.initialize()
   } catch (error) {
     console.error('❌ [WidgetLibrary] 组件初始化失败:', error)

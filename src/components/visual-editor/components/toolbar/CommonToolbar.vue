@@ -14,6 +14,7 @@ interface Props {
   hasChanges?: boolean
   canUndo?: boolean
   canRedo?: boolean
+  currentRenderer?: string
 }
 
 interface Emits {
@@ -33,7 +34,8 @@ const props = withDefaults(defineProps<Props>(), {
   isSaving: false,
   hasChanges: false,
   canUndo: false,
-  canRedo: false
+  canRedo: false,
+  currentRenderer: 'gridstack'
 })
 
 const emit = defineEmits<Emits>()
@@ -41,6 +43,12 @@ const emit = defineEmits<Emits>()
 // 计算属性
 const saveButtonType = computed(() => (props.hasChanges ? 'primary' : 'default'))
 const saveButtonText = computed(() => (props.isSaving ? '保存中...' : $t('common.save')))
+
+// 检查是否为Canvas渲染器
+const isCanvasRenderer = computed(() => props.currentRenderer === 'canvas')
+const isSaveDisabled = computed(
+  () => props.readonly || (!props.hasChanges && !props.isSaving) || isCanvasRenderer.value
+)
 
 // 事件处理
 const handleSave = () => emit('save')
@@ -64,7 +72,7 @@ const handleCenterView = () => emit('center-view')
             :type="saveButtonType"
             size="small"
             :loading="isSaving"
-            :disabled="readonly || (!hasChanges && !isSaving)"
+            :disabled="isSaveDisabled"
             @click="handleSave"
           >
             <template #icon>
@@ -73,7 +81,8 @@ const handleCenterView = () => emit('center-view')
             {{ saveButtonText }}
           </NButton>
         </template>
-        <span>{{ $t('common.save') }} (Ctrl+S)</span>
+        <span v-if="isCanvasRenderer">Canvas功能开发中，暂不支持保存</span>
+        <span v-else>{{ $t('common.save') }} (Ctrl+S)</span>
       </NTooltip>
 
       <NDivider vertical />

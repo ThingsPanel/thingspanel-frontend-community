@@ -47,7 +47,7 @@ export async function initializeCard2System() {
       const stats = componentLoader.getComponentStats(componentModules)
       console.log('📊 [Card2.1] 组件统计:', stats)
 
-      // 3. 自动注册组件
+      // 3. 自动注册组件（包含权限过滤）
       const registeredComponents = await autoRegistry.autoRegister(componentModules)
 
       // 4. 获取组件树形结构
@@ -114,10 +114,37 @@ export function getCategories() {
   return autoRegistry.getCategories()
 }
 
+/**
+ * 重新应用权限过滤
+ * 当用户权限发生变化时调用此函数
+ */
+export function reapplyPermissionFilter() {
+  if (!isInitialized) {
+    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
+    return
+  }
+  autoRegistry.reapplyPermissionFilter()
+}
+
+/**
+ * 获取所有组件（包括无权限的，用于调试）
+ */
+export function getAllComponents() {
+  if (!isInitialized) {
+    console.warn('⚠️ [Card2.1] 系统未初始化，请先调用 initializeCard2System()')
+    return []
+  }
+  return autoRegistry.getAllComponents()
+}
+
 // 导出核心模块
 export { componentRegistry }
 export { AutoRegistry, ComponentLoader }
 export type { ComponentTree, ComponentCategory } from './core/auto-registry'
+
+// 导出权限相关工具
+export * from './core/permission-utils'
+export type { ComponentPermission } from './core/types'
 
 // 导出 Hooks
 export * from './hooks'

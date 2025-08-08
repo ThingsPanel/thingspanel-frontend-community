@@ -323,6 +323,9 @@ const configActionsOptions = [
 // 配置变更监听器清理函数
 let configChangeCleanup: (() => void) | null = null
 
+// 防循环标记
+let isUpdatingFromManager = false
+
 // 监听选中组件变化
 watch(
   () => props.selectedWidget,
@@ -352,7 +355,8 @@ watch(
 watch(
   [baseConfig, componentConfig, dataSourceConfig, interactionConfig],
   () => {
-    if (props.selectedWidget) {
+    // 防止循环更新：如果是从ConfigurationManager更新的，不再同步回去
+    if (props.selectedWidget && !isUpdatingFromManager) {
       syncConfigurationToManager()
     }
   },

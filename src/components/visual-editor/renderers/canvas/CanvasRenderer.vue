@@ -1,4 +1,65 @@
 <template>
+  <!-- 敬请期待界面 -->
+  <div class="coming-soon-container">
+    <div class="coming-soon-content">
+      <div class="coming-soon-icon">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M12 2L2 7L12 12L22 7L12 2Z"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M2 17L12 22L22 17"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+          <path
+            d="M2 12L12 17L22 12"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </div>
+      <h2 class="coming-soon-title">敬请期待</h2>
+      <p class="coming-soon-description">Canvas渲染器功能正在开发中，即将上线</p>
+      <div class="coming-soon-features">
+        <div class="feature-item">
+          <span class="feature-icon">🎨</span>
+          <span>拖拽式组件编辑</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📐</span>
+          <span>网格对齐系统</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔧</span>
+          <span>实时属性配置</span>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📱</span>
+          <span>响应式布局</span>
+        </div>
+      </div>
+      <div class="coming-soon-note">
+        <n-alert type="info" size="small">
+          <template #header>
+            <span>开发进度</span>
+          </template>
+          当前功能已完成基础架构，正在完善交互体验和性能优化
+        </n-alert>
+      </div>
+    </div>
+  </div>
+
+  <!-- 原有代码（已注释） -->
+  <!--
   <BaseRendererComponent
     :readonly="readonly"
     :config="canvasConfig"
@@ -46,11 +107,13 @@
       />
     </div>
   </BaseRendererComponent>
+  -->
 </template>
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { nanoid } from 'nanoid'
+import { NAlert } from 'naive-ui'
 import { useEditor } from '../../hooks/useEditor'
 import { globalPreviewMode } from '../../hooks/usePreviewMode'
 import BaseRendererComponent from '../base/BaseRendererComponent.vue'
@@ -94,6 +157,26 @@ interface Emits {
   (e: 'request-settings', id: string): void
 }
 const emit = defineEmits<Emits>()
+
+// 立即发出ready事件，表示组件已加载
+onMounted(() => {
+  emit('ready')
+})
+
+// 添加保存时的提示
+const showSaveWarning = () => {
+  // 这里可以触发一个全局的提示，告知用户功能尚未完成
+  console.warn('Canvas功能尚未完成，无法保存')
+  // 可以在这里添加一个全局的提示组件
+}
+
+// 暴露保存警告方法给父组件
+defineExpose({
+  showSaveWarning
+})
+
+// 原有代码（已注释）
+/*
 // 根据预览模式动态调整画布配置
 const canvasConfig = computed(() => ({
   ...props.config,
@@ -286,17 +369,79 @@ const handleCard2Error = (error: Error) => {
   emit('error', error)
 }
 
-/**
- * 处理标题更新
- * 当NodeWrapper中的标题被编辑时调用
- */
 const handleTitleUpdate = (nodeId: string, newTitle: string) => {
   console.log(`[CanvasRenderer] 标题更新: ${nodeId} -> "${newTitle}"`)
-  // NodeWrapper已经处理了配置更新，这里只需要记录日志
 }
+*/
 </script>
 
 <style scoped>
+/* 敬请期待样式 */
+.coming-soon-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 600px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 2rem;
+}
+
+.coming-soon-content {
+  text-align: center;
+  max-width: 500px;
+}
+
+.coming-soon-icon {
+  margin-bottom: 1.5rem;
+  opacity: 0.8;
+}
+
+.coming-soon-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(45deg, #fff, #f0f0f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.coming-soon-description {
+  font-size: 1.1rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.coming-soon-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.feature-icon {
+  font-size: 1.2rem;
+}
+
+.coming-soon-note {
+  margin-top: 1.5rem;
+}
+
+/* 原有样式（已注释） */
+/*
 .canvas {
   position: relative;
   width: 100%;
@@ -306,7 +451,6 @@ const handleTitleUpdate = (nodeId: string, newTitle: string) => {
 }
 
 .canvas-node {
-  /* NodeWrapper现在处理所有节点样式，这里只保留位置相关 */
   cursor: move;
 }
 
@@ -314,8 +458,8 @@ const handleTitleUpdate = (nodeId: string, newTitle: string) => {
   cursor: default;
 }
 
-/* 预览模式样式 */
 .canvas-node.preview-mode {
   cursor: default !important;
 }
+*/
 </style>
