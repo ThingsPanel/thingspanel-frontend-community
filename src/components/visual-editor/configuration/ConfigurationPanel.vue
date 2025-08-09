@@ -307,21 +307,21 @@ const importExportTitle = computed(() => {
 // 判断是否使用增强版数据源表单
 const shouldUseEnhancedDataSourceForm = computed(() => {
   if (!props.selectedWidget) return false
-  
+
   // 支持数组数据的组件类型列表
   const arrayDataComponents = [
-    'array-chart-test', // 新的数组图表测试组件
+    'array-chart-test' // 新的数组图表测试组件
     // 可以在这里添加更多支持数组数据的组件
   ]
-  
+
   // 通用组件也可以使用增强版表单
   const enhancedComponents = [
-    'array-chart-test',
+    'array-chart-test'
     // 未来的其他增强组件
   ]
-  
+
   const widgetType = props.selectedWidget.type
-  
+
   return arrayDataComponents.includes(widgetType) || enhancedComponents.includes(widgetType)
 })
 
