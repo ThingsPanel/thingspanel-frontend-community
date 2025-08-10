@@ -13,7 +13,7 @@
       v-else-if="componentToRender"
       v-bind="config"
       :data="data"
-      :metadata="{ card2Data: data, dataSource: dataSource }"
+      :metadata="metadata || { card2Data: data, dataSource: dataSource }"
       :dataSourceValue="dataSourceValue"
     />
   </div>
@@ -31,6 +31,7 @@ interface Props {
   componentType: string
   config?: any
   data?: any // data prop暂时保留，但目前未使用
+  metadata?: any // 完整的metadata对象，包含dataConfig等配置
   dataSource?: any // 数据源配置
   nodeId: string
 }
@@ -151,6 +152,18 @@ watch(
   () => props.data,
   newData => {
     console.log('🔧 [Card2Wrapper] 接收到新的data prop:', newData)
+  },
+  { deep: true, immediate: true }
+)
+
+// 监听metadata变化，用于调试
+watch(
+  () => props.metadata,
+  newMetadata => {
+    console.log('🔧 [Card2Wrapper] 接收到新的metadata prop:', newMetadata)
+    if (newMetadata?.dataConfig) {
+      console.log('🎯 [Card2Wrapper] 检测到dataConfig配置:', newMetadata.dataConfig)
+    }
   },
   { deep: true, immediate: true }
 )

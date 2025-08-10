@@ -34,6 +34,7 @@
         :component-type="node.type"
         :config="getNodeComponentConfig(nodeId) || node.properties"
         :data="node.metadata?.card2Data"
+        :metadata="node.metadata"
         :data-source="node.dataSource"
         :node-id="nodeId"
         @error="$emit('component-error', $event)"
