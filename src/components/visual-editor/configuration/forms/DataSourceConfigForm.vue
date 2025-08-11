@@ -17,7 +17,7 @@
         />
         <div class="json-actions">
           <n-button size="small" @click="loadExampleData">对象示例</n-button>
-          <n-button size="small" @click="loadArrayExample" type="info">数组示例</n-button>
+          <n-button size="small" type="info" @click="loadArrayExample">数组示例</n-button>
           <n-button size="small" type="primary" @click="randomizeData">随机更新</n-button>
           <n-button size="small" @click="formatJson">格式化</n-button>
         </div>
@@ -27,18 +27,16 @@
     <!-- 智能数据配置 - 根据数据类型显示不同配置 -->
     <div class="mapping-section">
       <div class="section-title">
-        数据配置 
-        <n-tag :type="dataTypeTag.type" size="tiny" style="margin-left: 8px;">
+        数据配置
+        <n-tag :type="dataTypeTag.type" size="tiny" style="margin-left: 8px">
           {{ dataTypeTag.label }}
         </n-tag>
       </div>
-      
+
       <!-- 数组数据配置 -->
       <div v-if="isArrayDataDetected" class="array-config">
         <div class="config-description">
-          <n-text depth="3" style="font-size: 12px;">
-            配置数组中每个对象的字段映射，用于图表X/Y轴显示
-          </n-text>
+          <n-text depth="3" style="font-size: 12px">配置数组中每个对象的字段映射，用于图表X/Y轴显示</n-text>
         </div>
         <div class="mapping-list">
           <div class="mapping-item">
@@ -49,9 +47,7 @@
               size="small"
               @update:value="handleMappingChange"
             />
-            <n-text depth="3" style="font-size: 11px; margin-top: 2px;">
-              时间或索引字段，用于图表横轴
-            </n-text>
+            <n-text depth="3" style="font-size: 11px; margin-top: 2px">时间或索引字段，用于图表横轴</n-text>
           </div>
           <div class="mapping-item">
             <span class="mapping-label">Y轴字段名:</span>
@@ -61,9 +57,7 @@
               size="small"
               @update:value="handleMappingChange"
             />
-            <n-text depth="3" style="font-size: 11px; margin-top: 2px;">
-              数值字段，用于图表纵轴
-            </n-text>
+            <n-text depth="3" style="font-size: 11px; margin-top: 2px">数值字段，用于图表纵轴</n-text>
           </div>
           <div class="mapping-item">
             <span class="mapping-label">标签字段名:</span>
@@ -73,41 +67,35 @@
               size="small"
               @update:value="handleMappingChange"
             />
-            <n-text depth="3" style="font-size: 11px; margin-top: 2px;">
-              可选，用于数据点标签显示
-            </n-text>
+            <n-text depth="3" style="font-size: 11px; margin-top: 2px">可选，用于数据点标签显示</n-text>
           </div>
         </div>
       </div>
-      
+
       <!-- 对象数据配置 -->
       <div v-else-if="isObjectDataDetected" class="object-config">
         <div class="config-description">
-          <n-text depth="3" style="font-size: 12px;">
-            对象数据将自动扫描所有数值字段，无需额外配置
-          </n-text>
+          <n-text depth="3" style="font-size: 12px">对象数据将自动扫描所有数值字段，无需额外配置</n-text>
         </div>
-        <div class="auto-fields-preview" v-if="detectedNumericFields.length > 0">
+        <div v-if="detectedNumericFields.length > 0" class="auto-fields-preview">
           <div class="preview-title">检测到的数值字段:</div>
           <div class="fields-list">
-            <n-tag 
-              v-for="field in detectedNumericFields" 
+            <n-tag
+              v-for="field in detectedNumericFields"
               :key="field.path"
               size="small"
               type="info"
-              style="margin: 2px;"
+              style="margin: 2px"
             >
               {{ field.path }}: {{ field.value }}
             </n-tag>
           </div>
         </div>
       </div>
-      
+
       <!-- 未识别数据类型 -->
       <div v-else class="unknown-data-config">
-        <n-alert type="warning" :show-icon="false" size="small">
-          请先输入有效的JSON数据以显示配置选项
-        </n-alert>
+        <n-alert type="warning" :show-icon="false" size="small">请先输入有效的JSON数据以显示配置选项</n-alert>
       </div>
     </div>
 
@@ -115,11 +103,10 @@
     <div class="preview-section">
       <div class="section-title">数据预览</div>
       <div class="preview-content">
-        
         <!-- 数组数据预览 -->
         <div v-if="isArrayDataDetected && currentOutputData.arrayLength" class="array-preview">
           <div class="preview-header">
-            <n-text style="font-size: 12px; color: var(--success-color);">
+            <n-text style="font-size: 12px; color: var(--success-color)">
               ✅ 数组数据 ({{ currentOutputData.arrayLength }} 项)
             </n-text>
           </div>
@@ -132,39 +119,42 @@
               <span class="field-name">Y轴 ({{ arrayConfig.yField }}):</span>
               <span class="field-value">{{ currentOutputData.yValue }}</span>
             </div>
-            <div v-if="arrayConfig.labelField && currentOutputData.labelValue !== '未配置'" class="mapping-preview-item">
+            <div
+              v-if="arrayConfig.labelField && currentOutputData.labelValue !== '未配置'"
+              class="mapping-preview-item"
+            >
               <span class="field-name">标签 ({{ arrayConfig.labelField }}):</span>
               <span class="field-value">{{ currentOutputData.labelValue }}</span>
             </div>
           </div>
         </div>
-        
+
         <!-- 对象数据预览 -->
         <div v-else-if="isObjectDataDetected && currentOutputData.numericFieldsCount" class="object-preview">
           <div class="preview-header">
-            <n-text style="font-size: 12px; color: var(--info-color);">
+            <n-text style="font-size: 12px; color: var(--info-color)">
               ✅ 对象数据 ({{ currentOutputData.numericFieldsCount }} 个数值字段)
             </n-text>
           </div>
           <div class="fields-preview">
-            <n-tag 
-              v-for="field in currentOutputData.fields" 
+            <n-tag
+              v-for="field in currentOutputData.fields"
               :key="field.path"
               size="small"
               type="info"
-              style="margin: 2px 4px 2px 0;"
+              style="margin: 2px 4px 2px 0"
             >
               {{ field.path }}: {{ field.value }}
             </n-tag>
-            <n-text v-if="currentOutputData.numericFieldsCount > 5" depth="3" style="font-size: 11px;">
+            <n-text v-if="currentOutputData.numericFieldsCount > 5" depth="3" style="font-size: 11px">
               ...还有 {{ currentOutputData.numericFieldsCount - 5 }} 个字段
             </n-text>
           </div>
         </div>
-        
+
         <!-- 无数据或错误状态 -->
         <div v-else class="no-preview">
-          <n-text depth="3" style="font-size: 12px;">
+          <n-text depth="3" style="font-size: 12px">
             {{ currentOutputData.error || '请输入有效的JSON数据以查看预览' }}
           </n-text>
         </div>
@@ -206,15 +196,15 @@ const jsonInput = ref('')
 
 // 🎯 新的数据配置结构 - 语义化字段替换key1/key2/key3
 const arrayConfig = ref({
-  xField: 'timestamp',    // X轴字段名（时间、索引等）
-  yField: 'temperature',  // Y轴字段名（数值）
-  labelField: 'label'     // 标签字段名（可选）
+  xField: 'timestamp', // X轴字段名（时间、索引等）
+  yField: 'temperature', // Y轴字段名（数值）
+  labelField: 'label' // 标签字段名（可选）
 })
 
 // 保留旧配置以兼容现有代码（将逐步移除）
 const mappingConfig = ref({
   key1: 'sensors.temperature.current',
-  key2: 'device.status', 
+  key2: 'device.status',
   key3: 'statistics.dataPoints'
 })
 
@@ -248,13 +238,13 @@ const dataTypeTag = computed(() => {
 // 🎯 自动检测对象中的数值字段
 const detectedNumericFields = computed(() => {
   if (!isObjectDataDetected.value) return []
-  
-  const fields: Array<{path: string, value: any, type: string}> = []
-  
+
+  const fields: Array<{ path: string; value: any; type: string }> = []
+
   const extractFields = (obj: any, prefix = '') => {
     Object.entries(obj).forEach(([key, value]) => {
       const fullPath = prefix ? `${prefix}.${key}` : key
-      
+
       if (typeof value === 'number') {
         fields.push({ path: fullPath, value, type: 'number' })
       } else if (value && typeof value === 'object' && !Array.isArray(value)) {
@@ -262,7 +252,7 @@ const detectedNumericFields = computed(() => {
       }
     })
   }
-  
+
   extractFields(parsedJson.value)
   return fields.slice(0, 10) // 最多显示10个字段
 })
@@ -270,10 +260,10 @@ const detectedNumericFields = computed(() => {
 // 🎯 自动检测数组中的字段
 const detectedArrayFields = computed(() => {
   if (!isArrayDataDetected.value) return []
-  
+
   const firstItem = parsedJson.value[0]
   if (!firstItem || typeof firstItem !== 'object') return []
-  
+
   return Object.keys(firstItem).map(key => ({
     name: key,
     type: typeof firstItem[key],
@@ -338,20 +328,22 @@ const updateOutput = () => {
       dataConfig: {
         isArray: isArrayDataDetected.value,
         isObject: isObjectDataDetected.value,
-        arrayConfig: isArrayDataDetected.value ? {
-          xField: arrayConfig.value.xField,
-          yField: arrayConfig.value.yField,
-          labelField: arrayConfig.value.labelField
-        } : null,
+        arrayConfig: isArrayDataDetected.value
+          ? {
+              xField: arrayConfig.value.xField,
+              yField: arrayConfig.value.yField,
+              labelField: arrayConfig.value.labelField
+            }
+          : null,
         detectedFields: isArrayDataDetected.value ? detectedArrayFields.value : detectedNumericFields.value
       },
       // 添加时间戳确保每次都是新对象
       _updateTimestamp: Date.now()
     }
-    
+
     // 替换整个metadata对象触发响应式更新
     props.widget.metadata = newMetadata
-    
+
     console.log('🎯 DataSourceConfigForm - 统一数据已更新:', {
       data: parsedJson.value,
       config: props.widget.metadata.dataConfig,
@@ -366,7 +358,7 @@ const updateOutput = () => {
     const firstItem = parsedJson.value[0] || {}
     currentOutputData.value = {
       xValue: firstItem[arrayConfig.value.xField] || '未找到',
-      yValue: firstItem[arrayConfig.value.yField] || '未找到',  
+      yValue: firstItem[arrayConfig.value.yField] || '未找到',
       labelValue: firstItem[arrayConfig.value.labelField] || '未配置',
       arrayLength: parsedJson.value.length
     }
@@ -388,7 +380,7 @@ const updateOutput = () => {
       mappings: mappingConfig.value,
       output: currentOutputData.value, // 使用当前输出数据
       // 🎯 新增：语义化配置信息
-      dataType: isArrayDataDetected.value ? 'array' : (isObjectDataDetected.value ? 'object' : 'unknown'),
+      dataType: isArrayDataDetected.value ? 'array' : isObjectDataDetected.value ? 'object' : 'unknown',
       arrayConfig: isArrayDataDetected.value ? arrayConfig.value : null
     },
     refreshInterval: 0, // 静态数据不需要刷新
@@ -401,14 +393,14 @@ const updateOutput = () => {
 
   emit('update:modelValue', dataSourceConfig)
   emit('validate', true)
-  
+
   // 🎯 关键：发送data-updated事件给SettingsPanel（使用新的数据结构）
   const eventData = {
-    data: parsedJson.value,  // 总是传递原始数据
+    data: parsedJson.value, // 总是传递原始数据
     config: {
       ...dataSourceConfig.config,
       // 🎯 新增：语义化配置信息
-      dataType: isArrayDataDetected.value ? 'array' : (isObjectDataDetected.value ? 'object' : 'unknown'),
+      dataType: isArrayDataDetected.value ? 'array' : isObjectDataDetected.value ? 'object' : 'unknown',
       arrayConfig: isArrayDataDetected.value ? arrayConfig.value : null,
       detectedFields: isArrayDataDetected.value ? detectedArrayFields.value : detectedNumericFields.value
     },
@@ -420,7 +412,7 @@ const updateOutput = () => {
     mappings: mappingConfig.value,
     timestamp: Date.now()
   }
-  
+
   console.log('🎯 DataSourceConfigForm - 发送data-updated事件（新结构）:', eventData)
   emit('data-updated', eventData)
 }
@@ -485,14 +477,14 @@ const loadArrayExample = () => {
 
   jsonInput.value = JSON.stringify(arrayExampleData, null, 2)
   parsedJson.value = arrayExampleData
-  
+
   // 🎯 智能设置数组配置（新的语义化字段）
   arrayConfig.value = {
-    xField: 'timestamp',    // X轴：时间戳
-    yField: 'temperature',  // Y轴：温度数值
-    labelField: 'label'     // 标签：数据点标签
+    xField: 'timestamp', // X轴：时间戳
+    yField: 'temperature', // Y轴：温度数值
+    labelField: 'label' // 标签：数据点标签
   }
-  
+
   updateOutput()
   message.success('数组数据示例已加载！字段映射: X轴=timestamp, Y轴=temperature')
 }
@@ -565,9 +557,9 @@ watch(
   () => arrayConfig.value,
   (newConfig, oldConfig) => {
     if (isArrayDataDetected.value && parsedJson.value) {
-      console.log('🔄 [DataSourceConfigForm] arrayConfig变化:', { 
-        old: oldConfig, 
-        new: newConfig 
+      console.log('🔄 [DataSourceConfigForm] arrayConfig变化:', {
+        old: oldConfig,
+        new: newConfig
       })
       updateOutput()
     }
@@ -674,7 +666,7 @@ onMounted(() => {
   .json-actions {
     flex-direction: column;
   }
-  
+
   .json-actions .n-button {
     width: 100%;
   }

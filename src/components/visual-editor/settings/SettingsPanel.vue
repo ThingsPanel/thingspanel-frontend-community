@@ -8,15 +8,11 @@
           全局设置
         </h3>
       </div>
-      
+
       <div class="form-container">
         <div class="form-item-flat">
           <span class="item-label">组件标题</span>
-          <n-switch 
-            :value="showWidgetTitles" 
-            @update:value="onToggleWidgetTitles" 
-            size="small"
-          />
+          <n-switch :value="showWidgetTitles" size="small" @update:value="onToggleWidgetTitles" />
         </div>
       </div>
     </div>
@@ -29,7 +25,7 @@
           网格配置
         </h3>
       </div>
-      
+
       <div class="form-container">
         <!-- 数值配置组 -->
         <div class="config-group">
@@ -37,18 +33,20 @@
           <div class="form-grid">
             <div class="form-item-compact">
               <span class="item-label-short">列数</span>
-              <n-input-number 
-                v-model:value="gridConfig.colNum" 
-                :min="1" :max="48" 
+              <n-input-number
+                v-model:value="gridConfig.colNum"
+                :min="1"
+                :max="48"
                 size="small"
-                @update:value="handleGridConfigChange" 
+                @update:value="handleGridConfigChange"
               />
             </div>
             <div class="form-item-compact">
               <span class="item-label-short">行高</span>
               <n-input-number
                 v-model:value="gridConfig.rowHeight"
-                :min="20" :max="200"
+                :min="20"
+                :max="200"
                 size="small"
                 @update:value="handleGridConfigChange"
               />
@@ -57,19 +55,22 @@
               <span class="item-label-short">间距</span>
               <n-input-number
                 v-model:value="gridConfig.margin[0]"
-                :min="0" :max="50"
+                :min="0"
+                :max="50"
                 size="small"
-                @update:value="value => {
-                  if (props.gridConfig) {
-                    props.gridConfig.margin = [value, value]
-                    handleGridConfigChange()
+                @update:value="
+                  value => {
+                    if (props.gridConfig) {
+                      props.gridConfig.margin = [value, value]
+                      handleGridConfigChange()
+                    }
                   }
-                }"
+                "
               />
             </div>
           </div>
         </div>
-        
+
         <!-- 开关配置组 -->
         <div class="config-group">
           <div class="group-label">交互设置</div>
@@ -96,7 +97,7 @@
       <div class="widget-header">
         <div class="widget-info">
           <h3 class="widget-title">
-            <n-ellipsis style="max-width: 140px;" tooltip>
+            <n-ellipsis style="max-width: 140px" tooltip>
               {{ widgetName }}
             </n-ellipsis>
           </h3>
@@ -124,7 +125,7 @@
                   </n-text>
                 </div>
               </div>
-              
+
               <!-- 直接嵌入数据源配置表单 -->
               <div class="data-source-config-wrapper">
                 <DataSourceConfigForm
@@ -134,14 +135,10 @@
                 />
               </div>
             </div>
-            
+
             <!-- 无数据源支持 -->
             <div v-else class="empty-state">
-              <n-empty 
-                description="该组件不支持数据源配置" 
-                size="small"
-                class="compact-empty"
-              >
+              <n-empty description="该组件不支持数据源配置" size="small" class="compact-empty">
                 <template #icon>
                   <DocumentOutline />
                 </template>
@@ -156,19 +153,15 @@
             <div class="config-group">
               <div class="form-item-flat">
                 <span class="item-label">显示标题</span>
-                <n-switch 
-                  v-model:value="editableProps.showLabel" 
-                  size="small"
-                  @update:value="updateNode" 
-                />
+                <n-switch v-model:value="editableProps.showLabel" size="small" @update:value="updateNode" />
               </div>
               <div class="form-item-vertical">
                 <span class="item-label-top">组件标题</span>
-                <n-input 
-                  v-model:value="editableProps.label" 
+                <n-input
+                  v-model:value="editableProps.label"
                   size="small"
                   placeholder="请输入组件标题"
-                  @update:value="updateNode" 
+                  @update:value="updateNode"
                 />
               </div>
             </div>
@@ -199,18 +192,14 @@
 
             <!-- 简单属性表单 - 优化布局 -->
             <div v-else class="properties-form">
-              <div 
-                v-for="(propDef, key) in selectedWidget.properties" 
-                :key="key" 
-                class="property-item"
-              >
+              <div v-for="(propDef, key) in selectedWidget.properties" :key="key" class="property-item">
                 <div class="form-item-vertical">
                   <span class="item-label-top">
-                    <n-ellipsis style="max-width: 100px;" tooltip>
+                    <n-ellipsis style="max-width: 100px" tooltip>
                       {{ String(key) }}
                     </n-ellipsis>
                   </span>
-                  
+
                   <n-input
                     v-if="typeof propDef === 'string'"
                     v-model:value="editableProps.properties[key]"
@@ -229,9 +218,7 @@
                     size="small"
                     @update:value="updateNode"
                   />
-                  <n-text v-else depth="3" class="unsupported-type">
-                    不支持的类型
-                  </n-text>
+                  <n-text v-else depth="3" class="unsupported-type">不支持的类型</n-text>
                 </div>
               </div>
             </div>
@@ -251,37 +238,37 @@
                   @update:value="updateNode"
                 />
               </div>
-              
+
               <!-- 动态显示额外配置 -->
               <div v-if="editableProps.interaction.onClick.type !== 'none'" class="interaction-config">
                 <div v-if="editableProps.interaction.onClick.type === 'link'" class="link-config">
                   <div class="form-item-vertical">
                     <span class="item-label-top">目标URL</span>
-                    <n-input 
-                      v-model:value="editableProps.interaction.onClick.payload.url" 
+                    <n-input
+                      v-model:value="editableProps.interaction.onClick.payload.url"
                       size="small"
                       placeholder="https://example.com"
-                      @update:value="updateNode" 
+                      @update:value="updateNode"
                     />
                   </div>
                   <div class="form-item-flat">
                     <span class="item-label">新窗口打开</span>
-                    <n-switch 
-                      v-model:value="editableProps.interaction.onClick.payload.newTab" 
+                    <n-switch
+                      v-model:value="editableProps.interaction.onClick.payload.newTab"
                       size="small"
-                      @update:value="updateNode" 
+                      @update:value="updateNode"
                     />
                   </div>
                 </div>
-                
+
                 <div v-if="editableProps.interaction.onClick.type === 'internal_route'" class="route-config">
                   <div class="form-item-vertical">
                     <span class="item-label-top">内部路由</span>
-                    <n-input 
-                      v-model:value="editableProps.interaction.onClick.payload.route" 
+                    <n-input
+                      v-model:value="editableProps.interaction.onClick.payload.route"
                       size="small"
                       placeholder="/dashboard/details"
-                      @update:value="updateNode" 
+                      @update:value="updateNode"
                     />
                   </div>
                 </div>
@@ -299,9 +286,7 @@
             <SettingsOutline />
           </template>
           <template #extra>
-            <p class="placeholder-text">
-              点击画布中的组件即可在此处配置其属性
-            </p>
+            <p class="placeholder-text">点击画布中的组件即可在此处配置其属性</p>
           </template>
         </n-empty>
       </div>
@@ -311,9 +296,21 @@
 
 <script setup lang="ts">
 import { computed, ref, watch, onUnmounted } from 'vue'
-import { 
-  NForm, NFormItem, NInput, NInputNumber, NSwitch, NText, 
-  NTabs, NTabPane, NSelect, NAlert, NIcon, NTag, NEmpty, NEllipsis 
+import {
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NSwitch,
+  NText,
+  NTabs,
+  NTabPane,
+  NSelect,
+  NAlert,
+  NIcon,
+  NTag,
+  NEmpty,
+  NEllipsis
 } from 'naive-ui'
 import { SettingsOutline, DocumentOutline, GridOutline } from '@vicons/ionicons5'
 import { useEditor } from '../hooks'
@@ -423,30 +420,29 @@ const componentDataSourceDefinitions = computed(() => {
 const hasDataSourceSupport = computed(() => {
   return (
     props.selectedWidget &&
-    (props.selectedWidget.metadata?.isCard2Component ||
-     componentDataSourceDefinitions.value.length > 0)
+    (props.selectedWidget.metadata?.isCard2Component || componentDataSourceDefinitions.value.length > 0)
   )
 })
 
 // 数据源状态
 const dataSourceStatus = computed(() => {
   const dataSource = editableProps.value.dataSource
-  
+
   if (!dataSource) {
     return { type: 'warning', label: '未配置' }
   }
-  
+
   if (dataSource.type && dataSource.config) {
     return { type: 'success', label: '已配置' }
   }
-  
+
   return { type: 'info', label: '配置中' }
 })
 
 // 处理数据源更新
 const handleDataSourceUpdate = (dataSourceUpdateEvent: any) => {
   console.log('🔧 SettingsPanel - 接收到数据源更新事件:', dataSourceUpdateEvent)
-  
+
   // DataSourceConfigForm 发送的事件包含完整的数据更新信息
   if (dataSourceUpdateEvent && props.selectedWidget) {
     // 更新 widget 的数据源配置
@@ -454,12 +450,12 @@ const handleDataSourceUpdate = (dataSourceUpdateEvent: any) => {
       type: 'data-source-test',
       config: dataSourceUpdateEvent.config || {}
     }
-    
+
     // 直接更新 widget 的 metadata.card2Data（这是组件真正接收数据的路径）
     if (props.selectedWidget.metadata) {
       props.selectedWidget.metadata.card2Data = dataSourceUpdateEvent.data
     }
-    
+
     // 通知状态管理器更新节点
     stateManager.updateNode(props.selectedWidget.id, {
       properties: editableProps.value.properties,
@@ -471,7 +467,7 @@ const handleDataSourceUpdate = (dataSourceUpdateEvent: any) => {
         card2Data: dataSourceUpdateEvent.data
       }
     } as any)
-    
+
     console.log('✅ SettingsPanel - 数据源已更新:', {
       widgetId: props.selectedWidget.id,
       dataSource: editableProps.value.dataSource,
@@ -865,12 +861,12 @@ onUnmounted(() => {
   .settings-panel {
     font-size: 12px;
   }
-  
+
   .form-grid {
     grid-template-columns: 1fr;
     gap: 8px;
   }
-  
+
   .form-item-flat {
     flex-direction: column;
     align-items: flex-start;

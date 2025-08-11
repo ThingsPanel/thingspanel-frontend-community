@@ -16,30 +16,30 @@ export const universalDataVizComponentDefinition: ComponentDefinition = {
   category: 'chart',
   version: '1.0.0',
   author: 'Card2.1 System',
-  
+
   // 组件实现
   component: UniversalDataVizCard,
-  
+
   // 配置面板
   configComponent: UniversalDataVizConfigPanel,
-  
+
   // 图标配置
   icon: iconSvg,
-  
+
   // === 注册和权限配置 ===
   // 权限设置 - 所有用户都可以访问
   permission: '不限',
-  
+
   // 注册设置 - 默认注册，可在组件库中正常使用
   isRegistered: true,
-  
+
   // === 分类信息 ===
   mainCategory: '数据展示',
   subCategory: '图表组件',
-  
+
   // 支持的数据源类型
   supportedDataSources: ['static', 'api', 'websocket', 'script'],
-  
+
   // === 组件属性定义 ===
   properties: {
     title: {
@@ -72,7 +72,7 @@ export const universalDataVizComponentDefinition: ComponentDefinition = {
       description: '自动检测数据类型并选择最佳显示模式'
     }
   },
-  
+
   // 默认配置
   config: {
     style: {
@@ -91,10 +91,10 @@ export const universalDataVizComponentDefinition: ComponentDefinition = {
       labelPath: 'label'
     }
   },
-  
+
   // 组件标签
   tags: ['数据可视化', '图表', '通用组件', 'ECharts', '对象数据', '数组数据'],
-  
+
   // === 使用示例 ===
   examples: [
     {
@@ -125,7 +125,7 @@ export const universalDataVizComponentDefinition: ComponentDefinition = {
       }
     }
   ],
-  
+
   // 组件文档
   documentation: {
     overview: '通用数据可视化组件支持对象和数组两种数据格式，可智能显示为图表、表格或对象模式',
