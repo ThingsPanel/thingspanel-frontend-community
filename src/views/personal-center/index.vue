@@ -24,6 +24,7 @@ import {
 } from '@/utils/common/tool'
 import CameraBg from '@/assets/imgs/camera-bg.png'
 import Camera from '@/assets/imgs/camera.png'
+import ProvinceCityDistrictSelector from '@/components/common/ProvinceCityDistrictSelector.vue'
 
 const url = ref(new URL(getDemoServerUrl()))
 const { formRef, validate } = useNaiveForm()
@@ -31,11 +32,57 @@ const editType = ref(false)
 const header = ref(false)
 const headUrl = ref('')
 
+// 时区选项
+const timezoneOptions = [
+  { label: 'Asia/Shanghai (北京时间)', value: 'Asia/Shanghai' },
+  { label: 'Asia/Tokyo (东京时间)', value: 'Asia/Tokyo' },
+  { label: 'Asia/Seoul (首尔时间)', value: 'Asia/Seoul' },
+  { label: 'Asia/Singapore (新加坡时间)', value: 'Asia/Singapore' },
+  { label: 'Asia/Hong_Kong (香港时间)', value: 'Asia/Hong_Kong' },
+  { label: 'Asia/Bangkok (曼谷时间)', value: 'Asia/Bangkok' },
+  { label: 'Asia/Dubai (迪拜时间)', value: 'Asia/Dubai' },
+  { label: 'Asia/Kolkata (印度时间)', value: 'Asia/Kolkata' },
+  { label: 'Europe/London (伦敦时间)', value: 'Europe/London' },
+  { label: 'Europe/Paris (巴黎时间)', value: 'Europe/Paris' },
+  { label: 'Europe/Berlin (柏林时间)', value: 'Europe/Berlin' },
+  { label: 'Europe/Moscow (莫斯科时间)', value: 'Europe/Moscow' },
+  { label: 'America/New_York (纽约时间)', value: 'America/New_York' },
+  { label: 'America/Los_Angeles (洛杉矶时间)', value: 'America/Los_Angeles' },
+  { label: 'America/Chicago (芝加哥时间)', value: 'America/Chicago' },
+  { label: 'America/Toronto (多伦多时间)', value: 'America/Toronto' },
+  { label: 'Australia/Sydney (悉尼时间)', value: 'Australia/Sydney' },
+  { label: 'Australia/Melbourne (墨尔本时间)', value: 'Australia/Melbourne' },
+  { label: 'Pacific/Auckland (奥克兰时间)', value: 'Pacific/Auckland' },
+  { label: 'UTC (协调世界时)', value: 'UTC' }
+]
+
+// 语言选项
+const languageOptions = [
+  { label: '中文', value: 'zh-CN' },
+  { label: 'English', value: 'en-US' }
+]
+
+// 处理省市区选择变化
+const handleAddressChange = (value: { province: string; city: string; district: string }) => {
+  userInfoData.value.address.province = value.province
+  userInfoData.value.address.city = value.city
+  userInfoData.value.address.district = value.district
+}
+
 const userInfoData = ref({
   additional_info: '',
   name: '',
   email: '',
-  phone_num: ''
+  phone_number: '', // 修改为 phone_number
+  organization: '', // 组织
+  timezone: '', // 时区
+  default_language: '', // 默认语言
+  address: {
+    province: '', // 省份
+    city: '', // 城市
+    district: '', // 区县
+    detailed_address: '' // 详细地址
+  }
 })
 /** 初始from数据 */
 const formData = ref({
@@ -49,17 +96,42 @@ const rules: FormRules = {
   email: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('custom.groupPage.selectParentGroup')
+    message: '请输入正确的邮箱地址'
   },
   name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('custom.groupPage.enterGroupName')
+    message: '请输入姓名'
   },
-  phone: {
+  phone_number: {
     required: true,
     trigger: ['blur', 'input'],
-    message: $t('custom.groupPage.enterGroupName')
+    message: '请输入手机号码'
+  },
+  organization: {
+    required: false,
+    trigger: ['blur', 'input'],
+    message: '请输入组织名称'
+  },
+  timezone: {
+    required: false,
+    trigger: ['blur', 'change'],
+    message: '请选择时区'
+  },
+  default_language: {
+    required: false,
+    trigger: ['blur', 'change'],
+    message: '请选择默认语言'
+  },
+  'address.province': {
+    required: false,
+    trigger: ['blur', 'change'],
+    message: '请选择省份'
+  },
+  'address.detailed_address': {
+    required: false,
+    trigger: ['blur', 'input'],
+    message: '请输入详细地址'
   }
 }
 const passRules: FormRules = {
@@ -158,7 +230,22 @@ async function handleFinish({ event }: { event?: ProgressEvent }) {
 }
 onMounted(async () => {
   const { data } = await fetchUserInfo()
-  userInfoData.value = data
+  userInfoData.value = {
+    ...data,
+    // 将 phone_num 映射为 phone_number
+    phone_number: data.phone_num || data.phone_number || '',
+    // 确保新字段有默认值
+    organization: data.organization || '',
+    timezone: data.timezone || '',
+    default_language: data.default_language || '',
+    address: {
+      province: data.address?.province || '',
+      city: data.address?.city || '',
+      district: data.address?.district || '',
+      detailed_address: data.address?.detailed_address || ''
+    }
+  }
+  
   if (userInfoData.value.additional_info === '{}') {
     header.value = false
   } else {
@@ -254,7 +341,32 @@ onMounted(async () => {
               <div class="flex justify-start">
                 <div class="w-120px text-14px text-#666 dark:text-gray-600">{{ $t('generate.phoneNumber') }}</div>
 
-                <div>{{ userInfoData.phone_num }}</div>
+                <div>{{ userInfoData.phone_number }}</div>
+              </div>
+              <n-divider style="margin: 12px 0" />
+              <div class="flex justify-start">
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">组织</div>
+                <div>{{ userInfoData.organization || '未设置' }}</div>
+              </div>
+              <n-divider style="margin: 12px 0" />
+              <div class="flex justify-start">
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">时区</div>
+                <div>{{ userInfoData.timezone || '未设置' }}</div>
+              </div>
+              <n-divider style="margin: 12px 0" />
+              <div class="flex justify-start">
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">默认语言</div>
+                <div>{{ userInfoData.default_language || '未设置' }}</div>
+              </div>
+              <n-divider style="margin: 12px 0" />
+              <div class="flex justify-start">
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">省市区</div>
+                <div>{{ [userInfoData.address.province, userInfoData.address.city, userInfoData.address.district].filter(Boolean).join(' / ') || '未设置' }}</div>
+              </div>
+              <n-divider style="margin: 12px 0" />
+              <div class="flex justify-start">
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">详细地址</div>
+                <div>{{ userInfoData.address.detailed_address || '未设置' }}</div>
               </div>
               <n-divider style="margin: 12px 0" />
             </div>
@@ -270,18 +382,43 @@ onMounted(async () => {
                 :model="userInfoData"
               >
                 <NFormItem path="name" :label="$t('generate.last-name')">
-                  <NInput v-model:value="userInfoData.name" :placeholder="$t('page.login.common.codePlaceholder')" />
+                  <NInput v-model:value="userInfoData.name" placeholder="请输入姓名" />
                 </NFormItem>
 
-                <NFormItem path="phone_num" :label="$t('generate.phoneNumber')">
+                <NFormItem path="phone_number" :label="$t('generate.phoneNumber')">
                   <NInput
-                    v-model:value="userInfoData.phone_num"
-                    :placeholder="$t('page.login.common.codePlaceholder')"
+                    v-model:value="userInfoData.phone_number"
+                    placeholder="请输入手机号码"
                   />
                 </NFormItem>
 
                 <NFormItem path="email" :label="$t('generate.email-address')">
-                  <NInput v-model:value="userInfoData.email" :placeholder="$t('page.login.common.codePlaceholder')" />
+                  <NInput v-model:value="userInfoData.email" placeholder="请输入邮箱地址" />
+                </NFormItem>
+
+                <NFormItem path="organization" label="组织">
+                  <NInput v-model:value="userInfoData.organization" placeholder="请输入组织名称" />
+                </NFormItem>
+
+                <NFormItem path="timezone" label="时区">
+                  <NSelect v-model:value="userInfoData.timezone" :options="timezoneOptions" placeholder="请选择时区" />
+                </NFormItem>
+
+                <NFormItem path="default_language" label="默认语言">
+                  <NSelect v-model:value="userInfoData.default_language" :options="languageOptions" placeholder="请选择默认语言" />
+                </NFormItem>
+
+                <NFormItem path="address.province" label="省市区">
+                  <ProvinceCityDistrictSelector
+                    :province="userInfoData.address.province"
+                    :city="userInfoData.address.city"
+                    :district="userInfoData.address.district"
+                    @change="handleAddressChange"
+                  />
+                </NFormItem>
+
+                <NFormItem path="address.detailed_address" label="详细地址">
+                  <NInput v-model:value="userInfoData.address.detailed_address" placeholder="请输入详细地址" />
                 </NFormItem>
               </NForm>
               <n-divider style="margin: 12px 0" />
