@@ -8,13 +8,17 @@
         <div class="control-group">
           <h3>基础控制</h3>
           <n-space>
-            <n-switch v-model:value="showGrid" size="large">
-              <template #checked>显示网格线</template>
-              <template #unchecked>隐藏网格线</template>
-            </n-switch>
             <n-switch v-model:value="readonly" size="large">
               <template #checked>只读模式</template>
               <template #unchecked>编辑模式</template>
+            </n-switch>
+            <n-switch v-model:value="enableCompact" size="large">
+              <template #checked>紧凑布局已启用</template>
+              <template #unchecked>紧凑布局已禁用</template>
+            </n-switch>
+            <n-switch v-model:value="showGridInfo" size="large">
+              <template #checked>显示网格信息</template>
+              <template #unchecked>隐藏网格信息</template>
             </n-switch>
           </n-space>
         </div>
@@ -35,9 +39,9 @@
           <h3>网格配置</h3>
           <n-space>
             <n-input-number v-model:value="gridConfig.column" :min="1" :max="24" placeholder="列数" />
-            <n-input-number v-model:value="gridConfig.cellHeight" :min="50" :max="200" placeholder="行高" />
-            <n-input-number v-model:value="marginX" :min="0" :max="50" placeholder="水平边距" />
-            <n-input-number v-model:value="marginY" :min="0" :max="50" placeholder="垂直边距" />
+            <n-input-number v-model:value="gridConfig.cellHeight" :min="10" :max="200" placeholder="行高" />
+            <n-input-number v-model:value="gridConfig.margin[0]" :min="0" :max="50" placeholder="水平边距" />
+            <n-input-number v-model:value="gridConfig.margin[1]" :min="0" :max="50" placeholder="垂直边距" />
           </n-space>
         </div>
 
@@ -56,17 +60,25 @@
 
     <div class="grid-container">
       <GridPlus
-        v-model:items="layout"
-        :show-grid="showGrid"
+        ref="gridPlusRef"
+        :items="layout"
         :readonly="readonly"
         :config="gridConfig"
-        @layout-change="handleLayoutChange"
-        @item-move="handleItemMove"
-        @item-moved="handleItemMoved"
-        @item-resize="handleItemResize"
-        @item-resized="handleItemResized"
-        @item-swap="handleItemSwap"
-      />
+        :enable-compact-layout="enableCompact"
+        :show-grid-info="showGridInfo"
+        @change="handleChange"
+        @added="handleAdded"
+        @removed="handleRemoved"
+        @dragstop="handleDragStop"
+        @resizestop="handleResizeStop"
+      >
+        <template #default="{ item }">
+          <div class="demo-card" :style="{ backgroundColor: item.content.color }">
+            <div class="card-content">{{ item.content.text }}</div>
+            <div class="card-type">{{ item.content.type }}</div>
+          </div>
+        </template>
+      </GridPlus>
     </div>
 
     <div class="debug-info">
@@ -75,10 +87,6 @@
         <div class="info-item">
           <span class="label">当前布局:</span>
           <span class="value">{{ layout.length }} 个卡片</span>
-        </div>
-        <div class="info-item">
-          <span class="label">显示网格线:</span>
-          <span class="value">{{ showGrid ? '是' : '否' }}</span>
         </div>
         <div class="info-item">
           <span class="label">只读模式:</span>
@@ -94,7 +102,7 @@
         </div>
         <div class="info-item">
           <span class="label">边距:</span>
-          <span class="value">{{ marginX }}px × {{ marginY }}px</span>
+          <span class="value">{{ gridConfig.margin[0] }}px × {{ gridConfig.margin[1] }}px</span>
         </div>
         <div class="info-item">
           <span class="label">重叠检测:</span>
@@ -103,6 +111,10 @@
         <div class="info-item">
           <span class="label">操作次数:</span>
           <span class="value">{{ operationCount }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">最新事件:</span>
+          <span class="value">{{ lastEvent }}</span>
         </div>
       </div>
 
@@ -145,239 +157,209 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, watch } from 'vue'
-import { NSpace, NSwitch, NButton, NInputNumber, NTag } from 'naive-ui'
-import { GridPlus } from '@/components/common/gridplus'
-import type { GridItem } from '@/components/common/gridplus'
+import { ref, computed } from 'vue';
+import { NSpace, NSwitch, NButton, NInputNumber, NTag } from 'naive-ui';
+import { GridPlus } from '@/components/common/gridplus';
+import type { GridStackWidget } from 'gridstack';
+
+// GridPlus 组件的引用
+const gridPlusRef = ref<InstanceType<typeof GridPlus> | null>(null);
 
 // 状态
-const showGrid = ref(true)
-const readonly = ref(false)
-const itemCount = ref(0)
-const operationCount = ref(0)
+const readonly = ref(false);
+const enableCompact = ref(true);
+const showGridInfo = ref(false);
+const itemCount = ref(0);
+const operationCount = ref(0);
+const lastEvent = ref('无');
+
+// 防止事件循环的标志位
+let isInternalUpdate = false;
 
 // 网格配置
 const gridConfig = ref({
   column: 12,
   cellHeight: 100,
-  margin: '10px',
-  responsive: true,
-  breakpoints: { lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 },
-  colsByBreakpoint: { lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 },
-  auto: true,
-  animate: true
-})
+  margin: [10, 10], // [水平边距, 垂直边距]
+  animate: false, // 关闭动画减少性能问题
+  float: false, // 使用更稳定的布局模式
+});
 
-// 边距配置
-const marginX = ref(10)
-const marginY = ref(10)
-
-// 监听边距变化，更新 gridConfig
-watch([marginX, marginY], ([x, y]) => {
-  gridConfig.value.margin = `${x}px ${y}px`
-})
-
-// 简单的卡片组件
-const SimpleCard = {
-  props: ['content', 'color', 'type'],
-  template: `
-    <div class="demo-card" :style="{ backgroundColor: color }">
-      <div class="card-content">{{ content }}</div>
-      <div class="card-type">{{ type }}</div>
-    </div>
-  `
-}
-
-// 初始布局
-const defaultLayout: GridItem[] = [
+// 初始布局 - 确保没有重叠，位置完全分离
+const createDefaultLayout = (): GridStackWidget[] => [
   {
     id: 'card-1',
     x: 0,
     y: 0,
-    w: 4,
-    h: 3,
-    title: '卡片 1',
-    component: SimpleCard,
-    props: { content: '拖拽交换位置', color: '#e3f2fd', type: '交换测试' }
+    w: 3,
+    h: 2,
+    content: { text: '拖拽交换位置', color: '#e3f2fd', type: '交换测试' },
   },
   {
     id: 'card-2',
     x: 4,
     y: 0,
-    w: 4,
-    h: 3,
-    title: '卡片 2',
-    component: SimpleCard,
-    props: { content: '多方向调整', color: '#f3e5f5', type: '调整大小' }
+    w: 3,
+    h: 2,
+    content: { text: '多方向调整', color: '#f3e5f5', type: '调整大小' },
   },
   {
     id: 'card-3',
     x: 8,
     y: 0,
-    w: 4,
-    h: 3,
-    title: '卡片 3',
-    component: SimpleCard,
-    props: { content: '120fps 流畅', color: '#e8f5e8', type: '性能优化' }
+    w: 3,
+    h: 2,
+    content: { text: '120fps 流畅', color: '#e8f5e8', type: '性能优化' },
   },
   {
     id: 'card-4',
     x: 0,
     y: 3,
-    w: 6,
+    w: 4,
     h: 2,
-    title: '卡片 4',
-    component: SimpleCard,
-    props: { content: '动态栅格数', color: '#fff3e0', type: '响应式' }
+    content: { text: '动态栅格数', color: '#fff3e0', type: '响应式' },
   },
   {
     id: 'card-5',
-    x: 6,
+    x: 5,
     y: 3,
-    w: 6,
+    w: 4,
     h: 2,
-    title: '卡片 5',
-    component: SimpleCard,
-    props: { content: '紧凑布局', color: '#fce4ec', type: '自动优化' }
-  }
-]
+    content: { text: '紧凑布局', color: '#fce4ec', type: '自动优化' },
+  },
+];
 
-const layout = ref<GridItem[]>([...defaultLayout])
+const layout = ref<GridStackWidget[]>(createDefaultLayout());
 
 // 计算重叠数量
 const overlappingCount = computed(() => {
-  let count = 0
+  let count = 0;
   for (let i = 0; i < layout.value.length; i++) {
     for (let j = i + 1; j < layout.value.length; j++) {
-      const item1 = layout.value[i]
-      const item2 = layout.value[j]
+      const item1 = layout.value[i];
+      const item2 = layout.value[j];
       if (
         item1.x < item2.x + item2.w &&
         item1.x + item1.w > item2.x &&
         item1.y < item2.y + item2.h &&
         item1.y + item1.h > item2.y
       ) {
-        count++
+        count++;
       }
     }
   }
-  return count
-})
+  return count;
+});
 
 // 方法
 const addItem = () => {
-  itemCount.value++
-  const colors = ['#fff3e0', '#fce4ec', '#e0f2f1', '#f1f8e9', '#e8eaf6', '#f3e5f5', '#e3f2fd']
-  const types = ['拖拽', '调整大小', '碰撞检测', '性能优化', '响应式', '主题', '动画']
+  itemCount.value++;
+  const colors = ['#fff3e0', '#fce4ec', '#e0f2f1', '#f1f8e9', '#e8eaf6', '#f3e5f5', '#e3f2fd'];
+  const types = ['拖拽', '调整大小', '碰撞检测', '性能优化', '响应式', '主题', '动画'];
 
-  const newItem: GridItem = {
-    id: `card-${defaultLayout.length + itemCount.value}`,
+  const newItem: GridStackWidget = {
+    id: `card-${Date.now()}`,
     x: 0,
-    y: Math.max(...layout.value.map(item => item.y + item.h)) + 1,
+    y: Infinity, // 让 GridStack 自动寻找位置
     w: 4,
     h: 3,
-    title: `卡片 ${defaultLayout.length + itemCount.value}`,
-    component: SimpleCard,
-    props: {
-      content: `功能测试 ${defaultLayout.length + itemCount.value}`,
+    content: {
+      text: `功能测试 ${itemCount.value}`,
       color: colors[itemCount.value % colors.length],
-      type: types[itemCount.value % types.length]
-    }
-  }
-  layout.value = [...layout.value, newItem]
-  operationCount.value++
-}
+      type: types[itemCount.value % types.length],
+    },
+  };
+  // 注意：我们不再直接修改 layout，而是通过 GridPlus 的方法
+  gridPlusRef.value?.addItem(newItem);
+  operationCount.value++;
+  lastEvent.value = 'addItem';
+};
 
 const addManyItems = () => {
   for (let i = 0; i < 5; i++) {
-    addItem()
+    addItem();
   }
-}
+};
 
 const resetLayout = () => {
-  layout.value = [...defaultLayout]
-  itemCount.value = 0
-  operationCount.value++
-}
+  layout.value = createDefaultLayout();
+  itemCount.value = 0;
+  operationCount.value++;
+  lastEvent.value = 'resetLayout';
+};
 
 const compactLayout = () => {
-  // 这里需要调用 GridPlus 组件的 compact 方法
-  // 由于我们没有 ref，暂时使用简单的紧凑算法
-  const sortedItems = [...layout.value].sort((a, b) => {
-    if (a.y !== b.y) return a.y - b.y
-    return a.x - b.x
-  })
-
-  let currentY = 0
-  let currentX = 0
-  const newLayout = sortedItems.map(item => {
-    if (currentX + item.w > gridConfig.value.column) {
-      currentX = 0
-      currentY += item.h
-    }
-    const newItem = { ...item, x: currentX, y: currentY }
-    currentX += item.w
-    return newItem
-  })
-
-  layout.value = newLayout
-  operationCount.value++
-}
+  gridPlusRef.value?.compact();
+  operationCount.value++;
+  lastEvent.value = 'compactLayout';
+};
 
 const createOverlap = () => {
-  // 创建重叠的卡片
-  const overlapItem: GridItem = {
+  const overlapItem: GridStackWidget = {
     id: `overlap-${Date.now()}`,
     x: 2,
     y: 1,
     w: 4,
     h: 2,
-    title: '重叠卡片',
-    component: SimpleCard,
-    props: { content: '重叠检测', color: '#ffebee', type: '重叠测试' }
-  }
-  layout.value = [...layout.value, overlapItem]
-  operationCount.value++
-}
+    content: { text: '重叠检测', color: '#ffebee', type: '重叠测试' },
+  };
+  gridPlusRef.value?.addItem(overlapItem);
+  operationCount.value++;
+  lastEvent.value = 'createOverlap';
+};
 
 const randomizeLayout = () => {
   const newLayout = layout.value.map(item => ({
     ...item,
     x: Math.floor(Math.random() * (gridConfig.value.column - item.w)),
-    y: Math.floor(Math.random() * 10)
-  }))
-  layout.value = newLayout
-  operationCount.value++
-}
+    y: Math.floor(Math.random() * 10),
+  }));
+  layout.value = newLayout;
+  operationCount.value++;
+  lastEvent.value = 'randomizeLayout';
+};
 
 // 事件处理
-const handleLayoutChange = (newLayout: GridItem[]) => {
-  console.log('布局变化:', newLayout)
-  operationCount.value++
-}
+const handleChange = (newLayout: GridStackWidget[]) => {
+  // 如果是内部更新引起的，跳过处理防止循环
+  if (isInternalUpdate) {
+    isInternalUpdate = false;
+    return;
+  }
+  
+  console.log('布局变化 (change):', newLayout);
+  
+  // 设置标志位，表明这是一次内部更新
+  isInternalUpdate = true;
+  layout.value = [...newLayout]; // 使用浅拷贝创建新数组引用
+  
+  operationCount.value++;
+  lastEvent.value = 'change';
+};
 
-const handleItemMove = (itemId: string, x: number, y: number) => {
-  console.log('卡片移动中:', itemId, x, y)
-}
+const handleAdded = (items: GridStackWidget[]) => {
+  console.log('卡片添加 (added):', items);
+  operationCount.value++;
+  lastEvent.value = `added: ${items.map(i => i.id).join(', ')}`;
+};
 
-const handleItemMoved = (itemId: string, x: number, y: number) => {
-  console.log('卡片移动完成:', itemId, x, y)
-  operationCount.value++
-}
+const handleRemoved = (items: GridStackWidget[]) => {
+  console.log('卡片移除 (removed):', items);
+  operationCount.value++;
+  lastEvent.value = `removed: ${items.map(i => i.id).join(', ')}`;
+};
 
-const handleItemResize = (itemId: string, w: number, h: number) => {
-  console.log('卡片调整大小中:', itemId, w, h)
-}
+const handleDragStop = (item: GridStackWidget) => {
+  console.log('拖拽结束 (dragstop):', item);
+  operationCount.value++;
+  lastEvent.value = `dragstop: ${item.id}`;
+};
 
-const handleItemResized = (itemId: string, w: number, h: number) => {
-  console.log('卡片调整大小完成:', itemId, w, h)
-  operationCount.value++
-}
-
-const handleItemSwap = (itemId1: string, itemId2: string) => {
-  console.log('卡片交换位置:', itemId1, itemId2)
-  operationCount.value++
-}
+const handleResizeStop = (item: GridStackWidget) => {
+  console.log('调整大小结束 (resizestop):', item);
+  operationCount.value++;
+  lastEvent.value = `resizestop: ${item.id}`;
+};
 </script>
 
 <style>
@@ -528,14 +510,24 @@ const handleItemSwap = (itemId1: string, itemId2: string) => {
 }
 
 .demo-card {
+  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 16px;
-  border-radius: 4px;
+  border-radius: 8px;
   position: relative;
+  box-sizing: border-box;
+  cursor: grab;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
+  overflow: auto;
+}
+
+.demo-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .card-content {

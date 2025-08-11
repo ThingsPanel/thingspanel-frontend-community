@@ -1,4 +1,6 @@
 import { createApp, watch } from 'vue'
+import 'gridstack/dist/gridstack.css'
+import 'gridstack/dist/gridstack-extra.css'
 import './plugins/assets'
 import { useSysSettingStore } from '@/store/modules/sys-setting'
 import { setupDayjs, setupIconifyOffline, setupLoading, setupNProgress } from './plugins'

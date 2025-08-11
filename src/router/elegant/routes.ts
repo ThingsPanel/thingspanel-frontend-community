@@ -829,6 +829,44 @@ export const generatedRoutes: GeneratedRoute[] = [
     ]
   },
   {
+    name: 'ultra-kanban',
+    path: '/ultra-kanban',
+    component: 'layout.base',
+    meta: {
+      title: 'ultra-kanban',
+      i18nKey: 'route.ultra-kanban'
+    },
+    children: [
+      {
+        name: 'ultra-kanban_index',
+        path: '/ultra-kanban/index',
+        component: 'view.ultra-kanban_index',
+        meta: {
+          title: 'ultra-kanban_index',
+          i18nKey: 'route.ultra-kanban_index'
+        }
+      },
+      {
+        name: 'ultra-kanban_kanban-details',
+        path: '/ultra-kanban/kanban-details',
+        component: 'view.ultra-kanban_kanban-details',
+        meta: {
+          title: 'ultra-kanban_kanban-details',
+          i18nKey: 'route.ultra-kanban_kanban-details'
+        }
+      },
+      {
+        name: 'ultra-kanban_panel-preview',
+        path: '/ultra-kanban/panel-preview',
+        component: 'view.ultra-kanban_panel-preview',
+        meta: {
+          title: 'ultra-kanban_panel-preview',
+          i18nKey: 'route.ultra-kanban_panel-preview'
+        }
+      }
+    ]
+  },
+  {
     name: 'user-center',
     path: '/user-center',
     component: 'layout.base$view.user-center',

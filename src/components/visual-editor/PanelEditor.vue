@@ -58,6 +58,12 @@ const draggedComponent = ref<string | null>(null)
 const selectedNodeId = ref<string>('')
 const showWidgetTitles = ref(true) // 总开关，默认显示标题
 
+// 多数据源数据存储 - 以组件ID为键
+const multiDataSourceStore = ref<Record<string, Record<string, any>>>({})
+
+// 多数据源配置存储 - 以组件ID为键，存储完整配置信息
+const multiDataSourceConfigStore = ref<Record<string, any>>({})
+
 // 全屏功能
 const { isFullscreen, toggle } = useFullscreen(fullui)
 
@@ -624,6 +630,36 @@ const handleCanvasConfigChange = (newCanvasConfig: any) => {
   console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.canvasConfig)
 }
 
+/**
+ * 处理多数据源数据更新
+ */
+const handleMultiDataSourceUpdate = (widgetId: string, dataSources: Record<string, any>) => {
+  console.log(`🔧 PanelEditor - 多数据源数据更新: ${widgetId}`, dataSources)
+  
+  // 存储数据源数据
+  multiDataSourceStore.value[widgetId] = dataSources
+  
+  // 标记有变化
+  hasChanges.value = true
+  
+  console.log(`✅ PanelEditor - 多数据源数据已存储:`, multiDataSourceStore.value)
+}
+
+/**
+ * 处理多数据源配置更新
+ */
+const handleMultiDataSourceConfigUpdate = (widgetId: string, config: any) => {
+  console.log(`🔧 PanelEditor - 多数据源配置更新: ${widgetId}`, config)
+  
+  // 存储配置信息
+  multiDataSourceConfigStore.value[widgetId] = config
+  
+  // 标记有变化
+  hasChanges.value = true
+  
+  console.log(`✅ PanelEditor - 多数据源配置已存储:`, multiDataSourceConfigStore.value)
+}
+
 const handleZoomIn = () => {
   // TODO: 实现缩放功能
   console.log('放大视图')
@@ -797,146 +833,6 @@ onMounted(() => {
   fetchBoard()
 })
 
-// 🧪 临时测试函数 - 用于测试数据源组件
-const testUpdateData = () => {
-  console.log('🧪 测试更新数据')
-
-  // 使用editorContext获取节点数据
-  const allNodes = editorContext.editorStore.nodes
-  console.log('🔍 从editorStore获取的所有节点:', allNodes)
-  console.log(
-    '🔍 节点类型:',
-    allNodes.map(node => ({ id: node.id, type: node.type }))
-  )
-
-  // 找到数据源测试组件
-  const dataSourceTestWidgets = allNodes.filter(node => node.type === 'datasource-test')
-
-  console.log('🎯 找到数据源测试组件:', dataSourceTestWidgets.length, '个')
-  console.log('🎯 数据源测试组件详情:', dataSourceTestWidgets)
-
-  if (dataSourceTestWidgets.length === 0) {
-    message.warning('未找到数据源测试组件，请先添加组件到画布')
-    return
-  }
-
-  // 更新所有数据源测试组件
-  let updatedCount = 0
-  dataSourceTestWidgets.forEach((node: any, index: number) => {
-    // 为每个组件生成不同的测试数据
-    const testData = {
-      key1: Math.round((Math.random() * 100 + index * 10) * 100) / 100,
-      key2: ['online', 'offline', 'maintenance', 'warning'][index % 4],
-      key3: Math.floor(Math.random() * 1000) + index * 100
-    }
-
-    // 确保metadata对象存在
-    if (!node.metadata) {
-      node.metadata = {}
-    }
-
-    // 更新节点的card2Data
-    node.metadata.card2Data = testData
-
-    // 使用editorContext更新节点
-    editorContext.updateNode(node.id, {
-      ...node,
-      metadata: {
-        ...node.metadata,
-        card2Data: testData
-      }
-    })
-
-    updatedCount++
-    console.log(`🧪 组件${index + 1}(${node.id})数据已更新:`, testData)
-  })
-
-  hasChanges.value = true
-  message.success(`已更新${updatedCount}个数据源测试组件的数据`)
-}
-
-const randomizeTestData = () => {
-  console.log('🎲 随机更新测试数据')
-
-  const allNodes = editorContext.editorStore.nodes
-  const dataSourceTestWidgets = allNodes.filter(node => node.type === 'datasource-test')
-
-  if (dataSourceTestWidgets.length === 0) {
-    message.warning('未找到数据源测试组件')
-    return
-  }
-
-  // 为所有数据源测试组件生成随机数据
-  dataSourceTestWidgets.forEach((node: any, index: number) => {
-    // 为每个组件生成不同的随机数据
-    const randomData = {
-      key1: (25 + (Math.random() - 0.5) * 10 + index * 2).toFixed(1), // 温度变化
-      key2: ['online', 'offline', 'maintenance', 'warning'][Math.floor(Math.random() * 4)],
-      key3: Math.floor(1000 + Math.random() * 500) + index * 50
-    }
-
-    // 确保metadata对象存在
-    if (!node.metadata) {
-      node.metadata = {}
-    }
-
-    // 更新节点的card2Data
-    node.metadata.card2Data = randomData
-
-    // 使用editorContext更新节点
-    editorContext.updateNode(node.id, {
-      ...node,
-      metadata: {
-        ...node.metadata,
-        card2Data: randomData
-      }
-    })
-
-    console.log(`🎲 组件${index + 1}(${node.id})随机数据:`, randomData)
-  })
-
-  hasChanges.value = true
-  message.success(`已为${dataSourceTestWidgets.length}个组件生成随机数据`)
-}
-
-const clearTestData = () => {
-  console.log('🧹 清空测试数据')
-
-  const allNodes = editorContext.editorStore.nodes
-  const dataSourceTestWidgets = allNodes.filter(node => node.type === 'datasource-test')
-
-  if (dataSourceTestWidgets.length === 0) {
-    message.warning('未找到数据源测试组件')
-    return
-  }
-
-  // 清空所有数据源测试组件的数据
-  dataSourceTestWidgets.forEach((node: any, index: number) => {
-    const clearData = { key1: null, key2: null, key3: null }
-
-    // 确保metadata对象存在
-    if (!node.metadata) {
-      node.metadata = {}
-    }
-
-    // 更新节点的card2Data
-    node.metadata.card2Data = clearData
-
-    // 使用editorContext更新节点
-    editorContext.updateNode(node.id, {
-      ...node,
-      metadata: {
-        ...node.metadata,
-        card2Data: clearData
-      }
-    })
-
-    console.log(`🧹 组件${index + 1}(${node.id})数据已清空`)
-  })
-
-  hasChanges.value = true
-  message.info(`已清空${dataSourceTestWidgets.length}个组件的测试数据`)
-}
 
 // 组件卸载时的清理工作
 onUnmounted(() => {
@@ -1012,14 +908,6 @@ onUnmounted(() => {
           />
         </div>
 
-        <!-- 临时测试按钮 -->
-        <div class="test-toolbar flex justify-center py-2 bg-yellow-50 border-b">
-          <n-space>
-            <n-button size="small" type="info" @click="testUpdateData">测试更新数据</n-button>
-            <n-button size="small" type="warning" @click="randomizeTestData">随机数据</n-button>
-            <n-button size="small" type="success" @click="clearTestData">清空数据</n-button>
-          </n-space>
-        </div>
 
         <!-- 主内容区域 -->
         <div class="main-container flex-1 relative overflow-hidden" :class="{ dragging: isDragging }">
@@ -1044,6 +932,8 @@ onUnmounted(() => {
               :readonly="isPreviewMode"
               :show-widget-titles="showWidgetTitles"
               :grid-config="editorConfig.gridConfig"
+              :multi-data-source-store="multiDataSourceStore"
+              :multi-data-source-config-store="multiDataSourceConfigStore"
               class="renderer-container"
               @ready="handleRendererReady"
               @error="handleRendererError"
@@ -1089,6 +979,8 @@ onUnmounted(() => {
                 :grid-config="editorConfig.gridConfig"
                 @toggle-widget-titles="handleToggleWidgetTitles"
                 @grid-config-change="handleGridConfigChange"
+                @multi-data-source-update="handleMultiDataSourceUpdate"
+                @multi-data-source-config-update="handleMultiDataSourceConfigUpdate"
               />
             </NDrawerContent>
           </NDrawer>

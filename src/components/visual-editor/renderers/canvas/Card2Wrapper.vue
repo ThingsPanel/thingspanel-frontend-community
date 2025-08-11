@@ -15,6 +15,8 @@
       :data="data"
       :metadata="metadata || { card2Data: data, dataSource: dataSource }"
       :dataSourceValue="dataSourceValue"
+      :dataSources="dataSources"
+      :dataSourcesConfig="dataSourcesConfig"
     />
   </div>
 </template>
@@ -33,6 +35,8 @@ interface Props {
   data?: any // data prop暂时保留，但目前未使用
   metadata?: any // 完整的metadata对象，包含dataConfig等配置
   dataSource?: any // 数据源配置
+  dataSources?: Record<string, any> // 多数据源数据
+  dataSourcesConfig?: any // 多数据源配置（包含路径映射等）
   nodeId: string
 }
 
@@ -152,6 +156,24 @@ watch(
   () => props.data,
   newData => {
     console.log('🔧 [Card2Wrapper] 接收到新的data prop:', newData)
+  },
+  { deep: true, immediate: true }
+)
+
+// 监听dataSources变化，用于调试
+watch(
+  () => props.dataSources,
+  newDataSources => {
+    console.log('🔧 [Card2Wrapper] 接收到新的dataSources prop:', newDataSources)
+  },
+  { deep: true, immediate: true }
+)
+
+// 监听dataSourcesConfig变化，用于调试
+watch(
+  () => props.dataSourcesConfig,
+  newDataSourcesConfig => {
+    console.log('🔧 [Card2Wrapper] 接收到新的dataSourcesConfig prop:', newDataSourcesConfig)
   },
   { deep: true, immediate: true }
 )

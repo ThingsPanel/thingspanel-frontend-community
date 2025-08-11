@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Card 2.1 组件调试</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .log { background: #f0f0f0; padding: 10px; font-family: monospace; }
+        button { padding: 10px 15px; margin: 5px; }
+        .error { color: red; }
+        .success { color: green; }
+        .warning { color: orange; }
+    </style>
+</head>
+<body>
+    <h1>Card 2.1 组件加载调试工具</h1>
+    
+    <div class="section">
+        <h2>步骤1: 检查开发服务器</h2>
+        <p>当前页面地址: <span id="currentUrl"></span></p>
+        <p>请确保访问: <a href="http://localhost:5006" target="_blank">http://localhost:5006</a></p>
+    </div>
+
+    <div class="section">
+        <h2>步骤2: 诊断Card 2.1系统</h2>
+        <button onclick="debugCard21System()">检查Card 2.1系统状态</button>
+        <button onclick="debugComponentLoader()">检查组件加载器</button>
+        <button onclick="debugUniversalDataViz()">专项检查 universal-data-viz</button>
+        <div id="debugOutput" class="log"></div>
+    </div>
+
+    <div class="section">
+        <h2>步骤3: 检查Visual Editor集成</h2>
+        <button onclick="checkVisualEditorIntegration()">检查Visual Editor集成</button>
+        <button onclick="goToVisualEditor()">打开Visual Editor测试页面</button>
+        <div id="editorOutput" class="log"></div>
+    </div>
+
+    <script>
+        document.getElementById('currentUrl').textContent = window.location.href;
+
+        function log(message, type = 'info') {
+            const output = document.getElementById('debugOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            output.innerHTML += `<div class="${colorClass}">[${timestamp}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function logEditor(message, type = 'info') {
+            const output = document.getElementById('editorOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            const colorClass = type === 'error' ? 'error' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : '';
+            output.innerHTML += `<div class="${colorClass}">[${timestamp}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        async function debugCard21System() {
+            log('🔍 开始检查Card 2.1系统...');
+            try {
+                // 尝试导入Card 2.1模块
+                const card21Module = await import('/src/card2.1/index.ts');
+                log('✅ Card 2.1 模块导入成功', 'success');
+                
+                // 检查组件注册表
+                const registry = card21Module.getComponentRegistry();
+                log(`📊 组件注册表状态: ${registry ? '已初始化' : '未初始化'}`, registry ? 'success' : 'warning');
+                
+                // 初始化系统
+                await card21Module.initializeCard2System();
+                log('✅ Card 2.1 系统初始化完成', 'success');
+                
+                // 获取所有组件
+                const allComponents = card21Module.getAllComponents();
+                log(`📊 总组件数: ${allComponents.length}`);
+                
+                // 查找 universal-data-viz
+                const universalDataViz = allComponents.find(comp => comp.type === 'universal-data-viz');
+                if (universalDataViz) {
+                    log('✅ 找到 universal-data-viz 组件!', 'success');
+                    log(`   - 名称: ${universalDataViz.name}`);
+                    log(`   - 分类: ${universalDataViz.category}`);
+                    log(`   - 权限: ${universalDataViz.permission}`);
+                    log(`   - 已注册: ${universalDataViz.isRegistered}`);
+                } else {
+                    log('❌ 未找到 universal-data-viz 组件!', 'error');
+                    log('   现有组件列表:');
+                    allComponents.forEach(comp => {
+                        log(`   - ${comp.type}: ${comp.name} (${comp.category})`);
+                    });
+                }
+                
+            } catch (error) {
+                log(`❌ Card 2.1 系统检查失败: ${error.message}`, 'error');
+                console.error('Card 2.1 debug error:', error);
+            }
+        }
+
+        async function debugComponentLoader() {
+            log('🔍 开始检查组件加载器...');
+            try {
+                const { ComponentLoader } = await import('/src/card2.1/core/component-loader.ts');
+                const loader = new ComponentLoader();
+                
+                const componentModules = await loader.loadComponents();
+                const moduleCount = Object.keys(componentModules).length;
+                log(`📊 加载的组件模块数: ${moduleCount}`);
+                
+                // 检查 universal-data-viz 是否被加载
+                const universalDataVizModule = componentModules['universal-data-viz'];
+                if (universalDataVizModule) {
+                    log('✅ universal-data-viz 模块已加载', 'success');
+                    log(`   - 组件定义: ${universalDataVizModule.default ? '存在' : '缺失'}`);
+                    if (universalDataVizModule.default) {
+                        const def = universalDataVizModule.default;
+                        log(`   - 类型: ${def.type}`);
+                        log(`   - 名称: ${def.name}`);
+                        log(`   - 权限: ${def.permission}`);
+                        log(`   - 已注册: ${def.isRegistered}`);
+                    }
+                } else {
+                    log('❌ universal-data-viz 模块未被加载!', 'error');
+                    log('   已加载的模块:');
+                    Object.keys(componentModules).forEach(key => {
+                        log(`   - ${key}`);
+                    });
+                }
+                
+            } catch (error) {
+                log(`❌ 组件加载器检查失败: ${error.message}`, 'error');
+                console.error('ComponentLoader debug error:', error);
+            }
+        }
+
+        async function debugUniversalDataViz() {
+            log('🎯 专项检查 universal-data-viz 组件...');
+            try {
+                // 直接导入组件定义
+                const componentDef = await import('/src/card2.1/components/universal-data-viz/index.ts');
+                log('✅ 组件定义文件导入成功', 'success');
+                
+                const def = componentDef.universalDataVizComponentDefinition;
+                if (def) {
+                    log('✅ 组件定义对象存在', 'success');
+                    log(`   - 类型: ${def.type}`);
+                    log(`   - 名称: ${def.name}`);
+                    log(`   - 描述: ${def.description}`);
+                    log(`   - 分类: ${def.category}`);
+                    log(`   - 权限: ${def.permission}`);
+                    log(`   - 已注册: ${def.isRegistered}`);
+                    log(`   - 组件: ${def.component ? '存在' : '缺失'}`);
+                    log(`   - 图标: ${def.icon ? '存在' : '缺失'}`);
+                    
+                    // 检查必需字段
+                    const requiredFields = ['type', 'name', 'description', 'category', 'icon', 'component'];
+                    const missingFields = requiredFields.filter(field => !def[field]);
+                    if (missingFields.length === 0) {
+                        log('✅ 所有必需字段都存在', 'success');
+                    } else {
+                        log(`⚠️ 缺少字段: ${missingFields.join(', ')}`, 'warning');
+                    }
+                } else {
+                    log('❌ 组件定义对象不存在!', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ universal-data-viz 检查失败: ${error.message}`, 'error');
+                console.error('Universal data viz debug error:', error);
+            }
+        }
+
+        async function checkVisualEditorIntegration() {
+            logEditor('🔍 检查Visual Editor集成...');
+            try {
+                const integrationModule = await import('/src/card2.1/hooks/useVisualEditorIntegration.ts');
+                logEditor('✅ Visual Editor集成模块导入成功', 'success');
+                
+                // 这里需要在Vue组件上下文中使用hook，暂时只能检查模块导入
+                logEditor('ℹ️ 需要在Vue组件中检查hook的实际运行情况', 'warning');
+                logEditor('请访问Visual Editor测试页面查看详细信息');
+                
+            } catch (error) {
+                logEditor(`❌ Visual Editor集成检查失败: ${error.message}`, 'error');
+                console.error('Visual Editor integration debug error:', error);
+            }
+        }
+
+        function goToVisualEditor() {
+            // 在新窗口中打开Visual Editor测试页面
+            window.open('/test/editor-integration', '_blank');
+        }
+
+        // 页面加载完成后自动运行基本检查
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                log('🚀 页面加载完成，开始自动诊断...');
+                debugCard21System();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

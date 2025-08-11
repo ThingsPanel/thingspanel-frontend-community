@@ -91,8 +91,20 @@ export class AutoRegistry {
   private checkComponentPermission(definition: ComponentDefinition, userAuthority: string): boolean {
     const permission = definition.permission || '不限'
 
+    // 特别记录 universal-data-viz 的权限检查
+    if (definition.type === 'universal-data-viz') {
+      console.log(`🎯 [AutoRegistry] universal-data-viz 权限检查:`, {
+        组件权限: permission,
+        用户权限: userAuthority,
+        组件类型: definition.type
+      })
+    }
+
     // 如果组件权限是"不限"，则所有用户都可以访问
     if (permission === '不限') {
+      if (definition.type === 'universal-data-viz') {
+        console.log(`✅ [AutoRegistry] universal-data-viz 权限检查通过: 组件权限为"不限"`)
+      }
       return true
     }
 
@@ -112,7 +124,17 @@ export class AutoRegistry {
     const componentLevel = permissionLevels[permission]
     const userLevel = permissionLevels[userAuthority as keyof typeof permissionLevels] || 0
 
-    return userLevel >= componentLevel
+    const hasPermission = userLevel >= componentLevel
+    
+    if (definition.type === 'universal-data-viz') {
+      console.log(`🎯 [AutoRegistry] universal-data-viz 权限等级检查:`, {
+        组件等级: componentLevel,
+        用户等级: userLevel,
+        检查结果: hasPermission
+      })
+    }
+
+    return hasPermission
   }
 
   /**
@@ -122,9 +144,22 @@ export class AutoRegistry {
     // 检查注册设置，默认为true（注册）
     const isRegistered = definition.isRegistered !== false // 只有明确设置为false才不注册
 
+    // 特别记录 universal-data-viz 的注册检查
+    if (definition.type === 'universal-data-viz') {
+      console.log(`🎯 [AutoRegistry] universal-data-viz 注册检查:`, {
+        isRegistered: definition.isRegistered,
+        计算结果: isRegistered,
+        组件名称: definition.name
+      })
+    }
+
     if (!isRegistered) {
       console.log(`🚫 [AutoRegistry] 组件设置为不注册: ${definition.type} (${definition.name})`)
       return false
+    }
+
+    if (definition.type === 'universal-data-viz') {
+      console.log(`✅ [AutoRegistry] universal-data-viz 注册检查通过`)
     }
 
     return true

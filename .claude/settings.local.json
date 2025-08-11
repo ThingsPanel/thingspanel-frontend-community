@@ -46,7 +46,10 @@
       "Bash(git stash pop:*)",
       "WebFetch(domain:www.naiveui.com)",
       "Bash(timeout:*)",
-      "Bash(pnmp lint:*)"
+      "Bash(pnmp lint:*)",
+      "Bash(pnpm gen-route:*)",
+      "Bash(npx sa:*)",
+      "Bash(rd /S /Q \"E:\\wbh\\things2\\thingspanel-frontend-community\\src\\views\\ultra-kanban\\details\")"
     ],
     "deny": []
   }

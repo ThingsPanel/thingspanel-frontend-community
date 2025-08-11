@@ -14,6 +14,8 @@
         :show-widget-titles="showWidgetTitles"
         :static-grid="isPreviewMode"
         :grid-config="gridConfig"
+        :multi-data-source-store="multiDataSourceStore"
+        :multi-data-source-config-store="multiDataSourceConfigStore"
         @node-select="onNodeSelect"
         @request-settings="onRequestSettings"
       />
@@ -31,6 +33,8 @@ const props = defineProps<{
   readonly?: boolean
   showWidgetTitles?: boolean
   gridConfig?: any
+  multiDataSourceStore?: Record<string, Record<string, any>>
+  multiDataSourceConfigStore?: Record<string, any>
 }>()
 
 // 使用传入的配置

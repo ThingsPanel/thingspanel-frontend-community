@@ -16,6 +16,8 @@
           :is-selected="false"
           :show-resize-handles="false"
           :get-widget-component="() => null"
+          :multi-data-source-data="props.multiDataSourceStore?.[item.raw.id]"
+          :multi-data-source-config="props.multiDataSourceConfigStore?.[item.raw.id]"
           class="grid-node-wrapper"
           @node-click="() => handleNodeSelect(item.i)"
           @node-contextmenu="(nodeId, event) => handleContextMenu(event, nodeId)"
@@ -51,6 +53,8 @@ const props = defineProps<{
   readonly?: boolean
   staticGrid?: boolean
   gridConfig?: Partial<GridLayoutPlusConfig>
+  multiDataSourceStore?: Record<string, Record<string, any>>
+  multiDataSourceConfigStore?: Record<string, any>
 }>()
 const emit = defineEmits(['node-select', 'request-settings'])
 

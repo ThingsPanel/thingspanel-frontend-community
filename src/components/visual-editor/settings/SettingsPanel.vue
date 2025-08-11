@@ -128,8 +128,18 @@
 
               <!-- 直接嵌入数据源配置表单 -->
               <div class="data-source-config-wrapper">
+                <!-- 检查是否支持多数据源 -->
+                <MultiDataSourceConfigForm
+                  v-if="selectedWidget && supportsMultiDataSource"
+                  :widget="selectedWidget"
+                  :component-id="selectedWidget.type"
+                  @data-updated="handleDataSourceUpdate"
+                  @config-changed="handleMultiDataSourceConfigChange"
+                />
+                
+                <!-- 兜底使用单数据源配置 -->
                 <DataSourceConfigForm
-                  v-if="selectedWidget"
+                  v-else-if="selectedWidget"
                   :widget="selectedWidget"
                   @data-updated="handleDataSourceUpdate"
                 />
@@ -319,6 +329,8 @@ import { cloneDeep } from 'lodash-es'
 import { configRegistry } from './ConfigRegistry'
 import EnhancedPropertyForm from './components/EnhancedPropertyForm.vue'
 import DataSourceConfigForm from '../configuration/forms/DataSourceConfigForm.vue'
+import MultiDataSourceConfigForm from '../configuration/forms/MultiDataSourceConfigForm.vue'
+import { getComponentDataRequirements } from '../core/component-data-requirements'
 
 const props = defineProps<{
   selectedWidget: VisualEditorWidget | null
@@ -420,8 +432,22 @@ const componentDataSourceDefinitions = computed(() => {
 const hasDataSourceSupport = computed(() => {
   return (
     props.selectedWidget &&
-    (props.selectedWidget.metadata?.isCard2Component || componentDataSourceDefinitions.value.length > 0)
+    (props.selectedWidget.metadata?.isCard2Component ||
+     componentDataSourceDefinitions.value.length > 0 ||
+     supportsMultiDataSource.value)
   )
+})
+
+// 检查是否支持多数据源
+const supportsMultiDataSource = computed(() => {
+  if (!props.selectedWidget) return false
+  
+  const componentId = props.selectedWidget.type
+  const requirements = getComponentDataRequirements(componentId)
+  
+  console.log(`🔧 [SettingsPanel] 检查多数据源支持: ${componentId}`, requirements)
+  
+  return requirements !== undefined
 })
 
 // 数据源状态
@@ -473,6 +499,32 @@ const handleDataSourceUpdate = (dataSourceUpdateEvent: any) => {
       dataSource: editableProps.value.dataSource,
       card2Data: dataSourceUpdateEvent.data
     })
+  }
+}
+
+// 处理多数据源配置变化
+const handleMultiDataSourceConfigChange = (config: any) => {
+  console.log('🔧 [SettingsPanel] 多数据源配置变化:', config)
+  
+  if (props.selectedWidget) {
+    // 更新 widget 的多数据源配置
+    if (!props.selectedWidget.metadata) {
+      props.selectedWidget.metadata = {}
+    }
+    
+    props.selectedWidget.metadata.multiDataSourceConfig = config
+    
+    // 通知状态管理器更新节点
+    stateManager.updateNode(props.selectedWidget.id, {
+      properties: editableProps.value.properties,
+      interaction: editableProps.value.interaction,
+      metadata: {
+        ...props.selectedWidget.metadata,
+        multiDataSourceConfig: config
+      }
+    } as any)
+    
+    console.log('✅ [SettingsPanel] 多数据源配置更新完成')
   }
 }
 

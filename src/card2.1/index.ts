@@ -12,6 +12,7 @@
 import { componentRegistry } from './core/registry'
 import { AutoRegistry } from './core/auto-registry'
 import { ComponentLoader } from './core/component-loader'
+import { componentDataRequirementsRegistry } from '@/components/visual-editor/core/component-data-requirements'
 
 // 创建自动注册系统
 const autoRegistry = new AutoRegistry(componentRegistry)
@@ -50,7 +51,30 @@ export async function initializeCard2System() {
       // 3. 自动注册组件（包含权限过滤）
       const registeredComponents = await autoRegistry.autoRegister(componentModules)
 
-      // 4. 获取组件树形结构
+      // 4. 注册预设的数据需求
+      componentDataRequirementsRegistry.registerPresets()
+      console.log('📋 [Card2.1] 数据需求预设注册完成')
+
+      // 5. 注册各组件的专用数据需求和配置
+      console.log('🔧 [Card2.1] 开始注册组件专用数据需求...')
+      
+      // 检查并调用已注册组件的数据需求注册函数
+      for (const component of registeredComponents) {
+        if (component.type === 'universal-data-viz') {
+          try {
+            const { registerUniversalDataVizConfig } = await import('./components/universal-data-viz/register-config')
+            registerUniversalDataVizConfig()
+            console.log('✅ [Card2.1] universal-data-viz 多数据源需求注册成功')
+          } catch (error) {
+            console.error('❌ [Card2.1] universal-data-viz 多数据源需求注册失败:', error)
+          }
+        }
+        // 在这里可以添加其他组件的数据需求注册
+      }
+      
+      console.log('🔧 [Card2.1] 组件专用数据需求注册完成')
+
+      // 6. 获取组件树形结构
       const componentTree = autoRegistry.getComponentTree()
 
       console.log('🎉 [Card2.1] 系统初始化完成!', {

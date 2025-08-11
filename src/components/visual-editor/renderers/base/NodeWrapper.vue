@@ -36,6 +36,8 @@
         :data="node.metadata?.card2Data"
         :metadata="node.metadata"
         :data-source="node.dataSource"
+        :data-sources="multiDataSourceData"
+        :data-sources-config="multiDataSourceConfig"
         :node-id="nodeId"
         @error="$emit('component-error', $event)"
       />
@@ -87,6 +89,10 @@ interface Props {
   forceShowTitle?: boolean
   /** 获取组件的方法（用于非Card2组件） */
   getWidgetComponent?: (type: string) => any
+  /** 多数据源数据 */
+  multiDataSourceData?: Record<string, any>
+  /** 多数据源配置 */
+  multiDataSourceConfig?: any
 }
 
 interface Emits {
@@ -99,6 +105,10 @@ interface Emits {
 }
 
 const props = defineProps<Props>()
+
+// 计算属性，从props中提取多数据源数据和配置，提供给组件
+const multiDataSourceData = computed(() => props.multiDataSourceData || {})
+const multiDataSourceConfig = computed(() => props.multiDataSourceConfig || {})
 const emit = defineEmits<Emits>()
 
 const { updateNode } = useEditor()
@@ -110,6 +120,17 @@ watch(
     if (props.node.type === 'datasource-test') {
       console.log('🔧 [NodeWrapper] metadata变化:', newMetadata)
       console.log('🔧 [NodeWrapper] card2Data:', newMetadata?.card2Data)
+    }
+  },
+  { deep: true, immediate: true }
+)
+
+// 调试：监听多数据源数据变化
+watch(
+  () => props.multiDataSourceData,
+  newMultiDataSourceData => {
+    if (newMultiDataSourceData) {
+      console.log(`🔧 [NodeWrapper] 多数据源数据变化 (${props.nodeId}):`, newMultiDataSourceData)
     }
   },
   { deep: true, immediate: true }

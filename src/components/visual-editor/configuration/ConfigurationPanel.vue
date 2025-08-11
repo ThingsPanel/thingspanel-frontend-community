@@ -84,9 +84,17 @@
 
         <!-- 数据源配置标签页 -->
         <n-tab-pane name="dataSource" :tab="$t('config.tabs.dataSource')">
+          <!-- 多数据源表单（专业级多数据源系统） -->
+          <MultiDataSourceConfigForm
+            v-if="supportsMultiDataSource"
+            :widget="selectedWidget"
+            :component-id="selectedWidget.type"
+            @data-updated="handleDataSourceUpdate"
+            @config-changed="handleMultiDataSourceConfigChange"
+          />
           <!-- 增强版数据源表单（支持数组和对象） -->
           <EnhancedDataSourceConfigForm
-            v-if="shouldUseEnhancedDataSourceForm"
+            v-else-if="shouldUseEnhancedDataSourceForm"
             v-model="dataSourceConfig"
             :widget="selectedWidget"
             :readonly="readonly"
@@ -211,15 +219,17 @@ import {
 } from 'naive-ui'
 import { Settings as SettingsIcon } from '@vicons/ionicons5'
 
-// 导入四个配置表单组件
+// 导入配置表单组件
 import BaseConfigForm from './forms/BaseConfigForm.vue'
 import ComponentConfigForm from './forms/ComponentConfigForm.vue'
 import DataSourceConfigForm from './forms/DataSourceConfigForm.vue'
 import EnhancedDataSourceConfigForm from './forms/EnhancedDataSourceConfigForm.vue'
+import MultiDataSourceConfigForm from './forms/MultiDataSourceConfigForm.vue'
 import InteractionConfigForm from './forms/InteractionConfigForm.vue'
 
 // 导入配置管理器和类型
 import { configurationManager } from './ConfigurationManager'
+import { getComponentDataRequirements } from '../core/component-data-requirements'
 import type {
   WidgetConfiguration,
   BaseConfiguration,
@@ -248,6 +258,8 @@ interface Props {
 interface Emits {
   (e: 'toggle-widget-titles', value: boolean): void
   (e: 'grid-config-change', config: any): void
+  (e: 'multi-data-source-update', widgetId: string, dataSources: Record<string, any>): void
+  (e: 'multi-data-source-config-update', widgetId: string, config: any): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -268,6 +280,9 @@ const showImportExportDialog = ref(false)
 const importExportMode = ref<'import' | 'export'>('export')
 const exportedConfig = ref('')
 const importConfigText = ref('')
+
+// 多数据源数据状态
+const multiDataSourceData = ref<Record<string, any>>({})
 
 // 配置数据
 const baseConfig = ref<BaseConfiguration>({
@@ -304,25 +319,33 @@ const importExportTitle = computed(() => {
   return importExportMode.value === 'export' ? '导出配置' : '导入配置'
 })
 
-// 判断是否使用增强版数据源表单
+// 判断是否支持多数据源
+const supportsMultiDataSource = computed(() => {
+  if (!props.selectedWidget) return false
+  
+  const componentId = props.selectedWidget.type
+  const requirements = getComponentDataRequirements(componentId)
+  
+  console.log(`🔧 [ConfigurationPanel] 检查多数据源支持: ${componentId}`, requirements)
+  
+  return requirements !== undefined
+})
+
+// 判断是否使用增强版数据源表单（向后兼容）
 const shouldUseEnhancedDataSourceForm = computed(() => {
   if (!props.selectedWidget) return false
+
+  // 如果支持多数据源，不使用增强表单
+  if (supportsMultiDataSource.value) return false
 
   // 支持数组数据的组件类型列表
   const arrayDataComponents = [
     'array-chart-test' // 新的数组图表测试组件
-    // 可以在这里添加更多支持数组数据的组件
-  ]
-
-  // 通用组件也可以使用增强版表单
-  const enhancedComponents = [
-    'array-chart-test'
-    // 未来的其他增强组件
   ]
 
   const widgetType = props.selectedWidget.type
 
-  return arrayDataComponents.includes(widgetType) || enhancedComponents.includes(widgetType)
+  return arrayDataComponents.includes(widgetType)
 })
 
 // 配置操作选项
@@ -503,6 +526,35 @@ const resetLocalConfiguration = () => {
  */
 const handleValidation = (result: ValidationResult) => {
   configurationStatus.value = result
+}
+
+/**
+ * 处理多数据源数据更新
+ */
+const handleDataSourceUpdate = (data: Record<string, any>) => {
+  console.log(`🔧 [ConfigurationPanel] 多数据源数据更新:`, data)
+  
+  // 更新本地数据状态
+  multiDataSourceData.value = { ...data }
+  
+  // 发射事件给父组件，传递给实际的组件
+  if (props.selectedWidget) {
+    emit('multi-data-source-update', props.selectedWidget.id, data)
+    console.log(`🔧 [ConfigurationPanel] 发射多数据源更新事件: ${props.selectedWidget.id}`, data)
+  }
+}
+
+/**
+ * 处理多数据源配置变化
+ */
+const handleMultiDataSourceConfigChange = (config: any) => {
+  console.log(`🔧 [ConfigurationPanel] 多数据源配置变化:`, config)
+  
+  // 发射配置更新事件给父组件
+  if (props.selectedWidget) {
+    emit('multi-data-source-config-update', props.selectedWidget.id, config)
+    console.log(`🔧 [ConfigurationPanel] 发射多数据源配置更新事件: ${props.selectedWidget.id}`, config)
+  }
 }
 
 /**

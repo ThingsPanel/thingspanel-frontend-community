@@ -9,6 +9,7 @@ import { useComponentTree } from './useComponentTree'
 import type { ComponentDefinition } from '../core/types'
 import type { WidgetType, WidgetDefinition } from '@/components/visual-editor/types'
 import { $t } from '@/locales'
+import { registerUniversalDataVizConfig } from '../components/universal-data-viz/register-config'
 
 export interface VisualEditorIntegrationOptions {
   autoInit?: boolean
@@ -52,7 +53,8 @@ const COMPONENT_I18N_KEYS: Record<string, string> = {
   // Card 2.1 组件
   'digit-indicator': 'card.digitalIndicator',
   'multi-data-test': '多数据测试',
-  'bar-chart': 'card.barChart'
+  'bar-chart': 'card.barChart',
+  'universal-data-viz': '通用数据可视化'
 }
 
 export function useVisualEditorIntegration(options: VisualEditorIntegrationOptions = {}) {
@@ -84,6 +86,10 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
     try {
       await initializeCard2System()
       await componentTree.initialize()
+      
+      // 注意：组件数据需求注册现在由 Card2.1 系统统一处理
+      // registerUniversalDataVizConfig() - 已移至 Card2.1 系统初始化中
+      
       isInitialized.value = true
       console.log('🎯 [VisualEditorIntegration] 集成初始化完成')
     } catch (error) {
@@ -115,6 +121,15 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
     if (!Array.isArray(components)) {
       console.log('❌ [VisualEditorIntegration] filteredComponents 不是数组，返回空数组，当前值:', components)
       return []
+    }
+
+    // 特别检查是否包含 universal-data-viz
+    const hasUniversalDataViz = components.some(comp => comp.type === 'universal-data-viz')
+    console.log(`🎯 [VisualEditorIntegration] filteredComponents 中是否包含 universal-data-viz: ${hasUniversalDataViz}`)
+    
+    if (!hasUniversalDataViz) {
+      console.log('⚠️ [VisualEditorIntegration] 警告：filteredComponents 中未找到 universal-data-viz 组件')
+      console.log('🔍 [VisualEditorIntegration] 当前组件列表:', components.map(c => c.type))
     }
 
     return components.map(definition => {
