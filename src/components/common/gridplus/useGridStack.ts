@@ -1,6 +1,6 @@
 import { ref, watch, nextTick } from 'vue'
 import type { Ref } from 'vue'
-import { GridStack, GridStackElement, GridStackNode, GridStackOptions, GridStackWidget } from 'gridstack'
+import { GridStack, GridStackElement, GridStackOptions, GridStackWidget } from 'gridstack'
 import 'gridstack/dist/gridstack.css'
 
 /**
@@ -14,17 +14,17 @@ const patchGridStackEngine = () => {
     if (engine && engine._fixCollisions && !engine._fixCollisions._patched) {
       const originalFixCollisions = engine._fixCollisions
       let recursionDepth = 0
-      const MAX_RECURSION_DEPTH = 5  // 降低到5次
-      
-      engine._fixCollisions = function(...args: any[]) {
+      const MAX_RECURSION_DEPTH = 5 // 降低到5次
+
+      engine._fixCollisions = function (...args: any[]) {
         recursionDepth++
-        
+
         if (recursionDepth > MAX_RECURSION_DEPTH) {
           console.warn(`GridStack: Stopping collision detection at depth ${recursionDepth}`)
           recursionDepth = 0
-          return false  // 返回false停止递归
+          return false // 返回false停止递归
         }
-        
+
         try {
           const result = originalFixCollisions.apply(this, args)
           recursionDepth--
@@ -37,13 +37,13 @@ const patchGridStackEngine = () => {
       }
       engine._fixCollisions._patched = true
     }
-    
+
     // 修复排序函数（这是错误的根源）
     const utilsObj = (window as any)._Utils || (GridStack as any).Utils
     if (utilsObj && utilsObj.sort && !utilsObj.sort._patched) {
-      utilsObj.sort = function(nodes: any[], dir?: number, width?: number) {
+      utilsObj.sort = function (nodes: any[]) {
         if (!Array.isArray(nodes) || nodes.length <= 1) return nodes
-        
+
         // 使用最简单的排序避免复杂比较
         return [...nodes].sort((a, b) => {
           if (!a || !b || typeof a.y !== 'number' || typeof b.y !== 'number') return 0
@@ -52,22 +52,22 @@ const patchGridStackEngine = () => {
       }
       utilsObj.sort._patched = true
     }
-    
+
     // 修复moveNode函数
     if (engine && engine.moveNode && !engine.moveNode._patched) {
       const originalMoveNode = engine.moveNode
       let moveNodeCalls = 0
       const MAX_MOVE_CALLS = 20
-      
-      engine.moveNode = function(...args: any[]) {
+
+      engine.moveNode = function (...args: any[]) {
         moveNodeCalls++
-        
+
         if (moveNodeCalls > MAX_MOVE_CALLS) {
           console.warn('GridStack: Too many moveNode calls, stopping')
           moveNodeCalls = 0
           return
         }
-        
+
         try {
           const result = originalMoveNode.apply(this, args)
           if (moveNodeCalls > 0) moveNodeCalls--
@@ -80,7 +80,7 @@ const patchGridStackEngine = () => {
       }
       engine.moveNode._patched = true
     }
-    
+
     console.log('GridStack safety patches applied successfully')
   } catch (error) {
     console.error('Failed to patch GridStack:', error)
@@ -129,7 +129,7 @@ export function useGridStack(
   const gridStack = ref<GridStack | null>(null)
 
   // 内部状态标志：防止响应式循环
-  let isUpdatingFromProps = false;
+  let isUpdatingFromProps = false
 
   /**
    * @description GridStack 'change' 事件的回调处理函数
@@ -164,7 +164,7 @@ export function useGridStack(
     if (!gridStack.value) return
 
     // 设置标志位，表明正在从props更新
-    isUpdatingFromProps = true;
+    isUpdatingFromProps = true
 
     // 暂时移除 'change' 事件监听器，防止无限循环
     gridStack.value.off('change', onGridChange)
@@ -175,19 +175,19 @@ export function useGridStack(
     // 使用 nextTick 确保在 DOM 更新后执行
     nextTick(() => {
       if (!gridStack.value) return
-      
+
       // 关键修复：使用非响应式的深拷贝数据，完全断开Vue响应式链
       const plainItems = JSON.parse(JSON.stringify(props.items))
-      
+
       // 临时启用acceptWidgets来添加项目
       if (gridStack.value) {
         gridStack.value.setStatic(false, false) // 暂时取消静态模式
       }
-      
+
       // 遍历非响应式数据，为每个项目添加 widget
       plainItems.forEach((item: GridStackWidget) => {
         if (!gridStack.value) return
-        
+
         const content = createItemContent(item)
         // 使用最简单的方式添加widget，避免触发复杂的算法
         gridStack.value.addWidget({
@@ -199,7 +199,7 @@ export function useGridStack(
           content: content.outerHTML
         })
       })
-      
+
       // 恢复静态模式（如果是只读的话）
       if (gridStack.value && props.readonly) {
         gridStack.value.setStatic(true, false)
@@ -210,7 +210,7 @@ export function useGridStack(
         if (gridStack.value) {
           gridStack.value.on('change', onGridChange)
           // 重置标志位
-          isUpdatingFromProps = false;
+          isUpdatingFromProps = false
         }
       })
     })
@@ -230,32 +230,28 @@ export function useGridStack(
       column: props.config?.column || 12,
       cellHeight: props.config?.cellHeight || 100,
       margin: props.config?.margin || 10,
-      
+
       // 关键：完全禁用所有可能引起无限循环的功能
       disableDrag: props.readonly,
       disableResize: props.readonly,
-      
+
       // 禁用所有自动布局和碰撞检测
       float: false, // 禁用浮动布局
       animate: false, // 禁用所有动画
       rtl: false, // 禁用RTL
-      
+
       // 禁用所有自动功能
       acceptWidgets: false, // 先禁用，后续手动控制
       removable: false,
       alwaysShowResizeHandle: false,
-      
+
       // 网格限制
       minRow: 0,
       maxRow: 100,
       disableOneColumnMode: true,
-      
+
       // 完全静态模式（只读时）
-      staticGrid: props.readonly,
-      
-      // 禁用所有回调以减少冲突
-      disableDrag: props.readonly,
-      disableResize: props.readonly
+      staticGrid: props.readonly
     }
 
     gridStack.value = GridStack.init(options, gridStackContainer.value)
@@ -269,25 +265,25 @@ export function useGridStack(
       if (changeTimeout) clearTimeout(changeTimeout)
       changeTimeout = setTimeout(onGridChange, 16) // ~60fps
     }
-    
+
     gridStack.value.on('change', debouncedChange)
-    gridStack.value.on('added', (event, items) => {
+    gridStack.value.on('added', (_event, items) => {
       const nodes = items.map(i => i.gridstackNode).filter(Boolean) as GridStackWidget[]
       if (nodes.length > 0) {
         emit('added', nodes)
       }
     })
-    gridStack.value.on('removed', (event, items) => {
+    gridStack.value.on('removed', (_event, items) => {
       const nodes = items.map(i => i.gridstackNode).filter(Boolean) as GridStackWidget[]
       if (nodes.length > 0) {
         emit('removed', nodes)
       }
     })
-    gridStack.value.on('dragstop', (event, el) => {
+    gridStack.value.on('dragstop', (_event, el) => {
       const node = (el as GridStackElement).gridstackNode
       if (node) emit('dragstop', node as GridStackWidget)
     })
-    gridStack.value.on('resizestop', (event, el) => {
+    gridStack.value.on('resizestop', (_event, el) => {
       const node = (el as GridStackElement).gridstackNode
       if (node) emit('resizestop', node as GridStackWidget)
     })
@@ -343,7 +339,7 @@ export function useGridStack(
     (newItems, oldItems) => {
       // 如果数组长度没有变化且引用相同，可能是GridStack内部触发的，跳过
       if (newItems === oldItems) return
-      
+
       if (gridStack.value) {
         debouncedReload()
       }
@@ -375,32 +371,32 @@ export function useGridStack(
    */
   const addItem = (item: GridStackWidget) => {
     if (!gridStack.value) return
-    
+
     // 设置更新标志
     isUpdatingFromProps = true
-    
+
     // 暂时关闭change事件，防止无限循环
     gridStack.value.off('change', onGridChange)
-    
+
     // 临时取消静态模式
     gridStack.value.setStatic(false, false)
-    
+
     const content = createItemContent(item)
     // 使用最简单的数据结构避免触发复杂算法
     gridStack.value.addWidget({
       x: item.x || 0,
-      y: item.y || 0, 
+      y: item.y || 0,
       w: item.w || 4,
       h: item.h || 3,
       id: item.id,
       content: content.outerHTML
     })
-    
+
     // 恢复模式设置
     if (props.readonly) {
       gridStack.value.setStatic(true, false)
     }
-    
+
     // 重新绑定change事件并重置标志
     nextTick(() => {
       if (gridStack.value) {
