@@ -96,42 +96,42 @@ const rules: FormRules = {
   email: {
     required: true,
     trigger: ['blur', 'input'],
-    message: '请输入正确的邮箱地址'
+    message: $t('generate.email-address')
   },
   name: {
     required: true,
     trigger: ['blur', 'input'],
-    message: '请输入姓名'
+    message: $t('generate.last-name')
   },
   phone_number: {
     required: true,
     trigger: ['blur', 'input'],
-    message: '请输入手机号码'
+    message: $t('generate.phoneNumber')
   },
   organization: {
     required: false,
     trigger: ['blur', 'input'],
-    message: '请输入组织名称'
+    message: $t('page.manage.user.form.organization')
   },
   timezone: {
     required: false,
     trigger: ['blur', 'change'],
-    message: '请选择时区'
+    message: $t('page.manage.user.form.timezone')
   },
   default_language: {
     required: false,
     trigger: ['blur', 'change'],
-    message: '请选择默认语言'
+    message: $t('page.manage.user.form.defaultLanguage')
   },
   'address.province': {
     required: false,
     trigger: ['blur', 'change'],
-    message: '请选择省份'
+    message: $t('page.manage.user.form.address')
   },
   'address.detailed_address': {
     required: false,
     trigger: ['blur', 'input'],
-    message: '请输入详细地址'
+    message: $t('page.manage.user.form.detailedAddress')
   }
 }
 const passRules: FormRules = {
@@ -345,28 +345,28 @@ onMounted(async () => {
               </div>
               <n-divider style="margin: 12px 0" />
               <div class="flex justify-start">
-                <div class="w-120px text-14px text-#666 dark:text-gray-600">组织</div>
-                <div>{{ userInfoData.organization || '未设置' }}</div>
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">{{ $t('page.manage.user.organization') }}</div>
+                <div>{{ userInfoData.organization || $t('common.notSet') }}</div>
               </div>
               <n-divider style="margin: 12px 0" />
               <div class="flex justify-start">
-                <div class="w-120px text-14px text-#666 dark:text-gray-600">时区</div>
-                <div>{{ userInfoData.timezone || '未设置' }}</div>
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">{{ $t('page.manage.user.timezone') }}</div>
+                <div>{{ userInfoData.timezone || $t('common.notSet') }}</div>
               </div>
               <n-divider style="margin: 12px 0" />
               <div class="flex justify-start">
-                <div class="w-120px text-14px text-#666 dark:text-gray-600">默认语言</div>
-                <div>{{ userInfoData.default_language || '未设置' }}</div>
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">{{ $t('page.manage.user.defaultLanguage') }}</div>
+                <div>{{ userInfoData.default_language || $t('common.notSet') }}</div>
               </div>
               <n-divider style="margin: 12px 0" />
               <div class="flex justify-start">
-                <div class="w-120px text-14px text-#666 dark:text-gray-600">省市区</div>
-                <div>{{ [userInfoData.address.province, userInfoData.address.city, userInfoData.address.district].filter(Boolean).join(' / ') || '未设置' }}</div>
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">{{ $t('page.manage.user.address') }}</div>
+                <div>{{ [userInfoData.address.province, userInfoData.address.city, userInfoData.address.district].filter(Boolean).join(' / ') || $t('common.notSet') }}</div>
               </div>
               <n-divider style="margin: 12px 0" />
               <div class="flex justify-start">
-                <div class="w-120px text-14px text-#666 dark:text-gray-600">详细地址</div>
-                <div>{{ userInfoData.address.detailed_address || '未设置' }}</div>
+                <div class="w-120px text-14px text-#666 dark:text-gray-600">{{ $t('page.manage.user.detailedAddress') }}</div>
+                <div>{{ userInfoData.address.detailed_address || $t('common.notSet') }}</div>
               </div>
               <n-divider style="margin: 12px 0" />
             </div>
@@ -396,19 +396,19 @@ onMounted(async () => {
                   <NInput v-model:value="userInfoData.email" placeholder="请输入邮箱地址" />
                 </NFormItem>
 
-                <NFormItem path="organization" label="组织">
-                  <NInput v-model:value="userInfoData.organization" placeholder="请输入组织名称" />
+                <NFormItem path="organization" :label="$t('page.manage.user.organization')">
+                  <NInput v-model:value="userInfoData.organization" :placeholder="$t('page.manage.user.form.organization')" />
                 </NFormItem>
 
-                <NFormItem path="timezone" label="时区">
-                  <NSelect v-model:value="userInfoData.timezone" :options="timezoneOptions" placeholder="请选择时区" />
+                <NFormItem path="timezone" :label="$t('page.manage.user.timezone')">
+                  <NSelect v-model:value="userInfoData.timezone" :options="timezoneOptions" :placeholder="$t('page.manage.user.form.timezone')" />
                 </NFormItem>
 
-                <NFormItem path="default_language" label="默认语言">
-                  <NSelect v-model:value="userInfoData.default_language" :options="languageOptions" placeholder="请选择默认语言" />
+                <NFormItem path="default_language" :label="$t('page.manage.user.defaultLanguage')">
+                  <NSelect v-model:value="userInfoData.default_language" :options="languageOptions" :placeholder="$t('page.manage.user.form.defaultLanguage')" />
                 </NFormItem>
 
-                <NFormItem path="address.province" label="省市区">
+                <NFormItem path="address.province" :label="$t('page.manage.user.address')">
                   <ProvinceCityDistrictSelector
                     :province="userInfoData.address.province"
                     :city="userInfoData.address.city"
@@ -417,8 +417,8 @@ onMounted(async () => {
                   />
                 </NFormItem>
 
-                <NFormItem path="address.detailed_address" label="详细地址">
-                  <NInput v-model:value="userInfoData.address.detailed_address" placeholder="请输入详细地址" />
+                <NFormItem path="address.detailed_address" :label="$t('page.manage.user.detailedAddress')">
+                  <NInput v-model:value="userInfoData.address.detailed_address" :placeholder="$t('page.manage.user.form.detailedAddress')" />
                 </NFormItem>
               </NForm>
               <n-divider style="margin: 12px 0" />

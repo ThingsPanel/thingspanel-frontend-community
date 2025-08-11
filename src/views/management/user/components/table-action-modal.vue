@@ -144,10 +144,10 @@ const rules: Record<keyof FormModel, FormItemRule | FormItemRule[]> = {
   timezone: createRequiredFormRule($t('common.pleaseCheckValue')),
   default_language: createRequiredFormRule($t('common.pleaseCheckValue')),
   address: {
-    province: createRequiredFormRule('请选择省份'),
-    city: createRequiredFormRule('请选择城市'),
-    district: createRequiredFormRule('请选择区县'),
-    detailed_address: createRequiredFormRule('请输入详细地址')
+    province: createRequiredFormRule($t('page.manage.user.form.address')),
+    city: createRequiredFormRule($t('page.manage.user.form.address')),
+    district: createRequiredFormRule($t('page.manage.user.form.address')),
+    detailed_address: createRequiredFormRule($t('page.manage.user.form.detailedAddress'))
   }
 }
 
@@ -276,16 +276,16 @@ watch(
         <NFormItemGridItem :span="12" :label="$t('page.manage.user.userPhone')" path="phone_number">
           <NInput v-model:value="formModel.phone_number" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="'组织'" path="organization">
-          <NInput v-model:value="formModel.organization" placeholder="请输入组织名称" />
+        <NFormItemGridItem :span="12" :label="$t('page.manage.user.organization')" path="organization">
+          <NInput v-model:value="formModel.organization" :placeholder="$t('page.manage.user.form.organization')" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="'时区'" path="timezone">
-          <NSelect v-model:value="formModel.timezone" :options="timezoneOptions" placeholder="请选择时区" />
+        <NFormItemGridItem :span="12" :label="$t('page.manage.user.timezone')" path="timezone">
+          <NSelect v-model:value="formModel.timezone" :options="timezoneOptions" :placeholder="$t('page.manage.user.form.timezone')" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="12" :label="'默认语言'" path="default_language">
-          <NSelect v-model:value="formModel.default_language" :options="languageOptions" placeholder="请选择默认语言" />
+        <NFormItemGridItem :span="12" :label="$t('page.manage.user.defaultLanguage')" path="default_language">
+          <NSelect v-model:value="formModel.default_language" :options="languageOptions" :placeholder="$t('page.manage.user.form.defaultLanguage')" />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="'省市区'" path="address.province">
+        <NFormItemGridItem :span="24" :label="$t('page.manage.user.address')" path="address.province">
           <ProvinceCityDistrictSelector
             :province="formModel.address.province"
             :city="formModel.address.city"
@@ -293,8 +293,8 @@ watch(
             @change="handleAddressChange"
           />
         </NFormItemGridItem>
-        <NFormItemGridItem :span="24" :label="'详细地址'" path="address.detailed_address">
-          <NInput v-model:value="formModel.address.detailed_address" placeholder="请输入详细地址" />
+        <NFormItemGridItem :span="24" :label="$t('page.manage.user.detailedAddress')" path="address.detailed_address">
+          <NInput v-model:value="formModel.address.detailed_address" :placeholder="$t('page.manage.user.form.detailedAddress')" />
         </NFormItemGridItem>
 
         <template v-if="type === 'add'">

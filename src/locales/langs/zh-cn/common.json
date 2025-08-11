@@ -270,6 +270,7 @@
   "common.networkError": "网络错误",
   "common.fetchDataFailed": "获取数据失败",
   "common.noMoreData": "没有更多数据了",
+  "common.notSet": "未设置",
   "common.operationFailed": "操作失败",
   "common.noContentToCopy": "没有内容可复制",
   "common.selectionMode": "选择模式",

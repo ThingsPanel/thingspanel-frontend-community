@@ -268,6 +268,7 @@
   "common.networkError": "Network Error",
   "common.fetchDataFailed": "Failed to fetch data",
   "common.noMoreData": "No more data",
+  "common.notSet": "Not set",
   "common.operationFailed": "Operation Failed",
   "common.noContentToCopy": "No content to copy",
   "common.selectionMode": "Selection Mode",
