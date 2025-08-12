@@ -106,54 +106,10 @@
       </div>
 
       <n-tabs type="segment" animated size="small" class="settings-tabs">
-        <!-- 数据源配置 - 直接嵌入配置表单 -->
-        <n-tab-pane name="dataSource" tab="数据源" display-directive="show">
+        <!-- 数据需求显示 - 纯展示组件的数据源需求 -->
+        <n-tab-pane name="dataSource" tab="数据需求" display-directive="show">
           <div class="tab-content">
-            <div v-if="hasDataSourceSupport" class="data-source-section">
-              <!-- 状态指示器 -->
-              <div class="status-bar">
-                <div class="status-item">
-                  <span class="status-label">状态</span>
-                  <n-tag :type="dataSourceStatus.type" size="small" round>
-                    {{ dataSourceStatus.label }}
-                  </n-tag>
-                </div>
-                <div v-if="editableProps.dataSource" class="status-item">
-                  <span class="status-label">类型</span>
-                  <n-text depth="2" class="status-value">
-                    {{ editableProps.dataSource.type || '数据源测试' }}
-                  </n-text>
-                </div>
-              </div>
-
-              <!-- 直接嵌入数据源配置表单 -->
-              <div class="data-source-config-wrapper">
-                <!-- 检查是否支持多数据源 -->
-                <MultiDataSourceConfigForm
-                  v-if="selectedWidget && supportsMultiDataSource"
-                  :widget="selectedWidget"
-                  :component-id="selectedWidget.type"
-                  @data-updated="handleDataSourceUpdate"
-                  @config-changed="handleMultiDataSourceConfigChange"
-                />
-                
-                <!-- 兜底使用单数据源配置 -->
-                <DataSourceConfigForm
-                  v-else-if="selectedWidget"
-                  :widget="selectedWidget"
-                  @data-updated="handleDataSourceUpdate"
-                />
-              </div>
-            </div>
-
-            <!-- 无数据源支持 -->
-            <div v-else class="empty-state">
-              <n-empty description="该组件不支持数据源配置" size="small" class="compact-empty">
-                <template #icon>
-                  <DocumentOutline />
-                </template>
-              </n-empty>
-            </div>
+            <DataRequirementsDisplay :selected-widget="selectedWidget" />
           </div>
         </n-tab-pane>
 
@@ -328,8 +284,7 @@ import type { VisualEditorWidget } from '../types'
 import { cloneDeep } from 'lodash-es'
 import { configRegistry } from './ConfigRegistry'
 import EnhancedPropertyForm from './components/EnhancedPropertyForm.vue'
-import DataSourceConfigForm from '../configuration/forms/DataSourceConfigForm.vue'
-import MultiDataSourceConfigForm from '../configuration/forms/MultiDataSourceConfigForm.vue'
+import DataRequirementsDisplay from './components/DataRequirementsDisplay.vue'
 import { getComponentDataRequirements } from '../core/component-data-requirements'
 
 const props = defineProps<{
@@ -365,8 +320,7 @@ watch(
         properties: widget.properties || {},
         interaction: widget.interaction || {
           onClick: { type: 'none', payload: {} }
-        },
-        dataSource: widget.dataSource || null
+        }
       })
     } else {
       editableProps.value = {}
@@ -422,111 +376,11 @@ const componentProperties = computed(() => {
   return definition?.properties || {}
 })
 
-// 获取组件数据源定义
-const componentDataSourceDefinitions = computed(() => {
-  const definition = props.selectedWidget?.metadata?.card2Definition
-  return definition?.dataSourceDefinitions || []
-})
+// 保留getComponentDataRequirements导入，DataRequirementsDisplay组件需要使用
+// 其他数据源相关的computed已移除
 
-// 检查是否支持数据源配置
-const hasDataSourceSupport = computed(() => {
-  return (
-    props.selectedWidget &&
-    (props.selectedWidget.metadata?.isCard2Component ||
-     componentDataSourceDefinitions.value.length > 0 ||
-     supportsMultiDataSource.value)
-  )
-})
-
-// 检查是否支持多数据源
-const supportsMultiDataSource = computed(() => {
-  if (!props.selectedWidget) return false
-  
-  const componentId = props.selectedWidget.type
-  const requirements = getComponentDataRequirements(componentId)
-  
-  console.log(`🔧 [SettingsPanel] 检查多数据源支持: ${componentId}`, requirements)
-  
-  return requirements !== undefined
-})
-
-// 数据源状态
-const dataSourceStatus = computed(() => {
-  const dataSource = editableProps.value.dataSource
-
-  if (!dataSource) {
-    return { type: 'warning', label: '未配置' }
-  }
-
-  if (dataSource.type && dataSource.config) {
-    return { type: 'success', label: '已配置' }
-  }
-
-  return { type: 'info', label: '配置中' }
-})
-
-// 处理数据源更新
-const handleDataSourceUpdate = (dataSourceUpdateEvent: any) => {
-  console.log('🔧 SettingsPanel - 接收到数据源更新事件:', dataSourceUpdateEvent)
-
-  // DataSourceConfigForm 发送的事件包含完整的数据更新信息
-  if (dataSourceUpdateEvent && props.selectedWidget) {
-    // 更新 widget 的数据源配置
-    editableProps.value.dataSource = {
-      type: 'data-source-test',
-      config: dataSourceUpdateEvent.config || {}
-    }
-
-    // 直接更新 widget 的 metadata.card2Data（这是组件真正接收数据的路径）
-    if (props.selectedWidget.metadata) {
-      props.selectedWidget.metadata.card2Data = dataSourceUpdateEvent.data
-    }
-
-    // 通知状态管理器更新节点
-    stateManager.updateNode(props.selectedWidget.id, {
-      properties: editableProps.value.properties,
-      interaction: editableProps.value.interaction,
-      dataSource: editableProps.value.dataSource,
-      // 同时更新 metadata
-      metadata: {
-        ...props.selectedWidget.metadata,
-        card2Data: dataSourceUpdateEvent.data
-      }
-    } as any)
-
-    console.log('✅ SettingsPanel - 数据源已更新:', {
-      widgetId: props.selectedWidget.id,
-      dataSource: editableProps.value.dataSource,
-      card2Data: dataSourceUpdateEvent.data
-    })
-  }
-}
-
-// 处理多数据源配置变化
-const handleMultiDataSourceConfigChange = (config: any) => {
-  console.log('🔧 [SettingsPanel] 多数据源配置变化:', config)
-  
-  if (props.selectedWidget) {
-    // 更新 widget 的多数据源配置
-    if (!props.selectedWidget.metadata) {
-      props.selectedWidget.metadata = {}
-    }
-    
-    props.selectedWidget.metadata.multiDataSourceConfig = config
-    
-    // 通知状态管理器更新节点
-    stateManager.updateNode(props.selectedWidget.id, {
-      properties: editableProps.value.properties,
-      interaction: editableProps.value.interaction,
-      metadata: {
-        ...props.selectedWidget.metadata,
-        multiDataSourceConfig: config
-      }
-    } as any)
-    
-    console.log('✅ [SettingsPanel] 多数据源配置更新完成')
-  }
-}
+// 数据源配置相关的处理函数已移除
+// 当前版本只展示数据需求，不进行数据源配置
 
 // 防抖更新节点
 let updateNodeTimer: NodeJS.Timeout | null = null
@@ -540,14 +394,12 @@ const updateNode = () => {
   updateNodeTimer = setTimeout(() => {
     if (props.selectedWidget) {
       console.log('🔧 SettingsPanel - 更新节点:', {
-        id: props.selectedWidget.id,
-        dataSource: editableProps.value.dataSource
+        id: props.selectedWidget.id
       })
 
       stateManager.updateNode(props.selectedWidget.id, {
         properties: editableProps.value.properties,
-        interaction: editableProps.value.interaction,
-        dataSource: editableProps.value.dataSource
+        interaction: editableProps.value.interaction
       } as any)
     }
   }, 200)

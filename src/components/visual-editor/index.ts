@@ -9,9 +9,6 @@ export { default as PanelEditor } from './PanelEditor.vue'
 // Hook导出
 export { useEditor, createEditor } from './hooks/useEditor'
 
-// Card 2.0 集成
-export { useCard2Integration } from './hooks/useCard2Integration'
-
 // 类型导出
 export type {
   EditorConfig,

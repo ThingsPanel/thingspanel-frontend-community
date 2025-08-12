@@ -82,37 +82,7 @@
           />
         </n-tab-pane>
 
-        <!-- 数据源配置标签页 -->
-        <n-tab-pane name="dataSource" :tab="$t('config.tabs.dataSource')">
-          <!-- 多数据源表单（专业级多数据源系统） -->
-          <MultiDataSourceConfigForm
-            v-if="supportsMultiDataSource"
-            :widget="selectedWidget"
-            :component-id="selectedWidget.type"
-            @data-updated="handleDataSourceUpdate"
-            @config-changed="handleMultiDataSourceConfigChange"
-          />
-          <!-- 增强版数据源表单（支持数组和对象） -->
-          <EnhancedDataSourceConfigForm
-            v-else-if="shouldUseEnhancedDataSourceForm"
-            v-model="dataSourceConfig"
-            :widget="selectedWidget"
-            :readonly="readonly"
-            :show-advanced="showAdvanced"
-            @validate="handleValidation"
-            @toggle-advanced="toggleAdvancedMode"
-          />
-          <!-- 原有的简单数据源表单（向后兼容） -->
-          <DataSourceConfigForm
-            v-else
-            v-model="dataSourceConfig"
-            :widget="selectedWidget"
-            :readonly="readonly"
-            :show-advanced="showAdvanced"
-            @validate="handleValidation"
-            @toggle-advanced="toggleAdvancedMode"
-          />
-        </n-tab-pane>
+        <!-- 数据源配置标签页已移除 -->
 
         <!-- 交互配置标签页 -->
         <n-tab-pane name="interaction" :tab="$t('config.tabs.interaction')">
@@ -222,9 +192,7 @@ import { Settings as SettingsIcon } from '@vicons/ionicons5'
 // 导入配置表单组件
 import BaseConfigForm from './forms/BaseConfigForm.vue'
 import ComponentConfigForm from './forms/ComponentConfigForm.vue'
-import DataSourceConfigForm from './forms/DataSourceConfigForm.vue'
-import EnhancedDataSourceConfigForm from './forms/EnhancedDataSourceConfigForm.vue'
-import MultiDataSourceConfigForm from './forms/MultiDataSourceConfigForm.vue'
+// 数据源配置表单已移除
 import InteractionConfigForm from './forms/InteractionConfigForm.vue'
 
 // 导入配置管理器和类型

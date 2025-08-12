@@ -11,7 +11,6 @@ export { configurationManager, ConfigurationManager }
 export type {
   BaseConfiguration,
   ComponentConfiguration,
-  DataSourceConfiguration,
   InteractionConfiguration,
   WidgetConfiguration,
   InteractionConfig,
@@ -31,7 +30,6 @@ export { default as ConfigurationPanel } from './ConfigurationPanel.vue'
 // 配置表单组件
 export { default as BaseConfigForm } from './forms/BaseConfigForm.vue'
 export { default as ComponentConfigForm } from './forms/ComponentConfigForm.vue'
-export { default as DataSourceConfigForm } from './forms/DataSourceConfigForm.vue'
 export { default as InteractionConfigForm } from './forms/InteractionConfigForm.vue'
 
 // Hooks

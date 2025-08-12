@@ -4,7 +4,6 @@
  */
 
 import type { Component } from 'vue'
-import type { ComponentDataSourceDefinition } from '../../components/visual-editor/types/data-source'
 
 // 权限类型定义
 export type ComponentPermission = '不限' | 'TENANT_ADMIN' | 'TENANT_USER' | 'SYS_ADMIN'
@@ -32,7 +31,6 @@ export interface ComponentDefinition {
     config: Record<string, any>
   }> // 示例配置
   documentation?: Record<string, any> // 文档信息
-  dataSourceDefinitions?: ComponentDataSourceDefinition[]
   properties?: Record<
     string,
     {

@@ -3,12 +3,35 @@
  * 提供标准化的方式让组件声明自己的数据源需求
  */
 
-import type { 
-  ComponentDataRequirements, 
-  DataSourceRequirement,
-  DataSourceType 
-} from './multi-data-source-types'
-import { DATA_SOURCE_TEMPLATES } from './multi-data-source-types'
+// import type { 
+//   ComponentDataRequirements, 
+//   DataSourceRequirement,
+//   DataSourceType 
+// } from './multi-data-source-types' // 临时注释，文件不存在
+// import { DATA_SOURCE_TEMPLATES } from './multi-data-source-types' // 临时注释，文件不存在
+
+// 临时类型定义
+export interface ComponentDataRequirements {
+  componentId: string
+  componentName: string
+  dataSources: DataSourceRequirement[]
+  maxDataSources?: number
+  minDataSources?: number
+}
+
+export interface DataSourceRequirement {
+  id: string
+  name: string
+  type: DataSourceType
+  required: boolean
+  description?: string
+  usage?: string
+  label?: string // 兼容性支持
+}
+
+export type DataSourceType = 'static' | 'device' | 'http' | 'websocket'
+
+export const DATA_SOURCE_TEMPLATES = {}
 
 /**
  * 数据需求构建器

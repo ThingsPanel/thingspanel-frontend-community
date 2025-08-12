@@ -15,7 +15,7 @@ import { createEditor, usePreviewMode } from './hooks'
 import type { RendererType, VisualEditorWidget, GraphData } from './types'
 
 // 导入数据源注册
-import './data-sources'
+// import './data-sources' // 临时注释，文件不存在
 
 import { useVisualEditorIntegration } from '@/card2.1/hooks/useVisualEditorIntegration'
 

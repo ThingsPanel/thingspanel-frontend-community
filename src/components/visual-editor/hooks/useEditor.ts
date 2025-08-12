@@ -10,7 +10,7 @@ import { useEditorStore } from '../store/editor'
 import { useWidgetStore, type WidgetDefinition } from '../store/widget'
 import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import { configRegistry } from '../settings/ConfigRegistry'
-import '../data-sources' // 注册数据源
+// 数据源注册已移除
 import type { GraphData, WidgetType } from '../types'
 import type { ComponentDefinition } from '@/card2.1/core/types'
 

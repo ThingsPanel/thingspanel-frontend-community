@@ -25,7 +25,7 @@
 import { ref, onMounted, watch, shallowRef, onBeforeUnmount, type Component } from 'vue'
 import { NAlert } from 'naive-ui'
 import { useEditor } from '../../hooks'
-import { dataSourceManager } from '../../core'
+// import { dataSourceManager } from '../../core' // 临时注释，dataSourceManager 不存在
 import { useWidgetStore } from '../../store/widget'
 import type { DataSourceValue } from '../../types/data-source'
 
@@ -66,9 +66,11 @@ const handleDataSource = (dataSource: any) => {
 
   // 如果有新的数据源且配置完整，订阅它
   if (dataSource && isDataSourceValid(dataSource)) {
-    currentSubscriberId = dataSourceManager.subscribe(dataSource, value => {
-      dataSourceValue.value = value
-    })
+    // TODO: 实现数据源管理器订阅
+    // currentSubscriberId = dataSourceManager.subscribe(dataSource, value => {
+    //   dataSourceValue.value = value
+    // })
+    console.log('[Card2Wrapper] 数据源管理器尚未实现，跳过订阅', dataSource)
   }
 }
 

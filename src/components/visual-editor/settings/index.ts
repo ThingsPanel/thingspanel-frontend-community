@@ -5,7 +5,7 @@ import { registerSettingPanel } from './core/registry'
 import BaseSettingsForm from './components/BaseSettingsForm.vue'
 import InteractionSettingsForm from './components/InteractionSettingsForm.vue'
 import TextWidgetSettings from './components/TextWidgetSettings.vue'
-import DataSourceSelector from './data/DataSourceSelector.vue'
+// import DataSourceSelector from './data/DataSourceSelector.vue' // 临时注释，文件不存在
 
 /**
  * 初始化并注册所有组件的设置面板
@@ -17,7 +17,7 @@ export function initializeSettings() {
     props: TextWidgetSettings,
     base: BaseSettingsForm,
     interaction: InteractionSettingsForm,
-    dataSource: DataSourceSelector
+    // dataSource: DataSourceSelector // 临时注释，组件不存在
   })
 
   // 在这里可以注册更多其他组件的设置...

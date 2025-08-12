@@ -251,7 +251,6 @@ const routeMap: RouteMap = {
   "system-management-user": "/system-management-user",
   "system-management-user_system-log": "/system-management-user/system-log",
   "test": "/test",
-  "test_datasource-integration": "/test/datasource-integration",
   "ultra-kanban": "/ultra-kanban",
   "ultra-kanban_index": "/ultra-kanban/index",
   "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details",
