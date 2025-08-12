@@ -8,7 +8,7 @@
         </n-icon>
         <span class="info-title">数据需求</span>
       </div>
-      
+
       <div class="component-details">
         <div class="detail-item">
           <span class="detail-label">组件名称：</span>
@@ -39,9 +39,7 @@
                 <ServerOutline />
               </n-icon>
               <span class="data-source-label">{{ dataSource.name || dataSource.label }}</span>
-              <n-tag v-if="dataSource.required" type="warning" size="small" round>
-                必需
-              </n-tag>
+              <n-tag v-if="dataSource.required" type="warning" size="small" round>必需</n-tag>
             </div>
             <n-text depth="3" class="data-source-type">{{ dataSource.type }}</n-text>
           </div>
@@ -68,9 +66,7 @@
           <DocumentOutline />
         </template>
         <template #extra>
-          <n-text depth="3" class="hint-text">
-            Card2.1组件可以通过声明数据需求来描述所需的数据结构
-          </n-text>
+          <n-text depth="3" class="hint-text">Card2.1组件可以通过声明数据需求来描述所需的数据结构</n-text>
         </template>
       </n-empty>
     </div>
@@ -105,25 +101,25 @@ const { t } = useI18n()
 // 获取组件数据需求
 const requirements = computed(() => {
   if (!props.selectedWidget) return null
-  
+
   // 获取组件的数据需求声明
   const componentId = props.selectedWidget.type
   const dataRequirements = getComponentDataRequirements(componentId)
-  
+
   console.log('🔍 [DataRequirementsDisplay] 获取组件数据需求:', {
     componentId,
     requirements: dataRequirements
   })
-  
+
   return dataRequirements
 })
 
 // 数量限制标签类型
 const limitsTagType = computed(() => {
   if (!requirements.value) return 'default'
-  
+
   const { minDataSources, maxDataSources } = requirements.value
-  
+
   if (minDataSources === maxDataSources) {
     return 'info' // 固定数量
   } else if (minDataSources === 0) {
@@ -309,24 +305,24 @@ const limitsTagType = computed(() => {
     align-items: flex-start;
     gap: 4px;
   }
-  
+
   .detail-row {
     flex-direction: column;
     gap: 2px;
   }
-  
+
   .detail-key {
     min-width: auto;
   }
 }
 
 /* === 主题适配 === */
-[data-theme="dark"] .data-source-item {
+[data-theme='dark'] .data-source-item {
   background: var(--card-color-dark);
   border-color: var(--border-color-dark);
 }
 
-[data-theme="dark"] .data-source-item:hover {
+[data-theme='dark'] .data-source-item:hover {
   border-color: var(--primary-color-suppl-dark);
   background: var(--hover-color-dark);
 }

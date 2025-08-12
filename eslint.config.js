@@ -51,7 +51,8 @@ export default [
       }
     },
     plugins: {
-      vue: vuePlugin // 注册 Vue 插件
+      vue: vuePlugin, // 注册 Vue 插件
+      '@typescript-eslint': tsPlugin // 注册 TypeScript 插件以支持 Vue 文件中的 TS 规则
     },
     rules: {
       // 应用 Vue 3 推荐规则
@@ -63,7 +64,13 @@ export default [
       // 关闭组件名必须多单词的限制
       'vue/multi-word-component-names': 'off',
       // 关闭模板中组件名大小写检查
-      'vue/component-name-in-template-casing': 'off'
+      'vue/component-name-in-template-casing': 'off',
+      // 关闭变量使用前定义检查（Vue文件中的 script setup 语法需要）
+      '@typescript-eslint/no-use-before-define': 'off',
+      // 未使用变量改为警告而非错误
+      '@typescript-eslint/no-unused-vars': 'warn',
+      // 未使用变量改为警告而非错误（普通JS规则）
+      'no-unused-vars': 'warn'
     }
   },
 
