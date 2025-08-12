@@ -1,16 +1,21 @@
 /**
  * 组件数据需求声明系统
  * 提供标准化的方式让组件声明自己的数据源需求
+ * 新版本支持详细的字段结构声明和数据源配置
  */
 
-// import type {
-//   ComponentDataRequirements,
-//   DataSourceRequirement,
-//   DataSourceType
-// } from './multi-data-source-types' // 临时注释，文件不存在
-// import { DATA_SOURCE_TEMPLATES } from './multi-data-source-types' // 临时注释，文件不存在
+import type {
+  ComponentDataSourceRequirements,
+  ComponentDataSourceRequirement,
+  ComponentFieldRequirement,
+  DataSourceStructureType,
+  FieldType
+} from './data-source-config-types'
 
-// 临时类型定义
+import { DATA_SOURCE_CONFIG_CONSTANTS } from './data-source-config-types'
+
+// ========== 兼容性类型定义（保留旧版本支持）==========
+
 export interface ComponentDataRequirements {
   componentId: string
   componentName: string
@@ -27,11 +32,84 @@ export interface DataSourceRequirement {
   description?: string
   usage?: string
   label?: string // 兼容性支持
+  // 新增字段
+  structureType?: DataSourceStructureType
+  fields?: ComponentFieldRequirement[]
 }
 
-export type DataSourceType = 'static' | 'device' | 'http' | 'websocket'
+export type DataSourceType = 'static' | 'device' | 'http' | 'websocket' | 'json' | 'array' | 'object'
 
-export const DATA_SOURCE_TEMPLATES = {}
+// ========== 数据源模板定义 ==========
+
+export const DATA_SOURCE_TEMPLATES = {
+  // JSON对象数据源模板
+  JSON_OBJECT: {
+    id: 'json_object',
+    name: 'JSON对象数据源',
+    type: 'object' as DataSourceStructureType,
+    description: '静态JSON对象数据，适用于单一记录显示',
+    usage: '用于显示单个对象的详细信息',
+    fields: [
+      { name: 'id', type: 'string' as FieldType, description: '唯一标识', required: true, example: 'device_001' },
+      { name: 'name', type: 'string' as FieldType, description: '显示名称', required: true, example: '温度传感器' },
+      { name: 'value', type: 'number' as FieldType, description: '数值', required: true, example: 25.6 }
+    ]
+  },
+
+  // JSON数组数据源模板
+  JSON_ARRAY: {
+    id: 'json_array',
+    name: 'JSON数组数据源',
+    type: 'array' as DataSourceStructureType,
+    description: '静态JSON数组数据，适用于列表和图表显示',
+    usage: '用于显示数据列表或时间序列',
+    fields: [
+      {
+        name: 'time',
+        type: 'string' as FieldType,
+        description: '时间戳',
+        required: true,
+        example: '2024-01-01T00:00:00'
+      },
+      { name: 'value', type: 'number' as FieldType, description: '数值', required: true, example: 123.45 },
+      { name: 'status', type: 'string' as FieldType, description: '状态', required: false, example: 'online' }
+    ]
+  },
+
+  // 统计数据模板
+  STATISTICS: {
+    id: 'statistics',
+    name: '统计数据源',
+    type: 'object' as DataSourceStructureType,
+    description: '统计汇总数据，适用于仪表板概览',
+    usage: '用于显示汇总指标和统计信息',
+    fields: [
+      { name: 'total', type: 'number' as FieldType, description: '总数', required: true, example: 1000 },
+      { name: 'active', type: 'number' as FieldType, description: '活跃数', required: true, example: 850 },
+      { name: 'rate', type: 'number' as FieldType, description: '比率', required: false, example: 85.5 }
+    ]
+  },
+
+  // 时间序列数据模板
+  TIME_SERIES: {
+    id: 'time_series',
+    name: '时间序列数据源',
+    type: 'array' as DataSourceStructureType,
+    description: '时间序列数据，适用于趋势图表',
+    usage: '用于显示数据随时间的变化趋势',
+    fields: [
+      {
+        name: 'timestamp',
+        type: 'string' as FieldType,
+        description: '时间戳',
+        required: true,
+        example: '2024-01-01T00:00:00Z'
+      },
+      { name: 'value', type: 'number' as FieldType, description: '数值', required: true, example: 25.6 },
+      { name: 'label', type: 'string' as FieldType, description: '标签', required: false, example: '温度' }
+    ]
+  }
+} as const
 
 /**
  * 数据需求构建器
@@ -55,27 +133,52 @@ export class ComponentDataRequirementsBuilder {
    */
   addDataSource(config: {
     id: string
-    label: string
+    name: string
+    label?: string // 兼容性支持
     type: DataSourceType
     required?: boolean
     description?: string
     usage?: string
     icon?: string
     defaultConfig?: any
+    // 新增字段支持
+    structureType?: DataSourceStructureType
+    fields?: ComponentFieldRequirement[]
   }): this {
     const requirement: DataSourceRequirement = {
       id: config.id,
-      label: config.label,
+      name: config.name,
+      label: config.label || config.name, // 兼容性支持
       type: config.type,
       required: config.required ?? false,
       description: config.description ?? '',
       usage: config.usage ?? '',
-      icon: config.icon,
-      defaultConfig: config.defaultConfig
+      structureType: config.structureType,
+      fields: config.fields || []
     }
 
     this.requirements.dataSources.push(requirement)
     return this
+  }
+
+  /**
+   * 添加详细的数据源需求（新版本API）
+   */
+  addDetailedDataSource(config: {
+    id: string
+    name: string
+    structureType: DataSourceStructureType
+    fields: ComponentFieldRequirement[]
+    required?: boolean
+    description?: string
+    usage?: string
+  }): this {
+    return this.addDataSource({
+      ...config,
+      type: config.structureType as DataSourceType,
+      structureType: config.structureType,
+      fields: config.fields
+    })
   }
 
   /**
@@ -84,7 +187,14 @@ export class ComponentDataRequirementsBuilder {
   addTemplate(template: keyof typeof DATA_SOURCE_TEMPLATES, overrides?: Partial<DataSourceRequirement>): this {
     const templateConfig = DATA_SOURCE_TEMPLATES[template]
     return this.addDataSource({
-      ...templateConfig,
+      id: templateConfig.id,
+      name: templateConfig.name,
+      type: templateConfig.type as DataSourceType,
+      structureType: templateConfig.type,
+      fields: templateConfig.fields,
+      description: templateConfig.description,
+      usage: templateConfig.usage,
+      required: false,
       ...overrides
     })
   }
@@ -124,7 +234,7 @@ export const COMPONENT_DATA_PRESETS = {
    * 单一时间序列图表
    */
   TIME_SERIES_CHART: createComponentDataRequirements('time-series-chart', '时间序列图表')
-    .addTemplate('TIME_SERIES', { required: true })
+    .addTemplate('TIME_SERIES', { id: 'time_data', required: true })
     .setLimits(1, 1)
     .build(),
 
@@ -132,21 +242,29 @@ export const COMPONENT_DATA_PRESETS = {
    * 双轴对比图表
    */
   DUAL_AXIS_CHART: createComponentDataRequirements('dual-axis-chart', '双轴对比图表')
-    .addDataSource({
+    .addDetailedDataSource({
       id: 'primary',
-      label: '主要数据',
-      type: 'array',
+      name: '主要数据',
+      structureType: 'array',
       required: true,
       description: '主轴数据，显示在左轴',
-      usage: '主要的时间序列数据'
+      usage: '主要的时间序列数据',
+      fields: [
+        { name: 'time', type: 'string', description: '时间', required: true, example: '2024-01-01T00:00:00Z' },
+        { name: 'value', type: 'number', description: '数值', required: true, example: 100.5 }
+      ]
     })
-    .addDataSource({
+    .addDetailedDataSource({
       id: 'secondary',
-      label: '次要数据',
-      type: 'array',
+      name: '次要数据',
+      structureType: 'array',
       required: true,
       description: '次轴数据，显示在右轴',
-      usage: '与主数据进行对比的时间序列数据'
+      usage: '与主数据进行对比的时间序列数据',
+      fields: [
+        { name: 'time', type: 'string', description: '时间', required: true, example: '2024-01-01T00:00:00Z' },
+        { name: 'value', type: 'number', description: '数值', required: true, example: 50.2 }
+      ]
     })
     .setLimits(2, 2)
     .build(),
@@ -157,13 +275,13 @@ export const COMPONENT_DATA_PRESETS = {
   DASHBOARD_OVERVIEW: createComponentDataRequirements('dashboard-overview', '仪表板概览')
     .addTemplate('TIME_SERIES', {
       id: 'trend',
-      label: '趋势数据',
+      name: '趋势数据',
       required: true,
       description: '用于显示趋势图表'
     })
     .addTemplate('STATISTICS', {
       id: 'stats',
-      label: '统计数据',
+      name: '统计数据',
       required: true,
       description: '用于显示汇总指标'
     })
@@ -174,23 +292,77 @@ export const COMPONENT_DATA_PRESETS = {
    * 灵活的数据可视化组件
    */
   FLEXIBLE_CHART: createComponentDataRequirements('flexible-chart', '灵活图表')
-    .addDataSource({
+    .addDetailedDataSource({
       id: 'primary',
-      label: '主要数据源',
-      type: 'any',
+      name: '主要数据源',
+      structureType: 'array',
       required: true,
-      description: '主要的数据源，支持任意格式',
-      usage: '图表的主要数据'
+      description: '主要的数据源，支持数组格式',
+      usage: '图表的主要数据',
+      fields: [
+        { name: 'label', type: 'string', description: '标签', required: true, example: '类别A' },
+        { name: 'value', type: 'number', description: '数值', required: true, example: 123.45 }
+      ]
     })
-    .addDataSource({
+    .addDetailedDataSource({
       id: 'secondary',
-      label: '辅助数据源',
-      type: 'any',
+      name: '辅助数据源',
+      structureType: 'object',
       required: false,
       description: '可选的辅助数据源',
-      usage: '用于对比或补充的数据'
+      usage: '用于对比或补充的数据',
+      fields: [
+        { name: 'total', type: 'number', description: '总计', required: true, example: 1000 },
+        { name: 'average', type: 'number', description: '平均值', required: false, example: 85.5 }
+      ]
     })
     .setLimits(1, 3)
+    .build(),
+
+  /**
+   * JSON数据展示组件 - 新增预设
+   */
+  JSON_DATA_DISPLAY: createComponentDataRequirements('json-data-display', 'JSON数据展示')
+    .addTemplate('JSON_OBJECT', {
+      id: 'display_data',
+      required: true,
+      description: '要显示的JSON对象数据'
+    })
+    .setLimits(1, 1)
+    .build(),
+
+  /**
+   * 数据列表组件 - 新增预设
+   */
+  DATA_LIST: createComponentDataRequirements('data-list', '数据列表')
+    .addTemplate('JSON_ARRAY', {
+      id: 'list_data',
+      required: true,
+      description: '列表显示的数组数据'
+    })
+    .setLimits(1, 2)
+    .build(),
+
+  /**
+   * 多数据源汇总组件 - 新增预设
+   */
+  MULTI_SOURCE_SUMMARY: createComponentDataRequirements('multi-source-summary', '多数据源汇总')
+    .addTemplate('STATISTICS', {
+      id: 'summary_stats',
+      required: true,
+      description: '汇总统计数据'
+    })
+    .addTemplate('JSON_ARRAY', {
+      id: 'detail_list',
+      required: false,
+      description: '详细数据列表'
+    })
+    .addTemplate('JSON_OBJECT', {
+      id: 'config_data',
+      required: false,
+      description: '配置参数'
+    })
+    .setLimits(1, DATA_SOURCE_CONFIG_CONSTANTS.MAX_DATA_SOURCES)
     .build()
 }
 

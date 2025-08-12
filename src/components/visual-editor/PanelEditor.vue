@@ -10,6 +10,7 @@ import { VisualEditorToolbar } from './components/toolbar'
 import WidgetLibrary from './components/WidgetLibrary/WidgetLibrary.vue'
 import { initializeSettings } from './settings'
 import ConfigurationPanel from './configuration/ConfigurationPanel.vue'
+import { configurationManager } from './configuration/ConfigurationManager'
 import { CanvasRenderer, GridstackRenderer } from './renderers'
 import { createEditor, usePreviewMode } from './hooks'
 import type { RendererType, VisualEditorWidget, GraphData } from './types'
@@ -159,9 +160,50 @@ const setState = (config: any) => {
   if (config.draggedComponent !== undefined) {
     draggedComponent.value = config.draggedComponent
   }
+
+  // 🔥 关键修复：恢复所有组件的配置数据
+  if (config.componentConfigurations) {
+    try {
+      console.log('🔄 setState - 恢复组件配置:', Object.keys(config.componentConfigurations))
+
+      // 恢复每个组件的配置
+      for (const [nodeId, nodeConfig] of Object.entries(config.componentConfigurations)) {
+        if (nodeConfig && typeof nodeConfig === 'object') {
+          try {
+            configurationManager.setConfiguration(nodeId, nodeConfig as any)
+            console.log(`✅ setState - 恢复组件配置成功: ${nodeId}`)
+          } catch (configError) {
+            console.error(`❌ setState - 恢复组件配置失败: ${nodeId}`, configError)
+            // 配置恢复失败不应阻止整个状态恢复过程
+          }
+        }
+      }
+
+      console.log('🎉 setState - 所有组件配置恢复完成')
+    } catch (error) {
+      console.error('💥 setState - 配置恢复过程失败:', error)
+    }
+  } else {
+    console.log('ℹ️ setState - 没有组件配置需要恢复')
+  }
 }
 
 const getState = () => {
+  // 收集所有组件的配置数据
+  const componentConfigurations: Record<string, any> = {}
+  try {
+    // 遍历所有节点，收集它们的配置
+    for (const node of stateManager.nodes) {
+      const config = configurationManager.getConfiguration(node.id)
+      if (config) {
+        componentConfigurations[node.id] = config
+      }
+    }
+    console.log('💾 getState - 收集到的组件配置:', Object.keys(componentConfigurations))
+  } catch (error) {
+    console.error('💾 getState - 收集组件配置失败:', error)
+  }
+
   return {
     nodes: stateManager.nodes,
     canvasConfig: editorConfig.value.canvasConfig || {},
@@ -180,7 +222,9 @@ const getState = () => {
     selectedNodeId: selectedNodeId.value,
     // 新增：拖拽状态（可选）
     isDragging: isDragging.value,
-    draggedComponent: draggedComponent.value
+    draggedComponent: draggedComponent.value,
+    // 🔥 关键修复：包含所有组件的配置数据
+    componentConfigurations: componentConfigurations
   }
 }
 

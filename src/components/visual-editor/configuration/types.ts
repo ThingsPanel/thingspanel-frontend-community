@@ -32,7 +32,37 @@ export interface BaseConfiguration {
   }
 }
 
-// 数据源相关类型定义已移除
+/**
+ * 数据源配置类型
+ */
+export interface DataSourceConfiguration {
+  /** 数据源类型 */
+  type: 'static' | 'api' | 'websocket' | 'multi-source' | 'data-mapping'
+  /** 是否启用 */
+  enabled?: boolean
+  /** 数据源配置信息 */
+  sources?: any[]
+  /** 已应用的数据 */
+  appliedData?: any
+  /** 通用配置对象（用于data-mapping等类型） */
+  config?: any
+  /** 元数据信息 */
+  metadata?: {
+    componentType?: string
+    mappingType?: string
+    updatedAt?: number
+    [key: string]: any
+  }
+  /** 配置设置 */
+  settings?: {
+    autoRefresh?: boolean
+    refreshInterval?: number
+    enableCache?: boolean
+    cacheTimeout?: number
+    updatedAt?: number
+    [key: string]: any
+  }
+}
 
 export interface InteractionConfiguration {
   /** 点击事件配置 */

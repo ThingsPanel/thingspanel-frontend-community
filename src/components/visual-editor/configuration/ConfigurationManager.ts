@@ -222,18 +222,40 @@ export class ConfigurationManager implements IConfigurationManager {
 
       // 数据源配置验证
       if (config.dataSource) {
-        if (!['static', 'api', 'websocket', 'script', 'device'].includes(config.dataSource.type)) {
+        if (!['static', 'api', 'websocket', 'multi-source', 'data-mapping'].includes(config.dataSource.type)) {
           errors?.push({
             field: 'dataSource.type',
             message: '无效的数据源类型'
           })
         }
 
-        if (!config.dataSource.config || typeof config.dataSource.config !== 'object') {
-          errors?.push({
-            field: 'dataSource.config',
-            message: '数据源配置不能为空'
-          })
+        // 验证多数据源配置
+        if (config.dataSource.type === 'multi-source') {
+          if (!config.dataSource.sources || !Array.isArray(config.dataSource.sources)) {
+            errors?.push({
+              field: 'dataSource.sources',
+              message: '多数据源配置必须包含sources数组'
+            })
+          }
+        }
+
+        // 验证数据映射配置
+        if (config.dataSource.type === 'data-mapping') {
+          if (!config.dataSource.config) {
+            errors?.push({
+              field: 'dataSource.config',
+              message: '数据映射配置必须包含config对象'
+            })
+          } else {
+            // 检查是否包含必要的映射配置
+            const mappingConfig = config.dataSource.config
+            if (!mappingConfig.arrayDataSource && !mappingConfig.objectDataSource) {
+              warnings?.push({
+                field: 'dataSource.config',
+                message: '建议配置至少一个数据源（数组或对象）'
+              })
+            }
+          }
         }
       }
 

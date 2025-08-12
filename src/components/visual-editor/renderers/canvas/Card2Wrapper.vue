@@ -11,7 +11,7 @@
     <component
       :is="componentToRender"
       v-else-if="componentToRender"
-      v-bind="config"
+      v-bind="mergedProps"
       :data="data"
       :metadata="metadata || { card2Data: data, dataSource: dataSource }"
       :dataSourceValue="dataSourceValue"
@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, shallowRef, onBeforeUnmount, type Component } from 'vue'
+import { ref, onMounted, watch, shallowRef, onBeforeUnmount, computed, type Component } from 'vue'
 import { NAlert } from 'naive-ui'
 import { useEditor } from '../../hooks'
 // import { dataSourceManager } from '../../core' // 临时注释，dataSourceManager 不存在
@@ -180,6 +180,31 @@ watch(
   { deep: true, immediate: true }
 )
 
+// 计算映射后的数据源props（专为数据映射测试组件）
+const mappedDataSourceProps = computed(() => {
+  if (!props.dataSourcesConfig || props.componentType !== 'data-mapping-test') {
+    return {}
+  }
+
+  const config = props.dataSourcesConfig
+  console.log('🎯 [Card2Wrapper] 为数据映射测试组件生成props:', config)
+
+  return {
+    arrayDataSource: config.arrayDataSource || [],
+    objectDataSource: config.objectDataSource || {},
+    arrayMappings: config.arrayMappings || {},
+    objectMappings: config.objectMappings || {}
+  }
+})
+
+// 合并所有props
+const mergedProps = computed(() => {
+  return {
+    ...props.config,
+    ...mappedDataSourceProps.value
+  }
+})
+
 // 监听metadata变化，用于调试
 watch(
   () => props.metadata,
@@ -194,6 +219,8 @@ watch(
 
 onMounted(() => {
   console.log('🔧 [Card2Wrapper] 组件挂载，当前props:', props)
+  console.log('🔧 [Card2Wrapper] 映射后的数据源props:', mappedDataSourceProps.value)
+  console.log('🔧 [Card2Wrapper] 合并后的props:', mergedProps.value)
   if (!componentToRender.value) {
     loadComponent()
   }

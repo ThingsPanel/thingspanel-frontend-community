@@ -106,15 +106,21 @@
       </div>
 
       <n-tabs type="segment" animated size="small" class="settings-tabs">
-        <!-- 数据需求显示 - 纯展示组件的数据源需求 -->
-        <n-tab-pane name="dataSource" tab="数据需求" display-directive="show">
+        <!-- 数据配置 - 完整的数据源配置功能 -->
+        <n-tab-pane name="dataSource" tab="数据配置" display-directive="show">
           <div class="tab-content">
-            <DataRequirementsDisplay :selected-widget="selectedWidget" />
+            <DataSourceConfigPanel
+              v-model="widgetDataSourceConfig"
+              :selected-widget="selectedWidget"
+              :component-requirements="componentRequirements"
+              @configuration-applied="handleConfigurationApplied"
+              @validation-change="handleDataSourceValidation"
+            />
           </div>
         </n-tab-pane>
 
         <!-- 基础配置 - 扁平化设计 -->
-        <n-tab-pane name="base" tab="基础" display-directive="show">
+        <n-tab-pane name="base" tab="基础1" display-directive="show">
           <div class="tab-content">
             <div class="config-group">
               <div class="form-item-flat">
@@ -285,7 +291,9 @@ import { cloneDeep } from 'lodash-es'
 import { configRegistry } from './ConfigRegistry'
 import EnhancedPropertyForm from './components/EnhancedPropertyForm.vue'
 import DataRequirementsDisplay from './components/DataRequirementsDisplay.vue'
+import DataSourceConfigPanel from './components/DataSourceConfigPanel.vue'
 import { getComponentDataRequirements } from '../core/component-data-requirements'
+import type { JsonDataSourceConfig } from '../core/data-source-config-types'
 
 const props = defineProps<{
   selectedWidget: VisualEditorWidget | null
@@ -298,6 +306,9 @@ const props = defineProps<{
 const { stateManager } = useEditor()
 
 const editableProps = ref<any>({})
+const widgetDataSourceConfig = ref<JsonDataSourceConfig[]>([])
+const dataSourceValidationErrors = ref<string[]>([])
+const isDataSourceConfigValid = ref(false)
 
 const interactionTypeOptions = [
   { label: '无', value: 'none' },
@@ -322,8 +333,30 @@ watch(
           onClick: { type: 'none', payload: {} }
         }
       })
+
+      // 初始化或恢复数据源配置
+      const existingDataBinding = widget.properties?.dataBinding
+      if (existingDataBinding && Array.isArray(existingDataBinding)) {
+        widgetDataSourceConfig.value = existingDataBinding
+      } else {
+        widgetDataSourceConfig.value = []
+      }
+
+      // 重置验证状态
+      dataSourceValidationErrors.value = []
+      isDataSourceConfigValid.value = false
+
+      console.log('🔧 [SettingsPanel] 组件选择变更:', {
+        widgetId: widget.id,
+        widgetType: widget.type,
+        hasDataBinding: !!existingDataBinding,
+        dataSourceCount: widgetDataSourceConfig.value.length
+      })
     } else {
       editableProps.value = {}
+      widgetDataSourceConfig.value = []
+      dataSourceValidationErrors.value = []
+      isDataSourceConfigValid.value = false
     }
   },
   { immediate: true, deep: true }
@@ -376,11 +409,46 @@ const componentProperties = computed(() => {
   return definition?.properties || {}
 })
 
-// 保留getComponentDataRequirements导入，DataRequirementsDisplay组件需要使用
-// 其他数据源相关的computed已移除
+// 获取组件数据需求
+const componentRequirements = computed(() => {
+  if (!props.selectedWidget) return null
 
-// 数据源配置相关的处理函数已移除
-// 当前版本只展示数据需求，不进行数据源配置
+  const componentId = props.selectedWidget.type
+  const requirements = getComponentDataRequirements(componentId)
+
+  console.log('🔍 [SettingsPanel] 获取组件数据需求:', {
+    componentId,
+    requirements
+  })
+
+  return requirements
+})
+
+// 数据源配置处理函数
+const handleConfigurationApplied = (data: any) => {
+  console.log('🔗 [SettingsPanel] 数据源配置已应用:', data)
+
+  // 将数据绑定结果存储到组件属性中
+  if (props.selectedWidget) {
+    const updatedProperties = {
+      ...editableProps.value.properties,
+      dataBinding: data
+    }
+
+    editableProps.value.properties = updatedProperties
+    updateNode()
+  }
+}
+
+const handleDataSourceValidation = (isValid: boolean, errors: string[]) => {
+  isDataSourceConfigValid.value = isValid
+  dataSourceValidationErrors.value = errors
+
+  console.log('🔍 [SettingsPanel] 数据源配置验证:', {
+    isValid,
+    errors
+  })
+}
 
 // 防抖更新节点
 let updateNodeTimer: NodeJS.Timeout | null = null
@@ -394,11 +462,19 @@ const updateNode = () => {
   updateNodeTimer = setTimeout(() => {
     if (props.selectedWidget) {
       console.log('🔧 SettingsPanel - 更新节点:', {
-        id: props.selectedWidget.id
+        id: props.selectedWidget.id,
+        hasDataBinding: !!editableProps.value.properties?.dataBinding,
+        dataSourceConfigCount: widgetDataSourceConfig.value.length
       })
 
+      // 确保数据源配置也被保存
+      const updatedProperties = {
+        ...editableProps.value.properties,
+        dataBinding: widgetDataSourceConfig.value.length > 0 ? widgetDataSourceConfig.value : undefined
+      }
+
       stateManager.updateNode(props.selectedWidget.id, {
-        properties: editableProps.value.properties,
+        properties: updatedProperties,
         interaction: editableProps.value.interaction
       } as any)
     }
