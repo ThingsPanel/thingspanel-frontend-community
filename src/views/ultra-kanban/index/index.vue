@@ -83,10 +83,10 @@ const setupData = (v: Panel.Board[]) => {
  */
 const fetchBoards = async () => {
   try {
-    const { data } = await getBoardList({ 
-      page: currentPage.value, 
-      page_size: pageSize.value, 
-      name: nameSearch.value 
+    const { data } = await getBoardList({
+      page: currentPage.value,
+      page_size: pageSize.value,
+      name: nameSearch.value
     })
     if (data && data.list) {
       setupData(data.list as Panel.Board[])
@@ -115,7 +115,7 @@ const submitForm = async () => {
       await PostBoard(formData)
       message.success($t('common.addSuccess'))
     }
-    
+
     showModal.value = false
     clearFormData()
     await fetchBoards()
@@ -186,21 +186,21 @@ onMounted(fetchBoards)
       <div class="m-b-20px flex flex-wrap items-center gap-15px">
         <!-- 新建按钮区域 -->
         <div class="flex-1">
-          <NButton type="primary" @click="showModal = true">
-            +{{ $t('dashboard_panel.addKanBan') }}
-          </NButton>
+          <NButton type="primary" @click="showModal = true">+{{ $t('dashboard_panel.addKanBan') }}</NButton>
         </div>
-        
+
         <!-- 搜索操作区域 -->
         <div class="flex items-center gap-20px">
           <NInput
             v-model:value="nameSearch"
             clearable
             :placeholder="$t('generate.search-by-name')"
-            @clear="() => {
-              nameSearch = ''
-              fetchBoards()
-            }"
+            @clear="
+              () => {
+                nameSearch = ''
+                fetchBoards()
+              }
+            "
           />
           <NButton type="primary" @click="fetchBoards">
             {{ $t('common.search') }}
@@ -226,10 +226,7 @@ onMounted(fetchBoards)
               <div class="text-16px font-600 text-primary">
                 {{ board.name }}
               </div>
-              <div
-                v-if="board.home_flag === 'Y'"
-                class="home-badge"
-              >
+              <div v-if="board.home_flag === 'Y'" class="home-badge">
                 {{ $t('generate.first') }}
               </div>
             </div>
@@ -255,7 +252,7 @@ onMounted(fetchBoards)
                   <icon-material-symbols:contract-edit-outline class="text-20px text-blue" />
                 </template>
               </NButton>
-              
+
               <!-- 删除按钮 -->
               <NPopconfirm @positive-click="deleteBoard(board.id as string)">
                 <template #trigger>
@@ -295,12 +292,9 @@ onMounted(fetchBoards)
         <NForm :model="formData" class="flex-1">
           <!-- 看板名称 -->
           <NFormItem :label="$t('generate.dashboard-name')" path="name">
-            <NInput 
-              v-model:value="formData.name" 
-              :placeholder="$t('generate.enter-dashboard-name')" 
-            />
+            <NInput v-model:value="formData.name" :placeholder="$t('generate.enter-dashboard-name')" />
           </NFormItem>
-          
+
           <!-- 是否首页 -->
           <NFormItem :label="$t('generate.is-homepage')">
             <NSelect
@@ -311,7 +305,7 @@ onMounted(fetchBoards)
               ]"
             />
           </NFormItem>
-          
+
           <!-- 描述信息 -->
           <NFormItem :label="$t('device_template.table_header.description')">
             <NInput
@@ -328,7 +322,7 @@ onMounted(fetchBoards)
             <NButton type="default" @click="handleCancel">
               {{ $t('generate.cancel') }}
             </NButton>
-            
+
             <!-- 设为首页时的确认提示 -->
             <NPopconfirm v-if="formData.home_flag === 'Y'" @positive-click="submitForm">
               <template #trigger>
@@ -336,7 +330,7 @@ onMounted(fetchBoards)
               </template>
               {{ $t('custom.visualization.onlyOneHomepage') }}
             </NPopconfirm>
-            
+
             <!-- 普通保存按钮 -->
             <NButton v-if="formData.home_flag === 'N'" type="primary" @click="submitForm">
               {{ $t('common.save') }}
@@ -404,11 +398,11 @@ onMounted(fetchBoards)
 }
 
 /* 响应主题变化 */
-[data-theme="dark"] .ultra-kanban-card {
+[data-theme='dark'] .ultra-kanban-card {
   background-color: var(--card-color);
 }
 
-[data-theme="dark"] .home-badge {
+[data-theme='dark'] .home-badge {
   background-color: var(--modal-color);
 }
 </style>

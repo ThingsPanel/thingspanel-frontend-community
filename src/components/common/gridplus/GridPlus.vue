@@ -18,34 +18,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, computed, nextTick } from 'vue';
-import type { GridStack, GridStackOptions, GridStackWidget } from 'gridstack';
-import { useGridStack } from './useGridStack';
+import { ref, onMounted, onBeforeUnmount, watch, computed, nextTick } from 'vue'
+import type { GridStack, GridStackOptions, GridStackWidget } from 'gridstack'
+import { useGridStack } from './useGridStack'
 
 // 定义组件的 props
 const props = withDefaults(
   defineProps<{
-    items: GridStackWidget[];
-    config?: GridStackOptions;
-    readonly?: boolean;
-    showGridInfo?: boolean;
-    enableCompactLayout?: boolean;
+    items: GridStackWidget[]
+    config?: GridStackOptions
+    readonly?: boolean
+    showGridInfo?: boolean
+    enableCompactLayout?: boolean
   }>(),
   {
     items: () => [],
     config: () => ({}),
     readonly: false,
     showGridInfo: false,
-    enableCompactLayout: true,
-  },
-);
+    enableCompactLayout: true
+  }
+)
 
 // 定义组件的 emits
-const emit = defineEmits(['change', 'added', 'removed', 'dragstop', 'resizestop']);
+const emit = defineEmits(['change', 'added', 'removed', 'dragstop', 'resizestop'])
 
 // 响应式状态
-const gridStackContainer = ref<HTMLElement | null>(null);
-const isMounted = ref(false);
+const gridStackContainer = ref<HTMLElement | null>(null)
+const isMounted = ref(false)
 
 /**
  * @description 创建一个用作 Teleport 目标的 DOM 元素
@@ -53,27 +53,27 @@ const isMounted = ref(false);
  * @returns 一个带有唯一 ID 和类名的 div 元素
  */
 const createItemContent = (item: GridStackWidget): HTMLElement => {
-  const slotContainer = document.createElement('div');
-  slotContainer.id = `grid-plus-slot-${item.id}`;
-  slotContainer.className = 'grid-plus-slot-container'; // 添加一个类名，便于样式控制
-  return slotContainer;
-};
+  const slotContainer = document.createElement('div')
+  slotContainer.id = `grid-plus-slot-${item.id}`
+  slotContainer.className = 'grid-plus-slot-container' // 添加一个类名，便于样式控制
+  return slotContainer
+}
 
 // 使用自定义 Hook
 const { gridStack, initGrid, destroyGrid, getItems, compact, addItem, removeItem, updateItem } = useGridStack(
   gridStackContainer,
   props,
   emit,
-  createItemContent, // 传递创建 Teleport 目标的函数
-);
+  createItemContent // 传递创建 Teleport 目标的函数
+)
 
 // 计算属性
 const gridInfo = computed(() => {
-  if (!gridStack.value) return '';
-  const column = gridStack.value.getColumn();
-  const cellHeight = gridStack.value.getCellHeight();
-  return `C: ${column} | H: ${cellHeight}px`;
-});
+  if (!gridStack.value) return ''
+  const column = gridStack.value.getColumn()
+  const cellHeight = gridStack.value.getCellHeight()
+  return `C: ${column} | H: ${cellHeight}px`
+})
 
 // 暴露给父组件的方法
 defineExpose({
@@ -82,8 +82,8 @@ defineExpose({
   compact,
   addItem,
   removeItem,
-  updateItem,
-});
+  updateItem
+})
 
 // 监听布局变化并自动紧凑
 if (props.enableCompactLayout) {
@@ -91,23 +91,23 @@ if (props.enableCompactLayout) {
     () => props.items,
     () => {
       nextTick(() => {
-        compact();
-      });
+        compact()
+      })
     },
-    { deep: true },
-  );
+    { deep: true }
+  )
 }
 
 // 生命周期钩子
 onMounted(() => {
-  initGrid();
+  initGrid()
   // 确保 DOM 准备好后再激活 Teleport
-  isMounted.value = true;
-});
+  isMounted.value = true
+})
 
 onBeforeUnmount(() => {
-  destroyGrid();
-});
+  destroyGrid()
+})
 </script>
 
 <style lang="scss" scoped>
@@ -141,7 +141,9 @@ onBeforeUnmount(() => {
   border: 1px solid var(--grid-plus-item-border-color, #e1e5e9);
   border-radius: 8px;
   box-shadow: var(--grid-plus-item-shadow, 0 2px 8px rgba(0, 0, 0, 0.1));
-  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
   overflow: visible; /* 改为 visible 以显示调整大小的手柄 */
 }
 

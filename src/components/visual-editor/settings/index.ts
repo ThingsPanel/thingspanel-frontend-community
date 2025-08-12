@@ -16,7 +16,7 @@ export function initializeSettings() {
     type: 'text', // 假设我们的文本组件类型是 'text'
     props: TextWidgetSettings,
     base: BaseSettingsForm,
-    interaction: InteractionSettingsForm,
+    interaction: InteractionSettingsForm
     // dataSource: DataSourceSelector // 临时注释，组件不存在
   })
 

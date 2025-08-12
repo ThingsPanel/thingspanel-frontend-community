@@ -33,7 +33,7 @@ const isUnmounted = ref(false)
  * 获取看板ID
  */
 const panelId = computed(() => {
-  return route.query.id as string || ''
+  return (route.query.id as string) || ''
 })
 
 /**
@@ -49,7 +49,7 @@ const fetchBoardData = async () => {
   try {
     loading.value = true
     const { data } = await getBoard(panelId.value)
-    
+
     if (data) {
       panelData.value = data
       console.log('🚀 Ultra看板预览数据加载完成:', data)
@@ -162,11 +162,7 @@ const goBack = () => {
 
       <!-- Visual Editor容器 - 预览模式 -->
       <div class="visual-editor-container">
-        <PanelEditor
-          :key="`ultra-panel-preview-${panelId}`"
-          :panel-id="panelId"
-          mode="preview"
-        />
+        <PanelEditor :key="`ultra-panel-preview-${panelId}`" :panel-id="panelId" mode="preview" />
       </div>
     </div>
 
@@ -245,16 +241,16 @@ const goBack = () => {
 }
 
 /* 响应主题变化 */
-[data-theme="dark"] .ultra-kanban-preview {
+[data-theme='dark'] .ultra-kanban-preview {
   background-color: var(--body-color);
 }
 
-[data-theme="dark"] .preview-toolbar {
+[data-theme='dark'] .preview-toolbar {
   background-color: var(--card-color);
   border-bottom-color: var(--border-color);
 }
 
-[data-theme="dark"] .visual-editor-container {
+[data-theme='dark'] .visual-editor-container {
   background-color: var(--body-color);
 }
 
@@ -264,15 +260,15 @@ const goBack = () => {
     min-width: 280px;
     margin: 0 10px;
   }
-  
+
   .preview-toolbar {
     padding: 8px 12px;
   }
-  
+
   .panel-title .text-16px {
     font-size: 14px;
   }
-  
+
   .panel-title .text-12px {
     font-size: 10px;
   }

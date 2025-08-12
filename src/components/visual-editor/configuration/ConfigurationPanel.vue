@@ -290,12 +290,12 @@ const importExportTitle = computed(() => {
 // 判断是否支持多数据源
 const supportsMultiDataSource = computed(() => {
   if (!props.selectedWidget) return false
-  
+
   const componentId = props.selectedWidget.type
   const requirements = getComponentDataRequirements(componentId)
-  
+
   console.log(`🔧 [ConfigurationPanel] 检查多数据源支持: ${componentId}`, requirements)
-  
+
   return requirements !== undefined
 })
 
@@ -501,10 +501,10 @@ const handleValidation = (result: ValidationResult) => {
  */
 const handleDataSourceUpdate = (data: Record<string, any>) => {
   console.log(`🔧 [ConfigurationPanel] 多数据源数据更新:`, data)
-  
+
   // 更新本地数据状态
   multiDataSourceData.value = { ...data }
-  
+
   // 发射事件给父组件，传递给实际的组件
   if (props.selectedWidget) {
     emit('multi-data-source-update', props.selectedWidget.id, data)
@@ -517,7 +517,7 @@ const handleDataSourceUpdate = (data: Record<string, any>) => {
  */
 const handleMultiDataSourceConfigChange = (config: any) => {
   console.log(`🔧 [ConfigurationPanel] 多数据源配置变化:`, config)
-  
+
   // 发射配置更新事件给父组件
   if (props.selectedWidget) {
     emit('multi-data-source-config-update', props.selectedWidget.id, config)

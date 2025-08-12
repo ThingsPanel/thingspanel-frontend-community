@@ -31,7 +31,7 @@ const isUnmounted = ref(false)
  * 获取看板ID
  */
 const panelId = computed(() => {
-  return route.query.id as string || ''
+  return (route.query.id as string) || ''
 })
 
 /**
@@ -47,7 +47,7 @@ const fetchBoardData = async () => {
   try {
     loading.value = true
     const { data } = await getBoard(panelId.value)
-    
+
     if (data) {
       panelData.value = data
       console.log('🚀 Ultra看板详情数据加载完成:', data)
@@ -116,10 +116,7 @@ const retryLoad = async () => {
     <div v-else-if="panelData && !isUnmounted" class="main-content">
       <!-- Visual Editor集成 -->
       <div class="visual-editor-container">
-        <PanelEditor
-          :key="`ultra-panel-editor-${panelId}`"
-          :panel-id="panelId"
-        />
+        <PanelEditor :key="`ultra-panel-editor-${panelId}`" :panel-id="panelId" />
       </div>
     </div>
 
@@ -178,11 +175,11 @@ const retryLoad = async () => {
 }
 
 /* 响应主题变化 */
-[data-theme="dark"] .ultra-kanban-details {
+[data-theme='dark'] .ultra-kanban-details {
   background-color: var(--body-color);
 }
 
-[data-theme="dark"] .visual-editor-container {
+[data-theme='dark'] .visual-editor-container {
   background-color: var(--card-color);
 }
 

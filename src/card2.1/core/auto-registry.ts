@@ -125,7 +125,7 @@ export class AutoRegistry {
     const userLevel = permissionLevels[userAuthority as keyof typeof permissionLevels] || 0
 
     const hasPermission = userLevel >= componentLevel
-    
+
     if (definition.type === 'universal-data-viz') {
       console.log(`🎯 [AutoRegistry] universal-data-viz 权限等级检查:`, {
         组件等级: componentLevel,

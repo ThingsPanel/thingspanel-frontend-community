@@ -86,10 +86,10 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
     try {
       await initializeCard2System()
       await componentTree.initialize()
-      
+
       // 注意：组件数据需求注册现在由 Card2.1 系统统一处理
       // registerUniversalDataVizConfig() - 已移至 Card2.1 系统初始化中
-      
+
       isInitialized.value = true
       console.log('🎯 [VisualEditorIntegration] 集成初始化完成')
     } catch (error) {
@@ -126,10 +126,13 @@ export function useVisualEditorIntegration(options: VisualEditorIntegrationOptio
     // 特别检查是否包含 universal-data-viz
     const hasUniversalDataViz = components.some(comp => comp.type === 'universal-data-viz')
     console.log(`🎯 [VisualEditorIntegration] filteredComponents 中是否包含 universal-data-viz: ${hasUniversalDataViz}`)
-    
+
     if (!hasUniversalDataViz) {
       console.log('⚠️ [VisualEditorIntegration] 警告：filteredComponents 中未找到 universal-data-viz 组件')
-      console.log('🔍 [VisualEditorIntegration] 当前组件列表:', components.map(c => c.type))
+      console.log(
+        '🔍 [VisualEditorIntegration] 当前组件列表:',
+        components.map(c => c.type)
+      )
     }
 
     return components.map(definition => {

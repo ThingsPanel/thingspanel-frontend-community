@@ -635,13 +635,13 @@ const handleCanvasConfigChange = (newCanvasConfig: any) => {
  */
 const handleMultiDataSourceUpdate = (widgetId: string, dataSources: Record<string, any>) => {
   console.log(`🔧 PanelEditor - 多数据源数据更新: ${widgetId}`, dataSources)
-  
+
   // 存储数据源数据
   multiDataSourceStore.value[widgetId] = dataSources
-  
+
   // 标记有变化
   hasChanges.value = true
-  
+
   console.log(`✅ PanelEditor - 多数据源数据已存储:`, multiDataSourceStore.value)
 }
 
@@ -650,13 +650,13 @@ const handleMultiDataSourceUpdate = (widgetId: string, dataSources: Record<strin
  */
 const handleMultiDataSourceConfigUpdate = (widgetId: string, config: any) => {
   console.log(`🔧 PanelEditor - 多数据源配置更新: ${widgetId}`, config)
-  
+
   // 存储配置信息
   multiDataSourceConfigStore.value[widgetId] = config
-  
+
   // 标记有变化
   hasChanges.value = true
-  
+
   console.log(`✅ PanelEditor - 多数据源配置已存储:`, multiDataSourceConfigStore.value)
 }
 
@@ -833,7 +833,6 @@ onMounted(() => {
   fetchBoard()
 })
 
-
 // 组件卸载时的清理工作
 onUnmounted(() => {
   isUnmounted.value = true
@@ -907,7 +906,6 @@ onUnmounted(() => {
             @canvas-config-change="handleCanvasConfigChange"
           />
         </div>
-
 
         <!-- 主内容区域 -->
         <div class="main-container flex-1 relative overflow-hidden" :class="{ dragging: isDragging }">

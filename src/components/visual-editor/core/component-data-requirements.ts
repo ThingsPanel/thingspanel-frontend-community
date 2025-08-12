@@ -3,10 +3,10 @@
  * 提供标准化的方式让组件声明自己的数据源需求
  */
 
-// import type { 
-//   ComponentDataRequirements, 
+// import type {
+//   ComponentDataRequirements,
 //   DataSourceRequirement,
-//   DataSourceType 
+//   DataSourceType
 // } from './multi-data-source-types' // 临时注释，文件不存在
 // import { DATA_SOURCE_TEMPLATES } from './multi-data-source-types' // 临时注释，文件不存在
 
@@ -109,7 +109,10 @@ export class ComponentDataRequirementsBuilder {
 /**
  * 创建数据需求构建器
  */
-export function createComponentDataRequirements(componentId: string, componentName: string): ComponentDataRequirementsBuilder {
+export function createComponentDataRequirements(
+  componentId: string,
+  componentName: string
+): ComponentDataRequirementsBuilder {
   return new ComponentDataRequirementsBuilder(componentId, componentName)
 }
 
@@ -138,7 +141,7 @@ export const COMPONENT_DATA_PRESETS = {
       usage: '主要的时间序列数据'
     })
     .addDataSource({
-      id: 'secondary', 
+      id: 'secondary',
       label: '次要数据',
       type: 'array',
       required: true,
@@ -152,13 +155,13 @@ export const COMPONENT_DATA_PRESETS = {
    * 仪表板概览组件
    */
   DASHBOARD_OVERVIEW: createComponentDataRequirements('dashboard-overview', '仪表板概览')
-    .addTemplate('TIME_SERIES', { 
+    .addTemplate('TIME_SERIES', {
       id: 'trend',
       label: '趋势数据',
       required: true,
       description: '用于显示趋势图表'
     })
-    .addTemplate('STATISTICS', { 
+    .addTemplate('STATISTICS', {
       id: 'stats',
       label: '统计数据',
       required: true,
@@ -182,7 +185,7 @@ export const COMPONENT_DATA_PRESETS = {
     .addDataSource({
       id: 'secondary',
       label: '辅助数据源',
-      type: 'any', 
+      type: 'any',
       required: false,
       description: '可选的辅助数据源',
       usage: '用于对比或补充的数据'
@@ -262,7 +265,7 @@ export const componentDataRequirementsRegistry = ComponentDataRequirementsRegist
  * 注册组件数据需求的装饰器工厂
  */
 export function registerComponentDataRequirements(requirements: ComponentDataRequirements) {
-  return function<T extends { new(...args: any[]): {} }>(constructor: T) {
+  return function <T extends { new (...args: any[]): {} }>(constructor: T) {
     componentDataRequirementsRegistry.register(requirements.componentId, requirements)
     return constructor
   }
@@ -274,18 +277,18 @@ export function registerComponentDataRequirements(requirements: ComponentDataReq
 export function getComponentDataRequirements(componentId: string): ComponentDataRequirements | undefined {
   // 首先从注册表查找
   let requirements = componentDataRequirementsRegistry.get(componentId)
-  
+
   // 如果没找到，尝试从预设中查找
   if (!requirements) {
-    const presetKey = Object.keys(COMPONENT_DATA_PRESETS).find(key => 
-      COMPONENT_DATA_PRESETS[key as keyof typeof COMPONENT_DATA_PRESETS].componentId === componentId
+    const presetKey = Object.keys(COMPONENT_DATA_PRESETS).find(
+      key => COMPONENT_DATA_PRESETS[key as keyof typeof COMPONENT_DATA_PRESETS].componentId === componentId
     )
-    
+
     if (presetKey) {
       requirements = COMPONENT_DATA_PRESETS[presetKey as keyof typeof COMPONENT_DATA_PRESETS]
     }
   }
-  
+
   return requirements
 }
 

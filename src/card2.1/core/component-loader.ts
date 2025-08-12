@@ -79,20 +79,20 @@ export class ComponentLoader {
    */
   private extractComponentId(path: string): string | null {
     console.log(`[ComponentLoader] 正在提取组件ID，路径: ${path}`)
-    
+
     // 匹配更灵活的路径格式，支持连字符和下划线
     // 优先匹配: ../components/universal-data-viz/index.ts
     const match = path.match(/\.\.\/components\/(?:.*\/)?([^/]+)\/index\.(ts|js)$/)
     const componentId = match ? match[1] : null
-    
+
     console.log(`[ComponentLoader] 路径 "${path}" 提取的组件ID: "${componentId}"`)
-    
+
     // 特别检查 universal-data-viz
     if (path.includes('universal-data-viz')) {
       console.log(`🎯 [ComponentLoader] 检测到 universal-data-viz 组件路径: ${path}`)
       console.log(`🎯 [ComponentLoader] 提取的组件ID: ${componentId}`)
     }
-    
+
     return componentId
   }
 

@@ -12,47 +12,52 @@ const patchGridStackEngine = () => {
     // 完全禁用碰撞检测系统 - 最激进的修复方案
     const engine = (GridStack as any).Engine?.prototype
     if (engine && !engine._superPatchedForVue) {
-      
       // 1. 完全禁用碰撞检测
       if (engine._fixCollisions) {
-        engine._fixCollisions = function() { return false }
+        engine._fixCollisions = function () {
+          return false
+        }
       }
-      
+
       // 2. 禁用所有布局算法
       if (engine.compact) {
-        engine.compact = function() { return this }
+        engine.compact = function () {
+          return this
+        }
       }
-      
+
       // 3. 简化排序函数
       if (engine.sortNodes) {
-        engine.sortNodes = function(nodes) {
+        engine.sortNodes = function (nodes) {
           if (!Array.isArray(nodes)) return nodes
           return nodes.sort((a, b) => (a?.y || 0) - (b?.y || 0))
         }
       }
-      
+
       // 4. 禁用moveNode复杂逻辑
       if (engine.moveNode) {
         const originalMove = engine.moveNode
-        engine.moveNode = function(node, o) {
+        engine.moveNode = function (node, o) {
           if (!node || !o) return false
           // 只允许简单的位置更新，不触发布局算法
           node.x = o.x ?? node.x
-          node.y = o.y ?? node.y  
+          node.y = o.y ?? node.y
           node.w = o.w ?? node.w
           node.h = o.h ?? node.h
           return true
         }
       }
-      
+
       // 5. 禁用所有可能引起递归的函数
       const dangerousFunctions = ['_packNodes', '_sortNodes', '_notify', 'batchUpdate']
       dangerousFunctions.forEach(fname => {
         if (engine[fname]) {
-          engine[fname] = function() { return this }
+          engine[fname] = function () {
+            return this
+          }
         }
       })
-      
+
       engine._superPatchedForVue = true
       console.log('GridStack SUPER patched - all collision detection disabled')
     }
@@ -60,10 +65,11 @@ const patchGridStackEngine = () => {
     // 全局禁用Utils排序
     const utilsObj = (window as any)._Utils || (GridStack as any).Utils
     if (utilsObj && utilsObj.sort && !utilsObj._superPatched) {
-      utilsObj.sort = function(nodes) { return nodes || [] }
+      utilsObj.sort = function (nodes) {
+        return nodes || []
+      }
       utilsObj._superPatched = true
     }
-    
   } catch (error) {
     console.error('Failed to super-patch GridStack:', error)
   }
@@ -119,11 +125,11 @@ export function useGridStack(
    */
   const onGridChange = () => {
     if (!gridStack.value || isUpdatingFromProps) return
-    
+
     // 安全模式：暂时不处理change事件，避免卡死
     console.log('GridStack change event (safe mode - disabled)')
     return
-    
+
     // TODO: 待GridStack稳定后重新启用
     /*
     try {
@@ -211,24 +217,24 @@ export function useGridStack(
       margin: props.config?.margin || 10,
 
       // 完全禁用所有危险功能
-      float: false,           // 禁用浮动布局
-      animate: false,         // 禁用所有动画  
-      rtl: false,            // 禁用RTL
-      
+      float: false, // 禁用浮动布局
+      animate: false, // 禁用所有动画
+      rtl: false, // 禁用RTL
+
       // 禁用碰撞检测和自动排列
-      acceptWidgets: false,   // 禁用拖拽添加
-      removable: false,       // 禁用删除
+      acceptWidgets: false, // 禁用拖拽添加
+      removable: false, // 禁用删除
       alwaysShowResizeHandle: false,
-      oneColumnMode: false,   // 禁用单列模式
+      oneColumnMode: false, // 禁用单列模式
       disableOneColumnMode: true,
-      
+
       // 禁用所有自动功能
-      staticGrid: false,      // 先不使用静态模式，后续手动控制
-      
+      staticGrid: false, // 先不使用静态模式，后续手动控制
+
       // 网格限制
       minRow: 0,
       maxRow: 100,
-      
+
       // 完全禁用拖拽和调整大小（先禁用，测试基础功能）
       disableDrag: true,
       disableResize: true

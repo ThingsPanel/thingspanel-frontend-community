@@ -57,7 +57,7 @@ export async function initializeCard2System() {
 
       // 5. 注册各组件的专用数据需求和配置
       console.log('🔧 [Card2.1] 开始注册组件专用数据需求...')
-      
+
       // 检查并调用已注册组件的数据需求注册函数
       for (const component of registeredComponents) {
         if (component.type === 'universal-data-viz') {
@@ -71,7 +71,7 @@ export async function initializeCard2System() {
         }
         // 在这里可以添加其他组件的数据需求注册
       }
-      
+
       console.log('🔧 [Card2.1] 组件专用数据需求注册完成')
 
       // 6. 获取组件树形结构

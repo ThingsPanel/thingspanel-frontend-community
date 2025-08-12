@@ -157,24 +157,24 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
-import { NSpace, NSwitch, NButton, NInputNumber, NTag } from 'naive-ui';
-import { GridPlus } from '@/components/common/gridplus';
-import type { GridStackWidget } from 'gridstack';
+import { ref, computed } from 'vue'
+import { NSpace, NSwitch, NButton, NInputNumber, NTag } from 'naive-ui'
+import { GridPlus } from '@/components/common/gridplus'
+import type { GridStackWidget } from 'gridstack'
 
 // GridPlus 组件的引用
-const gridPlusRef = ref<InstanceType<typeof GridPlus> | null>(null);
+const gridPlusRef = ref<InstanceType<typeof GridPlus> | null>(null)
 
 // 状态
-const readonly = ref(false);
-const enableCompact = ref(true);
-const showGridInfo = ref(false);
-const itemCount = ref(0);
-const operationCount = ref(0);
-const lastEvent = ref('无');
+const readonly = ref(false)
+const enableCompact = ref(true)
+const showGridInfo = ref(false)
+const itemCount = ref(0)
+const operationCount = ref(0)
+const lastEvent = ref('无')
 
 // 防止事件循环的标志位
-let isInternalUpdate = false;
+let isInternalUpdate = false
 
 // 网格配置
 const gridConfig = ref({
@@ -182,8 +182,8 @@ const gridConfig = ref({
   cellHeight: 100,
   margin: [10, 10], // [水平边距, 垂直边距]
   animate: false, // 关闭动画减少性能问题
-  float: false, // 使用更稳定的布局模式
-});
+  float: false // 使用更稳定的布局模式
+})
 
 // 初始布局 - 确保没有重叠，位置完全分离
 const createDefaultLayout = (): GridStackWidget[] => [
@@ -193,7 +193,7 @@ const createDefaultLayout = (): GridStackWidget[] => [
     y: 0,
     w: 3,
     h: 2,
-    content: { text: '拖拽交换位置', color: '#e3f2fd', type: '交换测试' },
+    content: { text: '拖拽交换位置', color: '#e3f2fd', type: '交换测试' }
   },
   {
     id: 'card-2',
@@ -201,7 +201,7 @@ const createDefaultLayout = (): GridStackWidget[] => [
     y: 0,
     w: 3,
     h: 2,
-    content: { text: '多方向调整', color: '#f3e5f5', type: '调整大小' },
+    content: { text: '多方向调整', color: '#f3e5f5', type: '调整大小' }
   },
   {
     id: 'card-3',
@@ -209,7 +209,7 @@ const createDefaultLayout = (): GridStackWidget[] => [
     y: 0,
     w: 3,
     h: 2,
-    content: { text: '120fps 流畅', color: '#e8f5e8', type: '性能优化' },
+    content: { text: '120fps 流畅', color: '#e8f5e8', type: '性能优化' }
   },
   {
     id: 'card-4',
@@ -217,7 +217,7 @@ const createDefaultLayout = (): GridStackWidget[] => [
     y: 3,
     w: 4,
     h: 2,
-    content: { text: '动态栅格数', color: '#fff3e0', type: '响应式' },
+    content: { text: '动态栅格数', color: '#fff3e0', type: '响应式' }
   },
   {
     id: 'card-5',
@@ -225,37 +225,37 @@ const createDefaultLayout = (): GridStackWidget[] => [
     y: 3,
     w: 4,
     h: 2,
-    content: { text: '紧凑布局', color: '#fce4ec', type: '自动优化' },
-  },
-];
+    content: { text: '紧凑布局', color: '#fce4ec', type: '自动优化' }
+  }
+]
 
-const layout = ref<GridStackWidget[]>(createDefaultLayout());
+const layout = ref<GridStackWidget[]>(createDefaultLayout())
 
 // 计算重叠数量
 const overlappingCount = computed(() => {
-  let count = 0;
+  let count = 0
   for (let i = 0; i < layout.value.length; i++) {
     for (let j = i + 1; j < layout.value.length; j++) {
-      const item1 = layout.value[i];
-      const item2 = layout.value[j];
+      const item1 = layout.value[i]
+      const item2 = layout.value[j]
       if (
         item1.x < item2.x + item2.w &&
         item1.x + item1.w > item2.x &&
         item1.y < item2.y + item2.h &&
         item1.y + item1.h > item2.y
       ) {
-        count++;
+        count++
       }
     }
   }
-  return count;
-});
+  return count
+})
 
 // 方法
 const addItem = () => {
-  itemCount.value++;
-  const colors = ['#fff3e0', '#fce4ec', '#e0f2f1', '#f1f8e9', '#e8eaf6', '#f3e5f5', '#e3f2fd'];
-  const types = ['拖拽', '调整大小', '碰撞检测', '性能优化', '响应式', '主题', '动画'];
+  itemCount.value++
+  const colors = ['#fff3e0', '#fce4ec', '#e0f2f1', '#f1f8e9', '#e8eaf6', '#f3e5f5', '#e3f2fd']
+  const types = ['拖拽', '调整大小', '碰撞检测', '性能优化', '响应式', '主题', '动画']
 
   const newItem: GridStackWidget = {
     id: `card-${Date.now()}`,
@@ -266,33 +266,33 @@ const addItem = () => {
     content: {
       text: `功能测试 ${itemCount.value}`,
       color: colors[itemCount.value % colors.length],
-      type: types[itemCount.value % types.length],
-    },
-  };
+      type: types[itemCount.value % types.length]
+    }
+  }
   // 注意：我们不再直接修改 layout，而是通过 GridPlus 的方法
-  gridPlusRef.value?.addItem(newItem);
-  operationCount.value++;
-  lastEvent.value = 'addItem';
-};
+  gridPlusRef.value?.addItem(newItem)
+  operationCount.value++
+  lastEvent.value = 'addItem'
+}
 
 const addManyItems = () => {
   for (let i = 0; i < 5; i++) {
-    addItem();
+    addItem()
   }
-};
+}
 
 const resetLayout = () => {
-  layout.value = createDefaultLayout();
-  itemCount.value = 0;
-  operationCount.value++;
-  lastEvent.value = 'resetLayout';
-};
+  layout.value = createDefaultLayout()
+  itemCount.value = 0
+  operationCount.value++
+  lastEvent.value = 'resetLayout'
+}
 
 const compactLayout = () => {
-  gridPlusRef.value?.compact();
-  operationCount.value++;
-  lastEvent.value = 'compactLayout';
-};
+  gridPlusRef.value?.compact()
+  operationCount.value++
+  lastEvent.value = 'compactLayout'
+}
 
 const createOverlap = () => {
   const overlapItem: GridStackWidget = {
@@ -301,65 +301,65 @@ const createOverlap = () => {
     y: 1,
     w: 4,
     h: 2,
-    content: { text: '重叠检测', color: '#ffebee', type: '重叠测试' },
-  };
-  gridPlusRef.value?.addItem(overlapItem);
-  operationCount.value++;
-  lastEvent.value = 'createOverlap';
-};
+    content: { text: '重叠检测', color: '#ffebee', type: '重叠测试' }
+  }
+  gridPlusRef.value?.addItem(overlapItem)
+  operationCount.value++
+  lastEvent.value = 'createOverlap'
+}
 
 const randomizeLayout = () => {
   const newLayout = layout.value.map(item => ({
     ...item,
     x: Math.floor(Math.random() * (gridConfig.value.column - item.w)),
-    y: Math.floor(Math.random() * 10),
-  }));
-  layout.value = newLayout;
-  operationCount.value++;
-  lastEvent.value = 'randomizeLayout';
-};
+    y: Math.floor(Math.random() * 10)
+  }))
+  layout.value = newLayout
+  operationCount.value++
+  lastEvent.value = 'randomizeLayout'
+}
 
 // 事件处理
 const handleChange = (newLayout: GridStackWidget[]) => {
   // 如果是内部更新引起的，跳过处理防止循环
   if (isInternalUpdate) {
-    isInternalUpdate = false;
-    return;
+    isInternalUpdate = false
+    return
   }
-  
-  console.log('布局变化 (change):', newLayout);
-  
+
+  console.log('布局变化 (change):', newLayout)
+
   // 设置标志位，表明这是一次内部更新
-  isInternalUpdate = true;
-  layout.value = [...newLayout]; // 使用浅拷贝创建新数组引用
-  
-  operationCount.value++;
-  lastEvent.value = 'change';
-};
+  isInternalUpdate = true
+  layout.value = [...newLayout] // 使用浅拷贝创建新数组引用
+
+  operationCount.value++
+  lastEvent.value = 'change'
+}
 
 const handleAdded = (items: GridStackWidget[]) => {
-  console.log('卡片添加 (added):', items);
-  operationCount.value++;
-  lastEvent.value = `added: ${items.map(i => i.id).join(', ')}`;
-};
+  console.log('卡片添加 (added):', items)
+  operationCount.value++
+  lastEvent.value = `added: ${items.map(i => i.id).join(', ')}`
+}
 
 const handleRemoved = (items: GridStackWidget[]) => {
-  console.log('卡片移除 (removed):', items);
-  operationCount.value++;
-  lastEvent.value = `removed: ${items.map(i => i.id).join(', ')}`;
-};
+  console.log('卡片移除 (removed):', items)
+  operationCount.value++
+  lastEvent.value = `removed: ${items.map(i => i.id).join(', ')}`
+}
 
 const handleDragStop = (item: GridStackWidget) => {
-  console.log('拖拽结束 (dragstop):', item);
-  operationCount.value++;
-  lastEvent.value = `dragstop: ${item.id}`;
-};
+  console.log('拖拽结束 (dragstop):', item)
+  operationCount.value++
+  lastEvent.value = `dragstop: ${item.id}`
+}
 
 const handleResizeStop = (item: GridStackWidget) => {
-  console.log('调整大小结束 (resizestop):', item);
-  operationCount.value++;
-  lastEvent.value = `resizestop: ${item.id}`;
-};
+  console.log('调整大小结束 (resizestop):', item)
+  operationCount.value++
+  lastEvent.value = `resizestop: ${item.id}`
+}
 </script>
 
 <style>
