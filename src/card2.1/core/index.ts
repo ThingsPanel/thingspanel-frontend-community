@@ -4,3 +4,5 @@
 
 export * from './types'
 export * from './registry'
+export * from './interaction-types'
+export * from './interaction-manager'

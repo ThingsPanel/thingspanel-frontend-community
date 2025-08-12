@@ -1,5 +1,5 @@
 <template>
-  <div class="data-mapping-test">
+  <div class="data-mapping-test" :style="interactionStyles" :class="{ interacting: interactionState.isAnimating }">
     <!-- 组件标题 -->
     <div v-if="showTitle" class="component-title">
       <n-icon size="16" class="title-icon">
@@ -73,6 +73,14 @@
         <n-collapse>
           <n-collapse-item title="调试信息" name="debug">
             <div class="debug-content">
+              <div class="debug-item">
+                <strong>组件ID:</strong>
+                {{ componentId }}
+              </div>
+              <div class="debug-item">
+                <strong>交互状态:</strong>
+                {{ interactionState.isAnimating ? '动画中' : '静止' }}
+              </div>
               <pre>{{ debugInfo }}</pre>
             </div>
           </n-collapse-item>
@@ -88,9 +96,10 @@
  * 用于测试和展示两个数据源（数组+对象）各自3个字段的映射结果
  */
 
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { NIcon, NEmpty, NCollapse, NCollapseItem } from 'naive-ui'
 import { CodeWorkingOutline, ListOutline, DocumentOutline, AlertCircleOutline } from '@vicons/ionicons5'
+import { useInteraction } from '../../hooks/use-interaction'
 
 // 组件属性定义
 interface Props {
@@ -126,6 +135,62 @@ const props = withDefaults(defineProps<Props>(), {
   arrayMappings: () => ({}),
   objectMappings: () => ({}),
   showDebugInfo: false
+})
+
+// 生成唯一的组件ID
+const componentId = `data-mapping-test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+// 使用交互系统
+const { interactionState, interactionStyles, createPresetConfig, updateConfigs } = useInteraction({
+  componentId,
+  configs: [
+    // 预设一些交互配置
+    {
+      event: 'click',
+      responses: [{ action: 'changeBackgroundColor', value: '#ff6b6b' }],
+      priority: 1
+    },
+    {
+      event: 'hover',
+      responses: [{ action: 'changeOpacity', value: 0.8 }],
+      priority: 1
+    },
+    {
+      event: 'click',
+      responses: [{ action: 'triggerAnimation', value: true, duration: 1000 }],
+      priority: 1
+    }
+  ]
+})
+
+// 添加一些测试用的交互配置
+const addTestInteractions = () => {
+  const testConfigs = [
+    {
+      event: 'click' as const,
+      responses: [{ action: 'changeTextColor' as const, value: '#ffffff' }],
+      priority: 2
+    },
+    {
+      event: 'click' as const,
+      responses: [{ action: 'changeBorderColor' as const, value: '#4ecdc4' }],
+      priority: 2
+    }
+  ]
+
+  updateConfigs([
+    ...testConfigs,
+    createPresetConfig.clickChangeSize(400, 300, 3),
+    createPresetConfig.hoverChangeOpacity(0.6, 2)
+  ])
+
+  console.log('🧪 已添加测试交互配置')
+}
+
+// 在组件挂载后添加测试配置
+onMounted(() => {
+  // 延迟添加，确保交互系统已初始化
+  setTimeout(addTestInteractions, 1000)
 })
 
 // 计算属性
@@ -323,6 +388,14 @@ const debugInfo = computed(() => {
   border-radius: 4px;
   max-height: 300px;
   overflow-y: auto;
+}
+
+.debug-item {
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  background: var(--body-color);
+  border-radius: 3px;
+  font-size: 12px;
 }
 
 .debug-content pre {

@@ -13,8 +13,6 @@ import { componentRegistry } from './core/registry'
 import { AutoRegistry } from './core/auto-registry'
 import { ComponentLoader } from './core/component-loader'
 import { componentDataRequirementsRegistry } from '@/components/visual-editor/core/component-data-requirements'
-import { registerTestComponents } from './components'
-import { registerTestComponentDataRequirements } from './components/component-data-requirements'
 
 // 创建自动注册系统
 const autoRegistry = new AutoRegistry(componentRegistry)
@@ -53,29 +51,15 @@ export async function initializeCard2System() {
       // 3. 自动注册组件（包含权限过滤）
       const registeredComponents = await autoRegistry.autoRegister(componentModules)
 
-      // 4. 注册测试组件
-      registerTestComponents()
-      console.log('🧪 [Card2.1] 测试组件注册完成')
-
-      // 5. 注册预设的数据需求
+      // 4. 注册预设的数据需求
       componentDataRequirementsRegistry.registerPresets()
       console.log('📋 [Card2.1] 数据需求预设注册完成')
 
-      // 6. 注册测试组件的数据需求
-      registerTestComponentDataRequirements()
-      console.log('🧪 [Card2.1] 测试组件数据需求注册完成')
-
-      // 7. 注册各组件的专用数据需求和配置
-      console.log('🔧 [Card2.1] 开始注册组件专用数据需求...')
-
-      // 检查并调用已注册组件的数据需求注册函数
+      // 5. 记录已注册的组件
+      console.log('📦 [Card2.1] 已注册组件列表:')
       for (const component of registeredComponents) {
-        // 注意：数据源系统已被简化，特定组件的配置注册已移除
-        // 如需添加新组件的数据需求注册，在此处添加相应逻辑
-        console.log(`📦 [Card2.1] 组件已注册: ${component.type}`)
+        console.log(`  - ${component.type}: ${component.name}`)
       }
-
-      console.log('🔧 [Card2.1] 组件专用数据需求注册完成')
 
       // 6. 获取组件树形结构
       const componentTree = autoRegistry.getComponentTree()

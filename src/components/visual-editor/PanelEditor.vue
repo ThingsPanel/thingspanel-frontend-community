@@ -19,6 +19,7 @@ import type { RendererType, VisualEditorWidget, GraphData } from './types'
 // import './data-sources' // 临时注释，文件不存在
 
 import { useVisualEditorIntegration } from '@/card2.1/hooks/useVisualEditorIntegration'
+import { interactionManager } from '@/card2.1/core/interaction-manager'
 
 // 初始化 Card 2.1 集成
 useVisualEditorIntegration({
@@ -43,6 +44,12 @@ const isSaving = ref(false)
 const dataFetched = ref(false)
 const hasChanges = ref(false)
 const isUnmounted = ref(false)
+
+// 交互系统测试状态
+const showInteractionTest = ref(false)
+const selectedTestComponent = ref('')
+const selectedTestAction = ref('changeBackgroundColor')
+const testActionValue = ref('#ff6b6b')
 
 // 编辑器状态
 const editorConfig = ref<any>({})
@@ -674,6 +681,91 @@ const handleCanvasConfigChange = (newCanvasConfig: any) => {
   console.log('🔧 PanelEditor - 更新后配置:', editorConfig.value.canvasConfig)
 }
 
+// 交互系统测试方法
+const toggleInteractionTest = () => {
+  showInteractionTest.value = !showInteractionTest.value
+  if (showInteractionTest.value) {
+    // 获取当前画布上的组件列表
+    const components = stateManager.nodes.map(node => ({
+      id: node.id,
+      type: node.type,
+      name: node.metadata?.name || node.type
+    }))
+    console.log('🧪 可测试的组件:', components)
+  }
+}
+
+const executeTestInteraction = () => {
+  if (!selectedTestComponent.value || !selectedTestAction.value) {
+    message.warning('请选择组件和动作')
+    return
+  }
+
+  try {
+    let value: any = testActionValue.value
+
+    // 根据动作类型处理参数值
+    switch (selectedTestAction.value) {
+      case 'changeSize':
+        if (testActionValue.value.includes('x')) {
+          const [width, height] = testActionValue.value.split('x').map(Number)
+          value = { width, height }
+        } else {
+          value = { width: 300, height: 200 }
+        }
+        break
+      case 'changeOpacity':
+        value = parseFloat(testActionValue.value) || 0.8
+        break
+      case 'triggerAnimation':
+        value = parseInt(testActionValue.value) || 1000
+        break
+    }
+
+    const results = interactionManager.triggerEvent(selectedTestComponent.value, 'click', {
+      action: selectedTestAction.value,
+      value
+    })
+
+    console.log('🧪 交互测试结果:', results)
+
+    if (results.some(r => r.success)) {
+      message.success(`交互执行成功: ${selectedTestAction.value}`)
+    } else {
+      message.error(`交互执行失败: ${results[0]?.error || '未知错误'}`)
+    }
+  } catch (error) {
+    console.error('🧪 交互测试失败:', error)
+    message.error(`执行失败: ${error}`)
+  }
+}
+
+const resetTestComponent = () => {
+  if (selectedTestComponent.value) {
+    interactionManager.resetComponentState(selectedTestComponent.value)
+    message.success('组件已重置')
+  } else {
+    message.warning('请先选择组件')
+  }
+}
+
+const getTestActionPlaceholder = () => {
+  switch (selectedTestAction.value) {
+    case 'changeBackgroundColor':
+    case 'changeTextColor':
+    case 'changeBorderColor':
+      return '输入颜色值，如：#ff6b6b'
+    case 'changeSize':
+      return '输入尺寸，如：300x200'
+    case 'changeOpacity':
+      return '输入透明度，如：0.5'
+    case 'triggerAnimation':
+      return '输入动画时长(ms)，如：1000'
+    default:
+      return '输入参数值'
+  }
+}
+
 /**
  * 处理多数据源数据更新
  */
@@ -949,10 +1041,84 @@ onUnmounted(() => {
             @gridstack-config-change="handleGridstackConfigChange"
             @canvas-config-change="handleCanvasConfigChange"
           />
+
+          <!-- 交互系统测试按钮 -->
+          <div class="interaction-test-button-container">
+            <button
+              class="interaction-test-btn"
+              :class="{ active: showInteractionTest }"
+              @click="toggleInteractionTest"
+            >
+              🧪 交互测试
+            </button>
+          </div>
         </div>
 
         <!-- 主内容区域 -->
         <div class="main-container flex-1 relative overflow-hidden" :class="{ dragging: isDragging }">
+          <!-- 交互系统测试面板 -->
+          <div v-if="showInteractionTest" class="interaction-test-panel">
+            <div class="test-panel-header">
+              <h3>🧪 交互系统测试</h3>
+              <button class="test-close-btn" @click="toggleInteractionTest">×</button>
+            </div>
+            <div class="test-panel-content">
+              <div class="test-control-group">
+                <label>选择组件:</label>
+                <select v-model="selectedTestComponent" class="test-select">
+                  <option value="">请选择要测试的组件</option>
+                  <option v-for="node in stateManager.nodes" :key="node.id" :value="node.id">
+                    {{ node.metadata?.name || node.type }} ({{ node.id }})
+                  </option>
+                </select>
+              </div>
+
+              <div class="test-control-group">
+                <label>交互动作:</label>
+                <select v-model="selectedTestAction" class="test-select">
+                  <option value="changeBackgroundColor">改变背景颜色</option>
+                  <option value="changeTextColor">改变文字颜色</option>
+                  <option value="changeBorderColor">改变边框颜色</option>
+                  <option value="changeSize">改变大小</option>
+                  <option value="changeOpacity">改变透明度</option>
+                  <option value="triggerAnimation">触发动画</option>
+                </select>
+              </div>
+
+              <div class="test-control-group">
+                <label>动作参数:</label>
+                <input v-model="testActionValue" :placeholder="getTestActionPlaceholder()" class="test-input" />
+              </div>
+
+              <div class="test-actions">
+                <button class="test-btn test-btn-primary" @click="executeTestInteraction">执行交互</button>
+                <button class="test-btn test-btn-secondary" @click="resetTestComponent">重置组件</button>
+              </div>
+
+              <div class="test-help">
+                <h4>参数示例:</h4>
+                <ul>
+                  <li>
+                    <strong>颜色:</strong>
+                    #ff6b6b, #4ecdc4, #45b7d1
+                  </li>
+                  <li>
+                    <strong>尺寸:</strong>
+                    300x200, 400x300
+                  </li>
+                  <li>
+                    <strong>透明度:</strong>
+                    0.5, 0.8, 1.0
+                  </li>
+                  <li>
+                    <strong>动画时长:</strong>
+                    1000, 2000 (毫秒)
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           <!-- 中央画布 -->
           <div class="canvas-container h-full w-full" @click="handleCanvasClick">
             <!-- 动态渲染器 -->
@@ -1120,5 +1286,183 @@ onUnmounted(() => {
   .panel-editor {
     min-height: 400px;
   }
+}
+
+/* 交互系统测试样式 */
+.interaction-test-button-container {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1001;
+}
+
+.interaction-test-btn {
+  padding: 8px 16px;
+  background: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.3);
+}
+
+.interaction-test-btn:hover {
+  background: #357abd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
+.interaction-test-btn.active {
+  background: #e74c3c;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+}
+
+.interaction-test-btn.active:hover {
+  background: #c0392b;
+}
+
+.interaction-test-panel {
+  position: absolute;
+  top: 60px;
+  right: 10px;
+  width: 320px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  border: 1px solid #e1e5e9;
+}
+
+.test-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e1e5e9;
+  background: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+}
+
+.test-panel-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+}
+
+.test-close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.test-close-btn:hover {
+  background: #e9ecef;
+  color: #333;
+}
+
+.test-panel-content {
+  padding: 20px;
+}
+
+.test-control-group {
+  margin-bottom: 16px;
+}
+
+.test-control-group label {
+  display: block;
+  font-weight: 500;
+  color: #555;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.test-select,
+.test-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.test-select:focus,
+.test-input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.test-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.test-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.test-btn-primary {
+  background: #4a90e2;
+  color: white;
+}
+
+.test-btn-primary:hover {
+  background: #357abd;
+}
+
+.test-btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.test-btn-secondary:hover {
+  background: #5a6268;
+}
+
+.test-help {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 4px;
+  border-left: 3px solid #4a90e2;
+}
+
+.test-help h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #333;
+}
+
+.test-help ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.test-help li {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.test-help strong {
+  color: #333;
 }
 </style>
