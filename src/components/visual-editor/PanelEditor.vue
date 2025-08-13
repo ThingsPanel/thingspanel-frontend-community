@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useDialog, useMessage, NDrawer, NDrawerContent } from 'naive-ui'
 import { useFullscreen } from '@vueuse/core'
 import { useAppStore } from '@/store/modules/app'
@@ -963,11 +963,108 @@ watch(
 )
 
 // 学习 PanelManage 的 onMounted 写法
-onMounted(() => {
+onMounted(async () => {
   // 初始化时同步预览模式状态
   setPreviewMode(!isEditing.value)
-  fetchBoard()
+
+  // 先加载面板数据
+  await fetchBoard()
+
+  // 面板数据加载完成后，恢复多数据源配置
+  await nextTick() // 确保DOM更新完成
+  restoreMultiDataSourceConfigs()
 })
+
+/**
+ * V6: 恢复多数据源配置
+ * 从ConfigurationManager中恢复已保存的数据源配置
+ * 修复数据持久化问题：确保刷新后数据自动恢复
+ */
+const restoreMultiDataSourceConfigs = () => {
+  console.log('🔧 [PanelEditor] 开始恢复多数据源配置...')
+  console.log('🔧 [PanelEditor] 当前状态检查:', {
+    hasStateManager: !!stateManager,
+    nodesCount: stateManager?.nodes?.length || 0,
+    dataFetched: dataFetched.value,
+    currentMultiDataSourceConfigStore: Object.keys(multiDataSourceConfigStore.value).length
+  })
+
+  if (!stateManager?.nodes || stateManager.nodes.length === 0) {
+    console.log('🔧 [PanelEditor] 无图表节点，跳过恢复')
+    return
+  }
+
+  const restored: Record<string, any> = {}
+  let restoredCount = 0
+  let skippedCount = 0
+
+  // 遍历所有节点，从ConfigurationManager恢复配置
+  stateManager.nodes.forEach(node => {
+    const widgetId = node.id
+    console.log(`🔍 [PanelEditor] 检查组件 ${widgetId} 的配置...`)
+
+    try {
+      const configuration = configurationManager.getConfiguration(widgetId)
+      console.log(`📋 [PanelEditor] 组件 ${widgetId} 的完整配置:`, configuration)
+
+      // 检查是否有V6数据源配置
+      if (configuration?.dataSource?.type === 'data-mapping' && configuration.dataSource.config) {
+        restored[widgetId] = configuration.dataSource.config
+        restoredCount++
+
+        console.log(`🔄 [PanelEditor] 恢复组件 ${widgetId} 的数据源配置:`, {
+          type: configuration.dataSource.type,
+          config: configuration.dataSource.config,
+          hasDataSourceBindings: !!configuration.dataSource.config.dataSourceBindings,
+          bindingsKeys: Object.keys(configuration.dataSource.config.dataSourceBindings || {})
+        })
+      } else {
+        console.log(`⏭️ [PanelEditor] 跳过组件 ${widgetId}:`, {
+          hasConfiguration: !!configuration,
+          hasDataSource: !!configuration?.dataSource,
+          dataSourceType: configuration?.dataSource?.type,
+          hasConfig: !!configuration?.dataSource?.config
+        })
+        skippedCount++
+      }
+    } catch (error) {
+      console.warn(`⚠️ [PanelEditor] 恢复组件 ${widgetId} 配置失败:`, error)
+      skippedCount++
+    }
+  })
+
+  // 批量更新multiDataSourceConfigStore
+  if (restoredCount > 0) {
+    const oldStore = { ...multiDataSourceConfigStore.value }
+    multiDataSourceConfigStore.value = { ...multiDataSourceConfigStore.value, ...restored }
+
+    console.log(`✅ [PanelEditor] 数据源配置恢复完成:`, {
+      restoredCount,
+      skippedCount,
+      totalNodes: stateManager.nodes.length,
+      oldStoreKeys: Object.keys(oldStore),
+      newStoreKeys: Object.keys(multiDataSourceConfigStore.value),
+      restoredData: restored
+    })
+
+    // 🔥 关键修复：主动触发所有恢复的组件的数据源配置更新事件
+    console.log('🔄 [PanelEditor] 主动触发恢复组件的数据源配置更新...')
+    Object.entries(restored).forEach(([widgetId, config]) => {
+      console.log(`📤 [PanelEditor] 触发组件 ${widgetId} 的数据源配置更新:`, config)
+      // 触发配置更新事件，让组件立即接收到配置
+      handleMultiDataSourceConfigUpdate(widgetId, config)
+    })
+
+    console.log('✅ [PanelEditor] 数据源配置更新事件已全部触发')
+  } else {
+    console.log(`🔧 [PanelEditor] 数据源配置恢复结果:`, {
+      restoredCount: 0,
+      skippedCount,
+      totalNodes: stateManager.nodes.length,
+      reason: '无V6数据映射配置需要恢复'
+    })
+  }
+}
 
 // 组件卸载时的清理工作
 onUnmounted(() => {

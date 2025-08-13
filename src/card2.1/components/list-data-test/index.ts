@@ -3,7 +3,7 @@
  * 用于验证V4优化方案中的数组数据绑定和初始化修复
  */
 
-import ListDataTestWidget from '../ListDataTestWidget.vue'
+import ListDataTestWidget from './ListDataTestWidget.vue'
 import type { ComponentDefinition } from '../../core/types'
 
 export const ListDataTest: ComponentDefinition = {
@@ -27,113 +27,74 @@ export const ListDataTest: ComponentDefinition = {
     }
   },
 
-  // ============ 配置驱动的动态数据源 ============
-
-  /** 静态参数需求声明 */
+  // ===== V6标准化定义 =====
+  // 静态参数定义
   staticParams: [
     {
       key: 'title',
-      name: '组件标题',
-      type: 'string',
-      description: '列表组件的显示标题',
+      label: '组件标题',
+      type: 'text',
       defaultValue: '列表数据测试',
-      required: false,
-      ui: {
-        component: 'input',
-        placeholder: '请输入组件标题',
-        label: '标题',
-        group: '基本设置'
-      }
+      description: '列表组件的显示标题',
+      placeholder: '请输入组件标题'
     },
     {
       key: 'showTimestamp',
-      name: '显示时间戳',
-      type: 'boolean',
-      description: '是否显示数据更新时间',
+      label: '显示时间戳',
+      type: 'switch',
       defaultValue: true,
-      required: false,
-      ui: {
-        component: 'switch',
-        label: '显示时间戳',
-        group: '显示设置'
-      }
+      description: '是否显示数据更新时间'
     },
     {
       key: 'enablePagination',
-      name: '启用分页',
-      type: 'boolean',
-      description: '是否启用分页功能',
+      label: '启用分页',
+      type: 'switch',
       defaultValue: true,
-      required: false,
-      ui: {
-        component: 'switch',
-        label: '启用分页',
-        group: '显示设置'
-      }
+      description: '是否启用分页功能'
     },
     {
       key: 'pageSize',
-      name: '每页条数',
+      label: '每页条数',
       type: 'number',
-      description: '每页显示的数据条数',
       defaultValue: 10,
-      required: false,
-      validation: {
-        min: 5,
-        max: 50
-      },
-      ui: {
-        component: 'number',
-        label: '每页条数',
-        group: '分页设置'
-      }
+      description: '每页显示的数据条数',
+      min: 5,
+      max: 50
     },
     {
       key: 'maxItems',
-      name: '最大条数',
+      label: '最大条数',
       type: 'number',
-      description: '最多显示的数据条数',
       defaultValue: 100,
-      required: false,
-      validation: {
-        min: 10,
-        max: 1000
-      },
-      ui: {
-        component: 'number',
-        label: '最大条数',
-        group: '性能设置'
-      }
+      description: '最多显示的数据条数',
+      min: 10,
+      max: 1000
     }
   ],
 
-  /** 数据源需求声明 */
+  // 数据源需求定义（V6标准）
   dataSources: [
     {
       key: 'listData',
-      name: '列表数据源',
+      label: '列表数据源',
       description: '提供列表展示的数组数据',
-      supportedTypes: ['static', 'api', 'websocket'],
-      required: true,
-      fieldMappings: {
-        data: {
-          targetField: 'listData',
-          type: 'array',
-          required: true,
-          defaultValue: [
-            { name: '测试项目1', value: 25.6, status: 'online', id: 'item001' },
-            { name: '测试项目2', value: 30.2, status: 'offline', id: 'item002' },
-            { name: '测试项目3', value: 28.9, status: 'online', id: 'item003' }
-          ]
+      fieldsToMap: [
+        {
+          key: 'dataPath',
+          label: '数据路径',
+          targetProperty: 'listData',
+          description: '指向数组数据的JSON路径，如果是根数组则使用 $',
+          placeholder: '如: $.data 或 $'
         },
-        timestamp: {
-          targetField: 'updateTime',
-          type: 'value',
-          required: false,
-          defaultValue: new Date(),
-          transform: 'new Date(value)'
+        {
+          key: 'updateTimePath',
+          label: '更新时间路径',
+          targetProperty: 'updateTime',
+          description: '指向时间戳字段的JSON路径',
+          placeholder: '如: $.timestamp',
+          required: false
         }
-      }
+      ]
     }
   ],
 

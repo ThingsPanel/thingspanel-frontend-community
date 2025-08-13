@@ -266,7 +266,7 @@ import {
 
 // 导入测试组件
 import SimpleDataMappingForm from '@/components/visual-editor/configuration/forms/SimpleDataMappingForm.vue'
-import ListDataTestWidget from '@/card2.1/components/ListDataTestWidget.vue'
+import ListDataTestWidget from '@/card2.1/components/list-data-test/ListDataTestWidget.vue'
 import { dataSourceCenter, initializeDataSources } from '@/card2.1/core/data-sources'
 
 // 组件元信息

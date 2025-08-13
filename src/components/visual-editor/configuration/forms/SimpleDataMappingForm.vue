@@ -1,244 +1,181 @@
+<!--
+  V6重构版本：纯粹的UI渲染器
+  SimpleDataMappingForm - 完全由definition驱动的动态配置表单
+-->
+
 <template>
-  <div class="simple-data-mapping-form">
-    <!-- 组件数据需求信息 -->
-    <div v-if="componentRequirements" class="requirements-info">
-      <n-card size="small" :bordered="false" class="requirements-card">
-        <template #header>
-          <div class="requirements-header">
-            <n-icon size="16"><ListOutline /></n-icon>
-            <span>{{ componentRequirements.componentName }} - 数据需求</span>
-          </div>
-        </template>
+  <div class="simple-data-mapping-form-v6">
+    <!-- V6: 专注于数据源配置，移除静态参数 -->
+    <n-collapse :default-expanded-names="getDefaultExpandedNames()">
+      <!-- 数据源配置区域 -->
+      <n-collapse-item
+        v-for="(dataSource, index) in definition.dataSources"
+        :key="dataSource.key"
+        :title="`${dataSource.label}`"
+        :name="`dataSource-${index}`"
+      >
+        <div class="data-source-section">
+          <n-space vertical size="large">
+            <!-- 数据源描述 -->
+            <n-alert v-if="dataSource.description" type="info" size="small">
+              {{ dataSource.description }}
+            </n-alert>
 
-        <div class="requirements-summary">
-          <n-text depth="2">
-            需要 {{ componentRequirements.dataSources.length }} 个数据源：
-            {{ componentRequirements.dataSources.map(ds => ds.name).join('、') }}
-          </n-text>
+            <!-- JSON 数据输入区域 -->
+            <div class="json-input-section">
+              <n-text strong>原始数据输入</n-text>
+              <n-divider style="margin: 8px 0" />
+
+              <div class="json-input-container">
+                <div class="input-header">
+                  <n-space>
+                    <n-button size="tiny" @click="formatJson(dataSource.key)">
+                      <template #icon>
+                        <n-icon><CodeOutline /></n-icon>
+                      </template>
+                      格式化
+                    </n-button>
+                    <n-button size="tiny" @click="loadSampleData(dataSource.key)">
+                      <template #icon>
+                        <n-icon><AddOutline /></n-icon>
+                      </template>
+                      示例数据
+                    </n-button>
+                    <n-tag :type="isValidJson(dataSource.key) ? 'success' : 'error'" size="small">
+                      {{ isValidJson(dataSource.key) ? 'JSON有效' : 'JSON无效' }}
+                    </n-tag>
+                  </n-space>
+                </div>
+
+                <n-input
+                  :value="getRawData(dataSource.key)"
+                  type="textarea"
+                  :rows="6"
+                  placeholder="请输入JSON数据..."
+                  class="json-input"
+                  @update:value="updateRawData(dataSource.key, $event)"
+                />
+              </div>
+            </div>
+
+            <!-- 字段映射区域 -->
+            <div v-if="dataSource.fieldsToMap" class="field-mappings-section">
+              <n-text strong>字段映射配置</n-text>
+              <n-divider style="margin: 8px 0" />
+
+              <n-form label-placement="left" label-width="120px" size="small">
+                <n-form-item v-for="field in dataSource.fieldsToMap" :key="field.key" :label="field.label">
+                  <n-input
+                    :value="getFieldMapping(dataSource.key, field.key)"
+                    :placeholder="field.placeholder || `JSONPath for ${field.label}`"
+                    @update:value="updateFieldMapping(dataSource.key, field.key, $event)"
+                  />
+
+                  <!-- 字段描述 -->
+                  <template v-if="field.description" #feedback>
+                    <n-text depth="3" style="font-size: 12px">{{ field.description }}</n-text>
+                  </template>
+                </n-form-item>
+              </n-form>
+
+              <!-- 映射预览 -->
+              <div v-if="hasValidJsonData(dataSource.key)" class="mapping-preview">
+                <n-text strong style="font-size: 12px">映射预览</n-text>
+                <n-divider style="margin: 6px 0" />
+                <div class="preview-items">
+                  <div v-for="field in dataSource.fieldsToMap" :key="field.key" class="preview-item">
+                    <span class="preview-label">{{ field.label }}:</span>
+                    <n-tag :type="getMappingPreviewType(dataSource.key, field.key)" size="small">
+                      {{ getMappingPreview(dataSource.key, field.key) }}
+                    </n-tag>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </n-space>
         </div>
-      </n-card>
-    </div>
-
-    <!-- JSON数据输入区域 - 使用NCollapse优化布局 -->
-    <div class="json-input-section">
-      <n-card size="small" title="JSON数据输入" class="json-card">
-        <n-collapse default-expanded-names="array">
-          <!-- 数组数据源 -->
-          <n-collapse-item title="数组数据源" name="array">
-            <div class="json-input-panel">
-              <n-input
-                v-model:value="arrayJsonData"
-                type="textarea"
-                :rows="6"
-                placeholder='请输入JSON数组数据，例如：
-[
-  {"name": "设备1", "value": 25.6, "status": "online"},
-  {"name": "设备2", "value": 30.2, "status": "offline"}
-]'
-                @input="handleArrayDataChange"
-              />
-              <div class="input-actions">
-                <n-space>
-                  <n-button size="small" @click="formatArrayJson">格式化</n-button>
-                  <n-button size="small" @click="loadArraySample">加载示例</n-button>
-                  <n-tag v-if="arrayDataValid" type="success" size="small">✓ JSON有效</n-tag>
-                  <n-tag v-else-if="arrayJsonData.trim()" type="error" size="small">✗ JSON无效</n-tag>
-                </n-space>
-              </div>
-            </div>
-          </n-collapse-item>
-
-          <!-- 对象数据源 -->
-          <n-collapse-item title="对象数据源" name="object">
-            <div class="json-input-panel">
-              <n-input
-                v-model:value="objectJsonData"
-                type="textarea"
-                :rows="6"
-                placeholder='请输入JSON对象数据，例如：
-{
-  "user": {"name": "张三", "age": 25},
-  "device": {"id": "dev001", "temp": 23.5},
-  "location": {"city": "北京", "area": "朝阳区"}
-}'
-                @input="handleObjectDataChange"
-              />
-              <div class="input-actions">
-                <n-space>
-                  <n-button size="small" @click="formatObjectJson">格式化</n-button>
-                  <n-button size="small" @click="loadObjectSample">加载示例</n-button>
-                  <n-tag v-if="objectDataValid" type="success" size="small">✓ JSON有效</n-tag>
-                  <n-tag v-else-if="objectJsonData.trim()" type="error" size="small">✗ JSON无效</n-tag>
-                </n-space>
-              </div>
-            </div>
-          </n-collapse-item>
-        </n-collapse>
-      </n-card>
-    </div>
-
-    <!-- 路径映射配置区域 -->
-    <div class="path-mapping-section">
-      <n-card size="small" title="路径映射配置" class="mapping-card">
-        <div class="mapping-groups">
-          <!-- 数组数据源映射 -->
-          <div class="mapping-group">
-            <h4 class="group-title">
-              <n-icon size="14"><CodeWorkingOutline /></n-icon>
-              数组数据源字段映射
-            </h4>
-            <div class="mapping-fields">
-              <div class="mapping-item">
-                <label class="field-label">字段1:</label>
-                <n-input
-                  v-model:value="pathMappings.arrayMappings.field1Path"
-                  size="small"
-                  placeholder="如: [0].name 或 0.name"
-                  @input="handleMappingChange"
-                />
-                <div class="preview-value">
-                  <n-tag size="small" :type="getPreviewType('array', 'field1')">
-                    {{ getPreviewValue('array', 'field1') }}
-                  </n-tag>
-                </div>
-              </div>
-
-              <div class="mapping-item">
-                <label class="field-label">字段2:</label>
-                <n-input
-                  v-model:value="pathMappings.arrayMappings.field2Path"
-                  size="small"
-                  placeholder="如: [0].value"
-                  @input="handleMappingChange"
-                />
-                <div class="preview-value">
-                  <n-tag size="small" :type="getPreviewType('array', 'field2')">
-                    {{ getPreviewValue('array', 'field2') }}
-                  </n-tag>
-                </div>
-              </div>
-
-              <div class="mapping-item">
-                <label class="field-label">字段3:</label>
-                <n-input
-                  v-model:value="pathMappings.arrayMappings.field3Path"
-                  size="small"
-                  placeholder="如: [1].status"
-                  @input="handleMappingChange"
-                />
-                <div class="preview-value">
-                  <n-tag size="small" :type="getPreviewType('array', 'field3')">
-                    {{ getPreviewValue('array', 'field3') }}
-                  </n-tag>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 对象数据源映射 -->
-          <div class="mapping-group">
-            <h4 class="group-title">
-              <n-icon size="14"><DocumentTextOutline /></n-icon>
-              对象数据源字段映射
-            </h4>
-            <div class="mapping-fields">
-              <div class="mapping-item">
-                <label class="field-label">字段A:</label>
-                <n-input
-                  v-model:value="pathMappings.objectMappings.fieldAPath"
-                  size="small"
-                  placeholder="如: user.name"
-                  @input="handleMappingChange"
-                />
-                <div class="preview-value">
-                  <n-tag size="small" :type="getPreviewType('object', 'fieldA')">
-                    {{ getPreviewValue('object', 'fieldA') }}
-                  </n-tag>
-                </div>
-              </div>
-
-              <div class="mapping-item">
-                <label class="field-label">字段B:</label>
-                <n-input
-                  v-model:value="pathMappings.objectMappings.fieldBPath"
-                  size="small"
-                  placeholder="如: device.temp"
-                  @input="handleMappingChange"
-                />
-                <div class="preview-value">
-                  <n-tag size="small" :type="getPreviewType('object', 'fieldB')">
-                    {{ getPreviewValue('object', 'fieldB') }}
-                  </n-tag>
-                </div>
-              </div>
-
-              <div class="mapping-item">
-                <label class="field-label">字段C:</label>
-                <n-input
-                  v-model:value="pathMappings.objectMappings.fieldCPath"
-                  size="small"
-                  placeholder="如: location.city"
-                  @input="handleMappingChange"
-                />
-                <div class="preview-value">
-                  <n-tag size="small" :type="getPreviewType('object', 'fieldC')">
-                    {{ getPreviewValue('object', 'fieldC') }}
-                  </n-tag>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </n-card>
-    </div>
-
-    <!-- 应用配置按钮 -->
-    <div class="actions-section">
-      <n-space>
-        <n-button type="primary" :disabled="!canApplyConfig" :loading="applying" @click="applyConfiguration">
-          <template #icon>
-            <n-icon><CheckmarkOutline /></n-icon>
-          </template>
-          应用配置到组件
-        </n-button>
-
-        <n-button @click="resetConfiguration">
-          <template #icon>
-            <n-icon><RefreshOutline /></n-icon>
-          </template>
-          重置配置
-        </n-button>
-      </n-space>
-    </div>
+      </n-collapse-item>
+    </n-collapse>
   </div>
 </template>
 
 <script setup lang="ts">
 /**
- * 简洁的数据映射配置表单
- * 专门为数据映射测试组件设计的简洁配置界面
+ * V6版本：纯粹的UI渲染器
+ * 完全由definition驱动的动态配置表单，无内部状态管理
  */
 
-import { ref, computed, reactive, watch } from 'vue'
-import { NCard, NInput, NButton, NSpace, NIcon, NText, NTag, NCollapse, NCollapseItem, useMessage } from 'naive-ui'
+import { computed, reactive, watch } from 'vue'
 import {
-  ListOutline,
-  CodeWorkingOutline,
-  DocumentTextOutline,
-  CheckmarkOutline,
-  RefreshOutline
-} from '@vicons/ionicons5'
+  NCollapse,
+  NCollapseItem,
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NSwitch,
+  NColorPicker,
+  NSelect,
+  NSpace,
+  NText,
+  NAlert,
+  NDivider,
+  NButton,
+  NIcon,
+  NTag,
+  useMessage
+} from 'naive-ui'
+import { CodeOutline, AddOutline } from '@vicons/ionicons5'
+
+// V6标准接口定义
+interface V6ComponentDefinition {
+  staticParams?: Array<{
+    key: string
+    label: string
+    type: string
+    defaultValue?: any
+    description?: string
+    placeholder?: string
+    min?: number
+    max?: number
+    options?: Array<{ label: string; value: any }>
+  }>
+  dataSources?: Array<{
+    key: string
+    label: string
+    description?: string
+    fieldsToMap?: Array<{
+      key: string
+      label: string
+      targetProperty: string
+      description?: string
+      placeholder?: string
+      required?: boolean
+    }>
+  }>
+}
+
+interface V6ConfigData {
+  staticParams?: Record<string, any>
+  dataSourceBindings?: Record<
+    string,
+    {
+      sourceType: string
+      rawData: string
+      fieldMappings: Record<string, string>
+    }
+  >
+}
 
 interface Props {
-  componentRequirements?: any
-  selectedWidget?: any
-  modelValue?: any
+  /** V6组件定义对象 */
+  definition: V6ComponentDefinition
+  /** V6配置数据对象 */
+  modelValue: V6ConfigData
 }
 
 interface Emits {
-  (e: 'update:modelValue', value: any): void
-  (e: 'config-update', config: any): void
-  (e: 'preview-update', preview: any): void
+  (e: 'update:modelValue', value: V6ConfigData): void
 }
 
 const props = defineProps<Props>()
@@ -246,70 +183,195 @@ const emit = defineEmits<Emits>()
 
 const message = useMessage()
 
-// 响应式数据
-const arrayJsonData = ref('')
-const objectJsonData = ref('')
-const applying = ref(false)
+// V6: 本地响应式状态，避免Proxy问题
+const localConfig = reactive({
+  dataSourceBindings: {}
+} as { dataSourceBindings: Record<string, any> })
 
-const pathMappings = reactive({
-  arrayMappings: {
-    field1Path: '',
-    field2Path: '',
-    field3Path: ''
+// 监听props变化，同步到本地状态
+watch(
+  () => props.modelValue,
+  newValue => {
+    if (newValue && typeof newValue === 'object') {
+      console.log('📥 [V6Form] 同步外部配置到本地:', newValue)
+      Object.assign(localConfig, newValue)
+      // 确保dataSourceBindings存在
+      if (!localConfig.dataSourceBindings) {
+        localConfig.dataSourceBindings = {}
+      }
+    }
   },
-  objectMappings: {
-    fieldAPath: '',
-    fieldBPath: '',
-    fieldCPath: ''
+  { immediate: true, deep: true }
+)
+
+// 监听本地状态变化，同步到外部
+watch(
+  localConfig,
+  newValue => {
+    console.log('📤 [V6Form] 同步本地配置到外部:', newValue)
+    emit('update:modelValue', { ...newValue })
+  },
+  { deep: true }
+)
+
+// V6: 移除静态参数相关函数 - 专注于数据源配置
+
+// ========== 数据源输入绑定 ==========
+// V6: 简化数据绑定，使用标准的:value和@update:value模式
+
+// ========== 数据源相关函数 ==========
+
+const getRawData = (dataSourceKey: string): string => {
+  const data = localConfig.dataSourceBindings?.[dataSourceKey]?.rawData || ''
+  console.log('📖 [V6Form] 读取原始数据:', dataSourceKey, data)
+  return data
+}
+
+const updateRawData = (dataSourceKey: string, rawData: string) => {
+  console.log('🔄 [V6Form] 更新原始数据:', dataSourceKey, rawData)
+
+  // 直接更新本地响应式状态
+  if (!localConfig.dataSourceBindings[dataSourceKey]) {
+    localConfig.dataSourceBindings[dataSourceKey] = { fieldMappings: {} }
   }
-})
 
-// 解析后的JSON数据
-const parsedArrayData = ref<any>(null)
-const parsedObjectData = ref<any>(null)
+  localConfig.dataSourceBindings[dataSourceKey].sourceType = 'static'
+  localConfig.dataSourceBindings[dataSourceKey].rawData = rawData
 
-// 计算属性
-const arrayDataValid = computed(() => {
-  if (!arrayJsonData.value.trim()) return false
+  console.log('🔄 [V6Form] 本地配置已更新:', localConfig)
+}
+
+const getFieldMapping = (dataSourceKey: string, fieldKey: string): string => {
+  return localConfig.dataSourceBindings?.[dataSourceKey]?.fieldMappings?.[fieldKey] || ''
+}
+
+const updateFieldMapping = (dataSourceKey: string, fieldKey: string, mapping: string) => {
+  // 直接更新本地响应式状态
+  if (!localConfig.dataSourceBindings[dataSourceKey]) {
+    localConfig.dataSourceBindings[dataSourceKey] = {
+      sourceType: 'static',
+      rawData: '',
+      fieldMappings: {}
+    }
+  }
+
+  if (!localConfig.dataSourceBindings[dataSourceKey].fieldMappings) {
+    localConfig.dataSourceBindings[dataSourceKey].fieldMappings = {}
+  }
+
+  localConfig.dataSourceBindings[dataSourceKey].fieldMappings[fieldKey] = mapping
+}
+
+// ========== JSON处理相关函数 ==========
+
+const isValidJson = (dataSourceKey: string): boolean => {
+  const rawData = getRawData(dataSourceKey)
+  if (!rawData.trim()) return false
+
   try {
-    const parsed = JSON.parse(arrayJsonData.value)
-    return Array.isArray(parsed)
+    JSON.parse(rawData)
+    return true
   } catch {
     return false
   }
-})
+}
 
-const objectDataValid = computed(() => {
-  if (!objectJsonData.value.trim()) return false
+const hasValidJsonData = (dataSourceKey: string): boolean => {
+  return isValidJson(dataSourceKey) && getRawData(dataSourceKey).trim().length > 0
+}
+
+const formatJson = (dataSourceKey: string) => {
+  const rawData = getRawData(dataSourceKey)
+  if (!rawData.trim()) return
+
   try {
-    const parsed = JSON.parse(objectJsonData.value)
-    return typeof parsed === 'object' && !Array.isArray(parsed)
+    const parsed = JSON.parse(rawData)
+    const formatted = JSON.stringify(parsed, null, 2)
+    updateRawData(dataSourceKey, formatted)
+    message.success('JSON格式化成功')
   } catch {
-    return false
+    message.error('JSON格式错误，无法格式化')
   }
-})
+}
 
-const canApplyConfig = computed(() => {
-  return arrayDataValid.value && objectDataValid.value
-})
+const loadSampleData = (dataSourceKey: string) => {
+  console.log('🔄 [V6Form] 加载示例数据:', dataSourceKey)
 
-// JSON路径解析函数
-const getValueByPath = (obj: any, path: string): any => {
-  if (!path || !obj) return null
+  // 根据数据源类型加载不同的示例数据
+  const dataSource = props.definition.dataSources?.find(ds => ds.key === dataSourceKey)
+
+  let sampleData
+  if (dataSource?.key === 'arrayDataSource' || dataSource?.label?.includes('数组')) {
+    sampleData = [
+      { name: '设备1', value: 25.6, status: 'online', id: 'dev001' },
+      { name: '设备2', value: 30.2, status: 'offline', id: 'dev002' },
+      { name: '设备3', value: 28.1, status: 'online', id: 'dev003' }
+    ]
+  } else if (dataSource?.key === 'objectDataSource' || dataSource?.label?.includes('对象')) {
+    sampleData = {
+      user: { name: '张三', age: 25, role: 'admin' },
+      device: { id: 'dev001', temp: 23.5, humidity: 65 },
+      location: { city: '北京', area: '朝阳区', building: 'A座' }
+    }
+  } else {
+    sampleData = [
+      { name: '项目1', value: 100, status: 'active' },
+      { name: '项目2', value: 200, status: 'inactive' }
+    ]
+  }
+
+  const formattedData = JSON.stringify(sampleData, null, 2)
+  console.log('🔄 [V6Form] 格式化示例数据:', formattedData)
+
+  updateRawData(dataSourceKey, formattedData)
+  message.success('已加载示例数据')
+}
+
+// ========== 映射预览相关函数 ==========
+
+const getMappingPreview = (dataSourceKey: string, fieldKey: string): string => {
+  if (!hasValidJsonData(dataSourceKey)) return '无数据'
+
+  const rawData = getRawData(dataSourceKey)
+  const mapping = getFieldMapping(dataSourceKey, fieldKey)
+
+  if (!mapping) return '未配置'
 
   try {
-    // 处理数组路径 [0].name -> 0.name
-    let cleanPath = path.replace(/\[(\d+)\]/g, '$1')
+    const data = JSON.parse(rawData)
+    const value = evaluateJsonPath(data, mapping)
+
+    if (value === null || value === undefined) return '路径无效'
+
+    return typeof value === 'object' ? JSON.stringify(value) : String(value)
+  } catch {
+    return '解析错误'
+  }
+}
+
+const getMappingPreviewType = (dataSourceKey: string, fieldKey: string): string => {
+  const preview = getMappingPreview(dataSourceKey, fieldKey)
+  if (preview === '无数据' || preview === '未配置') return 'default'
+  if (preview === '路径无效' || preview === '解析错误') return 'error'
+  return 'success'
+}
+
+// 简化的JSONPath解析器
+const evaluateJsonPath = (data: any, path: string): any => {
+  if (!path || path === '$') return data
+
+  try {
+    // 处理简单的路径，如 $.name, [0].name, user.name 等
+    let cleanPath = path.replace(/^\$\.?/, '').replace(/\[(\d+)\]/g, '.$1')
     if (cleanPath.startsWith('.')) cleanPath = cleanPath.slice(1)
 
     const keys = cleanPath.split('.')
-    let current = obj
+    let current = data
 
     for (const key of keys) {
       if (key === '') continue
       if (current === null || current === undefined) return null
 
-      // 如果是数字，尝试作为数组索引
       if (/^\d+$/.test(key)) {
         const index = parseInt(key)
         current = Array.isArray(current) ? current[index] : current[key]
@@ -321,324 +383,114 @@ const getValueByPath = (obj: any, path: string): any => {
     }
 
     return current
-  } catch (error) {
-    console.warn('路径解析失败:', path, error)
+  } catch {
     return null
   }
 }
 
-// 预览值获取
-const getPreviewValue = (dataType: 'array' | 'object', fieldKey: string): string => {
-  let data, path
+// ========== 工具函数 ==========
 
-  if (dataType === 'array') {
-    data = parsedArrayData.value
-    path = pathMappings.arrayMappings[`${fieldKey}Path` as keyof typeof pathMappings.arrayMappings]
-  } else {
-    data = parsedObjectData.value
-    path = pathMappings.objectMappings[`${fieldKey}Path` as keyof typeof pathMappings.objectMappings]
+const getDefaultExpandedNames = () => {
+  const names = []
+
+  // V6: 只展开数据源配置
+  if (props.definition.dataSources?.length > 0) {
+    names.push('dataSource-0')
   }
 
-  if (!data || !path) return '未配置'
-
-  const value = getValueByPath(data, path)
-  if (value === null || value === undefined) return '路径无效'
-
-  return typeof value === 'object' ? JSON.stringify(value) : String(value)
+  return names
 }
-
-const getPreviewType = (dataType: 'array' | 'object', fieldKey: string) => {
-  const previewValue = getPreviewValue(dataType, fieldKey)
-  if (previewValue === '未配置') return 'default'
-  if (previewValue === '路径无效') return 'error'
-  return 'success'
-}
-
-// 事件处理
-const handleArrayDataChange = () => {
-  if (arrayDataValid.value) {
-    try {
-      parsedArrayData.value = JSON.parse(arrayJsonData.value)
-    } catch {
-      parsedArrayData.value = null
-    }
-  } else {
-    parsedArrayData.value = null
-  }
-}
-
-const handleObjectDataChange = () => {
-  if (objectDataValid.value) {
-    try {
-      parsedObjectData.value = JSON.parse(objectJsonData.value)
-    } catch {
-      parsedObjectData.value = null
-    }
-  } else {
-    parsedObjectData.value = null
-  }
-}
-
-const handleMappingChange = () => {
-  // 实时更新预览
-  emitPreviewUpdate()
-}
-
-const formatArrayJson = () => {
-  if (arrayDataValid.value) {
-    try {
-      const parsed = JSON.parse(arrayJsonData.value)
-      arrayJsonData.value = JSON.stringify(parsed, null, 2)
-    } catch {
-      message.error('JSON格式错误，无法格式化')
-    }
-  }
-}
-
-const formatObjectJson = () => {
-  if (objectDataValid.value) {
-    try {
-      const parsed = JSON.parse(objectJsonData.value)
-      objectJsonData.value = JSON.stringify(parsed, null, 2)
-    } catch {
-      message.error('JSON格式错误，无法格式化')
-    }
-  }
-}
-
-const loadArraySample = () => {
-  arrayJsonData.value = JSON.stringify(
-    [
-      { name: '设备1', value: 25.6, status: 'online', id: 'dev001' },
-      { name: '设备2', value: 30.2, status: 'offline', id: 'dev002' },
-      { name: '设备3', value: 28.1, status: 'online', id: 'dev003' }
-    ],
-    null,
-    2
-  )
-  handleArrayDataChange()
-}
-
-const loadObjectSample = () => {
-  objectJsonData.value = JSON.stringify(
-    {
-      user: { name: '张三', age: 25, role: 'admin' },
-      device: { id: 'dev001', temp: 23.5, humidity: 65 },
-      location: { city: '北京', area: '朝阳区', building: 'A座' }
-    },
-    null,
-    2
-  )
-  handleObjectDataChange()
-}
-
-const applyConfiguration = async () => {
-  if (!canApplyConfig.value) return
-
-  applying.value = true
-  try {
-    const config = {
-      arrayDataSource: parsedArrayData.value,
-      objectDataSource: parsedObjectData.value,
-      arrayMappings: { ...pathMappings.arrayMappings },
-      objectMappings: { ...pathMappings.objectMappings }
-    }
-
-    emit('config-update', config)
-    message.success('配置已应用到组件')
-  } catch (error) {
-    message.error('应用配置失败')
-  } finally {
-    applying.value = false
-  }
-}
-
-const resetConfiguration = () => {
-  arrayJsonData.value = ''
-  objectJsonData.value = ''
-  Object.assign(pathMappings.arrayMappings, {
-    field1Path: '',
-    field2Path: '',
-    field3Path: ''
-  })
-  Object.assign(pathMappings.objectMappings, {
-    fieldAPath: '',
-    fieldBPath: '',
-    fieldCPath: ''
-  })
-  parsedArrayData.value = null
-  parsedObjectData.value = null
-
-  message.info('配置已重置')
-}
-
-const emitPreviewUpdate = () => {
-  const preview = {
-    arrayMappedValues: {
-      field1: getPreviewValue('array', 'field1'),
-      field2: getPreviewValue('array', 'field2'),
-      field3: getPreviewValue('array', 'field3')
-    },
-    objectMappedValues: {
-      fieldA: getPreviewValue('object', 'fieldA'),
-      fieldB: getPreviewValue('object', 'fieldB'),
-      fieldC: getPreviewValue('object', 'fieldC')
-    }
-  }
-
-  emit('preview-update', preview)
-}
-
-// 监听外部数据变化，初始化表单
-watch(
-  () => props.modelValue,
-  newValue => {
-    if (newValue && typeof newValue === 'object') {
-      console.log('🔄 [SimpleDataMappingForm] 接收到外部数据:', newValue)
-
-      // 恢复JSON数据
-      if (newValue.arrayDataSource) {
-        arrayJsonData.value = JSON.stringify(newValue.arrayDataSource, null, 2)
-        parsedArrayData.value = newValue.arrayDataSource
-      }
-
-      if (newValue.objectDataSource) {
-        objectJsonData.value = JSON.stringify(newValue.objectDataSource, null, 2)
-        parsedObjectData.value = newValue.objectDataSource
-      }
-
-      // 恢复路径映射
-      if (newValue.arrayMappings) {
-        Object.assign(pathMappings.arrayMappings, newValue.arrayMappings)
-      }
-
-      if (newValue.objectMappings) {
-        Object.assign(pathMappings.objectMappings, newValue.objectMappings)
-      }
-
-      console.log('✅ [SimpleDataMappingForm] 表单数据已恢复')
-    }
-  },
-  { immediate: true, deep: true }
-)
-
-// 监听数据变化
-watch([parsedArrayData, parsedObjectData, pathMappings], emitPreviewUpdate, { deep: true })
 </script>
 
 <style scoped>
-.simple-data-mapping-form {
+.simple-data-mapping-form-v6 {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.requirements-card {
-  border: 1px solid var(--border-color);
+.static-params-section {
+  padding: 0 4px;
 }
 
-.requirements-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 500;
+.data-source-section {
+  padding: 4px;
 }
 
-.requirements-summary {
-  font-size: 12px;
-  color: var(--text-color-2);
-}
-
-.json-card,
-.mapping-card {
-  border: 1px solid var(--border-color);
-}
-
-.json-input-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.input-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.mapping-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.mapping-group {
+.json-input-section {
+  background: var(--hover-color);
   padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.json-input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.json-input {
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.field-mappings-section {
+  background: var(--card-color);
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+}
+
+.mapping-preview {
+  margin-top: 12px;
+  padding: 8px;
   background: var(--hover-color);
   border-radius: 4px;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--divider-color);
 }
 
-.group-title {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-color);
-  margin: 0 0 12px 0;
-}
-
-.mapping-fields {
+.preview-items {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
 }
 
-.mapping-item {
-  display: grid;
-  grid-template-columns: 60px 1fr 120px;
-  gap: 8px;
+.preview-item {
+  display: flex;
   align-items: center;
-}
-
-.field-label {
+  gap: 8px;
   font-size: 12px;
-  font-weight: 500;
+}
+
+.preview-label {
+  min-width: 80px;
   color: var(--text-color-2);
-  text-align: right;
-}
-
-.preview-value {
-  font-size: 11px;
-}
-
-.preview-value .n-tag {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.actions-section {
-  padding-top: 8px;
-  border-top: 1px solid var(--divider-color);
+  font-weight: 500;
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .mapping-item {
-    grid-template-columns: 1fr;
+  .input-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .preview-item {
+    flex-direction: column;
+    align-items: flex-start;
     gap: 4px;
   }
 
-  .field-label {
-    text-align: left;
-  }
-
-  .preview-value {
-    justify-self: start;
+  .preview-label {
+    min-width: auto;
   }
 }
 </style>

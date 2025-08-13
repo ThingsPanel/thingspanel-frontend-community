@@ -834,6 +834,15 @@ export const generatedRoutes: GeneratedRoute[] = [
           title: 'test_v4-optimization-validation',
           i18nKey: 'route.test_v4-optimization-validation'
         }
+      },
+      {
+        name: 'test_v5-refactoring-validation',
+        path: '/test/v5-refactoring-validation',
+        component: 'view.test_v5-refactoring-validation',
+        meta: {
+          title: 'test_v5-refactoring-validation',
+          i18nKey: 'route.test_v5-refactoring-validation'
+        }
       }
     ]
   },

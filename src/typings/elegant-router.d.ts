@@ -109,6 +109,7 @@ declare module "@elegant-router/types" {
     "test": "/test";
     "test_config-driven-data-source": "/test/config-driven-data-source";
     "test_v4-optimization-validation": "/test/v4-optimization-validation";
+    "test_v5-refactoring-validation": "/test/v5-refactoring-validation";
     "ultra-kanban": "/ultra-kanban";
     "ultra-kanban_index": "/ultra-kanban/index";
     "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details";
@@ -266,6 +267,7 @@ declare module "@elegant-router/types" {
     | "test_config-driven-data-source"
     | "test"
     | "test_v4-optimization-validation"
+    | "test_v5-refactoring-validation"
     | "ultra-kanban_index"
     | "ultra-kanban_kanban-details"
     | "ultra-kanban_panel-preview"

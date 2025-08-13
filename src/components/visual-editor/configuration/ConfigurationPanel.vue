@@ -83,32 +83,22 @@
           />
         </n-tab-pane>
 
-        <!-- 数据源配置标签页 - 简洁实现 -->
+        <!-- V6数据源配置标签页 - 纯粹的数据协调 -->
         <n-tab-pane name="dataSource" :tab="$t('config.tabs.dataSource')">
-          <div class="simple-data-config">
-            <!-- 数据映射测试组件的配置 -->
-            <div v-if="isDataMappingTestComponent" class="data-mapping-config">
-              <SimpleDataMappingForm
-                v-model="dataMappingConfig"
-                :component-requirements="componentRequirements"
-                :selected-widget="selectedWidget"
-                @config-update="handleDataMappingConfigUpdate"
-                @preview-update="handlePreviewUpdate"
-              />
+          <div class="v6-data-config">
+            <!-- V6: 直接检查组件定义中的dataSources -->
+            <div v-if="componentDefinition?.dataSources?.length > 0" class="v6-data-mapping">
+              <SimpleDataMappingForm v-model="dataMappingConfig" :definition="componentDefinition" />
             </div>
 
-            <!-- 其他组件的简单提示 -->
-            <div v-else class="other-component-hint">
-              <n-alert type="info" size="small" style="margin-bottom: 16px">
-                {{ $t('config.dataSource.simpleMappingHint') }}
-              </n-alert>
-
-              <n-empty description="当前组件暂不支持数据源配置" size="small">
+            <!-- 无数据源需求时的提示 -->
+            <div v-else class="no-data-source-hint">
+              <n-empty description="当前组件无需配置数据源" size="small">
                 <template #icon>
                   <n-icon><DocumentOutline /></n-icon>
                 </template>
                 <template #extra>
-                  <n-text depth="3">请选择 "数据映射测试" 组件来体验JSON路径映射功能</n-text>
+                  <n-text depth="3">组件使用静态配置或预设数据</n-text>
                 </template>
               </n-empty>
             </div>
@@ -196,8 +186,8 @@
 
 <script setup lang="ts">
 /**
- * 新配置面板组件
- * 整合四个配置表单，使用ConfigurationManager管理配置数据
+ * V6配置面板组件 - 纯粹的数据协调器
+ * 简化的配置面板，直接传递definition和配置数据，专注于协调数据流
  */
 
 import { ref, reactive, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
@@ -284,8 +274,10 @@ const importConfigText = ref('')
 // 多数据源数据状态
 const multiDataSourceData = ref<Record<string, any>>({})
 
-// 数据映射配置状态
-const dataMappingConfig = ref<any>({})
+// V6数据映射配置状态 - 初始化正确的结构
+const dataMappingConfig = ref<any>({
+  dataSourceBindings: {}
+})
 
 // 配置数据
 const baseConfig = ref<BaseConfiguration>({
@@ -322,44 +314,17 @@ const importExportTitle = computed(() => {
   return importExportMode.value === 'export' ? '导出配置' : '导入配置'
 })
 
-// 判断是否支持多数据源
-const supportsMultiDataSource = computed(() => {
-  if (!props.selectedWidget) return false
-
-  const componentId = props.selectedWidget.type
-  const requirements = getComponentDataRequirements(componentId)
-
-  console.log(`🔧 [ConfigurationPanel] 检查多数据源支持: ${componentId}`, requirements)
-
-  return requirements !== undefined
-})
-
-// 判断是否使用增强版数据源表单（向后兼容）
-const shouldUseEnhancedDataSourceForm = computed(() => {
-  if (!props.selectedWidget) return false
-
-  // 如果支持多数据源，不使用增强表单
-  if (supportsMultiDataSource.value) return false
-
-  // 支持数组数据的组件类型列表
-  const arrayDataComponents = [
-    'array-chart-test' // 新的数组图表测试组件
-  ]
-
-  const widgetType = props.selectedWidget.type
-
-  return arrayDataComponents.includes(widgetType)
-})
-
-// 判断是否为数据映射测试组件
-const isDataMappingTestComponent = computed(() => {
-  if (!props.selectedWidget) return false
-  return props.selectedWidget.type === 'data-mapping-test'
-})
-
-// 获取组件数据需求
-const componentRequirements = computed(() => {
+// V6: 获取组件定义 - 直接从组件元数据获取
+const componentDefinition = computed(() => {
   if (!props.selectedWidget) return null
+
+  // V6: 优先从Card2.1组件元数据获取定义
+  const card2Definition = props.selectedWidget.metadata?.card2Definition
+  if (card2Definition) {
+    return card2Definition
+  }
+
+  // 回退到传统的数据需求获取方式
   return getComponentDataRequirements(props.selectedWidget.type)
 })
 
@@ -411,27 +376,33 @@ watch(
   { deep: true }
 )
 
-// 🔥 新增：监听组件选中变化，自动应用已有的数据映射配置
+// V6: 监听数据映射配置变化，自动处理持久化和应用
 watch(
-  () => props.selectedWidget,
-  (newWidget, oldWidget) => {
-    if (newWidget && newWidget !== oldWidget) {
-      console.log('🎯 ConfigurationPanel - 组件选中变化:', {
-        newWidgetId: newWidget.id,
-        newWidgetType: newWidget.type,
-        hasDataMappingConfig: Object.keys(dataMappingConfig.value).length > 0
-      })
+  dataMappingConfig,
+  newConfig => {
+    if (!props.selectedWidget) return
 
-      // 如果是数据映射测试组件且有配置数据，自动应用
-      if (newWidget.type === 'data-mapping-test' && Object.keys(dataMappingConfig.value).length > 0) {
-        console.log('🚀 ConfigurationPanel - 组件选中后自动应用数据映射配置')
-        nextTick(() => {
-          emit('multi-data-source-config-update', newWidget.id, dataMappingConfig.value)
-        })
+    // 更新dataSourceConfig以保持持久化
+    if (newConfig && Object.keys(newConfig).length > 0) {
+      dataSourceConfig.value = {
+        type: 'data-mapping',
+        enabled: true,
+        config: { ...newConfig },
+        metadata: {
+          componentType: props.selectedWidget.type,
+          mappingType: 'json-path',
+          updatedAt: Date.now()
+        }
       }
+
+      console.log('🎯 [V6ConfigPanel] 数据映射配置变化，自动应用:', newConfig)
+      emit('multi-data-source-config-update', props.selectedWidget.id, newConfig)
+    } else {
+      // 重置为空的正确结构，不是null
+      dataSourceConfig.value = null
     }
   },
-  { immediate: true }
+  { deep: true }
 )
 
 // 生命周期
@@ -472,23 +443,12 @@ const loadWidgetConfiguration = async (widgetId: string) => {
       dataSourceConfig.value = config.dataSource ? { ...config.dataSource } : null
       interactionConfig.value = { ...config.interaction }
 
-      // 恢复数据映射配置
-      if (config.dataSource?.type === 'data-mapping' && config.dataSource?.config) {
-        // 使用nextTick确保组件已经完全挂载再恢复数据
-        nextTick(() => {
-          dataMappingConfig.value = { ...config.dataSource.config }
-          console.log('ConfigurationPanel - 恢复数据映射配置:', dataMappingConfig.value)
-
-          // 🔥 关键修复：配置恢复后自动应用到组件
-          if (props.selectedWidget && isDataMappingTestComponent.value) {
-            console.log('🚀 [自动应用] 配置恢复后应用到组件:', props.selectedWidget.id)
-            emit('multi-data-source-config-update', props.selectedWidget.id, dataMappingConfig.value)
-          }
-        })
+      // V6: 直接恢复数据映射配置
+      if (config.dataSource?.config) {
+        dataMappingConfig.value = { ...config.dataSource.config }
+        console.log('V6ConfigPanel - 恢复数据映射配置:', dataMappingConfig.value)
       } else {
-        // 没有data-mapping配置时重置
-        dataMappingConfig.value = {}
-        console.log('ConfigurationPanel - 重置数据映射配置')
+        dataMappingConfig.value = { dataSourceBindings: {} }
       }
 
       console.log('ConfigurationPanel - 配置加载完成:', config)
@@ -520,20 +480,11 @@ const handleConfigurationChange = (config: WidgetConfiguration) => {
     dataSourceConfig.value = config.dataSource ? { ...config.dataSource } : null
     interactionConfig.value = { ...config.interaction }
 
-    // 恢复数据映射配置
-    if (config.dataSource?.type === 'data-mapping' && config.dataSource?.config) {
-      nextTick(() => {
-        dataMappingConfig.value = { ...config.dataSource.config }
-        console.log('ConfigurationPanel - 从配置变化中恢复数据映射配置:', dataMappingConfig.value)
-
-        // 🔥 自动应用配置变化
-        if (props.selectedWidget && isDataMappingTestComponent.value) {
-          console.log('🚀 ConfigurationPanel - 自动应用配置变化的数据映射')
-          emit('multi-data-source-config-update', props.selectedWidget.id, dataMappingConfig.value)
-        }
-      })
+    // V6: 简化配置变化处理
+    if (config.dataSource?.config) {
+      dataMappingConfig.value = { ...config.dataSource.config }
     } else {
-      dataMappingConfig.value = {}
+      dataMappingConfig.value = { dataSourceBindings: {} }
     }
 
     console.log('ConfigurationPanel - 本地配置已更新')
@@ -595,9 +546,9 @@ const resetLocalConfiguration = () => {
   interactionConfig.value = {}
   configurationStatus.value = null
 
-  // 重置数据映射配置
-  dataMappingConfig.value = {}
-  console.log('🔧 [ConfigurationPanel] 本地配置已重置')
+  // V6: 重置数据映射配置为正确结构
+  dataMappingConfig.value = { dataSourceBindings: {} }
+  console.log('🔧 [V6ConfigPanel] 本地配置已重置')
 }
 
 /**
@@ -623,43 +574,9 @@ const handleDataSourceUpdate = (data: Record<string, any>) => {
   }
 }
 
-/**
- * 处理数据映射配置更新
- */
-const handleDataMappingConfigUpdate = (config: any) => {
-  console.log(`🔧 [ConfigurationPanel] 数据映射配置更新:`, config)
+// V6: 移除handleDataMappingConfigUpdate - 数据变化自动处理
 
-  // 更新本地配置
-  dataMappingConfig.value = { ...config }
-
-  // 将数据映射配置保存到dataSourceConfig中，以便持久化
-  dataSourceConfig.value = {
-    type: 'data-mapping',
-    enabled: true,
-    config: { ...config },
-    metadata: {
-      componentType: props.selectedWidget?.type,
-      mappingType: 'json-path',
-      updatedAt: Date.now()
-    }
-  }
-
-  console.log(`🔧 [ConfigurationPanel] 数据映射配置已保存到dataSourceConfig:`, dataSourceConfig.value)
-
-  // 发射事件给父组件，将配置应用到组件
-  if (props.selectedWidget) {
-    emit('multi-data-source-config-update', props.selectedWidget.id, config)
-    console.log(`🔧 [ConfigurationPanel] 发射数据映射配置更新事件: ${props.selectedWidget.id}`, config)
-  }
-}
-
-/**
- * 处理预览数据更新
- */
-const handlePreviewUpdate = (preview: any) => {
-  console.log(`🔧 [ConfigurationPanel] 映射预览更新:`, preview)
-  // 预览数据更新，可以用于实时展示映射效果
-}
+// V6: 移除handlePreviewUpdate - SimpleDataMappingForm内部处理预览
 
 /**
  * 切换高级模式
@@ -928,5 +845,20 @@ watch(
     align-items: flex-start;
     gap: 4px;
   }
+}
+
+/* V6样式 - 简化的数据配置区域 */
+.v6-data-config {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.v6-data-mapping {
+  padding: 4px;
+}
+
+.no-data-source-hint {
+  padding: 8px;
 }
 </style>

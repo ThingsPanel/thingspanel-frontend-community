@@ -332,6 +332,61 @@ export const COMPONENT_DATA_PRESETS = {
     .build(),
 
   /**
+   * 数据映射测试组件 - 支持JSON路径映射
+   */
+  DATA_MAPPING_TEST: createComponentDataRequirements('data-mapping-test', '数据映射测试')
+    .addDetailedDataSource({
+      id: 'arrayDataSource',
+      name: '数组数据源',
+      structureType: 'array',
+      required: false,
+      description: '用于数组数据JSON路径映射测试',
+      usage: '支持数组索引访问和字段路径映射，如: [0].name, [1].value',
+      fields: [
+        { name: 'field1', type: 'string', description: '字段1映射路径', required: false, example: '[0].name' },
+        { name: 'field2', type: 'string', description: '字段2映射路径', required: false, example: '[0].value' },
+        { name: 'field3', type: 'string', description: '字段3映射路径', required: false, example: '[0].status' }
+      ]
+    })
+    .addDetailedDataSource({
+      id: 'objectDataSource',
+      name: '对象数据源',
+      structureType: 'object',
+      required: false,
+      description: '用于对象数据JSON路径映射测试',
+      usage: '支持对象属性访问和嵌套路径映射，如: user.name, device.temperature',
+      fields: [
+        { name: 'fieldA', type: 'string', description: '字段A映射路径', required: false, example: 'user.name' },
+        { name: 'fieldB', type: 'string', description: '字段B映射路径', required: false, example: 'device.value' },
+        { name: 'fieldC', type: 'string', description: '字段C映射路径', required: false, example: 'location.city' }
+      ]
+    })
+    .setLimits(0, 2)
+    .build(),
+
+  /**
+   * 列表数据测试组件 - V5新增
+   */
+  LIST_DATA_TEST: createComponentDataRequirements('list-data-test', '列表数据测试')
+    .addDetailedDataSource({
+      id: 'listData',
+      name: '列表数据源',
+      structureType: 'array',
+      required: true,
+      description: '提供列表展示的数组数据',
+      usage: '显示设备、传感器或其他项目的列表信息',
+      fields: [
+        { name: 'name', type: 'string', description: '项目名称', required: false, example: '设备001' },
+        { name: 'value', type: 'number', description: '数值', required: false, example: 25.6 },
+        { name: 'status', type: 'string', description: '状态', required: false, example: 'online' },
+        { name: 'id', type: 'string', description: '唯一标识', required: false, example: 'dev001' },
+        { name: 'description', type: 'string', description: '描述信息', required: false, example: '温度传感器' }
+      ]
+    })
+    .setLimits(1, 1)
+    .build(),
+
+  /**
    * 数据列表组件 - 新增预设
    */
   DATA_LIST: createComponentDataRequirements('data-list', '数据列表')

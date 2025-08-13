@@ -84,6 +84,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "test_config-driven-data-source": () => import("@/views/test/config-driven-data-source/index.vue"),
   test: () => import("@/views/test/index.vue"),
   "test_v4-optimization-validation": () => import("@/views/test/v4-optimization-validation/index.vue"),
+  "test_v5-refactoring-validation": () => import("@/views/test/v5-refactoring-validation/index.vue"),
   "ultra-kanban_index": () => import("@/views/ultra-kanban/index/index.vue"),
   "ultra-kanban_kanban-details": () => import("@/views/ultra-kanban/kanban-details/index.vue"),
   "ultra-kanban_panel-preview": () => import("@/views/ultra-kanban/panel-preview/index.vue"),

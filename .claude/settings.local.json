@@ -55,7 +55,9 @@
       "Bash(rm:*)",
       "Bash(pnpm install:*)",
       "Bash(pnpm dev:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(copy SimpleDataMappingForm.vue SimpleDataMappingForm.v5.backup.vue)",
+      "Bash(echo:*)"
     ],
     "deny": []
   }

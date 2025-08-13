@@ -24,7 +24,94 @@ export const DataMappingTest: ComponentDefinition = {
       height: 300
     }
   },
-  // 组件属性定义（用于属性配置面板）
+
+  // ===== V6标准化定义 =====
+  // 静态参数定义
+  staticParams: [
+    {
+      key: 'title',
+      label: '组件标题',
+      type: 'text',
+      defaultValue: '数据映射测试',
+      description: '自定义组件标题文本'
+    },
+    {
+      key: 'showTitle',
+      label: '显示标题',
+      type: 'switch',
+      defaultValue: true,
+      description: '是否显示组件标题'
+    },
+    {
+      key: 'showDebugInfo',
+      label: '显示调试信息',
+      type: 'switch',
+      defaultValue: false,
+      description: '是否显示详细的调试信息'
+    }
+  ],
+
+  // 数据源需求定义
+  dataSources: [
+    {
+      key: 'arrayDataSource',
+      label: '数组数据源',
+      description: '用于数组数据JSON路径映射测试',
+      fieldsToMap: [
+        {
+          key: 'field1Path',
+          label: '字段1映射路径',
+          targetProperty: 'arrayMappings.field1Path',
+          description: '数组中第一个字段的JSON路径，如: [0].name',
+          placeholder: '如: [0].name'
+        },
+        {
+          key: 'field2Path',
+          label: '字段2映射路径',
+          targetProperty: 'arrayMappings.field2Path',
+          description: '数组中第二个字段的JSON路径，如: [0].value',
+          placeholder: '如: [0].value'
+        },
+        {
+          key: 'field3Path',
+          label: '字段3映射路径',
+          targetProperty: 'arrayMappings.field3Path',
+          description: '数组中第三个字段的JSON路径，如: [0].status',
+          placeholder: '如: [0].status'
+        }
+      ]
+    },
+    {
+      key: 'objectDataSource',
+      label: '对象数据源',
+      description: '用于对象数据JSON路径映射测试',
+      fieldsToMap: [
+        {
+          key: 'fieldAPath',
+          label: '字段A映射路径',
+          targetProperty: 'objectMappings.fieldAPath',
+          description: '对象中字段A的JSON路径，如: user.name',
+          placeholder: '如: user.name'
+        },
+        {
+          key: 'fieldBPath',
+          label: '字段B映射路径',
+          targetProperty: 'objectMappings.fieldBPath',
+          description: '对象中字段B的JSON路径，如: device.value',
+          placeholder: '如: device.value'
+        },
+        {
+          key: 'fieldCPath',
+          label: '字段C映射路径',
+          targetProperty: 'objectMappings.fieldCPath',
+          description: '对象中字段C的JSON路径，如: location.city',
+          placeholder: '如: location.city'
+        }
+      ]
+    }
+  ],
+
+  // 传统属性定义（向后兼容，保留）
   properties: {
     showTitle: {
       type: 'boolean',
