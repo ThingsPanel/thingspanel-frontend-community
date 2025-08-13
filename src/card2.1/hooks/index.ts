@@ -5,7 +5,9 @@
 
 export { useComponentTree } from './useComponentTree'
 export { useVisualEditorIntegration } from './useVisualEditorIntegration'
+export { useWidgetProps } from './useWidgetProps'
 
 // 导出类型
 export type { ComponentTreeOptions, FilteredComponentTree } from './useComponentTree'
 export type { VisualEditorIntegrationOptions, Card2Widget } from './useVisualEditorIntegration'
+export type { UseWidgetPropsReturn } from './useWidgetProps'

@@ -107,6 +107,8 @@ declare module "@elegant-router/types" {
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
     "test": "/test";
+    "test_config-driven-data-source": "/test/config-driven-data-source";
+    "test_v4-optimization-validation": "/test/v4-optimization-validation";
     "ultra-kanban": "/ultra-kanban";
     "ultra-kanban_index": "/ultra-kanban/index";
     "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details";
@@ -261,7 +263,9 @@ declare module "@elegant-router/types" {
     | "plugin_video"
     | "rule-engine"
     | "system-management-user_system-log"
+    | "test_config-driven-data-source"
     | "test"
+    | "test_v4-optimization-validation"
     | "ultra-kanban_index"
     | "ultra-kanban_kanban-details"
     | "ultra-kanban_panel-preview"

@@ -811,11 +811,31 @@ export const generatedRoutes: GeneratedRoute[] = [
   {
     name: 'test',
     path: '/test',
-    component: 'layout.base$view.test',
+    component: 'layout.base',
     meta: {
       title: 'test',
       i18nKey: 'route.test'
-    }
+    },
+    children: [
+      {
+        name: 'test_config-driven-data-source',
+        path: '/test/config-driven-data-source',
+        component: 'view.test_config-driven-data-source',
+        meta: {
+          title: 'test_config-driven-data-source',
+          i18nKey: 'route.test_config-driven-data-source'
+        }
+      },
+      {
+        name: 'test_v4-optimization-validation',
+        path: '/test/v4-optimization-validation',
+        component: 'view.test_v4-optimization-validation',
+        meta: {
+          title: 'test_v4-optimization-validation',
+          i18nKey: 'route.test_v4-optimization-validation'
+        }
+      }
+    ]
   },
   {
     name: 'ultra-kanban',

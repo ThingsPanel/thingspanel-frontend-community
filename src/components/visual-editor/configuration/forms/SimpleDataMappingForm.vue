@@ -19,12 +19,12 @@
       </n-card>
     </div>
 
-    <!-- JSON数据输入区域 -->
+    <!-- JSON数据输入区域 - 使用NCollapse优化布局 -->
     <div class="json-input-section">
       <n-card size="small" title="JSON数据输入" class="json-card">
-        <n-tabs type="line" size="small">
+        <n-collapse default-expanded-names="array">
           <!-- 数组数据源 -->
-          <n-tab-pane name="array" tab="数组数据源">
+          <n-collapse-item title="数组数据源" name="array">
             <div class="json-input-panel">
               <n-input
                 v-model:value="arrayJsonData"
@@ -46,10 +46,10 @@
                 </n-space>
               </div>
             </div>
-          </n-tab-pane>
+          </n-collapse-item>
 
           <!-- 对象数据源 -->
-          <n-tab-pane name="object" tab="对象数据源">
+          <n-collapse-item title="对象数据源" name="object">
             <div class="json-input-panel">
               <n-input
                 v-model:value="objectJsonData"
@@ -72,8 +72,8 @@
                 </n-space>
               </div>
             </div>
-          </n-tab-pane>
-        </n-tabs>
+          </n-collapse-item>
+        </n-collapse>
       </n-card>
     </div>
 
@@ -220,7 +220,7 @@
  */
 
 import { ref, computed, reactive, watch } from 'vue'
-import { NCard, NInput, NButton, NSpace, NIcon, NText, NTag, NTabs, NTabPane, useMessage } from 'naive-ui'
+import { NCard, NInput, NButton, NSpace, NIcon, NText, NTag, NCollapse, NCollapseItem, useMessage } from 'naive-ui'
 import {
   ListOutline,
   CodeWorkingOutline,
