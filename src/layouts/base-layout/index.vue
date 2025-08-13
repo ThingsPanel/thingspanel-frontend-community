@@ -214,7 +214,7 @@ onMounted(() => {
   <!-- 移动端布局 -->
   <div v-if="appStore.isMobile" class="mobile-layout">
     <!-- iOS风格头部 -->
-    <header class="ios-header">
+    <header v-if="0" class="ios-header">
       <!-- 返回按钮 -->
       <div 
         v-if="showBackButton" 
@@ -340,7 +340,7 @@ onMounted(() => {
 
 .mobile-main {
   @apply flex-1 overflow-auto;
-  margin-top: 44px;
+
   @include scrollbar();
 }
 
