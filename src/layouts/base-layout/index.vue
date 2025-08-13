@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { computed, h, onMounted } from 'vue'
-import { NButton } from 'naive-ui'
+import { NButton, NIcon } from 'naive-ui'
+import { ArrowBack } from '@vicons/ionicons5'
 import { AdminLayout, LAYOUT_SCROLL_EL_ID } from '@sa/materials'
 import type { LayoutMode } from '@sa/materials'
 import { EventSourcePolyfill } from 'event-source-polyfill'
 import { useAppStore } from '@/store/modules/app'
 import { useThemeStore } from '@/store/modules/theme'
+import { useRouteStore } from '@/store/modules/route'
 import { localStg } from '@/utils/storage'
 import deviceStatusMp3 from '@/assets/audio/device-status.mp3'
 import { useRouterPush } from '@/hooks/common/router'
+import { useRouter, useRoute } from 'vue-router'
 import { createLogger } from '@/utils/logger'
 import { $t } from '@/locales'
 import GlobalHeader from '../modules/global-header/index.vue'
@@ -27,6 +30,9 @@ defineOptions({
 
 const appStore = useAppStore()
 const themeStore = useThemeStore()
+const routeStore = useRouteStore()
+const router = useRouter()
+const route = useRoute()
 
 const layoutMode = computed(() => {
   const vertical: LayoutMode = 'vertical'
@@ -86,6 +92,30 @@ function getSiderCollapsedWidth() {
     w += mixChildMenuWidth
   }
   return w
+}
+
+// 移动端动态标题
+const mobileTitle = computed(() => {
+  // 使用Vue Router的当前路由
+  if (route.meta?.i18nKey) {
+    return $t(route.meta.i18nKey as string)
+  }
+  if (route.meta?.title) {
+    return route.meta.title as string
+  }
+  return 'ThingsPanel'
+})
+
+// 是否显示返回按钮
+const showBackButton = computed(() => {
+  // 首页不显示返回按钮
+  const noBackRoutes = ['home', 'root', 'login']
+  return !noBackRoutes.includes(route.name as string)
+})
+
+// 返回功能
+function handleBack() {
+  router.go(-1)
 }
 
 setupMixMenuContext()
@@ -181,7 +211,36 @@ onMounted(() => {
 </script>
 
 <template>
+  <!-- 移动端布局 -->
+  <div v-if="appStore.isMobile" class="mobile-layout">
+    <!-- iOS风格头部 -->
+    <header class="ios-header">
+      <!-- 返回按钮 -->
+      <div 
+        v-if="showBackButton" 
+        class="ios-back-btn" 
+        @click="handleBack"
+      >
+        <NIcon size="20">
+          <ArrowBack />
+        </NIcon>
+      </div>
+      
+      <!-- 标题 -->
+      <h1 class="ios-title">{{ mobileTitle }}</h1>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main :id="LAYOUT_SCROLL_EL_ID" class="mobile-main">
+      <GlobalContent :show-padding="true" />
+    </main>
+
+    <ThemeDrawer />
+  </div>
+
+  <!-- 桌面端布局 -->
   <AdminLayout
+    v-else
     v-model:sider-collapse="appStore.siderCollapse"
     :mode="layoutMode"
     :scroll-el-id="LAYOUT_SCROLL_EL_ID"
@@ -220,5 +279,84 @@ onMounted(() => {
 <style lang="scss">
 #__SCROLL_EL_ID__ {
   @include scrollbar();
+}
+
+// 移动端布局样式
+.mobile-layout {
+  @apply h-screen flex flex-col bg-layout;
+}
+
+// iOS风格头部
+.ios-header {
+  @apply fixed top-0 left-0 right-0 z-50 relative;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+
+  .ios-back-btn {
+    @apply absolute left-0 top-0 h-full flex items-center justify-center;
+    width: 44px;
+    background: none;
+    border: none;
+    color: #007AFF;
+    cursor: pointer;
+    padding: 0;
+    z-index: 10;
+    pointer-events: auto;
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.6;
+    }
+
+    &:active {
+      opacity: 0.3;
+    }
+
+    // 确保触摸区域足够大
+    &::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      background: transparent;
+    }
+  }
+
+  .ios-title {
+    @apply absolute inset-0 flex items-center justify-center;
+    font-size: 17px;
+    font-weight: 600;
+    color: #000;
+    margin: 0;
+    // 为返回按钮留出空间
+    padding: 0 44px;
+  }
+}
+
+.mobile-main {
+  @apply flex-1 overflow-auto;
+  margin-top: 44px;
+  @include scrollbar();
+}
+
+// 深色模式支持
+[data-theme='dark'] {
+  .ios-header {
+    background: rgba(0, 0, 0, 0.8);
+    border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+    
+    .ios-back-btn {
+      color: #0A84FF;
+    }
+    
+    .ios-title {
+      color: #fff;
+    }
+  }
 }
 </style>

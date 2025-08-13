@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 // import { useMessage } from "naive-ui";
-import { createServiceDrop, getServiceAccessForm, putServiceDrop } from '@/service/api/plugin'
+import { createServiceDrop, getServiceAccessForm, putServiceDrop, getServiceListDrop } from '@/service/api/plugin'
 import { $t } from '@/locales'
 import FormInput from './form.vue'
 
@@ -81,7 +81,19 @@ const submitSevice: () => void = async () => {
     serviceModals.value = false
 
     if (form.value.auth_type === 'auto') {
-      // 自动模式，关闭当前弹窗，并打开配置弹窗
+      // 自动模式，调用设备列表接口（与手动模式一样）
+      try {
+        await getServiceListDrop({
+          voucher: form.value.voucher,
+          service_type: '', // 可能需要根据实际情况调整
+          page: 1,
+          page_size: 10
+        })
+      } catch (error) {
+        console.log('Auto mode device list call:', error)
+      }
+      
+      // 关闭当前弹窗，并打开配置弹窗
       const id = isEdit.value ? form.value.id : data.data.id
       emit(
         'isEdit',
