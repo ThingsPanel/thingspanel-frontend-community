@@ -86,6 +86,13 @@
               <n-button size="tiny" @click="formatJsonValue(dataSource.key)">格式化</n-button>
               <n-button size="tiny" @click="loadSampleData(dataSource.key)">示例数据</n-button>
             </n-space>
+            
+            <!-- 数据过滤器 -->
+            <DataFilterInput
+              v-model="filterPaths[dataSource.key]"
+              :source-data="getParsedJsonValue(dataSource.key)"
+              @filter-change="(filteredData) => handleFilterResult(dataSource.key, filteredData)"
+            />
           </div>
 
           <!-- HTTP 数据配置（暂时简化） -->
@@ -114,6 +121,7 @@ import {
   useMessage
 } from 'naive-ui'
 import { configurationManager } from '../ConfigurationManager'
+import DataFilterInput from './DataFilterInput.vue'
 
 interface DataSource {
   key: string
@@ -145,6 +153,9 @@ const dataSourceTypes = reactive<Record<string, 'json' | 'http'>>({})
 // 每个数据源的 JSON 数据
 const jsonValues = reactive<Record<string, string>>({})
 
+// 每个数据源的过滤路径
+const filterPaths = reactive<Record<string, string>>({})
+
 // 获取默认数据
 function getDefaultData(dataSourceKey: string) {
   if (dataSourceKey.includes('array') || dataSourceKey.includes('list')) {
@@ -162,20 +173,72 @@ function getDefaultData(dataSourceKey: string) {
   }
 }
 
-// 更新 JSON 值（需要在其他函数之前定义）
+// 应用数据过滤器
+const applyDataFilter = (data: any, path: string): any => {
+  // 如果路径为空或者是 $，返回完整数据
+  if (!path || path === '$') {
+    return data
+  }
+  
+  try {
+    // 简单的 JSONPath 实现
+    let current = data
+    
+    // 移除开头的 $ 符号
+    const cleanPath = path.startsWith('$') ? path.substring(1) : path
+    
+    if (cleanPath === '') {
+      return current
+    }
+    
+    // 按点分割路径
+    const parts = cleanPath.split('.').filter(part => part !== '')
+    
+    for (const part of parts) {
+      if (current === null || current === undefined) {
+        console.warn(`[DataSourceConfigForm] 路径 "${part}" 处数据为空`)
+        return null
+      }
+      
+      // 处理数组索引
+      if (part.includes('[') && part.includes(']')) {
+        const [field, indexPart] = part.split('[')
+        const index = parseInt(indexPart.replace(']', ''), 10)
+        
+        if (field) {
+          current = current[field]
+        }
+        
+        if (Array.isArray(current) && index >= 0 && index < current.length) {
+          current = current[index]
+        } else {
+          console.warn(`[DataSourceConfigForm] 数组索引 ${index} 无效`)
+          return null
+        }
+      } else {
+        // 普通字段访问
+        if (typeof current === 'object' && current !== null && part in current) {
+          current = current[part]
+        } else {
+          console.warn(`[DataSourceConfigForm] 字段 "${part}" 不存在`)
+          return null
+        }
+      }
+    }
+    
+    return current
+  } catch (error) {
+    console.warn(`[DataSourceConfigForm] 路径解析错误:`, error)
+    return data // 出错时返回原始数据
+  }
+}
+
+// 更新 JSON 值（现在主要用于保存数据，过滤由 DataFilterInput 组件处理）
 const updateJsonValue = (key: string, value: string) => {
   jsonValues[key] = value
-
-  try {
-    const parsedData = JSON.parse(value)
-    // 发射数据到 ConfigurationPanel，让它通过 ConfigurationManager 统一管理
-    const eventName = `update:${key}`
-    emit(eventName, parsedData)
-    console.log(`📤 [DataSourceConfigForm] 发射数据源 ${key} 数据:`, parsedData)
-  } catch (error) {
-    // JSON 格式错误，静默处理（用户可能还在输入）
-    console.log(`⚠️ [DataSourceConfigForm] JSON 解析错误 (${key}):`, error)
-  }
+  console.log(`📝 [DataSourceConfigForm] 更新数据源 ${key} JSON 数据`)
+  
+  // 不再直接发射，让 DataFilterInput 组件处理过滤和发射
 }
 
 // 初始化数据源状态
@@ -184,6 +247,7 @@ const initializeDataSources = () => {
   props.dataSources.forEach(dataSource => {
     dataSourceTypes[dataSource.key] = 'json' // 默认为 JSON
     jsonValues[dataSource.key] = JSON.stringify(getDefaultData(dataSource.key), null, 2)
+    filterPaths[dataSource.key] = '' // 默认无过滤路径
   })
 }
 
@@ -214,7 +278,10 @@ const loadSavedDataFromManager = () => {
     Object.entries(config.dataSource.config.dataSourceBindings).forEach(([key, binding]: [string, any]) => {
       if (binding.rawData && jsonValues[key] !== undefined) {
         jsonValues[key] = binding.rawData
+        // 恢复过滤路径
+        filterPaths[key] = binding.filterPath || ''
         console.log(`✅ [DataSourceConfigForm] 恢复数据源 ${key}:`, binding.rawData.substring(0, 100))
+        console.log(`✅ [DataSourceConfigForm] 恢复过滤路径 ${key}:`, binding.filterPath || '(无过滤)')
         hasLoadedData = true
       }
     })
@@ -291,6 +358,36 @@ const loadSampleData = (key: string) => {
   message.success('示例数据加载成功')
   // 加载示例数据后立即发射
   updateJsonValue(key, jsonValues[key])
+}
+
+// 处理过滤路径变化
+const handleFilterPathChange = (key: string, path: string) => {
+  filterPaths[key] = path
+  console.log(`🔧 [DataSourceConfigForm] 数据源 ${key} 过滤路径变更为: "${path}"`)
+  
+  // 重新应用过滤器并发射数据
+  if (jsonValues[key]) {
+    updateJsonValue(key, jsonValues[key])
+  }
+}
+
+// 获取解析后的 JSON 值用于预览
+const getParsedJsonValue = (key: string): any => {
+  try {
+    const jsonStr = jsonValues[key] || '{}'
+    return JSON.parse(jsonStr)
+  } catch (error) {
+    return null
+  }
+}
+
+// 处理过滤结果
+const handleFilterResult = (key: string, filteredData: any) => {
+  console.log(`🔧 [DataSourceConfigForm] 数据源 ${key} 过滤结果:`, filteredData)
+  
+  // 直接发射过滤后的数据
+  const eventName = `update:${key}`
+  emit(eventName, filteredData)
 }
 
 // 递归更新问题已通过 restoreSavedValues 方法解决，不再需要监听 initialData

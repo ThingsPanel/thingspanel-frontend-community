@@ -827,6 +827,24 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'test_data-filter-test',
+        path: '/test/data-filter-test',
+        component: 'view.test_data-filter-test',
+        meta: {
+          title: 'test_data-filter-test',
+          i18nKey: 'route.test_data-filter-test'
+        }
+      },
+      {
+        name: 'test_editor-integration',
+        path: '/test/editor-integration',
+        component: 'view.test_editor-integration',
+        meta: {
+          title: 'test_editor-integration',
+          i18nKey: 'route.test_editor-integration'
+        }
+      },
+      {
         name: 'test_v4-optimization-validation',
         path: '/test/v4-optimization-validation',
         component: 'view.test_v4-optimization-validation',

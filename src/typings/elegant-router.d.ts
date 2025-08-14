@@ -108,6 +108,8 @@ declare module "@elegant-router/types" {
     "system-management-user_system-log": "/system-management-user/system-log";
     "test": "/test";
     "test_config-driven-data-source": "/test/config-driven-data-source";
+    "test_data-filter-test": "/test/data-filter-test";
+    "test_editor-integration": "/test/editor-integration";
     "test_v4-optimization-validation": "/test/v4-optimization-validation";
     "test_v5-refactoring-validation": "/test/v5-refactoring-validation";
     "ultra-kanban": "/ultra-kanban";
@@ -265,6 +267,8 @@ declare module "@elegant-router/types" {
     | "rule-engine"
     | "system-management-user_system-log"
     | "test_config-driven-data-source"
+    | "test_data-filter-test"
+    | "test_editor-integration"
     | "test"
     | "test_v4-optimization-validation"
     | "test_v5-refactoring-validation"

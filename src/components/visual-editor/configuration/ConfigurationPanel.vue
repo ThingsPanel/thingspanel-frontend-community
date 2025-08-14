@@ -608,7 +608,8 @@ const handleDynamicDataSourceUpdate = (key: string, data: any) => {
     Object.entries(multiDataSourceData.value).forEach(([dataSourceKey, data]) => {
       dataSourceBindings[dataSourceKey] = {
         rawData: JSON.stringify(data), // Card2Wrapper 期望的 rawData 字段
-        fieldMappings: {} // 字段映射（暂时为空）
+        fieldMappings: {}, // 字段映射（暂时为空）
+        filterPath: '', // 过滤路径（暂时为空，后续扩展）
       }
     })
 
