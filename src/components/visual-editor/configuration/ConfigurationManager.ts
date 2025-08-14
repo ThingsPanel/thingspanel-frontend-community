@@ -120,9 +120,15 @@ export class ConfigurationManager implements IConfigurationManager {
     }
 
     // 深度合并配置
+    const currentSectionValue = currentConfig[section]
+    const mergedSectionValue =
+      currentSectionValue !== null && currentSectionValue !== undefined
+        ? this.deepMerge(currentSectionValue, config)
+        : config // 如果当前值是 null 或 undefined，直接使用新配置
+
     const updatedConfig = {
       ...currentConfig,
-      [section]: this.deepMerge(currentConfig[section], config),
+      [section]: mergedSectionValue,
       metadata: {
         ...currentConfig.metadata,
         updatedAt: Date.now()
@@ -222,7 +228,11 @@ export class ConfigurationManager implements IConfigurationManager {
 
       // 数据源配置验证
       if (config.dataSource) {
-        if (!['static', 'api', 'websocket', 'multi-source', 'data-mapping'].includes(config.dataSource.type)) {
+        if (
+          !['static', 'api', 'websocket', 'multi-source', 'data-mapping', 'data-source-bindings'].includes(
+            config.dataSource.type
+          )
+        ) {
           errors?.push({
             field: 'dataSource.type',
             message: '无效的数据源类型'
@@ -253,6 +263,26 @@ export class ConfigurationManager implements IConfigurationManager {
               warnings?.push({
                 field: 'dataSource.config',
                 message: '建议配置至少一个数据源（数组或对象）'
+              })
+            }
+          }
+        }
+
+        // 验证数据源绑定配置（简化验证，主要用于演示）
+        if (config.dataSource.type === 'data-source-bindings') {
+          if (!config.dataSource.config) {
+            // 对于演示组件，config 可以为空，只给出警告
+            warnings?.push({
+              field: 'dataSource.config',
+              message: '数据源绑定配置为空，组件将使用默认数据'
+            })
+          } else if (config.dataSource.config.dataSourceBindings) {
+            // 检查绑定配置的基本结构
+            const bindings = config.dataSource.config.dataSourceBindings
+            if (typeof bindings !== 'object') {
+              warnings?.push({
+                field: 'dataSource.config.dataSourceBindings',
+                message: '数据源绑定应该是一个对象'
               })
             }
           }

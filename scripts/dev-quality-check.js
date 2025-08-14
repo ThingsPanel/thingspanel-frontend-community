@@ -5,9 +5,9 @@
  * 确保代码提交前符合所有质量标准
  */
 
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
+import { execSync } from 'child_process'
+import fs from 'fs'
+import path from 'path'
 
 // 颜色输出
 const colors = {

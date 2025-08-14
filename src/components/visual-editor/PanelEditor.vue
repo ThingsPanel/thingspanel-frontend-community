@@ -1008,7 +1008,11 @@ const restoreMultiDataSourceConfigs = () => {
       console.log(`📋 [PanelEditor] 组件 ${widgetId} 的完整配置:`, configuration)
 
       // 检查是否有V6数据源配置
-      if (configuration?.dataSource?.type === 'data-mapping' && configuration.dataSource.config) {
+      if (
+        (configuration?.dataSource?.type === 'data-mapping' ||
+          configuration?.dataSource?.type === 'data-source-bindings') &&
+        configuration.dataSource.config
+      ) {
         restored[widgetId] = configuration.dataSource.config
         restoredCount++
 
@@ -1047,13 +1051,42 @@ const restoreMultiDataSourceConfigs = () => {
       restoredData: restored
     })
 
-    // 🔥 关键修复：主动触发所有恢复的组件的数据源配置更新事件
-    console.log('🔄 [PanelEditor] 主动触发恢复组件的数据源配置更新...')
+    // 🔥 关键修复：同时恢复数据源数据和配置
+    console.log('🔄 [PanelEditor] 恢复数据源数据和配置...')
+
+    const restoredData: Record<string, any> = {}
+
     Object.entries(restored).forEach(([widgetId, config]) => {
       console.log(`📤 [PanelEditor] 触发组件 ${widgetId} 的数据源配置更新:`, config)
+
+      // 从配置中恢复数据源数据
+      if (config.dataSourceBindings) {
+        const widgetData: Record<string, any> = {}
+        Object.entries(config.dataSourceBindings).forEach(([dataSourceKey, binding]: [string, any]) => {
+          if (binding.rawData) {
+            try {
+              widgetData[dataSourceKey] = JSON.parse(binding.rawData)
+            } catch (error) {
+              console.warn(`⚠️ [PanelEditor] 解析组件 ${widgetId} 数据源 ${dataSourceKey} 失败:`, error)
+            }
+          }
+        })
+
+        if (Object.keys(widgetData).length > 0) {
+          restoredData[widgetId] = widgetData
+          console.log(`📊 [PanelEditor] 恢复组件 ${widgetId} 的数据:`, widgetData)
+        }
+      }
+
       // 触发配置更新事件，让组件立即接收到配置
       handleMultiDataSourceConfigUpdate(widgetId, config)
     })
+
+    // 批量更新 multiDataSourceStore
+    if (Object.keys(restoredData).length > 0) {
+      multiDataSourceStore.value = { ...multiDataSourceStore.value, ...restoredData }
+      console.log(`✅ [PanelEditor] 数据源数据恢复完成:`, restoredData)
+    }
 
     console.log('✅ [PanelEditor] 数据源配置更新事件已全部触发')
   } else {

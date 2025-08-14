@@ -57,7 +57,10 @@
       "Bash(pnpm dev:*)",
       "Bash(git add:*)",
       "Bash(copy SimpleDataMappingForm.vue SimpleDataMappingForm.v5.backup.vue)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(del \"E:\\wbh\\things2\\thingspanel-frontend-community\\src\\components\\visual-editor\\configuration\\forms\\SimpleDataMappingForm.vue.bat\")",
+      "Bash(chmod:*)",
+      "Bash(pnpm prepare:*)"
     ],
     "deny": []
   }

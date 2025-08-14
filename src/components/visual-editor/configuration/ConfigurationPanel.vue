@@ -86,9 +86,15 @@
         <!-- V6数据源配置标签页 - 纯粹的数据协调 -->
         <n-tab-pane name="dataSource" :tab="$t('config.tabs.dataSource')">
           <div class="v6-data-config">
-            <!-- V6: 直接检查组件定义中的dataSources -->
+            <!-- V6: 检查组件定义中的dataSources -->
             <div v-if="componentDefinition?.dataSources?.length > 0" class="v6-data-mapping">
-              <SimpleDataMappingForm v-model="dataMappingConfig" :definition="componentDefinition" />
+              <!-- 新的DataSourceConfigForm组件 -->
+              <DataSourceConfigForm
+                ref="dataSourceFormRef"
+                :data-sources="componentDefinition.dataSources"
+                :selected-widget-id="selectedWidget?.id"
+                v-on="getDataSourceEventListeners()"
+              />
             </div>
 
             <!-- 无数据源需求时的提示 -->
@@ -207,6 +213,7 @@ import {
   NInput,
   NAlert,
   NEmpty,
+  NDivider,
   useMessage
 } from 'naive-ui'
 import { Settings as SettingsIcon, DocumentOutline } from '@vicons/ionicons5'
@@ -215,7 +222,7 @@ import { Settings as SettingsIcon, DocumentOutline } from '@vicons/ionicons5'
 import BaseConfigForm from './forms/BaseConfigForm.vue'
 import ComponentConfigForm from './forms/ComponentConfigForm.vue'
 import InteractionConfigForm from './forms/InteractionConfigForm.vue'
-import SimpleDataMappingForm from './forms/SimpleDataMappingForm.vue'
+import DataSourceConfigForm from './forms/DataSourceConfigForm.vue'
 
 // 导入配置管理器和类型
 import { configurationManager } from './ConfigurationManager'
@@ -278,6 +285,9 @@ const multiDataSourceData = ref<Record<string, any>>({})
 const dataMappingConfig = ref<any>({
   dataSourceBindings: {}
 })
+
+// DataSourceConfigForm 组件引用
+const dataSourceFormRef = ref<any>(null)
 
 // 配置数据
 const baseConfig = ref<BaseConfiguration>({
@@ -451,6 +461,9 @@ const loadWidgetConfiguration = async (widgetId: string) => {
         dataMappingConfig.value = { dataSourceBindings: {} }
       }
 
+      // V6: DataSourceConfigForm 现在自己负责数据回显，不需要手动调用
+      // 只需要传递 selectedWidgetId，组件会自动从 ConfigurationManager 加载数据
+
       console.log('ConfigurationPanel - 配置加载完成:', config)
     }
   } catch (error) {
@@ -572,6 +585,95 @@ const handleDataSourceUpdate = (data: Record<string, any>) => {
     emit('multi-data-source-update', props.selectedWidget.id, data)
     console.log(`🔧 [ConfigurationPanel] 发射多数据源更新事件: ${props.selectedWidget.id}`, data)
   }
+}
+
+/**
+ * 处理动态数据源更新
+ */
+const handleDynamicDataSourceUpdate = (key: string, data: any) => {
+  console.log(`🔧 [ConfigurationPanel] 动态数据源更新 ${key}:`, data)
+
+  // 更新本地数据状态
+  multiDataSourceData.value = {
+    ...multiDataSourceData.value,
+    [key]: data
+  }
+
+  // 同时更新 ConfigurationManager 中的数据源配置
+  if (props.selectedWidget) {
+    // 创建符合 Card2Wrapper 期望的数据结构
+    const dataSourceBindings: Record<string, any> = {}
+
+    // 将每个数据源的数据包装成 Card2Wrapper 期望的格式
+    Object.entries(multiDataSourceData.value).forEach(([dataSourceKey, data]) => {
+      dataSourceBindings[dataSourceKey] = {
+        rawData: JSON.stringify(data), // Card2Wrapper 期望的 rawData 字段
+        fieldMappings: {} // 字段映射（暂时为空）
+      }
+    })
+
+    // 创建或更新数据源配置
+    const dataSourceConfig: DataSourceConfiguration = {
+      type: 'data-source-bindings',
+      enabled: true,
+      config: {
+        dataSourceBindings
+      },
+      metadata: {
+        updatedAt: Date.now()
+      }
+    }
+
+    // 更新 ConfigurationManager
+    configurationManager.updateConfiguration(props.selectedWidget.id, 'dataSource', dataSourceConfig)
+
+    // 发射事件给父组件
+    emit('multi-data-source-update', props.selectedWidget.id, multiDataSourceData.value)
+    console.log(`🔧 [ConfigurationPanel] 发射动态数据源更新事件: ${props.selectedWidget.id}`, { [key]: data })
+    console.log(`🔧 [ConfigurationPanel] 已更新 ConfigurationManager 数据源配置`)
+  }
+}
+
+/**
+ * 获取初始数据源值（从已保存的配置中恢复）
+ */
+const getInitialDataSourceValues = () => {
+  if (!props.selectedWidget) {
+    return {}
+  }
+
+  const config = configurationManager.getConfiguration(props.selectedWidget.id)
+  const initialData: Record<string, string> = {}
+
+  if (config?.dataSource?.type === 'data-source-bindings' && config.dataSource.config?.dataSourceBindings) {
+    Object.entries(config.dataSource.config.dataSourceBindings).forEach(([key, binding]: [string, any]) => {
+      if (binding.rawData) {
+        initialData[key] = binding.rawData // 直接使用保存的 JSON 字符串
+      }
+    })
+  }
+
+  console.log('🔍 [ConfigurationPanel] 获取初始数据源值:', initialData)
+  return initialData
+}
+
+/**
+ * 获取动态数据源事件监听器
+ */
+const getDataSourceEventListeners = () => {
+  const listeners: Record<string, Function> = {}
+
+  if (componentDefinition.value?.dataSources) {
+    componentDefinition.value.dataSources.forEach(dataSource => {
+      const eventName = `update:${dataSource.key}`
+      listeners[eventName] = (data: any) => {
+        handleDynamicDataSourceUpdate(dataSource.key, data)
+      }
+    })
+  }
+
+  console.log('🔧 [ConfigurationPanel] 生成动态事件监听器:', Object.keys(listeners))
+  return listeners
 }
 
 // V6: 移除handleDataMappingConfigUpdate - 数据变化自动处理

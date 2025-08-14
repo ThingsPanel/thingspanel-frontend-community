@@ -169,12 +169,5 @@
     "vue-eslint-parser": "9.4.2",
     "vue-tsc": "^2.0.21"
   },
-  "simple-git-hooks": {
-    "commit-msg": "pnpm sa git-commit-verify",
-    "pre-commit": "pnpm typecheck && pnpm lint-staged"
-  },
-  "lint-staged": {
-    "*.{ts,vue}": "eslint --cache --fix"
-  },
   "website": "http://23.94.59.38:8089/"
 }
