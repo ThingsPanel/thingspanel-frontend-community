@@ -179,12 +179,12 @@ watch(
 // 🔥 架构修复：Card2Wrapper只负责传递，不做数据转换
 const getDataSourcesForComponent = () => {
   // 🔥 修复：检查哪个有真实数据，不只是检查存在性
-  const dataSourcesConfigHasData = props.dataSourcesConfig?.dataSourceBindings && 
-    Object.keys(props.dataSourcesConfig.dataSourceBindings).length > 0
-  
-  const dataSourcesHasData = props.dataSources?.dataSourceBindings && 
-    Object.keys(props.dataSources.dataSourceBindings).length > 0
-  
+  const dataSourcesConfigHasData =
+    props.dataSourcesConfig?.dataSourceBindings && Object.keys(props.dataSourcesConfig.dataSourceBindings).length > 0
+
+  const dataSourcesHasData =
+    props.dataSources?.dataSourceBindings && Object.keys(props.dataSources.dataSourceBindings).length > 0
+
   if (dataSourcesConfigHasData) {
     console.log('🔧 [Card2Wrapper] 传递 dataSourcesConfig 到组件', {
       bindingKeys: Object.keys(props.dataSourcesConfig.dataSourceBindings),
@@ -198,10 +198,14 @@ const getDataSourcesForComponent = () => {
     })
     return props.dataSources
   }
-  
+
   console.log('🔧 [Card2Wrapper] 无有效数据源配置', {
-    dataSourcesConfigKeys: props.dataSourcesConfig?.dataSourceBindings ? Object.keys(props.dataSourcesConfig.dataSourceBindings) : 'no bindings',
-    dataSourcesKeys: props.dataSources?.dataSourceBindings ? Object.keys(props.dataSources.dataSourceBindings) : 'no bindings'
+    dataSourcesConfigKeys: props.dataSourcesConfig?.dataSourceBindings
+      ? Object.keys(props.dataSourcesConfig.dataSourceBindings)
+      : 'no bindings',
+    dataSourcesKeys: props.dataSources?.dataSourceBindings
+      ? Object.keys(props.dataSources.dataSourceBindings)
+      : 'no bindings'
   })
   return null
 }
@@ -242,7 +246,7 @@ onMounted(() => {
   console.log('🔧 [Card2Wrapper] 传递给组件的数据源:', dataSourcesForComponent)
   console.log('🔧 [Card2Wrapper] 组件类型:', props.componentType)
   console.log('🔧 [Card2Wrapper] 组件实例:', componentToRender.value)
-  
+
   if (!componentToRender.value) {
     loadComponent()
   }

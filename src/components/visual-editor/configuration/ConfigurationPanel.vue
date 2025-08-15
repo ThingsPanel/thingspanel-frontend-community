@@ -453,7 +453,7 @@ watch(
   dataMappingConfig,
   newConfig => {
     if (!props.selectedWidget) return
-    
+
     // 🔥 修复：防止配置加载时触发不必要的事件
     if (isUpdatingFromManager) {
       console.log('🔧 [V6ConfigPanel] 配置加载中，跳过自动应用:', newConfig)
@@ -731,7 +731,7 @@ const getInitialDataSourceValues = () => {
  */
 const handleDataSourceConfigUpdate = (config: any) => {
   console.log('🔧 [ConfigurationPanel] 处理数据源配置更新:', config)
-  
+
   if (props.selectedWidget && config.dataSourceBindings) {
     // 🔥 修复：发送正确的事件名
     console.log('🔧 [ConfigurationPanel] 发送配置更新事件:', 'multi-data-source-config-update')
@@ -744,7 +744,7 @@ const handleDataSourceConfigUpdate = (config: any) => {
  */
 const handleCurrentDataRequest = (widgetId: string) => {
   console.log('🔄 [ConfigurationPanel] 处理当前数据请求:', widgetId)
-  
+
   // 请求父组件（PanelEditor）提供当前运行时数据
   emit('request-current-data', widgetId)
 }
@@ -754,13 +754,13 @@ const handleCurrentDataRequest = (widgetId: string) => {
  */
 const getDataSourceEventListeners = () => {
   const listeners: Record<string, Function> = {}
-  
+
   // 监听通用的 update 事件（来自新的 DataSourceConfigForm）
   listeners['update'] = (config: any) => {
     console.log('🔧 [ConfigurationPanel] 接收到数据源配置更新:', config)
     handleDataSourceConfigUpdate(config)
   }
-  
+
   // 🔥 新增：监听请求当前数据事件
   listeners['request-current-data'] = (widgetId: string) => {
     console.log('🔄 [ConfigurationPanel] 收到当前数据请求:', widgetId)

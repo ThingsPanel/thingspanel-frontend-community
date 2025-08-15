@@ -68,20 +68,28 @@ const arrayData = computed(() => {
 })
 
 // 调试：监听原始数据源变化
-watch(() => props.rawDataSources, (newDataSources) => {
-  console.log('🔧 [DEBUG-Component] DualDataTest 接收到原始数据源:', newDataSources)
-  console.log('🔧 [DEBUG-Component] 解析后的数据:', {
-    objectData: objectData.value,
-    arrayData: arrayData.value,
-    hasObjectData: !!objectData.value,
-    hasArrayData: !!arrayData.value
-  })
-}, { deep: true, immediate: true })
+watch(
+  () => props.rawDataSources,
+  newDataSources => {
+    console.log('🔧 [DEBUG-Component] DualDataTest 接收到原始数据源:', newDataSources)
+    console.log('🔧 [DEBUG-Component] 解析后的数据:', {
+      objectData: objectData.value,
+      arrayData: arrayData.value,
+      hasObjectData: !!objectData.value,
+      hasArrayData: !!arrayData.value
+    })
+  },
+  { deep: true, immediate: true }
+)
 
 // 额外调试：监听所有props变化
-watch(() => props, (newProps) => {
-  console.log('🔧 [DEBUG-Component] DualDataTest 所有props变化:', newProps)
-}, { deep: true, immediate: true })
+watch(
+  () => props,
+  newProps => {
+    console.log('🔧 [DEBUG-Component] DualDataTest 所有props变化:', newProps)
+  },
+  { deep: true, immediate: true }
+)
 
 // 格式化对象数据显示
 const objectDataDisplay = computed(() => {

@@ -179,17 +179,17 @@ const setState = (config: any) => {
           try {
             // 🔥 关键修复：分离和恢复 multiDataSourceConfigStore 数据
             const typedConfig = nodeConfig as any
-            
+
             // 检查是否有数据源配置需要恢复
             if (typedConfig.dataSource?.type === 'data-mapping' && typedConfig.dataSource?.config) {
               // 恢复到 multiDataSourceConfigStore
               multiDataSourceConfigStore.value[nodeId] = typedConfig.dataSource.config
               console.log(`🔄 setState - 恢复多数据源配置: ${nodeId}`, typedConfig.dataSource.config)
             }
-            
+
             // 🔥 修复：保留完整配置，不删除 dataSource 字段
             configurationManager.setConfiguration(nodeId, typedConfig)
-            
+
             console.log(`✅ setState - 恢复组件配置成功: ${nodeId}`)
           } catch (configError) {
             console.error(`❌ setState - 恢复组件配置失败: ${nodeId}`, configError)
@@ -218,7 +218,7 @@ const getState = () => {
         // 🔥 关键修复：集成 multiDataSourceConfigStore 的数据
         const nodeId = node.id
         const multiDataSourceConfig = multiDataSourceConfigStore.value[nodeId]
-        
+
         if (multiDataSourceConfig) {
           console.log(`🔍 getState - 检查multiDataSourceConfig: ${nodeId}`, {
             configExists: !!multiDataSourceConfig,
@@ -226,7 +226,7 @@ const getState = () => {
             configKeys: Object.keys(multiDataSourceConfig),
             fullConfig: multiDataSourceConfig
           })
-          
+
           // 将多数据源配置合并到 dataSource 字段中
           const enhancedConfig = {
             ...config,
@@ -850,7 +850,9 @@ const handleMultiDataSourceConfigUpdate = (widgetId: string, config: any) => {
   console.log(`🔍 [Store-After] 存储后的 multiDataSourceConfigStore:`, {
     afterKeys: Object.keys(multiDataSourceConfigStore.value),
     afterData: multiDataSourceConfigStore.value[widgetId],
-    isDataCorrect: !!multiDataSourceConfigStore.value[widgetId]?.dataSourceBindings && Object.keys(multiDataSourceConfigStore.value[widgetId].dataSourceBindings).length > 0
+    isDataCorrect:
+      !!multiDataSourceConfigStore.value[widgetId]?.dataSourceBindings &&
+      Object.keys(multiDataSourceConfigStore.value[widgetId].dataSourceBindings).length > 0
   })
 
   // 标记有变化
@@ -869,13 +871,13 @@ const handleMultiDataSourceConfigUpdate = (widgetId: string, config: any) => {
  */
 const handleRequestCurrentData = (widgetId: string) => {
   console.log('🔄 [PanelEditor] 处理当前数据请求:', widgetId)
-  
+
   // 获取当前运行时配置数据
   const currentConfig = multiDataSourceConfigStore.value[widgetId]
-  
+
   if (currentConfig) {
     console.log('✅ [PanelEditor] 提供当前运行时配置数据:', currentConfig)
-    
+
     // 通过 ConfigurationManager 临时更新配置，让配置面板可以获取到
     const tempDataSourceConfig = {
       type: 'data-mapping',
@@ -888,10 +890,10 @@ const handleRequestCurrentData = (widgetId: string) => {
         isRuntime: true // 标记为运行时数据
       }
     }
-    
+
     // 临时更新 ConfigurationManager 中的数据源配置
     configurationManager.updateConfiguration(widgetId, 'dataSource', tempDataSourceConfig)
-    
+
     console.log('🔄 [PanelEditor] 已更新 ConfigurationManager 为当前运行时数据')
   } else {
     console.log('ℹ️ [PanelEditor] 没有找到当前运行时配置数据，将使用默认数据')
@@ -967,12 +969,14 @@ const handleSave = async () => {
   isSaving.value = true
   try {
     const currentState = getState()
-    
+
     // 🔍 保存过程调试
     console.log('💾 [SAVE] 开始保存，getState返回:', {
       nodesCount: currentState.nodes?.length || 0,
       hasComponentConfigurations: !!currentState.componentConfigurations,
-      componentConfigurationKeys: currentState.componentConfigurations ? Object.keys(currentState.componentConfigurations) : [],
+      componentConfigurationKeys: currentState.componentConfigurations
+        ? Object.keys(currentState.componentConfigurations)
+        : [],
       multiDataSourceConfigStoreKeys: Object.keys(multiDataSourceConfigStore.value),
       fullState: currentState
     })

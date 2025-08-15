@@ -12,7 +12,7 @@ const userInfoCardDefinition: ComponentDefinition = {
   description: '展示用户头像、基本信息、统计数据、技能标签和最近活动的卡片组件',
   version: '1.0.0',
   component: UserInfoCard, // 🔥 关键修复：添加Vue组件引用
-  
+
   // 组件分类
   category: 'display',
   mainCategory: '展示',
@@ -21,7 +21,7 @@ const userInfoCardDefinition: ComponentDefinition = {
   author: 'Claude Code Assistant',
   permission: '不限',
   tags: ['用户', '信息', '卡片', '头像', '统计'],
-  
+
   // 数据源定义 - 双数据源：用户信息对象 + 活动列表数组
   dataSources: [
     {
@@ -75,7 +75,7 @@ const userInfoCardDefinition: ComponentDefinition = {
       }
     }
   ],
-  
+
   config: {
     width: 320,
     height: 400

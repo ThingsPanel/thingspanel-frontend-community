@@ -205,7 +205,6 @@ const handleNodeSelect = (nodeId: string) => {
   emit('node-select', nodeId)
 }
 
-
 const handleInteraction = (widget: VisualEditorWidget) => {
   if (props.readonly) {
     // 只在预览模式下触发交互

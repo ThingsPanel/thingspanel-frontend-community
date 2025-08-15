@@ -42,7 +42,7 @@ const objectDataDisplay = computed(() => {
   if (!data || data === null || data === undefined) {
     return '暂无数据'
   }
-  
+
   // 检查是否为空对象
   if (typeof data === 'object' && Object.keys(data).length === 0) {
     return '暂无数据'

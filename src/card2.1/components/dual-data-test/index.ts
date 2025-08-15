@@ -55,9 +55,7 @@ const dualDataTestDefinition: ComponentDefinition = {
           type: 'array',
           required: false,
           description: '数组数据源',
-          defaultValue: [
-            { id: 1, name: '示例项目', value: 0, status: 'active' }
-          ]
+          defaultValue: [{ id: 1, name: '示例项目', value: 0, status: 'active' }]
         }
       }
     }
