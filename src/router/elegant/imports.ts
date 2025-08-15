@@ -83,6 +83,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "system-management-user_system-log": () => import("@/views/system-management-user/system-log/index.vue"),
   "test_config-driven-data-source": () => import("@/views/test/config-driven-data-source/index.vue"),
   "test_data-filter-test": () => import("@/views/test/data-filter-test/index.vue"),
+  "test_data-mapping-test": () => import("@/views/test/data-mapping-test/index.vue"),
   "test_editor-integration": () => import("@/views/test/editor-integration/index.vue"),
   test: () => import("@/views/test/index.vue"),
   "test_v4-optimization-validation": () => import("@/views/test/v4-optimization-validation/index.vue"),

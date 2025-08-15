@@ -93,6 +93,43 @@
               :source-data="getParsedJsonValue(dataSource.key)"
               @filter-change="(filteredData) => handleFilterResult(dataSource.key, filteredData)"
             />
+            
+            <!-- 数据字段映射 -->
+            <n-divider style="margin: 16px 0;" />
+            <n-form-item label="字段映射配置" size="small">
+              <template #label>
+                <n-space align="center" size="small">
+                  <span>字段映射配置</span>
+                  <n-tooltip>
+                    <template #trigger>
+                      <n-icon size="14" color="var(--text-color-3)">
+                        <InformationCircleOutline />
+                      </n-icon>
+                    </template>
+                    <div style="max-width: 300px; font-size: 12px">
+                      <div>
+                        <strong>字段映射作用:</strong>
+                        将原始数据字段映射为组件需要的字段名
+                      </div>
+                      <div style="margin-top: 4px">
+                        <strong>示例:</strong>
+                        原始数据的 "xingming" 字段映射为组件需要的 "name" 字段
+                      </div>
+                      <div style="margin-top: 4px">
+                        <strong>支持嵌套:</strong>
+                        "user.profile.name" → "name"
+                      </div>
+                    </div>
+                  </n-tooltip>
+                </n-space>
+              </template>
+              <DataFieldMappingInput
+                v-model="fieldMappings[dataSource.key]"
+                :preview-data="getFilteredData(dataSource.key)"
+                :show-preview="true"
+                @mapping-change="(mappedData) => handleMappingResult(dataSource.key, mappedData)"
+              />
+            </n-form-item>
           </div>
 
           <!-- HTTP 数据配置（暂时简化） -->
@@ -118,10 +155,13 @@ import {
   NAlert,
   NTooltip,
   NIcon,
+  NDivider,
   useMessage
 } from 'naive-ui'
+import { InformationCircleOutline } from '@vicons/ionicons5'
 import { configurationManager } from '../ConfigurationManager'
 import DataFilterInput from './DataFilterInput.vue'
+import DataFieldMappingInput from './DataFieldMappingInput.vue'
 
 interface DataSource {
   key: string
@@ -155,6 +195,15 @@ const jsonValues = reactive<Record<string, string>>({})
 
 // 每个数据源的过滤路径
 const filterPaths = reactive<Record<string, string>>({})
+
+// 每个数据源的字段映射规则
+const fieldMappings = reactive<Record<string, Array<{ targetField: string; sourcePath: string }>>>({})
+
+// 每个数据源的过滤后数据缓存
+const filteredDataCache = reactive<Record<string, any>>({})
+
+// 每个数据源的最终处理后数据缓存
+const finalDataCache = reactive<Record<string, any>>({})
 
 // 获取默认数据
 function getDefaultData(dataSourceKey: string) {
@@ -248,6 +297,7 @@ const initializeDataSources = () => {
     dataSourceTypes[dataSource.key] = 'json' // 默认为 JSON
     jsonValues[dataSource.key] = JSON.stringify(getDefaultData(dataSource.key), null, 2)
     filterPaths[dataSource.key] = '' // 默认无过滤路径
+    fieldMappings[dataSource.key] = [] // 默认无字段映射
   })
 }
 
@@ -280,8 +330,11 @@ const loadSavedDataFromManager = () => {
         jsonValues[key] = binding.rawData
         // 恢复过滤路径
         filterPaths[key] = binding.filterPath || ''
+        // 恢复字段映射规则
+        fieldMappings[key] = binding.fieldMappings || []
         console.log(`✅ [DataSourceConfigForm] 恢复数据源 ${key}:`, binding.rawData.substring(0, 100))
         console.log(`✅ [DataSourceConfigForm] 恢复过滤路径 ${key}:`, binding.filterPath || '(无过滤)')
+        console.log(`✅ [DataSourceConfigForm] 恢复字段映射 ${key}:`, binding.fieldMappings || '(无映射)')
         hasLoadedData = true
       }
     })
@@ -385,9 +438,98 @@ const getParsedJsonValue = (key: string): any => {
 const handleFilterResult = (key: string, filteredData: any) => {
   console.log(`🔧 [DataSourceConfigForm] 数据源 ${key} 过滤结果:`, filteredData)
   
-  // 直接发射过滤后的数据
+  // 缓存过滤后的数据
+  filteredDataCache[key] = filteredData
+  
+  // 应用字段映射并发射最终数据
+  applyFieldMappingAndEmit(key, filteredData)
+}
+
+// 获取过滤后的数据（用于字段映射预览）
+const getFilteredData = (key: string): any => {
+  return filteredDataCache[key] || getParsedJsonValue(key)
+}
+
+// 处理字段映射结果
+const handleMappingResult = (key: string, mappedData: any) => {
+  console.log(`🔧 [DataSourceConfigForm] 数据源 ${key} 字段映射结果:`, mappedData)
+  
+  // 缓存最终处理后的数据
+  finalDataCache[key] = mappedData
+  
+  // 发射最终数据
   const eventName = `update:${key}`
-  emit(eventName, filteredData)
+  emit(eventName, mappedData)
+}
+
+// 应用字段映射的通用方法
+const applyFieldMappingAndEmit = (key: string, filteredData: any) => {
+  const mappingRules = fieldMappings[key]
+  
+  if (!mappingRules || mappingRules.length === 0) {
+    // 没有映射规则，直接发射过滤后的数据
+    const eventName = `update:${key}`
+    emit(eventName, filteredData)
+    return
+  }
+  
+  // 应用字段映射
+  const mappedData = applyFieldMapping(filteredData, mappingRules)
+  handleMappingResult(key, mappedData)
+}
+
+/**
+ * 从对象中根据路径获取值
+ * 支持嵌套路径，如 'user.profile.name'
+ */
+const getValueByPath = (obj: any, path: string): any => {
+  if (!obj || !path) return undefined
+  
+  const keys = path.split('.')
+  let current = obj
+  
+  for (const key of keys) {
+    if (current === null || current === undefined) {
+      return undefined
+    }
+    current = current[key]
+  }
+  
+  return current
+}
+
+/**
+ * 应用字段映射规则
+ * 将原始数据转换为目标字段结构
+ */
+const applyFieldMapping = (data: any, mappingRules: Array<{ targetField: string; sourcePath: string }>): any => {
+  if (!data || !mappingRules || mappingRules.length === 0) {
+    return data
+  }
+
+  // 处理数组数据
+  if (Array.isArray(data)) {
+    return data.map(item => applyFieldMapping(item, mappingRules))
+  }
+
+  // 处理对象数据
+  if (typeof data === 'object' && data !== null) {
+    const result: Record<string, any> = {}
+    
+    // 应用映射规则
+    mappingRules.forEach(rule => {
+      if (rule.targetField && rule.sourcePath) {
+        const value = getValueByPath(data, rule.sourcePath)
+        if (value !== undefined) {
+          result[rule.targetField] = value
+        }
+      }
+    })
+    
+    return result
+  }
+
+  return data
 }
 
 // 递归更新问题已通过 restoreSavedValues 方法解决，不再需要监听 initialData

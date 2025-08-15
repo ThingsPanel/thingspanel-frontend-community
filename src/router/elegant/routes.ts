@@ -836,6 +836,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'test_data-mapping-test',
+        path: '/test/data-mapping-test',
+        component: 'view.test_data-mapping-test',
+        meta: {
+          title: 'test_data-mapping-test',
+          i18nKey: 'route.test_data-mapping-test'
+        }
+      },
+      {
         name: 'test_editor-integration',
         path: '/test/editor-integration',
         component: 'view.test_editor-integration',

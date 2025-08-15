@@ -72,6 +72,51 @@
                 </n-button>
               </template>
             </n-card>
+
+            <!-- 数据过滤器测试 -->
+            <n-card size="small" embedded hoverable class="test-item">
+              <template #header>
+                <n-space align="center">
+                  <n-icon size="18" color="var(--success-color)">
+                    <FunnelOutline />
+                  </n-icon>
+                  <span>数据过滤器测试</span>
+                </n-space>
+              </template>
+
+              <div class="test-description">
+                <p>JSONPath数据过滤器功能测试，支持复杂数据结构的路径过滤。</p>
+              </div>
+
+              <template #action>
+                <n-button size="small" @click="$router.push('/test/data-filter-test')">
+                  进入测试
+                </n-button>
+              </template>
+            </n-card>
+
+            <!-- 数据映射器测试 -->
+            <n-card size="small" embedded hoverable class="test-item">
+              <template #header>
+                <n-space align="center">
+                  <n-icon size="18" color="var(--primary-color)">
+                    <SwapHorizontalOutline />
+                  </n-icon>
+                  <span>数据映射器测试</span>
+                  <n-tag type="success" size="tiny">新功能</n-tag>
+                </n-space>
+              </template>
+
+              <div class="test-description">
+                <p>字段映射组件功能测试，支持字段重命名和嵌套路径映射。</p>
+              </div>
+
+              <template #action>
+                <n-button size="small" @click="$router.push('/test/data-mapping-test')">
+                  进入测试
+                </n-button>
+              </template>
+            </n-card>
           </n-space>
         </div>
       </n-card>
@@ -161,7 +206,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { NCard, NSpace, NButton, NTag, NIcon, NDescriptions, NDescriptionsItem, NPageHeader } from 'naive-ui'
-import { ServerOutline, Link, Create, Settings } from '@vicons/ionicons5'
+import { ServerOutline, Link, Create, Settings, FunnelOutline, SwapHorizontalOutline } from '@vicons/ionicons5'
 
 const router = useRouter()
 
