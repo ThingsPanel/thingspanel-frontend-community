@@ -35,10 +35,9 @@ const dualDataTestDefinition: ComponentDefinition = {
           required: false,
           description: '对象数据源',
           defaultValue: {
-            name: '测试对象',
-            status: 'online',
-            value: 42,
-            timestamp: new Date().toISOString()
+            name: '示例名称',
+            status: 'active',
+            value: 0
           }
         }
       }
@@ -57,9 +56,7 @@ const dualDataTestDefinition: ComponentDefinition = {
           required: false,
           description: '数组数据源',
           defaultValue: [
-            { id: 1, name: '项目A', value: 100, status: 'active' },
-            { id: 2, name: '项目B', value: 200, status: 'inactive' },
-            { id: 3, name: '项目C', value: 150, status: 'active' }
+            { id: 1, name: '示例项目', value: 0, status: 'active' }
           ]
         }
       }

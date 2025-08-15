@@ -4,9 +4,27 @@
       <n-collapse-item
         v-for="dataSource in props.dataSources"
         :key="dataSource.key"
-        :title="`${dataSource.name || dataSource.key} (${getDataTypeText(dataSource)})`"
         :name="dataSource.key"
       >
+        <template #header>
+          <div class="data-source-header">
+            <span>{{ dataSource.name || dataSource.key }} ({{ getDataTypeText(dataSource) }})</span>
+            <!-- 🔥 新增：示例数据提示图标 -->
+            <n-tooltip placement="right" trigger="hover">
+              <template #trigger>
+                <n-icon size="16" class="example-data-icon">
+                  <InformationCircleOutline />
+                </n-icon>
+              </template>
+              <div class="example-data-tooltip">
+                <div class="tooltip-title">示例数据格式:</div>
+                <div class="example-code-container">
+                  <pre class="example-code">{{ getExampleDataCode(dataSource) }}</pre>
+                </div>
+              </div>
+            </n-tooltip>
+          </div>
+        </template>
         <!-- 数据源配置内容 -->
         <div class="data-source-content">
           <n-space vertical size="medium">
@@ -44,7 +62,8 @@
  */
 
 import { ref, reactive, watch, computed, onMounted } from 'vue'
-import { NCollapse, NCollapseItem, NSpace, NText, NCode, NButton } from 'naive-ui'
+import { NCollapse, NCollapseItem, NSpace, NText, NCode, NButton, NTooltip, NIcon } from 'naive-ui'
+import { InformationCircleOutline } from '@vicons/ionicons5'
 import { configurationManager } from '../ConfigurationManager'
 
 interface DataSource {
@@ -147,6 +166,31 @@ const getFormattedData = (dataSourceKey: string) => {
     return JSON.stringify(data, null, 2)
   } catch {
     return String(data)
+  }
+}
+
+/**
+ * 🔥 新增：获取示例数据代码用于悬停提示
+ */
+const getExampleDataCode = (dataSource: DataSource) => {
+  // 从 fieldMappings 中获取 defaultValue
+  if (dataSource.fieldMappings) {
+    const firstMapping = Object.values(dataSource.fieldMappings)[0] as any
+    if (firstMapping && firstMapping.defaultValue !== undefined) {
+      try {
+        return JSON.stringify(firstMapping.defaultValue, null, 2)
+      } catch {
+        return JSON.stringify(firstMapping.defaultValue)
+      }
+    }
+  }
+  
+  // 如果没有示例数据，返回基本格式提示
+  const dataType = getDataTypeText(dataSource)
+  if (dataType === '数组') {
+    return '[\n  {\n    "id": 1,\n    "name": "示例项目"\n  }\n]'
+  } else {
+    return '{\n  "name": "示例名称",\n  "status": "active"\n}'
   }
 }
 
@@ -371,6 +415,96 @@ watch(() => props.dataSources, () => {
 <style scoped>
 .data-source-config-form {
   width: 100%;
+}
+
+.data-source-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.example-data-icon {
+  color: var(--text-color-3);
+  margin-left: 8px;
+  cursor: help;
+  transition: color 0.2s;
+}
+
+.example-data-icon:hover {
+  color: var(--primary-color);
+}
+
+.example-data-tooltip {
+  max-width: 350px;
+  padding: 4px 0;
+}
+
+.tooltip-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+
+.example-code-container {
+  background: var(--code-color, var(--card-color));
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.example-code {
+  margin: 0;
+  padding: 12px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-color);
+  background: transparent;
+  overflow-x: auto;
+  white-space: pre;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+/* 明暗主题适配 */
+[data-theme="dark"] .example-code-container {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .example-code {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .example-code-container {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .example-code {
+  color: rgba(0, 0, 0, 0.85);
+}
+
+/* 滚动条美化 */
+.example-code::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.example-code::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.example-code::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 2px;
+}
+
+.example-code::-webkit-scrollbar-thumb:hover {
+  background: var(--text-color-3);
 }
 
 .data-source-content {
