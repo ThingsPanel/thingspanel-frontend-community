@@ -257,6 +257,7 @@ interface Emits {
   (e: 'grid-config-change', config: any): void
   (e: 'multi-data-source-update', widgetId: string, dataSources: Record<string, any>): void
   (e: 'multi-data-source-config-update', widgetId: string, config: any): void
+  (e: 'request-current-data', widgetId: string): void
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -360,7 +361,12 @@ const enrichedDataSources = computed(() => {
  * 优先级：fieldMappings.defaultValue > 组件config中的默认数据 > 通用示例
  */
 function extractExampleDataFromDefinition(dataSource: any) {
-  console.log('🔍 [ConfigurationPanel] 提取示例数据:', dataSource)
+  console.log('🔧 [DEBUG-DataSource] 解析数据源定义:', {
+    key: dataSource.key,
+    hasFieldMappings: !!dataSource.fieldMappings,
+    fieldMappingsKeys: dataSource.fieldMappings ? Object.keys(dataSource.fieldMappings) : [],
+    hasFieldsToMap: !!dataSource.fieldsToMap
+  })
 
   // 1. 从 fieldMappings 的 defaultValue 构建示例数据
   if (dataSource.fieldMappings) {
@@ -375,7 +381,7 @@ function extractExampleDataFromDefinition(dataSource: any) {
     })
 
     if (hasDefaults) {
-      console.log('✅ 使用 fieldMappings 默认值构建示例数据:', exampleFromMappings)
+      console.log('🔧 [DEBUG-DataSource] 使用 fieldMappings 默认值构建示例数据:', exampleFromMappings)
       return exampleFromMappings
     }
   }
@@ -447,6 +453,12 @@ watch(
   dataMappingConfig,
   newConfig => {
     if (!props.selectedWidget) return
+    
+    // 🔥 修复：防止配置加载时触发不必要的事件
+    if (isUpdatingFromManager) {
+      console.log('🔧 [V6ConfigPanel] 配置加载中，跳过自动应用:', newConfig)
+      return
+    }
 
     // 更新dataSourceConfig以保持持久化
     if (newConfig && Object.keys(newConfig).length > 0) {
@@ -715,11 +727,47 @@ const getInitialDataSourceValues = () => {
 }
 
 /**
+ * 处理来自 DataSourceConfigForm 的配置更新
+ */
+const handleDataSourceConfigUpdate = (config: any) => {
+  console.log('🔧 [ConfigurationPanel] 处理数据源配置更新:', config)
+  
+  if (props.selectedWidget && config.dataSourceBindings) {
+    // 🔥 修复：发送正确的事件名
+    console.log('🔧 [ConfigurationPanel] 发送配置更新事件:', 'multi-data-source-config-update')
+    emit('multi-data-source-config-update', props.selectedWidget.id, config)
+  }
+}
+
+/**
+ * 处理当前数据请求 - 🔥 提供运行时数据给配置面板
+ */
+const handleCurrentDataRequest = (widgetId: string) => {
+  console.log('🔄 [ConfigurationPanel] 处理当前数据请求:', widgetId)
+  
+  // 请求父组件（PanelEditor）提供当前运行时数据
+  emit('request-current-data', widgetId)
+}
+
+/**
  * 获取动态数据源事件监听器
  */
 const getDataSourceEventListeners = () => {
   const listeners: Record<string, Function> = {}
+  
+  // 监听通用的 update 事件（来自新的 DataSourceConfigForm）
+  listeners['update'] = (config: any) => {
+    console.log('🔧 [ConfigurationPanel] 接收到数据源配置更新:', config)
+    handleDataSourceConfigUpdate(config)
+  }
+  
+  // 🔥 新增：监听请求当前数据事件
+  listeners['request-current-data'] = (widgetId: string) => {
+    console.log('🔄 [ConfigurationPanel] 收到当前数据请求:', widgetId)
+    handleCurrentDataRequest(widgetId)
+  }
 
+  // 保持对原有动态事件的兼容
   if (componentDefinition.value?.dataSources) {
     componentDefinition.value.dataSources.forEach(dataSource => {
       const eventName = `update:${dataSource.key}`

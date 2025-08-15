@@ -177,7 +177,19 @@ const setState = (config: any) => {
       for (const [nodeId, nodeConfig] of Object.entries(config.componentConfigurations)) {
         if (nodeConfig && typeof nodeConfig === 'object') {
           try {
-            configurationManager.setConfiguration(nodeId, nodeConfig as any)
+            // 🔥 关键修复：分离和恢复 multiDataSourceConfigStore 数据
+            const typedConfig = nodeConfig as any
+            
+            // 检查是否有数据源配置需要恢复
+            if (typedConfig.dataSource?.type === 'data-mapping' && typedConfig.dataSource?.config) {
+              // 恢复到 multiDataSourceConfigStore
+              multiDataSourceConfigStore.value[nodeId] = typedConfig.dataSource.config
+              console.log(`🔄 setState - 恢复多数据源配置: ${nodeId}`, typedConfig.dataSource.config)
+            }
+            
+            // 🔥 修复：保留完整配置，不删除 dataSource 字段
+            configurationManager.setConfiguration(nodeId, typedConfig)
+            
             console.log(`✅ setState - 恢复组件配置成功: ${nodeId}`)
           } catch (configError) {
             console.error(`❌ setState - 恢复组件配置失败: ${nodeId}`, configError)
@@ -203,10 +215,44 @@ const getState = () => {
     for (const node of stateManager.nodes) {
       const config = configurationManager.getConfiguration(node.id)
       if (config) {
-        componentConfigurations[node.id] = config
+        // 🔥 关键修复：集成 multiDataSourceConfigStore 的数据
+        const nodeId = node.id
+        const multiDataSourceConfig = multiDataSourceConfigStore.value[nodeId]
+        
+        if (multiDataSourceConfig) {
+          console.log(`🔍 getState - 检查multiDataSourceConfig: ${nodeId}`, {
+            configExists: !!multiDataSourceConfig,
+            configType: typeof multiDataSourceConfig,
+            configKeys: Object.keys(multiDataSourceConfig),
+            fullConfig: multiDataSourceConfig
+          })
+          
+          // 将多数据源配置合并到 dataSource 字段中
+          const enhancedConfig = {
+            ...config,
+            dataSource: {
+              type: 'data-mapping',
+              enabled: true,
+              config: multiDataSourceConfig,
+              metadata: {
+                componentType: node.type,
+                mappingType: 'json-path',
+                updatedAt: Date.now()
+              }
+            }
+          }
+          componentConfigurations[nodeId] = enhancedConfig
+          console.log(`💾 getState - 集成多数据源配置: ${nodeId}`, multiDataSourceConfig)
+        } else {
+          componentConfigurations[nodeId] = config
+        }
       }
     }
     console.log('💾 getState - 收集到的组件配置:', Object.keys(componentConfigurations))
+    console.log('💾 getState - multiDataSourceConfigStore 状态:', {
+      storeKeys: Object.keys(multiDataSourceConfigStore.value),
+      totalConfigs: Object.keys(multiDataSourceConfigStore.value).length
+    })
   } catch (error) {
     console.error('💾 getState - 收集组件配置失败:', error)
   }
@@ -785,15 +831,71 @@ const handleMultiDataSourceUpdate = (widgetId: string, dataSources: Record<strin
  * 处理多数据源配置更新
  */
 const handleMultiDataSourceConfigUpdate = (widgetId: string, config: any) => {
-  console.log(`🔧 PanelEditor - 多数据源配置更新: ${widgetId}`, config)
+  console.log(`🔧 [DEBUG-Config] 多数据源配置更新:`, {
+    widgetId,
+    hasDataSourceBindings: !!config.dataSourceBindings,
+    bindingKeys: config.dataSourceBindings ? Object.keys(config.dataSourceBindings) : [],
+    config
+  })
+
+  // 🔍 详细调试存储前后的数据
+  console.log(`🔍 [Store-Before] 存储前的 multiDataSourceConfigStore:`, {
+    beforeKeys: Object.keys(multiDataSourceConfigStore.value),
+    beforeData: multiDataSourceConfigStore.value[widgetId]
+  })
 
   // 存储配置信息
   multiDataSourceConfigStore.value[widgetId] = config
 
+  console.log(`🔍 [Store-After] 存储后的 multiDataSourceConfigStore:`, {
+    afterKeys: Object.keys(multiDataSourceConfigStore.value),
+    afterData: multiDataSourceConfigStore.value[widgetId],
+    isDataCorrect: !!multiDataSourceConfigStore.value[widgetId]?.dataSourceBindings && Object.keys(multiDataSourceConfigStore.value[widgetId].dataSourceBindings).length > 0
+  })
+
   // 标记有变化
   hasChanges.value = true
 
-  console.log(`✅ PanelEditor - 多数据源配置已存储:`, multiDataSourceConfigStore.value)
+  console.log(`🔧 [DEBUG-Config] 配置存储完成:`, {
+    widgetId,
+    storeKeys: Object.keys(multiDataSourceConfigStore.value),
+    totalConfigs: Object.keys(multiDataSourceConfigStore.value).length
+  })
+}
+
+/**
+ * 🔥 新增：处理配置面板请求当前数据
+ * 提供组件当前运行时数据给配置面板，实现内存数据优先原则
+ */
+const handleRequestCurrentData = (widgetId: string) => {
+  console.log('🔄 [PanelEditor] 处理当前数据请求:', widgetId)
+  
+  // 获取当前运行时配置数据
+  const currentConfig = multiDataSourceConfigStore.value[widgetId]
+  
+  if (currentConfig) {
+    console.log('✅ [PanelEditor] 提供当前运行时配置数据:', currentConfig)
+    
+    // 通过 ConfigurationManager 临时更新配置，让配置面板可以获取到
+    const tempDataSourceConfig = {
+      type: 'data-mapping',
+      enabled: true,
+      config: currentConfig,
+      metadata: {
+        componentType: selectedWidget.value?.type || 'unknown',
+        mappingType: 'json-path',
+        updatedAt: Date.now(),
+        isRuntime: true // 标记为运行时数据
+      }
+    }
+    
+    // 临时更新 ConfigurationManager 中的数据源配置
+    configurationManager.updateConfiguration(widgetId, 'dataSource', tempDataSourceConfig)
+    
+    console.log('🔄 [PanelEditor] 已更新 ConfigurationManager 为当前运行时数据')
+  } else {
+    console.log('ℹ️ [PanelEditor] 没有找到当前运行时配置数据，将使用默认数据')
+  }
 }
 
 const handleZoomIn = () => {
@@ -865,6 +967,15 @@ const handleSave = async () => {
   isSaving.value = true
   try {
     const currentState = getState()
+    
+    // 🔍 保存过程调试
+    console.log('💾 [SAVE] 开始保存，getState返回:', {
+      nodesCount: currentState.nodes?.length || 0,
+      hasComponentConfigurations: !!currentState.componentConfigurations,
+      componentConfigurationKeys: currentState.componentConfigurations ? Object.keys(currentState.componentConfigurations) : [],
+      multiDataSourceConfigStoreKeys: Object.keys(multiDataSourceConfigStore.value),
+      fullState: currentState
+    })
 
     // 解析现有配置
     let existingConfig: any = {}
@@ -970,18 +1081,18 @@ onMounted(async () => {
   // 先加载面板数据
   await fetchBoard()
 
-  // 面板数据加载完成后，恢复多数据源配置
+  // 面板数据加载完成后，检查多数据源配置状态
   await nextTick() // 确保DOM更新完成
-  restoreMultiDataSourceConfigs()
+  restoreMultiDataSourceConfigs() // 现在只做状态检查
 })
 
 /**
- * V6: 恢复多数据源配置
- * 从ConfigurationManager中恢复已保存的数据源配置
- * 修复数据持久化问题：确保刷新后数据自动恢复
+ * V6: 恢复多数据源配置（已弃用）
+ * 🔥 修复说明：配置恢复现在已集成到 setState 方法中
+ * 这个函数保留用于调试和状态检查
  */
 const restoreMultiDataSourceConfigs = () => {
-  console.log('🔧 [PanelEditor] 开始恢复多数据源配置...')
+  console.log('🔧 [PanelEditor] 检查多数据源配置状态（已集成到setState）...')
   console.log('🔧 [PanelEditor] 当前状态检查:', {
     hasStateManager: !!stateManager,
     nodesCount: stateManager?.nodes?.length || 0,
@@ -990,9 +1101,13 @@ const restoreMultiDataSourceConfigs = () => {
   })
 
   if (!stateManager?.nodes || stateManager.nodes.length === 0) {
-    console.log('🔧 [PanelEditor] 无图表节点，跳过恢复')
+    console.log('🔧 [PanelEditor] 无图表节点，跳过检查')
     return
   }
+
+  // 🔥 配置恢复现在在 setState 中完成，这里只做状态报告
+  console.log('✅ [PanelEditor] 配置恢复已通过 setState 完成')
+  return
 
   const restored: Record<string, any> = {}
   let restoredCount = 0
@@ -1319,6 +1434,7 @@ onUnmounted(() => {
                 @grid-config-change="handleGridConfigChange"
                 @multi-data-source-update="handleMultiDataSourceUpdate"
                 @multi-data-source-config-update="handleMultiDataSourceConfigUpdate"
+                @request-current-data="handleRequestCurrentData"
               />
             </NDrawerContent>
           </NDrawer>

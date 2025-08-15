@@ -11,12 +11,8 @@
     <component
       :is="componentToRender"
       v-else-if="componentToRender"
-      v-bind="mergedProps"
-      :data="data"
-      :metadata="metadata || { card2Data: data, dataSource: dataSource }"
-      :dataSourceValue="dataSourceValue"
-      :dataSources="dataSources"
-      :dataSourcesConfig="dataSourcesConfig"
+      v-bind="config"
+      :raw-data-sources="JSON.parse(JSON.stringify(getDataSourcesForComponent()))"
     />
   </div>
 </template>
@@ -180,99 +176,35 @@ watch(
   { deep: true, immediate: true }
 )
 
-// V6: 计算映射后的数据源props - 基于targetProperty的通用解决方案
-const mappedDataSourceProps = computed(() => {
-  if (!props.dataSourcesConfig) {
-    return {}
-  }
-
-  const config = props.dataSourcesConfig
-  console.log('🎯 [Card2Wrapper] 为组件生成数据源props:', props.componentType, config)
-
-  const result: Record<string, any> = {}
-
-  if (config.dataSourceBindings) {
-    // V6标准：根据组件定义的targetProperty生成props
-    const componentDefinition = props.metadata?.card2Definition
-
-    if (componentDefinition?.dataSources) {
-      // 遍历组件定义的数据源
-      componentDefinition.dataSources.forEach((dataSourceDef: any) => {
-        const dataSourceKey = dataSourceDef.key
-        const binding = config.dataSourceBindings[dataSourceKey]
-
-        if (binding?.rawData) {
-          try {
-            const parsedData = JSON.parse(binding.rawData)
-            console.log(`📊 [Card2Wrapper] 解析数据源 ${dataSourceKey}:`, parsedData)
-
-            // 处理字段映射 vs 直接数据传递
-            if (dataSourceDef.fieldsToMap && binding.fieldMappings) {
-              let hasDirectDataMapping = false
-
-              dataSourceDef.fieldsToMap.forEach((field: any) => {
-                const targetProperty = field.targetProperty
-                const mappingValue = binding.fieldMappings[field.key]
-
-                if (targetProperty && mappingValue) {
-                  // 检查targetProperty是否就是dataSourceKey（直接数据映射）
-                  if (targetProperty === dataSourceKey) {
-                    // 直接数据映射：将解析的数据设置到targetProperty
-                    result[targetProperty] = parsedData
-                    hasDirectDataMapping = true
-                    console.log(`🎯 [Card2Wrapper] 直接数据映射 ${dataSourceKey} -> ${targetProperty}:`, parsedData)
-                  } else {
-                    // 字段路径映射：将映射路径设置到targetProperty
-                    setNestedProperty(result, targetProperty, mappingValue)
-                    console.log(`🎯 [Card2Wrapper] 路径映射 ${field.key} -> ${targetProperty}:`, mappingValue)
-                  }
-                }
-              })
-
-              // 如果没有直接数据映射，则设置数据源本身
-              if (!hasDirectDataMapping && !result[dataSourceKey]) {
-                result[dataSourceKey] = parsedData
-                console.log(`📊 [Card2Wrapper] 补充设置数据源 ${dataSourceKey}:`, parsedData)
-              }
-            } else {
-              // 无字段映射时直接设置数据源
-              result[dataSourceKey] = parsedData
-              console.log(`📊 [Card2Wrapper] 无映射直接设置数据源 ${dataSourceKey}:`, parsedData)
-            }
-          } catch (error) {
-            console.warn(`⚠️ [Card2Wrapper] 数据源 ${dataSourceKey} JSON解析失败:`, error)
-            result[dataSourceKey] = binding.rawData
-          }
-        }
-      })
-    } else {
-      // 无组件定义时的回退逻辑
-      Object.entries(config.dataSourceBindings).forEach(([key, binding]: [string, any]) => {
-        if (binding.rawData) {
-          try {
-            const parsedData = JSON.parse(binding.rawData)
-            result[key] = parsedData
-          } catch (error) {
-            result[key] = binding.rawData
-          }
-        }
-      })
-    }
-  }
-
-  // 兼容旧格式
-  if (props.componentType === 'data-mapping-test') {
-    Object.assign(result, {
-      arrayDataSource: config.arrayDataSource || result.arrayDataSource || [],
-      objectDataSource: config.objectDataSource || result.objectDataSource || {},
-      arrayMappings: config.arrayMappings || result.arrayMappings || {},
-      objectMappings: config.objectMappings || result.objectMappings || {}
+// 🔥 架构修复：Card2Wrapper只负责传递，不做数据转换
+const getDataSourcesForComponent = () => {
+  // 🔥 修复：检查哪个有真实数据，不只是检查存在性
+  const dataSourcesConfigHasData = props.dataSourcesConfig?.dataSourceBindings && 
+    Object.keys(props.dataSourcesConfig.dataSourceBindings).length > 0
+  
+  const dataSourcesHasData = props.dataSources?.dataSourceBindings && 
+    Object.keys(props.dataSources.dataSourceBindings).length > 0
+  
+  if (dataSourcesConfigHasData) {
+    console.log('🔧 [Card2Wrapper] 传递 dataSourcesConfig 到组件', {
+      bindingKeys: Object.keys(props.dataSourcesConfig.dataSourceBindings),
+      fullConfig: props.dataSourcesConfig
     })
+    return props.dataSourcesConfig
+  } else if (dataSourcesHasData) {
+    console.log('🔧 [Card2Wrapper] 传递 dataSources 到组件', {
+      bindingKeys: Object.keys(props.dataSources.dataSourceBindings),
+      fullData: props.dataSources
+    })
+    return props.dataSources
   }
-
-  console.log('🎯 [Card2Wrapper] 最终生成的props:', result)
-  return result
-})
+  
+  console.log('🔧 [Card2Wrapper] 无有效数据源配置', {
+    dataSourcesConfigKeys: props.dataSourcesConfig?.dataSourceBindings ? Object.keys(props.dataSourcesConfig.dataSourceBindings) : 'no bindings',
+    dataSourcesKeys: props.dataSources?.dataSourceBindings ? Object.keys(props.dataSources.dataSourceBindings) : 'no bindings'
+  })
+  return null
+}
 
 // 辅助函数：设置嵌套属性
 function setNestedProperty(obj: any, path: string, value: any) {
@@ -290,13 +222,7 @@ function setNestedProperty(obj: any, path: string, value: any) {
   current[keys[keys.length - 1]] = value
 }
 
-// 合并所有props
-const mergedProps = computed(() => {
-  return {
-    ...props.config,
-    ...mappedDataSourceProps.value
-  }
-})
+// 架构简化：直接使用config，不做复杂合并
 
 // 监听metadata变化，用于调试
 watch(
@@ -312,8 +238,11 @@ watch(
 
 onMounted(() => {
   console.log('🔧 [Card2Wrapper] 组件挂载，当前props:', props)
-  console.log('🔧 [Card2Wrapper] 映射后的数据源props:', mappedDataSourceProps.value)
-  console.log('🔧 [Card2Wrapper] 合并后的props:', mergedProps.value)
+  const dataSourcesForComponent = getDataSourcesForComponent()
+  console.log('🔧 [Card2Wrapper] 传递给组件的数据源:', dataSourcesForComponent)
+  console.log('🔧 [Card2Wrapper] 组件类型:', props.componentType)
+  console.log('🔧 [Card2Wrapper] 组件实例:', componentToRender.value)
+  
   if (!componentToRender.value) {
     loadComponent()
   }

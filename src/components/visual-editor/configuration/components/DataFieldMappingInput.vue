@@ -194,12 +194,9 @@ const currentMappings = computed(() => {
 // 验证和过滤必需字段
 const validRequiredFields = computed(() => {
   if (!props.requiredFields || !Array.isArray(props.requiredFields)) return []
-  
-  return props.requiredFields.filter(field => 
-    field && 
-    typeof field === 'object' && 
-    field.targetField &&
-    typeof field.targetField === 'string'
+
+  return props.requiredFields.filter(
+    field => field && typeof field === 'object' && field.targetField && typeof field.targetField === 'string'
   )
 })
 

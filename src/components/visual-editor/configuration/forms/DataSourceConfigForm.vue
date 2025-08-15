@@ -1,158 +1,36 @@
 <template>
   <div class="data-source-config-form">
-    <n-collapse :default-expanded-names="defaultExpandedNames" accordion>
+    <n-collapse :default-expanded-names="[props.dataSources[0]?.key]" accordion>
       <n-collapse-item
-        v-for="dataSource in dataSources"
+        v-for="dataSource in props.dataSources"
         :key="dataSource.key"
-        :title="dataSource.label || dataSource.key"
+        :title="`${dataSource.name || dataSource.key} (${getDataTypeText(dataSource)})`"
         :name="dataSource.key"
       >
-        <template #header-extra>
-          <n-space size="small">
-            <!-- 数据源类型切换 -->
-            <n-tag
-              :type="dataSourceTypes[dataSource.key] === 'json' ? 'primary' : 'default'"
-              size="small"
-              style="cursor: pointer"
-              @click.stop="switchDataSourceType(dataSource.key, 'json')"
-            >
-              JSON
-            </n-tag>
-            <n-tag
-              :type="dataSourceTypes[dataSource.key] === 'http' ? 'primary' : 'default'"
-              size="small"
-              style="cursor: pointer"
-              @click.stop="switchDataSourceType(dataSource.key, 'http')"
-            >
-              HTTP
-            </n-tag>
-          </n-space>
-        </template>
-
         <!-- 数据源配置内容 -->
         <div class="data-source-content">
-          <!-- JSON 数据配置 -->
-          <div v-if="dataSourceTypes[dataSource.key] === 'json'" class="json-config">
-            <n-form-item>
-              <template #label>
-                <n-space size="small" align="center">
-                  <span>{{ dataSource.label }} 数据</span>
-                  <n-tooltip>
-                    <template #trigger>
-                      <n-icon size="14" style="color: var(--text-color-3); cursor: help">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
-                          <path
-                            d="m9,9a3,3 0 1,1 6,0c0,2 -3,3 -3,3"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                          <path
-                            d="m12,17.02v.01"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                          />
-                        </svg>
-                      </n-icon>
-                    </template>
-                    <div style="max-width: 200px; font-size: 12px">
-                      <div>
-                        <strong>数据传递:</strong>
-                        JSON数据 → 组件
-                        <code>{{ dataSource.key }}</code>
-                        属性
-                      </div>
-                      <div style="margin-top: 4px">
-                        <strong>格式建议:</strong>
-                        {{ getFormatTip(dataSource.key) }}
-                      </div>
-                    </div>
-                  </n-tooltip>
-                </n-space>
-              </template>
-              <n-input
-                :value="getJsonValue(dataSource.key)"
-                type="textarea"
-                placeholder="请输入JSON格式数据"
-                :rows="6"
-                @update:value="value => updateJsonValue(dataSource.key, value)"
+          <n-space vertical size="medium">
+            <!-- 当前数据展示 -->
+            <div>
+              <n-text strong>当前数据:</n-text>
+              <n-code 
+                :code="getFormattedData(dataSource.key)" 
+                language="json" 
+                :show-line-numbers="false"
+                style="margin-top: 8px; max-height: 200px; overflow-y: auto"
               />
-            </n-form-item>
-            <n-space size="small">
-              <n-button size="tiny" @click="formatJsonValue(dataSource.key)">格式化</n-button>
-              <n-button size="tiny" @click="loadSampleData(dataSource.key)">示例数据</n-button>
+            </div>
+            
+            <!-- 修改按钮 -->
+            <n-space>
+              <n-button type="primary" @click="randomizeData(dataSource.key)">
+                随机修改数据
+              </n-button>
+              <n-button @click="resetData(dataSource.key)">
+                重置为默认
+              </n-button>
             </n-space>
-
-            <!-- 数据过滤器 - 暂时禁用 -->
-            <!-- <DataFilterInput
-              v-model="filterPaths[dataSource.key]"
-              :source-data="getParsedJsonValue(dataSource.key)"
-              @filter-change="filteredData => handleFilterResult(dataSource.key, filteredData)"
-            /> -->
-
-            <!-- 数据字段映射 -->
-            <n-divider style="margin: 16px 0" />
-            <n-form-item label="字段映射配置" size="small">
-              <template #label>
-                <n-space align="center" size="small">
-                  <span>字段映射配置</span>
-                  <n-tooltip>
-                    <template #trigger>
-                      <n-icon size="14" color="var(--text-color-3)">
-                        <InformationCircleOutline />
-                      </n-icon>
-                    </template>
-                    <div style="max-width: 300px; font-size: 12px">
-                      <div>
-                        <strong>字段映射作用:</strong>
-                        将原始数据字段映射为组件需要的字段名
-                      </div>
-                      <div style="margin-top: 4px">
-                        <strong>示例:</strong>
-                        原始数据的 "xingming" 字段映射为组件需要的 "name" 字段
-                      </div>
-                      <div style="margin-top: 4px">
-                        <strong>支持嵌套:</strong>
-                        "user.profile.name" → "name"
-                      </div>
-                    </div>
-                  </n-tooltip>
-
-                  <!-- 示例数据工具提示图标 - 暂时简化 -->
-                  <n-tooltip>
-                    <template #trigger>
-                      <n-icon size="14" color="var(--primary-color)" style="cursor: help">
-                        <InformationCircleOutline />
-                      </n-icon>
-                    </template>
-                    <div style="max-width: 200px; font-size: 12px">
-                      示例数据参考 (功能开发中...)
-                    </div>
-                  </n-tooltip>
-                </n-space>
-              </template>
-              <!-- 暂时禁用以排查错误 -->
-              <div style="padding: 8px; color: var(--text-color-3); font-size: 12px;">
-                字段映射功能暂时禁用，正在排查问题...
-              </div>
-              <!-- <DataFieldMappingInput
-                v-model="fieldMappings[dataSource.key]"
-                :preview-data="getFilteredData(dataSource.key)"
-                :show-preview="true"
-                :required-fields="extractRequiredFields(dataSource)"
-                @mapping-change="mappedData => handleMappingResult(dataSource.key, mappedData)"
-              /> -->
-            </n-form-item>
-          </div>
-
-          <!-- HTTP 数据配置（暂时简化） -->
-          <div v-else-if="dataSourceTypes[dataSource.key] === 'http'" class="http-config">
-            <n-alert type="info" size="small">HTTP 数据源配置功能开发中...</n-alert>
-          </div>
+          </n-space>
         </div>
       </n-collapse-item>
     </n-collapse>
@@ -160,500 +38,345 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, inject, computed } from 'vue'
-import {
-  NCollapse,
-  NCollapseItem,
-  NSpace,
-  NTag,
-  NFormItem,
-  NInput,
-  NButton,
-  NAlert,
-  NTooltip,
-  NIcon,
-  NDivider,
-  NCode,
-  useMessage
-} from 'naive-ui'
-import { InformationCircleOutline } from '@vicons/ionicons5'
+/**
+ * 数据源配置表单 - 极简重写版本
+ * 目标：实现基础数据流闭环
+ */
+
+import { ref, reactive, watch, computed, onMounted } from 'vue'
+import { NCollapse, NCollapseItem, NSpace, NText, NCode, NButton } from 'naive-ui'
 import { configurationManager } from '../ConfigurationManager'
-import DataFilterInput from '../components/DataFilterInput.vue'
-import DataFieldMappingInput from '../components/DataFieldMappingInput.vue'
 
 interface DataSource {
   key: string
-  type: string
-  label?: string
-  // Card2.1 数据源定义扩展字段
-  fieldMappings?: Record<
-    string,
-    {
-      targetField: string
-      type: 'value' | 'object' | 'array'
-      required: boolean
-      defaultValue?: any
-    }
-  >
-  // 示例数据
-  exampleData?: any
-  // 数据处理脚本
-  dataProcessScript?: string
+  name?: string
+  description?: string
+  fieldMappings?: Record<string, any>
+  fieldsToMap?: Array<{ key: string; targetProperty: string }>
 }
 
 interface Props {
+  selectedWidgetId?: string  // 修改为匹配 ConfigurationPanel 传递的属性名
   dataSources: DataSource[]
-  selectedWidgetId?: string // 新增：当前选中的组件ID，用于回显数据
 }
 
 interface Emits {
-  (e: string, value: any): void
+  (e: 'update', config: any): void
+  (e: 'request-current-data', widgetId: string): void  // 🔥 新增：请求当前数据
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
-const message = useMessage()
 
-// 计算默认展开的数据源名称（默认展开第一个）
-const defaultExpandedNames = computed(() => {
-  return props.dataSources.length > 0 ? [props.dataSources[0].key] : []
-})
+// 数据存储
+const dataValues = reactive<Record<string, any>>({})
 
-// 每个数据源的类型状态 (json/http)
-const dataSourceTypes = reactive<Record<string, 'json' | 'http'>>({})
+/**
+ * 获取数据类型文本描述
+ */
+const getDataTypeText = (dataSource: DataSource) => {
+  // 根据 fieldsToMap 判断期望的数据类型
+  if (dataSource.fieldsToMap && dataSource.fieldsToMap.length > 0) {
+    const targetProperty = dataSource.fieldsToMap[0].targetProperty
+    if (targetProperty.includes('array') || targetProperty.includes('Array')) {
+      return '数组'
+    }
+    if (targetProperty.includes('object') || targetProperty.includes('Object')) {
+      return '对象'
+    }
+  }
+  
+  // 根据 key 判断
+  if (dataSource.key.toLowerCase().includes('array')) return '数组'
+  if (dataSource.key.toLowerCase().includes('object')) return '对象'
+  
+  return '数据'
+}
 
-// 每个数据源的 JSON 数据
-const jsonValues = reactive<Record<string, string>>({})
+/**
+ * 获取默认数据 - 🔥 修复：优先使用组件定义的 defaultValue
+ */
+const getDefaultData = (dataSourceKey: string) => {
+  const dataSource = props.dataSources.find(ds => ds.key === dataSourceKey)
+  if (!dataSource) return {}
 
-// 每个数据源的过滤路径
-const filterPaths = reactive<Record<string, string>>({})
+  // 🔥 修复：优先从 fieldMappings 中获取 defaultValue
+  if (dataSource.fieldMappings) {
+    // 查找匹配的字段映射
+    const targetFieldMapping = Object.values(dataSource.fieldMappings).find(
+      (mapping: any) => mapping.targetField === dataSourceKey || mapping.type
+    )
+    
+    if (targetFieldMapping && targetFieldMapping.defaultValue !== undefined) {
+      console.log(`🔧 [DEBUG-Config] 使用组件定义的默认值 (${dataSourceKey}):`, targetFieldMapping.defaultValue)
+      return targetFieldMapping.defaultValue
+    }
+  }
 
-// 每个数据源的字段映射规则
-const fieldMappings = reactive<Record<string, Array<{ targetField: string; sourcePath: string }>>>({})
-
-// 每个数据源的过滤后数据缓存
-const filteredDataCache = reactive<Record<string, any>>({})
-
-// 每个数据源的最终处理后数据缓存
-const finalDataCache = reactive<Record<string, any>>({})
-
-// 获取默认数据
-function getDefaultData(dataSourceKey: string) {
-  if (dataSourceKey.includes('array') || dataSourceKey.includes('list')) {
+  // 根据数据类型返回通用默认数据（后备方案）
+  const dataType = getDataTypeText(dataSource)
+  
+  if (dataType === '数组') {
     return [
-      { name: '项目1', value: 100 },
-      { name: '项目2', value: 200 },
-      { name: '项目3', value: 150 }
+      { id: 1, name: '项目A', value: 100, status: 'active' },
+      { id: 2, name: '项目B', value: 200, status: 'inactive' },
+      { id: 3, name: '项目C', value: 150, status: 'active' }
     ]
   } else {
     return {
-      name: '示例数据',
-      status: 'active',
-      value: 42
+      name: '测试数据',
+      value: 42,
+      status: 'online',
+      timestamp: new Date().toISOString(),
+      config: {
+        enabled: true,
+        priority: 'high'
+      }
     }
   }
 }
 
-// 应用数据过滤器
-const applyDataFilter = (data: any, path: string): any => {
-  // 如果路径为空或者是 $，返回完整数据
-  if (!path || path === '$') {
-    return data
-  }
-
+/**
+ * 格式化显示数据
+ */
+const getFormattedData = (dataSourceKey: string) => {
+  const data = dataValues[dataSourceKey]
+  if (!data) return '暂无数据'
+  
   try {
-    // 简单的 JSONPath 实现
-    let current = data
-
-    // 移除开头的 $ 符号
-    const cleanPath = path.startsWith('$') ? path.substring(1) : path
-
-    if (cleanPath === '') {
-      return current
-    }
-
-    // 按点分割路径
-    const parts = cleanPath.split('.').filter(part => part !== '')
-
-    for (const part of parts) {
-      if (current === null || current === undefined) {
-        console.warn(`[DataSourceConfigForm] 路径 "${part}" 处数据为空`)
-        return null
-      }
-
-      // 处理数组索引
-      if (part.includes('[') && part.includes(']')) {
-        const [field, indexPart] = part.split('[')
-        const index = parseInt(indexPart.replace(']', ''), 10)
-
-        if (field) {
-          current = current[field]
-        }
-
-        if (Array.isArray(current) && index >= 0 && index < current.length) {
-          current = current[index]
-        } else {
-          console.warn(`[DataSourceConfigForm] 数组索引 ${index} 无效`)
-          return null
-        }
-      } else {
-        // 普通字段访问
-        if (typeof current === 'object' && current !== null && part in current) {
-          current = current[part]
-        } else {
-          console.warn(`[DataSourceConfigForm] 字段 "${part}" 不存在`)
-          return null
-        }
-      }
-    }
-
-    return current
-  } catch (error) {
-    console.warn(`[DataSourceConfigForm] 路径解析错误:`, error)
-    return data // 出错时返回原始数据
+    return JSON.stringify(data, null, 2)
+  } catch {
+    return String(data)
   }
 }
 
-// 更新 JSON 值（现在主要用于保存数据，过滤由 DataFilterInput 组件处理）
-const updateJsonValue = (key: string, value: string) => {
-  jsonValues[key] = value
-  console.log(`📝 [DataSourceConfigForm] 更新数据源 ${key} JSON 数据`)
+/**
+ * 随机修改数据
+ */
+const randomizeData = (dataSourceKey: string) => {
+  const dataSource = props.dataSources.find(ds => ds.key === dataSourceKey)
+  if (!dataSource) return
 
-  // 不再直接发射，让 DataFilterInput 组件处理过滤和发射
+  const dataType = getDataTypeText(dataSource)
+  
+  if (dataType === '数组') {
+    // 修改数组数据
+    dataValues[dataSourceKey] = [
+      { 
+        id: Math.floor(Math.random() * 1000), 
+        name: `随机项目${Math.floor(Math.random() * 100)}`, 
+        value: Math.floor(Math.random() * 1000), 
+        status: Math.random() > 0.5 ? 'active' : 'inactive' 
+      },
+      { 
+        id: Math.floor(Math.random() * 1000), 
+        name: `随机项目${Math.floor(Math.random() * 100)}`, 
+        value: Math.floor(Math.random() * 1000), 
+        status: Math.random() > 0.5 ? 'active' : 'inactive' 
+      }
+    ]
+  } else {
+    // 修改对象数据
+    dataValues[dataSourceKey] = {
+      name: `随机测试${Math.floor(Math.random() * 100)}`,
+      value: Math.floor(Math.random() * 1000),
+      status: Math.random() > 0.5 ? 'online' : 'offline',
+      timestamp: new Date().toISOString(),
+      config: {
+        enabled: Math.random() > 0.5,
+        priority: Math.random() > 0.5 ? 'high' : 'low'
+      }
+    }
+  }
+  
+  console.log('🔧 [DEBUG-Config] 随机修改数据:', { dataSourceKey, newData: dataValues[dataSourceKey] })
+  
+  // 立即发送更新
+  sendUpdate()
 }
 
-// 初始化数据源状态
-const initializeDataSources = () => {
-  console.log('🚀 [DataSourceConfigForm] 初始化数据源状态')
+/**
+ * 重置数据为默认
+ */
+const resetData = (dataSourceKey: string) => {
+  dataValues[dataSourceKey] = getDefaultData(dataSourceKey)
+  console.log('🔧 [DEBUG-Config] 重置数据:', { dataSourceKey, data: dataValues[dataSourceKey] })
+  sendUpdate()
+}
+
+// 上次发送的配置，用于防止重复发送
+let lastSentConfig: string | null = null
+
+/**
+ * 发送配置更新 - 🔥 修复：只在数据真正变化时发送
+ */
+const sendUpdate = () => {
+  const dataSourceBindings: Record<string, any> = {}
+  
+  // 构建数据源绑定
   props.dataSources.forEach(dataSource => {
-    dataSourceTypes[dataSource.key] = 'json' // 默认为 JSON
-    jsonValues[dataSource.key] = JSON.stringify(getDefaultData(dataSource.key), null, 2)
-    filterPaths[dataSource.key] = '' // 默认无过滤路径
-    fieldMappings[dataSource.key] = [] // 默认无字段映射，让用户手动配置
+    if (dataValues[dataSource.key]) {
+      dataSourceBindings[dataSource.key] = {
+        rawData: JSON.stringify(dataValues[dataSource.key])
+      }
+    }
+  })
+  
+  const config = { dataSourceBindings }
+  const configHash = JSON.stringify(config)
+  
+  // 🔥 关键修复：只在配置真正变化时才发送
+  if (configHash !== lastSentConfig) {
+    console.log('🔧 [DEBUG-Config] 检测到配置变化，发送更新:', {
+      selectedWidgetId: props.selectedWidgetId,
+      bindingKeys: Object.keys(dataSourceBindings),
+      hasDataChanged: configHash !== lastSentConfig,
+      config
+    })
+    
+    lastSentConfig = configHash
+    emit('update', config)
+  } else {
+    console.log('🔧 [DEBUG-Config] 配置未变化，跳过发送:', {
+      selectedWidgetId: props.selectedWidgetId,
+      bindingKeys: Object.keys(dataSourceBindings)
+    })
+  }
+}
+
+/**
+ * 初始化数据 - 🔥 修复：优先使用当前运行时数据
+ */
+const initializeData = () => {
+  console.log('🔧 [DEBUG-Config] 初始化数据源数据:', {
+    selectedWidgetId: props.selectedWidgetId,
+    dataSourcesCount: props.dataSources.length,
+    dataSourceKeys: props.dataSources.map(ds => ds.key)
+  })
+  
+  // 🔥 重置配置缓存，允许新的配置发送
+  lastSentConfig = null
+  
+  // 🔥 核心修复：先请求当前运行时数据
+  if (props.selectedWidgetId) {
+    console.log('🔄 [DataSourceConfigForm] 请求当前运行时数据:', props.selectedWidgetId)
+    emit('request-current-data', props.selectedWidgetId)
+    
+    // 给父组件一点时间响应，然后再尝试恢复
+    setTimeout(() => {
+      attemptDataRestore()
+    }, 50)
+  } else {
+    // 没有选中组件，使用默认数据
+    useDefaultData()
+  }
+}
+
+/**
+ * 尝试数据恢复（从存储的配置）
+ */
+const attemptDataRestore = () => {
+  let hasRestoredData = false
+  
+  if (props.selectedWidgetId) {
+    try {
+      console.log('🔍 [DEBUG-Restore] 开始尝试恢复配置:', props.selectedWidgetId)
+      const savedConfig = configurationManager.getConfiguration(props.selectedWidgetId)
+      console.log('🔍 [DEBUG-Restore] ConfigurationManager返回的完整配置:', savedConfig)
+      
+      // 尝试从多种数据结构恢复
+      let dataSourceBindings = null
+      
+      if (savedConfig?.dataSource?.config?.dataSourceBindings) {
+        dataSourceBindings = savedConfig.dataSource.config.dataSourceBindings
+        console.log('🔧 [DEBUG-Config] 从dataSource.config恢复数据:', dataSourceBindings)
+      } else if (savedConfig?.dataSourceBindings) {
+        dataSourceBindings = savedConfig.dataSourceBindings
+        console.log('🔧 [DEBUG-Config] 从dataSourceBindings直接恢复数据:', dataSourceBindings)
+      }
+      
+      if (dataSourceBindings && Object.keys(dataSourceBindings).length > 0) {
+        // 恢复每个数据源的保存数据
+        Object.entries(dataSourceBindings).forEach(([key, binding]: [string, any]) => {
+          if (binding?.rawData) {
+            try {
+              dataValues[key] = JSON.parse(binding.rawData)
+              hasRestoredData = true
+              console.log(`🔧 [DEBUG-Config] 恢复数据源 ${key}:`, dataValues[key])
+            } catch (error) {
+              console.warn(`⚠️ [DEBUG-Config] 恢复数据源 ${key} 失败:`, error)
+            }
+          }
+        })
+      }
+    } catch (error) {
+      console.warn('⚠️ [DEBUG-Config] 配置恢复失败:', error)
+    }
+  }
+  
+  // 如果没有恢复到数据，使用默认数据
+  if (!hasRestoredData) {
+    useDefaultData()
+  }
+  
+  // 🔥 修复：只在没有恢复到数据时发送初始配置
+  // 恢复数据时不发送，避免重复发送相同配置
+  if (!hasRestoredData) {
+    console.log('🔧 [DEBUG-Config] 使用默认数据，发送初始配置')
+    sendUpdate()
+  } else {
+    console.log('🔧 [DEBUG-Config] 数据已恢复，不发送重复配置')
+    // 更新 lastSentConfig 以避免后续重复发送
+    const dataSourceBindings: Record<string, any> = {}
+    props.dataSources.forEach(dataSource => {
+      if (dataValues[dataSource.key]) {
+        dataSourceBindings[dataSource.key] = {
+          rawData: JSON.stringify(dataValues[dataSource.key])
+        }
+      }
+    })
+    lastSentConfig = JSON.stringify({ dataSourceBindings })
+  }
+}
+
+/**
+ * 使用默认数据
+ */
+const useDefaultData = () => {
+  console.log('🔧 [DEBUG-Config] 使用默认数据初始化')
+  props.dataSources.forEach(dataSource => {
+    dataValues[dataSource.key] = getDefaultData(dataSource.key)
   })
 }
 
-// 从 ConfigurationManager 加载已保存的数据
-const loadSavedDataFromManager = () => {
-  if (!props.selectedWidgetId) {
-    console.log('🔄 [DataSourceConfigForm] 无组件ID，使用默认数据')
-    initializeDataSources()
-    // 发射默认数据
-    props.dataSources.forEach(dataSource => {
-      updateJsonValue(dataSource.key, jsonValues[dataSource.key])
-    })
-    return
+// 组件挂载时初始化
+onMounted(() => {
+  initializeData()
+})
+
+// 🔥 监听 selectedWidgetId 变化，重新初始化
+watch(() => props.selectedWidgetId, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    console.log('🔄 [DataSourceConfigForm] selectedWidgetId 变化，重新初始化:', { oldId, newId })
+    initializeData()
   }
+}, { immediate: false })
 
-  console.log('🔄 [DataSourceConfigForm] 从 ConfigurationManager 加载数据:', props.selectedWidgetId)
-
-  const config = configurationManager.getConfiguration(props.selectedWidgetId)
-  let hasLoadedData = false
-
-  if (config?.dataSource?.type === 'data-source-bindings' && config.dataSource.config?.dataSourceBindings) {
-    console.log('✅ [DataSourceConfigForm] 找到已保存的数据源配置:', config.dataSource.config.dataSourceBindings)
-
-    // 先初始化基础结构
-    initializeDataSources()
-
-    // 恢复已保存的数据
-    Object.entries(config.dataSource.config.dataSourceBindings).forEach(([key, binding]: [string, any]) => {
-      if (binding.rawData && jsonValues[key] !== undefined) {
-        jsonValues[key] = binding.rawData
-        // 恢复过滤路径
-        filterPaths[key] = binding.filterPath || ''
-        // 恢复字段映射规则
-        fieldMappings[key] = binding.fieldMappings || []
-        console.log(`✅ [DataSourceConfigForm] 恢复数据源 ${key}:`, binding.rawData.substring(0, 100))
-        console.log(`✅ [DataSourceConfigForm] 恢复过滤路径 ${key}:`, binding.filterPath || '(无过滤)')
-        console.log(`✅ [DataSourceConfigForm] 恢复字段映射 ${key}:`, binding.fieldMappings || '(无映射)')
-        hasLoadedData = true
-      }
-    })
-
-    if (hasLoadedData) {
-      // 恢复数据后立即发射给组件
-      Object.entries(config.dataSource.config.dataSourceBindings).forEach(([key, binding]: [string, any]) => {
-        if (binding.rawData && jsonValues[key] !== undefined) {
-          updateJsonValue(key, binding.rawData)
-        }
-      })
-    }
-  }
-
-  if (!hasLoadedData) {
-    console.log('🔄 [DataSourceConfigForm] 没有已保存的数据，使用默认数据')
-    initializeDataSources()
-    // 发射默认数据
-    props.dataSources.forEach(dataSource => {
-      updateJsonValue(dataSource.key, jsonValues[dataSource.key])
-    })
-  }
-}
-
-// 监听选中的组件变化，自动加载对应的配置
-watch(
-  () => props.selectedWidgetId,
-  newWidgetId => {
-    console.log('🔄 [DataSourceConfigForm] 组件切换，重新加载数据:', newWidgetId)
-    loadSavedDataFromManager()
-  },
-  { immediate: true }
-)
-
-// 切换数据源类型
-const switchDataSourceType = (key: string, type: 'json' | 'http') => {
-  dataSourceTypes[key] = type
-  console.log(`🔄 数据源 ${key} 切换到 ${type}`)
-
-  if (type === 'json') {
-    // 切换到 JSON 时，立即发射当前数据
-    updateJsonValue(key, jsonValues[key])
-  }
-}
-
-// 获取 JSON 值
-const getJsonValue = (key: string) => {
-  return jsonValues[key] || '{}'
-}
-
-// 获取格式提示
-const getFormatTip = (key: string) => {
-  const isArrayType = key.includes('array') || key.includes('list')
-  return isArrayType ? '数组格式: [{key: value}, ...]' : '对象格式: {key1: value1, key2: value2}'
-}
-
-// 格式化 JSON 值
-const formatJsonValue = (key: string) => {
-  try {
-    const parsed = JSON.parse(jsonValues[key])
-    jsonValues[key] = JSON.stringify(parsed, null, 2)
-    message.success('JSON 格式化成功')
-    // 格式化后重新发射数据
-    updateJsonValue(key, jsonValues[key])
-  } catch (error) {
-    message.error('JSON 格式错误，无法格式化')
-  }
-}
-
-// 加载示例数据
-const loadSampleData = (key: string) => {
-  const sampleData = getDefaultData(key)
-  jsonValues[key] = JSON.stringify(sampleData, null, 2)
-  message.success('示例数据加载成功')
-  // 加载示例数据后立即发射
-  updateJsonValue(key, jsonValues[key])
-}
-
-// 处理过滤路径变化
-const handleFilterPathChange = (key: string, path: string) => {
-  filterPaths[key] = path
-  console.log(`🔧 [DataSourceConfigForm] 数据源 ${key} 过滤路径变更为: "${path}"`)
-
-  // 重新应用过滤器并发射数据
-  if (jsonValues[key]) {
-    updateJsonValue(key, jsonValues[key])
-  }
-}
-
-// 获取解析后的 JSON 值用于预览
-const getParsedJsonValue = (key: string): any => {
-  try {
-    const jsonStr = jsonValues[key] || '{}'
-    return JSON.parse(jsonStr)
-  } catch (error) {
-    return null
-  }
-}
-
-// 处理过滤结果
-const handleFilterResult = (key: string, filteredData: any) => {
-  console.log(`🔧 [DataSourceConfigForm] 数据源 ${key} 过滤结果:`, filteredData)
-
-  // 缓存过滤后的数据
-  filteredDataCache[key] = filteredData
-
-  // 应用字段映射并发射最终数据
-  applyFieldMappingAndEmit(key, filteredData)
-}
-
-// 获取过滤后的数据（用于字段映射预览）
-const getFilteredData = (key: string): any => {
-  return filteredDataCache[key] || getParsedJsonValue(key)
-}
-
-// 处理字段映射结果
-const handleMappingResult = (key: string, mappedData: any) => {
-  console.log(`🔧 [DataSourceConfigForm] 数据源 ${key} 字段映射结果:`, mappedData)
-
-  // 缓存最终处理后的数据
-  finalDataCache[key] = mappedData
-
-  // 发射最终数据
-  const eventName = `update:${key}`
-  emit(eventName, mappedData)
-}
-
-/**
- * 从数据源定义中提取必需字段信息
- * 用于传递给DataFieldMappingInput组件显示组件需要的字段
- */
-const extractRequiredFields = (dataSource: DataSource) => {
-  console.log('🔍 [DataSourceConfigForm] 提取必需字段:', dataSource)
-
-  if (!dataSource || !dataSource.fieldMappings || typeof dataSource.fieldMappings !== 'object') {
-    console.log('🔍 [DataSourceConfigForm] 无有效字段映射配置')
-    return []
-  }
-
-  try {
-    // 将fieldMappings转换为DataFieldMappingInput需要的格式
-    return Object.entries(dataSource.fieldMappings)
-      .filter(([sourceKey, mapping]) => sourceKey && mapping && typeof mapping === 'object')
-      .map(([sourceKey, mapping]: [string, any]) => ({
-        targetField: mapping?.targetField || sourceKey,
-        type: mapping?.type || 'value',
-        required: Boolean(mapping?.required),
-        description: mapping?.description || `组件需要的 ${mapping?.targetField || sourceKey} 字段`
-      }))
-  } catch (error) {
-    console.error('🔍 [DataSourceConfigForm] 提取必需字段失败:', error)
-    return []
-  }
-}
-
-// 应用字段映射的通用方法
-const applyFieldMappingAndEmit = (key: string, filteredData: any) => {
-  const mappingRules = fieldMappings[key]
-
-  // 确保 mappingRules 是数组
-  if (!mappingRules || !Array.isArray(mappingRules) || mappingRules.length === 0) {
-    // 没有映射规则，直接发射过滤后的数据
-    const eventName = `update:${key}`
-    emit(eventName, filteredData)
-    return
-  }
-
-  // 应用字段映射
-  const mappedData = applyFieldMapping(filteredData, mappingRules)
-  handleMappingResult(key, mappedData)
-}
-
-/**
- * 从对象中根据路径获取值
- * 支持嵌套路径，如 'user.profile.name'
- */
-const getValueByPath = (obj: any, path: string): any => {
-  if (!obj || !path) return undefined
-
-  const keys = path.split('.')
-  let current = obj
-
-  for (const key of keys) {
-    if (current === null || current === undefined) {
-      return undefined
-    }
-    current = current[key]
-  }
-
-  return current
-}
-
-/**
- * 应用字段映射规则
- * 将原始数据转换为目标字段结构
- */
-const applyFieldMapping = (data: any, mappingRules: Array<{ targetField: string; sourcePath: string }>): any => {
-  if (!data || !mappingRules) {
-    return data
-  }
-
-  // 确保 mappingRules 是数组
-  if (!Array.isArray(mappingRules) || mappingRules.length === 0) {
-    return data
-  }
-
-  // 处理数组数据
-  if (Array.isArray(data)) {
-    return data.map(item => applyFieldMapping(item, mappingRules))
-  }
-
-  // 处理对象数据
-  if (typeof data === 'object' && data !== null) {
-    const result: Record<string, any> = {}
-
-    // 应用映射规则
-    mappingRules.forEach(rule => {
-      if (rule.targetField && rule.sourcePath) {
-        const value = getValueByPath(data, rule.sourcePath)
-        if (value !== undefined) {
-          result[rule.targetField] = value
-        }
-      }
-    })
-
-    return result
-  }
-
-  return data
-}
-
-// 递归更新问题已通过 restoreSavedValues 方法解决，不再需要监听 initialData
-// 组件挂载时不再自动发射初始数据，等待 ConfigurationPanel 恢复已保存数据或手动初始化
+// 监听 props 变化，重新初始化
+watch(() => props.dataSources, () => {
+  initializeData()
+}, { deep: true })
 </script>
 
 <style scoped>
 .data-source-config-form {
-  padding: 8px;
+  width: 100%;
 }
 
 .data-source-content {
-  padding: 12px 0;
-}
-
-.json-config {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.http-config {
-  padding: 8px 0;
-}
-
-/* 折叠面板样式调整 */
-:deep(.n-collapse-item__header) {
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-:deep(.n-collapse-item__content-wrapper) {
-  padding: 0 12px 12px 12px;
-}
-
-/* 标签按钮样式 */
-.n-tag {
-  transition: all 0.2s ease;
-}
-
-.n-tag:hover {
-  opacity: 0.8;
-}
-
-/* 表单项样式 */
-:deep(.n-form-item .n-form-item-label) {
-  font-size: 12px;
-  color: var(--text-color-2);
-}
-
-:deep(.n-input) {
-  font-size: 12px;
-}
-
-:deep(.n-input__textarea-el) {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 11px;
-  line-height: 1.4;
+  padding: 16px;
+  background: var(--card-color);
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
 }
 </style>

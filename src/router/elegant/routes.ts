@@ -854,6 +854,15 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'test_script-engine-test',
+        path: '/test/script-engine-test',
+        component: 'view.test_script-engine-test',
+        meta: {
+          title: 'test_script-engine-test',
+          i18nKey: 'route.test_script-engine-test'
+        }
+      },
+      {
         name: 'test_v4-optimization-validation',
         path: '/test/v4-optimization-validation',
         component: 'view.test_v4-optimization-validation',

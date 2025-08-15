@@ -4,6 +4,7 @@
  */
 
 import type { DataSource } from './types'
+import { defaultScriptEngine } from '@/core/script-engine'
 
 // ========== 静态数据源 ==========
 
@@ -362,51 +363,18 @@ export class ScriptDataSource implements DataSource {
     console.log(`📜 [ScriptDataSource] 执行脚本: ${this.id}`)
 
     try {
-      // 创建安全的执行环境
-      const context = {
-        ...this.config.context,
-        console: {
-          log: console.log,
-          warn: console.warn,
-          error: console.error
-        },
-        Math,
-        Date,
-        JSON,
-        fetch,
-        // 模拟数据生成函数
-        mockData: {
-          randomNumber: (min = 0, max = 100) => Math.random() * (max - min) + min,
-          randomString: (length = 10) =>
-            Math.random()
-              .toString(36)
-              .substring(2, length + 2),
-          randomBoolean: () => Math.random() > 0.5,
-          randomDate: () => new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000)
-        }
+      // 使用全局脚本引擎执行脚本
+      const result = await defaultScriptEngine.execute(this.config.script, this.config.context)
+
+      if (result.success) {
+        console.log(`✅ [ScriptDataSource] 脚本执行成功: ${this.id} (${result.executionTime}ms)`)
+        return result.data
+      } else {
+        console.error(`❌ [ScriptDataSource] 脚本执行失败: ${this.id}`, result.error)
+        throw result.error || new Error('脚本执行失败')
       }
-
-      // 创建异步函数并执行
-      const asyncFunction = new Function(
-        'context',
-        `
-        return (async function() {
-          with(context) {
-            ${this.config.script}
-          }
-        })();
-      `
-      )
-
-      const result = await Promise.race([
-        asyncFunction(context),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('脚本执行超时')), this.config.timeout))
-      ])
-
-      console.log(`✅ [ScriptDataSource] 脚本执行成功: ${this.id}`)
-      return result
     } catch (error) {
-      console.error(`❌ [ScriptDataSource] 脚本执行失败: ${this.id}`, error)
+      console.error(`❌ [ScriptDataSource] 脚本执行异常: ${this.id}`, error)
       throw error
     }
   }

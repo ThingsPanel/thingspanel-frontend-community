@@ -2,8 +2,8 @@
  * 配置管理器
  * 负责管理所有组件的配置数据，提供配置的CRUD操作和事件监听
  */
-
 import { reactive, ref, computed } from 'vue'
+
 import type {
   IConfigurationManager,
   WidgetConfiguration,

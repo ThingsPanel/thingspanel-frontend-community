@@ -255,6 +255,7 @@ const routeMap: RouteMap = {
   "test_data-filter-test": "/test/data-filter-test",
   "test_data-mapping-test": "/test/data-mapping-test",
   "test_editor-integration": "/test/editor-integration",
+  "test_script-engine-test": "/test/script-engine-test",
   "test_v4-optimization-validation": "/test/v4-optimization-validation",
   "test_v5-refactoring-validation": "/test/v5-refactoring-validation",
   "ultra-kanban": "/ultra-kanban",

@@ -10,6 +10,24 @@
 
     <!-- 测试分类 -->
     <div class="test-categories">
+      <!-- 脚本引擎测试 -->
+      <n-card title="脚本引擎测试" size="small" class="category-card">
+        <template #header-extra>
+          <n-tag type="success" size="small">最新</n-tag>
+        </template>
+
+        <div class="category-description">
+          <p>测试全局脚本处理引擎的完整功能，包括安全沙箱、模板系统、上下文管理和Visual Editor集成。</p>
+          <div class="test-items">
+            <n-space>
+              <n-button type="primary" size="small" @click="navigateTo('/test/script-engine-test')">
+                脚本引擎测试平台
+              </n-button>
+            </n-space>
+          </div>
+        </div>
+      </n-card>
+
       <!-- 数据源系统测试 -->
       <n-card title="数据源系统测试" size="small" class="category-card">
         <template #header-extra>

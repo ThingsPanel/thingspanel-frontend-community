@@ -86,6 +86,7 @@ export const views: Record<LastLevelRouteKey, RouteComponent | (() => Promise<Ro
   "test_data-mapping-test": () => import("@/views/test/data-mapping-test/index.vue"),
   "test_editor-integration": () => import("@/views/test/editor-integration/index.vue"),
   test: () => import("@/views/test/index.vue"),
+  "test_script-engine-test": () => import("@/views/test/script-engine-test/index.vue"),
   "test_v4-optimization-validation": () => import("@/views/test/v4-optimization-validation/index.vue"),
   "test_v5-refactoring-validation": () => import("@/views/test/v5-refactoring-validation/index.vue"),
   "ultra-kanban_index": () => import("@/views/ultra-kanban/index/index.vue"),
