@@ -86,16 +86,16 @@
               <n-button size="tiny" @click="formatJsonValue(dataSource.key)">格式化</n-button>
               <n-button size="tiny" @click="loadSampleData(dataSource.key)">示例数据</n-button>
             </n-space>
-            
-            <!-- 数据过滤器 -->
-            <DataFilterInput
+
+            <!-- 数据过滤器 - 暂时禁用 -->
+            <!-- <DataFilterInput
               v-model="filterPaths[dataSource.key]"
               :source-data="getParsedJsonValue(dataSource.key)"
-              @filter-change="(filteredData) => handleFilterResult(dataSource.key, filteredData)"
-            />
-            
+              @filter-change="filteredData => handleFilterResult(dataSource.key, filteredData)"
+            /> -->
+
             <!-- 数据字段映射 -->
-            <n-divider style="margin: 16px 0;" />
+            <n-divider style="margin: 16px 0" />
             <n-form-item label="字段映射配置" size="small">
               <template #label>
                 <n-space align="center" size="small">
@@ -121,14 +121,31 @@
                       </div>
                     </div>
                   </n-tooltip>
+
+                  <!-- 示例数据工具提示图标 - 暂时简化 -->
+                  <n-tooltip>
+                    <template #trigger>
+                      <n-icon size="14" color="var(--primary-color)" style="cursor: help">
+                        <InformationCircleOutline />
+                      </n-icon>
+                    </template>
+                    <div style="max-width: 200px; font-size: 12px">
+                      示例数据参考 (功能开发中...)
+                    </div>
+                  </n-tooltip>
                 </n-space>
               </template>
-              <DataFieldMappingInput
+              <!-- 暂时禁用以排查错误 -->
+              <div style="padding: 8px; color: var(--text-color-3); font-size: 12px;">
+                字段映射功能暂时禁用，正在排查问题...
+              </div>
+              <!-- <DataFieldMappingInput
                 v-model="fieldMappings[dataSource.key]"
                 :preview-data="getFilteredData(dataSource.key)"
                 :show-preview="true"
-                @mapping-change="(mappedData) => handleMappingResult(dataSource.key, mappedData)"
-              />
+                :required-fields="extractRequiredFields(dataSource)"
+                @mapping-change="mappedData => handleMappingResult(dataSource.key, mappedData)"
+              /> -->
             </n-form-item>
           </div>
 
@@ -156,17 +173,32 @@ import {
   NTooltip,
   NIcon,
   NDivider,
+  NCode,
   useMessage
 } from 'naive-ui'
 import { InformationCircleOutline } from '@vicons/ionicons5'
 import { configurationManager } from '../ConfigurationManager'
-import DataFilterInput from './DataFilterInput.vue'
-import DataFieldMappingInput from './DataFieldMappingInput.vue'
+import DataFilterInput from '../components/DataFilterInput.vue'
+import DataFieldMappingInput from '../components/DataFieldMappingInput.vue'
 
 interface DataSource {
   key: string
   type: string
   label?: string
+  // Card2.1 数据源定义扩展字段
+  fieldMappings?: Record<
+    string,
+    {
+      targetField: string
+      type: 'value' | 'object' | 'array'
+      required: boolean
+      defaultValue?: any
+    }
+  >
+  // 示例数据
+  exampleData?: any
+  // 数据处理脚本
+  dataProcessScript?: string
 }
 
 interface Props {
@@ -228,36 +260,36 @@ const applyDataFilter = (data: any, path: string): any => {
   if (!path || path === '$') {
     return data
   }
-  
+
   try {
     // 简单的 JSONPath 实现
     let current = data
-    
+
     // 移除开头的 $ 符号
     const cleanPath = path.startsWith('$') ? path.substring(1) : path
-    
+
     if (cleanPath === '') {
       return current
     }
-    
+
     // 按点分割路径
     const parts = cleanPath.split('.').filter(part => part !== '')
-    
+
     for (const part of parts) {
       if (current === null || current === undefined) {
         console.warn(`[DataSourceConfigForm] 路径 "${part}" 处数据为空`)
         return null
       }
-      
+
       // 处理数组索引
       if (part.includes('[') && part.includes(']')) {
         const [field, indexPart] = part.split('[')
         const index = parseInt(indexPart.replace(']', ''), 10)
-        
+
         if (field) {
           current = current[field]
         }
-        
+
         if (Array.isArray(current) && index >= 0 && index < current.length) {
           current = current[index]
         } else {
@@ -274,7 +306,7 @@ const applyDataFilter = (data: any, path: string): any => {
         }
       }
     }
-    
+
     return current
   } catch (error) {
     console.warn(`[DataSourceConfigForm] 路径解析错误:`, error)
@@ -286,7 +318,7 @@ const applyDataFilter = (data: any, path: string): any => {
 const updateJsonValue = (key: string, value: string) => {
   jsonValues[key] = value
   console.log(`📝 [DataSourceConfigForm] 更新数据源 ${key} JSON 数据`)
-  
+
   // 不再直接发射，让 DataFilterInput 组件处理过滤和发射
 }
 
@@ -297,7 +329,7 @@ const initializeDataSources = () => {
     dataSourceTypes[dataSource.key] = 'json' // 默认为 JSON
     jsonValues[dataSource.key] = JSON.stringify(getDefaultData(dataSource.key), null, 2)
     filterPaths[dataSource.key] = '' // 默认无过滤路径
-    fieldMappings[dataSource.key] = [] // 默认无字段映射
+    fieldMappings[dataSource.key] = [] // 默认无字段映射，让用户手动配置
   })
 }
 
@@ -417,7 +449,7 @@ const loadSampleData = (key: string) => {
 const handleFilterPathChange = (key: string, path: string) => {
   filterPaths[key] = path
   console.log(`🔧 [DataSourceConfigForm] 数据源 ${key} 过滤路径变更为: "${path}"`)
-  
+
   // 重新应用过滤器并发射数据
   if (jsonValues[key]) {
     updateJsonValue(key, jsonValues[key])
@@ -437,10 +469,10 @@ const getParsedJsonValue = (key: string): any => {
 // 处理过滤结果
 const handleFilterResult = (key: string, filteredData: any) => {
   console.log(`🔧 [DataSourceConfigForm] 数据源 ${key} 过滤结果:`, filteredData)
-  
+
   // 缓存过滤后的数据
   filteredDataCache[key] = filteredData
-  
+
   // 应用字段映射并发射最终数据
   applyFieldMappingAndEmit(key, filteredData)
 }
@@ -453,26 +485,55 @@ const getFilteredData = (key: string): any => {
 // 处理字段映射结果
 const handleMappingResult = (key: string, mappedData: any) => {
   console.log(`🔧 [DataSourceConfigForm] 数据源 ${key} 字段映射结果:`, mappedData)
-  
+
   // 缓存最终处理后的数据
   finalDataCache[key] = mappedData
-  
+
   // 发射最终数据
   const eventName = `update:${key}`
   emit(eventName, mappedData)
 }
 
+/**
+ * 从数据源定义中提取必需字段信息
+ * 用于传递给DataFieldMappingInput组件显示组件需要的字段
+ */
+const extractRequiredFields = (dataSource: DataSource) => {
+  console.log('🔍 [DataSourceConfigForm] 提取必需字段:', dataSource)
+
+  if (!dataSource || !dataSource.fieldMappings || typeof dataSource.fieldMappings !== 'object') {
+    console.log('🔍 [DataSourceConfigForm] 无有效字段映射配置')
+    return []
+  }
+
+  try {
+    // 将fieldMappings转换为DataFieldMappingInput需要的格式
+    return Object.entries(dataSource.fieldMappings)
+      .filter(([sourceKey, mapping]) => sourceKey && mapping && typeof mapping === 'object')
+      .map(([sourceKey, mapping]: [string, any]) => ({
+        targetField: mapping?.targetField || sourceKey,
+        type: mapping?.type || 'value',
+        required: Boolean(mapping?.required),
+        description: mapping?.description || `组件需要的 ${mapping?.targetField || sourceKey} 字段`
+      }))
+  } catch (error) {
+    console.error('🔍 [DataSourceConfigForm] 提取必需字段失败:', error)
+    return []
+  }
+}
+
 // 应用字段映射的通用方法
 const applyFieldMappingAndEmit = (key: string, filteredData: any) => {
   const mappingRules = fieldMappings[key]
-  
-  if (!mappingRules || mappingRules.length === 0) {
+
+  // 确保 mappingRules 是数组
+  if (!mappingRules || !Array.isArray(mappingRules) || mappingRules.length === 0) {
     // 没有映射规则，直接发射过滤后的数据
     const eventName = `update:${key}`
     emit(eventName, filteredData)
     return
   }
-  
+
   // 应用字段映射
   const mappedData = applyFieldMapping(filteredData, mappingRules)
   handleMappingResult(key, mappedData)
@@ -484,17 +545,17 @@ const applyFieldMappingAndEmit = (key: string, filteredData: any) => {
  */
 const getValueByPath = (obj: any, path: string): any => {
   if (!obj || !path) return undefined
-  
+
   const keys = path.split('.')
   let current = obj
-  
+
   for (const key of keys) {
     if (current === null || current === undefined) {
       return undefined
     }
     current = current[key]
   }
-  
+
   return current
 }
 
@@ -503,7 +564,12 @@ const getValueByPath = (obj: any, path: string): any => {
  * 将原始数据转换为目标字段结构
  */
 const applyFieldMapping = (data: any, mappingRules: Array<{ targetField: string; sourcePath: string }>): any => {
-  if (!data || !mappingRules || mappingRules.length === 0) {
+  if (!data || !mappingRules) {
+    return data
+  }
+
+  // 确保 mappingRules 是数组
+  if (!Array.isArray(mappingRules) || mappingRules.length === 0) {
     return data
   }
 
@@ -515,7 +581,7 @@ const applyFieldMapping = (data: any, mappingRules: Array<{ targetField: string;
   // 处理对象数据
   if (typeof data === 'object' && data !== null) {
     const result: Record<string, any> = {}
-    
+
     // 应用映射规则
     mappingRules.forEach(rule => {
       if (rule.targetField && rule.sourcePath) {
@@ -525,7 +591,7 @@ const applyFieldMapping = (data: any, mappingRules: Array<{ targetField: string;
         }
       }
     })
-    
+
     return result
   }
 

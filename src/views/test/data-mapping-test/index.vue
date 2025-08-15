@@ -23,7 +23,7 @@
                   @update:value="handleSampleDataChange"
                 />
               </n-form-item>
-              
+
               <n-form-item label="JSON数据" size="small">
                 <n-input
                   v-model:value="rawJsonData"
@@ -57,34 +57,26 @@
           <n-card title="映射结果展示" size="small">
             <n-space vertical :size="16">
               <!-- 映射状态 -->
-              <n-alert 
-                :type="mappingStatus.type" 
-                size="small"
-                :show-icon="false"
-              >
+              <n-alert :type="mappingStatus.type" size="small" :show-icon="false">
                 <template #header>映射状态</template>
                 <div>{{ mappingStatus.message }}</div>
-                <div v-if="mappedData" style="margin-top: 4px;">
-                  <n-text depth="3" style="font-size: 12px;">
-                    映射字段数: {{ getMappedFieldCount() }} | 
-                    数据类型: {{ Array.isArray(mappedData) ? '数组' : '对象' }} |
-                    更新时间: {{ lastUpdateTime }}
+                <div v-if="mappedData" style="margin-top: 4px">
+                  <n-text depth="3" style="font-size: 12px">
+                    映射字段数: {{ getMappedFieldCount() }} | 数据类型:
+                    {{ Array.isArray(mappedData) ? '数组' : '对象' }} | 更新时间: {{ lastUpdateTime }}
                   </n-text>
                 </div>
               </n-alert>
 
               <!-- 使用字段映射测试组件展示结果 -->
               <div class="mapped-result">
-                <FieldMappingDemo
-                  :mapped-data="mappedData"
-                  :show-debug-info="showDebugInfo"
-                />
+                <FieldMappingDemo :mapped-data="mappedData" :show-debug-info="showDebugInfo" />
               </div>
 
               <!-- 控制选项 -->
               <n-space align="center">
                 <n-switch v-model:value="showDebugInfo" size="small" />
-                <n-text depth="3" style="font-size: 12px;">显示调试信息</n-text>
+                <n-text depth="3" style="font-size: 12px">显示调试信息</n-text>
               </n-space>
             </n-space>
           </n-card>
@@ -100,27 +92,36 @@
             <n-space vertical :size="12">
               <div class="instruction-item">
                 <n-text strong>1. 基本使用</n-text>
-                <ul style="margin: 8px 0; padding-left: 20px;">
+                <ul style="margin: 8px 0; padding-left: 20px">
                   <li>选择或输入原始JSON数据</li>
                   <li>点击"添加字段映射"配置映射规则</li>
                   <li>设置目标字段名和源字段路径</li>
                   <li>查看右侧实时映射结果</li>
                 </ul>
               </div>
-              
+
               <div class="instruction-item">
                 <n-text strong>2. 字段映射规则</n-text>
-                <ul style="margin: 8px 0; padding-left: 20px;">
-                  <li><n-code>name</n-code> - 简单字段映射</li>
-                  <li><n-code>user.name</n-code> - 嵌套对象字段</li>
-                  <li><n-code>user.profile.name</n-code> - 深层嵌套字段</li>
+                <ul style="margin: 8px 0; padding-left: 20px">
+                  <li>
+                    <n-code>name</n-code>
+                    - 简单字段映射
+                  </li>
+                  <li>
+                    <n-code>user.name</n-code>
+                    - 嵌套对象字段
+                  </li>
+                  <li>
+                    <n-code>user.profile.name</n-code>
+                    - 深层嵌套字段
+                  </li>
                   <li>支持数组和对象两种数据结构</li>
                 </ul>
               </div>
 
               <div class="instruction-item">
                 <n-text strong>3. 常见场景</n-text>
-                <ul style="margin: 8px 0; padding-left: 20px;">
+                <ul style="margin: 8px 0; padding-left: 20px">
                   <li>API数据字段名适配</li>
                   <li>数据库字段映射</li>
                   <li>多语言字段转换</li>
@@ -134,7 +135,7 @@
             <n-space vertical :size="12">
               <div class="example-item">
                 <n-text strong>示例1: 用户信息映射</n-text>
-                <n-code-group style="margin-top: 8px;">
+                <n-code-group style="margin-top: 8px">
                   <n-code language="json" title="原始数据">{{ userMappingExample.source }}</n-code>
                   <n-code language="json" title="映射规则">{{ userMappingExample.rules }}</n-code>
                   <n-code language="json" title="映射结果">{{ userMappingExample.result }}</n-code>
@@ -143,7 +144,7 @@
 
               <div class="example-item">
                 <n-text strong>示例2: 产品列表映射</n-text>
-                <n-code-group style="margin-top: 8px;">
+                <n-code-group style="margin-top: 8px">
                   <n-code language="json" title="原始数据">{{ productMappingExample.source }}</n-code>
                   <n-code language="json" title="映射规则">{{ productMappingExample.rules }}</n-code>
                   <n-code language="json" title="映射结果">{{ productMappingExample.result }}</n-code>
@@ -186,7 +187,7 @@ import {
 } from 'naive-ui'
 
 // 导入组件
-import DataFieldMappingInput from '@/components/visual-editor/configuration/forms/DataFieldMappingInput.vue'
+import DataFieldMappingInput from '@/components/visual-editor/configuration/components/DataFieldMappingInput.vue'
 import FieldMappingDemo from '@/card2.1/components/field-mapping-demo/FieldMappingDemo.vue'
 
 // 响应式状态
@@ -313,52 +314,76 @@ const mappingStatus = computed(() => {
   if (!fieldMappings.value || fieldMappings.value.length === 0) {
     return { type: 'info', message: '请添加字段映射规则' }
   }
-  
+
   if (!parsedRawData.value) {
     return { type: 'warning', message: '请输入有效的JSON数据' }
   }
-  
+
   if (mappedData.value) {
     return { type: 'success', message: '映射成功，数据已更新' }
   }
-  
+
   return { type: 'warning', message: '等待映射结果' }
 })
 
 // 示例用例数据
 const userMappingExample = {
-  source: JSON.stringify({
-    xingming: '张三',
-    nianling: 28,
-    gongsi: { mingcheng: '科技公司', bumen: '技术部' }
-  }, null, 2),
-  rules: JSON.stringify([
-    { targetField: 'name', sourcePath: 'xingming' },
-    { targetField: 'age', sourcePath: 'nianling' },
-    { targetField: 'company', sourcePath: 'gongsi.mingcheng' },
-    { targetField: 'department', sourcePath: 'gongsi.bumen' }
-  ], null, 2),
-  result: JSON.stringify({
-    name: '张三',
-    age: 28,
-    company: '科技公司',
-    department: '技术部'
-  }, null, 2)
+  source: JSON.stringify(
+    {
+      xingming: '张三',
+      nianling: 28,
+      gongsi: { mingcheng: '科技公司', bumen: '技术部' }
+    },
+    null,
+    2
+  ),
+  rules: JSON.stringify(
+    [
+      { targetField: 'name', sourcePath: 'xingming' },
+      { targetField: 'age', sourcePath: 'nianling' },
+      { targetField: 'company', sourcePath: 'gongsi.mingcheng' },
+      { targetField: 'department', sourcePath: 'gongsi.bumen' }
+    ],
+    null,
+    2
+  ),
+  result: JSON.stringify(
+    {
+      name: '张三',
+      age: 28,
+      company: '科技公司',
+      department: '技术部'
+    },
+    null,
+    2
+  )
 }
 
 const productMappingExample = {
-  source: JSON.stringify([
-    { chanpinming: '手机', jiage: 2999 },
-    { chanpinming: '电脑', jiage: 5999 }
-  ], null, 2),
-  rules: JSON.stringify([
-    { targetField: 'title', sourcePath: 'chanpinming' },
-    { targetField: 'price', sourcePath: 'jiage' }
-  ], null, 2),
-  result: JSON.stringify([
-    { title: '手机', price: 2999 },
-    { title: '电脑', price: 5999 }
-  ], null, 2)
+  source: JSON.stringify(
+    [
+      { chanpinming: '手机', jiage: 2999 },
+      { chanpinming: '电脑', jiage: 5999 }
+    ],
+    null,
+    2
+  ),
+  rules: JSON.stringify(
+    [
+      { targetField: 'title', sourcePath: 'chanpinming' },
+      { targetField: 'price', sourcePath: 'jiage' }
+    ],
+    null,
+    2
+  ),
+  result: JSON.stringify(
+    [
+      { title: '手机', price: 2999 },
+      { title: '电脑', price: 5999 }
+    ],
+    null,
+    2
+  )
 }
 
 // 方法
@@ -367,7 +392,7 @@ const handleSampleDataChange = (value: string) => {
     rawJsonData.value = ''
     return
   }
-  
+
   const sampleData = sampleDataMap[value as keyof typeof sampleDataMap]
   if (sampleData) {
     rawJsonData.value = JSON.stringify(sampleData, null, 2)
@@ -407,13 +432,13 @@ const handleMappingChange = (mappedResult: any) => {
 
 const getMappedFieldCount = () => {
   if (!mappedData.value) return 0
-  
+
   if (Array.isArray(mappedData.value)) {
     return mappedData.value.length > 0 ? Object.keys(mappedData.value[0] || {}).length : 0
   } else if (typeof mappedData.value === 'object') {
     return Object.keys(mappedData.value).length
   }
-  
+
   return 1
 }
 
@@ -472,7 +497,7 @@ handleSampleDataChange(selectedSampleData.value)
   .test-content :deep(.n-grid) {
     display: block;
   }
-  
+
   .test-content :deep(.n-gi) {
     margin-bottom: 16px;
   }

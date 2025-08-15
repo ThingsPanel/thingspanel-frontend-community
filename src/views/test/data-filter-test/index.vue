@@ -11,7 +11,7 @@
             :rows="10"
             placeholder="输入复杂的JSON数据进行过滤测试"
           />
-          <n-space style="margin-top: 8px;">
+          <n-space style="margin-top: 8px">
             <n-button size="small" @click="loadSampleComplexData">加载示例数据</n-button>
             <n-button size="small" @click="formatComplexData">格式化</n-button>
           </n-space>
@@ -20,11 +20,7 @@
         <!-- 数据过滤器组件 -->
         <div class="test-section">
           <h3>数据过滤器</h3>
-          <DataFilterInput
-            v-model="filterPath"
-            :source-data="parsedComplexData"
-            @filter-change="handleFilterResult"
-          />
+          <DataFilterInput v-model="filterPath" :source-data="parsedComplexData" @filter-change="handleFilterResult" />
         </div>
 
         <!-- 过滤结果显示 -->
@@ -35,11 +31,11 @@
               <template #header>✅ 过滤成功</template>
               <div>数据类型: {{ typeof filterResult }} {{ Array.isArray(filterResult) ? '(数组)' : '' }}</div>
             </n-alert>
-            <n-code 
-              :code="filterResultJson" 
-              language="json" 
+            <n-code
+              :code="filterResultJson"
+              language="json"
               :hljs="true"
-              style="margin-top: 8px; max-height: 300px; overflow-y: auto;"
+              style="margin-top: 8px; max-height: 300px; overflow-y: auto"
             />
           </div>
           <div v-else class="no-result">
@@ -51,17 +47,11 @@
         <div class="test-section">
           <h3>常用过滤路径示例</h3>
           <n-space vertical>
-            <n-card size="small" v-for="example in pathExamples" :key="example.path">
+            <n-card v-for="example in pathExamples" :key="example.path" size="small">
               <div class="example-item">
                 <div class="example-path">
                   <n-tag type="info">{{ example.path }}</n-tag>
-                  <n-button 
-                    size="tiny" 
-                    quaternary 
-                    @click="applyExamplePath(example.path)"
-                  >
-                    应用
-                  </n-button>
+                  <n-button size="tiny" quaternary @click="applyExamplePath(example.path)">应用</n-button>
                 </div>
                 <div class="example-desc">{{ example.description }}</div>
               </div>
@@ -75,18 +65,8 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import { 
-  NCard, 
-  NInput, 
-  NButton, 
-  NSpace, 
-  NCode, 
-  NAlert, 
-  NEmpty, 
-  NTag,
-  useMessage 
-} from 'naive-ui'
-import DataFilterInput from '@/components/visual-editor/configuration/forms/DataFilterInput.vue'
+import { NCard, NInput, NButton, NSpace, NCode, NAlert, NEmpty, NTag, useMessage } from 'naive-ui'
+import DataFilterInput from '@/components/visual-editor/configuration/components/DataFilterInput.vue'
 
 // 响应式数据
 const complexDataJson = ref('')
@@ -130,9 +110,9 @@ const loadSampleComplexData = () => {
     timestamp: Date.now(),
     data: {
       users: [
-        { 
-          id: 1, 
-          name: '张三', 
+        {
+          id: 1,
+          name: '张三',
           email: 'zhangsan@example.com',
           profile: {
             age: 25,
@@ -140,9 +120,9 @@ const loadSampleComplexData = () => {
             skills: ['JavaScript', 'Vue', 'React']
           }
         },
-        { 
-          id: 2, 
-          name: '李四', 
+        {
+          id: 2,
+          name: '李四',
           email: 'lisi@example.com',
           profile: {
             age: 30,
@@ -180,7 +160,7 @@ const loadSampleComplexData = () => {
       }
     }
   }
-  
+
   complexDataJson.value = JSON.stringify(sampleData, null, 2)
   message.success('示例数据已加载')
 }
@@ -308,14 +288,22 @@ loadSampleComplexData()
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 24px;
-    grid-template-areas: 
-      "source filter"
-      "result examples";
+    grid-template-areas:
+      'source filter'
+      'result examples';
   }
-  
-  .test-section:nth-child(1) { grid-area: source; }
-  .test-section:nth-child(2) { grid-area: filter; }
-  .test-section:nth-child(3) { grid-area: result; }
-  .test-section:nth-child(4) { grid-area: examples; }
+
+  .test-section:nth-child(1) {
+    grid-area: source;
+  }
+  .test-section:nth-child(2) {
+    grid-area: filter;
+  }
+  .test-section:nth-child(3) {
+    grid-area: result;
+  }
+  .test-section:nth-child(4) {
+    grid-area: examples;
+  }
 }
 </style>

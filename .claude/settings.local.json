@@ -60,8 +60,12 @@
       "Bash(echo:*)",
       "Bash(del \"E:\\wbh\\things2\\thingspanel-frontend-community\\src\\components\\visual-editor\\configuration\\forms\\SimpleDataMappingForm.vue.bat\")",
       "Bash(chmod:*)",
-      "Bash(pnpm prepare:*)"
+      "Bash(pnpm prepare:*)",
+      "WebFetch(domain:localhost)"
     ],
-    "deny": []
+    "deny": [],
+    "additionalDirectories": [
+      "E:\\mnt\\e\\wbh\\things2"
+    ]
   }
 }

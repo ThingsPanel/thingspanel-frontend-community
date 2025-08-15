@@ -2,42 +2,27 @@
   <div class="field-mapping-demo">
     <n-card title="字段映射测试组件" size="small">
       <template #header-extra>
-        <n-tag type="info" size="small">
-          数据映射演示
-        </n-tag>
+        <n-tag type="info" size="small">数据映射演示</n-tag>
       </template>
-      
+
       <n-space vertical :size="16">
         <!-- 当前接收到的数据展示 -->
         <div class="data-display">
-          <n-alert 
-            type="info" 
-            size="small"
-            :show-icon="false"
-          >
+          <n-alert type="info" size="small" :show-icon="false">
             <template #header>
               <n-space align="center" :size="8">
                 <span>当前接收数据</span>
-                <n-tag 
-                  :type="hasData ? 'success' : 'warning'" 
-                  size="tiny"
-                >
+                <n-tag :type="hasData ? 'success' : 'warning'" size="tiny">
                   {{ hasData ? '有数据' : '无数据' }}
                 </n-tag>
               </n-space>
             </template>
-            <div style="margin-top: 8px;">
-              <n-text depth="3" style="font-size: 12px;">
-                数据类型: {{ dataType }}
-              </n-text>
+            <div style="margin-top: 8px">
+              <n-text depth="3" style="font-size: 12px">数据类型: {{ dataType }}</n-text>
               <br />
-              <n-text depth="3" style="font-size: 12px;">
-                字段数量: {{ fieldCount }}
-              </n-text>
+              <n-text depth="3" style="font-size: 12px">字段数量: {{ fieldCount }}</n-text>
               <br />
-              <n-text depth="3" style="font-size: 12px;">
-                更新时间: {{ lastUpdateTime }}
-              </n-text>
+              <n-text depth="3" style="font-size: 12px">更新时间: {{ lastUpdateTime }}</n-text>
             </div>
           </n-alert>
         </div>
@@ -46,17 +31,8 @@
         <div v-if="hasData" class="data-content">
           <!-- 对象数据展示 -->
           <div v-if="!Array.isArray(mappedData)" class="object-data">
-            <n-descriptions 
-              :column="2" 
-              size="small" 
-              bordered
-              title="映射后的对象字段"
-            >
-              <n-descriptions-item 
-                v-for="[key, value] in Object.entries(mappedData)" 
-                :key="key"
-                :label="key"
-              >
+            <n-descriptions :column="2" size="small" bordered title="映射后的对象字段">
+              <n-descriptions-item v-for="[key, value] in Object.entries(mappedData)" :key="key" :label="key">
                 <n-tag size="small" :type="getValueType(value) === 'number' ? 'success' : 'default'">
                   {{ formatValue(value) }}
                 </n-tag>
@@ -68,25 +44,19 @@
           <div v-else class="array-data">
             <n-card title="映射后的数组数据" size="small">
               <template #header-extra>
-                <n-tag size="small" type="info">
-                  {{ mappedData.length }} 项
-                </n-tag>
+                <n-tag size="small" type="info">{{ mappedData.length }} 项</n-tag>
               </template>
-              
+
               <n-space vertical :size="8">
-                <div 
-                  v-for="(item, index) in mappedData.slice(0, 5)" 
-                  :key="index"
-                  class="array-item"
-                >
+                <div v-for="(item, index) in mappedData.slice(0, 5)" :key="index" class="array-item">
                   <n-card size="tiny" embedded>
                     <template #header>
-                      <n-text style="font-size: 12px;">项目 {{ index + 1 }}</n-text>
+                      <n-text style="font-size: 12px">项目 {{ index + 1 }}</n-text>
                     </template>
-                    
+
                     <n-space size="small" wrap>
-                      <n-tag 
-                        v-for="[key, value] in Object.entries(item)" 
+                      <n-tag
+                        v-for="[key, value] in Object.entries(item)"
                         :key="key"
                         size="tiny"
                         :type="getValueType(value) === 'number' ? 'success' : 'default'"
@@ -96,11 +66,9 @@
                     </n-space>
                   </n-card>
                 </div>
-                
+
                 <div v-if="mappedData.length > 5" class="more-items">
-                  <n-text depth="3" style="font-size: 12px;">
-                    ... 还有 {{ mappedData.length - 5 }} 项
-                  </n-text>
+                  <n-text depth="3" style="font-size: 12px">... 还有 {{ mappedData.length - 5 }} 项</n-text>
                 </div>
               </n-space>
             </n-card>
@@ -109,19 +77,14 @@
 
         <!-- 无数据状态 -->
         <div v-else class="no-data">
-          <n-empty 
-            size="small"
-            description="等待数据输入"
-          >
+          <n-empty size="small" description="等待数据输入">
             <template #icon>
               <n-icon>
                 <DocumentTextOutline />
               </n-icon>
             </template>
             <template #extra>
-              <n-text depth="3" style="font-size: 12px;">
-                请在数据源配置中输入JSON数据并配置字段映射
-              </n-text>
+              <n-text depth="3" style="font-size: 12px">请在数据源配置中输入JSON数据并配置字段映射</n-text>
             </template>
           </n-empty>
         </div>
@@ -130,11 +93,11 @@
         <div v-if="showDebugInfo && hasData" class="debug-info">
           <n-collapse size="small">
             <n-collapse-item title="调试信息" name="debug">
-              <n-code 
-                :code="JSON.stringify(mappedData, null, 2)" 
+              <n-code
+                :code="JSON.stringify(mappedData, null, 2)"
                 language="json"
                 :show-line-numbers="false"
-                style="max-height: 200px; overflow-y: auto;"
+                style="max-height: 200px; overflow-y: auto"
               />
             </n-collapse-item>
           </n-collapse>
@@ -188,7 +151,7 @@ const hasData = computed(() => {
 
 const dataType = computed(() => {
   if (!hasData.value) return '无数据'
-  
+
   if (Array.isArray(props.mappedData)) {
     return `数组 (${props.mappedData.length} 项)`
   } else if (typeof props.mappedData === 'object') {
@@ -200,7 +163,7 @@ const dataType = computed(() => {
 
 const fieldCount = computed(() => {
   if (!hasData.value) return 0
-  
+
   if (Array.isArray(props.mappedData)) {
     return props.mappedData.length > 0 ? Object.keys(props.mappedData[0] || {}).length : 0
   } else if (typeof props.mappedData === 'object') {
@@ -288,7 +251,7 @@ watch(
   .object-data :deep(.n-descriptions) {
     /* 在小屏幕上单列显示 */
   }
-  
+
   .array-item :deep(.n-space) {
     /* 在小屏幕上换行显示标签 */
   }

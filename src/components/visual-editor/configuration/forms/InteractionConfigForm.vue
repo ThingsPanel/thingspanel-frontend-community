@@ -6,7 +6,7 @@
       </n-alert>
 
       <div class="add-interaction-actions">
-        <n-space>
+        <n-space size="small">
           <n-button size="small" @click="addInteraction('onClick')">
             {{ $t('config.interaction.addClick') }}
           </n-button>
@@ -140,7 +140,7 @@
               </n-form-item>
 
               <n-form-item :label="$t('config.interaction.modal.size')">
-                <n-space>
+                <n-space size="small">
                   <n-input-number
                     v-model:value="eventConfig.payload.modalConfig.width"
                     :min="200"
@@ -217,7 +217,7 @@
               </n-form-item>
 
               <n-form-item>
-                <n-space>
+                <n-space size="small">
                   <n-button size="small" :loading="testing" @click="testScript(eventName)">
                     {{ $t('config.interaction.script.test') }}
                   </n-button>
@@ -274,7 +274,7 @@
       <!-- 添加交互按钮 -->
       <div class="add-interaction-section">
         <h4 class="section-title">{{ $t('config.interaction.addNew') }}</h4>
-        <n-space>
+        <n-space size="small">
           <n-dropdown :options="addInteractionOptions" @select="addInteraction">
             <n-button size="small" dashed>
               {{ $t('config.interaction.addInteraction') }}
@@ -285,7 +285,7 @@
 
       <!-- 操作按钮 -->
       <div class="form-actions">
-        <n-space>
+        <n-space size="small">
           <n-button size="small" @click="handleReset">
             {{ $t('common.reset') }}
           </n-button>

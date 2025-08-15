@@ -281,7 +281,7 @@
         </template>
 
         <div class="global-actions">
-          <n-space>
+          <n-space size="small">
             <n-button size="small" :disabled="dataSources.length === 0" @click="exportConfiguration">
               <template #icon>
                 <n-icon><DownloadOutline /></n-icon>

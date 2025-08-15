@@ -70,12 +70,7 @@
 
           <!-- 测试日志 -->
           <div class="test-logs">
-            <n-log 
-              :log="testLogs.join('\n')" 
-              :rows="8"
-              language="log"
-              trim
-            />
+            <n-log :log="testLogs.join('\n')" :rows="8" language="log" trim />
           </div>
         </n-space>
       </n-card>
@@ -90,15 +85,7 @@
  */
 
 import { ref, computed, onMounted } from 'vue'
-import { 
-  NCard, 
-  NPageHeader, 
-  NSpace, 
-  NDescriptions, 
-  NDescriptionsItem,
-  NAlert,
-  NLog
-} from 'naive-ui'
+import { NCard, NPageHeader, NSpace, NDescriptions, NDescriptionsItem, NAlert, NLog } from 'naive-ui'
 
 // 导入编辑器组件
 import PanelEditor from '@/components/visual-editor/PanelEditor.vue'
@@ -120,7 +107,7 @@ const dataSourceStatus = ref<{
 const addTestLog = (message: string) => {
   const timestamp = new Date().toLocaleTimeString()
   testLogs.value.push(`[${timestamp}] ${message}`)
-  
+
   // 保持最近的50条日志
   if (testLogs.value.length > 50) {
     testLogs.value = testLogs.value.slice(-50)
@@ -163,14 +150,18 @@ const handleWidgetDelete = (widgetId: string) => {
 
 const handleDataSourceUpdate = (widgetId: string, dataSources: Record<string, any>) => {
   addTestLog(`数据源更新: ${widgetId}, 数据源数量: ${Object.keys(dataSources).length}`)
-  
+
   // 记录详细的数据源信息
   Object.entries(dataSources).forEach(([key, data]) => {
     const dataType = Array.isArray(data) ? 'array' : typeof data
-    const dataSize = Array.isArray(data) ? data.length : (typeof data === 'object' && data ? Object.keys(data).length : 'N/A')
+    const dataSize = Array.isArray(data)
+      ? data.length
+      : typeof data === 'object' && data
+        ? Object.keys(data).length
+        : 'N/A'
     addTestLog(`  - ${key}: ${dataType} (${dataSize}${Array.isArray(data) ? ' items' : ' fields'})`)
   })
-  
+
   // 更新数据源状态
   dataSourceStatus.value = {
     lastUpdate: Date.now(),
@@ -264,7 +255,7 @@ onMounted(() => {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr 300px;
   }
-  
+
   .config-panel :deep(.n-card__content) {
     height: 260px;
   }
@@ -275,11 +266,11 @@ onMounted(() => {
     padding: 8px;
     gap: 8px;
   }
-  
+
   .test-header {
     padding: 8px;
   }
-  
+
   .test-status {
     padding: 0 8px 8px;
   }

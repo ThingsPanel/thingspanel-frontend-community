@@ -11,7 +11,7 @@ export const fieldMappingDemoDefinition: ComponentDefinition = {
   description: '演示数据字段映射功能的测试组件',
   category: 'test',
   tags: ['测试', '数据映射', '字段转换'],
-  
+
   // 组件配置
   config: {
     // 样式配置
@@ -19,7 +19,7 @@ export const fieldMappingDemoDefinition: ComponentDefinition = {
       width: 400,
       height: 350
     },
-    
+
     // 数据需求配置 - 需要一个经过字段映射的数据源
     dataRequirements: {
       mappedData: {
@@ -33,7 +33,7 @@ export const fieldMappingDemoDefinition: ComponentDefinition = {
         }
       }
     },
-    
+
     // 属性配置
     properties: {
       showDebugInfo: {
@@ -44,13 +44,13 @@ export const fieldMappingDemoDefinition: ComponentDefinition = {
       }
     }
   },
-  
+
   // 组件元数据
   metadata: {
     author: 'System',
     version: '1.0.0',
     createdAt: new Date().toISOString(),
-    
+
     // 使用说明
     usage: {
       title: '字段映射测试组件使用说明',
@@ -77,7 +77,7 @@ export const fieldMappingDemoDefinition: ComponentDefinition = {
         }
       ]
     },
-    
+
     // 测试数据
     testData: {
       mappedData: {

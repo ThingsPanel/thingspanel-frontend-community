@@ -83,7 +83,7 @@
           />
         </n-tab-pane>
 
-        <!-- V6数据源配置标签页 - 纯粹的数据协调 -->
+        <!-- V6数据源配置标签页 - 重新启用简化版本 -->
         <n-tab-pane name="dataSource" :tab="$t('config.tabs.dataSource')">
           <div class="v6-data-config">
             <!-- V6: 检查组件定义中的dataSources -->
@@ -91,7 +91,7 @@
               <!-- 新的DataSourceConfigForm组件 -->
               <DataSourceConfigForm
                 ref="dataSourceFormRef"
-                :data-sources="componentDefinition.dataSources"
+                :data-sources="enrichedDataSources"
                 :selected-widget-id="selectedWidget?.id"
                 v-on="getDataSourceEventListeners()"
               />
@@ -155,7 +155,7 @@
         <template v-if="importExportMode === 'export'">
           <n-space vertical>
             <n-input v-model:value="exportedConfig" type="textarea" :rows="12" readonly class="config-json" />
-            <n-space>
+            <n-space size="small">
               <n-button type="primary" @click="copyToClipboard">
                 {{ $t('config.copy') }}
               </n-button>
@@ -175,7 +175,7 @@
               :placeholder="$t('config.import.placeholder')"
               class="config-json"
             />
-            <n-space>
+            <n-space size="small">
               <n-button type="primary" @click="importConfiguration">
                 {{ $t('config.import.confirm') }}
               </n-button>
@@ -337,6 +337,62 @@ const componentDefinition = computed(() => {
   // 回退到传统的数据需求获取方式
   return getComponentDataRequirements(props.selectedWidget.type)
 })
+
+// 增强的数据源信息 - 包含完整的组件定义信息
+const enrichedDataSources = computed(() => {
+  if (!componentDefinition.value?.dataSources) return []
+
+  return componentDefinition.value.dataSources.map(dataSource => ({
+    ...dataSource,
+    // 传递完整的字段映射规则
+    fieldMappings: dataSource.fieldMappings || {},
+    // 从组件定义中提取示例数据
+    exampleData: extractExampleDataFromDefinition(dataSource),
+    // 数据处理脚本（如果有）
+    dataProcessScript: dataSource.dataProcessScript || '',
+    // 传递标签信息
+    label: dataSource.name || dataSource.key
+  }))
+})
+
+/**
+ * 从组件定义中提取示例数据
+ * 优先级：fieldMappings.defaultValue > 组件config中的默认数据 > 通用示例
+ */
+function extractExampleDataFromDefinition(dataSource: any) {
+  console.log('🔍 [ConfigurationPanel] 提取示例数据:', dataSource)
+
+  // 1. 从 fieldMappings 的 defaultValue 构建示例数据
+  if (dataSource.fieldMappings) {
+    const exampleFromMappings: Record<string, any> = {}
+    let hasDefaults = false
+
+    Object.entries(dataSource.fieldMappings).forEach(([sourceKey, mapping]: [string, any]) => {
+      if (mapping.defaultValue !== undefined) {
+        exampleFromMappings[sourceKey] = mapping.defaultValue
+        hasDefaults = true
+      }
+    })
+
+    if (hasDefaults) {
+      console.log('✅ 使用 fieldMappings 默认值构建示例数据:', exampleFromMappings)
+      return exampleFromMappings
+    }
+  }
+
+  // 2. 检查组件元数据中的测试数据
+  if (componentDefinition.value?.metadata?.testData) {
+    const testData = componentDefinition.value.metadata.testData[dataSource.key]
+    if (testData) {
+      console.log('✅ 使用组件元数据测试数据:', testData)
+      return testData
+    }
+  }
+
+  // 3. 使用通用默认数据
+  console.log('ℹ️ 使用通用默认示例数据')
+  return null // 返回 null，让 DataSourceConfigForm 使用自己的默认数据生成逻辑
+}
 
 // 配置操作选项
 const configActionsOptions = [
@@ -609,7 +665,7 @@ const handleDynamicDataSourceUpdate = (key: string, data: any) => {
       dataSourceBindings[dataSourceKey] = {
         rawData: JSON.stringify(data), // Card2Wrapper 期望的 rawData 字段
         fieldMappings: {}, // 字段映射（暂时为空）
-        filterPath: '', // 过滤路径（暂时为空，后续扩展）
+        filterPath: '' // 过滤路径（暂时为空，后续扩展）
       }
     })
 

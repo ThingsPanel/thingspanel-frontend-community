@@ -200,7 +200,7 @@
           </n-space>
         </template>
 
-        <n-space>
+        <n-space size="small">
           <n-button size="small" :disabled="!canPreview" @click="previewAllMappings">
             <template #icon>
               <n-icon><EyeOutline /></n-icon>

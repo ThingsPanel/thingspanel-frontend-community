@@ -146,7 +146,7 @@
 
     <!-- 操作按钮 -->
     <div v-if="hasCustomConfig || hasProperties" class="form-actions">
-      <n-space>
+      <n-space size="small">
         <n-button size="small" @click="handleReset">
           {{ $t('common.reset') }}
         </n-button>

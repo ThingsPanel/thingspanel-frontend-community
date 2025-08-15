@@ -7,33 +7,25 @@
         {{ getDataStatus() }}
       </n-tag>
     </div>
-    
+
     <div class="demo-content">
       <!-- 最终数据显示 -->
       <div v-if="hasData" class="final-data-display">
         <div class="data-type-info">
           <n-space size="small">
-            <n-tag size="tiny" type="info">
-              类型: {{ getDataType(finalData) }}
-            </n-tag>
-            <n-tag size="tiny" type="default" v-if="Array.isArray(finalData)">
-              长度: {{ finalData.length }}
-            </n-tag>
-            <n-tag size="tiny" type="default" v-else-if="typeof finalData === 'object' && finalData !== null">
+            <n-tag size="tiny" type="info">类型: {{ getDataType(finalData) }}</n-tag>
+            <n-tag v-if="Array.isArray(finalData)" size="tiny" type="default">长度: {{ finalData.length }}</n-tag>
+            <n-tag v-else-if="typeof finalData === 'object' && finalData !== null" size="tiny" type="default">
               字段: {{ Object.keys(finalData).length }}
             </n-tag>
           </n-space>
         </div>
-        
+
         <!-- 数据内容展示 -->
         <div class="data-content">
           <!-- 数组类型 -->
           <div v-if="Array.isArray(finalData)" class="array-display">
-            <div 
-              v-for="(item, index) in finalData.slice(0, 5)" 
-              :key="index"
-              class="array-item"
-            >
+            <div v-for="(item, index) in finalData.slice(0, 5)" :key="index" class="array-item">
               <span class="item-index">#{{ index + 1 }}</span>
               <span class="item-value">{{ formatValue(item) }}</span>
             </div>
@@ -41,33 +33,27 @@
               <n-text depth="3">... 还有 {{ finalData.length - 5 }} 项</n-text>
             </div>
           </div>
-          
+
           <!-- 对象类型 -->
           <div v-else-if="typeof finalData === 'object' && finalData !== null" class="object-display">
-            <div 
-              v-for="(value, key) in finalData" 
-              :key="key"
-              class="object-item"
-            >
+            <div v-for="(value, key) in finalData" :key="key" class="object-item">
               <span class="key">{{ key }}:</span>
               <span class="value">{{ formatValue(value) }}</span>
             </div>
           </div>
-          
+
           <!-- 基础类型 -->
           <div v-else class="primitive-display">
             <div class="primitive-value">{{ formatValue(finalData) }}</div>
           </div>
         </div>
       </div>
-      
+
       <!-- 无数据状态 -->
       <div v-else class="no-data">
         <n-empty description="暂无过滤数据" size="small">
           <template #extra>
-            <n-text depth="3" style="font-size: 11px;">
-              💡 在右侧"数据源"配置中设置过滤路径
-            </n-text>
+            <n-text depth="3" style="font-size: 11px">💡 在右侧"数据源"配置中设置过滤路径</n-text>
           </template>
         </n-empty>
       </div>
@@ -101,9 +87,13 @@ const hasData = computed(() => {
 })
 
 // 监听数据变化，用于调试
-watch(finalData, (newValue) => {
-  console.log('🔍 [FilteredDataDemo] 接收到过滤后的数据:', newValue)
-}, { deep: true })
+watch(
+  finalData,
+  newValue => {
+    console.log('🔍 [FilteredDataDemo] 接收到过滤后的数据:', newValue)
+  },
+  { deep: true }
+)
 
 // 获取数据类型
 const getDataType = (data: any): string => {
@@ -116,7 +106,7 @@ const getDataType = (data: any): string => {
 // 获取数据状态描述
 const getDataStatus = (): string => {
   if (!hasData.value) return '无数据'
-  
+
   const data = finalData.value
   if (Array.isArray(data)) {
     return `${data.length} 项数据`
@@ -131,7 +121,7 @@ const getDataStatus = (): string => {
 const formatValue = (value: any): string => {
   if (value === null) return 'null'
   if (value === undefined) return 'undefined'
-  
+
   if (typeof value === 'object') {
     if (Array.isArray(value)) {
       return `[${value.length} items]`
@@ -148,7 +138,7 @@ const formatValue = (value: any): string => {
       }
     }
   }
-  
+
   const str = String(value)
   return str.length > 50 ? str.substring(0, 47) + '...' : str
 }

@@ -13,7 +13,7 @@
         @update:value="updateProperty('data', $event)"
       >
         <template #default="{ value, index }">
-          <n-space>
+          <n-space size="small">
             <n-input :value="value.name" placeholder="名称" @update:value="updateDataItem(index, 'name', $event)" />
             <n-input-number
               :value="value.value"

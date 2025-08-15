@@ -89,9 +89,7 @@
               </div>
 
               <template #action>
-                <n-button size="small" @click="$router.push('/test/data-filter-test')">
-                  进入测试
-                </n-button>
+                <n-button size="small" @click="$router.push('/test/data-filter-test')">进入测试</n-button>
               </template>
             </n-card>
 
@@ -112,9 +110,7 @@
               </div>
 
               <template #action>
-                <n-button size="small" @click="$router.push('/test/data-mapping-test')">
-                  进入测试
-                </n-button>
+                <n-button size="small" @click="$router.push('/test/data-mapping-test')">进入测试</n-button>
               </template>
             </n-card>
           </n-space>
