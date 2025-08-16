@@ -114,7 +114,7 @@
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { nanoid } from 'nanoid'
 import { NAlert } from 'naive-ui'
-import { useEditor } from '../../hooks/useEditor'
+// 注意：useEditor已迁移到新的统一架构，请使用useVisualEditor
 import { globalPreviewMode } from '../../hooks/usePreviewMode'
 import BaseRendererComponent from '../base/BaseRendererComponent.vue'
 import NodeWrapper from '../base/NodeWrapper.vue'

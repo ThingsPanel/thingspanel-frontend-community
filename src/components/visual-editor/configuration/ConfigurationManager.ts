@@ -18,25 +18,22 @@ import type {
 
 /**
  * 默认配置工厂
+ * 🔧 重构：各层自治原则 - 配置器只提供空结构，由各层自己填充
  */
 export const createDefaultConfiguration = (): WidgetConfiguration => ({
-  base: {
-    showTitle: false,
-    title: '组件标题',
-    opacity: 1,
-    visible: true,
-    customClassName: '',
-    margin: { top: 0, right: 0, bottom: 0, left: 0 },
-    padding: { top: 0, right: 0, bottom: 0, left: 0 }
-  },
-  component: {
-    properties: {},
-    styles: {},
-    behavior: {},
-    validation: { required: [], rules: {} }
-  },
-  dataSource: null,
+  // 🔧 Base配置：由NodeWrapper层自主管理和定义
+  base: {},
+
+  // 🔧 Component配置：由各Card2.1组件自主管理和定义
+  component: {},
+
+  // 🔧 DataSource配置：由独立数据源系统管理和定义
+  dataSource: {},
+
+  // 🔧 Interaction配置：由独立交互系统管理和定义
   interaction: {},
+
+  // 🔧 元数据：配置器层统一管理
   metadata: {
     version: '1.0.0',
     createdAt: Date.now(),
@@ -228,11 +225,8 @@ export class ConfigurationManager implements IConfigurationManager {
 
       // 数据源配置验证
       if (config.dataSource) {
-        if (
-          !['static', 'api', 'websocket', 'multi-source', 'data-mapping', 'data-source-bindings'].includes(
-            config.dataSource.type
-          )
-        ) {
+        const validTypes = ['static', 'api', 'websocket', 'multi-source', 'data-mapping', 'data-source-bindings', '']
+        if (config.dataSource.type && !validTypes.includes(config.dataSource.type)) {
           errors?.push({
             field: 'dataSource.type',
             message: '无效的数据源类型'

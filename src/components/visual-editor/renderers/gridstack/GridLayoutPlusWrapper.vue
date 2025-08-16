@@ -43,7 +43,8 @@ import { ref, computed, watch, shallowRef, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { nanoid } from 'nanoid'
 import { GridLayoutPlus, type GridLayoutPlusItem, type GridLayoutPlusConfig } from '@/components/common/grid'
-import { useEditor } from '@/components/visual-editor/hooks/useEditor'
+import { useEditorStore } from '@/store/modules/editor'
+import { useWidgetStore } from '@/store/modules/widget'
 import NodeWrapper from '../base/NodeWrapper.vue'
 import ContextMenu from '../canvas/ContextMenu.vue'
 import type { VisualEditorWidget, GraphData } from '@/components/visual-editor/types'
@@ -59,7 +60,41 @@ const props = defineProps<{
 const emit = defineEmits(['node-select', 'request-settings'])
 
 const router = useRouter()
-const { selectNode, isCard2Component, getNodeById, updateNode, addNode, removeNode } = useEditor()
+
+// 使用原始 store
+const editorStore = useEditorStore()
+const widgetStore = useWidgetStore()
+
+// 适配旧接口方法
+const selectNode = (nodeId: string) => {
+  if (nodeId) {
+    widgetStore.selectNodes([nodeId])
+  } else {
+    widgetStore.selectNodes([])
+  }
+}
+
+const isCard2Component = (nodeId: string) => {
+  // 简单的Card2组件检测
+  const node = editorStore.nodes.find(n => n.id === nodeId)
+  return node?.type.includes('card2') || node?.type.includes('Card2') || false
+}
+
+const getNodeById = (nodeId: string) => {
+  return editorStore.nodes.find(n => n.id === nodeId)
+}
+
+const updateNode = async (nodeId: string, updates: any) => {
+  editorStore.updateNode(nodeId, updates)
+}
+
+const addNode = async (node: any) => {
+  editorStore.addNode(node)
+}
+
+const removeNode = async (nodeId: string) => {
+  editorStore.removeNode(nodeId)
+}
 
 const gridWrapperEl = ref<HTMLElement | null>(null)
 const layout = shallowRef<ExtendedGridLayoutPlusItem[]>([])

@@ -1,13 +1,13 @@
 /**
  * Visual Editor - 对外API入口
- * 按照架构设计的黑盒模块，集成 Card 2.0 支持
+ * 新统一架构入口
  */
 
 // 主组件导出
 export { default as PanelEditor } from './PanelEditor.vue'
 
-// Hook导出
-export { useEditor, createEditor } from './hooks/useEditor'
+// 新架构Hook导出 - 替代旧的useEditor和createEditor
+export { useVisualEditor } from '@/store/modules/visual-editor'
 
 // 类型导出
 export type {

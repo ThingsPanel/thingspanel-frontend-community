@@ -27,10 +27,11 @@ export type {
 // 配置面板组件
 export { default as ConfigurationPanel } from './ConfigurationPanel.vue'
 
-// 配置表单组件
-export { default as BaseConfigForm } from './forms/BaseConfigForm.vue'
-export { default as ComponentConfigForm } from './forms/ComponentConfigForm.vue'
-export { default as InteractionConfigForm } from './forms/InteractionConfigForm.vue'
+// 配置表单组件 - 现在从renderers/base目录导入
+export { default as BaseConfigForm } from '../renderers/base/BaseConfigForm.vue'
+export { default as ComponentConfigForm } from '../renderers/base/ComponentConfigForm.vue'
+
+// 注意：InteractionConfigForm 暂时移除，专注基础测试
 
 // Hooks
 export { useConfiguration, type UseConfigurationOptions } from './hooks/useConfiguration'

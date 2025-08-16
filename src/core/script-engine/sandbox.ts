@@ -218,7 +218,7 @@ export class ScriptSandbox implements IScriptSandbox {
       const eval = undefined;
       const Function = undefined;
       const require = undefined;
-      const import = undefined;
+      // 注意：不能定义 import 变量，因为它是保留字
       
       // 用户代码
       ${code}

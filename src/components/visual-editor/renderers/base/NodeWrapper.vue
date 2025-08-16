@@ -66,8 +66,9 @@
  * 负责标题显示/编辑、基础配置应用、选中状态等
  */
 
-import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
-import { NInput } from 'naive-ui'
+import { ref, computed, nextTick, watch, onMounted, onUnmounted, h } from 'vue'
+import { NInput, NModal, NSpace, NButton, NDropdown, NIcon } from 'naive-ui'
+import { SettingsOutline, CopyOutline, TrashOutline } from '@vicons/ionicons5'
 import { configurationManager } from '../../configuration'
 import { useEditor } from '../../hooks/useEditor'
 import Card2Wrapper from '../canvas/Card2Wrapper.vue'
@@ -167,8 +168,6 @@ const baseConfig = computed((): BaseConfiguration => {
       title: '',
       opacity: 1,
       visible: true,
-      customClassName: '',
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
       padding: { top: 0, right: 0, bottom: 0, left: 0 }
     }
 
@@ -182,8 +181,6 @@ const baseConfig = computed((): BaseConfiguration => {
       title: '',
       opacity: 1,
       visible: true,
-      customClassName: '',
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
       padding: { top: 0, right: 0, bottom: 0, left: 0 }
     }
   }
@@ -214,19 +211,34 @@ const wrapperStyles = computed(() => {
   const config = baseConfig.value
   const styles: Record<string, string> = {}
 
-  // 透明度
+  // 🔧 透明度
   if (config.opacity !== undefined && config.opacity !== 1) {
     styles.opacity = config.opacity.toString()
   }
 
-  // 外边距
-  if (config.margin) {
-    const { top = 0, right = 0, bottom = 0, left = 0 } = config.margin
-    if (top || right || bottom || left) {
-      styles.margin = `${top}px ${right}px ${bottom}px ${left}px`
-    }
+  // 🔧 背景颜色 - 如果配置了则覆盖默认值
+  if (config.backgroundColor) {
+    styles.backgroundColor = config.backgroundColor
   }
 
+  // 🔧 边框样式 - 完整的边框配置
+  if (config.borderWidth !== undefined) {
+    styles.borderWidth = `${config.borderWidth}px`
+    styles.borderStyle = config.borderStyle || 'solid'
+    styles.borderColor = config.borderColor || 'var(--border-color)'
+  }
+
+  // 🔧 圆角 - 如果配置了则覆盖默认值
+  if (config.borderRadius !== undefined) {
+    styles.borderRadius = `${config.borderRadius}px`
+  }
+
+  // 🔧 阴影 - 如果配置了则覆盖默认值
+  if (config.boxShadow) {
+    styles.boxShadow = config.boxShadow
+  }
+
+  console.log('🔧 [NodeWrapper] 应用样式:', styles, '来源配置:', config)
   return styles
 })
 
@@ -239,10 +251,6 @@ const wrapperClasses = computed(() => {
 
   if (props.readonly) {
     classes.push('readonly')
-  }
-
-  if (baseConfig.value.customClassName) {
-    classes.push(baseConfig.value.customClassName)
   }
 
   return classes
@@ -267,12 +275,10 @@ const contentStyles = computed(() => {
     overflow: 'hidden' as const
   }
 
-  // 内边距
+  // 内边距 - 应用到内容区域
   if (config.padding) {
     const { top = 0, right = 0, bottom = 0, left = 0 } = config.padding
-    if (top || right || bottom || left) {
-      styles.padding = `${top}px ${right}px ${bottom}px ${left}px`
-    }
+    styles.padding = `${top}px ${right}px ${bottom}px ${left}px`
   }
 
   return styles
@@ -345,8 +351,6 @@ onMounted(() => {
           title: props.node.label || props.node.type || '未命名组件',
           opacity: 1,
           visible: true,
-          customClassName: '',
-          margin: { top: 0, right: 0, bottom: 0, left: 0 },
           padding: { top: 0, right: 0, bottom: 0, left: 0 }
         },
         component: { properties: props.node.properties || {} },
@@ -403,29 +407,42 @@ watch(
 
 <style scoped>
 .node-wrapper {
+  /* 🔧 基本布局样式，不干扰base配置 */
   width: 100%;
   height: 100%;
   position: relative;
   display: flex;
   flex-direction: column;
-  background-color: var(--card-color);
-  border-radius: var(--border-radius, 6px);
+
+  /* 🔧 移除默认样式，由base配置控制 */
+  /* background-color: var(--card-color); */
+  /* border-radius: var(--border-radius, 6px); */
+  /* border: 2px solid transparent; */
+  /* box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); */
+
+  /* 保留必要的交互样式 */
   transition:
     opacity 0.3s ease,
     border-color 0.2s ease;
-  border: 2px solid transparent;
   overflow: hidden;
+
+  /* 🔧 最小的默认样式，保证可见性 */
+  border: 1px solid transparent; /* 最小边框，用于选中状态 */
+
+  /* 🔧 确保在grid-item-body透明化后有基本可见样式 */
+  background-color: var(--card-color);
+  border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .node-wrapper:hover:not(.readonly) {
+  /* 🔧 简化hover效果，不覆盖base配置 */
   border-color: rgba(24, 160, 88, 0.3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .node-wrapper.selected {
-  border-color: var(--primary-color);
-  box-shadow: 0 2px 12px rgba(24, 160, 88, 0.2);
+  /* 🔧 简化选中效果，不覆盖base配置 */
+  border-color: var(--primary-color) !important; /* !important保证选中效果 */
   z-index: 1;
 }
 
@@ -435,7 +452,6 @@ watch(
 
 .node-wrapper.readonly:hover {
   border-color: transparent;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .node-title-bar {

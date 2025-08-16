@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据字段映射集成功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .success {
+            color: #52c41a;
+            font-weight: 600;
+        }
+        .info {
+            color: #1890ff;
+            font-weight: 600;
+        }
+        .test-step {
+            background: #f9f9f9;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 12px 0;
+            border-left: 4px solid #1890ff;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .feature-list li:before {
+            content: "✅ ";
+            color: #52c41a;
+            font-weight: bold;
+        }
+        code {
+            background: #f6f8fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        .json-preview {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 6px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 数据过滤器集成功能测试</h1>
+        <p class="info">验证 DataFilterInput 组件与数据源配置表单的集成效果</p>
+        
+        <h2>📋 实现的功能清单</h2>
+        <ul class="feature-list">
+            <li>JSON示例自动设置为默认值</li>
+            <li>数据过滤器配置区域动态显示/隐藏</li>
+            <li>JSONPath语法支持（$.data.list, $.users[0], $.result.items）</li>
+            <li>实时数据过滤和结果预览</li>
+            <li>配置器逻辑（UI配置）与执行器逻辑（数据应用）分离</li>
+            <li>过滤路径规则保存到数据项配置中</li>
+            <li>多数据类型支持（json/http/websocket）</li>
+        </ul>
+
+        <h2>🔧 JSON默认数据示例</h2>
+        <div class="json-preview">{
+  "deviceInfo": {
+    "id": "device_001",
+    "name": "智能传感器",
+    "status": "online",
+    "location": {
+      "building": "A栋",
+      "floor": 3,
+      "room": "301"
+    }
+  },
+  "metrics": [
+    {
+      "type": "temperature",
+      "value": 23.5,
+      "unit": "°C",
+      "timestamp": "2024-01-15T10:30:00Z"
+    },
+    {
+      "type": "humidity",
+      "value": 65.2,
+      "unit": "%",
+      "timestamp": "2024-01-15T10:30:00Z"
+    }
+  ],
+  "config": {
+    "enabled": true,
+    "reportInterval": 60,
+    "thresholds": {
+      "temperature": { "min": 18, "max": 28 },
+      "humidity": { "min": 40, "max": 80 }
+    }
+  }
+}</div>
+
+        <h2>🎯 测试步骤</h2>
+        
+        <div class="test-step">
+            <h3>步骤 1: 访问测试页面</h3>
+            <p>在开发服务器中打开: <code>/views/test/data-source-config-form-test</code></p>
+            <p>或者通过菜单: <strong>测试 → 数据源配置表单测试</strong></p>
+        </div>
+
+        <div class="test-step">
+            <h3>步骤 2: 测试JSON默认值</h3>
+            <p>1. 点击左侧配置表单中的 <strong>"添加数据项"</strong> 按钮</p>
+            <p>2. 确认JSON输入框已自动填充复杂的示例数据</p>
+            <p>3. 验证JSON格式正确且包含设备信息、度量数据、配置等多层结构</p>
+        </div>
+
+        <div class="test-step">
+            <h3>步骤 3: 测试数据过滤功能</h3>
+            <p>1. 在弹窗中点击 <strong>"添加过滤器"</strong> 按钮</p>
+            <p>2. 验证数据过滤器配置区域出现</p>
+            <p>3. 测试过滤路径，例如:</p>
+            <ul>
+                <li><code>$.deviceInfo.name</code> → 过滤设备名称</li>
+                <li><code>$.metrics[0]</code> → 过滤第一个度量数据</li>
+                <li><code>$.config</code> → 过滤配置对象</li>
+            </ul>
+        </div>
+
+        <div class="test-step">
+            <h3>步骤 4: 验证过滤预览功能</h3>
+            <p>1. 确认数据过滤器显示实时状态提示</p>
+            <p>2. 修改JSON内容，验证过滤源数据自动更新</p>
+            <p>3. 输入/修改过滤路径，验证过滤结果正确</p>
+        </div>
+
+        <div class="test-step">
+            <h3>步骤 5: 测试配置保存</h3>
+            <p>1. 设置数据过滤路径后点击 <strong>"确认添加"</strong></p>
+            <p>2. 验证数据项列表中显示新添加的项目</p>
+            <p>3. 点击 <strong>"查看"</strong> 按钮，确认过滤路径配置已保存</p>
+        </div>
+
+        <h2>🔍 验证要点</h2>
+        
+        <div class="test-step">
+            <h3>配置器与执行器分离</h3>
+            <p><strong>配置器部分:</strong> 弹窗中的UI配置，包括字段映射规则设置</p>
+            <p><strong>执行器部分:</strong> 实际数据处理和字段映射应用（在 <code>handleMappingResultChange</code> 中）</p>
+            <p><strong>验证方法:</strong> 检查控制台输出，确认配置和执行的日志分离</p>
+        </div>
+
+        <div class="test-step">
+            <h3>多数据类型兼容性</h3>
+            <p>测试切换到 HTTP/WebSocket 类型时，字段映射功能仍然可用</p>
+            <p>验证不同数据类型的配置结构正确保存</p>
+        </div>
+
+        <h2>✅ 期望结果</h2>
+        <ul class="feature-list">
+            <li>弹窗打开时JSON输入框自动填充复杂示例数据</li>
+            <li>字段映射区域可以正常显示和隐藏</li>
+            <li>JSONPath解析正确，支持嵌套对象和数组访问</li>
+            <li>实时预览功能工作正常</li>
+            <li>字段映射配置正确保存到数据项中</li>
+            <li>配置器和执行器逻辑清晰分离</li>
+            <li>控制台日志显示映射处理流程</li>
+        </ul>
+
+        <div style="margin-top: 32px; padding: 16px; background: #e6f7ff; border-radius: 6px; border: 1px solid #91d5ff;">
+            <p class="info"><strong>💡 提示:</strong> 这个集成功能实现了用户需求的核心要点：</p>
+            <ul style="margin: 8px 0;">
+                <li>📝 JSON示例自动填充，提升用户体验</li>
+                <li>🔗 字段映射功能集成，支持路径过滤</li>
+                <li>🏗️ 架构分离，配置器和执行器职责明确</li>
+                <li>🔄 兼容多种数据类型，扩展性良好</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        console.log('🧪 数据字段映射集成功能测试页面已加载');
+        console.log('📋 请按照上述步骤在实际应用中测试功能');
+    </script>
+</body>
+</html>

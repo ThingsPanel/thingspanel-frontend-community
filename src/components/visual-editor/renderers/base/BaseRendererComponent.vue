@@ -5,7 +5,7 @@
 <script setup lang="ts" generic="TConfig extends Record<string, any> = Record<string, any>">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useThemeStore } from '@/store/modules/theme'
-import { useEditor } from '../../hooks' // 1. 导入 useEditor
+import { useVisualEditor } from '@/store/modules/visual-editor' // 1. 导入统一架构
 
 // 基础 Props 接口
 interface BaseRendererProps {
@@ -32,7 +32,23 @@ const props = withDefaults(defineProps<BaseRendererProps>(), {
 // Emits 定义
 const emit = defineEmits<BaseRendererEmits>()
 
-const { addWidget } = useEditor() // 2. 获取 addWidget 函数
+// 2. 🔥 使用新的统一架构
+const unifiedEditor = useVisualEditor()
+
+const addWidget = async (componentType: string, position?: { x: number; y: number }) => {
+  // 创建新节点
+  const newNode = {
+    id: `${componentType}_${Date.now()}`,
+    type: componentType,
+    position: position || { x: 100, y: 100 },
+    data: {
+      componentType,
+      title: componentType
+    }
+  }
+
+  await unifiedEditor.addNode(newNode)
+}
 
 // 渲染器状态
 const rendererState = ref<'idle' | 'initializing' | 'ready' | 'rendering' | 'error' | 'destroyed'>('idle')
@@ -88,8 +104,8 @@ const handleDrop = (event: DragEvent) => {
       const x = event.clientX - rect.left
       const y = event.clientY - rect.top
 
-      // 调用 addWidget 添加新组件，并传入 source
-      addWidget(type, { x, y }, source).catch(handleError)
+      // 调用 addWidget 添加新组件
+      addWidget(type, { x, y }).catch(handleError)
     } catch (e) {
       handleError(new Error('Failed to parse dropped data.'))
     }

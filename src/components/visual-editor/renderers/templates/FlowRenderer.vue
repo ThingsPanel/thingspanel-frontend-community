@@ -58,7 +58,8 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useEditor } from '../../hooks/useEditor'
+import { useEditorStore } from '@/store/modules/editor'
+import { useWidgetStore } from '@/store/modules/widget'
 import { globalPreviewMode } from '../../hooks/usePreviewMode'
 import BaseRendererComponent from '../base/BaseRendererComponent.vue'
 import Card2Wrapper from '../canvas/Card2Wrapper.vue'
@@ -109,13 +110,28 @@ interface Emits {
 
 const emit = defineEmits<Emits>()
 
-// 使用编辑器钩子
-const { stateManager, widgetStore, selectNode, isCard2Component } = useEditor()
+// 使用原始 store
+const editorStore = useEditorStore()
+const widgetStore = useWidgetStore()
+
+// 适配旧接口
+const selectNode = (nodeId: string) => {
+  if (nodeId) {
+    widgetStore.selectNodes([nodeId])
+  } else {
+    widgetStore.selectNodes([])
+  }
+}
+
+const isCard2Component = (type: string) => {
+  // 简单的Card2组件检测
+  return type.includes('card2') || type.includes('Card2')
+}
 const { isPreviewMode } = globalPreviewMode
 
 // 计算属性
-const nodes = computed(() => stateManager.nodes)
-const selectedIds = computed(() => widgetStore.selectedIds)
+const nodes = computed(() => editorStore.nodes || [])
+const selectedIds = computed(() => widgetStore.selectedNodeIds || [])
 
 // 布局计算
 const layoutNodes = computed(() => {

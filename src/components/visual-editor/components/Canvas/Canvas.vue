@@ -43,7 +43,7 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { useEditor } from '../../hooks/useEditor'
+import { useVisualEditor } from '@/store/modules/visual-editor'
 import TextWidget from '../../widgets/custom/TextWidget/TextWidget.vue'
 import ImageWidget from '../../widgets/custom/ImageWidget/ImageWidget.vue'
 import BarChartWidget from '../../widgets/custom/BarChartWidget/BarChartWidget.vue'
@@ -53,10 +53,35 @@ import BarChartChartWidget from '../../widgets/chart/BarChartChartWidget/BarChar
 import ContextMenu from './ContextMenu.vue'
 import type { GraphData } from '../../types'
 
-const { stateManager, selectNode, updateNode, addWidget } = useEditor()
+// 🔥 使用新的统一架构
+const unifiedEditor = useVisualEditor()
 
-const nodes = computed(() => stateManager.canvasState.value.nodes)
-const selectedIds = computed(() => stateManager.canvasState.value.selectedIds)
+// 适配旧接口
+const nodes = computed(() => unifiedEditor.store.nodes)
+const selectedIds = computed(() => unifiedEditor.store.selectedIds)
+
+// 适配方法
+const selectNode = (nodeId: string) => {
+  if (nodeId) {
+    unifiedEditor.store.selectNodes([nodeId])
+  } else {
+    unifiedEditor.store.selectNodes([])
+  }
+}
+
+const updateNode = async (nodeId: string, updates: any) => {
+  await unifiedEditor.updateNode(nodeId, updates)
+}
+
+const addWidget = async (type: string, position?: { x: number; y: number }) => {
+  const newNode = {
+    id: `${type}_${Date.now()}`,
+    type,
+    position: position || { x: 100, y: 100 },
+    data: { componentType: type, title: type }
+  }
+  await unifiedEditor.addNode(newNode)
+}
 
 const widgetComponents = {
   text: TextWidget,
@@ -118,7 +143,7 @@ const getNodeStyle = (node: GraphData) => ({
 })
 
 const handleCanvasClick = () => {
-  stateManager.clearSelection()
+  unifiedEditor.store.selectNodes([])
 }
 
 const handleNodeClick = (id: string, event?: MouseEvent) => {
@@ -128,10 +153,10 @@ const handleNodeClick = (id: string, event?: MouseEvent) => {
     if (currentSelected.includes(id)) {
       // 取消选择
       const newSelected = currentSelected.filter(nodeId => nodeId !== id)
-      stateManager.selectNodes(newSelected)
+      unifiedEditor.store.selectNodes(newSelected)
     } else {
       // 添加到选择
-      stateManager.selectNodes([...currentSelected, id])
+      unifiedEditor.store.selectNodes([...currentSelected, id])
     }
   } else {
     // 普通点击：单选
@@ -171,7 +196,7 @@ const handleResizeStart = (nodeId: string, direction: string, event: MouseEvent)
   document.addEventListener('mouseup', handleMouseUp)
 }
 
-const handleMouseMove = (event: MouseEvent) => {
+const handleMouseMove = async (event: MouseEvent) => {
   if (!isDragging.value && !isResizing.value) return
 
   const deltaX = event.clientX - dragStartPos.value.x
@@ -184,7 +209,7 @@ const handleMouseMove = (event: MouseEvent) => {
       const newX = Math.max(0, node.x + deltaX)
       const newY = Math.max(0, node.y + deltaY)
 
-      updateNode(dragNodeId.value, {
+      await updateNode(dragNodeId.value, {
         x: snapToGrid(newX),
         y: snapToGrid(newY)
       })
@@ -218,7 +243,7 @@ const handleMouseMove = (event: MouseEvent) => {
         updates.width = snapToGrid(newWidth)
       }
 
-      updateNode(resizeNodeId.value, updates)
+      await updateNode(resizeNodeId.value, updates)
       dragStartPos.value = { x: event.clientX, y: event.clientY }
     }
   }
@@ -236,7 +261,7 @@ const handleMouseUp = () => {
 }
 
 // 拖放创建组件
-const handleDrop = (event: DragEvent) => {
+const handleDrop = async (event: DragEvent) => {
   event.preventDefault()
   const widgetType = event.dataTransfer?.getData('text/plain')
   if (widgetType) {
@@ -245,7 +270,7 @@ const handleDrop = (event: DragEvent) => {
     const y = event.clientY - rect.top
 
     // 创建新组件
-    addWidget(widgetType, { x, y })
+    await addWidget(widgetType, { x, y })
   }
 }
 

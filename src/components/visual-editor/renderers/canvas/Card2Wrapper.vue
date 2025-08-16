@@ -11,18 +11,21 @@
     <component
       :is="componentToRender"
       v-else-if="componentToRender"
-      v-bind="config"
+      :config="extractComponentConfig()"
       :raw-data-sources="JSON.parse(JSON.stringify(getDataSourcesForComponent()))"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+/**
+ * Card2.1 组件包装器
+ * 🔥 已迁移到新的统一架构
+ */
+
 import { ref, onMounted, watch, shallowRef, onBeforeUnmount, computed, type Component } from 'vue'
 import { NAlert } from 'naive-ui'
-import { useEditor } from '../../hooks'
-// import { dataSourceManager } from '../../core' // 临时注释，dataSourceManager 不存在
-import { useWidgetStore } from '../../store/widget'
+import { useVisualEditorIntegration as useCard2Integration } from '@/card2.1/hooks/useVisualEditorIntegration'
 import type { DataSourceValue } from '../../types/data-source'
 
 interface Props {
@@ -38,9 +41,8 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const editor = useEditor()
-const card2Integration = editor.card2Integration
-const widgetStore = useWidgetStore()
+// 🔥 使用Card2集成
+const card2Integration = useCard2Integration({ autoInit: true })
 
 // State
 const hasError = ref(false)
@@ -122,13 +124,78 @@ onBeforeUnmount(() => {
   }
 })
 
+/**
+ * 提取组件配置数据
+ * 将Visual Editor的配置格式转换为组件期望的格式
+ */
+const extractComponentConfig = () => {
+  console.log('[Card2Wrapper] 提取组件配置:', {
+    nodeId: props.nodeId,
+    componentType: props.componentType,
+    originalConfig: props.config
+  })
+
+  // 尝试多种路径提取配置
+  let configData = null
+  
+  // 1. 直接使用config
+  if (props.config && typeof props.config === 'object') {
+    // 检查是否直接包含配置属性
+    if (props.config.title || props.config.content || props.config.backgroundColor || props.config.showTitle) {
+      configData = props.config
+      console.log('[Card2Wrapper] 使用直接配置:', configData)
+    }
+    // 检查是否在properties中
+    else if (props.config.properties && typeof props.config.properties === 'object') {
+      const propsConfig = props.config.properties
+      if (propsConfig.title || propsConfig.content || propsConfig.backgroundColor || propsConfig.showTitle) {
+        configData = propsConfig
+        console.log('[Card2Wrapper] 使用properties配置:', configData)
+      }
+    }
+  }
+  
+  // 2. 如果还没找到配置，返回默认配置
+  if (!configData) {
+    console.log('[Card2Wrapper] 使用默认配置')
+    configData = {
+      title: '测试标题',
+      showTitle: true,
+      content: '这是测试内容',
+      backgroundColor: '#f0f8ff',
+      textColor: '#333333',
+      showButton: true,
+      buttonText: '按钮',
+      buttonType: 'primary',
+      fontSize: 14,
+      padding: 16,
+      borderRadius: 8
+    }
+  }
+  
+  console.log('[Card2Wrapper] 最终配置:', configData)
+  return configData
+}
+
 const loadComponent = async () => {
   try {
     hasError.value = false
     errorMessage.value = ''
     console.log(`[Card2Wrapper] [${props.nodeId}] 开始加载组件: ${props.componentType}`)
 
-    const component = card2Integration.getComponent(props.componentType)
+    // 🔥 修复：确保Card2集成已初始化
+    if (!card2Integration.isInitialized.value) {
+      console.log(`[Card2Wrapper] [${props.nodeId}] 等待Card2集成初始化...`)
+      await card2Integration.initialize()
+    }
+
+    // 🔥 修复：使用正确的Card2集成API
+    const componentDefinition = card2Integration.getComponentDefinition(props.componentType)
+    if (!componentDefinition) {
+      throw new Error(`组件定义不存在: ${props.componentType}`)
+    }
+
+    const component = await card2Integration.getComponent(props.componentType)
 
     if (!component) {
       console.error(`[Card2Wrapper] [${props.nodeId}] 错误：组件 [${props.componentType}] 的实现不存在。`)
@@ -148,6 +215,23 @@ const loadComponent = async () => {
 
 // 监听组件类型变化，例如在编辑器中切换组件类型
 watch(() => props.componentType, loadComponent, { immediate: true })
+
+// 监听config变化，确保配置更新时组件重新渲染
+watch(
+  () => props.config,
+  (newConfig) => {
+    console.log('[Card2Wrapper] 配置变化:', {
+      nodeId: props.nodeId,
+      newConfig
+    })
+    // 配置变化时强制重新渲染
+    if (componentToRender.value) {
+      // 通过key变化强制重新渲染组件
+      componentToRender.value = { ...componentToRender.value }
+    }
+  },
+  { deep: true }
+)
 
 // 监听data变化，用于调试
 watch(
@@ -176,9 +260,8 @@ watch(
   { deep: true, immediate: true }
 )
 
-// 🔥 架构修复：Card2Wrapper只负责传递，不做数据转换
+// 🔧 Card2Wrapper数据源传递 - 恢复原有分流架构
 const getDataSourcesForComponent = () => {
-  // 🔥 修复：检查哪个有真实数据，不只是检查存在性
   const dataSourcesConfigHasData =
     props.dataSourcesConfig?.dataSourceBindings && Object.keys(props.dataSourcesConfig.dataSourceBindings).length > 0
 
@@ -199,14 +282,7 @@ const getDataSourcesForComponent = () => {
     return props.dataSources
   }
 
-  console.log('🔧 [Card2Wrapper] 无有效数据源配置', {
-    dataSourcesConfigKeys: props.dataSourcesConfig?.dataSourceBindings
-      ? Object.keys(props.dataSourcesConfig.dataSourceBindings)
-      : 'no bindings',
-    dataSourcesKeys: props.dataSources?.dataSourceBindings
-      ? Object.keys(props.dataSources.dataSourceBindings)
-      : 'no bindings'
-  })
+  console.log('🔧 [Card2Wrapper] 无有效数据源配置')
   return null
 }
 

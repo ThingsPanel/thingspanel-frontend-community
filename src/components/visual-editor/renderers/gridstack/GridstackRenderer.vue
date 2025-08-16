@@ -24,7 +24,14 @@
 </template>
 
 <script setup lang="ts">
-import { useEditor } from '../../hooks/useEditor'
+/**
+ * Gridstack 渲染器组件
+ * 🔥 已迁移到新的统一架构
+ */
+
+import { computed } from 'vue'
+import { useEditorStore } from '@/store/modules/editor'
+import { useWidgetStore } from '@/store/modules/widget'
 import { globalPreviewMode } from '../../hooks/usePreviewMode'
 import BaseRendererComponent from '../base/BaseRendererComponent.vue'
 import GridLayoutPlusWrapper from './GridLayoutPlusWrapper.vue'
@@ -37,11 +44,27 @@ const props = defineProps<{
   multiDataSourceConfigStore?: Record<string, any>
 }>()
 
-// 使用传入的配置
-
 const emit = defineEmits(['ready', 'error', 'node-select', 'canvas-click', 'request-settings'])
 
-const { stateManager, selectNode } = useEditor()
+// 使用原始的 store
+const editorStore = useEditorStore()
+const widgetStore = useWidgetStore()
+
+// 为兼容旧组件接口，创建stateManager适配
+const stateManager = computed(() => ({
+  nodes: editorStore.nodes || [],
+  selectedIds: widgetStore.selectedNodeIds || [],
+  viewport: editorStore.viewport || { zoom: 1, offsetX: 0, offsetY: 0 }
+}))
+
+// 选择节点方法适配
+const selectNode = (nodeId: string) => {
+  if (nodeId) {
+    widgetStore.selectNodes([nodeId])
+  } else {
+    widgetStore.selectNodes([])
+  }
+}
 
 // 全局预览模式
 const { isPreviewMode } = globalPreviewMode

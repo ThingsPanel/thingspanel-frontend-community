@@ -285,7 +285,7 @@ import {
   NEllipsis
 } from 'naive-ui'
 import { SettingsOutline, DocumentOutline, GridOutline } from '@vicons/ionicons5'
-import { useEditor } from '../hooks'
+import { useVisualEditor } from '@/store/modules/visual-editor'
 import type { VisualEditorWidget } from '../types'
 import { cloneDeep } from 'lodash-es'
 import { configRegistry } from './ConfigRegistry'
@@ -303,7 +303,14 @@ const props = defineProps<{
   onToggleWidgetTitles?: (value: boolean) => void
 }>()
 
-const { stateManager } = useEditor()
+// 🔥 使用新的统一架构
+const unifiedEditor = useVisualEditor()
+
+// 适配旧接口
+const stateManager = computed(() => ({
+  nodes: unifiedEditor.store.nodes,
+  selectedIds: unifiedEditor.store.selectedIds
+}))
 
 const editableProps = ref<any>({})
 const widgetDataSourceConfig = ref<JsonDataSourceConfig[]>([])
@@ -459,7 +466,7 @@ const updateNode = () => {
   }
 
   // 设置新的定时器，防抖200ms
-  updateNodeTimer = setTimeout(() => {
+  updateNodeTimer = setTimeout(async () => {
     if (props.selectedWidget) {
       console.log('🔧 SettingsPanel - 更新节点:', {
         id: props.selectedWidget.id,
@@ -473,10 +480,11 @@ const updateNode = () => {
         dataBinding: widgetDataSourceConfig.value.length > 0 ? widgetDataSourceConfig.value : undefined
       }
 
-      stateManager.updateNode(props.selectedWidget.id, {
+      // 使用统一架构更新节点
+      await unifiedEditor.updateNode(props.selectedWidget.id, {
         properties: updatedProperties,
         interaction: editableProps.value.interaction
-      } as any)
+      })
     }
   }, 200)
 }

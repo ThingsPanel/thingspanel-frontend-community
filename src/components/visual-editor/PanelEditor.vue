@@ -12,7 +12,8 @@ import { initializeSettings } from './settings'
 import ConfigurationPanel from './configuration/ConfigurationPanel.vue'
 import { configurationManager } from './configuration/ConfigurationManager'
 import { CanvasRenderer, GridstackRenderer } from './renderers'
-import { createEditor, usePreviewMode } from './hooks'
+import { createEditor } from './hooks'
+import { usePreviewMode } from './hooks/usePreviewMode'
 import type { RendererType, VisualEditorWidget, GraphData } from './types'
 
 // 导入数据源注册

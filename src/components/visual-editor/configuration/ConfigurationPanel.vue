@@ -57,70 +57,81 @@
         </div>
       </div>
 
-      <!-- 配置标签页 -->
+      <!-- 配置标签页 - 动态结构 -->
       <n-tabs v-model:value="activeTab" type="line" animated size="small" class="config-tabs">
-        <!-- 基础配置标签页 -->
-        <n-tab-pane name="base" :tab="$t('config.tabs.base')">
-          <BaseConfigForm
-            v-model="baseConfig"
-            :widget="selectedWidget"
-            :readonly="readonly"
-            :show-advanced="showAdvanced"
-            @validate="handleValidation"
-            @toggle-advanced="toggleAdvancedMode"
-          />
-        </n-tab-pane>
+        <!-- 动态生成配置标签页 -->
+        <n-tab-pane v-for="layer in configLayers" :key="layer.name" :name="layer.name" :tab="$t(layer.label)">
+          <!-- Base配置特殊处理 -->
+          <template v-if="layer.name === 'base'">
+            <component
+              :is="layer.component"
+              v-model="baseConfig"
+              :node-id="selectedWidget?.id || ''"
+              :readonly="readonly"
+              @apply="handleBaseConfigApply"
+              @reset="handleBaseConfigReset"
+            />
+          </template>
 
-        <!-- 组件配置标签页 -->
-        <n-tab-pane name="component" :tab="$t('config.tabs.component')">
-          <ComponentConfigForm
-            v-model="componentConfig"
-            :widget="selectedWidget"
-            :readonly="readonly"
-            :show-advanced="showAdvanced"
-            @validate="handleValidation"
-            @toggle-advanced="toggleAdvancedMode"
-          />
-        </n-tab-pane>
+          <!-- 组件配置特殊处理 -->
+          <template v-else-if="layer.name === 'component'">
+            <component
+              :is="layer.component"
+              v-model="componentConfig"
+              :widget="selectedWidget"
+              :readonly="readonly"
+              :show-advanced="showAdvanced"
+              @validate="handleValidation"
+              @toggle-advanced="toggleAdvancedMode"
+            />
+          </template>
 
-        <!-- V6数据源配置标签页 - 重新启用简化版本 -->
-        <n-tab-pane name="dataSource" :tab="$t('config.tabs.dataSource')">
-          <div class="v6-data-config">
-            <!-- V6: 检查组件定义中的dataSources -->
-            <div v-if="componentDefinition?.dataSources?.length > 0" class="v6-data-mapping">
-              <!-- 新的DataSourceConfigForm组件 -->
-              <DataSourceConfigForm
-                ref="dataSourceFormRef"
-                :data-sources="enrichedDataSources"
-                :selected-widget-id="selectedWidget?.id"
-                v-on="getDataSourceEventListeners()"
-              />
+          <!-- 数据源配置特殊处理 -->
+          <template v-else-if="layer.name === 'dataSource'">
+            <div class="v6-data-config">
+              <!-- V6: 检查组件定义中的dataSources -->
+              <div v-if="componentDefinition?.dataSources?.length > 0" class="v6-data-mapping">
+                <!-- 新的DataSourceConfigForm组件 -->
+                <component
+                  :is="layer.component"
+                  ref="dataSourceFormRef"
+                  :data-sources="enrichedDataSources"
+                  :selected-widget-id="selectedWidget?.id"
+                  v-on="getDataSourceEventListeners()"
+                />
+              </div>
+
+              <!-- 无数据源需求时的提示 -->
+              <div v-else class="no-data-source-hint">
+                <n-empty description="当前组件无需配置数据源" size="small">
+                  <template #icon>
+                    <n-icon><DocumentOutline /></n-icon>
+                  </template>
+                  <template #extra>
+                    <n-text depth="3">组件使用静态配置或预设数据</n-text>
+                  </template>
+                </n-empty>
+              </div>
             </div>
+          </template>
 
-            <!-- 无数据源需求时的提示 -->
-            <div v-else class="no-data-source-hint">
-              <n-empty description="当前组件无需配置数据源" size="small">
-                <template #icon>
-                  <n-icon><DocumentOutline /></n-icon>
-                </template>
-                <template #extra>
-                  <n-text depth="3">组件使用静态配置或预设数据</n-text>
-                </template>
-              </n-empty>
-            </div>
-          </div>
-        </n-tab-pane>
+          <!-- 交互配置特殊处理 -->
+          <template v-else-if="layer.name === 'interaction'">
+            <component
+              :is="layer.component"
+              v-model="interactionConfig"
+              :widget="selectedWidget"
+              :readonly="readonly"
+              :show-advanced="showAdvanced"
+              @validate="handleValidation"
+              @toggle-advanced="toggleAdvancedMode"
+            />
+          </template>
 
-        <!-- 交互配置标签页 -->
-        <n-tab-pane name="interaction" :tab="$t('config.tabs.interaction')">
-          <InteractionConfigForm
-            v-model="interactionConfig"
-            :widget="selectedWidget"
-            :readonly="readonly"
-            :show-advanced="showAdvanced"
-            @validate="handleValidation"
-            @toggle-advanced="toggleAdvancedMode"
-          />
+          <!-- 默认通用处理 -->
+          <template v-else>
+            <component :is="layer.component" v-bind="getLayerProps(layer)" @validate="handleValidation" />
+          </template>
         </n-tab-pane>
       </n-tabs>
 
@@ -218,18 +229,14 @@ import {
 } from 'naive-ui'
 import { Settings as SettingsIcon, DocumentOutline } from '@vicons/ionicons5'
 
-// 导入配置表单组件
-import BaseConfigForm from './forms/BaseConfigForm.vue'
-import ComponentConfigForm from './forms/ComponentConfigForm.vue'
-import InteractionConfigForm from './forms/InteractionConfigForm.vue'
-import DataSourceConfigForm from './forms/DataSourceConfigForm.vue'
+// 导入配置组件注册中心
+import { getVisibleConfigLayers, getConfigLayer } from './component-registry'
 
 // 导入配置管理器和类型
 import { configurationManager } from './ConfigurationManager'
 import { getComponentDataRequirements } from '../core/component-data-requirements'
 import type {
   WidgetConfiguration,
-  BaseConfiguration,
   ComponentConfiguration,
   DataSourceConfiguration,
   InteractionConfiguration,
@@ -271,8 +278,11 @@ const emit = defineEmits<Emits>()
 // 消息提示
 const message = useMessage()
 
-// 响应式状态
-const activeTab = ref('base')
+// 获取配置层级定义
+const configLayers = computed(() => getVisibleConfigLayers())
+
+// 响应式状态 - 默认显示第一个可见层级
+const activeTab = ref(configLayers.value[0]?.name || 'base')
 const showAdvanced = ref(false)
 const showImportExportDialog = ref(false)
 const importExportMode = ref<'import' | 'export'>('export')
@@ -291,16 +301,7 @@ const dataMappingConfig = ref<any>({
 const dataSourceFormRef = ref<any>(null)
 
 // 配置数据
-const baseConfig = ref<BaseConfiguration>({
-  showTitle: false,
-  title: '',
-  opacity: 1,
-  visible: true,
-  customClassName: '',
-  margin: { top: 0, right: 0, bottom: 0, left: 0 },
-  padding: { top: 0, right: 0, bottom: 0, left: 0 }
-})
-
+const baseConfig = ref({})
 const componentConfig = ref<ComponentConfiguration>({
   properties: {},
   styles: {},
@@ -516,6 +517,7 @@ const loadWidgetConfiguration = async (widgetId: string) => {
     }
 
     if (config) {
+      // 🔧 现在加载所有层级的配置
       baseConfig.value = { ...config.base }
       componentConfig.value = { ...config.component }
       dataSourceConfig.value = config.dataSource ? { ...config.dataSource } : null
@@ -556,6 +558,7 @@ const handleConfigurationChange = (config: WidgetConfiguration) => {
 
   try {
     // 更新本地配置状态
+    // 🔧 现在加载所有层级的配置
     baseConfig.value = { ...config.base }
     componentConfig.value = { ...config.component }
     dataSourceConfig.value = config.dataSource ? { ...config.dataSource } : null
@@ -585,9 +588,9 @@ const syncConfigurationToManager = async () => {
 
   try {
     const config: WidgetConfiguration = {
-      base: { ...baseConfig.value },
+      base: { ...baseConfig.value }, // 🔧 现在包含base配置
       component: { ...componentConfig.value },
-      dataSource: dataSourceConfig.value ? { ...dataSourceConfig.value } : null,
+      dataSource: dataSourceConfig.value ? { ...dataSourceConfig.value } : {},
       interaction: { ...interactionConfig.value },
       metadata: {
         version: '1.0.0',
@@ -606,16 +609,8 @@ const syncConfigurationToManager = async () => {
  * 重置本地配置
  */
 const resetLocalConfiguration = () => {
-  baseConfig.value = {
-    showTitle: false,
-    title: '',
-    opacity: 1,
-    visible: true,
-    customClassName: '',
-    margin: { top: 0, right: 0, bottom: 0, left: 0 },
-    padding: { top: 0, right: 0, bottom: 0, left: 0 }
-  }
-
+  // 🔧 重置所有配置层级
+  baseConfig.value = {}
   componentConfig.value = {
     properties: {},
     styles: {},
@@ -784,6 +779,63 @@ const getDataSourceEventListeners = () => {
 // V6: 移除handleDataMappingConfigUpdate - 数据变化自动处理
 
 // V6: 移除handlePreviewUpdate - SimpleDataMappingForm内部处理预览
+
+/**
+ * 处理Base配置应用
+ */
+const handleBaseConfigApply = (config: any) => {
+  console.log('🔧 [ConfigurationPanel] Base配置应用:', config)
+  if (props.selectedWidget) {
+    configurationManager.updateConfiguration(props.selectedWidget.id, 'base', config)
+  }
+}
+
+/**
+ * 处理Base配置重置
+ */
+const handleBaseConfigReset = () => {
+  console.log('🔧 [ConfigurationPanel] Base配置重置')
+  baseConfig.value = {}
+}
+
+/**
+ * 获取层级的props
+ */
+const getLayerProps = (layer: any) => {
+  const commonProps = {
+    readonly: props.readonly
+  }
+
+  switch (layer.name) {
+    case 'base':
+      return {
+        ...commonProps,
+        modelValue: baseConfig.value,
+        nodeId: props.selectedWidget?.id || ''
+      }
+    case 'component':
+      return {
+        ...commonProps,
+        modelValue: componentConfig.value,
+        widget: props.selectedWidget,
+        showAdvanced: showAdvanced.value
+      }
+    case 'dataSource':
+      return {
+        ...commonProps,
+        modelValue: dataSourceConfig.value
+      }
+    case 'interaction':
+      return {
+        ...commonProps,
+        modelValue: interactionConfig.value,
+        widget: props.selectedWidget,
+        showAdvanced: showAdvanced.value
+      }
+    default:
+      return commonProps
+  }
+}
 
 /**
  * 切换高级模式

@@ -421,25 +421,28 @@ defineExpose({
 /* 网格项内容 */
 .grid-item-content {
   height: 100%;
-  background: white;
-  border: 1px solid #e1e5e9;
-  border-radius: 8px;
+  /* 🔧 移除默认样式，避免与NodeWrapper base配置冲突 */
+  background: transparent;
+  border: none;
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
+  /* 🔧 移除默认阴影和过渡，由内部组件控制 */
+  transition: none;
 }
 
 .dark-theme .grid-item-content {
-  background: #2d2d2d;
-  border-color: #404040;
-  color: white;
+  /* 🔧 移除暗主题默认样式，避免与NodeWrapper配置冲突 */
+  background: transparent;
+  border-color: transparent;
+  color: inherit;
 }
 
 .grid-item-content:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+  /* 🔧 移除hover效果，避免与NodeWrapper配置冲突 */
+  /* box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); */
+  /* transform: translateY(-1px); */
 }
 
 /* 项目头部 */
@@ -503,8 +506,13 @@ defineExpose({
 /* 项目内容 */
 .grid-item-body {
   flex: 1;
-  padding: 12px;
+  padding: 0; /* 🔧 移除默认内边距，由内部组件控制 */
   overflow: auto;
+  /* 🔧 移除默认背景，避免与NodeWrapper配置冲突 */
+  background: transparent;
+  /* 🔧 确保内部组件样式能够正常显示 */
+  border: none;
+  border-radius: inherit;
 }
 
 .default-item-content {

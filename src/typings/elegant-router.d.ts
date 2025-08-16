@@ -107,13 +107,16 @@ declare module "@elegant-router/types" {
     "system-management-user": "/system-management-user";
     "system-management-user_system-log": "/system-management-user/system-log";
     "test": "/test";
+    "test_card2-config-test": "/test/card2-config-test";
     "test_config-driven-data-source": "/test/config-driven-data-source";
     "test_data-filter-test": "/test/data-filter-test";
     "test_data-mapping-test": "/test/data-mapping-test";
+    "test_data-source-config-form-test": "/test/data-source-config-form-test";
+    "test_data-source-system-test": "/test/data-source-system-test";
     "test_editor-integration": "/test/editor-integration";
+    "test_flexible-config-test": "/test/flexible-config-test";
     "test_script-engine-test": "/test/script-engine-test";
-    "test_v4-optimization-validation": "/test/v4-optimization-validation";
-    "test_v5-refactoring-validation": "/test/v5-refactoring-validation";
+    "test_unifiedarchitecturetest": "/test/unifiedarchitecturetest";
     "ultra-kanban": "/ultra-kanban";
     "ultra-kanban_index": "/ultra-kanban/index";
     "ultra-kanban_kanban-details": "/ultra-kanban/kanban-details";
@@ -268,14 +271,17 @@ declare module "@elegant-router/types" {
     | "plugin_video"
     | "rule-engine"
     | "system-management-user_system-log"
+    | "test_unifiedarchitecturetest"
+    | "test_card2-config-test"
     | "test_config-driven-data-source"
     | "test_data-filter-test"
     | "test_data-mapping-test"
+    | "test_data-source-config-form-test"
+    | "test_data-source-system-test"
     | "test_editor-integration"
+    | "test_flexible-config-test"
     | "test"
     | "test_script-engine-test"
-    | "test_v4-optimization-validation"
-    | "test_v5-refactoring-validation"
     | "ultra-kanban_index"
     | "ultra-kanban_kanban-details"
     | "ultra-kanban_panel-preview"

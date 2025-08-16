@@ -4,11 +4,34 @@
     "allow": [
       "Bash(git add:*)",
       "Bash(pnpm dev:*)",
-      "Bash(pnpm quality-check:*)"
+      "Bash(pnpm quality-check:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(grep:*)",
+      "Bash(mkdir:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(rg:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(node:*)",
+      "Bash(rm:*)",
+      "Bash(find:*)",
+      "Bash(mv:*)",
+      "Bash(git checkout:*)",
+      "Bash(git reset:*)",
+      "Bash(pnpm gen-route:*)",
+      "Bash(rm:*)",
+      "Bash(touch:*)",
+      "Bash(node:*)",
+      "WebFetch(domain:localhost)",
+      "Bash(taskkill:*)",
+      "Bash(pnpm add:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "additionalDirectories": [
-      "E:\\mnt\\e\\wbh\\things2"
+      "E:\\mnt\\e\\wbh\\things2",
+      "E:\\e\\wbh\\things2",
+      "E:\\"
     ]
   }
 }

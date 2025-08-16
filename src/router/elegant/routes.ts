@@ -818,6 +818,15 @@ export const generatedRoutes: GeneratedRoute[] = [
     },
     children: [
       {
+        name: 'test_card2-config-test',
+        path: '/test/card2-config-test',
+        component: 'view.test_card2-config-test',
+        meta: {
+          title: 'test_card2-config-test',
+          i18nKey: 'route.test_card2-config-test'
+        }
+      },
+      {
         name: 'test_config-driven-data-source',
         path: '/test/config-driven-data-source',
         component: 'view.test_config-driven-data-source',
@@ -845,12 +854,39 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
+        name: 'test_data-source-config-form-test',
+        path: '/test/data-source-config-form-test',
+        component: 'view.test_data-source-config-form-test',
+        meta: {
+          title: 'test_data-source-config-form-test',
+          i18nKey: 'route.test_data-source-config-form-test'
+        }
+      },
+      {
+        name: 'test_data-source-system-test',
+        path: '/test/data-source-system-test',
+        component: 'view.test_data-source-system-test',
+        meta: {
+          title: 'test_data-source-system-test',
+          i18nKey: 'route.test_data-source-system-test'
+        }
+      },
+      {
         name: 'test_editor-integration',
         path: '/test/editor-integration',
         component: 'view.test_editor-integration',
         meta: {
           title: 'test_editor-integration',
           i18nKey: 'route.test_editor-integration'
+        }
+      },
+      {
+        name: 'test_flexible-config-test',
+        path: '/test/flexible-config-test',
+        component: 'view.test_flexible-config-test',
+        meta: {
+          title: 'test_flexible-config-test',
+          i18nKey: 'route.test_flexible-config-test'
         }
       },
       {
@@ -863,21 +899,12 @@ export const generatedRoutes: GeneratedRoute[] = [
         }
       },
       {
-        name: 'test_v4-optimization-validation',
-        path: '/test/v4-optimization-validation',
-        component: 'view.test_v4-optimization-validation',
+        name: 'test_unifiedarchitecturetest',
+        path: '/test/unifiedarchitecturetest',
+        component: 'view.test_unifiedarchitecturetest',
         meta: {
-          title: 'test_v4-optimization-validation',
-          i18nKey: 'route.test_v4-optimization-validation'
-        }
-      },
-      {
-        name: 'test_v5-refactoring-validation',
-        path: '/test/v5-refactoring-validation',
-        component: 'view.test_v5-refactoring-validation',
-        meta: {
-          title: 'test_v5-refactoring-validation',
-          i18nKey: 'route.test_v5-refactoring-validation'
+          title: 'test_unifiedarchitecturetest',
+          i18nKey: 'route.test_unifiedarchitecturetest'
         }
       }
     ]

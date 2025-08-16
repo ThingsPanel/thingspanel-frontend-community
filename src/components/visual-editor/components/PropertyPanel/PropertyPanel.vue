@@ -34,7 +34,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useEditor } from '../../hooks/useEditor'
+import { useVisualEditor } from '@/store/modules/visual-editor'
 import TextPropertyEditor from './components/TextPropertyEditor.vue'
 import ImagePropertyEditor from './components/ImagePropertyEditor.vue'
 import BarChartPropertyEditor from './components/BarChartPropertyEditor.vue'
@@ -42,11 +42,27 @@ import DigitIndicatorPropertyEditor from './components/DigitIndicatorPropertyEdi
 import ChartDigitIndicatorPropertyEditor from './components/ChartDigitIndicatorPropertyEditor.vue'
 import ChartBarPropertyEditor from './components/ChartBarPropertyEditor.vue'
 
-const { stateManager, updateNode } = useEditor()
+// 🔥 使用新的统一架构
+const unifiedEditor = useVisualEditor()
+
+// 适配旧接口
+const stateManager = computed(() => ({
+  nodes: unifiedEditor.store.nodes,
+  selectedIds: unifiedEditor.store.selectedIds
+}))
+
+const updateNode = async (nodeId: string, updates: any) => {
+  await unifiedEditor.updateNode(nodeId, updates)
+}
 
 const selectedNode = computed(() => {
-  const selected = stateManager.selectedNodes.value
-  return selected.length === 1 ? selected[0] : null
+  const nodes = stateManager.value.nodes
+  const selectedIds = stateManager.value.selectedIds
+
+  if (selectedIds.length === 1) {
+    return nodes.find(node => node.id === selectedIds[0]) || null
+  }
+  return null
 })
 
 const propertyEditors = {

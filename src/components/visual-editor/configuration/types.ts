@@ -5,113 +5,28 @@
 
 // 数据源相关的导入已移除
 
-export interface BaseConfiguration {
-  /** 是否显示标题 */
-  showTitle: boolean
-  /** 组件标题 */
-  title: string
-  /** 组件透明度 */
-  opacity?: number
-  /** 是否可见 */
-  visible?: boolean
-  /** 自定义CSS类名 */
-  customClassName?: string
-  /** 边距配置 */
-  margin?: {
-    top?: number
-    right?: number
-    bottom?: number
-    left?: number
-  }
-  /** 内边距配置 */
-  padding?: {
-    top?: number
-    right?: number
-    bottom?: number
-    left?: number
-  }
+/**
+ * 🔧 Base配置接口 - 泛型化，由NodeWrapper层具体定义
+ * 配置器层只定义结构，不定义具体字段
+ */
+export interface BaseConfiguration extends Record<string, any> {
+  // 🔧 保持泛型结构，具体字段由NodeWrapper层定义
 }
 
 /**
- * 数据源配置类型
+ * 🔧 数据源配置接口 - 泛型化，由独立数据源系统具体定义
+ * 配置器层只定义结构，不定义具体字段
  */
-export interface DataSourceConfiguration {
-  /** 数据源类型 */
-  type: 'static' | 'api' | 'websocket' | 'multi-source' | 'data-mapping'
-  /** 是否启用 */
-  enabled?: boolean
-  /** 数据源配置信息 */
-  sources?: any[]
-  /** 已应用的数据 */
-  appliedData?: any
-  /** 通用配置对象（用于data-mapping等类型） */
-  config?: any
-  /** 元数据信息 */
-  metadata?: {
-    componentType?: string
-    mappingType?: string
-    updatedAt?: number
-    [key: string]: any
-  }
-  /** 配置设置 */
-  settings?: {
-    autoRefresh?: boolean
-    refreshInterval?: number
-    enableCache?: boolean
-    cacheTimeout?: number
-    updatedAt?: number
-    [key: string]: any
-  }
+export interface DataSourceConfiguration extends Record<string, any> {
+  // 🔧 保持泛型结构，具体字段由数据源系统定义
 }
 
-export interface InteractionConfiguration {
-  /** 点击事件配置 */
-  onClick?: InteractionConfig
-  /** 悬停事件配置 */
-  onHover?: InteractionConfig
-  /** 双击事件配置 */
-  onDoubleClick?: InteractionConfig
-  /** 右键事件配置 */
-  onRightClick?: InteractionConfig
-}
-
-export interface InteractionConfig {
-  /** 交互类型 */
-  type: 'none' | 'link' | 'internal_route' | 'modal' | 'drawer' | 'custom_script' | 'emit_event'
-  /** 交互配置参数 */
-  payload: {
-    /** 链接地址 */
-    url?: string
-    /** 是否新标签页打开 */
-    newTab?: boolean
-    /** 内部路由 */
-    route?: string
-    /** 路由参数 */
-    routeParams?: Record<string, any>
-    /** 模态框配置 */
-    modalConfig?: {
-      title?: string
-      width?: number
-      height?: number
-      content?: string
-    }
-    /** 抽屉配置 */
-    drawerConfig?: {
-      title?: string
-      width?: number
-      placement?: 'left' | 'right' | 'top' | 'bottom'
-    }
-    /** 自定义脚本 */
-    script?: string
-    /** 事件名称 */
-    eventName?: string
-    /** 事件参数 */
-    eventData?: Record<string, any>
-  }
-  /** 是否启用 */
-  enabled?: boolean
-  /** 交互条件 */
-  condition?: string | ((context: any) => boolean)
+/**
+ * 🔧 交互配置接口 - 泛型化，由独立交互系统具体定义
+ * 配置器层只定义结构，不定义具体字段
+ */
+export interface InteractionConfiguration extends Record<string, any> {
+  // 🔧 保持泛型结构，具体字段由交互系统定义
 }
 
 export interface ComponentConfiguration {
@@ -129,23 +44,23 @@ export interface ComponentConfiguration {
 }
 
 /**
- * 完整的组件配置接口
- * 包含四个主要配置模块
+ * 🔧 完整的组件配置接口 - 重构为分层自治架构
+ * 配置器作为接口层，各层自主管理各自配置
  */
 export interface WidgetConfiguration {
-  /** 基础配置 - 由包装组件管理 */
+  /** 🔧 基础配置 - 由NodeWrapper层自主定义和管理 */
   base: BaseConfiguration
 
-  /** 组件自定义配置 - 由组件自己定义 */
+  /** 🔧 组件配置 - 由各Card2.1组件自主定义和管理 */
   component: ComponentConfiguration
 
-  /** 数据源配置 - 标准化结构 */
-  dataSource: DataSourceConfiguration | null
+  /** 🔧 数据源配置 - 由独立数据源系统自主定义和管理 */
+  dataSource: DataSourceConfiguration
 
-  /** 交互配置 - 标准化结构 */
+  /** 🔧 交互配置 - 由独立交互系统自主定义和管理 */
   interaction: InteractionConfiguration
 
-  /** 配置元数据 */
+  /** 🔧 配置元数据 - 配置器层统一管理 */
   metadata?: {
     /** 配置版本 */
     version: string
